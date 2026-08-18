@@ -1,22 +1,16 @@
 import { SUPPORTED_LOCALES } from '@/config';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
 
 import { deleteArticle } from './deleteArticle';
 
-const mockGetUser = vi.fn();
 const mockSelectFromWhere = vi.fn();
 const mockDeleteWhere = vi.fn();
 const mockRevalidatePath = vi.fn();
 const mockRevalidateTag = vi.fn();
 
-vi.mock('@/lib/supabase/server', () => ({
-  createClient: () =>
-    Promise.resolve({
-      auth: {
-        getUser: mockGetUser,
-      },
-    }),
-}));
+vi.mock('@/lib/supabase/server');
 
 vi.mock('@/lib/db', () => ({
   db: {
@@ -52,10 +46,6 @@ const adminUserId = 'admin-00000000-0000-0000-0000-000000000001';
 const articleId = 'art-00000000-0000-0000-0000-000000000001';
 
 describe('deleteArticle', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('should return unauthorized when user is not authenticated', async () => {
     mockGetUser.mockResolvedValue({ data: { user: null } });
 

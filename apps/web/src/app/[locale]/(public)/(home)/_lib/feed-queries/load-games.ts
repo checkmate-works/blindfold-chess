@@ -3,7 +3,7 @@ import { and, eq, inArray, isNull } from 'drizzle-orm';
 
 import { getReviewedGameIdSet } from '@/lib/ai-review/queries';
 import { AUTHOR_PROFILE_COLUMNS, db, games, liveProfileJoinOn, profiles } from '@/lib/db';
-import { GAME_LIKE_TARGET, getLikeMetaMap } from '@/lib/db/like-queries';
+import { EMPTY_LIKE_META, GAME_LIKE_TARGET, getLikeMetaMap } from '@/lib/db/like-queries';
 import { EMPTY_REPLY_META, getGameCommentMetaMap } from '@/lib/db/reply-meta-queries';
 import { playSettingsToThumbnailDisplay } from '@/lib/games/play-settings-thumbnail';
 
@@ -70,7 +70,7 @@ export async function loadGamesForFeed(
             flair: row.author.flair,
           }
         : null,
-      likeMeta: likeMetaMap.get(row.id) ?? { likeCount: 0, likedByMe: false },
+      likeMeta: likeMetaMap.get(row.id) ?? EMPTY_LIKE_META,
       replyMeta: commentMetaMap.get(row.id) ?? EMPTY_REPLY_META,
       aiReviewed: reviewedIds.has(row.id),
     });

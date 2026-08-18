@@ -18,11 +18,11 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 
+import { getOptionalUser } from '@/lib/auth';
 import { CURRICULUM } from '@/lib/db/data/curriculum';
 import { ALL_RANK_SLUGS } from '@/lib/db/data/ranks';
 import type { RankSlug } from '@/lib/db/data/ranks';
 import { buildGuidePath, getRankGuide } from '@/lib/guides';
-import { createClient } from '@/lib/supabase/server';
 
 import { RankCard } from '@/app/[locale]/(public)/dojo/ranks/_components/RankCard';
 import { getBeltColorHex } from '@/app/[locale]/(public)/dojo/ranks/_lib/belt-colors';
@@ -65,12 +65,11 @@ export default async function DojoPage({ params }: LocalePageProps) {
   const { locale } = await params;
   // The rank master is viewer-independent, so it loads with the translations
   // and the supabase client instead of waiting behind the session lookup.
-  const [t, tHelp, tRanks, tGuides, supabase, dbRanks] = await Promise.all([
+  const [t, tHelp, tRanks, tGuides, dbRanks] = await Promise.all([
     getTranslations({ locale, namespace: 'dojo' }),
     getTranslations({ locale, namespace: 'dojo.help' }),
     getTranslations({ locale, namespace: 'ranks' }),
     getTranslations({ locale, namespace: 'guides' }),
-    createClient(),
     getAllRanks(),
   ]);
   const guidesPages = tGuides.raw('pages') as Record<string, unknown>;
@@ -84,9 +83,7 @@ export default async function DojoPage({ params }: LocalePageProps) {
       : null;
   }
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getOptionalUser();
 
   const achievedRankIds = user ? await getUserAchievedRankIds(user.id) : new Set<string>();
   const achievedSlugs = resolveAchievedSlugs(dbRanks, achievedRankIds);

@@ -14,6 +14,8 @@ import {
   SquareQuestion,
   ColorButtons,
 } from "../../../../features/square-colors/components";
+import { parseIntParam } from "../../../../lib/route-params";
+import { serializePracticeStatsParams } from "../../../../lib/practice-result-params";
 
 export default function SquareColorsSession() {
   const router = useRouter();
@@ -21,20 +23,13 @@ export default function SquareColorsSession() {
     timeLimit: string;
   }>();
 
-  const duration = parseInt(params.timeLimit || "60", 10);
+  const duration = parseIntParam(params.timeLimit, { min: 1, fallback: 60 });
 
   const handleComplete = useCallback(
     (result: SquareColorsResult) => {
       router.replace({
         pathname: "/(tabs)/practice/square-colors/result",
-        params: {
-          correctAnswers: result.correctAnswers.toString(),
-          incorrectAnswers: result.incorrectAnswers.toString(),
-          totalQuestions: result.totalQuestions.toString(),
-          accuracy: result.accuracy.toString(),
-          timeTaken: result.timeTaken.toString(),
-          averageTime: result.averageTime.toString(),
-        },
+        params: serializePracticeStatsParams(result),
       });
     },
     [router],

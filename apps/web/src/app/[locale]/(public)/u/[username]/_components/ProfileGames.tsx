@@ -1,13 +1,8 @@
-import { getStartingFen } from '@blindfold-chess/features/chess-core';
-
 import type { SharedGameListItem } from '@/lib/db/games-read';
 import type { LikeMeta } from '@/lib/db/like-queries';
 import type { ReplyMeta } from '@/lib/db/reply-meta-queries';
 
-import { toggleGameLikeAction } from '@/app/[locale]/(public)/games/shared/[id]/_actions/game-like';
-import { AiReviewedBadge } from '@/app/[locale]/(public)/games/shared/_components/AiReviewedBadge';
-import { GameColorOpeningRow } from '@/app/[locale]/(public)/games/shared/_components/GameColorOpeningRow';
-import { CatalogListCard } from '@/app/[locale]/_components/CatalogListCard';
+import { SharedGameListCard } from '@/app/[locale]/(public)/games/shared/_components/SharedGameListCard';
 import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -35,11 +30,9 @@ type Props = {
   };
 };
 
-const EMPTY_LIKE_META: LikeMeta = { likeCount: 0, likedByMe: false };
-
 /**
  * Games tab on a public profile — lists a user's publicly-shared games using the
- * same {@link CatalogListCard} the shared-games gallery uses, with the player's
+ * same {@link SharedGameListCard} the shared-games gallery uses, with the player's
  * colour + detected opening on the meta row. Presentational: the caller resolves
  * the localized colour / opening / relative-time labels and passes them in.
  */
@@ -63,44 +56,17 @@ export function ProfileGames({
       <div className="mt-4 space-y-3">
         {games.length > 0 ? (
           games.map((g) => (
-            <CatalogListCard
+            <SharedGameListCard
               key={g.id}
-              id={g.id}
-              fen={g.startingFen ?? getStartingFen()}
-              thumbnailDisplaySettings={g.thumbnailDisplay}
-              title={g.title}
-              description={g.description}
-              createdAt={g.createdAt}
-              profile={g.author}
-              likeMeta={likeMetaMap.get(g.id) ?? EMPTY_LIKE_META}
+              game={g}
+              likeMeta={likeMetaMap.get(g.id)}
               replyMeta={replyMetaMap.get(g.id) ?? emptyReplyMeta}
-              detailHref={`/games/shared/${g.id}`}
-              // GameReview's own hash handler scrolls to #game-overview,
-              // not the generic #comments id — see GameFeedCard's home-feed
-              // equivalent.
-              commentHref={`/games/shared/${g.id}#game-overview`}
-              i18nNamespace="sharedGames.detail"
-              toggleLikeAction={toggleGameLikeAction}
+              reviewed={reviewedGameIds.has(g.id)}
+              aiReviewedBadgeLabel={labels.aiReviewedBadge}
+              colorLabels={colorLabels}
+              resolveOpeningName={resolveOpeningName}
               justNowLabel={justNowLabel}
               locale={locale}
-              topicKey=""
-              badge={
-                <AiReviewedBadge
-                  reviewed={reviewedGameIds.has(g.id)}
-                  label={labels.aiReviewedBadge}
-                />
-              }
-              meta={
-                <GameColorOpeningRow
-                  playerColor={g.playerColor}
-                  colorLabel={g.playerColor === 'white' ? colorLabels.white : colorLabels.black}
-                  opening={g.opening}
-                  openingDisplayName={
-                    g.opening ? resolveOpeningName(g.opening.slug, g.opening.name) : undefined
-                  }
-                  locale={locale}
-                />
-              }
             />
           ))
         ) : (

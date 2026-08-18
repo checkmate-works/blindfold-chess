@@ -1,26 +1,19 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
+import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
+import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
 import { logActivityEvent } from '@/lib/users/activity-log';
 
 import { editPost } from './editPost';
 
-const mockGetUser = vi.fn();
 // Both the `select(post)` and the (no-op-path) `select(updatedAt)` chains
 // land here. Tests queue up rows for whichever call they trigger.
 const mockSelectFromWhereLimit = vi.fn();
 const mockUpdateSetWhere = vi.fn();
-const mockIsUserBanned = vi.fn();
 
 vi.mock('@/lib/users/activity-log');
 
-vi.mock('@/lib/supabase/server', () => ({
-  createClient: () =>
-    Promise.resolve({
-      auth: {
-        getUser: mockGetUser,
-      },
-    }),
-}));
+vi.mock('@/lib/supabase/server');
 
 vi.mock('@/lib/db', () => ({
   db: {
@@ -49,9 +42,7 @@ vi.mock('@/lib/db', () => ({
   },
 }));
 
-vi.mock('@/lib/moderation/ban', () => ({
-  isUserBanned: (...args: unknown[]) => mockIsUserBanned(...args),
-}));
+vi.mock('@/lib/moderation/ban');
 
 vi.mock('@/lib/security/rate-limit', () => ({
   checkRateLimit: vi.fn().mockResolvedValue({ success: true }),
@@ -76,10 +67,6 @@ function makeFormData(content: string, isSpoiler?: 'on' | undefined): FormData {
 }
 
 describe('editPost', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('should return signInRequired when user is not authenticated', async () => {
     mockGetUser.mockResolvedValue({ data: { user: null } });
 

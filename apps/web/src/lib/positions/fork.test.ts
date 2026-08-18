@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { POSITION_FORK_SOURCE_TYPES, PUZZLE_FORK_SOURCE_TYPES, validateForkSource } from './fork';
 
@@ -29,10 +29,6 @@ const VALID_UUID_B = '22222222-2222-2222-2222-222222222222';
 const VALID_UUID_C = '33333333-3333-3333-3333-333333333333';
 
 describe('validateForkSource', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('rejects non-uuid forkedFromId before querying the database', async () => {
     const result = await validateForkSource({
       forkedFromId: 'not-a-uuid',

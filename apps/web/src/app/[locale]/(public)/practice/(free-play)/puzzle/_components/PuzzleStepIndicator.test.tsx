@@ -1,15 +1,11 @@
-import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 import { PuzzleStepIndicator } from './PuzzleStepIndicator';
 
 vi.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
 }));
-
-afterEach(() => {
-  cleanup();
-});
 
 describe('PuzzleStepIndicator', () => {
   it('renders the three create-flow steps in order', () => {

@@ -1,4 +1,4 @@
-import type { LikeMeta } from '@/lib/db/like-queries';
+import { EMPTY_LIKE_META, type LikeMeta } from '@/lib/db/like-queries';
 import type { ReplyMeta } from '@/lib/db/reply-meta-queries';
 import { EMPTY_REPLY_META, getReplyMetaMap } from '@/lib/db/reply-meta-queries';
 
@@ -10,9 +10,7 @@ export type RepertoireCardMeta = {
   replyMeta: ReplyMeta;
 };
 
-const NO_LIKES: LikeMeta = { likeCount: 0, likedByMe: false };
-
-const NO_META: RepertoireCardMeta = { likeMeta: NO_LIKES, replyMeta: EMPTY_REPLY_META };
+const NO_META: RepertoireCardMeta = { likeMeta: EMPTY_LIKE_META, replyMeta: EMPTY_REPLY_META };
 
 /**
  * Load the like + reply counters for a page of repertoire cards, and return a
@@ -32,7 +30,7 @@ export async function getRepertoireCardMeta(
   ]);
 
   return (repertoireId) => ({
-    likeMeta: likeMetaMap.get(repertoireId) ?? NO_LIKES,
+    likeMeta: likeMetaMap.get(repertoireId) ?? EMPTY_LIKE_META,
     replyMeta: replyMetaMap.get(repertoireId) ?? EMPTY_REPLY_META,
   });
 }

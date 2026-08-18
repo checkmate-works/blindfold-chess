@@ -9,6 +9,7 @@ import { FaEyeSlash } from 'react-icons/fa';
 import { truncateContent } from '@/lib/content/truncate-content';
 import type { LikeMeta } from '@/lib/db/like-queries';
 import type { ReplyMeta } from '@/lib/db/reply-meta-queries';
+import { buildProfileHref } from '@/lib/users/author-profile';
 import type { SocialAuthorProfile } from '@/lib/users/author-profile';
 
 import { LinkedText } from '@/app/[locale]/_components';
@@ -93,7 +94,7 @@ export function BaseTopicPostCard({
   const [isClamped, setIsClamped] = useState(false);
   const bodyRef = useRef<HTMLParagraphElement>(null);
   const displayName = author?.displayName || author?.username || tCommon('deletedUser');
-  const profileHref = author?.username ? `/u/${author.username}` : null;
+  const profileHref = buildProfileHref(author);
   const hasContent = content.length > 0;
   const contentPreview = truncateContent(content);
   const showSpoilerOverlay = isSpoiler && !isRevealed;

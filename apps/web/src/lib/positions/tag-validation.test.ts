@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { validateAndDedupeTagIds } from './tag-validation';
 
@@ -18,10 +18,6 @@ vi.mock('@/lib/db', () => ({
 }));
 
 describe('validateAndDedupeTagIds', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('returns ok with both undefined when no input is passed', async () => {
     const result = await validateAndDedupeTagIds({});
     expect(result).toEqual({ ok: true, deduped: { themeIds: undefined, chunkIds: undefined } });

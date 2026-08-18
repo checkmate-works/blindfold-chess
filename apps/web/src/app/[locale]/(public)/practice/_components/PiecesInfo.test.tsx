@@ -5,16 +5,12 @@ import { NextIntlClientProvider } from 'next-intl';
 import { IntlAvailableContext } from '@/i18n/IntlAvailableContext';
 import enMessages from '@/messages/en.json';
 import * as matchers from '@testing-library/jest-dom/matchers';
-import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
 
 import { PiecesInfo } from './PiecesInfo';
 
 expect.extend(matchers);
-
-afterEach(() => {
-  cleanup();
-});
 
 function renderInfo(fen: string, showSideToMove?: boolean) {
   const ui: ReactNode = <PiecesInfo fen={fen} showSideToMove={showSideToMove} />;

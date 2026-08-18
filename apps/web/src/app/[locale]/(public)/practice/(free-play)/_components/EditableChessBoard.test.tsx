@@ -9,8 +9,8 @@
  *     the drop as a second tap action.
  */
 import { fenToBoardFlat } from '@blindfold-chess/features/chess-core/fen';
-import { cleanup, fireEvent, render } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, render } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 import { EditableChessBoard } from './EditableChessBoard';
 
@@ -69,10 +69,6 @@ function dragSquare(
   fireEvent.pointerMove(window, { clientX: endX, clientY: endY });
   fireEvent.pointerUp(target, { clientX: endX, clientY: endY });
 }
-
-afterEach(() => {
-  cleanup();
-});
 
 describe('EditableChessBoard — tap-to-place (unchanged)', () => {
   it('selecting a palette piece then clicking a square places it', () => {

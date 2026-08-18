@@ -1,5 +1,5 @@
-import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 import type {
   ChallengeRankUpdateFeedItem,
@@ -10,10 +10,6 @@ import type {
   TopicPostFeedItem,
 } from '../_lib/types';
 import { FeedCard } from './FeedCard';
-
-afterEach(() => {
-  cleanup();
-});
 
 vi.mock('./TopicPostCard', () => ({
   TopicPostCard: ({ post }: { post: unknown }) => (
@@ -100,10 +96,6 @@ const defaultProps = {
 // --- Tests ---
 
 describe('FeedCard', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('should render TopicPostCard for topic_post entityType', () => {
     const item = createTopicPostFeedItem();
 

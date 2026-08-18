@@ -24,7 +24,6 @@ vi.mock('./save-exp', () => ({
 
 describe('saveFreePlayResult', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     // Default: forward the callback to a fake tx object, matching the
     // real db.transaction contract.
     mockTransaction.mockImplementation(async (cb: (tx: unknown) => unknown) => cb({ __tx: true }));

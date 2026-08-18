@@ -106,7 +106,6 @@ describe('updatePosition', () => {
   }, 30000);
 
   beforeEach(() => {
-    vi.clearAllMocks();
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: TEST_USER_ID } });
     mockTxUpdateWhere.mockResolvedValue(undefined);
   });

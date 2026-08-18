@@ -8,7 +8,6 @@ import { getOptionalUser } from '@/lib/auth';
 import { getExpInfoBySource } from '@/lib/db/get-exp-info-by-source';
 import { getPositionLikeMeta } from '@/lib/positions/like-queries';
 import { getPositionWithProfileById } from '@/lib/positions/queries';
-import { createClient } from '@/lib/supabase/server';
 import { resolveAuthorName } from '@/lib/users/display-name';
 import { UUID_RE } from '@/lib/validations/uuid';
 
@@ -62,10 +61,7 @@ export default async function PositionResultPage({ params, searchParams }: Props
   // `resolveExpInfoFromGrantParam` helper in createPracticeResultPage.
   let expInfo = null;
   if (grant) {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = await getOptionalUser();
     if (user) {
       expInfo = await getExpInfoBySource(user.id, 'practice_result', grant);
     }

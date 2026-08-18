@@ -40,7 +40,6 @@ const NOW = new Date('2026-06-18T00:00:00.000Z');
 
 describe('purgeDeletedAccounts', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockTargets = [];
     mockLimit.mockImplementation((_limit?: number) => Promise.resolve(mockTargets));
     mockDeleteUser.mockResolvedValue({ error: null });

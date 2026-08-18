@@ -2,6 +2,8 @@ import type { ReactNode } from 'react';
 
 import Link from 'next/link';
 
+import { buildProfileHref } from '@/lib/users/author-profile';
+
 import type { ActionsMenuItem } from '@/app/[locale]/_components/ActionsMenu';
 import { ActionsMenu } from '@/app/[locale]/_components/ActionsMenu';
 import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
@@ -73,7 +75,7 @@ export function PositionAuthorHeader({
       <p className="text-xs text-muted-foreground">{createdByLabel}</p>
       <div className="flex items-center justify-between gap-4">
         <UserAvatar
-          profileHref={profile?.username ? `/u/${profile.username}` : null}
+          profileHref={buildProfileHref(profile)}
           avatarUrl={profile?.avatarUrl}
           displayName={displayName}
           locale={locale}

@@ -1,5 +1,5 @@
-import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 import { AlgebraicKeyboardHint, KeyboardHintText } from './KeyboardHint';
 
@@ -7,10 +7,6 @@ vi.mock('@/i18n/use-safe-translations', () => ({
   useSafeTranslations: (namespace?: string) => (key: string) =>
     namespace ? `${namespace}.${key}` : key,
 }));
-
-afterEach(() => {
-  cleanup();
-});
 
 describe('KeyboardHintText', () => {
   it('renders the given text', () => {

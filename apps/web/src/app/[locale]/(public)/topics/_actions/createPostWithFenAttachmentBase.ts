@@ -1,13 +1,11 @@
 'use server';
 
-import { postFenAttachments } from '@/lib/db';
 import type { DbTx } from '@/lib/db/types';
-import {
-  buildFenAttachmentValues,
-  fenAttachmentErrorKey,
-  fenAttachmentPgErrorKind,
-} from '@/lib/post-fens/build-fen-attachment-values';
 import type { RateLimitConfig } from '@/lib/security/rate-limit';
+import {
+  fenAttachmentInsertErrorKey,
+  resolveFenAttachment,
+} from '@/lib/topic-posts/attachment-steps';
 
 import type { TopicType } from '@/app/[locale]/(public)/topics/_lib/constants';
 
@@ -50,34 +48,21 @@ export async function createPostWithFenAttachmentBase(args: {
 }): Promise<CreatePostState> {
   const { formData, extraAfterInsert, ...topicSpec } = args;
 
-  const built = buildFenAttachmentValues(
-    formData.get('attachmentFen'),
-    formData.get('attachmentFenCaption')
-  );
-  if (!built.ok) {
-    return { error: fenAttachmentErrorKey(built.error) };
+  const attachment = resolveFenAttachment(formData);
+  if (attachment.kind === 'error') {
+    return { error: attachment.error };
   }
-  const { fen, caption } = built.values;
 
   try {
     return await createPostBase({
       ...topicSpec,
-      afterInsert: async (tx, postId) => {
-        await tx.insert(postFenAttachments).values({
-          postId,
-          fen,
-          caption,
-        });
-        if (extraAfterInsert) {
-          await extraAfterInsert(tx, postId);
-        }
-      },
+      afterInsert: attachment.afterInsert(extraAfterInsert),
       formData,
     });
   } catch (err) {
-    const kind = fenAttachmentPgErrorKind(err);
-    if (kind) {
-      return { error: fenAttachmentErrorKey(kind) };
+    const error = fenAttachmentInsertErrorKey(err);
+    if (error) {
+      return { error };
     }
     throw err;
   }

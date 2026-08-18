@@ -1,5 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
+import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
+
 import { attachPostVideo } from './attachPostVideo';
 
 /**
@@ -25,21 +28,12 @@ import { attachPostVideo } from './attachPostVideo';
  *     reject divergence guard)
  */
 
-const mockGetUser = vi.fn();
 const mockSelectWhere = vi.fn();
 const mockInsertValues = vi.fn();
 const mockInsertReturning = vi.fn();
-const mockIsUserBanned = vi.fn();
 const mockCheckRateLimit = vi.fn();
 
-vi.mock('@/lib/supabase/server', () => ({
-  createClient: () =>
-    Promise.resolve({
-      auth: {
-        getUser: mockGetUser,
-      },
-    }),
-}));
+vi.mock('@/lib/supabase/server');
 
 vi.mock('@/lib/db', () => ({
   db: {
@@ -80,9 +74,7 @@ vi.mock('@/lib/db', () => ({
   },
 }));
 
-vi.mock('@/lib/moderation/ban', () => ({
-  isUserBanned: (...args: unknown[]) => mockIsUserBanned(...args),
-}));
+vi.mock('@/lib/moderation/ban');
 
 vi.mock('@/lib/security/rate-limit', () => ({
   checkRateLimit: (...args: unknown[]) => mockCheckRateLimit(...args),
@@ -97,7 +89,6 @@ const VALID_ID = 'VALIDID0001';
 const VALID_URL = `https://www.youtube.com/watch?v=${VALID_ID}`;
 
 beforeEach(() => {
-  vi.clearAllMocks();
   mockGetUser.mockResolvedValue({ data: { user: { id: userId } } });
   mockIsUserBanned.mockResolvedValue(false);
   mockCheckRateLimit.mockResolvedValue({ allowed: true });

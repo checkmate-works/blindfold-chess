@@ -1,18 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
+
 import { getFeed } from './getFeed';
 
-const mockGetUser = vi.fn();
 const mockGetFeedData = vi.fn();
 
-vi.mock('@/lib/supabase/server', () => ({
-  createClient: () =>
-    Promise.resolve({
-      auth: {
-        getUser: mockGetUser,
-      },
-    }),
-}));
+vi.mock('@/lib/supabase/server');
 
 vi.mock('../_lib/queries', () => ({
   getFeedData: (...args: unknown[]) => mockGetFeedData(...args),
@@ -23,7 +17,6 @@ const TOPICS_FEED_ENTITY_TYPES = ['topic_post', 'chunk'];
 
 describe('getFeed', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockGetUser.mockResolvedValue({ data: { user: null } });
   });
 

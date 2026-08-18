@@ -3,10 +3,11 @@ import { getTranslations } from 'next-intl/server';
 import { BoardSkeleton } from '@/app/_components';
 import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 
-import { createClient } from '@/lib/supabase/server';
+import { getOptionalUser } from '@/lib/auth';
 
 import { SignUpBannerSkeleton } from '@/app/[locale]/(public)/practice/_components/skeletons';
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { BreadcrumbSkeleton } from '@/app/[locale]/_components/Breadcrumb';
 import { CardLinkSkeleton } from '@/app/[locale]/_components/CardLinkSkeleton';
 import { Skeleton } from '@/app/[locale]/_components/Skeleton';
 
@@ -36,13 +37,12 @@ import { Skeleton } from '@/app/[locale]/_components/Skeleton';
  */
 export async function KnightTourResultLoadingSkeleton() {
   const locale = await getLocaleFromPathnameHeader();
-  const supabase = await createClient();
-  const [t, tPractice, userResult] = await Promise.all([
+  const [t, tPractice, user] = await Promise.all([
     getTranslations({ locale, namespace: 'practice.knightTour' }),
     getTranslations({ locale, namespace: 'practice' }),
-    supabase.auth.getUser(),
+    getOptionalUser(),
   ]);
-  const isAuthed = !!userResult.data.user;
+  const isAuthed = !!user;
 
   return (
     <div className="space-y-8">
@@ -96,25 +96,14 @@ export async function KnightTourResultLoadingSkeleton() {
         <div className="!mt-4 space-y-4">
           <Divider />
 
-          <nav aria-label="Breadcrumb" className="flex min-h-6 items-center">
-            <ol className="flex flex-wrap items-center gap-x-1 text-sm">
-              <li>
-                <Skeleton className="w-6 h-6 rounded-sm" />
-              </li>
-              <li className="flex items-center">
-                <span className="mx-1 text-muted-foreground">/</span>
-                <span className="text-muted-foreground">{tPractice('title')}</span>
-              </li>
-              <li className="flex items-center">
-                <span className="mx-1 text-muted-foreground">/</span>
-                <span className="text-muted-foreground">{t('title')}</span>
-              </li>
-              <li className="flex items-center">
-                <span className="mx-1 text-muted-foreground">/</span>
-                <span className="text-foreground font-medium">{tPractice('result')}</span>
-              </li>
-            </ol>
-          </nav>
+          <BreadcrumbSkeleton
+            crumbs={[
+              { label: tPractice('title') },
+              { label: t('title') },
+              { label: tPractice('result'), current: true },
+            ]}
+            density="compact"
+          />
         </div>
       </PagePanel>
     </div>

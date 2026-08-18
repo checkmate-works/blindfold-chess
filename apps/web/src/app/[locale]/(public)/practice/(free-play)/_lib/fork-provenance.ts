@@ -1,15 +1,17 @@
+import { type PositionKind, getPositionListPath } from '@/lib/positions/kind';
+
 /**
  * Route segment for a position kind, used to build detail links. Lives here
  * rather than beside the components that render those links so it stays
  * importable from pure (non-React) code.
  */
-export const POSITION_KIND_PATH_PREFIX = {
-  memory: 'practice/position-memory',
-  puzzle: 'practice/puzzle',
-} as const;
+export const POSITION_KIND_PATH_PREFIX: Record<PositionKind, string> = {
+  memory: getPositionListPath('memory').slice(1),
+  puzzle: getPositionListPath('puzzle').slice(1),
+};
 
 /** The two position kinds that can appear on either end of a fork lineage. */
-export type ForkPositionKind = keyof typeof POSITION_KIND_PATH_PREFIX;
+export type ForkPositionKind = PositionKind;
 
 /**
  * Decide how the create page states its `?from=` seed: which of the two

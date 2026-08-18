@@ -1,11 +1,7 @@
-import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 import { getLeaderboardIcon } from './icons';
-
-afterEach(() => {
-  cleanup();
-});
 
 vi.mock('@blindfold-chess/icons', () => ({
   ChessPieceIcon: ({ type, color, size }: { type: string; color: string; size: number }) => (

@@ -43,7 +43,6 @@ afterEach(() => {
 });
 
 beforeEach(() => {
-  vi.clearAllMocks();
   window.localStorage.clear();
   authState.user = null;
   authState.hasProfile = false;

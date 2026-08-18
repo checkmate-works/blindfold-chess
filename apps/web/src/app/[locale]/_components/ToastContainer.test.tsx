@@ -1,13 +1,9 @@
 import { StrictMode } from 'react';
 
-import { cleanup, render } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { render } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ToastContainer } from './ToastContainer';
-
-afterEach(() => {
-  cleanup();
-});
 
 const mockShowToast = vi.fn();
 const mockReplace = vi.fn();
@@ -42,7 +38,6 @@ vi.mock('../_contexts/ToastContext', () => ({
 
 describe('ToastContainer query-param toasts', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     sessionStorage.clear();
     setUrl('/en/repertoires/r1/lines/1');
   });

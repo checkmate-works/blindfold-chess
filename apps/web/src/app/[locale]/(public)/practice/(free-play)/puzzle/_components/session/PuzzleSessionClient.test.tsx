@@ -1,6 +1,7 @@
+import { STARTING_FEN } from '@blindfold-chess/features/chess-core/fen';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, fireEvent, render, screen } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { PuzzleSessionClient } from './PuzzleSessionClient';
 
@@ -184,7 +185,6 @@ vi.mock('@/app/[locale]/_components/MoveInputPanel', () => ({
 
 // FEN with white to move (any legal-looking FEN suffices — the component only
 // reads side-to-move via `isBlackToMoveFromFen`).
-const STARTING_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 const POSITION_ID = 'puzzle-123';
 const POSITION_TITLE = 'Sample Puzzle';
 
@@ -217,10 +217,6 @@ beforeEach(() => {
   // Tests that exercise the grant-URL path override this in their own block.
   mockSavePuzzleResult.mockResolvedValue({ success: true });
   sessionStorage.clear();
-});
-
-afterEach(() => {
-  cleanup();
 });
 
 describe('PuzzleSessionClient', () => {

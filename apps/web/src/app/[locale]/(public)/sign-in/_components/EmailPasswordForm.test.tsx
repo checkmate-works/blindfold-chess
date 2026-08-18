@@ -1,14 +1,10 @@
 import * as matchers from '@testing-library/jest-dom/matchers';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { EmailPasswordForm } from './EmailPasswordForm';
 
 expect.extend(matchers);
-
-afterEach(() => {
-  cleanup();
-});
 
 const mockSignIn = vi.fn();
 
@@ -43,7 +39,6 @@ describe('EmailPasswordForm', () => {
   const originalLocation = window.location;
 
   beforeEach(() => {
-    vi.clearAllMocks();
     // Replace window.location with a writable mock
     Object.defineProperty(window, 'location', {
       writable: true,

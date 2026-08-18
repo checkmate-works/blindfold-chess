@@ -1,12 +1,8 @@
 // @vitest-environment jsdom
-import { act, cleanup, renderHook } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { act, renderHook } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
 
 import { usePgnReplay } from './use-pgn-replay';
-
-afterEach(() => {
-  cleanup();
-});
 
 /** A short real game, so the FEN derivation runs rather than being stubbed. */
 const MOVES = ['e4', 'e5', 'Nf3', 'Nc6'] as const;

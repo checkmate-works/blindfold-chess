@@ -1,23 +1,18 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
+import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
+import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
 import { logActivityEvent } from '@/lib/users/activity-log';
 
 import { attachPostPgn } from './attachPostPgn';
 
-const mockGetUser = vi.fn();
-const mockIsUserBanned = vi.fn();
 const mockSelectLimit = vi.fn();
 const mockInsertReturning = vi.fn();
 const mockBuildValues = vi.fn();
 
 vi.mock('@/lib/users/activity-log');
 
-vi.mock('@/lib/supabase/server', () => ({
-  createClient: () =>
-    Promise.resolve({
-      auth: { getUser: mockGetUser },
-    }),
-}));
+vi.mock('@/lib/supabase/server');
 
 vi.mock('@/lib/db', () => ({
   db: {
@@ -52,9 +47,7 @@ vi.mock('@/lib/games/build-pgn-attachment-values', () => ({
   pgnAttachmentErrorKey: (key: string) => `attachment.error.${key}`,
 }));
 
-vi.mock('@/lib/moderation/ban', () => ({
-  isUserBanned: (...args: unknown[]) => mockIsUserBanned(...args),
-}));
+vi.mock('@/lib/moderation/ban');
 
 vi.mock('@/lib/security/rate-limit', () => ({
   checkRateLimit: vi.fn().mockResolvedValue({ success: true }),
@@ -107,10 +100,6 @@ const validatedValues = {
 };
 
 describe('attachPostPgn', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('returns signInRequired when user is not authenticated', async () => {
     mockGetUser.mockResolvedValue({ data: { user: null } });
     const result = await attachPostPgn(testPostId, 'en', fdWithAttachment('1. e4 e5'));

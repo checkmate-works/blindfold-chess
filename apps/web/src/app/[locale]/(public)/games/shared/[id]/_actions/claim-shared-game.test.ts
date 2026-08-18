@@ -54,7 +54,6 @@ const { claimSharedGameAction } = await import('./claim-shared-game');
 
 describe('claimSharedGameAction', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockGuard.mockResolvedValue({ user: { id: USER_ID } });
     mockAuthorize.mockResolvedValue('ok');
     mockClaim.mockResolvedValue(true);

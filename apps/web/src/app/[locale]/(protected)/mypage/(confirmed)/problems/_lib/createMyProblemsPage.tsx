@@ -5,6 +5,7 @@ import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 import { FiEdit2 } from 'react-icons/fi';
 
 import { getAuthenticatedUser } from '@/lib/auth';
+import { EMPTY_LIKE_META } from '@/lib/db/like-queries';
 import { EMPTY_REPLY_META, getReplyMetaMap } from '@/lib/db/reply-meta-queries';
 import { getPaginationParams } from '@/lib/pagination';
 import { getPositionLikeMetaMap } from '@/lib/positions/like-queries';
@@ -128,7 +129,7 @@ export function createMyProblemsPage(config: MyProblemsPageConfig) {
                   key={position.id}
                   position={position}
                   profile={profile}
-                  likeMeta={likeMetaMap.get(position.id) ?? { likeCount: 0, likedByMe: false }}
+                  likeMeta={likeMetaMap.get(position.id) ?? EMPTY_LIKE_META}
                   replyMeta={replyMetaMap.get(position.id) ?? EMPTY_REPLY_META}
                   detailHref={detailHref}
                   i18nNamespace={footerNamespace}

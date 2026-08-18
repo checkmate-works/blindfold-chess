@@ -11,6 +11,7 @@ import type {
   PreferenceChangeLogEntry,
   UndoneMoveLog,
 } from '@/lib/games/saved-game-types';
+import { removeSessionItem } from '@/lib/storage/session-storage';
 
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
@@ -83,7 +84,7 @@ export function useGamePersistence({
   // Clear save toast flag on mount when we have a gameId
   useEffect(() => {
     if (initialGameId && typeof window !== 'undefined') {
-      sessionStorage.removeItem(SESSION_STORAGE_KEYS.SHOW_SAVE_TOAST);
+      removeSessionItem(SESSION_STORAGE_KEYS.SHOW_SAVE_TOAST);
     }
   }, [initialGameId]);
 
@@ -97,7 +98,7 @@ export function useGamePersistence({
     const loadGame = async () => {
       if (initialGameId && typeof window !== 'undefined') {
         setIsLoadingFromStorage(true);
-        sessionStorage.removeItem(SESSION_STORAGE_KEYS.SHOW_SAVE_TOAST);
+        removeSessionItem(SESSION_STORAGE_KEYS.SHOW_SAVE_TOAST);
 
         const gameRepository = new LocalStorageGameRepository();
         const savedGame = await gameRepository.load(initialGameId);

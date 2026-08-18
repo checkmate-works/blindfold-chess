@@ -5,6 +5,7 @@ import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-hea
 
 import { ReplyCardsSkeleton } from '@/app/[locale]/(public)/topics/_components/ReplyCardsSkeleton';
 import { PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { BreadcrumbSkeleton } from '@/app/[locale]/_components/Breadcrumb';
 import { Skeleton } from '@/app/[locale]/_components/Skeleton';
 
 export default async function SquarePostDetailLoading() {
@@ -63,29 +64,14 @@ export default async function SquarePostDetailLoading() {
         <ReplyCardsSkeleton />
 
         {/* Breadcrumb (last item — readMore — is static; other items are dynamic) */}
-        <nav aria-label="Breadcrumb" className="mb-4 flex min-h-10 items-end">
-          <ol className="flex flex-wrap items-center gap-x-1 text-sm">
-            <li>
-              <Skeleton className="w-6 h-6 rounded-sm" />
-            </li>
-            <li className="flex items-center">
-              <span className="mx-1 text-muted-foreground">/</span>
-              <span className="text-muted-foreground">{t('title')}</span>
-            </li>
-            <li className="flex items-center">
-              <span className="mx-1 text-muted-foreground">/</span>
-              <span className="text-muted-foreground">{st('title')}</span>
-            </li>
-            <li className="flex items-center">
-              <span className="mx-1 text-muted-foreground">/</span>
-              <Skeleton className="h-4 w-12 rounded" />
-            </li>
-            <li className="flex items-center">
-              <span className="mx-1 text-muted-foreground">/</span>
-              <span className="text-foreground font-medium">{st('readMore')}</span>
-            </li>
-          </ol>
-        </nav>
+        <BreadcrumbSkeleton
+          crumbs={[
+            { label: t('title') },
+            { label: st('title') },
+            { widthClass: 'w-12' },
+            { label: st('readMore'), current: true },
+          ]}
+        />
       </PagePanel>
     </div>
   );

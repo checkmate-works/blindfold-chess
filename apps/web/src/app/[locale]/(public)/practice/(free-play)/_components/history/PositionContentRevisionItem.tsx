@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 
 import type { PuzzleSolutionMove } from '@/lib/db/schema/positions';
+import { buildProfileHref } from '@/lib/users/author-profile';
 import type { AuthorProfile } from '@/lib/users/author-profile';
 
 import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';
@@ -25,7 +26,7 @@ export async function PositionContentRevisionItem({ changes, createdAt, editor, 
   const t = await getTranslations({ locale, namespace: 'practice.positionHistory' });
 
   const editorName = editor?.displayName ?? editor?.username ?? t('deletedEditor');
-  const profileHref = editor?.username ? `/u/${editor.username}` : null;
+  const profileHref = buildProfileHref(editor);
 
   return (
     <div className="space-y-3 rounded-md border border-border bg-card p-4">

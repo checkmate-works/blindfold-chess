@@ -1,5 +1,5 @@
-import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 import type { ThemeOption } from '@/lib/themes/types';
 
@@ -22,8 +22,6 @@ const labels = {
   badgeTheme: 'Theme',
   badgeChunk: 'Chunk',
 };
-
-afterEach(() => cleanup());
 
 describe('RelatedTags', () => {
   it('renders nothing when there are no themes or chunks', () => {

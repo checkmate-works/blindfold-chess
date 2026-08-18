@@ -3,7 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 
 import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
-import { Skeleton } from '@/app/[locale]/_components/Skeleton';
+import { BreadcrumbSkeleton } from '@/app/[locale]/_components/Breadcrumb';
 
 import { PuzzleResultContentSkeleton } from '../../_components/PuzzleResultContentSkeleton';
 
@@ -52,29 +52,14 @@ export default async function PuzzleResultLoading() {
             — three static crumbs (`navigation.practice`,
             `practice.puzzle.list.title`, `practice.puzzle.result.title`) plus
             one dynamic crumb (the puzzle title, fetched per request). */}
-        <nav aria-label="Breadcrumb" className="mb-4 flex min-h-10 items-end">
-          <ol className="flex flex-wrap items-center gap-x-1 text-sm">
-            <li>
-              <Skeleton className="w-6 h-6 rounded-sm" />
-            </li>
-            <li className="flex items-center">
-              <span className="mx-1 text-muted-foreground">/</span>
-              <span className="text-muted-foreground">{tNav('practice')}</span>
-            </li>
-            <li className="flex items-center">
-              <span className="mx-1 text-muted-foreground">/</span>
-              <span className="text-muted-foreground">{t('list.title')}</span>
-            </li>
-            <li className="flex items-center">
-              <span className="mx-1 text-muted-foreground">/</span>
-              <Skeleton className="h-4 w-32 rounded" />
-            </li>
-            <li className="flex items-center">
-              <span className="mx-1 text-muted-foreground">/</span>
-              <span className="text-foreground font-medium">{t('result.title')}</span>
-            </li>
-          </ol>
-        </nav>
+        <BreadcrumbSkeleton
+          crumbs={[
+            { label: tNav('practice') },
+            { label: t('list.title') },
+            { widthClass: 'w-32' },
+            { label: t('result.title'), current: true },
+          ]}
+        />
       </PagePanel>
     </div>
   );

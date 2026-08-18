@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { ChunkOption } from '@/lib/chunks/types';
 import type { ThemeOption } from '@/lib/themes/types';
@@ -197,10 +197,6 @@ function makeEditDraft(overrides: Partial<PuzzleEditDraftV1> = {}): PuzzleEditDr
 beforeEach(() => {
   mockPush.mockReset();
   sessionStorage.clear();
-});
-
-afterEach(() => {
-  cleanup();
 });
 
 describe('EditPuzzlePositionForm', () => {

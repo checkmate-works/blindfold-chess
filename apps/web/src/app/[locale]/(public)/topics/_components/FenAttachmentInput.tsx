@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 
 import { validateFenSemantic } from '@blindfold-chess/features/chess-core';
+import { STARTING_FEN } from '@blindfold-chess/features/chess-core/fen';
 
 import { MiniBoard } from '@/lib/positions/ui/MiniBoard';
 import { FEN_MAX_LENGTH } from '@/lib/post-fens/constants';
@@ -86,7 +87,7 @@ export function FenAttachmentInput({ onChange, onModeChange, onValidationStatusC
         name="attachmentFen"
         type="text"
         maxLength={FEN_MAX_LENGTH}
-        placeholder="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+        placeholder={STARTING_FEN}
         value={fen}
         onChange={(e) => setFen(e.target.value)}
         className="block w-full rounded-md border border-border bg-input px-2 py-1 font-mono text-sm text-foreground"

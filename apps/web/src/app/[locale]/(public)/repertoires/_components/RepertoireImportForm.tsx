@@ -38,6 +38,7 @@ import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal'
 import { PgnDiagnosisHint } from '@/app/[locale]/_components/PgnDiagnosisHint';
 
 import { createRepertoire } from '../_actions/createRepertoire';
+import { VISIBILITY_I18N_KEY } from '../_lib/visibility-i18n';
 import { MoveAnnotationField } from './MoveAnnotationField';
 import { OpeningLinksField } from './OpeningLinksField';
 import { RepertoireBoardBuilder } from './RepertoireBoardBuilder';
@@ -56,13 +57,6 @@ const AUTHORABLE_PHASES: readonly RepertoirePhase[] = ['opening'];
 
 /** The controls this form renders a rejection against. */
 const FIELDS: readonly RepertoireFormField[] = ['name', 'moves'];
-
-/** RepertoireVisibility (snake) → its `Repertoires.visibility.*` i18n key (camel). */
-const VISIBILITY_I18N_KEY: Record<RepertoireVisibility, string> = {
-  public: 'public',
-  followers_only: 'followersOnly',
-  private: 'private',
-};
 
 type Props = {
   openings: OpeningOption[];

@@ -186,7 +186,6 @@ const baseCreateInput = {
 
 describe('createChunkEntry', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: TEST_USER_ID } });
     mockFindChunkBySlug.mockResolvedValue(null);
     mockInsertReturning.mockResolvedValue([{ id: TEST_CHUNK_ID, slug: TEST_SLUG }]);
@@ -531,7 +530,6 @@ describe('createChunkEntry', () => {
 
 describe('updateChunkEntry', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: TEST_USER_ID } });
     mockUpdateWhere.mockResolvedValue(undefined);
     // Default: no slug collision. Tests covering the rename collision
@@ -874,7 +872,6 @@ describe('updateChunkEntry', () => {
 
 describe('deleteChunkEntry', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: TEST_USER_ID } });
     mockTxUpdateWhere.mockResolvedValue(undefined);
   });
@@ -1014,7 +1011,6 @@ describe('deleteChunkEntry', () => {
 
 describe('createChunkEntry — status', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: TEST_USER_ID } });
     mockFindChunkBySlug.mockResolvedValue(null);
     mockInsertReturning.mockResolvedValue([{ id: TEST_CHUNK_ID, slug: TEST_SLUG }]);
@@ -1064,7 +1060,6 @@ describe('createChunkEntry — status', () => {
 
 describe('updateChunkEntry — published lock', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: TEST_USER_ID } });
     mockUpdateWhere.mockResolvedValue(undefined);
   });
@@ -1116,7 +1111,6 @@ describe('updateChunkEntry — published lock', () => {
 
 describe('publishChunkEntry', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: TEST_USER_ID } });
     mockTxUpdateWhere.mockResolvedValue(undefined);
   });

@@ -4,6 +4,7 @@ import { unstable_cache } from 'next/cache';
 
 import { and, desc, eq, gte, isNotNull, sql } from 'drizzle-orm';
 
+import { ANNOUNCEMENTS_CACHE_TAG } from '@/lib/cache-tags';
 import { type Announcement, announcements, db } from '@/lib/db';
 
 import { DEFAULT_LOCALE, pickByLocale } from '@/app/[locale]/_lib/locale-utils';
@@ -217,6 +218,6 @@ export const getLatestBannerAnnouncement = cache(
       return deduplicateBySlug(rows, locale)[0] ?? null;
     },
     ['latest-banner-announcement'],
-    { tags: ['announcements'], revalidate: 86400 }
+    { tags: [ANNOUNCEMENTS_CACHE_TAG], revalidate: 86400 }
   )
 );

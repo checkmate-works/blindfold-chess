@@ -5,10 +5,10 @@ import { notFound } from 'next/navigation';
 import { Link } from '@/i18n/routing';
 import { asc } from 'drizzle-orm';
 
+import { getOptionalUser } from '@/lib/auth';
 import { withReturnPath } from '@/lib/auth-return-path';
 import { getCurrentReturnTarget } from '@/lib/current-return-target';
 import { chessOpenings, db } from '@/lib/db';
-import { createClient } from '@/lib/supabase/server';
 
 import { DeletePostButton } from '@/app/[locale]/(public)/topics/_components/DeletePostButton';
 import {
@@ -68,22 +68,16 @@ export default async function InterviewQuestionDetailPage({ params }: Props) {
   const typedKey = questionKey as InterviewQuestionKey;
   const config = QUESTION_CONFIG[typedKey];
 
-  const [t, tDetail, tOpeningNames, supabase] = await Promise.all([
+  const [t, tDetail, tOpeningNames] = await Promise.all([
     getTranslations({ locale, namespace: 'interview' }),
     getTranslations({ locale, namespace: 'interview.detail' }),
     getTranslations({ locale, namespace: 'topics.openings.names' }),
-    createClient(),
   ]);
 
   // The viewer lookup (auth is optional here) and the openings master for
   // master_ref questions are independent — fetch both in one round.
-  const [
-    {
-      data: { user },
-    },
-    allOpenings,
-  ] = await Promise.all([
-    supabase.auth.getUser(),
+  const [user, allOpenings] = await Promise.all([
+    getOptionalUser(),
     config.answerType === 'master_ref'
       ? db
           .select({

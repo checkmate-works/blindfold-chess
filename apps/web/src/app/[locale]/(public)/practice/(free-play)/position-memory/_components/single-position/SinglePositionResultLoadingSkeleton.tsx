@@ -2,10 +2,10 @@ import { getTranslations } from 'next-intl/server';
 
 import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 
-import { createClient } from '@/lib/supabase/server';
+import { getOptionalUser } from '@/lib/auth';
 
 import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
-import { Skeleton } from '@/app/[locale]/_components/Skeleton';
+import { BreadcrumbSkeleton } from '@/app/[locale]/_components/Breadcrumb';
 
 import { SinglePositionResultPanelSkeleton } from './SinglePositionResultPanelSkeleton';
 
@@ -38,13 +38,12 @@ type Props = {
  */
 export async function SinglePositionResultLoadingSkeleton({ grantsExp = false }: Props = {}) {
   const locale = await getLocaleFromPathnameHeader();
-  const supabase = await createClient();
-  const [t, tNav, userResult] = await Promise.all([
+  const [t, tNav, user] = await Promise.all([
     getTranslations({ locale, namespace: 'practice.positionMemory' }),
     getTranslations({ locale, namespace: 'navigation' }),
-    supabase.auth.getUser(),
+    getOptionalUser(),
   ]);
-  const isAuthed = !!userResult.data.user;
+  const isAuthed = !!user;
 
   return (
     <div className="space-y-8">
@@ -67,29 +66,14 @@ export async function SinglePositionResultLoadingSkeleton({ grantsExp = false }:
         {/* Breadcrumb: [Home logo] / Practice / Position Memory / <bar> /
             Result. The third crumb (position title for `[id]`, "custom" label
             for `[token]`) is a bar placeholder. */}
-        <nav aria-label="Breadcrumb" className="mb-4 flex min-h-10 items-end">
-          <ol className="flex flex-wrap items-center gap-x-1 text-sm">
-            <li>
-              <Skeleton className="w-6 h-6 rounded-sm" />
-            </li>
-            <li className="flex items-center">
-              <span className="mx-1 text-muted-foreground">/</span>
-              <span className="text-muted-foreground">{tNav('practice')}</span>
-            </li>
-            <li className="flex items-center">
-              <span className="mx-1 text-muted-foreground">/</span>
-              <span className="text-muted-foreground">{t('list.title')}</span>
-            </li>
-            <li className="flex items-center">
-              <span className="mx-1 text-muted-foreground">/</span>
-              <Skeleton className="h-4 w-32 rounded" />
-            </li>
-            <li className="flex items-center">
-              <span className="mx-1 text-muted-foreground">/</span>
-              <span className="text-foreground font-medium">{t('result')}</span>
-            </li>
-          </ol>
-        </nav>
+        <BreadcrumbSkeleton
+          crumbs={[
+            { label: tNav('practice') },
+            { label: t('list.title') },
+            { widthClass: 'w-32' },
+            { label: t('result'), current: true },
+          ]}
+        />
       </PagePanel>
     </div>
   );

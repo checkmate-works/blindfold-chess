@@ -1,6 +1,7 @@
 import { and, inArray, isNull } from 'drizzle-orm';
 
 import { AUTHOR_PROFILE_COLUMNS, db, liveProfileJoinOn, positions, profiles } from '@/lib/db';
+import { EMPTY_LIKE_META } from '@/lib/db/like-queries';
 import { EMPTY_REPLY_META, getReplyMetaMap } from '@/lib/db/reply-meta-queries';
 import { getPositionLikeMetaMap } from '@/lib/positions/like-queries';
 import { parsePositionType } from '@/lib/positions/types';
@@ -56,7 +57,7 @@ export async function loadPositionsForFeed(
   for (const row of rows) {
     const positionType = parsePositionType(row.type);
     if (positionType === null) continue;
-    const likeMeta = likeMetaMap.get(row.id) ?? { likeCount: 0, likedByMe: false };
+    const likeMeta = likeMetaMap.get(row.id) ?? EMPTY_LIKE_META;
     const replyMeta = memoryReplyMap.get(row.id) ?? puzzleReplyMap.get(row.id) ?? EMPTY_REPLY_META;
     map.set(row.id, {
       id: row.id,

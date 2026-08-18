@@ -19,7 +19,6 @@ const { isMutableNotificationType } = await import('./mutable-types');
 
 describe('notifyGameOwnerOfChunkLink', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockGetLiveGameAuthorId.mockResolvedValue('owner-1');
   });
 

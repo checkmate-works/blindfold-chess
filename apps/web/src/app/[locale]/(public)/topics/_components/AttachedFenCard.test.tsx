@@ -1,12 +1,8 @@
-import { cleanup, fireEvent, render } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, render } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 import { AttachedFenCard } from './AttachedFenCard';
 import type { AttachedFenCardData } from './AttachedFenCard';
-
-afterEach(() => {
-  cleanup();
-});
 
 // `BoardReviewModal` (rendered by the card) reads its labels through
 // next-intl, which needs a provider this test has no use for. Echo the key.

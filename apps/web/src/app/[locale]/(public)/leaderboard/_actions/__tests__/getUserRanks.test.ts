@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import type { LeaderboardPeriod } from '../../_lib/types';
 import { ALL_LEADERBOARD_ENTRIES } from '../../_lib/types';
@@ -57,10 +57,6 @@ function setAllRankResults(
 // ---------------------------------------------------------------------------
 
 describe('getUserRanks', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   describe('period routing', () => {
     it('uses getUserAllTimeRank for all-time period', async () => {
       mockGetUserAllTimeRank.mockResolvedValue(null);

@@ -27,8 +27,6 @@ describe('getExpHeatmapData', () => {
   const mockFrom = vi.fn();
 
   beforeEach(() => {
-    vi.clearAllMocks();
-
     // Each call to db.select() creates a new chain.
     // First call: daily totals. Second call: module breakdown.
     let callCount = 0;

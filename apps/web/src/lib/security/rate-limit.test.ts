@@ -34,7 +34,6 @@ const testConfig = {
 
 describe('checkRateLimit', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockInsertValues.mockResolvedValue(undefined);
   });
 
@@ -222,10 +221,6 @@ describe('RATE_LIMITS', () => {
 });
 
 describe('isRateLimited', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('should return false when count is 0 (no events in window)', async () => {
     mockSelectFromWhere.mockResolvedValue([{ count: 0 }]);
 

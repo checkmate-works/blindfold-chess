@@ -132,7 +132,6 @@ function makeCtx(bestScores: { menuType: string; leaderboardKey: string; score: 
 
 describe('evaluateRankRequirements', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockSelectResult.mockReturnValue([]);
   });
 
@@ -409,7 +408,6 @@ describe('evaluateRankRequirements', () => {
 
 describe('game_publish_win evaluator', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockSelectResult.mockReturnValue([]);
     capturedWhere = null;
   });
@@ -433,7 +431,6 @@ describe('game_publish_win evaluator', () => {
 
 describe('game_publish_win_hidden_board evaluator', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockSelectResult.mockReturnValue([]);
     capturedWhere = null;
   });
@@ -730,7 +727,6 @@ describe('game_publish_win_hidden_board evaluator', () => {
 
 describe('checkAndGrantRanks', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockSelectResult.mockReturnValue([]);
   });
 

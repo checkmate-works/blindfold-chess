@@ -1,5 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
+import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
+
 import { createChunkPostWithAttachment } from './createChunkPostWithAttachment';
 
 // ─── Module mocks ───
@@ -9,8 +12,6 @@ import { createChunkPostWithAttachment } from './createChunkPostWithAttachment';
 // observe (a) which DB rows are written and (b) which rate-limit slots
 // are consumed.
 
-const mockGetUser = vi.fn();
-const mockIsUserBanned = vi.fn();
 const mockGetChunkBySlug = vi.fn();
 const mockResolveLichessAttachmentPgn = vi.fn();
 const mockCheckRateLimit = vi.fn();
@@ -19,10 +20,7 @@ const mockInsertReturning = vi.fn();
 const mockAttachmentInsertValues = vi.fn();
 const mockSelectProfile = vi.fn();
 
-vi.mock('@/lib/moderation/block', () => ({
-  isBlockedBetween: () => Promise.resolve(false),
-  hasBlocked: () => Promise.resolve(false),
-}));
+vi.mock('@/lib/moderation/block');
 
 vi.mock('@/lib/users/activity-log');
 
@@ -31,14 +29,7 @@ vi.mock('@/lib/notifications/notification', () => ({
   createNotification: vi.fn(),
 }));
 
-vi.mock('@/lib/supabase/server', () => ({
-  createClient: () =>
-    Promise.resolve({
-      auth: {
-        getUser: mockGetUser,
-      },
-    }),
-}));
+vi.mock('@/lib/supabase/server');
 
 const generatedPostId = 'post-00000000-0000-0000-0000-000000000001';
 
@@ -85,9 +76,7 @@ vi.mock('@/lib/db', () => ({
   feedItems: { __name: 'feed_items' },
 }));
 
-vi.mock('@/lib/moderation/ban', () => ({
-  isUserBanned: (...args: unknown[]) => mockIsUserBanned(...args),
-}));
+vi.mock('@/lib/moderation/ban');
 
 vi.mock('@/lib/security/rate-limit', () => ({
   checkRateLimit: (...args: unknown[]) => mockCheckRateLimit(...args),
@@ -153,7 +142,6 @@ const SIMPLE_PGN = '1. e4 e5 2. Nf3 Nc6';
 
 describe('createChunkPostWithAttachment', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockGetChunkBySlug.mockResolvedValue({ id: 'chunk-1', slug: testSlug });
     mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
     mockIsUserBanned.mockResolvedValue(false);

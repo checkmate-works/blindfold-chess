@@ -4,6 +4,7 @@ import { headers } from 'next/headers';
 import { IS_LOCAL_DEV } from '@/config';
 import { and, asc, eq } from 'drizzle-orm';
 
+import { AD_CREATIVES_CACHE_TAG } from '@/lib/cache-tags';
 import { adCreatives, db } from '@/lib/db';
 
 import { hasAdFreeEntitlement } from './ad-free-entitlement';
@@ -11,9 +12,6 @@ import { filterByCountry, getRequestCountry } from './country';
 import type { BannerPayload, NativeCardThumbnail } from './payload';
 import { isBannerPayload, isNativeCardPayload, resolveNativeThumbnail } from './payload';
 import type { AdKind, AdSlot } from './registry';
-
-/** Cache tag invalidated by every admin creative mutation. */
-export const AD_CREATIVES_CACHE_TAG = 'ad-creatives';
 
 /**
  * Pure decision function: determine whether ads should be shown for a given user.

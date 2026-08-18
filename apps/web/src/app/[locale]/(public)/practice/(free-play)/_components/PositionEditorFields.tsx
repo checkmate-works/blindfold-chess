@@ -5,6 +5,7 @@ import { type ReactNode, useState } from 'react';
 import type { useTranslations } from 'next-intl';
 
 import { FieldError, FlipBoardButton, fieldBorderClass, fieldErrorProps } from '@/app/_components';
+import { STARTING_FEN } from '@blindfold-chess/features/chess-core/fen';
 
 import type { ChunkOption } from '@/lib/chunks/types';
 import type { ThemeOption } from '@/lib/themes/types';
@@ -199,7 +200,7 @@ export function PositionEditorFields({
               id="fen"
               value={board.fenInput}
               onChange={board.handleFenInputChange}
-              placeholder="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+              placeholder={STARTING_FEN}
               rows={2}
               className={`w-full px-3 py-2 rounded border bg-card text-foreground text-sm font-mono ${fieldBorderClass(fenError)}`}
               {...fieldErrorProps('fen-error', fenError)}

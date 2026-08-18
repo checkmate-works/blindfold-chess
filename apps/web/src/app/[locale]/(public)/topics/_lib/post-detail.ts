@@ -1,6 +1,6 @@
 import type { User } from '@supabase/supabase-js';
 
-import { createClient } from '@/lib/supabase/server';
+import { getOptionalUser } from '@/lib/auth';
 
 import { canUserReply } from './permissions';
 import { attachPostMeta } from './post-meta';
@@ -30,10 +30,7 @@ export async function fetchPostDetailData(
   postId: string,
   post: TopicPostWithAuthor
 ): Promise<PostDetailData> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getOptionalUser();
 
   const [replies, [rootWithMeta]] = await Promise.all([
     getRepliesByPostId(postId, user?.id),

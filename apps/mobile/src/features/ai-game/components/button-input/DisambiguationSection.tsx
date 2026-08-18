@@ -8,7 +8,7 @@ import {
   type ThemeColors,
 } from "../../../../theme";
 import { ToggleButton } from "../ToggleButton";
-import { FILES, RANKS } from "./constants";
+import { FILES, RANKS } from "@blindfold-chess/types";
 
 /**
  * The piece-move disambiguation controls: the "Disambiguation" toggle and —

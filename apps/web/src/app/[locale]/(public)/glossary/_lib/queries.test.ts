@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { EMPTY_BOARD_ANNOTATIONS } from '@/lib/board-annotations/types';
 import { db } from '@/lib/db';
@@ -699,10 +699,6 @@ describe('mergeTermRows', () => {
 });
 
 describe('queries (integration with DB mock)', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   describe('getGlossaryTerms', () => {
     it('should return all terms with full translations and aliases', async () => {
       const aliasRows: TermWithAliasRow[] = [

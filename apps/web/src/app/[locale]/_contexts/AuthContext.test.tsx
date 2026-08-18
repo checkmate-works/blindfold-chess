@@ -63,7 +63,6 @@ function wrapper({ children }: { children: React.ReactNode }) {
 
 describe('AuthContext', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockOnAuthStateChange.mockReturnValue({
       data: { subscription: { unsubscribe: vi.fn() } },
     });

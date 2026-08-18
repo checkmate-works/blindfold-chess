@@ -1,10 +1,9 @@
 import { type ReplyMeta, getReplyMetaMap } from '@/lib/db/reply-meta-queries';
 import type { Position } from '@/lib/db/schema';
 import { resolvePagination } from '@/lib/pagination';
+import type { PositionKind } from '@/lib/positions/kind';
 import { type PositionLikeMeta, getPositionLikeMetaMap } from '@/lib/positions/like-queries';
 import { countPositions, listPositions } from '@/lib/positions/queries';
-
-type ProblemType = 'puzzle' | 'memory';
 
 export type ProblemsPageData = {
   positions: Position[];
@@ -31,7 +30,7 @@ export async function loadProblemsPageData({
 }: {
   profileId: string;
   currentUserId: string | undefined;
-  type: ProblemType;
+  type: PositionKind;
   page: number;
   pageSize: number;
 }): Promise<ProblemsPageData> {

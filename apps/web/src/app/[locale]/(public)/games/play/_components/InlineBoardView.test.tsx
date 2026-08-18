@@ -14,8 +14,8 @@
  * purely on `InlineBoardView`'s own branching without coupling to the rendering
  * of the chess content.
  */
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
@@ -74,10 +74,6 @@ const BASE_PROPS = {
 
 const renderView = (visibility: InlineBoardVisibility) =>
   render(<InlineBoardView {...BASE_PROPS} visibility={visibility} />);
-
-afterEach(() => {
-  cleanup();
-});
 
 describe("InlineBoardView — visibility { kind: 'accordion' }", () => {
   it('starts collapsed: header is rendered but the board content is not', () => {

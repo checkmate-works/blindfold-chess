@@ -1,7 +1,9 @@
 import { eq } from 'drizzle-orm';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
 import { createNotification } from '@/lib/notifications/notification';
+import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
 import { logActivityEvent } from '@/lib/users/activity-log';
 
 import { toggleLikeBase } from './toggleLike';
@@ -13,10 +15,7 @@ import { toggleLikeBase } from './toggleLike';
 // Note: vi.mock is hoisted to the top of the file by Vitest, so it applies
 // before the `eq` import above is resolved — the imported `eq` is the spied
 // version returned from this mock factory.
-vi.mock('@/lib/moderation/block', () => ({
-  isBlockedBetween: () => Promise.resolve(false),
-  hasBlocked: () => Promise.resolve(false),
-}));
+vi.mock('@/lib/moderation/block');
 
 vi.mock('drizzle-orm', async (importOriginal) => {
   const actual = await importOriginal<typeof import('drizzle-orm')>();
@@ -27,8 +26,6 @@ vi.mock('drizzle-orm', async (importOriginal) => {
   };
 });
 
-const mockGetUser = vi.fn();
-const mockIsUserBanned = vi.fn();
 const mockInsertValues = vi.fn();
 const mockDeleteWhere = vi.fn();
 const mockSelectCount = vi.fn();
@@ -41,18 +38,9 @@ vi.mock('@/lib/notifications/notification', () => ({
   createNotification: vi.fn(),
 }));
 
-vi.mock('@/lib/supabase/server', () => ({
-  createClient: () =>
-    Promise.resolve({
-      auth: {
-        getUser: mockGetUser,
-      },
-    }),
-}));
+vi.mock('@/lib/supabase/server');
 
-vi.mock('@/lib/moderation/ban', () => ({
-  isUserBanned: (...args: unknown[]) => mockIsUserBanned(...args),
-}));
+vi.mock('@/lib/moderation/ban');
 
 vi.mock('@/lib/security/rate-limit', () => ({
   checkRateLimit: vi.fn().mockResolvedValue({ success: true }),
@@ -114,7 +102,6 @@ const validParams = {
 
 describe('toggleLikeBase', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     validParams.validateTopic.mockResolvedValue(true);
     mockSelectPostAuthor.mockResolvedValue([{ userId: testPostAuthorId }]);
     mockSelectProfile.mockResolvedValue([{ id: testUserId }]);

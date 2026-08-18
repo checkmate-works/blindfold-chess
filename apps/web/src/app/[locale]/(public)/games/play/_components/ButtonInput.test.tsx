@@ -1,5 +1,6 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { STARTING_FEN } from '@blindfold-chess/features/chess-core/fen';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 import { ButtonInput } from './ButtonInput';
 
@@ -24,8 +25,6 @@ vi.mock('@/app/[locale]/_contexts/GamePreferencesContext', () => ({
   }),
 }));
 
-const STARTING_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
-
 // aria-label values that identify each interactive button exactly, matching
 // the translation keys used inside `ButtonInput` (next-intl mock returns keys
 // verbatim).
@@ -35,10 +34,6 @@ const ANNOTATION_LABELS = ['symbol.check', 'symbol.promotion', 'symbol.checkmate
 const CASTLING_LABELS = ['castling.kingside', 'castling.queenside'];
 const UTILITY_LABELS = ['action.backspace', 'action.clear'];
 const SUBMIT_LABEL = 'action.submit';
-
-afterEach(() => {
-  cleanup();
-});
 
 describe('ButtonInput', () => {
   describe('disabled=true', () => {

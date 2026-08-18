@@ -10,6 +10,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import * as Sentry from '@sentry/nextjs';
 
 import { prepareImageForUpload } from '@/lib/client-images/prepare-image-for-upload';
+import { AVATAR_MAX_FILE_SIZE, isAllowedImageMimeType } from '@/lib/images/policy';
 
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 
@@ -17,9 +18,6 @@ type Props = {
   currentAvatarUrl: string | null;
   onUploaded?: (url: string) => void;
 };
-
-const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
-const MAX_SIZE = 2 * 1024 * 1024; // 2MB
 
 export function AvatarUpload({ currentAvatarUrl, onUploaded }: Props) {
   const t = useTranslations('profile');
@@ -56,13 +54,13 @@ export function AvatarUpload({ currentAvatarUrl, onUploaded }: Props) {
       return;
     }
 
-    if (!ALLOWED_TYPES.includes(file.type)) {
+    if (!isAllowedImageMimeType(file.type)) {
       setError(t('avatarInvalidType'));
       if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
 
-    if (file.size > MAX_SIZE) {
+    if (file.size > AVATAR_MAX_FILE_SIZE) {
       setError(t('avatarTooLarge'));
       if (fileInputRef.current) fileInputRef.current.value = '';
       return;

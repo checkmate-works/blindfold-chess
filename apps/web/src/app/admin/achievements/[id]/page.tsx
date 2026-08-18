@@ -26,7 +26,7 @@ import { buildAdminListHref } from '@/app/admin/_lib/build-list-href';
 import { formatDateTime } from '@/app/admin/_lib/format';
 
 import { getAchievementDisplayName, getAchievementIconEmoji } from '@/lib/achievements/display';
-import { DEFAULT_PAGE_SIZE, getPaginationParams } from '@/lib/pagination';
+import { DEFAULT_PAGE_SIZE, getPageRange, getPaginationParams } from '@/lib/pagination';
 
 import { AdminDataTable } from '../../_components/AdminDataTable';
 import { AdminPageHeader } from '../../_components/AdminPageHeader';
@@ -129,8 +129,7 @@ export default async function AdminAchievementDetailPage({
       {holders.length > 0 && (
         <p className="text-sm text-muted-foreground mb-2">
           {t('achievements.detail.showingHolders', {
-            from: (currentPage - 1) * DEFAULT_PAGE_SIZE + 1,
-            to: (currentPage - 1) * DEFAULT_PAGE_SIZE + holders.length,
+            ...getPageRange(currentPage, DEFAULT_PAGE_SIZE, holders.length),
             total: totalCount,
           })}
         </p>

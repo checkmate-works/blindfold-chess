@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { db } from '@/lib/db';
 
@@ -83,10 +83,6 @@ function makeChain(rows: unknown[]) {
 const SQUARE_POST_ID = '11111111-1111-1111-1111-111111111111';
 
 describe('getPostByIdAndTopicKey — cross-topic isolation', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('issues an eq() predicate that pins topicType to the requested value', async () => {
     // Empty result is fine — we are auditing the WHERE clause that was built,
     // not the row mapping. This is the exact predicate that protects the

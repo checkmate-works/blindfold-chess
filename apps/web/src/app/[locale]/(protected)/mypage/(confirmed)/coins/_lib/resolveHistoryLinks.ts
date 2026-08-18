@@ -4,6 +4,8 @@ import 'server-only';
 import { chunks, db, games, positions, repertoires, topicPosts } from '@/lib/db';
 import { POINT_SOURCES, type PointHistoryEntry } from '@/lib/points';
 
+import { buildTopicPostPath } from '@/app/[locale]/(public)/topics/_lib/topic-paths';
+
 /**
  * Resolve a deep link to the UGC that earned each coin-grant history row.
  *
@@ -142,8 +144,7 @@ export function grantHref(
       if (!meta) return null;
       // Only `square` / `opening` topics earn grants (isPointEligibleTopicType);
       // both use the plural-segment post route (`squares` / `openings`).
-      const segment = meta.topicType === 'opening' ? 'openings' : `${meta.topicType}s`;
-      return `/topics/${segment}/${meta.topicKey}/posts/${sourceId}`;
+      return buildTopicPostPath(meta.topicType, meta.topicKey, sourceId);
     }
     default:
       return null;

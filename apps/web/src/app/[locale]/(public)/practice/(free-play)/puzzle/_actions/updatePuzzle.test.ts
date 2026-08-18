@@ -112,7 +112,6 @@ describe('updatePuzzle', () => {
   }, 30000);
 
   beforeEach(() => {
-    vi.clearAllMocks();
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: TEST_USER_ID } });
     mockTxSelectSolutionsWhere.mockResolvedValue([]);
     mockTxUpdateWhere.mockResolvedValue(undefined);

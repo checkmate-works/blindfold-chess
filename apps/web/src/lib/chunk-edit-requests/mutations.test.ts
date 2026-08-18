@@ -13,10 +13,7 @@ const mockGetEditRequestById = vi.fn();
 const mockGetViewerPendingEditRequestForChunk = vi.fn();
 const mockIsUniqueViolation = vi.fn();
 
-vi.mock('@/lib/moderation/block', () => ({
-  isBlockedBetween: () => Promise.resolve(false),
-  hasBlocked: () => Promise.resolve(false),
-}));
+vi.mock('@/lib/moderation/block');
 
 vi.mock('@/lib/auth', () => ({
   authenticateAndGuard: (...args: unknown[]) => mockAuthenticateAndGuard(...args),
@@ -129,7 +126,6 @@ function mockDraftChunk(overrides: Partial<Record<string, unknown>> = {}) {
 
 describe('submitEditRequestEntry', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: PROPOSER_ID } });
     mockInsertReturning.mockResolvedValue([{ id: REQUEST_ID }]);
     // Default: viewer has no pending suggestion. Tests covering the
@@ -308,7 +304,6 @@ describe('submitEditRequestEntry', () => {
 
 describe('acceptEditRequestEntry', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: OWNER_ID } });
   });
 
@@ -439,7 +434,6 @@ describe('acceptEditRequestEntry', () => {
 
 describe('rejectEditRequestEntry', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: OWNER_ID } });
   });
 
@@ -491,7 +485,6 @@ describe('rejectEditRequestEntry', () => {
 
 describe('withdrawEditRequestEntry', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: PROPOSER_ID } });
   });
 

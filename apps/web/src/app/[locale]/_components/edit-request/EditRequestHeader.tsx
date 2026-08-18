@@ -1,4 +1,5 @@
 import type { EditRequestStatus } from '@/lib/edit-requests/shared';
+import { buildProfileHref } from '@/lib/users/author-profile';
 import type { AuthorProfile } from '@/lib/users/author-profile';
 
 import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';
@@ -33,7 +34,7 @@ type Props = {
 /** Avatar, submission time and lifecycle badge across the top of a request row. */
 export function EditRequestHeader({ proposer, createdAt, status, locale, labels }: Props) {
   const proposerName = proposer?.displayName ?? proposer?.username ?? labels.deletedProposer;
-  const profileHref = proposer?.username ? `/u/${proposer.username}` : null;
+  const profileHref = buildProfileHref(proposer);
 
   return (
     <div className="flex items-start justify-between gap-3">

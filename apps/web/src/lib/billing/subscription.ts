@@ -7,6 +7,7 @@ import {
   BENEFIT_ACTIVE_STATUSES,
   DISPLAYABLE_STATUSES,
 } from '@/lib/billing/subscription-constants';
+import { SUBSCRIPTION_STATUS_CACHE_TAG } from '@/lib/cache-tags';
 import { db, subscriptions } from '@/lib/db';
 import { withTimeout } from '@/lib/db-timeout';
 
@@ -32,7 +33,7 @@ export const hasActiveSubscription = unstable_cache(
     }
   },
   ['has-active-subscription'],
-  { tags: ['subscription-status'], revalidate: 60 }
+  { tags: [SUBSCRIPTION_STATUS_CACHE_TAG], revalidate: 60 }
 );
 
 export async function getUserSubscription(userId: string) {

@@ -27,7 +27,6 @@ const { notifyAllUsersOfAnnouncement } = await import('./announcement-notificati
 
 describe('notifyAllUsersOfAnnouncement', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockUsers = [{ id: 'user-1' }, { id: 'user-2' }, { id: 'user-3' }];
   });
 

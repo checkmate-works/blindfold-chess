@@ -68,7 +68,6 @@ const defaultLabels = {
 
 describe('AnnouncementForm', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockUseNavigationGuard.mockReturnValue({
       active: false,
       accept: vi.fn(),

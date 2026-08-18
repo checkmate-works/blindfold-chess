@@ -6,8 +6,8 @@ import { Button } from '@/app/_components';
 import { CoinIcon } from '@blindfold-chess/icons';
 import { and, eq } from 'drizzle-orm';
 
+import { getOptionalUser } from '@/lib/auth';
 import { db, pointEvents } from '@/lib/db';
-import { createClient } from '@/lib/supabase/server';
 
 import { CertificateFrame, PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -49,10 +49,7 @@ export default async function ThanksPage({ params, searchParams }: Props) {
   // Resolve the point grant with auth + ownership filter. Anonymous visitors
   // and mismatched users get the generic message; the page never reveals
   // another user's grant.
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getOptionalUser();
 
   let awardedCoins: number | null = null;
   // True when the grant was trimmed by the daily creation cap — the

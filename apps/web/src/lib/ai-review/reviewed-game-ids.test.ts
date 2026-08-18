@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { db } from '@/lib/db';
 
@@ -26,10 +26,6 @@ function mockChain(rows: unknown[]) {
 }
 
 describe('getReviewedGameIdSet', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('reports the games that have a review', async () => {
     mockDb.selectDistinct.mockReturnValue(mockChain([{ gameId: 'game-a' }, { gameId: 'game-c' }]));
 

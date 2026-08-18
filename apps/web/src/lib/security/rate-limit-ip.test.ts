@@ -28,7 +28,6 @@ const config = { maxRequests: 3, windowMs: 60_000 };
 
 describe('checkIpRateLimitGuard', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockInsertValues.mockResolvedValue(undefined);
   });
 
@@ -66,7 +65,6 @@ describe('checkEmailRateLimitGuard', () => {
   const expectedHashPrefix = 'email:';
 
   beforeEach(() => {
-    vi.clearAllMocks();
     mockInsertValues.mockResolvedValue(undefined);
   });
 

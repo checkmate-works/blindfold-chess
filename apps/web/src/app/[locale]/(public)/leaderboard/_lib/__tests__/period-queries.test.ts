@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import type { LeaderboardPeriod } from '../types';
 
@@ -35,10 +35,6 @@ const { getQueriesForPeriod } = await import('../period-queries');
 // ---------------------------------------------------------------------------
 
 describe('getQueriesForPeriod', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   // -----------------------------------------------------------------------
   // Return structure
   // -----------------------------------------------------------------------

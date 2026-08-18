@@ -1,11 +1,7 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { AuthStatusDisplay } from './AuthStatusDisplay';
-
-afterEach(() => {
-  cleanup();
-});
 
 const mockUseAuth = vi.fn();
 
@@ -49,7 +45,6 @@ vi.mock('next/navigation', () => ({
 
 describe('AuthStatusDisplay', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockLocale = 'en';
     mockPathname = '/en';
     mockPush.mockClear();

@@ -17,6 +17,12 @@ import type { AiReviewContent } from './types';
  *   server-side, adding the bounds strict JSON Schema cannot express
  *   (min/max lengths) and trimming. Never trust the provider's enforcement
  *   alone.
+ *
+ * The looser layer is not derived from the stricter one — that would send the
+ * length bounds to the provider and erase the distinction above. What the two
+ * must agree on is the field set, because `additionalProperties: false` means
+ * a field added to zod but not here is forbidden rather than merely
+ * unvalidated. `schema.test.ts` holds them to it.
  */
 
 const MAX_SUMMARY_LENGTH = 2000;

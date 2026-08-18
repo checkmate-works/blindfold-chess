@@ -1,5 +1,5 @@
-import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 import { SelectedTagCard } from './SelectedTagCard';
 
@@ -20,8 +20,6 @@ const baseProps = {
   onOpen: () => {},
   onRemove: () => {},
 };
-
-afterEach(() => cleanup());
 
 describe('SelectedTagCard', () => {
   it('shows the "No Image" placeholder for a board-less tag (previewFen null)', () => {

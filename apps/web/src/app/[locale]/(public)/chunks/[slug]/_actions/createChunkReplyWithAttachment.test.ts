@@ -2,6 +2,9 @@ import { revalidatePath } from 'next/cache';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
+import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
+
 import { createChunkReplyWithAttachment } from './createChunkReplyWithAttachment';
 
 /**
@@ -20,21 +23,16 @@ import { createChunkReplyWithAttachment } from './createChunkReplyWithAttachment
  *      surfaces.
  */
 
-const mockGetUser = vi.fn();
 const mockSelectFromWhere = vi.fn();
 const mockSelectProfile = vi.fn();
 const mockInsertReturning = vi.fn();
 const mockInsertValues = vi.fn();
 const mockTxAttachmentValues = vi.fn();
-const mockIsUserBanned = vi.fn();
 const mockCheckRateLimit = vi.fn();
 const mockGetChunkBySlug = vi.fn();
 const mockResolveLichess = vi.fn();
 
-vi.mock('@/lib/moderation/block', () => ({
-  isBlockedBetween: () => Promise.resolve(false),
-  hasBlocked: () => Promise.resolve(false),
-}));
+vi.mock('@/lib/moderation/block');
 
 vi.mock('@/lib/users/activity-log');
 
@@ -42,12 +40,7 @@ vi.mock('@/lib/notifications/notification', () => ({
   createNotification: vi.fn(),
 }));
 
-vi.mock('@/lib/supabase/server', () => ({
-  createClient: () =>
-    Promise.resolve({
-      auth: { getUser: mockGetUser },
-    }),
-}));
+vi.mock('@/lib/supabase/server');
 
 const mockTx = {
   insert: (table: { __name?: string }) => {
@@ -106,9 +99,7 @@ vi.mock('@/lib/db', () => ({
   },
 }));
 
-vi.mock('@/lib/moderation/ban', () => ({
-  isUserBanned: (...args: unknown[]) => mockIsUserBanned(...args),
-}));
+vi.mock('@/lib/moderation/ban');
 
 vi.mock('@/lib/security/rate-limit', () => ({
   checkRateLimit: (...args: unknown[]) => mockCheckRateLimit(...args),
@@ -181,7 +172,6 @@ function setupParentPost(overrides: { userId?: string; replyPermission?: string 
 
 describe('createChunkReplyWithAttachment', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockGetChunkBySlug.mockResolvedValue({ id: 'chunk-1', slug: testSlug });
     mockSelectProfile.mockResolvedValue([{ id: testUserId }]);
   });

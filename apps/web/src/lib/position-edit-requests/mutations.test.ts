@@ -124,7 +124,6 @@ function mockPosition(overrides: Partial<Record<string, unknown>> = {}) {
 
 describe('submitPositionEditRequestEntry', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: PROPOSER_ID } });
     mockInsertReturning.mockResolvedValue([{ id: REQUEST_ID }]);
     mockGetViewerPending.mockResolvedValue(null);
@@ -298,7 +297,6 @@ describe('submitPositionEditRequestEntry', () => {
 
 describe('acceptPositionEditRequestEntry', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: OWNER_ID } });
   });
 
@@ -379,7 +377,6 @@ describe('acceptPositionEditRequestEntry', () => {
 
 describe('rejectPositionEditRequestEntry', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: OWNER_ID } });
   });
 
@@ -404,7 +401,6 @@ describe('rejectPositionEditRequestEntry', () => {
 
 describe('withdrawPositionEditRequestEntry', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: PROPOSER_ID } });
   });
 

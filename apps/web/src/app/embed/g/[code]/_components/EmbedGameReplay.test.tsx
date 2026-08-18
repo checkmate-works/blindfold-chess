@@ -12,8 +12,8 @@
  * the controls are found by their stable key names.
  */
 import type { AlgebraicNotation } from '@blindfold-chess/types';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 import type { GamePlaySettings } from '@/lib/games/saved-game-types';
 
@@ -69,8 +69,6 @@ function renderReplay(props: Partial<Parameters<typeof EmbedGameReplay>[0]> = {}
 }
 
 const ghosts = (container: HTMLElement) => container.querySelectorAll('.opacity-40').length;
-
-afterEach(() => cleanup());
 
 describe('EmbedGameReplay', () => {
   it('opens showing the position as the player saw it — every piece a ghost', () => {

@@ -11,8 +11,8 @@ import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
+import { getOptionalUser } from '@/lib/auth';
 import { getGameById } from '@/lib/db/games-read';
-import { createClient } from '@/lib/supabase/server';
 import { UUID_RE } from '@/lib/validations/uuid';
 
 import { PageLayout } from '@/app/[locale]/_components';
@@ -45,18 +45,15 @@ export default async function EditSharedGamePage({ params }: Props) {
 
   if (!UUID_RE.test(id)) notFound();
 
-  const [detail, t, supabase] = await Promise.all([
+  const [detail, t] = await Promise.all([
     getGameById(id),
     getTranslations({ locale, namespace: 'sharedGames' }),
-    createClient(),
   ]);
   if (!detail) notFound();
 
   const { game } = detail;
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getOptionalUser();
   const isRegisteredOwner = game.authorId != null && user?.id === game.authorId;
 
   return (

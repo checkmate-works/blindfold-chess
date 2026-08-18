@@ -15,10 +15,6 @@ vi.mock('@/lib/db', () => ({
 const { logActivityEvent } = await import('./activity-log');
 
 describe('logActivityEvent', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('should insert an activity event with all fields', () => {
     mockInsertValues.mockReturnValue({ then: (fn: () => void) => ({ catch: () => fn() }) });
 

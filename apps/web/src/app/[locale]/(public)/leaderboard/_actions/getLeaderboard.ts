@@ -2,9 +2,9 @@
 
 import { eq } from 'drizzle-orm';
 
+import { getOptionalUser } from '@/lib/auth';
 import { db, profiles } from '@/lib/db';
 import { handleServerActionError } from '@/lib/server-action-error';
-import { createClient } from '@/lib/supabase/server';
 
 import { getPublicLeaderboard } from '../_lib/get-public-leaderboard';
 import { getQueriesForPeriod } from '../_lib/period-queries';
@@ -21,10 +21,7 @@ import type {
 
 async function getCurrentUserId(): Promise<string | null> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = await getOptionalUser();
     return user?.id ?? null;
   } catch {
     return null;

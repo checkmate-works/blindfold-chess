@@ -76,7 +76,6 @@ const baseProps = {
 
 describe('AiReviewPanel', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockState = { phase: 'idle' };
   });
 

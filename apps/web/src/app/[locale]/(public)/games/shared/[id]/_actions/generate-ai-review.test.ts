@@ -85,7 +85,6 @@ function validInput() {
 
 describe('generateAiReviewAction', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockAuth.mockResolvedValue({ user: { id: USER_ID } });
     mockGetGameById.mockResolvedValue({
       game: { id: GAME_ID, moves: MOVES, authorId: USER_ID },

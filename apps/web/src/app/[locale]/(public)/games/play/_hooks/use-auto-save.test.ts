@@ -30,7 +30,6 @@ vi.mock('@/lib/games/local-storage-repository', () => {
 
 describe('useAutoSave', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     localStorage.clear();
     sessionStorage.clear();
   });

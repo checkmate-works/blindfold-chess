@@ -1,5 +1,5 @@
 import type Stripe from 'stripe';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 const mockInsertValues = vi.fn();
 const mockOnConflictDoUpdate = vi.fn();
@@ -250,10 +250,6 @@ describe('toSubscriptionFields', () => {
 // ── handleCheckoutCompleted ──────────────────────────────────────────
 
 describe('handleCheckoutCompleted', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('should skip if session mode is not subscription', async () => {
     const session = {
       mode: 'payment',
@@ -509,10 +505,6 @@ describe('handleCheckoutCompleted', () => {
 // ── handleSubscriptionUpdated ────────────────────────────────────────
 
 describe('handleSubscriptionUpdated', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('should update subscription fields in DB', async () => {
     mockUpdateReturning.mockResolvedValue([{ id: 'some-id' }]);
 
@@ -737,10 +729,6 @@ describe('handleSubscriptionUpdated', () => {
 // ── handleSubscriptionDeleted ────────────────────────────────────────
 
 describe('handleSubscriptionDeleted', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('should set status to canceled and cancelAt to null', async () => {
     mockUpdateReturning.mockResolvedValue([{ id: 'some-id' }]);
 

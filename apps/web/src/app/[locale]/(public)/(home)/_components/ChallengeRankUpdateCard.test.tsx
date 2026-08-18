@@ -1,12 +1,8 @@
-import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 import type { ChallengeRankUpdateData } from '../_lib/types';
 import { ChallengeRankUpdateCard } from './ChallengeRankUpdateCard';
-
-afterEach(() => {
-  cleanup();
-});
 
 vi.mock('@/i18n/use-safe-translations', () => ({
   useSafeTranslations: (namespace: string) => {
@@ -102,10 +98,6 @@ const defaultProps = {
 };
 
 describe('ChallengeRankUpdateCard', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('should render the user avatar with display name', () => {
     render(<ChallengeRankUpdateCard data={createData()} {...defaultProps} />);
 

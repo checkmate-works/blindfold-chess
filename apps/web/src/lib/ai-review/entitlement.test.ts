@@ -22,7 +22,6 @@ function gameOf(overrides: Partial<GameRecord> = {}): GameRecord {
 
 describe('resolveAiReviewGenerationState', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockHasActiveSubscription.mockResolvedValue(false);
   });
 

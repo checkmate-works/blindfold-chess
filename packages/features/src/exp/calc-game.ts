@@ -28,10 +28,16 @@
  * @see {@link ./calc-practice.ts} for the free-play calculator (calculatePracticeExp)
  * @see {@link ../../../apps/web/src/lib/db/save-game-exp.ts} for persistence (grantGameExp)
  */
+import type { FinalGameOutcome } from "@blindfold-chess/types";
+
 import { MIN_COMPLETION_EXP } from "./constants";
 
-/** Outcome of a completed AI game from the player's perspective. */
-export type GameExpOutcome = "win" | "loss" | "draw";
+/**
+ * Outcome of a completed AI game from the player's perspective. Named for this
+ * module's vocabulary, but the same set as the shared `FinalGameOutcome` — see
+ * `PlayerResult` in `../ai-game/types` for why the aliases point at one union.
+ */
+export type GameExpOutcome = FinalGameOutcome;
 
 /**
  * Engine-strength descriptor. Callers pass plain numbers (not the literal
@@ -39,8 +45,7 @@ export type GameExpOutcome = "win" | "loss" | "draw";
  * via clamping rather than being a type error at the boundary.
  */
 export type GameExpEngine =
-  | { kind: "stockfish"; skillLevel: number }
-  | { kind: "maia"; rating: number };
+  { kind: "stockfish"; skillLevel: number } | { kind: "maia"; rating: number };
 
 export type GameExpInput = {
   /** Game outcome from the player's perspective. */

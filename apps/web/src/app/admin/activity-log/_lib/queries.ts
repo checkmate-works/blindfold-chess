@@ -3,6 +3,7 @@ import { desc, eq, inArray } from 'drizzle-orm';
 
 import { db, profiles, userActivityLog } from '@/lib/db';
 import { combineConditions, countRows } from '@/lib/db/list-query';
+import { getPaginationParams } from '@/lib/pagination';
 
 import { resolveUserFilter } from '../../_lib/resolve-user-filter';
 import { loadUsersEmailMap } from '../../_lib/users-email-map';
@@ -27,8 +28,6 @@ export async function fetchActivityLogPageData(
   actionFilter: string,
   userFilter: string
 ): Promise<ActivityLogPageData> {
-  const currentPage = Math.max(1, page);
-
   // Build where conditions
   const conditions = [];
   if (actionFilter) {
@@ -54,7 +53,11 @@ export async function fetchActivityLogPageData(
 
   // Get total count for pagination
   const totalCount = await countRows(userActivityLog, whereClause);
-  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+  const { currentPage, totalPages, limit, offset } = getPaginationParams(
+    page,
+    totalCount,
+    PAGE_SIZE
+  );
 
   // Fetch logs for current page
   const logs =
@@ -65,8 +68,8 @@ export async function fetchActivityLogPageData(
           .from(userActivityLog)
           .where(whereClause)
           .orderBy(desc(userActivityLog.createdAt))
-          .limit(PAGE_SIZE)
-          .offset((currentPage - 1) * PAGE_SIZE);
+          .limit(limit)
+          .offset(offset);
 
   // Collect unique user IDs for lookups
   const userIds = [...new Set(logs.map((l) => l.userId))];

@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { db } from '@/lib/db';
 
@@ -65,10 +65,6 @@ const makeArticle = (overrides: Record<string, unknown> = {}) => ({
 });
 
 describe('articles queries', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   describe('getPublishedArticles', () => {
     it('should return all published articles without locale filter', async () => {
       const articles = [

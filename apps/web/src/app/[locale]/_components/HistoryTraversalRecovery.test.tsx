@@ -42,7 +42,6 @@ function advance(ms: number) {
 
 describe('HistoryTraversalRecovery', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     renderedPathname = '/en/leaderboard/score/all-time';
     renderedSearchParams = new URLSearchParams();
     window.history.replaceState(null, '', '/en/leaderboard/score/all-time');

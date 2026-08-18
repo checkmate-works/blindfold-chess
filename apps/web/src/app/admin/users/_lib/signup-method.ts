@@ -8,4 +8,15 @@
  * is imported from Client Components such as `ProviderFilter.tsx`.
  */
 export const SIGNUP_METHOD_ORDER = ['google', 'email', 'unknown'] as const;
+
+/**
+ * `SignupMethod` → the `Admin.usersTable.provider*` i18n key naming it. Lives
+ * next to the order so label maps derive from one place; the users list and
+ * the user detail page each had their own copy.
+ */
+export const SIGNUP_METHOD_I18N_KEY: Record<(typeof SIGNUP_METHOD_ORDER)[number], string> = {
+  google: 'providerGoogle',
+  email: 'providerEmail',
+  unknown: 'providerUnknown',
+};
 export type SignupMethod = (typeof SIGNUP_METHOD_ORDER)[number];

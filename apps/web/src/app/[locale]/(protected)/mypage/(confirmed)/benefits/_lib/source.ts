@@ -9,14 +9,7 @@
  */
 import type { GrantType } from '@/lib/db/data/grant-types';
 
-/**
- * Convert a `topic_posts.topic_type` into the URL segment the public route
- * uses. Mirrors `getTopicSegment` in NotificationItem for consistency.
- */
-function topicTypeToSegment(topicType: string): string {
-  if (topicType === 'opening') return 'openings';
-  return `${topicType}s`;
-}
+import { buildTopicPostPath } from '@/app/[locale]/(public)/topics/_lib/topic-paths';
 
 /**
  * Build a public detail path for a topic_post (no locale prefix). The
@@ -34,7 +27,7 @@ function buildTopicPostHref(topicType: string, topicKey: string, postId: string)
   if (topicType === 'position_puzzle') {
     return `/practice/puzzle/${topicKey}#post-${postId}`;
   }
-  return `/topics/${topicTypeToSegment(topicType)}/${topicKey}/posts/${postId}`;
+  return buildTopicPostPath(topicType, topicKey, postId);
 }
 
 /**

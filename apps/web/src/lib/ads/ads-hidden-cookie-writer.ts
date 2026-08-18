@@ -4,8 +4,9 @@ import type { NextResponse } from 'next/server';
 
 import type { User } from '@supabase/supabase-js';
 
+import { RANK_STATUS_CACHE_TAG } from '@/lib/cache-tags';
 import type { GrantedRank } from '@/lib/db/data/ranks';
-import { DAN_TIER_MIN_LEVEL, RANK_STATUS_CACHE_TAG } from '@/lib/db/data/ranks';
+import { DAN_TIER_MIN_LEVEL } from '@/lib/db/data/ranks';
 
 import { ADS_HIDDEN_COOKIE_NAME, adsHiddenCookieOptions } from './ads-hidden-cookie';
 import { computeAdsHiddenValueForUser } from './ads-hidden-cookie-compute';

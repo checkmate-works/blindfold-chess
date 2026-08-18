@@ -36,6 +36,7 @@ import { Link } from '@/i18n/routing';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { getAuthenticatedUser } from '@/lib/auth';
+import { getPageRange } from '@/lib/pagination';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
@@ -147,8 +148,7 @@ export default async function BenefitHistoryPage({ params, searchParams }: Props
         <>
           <p className="text-sm text-muted-foreground mb-2">
             {t('showing', {
-              from: (currentPage - 1) * PAGE_SIZE + 1,
-              to: (currentPage - 1) * PAGE_SIZE + rows.length,
+              ...getPageRange(currentPage, PAGE_SIZE, rows.length),
               total: totalCount,
             })}
           </p>

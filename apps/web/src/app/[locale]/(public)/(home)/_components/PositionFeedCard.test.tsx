@@ -1,12 +1,8 @@
-import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 import type { PositionFeedData } from '../_lib/types';
 import { PositionFeedCard } from './PositionFeedCard';
-
-afterEach(() => {
-  cleanup();
-});
 
 // Mock the GamePreferences hook so we can control the boardTheme value.
 const mockUseGamePreferences = vi.fn();
@@ -93,10 +89,6 @@ const defaultProps = {
 // --- Tests ---
 
 describe('PositionFeedCard', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('forwards the user\u2019s selected boardTheme from useGamePreferences to BoardThumbnail', () => {
     // Regression guard: previously PositionFeedCard rendered BoardThumbnail
     // without threading the user's boardTheme preference, so the chess.com

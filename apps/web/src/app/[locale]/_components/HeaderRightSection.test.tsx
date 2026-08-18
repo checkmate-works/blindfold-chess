@@ -1,5 +1,5 @@
 import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { HeaderRightSection } from './HeaderRightSection';
 
@@ -40,10 +40,6 @@ vi.mock('./NotificationBadge', () => ({
 }));
 
 describe('HeaderRightSection', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   describe('when loading', () => {
     it('renders a placeholder', () => {
       mockUseAuth.mockReturnValue({ user: null, isLoading: true, profile: null });

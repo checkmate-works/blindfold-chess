@@ -1,9 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
+import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
+
 import { createChunkPostWithVideoAttachment } from './createChunkPostWithVideoAttachment';
 
-const mockGetUser = vi.fn();
-const mockIsUserBanned = vi.fn();
 const mockGetChunkBySlug = vi.fn();
 const mockCheckRateLimit = vi.fn();
 const mockInsertValues = vi.fn();
@@ -11,10 +12,7 @@ const mockInsertReturning = vi.fn();
 const mockVideoInsertValues = vi.fn();
 const mockSelectProfile = vi.fn();
 
-vi.mock('@/lib/moderation/block', () => ({
-  isBlockedBetween: () => Promise.resolve(false),
-  hasBlocked: () => Promise.resolve(false),
-}));
+vi.mock('@/lib/moderation/block');
 
 vi.mock('@sentry/nextjs', () => ({
   captureException: vi.fn(),
@@ -28,9 +26,7 @@ vi.mock('@/lib/notifications/notification', () => ({
   createNotification: vi.fn(),
 }));
 
-vi.mock('@/lib/supabase/server', () => ({
-  createClient: () => Promise.resolve({ auth: { getUser: mockGetUser } }),
-}));
+vi.mock('@/lib/supabase/server');
 
 const generatedPostId = 'post-00000000-0000-0000-0000-0000000000aa';
 
@@ -70,9 +66,7 @@ vi.mock('@/lib/db', () => ({
   feedItems: { __name: 'feed_items' },
 }));
 
-vi.mock('@/lib/moderation/ban', () => ({
-  isUserBanned: (...args: unknown[]) => mockIsUserBanned(...args),
-}));
+vi.mock('@/lib/moderation/ban');
 
 vi.mock('@/lib/security/rate-limit', () => ({
   checkRateLimit: (...args: unknown[]) => mockCheckRateLimit(...args),
@@ -122,7 +116,6 @@ function makeFormData(opts: {
 
 describe('createChunkPostWithVideoAttachment', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockGetChunkBySlug.mockResolvedValue({ id: 'chunk-1', slug: testSlug });
     mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
     mockIsUserBanned.mockResolvedValue(false);

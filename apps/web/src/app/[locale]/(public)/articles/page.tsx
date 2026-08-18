@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 
 import { SITE_URL } from '@/config';
 
+import { getPaginationParams } from '@/lib/pagination';
 import { JsonLd, generateItemListSchema } from '@/lib/seo/jsonld';
 
 import { ListLink, ListLinkContainer, PageLayout, SectionTitle } from '@/app/[locale]/_components';
@@ -36,15 +37,16 @@ export default async function ArticlesPage({ params, searchParams }: Props) {
   const { page } = await searchParams;
   const t = await getTranslations({ locale, namespace: 'articles' });
 
-  const currentPage = Math.max(1, Number(page) || 1);
   const totalCount = await getPublishedArticleCount();
-  const totalPages = Math.max(1, Math.ceil(totalCount / ARTICLES_PER_PAGE));
+  const { currentPage, totalPages, offset } = getPaginationParams(
+    Number(page) || 1,
+    totalCount,
+    ARTICLES_PER_PAGE
+  );
 
   if (currentPage > totalPages && totalPages > 0) {
     notFound();
   }
-
-  const offset = (currentPage - 1) * ARTICLES_PER_PAGE;
   const articles = await getPublishedArticlesPaginated(locale, ARTICLES_PER_PAGE, offset);
 
   const itemListItems = articles.map((article) => ({

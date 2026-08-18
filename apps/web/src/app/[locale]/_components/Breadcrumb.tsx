@@ -6,6 +6,8 @@ import Link from 'next/link';
 
 import { JsonLd, generateBreadcrumbListSchema } from '@/lib/seo/jsonld';
 
+import { Skeleton } from './Skeleton';
+
 export type BreadcrumbItem = {
   label: string;
   href?: string;
@@ -35,14 +37,17 @@ type BreadcrumbContentProps = {
   density?: Density;
 };
 
+function breadcrumbNavClass(density: Density): string {
+  return density === 'compact' ? 'flex min-h-6 items-center' : 'mb-4 flex min-h-10 items-center';
+}
+
 export function BreadcrumbContent({
   items,
   locale,
   brandName,
   density = 'default',
 }: BreadcrumbContentProps) {
-  const navClass =
-    density === 'compact' ? 'flex min-h-6 items-center' : 'mb-4 flex min-h-10 items-center';
+  const navClass = breadcrumbNavClass(density);
 
   return (
     <>
@@ -94,4 +99,52 @@ type BreadcrumbProps = {
 
 export function Breadcrumb({ items, locale, density }: BreadcrumbProps) {
   return <BreadcrumbContent items={items} locale={locale} brandName="Home" density={density} />;
+}
+
+/**
+ * One placeholder crumb: either a label the skeleton already knows (a static
+ * section name) or a bar standing in for one it cannot know yet (a title still
+ * being fetched). `current` marks the crumb the real breadcrumb will render
+ * without a link — the last one.
+ */
+export type BreadcrumbSkeletonCrumb = { label: string; current?: boolean } | { widthClass: string };
+
+type BreadcrumbSkeletonProps = {
+  crumbs: BreadcrumbSkeletonCrumb[];
+  density?: Density;
+};
+
+/**
+ * The loading placeholder for {@link Breadcrumb}, sharing its nav class so the
+ * two cannot disagree about the band they occupy.
+ *
+ * Thirteen `loading.tsx` / skeleton files wrote this markup out by hand, and
+ * nine of them ended up with `items-end` against the real breadcrumb's
+ * `items-center` — a vertical offset in the one component whose entire job is
+ * to reserve the same space the real thing will take.
+ */
+export function BreadcrumbSkeleton({ crumbs, density = 'default' }: BreadcrumbSkeletonProps) {
+  return (
+    <nav aria-label="Breadcrumb" className={breadcrumbNavClass(density)}>
+      <ol className="flex flex-wrap items-center gap-x-1 text-sm">
+        <li>
+          <Skeleton className="size-6 rounded-sm" />
+        </li>
+        {crumbs.map((crumb, index) => (
+          <li key={index} className="flex items-center">
+            <span className="mx-1 text-muted-foreground">/</span>
+            {'label' in crumb ? (
+              <span
+                className={crumb.current ? 'text-foreground font-medium' : 'text-muted-foreground'}
+              >
+                {crumb.label}
+              </span>
+            ) : (
+              <Skeleton className={`h-4 rounded ${crumb.widthClass}`} />
+            )}
+          </li>
+        ))}
+      </ol>
+    </nav>
+  );
 }

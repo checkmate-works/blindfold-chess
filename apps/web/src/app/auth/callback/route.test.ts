@@ -75,7 +75,6 @@ function mockSuccessfulExchange(userId = mockUserId) {
 
 describe('Auth callback route', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     // Default: falls back to DEFAULT_LOCALE = 'en'
     mockGetLocaleFromRequest.mockResolvedValue('en');
     // Default: user has a profile

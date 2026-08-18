@@ -1,27 +1,19 @@
 import { revalidatePath } from 'next/cache';
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
 
 import { deletePosition } from './deletePosition';
 
-const mockGetUser = vi.fn();
 const mockSelectFromWhere = vi.fn();
 const mockUpdateSetWhere = vi.fn();
 const mockInsertValues = vi.fn();
 const mockTransaction = vi.fn();
 
-vi.mock('@/lib/supabase/server', () => ({
-  createClient: () =>
-    Promise.resolve({
-      auth: {
-        getUser: mockGetUser,
-      },
-    }),
-}));
+vi.mock('@/lib/supabase/server');
 
-vi.mock('@/lib/security/client-ip', () => ({
-  getClientIp: () => Promise.resolve('127.0.0.1'),
-}));
+vi.mock('@/lib/security/client-ip');
 
 vi.mock('@/lib/db', () => {
   const makeDbOps = () => ({
@@ -106,10 +98,6 @@ function setupAdminWithPosition() {
 }
 
 describe('deletePosition', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('should return unauthorized when user is not authenticated', async () => {
     mockGetUser.mockResolvedValue({ data: { user: null } });
 

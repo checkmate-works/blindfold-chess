@@ -55,3 +55,18 @@ export type SocialAuthorProfile = AuthorProfile & {
   country: string | null;
   flair: string | null;
 };
+
+/**
+ * The public profile page for an author, or `null` when there is nobody to
+ * link to — a deleted account, or a provisional user who never set a username.
+ *
+ * Seventeen call sites wrote the ternary out. That is not just repetition:
+ * the "no username means no link" rule is the one thing standing between a
+ * deleted author and a `/u/undefined` link, and it belongs next to the type
+ * whose `username` it reads.
+ */
+export function buildProfileHref(
+  profile: { username?: string | null } | null | undefined
+): string | null {
+  return profile?.username ? `/u/${profile.username}` : null;
+}

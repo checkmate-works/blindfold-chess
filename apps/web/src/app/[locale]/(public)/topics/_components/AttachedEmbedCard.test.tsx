@@ -1,12 +1,8 @@
-import { cleanup, render } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { render } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 import type { AttachedEmbedCardData } from './AttachedEmbedCard';
 import { AttachedEmbedCard } from './AttachedEmbedCard';
-
-afterEach(() => {
-  cleanup();
-});
 
 vi.mock('@/i18n/use-safe-translations', () => ({
   useSafeTranslations: () => (key: string, params?: Record<string, unknown>) =>

@@ -7,7 +7,7 @@
  * `useSafeTranslations` falls through to its key-as-text fallback when no
  * provider is mounted; stubbing it keeps assertions on stable strings.
  */
-import { act, cleanup, render, renderHook, screen } from '@testing-library/react';
+import { act, render, renderHook, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { AiReplyChip, useAiReplyChip } from './AiReplyChip';
@@ -129,8 +129,6 @@ describe('useAiReplyChip', () => {
 });
 
 describe('AiReplyChip (presentational)', () => {
-  afterEach(() => cleanup());
-
   it('shows the thinking label at full opacity when active + thinking', () => {
     const { container } = render(<AiReplyChip active thinking aiMoveNotation={null} />);
     expect(screen.getByText('aiThinking')).toBeInTheDocument();

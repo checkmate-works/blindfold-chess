@@ -1,17 +1,14 @@
 import { eq } from 'drizzle-orm';
 
+import { getOptionalUser } from '@/lib/auth';
 import { db, userRoles } from '@/lib/db';
-import { createClient } from '@/lib/supabase/server';
 
 type AuthSuccess = { userId: string };
 type AuthFailure = { error: 'unauthorized' };
 type AuthResult = AuthSuccess | AuthFailure;
 
 export async function requireAdmin(): Promise<AuthResult> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getOptionalUser();
 
   if (!user) {
     return { error: 'unauthorized' };

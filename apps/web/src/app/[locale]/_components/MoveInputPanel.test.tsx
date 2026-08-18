@@ -1,6 +1,7 @@
+import { STARTING_FEN } from '@blindfold-chess/features/chess-core/fen';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
@@ -49,8 +50,6 @@ vi.mock('@/app/[locale]/(public)/games/play/_components/MoveSelect', () => ({
   ),
 }));
 
-const STARTING_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
-
 // Preferences with 2+ enabled modes so the mode-switch button renders.
 const preferences: GamePreferences = {
   showCoordinates: true,
@@ -71,10 +70,6 @@ const preferences: GamePreferences = {
 };
 
 const TOGGLE_TITLE = 'switchInputMode';
-
-afterEach(() => {
-  cleanup();
-});
 
 function renderPanel(disabled: boolean) {
   return render(

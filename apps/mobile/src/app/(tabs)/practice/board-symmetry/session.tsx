@@ -13,6 +13,8 @@ import {
   CoordinateSelector,
 } from "../../../../features/board-symmetry/components";
 import type { BoardSymmetryResult } from "@blindfold-chess/features/board-symmetry";
+import { parseIntParam } from "../../../../lib/route-params";
+import { serializePracticeStatsParams } from "../../../../lib/practice-result-params";
 
 export default function BoardSymmetrySession() {
   const router = useRouter();
@@ -20,20 +22,13 @@ export default function BoardSymmetrySession() {
     timeLimit: string;
   }>();
 
-  const duration = parseInt(params.timeLimit || "60", 10);
+  const duration = parseIntParam(params.timeLimit, { min: 1, fallback: 60 });
 
   const handleComplete = useCallback(
     (result: BoardSymmetryResult) => {
       router.replace({
         pathname: "/(tabs)/practice/board-symmetry/result",
-        params: {
-          correctAnswers: result.correctAnswers.toString(),
-          incorrectAnswers: result.incorrectAnswers.toString(),
-          totalQuestions: result.totalQuestions.toString(),
-          accuracy: result.accuracy.toString(),
-          timeTaken: result.timeTaken.toString(),
-          averageTime: result.averageTime.toString(),
-        },
+        params: serializePracticeStatsParams(result),
       });
     },
     [router],

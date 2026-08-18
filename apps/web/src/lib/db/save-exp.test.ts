@@ -182,8 +182,6 @@ const baseParams = {
 
 describe('grantChallengeExp', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
-
     mockCalculateExp.mockReturnValue({
       baseExp: 40,
       accuracyMultiplier: 1.2,
@@ -292,8 +290,6 @@ describe('grantChallengeExp', () => {
 
 describe('grantChallengeExp idempotency', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
-
     mockCalculateExp.mockReturnValue({
       baseExp: 40,
       accuracyMultiplier: 1.2,

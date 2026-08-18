@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 const mockGet = vi.fn();
 
@@ -23,10 +23,6 @@ function setHeaders(map: Record<string, string | null>) {
 }
 
 describe('getClientIp — header priority', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('prefers x-real-ip over x-vercel-forwarded-for and x-forwarded-for', async () => {
     setHeaders({
       'x-real-ip': '203.0.113.50',
@@ -56,10 +52,6 @@ describe('getClientIp — header priority', () => {
 });
 
 describe('getClientIp — spoofing resistance', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('ignores an attacker-supplied leading value in x-forwarded-for', async () => {
     // Attacker prepends a forged value to X-Forwarded-For before the request
     // reaches Vercel; Vercel appends the real client IP at the end.
@@ -84,10 +76,6 @@ describe('getClientIp — spoofing resistance', () => {
 });
 
 describe('getClientIp — whitespace / empty handling', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('trims whitespace around the selected x-forwarded-for entry', async () => {
     setHeaders({ 'x-forwarded-for': '  1.2.3.4 ,  5.6.7.8  ' });
     expect(await getClientIp()).toBe('5.6.7.8');

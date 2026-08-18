@@ -30,3 +30,24 @@ export function parsePracticeStatsParams(
     averageTime: parseFloat(params.averageTime || "0"),
   };
 }
+
+/**
+ * The inverse of {@link parsePracticeStatsParams}: what a session screen hands
+ * `router.replace` on completion.
+ *
+ * Four session screens spelled these six `.toString()` calls out, so adding a
+ * field to the result meant editing the parser and every one of them; now the
+ * pair moves together.
+ */
+export function serializePracticeStatsParams(
+  result: PracticeResultWithMistakes,
+): Required<PracticeStatsParams> {
+  return {
+    correctAnswers: result.correctAnswers.toString(),
+    incorrectAnswers: result.incorrectAnswers.toString(),
+    totalQuestions: result.totalQuestions.toString(),
+    accuracy: result.accuracy.toString(),
+    timeTaken: result.timeTaken.toString(),
+    averageTime: result.averageTime.toString(),
+  };
+}

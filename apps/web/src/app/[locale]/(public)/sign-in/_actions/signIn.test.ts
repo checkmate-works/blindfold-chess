@@ -36,7 +36,6 @@ const testUserId = 'user-id-00000000-0000-0000-0000-000000000001';
 
 describe('signIn', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockGetClientIp.mockResolvedValue('127.0.0.1');
     mockGetLocaleFromRequest.mockResolvedValue('en');
   });

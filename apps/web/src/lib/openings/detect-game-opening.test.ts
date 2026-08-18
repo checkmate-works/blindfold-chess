@@ -1,5 +1,5 @@
 import { getFenAfterMoves, getStartingFen } from '@blindfold-chess/features/chess-core';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 // Pass-through cache wrappers so the real loader/index logic runs in the test.
 vi.mock('next/cache', () => ({
@@ -34,10 +34,6 @@ vi.mock('@/lib/db', () => ({
 const { detectGameOpening } = await import('./detect-game-opening');
 
 describe('detectGameOpening', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('maps the deepest matched opening to its display record', async () => {
     const result = await detectGameOpening({
       moves: ['e4', 'e5', 'Nf3', 'Nc6', 'Bb5', 'Nf6'],

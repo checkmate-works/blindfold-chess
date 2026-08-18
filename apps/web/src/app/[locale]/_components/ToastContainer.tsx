@@ -6,6 +6,8 @@ import { useParams, usePathname, useRouter, useSearchParams } from 'next/navigat
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
+import { readSessionItem, removeSessionItem } from '@/lib/storage/session-storage';
+
 import { SESSION_STORAGE_KEYS as GAME_SESSION_STORAGE_KEYS } from '@/app/[locale]/(public)/games/play/_lib/session-storage-keys';
 import { SESSION_STORAGE_KEYS as PRACTICE_SESSION_STORAGE_KEYS } from '@/app/[locale]/(public)/practice/_lib/session-storage-keys';
 import { UI_TIMEOUTS } from '@/app/[locale]/_constants/ui-timeouts';
@@ -149,17 +151,15 @@ export function ToastContainer({ locale: localeProp }: ToastContainerProps = {})
       // Prevent duplicate processing
       if (processingToastRef.current) return;
 
-      const shouldShowPracticeErrorToast = sessionStorage.getItem(
+      const shouldShowPracticeErrorToast = readSessionItem(
         PRACTICE_SESSION_STORAGE_KEYS.SHOW_SAVE_ERROR_TOAST
       );
-      const shouldShowSaveToast = sessionStorage.getItem(GAME_SESSION_STORAGE_KEYS.SHOW_SAVE_TOAST);
-      const shouldShowDeleteToast = sessionStorage.getItem(
-        GAME_SESSION_STORAGE_KEYS.SHOW_DELETE_TOAST
-      );
+      const shouldShowSaveToast = readSessionItem(GAME_SESSION_STORAGE_KEYS.SHOW_SAVE_TOAST);
+      const shouldShowDeleteToast = readSessionItem(GAME_SESSION_STORAGE_KEYS.SHOW_DELETE_TOAST);
 
       if (shouldShowPracticeErrorToast === 'true') {
         processingToastRef.current = true;
-        sessionStorage.removeItem(PRACTICE_SESSION_STORAGE_KEYS.SHOW_SAVE_ERROR_TOAST);
+        removeSessionItem(PRACTICE_SESSION_STORAGE_KEYS.SHOW_SAVE_ERROR_TOAST);
         showToast(tToast('practiceResultSaveFailed'), 'error');
 
         setTimeout(() => {
@@ -167,7 +167,7 @@ export function ToastContainer({ locale: localeProp }: ToastContainerProps = {})
         }, 1000);
       } else if (shouldShowSaveToast === 'true') {
         processingToastRef.current = true;
-        sessionStorage.removeItem(GAME_SESSION_STORAGE_KEYS.SHOW_SAVE_TOAST);
+        removeSessionItem(GAME_SESSION_STORAGE_KEYS.SHOW_SAVE_TOAST);
         showToast(tToast('gameSaved'), 'success');
 
         // Reset flag after a delay
@@ -176,9 +176,9 @@ export function ToastContainer({ locale: localeProp }: ToastContainerProps = {})
         }, 1000);
       } else if (shouldShowDeleteToast === 'true') {
         processingToastRef.current = true;
-        const deletedCount = sessionStorage.getItem(GAME_SESSION_STORAGE_KEYS.DELETED_COUNT);
-        sessionStorage.removeItem(GAME_SESSION_STORAGE_KEYS.SHOW_DELETE_TOAST);
-        sessionStorage.removeItem(GAME_SESSION_STORAGE_KEYS.DELETED_COUNT);
+        const deletedCount = readSessionItem(GAME_SESSION_STORAGE_KEYS.DELETED_COUNT);
+        removeSessionItem(GAME_SESSION_STORAGE_KEYS.SHOW_DELETE_TOAST);
+        removeSessionItem(GAME_SESSION_STORAGE_KEYS.DELETED_COUNT);
 
         const count = deletedCount ? parseInt(deletedCount, 10) : 1;
         showToast(tToast('gamesDeleted', { count }), 'success');

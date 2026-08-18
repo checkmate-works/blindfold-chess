@@ -9,6 +9,7 @@ import type { User } from '@supabase/supabase-js';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { getAuthenticatedUser, getOptionalUser } from '@/lib/auth';
+import { EMPTY_LIKE_META } from '@/lib/db/like-queries';
 import type { getReplyMetaMap } from '@/lib/db/reply-meta-queries';
 import { EMPTY_REPLY_META } from '@/lib/db/reply-meta-queries';
 import { loadPositionCreateContext } from '@/lib/positions/create-page-context';
@@ -276,7 +277,7 @@ export function createPositionForksPage(route: PositionRouteKind) {
                   key={position.id}
                   position={position}
                   profile={profile}
-                  likeMeta={likeMetaMap.get(position.id) ?? { likeCount: 0, likedByMe: false }}
+                  likeMeta={likeMetaMap.get(position.id) ?? EMPTY_LIKE_META}
                   replyMeta={replyMetaMap.get(position.id) ?? EMPTY_REPLY_META}
                   detailHref={detailHref}
                   i18nNamespace={namespace}

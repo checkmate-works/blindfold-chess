@@ -11,6 +11,8 @@ import type { ExpInfo } from '@blindfold-chess/features/exp';
 import { FaExternalLinkAlt, FaEye } from 'react-icons/fa';
 
 import type { PuzzleSolutionMove } from '@/lib/db/schema/positions';
+import { readSessionItem } from '@/lib/storage/session-storage';
+import { buildProfileHref } from '@/lib/users/author-profile';
 
 import { toggleLike } from '@/app/[locale]/(public)/practice/(free-play)/_actions/toggleLike';
 import { ExpGainDisplay } from '@/app/[locale]/(public)/practice/_components/ExpGainDisplay';
@@ -76,7 +78,7 @@ export function PuzzleResultClient({
 
   useEffect(() => {
     try {
-      const stored = sessionStorage.getItem(puzzleResultStorageKey(positionId));
+      const stored = readSessionItem(puzzleResultStorageKey(positionId));
       if (stored) {
         const data = JSON.parse(stored) as {
           attempts: Attempt[];
@@ -190,7 +192,7 @@ export function PuzzleResultClient({
       <div className="flex items-center justify-end gap-2 text-sm text-muted-foreground">
         <span>{tPuzzle('detail.createdBy')}</span>
         <UserAvatar
-          profileHref={profile?.username ? `/u/${profile.username}` : null}
+          profileHref={buildProfileHref(profile)}
           avatarUrl={profile?.avatarUrl}
           displayName={displayName}
           locale={locale}

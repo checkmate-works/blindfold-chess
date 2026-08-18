@@ -2,21 +2,19 @@ import { revalidatePath } from 'next/cache';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
+import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
+
 import { createReply } from './createReply';
 
-const mockGetUser = vi.fn();
 const mockSelectFromWhere = vi.fn();
 const mockSelectProfile = vi.fn();
 const mockInsertReturning = vi.fn();
 const mockInsertValues = vi.fn();
-const mockIsUserBanned = vi.fn();
 const mockCheckRateLimit = vi.fn();
 const mockGetPositionById = vi.fn();
 
-vi.mock('@/lib/moderation/block', () => ({
-  isBlockedBetween: () => Promise.resolve(false),
-  hasBlocked: () => Promise.resolve(false),
-}));
+vi.mock('@/lib/moderation/block');
 
 vi.mock('@/lib/users/activity-log');
 
@@ -24,14 +22,7 @@ vi.mock('@/lib/notifications/notification', () => ({
   createNotification: vi.fn(),
 }));
 
-vi.mock('@/lib/supabase/server', () => ({
-  createClient: () =>
-    Promise.resolve({
-      auth: {
-        getUser: mockGetUser,
-      },
-    }),
-}));
+vi.mock('@/lib/supabase/server');
 
 const txInsert = () => ({
   values: (...args: unknown[]) => {
@@ -101,9 +92,7 @@ vi.mock('@/lib/db', () => {
   };
 });
 
-vi.mock('@/lib/moderation/ban', () => ({
-  isUserBanned: (...args: unknown[]) => mockIsUserBanned(...args),
-}));
+vi.mock('@/lib/moderation/ban');
 
 vi.mock('@/lib/security/rate-limit', () => ({
   checkRateLimit: (...args: unknown[]) => mockCheckRateLimit(...args),
@@ -142,7 +131,6 @@ function makeFormData(content: string): FormData {
 
 describe('position-memory parent-page createReply', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockGetPositionById.mockResolvedValue({ id: positionId, type: 'memory' });
     mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
     mockIsUserBanned.mockResolvedValue(false);

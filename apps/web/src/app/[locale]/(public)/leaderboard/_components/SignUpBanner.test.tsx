@@ -7,8 +7,8 @@
  * the page (`{!user && <SignUpBanner />}`) so the `loading.tsx` skeleton can
  * hide its banner placeholder for logged-in users via a paired CSS rule.
  */
-import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('next-intl/server', () => ({
   getTranslations: () => (key: string) => key,
@@ -32,10 +32,6 @@ vi.mock('@/i18n/routing', () => ({
 }));
 
 const { SignUpBanner } = await import('./SignUpBanner');
-
-afterEach(() => {
-  cleanup();
-});
 
 async function renderBanner(locale = 'en') {
   const element = await SignUpBanner({ locale });

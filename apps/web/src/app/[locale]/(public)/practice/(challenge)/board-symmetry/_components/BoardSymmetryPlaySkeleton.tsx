@@ -1,3 +1,8 @@
+import {
+  PlayHeaderSkeleton,
+  PlayQuitLinkSkeleton,
+  PlayScoreCounterSkeleton,
+} from '@/app/[locale]/(public)/practice/_components/PlaySkeletonParts';
 import { Skeleton } from '@/app/[locale]/_components';
 
 type Props = {
@@ -31,12 +36,7 @@ export function BoardSymmetryPlaySkeleton({ showHeader = false }: Props) {
         <Skeleton className="mx-auto mb-8 h-8 w-3/4 rounded-md" disableAnimation />
 
         {/* Lives (left) + pause/timer (right) header — challenge only */}
-        {showHeader && (
-          <div className="mb-6 flex justify-between items-center">
-            <Skeleton className="h-5 w-28 rounded-md" disableAnimation />
-            <Skeleton className="h-10 w-10 rounded-full" disableAnimation />
-          </div>
-        )}
+        {showHeader && <PlayHeaderSkeleton className="mb-6 flex justify-between items-center" />}
 
         {/* `square → ?` transform display */}
         <div className="mb-8">
@@ -54,15 +54,10 @@ export function BoardSymmetryPlaySkeleton({ showHeader = false }: Props) {
       </div>
 
       {/* Score counter */}
-      <div className="mt-4 flex justify-center items-center gap-12">
-        <Skeleton className="h-8 w-16 rounded-md" />
-        <Skeleton className="h-8 w-16 rounded-md" />
-      </div>
+      <PlayScoreCounterSkeleton className="mt-4 flex justify-center items-center gap-12" />
 
       {/* Quit / end-training link */}
-      <div className="mt-4 flex justify-center">
-        <Skeleton className="h-5 w-24 rounded-md" disableAnimation />
-      </div>
+      <PlayQuitLinkSkeleton className="mt-4 flex justify-center" />
     </div>
   );
 }

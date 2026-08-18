@@ -11,15 +11,16 @@
  */
 import type { ParsedImageUpload } from '@/lib/images/parse-upload';
 import { parseImageUpload } from '@/lib/images/parse-upload';
+import {
+  ADMIN_IMAGE_MAX_FILE_SIZE,
+  ALLOWED_IMAGE_MIME_TYPES,
+  IMAGE_MIME_TO_EXTENSION,
+} from '@/lib/images/policy';
 
-export const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
-export const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+export const ALLOWED_MIME_TYPES = ALLOWED_IMAGE_MIME_TYPES;
+export const MAX_FILE_SIZE = ADMIN_IMAGE_MAX_FILE_SIZE;
 
-export const MIME_TO_EXTENSION: Record<string, string> = {
-  'image/jpeg': 'jpg',
-  'image/png': 'png',
-  'image/webp': 'webp',
-};
+export const MIME_TO_EXTENSION: Record<string, string> = IMAGE_MIME_TO_EXTENSION;
 
 /**
  * {@link parseImageUpload} bound to the admin policy above. Both admin

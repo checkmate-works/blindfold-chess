@@ -6,6 +6,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { FiEdit2 } from 'react-icons/fi';
 
 import type { PostAttachment } from '@/lib/games/get-attachments-for-posts';
+import { buildProfileHref } from '@/lib/users/author-profile';
 import type { SocialAuthorProfile } from '@/lib/users/author-profile';
 
 import { ActionsMenu, ActionsMenuButton } from '@/app/[locale]/_components/ActionsMenu';
@@ -125,7 +126,7 @@ export function OpCard({
   const wasEdited = localUpdatedAt.getTime() > createdAt.getTime();
 
   const authorName = author?.displayName || author?.username || tCommon('deletedUser');
-  const profileHref = author?.username ? `/u/${author.username}` : null;
+  const profileHref = buildProfileHref(author);
 
   return (
     <div className="p-4 bg-card border border-border rounded-lg space-y-4">

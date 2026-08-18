@@ -3,8 +3,8 @@
  * click-to-navigate behavior (jumps the review to the position the change
  * was made at, mirroring EffortStrip's per-move cells).
  */
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 import type { GamePlaySettings, PlaySettingsChangeEntry } from '@/lib/games/saved-game-types';
 
@@ -20,8 +20,6 @@ const baseSettings: GamePlaySettings = {
   pieceColors: 'normal',
   pawnHideMode: 'none',
 };
-
-afterEach(() => cleanup());
 
 describe('PlaySettingsChangeLog', () => {
   it('labels the badge with the PGN-style move number, not the raw half-moves-played count', () => {

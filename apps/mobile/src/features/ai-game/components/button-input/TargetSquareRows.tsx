@@ -10,7 +10,9 @@ import {
 import type { useMoveInput } from "../../hooks/useMoveInput";
 import { CheckboxPill } from "../CheckboxPill";
 import { ToggleButton } from "../ToggleButton";
-import { FILES, RANKS, PROMOTION_PIECES } from "./constants";
+import { FILES, RANKS } from "@blindfold-chess/types";
+
+import { PROMOTION_PIECES } from "./constants";
 
 type MoveInput = ReturnType<typeof useMoveInput>;
 

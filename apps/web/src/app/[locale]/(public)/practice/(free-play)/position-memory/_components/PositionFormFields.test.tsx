@@ -1,5 +1,5 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 import type { FenBoardEditor } from '@/app/[locale]/(public)/practice/(free-play)/_hooks/use-fen-board-editor';
 import type { TagSelection } from '@/app/[locale]/(public)/practice/(free-play)/_hooks/use-tag-selection';
@@ -72,10 +72,6 @@ function renderFields(board: Partial<FenBoardEditor> = {}) {
 
   return { handleSideToMoveChange, setFlipped };
 }
-
-afterEach(() => {
-  cleanup();
-});
 
 describe('PositionFormFields', () => {
   it('rewrites the FEN side-to-move when flipping, not just the view', () => {

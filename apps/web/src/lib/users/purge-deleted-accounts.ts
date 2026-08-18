@@ -1,4 +1,3 @@
-import * as Sentry from '@sentry/nextjs';
 import { and, asc, isNotNull, lt } from 'drizzle-orm';
 import 'server-only';
 
@@ -177,11 +176,7 @@ async function hardDeleteAccount(
     }
     return true;
   } catch (err) {
-    console.error(
-      `[purgeDeletedAccounts] hard delete threw for ${userId}:`,
-      err instanceof Error ? err.message : err
-    );
-    Sentry.captureException(err);
+    captureError(err, `[purgeDeletedAccounts] hard delete threw for ${userId}`);
     return false;
   }
 }

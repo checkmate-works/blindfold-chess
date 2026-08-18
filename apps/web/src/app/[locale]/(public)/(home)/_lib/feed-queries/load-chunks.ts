@@ -3,6 +3,7 @@ import { and, inArray, isNull } from 'drizzle-orm';
 import { parseBoardAnnotations } from '@/lib/board-annotations/parse';
 import { getChunkLikeMetaMap } from '@/lib/chunks/like-queries';
 import { AUTHOR_PROFILE_COLUMNS, chunks, db, liveProfileJoinOn, profiles } from '@/lib/db';
+import { EMPTY_LIKE_META } from '@/lib/db/like-queries';
 import { EMPTY_REPLY_META, getReplyMetaMap } from '@/lib/db/reply-meta-queries';
 
 import type { ChunkFeedData } from '../types';
@@ -54,7 +55,7 @@ export async function loadChunksForFeed(
   ]);
 
   for (const row of chunkRows) {
-    const likeMeta = likeMetaMap.get(row.id) ?? { likeCount: 0, likedByMe: false };
+    const likeMeta = likeMetaMap.get(row.id) ?? EMPTY_LIKE_META;
     const replyMeta = replyMetaMap.get(row.slug) ?? EMPTY_REPLY_META;
     map.set(row.id, {
       id: row.id,

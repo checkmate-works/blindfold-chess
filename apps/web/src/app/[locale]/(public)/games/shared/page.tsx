@@ -3,8 +3,8 @@
  *
  * @description
  * Public catalog of community-shared blindfold games, newest first. Each card
- * uses the shared {@link CatalogListCard} — the same thumbnail-led card the
- * puzzle / position-memory lists use — with the game's opening position as the
+ * uses the shared {@link SharedGameListCard} — the same thumbnail-led card the
+ * profile games tab and a chunk's related games use — with the opening position as the
  * board thumbnail. Clicking a card opens the detail at that same opening board.
  * Only `public`, non-deleted games are listed.
  */
@@ -12,7 +12,6 @@ import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { Link } from '@/i18n/routing';
-import { getStartingFen } from '@blindfold-chess/features/chess-core';
 
 import { getReviewedGameIdSet } from '@/lib/ai-review/queries';
 import { getOptionalUser } from '@/lib/auth';
@@ -24,7 +23,6 @@ import { getPaginationParams } from '@/lib/pagination';
 import { getOpeningDisplayName } from '@/app/[locale]/(public)/topics/openings/_lib/get-opening-display-name';
 import { PageLayout } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
-import { CatalogListCard } from '@/app/[locale]/_components/CatalogListCard';
 import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -32,10 +30,8 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { GamesTabs } from '../_components/GamesTabs';
 import { MIN_GAMES_FOR_MID_AD } from '../_lib/mid-ad';
-import { toggleGameLikeAction } from './[id]/_actions/game-like';
-import { AiReviewedBadge } from './_components/AiReviewedBadge';
-import { GameColorOpeningRow } from './_components/GameColorOpeningRow';
 import { PublishExistingGameButton } from './_components/PublishExistingGameButton';
+import { SharedGameListCard } from './_components/SharedGameListCard';
 import { SharedGamesSort } from './_components/SharedGamesSort';
 import { getMyPublishedGames } from './_lib/my-published-games';
 import { parseSharedGamesSort } from './_lib/sort';
@@ -131,50 +127,17 @@ export default async function SharedGamesPage({ params, searchParams }: Props) {
       ) : (
         <div className="space-y-3">
           {items.map((g) => (
-            <CatalogListCard
+            <SharedGameListCard
               key={g.id}
-              id={g.id}
-              fen={g.startingFen ?? getStartingFen()}
-              thumbnailDisplaySettings={g.thumbnailDisplay}
-              title={g.title}
-              description={g.description}
-              createdAt={g.createdAt}
-              profile={g.author}
-              likeMeta={likeMetaMap.get(g.id) ?? { likeCount: 0, likedByMe: false }}
+              game={g}
+              likeMeta={likeMetaMap.get(g.id)}
               replyMeta={commentMetaMap.get(g.id) ?? EMPTY_REPLY_META}
-              detailHref={`/games/shared/${g.id}`}
-              // GameReview's own hash handler scrolls to #game-overview,
-              // not the generic #comments id — see GameFeedCard's home-feed
-              // equivalent.
-              commentHref={`/games/shared/${g.id}#game-overview`}
-              i18nNamespace="sharedGames.detail"
-              toggleLikeAction={toggleGameLikeAction}
+              reviewed={reviewedIds.has(g.id)}
+              aiReviewedBadgeLabel={t('list.aiReviewedBadge')}
+              colorLabels={{ white: tPlay('playerColor.white'), black: tPlay('playerColor.black') }}
+              resolveOpeningName={(slug, name) => getOpeningDisplayName(openingNameT, slug, name)}
               justNowLabel={justNowLabel}
               locale={locale}
-              topicKey=""
-              badge={
-                <AiReviewedBadge
-                  reviewed={reviewedIds.has(g.id)}
-                  label={t('list.aiReviewedBadge')}
-                />
-              }
-              meta={
-                <GameColorOpeningRow
-                  playerColor={g.playerColor}
-                  colorLabel={
-                    g.playerColor === 'white'
-                      ? tPlay('playerColor.white')
-                      : tPlay('playerColor.black')
-                  }
-                  opening={g.opening}
-                  openingDisplayName={
-                    g.opening
-                      ? getOpeningDisplayName(openingNameT, g.opening.slug, g.opening.name)
-                      : undefined
-                  }
-                  locale={locale}
-                />
-              }
             />
           ))}
         </div>

@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 
-import * as Sentry from '@sentry/nextjs';
 import type Stripe from 'stripe';
 
 import { getStripe, getStripeWebhookSecret } from '@/lib/billing/stripe';
@@ -9,6 +8,7 @@ import {
   handleSubscriptionDeleted,
   handleSubscriptionUpdated,
 } from '@/lib/billing/stripe-webhook-handlers';
+import { captureError } from '@/lib/sentry/capture-error';
 
 export async function POST(request: Request) {
   const body = await request.text();
@@ -23,11 +23,7 @@ export async function POST(request: Request) {
   try {
     event = getStripe().webhooks.constructEvent(body, sig, getStripeWebhookSecret());
   } catch (err) {
-    console.error(
-      'Webhook signature verification failed:',
-      err instanceof Error ? err.message : 'Unknown error'
-    );
-    Sentry.captureException(err);
+    captureError(err, '[stripe/webhook] signature verification failed');
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
   }
 
@@ -46,11 +42,7 @@ export async function POST(request: Request) {
         break;
     }
   } catch (error) {
-    console.error(
-      `Webhook handler error for ${event.type}:`,
-      error instanceof Error ? error.message : 'Unknown error'
-    );
-    Sentry.captureException(error);
+    captureError(error, `[stripe/webhook] handler failed for ${event.type}`);
     return NextResponse.json({ error: 'Handler failed' }, { status: 500 });
   }
 

@@ -6,6 +6,7 @@ import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-hea
 import { MOVE_NAV_ROW_CLASS } from '@/app/[locale]/(public)/games/play/_lib/skeleton-layout-classes';
 import { ReplyCardsSkeleton } from '@/app/[locale]/(public)/topics/_components/ReplyCardsSkeleton';
 import { PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { BreadcrumbSkeleton } from '@/app/[locale]/_components/Breadcrumb';
 import { Skeleton } from '@/app/[locale]/_components/Skeleton';
 
 export default async function OpeningPostDetailLoading() {
@@ -84,29 +85,14 @@ export default async function OpeningPostDetailLoading() {
         <ReplyCardsSkeleton />
 
         {/* Breadcrumb (last item — readMore — is static; other items are dynamic) */}
-        <nav aria-label="Breadcrumb" className="mb-4 flex min-h-10 items-end">
-          <ol className="flex flex-wrap items-center gap-x-1 text-sm">
-            <li>
-              <Skeleton className="w-6 h-6 rounded-sm" />
-            </li>
-            <li className="flex items-center">
-              <span className="mx-1 text-muted-foreground">/</span>
-              <span className="text-muted-foreground">{t('title')}</span>
-            </li>
-            <li className="flex items-center">
-              <span className="mx-1 text-muted-foreground">/</span>
-              <span className="text-muted-foreground">{dt('title')}</span>
-            </li>
-            <li className="flex items-center">
-              <span className="mx-1 text-muted-foreground">/</span>
-              <Skeleton className="h-4 w-32 rounded" />
-            </li>
-            <li className="flex items-center">
-              <span className="mx-1 text-muted-foreground">/</span>
-              <span className="text-foreground font-medium">{dt('readMore')}</span>
-            </li>
-          </ol>
-        </nav>
+        <BreadcrumbSkeleton
+          crumbs={[
+            { label: t('title') },
+            { label: dt('title') },
+            { widthClass: 'w-32' },
+            { label: dt('readMore'), current: true },
+          ]}
+        />
       </PagePanel>
     </div>
   );

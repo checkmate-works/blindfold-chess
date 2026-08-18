@@ -1,5 +1,5 @@
 import { act, renderHook } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { useGameDelete } from './use-game-delete';
 
@@ -29,10 +29,6 @@ vi.mock('@/lib/games/local-storage-repository', () => ({
 // --- Tests ---
 
 describe('useGameDelete', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   afterEach(() => {
     vi.restoreAllMocks();
   });

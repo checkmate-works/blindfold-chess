@@ -2,6 +2,7 @@
 
 import { revalidateTag } from 'next/cache';
 
+import { ANNOUNCEMENTS_CACHE_TAG } from '@/lib/cache-tags';
 import { announcements, db } from '@/lib/db';
 
 import {
@@ -40,7 +41,7 @@ export async function createAnnouncement(data: AnnouncementMutationData): Promis
   // the new banner on its next natural revalidation cycle — a layout-wide
   // revalidatePath here would evict every ISR entry under [locale]/(public),
   // which previously caused a 305x ISR Writes spike on Vercel.
-  revalidateTag('announcements', { expire: 60 });
+  revalidateTag(ANNOUNCEMENTS_CACHE_TAG, { expire: 60 });
 
   return mutationSuccess(inserted.id, '/admin/announcements');
 }

@@ -1,13 +1,9 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 import type { Opening } from '@/app/[locale]/_components/OpeningSearch';
 
 import { OpeningGameForm } from './OpeningGameForm';
-
-afterEach(() => {
-  cleanup();
-});
 
 vi.mock('@/i18n/use-safe-translations');
 
@@ -76,10 +72,6 @@ const sampleOpenings: Opening[] = [
 ];
 
 describe('OpeningGameForm', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   describe('initial state', () => {
     it('should render the search input and opening list', () => {
       render(<OpeningGameForm openings={sampleOpenings} />);

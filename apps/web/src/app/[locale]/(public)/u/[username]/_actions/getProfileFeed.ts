@@ -1,6 +1,6 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { getOptionalUser } from '@/lib/auth';
 import { isValidUUID } from '@/lib/validations/uuid';
 
 import { getFeedData } from '@/app/[locale]/(public)/(home)/_lib/queries';
@@ -39,10 +39,7 @@ export async function getProfileFeed(profileId: string, cursor?: string): Promis
     return { items: [], nextCursor: null };
   }
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getOptionalUser();
 
   return getFeedData({
     actorId: profileId,

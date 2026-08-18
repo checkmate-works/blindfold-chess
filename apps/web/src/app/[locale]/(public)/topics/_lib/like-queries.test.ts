@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { db } from '@/lib/db';
 
@@ -109,10 +109,6 @@ function mockChain(rows: unknown[]) {
 const userId = 'user-00000000-0000-0000-0000-000000000001';
 
 describe('getLikedPostsByUser', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('filters topicType to square and opening only (excluding chunk)', async () => {
     const mainChain = mockChain([]);
     mockDb.select.mockReturnValue(mainChain as unknown as ReturnType<typeof mockDb.select>);
@@ -138,10 +134,6 @@ describe('getLikedPostsByUser', () => {
 });
 
 describe('getLikedPostCountByUser', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('filters topicType to square and opening only (excluding chunk)', async () => {
     const chain = mockChain([{ count: 0 }]);
     mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);

@@ -39,26 +39,17 @@ import { UsernameFilter } from './_components/UsernameFilter';
 import { UsersListTab } from './_components/UsersListTab';
 import { UsersTabNav } from './_components/UsersTabNav';
 import type { AdminUserFilters } from './_lib/filters';
-import { SIGNUP_METHOD_ORDER } from './_lib/signup-method';
+import { SIGNUP_METHOD_I18N_KEY, SIGNUP_METHOD_ORDER } from './_lib/signup-method';
 
 // Whitelist for the `provider` URL param. Includes '' (= no filter / default).
 // Anything outside this list falls back to '' (filter cleared).
 const PROVIDER_FILTER_VALUES = ['', ...SIGNUP_METHOD_ORDER] as const;
 
-// Map `SignupMethod` ('google' | 'email' | 'unknown') to the corresponding
-// `Admin.usersTable.provider*` i18n key suffix, so label maps can be derived
-// from `SIGNUP_METHOD_ORDER` without hard-coding each method in 3+ places.
-const PROVIDER_I18N_KEY: Record<(typeof SIGNUP_METHOD_ORDER)[number], string> = {
-  google: 'providerGoogle',
-  email: 'providerEmail',
-  unknown: 'providerUnknown',
-};
-
 function buildProviderNames(
   t: Awaited<ReturnType<typeof getTranslations>>
 ): Record<(typeof SIGNUP_METHOD_ORDER)[number], string> {
   return Object.fromEntries(
-    SIGNUP_METHOD_ORDER.map((method) => [method, t(`usersTable.${PROVIDER_I18N_KEY[method]}`)])
+    SIGNUP_METHOD_ORDER.map((method) => [method, t(`usersTable.${SIGNUP_METHOD_I18N_KEY[method]}`)])
   ) as Record<(typeof SIGNUP_METHOD_ORDER)[number], string>;
 }
 

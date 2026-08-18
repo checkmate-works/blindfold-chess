@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 const mockLimit = vi.fn();
 
@@ -30,10 +30,6 @@ vi.mock('next/cache', () => ({
 const { hasDanTierRank } = await import('./dan-rank');
 
 describe('hasDanTierRank', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('returns true when the user holds a dan-tier rank row', async () => {
     mockLimit.mockResolvedValue([{ id: 'user-rank-1' }]);
 

@@ -14,8 +14,8 @@
  * `MidGameSettingsModal` and does not couple to the underlying form's own
  * implementation (which has its own piece-shape auto-reset effect, etc.).
  */
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 import type {
   GamePreferences,
@@ -129,10 +129,6 @@ function renderModal(overrides?: {
   );
   return { ...result, onPerGamePrefChange };
 }
-
-afterEach(() => {
-  cleanup();
-});
 
 describe('MidGameSettingsModal — onSettingsChange → onPerGamePrefChange routing', () => {
   it('routes single-key per-game updates to onPerGamePrefChange', () => {

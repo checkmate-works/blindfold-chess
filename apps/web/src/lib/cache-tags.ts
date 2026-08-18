@@ -10,6 +10,13 @@
  * and imported from `@/lib/cache-tags`. Do not inline tag literals at call
  * sites.
  *
+ * This module imports nothing, which is what lets any caller reach a tag.
+ * `RANK_STATUS_CACHE_TAG` used to live in the rank seed data specifically so
+ * the ads cookie writer could read it without pulling the server-only DB
+ * module graph into client-component unit tests; that constraint is satisfied
+ * a fortiori here. Keep it that way — a tag constant behind an import is a
+ * tag constant someone will re-type as a literal.
+ *
  * ## Current tags
  *
  * - {@link LEADERBOARD_CACHE_TAG} — module-specific ranking caches
@@ -29,9 +36,26 @@
  *   LIST only: the article *detail* page is prerendered per (locale, slug), so
  *   those actions additionally call `revalidatePublicArticlePages()` — a tag
  *   cannot reach a Full Route Cache entry.
+ * - {@link ANNOUNCEMENTS_CACHE_TAG} — the public announcement queries. Their
+ *   own revalidate is a full day, so the admin create / update / delete
+ *   actions are what actually makes an announcement appear.
+ * - {@link AD_CREATIVES_CACHE_TAG} — the ad creative pool. Invalidated by the
+ *   admin ad CRUD so a paused creative stops being served immediately.
+ * - The three entitlement tags below back the ad-free decision, and each is
+ *   read behind a 60-second `unstable_cache`. That interval bounds how long a
+ *   revoked benefit keeps hiding ads; the explicit invalidation is what makes
+ *   it usually instant.
+ *   - {@link GRANT_STATUS_CACHE_TAG} — `user_grants` lookups.
+ *   - {@link SUBSCRIPTION_STATUS_CACHE_TAG} — Stripe subscription mirror.
+ *   - {@link RANK_STATUS_CACHE_TAG} — dan-tier belt rank.
  */
 
 export const LEADERBOARD_CACHE_TAG = 'leaderboard' as const;
 export const EXP_LEADERBOARD_CACHE_TAG = 'exp-leaderboard' as const;
 export const DAILY_PUZZLE_CACHE_TAG = 'daily-puzzle' as const;
 export const ARTICLES_CACHE_TAG = 'articles' as const;
+export const ANNOUNCEMENTS_CACHE_TAG = 'announcements' as const;
+export const AD_CREATIVES_CACHE_TAG = 'ad-creatives' as const;
+export const GRANT_STATUS_CACHE_TAG = 'grant-status' as const;
+export const SUBSCRIPTION_STATUS_CACHE_TAG = 'subscription-status' as const;
+export const RANK_STATUS_CACHE_TAG = 'rank-status' as const;

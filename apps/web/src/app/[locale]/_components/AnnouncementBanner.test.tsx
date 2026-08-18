@@ -1,14 +1,10 @@
 import * as matchers from '@testing-library/jest-dom/matchers';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { AnnouncementBanner } from './AnnouncementBanner';
 
 expect.extend(matchers);
-
-afterEach(() => {
-  cleanup();
-});
 
 describe('AnnouncementBanner', () => {
   const defaultProps = {
@@ -18,7 +14,6 @@ describe('AnnouncementBanner', () => {
   };
 
   beforeEach(() => {
-    vi.clearAllMocks();
     // Reset document.cookie
     document.cookie = 'dismissed-announcement=; max-age=0';
   });

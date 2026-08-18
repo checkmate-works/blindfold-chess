@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
+import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
 import { logActivityEvent } from '@/lib/users/activity-log';
 
 import { toggleFollow } from './toggleFollow';
 
-const mockGetUser = vi.fn();
-const mockIsUserBanned = vi.fn();
 const mockSelectFromWhere = vi.fn();
 const mockSelectProfile = vi.fn();
 const mockInsertValues = vi.fn();
@@ -23,18 +23,9 @@ vi.mock('@/lib/notifications/notification', () => ({
   createNotification: vi.fn(),
 }));
 
-vi.mock('@/lib/supabase/server', () => ({
-  createClient: () =>
-    Promise.resolve({
-      auth: {
-        getUser: mockGetUser,
-      },
-    }),
-}));
+vi.mock('@/lib/supabase/server');
 
-vi.mock('@/lib/moderation/ban', () => ({
-  isUserBanned: (...args: unknown[]) => mockIsUserBanned(...args),
-}));
+vi.mock('@/lib/moderation/ban');
 
 vi.mock('@/lib/security/rate-limit', () => ({
   checkRateLimit: vi.fn().mockResolvedValue({ success: true }),
@@ -85,7 +76,6 @@ const targetProfileId = 'target-00000000-0000-0000-0000-000000000001';
 
 describe('toggleFollow', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockSelectProfile.mockResolvedValue([{ id: testUserId }]);
     mockIsBlockedBetween.mockResolvedValue(false);
   });

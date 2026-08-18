@@ -1,3 +1,5 @@
+import { getPageRange } from '@/lib/pagination';
+
 type AdminListSummaryProps = {
   currentPage: number;
   pageSize: number;
@@ -16,10 +18,10 @@ export function AdminListSummary({
   itemLabel,
 }: AdminListSummaryProps) {
   if (shownCount === 0) return null;
-  const start = (currentPage - 1) * pageSize + 1;
+  const { from, to } = getPageRange(currentPage, pageSize, shownCount);
   return (
     <p className="text-sm text-muted-foreground mb-2">
-      Showing {start}&ndash;{start + shownCount - 1} of {totalCount} {itemLabel}
+      Showing {from}&ndash;{to} of {totalCount} {itemLabel}
     </p>
   );
 }

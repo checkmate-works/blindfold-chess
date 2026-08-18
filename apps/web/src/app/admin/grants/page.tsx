@@ -47,7 +47,7 @@ import { formatDate } from '@/app/admin/_lib/format';
 import { desc, inArray, sql } from 'drizzle-orm';
 
 import { db, profiles, userGrants } from '@/lib/db';
-import { DEFAULT_PAGE_SIZE, getPaginationParams } from '@/lib/pagination';
+import { DEFAULT_PAGE_SIZE, getPageRange, getPaginationParams } from '@/lib/pagination';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 import { AdminDataTable } from '../_components/AdminDataTable';
@@ -141,8 +141,7 @@ export default async function AdminGrantsPage({
       {grantRows.length > 0 && (
         <p className="text-sm text-muted-foreground mb-2">
           {t('grants.showing', {
-            from: (currentPage - 1) * DEFAULT_PAGE_SIZE + 1,
-            to: (currentPage - 1) * DEFAULT_PAGE_SIZE + grantRows.length,
+            ...getPageRange(currentPage, DEFAULT_PAGE_SIZE, grantRows.length),
             total: countResult?.count ?? 0,
           })}
         </p>

@@ -10,9 +10,10 @@
  * Lives apart from `PuzzleSessionClient.test.tsx` because it needs a per-test
  * mutable `useGamePreferences` mock + a prop-capturing `InlineBoardView` mock.
  */
+import { STARTING_FEN } from '@blindfold-chess/features/chess-core/fen';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
-import { cleanup, render } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { render } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { PuzzleSessionClient } from './PuzzleSessionClient';
 
@@ -101,8 +102,6 @@ vi.mock('@/app/[locale]/_components/MoveInputPanel', () => ({
   ),
 }));
 
-const STARTING_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
-
 function toSolutionMoves(line: string) {
   return line
     .split(/\s+/)
@@ -128,10 +127,6 @@ beforeEach(() => {
   sessionStorage.clear();
   capturedInline.length = 0;
   currentPreferences = { ...DEFAULT_PREFS };
-});
-
-afterEach(() => {
-  cleanup();
 });
 
 describe('PuzzleSessionClient peek board — pieces reveal', () => {

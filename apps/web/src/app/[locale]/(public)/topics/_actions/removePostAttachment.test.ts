@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
 import { logActivityEvent } from '@/lib/users/activity-log';
 
 import { removePostAttachment } from './removePostAttachment';
 
 const mockGetUser = vi.fn();
-const mockIsUserBanned = vi.fn();
 // Each test queues rows in the order the action reads them: first the
 // topic_posts row, then (for images only) the storage_path row.
 const mockSelectLimit = vi.fn();
@@ -83,9 +83,7 @@ vi.mock('@/lib/db', () => ({
   },
 }));
 
-vi.mock('@/lib/moderation/ban', () => ({
-  isUserBanned: (...args: unknown[]) => mockIsUserBanned(...args),
-}));
+vi.mock('@/lib/moderation/ban');
 
 vi.mock('@/lib/security/rate-limit', () => ({
   checkRateLimit: vi.fn().mockResolvedValue({ success: true }),
@@ -117,7 +115,6 @@ const ownedPostRow = {
 
 describe('removePostAttachment', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockStorageRemove.mockResolvedValue({ error: null });
   });
 

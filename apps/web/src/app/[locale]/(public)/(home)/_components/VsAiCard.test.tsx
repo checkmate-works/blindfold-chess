@@ -1,5 +1,5 @@
-import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { Game } from '@/lib/games/saved-game-types';
 
@@ -10,9 +10,6 @@ import { VsAiCard } from './VsAiCard';
 // `ads-hidden-cookie-compute` (which imports `server-only`). Mock the
 // `server-only` sentinel so the barrel evaluation does not explode in
 // jsdom. Nothing in this test actually exercises the auth/ads path.
-afterEach(() => {
-  cleanup();
-});
 
 // --- Mocks ---
 
@@ -68,10 +65,6 @@ function createMockGame(overrides: Partial<Game> & { id: string }): Game {
 // --- Tests ---
 
 describe('VsAiCard', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   describe('loading state', () => {
     it('should show skeleton placeholder while loading', () => {
       mockUseGameList.mockReturnValue({

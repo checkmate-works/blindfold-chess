@@ -16,10 +16,9 @@ import {
   type MaiaInferenceInput,
   type MaiaInferenceOutput,
 } from "./types";
+import { STARTING_FEN } from "../../chess-core/fen-pure";
 
 const CONFIG: MaiaConfig = { selfElo: 1500, opponentElo: 1500 };
-
-const STARTING_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 /**
  * Build an inference output with a single logit set high so the decoder

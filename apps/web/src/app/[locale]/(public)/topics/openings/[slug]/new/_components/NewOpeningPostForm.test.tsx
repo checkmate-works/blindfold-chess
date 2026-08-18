@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { NewOpeningPostForm } from './NewOpeningPostForm';
 
@@ -69,10 +69,6 @@ vi.mock('react', async () => {
 });
 
 describe('NewOpeningPostForm', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('should render preference rating input', () => {
     render(<NewOpeningPostForm locale="en" slug="french-defense" />);
     expect(screen.getByText('Preference')).toBeInTheDocument();

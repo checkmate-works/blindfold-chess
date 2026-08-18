@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { BreadcrumbSkeleton } from '@/app/[locale]/_components/Breadcrumb';
 import { Skeleton } from '@/app/[locale]/_components/Skeleton';
 
 /**
@@ -95,25 +96,14 @@ export default function RankDetailLoading() {
             `Ranks` middle crumbs are static and resolve from i18n. */}
         <div className="!mt-4 space-y-4">
           <Divider />
-          <nav aria-label="Breadcrumb" className="flex min-h-6 items-center">
-            <ol className="flex flex-wrap items-center gap-x-1 text-sm">
-              <li>
-                <Skeleton className="size-6 rounded-sm" />
-              </li>
-              <li className="flex items-center">
-                <span className="mx-1 text-muted-foreground">/</span>
-                <span className="text-muted-foreground">{tDojo('pageTitle')}</span>
-              </li>
-              <li className="flex items-center">
-                <span className="mx-1 text-muted-foreground">/</span>
-                <span className="text-muted-foreground">{t('pageTitle')}</span>
-              </li>
-              <li className="flex items-center">
-                <span className="mx-1 text-muted-foreground">/</span>
-                <Skeleton className="h-4 w-20 rounded" />
-              </li>
-            </ol>
-          </nav>
+          <BreadcrumbSkeleton
+            crumbs={[
+              { label: tDojo('pageTitle') },
+              { label: t('pageTitle') },
+              { widthClass: 'w-20' },
+            ]}
+            density="compact"
+          />
         </div>
       </PagePanel>
     </div>

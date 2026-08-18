@@ -10,6 +10,7 @@ import { FaPlus } from 'react-icons/fa';
 import { resolveNativeAds } from '@/lib/ads/ad';
 import type { AdSlot as AdSlotId } from '@/lib/ads/registry';
 import { getOptionalUser } from '@/lib/auth';
+import { EMPTY_LIKE_META } from '@/lib/db/like-queries';
 import { EMPTY_REPLY_META, getReplyMetaMap } from '@/lib/db/reply-meta-queries';
 import { getPaginationParams } from '@/lib/pagination';
 import { getPositionLikeMetaMap } from '@/lib/positions/like-queries';
@@ -214,7 +215,7 @@ export function createPositionListPage(config: PositionListPageConfig) {
                 <PositionListCard
                   position={position}
                   profile={profile}
-                  likeMeta={likeMetaMap.get(position.id) ?? { likeCount: 0, likedByMe: false }}
+                  likeMeta={likeMetaMap.get(position.id) ?? EMPTY_LIKE_META}
                   replyMeta={replyMetaMap.get(position.id) ?? EMPTY_REPLY_META}
                   detailHref={`${basePath}/${position.id}`}
                   i18nNamespace={namespace}

@@ -1,20 +1,14 @@
 import type { User } from '@supabase/supabase-js';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
+
 const mockSentryCaptureException = vi.fn();
 vi.mock('@sentry/nextjs', () => ({
   captureException: (...args: unknown[]) => mockSentryCaptureException(...args),
 }));
 
-const mockGetUser = vi.fn();
-vi.mock('@/lib/supabase/server', () => ({
-  createClient: () =>
-    Promise.resolve({
-      auth: {
-        getUser: (...args: unknown[]) => mockGetUser(...args),
-      },
-    }),
-}));
+vi.mock('@/lib/supabase/server');
 
 const mockWriteAdsHiddenCookieForUser = vi.fn();
 vi.mock('@/lib/ads/ads-hidden-cookie-writer', () => ({
@@ -43,7 +37,6 @@ const mockUser = { id: 'user-123', email: 'u@example.com' } as unknown as User;
 
 describe('getSessionUser', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockWriteAdsHiddenCookieForUser.mockResolvedValue(undefined);
     // Default: the user has a profile (confirmed member).
     mockProfileRows.mockReturnValue([

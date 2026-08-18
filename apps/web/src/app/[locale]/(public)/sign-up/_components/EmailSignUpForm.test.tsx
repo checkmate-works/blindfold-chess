@@ -1,14 +1,10 @@
 import * as matchers from '@testing-library/jest-dom/matchers';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 import { EmailSignUpForm } from './EmailSignUpForm';
 
 expect.extend(matchers);
-
-afterEach(() => {
-  cleanup();
-});
 
 const mockSignUp = vi.fn();
 const mockPush = vi.fn();
@@ -28,10 +24,6 @@ vi.mock('../_actions/signUp', () => ({
 }));
 
 describe('EmailSignUpForm', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('should render the form with email, password, and confirm password fields', () => {
     render(<EmailSignUpForm />);
 

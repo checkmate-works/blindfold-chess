@@ -90,7 +90,6 @@ const testUserId = 'user-id-00000000-0000-0000-0000-000000000001';
 
 describe('deleteAccount', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockDeleteUser.mockResolvedValue({ error: null });
     mockList.mockResolvedValue({ data: [{ name: 'avatar.webp' }] });
     mockRemove.mockResolvedValue({ data: [], error: null });

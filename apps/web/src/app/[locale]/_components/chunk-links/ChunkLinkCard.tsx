@@ -3,6 +3,7 @@
 import { useState } from 'react';
 
 import type { ChunkLinkCardItem } from '@/lib/chunks/types';
+import { buildProfileHref } from '@/lib/users/author-profile';
 
 import { formatAbsoluteDateTime } from '@/app/[locale]/(public)/topics/_lib/absolute-time';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
@@ -86,7 +87,7 @@ export function ChunkLinkCard<T extends ChunkLinkCardItem>({
   const head = items[0];
   const latest = items[items.length - 1];
   const displayName = head.suggester?.displayName || head.suggester?.username || labels.deletedUser;
-  const profileHref = head.suggester?.username ? `/u/${head.suggester.username}` : null;
+  const profileHref = buildProfileHref(head.suggester);
 
   return (
     <li id={`chunk-link-${head.id}`} className="scroll-mt-20">

@@ -1,5 +1,5 @@
-import { cleanup, fireEvent, render } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, render } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 import { FenAttachmentInput } from './FenAttachmentInput';
 import type { FenAttachmentMode, ValidationStatus } from './FenAttachmentInput';
@@ -7,10 +7,6 @@ import type { FenAttachmentMode, ValidationStatus } from './FenAttachmentInput';
 vi.mock('@/lib/positions/ui/MiniBoard', () => ({
   MiniBoard: ({ fen }: { fen: string }) => <div data-testid="mini-board" data-fen={fen} />,
 }));
-
-afterEach(() => {
-  cleanup();
-});
 
 const VALID_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 

@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { db } from '@/lib/db';
 
@@ -88,10 +88,6 @@ const testPostId = 'post-00000000-0000-0000-0000-000000000001';
 const otherPostId = 'post-00000000-0000-0000-0000-000000000002';
 
 describe('getRepliesByPostId', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('should return empty array when no replies exist', async () => {
     const chain = mockChain([]);
     mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
@@ -308,10 +304,6 @@ describe('getRepliesByPostId', () => {
 });
 
 describe('getPostsWithReplyMeta', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   /**
    * Helper: configure sequential db.select calls for getPostsWithReplyMeta.
    * Call 1: getPostsForSquare (posts)

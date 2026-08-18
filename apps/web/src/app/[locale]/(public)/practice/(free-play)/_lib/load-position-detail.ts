@@ -1,5 +1,6 @@
 import { getLinkedChunksForPosition } from '@/lib/chunks/queries';
 import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
+import type { PositionKind } from '@/lib/positions/kind';
 import { getPositionLikeMeta } from '@/lib/positions/like-queries';
 import { countPositions, getPositionLineageMetaById } from '@/lib/positions/queries';
 import { parsePositionType } from '@/lib/positions/types';
@@ -18,7 +19,6 @@ import type { Locale } from '@/app/[locale]/_lib/types';
  * for comment fetches and the `forkedFromId` filter applied to the
  * forks counter.
  */
-export type PositionKind = 'memory' | 'puzzle';
 
 /**
  * Minimal position-row shape the loader reads. Accepting a structural

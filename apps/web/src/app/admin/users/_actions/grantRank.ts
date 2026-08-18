@@ -5,8 +5,9 @@ import { revalidateTag } from 'next/cache';
 import { eq } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
+import { RANK_STATUS_CACHE_TAG } from '@/lib/cache-tags';
 import { db, ranks, userRanks } from '@/lib/db';
-import { ALL_RANK_SLUGS, RANK_STATUS_CACHE_TAG, isMukyuSlug } from '@/lib/db/data/ranks';
+import { ALL_RANK_SLUGS, isMukyuSlug } from '@/lib/db/data/ranks';
 import type { RankSlug } from '@/lib/db/data/ranks';
 import { logModerationAction } from '@/lib/moderation/audit';
 import { validateModerationReason } from '@/lib/moderation/validate-reason';

@@ -21,8 +21,8 @@ import enMessages from '@/messages/en.json';
 import esMessages from '@/messages/es.json';
 import jaMessages from '@/messages/ja.json';
 import * as matchers from '@testing-library/jest-dom/matchers';
-import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
 
 import {
   AntiDiagAFileTable,
@@ -32,10 +32,6 @@ import {
 } from './DiagonalPatternTables';
 
 expect.extend(matchers);
-
-afterEach(() => {
-  cleanup();
-});
 
 const localeMessages = {
   en: enMessages,

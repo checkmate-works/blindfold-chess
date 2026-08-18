@@ -3,8 +3,8 @@
 import { useTranslations } from 'next-intl';
 
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { BreadcrumbSkeleton } from '@/app/[locale]/_components/Breadcrumb';
 import { ProseArticle } from '@/app/[locale]/_components/ProseArticle';
-import { Skeleton } from '@/app/[locale]/_components/Skeleton';
 
 /**
  * Learn article detail loading skeleton.
@@ -121,25 +121,9 @@ export default function LearnArticleLoading() {
         {/* Breadcrumb: [Home logo] / Learn / <category> / <article title>.
             The category and article title are data-driven — bar placeholders.
             Mirrors `learn/[category]/[slug]/page.tsx`'s Breadcrumb. */}
-        <nav aria-label="Breadcrumb" className="mb-4 flex min-h-10 items-end">
-          <ol className="flex flex-wrap items-center gap-x-1 text-sm">
-            <li>
-              <Skeleton className="w-6 h-6 rounded-sm" />
-            </li>
-            <li className="flex items-center">
-              <span className="mx-1 text-muted-foreground">/</span>
-              <span className="text-muted-foreground">{tNav('learn')}</span>
-            </li>
-            <li className="flex items-center">
-              <span className="mx-1 text-muted-foreground">/</span>
-              <Skeleton className="h-4 w-24 rounded" />
-            </li>
-            <li className="flex items-center">
-              <span className="mx-1 text-muted-foreground">/</span>
-              <Skeleton className="h-4 w-40 rounded" />
-            </li>
-          </ol>
-        </nav>
+        <BreadcrumbSkeleton
+          crumbs={[{ label: tNav('learn') }, { widthClass: 'w-24' }, { widthClass: 'w-40' }]}
+        />
       </PagePanel>
     </div>
   );

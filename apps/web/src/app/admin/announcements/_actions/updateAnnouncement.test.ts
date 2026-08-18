@@ -1,8 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
+
 import { updateAnnouncement } from './updateAnnouncement';
 
-const mockGetUser = vi.fn();
 const mockSelectFromWhere = vi.fn();
 const mockUpdateSetWhere = vi.fn();
 const mockRevalidatePath = vi.fn();
@@ -10,14 +11,7 @@ const mockRevalidateTag = vi.fn();
 const mockNotifyAllUsersOfAnnouncement = vi.fn();
 const mockHasAnnouncementNotification = vi.fn();
 
-vi.mock('@/lib/supabase/server', () => ({
-  createClient: () =>
-    Promise.resolve({
-      auth: {
-        getUser: mockGetUser,
-      },
-    }),
-}));
+vi.mock('@/lib/supabase/server');
 
 vi.mock('@/lib/db', () => ({
   db: {
@@ -100,7 +94,6 @@ function setupAdminWithAnnouncement(currentStatus = 'draft') {
 
 describe('updateAnnouncement', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockHasAnnouncementNotification.mockResolvedValue(false);
   });
 

@@ -179,7 +179,6 @@ const baseParams = {
 
 describe('grantGameExp', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockGetLevel.mockImplementation((exp: number) => Math.floor(exp / 100));
     mockGetLevelProgress.mockImplementation((exp: number) => ({
       level: Math.floor(exp / 100),
@@ -273,7 +272,6 @@ describe('grantGameExp', () => {
 
 describe('grantGameExp idempotent replay', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockGetLevel.mockImplementation((exp: number) => Math.floor(exp / 100));
     mockGetLevelProgress.mockImplementation((exp: number) => ({
       level: Math.floor(exp / 100),

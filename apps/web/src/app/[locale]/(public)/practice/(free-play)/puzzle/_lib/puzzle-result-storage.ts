@@ -1,3 +1,5 @@
+import { writeSessionItem } from '@/lib/storage/session-storage';
+
 import type { Attempt } from './puzzle-match';
 
 export type PuzzleResultPayload = {
@@ -27,9 +29,5 @@ export function puzzleResultStorageKey(positionId: string): string {
  * payload shape under the same key.
  */
 export function writePuzzleResult(positionId: string, payload: PuzzleResultPayload): void {
-  try {
-    sessionStorage.setItem(puzzleResultStorageKey(positionId), JSON.stringify(payload));
-  } catch {
-    // sessionStorage may be unavailable.
-  }
+  writeSessionItem(puzzleResultStorageKey(positionId), JSON.stringify(payload));
 }

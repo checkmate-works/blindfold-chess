@@ -2,7 +2,7 @@
 
 import type { FinalGameOutcome, Side } from '@blindfold-chess/types';
 
-import { userHasProfile } from '@/lib/auth';
+import { getOptionalUser, userHasProfile } from '@/lib/auth';
 import type { GrantedRank } from '@/lib/db/data/ranks';
 import { publishGame } from '@/lib/db/games-write';
 import { evaluateRanksAndRefreshEntitlements } from '@/lib/db/rank-grant-flow';
@@ -18,7 +18,6 @@ import { isUserBanned } from '@/lib/moderation/ban';
 import { notifyFollowersOfNewGame } from '@/lib/notifications/notification';
 import { guardByIpRateLimit } from '@/lib/security/rate-limit-ip';
 import { handleServerActionError } from '@/lib/server-action-error';
-import { createClient } from '@/lib/supabase/server';
 
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
@@ -73,10 +72,7 @@ export async function publishGameAction(
       return { success: false, error: limited.error };
     }
 
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = await getOptionalUser();
 
     if (user && (await isUserBanned(user.id))) {
       return { success: false, error: 'forbidden' };

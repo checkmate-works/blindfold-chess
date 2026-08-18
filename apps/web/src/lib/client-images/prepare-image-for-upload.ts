@@ -29,6 +29,7 @@
  *   (48 MP) canvas — the destination canvas is capped at the downscale target
  *   (long edge ≤ `MAX_LONG_EDGE` ⇒ ≤ ~4 MP), well under the limit.
  */
+import { IMAGE_MIME_TO_EXTENSION } from '@/lib/images/policy';
 
 export const MAX_LONG_EDGE = 2048;
 
@@ -159,11 +160,7 @@ function renameExtension(name: string, ext: string): string {
   return `${base || 'image'}.${ext}`;
 }
 
-const MIME_TO_EXT: Record<string, string> = {
-  'image/jpeg': 'jpg',
-  'image/png': 'png',
-  'image/webp': 'webp',
-};
+const MIME_TO_EXT: Record<string, string> = IMAGE_MIME_TO_EXTENSION;
 
 function createDrawSurface(w: number, h: number): HTMLCanvasElement {
   const canvas = document.createElement('canvas');

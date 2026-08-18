@@ -1,4 +1,9 @@
 import type { GrantedRank } from '@/lib/db/data/ranks';
+import {
+  readSessionItem,
+  removeSessionItem,
+  writeSessionItem,
+} from '@/lib/storage/session-storage';
 
 import { SESSION_STORAGE_KEYS } from './session-storage-keys';
 
@@ -14,7 +19,7 @@ import { SESSION_STORAGE_KEYS } from './session-storage-keys';
  */
 export function stashGrantedRanks(grantedRanks: GrantedRank[] | undefined): void {
   if (!grantedRanks || grantedRanks.length === 0) return;
-  sessionStorage.setItem(SESSION_STORAGE_KEYS.GRANTED_RANKS, JSON.stringify(grantedRanks));
+  writeSessionItem(SESSION_STORAGE_KEYS.GRANTED_RANKS, JSON.stringify(grantedRanks));
 }
 
 /**
@@ -23,9 +28,9 @@ export function stashGrantedRanks(grantedRanks: GrantedRank[] | undefined): void
  * payload is unreadable.
  */
 export function takeGrantedRanks(): GrantedRank[] {
-  const stored = sessionStorage.getItem(SESSION_STORAGE_KEYS.GRANTED_RANKS);
+  const stored = readSessionItem(SESSION_STORAGE_KEYS.GRANTED_RANKS);
   if (!stored) return [];
-  sessionStorage.removeItem(SESSION_STORAGE_KEYS.GRANTED_RANKS);
+  removeSessionItem(SESSION_STORAGE_KEYS.GRANTED_RANKS);
   try {
     const parsed: unknown = JSON.parse(stored);
     return Array.isArray(parsed) ? (parsed as GrantedRank[]) : [];

@@ -1,47 +1,30 @@
-import { parseMoveTopicKey } from '@/lib/repertoires/move-topic-key';
-
 import type { TopicType } from './constants';
 
 /**
- * Resolve the public detail path that hosts a topic_post's discussion thread.
+ * The URL segment a topic type appears under in `/topics/<segment>/…`.
  *
- * Most topic types live under `/topics/<segment>/<key>`, but a few diverge:
- *   - 'chunk' lives under `/chunks/<slug>` (its catalog lives in `chunks`)
- *   - 'position_memory' lives under `/practice/position-memory/<id>`
- *   - 'position_puzzle' lives under `/practice/puzzle/<id>`
+ * Only `square` and `opening` have such a route — the other topic types host
+ * their discussion on the entity's own page (a chunk, a position, a kata) and
+ * never reach this. `opening` is the one type whose plural is not the type
+ * name plus `s`.
  *
- * Shared by `deletePost` and `editPost` so both invalidate the same path on
- * mutation. Returns the locale-prefixed absolute path; pass directly to
- * `revalidatePath` / `router.push`.
+ * Three callers spelled this rule out: the notification deep-link builder, the
+ * grant-history link builder, and the coin-history link builder. The second
+ * one's comment even said it mirrored the first.
  */
-export function buildTopicDetailPath(
+export function topicSegment(topicType: TopicType | string): string {
+  return topicType === 'opening' ? 'openings' : `${topicType}s`;
+}
+
+/**
+ * The post-detail page for a topic type that has one — the page that renders
+ * the OP plus its reply tree. Callers append `#post-<replyId>` themselves when
+ * they are linking at a reply rather than the post.
+ */
+export function buildTopicPostPath(
   topicType: TopicType | string,
   topicKey: string,
-  locale: string
+  postId: string
 ): string {
-  switch (topicType) {
-    case 'chunk':
-      return `/${locale}/chunks/${topicKey}`;
-    case 'position_memory':
-      return `/${locale}/practice/position-memory/${topicKey}`;
-    case 'position_puzzle':
-      return `/${locale}/practice/puzzle/${topicKey}`;
-    case 'repertoire':
-      return `/${locale}/repertoires/${topicKey}`;
-    case 'repertoire_move': {
-      // topicKey packs `${repertoireId}_${positionHash}` — the position hash
-      // can't be reversed to a specific line, and this feeds revalidatePath
-      // anyway (which keys on a path). Revalidate the repertoire; its line pages
-      // are dynamic, so they re-render per request regardless. (Deep links that
-      // need the focused move resolve the line in the notification helper.)
-      const parsed = parseMoveTopicKey(topicKey);
-      return parsed ? `/${locale}/repertoires/${parsed.repertoireId}` : `/${locale}/repertoires`;
-    }
-    case 'square':
-      return `/${locale}/topics/squares/${topicKey}`;
-    case 'opening':
-      return `/${locale}/topics/openings/${topicKey}`;
-    default:
-      return `/${locale}/topics/${topicType}/${topicKey}`;
-  }
+  return `/topics/${topicSegment(topicType)}/${topicKey}/posts/${postId}`;
 }

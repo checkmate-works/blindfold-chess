@@ -6,6 +6,7 @@ import { requireAdmin } from '@/app/admin/_lib/auth';
 import { eq } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
+import { GRANT_STATUS_CACHE_TAG } from '@/lib/cache-tags';
 import { db, userGrants } from '@/lib/db';
 import { logModerationAction } from '@/lib/moderation/audit';
 import { getClientIp } from '@/lib/security/client-ip';
@@ -68,7 +69,7 @@ export async function revokeGrant(grantId: string): Promise<ActionResult> {
       return { error: result.error };
     }
 
-    revalidateTag('grant-status', { expire: 60 });
+    revalidateTag(GRANT_STATUS_CACHE_TAG, { expire: 60 });
     // See `createGrant.ts` — the target user's `bfc_ads_hidden` cookie
     // cannot be updated from an admin action; it self-corrects on their
     // next authenticated page load or when the cookie TTL expires.

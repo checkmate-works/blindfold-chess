@@ -11,14 +11,14 @@ export const CATEGORY_STYLES = {
 
 export type GlossaryCategory = keyof typeof CATEGORY_STYLES;
 
-export const CATEGORY_COLORS: Record<GlossaryCategory, string> = {
-  tactics: 'bg-destructive/10 text-destructive',
-  strategy: 'bg-primary/10 text-primary',
-  endgame: 'bg-secondary/10 text-secondary-foreground',
-  opening: 'bg-muted/50 text-muted-foreground',
-  structure: 'bg-accent/50 text-accent-foreground',
-  general: 'bg-card text-card-foreground',
-} as const;
+/**
+ * Just the colour half of {@link CATEGORY_STYLES}, for callers that render a
+ * category chip without its icon. Derived rather than repeated — the two were
+ * separate literals holding the same six class strings.
+ */
+export const CATEGORY_COLORS: Record<GlossaryCategory, string> = Object.fromEntries(
+  Object.entries(CATEGORY_STYLES).map(([category, { color }]) => [category, color])
+) as Record<GlossaryCategory, string>;
 
 export interface ChessTerm {
   /**

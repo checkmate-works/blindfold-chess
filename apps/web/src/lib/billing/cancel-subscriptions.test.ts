@@ -42,7 +42,6 @@ const testUserId = 'user-id-00000000-0000-0000-0000-000000000001';
 
 describe('cancelAllActiveSubscriptions', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockUpdateWhere.mockResolvedValue(undefined);
     mockCancel.mockResolvedValue(undefined);
   });

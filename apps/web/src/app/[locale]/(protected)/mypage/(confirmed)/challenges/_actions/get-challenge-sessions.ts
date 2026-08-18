@@ -3,12 +3,12 @@
 import * as Sentry from '@sentry/nextjs';
 import { and, desc, eq, gte, lt } from 'drizzle-orm';
 
+import { getOptionalUser } from '@/lib/auth';
 import { db } from '@/lib/db';
 import type { ChallengeMenuType } from '@/lib/db/practice-menu-types';
 import { CHALLENGE_MENU_TYPES } from '@/lib/db/practice-menu-types';
 import { challengeResults } from '@/lib/db/schema';
 import { handleServerActionError } from '@/lib/server-action-error';
-import { createClient } from '@/lib/supabase/server';
 
 export type ChallengeResultRow = {
   id: string;
@@ -28,10 +28,7 @@ export type GetChallengeSessionsResponse = {
 
 /** Resolve the current user ID from Supabase auth, or null if unauthenticated. */
 async function getSessionUserId(): Promise<string | null> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getOptionalUser();
   return user?.id ?? null;
 }
 

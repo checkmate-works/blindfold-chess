@@ -1,3 +1,4 @@
+import { serializePracticeStatsParams } from "../../../../lib/practice-result-params";
 import { useCallback } from "react";
 import { View } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
@@ -38,14 +39,7 @@ export default function LegalMovesSession() {
     (result: LegalMovesResult) => {
       router.replace({
         pathname: "/(tabs)/practice/legal-moves/result",
-        params: {
-          correctAnswers: result.correctAnswers.toString(),
-          incorrectAnswers: result.incorrectAnswers.toString(),
-          totalQuestions: result.totalQuestions.toString(),
-          accuracy: result.accuracy.toString(),
-          timeTaken: result.timeTaken.toString(),
-          averageTime: result.averageTime.toString(),
-        },
+        params: serializePracticeStatsParams(result),
       });
     },
     [router],

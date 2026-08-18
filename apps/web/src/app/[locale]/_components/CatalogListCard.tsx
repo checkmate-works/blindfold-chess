@@ -7,19 +7,15 @@ import type { LikeMeta } from '@/lib/db/like-queries';
 import type { ReplyMeta } from '@/lib/db/reply-meta-queries';
 import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
 import { truncate } from '@/lib/text';
+import { buildProfileHref } from '@/lib/users/author-profile';
 import type { AuthorProfile } from '@/lib/users/author-profile';
 import { resolveDisplayName } from '@/lib/users/display-name';
 
 import { PostFooter } from '@/app/[locale]/(public)/topics/_components/PostFooter';
+import type { ToggleLikeAction } from '@/app/[locale]/(public)/topics/_lib/action-types';
 import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';
 import { ActivityCard } from '@/app/[locale]/_components/ActivityCard';
 import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
-
-type ToggleLikeAction = (
-  postId: string,
-  locale: string,
-  topicKey: string
-) => Promise<{ liked: boolean; likeCount: number } | { error: string }>;
 
 type Props = {
   /** Entity id. Used as the LikeButton's `postId` (the action's first arg). */
@@ -154,7 +150,7 @@ export function CatalogListCard({
       }
       author={
         <UserAvatar
-          profileHref={profile?.username ? `/u/${profile.username}` : null}
+          profileHref={buildProfileHref(profile)}
           avatarUrl={profile?.avatarUrl}
           displayName={displayName}
           locale={locale}

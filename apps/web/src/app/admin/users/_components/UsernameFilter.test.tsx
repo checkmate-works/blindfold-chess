@@ -1,12 +1,8 @@
-import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { NuqsTestingAdapter } from 'nuqs/adapters/testing';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { UsernameFilter } from './UsernameFilter';
-
-afterEach(() => {
-  cleanup();
-});
 
 const defaultLabels = {
   searchByUsernameOrEmail: 'Search by username or email',
@@ -25,10 +21,6 @@ function renderWithNuqs(
 }
 
 describe('UsernameFilter', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   describe('rendering', () => {
     it('renders the labeled input and submit button', () => {
       renderWithNuqs();

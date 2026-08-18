@@ -1,3 +1,4 @@
+import { STARTING_FEN } from '@blindfold-chess/features/chess-core/fen';
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -35,8 +36,6 @@ vi.mock('next/dynamic', () => ({
     return Stub;
   },
 }));
-
-const STARTING_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
 function makeAttachment(overrides: Partial<AttachedGameCardData> = {}): AttachedGameCardData {
   return {
