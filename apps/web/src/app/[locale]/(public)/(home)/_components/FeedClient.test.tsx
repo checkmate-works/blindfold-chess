@@ -155,8 +155,8 @@ describe('FeedClient', () => {
 
   describe('visually-last item border', () => {
     it('strips border-bottom only from the true last item (not the last SSR item when more follow)', () => {
-      // With showAds=true and AD_INTERVAL=10, 3 initial items produce no ad;
-      // the visually-last item is simply the last feed card.
+      // With showAds=true, 3 initial items produce the leading ad slot plus
+      // 3 feed cards; the visually-last item is the last feed card.
       const initialItems = [makeTopicPostItem('a'), makeTopicPostItem('b'), makeTopicPostItem('c')];
       const { container } = render(
         <FeedClient
@@ -170,7 +170,8 @@ describe('FeedClient', () => {
       const wrappers = Array.from(
         container.querySelectorAll<HTMLElement>('div.border-b.border-border')
       );
-      expect(wrappers.length).toBe(3);
+      // 1 leading ad wrapper + 3 feed wrappers.
+      expect(wrappers.length).toBe(4);
 
       // Only the final wrapper should have `last:border-b-0` effectively applied;
       // that class is written on every wrapper but only matches the last child.
@@ -194,7 +195,8 @@ describe('FeedClient', () => {
       const wrappers = Array.from(
         container.querySelectorAll<HTMLElement>('div.border-b.border-border')
       );
-      expect(wrappers.length).toBe(3);
+      // 1 leading ad wrapper + 3 feed wrappers.
+      expect(wrappers.length).toBe(4);
 
       const lastWrapper = wrappers[wrappers.length - 1];
       // `last:border-b-0` only takes effect when the element truly is
@@ -230,7 +232,8 @@ describe('FeedClient', () => {
       const wrappersBefore = Array.from(
         container.querySelectorAll<HTMLElement>('div.border-b.border-border')
       );
-      expect(wrappersBefore.length).toBe(2);
+      // 1 leading ad wrapper + 2 feed wrappers.
+      expect(wrappersBefore.length).toBe(3);
 
       await act(async () => {
         triggerIntersection();
@@ -246,7 +249,8 @@ describe('FeedClient', () => {
       const wrappersAfter = Array.from(
         container.querySelectorAll<HTMLElement>('div.border-b.border-border')
       );
-      expect(wrappersAfter.length).toBe(4);
+      // 1 leading ad wrapper + 4 feed wrappers.
+      expect(wrappersAfter.length).toBe(5);
 
       const allShareOneParent = new Set(wrappersAfter.map((el) => el.parentElement)).size;
       expect(allShareOneParent).toBe(1);
@@ -355,11 +359,12 @@ describe('FeedClient', () => {
     });
   });
 
-  describe('ad-slot last-item edge case', () => {
-    it('when initialItems.length % AD_INTERVAL === 0 and showAds is true, the ad wrapper is the visually-last block and shares the same per-item wrapper pattern', () => {
-      // AD_INTERVAL is 10. Render exactly 10 items with showAds=true -> an ad
-      // slot is appended as the 11th display element. With initialCursor=null
-      // (no sentinel), the ad wrapper is the last DOM child of the container.
+  describe('leading ad slot', () => {
+    it('renders the ad wrapper as the first block, sharing the per-item wrapper pattern, and never as the last block of an AD_INTERVAL-sized page', () => {
+      // AD_INTERVAL is 10. Render exactly 10 items with showAds=true -> the
+      // only ad slot leads the list (before item 1); the slot that precedes
+      // item 11 does not exist until item 11 loads, so with initialCursor=null
+      // the last DOM child is a feed card, not an ad.
       const initialItems = Array.from({ length: 10 }, (_, i) => makeTopicPostItem(`ad-edge-${i}`));
       const { container } = render(
         <FeedClient {...defaultProps} initialItems={initialItems} initialCursor={null} />
@@ -368,17 +373,21 @@ describe('FeedClient', () => {
       const wrappers = Array.from(
         container.querySelectorAll<HTMLElement>('div.border-b.border-border')
       );
-      // 10 feed wrappers + 1 ad wrapper.
+      // 1 ad wrapper + 10 feed wrappers.
       expect(wrappers.length).toBe(11);
 
+      const firstWrapper = wrappers[0];
+      expect(firstWrapper.matches(':first-child')).toBe(true);
+      // The mocked NativeAdCard owns its wrapper (as the real one does), so the
+      // wrapper element itself is the ad slot.
+      expect(firstWrapper.dataset.testid).toBe('ad-slot');
+      // The ad row shares the divider so it reads as one more feed row.
+      expect(firstWrapper.className).toContain('border-b');
+
       const lastWrapper = wrappers[wrappers.length - 1];
-      // The ad wrapper is the visually-last block, must be :last-child so
-      // `last:border-b-0` kicks in and the double border with DashboardCard
-      // is avoided.
       expect(lastWrapper.matches(':last-child')).toBe(true);
-      expect(lastWrapper.className).toContain('last:border-b-0');
-      // Confirm this is the ad block, not a feed card wrapper.
-      expect(lastWrapper.querySelector('[data-testid="feed-card-ad-edge-9"]')).toBeNull();
+      expect(lastWrapper.querySelector('[data-testid="feed-card-ad-edge-9"]')).not.toBeNull();
+      expect(lastWrapper.dataset.testid).not.toBe('ad-slot');
     });
   });
 
@@ -397,7 +406,7 @@ describe('FeedClient', () => {
 
   describe('ad fallback when ad_creatives has no eligible rows', () => {
     it('renders the AdSense fallback, wrapped in .ad-slot-wrapper, instead of a native ad card', () => {
-      // AD_INTERVAL is 10, so 10 items produce exactly one ad slot. With
+      // Any non-empty page carries the leading ad slot. With
       // nativeAdCreatives empty (mirrors an empty ad_creatives table), the
       // slot must fall back to ResponsiveAdSlot rather than being skipped.
       const initialItems = Array.from({ length: 10 }, (_, i) => makeTopicPostItem(`noad-${i}`));
@@ -425,9 +434,11 @@ describe('FeedClient', () => {
 
   describe('boundary: exactly one item', () => {
     it('renders a single wrapper that is both first and last, with last:border-b-0 applicable', () => {
+      // Ads off, otherwise the leading ad slot would be the first wrapper.
       const { container } = render(
         <FeedClient
           {...defaultProps}
+          showAds={false}
           initialItems={[makeTopicPostItem('solo')]}
           initialCursor={null}
         />
