@@ -6,6 +6,7 @@ import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
+import { buildProfileHref } from '@/lib/users/author-profile';
 import { resolveAuthorName } from '@/lib/users/display-name';
 
 import { toggleLike } from '@/app/[locale]/(public)/chunks/_actions/toggleLike';
@@ -64,7 +65,7 @@ export const ChunkFeedCard = memo(function ChunkFeedCard({
       }
       author={
         <UserAvatar
-          profileHref={data.author?.username ? `/u/${data.author.username}` : null}
+          profileHref={buildProfileHref(data.author)}
           avatarUrl={data.author?.avatarUrl}
           displayName={displayName}
           locale={locale}

@@ -4,6 +4,8 @@ import { useState } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
+import { buildProfileHref } from '@/lib/users/author-profile';
+
 import { formatAbsoluteDateTime } from '@/app/[locale]/(public)/topics/_lib/absolute-time';
 import { CommentNodeLayout } from '@/app/[locale]/_components/CommentNodeLayout';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
@@ -49,7 +51,7 @@ export function GameCommentNode({ node, replyGroups, flatReplies, replyToDisplay
 
   const isDeleted = node.deletedAt !== null;
   const displayName = node.author?.displayName || node.author?.username || tCommon('deletedUser');
-  const profileHref = node.author?.username ? `/u/${node.author.username}` : null;
+  const profileHref = buildProfileHref(node.author);
   const isOwnComment = !isDeleted && currentUserId !== undefined && currentUserId === node.authorId;
   const wasEdited = node.updatedAt.getTime() > node.createdAt.getTime();
   const isRoot = replyGroups !== undefined;

@@ -4,6 +4,8 @@ import { useState } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
+import { buildProfileHref } from '@/lib/users/author-profile';
+
 import { GameCommentBody } from '@/app/[locale]/(public)/games/shared/[id]/_components/GameCommentBody';
 import { CommentNodeLayout } from '@/app/[locale]/_components/CommentNodeLayout';
 import { LinkedText } from '@/app/[locale]/_components/LinkedText';
@@ -91,7 +93,7 @@ export function CommentNode({ node, replyGroups, flatReplies, replyToDisplayName
 
   const isDeleted = node.deletedAt !== null;
   const displayName = node.author?.displayName || node.author?.username || tCommon('deletedUser');
-  const profileHref = node.author?.username ? `/u/${node.author.username}` : null;
+  const profileHref = buildProfileHref(node.author);
 
   // Tombstones never run spoiler / like / reply / delete affordances — those
   // are anchored to the (deleted) author and would either leak identity or

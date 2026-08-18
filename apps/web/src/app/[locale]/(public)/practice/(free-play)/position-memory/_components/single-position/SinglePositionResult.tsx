@@ -11,6 +11,8 @@ import { fenToLichessUrl } from '@blindfold-chess/features/chess-core/fen';
 import type { ExpInfo } from '@blindfold-chess/features/exp';
 import { FaExternalLinkAlt } from 'react-icons/fa';
 
+import { buildProfileHref } from '@/lib/users/author-profile';
+
 import { toggleLike } from '@/app/[locale]/(public)/practice/(free-play)/_actions/toggleLike';
 import { ChessBoardWithOverlay } from '@/app/[locale]/(public)/practice/(free-play)/_components/ChessBoardWithOverlay';
 import { ResultLikeCta } from '@/app/[locale]/(public)/practice/(free-play)/_components/ResultLikeCta';
@@ -221,7 +223,7 @@ export function SinglePositionResult({
                 <div className="flex items-center justify-end gap-2 text-sm text-muted-foreground">
                   <span>{t('detail.createdBy')}</span>
                   <UserAvatar
-                    profileHref={profile?.username ? `/u/${profile.username}` : null}
+                    profileHref={buildProfileHref(profile)}
                     avatarUrl={profile?.avatarUrl}
                     displayName={displayName ?? ''}
                     locale={locale}

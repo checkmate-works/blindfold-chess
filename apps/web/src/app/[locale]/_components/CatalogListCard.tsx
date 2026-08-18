@@ -7,6 +7,7 @@ import type { LikeMeta } from '@/lib/db/like-queries';
 import type { ReplyMeta } from '@/lib/db/reply-meta-queries';
 import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
 import { truncate } from '@/lib/text';
+import { buildProfileHref } from '@/lib/users/author-profile';
 import type { AuthorProfile } from '@/lib/users/author-profile';
 import { resolveDisplayName } from '@/lib/users/display-name';
 
@@ -149,7 +150,7 @@ export function CatalogListCard({
       }
       author={
         <UserAvatar
-          profileHref={profile?.username ? `/u/${profile.username}` : null}
+          profileHref={buildProfileHref(profile)}
           avatarUrl={profile?.avatarUrl}
           displayName={displayName}
           locale={locale}

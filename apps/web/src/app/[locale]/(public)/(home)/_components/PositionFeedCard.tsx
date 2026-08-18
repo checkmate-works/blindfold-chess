@@ -7,6 +7,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 
 import { getPositionDetailPath } from '@/lib/positions/routes';
 import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
+import { buildProfileHref } from '@/lib/users/author-profile';
 import { resolveAuthorName } from '@/lib/users/display-name';
 
 import { toggleLike } from '@/app/[locale]/(public)/practice/(free-play)/_actions/toggleLike';
@@ -61,7 +62,7 @@ export const PositionFeedCard = memo(function PositionFeedCard({
       }
       author={
         <UserAvatar
-          profileHref={data.author?.username ? `/u/${data.author.username}` : null}
+          profileHref={buildProfileHref(data.author)}
           avatarUrl={data.author?.avatarUrl}
           displayName={displayName}
           locale={locale}

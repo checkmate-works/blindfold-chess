@@ -5,6 +5,7 @@ import { memo } from 'react';
 import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
+import { buildProfileHref } from '@/lib/users/author-profile';
 import { getMedalEmoji } from '@/lib/users/rank-emoji';
 
 import { getLeaderboardIcon } from '@/app/[locale]/(public)/leaderboard/_lib/icons';
@@ -86,7 +87,7 @@ export const ChallengeRankUpdateCard = memo(function ChallengeRankUpdateCard({
       thumbnailClassName="flex items-center justify-center"
       author={
         <UserAvatar
-          profileHref={data.actor.username ? `/u/${data.actor.username}` : null}
+          profileHref={buildProfileHref(data.actor)}
           avatarUrl={data.actor.avatarUrl}
           displayName={displayName}
           locale={locale}

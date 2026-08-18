@@ -9,6 +9,7 @@ import { getStartingFen } from '@blindfold-chess/features/chess-core';
 
 import { truncateContent } from '@/lib/content/truncate-content';
 import { MiniBoard } from '@/lib/positions/ui/MiniBoard';
+import { buildProfileHref } from '@/lib/users/author-profile';
 
 import { PostFooter } from '@/app/[locale]/(public)/topics/_components/PostFooter';
 import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';
@@ -97,7 +98,7 @@ export const TopicPostCard = memo(function TopicPostCard({
       }
       author={
         <UserAvatar
-          profileHref={post.author?.username ? `/u/${post.author.username}` : null}
+          profileHref={buildProfileHref(post.author)}
           avatarUrl={post.author?.avatarUrl}
           displayName={displayName}
           locale={locale}
