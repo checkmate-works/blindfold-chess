@@ -1,3 +1,11 @@
+import {
+  type FlatReply as GenericFlatReply,
+  type ReplyGroup as GenericReplyGroup,
+  countDescendants,
+  flattenReplies,
+  groupReplies,
+  pruneDeleted,
+} from '@/lib/comment-tree/shape';
 import type { GameCommentItem } from '@/lib/db/game-comments';
 
 /**
@@ -42,66 +50,7 @@ export function buildGameCommentTree(flat: GameCommentItem[]): GameCommentTreeNo
   return roots.flatMap(pruneDeleted);
 }
 
-function pruneDeleted(node: GameCommentTreeNode): GameCommentTreeNode[] {
-  const prunedChildren = node.children.flatMap(pruneDeleted);
-  if (node.deletedAt && prunedChildren.length === 0) return [];
-  return [{ ...node, children: prunedChildren }];
-}
+export type FlatReply = GenericFlatReply<GameCommentTreeNode>;
+export type ReplyGroup = GenericReplyGroup<GameCommentTreeNode>;
 
-/** Count every descendant — used by the collapse "N replies hidden" label. */
-export function countDescendants(node: GameCommentTreeNode): number {
-  let total = 0;
-  for (const child of node.children) {
-    total += 1 + countDescendants(child);
-  }
-  return total;
-}
-
-export type FlatReply = {
-  node: GameCommentTreeNode;
-  replyToDisplayName: string | null;
-};
-
-function displayNameOf(node: GameCommentTreeNode): string | null {
-  if (node.deletedAt) return null;
-  return node.author?.displayName || node.author?.username || null;
-}
-
-/**
- * Flatten every descendant of `root` (DFS pre-order) so the UI renders one
- * indent level. Each entry carries its immediate parent's display name, but
- * only when the parent is NOT `root` — direct replies to `root` get `null`
- * because their placement already conveys the relationship.
- */
-export function flattenReplies(root: GameCommentTreeNode): FlatReply[] {
-  const out: FlatReply[] = [];
-  function walk(node: GameCommentTreeNode, parentIsRoot: boolean) {
-    for (const child of node.children) {
-      out.push({
-        node: child,
-        replyToDisplayName: parentIsRoot ? null : displayNameOf(node),
-      });
-      walk(child, false);
-    }
-  }
-  walk(root, true);
-  return out;
-}
-
-export type ReplyGroup = {
-  first: GameCommentTreeNode;
-  deeper: FlatReply[];
-};
-
-/**
- * Group a root's descendants by first-level reply: `{ first, deeper }` where
- * `first` is a direct reply (one indent) and `deeper` is everything under it
- * flattened (two indents — the cap). Indentation never exceeds two levels
- * regardless of the underlying `parent_id` depth.
- */
-export function groupReplies(root: GameCommentTreeNode): ReplyGroup[] {
-  return root.children.map((first) => ({
-    first,
-    deeper: flattenReplies(first),
-  }));
-}
+export { countDescendants, flattenReplies, groupReplies };
