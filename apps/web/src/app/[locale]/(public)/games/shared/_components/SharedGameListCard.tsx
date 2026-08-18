@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { getStartingFen } from '@blindfold-chess/features/chess-core';
 
 import type { SharedGameListItem } from '@/lib/db/games-read';
-import type { LikeMeta } from '@/lib/db/like-queries';
+import { EMPTY_LIKE_META, type LikeMeta } from '@/lib/db/like-queries';
 import type { ReplyMeta } from '@/lib/db/reply-meta-queries';
 
 import { CatalogListCard } from '@/app/[locale]/_components/CatalogListCard';
@@ -12,8 +12,6 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { toggleGameLikeAction } from '../[id]/_actions/game-like';
 import { AiReviewedBadge } from './AiReviewedBadge';
 import { GameColorOpeningRow } from './GameColorOpeningRow';
-
-const EMPTY_LIKE_META: LikeMeta = { likeCount: 0, likedByMe: false };
 
 type Props = {
   game: SharedGameListItem;

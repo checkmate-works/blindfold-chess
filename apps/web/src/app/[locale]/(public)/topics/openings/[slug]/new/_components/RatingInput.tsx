@@ -5,13 +5,7 @@ import { useState } from 'react';
 import { RatingFaceIcon } from '@blindfold-chess/icons';
 import type { RatingFaceLevel } from '@blindfold-chess/icons';
 
-const RATING_FACE_COLORS: Record<RatingFaceLevel, string> = {
-  1: '#7C3AED',
-  2: '#60A5FA',
-  3: '#F59E0B',
-  4: '#EF4444',
-  5: '#EC4899',
-};
+import { RATING_FACE_COLORS } from '../../_components/rating-face-colors';
 
 type Props = {
   name: string;

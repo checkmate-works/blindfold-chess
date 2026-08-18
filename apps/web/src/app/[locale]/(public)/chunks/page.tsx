@@ -15,6 +15,7 @@ import {
   listChunksWithProfile,
 } from '@/lib/chunks/queries';
 import type { ChunkFeedbackTopic, ChunkStatus } from '@/lib/chunks/validation';
+import { EMPTY_LIKE_META } from '@/lib/db/like-queries';
 import { EMPTY_REPLY_META, getReplyMetaMap } from '@/lib/db/reply-meta-queries';
 import { DEFAULT_PAGE_SIZE, getPaginationParams } from '@/lib/pagination';
 
@@ -217,7 +218,7 @@ async function ChunksListContent({ params, searchParams }: Props) {
                 description={chunk.description}
                 createdAt={chunk.createdAt}
                 profile={profile}
-                likeMeta={likeMetaMap.get(chunk.id) ?? { likeCount: 0, likedByMe: false }}
+                likeMeta={likeMetaMap.get(chunk.id) ?? EMPTY_LIKE_META}
                 replyMeta={replyMetaMap.get(chunk.slug) ?? EMPTY_REPLY_META}
                 detailHref={`/chunks/${chunk.slug}`}
                 // Chunk detail pages scroll to the tab bar via

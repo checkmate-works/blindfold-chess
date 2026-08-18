@@ -14,13 +14,7 @@ import { REPERTOIRE_VISIBILITIES, repertoireVisibilityCharge } from '@/lib/point
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 
 import { changeVisibility } from '../[id]/_actions/changeVisibility';
-
-/** RepertoireVisibility (snake) → its `Repertoires.visibility.*` i18n key (camel). */
-const VISIBILITY_I18N_KEY: Record<RepertoireVisibility, string> = {
-  public: 'public',
-  followers_only: 'followersOnly',
-  private: 'private',
-};
+import { VISIBILITY_I18N_KEY } from '../_lib/visibility-i18n';
 
 type Props = {
   id: string;

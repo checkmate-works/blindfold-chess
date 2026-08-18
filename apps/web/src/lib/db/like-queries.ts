@@ -18,6 +18,13 @@ export type LikeMeta = {
 export const GAME_LIKE_TARGET = 'game';
 
 /**
+ * What a list row shows for an entity nobody has liked — the `??` fallback on
+ * every `likeMetaMap.get(id)`. Was four named constants and eight inline
+ * literals; `EMPTY_REPLY_META` next door had already been given a name.
+ */
+export const EMPTY_LIKE_META: LikeMeta = { likeCount: 0, likedByMe: false };
+
+/**
  * Polymorphic like-meta lookup — returns count + liked-by-me for a
  * single `(targetType, targetId)` pair.
  *

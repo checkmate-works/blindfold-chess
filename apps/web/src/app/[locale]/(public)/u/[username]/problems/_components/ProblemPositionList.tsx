@@ -1,4 +1,4 @@
-import type { LikeMeta } from '@/lib/db/like-queries';
+import { EMPTY_LIKE_META, type LikeMeta } from '@/lib/db/like-queries';
 import type { ReplyMeta } from '@/lib/db/reply-meta-queries';
 import type { Position } from '@/lib/db/schema';
 import { type PositionKind, getPositionKindDetailPath } from '@/lib/positions/kind';
@@ -26,8 +26,6 @@ type Props = {
     noProblems: string;
   };
 };
-
-const EMPTY_LIKE_META: LikeMeta = { likeCount: 0, likedByMe: false };
 
 function getPositionHref(type: PositionKind, id: string): string {
   return getPositionKindDetailPath(type, id);

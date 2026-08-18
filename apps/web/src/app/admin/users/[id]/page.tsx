@@ -27,16 +27,11 @@ import { CopyUserIdButton } from '../_components/CopyUserIdButton';
 import { StatusBadge } from '../_components/StatusBadge';
 import { UnbanButton } from '../_components/UnbanButton';
 import { getSignupMethod } from '../_lib/queries';
+import { SIGNUP_METHOD_I18N_KEY } from '../_lib/signup-method';
 import { DetailSection } from './_components/DetailSection';
 import { GrantRankButton } from './_components/GrantRankButton';
 import { InfoRow } from './_components/InfoRow';
 import { fetchUserDetail } from './_lib/queries';
-
-const SIGNUP_METHOD_LABEL_KEY = {
-  google: 'providerGoogle',
-  email: 'providerEmail',
-  unknown: 'providerUnknown',
-} as const;
 
 export default async function AdminUserDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -162,7 +157,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
               {role ?? t('usersTable.defaultRole')}
             </InfoRow>
             <InfoRow label={t('usersTable.signupMethod')}>
-              {t(`usersTable.${SIGNUP_METHOD_LABEL_KEY[signupMethod]}`)}
+              {t(`usersTable.${SIGNUP_METHOD_I18N_KEY[signupMethod]}`)}
             </InfoRow>
             <InfoRow label={t('usersTable.createdAt')}>{formatDate(authUser.created_at)}</InfoRow>
           </dl>
