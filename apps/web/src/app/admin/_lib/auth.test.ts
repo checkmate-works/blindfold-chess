@@ -1,18 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
 
+import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
+
 import { requireAdmin } from './auth';
 
-const mockGetUser = vi.fn();
 const mockSelectFromWhere = vi.fn();
 
-vi.mock('@/lib/supabase/server', () => ({
-  createClient: () =>
-    Promise.resolve({
-      auth: {
-        getUser: mockGetUser,
-      },
-    }),
-}));
+vi.mock('@/lib/supabase/server');
 
 vi.mock('@/lib/db', () => ({
   db: {

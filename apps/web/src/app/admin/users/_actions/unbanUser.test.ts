@@ -1,22 +1,16 @@
 import { describe, expect, it, vi } from 'vitest';
 
+import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
+
 import { unbanUser } from './unbanUser';
 
-const mockGetUser = vi.fn();
 const mockSelectFromWhere = vi.fn();
 const mockUpdateSetWhere = vi.fn();
 const mockUpdateUserById = vi.fn();
 const mockInsertValues = vi.fn();
 const mockTransaction = vi.fn();
 
-vi.mock('@/lib/supabase/server', () => ({
-  createClient: () =>
-    Promise.resolve({
-      auth: {
-        getUser: mockGetUser,
-      },
-    }),
-}));
+vi.mock('@/lib/supabase/server');
 
 vi.mock('@/lib/db', () => {
   const makeDbOps = () => ({

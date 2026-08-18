@@ -1,21 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { checkRateLimit } from '@/lib/security/rate-limit';
+import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
 
 import { deleteOwnAccount } from './deleteOwnAccount';
 
-const mockGetUser = vi.fn();
 const mockIsUserBanned = vi.fn();
 const mockDeleteAccount = vi.fn();
 
-vi.mock('@/lib/supabase/server', () => ({
-  createClient: () =>
-    Promise.resolve({
-      auth: {
-        getUser: mockGetUser,
-      },
-    }),
-}));
+vi.mock('@/lib/supabase/server');
 
 vi.mock('@/lib/users/delete-account', () => ({
   deleteAccount: (...args: unknown[]) => mockDeleteAccount(...args),

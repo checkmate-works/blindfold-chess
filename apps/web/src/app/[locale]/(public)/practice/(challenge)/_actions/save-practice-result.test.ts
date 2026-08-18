@@ -2,6 +2,8 @@ import { revalidateTag } from 'next/cache';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
+
 import type { SaveResultResponse } from '../_lib/save-result-response';
 import { savePracticeResult } from './save-practice-result';
 
@@ -9,7 +11,6 @@ import { savePracticeResult } from './save-practice-result';
 // Mock setup
 // ---------------------------------------------------------------------------
 
-const mockGetUser = vi.fn();
 const mockIsUserBanned = vi.fn();
 const mockCheckRateLimit = vi.fn();
 const mockSaveChallengeResult = vi.fn();
@@ -19,14 +20,7 @@ vi.mock('next/cache', () => ({
   revalidateTag: vi.fn(),
 }));
 
-vi.mock('@/lib/supabase/server', () => ({
-  createClient: () =>
-    Promise.resolve({
-      auth: {
-        getUser: () => mockGetUser(),
-      },
-    }),
-}));
+vi.mock('@/lib/supabase/server');
 
 vi.mock('@/lib/moderation/ban', () => ({
   isUserBanned: (...args: unknown[]) => mockIsUserBanned(...args),

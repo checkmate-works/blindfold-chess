@@ -1,13 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
+
 import { getProfileFeed } from './getProfileFeed';
 
-const mockGetUser = vi.fn();
 const mockGetFeedData = vi.fn();
 
-vi.mock('@/lib/supabase/server', () => ({
-  createClient: () => Promise.resolve({ auth: { getUser: mockGetUser } }),
-}));
+vi.mock('@/lib/supabase/server');
 
 vi.mock('@/app/[locale]/(public)/(home)/_lib/queries', () => ({
   getFeedData: (...args: unknown[]) => mockGetFeedData(...args),

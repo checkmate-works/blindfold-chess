@@ -2,6 +2,7 @@ import { eq } from 'drizzle-orm';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createNotification } from '@/lib/notifications/notification';
+import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
 import { logActivityEvent } from '@/lib/users/activity-log';
 
 import { toggleLikeBase } from './toggleLike';
@@ -27,7 +28,6 @@ vi.mock('drizzle-orm', async (importOriginal) => {
   };
 });
 
-const mockGetUser = vi.fn();
 const mockIsUserBanned = vi.fn();
 const mockInsertValues = vi.fn();
 const mockDeleteWhere = vi.fn();
@@ -41,14 +41,7 @@ vi.mock('@/lib/notifications/notification', () => ({
   createNotification: vi.fn(),
 }));
 
-vi.mock('@/lib/supabase/server', () => ({
-  createClient: () =>
-    Promise.resolve({
-      auth: {
-        getUser: mockGetUser,
-      },
-    }),
-}));
+vi.mock('@/lib/supabase/server');
 
 vi.mock('@/lib/moderation/ban', () => ({
   isUserBanned: (...args: unknown[]) => mockIsUserBanned(...args),

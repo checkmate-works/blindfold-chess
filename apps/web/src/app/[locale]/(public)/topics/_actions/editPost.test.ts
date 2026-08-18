@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
 
+import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
 import { logActivityEvent } from '@/lib/users/activity-log';
 
 import { editPost } from './editPost';
 
-const mockGetUser = vi.fn();
 // Both the `select(post)` and the (no-op-path) `select(updatedAt)` chains
 // land here. Tests queue up rows for whichever call they trigger.
 const mockSelectFromWhereLimit = vi.fn();
@@ -13,14 +13,7 @@ const mockIsUserBanned = vi.fn();
 
 vi.mock('@/lib/users/activity-log');
 
-vi.mock('@/lib/supabase/server', () => ({
-  createClient: () =>
-    Promise.resolve({
-      auth: {
-        getUser: mockGetUser,
-      },
-    }),
-}));
+vi.mock('@/lib/supabase/server');
 
 vi.mock('@/lib/db', () => ({
   db: {

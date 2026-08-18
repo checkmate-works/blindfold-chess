@@ -1,8 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
+
 import { createChunkPostWithVideoAttachment } from './createChunkPostWithVideoAttachment';
 
-const mockGetUser = vi.fn();
 const mockIsUserBanned = vi.fn();
 const mockGetChunkBySlug = vi.fn();
 const mockCheckRateLimit = vi.fn();
@@ -28,9 +29,7 @@ vi.mock('@/lib/notifications/notification', () => ({
   createNotification: vi.fn(),
 }));
 
-vi.mock('@/lib/supabase/server', () => ({
-  createClient: () => Promise.resolve({ auth: { getUser: mockGetUser } }),
-}));
+vi.mock('@/lib/supabase/server');
 
 const generatedPostId = 'post-00000000-0000-0000-0000-0000000000aa';
 

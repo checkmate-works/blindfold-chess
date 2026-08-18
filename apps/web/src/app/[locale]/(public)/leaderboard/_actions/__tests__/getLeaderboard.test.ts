@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { LeaderboardPage, RankedLeaderboardRow } from '@/lib/db/challenge-queries';
+import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
 
 import type { LeaderboardModule, LeaderboardPeriod } from '../../_lib/types';
 
@@ -34,16 +35,7 @@ vi.mock('@/lib/db/challenge-queries', () => ({
   getUserMonthlyRank: (...args: unknown[]) => mockGetUserMonthlyRank(...args),
 }));
 
-const mockGetUser = vi.fn();
-
-vi.mock('@/lib/supabase/server', () => ({
-  createClient: () =>
-    Promise.resolve({
-      auth: {
-        getUser: () => mockGetUser(),
-      },
-    }),
-}));
+vi.mock('@/lib/supabase/server');
 
 // The viewer's hidden_from_leaderboard flag read. The action only runs
 // `db.select(...).from(...).where(...).limit(1)` against profiles, so the

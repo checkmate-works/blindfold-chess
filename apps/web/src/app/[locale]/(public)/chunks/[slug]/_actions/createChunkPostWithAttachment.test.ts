@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
+
 import { createChunkPostWithAttachment } from './createChunkPostWithAttachment';
 
 // ─── Module mocks ───
@@ -9,7 +11,6 @@ import { createChunkPostWithAttachment } from './createChunkPostWithAttachment';
 // observe (a) which DB rows are written and (b) which rate-limit slots
 // are consumed.
 
-const mockGetUser = vi.fn();
 const mockIsUserBanned = vi.fn();
 const mockGetChunkBySlug = vi.fn();
 const mockResolveLichessAttachmentPgn = vi.fn();
@@ -31,14 +32,7 @@ vi.mock('@/lib/notifications/notification', () => ({
   createNotification: vi.fn(),
 }));
 
-vi.mock('@/lib/supabase/server', () => ({
-  createClient: () =>
-    Promise.resolve({
-      auth: {
-        getUser: mockGetUser,
-      },
-    }),
-}));
+vi.mock('@/lib/supabase/server');
 
 const generatedPostId = 'post-00000000-0000-0000-0000-000000000001';
 

@@ -2,9 +2,10 @@ import { revalidatePath } from 'next/cache';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
+
 import { toggleChunkLike } from './toggleChunkLike';
 
-const mockGetUser = vi.fn();
 const mockIsUserBanned = vi.fn();
 const mockInsertValues = vi.fn();
 const mockSelectCount = vi.fn();
@@ -23,14 +24,7 @@ vi.mock('@/lib/notifications/notification', () => ({
   createNotification: vi.fn(),
 }));
 
-vi.mock('@/lib/supabase/server', () => ({
-  createClient: () =>
-    Promise.resolve({
-      auth: {
-        getUser: mockGetUser,
-      },
-    }),
-}));
+vi.mock('@/lib/supabase/server');
 
 vi.mock('@/lib/moderation/ban', () => ({
   isUserBanned: (...args: unknown[]) => mockIsUserBanned(...args),

@@ -3,10 +3,10 @@ import { revalidatePath, revalidateTag } from 'next/cache';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { DAILY_PUZZLE_CACHE_TAG } from '@/lib/cache-tags';
+import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
 
 import { setPuzzleFeatured } from './setPuzzleFeatured';
 
-const mockGetUser = vi.fn();
 const mockSelectFromWhere = vi.fn();
 const mockInsertValues = vi.fn();
 const mockFeaturedInsertReturning = vi.fn();
@@ -14,14 +14,7 @@ const mockDeleteWhere = vi.fn();
 const mockDeleteReturning = vi.fn();
 const mockTransaction = vi.fn();
 
-vi.mock('@/lib/supabase/server', () => ({
-  createClient: () =>
-    Promise.resolve({
-      auth: {
-        getUser: mockGetUser,
-      },
-    }),
-}));
+vi.mock('@/lib/supabase/server');
 
 vi.mock('@/lib/security/client-ip', () => ({
   getClientIp: () => Promise.resolve('127.0.0.1'),

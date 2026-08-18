@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
+
 import { attachPostVideo } from './attachPostVideo';
 
 /**
@@ -25,21 +27,13 @@ import { attachPostVideo } from './attachPostVideo';
  *     reject divergence guard)
  */
 
-const mockGetUser = vi.fn();
 const mockSelectWhere = vi.fn();
 const mockInsertValues = vi.fn();
 const mockInsertReturning = vi.fn();
 const mockIsUserBanned = vi.fn();
 const mockCheckRateLimit = vi.fn();
 
-vi.mock('@/lib/supabase/server', () => ({
-  createClient: () =>
-    Promise.resolve({
-      auth: {
-        getUser: mockGetUser,
-      },
-    }),
-}));
+vi.mock('@/lib/supabase/server');
 
 vi.mock('@/lib/db', () => ({
   db: {

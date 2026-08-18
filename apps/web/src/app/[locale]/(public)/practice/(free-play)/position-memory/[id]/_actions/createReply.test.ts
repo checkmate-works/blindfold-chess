@@ -2,9 +2,10 @@ import { revalidatePath } from 'next/cache';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
+
 import { createReply } from './createReply';
 
-const mockGetUser = vi.fn();
 const mockSelectFromWhere = vi.fn();
 const mockSelectProfile = vi.fn();
 const mockInsertReturning = vi.fn();
@@ -24,14 +25,7 @@ vi.mock('@/lib/notifications/notification', () => ({
   createNotification: vi.fn(),
 }));
 
-vi.mock('@/lib/supabase/server', () => ({
-  createClient: () =>
-    Promise.resolve({
-      auth: {
-        getUser: mockGetUser,
-      },
-    }),
-}));
+vi.mock('@/lib/supabase/server');
 
 const txInsert = () => ({
   values: (...args: unknown[]) => {
