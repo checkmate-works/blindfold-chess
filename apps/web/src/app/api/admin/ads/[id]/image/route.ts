@@ -11,6 +11,7 @@ import type { NativeCardPayload } from '@/lib/ads/payload';
 import { DEFAULT_NATIVE_THUMBNAIL_FEN, isNativeCardPayload } from '@/lib/ads/payload';
 import { checkMutationOrigin } from '@/lib/api-mutation-guard';
 import { adCreatives, db } from '@/lib/db';
+import { SHARP_DECODE_OPTIONS } from '@/lib/images/sharp-options';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/security/rate-limit';
 import { createAdminClient } from '@/lib/supabase/admin';
 
@@ -124,14 +125,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const maxEdge = MAX_LONG_EDGE[target];
   let processed: Buffer;
   try {
-    // `limitInputPixels` (50 MP) rejects a decompression bomb — a highly
-    // compressible huge-dimension image under the byte cap that would
-    // otherwise decode to ~GBs — before the full decode.
-    processed = await sharp(Buffer.from(buffer), {
-      failOn: 'error',
-      pages: 1,
-      limitInputPixels: 50_000_000,
-    })
+    processed = await sharp(Buffer.from(buffer), SHARP_DECODE_OPTIONS)
       .rotate()
       .resize(maxEdge, maxEdge, { fit: 'inside', withoutEnlargement: true })
       .toBuffer();
