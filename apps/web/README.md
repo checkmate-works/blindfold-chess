@@ -9,7 +9,12 @@ Free online platform to practice blindfold chess.
 - Node.js 24.x
 - pnpm 10.x
 - Docker (required by Supabase CLI)
-- [Supabase CLI](https://supabase.com/docs/guides/local-development)
+
+The [Supabase CLI](https://supabase.com/docs/guides/local-development) is
+bundled as a devDependency of this app (`pnpm install` brings it in), so do not
+install it separately. `supabase/config.toml` is version-coupled to the CLI, so
+run the bundled binary — `pnpm supabase ...` from `apps/web` — rather than a
+globally installed one.
 
 ### Setup
 
@@ -20,14 +25,14 @@ pnpm install
 # Copy Stockfish AI engine files (required for AI opponent)
 pnpm run copy-stockfish
 
-# Start Supabase local (first run downloads Docker images)
-supabase start
+# Start Supabase local (from apps/web; first run downloads Docker images)
+pnpm supabase start
 ```
 
-After `supabase start` completes, retrieve the API keys by running `supabase status -o json`. Copy these values into `.env.local`:
+After `pnpm supabase start` completes, retrieve the API keys by running `pnpm supabase status -o json`. Copy these values into `.env.local`:
 
 ```bash
-supabase status -o json
+pnpm supabase status -o json
 cp .env.example .env.local
 ```
 
@@ -95,7 +100,7 @@ To test Google Sign-In locally, you need to configure OAuth credentials:
 
 4. **Restart Supabase** to pick up the new environment variables:
    ```bash
-   supabase stop && supabase start
+   pnpm supabase stop && pnpm supabase start
    ```
 
 For detailed authentication documentation, see [docs/authentication-setup.md](docs/authentication-setup.md).
@@ -115,13 +120,13 @@ This is intentionally separate from `pnpm db:seed`, which seeds master data (ran
 ### Local Services
 
 - **Supabase Studio**: http://127.0.0.1:54323
-- **Inbucket (email testing)**: http://127.0.0.1:54324
+- **Mailpit (email testing)**: http://127.0.0.1:54324
 - **PostgreSQL**: `postgresql://postgres:postgres@127.0.0.1:54322/postgres`
 
 To stop Supabase:
 
 ```bash
-supabase stop
+pnpm supabase stop
 ```
 
 ## Deployment

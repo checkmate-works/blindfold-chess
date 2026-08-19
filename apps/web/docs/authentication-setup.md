@@ -87,7 +87,7 @@ After completing the above steps:
 
 ## Local Development (Supabase CLI)
 
-When running Supabase locally via `supabase start`, OAuth provider configuration works differently from production:
+When running Supabase locally via `pnpm supabase start`, OAuth provider configuration works differently from production:
 
 - **Provider settings** are defined in `supabase/config.toml` (not the Supabase Dashboard). Google OAuth is already enabled with `[auth.external.google] enabled = true`.
 - **Credentials** are loaded from `supabase/.env` (not environment variables or Dashboard settings). The `config.toml` references them via `env()` syntax (e.g., `client_id = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID)"`).
@@ -115,7 +115,7 @@ When running Supabase locally via `supabase start`, OAuth provider configuration
 
 4. **Restart Supabase** to pick up the new environment variables:
    ```bash
-   supabase stop && supabase start
+   pnpm supabase stop && pnpm supabase start
    ```
 
 ### localhost vs 127.0.0.1
