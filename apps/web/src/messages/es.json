@@ -2959,6 +2959,7 @@
       "reviewHint": "Toca para ver la posición",
       "restart": "Jugar de nuevo",
       "backToResult": "Volver al resultado",
+      "backToGame": "Volver a la partida",
       "startNew": "Empezar con otro PGN"
     }
   },

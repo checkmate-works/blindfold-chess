@@ -59,6 +59,11 @@ type Props = {
    */
   gameId?: string;
   /**
+   * Validated same-origin path the summary's back link returns to; set by
+   * the mid-game recall entry, absent for the finished-game / paste-PGN flows.
+   */
+  returnTo?: string;
+  /**
    * Reports the latest move feedback up to the page title owner so it can be
    * rendered in the `PageTitle` slot (like the play screen surfaces its move
    * status there). Null clears the title back to the page name.
@@ -89,6 +94,7 @@ export function RecallClient({
   initialOffset = 0,
   startingFen,
   gameId,
+  returnTo,
   onFeedbackChange,
   onCompletedChange,
   onRestart,
@@ -377,6 +383,7 @@ export function RecallClient({
                   onEntryClick={openQuickPeek}
                   onRestart={onRestart ?? (() => {})}
                   gameId={gameId}
+                  returnTo={returnTo}
                   initialPlaySettings={initialPlaySettings}
                   preferenceChangeLog={preferenceChangeLog}
                   startingFen={startingFen}

@@ -2959,6 +2959,7 @@
       "reviewHint": "Tap to view the position",
       "restart": "Play again",
       "backToResult": "Back to result",
+      "backToGame": "Back to game",
       "startNew": "Start with another PGN"
     }
   },

@@ -1,5 +1,7 @@
 'use client';
 
+import NextLink from 'next/link';
+
 import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
@@ -26,6 +28,13 @@ type Props = {
   /** Saved game id, for the "back to result" link. */
   gameId?: string;
   /**
+   * Validated same-origin path (locale-prefixed) the back link returns to.
+   * Set when recall was entered mid-game, so finishing the review lands back
+   * on the live game rather than on the (not-yet-existing) result screen.
+   * Takes precedence over the `gameId`-based result link.
+   */
+  returnTo?: string;
+  /**
    * Start-of-session snapshot of the display-relevant settings, and the
    * mid-session edits on top of it — feeds the Change Log, matching
    * games/play/result's. Null until useRecallPreferences has seeded (always
@@ -51,6 +60,7 @@ export function RecallSummary({
   onEntryClick,
   onRestart,
   gameId,
+  returnTo,
   initialPlaySettings,
   preferenceChangeLog,
   startingFen,
@@ -145,14 +155,26 @@ export function RecallSummary({
         >
           {t('summary.restart')}
         </Button>
-        <Link
-          href={gameId ? `/games/play/result?gameId=${gameId}` : '/practice/recall'}
-          className="w-full"
-        >
-          <Button asChild variant="secondary" size="lg" className="w-full rounded-xl font-medium">
-            {gameId ? t('summary.backToResult') : t('summary.startNew')}
-          </Button>
-        </Link>
+        {returnTo ? (
+          // Mid-game entry: return to the live game. `returnTo` is already
+          // locale-prefixed (it is the play screen's own URL), so it goes
+          // through next/link directly — the i18n Link would double the
+          // locale segment.
+          <NextLink href={returnTo} className="w-full">
+            <Button asChild variant="secondary" size="lg" className="w-full rounded-xl font-medium">
+              {t('summary.backToGame')}
+            </Button>
+          </NextLink>
+        ) : (
+          <Link
+            href={gameId ? `/games/play/result?gameId=${gameId}` : '/practice/recall'}
+            className="w-full"
+          >
+            <Button asChild variant="secondary" size="lg" className="w-full rounded-xl font-medium">
+              {gameId ? t('summary.backToResult') : t('summary.startNew')}
+            </Button>
+          </Link>
+        )}
       </div>
     </div>
   );

@@ -2959,6 +2959,7 @@
       "reviewHint": "タップでその局面を確認",
       "restart": "もう一度",
       "backToResult": "結果へ戻る",
+      "backToGame": "対局に戻る",
       "startNew": "別の棋譜で始める"
     }
   },
