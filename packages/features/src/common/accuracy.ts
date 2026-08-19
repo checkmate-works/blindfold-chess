@@ -6,9 +6,8 @@
  * `accuracy` score with per-square scoring details and (b) a lightweight
  * per-square status list for board overlay rendering.
  */
-import { fenToBoardFlat } from "../chess-core/fen-pure";
-import { BOARD_LAST_INDEX, BOARD_SIZE, TOTAL_SQUARES } from "./constants";
-import { fileRankToSquare } from "./utils";
+import { boardIndexToSquare, fenToBoardFlat } from "../chess-core/fen-pure";
+import { TOTAL_SQUARES } from "./constants";
 
 export type ScoreDetail = {
   square: string;
@@ -39,14 +38,6 @@ export type SquareDiff = {
   status: SquareStatus;
 };
 
-function indexToSquare(index: number): string {
-  // index 0 = a8, index 63 = h1 (rank-major, top-down ordering used by FEN board flat)
-  return fileRankToSquare(
-    index % BOARD_SIZE,
-    BOARD_LAST_INDEX - Math.floor(index / BOARD_SIZE),
-  );
-}
-
 function getPieceDescription(
   piece: string,
   pieceNames: Record<string, string>,
@@ -56,10 +47,7 @@ function getPieceDescription(
 
 /** How a single square compares between the original and recreated boards. */
 export type SquareClassification =
-  | "correct"
-  | "wrongPiece"
-  | "missing"
-  | "extra";
+  "correct" | "wrongPiece" | "missing" | "extra";
 
 export type ClassifiedSquare = {
   square: string;
@@ -99,7 +87,7 @@ export function classifySquares(
     } else {
       kind = "extra";
     }
-    result.push({ square: indexToSquare(i), expected, actual, kind });
+    result.push({ square: boardIndexToSquare(i), expected, actual, kind });
   }
   return result;
 }

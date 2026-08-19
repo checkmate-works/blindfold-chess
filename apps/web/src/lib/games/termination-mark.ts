@@ -1,4 +1,4 @@
-import { fenToBoardFlat } from '@blindfold-chess/features/chess-core/fen';
+import { boardIndexToSquare, fenToBoardFlat } from '@blindfold-chess/features/chess-core/fen';
 import type { FinalGameOutcome, Side } from '@blindfold-chess/types';
 
 /** Why the losing side's king is marked. */
@@ -99,12 +99,8 @@ export function resolveTerminationMark({
   const index = fenToBoardFlat(fen).indexOf(kingChar);
   if (index === -1) return null;
 
-  // fenToBoardFlat is a8-first, rank by rank.
-  const file = String.fromCharCode('a'.charCodeAt(0) + (index % 8));
-  const rank = 8 - Math.floor(index / 8);
-
   return {
-    square: `${file}${rank}`,
+    square: boardIndexToSquare(index),
     kind: isCheckmate ? 'checkmate' : 'resignation',
   };
 }

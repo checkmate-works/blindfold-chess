@@ -97,12 +97,27 @@ export function fenToPlacements(fen: string): FenPlacement[] {
   fenToBoardFlat(fen).forEach((ch, index) => {
     const piece = fenCharToPiece(ch);
     if (!piece) return;
-    const file = String.fromCharCode("a".charCodeAt(0) + (index % 8));
-    const rank = 8 - Math.floor(index / 8);
-    placements.push({ square: `${file}${rank}`, ...piece });
+    placements.push({ square: boardIndexToSquare(index), ...piece });
   });
 
   return placements;
+}
+
+/**
+ * The algebraic square at a flat board index, counted a8-first and rank by
+ * rank — the order {@link fenToBoardFlat} returns.
+ *
+ * Worth naming because the opposite convention (a1-first, the one
+ * `squareToRankIndex` uses) is equally plausible and the two differ by a
+ * vertical flip, so getting it wrong returns a real square that is simply
+ * the wrong one. Three places derived it independently.
+ *
+ * Assumes `0 <= index < 64`; outside that the result is not a square.
+ */
+export function boardIndexToSquare(index: number): string {
+  const file = String.fromCharCode("a".charCodeAt(0) + (index % 8));
+  const rank = 8 - Math.floor(index / 8);
+  return `${file}${rank}`;
 }
 
 /**
