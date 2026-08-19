@@ -3,13 +3,11 @@ import { desc, eq, inArray, isNotNull, isNull } from 'drizzle-orm';
 
 import { db, profiles, topicPosts } from '@/lib/db';
 import { combineConditions, countRows } from '@/lib/db/list-query';
+import type { Profile, TopicPost } from '@/lib/db/schema';
 import { getPaginationParams } from '@/lib/pagination';
 
 import { resolveUserFilter } from '../../_lib/resolve-user-filter';
 import { loadUsersEmailMap } from '../../_lib/users-email-map';
-
-type Profile = typeof profiles.$inferSelect;
-type TopicPost = typeof topicPosts.$inferSelect;
 
 export type AdminTopicPostsPageData = {
   posts: TopicPost[];

@@ -3,6 +3,7 @@ import { desc, eq, inArray } from 'drizzle-orm';
 
 import { db, profiles, userActivityLog } from '@/lib/db';
 import { combineConditions, countRows } from '@/lib/db/list-query';
+import type { Profile, UserActivityLog } from '@/lib/db/schema';
 import { getPaginationParams } from '@/lib/pagination';
 
 import { resolveUserFilter } from '../../_lib/resolve-user-filter';
@@ -10,11 +11,8 @@ import { loadUsersEmailMap } from '../../_lib/users-email-map';
 
 const PAGE_SIZE = 20;
 
-type ActivityLog = typeof userActivityLog.$inferSelect;
-type Profile = typeof profiles.$inferSelect;
-
 export type ActivityLogPageData = {
-  logs: ActivityLog[];
+  logs: UserActivityLog[];
   currentPage: number;
   totalPages: number;
   profileMap: Map<string, Profile>;

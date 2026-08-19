@@ -2,6 +2,7 @@ import type { SupabaseClient, User } from '@supabase/supabase-js';
 import { and, desc, eq } from 'drizzle-orm';
 
 import { db, moderationActions, profiles, subscriptions, userRanks, userRoles } from '@/lib/db';
+import type { ModerationAction, Profile, Subscription } from '@/lib/db/schema';
 import {
   type PointBalanceSummary,
   type PointHistoryEntry,
@@ -17,10 +18,6 @@ import { getAllRanks } from '../../_lib/queries/population';
  * (`?user=<id>`); this card is only a recent-activity snapshot.
  */
 export const COIN_HISTORY_LIMIT = 10;
-
-type Profile = typeof profiles.$inferSelect;
-type Subscription = typeof subscriptions.$inferSelect;
-type ModerationAction = typeof moderationActions.$inferSelect;
 
 export type UserRankEntry = {
   slug: string;
