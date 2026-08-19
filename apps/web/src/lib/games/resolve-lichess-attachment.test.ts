@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
+
 import { resolveLichessAttachmentPgn } from './resolve-lichess-attachment';
 
 const fetchLichessGamePgnMock = vi.fn();
@@ -8,15 +10,10 @@ vi.mock('./lichess', () => ({
 }));
 
 const dbSelectMock = vi.fn();
-vi.mock('@/lib/db', () => ({
+vi.mock('@/lib/db', async () => ({
+  ...(await actualDbSchema()),
   db: {
     select: (...args: unknown[]) => dbSelectMock(...args),
-  },
-  postGamePgnAttachments: {
-    pgn: 'pgn',
-    source: 'source',
-    sourceGameId: 'sourceGameId',
-    createdAt: 'createdAt',
   },
 }));
 

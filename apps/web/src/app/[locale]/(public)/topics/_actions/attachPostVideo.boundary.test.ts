@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { whereThenLimit } from '@/lib/db/__test-support__/query-chain';
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
 import { checkRateLimit } from '@/lib/security/rate-limit';
 import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
@@ -35,17 +37,12 @@ const mockInsertReturning = vi.fn();
 
 vi.mock('@/lib/supabase/server');
 
-vi.mock('@/lib/db', () => ({
+vi.mock('@/lib/db', async () => ({
+  ...(await actualDbSchema()),
   db: {
     select: () => ({
       from: () => ({
-        where: (...args: unknown[]) => {
-          mockSelectWhere(...args);
-          return {
-            limit: () =>
-              mockSelectWhere.mock.results[mockSelectWhere.mock.calls.length - 1]?.value ?? [],
-          };
-        },
+        where: whereThenLimit(mockSelectWhere),
       }),
     }),
     insert: () => ({
@@ -56,21 +53,6 @@ vi.mock('@/lib/db', () => ({
         };
       },
     }),
-  },
-  postVideoAttachments: {
-    id: 'id',
-    postId: 'post_id',
-    provider: 'provider',
-    providerVideoId: 'provider_video_id',
-    sourceUrl: 'source_url',
-    title: 'title',
-    thumbnailUrl: 'thumbnail_url',
-    createdAt: 'created_at',
-  },
-  topicPosts: {
-    id: 'id',
-    userId: 'user_id',
-    deletedAt: 'deleted_at',
   },
 }));
 

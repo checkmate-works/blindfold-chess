@@ -7,8 +7,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import type { Square } from '@blindfold-chess/types';
 import { FaRedo } from 'react-icons/fa';
 
-import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
-import { TrainingChallengeCTA } from '@/app/[locale]/(public)/practice/(challenge)/_components/TrainingChallengeCTA';
+import { TrainingFooter } from '@/app/[locale]/(public)/practice/(challenge)/_components/TrainingFooter';
 import { SectionTitle } from '@/app/[locale]/_components';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
@@ -34,7 +33,6 @@ export function DiagonalQuizResultLayout({
   children,
 }: Props) {
   const t = useTranslations('practice.diagonalQuiz');
-  const tp = useTranslations('practice');
   const { preferences } = useGamePreferences();
 
   return (
@@ -54,18 +52,12 @@ export function DiagonalQuizResultLayout({
         </div>
       </div>
 
-      <ScoreCounter correct={correctCount} incorrect={incorrectCount} className="mt-8" />
-
-      <div className="mt-6 text-center">
-        <button
-          onClick={onEndTraining}
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          {tp('endTraining')}
-        </button>
-      </div>
-
-      <TrainingChallengeCTA challengeHref={challengeHref} />
+      <TrainingFooter
+        correct={correctCount}
+        incorrect={incorrectCount}
+        onEndTraining={onEndTraining}
+        challengeHref={challengeHref}
+      />
     </>
   );
 }

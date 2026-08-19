@@ -1,6 +1,7 @@
 'use server';
 
 import { authenticateGuardAndRequireProfile } from '@/lib/auth';
+import { canDeleteChunkLink } from '@/lib/chunks/chunk-link-permissions';
 import {
   deleteGameChunk,
   getGameChunkForDelete,
@@ -95,9 +96,9 @@ export async function deleteGameChunkAction(id: string): Promise<DeleteGameChunk
 
     const link = await getGameChunkForDelete(id);
     if (!link) return { success: false, error: 'not_found' };
-    const isSuggester = link.suggestedById === user.id;
-    const isOwner = link.gameAuthorId != null && link.gameAuthorId === user.id;
-    if (!isSuggester && !isOwner) return { success: false, error: 'forbidden' };
+    if (!canDeleteChunkLink({ ...link, parentOwnerId: link.gameAuthorId }, user.id)) {
+      return { success: false, error: 'forbidden' };
+    }
 
     await deleteGameChunk(id);
     return { success: true };

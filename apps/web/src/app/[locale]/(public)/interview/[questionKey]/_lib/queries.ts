@@ -2,14 +2,9 @@ import { and, eq, isNull } from 'drizzle-orm';
 
 import { chessOpenings, db, userInterviewAnswers } from '@/lib/db';
 
-import type { InterviewQuestionKey } from '@/app/[locale]/_lib/interview';
+import type { InterviewAnswerRow } from '@/app/[locale]/(public)/interview/_lib/queries';
 
-export type InterviewAnswerDetail = {
-  id: string;
-  questionKey: InterviewQuestionKey;
-  answerValue: string;
-  openingName: string | null;
-};
+export type { InterviewAnswerRow as InterviewAnswerDetail };
 
 /**
  * Fetch a single interview answer for a user and question key.
@@ -17,7 +12,7 @@ export type InterviewAnswerDetail = {
 export async function getInterviewAnswer(
   userId: string,
   questionKey: string
-): Promise<InterviewAnswerDetail | null> {
+): Promise<InterviewAnswerRow | null> {
   const rows = await db
     .select({
       id: userInterviewAnswers.id,
@@ -38,5 +33,5 @@ export async function getInterviewAnswer(
 
   if (rows.length === 0) return null;
 
-  return rows[0] as InterviewAnswerDetail;
+  return rows[0] as InterviewAnswerRow;
 }

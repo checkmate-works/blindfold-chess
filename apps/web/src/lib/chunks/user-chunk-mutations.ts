@@ -9,6 +9,8 @@ import { isUniqueViolation } from '@/lib/db/extract-pg-error-code';
 import { linkNewChunkToGameMove } from '@/lib/db/game-chunks';
 import { notifyGameOwnerOfChunkLink } from '@/lib/notifications/game-chunk-link-notification';
 import { clawbackPointsForPost, grantPointsForPost } from '@/lib/points';
+import type { CoinRewardOutcome } from '@/lib/points/coin-reward-outcome';
+import { toCoinRewardOutcome } from '@/lib/points/coin-reward-outcome';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 
 import { dispatchChunkEvent } from './chunk-event-handlers';
@@ -102,7 +104,7 @@ export type CreateChunkOptions = {
 };
 
 export type CreateChunkResult =
-  | {
+  | ({
       success: true;
       id: string;
       slug: string;
@@ -112,14 +114,7 @@ export type CreateChunkResult =
        * the new chunk's page, without guessing whether the link happened.
        */
       linkedToGame?: boolean;
-      pointGrant?: { pointEventId: string; amount: number };
-      /**
-       * True when the daily creation cap limited the reward — either trimmed
-       * it to a partial amount (also has `pointGrant`) or blocked it entirely
-       * (no `pointGrant`, earned 0 today). Callers append `?coinsCapped=1`.
-       */
-      coinCapped?: boolean;
-    }
+    } & CoinRewardOutcome)
   | { error: string };
 
 export type UpdateChunkResult = ActionResult;
@@ -254,24 +249,12 @@ export async function createChunkEntry(
       });
     }
 
-    const grant = txResult.grant;
-    const coinCapped =
-      grant.status === 'capped' || (grant.status === 'granted' && grant.cappedDaily);
-
     return {
       success: true,
       id: txResult.chunk.id,
       slug: txResult.chunk.slug,
       ...(txResult.linkedToGame ? { linkedToGame: true } : {}),
-      ...(grant.status === 'granted'
-        ? {
-            pointGrant: {
-              pointEventId: grant.pointEventId,
-              amount: grant.amount,
-            },
-          }
-        : {}),
-      ...(coinCapped ? { coinCapped: true } : {}),
+      ...toCoinRewardOutcome(txResult.grant),
     };
   } catch (err) {
     // Race-window backstop: another writer claimed the slug between the

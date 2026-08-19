@@ -1,8 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
+
 const mockLimit = vi.fn();
 
-vi.mock('@/lib/db', () => ({
+vi.mock('@/lib/db', async () => ({
+  ...(await actualDbSchema()),
   db: {
     select: () => ({
       from: () => ({
@@ -14,8 +17,6 @@ vi.mock('@/lib/db', () => ({
       }),
     }),
   },
-  ranks: { id: 'id', level: 'level' },
-  userRanks: { id: 'id', userId: 'user_id', rankId: 'rank_id' },
 }));
 
 vi.mock('@/lib/db-timeout', () => ({

@@ -25,7 +25,15 @@ const danSeedRequirement = ranksSeedData
   .find((rank) => rank.slug === '1dan')
   ?.requirements.find(isGamePublishWinHiddenBoardRequirement);
 
-type Args = {
+/**
+ * Everything a finished game contributes to a rank-requirement verdict.
+ *
+ * Named because three call sites carry it: this classifier and the two
+ * finish-modal hooks that feed it. The hooks used to redeclare all eight
+ * fields under their own names and rename them on the way in, so a field
+ * added here reached neither until both copies were updated by hand.
+ */
+export type FinishedGameEvidence = {
   /** The player's terminal result. Only a win can qualify. */
   result: FinalGameOutcome | null;
   /**
@@ -75,7 +83,7 @@ export function classifyGuestPromotionQualification({
   moveCount,
   startingFen,
   setupPlies,
-}: Args): GuestPromotionQualification | null {
+}: FinishedGameEvidence): GuestPromotionQualification | null {
   if (result !== 'win' || !playSettings) return null;
 
   if (danSeedRequirement && startedFromStandardPosition(startingFen, setupPlies)) {

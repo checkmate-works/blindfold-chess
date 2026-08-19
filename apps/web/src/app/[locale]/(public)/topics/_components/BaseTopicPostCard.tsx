@@ -9,12 +9,12 @@ import { FaEyeSlash } from 'react-icons/fa';
 import { truncateContent } from '@/lib/content/truncate-content';
 import type { LikeMeta } from '@/lib/db/like-queries';
 import type { ReplyMeta } from '@/lib/db/reply-meta-queries';
-import { buildProfileHref } from '@/lib/users/author-profile';
 import type { SocialAuthorProfile } from '@/lib/users/author-profile';
 
 import { LinkedText } from '@/app/[locale]/_components';
 import { ActivityCard } from '@/app/[locale]/_components/ActivityCard';
-import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
+import { CardAuthorAvatar } from '@/app/[locale]/_components/CardAuthorAvatar';
+import { CARD_PERMALINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 import type { ToggleLikeAction } from '../_lib/action-types';
 import { formatRelativeTime } from '../_lib/relative-time';
@@ -94,7 +94,6 @@ export function BaseTopicPostCard({
   const [isClamped, setIsClamped] = useState(false);
   const bodyRef = useRef<HTMLParagraphElement>(null);
   const displayName = author?.displayName || author?.username || tCommon('deletedUser');
-  const profileHref = buildProfileHref(author);
   const hasContent = content.length > 0;
   const contentPreview = truncateContent(content);
   const showSpoilerOverlay = isSpoiler && !isRevealed;
@@ -143,22 +142,12 @@ export function BaseTopicPostCard({
       variant="card"
       href={postHref}
       locale={locale}
-      author={
-        <UserAvatar
-          profileHref={profileHref}
-          avatarUrl={author?.avatarUrl}
-          displayName={displayName}
-          locale={locale}
-          size="sm"
-          flair={author?.flair}
-          country={author?.country}
-        />
-      }
+      author={<CardAuthorAvatar author={author} displayName={displayName} locale={locale} />}
       permalink={
         <Link
           href={postHref}
           locale={locale}
-          className="hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+          className={CARD_PERMALINK_CLASSES}
           aria-label={tTopics('permalinkAriaLabel')}
         >
           <time dateTime={createdAt.toISOString()}>
@@ -238,7 +227,7 @@ export function BaseTopicPostCard({
               onClick={() => setIsExpanded(true)}
               aria-expanded={false}
               aria-controls={bodyId}
-              className="self-start text-sm text-link-primary hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm cursor-pointer"
+              className={`${CARD_PERMALINK_CLASSES} self-start text-sm text-link-primary cursor-pointer`}
             >
               {tTopics('showMore')}
             </button>
@@ -247,7 +236,7 @@ export function BaseTopicPostCard({
           <Link
             href={postHref}
             locale={locale}
-            className="self-start text-sm text-link-primary hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+            className={`${CARD_PERMALINK_CLASSES} self-start text-sm text-link-primary`}
           >
             {tTopics('showMore')}
           </Link>

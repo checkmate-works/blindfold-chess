@@ -8,8 +8,10 @@ import type { ActiveField } from '@blindfold-chess/features/diagonal-quiz';
 import { useDiagonalInput } from '@blindfold-chess/features/diagonal-quiz/client';
 import type { Square } from '@blindfold-chess/types';
 
-import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
-import { TrainingChallengeCTA } from '@/app/[locale]/(public)/practice/(challenge)/_components/TrainingChallengeCTA';
+import {
+  TRAINING_TEXT_ACTION_CLASSES,
+  TrainingFooter,
+} from '@/app/[locale]/(public)/practice/(challenge)/_components/TrainingFooter';
 import { useAlgebraicKeyboardInput } from '@/app/[locale]/(public)/practice/_hooks/use-algebraic-keyboard-input';
 import { SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -184,30 +186,20 @@ export function DiagonalQuizTrainingPlaying({
         />
       </div>
 
-      <ScoreCounter correct={correctCount} incorrect={incorrectCount} className="mt-8" />
-
-      <div className="mt-6 text-center space-y-2">
+      <TrainingFooter
+        correct={correctCount}
+        incorrect={incorrectCount}
+        onEndTraining={onEndTraining}
+        challengeHref={challengeHref}
+      >
         {!isDisabled && (
           <div>
-            <button
-              onClick={onSkip}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
+            <button onClick={onSkip} className={TRAINING_TEXT_ACTION_CLASSES}>
               {tp('skip')}
             </button>
           </div>
         )}
-        <div>
-          <button
-            onClick={onEndTraining}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            {tp('endTraining')}
-          </button>
-        </div>
-      </div>
-
-      <TrainingChallengeCTA challengeHref={challengeHref} />
+      </TrainingFooter>
     </div>
   );
 }

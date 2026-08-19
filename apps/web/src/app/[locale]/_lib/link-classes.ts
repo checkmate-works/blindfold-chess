@@ -28,3 +28,15 @@ export const TEXT_LINK_MUTED_CLASSES = `text-muted-foreground hover:text-foregro
 
 /** Destructive variant for action-like links (e.g. delete account). */
 export const TEXT_LINK_DESTRUCTIVE_CLASSES = `text-destructive hover:text-destructive/80 ${LINK_BASE}`;
+
+/**
+ * The timestamp / permalink affordance inside an activity card.
+ *
+ * Hover-only on purpose, unlike {@link TEXT_LINK_CLASSES}: the card itself
+ * is the click target, so a persistent underline on the timestamp would read
+ * as a second, competing link. Eight cards spelled this string out and four
+ * more prefixed it with their own color and size, which is how a focus ring
+ * ends up on some cards and not others.
+ */
+export const CARD_PERMALINK_CLASSES =
+  'hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm';

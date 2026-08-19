@@ -1,10 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
 
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
+
 import { POSITION_FORK_SOURCE_TYPES, PUZZLE_FORK_SOURCE_TYPES, validateForkSource } from './fork';
 
 const mockLimit = vi.fn();
 
-vi.mock('@/lib/db', () => ({
+vi.mock('@/lib/db', async () => ({
+  ...(await actualDbSchema()),
   db: {
     select: () => ({
       from: () => ({
@@ -13,14 +16,6 @@ vi.mock('@/lib/db', () => ({
         }),
       }),
     }),
-  },
-  positions: {
-    id: 'id',
-    userId: 'user_id',
-    title: 'title',
-    type: 'type',
-    deletedAt: 'deleted_at',
-    forksDisabledAt: 'forks_disabled_at',
   },
 }));
 

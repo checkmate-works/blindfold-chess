@@ -1,6 +1,7 @@
 'use client';
 
 import { Link } from '@/i18n/routing';
+import { isLightSquare } from '@blindfold-chess/features/common';
 
 import type { ChessOpening } from '@/lib/db';
 import { MiniBoard } from '@/lib/positions/ui/MiniBoard';
@@ -29,7 +30,7 @@ function BoardSkeleton() {
       style={{ width: BOARD_SIZE, height: BOARD_SIZE }}
     >
       {Array.from({ length: 64 }, (_, i) => {
-        const isLight = (Math.floor(i / 8) + (i % 8)) % 2 === 0;
+        const isLight = isLightSquare(i % 8, Math.floor(i / 8));
         return (
           <div
             key={i}

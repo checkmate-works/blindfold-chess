@@ -6,12 +6,9 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation';
 
 import { generateThemeCSS } from '@blindfold-chess/ui';
-import { eq } from 'drizzle-orm';
 import { EnvironmentRibbon } from 'env-ribbon';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
 
-import { getOptionalUser } from '@/lib/auth';
-import { db, userRoles } from '@/lib/db';
 import { ThemeProvider, ThemeScript } from '@/lib/theme';
 
 import { ToastProvider } from '@/app/[locale]/_contexts/ToastContext';
@@ -20,6 +17,7 @@ import '../globals.css';
 import { AdminShell } from './_components/AdminShell';
 import { type AdminNavGroup, AdminSidebarNav } from './_components/AdminSidebarNav';
 import { AdminToastContainer } from './_components/AdminToastContainer';
+import { requireAdmin } from './_lib/auth';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -36,19 +34,9 @@ export const metadata: Metadata = {
 export const maxDuration = 60;
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const user = await getOptionalUser();
-
-  if (!user) {
-    notFound();
-  }
-
-  const [userRole] = await db
-    .select()
-    .from(userRoles)
-    .where(eq(userRoles.userId, user.id))
-    .limit(1);
-
-  if (!userRole || userRole.role !== 'admin') {
+  // The same check the admin API routes run, mapped to a 404: the panel's
+  // existence is not something a signed-out or non-admin visitor is told about.
+  if ('error' in (await requireAdmin())) {
     notFound();
   }
 

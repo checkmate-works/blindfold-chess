@@ -3,12 +3,10 @@
 import { useEffect } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { flipIndex } from '@blindfold-chess/features/common';
+import { PROMOTION_PIECES, type PromotionPiece } from '@blindfold-chess/types';
 
 import { ChessPiece } from './ChessPiece';
-
-/** Promotion piece types in display order — queen first, then descending importance. */
-const PROMOTION_TYPES = ['q', 'r', 'b', 'n'] as const;
-type PromotionType = (typeof PROMOTION_TYPES)[number];
 
 type Props = {
   /** File of the destination square (0=a, 7=h, in absolute board coords). */
@@ -20,7 +18,7 @@ type Props = {
   /** The color that is doing the promoting — drives the piece icons. */
   promotingColor: 'w' | 'b';
   /** Fires with the chosen promotion type. The parent commits the move. */
-  onSelect: (type: PromotionType) => void;
+  onSelect: (type: PromotionPiece) => void;
   /** Fires when the user dismisses the picker (backdrop click, Esc, etc.). */
   onCancel: () => void;
 };
@@ -65,19 +63,19 @@ export function PromotionPicker({
   }, [onCancel]);
 
   // Map (fileIndex, rankIndex) → visual (column, row) accounting for board flip.
-  const visualCol = flipped ? 7 - fileIndex : fileIndex;
-  const visualRow = flipped ? 7 - rankIndex : rankIndex;
+  const visualCol = flipIndex(fileIndex, flipped);
+  const visualRow = flipIndex(rankIndex, flipped);
 
   // Stack downward when destination is in the top half (visualRow < 4),
   // upward otherwise. Each option is one square tall (12.5% of board height).
   const stackDown = visualRow < 4;
   const leftPct = visualCol * 12.5;
   const topPct = stackDown ? visualRow * 12.5 : (visualRow - 3) * 12.5;
-  const orderedTypes: PromotionType[] = stackDown
-    ? [...PROMOTION_TYPES]
-    : [...PROMOTION_TYPES].reverse();
+  const orderedTypes: PromotionPiece[] = stackDown
+    ? [...PROMOTION_PIECES]
+    : [...PROMOTION_PIECES].reverse();
 
-  const labelKey: Record<PromotionType, string> = {
+  const labelKey: Record<PromotionPiece, string> = {
     q: 'promotionPicker.promoteTo.queen',
     r: 'promotionPicker.promoteTo.rook',
     b: 'promotionPicker.promoteTo.bishop',

@@ -1,21 +1,19 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
+
 let mockUsers: { id: string }[] = [];
 
 const mockCreateNotification = vi.fn();
 
-vi.mock('@/lib/db', () => ({
+vi.mock('@/lib/db', async () => ({
+  ...(await actualDbSchema()),
   db: {
     select: () => ({
       from: () => ({
         where: () => Promise.resolve(mockUsers),
       }),
     }),
-  },
-  profiles: {
-    id: 'profiles.id',
-    bannedAt: 'profiles.banned_at',
-    deletedAt: 'profiles.deleted_at',
   },
 }));
 

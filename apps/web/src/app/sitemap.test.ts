@@ -2,23 +2,20 @@ import { SITE_URL, SUPPORTED_LOCALES } from '@/config';
 import enMessages from '@/messages/en.json';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
+
 import sitemapFn from './sitemap';
 
 // Mock every DB / query module that `sitemap.ts` touches so we don't require a
 // running database. The guides block is fully i18n-driven and needs no mocks.
-vi.mock('@/lib/db', () => ({
+vi.mock('@/lib/db', async () => ({
+  ...(await actualDbSchema()),
   db: {
     selectDistinct: () => ({
       from: () => ({
         where: () => Promise.resolve([]),
       }),
     }),
-  },
-  topicPosts: {
-    topicKey: 'topic_key',
-    topicType: 'topic_type',
-    parentId: 'parent_id',
-    deletedAt: 'deleted_at',
   },
 }));
 

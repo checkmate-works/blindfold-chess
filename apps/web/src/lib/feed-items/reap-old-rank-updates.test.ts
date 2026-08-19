@@ -1,5 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
+
 import {
   RANK_UPDATE_ENTITY_TYPE,
   RANK_UPDATE_RETENTION_MS,
@@ -54,7 +56,8 @@ function resetState() {
   state.selectDelayMs = 0;
 }
 
-vi.mock('@/lib/db', () => ({
+vi.mock('@/lib/db', async () => ({
+  ...(await actualDbSchema()),
   db: {
     select: () => ({
       from: () => ({
@@ -82,7 +85,6 @@ vi.mock('@/lib/db', () => ({
       },
     }),
   },
-  feedItems: { id: 'id', entityType: 'entity_type', createdAt: 'created_at' },
 }));
 
 /**

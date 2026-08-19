@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import type { LeaderboardPage, RankedLeaderboardRow } from '@/lib/db/challenge-queries';
 import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
 
@@ -42,7 +43,8 @@ vi.mock('@/lib/supabase/server');
 // chain is stubbed down to this single resolver.
 const mockProfilesFlagQuery = vi.fn();
 
-vi.mock('@/lib/db', () => ({
+vi.mock('@/lib/db', async () => ({
+  ...(await actualDbSchema()),
   db: {
     select: () => ({
       from: () => ({
@@ -52,11 +54,11 @@ vi.mock('@/lib/db', () => ({
       }),
     }),
   },
-  profiles: {},
 }));
 
-// `eq(profiles.id, ...)` receives the stubbed (empty) profiles table above;
-// real drizzle eq would choke on the missing column objects.
+// The db double resolves every chain from a queued value and never inspects
+// the predicate, so building a real one buys nothing here — this keeps the
+// column plumbing out of a test about the query's *results*.
 vi.mock('drizzle-orm', () => ({
   eq: () => ({}),
 }));

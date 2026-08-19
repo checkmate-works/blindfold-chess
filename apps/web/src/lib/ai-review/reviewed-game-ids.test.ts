@@ -1,17 +1,16 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { db } from '@/lib/db';
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 
-vi.mock('@/lib/db', () => ({
+vi.mock('@/lib/db', async () => ({
+  ...(await actualDbSchema()),
   db: { selectDistinct: vi.fn() },
-  gameAiReviews: {
-    id: 'game_ai_reviews.id',
-    gameId: 'game_ai_reviews.game_id',
-    locale: 'game_ai_reviews.locale',
-    createdAt: 'game_ai_reviews.created_at',
-  },
 }));
 
+// Imported after the factory, not at the top: a static `import ... from
+// '@/lib/db'` is evaluated before this file's other imports and would run the
+// mock factory above while `actualDbSchema` is still uninitialised.
+const { db } = await import('@/lib/db');
 const { getReviewedGameIdSet } = await import('./queries');
 
 const mockDb = vi.mocked(db) as unknown as { selectDistinct: ReturnType<typeof vi.fn> };

@@ -1,13 +1,16 @@
 import type Stripe from 'stripe';
 import { describe, expect, it, vi } from 'vitest';
 
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
+
 const mockInsertValues = vi.fn();
 const mockOnConflictDoUpdate = vi.fn();
 const mockUpdateSetWhere = vi.fn();
 const mockUpdateReturning = vi.fn();
 const mockSelectLimit = vi.fn();
 
-vi.mock('@/lib/db', () => ({
+vi.mock('@/lib/db', async () => ({
+  ...(await actualDbSchema()),
   db: {
     insert: () => ({
       values: (...args: unknown[]) => {
@@ -38,8 +41,6 @@ vi.mock('@/lib/db', () => ({
       }),
     }),
   },
-  stripeCustomers: { stripeCustomerId: 'stripe_customer_id', userId: 'user_id' },
-  subscriptions: { stripeSubscriptionId: 'stripe_subscription_id', id: 'id' },
 }));
 
 const mockStripe = {

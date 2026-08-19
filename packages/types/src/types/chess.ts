@@ -14,6 +14,18 @@ export type PieceType = (typeof ALL_PIECE_TYPES)[number];
 export const ALL_PIECE_SYMBOLS = ["K", "Q", "R", "B", "N"] as const;
 export type PieceSymbol = (typeof ALL_PIECE_SYMBOLS)[number];
 
+/**
+ * What a pawn may promote to: every piece type except a pawn (it is the one
+ * promoting) and a king (there is already one).
+ *
+ * The type is derived from {@link PieceType} rather than written out, so a
+ * board that ever gains a piece cannot leave this set describing the old one.
+ * The array is ordered as the promotion picker offers them — strongest first
+ * — and is the runtime counterpart for iterating and validating.
+ */
+export const PROMOTION_PIECES = ["q", "r", "b", "n"] as const;
+export type PromotionPiece = Exclude<PieceType, "p" | "k">;
+
 type Promotion = `=${"Q" | "R" | "B" | "N"}`;
 type CheckSuffix = "" | "+" | "#";
 
@@ -70,7 +82,7 @@ export type PieceColor = "w" | "b";
 
 export type UciMove =
   | `${File}${Rank}${File}${Rank}`
-  | `${File}${Rank}${File}${Rank}${"q" | "r" | "b" | "n"}`;
+  | `${File}${Rank}${File}${Rank}${PromotionPiece}`;
 
 /** Semantic alias for a FEN string. Validated by chess.js at the chess-core boundary. */
 export type Fen = string;

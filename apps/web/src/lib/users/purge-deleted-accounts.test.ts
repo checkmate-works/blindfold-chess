@@ -1,5 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
+import { profiles } from '@/lib/db/schema';
+
 import { ACCOUNT_PURGE_RETENTION_MS, purgeDeletedAccounts } from './purge-deleted-accounts';
 
 const mockDeleteUser = vi.fn();
@@ -25,9 +28,9 @@ vi.mock('drizzle-orm', () => ({
   asc: (column: unknown) => ({ __asc: column }),
 }));
 
-vi.mock('@/lib/db', () => ({
+vi.mock('@/lib/db', async () => ({
+  ...(await actualDbSchema()),
   db: { select: (...args: unknown[]) => mockSelect(...args) },
-  profiles: { id: 'profiles.id', deletedAt: 'profiles.deletedAt' },
 }));
 
 vi.mock('@/lib/supabase/admin', () => ({
@@ -64,8 +67,8 @@ describe('purgeDeletedAccounts', () => {
     const whereArg = mockWhere.mock.calls[0][0] as {
       __and: [{ __isNotNull: unknown }, { __lt: [unknown, Date] }];
     };
-    expect(whereArg.__and[0]).toEqual({ __isNotNull: 'profiles.deletedAt' });
-    expect(whereArg.__and[1].__lt[0]).toBe('profiles.deletedAt');
+    expect(whereArg.__and[0]).toEqual({ __isNotNull: profiles.deletedAt });
+    expect(whereArg.__and[1].__lt[0]).toBe(profiles.deletedAt);
     expect(whereArg.__and[1].__lt[1].toISOString()).toBe(cutoff.toISOString());
     // Report echoes the same cutoff.
     expect(report.cutoff).toBe(cutoff.toISOString());

@@ -1,7 +1,8 @@
-import type { AlgebraicNotation } from "@blindfold-chess/types";
+import type { AlgebraicNotation, PromotionPiece } from "@blindfold-chess/types";
 import type { PieceSymbol, Square } from "chess.js";
 import { Chess } from "chess.js";
 
+import { boardFrom, replaySan } from "./replay";
 import type { MoveResult } from "./types";
 import { asEngineSan, toMoveResult } from "./types";
 
@@ -23,30 +24,19 @@ export function validateMoveSequence(
   fen: string,
   moves: string[],
 ): MoveSequenceValidation {
-  const chess = new Chess(fen);
-  const validMoves: AlgebraicNotation[] = [];
+  const { applied, invalidIndex } = replaySan(new Chess(fen), moves, (move) =>
+    asEngineSan(move.san),
+  );
 
-  for (let i = 0; i < moves.length; i++) {
-    try {
-      const result = chess.move(moves[i]);
-      if (!result) {
-        return {
-          valid: false,
-          error: `Invalid move: ${moves[i]} at index ${i}`,
-          validMoves,
-        };
-      }
-      validMoves.push(asEngineSan(result.san));
-    } catch {
-      return {
-        valid: false,
-        error: `Invalid move: ${moves[i]} at index ${i}`,
-        validMoves,
-      };
-    }
+  if (invalidIndex !== null) {
+    return {
+      valid: false,
+      error: `Invalid move: ${moves[invalidIndex]} at index ${invalidIndex}`,
+      validMoves: applied,
+    };
   }
 
-  return { valid: true, validMoves };
+  return { valid: true, validMoves: applied };
 }
 
 export function executeMove(
@@ -88,23 +78,11 @@ export function getLegalMoves(
 }
 
 export function movesToUci(moves: string[], startingFen?: string): string[] {
-  const chess = startingFen ? new Chess(startingFen) : new Chess();
-  const uciMoves: string[] = [];
-
-  for (const move of moves) {
-    try {
-      const result = chess.move(move);
-      if (result) {
-        uciMoves.push(result.from + result.to + (result.promotion || ""));
-      } else {
-        break;
-      }
-    } catch {
-      break;
-    }
-  }
-
-  return uciMoves;
+  return replaySan(
+    boardFrom(startingFen),
+    moves,
+    (move) => move.from + move.to + (move.promotion || ""),
+  ).applied;
 }
 
 export function uciToAlgebraic(
@@ -126,49 +104,33 @@ export function getLastMoveDetails(
 ): { from: Square; to: Square } | null {
   if (moves.length === 0) return null;
 
-  const chess = startingFen ? new Chess(startingFen) : new Chess();
-  let lastResult = null;
+  const { applied, invalidIndex } = replaySan(
+    boardFrom(startingFen),
+    moves,
+    (move) => ({ from: move.from, to: move.to }),
+  );
 
-  for (const move of moves) {
-    try {
-      lastResult = chess.move(move);
-      if (!lastResult) return null;
-    } catch {
-      return null;
-    }
-  }
-
-  if (!lastResult) return null;
-  return { from: lastResult.from, to: lastResult.to };
+  // Unlike the truncating helpers, a caller asking for "the last move" of a
+  // sequence that turned out to be illegal is not served by the last LEGAL
+  // move — that is a different position than the one it asked about.
+  if (invalidIndex !== null) return null;
+  return applied.at(-1) ?? null;
 }
 
 export function replayMoves(
   moves: string[],
   startingFen?: string,
 ): Array<{ fen: string; lastMove?: { from: Square; to: Square } }> {
-  const chess = startingFen ? new Chess(startingFen) : new Chess();
-  const positions: Array<{
-    fen: string;
-    lastMove?: { from: Square; to: Square };
-  }> = [{ fen: chess.fen() }];
+  const chess = boardFrom(startingFen);
+  // Read before replaying: `chess` is advanced in place, so this must not be
+  // deferred to the array literal below.
+  const initial = { fen: chess.fen() };
+  const { applied } = replaySan(chess, moves, (move, board) => ({
+    fen: board.fen(),
+    lastMove: { from: move.from, to: move.to },
+  }));
 
-  for (const move of moves) {
-    try {
-      const result = chess.move(move);
-      if (result) {
-        positions.push({
-          fen: chess.fen(),
-          lastMove: { from: result.from, to: result.to },
-        });
-      } else {
-        break;
-      }
-    } catch {
-      break;
-    }
-  }
-
-  return positions;
+  return [initial, ...applied];
 }
 
 /**
@@ -235,7 +197,7 @@ export function findLegalMoveByCoords(
   fen: string,
   from: string,
   to: string,
-  preferredPromotion: "q" | "r" | "b" | "n" = "q",
+  preferredPromotion: PromotionPiece = "q",
 ): MoveResult | null {
   const candidates = findLegalMovesByCoords(fen, from, to);
   if (candidates.length === 0) return null;

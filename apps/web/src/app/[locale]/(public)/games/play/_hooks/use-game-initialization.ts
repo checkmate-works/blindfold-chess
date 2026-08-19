@@ -17,7 +17,7 @@ type UrlParams = {
   gamePrefs: PerGamePreferences | undefined;
 };
 
-type ValidationErrorDetails = {
+export type ValidationErrorDetails = {
   invalidMove: string;
   invalidIndex: number;
   validMoves: AlgebraicNotation[];

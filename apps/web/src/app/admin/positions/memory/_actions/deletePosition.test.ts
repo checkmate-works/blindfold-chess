@@ -2,6 +2,7 @@ import { revalidatePath } from 'next/cache';
 
 import { describe, expect, it, vi } from 'vitest';
 
+import { whereThenLimit } from '@/lib/db/__test-support__/query-chain';
 import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
 
 import { deletePosition } from './deletePosition';
@@ -19,14 +20,7 @@ vi.mock('@/lib/db', () => {
   const makeDbOps = () => ({
     select: () => ({
       from: () => ({
-        where: (...args: unknown[]) => {
-          mockSelectFromWhere(...args);
-          return {
-            limit: () =>
-              mockSelectFromWhere.mock.results[mockSelectFromWhere.mock.calls.length - 1]?.value ??
-              [],
-          };
-        },
+        where: whereThenLimit(mockSelectFromWhere),
       }),
     }),
     update: () => ({

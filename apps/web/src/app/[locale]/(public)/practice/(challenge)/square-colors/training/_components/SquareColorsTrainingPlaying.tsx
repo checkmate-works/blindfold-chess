@@ -1,12 +1,9 @@
 'use client';
 
-import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-
 import type { BoardTheme } from '@/lib/games/board-themes';
 import { DEFAULT_BOARD_THEME } from '@/lib/games/board-themes';
 
-import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
-import { TrainingChallengeCTA } from '@/app/[locale]/(public)/practice/(challenge)/_components/TrainingChallengeCTA';
+import { TrainingFooter } from '@/app/[locale]/(public)/practice/(challenge)/_components/TrainingFooter';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { SquareColorsQuestionPanel } from '../../_components/SquareColorsQuestionPanel';
@@ -34,7 +31,6 @@ export function SquareColorsTrainingPlaying({
   onEndTraining,
   locale,
 }: Props) {
-  const tp = useTranslations('practice');
   const inputDisabled = showResult;
 
   return (
@@ -51,18 +47,12 @@ export function SquareColorsTrainingPlaying({
         </div>
       </div>
 
-      <ScoreCounter correct={correctCount} incorrect={incorrectCount} className="mt-8" />
-
-      <div className="mt-6 text-center">
-        <button
-          onClick={onEndTraining}
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          {tp('endTraining')}
-        </button>
-      </div>
-
-      <TrainingChallengeCTA challengeHref={`/${locale}/practice/square-colors/challenge/session`} />
+      <TrainingFooter
+        correct={correctCount}
+        incorrect={incorrectCount}
+        onEndTraining={onEndTraining}
+        challengeHref={`/${locale}/practice/square-colors/challenge/session`}
+      />
     </div>
   );
 }

@@ -35,8 +35,17 @@ export function fileRankToSquare(fileIndex: number, rankIndex: number): Square {
     (rankIndex + 1)) as Square;
 }
 
-export function isLightSquare(fileIndex: number, rankIndex: number): boolean {
-  return (fileIndex + rankIndex) % 2 === 0;
+/**
+ * Whether the square at a board grid cell is a light one.
+ *
+ * The second index is the row **as drawn**, top-down (`DISPLAY_RANKS`, so
+ * `0` = rank 8) — not the rank index `squareToRankIndex` returns (`0` = rank
+ * 1). The two run opposite ways, so feeding this a true rank index inverts
+ * every square: `isLightSquare(0, 0)` is `true` while `computeSquareColor("a1")`
+ * is `"dark"`. Take a square rather than indices if you have one.
+ */
+export function isLightSquare(fileIndex: number, rowFromTop: number): boolean {
+  return (fileIndex + rowFromTop) % 2 === 0;
 }
 
 export function isValidSquare(square: string): square is Square {

@@ -1,4 +1,9 @@
-import { DISPLAY_RANKS, FILES } from '@blindfold-chess/features/common';
+import {
+  BOARD_LAST_INDEX,
+  DISPLAY_RANKS,
+  FILES,
+  flipIndex,
+} from '@blindfold-chess/features/common';
 
 /**
  * Convert an algebraic square name (e.g. "f5") to its cell position on the
@@ -30,8 +35,8 @@ export function getSquareVisualCell(
   const file = square.charCodeAt(0) - 'a'.charCodeAt(0);
   const rank = parseInt(square[1], 10) - 1;
 
-  const col = flipped ? 7 - file : file;
-  const row = flipped ? rank : 7 - rank;
+  const col = flipIndex(file, flipped);
+  const row = flipIndex(BOARD_LAST_INDEX - rank, flipped);
 
   return { col, row };
 }
@@ -54,8 +59,8 @@ export function getVisualCellSquare(
   row: number,
   flipped: boolean
 ): { fileIndex: number; rankIndex: number; file: string; rank: string; square: string } {
-  const fileIndex = flipped ? 7 - col : col;
-  const rankIndex = flipped ? 7 - row : row;
+  const fileIndex = flipIndex(col, flipped);
+  const rankIndex = flipIndex(row, flipped);
   const file = FILES[fileIndex];
   const rank = DISPLAY_RANKS[rankIndex];
 

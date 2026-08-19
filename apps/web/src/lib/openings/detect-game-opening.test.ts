@@ -1,6 +1,8 @@
 import { getFenAfterMoves, getStartingFen } from '@blindfold-chess/features/chess-core';
 import { describe, expect, it, vi } from 'vitest';
 
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
+
 // Pass-through cache wrappers so the real loader/index logic runs in the test.
 vi.mock('next/cache', () => ({
   unstable_cache: (fn: (...args: unknown[]) => unknown) => fn,
@@ -24,8 +26,8 @@ const ROWS = [
   },
 ];
 
-vi.mock('@/lib/db', () => ({
-  chessOpenings: { slug: 'slug', name: 'name', ecoCode: 'eco_code', fen: 'fen' },
+vi.mock('@/lib/db', async () => ({
+  ...(await actualDbSchema()),
   db: {
     select: () => ({ from: () => Promise.resolve(ROWS) }),
   },

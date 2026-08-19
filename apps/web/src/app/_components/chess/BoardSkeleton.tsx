@@ -1,3 +1,5 @@
+import { isLightSquare } from '@blindfold-chess/features/common';
+
 type Props = {
   className?: string;
   rounded?: boolean;
@@ -15,7 +17,7 @@ export function BoardSkeleton({ className = '', rounded = true }: Props) {
         {Array.from({ length: ROWS }, (_, rowIndex) => (
           <div key={rowIndex} className="flex h-[12.5%]">
             {Array.from({ length: COLS }, (_, colIndex) => {
-              const isLight = (rowIndex + colIndex) % 2 === 0;
+              const isLight = isLightSquare(colIndex, rowIndex);
               return (
                 <div
                   key={colIndex}

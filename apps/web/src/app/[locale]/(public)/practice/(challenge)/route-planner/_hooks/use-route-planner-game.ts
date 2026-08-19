@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { isValidSquare } from '@blindfold-chess/features/common';
+import type { RoutePlannerProblemResult } from '@blindfold-chess/features/route-planner';
 import type { Square } from '@blindfold-chess/types';
 
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
@@ -14,16 +15,6 @@ import { findShortestPath, generateProblem, validateUserPath } from '../_lib/rou
 import type { StagedCoordinate } from './use-staged-coordinate';
 
 type GameState = 'playing' | 'result';
-
-type RoutePlannerResult = {
-  piece: PieceType;
-  start: Square;
-  end: Square;
-  success: boolean;
-  userPath: Square[];
-  shortestPath: Square[];
-  skipped?: boolean;
-};
 
 type ResultState = {
   success: boolean;
@@ -47,7 +38,7 @@ export function useRoutePlannerGame({ locale, allowedPieces, mode, stagedCoordin
   const { showToast } = useToast();
 
   const [gameState, setGameState] = useState<GameState>('playing');
-  const [results, setResults] = useState<RoutePlannerResult[]>([]);
+  const [results, setResults] = useState<RoutePlannerProblemResult[]>([]);
 
   const [problem, setProblem] = useState<{
     piece: PieceType;

@@ -1,3 +1,4 @@
+import { flipIndex } from '@blindfold-chess/features/common';
 import type { Square } from '@blindfold-chess/types';
 
 import type { AnnotationColor, BoardAnnotations } from './types';
@@ -85,10 +86,9 @@ export function colorFromModifiers(e: {
  *
  * The board is assumed to occupy the rectangle as a true 8×8 grid (no
  * padding / borders consumed by the squares themselves), which matches
- * how `BoardThumbnail` and `BoardLayout` render today. The mapping
- * mirrors `getSquareVisualCell` from `board-coords.ts`, kept inline
- * here only because that helper consumes a `square` string and we want
- * the inverse direction.
+ * how `BoardThumbnail` and `BoardLayout` render today. This is the
+ * inverse direction of `getSquareVisualCell` in `board-coords.ts`, which
+ * consumes a `square` string; both reflect the grid through `flipIndex`.
  */
 export function pointerToSquare(
   clientX: number,
@@ -102,8 +102,8 @@ export function pointerToSquare(
   if (x < 0 || x >= rect.width || y < 0 || y >= rect.height) return null;
   const col = Math.min(7, Math.max(0, Math.floor((x / rect.width) * 8)));
   const row = Math.min(7, Math.max(0, Math.floor((y / rect.height) * 8)));
-  const fileIndex = flipped ? 7 - col : col;
-  const rankIndex = flipped ? 7 - row : row;
+  const fileIndex = flipIndex(col, flipped);
+  const rankIndex = flipIndex(row, flipped);
   const file = 'abcdefgh'[fileIndex] as 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h';
   // rankIndex 0 → rank 8, rankIndex 7 → rank 1
   const rank = String(8 - rankIndex) as '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8';

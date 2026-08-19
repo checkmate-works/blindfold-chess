@@ -1,5 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
+import {
+  chunks,
+  gameComments,
+  games,
+  likes,
+  positions,
+  repertoires,
+  topicPosts,
+} from '@/lib/db/schema';
+
 import { PROFILE_PII_COLUMNS, deleteAccount } from './delete-account';
 
 const mockDeleteUser = vi.fn();
@@ -39,7 +50,8 @@ vi.mock('@/lib/billing/cancel-subscriptions', () => ({
   cancelAllActiveSubscriptions: (...args: unknown[]) => mockCancelAllActiveSubscriptions(...args),
 }));
 
-vi.mock('@/lib/db', () => ({
+vi.mock('@/lib/db', async () => ({
+  ...(await actualDbSchema()),
   db: {
     update: () => ({
       set: (values: Record<string, unknown>) => {
@@ -50,19 +62,6 @@ vi.mock('@/lib/db', () => ({
     delete: (...args: unknown[]) => mockDelete(...args),
     select: (...args: unknown[]) => mockSelect(...args),
   },
-  profiles: { id: 'id' },
-  likes: { targetType: 'likes.targetType', targetId: 'likes.targetId', userId: 'likes.userId' },
-  topicPosts: { id: 'topicPosts.id', userId: 'topicPosts.userId' },
-  positions: { id: 'positions.id', userId: 'positions.userId' },
-  chunks: {
-    id: 'chunks.id',
-    userId: 'chunks.userId',
-    status: 'chunks.status',
-    deletedAt: 'chunks.deletedAt',
-  },
-  repertoires: { id: 'repertoires.id', userId: 'repertoires.userId' },
-  games: { id: 'games.id', authorId: 'games.authorId' },
-  gameComments: { id: 'gameComments.id', authorId: 'gameComments.authorId' },
 }));
 
 vi.mock('@/lib/supabase/admin', () => ({
@@ -220,12 +219,12 @@ describe('deleteAccount', () => {
         (call) => (call as unknown as [{ __eq: [unknown, unknown] }])[0].__eq
       );
       expect(ownerPredicates).toEqual([
-        ['topicPosts.userId', testUserId],
-        ['positions.userId', testUserId],
-        ['chunks.userId', testUserId],
-        ['repertoires.userId', testUserId],
-        ['games.authorId', testUserId],
-        ['gameComments.authorId', testUserId],
+        [topicPosts.userId, testUserId],
+        [positions.userId, testUserId],
+        [chunks.userId, testUserId],
+        [repertoires.userId, testUserId],
+        [games.authorId, testUserId],
+        [gameComments.authorId, testUserId],
       ]);
     });
 
@@ -237,7 +236,7 @@ describe('deleteAccount', () => {
       expect(mockDelete).toHaveBeenCalledTimes(6);
       for (const call of mockDeleteWhere.mock.calls) {
         const cond = call[0] as { __and: { __inArray: [unknown, unknown] }[] };
-        expect(cond.__and[1].__inArray).toEqual(['likes.targetId', 'owned-content-subquery']);
+        expect(cond.__and[1].__inArray).toEqual([likes.targetId, 'owned-content-subquery']);
       }
     });
   });
@@ -250,7 +249,7 @@ describe('deleteAccount', () => {
     const draftChunkWhere = () =>
       mockWhere.mock.calls
         .map((c) => c[0] as { __and?: { __eq?: [unknown, unknown]; __isNull?: unknown }[] })
-        .find((w) => w.__and?.some((p) => p.__eq?.[0] === 'chunks.status'));
+        .find((w) => w.__and?.some((p) => p.__eq?.[0] === chunks.status));
 
     it('soft-deletes only the withdrawing user’s draft chunks', async () => {
       await deleteAccount(testUserId);
@@ -262,9 +261,9 @@ describe('deleteAccount', () => {
       // so published chunks (and other users') are untouched.
       const where = draftChunkWhere();
       expect(where?.__and).toEqual([
-        { __eq: ['chunks.userId', testUserId] },
-        { __eq: ['chunks.status', 'draft'] },
-        { __isNull: 'chunks.deletedAt' },
+        { __eq: [chunks.userId, testUserId] },
+        { __eq: [chunks.status, 'draft'] },
+        { __isNull: chunks.deletedAt },
       ]);
     });
 

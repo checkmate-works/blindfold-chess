@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
 import { grantPointsForPost } from '@/lib/points';
 import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
@@ -40,7 +41,8 @@ const mockTx = {
   }),
 };
 
-vi.mock('@/lib/db', () => ({
+vi.mock('@/lib/db', async () => ({
+  ...(await actualDbSchema()),
   db: {
     transaction: (fn: (tx: typeof mockTx) => Promise<unknown>) => fn(mockTx),
     select: () => ({
@@ -51,13 +53,6 @@ vi.mock('@/lib/db', () => ({
       }),
     }),
   },
-  topicPosts: {
-    id: 'id',
-  },
-  profiles: {
-    id: 'id',
-  },
-  feedItems: {},
 }));
 
 vi.mock('@/lib/moderation/ban');

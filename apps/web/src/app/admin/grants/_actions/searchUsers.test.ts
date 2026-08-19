@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
+
 const mockRequireAdmin = vi.fn();
 const mockGetUserById = vi.fn();
 
@@ -9,19 +11,14 @@ vi.mock('@/app/admin/_lib/auth', () => ({
   requireAdmin: () => mockRequireAdmin(),
 }));
 
-vi.mock('@/lib/db', () => ({
+vi.mock('@/lib/db', async () => ({
+  ...(await actualDbSchema()),
   db: {
     select: () => ({
       from: () => ({
         where: () => Promise.resolve(mockProfileRows),
       }),
     }),
-  },
-  profiles: {
-    id: 'id',
-    username: 'username',
-    displayName: 'display_name',
-    createdAt: 'created_at',
   },
 }));
 

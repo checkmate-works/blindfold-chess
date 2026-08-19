@@ -9,7 +9,6 @@ import { getStartingFen } from '@blindfold-chess/features/chess-core';
 
 import { truncateContent } from '@/lib/content/truncate-content';
 import { MiniBoard } from '@/lib/positions/ui/MiniBoard';
-import { buildProfileHref } from '@/lib/users/author-profile';
 
 import { PostFooter } from '@/app/[locale]/(public)/topics/_components/PostFooter';
 import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';
@@ -20,8 +19,9 @@ import { isBlackOpening } from '@/app/[locale]/(public)/topics/openings/_lib/ope
 import { toggleLike as toggleLikeSquare } from '@/app/[locale]/(public)/topics/squares/[square]/posts/[postId]/_actions/toggleLike';
 import { LinkedText } from '@/app/[locale]/_components';
 import { ActivityCard } from '@/app/[locale]/_components/ActivityCard';
+import { CardAuthorAvatar } from '@/app/[locale]/_components/CardAuthorAvatar';
 import type { EngagementCounterSize } from '@/app/[locale]/_components/EngagementCounter';
-import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
+import { CARD_PERMALINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 import { TopicSquareBoard } from './TopicSquareBoard';
 
@@ -96,22 +96,12 @@ export const TopicPostCard = memo(function TopicPostCard({
           <TopicSquareBoard square={post.topicKey} />
         )
       }
-      author={
-        <UserAvatar
-          profileHref={buildProfileHref(post.author)}
-          avatarUrl={post.author?.avatarUrl}
-          displayName={displayName}
-          locale={locale}
-          size="sm"
-          flair={post.author?.flair}
-          country={post.author?.country}
-        />
-      }
+      author={<CardAuthorAvatar author={post.author} displayName={displayName} locale={locale} />}
       permalink={
         <Link
           href={href}
           locale={locale}
-          className="hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+          className={CARD_PERMALINK_CLASSES}
           aria-label={tTopics('permalinkAriaLabel')}
         >
           <time dateTime={post.createdAt.toISOString()}>
@@ -176,7 +166,7 @@ export const TopicPostCard = memo(function TopicPostCard({
         <Link
           href={href}
           locale={locale}
-          className="text-sm text-link-primary hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+          className={`${CARD_PERMALINK_CLASSES} text-sm text-link-primary`}
         >
           {showMoreLabel}
         </Link>

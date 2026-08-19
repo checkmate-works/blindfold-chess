@@ -1,6 +1,8 @@
 import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
+
 import AdminArticlesPage from './page';
 
 const mockDbExecute = vi.fn();
@@ -32,16 +34,10 @@ vi.mock('nuqs/server', () => ({
   },
 }));
 
-vi.mock('@/lib/db', () => ({
+vi.mock('@/lib/db', async () => ({
+  ...(await actualDbSchema()),
   db: {
     execute: (...args: unknown[]) => mockDbExecute(...args),
-  },
-  articles: {
-    slug: 'slug',
-    title: 'title',
-    locale: 'locale',
-    status: 'status',
-    createdAt: 'created_at',
   },
 }));
 

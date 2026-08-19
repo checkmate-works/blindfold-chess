@@ -1,9 +1,6 @@
 'use client';
 
-import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-
-import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
-import { TrainingChallengeCTA } from '@/app/[locale]/(public)/practice/(challenge)/_components/TrainingChallengeCTA';
+import { TrainingFooter } from '@/app/[locale]/(public)/practice/(challenge)/_components/TrainingFooter';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { LegalMovesQuestionPanel } from '../../_components/LegalMovesQuestionPanel';
@@ -36,7 +33,6 @@ export function LegalMovesTrainingPlaying({
   incorrectCount,
   onEndTraining,
 }: Props) {
-  const tp = useTranslations('practice');
   const inputDisabled = showResult;
 
   return (
@@ -53,18 +49,12 @@ export function LegalMovesTrainingPlaying({
         </div>
       </div>
 
-      <ScoreCounter correct={correctCount} incorrect={incorrectCount} className="mt-8" />
-
-      <div className="mt-6 text-center">
-        <button
-          onClick={onEndTraining}
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          {tp('endTraining')}
-        </button>
-      </div>
-
-      <TrainingChallengeCTA challengeHref={`/${locale}/practice/legal-moves/challenge/session`} />
+      <TrainingFooter
+        correct={correctCount}
+        incorrect={incorrectCount}
+        onEndTraining={onEndTraining}
+        challengeHref={`/${locale}/practice/legal-moves/challenge/session`}
+      />
     </div>
   );
 }

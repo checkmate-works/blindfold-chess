@@ -1,33 +1,12 @@
 'use client';
 
-import type { FinalGameOutcome } from '@blindfold-chess/types';
-
 import type { RankSlug } from '@/lib/db/data/ranks';
+import type { FinishedGameEvidence } from '@/lib/games/guest-promotion';
 import { classifyGuestPromotionQualification } from '@/lib/games/guest-promotion';
-import type { MoveOperationLog, PreferenceChangeLogEntry } from '@/lib/games/saved-game-types';
 
 import { usePromotionTarget } from '@/app/[locale]/(public)/games/_hooks/use-promotion-target';
-import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
-type Args = {
-  /** The player's terminal result. Only a win can promote. */
-  result: FinalGameOutcome | null;
-  /**
-   * The START-OF-GAME settings snapshot, not the live folded value: this is
-   * what publish persists to `games.play_settings`, and the server grades that
-   * column. Anything else would let the two disagree.
-   */
-  initialPerGamePrefs: PerGamePreferences | undefined;
-  /** Mid-game preference edits, as the play surface records them. */
-  preferenceChangeLog: readonly PreferenceChangeLogEntry[] | undefined;
-  /** Per-move aid counts — source of the peek total for the 1dan bar. */
-  operationLogs: readonly MoveOperationLog[] | undefined;
-  /** Half-moves played. */
-  moveCount: number;
-  /** The position the game started from; undefined = the standard start. */
-  startingFen: string | undefined;
-  /** Seeded setup-prefix length (opening / PGN start); undefined = none. */
-  setupPlies: number | undefined;
+type Args = FinishedGameEvidence & {
   /** Gate the round-trip until the game is actually over. */
   enabled: boolean;
 };
@@ -51,27 +30,8 @@ type Args = {
  * Returns the rank's slug, or null until confirmed — so the UI defaults to
  * promising nothing.
  */
-export function usePublishPromotion({
-  result,
-  initialPerGamePrefs,
-  preferenceChangeLog,
-  operationLogs,
-  moveCount,
-  startingFen,
-  setupPlies,
-  enabled,
-}: Args): RankSlug | null {
-  const qualification = enabled
-    ? classifyGuestPromotionQualification({
-        result,
-        playSettings: initialPerGamePrefs,
-        changeLog: preferenceChangeLog,
-        operationLogs,
-        moveCount,
-        startingFen,
-        setupPlies,
-      })
-    : null;
+export function usePublishPromotion({ enabled, ...evidence }: Args): RankSlug | null {
+  const qualification = enabled ? classifyGuestPromotionQualification(evidence) : null;
 
   return usePromotionTarget(qualification);
 }

@@ -1,8 +1,5 @@
 'use server';
 
-import { revalidateTag } from 'next/cache';
-
-import { ANNOUNCEMENTS_CACHE_TAG } from '@/lib/cache-tags';
 import { announcements, db } from '@/lib/db';
 
 import {
@@ -13,6 +10,7 @@ import {
 import type { MutationResult } from '../../_lib/action-factories';
 import type { AnnouncementMutationData } from '../_lib/mutation-helpers';
 import { buildAnnouncementMutationValues, maybeNotifyAnnouncement } from '../_lib/mutation-helpers';
+import { revalidateAnnouncements } from '../_lib/revalidate';
 import { validateAnnouncementData } from '../_lib/validation';
 
 export async function createAnnouncement(data: AnnouncementMutationData): Promise<MutationResult> {
@@ -37,11 +35,7 @@ export async function createAnnouncement(data: AnnouncementMutationData): Promis
 
   await maybeNotifyAnnouncement(inserted.id, data);
 
-  // Invalidate the unstable_cache-wrapped banner fetch. Each ISR page picks up
-  // the new banner on its next natural revalidation cycle — a layout-wide
-  // revalidatePath here would evict every ISR entry under [locale]/(public),
-  // which previously caused a 305x ISR Writes spike on Vercel.
-  revalidateTag(ANNOUNCEMENTS_CACHE_TAG, { expire: 60 });
+  revalidateAnnouncements();
 
   return mutationSuccess(inserted.id, '/admin/announcements');
 }

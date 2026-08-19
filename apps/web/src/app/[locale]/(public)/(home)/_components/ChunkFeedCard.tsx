@@ -6,16 +6,16 @@ import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
-import { buildProfileHref } from '@/lib/users/author-profile';
 import { resolveAuthorName } from '@/lib/users/display-name';
 
 import { toggleLike } from '@/app/[locale]/(public)/chunks/_actions/toggleLike';
 import { PostFooter } from '@/app/[locale]/(public)/topics/_components/PostFooter';
 import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';
 import { ActivityCard } from '@/app/[locale]/_components/ActivityCard';
+import { CardAuthorAvatar } from '@/app/[locale]/_components/CardAuthorAvatar';
 import type { EngagementCounterSize } from '@/app/[locale]/_components/EngagementCounter';
-import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+import { CARD_PERMALINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 import type { ChunkFeedData } from '../_lib/types';
 
@@ -63,23 +63,9 @@ export const ChunkFeedCard = memo(function ChunkFeedCard({
           boardTheme={preferences.boardTheme}
         />
       }
-      author={
-        <UserAvatar
-          profileHref={buildProfileHref(data.author)}
-          avatarUrl={data.author?.avatarUrl}
-          displayName={displayName}
-          locale={locale}
-          size="sm"
-          flair={data.author?.flair}
-          country={data.author?.country}
-        />
-      }
+      author={<CardAuthorAvatar author={data.author} displayName={displayName} locale={locale} />}
       permalink={
-        <Link
-          href={href}
-          locale={locale}
-          className="hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
-        >
+        <Link href={href} locale={locale} className={CARD_PERMALINK_CLASSES}>
           {time}
         </Link>
       }

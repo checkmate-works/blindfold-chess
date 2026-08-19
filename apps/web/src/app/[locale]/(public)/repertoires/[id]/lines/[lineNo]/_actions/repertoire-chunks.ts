@@ -3,6 +3,7 @@
 import { toPositionKey } from '@blindfold-chess/features/chess-core';
 
 import { authenticateGuardAndRequireProfile } from '@/lib/auth';
+import { canDeleteChunkLink } from '@/lib/chunks/chunk-link-permissions';
 import {
   deleteRepertoireChunk,
   getRepertoireChunkForDelete,
@@ -131,9 +132,9 @@ export async function deleteRepertoireChunkAction(
 
     const link = await getRepertoireChunkForDelete(id);
     if (!link) return { success: false, error: 'not_found' };
-    const isSuggester = link.suggestedById === user.id;
-    const isOwner = link.repertoireOwnerId != null && link.repertoireOwnerId === user.id;
-    if (!isSuggester && !isOwner) return { success: false, error: 'forbidden' };
+    if (!canDeleteChunkLink({ ...link, parentOwnerId: link.repertoireOwnerId }, user.id)) {
+      return { success: false, error: 'forbidden' };
+    }
 
     await deleteRepertoireChunk(id);
     return { success: true };

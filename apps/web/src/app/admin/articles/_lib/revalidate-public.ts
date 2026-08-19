@@ -1,7 +1,9 @@
 // eslint-disable-next-line no-restricted-imports -- /[locale]/articles/[slug] is the app's only prerendered page, making this the one place revalidatePath does real cache work; see this module's TSDoc
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 
 import { SUPPORTED_LOCALES } from '@/config';
+
+import { ARTICLES_CACHE_TAG } from '@/lib/cache-tags';
 
 /**
  * Invalidate the prerendered public article detail pages for `slug`.
@@ -30,4 +32,20 @@ export function revalidatePublicArticlePages(...slugs: (string | null | undefine
       revalidatePath(`/${locale}/articles/${slug}`);
     }
   }
+}
+
+/**
+ * Invalidate everything an article mutation can affect: the tag-cached
+ * article reads, and the prerendered public detail pages the tag cannot
+ * reach. Pass every slug involved — for a rename, both the new and the
+ * previous one.
+ *
+ * Both halves are needed on every path, and the pair was written out at each
+ * of the three mutations. Following the precedent of `revalidateAdCreatives`,
+ * which exists because hand-rolling its pair had already produced partial
+ * coverage.
+ */
+export function revalidateArticles(...slugs: (string | null | undefined)[]): void {
+  revalidateTag(ARTICLES_CACHE_TAG, { expire: 60 });
+  revalidatePublicArticlePages(...slugs);
 }

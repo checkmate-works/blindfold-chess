@@ -5,6 +5,7 @@ import {
   fenToBoardFlat,
   isBlackToMoveFromFen,
 } from '@blindfold-chess/features/chess-core/fen';
+import { isLightSquare } from '@blindfold-chess/features/common';
 import { ChessPieceIcon } from '@blindfold-chess/icons';
 import type { PieceColor, PieceType } from '@blindfold-chess/types';
 
@@ -129,7 +130,7 @@ export function BoardThumbnail({
       <div className="relative grid grid-cols-8 rounded-sm overflow-hidden aspect-square w-full h-full">
         {board.map((rank, rankIdx) =>
           rank.map((fenChar, fileIdx) => {
-            const isLight = (rankIdx + fileIdx) % 2 === 0;
+            const isLight = isLightSquare(fileIdx, rankIdx);
             const piece = fenChar ? fenCharToPiece(fenChar) : null;
             return (
               <div

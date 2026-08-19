@@ -11,6 +11,7 @@ import { type SQL, and, desc, eq, inArray, sql } from 'drizzle-orm';
 import 'server-only';
 
 import { playSettingsToThumbnailDisplay } from '@/lib/games/play-settings-thumbnail';
+import type { SharedGamesSortMode } from '@/lib/games/shared-sort';
 import { type DetectedOpening, detectGameOpening } from '@/lib/openings/detect-game-opening';
 import type { AuthorProfile } from '@/lib/users/author-profile';
 
@@ -97,8 +98,8 @@ export type SharedGameListItem = {
   opening: DetectedOpening | null;
 };
 
-/** Gallery sort modes (kept in sync with the page's sort control). */
-export type SharedGamesSort = 'new' | 'clean' | 'strong';
+/** Gallery sort modes. @see {@link SharedGamesSortMode} */
+export type SharedGamesSort = SharedGamesSortMode;
 
 /**
  * Base list query shared by every gallery/profile list path: the column
