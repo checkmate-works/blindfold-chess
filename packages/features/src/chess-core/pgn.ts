@@ -1,6 +1,8 @@
 import type { AlgebraicNotation } from "@blindfold-chess/types";
 import { Chess, DEFAULT_POSITION } from "chess.js";
 
+import { boardFrom } from "./replay";
+
 import { getTurnFromFen, validateFen } from "./fen";
 import type { MoveSequenceValidation } from "./moves";
 import { validateMoveSequence } from "./moves";
@@ -79,7 +81,7 @@ export function parsePgnWithFen(pgn: string): {
 
 export function generatePgn(moves: string[], startingFen?: string): string {
   try {
-    const chess = startingFen ? new Chess(startingFen) : new Chess();
+    const chess = boardFrom(startingFen);
     if (startingFen) {
       chess.setHeader("SetUp", "1");
       chess.setHeader("FEN", startingFen);
