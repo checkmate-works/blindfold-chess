@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
-import { DEFAULT_LOCALE, SITE_URL, SUPPORTED_LOCALES } from '@/config';
+import { DEFAULT_LOCALE, SITE_URL } from '@/config';
+
+import { buildLanguageAlternates } from '@/lib/seo/language-alternates';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -130,13 +132,10 @@ export function generateCanonicalMetadata({
   const effectiveLocale = canonicalLocale ?? locale;
   const canonical = `${baseUrl}/${effectiveLocale}${cleanPath ? `/${cleanPath}` : ''}`;
 
-  // Build hreflang entries
-  const languages: Record<string, string> = {};
-  const localesForAlternates = availableLocales ?? [...SUPPORTED_LOCALES];
-  for (const loc of localesForAlternates) {
-    languages[loc] = `${baseUrl}/${loc}${cleanPath ? `/${cleanPath}` : ''}`;
-  }
-  languages['x-default'] = `${baseUrl}/en${cleanPath ? `/${cleanPath}` : ''}`;
+  const languages = buildLanguageAlternates(
+    (loc) => `${baseUrl}/${loc}${cleanPath ? `/${cleanPath}` : ''}`,
+    availableLocales
+  );
 
   return {
     alternates: {

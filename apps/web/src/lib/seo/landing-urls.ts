@@ -1,6 +1,8 @@
-import { DEFAULT_LOCALE, SITE_URL, SUPPORTED_LOCALES } from '@/config';
+import { DEFAULT_LOCALE, SITE_URL } from '@/config';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
+
+import { buildLanguageAlternates } from './language-alternates';
 
 /**
  * Build the canonical / hreflang / sitemap URL for a root landing page
@@ -30,10 +32,5 @@ export function buildLandingUrl(locale: Locale): string {
  * English URL).
  */
 export function buildLandingLanguageAlternates(): Record<string, string> {
-  const languages: Record<string, string> = {};
-  for (const l of SUPPORTED_LOCALES) {
-    languages[l] = buildLandingUrl(l);
-  }
-  languages['x-default'] = buildLandingUrl(DEFAULT_LOCALE);
-  return languages;
+  return buildLanguageAlternates((locale) => buildLandingUrl(locale as Locale));
 }

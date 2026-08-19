@@ -1,8 +1,9 @@
 import type { MetadataRoute } from 'next';
 
-import { SITE_URL, SUPPORTED_LOCALES } from '@/config';
+import { SITE_URL } from '@/config';
 
 import { captureError } from '@/lib/sentry/capture-error';
+import { buildLanguageAlternates } from '@/lib/seo/language-alternates';
 
 export const BASE_URL = SITE_URL;
 
@@ -56,12 +57,10 @@ export async function buildSitemapSection(
  * is correct for pages that exist in every locale.
  */
 export function generateAlternates(path: string, availableLocales?: readonly string[]) {
-  const languages: Record<string, string> = {};
-  const locales = availableLocales ?? SUPPORTED_LOCALES;
-  for (const locale of locales) {
-    languages[locale] = `${BASE_URL}/${locale}${path}`;
-  }
-  // x-default points to the English version
-  languages['x-default'] = `${BASE_URL}/en${path}`;
-  return { languages };
+  return {
+    languages: buildLanguageAlternates(
+      (locale) => `${BASE_URL}/${locale}${path}`,
+      availableLocales
+    ),
+  };
 }
