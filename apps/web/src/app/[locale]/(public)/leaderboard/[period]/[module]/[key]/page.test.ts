@@ -2,24 +2,15 @@
  * Redirect tests for the legacy score detail shim
  * (`/leaderboard/[period]/[module]/[key]` → `/leaderboard/score/[period]/[module-slug]/[key]`).
  */
+import { notFound, permanentRedirect } from 'next/navigation';
+
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import LegacyLeaderboardDetailRedirect from './page';
 
-const mockPermanentRedirect = vi.fn((url: string) => {
-  throw new Error(`NEXT_REDIRECT:${url}`);
-});
-
-const mockNotFound = vi.fn(() => {
-  throw new Error('NEXT_NOT_FOUND');
-});
-
-vi.mock('next/navigation', () => ({
-  permanentRedirect: (url: string) => mockPermanentRedirect(url),
-  notFound: () => mockNotFound(),
-}));
+vi.mock('next/navigation');
 
 async function invoke(
   locale: Locale,
@@ -36,15 +27,15 @@ async function invoke(
   } catch {
     // expected — permanentRedirect / notFound throw in the mocks
   }
-  if (mockNotFound.mock.calls.length > 0) {
+  if (vi.mocked(notFound).mock.calls.length > 0) {
     return { notFound: true };
   }
-  return { redirect: mockPermanentRedirect.mock.calls[0][0], notFound: false };
+  return { redirect: vi.mocked(permanentRedirect).mock.calls[0][0], notFound: false };
 }
 
 beforeEach(() => {
-  mockPermanentRedirect.mockClear();
-  mockNotFound.mockClear();
+  vi.mocked(permanentRedirect).mockClear();
+  vi.mocked(notFound).mockClear();
 });
 
 describe('LegacyLeaderboardDetailRedirect', () => {
@@ -52,7 +43,7 @@ describe('LegacyLeaderboardDetailRedirect', () => {
     it('calls notFound() for an invalid period', async () => {
       const result = await invoke('en', 'daily', 'coordinate-quiz', 'white');
       expect(result.notFound).toBe(true);
-      expect(mockPermanentRedirect).not.toHaveBeenCalled();
+      expect(vi.mocked(permanentRedirect)).not.toHaveBeenCalled();
     });
 
     it('calls notFound() for an unknown module slug', async () => {

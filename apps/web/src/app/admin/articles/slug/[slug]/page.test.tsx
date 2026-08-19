@@ -1,3 +1,5 @@
+import { notFound } from 'next/navigation';
+
 import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -10,13 +12,7 @@ vi.mock('next-intl/server', () => ({
   getTranslations: (...args: unknown[]) => mockGetTranslations(...args),
 }));
 
-const mockNotFound = vi.fn();
-vi.mock('next/navigation', () => ({
-  notFound: () => {
-    mockNotFound();
-    throw new Error('NEXT_NOT_FOUND');
-  },
-}));
+vi.mock('next/navigation');
 
 vi.mock('drizzle-orm', () => ({
   eq: (col: unknown, val: unknown) => ({ col, val }),
@@ -378,7 +374,7 @@ describe('AdminArticleSlugPage (locale variant detail page)', () => {
         AdminArticleSlugPage({ params: createParams('non-existent-slug') })
       ).rejects.toThrow('NEXT_NOT_FOUND');
 
-      expect(mockNotFound).toHaveBeenCalled();
+      expect(vi.mocked(notFound)).toHaveBeenCalled();
     });
 
     it('generates correct links when slug contains characters requiring encoding', async () => {

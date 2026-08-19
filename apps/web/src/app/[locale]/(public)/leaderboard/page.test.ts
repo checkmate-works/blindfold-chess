@@ -1,16 +1,12 @@
+import { permanentRedirect } from 'next/navigation';
+
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import LeaderboardIndexRedirect from './page';
 
-const mockPermanentRedirect = vi.fn((url: string) => {
-  throw new Error(`NEXT_REDIRECT:${url}`);
-});
-
-vi.mock('next/navigation', () => ({
-  permanentRedirect: (url: string) => mockPermanentRedirect(url),
-}));
+vi.mock('next/navigation');
 
 async function invoke(locale: Locale, period?: string | string[] | undefined): Promise<string> {
   try {
@@ -21,13 +17,13 @@ async function invoke(locale: Locale, period?: string | string[] | undefined): P
   } catch {
     // expected — permanentRedirect throws in the mock
   }
-  expect(mockPermanentRedirect).toHaveBeenCalledTimes(1);
-  const url = mockPermanentRedirect.mock.calls[0][0];
+  expect(vi.mocked(permanentRedirect)).toHaveBeenCalledTimes(1);
+  const url = vi.mocked(permanentRedirect).mock.calls[0][0];
   return url;
 }
 
 beforeEach(() => {
-  mockPermanentRedirect.mockClear();
+  vi.mocked(permanentRedirect).mockClear();
 });
 
 describe('LeaderboardIndexRedirect', () => {

@@ -22,16 +22,8 @@ const mockGetAuthenticatedUser = vi.fn();
 const mockGetOrCreateStripeCustomerId = vi.fn();
 const mockGetStripePriceId = vi.fn(() => 'price_test_123');
 const mockSessionsCreate = vi.fn();
-const mockRedirect = vi.fn();
 
-vi.mock('next/navigation', () => ({
-  redirect: (...args: unknown[]) => {
-    mockRedirect(...args);
-    // Match Next's runtime behaviour: `redirect()` throws so callers stop
-    // execution. We throw a sentinel error so tests can ignore it.
-    throw new Error('NEXT_REDIRECT');
-  },
-}));
+vi.mock('next/navigation');
 
 vi.mock('@/lib/auth', () => ({
   getAuthenticatedUser: (...args: unknown[]) => mockGetAuthenticatedUser(...args),

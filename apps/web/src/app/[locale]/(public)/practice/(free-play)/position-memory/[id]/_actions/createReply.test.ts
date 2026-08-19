@@ -1,4 +1,5 @@
 import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -96,13 +97,7 @@ vi.mock('@/lib/moderation/ban');
 
 vi.mock('@/lib/security/rate-limit');
 
-const mockRedirect = vi.fn();
-vi.mock('next/navigation', () => ({
-  redirect: (...args: unknown[]) => {
-    mockRedirect(...args);
-    throw new Error('NEXT_REDIRECT');
-  },
-}));
+vi.mock('next/navigation');
 
 vi.mock('@/lib/positions/queries', () => ({
   getPositionById: (params: { id: string; type: string }) => mockGetPositionById(params),
@@ -160,7 +155,7 @@ describe('position-memory parent-page createReply', () => {
       createReply('ja', positionId, validPostId, {}, makeFormData('hi'))
     ).rejects.toThrow('NEXT_REDIRECT');
 
-    expect(mockRedirect).toHaveBeenCalledWith(
+    expect(vi.mocked(redirect)).toHaveBeenCalledWith(
       `/ja/practice/position-memory/${positionId}?toast=post_created#post-${generatedReplyId}`
     );
   });

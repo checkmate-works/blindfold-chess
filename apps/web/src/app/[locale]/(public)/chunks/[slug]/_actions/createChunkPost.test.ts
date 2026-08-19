@@ -1,3 +1,5 @@
+import { redirect } from 'next/navigation';
+
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
@@ -62,13 +64,7 @@ vi.mock('@/lib/moderation/ban');
 
 vi.mock('@/lib/security/rate-limit');
 
-const mockRedirect = vi.fn();
-vi.mock('next/navigation', () => ({
-  redirect: (...args: unknown[]) => {
-    mockRedirect(...args);
-    throw new Error('NEXT_REDIRECT');
-  },
-}));
+vi.mock('next/navigation');
 
 vi.mock('@/lib/points', () => ({
   grantPointsForPost: vi.fn().mockResolvedValue({ pointEventId: 'pe-1', amount: 3 }),
@@ -145,7 +141,7 @@ describe('createChunkPost', () => {
         'NEXT_REDIRECT'
       );
 
-      expect(mockRedirect).toHaveBeenCalledWith(
+      expect(vi.mocked(redirect)).toHaveBeenCalledWith(
         `/ja/chunks/${testSlug}?toast=post_created#post-${generatedPostId}`
       );
     });

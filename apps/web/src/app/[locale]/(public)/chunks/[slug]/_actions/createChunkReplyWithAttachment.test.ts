@@ -1,4 +1,5 @@
 import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -103,13 +104,7 @@ vi.mock('@/lib/moderation/ban');
 
 vi.mock('@/lib/security/rate-limit');
 
-const mockRedirect = vi.fn();
-vi.mock('next/navigation', () => ({
-  redirect: (...args: unknown[]) => {
-    mockRedirect(...args);
-    throw new Error('NEXT_REDIRECT');
-  },
-}));
+vi.mock('next/navigation');
 
 vi.mock('@/lib/chunks/queries', () => ({
   getChunkBySlug: (slug: string) => mockGetChunkBySlug(slug),
@@ -184,7 +179,7 @@ describe('createChunkReplyWithAttachment', () => {
     expect(vi.mocked(checkRateLimit)).toHaveBeenCalledTimes(1);
     // The redirect carries the new reply id as the URL anchor (chunks
     // list-page contract — the reply lands as a comment under the chunk).
-    expect(mockRedirect).toHaveBeenCalledWith(
+    expect(vi.mocked(redirect)).toHaveBeenCalledWith(
       `/en/chunks/${testSlug}?toast=post_created#post-${generatedReplyId}`
     );
     expect(revalidatePath).not.toHaveBeenCalled();
