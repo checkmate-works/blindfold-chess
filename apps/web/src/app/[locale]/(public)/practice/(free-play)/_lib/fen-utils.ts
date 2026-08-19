@@ -1,3 +1,5 @@
+import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
+
 import type { SideToMove } from './board-editor-constants';
 
 /**
@@ -15,8 +17,11 @@ export function replaceSideToMove(fen: string, side: SideToMove): string {
 /**
  * Read the side-to-move byte from a FEN string. Defaults to white
  * when the field is missing or malformed.
+ *
+ * Whitespace is normalized first because the board editor hands this
+ * user-typed FENs, which arrive padded and irregularly spaced; the shared
+ * accessor assumes the single-space form a canonical FEN uses.
  */
 export function readSideToMove(fen: string): SideToMove {
-  const parts = fen.trim().split(/\s+/);
-  return parts[1] === 'b' ? 'b' : 'w';
+  return isBlackToMoveFromFen(fen.trim().replace(/\s+/g, ' ')) ? 'b' : 'w';
 }

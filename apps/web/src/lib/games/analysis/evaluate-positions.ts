@@ -1,4 +1,5 @@
 import { getLegalMoves, isCheckmateFen, replayMoves } from '@blindfold-chess/features/chess-core';
+import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 import type { Fen } from '@blindfold-chess/types';
 
 import type { PositionEvaluation } from './types';
@@ -102,7 +103,7 @@ export async function evaluatePositions({
  */
 function resolveTerminalEvaluation(fen: string): PositionEvaluation | null {
   if (isCheckmateFen(fen)) {
-    const whiteMated = fen.split(' ')[1] === 'w';
+    const whiteMated = !isBlackToMoveFromFen(fen);
     return { score: whiteMated ? -EVAL_SCORE_LIMIT : EVAL_SCORE_LIMIT };
   }
   if (getLegalMoves(fen).length === 0) {

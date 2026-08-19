@@ -1,4 +1,8 @@
 import { parsePgn, replayMoves } from '@blindfold-chess/features/chess-core';
+import {
+  fullmoveNumberFromFen,
+  isBlackToMoveFromFen,
+} from '@blindfold-chess/features/chess-core/fen';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 export type ReplayedLine = {
@@ -32,8 +36,8 @@ export function replayRepertoireLine(line: {
     fen: p.fen,
     lastMove: p.lastMove ?? null,
   }));
-  const startField = line.startingFen?.split(' ');
-  const startsAsBlack = startField?.[1] === 'b';
-  const startMoveNumber = startField ? Number(startField[5]) || 1 : 1;
+  const startingFen = line.startingFen;
+  const startsAsBlack = startingFen ? isBlackToMoveFromFen(startingFen) : false;
+  const startMoveNumber = startingFen ? fullmoveNumberFromFen(startingFen) : 1;
   return { sans, positions, startsAsBlack, startMoveNumber };
 }

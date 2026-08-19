@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { computeGameState } from '@blindfold-chess/features/ai-game';
 import type { GameStatus } from '@blindfold-chess/features/ai-game';
 import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
+import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 import type { AlgebraicNotation, FinalGameOutcome, Side } from '@blindfold-chess/types';
 
 import { sumOperationLogs } from '@/lib/games/operation-totals';
@@ -95,12 +96,7 @@ export function useGameState({
       return !gameState.isPlayerTurn && gameState.status === 'in_progress';
     }
     if (startingFen) {
-      const fenParts = startingFen.split(' ');
-      const turnFromFen = fenParts[1];
-      const isWhiteToMove = turnFromFen === 'w';
-      return (
-        (playerSide === 'white' && !isWhiteToMove) || (playerSide === 'black' && isWhiteToMove)
-      );
+      return isBlackToMoveFromFen(startingFen) ? playerSide === 'white' : playerSide === 'black';
     }
     return playerSide === 'black';
   });
