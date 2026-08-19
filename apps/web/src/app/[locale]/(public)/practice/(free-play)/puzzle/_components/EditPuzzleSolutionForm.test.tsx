@@ -1,6 +1,8 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { makeGamePreferences } from '@/app/[locale]/_contexts/__test-support__/preferences-fixture';
+
 import { editDraftStorageKey } from '../_lib/edit-draft-storage';
 import type { PuzzleEditDraftV1 } from '../_lib/edit-draft-storage';
 import { EditPuzzleSolutionForm } from './EditPuzzleSolutionForm';
@@ -25,21 +27,7 @@ vi.mock('../_actions/updatePuzzle', () => ({
 
 vi.mock('@/app/[locale]/_contexts/GamePreferencesContext', () => ({
   useGamePreferences: () => ({
-    preferences: {
-      showCoordinates: true,
-      highlightLastMove: true,
-      boardTheme: 'monotone',
-      showOwnPieces: true,
-      showOpponentPieces: true,
-      pieceShapeMode: 'normal',
-      pieceColors: 'normal',
-      moveInputMode: 'button',
-      enabledMoveInputModes: ['button'],
-      buttonInputPieceLabel: 'icon',
-      enableAutoComplete: true,
-      boardVisibility: 'peek',
-      peekMode: 'modal',
-    },
+    preferences: makeGamePreferences(),
     isLoaded: true,
     isHydrated: true,
     updatePreferences: () => {},

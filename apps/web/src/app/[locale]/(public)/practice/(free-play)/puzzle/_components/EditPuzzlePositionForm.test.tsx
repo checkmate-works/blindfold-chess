@@ -6,6 +6,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ChunkOption } from '@/lib/chunks/types';
 import type { ThemeOption } from '@/lib/themes/types';
 
+import { makeGamePreferences } from '@/app/[locale]/_contexts/__test-support__/preferences-fixture';
+
 import { editDraftStorageKey } from '../_lib/edit-draft-storage';
 import type { PuzzleEditDraftV1 } from '../_lib/edit-draft-storage';
 import { EditPuzzlePositionForm } from './EditPuzzlePositionForm';
@@ -25,21 +27,7 @@ vi.mock('next-intl', () => ({
 
 vi.mock('@/app/[locale]/_contexts/GamePreferencesContext', () => ({
   useGamePreferences: () => ({
-    preferences: {
-      showCoordinates: true,
-      highlightLastMove: true,
-      boardTheme: 'monotone',
-      showOwnPieces: true,
-      showOpponentPieces: true,
-      pieceShapeMode: 'normal',
-      pieceColors: 'normal',
-      moveInputMode: 'button',
-      enabledMoveInputModes: ['button'],
-      buttonInputPieceLabel: 'icon',
-      enableAutoComplete: true,
-      boardVisibility: 'peek',
-      peekMode: 'modal',
-    },
+    preferences: makeGamePreferences(),
     isLoaded: true,
     isHydrated: true,
     updatePreferences: () => {},

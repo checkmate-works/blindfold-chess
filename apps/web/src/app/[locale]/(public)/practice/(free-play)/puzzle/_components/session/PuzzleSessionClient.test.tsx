@@ -5,6 +5,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { MoveSquares } from '@/lib/board/move-squares';
 
+import { makeGamePreferences } from '@/app/[locale]/_contexts/__test-support__/preferences-fixture';
+
 import { PuzzleSessionClient } from './PuzzleSessionClient';
 
 // `useRouter` is provided by the i18n routing wrapper, which is just a thin
@@ -46,20 +48,7 @@ vi.mock('next-intl', () => ({
 
 vi.mock('@/app/[locale]/_contexts/GamePreferencesContext', () => ({
   useGamePreferences: () => ({
-    preferences: {
-      showCoordinates: true,
-      highlightLastMove: true,
-      boardTheme: 'monotone',
-      showOwnPieces: true,
-      showOpponentPieces: true,
-      pieceShapeMode: 'normal',
-      pieceColors: 'normal',
-      moveInputMode: 'button',
-      enabledMoveInputModes: ['button'],
-      buttonInputPieceLabel: 'icon',
-      enableAutoComplete: true,
-      boardVisibility: 'peek',
-    },
+    preferences: makeGamePreferences(),
     isLoaded: true,
     isHydrated: true,
     updatePreferences: () => {},
