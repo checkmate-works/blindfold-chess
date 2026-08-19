@@ -14,9 +14,13 @@ import type { GamePreferences } from '../GamePreferencesContext';
  * test was reading `undefined` for three real settings while the fixture
  * asserted a fourth that the app had stopped having.
  *
- * The values are the fixture's own, not the production defaults: the
- * production object is what `GamePreferencesContext.test` verifies, and
- * sharing it would make that test tautological.
+ * Not built from the production `defaultPreferences`: that object is what
+ * `GamePreferencesContext.test` verifies, and sharing it would make the test
+ * tautological. Several values are deliberately not the defaults (a
+ * `'monotone'` board, button input, `'peek'` visibility) because that is the
+ * configuration these tests exercise; the three restored fields happen to
+ * carry the same values the defaults do, which is what a real user of this
+ * screen would have.
  */
 export function makeGamePreferences(overrides: Partial<GamePreferences> = {}): GamePreferences {
   return {

@@ -8,8 +8,6 @@ import { PROMOTION_PIECES, type PromotionPiece } from '@blindfold-chess/types';
 
 import { ChessPiece } from './ChessPiece';
 
-/** Promotion piece types in display order — queen first, then descending importance. */
-
 type Props = {
   /** File of the destination square (0=a, 7=h, in absolute board coords). */
   fileIndex: number;
