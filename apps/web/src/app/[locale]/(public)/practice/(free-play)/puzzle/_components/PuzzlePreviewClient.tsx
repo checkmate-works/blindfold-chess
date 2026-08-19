@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 
 import type { ChunkOption } from '@/lib/chunks/types';
 import type { PuzzleSolutionMove } from '@/lib/db/schema/positions';
+import { buildCoinToastParams } from '@/lib/points/coin-toast-params';
 import type { ThemeOption } from '@/lib/themes/types';
 
 import {
@@ -75,16 +76,7 @@ export function PuzzlePreviewClient({ availableThemes, availableChunks }: Props)
       clearDraft();
 
       // Land straight on the created puzzle so the author can verify it.
-      // A point grant surfaces the coin reward as a toast on arrival
-      // (`?coinsEarned=N`); no-grant flows keep the plain "created" toast; a
-      // daily-cap hit adds a `?coinsCapped=1` warning toast either way.
-      const toastParams = new URLSearchParams();
-      if (result.pointGrant) {
-        toastParams.set('coinsEarned', String(result.pointGrant.amount));
-      } else {
-        toastParams.set('toast', 'position_created');
-      }
-      if (result.coinCapped) toastParams.set('coinsCapped', '1');
+      const toastParams = buildCoinToastParams(result, 'position_created');
       return { path: `/practice/puzzle/${result.id}?${toastParams.toString()}` };
     });
 

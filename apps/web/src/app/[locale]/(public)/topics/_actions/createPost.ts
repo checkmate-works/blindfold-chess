@@ -14,6 +14,7 @@ import {
 } from '@/lib/notifications/notification';
 import type { PointGrantOutcome } from '@/lib/points';
 import { grantPointsForPost, isPointEligibleTopicType } from '@/lib/points';
+import { buildCoinToastParams } from '@/lib/points/coin-toast-params';
 import type { RateLimitConfig } from '@/lib/security/rate-limit';
 import { checkRateLimit } from '@/lib/security/rate-limit';
 
@@ -241,13 +242,10 @@ export async function createPostBase(params: CreatePostParams): Promise<CreatePo
         !grantApplied ? '?toast=post_created' : ''
       }`;
 
-  // Append the coin-reward (`coinsEarned`) and/or daily-cap (`coinsCapped`)
-  // toast params to whatever destination was resolved above. A fully capped
-  // post keeps its `?toast=post_created` confirmation and adds the cap warning.
-  const extra = new URLSearchParams();
-  if (result.pointGrant) extra.set('coinsEarned', String(result.pointGrant.amount));
-  if (result.coinCapped) extra.set('coinsCapped', '1');
-  const extraQs = extra.toString();
+  // Append the coin toast params to whatever destination was resolved above.
+  // The `?toast=post_created` confirmation is already in `finalUrl` when no
+  // grant applied, so a fully capped post keeps it and adds the cap warning.
+  const extraQs = buildCoinToastParams(result).toString();
   if (extraQs) {
     const sep = finalUrl.includes('?') ? '&' : '?';
     redirect(`${finalUrl}${sep}${extraQs}`);

@@ -10,6 +10,7 @@ import { useRouter } from '@/i18n/routing';
 import { flushSync } from 'react-dom';
 
 import { localizeActionError } from '@/lib/i18n/localize-action-error';
+import { buildCoinToastParams } from '@/lib/points/coin-toast-params';
 import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
 
 import { SectionTitle } from '@/app/[locale]/_components';
@@ -180,13 +181,8 @@ export function ChunkPreviewClient(props: Props) {
       clearChunkDraft();
       flushSync(() => setSubmitted(true));
 
-      // A point grant surfaces the coin reward as a toast on arrival
-      // (`?coinsEarned=N`) and a daily-cap hit adds a `?coinsCapped=1` warning;
-      // an uncapped no-grant create navigates silently as before.
-      const toastParams = new URLSearchParams();
-      if (result.pointGrant) toastParams.set('coinsEarned', String(result.pointGrant.amount));
-      if (result.coinCapped) toastParams.set('coinsCapped', '1');
-      const toastQs = toastParams.toString();
+      // An uncapped no-grant create navigates silently, as before.
+      const toastQs = buildCoinToastParams(result).toString();
 
       // When the chunk was authored from a game move and the link landed,
       // return the author to that move — the chunk is visible there, in the
