@@ -10,9 +10,9 @@ import type { ThemeOption } from '@/lib/themes/types';
 import { EditableBoardSkeleton } from '@/app/[locale]/(public)/practice/(free-play)/_components/EditableBoardSkeleton';
 import { PositionEditorFields } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionEditorFields';
 
+import { useEditableBoardLabels } from '../../_hooks/use-editable-board-labels';
 import type { useFenBoardEditor } from '../../_hooks/use-fen-board-editor';
 import type { useTagSelection } from '../../_hooks/use-tag-selection';
-import { useEditableBoardLabels } from '../_hooks/use-editable-board-labels';
 import type { PuzzlePositionField } from '../_lib/validate-puzzle-form';
 import { SideToMoveIndicator } from './SideToMoveIndicator';
 
@@ -73,7 +73,7 @@ export function PuzzlePositionFields({
   messageFor,
 }: Props) {
   const t = useTranslations('practice.puzzle.create');
-  const boardLabels = useEditableBoardLabels();
+  const boardLabels = useEditableBoardLabels('practice.puzzle');
 
   return (
     <PositionEditorFields

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
 
 import { useTranslations } from 'next-intl';
 
@@ -13,6 +13,7 @@ import { PositionEditorFields } from '@/app/[locale]/(public)/practice/(free-pla
 import type { useFenBoardEditor } from '@/app/[locale]/(public)/practice/(free-play)/_hooks/use-fen-board-editor';
 import type { useTagSelection } from '@/app/[locale]/(public)/practice/(free-play)/_hooks/use-tag-selection';
 
+import { useEditableBoardLabels } from '../../_hooks/use-editable-board-labels';
 import type { PositionFormField } from '../_lib/position-form-validation';
 
 type Props = {
@@ -57,17 +58,8 @@ export function PositionFormFields({
   messageFor,
 }: Props) {
   const t = useTranslations('practice.positionMemory.create');
-  const tBoard = useTranslations('practice.positionMemory');
 
-  const boardLabels = useMemo(
-    () => ({
-      whitePieces: tBoard('whitePieces'),
-      blackPieces: tBoard('blackPieces'),
-      removePieceMode: tBoard('removePieceMode'),
-      placingPiece: tBoard('placingPiece'),
-    }),
-    [tBoard]
-  );
+  const boardLabels = useEditableBoardLabels('practice.positionMemory');
 
   // Position-memory has no separate "side to move" control — the FEN's active
   // color IS the persisted board orientation (isBlackToMoveFromFen drives the

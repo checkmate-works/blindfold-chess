@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 
 import { BoardFrame, Button, FlipBoardButton } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
@@ -12,6 +12,8 @@ import { EditableChessBoard } from '@/app/[locale]/(public)/practice/(free-play)
 import { ProgressBar } from '@/app/[locale]/(public)/practice/_components/ProgressBar';
 import type { PositionData } from '@/app/[locale]/(public)/practice/_lib/types';
 import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
+
+import { useEditableBoardLabels } from '../../_hooks/use-editable-board-labels';
 
 type Props = {
   originalPosition: PositionData;
@@ -43,15 +45,7 @@ export function FenRecreate({
   const t = useTranslations('practice.fen');
   const [isFlipped, setIsFlipped] = useState(originalPosition.isBlackToMove);
 
-  const editableBoardLabels = useMemo(
-    () => ({
-      whitePieces: t('whitePieces'),
-      blackPieces: t('blackPieces'),
-      removePieceMode: t('removePieceMode'),
-      placingPiece: t('placingPiece'),
-    }),
-    [t]
-  );
+  const editableBoardLabels = useEditableBoardLabels('practice.fen');
 
   return (
     <div className="space-y-4">

@@ -24,8 +24,8 @@ import {
 
 import { BoardFenTabs } from '@/app/[locale]/(public)/practice/(free-play)/_components/BoardFenTabs';
 import { EditableChessBoard } from '@/app/[locale]/(public)/practice/(free-play)/_components/EditableChessBoard';
+import { useEditableBoardLabels } from '@/app/[locale]/(public)/practice/(free-play)/_hooks/use-editable-board-labels';
 import type { useFenBoardEditor } from '@/app/[locale]/(public)/practice/(free-play)/_hooks/use-fen-board-editor';
-import { useEditableBoardLabels } from '@/app/[locale]/(public)/practice/(free-play)/puzzle/_hooks/use-editable-board-labels';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
@@ -101,7 +101,7 @@ export function ChunkFormFields({
   messageFor,
 }: Props) {
   const t = useTranslations('chunks.form');
-  const editableBoardLabels = useEditableBoardLabels();
+  const editableBoardLabels = useEditableBoardLabels('practice.puzzle');
   const { preferences, isLoaded } = useGamePreferences();
 
   const [clearBoardOpen, setClearBoardOpen] = useState(false);

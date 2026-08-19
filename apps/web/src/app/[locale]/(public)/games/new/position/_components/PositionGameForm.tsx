@@ -30,6 +30,7 @@ import { useMaiaGameLaunch } from '@/app/[locale]/(public)/games/new/_hooks/use-
 import { usePositionState } from '@/app/[locale]/(public)/games/new/_hooks/use-position-state';
 import { deriveMaiaCardMode } from '@/app/[locale]/(public)/games/new/_lib/maia-launch';
 import { EditableChessBoard } from '@/app/[locale]/(public)/practice/(free-play)/_components/EditableChessBoard';
+import { useEditableBoardLabels } from '@/app/[locale]/(public)/practice/(free-play)/_hooks/use-editable-board-labels';
 import { CollapsibleGameSettings } from '@/app/[locale]/(public)/preferences/_components/CollapsibleGameSettings';
 import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -132,15 +133,7 @@ export function PositionGameForm({ locale, maiaAccess }: Props) {
 
   const launch = useMaiaGameLaunch({ navigateToGame });
 
-  const editableBoardLabels = useMemo(
-    () => ({
-      whitePieces: t('positionSettings.whitePieces'),
-      blackPieces: t('positionSettings.blackPieces'),
-      removePieceMode: t('positionSettings.removePieceMode'),
-      placingPiece: t('positionSettings.placingPiece'),
-    }),
-    [t]
-  );
+  const editableBoardLabels = useEditableBoardLabels('newGame.positionSettings');
 
   const [positionSettingsOpen, setPositionSettingsOpen] = useState(false);
 
