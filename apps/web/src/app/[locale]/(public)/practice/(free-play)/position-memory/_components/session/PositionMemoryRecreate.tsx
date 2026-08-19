@@ -23,6 +23,14 @@ type Props = {
   boardTheme?: BoardTheme;
   isTutorial?: boolean;
   showSkip?: boolean;
+  /**
+   * Whether the "view again" link (back to the memorize phase) is offered.
+   * False when the session skips memorize: the auto-MEMORIZED effect fires
+   * again the instant the machine re-enters `memorize`, so the link would
+   * flash the answer for one frame and bounce straight back — a broken
+   * affordance and, for the in-game position check, an answer leak.
+   */
+  showViewAgain?: boolean;
   onPositionChange: (fen: string) => void;
   onSubmit: () => void;
   onViewAgain: () => void;
@@ -38,6 +46,7 @@ export function PositionMemoryRecreate({
   boardTheme = DEFAULT_BOARD_THEME,
   isTutorial = false,
   showSkip = true,
+  showViewAgain = true,
   onPositionChange,
   onSubmit,
   onViewAgain,
@@ -88,9 +97,11 @@ export function PositionMemoryRecreate({
       {/* Action Links */}
       {!isTutorial && (
         <div className="flex flex-col items-center gap-2">
-          <button onClick={onViewAgain} className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
-            {t('viewAgain')}
-          </button>
+          {showViewAgain && (
+            <button onClick={onViewAgain} className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
+              {t('viewAgain')}
+            </button>
+          )}
           {showSkip && (
             <button onClick={onSkip} className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
               {t('skip')}

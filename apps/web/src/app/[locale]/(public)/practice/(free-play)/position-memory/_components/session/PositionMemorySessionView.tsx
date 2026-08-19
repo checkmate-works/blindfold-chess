@@ -173,6 +173,10 @@ export function PositionMemorySessionView({
         enablePause={enablePause}
         isPaused={isPaused}
         showSkipButton={showSkipButton}
+        // With memorize skipped, "view again" would re-enter memorize only to
+        // be bounced straight back by the auto-MEMORIZED effect — the answer
+        // flashes for a frame and nothing else happens. Hide it.
+        showViewAgain={!skipMemorize}
         skipProblemResult={skipProblemResult}
         displayMode={displayMode}
         onMemorized={() => send({ type: 'MEMORIZED' })}
