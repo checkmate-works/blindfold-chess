@@ -4,7 +4,7 @@
 import * as Sentry from '@sentry/nextjs';
 
 import type { QueryDeadlineDiagnostics } from '@/lib/db/query-deadline';
-import { scrubInPlace } from '@/lib/sentry/scrub';
+import { scrubRequestInPlace } from '@/lib/sentry/scrub';
 
 /**
  * Find a `QueryDeadlineError`'s diagnostics anywhere in an error's `cause`
@@ -43,7 +43,7 @@ Sentry.init({
   // attaches the request URL / headers / body to server-side exceptions, and
   // password-related Server Actions (changePassword, resetPassword, ...)
   // would otherwise leak plaintext credentials via `event.request.data`.
-  /* eslint-disable no-param-reassign -- Sentry's beforeSend contract is mutate-in-place: the hook edits the event it is handed (see scrubInPlace's docblock). */
+  /* eslint-disable no-param-reassign -- Sentry's beforeSend contract is mutate-in-place: the hook edits the event it is handed, and returning a copy would drop the fields Sentry attaches after it runs. */
   beforeSend(event, hint) {
     // Surface a query deadline's where-did-the-time-go numbers as searchable
     // tags: overshoot in the seconds = this instance's event loop was blocked
@@ -68,20 +68,7 @@ Sentry.init({
       };
     }
 
-    if (event.request) {
-      if (event.request.cookies) {
-        event.request.cookies = { scrubbed: true } as unknown as typeof event.request.cookies;
-      }
-      if (event.request.headers) {
-        delete event.request.headers.authorization;
-        delete event.request.headers.Authorization;
-        delete event.request.headers.cookie;
-        delete event.request.headers.Cookie;
-      }
-      if (event.request.data && typeof event.request.data === 'object') {
-        scrubInPlace(event.request.data);
-      }
-    }
+    scrubRequestInPlace(event);
     return event;
   },
 });

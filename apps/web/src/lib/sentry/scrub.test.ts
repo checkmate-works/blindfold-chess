@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { scrubInPlace } from './scrub';
+import { scrubInPlace, scrubRequestInPlace } from './scrub';
 
 describe('scrubInPlace', () => {
   it('redacts top-level sensitive keys', () => {
@@ -81,5 +81,47 @@ describe('scrubInPlace', () => {
     expect(() => scrubInPlace(undefined)).not.toThrow();
     expect(() => scrubInPlace('password')).not.toThrow();
     expect(() => scrubInPlace(42)).not.toThrow();
+  });
+});
+
+describe('scrubRequestInPlace', () => {
+  it('replaces the cookie jar wholesale', () => {
+    const event = { request: { cookies: { sb_access_token: 'secret', theme: 'dark' } } };
+
+    scrubRequestInPlace(event);
+
+    expect(event.request.cookies).toEqual({ scrubbed: true });
+  });
+
+  it('deletes both capitalizations of the credential headers', () => {
+    const event = {
+      request: {
+        headers: {
+          authorization: 'Bearer a',
+          Authorization: 'Bearer b',
+          cookie: 'sb=1',
+          Cookie: 'sb=2',
+          'user-agent': 'vitest',
+        },
+      },
+    };
+
+    scrubRequestInPlace(event);
+
+    expect(event.request.headers).toEqual({ 'user-agent': 'vitest' });
+  });
+
+  it('scrubs the request body with the shared key list', () => {
+    const event = {
+      request: { data: { email: 'user@example.com', newPassword: 'hunter2' } },
+    };
+
+    scrubRequestInPlace(event);
+
+    expect(event.request.data).toEqual({ email: 'user@example.com', newPassword: '[Filtered]' });
+  });
+
+  it('is a no-op when the event carries no request', () => {
+    expect(() => scrubRequestInPlace({})).not.toThrow();
   });
 });
