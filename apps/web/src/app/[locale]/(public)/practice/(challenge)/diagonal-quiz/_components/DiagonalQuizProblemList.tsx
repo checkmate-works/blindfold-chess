@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 
 import { ChessPiece, Square } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { isLightSquare } from '@blindfold-chess/features/common';
 import {
   type DiagonalQuestionResult as QuestionResult,
   getDiagonalSquares,
@@ -58,7 +59,7 @@ export function DiagonalBoard({
           {DISPLAY_RANKS.map((rank, rankIndex) =>
             FILES.map((file, fileIndex) => {
               const square = `${file}${rank}` as const;
-              const isLight = (fileIndex + rankIndex) % 2 === 0;
+              const isLight = isLightSquare(fileIndex, rankIndex);
               const overlay = getOverlayClass(square);
               const isBishopSquare = square === targetSquare;
 

@@ -4,6 +4,7 @@ import type {
 } from '@blindfold-chess/features/board-display';
 import { resolvePieceDisplay } from '@blindfold-chess/features/board-display';
 import { fenCharToPiece, fenToBoardFlat } from '@blindfold-chess/features/chess-core/fen';
+import { isLightSquare } from '@blindfold-chess/features/common';
 import type { SvgElement } from '@blindfold-chess/icons/data';
 import { flagData, getPieceData, undoData } from '@blindfold-chess/icons/data';
 import type { PieceColor } from '@blindfold-chess/types';
@@ -314,7 +315,7 @@ export function renderBoardSvg({
     const { col, row } = toPixelColRow(rankFromTop, fileIdx, flipped);
     const x = col * squareSize;
     const y = row * squareSize;
-    const isLight = (rankFromTop + fileIdx) % 2 === 0;
+    const isLight = isLightSquare(fileIdx, rankFromTop);
     squaresMarkup += `<rect x="${x}" y="${y}" width="${squareSize}" height="${squareSize}" fill="${
       isLight ? theme.light : theme.dark
     }"/>`;
