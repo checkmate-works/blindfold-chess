@@ -2,11 +2,13 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { notFound, useSearchParams } from 'next/navigation';
+import { notFound, usePathname, useSearchParams } from 'next/navigation';
 
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { fenToLichessUrl } from '@blindfold-chess/features/chess-core/fen';
 import type { ExpInfo } from '@blindfold-chess/features/exp';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
+import { FaBrain } from 'react-icons/fa';
 
 import type { BoardVisibility } from '@/lib/games/board-visibility';
 import { writeBoardVisibilityCookieClient } from '@/lib/games/board-visibility-cookie';
@@ -91,8 +93,15 @@ export function PlayClient({
   isAuthenticated,
   expInfo,
 }: Props) {
+  const t = useTranslations('play');
   const terminationMarkLabel = useTerminationMarkLabel();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
+  // The play screen's own URL, passed as `returnTo` to the mid-game practice
+  // entries (recall / position check) so their exit lands back on this game.
+  // Read lazily at click time via closure — the query string tracks gameId
+  // and settings as the game progresses (see use-url-sync).
+  const currentUrl = searchParams.size > 0 ? `${pathname}?${searchParams.toString()}` : pathname;
   // Opened from the result / games list with `finished=1` to review a
   // finished game in the familiar game UI (read-only). Suppresses the
   // redirect-to-result below and renders the play panel in `finished` mode.
@@ -521,6 +530,28 @@ export function PlayClient({
               }}
               operations={{ logs: operationLogs, playerSide, setupPlies }}
               showBackground={false}
+              // Mid-game recall entry, sitting on the "Moves" header: the
+              // moment a player reaches for the move list is the moment they
+              // can no longer recall the game — offer "reconstruct it from
+              // memory" right next to "just show me". Free to use (the move
+              // list itself is uncounted), so no aid accounting here. Also
+              // rendered in finished review for consistency with the
+              // finish-modal card; `returnTo` brings the summary's back link
+              // to this very screen. Disabled until the game has moves and a
+              // persisted id (the recall deep-link replays by gameId), and
+              // while the engine is thinking (navigating away would abandon
+              // the pending move).
+              headerAction={
+                <button
+                  type="button"
+                  onClick={() => openRecall(currentUrl)}
+                  disabled={!gameId || moves.length === 0 || isAiThinking}
+                  className="flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <FaBrain className="w-3.5 h-3.5" aria-hidden />
+                  {t('movesPanel.startRecall')}
+                </button>
+              }
             />
           )}
         </div>
@@ -548,7 +579,9 @@ export function PlayClient({
         onClose={() => setFinishModalOpen(false)}
         result={playerResult}
         onReview={handleViewResult}
-        onRecall={openRecall}
+        // Explicit closure: openRecall now takes an optional returnTo, and a
+        // raw event-handler reference would pass the MouseEvent as that arg.
+        onRecall={() => openRecall()}
         onRepertoireCheck={openRepertoireCheck}
         published={isShared}
         promotionRankSlug={promotionRankSlug}

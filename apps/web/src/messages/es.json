@@ -2330,7 +2330,8 @@
     "undo": "Deshacer",
     "moves": "Movimientos",
     "movesPanel": {
-      "viewOps": "Ver las operaciones de este movimiento"
+      "viewOps": "Ver las operaciones de este movimiento",
+      "startRecall": "De memoria"
     },
     "confirmResignTitle": "Confirmar Rendición",
     "confirmResignMessage": "¿Estás seguro de que quieres rendirte? Esto terminará la partida.",

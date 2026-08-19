@@ -27,8 +27,15 @@ type Params = {
 type Result = {
   /** Navigate to the result page for the current game. */
   handleViewResult: () => void;
-  /** Navigate to Recall — open to everyone, no sign-up required. */
-  openRecall: () => void;
+  /**
+   * Navigate to Recall — open to everyone, no sign-up required. The optional
+   * `returnTo` (a same-origin path, typically the play screen's current URL)
+   * makes the recall summary's back link return there instead of to the
+   * result screen — the mid-game entry passes it; the finished-game modal
+   * calls with no argument. Call through an explicit closure, never as a raw
+   * event handler (a MouseEvent would arrive as `returnTo`).
+   */
+  openRecall: (returnTo?: string) => void;
   /** Navigate to the Kata check — compare the opening against registered 型. */
   openRepertoireCheck: () => void;
   /** Publish this game (or open it if already published from this browser). */
@@ -89,20 +96,24 @@ export function useFinishedGameNavigation({
     );
   }, [router, locale, gameId, sharedPublishedId]);
 
-  const openRecall = useCallback(() => {
-    if (!gameId) return;
-    router.push(
-      buildRecallPath({
-        locale,
-        formattedPgn,
-        playerColor: playerSide,
-        moves,
-        engineConfig,
-        gameId,
-        startingFen,
-      })
-    );
-  }, [router, locale, formattedPgn, playerSide, moves, engineConfig, gameId, startingFen]);
+  const openRecall = useCallback(
+    (returnTo?: string) => {
+      if (!gameId) return;
+      router.push(
+        buildRecallPath({
+          locale,
+          formattedPgn,
+          playerColor: playerSide,
+          moves,
+          engineConfig,
+          gameId,
+          startingFen,
+          returnTo,
+        })
+      );
+    },
+    [router, locale, formattedPgn, playerSide, moves, engineConfig, gameId, startingFen]
+  );
 
   const openRepertoireCheck = useCallback(() => {
     if (!gameId) return;

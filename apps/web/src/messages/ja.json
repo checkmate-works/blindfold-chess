@@ -2330,7 +2330,8 @@
     "undo": "待った",
     "moves": "棋譜",
     "movesPanel": {
-      "viewOps": "この手の操作内訳を表示"
+      "viewOps": "この手の操作内訳を表示",
+      "startRecall": "棋譜再現"
     },
     "confirmResignTitle": "投了の確認",
     "confirmResignMessage": "本当に投了しますか？ゲームが終了します。",

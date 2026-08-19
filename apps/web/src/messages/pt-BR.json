@@ -2330,7 +2330,8 @@
     "undo": "Desfazer",
     "moves": "Movimentos",
     "movesPanel": {
-      "viewOps": "Ver as operações deste movimento"
+      "viewOps": "Ver as operações deste movimento",
+      "startRecall": "De memória"
     },
     "confirmResignTitle": "Confirmar Desistência",
     "confirmResignMessage": "Tem certeza de que deseja desistir? Isso encerrará a partida.",
