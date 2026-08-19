@@ -7,20 +7,18 @@ import {
   pruneDeleted,
 } from '@/lib/comment-tree/shape';
 
+import { byActivity, byNewest, byPopularity } from './post-comparators';
 import type { PostWithReplyMeta, SortMode } from './shared';
 
 /**
  * Sort the top-level node array.
  *
- * The logic is intentionally duplicated from `sortPosts` in `./shared`
- * rather than imported: this module is consumed by client components
- * (see `CommentNode`), and `./shared` value-imports from `@/lib/db`
- * (Drizzle column refs that boot a Postgres client) which must not enter
- * the client bundle.
- *
- * Differs from `sortPosts` only in 'new' handling: `sortPosts` treats 'new'
- * as a no-op assuming `createdAt DESC` input; tree path receives
- * `createdAt ASC` (so sibling replies stay chronological), so we re-sort.
+ * Differs from `sortPosts` in `./shared` only in 'new' handling: `sortPosts`
+ * treats 'new' as a no-op assuming `createdAt DESC` input; the tree path
+ * receives `createdAt ASC` (so sibling replies stay chronological), so we
+ * re-sort. The comparators themselves come from `./post-comparators`, a leaf
+ * module this can import without dragging `./shared`'s Drizzle column refs
+ * into the client bundle that renders `CommentNode`.
  *
  * Exported (beyond `buildCommentTree`'s internal use) for
  * `getCommentTreePageForTopic`, which must slice the globally-sorted root
@@ -28,26 +26,10 @@ import type { PostWithReplyMeta, SortMode } from './shared';
  * diverged, batch boundaries would drop or duplicate roots.
  */
 export function sortRoots<T extends PostWithReplyMeta>(roots: T[], sortBy: SortMode): T[] {
-  if (sortBy === 'popular') {
-    return [...roots].sort((a, b) => {
-      const likeDiff = b.likeMeta.likeCount - a.likeMeta.likeCount;
-      if (likeDiff !== 0) return likeDiff;
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-    });
-  }
-  if (sortBy === 'active') {
-    return [...roots].sort((a, b) => {
-      const aLatest = a.replyMeta.latestReplyAt ? new Date(a.replyMeta.latestReplyAt).getTime() : 0;
-      const bLatest = b.replyMeta.latestReplyAt ? new Date(b.replyMeta.latestReplyAt).getTime() : 0;
-      const replyDiff = bLatest - aLatest;
-      if (replyDiff !== 0) return replyDiff;
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-    });
-  }
+  if (sortBy === 'popular') return [...roots].sort(byPopularity);
+  if (sortBy === 'active') return [...roots].sort(byActivity);
   // 'new'
-  return [...roots].sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  );
+  return [...roots].sort(byNewest);
 }
 
 /**

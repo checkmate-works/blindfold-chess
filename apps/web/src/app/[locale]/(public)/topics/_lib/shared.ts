@@ -5,6 +5,8 @@ import type { ReplyMeta } from '@/lib/db/reply-meta-queries';
 import type { SortMode } from '@/lib/sort';
 import type { SocialAuthorProfile } from '@/lib/users/author-profile';
 
+import { byActivity, byPopularity } from './post-comparators';
+
 /**
  * Normalize a rating value: returns the rating if at least one field is non-null,
  * otherwise returns null. Prevents storing empty rating objects.
@@ -50,23 +52,8 @@ export type { SortMode };
  * - 'active': by latestReplyAt DESC, then createdAt DESC
  */
 export function sortPosts<T extends PostWithReplyMeta>(posts: readonly T[], sortBy: SortMode): T[] {
-  if (sortBy === 'popular') {
-    return posts.toSorted((a, b) => {
-      const likeDiff = b.likeMeta.likeCount - a.likeMeta.likeCount;
-      if (likeDiff !== 0) return likeDiff;
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-    });
-  }
-
-  if (sortBy === 'active') {
-    return posts.toSorted((a, b) => {
-      const aLatest = a.replyMeta.latestReplyAt ? new Date(a.replyMeta.latestReplyAt).getTime() : 0;
-      const bLatest = b.replyMeta.latestReplyAt ? new Date(b.replyMeta.latestReplyAt).getTime() : 0;
-      const replyDiff = bLatest - aLatest;
-      if (replyDiff !== 0) return replyDiff;
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-    });
-  }
+  if (sortBy === 'popular') return posts.toSorted(byPopularity);
+  if (sortBy === 'active') return posts.toSorted(byActivity);
 
   // 'new' — already sorted by createdAt DESC from the DB query
   return [...posts];
