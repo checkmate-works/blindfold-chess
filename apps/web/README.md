@@ -120,7 +120,7 @@ This is intentionally separate from `pnpm db:seed`, which seeds master data (ran
 ### Local Services
 
 - **Supabase Studio**: http://127.0.0.1:54323
-- **Inbucket (email testing)**: http://127.0.0.1:54324
+- **Mailpit (email testing)**: http://127.0.0.1:54324
 - **PostgreSQL**: `postgresql://postgres:postgres@127.0.0.1:54322/postgres`
 
 To stop Supabase:

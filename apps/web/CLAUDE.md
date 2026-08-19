@@ -244,7 +244,7 @@ Delete the build steps, deliverable lists, acceptance checklists, progress check
 
 ### Supabase Local
 
-Local development uses [Supabase CLI](https://supabase.com/docs/guides/local-development) instead of standalone PostgreSQL. Supabase local provides PostgreSQL, Auth (GoTrue), Storage, Studio, and Inbucket (email testing) in Docker containers.
+Local development uses [Supabase CLI](https://supabase.com/docs/guides/local-development) instead of standalone PostgreSQL. Supabase local provides PostgreSQL, Auth (GoTrue), Storage, Studio, and Mailpit (email testing) in Docker containers.
 
 The CLI is bundled as a devDependency of `apps/web` (`supabase/config.toml` is
 version-coupled to it), so always run it as `pnpm supabase ...` from `apps/web`
@@ -271,7 +271,7 @@ pnpm supabase stop
 > These keys are also visible in the human-readable `pnpm supabase start` output under "Authentication Keys" (Publishable / Secret).
 
 - **Supabase Studio**: http://127.0.0.1:54323
-- **Inbucket (email testing)**: http://127.0.0.1:54324
+- **Mailpit (email testing)**: http://127.0.0.1:54324
 - **PostgreSQL**: `postgresql://postgres:postgres@127.0.0.1:54322/postgres`
 - **API**: http://127.0.0.1:54321
 
