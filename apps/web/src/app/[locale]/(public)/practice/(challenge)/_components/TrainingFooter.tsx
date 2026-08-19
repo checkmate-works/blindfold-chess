@@ -18,7 +18,11 @@ type Props = {
   correct: number;
   incorrect: number;
   onEndTraining: () => void;
-  /** Where "ready for the challenge?" sends the player. */
+  /**
+   * Where "ready for the challenge?" sends the player — normally the
+   * module's `/challenge/session`. See the quadrant drill for the one case
+   * that deliberately points at the setup screen instead.
+   */
   challengeHref: string;
   /**
    * Actions shown above "end training", each in its own block — the diagonal
@@ -37,12 +41,14 @@ type Props = {
  * the way out of training mode, and the pitch to switch to the scored
  * challenge.
  *
- * Seven screens assembled these three by hand. The copies had already
- * drifted — the score spacing in one, and the quadrants CTA pointing at
- * `/challenge` (the setup screen) where every other module links to
- * `/challenge/session`. Composing it once does not resolve either
- * difference, but it makes both of them visible as arguments at the call
- * site rather than as a diff between two files nobody reads side by side.
+ * Seven screens assembled these three by hand, and two of them differ:
+ * the coordinate quiz sits closer to its board, and the quadrant drill
+ * sends players to its challenge *setup* screen rather than straight into
+ * a session, because it is the only unranked challenge and that screen is
+ * where it says so. Composing the footer once does not resolve either
+ * difference — it makes both visible as arguments at the call site, where
+ * the quadrants one carries its reason, instead of as a diff between two
+ * files nobody reads side by side.
  */
 export function TrainingFooter({
   correct,

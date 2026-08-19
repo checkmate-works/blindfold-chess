@@ -85,6 +85,14 @@ export function QuadrantsTrainingPlaying({
         </div>
       </div>
 
+      {/*
+        The setup screen, not `/challenge/session` that the other six modules
+        link to. This is the one unranked challenge, and its setup screen is
+        the only place that says so ("scores from this exercise will not be
+        recorded in your practice history or leaderboard"). Sending a player
+        straight into the session would start a run whose result is silently
+        discarded. Do not "align" this with the others.
+      */}
       <TrainingFooter
         correct={correctCount}
         incorrect={incorrectCount}
