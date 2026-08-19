@@ -4,14 +4,13 @@ import { and, asc, desc, eq, inArray, isNull, or, sql } from 'drizzle-orm';
 
 import { SOCIAL_AUTHOR_COLUMNS, db, liveProfileJoinOn, profiles, topicPosts } from '@/lib/db';
 import { countRows } from '@/lib/db/list-query';
+import { UUID_RE } from '@/lib/validations/uuid';
 
 import { sortRoots } from './comment-tree';
 import type { TopicType } from './constants';
 import { attachPostMeta } from './post-meta';
 import { sortPosts } from './shared';
 import type { PostWithReplyMeta, SortMode, TopicPostWithAuthor } from './shared';
-
-const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
  * The `topic_posts` + author SELECT every read in this module starts from.
@@ -99,7 +98,7 @@ export const getPostByIdAndTopicKey = cache(
     // URL-supplied postId — reject non-UUID input before it reaches Postgres,
     // where `eq(topicPosts.id, "1")` would throw `invalid input syntax for type uuid`
     // and surface as a 500. Caller treats null as 404.
-    if (!UUID_REGEX.test(postId)) {
+    if (!UUID_RE.test(postId)) {
       return null;
     }
 
