@@ -1,3 +1,5 @@
+import { formatLocalDate } from '@/lib/i18n/format-date';
+
 /**
  * Format an absolute "<date> · <time>" string for display alongside a
  * comment or post.
@@ -20,11 +22,7 @@ export function formatAbsoluteDateTime(
   locale: string,
   monthStyle: 'short' | 'long' = 'short'
 ): string {
-  const datePart = date.toLocaleDateString(locale, {
-    year: 'numeric',
-    month: monthStyle,
-    day: 'numeric',
-  });
+  const datePart = formatLocalDate(date, locale, monthStyle);
   const timePart = date.toLocaleTimeString(locale, {
     hour: '2-digit',
     minute: '2-digit',

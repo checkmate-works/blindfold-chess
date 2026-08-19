@@ -9,6 +9,7 @@ import { Link, routing } from '@/i18n/routing';
 import { getOptionalUser } from '@/lib/auth';
 import { withReturnPath } from '@/lib/auth-return-path';
 import { getCurrentReturnTarget } from '@/lib/current-return-target';
+import { formatLocalDate } from '@/lib/i18n/format-date';
 
 import { PageLayout } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
@@ -114,11 +115,7 @@ export default async function AnnouncementPage({ params }: Props) {
   }
 
   const publishedDate = announcement.publishedAt
-    ? new Date(announcement.publishedAt).toLocaleDateString(locale, {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      })
+    ? formatLocalDate(new Date(announcement.publishedAt), locale, 'long')
     : undefined;
 
   return (

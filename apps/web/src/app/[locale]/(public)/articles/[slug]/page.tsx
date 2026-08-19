@@ -8,6 +8,7 @@ import type { TiptapJsonContent } from '@/app/admin/articles/_lib/types';
 import { SUPPORTED_LOCALES } from '@/config';
 import { routing } from '@/i18n/routing';
 
+import { formatLocalDate } from '@/lib/i18n/format-date';
 import { JsonLd, generateBlogPostingSchema } from '@/lib/seo/jsonld';
 
 import { PageLayout } from '@/app/[locale]/_components';
@@ -97,11 +98,7 @@ export default async function ArticlePage({ params }: Props) {
   const isFallback = article.locale !== locale;
 
   const publishedDate = article.publishedAt
-    ? new Date(article.publishedAt).toLocaleDateString(locale, {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      })
+    ? formatLocalDate(new Date(article.publishedAt), locale, 'long')
     : undefined;
 
   return (

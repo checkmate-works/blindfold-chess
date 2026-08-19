@@ -3,6 +3,8 @@ import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 import { FaBullhorn } from 'react-icons/fa';
 
+import { formatLocalDate } from '@/lib/i18n/format-date';
+
 import { getPublishedAnnouncementsPaginated } from '@/app/[locale]/(public)/announcements/_lib/queries';
 import { ListLink, ListLinkContainer, SectionTitle } from '@/app/[locale]/_components';
 
@@ -30,11 +32,7 @@ export async function LatestAnnouncements({ locale, userId }: Props) {
       <ListLinkContainer>
         {announcements.map((announcement) => {
           const publishedDate = announcement.publishedAt
-            ? new Date(announcement.publishedAt).toLocaleDateString(locale, {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-              })
+            ? formatLocalDate(new Date(announcement.publishedAt), locale)
             : undefined;
 
           return (

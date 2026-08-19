@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
+import { formatLocalDate } from '@/lib/i18n/format-date';
 import { buildPageHref } from '@/lib/pagination';
 import { getPaginationParams } from '@/lib/pagination';
 
@@ -78,11 +79,7 @@ export default async function AnnouncementsPage({ params, searchParams }: Props)
           <ListLinkContainer>
             {announcements.map((announcement) => {
               const publishedDate = announcement.publishedAt
-                ? new Date(announcement.publishedAt).toLocaleDateString(locale, {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric',
-                  })
+                ? formatLocalDate(new Date(announcement.publishedAt), locale)
                 : undefined;
 
               return (
