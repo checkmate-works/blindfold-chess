@@ -2,18 +2,13 @@ import { useEffect } from 'react';
 
 import { useRouter, useSearchParams } from 'next/navigation';
 
-import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
+import type { Side } from '@blindfold-chess/types';
 
 import { type EngineConfig, engineConfigToUrlParams } from '@/lib/engines';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-type ErrorDetails = {
-  invalidMove: string;
-  invalidIndex: number;
-  validMoves: AlgebraicNotation[];
-  allMoves: AlgebraicNotation[];
-};
+import type { ValidationErrorDetails } from './use-game-initialization';
 
 type UseUrlSyncOptions = {
   locale: Locale;
@@ -23,7 +18,7 @@ type UseUrlSyncOptions = {
   engineConfig: EngineConfig;
   initialStartingFen: string | undefined;
   shouldRedirectToError: boolean;
-  errorDetails: ErrorDetails | null;
+  errorDetails: ValidationErrorDetails | null;
 };
 
 export function useUrlSync({

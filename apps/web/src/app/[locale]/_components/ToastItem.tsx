@@ -6,18 +6,10 @@ import { useEffect } from 'react';
 import { useRouter } from '@/i18n/routing';
 import { CoinIcon } from '@blindfold-chess/icons';
 
-import type { ToastIcon, ToastType } from '@/app/[locale]/_contexts/ToastContext';
-
-type ToastData = {
-  id: string;
-  message: string;
-  type: ToastType;
-  icon?: ToastIcon;
-  href?: string;
-};
+import type { Toast } from '@/app/[locale]/_contexts/ToastContext';
 
 type Props = {
-  toast: ToastData;
+  toast: Toast;
   onClose: () => void;
   duration: number;
 };
