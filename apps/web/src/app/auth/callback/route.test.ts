@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import { logActivityEvent } from '@/lib/users/activity-log';
 
 const mockSentryCaptureException = vi.fn();
@@ -39,7 +40,8 @@ vi.mock('@/lib/locale', () => ({
 
 const mockDbSelect = vi.fn();
 
-vi.mock('@/lib/db', () => ({
+vi.mock('@/lib/db', async () => ({
+  ...(await actualDbSchema()),
   db: {
     select: () => ({
       from: () => ({
@@ -48,11 +50,6 @@ vi.mock('@/lib/db', () => ({
         }),
       }),
     }),
-  },
-  profiles: {
-    username: 'username',
-    displayName: 'display_name',
-    id: 'id',
   },
 }));
 

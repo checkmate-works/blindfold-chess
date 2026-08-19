@@ -1,5 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
+import { feedItems, positionContentRevisions } from '@/lib/db/schema';
+
 /**
  * Unit tests for the shared position CRUD cores. Mirrors the mock harness of
  * `lib/chunks/user-chunk-mutations.test.ts` — the deliberately parallel
@@ -76,7 +79,8 @@ vi.mock('@/lib/users/activity-log', () => ({
   logActivityEvent: (...args: unknown[]) => mockLogActivityEvent(...args),
 }));
 
-vi.mock('@/lib/db', () => ({
+vi.mock('@/lib/db', async () => ({
+  ...(await actualDbSchema()),
   db: {
     select: () => ({
       from: () => ({
@@ -87,16 +91,16 @@ vi.mock('@/lib/db', () => ({
     }),
     transaction: async (fn: (tx: unknown) => Promise<unknown>) => {
       const tx = {
-        insert: (table: { __tableTag?: string }) => ({
+        insert: (table: unknown) => ({
           values: (values: unknown) => {
             // Discriminate by table tag so the positions insert (which the
             // create path `returning()`s) can be asserted independently of
             // the feed_items insert.
-            if (table?.__tableTag === 'feed_items') {
+            if (table === feedItems) {
               mockTxFeedInsertValues(values);
               return Promise.resolve();
             }
-            if (table?.__tableTag === 'position_content_revisions') {
+            if (table === positionContentRevisions) {
               mockTxRevisionInsertValues(values);
               return Promise.resolve();
             }
@@ -112,29 +116,6 @@ vi.mock('@/lib/db', () => ({
       };
       return fn(tx);
     },
-  },
-  positions: {
-    __tableTag: 'positions',
-    id: 'id',
-    userId: 'user_id',
-    type: 'type',
-    deletedAt: 'deleted_at',
-    fen: 'fen',
-    title: 'title',
-    description: 'description',
-  },
-  feedItems: {
-    __tableTag: 'feed_items',
-    entityType: 'entity_type',
-    entityId: 'entity_id',
-    actorId: 'actor_id',
-    metadata: 'metadata',
-  },
-  positionContentRevisions: {
-    __tableTag: 'position_content_revisions',
-    positionId: 'position_id',
-    editorId: 'editor_id',
-    changes: 'changes',
   },
 }));
 

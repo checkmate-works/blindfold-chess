@@ -1,5 +1,8 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
+import { positionContentRevisions } from '@/lib/db/schema';
+
 const mockAuthenticateAndGuard = vi.fn();
 const mockSelectLimit = vi.fn();
 const mockTxSelectSolutionsWhere = vi.fn();
@@ -14,7 +17,8 @@ vi.mock('@/lib/auth', () => ({
 
 vi.mock('@/lib/users/activity-log');
 
-vi.mock('@/lib/db', () => ({
+vi.mock('@/lib/db', async () => ({
+  ...(await actualDbSchema()),
   db: {
     select: () => ({
       from: () => ({
@@ -38,9 +42,9 @@ vi.mock('@/lib/db', () => ({
         delete: () => ({
           where: (...args: unknown[]) => mockTxDeleteWhere(...args),
         }),
-        insert: (table: { __tableTag?: string }) => ({
+        insert: (table: unknown) => ({
           values: (...args: unknown[]) => {
-            if (table?.__tableTag === 'position_content_revisions') {
+            if (table === positionContentRevisions) {
               return mockTxRevisionInsertValues(...args);
             }
             return mockTxInsertValues(...args);
@@ -49,25 +53,6 @@ vi.mock('@/lib/db', () => ({
       };
       return fn(tx);
     },
-  },
-  positions: {
-    id: 'id',
-    userId: 'user_id',
-    type: 'type',
-    deletedAt: 'deleted_at',
-    fen: 'fen',
-    title: 'title',
-    description: 'description',
-  },
-  puzzleSolutions: {
-    positionId: 'position_id',
-    solutionMoves: 'solution_moves',
-  },
-  positionContentRevisions: {
-    __tableTag: 'position_content_revisions',
-    positionId: 'position_id',
-    editorId: 'editor_id',
-    changes: 'changes',
   },
 }));
 

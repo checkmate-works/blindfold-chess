@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
+
 import { REAP_RETENTION_MS, reapOrphanedPostImages } from './reap-orphaned-images';
 
 /**
@@ -52,7 +54,8 @@ function resetState() {
   state.whereArgs = [];
 }
 
-vi.mock('@/lib/db', () => ({
+vi.mock('@/lib/db', async () => ({
+  ...(await actualDbSchema()),
   db: {
     select: () => ({
       from: () => ({
@@ -81,8 +84,6 @@ vi.mock('@/lib/db', () => ({
       },
     }),
   },
-  postImageAttachments: { id: 'id', storagePath: 'storage_path', postId: 'post_id' },
-  topicPosts: { id: 'id', deletedAt: 'deleted_at' },
 }));
 
 vi.mock('@/lib/supabase/admin', () => ({
@@ -104,12 +105,21 @@ vi.mock('@/lib/supabase/admin', () => ({
  * Walk an unknown Drizzle predicate looking for the IN-list of attachment
  * IDs that the reaper packages into `inArray(...)`.
  *
- * Drizzle 0.x serializes `inArray(col, ids)` as an SQL object with a
- * `queryChunks` array; the IDs appear as one of the chunks (an array of
- * strings whose `att-` prefix matches our test fixture). We pick that
- * specific shape so we don't false-match the SQL syntax chunks like `[""]`
- * or `[" in "]` that also satisfy "array of strings".
+ * Drizzle serializes `inArray(col, ids)` as an SQL object with a
+ * `queryChunks` array; the IDs appear as one of the chunks, each bound value
+ * wrapped in a `Param`. We match on the `att-` prefix of our fixture so we
+ * don't false-match the SQL syntax chunks like `[""]` or `[" in "]` that also
+ * satisfy "array of strings".
  */
+function unwrapAttachmentId(node: unknown): string | null {
+  if (typeof node === 'string') return node.startsWith('att-') ? node : null;
+  if (node !== null && typeof node === 'object' && 'value' in node) {
+    const value = (node as { value: unknown }).value;
+    return typeof value === 'string' && value.startsWith('att-') ? value : null;
+  }
+  return null;
+}
+
 function extractIds(node: unknown): string[] {
   const seen = new Set<unknown>();
   const stack: unknown[] = [node];
@@ -119,12 +129,9 @@ function extractIds(node: unknown): string[] {
     if (typeof cur !== 'object') continue;
     if (seen.has(cur)) continue;
     seen.add(cur);
-    if (
-      Array.isArray(cur) &&
-      cur.length > 0 &&
-      cur.every((x) => typeof x === 'string' && x.startsWith('att-'))
-    ) {
-      return cur as string[];
+    if (Array.isArray(cur) && cur.length > 0) {
+      const ids = cur.map(unwrapAttachmentId);
+      if (ids.every((id) => id !== null)) return ids as string[];
     }
     for (const v of Object.values(cur as Record<string, unknown>)) {
       stack.push(v);

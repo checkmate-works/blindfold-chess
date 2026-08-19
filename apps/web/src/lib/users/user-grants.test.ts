@@ -1,8 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
+
 const mockSelectFromWhere = vi.fn();
 
-vi.mock('@/lib/db', () => ({
+vi.mock('@/lib/db', async () => ({
+  ...(await actualDbSchema()),
   db: {
     select: () => ({
       from: () => ({
@@ -11,14 +14,6 @@ vi.mock('@/lib/db', () => ({
         },
       }),
     }),
-  },
-  userGrants: {
-    id: 'id',
-    userId: 'user_id',
-    benefitType: 'benefit_type',
-    startsAt: 'starts_at',
-    expiresAt: 'expires_at',
-    revokedAt: 'revoked_at',
   },
 }));
 

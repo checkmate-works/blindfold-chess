@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
 import { checkRateLimit } from '@/lib/security/rate-limit';
 import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
@@ -20,7 +21,8 @@ vi.mock('@/lib/moderation/ban');
 
 vi.mock('@/lib/security/rate-limit');
 
-vi.mock('@/lib/db', () => ({
+vi.mock('@/lib/db', async () => ({
+  ...(await actualDbSchema()),
   db: {
     select: () => ({
       from: () => ({
@@ -32,20 +34,6 @@ vi.mock('@/lib/db', () => ({
         where: mockWhere,
       }),
     }),
-  },
-  profiles: {
-    id: 'id',
-    displayName: 'display_name',
-    bio: 'bio',
-    country: 'country',
-    flair: 'flair',
-    fideId: 'fide_id',
-    chesscomUsername: 'chesscom_username',
-    lichessUsername: 'lichess_username',
-    xUsername: 'x_username',
-    instagramUsername: 'instagram_username',
-    youtubeHandle: 'youtube_handle',
-    updatedAt: 'updated_at',
   },
 }));
 

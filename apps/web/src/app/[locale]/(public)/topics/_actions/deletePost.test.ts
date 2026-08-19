@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
 import { clawbackPointsForPost } from '@/lib/points';
 import { logActivityEvent } from '@/lib/users/activity-log';
@@ -27,7 +28,8 @@ vi.mock('@/lib/supabase/server', () => ({
     }),
 }));
 
-vi.mock('@/lib/db', () => ({
+vi.mock('@/lib/db', async () => ({
+  ...(await actualDbSchema()),
   db: {
     select: () => ({
       from: () => ({
@@ -61,22 +63,6 @@ vi.mock('@/lib/db', () => ({
       };
       return fn(tx);
     },
-  },
-  topicPosts: {
-    id: 'id',
-    userId: 'user_id',
-    topicType: 'topic_type',
-    topicKey: 'topic_key',
-    deletedAt: 'deleted_at',
-  },
-  postImageAttachments: {
-    postId: 'post_id',
-    storagePath: 'storage_path',
-  },
-  userGrants: {
-    sourceType: 'source_type',
-    sourceId: 'source_id',
-    revokedAt: 'revoked_at',
   },
 }));
 

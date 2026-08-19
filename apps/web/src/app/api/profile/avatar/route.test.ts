@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
 
 import { POST } from './route';
@@ -85,18 +86,14 @@ vi.mock('sharp', () => {
 
 const mockWhere = vi.fn().mockResolvedValue(undefined);
 
-vi.mock('@/lib/db', () => ({
+vi.mock('@/lib/db', async () => ({
+  ...(await actualDbSchema()),
   db: {
     update: () => ({
       set: () => ({
         where: mockWhere,
       }),
     }),
-  },
-  profiles: {
-    id: 'id',
-    avatarUrl: 'avatar_url',
-    updatedAt: 'updated_at',
   },
 }));
 

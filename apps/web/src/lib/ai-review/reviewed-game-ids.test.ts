@@ -1,15 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { db } from '@/lib/db';
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 
-vi.mock('@/lib/db', () => ({
+vi.mock('@/lib/db', async () => ({
+  ...(await actualDbSchema()),
   db: { selectDistinct: vi.fn() },
-  gameAiReviews: {
-    id: 'game_ai_reviews.id',
-    gameId: 'game_ai_reviews.game_id',
-    locale: 'game_ai_reviews.locale',
-    createdAt: 'game_ai_reviews.created_at',
-  },
 }));
 
 const { getReviewedGameIdSet } = await import('./queries');

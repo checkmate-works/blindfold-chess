@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation';
 import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
+
 import AdminArticleSlugPage from './page';
 
 const mockDbSelectFromWhereOrderBy = vi.fn();
@@ -18,7 +20,8 @@ vi.mock('drizzle-orm', () => ({
   eq: (col: unknown, val: unknown) => ({ col, val }),
 }));
 
-vi.mock('@/lib/db', () => ({
+vi.mock('@/lib/db', async () => ({
+  ...(await actualDbSchema()),
   db: {
     select: () => ({
       from: () => ({
@@ -27,10 +30,6 @@ vi.mock('@/lib/db', () => ({
         }),
       }),
     }),
-  },
-  articles: {
-    slug: 'slug',
-    locale: 'locale',
   },
 }));
 

@@ -2,6 +2,7 @@ import { SUPPORTED_LOCALES } from '@/config';
 import { describe, expect, it, vi } from 'vitest';
 
 import { whereThenLimit } from '@/lib/db/__test-support__/query-chain';
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
 
 import { deleteArticle } from './deleteArticle';
@@ -13,7 +14,8 @@ const mockRevalidateTag = vi.fn();
 
 vi.mock('@/lib/supabase/server');
 
-vi.mock('@/lib/db', () => ({
+vi.mock('@/lib/db', async () => ({
+  ...(await actualDbSchema()),
   db: {
     select: () => ({
       from: () => ({
@@ -24,11 +26,6 @@ vi.mock('@/lib/db', () => ({
       where: mockDeleteWhere,
     }),
   },
-  articles: {
-    id: 'id',
-    slug: 'slug',
-  },
-  userRoles: { userId: 'user_id' },
 }));
 
 vi.mock('next/cache', () => ({

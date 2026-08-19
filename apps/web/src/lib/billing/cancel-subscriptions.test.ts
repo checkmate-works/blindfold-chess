@@ -1,12 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
+
 import { cancelAllActiveSubscriptions } from './cancel-subscriptions';
 
 const mockSelectWhere = vi.fn();
 const mockUpdateSet = vi.fn();
 const mockUpdateWhere = vi.fn().mockResolvedValue(undefined);
 
-vi.mock('@/lib/db', () => ({
+vi.mock('@/lib/db', async () => ({
+  ...(await actualDbSchema()),
   db: {
     select: () => ({
       from: () => ({
@@ -19,12 +22,6 @@ vi.mock('@/lib/db', () => ({
         return { where: () => mockUpdateWhere() };
       },
     }),
-  },
-  subscriptions: {
-    id: 'id',
-    userId: 'user_id',
-    stripeSubscriptionId: 'stripe_subscription_id',
-    status: 'status',
   },
 }));
 

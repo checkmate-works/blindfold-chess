@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { whereThenLimit } from '@/lib/db/__test-support__/query-chain';
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
 
 import { updateAnnouncement } from './updateAnnouncement';
@@ -14,7 +15,8 @@ const mockHasAnnouncementNotification = vi.fn();
 
 vi.mock('@/lib/supabase/server');
 
-vi.mock('@/lib/db', () => ({
+vi.mock('@/lib/db', async () => ({
+  ...(await actualDbSchema()),
   db: {
     select: () => ({
       from: () => ({
@@ -27,19 +29,6 @@ vi.mock('@/lib/db', () => ({
       }),
     }),
   },
-  announcements: {
-    id: 'id',
-    slug: 'slug',
-    title: 'title',
-    content: 'content',
-    locale: 'locale',
-    status: 'status',
-    visibility: 'visibility',
-    pinnedAt: 'pinned_at',
-    publishedAt: 'published_at',
-    updatedAt: 'updated_at',
-  },
-  userRoles: { userId: 'user_id' },
 }));
 
 vi.mock('next/cache', () => ({

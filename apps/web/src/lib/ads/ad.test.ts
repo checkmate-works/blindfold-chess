@@ -1,20 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
+
 const mockOrderBy = vi.fn();
 
-vi.mock('@/lib/db', () => ({
+vi.mock('@/lib/db', async () => ({
+  ...(await actualDbSchema()),
   db: {
     select: () => ({
       from: () => ({
         orderBy: () => mockOrderBy(),
       }),
     }),
-  },
-  adCreatives: {
-    slot: 'slot',
-    sortOrder: 'sort_order',
-    isActive: 'is_active',
-    createdAt: 'created_at',
   },
 }));
 

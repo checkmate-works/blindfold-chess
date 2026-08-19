@@ -1,9 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
+
 const mockSelectFromWhere = vi.fn();
 const mockInsertValues = vi.fn().mockResolvedValue(undefined);
 
-vi.mock('@/lib/db', () => ({
+vi.mock('@/lib/db', async () => ({
+  ...(await actualDbSchema()),
   db: {
     select: () => ({
       from: () => ({
@@ -13,11 +16,6 @@ vi.mock('@/lib/db', () => ({
     insert: () => ({
       values: mockInsertValues,
     }),
-  },
-  rateLimitEvents: {
-    userId: 'user_id',
-    action: 'action',
-    createdAt: 'created_at',
   },
 }));
 

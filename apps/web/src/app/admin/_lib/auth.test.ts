@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { whereThenLimit } from '@/lib/db/__test-support__/query-chain';
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
 
 import { requireAdmin } from './auth';
@@ -9,7 +10,8 @@ const mockSelectFromWhere = vi.fn();
 
 vi.mock('@/lib/supabase/server');
 
-vi.mock('@/lib/db', () => ({
+vi.mock('@/lib/db', async () => ({
+  ...(await actualDbSchema()),
   db: {
     select: () => ({
       from: () => ({
@@ -17,7 +19,6 @@ vi.mock('@/lib/db', () => ({
       }),
     }),
   },
-  userRoles: { userId: 'user_id' },
 }));
 
 const adminUserId = 'admin-00000000-0000-0000-0000-000000000001';
