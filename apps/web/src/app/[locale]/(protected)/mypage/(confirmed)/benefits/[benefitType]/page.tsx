@@ -36,8 +36,7 @@ import { Link } from '@/i18n/routing';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { getAuthenticatedUser } from '@/lib/auth';
-import { buildPageHref } from '@/lib/pagination';
-import { getPageRange } from '@/lib/pagination';
+import { buildPageHref, getPageRange } from '@/lib/pagination';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';

@@ -6,8 +6,7 @@ import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { AUTHOR_PROFILE_COLUMNS, db, profiles, userFollows } from '@/lib/db';
 import { profileNotDeleted } from '@/lib/db/profile-not-deleted';
-import { buildPageHref } from '@/lib/pagination';
-import { resolvePagination } from '@/lib/pagination';
+import { buildPageHref, resolvePagination } from '@/lib/pagination';
 
 import { PageLayout } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';

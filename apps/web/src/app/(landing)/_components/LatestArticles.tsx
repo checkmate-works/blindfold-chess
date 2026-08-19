@@ -3,6 +3,8 @@ import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 import { FaBookOpen } from 'react-icons/fa';
 
+import { formatLocalDate } from '@/lib/i18n/format-date';
+
 import { getLatestPublishedArticles } from '@/app/[locale]/(public)/articles/_lib/queries';
 import { ListLink, ListLinkContainer, SectionTitle } from '@/app/[locale]/_components';
 
@@ -25,11 +27,7 @@ export async function LatestArticles({ locale }: Props) {
       <ListLinkContainer>
         {articles.map((article) => {
           const publishedDate = article.publishedAt
-            ? new Date(article.publishedAt).toLocaleDateString(locale, {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-              })
+            ? formatLocalDate(new Date(article.publishedAt), locale)
             : undefined;
 
           return (

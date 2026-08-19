@@ -12,8 +12,7 @@ import { getTranslations } from 'next-intl/server';
 
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
-import { buildPageHref } from '@/lib/pagination';
-import { resolvePagination } from '@/lib/pagination';
+import { buildPageHref, resolvePagination } from '@/lib/pagination';
 
 import { TopicPostCard } from '@/app/[locale]/(public)/(home)/_components/TopicPostCard';
 import { getPostsByUserId } from '@/app/[locale]/(public)/topics/_lib/user-post-queries';

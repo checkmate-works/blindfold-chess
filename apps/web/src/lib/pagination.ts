@@ -105,13 +105,19 @@ export function resolvePagination(
 }
 
 /**
- * Build the `buildHref` callback a `PaginationNav` needs: the page number, plus
- * any filters currently applied, with empty filters omitted.
+ * Build the `buildHref` callback a `PaginationNav` needs: any filters currently
+ * applied, then the page number, with empty filters omitted.
  *
  * Page 1 is spelled as the bare path — no `?page=1`. The first page of a list
  * is reachable by two URLs otherwise, which splits its inbound links and makes
- * the canonical tag do work the href could have avoided. Fifteen list pages
- * had each written that rule out by hand.
+ * the canonical tag do work the href could have avoided.
+ *
+ * `page` is written last so the query string matches the URLs already in the
+ * wild: every list that carries a filter put the filter first. Changing that
+ * order would rewrite indexed URLs and their CDN cache keys for no gain.
+ *
+ * Callers whose filter set includes a sort mode should go through
+ * `buildPaginationHref`, which adds the rule that the default sort is elided.
  *
  * Not to be confused with `buildAdminListHref`, which always writes `page`:
  * admin lists are noindex and their operators paste URLs at each other, where
@@ -123,10 +129,10 @@ export function buildPageHref(
 ): (page: number) => string {
   return (page) => {
     const params = new URLSearchParams();
-    if (page > 1) params.set('page', String(page));
     for (const [key, value] of Object.entries(filters)) {
       if (value) params.set(key, value);
     }
+    if (page > 1) params.set('page', String(page));
     const qs = params.toString();
     return qs ? `${basePath}?${qs}` : basePath;
   };

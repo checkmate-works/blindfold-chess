@@ -6,8 +6,7 @@ import { getAuthenticatedUser } from '@/lib/auth';
 import { getMissColorClass } from '@/lib/challenge/ui';
 import type { ChallengeMenuType } from '@/lib/db/practice-menu-types';
 import { CHALLENGE_MENU_TYPES } from '@/lib/db/practice-menu-types';
-import { buildPageHref } from '@/lib/pagination';
-import { clampPage } from '@/lib/pagination';
+import { buildPageHref, clampPage } from '@/lib/pagination';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';

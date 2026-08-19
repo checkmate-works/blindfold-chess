@@ -19,8 +19,7 @@ import {
   type ReplyMeta,
   getGameCommentMetaMap,
 } from '@/lib/db/reply-meta-queries';
-import { buildPageHref } from '@/lib/pagination';
-import { resolvePagination } from '@/lib/pagination';
+import { buildPageHref, resolvePagination } from '@/lib/pagination';
 
 import { getOpeningDisplayName } from '@/app/[locale]/(public)/topics/openings/_lib/get-opening-display-name';
 import type { Locale } from '@/app/[locale]/_lib/types';

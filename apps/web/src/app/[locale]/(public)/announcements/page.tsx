@@ -2,8 +2,7 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { formatLocalDate } from '@/lib/i18n/format-date';
-import { buildPageHref } from '@/lib/pagination';
-import { getPaginationParams } from '@/lib/pagination';
+import { buildPageHref, getPaginationParams } from '@/lib/pagination';
 
 import { ListLink, ListLinkContainer, PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';

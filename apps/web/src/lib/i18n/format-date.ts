@@ -7,9 +7,11 @@
  *
  * No `timeZone` option is offered. Every caller here shows a moment that
  * happened — a publication, a comment, a notification — and the viewer's own
- * timezone is the right frame for those. The one place that pins the zone
- * (`LastUpdated`, which must not let a page's stated revision date roll over
- * a day early east of UTC) states its own reason and formats directly.
+ * timezone is the right frame for those. The two places that pin the zone
+ * format directly instead, because they are not showing a moment: `LastUpdated`
+ * states a page's revision date, which must not roll over a day early east of
+ * UTC, and the exp heatmap labels a UTC day bucket, which is the unit the
+ * underlying rows are aggregated by.
  */
 export function formatLocalDate(
   date: Date,

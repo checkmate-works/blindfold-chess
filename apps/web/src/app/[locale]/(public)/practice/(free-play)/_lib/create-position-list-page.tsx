@@ -17,6 +17,7 @@ import { getPositionLikeMetaMap } from '@/lib/positions/like-queries';
 import { countPositions, listPositionsWithProfile } from '@/lib/positions/queries';
 
 import { SortSelect } from '@/app/[locale]/(public)/topics/_components/SortSelect';
+import { buildPaginationHref } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import { validateSort } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import { HelpTourButton, PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import type { HelpStep } from '@/app/[locale]/_components';
@@ -129,13 +130,7 @@ export function createPositionListPage(config: PositionListPageConfig) {
       nativeAdSlot ? resolveNativeAds(nativeAdSlot, currentUser?.id ?? null) : null,
     ]);
 
-    const buildHref = (p: number) => {
-      const urlParams = new URLSearchParams();
-      if (sortBy !== 'new') urlParams.set('sort', sortBy);
-      if (p > 1) urlParams.set('page', String(p));
-      const qs = urlParams.toString();
-      return `/${locale}${basePath}${qs ? `?${qs}` : ''}`;
-    };
+    const buildHref = (p: number) => buildPaginationHref(locale, basePath, p, sortBy);
 
     const justNowLabel = t('justNow');
 

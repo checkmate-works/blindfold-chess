@@ -3,8 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { getAuthenticatedUser } from '@/lib/auth';
-import { buildPageHref } from '@/lib/pagination';
-import { getPaginationParams } from '@/lib/pagination';
+import { buildPageHref, getPaginationParams } from '@/lib/pagination';
 
 import { TopicPostCard } from '@/app/[locale]/(public)/(home)/_components/TopicPostCard';
 import { TOPIC_PAGE_SIZE } from '@/app/[locale]/(public)/topics/_lib/pagination';

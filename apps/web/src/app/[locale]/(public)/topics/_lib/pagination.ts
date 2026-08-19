@@ -1,3 +1,5 @@
+import { buildPageHref } from '@/lib/pagination';
+
 import type { SortMode } from './shared';
 
 /** Default page size for topic and profile listing pages. */
@@ -21,7 +23,12 @@ export function validateSort(sort: string): SortMode {
 }
 
 /**
- * Build a href for a pagination link with optional sort parameter.
+ * Build a href for a pagination link on a sortable list.
+ *
+ * Adds one rule to `buildPageHref`: `'new'` is the sort a list falls back to,
+ * so it is left out of the URL. Spelling it would give the default ordering a
+ * second address, which is the same duplicate-URL problem `buildPageHref`
+ * avoids for page 1.
  */
 export function buildPaginationHref(
   locale: string,
@@ -29,9 +36,7 @@ export function buildPaginationHref(
   page: number,
   sortBy: SortMode
 ): string {
-  const params = new URLSearchParams();
-  if (sortBy !== 'new') params.set('sort', sortBy);
-  if (page > 1) params.set('page', String(page));
-  const qs = params.toString();
-  return `/${locale}${basePath}${qs ? `?${qs}` : ''}`;
+  return buildPageHref(`/${locale}${basePath}`, {
+    sort: sortBy === 'new' ? null : sortBy,
+  })(page);
 }

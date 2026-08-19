@@ -6,8 +6,7 @@ import { FiSettings } from 'react-icons/fi';
 
 import { getAuthenticatedUser } from '@/lib/auth';
 import { getMutedNotificationTypes } from '@/lib/notifications/mutes';
-import { buildPageHref } from '@/lib/pagination';
-import { clampPage } from '@/lib/pagination';
+import { buildPageHref, clampPage } from '@/lib/pagination';
 import { getViewerProfile } from '@/lib/users/viewer-profile';
 
 import { PageLayout } from '@/app/[locale]/_components';

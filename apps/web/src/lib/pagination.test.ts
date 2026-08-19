@@ -246,7 +246,7 @@ describe('buildPageHref', () => {
     });
 
     expect(href(1)).toBe('/ja/mypage/challenges/results?menu=legal_moves&key=blitz');
-    expect(href(3)).toBe('/ja/mypage/challenges/results?page=3&menu=legal_moves&key=blitz');
+    expect(href(3)).toBe('/ja/mypage/challenges/results?menu=legal_moves&key=blitz&page=3');
   });
 
   it('omits empty and absent filters', () => {

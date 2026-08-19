@@ -5,8 +5,7 @@ import { notFound } from 'next/navigation';
 import { SITE_URL } from '@/config';
 
 import { formatLocalDate } from '@/lib/i18n/format-date';
-import { buildPageHref } from '@/lib/pagination';
-import { getPaginationParams } from '@/lib/pagination';
+import { buildPageHref, getPaginationParams } from '@/lib/pagination';
 import { JsonLd, generateItemListSchema } from '@/lib/seo/jsonld';
 
 import { ListLink, ListLinkContainer, PageLayout, SectionTitle } from '@/app/[locale]/_components';
