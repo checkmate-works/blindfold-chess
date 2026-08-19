@@ -12,6 +12,7 @@ import { getTranslations } from 'next-intl/server';
 
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
+import { buildPageHref } from '@/lib/pagination';
 import { resolvePagination } from '@/lib/pagination';
 
 import { TopicPostCard } from '@/app/[locale]/(public)/(home)/_components/TopicPostCard';
@@ -65,7 +66,7 @@ export default async function ProfilePostsPage({ params, searchParams }: Props) 
       ? await getPostsByUserId(context.profile.id, context.currentUserId, PAGE_SIZE, offset)
       : [];
 
-  const buildHref = (p: number) => `/${locale}/u/${username}/posts${p > 1 ? `?page=${p}` : ''}`;
+  const buildHref = buildPageHref(`/${locale}/u/${username}/posts`);
 
   return (
     <ProfileShell context={context} locale={locale} activeTab="topics">

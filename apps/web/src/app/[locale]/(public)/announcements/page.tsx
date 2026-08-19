@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
+import { buildPageHref } from '@/lib/pagination';
 import { getPaginationParams } from '@/lib/pagination';
 
 import { ListLink, ListLinkContainer, PageLayout, SectionTitle } from '@/app/[locale]/_components';
@@ -103,7 +104,7 @@ export default async function AnnouncementsPage({ params, searchParams }: Props)
           <PaginationNav
             currentPage={currentPage}
             totalPages={totalPages}
-            buildHref={(p) => `/${locale}/announcements${p > 1 ? `?page=${p}` : ''}`}
+            buildHref={buildPageHref(`/${locale}/announcements`)}
             locale={locale}
           />
         </>

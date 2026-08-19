@@ -103,3 +103,31 @@ export function resolvePagination(
 
   return { currentPage, totalPages, offset: (currentPage - 1) * pageSize };
 }
+
+/**
+ * Build the `buildHref` callback a `PaginationNav` needs: the page number, plus
+ * any filters currently applied, with empty filters omitted.
+ *
+ * Page 1 is spelled as the bare path — no `?page=1`. The first page of a list
+ * is reachable by two URLs otherwise, which splits its inbound links and makes
+ * the canonical tag do work the href could have avoided. Fifteen list pages
+ * had each written that rule out by hand.
+ *
+ * Not to be confused with `buildAdminListHref`, which always writes `page`:
+ * admin lists are noindex and their operators paste URLs at each other, where
+ * an explicit page number reads better than an implied one.
+ */
+export function buildPageHref(
+  basePath: string,
+  filters: Record<string, string | null | undefined> = {}
+): (page: number) => string {
+  return (page) => {
+    const params = new URLSearchParams();
+    if (page > 1) params.set('page', String(page));
+    for (const [key, value] of Object.entries(filters)) {
+      if (value) params.set(key, value);
+    }
+    const qs = params.toString();
+    return qs ? `${basePath}?${qs}` : basePath;
+  };
+}

@@ -12,6 +12,7 @@ import { getAuthenticatedUser, getOptionalUser } from '@/lib/auth';
 import { EMPTY_LIKE_META } from '@/lib/db/like-queries';
 import type { getReplyMetaMap } from '@/lib/db/reply-meta-queries';
 import { EMPTY_REPLY_META } from '@/lib/db/reply-meta-queries';
+import { buildPageHref } from '@/lib/pagination';
 import { loadPositionCreateContext } from '@/lib/positions/create-page-context';
 import type { countPositions } from '@/lib/positions/queries';
 import { getPositionById, getPositionWithProfileById } from '@/lib/positions/queries';
@@ -249,10 +250,7 @@ export function createPositionForksPage(route: PositionRouteKind) {
       });
 
     const justNowLabel = t('justNow');
-    const buildHref = (p: number) => {
-      const qs = p > 1 ? `?page=${p}` : '';
-      return `/${locale}/practice/${slug}/${id}/forks${qs}`;
-    };
+    const buildHref = buildPageHref(`/${locale}/practice/${slug}/${id}/forks`);
 
     return (
       <PageLayout

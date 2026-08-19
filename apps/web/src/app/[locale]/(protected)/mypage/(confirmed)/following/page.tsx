@@ -6,6 +6,7 @@ import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { AUTHOR_PROFILE_COLUMNS, db, profiles, userFollows } from '@/lib/db';
 import { profileNotDeleted } from '@/lib/db/profile-not-deleted';
+import { buildPageHref } from '@/lib/pagination';
 import { resolvePagination } from '@/lib/pagination';
 
 import { PageLayout } from '@/app/[locale]/_components';
@@ -61,10 +62,7 @@ export default async function FollowingPage({ params, searchParams }: Props) {
     .limit(PAGE_SIZE)
     .offset(offset);
 
-  const buildHref = (p: number) => {
-    const qs = p > 1 ? `?page=${p}` : '';
-    return `/${locale}/mypage/following${qs}`;
-  };
+  const buildHref = buildPageHref(`/${locale}/mypage/following`);
 
   return (
     <PageLayout

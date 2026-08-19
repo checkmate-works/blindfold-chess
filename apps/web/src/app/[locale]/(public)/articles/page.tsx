@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 
 import { SITE_URL } from '@/config';
 
+import { buildPageHref } from '@/lib/pagination';
 import { getPaginationParams } from '@/lib/pagination';
 import { JsonLd, generateItemListSchema } from '@/lib/seo/jsonld';
 
@@ -89,7 +90,7 @@ export default async function ArticlesPage({ params, searchParams }: Props) {
             <PaginationNav
               currentPage={currentPage}
               totalPages={totalPages}
-              buildHref={(p) => `/${locale}/articles${p > 1 ? `?page=${p}` : ''}`}
+              buildHref={buildPageHref(`/${locale}/articles`)}
               locale={locale}
             />
           </>

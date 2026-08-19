@@ -4,6 +4,7 @@ import { getTranslations } from 'next-intl/server';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { EMPTY_REPLY_META } from '@/lib/db/reply-meta-queries';
+import { buildPageHref } from '@/lib/pagination';
 import type { PositionKind } from '@/lib/positions/kind';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -75,10 +76,7 @@ export async function ProblemsTypePage({
     }),
   ]);
 
-  const buildHref = (p: number) => {
-    const qs = p > 1 ? `?page=${p}` : '';
-    return `/${locale}/u/${username}/problems/${TYPE_ROUTE_SEGMENT[type]}${qs}`;
-  };
+  const buildHref = buildPageHref(`/${locale}/u/${username}/problems/${TYPE_ROUTE_SEGMENT[type]}`);
 
   return (
     <ProfileShell context={context} locale={locale} activeTab="problems">

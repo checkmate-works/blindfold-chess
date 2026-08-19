@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { getAuthenticatedUser } from '@/lib/auth';
+import { buildPageHref } from '@/lib/pagination';
 import { getPaginationParams } from '@/lib/pagination';
 
 import { TopicPostCard } from '@/app/[locale]/(public)/(home)/_components/TopicPostCard';
@@ -64,10 +65,7 @@ export function createMypageTopicPostListPage(config: CreateTopicPostListPageCon
     );
     const posts = await config.loadPosts(user.id, limit, offset);
 
-    const buildHref = (p: number) => {
-      const qs = p > 1 ? `?page=${p}` : '';
-      return `/${locale}/${config.path}${qs}`;
-    };
+    const buildHref = buildPageHref(`/${locale}/${config.path}`);
 
     return (
       <PageLayout

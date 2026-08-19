@@ -7,6 +7,7 @@ import { FiEdit2 } from 'react-icons/fi';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { EMPTY_LIKE_META } from '@/lib/db/like-queries';
 import { EMPTY_REPLY_META, getReplyMetaMap } from '@/lib/db/reply-meta-queries';
+import { buildPageHref } from '@/lib/pagination';
 import { getPaginationParams } from '@/lib/pagination';
 import { getPositionLikeMetaMap } from '@/lib/positions/like-queries';
 import { countPositions, listPositionsWithProfile } from '@/lib/positions/queries';
@@ -102,10 +103,7 @@ export function createMyProblemsPage(config: MyProblemsPageConfig) {
 
     const justNowLabel = tFooter('justNow');
 
-    const buildHref = (p: number) => {
-      const qs = p > 1 ? `?page=${p}` : '';
-      return `/${locale}/mypage/problems/${pathSegment}${qs}`;
-    };
+    const buildHref = buildPageHref(`/${locale}/mypage/problems/${pathSegment}`);
 
     return (
       <PageLayout

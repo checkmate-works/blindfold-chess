@@ -26,6 +26,7 @@ import { CoinIcon } from '@blindfold-chess/icons';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { getAuthenticatedUser } from '@/lib/auth';
+import { buildPageHref } from '@/lib/pagination';
 import { AD_FREE_DAYS_PER_POINT } from '@/lib/points';
 import { hasDanTierRank } from '@/lib/users/dan-rank';
 
@@ -62,7 +63,7 @@ export default async function CoinsPage({ params, searchParams }: Props) {
   ]);
 
   const dateFmt = (d: Date) => d.toLocaleDateString(locale);
-  const buildHref = (p: number) => `/${locale}/mypage/coins${p > 1 ? `?page=${p}` : ''}`;
+  const buildHref = buildPageHref(`/${locale}/mypage/coins`);
 
   return (
     <PageLayout

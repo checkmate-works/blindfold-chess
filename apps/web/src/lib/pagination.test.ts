@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   DEFAULT_PAGE_SIZE,
+  buildPageHref,
   clampPage,
   getPaginationParams,
   paginateItems,
@@ -226,5 +227,29 @@ describe('resolvePagination', () => {
       totalPages: 0,
       offset: 0,
     });
+  });
+});
+
+describe('buildPageHref', () => {
+  it('spells page 1 as the bare path', () => {
+    expect(buildPageHref('/ja/articles')(1)).toBe('/ja/articles');
+  });
+
+  it('appends the page number from page 2 on', () => {
+    expect(buildPageHref('/ja/articles')(2)).toBe('/ja/articles?page=2');
+  });
+
+  it('keeps applied filters on every page, including the first', () => {
+    const href = buildPageHref('/ja/mypage/challenges/results', {
+      menu: 'legal_moves',
+      key: 'blitz',
+    });
+
+    expect(href(1)).toBe('/ja/mypage/challenges/results?menu=legal_moves&key=blitz');
+    expect(href(3)).toBe('/ja/mypage/challenges/results?page=3&menu=legal_moves&key=blitz');
+  });
+
+  it('omits empty and absent filters', () => {
+    expect(buildPageHref('/ja/list', { menu: null, key: '', tag: undefined })(1)).toBe('/ja/list');
   });
 });

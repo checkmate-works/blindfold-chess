@@ -7,6 +7,7 @@ import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { AUTHOR_PROFILE_COLUMNS, db, profiles, userFollows } from '@/lib/db';
 import { profileNotDeleted } from '@/lib/db/profile-not-deleted';
+import { buildPageHref } from '@/lib/pagination';
 import { resolvePagination } from '@/lib/pagination';
 
 import { PageLayout, UserCard } from '@/app/[locale]/_components';
@@ -95,10 +96,7 @@ export default async function FollowersPage({ params, searchParams }: Props) {
 
   const displayName = profile.displayName ?? username;
 
-  const buildHref = (p: number) => {
-    const qs = p > 1 ? `?page=${p}` : '';
-    return `/${locale}/u/${username}/followers${qs}`;
-  };
+  const buildHref = buildPageHref(`/${locale}/u/${username}/followers`);
 
   return (
     <PageLayout
