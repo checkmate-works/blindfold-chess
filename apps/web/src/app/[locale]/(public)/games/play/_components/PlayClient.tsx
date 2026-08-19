@@ -317,8 +317,8 @@ export function PlayClient({
   // player walks away from it.
   const promotionRankSlug = usePublishPromotion({
     result: playerResult,
-    initialPerGamePrefs,
-    preferenceChangeLog,
+    playSettings: initialPerGamePrefs,
+    changeLog: preferenceChangeLog,
     operationLogs,
     moveCount: moves.length,
     startingFen,
@@ -330,8 +330,8 @@ export function PlayClient({
   // requirement? Purely local — a guest has no progression to consult.
   const guestPromotionRankSlug = useGuestPromotion({
     result: playerResult,
-    initialPerGamePrefs,
-    preferenceChangeLog,
+    playSettings: initialPerGamePrefs,
+    changeLog: preferenceChangeLog,
     operationLogs,
     moveCount: moves.length,
     startingFen,

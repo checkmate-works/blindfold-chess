@@ -1,29 +1,14 @@
 'use client';
 
-import type { FinalGameOutcome } from '@blindfold-chess/types';
-
-import type { GuestPromotionQualification } from '@/lib/games/guest-promotion';
+import type {
+  FinishedGameEvidence,
+  GuestPromotionQualification,
+} from '@/lib/games/guest-promotion';
 import { classifyGuestPromotionQualification } from '@/lib/games/guest-promotion';
-import type { MoveOperationLog, PreferenceChangeLogEntry } from '@/lib/games/saved-game-types';
 
 import { useAuth } from '@/app/[locale]/_contexts/AuthContext';
-import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
-type Args = {
-  /** The player's terminal result. Only a win can qualify. */
-  result: FinalGameOutcome | null;
-  /** The START-OF-GAME settings snapshot — what publish would persist. */
-  initialPerGamePrefs: PerGamePreferences | undefined;
-  /** Mid-game preference edits, as the play surface records them. */
-  preferenceChangeLog: readonly PreferenceChangeLogEntry[] | undefined;
-  /** Per-move aid counts — source of the peek total. */
-  operationLogs: readonly MoveOperationLog[] | undefined;
-  /** Half-moves played. */
-  moveCount: number;
-  /** The position the game started from; undefined = the standard start. */
-  startingFen: string | undefined;
-  /** Seeded setup-prefix length (opening / PGN start); undefined = none. */
-  setupPlies: number | undefined;
+type Args = FinishedGameEvidence & {
   /** Gate until the game is actually over. */
   enabled: boolean;
 };
@@ -45,27 +30,13 @@ type Args = {
  * publishes are anonymous too, so the same pitch applies.
  */
 export function useGuestPromotion({
-  result,
-  initialPerGamePrefs,
-  preferenceChangeLog,
-  operationLogs,
-  moveCount,
-  startingFen,
-  setupPlies,
   enabled,
+  ...evidence
 }: Args): GuestPromotionQualification | null {
   const { user, isProvisional, isLoading } = useAuth();
 
   if (!enabled || isLoading) return null;
   if (user !== null && !isProvisional) return null;
 
-  return classifyGuestPromotionQualification({
-    result,
-    playSettings: initialPerGamePrefs,
-    changeLog: preferenceChangeLog,
-    operationLogs,
-    moveCount,
-    startingFen,
-    setupPlies,
-  });
+  return classifyGuestPromotionQualification(evidence);
 }
