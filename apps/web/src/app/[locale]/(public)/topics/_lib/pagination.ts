@@ -1,6 +1,5 @@
 import { buildPageHref } from '@/lib/pagination';
-
-import type { SortMode } from './shared';
+import { SORT_MODES, type SortMode } from '@/lib/sort';
 
 /** Default page size for topic and profile listing pages. */
 export const TOPIC_PAGE_SIZE = 5;
@@ -13,13 +12,11 @@ export const TOPIC_PAGE_SIZE = 5;
  */
 export const COMMENT_TREE_PAGE_SIZE = 20;
 
-const VALID_SORTS: SortMode[] = ['new', 'popular', 'active'];
-
 /**
- * Validate and normalize a sort parameter.
+ * Validate and normalize a sort parameter, falling back to `'new'`.
  */
 export function validateSort(sort: string): SortMode {
-  return VALID_SORTS.includes(sort as SortMode) ? (sort as SortMode) : 'new';
+  return (SORT_MODES as readonly string[]).includes(sort) ? (sort as SortMode) : 'new';
 }
 
 /**

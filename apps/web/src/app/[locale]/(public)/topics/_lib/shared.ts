@@ -2,6 +2,7 @@ import { topicPostRatings } from '@/lib/db';
 import type { TopicPost, TopicPostRating } from '@/lib/db';
 import type { LikeMeta } from '@/lib/db/like-queries';
 import type { ReplyMeta } from '@/lib/db/reply-meta-queries';
+import type { SortMode } from '@/lib/sort';
 import type { SocialAuthorProfile } from '@/lib/users/author-profile';
 
 /**
@@ -39,7 +40,7 @@ export type ProfilePostWithReplyMeta = PostWithReplyMeta & {
   openingFen: string | null;
 };
 
-export type SortMode = 'new' | 'popular' | 'active';
+export type { SortMode };
 
 /**
  * Sort posts by the given mode. Pure: returns a new array, `posts` is not

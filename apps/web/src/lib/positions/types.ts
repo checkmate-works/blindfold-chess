@@ -4,19 +4,20 @@
  * Keeps route-independent type definitions used by both the public
  * position-memory practice routes and the admin management pages.
  */
+import type { SortMode } from '@/lib/sort';
 
 /** Known values of `positions.type`. */
 export type PositionType = 'memory' | 'puzzle' | 'sequence';
 
 /**
- * Ordering modes for paginated position lists. Mirrors the topic-thread
- * `SortMode` union (new / popular / active) so list pages can reuse the
- * shared `SortSelect` UI and `validateSort` helper:
+ * Ordering modes for paginated position lists — the shared {@link SortMode},
+ * named locally because position queries read better with the noun in the type.
+ * What each mode means here:
  * - `new`: `createdAt` DESC (default).
  * - `popular`: like count DESC, then `createdAt` DESC.
  * - `active`: latest comment timestamp DESC (NULLs last), then `createdAt` DESC.
  */
-export type PositionSortMode = 'new' | 'popular' | 'active';
+export type PositionSortMode = SortMode;
 
 const POSITION_TYPES = ['memory', 'puzzle', 'sequence'] as const satisfies readonly PositionType[];
 
