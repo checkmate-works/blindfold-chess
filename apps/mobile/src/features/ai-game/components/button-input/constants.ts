@@ -1,8 +1,9 @@
 import type { PieceType } from "@blindfold-chess/icons";
-import { ALL_PIECE_SYMBOLS } from "@blindfold-chess/types";
+import { ALL_PIECE_SYMBOLS, PROMOTION_PIECES } from "@blindfold-chess/types";
+
+export { PROMOTION_PIECES };
 
 export const PIECES = ALL_PIECE_SYMBOLS;
-export const PROMOTION_PIECES = ["q", "r", "b", "n"] as const;
 
 export const PIECE_TYPE_MAP: Record<(typeof PIECES)[number], PieceType> = {
   K: "k",

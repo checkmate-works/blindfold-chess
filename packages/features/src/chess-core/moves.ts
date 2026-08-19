@@ -1,4 +1,4 @@
-import type { AlgebraicNotation } from "@blindfold-chess/types";
+import type { AlgebraicNotation, PromotionPiece } from "@blindfold-chess/types";
 import type { PieceSymbol, Square } from "chess.js";
 import { Chess } from "chess.js";
 
@@ -197,7 +197,7 @@ export function findLegalMoveByCoords(
   fen: string,
   from: string,
   to: string,
-  preferredPromotion: "q" | "r" | "b" | "n" = "q",
+  preferredPromotion: PromotionPiece = "q",
 ): MoveResult | null {
   const candidates = findLegalMovesByCoords(fen, from, to);
   if (candidates.length === 0) return null;

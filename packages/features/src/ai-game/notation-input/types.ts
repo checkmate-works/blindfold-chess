@@ -31,7 +31,9 @@ export type NotationChar =
 
 export type CastlingToken = "O-O" | "O-O-O";
 
-export type PromotionPiece = "q" | "r" | "b" | "n";
+import type { PromotionPiece } from "@blindfold-chess/types";
+
+export type { PromotionPiece };
 
 export type NotationInputState = {
   input: string;
