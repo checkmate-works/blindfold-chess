@@ -1,10 +1,9 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { setRequestLocale } from 'next-intl/server';
-// Renamed to avoid conflict with Next.js route segment config `export const dynamic`
-import nextDynamic from 'next/dynamic';
 import { notFound } from 'next/navigation';
 
+import { LazyMarkdownRenderer } from '@/app/_components/LazyMarkdownRenderer';
 import { SUPPORTED_LOCALES } from '@/config';
 
 import { JsonLd, generateArticleSchema } from '@/lib/seo/jsonld';
@@ -29,14 +28,6 @@ import {
   getLearnArticleAvailableLocales,
   getPracticeModulesForArticle,
 } from '../../_lib/utils';
-
-const MarkdownRenderer = nextDynamic(
-  () =>
-    import('@/app/_components/MarkdownRenderer').then((m) => ({
-      default: m.MarkdownRenderer,
-    })),
-  { ssr: true }
-);
 
 type Props = {
   params: Promise<{
@@ -141,7 +132,7 @@ export default async function LearnArticlePage({ params }: Props) {
       >
         {/* Article content with narrower width for readability */}
         <ProseArticle>
-          <MarkdownRenderer content={article.content} skipFirstH1={true} />
+          <LazyMarkdownRenderer content={article.content} skipFirstH1={true} />
         </ProseArticle>
 
         <AdSlot slot="content-middle" />

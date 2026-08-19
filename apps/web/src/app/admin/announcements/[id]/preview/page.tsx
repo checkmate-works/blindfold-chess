@@ -1,7 +1,7 @@
 import { getTranslations } from 'next-intl/server';
-import dynamic from 'next/dynamic';
 import { notFound } from 'next/navigation';
 
+import { LazyMarkdownRenderer } from '@/app/_components/LazyMarkdownRenderer';
 import { and, eq } from 'drizzle-orm';
 
 import { announcements, db, notifications } from '@/lib/db';
@@ -9,14 +9,6 @@ import { announcements, db, notifications } from '@/lib/db';
 import { AdminPageHeader } from '../../../_components/AdminPageHeader';
 import { formatDateTimeLocal } from '../../../_lib/format';
 import { AnnouncementPreviewForm } from '../../_components/AnnouncementPreviewForm';
-
-const MarkdownRenderer = dynamic(
-  () =>
-    import('@/app/_components/MarkdownRenderer').then((m) => ({
-      default: m.MarkdownRenderer,
-    })),
-  { ssr: true }
-);
 
 export default async function PreviewAnnouncementPage({
   params,
@@ -63,7 +55,7 @@ export default async function PreviewAnnouncementPage({
           <div className="border border-border rounded-lg p-6 bg-card">
             <h2 className="text-xl font-bold mb-4">{announcement.title}</h2>
             <article className="prose prose-slate dark:prose-invert max-w-none break-words">
-              <MarkdownRenderer content={announcement.content} skipFirstH1={true} />
+              <LazyMarkdownRenderer content={announcement.content} skipFirstH1={true} />
             </article>
           </div>
         </div>

@@ -1,10 +1,9 @@
 import type { Metadata } from 'next';
 import { hasLocale } from 'next-intl';
 import { getTranslations } from 'next-intl/server';
-// Renamed to avoid conflict with Next.js route segment config `export const dynamic`
-import nextDynamic from 'next/dynamic';
 import { notFound } from 'next/navigation';
 
+import { LazyMarkdownRenderer } from '@/app/_components/LazyMarkdownRenderer';
 import { Link, routing } from '@/i18n/routing';
 
 import { getOptionalUser } from '@/lib/auth';
@@ -21,14 +20,6 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { getPublishedAnnouncement } from '../_lib/queries';
 
 export const dynamic = 'force-dynamic';
-
-const MarkdownRenderer = nextDynamic(
-  () =>
-    import('@/app/_components/MarkdownRenderer').then((m) => ({
-      default: m.MarkdownRenderer,
-    })),
-  { ssr: true }
-);
 
 type Props = {
   params: Promise<{
@@ -140,7 +131,7 @@ export default async function AnnouncementPage({ params }: Props) {
       ]}
     >
       <ProseArticle className="break-words">
-        <MarkdownRenderer content={announcement.content} skipFirstH1={true} />
+        <LazyMarkdownRenderer content={announcement.content} skipFirstH1={true} />
       </ProseArticle>
 
       {publishedDate && <p className="text-sm text-muted-foreground text-right">{publishedDate}</p>}
