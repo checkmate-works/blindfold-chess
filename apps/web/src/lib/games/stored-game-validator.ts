@@ -4,6 +4,7 @@ import { PAWN_HIDE_MODES, PIECE_COLOR_MODES, PIECE_SHAPE_MODES } from '@blindfol
 import { isEngineConfig } from '@/lib/engines';
 import { isAiReplyDuration } from '@/lib/games/ai-reply-duration';
 import { isBoardVisibility } from '@/lib/games/board-visibility';
+import { isMoveOperationLog } from '@/lib/games/move-operation-log';
 import { isOperationTotals } from '@/lib/games/operation-totals';
 import type { StoredGame } from '@/lib/games/saved-game-types';
 import { isUndoneMoveLog } from '@/lib/games/undone-logs';
@@ -105,36 +106,7 @@ export function isValidStoredGame(stored: unknown): stored is StoredGame {
     (g.gamePreferences === undefined ||
       (typeof g.gamePreferences === 'object' && g.gamePreferences !== null)) &&
     (g.operationLogs === undefined ||
-      (Array.isArray(g.operationLogs) &&
-        g.operationLogs.every(
-          (log) =>
-            typeof log === 'object' &&
-            log !== null &&
-            ['text', 'text-autocomplete', 'select', 'button', 'board'].includes(
-              (log as Record<string, unknown>).inputMethod as string
-            ) &&
-            typeof (log as Record<string, unknown>).peekCount === 'number' &&
-            typeof (log as Record<string, unknown>).undoCount === 'number' &&
-            (typeof (log as Record<string, unknown>).movePeekCount === 'number' ||
-              (log as Record<string, unknown>).movePeekCount === undefined) &&
-            (typeof (log as Record<string, unknown>).invalidCount === 'number' ||
-              (log as Record<string, unknown>).invalidCount === undefined) &&
-            ((log as Record<string, unknown>).invalidAttempts === undefined ||
-              (Array.isArray((log as Record<string, unknown>).invalidAttempts) &&
-                ((log as Record<string, unknown>).invalidAttempts as unknown[]).every(
-                  (s) => typeof s === 'string'
-                ))) &&
-            ((log as Record<string, unknown>).invalidAttemptSquares === undefined ||
-              (Array.isArray((log as Record<string, unknown>).invalidAttemptSquares) &&
-                ((log as Record<string, unknown>).invalidAttemptSquares as unknown[]).every(
-                  (s) =>
-                    s === null ||
-                    (typeof s === 'object' &&
-                      s !== null &&
-                      typeof (s as Record<string, unknown>).from === 'string' &&
-                      typeof (s as Record<string, unknown>).to === 'string')
-                )))
-        ))) &&
+      (Array.isArray(g.operationLogs) && g.operationLogs.every(isMoveOperationLog))) &&
     (g.operationTotals === undefined || isOperationTotals(g.operationTotals)) &&
     (g.undoneLogs === undefined ||
       (Array.isArray(g.undoneLogs) && g.undoneLogs.every((entry) => isUndoneMoveLog(entry)))) &&

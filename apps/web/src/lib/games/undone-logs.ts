@@ -1,6 +1,5 @@
-import type { MoveSquares } from '@/lib/board/move-squares';
-
-import type { MoveOperationLog, UndoneMoveLog } from './saved-game-types';
+import { isMoveOperationLog, isStringArray } from './move-operation-log';
+import type { UndoneMoveLog } from './saved-game-types';
 
 /**
  * Per-game cap on archived {@link UndoneMoveLog} records. Beyond it new
@@ -9,37 +8,6 @@ import type { MoveOperationLog, UndoneMoveLog } from './saved-game-types';
  * `invalidAttempts` cap.
  */
 export const MAX_UNDONE_LOGS = 50;
-
-const INPUT_METHODS = ['text', 'text-autocomplete', 'select', 'button', 'board'];
-
-function isStringArray(value: unknown): value is string[] {
-  return Array.isArray(value) && value.every((s) => typeof s === 'string');
-}
-
-/** Shape guard for one {@link MoveOperationLog.invalidAttemptSquares} slot. */
-function isAttemptSquaresSlot(value: unknown): value is MoveSquares | null {
-  if (value === null) return true;
-  if (typeof value !== 'object') return false;
-  const s = value as Record<string, unknown>;
-  return typeof s.from === 'string' && typeof s.to === 'string';
-}
-
-/** Shape guard for an archived entry's embedded per-move log. */
-function isArchivedMoveLog(value: unknown): value is MoveOperationLog {
-  if (typeof value !== 'object' || value === null) return false;
-  const l = value as Record<string, unknown>;
-  return (
-    INPUT_METHODS.includes(l.inputMethod as string) &&
-    typeof l.peekCount === 'number' &&
-    typeof l.undoCount === 'number' &&
-    (l.movePeekCount === undefined || typeof l.movePeekCount === 'number') &&
-    (l.invalidCount === undefined || typeof l.invalidCount === 'number') &&
-    (l.invalidAttempts === undefined || isStringArray(l.invalidAttempts)) &&
-    (l.invalidAttemptSquares === undefined ||
-      (Array.isArray(l.invalidAttemptSquares) &&
-        l.invalidAttemptSquares.every(isAttemptSquaresSlot)))
-  );
-}
 
 /**
  * Shape guard for {@link UndoneMoveLog} as read from untrusted places
@@ -51,7 +19,7 @@ export function isUndoneMoveLog(value: unknown): value is UndoneMoveLog {
   const v = value as Record<string, unknown>;
   if (typeof v.index !== 'number' || !Number.isInteger(v.index) || v.index < 0) return false;
   if (v.log === undefined && v.pendingInvalidAttempts === undefined) return false;
-  if (v.log !== undefined && !isArchivedMoveLog(v.log)) return false;
+  if (v.log !== undefined && !isMoveOperationLog(v.log)) return false;
   if (v.pendingInvalidAttempts !== undefined && !isStringArray(v.pendingInvalidAttempts)) {
     return false;
   }
