@@ -5,7 +5,6 @@ import { memo } from 'react';
 import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
-import { buildProfileHref } from '@/lib/users/author-profile';
 import { getMedalEmoji } from '@/lib/users/rank-emoji';
 
 import { getLeaderboardIcon } from '@/app/[locale]/(public)/leaderboard/_lib/icons';
@@ -15,7 +14,8 @@ import {
 } from '@/app/[locale]/(public)/leaderboard/_lib/types';
 import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';
 import { ActivityCard } from '@/app/[locale]/_components/ActivityCard';
-import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
+import { CardAuthorAvatar } from '@/app/[locale]/_components/CardAuthorAvatar';
+import { CARD_PERMALINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 import type { ChallengeRankUpdateData } from '../_lib/types';
 
@@ -85,23 +85,9 @@ export const ChallengeRankUpdateCard = memo(function ChallengeRankUpdateCard({
       locale={locale}
       thumbnail={thumbnail}
       thumbnailClassName="flex items-center justify-center"
-      author={
-        <UserAvatar
-          profileHref={buildProfileHref(data.actor)}
-          avatarUrl={data.actor.avatarUrl}
-          displayName={displayName}
-          locale={locale}
-          size="sm"
-          flair={data.actor.flair}
-          country={data.actor.country}
-        />
-      }
+      author={<CardAuthorAvatar author={data.actor} displayName={displayName} locale={locale} />}
       permalink={
-        <Link
-          href={href}
-          locale={locale}
-          className="hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
-        >
+        <Link href={href} locale={locale} className={CARD_PERMALINK_CLASSES}>
           <time dateTime={createdAt}>
             {formatRelativeTime(new Date(createdAt), locale, justNowLabel)}
           </time>

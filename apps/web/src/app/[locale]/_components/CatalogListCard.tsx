@@ -16,6 +16,7 @@ import type { ToggleLikeAction } from '@/app/[locale]/(public)/topics/_lib/actio
 import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';
 import { ActivityCard } from '@/app/[locale]/_components/ActivityCard';
 import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
+import { CARD_PERMALINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 type Props = {
   /** Entity id. Used as the LikeButton's `postId` (the action's first arg). */
@@ -158,11 +159,7 @@ export function CatalogListCard({
         />
       }
       permalink={
-        <Link
-          href={detailHref}
-          locale={locale}
-          className="hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
-        >
+        <Link href={detailHref} locale={locale} className={CARD_PERMALINK_CLASSES}>
           <time dateTime={createdAt.toISOString()}>
             {formatRelativeTime(createdAt, locale, justNowLabel)}
           </time>
@@ -186,11 +183,7 @@ export function CatalogListCard({
     >
       <div className="flex items-center gap-2 mt-2 min-w-0">
         <h3 className="font-medium text-foreground truncate">
-          <Link
-            href={detailHref}
-            locale={locale}
-            className="hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
-          >
+          <Link href={detailHref} locale={locale} className={CARD_PERMALINK_CLASSES}>
             {title}
           </Link>
         </h3>

@@ -7,16 +7,16 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 
 import { getPositionDetailPath } from '@/lib/positions/routes';
 import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
-import { buildProfileHref } from '@/lib/users/author-profile';
 import { resolveAuthorName } from '@/lib/users/display-name';
 
 import { toggleLike } from '@/app/[locale]/(public)/practice/(free-play)/_actions/toggleLike';
 import { PostFooter } from '@/app/[locale]/(public)/topics/_components/PostFooter';
 import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';
 import { ActivityCard } from '@/app/[locale]/_components/ActivityCard';
+import { CardAuthorAvatar } from '@/app/[locale]/_components/CardAuthorAvatar';
 import type { EngagementCounterSize } from '@/app/[locale]/_components/EngagementCounter';
-import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+import { CARD_PERMALINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 import type { PositionFeedData } from '../_lib/types';
 
@@ -60,24 +60,10 @@ export const PositionFeedCard = memo(function PositionFeedCard({
           boardTheme={preferences.boardTheme}
         />
       }
-      author={
-        <UserAvatar
-          profileHref={buildProfileHref(data.author)}
-          avatarUrl={data.author?.avatarUrl}
-          displayName={displayName}
-          locale={locale}
-          size="sm"
-          flair={data.author?.flair}
-          country={data.author?.country}
-        />
-      }
+      author={<CardAuthorAvatar author={data.author} displayName={displayName} locale={locale} />}
       permalink={
         href ? (
-          <Link
-            href={href}
-            locale={locale}
-            className="hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
-          >
+          <Link href={href} locale={locale} className={CARD_PERMALINK_CLASSES}>
             {time}
           </Link>
         ) : (
