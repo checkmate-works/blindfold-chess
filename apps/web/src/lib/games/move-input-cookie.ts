@@ -1,3 +1,4 @@
+import { MOVE_INPUT_MODES, type MoveInputMode } from './move-input-modes';
 import { writePreferenceCookieClient } from './preference-cookie';
 
 /**
@@ -49,8 +50,7 @@ import { writePreferenceCookieClient } from './preference-cookie';
  */
 export const MOVE_INPUT_COOKIE_NAME = 'bfc_move_input_pref';
 
-const MOVE_INPUT_MODES = ['button', 'text', 'select'] as const;
-export type MoveInputMode = (typeof MOVE_INPUT_MODES)[number];
+export type { MoveInputMode };
 
 export type MoveInputPreferenceHint = {
   mode: MoveInputMode;

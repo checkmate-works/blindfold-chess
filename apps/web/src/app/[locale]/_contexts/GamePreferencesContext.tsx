@@ -23,6 +23,7 @@ import {
   DEFAULT_ENABLED_MOVE_INPUT_MODES,
   DEFAULT_MOVE_INPUT_MODE,
 } from '@/lib/games/move-input-cookie';
+import type { MoveInputMode } from '@/lib/games/move-input-modes';
 
 import {
   loadStoredPreferences,
@@ -72,7 +73,7 @@ export type PerGamePreferences = {
    * (which modes are even available to switch between) remains a global
    * setting — it controls UI affordance availability, not per-game intent.
    */
-  moveInputMode: 'text' | 'select' | 'button';
+  moveInputMode: MoveInputMode;
   /**
    * How long the on-board AI-reply chip keeps the opponent's last move visible
    * (ms; `0` = keep until the next reply). Per-game because how long a player
@@ -99,8 +100,8 @@ export type GamePreferences = {
   pieceColors: PieceColorMode; // Piece color mode
   pawnHideMode: PawnHideMode; // Hide pawns (none / both / own / opponent)
   // Move input
-  moveInputMode: 'text' | 'select' | 'button'; // Move input mode
-  enabledMoveInputModes: ('text' | 'select' | 'button')[]; // Which move input modes are available
+  moveInputMode: MoveInputMode; // Move input mode
+  enabledMoveInputModes: MoveInputMode[]; // Which move input modes are available
   buttonInputPieceLabel: 'text' | 'icon'; // Button input label style
   enableAutoComplete: boolean; // Enable auto-complete for text input
   // Board visibility during gameplay — see BoardVisibility for semantics.

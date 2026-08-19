@@ -3,6 +3,7 @@ import { PAWN_HIDE_MODES, PIECE_COLOR_MODES, PIECE_SHAPE_MODES } from '@blindfol
 import { isAiReplyDuration } from '@/lib/games/ai-reply-duration';
 import type { BoardTheme } from '@/lib/games/board-themes';
 import { isBoardVisibility, legacyToBoardVisibility } from '@/lib/games/board-visibility';
+import { MOVE_INPUT_MODES, type MoveInputMode } from '@/lib/games/move-input-modes';
 
 import type { GamePreferences } from './GamePreferencesContext';
 
@@ -55,15 +56,14 @@ export function validatePreferences(parsed: unknown): Partial<GamePreferences> {
   }
   if (
     typeof p.moveInputMode === 'string' &&
-    ['text', 'select', 'button'].includes(p.moveInputMode)
+    (MOVE_INPUT_MODES as readonly string[]).includes(p.moveInputMode)
   ) {
-    result.moveInputMode = p.moveInputMode as GamePreferences['moveInputMode'];
+    result.moveInputMode = p.moveInputMode as MoveInputMode;
   }
   if (Array.isArray(p.enabledMoveInputModes)) {
-    const validModes = ['text', 'select', 'button'] as const;
     const filtered = p.enabledMoveInputModes.filter(
-      (m: unknown): m is GamePreferences['moveInputMode'] =>
-        typeof m === 'string' && validModes.includes(m as (typeof validModes)[number])
+      (m: unknown): m is MoveInputMode =>
+        typeof m === 'string' && (MOVE_INPUT_MODES as readonly string[]).includes(m)
     );
     if (filtered.length > 0) {
       result.enabledMoveInputModes = filtered;
