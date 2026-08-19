@@ -10,6 +10,7 @@ import type { PieceColor } from '@blindfold-chess/types';
 import type { BoardTheme } from '@blindfold-chess/types';
 import { boardThemeColors } from '@blindfold-chess/ui';
 
+import type { MoveSquares } from '@/lib/board/move-squares';
 import type { TerminationMark } from '@/lib/games/termination-mark';
 import { HASH_GLYPH_PATHS, TERMINATION_MARK_STYLE } from '@/lib/games/termination-mark';
 
@@ -37,7 +38,7 @@ export type RenderBoardSvgOptions = {
   /** 目隠し "as played" 表示。null/省略で通常表示 */
   displaySettings?: BlindfoldDisplaySettings | null;
   /** 直前の手のハイライト（from/to マス）。null で無し */
-  lastMove?: { from: string; to: string } | null;
+  lastMove?: MoveSquares | null;
   /** GIF replay annotation (peek/undo badge, rejected-move marker). null/省略で無し */
   overlay?: RenderBoardSvgOverlay | null;
   /**

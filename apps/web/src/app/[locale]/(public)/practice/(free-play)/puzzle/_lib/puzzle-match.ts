@@ -1,6 +1,7 @@
 import { executeMove } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
+import type { MoveSquares } from '@/lib/board/move-squares';
 import type { PuzzleSolutionMove } from '@/lib/db/schema/positions';
 
 export type Attempt = { move: string; isCorrect: boolean };
@@ -53,7 +54,7 @@ export type SolveContext = {
 };
 
 /** A move's origin/destination squares, used to highlight it on the board. */
-export type MoveSquares = { from: string; to: string };
+export type { MoveSquares };
 
 export type PuzzleSubmitOutcome =
   /** The move was illegal or did not match any solution line. */
@@ -76,7 +77,7 @@ export type PuzzleSubmitOutcome =
        * (SAN + squares), or `null` when the line has no reply at this point
        * (e.g. the puzzle's final move).
        */
-      opponentReply: { san: string; from: string; to: string } | null;
+      opponentReply: ({ san: string } & MoveSquares) | null;
     };
 
 /**
@@ -147,7 +148,7 @@ export function evaluatePuzzleSubmit(
 
   let fenAfter = afterPlayer.fen;
   let playedOpponentMove: string | null = null;
-  let opponentReply: { san: string; from: string; to: string } | null = null;
+  let opponentReply: ({ san: string } & MoveSquares) | null = null;
   if (opponentSanIndex < solution.moves.length) {
     const opponentSan = solution.moves[opponentSanIndex]!;
     const afterOpponent = executeMove(fenAfter, opponentSan);

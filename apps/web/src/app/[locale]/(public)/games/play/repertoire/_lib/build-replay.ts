@@ -7,6 +7,8 @@ import {
 } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
+import type { MoveSquares } from '@/lib/board/move-squares';
+
 // Relative on purpose (against the usual 2-levels-up @ alias rule): vitest's
 // vite-node fails to apply the `@` alias to specifiers containing `[locale]` /
 // `(public)`, and this module is under unit test.
@@ -26,7 +28,7 @@ export type MatchVerdict = {
 
 export type ReplayModel = {
   /** Board position at each ply of the game; index 0 is the start. */
-  positions: { fen: string; lastMove: { from: string; to: string } | null }[];
+  positions: { fen: string; lastMove: MoveSquares | null }[];
   /**
    * The ply playback stops at: one past the divergence (so the board shows
    * the diverging move played, not the position before it) for deviation/gap,

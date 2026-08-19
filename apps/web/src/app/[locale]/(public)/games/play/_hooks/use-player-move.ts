@@ -5,6 +5,8 @@ import { validateGameMove } from '@blindfold-chess/features/ai-game';
 import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
+import type { MoveSquares } from '@/lib/board/move-squares';
+
 type UsePlayerMoveOptions = {
   moves: AlgebraicNotation[];
   startingFen: string | undefined;
@@ -12,7 +14,7 @@ type UsePlayerMoveOptions = {
   isPlayerTurn: boolean;
   pushMove: (move: AlgebraicNotation) => void;
   markPlayerInteraction: () => void;
-  setLastMove: (lastMove: { from: string; to: string } | null) => void;
+  setLastMove: (lastMove: MoveSquares | null) => void;
   setMoveInput: (input: string) => void;
   setError: (error: string | null) => void;
   setLastAttemptedInput: (input: string) => void;

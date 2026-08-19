@@ -4,6 +4,7 @@ import type { GameStatus } from '@blindfold-chess/features/ai-game';
 import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation, FinalGameOutcome, GameOutcome } from '@blindfold-chess/types';
 
+import type { MoveSquares } from '@/lib/board/move-squares';
 import { LocalStorageGameRepository } from '@/lib/games/local-storage-repository';
 import type {
   MoveOperationLog,
@@ -21,7 +22,7 @@ type SavedGameData = {
   moves: AlgebraicNotation[];
   startingFen?: string;
   setupPlies?: number;
-  lastMove: { from: string; to: string } | null;
+  lastMove: MoveSquares | null;
   gameStatus: GameStatus;
   playerResult: FinalGameOutcome | null;
   shouldMakeAiMove: boolean;

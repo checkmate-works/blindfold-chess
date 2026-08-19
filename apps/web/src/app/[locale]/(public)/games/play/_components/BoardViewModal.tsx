@@ -7,6 +7,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import type { Side } from '@blindfold-chess/types';
 
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
+import type { MoveSquares } from '@/lib/board/move-squares';
 import type { EvaluationMark } from '@/lib/games/evaluation';
 import type { TerminationMark } from '@/lib/games/termination-mark';
 
@@ -27,7 +28,7 @@ type Props = {
   fen: string;
   playerSide: Side;
   flipped?: boolean;
-  lastMove: { from: string; to: string } | null;
+  lastMove: MoveSquares | null;
   preferences: GamePreferences;
   /** Relayed to the inner `ChessBoard`; `'ghost'` in the review's reproduce view. */
   hiddenPieceStyle?: 'absent' | 'ghost';

@@ -5,11 +5,13 @@ import {
 } from '@blindfold-chess/features/chess-core/fen';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
+import type { MoveSquares } from '@/lib/board/move-squares';
+
 export type ReplayedLine = {
   /** The line's moves (empty if the PGN failed to parse). */
   sans: AlgebraicNotation[];
   /** Board position at each ply; index 0 is the start, index k is after move k. */
-  positions: { fen: string; lastMove: { from: string; to: string } | null }[];
+  positions: { fen: string; lastMove: MoveSquares | null }[];
   /** Whether the root position has black to move (drives move numbering / labels). */
   startsAsBlack: boolean;
   /** Full-move number of the root position. */

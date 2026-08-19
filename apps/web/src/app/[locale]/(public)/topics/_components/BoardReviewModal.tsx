@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 
+import type { MoveSquares } from '@/lib/board/move-squares';
 import { MiniBoard } from '@/lib/positions/ui/MiniBoard';
 
 import { HorizontalMoveList } from '@/app/[locale]/(public)/games/play/_components/HorizontalMoveList';
@@ -64,7 +65,7 @@ type Props = {
   fen: string;
   /** Squares of the move that produced `fen`; PGN callers update it in step.
    *  Honouring the highlight preference is handled here, not by the caller. */
-  lastMove?: { from: string; to: string } | null;
+  lastMove?: MoveSquares | null;
   flipped: boolean;
   onFlip: () => void;
   // PGN-mode props. All four navigation handlers + currentMoveIndex

@@ -2,6 +2,7 @@ import { type ReactNode, useMemo, useState } from 'react';
 
 import type { Side } from '@blindfold-chess/types';
 
+import type { MoveSquares } from '@/lib/board/move-squares';
 import { foldBoardVisibility } from '@/lib/games/play-settings-log';
 import { hidesAnyPiece, revealPieces } from '@/lib/games/reveal-preferences';
 import type { TerminationMark } from '@/lib/games/termination-mark';
@@ -84,7 +85,7 @@ export function usePlayBoardViews({
   isPlayerTurn: boolean;
   isLoading: boolean;
   onBoardMove: (san: string) => void;
-  onIllegalMove: (attempt?: string, squares?: { from: string; to: string }) => void;
+  onIllegalMove: (attempt?: string, squares?: MoveSquares) => void;
   aiReply: { active: boolean; thinking: boolean };
   aiMoveNotation: string | null;
   isAiThinking: boolean;

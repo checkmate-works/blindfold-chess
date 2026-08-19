@@ -1,6 +1,7 @@
 import type { BlindfoldDisplaySettings } from '@blindfold-chess/features/board-display';
 import { executeMove, isCheckmateFen, replayMoves } from '@blindfold-chess/features/chess-core';
 
+import type { MoveSquares } from '@/lib/board/move-squares';
 import type { GameRecord } from '@/lib/db/schema';
 import type { GameGifVariant } from '@/lib/games/gif/constants';
 import type { IllegalAttemptSquares } from '@/lib/games/illegal-attempts';
@@ -68,7 +69,7 @@ export type GifOverlay =
 
 export type GifFrame = {
   fen: string;
-  lastMove: { from: string; to: string } | null;
+  lastMove: MoveSquares | null;
   displaySettings: BlindfoldDisplaySettings | null;
   overlay?: GifOverlay;
   /**

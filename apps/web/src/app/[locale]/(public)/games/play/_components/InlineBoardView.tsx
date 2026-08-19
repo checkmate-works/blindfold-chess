@@ -8,6 +8,7 @@ import type { Side } from '@blindfold-chess/types';
 import { FaChevronDown, FaEye, FaEyeSlash, FaSpinner } from 'react-icons/fa';
 
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
+import type { MoveSquares } from '@/lib/board/move-squares';
 import type { EvaluationMark } from '@/lib/games/evaluation';
 import type { TerminationMark } from '@/lib/games/termination-mark';
 
@@ -34,7 +35,7 @@ export type InlineBoardChessProps = {
   playerSide: Side;
   /** Defaults to "flipped iff `playerSide` is black". */
   flipped?: boolean;
-  lastMove: { from: string; to: string } | null;
+  lastMove: MoveSquares | null;
   preferences: GamePreferences;
   /**
    * How pieces hidden by the blindfold settings are drawn. Defaults to
@@ -74,7 +75,7 @@ export type InlineBoardChessProps = {
    * Fires once per illegal move attempt so always-visible games can count
    * board-driven blindfold mistakes. Suppressed while masked, like `onMove`.
    */
-  onIllegalMove?: (attempt?: string, squares?: { from: string; to: string }) => void;
+  onIllegalMove?: (attempt?: string, squares?: MoveSquares) => void;
 };
 
 /** The horizontal move-list strip above the board, and what the nav row enables. */

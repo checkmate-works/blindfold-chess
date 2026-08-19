@@ -1,6 +1,8 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { type Mock, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import type { MoveSquares } from '@/lib/board/move-squares';
+
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -35,7 +37,7 @@ let mockNav: {
 };
 let mockFlip: { effectiveFlipped: boolean; toggleFlip: Mock };
 /** What the (stubbed) chess-core reports as the move reaching any position. */
-let mockLastMove: { from: string; to: string } | null;
+let mockLastMove: MoveSquares | null;
 let mockStats: { totalMoves: number };
 let mockNotable: boolean;
 let mockEffectiveSettings: Record<string, unknown> | null;

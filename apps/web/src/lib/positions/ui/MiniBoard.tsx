@@ -8,6 +8,7 @@ import { fenToPlacements } from '@blindfold-chess/features/chess-core/fen';
 import { ChessPieceIcon } from '@blindfold-chess/icons';
 import type { PieceType } from '@blindfold-chess/types';
 
+import type { MoveSquares } from '@/lib/board/move-squares';
 import { getBoardThemeColors } from '@/lib/games/board-themes';
 
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -26,7 +27,7 @@ type Props = {
    * Squares to ring as the last move. Pass it already resolved against the
    * `highlightLastMove` preference — `useBoardDisplay` does that.
    */
-  lastMove?: { from: string; to: string } | null;
+  lastMove?: MoveSquares | null;
   /**
    * Off by default: the thumbnail sizes this renders at (120px) have no room
    * for legible file/rank labels. Enlarged views pass the viewer's preference.

@@ -7,6 +7,7 @@ import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 import type { AlgebraicNotation, FinalGameOutcome, Side } from '@blindfold-chess/types';
 
+import type { MoveSquares } from '@/lib/board/move-squares';
 import { sumOperationLogs } from '@/lib/games/operation-totals';
 import type {
   MoveOperationLog,
@@ -18,7 +19,7 @@ type LoadedGameData = {
   startingFen?: string;
   setupPlies?: number;
   moves: AlgebraicNotation[];
-  lastMove: { from: string; to: string } | null;
+  lastMove: MoveSquares | null;
   gameStatus: GameStatus;
   playerResult: FinalGameOutcome | null;
   operationLogs?: MoveOperationLog[];
@@ -67,7 +68,7 @@ export function useGameState({
   // Lazy-initialized from the URL-seeded moves: they are fixed for the life
   // of the mount, so this needs no effect (the old mount effect committed a
   // first frame with the highlight missing).
-  const [lastMove, setLastMove] = useState<{ from: string; to: string } | null>(() =>
+  const [lastMove, setLastMove] = useState<MoveSquares | null>(() =>
     initialMovesFromUrl.length > 0
       ? getLastMoveDetails(initialMovesFromUrl as string[], startingFen)
       : null

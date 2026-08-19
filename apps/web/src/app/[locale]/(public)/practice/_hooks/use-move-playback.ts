@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { ChessGameManager } from '@blindfold-chess/features/chess-core';
 
+import type { MoveSquares } from '@/lib/board/move-squares';
+
 type UseMovePlaybackProps = {
   initialFen: string;
   moves: string[];
@@ -21,7 +23,7 @@ export function useMovePlayback({
   const [currentMoveIndex, setCurrentMoveIndex] = useState(-1);
   const [isPlaying, setIsPlaying] = useState(false);
   const [hasPlayed, setHasPlayed] = useState(false);
-  const [lastMove, setLastMove] = useState<{ from: string; to: string } | null>(null);
+  const [lastMove, setLastMove] = useState<MoveSquares | null>(null);
 
   const chessRef = useRef<ChessGameManager | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -152,7 +154,7 @@ export function useMovePlayback({
       if (isPlaying || targetIndex >= moves.length || targetIndex < -1) return;
 
       const manager = new ChessGameManager(initialFen);
-      let lastMoveResult: { from: string; to: string } | null = null;
+      let lastMoveResult: MoveSquares | null = null;
 
       for (let i = 0; i <= targetIndex; i++) {
         try {

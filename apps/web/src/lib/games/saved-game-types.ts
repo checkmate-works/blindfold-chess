@@ -56,6 +56,7 @@ import type {
   Side,
 } from '@blindfold-chess/types';
 
+import type { MoveSquares } from '@/lib/board/move-squares';
 import type { EngineConfig } from '@/lib/engines';
 
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -153,7 +154,7 @@ export type MoveOperationLog = {
    * downstream (e.g. the "as played" GIF replay, which marks both squares
    * of a rejected board attempt rather than only the destination).
    */
-  invalidAttemptSquares?: ({ from: string; to: string } | null)[];
+  invalidAttemptSquares?: (MoveSquares | null)[];
 };
 
 /**

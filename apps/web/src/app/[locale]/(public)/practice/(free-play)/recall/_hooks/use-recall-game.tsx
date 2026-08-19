@@ -5,6 +5,8 @@ import type { FormattedPgnMove } from '@blindfold-chess/features/chess-core';
 import { formatMovesToPgn } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
+import type { MoveSquares } from '@/lib/board/move-squares';
+
 import { getMovingSide } from '@/app/[locale]/(public)/games/play/_lib/fen-utils';
 
 import type { MoveLogEntry } from '../_lib';
@@ -36,7 +38,7 @@ type RecallGameReturn = {
   boardState: {
     currentFen: string;
     displayFen: string | null;
-    currentLastMove: { from: string; to: string } | null;
+    currentLastMove: MoveSquares | null;
     gamePositions: ReturnType<typeof replayMoves>;
   };
   moveInput: {

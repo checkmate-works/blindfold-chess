@@ -9,6 +9,8 @@ import type { FormattedPgnMove } from '@blindfold-chess/features/chess-core';
 import type { Side } from '@blindfold-chess/types';
 import { FaPlay } from 'react-icons/fa';
 
+import type { MoveSquares } from '@/lib/board/move-squares';
+
 import { HorizontalMoveList } from '@/app/[locale]/(public)/games/play/_components/HorizontalMoveList';
 import { MoveNavigationRow } from '@/app/[locale]/(public)/games/play/_components/MoveNavigationRow';
 import { INLINE_BOARD_CARD_CHROME } from '@/app/[locale]/(public)/games/play/_lib/skeleton-layout-classes';
@@ -19,7 +21,7 @@ import type { MatchVerdict } from '../_lib/build-replay';
 
 type Props = {
   /** Board position at each ply; index 0 is the start (server-precomputed). */
-  positions: { fen: string; lastMove: { from: string; to: string } | null }[];
+  positions: { fen: string; lastMove: MoveSquares | null }[];
   /** Numbered move pairs for the horizontal move strip. */
   formatted: FormattedPgnMove[];
   side: Side;

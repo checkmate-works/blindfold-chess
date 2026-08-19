@@ -11,6 +11,7 @@ import type { FormattedPgnMove } from '@blindfold-chess/features/chess-core';
 import type { Side } from '@blindfold-chess/types';
 import { HiChevronDown, HiChevronRight, HiChevronUp } from 'react-icons/hi2';
 
+import type { MoveSquares } from '@/lib/board/move-squares';
 import { usePlyKeyboardNav } from '@/lib/board/use-ply-keyboard-nav';
 import { lineFallbackTitle } from '@/lib/repertoires/line-display-name';
 
@@ -33,7 +34,7 @@ export type RepertoireViewerLine = {
   /** Numbered move pairs, rendered like the in-game move list. */
   formatted: FormattedPgnMove[];
   /** Board position at each ply; index 0 is the start. */
-  positions: { fen: string; lastMove: { from: string; to: string } | null }[];
+  positions: { fen: string; lastMove: MoveSquares | null }[];
 };
 
 /** Move pairs shown in a list row's unfolded preview before truncating. */
