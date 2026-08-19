@@ -12,7 +12,7 @@ import { DEFAULT_BOARD_THEME } from '@/lib/games/board-themes';
 
 import { ChessBoardWithOverlay } from '@/app/[locale]/(public)/practice/(free-play)/_components/ChessBoardWithOverlay';
 import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';
-import { SegmentedProgressBar } from '@/app/[locale]/(public)/practice/_components/SegmentedProgressBar';
+import { PieceRecreationProgress } from '@/app/[locale]/(public)/practice/_components/PieceRecreationProgress';
 
 import { calculateSquareDifferences } from '../../_lib/preset-problems';
 import type { PositionAccuracy, PositionData } from '../../_lib/types';
@@ -62,42 +62,7 @@ export function PositionMemoryProblemResult({
           </h2>
 
           {/* Recreation Progress Bar */}
-          <div>
-            <p className="text-sm font-medium text-muted-foreground mb-2">
-              {t('recreationProgress')}
-            </p>
-            <SegmentedProgressBar
-              segments={[
-                {
-                  key: 'correct',
-                  value: accuracy.correctPieces,
-                  color: 'bg-success',
-                  label: t('correct'),
-                },
-                {
-                  key: 'incorrect',
-                  value: accuracy.incorrectPieces,
-                  color: 'bg-destructive',
-                  label: t('incorrect'),
-                },
-                {
-                  key: 'missing',
-                  value: accuracy.missingPieces,
-                  color: 'bg-muted-foreground/40',
-                  label: t('missing'),
-                },
-              ]}
-              total={accuracy.totalPieces}
-            />
-
-            {/* Extra pieces display */}
-            {accuracy.extraPieces > 0 && (
-              <p className="text-xs text-muted-foreground mt-3">
-                {t('extra')}: <span className="font-semibold">+{accuracy.extraPieces}</span> (
-                {t('extraDescription')})
-              </p>
-            )}
-          </div>
+          <PieceRecreationProgress accuracy={accuracy} namespace="practice.positionMemory" />
 
           {/* Board Comparison */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
