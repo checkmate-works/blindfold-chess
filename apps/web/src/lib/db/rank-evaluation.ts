@@ -66,7 +66,7 @@ import type {
   RankRequirement,
 } from './data/ranks';
 import { parseRequirements } from './data/ranks';
-import { publiclyVisible } from './games-read';
+import { publiclyVisible } from './games-visibility';
 import { db } from './index';
 import { challengeBestScores, games, positions, ranks, userRanks } from './schema';
 

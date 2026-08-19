@@ -1,7 +1,7 @@
 import { type SQL, sql } from 'drizzle-orm';
 
 import { chunks, feedItems, games, positions, profiles, topicPosts } from '@/lib/db';
-import { publiclyVisible } from '@/lib/db/games-read';
+import { publiclyVisible } from '@/lib/db/games-visibility';
 
 /**
  * Highest all-time leaderboard rank a `challenge_rank_update` row is worth

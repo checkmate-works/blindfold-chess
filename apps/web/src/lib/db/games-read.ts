@@ -7,31 +7,19 @@ import { cache } from 'react';
 
 import type { BlindfoldDisplaySettings } from '@blindfold-chess/features/board-display';
 import type { FinalGameOutcome, Side } from '@blindfold-chess/types';
-import { type SQL, and, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
+import { type SQL, and, desc, eq, inArray, sql } from 'drizzle-orm';
 import 'server-only';
 
 import { playSettingsToThumbnailDisplay } from '@/lib/games/play-settings-thumbnail';
 import { type DetectedOpening, detectGameOpening } from '@/lib/openings/detect-game-opening';
 import type { AuthorProfile } from '@/lib/users/author-profile';
 
+import { publiclyVisible } from './games-visibility';
 import { db } from './index';
 import { countRows } from './list-query';
 import { liveProfileJoinOn } from './profile-select';
 import type { GameRecord } from './schema';
 import { gameChunks, games, profiles } from './schema';
-
-/**
- * The visibility rule for a published game: `public` status and not
- * soft-deleted. Every public read path composes this, so no surface can leak a
- * game the gallery hides, and the planned owner-only `private` tier becomes a
- * one-line change here rather than a hunt for the spellings of the rule.
- *
- * Owner and admin views of non-public games are separate paths and
- * deliberately do not go through this.
- */
-export function publiclyVisible() {
-  return and(isNull(games.deletedAt), eq(games.status, 'public'));
-}
 
 export type SharedGameDetail = {
   game: GameRecord;
