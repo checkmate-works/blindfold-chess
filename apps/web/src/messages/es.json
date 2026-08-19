@@ -1523,7 +1523,8 @@
         "confirmMessage": "¿Estás seguro de que deseas eliminar este problema? Esta acción no se puede deshacer.",
         "confirm": "Eliminar",
         "cancel": "Cancelar"
-      }
+      },
+      "backToGame": "Volver a la partida"
     },
     "puzzle": {
       "title": "Puzzle",

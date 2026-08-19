@@ -1523,7 +1523,8 @@
         "confirmMessage": "この問題を削除しますか？この操作は元に戻せません。",
         "confirm": "削除",
         "cancel": "キャンセル"
-      }
+      },
+      "backToGame": "対局に戻る"
     },
     "puzzle": {
       "title": "パズル",

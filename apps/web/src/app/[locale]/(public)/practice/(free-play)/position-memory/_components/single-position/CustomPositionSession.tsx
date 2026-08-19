@@ -22,6 +22,19 @@ type Props = {
   timeLimit: number;
   displayMode?: DisplayMode;
   position: PositionData;
+  /**
+   * Skip the memorize phase and start on the empty recreate board. Set by the
+   * in-game position check, where the "memorizing" already happened during
+   * play — the point is to test the picture the player carries in their head,
+   * not to show them the answer first.
+   */
+  skipMemorize?: boolean;
+  /**
+   * Validated same-origin path threaded into the result URL, so the result
+   * screen can offer a "back to game" action (and preserve it across "try
+   * again"). Set together with `skipMemorize` by the in-game entry.
+   */
+  returnTo?: string;
 };
 
 /**
@@ -40,6 +53,8 @@ export function CustomPositionSession({
   timeLimit,
   displayMode = 'board',
   position,
+  skipMemorize = false,
+  returnTo,
 }: Props) {
   const router = useRouter();
   const savedRef = useRef(false);
@@ -50,9 +65,11 @@ export function CustomPositionSession({
       if (savedRef.current) return;
       savedRef.current = true;
 
-      router.push(buildCustomResultUrl({ locale, token, timeLimit, results, stats }));
+      router.push(
+        buildCustomResultUrl({ locale, token, timeLimit, results, stats, skipMemorize, returnTo })
+      );
     },
-    [locale, token, timeLimit, router]
+    [locale, token, timeLimit, skipMemorize, returnTo, router]
   );
 
   return (
@@ -60,6 +77,7 @@ export function CustomPositionSession({
       timeLimit={timeLimit}
       shuffle={false}
       presetPositions={[position]}
+      skipMemorize={skipMemorize}
       displayMode={displayMode}
       behavior={{
         enablePause: true,

@@ -1523,7 +1523,8 @@
         "confirmMessage": "Tem certeza de que deseja excluir este problema? Esta ação não pode ser desfeita.",
         "confirm": "Excluir",
         "cancel": "Cancelar"
-      }
+      },
+      "backToGame": "Voltar à partida"
     },
     "puzzle": {
       "title": "Puzzle",
