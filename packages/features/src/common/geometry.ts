@@ -42,24 +42,32 @@ export function mirrorSquare(square: Square, axis: MirrorAxis): Square {
 }
 
 /**
+ * Reflect one 0-based board index when the board is drawn from Black's
+ * point of view, and leave it alone otherwise.
+ *
+ * Flipping the board is a 180° rotation, so it reflects both axes: apply
+ * this to the file/column index and to the rank/row index alike. That is
+ * what makes it worth naming — `flipped ? BOARD_LAST_INDEX - i : i` was
+ * written out in pairs across the promotion picker, the pointer hit-test,
+ * the visual-cell mapping, the SVG renderer and the native board, and
+ * flipping only one of the two puts the piece on the point-symmetric
+ * square rather than anywhere obviously wrong.
+ */
+export function flipIndex(index: number, flipped: boolean): number {
+  return flipped ? BOARD_LAST_INDEX - index : index;
+}
+
+/**
  * Flip 0-based `(file, rank)` indices for board orientation.
  *
  * - `"white"`: returned as-is (white plays from rank 1, files a..h left-to-right).
  * - `"black"`: both axes are reflected, equivalent to `mirrorSquare(.., "point")`.
- *
- * This helper exists so call sites do not have to spell out
- * `(BOARD_LAST_INDEX - file, BOARD_LAST_INDEX - rank)` arithmetic.
  */
 export function flipForOrientation(
   file: number,
   rank: number,
   orientation: "white" | "black",
 ): { file: number; rank: number } {
-  if (orientation === "white") {
-    return { file, rank };
-  }
-  return {
-    file: BOARD_LAST_INDEX - file,
-    rank: BOARD_LAST_INDEX - rank,
-  };
+  const flipped = orientation === "black";
+  return { file: flipIndex(file, flipped), rank: flipIndex(rank, flipped) };
 }

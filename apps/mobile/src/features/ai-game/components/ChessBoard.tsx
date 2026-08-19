@@ -7,6 +7,7 @@ import {
 import {
   DISPLAY_RANKS,
   FILES,
+  flipIndex,
   isLightSquare,
 } from "@blindfold-chess/features/common";
 import { ChessPieceIcon } from "@blindfold-chess/icons";
@@ -64,8 +65,8 @@ export function ChessBoard({
       {displayBoard.map((row, rankIndex) => (
         <View key={rankIndex} style={styles.row}>
           {row.map((piece, fileIndex) => {
-            const actualFileIndex = flipped ? 7 - fileIndex : fileIndex;
-            const actualRankIndex = flipped ? 7 - rankIndex : rankIndex;
+            const actualFileIndex = flipIndex(fileIndex, flipped);
+            const actualRankIndex = flipIndex(rankIndex, flipped);
             const light = isLightSquare(actualFileIndex, actualRankIndex);
             return (
               <View

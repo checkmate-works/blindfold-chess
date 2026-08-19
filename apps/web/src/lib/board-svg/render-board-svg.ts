@@ -4,7 +4,7 @@ import type {
 } from '@blindfold-chess/features/board-display';
 import { resolvePieceDisplay } from '@blindfold-chess/features/board-display';
 import { fenCharToPiece, fenToBoardFlat } from '@blindfold-chess/features/chess-core/fen';
-import { isLightSquare } from '@blindfold-chess/features/common';
+import { flipIndex, isLightSquare } from '@blindfold-chess/features/common';
 import type { SvgElement } from '@blindfold-chess/icons/data';
 import { flagData, getPieceData, undoData } from '@blindfold-chess/icons/data';
 import type { PieceColor } from '@blindfold-chess/types';
@@ -79,7 +79,7 @@ const STONE_GRADIENT_STOPS: Record<Color, readonly [string, string, string]> = {
  * bottom-left); black's view rotates 180° (so h8 is bottom-left instead).
  */
 function toPixelColRow(rankFromTop: number, fileIdx: number, flipped: boolean) {
-  return flipped ? { col: 7 - fileIdx, row: 7 - rankFromTop } : { col: fileIdx, row: rankFromTop };
+  return { col: flipIndex(fileIdx, flipped), row: flipIndex(rankFromTop, flipped) };
 }
 
 function squareToColRow(square: string, flipped: boolean) {

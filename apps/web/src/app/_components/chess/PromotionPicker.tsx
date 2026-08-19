@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { flipIndex } from '@blindfold-chess/features/common';
 
 import { ChessPiece } from './ChessPiece';
 
@@ -65,8 +66,8 @@ export function PromotionPicker({
   }, [onCancel]);
 
   // Map (fileIndex, rankIndex) → visual (column, row) accounting for board flip.
-  const visualCol = flipped ? 7 - fileIndex : fileIndex;
-  const visualRow = flipped ? 7 - rankIndex : rankIndex;
+  const visualCol = flipIndex(fileIndex, flipped);
+  const visualRow = flipIndex(rankIndex, flipped);
 
   // Stack downward when destination is in the top half (visualRow < 4),
   // upward otherwise. Each option is one square tall (12.5% of board height).
