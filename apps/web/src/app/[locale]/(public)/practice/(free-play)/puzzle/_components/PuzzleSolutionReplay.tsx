@@ -5,6 +5,7 @@ import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { BoardFrame, ChessBoard } from '@/app/_components';
+import type { ClientTranslator } from '@/i18n/translator';
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 import { fullmoveNumberFromFen } from '@blindfold-chess/features/chess-core/fen';
 import { FaPlay, FaRedo } from 'react-icons/fa';
@@ -172,13 +173,7 @@ export function PuzzleSolutionReplay({
   );
 }
 
-function SolutionMoveCell({
-  move,
-  t,
-}: {
-  move: PuzzleSolutionMove | null;
-  t: ReturnType<typeof useTranslations>;
-}) {
+function SolutionMoveCell({ move, t }: { move: PuzzleSolutionMove | null; t: ClientTranslator }) {
   if (!move) return <span className="text-muted-foreground">…</span>;
   return (
     <>

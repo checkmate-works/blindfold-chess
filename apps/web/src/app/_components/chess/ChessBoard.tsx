@@ -31,6 +31,7 @@ import { createPortal } from 'react-dom';
 
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
 import { useBoardAnnotationDrawing } from '@/lib/board-annotations/use-board-annotation-drawing';
+import type { MoveSquares } from '@/lib/board/move-squares';
 import type { BoardTheme } from '@/lib/games/board-themes';
 import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/games/board-themes';
 import type { EvaluationMark } from '@/lib/games/evaluation';
@@ -57,7 +58,7 @@ type Props = {
   fen: string;
   flipped?: boolean;
   playerSide?: Side;
-  lastMove?: { from: string; to: string } | null;
+  lastMove?: MoveSquares | null;
   onSquareClick?: (square: string) => void;
   highlightedSquares?: string[];
   /**
@@ -192,7 +193,7 @@ type Props = {
    * alongside it — the board always knows both at rejection time, unlike the
    * synthesized label, which deliberately drops disambiguation.
    */
-  onIllegalMove?: (attempt?: string, squares?: { from: string; to: string }) => void;
+  onIllegalMove?: (attempt?: string, squares?: MoveSquares) => void;
   /**
    * Which pieces the user may pick up in interactive mode (drag / tap / click
    * selection):

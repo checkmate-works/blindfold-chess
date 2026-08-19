@@ -2,13 +2,14 @@
 
 import { useRouter } from 'next/navigation';
 
+import type { ClientTranslator } from '@/i18n/translator';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { ChallengeSetupShell } from './ChallengeSetupShell';
 
-type PracticeTranslator = ReturnType<typeof useTranslations>;
+type PracticeTranslator = ClientTranslator;
 
 type CreateChallengeSetupOptions = {
   /** Kebab-case module slug used to build the challenge session URL. */

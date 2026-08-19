@@ -1,3 +1,5 @@
+import type { MoveSquares } from '@/lib/board/move-squares';
+
 import type { MoveOperationLog, UndoneMoveLog } from './saved-game-types';
 
 /**
@@ -15,7 +17,7 @@ function isStringArray(value: unknown): value is string[] {
 }
 
 /** Shape guard for one {@link MoveOperationLog.invalidAttemptSquares} slot. */
-function isAttemptSquaresSlot(value: unknown): value is { from: string; to: string } | null {
+function isAttemptSquaresSlot(value: unknown): value is MoveSquares | null {
   if (value === null) return true;
   if (typeof value !== 'object') return false;
   const s = value as Record<string, unknown>;

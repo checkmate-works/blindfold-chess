@@ -19,7 +19,7 @@ import {
   type ReplyMeta,
   getGameCommentMetaMap,
 } from '@/lib/db/reply-meta-queries';
-import { resolvePagination } from '@/lib/pagination';
+import { buildPageHref, resolvePagination } from '@/lib/pagination';
 
 import { getOpeningDisplayName } from '@/app/[locale]/(public)/topics/openings/_lib/get-opening-display-name';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -82,7 +82,7 @@ export default async function ProfileGamesPage({ params, searchParams }: Props) 
     ]);
   }
 
-  const buildHref = (p: number) => `/${locale}/u/${username}/games${p > 1 ? `?page=${p}` : ''}`;
+  const buildHref = buildPageHref(`/${locale}/u/${username}/games`);
 
   return (
     <ProfileShell context={context} locale={locale} activeTab="games">

@@ -7,7 +7,7 @@ import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/ser
 
 import { getOptionalUser } from '@/lib/auth';
 import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
-import { getPaginationParams } from '@/lib/pagination';
+import { buildPageHref, getPaginationParams } from '@/lib/pagination';
 
 import { TopicPostCard } from '@/app/[locale]/(public)/(home)/_components/TopicPostCard';
 import { TopicCardSkeleton } from '@/app/[locale]/(public)/topics/_components/TopicCardSkeleton';
@@ -93,13 +93,9 @@ async function OpeningsContent({ params, searchParams }: Props) {
   ]);
   const fallbackVideoTitle = tVideo('fallbackTitle');
 
-  const buildHref = (p: number) => {
-    const params = new URLSearchParams();
-    if (firstMoveSquare) params.set('first_move', firstMoveSquare);
-    if (p > 1) params.set('page', String(p));
-    const qs = params.toString();
-    return `/${locale}/topics/openings${qs ? `?${qs}` : ''}`;
-  };
+  const buildHref = buildPageHref(`/${locale}/topics/openings`, {
+    first_move: firstMoveSquare,
+  });
 
   return (
     <PageLayout

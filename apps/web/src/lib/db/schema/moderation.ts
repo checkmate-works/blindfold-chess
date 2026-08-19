@@ -4,28 +4,10 @@
 // Moderation event log, rate-limit event log, and the broader user activity
 // log. The moderation log is append-only (no `updated_at`) — see the table
 // TSDoc for the event-sourcing rationale.
-import { index, jsonb, pgTable, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
+import { index, jsonb, pgTable, text, uuid, varchar } from 'drizzle-orm/pg-core';
 
-/**
- * @design updated_at update policy
- *
- * For every table with an `updated_at` column, the timestamp is refreshed
- * automatically by Drizzle via `.$onUpdateFn(() => new Date())`. When adding a
- * new table that has an `updated_at` column, always attach this callback.
- *
- * Exceptions:
- * - `profiles`: updated by a Supabase BEFORE UPDATE trigger
- *   (`profiles_updated_at`). Because `profiles` can be written through
- *   internal Supabase paths that go via `auth.users` (e.g. auth hooks), the
- *   timestamp update is centralized at the DB trigger layer instead of
- *   `$onUpdateFn`. See the `@design` note on the `profiles` table
- *   definition for details.
- *
- * Existing call sites still contain several explicit
- * `set({ updatedAt: new Date() })` statements. They are redundant but
- * harmless and act as a fail-safe if an UPDATE path that bypasses Drizzle
- * is introduced in the future.
- */
+import { createdAtOnly } from './columns';
+
 export const moderationActions = pgTable(
   'moderation_actions',
   {
@@ -37,7 +19,7 @@ export const moderationActions = pgTable(
     reason: text('reason'),
     metadata: jsonb('metadata').default({}),
     ipAddress: varchar('ip_address', { length: 45 }),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    ...createdAtOnly,
   },
   (table) => [
     index('idx_moderation_actions_actor').on(table.actorId),
@@ -75,7 +57,7 @@ export const rateLimitEvents = pgTable(
     id: uuid('id').primaryKey().defaultRandom(),
     userId: uuid('user_id').notNull(),
     action: varchar('action', { length: 50 }).notNull(),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    ...createdAtOnly,
   },
   (table) => [index('idx_rate_limit_events_lookup').on(table.userId, table.action, table.createdAt)]
 );
@@ -112,7 +94,7 @@ export const rateLimitKeyEvents = pgTable(
     id: uuid('id').primaryKey().defaultRandom(),
     subjectKey: varchar('subject_key', { length: 255 }).notNull(),
     action: varchar('action', { length: 50 }).notNull(),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    ...createdAtOnly,
   },
   (table) => [
     index('idx_rate_limit_key_events_lookup').on(table.subjectKey, table.action, table.createdAt),
@@ -183,7 +165,7 @@ export const userActivityLog = pgTable(
     targetType: varchar('target_type', { length: 50 }),
     targetId: uuid('target_id'),
     metadata: jsonb('metadata').default({}),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    ...createdAtOnly,
   },
   (table) => [
     index('idx_user_activity_log_user').on(table.userId),

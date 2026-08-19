@@ -6,7 +6,7 @@ import { FiSettings } from 'react-icons/fi';
 
 import { getAuthenticatedUser } from '@/lib/auth';
 import { getMutedNotificationTypes } from '@/lib/notifications/mutes';
-import { clampPage } from '@/lib/pagination';
+import { buildPageHref, clampPage } from '@/lib/pagination';
 import { getViewerProfile } from '@/lib/users/viewer-profile';
 
 import { PageLayout } from '@/app/[locale]/_components';
@@ -51,10 +51,7 @@ export default async function NotificationsPage({ params, searchParams }: Props)
 
   const currentPage = clampPage(page, totalPages);
 
-  const buildHref = (p: number) => {
-    const qs = p > 1 ? `?page=${p}` : '';
-    return `/${locale}/mypage/notifications${qs}`;
-  };
+  const buildHref = buildPageHref(`/${locale}/mypage/notifications`);
 
   return (
     <PageLayout

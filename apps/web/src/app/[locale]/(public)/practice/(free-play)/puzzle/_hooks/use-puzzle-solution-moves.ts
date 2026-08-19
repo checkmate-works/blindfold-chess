@@ -11,6 +11,8 @@ import {
 import type { FormattedPgnMove } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
+import type { MoveSquares } from '@/lib/board/move-squares';
+
 import { parseFenMeta } from '@/app/[locale]/(public)/games/play/_lib/fen-utils';
 
 import type { SideToMove } from '../../_lib/board-editor-constants';
@@ -29,7 +31,7 @@ type SolutionPosition = {
   fen: string;
   /** The move that produced this position, for the board's last-move
    * highlight. `null` at ply 0 (the starting position). */
-  lastMove: { from: string; to: string } | null;
+  lastMove: MoveSquares | null;
 };
 
 export function usePuzzleSolutionMoves({ baseFen, moveSubmitLabels }: PuzzleSolutionMovesOptions) {

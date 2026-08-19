@@ -6,26 +6,8 @@
 // grant row — see `pointRedemptions` in `./points`.
 import { index, pgTable, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
 
-/**
- * @design updated_at update policy
- *
- * For every table with an `updated_at` column, the timestamp is refreshed
- * automatically by Drizzle via `.$onUpdateFn(() => new Date())`. When adding a
- * new table that has an `updated_at` column, always attach this callback.
- *
- * Exceptions:
- * - `profiles`: updated by a Supabase BEFORE UPDATE trigger
- *   (`profiles_updated_at`). Because `profiles` can be written through
- *   internal Supabase paths that go via `auth.users` (e.g. auth hooks), the
- *   timestamp update is centralized at the DB trigger layer instead of
- *   `$onUpdateFn`. See the `@design` note on the `profiles` table
- *   definition for details.
- *
- * Existing call sites still contain several explicit
- * `set({ updatedAt: new Date() })` statements. They are redundant but
- * harmless and act as a fail-safe if an UPDATE path that bypasses Drizzle
- * is introduced in the future.
- */
+import { createdAtOnly } from './columns';
+
 /**
  * User Grants — time-limited benefit grants for users.
  *
@@ -127,7 +109,7 @@ export const userGrants = pgTable(
     reason: text('reason'), // Human-readable justification (admin memo, campaign name, etc.)
     startsAt: timestamp('starts_at', { withTimezone: true }).notNull(),
     expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    ...createdAtOnly,
     revokedAt: timestamp('revoked_at', { withTimezone: true }),
   },
   (table) => [

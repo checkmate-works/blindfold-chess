@@ -1,6 +1,5 @@
 import { useCallback } from "react";
 import { View, Text, StyleSheet } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import * as Haptics from "expo-haptics";
@@ -10,6 +9,7 @@ import {
   CountdownOverlay,
   QuizTimer,
   ScoreFooter,
+  Screen,
 } from "../../../../components";
 import {
   ChessBoard,
@@ -95,9 +95,7 @@ export default function CoordinateQuizSession() {
     : null;
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
-    >
+    <Screen>
       <CountdownOverlay countdown={countdown} />
 
       {/* Main content */}
@@ -173,14 +171,11 @@ export default function CoordinateQuizSession() {
           />
         </>
       )}
-    </SafeAreaView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   boardContainer: {
     flex: 1,
     justifyContent: "center",

@@ -4,6 +4,8 @@ import { type ReactNode } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
+import { buildPageHref } from '@/lib/pagination';
+
 import { PaginationNavView, SectionTitle } from '@/app/[locale]/_components';
 
 import {
@@ -53,10 +55,9 @@ export function LeaderboardDetailContent({
   const periodLabel = t(`period.${period}`);
   const totalPages = Math.ceil(data.totalCount / PAGE_SIZE);
 
-  const buildHref = (page: number) =>
-    `/${locale}/leaderboard/score/${period}/${moduleSlug}/${settingKey}${
-      page > 1 ? `?page=${page}` : ''
-    }`;
+  const buildHref = buildPageHref(
+    `/${locale}/leaderboard/score/${period}/${moduleSlug}/${settingKey}`
+  );
 
   return (
     <div className="space-y-8">

@@ -77,11 +77,7 @@ vi.mock('next-intl/server', () => ({
   },
 }));
 
-vi.mock('next/navigation', () => ({
-  notFound: () => {
-    throw new Error('NEXT_NOT_FOUND');
-  },
-}));
+vi.mock('next/navigation');
 
 // `resolveGuideContext` now reads the per-request CSP nonce via
 // `resolveCspNonce()`, which calls `next/headers`. In jsdom there is no

@@ -3,6 +3,7 @@ import { revalidateTag } from 'next/cache';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
+import { checkRateLimit } from '@/lib/security/rate-limit';
 import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
 
 import type { SaveResultResponse } from '../_lib/save-result-response';
@@ -12,24 +13,14 @@ import { savePracticeResult } from './save-practice-result';
 // Mock setup
 // ---------------------------------------------------------------------------
 
-const mockCheckRateLimit = vi.fn();
 const mockSaveChallengeResult = vi.fn();
 const mockDeriveLeaderboardKey = vi.fn();
-
-vi.mock('next/cache', () => ({
-  revalidateTag: vi.fn(),
-}));
 
 vi.mock('@/lib/supabase/server');
 
 vi.mock('@/lib/moderation/ban');
 
-vi.mock('@/lib/security/rate-limit', () => ({
-  checkRateLimit: (...args: unknown[]) => mockCheckRateLimit(...args),
-  RATE_LIMITS: {
-    savePracticeResult: { maxAttempts: 10, windowMs: 60_000 },
-  },
-}));
+vi.mock('@/lib/security/rate-limit');
 
 vi.mock('@/lib/db/save-challenge-result', () => ({
   saveChallengeResult: (...args: unknown[]) => mockSaveChallengeResult(...args),
@@ -59,7 +50,7 @@ describe('savePracticeResult', () => {
   beforeEach(() => {
     mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
     mockIsUserBanned.mockResolvedValue(false);
-    mockCheckRateLimit.mockResolvedValue({ success: true });
+    vi.mocked(checkRateLimit).mockResolvedValue({ success: true });
     mockDeriveLeaderboardKey.mockReturnValue('white');
     mockSaveChallengeResult.mockResolvedValue({
       grantedRanks: [],
@@ -180,7 +171,7 @@ describe('savePracticeResult', () => {
   // -------------------------------------------------------------------------
 
   it('should return { success: false, error: "rateLimited" } when rate limited', async () => {
-    mockCheckRateLimit.mockResolvedValue({ error: 'rateLimited' });
+    vi.mocked(checkRateLimit).mockResolvedValue({ error: 'rateLimited' });
 
     const result = await savePracticeResult(
       'coordinate_quiz',

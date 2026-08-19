@@ -1,6 +1,8 @@
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
+import type { ServerTranslator } from '@/i18n/translator';
+
 import { ALL_RANK_SLUGS, isMukyuSlug, parseRequirements } from '@/lib/db/data/ranks';
 import type { RankRequirement, RankSlug } from '@/lib/db/data/ranks';
 import { getRankGuide } from '@/lib/guides';
@@ -16,7 +18,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
  * use `.rich()` for messages with embedded links (e.g. the rank-linked
  * guide heading), not just plain string lookups.
  */
-export type Translator = Awaited<ReturnType<typeof getTranslations>>;
+export type Translator = ServerTranslator;
 
 type RankNavigationNeighbour = {
   slug: RankSlug;

@@ -1,8 +1,18 @@
 import '@testing-library/jest-dom';
 import { vi } from 'vitest';
 
+// `next/cache` has no runtime outside a Next server, so every test that
+// touches a module using it needs the same three stubs. Declaring them here
+// rather than per file is not only less typing: a local `vi.mock('next/cache')`
+// REPLACES this factory wholesale, so a test that only wanted `revalidatePath`
+// used to lose `unstable_cache` and fail the moment its subject reached a
+// cached query — which is exactly what happened when a shared predicate grew a
+// new import. `unstable_cache` passes the function straight through because
+// the tests care what the query returns, not that it was memoized.
 vi.mock('next/cache', () => ({
   unstable_cache: (fn: (...args: unknown[]) => unknown) => fn,
+  revalidatePath: vi.fn(),
+  revalidateTag: vi.fn(),
 }));
 
 // `server-only` exists to make a build fail when a server module is pulled

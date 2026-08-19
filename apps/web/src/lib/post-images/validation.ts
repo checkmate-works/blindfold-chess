@@ -36,6 +36,7 @@ import {
   type ImageMimeType,
   POST_IMAGE_MAX_FILE_SIZE,
 } from '@/lib/images/policy';
+import { MAX_DECODE_PIXELS } from '@/lib/images/sharp-options';
 
 export const POST_IMAGES_BUCKET = 'post-images';
 
@@ -45,8 +46,16 @@ export type PostImageMimeType = ImageMimeType;
 
 export const POST_IMAGES_MAX_FILE_SIZE = POST_IMAGE_MAX_FILE_SIZE;
 
-/** Pixel cap (W*H) — decompression-bomb defense. Mirrors the DB CHECK. */
-export const POST_IMAGES_MAX_MEGAPIXELS = 50_000_000;
+/**
+ * Pixel cap (W*H) for a stored post image, mirroring the DB CHECK on
+ * `post_images`.
+ *
+ * The same number as the app-wide decode budget, and deliberately so — but it
+ * is named here as well because this one has a second obligation: a value that
+ * disagrees with the CHECK constraint would fail the INSERT after the upload
+ * has already been transcoded and stored.
+ */
+export const POST_IMAGES_MAX_MEGAPIXELS = MAX_DECODE_PIXELS;
 
 /** Per-post cap. Mirrors the trigger constant `MAX_IMAGES_PER_POST`. */
 export const MAX_IMAGES_PER_POST = 3;

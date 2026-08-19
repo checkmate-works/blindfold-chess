@@ -17,12 +17,7 @@ vi.mock('@/lib/users/activity-log', () => ({
   logActivityEvent: (...args: unknown[]) => mockLogActivityEvent(...args),
 }));
 
-vi.mock('@/lib/security/rate-limit', () => ({
-  checkRateLimit: vi.fn().mockResolvedValue({ success: true }),
-  RATE_LIMITS: {
-    changePassword: { action: 'change_password', maxAttempts: 5, windowMs: 3_600_000 },
-  },
-}));
+vi.mock('@/lib/security/rate-limit');
 
 vi.mock('@/lib/validations/password', () => ({
   getPasswordValidationError: (password: string) => {

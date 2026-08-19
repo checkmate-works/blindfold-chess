@@ -4,7 +4,8 @@ import { notFound } from 'next/navigation';
 
 import { SITE_URL } from '@/config';
 
-import { getPaginationParams } from '@/lib/pagination';
+import { formatLocalDate } from '@/lib/i18n/format-date';
+import { buildPageHref, getPaginationParams } from '@/lib/pagination';
 import { JsonLd, generateItemListSchema } from '@/lib/seo/jsonld';
 
 import { ListLink, ListLinkContainer, PageLayout, SectionTitle } from '@/app/[locale]/_components';
@@ -66,11 +67,7 @@ export default async function ArticlesPage({ params, searchParams }: Props) {
             <ListLinkContainer>
               {articles.map((article) => {
                 const publishedDate = article.publishedAt
-                  ? new Date(article.publishedAt).toLocaleDateString(locale, {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric',
-                    })
+                  ? formatLocalDate(new Date(article.publishedAt), locale)
                   : undefined;
 
                 return (
@@ -89,7 +86,7 @@ export default async function ArticlesPage({ params, searchParams }: Props) {
             <PaginationNav
               currentPage={currentPage}
               totalPages={totalPages}
-              buildHref={(p) => `/${locale}/articles${p > 1 ? `?page=${p}` : ''}`}
+              buildHref={buildPageHref(`/${locale}/articles`)}
               locale={locale}
             />
           </>

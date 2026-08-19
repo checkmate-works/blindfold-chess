@@ -8,6 +8,11 @@ import { useRouter } from 'next/navigation';
 import { CreativeThumbnail } from '@/lib/ads/ui/CreativeThumbnail';
 import { countryCodeToFlag } from '@/lib/countries';
 
+import {
+  toggleKnobClass,
+  toggleTrackClass,
+} from '@/app/[locale]/_components/toggle-switch-classes';
+
 import { reorderAdCreatives } from '../_actions/reorderAdCreatives';
 import { setAdCreativeActive } from '../_actions/setAdCreativeActive';
 import { CreativeDeleteButton } from './CreativeDeleteButton';
@@ -216,15 +221,9 @@ export function SlotCreativeList({ slot, rows: initialRows, editHrefBase, labels
                 aria-checked={row.isActive}
                 aria-label={row.isActive ? labels.active : labels.inactive}
                 onClick={() => toggleActive(row.id, !row.isActive)}
-                className={`relative h-5 w-9 shrink-0 rounded-full transition-colors ${
-                  row.isActive ? 'bg-success' : 'bg-muted'
-                }`}
+                className={`${toggleTrackClass('setting', row.isActive)} shrink-0`}
               >
-                <span
-                  className={`absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${
-                    row.isActive ? 'translate-x-4' : 'translate-x-0'
-                  }`}
-                />
+                <span className={toggleKnobClass('setting', row.isActive)} />
               </button>
             </div>
           </li>

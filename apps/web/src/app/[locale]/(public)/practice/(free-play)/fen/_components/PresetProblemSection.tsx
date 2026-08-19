@@ -9,6 +9,10 @@ import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 import type { BoardTheme } from '@/lib/games/board-themes';
 
 import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';
+import {
+  toggleKnobClass,
+  toggleTrackClass,
+} from '@/app/[locale]/_components/toggle-switch-classes';
 
 import type { PresetPosition } from '../_data/positions';
 import presetPositions from '../_data/presetPositions.json';
@@ -106,16 +110,10 @@ export function PresetProblemSection({
             role="switch"
             aria-checked={shuffleProblems}
             onClick={() => onShuffleChange(!shuffleProblems)}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-              shuffleProblems ? 'bg-foreground' : 'bg-secondary'
-            }`}
+            className={toggleTrackClass('control', shuffleProblems)}
           >
             <span className="sr-only">{t('shuffle')}</span>
-            <span
-              className={`inline-block h-4 w-4 transform rounded-full bg-background transition-transform ${
-                shuffleProblems ? 'translate-x-6' : 'translate-x-1'
-              }`}
-            />
+            <span className={toggleKnobClass('control', shuffleProblems)} />
           </button>
         </div>
       )}

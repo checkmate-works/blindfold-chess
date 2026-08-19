@@ -1,6 +1,5 @@
 import type { User } from '@supabase/supabase-js';
 
-import type { ranks } from '@/lib/db';
 import {
   ALL_RANK_SLUGS,
   BELT_COLOR_HEX,
@@ -9,8 +8,7 @@ import {
   RANK_LEVEL_BY_SLUG,
   resolveHighestRankSlug,
 } from '@/lib/db/data/ranks';
-
-type Rank = typeof ranks.$inferSelect;
+import type { Rank } from '@/lib/db/schema';
 
 export type RankStat = {
   slug: string;

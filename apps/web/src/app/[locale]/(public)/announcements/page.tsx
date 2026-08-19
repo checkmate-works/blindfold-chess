@@ -1,7 +1,8 @@
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { getPaginationParams } from '@/lib/pagination';
+import { formatLocalDate } from '@/lib/i18n/format-date';
+import { buildPageHref, getPaginationParams } from '@/lib/pagination';
 
 import { ListLink, ListLinkContainer, PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
@@ -77,11 +78,7 @@ export default async function AnnouncementsPage({ params, searchParams }: Props)
           <ListLinkContainer>
             {announcements.map((announcement) => {
               const publishedDate = announcement.publishedAt
-                ? new Date(announcement.publishedAt).toLocaleDateString(locale, {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric',
-                  })
+                ? formatLocalDate(new Date(announcement.publishedAt), locale)
                 : undefined;
 
               return (
@@ -103,7 +100,7 @@ export default async function AnnouncementsPage({ params, searchParams }: Props)
           <PaginationNav
             currentPage={currentPage}
             totalPages={totalPages}
-            buildHref={(p) => `/${locale}/announcements${p > 1 ? `?page=${p}` : ''}`}
+            buildHref={buildPageHref(`/${locale}/announcements`)}
             locale={locale}
           />
         </>

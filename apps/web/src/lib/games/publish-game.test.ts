@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
+import type { MoveSquares } from '@/lib/board/move-squares';
+
 import {
   MAX_DESCRIPTION_LENGTH,
   MAX_MOVES,
@@ -192,7 +194,7 @@ describe('validatePublishSnapshot', () => {
               { from: 'g1', to: 'f3' },
               { from: 'not-a-square', to: 'd5' }, // malformed shape
               'nope', // wrong type entirely
-            ] as unknown as ({ from: string; to: string } | null)[],
+            ] as unknown as (MoveSquares | null)[],
           }),
         ],
       })

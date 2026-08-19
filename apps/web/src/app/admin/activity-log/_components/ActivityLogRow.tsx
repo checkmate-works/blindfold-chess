@@ -4,6 +4,8 @@ import { AdminBadge, type AdminBadgeVariant } from '@/app/admin/_components/Admi
 import { formatDateTime } from '@/app/admin/_lib/format';
 import { FaExternalLinkAlt } from 'react-icons/fa';
 
+import type { UserActivityLog } from '@/lib/db/schema';
+
 function actionBadgeVariant(action: string): AdminBadgeVariant {
   switch (action) {
     // Destructive / dangerous
@@ -53,18 +55,8 @@ function formatUserDisplay(
   return `[deleted] (${shortId}...)`;
 }
 
-type ActivityLog = {
-  id: string;
-  userId: string;
-  action: string;
-  targetType: string | null;
-  targetId: string | null;
-  metadata: unknown;
-  createdAt: Date;
-};
-
 type ActivityLogRowProps = {
-  log: ActivityLog;
+  log: UserActivityLog;
   profileMap: Map<string, { username: string | null }>;
   emailMap: Map<string, string>;
 };

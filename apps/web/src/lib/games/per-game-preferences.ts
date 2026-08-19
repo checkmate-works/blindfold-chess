@@ -8,6 +8,7 @@ import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreference
 
 import { DEFAULT_AI_REPLY_DURATION, isAiReplyDuration } from './ai-reply-duration';
 import { isBoardVisibility, legacyToBoardVisibility } from './board-visibility';
+import { MOVE_INPUT_MODES } from './move-input-modes';
 
 /**
  * Safe defaults applied when a per-game preferences object is missing a field
@@ -34,12 +35,6 @@ export const DEFAULT_PER_GAME_PREFERENCES: PerGamePreferences = {
   moveInputMode: 'text',
   aiReplyDuration: DEFAULT_AI_REPLY_DURATION,
 };
-
-const MOVE_INPUT_MODES = [
-  'text',
-  'select',
-  'button',
-] as const satisfies readonly PerGamePreferences['moveInputMode'][];
 
 function isOneOf<T extends string>(value: unknown, allowed: readonly T[]): value is T {
   return typeof value === 'string' && (allowed as readonly string[]).includes(value);

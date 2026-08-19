@@ -4,37 +4,10 @@
 // Experience-point economy: per-action `exp_events` (append-only log) and
 // per-user totals (`user_exp`, materialized cache).
 import { sql } from 'drizzle-orm';
-import {
-  index,
-  integer,
-  jsonb,
-  pgTable,
-  timestamp,
-  uniqueIndex,
-  uuid,
-  varchar,
-} from 'drizzle-orm/pg-core';
+import { index, integer, jsonb, pgTable, uniqueIndex, uuid, varchar } from 'drizzle-orm/pg-core';
 
-/**
- * @design updated_at update policy
- *
- * For every table with an `updated_at` column, the timestamp is refreshed
- * automatically by Drizzle via `.$onUpdateFn(() => new Date())`. When adding a
- * new table that has an `updated_at` column, always attach this callback.
- *
- * Exceptions:
- * - `profiles`: updated by a Supabase BEFORE UPDATE trigger
- *   (`profiles_updated_at`). Because `profiles` can be written through
- *   internal Supabase paths that go via `auth.users` (e.g. auth hooks), the
- *   timestamp update is centralized at the DB trigger layer instead of
- *   `$onUpdateFn`. See the `@design` note on the `profiles` table
- *   definition for details.
- *
- * Existing call sites still contain several explicit
- * `set({ updatedAt: new Date() })` statements. They are redundant but
- * harmless and act as a fail-safe if an UPDATE path that bypasses Drizzle
- * is introduced in the future.
- */
+import { createdAtOnly, updatedAtOnly } from './columns';
+
 /**
  * Exp Events — append-only log of all Exp grants.
  *
@@ -84,7 +57,7 @@ export const expEvents = pgTable(
     menuType: varchar('menu_type', { length: 30 }),
     amount: integer('amount').notNull(),
     metadata: jsonb('metadata').default({}),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    ...createdAtOnly,
   },
   (table) => [
     index('idx_exp_events_user_created').on(table.userId, table.createdAt),
@@ -132,10 +105,7 @@ export const userExp = pgTable(
   {
     userId: uuid('user_id').primaryKey().notNull(), // references auth.users — FK defined in custom SQL
     totalExp: integer('total_exp').notNull().default(0),
-    updatedAt: timestamp('updated_at', { withTimezone: true })
-      .defaultNow()
-      .notNull()
-      .$onUpdateFn(() => new Date()),
+    ...updatedAtOnly,
   },
   (table) => [index('idx_user_exp_total').on(table.totalExp)]
 );

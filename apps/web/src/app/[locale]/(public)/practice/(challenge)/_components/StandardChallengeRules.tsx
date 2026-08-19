@@ -1,8 +1,8 @@
-import type { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import type { ClientTranslator } from '@/i18n/translator';
 
 import { CHALLENGE_TIME_LIMIT, MISTAKE_LIMIT } from '@/lib/challenge/constants';
 
-type PracticeTranslator = ReturnType<typeof useTranslations>;
+type PracticeTranslator = ClientTranslator;
 
 /**
  * The rule list every leaderboard-backed challenge shows: the fixed time

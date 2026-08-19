@@ -5,14 +5,12 @@ import { type KeyboardEvent, useCallback, useId, useState } from 'react';
 import { Button } from '@/app/_components';
 
 import { AttachmentInput } from '@/app/[locale]/(public)/topics/_components/AttachmentInput';
-import type {
-  AttachmentInputMode,
-  ValidationStatus,
-} from '@/app/[locale]/(public)/topics/_components/AttachmentInput';
+import type { AttachmentInputMode } from '@/app/[locale]/(public)/topics/_components/AttachmentInput';
 import { FenAttachmentInput } from '@/app/[locale]/(public)/topics/_components/FenAttachmentInput';
 import type { FenAttachmentMode } from '@/app/[locale]/(public)/topics/_components/FenAttachmentInput';
 import { ImageAttachmentInput } from '@/app/[locale]/(public)/topics/_components/ImageAttachmentInput';
 import type { ImageAttachmentMode } from '@/app/[locale]/(public)/topics/_components/ImageAttachmentInput';
+import type { ValidationStatus } from '@/app/[locale]/(public)/topics/_components/attachment-validation-status';
 import { Modal } from '@/app/[locale]/_components/Modal';
 
 /**

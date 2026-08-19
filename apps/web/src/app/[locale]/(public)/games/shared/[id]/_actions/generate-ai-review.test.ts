@@ -1,8 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { checkRateLimit } from '@/lib/security/rate-limit';
+
 const mockAuth = vi.fn();
 const mockGetGameById = vi.fn();
-const mockCheckRateLimit = vi.fn();
 const mockDetectOpening = vi.fn();
 const mockGenerateReview = vi.fn();
 const mockStoreFind = vi.fn();
@@ -21,12 +22,7 @@ vi.mock('@/lib/db/games-read', () => ({
   getGameById: (...args: unknown[]) => mockGetGameById(...args),
 }));
 
-vi.mock('@/lib/security/rate-limit', () => ({
-  RATE_LIMITS: {
-    generateAiReview: { action: 'generate_ai_review', maxAttempts: 1, windowMs: 86_400_000 },
-  },
-  checkRateLimit: (...args: unknown[]) => mockCheckRateLimit(...args),
-}));
+vi.mock('@/lib/security/rate-limit');
 
 vi.mock('@/lib/openings/detect-game-opening', () => ({
   detectGameOpening: (...args: unknown[]) => mockDetectOpening(...args),
@@ -93,7 +89,7 @@ describe('generateAiReviewAction', () => {
     mockStoreFind.mockResolvedValue(null);
     mockHasActiveSubscription.mockResolvedValue(true);
     mockIsLlmConfigured.mockReturnValue(true);
-    mockCheckRateLimit.mockResolvedValue({ success: true });
+    vi.mocked(checkRateLimit).mockResolvedValue({ success: true });
     mockDetectOpening.mockResolvedValue({ slug: 'italian', name: 'Italian Game', ecoCode: 'C50' });
     mockGenerateReview.mockResolvedValue({ ok: true, review: FAKE_REVIEW });
   });
@@ -164,7 +160,7 @@ describe('generateAiReviewAction', () => {
       success: false,
       error: 'not_owner',
     });
-    expect(mockCheckRateLimit).not.toHaveBeenCalled();
+    expect(vi.mocked(checkRateLimit)).not.toHaveBeenCalled();
     expect(mockGenerateReview).not.toHaveBeenCalled();
   });
 
@@ -197,7 +193,7 @@ describe('generateAiReviewAction', () => {
     const result = await generateAiReviewAction(validInput());
 
     expect(result).toEqual({ success: true, review: FAKE_REVIEW });
-    expect(mockCheckRateLimit).not.toHaveBeenCalled();
+    expect(vi.mocked(checkRateLimit)).not.toHaveBeenCalled();
     expect(mockGenerateReview).not.toHaveBeenCalled();
   });
 
@@ -208,7 +204,7 @@ describe('generateAiReviewAction', () => {
       success: false,
       error: 'subscription_required',
     });
-    expect(mockCheckRateLimit).not.toHaveBeenCalled();
+    expect(vi.mocked(checkRateLimit)).not.toHaveBeenCalled();
     expect(mockGenerateReview).not.toHaveBeenCalled();
   });
 
@@ -233,7 +229,7 @@ describe('generateAiReviewAction', () => {
       success: false,
       error: 'llm_error',
     });
-    expect(mockCheckRateLimit).not.toHaveBeenCalled();
+    expect(vi.mocked(checkRateLimit)).not.toHaveBeenCalled();
     expect(mockGenerateReview).not.toHaveBeenCalled();
     errSpy.mockRestore();
   });
@@ -249,7 +245,7 @@ describe('generateAiReviewAction', () => {
   });
 
   it('maps a hit rate limit to rate_limited', async () => {
-    mockCheckRateLimit.mockResolvedValue({ error: 'rateLimited' });
+    vi.mocked(checkRateLimit).mockResolvedValue({ error: 'rateLimited' });
     expect(await generateAiReviewAction(validInput())).toEqual({
       success: false,
       error: 'rate_limited',

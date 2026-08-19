@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 
 import { Button, FlipBoardButton } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
@@ -12,6 +12,7 @@ import { EditableChessBoard } from '@/app/[locale]/(public)/practice/(free-play)
 import { ProgressBar } from '@/app/[locale]/(public)/practice/_components/ProgressBar';
 import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
+import { useEditableBoardLabels } from '../../../_hooks/use-editable-board-labels';
 import type { PositionData } from '../../_lib/types';
 
 type Props = {
@@ -51,15 +52,7 @@ export function PositionMemoryRecreate({
   // position was authored, then let the solver flip freely.
   const [flipped, setFlipped] = useState(originalPosition.isBlackToMove);
 
-  const editableBoardLabels = useMemo(
-    () => ({
-      whitePieces: t('whitePieces'),
-      blackPieces: t('blackPieces'),
-      removePieceMode: t('removePieceMode'),
-      placingPiece: t('placingPiece'),
-    }),
-    [t]
-  );
+  const editableBoardLabels = useEditableBoardLabels('practice.positionMemory');
 
   return (
     <div className="space-y-4">

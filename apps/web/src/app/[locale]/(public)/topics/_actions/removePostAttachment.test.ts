@@ -85,20 +85,7 @@ vi.mock('@/lib/db', () => ({
 
 vi.mock('@/lib/moderation/ban');
 
-vi.mock('@/lib/security/rate-limit', () => ({
-  checkRateLimit: vi.fn().mockResolvedValue({ success: true }),
-  RATE_LIMITS: {
-    removePostAttachment: {
-      action: 'remove_post_attachment',
-      maxAttempts: 30,
-      windowMs: 3_600_000,
-    },
-  },
-}));
-
-vi.mock('next/cache', () => ({
-  revalidatePath: vi.fn(),
-}));
+vi.mock('@/lib/security/rate-limit');
 
 const testUserId = 'user-00000000-0000-0000-0000-000000000001';
 const otherUserId = 'user-00000000-0000-0000-0000-000000000002';

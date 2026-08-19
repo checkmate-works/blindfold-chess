@@ -27,12 +27,7 @@ vi.mock('@/lib/supabase/server');
 
 vi.mock('@/lib/moderation/ban');
 
-vi.mock('@/lib/security/rate-limit', () => ({
-  checkRateLimit: vi.fn().mockResolvedValue({ success: true }),
-  RATE_LIMITS: {
-    toggleFollow: { action: 'toggle_follow', maxAttempts: 100, windowMs: 86_400_000 },
-  },
-}));
+vi.mock('@/lib/security/rate-limit');
 
 vi.mock('@/lib/db', () => ({
   db: {
@@ -65,10 +60,6 @@ vi.mock('@/lib/db', () => ({
     followerId: 'follower_id',
     followingId: 'following_id',
   },
-}));
-
-vi.mock('next/cache', () => ({
-  revalidatePath: vi.fn(),
 }));
 
 const testUserId = 'user-00000000-0000-0000-0000-000000000001';

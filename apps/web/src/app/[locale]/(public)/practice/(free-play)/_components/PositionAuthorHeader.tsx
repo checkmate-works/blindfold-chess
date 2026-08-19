@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 
 import Link from 'next/link';
 
+import { formatLocalDate } from '@/lib/i18n/format-date';
 import { buildProfileHref } from '@/lib/users/author-profile';
 
 import type { ActionsMenuItem } from '@/app/[locale]/_components/ActionsMenu';
@@ -84,11 +85,7 @@ export function PositionAuthorHeader({
         >
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <time dateTime={createdAt.toISOString()}>
-              {createdAt.toLocaleDateString(locale, {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-              })}
+              {formatLocalDate(createdAt, locale, 'long')}
             </time>
             {edited && editedLabel && editedHref && (
               <Link href={editedHref} className="hover:text-foreground hover:underline">

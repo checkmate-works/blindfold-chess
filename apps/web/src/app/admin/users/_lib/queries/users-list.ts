@@ -3,6 +3,7 @@ import { and, desc, eq, inArray } from 'drizzle-orm';
 
 import { BENEFIT_ACTIVE_STATUSES } from '@/lib/billing/subscription-constants';
 import { db, moderationActions, profiles, subscriptions, userRanks, userRoles } from '@/lib/db';
+import type { Profile } from '@/lib/db/schema';
 import { DEFAULT_PAGE_SIZE, getPaginationParams } from '@/lib/pagination';
 
 import type { AdminUserFilters } from '../filters';
@@ -10,8 +11,6 @@ import { type CountryStat, aggregateCountryStats } from './country-stats';
 import { getAllRanks, getFilteredPopulation } from './population';
 import { type RankStat, aggregateRankStats } from './rank-stats';
 import { type SignupMethodStat, aggregateSignupMethodStats } from './signup-methods';
-
-type Profile = typeof profiles.$inferSelect;
 
 export type UsersPageData = {
   users: User[];

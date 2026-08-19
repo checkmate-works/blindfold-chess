@@ -2,10 +2,12 @@ import { cache } from 'react';
 
 import { unstable_cache } from 'next/cache';
 
-import { and, asc, eq, isNull } from 'drizzle-orm';
+import { asc, eq } from 'drizzle-orm';
 
 import { chessOpenings, db, topicPosts } from '@/lib/db';
 import type { ChessOpening } from '@/lib/db';
+
+import { liveTopLevelPosts } from '@/app/[locale]/(public)/topics/_lib/post-filters';
 
 /**
  * Get all chess openings ordered by sort_order.
@@ -116,13 +118,7 @@ export async function hasUserPostedForOpening(userId: string, slug: string): Pro
     .select({ id: topicPosts.id })
     .from(topicPosts)
     .where(
-      and(
-        eq(topicPosts.topicType, 'opening'),
-        eq(topicPosts.topicKey, slug),
-        eq(topicPosts.userId, userId),
-        isNull(topicPosts.parentId),
-        isNull(topicPosts.deletedAt)
-      )
+      liveTopLevelPosts('opening', eq(topicPosts.topicKey, slug), eq(topicPosts.userId, userId))
     )
     .limit(1);
 

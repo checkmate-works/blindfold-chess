@@ -1,12 +1,12 @@
+import { Screen } from "./Screen";
 import type { ReactNode } from "react";
 import { View, StyleSheet } from "react-native";
 import type { StyleProp, ViewStyle } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 import { CountdownOverlay } from "./CountdownOverlay";
 import { QuizTimer } from "./QuizTimer";
 import { ScoreFooter } from "./ScoreFooter";
-import { useTheme, spacing } from "../theme";
+import { spacing } from "../theme";
 
 type PracticeSessionScreenProps = {
   /** Seconds left on the "get ready" overlay, or null once the quiz is live. */
@@ -47,12 +47,8 @@ export function PracticeSessionScreen({
   footerStyle,
   children,
 }: PracticeSessionScreenProps) {
-  const { colors } = useTheme();
-
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
-    >
+    <Screen>
       <CountdownOverlay countdown={countdown} />
 
       {countdown === null && (
@@ -75,7 +71,7 @@ export function PracticeSessionScreen({
           />
         </>
       )}
-    </SafeAreaView>
+    </Screen>
   );
 }
 
@@ -99,9 +95,6 @@ export const practiceSessionStyles = StyleSheet.create({
 });
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   timerRow: {
     flexDirection: "row",
     justifyContent: "flex-end",

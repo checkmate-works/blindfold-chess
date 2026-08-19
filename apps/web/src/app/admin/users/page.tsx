@@ -22,6 +22,7 @@
  */
 import { getTranslations } from 'next-intl/server';
 
+import type { ServerTranslator } from '@/i18n/translator';
 import {
   createSearchParamsCache,
   parseAsInteger,
@@ -46,7 +47,7 @@ import { SIGNUP_METHOD_I18N_KEY, SIGNUP_METHOD_ORDER } from './_lib/signup-metho
 const PROVIDER_FILTER_VALUES = ['', ...SIGNUP_METHOD_ORDER] as const;
 
 function buildProviderNames(
-  t: Awaited<ReturnType<typeof getTranslations>>
+  t: ServerTranslator
 ): Record<(typeof SIGNUP_METHOD_ORDER)[number], string> {
   return Object.fromEntries(
     SIGNUP_METHOD_ORDER.map((method) => [method, t(`usersTable.${SIGNUP_METHOD_I18N_KEY[method]}`)])

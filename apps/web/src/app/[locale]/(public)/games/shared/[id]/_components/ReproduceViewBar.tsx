@@ -6,6 +6,10 @@ import type { Side } from '@blindfold-chess/types';
 import type { GamePlaySettings } from '@/lib/games/saved-game-types';
 
 import { type HelpStep, HelpTourButton } from '@/app/[locale]/_components/HelpTourButton';
+import {
+  toggleKnobClass,
+  toggleTrackClass,
+} from '@/app/[locale]/_components/toggle-switch-classes';
 
 import { PlaySettingsIndicator } from './PlaySettingsIndicator';
 
@@ -51,17 +55,8 @@ export function ReproduceViewBar({
           className="inline-flex shrink-0 items-center gap-2 text-xs text-muted-foreground transition-colors hover:text-foreground"
         >
           <span>{t('playSettings.reproduceView')}</span>
-          <span
-            aria-hidden
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-              reproduceView ? 'bg-foreground' : 'bg-secondary'
-            }`}
-          >
-            <span
-              className={`inline-block h-4 w-4 transform rounded-full bg-background transition-transform ${
-                reproduceView ? 'translate-x-6' : 'translate-x-1'
-              }`}
-            />
+          <span aria-hidden className={toggleTrackClass('control', reproduceView)}>
+            <span className={toggleKnobClass('control', reproduceView)} />
           </span>
         </button>
         <HelpTourButton steps={reproduceViewTourSteps} label={t('playSettings.tour.label')} />

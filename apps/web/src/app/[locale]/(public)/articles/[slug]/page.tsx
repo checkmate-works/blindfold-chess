@@ -1,14 +1,14 @@
 import type { Metadata } from 'next';
 import { hasLocale } from 'next-intl';
 import { getTranslations } from 'next-intl/server';
-// Renamed to avoid conflict with Next.js route segment config `export const dynamic`
-import nextDynamic from 'next/dynamic';
 import { notFound } from 'next/navigation';
 
+import { LazyMarkdownRenderer } from '@/app/_components/LazyMarkdownRenderer';
 import type { TiptapJsonContent } from '@/app/admin/articles/_lib/types';
 import { SUPPORTED_LOCALES } from '@/config';
 import { routing } from '@/i18n/routing';
 
+import { formatLocalDate } from '@/lib/i18n/format-date';
 import { JsonLd, generateBlogPostingSchema } from '@/lib/seo/jsonld';
 
 import { PageLayout } from '@/app/[locale]/_components';
@@ -33,14 +33,6 @@ export async function generateStaticParams(): Promise<{ locale: Locale; slug: st
   const uniqueSlugs = [...new Set(published.map((a) => a.slug))];
   return SUPPORTED_LOCALES.flatMap((locale) => uniqueSlugs.map((slug) => ({ locale, slug })));
 }
-
-const MarkdownRenderer = nextDynamic(
-  () =>
-    import('@/app/_components/MarkdownRenderer').then((m) => ({
-      default: m.MarkdownRenderer,
-    })),
-  { ssr: true }
-);
 
 type Props = {
   params: Promise<{
@@ -106,11 +98,7 @@ export default async function ArticlePage({ params }: Props) {
   const isFallback = article.locale !== locale;
 
   const publishedDate = article.publishedAt
-    ? new Date(article.publishedAt).toLocaleDateString(locale, {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      })
+    ? formatLocalDate(new Date(article.publishedAt), locale, 'long')
     : undefined;
 
   return (
@@ -139,7 +127,7 @@ export default async function ArticlePage({ params }: Props) {
           {article.contentFormat === 'tiptap_json' && article.contentJson ? (
             <TiptapRenderer content={article.contentJson as TiptapJsonContent} />
           ) : (
-            <MarkdownRenderer content={article.content} skipFirstH1={true} />
+            <LazyMarkdownRenderer content={article.content} skipFirstH1={true} />
           )}
         </ProseArticle>
 

@@ -22,6 +22,7 @@ import { notFound } from 'next/navigation';
 
 import { Button } from '@/app/_components';
 import { SUPPORTED_LOCALES } from '@/config';
+import type { ServerTranslator } from '@/i18n/translator';
 import { HiArrowRight } from 'react-icons/hi2';
 
 import { ALL_RANK_SLUGS, isMukyuSlug } from '@/lib/db/data/ranks';
@@ -55,7 +56,7 @@ type Props = {
   }>;
 };
 
-type TFunc = Awaited<ReturnType<typeof getTranslations>>;
+type TFunc = ServerTranslator;
 
 function truncateTeaser(text: string): string {
   return text.length > 100 ? `${text.slice(0, 100)}…` : text;

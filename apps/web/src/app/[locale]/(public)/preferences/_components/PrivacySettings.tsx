@@ -5,6 +5,10 @@ import { useEffect, useState, useTransition } from 'react';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { Skeleton } from '@/app/[locale]/_components/Skeleton';
+import {
+  toggleKnobClass,
+  toggleTrackClass,
+} from '@/app/[locale]/_components/toggle-switch-classes';
 
 import { getLeaderboardVisibility, setLeaderboardVisibility } from '../_actions';
 
@@ -75,15 +79,9 @@ export function PrivacySettings() {
                 aria-checked={hidden}
                 aria-label={t('privacy.hideFromLeaderboard')}
                 onClick={toggle}
-                className={`relative h-5 w-9 shrink-0 rounded-full transition-colors ${
-                  hidden ? 'bg-success' : 'bg-muted'
-                }`}
+                className={`${toggleTrackClass('setting', hidden)} shrink-0`}
               >
-                <span
-                  className={`absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${
-                    hidden ? 'translate-x-4' : 'translate-x-0'
-                  }`}
-                />
+                <span className={toggleKnobClass('setting', hidden)} />
               </button>
             </div>
             <p className="mt-2 text-xs text-muted-foreground">

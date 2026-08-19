@@ -13,6 +13,8 @@ import { FaCodeBranch } from 'react-icons/fa';
 import { FiRepeat } from 'react-icons/fi';
 
 import { EMPTY_BOARD_ANNOTATIONS } from '@/lib/board-annotations/types';
+import type { MoveSquares } from '@/lib/board/move-squares';
+import { usePlyKeyboardNav } from '@/lib/board/use-ply-keyboard-nav';
 
 import { HorizontalMoveList } from '@/app/[locale]/(public)/games/play/_components/HorizontalMoveList';
 import {
@@ -36,7 +38,7 @@ type Props = {
   side: Side;
   formatted: FormattedPgnMove[];
   /** Board position at each ply; index 0 is the start, index k is after move k. */
-  positions: { fen: string; lastMove: { from: string; to: string } | null }[];
+  positions: { fen: string; lastMove: MoveSquares | null }[];
   /** Per-ply move data, indexed by ply-1 (moves[0] = ply 1). */
   moves: LineMove[];
   isOwner: boolean;
@@ -114,17 +116,10 @@ export function LineDetailBoard({
   // written for — but a reader studying the opposing side can flip it.
   const [flipped, setFlipped] = useState(side === 'black');
 
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      if (e.key === 'ArrowLeft') {
-        setPly((p) => Math.max(0, p - 1));
-      } else if (e.key === 'ArrowRight') {
-        setPly((p) => Math.min(maxPly, p + 1));
-      }
-    }
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [maxPly]);
+  usePlyKeyboardNav({
+    onPrev: () => setPly((p) => Math.max(0, p - 1)),
+    onNext: () => setPly((p) => Math.min(maxPly, p + 1)),
+  });
 
   const clampedPly = Math.min(ply, maxPly);
 

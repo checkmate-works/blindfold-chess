@@ -18,7 +18,7 @@ import { ChessBoardWithOverlay } from '@/app/[locale]/(public)/practice/(free-pl
 import { ResultLikeCta } from '@/app/[locale]/(public)/practice/(free-play)/_components/ResultLikeCta';
 import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';
 import { ExpGainDisplay } from '@/app/[locale]/(public)/practice/_components/ExpGainDisplay';
-import { SegmentedProgressBar } from '@/app/[locale]/(public)/practice/_components/SegmentedProgressBar';
+import { PieceRecreationProgress } from '@/app/[locale]/(public)/practice/_components/PieceRecreationProgress';
 import { SignUpBanner } from '@/app/[locale]/(public)/practice/_components/SignUpBanner';
 import { CardLink, Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
@@ -125,40 +125,7 @@ export function SinglePositionResult({
 
           {/* Progress bar */}
           {accuracy && !isSkipped && (
-            <div>
-              <p className="text-sm font-medium text-muted-foreground mb-2">
-                {t('recreationProgress')}
-              </p>
-              <SegmentedProgressBar
-                segments={[
-                  {
-                    key: 'correct',
-                    value: accuracy.correctPieces,
-                    color: 'bg-success',
-                    label: t('correct'),
-                  },
-                  {
-                    key: 'incorrect',
-                    value: accuracy.incorrectPieces,
-                    color: 'bg-destructive',
-                    label: t('incorrect'),
-                  },
-                  {
-                    key: 'missing',
-                    value: accuracy.missingPieces,
-                    color: 'bg-muted-foreground/40',
-                    label: t('missing'),
-                  },
-                ]}
-                total={accuracy.totalPieces}
-              />
-              {accuracy.extraPieces > 0 && (
-                <p className="text-xs text-muted-foreground mt-3">
-                  {t('extra')}: <span className="font-semibold">+{accuracy.extraPieces}</span> (
-                  {t('extraDescription')})
-                </p>
-              )}
-            </div>
+            <PieceRecreationProgress accuracy={accuracy} namespace="practice.positionMemory" />
           )}
 
           {/* Board comparison */}

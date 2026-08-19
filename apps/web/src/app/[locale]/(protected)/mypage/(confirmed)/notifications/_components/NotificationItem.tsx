@@ -10,6 +10,7 @@ import { useSafeLocale as useLocale } from '@/i18n/use-safe-locale';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FiBell, FiBellOff } from 'react-icons/fi';
 
+import { formatLocalDate } from '@/lib/i18n/format-date';
 import { isMutableNotificationType } from '@/lib/notifications/mutable-types';
 
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
@@ -76,11 +77,7 @@ export function NotificationItem({ notification, currentUsername, isTypeMuted = 
 
   const link = buildNotificationLink(notification, { currentUsername });
   const message = buildNotificationMessage(notification, { actorName, t, tRoot });
-  const timeAgo = notification.createdAt.toLocaleDateString(locale, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
+  const timeAgo = formatLocalDate(notification.createdAt, locale);
 
   // The avatar + message column is the only part wrapped in the clickable
   // Link/button — the mute affordance below is a sibling, not a nested

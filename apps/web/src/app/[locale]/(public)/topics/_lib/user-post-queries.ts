@@ -1,9 +1,10 @@
-import { and, desc, eq, inArray, isNull } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 
 import { topicPosts } from '@/lib/db';
 import { countRows } from '@/lib/db/list-query';
 
 import { buildProfilePostQuery } from './build-profile-post-query';
+import { liveTopLevelPosts } from './post-filters';
 import { attachProfilePostMeta } from './post-meta';
 import type { ProfilePostWithReplyMeta } from './shared';
 
@@ -19,14 +20,7 @@ export async function getPostsByUserId(
   offset?: number
 ): Promise<ProfilePostWithReplyMeta[]> {
   let query = buildProfilePostQuery()
-    .where(
-      and(
-        eq(topicPosts.userId, userId),
-        inArray(topicPosts.topicType, ['square', 'opening']),
-        isNull(topicPosts.parentId),
-        isNull(topicPosts.deletedAt)
-      )
-    )
+    .where(liveTopLevelPosts(['square', 'opening'], eq(topicPosts.userId, userId)))
     .orderBy(desc(topicPosts.createdAt));
 
   if (limit !== undefined) {
@@ -47,11 +41,6 @@ export async function getPostsByUserId(
 export async function getPostCountByUserId(userId: string): Promise<number> {
   return countRows(
     topicPosts,
-    and(
-      eq(topicPosts.userId, userId),
-      inArray(topicPosts.topicType, ['square', 'opening']),
-      isNull(topicPosts.parentId),
-      isNull(topicPosts.deletedAt)
-    )
+    liveTopLevelPosts(['square', 'opening'], eq(topicPosts.userId, userId))
   );
 }

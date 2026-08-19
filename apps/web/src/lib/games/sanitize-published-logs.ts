@@ -1,3 +1,5 @@
+import type { MoveSquares } from '@/lib/board/move-squares';
+
 import type { MoveOperationLog, UndoneMoveLog } from './saved-game-types';
 import { MAX_UNDONE_LOGS, isUndoneMoveLog } from './undone-logs';
 
@@ -38,7 +40,7 @@ export const MAX_SAN_LEN = 10;
 const ALGEBRAIC_SQUARE_RE = /^[a-h][1-8]$/;
 
 /** Shape guard for one `invalidAttemptSquares` slot's `{ from, to }` object. */
-function isAlgebraicSquarePair(value: unknown): value is { from: string; to: string } {
+function isAlgebraicSquarePair(value: unknown): value is MoveSquares {
   if (!value || typeof value !== 'object') return false;
   const v = value as Record<string, unknown>;
   return (
@@ -64,8 +66,8 @@ function boundAttempts(attempts: readonly string[] | undefined): string[] | unde
  * null (nothing to mark on a board).
  */
 function boundSquares(
-  squares: readonly ({ from: string; to: string } | null)[] | undefined
-): ({ from: string; to: string } | null)[] | undefined {
+  squares: readonly (MoveSquares | null)[] | undefined
+): (MoveSquares | null)[] | undefined {
   if (!squares || squares.length === 0) return undefined;
   const bounded = squares.slice(0, MAX_INVALID_ATTEMPTS);
   return bounded.some((s) => s !== null) ? bounded : undefined;

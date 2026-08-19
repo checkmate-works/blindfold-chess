@@ -1,4 +1,4 @@
-import type { getTranslations } from 'next-intl/server';
+import type { ServerTranslator } from '@/i18n/translator';
 
 import { ALL_RANK_SLUGS } from '@/lib/db/data/ranks';
 import type { createAdminClient } from '@/lib/supabase/admin';
@@ -11,7 +11,7 @@ import { RankBarChart } from './RankBarChart';
 import { SignupMethodChart } from './SignupMethodChart';
 import { StatsChartNav } from './StatsChartNav';
 
-type Translator = Awaited<ReturnType<typeof getTranslations>>;
+type Translator = ServerTranslator;
 type AdminClient = ReturnType<typeof createAdminClient>;
 type ProviderNames = Record<(typeof SIGNUP_METHOD_ORDER)[number], string>;
 

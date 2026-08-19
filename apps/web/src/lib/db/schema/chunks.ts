@@ -20,26 +20,7 @@ import {
 
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
 
-/**
- * @design updated_at update policy
- *
- * For every table with an `updated_at` column, the timestamp is refreshed
- * automatically by Drizzle via `.$onUpdateFn(() => new Date())`. When adding a
- * new table that has an `updated_at` column, always attach this callback.
- *
- * Exceptions:
- * - `profiles`: updated by a Supabase BEFORE UPDATE trigger
- *   (`profiles_updated_at`). Because `profiles` can be written through
- *   internal Supabase paths that go via `auth.users` (e.g. auth hooks), the
- *   timestamp update is centralized at the DB trigger layer instead of
- *   `$onUpdateFn`. See the `@design` note on the `profiles` table
- *   definition for details.
- *
- * Existing call sites still contain several explicit
- * `set({ updatedAt: new Date() })` statements. They are redundant but
- * harmless and act as a fail-safe if an UPDATE path that bypasses Drizzle
- * is introduced in the future.
- */
+import { createdAtOnly, softDeleteTimestamp, timestamps } from './columns';
 
 const EMPTY_BOARD_ANNOTATIONS_DEFAULT: BoardAnnotations = { arrows: [], circles: [] };
 
@@ -245,12 +226,8 @@ export const chunks = pgTable(
       .$type<BoardAnnotations>()
       .notNull()
       .default(EMPTY_BOARD_ANNOTATIONS_DEFAULT),
-    deletedAt: timestamp('deleted_at', { withTimezone: true }),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true })
-      .defaultNow()
-      .notNull()
-      .$onUpdateFn(() => new Date()),
+    ...softDeleteTimestamp,
+    ...timestamps,
   },
   (table) => [
     index('idx_chunks_user').on(table.userId),
@@ -358,11 +335,7 @@ export const chunkEditRequests = pgTable(
      * after the resolver's account is hard-deleted (FK SET NULL).
      */
     resolverId: uuid('resolver_id'),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true })
-      .defaultNow()
-      .notNull()
-      .$onUpdateFn(() => new Date()),
+    ...timestamps,
   },
   (table) => [
     // "List pending requests for this chunk, newest first" — the
@@ -433,7 +406,7 @@ export const chunkFeedbackTopics = pgTable(
       .notNull()
       .references(() => chunks.id, { onDelete: 'cascade' }),
     topic: varchar('topic', { length: 50 }).notNull(),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    ...createdAtOnly,
   },
   (table) => [primaryKey({ columns: [table.chunkId, table.topic] })]
 );

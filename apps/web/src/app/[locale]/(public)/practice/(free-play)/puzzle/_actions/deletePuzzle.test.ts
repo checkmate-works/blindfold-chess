@@ -44,15 +44,7 @@ vi.mock('@/lib/points', () => ({
   clawbackPointsForPost: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock('@/lib/security/rate-limit', () => ({
-  RATE_LIMITS: {
-    deletePuzzle: { action: 'delete_puzzle', maxAttempts: 10, windowMs: 3_600_000 },
-  },
-}));
-
-vi.mock('next/cache', () => ({
-  revalidatePath: vi.fn(),
-}));
+vi.mock('@/lib/security/rate-limit');
 
 // Cuts the request-layer cookie chain (next/headers, billing, grants) that
 // the shared position-mutation lib pulls in via its dan-promotion cookie

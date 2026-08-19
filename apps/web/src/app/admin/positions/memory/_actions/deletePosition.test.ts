@@ -68,10 +68,6 @@ vi.mock('@/lib/db', () => {
   };
 });
 
-vi.mock('next/cache', () => ({
-  revalidatePath: vi.fn(),
-}));
-
 vi.mock('@/lib/points', () => ({
   // Stub clawback to a no-op; this test does not exercise the points ledger.
   clawbackPointsForPost: vi.fn().mockResolvedValue(undefined),

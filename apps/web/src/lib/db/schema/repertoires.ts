@@ -39,6 +39,7 @@ import type { BoardAnnotations } from '@/lib/board-annotations/types';
 import { uuidv7 } from '@/lib/uuidv7';
 
 import { chunks } from './chunks';
+import { createdAtOnly, softDeleteTimestamp, timestamps } from './columns';
 import { chessOpenings } from './openings';
 
 /**
@@ -118,12 +119,8 @@ export const repertoires = pgTable(
      * straight into obscurity instead of appearing as new.
      */
     publishedAt: timestamp('published_at', { withTimezone: true }),
-    deletedAt: timestamp('deleted_at', { withTimezone: true }),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true })
-      .defaultNow()
-      .notNull()
-      .$onUpdateFn(() => new Date()),
+    ...softDeleteTimestamp,
+    ...timestamps,
   },
   (table) => [
     index('idx_repertoires_user').on(table.userId, table.createdAt),
@@ -179,11 +176,7 @@ export const repertoireChapters = pgTable(
       .references(() => repertoires.id, { onDelete: 'cascade' }),
     name: varchar('name', { length: 255 }).notNull(),
     seq: integer('seq').notNull().default(0),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true })
-      .defaultNow()
-      .notNull()
-      .$onUpdateFn(() => new Date()),
+    ...timestamps,
   },
   (table) => [
     index('idx_repertoire_chapters_repertoire').on(table.repertoireId, table.seq),
@@ -265,12 +258,8 @@ export const repertoireLines = pgTable(
      * already "the order within the unfiled bucket".
      */
     seq: integer('seq').notNull().default(0),
-    deletedAt: timestamp('deleted_at', { withTimezone: true }),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true })
-      .defaultNow()
-      .notNull()
-      .$onUpdateFn(() => new Date()),
+    ...softDeleteTimestamp,
+    ...timestamps,
   },
   (table) => [
     index('idx_repertoire_lines_repertoire').on(table.repertoireId, table.chapterId, table.seq),
@@ -349,11 +338,7 @@ export const repertoireReviews = pgTable(
     lastReviewedAt: timestamp('last_reviewed_at', { withTimezone: true }),
     reps: integer('reps').notNull().default(0),
     lapses: integer('lapses').notNull().default(0),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true })
-      .defaultNow()
-      .notNull()
-      .$onUpdateFn(() => new Date()),
+    ...timestamps,
   },
   (table) => [
     unique('uq_repertoire_review').on(table.userId, table.repertoireId, table.positionKey),
@@ -439,11 +424,7 @@ export const repertoireAnnotations = pgTable(
      * object). See `apps/web/src/lib/board-annotations/types.ts`.
      */
     shapes: jsonb('shapes').$type<BoardAnnotations>().notNull().default(EMPTY_BOARD_ANNOTATIONS),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true })
-      .defaultNow()
-      .notNull()
-      .$onUpdateFn(() => new Date()),
+    ...timestamps,
   },
   (table) => [unique('uq_repertoire_annotation').on(table.repertoireId, table.positionKey)]
 );
@@ -507,7 +488,7 @@ export const repertoireChunks = pgTable(
       .references(() => chunks.id, { onDelete: 'restrict' }),
     // references auth.users — FK defined in custom SQL (ON DELETE SET NULL).
     suggestedById: uuid('suggested_by_id'),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    ...createdAtOnly,
   },
   (table) => [
     // One link per (repertoire, position, chunk); a repeat link is a no-op

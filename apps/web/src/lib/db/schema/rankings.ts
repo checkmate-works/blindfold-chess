@@ -6,26 +6,8 @@
 // `feed_items` moved to `./openings` and `./feed` on 2026-07-04.)
 import { index, integer, pgTable, primaryKey, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
 
-/**
- * @design updated_at update policy
- *
- * For every table with an `updated_at` column, the timestamp is refreshed
- * automatically by Drizzle via `.$onUpdateFn(() => new Date())`. When adding a
- * new table that has an `updated_at` column, always attach this callback.
- *
- * Exceptions:
- * - `profiles`: updated by a Supabase BEFORE UPDATE trigger
- *   (`profiles_updated_at`). Because `profiles` can be written through
- *   internal Supabase paths that go via `auth.users` (e.g. auth hooks), the
- *   timestamp update is centralized at the DB trigger layer instead of
- *   `$onUpdateFn`. See the `@design` note on the `profiles` table
- *   definition for details.
- *
- * Existing call sites still contain several explicit
- * `set({ updatedAt: new Date() })` statements. They are redundant but
- * harmless and act as a fail-safe if an UPDATE path that bypasses Drizzle
- * is introduced in the future.
- */
+import { createdAtOnly, updatedAtOnly } from './columns';
+
 /**
  * Challenge Results — stores all challenge results for period-based rankings.
  *
@@ -84,7 +66,7 @@ export const challengeResults = pgTable(
     score: integer('score').notNull(),
     incorrectAnswers: integer('incorrect_answers').notNull().default(0),
     timeTaken: integer('time_taken').notNull(),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    ...createdAtOnly,
   },
   (table) => [
     index('idx_cr_period_ranking').on(
@@ -142,10 +124,7 @@ export const challengeBestScores = pgTable(
     incorrectAnswers: integer('incorrect_answers').notNull().default(0),
     timeTaken: integer('time_taken').notNull(),
     achievedAt: timestamp('achieved_at', { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true })
-      .defaultNow()
-      .notNull()
-      .$onUpdateFn(() => new Date()),
+    ...updatedAtOnly,
   },
   (table) => [
     primaryKey({ columns: [table.userId, table.menuType, table.leaderboardKey] }),

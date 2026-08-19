@@ -1,16 +1,17 @@
 'use client';
 
+import type { MoveSquares } from '@/lib/board/move-squares';
 import type { BoardTheme } from '@/lib/games/board-themes';
 
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
-type LastMove = { from: string; to: string } | null | undefined;
+type LastMove = MoveSquares | null | undefined;
 
 /** The display half of the board preferences, resolved and ready to spread. */
 export type BoardDisplay = {
   showCoordinates: boolean;
   boardTheme: BoardTheme;
-  lastMove: { from: string; to: string } | null;
+  lastMove: MoveSquares | null;
 };
 
 type DisplayPreferences = {

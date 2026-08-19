@@ -22,11 +22,7 @@ vi.mock('@/lib/db/game-chunks', () => ({
   isLinkableChunkForViewer: (...args: unknown[]) => mockIsLinkable(...args),
 }));
 
-vi.mock('@/lib/security/rate-limit', () => ({
-  RATE_LIMITS: {
-    linkGameChunk: { action: 'link_game_chunk', maxAttempts: 30, windowMs: 3_600_000 },
-  },
-}));
+vi.mock('@/lib/security/rate-limit');
 
 vi.mock('@/lib/server-action-error', () => ({
   handleServerActionError: () => ({ success: false, error: 'unexpected_error' }),

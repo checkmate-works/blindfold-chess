@@ -16,12 +16,7 @@ vi.mock('@/lib/users/delete-account', () => ({
 
 vi.mock('@/lib/moderation/ban');
 
-vi.mock('@/lib/security/rate-limit', () => ({
-  checkRateLimit: vi.fn().mockResolvedValue({ success: true }),
-  RATE_LIMITS: {
-    deleteAccount: { action: 'delete_account', maxAttempts: 3, windowMs: 3_600_000 },
-  },
-}));
+vi.mock('@/lib/security/rate-limit');
 
 const testUserId = 'user-id-00000000-0000-0000-0000-000000000001';
 

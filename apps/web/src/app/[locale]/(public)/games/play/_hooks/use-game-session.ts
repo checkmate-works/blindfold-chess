@@ -7,6 +7,7 @@ import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
 import { useLatestRef } from '@blindfold-chess/features/common/client';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
+import type { MoveSquares } from '@/lib/board/move-squares';
 import type { EngineConfig } from '@/lib/engines';
 
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -345,7 +346,7 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
     markPendingChange();
   }, [recordMovePeek, markPendingChange]);
   const recordInvalidDurable = useCallback(
-    (attempt?: string, squares?: { from: string; to: string }) => {
+    (attempt?: string, squares?: MoveSquares) => {
       recordInvalid(attempt, squares);
       markPendingChange();
     },

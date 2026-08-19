@@ -1,11 +1,8 @@
-import type { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import type { ClientTranslator } from '@/i18n/translator';
 
 import type { DatePeriod } from './period-utils';
 
-export function getComparisonLabel(
-  period: DatePeriod,
-  t: ReturnType<typeof useTranslations>
-): string {
+export function getComparisonLabel(period: DatePeriod, t: ClientTranslator): string {
   switch (period) {
     case 'thisWeek':
       return t('vsLastWeek');

@@ -43,20 +43,7 @@ vi.mock('./apply-position-edit-proposal', () => ({
   applyAcceptedPositionProposal: (...args: unknown[]) => mockApplyAcceptedProposal(...args),
 }));
 
-vi.mock('@/lib/security/rate-limit', () => ({
-  RATE_LIMITS: {
-    submitPositionEditRequest: {
-      action: 'submit_position_edit_request',
-      maxAttempts: 10,
-      windowMs: 1,
-    },
-    resolvePositionEditRequest: {
-      action: 'resolve_position_edit_request',
-      maxAttempts: 30,
-      windowMs: 1,
-    },
-  },
-}));
+vi.mock('@/lib/security/rate-limit');
 
 vi.mock('next/cache', () => ({
   revalidatePath: (...args: unknown[]) => mockRevalidatePath(...args),

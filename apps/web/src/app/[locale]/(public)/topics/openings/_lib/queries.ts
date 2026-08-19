@@ -15,8 +15,10 @@ import {
 import type { Profile, TopicPost, TopicPostRating } from '@/lib/db';
 import type { LikeMeta } from '@/lib/db/like-queries';
 import { countRows } from '@/lib/db/list-query';
+import { UUID_RE } from '@/lib/validations/uuid';
 
 import { buildProfilePostQuery } from '@/app/[locale]/(public)/topics/_lib/build-profile-post-query';
+import { liveTopLevelPosts } from '@/app/[locale]/(public)/topics/_lib/post-filters';
 import {
   attachPostMeta,
   attachProfilePostMeta,
@@ -63,14 +65,7 @@ async function getPostsForOpening(slug: string): Promise<OpeningPostWithAuthor[]
     .from(topicPosts)
     .leftJoin(profiles, liveProfileJoinOn(topicPosts.userId))
     .leftJoin(topicPostRatings, eq(topicPosts.id, topicPostRatings.postId))
-    .where(
-      and(
-        eq(topicPosts.topicType, 'opening'),
-        eq(topicPosts.topicKey, slug),
-        isNull(topicPosts.parentId),
-        isNull(topicPosts.deletedAt)
-      )
-    )
+    .where(liveTopLevelPosts('opening', eq(topicPosts.topicKey, slug)))
     .orderBy(desc(topicPosts.createdAt));
 
   return results.map((r) => ({
@@ -91,14 +86,13 @@ export type OpeningPostWithReplyMeta = OpeningPostWithAuthor & {
  * Wrapped with `React.cache` so the metadata generator and the page
  * component dedupe to a single lookup per request on the post detail page.
  */
-const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export const getOpeningPostById = cache(
   async (postId: string, slug: string): Promise<OpeningPostWithAuthor | null> => {
     // URL-supplied postId — reject non-UUID input before it reaches Postgres,
     // where `eq(topicPosts.id, "1")` would throw `invalid input syntax for type uuid`
     // and surface as a 500. Caller treats null as 404.
-    if (!UUID_REGEX.test(postId)) {
+    if (!UUID_RE.test(postId)) {
       return null;
     }
 
@@ -181,14 +175,7 @@ async function getProfileOpeningPostsPaginated(
   currentUserId?: string
 ): Promise<ProfilePostWithReplyMeta[]> {
   const results = await buildProfilePostQuery()
-    .where(
-      and(
-        eq(topicPosts.topicType, 'opening'),
-        extra,
-        isNull(topicPosts.parentId),
-        isNull(topicPosts.deletedAt)
-      )
-    )
+    .where(liveTopLevelPosts('opening', extra))
     .orderBy(desc(topicPosts.createdAt))
     .limit(limit)
     .offset(offset);
@@ -220,15 +207,7 @@ export async function getPostCountByFirstMoveSquare(square: string): Promise<num
 
   if (slugs.length === 0) return 0;
 
-  return countRows(
-    topicPosts,
-    and(
-      eq(topicPosts.topicType, 'opening'),
-      inArray(topicPosts.topicKey, slugs),
-      isNull(topicPosts.parentId),
-      isNull(topicPosts.deletedAt)
-    )
-  );
+  return countRows(topicPosts, liveTopLevelPosts('opening', inArray(topicPosts.topicKey, slugs)));
 }
 
 /**

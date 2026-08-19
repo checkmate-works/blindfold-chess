@@ -6,6 +6,7 @@ import {
   isBlackToMoveFromFen,
   parsePgnTree,
 } from '@blindfold-chess/features/chess-core';
+import type { Square } from '@blindfold-chess/types';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 /**
@@ -29,8 +30,8 @@ export type BuilderNode = {
   /** FEN of the position AFTER this move (mirrors MoveTreeNode). */
   fen: string;
   /** Source / destination squares, for the board's last-move highlight. */
-  from: string;
-  to: string;
+  from: Square;
+  to: Square;
   children: BuilderNode[];
 };
 

@@ -3,6 +3,8 @@ import type { ReactNode } from 'react';
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
+import type { ServerTranslator } from '@/i18n/translator';
+
 import { PracticeSessionPage } from '@/app/[locale]/(public)/practice/_components/PracticeSessionPage';
 import { Divider, PageLayout, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
@@ -56,10 +58,7 @@ type BreadcrumbSegment = {
   href?: string;
 };
 
-function resolveBreadcrumbs(
-  segments: BreadcrumbSegment[],
-  t: Awaited<ReturnType<typeof getTranslations>>
-) {
+function resolveBreadcrumbs(segments: BreadcrumbSegment[], t: ServerTranslator) {
   return segments.map((seg) => {
     const ns = seg.namespace ?? 'practice';
     const label =
@@ -79,7 +78,7 @@ type SessionPageBodyConfig = {
   renderContent: (context: {
     locale: Locale;
     searchParams: Record<string, string | string[] | undefined>;
-    t: Awaited<ReturnType<typeof getTranslations>>;
+    t: ServerTranslator;
   }) => ReactNode;
 };
 
@@ -130,7 +129,7 @@ type ChallengePageConfig = {
   renderContent: (context: {
     locale: Locale;
     searchParams: Record<string, string | string[] | undefined>;
-    t: Awaited<ReturnType<typeof getTranslations>>;
+    t: ServerTranslator;
   }) => ReactNode;
 };
 
@@ -174,7 +173,7 @@ type ChallengeSessionPageConfig = {
   renderContent: (context: {
     locale: Locale;
     searchParams: Record<string, string | string[] | undefined>;
-    t: Awaited<ReturnType<typeof getTranslations>>;
+    t: ServerTranslator;
   }) => ReactNode;
 };
 
@@ -226,7 +225,7 @@ type TutorialPageConfig = {
   /** Whether to wrap the content in a PagePanel. Defaults to true. */
   usePagePanel?: boolean;
   /** Render the section title. Receives translation function. Defaults to SectionTitle with tutorial.title. */
-  renderSectionTitle?: (t: Awaited<ReturnType<typeof getTranslations>>) => ReactNode;
+  renderSectionTitle?: (t: ServerTranslator) => ReactNode;
   /** Render the tutorial content. Receives locale. */
   renderTutorial: (locale: Locale) => ReactNode;
 };
@@ -319,7 +318,7 @@ type TrainingPageConfig = {
   renderContent: (context: {
     locale: Locale;
     searchParams: Record<string, string | string[] | undefined>;
-    t: Awaited<ReturnType<typeof getTranslations>>;
+    t: ServerTranslator;
   }) => ReactNode;
 };
 

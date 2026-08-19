@@ -24,28 +24,9 @@ import {
 
 import { tags } from './articles';
 import { chunks } from './chunks';
+import { createdAtOnly, softDeleteTimestamp, timestamps } from './columns';
 import { glossaryTerms } from './glossary';
 
-/**
- * @design updated_at update policy
- *
- * For every table with an `updated_at` column, the timestamp is refreshed
- * automatically by Drizzle via `.$onUpdateFn(() => new Date())`. When adding a
- * new table that has an `updated_at` column, always attach this callback.
- *
- * Exceptions:
- * - `profiles`: updated by a Supabase BEFORE UPDATE trigger
- *   (`profiles_updated_at`). Because `profiles` can be written through
- *   internal Supabase paths that go via `auth.users` (e.g. auth hooks), the
- *   timestamp update is centralized at the DB trigger layer instead of
- *   `$onUpdateFn`. See the `@design` note on the `profiles` table
- *   definition for details.
- *
- * Existing call sites still contain several explicit
- * `set({ updatedAt: new Date() })` statements. They are redundant but
- * harmless and act as a fail-safe if an UPDATE path that bypasses Drizzle
- * is introduced in the future.
- */
 /**
  * Positions — user-submitted chess positions for various practice modules.
  *
@@ -120,12 +101,8 @@ export const positions = pgTable(
      * lapse does not silently re-open previously locked rows.
      */
     forksDisabledAt: timestamp('forks_disabled_at', { withTimezone: true }),
-    deletedAt: timestamp('deleted_at', { withTimezone: true }),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true })
-      .defaultNow()
-      .notNull()
-      .$onUpdateFn(() => new Date()),
+    ...softDeleteTimestamp,
+    ...timestamps,
   },
   (table) => [
     index('idx_positions_user').on(table.userId),
@@ -219,7 +196,7 @@ export const positionChunks = pgTable(
     // end user. Preserved across user hard-deletes (SET NULL) so the
     // junction row itself isn't broken.
     attachedByUserId: uuid('attached_by_user_id'),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    ...createdAtOnly,
   },
   (table) => [
     primaryKey({ columns: [table.positionId, table.chunkId] }),
@@ -344,11 +321,7 @@ export const positionEditRequests = pgTable(
      * hard-deleted (FK SET NULL).
      */
     resolverId: uuid('resolver_id'),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true })
-      .defaultNow()
-      .notNull()
-      .$onUpdateFn(() => new Date()),
+    ...timestamps,
   },
   (table) => [
     // "List pending requests for this position, newest first" — the
@@ -423,7 +396,7 @@ export const positionThemes = pgTable(
     // references auth.users — FK defined in custom SQL (ON DELETE SET NULL).
     // NULL means the tag was attached by an admin batch / service role.
     attachedByUserId: uuid('attached_by_user_id'),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    ...createdAtOnly,
   },
   (table) => [
     primaryKey({ columns: [table.positionId, table.termId] }),
@@ -492,7 +465,7 @@ export const positionContentRevisions = pgTable(
     // references auth.users — FK defined in custom SQL (ON DELETE SET NULL).
     editorId: uuid('editor_id'),
     changes: jsonb('changes').$type<Record<string, { from: unknown; to: unknown }>>().notNull(),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    ...createdAtOnly,
   },
   (table) => [
     // "Show this position's edit history, newest first" — the only read

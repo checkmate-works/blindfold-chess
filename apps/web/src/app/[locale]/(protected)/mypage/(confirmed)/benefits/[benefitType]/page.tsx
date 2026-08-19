@@ -36,7 +36,7 @@ import { Link } from '@/i18n/routing';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { getAuthenticatedUser } from '@/lib/auth';
-import { getPageRange } from '@/lib/pagination';
+import { buildPageHref, getPageRange } from '@/lib/pagination';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
@@ -125,10 +125,7 @@ export default async function BenefitHistoryPage({ params, searchParams }: Props
     }
   };
 
-  const buildHref = (p: number) => {
-    const qs = p > 1 ? `?page=${p}` : '';
-    return `/${locale}/mypage/benefits/${benefitType}${qs}`;
-  };
+  const buildHref = buildPageHref(`/${locale}/mypage/benefits/${benefitType}`);
 
   return (
     <PageLayout

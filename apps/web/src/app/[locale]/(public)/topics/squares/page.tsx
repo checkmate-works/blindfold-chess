@@ -7,7 +7,7 @@ import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { getOptionalUser } from '@/lib/auth';
 import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
-import { getPaginationParams } from '@/lib/pagination';
+import { buildPageHref, getPaginationParams } from '@/lib/pagination';
 
 import { TopicCardSkeleton } from '@/app/[locale]/(public)/topics/_components/TopicCardSkeleton';
 import { TopicTabs } from '@/app/[locale]/(public)/topics/_components/TopicTabs';
@@ -60,12 +60,7 @@ async function SquaresContent({ params, searchParams }: Props) {
   const tVideo = await getTranslations({ locale, namespace: 'postVideoAttachmentRender' });
   const fallbackVideoTitle = tVideo('fallbackTitle');
 
-  const buildHref = (p: number) => {
-    const params = new URLSearchParams();
-    if (p > 1) params.set('page', String(p));
-    const qs = params.toString();
-    return `/${locale}/topics/squares${qs ? `?${qs}` : ''}`;
-  };
+  const buildHref = buildPageHref(`/${locale}/topics/squares`);
 
   return (
     <PageLayout

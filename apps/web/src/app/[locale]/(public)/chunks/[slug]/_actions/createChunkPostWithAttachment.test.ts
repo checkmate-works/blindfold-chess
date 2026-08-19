@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
+import { checkRateLimit } from '@/lib/security/rate-limit';
 import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
 
 import { createChunkPostWithAttachment } from './createChunkPostWithAttachment';
@@ -14,7 +15,6 @@ import { createChunkPostWithAttachment } from './createChunkPostWithAttachment';
 
 const mockGetChunkBySlug = vi.fn();
 const mockResolveLichessAttachmentPgn = vi.fn();
-const mockCheckRateLimit = vi.fn();
 const mockInsertValues = vi.fn();
 const mockInsertReturning = vi.fn();
 const mockAttachmentInsertValues = vi.fn();
@@ -78,29 +78,9 @@ vi.mock('@/lib/db', () => ({
 
 vi.mock('@/lib/moderation/ban');
 
-vi.mock('@/lib/security/rate-limit', () => ({
-  checkRateLimit: (...args: unknown[]) => mockCheckRateLimit(...args),
-  RATE_LIMITS: {
-    createPost: { action: 'create_post', maxAttempts: 10, windowMs: 3_600_000 },
-    createPostWithAttachment: {
-      action: 'create_post_with_attachment',
-      maxAttempts: 5,
-      windowMs: 3_600_000,
-    },
-  },
-}));
+vi.mock('@/lib/security/rate-limit');
 
-const mockRedirect = vi.fn();
-vi.mock('next/navigation', () => ({
-  redirect: (...args: unknown[]) => {
-    mockRedirect(...args);
-    throw new Error('NEXT_REDIRECT');
-  },
-}));
-
-vi.mock('next/cache', () => ({
-  revalidateTag: vi.fn(),
-}));
+vi.mock('next/navigation');
 
 vi.mock('@/lib/points', () => ({
   grantPointsForPost: vi.fn().mockResolvedValue({ pointEventId: 'pe-1', amount: 3 }),
@@ -146,7 +126,7 @@ describe('createChunkPostWithAttachment', () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
     mockIsUserBanned.mockResolvedValue(false);
     mockInsertReturning.mockResolvedValue([{ id: generatedPostId }]);
-    mockCheckRateLimit.mockResolvedValue({ success: true });
+    vi.mocked(checkRateLimit).mockResolvedValue({ success: true });
     mockSelectProfile.mockResolvedValue([{ id: testUserId }]);
   });
 
@@ -175,7 +155,9 @@ describe('createChunkPostWithAttachment', () => {
 
       // Only the base createPost limit should have been touched, NOT
       // the per-attachment one.
-      const actions = mockCheckRateLimit.mock.calls.map((c) => (c[1] as { action: string }).action);
+      const actions = vi
+        .mocked(checkRateLimit)
+        .mock.calls.map((c) => (c[1] as { action: string }).action);
       expect(actions).not.toContain('create_post_with_attachment');
       expect(actions).toContain('create_post');
     });
@@ -193,7 +175,9 @@ describe('createChunkPostWithAttachment', () => {
         createChunkPostWithAttachment('en', testSlug, {}, makeFormData({ attachment: '   \n\t  ' }))
       ).rejects.toThrow('NEXT_REDIRECT');
 
-      const actions = mockCheckRateLimit.mock.calls.map((c) => (c[1] as { action: string }).action);
+      const actions = vi
+        .mocked(checkRateLimit)
+        .mock.calls.map((c) => (c[1] as { action: string }).action);
       expect(actions).not.toContain('create_post_with_attachment');
     });
   });
@@ -207,7 +191,9 @@ describe('createChunkPostWithAttachment', () => {
       // Both slots were consumed exactly once each — the attachment slot
       // FIRST (before createPostBase even runs), the base createPost slot
       // second (inside createPostBase).
-      const actions = mockCheckRateLimit.mock.calls.map((c) => (c[1] as { action: string }).action);
+      const actions = vi
+        .mocked(checkRateLimit)
+        .mock.calls.map((c) => (c[1] as { action: string }).action);
       expect(actions.filter((a) => a === 'create_post_with_attachment').length).toBe(1);
       expect(actions.filter((a) => a === 'create_post').length).toBe(1);
 
@@ -244,7 +230,9 @@ describe('createChunkPostWithAttachment', () => {
       expect(result).toEqual({ error: 'attachment.error.invalidPgn' });
 
       // The slot was consumed (this documents the M4 issue).
-      const actions = mockCheckRateLimit.mock.calls.map((c) => (c[1] as { action: string }).action);
+      const actions = vi
+        .mocked(checkRateLimit)
+        .mock.calls.map((c) => (c[1] as { action: string }).action);
       expect(actions).toContain('create_post_with_attachment');
 
       // No post was created.
@@ -269,7 +257,9 @@ describe('createChunkPostWithAttachment', () => {
 
       expect(result).toEqual({ error: 'attachment.error.lichessRateLimited' });
 
-      const actions = mockCheckRateLimit.mock.calls.map((c) => (c[1] as { action: string }).action);
+      const actions = vi
+        .mocked(checkRateLimit)
+        .mock.calls.map((c) => (c[1] as { action: string }).action);
       expect(actions).toContain('create_post_with_attachment');
 
       expect(mockResolveLichessAttachmentPgn).toHaveBeenCalledWith('abcd1234');
@@ -280,7 +270,7 @@ describe('createChunkPostWithAttachment', () => {
 
   describe('rate limit exceeded (per-attachment)', () => {
     it('returns the rateLimitedPostWithAttachment error and never consults Lichess or chess-core', async () => {
-      mockCheckRateLimit.mockResolvedValueOnce({ error: 'rateLimited' });
+      vi.mocked(checkRateLimit).mockResolvedValueOnce({ error: 'rateLimited' });
 
       const result = await createChunkPostWithAttachment(
         'en',
@@ -435,7 +425,9 @@ describe('createChunkPostWithAttachment', () => {
 
       // Per-attachment slot was still consumed (M4 finding parity with
       // the plain Lichess game URL path).
-      const actions = mockCheckRateLimit.mock.calls.map((c) => (c[1] as { action: string }).action);
+      const actions = vi
+        .mocked(checkRateLimit)
+        .mock.calls.map((c) => (c[1] as { action: string }).action);
       expect(actions).toContain('create_post_with_attachment');
 
       expect(mockResolveLichessAttachmentPgn).toHaveBeenCalledWith('wxyz5678');

@@ -1,9 +1,8 @@
+import type { MoveInputMode } from '@/lib/games/move-input-modes';
+
 import { Skeleton } from '@/app/[locale]/_components';
-import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import { ModeSwitchSkeleton } from './skeletons';
-
-type MoveInputMode = GamePreferences['moveInputMode'];
 
 type Props = {
   mode: MoveInputMode;

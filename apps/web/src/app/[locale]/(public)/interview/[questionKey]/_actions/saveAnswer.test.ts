@@ -15,16 +15,7 @@ vi.mock('@/lib/supabase/server');
 
 vi.mock('@/lib/moderation/ban');
 
-vi.mock('@/lib/security/rate-limit', () => ({
-  checkRateLimit: vi.fn().mockResolvedValue({ success: true }),
-  RATE_LIMITS: {
-    saveInterviewAnswer: {
-      action: 'save_interview_answer',
-      maxAttempts: 50,
-      windowMs: 86_400_000,
-    },
-  },
-}));
+vi.mock('@/lib/security/rate-limit');
 
 vi.mock('@/lib/db', () => {
   const chessOpeningsTable = { slug: 'slug' };
@@ -59,10 +50,6 @@ vi.mock('@/app/[locale]/_lib/interview', () => ({
   QUESTION_CONFIG: {
     favorite_opening: { answerType: 'master_ref' },
   },
-}));
-
-vi.mock('next/cache', () => ({
-  revalidatePath: vi.fn(),
 }));
 
 const testUserId = 'user-00000000-0000-0000-0000-000000000001';

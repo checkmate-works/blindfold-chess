@@ -2,7 +2,8 @@ import { fireEvent, render } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { FenAttachmentInput } from './FenAttachmentInput';
-import type { FenAttachmentMode, ValidationStatus } from './FenAttachmentInput';
+import type { FenAttachmentMode } from './FenAttachmentInput';
+import type { ValidationStatus } from './attachment-validation-status';
 
 vi.mock('@/lib/positions/ui/MiniBoard', () => ({
   MiniBoard: ({ fen }: { fen: string }) => <div data-testid="mini-board" data-fen={fen} />,

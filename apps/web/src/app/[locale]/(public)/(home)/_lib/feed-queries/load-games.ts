@@ -1,8 +1,9 @@
 import { getStartingFen } from '@blindfold-chess/features/chess-core';
-import { and, eq, inArray, isNull } from 'drizzle-orm';
+import { and, inArray } from 'drizzle-orm';
 
 import { getReviewedGameIdSet } from '@/lib/ai-review/queries';
 import { AUTHOR_PROFILE_COLUMNS, db, games, liveProfileJoinOn, profiles } from '@/lib/db';
+import { publiclyVisible } from '@/lib/db/games-visibility';
 import { EMPTY_LIKE_META, GAME_LIKE_TARGET, getLikeMetaMap } from '@/lib/db/like-queries';
 import { EMPTY_REPLY_META, getGameCommentMetaMap } from '@/lib/db/reply-meta-queries';
 import { playSettingsToThumbnailDisplay } from '@/lib/games/play-settings-thumbnail';
@@ -44,7 +45,7 @@ export async function loadGamesForFeed(
     })
     .from(games)
     .leftJoin(profiles, liveProfileJoinOn(games.authorId))
-    .where(and(inArray(games.id, gameIds), isNull(games.deletedAt), eq(games.status, 'public')));
+    .where(and(inArray(games.id, gameIds), publiclyVisible()));
 
   const foundIds = rows.map((r) => r.id);
   const [likeMetaMap, commentMetaMap, reviewedIds] = await Promise.all([

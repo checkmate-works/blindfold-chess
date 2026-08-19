@@ -1,8 +1,6 @@
 import type { User } from '@supabase/supabase-js';
 
-import type { profiles } from '@/lib/db';
-
-type Profile = typeof profiles.$inferSelect;
+import type { Profile } from '@/lib/db/schema';
 
 export type CountryStat = {
   country: string;

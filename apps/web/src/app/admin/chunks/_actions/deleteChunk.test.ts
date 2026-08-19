@@ -67,10 +67,6 @@ vi.mock('@/lib/db', () => {
   };
 });
 
-vi.mock('next/cache', () => ({
-  revalidatePath: vi.fn(),
-}));
-
 const adminUserId = 'admin-00000000-0000-0000-0000-000000000001';
 const authorUserId = 'author-00000000-0000-0000-0000-000000000001';
 const testChunkId = 'chk-00000000-0000-0000-0000-000000000001';

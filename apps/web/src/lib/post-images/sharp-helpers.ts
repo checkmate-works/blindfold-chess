@@ -47,20 +47,15 @@ import 'server-only';
  */
 import sharp from 'sharp';
 
+import { SHARP_INPUT_OPTIONS } from '@/lib/images/sharp-options';
+
 import {
   POST_IMAGES_MAX_FILE_SIZE,
   POST_IMAGES_MAX_MEGAPIXELS,
   type PostImageMimeType,
 } from './validation';
 
-/**
- * Sharp constructor options applied to every `sharp(input, ...)` call in
- * this file. See `@design failOn / pages` in the module-level TSDoc.
- *
- * Exported so unit tests can assert that callers pass these options
- * without having to monkey-patch the sharp module.
- */
-export const SHARP_INPUT_OPTIONS = { failOn: 'error', pages: 1 } as const;
+export { SHARP_INPUT_OPTIONS };
 
 /**
  * Long-edge cap (pixels) applied to every persisted post image. 1600 px

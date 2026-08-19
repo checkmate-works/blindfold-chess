@@ -7,6 +7,7 @@ import sharp from 'sharp';
 import { MIME_TO_EXTENSION, parseAdminImageUpload } from '@/lib/admin-images/validation';
 import { checkMutationOrigin, parseJsonBody } from '@/lib/api-mutation-guard';
 import { articleImages, articles, db } from '@/lib/db';
+import { SHARP_DECODE_OPTIONS } from '@/lib/images/sharp-options';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/security/rate-limit';
 import { createAdminClient } from '@/lib/supabase/admin';
 
@@ -27,7 +28,6 @@ const ARTICLE_IMAGE_MAX_LONG_EDGE = 1600;
  * post-image policy (50 MP): rejects a highly compressible huge-dimension
  * image that sits under the 5 MB byte cap but would decode to ~GBs of memory.
  */
-const ARTICLE_IMAGE_MAX_INPUT_PIXELS = 50_000_000;
 
 async function authenticateAdmin(): Promise<NextResponse | { userId: string }> {
   const auth = await requireAdmin();
@@ -91,11 +91,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   let payload: Buffer | ArrayBuffer = buffer;
   let payloadByteLength = file.size;
   try {
-    const processed = await sharp(Buffer.from(buffer), {
-      failOn: 'error',
-      pages: 1,
-      limitInputPixels: ARTICLE_IMAGE_MAX_INPUT_PIXELS,
-    })
+    const processed = await sharp(Buffer.from(buffer), SHARP_DECODE_OPTIONS)
       .rotate()
       .resize(ARTICLE_IMAGE_MAX_LONG_EDGE, ARTICLE_IMAGE_MAX_LONG_EDGE, {
         fit: 'inside',

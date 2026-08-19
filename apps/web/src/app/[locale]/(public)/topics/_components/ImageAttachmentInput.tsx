@@ -9,6 +9,8 @@ import { FaImage, FaTimes } from 'react-icons/fa';
 import { prepareImageForUpload } from '@/lib/client-images/prepare-image-for-upload';
 import { MAX_IMAGES_PER_POST, POST_IMAGES_MAX_FILE_SIZE } from '@/lib/post-images/validation';
 
+import type { ValidationStatus } from './attachment-validation-status';
+
 /**
  * Discriminated mode reported to the parent form.
  *
@@ -26,23 +28,20 @@ import { MAX_IMAGES_PER_POST, POST_IMAGES_MAX_FILE_SIZE } from '@/lib/post-image
  */
 export type ImageAttachmentMode = { kind: 'empty' } | { kind: 'image'; files: readonly File[] };
 
-/**
- * Validation status surfaced to the parent. See AttachmentInput.tsx for
- * the contract — same three-state union, used by AttachmentModal to
- * disable the Apply button when the active tab is in `error`. The image
- * input never reports `'error'` client-side: file count is clamped to
- * `MAX_IMAGES_PER_POST` and per-file size / MIME validation is
- * authoritative server-side in `/api/posts/[id]/images`.
- */
-export type ValidationStatus = 'empty' | 'ok' | 'error';
-
 type Props = {
   /** Notify the parent form when the input becomes non-empty. */
   onChange?: (hasContent: boolean) => void;
   /** Notify the parent form which mode the input is currently in. */
   onModeChange?: (mode: ImageAttachmentMode) => void;
-  /** Notify the parent of the current validation status so it can
-   *  disable the Apply button while the active tab is in `error`. */
+  /**
+   * Notify the parent of the current validation status so it can disable the
+   * Apply button while the active tab is in `error`.
+   *
+   * This input only ever reports `empty` or `ok`. There is no client-side
+   * failure to report: the file count is clamped to `MAX_IMAGES_PER_POST` as
+   * files are picked, and per-file size and MIME checks are authoritative in
+   * `/api/posts/[id]/images` rather than here.
+   */
   onValidationStatusChange?: (status: ValidationStatus) => void;
 };
 

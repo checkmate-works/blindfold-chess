@@ -40,7 +40,7 @@
  * @see {@link checkAndGrantRanks} — entry point, called from `saveChallengeResult`
  * @see {@link evaluators} — registry of requirement type evaluators
  */
-import { and, asc, count, eq, inArray, isNull } from 'drizzle-orm';
+import { and, asc, count, eq, inArray } from 'drizzle-orm';
 import 'server-only';
 
 import { isOperationTotals } from '@/lib/games/operation-totals';
@@ -66,6 +66,7 @@ import type {
   RankRequirement,
 } from './data/ranks';
 import { parseRequirements } from './data/ranks';
+import { publiclyVisible } from './games-visibility';
 import { db } from './index';
 import { challengeBestScores, games, positions, ranks, userRanks } from './schema';
 
@@ -126,14 +127,7 @@ export function createRankEvalContext(userId: string, scoreCache: BestScoreCache
           setupPlies: games.setupPlies,
         })
         .from(games)
-        .where(
-          and(
-            eq(games.authorId, userId),
-            eq(games.result, 'win'),
-            eq(games.status, 'public'),
-            isNull(games.deletedAt)
-          )
-        );
+        .where(and(eq(games.authorId, userId), eq(games.result, 'win'), publiclyVisible()));
       return wonPublicGames;
     },
   };

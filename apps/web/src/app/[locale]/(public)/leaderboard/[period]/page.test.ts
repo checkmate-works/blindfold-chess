@@ -9,24 +9,15 @@
  *  - plain period-only redirect when `?module=` is absent or invalid
  *  - locale passthrough
  */
+import { notFound, permanentRedirect } from 'next/navigation';
+
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import LegacyLeaderboardPeriodRedirect from './page';
 
-const mockPermanentRedirect = vi.fn((url: string) => {
-  throw new Error(`NEXT_REDIRECT:${url}`);
-});
-
-const mockNotFound = vi.fn(() => {
-  throw new Error('NEXT_NOT_FOUND');
-});
-
-vi.mock('next/navigation', () => ({
-  permanentRedirect: (url: string) => mockPermanentRedirect(url),
-  notFound: () => mockNotFound(),
-}));
+vi.mock('next/navigation');
 
 async function invoke(
   locale: Locale,
@@ -41,8 +32,8 @@ async function invoke(
   } catch {
     // expected — permanentRedirect / notFound throw in the mocks
   }
-  const redirectCalls = mockPermanentRedirect.mock.calls;
-  const notFoundCalls = mockNotFound.mock.calls;
+  const redirectCalls = vi.mocked(permanentRedirect).mock.calls;
+  const notFoundCalls = vi.mocked(notFound).mock.calls;
   if (notFoundCalls.length > 0) {
     return { notFound: true };
   }
@@ -50,8 +41,8 @@ async function invoke(
 }
 
 beforeEach(() => {
-  mockPermanentRedirect.mockClear();
-  mockNotFound.mockClear();
+  vi.mocked(permanentRedirect).mockClear();
+  vi.mocked(notFound).mockClear();
 });
 
 describe('LegacyLeaderboardPeriodRedirect', () => {
@@ -59,7 +50,7 @@ describe('LegacyLeaderboardPeriodRedirect', () => {
     it('calls notFound() for an invalid period', async () => {
       const result = await invoke('en', 'daily');
       expect(result.notFound).toBe(true);
-      expect(mockPermanentRedirect).not.toHaveBeenCalled();
+      expect(vi.mocked(permanentRedirect)).not.toHaveBeenCalled();
     });
 
     it('calls notFound() for an empty period', async () => {
@@ -70,13 +61,13 @@ describe('LegacyLeaderboardPeriodRedirect', () => {
     it('calls notFound() for the reserved "score" segment', async () => {
       const result = await invoke('en', 'score');
       expect(result.notFound).toBe(true);
-      expect(mockPermanentRedirect).not.toHaveBeenCalled();
+      expect(vi.mocked(permanentRedirect)).not.toHaveBeenCalled();
     });
 
     it('calls notFound() for the reserved "exp" segment', async () => {
       const result = await invoke('en', 'exp');
       expect(result.notFound).toBe(true);
-      expect(mockPermanentRedirect).not.toHaveBeenCalled();
+      expect(vi.mocked(permanentRedirect)).not.toHaveBeenCalled();
     });
   });
 

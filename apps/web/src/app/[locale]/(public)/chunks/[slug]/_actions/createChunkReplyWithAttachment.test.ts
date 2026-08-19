@@ -1,8 +1,10 @@
 import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
+import { checkRateLimit } from '@/lib/security/rate-limit';
 import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
 
 import { createChunkReplyWithAttachment } from './createChunkReplyWithAttachment';
@@ -28,7 +30,6 @@ const mockSelectProfile = vi.fn();
 const mockInsertReturning = vi.fn();
 const mockInsertValues = vi.fn();
 const mockTxAttachmentValues = vi.fn();
-const mockCheckRateLimit = vi.fn();
 const mockGetChunkBySlug = vi.fn();
 const mockResolveLichess = vi.fn();
 
@@ -101,29 +102,9 @@ vi.mock('@/lib/db', () => ({
 
 vi.mock('@/lib/moderation/ban');
 
-vi.mock('@/lib/security/rate-limit', () => ({
-  checkRateLimit: (...args: unknown[]) => mockCheckRateLimit(...args),
-  RATE_LIMITS: {
-    createReply: { action: 'create_reply', maxAttempts: 20, windowMs: 3_600_000 },
-    createPostWithAttachment: {
-      action: 'create_post_with_attachment',
-      maxAttempts: 5,
-      windowMs: 3_600_000,
-    },
-  },
-}));
+vi.mock('@/lib/security/rate-limit');
 
-vi.mock('next/cache', () => ({
-  revalidatePath: vi.fn(),
-}));
-
-const mockRedirect = vi.fn();
-vi.mock('next/navigation', () => ({
-  redirect: (...args: unknown[]) => {
-    mockRedirect(...args);
-    throw new Error('NEXT_REDIRECT');
-  },
-}));
+vi.mock('next/navigation');
 
 vi.mock('@/lib/chunks/queries', () => ({
   getChunkBySlug: (slug: string) => mockGetChunkBySlug(slug),
@@ -156,7 +137,7 @@ function makeFormData(opts: {
 function setupHappyAuth() {
   mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
   mockIsUserBanned.mockResolvedValue(false);
-  mockCheckRateLimit.mockResolvedValue({ success: true });
+  vi.mocked(checkRateLimit).mockResolvedValue({ success: true });
 }
 
 function setupParentPost(overrides: { userId?: string; replyPermission?: string } = {}) {
@@ -195,10 +176,10 @@ describe('createChunkReplyWithAttachment', () => {
     );
     // No attachment row, no per-attachment rate-limit hit.
     expect(mockTxAttachmentValues).not.toHaveBeenCalled();
-    expect(mockCheckRateLimit).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(checkRateLimit)).toHaveBeenCalledTimes(1);
     // The redirect carries the new reply id as the URL anchor (chunks
     // list-page contract — the reply lands as a comment under the chunk).
-    expect(mockRedirect).toHaveBeenCalledWith(
+    expect(vi.mocked(redirect)).toHaveBeenCalledWith(
       `/en/chunks/${testSlug}?toast=post_created#post-${generatedReplyId}`
     );
     expect(revalidatePath).not.toHaveBeenCalled();
@@ -228,7 +209,7 @@ describe('createChunkReplyWithAttachment', () => {
       source: 'pgn',
     });
     // Per-attachment rate-limit fires alongside the create-reply check.
-    expect(mockCheckRateLimit).toHaveBeenCalledTimes(2);
+    expect(vi.mocked(checkRateLimit)).toHaveBeenCalledTimes(2);
   });
 
   it('routes Lichess URLs through the attachment resolver and persists the canonical URL', async () => {
@@ -279,7 +260,7 @@ describe('createChunkReplyWithAttachment', () => {
   it('returns the attachment-rate-limit error when the per-attachment limit is exhausted', async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
     mockIsUserBanned.mockResolvedValue(false);
-    mockCheckRateLimit.mockResolvedValue({ error: 'rateLimited' });
+    vi.mocked(checkRateLimit).mockResolvedValue({ error: 'rateLimited' });
 
     const result = await createChunkReplyWithAttachment(
       'en',

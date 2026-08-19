@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 
+import type { MoveSquares } from '@/lib/board/move-squares';
+
 /**
  * How long the transient submit-feedback chip stays mounted. Matches the
  * total length of the `feedback-pop` CSS keyframe in `globals.css` —
@@ -46,7 +48,7 @@ export type PuzzleFeedback = {
 
 type BoardView = {
   fen: string;
-  lastMove: { from: string; to: string } | null;
+  lastMove: MoveSquares | null;
 };
 
 /**
@@ -95,7 +97,7 @@ export function usePuzzleBoardFeedback(initialFen: string) {
   }
 
   /** Paint the player's accepted move right away (highlighted). */
-  function showPlayerMove(fen: string, lastMove: { from: string; to: string }) {
+  function showPlayerMove(fen: string, lastMove: MoveSquares) {
     setBoardView({ fen, lastMove });
   }
 
@@ -107,7 +109,7 @@ export function usePuzzleBoardFeedback(initialFen: string) {
    */
   function revealOpponentReply(opts: {
     fenAfterReply: string;
-    reply: { from: string; to: string };
+    reply: MoveSquares;
     keepFeedback: boolean;
   }) {
     setIsOpponentReplying(true);

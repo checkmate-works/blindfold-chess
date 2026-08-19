@@ -1,11 +1,9 @@
 import type { User } from '@supabase/supabase-js';
 import { describe, expect, it } from 'vitest';
 
-import type { profiles } from '@/lib/db';
+import type { Profile } from '@/lib/db/schema';
 
 import { aggregateCountryStats } from './country-stats';
-
-type Profile = typeof profiles.$inferSelect;
 
 function makeUser(id: string): User {
   return {

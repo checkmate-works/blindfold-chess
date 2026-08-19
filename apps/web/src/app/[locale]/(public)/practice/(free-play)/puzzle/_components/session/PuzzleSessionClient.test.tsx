@@ -3,6 +3,8 @@ import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import type { MoveSquares } from '@/lib/board/move-squares';
+
 import { PuzzleSessionClient } from './PuzzleSessionClient';
 
 // `useRouter` is provided by the i18n routing wrapper, which is just a thin
@@ -77,7 +79,7 @@ vi.mock('@/app/[locale]/(public)/games/play/_components/InlineBoardView', () => 
   }: {
     board: {
       fen?: string;
-      lastMove?: { from: string; to: string } | null;
+      lastMove?: MoveSquares | null;
       onMove?: (san: string) => void;
     };
     visibility: { kind: string; onPeek?: () => void };

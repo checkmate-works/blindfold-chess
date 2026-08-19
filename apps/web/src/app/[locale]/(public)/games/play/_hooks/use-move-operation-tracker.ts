@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 
+import type { MoveSquares } from '@/lib/board/move-squares';
 import { EMPTY_OPERATION_TOTALS } from '@/lib/games/operation-totals';
 import type {
   MoveInputMethod,
@@ -60,7 +61,7 @@ export function useMoveOperationTracker({ initialLogs }: UseMoveOperationTracker
   // The exact squares behind each entry in `invalidAttemptsRef`, same
   // indexing — `null` for MoveInputPanel attempts, which have no board
   // interaction to derive squares from. See `MoveOperationLog.invalidAttemptSquares`.
-  const invalidAttemptSquaresRef = useRef<({ from: string; to: string } | null)[]>([]);
+  const invalidAttemptSquaresRef = useRef<(MoveSquares | null)[]>([]);
 
   // Reset every counter that accumulates during a single move. Called from
   // commit / undo / truncate so the ref state stays in sync with the
@@ -102,7 +103,7 @@ export function useMoveOperationTracker({ initialLogs }: UseMoveOperationTracker
    * `MoveOperationLog.invalidAttemptSquares`) — is recorded in lockstep so
    * indices stay aligned; omitted (`null`) for a MoveInputPanel attempt.
    */
-  const recordInvalid = useCallback((attempt?: string, squares?: { from: string; to: string }) => {
+  const recordInvalid = useCallback((attempt?: string, squares?: MoveSquares) => {
     invalidCountRef.current += 1;
     setTotals((t) => ({ ...t, invalidMoves: t.invalidMoves + 1 }));
     if (attempt && invalidAttemptsRef.current.length < 20) {

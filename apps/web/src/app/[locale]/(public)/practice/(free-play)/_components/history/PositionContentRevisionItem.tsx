@@ -1,5 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 
+import type { ServerTranslator } from '@/i18n/translator';
+
 import type { PuzzleSolutionMove } from '@/lib/db/schema/positions';
 import { buildProfileHref } from '@/lib/users/author-profile';
 import type { AuthorProfile } from '@/lib/users/author-profile';
@@ -64,7 +66,7 @@ export async function PositionContentRevisionItem({ changes, createdAt, editor, 
   );
 }
 
-type T = Awaited<ReturnType<typeof getTranslations>>;
+type T = ServerTranslator;
 
 function fieldLabel(field: string, t: T): string {
   switch (field) {

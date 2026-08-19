@@ -9,15 +9,11 @@
  *   - Non-variant modules (`key === 'default'`) → 2 breadcrumb items, with
  *     the middle hub item ("Square Colors") as the final step.
  */
+import { notFound } from 'next/navigation';
+
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mockNotFound = vi.fn(() => {
-  throw new Error('NEXT_NOT_FOUND');
-});
-
-vi.mock('next/navigation', () => ({
-  notFound: () => mockNotFound(),
-}));
+vi.mock('next/navigation');
 
 vi.mock('next-intl/server', () => ({
   getTranslations: async () => (key: string) => key,
@@ -69,7 +65,7 @@ vi.mock('@/app/[locale]/_components/Breadcrumb', () => ({
 }));
 
 beforeEach(() => {
-  mockNotFound.mockClear();
+  vi.mocked(notFound).mockClear();
   capturedBreadcrumbItems.length = 0;
 });
 
@@ -87,7 +83,7 @@ describe('ScoreLeaderboardDetailPage validation', () => {
         searchParams: Promise.resolve({}),
       })
     ).rejects.toThrow('NEXT_NOT_FOUND');
-    expect(mockNotFound).toHaveBeenCalled();
+    expect(vi.mocked(notFound)).toHaveBeenCalled();
   });
 
   it('calls notFound() for an invalid module slug', async () => {
@@ -103,7 +99,7 @@ describe('ScoreLeaderboardDetailPage validation', () => {
         searchParams: Promise.resolve({}),
       })
     ).rejects.toThrow('NEXT_NOT_FOUND');
-    expect(mockNotFound).toHaveBeenCalled();
+    expect(vi.mocked(notFound)).toHaveBeenCalled();
   });
 
   it('calls notFound() for a key that does not belong to the module', async () => {
@@ -119,7 +115,7 @@ describe('ScoreLeaderboardDetailPage validation', () => {
         searchParams: Promise.resolve({}),
       })
     ).rejects.toThrow('NEXT_NOT_FOUND');
-    expect(mockNotFound).toHaveBeenCalled();
+    expect(vi.mocked(notFound)).toHaveBeenCalled();
   });
 
   it('generateMetadata returns empty object for invalid period', async () => {

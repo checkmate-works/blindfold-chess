@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
+import { checkRateLimit } from '@/lib/security/rate-limit';
 import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
 
 import { createChunkPostWithEmbedAttachment } from './createChunkPostWithEmbedAttachment';
@@ -21,7 +22,6 @@ import { createChunkPostWithEmbedAttachment } from './createChunkPostWithEmbedAt
  */
 
 const mockGetChunkBySlug = vi.fn();
-const mockCheckRateLimit = vi.fn();
 const mockInsertValues = vi.fn();
 const mockInsertReturning = vi.fn();
 const mockEmbedInsertValues = vi.fn();
@@ -101,29 +101,9 @@ vi.mock('@/lib/db', () => ({
 
 vi.mock('@/lib/moderation/ban');
 
-vi.mock('@/lib/security/rate-limit', () => ({
-  checkRateLimit: (...args: unknown[]) => mockCheckRateLimit(...args),
-  RATE_LIMITS: {
-    createPost: { action: 'create_post', maxAttempts: 10, windowMs: 3_600_000 },
-    createPostWithAttachment: {
-      action: 'create_post_with_attachment',
-      maxAttempts: 5,
-      windowMs: 3_600_000,
-    },
-  },
-}));
+vi.mock('@/lib/security/rate-limit');
 
-const mockRedirect = vi.fn();
-vi.mock('next/navigation', () => ({
-  redirect: (...args: unknown[]) => {
-    mockRedirect(...args);
-    throw new Error('NEXT_REDIRECT');
-  },
-}));
-
-vi.mock('next/cache', () => ({
-  revalidateTag: vi.fn(),
-}));
+vi.mock('next/navigation');
 
 vi.mock('@/lib/points', () => ({
   grantPointsForPost: vi.fn().mockResolvedValue({ pointEventId: 'pe-1', amount: 3 }),
@@ -167,7 +147,7 @@ describe('createChunkPostWithEmbedAttachment', () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
     mockIsUserBanned.mockResolvedValue(false);
     mockInsertReturning.mockResolvedValue([{ id: generatedPostId }]);
-    mockCheckRateLimit.mockResolvedValue({ success: true });
+    vi.mocked(checkRateLimit).mockResolvedValue({ success: true });
     mockPgnSelectWhereLimit.mockResolvedValue([]); // no pre-existing PGN
     mockSelectProfile.mockResolvedValue([{ id: testUserId }]);
   });
@@ -340,7 +320,7 @@ describe('createChunkPostWithEmbedAttachment — lichess narrowing', () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
     mockIsUserBanned.mockResolvedValue(false);
     mockInsertReturning.mockResolvedValue([{ id: generatedPostId }]);
-    mockCheckRateLimit.mockResolvedValue({ success: true });
+    vi.mocked(checkRateLimit).mockResolvedValue({ success: true });
     mockPgnSelectWhereLimit.mockResolvedValue([]);
     mockSelectProfile.mockResolvedValue([{ id: testUserId }]);
   });
@@ -382,7 +362,7 @@ describe('createChunkPostWithEmbedAttachment — application-layer exclusivity',
     mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
     mockIsUserBanned.mockResolvedValue(false);
     mockInsertReturning.mockResolvedValue([{ id: generatedPostId }]);
-    mockCheckRateLimit.mockResolvedValue({ success: true });
+    vi.mocked(checkRateLimit).mockResolvedValue({ success: true });
     mockSelectProfile.mockResolvedValue([{ id: testUserId }]);
   });
 

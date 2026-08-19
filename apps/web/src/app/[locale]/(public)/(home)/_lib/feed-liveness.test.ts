@@ -48,8 +48,10 @@ describe('liveFeedRow', () => {
   it('admits a game only while it is live AND public', () => {
     // A game the author switches back to private has to drop out of every feed
     // it was posted to — and reappear, in place, if they publish it again.
+    // Spelled by `publiclyVisible()` rather than inline, so the parentheses
+    // and lower-case operators are drizzle's rendering of that predicate.
     expect(sql).toContain(
-      `WHEN 'game' THEN ( SELECT "games"."deleted_at" IS NULL AND "games"."status" = 'public' ` +
+      `WHEN 'game' THEN ( SELECT ("games"."deleted_at" is null and "games"."status" = 'public') ` +
         `FROM "games" WHERE "games"."id" = "feed_items"."entity_id" )`
     );
   });

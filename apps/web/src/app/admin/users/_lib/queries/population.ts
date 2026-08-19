@@ -5,14 +5,12 @@ import { inArray } from 'drizzle-orm';
 
 import { db, profiles, ranks, userRanks } from '@/lib/db';
 import { MUKYU_SLUG, resolveHighestRankSlug } from '@/lib/db/data/ranks';
+import type { Profile, Rank } from '@/lib/db/schema';
 import { listAllAuthUsers } from '@/lib/supabase/list-all-auth-users';
 
 import type { AdminUserFilters } from '../filters';
 import { UNKNOWN_COUNTRY } from './country-stats';
 import { getSignupMethod } from './signup-methods';
-
-type Profile = typeof profiles.$inferSelect;
-type Rank = typeof ranks.$inferSelect;
 
 export type FilteredPopulation = {
   filteredUsers: User[];

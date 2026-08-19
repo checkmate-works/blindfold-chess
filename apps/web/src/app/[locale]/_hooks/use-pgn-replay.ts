@@ -10,6 +10,8 @@ import {
 } from '@blindfold-chess/features/chess-core';
 import type { FormattedPgnMove } from '@blindfold-chess/features/chess-core';
 
+import type { MoveSquares } from '@/lib/board/move-squares';
+
 import { parseFenMeta } from '@/app/[locale]/(public)/games/play/_lib/fen-utils';
 
 type Options = {
@@ -55,7 +57,7 @@ export type PgnReplay = {
   /** Board position at `index`. */
   fen: string;
   /** Squares of the move that produced `fen`; null at the start position. */
-  lastMove: { from: string; to: string } | null;
+  lastMove: MoveSquares | null;
   /** Numbered move pairs for `HorizontalMoveList`. */
   formattedPgn: FormattedPgnMove[];
   isAtStart: boolean;

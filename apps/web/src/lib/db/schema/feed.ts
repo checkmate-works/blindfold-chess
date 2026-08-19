@@ -3,7 +3,9 @@
 //
 // The materialised home-feed `feed_items` queue — a timeline surface,
 // unrelated to the challenge-ranking tables it used to share a file with.
-import { index, jsonb, pgTable, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
+import { index, jsonb, pgTable, uuid, varchar } from 'drizzle-orm/pg-core';
+
+import { createdAtOnly } from './columns';
 
 /**
  * Feed Items — materialized timeline feed for the home page.
@@ -52,7 +54,7 @@ export const feedItems = pgTable(
     entityId: uuid('entity_id').notNull(),
     actorId: uuid('actor_id').notNull(), // references auth.users — FK defined in custom SQL
     metadata: jsonb('metadata').default({}),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    ...createdAtOnly,
   },
   (table) => [
     index('idx_feed_items_created').on(table.createdAt),

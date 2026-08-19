@@ -7,7 +7,7 @@ import { guardApiMutation } from '@/lib/api-mutation-guard';
 import { db, profiles } from '@/lib/db';
 import { parseImageUpload } from '@/lib/images/parse-upload';
 import { ALLOWED_IMAGE_MIME_TYPES, AVATAR_MAX_FILE_SIZE } from '@/lib/images/policy';
-import { POST_IMAGES_MAX_MEGAPIXELS } from '@/lib/post-images/validation';
+import { SHARP_DECODE_OPTIONS } from '@/lib/images/sharp-options';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { createClient } from '@/lib/supabase/server';
 
@@ -52,11 +52,7 @@ export async function POST(request: Request) {
   // decode — same 50 MP policy the post-image path enforces via its probe.
   let processed: Buffer;
   try {
-    processed = await sharp(Buffer.from(buffer), {
-      failOn: 'error',
-      pages: 1,
-      limitInputPixels: POST_IMAGES_MAX_MEGAPIXELS,
-    })
+    processed = await sharp(Buffer.from(buffer), SHARP_DECODE_OPTIONS)
       .rotate()
       .resize(AVATAR_PIXEL_SIZE, AVATAR_PIXEL_SIZE, { fit: 'cover' })
       .webp({ quality: AVATAR_WEBP_QUALITY })

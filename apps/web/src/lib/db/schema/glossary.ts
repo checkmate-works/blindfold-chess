@@ -3,40 +3,11 @@
 //
 // Glossary domain: terms, per-locale translations, search aliases, position
 // examples (with board annotations), and term-to-term relations.
-import {
-  boolean,
-  integer,
-  jsonb,
-  pgTable,
-  text,
-  timestamp,
-  unique,
-  uuid,
-  varchar,
-} from 'drizzle-orm/pg-core';
+import { boolean, integer, jsonb, pgTable, text, unique, uuid, varchar } from 'drizzle-orm/pg-core';
 
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
 
-/**
- * @design updated_at update policy
- *
- * For every table with an `updated_at` column, the timestamp is refreshed
- * automatically by Drizzle via `.$onUpdateFn(() => new Date())`. When adding a
- * new table that has an `updated_at` column, always attach this callback.
- *
- * Exceptions:
- * - `profiles`: updated by a Supabase BEFORE UPDATE trigger
- *   (`profiles_updated_at`). Because `profiles` can be written through
- *   internal Supabase paths that go via `auth.users` (e.g. auth hooks), the
- *   timestamp update is centralized at the DB trigger layer instead of
- *   `$onUpdateFn`. See the `@design` note on the `profiles` table
- *   definition for details.
- *
- * Existing call sites still contain several explicit
- * `set({ updatedAt: new Date() })` statements. They are redundant but
- * harmless and act as a fail-safe if an UPDATE path that bypasses Drizzle
- * is introduced in the future.
- */
+import { createdAtOnly, timestamps } from './columns';
 
 const EMPTY_BOARD_ANNOTATIONS_DEFAULT: BoardAnnotations = { arrows: [], circles: [] };
 /**
@@ -57,11 +28,7 @@ export const glossaryTerms = pgTable('glossary_terms', {
   termEn: varchar('term_en', { length: 255 }).notNull(),
   category: varchar('category', { length: 50 }).notNull(),
   isTheme: boolean('is_theme').notNull().default(false),
-  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-  updatedAt: timestamp('updated_at', { withTimezone: true })
-    .defaultNow()
-    .notNull()
-    .$onUpdateFn(() => new Date()),
+  ...timestamps,
 });
 
 export const glossaryTermTranslations = pgTable(
@@ -75,11 +42,7 @@ export const glossaryTermTranslations = pgTable(
     term: varchar('term', { length: 255 }).notNull(),
     definition: text('definition').notNull(),
     reading: varchar('reading', { length: 255 }),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true })
-      .defaultNow()
-      .notNull()
-      .$onUpdateFn(() => new Date()),
+    ...timestamps,
   },
   (table) => [unique('uq_term_locale').on(table.termId, table.locale)]
 );
@@ -92,7 +55,7 @@ export const glossaryTermAliases = pgTable(
       .notNull()
       .references(() => glossaryTerms.id, { onDelete: 'cascade' }),
     alias: varchar('alias', { length: 255 }).notNull(),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    ...createdAtOnly,
   },
   (table) => [unique('uq_term_alias').on(table.termId, table.alias)]
 );
@@ -123,7 +86,7 @@ export const glossaryTermPositions = pgTable(
       .$type<BoardAnnotations>()
       .notNull()
       .default(EMPTY_BOARD_ANNOTATIONS_DEFAULT),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    ...createdAtOnly,
   },
   (table) => [unique('uq_term_position').on(table.termId, table.fen)]
 );
@@ -138,7 +101,7 @@ export const glossaryTermRelations = pgTable(
     relatedTermId: uuid('related_term_id')
       .notNull()
       .references(() => glossaryTerms.id, { onDelete: 'cascade' }),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    ...createdAtOnly,
   },
   (table) => [unique('uq_term_relation').on(table.termId, table.relatedTermId)]
 );

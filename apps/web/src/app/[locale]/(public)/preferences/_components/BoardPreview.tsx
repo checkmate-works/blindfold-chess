@@ -6,6 +6,8 @@ import { ChessBoard } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { Side } from '@blindfold-chess/types';
 
+import type { MoveSquares } from '@/lib/board/move-squares';
+
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 type Props = {
@@ -17,7 +19,7 @@ type Props = {
 // move is Black's e7-e6. We highlight it when the "highlight last move" option
 // is on, so the preview reflects that setting.
 const DEMO_FEN = 'rnbqkbnr/pppp1ppp/4p3/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2';
-const DEMO_LAST_MOVE = { from: 'e7', to: 'e6' };
+const DEMO_LAST_MOVE: MoveSquares = { from: 'e7', to: 'e6' };
 // Demo "tapped" square for the Piece destinations preview: the d2 pawn, whose
 // legal destinations (d3 / d4) render as move dots when the option is on.
 const DEMO_SELECTED_SQUARE = 'd2';

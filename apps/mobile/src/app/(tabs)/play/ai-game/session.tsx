@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { View, Text, StyleSheet, ScrollView, Pressable } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { isValidSkillLevel } from "@blindfold-chess/features/ai-game";
@@ -20,6 +19,7 @@ import {
 } from "../../../../features/ai-game/hooks";
 import type { SkillLevel } from "../../../../features/ai-game/lib/types";
 import { parseEnumParam } from "../../../../lib/route-params";
+import { Screen } from "../../../../components";
 import {
   useTheme,
   fontSize,
@@ -83,10 +83,7 @@ export default function AiGameSession() {
   ]);
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
-      edges={["top", "bottom"]}
-    >
+    <Screen edges={["top", "bottom"]}>
       {/* Hidden WebView for Stockfish engine */}
       <StockfishWebView
         ref={ai.webViewRef}
@@ -177,14 +174,11 @@ export default function AiGameSession() {
         fen={game.currentFen}
         playerColor={playerColor}
       />
-    </SafeAreaView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   scrollView: {
     flex: 1,
   },

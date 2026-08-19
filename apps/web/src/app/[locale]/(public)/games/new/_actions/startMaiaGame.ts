@@ -3,6 +3,7 @@
 import { authenticateAndCheckBan } from '@/lib/auth';
 import { consumeMaiaGamePoint } from '@/lib/points';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/security/rate-limit';
+import { UUID_RE } from '@/lib/validations/uuid';
 
 type StartMaiaGameResult =
   | { ok: true; charged: boolean }
@@ -31,7 +32,6 @@ type StartMaiaGameResult =
  * this call. The honest path charges; valuable server-side artefacts are
  * gated separately on the `maia_game` ledger row.
  */
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export async function startMaiaGame(clientGameId: string): Promise<StartMaiaGameResult> {
   if (typeof clientGameId !== 'string' || !UUID_RE.test(clientGameId)) {

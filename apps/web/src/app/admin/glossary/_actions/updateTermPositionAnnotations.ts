@@ -8,12 +8,7 @@ import { and, eq } from 'drizzle-orm';
 
 import { parseBoardAnnotations } from '@/lib/board-annotations/parse';
 import { db, glossaryTermPositions } from '@/lib/db';
-
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-function isValidUuid(value: string): boolean {
-  return UUID_RE.test(value);
-}
+import { isValidUUID } from '@/lib/validations/uuid';
 
 /**
  * Persist the annotation set for a single (term, fen) row.
@@ -37,7 +32,7 @@ export async function updateTermPositionAnnotations(
   const auth = await requireAdmin();
   if ('error' in auth) return auth;
 
-  if (!isValidUuid(rowId)) {
+  if (!isValidUUID(rowId)) {
     return { error: 'Invalid row id' };
   }
 

@@ -1,12 +1,10 @@
 import type { User } from '@supabase/supabase-js';
 import { describe, expect, it } from 'vitest';
 
-import type { ranks } from '@/lib/db';
 import { ALL_RANK_SLUGS, MUKYU_SLUG } from '@/lib/db/data/ranks';
+import type { Rank } from '@/lib/db/schema';
 
 import { type RankStatsContext, aggregateRankStats } from './rank-stats';
-
-type Rank = typeof ranks.$inferSelect;
 
 function makeUser(id: string): User {
   return {

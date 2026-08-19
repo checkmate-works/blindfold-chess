@@ -4,8 +4,10 @@ import { useMemo } from 'react';
 import { computeGameState } from '@blindfold-chess/features/ai-game';
 import type { GameStatus } from '@blindfold-chess/features/ai-game';
 import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
+import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 import type { AlgebraicNotation, FinalGameOutcome, Side } from '@blindfold-chess/types';
 
+import type { MoveSquares } from '@/lib/board/move-squares';
 import { sumOperationLogs } from '@/lib/games/operation-totals';
 import type {
   MoveOperationLog,
@@ -17,7 +19,7 @@ type LoadedGameData = {
   startingFen?: string;
   setupPlies?: number;
   moves: AlgebraicNotation[];
-  lastMove: { from: string; to: string } | null;
+  lastMove: MoveSquares | null;
   gameStatus: GameStatus;
   playerResult: FinalGameOutcome | null;
   operationLogs?: MoveOperationLog[];
@@ -66,7 +68,7 @@ export function useGameState({
   // Lazy-initialized from the URL-seeded moves: they are fixed for the life
   // of the mount, so this needs no effect (the old mount effect committed a
   // first frame with the highlight missing).
-  const [lastMove, setLastMove] = useState<{ from: string; to: string } | null>(() =>
+  const [lastMove, setLastMove] = useState<MoveSquares | null>(() =>
     initialMovesFromUrl.length > 0
       ? getLastMoveDetails(initialMovesFromUrl as string[], startingFen)
       : null
@@ -95,12 +97,7 @@ export function useGameState({
       return !gameState.isPlayerTurn && gameState.status === 'in_progress';
     }
     if (startingFen) {
-      const fenParts = startingFen.split(' ');
-      const turnFromFen = fenParts[1];
-      const isWhiteToMove = turnFromFen === 'w';
-      return (
-        (playerSide === 'white' && !isWhiteToMove) || (playerSide === 'black' && isWhiteToMove)
-      );
+      return isBlackToMoveFromFen(startingFen) ? playerSide === 'white' : playerSide === 'black';
     }
     return playerSide === 'black';
   });

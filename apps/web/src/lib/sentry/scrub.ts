@@ -68,3 +68,49 @@ function walk(value: unknown, lowerKeys: Set<string>): void {
     walk(value[key], lowerKeys);
   }
 }
+
+/**
+ * The subset of a Sentry event this module needs. Declared structurally rather
+ * than imported from `@sentry/nextjs` so the module stays dependency-free and
+ * its tests can hand it plain objects.
+ */
+type EventWithRequest = {
+  request?: {
+    cookies?: unknown;
+    headers?: Record<string, string | undefined>;
+    data?: unknown;
+  };
+};
+
+/**
+ * Strips credentials the Sentry Next.js integration attaches to server- and
+ * edge-side exceptions: the cookie jar is replaced wholesale, the two header
+ * spellings of `Authorization` and `Cookie` are removed, and the request body
+ * goes through `scrubInPlace`.
+ *
+ * Headers are deleted rather than filtered because a session cookie or bearer
+ * token has no redacted form worth keeping — unlike a form field, where
+ * `'[Filtered]'` still tells you the field was submitted. Both capitalizations
+ * are handled because the header bag Sentry builds preserves whatever casing
+ * the runtime used, and the edge and node runtimes do not agree.
+ *
+ * Both `beforeSend` hooks call this, so a change to what counts as a
+ * credential reaches the edge and node runtimes together.
+ */
+export function scrubRequestInPlace(event: EventWithRequest): void {
+  const request = event.request;
+  if (!request) return;
+
+  if (request.cookies) {
+    request.cookies = { scrubbed: true };
+  }
+  if (request.headers) {
+    delete request.headers.authorization;
+    delete request.headers.Authorization;
+    delete request.headers.cookie;
+    delete request.headers.Cookie;
+  }
+  if (request.data && typeof request.data === 'object') {
+    scrubInPlace(request.data);
+  }
+}

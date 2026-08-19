@@ -16,28 +16,9 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core';
 
+import { createdAtOnly, updatedAtOnly } from './columns';
 import { userGrants } from './grants';
 
-/**
- * @design updated_at update policy
- *
- * For every table with an `updated_at` column, the timestamp is refreshed
- * automatically by Drizzle via `.$onUpdateFn(() => new Date())`. When adding a
- * new table that has an `updated_at` column, always attach this callback.
- *
- * Exceptions:
- * - `profiles`: updated by a Supabase BEFORE UPDATE trigger
- *   (`profiles_updated_at`). Because `profiles` can be written through
- *   internal Supabase paths that go via `auth.users` (e.g. auth hooks), the
- *   timestamp update is centralized at the DB trigger layer instead of
- *   `$onUpdateFn`. See the `@design` note on the `profiles` table
- *   definition for details.
- *
- * Existing call sites still contain several explicit
- * `set({ updatedAt: new Date() })` statements. They are redundant but
- * harmless and act as a fail-safe if an UPDATE path that bypasses Drizzle
- * is introduced in the future.
- */
 /**
  * Point Events — append-only ledger of every point delta (grant or consumption).
  *
@@ -120,7 +101,7 @@ export const pointEvents = pgTable(
     idempotencyKey: varchar('idempotency_key', { length: 255 }).notNull(),
     metadata: jsonb('metadata').default({}),
     expiresAt: timestamp('expires_at', { withTimezone: true }),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    ...createdAtOnly,
   },
   (table) => [
     index('idx_point_events_user_created').on(table.userId, table.createdAt),
@@ -172,10 +153,7 @@ export const userPointBalances = pgTable(
     category: varchar('category', { length: 30 }).notNull(),
     balance: integer('balance').notNull().default(0),
     version: integer('version').notNull().default(0),
-    updatedAt: timestamp('updated_at', { withTimezone: true })
-      .defaultNow()
-      .notNull()
-      .$onUpdateFn(() => new Date()),
+    ...updatedAtOnly,
   },
   (table) => [
     primaryKey({ columns: [table.userId, table.category] }),
@@ -212,10 +190,7 @@ export const pointBatchWatermarks = pgTable('point_batch_watermarks', {
   batchType: varchar('batch_type', { length: 50 }).primaryKey(),
   watermark: timestamp('watermark', { withTimezone: true }).notNull(),
   completedAt: timestamp('completed_at', { withTimezone: true }).notNull(),
-  updatedAt: timestamp('updated_at', { withTimezone: true })
-    .defaultNow()
-    .notNull()
-    .$onUpdateFn(() => new Date()),
+  ...updatedAtOnly,
 });
 
 export type PointBatchWatermark = typeof pointBatchWatermarks.$inferSelect;
@@ -267,7 +242,7 @@ export const pointRedemptions = pgTable(
       onDelete: 'restrict',
     }),
     metadata: jsonb('metadata').default({}),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    ...createdAtOnly,
     completedAt: timestamp('completed_at', { withTimezone: true }),
   },
   (table) => [
@@ -317,7 +292,7 @@ export const pointPurchases = pgTable(
       onDelete: 'restrict',
     }),
     metadata: jsonb('metadata').default({}),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    ...createdAtOnly,
     completedAt: timestamp('completed_at', { withTimezone: true }),
   },
   (table) => [
