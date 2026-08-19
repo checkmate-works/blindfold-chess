@@ -2,13 +2,13 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { notFound, usePathname, useSearchParams } from 'next/navigation';
+import { notFound, usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { fenToLichessUrl } from '@blindfold-chess/features/chess-core/fen';
 import type { ExpInfo } from '@blindfold-chess/features/exp';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
-import { FaBrain } from 'react-icons/fa';
+import { FaBrain, FaChessBoard } from 'react-icons/fa';
 
 import type { BoardVisibility } from '@/lib/games/board-visibility';
 import { writeBoardVisibilityCookieClient } from '@/lib/games/board-visibility-cookie';
@@ -33,6 +33,7 @@ import { usePeekState } from '../_hooks/use-peek-state';
 import { usePlayBoardViews } from '../_hooks/use-play-board-views';
 import { usePlayClientPreferences } from '../_hooks/use-play-client-preferences';
 import { usePublishPromotion } from '../_hooks/use-publish-promotion';
+import { buildPositionCheckPath } from '../_lib';
 import { useAiReplyChip } from './AiReplyChip';
 import { GameFinishModal } from './GameFinishModal';
 import { GameInProgressPanel } from './GameInProgressPanel';
@@ -94,6 +95,7 @@ export function PlayClient({
   expInfo,
 }: Props) {
   const t = useTranslations('play');
+  const router = useRouter();
   const terminationMarkLabel = useTerminationMarkLabel();
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -378,6 +380,30 @@ export function PlayClient({
   }, [handleRevealBoard, dismissAiReply]);
   // The two board views (in-progress with mask/AI chip, finished read-only)
   // — assembled in usePlayBoardViews so this component keeps only wiring.
+  // Mid-game position check: recreate the current position from memory in an
+  // instant position-memory session. Lives on the hidden board itself (the
+  // peek mask / the 'never' compact bar — InlineBoardView's `maskAction`
+  // slot), because the itch it answers — "how does the position look?" — is
+  // the same one the counted reveal answers; this is the free self-test right
+  // next to the paid peek. Always the LIVE position (`currentFen`), never a
+  // scrubbed historical one. Hidden until a move exists (recreating the
+  // start position tests nothing) and disabled while the engine is thinking
+  // (navigating away would abandon the pending move).
+  const positionCheckAction =
+    moves.length > 0 ? (
+      <button
+        type="button"
+        onClick={() =>
+          router.push(buildPositionCheckPath({ locale, fen: currentFen, returnTo: currentUrl }))
+        }
+        disabled={isAiThinking || isLoading}
+        className="inline-flex items-center gap-2 rounded-full border border-border bg-background/80 px-3 py-1.5 text-xs font-medium text-muted-foreground shadow-sm transition-colors hover:bg-background hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        <FaChessBoard className="h-3.5 w-3.5" aria-hidden />
+        {t('positionCheck')}
+      </button>
+    ) : undefined;
+
   const { inProgressBoardView, finishedBoardView } = usePlayBoardViews({
     displayFen,
     currentFen,
@@ -407,6 +433,7 @@ export function PlayClient({
     isAiThinking,
     canEditPerGameSettings,
     onOpenSettings: () => setShowSettingsModal(true),
+    positionCheckAction,
     terminationMark,
     terminationMarkLabel: terminationMarkLabel(terminationMark),
   });

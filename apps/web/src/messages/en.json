@@ -2562,7 +2562,8 @@
       },
       "backToResult": "Back to game review"
     },
-    "boardModalTitle": "Board"
+    "boardModalTitle": "Board",
+    "positionCheck": "Recreate the position"
   },
   "sharedGames": {
     "detail": {

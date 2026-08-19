@@ -2562,7 +2562,8 @@
       },
       "backToResult": "Voltar à revisão da partida"
     },
-    "boardModalTitle": "Tabuleiro"
+    "boardModalTitle": "Tabuleiro",
+    "positionCheck": "Recriar a posição"
   },
   "sharedGames": {
     "detail": {

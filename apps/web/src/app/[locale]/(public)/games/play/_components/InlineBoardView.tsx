@@ -184,6 +184,17 @@ export type InlineBoardSlots = {
    * navigation controls underneath stay operable.
    */
   aiThinking?: boolean;
+  /**
+   * Interactive control shown only while the board is hidden — the moment
+   * "how does the position look?" arises. The play surface wires the mid-game
+   * position check here: a cheaper alternative right next to the expensive
+   * one (revealing counts a peek; recreating from memory is free). Rendered
+   * bottom-centered above the dismissable peek mask, and as its own row under
+   * the compact blindfold bar in 'never' mode (the one place the board can
+   * never be revealed at all). Never rendered on a visible board — checking
+   * a position you can see is meaningless.
+   */
+  maskAction?: ReactNode;
 };
 
 type Props = {
@@ -230,7 +241,8 @@ export function InlineBoardView({
     onNavigateToPosition,
     onFlipBoard,
   } = navigation;
-  const { boardBadge, badgeActive, topRightControl, trailingAction, aiThinking } = slots;
+  const { boardBadge, badgeActive, topRightControl, trailingAction, aiThinking, maskAction } =
+    slots;
 
   const alwaysOpen = visibility.kind === 'always';
   const mask = visibility.kind === 'always' ? visibility.mask : undefined;
@@ -274,22 +286,30 @@ export function InlineBoardView({
         // affordances that must survive without a board remain: the AI-reply
         // chip (the sole signal of the opponent's move in pure blindfold play)
         // and the settings gear (the way back out of blindfold mode).
-        <div className="relative flex h-16 items-center justify-center px-4">
-          {/* Fixed height (not min-h + padding): the chip and label differ in
-              height — the chip's move notation is text-lg — so a content-sized
-              box would grow/shrink between them and shift everything below.
-              A constant height centers whichever is shown with zero layout
-              shift. They share this one flow slot (mutually exclusive via
-              badgeActive) so both are centered identically. */}
-          {boardBadge && badgeActive ? (
-            boardBadge
-          ) : (
-            <span className={`${STATUS_PILL_CLASSES} bg-muted text-muted-foreground`}>
-              <FaEyeSlash className="h-4 w-4" aria-hidden />
-              {t('boardHidden')}
-            </span>
-          )}
-          {topRightControl && <div className="absolute right-2 top-2 z-30">{topRightControl}</div>}
+        <div>
+          <div className="relative flex h-16 items-center justify-center px-4">
+            {/* Fixed height (not min-h + padding): the chip and label differ in
+                height — the chip's move notation is text-lg — so a content-sized
+                box would grow/shrink between them and shift everything below.
+                A constant height centers whichever is shown with zero layout
+                shift. They share this one flow slot (mutually exclusive via
+                badgeActive) so both are centered identically. */}
+            {boardBadge && badgeActive ? (
+              boardBadge
+            ) : (
+              <span className={`${STATUS_PILL_CLASSES} bg-muted text-muted-foreground`}>
+                <FaEyeSlash className="h-4 w-4" aria-hidden />
+                {t('boardHidden')}
+              </span>
+            )}
+            {topRightControl && (
+              <div className="absolute right-2 top-2 z-30">{topRightControl}</div>
+            )}
+          </div>
+          {/* Position-check entry — its own row (always present while the slot
+              is wired), so it never competes with the chip/label's fixed-height
+              center slot above and adds no layout shift of its own. */}
+          {maskAction && <div className="flex justify-center pb-3">{maskAction}</div>}
         </div>
       )}
       {effectivelyOpen && !isBlindfoldNever && (
@@ -375,6 +395,16 @@ export function InlineBoardView({
                   </span>
                 )}
               </button>
+            )}
+
+            {/* Position-check entry over the peek mask: a sibling of the mask
+                button (never a child — nested interactive elements are invalid
+                HTML), bottom-centered so the reveal pill keeps the center. A
+                tap here navigates instead of revealing. */}
+            {masked && maskAction && (
+              <div className="absolute inset-x-0 bottom-4 z-10 flex justify-center">
+                {maskAction}
+              </div>
             )}
 
             {/* "AI is thinking" overlay for always-visible boards. A light
