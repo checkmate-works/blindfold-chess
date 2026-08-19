@@ -7,9 +7,7 @@ import { useSearchParams } from 'next/navigation';
 import { useRouter } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
-import type { SortMode } from '../_lib/shared';
-
-const SORT_MODES: SortMode[] = ['new', 'popular', 'active'];
+import { SORT_MODES, type SortMode } from '@/lib/sort';
 
 type Props = {
   basePath: string;
@@ -18,7 +16,7 @@ type Props = {
    * meaning for one of them — the repertoires panel has no reply activity to
    * sort by, so it offers `new` / `popular` only.
    */
-  modes?: SortMode[];
+  modes?: readonly SortMode[];
   /**
    * Translation namespace owning `{ new, popular, active }` option labels —
    * each topic family (openings/squares/chunks) has its own copy under
