@@ -25,6 +25,14 @@ import { vi } from 'vitest';
  *   db: myDbDouble,
  * }));
  * ```
+ *
+ * One constraint: the test file must NOT also carry a static
+ * `import ... from '@/lib/db'`. Import sorting puts it above this module, so
+ * it runs the hoisted factory before this module's binding exists, and the
+ * suite dies with `Cannot access '__vi_import_N__' before initialization`
+ * rather than a failed assertion. Reach for `const { db } = await
+ * import('@/lib/db')` below the factory instead — the same shape these tests
+ * already use for the subject under test.
  */
 export async function actualDbSchema(): Promise<Record<string, unknown>> {
   return {

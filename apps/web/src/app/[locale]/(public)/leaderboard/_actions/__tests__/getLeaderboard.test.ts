@@ -56,8 +56,9 @@ vi.mock('@/lib/db', async () => ({
   },
 }));
 
-// `eq(profiles.id, ...)` receives the stubbed (empty) profiles table above;
-// real drizzle eq would choke on the missing column objects.
+// The db double resolves every chain from a queued value and never inspects
+// the predicate, so building a real one buys nothing here — this keeps the
+// column plumbing out of a test about the query's *results*.
 vi.mock('drizzle-orm', () => ({
   eq: () => ({}),
 }));

@@ -40,8 +40,9 @@ function tryMove(chess: Chess, san: string): Move | null {
  * The tolerant contract is deliberately not universal: `getFenAfterMoves`
  * and `generatePgn` let an illegal move throw, because a caller asking for
  * "the position after these moves" or "the PGN of this game" cannot be
- * handed a silently shortened game. Those two build their board with
- * {@link boardFrom} and run their own loop.
+ * handed a silently shortened game. Both run their own loop instead
+ * (`generatePgn` over a {@link boardFrom} board, `getFenAfterMoves` over one
+ * it constructs from its required FEN).
  *
  * Constructing the board is the caller's job so an invalid starting FEN
  * still throws from the call site, and so a caller that needs the initial

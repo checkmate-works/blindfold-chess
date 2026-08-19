@@ -93,7 +93,7 @@ vi.mock('@/lib/db', async () => ({
       const tx = {
         insert: (table: unknown) => ({
           values: (values: unknown) => {
-            // Discriminate by table tag so the positions insert (which the
+            // Discriminate by table identity so the positions insert (which the
             // create path `returning()`s) can be asserted independently of
             // the feed_items insert.
             if (table === feedItems) {
