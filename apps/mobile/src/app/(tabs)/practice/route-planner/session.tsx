@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   Text,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import * as Haptics from "expo-haptics";
@@ -20,7 +19,7 @@ import {
 } from "@blindfold-chess/features/route-planner";
 import type { Square } from "@blindfold-chess/types";
 
-import { Button, CountdownOverlay } from "../../../../components";
+import { Button, CountdownOverlay, Screen } from "../../../../components";
 import {
   ProblemCard,
   ProblemResultCard,
@@ -168,9 +167,7 @@ export default function RoutePlannerSessionScreen() {
   }
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
-    >
+    <Screen>
       <CountdownOverlay countdown={countdown} />
 
       {countdown === null && (
@@ -253,14 +250,11 @@ export default function RoutePlannerSessionScreen() {
           )}
         </ScrollView>
       )}
-    </SafeAreaView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   scrollView: {
     flex: 1,
   },

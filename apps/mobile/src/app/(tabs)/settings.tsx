@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
+import { Screen } from "../../components";
 import {
   useTheme,
   fontSize,
@@ -33,10 +33,7 @@ export default function SettingsTab() {
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
-      edges={["top"]}
-    >
+    <Screen edges={["top"]}>
       <View
         style={[
           styles.header,
@@ -98,14 +95,11 @@ export default function SettingsTab() {
           </View>
         </View>
       </View>
-    </SafeAreaView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   header: {
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,

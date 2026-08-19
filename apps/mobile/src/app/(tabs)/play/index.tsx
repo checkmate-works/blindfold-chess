@@ -1,9 +1,8 @@
 import { View, Text, StyleSheet, ScrollView } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { useRouter } from "expo-router";
 
-import { Button, Card } from "../../../components";
+import { Button, Card, Screen } from "../../../components";
 import {
   useTheme,
   fontSize,
@@ -22,10 +21,7 @@ export default function PlayTab() {
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
-      edges={["top"]}
-    >
+    <Screen edges={["top"]}>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
@@ -54,14 +50,11 @@ export default function PlayTab() {
           />
         </Card>
       </ScrollView>
-    </SafeAreaView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   scrollView: {
     flex: 1,
   },

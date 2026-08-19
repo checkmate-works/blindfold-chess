@@ -1,6 +1,6 @@
+import { Screen } from "./Screen";
 import type { ReactNode } from "react";
 import { View, Text, StyleSheet } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import type { Href } from "expo-router";
 
@@ -32,10 +32,7 @@ export function PracticeResultScreen({
   const { colors } = useTheme();
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
-      edges={["bottom"]}
-    >
+    <Screen edges={["bottom"]}>
       <View style={styles.content}>
         <Text style={[styles.title, { color: colors.foreground }]}>
           {title}
@@ -59,14 +56,11 @@ export function PracticeResultScreen({
           fullWidth
         />
       </View>
-    </SafeAreaView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   content: {
     flex: 1,
     padding: spacing.lg,

@@ -1,5 +1,4 @@
 import { StyleSheet, ScrollView } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   PLAYER_RESULTS,
@@ -13,11 +12,11 @@ import type {
   SkillLevel,
 } from "../../../../features/ai-game/lib/types";
 import { parseEnumParam, parseIntParam } from "../../../../lib/route-params";
-import { useTheme, spacing } from "../../../../theme";
+import { Screen } from "../../../../components";
+import { spacing } from "../../../../theme";
 
 export default function AiGameResult() {
   const router = useRouter();
-  const { colors } = useTheme();
   const params = useLocalSearchParams<{
     result: string;
     playerColor: string;
@@ -48,10 +47,7 @@ export default function AiGameResult() {
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
-      edges={["bottom"]}
-    >
+    <Screen edges={["bottom"]}>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
@@ -66,14 +62,11 @@ export default function AiGameResult() {
           onBackToMenu={handleBackToMenu}
         />
       </ScrollView>
-    </SafeAreaView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   scrollView: {
     flex: 1,
   },

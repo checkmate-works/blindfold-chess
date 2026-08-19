@@ -1,6 +1,6 @@
+import { Screen } from "./Screen";
 import type { ReactNode } from "react";
 import { View, StyleSheet, ScrollView, ActivityIndicator } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Button } from "./Button";
 import { useTheme, spacing } from "../theme";
@@ -42,10 +42,7 @@ export function PracticeSetupScreen({
   }
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
-      edges={["bottom"]}
-    >
+    <Screen edges={["bottom"]}>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
@@ -65,14 +62,11 @@ export function PracticeSetupScreen({
       >
         <Button title={startLabel} onPress={onStart} size="lg" fullWidth />
       </View>
-    </SafeAreaView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
