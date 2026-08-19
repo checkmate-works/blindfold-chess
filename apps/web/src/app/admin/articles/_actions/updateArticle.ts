@@ -1,11 +1,10 @@
 'use server';
 
 // eslint-disable-next-line no-restricted-imports -- ArticleForm router.push()es to the publish page after save; purging the admin edit/publish pages keeps that push (and edit↔publish bouncing) from serving a stale Router Cache copy
-import { revalidatePath, revalidateTag } from 'next/cache';
+import { revalidatePath } from 'next/cache';
 
 import { eq } from 'drizzle-orm';
 
-import { ARTICLES_CACHE_TAG } from '@/lib/cache-tags';
 import { articles, db } from '@/lib/db';
 
 import {
@@ -15,7 +14,7 @@ import {
 } from '../../_lib/action-factories';
 import type { MutationResult } from '../../_lib/action-factories';
 import { buildArticleMutationValues } from '../_lib/build-mutation-values';
-import { revalidatePublicArticlePages } from '../_lib/revalidate-public';
+import { revalidateArticles } from '../_lib/revalidate-public';
 import type { ArticleMutationData } from '../_lib/types';
 import { validateArticleData } from '../_lib/validation';
 
@@ -67,8 +66,6 @@ export async function updateArticle(
   revalidatePath(`/admin/articles/${id}/edit`);
   revalidatePath(`/admin/articles/${id}/publish`);
   // Public list queries (unstable_cache) ...
-  revalidateTag(ARTICLES_CACHE_TAG, { expire: 60 });
-  // ... and the prerendered public detail pages, which the tag cannot reach.
-  revalidatePublicArticlePages(data.slug, current.slug);
+  revalidateArticles(data.slug, current.slug);
   return mutationSuccess(id, '/admin/articles');
 }

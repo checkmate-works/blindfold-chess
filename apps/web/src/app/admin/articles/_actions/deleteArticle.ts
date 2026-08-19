@@ -1,14 +1,11 @@
 'use server';
 
-import { revalidateTag } from 'next/cache';
-
 import { eq } from 'drizzle-orm';
 
-import { ARTICLES_CACHE_TAG } from '@/lib/cache-tags';
 import { articles, db } from '@/lib/db';
 
 import { createAdminDeleteAction } from '../../_lib/action-factories';
-import { revalidatePublicArticlePages } from '../_lib/revalidate-public';
+import { revalidateArticles } from '../_lib/revalidate-public';
 
 const deleteBase = createAdminDeleteAction({
   table: articles,
@@ -33,7 +30,6 @@ export async function deleteArticle(id: string) {
   const result = await deleteBase(id);
   if ('error' in result) return result;
 
-  revalidateTag(ARTICLES_CACHE_TAG, { expire: 60 });
-  revalidatePublicArticlePages(existing?.slug);
+  revalidateArticles(existing?.slug);
   return result;
 }
