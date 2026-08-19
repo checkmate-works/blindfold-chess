@@ -3,6 +3,7 @@ import 'server-only';
 
 import { chunks, db, games, positions, repertoires, topicPosts } from '@/lib/db';
 import { POINT_SOURCES, type PointHistoryEntry } from '@/lib/points';
+import { getPositionKindDetailPath } from '@/lib/positions/kind';
 
 import { buildTopicPostPath } from '@/app/[locale]/(public)/topics/_lib/topic-paths';
 
@@ -126,10 +127,12 @@ export function grantHref(
 ): string | null {
   switch (source) {
     case 'puzzle_created':
-      return resolved.livePositionIds.has(sourceId) ? `/practice/puzzle/${sourceId}` : null;
+      return resolved.livePositionIds.has(sourceId)
+        ? getPositionKindDetailPath('puzzle', sourceId)
+        : null;
     case 'position_memory_created':
       return resolved.livePositionIds.has(sourceId)
-        ? `/practice/position-memory/${sourceId}`
+        ? getPositionKindDetailPath('memory', sourceId)
         : null;
     case 'chunk_created': {
       const slug = resolved.chunkSlugById.get(sourceId);

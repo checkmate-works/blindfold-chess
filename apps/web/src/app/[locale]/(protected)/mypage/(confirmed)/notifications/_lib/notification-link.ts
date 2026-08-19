@@ -1,3 +1,4 @@
+import { getPositionKindForTopicType, getPositionPostAnchorPath } from '@/lib/positions/kind';
 import { getPositionDetailPath } from '@/lib/positions/routes';
 import { parseMoveTopicKey } from '@/lib/repertoires/move-topic-key';
 
@@ -90,13 +91,9 @@ function buildPostDetailUrl(
   postId: string,
   replyId?: string
 ): string {
-  if (topicType === 'position_memory') {
-    const targetId = replyId ?? postId;
-    return `/practice/position-memory/${topicKey}#post-${targetId}`;
-  }
-  if (topicType === 'position_puzzle') {
-    const targetId = replyId ?? postId;
-    return `/practice/puzzle/${topicKey}#post-${targetId}`;
+  const positionKind = getPositionKindForTopicType(topicType);
+  if (positionKind) {
+    return getPositionPostAnchorPath(positionKind, topicKey, replyId ?? postId);
   }
   if (topicType === 'repertoire') {
     // The repertoire detail page renders the inline comment tree (like puzzles),

@@ -8,6 +8,12 @@
  * `Link` which prepends the active locale.
  */
 import type { GrantType } from '@/lib/db/data/grant-types';
+import {
+  getPositionKindDetailPath,
+  getPositionKindForTopicType,
+  getPositionPostAnchorPath,
+  isPositionKind,
+} from '@/lib/positions/kind';
 
 import { buildTopicPostPath } from '@/app/[locale]/(public)/topics/_lib/topic-paths';
 
@@ -21,12 +27,8 @@ import { buildTopicPostPath } from '@/app/[locale]/(public)/topics/_lib/topic-pa
  * scope change still resolve to a usable link.
  */
 function buildTopicPostHref(topicType: string, topicKey: string, postId: string): string {
-  if (topicType === 'position_memory') {
-    return `/practice/position-memory/${topicKey}#post-${postId}`;
-  }
-  if (topicType === 'position_puzzle') {
-    return `/practice/puzzle/${topicKey}#post-${postId}`;
-  }
+  const positionKind = getPositionKindForTopicType(topicType);
+  if (positionKind) return getPositionPostAnchorPath(positionKind, topicKey, postId);
   return buildTopicPostPath(topicType, topicKey, postId);
 }
 
@@ -36,9 +38,7 @@ function buildTopicPostHref(topicType: string, topicKey: string, postId: string)
  * `'sequence'`); callers render the row without a link in that case.
  */
 function buildPositionHref(positionType: string, positionId: string): string | null {
-  if (positionType === 'puzzle') return `/practice/puzzle/${positionId}`;
-  if (positionType === 'memory') return `/practice/position-memory/${positionId}`;
-  return null;
+  return isPositionKind(positionType) ? getPositionKindDetailPath(positionType, positionId) : null;
 }
 
 type TopicPostMeta = { id: string; topicType: string; topicKey: string };
