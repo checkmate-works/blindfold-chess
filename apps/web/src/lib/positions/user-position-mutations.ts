@@ -14,6 +14,8 @@ import {
 } from '@/lib/notifications/notification';
 import { guardOwnership } from '@/lib/ownership-guard';
 import { clawbackPointsForPost, grantPointsForPost } from '@/lib/points';
+import type { CoinRewardOutcome } from '@/lib/points/coin-reward-outcome';
+import { toCoinRewardOutcome } from '@/lib/points/coin-reward-outcome';
 import {
   POSITION_FORK_SOURCE_TYPES,
   PUZZLE_FORK_SOURCE_TYPES,
@@ -87,29 +89,16 @@ const POSITION_KINDS: Record<PositionKind, PositionKindConfig> = {
 };
 
 export type CreatePositionEntryResult =
-  | {
+  | ({
       success: true;
       id: string;
-      /**
-       * Present when the create awarded points. Callers navigate the user
-       * straight to the created content with `?coinsEarned=<amount>` so the
-       * coin-reward toast can announce how many coins were earned.
-       */
-      pointGrant?: { pointEventId: string; amount: number };
-      /**
-       * True when the daily creation cap limited the reward — either trimmed
-       * it to a partial amount (also has `pointGrant`) or blocked it entirely
-       * (no `pointGrant`, earned 0 today). Callers append `?coinsCapped=1` to
-       * warn the author the cap is why they earned less / nothing.
-       */
-      coinCapped?: boolean;
       /**
        * Belt ranks unlocked by this submission. Surfaced via sessionStorage
        * by the caller so {@link RankAchievementModal} can pick them up on
        * the next navigation. Mirrors the challenge-completion flow.
        */
       grantedRanks?: GrantedRank[];
-    }
+    } & CoinRewardOutcome)
   | { error: string };
 
 export type UpdatePositionEntryResult = ActionResult;
@@ -289,21 +278,10 @@ export async function createPositionEntry(params: {
     'position create'
   );
 
-  const grant = txResult.grant;
-  const coinCapped = grant.status === 'capped' || (grant.status === 'granted' && grant.cappedDaily);
-
   return {
     success: true,
     id: txResult.position.id,
-    ...(grant.status === 'granted'
-      ? {
-          pointGrant: {
-            pointEventId: grant.pointEventId,
-            amount: grant.amount,
-          },
-        }
-      : {}),
-    ...(coinCapped ? { coinCapped: true } : {}),
+    ...toCoinRewardOutcome(txResult.grant),
     ...(grantedRanks.length > 0 ? { grantedRanks } : {}),
   };
 }

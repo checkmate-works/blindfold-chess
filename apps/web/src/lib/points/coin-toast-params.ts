@@ -1,3 +1,5 @@
+import type { CoinRewardOutcome } from './coin-reward-outcome';
+
 /**
  * The query params that ask the next page to show a coin toast on arrival.
  *
@@ -14,12 +16,10 @@
  * omit it.
  *
  * Returns an empty `URLSearchParams` when there is nothing to say — callers
- * should check `toString()` before appending. `pointGrant` is accepted as
- * either absent or null because the create flows disagree on which they
- * return for "no grant"; both mean the same thing here.
+ * should check `toString()` before appending.
  */
 export function buildCoinToastParams(
-  grant: { pointGrant?: { amount: number } | null; coinCapped?: boolean },
+  grant: CoinRewardOutcome,
   fallbackToast?: string
 ): URLSearchParams {
   const params = new URLSearchParams();

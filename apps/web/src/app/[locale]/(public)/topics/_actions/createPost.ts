@@ -14,6 +14,8 @@ import {
 } from '@/lib/notifications/notification';
 import type { PointGrantOutcome } from '@/lib/points';
 import { grantPointsForPost, isPointEligibleTopicType } from '@/lib/points';
+import type { CoinRewardOutcome } from '@/lib/points/coin-reward-outcome';
+import { toCoinRewardOutcome } from '@/lib/points/coin-reward-outcome';
 import { buildCoinToastParams } from '@/lib/points/coin-toast-params';
 import type { RateLimitConfig } from '@/lib/security/rate-limit';
 import { checkRateLimit } from '@/lib/security/rate-limit';
@@ -81,15 +83,9 @@ type CreatePostParams = {
  * share one body. This keeps feed-item emission, point grants and
  * notifications from drifting between the two paths.
  */
-async function insertPost(params: CreatePostParams): Promise<
-  | { error: string }
-  | {
-      ok: true;
-      postId: string;
-      pointGrant: { pointEventId: string; amount: number } | null;
-      coinCapped: boolean;
-    }
-> {
+async function insertPost(
+  params: CreatePostParams
+): Promise<{ error: string } | ({ ok: true; postId: string } & CoinRewardOutcome)> {
   const {
     locale,
     topicIdentifier,
@@ -212,15 +208,7 @@ async function insertPost(params: CreatePostParams): Promise<
     });
   }
 
-  const pointGrant =
-    grantOutcome.status === 'granted'
-      ? { pointEventId: grantOutcome.pointEventId, amount: grantOutcome.amount }
-      : null;
-  const coinCapped =
-    grantOutcome.status === 'capped' ||
-    (grantOutcome.status === 'granted' && grantOutcome.cappedDaily);
-
-  return { ok: true, postId: inserted.id, pointGrant, coinCapped };
+  return { ok: true, postId: inserted.id, ...toCoinRewardOutcome(grantOutcome) };
 }
 
 export async function createPostBase(params: CreatePostParams): Promise<CreatePostState> {

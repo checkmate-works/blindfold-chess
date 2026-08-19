@@ -307,7 +307,7 @@ describe('createChunkEntry', () => {
     });
   });
 
-  it('flags coinCapped with no pointGrant when fully capped out', async () => {
+  it('flags coinCapped with a null pointGrant when fully capped out', async () => {
     mockGrantPointsForPost.mockResolvedValue({ status: 'capped' });
 
     const { createChunkEntry } = await import('./user-chunk-mutations');
@@ -317,17 +317,24 @@ describe('createChunkEntry', () => {
       success: true,
       id: TEST_CHUNK_ID,
       slug: TEST_SLUG,
+      pointGrant: null,
       coinCapped: true,
     });
   });
 
-  it('omits pointGrant and coinCapped when the grant is skipped', async () => {
+  it('reports no grant and no cap when the grant is skipped', async () => {
     mockGrantPointsForPost.mockResolvedValue({ status: 'skipped' });
 
     const { createChunkEntry } = await import('./user-chunk-mutations');
     const result = await createChunkEntry(baseCreateInput);
 
-    expect(result).toEqual({ success: true, id: TEST_CHUNK_ID, slug: TEST_SLUG });
+    expect(result).toEqual({
+      success: true,
+      id: TEST_CHUNK_ID,
+      slug: TEST_SLUG,
+      pointGrant: null,
+      coinCapped: false,
+    });
   });
 
   it('inserts feedback topics when creating a draft with topics set', async () => {

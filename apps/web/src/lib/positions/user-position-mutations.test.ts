@@ -442,7 +442,7 @@ describe('createPositionEntry', () => {
       success: true,
       pointGrant: { pointEventId: 'pe-1', amount: 3 },
     });
-    expect(granted).not.toHaveProperty('coinCapped');
+    expect(granted).toMatchObject({ coinCapped: false });
     expect(mockGrantPointsForPost).toHaveBeenCalledWith(expect.anything(), TEST_USER_ID, {
       type: 'position_memory',
       id: TEST_POSITION_ID,
@@ -466,20 +466,30 @@ describe('createPositionEntry', () => {
     });
   });
 
-  it('flags coinCapped with no grant when fully capped out', async () => {
+  it('flags coinCapped with a null pointGrant when fully capped out', async () => {
     mockGrantPointsForPost.mockResolvedValue({ status: 'capped' });
 
     const { createPositionEntry } = await import('./user-position-mutations');
     const capped = await createPositionEntry(baseCreateParams);
-    expect(capped).toEqual({ success: true, id: TEST_POSITION_ID, coinCapped: true });
+    expect(capped).toEqual({
+      success: true,
+      id: TEST_POSITION_ID,
+      pointGrant: null,
+      coinCapped: true,
+    });
   });
 
-  it('omits both pointGrant and coinCapped when the grant is skipped', async () => {
+  it('reports no grant and no cap when the grant is skipped', async () => {
     mockGrantPointsForPost.mockResolvedValue({ status: 'skipped' });
 
     const { createPositionEntry } = await import('./user-position-mutations');
     const skipped = await createPositionEntry(baseCreateParams);
-    expect(skipped).toEqual({ success: true, id: TEST_POSITION_ID });
+    expect(skipped).toEqual({
+      success: true,
+      id: TEST_POSITION_ID,
+      pointGrant: null,
+      coinCapped: false,
+    });
   });
 
   it('surfaces granted belt ranks from the post-commit evaluation', async () => {

@@ -52,6 +52,7 @@ export { countPointEvents, listPointEvents, POINT_EVENT_SOURCE_OPTIONS } from '.
 export type { PointEventFilters, PointEventRow } from './list-events';
 export { clawbackPointsForPost, grantPointsForPost } from './grant-points';
 export type { PointGrantOutcome } from './grant-points';
+export type { CoinRewardOutcome, PointGrantReceipt } from './coin-reward-outcome';
 export {
   AD_FREE_DAYS_PER_POINT,
   AD_FREE_PRODUCT_CODE,
