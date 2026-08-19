@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { whereThenRows } from '@/lib/db/__test-support__/query-chain';
 import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
 import { checkRateLimit } from '@/lib/security/rate-limit';
 import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
@@ -52,13 +53,7 @@ vi.mock('@/lib/db', () => {
             };
           }
           return {
-            where: (...args: unknown[]) => {
-              mockSelectFromWhere(...args);
-              return (
-                mockSelectFromWhere.mock.results[mockSelectFromWhere.mock.calls.length - 1]
-                  ?.value ?? []
-              );
-            },
+            where: whereThenRows(mockSelectFromWhere),
           };
         },
       }),

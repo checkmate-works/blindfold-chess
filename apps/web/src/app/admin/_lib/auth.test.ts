@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
+import { whereThenLimit } from '@/lib/db/__test-support__/query-chain';
 import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
 
 import { requireAdmin } from './auth';
@@ -12,14 +13,7 @@ vi.mock('@/lib/db', () => ({
   db: {
     select: () => ({
       from: () => ({
-        where: (...args: unknown[]) => {
-          mockSelectFromWhere(...args);
-          return {
-            limit: () =>
-              mockSelectFromWhere.mock.results[mockSelectFromWhere.mock.calls.length - 1]?.value ??
-              [],
-          };
-        },
+        where: whereThenLimit(mockSelectFromWhere),
       }),
     }),
   },
