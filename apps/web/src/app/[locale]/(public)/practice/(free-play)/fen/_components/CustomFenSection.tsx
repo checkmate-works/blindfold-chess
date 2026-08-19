@@ -2,6 +2,11 @@
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
+import {
+  toggleKnobClass,
+  toggleTrackClass,
+} from '@/app/[locale]/_components/toggle-switch-classes';
+
 type Props = {
   customFenInput: string;
   customFenError: string | null;
@@ -82,16 +87,10 @@ export function CustomFenSection({
             role="switch"
             aria-checked={shuffleProblems}
             onClick={() => onShuffleChange(!shuffleProblems)}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-              shuffleProblems ? 'bg-foreground' : 'bg-secondary'
-            }`}
+            className={toggleTrackClass('control', shuffleProblems)}
           >
             <span className="sr-only">{t('shuffle')}</span>
-            <span
-              className={`inline-block h-4 w-4 transform rounded-full bg-background transition-transform ${
-                shuffleProblems ? 'translate-x-6' : 'translate-x-1'
-              }`}
-            />
+            <span className={toggleKnobClass('control', shuffleProblems)} />
           </button>
         </div>
       )}

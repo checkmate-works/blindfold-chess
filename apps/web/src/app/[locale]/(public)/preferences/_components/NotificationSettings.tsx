@@ -8,6 +8,10 @@ import { MUTABLE_NOTIFICATION_TYPES } from '@/lib/notifications/mutable-types';
 import type { MutableNotificationType } from '@/lib/notifications/mutable-types';
 
 import { Skeleton } from '@/app/[locale]/_components/Skeleton';
+import {
+  toggleKnobClass,
+  toggleTrackClass,
+} from '@/app/[locale]/_components/toggle-switch-classes';
 
 import { getNotificationMutes, setNotificationMute } from '../_actions';
 
@@ -79,15 +83,9 @@ export function NotificationSettings() {
                   aria-checked={enabled}
                   aria-label={t(`notifications.types.${type}`)}
                   onClick={() => toggle(type)}
-                  className={`relative h-5 w-9 shrink-0 rounded-full transition-colors ${
-                    enabled ? 'bg-success' : 'bg-muted'
-                  }`}
+                  className={`${toggleTrackClass('setting', enabled)} shrink-0`}
                 >
-                  <span
-                    className={`absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${
-                      enabled ? 'translate-x-4' : 'translate-x-0'
-                    }`}
-                  />
+                  <span className={toggleKnobClass('setting', enabled)} />
                 </button>
               </li>
             );

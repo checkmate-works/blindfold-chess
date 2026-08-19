@@ -7,6 +7,11 @@ import { FaEyeSlash, FaHandPointer } from 'react-icons/fa';
 
 import type { BoardVisibility } from '@/lib/games/board-visibility';
 
+import {
+  toggleKnobClass,
+  toggleTrackClass,
+} from '@/app/[locale]/_components/toggle-switch-classes';
+
 type Props = {
   value: BoardVisibility;
   onChange: (value: BoardVisibility) => void;
@@ -46,17 +51,8 @@ function ToggleRow({
         {icon}
         <span className={muted ? 'text-muted-foreground' : undefined}>{label}</span>
       </span>
-      <span
-        aria-hidden
-        className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${
-          checked ? 'bg-foreground' : 'bg-secondary'
-        }`}
-      >
-        <span
-          className={`inline-block h-4 w-4 transform rounded-full bg-background transition-transform ${
-            checked ? 'translate-x-6' : 'translate-x-1'
-          }`}
-        />
+      <span aria-hidden className={`${toggleTrackClass('control', checked)} shrink-0`}>
+        <span className={toggleKnobClass('control', checked)} />
       </span>
     </button>
   );
