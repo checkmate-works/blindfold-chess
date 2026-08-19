@@ -3,26 +3,15 @@
 import { useState } from 'react';
 
 import { ChessPiece } from '@/app/_components/chess/ChessPiece';
-import type { Square } from '@blindfold-chess/types';
+import type { RoutePlannerProblemResult } from '@blindfold-chess/features/route-planner';
 import { FaArrowRight, FaChevronDown, FaChevronRight } from 'react-icons/fa';
 
 import type { BoardTheme } from '@/lib/games/board-themes';
 
-import type { PieceType } from '../_lib/pieces';
 import { RoutePlannerProblemFeedback } from './RoutePlannerProblemFeedback';
 
-export type RoutePlannerResult = {
-  piece: PieceType;
-  start: Square;
-  end: Square;
-  success: boolean;
-  userPath: Square[];
-  shortestPath: Square[];
-  skipped?: boolean;
-};
-
 type Props = {
-  results: RoutePlannerResult[];
+  results: RoutePlannerProblemResult[];
   boardTheme: BoardTheme;
   labels: {
     skipped: string;

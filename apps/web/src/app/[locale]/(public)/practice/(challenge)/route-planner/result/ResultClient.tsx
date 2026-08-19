@@ -5,6 +5,7 @@ import { useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import type { RoutePlannerProblemResult } from '@blindfold-chess/features/route-planner';
 
 import { ARTICLE_ICONS } from '@/app/[locale]/(public)/learn/_lib/types';
 import {
@@ -15,10 +16,7 @@ import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import {
-  type RoutePlannerResult,
-  RoutePlannerResultList,
-} from '../_components/RoutePlannerResultList';
+import { RoutePlannerResultList } from '../_components/RoutePlannerResultList';
 
 function RoutePlannerChildren() {
   const searchParams = useSearchParams();
@@ -30,7 +28,7 @@ function RoutePlannerChildren() {
     if (!dataParam) return [];
     try {
       const parsed = JSON.parse(decodeURIComponent(dataParam));
-      return Array.isArray(parsed) ? (parsed as RoutePlannerResult[]) : [];
+      return Array.isArray(parsed) ? (parsed as RoutePlannerProblemResult[]) : [];
     } catch {
       return [];
     }
@@ -96,7 +94,7 @@ function parseDataScores(searchParams: URLSearchParams) {
   try {
     const parsed = JSON.parse(decodeURIComponent(dataParam));
     const results = Array.isArray(parsed) ? parsed : [];
-    const score = results.filter((r: RoutePlannerResult) => r.success).length;
+    const score = results.filter((r: RoutePlannerProblemResult) => r.success).length;
     return { score, total: results.length };
   } catch {
     return { score: 0, total: 0 };
