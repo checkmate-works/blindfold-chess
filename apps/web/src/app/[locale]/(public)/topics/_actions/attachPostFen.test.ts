@@ -2,6 +2,7 @@ import { STARTING_FEN } from '@blindfold-chess/features/chess-core/fen';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
+import { checkRateLimit } from '@/lib/security/rate-limit';
 import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
 
 import { attachPostFen } from './attachPostFen';
@@ -9,7 +10,6 @@ import { attachPostFen } from './attachPostFen';
 const mockSelectWhere = vi.fn();
 const mockInsertValues = vi.fn();
 const mockInsertReturning = vi.fn();
-const mockCheckRateLimit = vi.fn();
 
 vi.mock('@/lib/users/activity-log');
 
@@ -55,12 +55,7 @@ vi.mock('@/lib/db', () => ({
 
 vi.mock('@/lib/moderation/ban');
 
-vi.mock('@/lib/security/rate-limit', () => ({
-  checkRateLimit: (...args: unknown[]) => mockCheckRateLimit(...args),
-  RATE_LIMITS: {
-    attachPostFen: { action: 'attach_post_fen', maxAttempts: 10, windowMs: 3_600_000 },
-  },
-}));
+vi.mock('@/lib/security/rate-limit');
 
 const userId = 'user-00000000-0000-0000-0000-000000000001';
 const otherUserId = 'user-00000000-0000-0000-0000-000000000002';
@@ -69,7 +64,7 @@ const postId = '00000000-0000-0000-0000-00000000aaaa';
 beforeEach(() => {
   mockGetUser.mockResolvedValue({ data: { user: { id: userId } } });
   mockIsUserBanned.mockResolvedValue(false);
-  mockCheckRateLimit.mockResolvedValue({ allowed: true });
+  vi.mocked(checkRateLimit).mockResolvedValue({ success: true });
   mockSelectWhere.mockReturnValue([
     { id: postId, userId, topicType: 'opening', topicKey: 'sicilian', deletedAt: null },
   ]);

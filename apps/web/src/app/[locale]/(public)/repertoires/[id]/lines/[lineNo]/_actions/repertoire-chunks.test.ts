@@ -27,11 +27,7 @@ vi.mock('@/lib/db/repertoire-chunks', () => ({
   isLinkableChunkForViewer: (...args: unknown[]) => mockIsLinkable(...args),
 }));
 
-vi.mock('@/lib/security/rate-limit', () => ({
-  RATE_LIMITS: {
-    linkRepertoireChunk: { action: 'link_repertoire_chunk', maxAttempts: 30, windowMs: 3_600_000 },
-  },
-}));
+vi.mock('@/lib/security/rate-limit');
 
 vi.mock('@/lib/server-action-error', () => ({
   handleServerActionError: () => ({ success: false, error: 'unexpected_error' }),

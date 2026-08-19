@@ -60,12 +60,7 @@ vi.mock('@/lib/db', () => ({
 
 vi.mock('@/lib/moderation/ban');
 
-vi.mock('@/lib/security/rate-limit', () => ({
-  checkRateLimit: vi.fn().mockResolvedValue({ success: true }),
-  RATE_LIMITS: {
-    createPost: { action: 'create_post', maxAttempts: 10, windowMs: 3_600_000 },
-  },
-}));
+vi.mock('@/lib/security/rate-limit');
 
 const mockRedirect = vi.fn();
 vi.mock('next/navigation', () => ({

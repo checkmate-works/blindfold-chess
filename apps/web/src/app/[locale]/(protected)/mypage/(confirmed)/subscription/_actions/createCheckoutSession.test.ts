@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { checkRateLimit } from '@/lib/security/rate-limit';
+
 /**
  * Regression test for the Stripe Checkout `success_url`.
  *
@@ -17,7 +19,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
  */
 
 const mockGetAuthenticatedUser = vi.fn();
-const mockCheckRateLimit = vi.fn();
 const mockGetOrCreateStripeCustomerId = vi.fn();
 const mockGetStripePriceId = vi.fn(() => 'price_test_123');
 const mockSessionsCreate = vi.fn();
@@ -47,16 +48,7 @@ vi.mock('@/lib/billing/stripe-customer', () => ({
   getOrCreateStripeCustomerId: (...args: unknown[]) => mockGetOrCreateStripeCustomerId(...args),
 }));
 
-vi.mock('@/lib/security/rate-limit', () => ({
-  checkRateLimit: (...args: unknown[]) => mockCheckRateLimit(...args),
-  RATE_LIMITS: {
-    createCheckoutSession: {
-      action: 'create_checkout_session',
-      maxAttempts: 5,
-      windowMs: 600_000,
-    },
-  },
-}));
+vi.mock('@/lib/security/rate-limit');
 
 // `createCheckoutSession.ts` reads `SITE_URL` from `@/config` at the top of
 // the module. We pin it so the regression assertion below is deterministic
@@ -71,7 +63,7 @@ const { createCheckoutSession } = await import('./createCheckoutSession');
 describe('createCheckoutSession — Stripe success_url regression', () => {
   beforeEach(() => {
     mockGetAuthenticatedUser.mockResolvedValue({ id: 'user-123', email: 'u@example.com' });
-    mockCheckRateLimit.mockResolvedValue({ success: true });
+    vi.mocked(checkRateLimit).mockResolvedValue({ success: true });
     mockGetOrCreateStripeCustomerId.mockResolvedValue('cus_test_123');
     mockSessionsCreate.mockResolvedValue({ url: 'https://checkout.stripe.com/c/pay/cs_test_xyz' });
   });
@@ -132,7 +124,7 @@ describe('createCheckoutSession — Stripe success_url regression', () => {
   });
 
   it('returns rateLimited error before hitting Stripe when the user has exceeded the limit', async () => {
-    mockCheckRateLimit.mockResolvedValueOnce({ error: 'rateLimited' });
+    vi.mocked(checkRateLimit).mockResolvedValueOnce({ error: 'rateLimited' });
 
     const result = await createCheckoutSession('en');
 

@@ -36,11 +36,7 @@ vi.mock('@/lib/ads/ads-hidden-cookie-writer', () => ({
   refreshAdsHiddenCookieOnDanPromotion: (...args: unknown[]) => mockCookieRefresh(...args),
 }));
 
-vi.mock('@/lib/security/rate-limit', () => ({
-  RATE_LIMITS: {
-    claimSharedGame: { action: 'claim_shared_game', maxAttempts: 10, windowMs: 3_600_000 },
-  },
-}));
+vi.mock('@/lib/security/rate-limit');
 
 vi.mock('@/lib/server-action-error', () => ({
   handleServerActionError: () => ({ success: false, error: 'unexpected_error' }),

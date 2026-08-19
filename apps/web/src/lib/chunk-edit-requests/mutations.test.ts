@@ -37,20 +37,7 @@ vi.mock('./queries', () => ({
     mockGetViewerPendingEditRequestForChunk(chunkId, viewerId),
 }));
 
-vi.mock('@/lib/security/rate-limit', () => ({
-  RATE_LIMITS: {
-    submitChunkEditRequest: {
-      action: 'submit_chunk_edit_request',
-      maxAttempts: 10,
-      windowMs: 3_600_000,
-    },
-    resolveChunkEditRequest: {
-      action: 'resolve_chunk_edit_request',
-      maxAttempts: 30,
-      windowMs: 3_600_000,
-    },
-  },
-}));
+vi.mock('@/lib/security/rate-limit');
 
 vi.mock('next/cache', () => ({
   revalidatePath: (...args: unknown[]) => mockRevalidatePath(...args),

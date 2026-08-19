@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
+import { checkRateLimit } from '@/lib/security/rate-limit';
 import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
 
 import { attachPostVideo } from './attachPostVideo';
@@ -8,7 +9,6 @@ import { attachPostVideo } from './attachPostVideo';
 const mockSelectWhere = vi.fn();
 const mockInsertValues = vi.fn();
 const mockInsertReturning = vi.fn();
-const mockCheckRateLimit = vi.fn();
 
 vi.mock('@/lib/supabase/server');
 
@@ -53,12 +53,7 @@ vi.mock('@/lib/db', () => ({
 
 vi.mock('@/lib/moderation/ban');
 
-vi.mock('@/lib/security/rate-limit', () => ({
-  checkRateLimit: (...args: unknown[]) => mockCheckRateLimit(...args),
-  RATE_LIMITS: {
-    attachPostVideo: { action: 'attach_post_video', maxAttempts: 10, windowMs: 3_600_000 },
-  },
-}));
+vi.mock('@/lib/security/rate-limit');
 
 const userId = 'user-00000000-0000-0000-0000-000000000001';
 const otherUserId = 'user-00000000-0000-0000-0000-000000000002';
@@ -69,7 +64,7 @@ const VALID_URL = `https://www.youtube.com/watch?v=${VALID_ID}`;
 beforeEach(() => {
   mockGetUser.mockResolvedValue({ data: { user: { id: userId } } });
   mockIsUserBanned.mockResolvedValue(false);
-  mockCheckRateLimit.mockResolvedValue({ allowed: true });
+  vi.mocked(checkRateLimit).mockResolvedValue({ success: true });
   mockSelectWhere.mockReturnValue([{ id: postId, userId, deletedAt: null }]);
   mockInsertReturning.mockResolvedValue([
     {

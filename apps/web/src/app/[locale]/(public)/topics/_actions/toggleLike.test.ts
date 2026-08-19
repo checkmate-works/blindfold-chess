@@ -42,12 +42,7 @@ vi.mock('@/lib/supabase/server');
 
 vi.mock('@/lib/moderation/ban');
 
-vi.mock('@/lib/security/rate-limit', () => ({
-  checkRateLimit: vi.fn().mockResolvedValue({ success: true }),
-  RATE_LIMITS: {
-    toggleLike: { action: 'toggle_like', maxAttempts: 50, windowMs: 86_400_000 },
-  },
-}));
+vi.mock('@/lib/security/rate-limit');
 
 vi.mock('@/lib/db', () => {
   const topicPostsTable = { id: 'id', userId: 'user_id' };

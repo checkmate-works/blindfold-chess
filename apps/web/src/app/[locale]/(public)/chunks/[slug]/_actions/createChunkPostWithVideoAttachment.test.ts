@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
+import { checkRateLimit } from '@/lib/security/rate-limit';
 import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
 
 import { createChunkPostWithVideoAttachment } from './createChunkPostWithVideoAttachment';
 
 const mockGetChunkBySlug = vi.fn();
-const mockCheckRateLimit = vi.fn();
 const mockInsertValues = vi.fn();
 const mockInsertReturning = vi.fn();
 const mockVideoInsertValues = vi.fn();
@@ -68,12 +68,7 @@ vi.mock('@/lib/db', () => ({
 
 vi.mock('@/lib/moderation/ban');
 
-vi.mock('@/lib/security/rate-limit', () => ({
-  checkRateLimit: (...args: unknown[]) => mockCheckRateLimit(...args),
-  RATE_LIMITS: {
-    createPost: { action: 'create_post', maxAttempts: 10, windowMs: 3_600_000 },
-  },
-}));
+vi.mock('@/lib/security/rate-limit');
 
 const mockRedirect = vi.fn();
 vi.mock('next/navigation', () => ({
@@ -118,7 +113,7 @@ describe('createChunkPostWithVideoAttachment', () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
     mockIsUserBanned.mockResolvedValue(false);
     mockInsertReturning.mockResolvedValue([{ id: generatedPostId }]);
-    mockCheckRateLimit.mockResolvedValue({ success: true });
+    vi.mocked(checkRateLimit).mockResolvedValue({ success: true });
     mockSelectProfile.mockResolvedValue([{ id: testUserId }]);
   });
 

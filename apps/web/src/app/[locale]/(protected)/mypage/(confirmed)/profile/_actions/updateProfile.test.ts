@@ -18,12 +18,7 @@ vi.mock('@/lib/supabase/server');
 
 vi.mock('@/lib/moderation/ban');
 
-vi.mock('@/lib/security/rate-limit', () => ({
-  checkRateLimit: vi.fn().mockResolvedValue({ success: true }),
-  RATE_LIMITS: {
-    updateProfile: { action: 'update_profile', maxAttempts: 5, windowMs: 600_000 },
-  },
-}));
+vi.mock('@/lib/security/rate-limit');
 
 vi.mock('@/lib/db', () => ({
   db: {
