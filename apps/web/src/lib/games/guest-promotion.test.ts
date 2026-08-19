@@ -29,9 +29,15 @@ function classify(overrides: Partial<Parameters<typeof classifyGuestPromotionQua
     changeLog: undefined,
     operationLogs: [],
     moveCount: 40,
+    startingFen: undefined,
+    setupPlies: undefined,
     ...overrides,
   });
 }
+
+/** One move from mate for White — the shape of the getting-started example. */
+const ENDGAME_FEN = '7k/5Q2/6K1/8/8/8/8/8 w - - 0 1';
+const STANDARD_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
 describe('classifyGuestPromotionQualification', () => {
   it.each(['loss', 'draw', null] as const)('returns null for a %s result', (result) => {
@@ -84,5 +90,27 @@ describe('classifyGuestPromotionQualification', () => {
 
   it('tolerates an undefined change log and operation logs', () => {
     expect(classify({ changeLog: undefined, operationLogs: null })).toBe('1dan');
+  });
+
+  describe('standard-start bar (mirrors the server evaluator)', () => {
+    it('downgrades a hidden-board win from a custom position to 1kyu', () => {
+      expect(classify({ startingFen: ENDGAME_FEN })).toBe('1kyu');
+    });
+
+    it('downgrades a hidden-board win seeded with setup plies (opening / PGN start) to 1kyu', () => {
+      expect(classify({ setupPlies: 8 })).toBe('1kyu');
+    });
+
+    it('keeps 1dan when startingFen is explicitly the standard position', () => {
+      expect(classify({ startingFen: STANDARD_FEN, setupPlies: 0 })).toBe('1dan');
+    });
+
+    it('treats null on both fields as the standard start', () => {
+      expect(classify({ startingFen: null, setupPlies: null })).toBe('1dan');
+    });
+
+    it('returns null (not 1kyu) for a fully sighted win from a custom position', () => {
+      expect(classify({ playSettings: SIGHTED, startingFen: ENDGAME_FEN })).toBeNull();
+    });
   });
 });

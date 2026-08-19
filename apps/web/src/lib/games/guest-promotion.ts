@@ -10,6 +10,7 @@ import type {
   MoveOperationLog,
   PreferenceChangeLogEntry,
 } from './saved-game-types';
+import { startedFromStandardPosition } from './standard-start';
 
 /** The two ranks a single published win can satisfy the game requirement of. */
 export type GuestPromotionQualification = Extract<RankSlug, '1kyu' | '1dan'>;
@@ -38,6 +39,14 @@ type Args = {
   operationLogs: readonly MoveOperationLog[] | null | undefined;
   /** Half-moves played — bounds the change-log normalization. */
   moveCount: number;
+  /**
+   * The position the game started from (`Game.startingFen`); absent means
+   * the standard start. Together with `setupPlies` this feeds the 1dan bar's
+   * "played from move 1" test — see {@link startedFromStandardPosition}.
+   */
+  startingFen: string | null | undefined;
+  /** Seeded setup-prefix length (`Game.setupPlies`); absent means none. */
+  setupPlies: number | null | undefined;
 };
 
 /**
@@ -47,7 +56,8 @@ type Args = {
  *
  * A UI hint only — the authority is the server evaluator over the published
  * row (`rank-evaluation.ts`). To keep the two from drifting, every predicate
- * here is the same pure function the server runs: `maintainedHiddenBoard` and
+ * here is the same pure function the server runs: `startedFromStandardPosition`
+ * gates the 1dan bar on a standard start, `maintainedHiddenBoard` and
  * `isConstrainedPlaySettings` grade the settings, `normalizePlaySettingsLog`
  * is the exact publish-time normalization of the change log, and the peek
  * allowance comes from the 1dan seed requirement itself.
@@ -63,10 +73,12 @@ export function classifyGuestPromotionQualification({
   changeLog,
   operationLogs,
   moveCount,
+  startingFen,
+  setupPlies,
 }: Args): GuestPromotionQualification | null {
   if (result !== 'win' || !playSettings) return null;
 
-  if (danSeedRequirement) {
+  if (danSeedRequirement && startedFromStandardPosition(startingFen, setupPlies)) {
     const normalizedLog = normalizePlaySettingsLog(changeLog ?? null, moveCount);
     const peeks = (operationLogs ?? []).reduce((sum, log) => sum + log.peekCount, 0);
     if (

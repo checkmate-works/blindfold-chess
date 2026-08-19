@@ -20,6 +20,10 @@ type Args = {
   operationLogs: readonly MoveOperationLog[] | undefined;
   /** Half-moves played. */
   moveCount: number;
+  /** The position the game started from; undefined = the standard start. */
+  startingFen: string | undefined;
+  /** Seeded setup-prefix length (opening / PGN start); undefined = none. */
+  setupPlies: number | undefined;
   /** Gate until the game is actually over. */
   enabled: boolean;
 };
@@ -46,6 +50,8 @@ export function useGuestPromotion({
   preferenceChangeLog,
   operationLogs,
   moveCount,
+  startingFen,
+  setupPlies,
   enabled,
 }: Args): GuestPromotionQualification | null {
   const { user, isProvisional, isLoading } = useAuth();
@@ -59,5 +65,7 @@ export function useGuestPromotion({
     changeLog: preferenceChangeLog,
     operationLogs,
     moveCount,
+    startingFen,
+    setupPlies,
   });
 }
