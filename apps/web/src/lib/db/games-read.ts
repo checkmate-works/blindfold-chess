@@ -21,12 +21,17 @@ import type { GameRecord } from './schema';
 import { gameChunks, games, profiles } from './schema';
 
 /**
- * Statuses a published game is publicly viewable in. Currently just `public`;
- * the planned owner-only `private` tier is deliberately excluded here (a future
- * owner-scoped read path will handle it). Kept as a list so adding such a path
- * is a one-line change, not a query rewrite.
+ * The visibility rule for a published game: `public` status and not
+ * soft-deleted. Every public read path composes this, so no surface can leak a
+ * game the gallery hides, and the planned owner-only `private` tier becomes a
+ * one-line change here rather than a hunt for the spellings of the rule.
+ *
+ * Owner and admin views of non-public games are separate paths and
+ * deliberately do not go through this.
  */
-const VISIBLE_STATUSES = ['public'] as const;
+export function publiclyVisible() {
+  return and(isNull(games.deletedAt), eq(games.status, 'public'));
+}
 
 export type SharedGameDetail = {
   game: GameRecord;
@@ -51,9 +56,7 @@ export const getGameById = cache(async (id: string): Promise<SharedGameDetail | 
     })
     .from(games)
     .leftJoin(profiles, liveProfileJoinOn(games.authorId))
-    .where(
-      and(eq(games.id, id), isNull(games.deletedAt), inArray(games.status, [...VISIBLE_STATUSES]))
-    )
+    .where(and(eq(games.id, id), publiclyVisible()))
     .limit(1);
 
   if (!row) return null;
@@ -173,15 +176,6 @@ function mapGameRowsToListItems(rows: GameListRow[]): Promise<SharedGameListItem
       opening: await detectGameOpening({ moves: r.moves, startingFen: r.startingFen }),
     }))
   );
-}
-
-/**
- * The gallery's visibility rule: only `public`, non-deleted games are listed
- * (the planned `private` tier and soft-deleted rows are excluded). Every public
- * read path composes this so no surface can leak a game the gallery hides.
- */
-function publiclyVisible() {
-  return and(isNull(games.deletedAt), eq(games.status, 'public'));
 }
 
 /**

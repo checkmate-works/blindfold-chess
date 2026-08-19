@@ -1,6 +1,7 @@
 import { type SQL, sql } from 'drizzle-orm';
 
 import { chunks, feedItems, games, positions, profiles, topicPosts } from '@/lib/db';
+import { publiclyVisible } from '@/lib/db/games-read';
 
 /**
  * Highest all-time leaderboard rank a `challenge_rank_update` row is worth
@@ -76,7 +77,7 @@ export function liveFeedRow(): SQL {
         FROM ${chunks} WHERE ${chunks.id} = ${feedItems.entityId}
       )
       WHEN 'game' THEN (
-        SELECT ${games.deletedAt} IS NULL AND ${games.status} = 'public'
+        SELECT ${publiclyVisible()}
         FROM ${games} WHERE ${games.id} = ${feedItems.entityId}
       )
       WHEN 'challenge_rank_update' THEN (
