@@ -1,4 +1,4 @@
-import type { useTranslations } from 'next-intl';
+import type { ClientTranslator } from '@/i18n/translator';
 
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
 import type { ChunkFeedbackTopic } from '@/lib/chunks/validation';
@@ -31,7 +31,7 @@ export const CHUNK_FORM_ERROR_CODES = new Set([
  * sites in this module read as "translator that handles chunk form
  * keys" rather than the broader `next-intl` type.
  */
-export type ChunkFormTranslator = ReturnType<typeof useTranslations>;
+export type ChunkFormTranslator = ClientTranslator;
 
 export type ChunkFormPayload = {
   representativeFen: string;

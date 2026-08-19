@@ -3,6 +3,8 @@ import type { ReactNode } from 'react';
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
+import type { ServerTranslator } from '@/i18n/translator';
+
 import type { LeaderboardModule } from '@/app/[locale]/(public)/leaderboard/_lib/types';
 import { LeaderboardPreview } from '@/app/[locale]/(public)/practice/_components/LeaderboardPreview';
 import { PageLayout } from '@/app/[locale]/_components';
@@ -26,13 +28,13 @@ type PracticeTopPageConfig = {
   /** Render the setup/main component. Receives locale. */
   renderSetup: (locale: Locale) => ReactNode;
   /** Render the articles section. Receives the translation function. */
-  renderArticles: (t: Awaited<ReturnType<typeof getTranslations>>, locale: Locale) => ReactNode;
+  renderArticles: (t: ServerTranslator, locale: Locale) => ReactNode;
   /**
    * Optional element rendered to the right of the page title (typically a
    * `HelpTourButton`). Returning `null` skips it entirely — useful when the
    * page only ships the help tour for some locales.
    */
-  renderTitleAction?: (t: Awaited<ReturnType<typeof getTranslations>>, locale: Locale) => ReactNode;
+  renderTitleAction?: (t: ServerTranslator, locale: Locale) => ReactNode;
   /** Optional leaderboard preview (reuses LeaderboardPreview from result pages) */
   leaderboard?: {
     module: LeaderboardModule;

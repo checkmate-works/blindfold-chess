@@ -2,9 +2,8 @@
 
 import { type ReactNode, useState } from 'react';
 
-import type { useTranslations } from 'next-intl';
-
 import { FieldError, FlipBoardButton, fieldBorderClass, fieldErrorProps } from '@/app/_components';
+import type { ClientTranslator } from '@/i18n/translator';
 import { STARTING_FEN } from '@blindfold-chess/features/chess-core/fen';
 
 import type { ChunkOption } from '@/lib/chunks/types';
@@ -28,7 +27,7 @@ type Props = {
    * way (`titleLabel`, `tabBoard`, `clearBoardConfirmTitle`, …), so the
    * shared body can read them without owning either namespace.
    */
-  t: ReturnType<typeof useTranslations>;
+  t: ClientTranslator;
   board: ReturnType<typeof useFenBoardEditor>;
   boardLabels: EditableChessBoardLabels;
   tags: ReturnType<typeof useTagSelection>;

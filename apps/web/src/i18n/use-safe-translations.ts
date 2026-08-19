@@ -4,9 +4,11 @@ import { useContext, useRef } from 'react';
 
 import { useTranslations } from 'next-intl';
 
+import type { ClientTranslator } from '@/i18n/translator';
+
 import { IntlAvailableContext } from './IntlAvailableContext';
 
-type TranslationFn = ReturnType<typeof useTranslations>;
+type TranslationFn = ClientTranslator;
 
 /**
  * A translation function that simply returns the key path as-is.

@@ -1,4 +1,4 @@
-import type { getTranslations } from 'next-intl/server';
+import type { ServerTranslator } from '@/i18n/translator';
 
 import { ALL_RANK_SLUGS } from '@/lib/db/data/ranks';
 import { DEFAULT_PAGE_SIZE, getPageRange } from '@/lib/pagination';
@@ -12,7 +12,7 @@ import type { SIGNUP_METHOD_ORDER } from '../_lib/signup-method';
 import { ActiveFilters } from './ActiveFilters';
 import { UserRow } from './UserRow';
 
-type Translator = Awaited<ReturnType<typeof getTranslations>>;
+type Translator = ServerTranslator;
 type AdminClient = ReturnType<typeof createAdminClient>;
 type ProviderNames = Record<(typeof SIGNUP_METHOD_ORDER)[number], string>;
 

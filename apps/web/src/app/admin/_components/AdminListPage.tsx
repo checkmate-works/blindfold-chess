@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 
 import { getTranslations } from 'next-intl/server';
 
+import type { ServerTranslator } from '@/i18n/translator';
 import { desc, sql } from 'drizzle-orm';
 import type { PgTableWithColumns } from 'drizzle-orm/pg-core';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
@@ -23,9 +24,9 @@ type AdminListPageConfig<T> = {
   translationNamespace: string;
   basePath: string;
   newButtonTranslationKey: string;
-  headers: (t: Awaited<ReturnType<typeof getTranslations>>) => ReactNode[];
+  headers: (t: ServerTranslator) => ReactNode[];
   emptyMessageKey: string;
-  renderRow: (item: T, t: Awaited<ReturnType<typeof getTranslations>>) => ReactNode;
+  renderRow: (item: T, t: ServerTranslator) => ReactNode;
 };
 
 export function createAdminListPage<T>(config: AdminListPageConfig<T>) {
