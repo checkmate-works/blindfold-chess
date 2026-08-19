@@ -321,6 +321,8 @@ export function PlayClient({
     preferenceChangeLog,
     operationLogs,
     moveCount: moves.length,
+    startingFen,
+    setupPlies,
     enabled: isFinished && !isFinishedView,
   });
 
@@ -332,6 +334,8 @@ export function PlayClient({
     preferenceChangeLog,
     operationLogs,
     moveCount: moves.length,
+    startingFen,
+    setupPlies,
     enabled: isFinished && !isFinishedView,
   });
 

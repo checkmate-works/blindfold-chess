@@ -56,6 +56,8 @@ export function PublishNudgeBanner({ locale, className }: Props) {
         changeLog: game.preferenceChangeLog,
         operationLogs: game.operationLogs,
         moveCount: game.moves.length,
+        startingFen: game.startingFen,
+        setupPlies: game.setupPlies,
       });
       if (!qualification) continue;
       if (qualification === '1dan') return { gameId: game.id, qualification };

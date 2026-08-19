@@ -24,6 +24,10 @@ type Args = {
   operationLogs: readonly MoveOperationLog[] | undefined;
   /** Half-moves played. */
   moveCount: number;
+  /** The position the game started from; undefined = the standard start. */
+  startingFen: string | undefined;
+  /** Seeded setup-prefix length (opening / PGN start); undefined = none. */
+  setupPlies: number | undefined;
   /** Gate the round-trip until the game is actually over. */
   enabled: boolean;
 };
@@ -53,6 +57,8 @@ export function usePublishPromotion({
   preferenceChangeLog,
   operationLogs,
   moveCount,
+  startingFen,
+  setupPlies,
   enabled,
 }: Args): RankSlug | null {
   const qualification = enabled
@@ -62,6 +68,8 @@ export function usePublishPromotion({
         changeLog: preferenceChangeLog,
         operationLogs,
         moveCount,
+        startingFen,
+        setupPlies,
       })
     : null;
 
