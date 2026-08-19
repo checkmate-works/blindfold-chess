@@ -18,6 +18,7 @@ import { countRows } from '@/lib/db/list-query';
 import { UUID_RE } from '@/lib/validations/uuid';
 
 import { buildProfilePostQuery } from '@/app/[locale]/(public)/topics/_lib/build-profile-post-query';
+import { liveTopLevelPosts } from '@/app/[locale]/(public)/topics/_lib/post-filters';
 import {
   attachPostMeta,
   attachProfilePostMeta,
@@ -64,14 +65,7 @@ async function getPostsForOpening(slug: string): Promise<OpeningPostWithAuthor[]
     .from(topicPosts)
     .leftJoin(profiles, liveProfileJoinOn(topicPosts.userId))
     .leftJoin(topicPostRatings, eq(topicPosts.id, topicPostRatings.postId))
-    .where(
-      and(
-        eq(topicPosts.topicType, 'opening'),
-        eq(topicPosts.topicKey, slug),
-        isNull(topicPosts.parentId),
-        isNull(topicPosts.deletedAt)
-      )
-    )
+    .where(liveTopLevelPosts('opening', eq(topicPosts.topicKey, slug)))
     .orderBy(desc(topicPosts.createdAt));
 
   return results.map((r) => ({
@@ -181,14 +175,7 @@ async function getProfileOpeningPostsPaginated(
   currentUserId?: string
 ): Promise<ProfilePostWithReplyMeta[]> {
   const results = await buildProfilePostQuery()
-    .where(
-      and(
-        eq(topicPosts.topicType, 'opening'),
-        extra,
-        isNull(topicPosts.parentId),
-        isNull(topicPosts.deletedAt)
-      )
-    )
+    .where(liveTopLevelPosts('opening', extra))
     .orderBy(desc(topicPosts.createdAt))
     .limit(limit)
     .offset(offset);
@@ -220,15 +207,7 @@ export async function getPostCountByFirstMoveSquare(square: string): Promise<num
 
   if (slugs.length === 0) return 0;
 
-  return countRows(
-    topicPosts,
-    and(
-      eq(topicPosts.topicType, 'opening'),
-      inArray(topicPosts.topicKey, slugs),
-      isNull(topicPosts.parentId),
-      isNull(topicPosts.deletedAt)
-    )
-  );
+  return countRows(topicPosts, liveTopLevelPosts('opening', inArray(topicPosts.topicKey, slugs)));
 }
 
 /**

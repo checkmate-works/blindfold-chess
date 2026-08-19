@@ -8,6 +8,7 @@ import { UUID_RE } from '@/lib/validations/uuid';
 
 import { sortRoots } from './comment-tree';
 import type { TopicType } from './constants';
+import { liveTopLevelPosts } from './post-filters';
 import { attachPostMeta } from './post-meta';
 import { sortPosts } from './shared';
 import type { PostWithReplyMeta, SortMode, TopicPostWithAuthor } from './shared';
@@ -43,23 +44,6 @@ function toPostsWithAuthor(rows: PostAuthorJoinRow[]): TopicPostWithAuthor[] {
 }
 
 /**
- * Live top-level posts of `topicType`, optionally narrowed to one `topicKey`.
- *
- * "Top-level" means no parent, "live" means not soft-deleted. The list reads
- * and the counts below have to agree on this predicate exactly — a count that
- * drifts from its list is a pagination bug that only shows up at the last
- * page.
- */
-function liveTopLevelPosts(topicType: TopicType, topicKey?: string) {
-  return and(
-    eq(topicPosts.topicType, topicType),
-    topicKey === undefined ? undefined : eq(topicPosts.topicKey, topicKey),
-    isNull(topicPosts.parentId),
-    isNull(topicPosts.deletedAt)
-  );
-}
-
-/**
  * Get the count of top-level posts for a specific topic type ('square' or 'opening').
  */
 export async function getPostCountByTopicType(topicType: TopicType): Promise<number> {
@@ -75,7 +59,7 @@ async function getTopLevelPostsByTopicKey(
   topicKey: string
 ): Promise<TopicPostWithAuthor[]> {
   const results = await selectPostsWithAuthor()
-    .where(liveTopLevelPosts(topicType, topicKey))
+    .where(liveTopLevelPosts(topicType, eq(topicPosts.topicKey, topicKey)))
     .orderBy(desc(topicPosts.createdAt));
 
   return toPostsWithAuthor(results);
@@ -147,7 +131,7 @@ export async function getPostCountByTopicKey(
   topicType: TopicType,
   topicKey: string
 ): Promise<number> {
-  return countRows(topicPosts, liveTopLevelPosts(topicType, topicKey));
+  return countRows(topicPosts, liveTopLevelPosts(topicType, eq(topicPosts.topicKey, topicKey)));
 }
 
 /**
@@ -177,7 +161,7 @@ export async function getPostsWithReplyMetaPaginatedByTopicKey(
 
   // For 'new' sort, use SQL-level pagination (posts already ordered by createdAt DESC)
   const results = await selectPostsWithAuthor()
-    .where(liveTopLevelPosts(topicType, topicKey))
+    .where(liveTopLevelPosts(topicType, eq(topicPosts.topicKey, topicKey)))
     .orderBy(desc(topicPosts.createdAt))
     .limit(limit)
     .offset(offset);

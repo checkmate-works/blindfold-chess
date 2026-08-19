@@ -1,9 +1,10 @@
 import type { MetadataRoute } from 'next';
 
 import { SUPPORTED_LOCALES } from '@/config';
-import { and, eq, isNull } from 'drizzle-orm';
 
 import { db, topicPosts } from '@/lib/db';
+
+import { liveTopLevelPosts } from '@/app/[locale]/(public)/topics/_lib/post-filters';
 
 import { BASE_URL, buildSitemapSection, generateAlternates } from './shared';
 
@@ -13,13 +14,7 @@ export async function buildOpeningTopicEntries(now: Date): Promise<MetadataRoute
     const openingTopics = await db
       .selectDistinct({ topicKey: topicPosts.topicKey })
       .from(topicPosts)
-      .where(
-        and(
-          eq(topicPosts.topicType, 'opening'),
-          isNull(topicPosts.parentId),
-          isNull(topicPosts.deletedAt)
-        )
-      );
+      .where(liveTopLevelPosts('opening'));
 
     for (const { topicKey } of openingTopics) {
       const path = `/topics/openings/${topicKey}`;
@@ -41,13 +36,7 @@ export async function buildSquareTopicEntries(now: Date): Promise<MetadataRoute.
     const squareTopics = await db
       .selectDistinct({ topicKey: topicPosts.topicKey })
       .from(topicPosts)
-      .where(
-        and(
-          eq(topicPosts.topicType, 'square'),
-          isNull(topicPosts.parentId),
-          isNull(topicPosts.deletedAt)
-        )
-      );
+      .where(liveTopLevelPosts('square'));
 
     for (const { topicKey } of squareTopics) {
       const path = `/topics/squares/${topicKey}`;
