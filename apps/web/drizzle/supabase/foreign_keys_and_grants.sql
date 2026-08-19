@@ -164,6 +164,29 @@ GRANT SELECT ON TABLE public.topic_posts TO anon;
 REVOKE UPDATE, DELETE ON TABLE public.topic_posts FROM authenticated;
 
 -- =============================================================================
+-- post_game_embed_attachments (1:0..1 extension of topic_posts)
+-- =============================================================================
+
+-- Until 2026-08 this table had no entry here and rode on the wide default
+-- privileges (full CRUD to anon/authenticated) that Supabase's Postgres image
+-- baked in when the production database was initialised. Newer images grant
+-- no data privileges by default, and default privileges are stamped at
+-- initialisation (they survive pg_upgrade), so a freshly initialised database
+-- exposed nothing through PostgREST while production exposed everything RLS
+-- allowed. Declare the intended surface so both derive it from this file, not
+-- from when they were initialised. Authors may attach and detach an embed on
+-- their own post; the RLS policies scope both to the post owner.
+-- Remaining tables still riding on the old defaults: GitHub issue #168.
+GRANT SELECT, INSERT, DELETE ON TABLE public.post_game_embed_attachments TO authenticated;
+GRANT SELECT ON TABLE public.post_game_embed_attachments TO anon;
+-- Embed attachments are immutable once created (rls_policies.sql declares no
+-- UPDATE policy), and no write is anon's to make (every write policy keys on
+-- auth.uid()). Databases initialised before the default-privilege change
+-- handed all of these out; withdraw them.
+REVOKE UPDATE ON TABLE public.post_game_embed_attachments FROM authenticated, anon;
+REVOKE INSERT, DELETE ON TABLE public.post_game_embed_attachments FROM anon;
+
+-- =============================================================================
 -- moderation_actions
 -- =============================================================================
 

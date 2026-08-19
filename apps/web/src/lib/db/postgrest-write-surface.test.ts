@@ -110,6 +110,9 @@ const OWNER_INSERT_NEVER_UPDATE = [
   // `username` (ban-evasion hold), `banned_at`, `deleted_at` and
   // `hidden_from_leaderboard` are not the user's to set.
   'profiles',
+  // Immutable once created: changing an embed is delete + re-insert, both of
+  // which the RLS policies scope to the post owner.
+  'post_game_embed_attachments',
 ] as const;
 
 /**
