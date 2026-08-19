@@ -1,10 +1,8 @@
 'use client';
 
-import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { BoardSymmetryProblem } from '@blindfold-chess/features/board-symmetry';
 
-import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
-import { TrainingChallengeCTA } from '@/app/[locale]/(public)/practice/(challenge)/_components/TrainingChallengeCTA';
+import { TrainingFooter } from '@/app/[locale]/(public)/practice/(challenge)/_components/TrainingFooter';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { BoardSymmetryQuestionPanel } from '../../_components/BoardSymmetryQuestionPanel';
@@ -38,7 +36,6 @@ export function BoardSymmetryTrainingPlaying({
   onEndTraining,
   locale,
 }: Props) {
-  const tp = useTranslations('practice');
   const isDisabled = isProcessing;
 
   return (
@@ -59,18 +56,10 @@ export function BoardSymmetryTrainingPlaying({
         </div>
       </div>
 
-      <ScoreCounter correct={correctCount} incorrect={incorrectCount} className="mt-8" />
-
-      <div className="mt-6 text-center">
-        <button
-          onClick={onEndTraining}
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          {tp('endTraining')}
-        </button>
-      </div>
-
-      <TrainingChallengeCTA
+      <TrainingFooter
+        correct={correctCount}
+        incorrect={incorrectCount}
+        onEndTraining={onEndTraining}
         challengeHref={`/${locale}/practice/board-symmetry/challenge/session`}
       />
     </div>

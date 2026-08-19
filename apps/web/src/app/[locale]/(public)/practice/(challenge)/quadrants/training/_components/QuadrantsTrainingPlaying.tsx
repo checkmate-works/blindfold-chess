@@ -4,8 +4,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import type { QuadrantId, QuadrantQuestion } from '@blindfold-chess/features/quadrants';
 import { getCorrectQuadrant } from '@blindfold-chess/features/quadrants';
 
-import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
-import { TrainingChallengeCTA } from '@/app/[locale]/(public)/practice/(challenge)/_components/TrainingChallengeCTA';
+import { TrainingFooter } from '@/app/[locale]/(public)/practice/(challenge)/_components/TrainingFooter';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import QuadrantBoard from '../../_components/QuadrantBoard';
@@ -37,7 +36,6 @@ export function QuadrantsTrainingPlaying({
   locale,
 }: Props) {
   const t = useTranslations('practice.quadrantAnchors');
-  const tp = useTranslations('practice');
   const tQuiz = useTranslations('practice.coordinateQuiz');
 
   const correctQuadrant =
@@ -87,18 +85,12 @@ export function QuadrantsTrainingPlaying({
         </div>
       </div>
 
-      <ScoreCounter correct={correctCount} incorrect={incorrectCount} className="mt-8" />
-
-      <div className="mt-6 text-center">
-        <button
-          onClick={onEndTraining}
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          {tp('endTraining')}
-        </button>
-      </div>
-
-      <TrainingChallengeCTA challengeHref={`/${locale}/practice/quadrants/challenge`} />
+      <TrainingFooter
+        correct={correctCount}
+        incorrect={incorrectCount}
+        onEndTraining={onEndTraining}
+        challengeHref={`/${locale}/practice/quadrants/challenge`}
+      />
     </div>
   );
 }

@@ -1,10 +1,8 @@
 'use client';
 
-import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { Square } from '@blindfold-chess/types';
 
-import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
-import { TrainingChallengeCTA } from '@/app/[locale]/(public)/practice/(challenge)/_components/TrainingChallengeCTA';
+import { TrainingFooter } from '@/app/[locale]/(public)/practice/(challenge)/_components/TrainingFooter';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { CoordinateQuizGameBoard } from '../../_components/CoordinateQuizGameBoard';
@@ -33,8 +31,6 @@ export function CoordinateQuizTrainingPlaying({
   onSquareClick,
   onEndTraining,
 }: Props) {
-  const tp = useTranslations('practice');
-
   return (
     <div>
       <div className="-mx-4 p-8 text-center overflow-hidden sm:mx-0">
@@ -52,19 +48,12 @@ export function CoordinateQuizTrainingPlaying({
         </div>
       </div>
 
-      <ScoreCounter correct={correctAnswers} incorrect={wrongAnswers} className="mt-4" />
-
-      <div className="mt-6 text-center">
-        <button
-          onClick={onEndTraining}
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          {tp('endTraining')}
-        </button>
-      </div>
-
-      <TrainingChallengeCTA
+      <TrainingFooter
+        correct={correctAnswers}
+        incorrect={wrongAnswers}
+        onEndTraining={onEndTraining}
         challengeHref={`/${locale}/practice/coordinate-quiz/challenge/session`}
+        scoreClassName="mt-4"
       />
     </div>
   );
