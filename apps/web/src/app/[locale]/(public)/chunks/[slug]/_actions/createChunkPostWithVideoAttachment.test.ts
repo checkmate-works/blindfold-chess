@@ -83,8 +83,6 @@ vi.mock('next/navigation', () => ({
   },
 }));
 
-vi.mock('next/cache', () => ({ revalidateTag: vi.fn() }));
-
 vi.mock('@/lib/points', () => ({
   grantPointsForPost: vi.fn().mockResolvedValue({ pointEventId: 'pe-1', amount: 3 }),
   clawbackPointsForPost: vi.fn().mockResolvedValue(undefined),

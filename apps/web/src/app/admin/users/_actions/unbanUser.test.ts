@@ -67,10 +67,6 @@ vi.mock('@/lib/supabase/admin', () => ({
   }),
 }));
 
-vi.mock('next/cache', () => ({
-  revalidatePath: vi.fn(),
-}));
-
 vi.mock('@/lib/security/client-ip');
 
 const adminUserId = 'admin-00000000-0000-0000-0000-000000000001';

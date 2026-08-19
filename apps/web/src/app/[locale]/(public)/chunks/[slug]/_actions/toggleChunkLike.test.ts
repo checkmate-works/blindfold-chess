@@ -65,10 +65,6 @@ vi.mock('@/lib/db', () => {
   };
 });
 
-vi.mock('next/cache', () => ({
-  revalidatePath: vi.fn(),
-}));
-
 vi.mock('@/lib/chunks/queries', () => ({
   getChunkBySlug: (slug: string) => mockGetChunkBySlug(slug),
 }));

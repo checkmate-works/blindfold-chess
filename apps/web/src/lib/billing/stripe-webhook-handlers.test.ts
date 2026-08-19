@@ -52,10 +52,6 @@ vi.mock('@/lib/billing/stripe', () => ({
   getStripe: () => mockStripe,
 }));
 
-vi.mock('next/cache', () => ({
-  revalidateTag: vi.fn(),
-}));
-
 const mockCaptureMessage = vi.fn();
 vi.mock('@sentry/nextjs', () => ({
   captureMessage: (...args: unknown[]) => mockCaptureMessage(...args),

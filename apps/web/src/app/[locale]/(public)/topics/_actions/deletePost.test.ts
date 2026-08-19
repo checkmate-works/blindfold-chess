@@ -95,11 +95,6 @@ vi.mock('@/lib/security/rate-limit', () => ({
   },
 }));
 
-vi.mock('next/cache', () => ({
-  revalidatePath: vi.fn(),
-  revalidateTag: vi.fn(),
-}));
-
 const testUserId = 'user-00000000-0000-0000-0000-000000000001';
 const otherUserId = 'user-00000000-0000-0000-0000-000000000002';
 const testPostId = 'post-00000000-0000-0000-0000-000000000001';

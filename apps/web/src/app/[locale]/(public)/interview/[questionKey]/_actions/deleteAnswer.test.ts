@@ -47,10 +47,6 @@ vi.mock('@/lib/db', () => {
   };
 });
 
-vi.mock('next/cache', () => ({
-  revalidatePath: vi.fn(),
-}));
-
 const testUserId = 'user-00000000-0000-0000-0000-000000000001';
 const testAnswerId = '11111111-1111-1111-1111-111111111111';
 const testQuestionKey = 'favorite_opening';

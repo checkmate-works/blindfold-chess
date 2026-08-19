@@ -50,10 +50,6 @@ vi.mock('@/lib/security/rate-limit', () => ({
   },
 }));
 
-vi.mock('next/cache', () => ({
-  revalidatePath: vi.fn(),
-}));
-
 // Cuts the request-layer cookie chain (next/headers, billing, grants) that
 // the shared position-mutation lib pulls in via its dan-promotion cookie
 // refresh; the helper itself is unit-tested in

@@ -16,10 +16,6 @@ const mockCheckRateLimit = vi.fn();
 const mockSaveChallengeResult = vi.fn();
 const mockDeriveLeaderboardKey = vi.fn();
 
-vi.mock('next/cache', () => ({
-  revalidateTag: vi.fn(),
-}));
-
 vi.mock('@/lib/supabase/server');
 
 vi.mock('@/lib/moderation/ban');

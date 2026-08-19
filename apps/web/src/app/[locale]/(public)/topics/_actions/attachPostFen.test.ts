@@ -13,10 +13,6 @@ const mockCheckRateLimit = vi.fn();
 
 vi.mock('@/lib/users/activity-log');
 
-vi.mock('next/cache', () => ({
-  revalidatePath: vi.fn(),
-}));
-
 vi.mock('@/lib/supabase/server');
 
 vi.mock('@/lib/db', () => ({

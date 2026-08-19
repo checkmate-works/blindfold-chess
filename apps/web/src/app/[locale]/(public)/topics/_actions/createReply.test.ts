@@ -102,10 +102,6 @@ vi.mock('@/lib/security/rate-limit', () => ({
   },
 }));
 
-vi.mock('next/cache', () => ({
-  revalidatePath: vi.fn(),
-}));
-
 const mockRedirect = vi.fn();
 vi.mock('next/navigation', () => ({
   redirect: (...args: unknown[]) => {
