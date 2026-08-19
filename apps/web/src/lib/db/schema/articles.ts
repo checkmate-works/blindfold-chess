@@ -17,32 +17,14 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core';
 
-/**
- * @design updated_at update policy
- *
- * For every table with an `updated_at` column, the timestamp is refreshed
- * automatically by Drizzle via `.$onUpdateFn(() => new Date())`. When adding a
- * new table that has an `updated_at` column, always attach this callback.
- *
- * Exceptions:
- * - `profiles`: updated by a Supabase BEFORE UPDATE trigger
- *   (`profiles_updated_at`). Because `profiles` can be written through
- *   internal Supabase paths that go via `auth.users` (e.g. auth hooks), the
- *   timestamp update is centralized at the DB trigger layer instead of
- *   `$onUpdateFn`. See the `@design` note on the `profiles` table
- *   definition for details.
- *
- * Existing call sites still contain several explicit
- * `set({ updatedAt: new Date() })` statements. They are redundant but
- * harmless and act as a fail-safe if an UPDATE path that bypasses Drizzle
- * is introduced in the future.
- */
+import { createdAtOnly, timestamps } from './columns';
+
 // Article Categories
 export const articleCategories = pgTable('article_categories', {
   id: uuid('id').primaryKey().defaultRandom(),
   slug: varchar('slug', { length: 100 }).unique().notNull(),
   displayOrder: integer('display_order').notNull().default(0),
-  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  ...createdAtOnly,
 });
 
 export type ArticleCategory = typeof articleCategories.$inferSelect;
@@ -58,11 +40,7 @@ export const articleCategoryTranslations = pgTable(
       .references(() => articleCategories.id, { onDelete: 'cascade' }),
     locale: varchar('locale', { length: 10 }).notNull(), // BCP 47
     name: varchar('name', { length: 100 }).notNull(),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true })
-      .defaultNow()
-      .notNull()
-      .$onUpdateFn(() => new Date()),
+    ...timestamps,
   },
   (table) => [unique('uq_category_translation_locale').on(table.categoryId, table.locale)]
 );
@@ -89,11 +67,7 @@ export const articles = pgTable(
     icon: varchar('icon', { length: 10 }),
     pinnedAt: timestamp('pinned_at', { withTimezone: true }),
     publishedAt: timestamp('published_at', { withTimezone: true }),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true })
-      .defaultNow()
-      .notNull()
-      .$onUpdateFn(() => new Date()),
+    ...timestamps,
   },
   (table) => [
     unique('uq_articles_slug_locale').on(table.slug, table.locale),
@@ -117,7 +91,7 @@ export const articleImages = pgTable(
     altText: varchar('alt_text', { length: 255 }),
     contentType: varchar('content_type', { length: 50 }).notNull(),
     fileSize: integer('file_size').notNull(),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    ...createdAtOnly,
   },
   (table) => [index('idx_article_images_article').on(table.articleId)]
 );
@@ -129,7 +103,7 @@ export type NewArticleImage = typeof articleImages.$inferInsert;
 export const tags = pgTable('tags', {
   id: uuid('id').primaryKey().defaultRandom(),
   slug: varchar('slug', { length: 100 }).unique().notNull(),
-  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  ...createdAtOnly,
 });
 
 export type Tag = typeof tags.$inferSelect;
@@ -185,11 +159,7 @@ export const announcements = pgTable(
     showAsBanner: boolean('show_as_banner').default(false).notNull(),
     pinnedAt: timestamp('pinned_at', { withTimezone: true }),
     publishedAt: timestamp('published_at', { withTimezone: true }),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true })
-      .defaultNow()
-      .notNull()
-      .$onUpdateFn(() => new Date()),
+    ...timestamps,
   },
   (table) => [
     unique('uq_announcements_slug_locale').on(table.slug, table.locale),

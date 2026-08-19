@@ -4,26 +4,8 @@
 // Stripe customer linkage and subscription lifecycle state.
 import { index, pgTable, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
 
-/**
- * @design updated_at update policy
- *
- * For every table with an `updated_at` column, the timestamp is refreshed
- * automatically by Drizzle via `.$onUpdateFn(() => new Date())`. When adding a
- * new table that has an `updated_at` column, always attach this callback.
- *
- * Exceptions:
- * - `profiles`: updated by a Supabase BEFORE UPDATE trigger
- *   (`profiles_updated_at`). Because `profiles` can be written through
- *   internal Supabase paths that go via `auth.users` (e.g. auth hooks), the
- *   timestamp update is centralized at the DB trigger layer instead of
- *   `$onUpdateFn`. See the `@design` note on the `profiles` table
- *   definition for details.
- *
- * Existing call sites still contain several explicit
- * `set({ updatedAt: new Date() })` statements. They are redundant but
- * harmless and act as a fail-safe if an UPDATE path that bypasses Drizzle
- * is introduced in the future.
- */
+import { createdAtOnly, timestamps } from './columns';
+
 /**
  * Stripe Customers -- Supabase user to Stripe customer mapping.
  *
@@ -46,7 +28,7 @@ export const stripeCustomers = pgTable('stripe_customers', {
   id: uuid('id').primaryKey().defaultRandom(),
   userId: uuid('user_id').unique().notNull(), // references auth.users -- FK defined in custom SQL
   stripeCustomerId: varchar('stripe_customer_id', { length: 255 }).unique().notNull(),
-  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  ...createdAtOnly,
 });
 
 export type StripeCustomer = typeof stripeCustomers.$inferSelect;
@@ -102,11 +84,7 @@ export const subscriptions = pgTable(
     cancelAt: timestamp('cancel_at', { withTimezone: true }),
     currentPeriodStart: timestamp('current_period_start', { withTimezone: true }).notNull(),
     currentPeriodEnd: timestamp('current_period_end', { withTimezone: true }).notNull(),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true })
-      .defaultNow()
-      .notNull()
-      .$onUpdateFn(() => new Date()),
+    ...timestamps,
   },
   (table) => [
     index('idx_subscriptions_user').on(table.userId),

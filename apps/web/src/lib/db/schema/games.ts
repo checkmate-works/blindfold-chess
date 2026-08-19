@@ -13,17 +13,7 @@
 import type { FinalGameOutcome, Side } from '@blindfold-chess/types';
 import { sql } from 'drizzle-orm';
 import type { AnyPgColumn } from 'drizzle-orm/pg-core';
-import {
-  index,
-  integer,
-  jsonb,
-  pgTable,
-  text,
-  timestamp,
-  unique,
-  uuid,
-  varchar,
-} from 'drizzle-orm/pg-core';
+import { index, integer, jsonb, pgTable, text, unique, uuid, varchar } from 'drizzle-orm/pg-core';
 
 import type { AiReviewContent, AnalysisSummaryStats, ReviewMoment } from '@/lib/ai-review/types';
 import type { EngineConfig } from '@/lib/engines';
@@ -37,6 +27,7 @@ import type {
 import { uuidv7 } from '@/lib/uuidv7';
 
 import { chunks } from './chunks';
+import { createdAtOnly, softDeleteTimestamp, timestamps } from './columns';
 
 /**
  * Games — server-persisted snapshot of a blindfold game shared by a user.
@@ -157,8 +148,8 @@ export const games = pgTable(
 
     // --- Lifecycle ---
     status: varchar('status', { length: 20 }).notNull().default('public'),
-    deletedAt: timestamp('deleted_at', { withTimezone: true }),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    ...softDeleteTimestamp,
+    ...createdAtOnly,
   },
   (table) => [
     index('idx_games_author').on(table.authorId),
@@ -196,7 +187,7 @@ export const gameTokens = pgTable('game_tokens', {
     .references(() => games.id, { onDelete: 'cascade' }),
   /** Hash of the client-held secret (raw token is never stored). */
   tokenHash: text('token_hash').notNull(),
-  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  ...createdAtOnly,
 });
 
 export type GameToken = typeof gameTokens.$inferSelect;
@@ -250,12 +241,8 @@ export const gameComments = pgTable(
     // references auth.users — FK defined in custom SQL (ON DELETE SET NULL).
     authorId: uuid('author_id'),
     body: text('body').notNull(),
-    deletedAt: timestamp('deleted_at', { withTimezone: true }),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true })
-      .defaultNow()
-      .notNull()
-      .$onUpdateFn(() => new Date()),
+    ...softDeleteTimestamp,
+    ...timestamps,
   },
   (table) => [
     index('idx_game_comments_game_ply').on(table.gameId, table.ply),
@@ -299,7 +286,7 @@ export const gameChunks = pgTable(
       .references(() => chunks.id, { onDelete: 'restrict' }),
     // references auth.users — FK defined in custom SQL (ON DELETE SET NULL).
     suggestedById: uuid('suggested_by_id'),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    ...createdAtOnly,
   },
   (table) => [
     // One link per (game, move, chunk); a second member "linking" the same
@@ -367,7 +354,7 @@ export const gameAiReviews = pgTable(
     model: varchar('model', { length: 100 }).notNull(),
     // references auth.users — FK defined in custom SQL (ON DELETE SET NULL).
     generatedById: uuid('generated_by_id'),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    ...createdAtOnly,
   },
   (table) => [
     // Cache key + race guard + future charge-idempotency anchor (see TSDoc).

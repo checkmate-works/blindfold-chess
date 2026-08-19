@@ -13,33 +13,14 @@ import {
   pgTable,
   smallint,
   text,
-  timestamp,
   unique,
   uniqueIndex,
   uuid,
   varchar,
 } from 'drizzle-orm/pg-core';
 
-/**
- * @design updated_at update policy
- *
- * For every table with an `updated_at` column, the timestamp is refreshed
- * automatically by Drizzle via `.$onUpdateFn(() => new Date())`. When adding a
- * new table that has an `updated_at` column, always attach this callback.
- *
- * Exceptions:
- * - `profiles`: updated by a Supabase BEFORE UPDATE trigger
- *   (`profiles_updated_at`). Because `profiles` can be written through
- *   internal Supabase paths that go via `auth.users` (e.g. auth hooks), the
- *   timestamp update is centralized at the DB trigger layer instead of
- *   `$onUpdateFn`. See the `@design` note on the `profiles` table
- *   definition for details.
- *
- * Existing call sites still contain several explicit
- * `set({ updatedAt: new Date() })` statements. They are redundant but
- * harmless and act as a fail-safe if an UPDATE path that bypasses Drizzle
- * is introduced in the future.
- */
+import { createdAtOnly, softDeleteTimestamp, timestamps } from './columns';
+
 /**
  * Topic Posts — UGC (User Generated Content) for chess concepts.
  *
@@ -145,12 +126,8 @@ export const topicPosts = pgTable(
      * single source of truth.
      */
     imageAttachmentCount: smallint('image_attachment_count').notNull().default(0),
-    deletedAt: timestamp('deleted_at', { withTimezone: true }),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true })
-      .defaultNow()
-      .notNull()
-      .$onUpdateFn(() => new Date()),
+    ...softDeleteTimestamp,
+    ...timestamps,
   },
   (table) => [
     // Partial index — every production read of `topic_posts` filters
@@ -212,7 +189,7 @@ export const likes = pgTable(
     userId: uuid('user_id'), // references auth.users — FK defined in custom SQL
     targetType: varchar('target_type', { length: 50 }).notNull(),
     targetId: uuid('target_id').notNull(),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    ...createdAtOnly,
   },
   (table) => [
     unique('uq_like').on(table.userId, table.targetType, table.targetId),
@@ -260,7 +237,7 @@ export const topicPostRatings = pgTable(
       .references(() => topicPosts.id, { onDelete: 'cascade' }),
     preferenceRating: smallint('preference_rating'),
     proficiencyRating: smallint('proficiency_rating'),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    ...createdAtOnly,
   },
   (table) => [
     check(
@@ -436,7 +413,7 @@ export const postGamePgnAttachments = pgTable(
     // See `apps/web/src/lib/games/chesscom-attribution.ts` for the parser.
     attributionPlatform: varchar('attribution_platform', { length: 20 }),
     attributionPath: varchar('attribution_path', { length: 160 }),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    ...createdAtOnly,
   },
   (table) => [
     check(
@@ -557,7 +534,7 @@ export const postGameEmbedAttachments = pgTable(
     sourceUrl: varchar('source_url', { length: 512 }),
     attributionPlatform: varchar('attribution_platform', { length: 20 }),
     attributionPath: varchar('attribution_path', { length: 160 }),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    ...createdAtOnly,
   },
   (table) => [
     check(
@@ -685,7 +662,7 @@ export const postImageAttachments = pgTable(
     height: integer('height').notNull(),
     altText: varchar('alt_text', { length: 255 }),
     displayOrder: smallint('display_order').notNull().default(0),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    ...createdAtOnly,
   },
   (table) => [
     check(
@@ -804,7 +781,7 @@ export const postFenAttachments = pgTable(
      * keep the sanitizer cap aligned across the attachment family.
      */
     caption: varchar('caption', { length: 200 }),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    ...createdAtOnly,
   },
   (table) => [
     check(
@@ -903,7 +880,7 @@ export const postVideoAttachments = pgTable(
      * oEmbed flow that may want to cache a CDN-hosted thumbnail.
      */
     thumbnailUrl: varchar('thumbnail_url', { length: 1024 }),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    ...createdAtOnly,
   },
   (table) => [
     check('post_video_attachments_chk_provider', sql`${table.provider} IN ('youtube')`),

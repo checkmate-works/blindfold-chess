@@ -5,28 +5,9 @@
 // solution lines.
 import { index, jsonb, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 
+import { createdAtOnly } from './columns';
 import { positions } from './positions';
 
-/**
- * @design updated_at update policy
- *
- * For every table with an `updated_at` column, the timestamp is refreshed
- * automatically by Drizzle via `.$onUpdateFn(() => new Date())`. When adding a
- * new table that has an `updated_at` column, always attach this callback.
- *
- * Exceptions:
- * - `profiles`: updated by a Supabase BEFORE UPDATE trigger
- *   (`profiles_updated_at`). Because `profiles` can be written through
- *   internal Supabase paths that go via `auth.users` (e.g. auth hooks), the
- *   timestamp update is centralized at the DB trigger layer instead of
- *   `$onUpdateFn`. See the `@design` note on the `profiles` table
- *   definition for details.
- *
- * Existing call sites still contain several explicit
- * `set({ updatedAt: new Date() })` statements. They are redundant but
- * harmless and act as a fail-safe if an UPDATE path that bypasses Drizzle
- * is introduced in the future.
- */
 /**
  * Puzzle Solutions — correct move sequences for puzzle-type positions.
  *
@@ -94,7 +75,7 @@ export const puzzleSolutions = pgTable(
       .references(() => positions.id, { onDelete: 'cascade' }),
     solutionLine: text('solution_line'), // archive of pre-migration denormalized line; new rows leave NULL
     solutionMoves: jsonb('solution_moves').$type<PuzzleSolutionMove[]>().notNull().default([]),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    ...createdAtOnly,
   },
   (table) => [index('idx_puzzle_solutions_position').on(table.positionId)]
 );

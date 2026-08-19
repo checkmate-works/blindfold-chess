@@ -9,32 +9,13 @@ import {
   integer,
   jsonb,
   pgTable,
-  timestamp,
   unique,
   uuid,
   varchar,
 } from 'drizzle-orm/pg-core';
 
-/**
- * @design updated_at update policy
- *
- * For every table with an `updated_at` column, the timestamp is refreshed
- * automatically by Drizzle via `.$onUpdateFn(() => new Date())`. When adding a
- * new table that has an `updated_at` column, always attach this callback.
- *
- * Exceptions:
- * - `profiles`: updated by a Supabase BEFORE UPDATE trigger
- *   (`profiles_updated_at`). Because `profiles` can be written through
- *   internal Supabase paths that go via `auth.users` (e.g. auth hooks), the
- *   timestamp update is centralized at the DB trigger layer instead of
- *   `$onUpdateFn`. See the `@design` note on the `profiles` table
- *   definition for details.
- *
- * Existing call sites still contain several explicit
- * `set({ updatedAt: new Date() })` statements. They are redundant but
- * harmless and act as a fail-safe if an UPDATE path that bypasses Drizzle
- * is introduced in the future.
- */
+import { createdAtOnly, timestamps } from './columns';
+
 /**
  * Self-served ad inventory ("creatives").
  *
@@ -90,11 +71,7 @@ export const adCreatives = pgTable(
     targetCountry: varchar('target_country', { length: 2 }),
     /** Kind-specific fields — see the `*Payload` types in `@/lib/ads/payload`. */
     payload: jsonb('payload').notNull(),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true })
-      .defaultNow()
-      .notNull()
-      .$onUpdateFn(() => new Date()),
+    ...timestamps,
   },
   (table) => [index('idx_ad_creatives_slot_active').on(table.slot, table.isActive)]
 );
@@ -115,7 +92,7 @@ export const notifications = pgTable(
     groupKey: varchar('group_key', { length: 255 }),
     metadata: jsonb('metadata').default({}),
     isRead: boolean('is_read').default(false).notNull(),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    ...createdAtOnly,
   },
   (table) => [
     index('idx_notifications_user_created').on(table.userId, table.createdAt),
@@ -170,7 +147,7 @@ export const notificationMutes = pgTable(
     id: uuid('id').primaryKey().defaultRandom(),
     userId: uuid('user_id').notNull(), // references auth.users — FK defined in custom SQL
     type: varchar('type', { length: 50 }).notNull(),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    ...createdAtOnly,
   },
   (table) => [
     unique('uq_notification_mute').on(table.userId, table.type),
