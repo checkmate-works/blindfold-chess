@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
+import { usePlyKeyboardNav } from '@/lib/board/use-ply-keyboard-nav';
+
 // Same pacing as PuzzleSolutionReplay / MoveSequenceMemorize, so playback
 // feels consistent across surfaces.
 const MOVE_INTERVAL_MS = 1000;
@@ -83,18 +85,10 @@ export function useReplayPlayback({
     setIsPlaying(target > 0);
   }, [target]);
 
-  // ←/→ step through the replay, the same keys the repertoire line viewer binds.
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      if (e.key === 'ArrowLeft') {
-        goTo(clampedPly - 1);
-      } else if (e.key === 'ArrowRight') {
-        goTo(clampedPly + 1);
-      }
-    }
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [clampedPly, goTo]);
+  usePlyKeyboardNav({
+    onPrev: () => goTo(clampedPly - 1),
+    onNext: () => goTo(clampedPly + 1),
+  });
 
   return {
     ply: clampedPly,

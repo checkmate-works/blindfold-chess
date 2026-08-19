@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
@@ -11,6 +11,7 @@ import type { FormattedPgnMove } from '@blindfold-chess/features/chess-core';
 import type { Side } from '@blindfold-chess/types';
 import { HiChevronDown, HiChevronRight, HiChevronUp } from 'react-icons/hi2';
 
+import { usePlyKeyboardNav } from '@/lib/board/use-ply-keyboard-nav';
 import { lineFallbackTitle } from '@/lib/repertoires/line-display-name';
 
 import { HorizontalMoveList } from '@/app/[locale]/(public)/games/play/_components/HorizontalMoveList';
@@ -76,17 +77,10 @@ export function RepertoireLineViewer({ lines, side, repertoireId, locale, isOwne
   const maxPly = (line?.positions.length ?? 1) - 1;
   const clampedPly = Math.min(ply, maxPly);
 
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      if (e.key === 'ArrowLeft') {
-        setPly((p) => Math.max(0, p - 1));
-      } else if (e.key === 'ArrowRight') {
-        setPly((p) => Math.min(maxPly, p + 1));
-      }
-    }
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [maxPly]);
+  usePlyKeyboardNav({
+    onPrev: () => setPly((p) => Math.max(0, p - 1)),
+    onNext: () => setPly((p) => Math.min(maxPly, p + 1)),
+  });
 
   function toggleExpand(index: number) {
     setExpandedIndex((prev) => (prev === index ? null : index));
