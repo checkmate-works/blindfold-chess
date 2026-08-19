@@ -35,7 +35,7 @@ Used by Supabase Auth for Google Sign-In. Without these variables, the authentic
 
 ```bash
 # Supabase project URL and Publishable key
-# Local development: Run `supabase start`, then `supabase status -o json` to retrieve API_URL and PUBLISHABLE_KEY
+# Local development: Run `pnpm supabase start`, then `pnpm supabase status -o json` to retrieve API_URL and PUBLISHABLE_KEY
 # Vercel/Production: synced by the Supabase-Vercel integration — do not enter
 #                    them by hand, or they stop tracking key rotation
 NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
@@ -43,7 +43,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 
 # Supabase service role key (server-side only)
 # Used for admin operations such as user management and bypassing RLS.
-# Local development: Run `supabase status -o json` and copy SECRET_KEY
+# Local development: Run `pnpm supabase status -o json` and copy SECRET_KEY
 # Production: Supabase Dashboard → Project Settings → API Keys → service_role
 # WARNING: Do NOT prefix with NEXT_PUBLIC_ — this key must never be exposed to the browser.
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key

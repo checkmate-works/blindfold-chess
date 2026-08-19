@@ -11,7 +11,7 @@ description: Build/launch/drive recipe for runtime-verifying apps/web changes en
   usually already has it running — probe `curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/en`
   first; a port clash just means reuse the running instance (it hot-reloads
   the working tree, so your uncommitted changes are live).
-- DB-backed pages need Supabase local (`supabase start` + `pnpm db:run-migrate`).
+- DB-backed pages need Supabase local (`pnpm supabase start` + `pnpm db:run-migrate`).
   Check with `psql postgresql://postgres:postgres@127.0.0.1:54322/postgres -c '\dt'`.
 
 ## Drive (headless browser)

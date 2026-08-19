@@ -13,7 +13,7 @@
  *
  * Required env in apps/web/.env.local:
  *   - NEXT_PUBLIC_SUPABASE_URL  (defaults to http://127.0.0.1:54321 if unset)
- *   - SUPABASE_SERVICE_ROLE_KEY (from `supabase status -o json`)
+ *   - SUPABASE_SERVICE_ROLE_KEY (from `pnpm supabase status -o json`)
  *   - DATABASE_URL / POSTGRES_URL (defaults to local Supabase Postgres)
  */
 import { createClient } from '@supabase/supabase-js';
@@ -41,7 +41,7 @@ if (!serviceKey) {
   console.error(
     'dev-seed: SUPABASE_SERVICE_ROLE_KEY is required.\n' +
       '          Add it to apps/web/.env.local using the SECRET_KEY value\n' +
-      '          from `supabase status -o json`.'
+      '          from `pnpm supabase status -o json`.'
   );
   process.exit(1);
 }
