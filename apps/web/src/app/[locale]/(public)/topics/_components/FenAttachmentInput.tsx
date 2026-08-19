@@ -8,6 +8,8 @@ import { STARTING_FEN } from '@blindfold-chess/features/chess-core/fen';
 import { MiniBoard } from '@/lib/positions/ui/MiniBoard';
 import { FEN_MAX_LENGTH } from '@/lib/post-fens/constants';
 
+import type { ValidationStatus } from './attachment-validation-status';
+
 /**
  * Discriminated mode reported to the parent.
  *
@@ -20,13 +22,6 @@ import { FEN_MAX_LENGTH } from '@/lib/post-fens/constants';
  */
 export type FenAttachmentMode =
   { kind: 'empty' } | { kind: 'fen'; fen: string; caption: string | null; valid: boolean };
-
-/**
- * Validation status surfaced to the parent. See AttachmentInput.tsx
- * for the contract — same three-state union, used by AttachmentModal
- * to disable the Apply button when the active tab is in `error`.
- */
-export type ValidationStatus = 'empty' | 'ok' | 'error';
 
 type Props = {
   /** Notify the parent when the input becomes non-empty. */

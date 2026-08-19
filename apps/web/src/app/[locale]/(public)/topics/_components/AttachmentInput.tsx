@@ -9,6 +9,7 @@ import { detectAttachmentInput } from '@/lib/games/validation';
 import { PgnDiagnosisHint } from '@/app/[locale]/_components/PgnDiagnosisHint';
 
 import { pgnSubModeError, urlSubModeError } from '../_lib/attachment-sub-mode-error';
+import type { ValidationStatus } from './attachment-validation-status';
 
 /**
  * Discriminated mode reported to the parent form.
@@ -38,18 +39,6 @@ import { pgnSubModeError, urlSubModeError } from '../_lib/attachment-sub-mode-er
  */
 export type AttachmentInputMode =
   { kind: 'empty' } | { kind: 'pgn'; pgn: string; anonymize: boolean };
-
-/**
- * Validation status surfaced to the parent so it can disable the
- * Apply button when the active tab has a known-bad input.
- *
- *   - `empty` — nothing meaningful entered (Apply allowed; emits
- *     `{ kind: 'empty' }` mode = no attachment row).
- *   - `ok`    — input parses to a kind the server can accept (Apply
- *     allowed; emits a non-empty mode).
- *   - `error` — client detected a known-bad input (Apply disabled).
- */
-export type ValidationStatus = 'empty' | 'ok' | 'error';
 
 type Props = {
   /** Notify the parent form that the user typed in the attachment field. */
