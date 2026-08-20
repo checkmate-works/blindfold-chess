@@ -19,7 +19,11 @@ export function SquareColorsSetup({ locale }: Props) {
 
   return (
     <div>
-      <PracticeHowToPlayCard title={t('howToPlayTitle')} description={t('howToPlayDescription')}>
+      <PracticeHowToPlayCard
+        title={t('howToPlayTitle')}
+        description={t('howToPlayDescription')}
+        variant="plain"
+      >
         <div className="text-4xl font-bold text-foreground mb-3">e4</div>
         <div className="max-w-[200px] mx-auto">
           <SquareColorAnswerButtons
