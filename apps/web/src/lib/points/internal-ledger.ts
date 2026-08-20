@@ -107,16 +107,10 @@ export async function debitSpendable(
     return { ok: false, error: 'insufficient_balance' };
   }
 
-  let remaining = input.amount;
   const pointEventIds: string[] = [];
   let anyInserted = false;
 
-  for (const category of SPENDABLE_CONSUME_ORDER) {
-    if (remaining === 0) break;
-    const available = byCategory.get(category) ?? 0;
-    if (available <= 0) continue;
-    const take = Math.min(remaining, available);
-
+  for (const { category, take } of planSpendableDebits(byCategory, input.amount)) {
     const movement = {
       userId: input.userId,
       delta: -take,
@@ -134,10 +128,47 @@ export async function debitSpendable(
       pointEventIds.push(result.pointEventId);
       anyInserted = true;
     }
-    remaining -= take;
   }
 
   return { ok: true, charged: input.amount, pointEventIds, noop: !anyInserted };
+}
+
+/** One bucket to debit, and how much to take from it. */
+export type SpendableDebit = { category: PointCategory; take: number };
+
+/**
+ * Split `amount` across the spendable buckets, walking
+ * `SPENDABLE_CONSUME_ORDER` (`earned` → `promotional` → `purchased`) and
+ * taking as much as each bucket holds until the amount is covered. Buckets
+ * that are empty — or reached after the amount is covered — are omitted, so
+ * the returned list is exactly the ledger rows the caller will write.
+ *
+ * Pure, and separate from {@link debitSpendable} because that function does
+ * its splitting inside the locking transaction, interleaved with one insert
+ * per bucket: a mis-split silently over- or under-charges a user's coins and
+ * could otherwise only be caught with a full transaction fake.
+ *
+ * Callers must have confirmed sufficiency first (`debitSpendable` compares
+ * against the locked total); given less than `amount` in total, this returns
+ * the partial plan rather than failing.
+ */
+export function planSpendableDebits(
+  byCategory: ReadonlyMap<PointCategory, number>,
+  amount: number
+): SpendableDebit[] {
+  const plan: SpendableDebit[] = [];
+  let remaining = amount;
+
+  for (const category of SPENDABLE_CONSUME_ORDER) {
+    if (remaining === 0) break;
+    const available = byCategory.get(category) ?? 0;
+    if (available <= 0) continue;
+    const take = Math.min(remaining, available);
+    plan.push({ category, take });
+    remaining -= take;
+  }
+
+  return plan;
 }
 
 export type RecordPointMovementInput = {
