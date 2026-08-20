@@ -28,20 +28,19 @@ type Props<TStep extends string> = {
   namespace: string;
   /** Extra classes for the description paragraph (alignment, pre-wrap). */
   descriptionClassName?: string;
-  /**
-   * Drops the bordered card around the steps. The tutorial already sits inside
-   * the page panel, so the card is a second frame around the same content.
-   */
-  frameless?: boolean;
   /** The step's own illustration / interaction, between description and footer. */
   renderStep: (step: TStep) => ReactNode;
 };
 
 /**
- * The card shell every stepped practice tutorial is built from: progress dots,
- * the current step's title and description, the caller's body, and a footer
- * that walks Back / Next until the last step, where it offers the challenge and
+ * The shell every stepped practice tutorial is built from: progress dots, the
+ * current step's title and description, the caller's body, and a footer that
+ * walks Back / Next until the last step, where it offers the challenge and
  * training modes instead.
+ *
+ * It is deliberately unframed. The steps used to sit in a bordered card, but
+ * the tutorial already renders inside the page panel, so the reader saw two
+ * frames around one thing.
  *
  * Board-symmetry, route-planner and diagonal-quiz each carried their own copy
  * of this (dots, heading, board panel, footer, and the two `router.push`
@@ -58,7 +57,6 @@ export function SteppedTutorial<TStep extends string>({
   steps,
   namespace,
   descriptionClassName = '',
-  frameless = false,
   renderStep,
 }: Props<TStep>) {
   // next-intl derives its key types from a LITERAL namespace; this shell takes
@@ -83,73 +81,71 @@ export function SteppedTutorial<TStep extends string>({
 
   return (
     <div className="max-w-md mx-auto">
-      <div className={frameless ? '' : 'bg-card rounded-2xl p-6 border border-border'}>
-        {/* Progress Dots */}
-        <div className="flex justify-center gap-2 mb-6">
-          {steps.map((s, idx) => (
-            <div
-              key={s}
-              className={`w-2 h-2 rounded-full transition-colors ${
-                idx === currentIndex
-                  ? 'bg-primary'
-                  : idx < currentIndex
-                    ? 'bg-primary/50'
-                    : 'bg-muted'
-              }`}
-            />
-          ))}
-        </div>
-
-        <h3 className="text-xl font-bold text-center mb-4">{t(`steps.${step}.title`)}</h3>
-        <p className={`text-muted-foreground mb-6 min-h-[4.5rem] ${descriptionClassName}`}>
-          {t(`steps.${step}.description`)}
-        </p>
-
-        {renderStep(step)}
-
-        {isLastStep ? (
-          <div>
-            <Button
-              onClick={() => router.push(`/${locale}/practice/${moduleSlug}/challenge`)}
-              variant="primary"
-              size="lg"
-              className="w-full"
-            >
-              <FaPlay className="mr-2 h-4 w-4" />
-              {t('startChallenge')}
-            </Button>
-
-            <div className="my-6 mx-auto flex w-4/5 items-center gap-4">
-              <Divider className="flex-1" />
-              <span className="text-sm text-muted-foreground">{tp('orDivider')}</span>
-              <Divider className="flex-1" />
-            </div>
-
-            <Button
-              onClick={() => router.push(`/${locale}/practice/${moduleSlug}/training`)}
-              variant="outline"
-              size="lg"
-              className="w-full"
-            >
-              <FaInfinity className="mr-2 h-4 w-4" />
-              {tp('startTraining')}
-            </Button>
-          </div>
-        ) : (
-          <div className="flex gap-4">
-            {currentIndex > 0 && (
-              <Button variant="outline" size="lg" onClick={handlePrevious} className="flex-1">
-                <FaArrowLeft className="mr-2 h-4 w-4" />
-                {t('previous')}
-              </Button>
-            )}
-            <Button onClick={handleNext} variant="primary" size="lg" className="flex-1">
-              {t('next')}
-              <FaArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-        )}
+      {/* Progress Dots */}
+      <div className="flex justify-center gap-2 mb-6">
+        {steps.map((s, idx) => (
+          <div
+            key={s}
+            className={`w-2 h-2 rounded-full transition-colors ${
+              idx === currentIndex
+                ? 'bg-primary'
+                : idx < currentIndex
+                  ? 'bg-primary/50'
+                  : 'bg-muted'
+            }`}
+          />
+        ))}
       </div>
+
+      <h3 className="text-xl font-bold text-center mb-4">{t(`steps.${step}.title`)}</h3>
+      <p className={`text-muted-foreground mb-6 min-h-[4.5rem] ${descriptionClassName}`}>
+        {t(`steps.${step}.description`)}
+      </p>
+
+      {renderStep(step)}
+
+      {isLastStep ? (
+        <div>
+          <Button
+            onClick={() => router.push(`/${locale}/practice/${moduleSlug}/challenge`)}
+            variant="primary"
+            size="lg"
+            className="w-full"
+          >
+            <FaPlay className="mr-2 h-4 w-4" />
+            {t('startChallenge')}
+          </Button>
+
+          <div className="my-6 mx-auto flex w-4/5 items-center gap-4">
+            <Divider className="flex-1" />
+            <span className="text-sm text-muted-foreground">{tp('orDivider')}</span>
+            <Divider className="flex-1" />
+          </div>
+
+          <Button
+            onClick={() => router.push(`/${locale}/practice/${moduleSlug}/training`)}
+            variant="outline"
+            size="lg"
+            className="w-full"
+          >
+            <FaInfinity className="mr-2 h-4 w-4" />
+            {tp('startTraining')}
+          </Button>
+        </div>
+      ) : (
+        <div className="flex gap-4">
+          {currentIndex > 0 && (
+            <Button variant="outline" size="lg" onClick={handlePrevious} className="flex-1">
+              <FaArrowLeft className="mr-2 h-4 w-4" />
+              {t('previous')}
+            </Button>
+          )}
+          <Button onClick={handleNext} variant="primary" size="lg" className="flex-1">
+            {t('next')}
+            <FaArrowRight className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
