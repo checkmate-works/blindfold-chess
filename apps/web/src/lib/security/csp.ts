@@ -150,10 +150,25 @@ export type ScriptPolicy =
  */
 export function buildCspHeader(
   scriptPolicy: ScriptPolicy,
-  options: { isDevelopment?: boolean; allowFraming?: boolean } = {}
+  options: {
+    isDevelopment?: boolean;
+    allowFraming?: boolean;
+    /**
+     * Supabase project URL, defaulting to `NEXT_PUBLIC_SUPABASE_URL`, and
+     * canonical site URL, defaulting to `NEXT_PUBLIC_SITE_URL`. Both were
+     * read inline while `isDevelopment` was already an option, leaving this
+     * half-injected: the emitted `connect-src` / `manifest-src` allow-lists
+     * changed with the environment and a test could only reach those
+     * branches by stubbing `process.env`.
+     */
+    supabaseUrl?: string;
+    siteUrl?: string;
+  } = {}
 ): string {
   const isDevelopment = options.isDevelopment ?? process.env.NODE_ENV === 'development';
   const allowFraming = options.allowFraming ?? false;
+  const supabaseUrl = options.supabaseUrl ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const siteUrl = options.siteUrl ?? process.env.NEXT_PUBLIC_SITE_URL;
 
   // Derive the Supabase origin from `NEXT_PUBLIC_SUPABASE_URL` so local dev
   // (which uses `http://127.0.0.1:54321` and is NOT covered by the
@@ -164,8 +179,8 @@ export function buildCspHeader(
   // If the env var is missing or unparseable we fall closed: nothing is
   // appended, the existing `*.supabase.co` wildcard remains, and production
   // is unaffected.
-  const supabaseOrigin = originFromUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
-  const supabaseWsOrigin = wsOriginFromUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
+  const supabaseOrigin = originFromUrl(supabaseUrl);
+  const supabaseWsOrigin = wsOriginFromUrl(supabaseUrl);
 
   // Canonical site origin. `metadataBase` resolves the `/manifest.webmanifest`
   // link to an ABSOLUTE URL on the canonical host (e.g.
@@ -177,8 +192,7 @@ export function buildCspHeader(
   // 'self'`) blocks it. Allow-listing the canonical origin fixes the violation
   // regardless of which host actually served the page. Falls back to the known
   // production canonical so the entry is present even if the env var is unset.
-  const siteOrigin =
-    originFromUrl(process.env.NEXT_PUBLIC_SITE_URL) ?? 'https://www.blindfold-chess.online';
+  const siteOrigin = originFromUrl(siteUrl) ?? 'https://www.blindfold-chess.online';
 
   // Keep host allow-lists: they act as a fallback for browsers that do not
   // implement `'strict-dynamic'`. Modern browsers ignore host-based entries
