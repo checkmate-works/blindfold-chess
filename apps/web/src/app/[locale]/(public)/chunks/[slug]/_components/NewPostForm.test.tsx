@@ -35,7 +35,7 @@ vi.mock('@/lib/positions/ui/MiniBoard', () => ({
 // keeps the async file-selection deterministic (a plain resolved Promise, no
 // FileReader timing) regardless of test-suite ordering.
 vi.mock('@/lib/client-images/prepare-image-for-upload', () => ({
-  prepareImageForUpload: vi.fn((file: File) => Promise.resolve(file)),
+  prepareImageForUpload: vi.fn((file: File) => Promise.resolve({ ok: true, value: file })),
 }));
 
 // Pass-through translator: returns the key verbatim. `has()` reports

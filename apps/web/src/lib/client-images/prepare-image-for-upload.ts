@@ -29,6 +29,8 @@
  *   (48 MP) canvas — the destination canvas is capped at the downscale target
  *   (long edge ≤ `MAX_LONG_EDGE` ⇒ ≤ ~4 MP), well under the limit.
  */
+import { type Result, err, ok } from '@blindfold-chess/features/utils';
+
 import { IMAGE_MIME_TO_EXTENSION } from '@/lib/images/policy';
 
 export const MAX_LONG_EDGE = 2048;
@@ -227,15 +229,31 @@ async function encodeFromBitmap(
 }
 
 /**
+ * Why a picked image could not be prepared.
+ *
+ * The two kinds are different incidents: `decode-failed` means the user
+ * picked a file this browser cannot decode (an exotic HEIC, a truncated
+ * upload) — expected, and worth telling them about; `encode-failed` means our
+ * own canvas pipeline broke (no 2d context, `toBlob` returned null), which is
+ * a bug worth reporting. As one thrown `ImageConversionError` the callers had
+ * only `catch (err: unknown)`, so neither checked the class and both reported
+ * every failure to the user as "unsupported format" and to Sentry under one
+ * tag.
+ */
+export type ImageConversionFailure =
+  { kind: 'decode-failed'; cause: unknown } | { kind: 'encode-failed'; cause: unknown };
+
+/**
  * Normalize a user-selected image for upload.
  *
  * @returns the original `File` untouched when it is already a web-safe format
- *   within limits, or a new `File` (converted/downscaled) otherwise.
- * @throws {ImageConversionError} when a HEIC file cannot be decoded, or a
- *   resize step fails. Callers should catch this and show a format-specific
- *   error rather than attempting the upload.
+ *   within limits, a new `File` (converted/downscaled) otherwise, or the
+ *   reason it could not be prepared — picking an undecodable file is an
+ *   ordinary outcome of a file picker, not an exception.
  */
-export async function prepareImageForUpload(file: File): Promise<File> {
+export async function prepareImageForUpload(
+  file: File
+): Promise<Result<File, ImageConversionFailure>> {
   const header = await readLeadingBytes(file, 32);
   const kind = sniffImageKind(header);
 
@@ -251,37 +269,42 @@ export async function prepareImageForUpload(file: File): Promise<File> {
   }
 
   // Unknown to us — let the server be the authority (unchanged behavior).
-  return file;
+  return ok(file);
 }
 
-async function convertHeic(file: File): Promise<File> {
+async function convertHeic(file: File): Promise<Result<File, ImageConversionFailure>> {
   let bitmap: ImageBitmap;
   try {
     const { heicTo } = await import('heic-to');
     bitmap = await heicTo({ blob: file, type: 'bitmap' });
-  } catch (err) {
-    throw new ImageConversionError(err);
+  } catch (cause) {
+    return err({ kind: 'decode-failed', cause });
   }
   try {
     const blob = await encodeFromBitmap(bitmap, 'image/jpeg', bitmap.width, bitmap.height);
-    return new File([blob], renameExtension(file.name, 'jpg'), { type: 'image/jpeg' });
+    return ok(new File([blob], renameExtension(file.name, 'jpg'), { type: 'image/jpeg' }));
+  } catch (cause) {
+    return err({ kind: 'encode-failed', cause });
   } finally {
     bitmap.close();
   }
 }
 
-async function maybeResizeWebSafe(file: File, kind: 'jpeg' | 'png' | 'webp'): Promise<File> {
+async function maybeResizeWebSafe(
+  file: File,
+  kind: 'jpeg' | 'png' | 'webp'
+): Promise<Result<File, ImageConversionFailure>> {
   let bitmap: ImageBitmap;
   try {
     bitmap = await createImageBitmap(file);
   } catch {
     // Could not decode for measurement — hand the original to the server,
     // which will accept it if valid or reject it with its own validation.
-    return file;
+    return ok(file);
   }
   try {
     if (!needsResize(file.size, Math.max(bitmap.width, bitmap.height))) {
-      return file;
+      return ok(file);
     }
     const outputMime = `image/${kind === 'jpeg' ? 'jpeg' : kind}`;
     const blob = await encodeFromBitmap(bitmap, outputMime, bitmap.width, bitmap.height);
@@ -289,11 +312,11 @@ async function maybeResizeWebSafe(file: File, kind: 'jpeg' | 'png' | 'webp'): Pr
     // is authoritative for the final MIME/extension.
     const finalMime = blob.type || outputMime;
     const ext = MIME_TO_EXT[finalMime] ?? 'jpg';
-    return new File([blob], renameExtension(file.name, ext), { type: finalMime });
+    return ok(new File([blob], renameExtension(file.name, ext), { type: finalMime }));
   } catch {
     // Resize failed on a file that is otherwise valid — better to attempt the
     // original upload than to block the user outright.
-    return file;
+    return ok(file);
   } finally {
     bitmap.close();
   }

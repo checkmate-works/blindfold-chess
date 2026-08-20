@@ -5,6 +5,7 @@ import {
   replayMoves,
   uciToAlgebraic,
 } from '@blindfold-chess/features/chess-core';
+import { type Result, err, ok } from '@blindfold-chess/features/utils';
 import type { Side } from '@blindfold-chess/types';
 
 import { classifyMove } from './classify-move';
@@ -14,6 +15,13 @@ import { EVAL_SCORE_LIMIT } from './types';
 function clampScore(score: number): number {
   return Math.max(-EVAL_SCORE_LIMIT, Math.min(EVAL_SCORE_LIMIT, Math.round(score)));
 }
+
+/** Why {@link deriveMoveAnalyses} could not produce verdicts. */
+export type DeriveMoveAnalysesError =
+  /** The client sent a different number of evaluations than there are positions. */
+  | { kind: 'length-mismatch'; expected: number; received: number }
+  /** The stored move list does not replay — the game record is corrupt. */
+  | { kind: 'replay-failed' };
 
 /**
  * Derive per-move verdicts from client-supplied position evaluations and the
@@ -33,27 +41,33 @@ function clampScore(score: number): number {
  *
  * @param evaluations one entry per position: `moves.length + 1` items, index
  *   i evaluating the position BEFORE `moves[i]`.
- * @throws if `evaluations` length mismatches or `moves` fails to replay —
- *   the caller validates both upfront and treats a throw as invalid input.
+ *
+ * Returns a {@link Result} rather than throwing: both failures are ordinary
+ * outcomes of untrusted input, and they mean different things — a length
+ * mismatch is a bad request (or a tampered payload), while a replay failure
+ * means the stored game record itself is corrupt. As throws they were
+ * indistinguishable in the caller's `catch`, and therefore in the logs.
  */
 export function deriveMoveAnalyses(
   moves: string[],
   startingFen: string | undefined,
   evaluations: PositionEvaluation[]
-): MoveAnalysis[] {
+): Result<MoveAnalysis[], DeriveMoveAnalysesError> {
   if (evaluations.length !== moves.length + 1) {
-    throw new Error(
-      `evaluations length ${evaluations.length} does not match ${moves.length + 1} positions`
-    );
+    return err({
+      kind: 'length-mismatch',
+      expected: moves.length + 1,
+      received: evaluations.length,
+    });
   }
 
   const positions = replayMoves(moves, startingFen);
   if (positions.length !== moves.length + 1) {
-    throw new Error('game record failed to replay');
+    return err({ kind: 'replay-failed' });
   }
   const playedUci = movesToUci(moves, startingFen);
 
-  return moves.map((san, ply) => {
+  const analyses = moves.map((san, ply) => {
     const fenBefore = positions[ply].fen;
     const color: Side = getTurnFromFen(fenBefore) === 'w' ? 'white' : 'black';
     const evalBefore = clampScore(evaluations[ply].score);
@@ -87,4 +101,6 @@ export function deriveMoveAnalyses(
       judgment: classifyMove(cpLoss),
     };
   });
+
+  return ok(analyses);
 }

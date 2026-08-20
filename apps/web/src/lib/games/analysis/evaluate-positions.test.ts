@@ -25,11 +25,13 @@ describe('evaluatePositions', () => {
       onProgress,
     });
 
-    expect(result).toHaveLength(4);
+    expect(result.ok).toBe(true);
+    const evaluations = result.ok ? result.value : [];
+    expect(evaluations).toHaveLength(4);
     expect(evaluator.getEvaluation).toHaveBeenCalledTimes(4);
     expect(onProgress).toHaveBeenCalledTimes(4);
     expect(onProgress).toHaveBeenLastCalledWith(4, 4);
-    expect(result[0]).toEqual({ score: 10, bestMoveUci: 'e2e4' });
+    expect(evaluations[0]).toEqual({ score: 10, bestMoveUci: 'e2e4' });
   });
 
   it('skips the engine on a checkmate final position and scores it for the winner', async () => {
@@ -41,10 +43,12 @@ describe('evaluatePositions', () => {
       evaluator,
     });
 
-    expect(result).toHaveLength(5);
+    expect(result.ok).toBe(true);
+    const evaluations = result.ok ? result.value : [];
+    expect(evaluations).toHaveLength(5);
     // 4 non-terminal positions probed, the mated position synthesized.
     expect(evaluator.getEvaluation).toHaveBeenCalledTimes(4);
-    expect(result[4]).toEqual({ score: -10000 });
+    expect(evaluations[4]).toEqual({ score: -10000 });
   });
 
   it('aborts between positions via the signal', async () => {
@@ -56,21 +60,35 @@ describe('evaluatePositions', () => {
       }),
     };
 
-    await expect(
-      evaluatePositions({
-        moves: ['e4', 'e5'],
-        evaluator,
-        signal: controller.signal,
-      })
-    ).rejects.toMatchObject({ name: 'AbortError' });
+    const result = await evaluatePositions({
+      moves: ['e4', 'e5'],
+      evaluator,
+      signal: controller.signal,
+    });
+
+    expect(result).toEqual({ ok: false, error: { kind: 'aborted' } });
     expect(evaluator.getEvaluation).toHaveBeenCalledTimes(1);
   });
 
   it('refuses games beyond the ply ceiling upfront', async () => {
     const evaluator = scriptedEvaluator();
-    await expect(evaluatePositions({ moves: Array(201).fill('e4'), evaluator })).rejects.toThrow(
-      /exceeds/
-    );
+
+    const result = await evaluatePositions({ moves: Array(201).fill('e4'), evaluator });
+
+    // A refusal, not a failure — and distinguishable from one now.
+    expect(result).toEqual({
+      ok: false,
+      error: { kind: 'too-long', limit: 200, plies: 201 },
+    });
+    expect(evaluator.getEvaluation).not.toHaveBeenCalled();
+  });
+
+  it('reports a corrupt move list as replay-failed', async () => {
+    const evaluator = scriptedEvaluator();
+
+    const result = await evaluatePositions({ moves: ['e4', 'Ke2'], evaluator });
+
+    expect(result).toEqual({ ok: false, error: { kind: 'replay-failed' } });
     expect(evaluator.getEvaluation).not.toHaveBeenCalled();
   });
 });

@@ -41,18 +41,22 @@ export function AvatarUpload({ currentAvatarUrl, onUploaded }: Props) {
     // downscale/compress oversized images in the browser, so the client checks
     // and the server gate below see a web-safe file within limits. A file
     // already web-safe and within limits is returned untouched.
-    let file: File;
-    try {
-      file = await prepareImageForUpload(original);
-    } catch (err) {
-      Sentry.captureException(err, {
-        tags: { feature: 'avatar-upload', phase: 'prepare' },
-        extra: { name: original.name, type: original.type, size: original.size },
-      });
+    const prepared = await prepareImageForUpload(original);
+    if (!prepared.ok) {
+      // Only report our own pipeline breaking. A file this browser cannot
+      // decode is the user's pick, not a bug — it used to be captured under
+      // the same tag, so genuine canvas failures were buried in noise.
+      if (prepared.error.kind === 'encode-failed') {
+        Sentry.captureException(prepared.error.cause, {
+          tags: { feature: 'avatar-upload', phase: 'prepare' },
+          extra: { name: original.name, type: original.type, size: original.size },
+        });
+      }
       setError(t('avatarConversionFailed'));
       if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
+    const file = prepared.value;
 
     if (!isAllowedImageMimeType(file.type)) {
       setError(t('avatarInvalidType'));
