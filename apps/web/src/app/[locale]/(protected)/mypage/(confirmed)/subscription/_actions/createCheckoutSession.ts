@@ -10,6 +10,7 @@ import { getAuthenticatedUser } from '@/lib/auth';
 import { getStripe, getStripePriceId } from '@/lib/billing/stripe';
 import { getOrCreateStripeCustomerId } from '@/lib/billing/stripe-customer';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/security/rate-limit';
+import { captureError } from '@/lib/sentry/capture-error';
 
 type CheckoutError = { error: 'rateLimited' | 'sessionCreationFailed' };
 
@@ -27,7 +28,8 @@ export async function createCheckoutSession(locale: string): Promise<CheckoutErr
   let stripeCustomerId: string;
   try {
     stripeCustomerId = await getOrCreateStripeCustomerId(user.id, user.email);
-  } catch {
+  } catch (error) {
+    captureError(error, '[createCheckoutSession] failed to resolve Stripe customer');
     return { error: 'sessionCreationFailed' as const };
   }
 
@@ -49,7 +51,8 @@ export async function createCheckoutSession(locale: string): Promise<CheckoutErr
         metadata: { supabaseUserId: user.id },
       },
     });
-  } catch {
+  } catch (error) {
+    captureError(error, '[createCheckoutSession] Stripe checkout session creation failed');
     return { error: 'sessionCreationFailed' as const };
   }
 

@@ -82,15 +82,29 @@ export type ImageAttachmentRow = Omit<AttachedImageCardData, 'publicUrl'> & {
  * a trigger), resolving each storage path to its public URL. Rows must
  * arrive ordered by (postId, displayOrder) ascending; insertion order is
  * preserved per bucket.
+ *
+ * A row whose storage path cannot be resolved to a public URL (unsafe path
+ * shape, missing Supabase URL config) is dropped instead of thrown: one
+ * corrupt row must not take down every page that lists attachments.
+ * `onDroppedRow` receives each dropped row so the caller can surface it to
+ * observability — the mapper itself stays side-effect-free.
  */
 export function groupImageRows(
-  rows: readonly ImageAttachmentRow[]
+  rows: readonly ImageAttachmentRow[],
+  onDroppedRow?: (row: ImageAttachmentRow, error: unknown) => void
 ): Map<string, AttachedImageCardData[]> {
   const imagesByPost = new Map<string, AttachedImageCardData[]>();
   for (const row of rows) {
+    let publicUrl: string;
+    try {
+      publicUrl = buildPostImagePublicUrl(row.storagePath);
+    } catch (error) {
+      onDroppedRow?.(row, error);
+      continue;
+    }
     const item: AttachedImageCardData = {
       id: row.id,
-      publicUrl: buildPostImagePublicUrl(row.storagePath),
+      publicUrl,
       width: row.width,
       height: row.height,
       altText: row.altText,

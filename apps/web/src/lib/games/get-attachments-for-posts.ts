@@ -11,6 +11,7 @@ import {
   postVideoAttachments,
   topicPosts,
 } from '@/lib/db';
+import { captureError } from '@/lib/sentry/capture-error';
 
 import type { AttachedEmbedCardData } from '@/app/[locale]/(public)/topics/_components/AttachedEmbedCard';
 import type { AttachedFenCardData } from '@/app/[locale]/(public)/topics/_components/AttachedFenCard';
@@ -182,7 +183,15 @@ export async function getAttachmentsForPosts(
   for (const row of embedRows) {
     setIfAbsent(row.postId, { kind: 'embed', data: embedRowToCard(row) });
   }
-  for (const [postId, images] of groupImageRows(imageRows)) {
+  for (const [postId, images] of groupImageRows(imageRows, (row, error) => {
+    // Dropping the one bad row keeps the page alive; the storage_path column
+    // is regex-pinned at the DB, so reaching this means row corruption or a
+    // missing NEXT_PUBLIC_SUPABASE_URL — either way it must be visible.
+    captureError(
+      error,
+      `[get-attachments-for-posts] dropped image attachment ${row.id} (post ${row.postId}): public URL unresolvable`
+    );
+  })) {
     setIfAbsent(postId, { kind: 'image', data: images });
   }
   for (const row of fenRows) {
