@@ -2,7 +2,7 @@
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
-import { PracticeHowToPlayCard } from '@/app/[locale]/(public)/practice/(challenge)/_components/PracticeHowToPlayCard';
+import { PracticeHowToPlaySection } from '@/app/[locale]/(public)/practice/(challenge)/_components/PracticeHowToPlaySection';
 import { PracticeSetupActions } from '@/app/[locale]/(public)/practice/(challenge)/_components/PracticeSetupActions';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -19,11 +19,7 @@ export function SquareColorsSetup({ locale }: Props) {
 
   return (
     <div>
-      <PracticeHowToPlayCard
-        title={t('howToPlayTitle')}
-        description={t('howToPlayDescription')}
-        variant="plain"
-      >
+      <PracticeHowToPlaySection title={t('howToPlayTitle')} description={t('howToPlayDescription')}>
         <div className="text-4xl font-bold text-foreground mb-3">e4</div>
         <div className="max-w-[200px] mx-auto">
           <SquareColorAnswerButtons
@@ -32,7 +28,7 @@ export function SquareColorsSetup({ locale }: Props) {
             labels={{ white: t('white'), black: t('black') }}
           />
         </div>
-      </PracticeHowToPlayCard>
+      </PracticeHowToPlaySection>
 
       <PracticeSetupActions
         locale={locale}

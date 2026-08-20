@@ -2,7 +2,7 @@
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
-import { PracticeHowToPlayCard } from '@/app/[locale]/(public)/practice/(challenge)/_components/PracticeHowToPlayCard';
+import { PracticeHowToPlaySection } from '@/app/[locale]/(public)/practice/(challenge)/_components/PracticeHowToPlaySection';
 import { PracticeSetupActions } from '@/app/[locale]/(public)/practice/(challenge)/_components/PracticeSetupActions';
 import { SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -34,7 +34,7 @@ export function CoordinateQuizSetup({
 
   return (
     <div>
-      <PracticeHowToPlayCard title={t('howToPlayTitle')} description={t('howToPlayDescription')}>
+      <PracticeHowToPlaySection title={t('howToPlayTitle')} description={t('howToPlayDescription')}>
         <div className="relative inline-block w-full max-w-[240px] mx-auto">
           <CoordinateQuizBoard orientation="white" onSquareClick={noop} />
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -43,7 +43,7 @@ export function CoordinateQuizSetup({
             </span>
           </div>
         </div>
-      </PracticeHowToPlayCard>
+      </PracticeHowToPlaySection>
 
       <SectionTitle className="mb-4">{t('settings')}</SectionTitle>
 

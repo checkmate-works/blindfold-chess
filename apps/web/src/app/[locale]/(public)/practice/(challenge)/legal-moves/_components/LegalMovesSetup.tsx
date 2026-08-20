@@ -3,7 +3,7 @@
 import type { PieceSelection } from '@/app/_components/practice/PieceSelector';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
-import { PracticeHowToPlayCard } from '@/app/[locale]/(public)/practice/(challenge)/_components/PracticeHowToPlayCard';
+import { PracticeHowToPlaySection } from '@/app/[locale]/(public)/practice/(challenge)/_components/PracticeHowToPlaySection';
 import { PracticeSetupActions } from '@/app/[locale]/(public)/practice/(challenge)/_components/PracticeSetupActions';
 import { SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -26,7 +26,7 @@ export function LegalMovesSetup({ locale, pieceSelection, onPieceSelect }: Props
 
   return (
     <div>
-      <PracticeHowToPlayCard title={t('howToPlayTitle')} description={t('howToPlayDescription')}>
+      <PracticeHowToPlaySection title={t('howToPlayTitle')} description={t('howToPlayDescription')}>
         <div className="text-lg font-bold text-foreground mb-3">
           {t('questionFormat', { from: 'e2', to: 'e4' })}
         </div>
@@ -47,7 +47,7 @@ export function LegalMovesSetup({ locale, pieceSelection, onPieceSelect }: Props
             <span className="text-sm">{t('illegal')}</span>
           </button>
         </div>
-      </PracticeHowToPlayCard>
+      </PracticeHowToPlaySection>
 
       <SectionTitle className="mb-4">{t('settings')}</SectionTitle>
 

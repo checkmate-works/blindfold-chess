@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
-import { PracticeHowToPlayCard } from '@/app/[locale]/(public)/practice/(challenge)/_components/PracticeHowToPlayCard';
+import { PracticeHowToPlaySection } from '@/app/[locale]/(public)/practice/(challenge)/_components/PracticeHowToPlaySection';
 import { PracticeSetupActions } from '@/app/[locale]/(public)/practice/(challenge)/_components/PracticeSetupActions';
 import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -19,7 +19,7 @@ export function DiagonalQuizSetup({ locale }: Props) {
   return (
     <div>
       <div className="mb-8">
-        <PracticeHowToPlayCard
+        <PracticeHowToPlaySection
           title={t('howToPlayTitle')}
           description={t('howToPlayDescription')}
           marginClassName="mb-2"
@@ -29,7 +29,7 @@ export function DiagonalQuizSetup({ locale }: Props) {
             <p>{t('diagonalLabel')}: ??-??</p>
             <p>{t('antiDiagonalLabel')}: ??-??</p>
           </div>
-        </PracticeHowToPlayCard>
+        </PracticeHowToPlaySection>
         <div className="mb-6 text-center" data-tour-id="diagonal-quiz-tutorial">
           <Link
             href={`/${locale}/practice/diagonal-quiz/tutorial`}
