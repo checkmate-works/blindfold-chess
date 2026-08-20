@@ -11,6 +11,7 @@ import { fenToLichessUrl } from '@blindfold-chess/features/chess-core/fen';
 import type { ExpInfo } from '@blindfold-chess/features/exp';
 import { FaExternalLinkAlt } from 'react-icons/fa';
 
+import { sanitizeNext } from '@/lib/safe-next';
 import { buildProfileHref } from '@/lib/users/author-profile';
 
 import { toggleLike } from '@/app/[locale]/(public)/practice/(free-play)/_actions/toggleLike';
@@ -78,6 +79,19 @@ export function SinglePositionResult({
 
   const score = parseFloat(searchParams.get('score') || '0');
   const timeLimit = searchParams.get('timeLimit') || '30';
+  // In-game position-check run (see the custom session page): the run skipped
+  // the memorize phase and carries the game's URL to return to. Both are read
+  // straight off this page's own params — `returnTo` is untrusted, so it is
+  // re-validated here (same-origin absolute paths only) even though the
+  // session page validated it on write.
+  const skipMemorize = searchParams.get('skipMemorize') === '1';
+  const returnTo = sanitizeNext(searchParams.get('returnTo'));
+
+  // "Try again" restarts the same kind of run, so the skip-memorize mode and
+  // the return path both survive the retry.
+  const tryAgainParams = new URLSearchParams({ timeLimit });
+  if (skipMemorize) tryAgainParams.set('skipMemorize', '1');
+  if (returnTo) tryAgainParams.set('returnTo', returnTo);
 
   const resultItem = useMemo(() => {
     const parsed = parseResults(searchParams.get('data'));
@@ -218,11 +232,21 @@ export function SinglePositionResult({
 
           {/* Action Buttons */}
           <div className="space-y-3">
-            <Link href={`/${locale}${sessionPath}?timeLimit=${timeLimit}`} className="block">
+            <Link href={`/${locale}${sessionPath}?${tryAgainParams.toString()}`} className="block">
               <Button variant="primary" size="lg" fullWidth>
                 {t('detail.tryAgain')}
               </Button>
             </Link>
+            {/* Back to the live game the position check was launched from.
+                `returnTo` is already locale-prefixed (the play screen's own
+                URL), so no `/${locale}` prefix here. */}
+            {returnTo && (
+              <Link href={returnTo} className="block">
+                <Button variant="secondary" size="lg" fullWidth>
+                  {t('backToGame')}
+                </Button>
+              </Link>
+            )}
             <Link href={`/${locale}/practice/position-memory`} className="block">
               <Button variant="secondary" size="lg" fullWidth>
                 {t('detail.backToList')}

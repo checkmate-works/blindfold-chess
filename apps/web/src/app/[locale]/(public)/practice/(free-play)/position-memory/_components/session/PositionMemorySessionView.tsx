@@ -47,6 +47,8 @@ type Props = {
   problemCount?: number;
   mode?: SessionMode;
   skipMemorize?: boolean;
+  /** See {@link PositionMemoryRecreate}'s prop of the same name. */
+  exitAction?: ReactNode;
   /** How to present the position during the memorize phase. Default: 'board'. */
   displayMode?: DisplayMode;
   behavior?: SessionBehavior;
@@ -75,6 +77,7 @@ export function PositionMemorySessionView({
   problemCount = 1,
   mode = 'custom',
   skipMemorize = false,
+  exitAction,
   displayMode = 'board',
   behavior,
   onSessionComplete,
@@ -173,6 +176,11 @@ export function PositionMemorySessionView({
         enablePause={enablePause}
         isPaused={isPaused}
         showSkipButton={showSkipButton}
+        // With memorize skipped, "view again" would re-enter memorize only to
+        // be bounced straight back by the auto-MEMORIZED effect — the answer
+        // flashes for a frame and nothing else happens. Hide it.
+        showViewAgain={!skipMemorize}
+        exitAction={exitAction}
         skipProblemResult={skipProblemResult}
         displayMode={displayMode}
         onMemorized={() => send({ type: 'MEMORIZED' })}

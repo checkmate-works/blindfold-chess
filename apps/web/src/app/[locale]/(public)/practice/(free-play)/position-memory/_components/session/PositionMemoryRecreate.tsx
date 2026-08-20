@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { type ReactNode, useState } from 'react';
 
 import { Button, FlipBoardButton } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
@@ -23,6 +23,22 @@ type Props = {
   boardTheme?: BoardTheme;
   isTutorial?: boolean;
   showSkip?: boolean;
+  /**
+   * Whether the "view again" link (back to the memorize phase) is offered.
+   * False when the session skips memorize: the auto-MEMORIZED effect fires
+   * again the instant the machine re-enters `memorize`, so the link would
+   * flash the answer for one frame and bounce straight back — a broken
+   * affordance and, for the in-game position check, an answer leak.
+   */
+  showViewAgain?: boolean;
+  /**
+   * Replaces the quit link in the action cluster. The in-game position check
+   * passes its "back to game" link here: for that flow quit's destination —
+   * confirm modal, then a result marked skipped — is a strictly worse spelling
+   * of the same intent, and there is no run worth a confirmation to protect.
+   * Generic sessions leave this unset and keep the quit link.
+   */
+  exitAction?: ReactNode;
   onPositionChange: (fen: string) => void;
   onSubmit: () => void;
   onViewAgain: () => void;
@@ -38,6 +54,8 @@ export function PositionMemoryRecreate({
   boardTheme = DEFAULT_BOARD_THEME,
   isTutorial = false,
   showSkip = true,
+  showViewAgain = true,
+  exitAction,
   onPositionChange,
   onSubmit,
   onViewAgain,
@@ -88,17 +106,21 @@ export function PositionMemoryRecreate({
       {/* Action Links */}
       {!isTutorial && (
         <div className="flex flex-col items-center gap-2">
-          <button onClick={onViewAgain} className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
-            {t('viewAgain')}
-          </button>
+          {showViewAgain && (
+            <button onClick={onViewAgain} className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
+              {t('viewAgain')}
+            </button>
+          )}
           {showSkip && (
             <button onClick={onSkip} className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
               {t('skip')}
             </button>
           )}
-          <button onClick={onQuit} className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
-            {t('quit')}
-          </button>
+          {exitAction ?? (
+            <button onClick={onQuit} className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
+              {t('quit')}
+            </button>
+          )}
         </div>
       )}
     </div>

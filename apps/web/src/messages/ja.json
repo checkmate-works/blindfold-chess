@@ -1523,7 +1523,8 @@
         "confirmMessage": "この問題を削除しますか？この操作は元に戻せません。",
         "confirm": "削除",
         "cancel": "キャンセル"
-      }
+      },
+      "backToGame": "対局に戻る"
     },
     "puzzle": {
       "title": "パズル",
@@ -2330,7 +2331,8 @@
     "undo": "待った",
     "moves": "棋譜",
     "movesPanel": {
-      "viewOps": "この手の操作内訳を表示"
+      "viewOps": "この手の操作内訳を表示",
+      "startRecall": "棋譜再現"
     },
     "confirmResignTitle": "投了の確認",
     "confirmResignMessage": "本当に投了しますか？ゲームが終了します。",
@@ -2560,7 +2562,8 @@
       },
       "backToResult": "振り返りに戻る"
     },
-    "boardModalTitle": "盤面"
+    "boardModalTitle": "盤面",
+    "positionCheck": "このポジションを再現"
   },
   "sharedGames": {
     "detail": {
@@ -2959,8 +2962,10 @@
       "reviewHint": "タップでその局面を確認",
       "restart": "もう一度",
       "backToResult": "結果へ戻る",
+      "backToGame": "対局に戻る",
       "startNew": "別の棋譜で始める"
-    }
+    },
+    "backToGame": "対局に戻る"
   },
   "playError": {
     "title": "ゲームの復旧",

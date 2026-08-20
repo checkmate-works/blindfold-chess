@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
+import { sanitizeNext } from '@/lib/safe-next';
+
 import { PracticeSessionPage } from '@/app/[locale]/(public)/practice/_components/PracticeSessionPage';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -42,6 +44,12 @@ export default async function CustomPositionSessionPage({ params, searchParams }
   const sp = await searchParams;
   const timeLimit = clampTimeLimit(sp.timeLimit);
   const displayMode = parseDisplayMode(sp.displayMode);
+  // In-game position check: skip the memorize phase (the position is already
+  // in the player's head from live play) and thread the validated return path
+  // through the run so the result screen can lead back to the game.
+  const skipMemorize = sp.skipMemorize === '1';
+  const returnTo =
+    sanitizeNext(typeof sp.returnTo === 'string' ? sp.returnTo : undefined) ?? undefined;
 
   return (
     <PracticeSessionPage
@@ -59,6 +67,8 @@ export default async function CustomPositionSessionPage({ params, searchParams }
         timeLimit={timeLimit}
         displayMode={displayMode}
         position={problem}
+        skipMemorize={skipMemorize}
+        returnTo={returnTo}
       />
     </PracticeSessionPage>
   );

@@ -29,6 +29,10 @@ type Props = {
   enablePause: boolean;
   isPaused: boolean;
   showSkipButton: boolean;
+  /** See {@link PositionMemoryRecreate}'s prop of the same name. */
+  showViewAgain: boolean;
+  /** See {@link PositionMemoryRecreate}'s prop of the same name. */
+  exitAction?: ReactNode;
   skipProblemResult: boolean;
   displayMode: DisplayMode;
   onMemorized: () => void;
@@ -70,6 +74,8 @@ export function PositionMemorySessionPhase({
   enablePause,
   isPaused,
   showSkipButton,
+  showViewAgain,
+  exitAction,
   skipProblemResult,
   displayMode,
   onMemorized,
@@ -117,6 +123,8 @@ export function PositionMemorySessionPhase({
         boardTheme={boardTheme}
         isTutorial={isTutorial}
         showSkip={showSkipButton}
+        showViewAgain={showViewAgain}
+        exitAction={exitAction}
         onPositionChange={onPositionChange}
         onSubmit={onSubmit}
         onViewAgain={onViewAgain}

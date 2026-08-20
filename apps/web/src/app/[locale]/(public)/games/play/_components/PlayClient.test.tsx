@@ -24,7 +24,12 @@ let isAuthModalOpen: boolean;
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ replace, push, prefetch }),
-  useSearchParams: () => ({ get: (k: string) => (k === 'finished' ? finishedParam : null) }),
+  useSearchParams: () => ({
+    get: (k: string) => (k === 'finished' ? finishedParam : null),
+    size: 0,
+    toString: () => '',
+  }),
+  usePathname: () => '/en/games/play',
   notFound: () => notFoundSpy(),
 }));
 

@@ -2,8 +2,12 @@
 
 import { useCallback, useRef } from 'react';
 
+import NextLink from 'next/link';
 import { useRouter } from 'next/navigation';
 
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+
+import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { buildCustomResultUrl } from '../../_lib/result-url';
@@ -22,6 +26,19 @@ type Props = {
   timeLimit: number;
   displayMode?: DisplayMode;
   position: PositionData;
+  /**
+   * Skip the memorize phase and start on the empty recreate board. Set by the
+   * in-game position check, where the "memorizing" already happened during
+   * play — the point is to test the picture the player carries in their head,
+   * not to show them the answer first.
+   */
+  skipMemorize?: boolean;
+  /**
+   * Validated same-origin path threaded into the result URL, so the result
+   * screen can offer a "back to game" action (and preserve it across "try
+   * again"). Set together with `skipMemorize` by the in-game entry.
+   */
+  returnTo?: string;
 };
 
 /**
@@ -40,9 +57,12 @@ export function CustomPositionSession({
   timeLimit,
   displayMode = 'board',
   position,
+  skipMemorize = false,
+  returnTo,
 }: Props) {
   const router = useRouter();
   const savedRef = useRef(false);
+  const t = useTranslations('practice.positionMemory');
 
   const handleSessionComplete = useCallback(
     ({ results, stats }: SessionCompletePayload) => {
@@ -50,9 +70,11 @@ export function CustomPositionSession({
       if (savedRef.current) return;
       savedRef.current = true;
 
-      router.push(buildCustomResultUrl({ locale, token, timeLimit, results, stats }));
+      router.push(
+        buildCustomResultUrl({ locale, token, timeLimit, results, stats, skipMemorize, returnTo })
+      );
     },
-    [locale, token, timeLimit, router]
+    [locale, token, timeLimit, skipMemorize, returnTo, router]
   );
 
   return (
@@ -60,6 +82,7 @@ export function CustomPositionSession({
       timeLimit={timeLimit}
       shuffle={false}
       presetPositions={[position]}
+      skipMemorize={skipMemorize}
       displayMode={displayMode}
       behavior={{
         enablePause: true,
@@ -67,6 +90,17 @@ export function CustomPositionSession({
         showSkipButton: false,
         skipProblemResult: true,
       }}
+      // In-game entry: replace the quit link with a direct "back to game"
+      // exit. Quit's confirm-modal → skipped-result detour is the same
+      // intent spelled worse here, and there is no run worth protecting.
+      // `returnTo` is locale-prefixed — next/link, not the i18n Link.
+      exitAction={
+        returnTo ? (
+          <NextLink href={returnTo} className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
+            {t('backToGame')}
+          </NextLink>
+        ) : undefined
+      }
       onSessionComplete={handleSessionComplete}
       // Custom positions are not EXP-eligible, so reserve no EXP card — but
       // still match the bespoke board-comparison result skeleton (with the

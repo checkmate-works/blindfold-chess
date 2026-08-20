@@ -4,6 +4,8 @@ import { redirect } from 'next/navigation';
 
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
+import { sanitizeNext } from '@/lib/safe-next';
+
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
@@ -53,6 +55,12 @@ export default async function RecallSessionPage({ params, searchParams }: Props)
   const offset = typeof search.offset === 'string' ? parseInt(search.offset, 10) || 0 : 0;
   const startingFen = typeof search.fen === 'string' ? search.fen : undefined;
   const gameId = typeof search.gameId === 'string' ? search.gameId : undefined;
+  // Where the summary's back link returns to (the mid-game recall entry sets
+  // this to the live game's URL). Untrusted input — `sanitizeNext` rejects
+  // anything that is not a same-origin absolute path, and the summary falls
+  // back to its default back link when absent.
+  const returnTo =
+    sanitizeNext(typeof search.returnTo === 'string' ? search.returnTo : undefined) ?? undefined;
 
   return (
     <RecallSessionClient
@@ -63,6 +71,7 @@ export default async function RecallSessionPage({ params, searchParams }: Props)
       initialOffset={offset}
       startingFen={startingFen}
       gameId={gameId}
+      returnTo={returnTo}
       breadcrumbItems={[
         { label: t('navigation.practice'), href: '/practice' },
         { label: t('recall.title'), href: '/practice/recall' },

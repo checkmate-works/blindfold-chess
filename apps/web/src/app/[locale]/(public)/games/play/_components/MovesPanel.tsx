@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { type ReactNode, useMemo, useState } from 'react';
 
 import { useCopyToClipboard } from '@/_hooks/useCopyToClipboard';
 import { Button } from '@/app/_components';
@@ -85,6 +85,15 @@ type Props = {
   actions: MovesPanelActionsProps;
   operations?: MovesPanelOperationsProps;
   showBackground?: boolean;
+  /**
+   * Control rendered inside the collapsed header, left of the chevron — the
+   * mid-game recall entry lives here. Sitting on the "Moves" header puts the
+   * "try to recall it" action exactly where the "just show me the moves"
+   * action is, and it stays reachable without expanding the list (expanding
+   * IS the answer). A sibling of the toggle button (absolutely positioned),
+   * not a child — nested interactive elements are invalid HTML.
+   */
+  headerAction?: ReactNode;
 };
 
 /**
@@ -104,6 +113,7 @@ export function MovesPanel({
   actions,
   operations,
   showBackground = true,
+  headerAction,
 }: Props) {
   const { formattedPgn, currentPosition, movesLength, currentFen, displayFen, startingFen } =
     moveList;
@@ -169,21 +179,32 @@ export function MovesPanel({
 
   return (
     <div className={showBackground ? 'bg-card rounded-lg' : 'border border-border rounded-lg'}>
-      {/* Moves Toggle Header */}
-      <button
-        onClick={() => setIsMovesVisible(!isMovesVisible)}
-        className={`w-full px-4 py-3 bg-muted/30 hover:bg-muted/50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-border/50 focus:ring-inset rounded-t-lg ${!isMovesVisible ? 'rounded-b-lg' : ''}`}
-        aria-expanded={isMovesVisible}
-      >
-        <div className="flex items-center justify-between">
-          <span className="text-foreground">{t('moves')}</span>
-          <FaChevronDown
-            className={`w-5 h-5 text-muted-foreground transform transition-transform duration-200 ${
-              isMovesVisible ? 'rotate-180' : ''
-            }`}
-          />
-        </div>
-      </button>
+      {/* Moves Toggle Header. `headerAction` overlays the empty middle of the
+          header row (between the label and the chevron) as an absolutely
+          positioned sibling, so the full-width toggle button keeps owning the
+          expand/collapse click everywhere else. */}
+      <div className="relative">
+        <button
+          onClick={() => setIsMovesVisible(!isMovesVisible)}
+          className={`w-full px-4 py-3 bg-muted/30 hover:bg-muted/50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-border/50 focus:ring-inset rounded-t-lg ${!isMovesVisible ? 'rounded-b-lg' : ''}`}
+          aria-expanded={isMovesVisible}
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-foreground">{t('moves')}</span>
+            <FaChevronDown
+              className={`w-5 h-5 text-muted-foreground transform transition-transform duration-200 ${
+                isMovesVisible ? 'rotate-180' : ''
+              }`}
+            />
+          </div>
+        </button>
+        {/* right-12 keeps a ≥12px gap to the chevron: the toggle surrounds the
+            action on all sides, and a mis-tap there expands the list — i.e.
+            reveals the very answer the action exists to avoid. */}
+        {headerAction && (
+          <div className="absolute right-12 top-1/2 -translate-y-1/2 z-10">{headerAction}</div>
+        )}
+      </div>
 
       {/* Moves Content */}
       <div

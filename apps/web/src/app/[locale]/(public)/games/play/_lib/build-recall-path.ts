@@ -16,6 +16,15 @@ type BuildRecallPathArgs = {
   gameId: string;
   /** Custom starting position; omitted for the standard start. */
   startingFen?: string;
+  /**
+   * Same-origin path (locale-prefixed, may carry a query) the recall summary's
+   * back link should return to. Set by the mid-game recall entry so finishing
+   * the review lands back on the live game instead of the result screen. The
+   * recall session page re-validates it with `sanitizeNext` before use, so a
+   * tampered URL degrades to the default back link rather than redirecting
+   * off-origin.
+   */
+  returnTo?: string;
 };
 
 /**
@@ -42,6 +51,7 @@ export function buildRecallPath({
   engineConfig,
   gameId,
   startingFen,
+  returnTo,
 }: BuildRecallPathArgs): string {
   const pgn = formattedPgn
     .map((move) => {
@@ -61,6 +71,7 @@ export function buildRecallPath({
   params.set('autoOpponent', 'true');
   if (startingFen) params.set('fen', startingFen);
   params.set('gameId', gameId);
+  if (returnTo) params.set('returnTo', returnTo);
   for (const [key, value] of Object.entries(engineConfigToUrlParams(engineConfig))) {
     params.set(key, value);
   }

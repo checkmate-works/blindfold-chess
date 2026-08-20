@@ -2,6 +2,8 @@
 
 import { type ReactNode, useCallback, useEffect, useState } from 'react';
 
+import NextLink from 'next/link';
+
 import { Button, ProgressBar } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
@@ -17,6 +19,7 @@ import { useQuickPeekModal } from '@/app/[locale]/(public)/games/play/_hooks/use
 import { ACTION_ROW_CONTAINER_CLASSES } from '@/app/[locale]/(public)/games/play/_lib';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
+import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 import { useRecallGame } from '../_hooks';
 import { useOpponentMoveAnnouncement } from '../_hooks/use-opponent-move-announcement';
@@ -59,6 +62,11 @@ type Props = {
    */
   gameId?: string;
   /**
+   * Validated same-origin path the summary's back link returns to; set by
+   * the mid-game recall entry, absent for the finished-game / paste-PGN flows.
+   */
+  returnTo?: string;
+  /**
    * Reports the latest move feedback up to the page title owner so it can be
    * rendered in the `PageTitle` slot (like the play screen surfaces its move
    * status there). Null clears the title back to the page name.
@@ -89,6 +97,7 @@ export function RecallClient({
   initialOffset = 0,
   startingFen,
   gameId,
+  returnTo,
   onFeedbackChange,
   onCompletedChange,
   onRestart,
@@ -368,6 +377,20 @@ export function RecallClient({
                       </div>
                     </>
                   )}
+
+                  {/* Mid-game entry: an "actually, back to the game" exit,
+                      in the same slot the play screen keeps its Save-and-Exit
+                      link (centered muted text under the action row). Nothing
+                      is lost by leaving — the review is rebuilt from the game
+                      any time. Locale-prefixed path, so next/link (the i18n
+                      Link would double the locale). */}
+                  {returnTo && (
+                    <div className="text-center">
+                      <NextLink href={returnTo} className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
+                        {t('backToGame')}
+                      </NextLink>
+                    </div>
+                  )}
                 </>
               ) : (
                 /* Completion: recall report + stumble review + next actions */
@@ -377,6 +400,7 @@ export function RecallClient({
                   onEntryClick={openQuickPeek}
                   onRestart={onRestart ?? (() => {})}
                   gameId={gameId}
+                  returnTo={returnTo}
                   initialPlaySettings={initialPlaySettings}
                   preferenceChangeLog={preferenceChangeLog}
                   startingFen={startingFen}

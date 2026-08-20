@@ -66,6 +66,7 @@ export function usePlayBoardViews({
   isAiThinking,
   canEditPerGameSettings,
   onOpenSettings,
+  positionCheckAction,
   terminationMark,
   terminationMarkLabel,
 }: {
@@ -91,6 +92,12 @@ export function usePlayBoardViews({
   isAiThinking: boolean;
   canEditPerGameSettings: boolean;
   onOpenSettings: () => void;
+  /**
+   * Mid-game position-check entry (see InlineBoardView's `maskAction` slot).
+   * Only wired into the in-progress board — it renders exclusively while the
+   * board is hidden, and the finished board is never hidden.
+   */
+  positionCheckAction?: ReactNode;
   /**
    * The end-of-game mark for the finished board; null while the game is in
    * progress or when the viewer has scrubbed off the final position.
@@ -173,6 +180,10 @@ export function usePlayBoardViews({
         topRightControl: canEditPerGameSettings ? (
           <BoardSettingsButton onClick={onOpenSettings} />
         ) : undefined,
+        // Position check, rendered by InlineBoardView only while the board is
+        // hidden (peek mask / 'never' bar) — the free counterpart to the
+        // counted reveal.
+        maskAction: positionCheckAction,
       }}
     />
   );

@@ -1523,7 +1523,8 @@
         "confirmMessage": "¿Estás seguro de que deseas eliminar este problema? Esta acción no se puede deshacer.",
         "confirm": "Eliminar",
         "cancel": "Cancelar"
-      }
+      },
+      "backToGame": "Volver a la partida"
     },
     "puzzle": {
       "title": "Puzzle",
@@ -2330,7 +2331,8 @@
     "undo": "Deshacer",
     "moves": "Movimientos",
     "movesPanel": {
-      "viewOps": "Ver las operaciones de este movimiento"
+      "viewOps": "Ver las operaciones de este movimiento",
+      "startRecall": "De memoria"
     },
     "confirmResignTitle": "Confirmar Rendición",
     "confirmResignMessage": "¿Estás seguro de que quieres rendirte? Esto terminará la partida.",
@@ -2560,7 +2562,8 @@
       },
       "backToResult": "Volver a la revisión de la partida"
     },
-    "boardModalTitle": "Tablero"
+    "boardModalTitle": "Tablero",
+    "positionCheck": "Recrear esta posición"
   },
   "sharedGames": {
     "detail": {
@@ -2959,8 +2962,10 @@
       "reviewHint": "Toca para ver la posición",
       "restart": "Jugar de nuevo",
       "backToResult": "Volver al resultado",
+      "backToGame": "Volver a la partida",
       "startNew": "Empezar con otro PGN"
-    }
+    },
+    "backToGame": "Volver a la partida"
   },
   "playError": {
     "title": "Recuperación de Partida",

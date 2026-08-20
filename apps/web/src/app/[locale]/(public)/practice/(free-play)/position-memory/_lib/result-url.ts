@@ -73,6 +73,13 @@ export type BuildCustomResultUrlArgs = {
   timeLimit: number;
   results: SerializedResultItem[];
   stats: SerializedStats;
+  /** Preserve the skip-memorize mode on the result's "try again" link. */
+  skipMemorize?: boolean;
+  /**
+   * Same-origin path for the result's "back to game" action (the in-game
+   * position check sets it). The result page re-validates it before use.
+   */
+  returnTo?: string;
 };
 
 /**
@@ -88,6 +95,8 @@ export function buildCustomResultUrl({
   timeLimit,
   results,
   stats,
+  skipMemorize,
+  returnTo,
 }: BuildCustomResultUrlArgs): string {
   const first = results[0];
   const params = new URLSearchParams();
@@ -96,6 +105,8 @@ export function buildCustomResultUrl({
   params.set('data', serializeResults(results));
   params.set('stats', serializeStats(stats));
   params.set('timeLimit', timeLimit.toString());
+  if (skipMemorize) params.set('skipMemorize', '1');
+  if (returnTo) params.set('returnTo', returnTo);
 
   return `/${locale}/practice/position-memory/custom/${token}/result?${params.toString()}`;
 }

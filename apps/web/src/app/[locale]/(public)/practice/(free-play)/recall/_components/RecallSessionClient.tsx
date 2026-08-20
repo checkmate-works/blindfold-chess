@@ -22,6 +22,12 @@ type Props = {
   initialOffset: number;
   startingFen?: string;
   gameId?: string;
+  /**
+   * Validated same-origin return path for the summary's back link (the
+   * mid-game recall entry sets it to the live game's URL). Undefined for the
+   * finished-game deep-link and the paste-PGN flow.
+   */
+  returnTo?: string;
   breadcrumbItems: BreadcrumbItem[];
   /** `content-bottom` ad slot, rendered server-side and passed through to RecallClient. */
   adBanner?: ReactNode;
@@ -35,6 +41,7 @@ export function RecallSessionClient({
   initialOffset,
   startingFen,
   gameId,
+  returnTo,
   breadcrumbItems,
   adBanner,
 }: Props) {
@@ -120,6 +127,7 @@ export function RecallSessionClient({
         initialOffset={effectiveOffset}
         startingFen={startingFen}
         gameId={gameId}
+        returnTo={returnTo}
         onFeedbackChange={setFeedback}
         onCompletedChange={setIsCompleted}
         onRestart={() => {
