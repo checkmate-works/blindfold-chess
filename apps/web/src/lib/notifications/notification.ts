@@ -4,6 +4,7 @@ import 'server-only';
 
 import { db, notifications, userFollows } from '../db';
 import { isBlockedBetween } from '../moderation/block';
+import { captureError } from '../sentry/capture-error';
 import { isMutableNotificationType } from './mutable-types';
 import { isNotificationTypeMuted } from './mutes';
 import { resolveSupersedeRule } from './supersede';
@@ -27,8 +28,12 @@ type NotificationEvent = {
 const DEDUP_WINDOW_MS = 5 * 60 * 1000;
 
 /**
- * Create a notification. Fire-and-forget — failures are silently
- * caught so that notification creation never breaks the main action.
+ * Create a notification. Fire-and-forget — failures are caught (never
+ * propagated, so notification creation cannot break the main action) and
+ * reported via {@link captureError}: for several events (a manually granted
+ * rank, an accepted edit request) this is the recipient's only signal, so a
+ * schema or constraint regression here must be visible in Sentry rather
+ * than silently dropping every notification.
  *
  * Includes deduplication: if a notification with the same userId + type +
  * actorId + targetType + targetId already exists within the time window,
@@ -146,7 +151,9 @@ export function createNotification(event: NotificationEvent): void {
           .where(and(supersede.groupFilter, eq(notifications.type, event.type)));
       }
     }
-  })().catch(() => {});
+  })().catch((error) => {
+    captureError(error, `[createNotification] failed to record ${event.type} notification`);
+  });
 }
 
 /**

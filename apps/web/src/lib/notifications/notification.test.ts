@@ -13,6 +13,8 @@ let notificationSelectCall = 0;
 const mockDbInsertValues = vi.fn();
 const mockDbSelectWhere = vi.fn();
 const mockDbDeleteWhere = vi.fn();
+/** When set, the next insert().values() rejects with this value. */
+let mockInsertRejection: unknown = null;
 
 /**
  * The DB mock needs to handle these distinct query patterns:
@@ -55,6 +57,11 @@ vi.mock('@/lib/db', () => ({
     insert: () => ({
       values: (...args: unknown[]) => {
         mockDbInsertValues(...args);
+        if (mockInsertRejection !== null) {
+          const rejection = mockInsertRejection;
+          mockInsertRejection = null;
+          return Promise.reject(rejection);
+        }
         return Promise.resolve();
       },
     }),
@@ -69,6 +76,11 @@ vi.mock('@/lib/db', () => ({
   userFollows: 'userFollows_table',
   userBlocks: 'userBlocks_table',
   notificationMutes: 'notificationMutes_table',
+}));
+
+const mockCaptureError = vi.fn();
+vi.mock('@/lib/sentry/capture-error', () => ({
+  captureError: (...args: unknown[]) => mockCaptureError(...args),
 }));
 
 vi.mock('drizzle-orm', () => ({
@@ -191,8 +203,8 @@ describe('notifyFollowersOfNewPost', () => {
   });
 
   it('should not throw when the internal async function fails (fire-and-forget)', () => {
-    // notifyFollowersOfNewPost wraps everything in (async () => { ... })().catch(() => {}).
-    // Even if it fails internally, it should not propagate the error to the caller.
+    // createNotification catches internally (reporting via captureError), so
+    // an internal failure never propagates to the caller.
     expect(() =>
       notifyFollowersOfNewPost({
         actorId: 'author-1',
@@ -206,6 +218,8 @@ describe('notifyFollowersOfNewPost', () => {
 
 describe('createNotification', () => {
   beforeEach(() => {
+    mockCaptureError.mockClear();
+    mockInsertRejection = null;
     mockMutedRows = [];
     mockNotificationSelects = [];
     notificationSelectCall = 0;
@@ -559,6 +573,25 @@ describe('createNotification — supersede', () => {
 
     expect(inArrayValues(mockDbSelectWhere.mock.calls[0][0])).toEqual([]);
     expect(mockDbDeleteWhere).not.toHaveBeenCalled();
+  });
+
+  it('reports an insert failure via captureError without throwing', async () => {
+    const failure = new Error('insert failed');
+    mockInsertRejection = failure;
+
+    expect(() =>
+      createNotification({
+        userId: 'user-1',
+        actorId: 'actor-1',
+        type: 'rank_granted',
+        targetType: 'rank',
+        targetId: 'rank-1',
+      })
+    ).not.toThrow();
+
+    await new Promise((r) => setTimeout(r, 0));
+
+    expect(mockCaptureError).toHaveBeenCalledWith(failure, expect.stringContaining('rank_granted'));
   });
 });
 
