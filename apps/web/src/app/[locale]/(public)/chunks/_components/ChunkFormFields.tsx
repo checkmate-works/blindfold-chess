@@ -5,8 +5,6 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import {
-  BoardFrame,
-  BoardSkeleton,
   FieldError,
   FlipBoardButton,
   GenerateSlugButton,
@@ -23,6 +21,7 @@ import {
 } from '@/lib/chunks/validation';
 
 import { BoardFenTabs } from '@/app/[locale]/(public)/practice/(free-play)/_components/BoardFenTabs';
+import { EditableBoardSkeleton } from '@/app/[locale]/(public)/practice/(free-play)/_components/EditableBoardSkeleton';
 import { EditableChessBoard } from '@/app/[locale]/(public)/practice/(free-play)/_components/EditableChessBoard';
 import { useEditableBoardLabels } from '@/app/[locale]/(public)/practice/(free-play)/_hooks/use-editable-board-labels';
 import type { useFenBoardEditor } from '@/app/[locale]/(public)/practice/(free-play)/_hooks/use-fen-board-editor';
@@ -215,9 +214,7 @@ export function ChunkFormFields({
               <FlipBoardButton onClick={board.handleFlip} title={t('flipBoard')} />
             </div>
             {!isLoaded ? (
-              <BoardFrame>
-                <BoardSkeleton />
-              </BoardFrame>
+              <EditableBoardSkeleton />
             ) : (
               <EditableChessBoard
                 fen={board.boardFen}
