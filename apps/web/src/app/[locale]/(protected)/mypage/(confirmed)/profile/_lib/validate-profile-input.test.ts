@@ -4,10 +4,11 @@ import type { ProfileInput } from './validate-profile-input';
 import { validateProfileInput } from './validate-profile-input';
 
 /** No mocks needed: the profanity check is the function's only dependency. */
-const deps = { isLameName: (name: string) => name === 'badname' };
-const noLameNames = { isLameName: () => false };
+type ValidateDeps = { isLameName: (name: string) => boolean };
+const deps: ValidateDeps = { isLameName: (name) => name === 'badname' };
+const noLameNames: ValidateDeps = { isLameName: () => false };
 
-const validate = (input: ProfileInput, d = deps) =>
+const validate = (input: ProfileInput, d: ValidateDeps = deps) =>
   validateProfileInput({ displayName: 'Valid Name', ...input }, d);
 
 describe('validateProfileInput', () => {

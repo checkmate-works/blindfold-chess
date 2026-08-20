@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactElement } from 'react';
 import { useState } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
@@ -114,16 +115,11 @@ export function AttachmentEditor({
   }
 
   // 1:0..1 kinds — render the read card and a confirm-then-remove affordance.
-  const card =
-    attachment.kind === 'pgn' ? (
-      <AttachedGameCard attachment={attachment.data} />
-    ) : attachment.kind === 'embed' ? (
-      <AttachedEmbedCard attachment={attachment.data} />
-    ) : attachment.kind === 'fen' ? (
-      <AttachedFenCard attachment={attachment.data} />
-    ) : (
-      <AttachedVideoCard attachment={attachment.data} fallbackTitle={fallbackVideoTitle} />
-    );
+  // Exhaustive like the sibling `render-attachment`: the nested ternary this
+  // replaces ended in an unguarded "otherwise it's a video", so a sixth kind
+  // would have rendered AttachedVideoCard with foreign data (and read
+  // `data.id` below, which a future 1:N kind does not have).
+  const card = renderRemovableCard(attachment, fallbackVideoTitle);
 
   const attachmentId = attachment.data.id;
   const kind = attachment.kind;
@@ -165,4 +161,30 @@ export function AttachmentEditor({
       />
     </div>
   );
+}
+
+/**
+ * The read-only card for the single-attachment kinds. `image` is handled by
+ * its own multi-thumbnail branch above and never reaches here, so it is the
+ * one kind excluded from the parameter type rather than from the switch.
+ */
+function renderRemovableCard(
+  attachment: Exclude<PostAttachment, { kind: 'image' }>,
+  fallbackVideoTitle: string
+): ReactElement | null {
+  switch (attachment.kind) {
+    case 'pgn':
+      return <AttachedGameCard attachment={attachment.data} />;
+    case 'embed':
+      return <AttachedEmbedCard attachment={attachment.data} />;
+    case 'fen':
+      return <AttachedFenCard attachment={attachment.data} />;
+    case 'video':
+      return <AttachedVideoCard attachment={attachment.data} fallbackTitle={fallbackVideoTitle} />;
+    default: {
+      const _exhaustive: never = attachment;
+      void _exhaustive;
+      return null;
+    }
+  }
 }

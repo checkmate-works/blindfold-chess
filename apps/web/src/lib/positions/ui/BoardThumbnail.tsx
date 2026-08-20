@@ -1,3 +1,5 @@
+import type { ReactElement } from 'react';
+
 import type { BlindfoldDisplaySettings } from '@blindfold-chess/features/board-display';
 import { resolvePieceDisplay } from '@blindfold-chess/features/board-display';
 import {
@@ -57,7 +59,7 @@ type Color = PieceColor;
 function renderThumbnailPiece(
   piece: { type: PieceType; color: Color },
   displaySettings: BlindfoldDisplaySettings | null
-) {
+): ReactElement | null {
   if (!displaySettings) {
     return <ChessPieceIcon type={piece.type} color={piece.color} className="w-[80%] h-[80%]" />;
   }
@@ -84,6 +86,15 @@ function renderThumbnailPiece(
       return (
         <ChessPieceIcon type={display.type} color={display.color} className="w-[80%] h-[80%]" />
       );
+    default: {
+      // Exhaustive over PieceDisplay. Without the declared return type and
+      // this branch, a new kind silently made the function return
+      // `undefined` — the piece vanished from the thumbnail while the two
+      // full boards drew it, so the three surfaces disagreed.
+      const _exhaustive: never = display;
+      void _exhaustive;
+      return null;
+    }
   }
 }
 

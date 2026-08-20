@@ -1,4 +1,4 @@
-import type { PracticeMenuType } from './practice-menu-types';
+import type { ChallengeMenuType, PracticeMenuType } from './practice-menu-types';
 
 /**
  * Derives the leaderboard segmentation key from module settings.
@@ -20,24 +20,40 @@ import type { PracticeMenuType } from './practice-menu-types';
  *
  * - board_symmetry: always 'default' — no configurable variant.
  */
+/** Resolves one module's leaderboard segmentation key from its settings. */
+type LeaderboardKeyResolver = (settings: Record<string, unknown>) => string | null;
+
+/**
+ * One resolver per challenge module.
+ *
+ * `satisfies Record<ChallengeMenuType, …>` is what makes this safe to grow:
+ * `ChallengeMenuType` is derived from the `hasChallenge: true` entries of
+ * `PRACTICE_MODULE_REGISTRY`, so registering a new challenge module without a
+ * resolver here is a compile error. It used to be a `switch` with
+ * `default: return null`, and that null reaches `savePracticeResult` as
+ * `invalid_leaderboard_key` — every result for the new module discarded
+ * behind a `console.warn`, with nothing failing at build time.
+ */
+const CHALLENGE_KEY_RESOLVERS = {
+  coordinate_quiz: (settings) =>
+    typeof settings.boardOrientation === 'string' ? settings.boardOrientation : null,
+  legal_moves: (settings) =>
+    typeof settings.selectedPiece === 'string' ? settings.selectedPiece : null,
+  square_colors: () => 'default',
+  diagonal_quiz: () => 'default',
+  board_symmetry: () => 'default',
+  route_planner: (settings) =>
+    typeof settings.selectedPiece === 'string' ? settings.selectedPiece : null,
+} as const satisfies Record<ChallengeMenuType, LeaderboardKeyResolver>;
+
 export function deriveLeaderboardKey(
   menuType: PracticeMenuType,
   settings: Record<string, unknown>
 ): string | null {
-  switch (menuType) {
-    case 'coordinate_quiz':
-      return typeof settings.boardOrientation === 'string' ? settings.boardOrientation : null;
-    case 'legal_moves':
-      return typeof settings.selectedPiece === 'string' ? settings.selectedPiece : null;
-    case 'square_colors':
-      return 'default';
-    case 'diagonal_quiz':
-      return 'default';
-    case 'board_symmetry':
-      return 'default';
-    case 'route_planner':
-      return typeof settings.selectedPiece === 'string' ? settings.selectedPiece : null;
-    default:
-      return null;
-  }
+  // Free-play modules have no leaderboard and no resolver — `null` for them
+  // is the documented answer, not a missing case.
+  const resolve: LeaderboardKeyResolver | undefined = (
+    CHALLENGE_KEY_RESOLVERS as Record<string, LeaderboardKeyResolver>
+  )[menuType];
+  return resolve ? resolve(settings) : null;
 }

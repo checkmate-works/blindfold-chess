@@ -1,3 +1,5 @@
+import type { ReactElement } from 'react';
+
 import {
   FaBook,
   FaBookOpen,
@@ -19,7 +21,14 @@ import { GiBlackBelt, GiCrossedSwords } from 'react-icons/gi';
 
 import type { NavigationIconName } from './types';
 
-export const getIcon = (iconName: NavigationIconName) => {
+/**
+ * The declared `ReactElement` return type is load-bearing: without it the
+ * switch had no `default`, so adding a `NavigationIconName` widened the
+ * inferred return to `Element | undefined` with no error (`noImplicitReturns`
+ * is off) and that nav item rendered with no icon, misaligned in every menu.
+ * With the annotation, a missing case fails the build.
+ */
+export const getIcon = (iconName: NavigationIconName): ReactElement => {
   switch (iconName) {
     case 'home':
       return <FaList className="h-5 w-5" />;

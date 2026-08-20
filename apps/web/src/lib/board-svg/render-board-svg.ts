@@ -329,30 +329,45 @@ export function renderBoardSvg({
       ? resolvePieceDisplay(piece, displaySettings)
       : { kind: 'piece', type: piece.type, color: piece.color };
 
-    if (display.kind === 'absent') continue;
-
-    if (display.kind === 'circle') {
-      if (display.color === 'w') usesStoneWhite = true;
-      else usesStoneBlack = true;
-      const diameter = squareSize * 0.6;
-      // A faint stone is a hidden one — same opacity as a ghost piece, so
-      // "dimmed" reads as "the player could not see this" no matter which
-      // form the square takes.
-      const opacity = display.faint ? ` opacity="${HIDDEN_OPACITY}"` : '';
-      piecesMarkup += `<circle cx="${x + squareSize / 2}" cy="${y + squareSize / 2}" r="${
-        diameter / 2
-      }" fill="url(#bfc-stone-${display.color})"${opacity}/>`;
-      continue;
+    // Exhaustive over PieceDisplay: an unhandled kind must not fall through
+    // to the full-piece branch below — on a blindfold board that leaks the
+    // position. The `never` default turns a new kind into a build error.
+    switch (display.kind) {
+      case 'absent':
+        continue;
+      case 'circle': {
+        if (display.color === 'w') usesStoneWhite = true;
+        else usesStoneBlack = true;
+        const diameter = squareSize * 0.6;
+        // A faint stone is a hidden one — same opacity as a ghost piece, so
+        // "dimmed" reads as "the player could not see this" no matter which
+        // form the square takes.
+        const opacity = display.faint ? ` opacity="${HIDDEN_OPACITY}"` : '';
+        piecesMarkup += `<circle cx="${x + squareSize / 2}" cy="${y + squareSize / 2}" r="${
+          diameter / 2
+        }" fill="url(#bfc-stone-${display.color})"${opacity}/>`;
+        continue;
+      }
+      case 'ghost':
+      case 'piece': {
+        const pieceData = getPieceData(display.type, display.color);
+        const scale = (squareSize * 0.8) / 45;
+        const offset = squareSize * 0.1;
+        const pieceGroup = `<g transform="translate(${x + offset},${y + offset}) scale(${scale})">${serializeElements(
+          pieceData.elements
+        )}</g>`;
+        piecesMarkup +=
+          display.kind === 'ghost'
+            ? `<g opacity="${HIDDEN_OPACITY}">${pieceGroup}</g>`
+            : pieceGroup;
+        continue;
+      }
+      default: {
+        const _exhaustive: never = display;
+        void _exhaustive;
+        continue;
+      }
     }
-
-    const pieceData = getPieceData(display.type, display.color);
-    const scale = (squareSize * 0.8) / 45;
-    const offset = squareSize * 0.1;
-    const pieceGroup = `<g transform="translate(${x + offset},${y + offset}) scale(${scale})">${serializeElements(
-      pieceData.elements
-    )}</g>`;
-    piecesMarkup +=
-      display.kind === 'ghost' ? `<g opacity="${HIDDEN_OPACITY}">${pieceGroup}</g>` : pieceGroup;
   }
 
   let highlightMarkup = '';
