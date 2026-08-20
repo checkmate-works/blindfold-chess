@@ -193,7 +193,14 @@ export function buildNotificationMessage(
         return t('achievementMultipleMessage', { count: String(badges.length) });
       }
       return t('unknownNotification');
-    default:
+    default: {
+      // Compile-time exhaustiveness: adding a NotificationType without a
+      // message here now fails the build instead of shipping an
+      // "unknownNotification" row. Runtime stays tolerant — stale rows may
+      // carry a type retired from the union.
+      const _exhaustive: never = notification.type;
+      void _exhaustive;
       return t('unknownNotification');
+    }
   }
 }

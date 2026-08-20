@@ -2,6 +2,7 @@ import { and, desc, eq } from 'drizzle-orm';
 
 import { db, notifications, profiles } from '@/lib/db';
 import { countRows } from '@/lib/db/list-query';
+import type { NotificationType } from '@/lib/notifications/types';
 import { resolvePagination } from '@/lib/pagination';
 import type { AuthorProfile } from '@/lib/users/author-profile';
 
@@ -9,7 +10,7 @@ const PAGE_SIZE = 20;
 
 export type NotificationWithActor = {
   id: string;
-  type: string;
+  type: NotificationType;
   targetType: string | null;
   targetId: string | null;
   groupKey: string | null;
@@ -49,7 +50,11 @@ export async function getNotifications(
 
   const items: NotificationWithActor[] = rows.map((row) => ({
     id: row.id,
-    type: row.type,
+    // The column is varchar, so a stale row may carry a type retired from
+    // NOTIFICATION_TYPES. The cast keeps the read path exhaustively typed;
+    // the message/link dispatches stay runtime-tolerant for such rows
+    // (generic message, no link) rather than throwing.
+    type: row.type as NotificationType,
     targetType: row.targetType,
     targetId: row.targetId,
     groupKey: row.groupKey,

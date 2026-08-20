@@ -1,3 +1,5 @@
+import type { NotificationType } from './types';
+
 /**
  * Notification types a user may individually mute from
  * `/mypage/notifications` settings.
@@ -50,7 +52,7 @@ export const MUTABLE_NOTIFICATION_TYPES = [
   'new_comment_on_topic',
   'game_chunk_linked',
   'repertoire_chunk_linked',
-] as const;
+] as const satisfies readonly NotificationType[];
 
 export type MutableNotificationType = (typeof MUTABLE_NOTIFICATION_TYPES)[number];
 

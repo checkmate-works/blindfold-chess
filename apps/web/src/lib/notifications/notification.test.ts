@@ -583,7 +583,7 @@ describe('createNotification — supersede', () => {
       createNotification({
         userId: 'user-1',
         actorId: 'actor-1',
-        type: 'rank_granted',
+        type: 'rank_grant',
         targetType: 'rank',
         targetId: 'rank-1',
       })
@@ -591,7 +591,7 @@ describe('createNotification — supersede', () => {
 
     await new Promise((r) => setTimeout(r, 0));
 
-    expect(mockCaptureError).toHaveBeenCalledWith(failure, expect.stringContaining('rank_granted'));
+    expect(mockCaptureError).toHaveBeenCalledWith(failure, expect.stringContaining('rank_grant'));
   });
 });
 

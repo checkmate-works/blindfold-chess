@@ -8,6 +8,7 @@ import { captureError } from '../sentry/capture-error';
 import { isMutableNotificationType } from './mutable-types';
 import { isNotificationTypeMuted } from './mutes';
 import { resolveSupersedeRule } from './supersede';
+import type { NotificationType } from './types';
 
 type NotificationEvent = {
   /**
@@ -17,7 +18,8 @@ type NotificationEvent = {
    */
   userId: string | null | undefined;
   actorId?: string;
-  type: string;
+  /** Registered in `./types` — adding a new value starts there. */
+  type: NotificationType;
   targetType?: string;
   targetId?: string;
   groupKey?: string;

@@ -135,6 +135,12 @@ function buildPostDetailUrl(
  *
  * Pure routing logic extracted from `NotificationItem` so it can be unit
  * tested without rendering the component.
+ *
+ * Dispatch is an exhaustive `switch` over {@link NotificationWithActor.type}:
+ * adding a `NotificationType` without deciding its link now fails the build
+ * (previously an unrouted type silently fell through to `null` and rendered
+ * as a dead row). Runtime stays tolerant of stale rows whose type has been
+ * retired from the union.
  */
 export function buildNotificationLink(
   notification: NotificationWithActor,
@@ -143,9 +149,153 @@ export function buildNotificationLink(
   const { currentUsername } = opts;
   const actor = notification.actor;
 
-  if (notification.type === 'follow' && actor) {
-    return `/u/${actor.username}`;
+  switch (notification.type) {
+    case 'follow':
+      return actor ? `/u/${actor.username}` : null;
+
+    case 'like':
+    case 'reply':
+    case 'new_post':
+    case 'new_comment_on_topic':
+      return buildEngagementLink(notification);
+
+    case 'new_position':
+      if (notification.targetId) {
+        if (isPositionMetadata(notification.metadata)) {
+          return resolvePositionLinkFromMetadata(notification.targetId, notification.metadata);
+        }
+        return `/practice/position-memory/${notification.targetId}`;
+      }
+      return null;
+
+    case 'puzzle_forked':
+    case 'memory_forked':
+      if (notification.targetId) {
+        // The target is always the newly created entry (never the fork source,
+        // whose kind may differ). Route via the stored `positionType` so
+        // `memory_forked` lands on the memory URL and `puzzle_forked` on the
+        // puzzle URL; legacy `puzzle_forked` rows always carried `positionType:
+        // 'puzzle'`, so the puzzle fallback preserves their prior behavior.
+        if (isPositionMetadata(notification.metadata)) {
+          return resolvePositionLinkFromMetadata(notification.targetId, notification.metadata);
+        }
+        return `/practice/puzzle/${notification.targetId}`;
+      }
+      return null;
+
+    case 'new_game':
+      // A followed author published a game; the target is the game id.
+      return notification.targetId ? `/games/shared/${notification.targetId}` : null;
+
+    case 'game_chunk_linked':
+      if (isGameChunkLinkMetadata(notification.metadata)) {
+        // Open the replay at the tagged move, where that move's chunk links are
+        // listed. The replay parses `#<half-move>` client-side as 1-based (see
+        // `useReplayDeepLink`), hence the +1; an out-of-range value there simply
+        // degrades to the overview board rather than 404ing.
+        return `/games/shared/${notification.metadata.gameId}#${notification.metadata.ply + 1}`;
+      }
+      return null;
+
+    case 'repertoire_chunk_linked':
+      if (isRepertoireChunkLinkMetadata(notification.metadata)) {
+        // lineNo / ply are the 1-based values the line page itself uses (`?move=`
+        // query param, not a #fragment — see `RepertoireLineDetailPage`), so no
+        // +1 adjustment is needed here (unlike the game_chunk_linked branch).
+        const { repertoireId, lineNo, ply } = notification.metadata;
+        return `/repertoires/${repertoireId}/lines/${lineNo}?move=${ply}`;
+      }
+      return null;
+
+    case 'announcement':
+      return isAnnouncementMetadata(notification.metadata)
+        ? `/announcements/${notification.metadata.slug}`
+        : null;
+
+    case 'chunk_edit_request_submitted':
+    case 'chunk_edit_request_accepted':
+      if (isChunkEditRequestMetadata(notification.metadata)) {
+        // Route to the chunk's edit-requests page rather than the
+        // individual request — the page already shows the full per-request
+        // list with the current chunk values for comparison, which is the
+        // context both notification types ask for.
+        return `/chunks/${notification.metadata.slug}/edit-requests`;
+      }
+      return null;
+
+    case 'position_edit_request_submitted':
+      if (isPositionMetadata(notification.metadata)) {
+        // Route the owner to the position's suggestions page — the full
+        // per-request list with the current position values for comparison,
+        // which is the context this notification asks the owner to review
+        // (mirrors the chunk edit-request routing above).
+        return resolvePositionEditRequestsLinkFromMetadata(
+          notification.metadata.positionId,
+          notification.metadata
+        );
+      }
+      return null;
+
+    case 'position_edit_request_accepted':
+      if (isPositionMetadata(notification.metadata)) {
+        // The accepted proposer lands on the position detail page, where the
+        // applied change is now visible. `positionType` in metadata selects
+        // memory vs. puzzle; a missing type falls back to the memory URL.
+        return resolvePositionLinkFromMetadata(
+          notification.metadata.positionId,
+          notification.metadata
+        );
+      }
+      return null;
+
+    case 'new_chunk_draft':
+    case 'chunk_published':
+      if (isChunkLifecycleMetadata(notification.metadata)) {
+        // Drafts land on the edit-requests page since the call-to-action
+        // is to review the draft and propose changes. Published chunks
+        // route to the chunk's main page — the canonical post.
+        if (notification.type === 'new_chunk_draft') {
+          return `/chunks/${notification.metadata.slug}/edit-requests`;
+        }
+        return `/chunks/${notification.metadata.slug}`;
+      }
+      return null;
+
+    case 'achievement_granted':
+      return currentUsername ? `/u/${currentUsername}/achievements` : null;
+
+    case 'benefit_grant':
+      return '/mypage/benefits';
+
+    case 'rank_grant':
+      return isRankGrantMetadata(notification.metadata)
+        ? `/dojo/ranks/${notification.metadata.rankSlug}`
+        : null;
+
+    case 'point_grant':
+    case 'like_coin_grant':
+      return '/mypage/coins';
+
+    default: {
+      // Compile-time exhaustiveness: a NotificationType with no case above
+      // fails the build. Runtime stays tolerant — a stale row whose type was
+      // retired renders as a non-link button.
+      const _exhaustive: never = notification.type;
+      void _exhaustive;
+      return null;
+    }
   }
+}
+
+/**
+ * Routing for the engagement family (`like` / `reply` / `new_post` /
+ * `new_comment_on_topic`), whose branches key off target/metadata shape and
+ * are shared across the four types — a like may point at a position, a post
+ * thread, a whole game, a game comment, or a chunk. The conditions keep the
+ * priority order of the original if-chain, including each branch's own type
+ * guards, so per-type behavior is unchanged.
+ */
+function buildEngagementLink(notification: NotificationWithActor): string | null {
   if (notification.type === 'like' && notification.targetType === 'position') {
     if (isPositionMetadata(notification.metadata)) {
       // Prefer the stored `positionType` so puzzle likes route to
@@ -163,33 +313,7 @@ export function buildNotificationLink(
       return `/practice/position-memory/${notification.targetId}`;
     }
   }
-  if (notification.type === 'new_position' && notification.targetId) {
-    if (isPositionMetadata(notification.metadata)) {
-      return resolvePositionLinkFromMetadata(notification.targetId, notification.metadata);
-    }
-    return `/practice/position-memory/${notification.targetId}`;
-  }
-  if (
-    (notification.type === 'puzzle_forked' || notification.type === 'memory_forked') &&
-    notification.targetId
-  ) {
-    // The target is always the newly created entry (never the fork source,
-    // whose kind may differ). Route via the stored `positionType` so
-    // `memory_forked` lands on the memory URL and `puzzle_forked` on the
-    // puzzle URL; legacy `puzzle_forked` rows always carried `positionType:
-    // 'puzzle'`, so the puzzle fallback preserves their prior behavior.
-    if (isPositionMetadata(notification.metadata)) {
-      return resolvePositionLinkFromMetadata(notification.targetId, notification.metadata);
-    }
-    return `/practice/puzzle/${notification.targetId}`;
-  }
-  if (
-    (notification.type === 'like' ||
-      notification.type === 'reply' ||
-      notification.type === 'new_post' ||
-      notification.type === 'new_comment_on_topic') &&
-    isPostMetadata(notification.metadata)
-  ) {
+  if (isPostMetadata(notification.metadata)) {
     // Both thread-derived types carry the concrete comment's id as replyId
     // ('new_comment_on_topic' rows written by notifyTopicAuthorOfNewComment
     // have no replyId — the post itself is the comment — and fall through
@@ -210,31 +334,8 @@ export function buildNotificationLink(
     // The game id is the like target itself.
     return `/games/shared/${notification.targetId}`;
   }
-  if (notification.type === 'new_game' && notification.targetId) {
-    // A followed author published a game; the target is the game id.
-    return `/games/shared/${notification.targetId}`;
-  }
-  if (notification.type === 'game_chunk_linked' && isGameChunkLinkMetadata(notification.metadata)) {
-    // Open the replay at the tagged move, where that move's chunk links are
-    // listed. The replay parses `#<half-move>` client-side as 1-based (see
-    // `useReplayDeepLink`), hence the +1; an out-of-range value there simply
-    // degrades to the overview board rather than 404ing.
-    return `/games/shared/${notification.metadata.gameId}#${notification.metadata.ply + 1}`;
-  }
   if (
-    notification.type === 'repertoire_chunk_linked' &&
-    isRepertoireChunkLinkMetadata(notification.metadata)
-  ) {
-    // lineNo / ply are the 1-based values the line page itself uses (`?move=`
-    // query param, not a #fragment — see `RepertoireLineDetailPage`), so no
-    // +1 adjustment is needed here (unlike the game_chunk_linked branch).
-    const { repertoireId, lineNo, ply } = notification.metadata;
-    return `/repertoires/${repertoireId}/lines/${lineNo}?move=${ply}`;
-  }
-  if (
-    (notification.type === 'like' ||
-      notification.type === 'reply' ||
-      notification.type === 'new_comment_on_topic') &&
+    notification.type !== 'new_post' &&
     notification.targetType === 'game_comment' &&
     notification.targetId &&
     isGameCommentLikeMetadata(notification.metadata)
@@ -256,66 +357,6 @@ export function buildNotificationLink(
     // (A like on a comment in the chunk thread is `targetType: 'topic_post'`
     // with `topicType: 'chunk'`, handled above by `buildPostDetailUrl`.)
     return `/chunks/${notification.metadata.slug}`;
-  }
-  if (notification.type === 'announcement' && isAnnouncementMetadata(notification.metadata)) {
-    return `/announcements/${notification.metadata.slug}`;
-  }
-  if (
-    (notification.type === 'chunk_edit_request_submitted' ||
-      notification.type === 'chunk_edit_request_accepted') &&
-    isChunkEditRequestMetadata(notification.metadata)
-  ) {
-    // Route to the chunk's edit-requests page rather than the
-    // individual request — the page already shows the full per-request
-    // list with the current chunk values for comparison, which is the
-    // context both notification types ask for.
-    return `/chunks/${notification.metadata.slug}/edit-requests`;
-  }
-  if (
-    notification.type === 'position_edit_request_submitted' &&
-    isPositionMetadata(notification.metadata)
-  ) {
-    // Route the owner to the position's suggestions page — the full
-    // per-request list with the current position values for comparison,
-    // which is the context this notification asks the owner to review
-    // (mirrors the chunk edit-request routing above).
-    return resolvePositionEditRequestsLinkFromMetadata(
-      notification.metadata.positionId,
-      notification.metadata
-    );
-  }
-  if (
-    notification.type === 'position_edit_request_accepted' &&
-    isPositionMetadata(notification.metadata)
-  ) {
-    // The accepted proposer lands on the position detail page, where the
-    // applied change is now visible. `positionType` in metadata selects
-    // memory vs. puzzle; a missing type falls back to the memory URL.
-    return resolvePositionLinkFromMetadata(notification.metadata.positionId, notification.metadata);
-  }
-  if (
-    (notification.type === 'new_chunk_draft' || notification.type === 'chunk_published') &&
-    isChunkLifecycleMetadata(notification.metadata)
-  ) {
-    // Drafts land on the edit-requests page since the call-to-action
-    // is to review the draft and propose changes. Published chunks
-    // route to the chunk's main page — the canonical post.
-    if (notification.type === 'new_chunk_draft') {
-      return `/chunks/${notification.metadata.slug}/edit-requests`;
-    }
-    return `/chunks/${notification.metadata.slug}`;
-  }
-  if (notification.type === 'achievement_granted' && currentUsername) {
-    return `/u/${currentUsername}/achievements`;
-  }
-  if (notification.type === 'benefit_grant') {
-    return '/mypage/benefits';
-  }
-  if (notification.type === 'rank_grant' && isRankGrantMetadata(notification.metadata)) {
-    return `/dojo/ranks/${notification.metadata.rankSlug}`;
-  }
-  if (notification.type === 'point_grant' || notification.type === 'like_coin_grant') {
-    return '/mypage/coins';
   }
   return null;
 }
