@@ -42,7 +42,13 @@ export function OpeningBoardWithMoves({ fen, pgn }: Props) {
   const router = useRouter();
   const t = useTranslations('topics.openings');
   const tCommon = useTranslations('Common');
-  const moves = useMemo(() => parsePgn(pgn), [pgn]);
+  // A seeded opening's PGN that no longer parses degrades to an empty
+  // replay; this used to be an unguarded call inside the memo, so one bad
+  // row took the whole page to its error boundary.
+  const moves = useMemo(() => {
+    const parsed = parsePgn(pgn);
+    return parsed.ok ? parsed.value : [];
+  }, [pgn]);
 
   // The side the opening is played from — which is also the side the board
   // faces by default, and the colour a game started from here is played as.

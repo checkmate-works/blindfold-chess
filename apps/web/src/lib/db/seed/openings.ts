@@ -16,7 +16,13 @@ export async function seedChessOpenings() {
   // Pass 1: Upsert all openings with parentSlug set to null.
   // This ensures all parent rows exist before children reference them via FK.
   for (const opening of chessOpeningsData) {
-    const moves = parsePgn(opening.pgn);
+    // A seed row that does not parse is a data bug: fail the seed loudly
+    // rather than writing an opening with no moves.
+    const parsed = parsePgn(opening.pgn);
+    if (!parsed.ok) {
+      throw new Error(`Opening "${opening.slug}" has an unparseable PGN: ${opening.pgn}`);
+    }
+    const moves = parsed.value;
     const fen = getFenAfterMoves(getStartingFen(), moves);
 
     await db

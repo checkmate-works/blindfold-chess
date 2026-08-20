@@ -30,16 +30,19 @@ export type PgnAttachmentRow = Omit<AttachedGameCardData, 'finalFen'>;
  * is lazy-loaded on expand (see `GameReplayModal`).
  */
 export function pgnRowToCard(row: PgnAttachmentRow): AttachedGameCardData {
+  // Defensive: validateAttachedPgn already accepted this PGN at write time.
+  // If it no longer parses (or no longer replays) the row is corrupt or
+  // chess.js changed behavior; fall back to the standard starting position
+  // rather than dropping the whole attachment.
   let finalFen: string;
-  try {
-    const parsed = parsePgnWithFen(row.pgn);
-    const startingFen = parsed.startingFen ?? getStartingFen();
-    finalFen = getFenAfterMoves(startingFen, parsed.moves);
-  } catch {
-    // Defensive: validateAttachedPgn already accepted this PGN at
-    // write time. If it now fails to parse the row is corrupt or
-    // chess.js changed behavior; fall back to the standard starting
-    // position rather than dropping the whole attachment.
+  const parsed = parsePgnWithFen(row.pgn);
+  if (parsed.ok) {
+    try {
+      finalFen = getFenAfterMoves(parsed.value.startingFen ?? getStartingFen(), parsed.value.moves);
+    } catch {
+      finalFen = getStartingFen();
+    }
+  } else {
     finalFen = getStartingFen();
   }
   return {

@@ -17,7 +17,7 @@
  * and knows nothing about next-intl. This returns a locale-free description;
  * mapping it onto message keys is the app's job.
  */
-import { PgnParseError, parsePgnTree } from "./pgn-tree";
+import { parsePgnTree } from "./pgn-tree";
 
 /**
  * What is wrong with a PGN.
@@ -68,25 +68,21 @@ function quotableSan(san: string): string | null {
 export function diagnosePgn(pgn: string): PgnDiagnosis | null {
   if (!pgn.trim()) return null;
 
-  try {
-    parsePgnTree(pgn);
-    return null;
-  } catch (error) {
-    if (!(error instanceof PgnParseError)) return { code: "unreadable" };
+  const parsed = parsePgnTree(pgn);
+  if (parsed.ok) return null;
 
-    const { failure } = error;
-    if (failure.reason === "noMoves") return { code: "noMoves" };
-    if (failure.reason !== "illegalMove") return { code: "unreadable" };
+  const failure = parsed.error;
+  if (failure.reason === "noMoves") return { code: "noMoves" };
+  if (failure.reason !== "illegalMove") return { code: "unreadable" };
 
-    const san = quotableSan(failure.san);
-    if (!san) return { code: "unreadable" };
-    return {
-      code: "illegalMove",
-      san,
-      moveNumber: failure.moveNumber,
-      ply: failure.ply,
-    };
-  }
+  const san = quotableSan(failure.san);
+  if (!san) return { code: "unreadable" };
+  return {
+    code: "illegalMove",
+    san,
+    moveNumber: failure.moveNumber,
+    ply: failure.ply,
+  };
 }
 
 /**

@@ -1,6 +1,7 @@
 import type { AlgebraicNotation } from "@blindfold-chess/types";
 import { Chess, DEFAULT_POSITION } from "chess.js";
 
+import { type Result, err, ok } from "../utils/result";
 import { fullmoveNumberFromFen, isBlackToMoveFromFen } from "./fen-pure";
 import { asEngineSan } from "./types";
 
@@ -224,13 +225,30 @@ function parseLine(
 }
 
 /**
- * Parse a PGN (with optional variations) into a {@link PgnTree}.
+ * Parse a PGN (with optional variations) into a {@link PgnTree}, or report the
+ * located {@link PgnParseFailure}.
  *
- * @throws {PgnParseError} if the PGN is empty, has no moves, or contains an
- * illegal move — carrying the located {@link PgnParseFailure} so a form can say
- * *which* move failed rather than only that something did.
+ * A PGN reaching this function is user-typed or user-pasted text, so failing
+ * to parse is an ordinary outcome, not an exception: the failure says *which*
+ * move was illegal and where, and as a throw that payload was discarded by
+ * every application caller (`catch {}` → a bare "invalidPgn").
+ *
+ * The recursive `parseLine` still signals failure by throwing
+ * {@link PgnParseError} internally — rewriting its cursor walk is tracked
+ * separately (GitHub issue #109) — and this boundary converts it to a value.
+ * A non-`PgnParseError` throw is a bug in the parser, not an expected
+ * failure, and is deliberately left to propagate.
  */
-export function parsePgnTree(pgn: string): PgnTree {
+export function parsePgnTree(pgn: string): Result<PgnTree, PgnParseFailure> {
+  try {
+    return ok(parsePgnTreeOrThrow(pgn));
+  } catch (error) {
+    if (error instanceof PgnParseError) return err(error.failure);
+    throw error;
+  }
+}
+
+function parsePgnTreeOrThrow(pgn: string): PgnTree {
   if (!pgn.trim()) {
     throw new PgnParseError({ reason: "empty" });
   }

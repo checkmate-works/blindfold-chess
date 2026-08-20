@@ -1,3 +1,4 @@
+import { type Result, err, ok } from "../utils/result";
 import type { AlgebraicNotation } from "@blindfold-chess/types";
 import { Chess, DEFAULT_POSITION } from "chess.js";
 
@@ -48,20 +49,43 @@ export function validatePgn(pgn: string): boolean {
   }
 }
 
-export function parsePgn(pgn: string): AlgebraicNotation[] {
+/**
+ * Why a PGN could not be loaded. chess.js reports only that its parse
+ * failed, so there is one kind; `cause` carries whatever it threw, for logs.
+ * (The variation-aware {@link parsePgnTree} reports a *located* failure —
+ * prefer it when the caller wants to say which move was illegal.)
+ */
+export type PgnLoadError = { kind: "invalid-pgn"; cause: unknown };
+
+/**
+ * Load a PGN's mainline moves.
+ *
+ * Returns a {@link Result}: the input is stored rows, seeded data or pasted
+ * text, so failing to parse is an ordinary outcome. As an untyped `throw` the
+ * contract was unenforceable — six call sites carefully recovered while two
+ * (an opening's board `useMemo` and a start-game click handler) called it bare,
+ * so one bad row blew up an error boundary instead of degrading.
+ */
+export function parsePgn(
+  pgn: string,
+): Result<AlgebraicNotation[], PgnLoadError> {
   try {
     const chess = new Chess();
     chess.loadPgn(pgn);
-    return chess.history().map(asEngineSan);
-  } catch {
-    throw new Error("Invalid PGN format");
+    return ok(chess.history().map(asEngineSan));
+  } catch (cause) {
+    return err({ kind: "invalid-pgn", cause });
   }
 }
 
-export function parsePgnWithFen(pgn: string): {
-  moves: AlgebraicNotation[];
-  startingFen?: string;
-} {
+/** As {@link parsePgn}, plus the `[FEN]` header when the game has one. */
+export function parsePgnWithFen(pgn: string): Result<
+  {
+    moves: AlgebraicNotation[];
+    startingFen?: string;
+  },
+  PgnLoadError
+> {
   try {
     const chess = new Chess();
     chess.loadPgn(pgn);
@@ -70,12 +94,12 @@ export function parsePgnWithFen(pgn: string): {
     const startingFen = headers.FEN;
     const isCustomPosition = startingFen && startingFen !== DEFAULT_POSITION;
 
-    return {
+    return ok({
       moves: chess.history().map(asEngineSan),
       startingFen: isCustomPosition ? startingFen : undefined,
-    };
-  } catch {
-    throw new Error("Invalid PGN format");
+    });
+  } catch (cause) {
+    return err({ kind: "invalid-pgn", cause });
   }
 }
 

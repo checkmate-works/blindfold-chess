@@ -157,7 +157,14 @@ export function RecallSetupForm() {
   const isStartDisabled = !pgn.trim() || !validatePgn(pgn);
 
   const handleStart = () => {
-    const { moves, startingFen } = parsePgnWithFen(pgn);
+    // `isStartDisabled` gates this behind validatePgn, so a failure here means
+    // the two parsers disagree — bail rather than start an empty session.
+    const parsed = parsePgnWithFen(pgn);
+    if (!parsed.ok) {
+      console.error('[recall] PGN accepted by validatePgn failed to parse', parsed.error);
+      return;
+    }
+    const { moves, startingFen } = parsed.value;
     const params = new URLSearchParams({ color });
     params.set('moves', JSON.stringify(moves));
     if (startingFen) params.set('fen', startingFen);

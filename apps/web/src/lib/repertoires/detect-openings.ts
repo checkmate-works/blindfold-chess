@@ -23,12 +23,9 @@ export function detectOpeningIdsFromPgn(
 ): string[] {
   if (!pgn.trim() || openings.length === 0) return [];
 
-  let tree;
-  try {
-    tree = parsePgnTree(pgn);
-  } catch {
-    return [];
-  }
+  const parsed = parsePgnTree(pgn);
+  if (!parsed.ok) return [];
+  const tree = parsed.value;
 
   const index = buildOpeningIndex(openings.map((o) => ({ id: o.id, fen: o.fen })));
   const matched = new Set<string>();

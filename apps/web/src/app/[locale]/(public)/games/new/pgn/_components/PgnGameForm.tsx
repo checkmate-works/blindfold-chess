@@ -67,15 +67,9 @@ export function PgnGameForm({ locale, maiaAccess }: Props) {
     startingFen?: string;
   } => {
     if (!pgn.trim() || !validatePgn(pgn)) return { pgnMoves: [] };
-    try {
-      const result = parsePgnWithFen(pgn);
-      return {
-        pgnMoves: result.moves,
-        startingFen: result.startingFen,
-      };
-    } catch {
-      return { pgnMoves: [] };
-    }
+    const result = parsePgnWithFen(pgn);
+    if (!result.ok) return { pgnMoves: [] };
+    return { pgnMoves: result.value.moves, startingFen: result.value.startingFen };
   }, [pgn]);
 
   // Auto-derive color from PGN
@@ -122,8 +116,14 @@ export function PgnGameForm({ locale, maiaAccess }: Props) {
 
   const navigateToGame = () => {
     const parsed = parsePgnWithFen(pgn);
-    const moves = parsed.moves;
-    const fenToPass = parsed.startingFen;
+    if (!parsed.ok) {
+      // The Start button is gated on validatePgn; reaching here means the two
+      // parsers disagree, and navigating would start a moveless game.
+      console.error('[pgn-game] PGN accepted by validatePgn failed to parse', parsed.error);
+      return;
+    }
+    const moves = parsed.value.moves;
+    const fenToPass = parsed.value.startingFen;
 
     const params = new URLSearchParams({
       color,

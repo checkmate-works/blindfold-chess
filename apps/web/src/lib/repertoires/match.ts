@@ -113,14 +113,11 @@ export function matchGameToRepertoire(
   game: GameForMatch,
   linePgns: string[]
 ): LineMatchResult | null {
-  const trees: PgnTree[] = [];
-  for (const pgn of linePgns) {
-    try {
-      trees.push(parsePgnTree(pgn));
-    } catch {
-      // A corrupt line must not take the whole kata check down with it.
-    }
-  }
+  // A corrupt line is skipped rather than taking the whole kata check down.
+  const trees: PgnTree[] = linePgns
+    .map((pgn) => parsePgnTree(pgn))
+    .filter((result) => result.ok)
+    .map((result) => result.value);
 
   let best: LineMatchResult | null = null;
   for (const tree of mergeLineTrees(trees)) {

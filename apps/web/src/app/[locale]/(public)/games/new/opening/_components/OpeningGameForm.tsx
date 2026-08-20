@@ -29,7 +29,15 @@ export function OpeningGameForm({ openings }: Props) {
   const handleStartGame = () => {
     if (!selectedOpening) return;
 
-    const moves = parsePgn(selectedOpening.pgn);
+    const parsed = parsePgn(selectedOpening.pgn);
+    // Nothing to start from if the seeded line no longer parses; staying put
+    // beats navigating to a game with no moves (and beats the unhandled
+    // rejection this used to raise).
+    if (!parsed.ok) {
+      console.error('[opening-game] seeded PGN failed to parse', parsed.error);
+      return;
+    }
+    const moves = parsed.value;
     const params = new URLSearchParams();
     params.set('moves', JSON.stringify(moves));
     params.set('color', isBlackOpening(selectedOpening.fen) ? 'black' : 'white');

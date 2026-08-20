@@ -8,6 +8,17 @@ import {
 } from "../pgn-tree";
 import type { MoveTreeNode, PgnParseFailure } from "../pgn-tree";
 
+/** Unwrap a parse expected to succeed. */
+function parseTree(pgn: string) {
+  const result = parsePgnTree(pgn);
+  if (!result.ok) {
+    throw new Error(
+      `expected the PGN to parse: ${JSON.stringify(result.error)}`,
+    );
+  }
+  return result.value;
+}
+
 const STANDARD_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 /** Collect the SAN of every node, depth-first, for terse assertions. */
@@ -31,7 +42,7 @@ function mainLine(nodes: MoveTreeNode[]): string[] {
 // ============================================================
 describe("parsePgnTree — linear", () => {
   it("builds a single chain for a variation-free PGN", () => {
-    const tree = parsePgnTree("1. e4 e5 2. Nf3 Nc6");
+    const tree = parseTree("1. e4 e5 2. Nf3 Nc6");
     expect(tree.startingFen).toBe(STANDARD_FEN);
     expect(mainLine(tree.children)).toEqual(["e4", "e5", "Nf3", "Nc6"]);
     // Each node has at most one child on a linear line.
@@ -39,7 +50,7 @@ describe("parsePgnTree — linear", () => {
   });
 
   it("stores the FEN after each move", () => {
-    const tree = parsePgnTree("1. e4 e5");
+    const tree = parseTree("1. e4 e5");
     const e4 = tree.children[0];
     expect(e4.san).toBe("e4");
     expect(e4.fen).toContain("PPPP1PPP/RNBQKBNR b");
@@ -48,12 +59,12 @@ describe("parsePgnTree — linear", () => {
   });
 
   it("ignores result markers", () => {
-    const tree = parsePgnTree("1. e4 e5 1-0");
+    const tree = parseTree("1. e4 e5 1-0");
     expect(mainLine(tree.children)).toEqual(["e4", "e5"]);
   });
 
   it("handles a single move", () => {
-    const tree = parsePgnTree("1. e4");
+    const tree = parseTree("1. e4");
     expect(sans(tree.children)).toEqual(["e4"]);
   });
 });
@@ -64,7 +75,7 @@ describe("parsePgnTree — linear", () => {
 describe("parsePgnTree — variations", () => {
   it("attaches a variation as a sibling of the move it follows", () => {
     // 2... b6 is the main reply; (2... Nf6 ...) is an alternative reply.
-    const tree = parsePgnTree("1. d4 d5 2. Nd2 b6 (2... Nf6 3. e4 e5) 3. Ngf3");
+    const tree = parseTree("1. d4 d5 2. Nd2 b6 (2... Nf6 3. e4 e5) 3. Ngf3");
 
     // Find the node after 1.d4 d5 2.Nd2 — it should have two children: b6, Nf6.
     const d4 = tree.children[0];
@@ -83,7 +94,7 @@ describe("parsePgnTree — variations", () => {
   });
 
   it("supports a variation on the very first move", () => {
-    const tree = parsePgnTree("1. e4 (1. d4 d5) e5");
+    const tree = parseTree("1. e4 (1. d4 d5) e5");
     expect(tree.children.map((c) => c.san).sort()).toEqual(["d4", "e4"]);
     const d4 = tree.children.find((c) => c.san === "d4")!;
     expect(mainLine([d4])).toEqual(["d4", "d5"]);
@@ -92,7 +103,7 @@ describe("parsePgnTree — variations", () => {
   });
 
   it("handles nested variations", () => {
-    const tree = parsePgnTree("1. e4 c5 2. Nf3 (2. Nc3 (2. c3 d5) Nc6) d6");
+    const tree = parseTree("1. e4 c5 2. Nf3 (2. Nc3 (2. c3 d5) Nc6) d6");
     const e4 = tree.children[0];
     const c5 = e4.children[0];
     // White's 2nd move branches three ways from the position after 1.e4 c5:
@@ -110,7 +121,7 @@ describe("parsePgnTree — variations", () => {
   });
 
   it("supports two consecutive variations on the same move", () => {
-    const tree = parsePgnTree("1. e4 e5 (1... c5) (1... e6) 2. Nf3");
+    const tree = parseTree("1. e4 e5 (1... c5) (1... e6) 2. Nf3");
     const e4 = tree.children[0];
     expect(e4.children.map((c) => c.san).sort()).toEqual(["c5", "e5", "e6"]);
   });
@@ -122,13 +133,13 @@ describe("parsePgnTree — variations", () => {
 describe("parsePgnTree — custom FEN", () => {
   it("uses a non-default FEN header as the root", () => {
     const fen = "4k3/P7/8/8/8/8/8/4K3 w - - 0 1";
-    const tree = parsePgnTree(`[SetUp "1"]\n[FEN "${fen}"]\n\n1. a8=Q+ Kd7`);
+    const tree = parseTree(`[SetUp "1"]\n[FEN "${fen}"]\n\n1. a8=Q+ Kd7`);
     expect(tree.startingFen).toBe(fen);
     expect(mainLine(tree.children)).toEqual(["a8=Q+", "Kd7"]);
   });
 
   it("treats the default FEN header as the standard start", () => {
-    const tree = parsePgnTree(`[FEN "${STANDARD_FEN}"]\n\n1. e4`);
+    const tree = parseTree(`[FEN "${STANDARD_FEN}"]\n\n1. e4`);
     expect(tree.startingFen).toBe(STANDARD_FEN);
   });
 });
@@ -142,7 +153,7 @@ describe("parsePgnTree — noise stripping", () => {
       '[White "a"]\n[Black "b"]\n\n' +
       "1. d4 { [%eval 0.15] } 1... d5 2. Nd2 b6? { (0.13 → 1.56) Mistake. } " +
       "{ [%eval 1.56] } $2 (2... Nf6 3. e4 e5) 3. Ngf3 1-0";
-    const tree = parsePgnTree(pgn);
+    const tree = parseTree(pgn);
     expect(mainLine(tree.children)).toEqual(["d4", "d5", "Nd2", "b6", "Ngf3"]);
     // The "?" glyph on b6 must not leak into the stored SAN.
     expect(sans(tree.children)).toContain("b6");
@@ -150,7 +161,7 @@ describe("parsePgnTree — noise stripping", () => {
   });
 
   it("handles glued move numbers (e.g. '1.e4')", () => {
-    const tree = parsePgnTree("1.e4 e5 2.Nf3");
+    const tree = parseTree("1.e4 e5 2.Nf3");
     expect(mainLine(tree.children)).toEqual(["e4", "e5", "Nf3"]);
   });
 });
@@ -160,12 +171,12 @@ describe("parsePgnTree — noise stripping", () => {
 // ============================================================
 describe("enumerateLines", () => {
   it("returns a single line for a variation-free PGN", () => {
-    const tree = parsePgnTree("1. e4 e5 2. Nf3 Nc6");
+    const tree = parseTree("1. e4 e5 2. Nf3 Nc6");
     expect(enumerateLines(tree)).toEqual([["e4", "e5", "Nf3", "Nc6"]]);
   });
 
   it("decomposes the main line plus each variation into separate lines", () => {
-    const tree = parsePgnTree(
+    const tree = parseTree(
       "1. Nf3 d5 (1... Nc6 2. d4 d5 3. c4) (1... Nf6 2. b3 d5 3. Bb2) 2. g3 Nc6 3. d4",
     );
     const lines = enumerateLines(tree);
@@ -176,7 +187,7 @@ describe("enumerateLines", () => {
   });
 
   it("repeats the shared prefix in each line", () => {
-    const tree = parsePgnTree("1. e4 e5 (1... c5) (1... e6)");
+    const tree = parseTree("1. e4 e5 (1... c5) (1... e6)");
     const lines = enumerateLines(tree);
     expect(lines).toHaveLength(3);
     // Every line starts from the shared 1. e4.
@@ -186,7 +197,7 @@ describe("enumerateLines", () => {
 
   it("handles a custom-FEN root", () => {
     const fen = "6k1/5ppp/8/8/8/8/5PPP/3R2K1 w - - 0 1";
-    const tree = parsePgnTree(`[SetUp "1"]\n[FEN "${fen}"]\n\n1. Rd8#`);
+    const tree = parseTree(`[SetUp "1"]\n[FEN "${fen}"]\n\n1. Rd8#`);
     expect(enumerateLines(tree)).toEqual([["Rd8#"]]);
   });
 });
@@ -196,23 +207,23 @@ describe("enumerateLines", () => {
 // ============================================================
 describe("generatePgnFromTree", () => {
   it("emits numbered movetext for a linear tree", () => {
-    const tree = parsePgnTree("1. e4 e5 2. Nf3 Nc6");
+    const tree = parseTree("1. e4 e5 2. Nf3 Nc6");
     expect(generatePgnFromTree(tree)).toBe("1. e4 e5 2. Nf3 Nc6");
   });
 
   it("emits variations in parens, numbering the black branch opener", () => {
     const pgn = "1. e4 e5 (1... c5 2. Nf3) 2. Nf3";
-    expect(generatePgnFromTree(parsePgnTree(pgn))).toBe(pgn);
+    expect(generatePgnFromTree(parseTree(pgn))).toBe(pgn);
   });
 
   it("restates the move number for a black reply after a variation block", () => {
     const pgn = "1. d4 d5 2. Nd2 (2. Nf3 Nf6) 2... b6 3. Ngf3";
-    expect(generatePgnFromTree(parsePgnTree(pgn))).toBe(pgn);
+    expect(generatePgnFromTree(parseTree(pgn))).toBe(pgn);
   });
 
   it("emits consecutive variations on the same move", () => {
     const pgn = "1. e4 e5 (1... c5) (1... e6) 2. Nf3";
-    expect(generatePgnFromTree(parsePgnTree(pgn))).toBe(pgn);
+    expect(generatePgnFromTree(parseTree(pgn))).toBe(pgn);
   });
 
   it("emits nested variations flattened to siblings of the same branch point", () => {
@@ -221,28 +232,28 @@ describe("generatePgnFromTree", () => {
     // 2. Nc3), so the serialized form lists the alternatives consecutively.
     // The line set is identical — see the round-trip test below.
     const pgn = "1. e4 c5 2. Nf3 (2. Nc3 (2. c3 d5) Nc6) 2... d6";
-    expect(generatePgnFromTree(parsePgnTree(pgn))).toBe(
+    expect(generatePgnFromTree(parseTree(pgn))).toBe(
       "1. e4 c5 2. Nf3 (2. Nc3 Nc6) (2. c3 d5) 2... d6",
     );
   });
 
   it("emits a variation on the very first move", () => {
     const pgn = "1. e4 (1. d4 d5) 1... e5";
-    expect(generatePgnFromTree(parsePgnTree(pgn))).toBe(pgn);
+    expect(generatePgnFromTree(parseTree(pgn))).toBe(pgn);
   });
 
   it("carries a non-standard root as SetUp/FEN headers", () => {
     const fen = "4k3/P7/8/8/8/8/8/4K3 w - - 0 1";
-    const tree = parsePgnTree(`[SetUp "1"]\n[FEN "${fen}"]\n\n1. a8=Q+ Kd7`);
+    const tree = parseTree(`[SetUp "1"]\n[FEN "${fen}"]\n\n1. a8=Q+ Kd7`);
     const pgn = generatePgnFromTree(tree);
     expect(pgn).toBe(`[SetUp "1"]\n[FEN "${fen}"]\n\n1. a8=Q+ Kd7`);
     // And the headers survive a re-parse.
-    expect(parsePgnTree(pgn).startingFen).toBe(fen);
+    expect(parseTree(pgn).startingFen).toBe(fen);
   });
 
   it("numbers a black first move from a black-to-move root", () => {
     const fen = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1";
-    const tree = parsePgnTree(`[SetUp "1"]\n[FEN "${fen}"]\n\n1... e5 2. Nf3`);
+    const tree = parseTree(`[SetUp "1"]\n[FEN "${fen}"]\n\n1... e5 2. Nf3`);
     expect(generatePgnFromTree(tree)).toBe(
       `[SetUp "1"]\n[FEN "${fen}"]\n\n1... e5 2. Nf3`,
     );
@@ -256,8 +267,8 @@ describe("generatePgnFromTree", () => {
       "1. e4 (1. d4 d5) e5",
     ];
     for (const pgn of pgns) {
-      const tree = parsePgnTree(pgn);
-      const reparsed = parsePgnTree(generatePgnFromTree(tree));
+      const tree = parseTree(pgn);
+      const reparsed = parseTree(generatePgnFromTree(tree));
       expect(enumerateLines(reparsed)).toEqual(enumerateLines(tree));
     }
   });
@@ -267,40 +278,45 @@ describe("generatePgnFromTree", () => {
 // error cases
 // ============================================================
 describe("parsePgnTree — errors", () => {
-  it("throws on empty input", () => {
-    expect(() => parsePgnTree("")).toThrow("Invalid PGN: empty");
-    expect(() => parsePgnTree("   ")).toThrow("Invalid PGN: empty");
+  /** The failure of a parse expected to fail. */
+  const failureOf = (pgn: string): PgnParseFailure => {
+    const result = parsePgnTree(pgn);
+    if (result.ok) throw new Error("expected the PGN to fail parsing");
+    return result.error;
+  };
+
+  it("reports empty input", () => {
+    expect(failureOf("")).toEqual({ reason: "empty" });
+    expect(failureOf("   ")).toEqual({ reason: "empty" });
   });
 
-  it("throws when there are no moves", () => {
-    expect(() => parsePgnTree('[Event "x"]\n\n*')).toThrow(
-      "Invalid PGN: no moves found",
-    );
+  it("reports a PGN with no moves", () => {
+    expect(failureOf('[Event "x"]\n\n*')).toEqual({ reason: "noMoves" });
   });
 
-  it("throws on an illegal move", () => {
-    expect(() => parsePgnTree("1. e4 e5 2. Bf8")).toThrow(
-      "Can't play Bf8 at move 2, ply 3",
-    );
+  it("reports an illegal move", () => {
+    expect(failureOf("1. e4 e5 2. Bf8")).toEqual({
+      reason: "illegalMove",
+      san: "Bf8",
+      moveNumber: 2,
+      ply: 3,
+    });
   });
 
-  it("throws on an illegal move inside a variation", () => {
-    expect(() => parsePgnTree("1. e4 e5 (1... Ke7) 2. Nf3")).toThrow(
-      "Can't play Ke7 at move 1, ply 2",
-    );
+  it("reports an illegal move inside a variation", () => {
+    expect(failureOf("1. e4 e5 (1... Ke7) 2. Nf3")).toEqual({
+      reason: "illegalMove",
+      san: "Ke7",
+      moveNumber: 1,
+      ply: 2,
+    });
   });
 
   it("locates the offending move by fullmove number and ply", () => {
     // 8. Bxa8 is legal; the "d7" that follows it is not a move at all.
     const pgn =
       "1. Nf3 d5 2. g3 d4 3. c3 dxc3 4. bxc3 Nc6 5. Bg2 e6 6. d4 b6 7. Ne5 Nxe5 8. Bxa8 d7 9. Bg2 Ng6";
-    let failure: PgnParseFailure | null = null;
-    try {
-      parsePgnTree(pgn);
-    } catch (error) {
-      failure = error instanceof PgnParseError ? error.failure : null;
-    }
-    expect(failure).toEqual({
+    expect(failureOf(pgn)).toEqual({
       reason: "illegalMove",
       san: "d7",
       moveNumber: 8,
@@ -311,17 +327,19 @@ describe("parsePgnTree — errors", () => {
   it("numbers plies from a non-standard [FEN] root", () => {
     const pgn =
       '[SetUp "1"]\n[FEN "8/8/8/4k3/8/8/4K3/8 w - - 0 20"]\n\n20. Qd4';
-    let failure: PgnParseFailure | null = null;
-    try {
-      parsePgnTree(pgn);
-    } catch (error) {
-      failure = error instanceof PgnParseError ? error.failure : null;
-    }
-    expect(failure).toEqual({
+    expect(failureOf(pgn)).toEqual({
       reason: "illegalMove",
       san: "Qd4",
       moveNumber: 20,
       ply: 39,
     });
+  });
+
+  it("still carries the human-readable message on PgnParseError", () => {
+    // The class stays the internal signal; its message is what a log line
+    // shows when a failure is reported rather than rendered.
+    expect(new PgnParseError({ reason: "empty" }).message).toBe(
+      "Invalid PGN: empty",
+    );
   });
 });

@@ -1,4 +1,3 @@
-import type { PgnTree } from '@blindfold-chess/features/chess-core';
 import { enumerateLines, generatePgn, parsePgnTree } from '@blindfold-chess/features/chess-core';
 import { STARTING_FEN } from '@blindfold-chess/features/chess-core/fen';
 import type { Side } from '@blindfold-chess/types';
@@ -144,12 +143,12 @@ export function validateRepertoireLineEdit(input: RepertoireLineEditInput): Vali
       ? `[FEN "${input.startingFen}"]\n[SetUp "1"]\n\n${pgn}`
       : pgn;
 
-  let tree: PgnTree;
-  try {
-    tree = parsePgnTree(fullPgn);
-  } catch {
-    return { ok: false, error: 'invalidPgn' };
-  }
+  // The failure names the offending move; this result type carries only a
+  // code, so the form re-derives the location with `diagnosePgn`. Widening
+  // the code to the located failure is a form/i18n change, not a refactor.
+  const parsed = parsePgnTree(fullPgn);
+  if (!parsed.ok) return { ok: false, error: 'invalidPgn' };
+  const tree = parsed.value;
 
   const mainLine = enumerateLines(tree)[0] ?? [];
   if (mainLine.length === 0) return { ok: false, error: 'noMoves' };
@@ -184,12 +183,9 @@ export function validateRepertoireImport(input: RepertoireImportInput): Validate
     return { ok: false, error: 'pgnTooLarge' };
   }
 
-  let tree: PgnTree;
-  try {
-    tree = parsePgnTree(pgn);
-  } catch {
-    return { ok: false, error: 'invalidPgn' };
-  }
+  const parsed = parsePgnTree(pgn);
+  if (!parsed.ok) return { ok: false, error: 'invalidPgn' };
+  const tree = parsed.value;
 
   const startingFen = tree.startingFen === STARTING_FEN ? null : tree.startingFen;
   const lines: ImportedLine[] = enumerateLines(tree).map((moves) => ({

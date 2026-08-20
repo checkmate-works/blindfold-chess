@@ -29,7 +29,8 @@ vi.mock('@blindfold-chess/features/chess-core', () => ({
       '1. e4 e5 2. Nf3 Nc6 3. Bb5': ['e4', 'e5', 'Nf3', 'Nc6', 'Bb5'],
       '1. d4 d5 2. c4': ['d4', 'd5', 'c4'],
     };
-    return moveMap[pgn] ?? [];
+    const moves = moveMap[pgn];
+    return moves ? { ok: true, value: moves } : { ok: false, error: { kind: 'invalid-pgn' } };
   },
 }));
 

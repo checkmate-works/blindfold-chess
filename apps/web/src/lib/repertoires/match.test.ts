@@ -7,6 +7,13 @@ import {
   mergeLineTrees,
 } from './match';
 
+/** Unwrap a fixture PGN that must parse. */
+function parseTreeOk(pgn: string) {
+  const result = parsePgnTree(pgn);
+  if (!result.ok) throw new Error(`fixture PGN failed to parse: ${result.error.reason}`);
+  return result.value;
+}
+
 // Two stored lines sharing the 1. e4 c5 2. Nf3 prefix, as the import
 // decomposition would produce them from one PGN with a variation.
 const NAJDORF_LINE = '1. e4 c5 2. Nf3 d6 3. d4 cxd4 4. Nxd4 Nf6 5. Nc3 a6';
@@ -134,8 +141,8 @@ describe('isRepertoireApplicableFromFirstMove', () => {
 
 describe('mergeLineTrees', () => {
   it('merges shared-root trees without mutating the inputs', () => {
-    const a = parsePgnTree(NAJDORF_LINE);
-    const b = parsePgnTree(SVESHNIKOV_LINE);
+    const a = parseTreeOk(NAJDORF_LINE);
+    const b = parseTreeOk(SVESHNIKOV_LINE);
     const aSnapshot = JSON.parse(JSON.stringify(a));
     const bSnapshot = JSON.parse(JSON.stringify(b));
 

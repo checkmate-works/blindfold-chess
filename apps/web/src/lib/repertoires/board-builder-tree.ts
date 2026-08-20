@@ -148,12 +148,9 @@ export function deleteAtPath(children: BuilderNode[], path: BuilderPath): PlayMo
 export function builderTreeFromPgn(
   pgn: string
 ): { rootFen: string; children: BuilderNode[] } | null {
-  let parsed: ReturnType<typeof parsePgnTree>;
-  try {
-    parsed = parsePgnTree(pgn);
-  } catch {
-    return null;
-  }
+  const result = parsePgnTree(pgn);
+  if (!result.ok) return null;
+  const parsed = result.value;
 
   const convert = (nodes: MoveTreeNode[], beforeFen: string): BuilderNode[] | null => {
     const out: BuilderNode[] = [];
