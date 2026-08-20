@@ -198,8 +198,11 @@ export function MovesPanel({
             />
           </div>
         </button>
+        {/* right-12 keeps a ≥12px gap to the chevron: the toggle surrounds the
+            action on all sides, and a mis-tap there expands the list — i.e.
+            reveals the very answer the action exists to avoid. */}
         {headerAction && (
-          <div className="absolute right-10 top-1/2 -translate-y-1/2 z-10">{headerAction}</div>
+          <div className="absolute right-12 top-1/2 -translate-y-1/2 z-10">{headerAction}</div>
         )}
       </div>
 

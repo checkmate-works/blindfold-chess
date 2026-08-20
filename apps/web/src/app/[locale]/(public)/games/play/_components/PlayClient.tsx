@@ -573,7 +573,7 @@ export function PlayClient({
                   type="button"
                   onClick={() => openRecall(currentUrl)}
                   disabled={!gameId || moves.length === 0 || isAiThinking}
-                  className="flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   <FaBrain className="w-3.5 h-3.5" aria-hidden />
                   {t('movesPanel.startRecall')}
