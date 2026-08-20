@@ -1,4 +1,9 @@
-import type { LocalStorageGameRepository } from '@/lib/games/local-storage-repository';
+import { type Result, ok } from '@blindfold-chess/features/utils';
+
+import type {
+  GameSaveError,
+  LocalStorageGameRepository,
+} from '@/lib/games/local-storage-repository';
 import type { Game } from '@/lib/games/saved-game-types';
 
 /**
@@ -24,19 +29,21 @@ type PersistGameSnapshotOptions = {
  * freshly minted one when we had to fall back to `create`).
  *
  * This is a pure IO helper: it never touches component state, never fires
- * notifications, and never handles its own errors — callers decide what to do
- * with exceptions (e.g. `GameLimitError`).
+ * notifications, and never handles its own failures — the repository's
+ * {@link GameSaveError} is passed through for the caller to branch on
+ * (e.g. `limit-reached`).
  */
 export async function persistGameSnapshot(
   repository: LocalStorageGameRepository,
   snapshot: GameSnapshot,
   { gameId, updateLastPlayed }: PersistGameSnapshotOptions
-): Promise<string> {
+): Promise<Result<string, GameSaveError>> {
   if (gameId) {
     const existingGame = await repository.load(gameId);
     if (existingGame) {
-      await repository.update(gameId, snapshot, { updateLastPlayed });
-      return gameId;
+      const updated = await repository.update(gameId, snapshot, { updateLastPlayed });
+      if (!updated.ok) return updated;
+      return ok(gameId);
     }
   }
 

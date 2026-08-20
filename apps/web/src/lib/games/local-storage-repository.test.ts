@@ -1,7 +1,6 @@
 import { MAX_GAMES } from '@/config';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { GameLimitError } from '../errors';
 import { LocalStorageGameRepository } from './local-storage-repository';
 
 describe('LocalStorageGameRepository', () => {
@@ -13,10 +12,17 @@ describe('LocalStorageGameRepository', () => {
     repository = new LocalStorageGameRepository();
   });
 
+  /** Unwrap a create Result — happy-path tests treat a failure as a bug. */
+  const createOk = async (game: Parameters<LocalStorageGameRepository['create']>[0]) => {
+    const result = await repository.create(game);
+    if (!result.ok) throw new Error(`create failed: ${JSON.stringify(result.error)}`);
+    return result.value;
+  };
+
   describe('game limit enforcement', () => {
     it('should allow creating games up to the limit', async () => {
       for (let i = 0; i < MAX_GAMES; i++) {
-        const gameId = await repository.create({
+        const gameId = await createOk({
           moves: [],
           playerColor: 'white',
           engineConfig: { kind: 'stockfish', skillLevel: 5 },
@@ -29,9 +35,9 @@ describe('LocalStorageGameRepository', () => {
       expect(games.length).toBe(MAX_GAMES);
     });
 
-    it('should throw GameLimitError when creating a new game beyond the limit', async () => {
+    it('should return limit-reached when creating a new game beyond the limit', async () => {
       for (let i = 0; i < MAX_GAMES; i++) {
-        await repository.create({
+        await createOk({
           moves: [],
           playerColor: 'white',
           engineConfig: { kind: 'stockfish', skillLevel: 5 },
@@ -39,20 +45,22 @@ describe('LocalStorageGameRepository', () => {
         });
       }
 
-      await expect(
-        repository.create({
-          moves: [],
-          playerColor: 'black',
-          engineConfig: { kind: 'stockfish', skillLevel: 10 },
-          status: 'in_progress',
-        })
-      ).rejects.toThrow(GameLimitError);
+      const result = await repository.create({
+        moves: [],
+        playerColor: 'black',
+        engineConfig: { kind: 'stockfish', skillLevel: 10 },
+        status: 'in_progress',
+      });
+      expect(result).toEqual({
+        ok: false,
+        error: { kind: 'limit-reached', limit: MAX_GAMES },
+      });
     });
 
     it('should allow updating an existing game even when at the limit', async () => {
       const gameIds: string[] = [];
       for (let i = 0; i < MAX_GAMES; i++) {
-        const gameId = await repository.create({
+        const gameId = await createOk({
           moves: [],
           playerColor: 'white',
           engineConfig: { kind: 'stockfish', skillLevel: 5 },
@@ -75,9 +83,9 @@ describe('LocalStorageGameRepository', () => {
       expect(games.length).toBe(MAX_GAMES);
     });
 
-    it('should include correct error message with limit value', async () => {
+    it('should carry the limit value in the limit-reached error', async () => {
       for (let i = 0; i < MAX_GAMES; i++) {
-        await repository.create({
+        await createOk({
           moves: [],
           playerColor: 'white',
           engineConfig: { kind: 'stockfish', skillLevel: 5 },
@@ -85,26 +93,22 @@ describe('LocalStorageGameRepository', () => {
         });
       }
 
-      try {
-        await repository.create({
-          moves: [],
-          playerColor: 'black',
-          engineConfig: { kind: 'stockfish', skillLevel: 10 },
-          status: 'in_progress',
-        });
-        expect.fail('Should have thrown GameLimitError');
-      } catch (error) {
-        expect(error).toBeInstanceOf(GameLimitError);
-        if (error instanceof GameLimitError) {
-          expect(error.message).toContain(`${MAX_GAMES}`);
-        }
+      const result = await repository.create({
+        moves: [],
+        playerColor: 'black',
+        engineConfig: { kind: 'stockfish', skillLevel: 10 },
+        status: 'in_progress',
+      });
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error).toEqual({ kind: 'limit-reached', limit: MAX_GAMES });
       }
     });
   });
 
   describe('cache isolation', () => {
     it('loadAll returns a copy — mutating it must not corrupt the cache', async () => {
-      await repository.create({
+      await createOk({
         moves: ['e4'],
         playerColor: 'white',
         engineConfig: { kind: 'stockfish', skillLevel: 5 },
@@ -122,7 +126,7 @@ describe('LocalStorageGameRepository', () => {
       const before = await repository.loadAll();
       expect(before.length).toBe(0);
 
-      await repository.create({
+      await createOk({
         moves: [],
         playerColor: 'white',
         engineConfig: { kind: 'stockfish', skillLevel: 5 },
@@ -137,7 +141,7 @@ describe('LocalStorageGameRepository', () => {
 
   describe('create', () => {
     it('should create a new game and return its ID', async () => {
-      const gameId = await repository.create({
+      const gameId = await createOk({
         moves: ['e4'],
         playerColor: 'white',
         engineConfig: { kind: 'stockfish', skillLevel: 10 },
@@ -156,14 +160,14 @@ describe('LocalStorageGameRepository', () => {
     });
 
     it('should generate a unique UUID for each game', async () => {
-      const gameId1 = await repository.create({
+      const gameId1 = await createOk({
         moves: [],
         playerColor: 'white',
         engineConfig: { kind: 'stockfish', skillLevel: 5 },
         status: 'in_progress',
       });
 
-      const gameId2 = await repository.create({
+      const gameId2 = await createOk({
         moves: [],
         playerColor: 'black',
         engineConfig: { kind: 'stockfish', skillLevel: 5 },
@@ -175,7 +179,7 @@ describe('LocalStorageGameRepository', () => {
 
     it('should set date and lastPlayed to current time', async () => {
       const beforeCreate = new Date().toISOString();
-      const gameId = await repository.create({
+      const gameId = await createOk({
         moves: [],
         playerColor: 'white',
         engineConfig: { kind: 'stockfish', skillLevel: 5 },
@@ -193,10 +197,10 @@ describe('LocalStorageGameRepository', () => {
       expect(game!.date <= afterCreate).toBe(true);
     });
 
-    it('should throw GameLimitError when limit is reached', async () => {
+    it('should return limit-reached when limit is reached', async () => {
       // Fill up to MAX_GAMES
       for (let i = 0; i < MAX_GAMES; i++) {
-        await repository.create({
+        await createOk({
           moves: [],
           playerColor: 'white',
           engineConfig: { kind: 'stockfish', skillLevel: 5 },
@@ -205,20 +209,37 @@ describe('LocalStorageGameRepository', () => {
       }
 
       // Attempt to create one more
-      await expect(
-        repository.create({
-          moves: [],
-          playerColor: 'black',
-          engineConfig: { kind: 'stockfish', skillLevel: 10 },
-          status: 'in_progress',
-        })
-      ).rejects.toThrow(GameLimitError);
+      const result = await repository.create({
+        moves: [],
+        playerColor: 'black',
+        engineConfig: { kind: 'stockfish', skillLevel: 10 },
+        status: 'in_progress',
+      });
+      expect(result).toEqual({
+        ok: false,
+        error: { kind: 'limit-reached', limit: MAX_GAMES },
+      });
+    });
+  });
+
+  describe('create', () => {
+    it('returns invalid-moves when the move sequence fails validation', async () => {
+      const result = await repository.create({
+        moves: ['e4', 'e4'], // second e4 is illegal for black
+        playerColor: 'white',
+        engineConfig: { kind: 'stockfish', skillLevel: 5 },
+        status: 'in_progress',
+      });
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.kind).toBe('invalid-moves');
+      }
     });
   });
 
   describe('update', () => {
     it('should update an existing game', async () => {
-      const gameId = await repository.create({
+      const gameId = await createOk({
         moves: ['e4'],
         playerColor: 'white',
         engineConfig: { kind: 'stockfish', skillLevel: 5 },
@@ -237,7 +258,7 @@ describe('LocalStorageGameRepository', () => {
     });
 
     it('should preserve the creation date', async () => {
-      const gameId = await repository.create({
+      const gameId = await createOk({
         moves: [],
         playerColor: 'white',
         engineConfig: { kind: 'stockfish', skillLevel: 5 },
@@ -262,7 +283,7 @@ describe('LocalStorageGameRepository', () => {
     });
 
     it('should update lastPlayed timestamp by default', async () => {
-      const gameId = await repository.create({
+      const gameId = await createOk({
         moves: [],
         playerColor: 'white',
         engineConfig: { kind: 'stockfish', skillLevel: 5 },
@@ -292,7 +313,7 @@ describe('LocalStorageGameRepository', () => {
     });
 
     it('should not update lastPlayed when updateLastPlayed is false', async () => {
-      const gameId = await repository.create({
+      const gameId = await createOk({
         moves: [],
         playerColor: 'white',
         engineConfig: { kind: 'stockfish', skillLevel: 5 },
@@ -321,7 +342,7 @@ describe('LocalStorageGameRepository', () => {
     });
 
     it('should update lastPlayed when updateLastPlayed is explicitly true', async () => {
-      const gameId = await repository.create({
+      const gameId = await createOk({
         moves: [],
         playerColor: 'white',
         engineConfig: { kind: 'stockfish', skillLevel: 5 },
@@ -351,7 +372,7 @@ describe('LocalStorageGameRepository', () => {
     });
 
     it('should preserve lastPlayed with updateLastPlayed false even when moves change', async () => {
-      const gameId = await repository.create({
+      const gameId = await createOk({
         moves: ['e4'],
         playerColor: 'white',
         engineConfig: { kind: 'stockfish', skillLevel: 5 },
@@ -382,7 +403,7 @@ describe('LocalStorageGameRepository', () => {
     });
 
     it('should update lastPlayed when options is an empty object', async () => {
-      const gameId = await repository.create({
+      const gameId = await createOk({
         moves: [],
         playerColor: 'white',
         engineConfig: { kind: 'stockfish', skillLevel: 5 },
@@ -445,24 +466,26 @@ describe('LocalStorageGameRepository', () => {
       expect(updatedGame!.lastPlayed).toBe(creationDate);
     });
 
-    it('should throw error when game does not exist', async () => {
+    it('should return not-found when game does not exist', async () => {
       const nonExistentId = 'non-existent-id-12345';
 
-      await expect(
-        repository.update(nonExistentId, {
-          moves: ['e4'],
-          playerColor: 'white',
-          engineConfig: { kind: 'stockfish', skillLevel: 5 },
-          status: 'in_progress',
-        })
-      ).rejects.toThrow('Game with ID non-existent-id-12345 not found');
+      const result = await repository.update(nonExistentId, {
+        moves: ['e4'],
+        playerColor: 'white',
+        engineConfig: { kind: 'stockfish', skillLevel: 5 },
+        status: 'in_progress',
+      });
+      expect(result).toEqual({
+        ok: false,
+        error: { kind: 'not-found', id: nonExistentId },
+      });
     });
 
     it('should allow updating when at game limit', async () => {
       // Fill up to MAX_GAMES
       const gameIds: string[] = [];
       for (let i = 0; i < MAX_GAMES; i++) {
-        const gameId = await repository.create({
+        const gameId = await createOk({
           moves: [],
           playerColor: 'white',
           engineConfig: { kind: 'stockfish', skillLevel: 5 },
@@ -488,7 +511,7 @@ describe('LocalStorageGameRepository', () => {
     });
 
     it('should update skill level correctly', async () => {
-      const gameId = await repository.create({
+      const gameId = await createOk({
         moves: ['e4'],
         playerColor: 'white',
         engineConfig: { kind: 'stockfish', skillLevel: 5 },
@@ -507,7 +530,7 @@ describe('LocalStorageGameRepository', () => {
     });
 
     it('should update game status correctly', async () => {
-      const gameId = await repository.create({
+      const gameId = await createOk({
         moves: ['e4', 'e5'],
         playerColor: 'white',
         engineConfig: { kind: 'stockfish', skillLevel: 5 },

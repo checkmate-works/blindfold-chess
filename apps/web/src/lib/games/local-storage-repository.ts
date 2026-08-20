@@ -1,8 +1,8 @@
 import { MAX_GAMES } from '@/config';
 import { getStartingFen, validateMoveSequence } from '@blindfold-chess/features/chess-core';
+import { type Result, err, ok } from '@blindfold-chess/features/utils';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
-import { GameLimitError } from '@/lib/errors';
 import type { Game, GameSortOption, SortDirection } from '@/lib/games/saved-game-types';
 import { normaliseStoredGame } from '@/lib/games/stored-game-migration';
 import { isValidStoredGame } from '@/lib/games/stored-game-validator';
@@ -11,18 +11,31 @@ type UpdateOptions = {
   updateLastPlayed?: boolean;
 };
 
+/**
+ * Everything a game write can fail with, as a value. The save flows branch
+ * on `kind` — `limit-reached` drives the game-limit UI, `invalid-moves`
+ * signals a corrupt move sequence (a data-integrity red flag, not a user
+ * mistake) — so failures used to travel as thrown `Error`s told apart by
+ * message substrings, which silently reclassified on any reword.
+ */
+export type GameSaveError =
+  | { readonly kind: 'limit-reached'; readonly limit: number }
+  | { readonly kind: 'invalid-moves'; readonly detail: string }
+  | { readonly kind: 'not-found'; readonly id: string }
+  | { readonly kind: 'storage-failed'; readonly cause: unknown };
+
 interface IGameRepository {
-  create(game: Omit<Game, 'id' | 'date' | 'lastPlayed'>): Promise<string>;
+  create(game: Omit<Game, 'id' | 'date' | 'lastPlayed'>): Promise<Result<string, GameSaveError>>;
   update(
     id: string,
     game: Omit<Game, 'id' | 'date' | 'lastPlayed'>,
     options?: UpdateOptions
-  ): Promise<void>;
+  ): Promise<Result<void, GameSaveError>>;
   load(id: string): Promise<Game | null>;
   loadAll(): Promise<Game[]>;
   loadAllSorted(sortBy: GameSortOption, direction?: SortDirection): Promise<Game[]>;
   delete(id: string): Promise<void>;
-  saveMove(gameId: string, move: AlgebraicNotation): Promise<void>;
+  saveMove(gameId: string, move: AlgebraicNotation): Promise<Result<void, GameSaveError>>;
 }
 
 /**
@@ -39,16 +52,19 @@ export class LocalStorageGameRepository implements IGameRepository {
   private readonly storageKey = 'blindfold_chess_games';
   private cachedGames: Game[] | null = null;
 
-  async create(game: Omit<Game, 'id' | 'date' | 'lastPlayed'>): Promise<string> {
-    try {
-      // Validate moves before creating (with custom starting FEN if provided)
-      this.validateMoves(game.moves, game.startingFen);
+  async create(
+    game: Omit<Game, 'id' | 'date' | 'lastPlayed'>
+  ): Promise<Result<string, GameSaveError>> {
+    // Validate moves before creating (with custom starting FEN if provided)
+    const invalid = this.validateMoves(game.moves, game.startingFen);
+    if (invalid) return err(invalid);
 
+    try {
       const games = await this.ensureCache();
 
       // Check game limit before creating new game
       if (games.length >= MAX_GAMES) {
-        throw new GameLimitError(`Cannot save game: limit of ${MAX_GAMES} games reached`);
+        return err({ kind: 'limit-reached', limit: MAX_GAMES });
       }
 
       const gameId = crypto.randomUUID();
@@ -59,17 +75,10 @@ export class LocalStorageGameRepository implements IGameRepository {
       this.saveToStorage(next);
       this.cachedGames = next;
 
-      return gameId;
-    } catch (error) {
-      // Re-throw GameLimitError and validation errors as-is
-      if (
-        error instanceof GameLimitError ||
-        (error instanceof Error && error.message.includes('Invalid move'))
-      ) {
-        throw error;
-      }
-      console.error('Failed to create game:', error);
-      throw new Error('Failed to create game');
+      return ok(gameId);
+    } catch (cause) {
+      console.error('Failed to create game:', cause);
+      return err({ kind: 'storage-failed', cause });
     }
   }
 
@@ -77,16 +86,17 @@ export class LocalStorageGameRepository implements IGameRepository {
     id: string,
     game: Omit<Game, 'id' | 'date' | 'lastPlayed'>,
     options?: UpdateOptions
-  ): Promise<void> {
-    try {
-      // Validate moves before updating (with custom starting FEN if provided)
-      this.validateMoves(game.moves, game.startingFen);
+  ): Promise<Result<void, GameSaveError>> {
+    // Validate moves before updating (with custom starting FEN if provided)
+    const invalid = this.validateMoves(game.moves, game.startingFen);
+    if (invalid) return err(invalid);
 
+    try {
       const games = await this.ensureCache();
       const index = games.findIndex((g) => g.id === id);
 
       if (index === -1) {
-        throw new Error(`Game with ID ${id} not found`);
+        return err({ kind: 'not-found', id });
       }
 
       const updateLastPlayed = options?.updateLastPlayed ?? true;
@@ -98,9 +108,10 @@ export class LocalStorageGameRepository implements IGameRepository {
 
       this.saveToStorage(next);
       this.cachedGames = next;
-    } catch (error) {
-      console.error('Failed to update game:', error);
-      throw error;
+      return ok(undefined);
+    } catch (cause) {
+      console.error('Failed to update game:', cause);
+      return err({ kind: 'storage-failed', cause });
     }
   }
 
@@ -200,48 +211,39 @@ export class LocalStorageGameRepository implements IGameRepository {
     }
   }
 
-  async saveMove(gameId: string, move: AlgebraicNotation): Promise<void> {
-    try {
-      const game = await this.load(gameId);
-      if (!game) {
-        throw new Error(`Game with ID ${gameId} not found`);
-      }
-
-      const updatedMoves = [...game.moves, move];
-
-      // Validate the move sequence before saving (with custom starting FEN if present)
-      this.validateMoves(updatedMoves, game.startingFen);
-
-      await this.update(gameId, {
-        moves: updatedMoves,
-        playerColor: game.playerColor,
-        engineConfig: game.engineConfig,
-        status: game.status,
-        startingFen: game.startingFen,
-        gamePreferences: game.gamePreferences,
-        preferenceChangeLog: game.preferenceChangeLog,
-        operationLogs: game.operationLogs,
-      });
-    } catch (error) {
-      console.error('Failed to save move:', error);
-      throw new Error('Failed to save move');
+  async saveMove(gameId: string, move: AlgebraicNotation): Promise<Result<void, GameSaveError>> {
+    const game = await this.load(gameId);
+    if (!game) {
+      return err({ kind: 'not-found', id: gameId });
     }
+
+    // `update` re-validates the extended move sequence before writing.
+    return this.update(gameId, {
+      moves: [...game.moves, move],
+      playerColor: game.playerColor,
+      engineConfig: game.engineConfig,
+      status: game.status,
+      startingFen: game.startingFen,
+      gamePreferences: game.gamePreferences,
+      preferenceChangeLog: game.preferenceChangeLog,
+      operationLogs: game.operationLogs,
+    });
   }
 
+  /**
+   * Throws raw (quota exceeded, storage disabled); the writing method maps
+   * the throw to `{ kind: 'storage-failed' }` with the original cause.
+   */
   private saveToStorage(games: Game[]): void {
-    try {
-      localStorage.setItem(this.storageKey, JSON.stringify(games));
-    } catch (error) {
-      console.error('Failed to save to localStorage:', error);
-      throw new Error('Failed to save to localStorage');
-    }
+    localStorage.setItem(this.storageKey, JSON.stringify(games));
   }
 
-  private validateMoves(moves: string[], startingFen?: string): void {
+  private validateMoves(moves: string[], startingFen?: string): GameSaveError | null {
     const fen = startingFen ?? getStartingFen();
     const result = validateMoveSequence(fen, moves);
     if (!result.valid) {
-      throw new Error(`Invalid move detected during validation: ${result.error}`);
+      return { kind: 'invalid-moves', detail: result.error ?? 'unknown' };
     }
+    return null;
   }
 }

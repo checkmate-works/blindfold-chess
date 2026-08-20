@@ -69,26 +69,37 @@ export function PlayErrorClient({ locale }: Props) {
       const gameRepository = new LocalStorageGameRepository();
       const savedGame = await gameRepository.load(gameId);
       if (savedGame) {
-        await gameRepository.update(gameId, {
+        const updated = await gameRepository.update(gameId, {
           moves: validMoves,
           playerColor: savedGame.playerColor,
           engineConfig: savedGame.engineConfig,
           status: savedGame.status,
           startingFen: savedGame.startingFen,
         });
+        if (!updated.ok) {
+          // Redirect anyway: the play page re-validates the stored record,
+          // and staying on the error page with a stuck spinner helps nobody.
+          console.error('Failed to repair saved game:', updated.error);
+        }
       }
     } else {
       // No gameId, save the game with valid moves and get new gameId
       if (validMoves.length > 0) {
         const gameRepository = new LocalStorageGameRepository();
-        const newGameId = await gameRepository.create({
+        const created = await gameRepository.create({
           moves: validMoves,
           playerColor: color === 'white' || color === 'black' ? color : 'white',
           engineConfig,
           status: 'in_progress',
           startingFen,
         });
-        params.set('gameId', newGameId);
+        if (created.ok) {
+          params.set('gameId', created.value);
+        } else {
+          // Redirect without an id — the play page starts the recovered
+          // position unsaved rather than stranding the user here.
+          console.error('Failed to save recovered game:', created.error);
+        }
       }
     }
 
