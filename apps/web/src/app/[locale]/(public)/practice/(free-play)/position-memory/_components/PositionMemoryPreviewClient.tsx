@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 
 import { useTranslations } from 'next-intl';
 
+import { BoardFrame } from '@/app/_components';
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 
 import type { ChunkOption } from '@/lib/chunks/types';
@@ -102,7 +103,9 @@ export function PositionMemoryPreviewClient({ availableThemes, availableChunks }
       onBack={() => leave('/practice/position-memory/new')}
       guard={{ isBlocking, confirm, cancel }}
     >
-      <PositionDetailBoard fen={draft.fen} flipped={isBlackToMoveFromFen(draft.fen)} />
+      <BoardFrame>
+        <PositionDetailBoard fen={draft.fen} flipped={isBlackToMoveFromFen(draft.fen)} />
+      </BoardFrame>
     </DraftPreviewLayout>
   );
 }
