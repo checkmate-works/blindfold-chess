@@ -165,14 +165,25 @@ function concat(chunks: readonly Uint8Array[], total: number): Uint8Array {
  * deploy stops the bleeding without any extra configuration step. Override
  * with the `CSP_REPORT_SAMPLE_RATE` env var (e.g. raise it back toward 1 once
  * the noisy sources are fixed, or lower it further during an incident).
+ *
+ * The parse/clamp is exported separately from the env read: this endpoint is
+ * open and attacker-reachable, so the branches that decide whether a bad
+ * value floods the Sentry quota (NaN, negative, above 1, empty string) are
+ * worth asserting directly rather than only through an HTTP-level test.
  */
-function cspReportSampleRate(): number {
-  const raw = process.env.CSP_REPORT_SAMPLE_RATE;
+export function parseCspReportSampleRate(raw: string | undefined, isProduction: boolean): number {
   if (raw !== undefined) {
     const n = Number(raw);
     if (Number.isFinite(n) && n >= 0 && n <= 1) return n;
   }
-  return process.env.NODE_ENV === 'production' ? 0.1 : 1;
+  return isProduction ? 0.1 : 1;
+}
+
+function cspReportSampleRate(): number {
+  return parseCspReportSampleRate(
+    process.env.CSP_REPORT_SAMPLE_RATE,
+    process.env.NODE_ENV === 'production'
+  );
 }
 
 /**

@@ -10,6 +10,18 @@ import 'server-only';
  * validation, but API Routes (route.ts) do not. This utility provides the
  * same defense for API Routes as a defense-in-depth measure.
  */
+/**
+ * Pure core of the check: do two origins refer to the same site?
+ *
+ * Split out so the normalization rule (a trailing slash on either side is
+ * insignificant) can be exercised without stubbing the environment — the
+ * suite for {@link isValidOrigin} has to `vi.stubEnv` for nearly every case,
+ * and one of them deletes the variable off `process.env` outright.
+ */
+export function originMatches(origin: string, allowedOrigin: string): boolean {
+  return origin.replace(/\/+$/, '') === allowedOrigin.replace(/\/+$/, '');
+}
+
 export function isValidOrigin(request: Request): boolean {
   const origin = request.headers.get('origin');
   if (!origin) {
@@ -22,7 +34,7 @@ export function isValidOrigin(request: Request): boolean {
     return false;
   }
 
-  if (origin.replace(/\/+$/, '') !== allowedOrigin.replace(/\/+$/, '')) {
+  if (!originMatches(origin, allowedOrigin)) {
     Sentry.captureMessage(`CSRF origin mismatch: received ${origin}`, 'warning');
     return false;
   }

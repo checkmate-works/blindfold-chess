@@ -51,9 +51,16 @@ function isReasoningModel(model: string): boolean {
   return model.startsWith('gpt-5') || model.startsWith('o');
 }
 
-export function createOpenAiClient(): LlmClient {
-  const model = process.env.OPENAI_MODEL || DEFAULT_MODEL;
-
+/**
+ * @param model Which model to call. Defaults to `OPENAI_MODEL`, falling back
+ *   to {@link DEFAULT_MODEL}. Taking it as a parameter keeps the pairing
+ *   testable: {@link isReasoningModel} branches the request body on this
+ *   value, so with the env read inline the same code emitted a different
+ *   payload per deployment and no test could pin which.
+ */
+export function createOpenAiClient(
+  model: string = process.env.OPENAI_MODEL || DEFAULT_MODEL
+): LlmClient {
   return {
     model,
     async complete(request: LlmCompletionRequest): Promise<string> {

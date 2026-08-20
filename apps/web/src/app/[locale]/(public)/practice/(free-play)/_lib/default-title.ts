@@ -15,10 +15,18 @@ function formatLocalIsoDate(d: Date): string {
  * that do not supply a profile), so the title field simply starts empty.
  *
  * @param prefix Item-kind word, e.g. `"Puzzle"` or `"Position"`.
+ * @param now Reference instant for the date segment; defaults to the current
+ *   time so the two `useState` initializers that call this stay unchanged.
+ *   Its absence was why this function had no tests at all: with the clock
+ *   read inline, the only assertable branch was the trivial empty-name one.
  */
-export function buildDefaultPracticeTitle(prefix: string, displayName: string | undefined): string {
+export function buildDefaultPracticeTitle(
+  prefix: string,
+  displayName: string | undefined,
+  now: Date = new Date()
+): string {
   if (displayName === undefined) return '';
-  const date = formatLocalIsoDate(new Date());
+  const date = formatLocalIsoDate(now);
   const trimmed = displayName.trim();
   return trimmed ? `${prefix} ${date} - ${trimmed}` : `${prefix} ${date}`;
 }
