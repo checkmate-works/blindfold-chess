@@ -8,7 +8,7 @@ import { FaArrowRight } from 'react-icons/fa';
 import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { PracticeHowToPlayCard } from '../../_components/PracticeHowToPlayCard';
+import { PracticeHowToPlaySection } from '../../_components/PracticeHowToPlaySection';
 import { PracticeSetupActions } from '../../_components/PracticeSetupActions';
 
 type Props = {
@@ -21,7 +21,7 @@ export function BoardSymmetrySetup({ locale }: Props) {
   return (
     <div>
       <div className="mb-8">
-        <PracticeHowToPlayCard
+        <PracticeHowToPlaySection
           title={t('howToPlayTitle')}
           description={t('howToPlayDescription')}
           marginClassName="mb-2"
@@ -31,7 +31,7 @@ export function BoardSymmetrySetup({ locale }: Props) {
             <FaArrowRight className="text-muted-foreground" />
             <span className="text-lg font-bold">?</span>
           </div>
-        </PracticeHowToPlayCard>
+        </PracticeHowToPlaySection>
         <div className="mb-6 text-center" data-tour-id="board-symmetry-tutorial">
           <Link
             href={`/${locale}/practice/board-symmetry/tutorial`}

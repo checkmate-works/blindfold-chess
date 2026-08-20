@@ -10,7 +10,7 @@ import { SectionTitle } from '@/app/[locale]/_components';
 import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { PracticeHowToPlayCard } from '../../_components/PracticeHowToPlayCard';
+import { PracticeHowToPlaySection } from '../../_components/PracticeHowToPlaySection';
 import { PracticeSetupActions } from '../../_components/PracticeSetupActions';
 import type { RoutePlannerPieceSelection } from '../_lib/pieces';
 import { PIECE_TYPE_TO_NAME } from '../_lib/query-params';
@@ -31,7 +31,7 @@ export function RoutePlannerSetup({ locale, pieceSelection, onPieceSelect }: Pro
   return (
     <div>
       <div className="mb-8">
-        <PracticeHowToPlayCard
+        <PracticeHowToPlaySection
           title={t('howToPlayTitle')}
           description={t('howToPlayDescription')}
           marginClassName="mb-2"
@@ -42,7 +42,7 @@ export function RoutePlannerSetup({ locale, pieceSelection, onPieceSelect }: Pro
             <FaArrowRight className="text-muted-foreground" />
             <span className="text-lg font-bold">g3</span>
           </div>
-        </PracticeHowToPlayCard>
+        </PracticeHowToPlaySection>
         <div className="mb-6 text-center" data-tour-id="route-planner-tutorial">
           <Link
             href={`/${locale}/practice/route-planner/tutorial`}
