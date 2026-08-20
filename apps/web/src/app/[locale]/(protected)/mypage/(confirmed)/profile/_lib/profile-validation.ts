@@ -1,10 +1,12 @@
 import { isValidCountryCode } from '@/lib/countries';
 
-const FIDE_ID_PATTERN = /^\d+$/;
-const CHESS_USERNAME_PATTERN = /^[a-zA-Z0-9_-]+$/;
-const X_USERNAME_PATTERN = /^[a-zA-Z0-9_]+$/;
-const INSTAGRAM_USERNAME_PATTERN = /^[a-zA-Z0-9._]+$/;
-const YOUTUBE_HANDLE_PATTERN = /^[a-zA-Z0-9._-]+$/;
+import {
+  CHESS_USERNAME_PATTERN,
+  FIDE_ID_PATTERN,
+  INSTAGRAM_USERNAME_PATTERN,
+  X_USERNAME_PATTERN,
+  YOUTUBE_HANDLE_PATTERN,
+} from './profile-field-rules';
 
 const VALIDATION_RULES: { field: string; regex: RegExp; errorKey: string }[] = [
   { field: 'fideId', regex: FIDE_ID_PATTERN, errorKey: 'fideIdInvalidFormat' },
