@@ -6,66 +6,75 @@ import { isAiReplyDuration } from '@/lib/games/ai-reply-duration';
 import { isBoardVisibility } from '@/lib/games/board-visibility';
 import { isMoveOperationLog } from '@/lib/games/move-operation-log';
 import { isOperationTotals } from '@/lib/games/operation-totals';
-import type { StoredGame } from '@/lib/games/saved-game-types';
+import type { PreferenceChangeLogEntry, StoredGame } from '@/lib/games/saved-game-types';
 import { isUndoneMoveLog } from '@/lib/games/undone-logs';
+
+/** Validates the `from`/`to` pair of one change-log entry for a given key. */
+type EntryValueCheck = (from: unknown, to: unknown) => boolean;
+
+const bothBooleans: EntryValueCheck = (from, to) =>
+  typeof from === 'boolean' && typeof to === 'boolean';
+
+const bothMembersOf =
+  (values: readonly string[]): EntryValueCheck =>
+  (from, to) =>
+    values.includes(from as string) && values.includes(to as string);
+
+/**
+ * One check per `PreferenceChangeLogEntry` key.
+ *
+ * `satisfies Record<PreferenceChangeLogEntry['key'], …>` is the point of this
+ * map: adding a key to the union without a check here is a compile error in
+ * this file. It used to be a `switch` with `default: return false`, paired
+ * with a prose note asking future authors to remember this file — and
+ * forgetting was not a mild failure. An unrecognised key fails
+ * `isValidPreferenceChangeEntry` → `isValidStoredGame` → the row is filtered
+ * out of `loadAll`, so the player's entire saved game silently disappears
+ * from localStorage on the next load, not just the one log entry.
+ */
+const ENTRY_VALUE_CHECKS = {
+  highlightLastMove: bothBooleans,
+  showPieceDestinations: bothBooleans,
+  showOwnPieces: bothBooleans,
+  showOpponentPieces: bothBooleans,
+  pieceShapeMode: bothMembersOf(PIECE_SHAPE_MODES),
+  pieceColors: bothMembersOf(PIECE_COLOR_MODES),
+  pawnHideMode: bothMembersOf(PAWN_HIDE_MODES),
+  boardVisibility: (from, to) => isBoardVisibility(from) && isBoardVisibility(to),
+  moveInputMode: bothMembersOf(['text', 'select', 'button']),
+  aiReplyDuration: (from, to) => isAiReplyDuration(from) && isAiReplyDuration(to),
+} as const satisfies Record<PreferenceChangeLogEntry['key'], EntryValueCheck>;
+
+/**
+ * Keys that no longer exist in `PreferenceChangeLogEntry` but may still sit
+ * in records written by older builds. They are accepted so those records
+ * keep loading — rejecting one would drop the whole game (see above).
+ *
+ * `showBoardButtonInGame` is additionally rewritten into a `boardVisibility`
+ * entry by `stored-game-migration`, so the in-app representation stays
+ * uniform; `peekMode` entries are carried through as-is.
+ */
+const LEGACY_ENTRY_VALUE_CHECKS: Record<string, EntryValueCheck> = {
+  showBoardButtonInGame: bothBooleans,
+  peekMode: bothMembersOf(['modal', 'inline']),
+};
 
 /**
  * Shape checks for a single `PreferenceChangeLogEntry` as read off
  * disk. Lifted out of the per-game validator so the discriminated-union
- * check stays readable: a malformed entry must have the right `key`
- * AND a `from`/`to` pair of the correct shape for that key.
- *
- * The `showBoardButtonInGame` branch is the only legacy key still
- * accepted at the boundary — `stored-game-migration` then rewrites it
- * into a `boardVisibility` entry so the in-app representation is
- * uniform. New keys should be added to BOTH this validator AND the
- * migration helper (when they need a shape change).
+ * check stays readable: a malformed entry must have a known `key` AND a
+ * `from`/`to` pair of the correct shape for that key.
  */
 export function isValidPreferenceChangeEntry(entry: unknown): boolean {
   if (typeof entry !== 'object' || entry === null) return false;
   const e = entry as Record<string, unknown>;
   if (typeof e.atMoveIndex !== 'number' || e.atMoveIndex < 0) return false;
+  if (typeof e.key !== 'string') return false;
 
-  switch (e.key) {
-    // Legacy boolean key — accepted at the validator boundary so the
-    // record loads, then transformed to a 'boardVisibility' entry by
-    // the migration helper.
-    case 'showBoardButtonInGame':
-      return typeof e.from === 'boolean' && typeof e.to === 'boolean';
-    case 'highlightLastMove':
-    case 'showPieceDestinations':
-    case 'showOwnPieces':
-    case 'showOpponentPieces':
-      return typeof e.from === 'boolean' && typeof e.to === 'boolean';
-    case 'pieceShapeMode': {
-      const shapes: readonly string[] = PIECE_SHAPE_MODES;
-      return shapes.includes(e.from as string) && shapes.includes(e.to as string);
-    }
-    case 'pieceColors': {
-      const colors: readonly string[] = PIECE_COLOR_MODES;
-      return colors.includes(e.from as string) && colors.includes(e.to as string);
-    }
-    case 'pawnHideMode': {
-      const modes: readonly string[] = PAWN_HIDE_MODES;
-      return modes.includes(e.from as string) && modes.includes(e.to as string);
-    }
-    case 'peekMode': {
-      const modes = ['modal', 'inline'];
-      return modes.includes(e.from as string) && modes.includes(e.to as string);
-    }
-    case 'boardVisibility': {
-      return isBoardVisibility(e.from) && isBoardVisibility(e.to);
-    }
-    case 'moveInputMode': {
-      const modes = ['text', 'select', 'button'];
-      return modes.includes(e.from as string) && modes.includes(e.to as string);
-    }
-    case 'aiReplyDuration': {
-      return isAiReplyDuration(e.from) && isAiReplyDuration(e.to);
-    }
-    default:
-      return false;
-  }
+  const check: EntryValueCheck | undefined =
+    (ENTRY_VALUE_CHECKS as Record<string, EntryValueCheck>)[e.key] ??
+    LEGACY_ENTRY_VALUE_CHECKS[e.key];
+  return check !== undefined && check(e.from, e.to);
 }
 
 /**
