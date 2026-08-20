@@ -9,10 +9,15 @@ import {
   movesToUci,
   uciToAlgebraic,
 } from "@blindfold-chess/features/chess-core";
+import { type Result, err, ok } from "@blindfold-chess/features/utils";
 import type { AlgebraicNotation, Fen, UciMove } from "@blindfold-chess/types";
 
 import type { SkillLevel } from "../lib/types";
+import type { EngineError } from "./engine-errors";
 import type { StockfishWebViewHandle } from "./StockfishWebView";
+
+/** A move the engine chose, in both notations the callers need. */
+export type BestMove = { uciMove: UciMove; algebraicMove: AlgebraicNotation };
 
 type EngineState = "idle" | "initializing" | "ready" | "error";
 
@@ -139,13 +144,13 @@ export function useStockfishEngine() {
       moves: AlgebraicNotation[] = [],
       timeLimit: number = 1000,
       startingFen?: string,
-    ): Promise<{ uciMove: UciMove; algebraicMove: AlgebraicNotation }> => {
+    ): Promise<Result<BestMove, EngineError>> => {
       if (engineStateRef.current !== "ready") {
-        throw new Error("Engine not ready");
+        return err({ kind: "not-ready", state: engineStateRef.current });
       }
 
       if (isProcessingRef.current) {
-        throw new Error("Engine is already processing a request");
+        return err({ kind: "busy" });
       }
 
       try {
@@ -170,7 +175,7 @@ export function useStockfishEngine() {
 
         const parsed = parseUciResponse(response);
         if (!parsed || parsed.type !== "bestmove") {
-          throw new Error("Engine failed to return a move");
+          return err({ kind: "no-move" });
         }
 
         const uciMove = parsed.move as UciMove;
@@ -179,7 +184,11 @@ export function useStockfishEngine() {
         // so use it directly for UCI-to-algebraic conversion
         const algebraicMove = convertUciToAlgebraic(uciMove, fen);
 
-        return { uciMove, algebraicMove };
+        return ok({ uciMove, algebraicMove });
+      } catch (cause) {
+        // `waitForResponse` rejects on its own timeout, and the UCI → SAN
+        // conversion throws on a move that is illegal in `fen`.
+        return err({ kind: "timeout", cause });
       } finally {
         isProcessingRef.current = false;
       }

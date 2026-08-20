@@ -1,11 +1,12 @@
 import { useCallback, useState } from "react";
+import { type Result, err, ok } from "@blindfold-chess/features/utils";
 import type { AlgebraicNotation } from "@blindfold-chess/types";
 import {
   getFenAfterMoves,
   getStartingFen,
 } from "@blindfold-chess/features/chess-core";
 
-import { useStockfishEngine } from "../engine";
+import { type EngineError, useStockfishEngine } from "../engine";
 import type { SkillLevel } from "../lib/types";
 
 // WASM base64 decoding + engine init can take several seconds
@@ -29,7 +30,7 @@ export function useAiVersus(skillLevel: SkillLevel) {
     async (
       moves: AlgebraicNotation[],
       startingFen?: string,
-    ): Promise<AlgebraicNotation> => {
+    ): Promise<Result<AlgebraicNotation, EngineError>> => {
       setIsLoading(true);
 
       try {
@@ -44,7 +45,10 @@ export function useAiVersus(skillLevel: SkillLevel) {
         }
 
         if (engine.engineStateRef.current !== "ready") {
-          throw new Error("Engine not ready after retries");
+          return err({
+            kind: "not-ready",
+            state: engine.engineStateRef.current,
+          });
         }
 
         await ensureSkillLevel();
@@ -54,7 +58,7 @@ export function useAiVersus(skillLevel: SkillLevel) {
         const fen = getFenAfterMoves(initialFen, moves);
 
         const result = await engine.getBestMove(fen, moves, 1000, startingFen);
-        return result.algebraicMove;
+        return result.ok ? ok(result.value.algebraicMove) : result;
       } finally {
         setIsLoading(false);
       }

@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { Result } from "@blindfold-chess/features/utils";
+import type { EngineError } from "../engine";
 import * as Haptics from "expo-haptics";
 import type { AlgebraicNotation, Side } from "@blindfold-chess/types";
 import {
@@ -14,7 +16,7 @@ type UseGameSessionProps = {
   getAiMove: (
     moves: AlgebraicNotation[],
     startingFen?: string,
-  ) => Promise<AlgebraicNotation>;
+  ) => Promise<Result<AlgebraicNotation, EngineError>>;
   isAiLoading: boolean;
 };
 
@@ -61,12 +63,22 @@ export function useGameSession({
     setIsAiThinking(true);
 
     getAiMove(moves)
-      .then((aiMove) => {
-        setMoves((prev) => [...prev, aiMove]);
-        setError(null);
+      .then((result) => {
+        if (result.ok) {
+          setMoves((prev) => [...prev, result.value]);
+          setError(null);
+          return;
+        }
+        // The kinds are distinguishable now; the message still is not. Saying
+        // "still starting up, try again in a moment" for a retryable failure
+        // needs its own copy, so that stays a follow-up.
+        console.error("AI move failed:", result.error);
+        setError("AI move failed. Please try again.");
       })
       .catch((err) => {
-        console.error("AI move failed:", err);
+        // getAiMove reports its failures as values; anything thrown here is
+        // unexpected.
+        console.error("AI move failed unexpectedly:", err);
         setError("AI move failed. Please try again.");
       })
       .finally(() => {
