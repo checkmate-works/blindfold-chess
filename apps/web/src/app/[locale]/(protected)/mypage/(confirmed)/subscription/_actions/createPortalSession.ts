@@ -10,6 +10,7 @@ import { getAuthenticatedUser } from '@/lib/auth';
 import { getStripe } from '@/lib/billing/stripe';
 import { getStripeCustomerId } from '@/lib/billing/stripe-customer';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/security/rate-limit';
+import { captureError } from '@/lib/sentry/capture-error';
 
 type PortalError = { error: 'rateLimited' | 'noSubscription' | 'portalSessionFailed' };
 
@@ -35,7 +36,8 @@ export async function createPortalSession(locale: string): Promise<PortalError> 
       customer: stripeCustomerId,
       return_url: `${SITE_URL}/${locale}/mypage/subscription`,
     });
-  } catch {
+  } catch (error) {
+    captureError(error, '[createPortalSession] Stripe billing portal session creation failed');
     return { error: 'portalSessionFailed' as const };
   }
 
