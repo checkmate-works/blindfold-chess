@@ -4,6 +4,7 @@ import { eq } from 'drizzle-orm';
 
 import { authenticateAndGuard } from '@/lib/auth';
 import { isLameName } from '@/lib/content/lame-name';
+import { isValidCountryCode } from '@/lib/countries';
 import { db, profiles } from '@/lib/db';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { logActivityEvent } from '@/lib/users/activity-log';
@@ -57,8 +58,11 @@ export async function updateProfile(input: UpdateProfileInput): Promise<UpdatePr
     return { error: 'bio_too_long' };
   }
 
+  // Real ISO 3166-1 alpha-2 membership, matching the client-side rule in
+  // `../_lib/profile-validation.ts`. A bare two-letter regex here used to
+  // accept codes like "ZZ" that the client form rejects.
   const country = input.country?.trim().toUpperCase() || null;
-  if (country && !/^[A-Z]{2}$/.test(country)) {
+  if (country && !isValidCountryCode(country)) {
     return { error: 'invalid_country' };
   }
 

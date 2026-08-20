@@ -111,6 +111,11 @@ describe('updateProfile', () => {
       ['displayName is inappropriate', { displayName: 'badname' }, 'display_name_inappropriate'],
       ['bio exceeds 500 characters', { bio: 'a'.repeat(501) }, 'bio_too_long'],
       ['country code is not two letters', { country: 'USA' }, 'invalid_country'],
+      [
+        'country code is two letters but not a real ISO 3166-1 code',
+        { country: 'ZZ' },
+        'invalid_country',
+      ],
       ['fideId contains non-digit characters', { fideId: '123abc' }, 'fide_id_invalid_format'],
       ['fideId contains path traversal', { fideId: '../etc' }, 'fide_id_invalid_format'],
       ['fideId contains null byte', { fideId: '123\x0045' }, 'fide_id_invalid_format'],
