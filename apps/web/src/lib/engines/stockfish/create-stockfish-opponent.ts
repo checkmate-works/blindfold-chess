@@ -1,4 +1,4 @@
-import { ChessEngine } from '@blindfold-chess/features/ai-game/engine';
+import { ChessEngine, EngineBusyError } from '@blindfold-chess/features/ai-game/engine';
 import { type ChessOpponent, err, ok } from '@blindfold-chess/features/ai-game/opponent';
 
 import type { SkillLevel } from '@/lib/games/saved-game-types';
@@ -58,6 +58,9 @@ export function createStockfishOpponent(config: StockfishOpponentConfig): ChessO
         const uciMove = await engine.getBestMove(fen, [...history], moveTimeMs, startingFen);
         return ok({ move: uciMove });
       } catch (cause) {
+        if (cause instanceof EngineBusyError) {
+          return err({ kind: 'busy' });
+        }
         return err({ kind: 'move-generation-failed', cause });
       }
     },
