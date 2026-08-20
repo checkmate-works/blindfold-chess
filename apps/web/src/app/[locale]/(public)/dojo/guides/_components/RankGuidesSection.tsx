@@ -1,8 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 
-import { ALL_RANK_SLUGS } from '@/lib/db/data/ranks';
-import type { RankSlug } from '@/lib/db/data/ranks';
-import { buildGuidePath, getRankGuide } from '@/lib/guides';
+import { buildGuideHrefBySlug } from '@/lib/guides/guideHrefBySlug';
 
 import { CurriculumToc, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -26,14 +24,7 @@ export async function RankGuidesSection({ locale }: RankGuidesSectionProps) {
 
   const guidesPages = tGuides.raw('pages') as Record<string, unknown>;
 
-  // Precompute per-rank guide hrefs. Ranks without a guide entry map to
-  // `null` so `CurriculumToc` renders them as disabled placeholders.
-  const guideHrefBySlug: Partial<Record<RankSlug, string | null>> = {};
-  for (const slug of ALL_RANK_SLUGS) {
-    guideHrefBySlug[slug] = getRankGuide(guidesPages, slug)
-      ? buildGuidePath(locale, slug, { kind: 'root' })
-      : null;
-  }
+  const guideHrefBySlug = buildGuideHrefBySlug(locale, guidesPages);
 
   return (
     <section className="space-y-4">

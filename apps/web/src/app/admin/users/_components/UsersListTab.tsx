@@ -1,6 +1,5 @@
 import type { ServerTranslator } from '@/i18n/translator';
 
-import { ALL_RANK_SLUGS } from '@/lib/db/data/ranks';
 import { DEFAULT_PAGE_SIZE, getPageRange } from '@/lib/pagination';
 import type { createAdminClient } from '@/lib/supabase/admin';
 
@@ -8,6 +7,7 @@ import { AdminDataTable } from '../../_components/AdminDataTable';
 import { AdminPaginationNav } from '../../_components/AdminPaginationNav';
 import { type AdminUserFilters, buildAdminUsersHref } from '../_lib/filters';
 import { fetchUsersPageData, getSignupMethod } from '../_lib/queries';
+import { buildRankNames } from '../_lib/rank-names';
 import type { SIGNUP_METHOD_ORDER } from '../_lib/signup-method';
 import { ActiveFilters } from './ActiveFilters';
 import { UserRow } from './UserRow';
@@ -42,10 +42,7 @@ export async function UsersListTab({
   const buildHref = (p: number) => buildAdminUsersHref(filters, p);
   const pageRange = getPageRange(currentPage, DEFAULT_PAGE_SIZE, users.length);
 
-  const rankNames: Record<string, string> = {};
-  for (const slug of ALL_RANK_SLUGS) {
-    rankNames[slug] = t(`stats.rankNames.${slug}`);
-  }
+  const rankNames = buildRankNames(t);
 
   const rowLabels = {
     premium: t('usersTable.premium'),

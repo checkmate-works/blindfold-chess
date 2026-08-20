@@ -53,20 +53,25 @@ export async function getExpHeatmapData(userId: string): Promise<ExpHeatmapData>
       .groupBy(dateExpr, expEvents.menuType),
   ]);
 
-  const daily: Record<string, number> = {};
-  for (const row of dailyRows) {
-    const dateStr = typeof row.date === 'string' ? row.date : formatDate(new Date(row.date));
-    daily[dateStr] = Number(row.total) || 0;
-  }
+  // The heatmap cell's color comes from `daily` and its tooltip breakdown
+  // from `dailyByModule`, so both must bucket on the same key — the
+  // derivation is named once rather than copy-pasted into each pass, where a
+  // timezone fix applied to one would desync the cell from its tooltip.
+  const bucketKey = (date: unknown): string =>
+    typeof date === 'string' ? date : formatDate(new Date(date as string | number | Date));
+
+  const daily: Record<string, number> = Object.fromEntries(
+    dailyRows.map((row) => [bucketKey(row.date), Number(row.total) || 0])
+  );
 
   const dailyByModule: Record<string, Record<string, number>> = {};
   for (const row of moduleRows) {
-    const dateStr = typeof row.date === 'string' ? row.date : formatDate(new Date(row.date));
+    const dateStr = bucketKey(row.date);
     const moduleKey = row.menuType ?? 'unknown';
-    if (!dailyByModule[dateStr]) {
-      dailyByModule[dateStr] = {};
-    }
-    dailyByModule[dateStr][moduleKey] = Number(row.total) || 0;
+    dailyByModule[dateStr] = {
+      ...dailyByModule[dateStr],
+      [moduleKey]: Number(row.total) || 0,
+    };
   }
 
   return { daily, dailyByModule };

@@ -92,19 +92,15 @@ export async function getArticlesByCategory(
  */
 export async function getCategoryCounts(locale: Locale): Promise<Record<ArticleCategory, number>> {
   const allArticles = await getAllArticles(locale);
-  const counts = {} as Record<ArticleCategory, number>;
 
-  // Initialize all categories with 0
-  for (const category of Object.values(ARTICLE_CATEGORIES)) {
-    counts[category] = 0;
-  }
-
-  // Count articles per category
-  for (const article of allArticles) {
-    if (article.category) {
-      counts[article.category]++;
-    }
-  }
-
-  return counts;
+  // Totality comes from the category list itself, not from a zero-fill pass
+  // behind an `as` cast: with the cast, dropping the fill (or missing a
+  // category in it) made `counts[category]++` evaluate `undefined + 1`, and
+  // `NaN` rendered straight into the category chips with no compile error.
+  return Object.fromEntries(
+    Object.values(ARTICLE_CATEGORIES).map((category) => [
+      category,
+      allArticles.filter((article) => article.category === category).length,
+    ])
+  ) as Record<ArticleCategory, number>;
 }

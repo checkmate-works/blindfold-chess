@@ -22,7 +22,7 @@ import { getOptionalUser } from '@/lib/auth';
 import { CURRICULUM } from '@/lib/db/data/curriculum';
 import { ALL_RANK_SLUGS } from '@/lib/db/data/ranks';
 import type { RankSlug } from '@/lib/db/data/ranks';
-import { buildGuidePath, getRankGuide } from '@/lib/guides';
+import { buildGuideHrefBySlug } from '@/lib/guides/guideHrefBySlug';
 
 import { RankCard } from '@/app/[locale]/(public)/dojo/ranks/_components/RankCard';
 import { getBeltColorHex } from '@/app/[locale]/(public)/dojo/ranks/_lib/belt-colors';
@@ -74,14 +74,7 @@ export default async function DojoPage({ params }: LocalePageProps) {
   ]);
   const guidesPages = tGuides.raw('pages') as Record<string, unknown>;
 
-  // Precompute per-rank guide hrefs for the curriculum list. Ranks without a
-  // guide entry map to `null` so `CurriculumToc` can render them as disabled.
-  const guideHrefBySlug: Partial<Record<RankSlug, string | null>> = {};
-  for (const slug of ALL_RANK_SLUGS) {
-    guideHrefBySlug[slug] = getRankGuide(guidesPages, slug)
-      ? buildGuidePath(locale, slug, { kind: 'root' })
-      : null;
-  }
+  const guideHrefBySlug = buildGuideHrefBySlug(locale, guidesPages);
 
   const user = await getOptionalUser();
 

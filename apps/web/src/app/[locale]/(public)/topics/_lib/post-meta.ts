@@ -90,28 +90,34 @@ export async function attachPostMeta(
 
   const likeCountMap = new Map(likeCounts.map((l) => [l.postId, l.likeCount]));
 
-  // Collect up to 3 unique repliers per root post (most recent, deduplicated by userId)
-  // while tracking ALL unique repliers for the +N overflow count
-  const repliersMap = new Map<string, Replier[]>();
-  const seenUsers = new Map<string, Set<string>>();
+  // Unique repliers per root post, in row order. Both the avatar preview and
+  // the "+N" overflow count are derived from this one grouping: they used to
+  // be two maps mutated in lockstep, with `seenUsers.set` unconditional but
+  // `repliersMap.set` nested inside the `length < 3` check — so touching the
+  // cap could leave a nonzero count beside an empty avatar list.
+  const uniqueRepliersByPost = new Map<string, Replier[]>();
+  const seenUserIdsByPost = new Map<string, Set<string>>();
   for (const row of repliesWithAuthors) {
     if (!row.rootPostId) continue;
     // Skip repliers whose author was anonymised (user_id NULL — account purged):
     // there is no distinct profile to dedup by, avatar, or link in the preview.
     if (!row.userId) continue;
-    const seen = seenUsers.get(row.rootPostId) ?? new Set();
+
+    const seen = seenUserIdsByPost.get(row.rootPostId) ?? new Set<string>();
+    seenUserIdsByPost.set(row.rootPostId, seen);
     if (seen.has(row.userId)) continue;
     seen.add(row.userId);
-    seenUsers.set(row.rootPostId, seen);
-    const existing = repliersMap.get(row.rootPostId) ?? [];
-    if (existing.length < 3) {
-      existing.push({
-        avatarUrl: row.avatarUrl,
-        displayName: row.displayName || row.username || 'Anonymous',
-      });
-      repliersMap.set(row.rootPostId, existing);
-    }
+
+    const repliers = uniqueRepliersByPost.get(row.rootPostId) ?? [];
+    uniqueRepliersByPost.set(row.rootPostId, repliers);
+    repliers.push({
+      avatarUrl: row.avatarUrl,
+      displayName: row.displayName || row.username || 'Anonymous',
+    });
   }
+
+  /** Avatars shown before the "+N" overflow takes over. */
+  const REPLIER_PREVIEW_LIMIT = 3;
 
   return posts.map((post) => {
     const stats = statsMap.get(post.id);
@@ -120,8 +126,8 @@ export async function attachPostMeta(
       replyMeta: {
         replyCount: stats?.replyCount ?? 0,
         latestReplyAt: stats?.latestReplyAt ?? null,
-        repliers: repliersMap.get(post.id) ?? [],
-        uniqueReplierCount: seenUsers.get(post.id)?.size ?? 0,
+        repliers: (uniqueRepliersByPost.get(post.id) ?? []).slice(0, REPLIER_PREVIEW_LIMIT),
+        uniqueReplierCount: uniqueRepliersByPost.get(post.id)?.length ?? 0,
       },
       likeMeta: {
         likeCount: likeCountMap.get(post.id) ?? 0,

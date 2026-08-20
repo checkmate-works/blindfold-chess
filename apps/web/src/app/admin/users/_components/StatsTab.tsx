@@ -1,10 +1,10 @@
 import type { ServerTranslator } from '@/i18n/translator';
 
-import { ALL_RANK_SLUGS } from '@/lib/db/data/ranks';
 import type { createAdminClient } from '@/lib/supabase/admin';
 
 import type { AdminUserFilters } from '../_lib/filters';
 import { fetchCountryStats, fetchRankStats, fetchSignupMethodStats } from '../_lib/queries';
+import { buildRankNames } from '../_lib/rank-names';
 import type { SIGNUP_METHOD_ORDER } from '../_lib/signup-method';
 import { CountryBarChart } from './CountryBarChart';
 import { RankBarChart } from './RankBarChart';
@@ -39,10 +39,7 @@ export async function StatsTab({
     fetchSignupMethodStats(adminClient, filters),
   ]);
 
-  const rankNames: Record<string, string> = {};
-  for (const slug of ALL_RANK_SLUGS) {
-    rankNames[slug] = t(`stats.rankNames.${slug}`);
-  }
+  const rankNames = buildRankNames(t);
 
   return (
     <div className="space-y-6">
