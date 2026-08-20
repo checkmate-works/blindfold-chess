@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useRouter, useSearchParams } from 'next/navigation';
 
-import { BoardSkeleton, Button, FlipBoardButton } from '@/app/_components';
+import { Button, FlipBoardButton } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { DEFAULT_MAIA_RATING, type MaiaRating } from '@blindfold-chess/features/ai-game/maia';
 import type { Side } from '@blindfold-chess/types';
@@ -29,6 +29,7 @@ import { useLocalGameSettings } from '@/app/[locale]/(public)/games/new/_hooks/u
 import { useMaiaGameLaunch } from '@/app/[locale]/(public)/games/new/_hooks/use-maia-game-launch';
 import { usePositionState } from '@/app/[locale]/(public)/games/new/_hooks/use-position-state';
 import { deriveMaiaCardMode } from '@/app/[locale]/(public)/games/new/_lib/maia-launch';
+import { EditableBoardSkeleton } from '@/app/[locale]/(public)/practice/(free-play)/_components/EditableBoardSkeleton';
 import { EditableChessBoard } from '@/app/[locale]/(public)/practice/(free-play)/_components/EditableChessBoard';
 import { useEditableBoardLabels } from '@/app/[locale]/(public)/practice/(free-play)/_hooks/use-editable-board-labels';
 import { CollapsibleGameSettings } from '@/app/[locale]/(public)/preferences/_components/CollapsibleGameSettings';
@@ -145,7 +146,7 @@ export function PositionGameForm({ locale, maiaAccess }: Props) {
           <FlipBoardButton onClick={() => setFlipped((prev) => !prev)} title={t('flipBoard')} />
         </div>
         {!isLoaded ? (
-          <BoardSkeleton />
+          <EditableBoardSkeleton />
         ) : (
           <EditableChessBoard
             fen={positionFen}
