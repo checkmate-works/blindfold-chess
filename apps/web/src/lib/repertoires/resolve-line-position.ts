@@ -43,12 +43,10 @@ export async function resolveLineForPosition(
   const lines = await fetchScannableLines(repertoireId);
 
   for (const line of lines) {
-    let sans: string[] = [];
-    try {
-      sans = parsePgn(line.pgn);
-    } catch {
-      continue;
-    }
+    // Skip a line whose stored PGN no longer parses.
+    const parsed = parsePgn(line.pgn);
+    if (!parsed.ok) continue;
+    const sans: string[] = parsed.value;
     const positions = replayMoves(sans, line.startingFen ?? undefined);
     // positions[0] is the start; positions[i] is the position after ply i.
     for (let ply = 1; ply < positions.length; ply++) {

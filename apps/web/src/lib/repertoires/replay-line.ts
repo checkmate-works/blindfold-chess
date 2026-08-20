@@ -28,12 +28,9 @@ export function replayRepertoireLine(line: {
   pgn: string;
   startingFen: string | null;
 }): ReplayedLine {
-  let sans: AlgebraicNotation[] = [];
-  try {
-    sans = parsePgn(line.pgn);
-  } catch {
-    sans = [];
-  }
+  // A corrupt stored line replays as empty rather than failing the page.
+  const parsed = parsePgn(line.pgn);
+  const sans: AlgebraicNotation[] = parsed.ok ? parsed.value : [];
   const positions = replayMoves(sans, line.startingFen ?? undefined).map((p) => ({
     fen: p.fen,
     lastMove: p.lastMove ?? null,

@@ -13,8 +13,8 @@ export const DEV_COUNTRY_COOKIE = 'bfc_dev_country';
  * never consulted when `NODE_ENV === 'production'`, so the live geo path is
  * byte-for-byte unchanged.
  */
-function devCountryOverride(headers: Headers): string | null {
-  if (process.env.NODE_ENV === 'production') return null;
+function devCountryOverride(headers: Headers, allowDevOverride: boolean): string | null {
+  if (!allowDevOverride) return null;
   const cookie = headers.get('cookie');
   if (!cookie) return null;
   const match = cookie.match(new RegExp(`(?:^|;\\s*)${DEV_COUNTRY_COOKIE}=([^;]+)`));
@@ -34,15 +34,20 @@ function devCountryOverride(headers: Headers): string | null {
  *
  * In non-production only, a `bfc_dev_country` cookie can stand in for the
  * missing Vercel header so country targeting is testable locally — see
- * {@link devCountryOverride}.
+ * {@link devCountryOverride}. That gate is a defaulted parameter rather than
+ * an inline `NODE_ENV` read, so a test can exercise the production path
+ * without reassigning a global Vitest treats as immutable.
  */
-export function getRequestCountry(headers: Headers): string | null {
+export function getRequestCountry(
+  headers: Headers,
+  allowDevOverride: boolean = process.env.NODE_ENV !== 'production'
+): string | null {
   const raw = headers.get('x-vercel-ip-country');
   if (raw) {
     const code = raw.trim().toUpperCase();
     if (/^[A-Z]{2}$/.test(code)) return code;
   }
-  return devCountryOverride(headers);
+  return devCountryOverride(headers, allowDevOverride);
 }
 
 /**

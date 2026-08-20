@@ -72,11 +72,10 @@ async function countActivePosters(start: Date, end: Date): Promise<number> {
     })
   );
 
-  const unioned = new Set<string>();
-  for (const userIds of perSourceUsers) {
-    for (const id of userIds) unioned.add(id);
-  }
-  return unioned.size;
+  // Plain flatten-and-dedupe. Written as a nested loop it read like it might
+  // be doing something to the NULL-filtering invariant explained above, and a
+  // reader had to re-verify both levels by hand to see that it does not.
+  return new Set(perSourceUsers.flat()).size;
 }
 
 /**

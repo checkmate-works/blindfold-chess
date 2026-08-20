@@ -3,12 +3,23 @@ import { describe, expect, it } from "vitest";
 import { matchGameAgainstLines, matchGameToLine } from "../line-match";
 import { parsePgnTree } from "../pgn-tree";
 
+/** Unwrap a parse expected to succeed. */
+function parseTree(pgn: string) {
+  const result = parsePgnTree(pgn);
+  if (!result.ok) {
+    throw new Error(
+      `expected the PGN to parse: ${JSON.stringify(result.error)}`,
+    );
+  }
+  return result.value;
+}
+
 // ============================================================
 // White repertoire (player = white)
 // ============================================================
 describe("matchGameToLine — white repertoire", () => {
   // 1. e4; against 1...e5 reply with 2. Nf3 Nc6 3. Bb5 (Ruy Lopez).
-  const ruy = parsePgnTree("1. e4 e5 2. Nf3 Nc6 3. Bb5");
+  const ruy = parseTree("1. e4 e5 2. Nf3 Nc6 3. Bb5");
 
   it("reports in-book when the game follows the prepared line", () => {
     const result = matchGameToLine(
@@ -56,7 +67,7 @@ describe("matchGameToLine — white repertoire", () => {
   it("returns not-applicable when the game never reaches a custom root", () => {
     // A mate pattern rooted at a custom FEN that a normal opening never reaches.
     const fen = "6k1/5ppp/8/8/8/8/5PPP/3R2K1 w - - 0 1";
-    const mate = parsePgnTree(`[SetUp "1"]\n[FEN "${fen}"]\n\n1. Rd8#`);
+    const mate = parseTree(`[SetUp "1"]\n[FEN "${fen}"]\n\n1. Rd8#`);
     const result = matchGameToLine(
       { moves: ["e4", "e5", "Nf3"], playerColor: "white" },
       mate,
@@ -68,7 +79,7 @@ describe("matchGameToLine — white repertoire", () => {
   it("flags a ply-0 deviation when the game's first move leaves the repertoire", () => {
     // A standard-rooted 1.d4 repertoire applies to every game at ply 0, so a
     // 1.e4 game is a (player) deviation on the very first move — not "n/a".
-    const queens = parsePgnTree("1. d4 d5 2. c4");
+    const queens = parseTree("1. d4 d5 2. c4");
     const result = matchGameToLine(
       { moves: ["e4", "e5"], playerColor: "white" },
       queens,
@@ -83,7 +94,7 @@ describe("matchGameToLine — white repertoire", () => {
 
   it("treats either of two prepared player moves as on-book", () => {
     // After 1. e4 e5 the player has prepared both 2. Nf3 and 2. Bc4.
-    const tree = parsePgnTree("1. e4 e5 2. Nf3 (2. Bc4 Bc5) Nc6");
+    const tree = parseTree("1. e4 e5 2. Nf3 (2. Bc4 Bc5) Nc6");
     const viaBc4 = matchGameToLine(
       { moves: ["e4", "e5", "Bc4", "Bc5"], playerColor: "white" },
       tree,
@@ -94,7 +105,7 @@ describe("matchGameToLine — white repertoire", () => {
 
   it("follows the correct branch through an opponent variation", () => {
     // Prepared: after 1.e4 e5 2.Nf3, answer 2...Nc6 with 3.Bb5 and 2...Nf6 with 3.Nxe5.
-    const tree = parsePgnTree("1. e4 e5 2. Nf3 Nc6 (2... Nf6 3. Nxe5) 3. Bb5");
+    const tree = parseTree("1. e4 e5 2. Nf3 Nc6 (2... Nf6 3. Nxe5) 3. Bb5");
     const petrov = matchGameToLine(
       { moves: ["e4", "e5", "Nf3", "Nf6", "Nxe5"], playerColor: "white" },
       tree,
@@ -109,7 +120,7 @@ describe("matchGameToLine — white repertoire", () => {
 // ============================================================
 describe("matchGameToLine — black repertoire", () => {
   // As black, meet 1. e4 with the Najdorf Sicilian.
-  const najdorf = parsePgnTree(
+  const najdorf = parseTree(
     "1. e4 c5 2. Nf3 d6 3. d4 cxd4 4. Nxd4 Nf6 5. Nc3 a6",
   );
 
@@ -176,7 +187,7 @@ describe("matchGameToLine — custom-FEN tree attaches mid-game", () => {
   // attach to it only once it reaches that position (ply 3).
   const midFen =
     "rnbqkbnr/pppp1ppp/8/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2";
-  const midTree = parsePgnTree(`[SetUp "1"]\n[FEN "${midFen}"]\n\nNc6 Bb5`);
+  const midTree = parseTree(`[SetUp "1"]\n[FEN "${midFen}"]\n\nNc6 Bb5`);
 
   it("begins matching at the ply the game first reaches the root", () => {
     const result = matchGameToLine(
@@ -205,7 +216,7 @@ describe("matchGameToLine — custom-FEN tree attaches mid-game", () => {
   it("matches a game that starts from the tree's custom root (mate pattern)", () => {
     // Back-rank mate: white to move, 1. Rd8#.
     const fen = "6k1/5ppp/8/8/8/8/5PPP/3R2K1 w - - 0 1";
-    const tree = parsePgnTree(`[SetUp "1"]\n[FEN "${fen}"]\n\n1. Rd8#`);
+    const tree = parseTree(`[SetUp "1"]\n[FEN "${fen}"]\n\n1. Rd8#`);
 
     const onBook = matchGameToLine(
       { moves: ["Rd8#"], playerColor: "white", startingFen: fen },
@@ -232,10 +243,10 @@ describe("matchGameToLine — custom-FEN tree attaches mid-game", () => {
 // matchGameAgainstLines
 // ============================================================
 describe("matchGameAgainstLines", () => {
-  const ruy = parsePgnTree("1. e4 e5 2. Nf3 Nc6 3. Bb5");
-  const italian = parsePgnTree("1. e4 e5 2. Nf3 Nc6 3. Bc4");
+  const ruy = parseTree("1. e4 e5 2. Nf3 Nc6 3. Bb5");
+  const italian = parseTree("1. e4 e5 2. Nf3 Nc6 3. Bc4");
   // A custom-FEN mate pattern that a normal opening game never reaches.
-  const mate = parsePgnTree(
+  const mate = parseTree(
     '[SetUp "1"]\n[FEN "6k1/5ppp/8/8/8/8/5PPP/3R2K1 w - - 0 1"]\n\n1. Rd8#',
   );
 

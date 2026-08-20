@@ -10,9 +10,16 @@ function evals(entries: Array<Partial<PositionEvaluation>>): PositionEvaluation[
   return entries.map((e) => ({ score: 0, ...e }));
 }
 
+/** Unwrap the ok branch — these cases all assert on successful derivation. */
+function analysesOf(...args: Parameters<typeof deriveMoveAnalyses>) {
+  const result = deriveMoveAnalyses(...args);
+  if (!result.ok) throw new Error(`expected ok, got ${JSON.stringify(result.error)}`);
+  return result.value;
+}
+
 describe('deriveMoveAnalyses', () => {
   it('derives color, move numbers, and SAN from the game record, not the payload', () => {
-    const analyses = deriveMoveAnalyses(
+    const analyses = analysesOf(
       MOVES,
       undefined,
       evals([{ score: 30 }, { score: 25 }, { score: 35 }, { score: 30 }])
@@ -25,7 +32,7 @@ describe('deriveMoveAnalyses', () => {
   });
 
   it('computes cp loss in the mover perspective and floors it at 0', () => {
-    const analyses = deriveMoveAnalyses(
+    const analyses = analysesOf(
       MOVES,
       undefined,
       // White's e4 drops 30→-70 (loss 100); Black's e5 moves -70→-90, which
@@ -42,7 +49,7 @@ describe('deriveMoveAnalyses', () => {
   });
 
   it('forces cpLoss to 0 when the played move is the engine best move', () => {
-    const analyses = deriveMoveAnalyses(
+    const analyses = analysesOf(
       MOVES,
       undefined,
       // Depth noise says e4 "lost" 80cp, but the engine's own choice was e2e4.
@@ -54,7 +61,7 @@ describe('deriveMoveAnalyses', () => {
   });
 
   it('resolves bestMoveUci to SAN and drops illegal UCI silently', () => {
-    const analyses = deriveMoveAnalyses(
+    const analyses = analysesOf(
       MOVES,
       undefined,
       evals([
@@ -71,11 +78,7 @@ describe('deriveMoveAnalyses', () => {
   });
 
   it('clamps out-of-range scores to the engine saturation limit', () => {
-    const analyses = deriveMoveAnalyses(
-      ['e4'],
-      undefined,
-      evals([{ score: 999999 }, { score: -999999 }])
-    );
+    const analyses = analysesOf(['e4'], undefined, evals([{ score: 999999 }, { score: -999999 }]));
 
     expect(analyses[0].evalBefore).toBe(10000);
     expect(analyses[0].evalAfter).toBe(-10000);
@@ -83,15 +86,24 @@ describe('deriveMoveAnalyses', () => {
   });
 
   it('rejects a payload whose length does not match the move count', () => {
-    expect(() => deriveMoveAnalyses(MOVES, undefined, evals([{ score: 0 }]))).toThrow(
-      /does not match/
-    );
+    expect(deriveMoveAnalyses(MOVES, undefined, evals([{ score: 0 }]))).toEqual({
+      ok: false,
+      error: { kind: 'length-mismatch', expected: 4, received: 1 },
+    });
+  });
+
+  it('reports a corrupt game record distinctly from a bad payload', () => {
+    // 'Ke2' is not legal from the standard start, so the replay stops short.
+    expect(deriveMoveAnalyses(['Ke2'], undefined, evals([{ score: 0 }, { score: 0 }]))).toEqual({
+      ok: false,
+      error: { kind: 'replay-failed' },
+    });
   });
 
   it('respects a custom starting FEN for colors and move numbers', () => {
     // Black to move at fullmove 10.
     const fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 10';
-    const analyses = deriveMoveAnalyses(['e5'], fen, evals([{ score: 0 }, { score: 0 }]));
+    const analyses = analysesOf(['e5'], fen, evals([{ score: 0 }, { score: 0 }]));
 
     expect(analyses[0].color).toBe('black');
     expect(analyses[0].moveNumber).toBe(10);

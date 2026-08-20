@@ -109,11 +109,16 @@ export function ImageAttachmentInput({ onChange, onModeChange, onValidationStatu
       const prepared: File[] = [];
       let anyFailed = false;
       for (const file of picked) {
-        try {
-          prepared.push(await prepareImageForUpload(file));
-        } catch (err) {
-          anyFailed = true;
-          Sentry.captureException(err, {
+        const result = await prepareImageForUpload(file);
+        if (result.ok) {
+          prepared.push(result.value);
+          continue;
+        }
+        anyFailed = true;
+        // See AvatarUpload: an undecodable pick is expected, our own encode
+        // failing is not — only the latter is worth a Sentry event.
+        if (result.error.kind === 'encode-failed') {
+          Sentry.captureException(result.error.cause, {
             tags: { feature: 'comment-image-upload', phase: 'prepare' },
             extra: { name: file.name, type: file.type, size: file.size },
           });

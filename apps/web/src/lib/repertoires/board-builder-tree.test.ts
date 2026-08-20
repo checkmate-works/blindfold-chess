@@ -112,7 +112,9 @@ describe('builderTreeToPgn', () => {
     const pgn = builderTreeToPgn(branched.children, ROOT);
     expect(pgn).toBe('1. e4 e5 (1... c5 2. Nf3) 2. Nf3');
 
-    const lines = enumerateLines(parsePgnTree(pgn));
+    const parsed = parsePgnTree(pgn);
+    if (!parsed.ok) throw new Error('expected the round-tripped PGN to parse');
+    const lines = enumerateLines(parsed.value);
     expect(lines).toHaveLength(2);
     expect(lines).toContainEqual(['e4', 'e5', 'Nf3']);
     expect(lines).toContainEqual(['e4', 'c5', 'Nf3']);

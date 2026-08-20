@@ -115,13 +115,12 @@ export async function getReplyMetaMap(
   const statsMap = new Map(stats.map((s) => [s.topicKey, s]));
 
   // Group deduped rows by topicKey, then sort each group by createdAt
-  // DESC and take the most-recent N for display.
-  const repliersByKey = new Map<string, typeof dedupedRepliers>();
-  for (const row of dedupedRepliers) {
-    const arr = repliersByKey.get(row.topicKey) ?? [];
-    arr.push(row);
-    repliersByKey.set(row.topicKey, arr);
-  }
+  // DESC and take the most-recent N for display. `Map.groupBy` rather than a
+  // hand-rolled get/push/set: the two analogous functions in this file must
+  // stay identical for the topic feed and the game feed to render the same
+  // avatar stack, and the hand-rolled form was the spot where a tidy-up
+  // would have diverged one copy from the other.
+  const repliersByKey = Map.groupBy(dedupedRepliers, (row) => row.topicKey);
 
   for (const topicKey of topicKeys) {
     const s = statsMap.get(topicKey);
@@ -192,12 +191,8 @@ export async function getGameCommentMetaMap(gameIds: string[]): Promise<Map<stri
 
   const statsMap = new Map(stats.map((s) => [s.gameId, s]));
 
-  const repliersByGame = new Map<string, typeof dedupedRepliers>();
-  for (const row of dedupedRepliers) {
-    const arr = repliersByGame.get(row.gameId) ?? [];
-    arr.push(row);
-    repliersByGame.set(row.gameId, arr);
-  }
+  // Same grouping as `attachReplyMetaToTopics` above — see its comment.
+  const repliersByGame = Map.groupBy(dedupedRepliers, (row) => row.gameId);
 
   for (const gameId of gameIds) {
     const s = statsMap.get(gameId);

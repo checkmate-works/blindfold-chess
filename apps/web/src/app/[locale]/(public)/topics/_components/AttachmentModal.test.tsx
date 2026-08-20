@@ -13,7 +13,7 @@ vi.mock('@/lib/positions/ui/MiniBoard', () => ({
 // async file-selection deterministic (a plain resolved Promise, no FileReader
 // timing) regardless of test-suite ordering.
 vi.mock('@/lib/client-images/prepare-image-for-upload', () => ({
-  prepareImageForUpload: vi.fn((file: File) => Promise.resolve(file)),
+  prepareImageForUpload: vi.fn((file: File) => Promise.resolve({ ok: true, value: file })),
 }));
 
 const VALID_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';

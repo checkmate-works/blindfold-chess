@@ -34,9 +34,17 @@ export function pgnSubModeError(detected: AttachmentInputDetect | null): string 
       // TODO(i18n): attachment.game.pgn.error.chesscomNotAccepted
       return 'chess.com URLs are not accepted. Paste the PGN body exported from chess.com instead.';
     case 'unknown':
-    default:
       // TODO(i18n): attachment.game.pgn.error.unknown
       return 'This does not look like a PGN body. Paste a complete PGN, or use the Lichess URL tab for a URL.';
+    default: {
+      // `unknown` used to share this branch, which hid the fact that every
+      // *new* detected shape landed on the "not a PGN body" hint instead of
+      // the routing hint this module exists to give. The union has grown
+      // twice (embed kinds, then chess.com kinds); it must fail the build now.
+      const _exhaustive: never = detected;
+      void _exhaustive;
+      return 'This does not look like a PGN body. Paste a complete PGN, or use the Lichess URL tab for a URL.';
+    }
   }
 }
 
@@ -69,8 +77,14 @@ export function urlSubModeError(detected: AttachmentInputDetect | null): string 
       // TODO(i18n): attachment.game.url.error.pgnDetected
       return 'PGN body detected. Switch to the PGN tab to attach.';
     case 'unknown':
-    default:
       // TODO(i18n): attachment.game.url.error.notLichess
       return 'Please paste a Lichess game URL or embed URL.';
+    default: {
+      // Same reasoning as `pgnSubModeError` above: keep `unknown` explicit so
+      // a newly detected shape is a build error rather than a wrong hint.
+      const _exhaustive: never = detected;
+      void _exhaustive;
+      return 'Please paste a Lichess game URL or embed URL.';
+    }
   }
 }

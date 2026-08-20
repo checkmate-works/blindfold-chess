@@ -36,12 +36,10 @@ export function scanLinesForPositionKeys(
 
   for (const line of lines) {
     if (wanted.size === 0) break;
-    let sans: string[] = [];
-    try {
-      sans = parsePgn(line.pgn);
-    } catch {
-      continue;
-    }
+    // Skip a line whose stored PGN no longer parses.
+    const parsed = parsePgn(line.pgn);
+    if (!parsed.ok) continue;
+    const sans: string[] = parsed.value;
     const positions = replayMoves(sans, line.startingFen ?? undefined);
     // positions[0] is the start; positions[ply] is the position after ply
     // (1-based) — ply 0 is not a linkable position (see the add action).

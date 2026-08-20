@@ -19,6 +19,7 @@ import type { AttachedGameCardData } from '@/app/[locale]/(public)/topics/_compo
 import type { AttachedImageCardData } from '@/app/[locale]/(public)/topics/_components/AttachedImageCard';
 import type { AttachedVideoCardData } from '@/app/[locale]/(public)/topics/_components/AttachedVideoCard';
 
+import type { ImageAttachmentRow, PgnAttachmentRow } from './attachment-card-mappers';
 import {
   embedRowToCard,
   fenRowToCard,
@@ -163,41 +164,80 @@ export async function getAttachmentsForPosts(
       .where(and(inArray(postVideoAttachments.postId, ids), isNull(topicPosts.deletedAt))),
   ]);
 
+  return mergeAttachmentsByPreference(
+    { pgnRows, embedRows, imageRows, fenRows, videoRows },
+    {
+      onConflict: conflictWarn,
+      onDroppedImage: (row, error) => {
+        // Dropping the one bad row keeps the page alive; the storage_path
+        // column is regex-pinned at the DB, so reaching this means row
+        // corruption or a missing NEXT_PUBLIC_SUPABASE_URL — either way it
+        // must be visible.
+        captureError(
+          error,
+          `[get-attachments-for-posts] dropped image attachment ${row.id} (post ${row.postId}): public URL unresolvable`
+        );
+      },
+    }
+  );
+}
+
+/** The five per-family row sets, as fetched by {@link getAttachmentsForPosts}. */
+type AttachmentRowSets = {
+  pgnRows: readonly (PgnAttachmentRow & { postId: string })[];
+  embedRows: readonly (AttachedEmbedCardData & { postId: string })[];
+  imageRows: readonly ImageAttachmentRow[];
+  fenRows: readonly (AttachedFenCardData & { postId: string })[];
+  videoRows: readonly (AttachedVideoCardData & { postId: string })[];
+};
+
+/**
+ * Reduce the five row sets to at most one attachment per post, applying the
+ * `pgn > embed > image > fen > video` preference documented on
+ * {@link PostAttachment}: the highest-priority kind is set unconditionally,
+ * every lower-priority kind only where the post has no entry yet.
+ *
+ * A post carrying rows in more than one table breaks an application
+ * invariant, so the loser is reported through `onConflict` (Sentry, in
+ * production) and dropped — never thrown, because one bad post must not fail
+ * the whole page.
+ *
+ * Pure, and separate from the fetch, because the fetch's tests drive it
+ * through a FIFO queue of stubbed rows: that made the assertions depend on
+ * the *order* the five `db.select()` calls are issued, so reordering the
+ * `Promise.all` array — a semantically neutral edit — broke every case.
+ */
+export function mergeAttachmentsByPreference(
+  rows: AttachmentRowSets,
+  handlers: {
+    onConflict: (postId: string, preferredKind: string, droppedKind: string) => void;
+    onDroppedImage?: (row: ImageAttachmentRow, error: unknown) => void;
+  }
+): Map<string, PostAttachment> {
   const map = new Map<string, PostAttachment>();
 
-  // Apply the documented single-kind preference by setting the highest-
-  // priority kind unconditionally, then merging lower-priority kinds only
-  // where the post has no entry yet (conflicts are reported, not thrown).
   const setIfAbsent = (postId: string, attachment: PostAttachment) => {
     const existing = map.get(postId);
     if (existing) {
-      conflictWarn(postId, existing.kind, attachment.kind);
+      handlers.onConflict(postId, existing.kind, attachment.kind);
       return;
     }
     map.set(postId, attachment);
   };
 
-  for (const row of pgnRows) {
+  for (const row of rows.pgnRows) {
     map.set(row.postId, { kind: 'pgn', data: pgnRowToCard(row) });
   }
-  for (const row of embedRows) {
+  for (const row of rows.embedRows) {
     setIfAbsent(row.postId, { kind: 'embed', data: embedRowToCard(row) });
   }
-  for (const [postId, images] of groupImageRows(imageRows, (row, error) => {
-    // Dropping the one bad row keeps the page alive; the storage_path column
-    // is regex-pinned at the DB, so reaching this means row corruption or a
-    // missing NEXT_PUBLIC_SUPABASE_URL — either way it must be visible.
-    captureError(
-      error,
-      `[get-attachments-for-posts] dropped image attachment ${row.id} (post ${row.postId}): public URL unresolvable`
-    );
-  })) {
+  for (const [postId, images] of groupImageRows(rows.imageRows, handlers.onDroppedImage)) {
     setIfAbsent(postId, { kind: 'image', data: images });
   }
-  for (const row of fenRows) {
+  for (const row of rows.fenRows) {
     setIfAbsent(row.postId, { kind: 'fen', data: fenRowToCard(row) });
   }
-  for (const row of videoRows) {
+  for (const row of rows.videoRows) {
     setIfAbsent(row.postId, { kind: 'video', data: videoRowToCard(row) });
   }
 

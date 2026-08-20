@@ -71,6 +71,40 @@ export async function listGameComments(
     currentUserId
   );
 
+  return toGameCommentItems(rows, likeMeta);
+}
+
+/** One comment row as selected by {@link listGameComments}. */
+export type GameCommentRow = {
+  id: string;
+  ply: number | null;
+  parentId: string | null;
+  body: string;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+  authorId: string | null;
+  authorUsername: string | null;
+  authorDisplayName: string | null;
+  authorAvatarUrl: string | null;
+};
+
+/**
+ * Project comment rows into the client-facing shape, redacting soft-deleted
+ * ones: a tombstone keeps its id, ply and parentId — so live replies stay
+ * anchored under it — but leaves the server with an empty body and a null
+ * author, and never carries like meta.
+ *
+ * Pure, and separate from the query because it is a content/identity leak
+ * guard: the like-meta lookup deliberately excludes deleted ids, so the
+ * `?? 0` fallbacks below pair with the redaction. Inlined between two awaits
+ * it had no test at all, and an edit that mapped like meta before redaction
+ * would have shipped retracted authors with nothing failing.
+ */
+export function toGameCommentItems(
+  rows: readonly GameCommentRow[],
+  likeMeta: ReadonlyMap<string, { likeCount: number; likedByMe: boolean }>
+): GameCommentItem[] {
   return rows.map((r) => {
     const isDeleted = r.deletedAt !== null;
     const meta = likeMeta.get(r.id);

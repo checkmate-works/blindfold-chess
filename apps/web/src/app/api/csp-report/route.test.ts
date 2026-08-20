@@ -8,7 +8,7 @@ vi.mock('@sentry/nextjs', () => ({
   captureException: (...args: unknown[]) => captureException(...args),
 }));
 
-const { POST } = await import('./route');
+const { POST, parseCspReportSampleRate } = await import('./route');
 
 function makeRequest(body: string, contentType: string, userAgent = 'vitest'): Request {
   return new Request('https://example.test/api/csp-report', {
@@ -280,5 +280,37 @@ describe('POST /api/csp-report', () => {
 
       expect(lastContext().tags.blocked_host).toBeUndefined();
     });
+  });
+});
+
+describe('parseCspReportSampleRate', () => {
+  // Pure — the clamp branches that decide whether this open, attacker-
+  // reachable endpoint can flood the Sentry quota, with no env stubbing.
+  it('accepts a valid rate inside [0, 1]', () => {
+    expect(parseCspReportSampleRate('0', false)).toBe(0);
+    expect(parseCspReportSampleRate('0.25', false)).toBe(0.25);
+    expect(parseCspReportSampleRate('1', false)).toBe(1);
+  });
+
+  it.each(['abc', 'NaN', '-0.5', '1.5', 'Infinity'])(
+    'falls back to the default for the unusable value %p',
+    (raw) => {
+      expect(parseCspReportSampleRate(raw, true)).toBe(0.1);
+      expect(parseCspReportSampleRate(raw, false)).toBe(1);
+    }
+  );
+
+  it('treats a blank value as an explicit rate of 0, not as unset', () => {
+    // `Number('')` is 0, which passes the finite/in-range test — so setting
+    // CSP_REPORT_SAMPLE_RATE to an empty string drops every report rather
+    // than falling back to the default. Documented rather than changed:
+    // this is the behavior the endpoint has always had.
+    expect(parseCspReportSampleRate('', true)).toBe(0);
+    expect(parseCspReportSampleRate(' ', false)).toBe(0);
+  });
+
+  it('defaults to a 10% cap in production and full fidelity elsewhere', () => {
+    expect(parseCspReportSampleRate(undefined, true)).toBe(0.1);
+    expect(parseCspReportSampleRate(undefined, false)).toBe(1);
   });
 });

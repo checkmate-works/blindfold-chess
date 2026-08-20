@@ -478,16 +478,6 @@ export const ChessBoard = memo(function ChessBoard({
 
       const display = resolvePieceDisplay(piece, displaySettings);
 
-      if (display.kind === 'absent') return null;
-      if (display.kind === 'ghost') {
-        // A ghost carries no drag/fade chrome (the review board is read-only).
-        return (
-          <div className="flex h-[80%] w-[80%] items-center justify-center opacity-40">
-            <ChessPiece type={display.type} color={display.color} size={45} />
-          </div>
-        );
-      }
-
       // Own pieces are draggable in interactive mode via pointer events (see
       // handleBoardPointerDown). `touch-none` lets a touch drag start on a
       // piece without the page scrolling; empty squares keep normal
@@ -501,25 +491,44 @@ export const ChessBoard = memo(function ChessBoard({
       const grabClass = isInteractivePiece ? 'cursor-grab active:cursor-grabbing touch-none' : '';
       const fadeClass = !floating && square === dragFrom ? 'opacity-30' : '';
 
-      if (display.kind === 'circle') {
-        // Show as Go stone-like circle with subtle gradient and shadow.
-        // A faint stone is a hidden one — same fade as a ghost piece, so
-        // "dimmed" reads as "could not see this" whichever form it takes.
-        return (
-          <div
-            className={`w-[60%] h-[60%] rounded-full ${display.faint ? 'opacity-40' : ''} ${grabClass} ${fadeClass}`}
-            style={goStoneStyle(display.color)}
-          />
-        );
+      // Exhaustive over PieceDisplay: this is a blindfold app, so a kind
+      // added without a branch here must not fall through to "draw the real
+      // piece" — that would leak the position. The `never` default makes it
+      // a build error instead.
+      switch (display.kind) {
+        case 'absent':
+          return null;
+        case 'ghost':
+          // A ghost carries no drag/fade chrome (the review board is read-only).
+          return (
+            <div className="flex h-[80%] w-[80%] items-center justify-center opacity-40">
+              <ChessPiece type={display.type} color={display.color} size={45} />
+            </div>
+          );
+        case 'circle':
+          // Show as Go stone-like circle with subtle gradient and shadow.
+          // A faint stone is a hidden one — same fade as a ghost piece, so
+          // "dimmed" reads as "could not see this" whichever form it takes.
+          return (
+            <div
+              className={`w-[60%] h-[60%] rounded-full ${display.faint ? 'opacity-40' : ''} ${grabClass} ${fadeClass}`}
+              style={goStoneStyle(display.color)}
+            />
+          );
+        case 'piece':
+          return (
+            <div
+              className={`w-[80%] h-[80%] flex items-center justify-center ${grabClass} ${fadeClass}`}
+            >
+              <ChessPiece type={display.type} color={display.color} size={45} />
+            </div>
+          );
+        default: {
+          const _exhaustive: never = display;
+          void _exhaustive;
+          return null;
+        }
       }
-
-      return (
-        <div
-          className={`w-[80%] h-[80%] flex items-center justify-center ${grabClass} ${fadeClass}`}
-        >
-          <ChessPiece type={display.type} color={display.color} size={45} />
-        </div>
-      );
     },
     [interactive, movableColorChar, displaySettings, dragFrom]
   );

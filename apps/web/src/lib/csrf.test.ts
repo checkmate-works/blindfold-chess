@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 vi.mock('@sentry/nextjs', () => ({ captureMessage: vi.fn() }));
 
 const Sentry = await import('@sentry/nextjs');
-const { isValidOrigin } = await import('./csrf');
+const { isValidOrigin, originMatches } = await import('./csrf');
 
 function createRequest(headers: Record<string, string> = {}): Request {
   return new Request('https://example.com/api/test', { headers });
@@ -149,5 +149,28 @@ describe('isValidOrigin', () => {
 
       expect(Sentry.captureMessage).not.toHaveBeenCalled();
     });
+  });
+});
+
+describe('originMatches', () => {
+  // Pure — no env stubbing, unlike every isValidOrigin case above.
+  it('accepts identical origins', () => {
+    expect(originMatches('https://example.com', 'https://example.com')).toBe(true);
+  });
+
+  it('ignores a trailing slash on either side', () => {
+    expect(originMatches('https://example.com/', 'https://example.com')).toBe(true);
+    expect(originMatches('https://example.com', 'https://example.com/')).toBe(true);
+    expect(originMatches('https://example.com///', 'https://example.com')).toBe(true);
+  });
+
+  it('rejects a different host, scheme or port', () => {
+    expect(originMatches('https://evil.com', 'https://example.com')).toBe(false);
+    expect(originMatches('http://example.com', 'https://example.com')).toBe(false);
+    expect(originMatches('https://example.com:3000', 'https://example.com')).toBe(false);
+  });
+
+  it('rejects a subdomain of the allowed origin', () => {
+    expect(originMatches('https://evil.example.com', 'https://example.com')).toBe(false);
   });
 });

@@ -83,7 +83,7 @@ export function useAiReviewGeneration({
 
       void (async () => {
         try {
-          const evaluations = await evaluatePositions({
+          const swept = await evaluatePositions({
             moves,
             startingFen: startingFen ?? undefined,
             evaluator: engine,
@@ -94,9 +94,29 @@ export function useAiReviewGeneration({
           });
 
           if (!isCurrent()) return;
+
+          if (!swept.ok) {
+            // An abort is the user's own doing — return to idle silently.
+            // Everything else still reports `analysis_failed`: the sweep now
+            // distinguishes "game too long" (a refusal a Retry can never
+            // satisfy) from a genuine failure, but telling the user so needs
+            // its own message in every locale, so that stays a follow-up.
+            if (swept.error.kind === 'aborted') {
+              setState({ phase: 'idle' });
+            } else {
+              console.error('[ai-review] analysis failed', swept.error);
+              setState({ phase: 'error', error: 'analysis_failed' });
+            }
+            return;
+          }
+
           setState({ phase: 'generating' });
 
-          const response = await generateAiReviewAction({ gameId, locale, evaluations });
+          const response = await generateAiReviewAction({
+            gameId,
+            locale,
+            evaluations: swept.value,
+          });
           if (!isCurrent()) return;
           setState(
             response.success
@@ -104,13 +124,11 @@ export function useAiReviewGeneration({
               : { phase: 'error', error: response.error }
           );
         } catch (error) {
+          // The sweep reports its own failures as values; anything thrown
+          // here came from the engine handle or the Server Action call.
           if (!isCurrent()) return;
-          if (error instanceof DOMException && error.name === 'AbortError') {
-            setState({ phase: 'idle' });
-          } else {
-            console.error('[ai-review] analysis failed', error);
-            setState({ phase: 'error', error: 'analysis_failed' });
-          }
+          console.error('[ai-review] analysis failed', error);
+          setState({ phase: 'error', error: 'analysis_failed' });
         } finally {
           if (isCurrent()) {
             runningRef.current = null;

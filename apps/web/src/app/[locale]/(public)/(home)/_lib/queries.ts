@@ -93,9 +93,7 @@ export async function getFeedData({
     .orderBy(desc(feedItems.createdAt))
     .limit(limit + 1);
 
-  const hasMore = feedRows.length > limit;
-  const rows = hasMore ? feedRows.slice(0, limit) : feedRows;
-  const nextCursor = hasMore ? rows[rows.length - 1].createdAt.toISOString() : null;
+  const { rows, nextCursor } = splitFeedPage(feedRows, limit);
 
   const topicPostIds = rows.filter((r) => r.entityType === 'topic_post').map((r) => r.entityId);
   const positionIds = rows.filter((r) => r.entityType === 'position').map((r) => r.entityId);
@@ -113,66 +111,101 @@ export async function getFeedData({
     loadRankUpdateActors(rankUpdateActorIds),
   ]);
 
-  // Build FeedItem array, filtering out items whose entity data was
-  // not found (the entity has been deleted between feed-item write
-  // and feed read).
+  const items = assembleFeedItems(rows, {
+    topicPostMap,
+    positionMap,
+    chunkMap,
+    gameMap,
+    rankUpdateActorMap,
+  });
+
+  return { items, nextCursor };
+}
+
+/** One `feed_items` row as selected above. */
+export type FeedRow = {
+  id: string;
+  entityType: string;
+  entityId: string;
+  actorId: string;
+  createdAt: Date;
+  metadata: unknown;
+};
+
+/**
+ * Split the over-fetched page (`limit + 1` rows) into the page proper and the
+ * cursor for the next one.
+ *
+ * The extra row is the has-more probe and must never be returned: the feed's
+ * contract is that a page of `limit` rows is `limit` renderable items, and
+ * the cursor is the timestamp of the last row actually returned.
+ */
+export function splitFeedPage<T extends { createdAt: Date }>(
+  feedRows: readonly T[],
+  limit: number
+): { rows: T[]; nextCursor: string | null } {
+  const hasMore = feedRows.length > limit;
+  const rows = hasMore ? feedRows.slice(0, limit) : [...feedRows];
+  return {
+    rows,
+    nextCursor: hasMore ? rows[rows.length - 1].createdAt.toISOString() : null,
+  };
+}
+
+/**
+ * The per-entity-type lookups the assembly joins each row against, derived
+ * from the loaders that produce them so the shapes cannot drift apart.
+ */
+export type FeedEntityMaps = {
+  topicPostMap: Awaited<ReturnType<typeof loadTopicPostsForFeed>>;
+  positionMap: Awaited<ReturnType<typeof loadPositionsForFeed>>;
+  chunkMap: Awaited<ReturnType<typeof loadChunksForFeed>>;
+  gameMap: Awaited<ReturnType<typeof loadGamesForFeed>>;
+  rankUpdateActorMap: Awaited<ReturnType<typeof loadRankUpdateActors>>;
+};
+
+/**
+ * Join each feed row to its entity payload, dropping rows whose entity is
+ * gone — the entity can be deleted between the feed-item write and this read,
+ * and a feed item with no entity has nothing to render.
+ *
+ * Pure, and separate from the fetch: this is where the page's invariants
+ * actually live (the drop-when-missing rule, the chunk metadata's
+ * created/published coercion, the unvalidated `challenge_rank_update`
+ * metadata casts), and inline they could only be exercised through a
+ * hand-built chainable `db` stub.
+ */
+export function assembleFeedItems(rows: readonly FeedRow[], maps: FeedEntityMaps): FeedItem[] {
   const items: FeedItem[] = [];
+
   for (const row of rows) {
+    const base = {
+      id: row.id,
+      entityId: row.entityId,
+      actorId: row.actorId,
+      createdAt: row.createdAt.toISOString(),
+    };
+
     if (row.entityType === 'topic_post') {
-      const data = topicPostMap.get(row.entityId);
-      if (data) {
-        items.push({
-          id: row.id,
-          entityType: 'topic_post',
-          entityId: row.entityId,
-          actorId: row.actorId,
-          createdAt: row.createdAt.toISOString(),
-          data,
-        });
-      }
+      const data = maps.topicPostMap.get(row.entityId);
+      if (data) items.push({ ...base, entityType: 'topic_post', data });
     } else if (row.entityType === 'position') {
-      const data = positionMap.get(row.entityId);
-      if (data) {
-        items.push({
-          id: row.id,
-          entityType: 'position',
-          entityId: row.entityId,
-          actorId: row.actorId,
-          createdAt: row.createdAt.toISOString(),
-          data,
-        });
-      }
+      const data = maps.positionMap.get(row.entityId);
+      if (data) items.push({ ...base, entityType: 'position', data });
     } else if (row.entityType === 'chunk') {
-      const data = chunkMap.get(row.entityId);
+      const data = maps.chunkMap.get(row.entityId);
       if (data) {
         const metadata = (row.metadata ?? {}) as Record<string, unknown>;
         const kind = metadata.kind === 'published' ? 'published' : 'created';
-        items.push({
-          id: row.id,
-          entityType: 'chunk',
-          entityId: row.entityId,
-          actorId: row.actorId,
-          createdAt: row.createdAt.toISOString(),
-          data: { ...data, kind },
-        });
+        items.push({ ...base, entityType: 'chunk', data: { ...data, kind } });
       }
     } else if (row.entityType === 'game') {
-      const data = gameMap.get(row.entityId);
-      if (data) {
-        items.push({
-          id: row.id,
-          entityType: 'game',
-          entityId: row.entityId,
-          actorId: row.actorId,
-          createdAt: row.createdAt.toISOString(),
-          data,
-        });
-      }
+      const data = maps.gameMap.get(row.entityId);
+      if (data) items.push({ ...base, entityType: 'game', data });
     } else if (row.entityType === 'challenge_rank_update') {
-      const actor = rankUpdateActorMap.get(row.actorId);
+      const actor = maps.rankUpdateActorMap.get(row.actorId);
       if (actor) {
-        const metadata = row.metadata as Record<string, unknown>;
-        const rank = metadata.rank as number;
+        const metadata = (row.metadata ?? {}) as Record<string, unknown>;
         // The rank threshold is applied in SQL (see `liveFeedRow`), not here.
         // Dropping a fetched row would put a hole back in the page and undo
         // the guarantee that a page of `limit` rows is `limit` items.
@@ -182,21 +215,14 @@ export async function getFeedData({
           score: metadata.score as number,
           incorrectAnswers: metadata.incorrectAnswers as number,
           timeTaken: metadata.timeTaken as number,
-          rank,
+          rank: metadata.rank as number,
           isNewEntry: metadata.isNewEntry as boolean,
           actor,
         };
-        items.push({
-          id: row.id,
-          entityType: 'challenge_rank_update',
-          entityId: row.entityId,
-          actorId: row.actorId,
-          createdAt: row.createdAt.toISOString(),
-          data,
-        });
+        items.push({ ...base, entityType: 'challenge_rank_update', data });
       }
     }
   }
 
-  return { items, nextCursor };
+  return items;
 }

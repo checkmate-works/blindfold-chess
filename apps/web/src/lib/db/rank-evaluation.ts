@@ -43,18 +43,14 @@
 import { and, asc, count, eq, inArray } from 'drizzle-orm';
 import 'server-only';
 
-import { isOperationTotals } from '@/lib/games/operation-totals';
-import {
-  isConstrainedPlaySettings,
-  maintainedHiddenBoard,
-} from '@/lib/games/play-settings-constraint';
+import { qualifiesAsHiddenBoardWin } from '@/lib/games/hidden-board-win';
+import { isConstrainedPlaySettings } from '@/lib/games/play-settings-constraint';
 import type {
   GamePlaySettings,
   MoveOperationLog,
   OperationTotals,
   PlaySettingsChangeEntry,
 } from '@/lib/games/saved-game-types';
-import { startedFromStandardPosition } from '@/lib/games/standard-start';
 import { captureError } from '@/lib/sentry/capture-error';
 
 import type {
@@ -178,41 +174,10 @@ const evaluators: EvaluatorRegistry = {
   },
   game_publish_win_hidden_board: async (ctx, requirement: GamePublishWinHiddenBoardRequirement) => {
     const rows = await ctx.getWonPublicGames();
-
-    // Malformed / unverifiable data always disqualifies the game rather than
-    // crashing or passing — a crash here would take down checkAndGrantRanks
-    // for every future trigger of this user (the error is swallowed and only
-    // reaches Sentry), permanently blocking promotion, and leniency would
-    // promote on unverifiable logs.
-    const qualifying = rows.filter((row) => {
-      // 1dan is a black-belt-grade feat: the game must be played from the
-      // standard initial position, or the "board hidden throughout" win is
-      // meaningless (start one move from mate and play it). See
-      // `startedFromStandardPosition`.
-      if (!startedFromStandardPosition(row.startingFen, row.setupPlies)) return false;
-      if (!maintainedHiddenBoard(row.playSettings, row.playSettingsLog)) return false;
-
-      // Preferred source: the monotonic lifetime totals, which undo cannot
-      // shrink — so peek → undo → replay counts every peek (issue #95).
-      if (row.operationTotals != null) {
-        if (!isOperationTotals(row.operationTotals)) return false;
-        return row.operationTotals.peeks <= requirement.maxPeeks;
-      }
-
-      // Legacy rows published before operation_totals existed: only the
-      // per-move log survives, and undo deleted log lines together with
-      // their peekCount. A game with any recorded undo therefore has an
-      // unverifiable peek total — fail closed on it.
-      let peeks = 0;
-      let undos = 0;
-      for (const log of row.operationLogs ?? []) {
-        if (typeof log?.peekCount !== 'number' || Number.isNaN(log.peekCount)) return false;
-        if (typeof log?.undoCount !== 'number' || Number.isNaN(log.undoCount)) return false;
-        peeks += log.peekCount;
-        undos += log.undoCount;
-      }
-      return undos === 0 && peeks <= requirement.maxPeeks;
-    });
+    // The per-row rule (standard start, board hidden throughout, peeks within
+    // budget, fail-closed on legacy rows) lives in `qualifiesAsHiddenBoardWin`
+    // so it can be exercised without a database — see its TSDoc.
+    const qualifying = rows.filter((row) => qualifiesAsHiddenBoardWin(row, requirement.maxPeeks));
     return qualifying.length >= requirement.minCount;
   },
 };

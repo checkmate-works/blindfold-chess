@@ -1,10 +1,11 @@
+import { err, ok } from '@blindfold-chess/features/utils';
 import { describe, expect, it, vi } from 'vitest';
 
 import type { GameRecord } from '@/lib/db/schema';
 import type { PositionEvaluation } from '@/lib/games/analysis/types';
 
 import { generateReview } from './generate-review';
-import type { LlmClient } from './llm-client';
+import type { LlmClient, LlmError } from './llm-client';
 import type { AiReviewStore } from './queries';
 import type { AiReview, AiReviewContent } from './types';
 
@@ -82,7 +83,12 @@ function memoryStore(initial: AiReview | null = null): AiReviewStore & { saved: 
   };
 }
 
-function llmReturning(...responses: Array<string | Error>): LlmClient & { calls: number } {
+/**
+ * A fake provider. A `string` response is a successful completion; an
+ * {@link LlmError} is a failed one, so a case can choose a retryable failure
+ * (server / rate_limited) or a final one (auth / client).
+ */
+function llmReturning(...responses: Array<string | LlmError>): LlmClient & { calls: number } {
   let call = 0;
   const client = {
     model: 'test-model',
@@ -90,8 +96,7 @@ function llmReturning(...responses: Array<string | Error>): LlmClient & { calls:
     async complete() {
       client.calls++;
       const r = responses[Math.min(call++, responses.length - 1)];
-      if (r instanceof Error) throw r;
-      return r;
+      return typeof r === 'string' ? ok(r) : err(r);
     },
   };
   return client;
@@ -169,13 +174,41 @@ describe('generateReview', () => {
     expect(store.save).not.toHaveBeenCalled();
   });
 
-  it('fails with llm_error when the provider throws twice', async () => {
+  it('fails with llm_error when the provider fails on both attempts', async () => {
     const store = memoryStore();
-    const llm = llmReturning(new Error('boom'), new Error('boom'));
+    const llm = llmReturning({ kind: 'server', status: 502 }, { kind: 'server', status: 502 });
 
     const result = await generateReview(baseParams(store, llm));
 
     expect(result).toEqual({ ok: false, error: 'llm_error' });
+    expect(llm.calls).toBe(2);
+  });
+
+  it('retries a retryable provider failure and succeeds on the second attempt', async () => {
+    const store = memoryStore();
+    const llm = llmReturning(
+      { kind: 'rate_limited', status: 429 },
+      JSON.stringify(validContent([2]))
+    );
+
+    const result = await generateReview(baseParams(store, llm));
+
+    expect(result.ok).toBe(true);
+    expect(llm.calls).toBe(2);
+  });
+
+  it.each([
+    ['auth', { kind: 'auth', status: 401 } as const],
+    ['client', { kind: 'client', status: 400 } as const],
+    ['empty_content', { kind: 'empty_content' } as const],
+  ])('does not spend a second attempt on a final %s failure', async (_label, error) => {
+    const store = memoryStore();
+    const llm = llmReturning(error, JSON.stringify(validContent([2])));
+
+    const result = await generateReview(baseParams(store, llm));
+
+    expect(result).toEqual({ ok: false, error: 'llm_error' });
+    expect(llm.calls).toBe(1);
   });
 
   it('rejects an evaluation payload of the wrong length as invalid_input', async () => {

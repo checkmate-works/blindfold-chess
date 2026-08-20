@@ -81,7 +81,14 @@ export function FeedCard({
           justNowLabel={justNowLabel}
         />
       );
-    default:
+    default: {
+      // Exhaustive over FeedItem. A new entity type is inserted into the
+      // feed and counted by the cursor/pagination in `_lib/queries`, so
+      // falling through to `null` here left a blank row in the list with no
+      // error anywhere — the union has grown twice (chunk, game) already.
+      const _exhaustive: never = item;
+      void _exhaustive;
       return null;
+    }
   }
 }

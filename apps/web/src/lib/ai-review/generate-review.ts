@@ -4,6 +4,7 @@ import type { PositionEvaluation } from '@/lib/games/analysis/types';
 
 import { buildReviewInput } from './input';
 import type { LlmClient } from './llm-client';
+import { isRetryableLlmError } from './llm-client';
 import { LOCALE_LANGUAGE, buildMovetext, buildSystemPrompt, buildUserPrompt } from './prompt';
 import type { AiReviewStore } from './queries';
 import { buildAiReviewContentSchema, buildAiReviewJsonSchema } from './schema';
@@ -61,14 +62,17 @@ export async function generateReview({
   const cached = await store.find(game.id, locale);
   if (cached) return { ok: true, review: cached };
 
-  let analyses;
-  try {
-    analyses = deriveMoveAnalyses(game.moves, game.startingFen ?? undefined, evaluations);
-  } catch {
+  const derived = deriveMoveAnalyses(game.moves, game.startingFen ?? undefined, evaluations);
+  if (!derived.ok) {
+    // Both map to `invalid_input` for the client — the codes are part of that
+    // contract — but they are different incidents: a length mismatch is a bad
+    // (or tampered) request, while a replay failure means the stored game
+    // record is corrupt and needs looking at.
+    console.error('[ai-review] could not derive move analyses', derived.error);
     return { ok: false, error: 'invalid_input' };
   }
 
-  const input = buildReviewInput(analyses, game.playerColor);
+  const input = buildReviewInput(derived.value, game.playerColor);
   const allowedPlies = input.moments.map((m) => m.ply);
 
   const system = buildSystemPrompt(LOCALE_LANGUAGE[locale] ?? 'English');
@@ -90,23 +94,36 @@ export async function generateReview({
 
   let content = null;
   for (let attempt = 1; attempt <= MAX_LLM_ATTEMPTS && content === null; attempt++) {
+    const completion = await llm.complete({
+      system,
+      user,
+      schemaName: 'ai_game_review',
+      schema: jsonSchema,
+      maxOutputTokens: MAX_OUTPUT_TOKENS,
+    });
+
+    if (!completion.ok) {
+      // Every failed attempt is logged, not just the last: a 429 storm used
+      // to be invisible because only the final attempt reached the console.
+      console.error('[ai-review] LLM completion failed', completion.error);
+      // A bad key or a rejected schema will fail identically next time, so
+      // spending another full-cost attempt on it is pure waste.
+      if (!isRetryableLlmError(completion.error)) break;
+      continue;
+    }
+
     try {
-      const raw = await llm.complete({
-        system,
-        user,
-        schemaName: 'ai_game_review',
-        schema: jsonSchema,
-        maxOutputTokens: MAX_OUTPUT_TOKENS,
-      });
-      const parsed = contentSchema.safeParse(JSON.parse(raw));
+      const parsed = contentSchema.safeParse(JSON.parse(completion.value));
       if (parsed.success) {
         content = parsed.data;
       } else if (attempt === MAX_LLM_ATTEMPTS) {
         console.error('[ai-review] LLM output failed validation', parsed.error.issues.slice(0, 5));
       }
     } catch (error) {
+      // JSON.parse on a non-JSON body — the provider answered, so retrying
+      // is worthwhile (a second sampling usually produces valid output).
       if (attempt === MAX_LLM_ATTEMPTS) {
-        console.error('[ai-review] LLM completion failed', error);
+        console.error('[ai-review] LLM output was not JSON', error);
       }
     }
   }

@@ -45,15 +45,11 @@ type Props = {
 export function GameReplayModal({ pgn, fallbackFen, isOpen, onClose }: Props) {
   const t = useTranslations('attachment');
   const parsed = useMemo(() => {
-    try {
-      return parsePgnWithFen(pgn);
-    } catch {
-      // Defensive: validateAttachedPgn already accepted this PGN at
-      // write time, so a parse failure here means the row is corrupt
-      // or chess.js changed behavior. Fall back to no-moves rather
-      // than crashing the modal.
-      return { moves: [] as string[], startingFen: undefined };
-    }
+    const result = parsePgnWithFen(pgn);
+    // Defensive: validateAttachedPgn already accepted this PGN at write time,
+    // so a parse failure here means the row is corrupt or chess.js changed
+    // behavior. Fall back to no-moves rather than crashing the modal.
+    return result.ok ? result.value : { moves: [] as string[], startingFen: undefined };
   }, [pgn]);
 
   const startingFen = parsed.startingFen ?? getStartingFen();

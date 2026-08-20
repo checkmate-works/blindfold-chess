@@ -21,6 +21,22 @@ import {
 import type { FormattedPgn } from "../pgn";
 import { validateAttachedPgn } from "../pgn-attachment";
 
+/** Unwrap a PGN expected to load; fails the test if it does not. */
+function movesOf(pgn: string) {
+  const result = parsePgn(pgn);
+  if (!result.ok)
+    throw new Error(`expected the PGN to load: ${String(result.error.cause)}`);
+  return result.value;
+}
+
+/** As {@link movesOf}, for the FEN-aware loader. */
+function loadedWithFen(pgn: string) {
+  const result = parsePgnWithFen(pgn);
+  if (!result.ok)
+    throw new Error(`expected the PGN to load: ${String(result.error.cause)}`);
+  return result.value;
+}
+
 const SIMPLE_PGN = "1. e4 e5 2. Nf3 Nc6";
 
 // ============================================================
@@ -55,21 +71,23 @@ describe("validatePgn", () => {
 // ============================================================
 describe("parsePgn", () => {
   it("returns an array of algebraic moves", () => {
-    const moves = parsePgn(SIMPLE_PGN);
+    const moves = movesOf(SIMPLE_PGN);
     expect(moves).toEqual(["e4", "e5", "Nf3", "Nc6"]);
   });
 
   it("handles a single move PGN", () => {
-    const moves = parsePgn("1. e4");
+    const moves = movesOf("1. e4");
     expect(moves).toEqual(["e4"]);
   });
 
-  it("throws for an invalid PGN", () => {
-    expect(() => parsePgn("1. invalidmove")).toThrow("Invalid PGN format");
+  it("reports an invalid PGN instead of throwing", () => {
+    const result = parsePgn("1. invalidmove");
+    expect(result.ok).toBe(false);
+    expect(!result.ok && result.error.kind).toBe("invalid-pgn");
   });
 
   it("handles PGN with result markers", () => {
-    const moves = parsePgn("1. e4 e5 1-0");
+    const moves = movesOf("1. e4 e5 1-0");
     expect(moves).toEqual(["e4", "e5"]);
   });
 });
@@ -79,7 +97,7 @@ describe("parsePgn", () => {
 // ============================================================
 describe("parsePgnWithFen", () => {
   it("returns moves and no startingFen for a standard game", () => {
-    const result = parsePgnWithFen(SIMPLE_PGN);
+    const result = loadedWithFen(SIMPLE_PGN);
     expect(result.moves).toEqual(["e4", "e5", "Nf3", "Nc6"]);
     expect(result.startingFen).toBeUndefined();
   });
@@ -87,7 +105,7 @@ describe("parsePgnWithFen", () => {
   it("returns startingFen when a custom FEN header is present", () => {
     const pgnWithFen =
       '[SetUp "1"]\n[FEN "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1"]\n\n1... e5';
-    const result = parsePgnWithFen(pgnWithFen);
+    const result = loadedWithFen(pgnWithFen);
     expect(result.startingFen).toBe(
       "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1",
     );
@@ -97,14 +115,14 @@ describe("parsePgnWithFen", () => {
   it("does not return startingFen when FEN is the standard starting position", () => {
     const pgnWithDefaultFen =
       '[FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"]\n\n1. e4';
-    const result = parsePgnWithFen(pgnWithDefaultFen);
+    const result = loadedWithFen(pgnWithDefaultFen);
     expect(result.startingFen).toBeUndefined();
   });
 
-  it("throws for an invalid PGN", () => {
-    expect(() => parsePgnWithFen("invalid pgn data")).toThrow(
-      "Invalid PGN format",
-    );
+  it("reports an invalid PGN instead of throwing", () => {
+    const result = parsePgnWithFen("invalid pgn data");
+    expect(result.ok).toBe(false);
+    expect(!result.ok && result.error.kind).toBe("invalid-pgn");
   });
 });
 
@@ -509,17 +527,17 @@ describe("validatePgn - edge cases", () => {
 
 describe("parsePgn - edge cases", () => {
   it("handles PGN with draw result marker", () => {
-    const moves = parsePgn("1. e4 e5 1/2-1/2");
+    const moves = movesOf("1. e4 e5 1/2-1/2");
     expect(moves).toEqual(["e4", "e5"]);
   });
 
   it("handles PGN with black win result marker", () => {
-    const moves = parsePgn("1. e4 e5 0-1");
+    const moves = movesOf("1. e4 e5 0-1");
     expect(moves).toEqual(["e4", "e5"]);
   });
 
   it("handles PGN with kingside castling", () => {
-    const moves = parsePgn("1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. O-O Nf6");
+    const moves = movesOf("1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. O-O Nf6");
     expect(moves).toContain("O-O");
   });
 
@@ -527,7 +545,7 @@ describe("parsePgn - edge cases", () => {
     // Position where promotion occurs
     const pgnWithPromotion =
       '[SetUp "1"]\n[FEN "4k3/P7/8/8/8/8/8/4K3 w - - 0 1"]\n\n1. a8=Q+';
-    const moves = parsePgn(pgnWithPromotion);
+    const moves = movesOf(pgnWithPromotion);
     expect(moves).toEqual(["a8=Q+"]);
   });
 });
@@ -536,7 +554,7 @@ describe("parsePgnWithFen - edge cases", () => {
   it("handles PGN with multiple headers", () => {
     const pgn =
       '[Event "World Championship"]\n[Site "London"]\n[Date "2024.01.01"]\n[White "Player A"]\n[Black "Player B"]\n\n1. e4 e5';
-    const result = parsePgnWithFen(pgn);
+    const result = loadedWithFen(pgn);
     expect(result.moves).toEqual(["e4", "e5"]);
     expect(result.startingFen).toBeUndefined();
   });
@@ -544,7 +562,7 @@ describe("parsePgnWithFen - edge cases", () => {
   it("handles PGN with only SetUp header but no FEN", () => {
     // chess.js may or may not accept this - test graceful behavior
     const pgn = '[SetUp "1"]\n\n1. e4 e5';
-    const result = parsePgnWithFen(pgn);
+    const result = loadedWithFen(pgn);
     expect(result.moves).toEqual(["e4", "e5"]);
   });
 });
@@ -959,7 +977,7 @@ describe("Integration: full PGN pipeline", () => {
     const originalMoves = ["e4", "e5", "Nf3", "Nc6", "Bb5"];
     const generatedPgn = generatePgn(originalMoves);
 
-    const parsed = parsePgn(generatedPgn);
+    const parsed = movesOf(generatedPgn);
     expect(parsed).toEqual(originalMoves);
 
     const validation = validatePgnMoves(STANDARD_FEN, parsed);

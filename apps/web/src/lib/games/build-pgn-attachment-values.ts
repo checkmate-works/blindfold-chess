@@ -174,7 +174,15 @@ export function pgnAttachmentErrorKey(err: PgnAttachmentErrorKind): string {
     case 'chesscom_pgn_required':
       return 'attachment.error.chesscomPgnRequired';
     case 'unknown':
-    default:
       return 'attachment.error.invalidPgn';
+    default: {
+      // Keep `unknown` explicit so a new error kind is a build error here
+      // rather than surfacing to the user as "invalid PGN" on both the create
+      // and edit paths this function exists to keep in sync. The sibling
+      // dispatch above already did this; only this one had drifted.
+      const _exhaustive: never = err;
+      void _exhaustive;
+      return 'attachment.error.invalidPgn';
+    }
   }
 }

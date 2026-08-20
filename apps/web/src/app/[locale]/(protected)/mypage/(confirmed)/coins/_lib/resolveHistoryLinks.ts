@@ -2,7 +2,7 @@ import { and, inArray, isNull } from 'drizzle-orm';
 import 'server-only';
 
 import { chunks, db, games, positions, repertoires, topicPosts } from '@/lib/db';
-import { POINT_SOURCES, type PointHistoryEntry } from '@/lib/points';
+import { POINT_SOURCES, type PointHistoryEntry, type PointSource } from '@/lib/points';
 import { getPositionKindDetailPath } from '@/lib/positions/kind';
 
 import { buildTopicPostPath } from '@/app/[locale]/(public)/topics/_lib/topic-paths';
@@ -114,42 +114,61 @@ export type ResolvedEntities = {
   liveGameIds: Set<string>;
 };
 
+/** Resolves one grant source's deep link, or `null` when the target is gone. */
+type GrantHrefResolver = (sourceId: string, resolved: ResolvedEntities) => string | null;
+
+/**
+ * One resolver per earning source.
+ *
+ * `satisfies Record<PointSource, …>` closes the set: adding a source to
+ * `POINT_SOURCES` without a link here is a compile error. Previously this was
+ * a `switch` over a `string` parameter ending in `default: return null`, so a
+ * new earning source produced coin-history rows rendered as plain text while
+ * every other source linked — a silent asymmetry with nothing to catch it.
+ *
+ * Note the sibling gap this does NOT close: the batched liveness lookups in
+ * {@link resolveHistoryLinks} need a matching table read per source, and
+ * nothing forces that to be added alongside a resolver here.
+ */
+const GRANT_HREF_RESOLVERS = {
+  puzzle_created: (sourceId, resolved) =>
+    resolved.livePositionIds.has(sourceId) ? getPositionKindDetailPath('puzzle', sourceId) : null,
+  position_memory_created: (sourceId, resolved) =>
+    resolved.livePositionIds.has(sourceId) ? getPositionKindDetailPath('memory', sourceId) : null,
+  chunk_created: (sourceId, resolved) => {
+    const slug = resolved.chunkSlugById.get(sourceId);
+    return slug ? `/chunks/${slug}` : null;
+  },
+  repertoire_published: (sourceId, resolved) =>
+    resolved.liveRepertoireIds.has(sourceId) ? `/repertoires/${sourceId}` : null,
+  game_published: (sourceId, resolved) =>
+    resolved.liveGameIds.has(sourceId) ? `/games/shared/${sourceId}` : null,
+  topic_post_created: (sourceId, resolved) => {
+    const meta = resolved.topicMetaById.get(sourceId);
+    if (!meta) return null;
+    // Only `square` / `opening` topics earn grants (isPointEligibleTopicType);
+    // both use the plural-segment post route (`squares` / `openings`).
+    return buildTopicPostPath(meta.topicType, meta.topicKey, sourceId);
+  },
+} as const satisfies Record<PointSource, GrantHrefResolver>;
+
 /**
  * Map a grant `(source, sourceId)` to its UGC deep link, or `null` when the
  * target is not live (absent from the resolved sets). Pure — the DB lookups
  * happen in {@link resolveHistoryLinks}; this is the branch logic, unit-tested
  * on its own.
+ *
+ * `source` stays `string`: `point_events.source` also carries non-UGC values
+ * (`admin_grant`, `like_grant`, `redemption`, …) that legitimately have no
+ * link, and callers pass rows straight from the ledger.
  */
 export function grantHref(
   source: string,
   sourceId: string,
   resolved: ResolvedEntities
 ): string | null {
-  switch (source) {
-    case 'puzzle_created':
-      return resolved.livePositionIds.has(sourceId)
-        ? getPositionKindDetailPath('puzzle', sourceId)
-        : null;
-    case 'position_memory_created':
-      return resolved.livePositionIds.has(sourceId)
-        ? getPositionKindDetailPath('memory', sourceId)
-        : null;
-    case 'chunk_created': {
-      const slug = resolved.chunkSlugById.get(sourceId);
-      return slug ? `/chunks/${slug}` : null;
-    }
-    case 'repertoire_published':
-      return resolved.liveRepertoireIds.has(sourceId) ? `/repertoires/${sourceId}` : null;
-    case 'game_published':
-      return resolved.liveGameIds.has(sourceId) ? `/games/shared/${sourceId}` : null;
-    case 'topic_post_created': {
-      const meta = resolved.topicMetaById.get(sourceId);
-      if (!meta) return null;
-      // Only `square` / `opening` topics earn grants (isPointEligibleTopicType);
-      // both use the plural-segment post route (`squares` / `openings`).
-      return buildTopicPostPath(meta.topicType, meta.topicKey, sourceId);
-    }
-    default:
-      return null;
-  }
+  const resolve: GrantHrefResolver | undefined = (
+    GRANT_HREF_RESOLVERS as Record<string, GrantHrefResolver>
+  )[source];
+  return resolve ? resolve(sourceId, resolved) : null;
 }

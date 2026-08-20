@@ -1,5 +1,6 @@
 import { getLegalMoves, isCheckmateFen, replayMoves } from '@blindfold-chess/features/chess-core';
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
+import { type Result, err, ok } from '@blindfold-chess/features/utils';
 import type { Fen } from '@blindfold-chess/types';
 
 import type { PositionEvaluation } from './types';
@@ -44,6 +45,20 @@ export type EvaluatePositionsOptions = {
 };
 
 /**
+ * Why the sweep produced no evaluations.
+ *
+ * `too-long` is a deterministic, pre-checkable refusal, not a failure —
+ * travelling as an exception it landed in the same bucket as an engine crash,
+ * so a 300-ply game showed the generic "analysis failed" with a Retry button
+ * that could never succeed. `aborted` replaces a `DOMException` the caller had
+ * to recognise by comparing `error.name` to a string.
+ */
+export type EvaluatePositionsError =
+  | { kind: 'too-long'; limit: number; plies: number }
+  | { kind: 'replay-failed' }
+  | { kind: 'aborted' };
+
+/**
  * Run the engine over every position of a finished game, producing the
  * `moves.length + 1` {@link PositionEvaluation}s the server derives verdicts
  * from (see `derive-move-analyses.ts`).
@@ -60,14 +75,14 @@ export async function evaluatePositions({
   evaluator,
   onProgress,
   signal,
-}: EvaluatePositionsOptions): Promise<PositionEvaluation[]> {
+}: EvaluatePositionsOptions): Promise<Result<PositionEvaluation[], EvaluatePositionsError>> {
   if (moves.length > MAX_ANALYSIS_PLIES) {
-    throw new Error(`game exceeds ${MAX_ANALYSIS_PLIES} plies`);
+    return err({ kind: 'too-long', limit: MAX_ANALYSIS_PLIES, plies: moves.length });
   }
 
   const positions = replayMoves(moves, startingFen);
   if (positions.length !== moves.length + 1) {
-    throw new Error('moves failed to replay');
+    return err({ kind: 'replay-failed' });
   }
 
   const total = positions.length;
@@ -75,7 +90,7 @@ export async function evaluatePositions({
 
   for (let i = 0; i < total; i++) {
     if (signal?.aborted) {
-      throw new DOMException('analysis aborted', 'AbortError');
+      return err({ kind: 'aborted' });
     }
 
     const fen = positions[i].fen;
@@ -93,7 +108,7 @@ export async function evaluatePositions({
     onProgress?.(i + 1, total);
   }
 
-  return evaluations;
+  return ok(evaluations);
 }
 
 /**
