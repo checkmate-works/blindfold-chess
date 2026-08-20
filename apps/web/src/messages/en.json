@@ -2964,7 +2964,8 @@
       "backToResult": "Back to result",
       "backToGame": "Back to game",
       "startNew": "Start with another PGN"
-    }
+    },
+    "backToGame": "Back to game"
   },
   "playError": {
     "title": "Game Recovery",

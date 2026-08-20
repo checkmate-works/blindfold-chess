@@ -2964,7 +2964,8 @@
       "backToResult": "Voltar ao resultado",
       "backToGame": "Voltar à partida",
       "startNew": "Começar com outro PGN"
-    }
+    },
+    "backToGame": "Voltar à partida"
   },
   "playError": {
     "title": "Recuperação da Partida",

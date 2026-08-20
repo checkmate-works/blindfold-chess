@@ -2,8 +2,12 @@
 
 import { useCallback, useRef } from 'react';
 
+import NextLink from 'next/link';
 import { useRouter } from 'next/navigation';
 
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+
+import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { buildCustomResultUrl } from '../../_lib/result-url';
@@ -58,6 +62,7 @@ export function CustomPositionSession({
 }: Props) {
   const router = useRouter();
   const savedRef = useRef(false);
+  const t = useTranslations('practice.positionMemory');
 
   const handleSessionComplete = useCallback(
     ({ results, stats }: SessionCompletePayload) => {
@@ -85,6 +90,17 @@ export function CustomPositionSession({
         showSkipButton: false,
         skipProblemResult: true,
       }}
+      // In-game entry: replace the quit link with a direct "back to game"
+      // exit. Quit's confirm-modal → skipped-result detour is the same
+      // intent spelled worse here, and there is no run worth protecting.
+      // `returnTo` is locale-prefixed — next/link, not the i18n Link.
+      exitAction={
+        returnTo ? (
+          <NextLink href={returnTo} className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
+            {t('backToGame')}
+          </NextLink>
+        ) : undefined
+      }
       onSessionComplete={handleSessionComplete}
       // Custom positions are not EXP-eligible, so reserve no EXP card — but
       // still match the bespoke board-comparison result skeleton (with the

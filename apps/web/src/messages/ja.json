@@ -2964,7 +2964,8 @@
       "backToResult": "結果へ戻る",
       "backToGame": "対局に戻る",
       "startNew": "別の棋譜で始める"
-    }
+    },
+    "backToGame": "対局に戻る"
   },
   "playError": {
     "title": "ゲームの復旧",
