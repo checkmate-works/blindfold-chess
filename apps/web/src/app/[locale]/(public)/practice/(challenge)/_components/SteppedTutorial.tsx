@@ -28,6 +28,11 @@ type Props<TStep extends string> = {
   namespace: string;
   /** Extra classes for the description paragraph (alignment, pre-wrap). */
   descriptionClassName?: string;
+  /**
+   * Drops the bordered card around the steps. The tutorial already sits inside
+   * the page panel, so the card is a second frame around the same content.
+   */
+  frameless?: boolean;
   /** The step's own illustration / interaction, between description and footer. */
   renderStep: (step: TStep) => ReactNode;
 };
@@ -53,6 +58,7 @@ export function SteppedTutorial<TStep extends string>({
   steps,
   namespace,
   descriptionClassName = '',
+  frameless = false,
   renderStep,
 }: Props<TStep>) {
   // next-intl derives its key types from a LITERAL namespace; this shell takes
@@ -77,7 +83,7 @@ export function SteppedTutorial<TStep extends string>({
 
   return (
     <div className="max-w-md mx-auto">
-      <div className="bg-card rounded-2xl p-6 border border-border">
+      <div className={frameless ? '' : 'bg-card rounded-2xl p-6 border border-border'}>
         {/* Progress Dots */}
         <div className="flex justify-center gap-2 mb-6">
           {steps.map((s, idx) => (

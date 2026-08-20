@@ -183,6 +183,7 @@ export function DiagonalQuizTutorial({ locale }: Props) {
       steps={STEPS}
       namespace="practice.diagonalQuiz.tutorial"
       descriptionClassName="whitespace-pre-wrap"
+      frameless
       renderStep={(step) => {
         if (step === 'trial') return <div className="mb-6">{renderTrial()}</div>;
 
