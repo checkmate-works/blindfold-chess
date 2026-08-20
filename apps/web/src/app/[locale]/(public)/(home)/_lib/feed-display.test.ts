@@ -89,3 +89,22 @@ describe('buildDisplayItems', () => {
     expect(result[result.length - 1].type).toBe('feed');
   });
 });
+
+describe('buildDisplayItems adIndex', () => {
+  const item = (id: string) => ({ id }) as never;
+
+  it('numbers ad slots consecutively from zero', () => {
+    // 21 items → slots before index 0, 10 and 20.
+    const items = Array.from({ length: 21 }, (_, i) => item(`i${i}`));
+    const ads = buildDisplayItems(items, true).filter((d) => d.type === 'ad');
+    expect(ads.map((a) => (a.type === 'ad' ? a.adIndex : -1))).toEqual([0, 1, 2]);
+  });
+
+  it('derives the ordinal from the slot position, so no index repeats', () => {
+    const items = Array.from({ length: 40 }, (_, i) => item(`i${i}`));
+    const ads = buildDisplayItems(items, true).filter((d) => d.type === 'ad');
+    const indices = ads.map((a) => (a.type === 'ad' ? a.adIndex : -1));
+    expect(new Set(indices).size).toBe(indices.length);
+    expect(indices).toEqual([...indices].sort((a, b) => a - b));
+  });
+});
