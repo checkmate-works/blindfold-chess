@@ -2,7 +2,11 @@ import { useEffect, useRef, useState } from 'react';
 
 import { computeGameState } from '@blindfold-chess/features/ai-game';
 import type { GameStatus } from '@blindfold-chess/features/ai-game';
+import type { Result } from '@blindfold-chess/features/ai-game/opponent';
+import { err } from '@blindfold-chess/features/ai-game/opponent';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
+
+import type { AiMoveError } from './use-ai-versus';
 
 type UseAiMoveOrchestrationOptions = {
   shouldMakeAiMove: boolean;
@@ -13,7 +17,7 @@ type UseAiMoveOrchestrationOptions = {
   getAiMove: (
     moves: AlgebraicNotation[],
     startingFen?: string
-  ) => Promise<AlgebraicNotation | null>;
+  ) => Promise<Result<AlgebraicNotation, AiMoveError>>;
   onAiMoveSuccess: (move: AlgebraicNotation) => void;
   onAiMoveError: () => void;
 };
@@ -66,26 +70,38 @@ export function useAiMoveOrchestration({
       const retryDelay = 200; // ms
 
       let aiMove: AlgebraicNotation | null = null;
-      let lastError: Error | null = null;
+      let lastError: AiMoveError | null = null;
 
       for (let attempt = 0; attempt < maxRetries; attempt++) {
         if (isCancelled) {
           return;
         }
 
+        let result: Result<AlgebraicNotation, AiMoveError>;
         try {
-          aiMove = await getAiMove(moves, startingFen);
-          break; // Success, exit retry loop
-        } catch (error) {
-          lastError = error as Error;
-          // If engine is busy, wait and retry
-          if (error instanceof Error && error.message.includes('already processing')) {
-            await new Promise((resolve) => setTimeout(resolve, retryDelay));
-            continue;
-          }
-          // For other errors, don't retry
+          result = await getAiMove(moves, startingFen);
+        } catch (cause) {
+          // getAiMove is a Result-returning boundary and is not expected to
+          // throw; if it somehow does, treat it as a failed attempt rather
+          // than letting the rejection escape this floating effect promise.
+          result = err({ kind: 'move-generation-failed', cause });
+        }
+
+        if (result.ok) {
+          aiMove = result.value;
+          lastError = null;
           break;
         }
+
+        lastError = result.error;
+        // A busy engine (StrictMode double-invocation, previous request
+        // still in flight) is the one transient kind worth waiting out;
+        // every other failure is final for this round.
+        if (result.error.kind === 'busy') {
+          await new Promise((resolve) => setTimeout(resolve, retryDelay));
+          continue;
+        }
+        break;
       }
 
       // Check if this effect was cleaned up while we were waiting

@@ -43,7 +43,14 @@ export type MoveResult = Readonly<{
 export type OpponentError =
   | { readonly kind: "initialization-failed"; readonly cause: unknown }
   | { readonly kind: "move-generation-failed"; readonly cause: unknown }
-  | { readonly kind: "opponent-destroyed" };
+  | { readonly kind: "opponent-destroyed" }
+  /**
+   * The underlying engine is still serving a previous request. Transient by
+   * nature: the caller may wait briefly and retry the same request. Kept as
+   * its own kind (not folded into `move-generation-failed`) precisely so the
+   * retry decision is a type-level branch, not a message-text match.
+   */
+  | { readonly kind: "busy" };
 
 /**
  * Port for any "thing that produces a move" in the AI-vs-human flow.

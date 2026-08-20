@@ -4,7 +4,6 @@ import { notifyGameListUpdated } from '@/config';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
 import type { EngineConfig } from '@/lib/engines';
-import { GameLimitError } from '@/lib/errors';
 import { LocalStorageGameRepository } from '@/lib/games/local-storage-repository';
 import type {
   GameOutcome,
@@ -226,11 +225,22 @@ export function useAutoSave({
         };
 
         const gameIdFromRef = currentGameIdRef.current;
-        const savedGameId = await persistGameSnapshot(gameRepository, gameData, {
+        const persisted = await persistGameSnapshot(gameRepository, gameData, {
           gameId: gameIdFromRef,
           // Skip lastPlayed update during initial sync save (reopening a game without making a move)
           updateLastPlayed: !isInitialSyncSave.current,
         });
+
+        if (!persisted.ok) {
+          if (!silent) setIsSaving(false);
+          if (persisted.error.kind === 'limit-reached') {
+            console.warn('Game limit reached, cannot save game');
+          } else {
+            console.error('Failed to auto-save game:', persisted.error);
+          }
+          return;
+        }
+        const savedGameId = persisted.value;
 
         // If persistGameSnapshot had to create a new record (either because
         // there was no gameId, or the previous id was stale), sync our refs
@@ -265,11 +275,7 @@ export function useAutoSave({
         return savedGameId;
       } catch (error) {
         if (!silent) setIsSaving(false);
-        if (error instanceof GameLimitError) {
-          console.warn('Game limit reached, cannot save game:', error);
-        } else {
-          console.error('Failed to auto-save game:', error);
-        }
+        console.error('Failed to auto-save game:', error);
       } finally {
         isSavingRef.current = false;
       }

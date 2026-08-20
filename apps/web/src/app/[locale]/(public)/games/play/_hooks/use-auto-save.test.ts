@@ -13,8 +13,8 @@ vi.mock('next/navigation', () => ({
 // Mock repositories
 
 const { mockUpdate, mockCreate, mockLoad } = vi.hoisted(() => ({
-  mockUpdate: vi.fn().mockResolvedValue(undefined),
-  mockCreate: vi.fn().mockResolvedValue('new-game-id'),
+  mockUpdate: vi.fn().mockResolvedValue({ ok: true, value: undefined }),
+  mockCreate: vi.fn().mockResolvedValue({ ok: true, value: 'new-game-id' }),
   mockLoad: vi.fn().mockResolvedValue(null),
 }));
 
@@ -176,7 +176,7 @@ describe('useAutoSave', () => {
     // The toast SHOULD appear because hasSavedInSession is set by saveOnInit
     // and subsequent saves from AI moves also set it.
 
-    mockCreate.mockResolvedValue('new-game-id');
+    mockCreate.mockResolvedValue({ ok: true, value: 'new-game-id' });
 
     // 1. Initial render with saveOnInit=true, no gameId (new game)
     const { rerender, unmount } = renderHook((props) => useAutoSave(props), {
@@ -277,7 +277,7 @@ describe('useAutoSave', () => {
     // 4. User navigates away without making a new move
     // The toast should NOT appear because the sync save consumed isInitialSyncSave.
 
-    mockCreate.mockResolvedValue('synced-game-id');
+    mockCreate.mockResolvedValue({ ok: true, value: 'synced-game-id' });
 
     // 1. Initial render: enabled=false, no moves (loading state)
     const { rerender, unmount } = renderHook((props) => useAutoSave(props), {
@@ -334,7 +334,7 @@ describe('useAutoSave', () => {
     // The sync save consumes isInitialSyncSave, then the user's move triggers
     // a second save that sets hasSavedInSession, so the toast SHOULD appear.
 
-    mockCreate.mockResolvedValue('synced-game-id');
+    mockCreate.mockResolvedValue({ ok: true, value: 'synced-game-id' });
 
     // 1. Initial render: enabled=false, no moves
     const { rerender, unmount } = renderHook((props) => useAutoSave(props), {

@@ -59,6 +59,21 @@ async function fetchOgFonts(text: string): Promise<OgFont[]> {
   return loaded.filter((f): f is OgFont => f !== null);
 }
 
+/**
+ * Success-only cache of resolved font sets, keyed by character set.
+ *
+ * The in-flight promise is stored (not the resolved value) so concurrent
+ * requests for the same character set share one Google Fonts round-trip —
+ * but only a *successful, non-empty* result may stay cached. A failed or
+ * empty resolution evicts its own entry so the next request retries:
+ * caching it would turn one transient 429/5xx into every subsequent OG
+ * card for that character set rendering with no glyphs for the lifetime
+ * of the serverless instance.
+ *
+ * Reads refresh recency (delete + re-set), making eviction LRU rather
+ * than insertion-order FIFO — otherwise the hottest keys are the first
+ * to be evicted.
+ */
 const fontCache = new Map<string, Promise<OgFont[]>>();
 
 /**
@@ -71,9 +86,25 @@ export async function loadOgFonts(text: string): Promise<OgFont[]> {
 
   const key = cacheKeyFor(text);
   const cached = fontCache.get(key);
-  if (cached) return cached;
+  if (cached) {
+    fontCache.delete(key);
+    fontCache.set(key, cached);
+    return cached;
+  }
 
-  const promise = fetchOgFonts(text).catch(() => [] as OgFont[]);
+  // The guard against `fontCache.get(key) !== promise` protects a newer
+  // in-flight promise for the same key (possible once this entry has been
+  // evicted and the key re-requested) from being evicted by this one.
+  const promise = fetchOgFonts(text).then(
+    (fonts) => {
+      if (fonts.length === 0 && fontCache.get(key) === promise) fontCache.delete(key);
+      return fonts;
+    },
+    () => {
+      if (fontCache.get(key) === promise) fontCache.delete(key);
+      return [] as OgFont[];
+    }
+  );
   fontCache.set(key, promise);
   if (fontCache.size > CACHE_LIMIT) {
     const oldestKey = fontCache.keys().next().value;

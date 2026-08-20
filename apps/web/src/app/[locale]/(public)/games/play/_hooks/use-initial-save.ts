@@ -2,7 +2,6 @@ import { useEffect, useRef } from 'react';
 
 import { notifyGameListUpdated } from '@/config';
 
-import { GameLimitError } from '@/lib/errors';
 import type { LocalStorageGameRepository } from '@/lib/games/local-storage-repository';
 
 import type { GameDataRefs } from './use-auto-save';
@@ -58,7 +57,19 @@ export function useInitialSave({
             undoneLogs: gameDataRefs.undoneLogs.current,
           };
 
-          const savedGameId = await gameRepository.create(gameData);
+          const created = await gameRepository.create(gameData);
+          if (!created.ok) {
+            if (created.error.kind === 'limit-reached') {
+              console.warn('Game limit reached on initial save');
+              window.dispatchEvent(new Event('blindfold-chess:game-limit-start-error'));
+            } else {
+              console.error('Failed to save initial game state:', created.error);
+            }
+            hasInitialSaveExecuted.current = false;
+            return;
+          }
+
+          const savedGameId = created.value;
           currentGameIdRef.current = savedGameId;
           setCurrentGameId(savedGameId);
 
@@ -68,12 +79,7 @@ export function useInitialSave({
 
           notifyGameListUpdated();
         } catch (error) {
-          if (error instanceof GameLimitError) {
-            console.warn('Game limit reached on initial save:', error.message);
-            window.dispatchEvent(new Event('blindfold-chess:game-limit-start-error'));
-          } else {
-            console.error('Failed to save initial game state:', error);
-          }
+          console.error('Failed to save initial game state:', error);
           hasInitialSaveExecuted.current = false;
         }
       };

@@ -52,6 +52,22 @@ export function toWhitePerspectiveEvaluation(
  * small bounded retry makes first-move experience far more robust without
  * hiding genuine configuration errors.
  */
+/**
+ * Thrown by {@link ChessEngine.getBestMove} / {@link ChessEngine.getEvaluation}
+ * when a request arrives while a previous one is still in flight (StrictMode
+ * double-invocation, overlapping orchestration rounds). Exposed as a class —
+ * rather than a bare `Error` with a well-known message — so boundary adapters
+ * can recognize the busy state with `instanceof` instead of matching message
+ * text: the web opponent factory maps it to `OpponentError{kind:"busy"}`,
+ * which the move orchestration waits on and retries.
+ */
+export class EngineBusyError extends Error {
+  constructor() {
+    super("Engine is already processing a request");
+    this.name = "EngineBusyError";
+  }
+}
+
 export const MAX_INIT_ATTEMPTS = 3;
 
 /**
@@ -190,7 +206,7 @@ export class ChessEngine {
     await this.ensureInitialized();
 
     if (this.isProcessing) {
-      throw new Error("Engine is already processing a request");
+      throw new EngineBusyError();
     }
 
     if (!this.transport) {
@@ -243,7 +259,7 @@ export class ChessEngine {
     await this.ensureInitialized();
 
     if (this.isProcessing) {
-      throw new Error("Engine is already processing a request");
+      throw new EngineBusyError();
     }
 
     if (!this.transport) {

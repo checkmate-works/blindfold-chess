@@ -1,7 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { maiaRatingToElo } from '@blindfold-chess/features/ai-game/maia';
-import type { ChessOpponent, OpponentError } from '@blindfold-chess/features/ai-game/opponent';
+import type {
+  ChessOpponent,
+  OpponentError,
+  Result,
+} from '@blindfold-chess/features/ai-game/opponent';
+import { err, ok } from '@blindfold-chess/features/ai-game/opponent';
 import {
   getFenAfterMoves,
   getStartingFen,
@@ -12,25 +17,13 @@ import type { AlgebraicNotation, Fen } from '@blindfold-chess/types';
 import { type EngineConfig, createMaiaOpponent, createStockfishOpponent } from '@/lib/engines';
 
 /**
- * Translate a domain {@link OpponentError} into a thrown `Error` so that
- * upstream React orchestration code (which already speaks in throws) does
- * not need to learn about `Result`. The hook acts as the boundary between
- * the domain layer (returns `Result`) and React effects (consume throws).
- *
- * Marked `never` so TypeScript enforces exhaustive handling at compile time.
+ * Everything `getAiMove` can fail with: the domain's {@link OpponentError}
+ * kinds plus the hook-level `not-initialized` state (the opponent effect has
+ * not produced an instance yet — construction failed, or the call raced the
+ * mount/reset window). Kept a typed union all the way to the orchestration
+ * layer so retry decisions branch on `kind`, never on message text.
  */
-function throwOpponentError(error: OpponentError): never {
-  switch (error.kind) {
-    case 'opponent-destroyed':
-      throw new Error('Chess opponent has been destroyed');
-    case 'move-generation-failed':
-    case 'initialization-failed': {
-      const cause = error.cause;
-      if (cause instanceof Error) throw cause;
-      throw new Error(`Chess opponent error (${error.kind}): ${String(cause)}`);
-    }
-  }
-}
+export type AiMoveError = OpponentError | { readonly kind: 'not-initialized' };
 
 /**
  * Drives an AI opponent for the human-vs-AI game flow.
@@ -80,10 +73,13 @@ export function useAiVersus(engineConfig: EngineConfig) {
   }, [engineConfig, resetCounter]);
 
   const getAiMove = useCallback(
-    async (moves: AlgebraicNotation[], startingFen?: string): Promise<AlgebraicNotation> => {
+    async (
+      moves: AlgebraicNotation[],
+      startingFen?: string
+    ): Promise<Result<AlgebraicNotation, AiMoveError>> => {
       const opponent = opponentRef.current;
       if (!opponent) {
-        throw new Error('Chess opponent is not initialized');
+        return err({ kind: 'not-initialized' });
       }
 
       const initialFen = startingFen ?? getStartingFen();
@@ -91,9 +87,17 @@ export function useAiVersus(engineConfig: EngineConfig) {
 
       const result = await opponent.getBestMove({ fen, history: moves, startingFen });
       if (!result.ok) {
-        throwOpponentError(result.error);
+        return result;
       }
-      return uciToAlgebraic(result.value.move, fen);
+      try {
+        return ok(uciToAlgebraic(result.value.move, fen));
+      } catch (cause) {
+        // uciToAlgebraic throws when the engine produced a move that is not
+        // legal in `fen` (see the position-command TSDoc in ChessEngine for
+        // how that can happen); surface it as a generation failure so the
+        // orchestration's error path (Retry button) handles it.
+        return err({ kind: 'move-generation-failed', cause });
+      }
     },
     []
   );
