@@ -10,9 +10,7 @@ import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 import { FaArrowRight, FaCheck, FaQuestionCircle, FaSpinner } from 'react-icons/fa';
 
-import { BoardSettingsButton } from '@/app/[locale]/(public)/games/play/_components/BoardSettingsButton';
 import { BoardViewModal } from '@/app/[locale]/(public)/games/play/_components/BoardViewModal';
-import { InlineBoardView } from '@/app/[locale]/(public)/games/play/_components/InlineBoardView';
 import { MidGameSettingsModal } from '@/app/[locale]/(public)/games/play/_components/MidGameSettingsModal';
 import { usePeekState } from '@/app/[locale]/(public)/games/play/_hooks/use-peek-state';
 import { useQuickPeekModal } from '@/app/[locale]/(public)/games/play/_hooks/use-quick-peek-modal';
@@ -23,13 +21,13 @@ import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 import { useRecallGame } from '../_hooks';
 import { useOpponentMoveAnnouncement } from '../_hooks/use-opponent-move-announcement';
+import { useRecallBoardViews } from '../_hooks/use-recall-board-views';
 import { useRecallParentReporting } from '../_hooks/use-recall-parent-reporting';
 import { useRecallPreferences } from '../_hooks/use-recall-preferences';
 import type { MoveLogEntry } from '../_lib';
 import { computeRecallStats, resolveModalPosition } from '../_lib';
 import { formatRecallFeedbackMessage, toRecallFeedbackTitleText } from '../_lib/recall-feedback';
 import { RecallMovesPanel } from './RecallMovesPanel';
-import { RecallOpponentMoveChip } from './RecallOpponentMoveChip';
 import { RecallSummary } from './RecallSummary';
 
 /**
@@ -191,9 +189,10 @@ export function RecallClient({
   // The completion/summary view — including a position adopted from the
   // quick-peek modal's "Open this position" — always shows the board
   // unmasked, mirroring play's separate `finishedBoardView`, which never
-  // re-hides a finished game. `inlineBoardView` below is shared by both the
-  // in-progress and completed JSX branches, so this gate is what keeps the
-  // summary view from inheriting the mid-session mask.
+  // re-hides a finished game. The finished board view below renders with no
+  // mask at all, so this gate only needs to cover the in-progress view (the
+  // `!isCompleted` term guards the one render where completion flips
+  // mid-session while the mask is still up).
   const isBoardMaskActive = !isCompleted && boardMasked;
 
   // Announce the opponent's auto-filled move (from "Auto-fill opponent's
@@ -224,53 +223,29 @@ export function RecallClient({
     settings.isPlayerTurn &&
     !isBoardMaskActive;
 
-  const inlineBoardView = (
-    <InlineBoardView
-      board={{
-        fen: boardFen,
-        playerSide: playerColor,
-        lastMove: navigation.currentPosition === -1 ? currentLastMove : null,
-        preferences,
-        // The reviewer enters BOTH sides' moves, so the opponent's pieces must
-        // be grabbable on the opponent's turn.
-        movablePieces: 'side-to-move',
-        onMove: canBoardInput
-          ? (san) => actions.handleSubmitMove(san as AlgebraicNotation)
-          : undefined,
-      }}
-      moveList={{
-        movesLength: originalMoves.length,
-        currentPosition: navigation.currentPosition,
-        formattedPgn,
-      }}
-      navigation={{
-        onNavigateToStart: navigation.navigateToStart,
-        onNavigatePrevious: navigation.navigatePrevious,
-        onNavigateNext: navigation.navigateNext,
-        onNavigateToEnd: navigation.navigateToEnd,
-      }}
-      visibility={{
-        kind: 'always',
-        mask: {
-          active: isBoardMaskActive,
-          dismissable: !isCompleted && preferences.boardVisibility === 'peek',
-          onReveal: handleReveal,
-        },
-      }}
-      slots={{
-        // Settings gear pinned to the board's top-right corner, matching
-        // games/play's BoardSettingsButton placement exactly (recall has no
-        // legacy-game gate on editability, so it's always shown here).
-        topRightControl: (
-          <BoardSettingsButton onClick={() => setShowSettings(true)} dataTourId="recall-settings" />
-        ),
-        boardBadge: showOpponentChip ? (
-          <RecallOpponentMoveChip active={opponentChipActive} moveNotation={opponentMoveNotation} />
-        ) : undefined,
-        badgeActive: showOpponentChip && opponentChipActive,
-      }}
-    />
-  );
+  // The two board views (in-progress: mask + input + settings gear;
+  // finished: revealed/as-played toggle) — see useRecallBoardViews for why
+  // the gear must not survive completion.
+  const { inProgressBoardView, finishedBoardView, finishedPreferences, finishedHiddenPieceStyle } =
+    useRecallBoardViews({
+      boardFen,
+      playerColor,
+      lastMove: navigation.currentPosition === -1 ? currentLastMove : null,
+      preferences,
+      originalMovesLength: originalMoves.length,
+      currentPosition: navigation.currentPosition,
+      formattedPgn,
+      navigation,
+      boardMaskActive: isBoardMaskActive,
+      maskDismissable: !isCompleted && preferences.boardVisibility === 'peek',
+      onReveal: handleReveal,
+      canBoardInput,
+      onSubmitMove: actions.handleSubmitMove,
+      onOpenSettings: () => setShowSettings(true),
+      showOpponentChip,
+      opponentChipActive,
+      opponentMoveNotation,
+    });
 
   // The last move's result, as a localized sentence for the inline error slot
   // and as the ⚠-prefixed page-title form (see recall-feedback).
@@ -302,7 +277,7 @@ export function RecallClient({
               <ProgressBar current={progress} total={totalMoves} />
 
               {/* Board (always present; blindfold mask driven by boardVisibility, same as play) */}
-              {inlineBoardView}
+              {isCompleted ? finishedBoardView : inProgressBoardView}
 
               {!isCompleted ? (
                 <>
@@ -458,7 +433,11 @@ export function RecallClient({
         fen={quickPeek.nav.displayFen ?? quickPeek.nav.latestFen}
         playerSide={playerColor}
         lastMove={quickPeek.lastMove}
-        preferences={preferences}
+        // The modal only opens from the completion summary, so it follows the
+        // finished board's reveal ⇄ as-played state — a revealed main board
+        // with still-hidden previews would read as a bug.
+        preferences={isCompleted ? finishedPreferences : preferences}
+        hiddenPieceStyle={isCompleted ? finishedHiddenPieceStyle : 'absent'}
         movesLength={originalMoves.length}
         currentPosition={quickPeek.nav.currentPosition}
         formattedPgn={formattedPgn}
