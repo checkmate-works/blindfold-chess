@@ -57,7 +57,7 @@ describe('AI review schemas', () => {
     expect(jsonPly.enum).toEqual(PLIES);
 
     const parsed = buildAiReviewContentSchema(PLIES).safeParse({
-      summary: 'x',
+      summary: ['x'],
       momentComments: [{ ply: 99, explanation: 'x', lesson: 'x' }],
       strengths: ['x'],
       weaknesses: ['x'],

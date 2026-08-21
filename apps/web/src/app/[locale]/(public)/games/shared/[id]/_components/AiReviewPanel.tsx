@@ -280,10 +280,7 @@ function ReviewBody({
         </p>
       )}
 
-      <section className="space-y-2">
-        <h3 className="text-sm font-semibold text-foreground">{t('aiReview.sections.summary')}</h3>
-        <p className="whitespace-pre-wrap text-sm text-foreground">{review.content.summary}</p>
-      </section>
+      <ProseList title={t('aiReview.sections.summary')} items={review.content.summary} />
 
       {momentRows.length > 0 && (
         <section className="space-y-3">

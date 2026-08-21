@@ -125,7 +125,8 @@ export function buildSystemPrompt(language: string, blindfold: BlindfoldContext 
     '- The provided Stockfish evaluations, centipawn losses, best moves, and move classifications are ground truth. Never contradict them, never estimate your own evaluations, and never suggest a "best move" other than the one provided for that position.',
     '- Only discuss the critical moments listed in the input. Do not invent analysis of other moves.',
     '- Address the player directly ("you"), in a constructive, specific tone. Explain ideas (piece activity, king safety, pawn structure, tactics) rather than restating numbers.',
-    '- Keep each explanation and lesson to 2-3 sentences. Keep the summary to 3-5 sentences.',
+    '- Keep each explanation and lesson to 2-3 sentences.',
+    '- The summary is a TL;DR: 3-4 bullet points of one sentence each — how the game went, what decided it, and the single most important thing to work on. No preamble; the sections that follow carry the detail.',
     `- Write ALL output text in ${language}. Keep chess move notation (SAN) as-is.`,
     '- Fill the JSON schema exactly. Every momentComments entry must reference one of the listed plies.',
   ];

@@ -50,7 +50,7 @@ const EVALS: PositionEvaluation[] = [
 
 function validContent(plies: number[]): AiReviewContent {
   return {
-    summary: 'A short but instructive game.',
+    summary: ['A short but instructive game.'],
     momentComments: plies.map((ply) => ({
       ply,
       explanation: 'This weakened the king fatally.',

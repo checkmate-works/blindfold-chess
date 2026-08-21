@@ -61,7 +61,15 @@ export type AiReviewMomentComment = {
 
 /** The validated LLM output — prose only, no numbers, no moves. */
 export type AiReviewContent = {
-  summary: string;
+  /**
+   * The TL;DR: 3-4 one-sentence takeaways (result, what decided it, the one
+   * thing to work on). A list rather than a paragraph because a paragraph
+   * got read as the review's intro and ran to 400-500 characters that nobody
+   * finished; the details it was summarising already follow in the sections
+   * below. Rows written before 2026-08-22 stored the paragraph — see
+   * `normalizeStoredContent`.
+   */
+  summary: string[];
   momentComments: AiReviewMomentComment[];
   strengths: string[];
   weaknesses: string[];

@@ -31,7 +31,7 @@ vi.mock('../_hooks/use-ai-review-generation', () => ({
 const REVIEW: AiReview = {
   locale: 'en',
   content: {
-    summary: 'A hard-fought game with one decisive slip.',
+    summary: ['A hard-fought game with one decisive slip.'],
     momentComments: [
       { ply: 4, explanation: 'This dropped the knight.', lesson: 'Count the defenders first.' },
     ],

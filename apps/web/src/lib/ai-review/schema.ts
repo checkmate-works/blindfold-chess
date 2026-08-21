@@ -25,8 +25,9 @@ import type { AiReviewContent } from './types';
  * unvalidated. `schema.test.ts` holds them to it.
  */
 
-const MAX_SUMMARY_LENGTH = 2000;
 const MAX_ITEM_LENGTH = 1000;
+/** Takeaways in the TL;DR — the prompt asks for 3-4; the floor tolerates a thin game. */
+const MAX_SUMMARY_POINTS = 4;
 
 /** Provider-facing strict JSON Schema, with `ply` pinned to this game's moments. */
 export function buildAiReviewJsonSchema(allowedPlies: number[]): Record<string, unknown> {
@@ -35,7 +36,7 @@ export function buildAiReviewJsonSchema(allowedPlies: number[]): Record<string, 
     additionalProperties: false,
     required: ['summary', 'momentComments', 'strengths', 'weaknesses', 'advice'],
     properties: {
-      summary: { type: 'string' },
+      summary: { type: 'array', items: { type: 'string' } },
       momentComments: {
         type: 'array',
         items: {
@@ -65,7 +66,7 @@ const prose = (max: number) => z.string().trim().min(1).max(max);
 export function buildAiReviewContentSchema(allowedPlies: number[]) {
   const allowed = new Set(allowedPlies);
   return z.object({
-    summary: prose(MAX_SUMMARY_LENGTH),
+    summary: z.array(prose(MAX_ITEM_LENGTH)).min(1).max(MAX_SUMMARY_POINTS),
     momentComments: z
       .array(
         z.object({
