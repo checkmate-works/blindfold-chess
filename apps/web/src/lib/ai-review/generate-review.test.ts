@@ -5,7 +5,7 @@ import type { GameRecord } from '@/lib/db/schema';
 import type { PositionEvaluation } from '@/lib/games/analysis/types';
 
 import { generateReview } from './generate-review';
-import type { LlmClient, LlmError } from './llm-client';
+import type { LlmClient, LlmCompletionRequest, LlmError } from './llm-client';
 import type { AiReviewStore } from './queries';
 import type { AiReview, AiReviewContent } from './types';
 
@@ -88,13 +88,17 @@ function memoryStore(initial: AiReview | null = null): AiReviewStore & { saved: 
  * {@link LlmError} is a failed one, so a case can choose a retryable failure
  * (server / rate_limited) or a final one (auth / client).
  */
-function llmReturning(...responses: Array<string | LlmError>): LlmClient & { calls: number } {
+function llmReturning(
+  ...responses: Array<string | LlmError>
+): LlmClient & { calls: number; requests: LlmCompletionRequest[] } {
   let call = 0;
   const client = {
     model: 'test-model',
     calls: 0,
-    async complete() {
+    requests: [] as LlmCompletionRequest[],
+    async complete(request: LlmCompletionRequest) {
       client.calls++;
+      client.requests.push(request);
       const r = responses[Math.min(call++, responses.length - 1)];
       return typeof r === 'string' ? ok(r) : err(r);
     },
@@ -127,6 +131,58 @@ describe('generateReview', () => {
     const blunder = result.review.moments.find((m) => m.ply === 2);
     expect(blunder).toMatchObject({ san: 'g4', color: 'white', judgment: 'blunder' });
     expect(store.save).toHaveBeenCalledTimes(1);
+  });
+
+  it('prompts without any blindfold context for a game whose conditions are unknown', async () => {
+    const store = memoryStore();
+    const llm = llmReturning(JSON.stringify(validContent([2])));
+
+    await generateReview(baseParams(store, llm));
+
+    expect(llm.requests[0]?.system).not.toMatch(/blindfold/i);
+    expect(llm.requests[0]?.user).not.toMatch(/blindfold/i);
+  });
+
+  it('prompts with the blindfold conditions and the aid usage at the moments', async () => {
+    const store = memoryStore();
+    const llm = llmReturning(JSON.stringify(validContent([2])));
+
+    await generateReview({
+      ...baseParams(store, llm),
+      game: fakeGame({
+        playSettings: {
+          boardVisibility: 'never',
+          showOwnPieces: true,
+          showOpponentPieces: true,
+          pieceShapeMode: 'normal',
+          pieceColors: 'normal',
+          pawnHideMode: 'none',
+        },
+        // Black's moves are plies 1 and 3; the second one had two rejected
+        // attempts, one of them not move-shaped.
+        operationLogs: [
+          { inputMethod: 'text', peekCount: 0, undoCount: 0, movePeekCount: 0 },
+          {
+            inputMethod: 'text',
+            peekCount: 0,
+            undoCount: 0,
+            movePeekCount: 0,
+            invalidCount: 2,
+            invalidAttempts: ['Qh4', 'write a poem'],
+          },
+        ],
+        operationTotals: { peeks: 1, movePeeks: 0, undos: 0, invalidMoves: 2 },
+      }),
+    });
+
+    const { system, user } = llm.requests[0]!;
+    expect(system).toContain('The board was never shown');
+    expect(user).toContain('board hidden for the whole game');
+    expect(user).toContain('peeks 1, hints 0, takebacks 0, rejected moves 2.');
+    expect(user).not.toContain('write a poem');
+    // Ply 3 is not a critical moment in this game (black's Qh4# is best), so
+    // no per-moment line is emitted for it.
+    expect(user).not.toContain('"ply":3');
   });
 
   it('returns the cached review without calling the LLM', async () => {
