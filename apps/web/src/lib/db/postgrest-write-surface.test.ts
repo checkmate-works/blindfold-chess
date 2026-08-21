@@ -84,6 +84,28 @@ function createdPoliciesFor(table: string): string[] {
   return [...created].map(([, name]) => name);
 }
 
+/** Tables that appear in rls_policies.sql via ALTER TABLE ... ENABLE ROW LEVEL SECURITY. */
+function tablesWithRlsEnabled(): Set<string> {
+  const tables = new Set<string>();
+  for (const [, table] of rlsSql.matchAll(
+    /ALTER\s+TABLE\s+"([^"]+)"\s+ENABLE\s+ROW\s+LEVEL\s+SECURITY/gi
+  )) {
+    tables.add(table);
+  }
+  return tables;
+}
+
+/** Tables that appear in foreign_keys_and_grants.sql via GRANT or REVOKE. */
+function tablesWithGrantsOrRevokes(): Set<string> {
+  const tables = new Set<string>();
+  for (const [, table] of grantsSql.matchAll(
+    /(?:GRANT|REVOKE)\s+[\s\S]*?\s+(?:ON|TO|FROM)\s+TABLE\s+public\.(\w+)/gi
+  )) {
+    tables.add(table);
+  }
+  return tables;
+}
+
 /** The commands (`FOR <cmd>`) that `table` has a live policy for. */
 function policyCommandsFor(table: string): Set<string> {
   const commands = new Set<string>();
@@ -113,6 +135,11 @@ const OWNER_INSERT_NEVER_UPDATE = [
   // Immutable once created: changing an embed is delete + re-insert, both of
   // which the RLS policies scope to the post owner.
   'post_game_embed_attachments',
+  // Immutable once created: same posture as post_game_embed_attachments.
+  'post_game_pgn_attachments',
+  'post_image_attachments',
+  'post_fen_attachments',
+  'post_video_attachments',
 ] as const;
 
 /**
@@ -181,5 +208,12 @@ describe('PostgREST write surface for `authenticated`', () => {
         expect(anonPrivileges, `anon must not hold ${write} on ${table}`).not.toContain(write);
       }
     }
+  });
+
+  it('every table with RLS enabled has explicit GRANT or REVOKE in foreign_keys_and_grants.sql', () => {
+    const rlsTables = tablesWithRlsEnabled();
+    const grantTables = tablesWithGrantsOrRevokes();
+    const missing = [...rlsTables].filter((t) => !grantTables.has(t));
+    expect(missing, `tables with RLS but no GRANT/REVOKE: ${missing.join(', ')}`).toHaveLength(0);
   });
 });

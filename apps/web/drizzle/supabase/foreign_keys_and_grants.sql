@@ -787,3 +787,132 @@ SELECT public.ensure_auth_users_fk('repertoire_deviations', 'repertoire_deviatio
 
 GRANT SELECT ON TABLE public.repertoire_reviews TO authenticated;
 GRANT SELECT ON TABLE public.repertoire_deviations TO authenticated;
+
+-- =============================================================================
+-- achievements (master data — public read, service role only write)
+-- =============================================================================
+-- Public read for badge display. No write policies: awards are service-role only.
+GRANT SELECT ON TABLE public.achievements TO authenticated;
+GRANT SELECT ON TABLE public.achievements TO anon;
+
+-- =============================================================================
+-- user_achievements (immutable badge log — public read, service role only write)
+-- =============================================================================
+-- Public read for profile badge display. No write policies: awards are
+-- service-role only.
+GRANT SELECT ON TABLE public.user_achievements TO authenticated;
+GRANT SELECT ON TABLE public.user_achievements TO anon;
+
+-- =============================================================================
+-- puzzle_solutions (solution data — public read, service role only write)
+-- =============================================================================
+-- Public read for puzzle display. No write policies: solutions are seeded/edited
+-- via Drizzle (service role).
+GRANT SELECT ON TABLE public.puzzle_solutions TO authenticated;
+GRANT SELECT ON TABLE public.puzzle_solutions TO anon;
+
+-- =============================================================================
+-- article_images (admin-curated article images — public read, authenticated write)
+-- =============================================================================
+-- Public read for article display. INSERT/DELETE gated by admin role in RLS;
+-- no UPDATE policy (images are immutable once placed).
+GRANT SELECT, INSERT, DELETE ON TABLE public.article_images TO authenticated;
+GRANT SELECT ON TABLE public.article_images TO anon;
+
+-- =============================================================================
+-- post_game_pgn_attachments (PGN attachment on topic_posts)
+-- =============================================================================
+-- SELECT gated on parent post not being soft-deleted; INSERT/DELETE restricted
+-- to the parent post's author. No UPDATE policy (immutable once created).
+GRANT SELECT, INSERT, DELETE ON TABLE public.post_game_pgn_attachments TO authenticated;
+GRANT SELECT ON TABLE public.post_game_pgn_attachments TO anon;
+
+-- =============================================================================
+-- post_image_attachments (image attachments on topic_posts, max 3 per post)
+-- =============================================================================
+-- Mirrors post_game_pgn_attachments posture. SELECT gated on parent post
+-- visibility; INSERT/DELETE restricted to parent post's owner. No UPDATE.
+GRANT SELECT, INSERT, DELETE ON TABLE public.post_image_attachments TO authenticated;
+GRANT SELECT ON TABLE public.post_image_attachments TO anon;
+
+-- =============================================================================
+-- post_fen_attachments (FEN attachment on topic_posts)
+-- =============================================================================
+-- Mirrors post_game_pgn_attachments posture. SELECT gated on parent post
+-- visibility; INSERT/DELETE restricted to parent post's owner. No UPDATE.
+GRANT SELECT, INSERT, DELETE ON TABLE public.post_fen_attachments TO authenticated;
+GRANT SELECT ON TABLE public.post_fen_attachments TO anon;
+
+-- =============================================================================
+-- post_video_attachments (video attachment on topic_posts)
+-- =============================================================================
+-- Mirrors post_game_pgn_attachments posture. SELECT gated on parent post
+-- visibility; INSERT/DELETE restricted to parent post's owner. No UPDATE.
+GRANT SELECT, INSERT, DELETE ON TABLE public.post_video_attachments TO authenticated;
+GRANT SELECT ON TABLE public.post_video_attachments TO anon;
+
+-- =============================================================================
+-- point_redemptions (user redemption history)
+-- =============================================================================
+-- Authenticated can SELECT own rows via RLS; writes are service-role only.
+GRANT SELECT ON TABLE public.point_redemptions TO authenticated;
+
+-- =============================================================================
+-- point_purchases (user purchase history)
+-- =============================================================================
+-- Authenticated can SELECT own rows via RLS; writes are service-role only.
+GRANT SELECT ON TABLE public.point_purchases TO authenticated;
+
+-- =============================================================================
+-- Reference / taxonomy master data (public read, service-role-only write)
+-- =============================================================================
+-- These tables hold app-managed reference data seeded/edited through the
+-- privileged Drizzle connection (BYPASSRLS) and admin tooling (service role).
+-- Public read for catalog listings and glossary display. No write policies:
+-- anon/authenticated may read but cannot write.
+
+-- glossary_terms + related (public content rendered on /glossary)
+GRANT SELECT ON TABLE public.glossary_terms TO authenticated;
+GRANT SELECT ON TABLE public.glossary_terms TO anon;
+GRANT SELECT ON TABLE public.glossary_term_translations TO authenticated;
+GRANT SELECT ON TABLE public.glossary_term_translations TO anon;
+GRANT SELECT ON TABLE public.glossary_term_aliases TO authenticated;
+GRANT SELECT ON TABLE public.glossary_term_aliases TO anon;
+GRANT SELECT ON TABLE public.glossary_term_positions TO authenticated;
+GRANT SELECT ON TABLE public.glossary_term_positions TO anon;
+GRANT SELECT ON TABLE public.glossary_term_relations TO authenticated;
+GRANT SELECT ON TABLE public.glossary_term_relations TO anon;
+
+-- article taxonomy (categories / tags / practice-module links — public listings)
+GRANT SELECT ON TABLE public.article_categories TO authenticated;
+GRANT SELECT ON TABLE public.article_categories TO anon;
+GRANT SELECT ON TABLE public.article_category_translations TO authenticated;
+GRANT SELECT ON TABLE public.article_category_translations TO anon;
+GRANT SELECT ON TABLE public.article_tags TO authenticated;
+GRANT SELECT ON TABLE public.article_tags TO anon;
+GRANT SELECT ON TABLE public.article_practice_modules TO authenticated;
+GRANT SELECT ON TABLE public.article_practice_modules TO anon;
+
+-- tag vocabulary (public catalog filtering)
+GRANT SELECT ON TABLE public.tags TO authenticated;
+GRANT SELECT ON TABLE public.tags TO anon;
+GRANT SELECT ON TABLE public.position_tags TO authenticated;
+GRANT SELECT ON TABLE public.position_tags TO anon;
+
+-- =============================================================================
+-- Deny-by-default tables (FORCE RLS, no policies)
+-- =============================================================================
+-- These tables have FORCE RLS enabled with no policies, which makes them
+-- inaccessible to anon/authenticated via PostgREST. The explicit REVOKE
+-- reinforces the deny-by-default posture and documents the intent.
+-- Production had wide default privileges on these tables; the REVOKE withdraws
+-- the excess (out of scope for the RLS issue but included for completeness).
+
+REVOKE ALL ON TABLE public.featured_puzzles FROM authenticated, anon;
+REVOKE ALL ON TABLE public.user_grants FROM authenticated, anon;
+REVOKE ALL ON TABLE public.announcements FROM authenticated, anon;
+REVOKE ALL ON TABLE public.ad_creatives FROM authenticated, anon;
+REVOKE ALL ON TABLE public.articles FROM authenticated, anon;
+REVOKE ALL ON TABLE public.game_tokens FROM authenticated, anon;
+REVOKE ALL ON TABLE public.point_batch_watermarks FROM authenticated, anon;
+REVOKE ALL ON TABLE public.topic_post_ratings FROM authenticated, anon;
