@@ -233,6 +233,28 @@ export const PURCHASE_SOURCE = 'purchase';
 export const REPERTOIRE_VISIBILITY_SOURCE = 'repertoire_visibility';
 
 /**
+ * Coins charged for one AI coach review (`requestAiReviewAction`), debited
+ * from the author when the request is accepted. Subscribers are not charged —
+ * entitlement decides who pays (`resolveAiReviewGenerationState`). The same
+ * unit as every other spend: one coin is one ad-free day is one Maia game.
+ *
+ * Lives in code, not the DB: every `point_events` row carries its concrete
+ * `delta`, so changing this only affects future charges.
+ */
+export const AI_REVIEW_POINT_COST = 1;
+
+/**
+ * `point_events.source` values for an AI review charge and its refund. Both
+ * are consumption-side sources like `MAIA_GAME_SOURCE`, deliberately NOT in
+ * `POINT_SOURCES`. `source_id` holds the review job id on both rows; the
+ * idempotency keys are `ai_review:<jobId>` and
+ * `ai_review_refund:<jobId>:<category>`, so neither side can double-apply.
+ * See `chargeAiReview` / `refundAiReviewCharge`.
+ */
+export const AI_REVIEW_SOURCE = 'ai_review';
+export const AI_REVIEW_REFUND_SOURCE = 'ai_review_refund';
+
+/**
  * `point_events.source` value for a like-derived coin grant. Like
  * `MAIA_GAME_SOURCE`, deliberately NOT a member of `POINT_SOURCES` — that
  * array is the UGC *creation* grant surface (`entityTypeForSource` etc.),
