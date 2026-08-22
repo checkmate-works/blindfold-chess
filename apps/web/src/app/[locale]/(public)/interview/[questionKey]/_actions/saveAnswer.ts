@@ -4,12 +4,12 @@
 import { revalidatePath } from 'next/cache';
 
 import { assertSupportedLocale } from '@/i18n/assertSupportedLocale';
-import { eq } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
-import { chessOpenings, db, userInterviewAnswers } from '@/lib/db';
+import { db, userInterviewAnswers } from '@/lib/db';
 import { isUniqueViolation } from '@/lib/db/extract-pg-error-code';
+import { getOpenings } from '@/lib/openings/master-queries';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 
 import type { InterviewQuestionKey } from '@/app/[locale]/_lib/interview';
@@ -47,13 +47,9 @@ export async function saveAnswerAction(
 
   // Validate answer value based on question type
   if (config.answerType === 'master_ref') {
-    const [opening] = await db
-      .select({ slug: chessOpenings.slug })
-      .from(chessOpenings)
-      .where(eq(chessOpenings.slug, answerValue))
-      .limit(1);
+    const openings = await getOpenings();
 
-    if (!opening) {
+    if (!openings.some((o) => o.slug === answerValue)) {
       return { error: 'invalidAnswerValue' };
     }
   }

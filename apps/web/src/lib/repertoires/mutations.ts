@@ -531,6 +531,15 @@ type OpeningLinks = { repertoireId: string; phase: RepertoirePhase; openingIds: 
  * paths drop the ids for the same reason). The requested ids are deduped and
  * re-checked against the master, so a stale or forged id is dropped rather than
  * tripping the FK.
+ *
+ * This is the one opening read that deliberately still hits the table instead
+ * of the cached master (`@/lib/openings/master-queries`): it exists to protect
+ * an INSERT from a bad id, and a cached master can be wrong in both directions
+ * — missing a just-seeded id silently drops a link the user asked for, holding
+ * a deleted one trips the FK it is meant to prevent. It also runs inside the
+ * write transaction, where the table is what the FK will be checked against.
+ * The picker that feeds it (`getOpeningOptions`) reads the cache, which is
+ * where the per-render connection actually was.
  */
 async function insertOpeningLinks(tx: DbTx, { repertoireId, phase, openingIds }: OpeningLinks) {
   const requested = phase === 'opening' ? [...new Set(openingIds)] : [];

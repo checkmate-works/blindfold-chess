@@ -1,9 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
-import { asc } from 'drizzle-orm';
-
-import { chessOpenings, db } from '@/lib/db';
+import { getOpenings } from '@/lib/openings/master-queries';
 
 import { PageLayout } from '@/app/[locale]/_components';
 import { type HelpStep, HelpTourButton } from '@/app/[locale]/_components/HelpTourButton';
@@ -53,22 +51,20 @@ export default async function OpeningGamePage({ params }: Props) {
     },
   ];
 
-  const allOpenings = await db
-    .select({
-      slug: chessOpenings.slug,
-      name: chessOpenings.name,
-      fen: chessOpenings.fen,
-      ecoCode: chessOpenings.ecoCode,
-      pgn: chessOpenings.pgn,
-    })
-    .from(chessOpenings)
-    .orderBy(asc(chessOpenings.sortOrder));
+  const allOpenings = await getOpenings();
 
   const openings = allOpenings.map((o) => {
     const translatedName = tOpeningNames.has(o.slug as never)
       ? tOpeningNames(o.slug as never)
       : o.name;
-    return { ...o, translatedName };
+    return {
+      slug: o.slug,
+      name: o.name,
+      fen: o.fen,
+      ecoCode: o.ecoCode,
+      pgn: o.pgn,
+      translatedName,
+    };
   });
 
   return (
