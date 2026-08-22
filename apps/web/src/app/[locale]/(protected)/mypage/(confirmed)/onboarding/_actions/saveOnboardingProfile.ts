@@ -1,8 +1,11 @@
 'use server';
 
+import { revalidateTag } from 'next/cache';
+
 import { eq } from 'drizzle-orm';
 
 import { authenticateAndCheckBan } from '@/lib/auth';
+import { profileCacheTag } from '@/lib/cache-tags';
 import { db, profiles } from '@/lib/db';
 
 export type SaveOnboardingProfileInput = {
@@ -46,10 +49,17 @@ export async function saveOnboardingProfile(
     return { ok: false, error: 'bioTooLong' };
   }
 
-  await db
+  const [updated] = await db
     .update(profiles)
     .set({ country, bio, updatedAt: new Date() })
-    .where(eq(profiles.id, auth.user.id));
+    .where(eq(profiles.id, auth.user.id))
+    .returning({ username: profiles.username });
+
+  // Both columns are rendered on the public profile, which caches the row per
+  // username (see `profileCacheTag`).
+  if (updated) {
+    revalidateTag(profileCacheTag(updated.username), { expire: 0 });
+  }
 
   return { ok: true };
 }

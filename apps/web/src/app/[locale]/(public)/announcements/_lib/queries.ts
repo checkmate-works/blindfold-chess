@@ -35,6 +35,30 @@ function deduplicateBySlug(rows: Announcement[], locale: string): Announcement[]
 }
 
 /**
+ * One row of the announcements listing.
+ *
+ * The timestamps are ISO strings rather than `Date`s because the listing is
+ * cached and the Data Cache round-trips its value through JSON: a `Date` would
+ * come back as a string on a hit and as a `Date` on a miss, which is exactly
+ * the kind of type that lies. Declaring them as strings makes both paths agree,
+ * and the page parses what it formats.
+ */
+export type AnnouncementListItem = Pick<Announcement, 'id' | 'slug' | 'title' | 'locale'> & {
+  visibility: Announcement['visibility'];
+  pinnedAt: string | null;
+  publishedAt: string | null;
+};
+
+/** The listing row as the driver hands it back, before the timestamps are normalised. */
+type AnnouncementListRow = Omit<AnnouncementListItem, 'pinnedAt' | 'publishedAt'> & {
+  pinnedAt: Date | string | null;
+  publishedAt: Date | string | null;
+};
+
+const toIsoString = (value: Date | string | null): string | null =>
+  value instanceof Date ? value.toISOString() : value;
+
+/**
  * Build a SQL query that deduplicates announcements by slug, keeping the best
  * locale variant for each slug. Uses ROW_NUMBER() window function to rank
  * locale variants per slug by priority:
@@ -44,25 +68,30 @@ function deduplicateBySlug(rows: Announcement[], locale: string): Announcement[]
  *
  * The result is ordered by pinned_at DESC NULLS LAST, published_at DESC,
  * then paginated with LIMIT/OFFSET applied after deduplication.
+ *
+ * Cached per (locale, limit, offset) on the announcements tag, like the COUNT
+ * beside it: the page is ISR, but its `?page=N` variants each render on their
+ * own and a crawler sweeping them in four locales spent a pooled connection
+ * per combination — the budget the session pooler shares across every warm
+ * instance, and the one a sweep exhausted with `EMAXCONNSESSION` (Sentry
+ * BLINDFOLD-CHESS-63, 2026-08-22). Admin CRUD expires the tag, so the daily
+ * timer is only the safety net.
+ *
+ * Only the columns the listing renders are selected; `content` in particular
+ * would put every published announcement's full body in a cache entry for a
+ * page that shows none of it.
  */
-async function getDeduplicatedAnnouncements(
-  locale: string,
-  limit: number,
-  offset: number
-): Promise<Announcement[]> {
-  const rows = await db.execute<Announcement>(sql`
+const getDeduplicatedAnnouncements = unstable_cache(
+  async (locale: string, limit: number, offset: number): Promise<AnnouncementListItem[]> => {
+    const rows = await db.execute<AnnouncementListRow>(sql`
     SELECT
       id,
       slug,
       title,
-      content,
       locale,
-      status,
       visibility,
       pinned_at AS "pinnedAt",
-      published_at AS "publishedAt",
-      created_at AS "createdAt",
-      updated_at AS "updatedAt"
+      published_at AS "publishedAt"
     FROM (
       SELECT *,
         ROW_NUMBER() OVER (
@@ -83,8 +112,15 @@ async function getDeduplicatedAnnouncements(
     OFFSET ${offset}
   `);
 
-  return rows;
-}
+    return rows.map((row) => ({
+      ...row,
+      pinnedAt: toIsoString(row.pinnedAt),
+      publishedAt: toIsoString(row.publishedAt),
+    }));
+  },
+  ['published-announcements-page'],
+  { tags: [ANNOUNCEMENTS_CACHE_TAG], revalidate: 86400 }
+);
 
 /**
  * Get all published public announcements (used by generateStaticParams).
@@ -110,7 +146,7 @@ export async function getPublishedAnnouncementsPaginated(
   locale: string,
   limit: number,
   offset: number
-): Promise<Announcement[]> {
+): Promise<AnnouncementListItem[]> {
   return getDeduplicatedAnnouncements(locale, limit, offset);
 }
 
@@ -123,9 +159,7 @@ export async function getPublishedAnnouncementsPaginated(
  * only the safety net. What the cache buys is a pooled connection per
  * listing render — a crawler sweeping the four locale variants at once had
  * this COUNT refused by the session pooler (`EMAXCONNSESSION`) and the page
- * answered 500 (Sentry BLINDFOLD-CHESS-63, 2026-08-22). The paginated list
- * beside it stays uncached: its rows carry `Date` columns the page formats,
- * and the Data Cache would hand those back as strings.
+ * answered 500 (Sentry BLINDFOLD-CHESS-63, 2026-08-22).
  */
 export const getPublishedAnnouncementCount = unstable_cache(
   async (): Promise<number> => {

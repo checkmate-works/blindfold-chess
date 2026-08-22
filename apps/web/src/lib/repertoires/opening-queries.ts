@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { asc, eq } from 'drizzle-orm';
 
 import { chessOpenings, db, repertoireOpenings } from '@/lib/db';
+import { getOpenings } from '@/lib/openings/master-queries';
 
 /** An opening option for the repertoire import picker. */
 export type OpeningOption = {
@@ -25,19 +26,14 @@ export type OpeningOption = {
 export async function getOpeningOptions(locale: string): Promise<OpeningOption[]> {
   const tNames = await getTranslations({ locale, namespace: 'topics.openings.names' });
 
-  const rows = await db
-    .select({
-      id: chessOpenings.id,
-      slug: chessOpenings.slug,
-      name: chessOpenings.name,
-      ecoCode: chessOpenings.ecoCode,
-      fen: chessOpenings.fen,
-    })
-    .from(chessOpenings)
-    .orderBy(asc(chessOpenings.sortOrder));
+  const rows = await getOpenings();
 
   return rows.map((o) => ({
-    ...o,
+    id: o.id,
+    slug: o.slug,
+    name: o.name,
+    ecoCode: o.ecoCode,
+    fen: o.fen,
     translatedName: tNames.has(o.slug as never) ? tNames(o.slug as never) : o.name,
   }));
 }

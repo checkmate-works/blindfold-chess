@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { whereThenLimit } from '@/lib/db/__test-support__/query-chain';
+import { whereThenLimit, whereThenReturning } from '@/lib/db/__test-support__/query-chain';
 import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
 
 import { banUser } from './banUser';
@@ -22,7 +22,7 @@ vi.mock('@/lib/db', () => {
     }),
     update: () => ({
       set: () => ({
-        where: mockUpdateSetWhere,
+        where: whereThenReturning(mockUpdateSetWhere),
       }),
     }),
     insert: () => ({

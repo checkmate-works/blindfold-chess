@@ -7,7 +7,7 @@ import { logActivityEvent } from '@/lib/users/activity-log';
 import { saveAnswerAction } from './saveAnswer';
 
 const mockInsertValues = vi.fn();
-const mockSelectFromWhereLimit = vi.fn();
+const mockGetOpenings = vi.fn<() => Promise<{ slug: string }[]>>();
 
 vi.mock('@/lib/users/activity-log');
 
@@ -17,8 +17,12 @@ vi.mock('@/lib/moderation/ban');
 
 vi.mock('@/lib/security/rate-limit');
 
+// The master_ref check reads the cached opening master rather than the table.
+vi.mock('@/lib/openings/master-queries', () => ({
+  getOpenings: () => mockGetOpenings(),
+}));
+
 vi.mock('@/lib/db', () => {
-  const chessOpeningsTable = { slug: 'slug' };
   const userInterviewAnswersTable = {
     id: 'id',
     userId: 'user_id',
@@ -32,15 +36,7 @@ vi.mock('@/lib/db', () => {
       insert: () => ({
         values: (...args: unknown[]) => mockInsertValues(...args),
       }),
-      select: () => ({
-        from: () => ({
-          where: () => ({
-            limit: () => mockSelectFromWhereLimit(),
-          }),
-        }),
-      }),
     },
-    chessOpenings: chessOpeningsTable,
     userInterviewAnswers: userInterviewAnswersTable,
   };
 });
@@ -121,7 +117,7 @@ describe('saveAnswerAction', () => {
     });
 
     it('should return invalidAnswerValue when opening slug is not found', async () => {
-      mockSelectFromWhereLimit.mockResolvedValue([]);
+      mockGetOpenings.mockResolvedValue([]);
 
       const result = await saveAnswerAction(
         testQuestionKey,
@@ -138,7 +134,7 @@ describe('saveAnswerAction', () => {
     beforeEach(() => {
       mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
       mockIsUserBanned.mockResolvedValue(false);
-      mockSelectFromWhereLimit.mockResolvedValue([{ slug: testAnswerValue }]);
+      mockGetOpenings.mockResolvedValue([{ slug: testAnswerValue }]);
     });
 
     it('should save answer and return success', async () => {

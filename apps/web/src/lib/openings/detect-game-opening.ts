@@ -1,14 +1,12 @@
 import { cache } from 'react';
 
-import { unstable_cache } from 'next/cache';
-
 import {
   type OpeningIndex,
   buildOpeningIndex,
   detectOpening,
 } from '@blindfold-chess/features/chess-core';
 
-import { chessOpenings, db } from '@/lib/db';
+import { getOpenings } from '@/lib/openings/master-queries';
 
 /**
  * detect-game-opening: resolve which named opening a recorded game played.
@@ -42,23 +40,19 @@ export type OpeningCatalogEntry = DetectedOpening & { fen: string };
 type OpeningRow = OpeningCatalogEntry;
 
 /**
- * The raw rows behind detection, cached for an hour under the shared `openings`
- * tag (so an opening-master change invalidates this alongside the other opening
- * caches).
+ * The rows behind detection, projected from the one cached opening master
+ * ({@link getOpenings}). This used to be a second `unstable_cache` over the
+ * same table, which meant two Data Cache entries and two tag strings for one
+ * seeded master; the projection is four fields off rows already in memory.
  */
-const loadOpeningRows = unstable_cache(
-  async (): Promise<OpeningRow[]> =>
-    db
-      .select({
-        slug: chessOpenings.slug,
-        name: chessOpenings.name,
-        ecoCode: chessOpenings.ecoCode,
-        fen: chessOpenings.fen,
-      })
-      .from(chessOpenings),
-  ['opening-detection-rows'],
-  { tags: ['openings'], revalidate: 3600 }
-);
+async function loadOpeningRows(): Promise<OpeningRow[]> {
+  return (await getOpenings()).map(({ slug, name, ecoCode, fen }) => ({
+    slug,
+    name,
+    ecoCode,
+    fen,
+  }));
+}
 
 /**
  * Build the position-key index once per request. `React.cache` dedupes so a

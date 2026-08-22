@@ -1,5 +1,8 @@
+import { revalidateTag } from 'next/cache';
+
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { profileCacheTag } from '@/lib/cache-tags';
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import {
   chunks,
@@ -20,7 +23,14 @@ const mockLogActivityEvent = vi.fn();
 const mockCancelAllActiveSubscriptions = vi.fn();
 
 const mockSet = vi.fn();
-const mockWhere = vi.fn().mockResolvedValue(undefined);
+// The chunk soft-delete awaits `update(...).set(...).where(...)` directly while
+// the profile anonymisation chains `.returning({ username })` onto it, so the
+// stub has to be a thenable AND a builder.
+const mockReturning = vi.fn().mockResolvedValue([{ username: 'retained-name' }]);
+const mockWhere = vi.fn((..._args: unknown[]) => ({
+  returning: mockReturning,
+  then: (resolve: (value: unknown) => unknown) => resolve(undefined),
+}));
 
 // `db.delete(likes).where(...)` — capture the WHERE condition so we can read
 // back which target_type each received-likes deletion scoped to.
@@ -92,7 +102,6 @@ describe('deleteAccount', () => {
     mockDeleteUser.mockResolvedValue({ error: null });
     mockList.mockResolvedValue({ data: [{ name: 'avatar.webp' }] });
     mockRemove.mockResolvedValue({ data: [], error: null });
-    mockWhere.mockResolvedValue(undefined);
     mockCancelAllActiveSubscriptions.mockResolvedValue(undefined);
   });
 
@@ -158,6 +167,15 @@ describe('deleteAccount', () => {
       expect(values.xUsername).toBeNull();
       expect(values.instagramUsername).toBeNull();
       expect(values.youtubeHandle).toBeNull();
+    });
+
+    it('expires the public profile cache so the withdrawn profile stops rendering', async () => {
+      // The /u/[username] read is cached per username and filters
+      // deleted_at IS NULL; without this expiry the anonymised-away PII would
+      // keep being served for up to an hour.
+      await deleteAccount(testUserId);
+
+      expect(revalidateTag).toHaveBeenCalledWith(profileCacheTag('retained-name'), { expire: 0 });
     });
 
     it('does not touch username or bannedAt', async () => {

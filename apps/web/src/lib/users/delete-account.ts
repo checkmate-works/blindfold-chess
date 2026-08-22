@@ -1,7 +1,10 @@
+import { revalidateTag } from 'next/cache';
+
 import { and, eq, inArray, isNull } from 'drizzle-orm';
 import 'server-only';
 
 import { cancelAllActiveSubscriptions } from '@/lib/billing/cancel-subscriptions';
+import { profileCacheTag } from '@/lib/cache-tags';
 import {
   chunks,
   db,
@@ -152,14 +155,24 @@ async function softDeleteDraftChunks(userId: string): Promise<void> {
  * so a future PII column is a compile error (and a test failure) until handled.
  */
 async function anonymiseProfile(userId: string): Promise<void> {
-  await db
+  const [updated] = await db
     .update(profiles)
     .set({
       ...PROFILE_ANONYMISED_VALUES,
       deletedAt: new Date(),
       updatedAt: new Date(),
     })
-    .where(eq(profiles.id, userId));
+    .where(eq(profiles.id, userId))
+    .returning({ username: profiles.username });
+
+  // `/u/[username]` caches the row under a per-username tag and filters
+  // `deleted_at IS NULL`, so without this expiry the withdrawn account's
+  // profile — PII included — keeps rendering for up to an hour. The username
+  // survives anonymisation (see the TSDoc above), which is what makes it
+  // available as the tag here.
+  if (updated) {
+    revalidateTag(profileCacheTag(updated.username), { expire: 0 });
+  }
 }
 
 /**

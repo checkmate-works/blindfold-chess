@@ -26,10 +26,12 @@ const ROWS = [
   },
 ];
 
+// The master is read through `getOpenings`, which selects whole rows; the four
+// fields detection projects are all these tests care about.
 vi.mock('@/lib/db', async () => ({
   ...(await actualDbSchema()),
   db: {
-    select: () => ({ from: () => Promise.resolve(ROWS) }),
+    select: () => ({ from: () => ({ orderBy: () => Promise.resolve(ROWS) }) }),
   },
 }));
 

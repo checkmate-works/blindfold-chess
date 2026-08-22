@@ -3,12 +3,11 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { Link } from '@/i18n/routing';
-import { asc } from 'drizzle-orm';
 
 import { getOptionalUser } from '@/lib/auth';
 import { withReturnPath } from '@/lib/auth-return-path';
 import { getCurrentReturnTarget } from '@/lib/current-return-target';
-import { chessOpenings, db } from '@/lib/db';
+import { getOpenings } from '@/lib/openings/master-queries';
 
 import { DeletePostButton } from '@/app/[locale]/(public)/topics/_components/DeletePostButton';
 import {
@@ -78,18 +77,7 @@ export default async function InterviewQuestionDetailPage({ params }: Props) {
   // master_ref questions are independent — fetch both in one round.
   const [user, allOpenings] = await Promise.all([
     getOptionalUser(),
-    config.answerType === 'master_ref'
-      ? db
-          .select({
-            slug: chessOpenings.slug,
-            name: chessOpenings.name,
-            fen: chessOpenings.fen,
-            ecoCode: chessOpenings.ecoCode,
-            pgn: chessOpenings.pgn,
-          })
-          .from(chessOpenings)
-          .orderBy(asc(chessOpenings.sortOrder))
-      : null,
+    config.answerType === 'master_ref' ? getOpenings() : null,
   ]);
 
   // Fetch existing answer for authenticated users
@@ -100,7 +88,14 @@ export default async function InterviewQuestionDetailPage({ params }: Props) {
     const translatedName = tOpeningNames.has(o.slug as never)
       ? tOpeningNames(o.slug as never)
       : o.name;
-    return { ...o, translatedName };
+    return {
+      slug: o.slug,
+      name: o.name,
+      fen: o.fen,
+      ecoCode: o.ecoCode,
+      pgn: o.pgn,
+      translatedName,
+    };
   });
 
   // Fetch full opening record and resolve display name for current answer

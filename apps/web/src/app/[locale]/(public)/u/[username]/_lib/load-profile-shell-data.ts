@@ -1,3 +1,5 @@
+import { unstable_cache } from 'next/cache';
+
 import { and, eq } from 'drizzle-orm';
 
 import { db, userFollows } from '@/lib/db';
@@ -37,6 +39,89 @@ export type ProfileShellData = {
   /** Highest rank actually held; `null` for an unranked (mukyu) member. */
   rankSlug: RankSlug | null;
 };
+
+/**
+ * The parts of the shell that depend only on whose profile it is — no viewer,
+ * no follow state, nothing per-request. Split out from {@link ProfileShellData}
+ * because that is exactly the subset a cache entry can be keyed by profile id.
+ */
+type PublicProfileStats = Pick<
+  ProfileShellData,
+  | 'followerCount'
+  | 'postsCount'
+  | 'problemsCount'
+  | 'gamesCount'
+  | 'userAchievementGroups'
+  | 'rankSlug'
+>;
+
+/**
+ * The six profile-scoped aggregates, in one round.
+ *
+ * Every one of them is a separate pooled connection, and they are opened
+ * simultaneously — this fan-out, times four locales, is what a crawler sweep
+ * turns into pool pressure (see the `@design` note on
+ * {@link getCachedPublicProfileStats}).
+ */
+async function loadPublicProfileStats(profileId: string): Promise<PublicProfileStats> {
+  const [
+    followerCount,
+    postsCount,
+    userAchievementGroups,
+    problemsCount,
+    gamesCount,
+    achievedSlugs,
+  ] = await Promise.all([
+    countRows(
+      userFollows,
+      and(eq(userFollows.followingId, profileId), profileNotDeleted(userFollows.followerId))
+    ),
+    getPostCountByUserId(profileId),
+    getUserAchievementGroups(profileId),
+    countPositions({ userId: profileId }),
+    countGamesByAuthorId(profileId),
+    getAchievedSlugsForUser(profileId),
+  ]);
+
+  return {
+    followerCount,
+    postsCount,
+    userAchievementGroups,
+    problemsCount,
+    gamesCount,
+    rankSlug: resolveHighestAchievedSlug(achievedSlugs),
+  };
+}
+
+/**
+ * {@link loadPublicProfileStats} behind the Data Cache, one entry per profile.
+ *
+ * @design Why a plain TTL and no tags
+ * These six reads are the shell's whole query fan-out, and caching them takes
+ * it to zero for every viewer but the profile's owner. That is the point: the
+ * `/u/[username]` archives are the pages a crawler hits hardest, and the
+ * session pooler's connection budget is shared across every warm instance — a
+ * sweep in four locales is what had these reads refused with
+ * `EMAXCONNSESSION` (Sentry BLINDFOLD-CHESS-5H, 2026-08-22).
+ *
+ * Unlike the pagination COUNTs, these are not tag-invalidated. Their writers
+ * are most of the app — publishing a puzzle or a game, posting a topic, being
+ * followed, earning a badge, being granted a rank — so a tag would have to be
+ * expired from a dozen call sites, and the one that eventually gets forgotten
+ * leaves a profile stale with nothing pointing at the cause. A five-minute TTL
+ * is a bounded, uniform staleness that no writer has to remember, and the one
+ * viewer who would notice is handled structurally instead: the owner's own
+ * view bypasses the cache (see {@link loadProfileShellData}), so "I just
+ * published this, why is the count wrong" cannot happen.
+ *
+ * Everything here survives the JSON round-trip as itself — counts, a slug, and
+ * achievement groups whose `occurrences` are already `jsonb`. A `Date` added to
+ * `PublicProfileStats` would not.
+ */
+const getCachedPublicProfileStats = (profileId: string) =>
+  unstable_cache(() => loadPublicProfileStats(profileId), ['public-profile-stats', profileId], {
+    revalidate: 300,
+  })();
 
 /**
  * Loads everything the profile "shell" needs regardless of which top-level
@@ -87,11 +172,6 @@ export async function loadProfileShellData({
   const blockedByProfilePromise =
     currentUserId && !isOwnProfile ? hasBlocked(profileId, currentUserId) : Promise.resolve(false);
 
-  const followerCountPromise = countRows(
-    userFollows,
-    and(eq(userFollows.followingId, profileId), profileNotDeleted(userFollows.followerId))
-  );
-
   const followingCountPromise = isOwnProfile
     ? countRows(
         userFollows,
@@ -104,25 +184,17 @@ export async function loadProfileShellData({
     reverseFollowRows,
     viewerHasBlocked,
     blockedByProfile,
-    followerCount,
     followingCount,
-    postsCount,
-    userAchievementGroups,
-    problemsCount,
-    gamesCount,
-    achievedSlugs,
+    stats,
   ] = await Promise.all([
     followCheckPromise,
     reverseFollowCheckPromise,
     viewerHasBlockedPromise,
     blockedByProfilePromise,
-    followerCountPromise,
     followingCountPromise,
-    getPostCountByUserId(profileId),
-    getUserAchievementGroups(profileId),
-    countPositions({ userId: profileId }),
-    countGamesByAuthorId(profileId),
-    getAchievedSlugsForUser(profileId),
+    // The owner reads live, so their own page always reflects what they just
+    // published; every other viewer — crawlers included — gets the cache.
+    isOwnProfile ? loadPublicProfileStats(profileId) : getCachedPublicProfileStats(profileId),
   ]);
 
   return {
@@ -130,12 +202,7 @@ export async function loadProfileShellData({
     followedByProfile: !!reverseFollowRows[0],
     viewerHasBlocked,
     blockedByProfile,
-    followerCount,
     followingCount,
-    postsCount,
-    problemsCount,
-    gamesCount,
-    userAchievementGroups,
-    rankSlug: resolveHighestAchievedSlug(achievedSlugs),
+    ...stats,
   };
 }

@@ -1,8 +1,11 @@
 'use server';
 
+import { revalidateTag } from 'next/cache';
+
 import { validateUsername } from '@blindfold-chess/features/username';
 
 import { authenticateAndGuard, userHasProfile } from '@/lib/auth';
+import { profileCacheTag } from '@/lib/cache-tags';
 import { isLameName } from '@/lib/content/lame-name';
 import { db, profiles } from '@/lib/db';
 import { isUniqueViolation } from '@/lib/db/extract-pg-error-code';
@@ -68,6 +71,12 @@ export async function setUsername(input: SetUsernameInput): Promise<SetUsernameR
     }
     throw e;
   }
+
+  // `/u/[username]` caches its lookup per username, misses included, so a
+  // crawler that walked this name while it was still free may hold a cached
+  // `null` for it. Expire that entry now or the brand-new profile 404s for up
+  // to an hour.
+  revalidateTag(profileCacheTag(username), { expire: 0 });
 
   return { success: true };
 }

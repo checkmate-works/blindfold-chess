@@ -1,5 +1,9 @@
+import { revalidateTag } from 'next/cache';
+
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { profileCacheTag } from '@/lib/cache-tags';
+import { whereThenReturning } from '@/lib/db/__test-support__/query-chain';
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
 import { checkRateLimit } from '@/lib/security/rate-limit';
@@ -8,7 +12,7 @@ import { logActivityEvent } from '@/lib/users/activity-log';
 
 import { updateProfile } from './updateProfile';
 
-const mockWhere = vi.fn().mockResolvedValue(undefined);
+const mockWhere = vi.fn<() => unknown[]>().mockReturnValue([{ username: 'tester' }]);
 // Resolves the "previous profile" row read before the update. Defaults to an
 // empty result (no prior row); individual tests override with mockResolvedValueOnce.
 const mockSelectWhere = vi.fn<() => Promise<unknown[]>>().mockResolvedValue([]);
@@ -31,7 +35,7 @@ vi.mock('@/lib/db', async () => ({
     }),
     update: () => ({
       set: () => ({
-        where: mockWhere,
+        where: whereThenReturning(mockWhere),
       }),
     }),
   },
@@ -383,6 +387,14 @@ describe('updateProfile', () => {
 
       expect(result).toEqual({ success: true });
       expect(mockWhere).toHaveBeenCalled();
+    });
+
+    it('expires the public profile cache for the edited row', async () => {
+      // /u/[username] serves the row from the Data Cache under this tag, so
+      // dropping the expiry would leave the edit invisible for an hour.
+      await updateProfile({ displayName: 'Chess Player' });
+
+      expect(revalidateTag).toHaveBeenCalledWith(profileCacheTag('tester'), { expire: 0 });
     });
 
     it('should log update_profile with the overwritten (from) and new (to) values', async () => {

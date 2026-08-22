@@ -5,7 +5,11 @@ import { revalidateTag } from 'next/cache';
 import { eq } from 'drizzle-orm';
 
 import { getAuthenticatedUser } from '@/lib/auth';
-import { EXP_LEADERBOARD_CACHE_TAG, LEADERBOARD_CACHE_TAG } from '@/lib/cache-tags';
+import {
+  EXP_LEADERBOARD_CACHE_TAG,
+  LEADERBOARD_CACHE_TAG,
+  profileCacheTag,
+} from '@/lib/cache-tags';
 import { db, profiles } from '@/lib/db';
 import { isMutableNotificationType } from '@/lib/notifications/mutable-types';
 import type { MutableNotificationType } from '@/lib/notifications/mutable-types';
@@ -39,7 +43,18 @@ export async function getLeaderboardVisibility(): Promise<boolean> {
 
 export async function setLeaderboardVisibility(hidden: boolean): Promise<void> {
   const user = await getAuthenticatedUser();
-  await db.update(profiles).set({ hiddenFromLeaderboard: hidden }).where(eq(profiles.id, user.id));
+  const [updated] = await db
+    .update(profiles)
+    .set({ hiddenFromLeaderboard: hidden })
+    .where(eq(profiles.id, user.id))
+    .returning({ username: profiles.username });
+
+  // `hidden_from_leaderboard` is not in the cached public-profile projection,
+  // but every writer of `profiles` expires that row's tag — see
+  // `profileCacheTag` for why there are no per-column exceptions.
+  if (updated) {
+    revalidateTag(profileCacheTag(updated.username), { expire: 0 });
+  }
 
   // Both ranking caches are tagged (60s TTL); purge them so opting out takes
   // effect on the next leaderboard view instead of up to a minute later.
