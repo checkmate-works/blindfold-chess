@@ -38,7 +38,7 @@ export async function createPostWithFenAttachmentBase(args: {
   invalidTopicError: string;
   rateLimit: RateLimitConfig;
   validateContent: (formData: FormData) => { error: string } | { content: string };
-  redirectPath?: (postId: string, opts: { toast: boolean }) => string;
+  redirectPath?: (postId: string) => string;
   emitFeedItem?: boolean;
   isSpoiler?: boolean;
   topicAuthorId?: string | null;
