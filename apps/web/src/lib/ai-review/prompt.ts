@@ -10,6 +10,7 @@ import type { GamePlaySettings } from '@/lib/games/saved-game-types';
 
 import type { BlindfoldContext } from './blindfold-context';
 import type { ReviewInput } from './input';
+import { REVIEW_LIST_BOUNDS } from './schema';
 
 /**
  * Game facts the prompt states as context. Deliberately excludes every
@@ -91,6 +92,7 @@ function blindfoldCoachingRules(start: GamePlaySettings): string[] {
     '- A mistake made right after a peek or a hint ("played_with_aid") was made with sight. Treat it as a chess error and do not blame memory for it.',
     '- Aid usage is information, never something to scold. Mention it only where it explains a moment or shapes a lesson.',
     '- Never claim the player saw, or could not see, anything beyond what the stated conditions and signals say.',
+    "- The per-move aid counts are exact for that move, and the game-wide totals say nothing about which moves they belong to. Never attribute a peek, hint, or takeback to a critical moment unless that moment's own line shows it; a peek that the totals count but no moment line shows happened at some other move.",
     '- If the input says accuracy fell off in the second half, say so and offer a way to keep the picture fresh in long games.',
   ];
   const byMode: Record<GamePlaySettings['boardVisibility'], string[]> = {
@@ -105,6 +107,11 @@ function blindfoldCoachingRules(start: GamePlaySettings): string[] {
     ],
   };
   return [...common, ...byMode[start.boardVisibility]];
+}
+
+/** "1-3" — the bounds as the prompt states them. */
+function range({ min, max }: { min: number; max: number }): string {
+  return `${min}-${max}`;
 }
 
 /**
@@ -129,6 +136,7 @@ export function buildSystemPrompt(language: string, blindfold: BlindfoldContext 
     '- The summary is a TL;DR: 3-4 bullet points of one sentence each — how the game went, what decided it, and the single most important thing to work on. No preamble; the sections that follow carry the detail.',
     `- Write ALL output text in ${language}. Keep chess move notation (SAN) as-is.`,
     '- Fill the JSON schema exactly. Every momentComments entry must reference one of the listed plies.',
+    `- List sizes are hard limits: strengths ${range(REVIEW_LIST_BOUNDS.strengths)} items, weaknesses ${range(REVIEW_LIST_BOUNDS.weaknesses)}, advice ${range(REVIEW_LIST_BOUNDS.advice)}, summary ${range(REVIEW_LIST_BOUNDS.summary)}. Merge points rather than exceed a limit.`,
   ];
   if (blindfold) {
     lines.push('', ...BLINDFOLD_VOCABULARY, '', ...blindfoldCoachingRules(blindfold.start));

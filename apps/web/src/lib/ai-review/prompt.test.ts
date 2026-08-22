@@ -70,6 +70,7 @@ describe('prompts', () => {
     const system = buildSystemPrompt('Japanese', null);
     expect(system).toContain('Write ALL output text in Japanese');
     expect(system).toContain('ground truth');
+    expect(system).toContain('advice 1-3');
   });
 
   it('serializes the facts block without any author-editable text', () => {
@@ -93,6 +94,7 @@ describe('blindfold prompts', () => {
     expect(never).toContain('"rejected move"');
     expect(never).toContain('board_image_drift');
     expect(never).toContain('The board was never shown');
+    expect(never).toContain('Never attribute a peek, hint, or takeback to a critical moment');
     expect(never).not.toContain('could be peeked');
 
     const peek = buildSystemPrompt(
