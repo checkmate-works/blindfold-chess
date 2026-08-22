@@ -12,6 +12,7 @@ import { CommentNodeLayout } from '@/app/[locale]/_components/CommentNodeLayout'
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { ReviewMomentFacts } from './ReviewMomentFacts';
+import { ReviewPrincipleCallout } from './ReviewPrincipleCallout';
 
 /**
  * The AI review's take on one move, rendered as a comment in that move's own
@@ -88,6 +89,7 @@ export function ReviewMomentComment({
               <p className="text-sm leading-relaxed break-words whitespace-pre-wrap text-foreground">
                 {comment.explanation}
               </p>
+              <ReviewPrincipleCallout principle={comment.principle} />
               <p className="text-sm leading-relaxed break-words whitespace-pre-wrap text-muted-foreground">
                 {comment.lesson}
               </p>
