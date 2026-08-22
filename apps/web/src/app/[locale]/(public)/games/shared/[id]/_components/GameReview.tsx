@@ -47,6 +47,7 @@ import { useReplayUrlSync } from '../_hooks/use-replay-url-sync';
 import { useReviewOverview } from '../_hooks/use-review-overview';
 import { useReviewPositionMarks } from '../_hooks/use-review-position-marks';
 import { type ReplaySocial, normalizeReplaySocial } from '../_lib/normalize-replay-social';
+import { parseOverviewTabParam } from '../_lib/overview-tab-param';
 import {
   computeContinuation,
   computeCurrentPly,
@@ -210,12 +211,6 @@ export function GameReview({
     playSettingsLog,
     currentPosition,
     notationMovesLength: notationMoves.length,
-  });
-
-  useReplayUrlSync({
-    currentPosition,
-    notationMovesLength: notationMoves.length,
-    effectiveFlipped,
   });
 
   // The game's AI review, as the whole page's copy of it: the board marks
@@ -458,6 +453,35 @@ export function GameReview({
     setOverviewView: overview.setOverviewView,
   });
 
+  useReplayUrlSync({
+    currentPosition,
+    notationMovesLength: notationMoves.length,
+    effectiveFlipped,
+    overviewView: overview.activeOverviewView,
+  });
+
+  // A `#14` / `?comment=` landing on the shared page is a request to read
+  // that move, so the tab opens on its thread — unless the URL names a tab,
+  // which is what coming back to this page does (`useReplayUrlSync` wrote the
+  // tab the viewer had open into the history entry); then that tab is the
+  // request, at that move. A deep-linked comment still wins: it lives in the
+  // Discussion, so any `?tab=` beside it would only hide it.
+  const { showOverviewTabs, setOverviewView } = overview;
+  const offersAiReview = aiReview != null;
+  const handleLand = useCallback(
+    (
+      position: number,
+      { tabParam, viaComment }: { tabParam: string | null; viaComment: boolean }
+    ) => {
+      const requested = viaComment
+        ? null
+        : parseOverviewTabParam(tabParam, { showOverviewTabs, aiReview: offersAiReview });
+      if (requested) setOverviewView(requested);
+      else syncToPosition(position);
+    },
+    [showOverviewTabs, offersAiReview, setOverviewView, syncToPosition]
+  );
+
   useReplayDeepLink({
     notationMovesLength: notationMoves.length,
     navigateToPosition,
@@ -469,10 +493,9 @@ export function GameReview({
     // overview board unless the URL asks for a move.
     fallbackPosition:
       social.mode === 'local' && startPosition ? startPosition.jumpIndex : undefined,
-    // A `#14` / `?comment=` landing on the shared page is a request to read
-    // that move, so the tab opens on its thread. The result screen's landing is
-    // a fallback, not a request, and must leave the Summary showing.
-    onLand: social.mode === 'live' ? syncToPosition : undefined,
+    // The result screen's landing is a fallback, not a request, and must leave
+    // the Summary showing — see `handleLand` for the shared page.
+    onLand: social.mode === 'live' ? handleLand : undefined,
   });
 
   // `#game-overview` deep-link from the home feed's comment-count icon. The

@@ -4,6 +4,8 @@ import { useEffect, useRef } from 'react';
 
 import type { GameCommentItem } from '@/lib/db/game-comments';
 
+import { OVERVIEW_TAB_PARAM } from '../_lib/overview-tab-param';
+
 /**
  * Parse the URL hash (`#14`) into a 0-based move index, or null when it is
  * absent / not a valid half-move number for this game.
@@ -36,8 +38,14 @@ type Params = {
    * a comment's move is a request to READ that move, so its thread is what
    * should be selected. Omitted on the result screen, whose landing is a
    * fallback rather than a request and must leave the Summary showing.
+   *
+   * `landing` carries what else the URL asked for, so the caller can weigh it
+   * against the position: `tabParam` is the raw `?tab=` value (see
+   * `parseOverviewTabParam`), and `viaComment` says the position came from a
+   * deep-linked comment, which lives in the Discussion and so outranks any tab
+   * the URL names beside it.
    */
-  onLand?: (position: number) => void;
+  onLand?: (position: number, landing: { tabParam: string | null; viaComment: boolean }) => void;
 };
 
 /**
@@ -47,6 +55,13 @@ type Params = {
  * Priority for the initial position (runs once after moves load): a deep-linked
  * comment's move, then the `#<half-move>` URL hash (read client-side — the
  * fragment never reaches the server), then {@link Params.fallbackPosition}.
+ *
+ * The `?tab=` param is read client-side too, although the server could see
+ * it: on a back/forward navigation the App Router re-renders this page from
+ * the history entry's cached tree, i.e. with the search params of the visit
+ * that created the entry, whereas `window.location` carries what
+ * `useReplayUrlSync` wrote into the entry afterwards. Reading the URL here is
+ * what lets the tab survive leaving the page, exactly as the hash does.
  */
 export function useReplayDeepLink({
   notationMovesLength,
@@ -69,7 +84,10 @@ export function useReplayDeepLink({
     const hashPly = parseHashPly(window.location.hash, notationMovesLength);
     const landed = commentPly ?? hashPly ?? fallbackPosition;
     navigateToPosition(landed);
-    onLand?.(landed);
+    onLand?.(landed, {
+      tabParam: new URL(window.location.href).searchParams.get(OVERVIEW_TAB_PARAM),
+      viaComment: commentPly != null,
+    });
     // startedRef makes re-runs no-ops, so the extra deps cannot re-trigger it.
   }, [
     notationMovesLength,
