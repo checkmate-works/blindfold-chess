@@ -127,11 +127,16 @@ jobs:
             printf '%s\n' "$delim"
           } >> "$GITHUB_ENV"
 
-      # Agent mode (prompt input): no trigger comment involved. The tool
-      # allowlist is local-only — no push, no gh; delivery happens in later
-      # deterministic steps after the guard validates the diff. Wildcards on
-      # git subcommands are not airtight (e.g. `git commit --amend` passes);
-      # the guard step + the absence of push/gh are the real enforcement.
+      # Agent mode (prompt input): no trigger comment involved. Unlike tag
+      # mode, agent mode adds NO default tools — the SDK runs headless and
+      # denies any permission-requiring tool not listed here (verified at
+      # v1.0.199: src/modes/agent/index.ts passes claude_args through
+      # untouched), so the file-editing tools must be listed explicitly.
+      # The allowlist is local-only — no push, no gh; delivery happens in
+      # later deterministic steps after the guard validates the diff.
+      # Wildcards on git subcommands are not airtight (e.g. `git commit
+      # --amend` passes); the guard step + the absence of push/gh are the
+      # real enforcement.
       - name: Run Claude
         if: steps.pick.outputs.found == 'true'
         uses: anthropics/claude-code-action@dcb57747bfceeaa1fa72638cae52295d1d853d4a # v1.0.199
@@ -146,7 +151,7 @@ jobs:
             Follow the system prompt's procedure exactly and write
             .claude-nightly-result.json at the repository root before finishing.
           claude_args: >-
-            --allowed-tools "Bash(pnpm lint),Bash(pnpm typecheck),Bash(pnpm test),Bash(git status),Bash(git diff *),Bash(git log *),Bash(git add *),Bash(git commit *),Bash(git checkout -b claude/issue-*),Bash(git branch *),Bash(git rev-parse *),Bash(git show *)"
+            --allowed-tools "Edit,Write,Read,Glob,Grep,Bash(pnpm lint),Bash(pnpm typecheck),Bash(pnpm test),Bash(git status),Bash(git diff *),Bash(git log *),Bash(git add *),Bash(git commit *),Bash(git checkout -b claude/issue-*),Bash(git branch *),Bash(git rev-parse *),Bash(git show *)"
             --max-turns 120
 
       # Deterministic post-validation of Claude's output. Nothing is pushed and
