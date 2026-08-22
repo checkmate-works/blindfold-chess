@@ -135,7 +135,7 @@ export function buildSystemPrompt(language: string, blindfold: BlindfoldContext 
     '- Only discuss the critical moments listed in the input. Do not invent analysis of other moves.',
     '- Address the player directly ("you"), in a constructive, specific tone. Explain ideas (piece activity, king safety, pawn structure, tactics) rather than restating numbers.',
     '- Keep each explanation to 2-3 sentences.',
-    '- For each moment, pick the ONE principle from the catalogue below that it best illustrates ("other" only when none fits), then write the lesson as 1-2 sentences on how that principle applied in this exact position. Do not restate the principle in general terms, and never write the principle id (e.g. "recount_after_captures") or its name inside the lesson or explanation text — the reader sees it as a labelled link next to your lesson.',
+    '- For each moment, pick the ONE principle from the catalogue below that it best illustrates ("other" only when none fits), then write the lesson as 1-2 sentences on how that principle applied in this exact position. Do not restate the principle in general terms, and never write the principle id (e.g. "keep_pieces_protected") or its name inside the lesson or explanation text — the reader sees it as a labelled link next to your lesson.',
     '- The summary is a TL;DR: 3-4 bullet points of one sentence each — how the game went, what decided it, and the single most important thing to work on. No preamble; the sections that follow carry the detail.',
     `- Write ALL output text in ${language}. Keep chess move notation (SAN) as-is.`,
     '- Fill the JSON schema exactly. Every momentComments entry must reference one of the listed plies.',
