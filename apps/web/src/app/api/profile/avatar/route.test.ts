@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { whereThenReturning } from '@/lib/db/__test-support__/query-chain';
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
 
@@ -84,14 +85,16 @@ vi.mock('sharp', () => {
   return { default: factory };
 });
 
-const mockWhere = vi.fn().mockResolvedValue(undefined);
+// The UPDATE reads the username back with `.returning()` to expire that
+// profile's Data Cache tag.
+const mockWhere = vi.fn<() => unknown[]>().mockReturnValue([{ username: 'tester' }]);
 
 vi.mock('@/lib/db', async () => ({
   ...(await actualDbSchema()),
   db: {
     update: () => ({
       set: () => ({
-        where: mockWhere,
+        where: whereThenReturning(mockWhere),
       }),
     }),
   },
@@ -478,9 +481,9 @@ describe('POST /api/profile/avatar', () => {
           publicUrl: `https://storage.example.com/avatars/${testUserId}/avatar.jpg`,
         },
       });
-      mockWhere.mockImplementation(async () => {
+      mockWhere.mockImplementation(() => {
         callOrder.push('updateProfile');
-        return undefined;
+        return [{ username: 'tester' }];
       });
 
       const file = createMockFile(JPEG_MAGIC, 'photo.jpg', 'image/jpeg');
