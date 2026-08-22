@@ -1,10 +1,13 @@
-import { getGlossaryTerms } from '@/app/[locale]/(public)/glossary/_lib/queries';
 import type { TermPreview } from '@/app/[locale]/_components/glossary-term/types';
 
+import { getGlossaryTerms } from './queries';
+
 /**
- * Resolve the lightweight {@link TermPreview} data for the glossary slugs a
- * guide page links, keyed by slug. Terms that no longer exist in the DB are
- * silently dropped (the renderer degrades their markup to plain text).
+ * Resolve the lightweight {@link TermPreview} data for a set of glossary
+ * slugs, keyed by slug — what a page embeds so its term links open the
+ * shared modal without a client fetch (guide prose, the AI review's
+ * principles). Terms that no longer exist in the DB are silently dropped
+ * (the caller degrades their markup to plain text or a plain link).
  *
  * Reads through the shared `getGlossaryTerms` cache (tag `glossary`, 1h), so
  * this adds no per-request DB cost on a warm cache. Locale selection mirrors
