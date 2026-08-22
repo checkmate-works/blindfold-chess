@@ -95,8 +95,7 @@ export async function createChunkPostWithVideoAttachment(
       validateContent,
       emitFeedItem: false,
       topicAuthorId: chunk?.userId,
-      redirectPath: (postId, { toast }) =>
-        `/${locale}/chunks/${slug}${toast ? '?toast=post_created' : ''}#post-${postId}`,
+      redirectPath: (postId) => `/${locale}/chunks/${slug}?toast=post_created#post-${postId}`,
       afterInsert: async (tx, postId) => {
         await tx.insert(postVideoAttachments).values({
           postId,

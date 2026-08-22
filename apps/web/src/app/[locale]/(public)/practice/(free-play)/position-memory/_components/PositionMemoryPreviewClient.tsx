@@ -8,7 +8,6 @@ import { BoardFrame } from '@/app/_components';
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 
 import type { ChunkOption } from '@/lib/chunks/types';
-import { buildCoinToastParams } from '@/lib/points/coin-toast-params';
 import type { ThemeOption } from '@/lib/themes/types';
 
 import {
@@ -83,8 +82,7 @@ export function PositionMemoryPreviewClient({ availableThemes, availableChunks }
       clearDraft();
 
       // Land straight on the created position so the author can verify it.
-      const toastParams = buildCoinToastParams(result, 'position_created');
-      return { path: `/practice/position-memory/${result.id}?${toastParams.toString()}` };
+      return { path: `/practice/position-memory/${result.id}?toast=position_created` };
     });
 
   return (

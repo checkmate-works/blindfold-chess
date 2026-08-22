@@ -734,19 +734,18 @@
     "title": "Coins",
     "unit": "coins",
     "hero": {
-      "tagline": "You earn Coins by posting in topics and creating problems."
+      "tagline": "Every like on the content you publish earns you a Coin."
     },
     "loop": {
-      "step1Title": "Contribute",
-      "step1Body": "Create a problem or a post",
-      "step2Title": "Earn Coins",
-      "step2Body": "Every contribution adds up",
+      "step1Title": "Publish",
+      "step1Body": "Share a game, a problem, a Kata",
+      "step2Title": "Get liked",
+      "step2Body": "Each like adds a Coin",
       "step3Title": "Spend on perks",
-      "step3Body": "Ad-free time or games"
+      "step3Body": "Ad-free time, games, AI reviews"
     },
     "earn": {
       "heading": "How to earn Coins",
-      "perContribution": "for each post or publish · up to {cap} a day",
       "chips": {
         "puzzle": "Puzzle",
         "positionMemory": "Position memory",
@@ -755,8 +754,8 @@
         "repertoire": "Kata",
         "game": "Game"
       },
-      "likeNote1": "Every like your content receives earns a Coin (not instant — granted once a day in a batch).",
-      "likeNote2": "Post a topic or create a problem once, and it keeps earning Coins."
+      "perLike": "per like · granted once a day in a batch",
+      "note": "Content you have published keeps earning with every new like. Likes on your own content do not count."
     },
     "spend": {
       "heading": "What Coins are for",
@@ -764,13 +763,16 @@
       "adFreeRate": "1 Coin = {days, plural, one {# ad-free day} other {# ad-free days}}",
       "maiaTitle": "Play against Maia",
       "maiaRate": "{cost, plural, one {# Coin} other {# Coins}} = 1 game",
-      "maiaNote": "Maia is a neural-network AI that plays human-like moves."
+      "maiaNote": "Maia is a neural-network AI that plays human-like moves.",
+      "aiReviewTitle": "Get an AI review",
+      "aiReviewRate": "{cost, plural, one {# Coin} other {# Coins}} = 1 review",
+      "aiReviewNote": "Subscribers generate reviews without spending Coins."
     },
     "facts": {
-      "instant": "Coins you earn are usable right away — no waiting.",
-      "deleteReversal": "If you delete your own content, the Coins it earned are reversed — but Coins you have already spent are never reclaimed.",
-      "balance": "Your balance and history are always available on My Page.",
-      "dailyCap": "Creating content earns up to {cap} coins per day (resets at 00:00 UTC)."
+      "batch": "Coins from likes are not instant — they are granted once a day in a batch.",
+      "instant": "Once granted, Coins are usable right away — no waiting.",
+      "selfLike": "Liking your own content earns nothing.",
+      "balance": "Your balance and history are always available on My Page."
     },
     "cta": {
       "viewBalance": "View my Coin balance",
@@ -829,8 +831,8 @@
       },
       "adFreeBenefits": {
         "question": "How do I earn coins, and how do they become ad-free time?",
-        "answer": "Each eligible contribution awards coins, usable immediately. 1 coin redeems 1 day of ad-free browsing (redemption flow coming soon).",
-        "earnSummary": "Publishing eligible content — problems, topics, chunks, Kata, and games — earns {amount, plural, one {# Coin} other {# Coins}} each, up to {cap} a day. Likes and staff grants don't count toward that cap (which resets at 00:00 UTC)."
+        "answer": "Each like on a game, problem, Kata, chunk or topic post you have published earns 1 Coin (granted once a day in a batch). 1 Coin redeems 1 day of ad-free browsing, and Coins also pay for Maia games and AI reviews.",
+        "earnSummary": "Likes on your own content do not count. Subscribers generate AI reviews without spending Coins."
       }
     }
   },
@@ -3896,11 +3898,6 @@
       "unit": "coins",
       "aboutLink": "How Coins work"
     },
-    "dailyCap": {
-      "label": "Earned from creating today",
-      "value": "{earned} / {cap}",
-      "note": "Creating problems and posts earns up to {cap} coins per day. Resets at 00:00 UTC."
-    },
     "redeem": {
       "title": "Redeem coins for ad-free time",
       "description": "Each coin converts to one day of ad-free browsing. Days stack on top of any ad-free time you already have.",
@@ -4115,8 +4112,6 @@
     "signInRequired": "Please sign in to continue",
     "profileUpdated": "Profile updated",
     "postCreated": "Posted successfully",
-    "coinsEarned": "{count, plural, one {# Coin earned!} other {# Coins earned!}}",
-    "coinsDailyCap": "You've reached today's coin earning limit. It resets at 00:00 UTC.",
     "gamePublished": "Game published",
     "gameClaimed": "The game is now linked to your account",
     "rateLimited": "You can only post once per day for each opening. Please try again later.",
@@ -4139,7 +4134,8 @@
     "editRequestSubmitted": "Edit suggestion submitted",
     "editRequestAccepted": "Edit suggestion accepted",
     "editRequestRejected": "Edit suggestion rejected",
-    "editRequestWithdrawn": "Edit suggestion withdrawn"
+    "editRequestWithdrawn": "Edit suggestion withdrawn",
+    "chunkCreated": "Chunk created"
   },
   "setupUsername": {
     "title": "Create Your Account",
@@ -5731,16 +5727,6 @@
     "continue": "Continue",
     "goBack": "Go Back",
     "invalidUrl": "The provided URL is invalid."
-  },
-  "thanks": {
-    "title": "Thanks!",
-    "sectionTitle": "Coins earned",
-    "continueButton": "View your post",
-    "viewPointsButton": "View your coins",
-    "genericMessage": "Thanks for your contribution.",
-    "coinsEarned": "Coins earned!",
-    "aboutCoinsLink": "How Coins work",
-    "dailyCapNote": "You've reached today's creation earning limit, so fewer coins were awarded. The limit resets at 00:00 UTC."
   },
   "authPrompt": {
     "title": "Sign in to continue",

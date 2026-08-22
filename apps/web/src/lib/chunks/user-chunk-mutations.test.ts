@@ -14,7 +14,6 @@ const mockTxFeedInsertValues = vi.fn();
 const mockNotifyFollowersOfNewChunk = vi.fn();
 const mockNotifyGameOwnerOfChunkLink = vi.fn();
 const mockFindChunkBySlug = vi.fn();
-const mockGrantPointsForPost = vi.fn();
 const mockClawbackPointsForPost = vi.fn();
 const mockLogActivityEvent = vi.fn();
 const mockRevalidatePath = vi.fn();
@@ -38,7 +37,6 @@ vi.mock('@/lib/notifications/game-chunk-link-notification', () => ({
 }));
 
 vi.mock('@/lib/points', () => ({
-  grantPointsForPost: (...args: unknown[]) => mockGrantPointsForPost(...args),
   clawbackPointsForPost: (...args: unknown[]) => mockClawbackPointsForPost(...args),
 }));
 
@@ -183,12 +181,6 @@ describe('createChunkEntry', () => {
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: TEST_USER_ID } });
     mockFindChunkBySlug.mockResolvedValue(null);
     mockInsertReturning.mockResolvedValue([{ id: TEST_CHUNK_ID, slug: TEST_SLUG }]);
-    mockGrantPointsForPost.mockResolvedValue({
-      status: 'granted',
-      pointEventId: 'pe-1',
-      amount: 3,
-      cappedDaily: false,
-    });
     mockIsUniqueViolation.mockReturnValue(false);
     mockLinkNewChunkToGameMove.mockResolvedValue(true);
   });
@@ -279,10 +271,9 @@ describe('createChunkEntry', () => {
     });
 
     expect(result).toMatchObject({ success: true, id: TEST_CHUNK_ID, slug: TEST_SLUG });
-    expect(mockGrantPointsForPost).toHaveBeenCalledWith(
-      expect.anything(),
-      TEST_USER_ID, // server-resolved id, not OTHER_USER_ID
-      { type: 'chunk', id: TEST_CHUNK_ID }
+    // server-resolved id, not OTHER_USER_ID
+    expect(mockInsertValues).toHaveBeenCalledWith(
+      expect.objectContaining({ userId: TEST_USER_ID })
     );
   });
 
@@ -297,50 +288,9 @@ describe('createChunkEntry', () => {
     expect(mockRevalidatePath).not.toHaveBeenCalled();
   });
 
-  it('returns the point grant amount when grantPointsForPost succeeds', async () => {
-    const { createChunkEntry } = await import('./user-chunk-mutations');
-    const result = await createChunkEntry(baseCreateInput);
-
-    expect(result).toMatchObject({
-      success: true,
-      pointGrant: { pointEventId: 'pe-1', amount: 3 },
-    });
-  });
-
-  it('flags coinCapped with a null pointGrant when fully capped out', async () => {
-    mockGrantPointsForPost.mockResolvedValue({ status: 'capped' });
-
-    const { createChunkEntry } = await import('./user-chunk-mutations');
-    const result = await createChunkEntry(baseCreateInput);
-
-    expect(result).toEqual({
-      success: true,
-      id: TEST_CHUNK_ID,
-      slug: TEST_SLUG,
-      pointGrant: null,
-      coinCapped: true,
-    });
-  });
-
-  it('reports no grant and no cap when the grant is skipped', async () => {
-    mockGrantPointsForPost.mockResolvedValue({ status: 'skipped' });
-
-    const { createChunkEntry } = await import('./user-chunk-mutations');
-    const result = await createChunkEntry(baseCreateInput);
-
-    expect(result).toEqual({
-      success: true,
-      id: TEST_CHUNK_ID,
-      slug: TEST_SLUG,
-      pointGrant: null,
-      coinCapped: false,
-    });
-  });
-
   it('inserts feedback topics when creating a draft with topics set', async () => {
     mockInsertReturning.mockResolvedValue([{ id: TEST_CHUNK_ID, slug: TEST_SLUG }]);
     mockFindChunkBySlug.mockResolvedValue(null);
-    mockGrantPointsForPost.mockResolvedValue({ status: 'skipped' });
 
     const { createChunkEntry } = await import('./user-chunk-mutations');
     await createChunkEntry({
@@ -362,7 +312,6 @@ describe('createChunkEntry', () => {
     // to be cleared by `publishChunkEntry` for these rows.
     mockInsertReturning.mockResolvedValue([{ id: TEST_CHUNK_ID, slug: TEST_SLUG }]);
     mockFindChunkBySlug.mockResolvedValue(null);
-    mockGrantPointsForPost.mockResolvedValue({ status: 'skipped' });
 
     const { createChunkEntry } = await import('./user-chunk-mutations');
     await createChunkEntry({
@@ -379,7 +328,6 @@ describe('createChunkEntry', () => {
     // requests" announcement; the publish moment later emits a second
     // feed_items row with kind=published from `publishChunkEntry`.
     mockInsertReturning.mockResolvedValue([{ id: TEST_CHUNK_ID, slug: TEST_SLUG }]);
-    mockGrantPointsForPost.mockResolvedValue({ status: 'skipped' });
 
     const { createChunkEntry } = await import('./user-chunk-mutations');
     await createChunkEntry({ ...baseCreateInput, status: 'draft' });
@@ -395,7 +343,6 @@ describe('createChunkEntry', () => {
 
   it('notifies followers with kind=created when a draft is submitted', async () => {
     mockInsertReturning.mockResolvedValue([{ id: TEST_CHUNK_ID, slug: TEST_SLUG }]);
-    mockGrantPointsForPost.mockResolvedValue({ status: 'skipped' });
 
     const { createChunkEntry } = await import('./user-chunk-mutations');
     await createChunkEntry({ ...baseCreateInput, status: 'draft' });
@@ -414,7 +361,6 @@ describe('createChunkEntry', () => {
     // the single feed row uses kind=published so the timeline doesn't
     // double-announce the same chunk.
     mockInsertReturning.mockResolvedValue([{ id: TEST_CHUNK_ID, slug: TEST_SLUG }]);
-    mockGrantPointsForPost.mockResolvedValue({ status: 'skipped' });
 
     const { createChunkEntry } = await import('./user-chunk-mutations');
     await createChunkEntry({ ...baseCreateInput, status: 'published' });
@@ -433,7 +379,6 @@ describe('createChunkEntry', () => {
     // mutation must avoid the no-op multi-VALUES INSERT in that case.
     mockInsertReturning.mockResolvedValue([{ id: TEST_CHUNK_ID, slug: TEST_SLUG }]);
     mockFindChunkBySlug.mockResolvedValue(null);
-    mockGrantPointsForPost.mockResolvedValue({ status: 'skipped' });
 
     const { createChunkEntry } = await import('./user-chunk-mutations');
     await createChunkEntry({
@@ -1015,7 +960,6 @@ describe('createChunkEntry — status', () => {
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: TEST_USER_ID } });
     mockFindChunkBySlug.mockResolvedValue(null);
     mockInsertReturning.mockResolvedValue([{ id: TEST_CHUNK_ID, slug: TEST_SLUG }]);
-    mockGrantPointsForPost.mockResolvedValue({ status: 'skipped' });
     mockIsUniqueViolation.mockReturnValue(false);
   });
 

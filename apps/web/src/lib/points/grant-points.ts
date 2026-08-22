@@ -2,14 +2,7 @@ import 'server-only';
 
 import type { DbTx } from '@/lib/db/types';
 
-import {
-  POST_CREATION_POINTS,
-  type PointPostEntity,
-  buildIdempotencyKey,
-  cappedCreationGrantAmount,
-  sourceForEntity,
-} from './constants';
-import { creationEarnedToday } from './daily-cap';
+import { type PointPostEntity, buildIdempotencyKey, sourceForEntity } from './constants';
 import {
   readEarnedBalanceForUpdate,
   readEarnedTotalForEntity,
@@ -17,84 +10,16 @@ import {
 } from './internal-ledger';
 
 /**
- * Outcome of a creation grant attempt.
- *
- * - `granted` — coins were credited. `cappedDaily` is true when the daily
- *   cap trimmed the award to a partial (but still positive) amount.
- * - `capped` — the daily cap is already exhausted, so nothing was credited
- *   (the user earned 0 today). Kept distinct from `skipped` so callers can
- *   tell the author the CAP — not ineligibility — is why they earned nothing.
- * - `skipped` — no grant for a non-cap reason (an idempotent retry).
- */
-export type PointGrantOutcome =
-  | { status: 'granted'; pointEventId: string; amount: number; cappedDaily: boolean }
-  | { status: 'capped' }
-  | { status: 'skipped' };
-
-/**
- * Grant points for a newly created UGC post — immediately spendable.
- *
- * Points are credited directly to `category='earned'`; there is no
- * maturation hold. The caller MUST be inside `db.transaction()` so the
- * entity row and the ledger row commit atomically.
- *
- * @design Daily creation cap
- *
- * The award is clamped to the user's remaining `DAILY_CREATION_POINT_CAP`
- * headroom for the current UTC day (`cappedCreationGrantAmount`). A
- * normal contributor earns the full `POST_CREATION_POINTS`; once the cap
- * is reached the grant shrinks to a partial amount and finally to `0`,
- * at which point this returns `{ status: 'capped' }` (no ledger row). When
- * the award is partial, the ledger row is stamped `metadata.cappedDaily`
- * and `cappedDaily: true` is returned so the caller can warn the author the
- * cap trimmed their reward.
- *
- * The cap read is not locked, so two creates racing at the cap boundary
- * may together exceed it by at most one `POST_CREATION_POINTS`. That is
- * acceptable — creation is rate-limited and the cap is an economic
- * guard, not a hard financial limit; locking the whole ledger per create
- * would not be worth it.
- *
- * Idempotency is enforced at the DB layer by the UNIQUE constraint on
- * `point_events.idempotency_key` — a retried call for the same entity is a
- * safe no-op (the conflict is swallowed and `null` is returned).
- */
-export async function grantPointsForPost(
-  tx: DbTx,
-  userId: string,
-  entity: PointPostEntity
-): Promise<PointGrantOutcome> {
-  const earnedToday = await creationEarnedToday(tx, userId);
-  const amount = cappedCreationGrantAmount(earnedToday);
-  if (amount <= 0) return { status: 'capped' };
-
-  const cappedDaily = amount < POST_CREATION_POINTS;
-  const result = await recordPointMovement(
-    tx,
-    {
-      userId,
-      delta: amount,
-      category: 'earned',
-      source: sourceForEntity(entity.type),
-      sourceId: entity.id,
-      idempotencyKey: buildIdempotencyKey('post_grant', entity),
-      metadata: {
-        entityType: entity.type,
-        ...(cappedDaily ? { cappedDaily: true } : {}),
-      },
-    },
-    { idempotent: true }
-  );
-
-  if (!result) return { status: 'skipped' };
-  return { status: 'granted', pointEventId: result.pointEventId, amount, cappedDaily };
-}
-
-/**
  * Reverse a post's creation point grant when the post is removed. Called
  * by **both** the author's own delete flows (`deletePuzzle` /
  * `deletePosition` / `deletePost`) and moderator / admin removal — a
  * removed contribution loses its grant either way.
+ *
+ * The grants themselves were retired in 2026-08 (likes are the only
+ * self-serve faucet now — see `POINT_SOURCES`), so for anything created
+ * since, this finds no grant and returns at the first read. It stays because
+ * the grants already paid out are still spendable, and deleting the content
+ * that earned one must still take it back.
  *
  * @design Capped at the live `earned` balance
  *

@@ -51,9 +51,10 @@ const ToastContext = createContext<ToastContextValue | undefined>(undefined);
  * Monotonic id source.
  *
  * `Date.now()` used to fill this role and collided whenever two toasts were
- * raised in the same millisecond — the routine case for a single navigation
- * carrying several params (`?coinsEarned=3&coinsCapped=1`), which the
- * container consumes in one pass. Two toasts sharing an id duplicate a React
+ * raised in the same millisecond — the routine case when a single navigation
+ * carried several toast params (the since-retired coin-reward toast travelled
+ * beside its daily-cap warning), which the container consumed in one pass.
+ * Two toasts sharing an id duplicate a React
  * key, and every removal path filters by id, so dismissing (or auto-hiding)
  * either one silently took the other's message down with it.
  *

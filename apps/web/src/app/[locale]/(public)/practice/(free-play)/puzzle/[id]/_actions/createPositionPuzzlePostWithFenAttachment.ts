@@ -31,10 +31,8 @@ export async function createPositionPuzzlePostWithFenAttachment(
     emitFeedItem: false,
     isSpoiler,
     topicAuthorId: position?.userId,
-    redirectPath: (postId, { toast }) =>
-      `/${locale}/practice/puzzle/${positionId}${
-        toast ? '?toast=post_created' : ''
-      }#post-${postId}`,
+    redirectPath: (postId) =>
+      `/${locale}/practice/puzzle/${positionId}?toast=post_created#post-${postId}`,
     formData,
   });
 }

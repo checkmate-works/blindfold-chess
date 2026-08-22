@@ -57,7 +57,7 @@ export default async function CoinsPage({ params, searchParams }: Props) {
 
   const user = await getAuthenticatedUser();
   const { page } = await searchParamsCache.parse(searchParams);
-  const [{ balance, history, currentPage, totalPages, dailyCap }, danAdFree] = await Promise.all([
+  const [{ balance, history, currentPage, totalPages }, danAdFree] = await Promise.all([
     getPointsPageData(user.id, page),
     hasDanTierRank(user.id),
   ]);
@@ -88,19 +88,6 @@ export default async function CoinsPage({ params, searchParams }: Props) {
           >
             {t('balance.aboutLink')}
           </Link>
-        </div>
-
-        {/* Daily creation-cap status */}
-        <div className="rounded-xl border border-border bg-card p-4">
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-sm font-medium text-foreground">{t('dailyCap.label')}</span>
-            <span className="text-sm font-medium text-foreground">
-              {t('dailyCap.value', { earned: dailyCap.earnedToday, cap: dailyCap.cap })}
-            </span>
-          </div>
-          <p className="mt-1 text-xs text-muted-foreground">
-            {t('dailyCap.note', { cap: dailyCap.cap })}
-          </p>
         </div>
 
         {/* Redeem control */}

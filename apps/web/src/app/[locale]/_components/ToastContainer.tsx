@@ -38,6 +38,7 @@ const TOAST_PARAM_CONFIG: Record<string, { messageKey: string; type: ToastType }
   position_updated: { messageKey: 'positionUpdated', type: 'success' },
   puzzle_updated: { messageKey: 'puzzleUpdated', type: 'success' },
   puzzle_deleted: { messageKey: 'puzzleDeleted', type: 'success' },
+  chunk_created: { messageKey: 'chunkCreated', type: 'success' },
   chunk_updated: { messageKey: 'chunkUpdated', type: 'success' },
   chunk_published: { messageKey: 'chunkPublished', type: 'success' },
   edit_request_submitted: { messageKey: 'editRequestSubmitted', type: 'success' },
@@ -64,13 +65,10 @@ export function ToastContainer({ locale: localeProp }: ToastContainerProps = {})
   const locale = localeProp ?? (params.locale as Locale);
   const processingToastRef = useRef(false);
 
-  // Handle toast query parameters (from server-side redirects / post-create
-  // navigations). Three shapes are supported:
-  //   ?toast=<key>        — fixed message keyed by TOAST_PARAM_CONFIG
-  //   ?coinsEarned=<n>    — UGC-reward toast rendered with the brand CoinIcon
-  //   ?coinsCapped=1      — daily-cap warning ("today's coin limit reached")
-  // All are consumed and stripped from the URL in a single history-neutral
-  // replace so the reward isn't re-shown on refresh or back-navigation.
+  // Handle the `?toast=<key>` query parameter (from server-side redirects /
+  // post-create navigations) — a fixed message keyed by TOAST_PARAM_CONFIG.
+  // It is consumed and stripped from the URL in a history-neutral replace so
+  // the message isn't re-shown on refresh or back-navigation.
   useEffect(() => {
     // Read the live URL, NOT the `searchParams` snapshot this effect closed
     // over. The snapshot belongs to the render that scheduled the effect, so
@@ -86,39 +84,11 @@ export function ToastContainer({ locale: localeProp }: ToastContainerProps = {})
     // effect run again when a later navigation brings new params.
     const liveParams = new URLSearchParams(window.location.search);
     const toastParam = liveParams.get('toast');
-    const coinsParam = liveParams.get('coinsEarned');
-    const cappedParam = liveParams.get('coinsCapped');
-    if (!toastParam && !coinsParam && !cappedParam) return;
+    if (!toastParam) return;
 
-    let handled = false;
-
-    if (toastParam) {
-      const config = TOAST_PARAM_CONFIG[toastParam];
-      if (config) {
-        showToast(tToast(config.messageKey), config.type);
-        handled = true;
-      }
-    }
-
-    if (coinsParam) {
-      const count = Number.parseInt(coinsParam, 10);
-      if (Number.isFinite(count) && count > 0) {
-        // Tapping the reward toast sends the author to their coin balance — a
-        // one-time discovery nudge to where earned coins live.
-        showToast(tToast('coinsEarned', { count }), 'success', {
-          icon: 'coin',
-          href: '/mypage/coins',
-        });
-        handled = true;
-      }
-    }
-
-    if (cappedParam === '1') {
-      showToast(tToast('coinsDailyCap'), 'warning');
-      handled = true;
-    }
-
-    if (!handled) return;
+    const config = TOAST_PARAM_CONFIG[toastParam];
+    if (!config) return;
+    showToast(tToast(config.messageKey), config.type);
 
     // Strip the consumed params from the URL without adding a history entry.
     //
@@ -140,8 +110,6 @@ export function ToastContainer({ locale: localeProp }: ToastContainerProps = {})
     // reporting the stale URL. `null` lets it copy its internals over itself.
     const url = new URL(window.location.href);
     url.searchParams.delete('toast');
-    url.searchParams.delete('coinsEarned');
-    url.searchParams.delete('coinsCapped');
     window.history.replaceState(null, '', url.pathname + url.search + url.hash);
   }, [searchParams, showToast, tToast]);
 

@@ -146,8 +146,8 @@ const GRANT_HREF_RESOLVERS = {
   topic_post_created: (sourceId, resolved) => {
     const meta = resolved.topicMetaById.get(sourceId);
     if (!meta) return null;
-    // Only `square` / `opening` topics earn grants (isPointEligibleTopicType);
-    // both use the plural-segment post route (`squares` / `openings`).
+    // Only `square` / `opening` topics ever earned grants; both use the
+    // plural-segment post route (`squares` / `openings`).
     return buildTopicPostPath(meta.topicType, meta.topicKey, sourceId);
   },
 } as const satisfies Record<PointSource, GrantHrefResolver>;

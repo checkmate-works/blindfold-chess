@@ -25,8 +25,8 @@ function renderToastApi() {
 }
 
 describe('ToastProvider', () => {
-  // A single navigation can raise several toasts in one pass — `?coinsEarned=3`
-  // plus `?coinsCapped=1` is a normal shape — so same-tick ids must stay
+  // A single navigation can raise several toasts in one pass (the retired
+  // coin-reward toast travelled beside its cap warning), so same-tick ids must stay
   // distinct. The clock is frozen because the old `Date.now()` id only
   // collided when both calls landed in the same millisecond, which real timing
   // makes intermittent.

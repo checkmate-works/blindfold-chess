@@ -18,30 +18,32 @@ export const POINT_CATEGORIES = ['earned', 'purchased', 'promotional'] as const;
 export type PointCategory = (typeof POINT_CATEGORIES)[number];
 
 /**
- * `point_events.source` values. Distinct per UGC trigger so clawback
- * queries can target a single (source, source_id) pair. Lifecycle stage
- * (created / clawed back) is encoded in the idempotency_key prefix, not in
- * `source` — see `buildIdempotencyKey`.
+ * `point_events.source` values of the retired UGC creation / publish grants.
+ *
+ * Until 2026-08 every create (problem, post, chunk) and publish (kata, game)
+ * minted a coin under one of these sources; likes are now the only
+ * self-serve faucet (`LIKE_GRANT_SOURCE`) and nothing writes a positive row
+ * with these sources any more. They stay declared because the rows they
+ * stamped still exist and are still read: the coin history classifies them
+ * as `post_grant`, the admin ledger filters on them, and — the one write
+ * that survives — `clawbackPointsForPost` reverses such a grant when its
+ * content is deleted, keyed on the same (source, source_id) pair. Stored
+ * data values: never rename a member.
  */
 export const POINT_SOURCES = [
   'puzzle_created',
   'position_memory_created',
   'topic_post_created',
   'chunk_created',
-  // Repertoire (Kata) and shared game rewards fire on *publish*, not create:
-  // a `building` repertoire is a private draft, and a game's public row is
-  // written at publish time. They still live in this array so they count
-  // toward the shared daily cap and classify as `post_grant` in history.
   'repertoire_published',
   'game_published',
 ] as const;
 export type PointSource = (typeof POINT_SOURCES)[number];
 
 /**
- * Entity types that earn points. Puzzle / position-memory / topic-post /
- * chunk earn on creation; `repertoire` earns when a building course is
- * published (→ public), and `game` earns when a shared game is published
- * (its public row is inserted). Map 1:1 with a `PointSource`.
+ * Entity types whose creation / publish used to earn a grant (see
+ * `POINT_SOURCES`). Map 1:1 with a `PointSource`; the pair is what the
+ * clawback on delete keys its lookup on.
  */
 export type PointPostEntityType =
   'puzzle' | 'position_memory' | 'topic_post' | 'chunk' | 'repertoire' | 'game';
@@ -90,78 +92,6 @@ export type PointLifecycleStage = (typeof POINT_LIFECYCLE_STAGES)[number];
 
 export function buildIdempotencyKey(stage: PointLifecycleStage, entity: PointPostEntity): string {
   return `${stage}:${entity.type}:${entity.id}`;
-}
-
-/**
- * Points awarded per UGC contribution (create for problems/posts/chunks,
- * publish for repertoires/games). Redemption is 1 pt → 1 day of ad_free
- * (set in the redemption flow); the reward stacks across the user's whole
- * submission history.
- *
- * Lives in code, not the DB: every `point_events` row carries its concrete
- * `delta`, so lowering this only affects future grants — coins already
- * awarded at a prior rate (and their `/mypage/coins` history) are untouched.
- */
-export const POST_CREATION_POINTS = 1;
-
-/**
- * Per-day ceiling on points a single user can earn from UGC contribution
- * (every `POINT_SOURCES` trigger — problem / post / chunk creation plus
- * repertoire / game publish), shared across all of them.
- *
- * @design Why a daily cap
- *
- * UGC contribution is rate-limited per action, but the limits are generous
- * enough that a scripted account could still mint dozens of points an
- * hour across the contribution surfaces. Since every point converts
- * 1:1 into an ad-free day, an uncapped create-faucet directly erodes ad
- * revenue. The cap holds the worst case to a fixed daily figure no
- * matter how the per-action rate limits are tuned; a genuine
- * contributor making a handful of problems a day never reaches it.
- *
- * The cap is measured as the **net** sum of creation-source deltas since
- * 00:00 UTC (see `creationEarnedToday`), so a same-day delete+recreate
- * nets correctly and a moderator clawback frees headroom. Like-coin and
- * admin grants are deliberately NOT counted against it — they are not
- * part of the self-serve create-faucet.
- *
- * Lives in code, not the DB: every `point_events` row carries its
- * concrete `delta`, so changing this only affects future grants.
- */
-export const DAILY_CREATION_POINT_CAP = 30;
-
-/**
- * Resolve how many points one UGC creation grant should award, given how
- * much the user has already earned from creation today. Clamps the
- * standard `POST_CREATION_POINTS` to the remaining daily headroom:
- * returns a partial amount when the cap is nearly reached and `0` once
- * it is hit. Pure — the caller supplies `earnedToday`.
- */
-export function cappedCreationGrantAmount(earnedToday: number): number {
-  const headroom = Math.max(0, DAILY_CREATION_POINT_CAP - earnedToday);
-  return Math.min(POST_CREATION_POINTS, headroom);
-}
-
-/**
- * `topic_posts.topicType` values that earn a point grant on creation.
- *
- * Scoped to the **standalone topic surfaces** (`square`, `opening`) only.
- * `position_memory` / `position_puzzle` posts are excluded because in
- * product language they are "comments on a problem" — the point grant for
- * those flows is earned by *creating the problem* via `createPosition` /
- * `createPuzzle`. `chunk` posts have always been excluded.
- *
- * Single source of truth for:
- *   1. `createPostBase` — gates `grantPointsForPost` on `topicType`.
- *   2. The `/faq` "Ways to earn points" surface.
- *
- * Add a topic type here together with its i18n label in every locale.
- */
-export const POINT_ELIGIBLE_TOPIC_TYPES = ['square', 'opening'] as const;
-export type PointEligibleTopicType = (typeof POINT_ELIGIBLE_TOPIC_TYPES)[number];
-
-export function isPointEligibleTopicType(v: string): v is PointEligibleTopicType {
-  return (POINT_ELIGIBLE_TOPIC_TYPES as readonly string[]).includes(v);
 }
 
 /**

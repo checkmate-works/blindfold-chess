@@ -23,7 +23,6 @@ const mockValidateForkSource = vi.fn();
 const mockValidateAndDedupeTagIds = vi.fn();
 const mockInsertPositionTags = vi.fn();
 const mockReplacePositionTags = vi.fn();
-const mockGrantPointsForPost = vi.fn();
 const mockClawbackPointsForPost = vi.fn();
 const mockNotifyFollowersOfNewPosition = vi.fn();
 const mockNotifyPositionForked = vi.fn();
@@ -56,7 +55,6 @@ vi.mock('@/lib/notifications/notification', () => ({
 }));
 
 vi.mock('@/lib/points', () => ({
-  grantPointsForPost: (...args: unknown[]) => mockGrantPointsForPost(...args),
   clawbackPointsForPost: (...args: unknown[]) => mockClawbackPointsForPost(...args),
 }));
 
@@ -145,7 +143,6 @@ describe('createPositionEntry', () => {
       deduped: { themeIds: undefined, chunkIds: undefined },
     });
     mockInsertReturning.mockResolvedValue([{ id: TEST_POSITION_ID }]);
-    mockGrantPointsForPost.mockResolvedValue({ status: 'skipped' });
     mockEvaluateRanksAfterCreate.mockResolvedValue([]);
   });
 
@@ -409,70 +406,6 @@ describe('createPositionEntry', () => {
     });
   });
 
-  it('returns the point grant when fully granted (no cap flag)', async () => {
-    mockGrantPointsForPost.mockResolvedValue({
-      status: 'granted',
-      pointEventId: 'pe-1',
-      amount: 3,
-      cappedDaily: false,
-    });
-
-    const { createPositionEntry } = await import('./user-position-mutations');
-    const granted = await createPositionEntry(baseCreateParams);
-    expect(granted).toMatchObject({
-      success: true,
-      pointGrant: { pointEventId: 'pe-1', amount: 3 },
-    });
-    expect(granted).toMatchObject({ coinCapped: false });
-    expect(mockGrantPointsForPost).toHaveBeenCalledWith(expect.anything(), TEST_USER_ID, {
-      type: 'position_memory',
-      id: TEST_POSITION_ID,
-    });
-  });
-
-  it('flags coinCapped alongside a partial grant (cappedDaily)', async () => {
-    mockGrantPointsForPost.mockResolvedValue({
-      status: 'granted',
-      pointEventId: 'pe-1',
-      amount: 1,
-      cappedDaily: true,
-    });
-
-    const { createPositionEntry } = await import('./user-position-mutations');
-    const result = await createPositionEntry(baseCreateParams);
-    expect(result).toMatchObject({
-      success: true,
-      pointGrant: { pointEventId: 'pe-1', amount: 1 },
-      coinCapped: true,
-    });
-  });
-
-  it('flags coinCapped with a null pointGrant when fully capped out', async () => {
-    mockGrantPointsForPost.mockResolvedValue({ status: 'capped' });
-
-    const { createPositionEntry } = await import('./user-position-mutations');
-    const capped = await createPositionEntry(baseCreateParams);
-    expect(capped).toEqual({
-      success: true,
-      id: TEST_POSITION_ID,
-      pointGrant: null,
-      coinCapped: true,
-    });
-  });
-
-  it('reports no grant and no cap when the grant is skipped', async () => {
-    mockGrantPointsForPost.mockResolvedValue({ status: 'skipped' });
-
-    const { createPositionEntry } = await import('./user-position-mutations');
-    const skipped = await createPositionEntry(baseCreateParams);
-    expect(skipped).toEqual({
-      success: true,
-      id: TEST_POSITION_ID,
-      pointGrant: null,
-      coinCapped: false,
-    });
-  });
-
   it('surfaces granted belt ranks from the post-commit evaluation', async () => {
     const grantedRank = { slug: '2kyu', name: '2kyu' };
     mockEvaluateRanksAfterCreate.mockResolvedValue([grantedRank]);
@@ -486,16 +419,12 @@ describe('createPositionEntry', () => {
 
   // Revalidation is deliberately absent — every practice route is dynamic and
   // the preview clients `router.push` to the new detail page on success.
-  it("uses the kind's own segment and point type, revalidating nothing", async () => {
+  it("uses the kind's own segment, revalidating nothing", async () => {
     const { createPositionEntry } = await import('./user-position-mutations');
     await createPositionEntry({ ...baseCreateParams, kind: 'puzzle' });
 
     expect(mockRevalidatePath).not.toHaveBeenCalled();
     expect(mockInsertValues).toHaveBeenCalledWith(expect.objectContaining({ type: 'puzzle' }));
-    expect(mockGrantPointsForPost).toHaveBeenCalledWith(expect.anything(), TEST_USER_ID, {
-      type: 'puzzle',
-      id: TEST_POSITION_ID,
-    });
   });
 });
 

@@ -734,19 +734,18 @@
     "title": "Monedas",
     "unit": "monedas",
     "hero": {
-      "tagline": "Ganas Monedas al publicar en temas y crear problemas."
+      "tagline": "Cada «me gusta» en el contenido que publicas te da una moneda."
     },
     "loop": {
-      "step1Title": "Contribuye",
-      "step1Body": "Crea un problema o una publicación",
-      "step2Title": "Gana Monedas",
-      "step2Body": "Cada contribución suma",
-      "step3Title": "Gasta en ventajas",
-      "step3Body": "Tiempo sin anuncios o partidas"
+      "step1Title": "Publica",
+      "step1Body": "Comparte una partida, un problema, un Kata",
+      "step2Title": "Recibe «me gusta»",
+      "step2Body": "Cada uno suma una moneda",
+      "step3Title": "Gástalas en ventajas",
+      "step3Body": "Sin anuncios, partidas, revisiones IA"
     },
     "earn": {
       "heading": "Cómo ganar Monedas",
-      "perContribution": "por cada publicación · hasta {cap} al día",
       "chips": {
         "puzzle": "Puzzle",
         "positionMemory": "Memoria de posición",
@@ -755,8 +754,8 @@
         "repertoire": "Kata",
         "game": "Partida"
       },
-      "likeNote1": "Cada Me gusta que recibe tu contenido te da una Moneda (no es inmediato: se otorga una vez al día en lote).",
-      "likeNote2": "Publica un tema o crea un problema una vez, y seguirá generando Monedas."
+      "perLike": "por «me gusta» · se acreditan una vez al día",
+      "note": "El contenido que ya publicaste sigue ganando con cada nuevo «me gusta». Los «me gusta» a tu propio contenido no cuentan."
     },
     "spend": {
       "heading": "Para qué sirven las Monedas",
@@ -764,13 +763,16 @@
       "adFreeRate": "1 Moneda = {days, plural, one {# día sin anuncios} other {# días sin anuncios}}",
       "maiaTitle": "Jugar contra Maia",
       "maiaRate": "{cost, plural, one {# Moneda} other {# Monedas}} = 1 partida",
-      "maiaNote": "Maia es una IA de red neuronal que juega con un estilo humano."
+      "maiaNote": "Maia es una IA de red neuronal que juega con un estilo humano.",
+      "aiReviewTitle": "Recibe una revisión IA",
+      "aiReviewRate": "{cost, plural, one {# moneda} other {# monedas}} = 1 revisión",
+      "aiReviewNote": "Los suscriptores generan revisiones sin gastar monedas."
     },
     "facts": {
-      "instant": "Las Monedas que ganas se pueden usar de inmediato, sin esperas.",
-      "deleteReversal": "Si eliminas tu propio contenido, las Monedas que generó se revierten, pero las Monedas que ya gastaste nunca se recuperan.",
-      "balance": "Tu saldo y tu historial están siempre disponibles en Mi Página.",
-      "dailyCap": "Crear contenido otorga hasta {cap} monedas por día (se reinicia a las 00:00 UTC)."
+      "batch": "Las monedas por «me gusta» no son inmediatas: se acreditan una vez al día.",
+      "instant": "Una vez acreditadas, las monedas se pueden usar al instante.",
+      "selfLike": "Dar «me gusta» a tu propio contenido no da monedas.",
+      "balance": "Tu saldo e historial están siempre disponibles en Mi página."
     },
     "cta": {
       "viewBalance": "Ver mi saldo de Monedas",
@@ -829,8 +831,8 @@
       },
       "adFreeBenefits": {
         "question": "¿Cómo se obtienen las monedas y cómo se convierten en tiempo sin anuncios?",
-        "answer": "Cada contribución elegible otorga monedas, utilizables de inmediato. 1 moneda canjea 1 día sin anuncios (el canje estará disponible próximamente).",
-        "earnSummary": "Publicar contenido válido (problemas, temas, chunks, Kata y partidas) otorga {amount, plural, one {# Moneda} other {# Monedas}} por cada uno, hasta {cap} al día. Los Me gusta y las concesiones del personal no cuentan para ese límite (que se reinicia a las 00:00 UTC)."
+        "answer": "Cada «me gusta» en una partida, problema, Kata, chunk o publicación que hayas publicado da 1 moneda (se acreditan una vez al día). 1 moneda equivale a 1 día sin anuncios, y las monedas también pagan partidas contra Maia y revisiones IA.",
+        "earnSummary": "Los «me gusta» a tu propio contenido no cuentan. Los suscriptores generan revisiones IA sin gastar monedas."
       }
     }
   },
@@ -3896,11 +3898,6 @@
       "unit": "monedas",
       "aboutLink": "Cómo funcionan las Monedas"
     },
-    "dailyCap": {
-      "label": "Ganado hoy por crear",
-      "value": "{earned} / {cap}",
-      "note": "Crear problemas y publicaciones otorga hasta {cap} monedas por día. Se reinicia a las 00:00 UTC."
-    },
     "redeem": {
       "title": "Canjear monedas por tiempo sin anuncios",
       "description": "Cada moneda se convierte en un día sin anuncios. Los días se suman al tiempo sin anuncios que ya tengas.",
@@ -4115,8 +4112,6 @@
     "signInRequired": "Por favor, inicia sesión para continuar",
     "profileUpdated": "Perfil actualizado",
     "postCreated": "Publicado correctamente",
-    "coinsEarned": "{count, plural, one {¡# Moneda obtenida!} other {¡# Monedas obtenidas!}}",
-    "coinsDailyCap": "Has alcanzado el límite de monedas de hoy. Se reinicia a las 00:00 UTC.",
     "gamePublished": "Partida publicada",
     "gameClaimed": "La partida ya está vinculada a tu cuenta",
     "rateLimited": "Solo puedes publicar una vez al día para cada apertura. Por favor, inténtalo más tarde.",
@@ -4139,7 +4134,8 @@
     "editRequestSubmitted": "Sugerencia de edición enviada",
     "editRequestAccepted": "Sugerencia de edición aceptada",
     "editRequestRejected": "Sugerencia de edición rechazada",
-    "editRequestWithdrawn": "Sugerencia de edición retirada"
+    "editRequestWithdrawn": "Sugerencia de edición retirada",
+    "chunkCreated": "Chunk creado"
   },
   "setupUsername": {
     "title": "Crea tu Cuenta",
@@ -5731,16 +5727,6 @@
     "continue": "Continuar",
     "goBack": "Volver",
     "invalidUrl": "La URL proporcionada es inválida."
-  },
-  "thanks": {
-    "title": "¡Gracias!",
-    "sectionTitle": "Monedas obtenidas",
-    "continueButton": "Ver tu publicación",
-    "viewPointsButton": "Ver tus monedas",
-    "genericMessage": "Gracias por tu contribución.",
-    "coinsEarned": "¡Monedas obtenidas!",
-    "aboutCoinsLink": "Cómo funcionan las Monedas",
-    "dailyCapNote": "Has alcanzado el límite de monedas por creación de hoy, así que se otorgaron menos monedas. El límite se reinicia a las 00:00 UTC."
   },
   "authPrompt": {
     "title": "Inicia sesión para continuar",

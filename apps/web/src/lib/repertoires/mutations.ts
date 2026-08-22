@@ -16,11 +16,7 @@ import {
 import { countRows } from '@/lib/db/list-query';
 import type { DbTx } from '@/lib/db/types';
 import type { RepertoireVisibility } from '@/lib/points';
-import {
-  chargeRepertoireVisibility,
-  clawbackPointsForPost,
-  grantPointsForPost,
-} from '@/lib/points';
+import { chargeRepertoireVisibility, clawbackPointsForPost } from '@/lib/points';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { isValidUUID } from '@/lib/validations/uuid';
 
@@ -678,10 +674,7 @@ export async function createRepertoireEntry(
         openingIds: input.openingIds ?? [],
       });
 
-      if (visibility === 'public') {
-        // Same reward the old building→public publish gave.
-        await grantPointsForPost(tx, user.id, { type: 'repertoire', id: repertoire.id });
-      } else {
+      if (visibility !== 'public') {
         const charge = await chargeRepertoireVisibility(tx, {
           userId: user.id,
           repertoireId: repertoire.id,
@@ -762,12 +755,6 @@ export async function publishRepertoireEntry(id: string): Promise<PublishReperto
       .update(repertoires)
       .set({ status: 'public', publishedAt: new Date() })
       .where(eq(repertoires.id, id));
-
-    // Reward the public contribution — immediately spendable, clamped to the
-    // shared daily creation cap. Idempotent per (source, id): the `building`
-    // guard above already blocks a second publish, and the ledger's UNIQUE
-    // idempotency key is the hard backstop.
-    await grantPointsForPost(tx, user.id, { type: 'repertoire', id });
   });
 
   return { success: true };
@@ -845,10 +832,6 @@ export async function changeRepertoireVisibility(params: {
         .update(repertoires)
         .set({ status: params.target, publishedAt })
         .where(eq(repertoires.id, params.repertoireId));
-
-      if (params.target === 'public') {
-        await grantPointsForPost(tx, user.id, { type: 'repertoire', id: params.repertoireId });
-      }
 
       return { ok: true, charged: charge.charged };
     }

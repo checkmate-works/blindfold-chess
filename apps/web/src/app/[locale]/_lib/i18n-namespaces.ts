@@ -34,7 +34,6 @@ export const NAMESPACE_CLASSIFICATION = {
   company: 'server',
   landing: 'server',
   licenses: 'server',
-  thanks: 'server',
   // Mypage sub-pages rendered as Server Components (getTranslations only).
   MypageBenefits: 'server',
   MypageBenefitHistory: 'server',

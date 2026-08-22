@@ -150,13 +150,13 @@ vi.mock('./PlaySettingsIndicator', () => ({
   PlaySettingsIndicator: () => <div data-testid="play-settings" />,
 }));
 
-// Pulls in next-intl routing (Link) and the Stockfish generation hook; its
-// own behaviour is covered by AiReviewPanel.test.tsx. Props are recorded so
-// the page's half of the contract — what it hands the panel back after the
-// panel has been unmounted and re-created — can be asserted here.
+// Pulls in next-intl routing (Link); its own behaviour is covered by
+// AiReviewPanel.test.tsx. Props are recorded so the page's half of the
+// contract — what it hands the panel back after the panel has been unmounted
+// and re-created — can be asserted here.
 type AiPanelProps = {
-  initialReview: unknown;
-  onReviewGenerated?: (review: unknown) => void;
+  review: unknown;
+  generationState: unknown;
 };
 let aiPanelProps: AiPanelProps | null = null;
 vi.mock('./AiReviewPanel', () => ({
@@ -164,6 +164,13 @@ vi.mock('./AiReviewPanel', () => ({
     aiPanelProps = props;
     return <div data-testid="ai-review-panel" />;
   },
+}));
+
+// The Stockfish sweep + job polling live in the page (see GameReview); the
+// tests drive its state directly.
+let mockGenerationState: { phase: string; review?: unknown } = { phase: 'idle' };
+vi.mock('../_hooks/use-ai-review-generation', () => ({
+  useAiReviewGeneration: () => ({ state: mockGenerationState, start: vi.fn(), cancel: vi.fn() }),
 }));
 
 type ReplayProps = Parameters<typeof GameReview>[0];
@@ -211,6 +218,7 @@ function baseProps(overrides: Partial<ReplayProps> = {}): ReplayProps {
 }
 
 beforeEach(() => {
+  mockGenerationState = { phase: 'idle' };
   mockMoves = ['e4', 'e5', 'Nf3'];
   mockNav = {
     currentPosition: -2,
@@ -344,7 +352,7 @@ describe('GameReview — overview tabs on a move position', () => {
     mockStats = { totalMoves: 3 };
     mockNav.currentPosition = 0;
     return baseProps({
-      aiReview: { initial: null, generation: { kind: 'allowed' } },
+      aiReview: { initial: null, generation: { kind: 'allowed' }, pendingJob: null },
       social: liveSocial({
         isAuthenticated: true,
         comments: [{ id: 'c1', ply: 1, deletedAt: null } as LiveSocial['comments'][number]],
@@ -392,18 +400,21 @@ describe('GameReview — overview tabs on a move position', () => {
       content: { momentComments: [] },
       createdAt: '2026-08-16T00:00:00.000Z',
     } as unknown as NonNullable<ReplayProps['aiReview']>['initial'];
-    render(<GameReview {...onMove()} />);
+    const props = onMove();
+    const { rerender } = render(<GameReview {...props} />);
 
     fireEvent.click(screen.getByRole('tab', { name: 'aiReview.tab' }));
-    expect(aiPanelProps?.initialReview).toBeNull();
+    expect(aiPanelProps?.review).toBeNull();
 
-    act(() => aiPanelProps!.onReviewGenerated!(generated));
+    // The page's generation run finishes — the hook reports `done`.
+    mockGenerationState = { phase: 'done', review: generated };
+    act(() => rerender(<GameReview {...props} />));
 
     fireEvent.click(screen.getByRole('tab', { name: 'overview.summaryTab' }));
     expect(screen.queryByTestId('ai-review-panel')).toBeNull();
     fireEvent.click(screen.getByRole('tab', { name: 'aiReview.tab' }));
 
-    expect(aiPanelProps?.initialReview).toBe(generated);
+    expect(aiPanelProps?.review).toBe(generated);
   });
 
   // The tab is React state, so leaving the page (a glossary term from a review
@@ -460,6 +471,7 @@ describe('GameReview — AI review grade on the board', () => {
           content: { momentComments: [] },
         } as unknown as NonNullable<ReplayProps['aiReview']>['initial'],
         generation: null,
+        pendingJob: null,
       },
     });
 
@@ -507,7 +519,7 @@ describe('GameReview — AI review grade on the board', () => {
         isAuthenticated: true,
         comments: [{ id: 'c1', ply: position, deletedAt: null } as LiveSocial['comments'][number]],
       }),
-      aiReview: { initial: REVIEWED, generation: null },
+      aiReview: { initial: REVIEWED, generation: null, pendingJob: null },
     });
   };
 

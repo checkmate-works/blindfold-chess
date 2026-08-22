@@ -4,7 +4,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
-import { grantPointsForPost } from '@/lib/points';
 import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
 import { logActivityEvent } from '@/lib/users/activity-log';
 
@@ -62,10 +61,7 @@ vi.mock('@/lib/security/rate-limit');
 vi.mock('next/navigation');
 
 vi.mock('@/lib/points', () => ({
-  grantPointsForPost: vi.fn().mockResolvedValue({ pointEventId: 'pe-1', amount: 3 }),
   clawbackPointsForPost: vi.fn().mockResolvedValue(undefined),
-  isPointEligibleTopicType: (v: string) => v === 'square' || v === 'opening',
-  POST_CREATION_POINTS: 3,
 }));
 
 vi.mock('@/lib/chunks/queries', () => ({
@@ -139,22 +135,6 @@ describe('createChunkPost', () => {
       expect(vi.mocked(redirect)).toHaveBeenCalledWith(
         `/ja/chunks/${testSlug}?toast=post_created#post-${generatedPostId}`
       );
-    });
-  });
-
-  describe('grant policy (chunks should not earn points)', () => {
-    beforeEach(() => {
-      mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
-      mockIsUserBanned.mockResolvedValue(false);
-      mockInsertReturning.mockResolvedValue([{ id: generatedPostId }]);
-    });
-
-    it('should NOT call grantPointsForPost for chunk posts', async () => {
-      await expect(createChunkPost('en', testSlug, {}, makeFormData('Nice chunk'))).rejects.toThrow(
-        'NEXT_REDIRECT'
-      );
-
-      expect(grantPointsForPost).not.toHaveBeenCalled();
     });
   });
 

@@ -10,7 +10,6 @@ import { useRouter } from '@/i18n/routing';
 import { flushSync } from 'react-dom';
 
 import { localizeActionError } from '@/lib/i18n/localize-action-error';
-import { buildCoinToastParams } from '@/lib/points/coin-toast-params';
 import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
 
 import { SectionTitle } from '@/app/[locale]/_components';
@@ -67,8 +66,8 @@ type Props =
  *    decision is actually made.
  * 3. Confirm →
  *      - create: `createChunk`; on success clear the draft and navigate to
- *        `/chunks/<slug>`, appending `?coinsEarned=N` to surface the
- *        coin-reward toast when a point grant fired.
+ *        `/chunks/<slug>` with `?toast=chunk_created` (or back to the game
+ *        move the chunk was authored from, when that link landed).
  *      - edit: `updateChunk` (via `saveChunkEdit`), then `publishChunk`
  *        when the "Save as draft" toggle was off (`draft.status`); on
  *        success clear the draft and navigate to the (possibly renamed)
@@ -181,9 +180,6 @@ export function ChunkPreviewClient(props: Props) {
       clearChunkDraft();
       flushSync(() => setSubmitted(true));
 
-      // An uncapped no-grant create navigates silently, as before.
-      const toastQs = buildCoinToastParams(result).toString();
-
       // When the chunk was authored from a game move and the link landed,
       // return the author to that move — the chunk is visible there, in the
       // context that prompted it, and the round trip they started is closed.
@@ -194,14 +190,12 @@ export function ChunkPreviewClient(props: Props) {
         // The replay's deep-link fragment counts half-moves from 1
         // (`parseHashPly`), while `ply` — like `game_chunks.ply` — is a
         // 0-based index into `games.moves[]`.
-        router.push(
-          `/games/shared/${gameId}${toastQs ? `?${toastQs}` : ''}#${ply + 1}` as '/games/shared/[id]'
-        );
+        router.push(`/games/shared/${gameId}#${ply + 1}` as '/games/shared/[id]');
         return;
       }
 
       // Otherwise land straight on the created chunk so the author can verify it.
-      router.push(`/chunks/${result.slug}${toastQs ? `?${toastQs}` : ''}` as '/chunks/[slug]');
+      router.push(`/chunks/${result.slug}?toast=chunk_created` as '/chunks/[slug]');
     } catch {
       setError(mode === 'edit' ? t('saveError') : t('createError'));
     } finally {

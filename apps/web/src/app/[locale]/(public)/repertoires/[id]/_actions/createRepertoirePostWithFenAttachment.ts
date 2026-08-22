@@ -31,8 +31,8 @@ export async function createRepertoirePostWithFenAttachment(
     emitFeedItem: false,
     isSpoiler,
     topicAuthorId: repertoire?.userId,
-    redirectPath: (postId, { toast }) =>
-      `/${locale}/repertoires/${repertoireId}${toast ? '?toast=post_created' : ''}#post-${postId}`,
+    redirectPath: (postId) =>
+      `/${locale}/repertoires/${repertoireId}?toast=post_created#post-${postId}`,
     formData,
   });
 }
