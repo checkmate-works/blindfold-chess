@@ -7,6 +7,8 @@ export const CATEGORY_STYLES = {
   opening: { color: 'bg-muted/50 text-muted-foreground', icon: '📖' },
   structure: { color: 'bg-accent/50 text-accent-foreground', icon: '♟' },
   general: { color: 'bg-card text-card-foreground', icon: '📋' },
+  /** Coaching rules the AI review links a moment to — see `@/lib/ai-review/principles`. */
+  principle: { color: 'bg-primary/10 text-primary', icon: '💡' },
 } as const;
 
 export type GlossaryCategory = keyof typeof CATEGORY_STYLES;

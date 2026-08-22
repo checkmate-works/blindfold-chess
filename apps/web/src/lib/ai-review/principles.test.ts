@@ -1,7 +1,16 @@
-import en from '@/messages/en.json';
 import { describe, expect, it } from 'vitest';
 
-import { PRINCIPLES, PRINCIPLE_IDS, isPrincipleId } from './principles';
+import { termsPrinciples } from '@/lib/db/data/terms/principles';
+import { slugifyTerm } from '@/lib/glossary/slug';
+
+import type { Principle } from './principles';
+import {
+  PRINCIPLES,
+  PRINCIPLE_GLOSSARY_SLUGS,
+  PRINCIPLE_IDS,
+  glossarySlugOf,
+  isPrincipleId,
+} from './principles';
 
 describe('principles', () => {
   it('has unique ids and ends with the escape hatch', () => {
@@ -9,23 +18,26 @@ describe('principles', () => {
     expect(PRINCIPLE_IDS.at(-1)).toBe('other');
   });
 
-  it('has a display name and definition for every principle except "other"', () => {
-    const messages = en.sharedGames.aiReview.principles as Record<
-      string,
-      { name: string; definition: string }
-    >;
-    for (const { id } of PRINCIPLES) {
-      if (id === 'other') continue;
-      expect(messages[id]?.name, id).toBeTruthy();
-      expect(messages[id]?.definition, id).toBeTruthy();
+  it('is backed one-to-one by the glossary seed, which names it by slug', () => {
+    const seeded = new Map(termsPrinciples.map((t) => [slugifyTerm(t.term), t]));
+    for (const p of PRINCIPLES as readonly Principle[]) {
+      if (p.id === 'other') {
+        expect(p.glossarySlug).toBeUndefined();
+        continue;
+      }
+      const term = seeded.get(p.glossarySlug ?? '');
+      expect(term, `${p.id} → ${p.glossarySlug}`).toBeDefined();
+      expect(term?.category).toBe('principle');
+      expect(term?.definitionEn, p.id).toBeTruthy();
+      expect(term?.termJa, p.id).toBeTruthy();
     }
-    // And nothing stale in the other direction.
-    expect(Object.keys(messages).sort()).toEqual(
-      PRINCIPLE_IDS.filter((id) => id !== 'other').sort()
-    );
+    // And no seeded principle without a catalogue entry behind it.
+    expect([...seeded.keys()].sort()).toEqual([...PRINCIPLE_GLOSSARY_SLUGS].sort());
   });
 
-  it('guards ids at runtime', () => {
+  it('resolves a slug per id', () => {
+    expect(glossarySlugOf('recount_after_captures')).toBe('recount-after-captures');
+    expect(glossarySlugOf('other')).toBeNull();
     expect(isPrincipleId('other')).toBe(true);
     expect(isPrincipleId('be_awesome')).toBe(false);
   });
