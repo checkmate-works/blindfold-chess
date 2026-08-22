@@ -1,19 +1,20 @@
 'use server';
 
+import { after } from 'next/server';
+
 import { SUPPORTED_LOCALES } from '@/config';
 import { z } from 'zod';
 
 import { resolveAiReviewGenerationState } from '@/lib/ai-review/entitlement';
-import { generateReview } from '@/lib/ai-review/generate-review';
-import { createOpenAiClient, isLlmConfigured } from '@/lib/ai-review/openai';
+import { enqueueAiReviewJob, findLiveAiReviewJob, processAiReviewJob } from '@/lib/ai-review/jobs';
+import { isLlmConfigured } from '@/lib/ai-review/openai';
 import { dbAiReviewStore } from '@/lib/ai-review/queries';
 // Response and error types live in @/lib/ai-review/types — a "use server"
 // file must not re-export types (see the Server Actions convention).
-import type { GenerateAiReviewResponse } from '@/lib/ai-review/types';
+import type { RequestAiReviewResponse } from '@/lib/ai-review/types';
 import { authenticateAndCheckBan } from '@/lib/auth';
 import { getGameById } from '@/lib/db/games-read';
 import { EVAL_SCORE_LIMIT } from '@/lib/games/analysis/types';
-import { detectGameOpening } from '@/lib/openings/detect-game-opening';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/security/rate-limit';
 import { handleServerActionError } from '@/lib/server-action-error';
 import { UUID_RE } from '@/lib/validations/uuid';
@@ -37,18 +38,20 @@ const inputSchema = z.object({
   evaluations: z.array(evaluationSchema).max(500),
 });
 
-export type GenerateAiReviewInput = z.infer<typeof inputSchema>;
+export type RequestAiReviewInput = z.infer<typeof inputSchema>;
 
 /**
- * Generate (or fetch, when already cached) the AI coach review for a shared
- * game. Restricted to the game's author with an active subscription (see
- * `resolveAiReviewGenerationState`) and tightly rate-limited on top — this is
- * the only path that can spend LLM tokens. See `@/lib/ai-review` for the
+ * Request the AI coach review for a shared game: return it when it is already
+ * cached, otherwise accept the request — charging the author's coin unless a
+ * subscription covers it — and hand the generation to a background job whose
+ * result arrives by notification. Restricted to the game's author (see
+ * `resolveAiReviewGenerationState`) and rate-limited on top. See
+ * `@/lib/ai-review/jobs` for the job lifecycle and `@/lib/ai-review` for the
  * pipeline and the engine/LLM authorship split.
  */
-export async function generateAiReviewAction(
-  input: GenerateAiReviewInput
-): Promise<GenerateAiReviewResponse> {
+export async function requestAiReviewAction(
+  input: RequestAiReviewInput
+): Promise<RequestAiReviewResponse> {
   try {
     const parsed = inputSchema.safeParse(input);
     if (!parsed.success) {
@@ -75,28 +78,34 @@ export async function generateAiReviewAction(
       return { success: false, error: 'invalid_input' };
     }
 
-    // Cache check BEFORE both the entitlement refusal and the rate limit:
-    // fetching an existing review is free, must not consume (or be blocked by)
-    // the generation budget, and must not stop working for an author whose
-    // subscription has since lapsed — the review is already published.
+    // Cache check BEFORE the entitlement refusal and the rate limit: fetching
+    // an existing review is free, must not consume (or be blocked by) the
+    // generation budget, and must not stop working for an author who can no
+    // longer pay — the review is already published.
     const cached = await dbAiReviewStore.find(game.id, locale);
     if (cached) {
-      return { success: true, review: cached };
+      return { success: true, status: 'ready', review: cached };
     }
 
-    // Everything below spends. `allowed` is the only state that may proceed:
-    // a future `payable` state must add its own branch (charge, then
-    // generate) rather than inherit this refusal, but until it exists,
-    // refusing anything unrecognised is the fail-closed default.
-    if (access.kind !== 'allowed') {
-      return { success: false, error: 'subscription_required' };
+    // Likewise a job already in flight (a double click, a second tab): report
+    // it as accepted rather than charging again or refusing.
+    const live = await findLiveAiReviewJob(game.id);
+    if (live) {
+      return { success: true, status: 'queued', job: live };
+    }
+
+    // Everything below spends. Only `allowed` (subscription) and `payable`
+    // (enough coins) may proceed; the advisory balance check here is
+    // re-asserted under a row lock by the charge itself.
+    if (access.kind === 'insufficient_balance') {
+      return { success: false, error: 'insufficient_balance' };
     }
 
     // The UI hides the tab when no key is configured, but a stale page (or a
     // direct POST) can still land here. Refuse BEFORE the rate limit so a
     // deployment-side misconfiguration cannot eat the caller's daily budget.
     if (!isLlmConfigured()) {
-      console.error('[generateAiReviewAction] OPENAI_API_KEY is not set');
+      console.error('[requestAiReviewAction] OPENAI_API_KEY is not set');
       return { success: false, error: 'llm_error' };
     }
 
@@ -105,27 +114,26 @@ export async function generateAiReviewAction(
       return { success: false, error: 'rate_limited' };
     }
 
-    const opening = await detectGameOpening({
-      moves: game.moves,
-      startingFen: game.startingFen,
-    });
-
-    const result = await generateReview({
+    const enqueued = await enqueueAiReviewJob({
       game,
       locale,
       userId: auth.user.id,
       evaluations,
-      openingName: opening?.name ?? null,
-      llm: createOpenAiClient(),
-      store: dbAiReviewStore,
+      charge: access.kind === 'payable',
     });
-
-    if (!result.ok) {
-      return { success: false, error: result.error };
+    if (!enqueued.ok) {
+      return { success: false, error: enqueued.error };
     }
-    return { success: true, review: result.review };
+
+    // The work itself runs once this response is out (see the jobs module for
+    // why `after()` is enough here and what the cron sweeper covers). A job
+    // that was already queued has its own worker.
+    if (!enqueued.alreadyQueued) {
+      after(() => processAiReviewJob(enqueued.job.id));
+    }
+    return { success: true, status: 'queued', job: enqueued.job };
   } catch (error) {
-    handleServerActionError(error, '[generateAiReviewAction]');
+    handleServerActionError(error, '[requestAiReviewAction]');
     return { success: false, error: 'unexpected_error' };
   }
 }
