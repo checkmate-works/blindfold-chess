@@ -1,9 +1,12 @@
 import { cache } from 'react';
 
+import { unstable_cache } from 'next/cache';
+
 import { STARTING_FEN } from '@blindfold-chess/features/chess-core/fen';
 import type { Side } from '@blindfold-chess/types';
 import { and, asc, count, desc, eq, inArray, isNull, ne } from 'drizzle-orm';
 
+import { REPERTOIRE_CATALOG_CACHE_TAG } from '@/lib/cache-tags';
 import type { Repertoire, RepertoireLine } from '@/lib/db';
 import {
   AUTHOR_PROFILE_COLUMNS,
@@ -175,16 +178,20 @@ export async function listPublicRepertoiresForOpening(
  * show the true total even though the panel itself renders only the first page
  * of cards.
  */
-export async function countPublicRepertoiresForOpening(openingSlug: string): Promise<number> {
-  const [row] = await db
-    .select({ value: count() })
-    .from(repertoireOpenings)
-    .innerJoin(chessOpenings, eq(chessOpenings.id, repertoireOpenings.openingId))
-    .innerJoin(repertoires, eq(repertoires.id, repertoireOpenings.repertoireId))
-    .where(publicRepertoiresForOpening(openingSlug));
+export const countPublicRepertoiresForOpening = unstable_cache(
+  async (openingSlug: string): Promise<number> => {
+    const [row] = await db
+      .select({ value: count() })
+      .from(repertoireOpenings)
+      .innerJoin(chessOpenings, eq(chessOpenings.id, repertoireOpenings.openingId))
+      .innerJoin(repertoires, eq(repertoires.id, repertoireOpenings.repertoireId))
+      .where(publicRepertoiresForOpening(openingSlug));
 
-  return row?.value ?? 0;
-}
+    return row?.value ?? 0;
+  },
+  ['public-repertoire-count-for-opening'],
+  { tags: [REPERTOIRE_CATALOG_CACHE_TAG], revalidate: 3600 }
+);
 
 /**
  * Every live public repertoire, newest-published first — the /repertoires
@@ -220,10 +227,26 @@ export async function listPublicRepertoires(
   return toCards(rows);
 }
 
-/** Total live public repertoires (optionally for one side) — pagination denominator. */
-export async function countPublicRepertoires(side?: Side): Promise<number> {
-  return countRows(repertoires, publicRepertoiresForSide(side));
-}
+/**
+ * Total live public repertoires (optionally for one side) — pagination denominator.
+ *
+ * @design Why the catalog COUNTs sit in the Data Cache
+ * Both this and {@link countPublicRepertoiresForOpening} are denominators
+ * read by every render of `/repertoires` and of each opening topic page, and
+ * each read spent a pooled connection. The session pooler's budget is shared
+ * across all warm instances, so a crawler sweeping those pages in four
+ * locales had the COUNTs refused with `EMAXCONNSESSION`; `/repertoires`
+ * answered 500 (Sentry BLINDFOLD-CHESS-5T / -5V, 2026-08-22). The counts
+ * change at runtime, so correctness rests on the writers: every mutation in
+ * `./mutations.ts` that can change which courses are public, or which
+ * openings they hang off, expires {@link REPERTOIRE_CATALOG_CACHE_TAG}
+ * immediately. The hourly timer only covers writes outside that module.
+ */
+export const countPublicRepertoires = unstable_cache(
+  async (side?: Side): Promise<number> => countRows(repertoires, publicRepertoiresForSide(side)),
+  ['public-repertoire-count'],
+  { tags: [REPERTOIRE_CATALOG_CACHE_TAG], revalidate: 3600 }
+);
 
 /** A user's own live (non-deleted) repertoires, newest first, with author. */
 export async function listRepertoiresForUser(userId: string): Promise<RepertoireWithProfile[]> {

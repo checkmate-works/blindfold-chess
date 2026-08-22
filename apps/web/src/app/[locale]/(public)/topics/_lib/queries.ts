@@ -1,7 +1,10 @@
 import { cache } from 'react';
 
+import { unstable_cache } from 'next/cache';
+
 import { and, asc, desc, eq, inArray, isNull, or, sql } from 'drizzle-orm';
 
+import { TOPIC_POST_COUNTS_CACHE_TAG } from '@/lib/cache-tags';
 import { SOCIAL_AUTHOR_COLUMNS, db, liveProfileJoinOn, profiles, topicPosts } from '@/lib/db';
 import { countRows } from '@/lib/db/list-query';
 import { UUID_RE } from '@/lib/validations/uuid';
@@ -45,10 +48,25 @@ function toPostsWithAuthor(rows: PostAuthorJoinRow[]): TopicPostWithAuthor[] {
 
 /**
  * Get the count of top-level posts for a specific topic type ('square' or 'opening').
+ *
+ * @design Why a UGC count sits in the Data Cache
+ * This COUNT is the pagination denominator of the topic index pages, and
+ * every index render paid a pooled connection for it. The session pooler's
+ * budget is shared across all warm instances, so a crawler sweeping the
+ * indexes in four locales had the COUNT refused with `EMAXCONNSESSION` and
+ * the pages failed (Sentry BLINDFOLD-CHESS-59, 2026-08-22). Unlike the
+ * master tables this changes at runtime, so correctness rests on the
+ * writers: `insertPost` and `deleteTopicPostCore` expire
+ * {@link TOPIC_POST_COUNTS_CACHE_TAG} immediately, which is what keeps the
+ * author's next page load consistent with the list beside it. The hourly
+ * timer only covers writes that bypass those two paths.
  */
-export async function getPostCountByTopicType(topicType: TopicType): Promise<number> {
-  return countRows(topicPosts, liveTopLevelPosts(topicType));
-}
+export const getPostCountByTopicType = unstable_cache(
+  async (topicType: TopicType): Promise<number> =>
+    countRows(topicPosts, liveTopLevelPosts(topicType)),
+  ['topic-post-count-by-type'],
+  { tags: [TOPIC_POST_COUNTS_CACHE_TAG], revalidate: 3600 }
+);
 
 /**
  * Get top-level posts for a specific topicType + topicKey, with author info.
@@ -126,13 +144,15 @@ export async function getPostsWithReplyMetaByTopicKey(
 
 /**
  * Get the count of top-level posts for a specific topicType + topicKey.
+ * Cached on the same tag, and for the same reason, as
+ * {@link getPostCountByTopicType}.
  */
-export async function getPostCountByTopicKey(
-  topicType: TopicType,
-  topicKey: string
-): Promise<number> {
-  return countRows(topicPosts, liveTopLevelPosts(topicType, eq(topicPosts.topicKey, topicKey)));
-}
+export const getPostCountByTopicKey = unstable_cache(
+  async (topicType: TopicType, topicKey: string): Promise<number> =>
+    countRows(topicPosts, liveTopLevelPosts(topicType, eq(topicPosts.topicKey, topicKey))),
+  ['topic-post-count-by-key'],
+  { tags: [TOPIC_POST_COUNTS_CACHE_TAG], revalidate: 3600 }
+);
 
 /**
  * Get paginated top-level posts for a specific topicType + topicKey with reply metadata, sorted.

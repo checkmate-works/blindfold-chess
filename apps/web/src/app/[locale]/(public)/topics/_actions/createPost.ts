@@ -1,10 +1,12 @@
 'use server';
 
+import { revalidateTag } from 'next/cache';
 import { redirect } from 'next/navigation';
 
 import { assertSupportedLocale } from '@/i18n/assertSupportedLocale';
 
 import { authenticateCheckBanAndRequireProfile } from '@/lib/auth';
+import { TOPIC_POST_COUNTS_CACHE_TAG } from '@/lib/cache-tags';
 import { db, feedItems, topicPosts } from '@/lib/db';
 import type { DbTx } from '@/lib/db/types';
 import { isBlockedBetween } from '@/lib/moderation/block';
@@ -165,6 +167,11 @@ async function insertPost(
 
     return post;
   });
+
+  // The topic index pages paginate against cached top-level COUNTs; expire
+  // them now so the author's next index load agrees with the list beside
+  // it. Outside the transaction because revalidation observes the commit.
+  revalidateTag(TOPIC_POST_COUNTS_CACHE_TAG, { expire: 0 });
 
   notifyFollowersOfNewPost({
     actorId: user.id,

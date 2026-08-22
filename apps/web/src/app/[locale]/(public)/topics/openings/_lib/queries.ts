@@ -1,8 +1,11 @@
 import { cache } from 'react';
 
+import { unstable_cache } from 'next/cache';
+
 import { and, desc, eq, inArray, isNull } from 'drizzle-orm';
 import type { SQL } from 'drizzle-orm';
 
+import { TOPIC_POST_COUNTS_CACHE_TAG } from '@/lib/cache-tags';
 import {
   SOCIAL_AUTHOR_COLUMNS,
   db,
@@ -199,14 +202,19 @@ export const getPostsAcrossOpeningsPaginated = (
 
 /**
  * Get the count of top-level posts across openings filtered by first move square.
+ * Cached on the same tag, and for the same reason, as `getPostCountByTopicType`.
  */
-export async function getPostCountByFirstMoveSquare(square: string): Promise<number> {
-  const slugs = await getOpeningSlugsByFirstMoveSquare(square);
+export const getPostCountByFirstMoveSquare = unstable_cache(
+  async (square: string): Promise<number> => {
+    const slugs = await getOpeningSlugsByFirstMoveSquare(square);
 
-  if (slugs.length === 0) return 0;
+    if (slugs.length === 0) return 0;
 
-  return countRows(topicPosts, liveTopLevelPosts('opening', inArray(topicPosts.topicKey, slugs)));
-}
+    return countRows(topicPosts, liveTopLevelPosts('opening', inArray(topicPosts.topicKey, slugs)));
+  },
+  ['opening-post-count-by-first-move-square'],
+  { tags: [TOPIC_POST_COUNTS_CACHE_TAG], revalidate: 3600 }
+);
 
 /**
  * Get top-level posts across openings filtered by first move square, paginated.
