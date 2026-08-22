@@ -58,7 +58,25 @@ describe('AI review schemas', () => {
 
     const parsed = buildAiReviewContentSchema(PLIES).safeParse({
       summary: ['x'],
-      momentComments: [{ ply: 99, explanation: 'x', lesson: 'x' }],
+      momentComments: [{ ply: 99, explanation: 'x', lesson: 'x', principle: 'other' }],
+      strengths: ['x'],
+      weaknesses: ['x'],
+      advice: ['x'],
+    });
+    expect(parsed.success).toBe(false);
+  });
+
+  it('pins principle to the catalogue on both sides', () => {
+    const jsonPrinciple = (
+      json.properties.momentComments as unknown as {
+        items: { properties: { principle: { enum?: string[] } } };
+      }
+    ).items.properties.principle;
+    expect(jsonPrinciple.enum).toContain('develop_before_attacking');
+
+    const parsed = buildAiReviewContentSchema(PLIES).safeParse({
+      summary: ['x'],
+      momentComments: [{ ply: 4, explanation: 'x', lesson: 'x', principle: 'be_awesome' }],
       strengths: ['x'],
       weaknesses: ['x'],
       advice: ['x'],

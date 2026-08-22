@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { MAX_REVIEW_MOMENTS } from './input';
+import { PRINCIPLE_IDS } from './principles';
 import type { AiReviewContent } from './types';
 
 /**
@@ -56,7 +57,7 @@ export function buildAiReviewJsonSchema(allowedPlies: number[]): Record<string, 
         items: {
           type: 'object',
           additionalProperties: false,
-          required: ['ply', 'explanation', 'lesson'],
+          required: ['ply', 'explanation', 'lesson', 'principle'],
           properties: {
             ply:
               allowedPlies.length > 0
@@ -64,6 +65,8 @@ export function buildAiReviewJsonSchema(allowedPlies: number[]): Record<string, 
                 : { type: 'integer' },
             explanation: { type: 'string' },
             lesson: { type: 'string' },
+            // Pinned like `ply`: the model names a principle, it does not write one.
+            principle: { type: 'string', enum: PRINCIPLE_IDS },
           },
         },
       },
@@ -92,6 +95,7 @@ export function buildAiReviewContentSchema(allowedPlies: number[]) {
             .refine((p) => allowed.has(p), 'ply not among the provided moments'),
           explanation: prose(MAX_ITEM_LENGTH),
           lesson: prose(MAX_ITEM_LENGTH),
+          principle: z.enum(PRINCIPLE_IDS),
         })
       )
       .max(MAX_REVIEW_MOMENTS),

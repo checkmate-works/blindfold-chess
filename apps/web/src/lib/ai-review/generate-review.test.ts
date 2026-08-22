@@ -55,6 +55,7 @@ function validContent(plies: number[]): AiReviewContent {
       ply,
       explanation: 'This weakened the king fatally.',
       lesson: 'Never open the e1-h4 diagonal for nothing.',
+      principle: 'king_safety_first' as const,
     })),
     strengths: ['You spotted the mating pattern instantly.'],
     weaknesses: ['Early pawn moves in front of the king.'],

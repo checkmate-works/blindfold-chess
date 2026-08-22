@@ -10,6 +10,8 @@ import type { GamePlaySettings } from '@/lib/games/saved-game-types';
 
 import type { BlindfoldContext } from './blindfold-context';
 import type { ReviewInput } from './input';
+import type { Principle } from './principles';
+import { PRINCIPLES } from './principles';
 import { REVIEW_LIST_BOUNDS } from './schema';
 
 /**
@@ -132,7 +134,8 @@ export function buildSystemPrompt(language: string, blindfold: BlindfoldContext 
     '- The provided Stockfish evaluations, centipawn losses, best moves, and move classifications are ground truth. Never contradict them, never estimate your own evaluations, and never suggest a "best move" other than the one provided for that position.',
     '- Only discuss the critical moments listed in the input. Do not invent analysis of other moves.',
     '- Address the player directly ("you"), in a constructive, specific tone. Explain ideas (piece activity, king safety, pawn structure, tactics) rather than restating numbers.',
-    '- Keep each explanation and lesson to 2-3 sentences.',
+    '- Keep each explanation to 2-3 sentences.',
+    '- For each moment, pick the ONE principle from the catalogue below that it best illustrates ("other" only when none fits), then write the lesson as 1-2 sentences on how that principle applied in this exact position. Do not restate the principle in general terms — the reader sees its definition next to your lesson.',
     '- The summary is a TL;DR: 3-4 bullet points of one sentence each — how the game went, what decided it, and the single most important thing to work on. No preamble; the sections that follow carry the detail.',
     `- Write ALL output text in ${language}. Keep chess move notation (SAN) as-is.`,
     '- Fill the JSON schema exactly. Every momentComments entry must reference one of the listed plies.',
@@ -141,7 +144,22 @@ export function buildSystemPrompt(language: string, blindfold: BlindfoldContext 
   if (blindfold) {
     lines.push('', ...BLINDFOLD_VOCABULARY, '', ...blindfoldCoachingRules(blindfold.start));
   }
+  lines.push('', ...principleCatalogue(blindfold !== null));
   return lines.join('\n');
+}
+
+/**
+ * The principles the model may name, one per line. Blindfold-only entries
+ * are listed only for a blindfold game, so a sighted game cannot be coached
+ * to "recount after captures".
+ */
+function principleCatalogue(includeBlindfold: boolean): string[] {
+  return [
+    'Principle catalogue (use the id exactly as written):',
+    ...PRINCIPLES.filter((p: Principle) => includeBlindfold || !p.blindfold).map(
+      (p) => `- ${p.id}: ${p.meaning}`
+    ),
+  ];
 }
 
 /** The start-of-game conditions as one sentence of plain facts. */

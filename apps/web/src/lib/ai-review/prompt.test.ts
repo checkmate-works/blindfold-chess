@@ -71,6 +71,13 @@ describe('prompts', () => {
     expect(system).toContain('Write ALL output text in Japanese');
     expect(system).toContain('ground truth');
     expect(system).toContain('advice 1-3');
+    expect(system).toContain('- develop_before_attacking:');
+    expect(system).toContain('- other:');
+  });
+
+  it('lists blindfold principles only for a blindfold game', () => {
+    expect(buildSystemPrompt('English', null)).not.toContain('recount_after_captures');
+    expect(buildSystemPrompt('English', blindfold())).toContain('- recount_after_captures:');
   });
 
   it('serializes the facts block without any author-editable text', () => {

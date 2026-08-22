@@ -21,6 +21,8 @@ import type { Side } from '@blindfold-chess/types';
 
 import type { MoveAnalysis, MoveJudgment } from '@/lib/games/analysis/types';
 
+import type { PrincipleId } from './principles';
+
 /**
  * One critical moment selected for the review — server-derived engine fact
  * (see the module TSDoc). Persisted in `game_ai_reviews.moments`.
@@ -55,8 +57,14 @@ export type AiReviewMomentComment = {
   ply: number;
   /** Why the moment mattered and what to look for in such positions. */
   explanation: string;
-  /** The transferable takeaway. */
+  /**
+   * How the principle applied in THIS position — not the principle itself,
+   * which `principle` names (see `./principles`). Reviews stored before the
+   * principle existed carry the general rule in this prose instead.
+   */
   lesson: string;
+  /** The general rule the moment illustrates; absent on reviews stored before 2026-08-22. */
+  principle?: PrincipleId;
 };
 
 /** The validated LLM output — prose only, no numbers, no moves. */
