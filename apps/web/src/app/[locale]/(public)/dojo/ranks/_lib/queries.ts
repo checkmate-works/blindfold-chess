@@ -1,19 +1,49 @@
+import { unstable_cache } from 'next/cache';
+
 import { asc, eq } from 'drizzle-orm';
 
+import { RANKS_CACHE_TAG } from '@/lib/cache-tags';
 import { db, ranks, userRanks } from '@/lib/db';
 import { ALL_RANK_SLUGS, parseRequirements } from '@/lib/db/data/ranks';
 import type { RankSlug } from '@/lib/db/data/ranks';
 
 import { resolveAchievedSlugs } from './rank-progression';
 
-export async function getAllRanks() {
-  return db.select().from(ranks).orderBy(asc(ranks.level));
-}
+/**
+ * The two `ranks` master reads, behind the Data Cache.
+ *
+ * `ranks` only changes when the seed runs at deploy, yet every dojo page,
+ * every rank guide page and every public profile shell (via
+ * `getAchievedSlugsForUser`) read it per render. Un-cached, each of those
+ * renders spent a pooled connection on a table of fifteen rows — and the
+ * session pooler's connection budget is shared across every warm instance,
+ * so a crawler sweeping the guide pages in all four locales at once had
+ * these SELECTs refused with `EMAXCONNSESSION`, failing the renders for
+ * nothing more than rank names and colours. Cached, the sweep costs one
+ * connection per revalidation instead of one per page.
+ *
+ * The hourly revalidate is the only freshness bound (see
+ * {@link RANKS_CACHE_TAG}); a re-seeded row surfacing within the hour is
+ * the same latitude `dojo/ranks/page.tsx` already takes with its own ISR.
+ * The rows are JSON round-tripped, so `createdAt` arrives as a string — no
+ * dojo consumer reads it.
+ *
+ * Refused under the 2026-08-22 crawler sweep as Sentry BLINDFOLD-CHESS-60.
+ */
+export const getAllRanks = unstable_cache(
+  async () => db.select().from(ranks).orderBy(asc(ranks.level)),
+  ['ranks-all'],
+  { tags: [RANKS_CACHE_TAG], revalidate: 3600 }
+);
 
-export async function getRankBySlug(slug: string) {
-  const rows = await db.select().from(ranks).where(eq(ranks.slug, slug)).limit(1);
-  return rows[0] ?? null;
-}
+export const getRankBySlug = unstable_cache(
+  async (slug: string) => {
+    const rows = await db.select().from(ranks).where(eq(ranks.slug, slug)).limit(1);
+    return rows[0] ?? null;
+  },
+  ['rank-by-slug'],
+  { tags: [RANKS_CACHE_TAG], revalidate: 3600 }
+);
 
 export async function getUserAchievedRankIds(userId: string): Promise<Set<string>> {
   const rows = await db

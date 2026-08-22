@@ -48,6 +48,11 @@
  *   - {@link GRANT_STATUS_CACHE_TAG} — `user_grants` lookups.
  *   - {@link SUBSCRIPTION_STATUS_CACHE_TAG} — Stripe subscription mirror.
  *   - {@link RANK_STATUS_CACHE_TAG} — dan-tier belt rank.
+ * - {@link RANKS_CACHE_TAG} — the `ranks` master rows the dojo reads
+ *   (`getAllRanks`, `getRankBySlug`). Nothing writes `ranks` at runtime —
+ *   the table is code-seeded on deploy — so no action invalidates this tag
+ *   today; the hourly revalidate on the readers is the only freshness bound.
+ *   Declared so a future admin editor has a handle to pull.
  */
 
 export const LEADERBOARD_CACHE_TAG = 'leaderboard' as const;
@@ -59,3 +64,4 @@ export const AD_CREATIVES_CACHE_TAG = 'ad-creatives' as const;
 export const GRANT_STATUS_CACHE_TAG = 'grant-status' as const;
 export const SUBSCRIPTION_STATUS_CACHE_TAG = 'subscription-status' as const;
 export const RANK_STATUS_CACHE_TAG = 'rank-status' as const;
+export const RANKS_CACHE_TAG = 'ranks' as const;
