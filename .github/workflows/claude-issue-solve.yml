@@ -94,7 +94,7 @@ jobs:
       #  degrades escaping and reviewability, so the prompt is managed as
       #  a separate file.)
       #
-      # Verified against anthropics/claude-code-action@c7c8889 (run.ts)
+      # Verified against anthropics/claude-code-action@dcb5774 v1.0.199 (run.ts:296)
       # Re-verify on every SHA bump of claude-code-action.
       - name: Load Claude system prompt
         shell: bash
@@ -122,7 +122,7 @@ jobs:
       # Quality gates are delegated to Claude itself via the system prompt
       # (strict enforcement will be added in Phase 2 via a guard step).
       - name: Run Claude Code Action
-        uses: anthropics/claude-code-action@c7c8889b30499b4e46f4c32b892e43cd364bc2fe # v1 (as of 2026-04)
+        uses: anthropics/claude-code-action@dcb57747bfceeaa1fa72638cae52295d1d853d4a # v1.0.199
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           # The default trigger_phrase is "@claude", so explicit specification
@@ -130,7 +130,7 @@ jobs:
           trigger_phrase: "@claude"
           # Strict allowlist for quality-gate execution.
           #
-          # claude-code-action@c7c8889 has no dedicated `allowed_tools` input;
+          # claude-code-action@dcb5774 has no dedicated `allowed_tools` input;
           # the only way to pass additional CLI flags is via the generic
           # `claude_args` input. We use --allowed-tools to whitelist exactly
           # three commands.
