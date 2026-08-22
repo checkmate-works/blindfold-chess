@@ -2,7 +2,7 @@ import Image from 'next/image';
 
 import type { IconType } from 'react-icons';
 import { GiBlackBelt } from 'react-icons/gi';
-import { HiGift, HiMegaphone, HiTrophy } from 'react-icons/hi2';
+import { HiGift, HiMegaphone, HiSparkles, HiTrophy } from 'react-icons/hi2';
 
 import type { NotificationWithActor } from '../_lib/queries';
 
@@ -22,6 +22,8 @@ const SYSTEM_ICONS: Record<string, IconType> = {
   like_coin_grant: HiGift,
   rank_grant: GiBlackBelt,
   announcement: HiMegaphone,
+  ai_review_ready: HiSparkles,
+  ai_review_failed: HiSparkles,
 };
 
 /**

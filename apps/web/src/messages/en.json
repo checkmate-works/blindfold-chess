@@ -2794,7 +2794,6 @@
       "notGenerated": "No AI review has been generated for this game yet.",
       "generateButton": "Generate AI review",
       "analyzing": "Analyzing with Stockfish… ({done}/{total} positions)",
-      "generating": "Writing the review…",
       "cancel": "Cancel",
       "retry": "Try again",
       "bestMoveLabel": "Best move",
@@ -2823,11 +2822,11 @@
         "not_found": "This game is no longer available.",
         "not_owner": "Only the player who published this game can generate its AI review.",
         "game_not_eligible": "This game is too short or too long for an automatic review.",
-        "subscription_required": "Generating an AI review requires a subscription.",
         "rate_limited": "You've reached today's AI review limit. Please try again tomorrow.",
         "llm_error": "The AI coach couldn't produce a review. Please try again later.",
         "unexpected_error": "Something went wrong. Please try again later.",
-        "analysis_failed": "The engine analysis failed. Please reload the page and try again."
+        "analysis_failed": "The engine analysis failed. Please reload the page and try again.",
+        "insufficient_balance": "Not enough Coins."
       },
       "languageNote": "This review is written in {language}.",
       "confirm": {
@@ -2836,14 +2835,21 @@
         "languageLabel": "Review language",
         "languageHelp": "A game has one review. It is shown to every visitor in the language you pick here.",
         "submit": "Generate",
-        "cancel": "Cancel"
+        "cancel": "Cancel",
+        "cost": "This costs {cost, plural, one {# Coin} other {# Coins}} (balance: {balance})"
       },
       "upsell": {
-        "title": "AI review is a paid feature",
-        "description": "The AI coach reads your game through the Stockfish analysis and writes up the moments that decided it, along with what to work on next. Generating one requires a subscription.",
+        "title": "An AI review costs {cost, plural, one {# Coin} other {# Coins}}",
+        "description": "The AI coach reads your game through the Stockfish analysis and writes up the moments that decided it, along with what to work on next. Your balance is {balance, plural, one {# Coin} other {# Coins}}. Coins come from likes on the games, problems and Kata you publish. Subscribers generate reviews without spending Coins.",
+        "coinCta": "How to earn Coins",
         "cta": "See plans"
       },
-      "principleLabel": "Principle"
+      "principleLabel": "Principle",
+      "submitting": "Submitting your request…",
+      "queued": {
+        "title": "AI review requested",
+        "body": "The AI coach is writing your review. It usually takes a minute or two — you will get a notification when it is ready, so feel free to leave this page."
+      }
     },
     "discussion": {
       "wholeGame": "Whole game",
@@ -3929,7 +3935,9 @@
         "admin_grant": "Granted by staff",
         "maia_game": "Maia game",
         "like_grant": "Earned from likes",
-        "other": "Adjustment"
+        "other": "Adjustment",
+        "ai_review": "AI review",
+        "ai_review_refund": "AI review refund"
       }
     }
   },
@@ -4078,7 +4086,9 @@
     "muteConfirmTitle": "Mute this notification type?",
     "muteConfirmMessage": "You'll stop receiving \"{type}\" notifications. You can change this anytime from notification settings.",
     "muteConfirmButton": "Mute",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "aiReviewReadyMessage": "Your AI review is ready",
+    "aiReviewFailedMessage": "The AI review could not be generated. Any Coin spent has been returned."
   },
   "deleteAccount": {
     "title": "Delete Account",

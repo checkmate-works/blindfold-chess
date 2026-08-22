@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, useCallback, useMemo, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
@@ -9,7 +9,7 @@ import { fenToLichessUrl, replayMoves } from '@blindfold-chess/features/chess-co
 import type { AlgebraicNotation, FinalGameOutcome, Side } from '@blindfold-chess/types';
 import { FaArrowRight } from 'react-icons/fa';
 
-import type { AiReview, AiReviewGenerationOffer } from '@/lib/ai-review/types';
+import type { AiReview, AiReviewGenerationOffer, PendingAiReviewJob } from '@/lib/ai-review/types';
 import type { EngineConfig } from '@/lib/engines';
 import { computeGameStats } from '@/lib/games/compute-game-stats';
 import type { EvaluationMark } from '@/lib/games/evaluation';
@@ -38,6 +38,7 @@ import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCont
 import { useTerminationMarkLabel } from '@/app/[locale]/_hooks/use-termination-mark-label';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { useAiReviewGeneration } from '../_hooks/use-ai-review-generation';
 import { useHashScrollOnce } from '../_hooks/use-hash-scroll-once';
 import { useIllegalAttemptSelection } from '../_hooks/use-illegal-attempt-selection';
 import { useOverviewPositionSync } from '../_hooks/use-overview-position-sync';
@@ -112,7 +113,12 @@ type Props = {
    * act on, so the tab never renders as an empty explanation — the caller owns
    * that policy (see `SharedGameDetailView`).
    */
-  aiReview?: { initial: AiReview | null; generation: AiReviewGenerationOffer | null };
+  aiReview?: {
+    initial: AiReview | null;
+    generation: AiReviewGenerationOffer | null;
+    /** A generation the server already holds for this game, if any. */
+    pendingJob: PendingAiReviewJob | null;
+  };
 };
 
 /**
@@ -228,6 +234,20 @@ export function GameReview({
   // Not lifted for the local (result-screen) layout, which has no AI review at
   // all — `aiReview` is undefined there and the seed is null.
   const [review, setReview] = useState<AiReview | null>(aiReview?.initial ?? null);
+  // The generation run lives here too, for the same reason: the tab that
+  // renders it is unmounted while another shows, and a Stockfish sweep in
+  // progress or a job already accepted must not be lost with it. Inert on the
+  // local layout (nothing ever calls `start`).
+  const generation = useAiReviewGeneration({
+    gameId,
+    moves,
+    startingFen,
+    pendingJob: aiReview?.pendingJob ?? null,
+  });
+  const generatedReview = generation.state.phase === 'done' ? generation.state.review : null;
+  useEffect(() => {
+    if (generatedReview) setReview(generatedReview);
+  }, [generatedReview]);
   // Stable identity: `?? []` fresh on every render would defeat the memos below.
   const reviewMoments = useMemo(() => review?.moments ?? [], [review]);
   const judgmentByPly = useMemo(
@@ -666,23 +686,22 @@ export function GameReview({
 
               {overview.activeOverviewView === 'aiReview' && aiReview && (
                 <AiReviewPanel
-                  gameId={gameId}
                   locale={locale}
-                  moves={moves}
-                  startingFen={startingFen}
                   // The page's copy, NOT `aiReview.initial` — switching tabs
                   // unmounts this panel, and the server prop is still null for
                   // a review generated in this session, so reading it here
                   // would send the author back to the generate button.
-                  initialReview={review}
+                  review={review}
                   generation={aiReview.generation}
+                  generationState={generation.state}
+                  onStart={generation.start}
+                  onCancel={generation.cancel}
                   // Preview in the quick-peek modal (like the By Move strip),
                   // so following a review's citation never scrolls the live
                   // replay out from under the paragraph being read. The modal's
                   // footer commits the position for a viewer who wants to go
                   // there — which then switches this block to that move's thread.
                   onJumpToPly={quickPeek.openAtMove}
-                  onReviewGenerated={setReview}
                 />
               )}
 

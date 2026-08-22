@@ -7,6 +7,12 @@ vi.mock('@/lib/billing/subscription', () => ({
   hasActiveSubscription: (...args: unknown[]) => mockHasActiveSubscription(...args),
 }));
 
+const mockGetPointBalanceSummary = vi.fn();
+vi.mock('@/lib/points', () => ({
+  AI_REVIEW_POINT_COST: 1,
+  getPointBalanceSummary: (...args: unknown[]) => mockGetPointBalanceSummary(...args),
+}));
+
 const { resolveAiReviewGenerationState } = await import('./entitlement');
 
 const AUTHOR_ID = 'author-1';
@@ -23,20 +29,35 @@ function gameOf(overrides: Partial<GameRecord> = {}): GameRecord {
 describe('resolveAiReviewGenerationState', () => {
   beforeEach(() => {
     mockHasActiveSubscription.mockResolvedValue(false);
+    mockGetPointBalanceSummary.mockResolvedValue({ total: 0 });
   });
 
-  it('allows the author when they hold an active subscription', async () => {
+  it('allows the author when they hold an active subscription, without reading the balance', async () => {
     mockHasActiveSubscription.mockResolvedValue(true);
 
     await expect(resolveAiReviewGenerationState(gameOf(), AUTHOR_ID)).resolves.toEqual({
       kind: 'allowed',
     });
     expect(mockHasActiveSubscription).toHaveBeenCalledWith(AUTHOR_ID);
+    expect(mockGetPointBalanceSummary).not.toHaveBeenCalled();
   });
 
-  it('asks the author without a subscription to subscribe', async () => {
+  it('offers the coin price to an unsubscribed author whose balance covers it', async () => {
+    mockGetPointBalanceSummary.mockResolvedValue({ total: 3 });
+
     await expect(resolveAiReviewGenerationState(gameOf(), AUTHOR_ID)).resolves.toEqual({
-      kind: 'subscription_required',
+      kind: 'payable',
+      cost: 1,
+      balance: 3,
+    });
+    expect(mockGetPointBalanceSummary).toHaveBeenCalledWith(AUTHOR_ID);
+  });
+
+  it('reports the shortfall to an unsubscribed author who cannot pay', async () => {
+    await expect(resolveAiReviewGenerationState(gameOf(), AUTHOR_ID)).resolves.toEqual({
+      kind: 'insufficient_balance',
+      cost: 1,
+      balance: 0,
     });
   });
 
@@ -54,6 +75,7 @@ describe('resolveAiReviewGenerationState', () => {
       reason: 'not_owner',
     });
     expect(mockHasActiveSubscription).not.toHaveBeenCalled();
+    expect(mockGetPointBalanceSummary).not.toHaveBeenCalled();
   });
 
   it('blocks an ineligible game before consulting billing', async () => {

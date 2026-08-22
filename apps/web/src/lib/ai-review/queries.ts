@@ -108,10 +108,9 @@ export type AiReviewStore = {
 export const dbAiReviewStore: AiReviewStore = {
   find: getAiReview,
   async save(row) {
-    // NOTE(coin charge): when generation becomes coin-priced, wrap this in
-    // `db.transaction` and debit inside it (idempotency key
-    // `ai_review:<userId>:<gameId>:<locale>`, mirroring consumeMaiaGamePoint)
-    // so the user pays exactly when — and only when — a review is stored.
+    // No charge here: the coin is debited when the job is accepted
+    // (`enqueueAiReviewJob`) and refunded if the job fails, so the save
+    // stays a plain insert. See the `game_ai_review_jobs` table TSDoc.
     const [inserted] = await db.insert(gameAiReviews).values(row).onConflictDoNothing().returning();
     if (inserted) return toAiReview(inserted);
     const existing = await fetchAiReview(row.gameId, row.locale);

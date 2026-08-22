@@ -42,6 +42,8 @@ export const NOTIFICATION_TYPES = [
   'point_grant',
   'like_coin_grant',
   'achievement_granted',
+  'ai_review_ready',
+  'ai_review_failed',
 ] as const;
 
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];

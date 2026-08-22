@@ -2794,7 +2794,6 @@
       "notGenerated": "Todavía no se ha generado una revisión IA de esta partida.",
       "generateButton": "Generar revisión IA",
       "analyzing": "Analizando con Stockfish… ({done}/{total} posiciones)",
-      "generating": "Escribiendo la revisión…",
       "cancel": "Cancelar",
       "retry": "Intentar de nuevo",
       "bestMoveLabel": "Mejor jugada",
@@ -2823,11 +2822,11 @@
         "not_found": "Esta partida ya no está disponible.",
         "not_owner": "Solo quien publicó esta partida puede generar su revisión IA.",
         "game_not_eligible": "Esta partida es demasiado corta o demasiado larga para una revisión automática.",
-        "subscription_required": "Generar una revisión IA requiere una suscripción.",
         "rate_limited": "Has alcanzado el límite diario de revisiones IA. Inténtalo mañana.",
         "llm_error": "El entrenador IA no pudo generar la revisión. Inténtalo más tarde.",
         "unexpected_error": "Algo salió mal. Inténtalo más tarde.",
-        "analysis_failed": "El análisis del motor falló. Recarga la página e inténtalo de nuevo."
+        "analysis_failed": "El análisis del motor falló. Recarga la página e inténtalo de nuevo.",
+        "insufficient_balance": "No tienes monedas suficientes."
       },
       "languageNote": "Esta revisión está escrita en {language}.",
       "confirm": {
@@ -2836,14 +2835,21 @@
         "languageLabel": "Idioma de la revisión",
         "languageHelp": "Cada partida tiene una sola revisión. Se mostrará a todos los visitantes en el idioma que elijas aquí.",
         "submit": "Generar",
-        "cancel": "Cancelar"
+        "cancel": "Cancelar",
+        "cost": "Cuesta {cost, plural, one {# moneda} other {# monedas}} (saldo: {balance})"
       },
       "upsell": {
-        "title": "La revisión IA es una función de pago",
-        "description": "El entrenador IA interpreta tu partida a partir del análisis de Stockfish y explica los momentos que la decidieron, además de en qué trabajar después. Generarla requiere una suscripción.",
+        "title": "Una revisión IA cuesta {cost, plural, one {# moneda} other {# monedas}}",
+        "description": "El entrenador IA analiza tu partida a partir del análisis de Stockfish y explica los momentos decisivos, además de qué trabajar a continuación. Tu saldo es de {balance, plural, one {# moneda} other {# monedas}}. Las monedas se obtienen con los «me gusta» en las partidas, problemas y Kata que publicas. Los suscriptores generan revisiones sin gastar monedas.",
+        "coinCta": "Cómo ganar monedas",
         "cta": "Ver planes"
       },
-      "principleLabel": "Principio"
+      "principleLabel": "Principio",
+      "submitting": "Enviando tu solicitud…",
+      "queued": {
+        "title": "Revisión IA solicitada",
+        "body": "El entrenador IA está escribiendo tu revisión. Suele tardar uno o dos minutos; recibirás una notificación cuando esté lista, así que puedes salir de esta página."
+      }
     },
     "discussion": {
       "wholeGame": "Toda la partida",
@@ -3929,7 +3935,9 @@
         "admin_grant": "Concedidas por el equipo",
         "maia_game": "Partida contra Maia",
         "like_grant": "Ganadas por me gusta",
-        "other": "Ajuste"
+        "other": "Ajuste",
+        "ai_review": "Revisión IA",
+        "ai_review_refund": "Reembolso de revisión IA"
       }
     }
   },
@@ -4078,7 +4086,9 @@
     "muteConfirmTitle": "¿Silenciar este tipo de notificación?",
     "muteConfirmMessage": "Dejarás de recibir notificaciones de \"{type}\". Puedes cambiarlo en cualquier momento desde la configuración de notificaciones.",
     "muteConfirmButton": "Silenciar",
-    "cancel": "Cancelar"
+    "cancel": "Cancelar",
+    "aiReviewReadyMessage": "Tu revisión IA está lista",
+    "aiReviewFailedMessage": "No se pudo generar la revisión IA. La moneda gastada ha sido devuelta."
   },
   "deleteAccount": {
     "title": "Eliminar Cuenta",

@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useId, useMemo, useState } from 'react';
+import { useId, useMemo, useState } from 'react';
 
 import { SUPPORTED_LOCALES } from '@/config';
 import { LOCALE_LABELS } from '@/i18n/locale-labels';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { CoinIcon } from '@blindfold-chess/icons';
 import { FaRobot } from 'react-icons/fa';
 
 import { PRINCIPLE_IDS, glossarySlugOf } from '@/lib/ai-review/principles';
@@ -19,25 +20,21 @@ import { useTermModal } from '@/app/[locale]/_components/glossary-term/GlossaryT
 import { TermLink } from '@/app/[locale]/_components/glossary-term/TermLink';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { useAiReviewGeneration } from '../_hooks/use-ai-review-generation';
+import type { AiReviewGenerationState } from '../_hooks/use-ai-review-generation';
 import { AiReviewUpsell } from './AiReviewUpsell';
 import { ReviewMomentCard } from './ReviewMomentCard';
 
 type Props = {
-  gameId: string;
   locale: Locale;
-  moves: string[];
-  startingFen: string | null;
   /**
-   * The review the page currently holds: the server-resolved one, or the one
-   * generated during this session (see `onReviewGenerated` — the page keeps it
-   * across this panel's unmounts, so it must be read from there rather than
-   * from the server prop, which stays null until the next server render).
+   * The review the page holds: the server-resolved one, or the one generated
+   * during this session (the page owns the generation and keeps its result
+   * across this panel's unmounts — see `GameReview`).
    *
    * Null when no review exists yet — in which case this panel is mounted only
    * for a viewer with a `generation` offer (see `SharedGameDetailView`).
    */
-  initialReview: AiReview | null;
+  review: AiReview | null;
   /**
    * What this viewer may do about generating a review, or null when they may
    * do nothing — a reader of someone else's review, or a deployment with no
@@ -45,25 +42,24 @@ type Props = {
    */
   generation: AiReviewGenerationOffer | null;
   /**
+   * Where the page's generation run is (`useAiReviewGeneration`, owned by the
+   * page so a sweep or a queued job outlives a tab switch) and its controls.
+   */
+  generationState: AiReviewGenerationState;
+  onStart: (locale: string) => void;
+  onCancel: () => void;
+  /**
    * Jump the replay board to the position after the given ply — the board that
    * carries both that move's grade badge and the engine arrow for what the
    * review would have played instead.
    */
   onJumpToPly: (ply: number) => void;
-  /**
-   * Fires once when a generation started here completes. This panel is where a
-   * brand-new review comes into existence, and it is not where the review can
-   * be kept: the page above marks graded moves on the board, and — because the
-   * tab is conditionally rendered — this panel is destroyed the moment the
-   * author looks at another tab. Handing the review up is what makes it
-   * survive both. Not called for `initialReview`, which the page already has.
-   */
-  onReviewGenerated?: (review: AiReview) => void;
 };
 
 /**
- * The AI Review tab body: renders the cached/just-generated review, or the
- * generation flow (CTA → Stockfish progress → LLM wait → result/error).
+ * The AI Review tab body: renders the review, or the generation flow (CTA →
+ * Stockfish progress → accepted notice → result/error). The generation itself
+ * belongs to the page; this panel only renders its state.
  *
  * Review prose is ALWAYS rendered as plain text nodes — never markdown,
  * never HTML — so nothing an LLM emits can become markup. The numbers and
@@ -71,32 +67,20 @@ type Props = {
  * facts), joined by ply; see `@/lib/ai-review/types` for the split.
  */
 export function AiReviewPanel({
-  gameId,
   locale,
-  moves,
-  startingFen,
-  initialReview,
+  review,
   generation,
+  generationState: state,
+  onStart,
+  onCancel,
   onJumpToPly,
-  onReviewGenerated,
 }: Props) {
   const t = useTranslations('sharedGames');
-  const { state, start, cancel } = useAiReviewGeneration({ gameId, moves, startingFen });
   const [confirming, setConfirming] = useState(false);
   // The page's language is the obvious default; the picker exists because this
   // one review is what every visitor will read, whatever page they came from.
   const [targetLocale, setTargetLocale] = useState<Locale>(locale);
   const languageSelectId = useId();
-
-  // The hook's 'done' phase is terminal, so the fresh review needs no extra state.
-  const review = state.phase === 'done' ? state.review : initialReview;
-
-  // Raise a just-generated review to the page. 'done' is terminal, so this
-  // fires once per generation and never for a cached `initialReview`.
-  const generated = state.phase === 'done' ? state.review : null;
-  useEffect(() => {
-    if (generated) onReviewGenerated?.(generated);
-  }, [generated, onReviewGenerated]);
 
   if (review) {
     return <ReviewBody review={review} viewerLocale={locale} onJumpToPly={onJumpToPly} />;
@@ -108,10 +92,29 @@ export function AiReviewPanel({
     return <p className="py-6 text-sm text-muted-foreground">{t('aiReview.notGenerated')}</p>;
   }
 
-  // Ahead of the in-flight phases below: without an entitlement, generation
+  // A job the server already holds (or one accepted moments ago) — the author
+  // may have reloaded, switched tabs or come back from elsewhere; the notice is
+  // the same in every case and the page's polling swaps it for the review.
+  if (state.phase === 'queued') {
+    return (
+      <div className="space-y-3 py-6 text-center" role="status">
+        <div className="flex justify-center">
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <FaRobot className="h-5 w-5" />
+          </span>
+        </div>
+        <p className="font-medium text-foreground">{t('aiReview.queued.title')}</p>
+        <p className="mx-auto max-w-sm text-sm text-muted-foreground">
+          {t('aiReview.queued.body')}
+        </p>
+      </div>
+    );
+  }
+
+  // Ahead of the in-flight phases below: with nothing that pays, generation
   // never starts, so there is no state for those phases to be in.
-  if (generation.kind === 'subscription_required') {
-    return <AiReviewUpsell locale={locale} />;
+  if (generation.kind === 'insufficient_balance') {
+    return <AiReviewUpsell locale={locale} cost={generation.cost} balance={generation.balance} />;
   }
 
   if (state.phase === 'analyzing') {
@@ -132,7 +135,7 @@ export function AiReviewPanel({
         </div>
         <button
           type="button"
-          onClick={cancel}
+          onClick={onCancel}
           className="text-sm text-muted-foreground hover:text-foreground hover:underline"
         >
           {t('aiReview.cancel')}
@@ -141,11 +144,11 @@ export function AiReviewPanel({
     );
   }
 
-  if (state.phase === 'generating') {
+  if (state.phase === 'submitting') {
     return (
       <div className="flex items-center justify-center gap-3 py-6">
         <span className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-        <p className="text-sm text-foreground">{t('aiReview.generating')}</p>
+        <p className="text-sm text-foreground">{t('aiReview.submitting')}</p>
       </div>
     );
   }
@@ -174,8 +177,8 @@ export function AiReviewPanel({
       </div>
 
       {/* Generation publishes something the author cannot take back, spends a
-          slot of their daily budget, and fixes the review's language — all
-          from one click, so it asks first. */}
+          coin (or a slot of their daily budget), and fixes the review's
+          language — all from one click, so it asks first. */}
       <ConfirmationModal
         isOpen={confirming}
         title={t('aiReview.confirm.title')}
@@ -185,9 +188,15 @@ export function AiReviewPanel({
         onCancel={() => setConfirming(false)}
         onConfirm={() => {
           setConfirming(false);
-          start(targetLocale);
+          onStart(targetLocale);
         }}
       >
+        {generation.kind === 'payable' && (
+          <p className="mt-4 flex items-center gap-1.5 text-sm font-medium text-foreground">
+            <CoinIcon size={16} aria-hidden="true" />
+            {t('aiReview.confirm.cost', { cost: generation.cost, balance: generation.balance })}
+          </p>
+        )}
         <div className="mt-4 space-y-1">
           <label htmlFor={languageSelectId} className="block text-sm font-medium text-foreground">
             {t('aiReview.confirm.languageLabel')}

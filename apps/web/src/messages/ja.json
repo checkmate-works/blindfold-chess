@@ -2794,7 +2794,6 @@
       "notGenerated": "AIレビューはまだ生成されていません。",
       "generateButton": "AIレビューを生成",
       "analyzing": "Stockfishで解析中… ({done}/{total} 局面)",
-      "generating": "レビューを執筆中…",
       "cancel": "キャンセル",
       "retry": "もう一度試す",
       "bestMoveLabel": "最善手",
@@ -2823,11 +2822,11 @@
         "not_found": "このゲームは利用できなくなりました。",
         "not_owner": "AIレビューを生成できるのは対局者本人だけです。",
         "game_not_eligible": "このゲームは短すぎるか長すぎるため、自動レビューの対象外です。",
-        "subscription_required": "AIレビューの生成は有料プラン限定です。",
         "rate_limited": "本日のAIレビュー生成回数の上限に達しました。明日以降にお試しください。",
         "llm_error": "AIコーチがレビューを生成できませんでした。時間をおいてお試しください。",
         "unexpected_error": "エラーが発生しました。時間をおいてお試しください。",
-        "analysis_failed": "エンジン解析に失敗しました。ページを再読み込みしてお試しください。"
+        "analysis_failed": "エンジン解析に失敗しました。ページを再読み込みしてお試しください。",
+        "insufficient_balance": "コインが不足しています。"
       },
       "languageNote": "このレビューは{language}で書かれています。",
       "confirm": {
@@ -2836,14 +2835,21 @@
         "languageLabel": "レビューの言語",
         "languageHelp": "1つのゲームにつきレビューは1件です。ここで選んだ言語で、どの言語の閲覧者にも表示されます。",
         "submit": "生成する",
-        "cancel": "キャンセル"
+        "cancel": "キャンセル",
+        "cost": "{cost} コインを消費します（残高: {balance} コイン）"
       },
       "upsell": {
-        "title": "AIレビューは有料プラン限定です",
-        "description": "AIコーチがStockfishの解析をもとにゲームを読み解き、勝敗を分けた局面の解説と、次のゲームに向けたアドバイスをお届けします。生成には月額プランへの登録が必要です。",
+        "title": "AIレビューの生成には {cost} コインが必要です",
+        "description": "AIコーチがStockfishの解析をもとにゲームを読み解き、勝敗を分けた局面の解説と次のゲームへのアドバイスをお届けします。現在の残高は {balance} コインです。コインは公開した対局・問題・型などに「いいね」が付くと貯まります。有料プランならコインを使わずに生成できます。",
+        "coinCta": "コインの貯め方を見る",
         "cta": "プランを見る"
       },
-      "principleLabel": "原則"
+      "principleLabel": "原則",
+      "submitting": "レビューを受け付けています…",
+      "queued": {
+        "title": "AIレビューを受け付けました",
+        "body": "AIコーチがレビューを執筆中です。通常1〜2分で完成し、完了するとお知らせ（通知）でご案内します。このページを離れても構いません。"
+      }
     },
     "discussion": {
       "wholeGame": "全体",
@@ -3929,7 +3935,9 @@
         "admin_grant": "運営からの付与",
         "maia_game": "Maia との対局",
         "like_grant": "いいねによるコイン獲得",
-        "other": "調整"
+        "other": "調整",
+        "ai_review": "AIレビューの生成",
+        "ai_review_refund": "AIレビュー失敗による返金"
       }
     }
   },
@@ -4078,7 +4086,9 @@
     "muteConfirmTitle": "この種類の通知をミュートしますか？",
     "muteConfirmMessage": "今後「{type}」の通知は届かなくなります。設定はいつでも通知設定から変更できます。",
     "muteConfirmButton": "ミュートする",
-    "cancel": "キャンセル"
+    "cancel": "キャンセル",
+    "aiReviewReadyMessage": "AIレビューが完成しました",
+    "aiReviewFailedMessage": "AIレビューを生成できませんでした。消費したコインは返却しました。"
   },
   "deleteAccount": {
     "title": "退会",

@@ -4,11 +4,12 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { ChessEngine } from '@blindfold-chess/features/ai-game/engine';
 
-import type { AiReview, AiReviewError } from '@/lib/ai-review/types';
+import type { AiReview, AiReviewError, PendingAiReviewJob } from '@/lib/ai-review/types';
 import { createWorkerMessageChannel } from '@/lib/engines/stockfish/worker-message-channel';
 import { evaluatePositions } from '@/lib/games/analysis/evaluate-positions';
 
-import { generateAiReviewAction } from '../_actions/generate-ai-review';
+import { getAiReviewJobStatusAction } from '../_actions/ai-review-job-status';
+import { requestAiReviewAction } from '../_actions/request-ai-review';
 
 /**
  * Same public asset the play screen's Stockfish opponent boots from
@@ -18,19 +19,32 @@ import { generateAiReviewAction } from '../_actions/generate-ai-review';
  */
 const STOCKFISH_WORKER_PATH = '/stockfish.js';
 
+/**
+ * How often an accepted job is polled, and for how long. The notification is
+ * the durable signal; polling only spares an author who stays on the page a
+ * reload. A review takes a minute or two, so ten minutes of polling covers
+ * every job the sweeper will still retry — after that the notification is
+ * the only channel, as it already is for an author who left.
+ */
+const JOB_POLL_INTERVAL_MS = 10_000;
+const JOB_POLL_MAX = 60;
+
 export type AiReviewGenerationState =
   | { phase: 'idle' }
   | { phase: 'analyzing'; done: number; total: number }
-  | { phase: 'generating' }
+  /** The sweep is done and the request is on its way to the server. */
+  | { phase: 'submitting' }
+  /** Accepted (and charged); the result arrives by notification / polling. */
+  | { phase: 'queued'; job: PendingAiReviewJob }
   | { phase: 'done'; review: AiReview }
   | { phase: 'error'; error: AiReviewError | 'analysis_failed' };
 
 export type UseAiReviewGenerationReturn = {
   state: AiReviewGenerationState;
   /**
-   * Kick off the sweep + server generation, writing the review in `locale`
+   * Kick off the sweep + server request, asking for the review in `locale`
    * (the author's choice, not necessarily the page's). No-op while already
-   * running.
+   * running or queued.
    */
   start: (locale: string) => void;
   /** Abort a running sweep (between positions) and return to idle. */
@@ -40,20 +54,32 @@ export type UseAiReviewGenerationReturn = {
 /**
  * Drives the client half of AI review generation: run the Stockfish sweep
  * over every position (with progress), ship the evaluations to the server
- * action, surface the stored review. The engine lives only for the duration
- * of one sweep — created on start, destroyed on completion, cancel, and
- * unmount — so navigating away never leaks a Worker.
+ * action, then wait on the accepted job until the review exists. The engine
+ * lives only for the duration of one sweep — created on start, destroyed on
+ * completion, cancel, and unmount — so navigating away never leaks a Worker.
+ *
+ * Owned by the page (`GameReview`), not by the AI Review tab: the tab is
+ * conditionally rendered, and a sweep or a queued job must survive the author
+ * looking at another tab in the meantime.
+ *
+ * @param pendingJob a job the server already holds for this game — the hook
+ *   starts in `queued` and polls it, so a reload mid-generation shows the
+ *   accepted notice rather than the generate button.
  */
 export function useAiReviewGeneration({
   gameId,
   moves,
   startingFen,
+  pendingJob,
 }: {
   gameId: string;
   moves: string[];
   startingFen: string | null;
+  pendingJob: PendingAiReviewJob | null;
 }): UseAiReviewGenerationReturn {
-  const [state, setState] = useState<AiReviewGenerationState>({ phase: 'idle' });
+  const [state, setState] = useState<AiReviewGenerationState>(() =>
+    pendingJob ? { phase: 'queued', job: pendingJob } : { phase: 'idle' }
+  );
   const runningRef = useRef<{ engine: ChessEngine; controller: AbortController } | null>(null);
 
   const teardown = useCallback(() => {
@@ -67,6 +93,36 @@ export function useAiReviewGeneration({
 
   // Unmount: kill the Worker and let any in-flight run resolve into the void.
   useEffect(() => teardown, [teardown]);
+
+  // Poll an accepted job until it resolves (or the poll budget runs out, in
+  // which case the notification takes over and the notice simply stays up).
+  const queuedJobId = state.phase === 'queued' ? state.job.id : null;
+  useEffect(() => {
+    if (!queuedJobId) return;
+    let polls = 0;
+    let cancelled = false;
+    const timer = setInterval(() => {
+      polls += 1;
+      if (polls > JOB_POLL_MAX) {
+        clearInterval(timer);
+        return;
+      }
+      void getAiReviewJobStatusAction(queuedJobId).then((status) => {
+        if (cancelled) return;
+        if (status.status === 'done') {
+          setState({ phase: 'done', review: status.review });
+        } else if (status.status === 'failed') {
+          setState({ phase: 'error', error: status.error });
+        }
+        // `pending` keeps waiting; `not_found` (a job that vanished under us)
+        // keeps waiting too — the next server render knows the truth.
+      });
+    }, JOB_POLL_INTERVAL_MS);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, [queuedJobId]);
 
   const start = useCallback(
     (locale: string) => {
@@ -110,19 +166,21 @@ export function useAiReviewGeneration({
             return;
           }
 
-          setState({ phase: 'generating' });
+          setState({ phase: 'submitting' });
 
-          const response = await generateAiReviewAction({
+          const response = await requestAiReviewAction({
             gameId,
             locale,
             evaluations: swept.value,
           });
           if (!isCurrent()) return;
-          setState(
-            response.success
-              ? { phase: 'done', review: response.review }
-              : { phase: 'error', error: response.error }
-          );
+          if (!response.success) {
+            setState({ phase: 'error', error: response.error });
+          } else if (response.status === 'ready') {
+            setState({ phase: 'done', review: response.review });
+          } else {
+            setState({ phase: 'queued', job: response.job });
+          }
         } catch (error) {
           // The sweep reports its own failures as values; anything thrown
           // here came from the engine handle or the Server Action call.

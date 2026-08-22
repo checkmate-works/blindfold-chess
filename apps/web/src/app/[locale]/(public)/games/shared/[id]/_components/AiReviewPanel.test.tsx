@@ -39,13 +39,11 @@ vi.mock('@/app/[locale]/_hooks/use-current-path-as-next', () => ({
   useCurrentPathAsNext: () => '/en/games/shared/x',
 }));
 
+// The generation run is the page's (see GameReview); the panel only renders
+// whatever state it is handed.
 let mockState: AiReviewGenerationState;
 const mockStart = vi.fn();
 const mockCancel = vi.fn();
-
-vi.mock('../_hooks/use-ai-review-generation', () => ({
-  useAiReviewGeneration: () => ({ state: mockState, start: mockStart, cancel: mockCancel }),
-}));
 
 const REVIEW: AiReview = {
   locale: 'en',
@@ -87,14 +85,13 @@ const REVIEW: AiReview = {
 };
 
 const baseProps = {
-  gameId: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
   locale: 'en' as Locale,
-  moves: ['e4', 'e5', 'Nf3', 'Nc6', 'Nd5'],
-  startingFen: null,
-  initialReview: null,
+  review: null,
   // The subscribed author — the viewer every generation-flow case below is
   // about. The gated variants override this.
   generation: { kind: 'allowed' } as const,
+  onStart: mockStart,
+  onCancel: mockCancel,
   onJumpToPly: vi.fn(),
 };
 
@@ -104,7 +101,7 @@ describe('AiReviewPanel', () => {
   });
 
   it('renders the review when one is cached, with engine facts joined by ply', () => {
-    renderPanel(<AiReviewPanel {...baseProps} initialReview={REVIEW} />);
+    renderPanel(<AiReviewPanel {...baseProps} generationState={mockState} review={REVIEW} />);
 
     expect(screen.getByText('A hard-fought game with one decisive slip.')).toBeInTheDocument();
     // The principle is a glossary link in the viewer's language — once in
@@ -125,28 +122,53 @@ describe('AiReviewPanel', () => {
   });
 
   it('labels a review written in another language, and only then', () => {
-    const { unmount } = renderPanel(<AiReviewPanel {...baseProps} initialReview={REVIEW} />);
+    const { unmount } = renderPanel(
+      <AiReviewPanel {...baseProps} generationState={mockState} review={REVIEW} />
+    );
     expect(screen.queryByText('aiReview.languageNote')).not.toBeInTheDocument();
     unmount();
 
-    renderPanel(<AiReviewPanel {...baseProps} initialReview={{ ...REVIEW, locale: 'ja' }} />);
+    renderPanel(
+      <AiReviewPanel
+        {...baseProps}
+        generationState={mockState}
+        review={{ ...REVIEW, locale: 'ja' }}
+      />
+    );
     expect(screen.getByText('aiReview.languageNote')).toBeInTheDocument();
   });
 
   it('jumps the quick-peek preview when a moment header is clicked', () => {
     const onJumpToPly = vi.fn();
-    renderPanel(<AiReviewPanel {...baseProps} initialReview={REVIEW} onJumpToPly={onJumpToPly} />);
+    renderPanel(
+      <AiReviewPanel
+        {...baseProps}
+        generationState={mockState}
+        review={REVIEW}
+        onJumpToPly={onJumpToPly}
+      />
+    );
 
     fireEvent.click(screen.getByText('3. Nd5'));
     expect(onJumpToPly).toHaveBeenCalledWith(4);
   });
 
-  it('offers the subscription instead of the generate button when nothing pays for it', () => {
-    renderPanel(<AiReviewPanel {...baseProps} generation={{ kind: 'subscription_required' }} />);
+  it('explains the coin price, with both ways to pay, when the balance cannot cover it', () => {
+    renderPanel(
+      <AiReviewPanel
+        {...baseProps}
+        generationState={mockState}
+        generation={{ kind: 'insufficient_balance', cost: 1, balance: 0 }}
+      />
+    );
 
     expect(screen.getByText('aiReview.upsell.title')).toBeInTheDocument();
     // Asserted loosely: the locale prefix is next-intl's to add, and it does
     // not do so outside a request context.
+    expect(screen.getByText('aiReview.upsell.coinCta').closest('a')).toHaveAttribute(
+      'href',
+      expect.stringContaining('/coin')
+    );
     expect(screen.getByText('aiReview.upsell.cta').closest('a')).toHaveAttribute(
       'href',
       expect.stringContaining('/pricing')
@@ -154,13 +176,46 @@ describe('AiReviewPanel', () => {
     expect(screen.queryByText('aiReview.generateButton')).not.toBeInTheDocument();
   });
 
+  it('states the coin price in the confirmation for a coin payer, and not for a subscriber', () => {
+    const { unmount } = renderPanel(
+      <AiReviewPanel
+        {...baseProps}
+        generationState={mockState}
+        generation={{ kind: 'payable', cost: 1, balance: 2 }}
+      />
+    );
+    fireEvent.click(screen.getByText('aiReview.generateButton'));
+    expect(screen.getByText('aiReview.confirm.cost')).toBeInTheDocument();
+    unmount();
+
+    renderPanel(<AiReviewPanel {...baseProps} generationState={mockState} />);
+    fireEvent.click(screen.getByText('aiReview.generateButton'));
+    expect(screen.queryByText('aiReview.confirm.cost')).not.toBeInTheDocument();
+  });
+
+  it('shows the accepted notice for a queued job, whatever the offer', () => {
+    mockState = { phase: 'queued', job: { id: 'job-1', locale: 'en' } };
+    renderPanel(
+      <AiReviewPanel
+        {...baseProps}
+        generationState={mockState}
+        generation={{ kind: 'insufficient_balance', cost: 1, balance: 0 }}
+      />
+    );
+
+    expect(screen.getByRole('status')).toHaveTextContent('aiReview.queued.title');
+    expect(screen.queryByText('aiReview.generateButton')).not.toBeInTheDocument();
+    expect(screen.queryByText('aiReview.upsell.title')).not.toBeInTheDocument();
+  });
+
   // The review is public once published; only spending on a new one is gated.
   it('shows a cached review to an unentitled viewer, with no upsell over it', () => {
     render(
       <AiReviewPanel
         {...baseProps}
-        initialReview={REVIEW}
-        generation={{ kind: 'subscription_required' }}
+        generationState={mockState}
+        review={REVIEW}
+        generation={{ kind: 'insufficient_balance', cost: 1, balance: 0 }}
       />
     );
 
@@ -169,7 +224,7 @@ describe('AiReviewPanel', () => {
   });
 
   it('offers nothing at all to a viewer with no generation offer', () => {
-    renderPanel(<AiReviewPanel {...baseProps} generation={null} />);
+    renderPanel(<AiReviewPanel {...baseProps} generationState={mockState} generation={null} />);
 
     expect(screen.getByText('aiReview.notGenerated')).toBeInTheDocument();
     expect(screen.queryByText('aiReview.generateButton')).not.toBeInTheDocument();
@@ -177,7 +232,7 @@ describe('AiReviewPanel', () => {
   });
 
   it('confirms before generating, and writes the review in the page language', () => {
-    renderPanel(<AiReviewPanel {...baseProps} />);
+    renderPanel(<AiReviewPanel {...baseProps} generationState={mockState} />);
 
     fireEvent.click(screen.getByText('aiReview.generateButton'));
     // The click opens the confirmation — nothing has started yet.
@@ -189,7 +244,7 @@ describe('AiReviewPanel', () => {
   });
 
   it('lets the author pick another language for the review', () => {
-    renderPanel(<AiReviewPanel {...baseProps} />);
+    renderPanel(<AiReviewPanel {...baseProps} generationState={mockState} />);
 
     fireEvent.click(screen.getByText('aiReview.generateButton'));
     fireEvent.change(screen.getByLabelText('aiReview.confirm.languageLabel'), {
@@ -201,7 +256,7 @@ describe('AiReviewPanel', () => {
   });
 
   it('starts nothing when the confirmation is dismissed', () => {
-    renderPanel(<AiReviewPanel {...baseProps} />);
+    renderPanel(<AiReviewPanel {...baseProps} generationState={mockState} />);
 
     fireEvent.click(screen.getByText('aiReview.generateButton'));
     fireEvent.click(screen.getByText('aiReview.confirm.cancel'));
@@ -212,50 +267,28 @@ describe('AiReviewPanel', () => {
 
   it('shows analysis progress with a cancel control', () => {
     mockState = { phase: 'analyzing', done: 3, total: 6 };
-    renderPanel(<AiReviewPanel {...baseProps} />);
+    renderPanel(<AiReviewPanel {...baseProps} generationState={mockState} />);
 
     expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '50');
     fireEvent.click(screen.getByText('aiReview.cancel'));
     expect(mockCancel).toHaveBeenCalledTimes(1);
   });
 
-  it('shows the LLM waiting state', () => {
-    mockState = { phase: 'generating' };
-    renderPanel(<AiReviewPanel {...baseProps} />);
+  it('shows the submitting state between the sweep and the acceptance', () => {
+    mockState = { phase: 'submitting' };
+    renderPanel(<AiReviewPanel {...baseProps} generationState={mockState} />);
 
-    expect(screen.getByText('aiReview.generating')).toBeInTheDocument();
+    expect(screen.getByText('aiReview.submitting')).toBeInTheDocument();
   });
 
   it('surfaces errors with a retry button', () => {
     mockState = { phase: 'error', error: 'rate_limited' };
-    renderPanel(<AiReviewPanel {...baseProps} />);
+    renderPanel(<AiReviewPanel {...baseProps} generationState={mockState} />);
 
     expect(screen.getByRole('alert')).toHaveTextContent('aiReview.errors.rate_limited');
     fireEvent.click(screen.getByText('aiReview.retry'));
     fireEvent.click(screen.getByText('aiReview.confirm.submit'));
     expect(mockStart).toHaveBeenCalledTimes(1);
-  });
-
-  it('renders the freshly generated review from the done phase', () => {
-    mockState = { phase: 'done', review: REVIEW };
-    renderPanel(<AiReviewPanel {...baseProps} />);
-
-    expect(screen.getByText('A hard-fought game with one decisive slip.')).toBeInTheDocument();
-  });
-
-  it('raises a freshly generated review, but not a cached one', () => {
-    const onReviewGenerated = vi.fn();
-
-    mockState = { phase: 'idle' };
-    const { unmount } = render(
-      <AiReviewPanel {...baseProps} initialReview={REVIEW} onReviewGenerated={onReviewGenerated} />
-    );
-    expect(onReviewGenerated).not.toHaveBeenCalled();
-    unmount();
-
-    mockState = { phase: 'done', review: REVIEW };
-    renderPanel(<AiReviewPanel {...baseProps} onReviewGenerated={onReviewGenerated} />);
-    expect(onReviewGenerated).toHaveBeenCalledWith(REVIEW);
   });
 });
 
@@ -290,7 +323,7 @@ describe('AiReviewPanel — key moment grade filter', () => {
   });
 
   it('offers one toggle per grade present, with its count, all on by default', () => {
-    renderPanel(<AiReviewPanel {...baseProps} initialReview={MULTI_GRADE} />);
+    renderPanel(<AiReviewPanel {...baseProps} generationState={mockState} review={MULTI_GRADE} />);
 
     const group = screen.getByRole('group');
     expect(
@@ -306,7 +339,7 @@ describe('AiReviewPanel — key moment grade filter', () => {
   });
 
   it('hides the moments of a grade that is toggled off, and brings them back', () => {
-    renderPanel(<AiReviewPanel {...baseProps} initialReview={MULTI_GRADE} />);
+    renderPanel(<AiReviewPanel {...baseProps} generationState={mockState} review={MULTI_GRADE} />);
 
     fireEvent.click(grade('aiReview.judgments.inaccuracy'));
     expect(grade('aiReview.judgments.inaccuracy')).toHaveAttribute('aria-pressed', 'false');
@@ -320,7 +353,7 @@ describe('AiReviewPanel — key moment grade filter', () => {
   });
 
   it('explains an empty list rather than showing a bare heading', () => {
-    renderPanel(<AiReviewPanel {...baseProps} initialReview={MULTI_GRADE} />);
+    renderPanel(<AiReviewPanel {...baseProps} generationState={mockState} review={MULTI_GRADE} />);
 
     for (const judgment of ['inaccuracy', 'mistake', 'blunder']) {
       fireEvent.click(grade(`aiReview.judgments.${judgment}`));
@@ -330,7 +363,7 @@ describe('AiReviewPanel — key moment grade filter', () => {
   });
 
   it('omits the filter when every moment shares one grade', () => {
-    renderPanel(<AiReviewPanel {...baseProps} initialReview={REVIEW} />);
+    renderPanel(<AiReviewPanel {...baseProps} generationState={mockState} review={REVIEW} />);
     expect(screen.queryByRole('group')).toBeNull();
   });
 });

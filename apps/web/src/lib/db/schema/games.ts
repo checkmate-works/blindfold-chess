@@ -13,10 +13,26 @@
 import type { FinalGameOutcome, Side } from '@blindfold-chess/types';
 import { sql } from 'drizzle-orm';
 import type { AnyPgColumn } from 'drizzle-orm/pg-core';
-import { index, integer, jsonb, pgTable, text, unique, uuid, varchar } from 'drizzle-orm/pg-core';
+import {
+  index,
+  integer,
+  jsonb,
+  pgTable,
+  text,
+  unique,
+  uniqueIndex,
+  uuid,
+  varchar,
+} from 'drizzle-orm/pg-core';
 
-import type { AiReviewContent, AnalysisSummaryStats, ReviewMoment } from '@/lib/ai-review/types';
+import type {
+  AiReviewContent,
+  AiReviewJobStatus,
+  AnalysisSummaryStats,
+  ReviewMoment,
+} from '@/lib/ai-review/types';
 import type { EngineConfig } from '@/lib/engines';
+import type { PositionEvaluation } from '@/lib/games/analysis/types';
 import type {
   GamePlaySettings,
   MoveOperationLog,
@@ -357,10 +373,85 @@ export const gameAiReviews = pgTable(
     ...createdAtOnly,
   },
   (table) => [
-    // Cache key + race guard + future charge-idempotency anchor (see TSDoc).
+    // Cache key + race guard (see TSDoc).
     unique('uq_game_ai_reviews_game_locale').on(table.gameId, table.locale),
   ]
 );
 
 export type GameAiReviewRecord = typeof gameAiReviews.$inferSelect;
 export type NewGameAiReviewRecord = typeof gameAiReviews.$inferInsert;
+
+/**
+ * AI review generation jobs — the queue behind the asynchronous coach review.
+ *
+ * @design Why a job row at all
+ * Generation is a browser-side Stockfish sweep followed by a server-side LLM
+ * call that takes tens of seconds. The first version ran that call inside the
+ * Server Action and made the author wait on a spinner that did not survive a
+ * tab switch. The job row is the server-side state that replaces the
+ * spinner: the action charges and enqueues, the work runs after the response
+ * (`after()`), and the page — on any later visit — reads this row to show
+ * "accepted" instead of offering the button again. The finished review still
+ * lands in `game_ai_reviews`; this table never holds prose.
+ *
+ * @design The engine sweep travels with the job
+ * The evaluations are the client's contribution and exist nowhere else, so
+ * the row carries them (already shape-validated by the action) until the
+ * worker has derived the review's moments from them. At most ~200 small
+ * objects; they are dead weight once the job is `done`, kept for the admin
+ * eye rather than reaped.
+ *
+ * @design One live job per (game, locale)
+ * The partial unique index over `status IN ('pending', 'processing')` is the
+ * double-submit guard: a second click while a job is live hits the index
+ * before any coin moves. Finished rows (`done` / `failed`) leave the index, so
+ * a failed job can be retried under a fresh charge.
+ *
+ * @design Charge at accept, refund on failure
+ * The coin is debited in the transaction that inserts this row (ledger key
+ * `ai_review:<job id>`): "accepted" is a promise the balance must already
+ * back, and a job that waits to charge until the review is stored can find
+ * the coin spent elsewhere in the meantime. A job that ends `failed` returns
+ * that exact debit (`ai_review_refund:<job id>`), so the author never pays
+ * for a review they did not get. See `chargeAiReview` / `refundAiReviewCharge`.
+ *
+ * `requested_by_id` references auth.users with ON DELETE CASCADE in custom
+ * SQL: a purged requester has no review to receive and no wallet to refund.
+ */
+export const gameAiReviewJobs = pgTable(
+  'game_ai_review_jobs',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .$defaultFn(() => uuidv7()),
+    gameId: uuid('game_id')
+      .notNull()
+      .references(() => games.id, { onDelete: 'cascade' }),
+    /** BCP 47 tag from `SUPPORTED_LOCALES` — the language to write the review in. */
+    locale: varchar('locale', { length: 10 }).notNull(),
+    // references auth.users — FK defined in custom SQL (ON DELETE CASCADE).
+    requestedById: uuid('requested_by_id').notNull(),
+    /** The client's engine sweep, one entry per position, consumed by the worker. */
+    evaluations: jsonb('evaluations').$type<PositionEvaluation[]>().notNull(),
+    /** `pending` → `processing` → `done` | `failed` (see {@link AiReviewJobStatus}). */
+    status: varchar('status', { length: 20 })
+      .$type<AiReviewJobStatus>()
+      .notNull()
+      .default('pending'),
+    /** Worker claims so far; the sweeper refunds instead of retrying past `AI_REVIEW_JOB_MAX_ATTEMPTS`. */
+    attempts: integer('attempts').notNull().default(0),
+    /** Why a `failed` job failed — an `AiReviewError` code. */
+    error: varchar('error', { length: 50 }),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex('uq_game_ai_review_jobs_live')
+      .on(table.gameId, table.locale)
+      .where(sql`status IN ('pending', 'processing')`),
+    // The sweeper's scan: stale rows by status, oldest `updated_at` first.
+    index('idx_game_ai_review_jobs_status_updated').on(table.status, table.updatedAt),
+  ]
+);
+
+export type GameAiReviewJobRecord = typeof gameAiReviewJobs.$inferSelect;
+export type NewGameAiReviewJobRecord = typeof gameAiReviewJobs.$inferInsert;

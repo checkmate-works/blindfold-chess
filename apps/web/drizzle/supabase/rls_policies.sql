@@ -1116,6 +1116,14 @@ CREATE POLICY "game_ai_reviews_select" ON "game_ai_reviews"
   );
 
 -- =============================================================================
+-- game_ai_review_jobs (AI review generation queue — service role only)
+-- =============================================================================
+-- No SELECT policy: the row is internal bookkeeping (the author's pending
+-- state is served through a members-only server action). RLS enabled with no
+-- policies keeps it invisible to authenticated/anon clients.
+ALTER TABLE "game_ai_review_jobs" ENABLE ROW LEVEL SECURITY;
+
+-- =============================================================================
 -- repertoires (型 — UGC course) + lines + opening links
 -- =============================================================================
 -- Visibility mirrors games: a repertoire is readable when it is live and shared

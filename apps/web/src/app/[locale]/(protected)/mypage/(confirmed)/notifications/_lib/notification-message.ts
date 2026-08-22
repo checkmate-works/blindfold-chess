@@ -179,6 +179,10 @@ export function buildNotificationMessage(
         return t('likeCoinGrantMessage.default', { count: notification.metadata.count });
       }
       return t('unknownNotification');
+    case 'ai_review_ready':
+      return t('aiReviewReadyMessage');
+    case 'ai_review_failed':
+      return t('aiReviewFailedMessage');
     case 'achievement_granted':
       if (isAchievementGrantedMetadata(notification.metadata)) {
         const { badges } = notification.metadata;
