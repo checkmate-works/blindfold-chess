@@ -53,6 +53,10 @@
  *   the table is code-seeded on deploy — so no action invalidates this tag
  *   today; the hourly revalidate on the readers is the only freshness bound.
  *   Declared so a future admin editor has a handle to pull.
+ * - {@link OPENINGS_CACHE_TAG} — the `chess_openings` master
+ *   (`getOpenings` and every lookup derived from it). Same situation as
+ *   `ranks`: seeded at deploy, no runtime writer, hourly revalidate, no
+ *   invalidator today.
  */
 
 export const LEADERBOARD_CACHE_TAG = 'leaderboard' as const;
@@ -65,3 +69,4 @@ export const GRANT_STATUS_CACHE_TAG = 'grant-status' as const;
 export const SUBSCRIPTION_STATUS_CACHE_TAG = 'subscription-status' as const;
 export const RANK_STATUS_CACHE_TAG = 'rank-status' as const;
 export const RANKS_CACHE_TAG = 'ranks' as const;
+export const OPENINGS_CACHE_TAG = 'openings' as const;

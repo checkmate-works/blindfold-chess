@@ -5,7 +5,6 @@ import type { SQL } from 'drizzle-orm';
 
 import {
   SOCIAL_AUTHOR_COLUMNS,
-  chessOpenings,
   db,
   liveProfileJoinOn,
   profiles,
@@ -34,6 +33,8 @@ import type {
   ProfilePostWithReplyMeta,
   SortMode,
 } from '@/app/[locale]/(public)/topics/_lib/shared';
+
+import { getOpeningsByFirstMoveSquare } from './opening-master-queries';
 
 // Re-export from opening-master-queries for backward compatibility
 export {
@@ -153,14 +154,11 @@ export async function getOpeningPostsWithReplyMeta(
 /**
  * Resolve the slugs of every opening whose first move lands on `square`.
  * Shared by the first-move-square count and paginated-listing queries.
+ * Read off the cached openings master rather than the table, so the filter
+ * costs no pooled connection (see `getOpenings`).
  */
 async function getOpeningSlugsByFirstMoveSquare(square: string): Promise<string[]> {
-  const rows = await db
-    .select({ slug: chessOpenings.slug })
-    .from(chessOpenings)
-    .where(eq(chessOpenings.firstMoveSquare, square));
-
-  return rows.map((o) => o.slug);
+  return (await getOpeningsByFirstMoveSquare(square)).map((o) => o.slug);
 }
 
 /**
