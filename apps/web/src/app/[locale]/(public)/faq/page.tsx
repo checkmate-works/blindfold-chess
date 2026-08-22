@@ -4,7 +4,6 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 import { getModuleWeight } from '@blindfold-chess/features/exp';
 
-import { DAILY_CREATION_POINT_CAP, POST_CREATION_POINTS } from '@/lib/points';
 import { JsonLd, generateFAQPageSchema } from '@/lib/seo/jsonld';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
@@ -172,12 +171,7 @@ export default async function FAQPage({ params }: Props) {
       answer: (
         <div className="space-y-3">
           <p>{t('items.adFreeBenefits.answer')}</p>
-          <p className="text-sm text-muted-foreground">
-            {t('items.adFreeBenefits.earnSummary', {
-              amount: POST_CREATION_POINTS,
-              cap: DAILY_CREATION_POINT_CAP,
-            })}
-          </p>
+          <p className="text-sm text-muted-foreground">{t('items.adFreeBenefits.earnSummary')}</p>
         </div>
       ),
     },

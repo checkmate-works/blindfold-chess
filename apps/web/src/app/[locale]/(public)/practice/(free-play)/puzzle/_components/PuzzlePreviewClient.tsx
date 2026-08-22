@@ -6,7 +6,6 @@ import { useTranslations } from 'next-intl';
 
 import type { ChunkOption } from '@/lib/chunks/types';
 import type { PuzzleSolutionMove } from '@/lib/db/schema/positions';
-import { buildCoinToastParams } from '@/lib/points/coin-toast-params';
 import type { ThemeOption } from '@/lib/themes/types';
 
 import {
@@ -76,8 +75,7 @@ export function PuzzlePreviewClient({ availableThemes, availableChunks }: Props)
       clearDraft();
 
       // Land straight on the created puzzle so the author can verify it.
-      const toastParams = buildCoinToastParams(result, 'position_created');
-      return { path: `/practice/puzzle/${result.id}?${toastParams.toString()}` };
+      return { path: `/practice/puzzle/${result.id}?toast=position_created` };
     });
 
   return (

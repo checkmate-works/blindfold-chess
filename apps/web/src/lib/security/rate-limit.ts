@@ -43,7 +43,7 @@ export type RateLimitConfig = {
  *
  * See `RATE_LIMITS.generateAiReview` for why it currently sits this low.
  */
-export const AI_REVIEW_GENERATIONS_PER_DAY = 1;
+export const AI_REVIEW_GENERATIONS_PER_DAY = 3;
 
 export const RATE_LIMITS = {
   createPost: { action: 'create_post', maxAttempts: 10, windowMs: 3_600_000 },
@@ -129,25 +129,20 @@ export const RATE_LIMITS = {
    */
   saveGameResult: { action: 'save_game_result', maxAttempts: 60, windowMs: 3_600_000 },
   /**
-   * Per-user limit for AI review generation. This is the ONLY spend guard on
-   * the paid LLM call (results are cached per (game, locale), so repeat views
-   * are free), and no system-wide counter backs it up: the daily ceiling on
-   * spend is (subscribers × this number). Keep it tight.
+   * Per-user limit for AI review requests — the abuse backstop behind the
+   * coin price. Results are cached per (game, locale), so repeat views are
+   * free; this counts accepted generation requests only. No system-wide
+   * counter backs it up: the daily ceiling on LLM spend is (members who can
+   * pay × this number), so it stays small even though coins are the primary
+   * economic control.
    *
-   * The current {@link AI_REVIEW_GENERATIONS_PER_DAY} is deliberately below
-   * what a heavy player could use. The feature ships subscriber-only while its
-   * output is still being tuned, so the cap is set to learn the per-review cost
-   * before opening the tap, not to satisfy demand. Raise it once real usage and
-   * billing data justify the number.
-   *
-   * The consequence to keep in mind at a cap of one: a slot is consumed just
-   * before the LLM call, so a provider error burns the day's only attempt (a
-   * cache hit, a missing key, and a failed entitlement check all refuse earlier
-   * and cost nothing). A retry used to be implicit in a larger budget; it is
-   * not now, and a user who hits `llm_error` waits until tomorrow.
-   *
-   * A future coin price replaces this as the primary economic control; the cap
-   * then stays on as an abuse backstop.
+   * {@link AI_REVIEW_GENERATIONS_PER_DAY} is set so an author who has earned
+   * a few coins can review more than one game in a sitting, while a scripted
+   * account minting coins through collusive likes cannot turn them into an
+   * unbounded stream of LLM calls. A slot is consumed just before the job is
+   * accepted, so a refused request (cache hit, missing key, unpaid) costs
+   * nothing; a job that fails after acceptance does consume its slot, but
+   * its coin is refunded.
    */
   generateAiReview: {
     action: 'generate_ai_review',

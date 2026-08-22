@@ -1,10 +1,8 @@
 import { resolvePagination } from '@/lib/pagination';
 import {
-  type DailyCreationCapStatus,
   type PointBalanceSummary,
   type PointHistoryEntry,
   countPointHistory,
-  getDailyCreationCapStatus,
   getPointBalanceSummary,
   getPointHistory,
 } from '@/lib/points';
@@ -15,7 +13,7 @@ const HISTORY_PAGE_SIZE = 20;
 
 /**
  * A history row plus an optional deep link to the UGC that earned it. `href`
- * is present only for a live UGC-creation grant — see {@link resolveHistoryLinks}.
+ * is present only for a live (historical) UGC-creation grant — see {@link resolveHistoryLinks}.
  */
 export type PointsHistoryRow = PointHistoryEntry & { href?: string };
 
@@ -25,12 +23,11 @@ export type PointsPageData = {
   /** Page actually rendered — `page` clamped into `[1, totalPages]`. */
   currentPage: number;
   totalPages: number;
-  dailyCap: DailyCreationCapStatus;
 };
 
 /**
- * Single batched fetch for the /mypage/coins view: the balance summary, the
- * daily creation-cap status, and one page of history rows.
+ * Single batched fetch for the /mypage/coins view: the balance summary and
+ * one page of history rows.
  *
  * The row count is fetched up front (rather than probing with a
  * `PAGE_SIZE + 1` row) because the view renders a numbered pagination bar,
@@ -39,10 +36,9 @@ export type PointsPageData = {
  * empty table.
  */
 export async function getPointsPageData(userId: string, page: number = 1): Promise<PointsPageData> {
-  const [balance, totalCount, dailyCap] = await Promise.all([
+  const [balance, totalCount] = await Promise.all([
     getPointBalanceSummary(userId),
     countPointHistory(userId),
-    getDailyCreationCapStatus(userId),
   ]);
 
   const { currentPage, totalPages, offset } = resolvePagination(
@@ -60,5 +56,5 @@ export async function getPointsPageData(userId: string, page: number = 1): Promi
     return href ? { ...row, href } : row;
   });
 
-  return { balance, history, currentPage, totalPages, dailyCap };
+  return { balance, history, currentPage, totalPages };
 }

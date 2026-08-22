@@ -100,48 +100,55 @@ export type AiReview = {
 };
 
 /**
- * Whether a given viewer may generate this game's review, and if not, why —
- * the one value both the page (which renders either the generate button or the
- * upsell) and the Server Action (which refuses) branch on.
+ * Whether a given viewer may generate this game's review, and on what terms —
+ * the one value both the page (which renders the generate button, the coin
+ * price, or the "earn coins" notice) and the Server Action (which refuses or
+ * charges) branch on.
  *
- * The union deliberately separates two different kinds of "no":
+ * The union deliberately separates three different answers:
  *
  * - `blocked` is about the (game, viewer) pair and never changes by paying —
  *   a third party cannot buy the right to publish an assessment of someone
  *   else's game, and a 3-ply game has nothing to coach. Resolved by the pure
  *   `canGenerateAiReview`.
- * - `subscription_required` is about entitlement only. The viewer is the right
- *   person asking about the right game; they just have nothing that pays for
- *   the LLM call yet. This is the state the paywall CTA renders for.
- *
- * @design Room for the coin charge
- * Paid-per-use access arrives as one more member, `{ kind: 'payable'; cost;
- * balance }`, produced when the viewer has no subscription but enough coins.
- * The UI gains a "spend N coins" branch beside the CTA; the Server Action
- * gains a debit. Nothing else in the union has to move, because generation
- * eligibility and entitlement are already separate members rather than one
- * boolean. See `resolveAiReviewGenerationState` for where the balance lookup
- * would go and `generateReview`'s save step for where the debit belongs.
+ * - `allowed` / `payable` are the two ways the right person can pay for the
+ *   LLM call: a subscription (no charge) or `cost` coins from `balance`.
+ * - `insufficient_balance` is the right person with nothing that pays. The
+ *   coin figures ride along so the notice can say how far off they are.
  */
 export type AiReviewGenerationState =
   | { kind: 'allowed' }
-  | { kind: 'subscription_required' }
+  | { kind: 'payable'; cost: number; balance: number }
+  | { kind: 'insufficient_balance'; cost: number; balance: number }
   | { kind: 'blocked'; reason: 'not_owner' | 'game_not_eligible' };
 
 /**
  * The generation states worth rendering something for. A blocked viewer is
  * offered nothing at all — not even an explanation — so the UI takes this
  * narrowed type and `null` for "no offer", rather than a fourth branch it
- * would have to remember never to render. Derived by subtraction so that the
- * planned `payable` state reaches the UI without touching this line.
+ * would have to remember never to render.
  */
 export type AiReviewGenerationOffer = Exclude<AiReviewGenerationState, { kind: 'blocked' }>;
 
 /**
+ * Lifecycle of a `game_ai_review_jobs` row. `pending` is accepted and
+ * charged but not yet picked up; `processing` is claimed by a worker;
+ * `done` / `failed` are terminal (a failed job has been refunded).
+ */
+export const AI_REVIEW_JOB_STATUSES = ['pending', 'processing', 'done', 'failed'] as const;
+export type AiReviewJobStatus = (typeof AI_REVIEW_JOB_STATUSES)[number];
+
+/** The job the author is waiting on, as the page and the action describe it. */
+export type PendingAiReviewJob = {
+  id: string;
+  /** The language the review will be written in. */
+  locale: string;
+};
+
+/**
  * Error codes the generation flow can surface to the UI (mapped to i18n
- * messages under `sharedGames.aiReview.errors`). Kept as a closed union so a
- * future coin charge only needs to add `'insufficient_balance'` here and in
- * the message files.
+ * messages under `sharedGames.aiReview.errors`). A closed union so that a
+ * new failure mode cannot ship without a message in every locale.
  */
 export type AiReviewError =
   | 'not_authenticated'
@@ -149,10 +156,29 @@ export type AiReviewError =
   | 'not_found'
   | 'not_owner'
   | 'game_not_eligible'
-  | 'subscription_required'
+  | 'insufficient_balance'
   | 'rate_limited'
   | 'llm_error'
   | 'unexpected_error';
 
-export type GenerateAiReviewResponse =
-  { success: true; review: AiReview } | { success: false; error: AiReviewError };
+/**
+ * What `requestAiReviewAction` answers. `ready` is the cache hit — the review
+ * already exists and is returned in full; `queued` is the accepted request
+ * (charged, if the viewer pays in coins) whose result arrives by notification
+ * and by polling `getAiReviewJobStatusAction`.
+ */
+export type RequestAiReviewResponse =
+  | { success: true; status: 'ready'; review: AiReview }
+  | { success: true; status: 'queued'; job: PendingAiReviewJob }
+  | { success: false; error: AiReviewError };
+
+/**
+ * One poll of a job the viewer requested. `pending` covers both the queued
+ * and the in-worker states — the client has no use for the difference.
+ * `not_found` is also what a job belonging to someone else returns.
+ */
+export type AiReviewJobStatusResponse =
+  | { status: 'pending' }
+  | { status: 'done'; review: AiReview }
+  | { status: 'failed'; error: AiReviewError }
+  | { status: 'not_found' };

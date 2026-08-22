@@ -282,3 +282,23 @@ export function isPositionForkedMetadata(m: unknown): m is PositionForkedMetadat
   const r = m as Record<string, unknown>;
   return typeof r.sourceType === 'string';
 }
+
+/**
+ * Metadata persisted with the `ai_review_ready` / `ai_review_failed` pair —
+ * emitted by the review job worker (`processAiReviewJob`). `locale` is the
+ * language the review was (to be) written in. A failed job additionally
+ * records the `AiReviewError` code and how many coins the refund returned;
+ * the message does not surface either (the refund is unconditional, and the
+ * code is for the admin eye), so the guard checks only the shared field.
+ */
+export type AiReviewJobMetadata = {
+  locale: string;
+  error?: string;
+  refunded?: number;
+};
+
+export function isAiReviewJobMetadata(m: unknown): m is AiReviewJobMetadata {
+  if (typeof m !== 'object' || m === null) return false;
+  const r = m as Record<string, unknown>;
+  return typeof r.locale === 'string';
+}

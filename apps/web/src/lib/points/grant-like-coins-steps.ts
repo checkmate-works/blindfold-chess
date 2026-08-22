@@ -1,10 +1,12 @@
 import { and, gt, inArray, isNotNull, isNull, lte } from 'drizzle-orm';
 import 'server-only';
 
-import { db, likes, positions, profiles, topicPosts } from '@/lib/db';
+import { chunks, db, games, likes, positions, profiles, repertoires, topicPosts } from '@/lib/db';
 
 import { LIKE_GRANT_TARGET_TYPES } from './constants';
+import type { LikeGrantTargetType } from './constants';
 import type { ContentRow, GrantIntent, LikeRow, PositionRow } from './grant-like-coins-intents';
+import { contentKey } from './grant-like-coins-intents';
 
 /**
  * Step helpers for the `grantLikeCoins` daily batch.
@@ -26,8 +28,8 @@ import type { ContentRow, GrantIntent, LikeRow, PositionRow } from './grant-like
  * next run's window.
  *
  * Filtered to target types that participate in the like-coin program
- * (currently `position` and `topic_post`); excludes likes on entities
- * — e.g. chunks — that are not part of the coin grant.
+ * (`LIKE_GRANT_TARGET_TYPES`); excludes likes on entities — articles, game
+ * comments — that are not part of the coin grant.
  *
  * Also excludes anonymised likes (`user_id IS NULL`): once a liker's account
  * is physically purged the FK sets their likes' `user_id` to NULL, and such a
@@ -58,9 +60,17 @@ export async function loadLikesForBatch(watermark: Date, scanStartedAt: Date): P
 
 /**
  * Resolve the liked content rows and the fork parents the
- * intent-builder needs. Issues two parallel queries (positions +
- * topic_posts) and a follow-up fork-parent lookup. Returns three
- * `Map`s keyed by id — the shape `buildGrantIntents` expects.
+ * intent-builder needs. Issues one query per target table in parallel,
+ * then a follow-up fork-parent lookup. Returns the content rows in a
+ * single map keyed by `(targetType, targetId)` — the shape
+ * `buildGrantIntents` expects — so a new likeable kind is one more entry
+ * in `CONTENT_LOADERS`, with the intent rules untouched.
+ *
+ * Every loader reads the same two facts: who owns the row (null once the
+ * author's account is purged — no payee) and whether it is soft-deleted.
+ * Visibility is deliberately NOT consulted: a like could only have been
+ * placed on content its liker could see, and a course later moved to
+ * `private` still earned that like.
  *
  * @design Fork lookup is one level only
  * Position-on-position likes pay both the direct owner and the
@@ -69,54 +79,30 @@ export async function loadLikesForBatch(watermark: Date, scanStartedAt: Date): P
  * detail page surfaces).
  */
 export async function resolveGrantTargets(likeRows: LikeRow[]): Promise<{
-  positionById: Map<string, PositionRow>;
-  topicPostById: Map<string, ContentRow>;
+  contentByKey: Map<string, ContentRow | PositionRow>;
   forkParentById: Map<string, ContentRow>;
 }> {
-  const positionIds = [
-    ...new Set(likeRows.filter((l) => l.targetType === 'position').map((l) => l.targetId)),
-  ];
-  const topicPostIds = [
-    ...new Set(likeRows.filter((l) => l.targetType === 'topic_post').map((l) => l.targetId)),
-  ];
+  const idsByType = new Map<LikeGrantTargetType, Set<string>>();
+  for (const like of likeRows) {
+    if (!isGrantTargetType(like.targetType)) continue;
+    const ids = idsByType.get(like.targetType) ?? new Set<string>();
+    ids.add(like.targetId);
+    idsByType.set(like.targetType, ids);
+  }
 
-  const [positionRows, topicPostRows] = await Promise.all([
-    positionIds.length
-      ? db
-          .select({
-            id: positions.id,
-            ownerId: positions.userId,
-            forkedFromId: positions.forkedFromId,
-            deletedAt: positions.deletedAt,
-          })
-          .from(positions)
-          .where(inArray(positions.id, positionIds))
-      : [],
-    topicPostIds.length
-      ? db
-          .select({
-            id: topicPosts.id,
-            ownerId: topicPosts.userId,
-            deletedAt: topicPosts.deletedAt,
-          })
-          .from(topicPosts)
-          .where(inArray(topicPosts.id, topicPostIds))
-      : [],
-  ]);
-
-  const positionById = new Map<string, PositionRow>(
-    positionRows.map((r) => [
-      r.id,
-      { ownerId: r.ownerId, forkedFromId: r.forkedFromId, deletedAt: r.deletedAt },
-    ])
+  const loaded = await Promise.all(
+    LIKE_GRANT_TARGET_TYPES.map(async (type) => {
+      const ids = [...(idsByType.get(type) ?? [])];
+      const rows = ids.length ? await CONTENT_LOADERS[type](ids) : [];
+      return rows.map((row) => [contentKey(type, row.id), row] as const);
+    })
   );
-  const topicPostById = new Map<string, ContentRow>(
-    topicPostRows.map((r) => [r.id, { ownerId: r.ownerId, deletedAt: r.deletedAt }])
-  );
+  const contentByKey = new Map<string, ContentRow | PositionRow>(loaded.flat());
 
   const forkParentIds = [
     ...new Set(
-      positionRows
+      [...contentByKey.values()]
+        .filter((r): r is PositionRow => 'forkedFromId' in r)
         .filter((r) => r.deletedAt === null && r.forkedFromId !== null)
         .map((r) => r.forkedFromId as string)
     ),
@@ -135,8 +121,52 @@ export async function resolveGrantTargets(likeRows: LikeRow[]): Promise<{
     forkParentRows.map((r) => [r.id, { ownerId: r.ownerId, deletedAt: r.deletedAt }])
   );
 
-  return { positionById, topicPostById, forkParentById };
+  return { contentByKey, forkParentById };
 }
+
+function isGrantTargetType(value: string): value is LikeGrantTargetType {
+  return (LIKE_GRANT_TARGET_TYPES as readonly string[]).includes(value);
+}
+
+type LoadedContent = (ContentRow | PositionRow) & { id: string };
+
+/**
+ * One owner/soft-delete lookup per likeable table. `satisfies` closes the
+ * set against `LIKE_GRANT_TARGET_TYPES`: adding a type there without a
+ * loader here is a compile error, not a silently unpaid like.
+ */
+const CONTENT_LOADERS = {
+  position: (ids) =>
+    db
+      .select({
+        id: positions.id,
+        ownerId: positions.userId,
+        forkedFromId: positions.forkedFromId,
+        deletedAt: positions.deletedAt,
+      })
+      .from(positions)
+      .where(inArray(positions.id, ids)),
+  topic_post: (ids) =>
+    db
+      .select({ id: topicPosts.id, ownerId: topicPosts.userId, deletedAt: topicPosts.deletedAt })
+      .from(topicPosts)
+      .where(inArray(topicPosts.id, ids)),
+  game: (ids) =>
+    db
+      .select({ id: games.id, ownerId: games.authorId, deletedAt: games.deletedAt })
+      .from(games)
+      .where(inArray(games.id, ids)),
+  chunk: (ids) =>
+    db
+      .select({ id: chunks.id, ownerId: chunks.userId, deletedAt: chunks.deletedAt })
+      .from(chunks)
+      .where(inArray(chunks.id, ids)),
+  repertoire: (ids) =>
+    db
+      .select({ id: repertoires.id, ownerId: repertoires.userId, deletedAt: repertoires.deletedAt })
+      .from(repertoires)
+      .where(inArray(repertoires.id, ids)),
+} as const satisfies Record<LikeGrantTargetType, (ids: string[]) => Promise<LoadedContent[]>>;
 
 /**
  * Drop intents whose recipient profile has been withdrawn or

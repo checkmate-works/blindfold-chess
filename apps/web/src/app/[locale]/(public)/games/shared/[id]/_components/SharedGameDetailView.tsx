@@ -5,6 +5,7 @@ import { getStartingFen } from '@blindfold-chess/features/chess-core';
 import type { Side } from '@blindfold-chess/types';
 
 import { resolveAiReviewGenerationState } from '@/lib/ai-review/entitlement';
+import { findLiveAiReviewJob } from '@/lib/ai-review/jobs';
 import { isLlmConfigured } from '@/lib/ai-review/openai';
 import { PRINCIPLE_GLOSSARY_SLUGS } from '@/lib/ai-review/principles';
 import { getAiReviewForViewer } from '@/lib/ai-review/queries';
@@ -81,6 +82,7 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
     availableChunks,
     aiReview,
     aiReviewAccess,
+    liveReviewJob,
   ] = await Promise.all([
     // Opening is derived from the moves (see detectGameOpening); null for
     // custom-start games or lines outside the master. Rendered (with the
@@ -101,6 +103,9 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
     // what the tab offers, and making it wait on the review's round-trip
     // would serialize two independent reads.
     resolveAiReviewGenerationState(game, user?.id ?? null),
+    // A generation already accepted for this game: the author's tab shows the
+    // "accepted" notice instead of the button until it lands (see GameReview).
+    findLiveAiReviewJob(game.id),
   ]);
 
   // Whether to offer the "as played" GIF — shared with the pre-publish teaser
@@ -175,7 +180,17 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
             statsHeader={
               <GameOutcomeLabel key="outcome" result={game.result} playerColor={game.playerColor} />
             }
-            aiReview={showAiReview ? { initial: aiReview, generation: generationOffer } : undefined}
+            aiReview={
+              showAiReview
+                ? {
+                    initial: aiReview,
+                    generation: generationOffer,
+                    // The job is the author's; a reader with no offer is
+                    // never told one is in flight.
+                    pendingJob: generationOffer ? liveReviewJob : null,
+                  }
+                : undefined
+            }
             social={{
               mode: 'live',
               // Real auth state — distinct from `currentUser` (the comment

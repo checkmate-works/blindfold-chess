@@ -734,19 +734,18 @@
     "title": "Moedas",
     "unit": "moedas",
     "hero": {
-      "tagline": "Você ganha Moedas ao publicar em tópicos e criar problemas."
+      "tagline": "Cada curtida no conteúdo que você publica rende uma moeda."
     },
     "loop": {
-      "step1Title": "Contribua",
-      "step1Body": "Crie um problema ou uma publicação",
-      "step2Title": "Ganhe Moedas",
-      "step2Body": "Cada contribuição soma",
+      "step1Title": "Publique",
+      "step1Body": "Compartilhe uma partida, um problema, um Kata",
+      "step2Title": "Receba curtidas",
+      "step2Body": "Cada curtida soma uma moeda",
       "step3Title": "Gaste em vantagens",
-      "step3Body": "Tempo sem anúncios ou partidas"
+      "step3Body": "Sem anúncios, partidas, revisões IA"
     },
     "earn": {
       "heading": "Como ganhar Moedas",
-      "perContribution": "por publicação · até {cap} por dia",
       "chips": {
         "puzzle": "Puzzle",
         "positionMemory": "Memória de posição",
@@ -755,8 +754,8 @@
         "repertoire": "Kata",
         "game": "Partida"
       },
-      "likeNote1": "Cada curtida que seu conteúdo recebe rende uma Moeda (não é imediato: concedido uma vez por dia em lote).",
-      "likeNote2": "Publique um tópico ou crie um problema uma vez, e ele continuará rendendo Moedas."
+      "perLike": "por curtida · creditadas uma vez por dia",
+      "note": "O conteúdo que você já publicou continua rendendo a cada nova curtida. Curtidas no seu próprio conteúdo não contam."
     },
     "spend": {
       "heading": "Para que servem as Moedas",
@@ -764,13 +763,16 @@
       "adFreeRate": "1 Moeda = {days, plural, one {# dia sem anúncios} other {# dias sem anúncios}}",
       "maiaTitle": "Jogar contra a Maia",
       "maiaRate": "{cost, plural, one {# Moeda} other {# Moedas}} = 1 partida",
-      "maiaNote": "A Maia é uma IA de rede neural que joga com estilo humano."
+      "maiaNote": "A Maia é uma IA de rede neural que joga com estilo humano.",
+      "aiReviewTitle": "Receba uma revisão IA",
+      "aiReviewRate": "{cost, plural, one {# moeda} other {# moedas}} = 1 revisão",
+      "aiReviewNote": "Assinantes geram revisões sem gastar moedas."
     },
     "facts": {
-      "instant": "As Moedas que você ganha podem ser usadas na hora, sem espera.",
-      "deleteReversal": "Se você excluir seu próprio conteúdo, as Moedas que ele gerou são revertidas, mas as Moedas que você já gastou nunca são recuperadas.",
-      "balance": "Seu saldo e histórico estão sempre disponíveis na Minha Página.",
-      "dailyCap": "Criar conteúdo concede até {cap} moedas por dia (reinicia às 00:00 UTC)."
+      "batch": "As moedas por curtidas não são imediatas: são creditadas uma vez por dia.",
+      "instant": "Depois de creditadas, as moedas podem ser usadas na hora.",
+      "selfLike": "Curtir o próprio conteúdo não rende moedas.",
+      "balance": "Seu saldo e histórico estão sempre disponíveis na Minha página."
     },
     "cta": {
       "viewBalance": "Ver meu saldo de Moedas",
@@ -829,8 +831,8 @@
       },
       "adFreeBenefits": {
         "question": "Como ganho moedas e como elas viram tempo sem anúncios?",
-        "answer": "Cada contribuição elegível concede moedas, utilizáveis imediatamente. 1 moeda resgata 1 dia sem anúncios (o resgate será liberado em breve).",
-        "earnSummary": "Publicar conteúdo elegível (problemas, tópicos, chunks, Kata e partidas) rende {amount, plural, one {# Moeda} other {# Moedas}} cada, até {cap} por dia. Curtidas e concessões da equipe não contam para esse limite (que reinicia às 00:00 UTC)."
+        "answer": "Cada curtida em uma partida, problema, Kata, chunk ou postagem que você publicou rende 1 moeda (creditadas uma vez por dia). 1 moeda equivale a 1 dia sem anúncios, e as moedas também pagam partidas contra a Maia e revisões IA.",
+        "earnSummary": "Curtidas no seu próprio conteúdo não contam. Assinantes geram revisões IA sem gastar moedas."
       }
     }
   },
@@ -2794,7 +2796,6 @@
       "notGenerated": "Ainda não há uma revisão IA gerada para esta partida.",
       "generateButton": "Gerar revisão IA",
       "analyzing": "Analisando com o Stockfish… ({done}/{total} posições)",
-      "generating": "Escrevendo a revisão…",
       "cancel": "Cancelar",
       "retry": "Tentar novamente",
       "bestMoveLabel": "Melhor lance",
@@ -2803,8 +2804,7 @@
         "keyMoments": "Momentos-chave",
         "strengths": "Pontos fortes",
         "weaknesses": "Pontos a melhorar",
-        "advice": "Conselhos para a próxima partida",
-        "principles": "Princípios desta partida"
+        "advice": "Conselhos para a próxima partida"
       },
       "gradeFilterLabel": "Filtrar momentos-chave por avaliação",
       "noMomentsForGrades": "Nenhum momento-chave corresponde às avaliações selecionadas.",
@@ -2823,11 +2823,11 @@
         "not_found": "Esta partida não está mais disponível.",
         "not_owner": "Apenas quem publicou esta partida pode gerar a revisão IA.",
         "game_not_eligible": "Esta partida é curta ou longa demais para uma revisão automática.",
-        "subscription_required": "Gerar uma revisão IA exige uma assinatura.",
         "rate_limited": "Você atingiu o limite diário de revisões IA. Tente novamente amanhã.",
         "llm_error": "O treinador IA não conseguiu gerar a revisão. Tente mais tarde.",
         "unexpected_error": "Algo deu errado. Tente mais tarde.",
-        "analysis_failed": "A análise do motor falhou. Recarregue a página e tente novamente."
+        "analysis_failed": "A análise do motor falhou. Recarregue a página e tente novamente.",
+        "insufficient_balance": "Você não tem moedas suficientes."
       },
       "languageNote": "Esta revisão está escrita em {language}.",
       "confirm": {
@@ -2836,14 +2836,21 @@
         "languageLabel": "Idioma da revisão",
         "languageHelp": "Cada partida tem uma única revisão. Ela será exibida a todos os visitantes no idioma que você escolher aqui.",
         "submit": "Gerar",
-        "cancel": "Cancelar"
+        "cancel": "Cancelar",
+        "cost": "Custa {cost, plural, one {# moeda} other {# moedas}} (saldo: {balance})"
       },
       "upsell": {
-        "title": "A revisão IA é um recurso pago",
-        "description": "O treinador IA interpreta sua partida a partir da análise do Stockfish e explica os momentos que a decidiram, além do que treinar em seguida. Gerar uma exige uma assinatura.",
+        "title": "Uma revisão IA custa {cost, plural, one {# moeda} other {# moedas}}",
+        "description": "O treinador IA lê sua partida a partir da análise do Stockfish e explica os momentos decisivos, além do que praticar em seguida. Seu saldo é de {balance, plural, one {# moeda} other {# moedas}}. As moedas vêm das curtidas nas partidas, problemas e Kata que você publica. Assinantes geram revisões sem gastar moedas.",
+        "coinCta": "Como ganhar moedas",
         "cta": "Ver planos"
       },
-      "principleLabel": "Princípio"
+      "principleLabel": "Princípio",
+      "submitting": "Enviando sua solicitação…",
+      "queued": {
+        "title": "Revisão IA solicitada",
+        "body": "O treinador IA está escrevendo sua revisão. Costuma levar um ou dois minutos — você receberá uma notificação quando estiver pronta, então pode sair desta página."
+      }
     },
     "discussion": {
       "wholeGame": "Jogo inteiro",
@@ -3890,11 +3897,6 @@
       "unit": "moedas",
       "aboutLink": "Como as Moedas funcionam"
     },
-    "dailyCap": {
-      "label": "Ganho hoje por criar",
-      "value": "{earned} / {cap}",
-      "note": "Criar problemas e publicações concede até {cap} moedas por dia. Reinicia às 00:00 UTC."
-    },
     "redeem": {
       "title": "Resgatar moedas por tempo sem anúncios",
       "description": "Cada moeda vira um dia sem anúncios. Os dias são somados ao tempo sem anúncios que você já possui.",
@@ -3929,7 +3931,9 @@
         "admin_grant": "Concedidas pela equipe",
         "maia_game": "Partida contra a Maia",
         "like_grant": "Ganhas por curtidas",
-        "other": "Ajuste"
+        "other": "Ajuste",
+        "ai_review": "Revisão IA",
+        "ai_review_refund": "Reembolso de revisão IA"
       }
     }
   },
@@ -4078,7 +4082,9 @@
     "muteConfirmTitle": "Silenciar este tipo de notificação?",
     "muteConfirmMessage": "Você deixará de receber notificações de \"{type}\". Você pode alterar isso a qualquer momento nas configurações de notificação.",
     "muteConfirmButton": "Silenciar",
-    "cancel": "Cancelar"
+    "cancel": "Cancelar",
+    "aiReviewReadyMessage": "Sua revisão IA está pronta",
+    "aiReviewFailedMessage": "Não foi possível gerar a revisão IA. A moeda gasta foi devolvida."
   },
   "deleteAccount": {
     "title": "Excluir Conta",
@@ -4105,8 +4111,6 @@
     "signInRequired": "Por favor, faça login para continuar",
     "profileUpdated": "Perfil atualizado",
     "postCreated": "Publicado com sucesso",
-    "coinsEarned": "{count, plural, one {# Moeda ganha!} other {# Moedas ganhas!}}",
-    "coinsDailyCap": "Você atingiu o limite de moedas de hoje. Ele reinicia às 00:00 UTC.",
     "gamePublished": "Partida publicada",
     "gameClaimed": "A partida agora está vinculada à sua conta",
     "rateLimited": "Você só pode publicar uma vez por dia para cada abertura. Por favor, tente mais tarde.",
@@ -4129,7 +4133,8 @@
     "editRequestSubmitted": "Sugestão de edição enviada",
     "editRequestAccepted": "Sugestão de edição aceita",
     "editRequestRejected": "Sugestão de edição rejeitada",
-    "editRequestWithdrawn": "Sugestão de edição retirada"
+    "editRequestWithdrawn": "Sugestão de edição retirada",
+    "chunkCreated": "Chunk criado"
   },
   "setupUsername": {
     "title": "Crie sua Conta",
@@ -5721,16 +5726,6 @@
     "continue": "Continuar",
     "goBack": "Voltar",
     "invalidUrl": "A URL fornecida é inválida."
-  },
-  "thanks": {
-    "title": "Obrigado!",
-    "sectionTitle": "Moedas ganhas",
-    "continueButton": "Ver sua publicação",
-    "viewPointsButton": "Ver suas moedas",
-    "genericMessage": "Obrigado pela sua contribuição.",
-    "coinsEarned": "Moedas ganhas!",
-    "aboutCoinsLink": "Como as Moedas funcionam",
-    "dailyCapNote": "Você atingiu o limite de moedas por criação de hoje, então menos moedas foram concedidas. O limite reinicia às 00:00 UTC."
   },
   "authPrompt": {
     "title": "Faça login para continuar",

@@ -8,9 +8,7 @@ import { diffFields } from '@/lib/db/diff-fields';
 import { isUniqueViolation } from '@/lib/db/extract-pg-error-code';
 import { linkNewChunkToGameMove } from '@/lib/db/game-chunks';
 import { notifyGameOwnerOfChunkLink } from '@/lib/notifications/game-chunk-link-notification';
-import { clawbackPointsForPost, grantPointsForPost } from '@/lib/points';
-import type { CoinRewardOutcome } from '@/lib/points/coin-reward-outcome';
-import { toCoinRewardOutcome } from '@/lib/points/coin-reward-outcome';
+import { clawbackPointsForPost } from '@/lib/points';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 
 import { dispatchChunkEvent } from './chunk-event-handlers';
@@ -104,7 +102,7 @@ export type CreateChunkOptions = {
 };
 
 export type CreateChunkResult =
-  | ({
+  | {
       success: true;
       id: string;
       slug: string;
@@ -114,7 +112,7 @@ export type CreateChunkResult =
        * the new chunk's page, without guessing whether the link happened.
        */
       linkedToGame?: boolean;
-    } & CoinRewardOutcome)
+    }
   | { error: string };
 
 export type UpdateChunkResult = ActionResult;
@@ -211,11 +209,6 @@ export async function createChunkEntry(
         metadata: { kind: initialFeedKind, slug: chunk.slug },
       });
 
-      const grant = await grantPointsForPost(tx, user.id, {
-        type: 'chunk',
-        id: chunk.id,
-      });
-
       const linkedToGame = options?.linkTarget
         ? await linkNewChunkToGameMove(tx, {
             gameId: options.linkTarget.gameId,
@@ -225,7 +218,7 @@ export async function createChunkEntry(
           })
         : false;
 
-      return { chunk, grant, linkedToGame };
+      return { chunk, linkedToGame };
     });
 
     dispatchChunkEvent({
@@ -254,7 +247,6 @@ export async function createChunkEntry(
       id: txResult.chunk.id,
       slug: txResult.chunk.slug,
       ...(txResult.linkedToGame ? { linkedToGame: true } : {}),
-      ...toCoinRewardOutcome(txResult.grant),
     };
   } catch (err) {
     // Race-window backstop: another writer claimed the slug between the

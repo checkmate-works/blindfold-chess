@@ -744,6 +744,15 @@ SELECT public.ensure_auth_users_fk('game_ai_reviews', 'game_ai_reviews_generated
 GRANT SELECT ON TABLE public.game_ai_reviews TO authenticated;
 GRANT SELECT ON TABLE public.game_ai_reviews TO anon;
 
+-- =============================================================================
+-- game_ai_review_jobs (AI review generation queue — service role only)
+-- =============================================================================
+-- FK constraint: game_ai_review_jobs.requested_by_id → auth.users(id) ON DELETE CASCADE
+-- A purged requester has no review to receive and no wallet to refund, so the
+-- job goes with the account. FK to games (cascade) is managed by Drizzle. No
+-- GRANT to non-service roles; RLS is enabled with no policies.
+SELECT public.ensure_auth_users_fk('game_ai_review_jobs', 'game_ai_review_jobs_requested_by_id_fkey', 'requested_by_id', 'CASCADE');
+
 -- Writes go through a members-only, rate-limited server action, so service-role
 -- only; reads are public.
 GRANT SELECT ON TABLE public.game_chunks TO authenticated;

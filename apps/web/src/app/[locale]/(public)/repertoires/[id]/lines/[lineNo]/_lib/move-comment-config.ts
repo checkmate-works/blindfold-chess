@@ -68,10 +68,8 @@ export async function buildMovePostConfig(opts: {
     emitFeedItem: false,
     isSpoiler: readSpoilerFlag(formData),
     topicAuthorId: repertoire?.userId,
-    redirectPath: (postId: string, { toast }: { toast: boolean }) =>
-      `/${locale}/repertoires/${repertoireId}/lines/${lineNo}?move=${ply}${
-        toast ? '&toast=post_created' : ''
-      }#post-${postId}`,
+    redirectPath: (postId: string) =>
+      `/${locale}/repertoires/${repertoireId}/lines/${lineNo}?move=${ply}&toast=post_created#post-${postId}`,
     formData,
   };
 }

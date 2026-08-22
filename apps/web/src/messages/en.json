@@ -734,19 +734,18 @@
     "title": "Coins",
     "unit": "coins",
     "hero": {
-      "tagline": "You earn Coins by posting in topics and creating problems."
+      "tagline": "Every like on the content you publish earns you a Coin."
     },
     "loop": {
-      "step1Title": "Contribute",
-      "step1Body": "Create a problem or a post",
-      "step2Title": "Earn Coins",
-      "step2Body": "Every contribution adds up",
+      "step1Title": "Publish",
+      "step1Body": "Share a game, a problem, a Kata",
+      "step2Title": "Get liked",
+      "step2Body": "Each like adds a Coin",
       "step3Title": "Spend on perks",
-      "step3Body": "Ad-free time or games"
+      "step3Body": "Ad-free time, games, AI reviews"
     },
     "earn": {
       "heading": "How to earn Coins",
-      "perContribution": "for each post or publish · up to {cap} a day",
       "chips": {
         "puzzle": "Puzzle",
         "positionMemory": "Position memory",
@@ -755,8 +754,8 @@
         "repertoire": "Kata",
         "game": "Game"
       },
-      "likeNote1": "Every like your content receives earns a Coin (not instant — granted once a day in a batch).",
-      "likeNote2": "Post a topic or create a problem once, and it keeps earning Coins."
+      "perLike": "per like · granted once a day in a batch",
+      "note": "Content you have published keeps earning with every new like. Likes on your own content do not count."
     },
     "spend": {
       "heading": "What Coins are for",
@@ -764,13 +763,16 @@
       "adFreeRate": "1 Coin = {days, plural, one {# ad-free day} other {# ad-free days}}",
       "maiaTitle": "Play against Maia",
       "maiaRate": "{cost, plural, one {# Coin} other {# Coins}} = 1 game",
-      "maiaNote": "Maia is a neural-network AI that plays human-like moves."
+      "maiaNote": "Maia is a neural-network AI that plays human-like moves.",
+      "aiReviewTitle": "Get an AI review",
+      "aiReviewRate": "{cost, plural, one {# Coin} other {# Coins}} = 1 review",
+      "aiReviewNote": "Subscribers generate reviews without spending Coins."
     },
     "facts": {
-      "instant": "Coins you earn are usable right away — no waiting.",
-      "deleteReversal": "If you delete your own content, the Coins it earned are reversed — but Coins you have already spent are never reclaimed.",
-      "balance": "Your balance and history are always available on My Page.",
-      "dailyCap": "Creating content earns up to {cap} coins per day (resets at 00:00 UTC)."
+      "batch": "Coins from likes are not instant — they are granted once a day in a batch.",
+      "instant": "Once granted, Coins are usable right away — no waiting.",
+      "selfLike": "Liking your own content earns nothing.",
+      "balance": "Your balance and history are always available on My Page."
     },
     "cta": {
       "viewBalance": "View my Coin balance",
@@ -829,8 +831,8 @@
       },
       "adFreeBenefits": {
         "question": "How do I earn coins, and how do they become ad-free time?",
-        "answer": "Each eligible contribution awards coins, usable immediately. 1 coin redeems 1 day of ad-free browsing (redemption flow coming soon).",
-        "earnSummary": "Publishing eligible content — problems, topics, chunks, Kata, and games — earns {amount, plural, one {# Coin} other {# Coins}} each, up to {cap} a day. Likes and staff grants don't count toward that cap (which resets at 00:00 UTC)."
+        "answer": "Each like on a game, problem, Kata, chunk or topic post you have published earns 1 Coin (granted once a day in a batch). 1 Coin redeems 1 day of ad-free browsing, and Coins also pay for Maia games and AI reviews.",
+        "earnSummary": "Likes on your own content do not count. Subscribers generate AI reviews without spending Coins."
       }
     }
   },
@@ -2794,7 +2796,6 @@
       "notGenerated": "No AI review has been generated for this game yet.",
       "generateButton": "Generate AI review",
       "analyzing": "Analyzing with Stockfish… ({done}/{total} positions)",
-      "generating": "Writing the review…",
       "cancel": "Cancel",
       "retry": "Try again",
       "bestMoveLabel": "Best move",
@@ -2803,8 +2804,7 @@
         "keyMoments": "Key moments",
         "strengths": "Strengths",
         "weaknesses": "Areas to improve",
-        "advice": "Advice for your next game",
-        "principles": "Principles from this game"
+        "advice": "Advice for your next game"
       },
       "gradeFilterLabel": "Filter key moments by grade",
       "noMomentsForGrades": "No key moments match the selected grades.",
@@ -2823,11 +2823,11 @@
         "not_found": "This game is no longer available.",
         "not_owner": "Only the player who published this game can generate its AI review.",
         "game_not_eligible": "This game is too short or too long for an automatic review.",
-        "subscription_required": "Generating an AI review requires a subscription.",
         "rate_limited": "You've reached today's AI review limit. Please try again tomorrow.",
         "llm_error": "The AI coach couldn't produce a review. Please try again later.",
         "unexpected_error": "Something went wrong. Please try again later.",
-        "analysis_failed": "The engine analysis failed. Please reload the page and try again."
+        "analysis_failed": "The engine analysis failed. Please reload the page and try again.",
+        "insufficient_balance": "Not enough Coins."
       },
       "languageNote": "This review is written in {language}.",
       "confirm": {
@@ -2836,14 +2836,21 @@
         "languageLabel": "Review language",
         "languageHelp": "A game has one review. It is shown to every visitor in the language you pick here.",
         "submit": "Generate",
-        "cancel": "Cancel"
+        "cancel": "Cancel",
+        "cost": "This costs {cost, plural, one {# Coin} other {# Coins}} (balance: {balance})"
       },
       "upsell": {
-        "title": "AI review is a paid feature",
-        "description": "The AI coach reads your game through the Stockfish analysis and writes up the moments that decided it, along with what to work on next. Generating one requires a subscription.",
+        "title": "An AI review costs {cost, plural, one {# Coin} other {# Coins}}",
+        "description": "The AI coach reads your game through the Stockfish analysis and writes up the moments that decided it, along with what to work on next. Your balance is {balance, plural, one {# Coin} other {# Coins}}. Coins come from likes on the games, problems and Kata you publish. Subscribers generate reviews without spending Coins.",
+        "coinCta": "How to earn Coins",
         "cta": "See plans"
       },
-      "principleLabel": "Principle"
+      "principleLabel": "Principle",
+      "submitting": "Submitting your request…",
+      "queued": {
+        "title": "AI review requested",
+        "body": "The AI coach is writing your review. It usually takes a minute or two — you will get a notification when it is ready, so feel free to leave this page."
+      }
     },
     "discussion": {
       "wholeGame": "Whole game",
@@ -3890,11 +3897,6 @@
       "unit": "coins",
       "aboutLink": "How Coins work"
     },
-    "dailyCap": {
-      "label": "Earned from creating today",
-      "value": "{earned} / {cap}",
-      "note": "Creating problems and posts earns up to {cap} coins per day. Resets at 00:00 UTC."
-    },
     "redeem": {
       "title": "Redeem coins for ad-free time",
       "description": "Each coin converts to one day of ad-free browsing. Days stack on top of any ad-free time you already have.",
@@ -3929,7 +3931,9 @@
         "admin_grant": "Granted by staff",
         "maia_game": "Maia game",
         "like_grant": "Earned from likes",
-        "other": "Adjustment"
+        "other": "Adjustment",
+        "ai_review": "AI review",
+        "ai_review_refund": "AI review refund"
       }
     }
   },
@@ -4078,7 +4082,9 @@
     "muteConfirmTitle": "Mute this notification type?",
     "muteConfirmMessage": "You'll stop receiving \"{type}\" notifications. You can change this anytime from notification settings.",
     "muteConfirmButton": "Mute",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "aiReviewReadyMessage": "Your AI review is ready",
+    "aiReviewFailedMessage": "The AI review could not be generated. Any Coin spent has been returned."
   },
   "deleteAccount": {
     "title": "Delete Account",
@@ -4105,8 +4111,6 @@
     "signInRequired": "Please sign in to continue",
     "profileUpdated": "Profile updated",
     "postCreated": "Posted successfully",
-    "coinsEarned": "{count, plural, one {# Coin earned!} other {# Coins earned!}}",
-    "coinsDailyCap": "You've reached today's coin earning limit. It resets at 00:00 UTC.",
     "gamePublished": "Game published",
     "gameClaimed": "The game is now linked to your account",
     "rateLimited": "You can only post once per day for each opening. Please try again later.",
@@ -4129,7 +4133,8 @@
     "editRequestSubmitted": "Edit suggestion submitted",
     "editRequestAccepted": "Edit suggestion accepted",
     "editRequestRejected": "Edit suggestion rejected",
-    "editRequestWithdrawn": "Edit suggestion withdrawn"
+    "editRequestWithdrawn": "Edit suggestion withdrawn",
+    "chunkCreated": "Chunk created"
   },
   "setupUsername": {
     "title": "Create Your Account",
@@ -5721,16 +5726,6 @@
     "continue": "Continue",
     "goBack": "Go Back",
     "invalidUrl": "The provided URL is invalid."
-  },
-  "thanks": {
-    "title": "Thanks!",
-    "sectionTitle": "Coins earned",
-    "continueButton": "View your post",
-    "viewPointsButton": "View your coins",
-    "genericMessage": "Thanks for your contribution.",
-    "coinsEarned": "Coins earned!",
-    "aboutCoinsLink": "How Coins work",
-    "dailyCapNote": "You've reached today's creation earning limit, so fewer coins were awarded. The limit resets at 00:00 UTC."
   },
   "authPrompt": {
     "title": "Sign in to continue",

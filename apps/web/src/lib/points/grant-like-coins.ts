@@ -126,10 +126,10 @@ export async function grantLikeCoins(): Promise<GrantLikeCoinsResult> {
   const likeRows = await loadLikesForBatch(watermark, scanUpperBound);
 
   // (3) + (4) Resolve liked content + fork parents.
-  const { positionById, topicPostById, forkParentById } = await resolveGrantTargets(likeRows);
+  const { contentByKey, forkParentById } = await resolveGrantTargets(likeRows);
 
   // (5) Derive payout intents (pure — see grant-like-coins-intents.ts).
-  const intents = buildGrantIntents({ likeRows, positionById, topicPostById, forkParentById });
+  const intents = buildGrantIntents({ likeRows, contentByKey, forkParentById });
 
   // (6) Drop intents whose recipient has withdrawn / been soft-deleted.
   const liveIntents = await filterLiveIntents(intents);

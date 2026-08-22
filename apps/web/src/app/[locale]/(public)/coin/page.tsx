@@ -7,13 +7,23 @@ import Image from 'next/image';
 import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 import { CoinIcon } from '@blindfold-chess/icons';
-import { FaArrowDown, FaBan, FaBolt, FaCheck, FaGift, FaPuzzlePiece } from 'react-icons/fa';
+import {
+  FaArrowDown,
+  FaBan,
+  FaBolt,
+  FaCheck,
+  FaClock,
+  FaGift,
+  FaHeart,
+  FaPuzzlePiece,
+  FaRobot,
+} from 'react-icons/fa';
 
 import {
   AD_FREE_DAYS_PER_POINT,
-  DAILY_CREATION_POINT_CAP,
+  AI_REVIEW_POINT_COST,
+  LIKE_COIN_AMOUNT,
   MAIA_GAME_POINT_COST,
-  POST_CREATION_POINTS,
 } from '@/lib/points';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
@@ -27,10 +37,11 @@ import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
  *
  * @description
  * Public, fully-static explainer for the Coin economy: how Coins are
- * earned (UGC contributions), what they are spent on (ad-free time, Maia
- * games), and the contribution loop that ties the two together. Visual-led
- * — icon cards and a flow diagram rather than walls of text; detailed edge
- * cases stay in the FAQ.
+ * earned (likes on published UGC — the only self-serve faucet since the
+ * creation grants were retired in 2026-08), what they are spent on (ad-free
+ * time, Maia games, AI reviews), and the publish → like → spend loop that
+ * ties the two together. Visual-led — icon cards and a flow diagram rather
+ * than walls of text; detailed edge cases stay in the FAQ.
  */
 export const generateStaticParams = generateLocaleStaticParams;
 
@@ -79,10 +90,11 @@ function LoopStep({ icon, title, body }: { icon: ReactNode; title: string; body:
 }
 
 /**
- * Every coin-earning surface, rendered as a linked chip in the "ways to earn"
- * panel. All award the same {@link POST_CREATION_POINTS} and share one daily
- * cap, so the amount is stated once on the panel — a new surface adds a chip
- * here, not another card. `key` maps to the `coin.earn.chips.*` i18n label.
+ * Every likeable UGC surface, rendered as a linked chip in the "ways to earn"
+ * panel. Each like on any of them pays the same {@link LIKE_COIN_AMOUNT}
+ * (see `LIKE_GRANT_TARGET_TYPES`), so the rate is stated once on the panel —
+ * a new likeable kind adds a chip here, not another card. `key` maps to the
+ * `coin.earn.chips.*` i18n label.
  */
 const EARN_CHIPS = [
   { key: 'puzzle', href: '/practice/puzzle/new' },
@@ -145,7 +157,7 @@ export default async function CoinPage({ params }: Props) {
           </p>
         </div>
 
-        {/* Contribution loop */}
+        {/* Publish → like → spend loop */}
         <div className="flex flex-col items-stretch gap-3 sm:flex-row">
           <LoopStep
             icon={<FaPuzzlePiece className="h-6 w-6" />}
@@ -154,7 +166,7 @@ export default async function CoinPage({ params }: Props) {
           />
           <FlowArrow />
           <LoopStep
-            icon={<CoinIcon size={28} aria-hidden="true" />}
+            icon={<FaHeart className="h-6 w-6" />}
             title={t('loop.step2Title')}
             body={t('loop.step2Body')}
           />
@@ -166,18 +178,18 @@ export default async function CoinPage({ params }: Props) {
           />
         </div>
 
-        {/* Ways to earn — one panel: the uniform rate stated once, then every
-            eligible surface as a linked chip (add a chip, not a card, when a
-            new earning surface ships). */}
+        {/* Ways to earn — one panel: the per-like rate stated once, then every
+            likeable surface as a linked chip (add a chip, not a card, when a
+            new likeable kind ships). */}
         <div className="space-y-3">
           <div className="space-y-4 rounded-xl border border-border bg-card p-5">
             <div className="flex items-center gap-3">
               <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-foreground/10 px-3 py-1 text-lg font-bold text-foreground">
-                <CoinIcon size={20} aria-hidden="true" />+{POST_CREATION_POINTS}
+                <FaHeart className="h-4 w-4" aria-hidden="true" />
+                <span aria-hidden="true">→</span>
+                <CoinIcon size={20} aria-hidden="true" />+{LIKE_COIN_AMOUNT}
               </span>
-              <p className="text-sm text-muted-foreground">
-                {t('earn.perContribution', { cap: DAILY_CREATION_POINT_CAP })}
-              </p>
+              <p className="text-sm text-muted-foreground">{t('earn.perLike')}</p>
             </div>
             <ul className="flex flex-wrap gap-2">
               {EARN_CHIPS.map((chip) => (
@@ -193,11 +205,7 @@ export default async function CoinPage({ params }: Props) {
               ))}
             </ul>
           </div>
-          <p className="text-center text-sm text-muted-foreground">
-            <span aria-hidden="true">❤️</span> {t('earn.likeNote1')}
-            <br />
-            {t('earn.likeNote2')}
-          </p>
+          <p className="text-center text-sm text-muted-foreground">{t('earn.note')}</p>
         </div>
 
         {/* What Coins are for */}
@@ -223,18 +231,21 @@ export default async function CoinPage({ params }: Props) {
               rate={t('spend.maiaRate', { cost: MAIA_GAME_POINT_COST })}
               note={t('spend.maiaNote')}
             />
+            <SpendCard
+              icon={<FaRobot className="h-6 w-6" />}
+              title={t('spend.aiReviewTitle')}
+              rate={t('spend.aiReviewRate', { cost: AI_REVIEW_POINT_COST })}
+              note={t('spend.aiReviewNote')}
+            />
           </div>
         </section>
 
         {/* Reassurance facts */}
         <ul className="space-y-2">
+          <Fact icon={<FaClock className="h-4 w-4" />} text={t('facts.batch')} />
           <Fact icon={<FaBolt className="h-4 w-4" />} text={t('facts.instant')} />
-          <Fact icon={<FaCheck className="h-4 w-4" />} text={t('facts.deleteReversal')} />
+          <Fact icon={<FaCheck className="h-4 w-4" />} text={t('facts.selfLike')} />
           <Fact icon={<FaCheck className="h-4 w-4" />} text={t('facts.balance')} />
-          <Fact
-            icon={<FaArrowDown className="h-4 w-4" />}
-            text={t('facts.dailyCap', { cap: DAILY_CREATION_POINT_CAP })}
-          />
         </ul>
 
         {/* CTA */}

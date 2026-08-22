@@ -734,19 +734,18 @@
     "title": "コイン",
     "unit": "コイン",
     "hero": {
-      "tagline": "トピックの投稿や問題の作成でコインが付与されます。"
+      "tagline": "公開したコンテンツに「いいね」が付くと、その数だけコインが貯まります。"
     },
     "loop": {
-      "step1Title": "貢献する",
-      "step1Body": "問題や投稿をつくる",
-      "step2Title": "コインを獲得",
-      "step2Body": "貢献するたびに貯まる",
+      "step1Title": "公開する",
+      "step1Body": "対局・問題・型などを公開",
+      "step2Title": "いいねをもらう",
+      "step2Body": "評価された分だけ貯まる",
       "step3Title": "特典に使う",
-      "step3Body": "広告非表示や対局に"
+      "step3Body": "広告非表示・対局・AIレビューに"
     },
     "earn": {
       "heading": "コインの貯め方",
-      "perContribution": "投稿・公開1件ごと（1日 {cap} コインまで）",
       "chips": {
         "puzzle": "パズル",
         "positionMemory": "ポジション記憶",
@@ -755,8 +754,8 @@
         "repertoire": "型",
         "game": "対局"
       },
-      "likeNote1": "いいねを獲得するとその分コインを付与（即時ではなく、1日1回まとめて反映）。",
-      "likeNote2": "一度トピックや問題を作れば継続的にコインが得られます。"
+      "perLike": "いいね1件につき（1日1回まとめて付与）",
+      "note": "一度公開したコンテンツは、いいねが付くたびに貯まり続けます。自分の投稿への「いいね」は対象外です。"
     },
     "spend": {
       "heading": "コインの使い道",
@@ -764,13 +763,16 @@
       "adFreeRate": "1 コイン = 広告のない {days} 日間",
       "maiaTitle": "Maia と対局する",
       "maiaRate": "{cost} コイン = 1 局",
-      "maiaNote": "Maia は人間らしい指し手のニューラルネット AI です。"
+      "maiaNote": "Maia は人間らしい指し手のニューラルネット AI です。",
+      "aiReviewTitle": "AIレビューを受ける",
+      "aiReviewRate": "{cost} コイン = レビュー1件",
+      "aiReviewNote": "有料プランの方はコインを使わずに生成できます。"
     },
     "facts": {
-      "instant": "獲得したコインは、待ち時間なくすぐに使えます。",
-      "deleteReversal": "自分で投稿を削除すると、その投稿で獲得したコインは戻されます。ただし、すでに使用したコインは回収されません。",
-      "balance": "残高と履歴は、いつでもマイページで確認できます。",
-      "dailyCap": "コンテンツ作成で獲得できるコインは1日{cap}コインまでです（UTC0時にリセット）。"
+      "batch": "いいねによるコインは即時ではなく、1日1回まとめて付与されます。",
+      "instant": "付与されたコインは、待ち時間なくすぐに使えます。",
+      "selfLike": "自分のコンテンツへの「いいね」ではコインは貯まりません。",
+      "balance": "残高と履歴は、いつでもマイページで確認できます。"
     },
     "cta": {
       "viewBalance": "コイン残高を見る",
@@ -829,8 +831,8 @@
       },
       "adFreeBenefits": {
         "question": "コインの獲得方法と広告非表示との交換について教えてください",
-        "answer": "対象アクションを行うとコインが付与され、投稿直後からすぐに利用できます。1 コインで広告非表示 1 日と交換できます（交換機能は近日公開予定です）。",
-        "earnSummary": "対象コンテンツ（問題・トピック・チャンク・型・対局）を投稿・公開すると、1件につき {amount} コイン。1日 {cap} コインまでで、いいねやスタッフ付与は上限に含まれません。"
+        "answer": "公開した対局・問題・型・チャンク・トピック投稿に「いいね」が付くと、1件につき1コインが貯まります（1日1回まとめて付与）。1コインで広告非表示1日と交換できるほか、Maiaとの対局やAIレビューにも使えます。",
+        "earnSummary": "自分の投稿への「いいね」は対象外です。有料プランの方は、コインを使わずにAIレビューを生成できます。"
       }
     }
   },
@@ -2794,7 +2796,6 @@
       "notGenerated": "AIレビューはまだ生成されていません。",
       "generateButton": "AIレビューを生成",
       "analyzing": "Stockfishで解析中… ({done}/{total} 局面)",
-      "generating": "レビューを執筆中…",
       "cancel": "キャンセル",
       "retry": "もう一度試す",
       "bestMoveLabel": "最善手",
@@ -2803,8 +2804,7 @@
         "keyMoments": "重要局面",
         "strengths": "良かった点",
         "weaknesses": "改善ポイント",
-        "advice": "次のゲームへのアドバイス",
-        "principles": "この対局で学ぶ原則"
+        "advice": "次のゲームへのアドバイス"
       },
       "gradeFilterLabel": "評価で重要局面を絞り込む",
       "noMomentsForGrades": "選択した評価に該当する局面はありません。",
@@ -2823,11 +2823,11 @@
         "not_found": "このゲームは利用できなくなりました。",
         "not_owner": "AIレビューを生成できるのは対局者本人だけです。",
         "game_not_eligible": "このゲームは短すぎるか長すぎるため、自動レビューの対象外です。",
-        "subscription_required": "AIレビューの生成は有料プラン限定です。",
         "rate_limited": "本日のAIレビュー生成回数の上限に達しました。明日以降にお試しください。",
         "llm_error": "AIコーチがレビューを生成できませんでした。時間をおいてお試しください。",
         "unexpected_error": "エラーが発生しました。時間をおいてお試しください。",
-        "analysis_failed": "エンジン解析に失敗しました。ページを再読み込みしてお試しください。"
+        "analysis_failed": "エンジン解析に失敗しました。ページを再読み込みしてお試しください。",
+        "insufficient_balance": "コインが不足しています。"
       },
       "languageNote": "このレビューは{language}で書かれています。",
       "confirm": {
@@ -2836,14 +2836,21 @@
         "languageLabel": "レビューの言語",
         "languageHelp": "1つのゲームにつきレビューは1件です。ここで選んだ言語で、どの言語の閲覧者にも表示されます。",
         "submit": "生成する",
-        "cancel": "キャンセル"
+        "cancel": "キャンセル",
+        "cost": "{cost} コインを消費します（残高: {balance} コイン）"
       },
       "upsell": {
-        "title": "AIレビューは有料プラン限定です",
-        "description": "AIコーチがStockfishの解析をもとにゲームを読み解き、勝敗を分けた局面の解説と、次のゲームに向けたアドバイスをお届けします。生成には月額プランへの登録が必要です。",
+        "title": "AIレビューの生成には {cost} コインが必要です",
+        "description": "AIコーチがStockfishの解析をもとにゲームを読み解き、勝敗を分けた局面の解説と次のゲームへのアドバイスをお届けします。現在の残高は {balance} コインです。コインは公開した対局・問題・型などに「いいね」が付くと貯まります。有料プランならコインを使わずに生成できます。",
+        "coinCta": "コインの貯め方を見る",
         "cta": "プランを見る"
       },
-      "principleLabel": "原則"
+      "principleLabel": "原則",
+      "submitting": "レビューを受け付けています…",
+      "queued": {
+        "title": "AIレビューを受け付けました",
+        "body": "AIコーチがレビューを執筆中です。通常1〜2分で完成し、完了するとお知らせ（通知）でご案内します。このページを離れても構いません。"
+      }
     },
     "discussion": {
       "wholeGame": "全体",
@@ -3890,11 +3897,6 @@
       "unit": "コイン",
       "aboutLink": "コインの仕組みを見る"
     },
-    "dailyCap": {
-      "label": "本日の作成獲得",
-      "value": "{earned} / {cap}",
-      "note": "問題や投稿の作成で獲得できるコインは1日{cap}コインまでです。毎日UTC0時にリセットされます。"
-    },
     "redeem": {
       "title": "コインを広告非表示と交換",
       "description": "1 コインで広告非表示 1 日と交換できます。すでに有効な広告非表示期間があれば、その後ろに加算されます。",
@@ -3929,7 +3931,9 @@
         "admin_grant": "運営からの付与",
         "maia_game": "Maia との対局",
         "like_grant": "いいねによるコイン獲得",
-        "other": "調整"
+        "other": "調整",
+        "ai_review": "AIレビューの生成",
+        "ai_review_refund": "AIレビュー失敗による返金"
       }
     }
   },
@@ -4078,7 +4082,9 @@
     "muteConfirmTitle": "この種類の通知をミュートしますか？",
     "muteConfirmMessage": "今後「{type}」の通知は届かなくなります。設定はいつでも通知設定から変更できます。",
     "muteConfirmButton": "ミュートする",
-    "cancel": "キャンセル"
+    "cancel": "キャンセル",
+    "aiReviewReadyMessage": "AIレビューが完成しました",
+    "aiReviewFailedMessage": "AIレビューを生成できませんでした。消費したコインは返却しました。"
   },
   "deleteAccount": {
     "title": "退会",
@@ -4105,8 +4111,6 @@
     "signInRequired": "ログインしてください",
     "profileUpdated": "プロフィールを更新しました",
     "postCreated": "投稿しました",
-    "coinsEarned": "{count} コイン獲得！",
-    "coinsDailyCap": "本日のコイン獲得上限に達しました。上限はUTC0時にリセットされます。",
     "gamePublished": "公開しました",
     "gameClaimed": "ゲームをアカウントに紐づけました",
     "rateLimited": "各オープニングへの投稿は1日1回までです。時間をおいて再度お試しください。",
@@ -4129,7 +4133,8 @@
     "editRequestSubmitted": "編集リクエストを送信しました",
     "editRequestAccepted": "編集リクエストを承認しました",
     "editRequestRejected": "編集リクエストを却下しました",
-    "editRequestWithdrawn": "編集リクエストを取り下げました"
+    "editRequestWithdrawn": "編集リクエストを取り下げました",
+    "chunkCreated": "チャンクを作成しました"
   },
   "setupUsername": {
     "title": "アカウント登録",
@@ -5721,16 +5726,6 @@
     "continue": "続行する",
     "goBack": "戻る",
     "invalidUrl": "指定されたURLは無効です。"
-  },
-  "thanks": {
-    "title": "御礼",
-    "sectionTitle": "獲得したコイン",
-    "continueButton": "投稿内容を確認する",
-    "viewPointsButton": "獲得したコインを確認する",
-    "genericMessage": "ご投稿ありがとうございます。",
-    "coinsEarned": "コインを獲得しました",
-    "aboutCoinsLink": "コインの仕組みを見る",
-    "dailyCapNote": "本日の作成によるコイン獲得上限に達したため、付与コインが少なくなっています。上限はUTC0時にリセットされます。"
   },
   "authPrompt": {
     "title": "サインインして続行",

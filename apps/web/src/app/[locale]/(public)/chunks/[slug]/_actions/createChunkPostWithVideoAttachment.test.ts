@@ -73,10 +73,7 @@ vi.mock('@/lib/security/rate-limit');
 vi.mock('next/navigation');
 
 vi.mock('@/lib/points', () => ({
-  grantPointsForPost: vi.fn().mockResolvedValue({ pointEventId: 'pe-1', amount: 3 }),
   clawbackPointsForPost: vi.fn().mockResolvedValue(undefined),
-  isPointEligibleTopicType: (v: string) => v === 'square' || v === 'opening',
-  POST_CREATION_POINTS: 3,
 }));
 
 vi.mock('@/lib/chunks/queries', () => ({

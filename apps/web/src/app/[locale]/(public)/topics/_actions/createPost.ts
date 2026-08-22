@@ -12,11 +12,6 @@ import {
   notifyFollowersOfNewPost,
   notifyTopicAuthorOfNewComment,
 } from '@/lib/notifications/notification';
-import type { PointGrantOutcome } from '@/lib/points';
-import { grantPointsForPost, isPointEligibleTopicType } from '@/lib/points';
-import type { CoinRewardOutcome } from '@/lib/points/coin-reward-outcome';
-import { toCoinRewardOutcome } from '@/lib/points/coin-reward-outcome';
-import { buildCoinToastParams } from '@/lib/points/coin-toast-params';
 import type { RateLimitConfig } from '@/lib/security/rate-limit';
 import { checkRateLimit } from '@/lib/security/rate-limit';
 
@@ -47,16 +42,13 @@ type CreatePostParams = {
   emitFeedItem?: boolean;
   /**
    * Override the post-creation redirect URL. The function receives the new
-   * post ID and a `toast` flag and must return the absolute path to redirect
-   * to. The flag is `true` when the post does NOT trigger an automated grant
-   * (legacy "post created" toast) and `false` when a grant was applied (the
-   * "created" toast is suppressed because a `?coinsEarned=N` coin-reward toast
-   * is appended instead — see the redirect logic below). When `redirectPath`
-   * is omitted, the
-   * legacy `/${locale}/topics/${urlSegment}/${topicIdentifier}/posts/${postId}`
-   * URL is used (with `?toast=post_created` appended when `toast` is true).
+   * post ID and must return the absolute path to redirect to — including its
+   * own `?toast=post_created` if the destination should confirm the create.
+   * When omitted, the legacy
+   * `/${locale}/topics/${urlSegment}/${topicIdentifier}/posts/${postId}`
+   * URL is used, with `?toast=post_created` appended.
    */
-  redirectPath?: (postId: string, opts: { toast: boolean }) => string;
+  redirectPath?: (postId: string) => string;
   /**
    * Self-declared "this comment contains spoilers" flag, persisted to
    * `topic_posts.is_spoiler`. Surface today is `topic_type='position_puzzle'`
@@ -74,18 +66,16 @@ type CreatePostParams = {
 };
 
 /**
- * Shared insert/notify/grant core for every create-post path.
+ * Shared insert/notify core for every create-post path.
  *
- * Returns the new post id (plus the point-grant result, which the
- * redirecting entry point uses to append the `?coinsEarned=N` reward toast)
- * instead of redirecting, so both the legacy redirecting wrapper (`createPostBase`)
- * and the 2-step image-attach wrapper (`createPostForImageAttachBase`)
- * share one body. This keeps feed-item emission, point grants and
- * notifications from drifting between the two paths.
+ * Returns the new post id instead of redirecting, so both the legacy
+ * redirecting wrapper (`createPostBase`) and the 2-step image-attach wrapper
+ * (`createPostForImageAttachBase`) share one body. This keeps feed-item
+ * emission and notifications from drifting between the two paths.
  */
 async function insertPost(
   params: CreatePostParams
-): Promise<{ error: string } | ({ ok: true; postId: string } & CoinRewardOutcome)> {
+): Promise<{ error: string } | { ok: true; postId: string }> {
   const {
     locale,
     topicIdentifier,
@@ -147,8 +137,7 @@ async function insertPost(
     return { error: rateLimitResult.error };
   }
 
-  const { post: inserted, grantOutcome } = await db.transaction(async (tx) => {
-    let outcome: PointGrantOutcome = { status: 'skipped' };
+  const inserted = await db.transaction(async (tx) => {
     const [post] = await tx
       .insert(topicPosts)
       .values({
@@ -174,17 +163,7 @@ async function insertPost(
       await afterInsert(tx, post.id);
     }
 
-    // Award points for text-bearing posts on eligible topic types —
-    // immediately spendable. Gate is `isPointEligibleTopicType` (square /
-    // opening) plus a non-empty body — rating-only and empty posts excluded.
-    if (isPointEligibleTopicType(topicType) && contentResult.content.trim() !== '') {
-      outcome = await grantPointsForPost(tx, user.id, {
-        type: 'topic_post',
-        id: post.id,
-      });
-    }
-
-    return { post, grantOutcome: outcome };
+    return post;
   });
 
   notifyFollowersOfNewPost({
@@ -208,7 +187,7 @@ async function insertPost(
     });
   }
 
-  return { ok: true, postId: inserted.id, ...toCoinRewardOutcome(grantOutcome) };
+  return { ok: true, postId: inserted.id };
 }
 
 export async function createPostBase(params: CreatePostParams): Promise<CreatePostState> {
@@ -217,27 +196,11 @@ export async function createPostBase(params: CreatePostParams): Promise<CreatePo
     return { error: result.error };
   }
 
-  // The author always lands directly on their post so they can verify it.
-  // When a point grant fires, the coin reward surfaces as a toast on arrival
-  // (`?coinsEarned=N`, rendered with the brand CoinIcon) instead of the old
-  // /thanks interstitial; the "created" toast is suppressed in that case since
-  // the coin toast already confirms the create. No-grant posts (chunks,
-  // rating-only opening posts, etc.) keep the legacy in-place toast UX.
-  const grantApplied = result.pointGrant !== null;
+  // The author always lands directly on their post so they can verify it,
+  // with the "created" toast confirming the create on arrival.
   const finalUrl = params.redirectPath
-    ? params.redirectPath(result.postId, { toast: !grantApplied })
-    : `/${params.locale}/topics/${params.urlSegment}/${params.topicIdentifier}/posts/${result.postId}${
-        !grantApplied ? '?toast=post_created' : ''
-      }`;
-
-  // Append the coin toast params to whatever destination was resolved above.
-  // The `?toast=post_created` confirmation is already in `finalUrl` when no
-  // grant applied, so a fully capped post keeps it and adds the cap warning.
-  const extraQs = buildCoinToastParams(result).toString();
-  if (extraQs) {
-    const sep = finalUrl.includes('?') ? '&' : '?';
-    redirect(`${finalUrl}${sep}${extraQs}`);
-  }
+    ? params.redirectPath(result.postId)
+    : `/${params.locale}/topics/${params.urlSegment}/${params.topicIdentifier}/posts/${result.postId}?toast=post_created`;
   redirect(finalUrl);
 }
 
@@ -245,12 +208,10 @@ export async function createPostBase(params: CreatePostParams): Promise<CreatePo
  * Create-post entry point for the 2-step image-attachment flow.
  *
  * Mirrors `createPostBase` (same validation, rate-limit bucket, feed
- * item, point grant and notifications via the shared `insertPost` core)
- * but returns the new post id instead of redirecting, so the client can
- * POST each selected image to `/api/posts/[id]/images` after the post
- * exists. Any earned points are still granted inside the transaction;
- * the image flow simply skips the `?coinsEarned=N` reward toast and
- * lets the client refresh the thread in place once uploads finish.
+ * item and notifications via the shared `insertPost` core) but returns the
+ * new post id instead of redirecting, so the client can POST each selected
+ * image to `/api/posts/[id]/images` after the post exists; the client then
+ * refreshes the thread in place once uploads finish.
  */
 export async function createPostForImageAttachBase(
   params: CreatePostParams

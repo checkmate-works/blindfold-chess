@@ -16,7 +16,7 @@ import 'server-only';
 
 import { generateManageToken } from '@/lib/games/manage-token';
 import type { GameColumns, ValidatedGame } from '@/lib/games/publish-game';
-import { clawbackPointsForPost, grantPointsForPost } from '@/lib/points';
+import { clawbackPointsForPost } from '@/lib/points';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 import { db } from './index';
@@ -81,13 +81,6 @@ export async function publishGame(params: {
         actorId: authorId,
         metadata: { result: game.result },
       });
-
-      // Reward the registered author's public contribution — immediately
-      // spendable, clamped to the shared daily creation cap, idempotent per
-      // (game_published, id). Account-less publishers have no ledger to credit
-      // (and a later claim does NOT retroactively grant, by product decision),
-      // so the grant lives only in this author-owned branch.
-      await grantPointsForPost(tx, authorId, { type: 'game', id: row.id });
     }
 
     return { id: row.id, manageToken };

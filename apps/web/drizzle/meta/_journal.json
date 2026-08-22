@@ -505,6 +505,13 @@
       "when": 1786707090143,
       "tag": "20260814113130_create_game_ai_reviews",
       "breakpoints": true
+    },
+    {
+      "idx": 72,
+      "version": "7",
+      "when": 1787425961015,
+      "tag": "20260822191241_create_game_ai_review_jobs",
+      "breakpoints": true
     }
   ]
 }

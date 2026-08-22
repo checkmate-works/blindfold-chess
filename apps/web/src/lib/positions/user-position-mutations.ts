@@ -13,9 +13,7 @@ import {
   notifyPositionForked,
 } from '@/lib/notifications/notification';
 import { guardOwnership } from '@/lib/ownership-guard';
-import { clawbackPointsForPost, grantPointsForPost } from '@/lib/points';
-import type { CoinRewardOutcome } from '@/lib/points/coin-reward-outcome';
-import { toCoinRewardOutcome } from '@/lib/points/coin-reward-outcome';
+import { clawbackPointsForPost } from '@/lib/points';
 import {
   POSITION_FORK_SOURCE_TYPES,
   PUZZLE_FORK_SOURCE_TYPES,
@@ -89,7 +87,7 @@ const POSITION_KINDS: Record<PositionKind, PositionKindConfig> = {
 };
 
 export type CreatePositionEntryResult =
-  | ({
+  | {
       success: true;
       id: string;
       /**
@@ -98,7 +96,7 @@ export type CreatePositionEntryResult =
        * the next navigation. Mirrors the challenge-completion flow.
        */
       grantedRanks?: GrantedRank[];
-    } & CoinRewardOutcome)
+    }
   | { error: string };
 
 export type UpdatePositionEntryResult = ActionResult;
@@ -236,13 +234,7 @@ export async function createPositionEntry(params: {
       metadata: { type: config.type },
     });
 
-    // Award points for the new entry — immediately spendable.
-    const grant = await grantPointsForPost(tx, user.id, {
-      type: config.pointType,
-      id: position.id,
-    });
-
-    return { position, grant };
+    return { position };
   });
 
   notifyFollowersOfNewPosition({
@@ -281,7 +273,6 @@ export async function createPositionEntry(params: {
   return {
     success: true,
     id: txResult.position.id,
-    ...toCoinRewardOutcome(txResult.grant),
     ...(grantedRanks.length > 0 ? { grantedRanks } : {}),
   };
 }

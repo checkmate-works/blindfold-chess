@@ -6,6 +6,8 @@ import { countRows } from '@/lib/db/list-query';
 
 import {
   ADMIN_GRANT_SOURCE,
+  AI_REVIEW_REFUND_SOURCE,
+  AI_REVIEW_SOURCE,
   LIKE_GRANT_SOURCE,
   MAIA_GAME_SOURCE,
   POINT_SOURCES,
@@ -34,6 +36,8 @@ export type PointHistoryEntry = {
     | 'admin_grant'
     | 'maia_game'
     | 'like_grant'
+    | 'ai_review'
+    | 'ai_review_refund'
     | 'other';
 };
 
@@ -98,5 +102,7 @@ export function classifyKind(
   if (source === PURCHASE_SOURCE) return 'purchase';
   if (source === MAIA_GAME_SOURCE) return 'maia_game';
   if (source === LIKE_GRANT_SOURCE) return 'like_grant';
+  if (source === AI_REVIEW_SOURCE) return 'ai_review';
+  if (source === AI_REVIEW_REFUND_SOURCE) return 'ai_review_refund';
   return 'other';
 }

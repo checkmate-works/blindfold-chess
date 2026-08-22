@@ -27,10 +27,8 @@ export async function createPositionMemoryPostWithFenAttachment(
     validateContent,
     emitFeedItem: false,
     topicAuthorId: position?.userId,
-    redirectPath: (postId, { toast }) =>
-      `/${locale}/practice/position-memory/${positionId}${
-        toast ? '?toast=post_created' : ''
-      }#post-${postId}`,
+    redirectPath: (postId) =>
+      `/${locale}/practice/position-memory/${positionId}?toast=post_created#post-${postId}`,
     formData,
   });
 }

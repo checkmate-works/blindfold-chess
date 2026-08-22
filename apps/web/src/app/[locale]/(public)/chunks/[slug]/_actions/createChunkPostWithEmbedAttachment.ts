@@ -155,8 +155,7 @@ export async function createChunkPostWithEmbedAttachment(
     validateContent,
     emitFeedItem: false,
     topicAuthorId: chunk?.userId,
-    redirectPath: (postId, { toast }) =>
-      `/${locale}/chunks/${slug}${toast ? '?toast=post_created' : ''}#post-${postId}`,
+    redirectPath: (postId) => `/${locale}/chunks/${slug}?toast=post_created#post-${postId}`,
     afterInsert: async (tx, postId) => {
       // Defensive PGN/embed exclusivity check. The post is brand-new
       // (just inserted in this transaction) so this can only fire if a

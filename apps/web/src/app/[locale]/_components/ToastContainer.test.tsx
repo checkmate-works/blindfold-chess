@@ -53,11 +53,11 @@ describe('ToastContainer query-param toasts', () => {
     expect(window.location.search).toBe('');
   });
 
-  it('keeps unrelated params while dropping the consumed ones', () => {
-    setUrl('/en/repertoires/r1/lines/1?move=3&toast=line_added&coinsCapped=1');
+  it('keeps unrelated params while dropping the consumed one', () => {
+    setUrl('/en/repertoires/r1/lines/1?move=3&toast=line_added');
     render(<ToastContainer />);
 
-    expect(mockShowToast).toHaveBeenCalledTimes(2);
+    expect(mockShowToast).toHaveBeenCalledTimes(1);
     expect(window.location.search).toBe('?move=3');
   });
 

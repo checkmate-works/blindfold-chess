@@ -276,6 +276,12 @@ export function buildNotificationLink(
     case 'like_coin_grant':
       return '/mypage/coins';
 
+    // Both land on the AI Review tab: the finished review to read, or the
+    // generate button to try again after a refunded failure.
+    case 'ai_review_ready':
+    case 'ai_review_failed':
+      return notification.targetId ? `/games/shared/${notification.targetId}?tab=ai-review` : null;
+
     default: {
       // Compile-time exhaustiveness: a NotificationType with no case above
       // fails the build. Runtime stays tolerant — a stale row whose type was
