@@ -7,6 +7,8 @@ import { LOCALE_LABELS } from '@/i18n/locale-labels';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaRobot } from 'react-icons/fa';
 
+import { PRINCIPLE_IDS } from '@/lib/ai-review/principles';
+import type { PrincipleId } from '@/lib/ai-review/principles';
 import type { AiReview, AiReviewGenerationOffer } from '@/lib/ai-review/types';
 import { MOVE_JUDGMENTS } from '@/lib/games/analysis/types';
 import type { MoveJudgment } from '@/lib/games/analysis/types';
@@ -248,6 +250,21 @@ function ReviewBody({
     });
   }, [momentRows]);
 
+  // Which principles the review named and how often, most-broken first and
+  // catalogue order within a tie. `other` names no rule and is not a tally.
+  const principleCounts = useMemo(() => {
+    const counts = new Map<PrincipleId, number>();
+    for (const { comment } of momentRows) {
+      if (comment.principle !== 'other') {
+        counts.set(comment.principle, (counts.get(comment.principle) ?? 0) + 1);
+      }
+    }
+    return PRINCIPLE_IDS.flatMap((principle) => {
+      const count = counts.get(principle);
+      return count === undefined ? [] : [{ principle, count }];
+    }).sort((a, b) => b.count - a.count);
+  }, [momentRows]);
+
   // Excluded rather than included, so the default (an empty set) means "show
   // everything" without having to be recomputed when the review changes.
   const [excluded, setExcluded] = useState<ReadonlySet<MoveJudgment>>(() => new Set());
@@ -280,10 +297,7 @@ function ReviewBody({
         </p>
       )}
 
-      <section className="space-y-2">
-        <h3 className="text-sm font-semibold text-foreground">{t('aiReview.sections.summary')}</h3>
-        <p className="whitespace-pre-wrap text-sm text-foreground">{review.content.summary}</p>
-      </section>
+      <ProseList title={t('aiReview.sections.summary')} items={review.content.summary} />
 
       {momentRows.length > 0 && (
         <section className="space-y-3">
@@ -336,6 +350,29 @@ function ReviewBody({
               onJumpToPly={onJumpToPly}
             />
           ))}
+        </section>
+      )}
+
+      {/* The rules this game broke, tallied — the aggregate a player actually
+          wants from a review, and the one thing in it written in THEIR
+          language whatever the review's (see ReviewPrincipleCallout). */}
+      {principleCounts.length > 0 && (
+        <section className="space-y-2">
+          <h3 className="text-sm font-semibold text-foreground">
+            {t('aiReview.sections.principles')}
+          </h3>
+          <ul className="flex flex-wrap gap-2">
+            {principleCounts.map(({ principle, count }) => (
+              <li
+                key={principle}
+                title={t(`aiReview.principles.${principle}.definition`)}
+                className="inline-flex items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs text-foreground"
+              >
+                {t(`aiReview.principles.${principle}.name`)}
+                {count > 1 && <span className="font-mono text-muted-foreground">×{count}</span>}
+              </li>
+            ))}
+          </ul>
         </section>
       )}
 

@@ -2,6 +2,7 @@ import type { GameRecord } from '@/lib/db/schema';
 import { deriveMoveAnalyses } from '@/lib/games/analysis/derive-move-analyses';
 import type { PositionEvaluation } from '@/lib/games/analysis/types';
 
+import { buildBlindfoldContext } from './blindfold-context';
 import { buildReviewInput } from './input';
 import type { LlmClient } from './llm-client';
 import { isRetryableLlmError } from './llm-client';
@@ -74,8 +75,12 @@ export async function generateReview({
 
   const input = buildReviewInput(derived.value, game.playerColor);
   const allowedPlies = input.moments.map((m) => m.ply);
+  // Null for a fully sighted game or a record without conditions — the
+  // prompt then carries no blindfold block at all, rather than a "conditions
+  // unknown" line the model would still read as blindfold.
+  const blindfold = buildBlindfoldContext(game, derived.value, game.playerColor, allowedPlies);
 
-  const system = buildSystemPrompt(LOCALE_LANGUAGE[locale] ?? 'English');
+  const system = buildSystemPrompt(LOCALE_LANGUAGE[locale] ?? 'English', blindfold);
   const user = buildUserPrompt(
     {
       playerColor: game.playerColor,
@@ -86,7 +91,8 @@ export async function generateReview({
       language: LOCALE_LANGUAGE[locale] ?? 'English',
     },
     buildMovetext(game.moves, game.startingFen),
-    input
+    input,
+    blindfold
   );
 
   const jsonSchema = buildAiReviewJsonSchema(allowedPlies);

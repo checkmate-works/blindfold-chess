@@ -2802,7 +2802,8 @@
         "keyMoments": "Key moments",
         "strengths": "Strengths",
         "weaknesses": "Areas to improve",
-        "advice": "Advice for your next game"
+        "advice": "Advice for your next game",
+        "principles": "Principles from this game"
       },
       "gradeFilterLabel": "Filter key moments by grade",
       "noMomentsForGrades": "No key moments match the selected grades.",
@@ -2840,6 +2841,89 @@
         "title": "AI review is a paid feature",
         "description": "The AI coach reads your game through the Stockfish analysis and writes up the moments that decided it, along with what to work on next. Generating one requires a subscription.",
         "cta": "See plans"
+      },
+      "principleLabel": "Principle",
+      "principles": {
+        "develop_before_attacking": {
+          "name": "Develop before attacking",
+          "definition": "Bring the minor pieces out and castle before the queen goes hunting or an attack starts."
+        },
+        "king_safety_first": {
+          "name": "King safety first",
+          "definition": "Keep the king safe before chasing material or activity; do not loosen its pawn shelter without need."
+        },
+        "count_attackers_and_defenders": {
+          "name": "Count attackers and defenders",
+          "definition": "Before a capture or a fight for a square, count the attackers and the defenders."
+        },
+        "check_opponent_threats": {
+          "name": "Check the opponent's threats",
+          "definition": "Before every move, ask what the opponent's last move threatens — checks and captures first."
+        },
+        "dont_grab_poisoned_material": {
+          "name": "Don't grab poisoned material",
+          "definition": "Do not take material that costs tempi, exposes the king, or is won back with interest."
+        },
+        "keep_central_control": {
+          "name": "Keep central control",
+          "definition": "Fight for the center; do not release or lock it without a plan the closed structure serves."
+        },
+        "dont_move_the_same_piece_twice": {
+          "name": "Don't move the same piece twice",
+          "definition": "In the opening, do not move the same piece twice while others are still at home."
+        },
+        "improve_the_worst_piece": {
+          "name": "Improve the worst piece",
+          "definition": "When nothing is forced, improve the least active piece instead of making a move for its own sake."
+        },
+        "mind_the_pawn_structure": {
+          "name": "Mind the pawn structure",
+          "definition": "Pawn moves are permanent: do not create weak squares or weak pawns without getting something for them."
+        },
+        "keep_pieces_protected": {
+          "name": "Keep pieces protected",
+          "definition": "Loose pieces drop off — keep pieces defended, and notice when a move leaves one hanging."
+        },
+        "trade_when_ahead": {
+          "name": "Trade when ahead",
+          "definition": "When ahead in material, trade pieces and simplify; when behind, keep pieces on and seek complications."
+        },
+        "activate_the_rooks": {
+          "name": "Activate the rooks",
+          "definition": "Put rooks on open files and the seventh rank; connect them early."
+        },
+        "calculate_forcing_moves_first": {
+          "name": "Calculate forcing moves first",
+          "definition": "In a sharp position, calculate checks, captures, and threats — for both sides — before anything else."
+        },
+        "convert_patiently": {
+          "name": "Convert patiently",
+          "definition": "In a winning position, avoid risk: consolidate, remove counterplay, and convert step by step."
+        },
+        "activate_the_king_in_the_endgame": {
+          "name": "Activate the king in the endgame",
+          "definition": "Once the queens are off, the king is a fighting piece — bring it toward the center and the pawns."
+        },
+        "recount_after_captures": {
+          "name": "Recount after captures",
+          "definition": "After every capture, pawn move, or check, re-verify where the affected pieces stand before thinking further."
+        },
+        "verify_the_piece_before_committing": {
+          "name": "Verify the piece before committing",
+          "definition": "Before submitting a move, confirm the square the moving piece is really on and that its path is clear."
+        },
+        "checkpoint_at_structural_changes": {
+          "name": "Checkpoint at structural changes",
+          "definition": "Spend a peek or a deliberate full recount at structural changes — captures, pawn breaks, king moves — not per move."
+        },
+        "track_both_kings": {
+          "name": "Track both kings",
+          "definition": "Keep the squares around both kings in mind at all times; most blindfold blunders start there."
+        },
+        "narrate_the_position_periodically": {
+          "name": "Narrate the position periodically",
+          "definition": "Every few moves, recite the full position piece by piece to refresh the mental board before it fades."
+        }
       }
     },
     "discussion": {

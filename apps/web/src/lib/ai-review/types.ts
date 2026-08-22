@@ -21,6 +21,8 @@ import type { Side } from '@blindfold-chess/types';
 
 import type { MoveAnalysis, MoveJudgment } from '@/lib/games/analysis/types';
 
+import type { PrincipleId } from './principles';
+
 /**
  * One critical moment selected for the review — server-derived engine fact
  * (see the module TSDoc). Persisted in `game_ai_reviews.moments`.
@@ -55,13 +57,25 @@ export type AiReviewMomentComment = {
   ply: number;
   /** Why the moment mattered and what to look for in such positions. */
   explanation: string;
-  /** The transferable takeaway. */
+  /**
+   * How the principle applied in THIS position — not the principle itself,
+   * which `principle` names (see `./principles`).
+   */
   lesson: string;
+  /** The general rule the moment illustrates, or `other`. */
+  principle: PrincipleId;
 };
 
 /** The validated LLM output — prose only, no numbers, no moves. */
 export type AiReviewContent = {
-  summary: string;
+  /**
+   * The TL;DR: 3-4 one-sentence takeaways (result, what decided it, the one
+   * thing to work on). A list rather than a paragraph because a paragraph
+   * got read as the review's intro and ran to 400-500 characters that nobody
+   * finished; the details it was summarising already follow in the sections
+   * below.
+   */
+  summary: string[];
   momentComments: AiReviewMomentComment[];
   strengths: string[];
   weaknesses: string[];

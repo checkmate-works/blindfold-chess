@@ -31,9 +31,14 @@ vi.mock('../_hooks/use-ai-review-generation', () => ({
 const REVIEW: AiReview = {
   locale: 'en',
   content: {
-    summary: 'A hard-fought game with one decisive slip.',
+    summary: ['A hard-fought game with one decisive slip.'],
     momentComments: [
-      { ply: 4, explanation: 'This dropped the knight.', lesson: 'Count the defenders first.' },
+      {
+        ply: 4,
+        explanation: 'This dropped the knight.',
+        lesson: 'Count the defenders first.',
+        principle: 'count_attackers_and_defenders',
+      },
     ],
     strengths: ['Solid opening play.'],
     weaknesses: ['Tactical oversights in the middlegame.'],
@@ -83,6 +88,12 @@ describe('AiReviewPanel', () => {
     render(<AiReviewPanel {...baseProps} initialReview={REVIEW} />);
 
     expect(screen.getByText('A hard-fought game with one decisive slip.')).toBeInTheDocument();
+    // The principle reads in the viewer's language — once in the moment's
+    // callout, once in the tally — and its definition comes along.
+    expect(
+      screen.getAllByText('aiReview.principles.count_attackers_and_defenders.name')
+    ).toHaveLength(2);
+    expect(screen.getByText('aiReview.sections.principles')).toBeInTheDocument();
     expect(screen.getByText('3. Nd5')).toBeInTheDocument();
     // The grade shows as chess notation, named for assistive tech.
     const grade = screen.getByRole('img', { name: 'aiReview.judgments.mistake' });
@@ -239,6 +250,7 @@ describe('AiReviewPanel — key moment grade filter', () => {
         ply,
         explanation: `explanation-${ply}`,
         lesson: `lesson-${ply}`,
+        principle: 'other' as const,
       })),
     },
     moments: (['inaccuracy', 'mistake', 'blunder', 'inaccuracy'] as const).map(

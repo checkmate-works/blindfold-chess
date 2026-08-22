@@ -3,6 +3,7 @@
 import type { AiReviewMomentComment, ReviewMoment } from '@/lib/ai-review/types';
 
 import { ReviewMomentFacts, formatMomentMoveLabel } from './ReviewMomentFacts';
+import { ReviewPrincipleCallout } from './ReviewPrincipleCallout';
 
 /**
  * One critical moment as the AI Review tab lists it: a bordered card led by
@@ -36,6 +37,7 @@ export function ReviewMomentCard({
       {comment && (
         <>
           <p className="text-sm text-foreground">{comment.explanation}</p>
+          <ReviewPrincipleCallout principle={comment.principle} />
           <p className="text-sm text-muted-foreground">{comment.lesson}</p>
         </>
       )}

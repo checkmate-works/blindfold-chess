@@ -56,7 +56,7 @@ const EVALS = Array.from({ length: MOVES.length + 1 }, () => ({ score: 10 }));
 
 const FAKE_REVIEW = {
   content: {
-    summary: 's',
+    summary: ['s'],
     momentComments: [],
     strengths: ['a'],
     weaknesses: ['b'],

@@ -32,7 +32,12 @@ describe('ReviewMomentComment', () => {
     render(
       <ReviewMomentComment
         {...props}
-        comment={{ ply: 7, explanation: 'Hung the knight.', lesson: 'Count first.' }}
+        comment={{
+          ply: 7,
+          explanation: 'Hung the knight.',
+          lesson: 'Count first.',
+          principle: 'keep_pieces_protected',
+        }}
       />
     );
 
@@ -45,6 +50,10 @@ describe('ReviewMomentComment', () => {
     expect(screen.getByTitle('aiReview.bestMoveLabel')).toBeInTheDocument();
     expect(screen.getByText('Qd2')).toBeInTheDocument();
     expect(screen.getByText('Hung the knight.')).toBeInTheDocument();
+    expect(screen.getByText('aiReview.principles.keep_pieces_protected.name')).toBeInTheDocument();
+    expect(
+      screen.getByText('aiReview.principles.keep_pieces_protected.definition')
+    ).toBeInTheDocument();
     expect(screen.getByText('Count first.')).toBeInTheDocument();
   });
 
@@ -52,7 +61,12 @@ describe('ReviewMomentComment', () => {
     render(
       <ReviewMomentComment
         {...props}
-        comment={{ ply: 7, explanation: 'Hung the knight.', lesson: 'Count first.' }}
+        comment={{
+          ply: 7,
+          explanation: 'Hung the knight.',
+          lesson: 'Count first.',
+          principle: 'other',
+        }}
       />
     );
 
@@ -70,7 +84,12 @@ describe('ReviewMomentComment', () => {
     render(
       <ReviewMomentComment
         {...props}
-        comment={{ ply: 7, explanation: 'Hung the knight.', lesson: 'Count first.' }}
+        comment={{
+          ply: 7,
+          explanation: 'Hung the knight.',
+          lesson: 'Count first.',
+          principle: 'other',
+        }}
       />
     );
     // Nothing else here acts on a `game_comments` row — no like, no reply.

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { MAX_REVIEW_MOMENTS } from './input';
+import { PRINCIPLE_IDS } from './principles';
 import type { AiReviewContent } from './types';
 
 /**
@@ -25,8 +26,23 @@ import type { AiReviewContent } from './types';
  * unvalidated. `schema.test.ts` holds them to it.
  */
 
-const MAX_SUMMARY_LENGTH = 2000;
 const MAX_ITEM_LENGTH = 1000;
+
+/**
+ * How many items each list may hold. Enforced by the zod layer only — strict
+ * JSON Schema cannot carry array bounds — so the prompt has to state them
+ * too (`buildSystemPrompt` reads this object): a model that was never told
+ * the ceiling will exceed it whenever it has more to say, and the review
+ * then fails validation twice and is refused. Seen live on 2026-08-22, when
+ * the blindfold coaching rules gave the model a fourth piece of advice.
+ */
+export const REVIEW_LIST_BOUNDS = {
+  /** The TL;DR — the prompt asks for 3-4; the floor tolerates a thin game. */
+  summary: { min: 1, max: 4 },
+  strengths: { min: 1, max: 4 },
+  weaknesses: { min: 1, max: 4 },
+  advice: { min: 1, max: 3 },
+} as const;
 
 /** Provider-facing strict JSON Schema, with `ply` pinned to this game's moments. */
 export function buildAiReviewJsonSchema(allowedPlies: number[]): Record<string, unknown> {
@@ -35,13 +51,13 @@ export function buildAiReviewJsonSchema(allowedPlies: number[]): Record<string, 
     additionalProperties: false,
     required: ['summary', 'momentComments', 'strengths', 'weaknesses', 'advice'],
     properties: {
-      summary: { type: 'string' },
+      summary: { type: 'array', items: { type: 'string' } },
       momentComments: {
         type: 'array',
         items: {
           type: 'object',
           additionalProperties: false,
-          required: ['ply', 'explanation', 'lesson'],
+          required: ['ply', 'explanation', 'lesson', 'principle'],
           properties: {
             ply:
               allowedPlies.length > 0
@@ -49,6 +65,8 @@ export function buildAiReviewJsonSchema(allowedPlies: number[]): Record<string, 
                 : { type: 'integer' },
             explanation: { type: 'string' },
             lesson: { type: 'string' },
+            // Pinned like `ply`: the model names a principle, it does not write one.
+            principle: { type: 'string', enum: PRINCIPLE_IDS },
           },
         },
       },
@@ -60,12 +78,14 @@ export function buildAiReviewJsonSchema(allowedPlies: number[]): Record<string, 
 }
 
 const prose = (max: number) => z.string().trim().min(1).max(max);
+const list = ({ min, max }: { min: number; max: number }) =>
+  z.array(prose(MAX_ITEM_LENGTH)).min(min).max(max);
 
 /** Server-side re-validation of the parsed LLM response. */
 export function buildAiReviewContentSchema(allowedPlies: number[]) {
   const allowed = new Set(allowedPlies);
   return z.object({
-    summary: prose(MAX_SUMMARY_LENGTH),
+    summary: list(REVIEW_LIST_BOUNDS.summary),
     momentComments: z
       .array(
         z.object({
@@ -75,11 +95,12 @@ export function buildAiReviewContentSchema(allowedPlies: number[]) {
             .refine((p) => allowed.has(p), 'ply not among the provided moments'),
           explanation: prose(MAX_ITEM_LENGTH),
           lesson: prose(MAX_ITEM_LENGTH),
+          principle: z.enum(PRINCIPLE_IDS),
         })
       )
       .max(MAX_REVIEW_MOMENTS),
-    strengths: z.array(prose(MAX_ITEM_LENGTH)).min(1).max(4),
-    weaknesses: z.array(prose(MAX_ITEM_LENGTH)).min(1).max(4),
-    advice: z.array(prose(MAX_ITEM_LENGTH)).min(1).max(3),
+    strengths: list(REVIEW_LIST_BOUNDS.strengths),
+    weaknesses: list(REVIEW_LIST_BOUNDS.weaknesses),
+    advice: list(REVIEW_LIST_BOUNDS.advice),
   }) satisfies z.ZodType<AiReviewContent>;
 }
