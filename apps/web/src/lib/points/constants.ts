@@ -277,11 +277,28 @@ export const LIKE_GRANT_BATCH_TYPE = 'like_grant';
 export const LIKE_GRANT_SCAN_SAFETY_MARGIN_MS = 5 * 60 * 1000;
 
 /**
- * `likes.target_type` values eligible for like-coin grants. Scoped to UGC
- * only — `article` (operator-authored) likes are intentionally absent so
- * the operator account is never paid.
+ * `likes.target_type` values eligible for like-coin grants — every piece of
+ * member-authored UGC that can be liked. Since 2026-08 likes are the ONLY
+ * self-serve way to earn coins (creation / publish grants were retired), so
+ * any likeable UGC left out of this list is a surface where contribution
+ * goes unrewarded; add the type here and a row lookup in
+ * `resolveGrantTargets` when a new likeable kind ships.
+ *
+ * Deliberately absent:
+ * - `article` — operator-authored, so the operator account is never paid.
+ * - `game_comment` — a comment is a reaction to someone else's game, not a
+ *   contribution in its own right; paying for comment likes would reward
+ *   comment volume rather than the play, problems and courses the economy
+ *   exists to encourage.
  */
-export const LIKE_GRANT_TARGET_TYPES = ['position', 'topic_post'] as const;
+export const LIKE_GRANT_TARGET_TYPES = [
+  'position',
+  'topic_post',
+  'game',
+  'chunk',
+  'repertoire',
+] as const;
+export type LikeGrantTargetType = (typeof LIKE_GRANT_TARGET_TYPES)[number];
 
 /**
  * `idempotency_key` prefixes for the like-coin batch. The key is keyed on

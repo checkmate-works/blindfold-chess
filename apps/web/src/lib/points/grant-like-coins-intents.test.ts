@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
 import type { ContentRow, LikeRow, PositionRow } from './grant-like-coins-intents';
-import { buildGrantIntents, directGrantKey, forkGrantKey } from './grant-like-coins-intents';
+import {
+  buildGrantIntents,
+  contentKey,
+  directGrantKey,
+  forkGrantKey,
+} from './grant-like-coins-intents';
 
 // --- Fixtures ---------------------------------------------------------------
 
@@ -17,6 +22,10 @@ function positionLike(targetId: string, likerId: string = LIKER): LikeRow {
   return { likerId, targetType: 'position', targetId };
 }
 
+function like(targetType: string, targetId: string, likerId: string = LIKER): LikeRow {
+  return { likerId, targetType, targetId };
+}
+
 function content(ownerId: string | null, deletedAt: Date | null = null): ContentRow {
   return { ownerId, deletedAt };
 }
@@ -29,16 +38,19 @@ function position(
   return { ownerId, forkedFromId, deletedAt };
 }
 
+/** `[targetType, targetId, row]` — the shape `contentByKey` is built from. */
+type ContentEntry = [targetType: string, targetId: string, row: ContentRow | PositionRow];
+
 function run(input: {
   likeRows: LikeRow[];
-  positionById?: Map<string, PositionRow>;
-  topicPostById?: Map<string, ContentRow>;
+  content?: ContentEntry[];
   forkParentById?: Map<string, ContentRow>;
 }) {
   return buildGrantIntents({
     likeRows: input.likeRows,
-    positionById: input.positionById ?? new Map(),
-    topicPostById: input.topicPostById ?? new Map(),
+    contentByKey: new Map(
+      (input.content ?? []).map(([type, id, row]) => [contentKey(type, id), row])
+    ),
     forkParentById: input.forkParentById ?? new Map(),
   });
 }
@@ -49,7 +61,7 @@ describe('buildGrantIntents — direct grants', () => {
   it('grants one coin to the topic_post owner', () => {
     const intents = run({
       likeRows: [topicPostLike('post-1')],
-      topicPostById: new Map([['post-1', content(OWNER)]]),
+      content: [['topic_post', 'post-1', content(OWNER)]],
     });
     expect(intents).toEqual([
       {
@@ -66,7 +78,7 @@ describe('buildGrantIntents — direct grants', () => {
   it('grants one coin to the position owner', () => {
     const intents = run({
       likeRows: [positionLike('pos-1')],
-      positionById: new Map([['pos-1', position(OWNER)]]),
+      content: [['position', 'pos-1', position(OWNER)]],
     });
     expect(intents).toHaveLength(1);
     expect(intents[0]).toMatchObject({ recipientId: OWNER, via: 'direct' });
@@ -75,7 +87,7 @@ describe('buildGrantIntents — direct grants', () => {
   it('withholds the direct grant on a self-like (liker is the owner)', () => {
     const intents = run({
       likeRows: [topicPostLike('post-1', OWNER)],
-      topicPostById: new Map([['post-1', content(OWNER)]]),
+      content: [['topic_post', 'post-1', content(OWNER)]],
     });
     expect(intents).toEqual([]);
   });
@@ -83,7 +95,7 @@ describe('buildGrantIntents — direct grants', () => {
   it('skips soft-deleted content', () => {
     const intents = run({
       likeRows: [topicPostLike('post-1')],
-      topicPostById: new Map([['post-1', content(OWNER, new Date())]]),
+      content: [['topic_post', 'post-1', content(OWNER, new Date())]],
     });
     expect(intents).toEqual([]);
   });
@@ -96,8 +108,50 @@ describe('buildGrantIntents — direct grants', () => {
   it('skips content whose owner was anonymised (null ownerId — no payee)', () => {
     const intents = run({
       likeRows: [topicPostLike('post-1'), positionLike('pos-1')],
-      topicPostById: new Map([['post-1', content(null)]]),
-      positionById: new Map([['pos-1', position(null)]]),
+      content: [
+        ['topic_post', 'post-1', content(null)],
+        ['position', 'pos-1', position(null)],
+      ],
+    });
+    expect(intents).toEqual([]);
+  });
+
+  it.each(['game', 'chunk', 'repertoire'])(
+    'grants one coin to the owner of a liked %s',
+    (targetType) => {
+      const intents = run({
+        likeRows: [like(targetType, 'c-1')],
+        content: [[targetType, 'c-1', content(OWNER)]],
+      });
+      expect(intents).toEqual([
+        {
+          recipientId: OWNER,
+          idempotencyKey: directGrantKey(targetType, 'c-1', LIKER),
+          targetType,
+          targetId: 'c-1',
+          likerId: LIKER,
+          via: 'direct',
+        },
+      ]);
+    }
+  );
+
+  it('applies the self-like and anonymised-owner rules to every target type', () => {
+    const intents = run({
+      likeRows: [like('game', 'g-1', OWNER), like('chunk', 'c-1'), like('repertoire', 'r-1')],
+      content: [
+        ['game', 'g-1', content(OWNER)],
+        ['chunk', 'c-1', content(null)],
+        ['repertoire', 'r-1', content(OWNER, new Date())],
+      ],
+    });
+    expect(intents).toEqual([]);
+  });
+
+  it('keys content by (targetType, targetId) — same id under another type does not match', () => {
+    const intents = run({
+      likeRows: [like('game', 'shared-id')],
+      content: [['chunk', 'shared-id', content(OWNER)]],
     });
     expect(intents).toEqual([]);
   });
@@ -114,7 +168,7 @@ describe('buildGrantIntents — fork propagation', () => {
   it('grants a second coin to the fork parent owner', () => {
     const intents = run({
       likeRows: [positionLike('fork-1')],
-      positionById: new Map([['fork-1', position(OWNER, 'parent-1')]]),
+      content: [['position', 'fork-1', position(OWNER, 'parent-1')]],
       forkParentById: new Map([['parent-1', content(PARENT_OWNER)]]),
     });
     expect(intents).toHaveLength(2);
@@ -127,7 +181,7 @@ describe('buildGrantIntents — fork propagation', () => {
   it('withholds the fork coin on a self-fork (parent owner == fork owner)', () => {
     const intents = run({
       likeRows: [positionLike('fork-1')],
-      positionById: new Map([['fork-1', position(OWNER, 'parent-1')]]),
+      content: [['position', 'fork-1', position(OWNER, 'parent-1')]],
       forkParentById: new Map([['parent-1', content(OWNER)]]),
     });
     expect(intents).toHaveLength(1);
@@ -137,7 +191,7 @@ describe('buildGrantIntents — fork propagation', () => {
   it('withholds the fork coin when the liker owns the fork parent', () => {
     const intents = run({
       likeRows: [positionLike('fork-1', PARENT_OWNER)],
-      positionById: new Map([['fork-1', position(OWNER, 'parent-1')]]),
+      content: [['position', 'fork-1', position(OWNER, 'parent-1')]],
       forkParentById: new Map([['parent-1', content(PARENT_OWNER)]]),
     });
     expect(intents).toHaveLength(1);
@@ -147,7 +201,7 @@ describe('buildGrantIntents — fork propagation', () => {
   it('withholds the fork coin when the parent is soft-deleted', () => {
     const intents = run({
       likeRows: [positionLike('fork-1')],
-      positionById: new Map([['fork-1', position(OWNER, 'parent-1')]]),
+      content: [['position', 'fork-1', position(OWNER, 'parent-1')]],
       forkParentById: new Map([['parent-1', content(PARENT_OWNER, new Date())]]),
     });
     expect(intents).toHaveLength(1);
@@ -157,7 +211,7 @@ describe('buildGrantIntents — fork propagation', () => {
   it('withholds the fork coin when the parent no longer exists', () => {
     const intents = run({
       likeRows: [positionLike('fork-1')],
-      positionById: new Map([['fork-1', position(OWNER, 'missing-parent')]]),
+      content: [['position', 'fork-1', position(OWNER, 'missing-parent')]],
     });
     expect(intents).toHaveLength(1);
     expect(intents[0].via).toBe('direct');
@@ -166,8 +220,20 @@ describe('buildGrantIntents — fork propagation', () => {
   it('withholds the fork coin when the parent owner was anonymised (null)', () => {
     const intents = run({
       likeRows: [positionLike('fork-1')],
-      positionById: new Map([['fork-1', position(OWNER, 'parent-1')]]),
+      content: [['position', 'fork-1', position(OWNER, 'parent-1')]],
       forkParentById: new Map([['parent-1', content(null)]]),
+    });
+    expect(intents).toHaveLength(1);
+    expect(intents[0].via).toBe('direct');
+  });
+
+  it('never propagates for a non-position target', () => {
+    // A fork parent exists, but the like is on a chunk — lineage is a
+    // `positions` concept and nothing else is consulted for it.
+    const intents = run({
+      likeRows: [like('chunk', 'c-1')],
+      content: [['chunk', 'c-1', position(OWNER, 'parent-1')]],
+      forkParentById: new Map([['parent-1', content(PARENT_OWNER)]]),
     });
     expect(intents).toHaveLength(1);
     expect(intents[0].via).toBe('direct');
@@ -176,7 +242,7 @@ describe('buildGrantIntents — fork propagation', () => {
   it('does not propagate when the position is not a fork', () => {
     const intents = run({
       likeRows: [positionLike('pos-1')],
-      positionById: new Map([['pos-1', position(OWNER, null)]]),
+      content: [['position', 'pos-1', position(OWNER, null)]],
     });
     expect(intents).toHaveLength(1);
     expect(intents[0].via).toBe('direct');
@@ -187,7 +253,7 @@ describe('buildGrantIntents — fork propagation', () => {
     // fork-propagation coin to the (different) parent owner still fires.
     const intents = run({
       likeRows: [positionLike('fork-1', OWNER)],
-      positionById: new Map([['fork-1', position(OWNER, 'parent-1')]]),
+      content: [['position', 'fork-1', position(OWNER, 'parent-1')]],
       forkParentById: new Map([['parent-1', content(PARENT_OWNER)]]),
     });
     expect(intents).toHaveLength(1);
@@ -199,7 +265,7 @@ describe('buildGrantIntents — fork propagation', () => {
     // owner — never the original grandparent.
     const intents = run({
       likeRows: [positionLike('fork-2')],
-      positionById: new Map([['fork-2', position(OWNER, 'fork-1')]]),
+      content: [['position', 'fork-2', position(OWNER, 'fork-1')]],
       forkParentById: new Map([['fork-1', content(PARENT_OWNER)]]),
     });
     expect(intents).toHaveLength(2);

@@ -49,6 +49,16 @@ export type PositionRow = ContentRow & {
   forkedFromId: string | null;
 };
 
+/**
+ * Key for the liked-content map: the polymorphic `(targetType, targetId)`
+ * pair a `likes` row points at. One map for every target type (rather than
+ * one map per table) so adding a likeable kind is a new row lookup in
+ * `resolveGrantTargets`, not a new parameter threaded through here.
+ */
+export function contentKey(targetType: string, targetId: string): string {
+  return `${targetType}:${targetId}`;
+}
+
 /** Idempotency key for the direct grant to a liked content's owner. */
 export function directGrantKey(targetType: string, targetId: string, likerId: string): string {
   return `${LIKE_GRANT_KEY_PREFIX}:${targetType}:${targetId}:${likerId}`;
@@ -63,13 +73,13 @@ export function forkGrantKey(targetType: string, targetId: string, likerId: stri
  * Turn a window of `likes` rows into the coin payouts they earn.
  *
  * Rules (see issue #87):
- * - Each like grants **1 coin to the liked content's owner** — except a
- *   self-like (liker owns the liked content), which is withheld entirely.
- *   Unlike UGC-creation grants, which are capped by `DAILY_CREATION_POINT_CAP`,
- *   like-coin grants are uncapped, so "own content count" is not a real
- *   ceiling — a scripted account can keep creating content and liking its
- *   own posts to mint coins without limit. Withholding the self-like grant
- *   closes that faucet.
+ * - Each like on member UGC (`LIKE_GRANT_TARGET_TYPES`: position, topic
+ *   post, game, chunk, repertoire) grants **1 coin to the liked content's
+ *   owner** — except a self-like (liker owns the liked content), which is
+ *   withheld entirely. Like-coin grants are uncapped, so "own content count"
+ *   is not a real ceiling — a scripted account can keep creating content and
+ *   liking its own posts to mint coins without limit. Withholding the
+ *   self-like grant closes that faucet.
  * - A like on a forked `position` *also* grants 1 coin to the fork
  *   **parent's** owner — but only one level up, and only when the parent
  *   still exists and is not soft-deleted.
@@ -84,20 +94,20 @@ export function forkGrantKey(targetType: string, targetId: string, likerId: stri
  */
 export function buildGrantIntents(input: {
   likeRows: readonly LikeRow[];
-  positionById: ReadonlyMap<string, PositionRow>;
-  topicPostById: ReadonlyMap<string, ContentRow>;
+  /**
+   * Every liked content row, keyed by {@link contentKey}. Rows for
+   * `position` targets are {@link PositionRow}s (they carry fork lineage);
+   * every other type is a plain {@link ContentRow}. A like whose target is
+   * absent from the map is treated as orphaned and pays nothing.
+   */
+  contentByKey: ReadonlyMap<string, ContentRow | PositionRow>;
   forkParentById: ReadonlyMap<string, ContentRow>;
 }): GrantIntent[] {
-  const { likeRows, positionById, topicPostById, forkParentById } = input;
+  const { likeRows, contentByKey, forkParentById } = input;
   const intents: GrantIntent[] = [];
 
   for (const like of likeRows) {
-    const content =
-      like.targetType === 'position'
-        ? positionById.get(like.targetId)
-        : like.targetType === 'topic_post'
-          ? topicPostById.get(like.targetId)
-          : undefined;
+    const content = contentByKey.get(contentKey(like.targetType, like.targetId));
 
     // Missing (orphaned like), soft-deleted, or owner anonymised (no payee) at
     // batch time — skip entirely. A null owner means the content's author has
@@ -118,9 +128,11 @@ export function buildGrantIntents(input: {
       });
     }
 
-    // Fork propagation — positions only, one level up.
-    if (like.targetType !== 'position') continue;
-    const position = content as PositionRow;
+    // Fork propagation — positions only, one level up. The `in` check is the
+    // structural guard for "this row came from `positions`"; any other type
+    // has no lineage and stops here.
+    if (like.targetType !== 'position' || !('forkedFromId' in content)) continue;
+    const position = content;
     if (position.forkedFromId === null) continue;
 
     const parent = forkParentById.get(position.forkedFromId);
