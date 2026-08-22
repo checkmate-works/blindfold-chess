@@ -43,6 +43,23 @@ description: Build/launch/drive recipe for runtime-verifying apps/web changes en
   → then `input[placeholder*="Enter move"]` + Enter submits moves. Undo/Resign
   are `button[title="Undo"|"Resign"]` + a confirm modal with the same text.
   The AI (stockfish wasm) works headless; allow ~10s per reply.
+- **Per-game blindfold settings come only from the URL**: a game started by
+  plain URL has no `play_settings` snapshot — `games.play_settings` publishes
+  as `null`, so it is neither "constrained" (1kyu/1dan evaluators) nor gets
+  the AI review's blindfold block. Pass `gamePrefs=<JSON>` as the real
+  new-game dialog does, e.g. `{"boardVisibility":"peek","showOwnPieces":true,
+"showOpponentPieces":true,"pieceShapeMode":"normal","pieceColors":"normal",
+"pawnHideMode":"none"}`. In peek mode the reveal control is the board
+  mask's "Tap to reveal" text, not the inline "Show Board" header.
+- **AI review generation** (`games/shared/[id]` → "AI Review" tab) needs the
+  author signed in with a `subscriptions` row in status `active` (fake Stripe
+  ids are fine locally), `OPENAI_API_KEY` in `.env.local`, and one free daily
+  slot: to regenerate, `delete from rate_limit_events where action =
+'generate_ai_review'` and drop the `game_ai_reviews` row. A real call costs
+  well under a yen on gpt-5-mini. To see the raw model response (the app logs
+  only to the dev-server console), drive `generateReview` from a scratch
+  vitest file with `vi.mock('server-only', () => ({}))` and a logging wrapper
+  around `createOpenAiClient()`.
 - Button titles are Title Case from i18n (e.g. "Flip Board", not "Flip board").
 - Screenshot-equality checks across a button click pick up the focus ring —
   compare DOM state (e.g. coordinate-label order for board orientation), not pixels.
