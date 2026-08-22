@@ -140,6 +140,24 @@ describe('announcements queries', () => {
       expect(result[0].slug).toBe('page-item');
     });
 
+    it('normalises the timestamps to ISO strings', async () => {
+      // The listing is cached, and the Data Cache returns its value as JSON.
+      // Both paths have to hand the page the same type, so the query converts
+      // rather than letting a hit and a miss differ.
+      const rows = [
+        makeAnnouncement({
+          pinnedAt: new Date('2026-01-20T00:00:00Z'),
+          publishedAt: new Date('2026-01-15T00:00:00Z'),
+        }),
+      ];
+      mockDb.execute.mockResolvedValue(mockExecuteResult(rows));
+
+      const [item] = await getPublishedAnnouncementsPaginated('en', 20, 0);
+
+      expect(item.pinnedAt).toBe('2026-01-20T00:00:00.000Z');
+      expect(item.publishedAt).toBe('2026-01-15T00:00:00.000Z');
+    });
+
     it('should return empty array when offset exceeds total', async () => {
       mockDb.execute.mockResolvedValue(mockExecuteResult([]));
 
