@@ -255,7 +255,7 @@ function ReviewBody({
   const principleCounts = useMemo(() => {
     const counts = new Map<PrincipleId, number>();
     for (const { comment } of momentRows) {
-      if (comment.principle && comment.principle !== 'other') {
+      if (comment.principle !== 'other') {
         counts.set(comment.principle, (counts.get(comment.principle) ?? 0) + 1);
       }
     }

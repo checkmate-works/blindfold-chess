@@ -49,13 +49,8 @@ describe('ReviewPrincipleCallout', () => {
     }
   });
 
-  it('renders nothing for "other" and for a review without a principle', () => {
-    const { container } = renderWithDictionary(
-      <>
-        <ReviewPrincipleCallout principle="other" />
-        <ReviewPrincipleCallout principle={undefined} />
-      </>
-    );
+  it('renders nothing for "other"', () => {
+    const { container } = renderWithDictionary(<ReviewPrincipleCallout principle="other" />);
     expect(container).toBeEmptyDOMElement();
   });
 });

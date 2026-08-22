@@ -13,12 +13,11 @@ import type { PrincipleId } from '@/lib/ai-review/principles';
  * a principle is an id the model picked from a closed list (see
  * `@/lib/ai-review/principles`), so this is the one part of a review that
  * reads in the VIEWER's language even when the prose was generated in
- * another. Renders nothing for a review stored before principles existed
- * and for `other`, which names no rule.
+ * another. Renders nothing for `other`, which names no rule.
  */
-export function ReviewPrincipleCallout({ principle }: { principle: PrincipleId | undefined }) {
+export function ReviewPrincipleCallout({ principle }: { principle: PrincipleId }) {
   const t = useTranslations('sharedGames');
-  if (!principle || principle === 'other') return null;
+  if (principle === 'other') return null;
 
   return (
     <div className="flex gap-2 rounded-md border border-primary/30 bg-primary/5 px-3 py-2">

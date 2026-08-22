@@ -61,7 +61,12 @@ describe('ReviewMomentComment', () => {
     render(
       <ReviewMomentComment
         {...props}
-        comment={{ ply: 7, explanation: 'Hung the knight.', lesson: 'Count first.' }}
+        comment={{
+          ply: 7,
+          explanation: 'Hung the knight.',
+          lesson: 'Count first.',
+          principle: 'other',
+        }}
       />
     );
 
@@ -79,7 +84,12 @@ describe('ReviewMomentComment', () => {
     render(
       <ReviewMomentComment
         {...props}
-        comment={{ ply: 7, explanation: 'Hung the knight.', lesson: 'Count first.' }}
+        comment={{
+          ply: 7,
+          explanation: 'Hung the knight.',
+          lesson: 'Count first.',
+          principle: 'other',
+        }}
       />
     );
     // Nothing else here acts on a `game_comments` row — no like, no reply.

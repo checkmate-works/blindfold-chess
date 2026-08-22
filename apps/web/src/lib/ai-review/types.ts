@@ -59,12 +59,11 @@ export type AiReviewMomentComment = {
   explanation: string;
   /**
    * How the principle applied in THIS position — not the principle itself,
-   * which `principle` names (see `./principles`). Reviews stored before the
-   * principle existed carry the general rule in this prose instead.
+   * which `principle` names (see `./principles`).
    */
   lesson: string;
-  /** The general rule the moment illustrates; absent on reviews stored before 2026-08-22. */
-  principle?: PrincipleId;
+  /** The general rule the moment illustrates, or `other`. */
+  principle: PrincipleId;
 };
 
 /** The validated LLM output — prose only, no numbers, no moves. */
@@ -74,8 +73,7 @@ export type AiReviewContent = {
    * thing to work on). A list rather than a paragraph because a paragraph
    * got read as the review's intro and ran to 400-500 characters that nobody
    * finished; the details it was summarising already follow in the sections
-   * below. Rows written before 2026-08-22 stored the paragraph — see
-   * `normalizeStoredContent`.
+   * below.
    */
   summary: string[];
   momentComments: AiReviewMomentComment[];

@@ -6,13 +6,12 @@ import 'server-only';
 import { db, gameAiReviews } from '@/lib/db';
 import type { GameAiReviewRecord, NewGameAiReviewRecord } from '@/lib/db/schema';
 
-import { normalizeStoredContent } from './stored-content';
 import type { AiReview } from './types';
 
 function toAiReview(row: GameAiReviewRecord): AiReview {
   return {
     locale: row.locale,
-    content: normalizeStoredContent(row.content),
+    content: row.content,
     moments: row.moments,
     summaryStats: row.summaryStats,
     model: row.model,
