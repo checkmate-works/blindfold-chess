@@ -6,6 +6,7 @@ import type { Side } from '@blindfold-chess/types';
 
 import { resolveAiReviewGenerationState } from '@/lib/ai-review/entitlement';
 import { isLlmConfigured } from '@/lib/ai-review/openai';
+import { PRINCIPLE_GLOSSARY_SLUGS } from '@/lib/ai-review/principles';
 import { getAiReviewForViewer } from '@/lib/ai-review/queries';
 import { getOptionalUser } from '@/lib/auth';
 import { getLinkableChunkOptionsForViewer } from '@/lib/chunks/queries';
@@ -20,10 +21,12 @@ import { resolveDisplayName } from '@/lib/users/display-name';
 import { UUID_RE } from '@/lib/validations/uuid';
 
 import { GameSocialFooter } from '@/app/[locale]/(public)/games/_components/GameSocialFooter';
+import { resolveTermPreviews } from '@/app/[locale]/(public)/glossary/_lib/term-previews';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import { MoveNotationText } from '@/app/[locale]/(public)/topics/_components/MoveNotationText';
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
+import { GlossaryTermModalProvider } from '@/app/[locale]/_components/glossary-term/GlossaryTermModalProvider';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { toggleGameLikeAction } from '../_actions/game-like';
@@ -125,6 +128,20 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
     isLlmConfigured() && aiReviewAccess.kind !== 'blocked' ? aiReviewAccess : null;
   const showAiReview = aiReview != null || generationOffer != null;
 
+  // The principles a review links are glossary terms; embed every one's
+  // preview (twenty small records) so the links open the shared modal with
+  // no client fetch — including for a review generated on this page after
+  // load, whose principles nobody can predict. Skipped when no review can
+  // appear, like the guides skip it for pages without term links.
+  const [principleTerms, viewDetailsLabel] = showAiReview
+    ? await Promise.all([
+        resolveTermPreviews(PRINCIPLE_GLOSSARY_SLUGS, locale),
+        getTranslations({ locale, namespace: 'glossary' }).then((tg) =>
+          tg('termModal.viewDetails')
+        ),
+      ])
+    : [{}, ''];
+
   return (
     <PageLayout
       title={game.title}
@@ -141,54 +158,56 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
             difficulty (board visibility + piece obfuscation) is surfaced inside
             the replay, above the board, as a position-aware indicator that
             tracks the displayed move — see PlaySettingsIndicator. */}
-        <GameReview
-          moves={game.moves}
-          startingFen={game.startingFen}
-          setupPlies={game.setupPlies}
-          playerColor={game.playerColor}
-          result={game.result}
-          detectedOpening={opening}
-          engineConfig={game.engineConfig}
-          operationLogs={game.operationLogs}
-          playSettings={game.playSettings ?? null}
-          playSettingsLog={game.playSettingsLog ?? null}
-          locale={locale}
-          orientation={orientation}
-          statsHeader={
-            <GameOutcomeLabel key="outcome" result={game.result} playerColor={game.playerColor} />
-          }
-          aiReview={showAiReview ? { initial: aiReview, generation: generationOffer } : undefined}
-          social={{
-            mode: 'live',
-            // Real auth state — distinct from `currentUser` (the comment
-            // profile), so a signed-in viewer without one still sees the stats
-            // instead of the members-only gate.
-            isAuthenticated: user != null,
-            gameId: game.id,
-            comments,
-            gameChunks,
-            availableChunks,
-            currentUser,
-            isGameOwner: isRegisteredOwner,
-            highlightCommentId,
-          }}
-        >
-          {game.description && (
-            <div className="space-y-2">
-              <SectionTitle>{t('detail.descriptionSection')}</SectionTitle>
-              <p className="whitespace-pre-wrap text-foreground">
-                {/* A description's line runs from the game's own start
+        <GlossaryTermModalProvider terms={principleTerms} viewDetailsLabel={viewDetailsLabel}>
+          <GameReview
+            moves={game.moves}
+            startingFen={game.startingFen}
+            setupPlies={game.setupPlies}
+            playerColor={game.playerColor}
+            result={game.result}
+            detectedOpening={opening}
+            engineConfig={game.engineConfig}
+            operationLogs={game.operationLogs}
+            playSettings={game.playSettings ?? null}
+            playSettingsLog={game.playSettingsLog ?? null}
+            locale={locale}
+            orientation={orientation}
+            statsHeader={
+              <GameOutcomeLabel key="outcome" result={game.result} playerColor={game.playerColor} />
+            }
+            aiReview={showAiReview ? { initial: aiReview, generation: generationOffer } : undefined}
+            social={{
+              mode: 'live',
+              // Real auth state — distinct from `currentUser` (the comment
+              // profile), so a signed-in viewer without one still sees the stats
+              // instead of the members-only gate.
+              isAuthenticated: user != null,
+              gameId: game.id,
+              comments,
+              gameChunks,
+              availableChunks,
+              currentUser,
+              isGameOwner: isRegisteredOwner,
+              highlightCommentId,
+            }}
+          >
+            {game.description && (
+              <div className="space-y-2">
+                <SectionTitle>{t('detail.descriptionSection')}</SectionTitle>
+                <p className="whitespace-pre-wrap text-foreground">
+                  {/* A description's line runs from the game's own start
                     (game.startingFen, NULL = standard start), the same root
                     detectGameOpening replays against. */}
-                <MoveNotationText
-                  text={game.description}
-                  locale={locale}
-                  fen={game.startingFen ?? getStartingFen()}
-                />
-              </p>
-            </div>
-          )}
-        </GameReview>
+                  <MoveNotationText
+                    text={game.description}
+                    locale={locale}
+                    fen={game.startingFen ?? getStartingFen()}
+                  />
+                </p>
+              </div>
+            )}
+          </GameReview>
+        </GlossaryTermModalProvider>
 
         {/* Author header + engagement row, in the layout the result screen
             shares (see GameSocialFooter). Anonymous authors get a fallback

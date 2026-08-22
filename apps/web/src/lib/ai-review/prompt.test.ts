@@ -73,6 +73,7 @@ describe('prompts', () => {
     expect(system).toContain('advice 1-3');
     expect(system).toContain('- develop_before_attacking:');
     expect(system).toContain('- other:');
+    expect(system).toContain('never write the principle id');
   });
 
   it('lists blindfold principles only for a blindfold game', () => {

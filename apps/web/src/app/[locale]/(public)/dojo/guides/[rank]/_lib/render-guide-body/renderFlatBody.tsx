@@ -13,6 +13,7 @@ import { GuidePageFooter } from '@/app/[locale]/(public)/dojo/guides/_components
 import { RankHeader } from '@/app/[locale]/(public)/dojo/ranks/_components/RankHeader';
 import { RequirementsList } from '@/app/[locale]/(public)/dojo/ranks/_components/RequirementsList';
 import { buildRequirementItems } from '@/app/[locale]/(public)/dojo/ranks/_lib/requirement-items';
+import { resolveTermPreviews } from '@/app/[locale]/(public)/glossary/_lib/term-previews';
 import { Divider, PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
 import { GlossaryTermModalProvider } from '@/app/[locale]/_components/glossary-term/GlossaryTermModalProvider';
@@ -23,7 +24,6 @@ import { buildFlatBodyBreadcrumbs, buildFlatBodyLearningResourceSchema } from '.
 import { RankNavigation } from './RankNavigation';
 import type { GuideContext } from './context';
 import { collectPageTermSlugs, renderPageParagraphs } from './renderParagraph';
-import { resolveTermPreviews } from './termPreviews';
 
 type FlatBodyProps = {
   kind: 'flat';

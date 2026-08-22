@@ -3,6 +3,7 @@ import type { ChessTerm } from '@/app/[locale]/(public)/glossary/_lib/types';
 import { termsAC } from './terms/a-c';
 import { termsDL } from './terms/d-l';
 import { termsMP } from './terms/m-p';
+import { termsPrinciples } from './terms/principles';
 import { termsRZ } from './terms/r-z';
 
 /**
@@ -18,4 +19,5 @@ export const chessTerms: readonly ChessTerm[] = [
   ...termsDL,
   ...termsMP,
   ...termsRZ,
+  ...termsPrinciples,
 ].sort((a, b) => a.term.localeCompare(b.term));
