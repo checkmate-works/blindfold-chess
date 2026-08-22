@@ -3,10 +3,29 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { AiReview } from '@/lib/ai-review/types';
 
+import { GlossaryTermModalProvider } from '@/app/[locale]/_components/glossary-term/GlossaryTermModalProvider';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import type { AiReviewGenerationState } from '../_hooks/use-ai-review-generation';
 import { AiReviewPanel } from './AiReviewPanel';
+
+/** The principle the fixture review names, as the page would embed it. */
+const PRINCIPLE_TERMS = {
+  'count-attackers-and-defenders': {
+    slug: 'count-attackers-and-defenders',
+    name: 'Count attackers and defenders',
+    definition: 'Before a capture or a fight for a square, count the attackers and the defenders',
+    href: '/en/glossary/count-attackers-and-defenders',
+  },
+};
+
+function renderPanel(ui: React.ReactElement) {
+  return render(
+    <GlossaryTermModalProvider terms={PRINCIPLE_TERMS} viewDetailsLabel="View">
+      {ui}
+    </GlossaryTermModalProvider>
+  );
+}
 
 vi.mock('@/i18n/use-safe-translations');
 
@@ -85,14 +104,14 @@ describe('AiReviewPanel', () => {
   });
 
   it('renders the review when one is cached, with engine facts joined by ply', () => {
-    render(<AiReviewPanel {...baseProps} initialReview={REVIEW} />);
+    renderPanel(<AiReviewPanel {...baseProps} initialReview={REVIEW} />);
 
     expect(screen.getByText('A hard-fought game with one decisive slip.')).toBeInTheDocument();
-    // The principle reads in the viewer's language — once in the moment's
-    // callout, once in the tally — and its definition comes along.
-    expect(
-      screen.getAllByText('aiReview.principles.count_attackers_and_defenders.name')
-    ).toHaveLength(2);
+    // The principle is a glossary link in the viewer's language — once in
+    // the moment's callout, once in the tally.
+    const links = screen.getAllByRole('link', { name: 'Count attackers and defenders' });
+    expect(links).toHaveLength(2);
+    expect(links[0]).toHaveAttribute('href', '/en/glossary/count-attackers-and-defenders');
     expect(screen.getByText('aiReview.sections.principles')).toBeInTheDocument();
     expect(screen.getByText('3. Nd5')).toBeInTheDocument();
     // The grade shows as chess notation, named for assistive tech.
@@ -106,24 +125,24 @@ describe('AiReviewPanel', () => {
   });
 
   it('labels a review written in another language, and only then', () => {
-    const { unmount } = render(<AiReviewPanel {...baseProps} initialReview={REVIEW} />);
+    const { unmount } = renderPanel(<AiReviewPanel {...baseProps} initialReview={REVIEW} />);
     expect(screen.queryByText('aiReview.languageNote')).not.toBeInTheDocument();
     unmount();
 
-    render(<AiReviewPanel {...baseProps} initialReview={{ ...REVIEW, locale: 'ja' }} />);
+    renderPanel(<AiReviewPanel {...baseProps} initialReview={{ ...REVIEW, locale: 'ja' }} />);
     expect(screen.getByText('aiReview.languageNote')).toBeInTheDocument();
   });
 
   it('jumps the quick-peek preview when a moment header is clicked', () => {
     const onJumpToPly = vi.fn();
-    render(<AiReviewPanel {...baseProps} initialReview={REVIEW} onJumpToPly={onJumpToPly} />);
+    renderPanel(<AiReviewPanel {...baseProps} initialReview={REVIEW} onJumpToPly={onJumpToPly} />);
 
     fireEvent.click(screen.getByText('3. Nd5'));
     expect(onJumpToPly).toHaveBeenCalledWith(4);
   });
 
   it('offers the subscription instead of the generate button when nothing pays for it', () => {
-    render(<AiReviewPanel {...baseProps} generation={{ kind: 'subscription_required' }} />);
+    renderPanel(<AiReviewPanel {...baseProps} generation={{ kind: 'subscription_required' }} />);
 
     expect(screen.getByText('aiReview.upsell.title')).toBeInTheDocument();
     // Asserted loosely: the locale prefix is next-intl's to add, and it does
@@ -150,7 +169,7 @@ describe('AiReviewPanel', () => {
   });
 
   it('offers nothing at all to a viewer with no generation offer', () => {
-    render(<AiReviewPanel {...baseProps} generation={null} />);
+    renderPanel(<AiReviewPanel {...baseProps} generation={null} />);
 
     expect(screen.getByText('aiReview.notGenerated')).toBeInTheDocument();
     expect(screen.queryByText('aiReview.generateButton')).not.toBeInTheDocument();
@@ -158,7 +177,7 @@ describe('AiReviewPanel', () => {
   });
 
   it('confirms before generating, and writes the review in the page language', () => {
-    render(<AiReviewPanel {...baseProps} />);
+    renderPanel(<AiReviewPanel {...baseProps} />);
 
     fireEvent.click(screen.getByText('aiReview.generateButton'));
     // The click opens the confirmation — nothing has started yet.
@@ -170,7 +189,7 @@ describe('AiReviewPanel', () => {
   });
 
   it('lets the author pick another language for the review', () => {
-    render(<AiReviewPanel {...baseProps} />);
+    renderPanel(<AiReviewPanel {...baseProps} />);
 
     fireEvent.click(screen.getByText('aiReview.generateButton'));
     fireEvent.change(screen.getByLabelText('aiReview.confirm.languageLabel'), {
@@ -182,7 +201,7 @@ describe('AiReviewPanel', () => {
   });
 
   it('starts nothing when the confirmation is dismissed', () => {
-    render(<AiReviewPanel {...baseProps} />);
+    renderPanel(<AiReviewPanel {...baseProps} />);
 
     fireEvent.click(screen.getByText('aiReview.generateButton'));
     fireEvent.click(screen.getByText('aiReview.confirm.cancel'));
@@ -193,7 +212,7 @@ describe('AiReviewPanel', () => {
 
   it('shows analysis progress with a cancel control', () => {
     mockState = { phase: 'analyzing', done: 3, total: 6 };
-    render(<AiReviewPanel {...baseProps} />);
+    renderPanel(<AiReviewPanel {...baseProps} />);
 
     expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '50');
     fireEvent.click(screen.getByText('aiReview.cancel'));
@@ -202,14 +221,14 @@ describe('AiReviewPanel', () => {
 
   it('shows the LLM waiting state', () => {
     mockState = { phase: 'generating' };
-    render(<AiReviewPanel {...baseProps} />);
+    renderPanel(<AiReviewPanel {...baseProps} />);
 
     expect(screen.getByText('aiReview.generating')).toBeInTheDocument();
   });
 
   it('surfaces errors with a retry button', () => {
     mockState = { phase: 'error', error: 'rate_limited' };
-    render(<AiReviewPanel {...baseProps} />);
+    renderPanel(<AiReviewPanel {...baseProps} />);
 
     expect(screen.getByRole('alert')).toHaveTextContent('aiReview.errors.rate_limited');
     fireEvent.click(screen.getByText('aiReview.retry'));
@@ -219,7 +238,7 @@ describe('AiReviewPanel', () => {
 
   it('renders the freshly generated review from the done phase', () => {
     mockState = { phase: 'done', review: REVIEW };
-    render(<AiReviewPanel {...baseProps} />);
+    renderPanel(<AiReviewPanel {...baseProps} />);
 
     expect(screen.getByText('A hard-fought game with one decisive slip.')).toBeInTheDocument();
   });
@@ -235,7 +254,7 @@ describe('AiReviewPanel', () => {
     unmount();
 
     mockState = { phase: 'done', review: REVIEW };
-    render(<AiReviewPanel {...baseProps} onReviewGenerated={onReviewGenerated} />);
+    renderPanel(<AiReviewPanel {...baseProps} onReviewGenerated={onReviewGenerated} />);
     expect(onReviewGenerated).toHaveBeenCalledWith(REVIEW);
   });
 });
@@ -271,7 +290,7 @@ describe('AiReviewPanel — key moment grade filter', () => {
   });
 
   it('offers one toggle per grade present, with its count, all on by default', () => {
-    render(<AiReviewPanel {...baseProps} initialReview={MULTI_GRADE} />);
+    renderPanel(<AiReviewPanel {...baseProps} initialReview={MULTI_GRADE} />);
 
     const group = screen.getByRole('group');
     expect(
@@ -287,7 +306,7 @@ describe('AiReviewPanel — key moment grade filter', () => {
   });
 
   it('hides the moments of a grade that is toggled off, and brings them back', () => {
-    render(<AiReviewPanel {...baseProps} initialReview={MULTI_GRADE} />);
+    renderPanel(<AiReviewPanel {...baseProps} initialReview={MULTI_GRADE} />);
 
     fireEvent.click(grade('aiReview.judgments.inaccuracy'));
     expect(grade('aiReview.judgments.inaccuracy')).toHaveAttribute('aria-pressed', 'false');
@@ -301,7 +320,7 @@ describe('AiReviewPanel — key moment grade filter', () => {
   });
 
   it('explains an empty list rather than showing a bare heading', () => {
-    render(<AiReviewPanel {...baseProps} initialReview={MULTI_GRADE} />);
+    renderPanel(<AiReviewPanel {...baseProps} initialReview={MULTI_GRADE} />);
 
     for (const judgment of ['inaccuracy', 'mistake', 'blunder']) {
       fireEvent.click(grade(`aiReview.judgments.${judgment}`));
@@ -311,7 +330,7 @@ describe('AiReviewPanel — key moment grade filter', () => {
   });
 
   it('omits the filter when every moment shares one grade', () => {
-    render(<AiReviewPanel {...baseProps} initialReview={REVIEW} />);
+    renderPanel(<AiReviewPanel {...baseProps} initialReview={REVIEW} />);
     expect(screen.queryByRole('group')).toBeNull();
   });
 });

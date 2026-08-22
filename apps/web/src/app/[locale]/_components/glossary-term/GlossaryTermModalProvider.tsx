@@ -12,6 +12,12 @@ type TermModalContextValue = {
   openTerm: (slug: string) => void;
   /** Whether a preview exists for `slug` (drives TermLink interactivity). */
   hasTerm: (slug: string) => boolean;
+  /**
+   * The preview itself, for a consumer that renders the term's NAME rather
+   * than prose of its own (the AI review's principle links): the same data
+   * the modal will show, so link text and dialog title cannot disagree.
+   */
+  getTerm: (slug: string) => TermPreview | undefined;
 };
 
 const TermModalContext = createContext<TermModalContextValue | null>(null);
@@ -49,6 +55,7 @@ export function GlossaryTermModalProvider({ terms, viewDetailsLabel, children }:
         if (terms[slug]) setActiveSlug(slug);
       },
       hasTerm: (slug) => Boolean(terms[slug]),
+      getTerm: (slug) => terms[slug],
     }),
     [terms]
   );

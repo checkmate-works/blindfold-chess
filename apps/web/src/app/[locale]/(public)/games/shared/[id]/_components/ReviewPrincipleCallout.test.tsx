@@ -1,56 +1,57 @@
-import { NextIntlClientProvider } from 'next-intl';
-
-import { IntlAvailableContext } from '@/i18n/IntlAvailableContext';
-import enMessages from '@/messages/en.json';
-import * as matchers from '@testing-library/jest-dom/matchers';
 import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { PRINCIPLES } from '@/lib/ai-review/principles';
+import { GlossaryTermModalProvider } from '@/app/[locale]/_components/glossary-term/GlossaryTermModalProvider';
+import type { TermPreview } from '@/app/[locale]/_components/glossary-term/types';
 
 import { ReviewPrincipleCallout } from './ReviewPrincipleCallout';
 
-expect.extend(matchers);
+vi.mock('@/i18n/use-safe-translations');
+
 afterEach(cleanup);
 
-/**
- * Rendered against the REAL English dictionary, not the identity mock: the
- * principle id reaches the translator as a dynamic key
- * (`aiReview.principles.${id}.name`), which no static key check can see, so
- * this is where a principle added to the catalogue without its copy shows up.
- */
-function renderWithDictionary(ui: React.ReactNode) {
+const RECOUNT: TermPreview = {
+  slug: 'recount-after-captures',
+  name: '駒取りの後に数え直す',
+  definition: '駒取り・ポーンの手・チェックのたびに、関係する駒の位置を確かめてから次を考える',
+  href: '/ja/glossary/recount-after-captures',
+};
+
+function withTerms(terms: Record<string, TermPreview>, ui: React.ReactNode) {
   return render(
-    <NextIntlClientProvider
-      locale="en"
-      messages={enMessages as unknown as Record<string, unknown>}
-      timeZone="UTC"
-    >
-      <IntlAvailableContext.Provider value={true}>{ui}</IntlAvailableContext.Provider>
-    </NextIntlClientProvider>
+    <GlossaryTermModalProvider terms={terms} viewDetailsLabel="View">
+      {ui}
+    </GlossaryTermModalProvider>
   );
 }
 
 describe('ReviewPrincipleCallout', () => {
-  it('shows the name and definition from the dictionary', () => {
-    renderWithDictionary(<ReviewPrincipleCallout principle="develop_before_attacking" />);
+  it('links the principle by its glossary name, in the page locale', () => {
+    withTerms(
+      { [RECOUNT.slug]: RECOUNT },
+      <ReviewPrincipleCallout principle="recount_after_captures" />
+    );
 
-    expect(screen.getByText('Develop before attacking')).toBeInTheDocument();
-    expect(screen.getByText(/Bring the minor pieces out and castle/)).toBeInTheDocument();
+    const link = screen.getByRole('link', { name: '駒取りの後に数え直す' });
+    expect(link).toHaveAttribute('href', '/ja/glossary/recount-after-captures');
+    expect(screen.getByText('aiReview.principleLabel:')).toBeInTheDocument();
+    // The definition is the modal's, not the callout's.
+    expect(screen.queryByText(RECOUNT.definition)).not.toBeInTheDocument();
   });
 
-  it('resolves copy for every catalogued principle', () => {
-    for (const { id } of PRINCIPLES) {
-      if (id === 'other') continue;
-      const { unmount } = renderWithDictionary(<ReviewPrincipleCallout principle={id} />);
-      // A missing message would render the key path itself.
-      expect(document.body.textContent).not.toContain('aiReview.principles');
-      unmount();
-    }
+  it('renders nothing for "other" and for a term the page did not embed', () => {
+    const { container } = withTerms(
+      {},
+      <>
+        <ReviewPrincipleCallout principle="other" />
+        <ReviewPrincipleCallout principle="recount_after_captures" />
+      </>
+    );
+    expect(container.querySelector('p')).toBeNull();
   });
 
-  it('renders nothing for "other"', () => {
-    const { container } = renderWithDictionary(<ReviewPrincipleCallout principle="other" />);
+  it('renders nothing outside a term-modal provider', () => {
+    const { container } = render(<ReviewPrincipleCallout principle="recount_after_captures" />);
     expect(container).toBeEmptyDOMElement();
   });
 });

@@ -3,9 +3,17 @@ import { describe, expect, it, vi } from 'vitest';
 
 import type { ReviewMoment } from '@/lib/ai-review/types';
 
+import { GlossaryTermModalProvider } from '@/app/[locale]/_components/glossary-term/GlossaryTermModalProvider';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { ReviewMomentComment } from './ReviewMomentComment';
+
+const KEEP_PIECES_PROTECTED = {
+  slug: 'keep-pieces-protected',
+  name: 'Keep pieces protected',
+  definition: 'Loose pieces drop off',
+  href: '/en/glossary/keep-pieces-protected',
+};
 
 vi.mock('@/i18n/use-safe-translations');
 
@@ -30,15 +38,20 @@ const props = {
 describe('ReviewMomentComment', () => {
   it('reads as a comment from the AI: name, timestamp, verdict, prose', () => {
     render(
-      <ReviewMomentComment
-        {...props}
-        comment={{
-          ply: 7,
-          explanation: 'Hung the knight.',
-          lesson: 'Count first.',
-          principle: 'keep_pieces_protected',
-        }}
-      />
+      <GlossaryTermModalProvider
+        terms={{ [KEEP_PIECES_PROTECTED.slug]: KEEP_PIECES_PROTECTED }}
+        viewDetailsLabel="View"
+      >
+        <ReviewMomentComment
+          {...props}
+          comment={{
+            ply: 7,
+            explanation: 'Hung the knight.',
+            lesson: 'Count first.',
+            principle: 'keep_pieces_protected',
+          }}
+        />
+      </GlossaryTermModalProvider>
     );
 
     expect(screen.getByText('aiReview.tab')).toBeInTheDocument();
@@ -50,10 +63,10 @@ describe('ReviewMomentComment', () => {
     expect(screen.getByTitle('aiReview.bestMoveLabel')).toBeInTheDocument();
     expect(screen.getByText('Qd2')).toBeInTheDocument();
     expect(screen.getByText('Hung the knight.')).toBeInTheDocument();
-    expect(screen.getByText('aiReview.principles.keep_pieces_protected.name')).toBeInTheDocument();
-    expect(
-      screen.getByText('aiReview.principles.keep_pieces_protected.definition')
-    ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Keep pieces protected' })).toHaveAttribute(
+      'href',
+      '/en/glossary/keep-pieces-protected'
+    );
     expect(screen.getByText('Count first.')).toBeInTheDocument();
   });
 
