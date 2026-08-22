@@ -84,6 +84,29 @@ describe('AiReviewPanel', () => {
     mockState = { phase: 'idle' };
   });
 
+  it('renders a review stored before principles existed, without a principle section', () => {
+    const legacy: AiReview = {
+      ...REVIEW,
+      content: {
+        ...REVIEW.content,
+        // One paragraph, already normalized to a one-item list by the store.
+        summary: ['A long paragraph that used to be the whole summary.'],
+        momentComments: [
+          { ply: 4, explanation: 'This dropped the knight.', lesson: 'Count first.' },
+        ],
+      },
+    };
+    render(<AiReviewPanel {...baseProps} initialReview={legacy} />);
+
+    expect(
+      screen.getByText('A long paragraph that used to be the whole summary.')
+    ).toBeInTheDocument();
+    expect(screen.getByText('This dropped the knight.')).toBeInTheDocument();
+    expect(screen.getByText('Count first.')).toBeInTheDocument();
+    expect(screen.queryByText('aiReview.sections.principles')).not.toBeInTheDocument();
+    expect(screen.queryByText(/aiReview\.principles\./)).not.toBeInTheDocument();
+  });
+
   it('renders the review when one is cached, with engine facts joined by ply', () => {
     render(<AiReviewPanel {...baseProps} initialReview={REVIEW} />);
 
