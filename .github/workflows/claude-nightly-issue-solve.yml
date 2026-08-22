@@ -197,6 +197,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # claude-code-action rewrites origin's URL to embed its own GitHub
+          # App token and revokes that token in its post step, so the remote's
+          # stored credential is dead by the time this step runs (first nightly
+          # run failed here with "Authentication failed"). Point origin back at
+          # the job's GITHUB_TOKEN before pushing.
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
           git push -u origin "claude/issue-$N"
           title=$(jq -r '.pr_title' .claude-nightly-result.json)
           jq -r '.pr_body' .claude-nightly-result.json > "$RUNNER_TEMP/pr-body.md"
