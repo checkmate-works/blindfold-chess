@@ -233,6 +233,8 @@ beforeEach(() => {
   quickPeekTarget = 2;
   pushSpy.mockClear();
   window.location.hash = '';
+  // Also drops a `?tab=` left by the URL-restore tests below.
+  window.history.replaceState(null, '', '/');
 });
 
 afterEach(() => {
@@ -402,6 +404,50 @@ describe('GameReview — overview tabs on a move position', () => {
     fireEvent.click(screen.getByRole('tab', { name: 'aiReview.tab' }));
 
     expect(aiPanelProps?.initialReview).toBe(generated);
+  });
+
+  // The tab is React state, so leaving the page (a glossary term from a review
+  // principle, say) and coming back used to restore the move from `#N` but
+  // reopen the Discussion. `useReplayUrlSync` now writes the tab into the
+  // history entry, and the landing reads it back — client-side, like the hash.
+  it('reopens the tab the URL names, at the move the hash names', () => {
+    window.history.replaceState(null, '', '/?tab=ai-review#3');
+    render(<GameReview {...onMove()} />);
+
+    expect(mockNav.navigateToPosition).toHaveBeenCalledWith(2);
+    expect(screen.getByTestId('ai-review-panel')).toBeInTheDocument();
+    expect(screen.queryByTestId('move-contributions')).toBeNull();
+  });
+
+  it('lets a deep-linked comment outrank the tab the URL names', () => {
+    window.history.replaceState(null, '', '/?comment=c1&tab=ai-review');
+    render(<GameReview {...onMove({ highlightCommentId: 'c1' })} />);
+
+    // The comment lives in the Discussion; the AI Review tab would hide it.
+    expect(screen.getByTestId('move-contributions')).toBeInTheDocument();
+    expect(screen.queryByTestId('ai-review-panel')).toBeNull();
+  });
+
+  it('ignores a tab the page does not offer and lands on the move as usual', () => {
+    window.history.replaceState(null, '', '/?tab=ai-review#3');
+    render(<GameReview {...onMove()} aiReview={undefined} />);
+
+    expect(screen.getByTestId('move-contributions')).toBeInTheDocument();
+    expect(screen.queryByTestId('ai-review-panel')).toBeNull();
+  });
+
+  it('writes the chosen tab to the URL once navigation settles', () => {
+    vi.useFakeTimers();
+    const replaceState = vi.spyOn(window.history, 'replaceState');
+    render(<GameReview {...onMove()} />);
+    replaceState.mockClear();
+    vi.advanceTimersByTime(1);
+
+    fireEvent.click(screen.getByRole('tab', { name: 'aiReview.tab' }));
+
+    const url = replaceState.mock.calls.at(-1)?.[2] as URL;
+    expect(url.searchParams.get('tab')).toBe('ai-review');
+    replaceState.mockRestore();
   });
 });
 
