@@ -2802,7 +2802,8 @@
         "keyMoments": "Momentos clave",
         "strengths": "Fortalezas",
         "weaknesses": "Aspectos a mejorar",
-        "advice": "Consejos para tu próxima partida"
+        "advice": "Consejos para tu próxima partida",
+        "principles": "Principios de esta partida"
       },
       "gradeFilterLabel": "Filtrar momentos clave por evaluación",
       "noMomentsForGrades": "Ningún momento clave coincide con las evaluaciones seleccionadas.",
@@ -2840,6 +2841,89 @@
         "title": "La revisión IA es una función de pago",
         "description": "El entrenador IA interpreta tu partida a partir del análisis de Stockfish y explica los momentos que la decidieron, además de en qué trabajar después. Generarla requiere una suscripción.",
         "cta": "Ver planes"
+      },
+      "principleLabel": "Principio",
+      "principles": {
+        "develop_before_attacking": {
+          "name": "Desarrolla antes de atacar",
+          "definition": "Saca las piezas menores y enroca antes de que la dama salga de caza o empiece un ataque."
+        },
+        "king_safety_first": {
+          "name": "La seguridad del rey primero",
+          "definition": "Asegura al rey antes de perseguir material o actividad; no debilites su escudo de peones sin necesidad."
+        },
+        "count_attackers_and_defenders": {
+          "name": "Cuenta atacantes y defensores",
+          "definition": "Antes de una captura o de disputar una casilla, cuenta los atacantes y los defensores."
+        },
+        "check_opponent_threats": {
+          "name": "Revisa las amenazas del rival",
+          "definition": "Antes de cada jugada, pregúntate qué amenaza la última jugada del rival: primero jaques y capturas."
+        },
+        "dont_grab_poisoned_material": {
+          "name": "No tomes material envenenado",
+          "definition": "No captures material que cueste tiempos, exponga al rey o se recupere con intereses."
+        },
+        "keep_central_control": {
+          "name": "Mantén el control del centro",
+          "definition": "Lucha por el centro; no lo cedas ni lo cierres sin un plan que aproveche la estructura cerrada."
+        },
+        "dont_move_the_same_piece_twice": {
+          "name": "No muevas la misma pieza dos veces",
+          "definition": "En la apertura, no muevas dos veces la misma pieza mientras otras siguen en casa."
+        },
+        "improve_the_worst_piece": {
+          "name": "Mejora la peor pieza",
+          "definition": "Cuando nada es forzado, mejora la pieza menos activa en lugar de jugar por jugar."
+        },
+        "mind_the_pawn_structure": {
+          "name": "Cuida la estructura de peones",
+          "definition": "Los peones no retroceden: no crees casillas ni peones débiles sin obtener algo a cambio."
+        },
+        "keep_pieces_protected": {
+          "name": "Mantén las piezas protegidas",
+          "definition": "Las piezas sueltas se caen: mantenlas defendidas y nota cuándo una jugada deja una colgando."
+        },
+        "trade_when_ahead": {
+          "name": "Cambia cuando vas ganando",
+          "definition": "Con ventaja material, cambia piezas y simplifica; en desventaja, conserva piezas y busca complicaciones."
+        },
+        "activate_the_rooks": {
+          "name": "Activa las torres",
+          "definition": "Lleva las torres a columnas abiertas y a la séptima fila; conéctalas pronto."
+        },
+        "calculate_forcing_moves_first": {
+          "name": "Calcula primero las jugadas forzadas",
+          "definition": "En una posición aguda, calcula jaques, capturas y amenazas —de ambos bandos— antes que nada."
+        },
+        "convert_patiently": {
+          "name": "Convierte con paciencia",
+          "definition": "En posición ganadora, evita riesgos: consolida, elimina el contrajuego y convierte paso a paso."
+        },
+        "activate_the_king_in_the_endgame": {
+          "name": "Activa al rey en el final",
+          "definition": "Sin damas en el tablero, el rey es una pieza de combate: llévalo hacia el centro y los peones."
+        },
+        "recount_after_captures": {
+          "name": "Recuenta después de las capturas",
+          "definition": "Tras cada captura, jugada de peón o jaque, verifica dónde están las piezas afectadas antes de seguir pensando."
+        },
+        "verify_the_piece_before_committing": {
+          "name": "Verifica la pieza antes de jugar",
+          "definition": "Antes de enviar una jugada, confirma en qué casilla está realmente la pieza y que su camino está libre."
+        },
+        "checkpoint_at_structural_changes": {
+          "name": "Punto de control en los cambios estructurales",
+          "definition": "Usa una mirada al tablero o un recuento completo en los cambios estructurales —capturas, rupturas de peón, jugadas de rey—, no en cada jugada."
+        },
+        "track_both_kings": {
+          "name": "Sigue a ambos reyes",
+          "definition": "Ten siempre presentes las casillas alrededor de ambos reyes; la mayoría de los errores a ciegas empiezan ahí."
+        },
+        "narrate_the_position_periodically": {
+          "name": "Narra la posición periódicamente",
+          "definition": "Cada pocas jugadas, recita toda la posición pieza por pieza para refrescar el tablero mental antes de que se desvanezca."
+        }
       }
     },
     "discussion": {
