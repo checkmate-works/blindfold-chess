@@ -4,20 +4,40 @@ import { unstable_cache } from 'next/cache';
 
 import { asc, eq } from 'drizzle-orm';
 
+import { OPENINGS_CACHE_TAG } from '@/lib/cache-tags';
 import { chessOpenings, db, topicPosts } from '@/lib/db';
 import type { ChessOpening } from '@/lib/db';
 
 import { liveTopLevelPosts } from '@/app/[locale]/(public)/topics/_lib/post-filters';
 
 /**
- * Get all chess openings ordered by sort_order.
+ * Every chess opening ordered by sort_order — the ONE Data Cache entry that
+ * all the master lookups in this module are derived from.
+ *
+ * @design One cached table, in-memory lookups
+ * `chess_openings` is code-seeded at deploy (`src/lib/db/seed/openings.ts`
+ * is its only writer) and small — a sidebar's worth of rows — so the by-slug
+ * and by-square lookups below filter this list in memory instead of each
+ * running their own SELECT. What that buys is connections, not query time:
+ * the session pooler's budget is shared across every warm instance, and a
+ * crawler sweeping the opening topic pages in four locales at once turned
+ * the per-slug SELECT into one pooled connection per distinct page. Under
+ * that load the pooler refused them (`EMAXCONNSESSION`) and the topic pages
+ * failed to render. With a single entry the whole sweep costs one
+ * connection per hourly revalidation.
+ *
+ * The rows are JSON round-tripped by the Data Cache, so `createdAt` /
+ * `updatedAt` arrive as strings — no consumer reads them.
+ *
+ * The per-slug refusal under the 2026-08-22 sweep is Sentry
+ * BLINDFOLD-CHESS-61.
  */
 export const getOpenings = unstable_cache(
   async (): Promise<ChessOpening[]> => {
     return db.select().from(chessOpenings).orderBy(asc(chessOpenings.sortOrder));
   },
   ['chess-openings'],
-  { tags: ['openings'], revalidate: 3600 }
+  { tags: [OPENINGS_CACHE_TAG], revalidate: 3600 }
 );
 
 /**
@@ -25,11 +45,7 @@ export const getOpenings = unstable_cache(
  * For example, getOpeningsByFirstMoveSquare('e4') returns all 1.e4 openings.
  */
 export async function getOpeningsByFirstMoveSquare(square: string): Promise<ChessOpening[]> {
-  return db
-    .select()
-    .from(chessOpenings)
-    .where(eq(chessOpenings.firstMoveSquare, square))
-    .orderBy(asc(chessOpenings.sortOrder));
+  return (await getOpenings()).filter((o) => o.firstMoveSquare === square);
 }
 
 export type OpeningWithChildren = ChessOpening & {
@@ -41,8 +57,7 @@ export type OpeningWithChildren = ChessOpening & {
  * Root openings (parentSlug is null) are returned with their children nested.
  */
 export async function getOpeningsAsTree(): Promise<OpeningWithChildren[]> {
-  const all = await db.select().from(chessOpenings).orderBy(asc(chessOpenings.sortOrder));
-  return buildTree(all);
+  return buildTree(await getOpenings());
 }
 
 /**
@@ -51,12 +66,7 @@ export async function getOpeningsAsTree(): Promise<OpeningWithChildren[]> {
 export async function getOpeningsAsTreeByFirstMoveSquare(
   square: string
 ): Promise<OpeningWithChildren[]> {
-  const all = await db
-    .select()
-    .from(chessOpenings)
-    .where(eq(chessOpenings.firstMoveSquare, square))
-    .orderBy(asc(chessOpenings.sortOrder));
-  return buildTree(all);
+  return buildTree(await getOpeningsByFirstMoveSquare(square));
 }
 
 /**
@@ -92,13 +102,7 @@ function buildTree(openings: ChessOpening[]): OpeningWithChildren[] {
  * `getProfileByUsername`, `getPublishedArticle`, etc.).
  */
 export const getOpeningBySlug = cache(async (slug: string): Promise<ChessOpening | null> => {
-  const results = await db
-    .select()
-    .from(chessOpenings)
-    .where(eq(chessOpenings.slug, slug))
-    .limit(1);
-
-  return results[0] ?? null;
+  return (await getOpenings()).find((o) => o.slug === slug) ?? null;
 });
 
 /**

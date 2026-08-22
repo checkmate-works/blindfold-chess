@@ -142,7 +142,7 @@ describe('getOpenings', () => {
 
 describe('getOpeningsByFirstMoveSquare', () => {
   it('should return openings matching the given square', async () => {
-    const chain = mockChain([sampleOpening, sampleOpening2]);
+    const chain = mockChain([sampleOpening, sampleOpening2, sampleOpeningD4]);
     mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
 
     const result = await getOpeningsByFirstMoveSquare('e4');
@@ -215,10 +215,13 @@ describe('isValidOpening', () => {
 });
 
 describe('getPostCountByFirstMoveSquare', () => {
+  // The square filter runs in memory over the whole openings master (one
+  // cached SELECT), so the first mocked query returns full rows carrying
+  // `firstMoveSquare`, not a pre-filtered slug list.
   it('should return 0 when no openings match the square', async () => {
-    // First call: select slugs from chessOpenings — returns empty
-    const slugChain = mockChain([]);
-    mockDb.select.mockReturnValueOnce(slugChain as unknown as ReturnType<typeof mockDb.select>);
+    // First call: the openings master — nothing lands on a3
+    const openingsChain = mockChain([{ slug: 'ruy-lopez', firstMoveSquare: 'e4' }]);
+    mockDb.select.mockReturnValueOnce(openingsChain as unknown as ReturnType<typeof mockDb.select>);
 
     const result = await getPostCountByFirstMoveSquare('a3');
 
@@ -228,13 +231,17 @@ describe('getPostCountByFirstMoveSquare', () => {
   });
 
   it('should return the count of posts for matching openings', async () => {
-    // First call: select slugs from chessOpenings
-    const slugChain = mockChain([{ slug: 'ruy-lopez' }, { slug: 'italian-game' }]);
+    // First call: the openings master
+    const openingsChain = mockChain([
+      { slug: 'ruy-lopez', firstMoveSquare: 'e4' },
+      { slug: 'italian-game', firstMoveSquare: 'e4' },
+      { slug: 'queens-gambit', firstMoveSquare: 'd4' },
+    ]);
     // Second call: count from topicPosts
     const countChain = mockChain([{ count: 5 }]);
 
     mockDb.select
-      .mockReturnValueOnce(slugChain as unknown as ReturnType<typeof mockDb.select>)
+      .mockReturnValueOnce(openingsChain as unknown as ReturnType<typeof mockDb.select>)
       .mockReturnValueOnce(countChain as unknown as ReturnType<typeof mockDb.select>);
 
     const result = await getPostCountByFirstMoveSquare('e4');
@@ -244,7 +251,7 @@ describe('getPostCountByFirstMoveSquare', () => {
   });
 
   it('should return 0 when openings exist but have no posts', async () => {
-    const slugChain = mockChain([{ slug: 'queens-gambit' }]);
+    const slugChain = mockChain([{ slug: 'queens-gambit', firstMoveSquare: 'd4' }]);
     const countChain = mockChain([{ count: 0 }]);
 
     mockDb.select

@@ -48,6 +48,28 @@
  *   - {@link GRANT_STATUS_CACHE_TAG} — `user_grants` lookups.
  *   - {@link SUBSCRIPTION_STATUS_CACHE_TAG} — Stripe subscription mirror.
  *   - {@link RANK_STATUS_CACHE_TAG} — dan-tier belt rank.
+ * - {@link RANKS_CACHE_TAG} — the `ranks` master rows the dojo reads
+ *   (`getAllRanks`, `getRankBySlug`). Nothing writes `ranks` at runtime —
+ *   the table is code-seeded on deploy — so no action invalidates this tag
+ *   today; the hourly revalidate on the readers is the only freshness bound.
+ *   Declared so a future admin editor has a handle to pull.
+ * - {@link OPENINGS_CACHE_TAG} — the `chess_openings` master
+ *   (`getOpenings` and every lookup derived from it). Same situation as
+ *   `ranks`: seeded at deploy, no runtime writer, hourly revalidate, no
+ *   invalidator today.
+ * - {@link TOPIC_POST_COUNTS_CACHE_TAG} — the top-level post COUNTs that
+ *   paginate the topic index pages (`getPostCountByTopicType`,
+ *   `getPostCountByTopicKey`, `getPostCountByFirstMoveSquare`). Invalidated
+ *   with `expire: 0` by post creation (`insertPost`) and soft-deletion
+ *   (`deleteTopicPostCore`), so the author's next page load paginates
+ *   against the right total. Replies never change these counts and do not
+ *   invalidate.
+ * - {@link REPERTOIRE_CATALOG_CACHE_TAG} — the public repertoire COUNTs
+ *   behind `/repertoires` and the opening topic pages
+ *   (`countPublicRepertoires`, `countPublicRepertoiresForOpening`).
+ *   Invalidated with `expire: 0` by every repertoire mutation that can
+ *   change which courses are public or which openings they hang off
+ *   (`src/lib/repertoires/mutations.ts`).
  */
 
 export const LEADERBOARD_CACHE_TAG = 'leaderboard' as const;
@@ -59,3 +81,7 @@ export const AD_CREATIVES_CACHE_TAG = 'ad-creatives' as const;
 export const GRANT_STATUS_CACHE_TAG = 'grant-status' as const;
 export const SUBSCRIPTION_STATUS_CACHE_TAG = 'subscription-status' as const;
 export const RANK_STATUS_CACHE_TAG = 'rank-status' as const;
+export const RANKS_CACHE_TAG = 'ranks' as const;
+export const OPENINGS_CACHE_TAG = 'openings' as const;
+export const TOPIC_POST_COUNTS_CACHE_TAG = 'topic-post-counts' as const;
+export const REPERTOIRE_CATALOG_CACHE_TAG = 'repertoire-catalog' as const;

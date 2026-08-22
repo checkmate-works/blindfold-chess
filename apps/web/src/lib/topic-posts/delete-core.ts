@@ -2,7 +2,7 @@ import { revalidateTag } from 'next/cache';
 
 import { and, eq, isNull } from 'drizzle-orm';
 
-import { GRANT_STATUS_CACHE_TAG } from '@/lib/cache-tags';
+import { GRANT_STATUS_CACHE_TAG, TOPIC_POST_COUNTS_CACHE_TAG } from '@/lib/cache-tags';
 import { db, postImageAttachments, topicPosts, userGrants } from '@/lib/db';
 import type { DbTx } from '@/lib/db/types';
 import { clawbackPointsForPost } from '@/lib/points';
@@ -153,4 +153,8 @@ export async function deletePostCore(
   // observe the writes — calling them inside would still work but adds
   // no atomicity guarantee.
   revalidateTag(GRANT_STATUS_CACHE_TAG, { expire: 60 });
+  // The topic index pages paginate against cached top-level COUNTs; a
+  // removed post must drop out of the denominator at once, or the last
+  // page shows an empty slot. Fires for replies too, harmlessly.
+  revalidateTag(TOPIC_POST_COUNTS_CACHE_TAG, { expire: 0 });
 }

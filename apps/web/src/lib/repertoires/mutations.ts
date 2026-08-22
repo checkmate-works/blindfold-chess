@@ -1,9 +1,12 @@
+import { revalidateTag } from 'next/cache';
+
 import { toPositionKey } from '@blindfold-chess/features/chess-core';
 import type { Side } from '@blindfold-chess/types';
 import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
+import { REPERTOIRE_CATALOG_CACHE_TAG } from '@/lib/cache-tags';
 import {
   chessOpenings,
   db,
@@ -31,6 +34,19 @@ import {
   validateRepertoireImport,
   validateRepertoireLineEdit,
 } from './validation';
+
+/**
+ * Expire the cached catalog COUNTs (`countPublicRepertoires`,
+ * `countPublicRepertoiresForOpening` in `./queries.ts`) after any write that
+ * can change which repertoires are public, or which openings they hang off.
+ * `expire: 0` rather than stale-while-revalidate: the counts paginate
+ * `/repertoires` and the opening topic pages, and a stale denominator means
+ * the author's freshly published course has no page to appear on. Writes
+ * that only touch lines, chapters or annotations leave the counts alone.
+ */
+function revalidateRepertoireCatalog(): void {
+  revalidateTag(REPERTOIRE_CATALOG_CACHE_TAG, { expire: 0 });
+}
 
 export type CreateRepertoireResult = ActionResult<{ id: string }>;
 export type DeleteRepertoireResult = ActionResult;
@@ -594,6 +610,9 @@ export async function updateRepertoireDetails(params: {
     });
   });
 
+  // A changed side or opening set moves the course between per-side and
+  // per-opening denominators.
+  revalidateRepertoireCatalog();
   return { ok: true, name };
 }
 
@@ -688,6 +707,7 @@ export async function createRepertoireEntry(
   );
 
   if (!result.ok) return { error: 'insufficient_balance' };
+  revalidateRepertoireCatalog();
   return { success: true, id: result.id };
 }
 
@@ -720,6 +740,7 @@ export async function deleteRepertoireEntry(id: string): Promise<DeleteRepertoir
   });
 
   if (deleted.length === 0) return { error: 'notFound' };
+  revalidateRepertoireCatalog();
   return { success: true };
 }
 
@@ -757,6 +778,7 @@ export async function publishRepertoireEntry(id: string): Promise<PublishReperto
       .where(eq(repertoires.id, id));
   });
 
+  revalidateRepertoireCatalog();
   return { success: true };
 }
 
@@ -838,5 +860,6 @@ export async function changeRepertoireVisibility(params: {
   );
 
   if (!outcome.ok) return { error: 'insufficient_balance' };
+  revalidateRepertoireCatalog();
   return { success: true, status: params.target, charged: outcome.charged };
 }

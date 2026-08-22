@@ -117,15 +117,28 @@ export async function getPublishedAnnouncementsPaginated(
 /**
  * Count published announcements deduplicated by slug.
  * Does NOT filter by visibility — mirrors getPublishedAnnouncementsPaginated.
+ *
+ * Cached on the announcements tag like the banner query below, and for the
+ * same reason it is safe: admin CRUD invalidates the tag, so the 24h timer is
+ * only the safety net. What the cache buys is a pooled connection per
+ * listing render — a crawler sweeping the four locale variants at once had
+ * this COUNT refused by the session pooler (`EMAXCONNSESSION`) and the page
+ * answered 500 (Sentry BLINDFOLD-CHESS-63, 2026-08-22). The paginated list
+ * beside it stays uncached: its rows carry `Date` columns the page formats,
+ * and the Data Cache would hand those back as strings.
  */
-export async function getPublishedAnnouncementCount(): Promise<number> {
-  const [result] = await db
-    .select({ count: sql<number>`COUNT(DISTINCT ${announcements.slug})` })
-    .from(announcements)
-    .where(eq(announcements.status, 'published'));
+export const getPublishedAnnouncementCount = unstable_cache(
+  async (): Promise<number> => {
+    const [result] = await db
+      .select({ count: sql<number>`COUNT(DISTINCT ${announcements.slug})` })
+      .from(announcements)
+      .where(eq(announcements.status, 'published'));
 
-  return Number(result.count);
-}
+    return Number(result.count);
+  },
+  ['published-announcement-count'],
+  { tags: [ANNOUNCEMENTS_CACHE_TAG], revalidate: 86400 }
+);
 
 /**
  * Get a single published announcement by slug.

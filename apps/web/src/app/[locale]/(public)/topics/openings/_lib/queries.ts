@@ -1,11 +1,13 @@
 import { cache } from 'react';
 
+import { unstable_cache } from 'next/cache';
+
 import { and, desc, eq, inArray, isNull } from 'drizzle-orm';
 import type { SQL } from 'drizzle-orm';
 
+import { TOPIC_POST_COUNTS_CACHE_TAG } from '@/lib/cache-tags';
 import {
   SOCIAL_AUTHOR_COLUMNS,
-  chessOpenings,
   db,
   liveProfileJoinOn,
   profiles,
@@ -34,6 +36,8 @@ import type {
   ProfilePostWithReplyMeta,
   SortMode,
 } from '@/app/[locale]/(public)/topics/_lib/shared';
+
+import { getOpeningsByFirstMoveSquare } from './opening-master-queries';
 
 // Re-export from opening-master-queries for backward compatibility
 export {
@@ -153,14 +157,11 @@ export async function getOpeningPostsWithReplyMeta(
 /**
  * Resolve the slugs of every opening whose first move lands on `square`.
  * Shared by the first-move-square count and paginated-listing queries.
+ * Read off the cached openings master rather than the table, so the filter
+ * costs no pooled connection (see `getOpenings`).
  */
 async function getOpeningSlugsByFirstMoveSquare(square: string): Promise<string[]> {
-  const rows = await db
-    .select({ slug: chessOpenings.slug })
-    .from(chessOpenings)
-    .where(eq(chessOpenings.firstMoveSquare, square));
-
-  return rows.map((o) => o.slug);
+  return (await getOpeningsByFirstMoveSquare(square)).map((o) => o.slug);
 }
 
 /**
@@ -201,14 +202,19 @@ export const getPostsAcrossOpeningsPaginated = (
 
 /**
  * Get the count of top-level posts across openings filtered by first move square.
+ * Cached on the same tag, and for the same reason, as `getPostCountByTopicType`.
  */
-export async function getPostCountByFirstMoveSquare(square: string): Promise<number> {
-  const slugs = await getOpeningSlugsByFirstMoveSquare(square);
+export const getPostCountByFirstMoveSquare = unstable_cache(
+  async (square: string): Promise<number> => {
+    const slugs = await getOpeningSlugsByFirstMoveSquare(square);
 
-  if (slugs.length === 0) return 0;
+    if (slugs.length === 0) return 0;
 
-  return countRows(topicPosts, liveTopLevelPosts('opening', inArray(topicPosts.topicKey, slugs)));
-}
+    return countRows(topicPosts, liveTopLevelPosts('opening', inArray(topicPosts.topicKey, slugs)));
+  },
+  ['opening-post-count-by-first-move-square'],
+  { tags: [TOPIC_POST_COUNTS_CACHE_TAG], revalidate: 3600 }
+);
 
 /**
  * Get top-level posts across openings filtered by first move square, paginated.
