@@ -2804,8 +2804,7 @@
         "keyMoments": "Key moments",
         "strengths": "Strengths",
         "weaknesses": "Areas to improve",
-        "advice": "Advice for your next game",
-        "principles": "Principles from this game"
+        "advice": "Advice for your next game"
       },
       "gradeFilterLabel": "Filter key moments by grade",
       "noMomentsForGrades": "No key moments match the selected grades.",

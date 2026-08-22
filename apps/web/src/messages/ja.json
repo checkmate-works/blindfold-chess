@@ -2804,8 +2804,7 @@
         "keyMoments": "重要局面",
         "strengths": "良かった点",
         "weaknesses": "改善ポイント",
-        "advice": "次のゲームへのアドバイス",
-        "principles": "この対局で学ぶ原則"
+        "advice": "次のゲームへのアドバイス"
       },
       "gradeFilterLabel": "評価で重要局面を絞り込む",
       "noMomentsForGrades": "選択した評価に該当する局面はありません。",

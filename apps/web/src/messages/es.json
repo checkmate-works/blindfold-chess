@@ -2804,8 +2804,7 @@
         "keyMoments": "Momentos clave",
         "strengths": "Fortalezas",
         "weaknesses": "Aspectos a mejorar",
-        "advice": "Consejos para tu próxima partida",
-        "principles": "Principios de esta partida"
+        "advice": "Consejos para tu próxima partida"
       },
       "gradeFilterLabel": "Filtrar momentos clave por evaluación",
       "noMomentsForGrades": "Ningún momento clave coincide con las evaluaciones seleccionadas.",

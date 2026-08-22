@@ -104,12 +104,11 @@ describe('AiReviewPanel', () => {
     renderPanel(<AiReviewPanel {...baseProps} generationState={mockState} review={REVIEW} />);
 
     expect(screen.getByText('A hard-fought game with one decisive slip.')).toBeInTheDocument();
-    // The principle is a glossary link in the viewer's language — once in
-    // the moment's callout, once in the tally.
+    // The principle is a glossary link in the viewer's language, in the
+    // moment's own callout — the review carries no separate tally.
     const links = screen.getAllByRole('link', { name: 'Count attackers and defenders' });
-    expect(links).toHaveLength(2);
+    expect(links).toHaveLength(1);
     expect(links[0]).toHaveAttribute('href', '/en/glossary/count-attackers-and-defenders');
-    expect(screen.getByText('aiReview.sections.principles')).toBeInTheDocument();
     expect(screen.getByText('3. Nd5')).toBeInTheDocument();
     // The grade shows as chess notation, named for assistive tech.
     const grade = screen.getByRole('img', { name: 'aiReview.judgments.mistake' });

@@ -8,16 +8,12 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { CoinIcon } from '@blindfold-chess/icons';
 import { FaRobot } from 'react-icons/fa';
 
-import { PRINCIPLE_IDS, glossarySlugOf } from '@/lib/ai-review/principles';
-import type { PrincipleId } from '@/lib/ai-review/principles';
 import type { AiReview, AiReviewGenerationOffer } from '@/lib/ai-review/types';
 import { MOVE_JUDGMENTS } from '@/lib/games/analysis/types';
 import type { MoveJudgment } from '@/lib/games/analysis/types';
 import { MoveJudgmentBadge } from '@/lib/games/evaluation';
 
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
-import { useTermModal } from '@/app/[locale]/_components/glossary-term/GlossaryTermModalProvider';
-import { TermLink } from '@/app/[locale]/_components/glossary-term/TermLink';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import type { AiReviewGenerationState } from '../_hooks/use-ai-review-generation';
@@ -261,26 +257,6 @@ function ReviewBody({
     });
   }, [momentRows]);
 
-  // Which principles the review named and how often, most-broken first and
-  // catalogue order within a tie. `other` names no rule and is not a tally,
-  // and a principle whose glossary term the page did not embed is skipped
-  // (the per-moment callout skips it the same way).
-  const termModal = useTermModal();
-  const principleChips = useMemo(() => {
-    const counts = new Map<PrincipleId, number>();
-    for (const { comment } of momentRows) {
-      if (comment.principle !== 'other') {
-        counts.set(comment.principle, (counts.get(comment.principle) ?? 0) + 1);
-      }
-    }
-    return PRINCIPLE_IDS.flatMap((principle) => {
-      const count = counts.get(principle);
-      const slug = glossarySlugOf(principle);
-      const term = slug ? termModal?.getTerm(slug) : undefined;
-      return count === undefined || !slug || !term ? [] : [{ principle, count, slug, term }];
-    }).sort((a, b) => b.count - a.count);
-  }, [momentRows, termModal]);
-
   // Excluded rather than included, so the default (an empty set) means "show
   // everything" without having to be recomputed when the review changes.
   const [excluded, setExcluded] = useState<ReadonlySet<MoveJudgment>>(() => new Set());
@@ -366,30 +342,6 @@ function ReviewBody({
               onJumpToPly={onJumpToPly}
             />
           ))}
-        </section>
-      )}
-
-      {/* The rules this game broke, tallied — the aggregate a player actually
-          wants from a review, and the one thing in it written in THEIR
-          language whatever the review's (see ReviewPrincipleCallout). */}
-      {principleChips.length > 0 && (
-        <section className="space-y-2">
-          <h3 className="text-sm font-semibold text-foreground">
-            {t('aiReview.sections.principles')}
-          </h3>
-          <ul className="flex flex-wrap gap-2">
-            {principleChips.map(({ principle, count, slug, term }) => (
-              <li
-                key={principle}
-                className="inline-flex items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs"
-              >
-                <TermLink slug={slug} href={term.href}>
-                  {term.name}
-                </TermLink>
-                {count > 1 && <span className="font-mono text-muted-foreground">×{count}</span>}
-              </li>
-            ))}
-          </ul>
         </section>
       )}
 

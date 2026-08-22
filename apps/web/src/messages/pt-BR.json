@@ -2804,8 +2804,7 @@
         "keyMoments": "Momentos-chave",
         "strengths": "Pontos fortes",
         "weaknesses": "Pontos a melhorar",
-        "advice": "Conselhos para a próxima partida",
-        "principles": "Princípios desta partida"
+        "advice": "Conselhos para a próxima partida"
       },
       "gradeFilterLabel": "Filtrar momentos-chave por avaliação",
       "noMomentsForGrades": "Nenhum momento-chave corresponde às avaliações selecionadas.",
