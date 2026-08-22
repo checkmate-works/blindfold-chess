@@ -29,6 +29,14 @@ export function whereThenLimit(spy: Mock) {
   };
 }
 
+/** A `where` whose rows are read back through `.returning()` (UPDATE ... RETURNING). */
+export function whereThenReturning(spy: Mock) {
+  return (...args: unknown[]) => {
+    spy(...args);
+    return { returning: () => lastQueuedRows(spy) };
+  };
+}
+
 /** A `where` that is awaited directly, with no `.limit()` in the chain. */
 export function whereThenRows(spy: Mock) {
   return (...args: unknown[]) => {

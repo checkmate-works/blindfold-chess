@@ -1,12 +1,13 @@
 'use server';
 
 // eslint-disable-next-line no-restricted-imports -- UnbanButton has no router.refresh(); this revalidate is what re-renders the admin users surface with the cleared ban
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 
 import * as Sentry from '@sentry/nextjs';
 import { eq } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
+import { profileCacheTag } from '@/lib/cache-tags';
 import { db, profiles } from '@/lib/db';
 import { logModerationAction } from '@/lib/moderation/audit';
 import { getClientIp } from '@/lib/security/client-ip';
@@ -23,7 +24,7 @@ export async function unbanUser(targetUserId: string): Promise<ActionResult> {
 
   // 1. Read current bannedAt for rollback
   const [targetProfile] = await db
-    .select({ bannedAt: profiles.bannedAt })
+    .select({ bannedAt: profiles.bannedAt, username: profiles.username })
     .from(profiles)
     .where(eq(profiles.id, targetUserId))
     .limit(1);
@@ -74,6 +75,12 @@ export async function unbanUser(targetUserId: string): Promise<ActionResult> {
       })
       .where(eq(profiles.id, targetUserId));
     return { error: 'failedToUnban' };
+  }
+
+  // An unban does not change the cached public-profile projection, but every
+  // writer of `profiles` expires that row's tag — see `profileCacheTag`.
+  if (targetProfile) {
+    revalidateTag(profileCacheTag(targetProfile.username), { expire: 0 });
   }
 
   revalidatePath('/admin/users');

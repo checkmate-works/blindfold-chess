@@ -1,8 +1,11 @@
 'use server';
 
+import { revalidateTag } from 'next/cache';
+
 import { eq } from 'drizzle-orm';
 
 import { authenticateAndGuard } from '@/lib/auth';
+import { profileCacheTag } from '@/lib/cache-tags';
 import { isLameName } from '@/lib/content/lame-name';
 import { db, profiles } from '@/lib/db';
 import { diffFields } from '@/lib/db/diff-fields';
@@ -64,10 +67,18 @@ export async function updateProfile(input: UpdateProfileInput): Promise<UpdatePr
     .from(profiles)
     .where(eq(profiles.id, user.id));
 
-  await db
+  const [updated] = await db
     .update(profiles)
     .set({ ...nextValues, updatedAt: new Date() })
-    .where(eq(profiles.id, user.id));
+    .where(eq(profiles.id, user.id))
+    .returning({ username: profiles.username });
+
+  // The public profile row is cached per username; without this the edit is
+  // invisible on /u/[username] for up to an hour. The username comes back from
+  // the UPDATE rather than from a second SELECT.
+  if (updated) {
+    revalidateTag(profileCacheTag(updated.username), { expire: 0 });
+  }
 
   // Record only the fields that actually changed, each with its overwritten
   // ("from") and new ("to") value. If nothing changed there is nothing worth

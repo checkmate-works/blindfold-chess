@@ -1,9 +1,11 @@
+import { revalidateTag } from 'next/cache';
 import { NextResponse } from 'next/server';
 
 import { eq } from 'drizzle-orm';
 import sharp from 'sharp';
 
 import { guardApiMutation } from '@/lib/api-mutation-guard';
+import { profileCacheTag } from '@/lib/cache-tags';
 import { db, profiles } from '@/lib/db';
 import { parseImageUpload } from '@/lib/images/parse-upload';
 import { ALLOWED_IMAGE_MIME_TYPES, AVATAR_MAX_FILE_SIZE } from '@/lib/images/policy';
@@ -84,10 +86,18 @@ export async function POST(request: Request) {
   // Append timestamp to bust cache when avatar is updated
   const avatarUrl = `${urlData.publicUrl}?t=${Date.now()}`;
 
-  await db
+  const [updated] = await db
     .update(profiles)
     .set({ avatarUrl, updatedAt: new Date() })
-    .where(eq(profiles.id, user.id));
+    .where(eq(profiles.id, user.id))
+    .returning({ username: profiles.username });
+
+  // The avatar is part of the cached public-profile row (`profileCacheTag`),
+  // so a new upload has to expire it — the cache-busting `?t=` on the URL only
+  // helps once the new URL is actually served.
+  if (updated) {
+    revalidateTag(profileCacheTag(updated.username), { expire: 0 });
+  }
 
   return NextResponse.json({ avatarUrl });
 }

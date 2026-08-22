@@ -70,6 +70,8 @@
  *   Invalidated with `expire: 0` by every repertoire mutation that can
  *   change which courses are public or which openings they hang off
  *   (`src/lib/repertoires/mutations.ts`).
+ * - {@link profileCacheTag} — not a constant but a per-username tag factory,
+ *   one tag per public profile row. See its own TSDoc for the writer list.
  */
 
 export const LEADERBOARD_CACHE_TAG = 'leaderboard' as const;
@@ -85,3 +87,32 @@ export const RANKS_CACHE_TAG = 'ranks' as const;
 export const OPENINGS_CACHE_TAG = 'openings' as const;
 export const TOPIC_POST_COUNTS_CACHE_TAG = 'topic-post-counts' as const;
 export const REPERTOIRE_CATALOG_CACHE_TAG = 'repertoire-catalog' as const;
+
+/**
+ * The public profile row behind `/u/[username]`, one Data Cache entry (and one
+ * tag) per username.
+ *
+ * Every writer of `profiles` must expire the tag for the row it touched, which
+ * is why the tag is keyed by username rather than by user id: the reader is a
+ * username lookup and cannot know the id before the query it is caching. Each
+ * writer therefore returns the username from its own UPDATE (`.returning()`)
+ * and calls `revalidateTag(profileCacheTag(username), { expire: 0 })`. The
+ * writers, exhaustively: `setUsername` (the INSERT — it also clears the
+ * negative entry a crawler may have cached for a not-yet-taken username),
+ * `updateProfile`, `saveOnboardingProfile`, `setLeaderboardVisibility`, the
+ * avatar upload route, the admin ban / unban actions, and account deletion's
+ * `anonymiseProfile`.
+ *
+ * The retention purge that later hard-deletes the row is deliberately NOT on
+ * that list: deletion already expired the tag and the reader filters
+ * `deleted_at IS NULL`, so the entry is a cached `null` long before the purge
+ * runs a month later — and re-registering the freed username expires it again
+ * through `setUsername`.
+ *
+ * Not all of those touch a column the cached projection actually selects —
+ * `banned_at` and `hidden_from_leaderboard` do not — but the projection is a
+ * moving target and a `revalidateTag` costs nothing next to an UPDATE, so the
+ * rule is "every writer expires it", with no per-column exceptions to keep
+ * straight.
+ */
+export const profileCacheTag = (username: string): `profile:${string}` => `profile:${username}`;
