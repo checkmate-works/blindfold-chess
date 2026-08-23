@@ -1,11 +1,9 @@
-import { unstable_cache } from 'next/cache';
-
 import { and, eq, gte } from 'drizzle-orm';
 import 'server-only';
 
 import { RANK_STATUS_CACHE_TAG } from '@/lib/cache-tags';
 import { db, ranks, userRanks } from '@/lib/db';
-import { withTimeout } from '@/lib/db-timeout';
+import { cachedExistenceCheck } from '@/lib/db/cached-existence-check';
 import { DAN_TIER_MIN_LEVEL } from '@/lib/db/data/ranks';
 
 /**
@@ -20,23 +18,17 @@ import { DAN_TIER_MIN_LEVEL } from '@/lib/db/data/ranks';
  *
  * Fails closed (ads shown) on DB errors, mirroring `hasActiveGrant`.
  */
-export const hasDanTierRank = unstable_cache(
-  async (userId: string): Promise<boolean> => {
-    try {
-      const [row] = await withTimeout(
-        db
-          .select({ id: userRanks.id })
-          .from(userRanks)
-          .innerJoin(ranks, eq(userRanks.rankId, ranks.id))
-          .where(and(eq(userRanks.userId, userId), gte(ranks.level, DAN_TIER_MIN_LEVEL)))
-          .limit(1)
-      );
-      return !!row;
-    } catch (error) {
-      console.warn('Failed to check dan-tier rank status:', error);
-      return false;
-    }
+export const hasDanTierRank = cachedExistenceCheck(
+  {
+    keyParts: ['has-dan-tier-rank'],
+    tag: RANK_STATUS_CACHE_TAG,
+    warning: 'Failed to check dan-tier rank status:',
   },
-  ['has-dan-tier-rank'],
-  { tags: [RANK_STATUS_CACHE_TAG], revalidate: 60 }
+  (userId: string) =>
+    db
+      .select({ id: userRanks.id })
+      .from(userRanks)
+      .innerJoin(ranks, eq(userRanks.rankId, ranks.id))
+      .where(and(eq(userRanks.userId, userId), gte(ranks.level, DAN_TIER_MIN_LEVEL)))
+      .limit(1)
 );

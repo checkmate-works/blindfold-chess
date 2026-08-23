@@ -1,5 +1,3 @@
-import { unstable_cache } from 'next/cache';
-
 import { and, eq, inArray } from 'drizzle-orm';
 import 'server-only';
 
@@ -10,30 +8,25 @@ import {
 import { SUBSCRIPTION_STATUS_CACHE_TAG } from '@/lib/cache-tags';
 import { db, subscriptions } from '@/lib/db';
 import { withTimeout } from '@/lib/db-timeout';
+import { cachedExistenceCheck } from '@/lib/db/cached-existence-check';
 
-export const hasActiveSubscription = unstable_cache(
-  async (userId: string): Promise<boolean> => {
-    try {
-      const [row] = await withTimeout(
-        db
-          .select({ id: subscriptions.id })
-          .from(subscriptions)
-          .where(
-            and(
-              eq(subscriptions.userId, userId),
-              inArray(subscriptions.status, [...BENEFIT_ACTIVE_STATUSES])
-            )
-          )
-          .limit(1)
-      );
-      return !!row;
-    } catch (error) {
-      console.warn('Failed to check subscription status:', error);
-      return false;
-    }
+export const hasActiveSubscription = cachedExistenceCheck(
+  {
+    keyParts: ['has-active-subscription'],
+    tag: SUBSCRIPTION_STATUS_CACHE_TAG,
+    warning: 'Failed to check subscription status:',
   },
-  ['has-active-subscription'],
-  { tags: [SUBSCRIPTION_STATUS_CACHE_TAG], revalidate: 60 }
+  (userId: string) =>
+    db
+      .select({ id: subscriptions.id })
+      .from(subscriptions)
+      .where(
+        and(
+          eq(subscriptions.userId, userId),
+          inArray(subscriptions.status, [...BENEFIT_ACTIVE_STATUSES])
+        )
+      )
+      .limit(1)
 );
 
 export async function getUserSubscription(userId: string) {
