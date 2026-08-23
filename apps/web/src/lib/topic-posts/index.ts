@@ -1,6 +1,8 @@
 import { eq } from 'drizzle-orm';
 
 import { db, topicPosts } from '@/lib/db';
+import { guardOwnership } from '@/lib/ownership-guard';
+import type { OwnershipError } from '@/lib/ownership-guard';
 
 // `delete-core` is intentionally NOT re-exported from this barrel. It
 // pulls in `server-only` modules (`@/lib/points`, `next/cache`), and
@@ -23,8 +25,12 @@ export type AuthoredPost = {
  * Why a {@link loadAuthoredPost} lookup failed. Callers map this to their own
  * error vocabulary — Server Actions to i18n error keys, the images API route
  * to HTTP status codes — because those vocabularies legitimately differ.
+ *
+ * An alias of {@link OwnershipError}: this is the same gate the chunk,
+ * position and repertoire mutations run, and the shared name is what keeps the
+ * four vocabularies from drifting apart again.
  */
-export type AuthoredPostError = 'notFound' | 'unauthorized' | 'alreadyDeleted';
+export type AuthoredPostError = OwnershipError;
 
 export type AuthoredPostLookup = { post: AuthoredPost } | { error: AuthoredPostError };
 
@@ -51,18 +57,13 @@ export async function loadAuthoredPost(
     .where(eq(topicPosts.id, postId))
     .limit(1);
 
-  if (!post) {
-    return { error: 'notFound' };
+  const error = guardOwnership(post, userId);
+  if (error) {
+    return { error };
   }
   // `topic_posts.user_id` is nullable (anonymised on author purge — see schema).
-  // An anonymised post has no author, so the ownership guard fails for everyone;
-  // past it, `post.userId` is provably the live, non-null caller, so substitute
-  // the param to keep `AuthoredPost.userId` non-null for every downstream caller.
-  if (post.userId !== userId) {
-    return { error: 'unauthorized' };
-  }
-  if (post.deletedAt) {
-    return { error: 'alreadyDeleted' };
-  }
+  // An anonymised post has no author, so the guard above rejects it for
+  // everyone; past it, `post.userId` is provably the live, non-null caller, so
+  // substitute the param to keep `AuthoredPost.userId` non-null downstream.
   return { post: { ...post, userId } };
 }
