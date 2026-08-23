@@ -41,7 +41,15 @@ export async function persistGameSnapshot(
   if (gameId) {
     const existingGame = await repository.load(gameId);
     if (existingGame) {
-      const updated = await repository.update(gameId, snapshot, { updateLastPlayed });
+      // The charge a game was started on is fixed for its life, and only the
+      // fresh-game URL ever carries it — a resumed session's snapshot has
+      // none — so an absent value means "unchanged", never "cleared".
+      const maiaChargeId = snapshot.maiaChargeId ?? existingGame.maiaChargeId;
+      const updated = await repository.update(
+        gameId,
+        { ...snapshot, maiaChargeId },
+        { updateLastPlayed }
+      );
       if (!updated.ok) return updated;
       return ok(gameId);
     }

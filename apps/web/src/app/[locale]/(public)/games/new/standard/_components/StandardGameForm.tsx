@@ -15,6 +15,7 @@ import {
   type EngineKind,
   engineConfigToUrlParams,
 } from '@/lib/engines';
+import { MAIA_CHARGE_PARAM } from '@/lib/games/maia-charge-param';
 import type { SkillLevel } from '@/lib/games/saved-game-types';
 import { MAIA_GAME_POINT_COST } from '@/lib/points/constants';
 import type { MaiaEngineAccess } from '@/lib/users/can-use-maia';
@@ -64,12 +65,13 @@ export function StandardGameForm({ locale, maiaAccess }: Props) {
    * to `useMaiaGameLaunch`, which calls it only after the large-download
    * consent and the per-game Maia point charge have both succeeded.
    */
-  const navigateToGame = () => {
+  const navigateToGame = (maiaChargeId: string | null) => {
     const params = new URLSearchParams({
       color,
       gamePrefs: JSON.stringify(localSettings),
       ...engineConfigToUrlParams(engineConfig),
     });
+    if (maiaChargeId) params.set(MAIA_CHARGE_PARAM, maiaChargeId);
     router.push(`/${locale}/games/play?${params.toString()}`);
   };
 

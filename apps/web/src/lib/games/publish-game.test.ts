@@ -395,6 +395,32 @@ describe('validatePublishSnapshot', () => {
   });
 });
 
+describe('validatePublishSnapshot maia charge', () => {
+  const CHARGE = '019A1B2C-3D4E-7F80-9A1B-2C3D4E5F6071';
+
+  it('keeps the charge id on a Maia game, in canonical lower case', () => {
+    const res = validatePublishSnapshot(validInput({ maiaChargeId: CHARGE }));
+    if (!res.ok) throw new Error('expected valid');
+    expect(res.game.maiaChargeId).toBe(CHARGE.toLowerCase());
+  });
+
+  it('drops the charge id on a non-Maia game — there was no charge', () => {
+    const res = validatePublishSnapshot(
+      validInput({ engineConfig: { kind: 'stockfish', skillLevel: 5 }, maiaChargeId: CHARGE })
+    );
+    if (!res.ok) throw new Error('expected valid');
+    expect(res.game.maiaChargeId).toBeNull();
+  });
+
+  it('drops an absent or malformed charge id to null without rejecting the publish', () => {
+    for (const maiaChargeId of [undefined, null, '', 'not-a-uuid', 42]) {
+      const res = validatePublishSnapshot(validInput({ maiaChargeId }));
+      if (!res.ok) throw new Error('expected valid');
+      expect(res.game.maiaChargeId).toBeNull();
+    }
+  });
+});
+
 describe('deriveGameColumns', () => {
   it('passes Maia rating to engine_elo and counts plies', () => {
     const res = validatePublishSnapshot(validInput());

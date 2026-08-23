@@ -58,6 +58,7 @@ export async function publishGame(params: {
         undoneLogs: game.undoneLogs,
         playSettings: game.playSettings,
         playSettingsLog: game.playSettingsLog,
+        maiaChargeId: game.maiaChargeId,
         result: game.result,
         engineKind: columns.engineKind,
         engineElo: columns.engineElo,

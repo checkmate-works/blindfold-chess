@@ -8,8 +8,13 @@ import { shouldWarnBeforeLargeDownload } from '@/lib/network/connection';
 import { startMaiaGame } from '@/app/[locale]/(public)/games/new/_actions/startMaiaGame';
 
 type Params = {
-  /** Navigate into the play route. Invoked only after consent + charge succeed. */
-  navigateToGame: () => void;
+  /**
+   * Navigate into the play route. Invoked only after consent + charge succeed.
+   * `maiaChargeId` is the charge the game was started on (the idempotency
+   * UUID the ledger row is keyed on), for the URL so the saved game can
+   * remember what paid for it; null for the free engines.
+   */
+  navigateToGame: (maiaChargeId: string | null) => void;
 };
 
 /**
@@ -40,7 +45,8 @@ export function useMaiaGameLaunch({ navigateToGame }: Params) {
   const proceed = async (engineKind: EngineKind) => {
     if (engineKind === 'maia') {
       if (!gameIdRef.current) gameIdRef.current = crypto.randomUUID();
-      const result = await startMaiaGame(gameIdRef.current);
+      const chargeId = gameIdRef.current;
+      const result = await startMaiaGame(chargeId);
       if (!result.ok) {
         setIsLoading(false);
         if (result.error === 'insufficient_balance') setPointInfoOpen(true);
@@ -50,8 +56,10 @@ export function useMaiaGameLaunch({ navigateToGame }: Params) {
         return;
       }
       gameIdRef.current = null;
+      navigateToGame(chargeId);
+      return;
     }
-    navigateToGame();
+    navigateToGame(null);
   };
 
   /**

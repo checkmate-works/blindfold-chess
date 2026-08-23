@@ -101,6 +101,7 @@ export function PublishGameClient({ locale }: Props) {
         undoneLogs: game.undoneLogs ?? null,
         playSettings: game.gamePreferences ?? null,
         playSettingsLog: game.preferenceChangeLog ?? null,
+        maiaChargeId: game.maiaChargeId ?? null,
       });
 
       if (!res.success) {

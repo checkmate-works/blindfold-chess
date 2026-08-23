@@ -2798,6 +2798,9 @@
       "analyzing": "Stockfishで解析中… ({done}/{total} 局面)",
       "cancel": "キャンセル",
       "retry": "もう一度試す",
+      "generateButtonPaid": "AIレビューを生成（{cost} コイン）",
+      "retryPaid": "もう一度試す（{cost} コイン）",
+      "balance": "残高: {balance} コイン",
       "bestMoveLabel": "最善手",
       "sections": {
         "summary": "ゲーム総評",
@@ -2841,7 +2844,7 @@
       },
       "upsell": {
         "title": "AIレビューの生成には {cost} コインが必要です",
-        "description": "AIコーチがStockfishの解析をもとにゲームを読み解き、勝敗を分けた局面の解説と次のゲームへのアドバイスをお届けします。現在の残高は {balance} コインです。コインは公開した対局・問題・型などに「いいね」が付くと貯まります。有料プランならコインを使わずに生成できます。",
+        "description": "AIコーチがStockfishの解析をもとにゲームを読み解き、勝敗を分けた局面の解説と次のゲームへのアドバイスをお届けします。",
         "coinCta": "コインの貯め方を見る",
         "cta": "プランを見る"
       },
@@ -5882,7 +5885,7 @@
       "priceUnit": "/ 月",
       "feature1": "サービス内の全機能",
       "feature2": "すべての広告を非表示",
-      "feature3": "AIレビュー（ゲームの自動解析と講評）"
+      "feature3": "AIレビュー（1 日 {limit} 回まで）"
     },
     "currentPlan": "現在のプラン",
     "subscribe": "登録する",

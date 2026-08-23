@@ -12,8 +12,9 @@ import { resolveHistoryLinks } from './resolveHistoryLinks';
 const HISTORY_PAGE_SIZE = 20;
 
 /**
- * A history row plus an optional deep link to the UGC that earned it. `href`
- * is present only for a live (historical) UGC-creation grant — see {@link resolveHistoryLinks}.
+ * A history row plus an optional deep link to what it is about: the UGC that
+ * earned a (historical) creation grant, or the game an AI review was bought
+ * for. Present only while the target is live — see {@link resolveHistoryLinks}.
  */
 export type PointsHistoryRow = PointHistoryEntry & { href?: string };
 
@@ -49,7 +50,7 @@ export async function getPointsPageData(userId: string, page: number = 1): Promi
 
   const historyRows = await getPointHistory(userId, HISTORY_PAGE_SIZE, offset);
 
-  // Attach a deep link to the earning UGC for each live creation grant.
+  // Attach a deep link to each row that has a live target to point at.
   const links = await resolveHistoryLinks(historyRows);
   const history: PointsHistoryRow[] = historyRows.map((row) => {
     const href = links.get(row.id);

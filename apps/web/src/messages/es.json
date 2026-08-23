@@ -2798,6 +2798,9 @@
       "analyzing": "Analizando con Stockfish… ({done}/{total} posiciones)",
       "cancel": "Cancelar",
       "retry": "Intentar de nuevo",
+      "generateButtonPaid": "Generar revisión IA ({cost, plural, one {# moneda} other {# monedas}})",
+      "retryPaid": "Intentar de nuevo ({cost, plural, one {# moneda} other {# monedas}})",
+      "balance": "Saldo: {balance, plural, one {# moneda} other {# monedas}}",
       "bestMoveLabel": "Mejor jugada",
       "sections": {
         "summary": "Resumen de la partida",
@@ -2841,7 +2844,7 @@
       },
       "upsell": {
         "title": "Una revisión IA cuesta {cost, plural, one {# moneda} other {# monedas}}",
-        "description": "El entrenador IA analiza tu partida a partir del análisis de Stockfish y explica los momentos decisivos, además de qué trabajar a continuación. Tu saldo es de {balance, plural, one {# moneda} other {# monedas}}. Las monedas se obtienen con los «me gusta» en las partidas, problemas y Kata que publicas. Los suscriptores generan revisiones sin gastar monedas.",
+        "description": "El entrenador IA analiza tu partida a partir del análisis de Stockfish y explica los momentos decisivos, además de qué trabajar a continuación.",
         "coinCta": "Cómo ganar monedas",
         "cta": "Ver planes"
       },
@@ -5882,7 +5885,7 @@
       "priceUnit": "/ mes",
       "feature1": "Todas las funciones",
       "feature2": "Ocultar todos los anuncios",
-      "feature3": "Revisión IA (análisis y comentarios automáticos de la partida)"
+      "feature3": "Revisión IA ({limit, plural, one {# generación} other {# generaciones}} al día)"
     },
     "currentPlan": "Plan actual",
     "subscribe": "Suscribirse",
