@@ -6,10 +6,10 @@ import { getAchievementCategoryNames } from '@/lib/achievements/display';
 import { countTotalEarned, getUserAchievementGroups } from '@/lib/db/achievement-queries';
 
 import { PageLayout } from '@/app/[locale]/_components';
-import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { ProfileAchievements } from '../_components/ProfileAchievements';
+import { buildProfileArchiveMetadata } from '../_lib/archive-metadata';
 import { getProfileByUsername } from '../_lib/queries';
 import { redirectIfBlockedFromProfile } from '../_lib/redirect-if-blocked';
 
@@ -25,22 +25,12 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, username } = await params;
-
-  const profile = await getProfileByUsername(username);
-
-  if (!profile) {
-    return {};
-  }
-
-  const t = await getTranslations({ locale, namespace: 'publicProfile' });
-  const displayName = profile.displayName ?? username;
-
-  return {
-    title: resolveTitle(`${t('achievementsPageTitle')} - ${displayName}`, locale),
-    alternates: {
-      canonical: `/${locale}/u/${username}/achievements`,
-    },
-  };
+  return buildProfileArchiveMetadata({
+    locale,
+    username,
+    labelKey: 'achievementsPageTitle',
+    segment: 'achievements',
+  });
 }
 
 /**

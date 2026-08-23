@@ -12,9 +12,9 @@ import { buildPageHref, resolvePagination } from '@/lib/pagination';
 import { PageLayout, UserCard } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
-import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { buildProfileArchiveMetadata } from '../_lib/archive-metadata';
 import { getProfileByUsername } from '../_lib/queries';
 import { redirectIfBlockedFromProfile } from '../_lib/redirect-if-blocked';
 
@@ -37,22 +37,12 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, username } = await params;
-
-  const profile = await getProfileByUsername(username);
-
-  if (!profile) {
-    return {};
-  }
-
-  const t = await getTranslations({ locale, namespace: 'publicProfile' });
-  const displayName = profile.displayName ?? username;
-
-  return {
-    title: resolveTitle(`${t('followersPageTitle')} - ${displayName}`, locale),
-    alternates: {
-      canonical: `/${locale}/u/${username}/followers`,
-    },
-  };
+  return buildProfileArchiveMetadata({
+    locale,
+    username,
+    labelKey: 'followersPageTitle',
+    segment: 'followers',
+  });
 }
 
 export default async function FollowersPage({ params, searchParams }: Props) {
