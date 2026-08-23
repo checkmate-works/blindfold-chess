@@ -153,6 +153,20 @@ export const games = pgTable(
      */
     playSettingsLog: jsonb('play_settings_log').$type<PlaySettingsChangeEntry[]>(),
     result: varchar('result', { length: 4 }).$type<FinalGameOutcome>().notNull(),
+    /**
+     * The coin charge this game was started on, for Maia games: the
+     * `point_events.source_id` of the `maia_game` debit (the client-minted
+     * UUID that `startMaiaGame` keyed the charge on). A Maia game is never
+     * persisted server-side at start — the charge happens at `/games/new`
+     * and the game lives in localStorage until published — so without this
+     * column the coin history could say "Maia game, -1" but never which
+     * game. Written only at publish, only for Maia games, so it stays null
+     * for Stockfish games, for Maia games that were never published, and
+     * for rows published before this column. Self-reported like the rest
+     * of the snapshot: it is a display link, not a billing record — the
+     * ledger row is the authority on what was charged.
+     */
+    maiaChargeId: uuid('maia_charge_id'),
 
     // --- Denormalized for gallery filter / sort ---
     engineKind: varchar('engine_kind', { length: 20 }).$type<EngineKind>().notNull(),
@@ -176,6 +190,8 @@ export const games = pgTable(
       .where(sql`deleted_at IS NULL AND status = 'public'`),
     index('idx_games_engine_elo').on(table.engineElo),
     index('idx_games_clean_rate').on(table.cleanRate),
+    // The coin history's charge → game lookup (`resolveHistoryLinks`).
+    index('idx_games_maia_charge').on(table.maiaChargeId),
   ]
 );
 
