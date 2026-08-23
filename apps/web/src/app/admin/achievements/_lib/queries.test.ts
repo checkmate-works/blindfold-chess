@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
+
 /**
  * Tests for the admin achievements queries module.
  *
@@ -53,7 +55,7 @@ vi.mock('drizzle-orm', () => ({
   ),
 }));
 
-vi.mock('@/lib/db', () => {
+vi.mock('@/lib/db', async () => {
   const makeChain = () => {
     const dequeue = () => dbResultQueue.shift() ?? [];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -97,6 +99,7 @@ vi.mock('@/lib/db', () => {
   });
 
   return {
+    ...(await actualDbSchema()),
     db: { select },
     achievements: {
       id: { __col: 'achievements.id' },

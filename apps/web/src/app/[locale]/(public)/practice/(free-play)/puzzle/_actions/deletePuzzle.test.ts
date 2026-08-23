@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import { clawbackPointsForPost } from '@/lib/points';
 
 const mockAuthenticateAndGuard = vi.fn();
@@ -12,13 +13,14 @@ vi.mock('@/lib/auth', () => ({
 
 vi.mock('@/lib/users/activity-log');
 
-vi.mock('@/lib/db', () => {
+vi.mock('@/lib/db', async () => {
   const updateChain = {
     set: () => ({
       where: (...args: unknown[]) => mockUpdateWhere(...args),
     }),
   };
   return {
+    ...(await actualDbSchema()),
     db: {
       select: () => ({
         from: () => ({

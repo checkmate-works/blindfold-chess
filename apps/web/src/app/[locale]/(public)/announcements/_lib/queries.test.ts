@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { db } from '@/lib/db';
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 
 import {
   getLatestBannerAnnouncement,
@@ -10,28 +11,15 @@ import {
   getPublishedAnnouncementsPaginated,
 } from './queries';
 
-vi.mock('@/lib/db', () => {
+vi.mock('@/lib/db', async () => {
   const mockDb = {
     select: vi.fn(),
     execute: vi.fn(),
   };
 
   return {
+    ...(await actualDbSchema()),
     db: mockDb,
-    announcements: {
-      id: 'announcements.id',
-      slug: 'announcements.slug',
-      title: 'announcements.title',
-      content: 'announcements.content',
-      locale: 'announcements.locale',
-      status: 'announcements.status',
-      visibility: 'announcements.visibility',
-      showAsBanner: 'announcements.show_as_banner',
-      pinnedAt: 'announcements.pinned_at',
-      publishedAt: 'announcements.published_at',
-      createdAt: 'announcements.created_at',
-      updatedAt: 'announcements.updated_at',
-    },
   };
 });
 

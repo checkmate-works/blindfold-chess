@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
+
 // ---------------------------------------------------------------------------
 // Import the function under test (after all mocks are set up)
 // ---------------------------------------------------------------------------
@@ -71,7 +73,7 @@ vi.mock('@/lib/server-action-error', () => ({
 // Mock DB — intercept the chained query builder
 // ---------------------------------------------------------------------------
 
-vi.mock('@/lib/db', () => {
+vi.mock('@/lib/db', async () => {
   // Sentinel table objects to identify which table is being queried
   const userExpTable = { __table: 'user_exp' };
   const expEventsTable = { __table: 'exp_events' };
@@ -115,17 +117,11 @@ vi.mock('@/lib/db', () => {
   };
 
   return {
+    ...(await actualDbSchema()),
     db,
     userExp: userExpTable,
     expEvents: expEventsTable,
     profiles: profilesTable,
-    // Shared profile-select columns re-exported by the real barrel; the mocked
-    // db.select ignores its arguments, so simple stand-ins are sufficient.
-    AUTHOR_PROFILE_COLUMNS: {
-      username: 'profiles.username',
-      displayName: 'profiles.display_name',
-      avatarUrl: 'profiles.avatar_url',
-    },
     liveProfileJoinOn: vi.fn((ownerColumn: unknown) => ['liveProfileJoinOn', ownerColumn]),
   };
 });

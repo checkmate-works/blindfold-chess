@@ -1,10 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
+
 let mockSelectRows: { id?: string; type?: string }[] = [];
 const mockDbInsertValues = vi.fn();
 const mockDbDeleteWhere = vi.fn();
 
-vi.mock('@/lib/db', () => ({
+vi.mock('@/lib/db', async () => ({
+  ...(await actualDbSchema()),
   db: {
     select: () => ({
       from: () => ({

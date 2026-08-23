@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
 import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
 import { logActivityEvent } from '@/lib/users/activity-log';
@@ -22,7 +23,7 @@ vi.mock('@/lib/openings/master-queries', () => ({
   getOpenings: () => mockGetOpenings(),
 }));
 
-vi.mock('@/lib/db', () => {
+vi.mock('@/lib/db', async () => {
   const userInterviewAnswersTable = {
     id: 'id',
     userId: 'user_id',
@@ -32,6 +33,7 @@ vi.mock('@/lib/db', () => {
   };
 
   return {
+    ...(await actualDbSchema()),
     db: {
       insert: () => ({
         values: (...args: unknown[]) => mockInsertValues(...args),

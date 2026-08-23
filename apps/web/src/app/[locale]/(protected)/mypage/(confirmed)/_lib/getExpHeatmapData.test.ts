@@ -1,21 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { db } from '@/lib/db';
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 
 import { getExpHeatmapData } from './getExpHeatmapData';
 
-vi.mock('@/lib/db', () => {
+vi.mock('@/lib/db', async () => {
   const mockDb = {
     select: vi.fn(),
   };
   return {
+    ...(await actualDbSchema()),
     db: mockDb,
-    expEvents: {
-      userId: 'exp_events.user_id',
-      amount: 'exp_events.amount',
-      createdAt: 'exp_events.created_at',
-      menuType: 'exp_events.menu_type',
-    },
   };
 });
 

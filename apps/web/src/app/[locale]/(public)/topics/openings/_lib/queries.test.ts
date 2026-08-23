@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { db } from '@/lib/db';
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 
 import {
   getOpeningBySlug,
@@ -12,52 +13,14 @@ import {
   isValidOpening,
 } from './queries';
 
-vi.mock('@/lib/db', () => {
+vi.mock('@/lib/db', async () => {
   const mockDb = {
     select: vi.fn(),
   };
 
   return {
+    ...(await actualDbSchema()),
     db: mockDb,
-    chessOpenings: {
-      id: 'chess_openings.id',
-      slug: 'chess_openings.slug',
-      name: 'chess_openings.name',
-      ecoCode: 'chess_openings.eco_code',
-      pgn: 'chess_openings.pgn',
-      fen: 'chess_openings.fen',
-      firstMoveSquare: 'chess_openings.first_move_square',
-      sortOrder: 'chess_openings.sort_order',
-      createdAt: 'chess_openings.created_at',
-      updatedAt: 'chess_openings.updated_at',
-    },
-    topicPosts: {
-      id: 'topic_posts.id',
-      topicType: 'topic_posts.topic_type',
-      topicKey: 'topic_posts.topic_key',
-      parentId: 'topic_posts.parent_id',
-      deletedAt: 'topic_posts.deleted_at',
-      createdAt: 'topic_posts.created_at',
-    },
-    profiles: {
-      id: 'profiles.id',
-      username: 'profiles.username',
-      displayName: 'profiles.display_name',
-      avatarUrl: 'profiles.avatar_url',
-      flair: 'profiles.flair',
-      country: 'profiles.country',
-    },
-    topicPostRatings: {
-      preferenceRating: 'topic_post_ratings.preference_rating',
-      proficiencyRating: 'topic_post_ratings.proficiency_rating',
-    },
-    // Same fake column ids as the `profiles` mock above so select shapes built
-    // from the shared columns stay consistent.
-    AUTHOR_PROFILE_COLUMNS: {
-      username: 'profiles.username',
-      displayName: 'profiles.display_name',
-      avatarUrl: 'profiles.avatar_url',
-    },
     liveProfileJoinOn: vi.fn((ownerColumn: unknown) => ['liveProfileJoinOn', ownerColumn]),
   };
 });

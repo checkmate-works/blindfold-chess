@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { db } from '@/lib/db';
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
+import { topicPosts } from '@/lib/db/schema';
 
 import { getPostByIdAndTopicKey } from './queries';
 
@@ -22,41 +24,14 @@ vi.mock('./post-meta', () => ({
   attachPostMeta: vi.fn(async (posts: unknown[]) => posts),
 }));
 
-vi.mock('@/lib/db', () => {
+vi.mock('@/lib/db', async () => {
   const mockDb = {
     select: vi.fn(),
   };
 
   return {
+    ...(await actualDbSchema()),
     db: mockDb,
-    topicPosts: {
-      id: 'topic_posts.id',
-      userId: 'topic_posts.user_id',
-      topicType: 'topic_posts.topic_type',
-      topicKey: 'topic_posts.topic_key',
-      parentId: 'topic_posts.parent_id',
-      deletedAt: 'topic_posts.deleted_at',
-    },
-    profiles: {
-      id: 'profiles.id',
-      username: 'profiles.username',
-      displayName: 'profiles.display_name',
-      avatarUrl: 'profiles.avatar_url',
-      flair: 'profiles.flair',
-      country: 'profiles.country',
-    },
-    topicPostRatings: {
-      postId: 'topic_post_ratings.post_id',
-      preferenceRating: 'topic_post_ratings.preference_rating',
-      proficiencyRating: 'topic_post_ratings.proficiency_rating',
-    },
-    // Same fake column ids as the `profiles` mock above so select shapes built
-    // from the shared columns stay consistent.
-    AUTHOR_PROFILE_COLUMNS: {
-      username: 'profiles.username',
-      displayName: 'profiles.display_name',
-      avatarUrl: 'profiles.avatar_url',
-    },
     SOCIAL_AUTHOR_COLUMNS: {
       username: 'username',
       displayName: 'display_name',
@@ -93,10 +68,10 @@ describe('getPostByIdAndTopicKey — cross-topic isolation', () => {
 
     await getPostByIdAndTopicKey(SQUARE_POST_ID, 'opening', 'sicilian-defense');
 
-    expect(eqMock).toHaveBeenCalledWith('topic_posts.topic_type', 'opening');
-    expect(eqMock).toHaveBeenCalledWith('topic_posts.topic_key', 'sicilian-defense');
-    expect(eqMock).toHaveBeenCalledWith('topic_posts.id', SQUARE_POST_ID);
-    expect(isNullMock).toHaveBeenCalledWith('topic_posts.deleted_at');
+    expect(eqMock).toHaveBeenCalledWith(topicPosts.topicType, 'opening');
+    expect(eqMock).toHaveBeenCalledWith(topicPosts.topicKey, 'sicilian-defense');
+    expect(eqMock).toHaveBeenCalledWith(topicPosts.id, SQUARE_POST_ID);
+    expect(isNullMock).toHaveBeenCalledWith(topicPosts.deletedAt);
   });
 
   it('returns null when the underlying query returns no rows (cross-topic mismatch case)', async () => {
@@ -162,6 +137,6 @@ describe('getPostByIdAndTopicKey — cross-topic isolation', () => {
 
     await getPostByIdAndTopicKey(SQUARE_POST_ID, 'opening', 'sicilian-defense');
 
-    expect(isNullMock).toHaveBeenCalledWith('topic_posts.deleted_at');
+    expect(isNullMock).toHaveBeenCalledWith(topicPosts.deletedAt);
   });
 });
