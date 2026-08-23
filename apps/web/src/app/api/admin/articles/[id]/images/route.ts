@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { requireAdmin } from '@/app/admin/_lib/auth';
+import { adminApiGuard } from '@/app/admin/_lib/auth';
 import { eq } from 'drizzle-orm';
 import sharp from 'sharp';
 
@@ -29,14 +29,6 @@ const ARTICLE_IMAGE_MAX_LONG_EDGE = 1600;
  * image that sits under the 5 MB byte cap but would decode to ~GBs of memory.
  */
 
-async function authenticateAdmin(): Promise<NextResponse | { userId: string }> {
-  const auth = await requireAdmin();
-  if ('error' in auth) {
-    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-  }
-  return auth;
-}
-
 async function verifyArticleExists(articleId: string): Promise<NextResponse | null> {
   const [article] = await db
     .select({ id: articles.id })
@@ -64,8 +56,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const originError = checkMutationOrigin(request);
   if (originError) return originError;
 
-  const auth = await authenticateAdmin();
-  if (auth instanceof NextResponse) return auth;
+  const auth = await adminApiGuard();
+  if ('response' in auth) return auth.response;
 
   const rateLimitResult = await checkRateLimit(auth.userId, RATE_LIMITS.uploadArticleImage);
   if ('error' in rateLimitResult) {
@@ -152,8 +144,8 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
   const originError = checkMutationOrigin(request);
   if (originError) return originError;
 
-  const auth = await authenticateAdmin();
-  if (auth instanceof NextResponse) return auth;
+  const auth = await adminApiGuard();
+  if ('response' in auth) return auth.response;
 
   const { id: articleId } = await params;
 

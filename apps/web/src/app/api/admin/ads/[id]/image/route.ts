@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { requireAdmin } from '@/app/admin/_lib/auth';
+import { adminApiGuard } from '@/app/admin/_lib/auth';
 import { revalidateAdCreatives } from '@/app/admin/ads/_lib/revalidate';
 import { AD_CREATIVES_BUCKET, storagePathFromPublicUrl } from '@/app/admin/ads/_lib/storage';
 import { eq } from 'drizzle-orm';
@@ -29,14 +29,6 @@ const MAX_LONG_EDGE: Record<ImageTarget, number> = {
 /** Strict: an unrecognized target must 400, not silently overwrite the avatar. */
 function parseTarget(value: unknown): ImageTarget | null {
   return value === 'avatar' || value === 'thumbnail' ? value : null;
-}
-
-async function authenticateAdmin(): Promise<NextResponse | { userId: string }> {
-  const auth = await requireAdmin();
-  if ('error' in auth) {
-    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-  }
-  return auth;
 }
 
 /**
@@ -105,8 +97,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const originError = checkMutationOrigin(request);
   if (originError) return originError;
 
-  const auth = await authenticateAdmin();
-  if (auth instanceof NextResponse) return auth;
+  const auth = await adminApiGuard();
+  if ('response' in auth) return auth.response;
 
   const rateLimitResult = await checkRateLimit(auth.userId, RATE_LIMITS.uploadAdImage);
   if ('error' in rateLimitResult) {
@@ -184,8 +176,8 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
   const originError = checkMutationOrigin(request);
   if (originError) return originError;
 
-  const auth = await authenticateAdmin();
-  if (auth instanceof NextResponse) return auth;
+  const auth = await adminApiGuard();
+  if ('response' in auth) return auth.response;
 
   const { id } = await params;
   const target = parseTarget(new URL(request.url).searchParams.get('target'));
