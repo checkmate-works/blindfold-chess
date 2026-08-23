@@ -31,7 +31,11 @@ import type { RepertoireFormField } from '@/lib/repertoires/form-error-fields';
 import { repertoireErrorField } from '@/lib/repertoires/form-error-fields';
 import type { OpeningOption } from '@/lib/repertoires/opening-queries';
 import type { RepertoirePhase } from '@/lib/repertoires/validation';
-import { REPERTOIRE_DESCRIPTION_MAX, REPERTOIRE_NAME_MAX } from '@/lib/repertoires/validation';
+import {
+  REPERTOIRE_DESCRIPTION_MAX,
+  REPERTOIRE_NAME_MAX,
+  REPERTOIRE_PHASES,
+} from '@/lib/repertoires/validation';
 
 import { BoardFenTabs } from '@/app/[locale]/(public)/practice/(free-play)/_components/BoardFenTabs';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
@@ -42,8 +46,6 @@ import { VISIBILITY_I18N_KEY } from '../_lib/visibility-i18n';
 import { MoveAnnotationField } from './MoveAnnotationField';
 import { OpeningLinksField } from './OpeningLinksField';
 import { RepertoireBoardBuilder } from './RepertoireBoardBuilder';
-
-const PHASES: readonly RepertoirePhase[] = ['opening', 'middlegame', 'endgame'];
 
 /**
  * Only `opening` can be authored today: a middlegame or endgame repertoire is
@@ -271,7 +273,7 @@ export function RepertoireImportForm({
           {t('form.phaseLabel')}
         </legend>
         <div className="mt-2 flex flex-wrap gap-4">
-          {PHASES.map((value) => {
+          {REPERTOIRE_PHASES.map((value) => {
             const locked = !AUTHORABLE_PHASES.includes(value);
             return (
               <label

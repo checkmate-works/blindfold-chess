@@ -1,15 +1,20 @@
 /**
- * Discriminator over the chess opponents the app ships. Used to route
- * UI selections and URL parameters through to the right factory in
- * `useAiVersus`. New engines plug in by extending this union and
- * adding a branch in the hook's dispatch.
+ * The chess opponents the app ships, as the one list everything else derives
+ * from — the union, the runtime guard, and the DB column's `$type`.
+ *
+ * New engines plug in by extending this array and adding a branch in
+ * `useAiVersus`'s dispatch.
  */
-export type EngineKind = 'stockfish' | 'maia';
+export const ENGINE_KINDS = ['stockfish', 'maia'] as const;
 
-export const ENGINE_KINDS = ['stockfish', 'maia'] as const satisfies readonly EngineKind[];
+/**
+ * Discriminator over {@link ENGINE_KINDS}. Used to route UI selections and URL
+ * parameters through to the right factory in `useAiVersus`.
+ */
+export type EngineKind = (typeof ENGINE_KINDS)[number];
 
 export const DEFAULT_ENGINE: EngineKind = 'stockfish';
 
 export function isEngineKind(value: unknown): value is EngineKind {
-  return value === 'stockfish' || value === 'maia';
+  return ENGINE_KINDS.includes(value as EngineKind);
 }

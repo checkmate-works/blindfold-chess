@@ -1,6 +1,7 @@
 import type { Side } from '@blindfold-chess/types';
 
 import type { BoardTheme } from '@/lib/games/board-themes';
+import type { GameGifVariant } from '@/lib/games/gif/constants';
 
 import { encodeGameShortId } from './short-id';
 
@@ -13,7 +14,7 @@ import { encodeGameShortId } from './short-id';
  */
 export type EmbedOptions = {
   /** `'played'` reproduces the blindfold; `'plain'` shows the revealed board. */
-  view: 'played' | 'plain';
+  view: GameGifVariant;
   /** `'player'` = the game's own player at the bottom, i.e. no `color` param. */
   orientation: 'player' | Side;
   /** `'auto'` follows the reader's OS setting rather than pinning a scheme. */

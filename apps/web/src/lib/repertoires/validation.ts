@@ -21,8 +21,6 @@ import { isRepertoireVisibility } from '@/lib/points/spend-catalog';
  * does the split; `generatePgn` re-emits each line as its own PGN.
  */
 
-export type RepertoirePhase = 'opening' | 'middlegame' | 'endgame';
-
 export const REPERTOIRE_NAME_MAX = 120;
 /** Max length of the course-level description blurb. */
 export const REPERTOIRE_DESCRIPTION_MAX = 2000;
@@ -30,7 +28,17 @@ export const REPERTOIRE_DESCRIPTION_MAX = 2000;
 export const REPERTOIRE_PGN_MAX_BYTES = 100 * 1024;
 /** Max length of an owner's per-move "why" annotation. */
 export const REPERTOIRE_ANNOTATION_MAX = 2000;
-export const REPERTOIRE_PHASES: readonly RepertoirePhase[] = ['opening', 'middlegame', 'endgame'];
+/**
+ * The phases a kata can cover, as the one list the union, the DB column's
+ * `$type` and the import form's radio group all derive from.
+ *
+ * Annotating a `readonly RepertoirePhase[]` instead would accept a subset, so
+ * a phase added to the union and forgotten here would compile and simply
+ * vanish from the form.
+ */
+export const REPERTOIRE_PHASES = ['opening', 'middlegame', 'endgame'] as const;
+
+export type RepertoirePhase = (typeof REPERTOIRE_PHASES)[number];
 
 export type RepertoireImportInput = {
   name: string;

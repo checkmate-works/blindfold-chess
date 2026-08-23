@@ -5,9 +5,8 @@ import { AdminBreadcrumb } from '@/app/admin/_components/AdminBreadcrumb';
 import { NewArticleForm } from '../_components/NewArticleForm';
 import { getArticleFormLabels } from '../_lib/labels';
 import { getArticleCategories } from '../_lib/queries';
+import { CONTENT_FORMATS } from '../_lib/types';
 import type { ContentFormat } from '../_lib/types';
-
-const VALID_CONTENT_FORMATS: ContentFormat[] = ['markdown', 'tiptap_json'];
 
 export default async function NewArticlePage({
   searchParams,
@@ -24,7 +23,7 @@ export default async function NewArticlePage({
   const rawContentFormat =
     typeof params.contentFormat === 'string' ? params.contentFormat : undefined;
   const contentFormat =
-    rawContentFormat && VALID_CONTENT_FORMATS.includes(rawContentFormat as ContentFormat)
+    rawContentFormat && CONTENT_FORMATS.includes(rawContentFormat as ContentFormat)
       ? (rawContentFormat as ContentFormat)
       : undefined;
 

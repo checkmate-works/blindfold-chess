@@ -10,6 +10,7 @@ import type { FinalGameOutcome, Side } from '@blindfold-chess/types';
 import { type SQL, and, desc, eq, inArray, sql } from 'drizzle-orm';
 import 'server-only';
 
+import type { EngineKind } from '@/lib/engines';
 import { playSettingsToThumbnailDisplay } from '@/lib/games/play-settings-thumbnail';
 import type { SharedGamesSortMode } from '@/lib/games/shared-sort';
 import { type DetectedOpening, detectGameOpening } from '@/lib/openings/detect-game-opening';
@@ -72,7 +73,7 @@ export type SharedGameListItem = {
   /** Opening position rendered as the card thumbnail; null = standard start. */
   startingFen: string | null;
   createdAt: Date;
-  engineKind: 'stockfish' | 'maia';
+  engineKind: EngineKind;
   engineElo: number;
   result: FinalGameOutcome;
   /** Side the author played — shown with a colour icon on the card. */

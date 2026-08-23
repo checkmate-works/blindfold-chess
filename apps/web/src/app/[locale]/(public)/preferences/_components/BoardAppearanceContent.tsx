@@ -1,6 +1,7 @@
 'use client';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import type { BoardTheme } from '@blindfold-chess/types';
 
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
@@ -22,21 +23,23 @@ export function BoardAppearanceContent({ settings, onSettingsChange }: Props) {
       <div className="mb-6">
         <h5 className="text-sm font-medium text-muted-foreground mb-3">{t('game.boardTheme')}</h5>
         <div className="space-y-2">
-          {(['lichess', 'chesscom', 'monotone'] as const).map((theme) => (
-            <PreferenceOption
-              key={theme}
-              type="radio"
-              name="boardTheme"
-              value={theme}
-              checked={settings.boardTheme === theme}
-              onChange={(e) =>
-                onSettingsChange({
-                  boardTheme: e.target.value as typeof theme,
-                })
-              }
-              label={t(`game.boardThemes.${theme}`)}
-            />
-          ))}
+          {(['lichess', 'chesscom', 'monotone'] as const satisfies readonly BoardTheme[]).map(
+            (theme) => (
+              <PreferenceOption
+                key={theme}
+                type="radio"
+                name="boardTheme"
+                value={theme}
+                checked={settings.boardTheme === theme}
+                onChange={(e) =>
+                  onSettingsChange({
+                    boardTheme: e.target.value as typeof theme,
+                  })
+                }
+                label={t(`game.boardThemes.${theme}`)}
+              />
+            )
+          )}
         </div>
       </div>
 
