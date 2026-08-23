@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { type ResolvedEntities, grantHref } from './resolveHistoryLinks';
+import { type ResolvedEntities, aiReviewHref, grantHref } from './resolveHistoryLinks';
 
 // resolveHistoryLinks.ts is a server module ('server-only' + db); stub the
 // marker so the pure grantHref export can be imported here.
@@ -10,6 +10,7 @@ const empty: ResolvedEntities = {
   topicMetaById: new Map(),
   liveRepertoireIds: new Set(),
   liveGameIds: new Set(),
+  liveGameIdByAiReviewJobId: new Map(),
 };
 
 describe('grantHref', () => {
@@ -62,5 +63,16 @@ describe('grantHref', () => {
     expect(grantHref('like_grant', 'x', empty)).toBeNull();
     expect(grantHref('admin_grant', 'x', empty)).toBeNull();
     expect(grantHref('redemption', 'x', empty)).toBeNull();
+  });
+});
+
+describe('aiReviewHref', () => {
+  it('links a charge or refund to the AI Review tab of the game its job was for', () => {
+    const resolved = { ...empty, liveGameIdByAiReviewJobId: new Map([['job1', 'g1']]) };
+    expect(aiReviewHref('job1', resolved)).toBe('/games/shared/g1?tab=ai-review');
+  });
+
+  it('returns null when the job has no live game behind it', () => {
+    expect(aiReviewHref('job1', empty)).toBeNull();
   });
 });
