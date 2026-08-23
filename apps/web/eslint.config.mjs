@@ -6,7 +6,19 @@ import globals from 'globals';
 export default [
   ...nextJsConfig,
   {
-    ignores: ['.next/**', 'out/**', 'build/**', 'public/stockfish.js', 'public/stockfish.wasm'],
+    ignores: [
+      '.next/**',
+      'out/**',
+      'build/**',
+      // Written by `supabase start`: bundled, minified copies of the edge
+      // runtime's entrypoint. Gitignored (see supabase/.gitignore) but ESLint
+      // walks the working tree, not the index, so without this every developer
+      // who has started the local stack lints ~220 errors out of one generated
+      // line and `pnpm lint` fails for reasons unrelated to their change.
+      'supabase/.temp/**',
+      'public/stockfish.js',
+      'public/stockfish.wasm',
+    ],
   },
   {
     files: ['*.config.{js,ts,mjs}', 'postcss.config.js'],
