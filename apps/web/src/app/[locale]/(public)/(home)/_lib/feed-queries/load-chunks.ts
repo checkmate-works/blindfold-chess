@@ -2,7 +2,7 @@ import { and, inArray, isNull } from 'drizzle-orm';
 
 import { parseBoardAnnotations } from '@/lib/board-annotations/parse';
 import { getChunkLikeMetaMap } from '@/lib/chunks/like-queries';
-import { AUTHOR_PROFILE_COLUMNS, chunks, db, liveProfileJoinOn, profiles } from '@/lib/db';
+import { SOCIAL_AUTHOR_COLUMNS, chunks, db, liveProfileJoinOn, profiles } from '@/lib/db';
 import { EMPTY_LIKE_META } from '@/lib/db/like-queries';
 import { EMPTY_REPLY_META, getReplyMetaMap } from '@/lib/db/reply-meta-queries';
 
@@ -37,11 +37,7 @@ export async function loadChunksForFeed(
       representativeFen: chunks.representativeFen,
       annotations: chunks.annotations,
       createdAt: chunks.createdAt,
-      author: {
-        ...AUTHOR_PROFILE_COLUMNS,
-        country: profiles.country,
-        flair: profiles.flair,
-      },
+      author: SOCIAL_AUTHOR_COLUMNS,
     })
     .from(chunks)
     .leftJoin(profiles, liveProfileJoinOn(chunks.userId))
