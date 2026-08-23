@@ -14,7 +14,7 @@ import {
   Textarea,
   fieldErrorProps,
 } from '@/app/_components';
-import { UnsavedChangesDialog } from '@/app/_components/UnsavedChangesDialog';
+import { LocalizedUnsavedChangesDialog } from '@/app/_components/LocalizedUnsavedChangesDialog';
 import { useRouter } from '@/i18n/routing';
 import type { Side } from '@blindfold-chess/types';
 import { flushSync } from 'react-dom';
@@ -130,7 +130,6 @@ export function RepertoireImportForm({
   // Guard back/away navigation once the author has changed the content
   // fields (name / moves) from what the page loaded with — prefills don't
   // count. Same reusable pieces as the chunk / puzzle / topic forms.
-  const tUnsaved = useTranslations('unsavedChanges');
   const hasAnnotationDrafts =
     Object.values(annotations).some((text) => text.trim()) ||
     Object.values(shapes).some((s) => !isEmptyBoardAnnotations(s));
@@ -443,15 +442,7 @@ export function RepertoireImportForm({
         onCancel={() => setConfirmOpen(false)}
       />
 
-      <UnsavedChangesDialog
-        open={isBlocking}
-        onConfirm={confirm}
-        onCancel={cancel}
-        title={tUnsaved('title')}
-        message={tUnsaved('message')}
-        confirmLabel={tUnsaved('confirm')}
-        cancelLabel={tUnsaved('cancel')}
-      />
+      <LocalizedUnsavedChangesDialog open={isBlocking} onConfirm={confirm} onCancel={cancel} />
 
       <div className="py-4">
         <Button

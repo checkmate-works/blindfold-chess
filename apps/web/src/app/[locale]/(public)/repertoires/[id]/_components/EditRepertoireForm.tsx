@@ -15,7 +15,7 @@ import {
   Textarea,
   fieldErrorProps,
 } from '@/app/_components';
-import { UnsavedChangesDialog } from '@/app/_components/UnsavedChangesDialog';
+import { LocalizedUnsavedChangesDialog } from '@/app/_components/LocalizedUnsavedChangesDialog';
 import { useRouter } from '@/i18n/routing';
 import type { Side } from '@blindfold-chess/types';
 import { flushSync } from 'react-dom';
@@ -106,7 +106,6 @@ export function EditRepertoireForm({
   const descriptionError = submitError.messageFor('description');
 
   // Same leave-guard pieces as the import / line edit / chunk forms.
-  const tUnsaved = useTranslations('unsavedChanges');
   const isDirty =
     !submitted &&
     (name !== initialName ||
@@ -261,15 +260,7 @@ export function EditRepertoireForm({
           rendered against that control instead. */}
       <FormErrorBanner ref={submitError.summaryRef} message={submitError.formMessage} />
 
-      <UnsavedChangesDialog
-        open={isBlocking}
-        onConfirm={confirm}
-        onCancel={cancel}
-        title={tUnsaved('title')}
-        message={tUnsaved('message')}
-        confirmLabel={tUnsaved('confirm')}
-        cancelLabel={tUnsaved('cancel')}
-      />
+      <LocalizedUnsavedChangesDialog open={isBlocking} onConfirm={confirm} onCancel={cancel} />
 
       <FormActionFooter
         cancel={{ label: t('cancel'), onClick: () => router.push(detailHref), disabled: pending }}

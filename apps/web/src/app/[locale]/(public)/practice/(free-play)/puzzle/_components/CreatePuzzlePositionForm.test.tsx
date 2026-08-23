@@ -133,7 +133,7 @@ vi.mock('@/app/_components', () => ({
   FormErrorBanner: ({ message }: { message: string | null }) =>
     message ? <div role="alert">{message}</div> : null,
   BoardFrame: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  UnsavedChangesDialog: () => null,
+  LocalizedUnsavedChangesDialog: () => null,
   Button: ({
     children,
     type,

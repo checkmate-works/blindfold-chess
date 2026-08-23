@@ -18,4 +18,5 @@ export { PieceSelector } from './practice/PieceSelector';
 export type { PieceSelection } from './practice/PieceSelector';
 export { ProgressBar } from './ProgressBar';
 export { UnsavedChangesDialog } from './UnsavedChangesDialog';
+export { LocalizedUnsavedChangesDialog } from './LocalizedUnsavedChangesDialog';
 export { Square } from './chess/Square';

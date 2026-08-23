@@ -7,7 +7,12 @@ import { useSearchParams } from 'next/navigation';
 
 import { useSubmitError } from '@/_hooks/useSubmitError';
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
-import { Button, FormActionFooter, FormErrorBanner, UnsavedChangesDialog } from '@/app/_components';
+import {
+  Button,
+  FormActionFooter,
+  FormErrorBanner,
+  LocalizedUnsavedChangesDialog,
+} from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
 import { validateFenStructure } from '@blindfold-chess/features/chess-core';
 import { flushSync } from 'react-dom';
@@ -100,7 +105,6 @@ export function ChunkForm(props: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const t = useTranslations('chunks.form');
-  const tUnsaved = useTranslations('unsavedChanges');
 
   // Latched at mount: `true` when the author arrived from the preview's
   // "Back to edit" (`?resumed=1`) rather than a cold visit. Distinguishes
@@ -359,15 +363,7 @@ export function ChunkForm(props: Props) {
         onCancel={() => setStartOverOpen(false)}
       />
 
-      <UnsavedChangesDialog
-        open={isBlocking}
-        onCancel={cancel}
-        onConfirm={confirm}
-        title={tUnsaved('title')}
-        message={tUnsaved('message')}
-        confirmLabel={tUnsaved('confirm')}
-        cancelLabel={tUnsaved('cancel')}
-      />
+      <LocalizedUnsavedChangesDialog open={isBlocking} onConfirm={confirm} onCancel={cancel} />
     </>
   );
 }

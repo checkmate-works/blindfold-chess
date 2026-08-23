@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
-import { Button, Textarea, UnsavedChangesDialog } from '@/app/_components';
+import { Button, LocalizedUnsavedChangesDialog, Textarea } from '@/app/_components';
 import { FiEdit2, FiPlus, FiTrash2 } from 'react-icons/fi';
 
 import { REPERTOIRE_ANNOTATION_MAX } from '@/lib/repertoires/validation';
@@ -62,7 +62,6 @@ export function AnnotationPanel({
   isOwner,
 }: Props) {
   const t = useTranslations('Repertoires.line.annotation');
-  const tUnsaved = useTranslations('unsavedChanges');
   // What the server holds (as far as this component knows) vs. the editor's
   // uncommitted buffer; Cancel is simply dropping the latter.
   const [text, setText] = useState((initialText ?? '').trim());
@@ -252,15 +251,7 @@ export function AnnotationPanel({
         </Button>
       </div>
 
-      <UnsavedChangesDialog
-        open={isBlocking}
-        onConfirm={confirm}
-        onCancel={cancel}
-        title={tUnsaved('title')}
-        message={tUnsaved('message')}
-        confirmLabel={tUnsaved('confirm')}
-        cancelLabel={tUnsaved('cancel')}
-      />
+      <LocalizedUnsavedChangesDialog open={isBlocking} onConfirm={confirm} onCancel={cancel} />
     </section>
   );
 }

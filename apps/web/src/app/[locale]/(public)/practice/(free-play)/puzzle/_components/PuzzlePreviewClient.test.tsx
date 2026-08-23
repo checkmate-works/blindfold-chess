@@ -89,7 +89,7 @@ vi.mock('@/app/_components', () => ({
       {children}
     </button>
   ),
-  UnsavedChangesDialog: () => null,
+  LocalizedUnsavedChangesDialog: () => null,
 }));
 
 // SectionTitle comes from a per-locale barrel that may also touch server-only

@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 
 import { useSubmitError } from '@/_hooks/useSubmitError';
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
-import { Button, FormErrorBanner, UnsavedChangesDialog } from '@/app/_components';
+import { Button, FormErrorBanner, LocalizedUnsavedChangesDialog } from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 import { flushSync } from 'react-dom';
@@ -90,7 +90,6 @@ export function CreatePositionForm({
 }: Props = {}) {
   const router = useRouter();
   const t = useTranslations('practice.positionMemory.create');
-  const tUnsaved = useTranslations('unsavedChanges');
 
   // Resolve fork seed tag IDs into option objects using the loaded catalog.
   // Computed once via useRef so option lookups don't repeat each render.
@@ -222,7 +221,7 @@ export function CreatePositionForm({
 
     // flushSync ensures the re-render (isDirty → false) completes before
     // router.push triggers the navigation guard check — otherwise the
-    // intentional push would fire the UnsavedChangesDialog.
+    // intentional push would fire the LocalizedUnsavedChangesDialog.
     flushSync(() => setSubmitted(true));
     router.push('/practice/position-memory/new/preview');
   }
@@ -264,15 +263,7 @@ export function CreatePositionForm({
         </Button>
       </div>
 
-      <UnsavedChangesDialog
-        open={isBlocking}
-        onConfirm={confirm}
-        onCancel={cancel}
-        title={tUnsaved('title')}
-        message={tUnsaved('message')}
-        confirmLabel={tUnsaved('confirm')}
-        cancelLabel={tUnsaved('cancel')}
-      />
+      <LocalizedUnsavedChangesDialog open={isBlocking} onConfirm={confirm} onCancel={cancel} />
     </>
   );
 }

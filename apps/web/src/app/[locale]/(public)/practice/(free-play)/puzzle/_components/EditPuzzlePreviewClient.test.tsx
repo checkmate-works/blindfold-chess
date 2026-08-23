@@ -73,7 +73,7 @@ vi.mock('@/app/_components', () => ({
       {children}
     </button>
   ),
-  UnsavedChangesDialog: () => null,
+  LocalizedUnsavedChangesDialog: () => null,
 }));
 
 vi.mock('@/app/[locale]/_components', () => ({

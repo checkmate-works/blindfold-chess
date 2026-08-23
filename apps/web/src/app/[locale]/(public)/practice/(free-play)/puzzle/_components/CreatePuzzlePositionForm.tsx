@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
 
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
-import { FormErrorBanner } from '@/app/_components';
+import { FormErrorBanner, LocalizedUnsavedChangesDialog } from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
 
 import type { ChunkOption } from '@/lib/chunks/types';
@@ -28,7 +28,6 @@ import { stringArraysEqual } from '../_lib/string-arrays-equal';
 import { PositionChangedModal } from './PositionChangedModal';
 import { PuzzlePositionFields } from './PuzzlePositionFields';
 import { PuzzleStepIndicator } from './PuzzleStepIndicator';
-import { PuzzleUnsavedChangesDialog } from './PuzzleUnsavedChangesDialog';
 
 /**
  * Seed payload when the form is opened via `?from=<id>` on the new page.
@@ -304,7 +303,7 @@ export function CreatePuzzlePositionForm({
         />
       </div>
 
-      <PuzzleUnsavedChangesDialog open={isBlocking} onConfirm={confirm} onCancel={cancel} />
+      <LocalizedUnsavedChangesDialog open={isBlocking} onConfirm={confirm} onCancel={cancel} />
 
       <ConfirmationModal
         isOpen={startOverOpen}

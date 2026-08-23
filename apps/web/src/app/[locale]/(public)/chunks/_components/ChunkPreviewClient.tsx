@@ -5,7 +5,12 @@ import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
-import { BoardFrame, Button, FormErrorBanner, UnsavedChangesDialog } from '@/app/_components';
+import {
+  BoardFrame,
+  Button,
+  FormErrorBanner,
+  LocalizedUnsavedChangesDialog,
+} from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
 import { flushSync } from 'react-dom';
 
@@ -82,7 +87,6 @@ export function ChunkPreviewClient(props: Props) {
 
   const t = useTranslations('chunks.preview');
   const tForm = useTranslations('chunks.form');
-  const tUnsaved = useTranslations('unsavedChanges');
   const router = useRouter();
 
   const [draft, setDraft] = useState<ChunkDraftV1 | null>(null);
@@ -299,15 +303,7 @@ export function ChunkPreviewClient(props: Props) {
         </div>
       </div>
 
-      <UnsavedChangesDialog
-        open={isBlocking}
-        onConfirm={confirm}
-        onCancel={cancel}
-        title={tUnsaved('title')}
-        message={tUnsaved('message')}
-        confirmLabel={tUnsaved('confirm')}
-        cancelLabel={tUnsaved('cancel')}
-      />
+      <LocalizedUnsavedChangesDialog open={isBlocking} onConfirm={confirm} onCancel={cancel} />
     </>
   );
 }
