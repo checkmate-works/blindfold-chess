@@ -2844,7 +2844,7 @@
       },
       "upsell": {
         "title": "Uma revisão IA custa {cost, plural, one {# moeda} other {# moedas}}",
-        "description": "O treinador IA lê sua partida a partir da análise do Stockfish e explica os momentos decisivos, além do que praticar em seguida. Seu saldo é de {balance, plural, one {# moeda} other {# moedas}}. As moedas vêm das curtidas nas partidas, problemas e Kata que você publica. Assinantes geram revisões sem gastar moedas.",
+        "description": "O treinador IA lê sua partida a partir da análise do Stockfish e explica os momentos decisivos, além do que praticar em seguida.",
         "coinCta": "Como ganhar moedas",
         "cta": "Ver planos"
       },
@@ -5885,7 +5885,7 @@
       "priceUnit": "/ mês",
       "feature1": "Todos os recursos",
       "feature2": "Ocultar todos os anúncios",
-      "feature3": "Revisão IA (análise e comentários automáticos da partida)"
+      "feature3": "Revisão IA ({limit, plural, one {# geração} other {# gerações}} por dia)"
     },
     "currentPlan": "Plano atual",
     "subscribe": "Assinar",

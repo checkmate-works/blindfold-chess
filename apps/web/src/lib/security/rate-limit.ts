@@ -22,6 +22,7 @@
 import { and, eq, gt, sql } from 'drizzle-orm';
 import 'server-only';
 
+import { AI_REVIEW_GENERATIONS_PER_DAY } from '@/lib/ai-review/limits';
 import { countRows } from '@/lib/db/list-query';
 
 import { db, rateLimitEvents } from '../db';
@@ -31,19 +32,6 @@ export type RateLimitConfig = {
   maxAttempts: number;
   windowMs: number;
 };
-
-/**
- * How many AI reviews one user may generate per day.
- *
- * Named rather than inlined with the other caps because this is the only
- * number in this file that decides how much money the app spends: nothing
- * counts LLM calls system-wide, so (subscribers × this) is the daily ceiling.
- * Anything that has to state or reason about the limit — a UI notice, a
- * pricing calculation — reads it from here instead of restating the digit.
- *
- * See `RATE_LIMITS.generateAiReview` for why it currently sits this low.
- */
-export const AI_REVIEW_GENERATIONS_PER_DAY = 3;
 
 export const RATE_LIMITS = {
   createPost: { action: 'create_post', maxAttempts: 10, windowMs: 3_600_000 },

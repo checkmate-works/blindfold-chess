@@ -18,7 +18,6 @@ const actual = await vi.importActual<typeof import('../rate-limit')>('../rate-li
  * verdict per test with `vi.mocked(checkRateLimit).mockResolvedValue(...)`.
  */
 export const RATE_LIMITS = actual.RATE_LIMITS;
-export const AI_REVIEW_GENERATIONS_PER_DAY = actual.AI_REVIEW_GENERATIONS_PER_DAY;
 export const createOpeningPostRateLimit = actual.createOpeningPostRateLimit;
 
 export const checkRateLimit = vi.fn(

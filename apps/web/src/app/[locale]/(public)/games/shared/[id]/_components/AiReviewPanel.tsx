@@ -111,7 +111,7 @@ export function AiReviewPanel({
   // Ahead of the in-flight phases below: with nothing that pays, generation
   // never starts, so there is no state for those phases to be in.
   if (generation.kind === 'insufficient_balance') {
-    return <AiReviewUpsell locale={locale} cost={generation.cost} balance={generation.balance} />;
+    return <AiReviewUpsell locale={locale} cost={generation.cost} />;
   }
 
   if (state.phase === 'analyzing') {

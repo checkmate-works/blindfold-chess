@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
+import { AI_REVIEW_GENERATIONS_PER_DAY } from '@/lib/ai-review/limits';
+
 import { useAuth } from '@/app/[locale]/_contexts/AuthContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -74,7 +76,13 @@ export function PricingPlans({ locale }: Props) {
         name={t('adFreePlan.name')}
         price={t('adFreePlan.price')}
         priceUnit={t('adFreePlan.priceUnit')}
-        features={[t('adFreePlan.feature1'), t('adFreePlan.feature2'), t('adFreePlan.feature3')]}
+        features={[
+          t('adFreePlan.feature1'),
+          t('adFreePlan.feature2'),
+          // The daily cap applies to subscribers too, so the plan states it
+          // rather than leaving "AI review" to read as unlimited.
+          t('adFreePlan.feature3', { limit: AI_REVIEW_GENERATIONS_PER_DAY }),
+        ]}
         isCurrent={isSubscribed}
         currentLabel={t('currentPlan')}
         ctaLabel={isSubscribed ? t('managePlan') : t('subscribe')}

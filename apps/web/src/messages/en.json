@@ -2844,7 +2844,7 @@
       },
       "upsell": {
         "title": "An AI review costs {cost, plural, one {# Coin} other {# Coins}}",
-        "description": "The AI coach reads your game through the Stockfish analysis and writes up the moments that decided it, along with what to work on next. Your balance is {balance, plural, one {# Coin} other {# Coins}}. Coins come from likes on the games, problems and Kata you publish. Subscribers generate reviews without spending Coins.",
+        "description": "The AI coach reads your game through the Stockfish analysis and writes up the moments that decided it, along with what to work on next.",
         "coinCta": "How to earn Coins",
         "cta": "See plans"
       },
@@ -5885,7 +5885,7 @@
       "priceUnit": "/ month",
       "feature1": "All features",
       "feature2": "Hide all advertisements",
-      "feature3": "AI review (automatic game analysis and coaching)"
+      "feature3": "AI review ({limit, plural, one {# generation} other {# generations}} per day)"
     },
     "currentPlan": "Current plan",
     "subscribe": "Subscribe",
