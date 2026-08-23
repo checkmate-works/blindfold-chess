@@ -4,6 +4,7 @@ import { getStartingFen, validateMoveSequence } from '@blindfold-chess/features/
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
 import { type EngineConfig, engineConfigFromUrlParams } from '@/lib/engines';
+import { maiaChargeFromUrlParams } from '@/lib/games/maia-charge-param';
 import { normalisePerGamePreferences } from '@/lib/games/per-game-preferences';
 
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -15,6 +16,8 @@ type UrlParams = {
   startingFen: string | undefined;
   urlMoves: string | null;
   gamePrefs: PerGamePreferences | undefined;
+  /** The Maia coin charge a new game was started on — see {@link Game.maiaChargeId}. */
+  maiaChargeId: string | undefined;
 };
 
 export type ValidationErrorDetails = {
@@ -31,6 +34,7 @@ type GameInitializationResult = {
   initialStartingFen: string | undefined;
   initialMovesFromUrl: AlgebraicNotation[];
   initialGamePrefs: PerGamePreferences | undefined;
+  initialMaiaChargeId: string | undefined;
   shouldRedirectToError: boolean;
   errorDetails: ValidationErrorDetails | null;
 };
@@ -45,7 +49,8 @@ type GameInitializationResult = {
  */
 export function useGameInitialization(urlParams: UrlParams): GameInitializationResult {
   return useMemo(() => {
-    const { playerSide, engineConfig, gameId, startingFen, urlMoves, gamePrefs } = urlParams;
+    const { playerSide, engineConfig, gameId, startingFen, urlMoves, gamePrefs, maiaChargeId } =
+      urlParams;
 
     // Get initial moves from URL and validate them
     let parsedMoves: AlgebraicNotation[] = [];
@@ -96,6 +101,7 @@ export function useGameInitialization(urlParams: UrlParams): GameInitializationR
       initialStartingFen: startingFen,
       initialMovesFromUrl,
       initialGamePrefs: gamePrefs,
+      initialMaiaChargeId: maiaChargeId,
       shouldRedirectToError,
       errorDetails,
     };
@@ -132,5 +138,6 @@ export function parseUrlSearchParams(searchParams: URLSearchParams): UrlParams {
     startingFen: searchParams.get('fen') || undefined,
     urlMoves: searchParams.get('moves'),
     gamePrefs,
+    maiaChargeId: maiaChargeFromUrlParams(searchParams),
   };
 }

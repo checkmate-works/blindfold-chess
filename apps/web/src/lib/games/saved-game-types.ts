@@ -333,6 +333,15 @@ export type Game = {
    * before the field existed and on games with no rollbacks.
    */
   undoneLogs?: UndoneMoveLog[];
+  /**
+   * The Maia coin charge this game was started on — the client-minted UUID
+   * `startMaiaGame` keyed the `maia_game` ledger row on. Captured from the
+   * play URL on the first save and fixed for the life of the game; forwarded
+   * at publish so the coin history can link the charge to the game.
+   * Undefined for Stockfish games and for Maia games started before the
+   * param existed.
+   */
+  maiaChargeId?: string;
 };
 
 /**

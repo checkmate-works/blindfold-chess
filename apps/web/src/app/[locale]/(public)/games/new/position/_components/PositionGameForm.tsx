@@ -16,6 +16,7 @@ import {
   type EngineKind,
   engineConfigToUrlParams,
 } from '@/lib/engines';
+import { MAIA_CHARGE_PARAM } from '@/lib/games/maia-charge-param';
 import type { SkillLevel } from '@/lib/games/saved-game-types';
 import { MAIA_GAME_POINT_COST } from '@/lib/points/constants';
 import type { MaiaEngineAccess } from '@/lib/users/can-use-maia';
@@ -122,13 +123,14 @@ export function PositionGameForm({ locale, maiaAccess }: Props) {
   const engineConfig: EngineConfig =
     engine === 'maia' ? { kind: 'maia', rating: maiaRating } : { kind: 'stockfish', skillLevel };
 
-  const navigateToGame = () => {
+  const navigateToGame = (maiaChargeId: string | null) => {
     const params = new URLSearchParams({
       color,
       fen: fullPositionFen,
       gamePrefs: JSON.stringify(localSettings),
       ...engineConfigToUrlParams(engineConfig),
     });
+    if (maiaChargeId) params.set(MAIA_CHARGE_PARAM, maiaChargeId);
     router.push(`/${locale}/games/play?${params.toString()}`);
   };
 
