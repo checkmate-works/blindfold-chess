@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
+
 import {
   STANDARD_RANK_ROWS,
   createMockAdminClient,
@@ -28,7 +30,8 @@ const mockWhereResult = {
   then: (resolve: (val: unknown[]) => void) => Promise.resolve(mockResult).then(resolve),
 };
 
-vi.mock('@/lib/db', () => ({
+vi.mock('@/lib/db', async () => ({
+  ...(await actualDbSchema()),
   db: {
     select: vi.fn().mockReturnValue({
       from: vi.fn().mockReturnValue({

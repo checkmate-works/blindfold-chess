@@ -1,4 +1,9 @@
-import { PAWN_HIDE_MODES, PIECE_COLOR_MODES, PIECE_SHAPE_MODES } from '@blindfold-chess/types';
+import {
+  BOARD_THEMES,
+  PAWN_HIDE_MODES,
+  PIECE_COLOR_MODES,
+  PIECE_SHAPE_MODES,
+} from '@blindfold-chess/types';
 
 import { isAiReplyDuration } from '@/lib/games/ai-reply-duration';
 import type { BoardTheme } from '@/lib/games/board-themes';
@@ -30,7 +35,7 @@ export function validatePreferences(parsed: unknown): Partial<GamePreferences> {
     result.showPieceDestinations = p.showPieceDestinations;
   if (
     typeof p.boardTheme === 'string' &&
-    ['monotone', 'lichess', 'chesscom'].includes(p.boardTheme)
+    (BOARD_THEMES as readonly string[]).includes(p.boardTheme)
   ) {
     result.boardTheme = p.boardTheme as BoardTheme;
   }

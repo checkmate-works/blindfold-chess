@@ -25,9 +25,7 @@ vi.mock('@/i18n/routing', () => ({
   useRouter: () => ({ push: mockPush }),
 }));
 
-vi.mock('next-intl', () => ({
-  useTranslations: () => (key: string) => key,
-}));
+vi.mock('next-intl');
 
 type Preferences = {
   showCoordinates: boolean;

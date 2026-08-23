@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
 import { checkRateLimit } from '@/lib/security/rate-limit';
 import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
@@ -30,17 +31,11 @@ const mockSelectProfile = vi.fn();
 
 vi.mock('@/lib/moderation/block');
 
-vi.mock('@sentry/nextjs', () => ({
-  captureException: vi.fn(),
-  captureMessage: vi.fn(),
-}));
+vi.mock('@sentry/nextjs');
 
 vi.mock('@/lib/users/activity-log');
 
-vi.mock('@/lib/notifications/notification', () => ({
-  notifyFollowersOfNewPost: vi.fn(),
-  createNotification: vi.fn(),
-}));
+vi.mock('@/lib/notifications/notification');
 
 vi.mock('@/lib/supabase/server');
 
@@ -81,7 +76,8 @@ const mockTx = {
   }),
 };
 
-vi.mock('@/lib/db', () => ({
+vi.mock('@/lib/db', async () => ({
+  ...(await actualDbSchema()),
   db: {
     transaction: (fn: (tx: typeof mockTx) => Promise<unknown>) => fn(mockTx),
     select: () => ({

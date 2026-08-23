@@ -7,9 +7,8 @@ import {
   validateTitle,
 } from '@/app/admin/_lib/validators';
 
+import { CONTENT_FORMATS } from './types';
 import type { ContentFormat } from './types';
-
-const VALID_CONTENT_FORMATS: ContentFormat[] = ['markdown', 'tiptap_json'];
 
 type ArticleData = {
   slug: string;
@@ -49,7 +48,7 @@ export function validateArticleData(data: ArticleData): AdminValidationIssue | n
 
   // Not a field the editor exposes — the form picks the format itself, so a
   // bad one is a bug rather than something an admin can correct in an input.
-  if (data.contentFormat && !VALID_CONTENT_FORMATS.includes(data.contentFormat)) {
+  if (data.contentFormat && !CONTENT_FORMATS.includes(data.contentFormat)) {
     return { field: null, message: 'invalid content format' };
   }
 

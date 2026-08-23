@@ -5,7 +5,7 @@ import { useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
-import { FormErrorBanner } from '@/app/_components';
+import { FormErrorBanner, LocalizedUnsavedChangesDialog } from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
 
 import type { ChunkOption } from '@/lib/chunks/types';
@@ -22,7 +22,6 @@ import { stringArraysEqual } from '../_lib/string-arrays-equal';
 import { PositionChangedModal } from './PositionChangedModal';
 import { PuzzlePositionFields } from './PuzzlePositionFields';
 import { PuzzleStepIndicator } from './PuzzleStepIndicator';
-import { PuzzleUnsavedChangesDialog } from './PuzzleUnsavedChangesDialog';
 
 type Props = {
   positionId: string;
@@ -150,7 +149,7 @@ export function EditPuzzlePositionForm({ positionId, initial, available }: Props
         />
       </div>
 
-      <PuzzleUnsavedChangesDialog open={isBlocking} onConfirm={confirm} onCancel={cancel} />
+      <LocalizedUnsavedChangesDialog open={isBlocking} onConfirm={confirm} onCancel={cancel} />
 
       <PositionChangedModal
         isOpen={step.positionChangedOpen}

@@ -11,7 +11,7 @@ import {
 } from '@blindfold-chess/types';
 
 import { engineApproxElo, isEngineConfig } from '@/lib/engines';
-import type { EngineConfig } from '@/lib/engines';
+import type { EngineConfig, EngineKind } from '@/lib/engines';
 
 import { isBoardVisibility } from './board-visibility';
 import { computeGameStats } from './compute-game-stats';
@@ -71,7 +71,7 @@ export type ValidatedGame = {
 
 /** Denormalized columns derived from a validated snapshot. */
 export type GameColumns = {
-  engineKind: 'stockfish' | 'maia';
+  engineKind: EngineKind;
   engineElo: number;
   moveCount: number;
   cleanRate: number | null;

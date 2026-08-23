@@ -42,9 +42,7 @@ const mockSelectWhere = vi.fn(() => 'owned-content-subquery');
 const mockSelectFrom = vi.fn(() => ({ where: mockSelectWhere }));
 const mockSelect = vi.fn((..._args: unknown[]) => ({ from: mockSelectFrom }));
 
-vi.mock('@sentry/nextjs', () => ({
-  captureException: vi.fn(),
-}));
+vi.mock('@sentry/nextjs');
 
 // drizzle-orm helpers are mocked as passthrough capturers: the mocked `db`
 // chain ignores the conditions, but we keep their raw args so assertions can

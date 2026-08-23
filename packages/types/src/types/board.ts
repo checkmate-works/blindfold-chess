@@ -1,7 +1,18 @@
 export const BOARD_ORIENTATIONS = ["white", "black", "random"] as const;
 export type BoardOrientation = (typeof BOARD_ORIENTATIONS)[number];
 
-export type BoardTheme = "monotone" | "lichess" | "chesscom";
+/**
+ * Board colour schemes, following the same `as const` convention as its
+ * neighbours below: the array is the runtime source of truth and the type
+ * derives from it.
+ *
+ * It was the one union in this file with no array, so its three consumers --
+ * the embed param parser, the stored-preferences validator and the picker --
+ * each wrote the members out again, and the validator's copy was a bare
+ * `.includes()` with no type linkage at all.
+ */
+export const BOARD_THEMES = ["monotone", "lichess", "chesscom"] as const;
+export type BoardTheme = (typeof BOARD_THEMES)[number];
 
 export type BoardThemeColors = {
   light: string;

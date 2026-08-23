@@ -44,6 +44,72 @@ export const EMPTY_REPLY_META: ReplyMeta = {
 
 const MAX_REPLIERS_DISPLAY = 3;
 
+/** The per-group aggregate half of a reply-meta lookup, keyed by the caller. */
+type ReplyMetaStatsRow = {
+  replyCount: number;
+  latestReplyAt: Date | null;
+  uniqueReplierCount: number;
+};
+
+/** The deduped per-(group, author) half, already joined to the author profile. */
+type ReplyMetaReplierRow = {
+  createdAt: Date;
+  avatarUrl: string | null;
+  displayName: string | null;
+  username: string | null;
+};
+
+/**
+ * Fold the two halves of a reply-meta lookup into the `ReplyMeta` per key that
+ * callers render.
+ *
+ * Shared by the two lookups below, which run the same pair of queries against
+ * different tables — `topic_posts` keyed by `(topicType, topicKey)` and
+ * `game_comments` keyed by `game_id`. Only the queries differ; everything from
+ * the returned rows onward is identical, and this is the half that a tidy-up
+ * would have quietly diverged. Keeping it in one place is what makes the topic
+ * feed and the game feed render the same avatar stack.
+ *
+ * Keys are read through accessors rather than by requiring both callers to
+ * alias their key column to a common name, so the SQL each lookup emits — and
+ * the row shape its own consumers assert on — is untouched.
+ */
+function assembleReplyMeta<S extends ReplyMetaStatsRow, R extends ReplyMetaReplierRow>(
+  keys: string[],
+  stats: S[],
+  statsKey: (row: S) => string,
+  dedupedRepliers: R[],
+  replierKey: (row: R) => string
+): Map<string, ReplyMeta> {
+  const statsMap = new Map(stats.map((s) => [statsKey(s), s]));
+
+  // `Map.groupBy` rather than a hand-rolled get/push/set — the latter is
+  // exactly the kind of loop that invites a local "improvement".
+  const repliersByKey = Map.groupBy(dedupedRepliers, replierKey);
+
+  const map = new Map<string, ReplyMeta>();
+  for (const key of keys) {
+    const s = statsMap.get(key);
+    // Sort within the group and keep the most recent N for display.
+    const repliers = (repliersByKey.get(key) ?? [])
+      .slice()
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .slice(0, MAX_REPLIERS_DISPLAY)
+      .map<Replier>((r) => ({
+        avatarUrl: r.avatarUrl,
+        displayName: r.displayName || r.username || 'Anonymous',
+      }));
+    map.set(key, {
+      replyCount: s?.replyCount ?? 0,
+      latestReplyAt: s?.latestReplyAt ?? null,
+      repliers,
+      uniqueReplierCount: s?.uniqueReplierCount ?? 0,
+    });
+  }
+
+  return map;
+}
+
 /**
  * Polymorphic reply-meta lookup — for a list of topics identified by
  * `(topicType, topicKey)`, return the total comment count, the latest
@@ -74,8 +140,7 @@ export async function getReplyMetaMap(
   topicType: string,
   topicKeys: string[]
 ): Promise<Map<string, ReplyMeta>> {
-  const map = new Map<string, ReplyMeta>();
-  if (topicKeys.length === 0) return map;
+  if (topicKeys.length === 0) return new Map();
 
   const filter = and(
     eq(topicPosts.topicType, topicType),
@@ -112,36 +177,13 @@ export async function getReplyMetaMap(
       .orderBy(asc(topicPosts.topicKey), asc(topicPosts.userId), desc(topicPosts.createdAt)),
   ]);
 
-  const statsMap = new Map(stats.map((s) => [s.topicKey, s]));
-
-  // Group deduped rows by topicKey, then sort each group by createdAt
-  // DESC and take the most-recent N for display. `Map.groupBy` rather than a
-  // hand-rolled get/push/set: the two analogous functions in this file must
-  // stay identical for the topic feed and the game feed to render the same
-  // avatar stack, and the hand-rolled form was the spot where a tidy-up
-  // would have diverged one copy from the other.
-  const repliersByKey = Map.groupBy(dedupedRepliers, (row) => row.topicKey);
-
-  for (const topicKey of topicKeys) {
-    const s = statsMap.get(topicKey);
-    const dedupedForKey = repliersByKey.get(topicKey) ?? [];
-    const repliers = dedupedForKey
-      .slice()
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-      .slice(0, MAX_REPLIERS_DISPLAY)
-      .map<Replier>((r) => ({
-        avatarUrl: r.avatarUrl,
-        displayName: r.displayName || r.username || 'Anonymous',
-      }));
-    map.set(topicKey, {
-      replyCount: s?.replyCount ?? 0,
-      latestReplyAt: s?.latestReplyAt ?? null,
-      repliers,
-      uniqueReplierCount: s?.uniqueReplierCount ?? 0,
-    });
-  }
-
-  return map;
+  return assembleReplyMeta(
+    topicKeys,
+    stats,
+    (s) => s.topicKey,
+    dedupedRepliers,
+    (r) => r.topicKey
+  );
 }
 
 /**
@@ -156,8 +198,7 @@ export async function getReplyMetaMap(
  * loader graph stays free of `server-only`, matching the other feed loaders.
  */
 export async function getGameCommentMetaMap(gameIds: string[]): Promise<Map<string, ReplyMeta>> {
-  const map = new Map<string, ReplyMeta>();
-  if (gameIds.length === 0) return map;
+  if (gameIds.length === 0) return new Map();
 
   const filter = and(inArray(gameComments.gameId, gameIds), isNull(gameComments.deletedAt));
 
@@ -189,29 +230,11 @@ export async function getGameCommentMetaMap(gameIds: string[]): Promise<Map<stri
       .orderBy(asc(gameComments.gameId), asc(gameComments.authorId), desc(gameComments.createdAt)),
   ]);
 
-  const statsMap = new Map(stats.map((s) => [s.gameId, s]));
-
-  // Same grouping as `attachReplyMetaToTopics` above — see its comment.
-  const repliersByGame = Map.groupBy(dedupedRepliers, (row) => row.gameId);
-
-  for (const gameId of gameIds) {
-    const s = statsMap.get(gameId);
-    const dedupedForGame = repliersByGame.get(gameId) ?? [];
-    const repliers = dedupedForGame
-      .slice()
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-      .slice(0, MAX_REPLIERS_DISPLAY)
-      .map<Replier>((r) => ({
-        avatarUrl: r.avatarUrl,
-        displayName: r.displayName || r.username || 'Anonymous',
-      }));
-    map.set(gameId, {
-      replyCount: s?.replyCount ?? 0,
-      latestReplyAt: s?.latestReplyAt ?? null,
-      repliers,
-      uniqueReplierCount: s?.uniqueReplierCount ?? 0,
-    });
-  }
-
-  return map;
+  return assembleReplyMeta(
+    gameIds,
+    stats,
+    (s) => s.gameId,
+    dedupedRepliers,
+    (r) => r.gameId
+  );
 }

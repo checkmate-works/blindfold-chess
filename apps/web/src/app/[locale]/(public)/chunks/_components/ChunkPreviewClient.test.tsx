@@ -23,7 +23,7 @@ vi.mock('@/app/_components', () => ({
   ),
   FormErrorBanner: ({ message }: { message: string | null }) =>
     message ? <div role="alert">{message}</div> : null,
-  UnsavedChangesDialog: () => null,
+  LocalizedUnsavedChangesDialog: () => null,
 }));
 
 vi.mock('@/app/[locale]/_components', () => ({

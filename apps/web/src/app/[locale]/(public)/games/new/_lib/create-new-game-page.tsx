@@ -4,6 +4,8 @@ import type { ReactNode } from 'react';
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
+import type { InterpolatingTranslator } from '@/i18n/translator';
+
 import { getOptionalUser } from '@/lib/auth';
 import { getMaiaEngineAccess } from '@/lib/users/can-use-maia';
 import type { MaiaEngineAccess } from '@/lib/users/can-use-maia';
@@ -22,15 +24,13 @@ type Props = {
   }>;
 };
 
-type TranslationFn = (key: string) => string;
-
 type CreateNewGamePageConfig = {
   /** Root-namespace i18n key for the page + metadata title (e.g. `newGame.pgnPageTitle`). */
   titleKey: string;
   /** Canonical metadata path (e.g. `games/new/pgn`). */
   path: string;
   /** Build the help-tour steps from the `newGame`-namespace translator. */
-  buildHelpSteps: (tNewGame: TranslationFn) => HelpStep[];
+  buildHelpSteps: (tNewGame: InterpolatingTranslator) => HelpStep[];
   /** Render the engine-backed form for this mode. */
   renderForm: (args: { locale: Locale; maiaAccess: MaiaEngineAccess }) => ReactNode;
 };

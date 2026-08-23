@@ -15,7 +15,7 @@ import {
   Textarea,
   fieldErrorProps,
 } from '@/app/_components';
-import { UnsavedChangesDialog } from '@/app/_components/UnsavedChangesDialog';
+import { LocalizedUnsavedChangesDialog } from '@/app/_components/LocalizedUnsavedChangesDialog';
 import { INPUT_BASE_CLASSES, invalidBorderClasses } from '@/app/_components/inputStyles';
 import { useRouter } from '@/i18n/routing';
 import type { Side } from '@blindfold-chess/types';
@@ -116,7 +116,6 @@ export function LineForm({
 }: Props) {
   const t = useTranslations('Repertoires.line.edit');
   const tForm = useTranslations('Repertoires.form');
-  const tUnsaved = useTranslations('unsavedChanges');
   const router = useRouter();
 
   const [name, setName] = useState(initialName);
@@ -341,15 +340,7 @@ export function LineForm({
           rendered against that control instead. */}
       <FormErrorBanner ref={submitError.summaryRef} message={submitError.formMessage} />
 
-      <UnsavedChangesDialog
-        open={isBlocking}
-        onConfirm={confirm}
-        onCancel={cancel}
-        title={tUnsaved('title')}
-        message={tUnsaved('message')}
-        confirmLabel={tUnsaved('confirm')}
-        cancelLabel={tUnsaved('cancel')}
-      />
+      <LocalizedUnsavedChangesDialog open={isBlocking} onConfirm={confirm} onCancel={cancel} />
 
       <FormActionFooter
         cancel={{ label: t('cancel'), onClick: () => router.push(cancelHref), disabled: pending }}

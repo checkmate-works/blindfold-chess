@@ -3,6 +3,7 @@ import { revalidatePath } from 'next/cache';
 import { describe, expect, it, vi } from 'vitest';
 
 import { whereThenLimit } from '@/lib/db/__test-support__/query-chain';
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
 
 import { deletePosition } from './deletePosition';
@@ -16,7 +17,7 @@ vi.mock('@/lib/supabase/server');
 
 vi.mock('@/lib/security/client-ip');
 
-vi.mock('@/lib/db', () => {
+vi.mock('@/lib/db', async () => {
   const makeDbOps = () => ({
     select: () => ({
       from: () => ({
@@ -42,6 +43,7 @@ vi.mock('@/lib/db', () => {
       },
     },
     positions: {
+      ...(await actualDbSchema()),
       id: 'id',
       userId: 'user_id',
       type: 'type',

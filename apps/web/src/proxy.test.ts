@@ -49,9 +49,7 @@ vi.mock('@/lib/ads/ads-hidden-cookie-compute', () => ({
   computeAdsHiddenValueForUser: vi.fn(async () => null),
 }));
 
-vi.mock('@sentry/nextjs', () => ({
-  captureException: vi.fn(),
-}));
+vi.mock('@sentry/nextjs');
 
 // Import AFTER the mock above so the module picks up the mocked dependency.
 const { proxy } = await import('./proxy');

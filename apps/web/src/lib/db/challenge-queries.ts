@@ -1,6 +1,8 @@
 import type { SQL } from 'drizzle-orm';
 import { and, asc, desc, eq, gte, sql } from 'drizzle-orm';
 
+import { notHiddenFromLeaderboard } from '@/lib/db/leaderboard-visibility';
+
 import { db } from './index';
 import { startOfCurrentMonth, startOfCurrentWeek } from './period-range';
 import { AUTHOR_PROFILE_COLUMNS } from './profile-select';
@@ -124,7 +126,7 @@ export async function getAllTimeRanking(
         and(
           eq(challengeBestScores.menuType, menuType),
           eq(challengeBestScores.leaderboardKey, leaderboardKey),
-          eq(profiles.hiddenFromLeaderboard, false)
+          notHiddenFromLeaderboard()
         )
       )
       .orderBy(...byBestScore(challengeBestScores))
@@ -141,7 +143,7 @@ export async function getAllTimeRanking(
         and(
           eq(challengeBestScores.menuType, menuType),
           eq(challengeBestScores.leaderboardKey, leaderboardKey),
-          eq(profiles.hiddenFromLeaderboard, false)
+          notHiddenFromLeaderboard()
         )
       ),
   ]);
@@ -178,7 +180,7 @@ async function getPeriodRanking(
         eq(challengeResults.menuType, menuType),
         eq(challengeResults.leaderboardKey, leaderboardKey),
         gte(challengeResults.createdAt, periodStart),
-        eq(profiles.hiddenFromLeaderboard, false)
+        notHiddenFromLeaderboard()
       )
     )
     .orderBy(challengeResults.userId, ...byBestScore(challengeResults))

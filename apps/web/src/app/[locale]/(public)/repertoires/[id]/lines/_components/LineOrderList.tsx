@@ -2,11 +2,9 @@
 
 import { useRef, useState } from 'react';
 
-import { useTranslations } from 'next-intl';
-
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
 import { Button, FormActionFooter, FormErrorBanner } from '@/app/_components';
-import { UnsavedChangesDialog } from '@/app/_components/UnsavedChangesDialog';
+import { LocalizedUnsavedChangesDialog } from '@/app/_components/LocalizedUnsavedChangesDialog';
 import { useRouter } from '@/i18n/routing';
 import { flushSync } from 'react-dom';
 import { HiBars3, HiChevronDown, HiChevronUp, HiPlus, HiXMark } from 'react-icons/hi2';
@@ -97,7 +95,6 @@ export function LineOrderList({
   labels,
 }: Props) {
   const router = useRouter();
-  const tUnsaved = useTranslations('unsavedChanges');
   const [rows, setRows] = useState(initialRows);
   const [dragKey, setDragKey] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -340,15 +337,7 @@ export function LineOrderList({
 
       <FormErrorBanner message={error} />
 
-      <UnsavedChangesDialog
-        open={isBlocking}
-        onConfirm={confirm}
-        onCancel={cancel}
-        title={tUnsaved('title')}
-        message={tUnsaved('message')}
-        confirmLabel={tUnsaved('confirm')}
-        cancelLabel={tUnsaved('cancel')}
-      />
+      <LocalizedUnsavedChangesDialog open={isBlocking} onConfirm={confirm} onCancel={cancel} />
 
       <FormActionFooter
         cancel={{ label: labels.cancel, onClick: () => router.push(detailHref), disabled: pending }}

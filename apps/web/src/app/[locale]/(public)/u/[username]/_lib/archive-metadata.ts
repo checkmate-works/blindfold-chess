@@ -7,13 +7,19 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { getProfileByUsername } from './queries';
 
 /** Which `publicProfile` message names the archive in its title. */
-type ArchiveLabelKey = 'topicsTab' | 'gamesTab' | 'problemTypePuzzle' | 'problemTypeMemory';
+type ArchiveLabelKey =
+  | 'topicsTab'
+  | 'gamesTab'
+  | 'problemTypePuzzle'
+  | 'problemTypeMemory'
+  | 'achievementsPageTitle'
+  | 'followersPageTitle';
 
 /**
  * `<archive> - <member>` metadata for a page under `/u/[username]`.
  *
- * The four archive pages had a byte-identical generator apart from the label
- * and the path segment, so the title format and the canonical URL were a
+ * The archive pages had a byte-identical generator apart from the label and
+ * the path segment, so the title format and the canonical URL were a
  * convention each of them had to keep independently. An unknown username
  * yields `{}` — the page itself answers with `notFound()`.
  */

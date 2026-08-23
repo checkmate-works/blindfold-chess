@@ -4,9 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { Opening } from './OpeningSearch';
 import { OpeningSearch } from './OpeningSearch';
 
-vi.mock('next-intl', () => ({
-  useTranslations: () => (key: string) => key,
-}));
+vi.mock('next-intl');
 
 const sampleOpenings: Opening[] = [
   {

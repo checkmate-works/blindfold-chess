@@ -1,6 +1,6 @@
 import { and, inArray, isNull } from 'drizzle-orm';
 
-import { AUTHOR_PROFILE_COLUMNS, db, liveProfileJoinOn, positions, profiles } from '@/lib/db';
+import { SOCIAL_AUTHOR_COLUMNS, db, liveProfileJoinOn, positions, profiles } from '@/lib/db';
 import { EMPTY_LIKE_META } from '@/lib/db/like-queries';
 import { EMPTY_REPLY_META, getReplyMetaMap } from '@/lib/db/reply-meta-queries';
 import { getPositionLikeMetaMap } from '@/lib/positions/like-queries';
@@ -35,11 +35,7 @@ export async function loadPositionsForFeed(
       type: positions.type,
       fen: positions.fen,
       createdAt: positions.createdAt,
-      author: {
-        ...AUTHOR_PROFILE_COLUMNS,
-        country: profiles.country,
-        flair: profiles.flair,
-      },
+      author: SOCIAL_AUTHOR_COLUMNS,
     })
     .from(positions)
     .leftJoin(profiles, liveProfileJoinOn(positions.userId))

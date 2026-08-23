@@ -2,9 +2,7 @@
 
 import type { ReactNode } from 'react';
 
-import { useTranslations } from 'next-intl';
-
-import { Button, FormErrorBanner, UnsavedChangesDialog } from '@/app/_components';
+import { Button, FormErrorBanner, LocalizedUnsavedChangesDialog } from '@/app/_components';
 
 import type { ChunkOption } from '@/lib/chunks/types';
 import type { ThemeOption } from '@/lib/themes/types';
@@ -73,8 +71,6 @@ export function DraftPreviewLayout({
   guard,
   children,
 }: Props) {
-  const tUnsaved = useTranslations('unsavedChanges');
-
   return (
     <>
       <div className="space-y-6">
@@ -117,14 +113,10 @@ export function DraftPreviewLayout({
         </div>
       </div>
 
-      <UnsavedChangesDialog
+      <LocalizedUnsavedChangesDialog
         open={guard.isBlocking}
         onConfirm={guard.confirm}
         onCancel={guard.cancel}
-        title={tUnsaved('title')}
-        message={tUnsaved('message')}
-        confirmLabel={tUnsaved('confirm')}
-        cancelLabel={tUnsaved('cancel')}
       />
     </>
   );

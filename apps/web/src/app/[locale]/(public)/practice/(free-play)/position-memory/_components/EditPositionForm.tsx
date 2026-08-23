@@ -6,7 +6,12 @@ import { useTranslations } from 'next-intl';
 
 import { useSubmitError } from '@/_hooks/useSubmitError';
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
-import { Button, FormActionFooter, FormErrorBanner, UnsavedChangesDialog } from '@/app/_components';
+import {
+  Button,
+  FormActionFooter,
+  FormErrorBanner,
+  LocalizedUnsavedChangesDialog,
+} from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
 import { flushSync } from 'react-dom';
 
@@ -41,7 +46,6 @@ export function EditPositionForm({ positionId, initial, available }: Props) {
   // The field-level validation messages live alongside the field labels,
   // which `PositionFormFields` reads from the `create` namespace.
   const tCreate = useTranslations('practice.positionMemory.create');
-  const tUnsaved = useTranslations('unsavedChanges');
 
   const initialDescription = initial.description ?? '';
   const initialThemeIdsRef = useRef(initial.themes.map((th) => th.id));
@@ -170,15 +174,7 @@ export function EditPositionForm({ positionId, initial, available }: Props) {
         </FormActionFooter>
       </form>
 
-      <UnsavedChangesDialog
-        open={isBlocking}
-        onConfirm={confirm}
-        onCancel={cancel}
-        title={tUnsaved('title')}
-        message={tUnsaved('message')}
-        confirmLabel={tUnsaved('confirm')}
-        cancelLabel={tUnsaved('cancel')}
-      />
+      <LocalizedUnsavedChangesDialog open={isBlocking} onConfirm={confirm} onCancel={cancel} />
     </>
   );
 }

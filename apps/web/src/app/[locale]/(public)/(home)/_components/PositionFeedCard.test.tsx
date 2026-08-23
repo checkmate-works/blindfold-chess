@@ -21,21 +21,7 @@ vi.mock('@/lib/positions/ui/BoardThumbnail', () => ({
 // Mock translations (mirrors how FeedCard tests avoid the i18n setup).
 vi.mock('@/i18n/use-safe-translations');
 
-vi.mock('@/i18n/routing', () => ({
-  Link: ({
-    children,
-    href,
-    ...props
-  }: {
-    children: React.ReactNode;
-    href: string;
-    locale?: string;
-  }) => (
-    <a href={href} {...props}>
-      {children}
-    </a>
-  ),
-}));
+vi.mock('@/i18n/routing');
 
 // Mock unrelated child components / actions that would otherwise pull in
 // server-only code. These are not the subject of this regression test.

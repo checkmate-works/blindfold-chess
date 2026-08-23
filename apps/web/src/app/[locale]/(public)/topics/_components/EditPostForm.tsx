@@ -6,8 +6,8 @@ import {
   Button,
   FormActionFooter,
   FormErrorBanner,
+  LocalizedUnsavedChangesDialog,
   Textarea,
-  UnsavedChangesDialog,
 } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
@@ -49,7 +49,6 @@ export function EditPostForm({
   onCancel,
 }: Props) {
   const t = useTranslations('topics.edit');
-  const tUnsaved = useTranslations('unsavedChanges');
   const textareaId = useId();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -144,17 +143,13 @@ export function EditPostForm({
         </Button>
       </FormActionFooter>
 
-      <UnsavedChangesDialog
+      <LocalizedUnsavedChangesDialog
         open={confirmingDiscard}
         onConfirm={() => {
           setConfirmingDiscard(false);
           onCancel();
         }}
         onCancel={() => setConfirmingDiscard(false)}
-        title={tUnsaved('title')}
-        message={tUnsaved('message')}
-        confirmLabel={tUnsaved('confirm')}
-        cancelLabel={tUnsaved('cancel')}
       />
     </form>
   );

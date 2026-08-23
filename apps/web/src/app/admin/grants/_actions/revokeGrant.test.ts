@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
+
 const mockRequireAdmin = vi.fn();
 const mockSelectFor = vi.fn();
 const mockUpdateSet = vi.fn();
@@ -15,7 +17,8 @@ vi.mock('@/app/admin/_lib/auth', () => ({
 const userGrantsTable = { __table: 'user_grants', id: 'id', revokedAt: 'revoked_at' };
 const moderationActionsTable = { __table: 'moderation_actions' };
 
-vi.mock('@/lib/db', () => ({
+vi.mock('@/lib/db', async () => ({
+  ...(await actualDbSchema()),
   db: {
     transaction: async (fn: (tx: unknown) => Promise<unknown>) => {
       const tx = {

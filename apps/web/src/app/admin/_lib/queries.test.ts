@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
+
 import {
   aggregateByDay,
   fillDateRange,
@@ -80,7 +82,7 @@ vi.mock('drizzle-orm', async (importOriginal) => {
   };
 });
 
-vi.mock('@/lib/db', () => {
+vi.mock('@/lib/db', async () => {
   /**
    * Builds a Drizzle-like chain where every terminal-ish method (`where`,
    * `groupBy`, `orderBy`) is thenable: if the caller awaits directly after
@@ -135,6 +137,7 @@ vi.mock('@/lib/db', () => {
   selectDistinctSpy.mockImplementation(() => makeChain());
 
   return {
+    ...(await actualDbSchema()),
     db: {
       select: selectSpy,
       selectDistinct: selectDistinctSpy,

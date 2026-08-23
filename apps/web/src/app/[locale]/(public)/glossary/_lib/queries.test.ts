@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { EMPTY_BOARD_ANNOTATIONS } from '@/lib/board-annotations/types';
-import { db } from '@/lib/db';
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 
 import {
   getCategoryCounts,
@@ -20,40 +20,19 @@ vi.mock('next/cache', () => ({
 }));
 
 // Mock the db module before importing queries
-vi.mock('@/lib/db', () => {
+vi.mock('@/lib/db', async () => {
   const mockDb = {
     select: vi.fn(),
     selectDistinct: vi.fn(),
   };
 
   return {
+    ...(await actualDbSchema()),
     db: mockDb,
-    glossaryTerms: {
-      id: 'glossary_terms.id',
-      termEn: 'glossary_terms.term_en',
-      category: 'glossary_terms.category',
-    },
-    glossaryTermTranslations: {
-      termId: 'glossary_term_translations.term_id',
-      term: 'glossary_term_translations.term',
-      definition: 'glossary_term_translations.definition',
-      reading: 'glossary_term_translations.reading',
-      locale: 'glossary_term_translations.locale',
-    },
-    glossaryTermAliases: {
-      termId: 'glossary_term_aliases.term_id',
-      alias: 'glossary_term_aliases.alias',
-    },
-    glossaryTermPositions: {
-      termId: 'glossary_term_positions.term_id',
-      fen: 'glossary_term_positions.fen',
-      sortOrder: 'glossary_term_positions.sort_order',
-      caption: 'glossary_term_positions.caption',
-      annotations: 'glossary_term_positions.annotations',
-    },
   };
 });
 
+const { db } = await import('@/lib/db');
 const mockDb = vi.mocked(db);
 
 /**

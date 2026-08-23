@@ -11,7 +11,7 @@ import {
   FieldError,
   FormActionFooter,
   FormErrorBanner,
-  UnsavedChangesDialog,
+  LocalizedUnsavedChangesDialog,
   fieldBorderClass,
   fieldErrorProps,
 } from '@/app/_components';
@@ -128,7 +128,6 @@ export function EditRequestForm({
   focusTopic,
 }: Props) {
   const t = useTranslations('chunks.editRequests');
-  const tUnsaved = useTranslations('unsavedChanges');
   const router = useRouter();
 
   const titleWanted = !!requestedFeedbackTopics?.includes('title');
@@ -179,7 +178,7 @@ export function EditRequestForm({
       comment.trim().length > 0);
 
   // Cancel is a plain router.push below; when the form is dirty the
-  // navigation guard intercepts it and raises UnsavedChangesDialog
+  // navigation guard intercepts it and raises LocalizedUnsavedChangesDialog
   // instead of discarding the draft silently.
   const { isBlocking, confirm, cancel } = useUnsavedChanges({ isDirty });
 
@@ -380,15 +379,7 @@ export function EditRequestForm({
         </FormActionFooter>
       </form>
 
-      <UnsavedChangesDialog
-        open={isBlocking}
-        onConfirm={confirm}
-        onCancel={cancel}
-        title={tUnsaved('title')}
-        message={tUnsaved('message')}
-        confirmLabel={tUnsaved('confirm')}
-        cancelLabel={tUnsaved('cancel')}
-      />
+      <LocalizedUnsavedChangesDialog open={isBlocking} onConfirm={confirm} onCancel={cancel} />
     </>
   );
 }

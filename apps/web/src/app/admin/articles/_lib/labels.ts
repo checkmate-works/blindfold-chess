@@ -1,4 +1,4 @@
-type TranslationFn = (key: string) => string;
+import type { InterpolatingTranslator } from '@/i18n/translator';
 
 /**
  * Build a labels object for `ArticleForm` from the i18n translation function.
@@ -6,7 +6,7 @@ type TranslationFn = (key: string) => string;
  * Centralizes label resolution so that `NewArticlePage` and `EditArticlePage`
  * only need to pass the appropriate `formTitle` (create vs. edit).
  */
-export function getArticleFormLabels(t: TranslationFn, formTitle: string) {
+export function getArticleFormLabels(t: InterpolatingTranslator, formTitle: string) {
   return {
     formTitle,
     slug: t('form.slug'),

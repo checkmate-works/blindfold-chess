@@ -89,6 +89,20 @@ export const TOPIC_POST_COUNTS_CACHE_TAG = 'topic-post-counts' as const;
 export const REPERTOIRE_CATALOG_CACHE_TAG = 'repertoire-catalog' as const;
 
 /**
+ * The glossary master data — terms, their translations, aliases and example
+ * positions. Read by the eight `unstable_cache` wrappers in the glossary
+ * queries and in `@/lib/glossary/term-positions`, all on a 1 hour
+ * `revalidate`.
+ *
+ * Note that nothing calls `revalidateTag` with it: an admin edit to a glossary
+ * term becomes visible when the hour elapses, not when it is saved. The tag is
+ * defined anyway because it is the handle a writer would need, and because
+ * eight inlined `'glossary'` literals were the exact drift this module's rule
+ * against inline tags exists to prevent.
+ */
+export const GLOSSARY_CACHE_TAG = 'glossary' as const;
+
+/**
  * The public profile row behind `/u/[username]`, one Data Cache entry (and one
  * tag) per username.
  *

@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { db } from '@/lib/db';
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
+import { topicPosts } from '@/lib/db/schema';
 
 import { getLikedPostCountByUser, getLikedPostsByUser } from './like-queries';
 
@@ -22,56 +23,14 @@ vi.mock('@/lib/db/like-queries', () => ({
   getLikeMeta: vi.fn(),
 }));
 
-vi.mock('@/lib/db', () => {
+vi.mock('@/lib/db', async () => {
   const mockDb = {
     select: vi.fn(),
   };
 
   return {
+    ...(await actualDbSchema()),
     db: mockDb,
-    topicPosts: {
-      id: 'topic_posts.id',
-      userId: 'topic_posts.user_id',
-      topicType: 'topic_posts.topic_type',
-      topicKey: 'topic_posts.topic_key',
-      parentId: 'topic_posts.parent_id',
-      rootPostId: 'topic_posts.root_post_id',
-      content: 'topic_posts.content',
-      createdAt: 'topic_posts.created_at',
-      deletedAt: 'topic_posts.deleted_at',
-    },
-    profiles: {
-      id: 'profiles.id',
-      username: 'profiles.username',
-      displayName: 'profiles.display_name',
-      avatarUrl: 'profiles.avatar_url',
-      flair: 'profiles.flair',
-      country: 'profiles.country',
-    },
-    likes: {
-      id: 'likes.id',
-      userId: 'likes.user_id',
-      targetType: 'likes.target_type',
-      targetId: 'likes.target_id',
-      createdAt: 'likes.created_at',
-    },
-    topicPostRatings: {
-      postId: 'topic_post_ratings.post_id',
-      preferenceRating: 'topic_post_ratings.preference_rating',
-      proficiencyRating: 'topic_post_ratings.proficiency_rating',
-    },
-    chessOpenings: {
-      slug: 'chess_openings.slug',
-      name: 'chess_openings.name',
-      fen: 'chess_openings.fen',
-    },
-    // Same fake column ids as the `profiles` mock above so select shapes built
-    // from the shared columns stay consistent.
-    AUTHOR_PROFILE_COLUMNS: {
-      username: 'profiles.username',
-      displayName: 'profiles.display_name',
-      avatarUrl: 'profiles.avatar_url',
-    },
     SOCIAL_AUTHOR_COLUMNS: {
       username: 'username',
       displayName: 'display_name',
@@ -83,6 +42,7 @@ vi.mock('@/lib/db', () => {
   };
 });
 
+const { db } = await import('@/lib/db');
 const mockDb = vi.mocked(db);
 
 function mockChain(rows: unknown[]) {
@@ -120,7 +80,7 @@ describe('getLikedPostsByUser', () => {
     // excluded from the result. Without this filter, /mypage/likes would render
     // chunk comments with the square card and produce broken hrefs (404s) and
     // i18n fallbacks.
-    expect(inArrayMock).toHaveBeenCalledWith('topic_posts.topic_type', ['square', 'opening']);
+    expect(inArrayMock).toHaveBeenCalledWith(topicPosts.topicType, ['square', 'opening']);
   });
 
   it('returns rows produced by the underlying query', async () => {
@@ -140,7 +100,7 @@ describe('getLikedPostCountByUser', () => {
 
     await getLikedPostCountByUser(userId);
 
-    expect(inArrayMock).toHaveBeenCalledWith('topic_posts.topic_type', ['square', 'opening']);
+    expect(inArrayMock).toHaveBeenCalledWith(topicPosts.topicType, ['square', 'opening']);
   });
 
   it('returns the count from the underlying query', async () => {

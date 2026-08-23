@@ -2,10 +2,11 @@ import { cache } from 'react';
 
 import { unstable_cache } from 'next/cache';
 
-import { and, desc, eq, isNotNull, sql } from 'drizzle-orm';
+import { and, desc, eq, sql } from 'drizzle-orm';
 
 import { ARTICLES_CACHE_TAG } from '@/lib/cache-tags';
 import { type Article, articles, db } from '@/lib/db';
+import { publiclyVisibleArticle } from '@/lib/db/articles-visibility';
 
 import { DEFAULT_LOCALE, pickByLocale } from '@/app/[locale]/_lib/locale-utils';
 
@@ -61,8 +62,7 @@ async function getDeduplicatedArticles(
             END
         ) AS rn
       FROM ${articles}
-      WHERE ${articles.status} = 'published'
-        AND ${articles.publishedAt} IS NOT NULL
+      WHERE ${publiclyVisibleArticle()}
     ) ranked
     WHERE rn = 1
     ORDER BY pinned_at DESC NULLS LAST, published_at DESC
@@ -81,7 +81,7 @@ export async function getPublishedArticles(): Promise<Article[]> {
   return db
     .select()
     .from(articles)
-    .where(and(eq(articles.status, 'published'), isNotNull(articles.publishedAt)))
+    .where(publiclyVisibleArticle())
     .orderBy(...pinnedFirstOrdering);
 }
 
@@ -108,7 +108,7 @@ export const getPublishedArticleCount = unstable_cache(
     const [result] = await db
       .select({ count: sql<number>`COUNT(DISTINCT ${articles.slug})` })
       .from(articles)
-      .where(and(eq(articles.status, 'published'), isNotNull(articles.publishedAt)));
+      .where(publiclyVisibleArticle());
 
     return Number(result.count);
   },
@@ -146,13 +146,7 @@ export const getPublishedArticle = cache(
     const results = await db
       .select()
       .from(articles)
-      .where(
-        and(
-          eq(articles.slug, slug),
-          eq(articles.status, 'published'),
-          isNotNull(articles.publishedAt)
-        )
-      );
+      .where(and(eq(articles.slug, slug), publiclyVisibleArticle()));
 
     if (results.length === 0) return null;
 
@@ -175,5 +169,5 @@ export async function getPublishedArticlesForSitemap(): Promise<
       publishedAt: articles.publishedAt,
     })
     .from(articles)
-    .where(and(eq(articles.status, 'published'), isNotNull(articles.publishedAt)));
+    .where(publiclyVisibleArticle());
 }

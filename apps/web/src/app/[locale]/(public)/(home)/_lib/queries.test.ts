@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
+
 import { getFeedData } from './queries';
 
 // --- Mocks ---
@@ -27,7 +29,8 @@ vi.mock('drizzle-orm', async (importOriginal) => {
   };
 });
 
-vi.mock('@/lib/db', () => ({
+vi.mock('@/lib/db', async () => ({
+  ...(await actualDbSchema()),
   db: {
     select: () => ({
       from: () => ({

@@ -14,9 +14,7 @@ vi.mock('@/i18n/use-safe-translations', () => ({
     params ? `${key}:${JSON.stringify(params)}` : key,
 }));
 
-vi.mock('next-intl', () => ({
-  useLocale: () => 'en',
-}));
+vi.mock('next-intl');
 
 // MiniBoard pulls in chess-pieces / icons / GamePreferencesContext, none of
 // which are relevant here. Stub it to a marker div so we can assert

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
 
 const mockValues = vi.fn().mockReturnValue(Promise.resolve());
@@ -9,7 +10,8 @@ vi.mock('@/lib/csrf', () => ({
   isValidOrigin: () => true,
 }));
 
-vi.mock('@/lib/db', () => ({
+vi.mock('@/lib/db', async () => ({
+  ...(await actualDbSchema()),
   db: {
     insert: (...args: unknown[]) => mockInsert(...args),
   },

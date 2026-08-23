@@ -11,9 +11,7 @@ import { GameInProgressPanel } from './GameInProgressPanel';
 // Stub next-intl so all translation keys resolve to the key itself — this
 // makes `title` / `aria-label` values deterministic for role queries.
 vi.mock('@/i18n/use-safe-translations');
-vi.mock('@/i18n/routing', () => ({
-  Link: ({ children, ...props }: { children: React.ReactNode }) => <a {...props}>{children}</a>,
-}));
+vi.mock('@/i18n/routing');
 
 // `MoveInputPanel` is covered by its own test. Stub it with a minimal marker
 // so we don't pull in chess.js / the full input graph.

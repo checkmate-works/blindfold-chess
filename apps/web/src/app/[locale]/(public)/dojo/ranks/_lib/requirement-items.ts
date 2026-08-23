@@ -1,3 +1,5 @@
+import type { InterpolatingTranslator } from '@/i18n/translator';
+
 import { parseRequirements, ranksSeedData } from '@/lib/db/data/ranks';
 import type {
   ChallengeScoreRequirement,
@@ -41,12 +43,10 @@ function menuTypeToPracticeSlug(menuType: string): string {
   return menuType.replace(/_/g, '-');
 }
 
-type Translator = (key: string, values?: Record<string, string | number | Date>) => string;
-
 function buildChallengeScoreItem(
   req: ChallengeScoreRequirement,
   locale: string,
-  t: Translator
+  t: InterpolatingTranslator
 ): RequirementItem {
   const challengeKey = buildChallengeNameKey(req);
   const practiceSlug = menuTypeToPracticeSlug(req.menuType);
@@ -75,7 +75,7 @@ function positionSubmissionRouteSegment(positionType: 'memory' | 'puzzle'): stri
 function positionSubmissionLabel(
   req: PositionSubmissionCountRequirement,
   positionType: 'memory' | 'puzzle',
-  t: Translator
+  t: InterpolatingTranslator
 ): string {
   return t('submissionCount', {
     minCount: req.minCount,
@@ -92,7 +92,7 @@ function positionSubmissionLabel(
 function buildPositionSubmissionItems(
   req: PositionSubmissionCountRequirement,
   locale: string,
-  t: Translator
+  t: InterpolatingTranslator
 ): (RequirementItem | RequirementDivider)[] {
   return req.positionTypes.flatMap((positionType, index) => {
     const item: RequirementItem = {
@@ -112,7 +112,7 @@ function buildPositionSubmissionItems(
  */
 export function buildPositionSubmissionLabels(
   req: PositionSubmissionCountRequirement,
-  t: Translator
+  t: InterpolatingTranslator
 ): (string | RequirementDivider)[] {
   return req.positionTypes.flatMap((positionType, index) => {
     const label = positionSubmissionLabel(req, positionType, t);
@@ -128,7 +128,7 @@ export function buildPositionSubmissionLabels(
  */
 export function buildRequirementLabels(
   req: RankRequirement,
-  t: Translator
+  t: InterpolatingTranslator
 ): (string | RequirementDivider)[] {
   if (req.type === 'challenge_score') {
     return [
@@ -159,7 +159,7 @@ export function buildRequirementLabels(
 export function buildRequirementItems(
   requirements: RankRequirement[],
   locale: string,
-  t: Translator
+  t: InterpolatingTranslator
 ): (RequirementItem | RequirementDivider)[] {
   return requirements.flatMap((req) => {
     if (req.type === 'challenge_score') return [buildChallengeScoreItem(req, locale, t)];
@@ -179,7 +179,7 @@ export function buildRequirementItems(
 function buildGamePublishWinItem(
   req: GamePublishWinRequirement,
   locale: string,
-  t: Translator
+  t: InterpolatingTranslator
 ): RequirementItem {
   return {
     label: t('gamePublishWin', { minCount: req.minCount }),
@@ -195,7 +195,7 @@ function buildGamePublishWinItem(
 function buildGamePublishWinHiddenBoardItem(
   req: GamePublishWinHiddenBoardRequirement,
   locale: string,
-  t: Translator
+  t: InterpolatingTranslator
 ): RequirementItem {
   return {
     label: t('gamePublishWinHiddenBoard', { minCount: req.minCount }),

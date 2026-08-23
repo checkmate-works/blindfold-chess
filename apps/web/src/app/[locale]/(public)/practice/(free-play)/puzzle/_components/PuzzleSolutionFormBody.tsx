@@ -2,13 +2,12 @@
 
 import { useTranslations } from 'next-intl';
 
-import { FormErrorBanner } from '@/app/_components';
+import { FormErrorBanner, LocalizedUnsavedChangesDialog } from '@/app/_components';
 
 import type { PuzzleSolutionStepApi } from '../_hooks/use-puzzle-solution-step';
 import { PuzzleSolutionFields } from './PuzzleSolutionFields';
 import { PuzzleSolutionSkeleton } from './PuzzleSolutionSkeleton';
 import { PuzzleStepIndicator } from './PuzzleStepIndicator';
-import { PuzzleUnsavedChangesDialog } from './PuzzleUnsavedChangesDialog';
 
 type Props = {
   /** Which wizard the step indicator should draw. */
@@ -69,7 +68,7 @@ export function PuzzleSolutionFormBody({ flow, step, onContinueToPreview }: Prop
         />
       </div>
 
-      <PuzzleUnsavedChangesDialog
+      <LocalizedUnsavedChangesDialog
         open={step.isBlocking}
         onConfirm={step.confirmLeave}
         onCancel={step.cancelLeave}

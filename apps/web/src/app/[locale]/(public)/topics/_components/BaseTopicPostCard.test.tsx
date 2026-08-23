@@ -11,21 +11,7 @@ import { BaseTopicPostCard } from './BaseTopicPostCard';
 
 vi.mock('@/i18n/use-safe-translations');
 
-vi.mock('@/i18n/routing', () => ({
-  Link: ({
-    href,
-    children,
-    'aria-label': ariaLabel,
-  }: {
-    href: string;
-    children: React.ReactNode;
-    'aria-label'?: string;
-  }) => (
-    <a href={typeof href === 'string' ? href : '#'} aria-label={ariaLabel}>
-      {children}
-    </a>
-  ),
-}));
+vi.mock('@/i18n/routing');
 
 vi.mock('@/app/[locale]/_components', () => ({
   LinkedText: ({ text }: { text: string }) => <span>{text}</span>,

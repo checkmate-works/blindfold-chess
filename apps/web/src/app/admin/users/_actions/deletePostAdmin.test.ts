@@ -2,6 +2,7 @@ import { revalidatePath } from 'next/cache';
 
 import { describe, expect, it, vi } from 'vitest';
 
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
 
 import { deletePostAdmin } from './deletePostAdmin';
@@ -23,7 +24,7 @@ vi.mock('@/lib/supabase/admin', () => ({
   }),
 }));
 
-vi.mock('@/lib/db', () => {
+vi.mock('@/lib/db', async () => {
   const makeDbOps = () => ({
     select: () => ({
       from: () => ({
@@ -64,6 +65,7 @@ vi.mock('@/lib/db', () => {
       },
     },
     topicPosts: {
+      ...(await actualDbSchema()),
       id: 'id',
       userId: 'user_id',
       topicType: 'topic_type',

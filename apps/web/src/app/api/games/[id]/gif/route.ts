@@ -1,4 +1,5 @@
 import { getGameById } from '@/lib/db/games-read';
+import type { GameGifVariant } from '@/lib/games/gif/constants';
 import { PLAYED_GIF_RENDER_VERSION } from '@/lib/games/gif/constants';
 import { generateGameGif } from '@/lib/games/gif/generate-game-gif';
 import { createAdminClient } from '@/lib/supabase/admin';
@@ -10,7 +11,7 @@ export const maxDuration = 60;
 
 const GIFS_BUCKET = 'game-gifs';
 
-function gifStorageKey(id: string, variant: 'plain' | 'played'): string {
+function gifStorageKey(id: string, variant: GameGifVariant): string {
   // 'played' output changes whenever PLAYED_GIF_RENDER_VERSION bumps, so its
   // Storage key carries the version — an old render never shadows a new one.
   // 'plain' output never changes, so its key stays unversioned.

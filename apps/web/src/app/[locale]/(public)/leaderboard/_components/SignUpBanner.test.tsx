@@ -14,22 +14,7 @@ vi.mock('next-intl/server', () => ({
   getTranslations: () => (key: string) => key,
 }));
 
-vi.mock('@/i18n/routing', () => ({
-  Link: ({
-    children,
-    href,
-    ...props
-  }: {
-    children: React.ReactNode;
-    href: string;
-    locale?: string;
-    className?: string;
-  }) => (
-    <a href={href} {...props}>
-      {children}
-    </a>
-  ),
-}));
+vi.mock('@/i18n/routing');
 
 const { SignUpBanner } = await import('./SignUpBanner');
 

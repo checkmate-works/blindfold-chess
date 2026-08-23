@@ -7,6 +7,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { FaXTwitter } from 'react-icons/fa6';
 import { FiCode, FiDownload, FiLink, FiShare2 } from 'react-icons/fi';
 
+import type { GameGifVariant } from '@/lib/games/gif/constants';
 import { PLAYED_GIF_RENDER_VERSION } from '@/lib/games/gif/constants';
 import { encodeGameShortId } from '@/lib/games/short-id';
 
@@ -15,8 +16,6 @@ import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { EmbedCodeModal } from './EmbedCodeModal';
-
-type GifVariant = 'plain' | 'played';
 
 type Props = {
   gameId: string;
@@ -64,7 +63,7 @@ function Spinner() {
 export function ShareMenu({ gameId, title, locale, hasPlayedVariant, canReproduce }: Props) {
   const t = useTranslations('sharedGames');
   const { showToast } = useToast();
-  const [downloading, setDownloading] = useState<GifVariant | null>(null);
+  const [downloading, setDownloading] = useState<GameGifVariant | null>(null);
   const [embedOpen, setEmbedOpen] = useState(false);
 
   // Copying hands the URL to a human, who may paste it somewhere that shows it
@@ -90,7 +89,7 @@ export function ShareMenu({ gameId, title, locale, hasPlayedVariant, canReproduc
     window.open(xIntentUrl, '_blank', 'noopener,noreferrer');
   }
 
-  async function handleDownloadGif(variant: GifVariant) {
+  async function handleDownloadGif(variant: GameGifVariant) {
     if (downloading) return;
     setDownloading(variant);
     try {

@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
+
 const mockRequireAdmin = vi.fn();
 const mockSelectFromWhereLimit = vi.fn();
 const mockUserRanksInsert = vi.fn();
@@ -20,7 +22,8 @@ const ranksTable = { __table: 'ranks' };
 const userRanksTable = { __table: 'user_ranks' };
 const moderationActionsTable = { __table: 'moderation_actions' };
 
-vi.mock('@/lib/db', () => ({
+vi.mock('@/lib/db', async () => ({
+  ...(await actualDbSchema()),
   db: {
     select: () => ({
       from: (table: unknown) => {

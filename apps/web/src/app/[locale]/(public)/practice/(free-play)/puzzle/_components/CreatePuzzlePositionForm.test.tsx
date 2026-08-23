@@ -36,9 +36,7 @@ vi.mock('next/navigation', () => ({
   useSearchParams: () => ({ get: mockSearchParamsGet }),
 }));
 
-vi.mock('next-intl', () => ({
-  useTranslations: () => (key: string) => key,
-}));
+vi.mock('next-intl');
 
 vi.mock('@/app/[locale]/_contexts/GamePreferencesContext', () => ({
   useGamePreferences: () => ({
@@ -133,7 +131,7 @@ vi.mock('@/app/_components', () => ({
   FormErrorBanner: ({ message }: { message: string | null }) =>
     message ? <div role="alert">{message}</div> : null,
   BoardFrame: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  UnsavedChangesDialog: () => null,
+  LocalizedUnsavedChangesDialog: () => null,
   Button: ({
     children,
     type,

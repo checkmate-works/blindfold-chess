@@ -1,7 +1,9 @@
 import { SUPPORTED_LOCALES } from '@/config';
+import { BOARD_THEMES } from '@blindfold-chess/types';
 import type { Side } from '@blindfold-chess/types';
 
 import type { BoardTheme } from '@/lib/games/board-themes';
+import type { GameGifVariant } from '@/lib/games/gif/constants';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -27,7 +29,7 @@ export type EmbedGameParams = {
    * embed a game from this site rather than from a general chess server, and
    * it degrades to an ordinary board by itself for a fully-sighted game.
    */
-  view: 'played' | 'plain';
+  view: GameGifVariant;
   /** Side at the bottom of the board. Undefined = the player's own side. */
   orientation: Side | undefined;
   /** Board colour scheme. Undefined = the app default. */
@@ -49,8 +51,6 @@ export type EmbedGameParams = {
    */
   bg: 'light' | 'dark' | undefined;
 };
-
-const BOARD_THEMES: readonly BoardTheme[] = ['monotone', 'lichess', 'chesscom'];
 
 /** First value of a repeated key, so `?view=a&view=b` behaves predictably. */
 function single(value: string | string[] | undefined): string | undefined {

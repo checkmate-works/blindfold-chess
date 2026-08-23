@@ -36,6 +36,7 @@ import {
 
 import { EMPTY_BOARD_ANNOTATIONS } from '@/lib/board-annotations/types';
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
+import type { RepertoirePhase } from '@/lib/repertoires/validation';
 import { uuidv7 } from '@/lib/uuidv7';
 
 import { chunks } from './chunks';
@@ -71,10 +72,7 @@ export const repertoires = pgTable(
     userId: uuid('user_id'),
     name: varchar('name', { length: 255 }).notNull(),
     side: varchar('side', { length: 5 }).$type<Side>().notNull(),
-    phase: varchar('phase', { length: 20 })
-      .$type<'opening' | 'middlegame' | 'endgame'>()
-      .notNull()
-      .default('opening'),
+    phase: varchar('phase', { length: 20 }).$type<RepertoirePhase>().notNull().default('opening'),
     description: text('description'),
     /** Denormalised root for the card thumbnail. NULL = standard start. */
     startingFen: varchar('starting_fen', { length: 100 }),

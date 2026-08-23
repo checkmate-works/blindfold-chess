@@ -3,9 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { PuzzleStepIndicator } from './PuzzleStepIndicator';
 
-vi.mock('next-intl', () => ({
-  useTranslations: () => (key: string) => key,
-}));
+vi.mock('next-intl');
 
 describe('PuzzleStepIndicator', () => {
   it('renders the three create-flow steps in order', () => {

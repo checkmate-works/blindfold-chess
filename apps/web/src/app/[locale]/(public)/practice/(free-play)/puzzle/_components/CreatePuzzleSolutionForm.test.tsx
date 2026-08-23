@@ -16,9 +16,7 @@ vi.mock('@/i18n/routing', () => ({
   useRouter: () => stableRouter,
 }));
 
-vi.mock('next-intl', () => ({
-  useTranslations: () => (key: string) => key,
-}));
+vi.mock('next-intl');
 
 vi.mock('@/app/[locale]/_contexts/GamePreferencesContext', () => ({
   useGamePreferences: () => ({
@@ -54,15 +52,13 @@ vi.mock('@/app/[locale]/_components/MoveInputPanel', () => ({
   ),
 }));
 
-vi.mock('next-navigation-guard', () => ({
-  useNavigationGuard: () => ({ active: false, accept: () => {}, reject: () => {} }),
-}));
+vi.mock('next-navigation-guard');
 
 vi.mock('@/app/_components', () => ({
   FormErrorBanner: ({ message }: { message: string | null }) =>
     message ? <div role="alert">{message}</div> : null,
   BoardFrame: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  UnsavedChangesDialog: () => null,
+  LocalizedUnsavedChangesDialog: () => null,
   BoardSkeleton: () => <div data-testid="board-skeleton" />,
   Button: ({
     children,

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { db } from '@/lib/db';
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 
 import {
   getLatestPublishedArticles,
@@ -11,29 +11,19 @@ import {
   getPublishedArticlesPaginated,
 } from './queries';
 
-vi.mock('@/lib/db', () => {
+vi.mock('@/lib/db', async () => {
   const mockDb = {
     select: vi.fn(),
     execute: vi.fn(),
   };
 
   return {
+    ...(await actualDbSchema()),
     db: mockDb,
-    articles: {
-      id: 'articles.id',
-      slug: 'articles.slug',
-      title: 'articles.title',
-      content: 'articles.content',
-      locale: 'articles.locale',
-      status: 'articles.status',
-      pinnedAt: 'articles.pinned_at',
-      publishedAt: 'articles.published_at',
-      createdAt: 'articles.created_at',
-      updatedAt: 'articles.updated_at',
-    },
   };
 });
 
+const { db } = await import('@/lib/db');
 const mockDb = vi.mocked(db);
 
 /**

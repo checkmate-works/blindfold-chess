@@ -63,7 +63,7 @@ vi.mock('@/app/_components', () => ({
         {message}
       </div>
     ) : null,
-  UnsavedChangesDialog: () => null,
+  LocalizedUnsavedChangesDialog: () => null,
 }));
 
 // Stub the board editor + heavy children so the test isolates the draft-vs-

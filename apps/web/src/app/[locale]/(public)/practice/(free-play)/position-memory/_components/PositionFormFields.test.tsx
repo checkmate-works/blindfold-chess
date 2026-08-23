@@ -6,9 +6,7 @@ import type { TagSelection } from '@/app/[locale]/(public)/practice/(free-play)/
 
 import { PositionFormFields } from './PositionFormFields';
 
-vi.mock('next-intl', () => ({
-  useTranslations: () => (key: string) => key,
-}));
+vi.mock('next-intl');
 
 vi.mock('@/app/[locale]/_contexts/GamePreferencesContext', () => ({
   useGamePreferences: () => ({

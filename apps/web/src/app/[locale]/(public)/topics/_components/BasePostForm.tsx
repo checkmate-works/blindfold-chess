@@ -11,7 +11,12 @@ import {
 } from 'react';
 
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
-import { Button, FormErrorBanner, Textarea, UnsavedChangesDialog } from '@/app/_components';
+import {
+  Button,
+  FormErrorBanner,
+  LocalizedUnsavedChangesDialog,
+  Textarea,
+} from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaPaperclip } from 'react-icons/fa';
 
@@ -154,7 +159,6 @@ export function BasePostForm({
   const t = useTranslations(translationNamespace);
   const tTopics = useTranslations('topics');
   const tGlobal = useTranslations();
-  const tUnsaved = useTranslations('unsavedChanges');
 
   // Per-instance id so multiple BasePostForms can coexist on the same
   // page (every CommentNode renders its own inline ReplyForm — without
@@ -326,15 +330,7 @@ export function BasePostForm({
         {isPending ? t('submitting') : t('submit')}
       </Button>
 
-      <UnsavedChangesDialog
-        open={isBlocking}
-        onConfirm={confirm}
-        onCancel={cancel}
-        title={tUnsaved('title')}
-        message={tUnsaved('message')}
-        confirmLabel={tUnsaved('confirm')}
-        cancelLabel={tUnsaved('cancel')}
-      />
+      <LocalizedUnsavedChangesDialog open={isBlocking} onConfirm={confirm} onCancel={cancel} />
     </form>
   );
 }

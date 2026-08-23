@@ -13,9 +13,7 @@ vi.mock('@/i18n/use-safe-translations', () => ({
   useSafeTranslations: () => Object.assign((key: string) => key, { has: () => true }),
 }));
 
-vi.mock('@/i18n/routing', () => ({
-  Link: ({ children, ...props }: { children: React.ReactNode }) => <a {...props}>{children}</a>,
-}));
+vi.mock('@/i18n/routing');
 
 vi.mock('@/app/[locale]/(public)/topics/_components/LikeButton', () => ({
   LikeButton: () => <div data-testid="like-button" />,

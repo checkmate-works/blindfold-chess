@@ -69,11 +69,7 @@ vi.mock('next/navigation', () => ({
   usePathname: () => '/en/games',
 }));
 
-vi.mock('@/i18n/routing', () => ({
-  Link: ({ children, href }: { children: React.ReactNode; href: string }) => (
-    <a href={href}>{children}</a>
-  ),
-}));
+vi.mock('@/i18n/routing');
 
 vi.mock('@/app/[locale]/_contexts/ToastContext', () => ({
   useToast: () => ({ showToast: vi.fn() }),

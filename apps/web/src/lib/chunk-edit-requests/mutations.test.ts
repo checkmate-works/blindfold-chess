@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
+
 const mockAuthenticateAndGuard = vi.fn();
 const mockSelectLimit = vi.fn();
 const mockInsertReturning = vi.fn();
@@ -48,7 +50,8 @@ vi.mock('next/cache', () => ({
 const CHUNK_EDIT_REQUESTS_TABLE = { __table: 'chunk_edit_requests' };
 const CHUNKS_TABLE = { __table: 'chunks' };
 
-vi.mock('@/lib/db', () => ({
+vi.mock('@/lib/db', async () => ({
+  ...(await actualDbSchema()),
   db: {
     select: () => ({
       from: () => ({

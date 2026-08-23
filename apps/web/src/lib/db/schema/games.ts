@@ -31,7 +31,7 @@ import type {
   AnalysisSummaryStats,
   ReviewMoment,
 } from '@/lib/ai-review/types';
-import type { EngineConfig } from '@/lib/engines';
+import type { EngineConfig, EngineKind } from '@/lib/engines';
 import type { PositionEvaluation } from '@/lib/games/analysis/types';
 import type {
   GamePlaySettings,
@@ -155,7 +155,7 @@ export const games = pgTable(
     result: varchar('result', { length: 4 }).$type<FinalGameOutcome>().notNull(),
 
     // --- Denormalized for gallery filter / sort ---
-    engineKind: varchar('engine_kind', { length: 20 }).$type<'stockfish' | 'maia'>().notNull(),
+    engineKind: varchar('engine_kind', { length: 20 }).$type<EngineKind>().notNull(),
     /** Unified approximate Elo (cross-engine comparable). */
     engineElo: integer('engine_elo').notNull(),
     moveCount: integer('move_count').notNull(),

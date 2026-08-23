@@ -10,7 +10,9 @@
  *                      server component) on public pages. Editable in the admin UI via the
  *                      Tiptap-based `ArticleForm`.
  */
-export type ContentFormat = 'markdown' | 'tiptap_json';
+export const CONTENT_FORMATS = ['markdown', 'tiptap_json'] as const;
+
+export type ContentFormat = (typeof CONTENT_FORMATS)[number];
 
 /** Tiptap JSON inline mark (bold, italic, link, code, strike, etc.) */
 export type TiptapMark = {

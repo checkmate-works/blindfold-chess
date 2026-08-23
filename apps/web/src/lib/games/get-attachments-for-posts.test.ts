@@ -1,5 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
+
 import { getAttachmentsForPosts } from './get-attachments-for-posts';
 import type { PostAttachment } from './get-attachments-for-posts';
 
@@ -27,7 +29,7 @@ vi.mock('@blindfold-chess/features/chess-core', () => ({
 // independently.
 const queueRows: unknown[][] = [];
 
-vi.mock('@/lib/db', () => {
+vi.mock('@/lib/db', async () => {
   const chain = () => {
     const rows = queueRows.shift() ?? [];
     const promiseLike = {
@@ -42,10 +44,8 @@ vi.mock('@/lib/db', () => {
   };
 
   return {
+    ...(await actualDbSchema()),
     db: { select: () => chain() },
-    // Tables are referenced as drizzle column wrappers; the chain stub
-    // ignores them entirely, so plain markers suffice.
-    postGamePgnAttachments: { __name: 'pgn' },
     postGameEmbedAttachments: { __name: 'embed' },
     postImageAttachments: { __name: 'image' },
     postFenAttachments: { __name: 'fen' },

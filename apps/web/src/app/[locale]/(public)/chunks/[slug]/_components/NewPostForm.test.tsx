@@ -52,13 +52,7 @@ vi.mock('@/i18n/use-safe-translations', () => ({
   },
 }));
 
-vi.mock('next-navigation-guard', () => ({
-  useNavigationGuard: () => ({
-    active: false,
-    accept: vi.fn(),
-    reject: vi.fn(),
-  }),
-}));
+vi.mock('next-navigation-guard');
 
 // Make `useActionState` invoke the wrapped server action and
 // reflect its resolved state back into the component so error

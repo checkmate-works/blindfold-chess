@@ -11,7 +11,7 @@ import {
   FieldError,
   FormActionFooter,
   FormErrorBanner,
-  UnsavedChangesDialog,
+  LocalizedUnsavedChangesDialog,
   fieldBorderClass,
   fieldErrorProps,
 } from '@/app/_components';
@@ -98,7 +98,6 @@ const FIELD_ANCHOR_IDS: Record<PositionEditRequestField, string> = {
 export function PositionEditRequestForm({ positionId, current, available, cancelHref }: Props) {
   const t = useTranslations('practice.positionEditRequests');
   const tToast = useTranslations('toast');
-  const tUnsaved = useTranslations('unsavedChanges');
   const pickerLabels = useTagPickerLabels();
   const router = useRouter();
   const { showToast } = useToast();
@@ -127,7 +126,7 @@ export function PositionEditRequestForm({ positionId, current, available, cancel
 
   // Cancel routes to the suggestions review page below; when the form is
   // dirty the guard intercepts both that in-app cancel and any route/tab
-  // exit, raising UnsavedChangesDialog instead of discarding silently.
+  // exit, raising LocalizedUnsavedChangesDialog instead of discarding silently.
   const { isBlocking, confirm, cancel, requestDiscard } = useUnsavedChanges({
     isDirty,
     onDiscard: () => router.push(cancelHref as '/practice/position-memory/[id]/suggestions'),
@@ -244,15 +243,7 @@ export function PositionEditRequestForm({ positionId, current, available, cancel
         </FormActionFooter>
       </form>
 
-      <UnsavedChangesDialog
-        open={isBlocking}
-        onConfirm={confirm}
-        onCancel={cancel}
-        title={tUnsaved('title')}
-        message={tUnsaved('message')}
-        confirmLabel={tUnsaved('confirm')}
-        cancelLabel={tUnsaved('cancel')}
-      />
+      <LocalizedUnsavedChangesDialog open={isBlocking} onConfirm={confirm} onCancel={cancel} />
     </>
   );
 }
