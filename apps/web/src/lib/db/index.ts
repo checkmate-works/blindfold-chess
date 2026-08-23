@@ -9,6 +9,7 @@ import postgres from 'postgres';
 import { derivePoolerMode, resolvePoolMax } from './pooler-mode';
 import {
   type DeadlineRetry,
+  WEDGE_SETTLE_WINDOW_MS,
   setCapacityRetry,
   setDeadlineRetry,
   setQueryActivityHandler,
@@ -101,9 +102,18 @@ Sentry.getGlobalScope().setTag('db.pooler_mode', poolerMode);
 // below is what closes that gap — see its TSDoc.
 /**
  * Seconds a pooled connection may sit idle before postgres.js closes it.
- * Extracted because the pool-drain keepalive below must outlast it.
+ * Extracted because the pool-drain keepalive below must outlast it — and
+ * that coupling is why this is short. Every second here is a second the
+ * keepalive holds a billed, otherwise idle instance awake after each request,
+ * so the value is the reconnect cost we are willing to pay: a request that
+ * arrives after a gap of more than this many seconds opens a fresh connection
+ * (one TLS handshake and auth round-trip against the pooler) rather than
+ * reusing one. Queries inside a single render are milliseconds apart and
+ * always reuse. The old value of 20 s bought almost no extra reuse on this
+ * traffic and multiplied provisioned-memory usage roughly twentyfold (8/5
+ * 2026: 0.03 → 0.5 USD-equivalent per day with Active CPU flat).
  */
-const IDLE_TIMEOUT_SECONDS = 20;
+const IDLE_TIMEOUT_SECONDS = 3;
 
 function createPooledClient(): ReturnType<typeof postgres> {
   return postgres(connectionString, {
@@ -315,16 +325,30 @@ setCapacityRetry({
  * of on the next thaw (a grace timer was once observed firing 6.6s late for
  * exactly that reason).
  *
+ * The hold is therefore sized per event, not as one constant. While a query
+ * is still in flight the instance must live through the full classification
+ * window (deadline + grace) so the wedge handling above can run; once the
+ * pool is quiet the only remaining job is the idle reaper, and the hold drops
+ * to `idle_timeout` plus a margin. Since virtually every query settles in
+ * milliseconds, the quiet-pool hold is what nearly every request pays — and it
+ * is billed as provisioned memory on an instance doing nothing. That makes
+ * this hold the single largest lever on Fluid Compute cost for this app; see
+ * the `IDLE_TIMEOUT_SECONDS` note for the number and its trade-off.
+ *
  * Outside Vercel (local dev, tests, `next build` prerendering) `waitUntil`
  * is a no-op because no request context exists; the timer is unref'd so it
  * never holds a dev server or test runner open.
  */
-const POOL_DRAIN_KEEPALIVE_MS = IDLE_TIMEOUT_SECONDS * 1000 + 500;
+const KEEPALIVE_MARGIN_MS = 500;
+/** Hold after the last event while the pool still has a query in flight. */
+const INFLIGHT_KEEPALIVE_MS = WEDGE_SETTLE_WINDOW_MS + KEEPALIVE_MARGIN_MS;
+/** Hold after the last event once the pool is quiet: let the reaper run. */
+const POOL_DRAIN_KEEPALIVE_MS = IDLE_TIMEOUT_SECONDS * 1000 + KEEPALIVE_MARGIN_MS;
 
 let drainTimer: ReturnType<typeof setTimeout> | undefined;
 let resolveDrained: (() => void) | undefined;
 
-setQueryActivityHandler(() => {
+setQueryActivityHandler(({ inflightCount }) => {
   if (drainTimer) clearTimeout(drainTimer);
   // Settle the previous promise and register a fresh one so the keepalive is
   // anchored to the newest request's context — the same per-event re-arm
@@ -334,11 +358,14 @@ setQueryActivityHandler(() => {
     resolveDrained = resolve;
   });
   waitUntil(drained);
-  drainTimer = setTimeout(() => {
-    drainTimer = undefined;
-    resolveDrained?.();
-    resolveDrained = undefined;
-  }, POOL_DRAIN_KEEPALIVE_MS);
+  drainTimer = setTimeout(
+    () => {
+      drainTimer = undefined;
+      resolveDrained?.();
+      resolveDrained = undefined;
+    },
+    inflightCount > 0 ? INFLIGHT_KEEPALIVE_MS : POOL_DRAIN_KEEPALIVE_MS
+  );
   // Node-only API, typed loosely because this file compiles under the DOM lib
   // too. Without it a pending keepalive would hold local processes open.
   (drainTimer as { unref?: () => void }).unref?.();
