@@ -7,6 +7,7 @@ import { and, desc, eq, gte, sql, sum } from 'drizzle-orm';
 
 import { EXP_LEADERBOARD_CACHE_TAG } from '@/lib/cache-tags';
 import { AUTHOR_PROFILE_COLUMNS, db, expEvents, profiles, userExp } from '@/lib/db';
+import { notHiddenFromLeaderboard } from '@/lib/db/leaderboard-visibility';
 import { startOfCurrentMonth, startOfCurrentWeek } from '@/lib/db/period-range';
 import { handleServerActionError } from '@/lib/server-action-error';
 
@@ -45,7 +46,7 @@ const getCachedAllTimeRanking = unstable_cache(
       })
       .from(userExp)
       .innerJoin(profiles, eq(profiles.id, userExp.userId))
-      .where(eq(profiles.hiddenFromLeaderboard, false))
+      .where(notHiddenFromLeaderboard())
       .orderBy(desc(userExp.totalExp))
       .limit(LIMIT);
 
@@ -84,7 +85,7 @@ function getCachedPeriodRanking(period: 'weekly' | 'monthly') {
         .from(expEvents)
         .innerJoin(profiles, eq(profiles.id, expEvents.userId))
         .leftJoin(userExp, eq(userExp.userId, expEvents.userId))
-        .where(and(gte(expEvents.createdAt, startDate), eq(profiles.hiddenFromLeaderboard, false)))
+        .where(and(gte(expEvents.createdAt, startDate), notHiddenFromLeaderboard()))
         .groupBy(
           expEvents.userId,
           userExp.totalExp,
