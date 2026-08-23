@@ -194,9 +194,33 @@ describe('withQueryDeadline', () => {
     // A query only dispatches when first awaited — subscribe to trigger it.
     const pending = (db.unsafe('select 1') as Promise<unknown>).then((rows) => rows);
     expect(activity).toHaveBeenCalledTimes(1); // dispatch
+    expect(activity).toHaveBeenLastCalledWith({ inflightCount: 1 });
 
     await pending;
     expect(activity).toHaveBeenCalledTimes(2); // settlement
+    expect(activity).toHaveBeenLastCalledWith({ inflightCount: 0 });
+  });
+
+  it('counts every query still in flight at the moment of each event', async () => {
+    const activity = vi.fn();
+    setQueryActivityHandler(activity);
+    const answers: Array<(value: unknown) => void> = [];
+    const db = withQueryDeadline(
+      fakeClient({ unsafe: () => new FakeQuery((resolve) => answers.push(resolve)) })
+    );
+
+    const a = (db.unsafe('select 1') as Promise<unknown>).then((rows) => rows);
+    const b = (db.unsafe('select 2') as Promise<unknown>).then((rows) => rows);
+    expect(activity).toHaveBeenNthCalledWith(1, { inflightCount: 1 });
+    expect(activity).toHaveBeenNthCalledWith(2, { inflightCount: 2 });
+
+    answers[0]!([]);
+    await a;
+    expect(activity).toHaveBeenNthCalledWith(3, { inflightCount: 1 }); // one still pending
+
+    answers[1]!([]);
+    await b;
+    expect(activity).toHaveBeenNthCalledWith(4, { inflightCount: 0 }); // pool quiet
   });
 
   it('reports dispatch activity even for a query that never settles', async () => {

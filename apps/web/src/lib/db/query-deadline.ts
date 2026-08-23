@@ -119,6 +119,14 @@ export function resetInflightRegistryForTests(): void {
  */
 const WEDGE_GRACE_MS = 5_000;
 
+/**
+ * Longest a dispatched query can take to be declared either settled, deadlined
+ * or wedged: the deadline plus its grace. Anything that needs the process to
+ * stay alive until a query has been classified — the pool-drain keepalive in
+ * `./index.ts` — must hold it at least this long after the last dispatch.
+ */
+export const WEDGE_SETTLE_WINDOW_MS = QUERY_DEADLINE_MS + WEDGE_GRACE_MS;
+
 export type WedgedQueryInfo = { sql: string; ageMs: number };
 
 type WedgedQueryHandler = (info: WedgedQueryInfo) => void;
@@ -253,24 +261,34 @@ export function setWedgedQueryHandler(handler: WedgedQueryHandler | undefined): 
 }
 
 /**
+ * What the activity handler learns about the pool at the moment of the event:
+ * how many queries are still in flight once the event (a dispatch or a
+ * settlement) has been applied. Zero means the pool is quiet.
+ */
+export type QueryActivity = { inflightCount: number };
+
+/**
  * Register the callback fired whenever a query is dispatched or settles.
  * `./index.ts` uses it to hold the instance out of Fluid Compute suspension
  * until the pool's idle reaper has had a chance to run — see the pool-drain
- * keepalive `@design` note there. One handler at a time — this is wiring,
- * not an event bus (same contract as {@link setWedgedQueryHandler}).
+ * keepalive `@design` note there; the in-flight count lets it hold longer
+ * while a query is still unclassified. One handler at a time — this is
+ * wiring, not an event bus (same contract as {@link setWedgedQueryHandler}).
  */
-export function setQueryActivityHandler(handler: (() => void) | undefined): void {
+export function setQueryActivityHandler(
+  handler: ((activity: QueryActivity) => void) | undefined
+): void {
   queryActivityHandler = handler;
 }
 
-let queryActivityHandler: (() => void) | undefined;
+let queryActivityHandler: ((activity: QueryActivity) => void) | undefined;
 
 function trackInflight(query: PendingQuery, sql: string): void {
   inflightQueries.set(query, { sql, armedAt: performance.now(), deadlined: false });
-  queryActivityHandler?.();
+  queryActivityHandler?.({ inflightCount: inflightQueries.size });
   const untrack = () => {
     inflightQueries.delete(query);
-    queryActivityHandler?.();
+    queryActivityHandler?.({ inflightCount: inflightQueries.size });
   };
   // Subscribing is safe here: the caller has already subscribed via the race.
   Promise.resolve(query).then(untrack, untrack);
