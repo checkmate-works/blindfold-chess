@@ -1,5 +1,5 @@
 {
-  "id": "c1c12987-ad9a-4586-b8ae-84d8901d1c1d",
+  "id": "197728cb-3bcd-4efb-994a-c71fcf520545",
   "prevId": "276f0779-304d-43da-994e-18bb83e94c3f",
   "version": "7",
   "dialect": "postgresql",
@@ -6756,6 +6756,7 @@
             }
           ],
           "isUnique": false,
+          "where": "maia_charge_id IS NOT NULL",
           "concurrently": false,
           "method": "btree",
           "with": {}

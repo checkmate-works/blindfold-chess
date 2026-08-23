@@ -190,8 +190,12 @@ export const games = pgTable(
       .where(sql`deleted_at IS NULL AND status = 'public'`),
     index('idx_games_engine_elo').on(table.engineElo),
     index('idx_games_clean_rate').on(table.cleanRate),
-    // The coin history's charge → game lookup (`resolveHistoryLinks`).
-    index('idx_games_maia_charge').on(table.maiaChargeId),
+    // The coin history's charge → game lookup (`resolveHistoryLinks`) — always
+    // by a concrete id, and most rows are null (Stockfish games, unpublished
+    // Maia games), so the index covers only the rows that can match.
+    index('idx_games_maia_charge')
+      .on(table.maiaChargeId)
+      .where(sql`maia_charge_id IS NOT NULL`),
   ]
 );
 
