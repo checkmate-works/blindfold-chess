@@ -8,24 +8,15 @@ import {
   YOUTUBE_HANDLE_PATTERN,
 } from './profile-field-rules';
 
-/** Raw, untrusted field values as they arrive from the client. */
-export type ProfileInput = {
-  displayName?: string;
-  bio?: string;
-  country?: string;
-  flair?: string;
-  fideId?: string;
-  chesscomUsername?: string;
-  lichessUsername?: string;
-  xUsername?: string;
-  instagramUsername?: string;
-  youtubeHandle?: string;
-};
-
 /**
  * Validated, normalized values ready to be written to `profiles`. Optional
  * fields are `null` (not `undefined` / `''`) so the update is a genuine
  * full overwrite and the activity-log diff compares like with like.
+ *
+ * This is the canonical list of editable profile fields: `ProfileInput`,
+ * `ProfileFields` and `PROFILE_WRITE_KEYS` all derive from its keys, so adding
+ * a social link here is a compile error everywhere it has to be handled rather
+ * than a field that silently skips client validation.
  */
 export type ProfileWriteValues = {
   displayName: string;
@@ -40,6 +31,12 @@ export type ProfileWriteValues = {
   youtubeHandle: string | null;
 };
 
+/** The editable profile fields, by name. */
+export type ProfileFieldKey = keyof ProfileWriteValues;
+
+/** Raw, untrusted field values as they arrive from the client. */
+export type ProfileInput = Partial<Record<ProfileFieldKey, string>>;
+
 /** The keys written by a profile update, in the order the log lists them. */
 export const PROFILE_WRITE_KEYS = [
   'displayName',
@@ -52,7 +49,7 @@ export const PROFILE_WRITE_KEYS = [
   'xUsername',
   'instagramUsername',
   'youtubeHandle',
-] as const satisfies readonly (keyof ProfileWriteValues)[];
+] as const satisfies readonly ProfileFieldKey[];
 
 /**
  * Error codes surfaced to the client. They are the keys of

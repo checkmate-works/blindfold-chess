@@ -7,6 +7,7 @@ import {
   X_USERNAME_PATTERN,
   YOUTUBE_HANDLE_PATTERN,
 } from './profile-field-rules';
+import type { ProfileFieldKey } from './validate-profile-input';
 
 const VALIDATION_RULES: { field: string; regex: RegExp; errorKey: string }[] = [
   { field: 'fideId', regex: FIDE_ID_PATTERN, errorKey: 'fideIdInvalidFormat' },
@@ -54,18 +55,12 @@ export const SERVER_ERROR_MAP: Record<string, { messageKey: string; field: strin
   },
 };
 
-export type ProfileFields = {
-  displayName: string;
-  bio: string;
-  country: string;
-  flair: string;
-  fideId: string;
-  chesscomUsername: string;
-  lichessUsername: string;
-  xUsername: string;
-  instagramUsername: string;
-  youtubeHandle: string;
-};
+/**
+ * The same fields as {@link ProfileWriteValues}, but as the form holds them:
+ * every one a string, because an empty input is `''` on the client and only
+ * becomes `null` once validated for the write.
+ */
+export type ProfileFields = Record<ProfileFieldKey, string>;
 
 export type ValidationError = { messageKey: string; field?: string };
 
