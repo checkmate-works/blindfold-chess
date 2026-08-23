@@ -176,7 +176,6 @@ REVOKE UPDATE, DELETE ON TABLE public.topic_posts FROM authenticated;
 -- allowed. Declare the intended surface so both derive it from this file, not
 -- from when they were initialised. Authors may attach and detach an embed on
 -- their own post; the RLS policies scope both to the post owner.
--- Remaining tables still riding on the old defaults: GitHub issue #168.
 GRANT SELECT, INSERT, DELETE ON TABLE public.post_game_embed_attachments TO authenticated;
 GRANT SELECT ON TABLE public.post_game_embed_attachments TO anon;
 -- Embed attachments are immutable once created (rls_policies.sql declares no
@@ -861,18 +860,6 @@ GRANT SELECT, INSERT, DELETE ON TABLE public.post_video_attachments TO authentic
 GRANT SELECT ON TABLE public.post_video_attachments TO anon;
 
 -- =============================================================================
--- point_redemptions (user redemption history)
--- =============================================================================
--- Authenticated can SELECT own rows via RLS; writes are service-role only.
-GRANT SELECT ON TABLE public.point_redemptions TO authenticated;
-
--- =============================================================================
--- point_purchases (user purchase history)
--- =============================================================================
--- Authenticated can SELECT own rows via RLS; writes are service-role only.
-GRANT SELECT ON TABLE public.point_purchases TO authenticated;
-
--- =============================================================================
 -- Reference / taxonomy master data (public read, service-role-only write)
 -- =============================================================================
 -- These tables hold app-managed reference data seeded/edited through the
@@ -925,3 +912,4 @@ REVOKE ALL ON TABLE public.articles FROM authenticated, anon;
 REVOKE ALL ON TABLE public.game_tokens FROM authenticated, anon;
 REVOKE ALL ON TABLE public.point_batch_watermarks FROM authenticated, anon;
 REVOKE ALL ON TABLE public.topic_post_ratings FROM authenticated, anon;
+REVOKE ALL ON TABLE public.game_ai_review_jobs FROM authenticated, anon;
