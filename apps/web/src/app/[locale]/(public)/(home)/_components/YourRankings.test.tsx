@@ -22,22 +22,7 @@ vi.mock('next-intl/server', () => ({
   },
 }));
 
-vi.mock('@/i18n/routing', () => ({
-  Link: ({
-    children,
-    href,
-    ...props
-  }: {
-    children: React.ReactNode;
-    href: string;
-    locale?: string;
-    className?: string;
-  }) => (
-    <a href={href} {...props}>
-      {children}
-    </a>
-  ),
-}));
+vi.mock('@/i18n/routing');
 
 vi.mock('@/app/[locale]/_components', () => ({
   SectionTitle: ({ children }: { children: React.ReactNode }) => <h2>{children}</h2>,

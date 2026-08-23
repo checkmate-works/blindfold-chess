@@ -2,9 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { GET } from './route';
 
-vi.mock('@sentry/nextjs', () => ({
-  captureException: vi.fn(),
-}));
+vi.mock('@sentry/nextjs');
 
 const mockSweep = vi.fn();
 vi.mock('@/lib/ai-review/jobs', () => ({

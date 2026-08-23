@@ -12,9 +12,7 @@ const mockSignOut = vi.fn();
 const mockOnAuthStateChange = vi.fn();
 const mockGetSessionUser = vi.fn();
 
-vi.mock('next-intl', () => ({
-  useLocale: () => 'en',
-}));
+vi.mock('next-intl');
 
 const mockPush = vi.fn();
 const mockRefresh = vi.fn();

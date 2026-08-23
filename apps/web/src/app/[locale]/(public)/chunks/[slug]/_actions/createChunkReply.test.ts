@@ -21,9 +21,7 @@ vi.mock('@/lib/moderation/block');
 
 vi.mock('@/lib/users/activity-log');
 
-vi.mock('@/lib/notifications/notification', () => ({
-  createNotification: vi.fn(),
-}));
+vi.mock('@/lib/notifications/notification');
 
 vi.mock('@/lib/supabase/server');
 

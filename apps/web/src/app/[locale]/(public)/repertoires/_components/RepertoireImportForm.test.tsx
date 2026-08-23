@@ -24,9 +24,7 @@ vi.mock('next-intl', () => {
   return { useTranslations: () => t };
 });
 
-vi.mock('next-navigation-guard', () => ({
-  useNavigationGuard: () => ({ active: false, accept: () => {}, reject: () => {} }),
-}));
+vi.mock('next-navigation-guard');
 
 const { mockCreateRepertoire } = vi.hoisted(() => ({
   mockCreateRepertoire: vi.fn(),

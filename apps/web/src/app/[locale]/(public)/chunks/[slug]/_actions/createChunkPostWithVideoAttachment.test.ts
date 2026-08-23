@@ -15,17 +15,11 @@ const mockSelectProfile = vi.fn();
 
 vi.mock('@/lib/moderation/block');
 
-vi.mock('@sentry/nextjs', () => ({
-  captureException: vi.fn(),
-  captureMessage: vi.fn(),
-}));
+vi.mock('@sentry/nextjs');
 
 vi.mock('@/lib/users/activity-log');
 
-vi.mock('@/lib/notifications/notification', () => ({
-  notifyFollowersOfNewPost: vi.fn(),
-  createNotification: vi.fn(),
-}));
+vi.mock('@/lib/notifications/notification');
 
 vi.mock('@/lib/supabase/server');
 

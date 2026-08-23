@@ -19,10 +19,7 @@ vi.mock('next-intl/server', () => ({
   getTranslations: async () => (key: string) => key,
 }));
 
-vi.mock('next-intl', () => ({
-  useTranslations: () => (key: string) => key,
-  useLocale: () => 'en',
-}));
+vi.mock('next-intl');
 
 vi.mock('@/i18n/routing', () => ({
   Link: () => null,

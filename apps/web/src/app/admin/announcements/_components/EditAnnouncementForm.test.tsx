@@ -17,9 +17,7 @@ vi.mock('../_actions/updateAnnouncement', () => ({
   updateAnnouncement: (...args: unknown[]) => mockUpdateAnnouncement(...args),
 }));
 
-vi.mock('next-navigation-guard', () => ({
-  useNavigationGuard: () => ({ active: false, accept: vi.fn(), reject: vi.fn() }),
-}));
+vi.mock('next-navigation-guard');
 
 const mockShowToast = vi.fn();
 

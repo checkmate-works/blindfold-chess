@@ -14,9 +14,7 @@ vi.mock('@/i18n/use-safe-translations', () => ({
   },
 }));
 
-vi.mock('@sentry/nextjs', () => ({
-  captureException: vi.fn(),
-}));
+vi.mock('@sentry/nextjs');
 
 vi.mock('../_actions/createPortalSession', () => ({
   createPortalSession: vi.fn(),

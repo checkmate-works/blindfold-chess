@@ -7,9 +7,7 @@ import { ButtonInput } from './ButtonInput';
 // `ButtonInput` uses `useTranslations('buttonInput')` from next-intl. Mock it
 // to return the key unchanged so we can target buttons by their deterministic
 // `aria-label` attribute in assertions.
-vi.mock('next-intl', () => ({
-  useTranslations: () => (key: string) => key,
-}));
+vi.mock('next-intl');
 
 // `ChessPiece` pulls in cross-platform icon packages that can be slow to load
 // under jsdom; stub it with a trivial placeholder.

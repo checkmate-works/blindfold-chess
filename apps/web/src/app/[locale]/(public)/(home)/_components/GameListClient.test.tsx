@@ -15,22 +15,7 @@ vi.mock('../_hooks/use-game-list', () => ({
 
 vi.mock('@/i18n/use-safe-translations');
 
-vi.mock('@/i18n/routing', () => ({
-  Link: ({
-    children,
-    href,
-    ...props
-  }: {
-    children: React.ReactNode;
-    href: string;
-    locale?: string;
-    className?: string;
-  }) => (
-    <a href={href} {...props}>
-      {children}
-    </a>
-  ),
-}));
+vi.mock('@/i18n/routing');
 
 vi.mock('@/app/[locale]/_contexts/ToastContext', () => ({
   useToast: () => ({ showToast: vi.fn() }),

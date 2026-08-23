@@ -48,13 +48,7 @@ vi.mock('@/i18n/use-safe-translations', () => ({
   },
 }));
 
-vi.mock('next-navigation-guard', () => ({
-  useNavigationGuard: () => ({
-    active: false,
-    accept: vi.fn(),
-    reject: vi.fn(),
-  }),
-}));
+vi.mock('next-navigation-guard');
 
 vi.mock('react', async () => {
   const actual = await vi.importActual('react');

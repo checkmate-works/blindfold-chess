@@ -23,9 +23,7 @@ vi.mock('@/i18n/use-safe-translations');
 
 // The stepper (`MoveNavigationControls`) reads plain next-intl, which needs a
 // provider this test has no reason to mount.
-vi.mock('next-intl', () => ({
-  useTranslations: () => (key: string) => key,
-}));
+vi.mock('next-intl');
 
 const MOVES = ['e4', 'e5', 'Nf3', 'Nc6'] as AlgebraicNotation[];
 const START = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';

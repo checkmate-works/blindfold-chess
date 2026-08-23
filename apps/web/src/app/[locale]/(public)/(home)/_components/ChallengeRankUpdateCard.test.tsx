@@ -27,21 +27,7 @@ vi.mock('@/i18n/use-safe-translations', () => ({
   },
 }));
 
-vi.mock('@/i18n/routing', () => ({
-  Link: ({
-    children,
-    href,
-    ...props
-  }: {
-    children: React.ReactNode;
-    href: string;
-    locale?: string;
-  }) => (
-    <a href={href} {...props}>
-      {children}
-    </a>
-  ),
-}));
+vi.mock('@/i18n/routing');
 
 vi.mock('@/app/[locale]/(public)/leaderboard/_lib/types', () => ({
   moduleToSlug: (module: string) => module.replace(/_/g, '-'),

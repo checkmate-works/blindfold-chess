@@ -17,9 +17,7 @@ vi.mock('@/app/[locale]/(protected)/mypage/(confirmed)/notifications/_actions', 
   getUnreadCount: () => mockGetUnreadCount(),
 }));
 
-vi.mock('next-intl', () => ({
-  useLocale: () => 'en',
-}));
+vi.mock('next-intl');
 
 vi.mock('next/navigation', () => ({
   usePathname: () => mockUsePathname(),

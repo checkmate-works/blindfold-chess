@@ -63,9 +63,7 @@ vi.mock('./PuzzleSolutionReplay', () => ({
 // next-navigation-guard is inert here — PuzzlePreviewClient's dirty-state
 // logic is exercised via the `submitted` flag, which we verify by asserting
 // push() is called (no dialog interception).
-vi.mock('next-navigation-guard', () => ({
-  useNavigationGuard: () => ({ active: false, accept: () => {}, reject: () => {} }),
-}));
+vi.mock('next-navigation-guard');
 
 // Stub the barrel's two consumed exports directly. Importing the real barrel
 // pulls in server-only via downstream ChessBoard / modal chain, which fails

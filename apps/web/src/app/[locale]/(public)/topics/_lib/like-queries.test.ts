@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { db } from '@/lib/db';
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import { topicPosts } from '@/lib/db/schema';
 
@@ -43,6 +42,7 @@ vi.mock('@/lib/db', async () => {
   };
 });
 
+const { db } = await import('@/lib/db');
 const mockDb = vi.mocked(db);
 
 function mockChain(rows: unknown[]) {

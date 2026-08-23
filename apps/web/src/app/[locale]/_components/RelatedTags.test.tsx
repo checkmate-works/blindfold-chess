@@ -5,9 +5,7 @@ import type { ThemeOption } from '@/lib/themes/types';
 
 import { RelatedTags } from './RelatedTags';
 
-vi.mock('@/i18n/routing', () => ({
-  Link: ({ children, ...props }: { children: React.ReactNode }) => <a {...props}>{children}</a>,
-}));
+vi.mock('@/i18n/routing');
 
 // Board rendering needs GamePreferencesContext; stub the themed thumbnail so
 // the board branch is assertable without a provider.

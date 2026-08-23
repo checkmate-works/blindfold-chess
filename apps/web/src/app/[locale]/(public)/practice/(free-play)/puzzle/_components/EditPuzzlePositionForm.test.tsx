@@ -21,9 +21,7 @@ vi.mock('@/i18n/routing', () => ({
   useRouter: () => stableRouter,
 }));
 
-vi.mock('next-intl', () => ({
-  useTranslations: () => (key: string) => key,
-}));
+vi.mock('next-intl');
 
 vi.mock('@/app/[locale]/_contexts/GamePreferencesContext', () => ({
   useGamePreferences: () => ({
@@ -41,9 +39,7 @@ vi.mock('@/app/[locale]/(public)/practice/(free-play)/_components/EditableChessB
   ),
 }));
 
-vi.mock('next-navigation-guard', () => ({
-  useNavigationGuard: () => ({ active: false, accept: () => {}, reject: () => {} }),
-}));
+vi.mock('next-navigation-guard');
 
 vi.mock('@/app/[locale]/_components/ConfirmationModal', () => ({
   ConfirmationModal: ({

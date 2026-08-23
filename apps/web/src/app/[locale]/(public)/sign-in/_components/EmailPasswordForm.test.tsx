@@ -14,21 +14,7 @@ vi.mock('@/i18n/use-safe-locale', () => ({
   useSafeLocale: () => 'en',
 }));
 
-vi.mock('@/i18n/routing', () => ({
-  Link: ({
-    children,
-    href,
-    ...props
-  }: {
-    children: React.ReactNode;
-    href: string;
-    [key: string]: unknown;
-  }) => (
-    <a href={href} {...props}>
-      {children}
-    </a>
-  ),
-}));
+vi.mock('@/i18n/routing');
 
 vi.mock('../_actions/signIn', () => ({
   signIn: (...args: unknown[]) => mockSignIn(...args),

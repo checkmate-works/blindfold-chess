@@ -15,9 +15,7 @@ const mockWhere = vi.fn((..._args: unknown[]) => ({ orderBy: mockOrderBy }));
 const mockFrom = vi.fn((..._args: unknown[]) => ({ where: mockWhere }));
 const mockSelect = vi.fn((..._args: unknown[]) => ({ from: mockFrom }));
 
-vi.mock('@sentry/nextjs', () => ({
-  captureException: vi.fn(),
-}));
+vi.mock('@sentry/nextjs');
 
 // Passthrough capturers so the mocked db chain ignores the conditions while we
 // can still assert the retention predicate was built from the right column.

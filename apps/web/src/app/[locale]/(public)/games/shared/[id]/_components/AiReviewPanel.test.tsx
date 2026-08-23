@@ -29,11 +29,7 @@ function renderPanel(ui: React.ReactElement) {
 
 vi.mock('@/i18n/use-safe-translations');
 
-vi.mock('@/i18n/routing', () => ({
-  Link: ({ href, children }: { href: string; children: React.ReactNode }) => (
-    <a href={href}>{children}</a>
-  ),
-}));
+vi.mock('@/i18n/routing');
 
 vi.mock('@/app/[locale]/_hooks/use-current-path-as-next', () => ({
   useCurrentPathAsNext: () => '/en/games/shared/x',

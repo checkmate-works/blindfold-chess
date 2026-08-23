@@ -50,9 +50,7 @@ vi.mock('next/cache', () => ({
 }));
 
 // Mock @sentry/nextjs (used by handleServerActionError)
-vi.mock('@sentry/nextjs', () => ({
-  captureException: vi.fn(),
-}));
+vi.mock('@sentry/nextjs');
 
 // Mock @blindfold-chess/features/exp — use a simplified getLevel
 vi.mock('@blindfold-chess/features/exp', () => ({

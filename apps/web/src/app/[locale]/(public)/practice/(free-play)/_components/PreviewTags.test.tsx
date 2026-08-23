@@ -6,15 +6,11 @@ import type { ThemeOption } from '@/lib/themes/types';
 
 import { PreviewTags } from './PreviewTags';
 
-vi.mock('next-intl', () => ({
-  useTranslations: () => (key: string) => key,
-}));
+vi.mock('next-intl');
 
 // The card is a static (non-link) div in the preview, but RelatedTags still
 // imports Link at module scope — stub the routing module so the import resolves.
-vi.mock('@/i18n/routing', () => ({
-  Link: ({ children }: { children: React.ReactNode }) => <a>{children}</a>,
-}));
+vi.mock('@/i18n/routing');
 
 // Board rendering needs GamePreferencesContext; stub the thumbnail so the
 // board-ful branch is assertable without a provider.

@@ -21,22 +21,7 @@ vi.mock('../_hooks/use-game-list', () => ({
 
 vi.mock('@/i18n/use-safe-translations');
 
-vi.mock('@/i18n/routing', () => ({
-  Link: ({
-    children,
-    href,
-    ...props
-  }: {
-    children: React.ReactNode;
-    href: string;
-    locale?: string;
-    className?: string;
-  }) => (
-    <a href={href} {...props}>
-      {children}
-    </a>
-  ),
-}));
+vi.mock('@/i18n/routing');
 
 vi.mock('@blindfold-chess/icons', () => ({
   ChessPieceIcon: ({ type, color, size }: { type: string; color: string; size: number }) => (
