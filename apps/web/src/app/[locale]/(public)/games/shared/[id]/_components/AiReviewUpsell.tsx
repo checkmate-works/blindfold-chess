@@ -36,7 +36,13 @@ export function AiReviewUpsell({ locale, cost }: Props) {
         <CoinIcon size={24} aria-hidden="true" />
       </span>
       <h3 className="text-lg font-bold text-foreground">{t('aiReview.upsell.title', { cost })}</h3>
-      <p className="max-w-sm text-sm text-muted-foreground">{t('aiReview.upsell.description')}</p>
+      {/* Left-aligned inside the centred column: the icon, heading and buttons
+          are single-line marks that centre well, but this runs to two or three
+          lines in every locale, and a centred ragged paragraph reads as
+          decoration rather than as something to be read. */}
+      <p className="max-w-sm text-left text-sm text-muted-foreground">
+        {t('aiReview.upsell.description')}
+      </p>
       <div className="flex w-full max-w-xs flex-col gap-2">
         <Link
           href="/coin"
