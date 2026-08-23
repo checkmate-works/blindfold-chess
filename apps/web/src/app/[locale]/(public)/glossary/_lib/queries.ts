@@ -5,6 +5,7 @@ import { eq, sql } from 'drizzle-orm';
 import { parseBoardAnnotations } from '@/lib/board-annotations/parse';
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
 import { EMPTY_BOARD_ANNOTATIONS } from '@/lib/board-annotations/types';
+import { GLOSSARY_CACHE_TAG } from '@/lib/cache-tags';
 import {
   db,
   glossaryTermAliases,
@@ -199,7 +200,7 @@ export const getGlossaryTerms = unstable_cache(
     return mergeTermRows(aliasRows, positionRows);
   },
   ['glossary-terms'],
-  { tags: ['glossary'], revalidate: 3600 }
+  { tags: [GLOSSARY_CACHE_TAG], revalidate: 3600 }
 );
 
 /**
@@ -222,7 +223,7 @@ export const getGlossaryTermBySlug = unstable_cache(
     return term ?? null;
   },
   ['glossary-term-by-slug'],
-  { tags: ['glossary'], revalidate: 3600 }
+  { tags: [GLOSSARY_CACHE_TAG], revalidate: 3600 }
 );
 
 export const getTermsByLetter = unstable_cache(
@@ -238,7 +239,7 @@ export const getTermsByLetter = unstable_cache(
     return mergeTermRows(aliasRows, positionRows);
   },
   ['glossary-terms-by-letter'],
-  { tags: ['glossary'], revalidate: 3600 }
+  { tags: [GLOSSARY_CACHE_TAG], revalidate: 3600 }
 );
 
 export const getTermsByCategory = unstable_cache(
@@ -255,7 +256,7 @@ export const getTermsByCategory = unstable_cache(
     return mergeTermRows(aliasRows, positionRows);
   },
   ['glossary-terms-by-category'],
-  { tags: ['glossary'], revalidate: 3600 }
+  { tags: [GLOSSARY_CACHE_TAG], revalidate: 3600 }
 );
 
 export const getUniqueLetters = unstable_cache(
@@ -270,7 +271,7 @@ export const getUniqueLetters = unstable_cache(
     return rows.map((r) => r.letter);
   },
   ['glossary-unique-letters'],
-  { tags: ['glossary'], revalidate: 3600 }
+  { tags: [GLOSSARY_CACHE_TAG], revalidate: 3600 }
 );
 
 export const getLetterCounts = unstable_cache(
@@ -290,7 +291,7 @@ export const getLetterCounts = unstable_cache(
     return counts;
   },
   ['glossary-letter-counts'],
-  { tags: ['glossary'], revalidate: 3600 }
+  { tags: [GLOSSARY_CACHE_TAG], revalidate: 3600 }
 );
 
 export const getCategoryCounts = unstable_cache(
@@ -310,5 +311,5 @@ export const getCategoryCounts = unstable_cache(
     return counts;
   },
   ['glossary-category-counts'],
-  { tags: ['glossary'], revalidate: 3600 }
+  { tags: [GLOSSARY_CACHE_TAG], revalidate: 3600 }
 );

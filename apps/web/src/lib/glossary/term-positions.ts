@@ -2,6 +2,7 @@ import { unstable_cache } from 'next/cache';
 
 import { and, desc, eq, isNull } from 'drizzle-orm';
 
+import { GLOSSARY_CACHE_TAG } from '@/lib/cache-tags';
 import { db, glossaryTerms, positionThemes, positions } from '@/lib/db';
 import { getPositionDetailPath } from '@/lib/positions/routes';
 import { parsePositionType } from '@/lib/positions/types';
@@ -56,5 +57,5 @@ export const getPositionsForTerm = unstable_cache(
     return problems;
   },
   ['glossary-term-positions'],
-  { tags: ['glossary'], revalidate: 3600 }
+  { tags: [GLOSSARY_CACHE_TAG], revalidate: 3600 }
 );
