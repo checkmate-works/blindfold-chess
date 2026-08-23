@@ -18,16 +18,19 @@ import { buildTopicPostPath } from '@/app/[locale]/(public)/topics/_lib/topic-pa
  *
  * @design Live-only, best-effort
  *
- * Two kinds of row resolve a link. Positive `post_grant` rows (UGC create /
- * publish) link to the contribution; `ai_review` / `ai_review_refund` rows
- * link to the game's AI Review tab — a spend is the row a reader most wants
- * to trace ("which game was that?"), and the charge's `source_id` is the job
- * id, which only the `game_ai_review_jobs` row can turn back into a game. The
- * refund links too: it lands on the tab with the generate button, which is
- * where the refunded author would try again. Like-coin grants, clawbacks,
- * redemptions, Maia games never link. Each source id is checked against its
- * live table (`deleted_at IS NULL`) before a link is produced, so a deleted
- * target simply falls back to plain text — the accompanying negative
+ * Three kinds of row resolve a link. Positive `post_grant` rows (UGC create /
+ * publish) link to the contribution. The spends link to the game they paid
+ * for — a spend is the row a reader most wants to trace ("which game was
+ * that?"): `ai_review` / `ai_review_refund` rows carry a job id that only the
+ * `game_ai_review_jobs` row can turn back into a game, and land on the AI
+ * Review tab (the refund too — that tab holds the generate button, which is
+ * where the refunded author would try again); `maia_game` rows carry the
+ * charge id a published game remembers in `games.maia_charge_id`, so only a
+ * Maia game that was later published links — one that stayed in the
+ * player's browser has no page to point at. Like-coin grants, clawbacks and
+ * redemptions never link. Each source id is checked against its live table
+ * (`deleted_at IS NULL`) before a link is produced, so a deleted target
+ * simply falls back to plain text — the accompanying negative
  * `post_clawback` row already explains a reversal, and we never emit a URL
  * that would 404. Ids / slugs are immutable, so a resolved link cannot drift.
  *
@@ -48,7 +51,13 @@ export async function resolveHistoryLinks(
     (e): e is PointHistoryEntry & { sourceId: string } =>
       (e.kind === 'ai_review' || e.kind === 'ai_review_refund') && e.sourceId !== null
   );
-  if (grantRows.length === 0 && aiReviewRows.length === 0) return new Map();
+  const maiaRows = entries.filter(
+    (e): e is PointHistoryEntry & { sourceId: string } =>
+      e.kind === 'maia_game' && e.sourceId !== null
+  );
+  if (grantRows.length === 0 && aiReviewRows.length === 0 && maiaRows.length === 0) {
+    return new Map();
+  }
 
   const idsBySource = new Map<string, string[]>();
   for (const row of grantRows) {
@@ -67,53 +76,67 @@ export async function resolveHistoryLinks(
   const repertoireIds = idsBySource.get('repertoire_published') ?? [];
   const gameIds = idsBySource.get('game_published') ?? [];
   const aiReviewJobIds = aiReviewRows.map((row) => row.sourceId);
+  const maiaChargeIds = maiaRows.map((row) => row.sourceId);
 
-  const [positionRows, chunkRows, topicRows, repertoireRows, gameRows, aiReviewJobRows] =
-    await Promise.all([
-      positionIds.length
-        ? db
-            .select({ id: positions.id })
-            .from(positions)
-            .where(and(inArray(positions.id, positionIds), isNull(positions.deletedAt)))
-        : Promise.resolve<{ id: string }[]>([]),
-      chunkIds.length
-        ? db
-            .select({ id: chunks.id, slug: chunks.slug })
-            .from(chunks)
-            .where(and(inArray(chunks.id, chunkIds), isNull(chunks.deletedAt)))
-        : Promise.resolve<{ id: string; slug: string }[]>([]),
-      topicIds.length
-        ? db
-            .select({
-              id: topicPosts.id,
-              topicType: topicPosts.topicType,
-              topicKey: topicPosts.topicKey,
-            })
-            .from(topicPosts)
-            .where(and(inArray(topicPosts.id, topicIds), isNull(topicPosts.deletedAt)))
-        : Promise.resolve<{ id: string; topicType: string; topicKey: string }[]>([]),
-      repertoireIds.length
-        ? db
-            .select({ id: repertoires.id })
-            .from(repertoires)
-            .where(and(inArray(repertoires.id, repertoireIds), isNull(repertoires.deletedAt)))
-        : Promise.resolve<{ id: string }[]>([]),
-      gameIds.length
-        ? db
-            .select({ id: games.id })
-            .from(games)
-            .where(and(inArray(games.id, gameIds), isNull(games.deletedAt)))
-        : Promise.resolve<{ id: string }[]>([]),
-      // The job row outlives its run (it is never pruned), so the join is
-      // only ever missing for a game that is gone — the same live check.
-      aiReviewJobIds.length
-        ? db
-            .select({ id: gameAiReviewJobs.id, gameId: gameAiReviewJobs.gameId })
-            .from(gameAiReviewJobs)
-            .innerJoin(games, eq(games.id, gameAiReviewJobs.gameId))
-            .where(and(inArray(gameAiReviewJobs.id, aiReviewJobIds), isNull(games.deletedAt)))
-        : Promise.resolve<{ id: string; gameId: string }[]>([]),
-    ]);
+  const [
+    positionRows,
+    chunkRows,
+    topicRows,
+    repertoireRows,
+    gameRows,
+    aiReviewJobRows,
+    maiaGameRows,
+  ] = await Promise.all([
+    positionIds.length
+      ? db
+          .select({ id: positions.id })
+          .from(positions)
+          .where(and(inArray(positions.id, positionIds), isNull(positions.deletedAt)))
+      : Promise.resolve<{ id: string }[]>([]),
+    chunkIds.length
+      ? db
+          .select({ id: chunks.id, slug: chunks.slug })
+          .from(chunks)
+          .where(and(inArray(chunks.id, chunkIds), isNull(chunks.deletedAt)))
+      : Promise.resolve<{ id: string; slug: string }[]>([]),
+    topicIds.length
+      ? db
+          .select({
+            id: topicPosts.id,
+            topicType: topicPosts.topicType,
+            topicKey: topicPosts.topicKey,
+          })
+          .from(topicPosts)
+          .where(and(inArray(topicPosts.id, topicIds), isNull(topicPosts.deletedAt)))
+      : Promise.resolve<{ id: string; topicType: string; topicKey: string }[]>([]),
+    repertoireIds.length
+      ? db
+          .select({ id: repertoires.id })
+          .from(repertoires)
+          .where(and(inArray(repertoires.id, repertoireIds), isNull(repertoires.deletedAt)))
+      : Promise.resolve<{ id: string }[]>([]),
+    gameIds.length
+      ? db
+          .select({ id: games.id })
+          .from(games)
+          .where(and(inArray(games.id, gameIds), isNull(games.deletedAt)))
+      : Promise.resolve<{ id: string }[]>([]),
+    // The job row outlives its run (it is never pruned), so the join is
+    // only ever missing for a game that is gone — the same live check.
+    aiReviewJobIds.length
+      ? db
+          .select({ id: gameAiReviewJobs.id, gameId: gameAiReviewJobs.gameId })
+          .from(gameAiReviewJobs)
+          .innerJoin(games, eq(games.id, gameAiReviewJobs.gameId))
+          .where(and(inArray(gameAiReviewJobs.id, aiReviewJobIds), isNull(games.deletedAt)))
+      : Promise.resolve<{ id: string; gameId: string }[]>([]),
+    maiaChargeIds.length
+      ? db
+          .select({ id: games.id, maiaChargeId: games.maiaChargeId })
+          .from(games)
+          .where(and(inArray(games.maiaChargeId, maiaChargeIds), isNull(games.deletedAt)))
+      : Promise.resolve<{ id: string; maiaChargeId: string | null }[]>([]),
+  ]);
 
   const resolved: ResolvedEntities = {
     livePositionIds: new Set(positionRows.map((r) => r.id)),
@@ -122,6 +145,9 @@ export async function resolveHistoryLinks(
     liveRepertoireIds: new Set(repertoireRows.map((r) => r.id)),
     liveGameIds: new Set(gameRows.map((r) => r.id)),
     liveGameIdByAiReviewJobId: new Map(aiReviewJobRows.map((r) => [r.id, r.gameId])),
+    liveGameIdByMaiaChargeId: new Map(
+      maiaGameRows.flatMap((r) => (r.maiaChargeId ? [[r.maiaChargeId, r.id] as const] : []))
+    ),
   };
 
   const links = new Map<string, string>();
@@ -131,6 +157,10 @@ export async function resolveHistoryLinks(
   }
   for (const row of aiReviewRows) {
     const href = aiReviewHref(row.sourceId, resolved);
+    if (href) links.set(row.id, href);
+  }
+  for (const row of maiaRows) {
+    const href = maiaGameHref(row.sourceId, resolved);
     if (href) links.set(row.id, href);
   }
   return links;
@@ -145,6 +175,8 @@ export type ResolvedEntities = {
   liveGameIds: Set<string>;
   /** AI review job id → the id of its (live) game. */
   liveGameIdByAiReviewJobId: Map<string, string>;
+  /** Maia charge id → the id of the (live) published game started on it. */
+  liveGameIdByMaiaChargeId: Map<string, string>;
 };
 
 /** Resolves one grant source's deep link, or `null` when the target is gone. */
@@ -216,4 +248,14 @@ export function aiReviewHref(jobId: string, resolved: ResolvedEntities): string 
   const gameId = resolved.liveGameIdByAiReviewJobId.get(jobId);
   if (!gameId) return null;
   return `/games/shared/${gameId}?${OVERVIEW_TAB_PARAM}=${overviewTabParamValue('aiReview')}`;
+}
+
+/**
+ * Map a Maia game charge (`sourceId` = the charge id the game was started
+ * on) to the published game, or `null` when no live game remembers it —
+ * the game was never published, or has since been deleted.
+ */
+export function maiaGameHref(chargeId: string, resolved: ResolvedEntities): string | null {
+  const gameId = resolved.liveGameIdByMaiaChargeId.get(chargeId);
+  return gameId ? `/games/shared/${gameId}` : null;
 }

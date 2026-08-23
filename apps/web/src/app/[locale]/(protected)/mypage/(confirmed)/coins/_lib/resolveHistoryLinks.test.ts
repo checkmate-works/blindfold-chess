@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { type ResolvedEntities, aiReviewHref, grantHref } from './resolveHistoryLinks';
+import {
+  type ResolvedEntities,
+  aiReviewHref,
+  grantHref,
+  maiaGameHref,
+} from './resolveHistoryLinks';
 
 // resolveHistoryLinks.ts is a server module ('server-only' + db); stub the
 // marker so the pure grantHref export can be imported here.
@@ -11,6 +16,7 @@ const empty: ResolvedEntities = {
   liveRepertoireIds: new Set(),
   liveGameIds: new Set(),
   liveGameIdByAiReviewJobId: new Map(),
+  liveGameIdByMaiaChargeId: new Map(),
 };
 
 describe('grantHref', () => {
@@ -74,5 +80,16 @@ describe('aiReviewHref', () => {
 
   it('returns null when the job has no live game behind it', () => {
     expect(aiReviewHref('job1', empty)).toBeNull();
+  });
+});
+
+describe('maiaGameHref', () => {
+  it('links a charge to the published game that was started on it', () => {
+    const resolved = { ...empty, liveGameIdByMaiaChargeId: new Map([['charge1', 'g1']]) };
+    expect(maiaGameHref('charge1', resolved)).toBe('/games/shared/g1');
+  });
+
+  it('returns null when no live published game remembers the charge', () => {
+    expect(maiaGameHref('charge1', empty)).toBeNull();
   });
 });

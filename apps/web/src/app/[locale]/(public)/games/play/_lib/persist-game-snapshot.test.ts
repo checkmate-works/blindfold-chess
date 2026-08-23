@@ -11,7 +11,7 @@ const CHARGE = '019a1b2c-3d4e-7f80-9a1b-2c3d4e5f6071';
 const snapshot: GameSnapshot = {
   moves: [],
   playerColor: 'white',
-  engineConfig: { kind: 'maia', rating: 1500 },
+  engineConfig: { kind: 'maia', rating: 1600 },
   status: 'in_progress',
 };
 
