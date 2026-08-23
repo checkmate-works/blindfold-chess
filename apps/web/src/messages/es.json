@@ -2798,6 +2798,9 @@
       "analyzing": "Analizando con Stockfish… ({done}/{total} posiciones)",
       "cancel": "Cancelar",
       "retry": "Intentar de nuevo",
+      "generateButtonPaid": "Generar revisión IA ({cost, plural, one {# moneda} other {# monedas}})",
+      "retryPaid": "Intentar de nuevo ({cost, plural, one {# moneda} other {# monedas}})",
+      "balance": "Saldo: {balance, plural, one {# moneda} other {# monedas}}",
       "bestMoveLabel": "Mejor jugada",
       "sections": {
         "summary": "Resumen de la partida",

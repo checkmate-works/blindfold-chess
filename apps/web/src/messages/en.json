@@ -2798,6 +2798,9 @@
       "analyzing": "Analyzing with Stockfish… ({done}/{total} positions)",
       "cancel": "Cancel",
       "retry": "Try again",
+      "generateButtonPaid": "Generate AI review ({cost, plural, one {# Coin} other {# Coins}})",
+      "retryPaid": "Try again ({cost, plural, one {# Coin} other {# Coins}})",
+      "balance": "Balance: {balance, plural, one {# Coin} other {# Coins}}",
       "bestMoveLabel": "Best move",
       "sections": {
         "summary": "Game summary",

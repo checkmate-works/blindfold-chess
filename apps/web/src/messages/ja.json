@@ -2798,6 +2798,9 @@
       "analyzing": "Stockfishで解析中… ({done}/{total} 局面)",
       "cancel": "キャンセル",
       "retry": "もう一度試す",
+      "generateButtonPaid": "AIレビューを生成（{cost} コイン）",
+      "retryPaid": "もう一度試す（{cost} コイン）",
+      "balance": "残高: {balance} コイン",
       "bestMoveLabel": "最善手",
       "sections": {
         "summary": "ゲーム総評",

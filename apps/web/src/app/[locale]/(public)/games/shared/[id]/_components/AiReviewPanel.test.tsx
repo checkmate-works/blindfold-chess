@@ -171,6 +171,38 @@ describe('AiReviewPanel', () => {
     expect(screen.queryByText('aiReview.generateButton')).not.toBeInTheDocument();
   });
 
+  it('prices the generate button and shows the balance for a coin payer, and not for a subscriber', () => {
+    const { unmount } = renderPanel(
+      <AiReviewPanel
+        {...baseProps}
+        generationState={mockState}
+        generation={{ kind: 'payable', cost: 1, balance: 2 }}
+      />
+    );
+    // The price is on the CTA itself, before anything opens.
+    expect(screen.getByRole('button', { name: 'aiReview.generateButtonPaid' })).toBeInTheDocument();
+    expect(screen.getByText('aiReview.balance')).toBeInTheDocument();
+    expect(screen.queryByText('aiReview.generateButton')).not.toBeInTheDocument();
+    unmount();
+
+    renderPanel(<AiReviewPanel {...baseProps} generationState={mockState} />);
+    expect(screen.getByRole('button', { name: 'aiReview.generateButton' })).toBeInTheDocument();
+    expect(screen.queryByText('aiReview.balance')).not.toBeInTheDocument();
+  });
+
+  it('prices the retry too — the refunded run is paid for again', () => {
+    mockState = { phase: 'error', error: 'llm_error' };
+    renderPanel(
+      <AiReviewPanel
+        {...baseProps}
+        generationState={mockState}
+        generation={{ kind: 'payable', cost: 1, balance: 2 }}
+      />
+    );
+    expect(screen.getByRole('button', { name: 'aiReview.retryPaid' })).toBeInTheDocument();
+    expect(screen.queryByText('aiReview.retry')).not.toBeInTheDocument();
+  });
+
   it('states the coin price in the confirmation for a coin payer, and not for a subscriber', () => {
     const { unmount } = renderPanel(
       <AiReviewPanel
@@ -179,7 +211,7 @@ describe('AiReviewPanel', () => {
         generation={{ kind: 'payable', cost: 1, balance: 2 }}
       />
     );
-    fireEvent.click(screen.getByText('aiReview.generateButton'));
+    fireEvent.click(screen.getByText('aiReview.generateButtonPaid'));
     expect(screen.getByText('aiReview.confirm.cost')).toBeInTheDocument();
     unmount();
 

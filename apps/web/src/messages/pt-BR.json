@@ -2798,6 +2798,9 @@
       "analyzing": "Analisando com o Stockfish… ({done}/{total} posições)",
       "cancel": "Cancelar",
       "retry": "Tentar novamente",
+      "generateButtonPaid": "Gerar revisão IA ({cost, plural, one {# moeda} other {# moedas}})",
+      "retryPaid": "Tentar novamente ({cost, plural, one {# moeda} other {# moedas}})",
+      "balance": "Saldo: {balance, plural, one {# moeda} other {# moedas}}",
       "bestMoveLabel": "Melhor lance",
       "sections": {
         "summary": "Resumo da partida",
