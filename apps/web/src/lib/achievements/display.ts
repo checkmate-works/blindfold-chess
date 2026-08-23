@@ -1,3 +1,5 @@
+import type { InterpolatingTranslator } from '@/i18n/translator';
+
 /**
  * Derive a display-friendly badge name from slug.
  * Example: "monthly-coordinate_quiz-white-1st" -> "Monthly Coordinate Quiz White 1st"
@@ -36,12 +38,6 @@ export function getAchievementIconEmoji(iconKey: string): string {
 // ---------------------------------------------------------------------------
 // Localized achievement display name
 // ---------------------------------------------------------------------------
-
-/**
- * Minimal shape shared by next-intl's `useTranslations` and `getTranslations`
- * return values — enough to resolve nested keys with interpolation values.
- */
-type TFn = (key: string, values?: Record<string, string | number | Date>) => string;
 
 type AchievementLike = { slug: string; category: string };
 
@@ -90,7 +86,10 @@ function isMissingTranslation(resolved: string, key: string): boolean {
  * user-facing pages (user locale) share a single implementation without this
  * module depending on `next-intl` directly.
  */
-export function getAchievementDisplayName(achievement: AchievementLike, t: TFn): string {
+export function getAchievementDisplayName(
+  achievement: AchievementLike,
+  t: InterpolatingTranslator
+): string {
   // Non-monthly-leaderboard categories fall back until keys are added.
   if (achievement.category !== 'monthly_leaderboard') {
     return slugToDisplayName(achievement.slug);

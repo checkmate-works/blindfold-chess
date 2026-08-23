@@ -1,8 +1,4 @@
-/** The subset of the next-intl translator the resolver needs. */
-type Translator = {
-  (key: string): string;
-  has: (key: string) => boolean;
-};
+import type { TranslatorWithHas } from '@/i18n/translator';
 
 /**
  * Resolve a Server Action error value into display text. Errors come back
@@ -13,8 +9,8 @@ type Translator = {
  */
 export function resolvePostFormError(
   error: string | undefined,
-  t: Translator,
-  tGlobal: Translator
+  t: TranslatorWithHas,
+  tGlobal: TranslatorWithHas
 ): string | null {
   if (!error) return null;
   if (t.has(error)) return t(error);

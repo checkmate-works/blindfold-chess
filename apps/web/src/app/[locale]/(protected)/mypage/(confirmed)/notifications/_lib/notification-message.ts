@@ -1,3 +1,5 @@
+import type { InterpolatingTranslator, TranslatorWithHas } from '@/i18n/translator';
+
 import { getAchievementDisplayName } from '@/lib/achievements/display';
 import { truncateContent } from '@/lib/content/truncate-content';
 
@@ -14,15 +16,6 @@ import {
   isRankGrantMetadata,
 } from './type-guards';
 
-/** Minimal subset of the next-intl translator API used by message building. */
-type MessageTranslator = {
-  (key: string, values?: Record<string, string | number | Date>): string;
-  has: (key: string) => boolean;
-};
-
-/** Root-scoped translator (no namespace) used for achievement display names. */
-type RootTranslator = (key: string, values?: Record<string, string | number | Date>) => string;
-
 /**
  * Resolve the human-readable message for a notification. Pure given the
  * notification, the resolved actor name, and the (injected) translators —
@@ -31,7 +24,7 @@ type RootTranslator = (key: string, values?: Record<string, string | number | Da
  */
 export function buildNotificationMessage(
   notification: NotificationWithActor,
-  opts: { actorName: string; t: MessageTranslator; tRoot: RootTranslator }
+  opts: { actorName: string; t: TranslatorWithHas; tRoot: InterpolatingTranslator }
 ): string {
   const { actorName, t, tRoot } = opts;
 

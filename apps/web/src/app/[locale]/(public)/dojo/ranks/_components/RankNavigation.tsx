@@ -2,13 +2,13 @@ import type { ReactNode } from 'react';
 
 import Link from 'next/link';
 
+import type { InterpolatingTranslator } from '@/i18n/translator';
+
 import { ALL_RANK_SLUGS } from '@/lib/db/data/ranks';
 import type { RankSlug } from '@/lib/db/data/ranks';
 
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
-
-type Translator = (key: string, values?: Record<string, string | number | Date>) => string;
 
 function getAdjacentRankSlug(currentSlug: RankSlug, step: -1 | 1): RankSlug | null {
   const index = ALL_RANK_SLUGS.indexOf(currentSlug);
@@ -31,7 +31,7 @@ export function RankNavigation({
 }: {
   locale: Locale;
   slug: RankSlug;
-  t: Translator;
+  t: InterpolatingTranslator;
 }): ReactNode {
   const prevSlug = getAdjacentRankSlug(slug, -1);
   const nextSlug = getAdjacentRankSlug(slug, 1);

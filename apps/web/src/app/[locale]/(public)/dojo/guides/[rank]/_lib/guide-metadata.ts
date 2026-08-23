@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 
 import { SITE_URL } from '@/config';
+import type { InterpolatingTranslator } from '@/i18n/translator';
 
 import type { RankSlug } from '@/lib/db/data/ranks';
 import { buildGuidePath, buildGuidePathRelative } from '@/lib/guides';
@@ -17,14 +18,12 @@ import type { Locale } from '@/app/[locale]/_lib/types';
  * paying the full render cost.
  */
 
-type Translator = (key: string, values?: Record<string, string | number | Date>) => string;
-
 // ---------------------------------------------------------------------------
 // Breadcrumbs
 // ---------------------------------------------------------------------------
 
 export function buildChapterListBreadcrumbs(
-  tGuides: Translator,
+  tGuides: InterpolatingTranslator,
   rankName: string
 ): BreadcrumbItem[] {
   return [
@@ -35,8 +34,8 @@ export function buildChapterListBreadcrumbs(
 }
 
 export function buildFlatBodyBreadcrumbs(
-  tGuides: Translator,
-  tRanks: Translator,
+  tGuides: InterpolatingTranslator,
+  tRanks: InterpolatingTranslator,
   rankSlug: RankSlug,
   rankName: string,
   pageNumber: number,
@@ -53,8 +52,8 @@ export function buildFlatBodyBreadcrumbs(
 }
 
 export function buildChapterBodyBreadcrumbs(
-  tGuides: Translator,
-  tRanks: Translator,
+  tGuides: InterpolatingTranslator,
+  tRanks: InterpolatingTranslator,
   rankSlug: RankSlug,
   rankName: string,
   chapterSlug: string,

@@ -1,7 +1,6 @@
-import type { HelpStep } from '@/app/[locale]/_components';
+import type { InterpolatingTranslator } from '@/i18n/translator';
 
-/** The subset of the next-intl translator the builder needs. */
-type Translator = (key: string) => string;
+import type { HelpStep } from '@/app/[locale]/_components';
 
 /**
  * Help-tour steps for the draft state — mirrors the home / practice
@@ -11,7 +10,7 @@ type Translator = (key: string) => string;
  * no help button since the page is then just a standard catalog entry.
  */
 export function buildDraftHelpSteps(
-  tEditRequests: Translator,
+  tEditRequests: InterpolatingTranslator,
   showEditRequestCallout: boolean
 ): HelpStep[] {
   return [
