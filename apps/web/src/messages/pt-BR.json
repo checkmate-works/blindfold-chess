@@ -4146,6 +4146,7 @@
     "usernameLabel": "Nome de usuário",
     "usernameDescription": "Um ID único usado na URL do seu perfil e menções.",
     "usernamePlaceholder": "ex., jogador_xadrez1",
+    "generateUsername": "Gerar um nome de usuário aleatório",
     "usernameHint": "2-20 caracteres. Apenas letras minúsculas, números e underscores. Deve começar com uma letra.",
     "displayNameLabel": "Nome de exibição",
     "displayNameDescription": "Exibido nos rankings e no seu perfil.",

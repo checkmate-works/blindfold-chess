@@ -4146,6 +4146,7 @@
     "usernameLabel": "ユーザー名",
     "usernameDescription": "プロフィールURL やメンションに使われる固有の ID です。",
     "usernamePlaceholder": "例: chess_player1",
+    "generateUsername": "ランダムなユーザー名を生成する",
     "usernameHint": "2〜20文字。英小文字、数字、アンダースコアのみ使用できます。先頭は英小文字にしてください。",
     "displayNameLabel": "表示名",
     "displayNameDescription": "ランキングやプロフィール画面に表示される名前です。",

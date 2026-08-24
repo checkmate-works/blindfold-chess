@@ -4146,6 +4146,7 @@
     "usernameLabel": "Username",
     "usernameDescription": "A unique ID used in your profile URL and mentions.",
     "usernamePlaceholder": "e.g., chess_player1",
+    "generateUsername": "Generate a random username",
     "usernameHint": "2-20 characters. Lowercase letters, numbers, and underscores only. Must start with a letter.",
     "displayNameLabel": "Display name",
     "displayNameDescription": "Shown on rankings and your profile.",
