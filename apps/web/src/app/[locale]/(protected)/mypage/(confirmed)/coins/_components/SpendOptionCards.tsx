@@ -29,7 +29,7 @@ function SpendOptionCard({
   locale: Locale;
 }) {
   return (
-    <div className="flex flex-col gap-2 rounded-xl border border-border bg-card p-4">
+    <div className="rounded-xl border border-border bg-card p-4 space-y-3">
       <div className="flex items-center gap-3">
         <div
           aria-hidden="true"
@@ -37,17 +37,17 @@ function SpendOptionCard({
         >
           {icon}
         </div>
-        <h4 className="text-sm font-semibold text-foreground">{title}</h4>
+        <div>
+          <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+          <p className="text-sm font-medium text-foreground">{rate}</p>
+        </div>
       </div>
-      <p className="text-sm font-medium text-foreground">{rate}</p>
-      <p className="text-xs text-muted-foreground">{note}</p>
-      <div className="mt-auto pt-1">
-        <Link href={href} locale={locale}>
-          <Button asChild variant="outline" fullWidth>
-            {cta}
-          </Button>
-        </Link>
-      </div>
+      <p className="text-sm text-muted-foreground">{note}</p>
+      <Link href={href} locale={locale} className="block">
+        <Button asChild variant="outline" fullWidth>
+          {cta}
+        </Button>
+      </Link>
     </div>
   );
 }
@@ -64,59 +64,66 @@ type Props = {
    * block it computes for the redeem card.
    */
   hasSubscription: boolean;
+  /**
+   * The viewer's profile username, for the link to their shared games —
+   * that profile tab is where the games whose pages offer an AI review
+   * live. `null` only when the viewer has no profile row yet, a state the
+   * `(confirmed)` layout already redirects away from; kept total anyway,
+   * falling back to the local games list rather than asserting.
+   */
+  username: string | null;
 };
 
 /**
- * The two coin spends that cannot happen on this page: a Maia game is paid
- * when the game is created, an AI review when the author requests it on their
- * shared game's page. Unlike the ad_free exchange above, there is nothing to
- * submit here — each card states the rate and links to the venue where the
- * spend actually happens, so the balance's uses are all visible in one place
- * without duplicating either flow.
+ * The two coin spends that cannot happen on this page: an AI review is paid
+ * when the author requests it on their shared game's page, a Maia game when
+ * the game is created. There is nothing to submit here — each card states
+ * the rate and links to the venue where the spend actually happens, so the
+ * balance's uses are all visible in one place without duplicating either
+ * flow. Rendered as a fragment: the cards are siblings of the redeem card
+ * in the page's one spacing column, same width, no grouping heading.
  *
  * The links stay enabled at any balance: following one never spends a coin,
- * and the venues carry their own affordability handling (the game launch
- * modal prices the Maia option; the review panel swaps its generate button
- * for an upsell).
+ * and the venues carry their own affordability handling (the review panel
+ * swaps its generate button for an upsell; the engine selector locks the
+ * Maia card). The Maia link lands on the standard form with Maia already
+ * chosen via `?engine=maia` — see `initialEngineKind`.
  */
-export async function SpendOptionsSection({ locale, hasSubscription }: Props) {
+export async function SpendOptionCards({ locale, hasSubscription, username }: Props) {
   const t = await getTranslations({ locale, namespace: 'MypagePoints' });
 
   return (
-    <div>
-      <h3 className="text-sm font-semibold text-foreground mb-2">{t('spendOptions.title')}</h3>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <SpendOptionCard
-          icon={
-            <Image
-              src="/images/engines/maia.png"
-              alt=""
-              width={28}
-              height={28}
-              className="object-contain"
-            />
-          }
-          title={t('spendOptions.maia.title')}
-          rate={t('spendOptions.maia.rate', { cost: MAIA_GAME_POINT_COST })}
-          note={t('spendOptions.maia.note')}
-          cta={t('spendOptions.maia.cta')}
-          href="/games/new"
-          locale={locale}
-        />
-        <SpendOptionCard
-          icon={<FaRobot className="h-5 w-5" />}
-          title={t('spendOptions.aiReview.title')}
-          rate={t('spendOptions.aiReview.rate', { cost: AI_REVIEW_POINT_COST })}
-          note={
-            hasSubscription
-              ? t('spendOptions.aiReview.noteSubscriber')
-              : t('spendOptions.aiReview.note')
-          }
-          cta={t('spendOptions.aiReview.cta')}
-          href="/games"
-          locale={locale}
-        />
-      </div>
-    </div>
+    <>
+      <SpendOptionCard
+        icon={<FaRobot className="h-5 w-5" />}
+        title={t('spendOptions.aiReview.title')}
+        rate={t('spendOptions.aiReview.rate', { cost: AI_REVIEW_POINT_COST })}
+        note={
+          hasSubscription
+            ? t('spendOptions.aiReview.noteSubscriber')
+            : t('spendOptions.aiReview.note')
+        }
+        cta={t('spendOptions.aiReview.cta')}
+        href={username ? `/u/${username}/games` : '/games'}
+        locale={locale}
+      />
+      <SpendOptionCard
+        icon={
+          <Image
+            src="/images/engines/maia.png"
+            alt=""
+            width={28}
+            height={28}
+            className="object-contain"
+          />
+        }
+        title={t('spendOptions.maia.title')}
+        rate={t('spendOptions.maia.rate', { cost: MAIA_GAME_POINT_COST })}
+        note={t('spendOptions.maia.note')}
+        cta={t('spendOptions.maia.cta')}
+        href="/games/new/standard?engine=maia"
+        locale={locale}
+      />
+    </>
   );
 }
