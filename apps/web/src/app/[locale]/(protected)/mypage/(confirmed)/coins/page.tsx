@@ -14,9 +14,9 @@
  * 2. Page reads the balance summary + history rows in one batched fetch.
  * 3. Renders three sections:
  *    - Balance card: the user's total Coin balance.
- *    - Redeem control: N Coin → N days of ad_free. Always rendered — a
- *      balance or entitlement that rules the exchange out covers the same
- *      card with the reason rather than removing it.
+ *    - Redeem control: N Coin → N days of ad_free. Always rendered — an
+ *      entitlement that rules the exchange out covers the card with the
+ *      reason, and an empty balance just disables the controls.
  *    - History table: one page of ledger rows, newest first, with a `?page=`
  *      pagination bar.
  */

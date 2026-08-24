@@ -1,5 +1,5 @@
 import * as matchers from '@testing-library/jest-dom/matchers';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { getBeltColorHex } from '@/app/[locale]/(public)/dojo/ranks/_lib/belt-colors';
@@ -40,6 +40,20 @@ describe('RedeemForm', () => {
     expect(screen.getByLabelText('redeem.amountLabel')).toBeDisabled();
     expect(screen.getByRole('button')).toBeDisabled();
     expect(container.querySelector('[inert]')).toBeNull();
+  });
+
+  it('re-clamps a stale amount when a refresh shrinks the balance under it', () => {
+    // Redeeming everything leaves `amount` state above the refreshed
+    // balance's bounds; the read-side clamp keeps the display honest.
+    const { rerender } = render(<RedeemForm {...baseProps} />);
+    const input = screen.getByLabelText<HTMLInputElement>('redeem.amountLabel');
+    fireEvent.change(input, { target: { value: '5' } });
+    expect(input.value).toBe('5');
+
+    rerender(<RedeemForm {...baseProps} balance={0} />);
+
+    expect(input.value).toBe('1');
+    expect(input).toBeDisabled();
   });
 
   it('covers an empty balance anyway when an entitlement makes it moot', () => {

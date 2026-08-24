@@ -26,14 +26,18 @@ type Props = {
 };
 
 /**
- * Inline redeem control rendered when the user has ≥1 point.
+ * The N-coins-for-N-days exchange card. Always rendered — see the states
+ * derived below and {@link RedeemNoticeOverlay}.
  *
  * @design Client-side input clamp
  *
- * The amount input is clamped to `[1, balance]` in `onChange` so
- * the user cannot send a value the server will just reject — better UX
- * than a round-trip rejection. The Server Action still re-validates so
- * the client clamp is a hint, not a security boundary.
+ * The amount is clamped to `[1, offeredMax]` — in `onChange`, and again at
+ * every read, because the state can go stale when a redemption (this tab's
+ * or another's) shrinks `balance` under it: props refresh, state persists.
+ * The read-side clamp keeps the input from displaying more than the user
+ * can spend and keeps the submit sending what the input shows, sparing a
+ * round-trip rejection. The Server Action still re-validates, so the
+ * client clamp is a hint, not a security boundary.
  *
  * @design Button-disable during pending
  *
@@ -66,7 +70,11 @@ export function RedeemForm({ balance, daysPerPoint, block = null }: Props) {
    */
   const offeredMax = Math.max(1, balance);
 
-  const days = amount * daysPerPoint;
+  // See the module @design note: `amount` is re-clamped at read time because
+  // the state survives a `balance` refresh that may have shrunk beneath it.
+  const shownAmount = Math.min(amount, offeredMax);
+
+  const days = shownAmount * daysPerPoint;
 
   // The two verdicts about the number typed in the box are shown at the box;
   // the rest (not signed in, banned, rate-limited) belong to no control.
@@ -89,7 +97,7 @@ export function RedeemForm({ balance, daysPerPoint, block = null }: Props) {
     setError(null);
     setSuccess(null);
     startTransition(async () => {
-      const result: RedeemAdFreeResult = await redeemAdFree(amount);
+      const result: RedeemAdFreeResult = await redeemAdFree(shownAmount);
       if (!result.ok) {
         setError({ code: result.error, message: t(`redeem.errors.${result.error}`) });
         return;
@@ -122,7 +130,7 @@ export function RedeemForm({ balance, daysPerPoint, block = null }: Props) {
           min={1}
           max={offeredMax}
           step={1}
-          value={amount}
+          value={shownAmount}
           onChange={(e) => handleAmountChange(e.target.value)}
           aria-label={t('redeem.amountLabel')}
           className={`w-24 rounded-md border bg-background px-3 py-1.5 text-sm disabled:opacity-60 ${
@@ -141,7 +149,7 @@ export function RedeemForm({ balance, daysPerPoint, block = null }: Props) {
       <FieldError id="redeem-amount-error" message={amountError} />
 
       <Button onClick={handleSubmit} disabled={controlsDisabled} variant="primary" fullWidth>
-        {pending ? t('redeem.submitting') : t('redeem.submit', { amount })}
+        {pending ? t('redeem.submitting') : t('redeem.submit', { amount: shownAmount })}
       </Button>
 
       <FormErrorBanner message={formError} />
