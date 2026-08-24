@@ -10,7 +10,7 @@ import { Button, FieldError, FormErrorBanner, fieldErrorProps } from '@/app/_com
 import type { AdFreeRedemptionBlock } from '@/lib/ads/ad-free-redemption';
 
 import { type RedeemAdFreeResult, redeemAdFree } from '../_actions/redeemAdFree';
-import { RedeemNoticeOverlay, type RedeemNoticeReason } from './RedeemNoticeOverlay';
+import { RedeemNoticeOverlay } from './RedeemNoticeOverlay';
 
 type Props = {
   balance: number;
@@ -50,18 +50,19 @@ export function RedeemForm({ balance, daysPerPoint, block = null }: Props) {
   const [pending, startTransition] = useTransition();
 
   /**
-   * Why the controls are covered, or `null` when they are live. An
-   * entitlement block outranks an empty balance: "you never need this" is
-   * the more useful thing to tell a dan holder who also happens to have no
-   * coins.
+   * An empty balance leaves the card readable and merely unusable: the reader
+   * with no coins is the one who has never read what the exchange offers, so
+   * covering it would hide the section's whole point from exactly the wrong
+   * person. `block` still covers — see {@link RedeemNoticeOverlay}.
    */
-  const notice: RedeemNoticeReason | null = block ?? (balance < 1 ? 'no_balance' : null);
+  const unaffordable = balance < 1;
+  const controlsDisabled = pending || unaffordable;
 
   /**
-   * The largest amount the controls offer. With an empty balance the card is
-   * a dimmed, inert preview of the exchange rather than something the user
-   * can act on, so it illustrates the one-coin offer instead of collapsing to
-   * a `max` of zero against a `min` of one.
+   * The largest amount the controls offer. With an empty balance they are a
+   * disabled illustration of the one-coin offer rather than something the
+   * user can act on, so the bounds describe that offer instead of collapsing
+   * to a `max` of zero against a `min` of one.
    */
   const offeredMax = Math.max(1, balance);
 
@@ -124,10 +125,10 @@ export function RedeemForm({ balance, daysPerPoint, block = null }: Props) {
           value={amount}
           onChange={(e) => handleAmountChange(e.target.value)}
           aria-label={t('redeem.amountLabel')}
-          className={`w-24 rounded-md border bg-background px-3 py-1.5 text-sm ${
+          className={`w-24 rounded-md border bg-background px-3 py-1.5 text-sm disabled:opacity-60 ${
             amountError ? 'border-destructive' : 'border-border'
           }`}
-          disabled={pending}
+          disabled={controlsDisabled}
           {...fieldErrorProps('redeem-amount-error', amountError)}
         />
         <span className="text-sm text-muted-foreground">{t('redeem.pointSuffix')}</span>
@@ -139,7 +140,7 @@ export function RedeemForm({ balance, daysPerPoint, block = null }: Props) {
 
       <FieldError id="redeem-amount-error" message={amountError} />
 
-      <Button onClick={handleSubmit} disabled={pending} variant="primary" fullWidth>
+      <Button onClick={handleSubmit} disabled={controlsDisabled} variant="primary" fullWidth>
         {pending ? t('redeem.submitting') : t('redeem.submit', { amount })}
       </Button>
 
@@ -152,12 +153,8 @@ export function RedeemForm({ balance, daysPerPoint, block = null }: Props) {
     </div>
   );
 
-  if (notice) {
-    return (
-      <RedeemNoticeOverlay reason={notice} daysPerPoint={daysPerPoint}>
-        {card}
-      </RedeemNoticeOverlay>
-    );
+  if (block) {
+    return <RedeemNoticeOverlay reason={block}>{card}</RedeemNoticeOverlay>;
   }
 
   return card;

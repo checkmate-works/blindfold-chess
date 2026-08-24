@@ -3916,10 +3916,6 @@
         "subscription": {
           "title": "No coins needed",
           "body": "Your subscription hides ads while it is active. Coins never expire, so you can redeem them once it ends."
-        },
-        "no_balance": {
-          "title": "No coins to redeem yet",
-          "body": "Each coin converts to {days, plural, one {# day} other {# days}} of ad-free browsing. Coins arrive when your published work gets likes."
         }
       },
       "errors": {

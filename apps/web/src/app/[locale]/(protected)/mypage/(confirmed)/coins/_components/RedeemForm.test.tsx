@@ -30,20 +30,22 @@ describe('RedeemForm', () => {
     expect(screen.queryByText('redeem.notice.dan_rank.title')).not.toBeInTheDocument();
   });
 
-  it('keeps the card and explains itself with an empty balance', () => {
-    // The user with no coins is the one who most needs to see what coins buy,
-    // and the section has to hold its shape for the loading skeleton.
+  it('leaves an empty balance readable, with the controls merely disabled', () => {
+    // The reader with no coins is the one who has never read what the
+    // exchange offers, so nothing is laid over it — the section still holds
+    // its shape because the same card renders either way.
     const { container } = render(<RedeemForm {...baseProps} balance={0} />);
 
-    expect(screen.getByText('redeem.notice.no_balance.body')).toBeInTheDocument();
-    expect(container.querySelector('#redeem-amount')?.closest('[inert]')).not.toBeNull();
+    expect(screen.getByText('redeem.description')).toBeVisible();
+    expect(screen.getByLabelText('redeem.amountLabel')).toBeDisabled();
+    expect(screen.getByRole('button')).toBeDisabled();
+    expect(container.querySelector('[inert]')).toBeNull();
   });
 
-  it('lets an entitlement outrank an empty balance', () => {
+  it('covers an empty balance anyway when an entitlement makes it moot', () => {
     render(<RedeemForm {...baseProps} balance={0} block="dan_rank" />);
 
     expect(screen.getByText('redeem.notice.dan_rank.body')).toBeInTheDocument();
-    expect(screen.queryByText('redeem.notice.no_balance.body')).not.toBeInTheDocument();
   });
 
   it.each(['dan_rank', 'subscription'] as const)(

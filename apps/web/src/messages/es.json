@@ -3916,10 +3916,6 @@
         "subscription": {
           "title": "No hace falta gastar monedas",
           "body": "Tu suscripción oculta los anuncios mientras está activa. Las monedas no caducan: podrás canjearlas cuando termine."
-        },
-        "no_balance": {
-          "title": "Todavía no tienes monedas",
-          "body": "Cada moneda se convierte en {days, plural, one {# día} other {# días}} sin anuncios. Las monedas llegan cuando tus publicaciones reciben me gusta."
         }
       },
       "errors": {

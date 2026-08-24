@@ -2,7 +2,6 @@ import type { ReactElement, ReactNode } from 'react';
 
 import { useTranslations } from 'next-intl';
 
-import { CoinIcon } from '@blindfold-chess/icons';
 import { GiBlackBelt } from 'react-icons/gi';
 import { HiShieldCheck } from 'react-icons/hi2';
 
@@ -17,15 +16,6 @@ import { getBeltColorHex } from '@/app/[locale]/(public)/dojo/ranks/_lib/belt-co
  * belt" means reaches this badge too.
  */
 const DAN_BELT_HEX = getBeltColorHex('1dan');
-
-/**
- * Why the redeem controls are covered.
- *
- * The two `AdFreeRedemptionBlock` reasons say "this would buy you nothing";
- * `no_balance` says "there is nothing to spend yet". Different messages, but
- * the same treatment on purpose — see the component's @design note.
- */
-export type RedeemNoticeReason = AdFreeRedemptionBlock | 'no_balance';
 
 const BADGE_CLASS =
   'flex h-12 w-12 shrink-0 items-center justify-center rounded-full ring-1 ring-border';
@@ -48,7 +38,7 @@ const BADGE_ICON_CLASS = 'h-6 w-6';
  * with `noImplicitReturns` off a newly added reason would otherwise widen the
  * return to `ReactElement | undefined` and silently render no badge.
  */
-function ReasonBadge({ reason }: { reason: RedeemNoticeReason }): ReactElement {
+function ReasonBadge({ reason }: { reason: AdFreeRedemptionBlock }): ReactElement {
   switch (reason) {
     case 'dan_rank':
       return (
@@ -65,43 +55,31 @@ function ReasonBadge({ reason }: { reason: RedeemNoticeReason }): ReactElement {
           />
         </span>
       );
-    case 'no_balance':
-      return (
-        <span className={`${BADGE_CLASS} bg-muted`}>
-          <CoinIcon size={24} aria-hidden="true" />
-        </span>
-      );
   }
 }
 
 type Props = {
-  reason: RedeemNoticeReason;
-  /**
-   * Days of ad_free one coin buys. The empty-balance copy states the rate
-   * itself: the card's own headline and description are the only other place
-   * that says what the exchange IS, and they sit behind the veil where a user
-   * with no coins — the one who has never read them — cannot.
-   */
-  daysPerPoint: number;
+  reason: AdFreeRedemptionBlock;
   /** The redeem card, rendered dimmed and inert underneath the notice. */
   children: ReactNode;
 };
 
 /**
- * Covers the redeem card with the reason it cannot be used right now — the
- * user's ads are already suppressed by dan rank or a subscription, or there
- * are no coins to spend yet.
+ * Covers the redeem card for users whose ads are already suppressed by dan
+ * rank or a subscription, stating that spending coins here would buy them
+ * nothing.
  *
  * @design Cover, don't replace
  *
- * Every state the section can be in renders the same card in the same box:
- * a redeemable balance gets the live controls, and everything else gets them
- * dimmed under this notice. The alternatives — swapping in a bare paragraph,
- * or (as the empty balance used to) rendering nothing at all — make the
- * section's height depend on who is looking, which leaves a loading skeleton
- * nothing stable to imitate and, in the empty case, hides the whole point of
- * collecting coins from precisely the user who has none. The reader always
- * sees what the exchange offers, plus one line on why it is unavailable.
+ * Swapping the card out for a bare paragraph would make the section's height
+ * depend on who is looking, leaving a loading skeleton nothing stable to
+ * imitate. Keeping the card mounted under the notice holds the box.
+ *
+ * Covering is right HERE and nowhere else, because these are the only readers
+ * for whom the card's content is irrelevant — they will never use this
+ * exchange, so hiding what it offers costs them nothing. An empty balance is
+ * the opposite case: that reader needs to read the offer, so those controls
+ * are merely disabled and nothing is laid over them.
  *
  * The covered card is `inert` + `aria-hidden`, so the amount input and the
  * submit button are unreachable by pointer, keyboard and assistive tech —
@@ -111,7 +89,7 @@ type Props = {
  * two layers is taller and the notice can never be clipped on narrow
  * screens.
  */
-export function RedeemNoticeOverlay({ reason, daysPerPoint, children }: Props) {
+export function RedeemNoticeOverlay({ reason, children }: Props) {
   const t = useTranslations('MypagePoints');
 
   return (
@@ -126,9 +104,7 @@ export function RedeemNoticeOverlay({ reason, daysPerPoint, children }: Props) {
           <p className="text-sm font-semibold text-foreground">
             {t(`redeem.notice.${reason}.title`)}
           </p>
-          <p className="text-sm text-muted-foreground">
-            {t(`redeem.notice.${reason}.body`, { days: daysPerPoint })}
-          </p>
+          <p className="text-sm text-muted-foreground">{t(`redeem.notice.${reason}.body`)}</p>
         </div>
       </div>
     </div>
