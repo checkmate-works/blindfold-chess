@@ -147,7 +147,7 @@ export default async function CoinPage({ params }: Props) {
   return (
     <PageLayout title={t('title')} locale={locale} breadcrumb={[{ label: t('title') }]}>
       <div className="space-y-8">
-        <SectionTitle>{t('earn.heading')}</SectionTitle>
+        <SectionTitle>{t('title')}</SectionTitle>
 
         {/* Hero */}
         <div className="flex flex-col items-center gap-4 text-center">
@@ -181,32 +181,35 @@ export default async function CoinPage({ params }: Props) {
         {/* Ways to earn — one panel: the per-like rate stated once, then every
             likeable surface as a linked chip (add a chip, not a card, when a
             new likeable kind ships). */}
-        <div className="space-y-3">
-          <div className="space-y-4 rounded-xl border border-border bg-card p-5">
-            <div className="flex items-center gap-3">
-              <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-foreground/10 px-3 py-1 text-lg font-bold text-foreground">
-                <FaHeart className="h-4 w-4" aria-hidden="true" />
-                <span aria-hidden="true">→</span>
-                <CoinIcon size={20} aria-hidden="true" />+{LIKE_COIN_AMOUNT}
-              </span>
-              <p className="text-sm text-muted-foreground">{t('earn.perLike')}</p>
+        <section className="space-y-4">
+          <SectionTitle>{t('earn.heading')}</SectionTitle>
+          <div className="space-y-3">
+            <div className="space-y-4 rounded-xl border border-border bg-card p-5">
+              <div className="flex items-center gap-3">
+                <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-foreground/10 px-3 py-1 text-lg font-bold text-foreground">
+                  <FaHeart className="h-4 w-4" aria-hidden="true" />
+                  <span aria-hidden="true">→</span>
+                  <CoinIcon size={20} aria-hidden="true" />+{LIKE_COIN_AMOUNT}
+                </span>
+                <p className="text-sm text-muted-foreground">{t('earn.perLike')}</p>
+              </div>
+              <ul className="flex flex-wrap gap-2">
+                {EARN_CHIPS.map((chip) => (
+                  <li key={chip.key}>
+                    <Link
+                      href={chip.href}
+                      locale={locale}
+                      className="inline-flex items-center rounded-full border border-border bg-background px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:border-primary/40 hover:bg-foreground/5"
+                    >
+                      {t(`earn.chips.${chip.key}`)}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             </div>
-            <ul className="flex flex-wrap gap-2">
-              {EARN_CHIPS.map((chip) => (
-                <li key={chip.key}>
-                  <Link
-                    href={chip.href}
-                    locale={locale}
-                    className="inline-flex items-center rounded-full border border-border bg-background px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:border-primary/40 hover:bg-foreground/5"
-                  >
-                    {t(`earn.chips.${chip.key}`)}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            <p className="text-center text-sm text-muted-foreground">{t('earn.note')}</p>
           </div>
-          <p className="text-center text-sm text-muted-foreground">{t('earn.note')}</p>
-        </div>
+        </section>
 
         {/* What Coins are for */}
         <section className="space-y-4">
