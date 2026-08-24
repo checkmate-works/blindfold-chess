@@ -127,7 +127,7 @@ export function RedeemForm({ balance, daysPerPoint, block = null }: Props) {
 
       <FieldError id="redeem-amount-error" message={amountError} />
 
-      <Button onClick={handleSubmit} disabled={pending} variant="primary">
+      <Button onClick={handleSubmit} disabled={pending} variant="primary" fullWidth>
         {pending ? t('redeem.submitting') : t('redeem.submit', { amount })}
       </Button>
 

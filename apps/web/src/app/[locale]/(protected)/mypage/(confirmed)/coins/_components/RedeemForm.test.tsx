@@ -2,6 +2,8 @@ import * as matchers from '@testing-library/jest-dom/matchers';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
+import { getBeltColorHex } from '@/app/[locale]/(public)/dojo/ranks/_lib/belt-colors';
+
 import { RedeemForm } from './RedeemForm';
 
 expect.extend(matchers);
@@ -47,4 +49,13 @@ describe('RedeemForm', () => {
       expect(input?.closest('[inert]')).not.toBeNull();
     }
   );
+
+  it('fills the dan badge with the belt colour rather than tinting the icon', () => {
+    // The belt path is line art — a black *icon* is a hollow outline that
+    // reads as no belt at all. The colour has to be the badge's fill.
+    const { container } = render(<RedeemForm {...baseProps} block="dan_rank" />);
+
+    const badge = container.querySelector('[style*="background-color"]');
+    expect(badge).toHaveStyle({ backgroundColor: getBeltColorHex('1dan') });
+  });
 });
