@@ -3909,8 +3909,9 @@
       "submitting": "Canjeando…",
       "successMessage": "Listo — se han añadido {days, plural, one {# día} other {# días}} sin anuncios.",
       "notice": {
-        "dan_rank": "Como poseedor de un rango dan, siempre navegas sin anuncios — no necesitas gastar monedas en esto.",
-        "subscription": "Tu suscripción ya oculta los anuncios, así que no necesitas gastar monedas en esto. Las monedas no caducan: podrás canjearlas cuando termine la suscripción."
+        "title": "No hace falta gastar monedas",
+        "dan_rank": "Quienes tienen un rango dan siempre navegan sin anuncios.",
+        "subscription": "Tu suscripción oculta los anuncios mientras está activa. Las monedas no caducan: podrás canjearlas cuando termine."
       },
       "errors": {
         "invalid_amount": "Introduce un número entero positivo.",

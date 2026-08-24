@@ -10,16 +10,17 @@ import { Button, FieldError, FormErrorBanner, fieldErrorProps } from '@/app/_com
 import type { AdFreeRedemptionBlock } from '@/lib/ads/ad-free-redemption';
 
 import { type RedeemAdFreeResult, redeemAdFree } from '../_actions/redeemAdFree';
+import { RedeemUnneededOverlay } from './RedeemUnneededOverlay';
 
 type Props = {
   balance: number;
   daysPerPoint: number;
   /**
    * Set when the user already browses ad-free by dan rank or subscription,
-   * either of which makes the days bought here tick down unused. The redeem
-   * controls are replaced with the explanation for that reason. Coins are
-   * never lost by waiting — see `getAdFreeRedemptionBlock`, which also guards
-   * the `redeemAdFree` action server-side.
+   * either of which makes the days bought here tick down unused. The card is
+   * then rendered inert under {@link RedeemUnneededOverlay}. Coins are never
+   * lost by waiting — see `getAdFreeRedemptionBlock`, which also guards the
+   * `redeemAdFree` action server-side.
    */
   block?: AdFreeRedemptionBlock | null;
 };
@@ -96,16 +97,7 @@ export function RedeemForm({ balance, daysPerPoint, block = null }: Props) {
     return null;
   }
 
-  if (block) {
-    return (
-      <div className="rounded-xl border border-border bg-card p-4 space-y-2">
-        <h3 className="text-sm font-semibold text-foreground">{t('redeem.title')}</h3>
-        <p className="text-sm text-muted-foreground">{t(`redeem.notice.${block}`)}</p>
-      </div>
-    );
-  }
-
-  return (
+  const card = (
     <div className="rounded-xl border border-border bg-card p-4 space-y-3">
       <h3 className="text-sm font-semibold text-foreground">{t('redeem.title')}</h3>
       <p className="text-sm text-muted-foreground">{t('redeem.description')}</p>
@@ -147,4 +139,10 @@ export function RedeemForm({ balance, daysPerPoint, block = null }: Props) {
       )}
     </div>
   );
+
+  if (block) {
+    return <RedeemUnneededOverlay reason={block}>{card}</RedeemUnneededOverlay>;
+  }
+
+  return card;
 }

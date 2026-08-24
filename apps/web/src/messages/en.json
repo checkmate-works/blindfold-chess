@@ -3909,8 +3909,9 @@
       "submitting": "Redeeming…",
       "successMessage": "Done — {days, plural, one {# day} other {# days}} of ad-free time has been added.",
       "notice": {
-        "dan_rank": "As a dan-rank holder, you always browse ad-free — no need to spend coins on this.",
-        "subscription": "Your subscription already hides ads, so there is no need to spend coins on this. Coins never expire, so you can redeem them once the subscription ends."
+        "title": "No coins needed",
+        "dan_rank": "Dan-rank holders always browse ad-free.",
+        "subscription": "Your subscription hides ads while it is active. Coins never expire, so you can redeem them once it ends."
       },
       "errors": {
         "invalid_amount": "Please enter a positive whole number.",
