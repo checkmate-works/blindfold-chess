@@ -20,7 +20,7 @@ import type { MoveOperationLog } from '@/lib/games/saved-game-types';
 
 import { UI_TIMEOUTS } from '@/app/[locale]/_constants/ui-timeouts';
 
-import { formatPgnToText } from '../_lib';
+import { formatPgnToText, moveNavDisabledState } from '../_lib';
 import type { FormattedPgn, FormattedPgnMove } from '../_lib';
 import {
   getPlayerMoveIndices,
@@ -330,10 +330,7 @@ export function MovesPanel({
                 onNavigatePrevious={onNavigatePrevious}
                 onNavigateNext={onNavigateNext}
                 onNavigateToEnd={onNavigateToEnd}
-                isPreviousDisabled={
-                  currentPosition === -2 || (currentPosition === -1 && movesLength === 0)
-                }
-                isNextDisabled={currentPosition === -1}
+                {...moveNavDisabledState(currentPosition, movesLength)}
               />
             </div>
           )}

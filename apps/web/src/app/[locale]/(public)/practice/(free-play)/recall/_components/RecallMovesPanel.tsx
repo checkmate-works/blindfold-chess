@@ -9,6 +9,7 @@ import { fenToLichessUrl } from '@blindfold-chess/features/chess-core/fen';
 import { FaCheck, FaCopy, FaExternalLinkAlt } from 'react-icons/fa';
 
 import { MoveNavigationControls } from '@/app/[locale]/(public)/games/play/_components/MoveNavigationControls';
+import { moveNavDisabledState } from '@/app/[locale]/(public)/games/play/_lib/move-nav-disabled-state';
 import { formatPgnToText } from '@/app/[locale]/(public)/games/play/_lib/pgn-parser';
 import { UI_TIMEOUTS } from '@/app/[locale]/_constants/ui-timeouts';
 
@@ -113,10 +114,7 @@ export function RecallMovesPanel({
                   onNavigatePrevious={onNavigatePrevious}
                   onNavigateNext={onNavigateNext}
                   onNavigateToEnd={onNavigateToEnd}
-                  isPreviousDisabled={
-                    currentPosition === -2 || (currentPosition === -1 && originalMovesLength === 0)
-                  }
-                  isNextDisabled={currentPosition === -1}
+                  {...moveNavDisabledState(currentPosition, originalMovesLength)}
                 />
               </div>
 

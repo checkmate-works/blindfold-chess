@@ -16,6 +16,7 @@ import type { FormattedPgnMove } from '@/app/[locale]/(public)/games/play/_lib/p
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { resolveBoardDisplay } from '@/app/[locale]/_hooks/use-board-display';
 
+import { moveNavDisabledState } from '../_lib/move-nav-disabled-state';
 import {
   INLINE_BOARD_CARD_CHROME,
   INLINE_BOARD_HEADER_CHROME,
@@ -361,12 +362,7 @@ export function InlineBoardView({
                 onNavigatePrevious={movesLength > 0 ? onNavigatePrevious : undefined}
                 onNavigateNext={movesLength > 0 ? onNavigateNext : undefined}
                 onNavigateToEnd={movesLength > 0 ? onNavigateToEnd : undefined}
-                isPreviousDisabled={
-                  currentPosition === -2 || (currentPosition === -1 && movesLength === 0)
-                }
-                isNextDisabled={
-                  currentPosition === -1 || (movesLength > 0 && currentPosition === movesLength - 1)
-                }
+                {...moveNavDisabledState(currentPosition, movesLength)}
                 flip={onFlipBoard ? { onClick: onFlipBoard, label: t('flipBoard') } : undefined}
                 trailingAction={trailingAction}
               />
