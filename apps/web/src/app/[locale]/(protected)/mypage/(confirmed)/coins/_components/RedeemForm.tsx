@@ -7,18 +7,21 @@ import { useRouter } from 'next/navigation';
 
 import { Button, FieldError, FormErrorBanner, fieldErrorProps } from '@/app/_components';
 
+import type { AdFreeRedemptionBlock } from '@/lib/ads/ad-free-redemption';
+
 import { type RedeemAdFreeResult, redeemAdFree } from '../_actions/redeemAdFree';
 
 type Props = {
   balance: number;
   daysPerPoint: number;
   /**
-   * True when the user holds a dan-tier rank and therefore browses ad-free
-   * permanently. Redeeming coins for ad_free days would burn coins for
-   * nothing, so the redeem controls are replaced with an explanation.
-   * The `redeemAdFree` action guards server-side as well.
+   * Set when the user already browses ad-free by dan rank or subscription,
+   * either of which makes the days bought here tick down unused. The redeem
+   * controls are replaced with the explanation for that reason. Coins are
+   * never lost by waiting — see `getAdFreeRedemptionBlock`, which also guards
+   * the `redeemAdFree` action server-side.
    */
-  danAdFree?: boolean;
+  block?: AdFreeRedemptionBlock | null;
 };
 
 /**
@@ -37,7 +40,7 @@ type Props = {
  * does not fire two requests. The server-side conditional debit would
  * still serialize, but we want the UI to feel intentional too.
  */
-export function RedeemForm({ balance, daysPerPoint, danAdFree = false }: Props) {
+export function RedeemForm({ balance, daysPerPoint, block = null }: Props) {
   const t = useTranslations('MypagePoints');
   const router = useRouter();
   const [amount, setAmount] = useState<number>(Math.min(1, balance));
@@ -93,11 +96,11 @@ export function RedeemForm({ balance, daysPerPoint, danAdFree = false }: Props) 
     return null;
   }
 
-  if (danAdFree) {
+  if (block) {
     return (
       <div className="rounded-xl border border-border bg-card p-4 space-y-2">
         <h3 className="text-sm font-semibold text-foreground">{t('redeem.title')}</h3>
-        <p className="text-sm text-muted-foreground">{t('redeem.danAdFreeNotice')}</p>
+        <p className="text-sm text-muted-foreground">{t(`redeem.notice.${block}`)}</p>
       </div>
     );
   }

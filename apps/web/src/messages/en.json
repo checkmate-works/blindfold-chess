@@ -3908,14 +3908,18 @@
       "submit": "Redeem {amount} coins",
       "submitting": "Redeeming…",
       "successMessage": "Done — {days, plural, one {# day} other {# days}} of ad-free time has been added.",
-      "danAdFreeNotice": "As a dan-rank holder, you always browse ad-free — no need to spend coins on this.",
+      "notice": {
+        "dan_rank": "As a dan-rank holder, you always browse ad-free — no need to spend coins on this.",
+        "subscription": "Your subscription already hides ads, so there is no need to spend coins on this. Coins never expire, so you can redeem them once the subscription ends."
+      },
       "errors": {
         "invalid_amount": "Please enter a positive whole number.",
         "insufficient_balance": "You do not have enough confirmed coins.",
         "signInRequired": "Please sign in to redeem.",
         "banned": "Your account is restricted.",
         "rateLimited": "Too many redemptions in a short period — try again later.",
-        "danAdFree": "As a dan-rank holder, you already browse ad-free."
+        "danAdFree": "As a dan-rank holder, you already browse ad-free.",
+        "subscriptionAdFree": "Your subscription already hides ads."
       }
     },
     "history": {
