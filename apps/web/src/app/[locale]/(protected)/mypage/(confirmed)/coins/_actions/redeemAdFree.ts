@@ -2,12 +2,12 @@
 
 import { revalidateTag } from 'next/cache';
 
+import { type AdFreeRedemptionBlock, getAdFreeRedemptionBlock } from '@/lib/ads/ad-free-redemption';
 import { writeAdsHiddenCookieForUser } from '@/lib/ads/ads-hidden-cookie-writer';
 import { authenticateAndCheckBan } from '@/lib/auth';
 import { GRANT_STATUS_CACHE_TAG } from '@/lib/cache-tags';
 import { redeemPointsForAdFree } from '@/lib/points';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/security/rate-limit';
-import { hasDanTierRank } from '@/lib/users/dan-rank';
 
 export type RedeemAdFreeResult =
   | { ok: true; cost: number; durationDays: number; expiresAtIso: string }
@@ -19,8 +19,22 @@ export type RedeemAdFreeResult =
         | 'signInRequired'
         | 'banned'
         | 'rateLimited'
-        | 'danAdFree';
+        | 'danAdFree'
+        | 'subscriptionAdFree';
     };
+
+/**
+ * The error code each redemption block surfaces to the client. Separate codes
+ * (rather than one shared "already ad-free") because the messages differ in
+ * kind: dan is permanent, a subscription is not.
+ */
+const REDEMPTION_BLOCK_ERRORS: Record<
+  AdFreeRedemptionBlock,
+  Extract<RedeemAdFreeResult, { ok: false }>['error']
+> = {
+  dan_rank: 'danAdFree',
+  subscription: 'subscriptionAdFree',
+};
 
 /**
  * Redeem the user's confirmed points for ad_free days. Thin server-action
@@ -55,12 +69,15 @@ export async function redeemAdFree(cost: number): Promise<RedeemAdFreeResult> {
     return { ok: false, error: 'signInRequired' };
   }
 
-  // Dan-tier holders browse ad-free permanently (see hasAdFreeEntitlement),
-  // so redeeming coins for ad_free days would only burn coins for nothing.
-  // The RedeemForm hides the control for them; this is the server-side guard
-  // behind that UI.
-  if (await hasDanTierRank(auth.user.id)) {
-    return { ok: false, error: 'danAdFree' };
+  // A dan-tier belt or an active subscription already suppresses ads, so the
+  // days bought here would tick down against wall-clock time while the user
+  // sees no ads either way — the coins would buy nothing. The RedeemForm
+  // hides the control in both cases; this is the server-side guard behind
+  // that UI. Nothing is forfeited by refusing: coins never expire, so the
+  // same redemption is available the moment the subscription lapses.
+  const block = await getAdFreeRedemptionBlock(auth.user.id);
+  if (block) {
+    return { ok: false, error: REDEMPTION_BLOCK_ERRORS[block] };
   }
 
   const rateLimitResult = await checkRateLimit(auth.user.id, RATE_LIMITS.redeemPoints);

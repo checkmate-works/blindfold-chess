@@ -3908,14 +3908,24 @@
       "submit": "Resgatar {amount} moedas",
       "submitting": "Resgatando…",
       "successMessage": "Pronto — {days, plural, one {# dia} other {# dias}} sem anúncios foram adicionados.",
-      "danAdFreeNotice": "Como detentor de uma graduação dan, você sempre navega sem anúncios — não precisa gastar moedas nisso.",
+      "notice": {
+        "dan_rank": {
+          "title": "Não é preciso gastar moedas",
+          "body": "Quem tem uma graduação dan sempre navega sem anúncios."
+        },
+        "subscription": {
+          "title": "Não é preciso gastar moedas",
+          "body": "Sua assinatura oculta os anúncios enquanto está ativa. As moedas não expiram: você pode resgatá-las quando ela terminar."
+        }
+      },
       "errors": {
         "invalid_amount": "Informe um número inteiro positivo.",
         "insufficient_balance": "Você não tem moedas disponíveis suficientes.",
         "signInRequired": "Entre na sua conta para resgatar.",
         "banned": "Sua conta está restrita.",
         "rateLimited": "Muitos resgates em pouco tempo — tente novamente mais tarde.",
-        "danAdFree": "Como detentor de uma graduação dan, você já navega sem anúncios."
+        "danAdFree": "Como detentor de uma graduação dan, você já navega sem anúncios.",
+        "subscriptionAdFree": "Sua assinatura já oculta os anúncios."
       }
     },
     "history": {

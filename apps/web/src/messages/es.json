@@ -3908,14 +3908,24 @@
       "submit": "Canjear {amount} monedas",
       "submitting": "Canjeando…",
       "successMessage": "Listo — se han añadido {days, plural, one {# día} other {# días}} sin anuncios.",
-      "danAdFreeNotice": "Como poseedor de un rango dan, siempre navegas sin anuncios — no necesitas gastar monedas en esto.",
+      "notice": {
+        "dan_rank": {
+          "title": "No hace falta gastar monedas",
+          "body": "Quienes tienen un rango dan siempre navegan sin anuncios."
+        },
+        "subscription": {
+          "title": "No hace falta gastar monedas",
+          "body": "Tu suscripción oculta los anuncios mientras está activa. Las monedas no caducan: podrás canjearlas cuando termine."
+        }
+      },
       "errors": {
         "invalid_amount": "Introduce un número entero positivo.",
         "insufficient_balance": "No tienes suficientes monedas disponibles.",
         "signInRequired": "Inicia sesión para canjear.",
         "banned": "Tu cuenta está restringida.",
         "rateLimited": "Demasiados canjes en poco tiempo — inténtalo más tarde.",
-        "danAdFree": "Como poseedor de un rango dan, ya navegas sin anuncios."
+        "danAdFree": "Como poseedor de un rango dan, ya navegas sin anuncios.",
+        "subscriptionAdFree": "Tu suscripción ya oculta los anuncios."
       }
     },
     "history": {

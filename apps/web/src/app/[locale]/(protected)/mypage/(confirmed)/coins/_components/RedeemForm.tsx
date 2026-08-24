@@ -7,29 +7,37 @@ import { useRouter } from 'next/navigation';
 
 import { Button, FieldError, FormErrorBanner, fieldErrorProps } from '@/app/_components';
 
+import type { AdFreeRedemptionBlock } from '@/lib/ads/ad-free-redemption';
+
 import { type RedeemAdFreeResult, redeemAdFree } from '../_actions/redeemAdFree';
+import { RedeemNoticeOverlay } from './RedeemNoticeOverlay';
 
 type Props = {
   balance: number;
   daysPerPoint: number;
   /**
-   * True when the user holds a dan-tier rank and therefore browses ad-free
-   * permanently. Redeeming coins for ad_free days would burn coins for
-   * nothing, so the redeem controls are replaced with an explanation.
-   * The `redeemAdFree` action guards server-side as well.
+   * Set when the user already browses ad-free by dan rank or subscription,
+   * either of which makes the days bought here tick down unused. The card is
+   * then rendered inert under {@link RedeemNoticeOverlay}. Coins are never
+   * lost by waiting — see `getAdFreeRedemptionBlock`, which also guards the
+   * `redeemAdFree` action server-side.
    */
-  danAdFree?: boolean;
+  block?: AdFreeRedemptionBlock | null;
 };
 
 /**
- * Inline redeem control rendered when the user has ≥1 point.
+ * The N-coins-for-N-days exchange card. Always rendered — see the states
+ * derived below and {@link RedeemNoticeOverlay}.
  *
  * @design Client-side input clamp
  *
- * The amount input is clamped to `[1, balance]` in `onChange` so
- * the user cannot send a value the server will just reject — better UX
- * than a round-trip rejection. The Server Action still re-validates so
- * the client clamp is a hint, not a security boundary.
+ * The amount is clamped to `[1, offeredMax]` — in `onChange`, and again at
+ * every read, because the state can go stale when a redemption (this tab's
+ * or another's) shrinks `balance` under it: props refresh, state persists.
+ * The read-side clamp keeps the input from displaying more than the user
+ * can spend and keeps the submit sending what the input shows, sparing a
+ * round-trip rejection. The Server Action still re-validates, so the
+ * client clamp is a hint, not a security boundary.
  *
  * @design Button-disable during pending
  *
@@ -37,15 +45,36 @@ type Props = {
  * does not fire two requests. The server-side conditional debit would
  * still serialize, but we want the UI to feel intentional too.
  */
-export function RedeemForm({ balance, daysPerPoint, danAdFree = false }: Props) {
+export function RedeemForm({ balance, daysPerPoint, block = null }: Props) {
   const t = useTranslations('MypagePoints');
   const router = useRouter();
-  const [amount, setAmount] = useState<number>(Math.min(1, balance));
+  const [amount, setAmount] = useState<number>(1);
   const [error, setError] = useState<{ code: string; message: string } | null>(null);
   const [success, setSuccess] = useState<{ days: number } | null>(null);
   const [pending, startTransition] = useTransition();
 
-  const days = amount * daysPerPoint;
+  /**
+   * An empty balance leaves the card readable and merely unusable: the reader
+   * with no coins is the one who has never read what the exchange offers, so
+   * covering it would hide the section's whole point from exactly the wrong
+   * person. `block` still covers — see {@link RedeemNoticeOverlay}.
+   */
+  const unaffordable = balance < 1;
+  const controlsDisabled = pending || unaffordable;
+
+  /**
+   * The largest amount the controls offer. With an empty balance they are a
+   * disabled illustration of the one-coin offer rather than something the
+   * user can act on, so the bounds describe that offer instead of collapsing
+   * to a `max` of zero against a `min` of one.
+   */
+  const offeredMax = Math.max(1, balance);
+
+  // See the module @design note: `amount` is re-clamped at read time because
+  // the state survives a `balance` refresh that may have shrunk beneath it.
+  const shownAmount = Math.min(amount, offeredMax);
+
+  const days = shownAmount * daysPerPoint;
 
   // The two verdicts about the number typed in the box are shown at the box;
   // the rest (not signed in, banned, rate-limited) belong to no control.
@@ -61,14 +90,14 @@ export function RedeemForm({ balance, daysPerPoint, danAdFree = false }: Props) 
       setAmount(1);
       return;
     }
-    setAmount(Math.min(Math.max(1, parsed), balance));
+    setAmount(Math.min(Math.max(1, parsed), offeredMax));
   };
 
   const handleSubmit = () => {
     setError(null);
     setSuccess(null);
     startTransition(async () => {
-      const result: RedeemAdFreeResult = await redeemAdFree(amount);
+      const result: RedeemAdFreeResult = await redeemAdFree(shownAmount);
       if (!result.ok) {
         setError({ code: result.error, message: t(`redeem.errors.${result.error}`) });
         return;
@@ -89,20 +118,7 @@ export function RedeemForm({ balance, daysPerPoint, danAdFree = false }: Props) 
     });
   };
 
-  if (balance < 1) {
-    return null;
-  }
-
-  if (danAdFree) {
-    return (
-      <div className="rounded-xl border border-border bg-card p-4 space-y-2">
-        <h3 className="text-sm font-semibold text-foreground">{t('redeem.title')}</h3>
-        <p className="text-sm text-muted-foreground">{t('redeem.danAdFreeNotice')}</p>
-      </div>
-    );
-  }
-
-  return (
+  const card = (
     <div className="rounded-xl border border-border bg-card p-4 space-y-3">
       <h3 className="text-sm font-semibold text-foreground">{t('redeem.title')}</h3>
       <p className="text-sm text-muted-foreground">{t('redeem.description')}</p>
@@ -112,15 +128,15 @@ export function RedeemForm({ balance, daysPerPoint, danAdFree = false }: Props) 
           id="redeem-amount"
           type="number"
           min={1}
-          max={balance}
+          max={offeredMax}
           step={1}
-          value={amount}
+          value={shownAmount}
           onChange={(e) => handleAmountChange(e.target.value)}
           aria-label={t('redeem.amountLabel')}
-          className={`w-24 rounded-md border bg-background px-3 py-1.5 text-sm ${
+          className={`w-24 rounded-md border bg-background px-3 py-1.5 text-sm disabled:opacity-60 ${
             amountError ? 'border-destructive' : 'border-border'
           }`}
-          disabled={pending}
+          disabled={controlsDisabled}
           {...fieldErrorProps('redeem-amount-error', amountError)}
         />
         <span className="text-sm text-muted-foreground">{t('redeem.pointSuffix')}</span>
@@ -132,8 +148,8 @@ export function RedeemForm({ balance, daysPerPoint, danAdFree = false }: Props) 
 
       <FieldError id="redeem-amount-error" message={amountError} />
 
-      <Button onClick={handleSubmit} disabled={pending} variant="primary">
-        {pending ? t('redeem.submitting') : t('redeem.submit', { amount })}
+      <Button onClick={handleSubmit} disabled={controlsDisabled} variant="primary" fullWidth>
+        {pending ? t('redeem.submitting') : t('redeem.submit', { amount: shownAmount })}
       </Button>
 
       <FormErrorBanner message={formError} />
@@ -144,4 +160,10 @@ export function RedeemForm({ balance, daysPerPoint, danAdFree = false }: Props) 
       )}
     </div>
   );
+
+  if (block) {
+    return <RedeemNoticeOverlay reason={block}>{card}</RedeemNoticeOverlay>;
+  }
+
+  return card;
 }

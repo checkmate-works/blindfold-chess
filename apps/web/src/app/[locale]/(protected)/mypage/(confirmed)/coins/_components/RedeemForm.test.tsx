@@ -1,0 +1,87 @@
+import * as matchers from '@testing-library/jest-dom/matchers';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
+
+import { getBeltColorHex } from '@/app/[locale]/(public)/dojo/ranks/_lib/belt-colors';
+
+import { RedeemForm } from './RedeemForm';
+
+expect.extend(matchers);
+
+vi.mock('next-intl', () => ({
+  useTranslations: () => (key: string) => key,
+}));
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ refresh: vi.fn() }),
+}));
+
+vi.mock('../_actions/redeemAdFree', () => ({
+  redeemAdFree: vi.fn(),
+}));
+
+const baseProps = { balance: 5, daysPerPoint: 1 };
+
+describe('RedeemForm', () => {
+  it('renders the redeem controls when the redemption is worth making', () => {
+    render(<RedeemForm {...baseProps} />);
+
+    expect(screen.getByLabelText('redeem.amountLabel')).toBeEnabled();
+    expect(screen.queryByText('redeem.notice.dan_rank.title')).not.toBeInTheDocument();
+  });
+
+  it('leaves an empty balance readable, with the controls merely disabled', () => {
+    // The reader with no coins is the one who has never read what the
+    // exchange offers, so nothing is laid over it — the section still holds
+    // its shape because the same card renders either way.
+    const { container } = render(<RedeemForm {...baseProps} balance={0} />);
+
+    expect(screen.getByText('redeem.description')).toBeVisible();
+    expect(screen.getByLabelText('redeem.amountLabel')).toBeDisabled();
+    expect(screen.getByRole('button')).toBeDisabled();
+    expect(container.querySelector('[inert]')).toBeNull();
+  });
+
+  it('re-clamps a stale amount when a refresh shrinks the balance under it', () => {
+    // Redeeming everything leaves `amount` state above the refreshed
+    // balance's bounds; the read-side clamp keeps the display honest.
+    const { rerender } = render(<RedeemForm {...baseProps} />);
+    const input = screen.getByLabelText<HTMLInputElement>('redeem.amountLabel');
+    fireEvent.change(input, { target: { value: '5' } });
+    expect(input.value).toBe('5');
+
+    rerender(<RedeemForm {...baseProps} balance={0} />);
+
+    expect(input.value).toBe('1');
+    expect(input).toBeDisabled();
+  });
+
+  it('covers an empty balance anyway when an entitlement makes it moot', () => {
+    render(<RedeemForm {...baseProps} balance={0} block="dan_rank" />);
+
+    expect(screen.getByText('redeem.notice.dan_rank.body')).toBeInTheDocument();
+  });
+
+  it.each(['dan_rank', 'subscription'] as const)(
+    'covers the controls with the %s notice instead of dropping them',
+    (reason) => {
+      const { container } = render(<RedeemForm {...baseProps} block={reason} />);
+
+      expect(screen.getByText(`redeem.notice.${reason}.body`)).toBeInTheDocument();
+      // The card stays mounted so the section keeps its shape — but every
+      // control under the notice must be unreachable, not merely covered.
+      const input = container.querySelector('#redeem-amount');
+      expect(input).toBeInTheDocument();
+      expect(input?.closest('[inert]')).not.toBeNull();
+    }
+  );
+
+  it('fills the dan badge with the belt colour rather than tinting the icon', () => {
+    // The belt path is line art — a black *icon* is a hollow outline that
+    // reads as no belt at all. The colour has to be the badge's fill.
+    const { container } = render(<RedeemForm {...baseProps} block="dan_rank" />);
+
+    const badge = container.querySelector('[style*="background-color"]');
+    expect(badge).toHaveStyle({ backgroundColor: getBeltColorHex('1dan') });
+  });
+});

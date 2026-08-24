@@ -14,7 +14,9 @@
  * 2. Page reads the balance summary + history rows in one batched fetch.
  * 3. Renders three sections:
  *    - Balance card: the user's total Coin balance.
- *    - Redeem control (only when balance ≥ 1): N Coin → N days of ad_free.
+ *    - Redeem control: N Coin → N days of ad_free. Always rendered — an
+ *      entitlement that rules the exchange out covers the card with the
+ *      reason, and an empty balance just disables the controls.
  *    - History table: one page of ledger rows, newest first, with a `?page=`
  *      pagination bar.
  */
@@ -25,10 +27,10 @@ import { Link } from '@/i18n/routing';
 import { CoinIcon } from '@blindfold-chess/icons';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
+import { getAdFreeRedemptionBlock } from '@/lib/ads/ad-free-redemption';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { buildPageHref } from '@/lib/pagination';
 import { AD_FREE_DAYS_PER_POINT } from '@/lib/points';
-import { hasDanTierRank } from '@/lib/users/dan-rank';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
@@ -57,9 +59,9 @@ export default async function CoinsPage({ params, searchParams }: Props) {
 
   const user = await getAuthenticatedUser();
   const { page } = await searchParamsCache.parse(searchParams);
-  const [{ balance, history, currentPage, totalPages }, danAdFree] = await Promise.all([
+  const [{ balance, history, currentPage, totalPages }, redemptionBlock] = await Promise.all([
     getPointsPageData(user.id, page),
-    hasDanTierRank(user.id),
+    getAdFreeRedemptionBlock(user.id),
   ]);
 
   const dateFmt = (d: Date) => d.toLocaleDateString(locale);
@@ -94,7 +96,7 @@ export default async function CoinsPage({ params, searchParams }: Props) {
         <RedeemForm
           balance={balance.total}
           daysPerPoint={AD_FREE_DAYS_PER_POINT}
-          danAdFree={danAdFree}
+          block={redemptionBlock}
         />
 
         {/* History */}
