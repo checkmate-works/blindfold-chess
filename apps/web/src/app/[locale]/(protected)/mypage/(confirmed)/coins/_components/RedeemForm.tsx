@@ -153,7 +153,11 @@ export function RedeemForm({ balance, daysPerPoint, block = null }: Props) {
   );
 
   if (notice) {
-    return <RedeemNoticeOverlay reason={notice}>{card}</RedeemNoticeOverlay>;
+    return (
+      <RedeemNoticeOverlay reason={notice} daysPerPoint={daysPerPoint}>
+        {card}
+      </RedeemNoticeOverlay>
+    );
   }
 
   return card;

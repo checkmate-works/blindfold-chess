@@ -3919,7 +3919,7 @@
         },
         "no_balance": {
           "title": "No coins to redeem yet",
-          "body": "Coins arrive when your published work gets likes."
+          "body": "Each coin converts to {days, plural, one {# day} other {# days}} of ad-free browsing. Coins arrive when your published work gets likes."
         }
       },
       "errors": {

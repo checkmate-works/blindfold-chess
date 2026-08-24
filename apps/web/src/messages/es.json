@@ -3919,7 +3919,7 @@
         },
         "no_balance": {
           "title": "Todavía no tienes monedas",
-          "body": "Las monedas llegan cuando tus publicaciones reciben me gusta."
+          "body": "Cada moneda se convierte en {days, plural, one {# día} other {# días}} sin anuncios. Las monedas llegan cuando tus publicaciones reciben me gusta."
         }
       },
       "errors": {

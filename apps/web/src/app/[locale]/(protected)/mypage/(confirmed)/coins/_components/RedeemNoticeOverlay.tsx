@@ -76,6 +76,13 @@ function ReasonBadge({ reason }: { reason: RedeemNoticeReason }): ReactElement {
 
 type Props = {
   reason: RedeemNoticeReason;
+  /**
+   * Days of ad_free one coin buys. The empty-balance copy states the rate
+   * itself: the card's own headline and description are the only other place
+   * that says what the exchange IS, and they sit behind the veil where a user
+   * with no coins — the one who has never read them — cannot.
+   */
+  daysPerPoint: number;
   /** The redeem card, rendered dimmed and inert underneath the notice. */
   children: ReactNode;
 };
@@ -104,7 +111,7 @@ type Props = {
  * two layers is taller and the notice can never be clipped on narrow
  * screens.
  */
-export function RedeemNoticeOverlay({ reason, children }: Props) {
+export function RedeemNoticeOverlay({ reason, daysPerPoint, children }: Props) {
   const t = useTranslations('MypagePoints');
 
   return (
@@ -119,7 +126,9 @@ export function RedeemNoticeOverlay({ reason, children }: Props) {
           <p className="text-sm font-semibold text-foreground">
             {t(`redeem.notice.${reason}.title`)}
           </p>
-          <p className="text-sm text-muted-foreground">{t(`redeem.notice.${reason}.body`)}</p>
+          <p className="text-sm text-muted-foreground">
+            {t(`redeem.notice.${reason}.body`, { days: daysPerPoint })}
+          </p>
         </div>
       </div>
     </div>

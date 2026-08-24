@@ -3919,7 +3919,7 @@
         },
         "no_balance": {
           "title": "Você ainda não tem moedas",
-          "body": "As moedas chegam quando suas publicações recebem curtidas."
+          "body": "Cada moeda vira {days, plural, one {# dia} other {# dias}} sem anúncios. As moedas chegam quando suas publicações recebem curtidas."
         }
       },
       "errors": {
