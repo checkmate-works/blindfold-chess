@@ -3928,6 +3928,22 @@
         "subscriptionAdFree": "Your subscription already hides ads."
       }
     },
+    "spendOptions": {
+      "title": "More ways to spend",
+      "maia": {
+        "title": "Play against Maia",
+        "rate": "{cost, plural, one {# Coin} other {# Coins}} = 1 game",
+        "note": "Maia is a neural-network AI that plays human-like moves. Charged when the game starts.",
+        "cta": "Start a game"
+      },
+      "aiReview": {
+        "title": "Get an AI review",
+        "rate": "{cost, plural, one {# Coin} other {# Coins}} = 1 review",
+        "note": "Request one from the page of a game you have shared.",
+        "noteSubscriber": "Your subscription covers AI reviews — no Coins spent.",
+        "cta": "Browse your games"
+      }
+    },
     "history": {
       "title": "History",
       "empty": "No coin activity yet.",

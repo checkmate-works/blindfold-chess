@@ -3928,6 +3928,22 @@
         "subscriptionAdFree": "Tu suscripción ya oculta los anuncios."
       }
     },
+    "spendOptions": {
+      "title": "Más formas de gastar",
+      "maia": {
+        "title": "Jugar contra Maia",
+        "rate": "{cost, plural, one {# Moneda} other {# Monedas}} = 1 partida",
+        "note": "Maia es una IA de red neuronal que juega con un estilo humano. Se cobra al iniciar la partida.",
+        "cta": "Empezar una partida"
+      },
+      "aiReview": {
+        "title": "Recibe una revisión IA",
+        "rate": "{cost, plural, one {# Moneda} other {# Monedas}} = 1 revisión",
+        "note": "Solicítala desde la página de una partida que hayas compartido.",
+        "noteSubscriber": "Tu suscripción cubre las revisiones IA — no gastas monedas.",
+        "cta": "Ver tus partidas"
+      }
+    },
     "history": {
       "title": "Historial",
       "empty": "Todavía no tienes actividad de monedas.",

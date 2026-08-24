@@ -12,11 +12,13 @@
  * @flow
  * 1. User opens /mypage/coins.
  * 2. Page reads the balance summary + history rows in one batched fetch.
- * 3. Renders three sections:
+ * 3. Renders four sections:
  *    - Balance card: the user's total Coin balance.
  *    - Redeem control: N Coin → N days of ad_free. Always rendered — an
  *      entitlement that rules the exchange out covers the card with the
  *      reason, and an empty balance just disables the controls.
+ *    - Spend options: the coin spends that happen elsewhere (Maia games,
+ *      AI reviews), as rate + link cards — see {@link SpendOptionsSection}.
  *    - History table: one page of ledger rows, newest first, with a `?page=`
  *      pagination bar.
  */
@@ -29,6 +31,7 @@ import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { getAdFreeRedemptionBlock } from '@/lib/ads/ad-free-redemption';
 import { getAuthenticatedUser } from '@/lib/auth';
+import { hasActiveSubscription } from '@/lib/billing/subscription';
 import { buildPageHref } from '@/lib/pagination';
 import { AD_FREE_DAYS_PER_POINT } from '@/lib/points';
 
@@ -38,6 +41,7 @@ import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
 
 import { RedeemForm } from './_components/RedeemForm';
+import { SpendOptionsSection } from './_components/SpendOptionsSection';
 import { getPointsPageData } from './_lib/getPointsPageData';
 
 const searchParamsCache = createSearchParamsCache({
@@ -59,10 +63,15 @@ export default async function CoinsPage({ params, searchParams }: Props) {
 
   const user = await getAuthenticatedUser();
   const { page } = await searchParamsCache.parse(searchParams);
-  const [{ balance, history, currentPage, totalPages }, redemptionBlock] = await Promise.all([
-    getPointsPageData(user.id, page),
-    getAdFreeRedemptionBlock(user.id),
-  ]);
+  // `hasActiveSubscription` is also read inside `getAdFreeRedemptionBlock`;
+  // both calls resolve from the same cache entry, so asking twice is free and
+  // keeps the block reason and the subscription fact independently typed.
+  const [{ balance, history, currentPage, totalPages }, redemptionBlock, hasSubscription] =
+    await Promise.all([
+      getPointsPageData(user.id, page),
+      getAdFreeRedemptionBlock(user.id),
+      hasActiveSubscription(user.id),
+    ]);
 
   const dateFmt = (d: Date) => d.toLocaleDateString(locale);
   const buildHref = buildPageHref(`/${locale}/mypage/coins`);
@@ -98,6 +107,9 @@ export default async function CoinsPage({ params, searchParams }: Props) {
           daysPerPoint={AD_FREE_DAYS_PER_POINT}
           block={redemptionBlock}
         />
+
+        {/* Spends that happen elsewhere: rate + link, nothing to submit */}
+        <SpendOptionsSection locale={locale} hasSubscription={hasSubscription} />
 
         {/* History */}
         <div>
