@@ -4146,6 +4146,7 @@
     "usernameLabel": "Nombre de usuario",
     "usernameDescription": "Un ID único usado en la URL de tu perfil y menciones.",
     "usernamePlaceholder": "ej., jugador_ajedrez1",
+    "generateUsername": "Generar un nombre de usuario aleatorio",
     "usernameHint": "2-20 caracteres. Solo letras minúsculas, números y guiones bajos. Debe empezar con una letra.",
     "displayNameLabel": "Nombre para mostrar",
     "displayNameDescription": "Se muestra en las clasificaciones y tu perfil.",

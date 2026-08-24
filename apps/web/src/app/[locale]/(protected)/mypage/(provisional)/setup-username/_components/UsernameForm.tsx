@@ -17,6 +17,17 @@ type Props = {
   locale: string;
 };
 
+/**
+ * Produces a username that always satisfies the format rule. The random suffix
+ * gives users an easy starting point while still allowing them to replace it.
+ */
+function generateUsername(): string {
+  const bytes = crypto.getRandomValues(new Uint8Array(5));
+  const suffix = Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+
+  return `player_${suffix}`;
+}
+
 export function UsernameForm({ locale }: Props) {
   const t = useTranslations('setupUsername');
   const router = useRouter();
@@ -57,6 +68,10 @@ export function UsernameForm({ locale }: Props) {
     if (error) {
       setError(null);
     }
+  };
+
+  const handleGenerateUsername = () => {
+    handleUsernameChange(generateUsername());
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -109,6 +124,13 @@ export function UsernameForm({ locale }: Props) {
           invalid={error !== null}
           {...fieldErrorProps('username-error', error)}
         />
+        <button
+          type="button"
+          onClick={handleGenerateUsername}
+          className="mt-2 ml-auto block text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
+        >
+          {t('generateUsername')}
+        </button>
         {/* Every rejection this form has is about the username (the display
             name is optional and unvalidated), so it renders here rather than
             in a banner — via FieldError, which announces it and ties it to
