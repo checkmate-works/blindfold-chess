@@ -2,19 +2,14 @@
 
 import { useState } from 'react';
 
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { DEFAULT_MAIA_RATING, type MaiaRating } from '@blindfold-chess/features/ai-game/maia';
 import type { Side } from '@blindfold-chess/types';
 
-import {
-  DEFAULT_ENGINE,
-  type EngineConfig,
-  type EngineKind,
-  engineConfigToUrlParams,
-} from '@/lib/engines';
+import { type EngineConfig, type EngineKind, engineConfigToUrlParams } from '@/lib/engines';
 import { MAIA_CHARGE_PARAM } from '@/lib/games/maia-charge-param';
 import type { SkillLevel } from '@/lib/games/saved-game-types';
 import { MAIA_GAME_POINT_COST } from '@/lib/points/constants';
@@ -26,7 +21,10 @@ import { GameLaunchModals } from '@/app/[locale]/(public)/games/new/_components/
 import { SkillLevelSelector } from '@/app/[locale]/(public)/games/new/_components/SkillLevelSelector';
 import { useLocalGameSettings } from '@/app/[locale]/(public)/games/new/_hooks/use-local-game-settings';
 import { useMaiaGameLaunch } from '@/app/[locale]/(public)/games/new/_hooks/use-maia-game-launch';
-import { deriveMaiaCardMode } from '@/app/[locale]/(public)/games/new/_lib/maia-launch';
+import {
+  deriveMaiaCardMode,
+  initialEngineKind,
+} from '@/app/[locale]/(public)/games/new/_lib/maia-launch';
 import { CollapsibleGameSettings } from '@/app/[locale]/(public)/preferences/_components/CollapsibleGameSettings';
 import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -51,7 +49,16 @@ export function StandardGameForm({ locale, maiaAccess }: Props) {
   // folded into a single `EngineConfig` at navigation time below.
   const [stockfishLevel, setStockfishLevel] = useState<SkillLevel>(5);
   const [maiaRating, setMaiaRating] = useState<MaiaRating>(DEFAULT_MAIA_RATING);
-  const [engineKind, setEngineKind] = useState<EngineKind>(DEFAULT_ENGINE);
+
+  const searchParams = useSearchParams();
+  const maiaCardMode = deriveMaiaCardMode(maiaAccess, MAIA_GAME_POINT_COST);
+  // `?engine=maia` (e.g. the Maia spend card on /mypage/coins) preselects
+  // Maia — read once as the initial value, not synced: after the first
+  // render the selection belongs to the user. See `initialEngineKind` for
+  // why a locked card overrides the param.
+  const [engineKind, setEngineKind] = useState<EngineKind>(() =>
+    initialEngineKind(searchParams.get('engine'), maiaCardMode)
+  );
 
   const { localSettings, handleSettingsChange } = useLocalGameSettings();
 
@@ -83,7 +90,7 @@ export function StandardGameForm({ locale, maiaAccess }: Props) {
       <EngineSelector
         value={engineKind}
         onChange={setEngineKind}
-        maiaCardMode={deriveMaiaCardMode(maiaAccess, MAIA_GAME_POINT_COST)}
+        maiaCardMode={maiaCardMode}
         maiaCost={MAIA_GAME_POINT_COST}
         onMaiaLockedClick={launch.openPointInfo}
       />
