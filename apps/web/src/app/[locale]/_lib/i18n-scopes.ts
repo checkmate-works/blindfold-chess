@@ -66,6 +66,7 @@ export const GLOBAL_CLIENT_NAMESPACES = [
   'signIn',
   'signUp',
   'toast',
+  'unsavedChanges',
   'validation',
   'verifyEmail',
 ] as const satisfies readonly ClientNamespace[];
@@ -145,6 +146,7 @@ export const INTL_SCOPES = {
       'ranks',
       'sharedGames',
       'topics',
+      'unsavedChanges',
     ],
   },
   chunks: {
@@ -161,7 +163,6 @@ export const INTL_SCOPES = {
       'play',
       'postFenAttachment',
       'postVideoAttachment',
-      'practice',
       'sharedGames',
       'toast',
       'topics',
@@ -189,15 +190,32 @@ export const INTL_SCOPES = {
   },
   dojo: {
     dir: '[locale]/(public)/dojo',
-    namespaces: ['Common', 'Preferences', 'dojo', 'guides', 'home', 'play', 'ranks'],
+    namespaces: [
+      'Common',
+      'Preferences',
+      'dojo',
+      'guides',
+      'home',
+      'play',
+      'ranks',
+      'unsavedChanges',
+    ],
   },
   home: {
     dir: '[locale]/(public)/(home)',
-    namespaces: ['Common', 'authPrompt', 'home', 'leaderboard', 'sharedGames', 'topics'],
+    namespaces: [
+      'Common',
+      'authPrompt',
+      'home',
+      'leaderboard',
+      'sharedGames',
+      'topics',
+      'unsavedChanges',
+    ],
   },
   leaderboard: {
     dir: '[locale]/(public)/leaderboard',
-    namespaces: ['Common', 'expLeaderboard', 'leaderboard'],
+    namespaces: ['Common', 'expLeaderboard', 'leaderboard', 'unsavedChanges'],
   },
   profile: {
     dir: '[locale]/(public)/u',
@@ -209,6 +227,7 @@ export const INTL_SCOPES = {
       'publicProfile',
       'sharedGames',
       'topics',
+      'unsavedChanges',
     ],
   },
   mypage: {
@@ -230,23 +249,24 @@ export const INTL_SCOPES = {
       'profile',
       'setupUsername',
       'topics',
+      'unsavedChanges',
       'validation',
     ],
   },
   preferences: {
     dir: '[locale]/(public)/preferences',
-    namespaces: ['Common', 'Preferences'],
+    namespaces: ['Common', 'Preferences', 'unsavedChanges'],
   },
   landing: {
     // The `/` root outside the [locale] tree. Its own layout mounts the
     // provider (there is no [locale] root above it), so its "scope" IS its
     // whole dictionary — the landing copy itself is a server-only namespace.
     dir: '(landing)',
-    namespaces: ['Common', 'toast'],
+    namespaces: ['Common', 'toast', 'unsavedChanges'],
   },
   learn: {
     dir: '[locale]/(public)/learn',
-    namespaces: ['Common', 'learn', 'navigation'],
+    namespaces: ['Common', 'learn', 'navigation', 'unsavedChanges'],
   },
 } as const satisfies Record<string, IntlScope>;
 
