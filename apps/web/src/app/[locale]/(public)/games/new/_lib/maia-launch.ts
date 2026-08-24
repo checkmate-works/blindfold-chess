@@ -1,3 +1,4 @@
+import { DEFAULT_ENGINE, type EngineKind } from '@/lib/engines';
 import type { MaiaEngineAccess } from '@/lib/users/can-use-maia';
 
 /**
@@ -17,4 +18,23 @@ export type MaiaCardMode = 'payable' | 'locked';
  */
 export function deriveMaiaCardMode(access: MaiaEngineAccess, cost: number): MaiaCardMode {
   return access.spendableBalance >= cost ? 'payable' : 'locked';
+}
+
+/**
+ * Engine to preselect on a game-creation form, from its `?engine=` search
+ * param. The value vocabulary mirrors `engineConfigFromUrlParams` on the
+ * play route (`maia`, else the default), so a link that names an engine
+ * reads the same on both — /mypage/coins uses this to land its Maia spend
+ * card on the standard form with Maia already chosen.
+ *
+ * A locked Maia card wins over the param: clicking a locked card never
+ * selects it (it opens the coin-info modal instead), so arriving by URL
+ * must not manufacture a selected-but-locked state that no sequence of
+ * clicks can produce.
+ */
+export function initialEngineKind(
+  engineParam: string | null,
+  maiaCardMode: MaiaCardMode
+): EngineKind {
+  return engineParam === 'maia' && maiaCardMode === 'payable' ? 'maia' : DEFAULT_ENGINE;
 }

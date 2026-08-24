@@ -14,9 +14,13 @@
  * 2. Page reads the balance summary + history rows in one batched fetch.
  * 3. Renders three sections:
  *    - Balance card: the user's total Coin balance.
- *    - Redeem control: N Coin → N days of ad_free. Always rendered — an
- *      entitlement that rules the exchange out covers the card with the
- *      reason, and an empty balance just disables the controls.
+ *    - Spend cards, one per use of the balance, all the same width: AI
+ *      review and Maia game as rate + link cards (paid at their own venues
+ *      — see {@link SpendOptionCards}), then the ad_free redeem control —
+ *      last because it is the only spend executed right here. Always
+ *      rendered: an entitlement that rules the exchange out covers the
+ *      redeem card with the reason, and an empty balance just disables its
+ *      controls.
  *    - History table: one page of ledger rows, newest first, with a `?page=`
  *      pagination bar.
  */
@@ -29,8 +33,10 @@ import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { getAdFreeRedemptionBlock } from '@/lib/ads/ad-free-redemption';
 import { getAuthenticatedUser } from '@/lib/auth';
+import { hasActiveSubscription } from '@/lib/billing/subscription';
 import { buildPageHref } from '@/lib/pagination';
 import { AD_FREE_DAYS_PER_POINT } from '@/lib/points';
+import { getViewerProfile } from '@/lib/users/viewer-profile';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
@@ -38,6 +44,7 @@ import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
 
 import { RedeemForm } from './_components/RedeemForm';
+import { SpendOptionCards } from './_components/SpendOptionCards';
 import { getPointsPageData } from './_lib/getPointsPageData';
 
 const searchParamsCache = createSearchParamsCache({
@@ -59,10 +66,17 @@ export default async function CoinsPage({ params, searchParams }: Props) {
 
   const user = await getAuthenticatedUser();
   const { page } = await searchParamsCache.parse(searchParams);
-  const [{ balance, history, currentPage, totalPages }, redemptionBlock] = await Promise.all([
-    getPointsPageData(user.id, page),
-    getAdFreeRedemptionBlock(user.id),
-  ]);
+  // `hasActiveSubscription` is also read inside `getAdFreeRedemptionBlock`
+  // and `getViewerProfile` was already read by the (confirmed) layout; both
+  // extra calls resolve from their caches, so asking again is free and keeps
+  // each fact independently typed.
+  const [{ balance, history, currentPage, totalPages }, redemptionBlock, hasSubscription, profile] =
+    await Promise.all([
+      getPointsPageData(user.id, page),
+      getAdFreeRedemptionBlock(user.id),
+      hasActiveSubscription(user.id),
+      getViewerProfile(user.id),
+    ]);
 
   const dateFmt = (d: Date) => d.toLocaleDateString(locale);
   const buildHref = buildPageHref(`/${locale}/mypage/coins`);
@@ -93,6 +107,14 @@ export default async function CoinsPage({ params, searchParams }: Props) {
         </div>
 
         {/* Redeem control */}
+        {/* Spends that happen elsewhere: rate + link, nothing to submit */}
+        <SpendOptionCards
+          locale={locale}
+          hasSubscription={hasSubscription}
+          username={profile?.username ?? null}
+        />
+
+        {/* The one spend executed on this page, so it closes the list */}
         <RedeemForm
           balance={balance.total}
           daysPerPoint={AD_FREE_DAYS_PER_POINT}

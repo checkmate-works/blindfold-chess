@@ -1,6 +1,7 @@
 import { MypageLoadingFallback } from '../_components/MypageLoadingFallback';
 import { MypageDashboardLoadingFallback } from '../mypage/(confirmed)/_components/MypageDashboardLoadingFallback';
 import { ChallengesLoadingFallback } from '../mypage/(confirmed)/challenges/_components/ChallengesLoadingFallback';
+import { CoinsLoadingFallback } from '../mypage/(confirmed)/coins/_components/CoinsLoadingFallback';
 import { NotificationsLoadingFallback } from '../mypage/(confirmed)/notifications/_components/NotificationsLoadingFallback';
 import { ProfileLoadingFallback } from '../mypage/(confirmed)/profile/_components/ProfileLoadingFallback';
 
@@ -28,6 +29,12 @@ export function resolveLoadingFallback(pathname: string) {
   // Covers `/mypage/challenges` and its `results` child (both use DashboardSkeleton).
   if (pathname.includes('/mypage/challenges')) {
     return <ChallengesLoadingFallback />;
+  }
+  if (pathname.includes('/mypage/coins')) {
+    // pathname is `/${locale}/mypage/coins` — the locale segment is always
+    // present and known synchronously, no await needed.
+    const locale = pathname.split('/')[1] ?? 'en';
+    return <CoinsLoadingFallback locale={locale} />;
   }
   if (pathname.includes('/mypage/notifications')) {
     // pathname is `/${locale}/mypage/notifications` — the locale segment is
