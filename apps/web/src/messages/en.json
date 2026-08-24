@@ -732,7 +732,6 @@
   },
   "coin": {
     "title": "Coins",
-    "unit": "coins",
     "hero": {
       "tagline": "Every like on the content you publish earns you a Coin."
     },

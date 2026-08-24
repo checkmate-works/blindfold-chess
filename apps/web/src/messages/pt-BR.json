@@ -732,7 +732,6 @@
   },
   "coin": {
     "title": "Moedas",
-    "unit": "moedas",
     "hero": {
       "tagline": "Cada curtida no conteúdo que você publica rende uma moeda."
     },

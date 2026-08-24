@@ -732,7 +732,6 @@
   },
   "coin": {
     "title": "Monedas",
-    "unit": "monedas",
     "hero": {
       "tagline": "Cada «me gusta» en el contenido que publicas te da una moneda."
     },
