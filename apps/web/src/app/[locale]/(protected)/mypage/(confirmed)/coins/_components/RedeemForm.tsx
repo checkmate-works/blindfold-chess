@@ -10,7 +10,7 @@ import { Button, FieldError, FormErrorBanner, fieldErrorProps } from '@/app/_com
 import type { AdFreeRedemptionBlock } from '@/lib/ads/ad-free-redemption';
 
 import { type RedeemAdFreeResult, redeemAdFree } from '../_actions/redeemAdFree';
-import { RedeemUnneededOverlay } from './RedeemUnneededOverlay';
+import { RedeemNoticeOverlay, type RedeemNoticeReason } from './RedeemNoticeOverlay';
 
 type Props = {
   balance: number;
@@ -18,7 +18,7 @@ type Props = {
   /**
    * Set when the user already browses ad-free by dan rank or subscription,
    * either of which makes the days bought here tick down unused. The card is
-   * then rendered inert under {@link RedeemUnneededOverlay}. Coins are never
+   * then rendered inert under {@link RedeemNoticeOverlay}. Coins are never
    * lost by waiting — see `getAdFreeRedemptionBlock`, which also guards the
    * `redeemAdFree` action server-side.
    */
@@ -44,10 +44,26 @@ type Props = {
 export function RedeemForm({ balance, daysPerPoint, block = null }: Props) {
   const t = useTranslations('MypagePoints');
   const router = useRouter();
-  const [amount, setAmount] = useState<number>(Math.min(1, balance));
+  const [amount, setAmount] = useState<number>(1);
   const [error, setError] = useState<{ code: string; message: string } | null>(null);
   const [success, setSuccess] = useState<{ days: number } | null>(null);
   const [pending, startTransition] = useTransition();
+
+  /**
+   * Why the controls are covered, or `null` when they are live. An
+   * entitlement block outranks an empty balance: "you never need this" is
+   * the more useful thing to tell a dan holder who also happens to have no
+   * coins.
+   */
+  const notice: RedeemNoticeReason | null = block ?? (balance < 1 ? 'no_balance' : null);
+
+  /**
+   * The largest amount the controls offer. With an empty balance the card is
+   * a dimmed, inert preview of the exchange rather than something the user
+   * can act on, so it illustrates the one-coin offer instead of collapsing to
+   * a `max` of zero against a `min` of one.
+   */
+  const offeredMax = Math.max(1, balance);
 
   const days = amount * daysPerPoint;
 
@@ -65,7 +81,7 @@ export function RedeemForm({ balance, daysPerPoint, block = null }: Props) {
       setAmount(1);
       return;
     }
-    setAmount(Math.min(Math.max(1, parsed), balance));
+    setAmount(Math.min(Math.max(1, parsed), offeredMax));
   };
 
   const handleSubmit = () => {
@@ -93,10 +109,6 @@ export function RedeemForm({ balance, daysPerPoint, block = null }: Props) {
     });
   };
 
-  if (balance < 1) {
-    return null;
-  }
-
   const card = (
     <div className="rounded-xl border border-border bg-card p-4 space-y-3">
       <h3 className="text-sm font-semibold text-foreground">{t('redeem.title')}</h3>
@@ -107,7 +119,7 @@ export function RedeemForm({ balance, daysPerPoint, block = null }: Props) {
           id="redeem-amount"
           type="number"
           min={1}
-          max={balance}
+          max={offeredMax}
           step={1}
           value={amount}
           onChange={(e) => handleAmountChange(e.target.value)}
@@ -140,8 +152,8 @@ export function RedeemForm({ balance, daysPerPoint, block = null }: Props) {
     </div>
   );
 
-  if (block) {
-    return <RedeemUnneededOverlay reason={block}>{card}</RedeemUnneededOverlay>;
+  if (notice) {
+    return <RedeemNoticeOverlay reason={notice}>{card}</RedeemNoticeOverlay>;
   }
 
   return card;

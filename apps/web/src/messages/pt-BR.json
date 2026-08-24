@@ -3909,9 +3909,18 @@
       "submitting": "Resgatando…",
       "successMessage": "Pronto — {days, plural, one {# dia} other {# dias}} sem anúncios foram adicionados.",
       "notice": {
-        "title": "Não é preciso gastar moedas",
-        "dan_rank": "Quem tem uma graduação dan sempre navega sem anúncios.",
-        "subscription": "Sua assinatura oculta os anúncios enquanto está ativa. As moedas não expiram: você pode resgatá-las quando ela terminar."
+        "dan_rank": {
+          "title": "Não é preciso gastar moedas",
+          "body": "Quem tem uma graduação dan sempre navega sem anúncios."
+        },
+        "subscription": {
+          "title": "Não é preciso gastar moedas",
+          "body": "Sua assinatura oculta os anúncios enquanto está ativa. As moedas não expiram: você pode resgatá-las quando ela terminar."
+        },
+        "no_balance": {
+          "title": "Você ainda não tem moedas",
+          "body": "As moedas chegam quando suas publicações recebem curtidas."
+        }
       },
       "errors": {
         "invalid_amount": "Informe um número inteiro positivo.",

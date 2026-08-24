@@ -2,6 +2,7 @@ import type { ReactElement, ReactNode } from 'react';
 
 import { useTranslations } from 'next-intl';
 
+import { CoinIcon } from '@blindfold-chess/icons';
 import { GiBlackBelt } from 'react-icons/gi';
 import { HiShieldCheck } from 'react-icons/hi2';
 
@@ -16,6 +17,15 @@ import { getBeltColorHex } from '@/app/[locale]/(public)/dojo/ranks/_lib/belt-co
  * belt" means reaches this badge too.
  */
 const DAN_BELT_HEX = getBeltColorHex('1dan');
+
+/**
+ * Why the redeem controls are covered.
+ *
+ * The two `AdFreeRedemptionBlock` reasons say "this would buy you nothing";
+ * `no_balance` says "there is nothing to spend yet". Different messages, but
+ * the same treatment on purpose — see the component's @design note.
+ */
+export type RedeemNoticeReason = AdFreeRedemptionBlock | 'no_balance';
 
 const BADGE_CLASS =
   'flex h-12 w-12 shrink-0 items-center justify-center rounded-full ring-1 ring-border';
@@ -38,7 +48,7 @@ const BADGE_ICON_CLASS = 'h-6 w-6';
  * with `noImplicitReturns` off a newly added reason would otherwise widen the
  * return to `ReactElement | undefined` and silently render no badge.
  */
-function ReasonBadge({ reason }: { reason: AdFreeRedemptionBlock }): ReactElement {
+function ReasonBadge({ reason }: { reason: RedeemNoticeReason }): ReactElement {
   switch (reason) {
     case 'dan_rank':
       return (
@@ -55,27 +65,36 @@ function ReasonBadge({ reason }: { reason: AdFreeRedemptionBlock }): ReactElemen
           />
         </span>
       );
+    case 'no_balance':
+      return (
+        <span className={`${BADGE_CLASS} bg-muted`}>
+          <CoinIcon size={24} aria-hidden="true" />
+        </span>
+      );
   }
 }
 
 type Props = {
-  reason: AdFreeRedemptionBlock;
+  reason: RedeemNoticeReason;
   /** The redeem card, rendered dimmed and inert underneath the notice. */
   children: ReactNode;
 };
 
 /**
- * Covers the redeem card with "you don't need to spend coins on this", for
- * users whose ads are already suppressed by dan rank or a subscription.
+ * Covers the redeem card with the reason it cannot be used right now — the
+ * user's ads are already suppressed by dan rank or a subscription, or there
+ * are no coins to spend yet.
  *
  * @design Cover, don't replace
  *
- * Swapping the card out for a bare paragraph changes the section's shape
- * per-user, which leaves a loading skeleton nothing stable to imitate — it
- * would have to guess which of two layouts the server is about to send.
- * Keeping the card mounted and laying the notice over it means the section
- * occupies the same box for everyone, and the reader still sees what the
- * exchange would have offered instead of a sentence about an absence.
+ * Every state the section can be in renders the same card in the same box:
+ * a redeemable balance gets the live controls, and everything else gets them
+ * dimmed under this notice. The alternatives — swapping in a bare paragraph,
+ * or (as the empty balance used to) rendering nothing at all — make the
+ * section's height depend on who is looking, which leaves a loading skeleton
+ * nothing stable to imitate and, in the empty case, hides the whole point of
+ * collecting coins from precisely the user who has none. The reader always
+ * sees what the exchange offers, plus one line on why it is unavailable.
  *
  * The covered card is `inert` + `aria-hidden`, so the amount input and the
  * submit button are unreachable by pointer, keyboard and assistive tech —
@@ -85,7 +104,7 @@ type Props = {
  * two layers is taller and the notice can never be clipped on narrow
  * screens.
  */
-export function RedeemUnneededOverlay({ reason, children }: Props) {
+export function RedeemNoticeOverlay({ reason, children }: Props) {
   const t = useTranslations('MypagePoints');
 
   return (
@@ -97,8 +116,10 @@ export function RedeemUnneededOverlay({ reason, children }: Props) {
       <div className="col-start-1 row-start-1 z-10 flex items-center justify-center rounded-xl bg-card/50 p-6 backdrop-blur-xs">
         <div className="flex flex-col items-center gap-2 text-center">
           <ReasonBadge reason={reason} />
-          <p className="text-sm font-semibold text-foreground">{t('redeem.notice.title')}</p>
-          <p className="text-sm text-muted-foreground">{t(`redeem.notice.${reason}`)}</p>
+          <p className="text-sm font-semibold text-foreground">
+            {t(`redeem.notice.${reason}.title`)}
+          </p>
+          <p className="text-sm text-muted-foreground">{t(`redeem.notice.${reason}.body`)}</p>
         </div>
       </div>
     </div>
