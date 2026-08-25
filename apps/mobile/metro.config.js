@@ -26,7 +26,17 @@ config.resolver.disableHierarchicalLookup = true;
 //   Metro from parsing it as a JS module — it contains require("fs") etc.)
 config.resolver.assetExts = [...config.resolver.assetExts, "wasm", "bin"];
 
-// 5. Inject polyfill before all modules (runs before any module initialization)
+// 5. Keep parallel-session worktrees out of Metro. watchFolders (see 1.)
+// covers the whole workspace root, which also contains the worktrees Claude
+// Code creates under .claude/worktrees/ — full checkouts of other branches.
+// Without this block Metro watches those trees and can resolve modules from
+// them, mixing another branch's in-progress code into this dev server.
+config.resolver.blockList = [
+  ...[config.resolver.blockList].flat().filter(Boolean),
+  /\/\.claude\/worktrees\/.*/,
+];
+
+// 6. Inject polyfill before all modules (runs before any module initialization)
 const defaultGetPolyfills = config.serializer.getPolyfills;
 config.serializer.getPolyfills = (options) => {
   return [
