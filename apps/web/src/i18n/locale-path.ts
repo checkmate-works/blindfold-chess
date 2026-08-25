@@ -1,4 +1,4 @@
-import { SUPPORTED_LOCALES } from '@/config';
+import { findSupportedLocale } from './supported-locale';
 
 /**
  * Top-level path segments served by route trees OUTSIDE `app/[locale]`.
@@ -69,7 +69,7 @@ export function needsLocalePrefix(pathname: string): boolean {
   if (first.includes('.')) return false;
 
   const lower = first.toLowerCase();
-  if (SUPPORTED_LOCALES.some((locale) => locale.toLowerCase() === lower)) return false;
+  if (findSupportedLocale(lower)) return false;
   if ((NON_LOCALE_TOP_SEGMENTS as readonly string[]).includes(lower)) return false;
 
   return true;

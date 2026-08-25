@@ -1,4 +1,4 @@
-import { SUPPORTED_LOCALES } from '@/config';
+import { isSupportedLocale } from '@/i18n/supported-locale';
 
 import { getLocaleFromRequest } from '@/lib/locale';
 
@@ -35,8 +35,8 @@ export async function getLandingLocale(
 ): Promise<Locale> {
   const raw = searchParams.lang;
   const candidate = Array.isArray(raw) ? raw[0] : raw;
-  if (candidate && (SUPPORTED_LOCALES as readonly string[]).includes(candidate)) {
-    return candidate as Locale;
+  if (candidate && isSupportedLocale(candidate)) {
+    return candidate;
   }
   return getLocaleFromRequest();
 }
