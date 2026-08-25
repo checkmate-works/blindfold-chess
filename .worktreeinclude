@@ -14,10 +14,14 @@
 # being run there by accident — the stack is driven from the main checkout
 # only. See .claude/skills/parallel-worktree/SKILL.md.
 #
-# apps/web/engines/maia/ is deliberately absent too: it is symlinked from the
+# apps/web/engines/ is deliberately absent too: it is symlinked from the
 # main checkout via worktree.symlinkDirectories in .claude/settings.json
-# (46 MB, immutable), and copying into a symlinked directory would write
-# through into the main checkout.
+# (the Maia model inside is 46 MB and immutable), and copying into a
+# symlinked directory would write through into the main checkout. The
+# setting names engines/ rather than engines/maia/ because the symlinker
+# links only into parent directories that already exist in the fresh
+# checkout, and engines/ — wholly gitignored — is not created by checkout
+# (verified 2026-08-25).
 
 # Next.js dev/build reads the full env set from here. The database is SHARED
 # with the main checkout (see above), so the connection strings stay as they
