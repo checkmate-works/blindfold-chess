@@ -59,12 +59,25 @@ export const generateStaticParams = generateLocaleStaticParams;
 export const dynamicParams = false;
 
 /**
- * Default ISR interval for every static route in this tree (pages may set a
- * lower one; dynamic routes ignore it). Bounds the staleness of layout-level
- * content baked into prerendered HTML — most visibly the announcement banner
- * the Header renders — to one hour, instead of the build default of one day.
+ * Default ISR interval for every static route in this tree (pages may set
+ * their own; dynamic routes ignore it). One day, up from one hour (2026-08):
+ * this interval is what background traffic pays — crawler sweeps of the
+ * code-seeded static pages re-render each page once per interval, and under
+ * PPR one page re-render is ~4 ISR Writes — so the hourly cycle was ~24× the
+ * write volume the content needs.
+ *
+ * The hourly bound existed for the announcement banner the Header bakes into
+ * every prerendered page, but the banner does not rely on this timer: admin
+ * announcement mutations invalidate the `announcements` cache tag
+ * (`admin/announcements/_lib/revalidate.ts`), which marks every page that
+ * read the banner query stale, so each page re-renders on its next visit —
+ * propagation is visit-driven, not timer-driven. This timer only backstops
+ * banner changes made outside the admin actions (a direct SQL / service-role
+ * write, a path we do not use), and even there the banner fetch's own 24h
+ * `unstable_cache` TTL (see `getLatestBannerAnnouncement`) already dominated
+ * the worst case.
  */
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 /**
  * Route segment config, inherited by every page below. The platform default
