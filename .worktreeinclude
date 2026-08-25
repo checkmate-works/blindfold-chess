@@ -1,0 +1,34 @@
+# Gitignored files copied into each worktree Claude Code creates
+# (claude --worktree / EnterWorktree). Same syntax as .gitignore; only files
+# that BOTH match a pattern here AND are gitignored get copied. Each entry
+# says why it is needed and what must change after the copy.
+#
+# MUST NOT list .claude/settings.local.json (or any local permission
+# override): a copy would keep a permission alive inside the worktree after
+# it is revoked in the main checkout — revocation never propagates to copies.
+#
+# MUST NOT list apps/web/supabase/.env: the local Supabase stack is shared
+# across all worktrees (project_id and every port are fixed in the tracked
+# supabase/config.toml, so per-worktree instances are impossible). Leaving
+# the credentials out of worktrees keeps `supabase start` / `db reset` from
+# being run there by accident — the stack is driven from the main checkout
+# only. See .claude/skills/parallel-worktree/SKILL.md.
+#
+# apps/web/engines/maia/ is deliberately absent too: it is symlinked from the
+# main checkout via worktree.symlinkDirectories in .claude/settings.json
+# (46 MB, immutable), and copying into a symlinked directory would write
+# through into the main checkout.
+
+# Next.js dev/build reads the full env set from here. The database is SHARED
+# with the main checkout (see above), so the connection strings stay as they
+# are. The one value to adjust per worktree is NEXT_PUBLIC_SITE_URL, when the
+# dev server runs on a port other than 3000.
+/apps/web/.env.local
+
+# Engine binaries copied out of node_modules by `pnpm copy-stockfish` (the
+# web prebuild runs it too). Regenerable after `pnpm install`, but copying
+# the ready-made files spares every worktree that setup step.
+/apps/web/public/stockfish.js
+/apps/web/public/stockfish.wasm
+/apps/mobile/assets/stockfish/stockfish.js.bin
+/apps/mobile/assets/stockfish/stockfish.wasm
