@@ -35,7 +35,7 @@ export function PieceMovementBoard({
   legalMoveSquares,
   className = DEFAULT_CLASS_NAME,
 }: PieceMovementBoardProps) {
-  const { themeColors, isLoaded } = useBoardTheme();
+  const { themeColors, showCoordinates, isLoaded } = useBoardTheme();
 
   const renderSquare = useCallback(
     ({ square, isLight }: SquareRenderInfo) => {
@@ -68,7 +68,11 @@ export function PieceMovementBoard({
 
   return (
     <div className={className}>
-      <BoardLayout showCoordinates themeColors={themeColors} renderSquare={renderSquare} />
+      <BoardLayout
+        showCoordinates={showCoordinates}
+        themeColors={themeColors}
+        renderSquare={renderSquare}
+      />
     </div>
   );
 }

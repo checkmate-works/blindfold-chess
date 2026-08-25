@@ -27,7 +27,7 @@ export function StaticPositionBoard({
   placements,
   className = DEFAULT_CLASS_NAME,
 }: StaticPositionBoardProps) {
-  const { themeColors, isLoaded } = useBoardTheme();
+  const { themeColors, showCoordinates, isLoaded } = useBoardTheme();
 
   const renderSquare = useCallback(
     ({ square }: SquareRenderInfo) => {
@@ -48,7 +48,11 @@ export function StaticPositionBoard({
 
   return (
     <div className={className}>
-      <BoardLayout showCoordinates themeColors={themeColors} renderSquare={renderSquare} />
+      <BoardLayout
+        showCoordinates={showCoordinates}
+        themeColors={themeColors}
+        renderSquare={renderSquare}
+      />
     </div>
   );
 }
