@@ -184,6 +184,13 @@ export default async function AdminGrantsPage({
           const profile = profileMap.get(grant.userId);
           const email = emailMap.get(grant.userId);
           const status = getGrantRowStatus(grant, now);
+          // Revoking is what cancels a mis-issued grant before it ever takes
+          // effect, and additive stacking means every grant added on top of an
+          // existing one starts in the future — gating this on `active` would
+          // make the common case uncancellable. Only an elapsed window has
+          // nothing left to take away; an already-revoked row is rejected by
+          // `revokeGrant` itself, which checks nothing else about the window.
+          const canRevoke = status !== 'expired' && status !== 'revoked';
 
           return (
             <tr key={grant.id} className="border-t border-border">
@@ -209,9 +216,7 @@ export default async function AdminGrantsPage({
                   {statusLabel(status)}
                 </span>
               </td>
-              <td className="px-4 py-3">
-                {status === 'active' && <RevokeButton grantId={grant.id} />}
-              </td>
+              <td className="px-4 py-3">{canRevoke && <RevokeButton grantId={grant.id} />}</td>
             </tr>
           );
         }}
