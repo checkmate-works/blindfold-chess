@@ -11,6 +11,7 @@ import type { MoveSquares } from '@/lib/board/move-squares';
 import type { EvaluationMark } from '@/lib/games/evaluation';
 import type { TerminationMark } from '@/lib/games/termination-mark';
 
+import { moveNavDisabledState } from '@/app/[locale]/(public)/games/play/_lib/move-nav-disabled-state';
 import type { FormattedPgnMove } from '@/app/[locale]/(public)/games/play/_lib/pgn-parser';
 import { BoardModal } from '@/app/[locale]/_components/BoardModal';
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -132,12 +133,7 @@ export function BoardViewModal({
             onNavigatePrevious={movesLength > 0 ? onNavigatePrevious : undefined}
             onNavigateNext={movesLength > 0 ? onNavigateNext : undefined}
             onNavigateToEnd={movesLength > 0 ? onNavigateToEnd : undefined}
-            isPreviousDisabled={
-              currentPosition === -2 || (currentPosition === -1 && movesLength === 0)
-            }
-            isNextDisabled={
-              currentPosition === -1 || (movesLength > 0 && currentPosition === movesLength - 1)
-            }
+            {...moveNavDisabledState(currentPosition, movesLength)}
             flip={onFlipBoard ? { onClick: onFlipBoard, label: t('flipBoard') } : undefined}
           />
         )}
