@@ -2,9 +2,18 @@ import en from '@/messages/en.json';
 import es from '@/messages/es.json';
 import ja from '@/messages/ja.json';
 import ptBR from '@/messages/pt-BR.json';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { TEXT_BY_LOCALE } from './CoinsLoadingFallback';
+
+// The map lives beside the JSX, so importing it pulls in the shared
+// `_components` barrel and, through it, the locale-aware `Link` that
+// next-intl's `createNavigation` builds. Loading that under vitest fails
+// outright — next-intl's ESM build asks for `next/navigation`, and pnpm's
+// isolated store has no `next` inside next-intl's own `node_modules`, so the
+// whole file errors before a single assertion runs. The shared mock
+// (`src/i18n/__mocks__/routing.ts`) short-circuits the chain.
+vi.mock('@/i18n/routing');
 
 const MESSAGES = { en, ja, es, 'pt-BR': ptBR } as const;
 
