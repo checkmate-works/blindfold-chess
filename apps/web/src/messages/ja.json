@@ -4850,6 +4850,7 @@
       "status": {
         "revoked": "取消済み",
         "expired": "期限切れ",
+        "upcoming": "開始前",
         "active": "有効"
       }
     },

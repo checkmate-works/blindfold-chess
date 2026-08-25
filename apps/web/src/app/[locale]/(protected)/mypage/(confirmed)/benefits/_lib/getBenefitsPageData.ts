@@ -82,7 +82,7 @@ export async function getBenefitsPageData(userId: string): Promise<BenefitsPageD
   const subscriptionExpiresAt = subscriptionActive ? new Date(subscription.currentPeriodEnd) : null;
 
   const activeGrants = allGrants.filter(
-    (g) => new Date(g.startsAt) <= now && new Date(g.expiresAt) > now
+    (g) => classifyGrantPeriod(now, new Date(g.startsAt), new Date(g.expiresAt)) === 'active'
   );
   const latestGrantExpiresAt = activeGrants.reduce<Date | null>((acc, g) => {
     const exp = new Date(g.expiresAt);

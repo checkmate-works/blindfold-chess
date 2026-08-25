@@ -26,7 +26,7 @@ vi.mock('next/cache', () => ({
   revalidateTag: vi.fn(),
 }));
 
-const { calcGrantStartsAt } = await import('./user-grants');
+const { calcGrantStartsAt, classifyGrantPeriod } = await import('./user-grants');
 
 describe('calcGrantStartsAt', () => {
   beforeEach(() => {
@@ -79,5 +79,30 @@ describe('calcGrantStartsAt', () => {
 
     const result = await calcGrantStartsAt('user-123', 'ad_free');
     expect(result.getTime()).toBe(now.getTime());
+  });
+});
+
+describe('classifyGrantPeriod', () => {
+  const now = new Date('2026-04-08T12:00:00Z');
+  const offset = (ms: number) => new Date(now.getTime() + ms);
+
+  it('classifies a window surrounding now as active', () => {
+    expect(classifyGrantPeriod(now, offset(-1000), offset(1000))).toBe('active');
+  });
+
+  it('classifies a window that has not begun as upcoming', () => {
+    expect(classifyGrantPeriod(now, offset(1000), offset(2000))).toBe('upcoming');
+  });
+
+  it('classifies a window that has elapsed as expired', () => {
+    expect(classifyGrantPeriod(now, offset(-2000), offset(-1000))).toBe('expired');
+  });
+
+  it('treats startsAt as inclusive: a grant starting exactly now has begun', () => {
+    expect(classifyGrantPeriod(now, now, offset(1000))).toBe('active');
+  });
+
+  it('treats expiresAt as exclusive: a grant expiring exactly now is over', () => {
+    expect(classifyGrantPeriod(now, offset(-1000), now)).toBe('expired');
   });
 });
