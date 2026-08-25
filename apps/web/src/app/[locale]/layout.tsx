@@ -60,11 +60,19 @@ export const dynamicParams = false;
 
 /**
  * Default ISR interval for every static route in this tree (pages may set
- * their own; dynamic routes ignore it). One day, up from one hour (2026-08):
- * this interval is what background traffic pays — crawler sweeps of the
- * code-seeded static pages re-render each page once per interval, and under
- * PPR one page re-render is ~4 ISR Writes — so the hourly cycle was ~24× the
- * write volume the content needs.
+ * their own; dynamic routes ignore it). One day, up from one hour (2026-08),
+ * because ISR Writes had become the largest usage line on the bill after the
+ * subscription itself — 0.24 USD-equivalent/day against Fluid Provisioned
+ * Memory's 0.14 once the pool-drain keepalive stopped inflating the latter.
+ *
+ * What the interval sets is a ceiling, not a rate. An entry is rewritten only
+ * when a request arrives after it went stale, so a page costs
+ * `min(requests, 86400 / interval)` re-renders per day, each ~4 ISR Writes
+ * under PPR. Dropping the ceiling from 24/day to 1/day therefore only pays
+ * off on pages background traffic hits more than once a day, and production
+ * deploys put a floor under the total by invalidating whatever was not
+ * prerendered at build. Expect a real cut on the crawler-swept content
+ * surface — not a 24-fold one.
  *
  * The hourly bound existed for the announcement banner the Header bakes into
  * every prerendered page, but the banner does not rely on this timer: admin
