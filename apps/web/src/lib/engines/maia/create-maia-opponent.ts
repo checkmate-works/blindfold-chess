@@ -1,3 +1,4 @@
+import { PendingRequests } from '@blindfold-chess/features/ai-game/engine';
 import {
   type MaiaConfig,
   decodeMaia3Output,
@@ -22,10 +23,35 @@ export type MaiaOpponentConfig = MaiaConfig & {
   modelUrl?: string;
 };
 
-type PendingInference = {
-  resolve: (logits: { policyLogits: Float32Array; valueLogits: Float32Array }) => void;
-  reject: (error: Error) => void;
+type MaiaInferenceLogits = {
+  policyLogits: Float32Array;
+  valueLogits: Float32Array;
 };
+
+/**
+ * Deadline for `init` → `ready`, which covers fetching the ~46 MB ONNX model
+ * and creating the onnxruntime session. Generous because the download runs
+ * over whatever connection the player happens to be on, and a slow phone on
+ * a train is the normal case rather than the pathological one — the deadline
+ * exists to bound a worker that has stopped answering entirely, not to
+ * enforce a performance budget.
+ */
+export const MAIA_INIT_TIMEOUT_MS = 120_000;
+
+/**
+ * Deadline for a single `infer` → `inferred` roundtrip. A Maia 3 forward pass
+ * is tens of milliseconds once the session is warm, so two orders of magnitude
+ * of headroom still leaves an unanswered request detectable well inside the
+ * player's patience.
+ */
+export const MAIA_INFERENCE_TIMEOUT_MS = 20_000;
+
+/**
+ * Key for the single outstanding model-initialisation request. Unlike
+ * inference, only one `init` is ever in flight (its promise is cached and
+ * shared by every concurrent caller), so a constant key suffices.
+ */
+const INIT_REQUEST_KEY = 'init';
 
 /**
  * Construct a fresh Maia-backed {@link ChessOpponent}.
@@ -40,8 +66,16 @@ type PendingInference = {
  * Concurrent `getBestMove` calls are correlated by an integer `requestId`
  * stamped on the request and echoed in the response. In practice the
  * upper layer (`useAiVersus`-style hook) serialises moves itself, so the
- * map will rarely hold more than one entry — but the protocol supports
+ * registry will rarely hold more than one entry — but the protocol supports
  * concurrency cleanly.
+ *
+ * Every request the adapter makes of the worker is bounded, and every
+ * outstanding request is failed when the worker dies, because this opponent
+ * sits directly under the "it is the AI's turn" state in the UI: a promise
+ * that never settles is not a slow move, it is a game the player can no
+ * longer continue and cannot diagnose. Both protections come from the shared
+ * {@link PendingRequests} registry, the same one the Stockfish UCI transport
+ * uses.
  */
 export function createMaiaOpponent(config: MaiaOpponentConfig): ChessOpponent {
   const modelUrl = config.modelUrl ?? DEFAULT_MAIA_MODEL_URL;
@@ -49,63 +83,80 @@ export function createMaiaOpponent(config: MaiaOpponentConfig): ChessOpponent {
     type: 'module',
   });
 
-  const pending = new Map<number, PendingInference>();
+  const initialization = new PendingRequests<void>();
+  const inferences = new PendingRequests<MaiaInferenceLogits>();
   let nextRequestId = 0;
   let initPromise: Promise<void> | null = null;
+  /**
+   * Set when the Worker itself fails (`error` event) rather than reporting a
+   * failure over the protocol. The worker is unrecoverable at that point —
+   * nothing we post to it will ever be answered — so the error is latched and
+   * replayed to later callers instead of letting them wait out a fresh
+   * initialisation deadline against a corpse.
+   */
+  let fatalWorkerError: Error | null = null;
   let destroyed = false;
 
   worker.addEventListener('message', (event: MessageEvent<MaiaWorkerResponse>) => {
     const msg = event.data;
+    if (msg.type === 'ready') {
+      initialization.settle(INIT_REQUEST_KEY, undefined);
+      return;
+    }
     if (msg.type === 'inferred') {
-      const handler = pending.get(msg.requestId);
-      if (!handler) return;
-      pending.delete(msg.requestId);
-      handler.resolve({
+      inferences.settle(msg.requestId, {
         policyLogits: msg.policyLogits,
         valueLogits: msg.valueLogits,
       });
       return;
     }
-    if (msg.type === 'error' && msg.requestId !== undefined) {
-      const handler = pending.get(msg.requestId);
-      if (!handler) return;
-      pending.delete(msg.requestId);
-      handler.reject(new Error(msg.message));
+    if (msg.type === 'error') {
+      // A `requestId` ties the failure to one inference; its absence means the
+      // worker failed globally, which can only be the model load.
+      if (msg.requestId === undefined) {
+        initialization.fail(INIT_REQUEST_KEY, new Error(msg.message));
+      } else {
+        inferences.fail(msg.requestId, new Error(msg.message));
+      }
     }
-    // `ready` and init-time errors are consumed by the init promise's
-    // own one-shot listener registered inside `ensureInitialized`.
   });
 
   worker.addEventListener('error', (event: ErrorEvent) => {
-    const message = event.message || 'Maia worker crashed';
-    // Reject every in-flight inference — the worker is gone.
-    for (const [, p] of pending) {
-      p.reject(new Error(message));
-    }
-    pending.clear();
+    const error = new Error(event.message || 'Maia worker crashed');
+    fatalWorkerError = error;
+    // Fail everything in flight — including a model load, which is awaited
+    // through the same registry precisely so that a worker dying mid-download
+    // rejects the initialisation instead of leaving it pending forever.
+    initialization.failAll(error);
+    inferences.failAll(error);
   });
 
   const ensureInitialized = (): Promise<void> => {
+    if (fatalWorkerError) return Promise.reject(fatalWorkerError);
     if (initPromise) return initPromise;
-    initPromise = new Promise<void>((resolve, reject) => {
-      const handler = (event: MessageEvent<MaiaWorkerResponse>) => {
-        const msg = event.data;
-        if (msg.type === 'ready') {
-          worker.removeEventListener('message', handler);
-          resolve();
-          return;
-        }
-        if (msg.type === 'error' && msg.requestId === undefined) {
-          worker.removeEventListener('message', handler);
-          reject(new Error(msg.message));
-        }
-      };
-      worker.addEventListener('message', handler);
 
-      const initMsg: MaiaWorkerInitRequest = { type: 'init', modelUrl };
-      worker.postMessage(initMsg satisfies MaiaWorkerRequest);
-    });
-    return initPromise;
+    const attempt = initialization
+      .request(INIT_REQUEST_KEY, {
+        timeoutMs: MAIA_INIT_TIMEOUT_MS,
+        timeoutMessage: 'Maia model initialization timed out',
+        dispatch: () => {
+          const initMsg: MaiaWorkerInitRequest = { type: 'init', modelUrl };
+          worker.postMessage(initMsg satisfies MaiaWorkerRequest);
+        },
+      })
+      .catch((error: unknown) => {
+        // Uncache the failed attempt so the next `getBestMove` starts a fresh
+        // one. Model load fails for transient reasons — a dropped connection,
+        // a 5xx from the model route — and caching the rejected promise would
+        // turn one of those into an opponent that refuses to play for the rest
+        // of the session. Guarded on identity so a retry already started by
+        // another caller is not dropped along with this one.
+        if (initPromise === attempt) initPromise = null;
+        throw error;
+      });
+
+    initPromise = attempt;
+    return attempt;
   };
 
   return {
@@ -135,14 +186,13 @@ export function createMaiaOpponent(config: MaiaOpponentConfig): ChessOpponent {
           opponentElo: input.opponentElo,
         };
 
-        const { policyLogits, valueLogits } = await new Promise<{
-          policyLogits: Float32Array;
-          valueLogits: Float32Array;
-        }>((resolve, reject) => {
-          pending.set(requestId, { resolve, reject });
+        const { policyLogits, valueLogits } = await inferences.request(requestId, {
+          timeoutMs: MAIA_INFERENCE_TIMEOUT_MS,
+          timeoutMessage: `Maia inference timed out after ${MAIA_INFERENCE_TIMEOUT_MS}ms`,
           // Transfer the boardTokens buffer to the worker — it is not
           // used again on the main thread after the postMessage call.
-          worker.postMessage(inferMsg satisfies MaiaWorkerRequest, [input.boardTokens.buffer]);
+          dispatch: () =>
+            worker.postMessage(inferMsg satisfies MaiaWorkerRequest, [input.boardTokens.buffer]),
         });
 
         const decoded = decodeMaia3Output({ policyLogits, valueLogits }, input);
@@ -178,8 +228,8 @@ export function createMaiaOpponent(config: MaiaOpponentConfig): ChessOpponent {
       worker.terminate();
 
       const teardownError = new Error('Maia opponent destroyed');
-      for (const [, p] of pending) p.reject(teardownError);
-      pending.clear();
+      initialization.failAll(teardownError);
+      inferences.failAll(teardownError);
     },
   };
 }
