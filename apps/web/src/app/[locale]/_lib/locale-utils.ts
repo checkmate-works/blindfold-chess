@@ -1,4 +1,4 @@
-export const DEFAULT_LOCALE = 'en';
+import { DEFAULT_LOCALE } from '@/config';
 
 /**
  * Pick the best locale variant from a group of rows sharing the same slug.

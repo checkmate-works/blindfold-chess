@@ -2,12 +2,13 @@ import { cache } from 'react';
 
 import { unstable_cache } from 'next/cache';
 
+import { DEFAULT_LOCALE } from '@/config';
 import { and, desc, eq, gte, isNotNull, sql } from 'drizzle-orm';
 
 import { ANNOUNCEMENTS_CACHE_TAG } from '@/lib/cache-tags';
 import { type Announcement, announcements, db } from '@/lib/db';
 
-import { DEFAULT_LOCALE, pickByLocale } from '@/app/[locale]/_lib/locale-utils';
+import { pickByLocale } from '@/app/[locale]/_lib/locale-utils';
 
 const BANNER_DISPLAY_DAYS = 3;
 
