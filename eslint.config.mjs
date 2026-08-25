@@ -20,6 +20,16 @@ export default [
     // eslint-disable comments in apps/web as unused directives.
     ...revalidatePathBan("apps/web/"),
     {
-        ignores: ["apps/web/.next/**", "**/dist/**", "**/node_modules/**"],
+        ignores: [
+            "apps/web/.next/**",
+            "**/dist/**",
+            "**/node_modules/**",
+            // Worktrees for parallel Claude Code sessions: full checkouts of
+            // other branches. ESLint walks the file system itself (it does not
+            // consult .gitignore), so without this entry a lint run from the
+            // repo root reports the other branches' in-progress code as errors
+            // of the current tree.
+            ".claude/worktrees/**",
+        ],
     },
 ];

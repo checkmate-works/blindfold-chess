@@ -54,5 +54,10 @@ next-env.d.ts
 /public/stockfish.wasm
 
 # maia engine assets (downloaded by scripts/download-maia.ts; served via
-# the auth-gated /api/engines/maia/[file] handler, so NOT under public/)
-/engines/maia/*.onnx
+# the auth-gated /api/engines/maia/[file] handler, so NOT under public/).
+# The whole directory is ignored, not just the .onnx files: in parallel
+# worktrees, engines/ is a symlink to the main checkout (see
+# worktree.symlinkDirectories in .claude/settings.json), and ignoring only
+# the contents would leave the symlink itself visible as untracked — one
+# careless `git add -A` away from committing an absolute local path.
+/engines/

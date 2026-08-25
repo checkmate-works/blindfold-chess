@@ -59,6 +59,12 @@ package-lock.json
 .claude/settings.local.json
 .claude/*.lock
 
+# Parallel-session worktrees (`claude --worktree` / EnterWorktree) live under
+# this one fixed path. Ignoring it here also stops every gitignore-honoring
+# scanner run from the main tree — including `pnpm format` (prettier respects
+# .gitignore by default) — from walking or rewriting other branches' checkouts.
+.claude/worktrees/
+
 # temporary working files
 tmp/
 SPEC*.md
