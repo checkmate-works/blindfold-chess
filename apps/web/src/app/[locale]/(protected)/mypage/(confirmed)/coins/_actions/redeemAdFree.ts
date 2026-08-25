@@ -2,7 +2,8 @@
 
 import { revalidateTag } from 'next/cache';
 
-import { type AdFreeRedemptionBlock, getAdFreeRedemptionBlock } from '@/lib/ads/ad-free-redemption';
+import type { AdFreeRedemptionBlock } from '@/lib/ads/ad-free-redemption';
+import { getAdFreeRedemptionBlock } from '@/lib/ads/ad-free-redemption';
 import { writeAdsHiddenCookieForUser } from '@/lib/ads/ads-hidden-cookie-writer';
 import { authenticateAndCheckBan } from '@/lib/auth';
 import { GRANT_STATUS_CACHE_TAG } from '@/lib/cache-tags';
