@@ -4850,6 +4850,7 @@
       "status": {
         "revoked": "Revogado",
         "expired": "Expirado",
+        "upcoming": "Próximo",
         "active": "Ativo"
       }
     },

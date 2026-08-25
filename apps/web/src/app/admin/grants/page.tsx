@@ -49,6 +49,8 @@ import { desc, inArray, sql } from 'drizzle-orm';
 import { db, profiles, userGrants } from '@/lib/db';
 import { DEFAULT_PAGE_SIZE, getPageRange, getPaginationParams } from '@/lib/pagination';
 import { createAdminClient } from '@/lib/supabase/admin';
+import type { GrantPeriodStatus } from '@/lib/users/user-grants';
+import { classifyGrantPeriod } from '@/lib/users/user-grants';
 
 import { AdminDataTable } from '../_components/AdminDataTable';
 import { AdminPageHeader } from '../_components/AdminPageHeader';
@@ -57,29 +59,31 @@ import { BulkGrantForm } from './_components/BulkGrantForm';
 import { GrantForm } from './_components/GrantForm';
 import { RevokeButton } from './_components/RevokeButton';
 
-function getGrantStatus(
-  grant: { revokedAt: Date | null; expiresAt: Date },
-  t: (key: string) => string
-): {
-  label: string;
-  className: string;
-} {
-  if (grant.revokedAt) {
-    return {
-      label: t('grants.status.revoked'),
-      className: 'bg-destructive-soft text-destructive-soft-foreground',
-    };
-  }
-  if (new Date(grant.expiresAt) < new Date()) {
-    return {
-      label: t('grants.status.expired'),
-      className: 'bg-secondary text-muted-foreground',
-    };
-  }
-  return {
-    label: t('grants.status.active'),
-    className: 'bg-success-soft text-success-soft-foreground',
-  };
+type GrantRowStatus = GrantPeriodStatus | 'revoked';
+
+const GRANT_STATUS_CLASS: Record<GrantRowStatus, string> = {
+  revoked: 'bg-destructive-soft text-destructive-soft-foreground',
+  expired: 'bg-secondary text-muted-foreground',
+  upcoming: 'bg-info-soft text-info-soft-foreground',
+  active: 'bg-success-soft text-success-soft-foreground',
+};
+
+/**
+ * Classify a row for the status badge and the revoke gate.
+ *
+ * The window itself is classified by `classifyGrantPeriod` so this table agrees
+ * with `hasActiveGrant` on the boundaries — most visibly, a grant stacked onto
+ * an existing one starts in the future and grants nothing yet, so it must read
+ * as `upcoming` here rather than as `active`. Revocation outranks the window: a
+ * revoked grant reads as revoked whether or not its period had already elapsed.
+ */
+function getGrantRowStatus(
+  grant: { revokedAt: Date | null; startsAt: Date; expiresAt: Date },
+  now: Date
+): GrantRowStatus {
+  return grant.revokedAt
+    ? 'revoked'
+    : classifyGrantPeriod(now, new Date(grant.startsAt), new Date(grant.expiresAt));
 }
 
 export default async function AdminGrantsPage({
@@ -126,6 +130,23 @@ export default async function AdminGrantsPage({
 
   const buildHref = buildAdminListHref('/admin/grants');
 
+  // One instant for the whole table, so two rows on the same boundary cannot
+  // disagree about where "now" falls.
+  const now = new Date();
+
+  const statusLabel = (status: GrantRowStatus) => {
+    switch (status) {
+      case 'active':
+        return t('grants.status.active');
+      case 'upcoming':
+        return t('grants.status.upcoming');
+      case 'expired':
+        return t('grants.status.expired');
+      case 'revoked':
+        return t('grants.status.revoked');
+    }
+  };
+
   return (
     <div>
       <AdminPageHeader breadcrumbs={[{ label: t('grants.title') }]} />
@@ -162,8 +183,7 @@ export default async function AdminGrantsPage({
         renderRow={(grant) => {
           const profile = profileMap.get(grant.userId);
           const email = emailMap.get(grant.userId);
-          const status = getGrantStatus(grant, t);
-          const isActive = !grant.revokedAt && new Date(grant.expiresAt) >= new Date();
+          const status = getGrantRowStatus(grant, now);
 
           return (
             <tr key={grant.id} className="border-t border-border">
@@ -184,12 +204,14 @@ export default async function AdminGrantsPage({
               </td>
               <td className="px-4 py-3">
                 <span
-                  className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${status.className}`}
+                  className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${GRANT_STATUS_CLASS[status]}`}
                 >
-                  {status.label}
+                  {statusLabel(status)}
                 </span>
               </td>
-              <td className="px-4 py-3">{isActive && <RevokeButton grantId={grant.id} />}</td>
+              <td className="px-4 py-3">
+                {status === 'active' && <RevokeButton grantId={grant.id} />}
+              </td>
             </tr>
           );
         }}
