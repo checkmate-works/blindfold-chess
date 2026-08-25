@@ -1,14 +1,18 @@
 import { parseUciResponse } from "../uci-protocol";
 
 import type { UciMessageChannel } from "./message-channel";
+import { PendingRequests } from "./pending-requests";
 
 type InfoHandler = (message: string) => void;
 
-type PendingResolver<T> = {
-  resolve: (value: T) => void;
-  reject: (reason: Error) => void;
-  timer: ReturnType<typeof setTimeout>;
-};
+/**
+ * Keys under which the handshake responses are awaited. UCI allows only one
+ * `uci` / `isready` roundtrip to be outstanding at a time, so a constant key
+ * per response type is the whole correlation scheme this protocol needs.
+ */
+const UCI_OK = "uciok";
+const READY_OK = "readyok";
+const BEST_MOVE = "bestmove";
 
 /**
  * Framework-agnostic UCI protocol state machine. Wraps a {@link UciMessageChannel}
@@ -21,20 +25,20 @@ type PendingResolver<T> = {
  * - `subscribeInfo`                  — stream `info` lines during evaluation
  * - `destroy`                        — terminate the underlying channel
  *
- * Uses typed one-shot resolvers instead of a string-keyed callback map: each
- * "await X" call atomically claims the resolver slot for that response type.
- * Each slot holds both a resolve and a reject callback plus its timeout handle
- * so that fatal channel errors (`onError`) can reject all pending awaiters
- * promptly instead of letting them run out the full timeout with a misleading
- * "command timeout" message.
+ * Request bookkeeping — the resolver slots, their per-command deadlines, and
+ * rejecting every awaiter when the channel dies — lives in
+ * {@link PendingRequests}. Two registries rather than one because the awaited
+ * values differ: the handshake responses carry nothing, `bestmove` carries the
+ * move string. Fatal channel errors (`onError`) reject all awaiters in both,
+ * promptly, instead of letting them run out the full timeout and report a
+ * misleading "command timeout".
  */
 export class UciTransport {
   private channel: UciMessageChannel | null = null;
   private unsubscribeMessage: (() => void) | null = null;
   private unsubscribeError: (() => void) | null = null;
-  private uciOkResolver: PendingResolver<void> | null = null;
-  private readyOkResolver: PendingResolver<void> | null = null;
-  private bestMoveResolver: PendingResolver<string | undefined> | null = null;
+  private handshakeRequests = new PendingRequests<void>();
+  private bestMoveRequests = new PendingRequests<string | undefined>();
   private infoHandler: InfoHandler | null = null;
 
   constructor(channel: UciMessageChannel) {
@@ -57,12 +61,12 @@ export class UciTransport {
 
   /** Send `uci` and resolve when the engine replies with `uciok`. */
   async waitForUciOk(timeoutMs = 10000): Promise<void> {
-    return this.awaitResponse("uciOkResolver", "uci", timeoutMs);
+    return this.awaitHandshake(UCI_OK, "uci", timeoutMs);
   }
 
   /** Send `isready` and resolve when the engine replies with `readyok`. */
   async waitForReadyOk(timeoutMs = 10000): Promise<void> {
-    return this.awaitResponse("readyOkResolver", "isready", timeoutMs);
+    return this.awaitHandshake(READY_OK, "isready", timeoutMs);
   }
 
   /**
@@ -76,27 +80,10 @@ export class UciTransport {
     if (!this.channel) throw new Error("Engine not initialized");
     const channel = this.channel;
 
-    return new Promise<string | undefined>((resolve, reject) => {
-      const timer = setTimeout(() => {
-        this.bestMoveResolver = null;
-        reject(new Error(`Engine command timeout: ${goCommand}`));
-      }, timeoutMs);
-
-      this.bestMoveResolver = {
-        resolve: (move) => {
-          clearTimeout(timer);
-          this.bestMoveResolver = null;
-          resolve(move);
-        },
-        reject: (reason) => {
-          clearTimeout(timer);
-          this.bestMoveResolver = null;
-          reject(reason);
-        },
-        timer,
-      };
-
-      channel.send(goCommand);
+    return this.bestMoveRequests.request(BEST_MOVE, {
+      timeoutMs,
+      timeoutMessage: `Engine command timeout: ${goCommand}`,
+      dispatch: () => channel.send(goCommand),
     });
   }
 
@@ -115,11 +102,7 @@ export class UciTransport {
 
   /** Abandon any in-flight `bestmove` resolver. */
   clearBestMoveResolver(): void {
-    const pending = this.bestMoveResolver;
-    if (pending) {
-      clearTimeout(pending.timer);
-      this.bestMoveResolver = null;
-    }
+    this.bestMoveRequests.abandonAll();
   }
 
   /** True once the underlying channel has been torn down (fatal error or destroy). */
@@ -133,20 +116,10 @@ export class UciTransport {
     }
     this.tearDown();
     // Clear any in-flight timers so a pending Promise does not linger past
-    // destruction. Slots are nulled without rejecting because `destroy()` is
+    // destruction. Slots are dropped without rejecting because `destroy()` is
     // expected teardown, not a failure the awaiter needs to observe.
-    if (this.uciOkResolver) {
-      clearTimeout(this.uciOkResolver.timer);
-      this.uciOkResolver = null;
-    }
-    if (this.readyOkResolver) {
-      clearTimeout(this.readyOkResolver.timer);
-      this.readyOkResolver = null;
-    }
-    if (this.bestMoveResolver) {
-      clearTimeout(this.bestMoveResolver.timer);
-      this.bestMoveResolver = null;
-    }
+    this.handshakeRequests.abandonAll();
+    this.bestMoveRequests.abandonAll();
     this.infoHandler = null;
   }
 
@@ -172,7 +145,8 @@ export class UciTransport {
         // failure state; the original error is what the caller cares about.
       }
     }
-    this.failPending(error);
+    this.handshakeRequests.failAll(error);
+    this.bestMoveRequests.failAll(error);
   }
 
   private tearDown(): void {
@@ -183,60 +157,18 @@ export class UciTransport {
     this.channel = null;
   }
 
-  /**
-   * Reject every pending awaiter with the given reason. Triggered from the
-   * channel's error path so pending resolvers don't hang past the 10s timeout.
-   */
-  private failPending(reason: Error): void {
-    const uciOk = this.uciOkResolver;
-    const readyOk = this.readyOkResolver;
-    const bestMove = this.bestMoveResolver;
-    this.uciOkResolver = null;
-    this.readyOkResolver = null;
-    this.bestMoveResolver = null;
-    if (uciOk) {
-      clearTimeout(uciOk.timer);
-      uciOk.reject(reason);
-    }
-    if (readyOk) {
-      clearTimeout(readyOk.timer);
-      readyOk.reject(reason);
-    }
-    if (bestMove) {
-      clearTimeout(bestMove.timer);
-      bestMove.reject(reason);
-    }
-  }
-
-  private async awaitResponse(
-    slot: "uciOkResolver" | "readyOkResolver",
+  private async awaitHandshake(
+    key: typeof UCI_OK | typeof READY_OK,
     command: string,
     timeoutMs: number,
   ): Promise<void> {
     if (!this.channel) throw new Error("Engine not initialized");
     const channel = this.channel;
 
-    return new Promise<void>((resolve, reject) => {
-      const timer = setTimeout(() => {
-        this[slot] = null;
-        reject(new Error(`Engine command timeout: ${command}`));
-      }, timeoutMs);
-
-      this[slot] = {
-        resolve: () => {
-          clearTimeout(timer);
-          this[slot] = null;
-          resolve();
-        },
-        reject: (reason) => {
-          clearTimeout(timer);
-          this[slot] = null;
-          reject(reason);
-        },
-        timer,
-      };
-
-      channel.send(command);
+    return this.handshakeRequests.request(key, {
+      timeoutMs,
+      timeoutMessage: `Engine command timeout: ${command}`,
+      dispatch: () => channel.send(command),
     });
   }
 
@@ -253,24 +185,15 @@ export class UciTransport {
 
     switch (parsed.type) {
       case "uciok": {
-        const resolver = this.uciOkResolver;
-        if (resolver) {
-          resolver.resolve();
-        }
+        this.handshakeRequests.settle(UCI_OK, undefined);
         break;
       }
       case "readyok": {
-        const resolver = this.readyOkResolver;
-        if (resolver) {
-          resolver.resolve();
-        }
+        this.handshakeRequests.settle(READY_OK, undefined);
         break;
       }
       case "bestmove": {
-        const resolver = this.bestMoveResolver;
-        if (resolver) {
-          resolver.resolve(parsed.move);
-        }
+        this.bestMoveRequests.settle(BEST_MOVE, parsed.move);
         break;
       }
       case "info": {
