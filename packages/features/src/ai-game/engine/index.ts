@@ -1,4 +1,9 @@
 export type { UciMessageChannel } from "./message-channel";
+export type {
+  PendingRequestKey,
+  PendingRequestOptions,
+} from "./pending-requests";
+export { PendingRequests } from "./pending-requests";
 export { UciTransport } from "./uci-transport";
 export {
   ChessEngine,
