@@ -6,6 +6,7 @@ import { eq } from 'drizzle-orm';
 
 import { authenticateAndCheckBan } from '@/lib/auth';
 import { profileCacheTag } from '@/lib/cache-tags';
+import { isValidCountryCode } from '@/lib/countries';
 import { db, profiles } from '@/lib/db';
 
 export type SaveOnboardingProfileInput = {
@@ -39,8 +40,16 @@ export async function saveOnboardingProfile(
     return { ok: false, error: auth.error === 'banned' ? 'banned' : 'signInRequired' };
   }
 
+  // Real ISO 3166-1 alpha-2 membership, not merely two letters. A bare
+  // two-letter regex here used to accept unassigned codes like "ZZ", which
+  // this action — the trust boundary, since the form's own <select> is only a
+  // convenience — would then write to `profiles.country`. Such a value fails
+  // silently downstream: it renders as a broken flag, and ad country
+  // targeting compares the column with the uppercase geo header by `===`, so
+  // it simply never matches. Uppercasing first is required by the helper,
+  // which is case-sensitive for the same reason.
   const country = input.country.trim().toUpperCase() || null;
-  if (country && !/^[A-Z]{2}$/.test(country)) {
+  if (country && !isValidCountryCode(country)) {
     return { ok: false, error: 'invalidCountry' };
   }
 
