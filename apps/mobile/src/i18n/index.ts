@@ -25,18 +25,44 @@ function isSupportedLanguage(lang: string): lang is SupportedLanguage {
 }
 
 /**
+ * Resolves a BCP 47 language tag reported by the device onto one of
+ * SUPPORTED_LANGUAGES: exact match first (ignoring case), then the primary
+ * subtag against the primary subtag of each supported language.
+ *
+ * The prefix step is what makes `pt-BR` reachable at all. A device set to
+ * Portuguese reports `languageCode: "pt"`, which is not itself a supported
+ * language, so an exact-only check handed Brazilian users English even
+ * though `pt-BR.json` ships in the bundle. It also maps `en-GB` / `es-MX`
+ * onto `en` / `es` rather than falling through.
+ *
+ * Mirrors `matchLanguageTag()` on the web (`apps/web/src/i18n/
+ * supported-locale.ts`). The two lists cannot be shared today — the web one
+ * lives in a Next.js app, not a workspace package — so this is a deliberate
+ * second copy; keep the rule identical when either side changes.
+ */
+function matchLanguageTag(tag: string): SupportedLanguage | undefined {
+  const lower = tag.toLowerCase();
+  const exact = SUPPORTED_LANGUAGES.find(
+    (lang) => lang.toLowerCase() === lower,
+  );
+  if (exact) return exact;
+
+  const primary = lower.split("-")[0];
+  return SUPPORTED_LANGUAGES.find(
+    (lang) => lang.toLowerCase().split("-")[0] === primary,
+  );
+}
+
+/**
  * Initialize i18n
  */
 export async function initI18n(): Promise<void> {
   const savedLanguage = await AsyncStorage.getItem(LANGUAGE_STORAGE_KEY);
-  const locales = Localization.getLocales();
-  const deviceLanguage = locales[0]?.languageCode ?? "en";
+  const deviceLocale = Localization.getLocales()[0];
+  const deviceTag = deviceLocale?.languageTag ?? deviceLocale?.languageCode;
 
-  const fallbackLanguage: SupportedLanguage = isSupportedLanguage(
-    deviceLanguage,
-  )
-    ? deviceLanguage
-    : "en";
+  const fallbackLanguage: SupportedLanguage =
+    (deviceTag ? matchLanguageTag(deviceTag) : undefined) ?? "en";
 
   const initialLanguage =
     (savedLanguage !== null && isSupportedLanguage(savedLanguage)

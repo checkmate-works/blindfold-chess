@@ -2,13 +2,14 @@ import { cache } from 'react';
 
 import { unstable_cache } from 'next/cache';
 
+import { DEFAULT_LOCALE } from '@/config';
 import { and, desc, eq, sql } from 'drizzle-orm';
 
 import { ARTICLES_CACHE_TAG } from '@/lib/cache-tags';
 import { type Article, articles, db } from '@/lib/db';
 import { publiclyVisibleArticle } from '@/lib/db/articles-visibility';
 
-import { DEFAULT_LOCALE, pickByLocale } from '@/app/[locale]/_lib/locale-utils';
+import { pickByLocale } from '@/app/[locale]/_lib/locale-utils';
 
 // NOTE: Currently articles have a flat structure without categories.
 // If categories are needed in the future, add an `article_categories` table,

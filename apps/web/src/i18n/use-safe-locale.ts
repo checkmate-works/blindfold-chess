@@ -4,7 +4,10 @@ import { useContext } from 'react';
 
 import { useLocale } from 'next-intl';
 
+import { DEFAULT_LOCALE } from '@/config';
+
 import { IntlAvailableContext } from './IntlAvailableContext';
+import { findSupportedLocale } from './supported-locale';
 
 /**
  * Drop-in replacement for `useLocale` that gracefully degrades when
@@ -33,21 +36,26 @@ export function useSafeLocale(): string {
 
   if (!isAvailable) {
     if (typeof window !== 'undefined') {
-      // Attempt to extract locale from pathname, e.g. /ja/... → 'ja'
-      const match = window.location.pathname.match(/^\/([a-z]{2})(\/|$)/);
-      if (match) {
+      // Extract the locale from the pathname, e.g. /ja/... → 'ja'. Matching
+      // against SUPPORTED_LOCALES rather than a shape: the two-letter regex
+      // this used to run silently dropped `pt-BR`, because the character
+      // after the two letters is `-` and not `/`, so every Brazilian page
+      // fell back to English for the duration of the HMR window.
+      const segment = window.location.pathname.split('/')[1] ?? '';
+      const locale = findSupportedLocale(segment);
+      if (locale) {
         if (process.env.NODE_ENV === 'development') {
           console.debug(
-            `[next-intl] Fallback locale "${match[1]}" from pathname (provider not available)`
+            `[next-intl] Fallback locale "${locale}" from pathname (provider not available)`
           );
         }
-        return match[1];
+        return locale;
       }
     }
     if (process.env.NODE_ENV === 'development') {
-      console.debug('[next-intl] Fallback locale "en" (provider not available)');
+      console.debug(`[next-intl] Fallback locale "${DEFAULT_LOCALE}" (provider not available)`);
     }
-    return 'en';
+    return DEFAULT_LOCALE;
   }
 
   // eslint-disable-next-line react-hooks/rules-of-hooks

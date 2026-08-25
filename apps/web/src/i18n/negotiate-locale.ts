@@ -1,6 +1,8 @@
-import { DEFAULT_LOCALE, SUPPORTED_LOCALES } from '@/config';
+import { DEFAULT_LOCALE } from '@/config';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
+
+import { matchLanguageTag } from './supported-locale';
 
 /**
  * Picks the best supported locale for an `Accept-Language` header.
@@ -11,12 +13,14 @@ import type { Locale } from '@/app/[locale]/_lib/types';
  * still not used, because it would claim the bare `/` that the landing page
  * serves for every language.
  *
- * Matching is two-tier, most-preferred entry first: an exact tag match
- * (`pt-BR` → `pt-BR`) wins, otherwise the primary subtag matches a supported
- * locale that starts with it (`pt-PT` → `pt-BR`, `en-GB` → `en`). Quality
- * values are honoured, and `*` is ignored — a wildcard expresses no
- * preference, so it should fall through to the default rather than claim the
- * first supported locale.
+ * Each entry is resolved with `matchLanguageTag()` (exact tag first, then
+ * primary subtag), most-preferred entry first. Quality values are honoured,
+ * and `*` is ignored — a wildcard expresses no preference, so it should fall
+ * through to the default rather than claim the first supported locale.
+ *
+ * This is the app's only `Accept-Language` parser. `getLocaleFromRequest()`
+ * in `@/lib/locale` delegates here for its header step, so the landing page
+ * and `/g/<code>` cannot disagree about the same visitor.
  */
 export function negotiateLocale(acceptLanguage: string | null): Locale {
   if (!acceptLanguage) return DEFAULT_LOCALE;
@@ -35,14 +39,8 @@ export function negotiateLocale(acceptLanguage: string | null): Locale {
     .sort((a, b) => b.quality - a.quality);
 
   for (const { tag } of requested) {
-    const exact = SUPPORTED_LOCALES.find((locale) => locale.toLowerCase() === tag);
-    if (exact) return exact;
-
-    const primary = tag.split('-')[0];
-    const byPrimary = SUPPORTED_LOCALES.find(
-      (locale) => locale.toLowerCase().split('-')[0] === primary
-    );
-    if (byPrimary) return byPrimary;
+    const matched = matchLanguageTag(tag);
+    if (matched) return matched;
   }
 
   return DEFAULT_LOCALE;

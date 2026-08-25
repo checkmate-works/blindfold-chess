@@ -161,10 +161,11 @@ describe('getLocaleFromRequest', () => {
     });
   });
 
-  // Boundary: getLocaleFromRequest uses strict `isValidLocale` comparison on
-  // the cookie path — lowercase `pt-br` is NOT normalized to `pt-BR`. This
-  // documents the current behaviour so a future normalization change is
-  // explicit. See also: parseAcceptLanguage, which IS case-insensitive.
+  // Boundary: the cookie path uses `isSupportedLocale`, an exact comparison —
+  // lowercase `pt-br` is NOT normalized to `pt-BR`. This documents the current
+  // behaviour so a future normalization change is explicit. See also
+  // `negotiateLocale`, which IS case-insensitive because header tags come from
+  // outside the app.
   describe('Cookie-based detection: case-sensitivity boundary', () => {
     it('accepts cookie value pt-BR as-is', async () => {
       mockCookieGet.mockReturnValue({ value: 'pt-BR' });
@@ -186,6 +187,28 @@ describe('getLocaleFromRequest', () => {
       const locale = await getLocaleFromRequest();
 
       expect(locale).toBe('en');
+    });
+  });
+
+  // Regression: this function used to carry its own `Accept-Language` parser
+  // that read the header in order and discarded `q`, while every locale-less
+  // entry point used `negotiateLocale`, which honours it. The same visitor got
+  // Japanese on the landing page and English on `/g/<code>`. Both now go
+  // through `negotiateLocale`.
+  describe('Accept-Language: quality values', () => {
+    it('prefers the highest q-value over header order', async () => {
+      mockHeadersGet.mockReturnValue('ja;q=0.1, en;q=0.9');
+      expect(await getLocaleFromRequest()).toBe('en');
+    });
+
+    it('keeps header order among equal q-values', async () => {
+      mockHeadersGet.mockReturnValue('ja,en');
+      expect(await getLocaleFromRequest()).toBe('ja');
+    });
+
+    it('ignores zero-weight entries', async () => {
+      mockHeadersGet.mockReturnValue('ja;q=0,es');
+      expect(await getLocaleFromRequest()).toBe('es');
     });
   });
 

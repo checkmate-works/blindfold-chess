@@ -1,6 +1,8 @@
 import { cookies, headers } from 'next/headers';
 
-import { DEFAULT_LOCALE, LOCALE_COOKIE_NAME, SUPPORTED_LOCALES } from '@/config';
+import { LOCALE_COOKIE_NAME } from '@/config';
+import { negotiateLocale } from '@/i18n/negotiate-locale';
+import { isSupportedLocale } from '@/i18n/supported-locale';
 import 'server-only';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -8,6 +10,12 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 /**
  * Detects the user's preferred locale from the request.
  * Priority: Cookie > Accept-Language header > Default (en)
+ *
+ * The header step is `negotiateLocale()` — the same parser the locale-less
+ * entry points (`/g/<code>`, `/embed`, the proxy) use. It used to be a second
+ * hand-rolled parser living here that read the header in order and discarded
+ * the `q` values, so `Accept-Language: ja;q=0.1, en;q=0.9` rendered the
+ * landing page in Japanese and `/g/<code>` in English for the same visitor.
  *
  * NOTE ON MIDDLEWARE & ROUTING:
  * We intentionally do NOT use a global Next.js `middleware.ts` to implement
@@ -32,82 +40,11 @@ export async function getLocaleFromRequest(): Promise<Locale> {
   const cookieStore = await cookies();
   const localeCookie = cookieStore.get(LOCALE_COOKIE_NAME);
 
-  if (localeCookie?.value && isValidLocale(localeCookie.value)) {
-    return localeCookie.value as Locale;
+  if (localeCookie?.value && isSupportedLocale(localeCookie.value)) {
+    return localeCookie.value;
   }
 
-  // 2. Check Accept-Language header
+  // 2. Accept-Language header, which already falls back to DEFAULT_LOCALE
   const headersList = await headers();
-  const acceptLanguage = headersList.get('accept-language');
-
-  if (acceptLanguage) {
-    const preferredLocale = parseAcceptLanguage(acceptLanguage);
-    if (preferredLocale) {
-      return preferredLocale;
-    }
-  }
-
-  // 3. Default to English
-  return DEFAULT_LOCALE;
-}
-
-/**
- * Validates if a string is a supported locale
- */
-function isValidLocale(locale: string): locale is Locale {
-  return SUPPORTED_LOCALES.includes(locale as Locale);
-}
-
-/**
- * Parses an `Accept-Language` header and returns the first entry that matches
- * a supported locale.
- *
- * Matching strategy (per preference order in the header):
- *  1. Case-insensitive exact match against `SUPPORTED_LOCALES`. RFC 4647
- *     explicitly allows the subtags in `Accept-Language` to vary in case
- *     (browsers commonly send `pt-br` lower-cased), while our canonical
- *     identifiers use BCP 47 mixed case (`pt-BR`). Without normalization, a
- *     Brazilian browser sending `pt-BR,pt;q=0.9,en;q=0.8` would fall through
- *     to English despite our shipping a `pt-BR` translation.
- *  2. Language-prefix fallback: if no exact match, we compare only the
- *     primary subtag (e.g. `pt` from `pt`, `en` from `en-US`) against the
- *     primary subtag of each supported locale. This maps a bare `pt` (generic
- *     Portuguese preference) onto our only supported regional variant
- *     (`pt-BR`), and it makes `en-GB`/`en-AU` resolve to `en` rather than
- *     failing over to cookie/default.
- *
- * Both steps derive from `SUPPORTED_LOCALES` — there is no secondary locale
- * list or BCP 47 variant table to keep in sync. Adding a new locale to
- * `SUPPORTED_LOCALES` automatically fans out here.
- *
- * If two supported locales ever share a primary subtag (e.g. `pt-BR` and
- * `pt-PT`), the prefix fallback resolves to whichever is declared first in
- * `SUPPORTED_LOCALES`. At that point we should replace the prefix step with
- * explicit regional preference ordering.
- */
-function parseAcceptLanguage(acceptLanguage: string): Locale | null {
-  // Parse "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7" format, lower-casing each
-  // entry so we can compare without worrying about browser casing.
-  const languages = acceptLanguage.split(',').map((lang) => {
-    const [code] = lang.trim().split(';');
-    return code.toLowerCase();
-  });
-
-  for (const lang of languages) {
-    // 1. Case-insensitive exact match (e.g., 'pt-br' -> 'pt-BR', 'ja' -> 'ja')
-    const exact = SUPPORTED_LOCALES.find((l) => l.toLowerCase() === lang);
-    if (exact) {
-      return exact;
-    }
-
-    // 2. Primary-subtag fallback (e.g., 'pt' -> 'pt-BR', 'en-US' -> 'en')
-    const prefix = lang.split('-')[0];
-    if (!prefix) continue;
-    const byPrefix = SUPPORTED_LOCALES.find((l) => l.toLowerCase().split('-')[0] === prefix);
-    if (byPrefix) {
-      return byPrefix;
-    }
-  }
-
-  return null;
+  return negotiateLocale(headersList.get('accept-language'));
 }
