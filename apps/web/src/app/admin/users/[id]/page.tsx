@@ -22,7 +22,7 @@ import { ALL_RANK_SLUGS, isMukyuSlug } from '@/lib/db/data/ranks';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 import { AdminDataTable } from '../../_components/AdminDataTable';
-import { AdminPageHeader } from '../../_components/AdminPageHeader';
+import { AdminPageLayout } from '../../_components/AdminPageLayout';
 import { AdminUserLink } from '../../_components/AdminUserLink';
 import { BanButton } from '../_components/BanButton';
 import { CopyUserIdButton } from '../_components/CopyUserIdButton';
@@ -92,37 +92,36 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
   ).map((slug) => ({ slug, label: rankName(slug) }));
 
   return (
-    <div className="space-y-6">
-      <AdminPageHeader
-        breadcrumbs={[
-          { label: t('users'), href: '/admin/users' },
-          { label: profile?.username ?? authUser.id },
-        ]}
-        actions={
-          <>
-            <StatusBadge
-              profile={profile}
-              banReason={banReason}
-              labels={{
-                anonymous: t('usersTable.anonymous'),
-                deleted: t('usersTable.deleted'),
-                banned: t('usersTable.banned'),
-                active: t('usersTable.active'),
-              }}
-            />
-            <span
-              className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${
-                isPremium
-                  ? 'bg-success-soft text-success-soft-foreground'
-                  : 'bg-secondary text-foreground'
-              }`}
-            >
-              {isPremium ? t('usersTable.premium') : t('usersTable.free')}
-            </span>
-          </>
-        }
-      />
-
+    <AdminPageLayout
+      breadcrumbs={[
+        { label: t('users'), href: '/admin/users' },
+        { label: profile?.username ?? authUser.id },
+      ]}
+      actions={
+        <>
+          <StatusBadge
+            profile={profile}
+            banReason={banReason}
+            labels={{
+              anonymous: t('usersTable.anonymous'),
+              deleted: t('usersTable.deleted'),
+              banned: t('usersTable.banned'),
+              active: t('usersTable.active'),
+            }}
+          />
+          <span
+            className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${
+              isPremium
+                ? 'bg-success-soft text-success-soft-foreground'
+                : 'bg-secondary text-foreground'
+            }`}
+          >
+            {isPremium ? t('usersTable.premium') : t('usersTable.free')}
+          </span>
+        </>
+      }
+      contentClassName="space-y-6"
+    >
       <div className="grid gap-6 lg:grid-cols-2">
         <DetailSection title={t('usersTable.detail.basicInfo')}>
           <dl>
@@ -356,6 +355,6 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
           )}
         </div>
       </DetailSection>
-    </div>
+    </AdminPageLayout>
   );
 }

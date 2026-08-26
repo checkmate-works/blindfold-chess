@@ -1,7 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { AdminPageHeader } from '@/app/admin/_components/AdminPageHeader';
+import { AdminPageLayout } from '@/app/admin/_components/AdminPageLayout';
 
 import { getGlossaryTermForAdmin } from '@/lib/glossary-admin/queries';
 
@@ -21,10 +21,9 @@ export default async function AdminGlossaryTermPage({
   }
 
   return (
-    <div>
-      <AdminPageHeader
-        breadcrumbs={[{ label: t('navLabel'), href: '/admin/glossary' }, { label: term.termEn }]}
-      />
+    <AdminPageLayout
+      breadcrumbs={[{ label: t('navLabel'), href: '/admin/glossary' }, { label: term.termEn }]}
+    >
       <p className="text-sm font-mono text-muted-foreground mb-6">{term.slug}</p>
 
       <div className="mb-8 rounded-lg border border-border bg-card p-4">
@@ -78,6 +77,6 @@ export default async function AdminGlossaryTermPage({
           </div>
         )}
       </section>
-    </div>
+    </AdminPageLayout>
   );
 }

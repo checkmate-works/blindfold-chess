@@ -5,7 +5,7 @@ import { eq } from 'drizzle-orm';
 
 import { articles, db } from '@/lib/db';
 
-import { AdminPageHeader } from '../../../_components/AdminPageHeader';
+import { AdminPageLayout } from '../../../_components/AdminPageLayout';
 import { formatDateTimeLocal } from '../../../_lib/format';
 import { ArticlePublishForm } from '../../_components/ArticlePublishForm';
 import type { ContentFormat, TiptapJsonContent } from '../../_lib/types';
@@ -21,15 +21,13 @@ export default async function PublishArticlePage({ params }: { params: Promise<{
   }
 
   return (
-    <div>
-      <AdminPageHeader
-        breadcrumbs={[
-          { label: t('title'), href: '/admin/articles' },
-          { label: article.title, href: `/admin/articles/${article.id}/edit` },
-          { label: t('form.publishTitle') },
-        ]}
-      />
-
+    <AdminPageLayout
+      breadcrumbs={[
+        { label: t('title'), href: '/admin/articles' },
+        { label: article.title, href: `/admin/articles/${article.id}/edit` },
+        { label: t('form.publishTitle') },
+      ]}
+    >
       <ArticlePublishForm
         id={article.id}
         slug={article.slug}
@@ -58,6 +56,6 @@ export default async function PublishArticlePage({ params }: { params: Promise<{
           backToEdit: t('form.backToEdit'),
         }}
       />
-    </div>
+    </AdminPageLayout>
   );
 }

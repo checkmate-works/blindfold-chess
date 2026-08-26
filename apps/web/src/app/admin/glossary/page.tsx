@@ -2,7 +2,7 @@ import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 
 import { AdminDataTable } from '@/app/admin/_components/AdminDataTable';
-import { AdminPageHeader } from '@/app/admin/_components/AdminPageHeader';
+import { AdminPageLayout } from '@/app/admin/_components/AdminPageLayout';
 
 import { listGlossaryTermsForAdmin } from '@/lib/glossary-admin/queries';
 
@@ -11,8 +11,7 @@ export default async function AdminGlossaryListPage() {
   const terms = await listGlossaryTermsForAdmin();
 
   return (
-    <div>
-      <AdminPageHeader breadcrumbs={[{ label: t('title') }]} />
+    <AdminPageLayout breadcrumbs={[{ label: t('title') }]}>
       <p className="text-sm text-muted-foreground mb-6">
         {t.rich('description', { code: (chunks) => <code className="text-xs">{chunks}</code> })}
       </p>
@@ -50,6 +49,6 @@ export default async function AdminGlossaryListPage() {
           </tr>
         )}
       />
-    </div>
+    </AdminPageLayout>
   );
 }

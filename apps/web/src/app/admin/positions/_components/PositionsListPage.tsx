@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 import { AdminDataTable } from '@/app/admin/_components/AdminDataTable';
 import { AdminListSummary } from '@/app/admin/_components/AdminListSummary';
-import { AdminPageHeader } from '@/app/admin/_components/AdminPageHeader';
+import { AdminPageLayout } from '@/app/admin/_components/AdminPageLayout';
 import { AdminPaginationNav } from '@/app/admin/_components/AdminPaginationNav';
 import { adminPageSearchParamsCache } from '@/app/admin/_lib/admin-search-params';
 import { buildAdminListHref } from '@/app/admin/_lib/build-list-href';
@@ -63,9 +63,7 @@ export async function PositionsListPage({
   const buildHref = buildAdminListHref(`/admin/positions/${type}`);
 
   return (
-    <div>
-      <AdminPageHeader breadcrumbs={[{ label: title }]} />
-
+    <AdminPageLayout breadcrumbs={[{ label: title }]}>
       <AdminListSummary
         currentPage={currentPage}
         pageSize={DEFAULT_PAGE_SIZE}
@@ -111,6 +109,6 @@ export async function PositionsListPage({
       />
 
       <AdminPaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
-    </div>
+    </AdminPageLayout>
   );
 }

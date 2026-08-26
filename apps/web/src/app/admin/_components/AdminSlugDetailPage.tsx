@@ -11,7 +11,7 @@ import { formatDateTime } from '../_lib/format';
 import { AdminBadge } from './AdminBadge';
 import { AdminDataTable } from './AdminDataTable';
 import type { AdminDeleteButton } from './AdminDeleteButton';
-import { AdminPageHeader } from './AdminPageHeader';
+import { AdminPageLayout } from './AdminPageLayout';
 
 /** Minimal row shape required by the slug detail page (Article / Announcement both satisfy it). */
 type AdminSlugDetailRow = {
@@ -67,14 +67,12 @@ export function createAdminSlugDetailPage<T extends AdminSlugDetailRow>(
     const { DeleteButton } = config;
 
     return (
-      <div>
-        <AdminPageHeader
-          breadcrumbs={[
-            { label: t('title'), href: config.basePath },
-            { label: t('slugDetail.title') },
-          ]}
-        />
-
+      <AdminPageLayout
+        breadcrumbs={[
+          { label: t('title'), href: config.basePath },
+          { label: t('slugDetail.title') },
+        ]}
+      >
         <div className="mb-6">
           <p className="text-muted-foreground">
             {t('slug')}: <code className="bg-accent px-2 py-0.5 rounded text-sm">{slug}</code>
@@ -152,7 +150,7 @@ export function createAdminSlugDetailPage<T extends AdminSlugDetailRow>(
             </div>
           </div>
         )}
-      </div>
+      </AdminPageLayout>
     );
   };
 }

@@ -10,7 +10,7 @@ import { getPaginationParams } from '@/lib/pagination';
 
 import { AdminDataTable } from './AdminDataTable';
 import { AdminNewButton } from './AdminNewButton';
-import { AdminPageHeader } from './AdminPageHeader';
+import { AdminPageLayout } from './AdminPageLayout';
 import { AdminPaginationNav } from './AdminPaginationNav';
 
 const searchParamsCache = createSearchParamsCache({
@@ -71,17 +71,15 @@ export function createAdminSlugGroupListPage(config: AdminSlugGroupListPageConfi
     const buildHref = (p: number) => `${config.basePath}?page=${p}`;
 
     return (
-      <div>
-        <AdminPageHeader
-          breadcrumbs={[{ label: t('title') }]}
-          actions={
-            <AdminNewButton
-              href={`${config.basePath}/new`}
-              label={t(config.newButtonTranslationKey)}
-            />
-          }
-        />
-
+      <AdminPageLayout
+        breadcrumbs={[{ label: t('title') }]}
+        actions={
+          <AdminNewButton
+            href={`${config.basePath}/new`}
+            label={t(config.newButtonTranslationKey)}
+          />
+        }
+      >
         <AdminDataTable
           headers={[t('titleColumn'), t('slug'), t('actions')]}
           items={groups}
@@ -107,7 +105,7 @@ export function createAdminSlugGroupListPage(config: AdminSlugGroupListPageConfi
           totalPages={totalPages}
           buildHref={buildHref}
         />
-      </div>
+      </AdminPageLayout>
     );
   };
 }

@@ -6,7 +6,7 @@ import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/ser
 
 import { createAdminClient } from '@/lib/supabase/admin';
 
-import { AdminPageHeader } from '../_components/AdminPageHeader';
+import { AdminPageLayout } from '../_components/AdminPageLayout';
 import { AdminPaginationNav } from '../_components/AdminPaginationNav';
 import { ActivityLogRow } from './_components/ActivityLogRow';
 import { fetchActivityLogPageData } from './_lib/queries';
@@ -40,9 +40,7 @@ export default async function AdminActivityLogPage({
   });
 
   return (
-    <div>
-      <AdminPageHeader breadcrumbs={[{ label: t('activityLog') }]} />
-
+    <AdminPageLayout breadcrumbs={[{ label: t('activityLog') }]}>
       {/* Filters */}
       <form className="flex gap-4 mb-6 items-end">
         <Field label={t('activityLogTable.filterByAction')} htmlFor="action-filter">
@@ -110,6 +108,6 @@ export default async function AdminActivityLogPage({
       </div>
 
       <AdminPaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
-    </div>
+    </AdminPageLayout>
   );
 }

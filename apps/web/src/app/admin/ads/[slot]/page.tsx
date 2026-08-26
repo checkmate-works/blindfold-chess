@@ -7,7 +7,7 @@ import { isBannerPayload, isNativeCardPayload, resolveNativeThumbnail } from '@/
 import { isAdSlot, kindForSlot } from '@/lib/ads/registry';
 
 import { AdminBadge } from '../../_components/AdminBadge';
-import { AdminPageHeader } from '../../_components/AdminPageHeader';
+import { AdminPageLayout } from '../../_components/AdminPageLayout';
 import { SlotCreativeList } from '../_components/SlotCreativeList';
 import type { SlotCreativeRow } from '../_components/SlotCreativeList';
 
@@ -39,19 +39,17 @@ export default async function AdminSlotCreativesPage({ params }: Props) {
   });
 
   return (
-    <div>
-      <AdminPageHeader
-        breadcrumbs={[{ label: t('title'), href: '/admin/ads' }, { label: slot }]}
-        actions={
-          <Link
-            href={`/admin/ads/${slot}/new`}
-            className="px-4 py-2 text-sm rounded bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
-          >
-            {t('newCreative')}
-          </Link>
-        }
-      />
-
+    <AdminPageLayout
+      breadcrumbs={[{ label: t('title'), href: '/admin/ads' }, { label: slot }]}
+      actions={
+        <Link
+          href={`/admin/ads/${slot}/new`}
+          className="px-4 py-2 text-sm rounded bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
+        >
+          {t('newCreative')}
+        </Link>
+      }
+    >
       <div className="mb-4 text-sm text-muted-foreground">
         {t('kind')}: <AdminBadge variant="neutral">{kindForSlot(slot)}</AdminBadge>
       </div>
@@ -73,6 +71,6 @@ export default async function AdminSlotCreativesPage({ params }: Props) {
           filterReorderHint: t('filterReorderHint'),
         }}
       />
-    </div>
+    </AdminPageLayout>
   );
 }

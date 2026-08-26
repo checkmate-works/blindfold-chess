@@ -6,7 +6,7 @@ import { and, eq } from 'drizzle-orm';
 
 import { announcements, db, notifications } from '@/lib/db';
 
-import { AdminPageHeader } from '../../../_components/AdminPageHeader';
+import { AdminPageLayout } from '../../../_components/AdminPageLayout';
 import { formatDateTimeLocal } from '../../../_lib/format';
 import { AnnouncementPreviewForm } from '../../_components/AnnouncementPreviewForm';
 
@@ -39,14 +39,12 @@ export default async function PreviewAnnouncementPage({
   const notificationSent = !!existingNotification;
 
   return (
-    <div>
-      <AdminPageHeader
-        breadcrumbs={[
-          { label: t('title'), href: '/admin/announcements' },
-          { label: t('form.previewTitle') },
-        ]}
-      />
-
+    <AdminPageLayout
+      breadcrumbs={[
+        { label: t('title'), href: '/admin/announcements' },
+        { label: t('form.previewTitle') },
+      ]}
+    >
       <div className="space-y-6">
         <div>
           <h2 className="text-sm font-medium text-muted-foreground mb-2">
@@ -101,6 +99,6 @@ export default async function PreviewAnnouncementPage({
           }}
         />
       </div>
-    </div>
+    </AdminPageLayout>
   );
 }
