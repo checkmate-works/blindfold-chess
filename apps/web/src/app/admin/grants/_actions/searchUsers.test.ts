@@ -97,8 +97,8 @@ describe('searchUsers', () => {
     expect('users' in result).toBe(true);
     if ('users' in result) {
       expect(result.users).toHaveLength(2);
-      expect(result.users[0]?.email).toBe('alice@example.com');
-      expect(result.users[1]?.email).toBe('bob@example.com');
+      expect(result.users[0]?.userId).toBe(userId1);
+      expect(result.users[1]?.userId).toBe(userId2);
     }
   });
 
@@ -182,9 +182,8 @@ describe('searchUsers', () => {
     expect('users' in result).toBe(true);
     if ('users' in result) {
       expect(result.users).toHaveLength(2);
-      // userId1 should have null email and lastSignInAt when getUserById returns no data
+      // userId1 should have a null lastSignInAt when getUserById returns no data
       const user1 = result.users.find((u) => u.userId === userId1);
-      expect(user1?.email).toBeNull();
       expect(user1?.lastSignInAt).toBeNull();
     }
   });

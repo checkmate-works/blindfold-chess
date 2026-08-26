@@ -20,7 +20,6 @@ export type SearchUsersParams = {
 
 export type SearchedUser = {
   userId: string;
-  email: string | null;
   username: string;
   displayName: string | null;
   createdAt: string;
@@ -66,9 +65,10 @@ export async function searchUsers(params: SearchUsersParams): Promise<ActionResu
       return { users: [] };
     }
 
-    // Fetch auth users for email and lastSignInAt via Supabase Admin API
+    // Fetch auth users for lastSignInAt via Supabase Admin API — the field
+    // lives in Supabase Auth, not in `profiles`.
     const adminClient = createAdminClient();
-    const authUserMap = new Map<string, { email: string | null; lastSignInAt: string | null }>();
+    const authUserMap = new Map<string, { lastSignInAt: string | null }>();
 
     // Fetch only the users we need by ID (not all users)
     const authResults = await Promise.all(
@@ -80,7 +80,6 @@ export async function searchUsers(params: SearchUsersParams): Promise<ActionResu
 
     for (const { id, data } of authResults) {
       authUserMap.set(id, {
-        email: data?.user?.email ?? null,
         lastSignInAt: data?.user?.last_sign_in_at ?? null,
       });
     }
@@ -90,7 +89,6 @@ export async function searchUsers(params: SearchUsersParams): Promise<ActionResu
       const authInfo = authUserMap.get(p.id);
       return {
         userId: p.id,
-        email: authInfo?.email ?? null,
         username: p.username,
         displayName: p.displayName,
         createdAt: p.createdAt.toISOString(),
