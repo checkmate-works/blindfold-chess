@@ -4379,6 +4379,8 @@
     },
     "usersTable": {
       "email": "E-mail",
+      "revealEmail": "Mostrar endereço de e-mail",
+      "hideEmail": "Ocultar endereço de e-mail",
       "role": "Função",
       "status": "Status",
       "createdAt": "Data de Criação",

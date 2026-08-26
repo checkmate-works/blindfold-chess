@@ -4351,6 +4351,8 @@
     },
     "usersTable": {
       "email": "Email",
+      "revealEmail": "メールアドレスを表示",
+      "hideEmail": "メールアドレスを隠す",
       "role": "Role",
       "status": "Status",
       "createdAt": "Created At",

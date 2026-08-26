@@ -54,6 +54,8 @@ export async function UsersListTab({
     viewDetail: t('usersTable.viewDetail'),
     copyUserId: t('usersTable.copyUserId'),
     copyUserIdSuccess: t('usersTable.copyUserIdSuccess'),
+    revealEmail: t('usersTable.revealEmail'),
+    hideEmail: t('usersTable.hideEmail'),
     ...providerNames,
   };
 

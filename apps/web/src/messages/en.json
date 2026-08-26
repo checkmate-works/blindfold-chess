@@ -4351,6 +4351,8 @@
     },
     "usersTable": {
       "email": "Email",
+      "revealEmail": "Show email address",
+      "hideEmail": "Hide email address",
       "role": "Role",
       "status": "Status",
       "createdAt": "Created At",

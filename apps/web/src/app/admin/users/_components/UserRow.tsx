@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import { AdminBadge } from '@/app/admin/_components/AdminBadge';
+import { MaskedEmail } from '@/app/admin/_components/MaskedEmail';
 import { formatDate } from '@/app/admin/_lib/format';
 import type { User } from '@supabase/supabase-js';
 import { FaExternalLinkAlt } from 'react-icons/fa';
@@ -34,6 +35,8 @@ type UserRowProps = {
     unknown: string;
     copyUserId: string;
     copyUserIdSuccess: string;
+    revealEmail: string;
+    hideEmail: string;
   };
 };
 
@@ -57,7 +60,10 @@ export function UserRow({
         />
       </td>
       <td className="px-4 py-3">
-        <span>{user.email ?? '-'}</span>
+        <MaskedEmail
+          email={user.email}
+          labels={{ revealEmail: labels.revealEmail, hideEmail: labels.hideEmail }}
+        />
       </td>
       <td className="px-4 py-3">
         {profile?.username ? (
