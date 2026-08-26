@@ -8,19 +8,37 @@ import type {
 } from '@/lib/games/saved-game-types';
 import { startedFromStandardPosition } from '@/lib/games/standard-start';
 
-/** The published-game columns the hidden-board qualification reads. */
-export type HiddenBoardWinRow = {
-  playSettings: GamePlaySettings | null;
-  playSettingsLog: PlaySettingsChangeEntry[] | null;
-  operationLogs: MoveOperationLog[] | null;
-  operationTotals: OperationTotals | null;
-  startingFen: string | null;
-  setupPlies: number | null;
+/**
+ * Everything the hidden-board qualification reads about one won game.
+ *
+ * Widened past the shape of a `games` row on purpose: the same predicate is
+ * run before the game is a row at all, over a finished game still sitting in
+ * localStorage (`guest-promotion.ts`, the finish-modal pitch). Persisted
+ * columns are `T | null`, the local `Game` object leaves the same fields
+ * `undefined`, and its arrays are handed over `readonly` — so every field
+ * accepts all three. Nothing here is mutated, and every read already treats
+ * absent and null identically.
+ */
+export type HiddenBoardWinEvidence = {
+  playSettings: GamePlaySettings | null | undefined;
+  playSettingsLog: readonly PlaySettingsChangeEntry[] | null | undefined;
+  operationLogs: readonly MoveOperationLog[] | null | undefined;
+  operationTotals: OperationTotals | null | undefined;
+  startingFen: string | null | undefined;
+  setupPlies: number | null | undefined;
 };
 
 /**
- * Does one won, published game count toward the 1dan hidden-board
- * requirement?
+ * Does one won game count toward the 1dan hidden-board requirement?
+ *
+ * The single copy of that rule. The server evaluator grades the published
+ * row with it (`rank-evaluation.ts`, the authority on what is actually
+ * granted) and the finish modal grades the still-local game with it
+ * (`guest-promotion.ts`) so the pitch it shows a signed-out player cannot
+ * promise a rank the server will then decline. Two of the rules below
+ * reached the evaluator alone while the pitch kept its own copy, and for
+ * each of them the modal advertised black belt for games the server refused:
+ * the standard-start bar, and the peek total read from the monotonic ledger.
  *
  * Fail-closed throughout: malformed or unverifiable data disqualifies the
  * game rather than crashing or passing. A crash would take down
@@ -46,9 +64,10 @@ export type HiddenBoardWinRow = {
  * Lives outside the evaluator registry because this is the highest-stakes
  * reward rule in the app: as an anonymous `filter` callback inside a
  * DB-backed evaluator, none of its branches could be reached without
- * feeding rows through a stubbed database module.
+ * feeding rows through a stubbed database module — and the client half
+ * could not call it at all without dragging `server-only` into the bundle.
  */
-export function qualifiesAsHiddenBoardWin(row: HiddenBoardWinRow, maxPeeks: number): boolean {
+export function qualifiesAsHiddenBoardWin(row: HiddenBoardWinEvidence, maxPeeks: number): boolean {
   if (!startedFromStandardPosition(row.startingFen, row.setupPlies)) return false;
   if (!maintainedHiddenBoard(row.playSettings, row.playSettingsLog)) return false;
 
