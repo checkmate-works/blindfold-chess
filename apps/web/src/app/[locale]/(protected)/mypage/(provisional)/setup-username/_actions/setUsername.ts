@@ -10,6 +10,7 @@ import { isLameName } from '@/lib/content/lame-name';
 import { db, profiles } from '@/lib/db';
 import { isUniqueViolation } from '@/lib/db/extract-pg-error-code';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
+import { DISPLAY_NAME_MAX_LENGTH } from '@/lib/users/profile-limits';
 
 export type SetUsernameInput = {
   username?: string;
@@ -46,6 +47,18 @@ export async function setUsername(input: SetUsernameInput): Promise<SetUsernameR
 
   if (isLameName(username)) {
     return { error: 'username_inappropriate' };
+  }
+
+  // The setup form caps this field with `maxLength`, which constrains typing
+  // only — a request that does not come from that form is bounded by nothing
+  // but the column's varchar(255). Without this check the over-long name is
+  // stored, and the user lands on a profile that `/mypage/profile` — which
+  // does enforce the limit — refuses to save: their first edit there fails
+  // with `display_name_too_long` for a field they did not touch. The fallback
+  // above means an omitted display name is the username, which
+  // `validateUsername` has already capped well below this.
+  if (displayName.length > DISPLAY_NAME_MAX_LENGTH) {
+    return { error: 'display_name_too_long' };
   }
 
   if (isLameName(displayName)) {
