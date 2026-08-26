@@ -2,10 +2,7 @@
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
-import {
-  toggleKnobClass,
-  toggleTrackClass,
-} from '@/app/[locale]/_components/toggle-switch-classes';
+import { ProblemCountAndShuffle } from './ProblemCountAndShuffle';
 
 type Props = {
   customFenInput: string;
@@ -48,52 +45,14 @@ export function CustomFenSection({
         {customFenError && <p className="mt-2 text-sm text-destructive">{customFenError}</p>}
       </div>
 
-      {/* Problem Count (for custom FEN mode) */}
-      {customFenCount >= 2 && (
-        <div>
-          <label
-            htmlFor="problemCountCustom"
-            className="block text-sm font-medium text-foreground mb-2"
-          >
-            {t('problemCount')}: {Math.min(problemCount, customFenCount)}{' '}
-            {Math.min(problemCount, customFenCount) > 1 ? t('problems') : ''}
-          </label>
-          <input
-            id="problemCountCustom"
-            type="range"
-            min="1"
-            max={customFenCount}
-            step="1"
-            value={Math.min(problemCount, customFenCount)}
-            onChange={(e) => onProblemCountChange(parseInt(e.target.value))}
-            className="w-full h-2 bg-secondary rounded-md appearance-none cursor-pointer accent-foreground"
-          />
-          <div className="flex justify-between text-xs text-muted-foreground mt-1">
-            <span>1</span>
-            <span>{customFenCount}</span>
-          </div>
-        </div>
-      )}
-
-      {/* Shuffle Problems (for custom FEN mode) */}
-      {customFenCount > 1 && (
-        <div className="flex items-center justify-end gap-3">
-          <label htmlFor="shuffleCustom" className="text-sm text-muted-foreground">
-            {t('shuffle')}
-          </label>
-          <button
-            id="shuffleCustom"
-            type="button"
-            role="switch"
-            aria-checked={shuffleProblems}
-            onClick={() => onShuffleChange(!shuffleProblems)}
-            className={toggleTrackClass('control', shuffleProblems)}
-          >
-            <span className="sr-only">{t('shuffle')}</span>
-            <span className={toggleKnobClass('control', shuffleProblems)} />
-          </button>
-        </div>
-      )}
+      <ProblemCountAndShuffle
+        availableCount={customFenCount}
+        problemCount={problemCount}
+        shuffleProblems={shuffleProblems}
+        onProblemCountChange={onProblemCountChange}
+        onShuffleChange={onShuffleChange}
+        idSuffix="Custom"
+      />
     </>
   );
 }
