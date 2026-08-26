@@ -4452,7 +4452,6 @@
     "subscriptions": "Subscriptions",
     "subscriptionsTable": {
       "title": "Subscriptions",
-      "user": "User",
       "username": "Username",
       "subscriptionId": "Subscription ID",
       "priceId": "Price ID",

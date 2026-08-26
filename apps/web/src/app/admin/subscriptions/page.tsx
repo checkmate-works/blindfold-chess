@@ -7,12 +7,12 @@ import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/ser
 
 import { db, profiles, subscriptions } from '@/lib/db';
 import { getPaginationParams } from '@/lib/pagination';
-import { createAdminClient } from '@/lib/supabase/admin';
 
 import { AdminBadge, type AdminBadgeVariant } from '../_components/AdminBadge';
 import { AdminDataTable } from '../_components/AdminDataTable';
 import { AdminPageHeader } from '../_components/AdminPageHeader';
 import { AdminPaginationNav } from '../_components/AdminPaginationNav';
+import { AdminUserLink } from '../_components/AdminUserLink';
 import { SubscriptionStatusFilter } from './_components/SubscriptionStatusFilter';
 import { UserCombobox } from './_components/UserCombobox';
 
@@ -87,26 +87,6 @@ export default async function AdminSubscriptionsPage({
     userIds.length > 0 ? await db.select().from(profiles).where(inArray(profiles.id, userIds)) : [];
   const profileMap = new Map(userProfiles.map((p) => [p.id, p]));
 
-  // Look up auth users for emails (only for the current page's users)
-  const adminClient = createAdminClient();
-  const emailMap = new Map<string, string>();
-  await Promise.all(
-    userIds.map(async (userId) => {
-      const { data } = await adminClient.auth.admin.getUserById(userId);
-      if (data?.user?.email) {
-        emailMap.set(userId, data.user.email);
-      }
-    })
-  );
-
-  // Ensure filtered user's email is available even if they have no subscriptions
-  if (userFilter && !emailMap.has(userFilter)) {
-    const { data } = await adminClient.auth.admin.getUserById(userFilter);
-    if (data?.user?.email) {
-      emailMap.set(userFilter, data.user.email);
-    }
-  }
-
   // Ensure filtered user's profile is available for the combobox
   if (userFilter && !profileMap.has(userFilter)) {
     const [profile] = await db.select().from(profiles).where(eq(profiles.id, userFilter)).limit(1);
@@ -117,7 +97,7 @@ export default async function AdminSubscriptionsPage({
   const initialUser = userFilter
     ? {
         id: userFilter,
-        username: filteredUserProfile?.username ?? emailMap.get(userFilter) ?? userFilter,
+        username: filteredUserProfile?.username ?? userFilter,
       }
     : null;
 
@@ -155,7 +135,6 @@ export default async function AdminSubscriptionsPage({
 
       <AdminDataTable
         headers={[
-          t('subscriptionsTable.user'),
           t('subscriptionsTable.username'),
           t('subscriptionsTable.subscriptionId'),
           t('subscriptionsTable.priceId'),
@@ -169,12 +148,16 @@ export default async function AdminSubscriptionsPage({
         emptyMessage={t('subscriptionsTable.noSubscriptionsFound')}
         renderRow={(sub) => {
           const profile = profileMap.get(sub.userId);
-          const email = emailMap.get(sub.userId);
 
           return (
             <tr key={sub.id} className="border-t border-border">
-              <td className="px-4 py-3">{email ?? sub.userId}</td>
-              <td className="px-4 py-3">{profile?.username ?? '-'}</td>
+              <td className="px-4 py-3">
+                <AdminUserLink
+                  userId={sub.userId}
+                  username={profile?.username}
+                  deletedLabel={t('deletedUser')}
+                />
+              </td>
               <td className="px-4 py-3 font-mono text-xs" title={sub.stripeSubscriptionId}>
                 {truncateId(sub.stripeSubscriptionId)}
               </td>
