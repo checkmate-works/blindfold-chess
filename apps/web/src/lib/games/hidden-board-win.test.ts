@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import type { HiddenBoardWinRow } from './hidden-board-win';
+import type { HiddenBoardWinEvidence } from './hidden-board-win';
 import { qualifiesAsHiddenBoardWin } from './hidden-board-win';
 
 /** A hidden-board win with nothing disqualifying: standard start, no peeks. */
-const baseRow: HiddenBoardWinRow = {
+const baseRow: HiddenBoardWinEvidence = {
   playSettings: {
     boardVisibility: 'never',
     showOwnPieces: false,
@@ -20,7 +20,7 @@ const baseRow: HiddenBoardWinRow = {
   setupPlies: null,
 };
 
-const row = (overrides: Partial<HiddenBoardWinRow>): HiddenBoardWinRow => ({
+const row = (overrides: Partial<HiddenBoardWinEvidence>): HiddenBoardWinEvidence => ({
   ...baseRow,
   ...overrides,
 });
@@ -80,7 +80,7 @@ describe('qualifiesAsHiddenBoardWin', () => {
 
     it('rejects a malformed totals object rather than falling back to the logs', () => {
       const malformed = row({
-        operationTotals: { peeks: 0 } as unknown as HiddenBoardWinRow['operationTotals'],
+        operationTotals: { peeks: 0 } as unknown as HiddenBoardWinEvidence['operationTotals'],
         operationLogs: [],
       });
       expect(qualifiesAsHiddenBoardWin(malformed, 5)).toBe(false);
@@ -88,7 +88,7 @@ describe('qualifiesAsHiddenBoardWin', () => {
   });
 
   describe('legacy rows without operation totals', () => {
-    const legacy = (logs: HiddenBoardWinRow['operationLogs']) =>
+    const legacy = (logs: HiddenBoardWinEvidence['operationLogs']) =>
       row({ operationTotals: null, operationLogs: logs });
 
     it('accepts an undo-free log within the peek budget', () => {
@@ -127,7 +127,7 @@ describe('qualifiesAsHiddenBoardWin', () => {
       ],
       ['a null entry', null],
     ])('rejects %s in the log', (_label, entry) => {
-      const malformed = legacy([entry] as unknown as HiddenBoardWinRow['operationLogs']);
+      const malformed = legacy([entry] as unknown as HiddenBoardWinEvidence['operationLogs']);
       expect(qualifiesAsHiddenBoardWin(malformed, 5)).toBe(false);
     });
   });
