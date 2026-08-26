@@ -3,6 +3,8 @@
 import { Button, TextInput, Textarea } from '@/app/_components';
 import { CountrySelect } from '@/app/_components/CountrySelect';
 
+import { BIO_MAX_LENGTH, DISPLAY_NAME_MAX_LENGTH } from '@/lib/users/profile-limits';
+
 import { useProfileForm } from '../_hooks/useProfileForm';
 import type { ProfileFormProps } from '../_lib/profile-form-types';
 import { AvatarUpload } from './AvatarUpload';
@@ -39,7 +41,7 @@ export function ProfileForm({ locale, profile }: ProfileFormProps) {
             id="displayName"
             value={fields.displayName}
             onChange={(e) => setField('displayName')(e.target.value)}
-            maxLength={50}
+            maxLength={DISPLAY_NAME_MAX_LENGTH}
             autoComplete="off"
           />
         </FormField>
@@ -53,7 +55,7 @@ export function ProfileForm({ locale, profile }: ProfileFormProps) {
             value={fields.bio}
             onChange={(e) => setField('bio')(e.target.value)}
             placeholder={t('bioPlaceholder')}
-            maxLength={500}
+            maxLength={BIO_MAX_LENGTH}
             rows={4}
           />
           {error?.field === 'bio' && (

@@ -8,6 +8,7 @@ import { authenticateAndCheckBan } from '@/lib/auth';
 import { profileCacheTag } from '@/lib/cache-tags';
 import { isValidCountryCode } from '@/lib/countries';
 import { db, profiles } from '@/lib/db';
+import { BIO_MAX_LENGTH } from '@/lib/users/profile-limits';
 
 export type SaveOnboardingProfileInput = {
   country: string;
@@ -17,8 +18,6 @@ export type SaveOnboardingProfileInput = {
 export type SaveOnboardingProfileResult =
   | { ok: true }
   | { ok: false; error: 'signInRequired' | 'banned' | 'invalidCountry' | 'bioTooLong' };
-
-const BIO_MAX_LENGTH = 500;
 
 /**
  * Persist the optional profile fields collected on the post-registration

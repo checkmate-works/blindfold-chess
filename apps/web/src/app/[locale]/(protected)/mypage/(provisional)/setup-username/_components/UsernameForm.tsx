@@ -9,6 +9,8 @@ import { Button, FieldError, TextInput, fieldErrorProps } from '@/app/_component
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { validateUsername } from '@blindfold-chess/features/username';
 
+import { DISPLAY_NAME_MAX_LENGTH } from '@/lib/users/profile-limits';
+
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 import { setUsername as setUsernameAction } from '../_actions/setUsername';
@@ -153,7 +155,7 @@ export function UsernameForm({ locale }: Props) {
           value={displayName}
           onChange={(e) => setDisplayName(e.target.value)}
           placeholder={t('displayNamePlaceholder')}
-          maxLength={50}
+          maxLength={DISPLAY_NAME_MAX_LENGTH}
           autoComplete="off"
         />
         <ul className="mt-2 list-disc list-inside">

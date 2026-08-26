@@ -1,4 +1,5 @@
 import { isValidCountryCode } from '@/lib/countries';
+import { BIO_MAX_LENGTH, DISPLAY_NAME_MAX_LENGTH } from '@/lib/users/profile-limits';
 
 import {
   CHESS_USERNAME_PATTERN,
@@ -159,7 +160,7 @@ export function validateProfileInput(
   if (!displayName) {
     return { ok: false, error: 'display_name_required' };
   }
-  if (displayName.length > 50) {
+  if (displayName.length > DISPLAY_NAME_MAX_LENGTH) {
     return { ok: false, error: 'display_name_too_long' };
   }
   if (deps.isLameName(displayName)) {
@@ -167,7 +168,7 @@ export function validateProfileInput(
   }
 
   const bio = normalize(input.bio);
-  if (bio && bio.length > 500) {
+  if (bio && bio.length > BIO_MAX_LENGTH) {
     return { ok: false, error: 'bio_too_long' };
   }
 

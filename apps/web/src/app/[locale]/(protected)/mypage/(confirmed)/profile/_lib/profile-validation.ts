@@ -1,4 +1,5 @@
 import { isValidCountryCode } from '@/lib/countries';
+import { BIO_MAX_LENGTH } from '@/lib/users/profile-limits';
 
 import {
   CHESS_USERNAME_PATTERN,
@@ -72,7 +73,7 @@ export function validateProfileFields(fields: ProfileFields): ValidationError | 
   if (!fields.displayName.trim()) {
     return { messageKey: 'displayNameRequired', field: 'displayName' };
   }
-  if (fields.bio.length > 500) {
+  if (fields.bio.length > BIO_MAX_LENGTH) {
     return { messageKey: 'bioMaxLength', field: 'bio' };
   }
   // Real ISO 3166-1 alpha-2 membership (not just two letters). Uppercased so a
