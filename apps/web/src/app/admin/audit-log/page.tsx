@@ -4,7 +4,6 @@ import { Button, Field, Input, Select } from '@/app/admin/_components/forms';
 import { buildAdminListHref } from '@/app/admin/_lib/build-list-href';
 import { formatDateTime } from '@/app/admin/_lib/format';
 import { resolveUserFilter } from '@/app/admin/_lib/resolve-user-filter';
-import type { User } from '@supabase/supabase-js';
 import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
@@ -16,7 +15,7 @@ import { AdminBadge, type AdminBadgeVariant } from '../_components/AdminBadge';
 import { AdminDataTable } from '../_components/AdminDataTable';
 import { AdminPageHeader } from '../_components/AdminPageHeader';
 import { AdminPaginationNav } from '../_components/AdminPaginationNav';
-import { loadUsersEmailMap } from '../_lib/users-email-map';
+import { AdminUserLink } from '../_components/AdminUserLink';
 
 const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
@@ -62,13 +61,8 @@ export default async function AdminAuditLogPage({
 
   // If user filter is set, find matching target IDs from profiles
   let filteredTargetIds: string[] | null = null;
-  // Cache the auth user list fetched while resolving the user filter so the
-  // later email-map step can reuse it instead of paying for a second
-  // identical `listUsers` round-trip in the same request.
-  let preloadedAuthUsers: User[] | undefined;
   if (userFilter) {
     const resolved = await resolveUserFilter(adminClient, userFilter);
-    preloadedAuthUsers = resolved.preloadedAuthUsers;
     filteredTargetIds = resolved.matchingIds;
     if (resolved.matchingIds.length > 0) {
       conditions.push(inArray(moderationActions.targetId, resolved.matchingIds));
@@ -104,20 +98,13 @@ export default async function AdminAuditLogPage({
   const actorIds = [...new Set(logs.map((l) => l.actorId))];
   const allUserIds = [...new Set([...targetIds, ...actorIds])];
 
-  // Fetch profiles for targets
-  const targetProfiles =
-    targetIds.length > 0
-      ? await db.select().from(profiles).where(inArray(profiles.id, targetIds))
+  // Fetch profiles for targets and for the acting admins alike — both
+  // columns render a username.
+  const rowProfiles =
+    allUserIds.length > 0
+      ? await db.select().from(profiles).where(inArray(profiles.id, allUserIds))
       : [];
-  const profileMap = new Map(targetProfiles.map((p) => [p.id, p]));
-
-  // Fetch emails from Supabase Auth for all users. Reuses the user list
-  // already fetched above (when a user filter was active) to avoid a second
-  // identical Auth round-trip in the same request.
-  const emailMap = await loadUsersEmailMap(allUserIds, {
-    adminClient,
-    preloadedUsers: preloadedAuthUsers,
-  });
+  const profileMap = new Map(rowProfiles.map((p) => [p.id, p]));
 
   // Build search params for pagination links
   const buildHref = buildAdminListHref('/admin/audit-log', {
@@ -179,18 +166,25 @@ export default async function AdminAuditLogPage({
         items={logs}
         emptyMessage={t('auditLogTable.noLogsFound')}
         renderRow={(log) => {
-          const targetProfile = profileMap.get(log.targetId);
-          const targetDisplay =
-            targetProfile?.username ?? emailMap.get(log.targetId) ?? log.targetId;
-          const actorDisplay = emailMap.get(log.actorId) ?? log.actorId;
-
           return (
             <tr key={log.id} className="border-t border-border">
               <td className="px-4 py-3">
                 <AdminBadge variant={actionBadgeVariant(log.action)}>{log.action}</AdminBadge>
               </td>
-              <td className="px-4 py-3">{targetDisplay}</td>
-              <td className="px-4 py-3 text-muted-foreground">{actorDisplay}</td>
+              <td className="px-4 py-3">
+                <AdminUserLink
+                  userId={log.targetId}
+                  username={profileMap.get(log.targetId)?.username}
+                  deletedLabel={t('deletedUser')}
+                />
+              </td>
+              <td className="px-4 py-3">
+                <AdminUserLink
+                  userId={log.actorId}
+                  username={profileMap.get(log.actorId)?.username}
+                  deletedLabel={t('deletedUser')}
+                />
+              </td>
               <td className="px-4 py-3">
                 {log.reason ? (
                   <span title={log.reason}>
