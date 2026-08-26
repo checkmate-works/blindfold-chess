@@ -4,6 +4,7 @@ import { classifyGuestPromotionQualification } from './guest-promotion';
 import type {
   GamePlaySettings,
   MoveOperationLog,
+  OperationTotals,
   PreferenceChangeLogEntry,
 } from './saved-game-types';
 
@@ -18,8 +19,12 @@ const SIGHTED: GamePlaySettings = {
 
 const HIDDEN: GamePlaySettings = { ...SIGHTED, boardVisibility: 'never' };
 
-function opLog(peekCount: number): MoveOperationLog {
-  return { inputMethod: 'text', peekCount, undoCount: 0, movePeekCount: 0 };
+function opLog(peekCount: number, undoCount = 0): MoveOperationLog {
+  return { inputMethod: 'text', peekCount, undoCount, movePeekCount: 0 };
+}
+
+function totals(overrides: Partial<OperationTotals>): OperationTotals {
+  return { peeks: 0, movePeeks: 0, undos: 0, invalidMoves: 0, ...overrides };
 }
 
 function classify(overrides: Partial<Parameters<typeof classifyGuestPromotionQualification>[0]>) {
@@ -28,6 +33,9 @@ function classify(overrides: Partial<Parameters<typeof classifyGuestPromotionQua
     playSettings: HIDDEN,
     changeLog: undefined,
     operationLogs: [],
+    // Absent by default so the log-based cases below exercise the legacy
+    // fallback; the totals cases opt in explicitly.
+    operationTotals: undefined,
     moveCount: 40,
     startingFen: undefined,
     setupPlies: undefined,
@@ -111,6 +119,32 @@ describe('classifyGuestPromotionQualification', () => {
 
     it('returns null (not 1kyu) for a fully sighted win from a custom position', () => {
       expect(classify({ playSettings: SIGHTED, startingFen: ENDGAME_FEN })).toBeNull();
+    });
+  });
+
+  describe('peek total (mirrors the server evaluator)', () => {
+    it('reads the monotonic totals, not the per-move log', () => {
+      // Undo deletes log entries together with the peeks they recorded, so a
+      // player who peeks, undoes and replays leaves a clean log behind. The
+      // totals remember, and they are what the server grades after publish —
+      // pitching 1dan off the log would promise a rank that is then declined.
+      const laundered = { operationLogs: [opLog(0, 4)], operationTotals: totals({ peeks: 9 }) };
+      expect(classify(laundered)).toBe('1kyu');
+    });
+
+    it('returns 1dan on totals within the allowance whatever the log says', () => {
+      expect(
+        classify({ operationLogs: [opLog(0)], operationTotals: totals({ peeks: 5, undos: 3 }) })
+      ).toBe('1dan');
+    });
+
+    it('downgrades to 1kyu on a malformed totals object rather than falling back', () => {
+      const malformed = { peeks: 0 } as unknown as OperationTotals;
+      expect(classify({ operationTotals: malformed })).toBe('1kyu');
+    });
+
+    it('downgrades a legacy game with any recorded undo — its peek total is unverifiable', () => {
+      expect(classify({ operationLogs: [opLog(0, 1)], operationTotals: undefined })).toBe('1kyu');
     });
   });
 });

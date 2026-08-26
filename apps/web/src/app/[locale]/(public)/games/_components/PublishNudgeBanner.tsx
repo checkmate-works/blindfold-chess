@@ -55,6 +55,7 @@ export function PublishNudgeBanner({ locale, className }: Props) {
         playSettings: game.gamePreferences,
         changeLog: game.preferenceChangeLog,
         operationLogs: game.operationLogs,
+        operationTotals: game.operationTotals,
         moveCount: game.moves.length,
         startingFen: game.startingFen,
         setupPlies: game.setupPlies,
