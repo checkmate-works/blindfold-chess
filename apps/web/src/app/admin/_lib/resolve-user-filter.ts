@@ -1,4 +1,4 @@
-import type { SupabaseClient, User } from '@supabase/supabase-js';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { ilike, or } from 'drizzle-orm';
 
 import { db, profiles } from '@/lib/db';
@@ -6,13 +6,6 @@ import { db, profiles } from '@/lib/db';
 export type ResolvedUserFilter = {
   /** Deduped user ids matching the filter (empty = no match, caller returns an empty page). */
   matchingIds: string[];
-  /**
-   * The auth user list fetched while resolving. Forward to
-   * `loadUsersEmailMap` so the per-row email column reuses it instead of
-   * paying for a second identical `listUsers` round-trip in the same
-   * request.
-   */
-  preloadedAuthUsers: User[] | undefined;
 };
 
 /**
@@ -36,13 +29,11 @@ export async function resolveUserFilter(
     );
 
   const listUsersResult = await adminClient.auth.admin.listUsers({ page: 1, perPage: 100 });
-  const preloadedAuthUsers = listUsersResult.data?.users;
-  const matchingEmailUserIds = (preloadedAuthUsers ?? [])
+  const matchingEmailUserIds = (listUsersResult.data?.users ?? [])
     .filter((u) => u.email?.toLowerCase().includes(userFilter.toLowerCase()))
     .map((u) => u.id);
 
   return {
     matchingIds: [...new Set([...matchingProfiles.map((p) => p.id), ...matchingEmailUserIds])],
-    preloadedAuthUsers,
   };
 }
