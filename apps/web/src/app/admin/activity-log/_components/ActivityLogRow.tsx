@@ -1,8 +1,6 @@
-import Link from 'next/link';
-
 import { AdminBadge, type AdminBadgeVariant } from '@/app/admin/_components/AdminBadge';
+import { AdminUserLink } from '@/app/admin/_components/AdminUserLink';
 import { formatDateTime } from '@/app/admin/_lib/format';
-import { FaExternalLinkAlt } from 'react-icons/fa';
 
 import type { UserActivityLog } from '@/lib/db/schema';
 
@@ -39,30 +37,14 @@ function actionBadgeVariant(action: string): AdminBadgeVariant {
   }
 }
 
-function formatUserDisplay(
-  userId: string,
-  profileMap: Map<string, { username: string | null }>,
-  emailMap: Map<string, string>
-): string {
-  const profile = profileMap.get(userId);
-  if (profile?.username) return profile.username;
-
-  const email = emailMap.get(userId);
-  if (email) return email;
-
-  // Neither username nor email available — likely a deleted account
-  const shortId = userId.length > 8 ? userId.slice(0, 8) : userId;
-  return `[deleted] (${shortId}...)`;
-}
-
 type ActivityLogRowProps = {
   log: UserActivityLog;
   profileMap: Map<string, { username: string | null }>;
-  emailMap: Map<string, string>;
+  /** Shown for actors and targets whose profile row is gone. */
+  deletedUserLabel: string;
 };
 
-export function ActivityLogRow({ log, profileMap, emailMap }: ActivityLogRowProps) {
-  const userDisplay = formatUserDisplay(log.userId, profileMap, emailMap);
+export function ActivityLogRow({ log, profileMap, deletedUserLabel }: ActivityLogRowProps) {
   const metadataStr = log.metadata ? JSON.stringify(log.metadata) : '-';
   const metadata = log.metadata as Record<string, unknown> | null;
 
@@ -72,38 +54,22 @@ export function ActivityLogRow({ log, profileMap, emailMap }: ActivityLogRowProp
         <AdminBadge variant={actionBadgeVariant(log.action)}>{log.action}</AdminBadge>
       </td>
       <td className="px-4 py-3">
-        {profileMap.get(log.userId)?.username ? (
-          <Link
-            href={`/en/u/${encodeURIComponent(profileMap.get(log.userId)!.username!)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-primary hover:underline"
-          >
-            {profileMap.get(log.userId)!.username}
-            <FaExternalLinkAlt className="h-3 w-3" />
-          </Link>
-        ) : (
-          userDisplay
-        )}
+        <AdminUserLink
+          userId={log.userId}
+          username={profileMap.get(log.userId)?.username}
+          deletedLabel={deletedUserLabel}
+        />
       </td>
       <td className="px-4 py-3">
         {log.targetType ? (
           <>
             <span className="text-muted-foreground text-xs mr-1">[{log.targetType}]</span>
             {log.targetType === 'user' && log.targetId ? (
-              profileMap.get(log.targetId)?.username ? (
-                <Link
-                  href={`/en/u/${encodeURIComponent(profileMap.get(log.targetId)!.username!)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-primary hover:underline"
-                >
-                  {profileMap.get(log.targetId)!.username}
-                  <FaExternalLinkAlt className="h-3 w-3" />
-                </Link>
-              ) : (
-                formatUserDisplay(log.targetId, profileMap, emailMap)
-              )
+              <AdminUserLink
+                userId={log.targetId}
+                username={profileMap.get(log.targetId)?.username}
+                deletedLabel={deletedUserLabel}
+              />
             ) : log.targetType === 'rank' ? (
               <span className="text-xs">
                 {metadata?.rankSlug ? String(metadata.rankSlug) : (log.targetId ?? '-')}

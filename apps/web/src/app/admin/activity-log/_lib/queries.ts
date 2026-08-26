@@ -1,4 +1,4 @@
-import type { SupabaseClient, User } from '@supabase/supabase-js';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { desc, eq, inArray } from 'drizzle-orm';
 
 import { db, profiles, userActivityLog } from '@/lib/db';
@@ -7,7 +7,6 @@ import type { Profile, UserActivityLog } from '@/lib/db/schema';
 import { getPaginationParams } from '@/lib/pagination';
 
 import { resolveUserFilter } from '../../_lib/resolve-user-filter';
-import { loadUsersEmailMap } from '../../_lib/users-email-map';
 
 const PAGE_SIZE = 20;
 
@@ -16,7 +15,6 @@ export type ActivityLogPageData = {
   currentPage: number;
   totalPages: number;
   profileMap: Map<string, Profile>;
-  emailMap: Map<string, string>;
   actionTypes: { action: string }[];
 };
 
@@ -34,13 +32,8 @@ export async function fetchActivityLogPageData(
 
   // If user filter is set, find matching user IDs from profiles
   let filteredUserIds: string[] | null = null;
-  // Cache the auth user list fetched while resolving the user filter so the
-  // later email-map step can reuse it instead of paying for a second
-  // identical `listUsers` round-trip in the same request.
-  let preloadedAuthUsers: User[] | undefined;
   if (userFilter) {
     const resolved = await resolveUserFilter(adminClient, userFilter);
-    preloadedAuthUsers = resolved.preloadedAuthUsers;
     filteredUserIds = resolved.matchingIds;
     if (resolved.matchingIds.length > 0) {
       conditions.push(inArray(userActivityLog.userId, resolved.matchingIds));
@@ -81,14 +74,6 @@ export async function fetchActivityLogPageData(
       : [];
   const profileMap = new Map(lookupProfiles.map((p) => [p.id, p]));
 
-  // Fetch emails from Supabase Auth. Reuses the user list already fetched
-  // above (when a user filter was active) to avoid a second identical Auth
-  // round-trip in the same request.
-  const emailMap = await loadUsersEmailMap(allLookupIds, {
-    adminClient,
-    preloadedUsers: preloadedAuthUsers,
-  });
-
   // Get distinct action types for filter dropdown
   const actionTypes = await db
     .selectDistinct({ action: userActivityLog.action })
@@ -100,7 +85,6 @@ export async function fetchActivityLogPageData(
     currentPage,
     totalPages,
     profileMap,
-    emailMap,
     actionTypes,
   };
 }
