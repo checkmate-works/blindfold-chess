@@ -12,6 +12,7 @@ import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+import { MaskedEmail } from '@/app/admin/_components/MaskedEmail';
 import { formatDate, formatDateTime } from '@/app/admin/_lib/format';
 import { FaExternalLinkAlt } from 'react-icons/fa';
 
@@ -94,7 +95,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
       <AdminPageHeader
         breadcrumbs={[
           { label: t('users'), href: '/admin/users' },
-          { label: profile?.username ?? authUser.email ?? authUser.id },
+          { label: profile?.username ?? authUser.id },
         ]}
         actions={
           <>
@@ -136,7 +137,16 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
                 />
               </span>
             </InfoRow>
-            <InfoRow label={t('usersTable.email')}>{authUser.email ?? '—'}</InfoRow>
+            <InfoRow label={t('usersTable.email')}>
+              <MaskedEmail
+                email={authUser.email}
+                labels={{
+                  revealEmail: t('usersTable.revealEmail'),
+                  hideEmail: t('usersTable.hideEmail'),
+                }}
+                fallback="—"
+              />
+            </InfoRow>
             <InfoRow label={t('usersTable.username')}>
               {profile?.username ? (
                 <Link
@@ -315,13 +325,13 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
           {profile && (
             <>
               <Link
-                href={`/admin/topic_posts?user=${encodeURIComponent(profile.username ?? authUser.email ?? authUser.id)}`}
+                href={`/admin/topic_posts?user=${encodeURIComponent(profile.username)}`}
                 className="rounded border border-border bg-card px-3 py-1 text-xs font-medium text-foreground transition-colors hover:bg-secondary"
               >
                 {t('usersTable.viewPosts')}
               </Link>
               <Link
-                href={`/admin/activity-log?user=${encodeURIComponent(profile.username ?? '')}`}
+                href={`/admin/activity-log?user=${encodeURIComponent(profile.username)}`}
                 className="rounded border border-border bg-card px-3 py-1 text-xs font-medium text-foreground transition-colors hover:bg-secondary"
               >
                 {t('usersTable.viewActivity')}
