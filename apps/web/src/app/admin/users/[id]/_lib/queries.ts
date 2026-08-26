@@ -1,5 +1,5 @@
 import type { SupabaseClient, User } from '@supabase/supabase-js';
-import { and, desc, eq } from 'drizzle-orm';
+import { and, desc, eq, inArray } from 'drizzle-orm';
 
 import { db, moderationActions, profiles, subscriptions, userRanks, userRoles } from '@/lib/db';
 import type { ModerationAction, Profile, Subscription } from '@/lib/db/schema';
@@ -26,8 +26,8 @@ export type UserRankEntry = {
   achievedAt: Date;
 };
 
-/** A moderation action with the acting admin's email resolved (null if unresolved). */
-export type ModerationEntry = ModerationAction & { actorEmail: string | null };
+/** A moderation action with the acting admin's username resolved (null if the profile is gone). */
+export type ModerationEntry = ModerationAction & { actorUsername: string | null };
 
 export type UserDetail = {
   authUser: User;
@@ -48,7 +48,7 @@ export type UserDetail = {
 /**
  * Aggregate everything the admin user-detail page needs for a single user:
  * auth record, profile, role, subscriptions, moderation history (with actor
- * emails resolved), and achieved ranks. Returns `null` when no auth user
+ * usernames resolved), and achieved ranks. Returns `null` when no auth user
  * exists for the id so the page can `notFound()`.
  */
 export async function fetchUserDetail(
@@ -74,19 +74,20 @@ export async function fetchUserDetail(
     .where(and(eq(moderationActions.targetType, 'user'), eq(moderationActions.targetId, id)))
     .orderBy(desc(moderationActions.createdAt));
 
-  // Resolve acting-admin emails. Dedupe ids first — moderation history for a
-  // single user is small, and admins recur, so this is a handful of lookups.
+  // Resolve acting-admin usernames. Dedupe ids first — moderation history for
+  // a single user is small, and admins recur.
   const uniqueActorIds = [...new Set(actions.map((a) => a.actorId))];
-  const actorEmailMap = new Map<string, string | null>();
-  await Promise.all(
-    uniqueActorIds.map(async (actorId) => {
-      const { data: actorData } = await adminClient.auth.admin.getUserById(actorId);
-      actorEmailMap.set(actorId, actorData?.user?.email ?? null);
-    })
-  );
+  const actorProfiles =
+    uniqueActorIds.length > 0
+      ? await db
+          .select({ id: profiles.id, username: profiles.username })
+          .from(profiles)
+          .where(inArray(profiles.id, uniqueActorIds))
+      : [];
+  const actorUsernameMap = new Map(actorProfiles.map((p) => [p.id, p.username]));
   const moderationEntries: ModerationEntry[] = actions.map((a) => ({
     ...a,
-    actorEmail: actorEmailMap.get(a.actorId) ?? null,
+    actorUsername: actorUsernameMap.get(a.actorId) ?? null,
   }));
 
   const banReason = moderationEntries.find((a) => a.action === 'ban')?.reason ?? null;

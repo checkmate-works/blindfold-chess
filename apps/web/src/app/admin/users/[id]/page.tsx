@@ -23,6 +23,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 
 import { AdminDataTable } from '../../_components/AdminDataTable';
 import { AdminPageHeader } from '../../_components/AdminPageHeader';
+import { AdminUserLink } from '../../_components/AdminUserLink';
 import { BanButton } from '../_components/BanButton';
 import { CopyUserIdButton } from '../_components/CopyUserIdButton';
 import { StatusBadge } from '../_components/StatusBadge';
@@ -238,8 +239,12 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
               <tr key={entry.id} className="border-t border-border align-top">
                 <td className="px-4 py-3 font-medium">{entry.action}</td>
                 <td className="px-4 py-3 text-muted-foreground">{entry.reason ?? '—'}</td>
-                <td className="px-4 py-3 text-muted-foreground break-all">
-                  {entry.actorEmail ?? entry.actorId}
+                <td className="px-4 py-3">
+                  <AdminUserLink
+                    userId={entry.actorId}
+                    username={entry.actorUsername}
+                    deletedLabel={t('deletedUser')}
+                  />
                 </td>
                 <td className="px-4 py-3 text-muted-foreground">
                   {formatDateTime(entry.createdAt)}
