@@ -1,7 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { AdminPageHeader } from '@/app/admin/_components/AdminPageHeader';
+import { AdminPageLayout } from '@/app/admin/_components/AdminPageLayout';
 import { BannerCreativeForm } from '@/app/admin/ads/_components/BannerCreativeForm';
 import { NativeCardCreativeForm } from '@/app/admin/ads/_components/NativeCardCreativeForm';
 import { buildAdCreativeFormLabels } from '@/app/admin/ads/_lib/form-labels';
@@ -25,14 +25,13 @@ export default async function NewCreativePage({ params }: Props) {
   const labels = buildAdCreativeFormLabels(t);
 
   return (
-    <div>
-      <AdminPageHeader
-        breadcrumbs={[
-          { label: t('title'), href: '/admin/ads' },
-          { label: slot, href: `/admin/ads/${slot}` },
-          { label: t('createTitle') },
-        ]}
-      />
+    <AdminPageLayout
+      breadcrumbs={[
+        { label: t('title'), href: '/admin/ads' },
+        { label: slot, href: `/admin/ads/${slot}` },
+        { label: t('createTitle') },
+      ]}
+    >
       {kindForSlot(slot) === 'banner' ? (
         <BannerCreativeForm
           mode="create"
@@ -48,6 +47,6 @@ export default async function NewCreativePage({ params }: Props) {
           initial={{ ...EMPTY_COMMON, payload: {} }}
         />
       )}
-    </div>
+    </AdminPageLayout>
   );
 }

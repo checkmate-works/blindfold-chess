@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 import { AdminDataTable } from '@/app/admin/_components/AdminDataTable';
 import { AdminListSummary } from '@/app/admin/_components/AdminListSummary';
-import { AdminPageHeader } from '@/app/admin/_components/AdminPageHeader';
+import { AdminPageLayout } from '@/app/admin/_components/AdminPageLayout';
 import { AdminPaginationNav } from '@/app/admin/_components/AdminPaginationNav';
 import { adminPageSearchParamsCache } from '@/app/admin/_lib/admin-search-params';
 import { formatDateTime } from '@/app/admin/_lib/format';
@@ -35,9 +35,7 @@ export default async function AdminChunksPage({
   const buildHref = (p: number) => `/admin/chunks?page=${p}`;
 
   return (
-    <div>
-      <AdminPageHeader breadcrumbs={[{ label: 'Chunks' }]} />
-
+    <AdminPageLayout breadcrumbs={[{ label: 'Chunks' }]}>
       <AdminListSummary
         currentPage={currentPage}
         pageSize={DEFAULT_PAGE_SIZE}
@@ -80,6 +78,6 @@ export default async function AdminChunksPage({
       />
 
       <AdminPaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
-    </div>
+    </AdminPageLayout>
   );
 }

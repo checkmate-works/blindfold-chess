@@ -1,7 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { AdminPageHeader } from '@/app/admin/_components/AdminPageHeader';
+import { AdminPageLayout } from '@/app/admin/_components/AdminPageLayout';
 import { BannerCreativeForm } from '@/app/admin/ads/_components/BannerCreativeForm';
 import { NativeCardCreativeForm } from '@/app/admin/ads/_components/NativeCardCreativeForm';
 import { buildAdCreativeFormLabels } from '@/app/admin/ads/_lib/form-labels';
@@ -31,14 +31,13 @@ export default async function EditCreativePage({ params }: Props) {
   };
 
   return (
-    <div>
-      <AdminPageHeader
-        breadcrumbs={[
-          { label: t('title'), href: '/admin/ads' },
-          { label: slot, href: `/admin/ads/${slot}` },
-          { label: t('editTitle') },
-        ]}
-      />
+    <AdminPageLayout
+      breadcrumbs={[
+        { label: t('title'), href: '/admin/ads' },
+        { label: slot, href: `/admin/ads/${slot}` },
+        { label: t('editTitle') },
+      ]}
+    >
       {/* A stored payload that fails its kind's guard (e.g. written before the
           validation tightened) starts the form empty instead of feeding it
           garbage fields. */}
@@ -65,6 +64,6 @@ export default async function EditCreativePage({ params }: Props) {
           }}
         />
       )}
-    </div>
+    </AdminPageLayout>
   );
 }

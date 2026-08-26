@@ -14,22 +14,20 @@
  */
 import { getTranslations } from 'next-intl/server';
 
-import { AdminPageHeader } from '../../_components/AdminPageHeader';
+import { AdminPageLayout } from '../../_components/AdminPageLayout';
 import { PointGrantForm } from '../_components/PointGrantForm';
 
 export default async function AdminCoinGrantPage() {
   const t = await getTranslations({ locale: 'en', namespace: 'Admin' });
 
   return (
-    <div>
-      <AdminPageHeader
-        breadcrumbs={[
-          { label: t('coins.navLabel'), href: '/admin/coins' },
-          { label: t('coins.grant') },
-        ]}
-      />
-
+    <AdminPageLayout
+      breadcrumbs={[
+        { label: t('coins.navLabel'), href: '/admin/coins' },
+        { label: t('coins.grant') },
+      ]}
+    >
       <PointGrantForm />
-    </div>
+    </AdminPageLayout>
   );
 }

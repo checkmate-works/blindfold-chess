@@ -13,7 +13,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 
 import { AdminBadge, type AdminBadgeVariant } from '../_components/AdminBadge';
 import { AdminDataTable } from '../_components/AdminDataTable';
-import { AdminPageHeader } from '../_components/AdminPageHeader';
+import { AdminPageLayout } from '../_components/AdminPageLayout';
 import { AdminPaginationNav } from '../_components/AdminPaginationNav';
 import { AdminUserLink } from '../_components/AdminUserLink';
 
@@ -113,9 +113,7 @@ export default async function AdminAuditLogPage({
   });
 
   return (
-    <div>
-      <AdminPageHeader breadcrumbs={[{ label: t('auditLog') }]} />
-
+    <AdminPageLayout breadcrumbs={[{ label: t('auditLog') }]}>
       {/* Filters */}
       <form className="flex gap-4 mb-6 items-end">
         <Field label={t('auditLogTable.filterByAction')} htmlFor="action-filter">
@@ -202,6 +200,6 @@ export default async function AdminAuditLogPage({
       />
 
       <AdminPaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
-    </div>
+    </AdminPageLayout>
   );
 }

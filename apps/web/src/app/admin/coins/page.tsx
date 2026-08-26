@@ -48,7 +48,7 @@ import {
 import { UUID_RE } from '@/lib/validations/uuid';
 
 import { AdminDataTable } from '../_components/AdminDataTable';
-import { AdminPageHeader } from '../_components/AdminPageHeader';
+import { AdminPageLayout } from '../_components/AdminPageLayout';
 import { AdminPaginationNav } from '../_components/AdminPaginationNav';
 import { AdminUserLink } from '../_components/AdminUserLink';
 import { CoinTransactionFilters } from './_components/CoinTransactionFilters';
@@ -130,19 +130,17 @@ export default async function AdminCoinsPage({
   });
 
   return (
-    <div>
-      <AdminPageHeader
-        breadcrumbs={[{ label: t('coins.title') }]}
-        actions={
-          <Link
-            href="/admin/coins/grant"
-            className="px-4 py-2 rounded bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity"
-          >
-            {t('coins.grant')}
-          </Link>
-        }
-      />
-
+    <AdminPageLayout
+      breadcrumbs={[{ label: t('coins.title') }]}
+      actions={
+        <Link
+          href="/admin/coins/grant"
+          className="px-4 py-2 rounded bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity"
+        >
+          {t('coins.grant')}
+        </Link>
+      }
+    >
       <div className="mb-4">
         <CoinTransactionFilters
           values={{
@@ -210,6 +208,6 @@ export default async function AdminCoinsPage({
       />
 
       <AdminPaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
-    </div>
+    </AdminPageLayout>
   );
 }

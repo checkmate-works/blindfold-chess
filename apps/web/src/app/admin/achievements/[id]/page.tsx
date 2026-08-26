@@ -29,7 +29,7 @@ import { getAchievementDisplayName, getAchievementIconEmoji } from '@/lib/achiev
 import { DEFAULT_PAGE_SIZE, getPageRange, getPaginationParams } from '@/lib/pagination';
 
 import { AdminDataTable } from '../../_components/AdminDataTable';
-import { AdminPageHeader } from '../../_components/AdminPageHeader';
+import { AdminPageLayout } from '../../_components/AdminPageLayout';
 import { AdminPaginationNav } from '../../_components/AdminPaginationNav';
 import {
   countAchievementHolders,
@@ -71,21 +71,20 @@ export default async function AdminAchievementDetailPage({
   const iconEmoji = getAchievementIconEmoji(achievement.iconKey);
 
   return (
-    <div>
-      <AdminPageHeader
-        breadcrumbs={[
-          { label: t('achievements.navLabel'), href: '/admin/achievements' },
-          { label: displayName },
-        ]}
-        title={
-          <>
-            <span aria-hidden="true" className="mr-1">
-              {iconEmoji}
-            </span>
-            <span>{displayName}</span>
-          </>
-        }
-      />
+    <AdminPageLayout
+      breadcrumbs={[
+        { label: t('achievements.navLabel'), href: '/admin/achievements' },
+        { label: displayName },
+      ]}
+      title={
+        <>
+          <span aria-hidden="true" className="mr-1">
+            {iconEmoji}
+          </span>
+          <span>{displayName}</span>
+        </>
+      }
+    >
       <p className="text-sm font-mono text-muted-foreground mb-6">{achievement.slug}</p>
 
       <div className="mb-8 rounded-lg border border-border bg-card p-4">
@@ -174,6 +173,6 @@ export default async function AdminAchievementDetailPage({
       />
 
       <AdminPaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
-    </div>
+    </AdminPageLayout>
   );
 }

@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 
-import { AdminPageHeader } from '@/app/admin/_components/AdminPageHeader';
+import { AdminPageLayout } from '@/app/admin/_components/AdminPageLayout';
 import { createSearchParamsCache, parseAsString } from 'nuqs/server';
 
 import { DailyTrendChart } from './_components/DailyTrendChart';
@@ -35,9 +35,7 @@ export default async function AdminDashboardPage({
   });
 
   return (
-    <div>
-      <AdminPageHeader breadcrumbs={[{ label: t('dashboard') }]} />
-
+    <AdminPageLayout breadcrumbs={[{ label: t('dashboard') }]}>
       {/* Date range picker */}
       <div className="mb-6">
         <DateRangePicker
@@ -159,6 +157,6 @@ export default async function AdminDashboardPage({
           }}
         />
       </div>
-    </div>
+    </AdminPageLayout>
   );
 }

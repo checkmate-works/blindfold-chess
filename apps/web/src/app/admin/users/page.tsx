@@ -32,7 +32,7 @@ import {
 
 import { createAdminClient } from '@/lib/supabase/admin';
 
-import { AdminPageHeader } from '../_components/AdminPageHeader';
+import { AdminPageLayout } from '../_components/AdminPageLayout';
 import { ProviderFilter } from './_components/ProviderFilter';
 import { StatsTab } from './_components/StatsTab';
 import { StatusFilter } from './_components/StatusFilter';
@@ -98,9 +98,7 @@ export default async function AdminUsersPage({
   ];
 
   return (
-    <div>
-      <AdminPageHeader breadcrumbs={[{ label: t('users') }]} />
-
+    <AdminPageLayout breadcrumbs={[{ label: t('users') }]}>
       <UsernameFilter
         labels={{
           searchByUsernameOrEmail: t('usersTable.searchByUsernameOrEmail'),
@@ -143,6 +141,6 @@ export default async function AdminUsersPage({
       ) : (
         <StatsTab adminClient={adminClient} filters={filters} providerNames={providerNames} t={t} />
       )}
-    </div>
+    </AdminPageLayout>
   );
 }

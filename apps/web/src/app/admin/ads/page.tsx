@@ -5,7 +5,7 @@ import { getAllAdCreatives } from '@/lib/ads/ad';
 import { AD_SLOT_VALUES, kindForSlot } from '@/lib/ads/registry';
 
 import { AdminBadge } from '../_components/AdminBadge';
-import { AdminPageHeader } from '../_components/AdminPageHeader';
+import { AdminPageLayout } from '../_components/AdminPageLayout';
 
 export default async function AdminAdsPage() {
   const t = await getTranslations({ locale: 'en', namespace: 'Admin.adsManagement' });
@@ -20,9 +20,7 @@ export default async function AdminAdsPage() {
   }
 
   return (
-    <div>
-      <AdminPageHeader breadcrumbs={[{ label: t('title') }]} />
-
+    <AdminPageLayout breadcrumbs={[{ label: t('title') }]}>
       <div className="overflow-x-auto rounded-lg border border-border">
         <table className="w-full text-sm">
           <thead className="bg-accent">
@@ -59,6 +57,6 @@ export default async function AdminAdsPage() {
           </tbody>
         </table>
       </div>
-    </div>
+    </AdminPageLayout>
   );
 }

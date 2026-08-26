@@ -10,7 +10,7 @@ import { getPaginationParams } from '@/lib/pagination';
 
 import { AdminBadge, type AdminBadgeVariant } from '../_components/AdminBadge';
 import { AdminDataTable } from '../_components/AdminDataTable';
-import { AdminPageHeader } from '../_components/AdminPageHeader';
+import { AdminPageLayout } from '../_components/AdminPageLayout';
 import { AdminPaginationNav } from '../_components/AdminPaginationNav';
 import { AdminUserLink } from '../_components/AdminUserLink';
 import { SubscriptionStatusFilter } from './_components/SubscriptionStatusFilter';
@@ -107,9 +107,7 @@ export default async function AdminSubscriptionsPage({
   });
 
   return (
-    <div>
-      <AdminPageHeader breadcrumbs={[{ label: t('subscriptionsTable.title') }]} />
-
+    <AdminPageLayout breadcrumbs={[{ label: t('subscriptionsTable.title') }]}>
       <div className="mb-6 flex gap-4">
         <UserCombobox
           initialUser={initialUser}
@@ -181,6 +179,6 @@ export default async function AdminSubscriptionsPage({
       />
 
       <AdminPaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
-    </div>
+    </AdminPageLayout>
   );
 }

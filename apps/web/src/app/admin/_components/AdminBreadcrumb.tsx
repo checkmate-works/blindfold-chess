@@ -12,10 +12,12 @@ type AdminBreadcrumbProps = {
 };
 
 /**
- * The admin breadcrumb trail (a `<nav><ol>` of "/"-separated crumbs). Used
- * standalone on full-height editor pages (where {@link AdminPageHeader}'s big
- * h1 would clash with the editor's own title input), and internally by
- * AdminPageHeader. Pure presentational (no hooks) — safe in Server Components.
+ * The admin breadcrumb trail (a `<nav><ol>` of "/"-separated crumbs). Normally
+ * reached through {@link AdminPageLayout}, which renders it at the foot of the
+ * page. The full-height editor pages compose it directly instead, at the top:
+ * they have no h1 of their own (the editor owns the title input) and their body
+ * is locked to the viewport height, so a trail below it would only be reachable
+ * by scrolling. Pure presentational (no hooks) — safe in Server Components.
  */
 export function AdminBreadcrumb({ items, className }: AdminBreadcrumbProps) {
   if (items.length === 0) return null;
