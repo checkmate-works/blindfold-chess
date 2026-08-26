@@ -1,6 +1,5 @@
-import { inArray } from 'drizzle-orm';
-
 import { db, positions, topicPosts } from '@/lib/db';
+import { selectLiveByIds } from '@/lib/db/live-sources';
 
 /** The polymorphic source pointer carried by a `user_grants` row. */
 type GrantSourceRef = {
@@ -18,8 +17,9 @@ type PositionRef = { id: string; type: string };
  * Two batched `IN` queries rather than a lookup per row: the benefits list and
  * the per-type history page both render a page of grants at a time, and a
  * per-row fetch would be an N+1. Grants whose source is neither a topic post
- * nor a position (or whose source has since been deleted) simply have no entry
- * in either map, which both callers already treat as "no link".
+ * nor a position (or whose source has since been deleted, soft-deletes
+ * included — {@link selectLiveByIds} filters them out) simply have no entry in
+ * either map, which both callers already treat as "no link".
  */
 export async function resolveGrantSources(grants: readonly GrantSourceRef[]): Promise<{
   topicPostMap: Map<string, TopicPostRef>;
@@ -33,22 +33,27 @@ export async function resolveGrantSources(grants: readonly GrantSourceRef[]): Pr
     .map((g) => g.sourceId as string);
 
   const [topicPostRows, positionRows] = await Promise.all([
-    topicPostIds.length
-      ? db
+    selectLiveByIds<TopicPostRef>({
+      ids: topicPostIds,
+      idColumn: topicPosts.id,
+      deletedAtColumn: topicPosts.deletedAt,
+      select: (live) =>
+        db
           .select({
             id: topicPosts.id,
             topicType: topicPosts.topicType,
             topicKey: topicPosts.topicKey,
           })
           .from(topicPosts)
-          .where(inArray(topicPosts.id, topicPostIds))
-      : Promise.resolve([] as TopicPostRef[]),
-    positionIds.length
-      ? db
-          .select({ id: positions.id, type: positions.type })
-          .from(positions)
-          .where(inArray(positions.id, positionIds))
-      : Promise.resolve([] as PositionRef[]),
+          .where(live),
+    }),
+    selectLiveByIds<PositionRef>({
+      ids: positionIds,
+      idColumn: positions.id,
+      deletedAtColumn: positions.deletedAt,
+      select: (live) =>
+        db.select({ id: positions.id, type: positions.type }).from(positions).where(live),
+    }),
   ]);
 
   return {
