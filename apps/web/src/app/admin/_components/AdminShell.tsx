@@ -10,10 +10,16 @@ import { ThemeToggle } from './ThemeToggle';
 
 /**
  * Client shell for the admin layout. On large screens (`lg` and up) the sidebar
- * is a static 224px column, unchanged from before. Below `lg` (tablet / small
- * windows) it collapses into an off-canvas drawer toggled by a hamburger button
- * in the header, so the narrow content column is no longer permanently squeezed
- * by the sidebar. Phones are out of scope but inherit the same drawer.
+ * is a static 224px column and the content column starts at the very top of the
+ * viewport — there is no header bar, because the only control it ever held (the
+ * theme switch) now sits at the foot of the sidebar, and a full-width strip
+ * holding nothing else just pushed every page down by its own height.
+ *
+ * Below `lg` (tablet / small windows) the sidebar collapses into an off-canvas
+ * drawer, so the narrow content column is no longer permanently squeezed by it.
+ * That is the one case where a header survives: it carries the hamburger that
+ * opens the drawer, and it is hidden from `lg` up. Phones are out of scope but
+ * inherit the same drawer.
  *
  * The sidebar content (logo, title, nav) is rendered server-side in layout.tsx
  * and passed in via `sidebar`, keeping i18n resolution on the server. This
@@ -50,7 +56,7 @@ export function AdminShell({ sidebar, children }: { sidebar: ReactNode; children
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-56 overflow-y-auto border-r border-border bg-secondary p-4 transition-transform lg:static lg:z-auto lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-56 flex-col border-r border-border bg-secondary transition-transform lg:static lg:z-auto lg:translate-x-0 ${
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -62,20 +68,23 @@ export function AdminShell({ sidebar, children }: { sidebar: ReactNode; children
         >
           <FaTimes className="h-4 w-4" />
         </button>
-        {sidebar}
+        {/* Only the nav scrolls; the theme switch stays pinned to the foot. */}
+        <div className="min-h-0 flex-1 overflow-y-auto p-4">{sidebar}</div>
+        <div className="border-t border-border px-4 py-2">
+          <ThemeToggle />
+        </div>
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex items-center justify-between border-b border-border p-4 lg:justify-end">
+        <header className="border-b border-border p-4 lg:hidden">
           <button
             type="button"
             onClick={() => setOpen(true)}
             aria-label="Open menu"
-            className="flex h-9 w-9 items-center justify-center rounded-md border border-border transition-colors hover:bg-secondary lg:hidden"
+            className="flex h-9 w-9 items-center justify-center rounded-md border border-border transition-colors hover:bg-secondary"
           >
             <FaBars className="h-5 w-5" />
           </button>
-          <ThemeToggle />
         </header>
         <main className="flex-1 p-8">{children}</main>
       </div>
