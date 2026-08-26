@@ -66,8 +66,9 @@ export type GrantSourceMeta = {
  * Resolve the display label key and optional deep-link for a single grant
  * given pre-fetched maps of its possible source rows. Centralizes the
  * (grantType, sourceType, sourceRow) → (label, href) decision so the two
- * benefits pages render rows the same way. Hard-deleted source rows
- * (missing from the map) keep the label but drop the link.
+ * benefits pages render rows the same way. Deleted source rows — missing
+ * from the map, whether the row was soft- or hard-deleted — keep the label
+ * but drop the link.
  */
 export function resolveGrantSourceMeta(
   grant: GrantLike,

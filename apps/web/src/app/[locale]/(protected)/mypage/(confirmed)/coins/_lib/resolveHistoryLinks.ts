@@ -1,7 +1,8 @@
-import { and, eq, inArray, isNull } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import 'server-only';
 
 import { chunks, db, gameAiReviewJobs, games, positions, repertoires, topicPosts } from '@/lib/db';
+import { selectLiveByIds } from '@/lib/db/live-sources';
 import { POINT_SOURCES, type PointHistoryEntry, type PointSource } from '@/lib/points';
 import { getPositionKindDetailPath } from '@/lib/positions/kind';
 
@@ -87,55 +88,64 @@ export async function resolveHistoryLinks(
     aiReviewJobRows,
     maiaGameRows,
   ] = await Promise.all([
-    positionIds.length
-      ? db
-          .select({ id: positions.id })
-          .from(positions)
-          .where(and(inArray(positions.id, positionIds), isNull(positions.deletedAt)))
-      : Promise.resolve<{ id: string }[]>([]),
-    chunkIds.length
-      ? db
-          .select({ id: chunks.id, slug: chunks.slug })
-          .from(chunks)
-          .where(and(inArray(chunks.id, chunkIds), isNull(chunks.deletedAt)))
-      : Promise.resolve<{ id: string; slug: string }[]>([]),
-    topicIds.length
-      ? db
+    selectLiveByIds({
+      ids: positionIds,
+      idColumn: positions.id,
+      deletedAtColumn: positions.deletedAt,
+      select: (live) => db.select({ id: positions.id }).from(positions).where(live),
+    }),
+    selectLiveByIds({
+      ids: chunkIds,
+      idColumn: chunks.id,
+      deletedAtColumn: chunks.deletedAt,
+      select: (live) => db.select({ id: chunks.id, slug: chunks.slug }).from(chunks).where(live),
+    }),
+    selectLiveByIds({
+      ids: topicIds,
+      idColumn: topicPosts.id,
+      deletedAtColumn: topicPosts.deletedAt,
+      select: (live) =>
+        db
           .select({
             id: topicPosts.id,
             topicType: topicPosts.topicType,
             topicKey: topicPosts.topicKey,
           })
           .from(topicPosts)
-          .where(and(inArray(topicPosts.id, topicIds), isNull(topicPosts.deletedAt)))
-      : Promise.resolve<{ id: string; topicType: string; topicKey: string }[]>([]),
-    repertoireIds.length
-      ? db
-          .select({ id: repertoires.id })
-          .from(repertoires)
-          .where(and(inArray(repertoires.id, repertoireIds), isNull(repertoires.deletedAt)))
-      : Promise.resolve<{ id: string }[]>([]),
-    gameIds.length
-      ? db
-          .select({ id: games.id })
-          .from(games)
-          .where(and(inArray(games.id, gameIds), isNull(games.deletedAt)))
-      : Promise.resolve<{ id: string }[]>([]),
+          .where(live),
+    }),
+    selectLiveByIds({
+      ids: repertoireIds,
+      idColumn: repertoires.id,
+      deletedAtColumn: repertoires.deletedAt,
+      select: (live) => db.select({ id: repertoires.id }).from(repertoires).where(live),
+    }),
+    selectLiveByIds({
+      ids: gameIds,
+      idColumn: games.id,
+      deletedAtColumn: games.deletedAt,
+      select: (live) => db.select({ id: games.id }).from(games).where(live),
+    }),
     // The job row outlives its run (it is never pruned), so the join is
     // only ever missing for a game that is gone — the same live check.
-    aiReviewJobIds.length
-      ? db
+    selectLiveByIds({
+      ids: aiReviewJobIds,
+      idColumn: gameAiReviewJobs.id,
+      deletedAtColumn: games.deletedAt,
+      select: (live) =>
+        db
           .select({ id: gameAiReviewJobs.id, gameId: gameAiReviewJobs.gameId })
           .from(gameAiReviewJobs)
           .innerJoin(games, eq(games.id, gameAiReviewJobs.gameId))
-          .where(and(inArray(gameAiReviewJobs.id, aiReviewJobIds), isNull(games.deletedAt)))
-      : Promise.resolve<{ id: string; gameId: string }[]>([]),
-    maiaChargeIds.length
-      ? db
-          .select({ id: games.id, maiaChargeId: games.maiaChargeId })
-          .from(games)
-          .where(and(inArray(games.maiaChargeId, maiaChargeIds), isNull(games.deletedAt)))
-      : Promise.resolve<{ id: string; maiaChargeId: string | null }[]>([]),
+          .where(live),
+    }),
+    selectLiveByIds({
+      ids: maiaChargeIds,
+      idColumn: games.maiaChargeId,
+      deletedAtColumn: games.deletedAt,
+      select: (live) =>
+        db.select({ id: games.id, maiaChargeId: games.maiaChargeId }).from(games).where(live),
+    }),
   ]);
 
   const resolved: ResolvedEntities = {
