@@ -11,6 +11,7 @@ import { AdminBadge } from '../_components/AdminBadge';
 import { AdminDataTable } from '../_components/AdminDataTable';
 import { AdminPageHeader } from '../_components/AdminPageHeader';
 import { AdminPaginationNav } from '../_components/AdminPaginationNav';
+import { AdminUserLink } from '../_components/AdminUserLink';
 import { DeletePostAdminButton } from '../users/_components/DeletePostAdminButton';
 import { getAdminTopicPostsPageData } from './_lib/getAdminTopicPostsPageData';
 
@@ -36,7 +37,7 @@ export default async function AdminTopicPostsPage({
   const adminClient = createAdminClient();
   const t = await getTranslations({ locale: 'en', namespace: 'Admin' });
 
-  const { posts, profileMap, emailMap, topicTypes, currentPage, totalPages } =
+  const { posts, profileMap, topicTypes, currentPage, totalPages } =
     await getAdminTopicPostsPageData({
       adminClient,
       page,
@@ -127,12 +128,7 @@ export default async function AdminTopicPostsPage({
         emptyMessage={t('topicPosts.noPostsFound')}
         renderRow={(post) => {
           const isDeleted = post.deletedAt != null;
-          // Anonymised post (author account purged): user_id is NULL, so there
-          // is no profile/email to resolve — show the deleted-user label.
           const authorProfile = post.userId ? profileMap.get(post.userId) : undefined;
-          const authorDisplay = post.userId
-            ? (authorProfile?.username ?? emailMap.get(post.userId) ?? post.userId)
-            : '(deleted user)';
 
           return (
             <tr key={post.id} className={`border-t border-border ${isDeleted ? 'opacity-50' : ''}`}>
@@ -143,7 +139,13 @@ export default async function AdminTopicPostsPage({
               </td>
               <td className="px-4 py-3 text-muted-foreground">{post.topicType}</td>
               <td className="px-4 py-3 text-muted-foreground">{post.topicKey}</td>
-              <td className="px-4 py-3">{authorDisplay}</td>
+              <td className="px-4 py-3">
+                <AdminUserLink
+                  userId={post.userId}
+                  username={authorProfile?.username}
+                  deletedLabel={t('deletedUser')}
+                />
+              </td>
               <td className="px-4 py-3">
                 {isDeleted ? (
                   <AdminBadge variant="danger">{t('topicPosts.deleted')}</AdminBadge>

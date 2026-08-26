@@ -4273,6 +4273,7 @@
     "title": "Admin",
     "dashboard": "Dashboard",
     "users": "Users",
+    "deletedUser": "(削除済みユーザー)",
     "auditLog": "Audit Log",
     "dashboardKpi": {
       "from": "開始日",
@@ -4351,6 +4352,8 @@
     },
     "usersTable": {
       "email": "Email",
+      "revealEmail": "メールアドレスを表示",
+      "hideEmail": "メールアドレスを隠す",
       "role": "Role",
       "status": "Status",
       "createdAt": "Created At",
@@ -4449,7 +4452,6 @@
     "subscriptions": "Subscriptions",
     "subscriptionsTable": {
       "title": "サブスクリプション",
-      "user": "ユーザー",
       "username": "ユーザー名",
       "subscriptionId": "Subscription ID",
       "priceId": "Price ID",

@@ -4273,6 +4273,7 @@
     "title": "Admin",
     "dashboard": "Dashboard",
     "users": "Users",
+    "deletedUser": "(deleted user)",
     "auditLog": "Audit Log",
     "dashboardKpi": {
       "from": "From",
@@ -4351,6 +4352,8 @@
     },
     "usersTable": {
       "email": "Email",
+      "revealEmail": "Show email address",
+      "hideEmail": "Hide email address",
       "role": "Role",
       "status": "Status",
       "createdAt": "Created At",
@@ -4449,7 +4452,6 @@
     "subscriptions": "Subscriptions",
     "subscriptionsTable": {
       "title": "Subscriptions",
-      "user": "User",
       "username": "Username",
       "subscriptionId": "Subscription ID",
       "priceId": "Price ID",

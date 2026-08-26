@@ -45,12 +45,12 @@ import {
   countPointEvents,
   listPointEvents,
 } from '@/lib/points';
-import { createAdminClient } from '@/lib/supabase/admin';
 import { UUID_RE } from '@/lib/validations/uuid';
 
 import { AdminDataTable } from '../_components/AdminDataTable';
 import { AdminPageHeader } from '../_components/AdminPageHeader';
 import { AdminPaginationNav } from '../_components/AdminPaginationNav';
+import { AdminUserLink } from '../_components/AdminUserLink';
 import { CoinTransactionFilters } from './_components/CoinTransactionFilters';
 
 const searchParamsCache = createSearchParamsCache({
@@ -108,17 +108,6 @@ export default async function AdminCoinsPage({
           .where(inArray(profiles.id, userIds))
       : [];
   const profileMap = new Map(userProfiles.map((p) => [p.id, p]));
-
-  const adminClient = createAdminClient();
-  const emailMap = new Map<string, string>();
-  await Promise.all(
-    userIds.map(async (userId) => {
-      const { data } = await adminClient.auth.admin.getUserById(userId);
-      if (data?.user?.email) {
-        emailMap.set(userId, data.user.email);
-      }
-    })
-  );
 
   const categoryLabel = (cat: string) => {
     switch (cat) {
@@ -188,14 +177,14 @@ export default async function AdminCoinsPage({
         emptyMessage={t('coins.empty')}
         renderRow={(row) => {
           const profile = profileMap.get(row.userId);
-          const email = emailMap.get(row.userId);
           return (
             <tr key={row.id} className="border-t border-border align-top">
               <td className="px-4 py-3">
-                <div className="text-sm">{email ?? row.userId}</div>
-                {profile?.username && (
-                  <div className="text-xs text-muted-foreground">@{profile.username}</div>
-                )}
+                <AdminUserLink
+                  userId={row.userId}
+                  username={profile?.username}
+                  deletedLabel={t('deletedUser')}
+                />
               </td>
               <td className="px-4 py-3">{tKind(row.kind)}</td>
               <td

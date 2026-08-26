@@ -47,7 +47,6 @@ export function BulkGrantUserTable({
             <thead>
               <tr className="text-left text-muted-foreground">
                 <th className="px-3 py-2 w-10"></th>
-                <th className="px-3 py-2">Email</th>
                 <th className="px-3 py-2">Username</th>
                 <th className="px-3 py-2">Display Name</th>
                 <th className="px-3 py-2">Registered</th>
@@ -65,7 +64,6 @@ export function BulkGrantUserTable({
                       className="rounded"
                     />
                   </td>
-                  <td className="px-3 py-2">{user.email ?? '-'}</td>
                   <td className="px-3 py-2">@{user.username}</td>
                   <td className="px-3 py-2 text-muted-foreground">
                     {user.displayName ?? '(anonymous)'}
