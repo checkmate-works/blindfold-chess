@@ -48,13 +48,13 @@ import { desc, inArray, sql } from 'drizzle-orm';
 
 import { db, profiles, userGrants } from '@/lib/db';
 import { DEFAULT_PAGE_SIZE, getPageRange, getPaginationParams } from '@/lib/pagination';
-import { createAdminClient } from '@/lib/supabase/admin';
 import type { GrantPeriodStatus } from '@/lib/users/user-grants';
 import { classifyGrantPeriod } from '@/lib/users/user-grants';
 
 import { AdminDataTable } from '../_components/AdminDataTable';
 import { AdminPageHeader } from '../_components/AdminPageHeader';
 import { AdminPaginationNav } from '../_components/AdminPaginationNav';
+import { AdminUserLink } from '../_components/AdminUserLink';
 import { BulkGrantForm } from './_components/BulkGrantForm';
 import { GrantForm } from './_components/GrantForm';
 import { RevokeButton } from './_components/RevokeButton';
@@ -116,18 +116,6 @@ export default async function AdminGrantsPage({
     userIds.length > 0 ? await db.select().from(profiles).where(inArray(profiles.id, userIds)) : [];
   const profileMap = new Map(userProfiles.map((p) => [p.id, p]));
 
-  // Look up auth users for emails
-  const adminClient = createAdminClient();
-  const emailMap = new Map<string, string>();
-  await Promise.all(
-    userIds.map(async (userId) => {
-      const { data } = await adminClient.auth.admin.getUserById(userId);
-      if (data?.user?.email) {
-        emailMap.set(userId, data.user.email);
-      }
-    })
-  );
-
   const buildHref = buildAdminListHref('/admin/grants');
 
   // One instant for the whole table, so two rows on the same boundary cannot
@@ -182,7 +170,6 @@ export default async function AdminGrantsPage({
         emptyMessage={t('grants.noGrantsFound')}
         renderRow={(grant) => {
           const profile = profileMap.get(grant.userId);
-          const email = emailMap.get(grant.userId);
           const status = getGrantRowStatus(grant, now);
           // Revoking is what cancels a mis-issued grant before it ever takes
           // effect, and additive stacking means every grant added on top of an
@@ -195,10 +182,11 @@ export default async function AdminGrantsPage({
           return (
             <tr key={grant.id} className="border-t border-border">
               <td className="px-4 py-3">
-                <div className="text-sm">{email ?? grant.userId}</div>
-                {profile?.username && (
-                  <div className="text-xs text-muted-foreground">@{profile.username}</div>
-                )}
+                <AdminUserLink
+                  userId={grant.userId}
+                  username={profile?.username}
+                  deletedLabel={t('deletedUser')}
+                />
               </td>
               <td className="px-4 py-3">{grant.benefitType}</td>
               <td className="px-4 py-3">{grant.grantType}</td>

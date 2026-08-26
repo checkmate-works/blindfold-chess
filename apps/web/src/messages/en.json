@@ -4273,6 +4273,7 @@
     "title": "Admin",
     "dashboard": "Dashboard",
     "users": "Users",
+    "deletedUser": "(deleted user)",
     "auditLog": "Audit Log",
     "dashboardKpi": {
       "from": "From",

@@ -4273,6 +4273,7 @@
     "title": "Admin",
     "dashboard": "Dashboard",
     "users": "Users",
+    "deletedUser": "(削除済みユーザー)",
     "auditLog": "Audit Log",
     "dashboardKpi": {
       "from": "開始日",

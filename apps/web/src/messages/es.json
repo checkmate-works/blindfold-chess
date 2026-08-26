@@ -4273,6 +4273,7 @@
     "title": "Admin",
     "dashboard": "Panel",
     "users": "Usuarios",
+    "deletedUser": "(usuario eliminado)",
     "auditLog": "Registro de Auditoría",
     "dashboardKpi": {
       "from": "Desde",
