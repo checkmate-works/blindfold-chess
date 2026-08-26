@@ -4,6 +4,8 @@ import { Textarea } from '@/app/_components';
 import { CountrySelect } from '@/app/_components/CountrySelect';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
+import { BIO_MAX_LENGTH } from '@/lib/users/profile-limits';
+
 import { AvatarUpload } from '@/app/[locale]/(protected)/mypage/(confirmed)/profile/_components/AvatarUpload';
 
 type Props = {
@@ -68,7 +70,7 @@ export function ProfileStep({
           value={bio}
           onChange={(e) => onBioChange(e.target.value)}
           placeholder={tProfile('bioPlaceholder')}
-          maxLength={500}
+          maxLength={BIO_MAX_LENGTH}
           rows={4}
         />
       </div>
