@@ -32,6 +32,10 @@
       "draw": "引き分け",
       "resignation": "投了",
       "stalemate": "ステイルメイト"
+    },
+    "operaGame": {
+      "title": "オペラ座の一局(モーフィ, 1858年)",
+      "hint": "手をタップすると、その局面を盤面で確認できます。"
     }
   },
   "Repertoires": {

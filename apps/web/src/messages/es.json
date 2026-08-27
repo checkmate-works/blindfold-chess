@@ -32,6 +32,10 @@
       "draw": "Tablas",
       "resignation": "Abandono",
       "stalemate": "Ahogado"
+    },
+    "operaGame": {
+      "title": "La partida de la Ópera (Morphy, 1858)",
+      "hint": "Toca cualquier jugada para ver esa posición en un tablero."
     }
   },
   "Repertoires": {

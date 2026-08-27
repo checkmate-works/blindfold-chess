@@ -11,6 +11,7 @@
 // `'use client'` and restore ~120–150 KB gzip to every markdown route.
 import { CoordinateBoard } from '@/app/[locale]/(public)/dojo/ranks/_components';
 import { ChessBoardDemo } from '@/app/[locale]/_components/ChessBoardDemo';
+import { OperaGameDemo } from '@/app/[locale]/_components/OperaGameDemo';
 
 type Props = {
   alt: string;
@@ -23,6 +24,12 @@ export function MarkdownDemoImage({ alt }: Props) {
         <CoordinateBoard />
       </div>
     );
+  }
+  // The clickable score is chess.js-free; the demo lazy-loads its replay
+  // modal on first tap, so this static import adds no chess.js weight to
+  // the markdown routes.
+  if (alt === 'demo:opera-game') {
+    return <OperaGameDemo />;
   }
   const demoType = alt.replace('demo:', '') as 'board-normal' | 'single-colored' | 'stones';
   return <ChessBoardDemo type={demoType} />;

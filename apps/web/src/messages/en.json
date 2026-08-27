@@ -32,6 +32,10 @@
       "draw": "Draw",
       "resignation": "Resignation",
       "stalemate": "Stalemate"
+    },
+    "operaGame": {
+      "title": "The Opera Game (Morphy, 1858)",
+      "hint": "Tap any move to see that position on a board."
     }
   },
   "Repertoires": {
