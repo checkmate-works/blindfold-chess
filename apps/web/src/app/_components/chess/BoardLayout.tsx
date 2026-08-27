@@ -47,7 +47,13 @@ type Props = {
   onBoardContextMenu?: (e: React.MouseEvent<HTMLDivElement>) => void;
   onBoardPointerUp?: (e: React.PointerEvent<HTMLDivElement>) => void;
   containerRef?: React.Ref<HTMLDivElement>;
-  rounded?: boolean;
+  /**
+   * `true` (default) → the standard `rounded-md`; `false` → no radius, for
+   * boards whose parent already clips. A string is used verbatim, which is
+   * how a full-bleed-on-mobile board asks for square corners only there
+   * (`BOARD_RADIUS_EXPAND_ON_MOBILE`).
+   */
+  rounded?: boolean | string;
   className?: string;
   /**
    * Optional pre-parsed display annotations (arrows + circles). Rendered
@@ -89,7 +95,7 @@ export function BoardLayout({
     <div className={`w-full ${className}`}>
       <div
         ref={containerRef}
-        className={`relative w-full aspect-square overflow-hidden ${rounded ? 'rounded-md' : ''}`}
+        className={`relative w-full aspect-square overflow-hidden ${roundedClass(rounded)}`}
         onClick={onBoardClick}
         onPointerDown={onBoardPointerDown}
         onContextMenu={onBoardContextMenu}
@@ -144,4 +150,10 @@ export function BoardLayout({
       </div>
     </div>
   );
+}
+
+/** `rounded` prop → the radius utility to apply. See the prop's TSDoc. */
+export function roundedClass(rounded: boolean | string): string {
+  if (typeof rounded === 'string') return rounded;
+  return rounded ? 'rounded-md' : '';
 }

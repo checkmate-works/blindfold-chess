@@ -4,6 +4,10 @@ import { useCallback } from 'react';
 
 import { BoardLayout, BoardSkeleton } from '@/app/_components';
 import type { SquareRenderInfo } from '@/app/_components';
+import {
+  BOARD_FRAME_EXPAND_ON_MOBILE_CLASS,
+  BOARD_RADIUS_EXPAND_ON_MOBILE,
+} from '@/app/_components/chess/BoardFrame';
 
 import type { Quadrant } from './quadrant-colors';
 import { QUADRANT_COLORS, getQuadrant } from './quadrant-colors';
@@ -31,19 +35,20 @@ export function HighlightQuadrantBoard({ quadrant }: Props) {
 
   if (!isLoaded) {
     return (
-      <div className="mx-auto max-w-xs sm:max-w-sm">
-        <BoardSkeleton />
+      <div className={BOARD_FRAME_EXPAND_ON_MOBILE_CLASS}>
+        <BoardSkeleton rounded={BOARD_RADIUS_EXPAND_ON_MOBILE} />
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-xs sm:max-w-sm">
+    <div className={BOARD_FRAME_EXPAND_ON_MOBILE_CLASS}>
       <BoardLayout
         showCoordinates={showCoordinates}
         themeColors={themeColors}
         renderSquare={renderSquare}
         squareProps={squareProps}
+        rounded={BOARD_RADIUS_EXPAND_ON_MOBILE}
       />
     </div>
   );

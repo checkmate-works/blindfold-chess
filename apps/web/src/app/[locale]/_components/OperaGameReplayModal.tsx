@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 
+import { BOARD_RADIUS_EXPAND_ON_MOBILE } from '@/app/_components/chess/BoardFrame';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { MiniBoard } from '@/lib/positions/ui/MiniBoard';
@@ -67,6 +68,7 @@ export function OperaGameReplayModal({ initialIndex, onClose }: Props) {
           fen={replay.fen}
           flipped={flipped}
           responsive
+          rounded={BOARD_RADIUS_EXPAND_ON_MOBILE}
           lastMove={display.lastMove}
           showCoordinates={display.showCoordinates}
         />

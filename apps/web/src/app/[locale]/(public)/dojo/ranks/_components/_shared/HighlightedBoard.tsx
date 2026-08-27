@@ -4,6 +4,10 @@ import type { ReactNode } from 'react';
 
 import { BoardLayout, BoardSkeleton } from '@/app/_components';
 import type { SquareRenderInfo } from '@/app/_components';
+import {
+  BOARD_FRAME_EXPAND_ON_MOBILE_CLASS,
+  BOARD_RADIUS_EXPAND_ON_MOBILE,
+} from '@/app/_components/chess/BoardFrame';
 
 import { useBoardTheme } from '../useBoardTheme';
 
@@ -45,7 +49,14 @@ type LineOverlay = {
 
 export type Overlay = RectOverlay | LineOverlay;
 
-const DEFAULT_CLASS_NAME = 'mx-auto max-w-xs sm:max-w-sm';
+/**
+ * These aids sit in prose (`/dojo/guides`, the rank Tips card, learn/manual
+ * articles), where the board is the explanation — so it gets the same
+ * full-bleed-on-mobile frame every other board in the app has. A caller may
+ * still replace it: the Tips card passes `mx-auto max-w-[10rem]` for a
+ * thumbnail.
+ */
+const DEFAULT_CLASS_NAME = BOARD_FRAME_EXPAND_ON_MOBILE_CLASS;
 
 type HighlightedBoardProps = {
   overlays: Overlay[];
@@ -77,7 +88,7 @@ export function HighlightedBoard({
   if (!isLoaded) {
     return (
       <div className={wrapperClass}>
-        <BoardSkeleton />
+        <BoardSkeleton rounded={BOARD_RADIUS_EXPAND_ON_MOBILE} />
       </div>
     );
   }
@@ -88,7 +99,7 @@ export function HighlightedBoard({
         themeColors={themeColors}
         showCoordinates={showCoordinates}
         renderSquare={renderSquare}
-        rounded
+        rounded={BOARD_RADIUS_EXPAND_ON_MOBILE}
       />
       <svg
         viewBox="0 0 100 100"

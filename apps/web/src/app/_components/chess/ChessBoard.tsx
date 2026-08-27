@@ -112,7 +112,8 @@ type Props = {
    */
   hiddenPieceStyle?: 'absent' | 'ghost';
   boardTheme?: BoardTheme;
-  rounded?: boolean;
+  /** Forwarded to `BoardLayout` — see its `rounded` TSDoc. */
+  rounded?: boolean | string;
   /** Move grade to draw on one square (see `MoveJudgmentBadge`). */
   evaluationMark?: EvaluationMark | null;
   /**

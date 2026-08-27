@@ -1,4 +1,5 @@
-import { ChessBoard } from '@/app/_components';
+import { BoardFrame, ChessBoard } from '@/app/_components';
+import { BOARD_RADIUS_EXPAND_ON_MOBILE } from '@/app/_components/chess/BoardFrame';
 
 type DemoType = 'board-normal' | 'single-colored' | 'stones';
 
@@ -12,8 +13,8 @@ export function ChessBoardDemo({ type }: Props) {
   const config = getDemoConfig(type);
 
   return (
-    <div className="my-8 flex justify-center">
-      <div className="w-full max-w-[280px] aspect-square">
+    <div className="my-8">
+      <BoardFrame expandOnMobile className="aspect-square">
         <ChessBoard
           fen={DEMO_FEN}
           showCoordinates={true}
@@ -22,8 +23,9 @@ export function ChessBoardDemo({ type }: Props) {
           pieceShapeMode={config.pieceShapeMode}
           pieceColors={config.pieceColors}
           boardTheme="lichess"
+          rounded={BOARD_RADIUS_EXPAND_ON_MOBILE}
         />
-      </div>
+      </BoardFrame>
     </div>
   );
 }
