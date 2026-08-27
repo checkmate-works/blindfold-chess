@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react';
 
+import { BOARD_FRAME_EXPAND_ON_MOBILE_CLASS } from '@/app/_components/chess/BoardFrame';
 import { isLightSquare } from '@blindfold-chess/features/common';
 
 import { Skeleton } from '@/app/[locale]/_components/Skeleton';
@@ -29,14 +30,14 @@ export function QuadrantGridBoard({
 
   if (!isLoaded) {
     return (
-      <div className="mx-auto max-w-xs sm:max-w-sm">
+      <div className={BOARD_FRAME_EXPAND_ON_MOBILE_CLASS}>
         <Skeleton className="aspect-square w-full rounded-md" />
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-xs sm:max-w-sm">
+    <div className={BOARD_FRAME_EXPAND_ON_MOBILE_CLASS}>
       <div className="relative w-full aspect-square overflow-hidden rounded-md">
         {ranks.map((rank, rankDisplayIndex) => {
           const actualRankIndex = rankDisplayIndex + rankOffset;

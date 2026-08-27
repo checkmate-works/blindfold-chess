@@ -4,6 +4,7 @@ import { useCallback } from 'react';
 
 import { BoardLayout, BoardSkeleton } from '@/app/_components';
 import type { SquareRenderInfo } from '@/app/_components';
+import { BOARD_FRAME_EXPAND_ON_MOBILE_CLASS } from '@/app/_components/chess/BoardFrame';
 
 import { useBoardTheme } from './useBoardTheme';
 
@@ -31,14 +32,14 @@ export function AnchorPointsBoard({
 
   if (!isLoaded) {
     return (
-      <div className={className ?? 'mx-auto max-w-xs sm:max-w-sm'}>
+      <div className={className ?? BOARD_FRAME_EXPAND_ON_MOBILE_CLASS}>
         <BoardSkeleton />
       </div>
     );
   }
 
   return (
-    <div className={className ?? 'mx-auto max-w-xs sm:max-w-sm'}>
+    <div className={className ?? BOARD_FRAME_EXPAND_ON_MOBILE_CLASS}>
       <BoardLayout
         showCoordinates={showCoordinates}
         themeColors={themeColors}

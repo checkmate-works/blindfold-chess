@@ -42,12 +42,29 @@ type Props = {
  * `EditableChessBoard` frames its own board internally (its palettes share
  * the column), so call sites render it bare — without a `BoardFrame`.
  */
+/**
+ * The frame's own classes, for the boards that cannot render `BoardFrame`
+ * itself: the dojo visual aids take a `className` prop whose contract is to
+ * REPLACE the frame (the rank Tips card passes `mx-auto max-w-[10rem]` to get
+ * a thumbnail), so they need the default as a string rather than as a wrapper
+ * component. Exported so those defaults still resolve to this file — the
+ * whole point of the component is that the numbers live in one place, and
+ * they had drifted to `max-w-xs` precisely by being retyped elsewhere.
+ */
+export const BOARD_FRAME_CLASS = 'mx-auto w-full max-w-md';
+
+/**
+ * `expandOnMobile` as a class string. Same caveat as the prop: only valid
+ * directly inside a `p-4`-padded container, which for prose surfaces means
+ * `PagePanel` on mobile.
+ */
+export const BOARD_FRAME_EXPAND_ON_MOBILE_CLASS =
+  '-mx-4 self-stretch sm:mx-auto sm:w-full sm:max-w-md';
+
 export function BoardFrame({ className, expandOnMobile = false, children }: Props) {
   // The expand variant drops `w-full` (a percentage width would ignore the
   // negative margins), so inside `items-center` flex columns it must force
   // `self-stretch` or it shrink-wraps to zero width.
-  const frame = expandOnMobile
-    ? '-mx-4 self-stretch sm:mx-auto sm:w-full sm:max-w-md'
-    : 'mx-auto w-full max-w-md';
+  const frame = expandOnMobile ? BOARD_FRAME_EXPAND_ON_MOBILE_CLASS : BOARD_FRAME_CLASS;
   return <div className={`${frame} ${className ?? ''}`}>{children}</div>;
 }
