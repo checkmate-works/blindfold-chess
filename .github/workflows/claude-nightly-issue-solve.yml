@@ -39,6 +39,10 @@ on:
     # that window. Scheduled workflows are also auto-disabled after 60 days
     # without repository activity.
     - cron: "37 18 * * *"
+    # Catch-up tick, two hours behind the primary one, so a dropped primary
+    # tick costs a delay instead of a whole night. The preflight job below
+    # turns this into a no-op whenever the primary tick already ran.
+    - cron: "37 20 * * *"
   workflow_dispatch: {}
 
 permissions: {}
@@ -48,8 +52,59 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Gate for the catch-up tick, so the two crons never solve two issues in one
+  # night. Every terminal path below (PR opened, or needs-human) strips the
+  # `claude-auto` label, so the queue shrinks exactly when work was done -
+  # which makes "did a run already succeed tonight?" a sufficient test. A run
+  # that found an empty queue also exits successfully, and skipping the
+  # catch-up in that case is correct: there was nothing to catch up on.
+  #
+  # A primary run that failed outright is deliberately NOT treated as done.
+  # The catch-up then retries the same issue; if the failure happened after
+  # the branch was pushed, the pick step's existing branch-exists bail hands
+  # it to a human rather than looping.
+  preflight:
+    name: Decide whether tonight's work is still pending
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: read # list this workflow's own runs
+    outputs:
+      proceed: ${{ steps.check.outputs.proceed }}
+    steps:
+      - name: Check for an earlier run tonight
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          # Verbatim cron string of the tick that fired; empty for
+          # workflow_dispatch, so manual runs always proceed.
+          SCHEDULE: ${{ github.event.schedule }}
+          RUN_ID: ${{ github.run_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "$SCHEDULE" != "37 20 * * *" ]; then
+            echo "proceed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # Reaches back past the primary tick (2h) with room for the stagger
+          # GitHub adds under load, but stops well short of the previous night.
+          since=$(date -u -d '4 hours ago' +%Y-%m-%dT%H:%M:%SZ)
+          earlier=$(gh api \
+            "repos/$GH_REPO/actions/workflows/claude-nightly-issue-solve.yml/runs?event=schedule&status=success&per_page=20" \
+            --jq "[.workflow_runs[] | select(.id != $RUN_ID) | select(.created_at >= \"$since\")] | length")
+          if [ "$earlier" -gt 0 ]; then
+            echo "proceed=false" >> "$GITHUB_OUTPUT"
+            echo "Primary tick already ran tonight; nothing to catch up."
+          else
+            echo "proceed=true" >> "$GITHUB_OUTPUT"
+          fi
+
   solve:
     name: Claude solves one queued issue
+    needs: preflight
+    if: needs.preflight.outputs.proceed == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 60
     permissions:
