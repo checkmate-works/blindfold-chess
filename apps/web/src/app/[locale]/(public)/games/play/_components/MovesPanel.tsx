@@ -21,7 +21,7 @@ import type { MoveOperationLog } from '@/lib/games/saved-game-types';
 import { UI_TIMEOUTS } from '@/app/[locale]/_constants/ui-timeouts';
 
 import { formatPgnToText, moveNavDisabledState } from '../_lib';
-import type { FormattedPgn, FormattedPgnMove } from '../_lib';
+import type { FormattedPgn } from '../_lib';
 import {
   getPlayerMoveIndices,
   hasOps,
@@ -29,6 +29,7 @@ import {
 } from '../_lib/move-ops-alignment';
 import { MoveNavigationControls } from './MoveNavigationControls';
 import { OpsPopover } from './OpsPopover';
+import { VerticalMoveList } from './VerticalMoveList';
 
 /** Everything needed to render and click-to-navigate the move list. */
 type MovesPanelMoveListProps = {
@@ -162,6 +163,36 @@ export function MovesPanel({
     invalid: t('operationLog.columnInvalid'),
   };
 
+  /**
+   * The info icon + popover `VerticalMoveList` renders inside a move's cell.
+   * Returns null for the moves that deserve no attention — the opponent's
+   * (no log aligns to them) and the player's own clean ones — so the list
+   * stays unscanned-looking until a move actually accumulated a counter.
+   */
+  const renderOpsAdornment = (movesIndex: number) => {
+    const log = logForMovesIndex(movesIndex);
+    if (log === null || !hasOps(log)) return null;
+
+    return (
+      <>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setOpsOpenForMoveIndex((prev) => (prev === movesIndex ? null : movesIndex));
+          }}
+          aria-label={t('movesPanel.viewOps')}
+          className="px-1 text-muted-foreground hover:text-foreground"
+        >
+          <FaInfoCircle className="w-3 h-3" />
+        </button>
+        {opsOpenForMoveIndex === movesIndex && (
+          <OpsPopover log={log} labels={opsLabels} onClose={() => setOpsOpenForMoveIndex(null)} />
+        )}
+      </>
+    );
+  };
+
   const handleCopyPgn = () => {
     pgnCopy.copy(formatPgnToText(formattedPgn, startingFen));
   };
@@ -212,112 +243,12 @@ export function MovesPanel({
       >
         <div className="p-4 max-h-[70vh] overflow-y-auto font-mono">
           {formattedPgn.length > 0 ? (
-            <div className="space-y-0.5">
-              {formattedPgn.map((move: FormattedPgnMove) => {
-                const whiteIndex = move.whiteMoveIndex;
-                const blackIndex = move.blackMoveIndex;
-                const isWhiteHighlighted =
-                  whiteIndex !== undefined && currentPosition === whiteIndex;
-                const isBlackHighlighted =
-                  blackIndex !== undefined && currentPosition === blackIndex;
-                const whiteLog = logForMovesIndex(whiteIndex);
-                const blackLog = logForMovesIndex(blackIndex);
-                const showWhiteOps = whiteLog !== null && hasOps(whiteLog);
-                const showBlackOps = blackLog !== null && hasOps(blackLog);
-
-                return (
-                  <div key={move.moveNumber} className="flex items-center text-sm">
-                    <span className="w-10 text-right pr-2 text-muted-foreground">
-                      {move.moveNumber}.
-                    </span>
-                    <div className="flex-1 flex items-center relative">
-                      {move.whiteMove ? (
-                        <span
-                          className={`flex-1 px-2 py-0.5 rounded cursor-pointer transition-colors ${
-                            isWhiteHighlighted
-                              ? 'bg-foreground/15 font-semibold dark:bg-foreground/10'
-                              : 'hover:bg-muted/40'
-                          }`}
-                          onClick={() =>
-                            whiteIndex !== undefined && onNavigateToPosition(whiteIndex)
-                          }
-                        >
-                          {move.whiteMove}
-                        </span>
-                      ) : (
-                        <span className="flex-1 px-2 py-0.5 text-muted-foreground">...</span>
-                      )}
-                      {showWhiteOps && whiteIndex !== undefined && whiteLog && (
-                        <>
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setOpsOpenForMoveIndex((prev) =>
-                                prev === whiteIndex ? null : whiteIndex
-                              );
-                            }}
-                            aria-label={t('movesPanel.viewOps')}
-                            className="px-1 text-muted-foreground hover:text-foreground"
-                          >
-                            <FaInfoCircle className="w-3 h-3" />
-                          </button>
-                          {opsOpenForMoveIndex === whiteIndex && (
-                            <OpsPopover
-                              log={whiteLog}
-                              labels={opsLabels}
-                              onClose={() => setOpsOpenForMoveIndex(null)}
-                            />
-                          )}
-                        </>
-                      )}
-                    </div>
-                    <div className="flex-1 flex items-center relative">
-                      <span
-                        className={`flex-1 px-2 py-0.5 rounded cursor-pointer transition-colors ${
-                          isBlackHighlighted
-                            ? 'bg-foreground/15 font-semibold dark:bg-foreground/10'
-                            : move.blackMove
-                              ? 'hover:bg-muted/40'
-                              : ''
-                        } ${!move.blackMove ? 'pointer-events-none' : ''}`}
-                        onClick={() =>
-                          move.blackMove &&
-                          blackIndex !== undefined &&
-                          onNavigateToPosition(blackIndex)
-                        }
-                      >
-                        {move.blackMove || ''}
-                      </span>
-                      {showBlackOps && blackIndex !== undefined && blackLog && (
-                        <>
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setOpsOpenForMoveIndex((prev) =>
-                                prev === blackIndex ? null : blackIndex
-                              );
-                            }}
-                            aria-label={t('movesPanel.viewOps')}
-                            className="px-1 text-muted-foreground hover:text-foreground"
-                          >
-                            <FaInfoCircle className="w-3 h-3" />
-                          </button>
-                          {opsOpenForMoveIndex === blackIndex && (
-                            <OpsPopover
-                              log={blackLog}
-                              labels={opsLabels}
-                              onClose={() => setOpsOpenForMoveIndex(null)}
-                            />
-                          )}
-                        </>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            <VerticalMoveList
+              formattedPgn={formattedPgn}
+              currentPosition={currentPosition}
+              onNavigateToPosition={onNavigateToPosition}
+              adornment={operations ? renderOpsAdornment : undefined}
+            />
           ) : (
             <p className="text-muted-foreground text-sm">No moves yet</p>
           )}

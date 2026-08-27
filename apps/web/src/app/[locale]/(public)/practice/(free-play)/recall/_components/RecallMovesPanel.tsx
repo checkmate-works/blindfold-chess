@@ -9,6 +9,7 @@ import { fenToLichessUrl } from '@blindfold-chess/features/chess-core/fen';
 import { FaCheck, FaCopy, FaExternalLinkAlt } from 'react-icons/fa';
 
 import { MoveNavigationControls } from '@/app/[locale]/(public)/games/play/_components/MoveNavigationControls';
+import { VerticalMoveList } from '@/app/[locale]/(public)/games/play/_components/VerticalMoveList';
 import { moveNavDisabledState } from '@/app/[locale]/(public)/games/play/_lib/move-nav-disabled-state';
 import { formatPgnToText } from '@/app/[locale]/(public)/games/play/_lib/pgn-parser';
 import { UI_TIMEOUTS } from '@/app/[locale]/_constants/ui-timeouts';
@@ -56,56 +57,11 @@ export function RecallMovesPanel({
         <div className="p-4 max-h-[70vh] overflow-y-auto font-mono">
           {formattedPgn.length > 0 ? (
             <>
-              <div className="space-y-0.5">
-                {formattedPgn.map((move) => {
-                  const whiteIndex = move.whiteMoveIndex;
-                  const blackIndex = move.blackMoveIndex;
-                  const isWhiteHighlighted =
-                    whiteIndex !== undefined && currentPosition === whiteIndex;
-                  const isBlackHighlighted =
-                    blackIndex !== undefined && currentPosition === blackIndex;
-
-                  return (
-                    <div key={move.moveNumber} className="flex items-center text-sm">
-                      <span className="w-10 text-right pr-2 text-muted-foreground">
-                        {move.moveNumber}.
-                      </span>
-                      {move.whiteMove ? (
-                        <span
-                          className={`flex-1 px-2 py-0.5 rounded cursor-pointer transition-colors ${
-                            isWhiteHighlighted
-                              ? 'bg-foreground/15 font-semibold dark:bg-foreground/10'
-                              : 'hover:bg-muted/40'
-                          }`}
-                          onClick={() =>
-                            whiteIndex !== undefined && onNavigateToPosition(whiteIndex)
-                          }
-                        >
-                          {move.whiteMove}
-                        </span>
-                      ) : (
-                        <span className="flex-1 px-2 py-0.5 text-muted-foreground">...</span>
-                      )}
-                      <span
-                        className={`flex-1 px-2 py-0.5 rounded cursor-pointer transition-colors ${
-                          isBlackHighlighted
-                            ? 'bg-foreground/15 font-semibold dark:bg-foreground/10'
-                            : move.blackMove
-                              ? 'hover:bg-muted/40'
-                              : ''
-                        } ${!move.blackMove ? 'pointer-events-none' : ''}`}
-                        onClick={() =>
-                          move.blackMove &&
-                          blackIndex !== undefined &&
-                          onNavigateToPosition(blackIndex)
-                        }
-                      >
-                        {move.blackMove || ''}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
+              <VerticalMoveList
+                formattedPgn={formattedPgn}
+                currentPosition={currentPosition}
+                onNavigateToPosition={onNavigateToPosition}
+              />
 
               {/* Navigation Controls */}
               <div className="mt-4">
