@@ -1,3 +1,17 @@
+/**
+ * PGN display formatting that does NOT depend on `chess.js`.
+ *
+ * Re-exported from `./pgn.ts` and therefore from the chess-core barrel, so
+ * existing callers are unaffected. Consumers that import from
+ * `@blindfold-chess/features/chess-core/pgn-format` (the subpath export wired
+ * via the package's `exports` field) receive ONLY this file's contents and
+ * never pull `chess.js` into their bundle — the same arrangement `fen-pure.ts`
+ * has, and for the same reason: a surface that merely lays moves out in
+ * numbered pairs should not ship an engine to do it.
+ *
+ * If you add a formatter that needs chess.js, put it in `pgn.ts` — do NOT
+ * import `chess.js` into this file.
+ */
 import { computeMoveNumber } from "./move-numbering";
 
 /**

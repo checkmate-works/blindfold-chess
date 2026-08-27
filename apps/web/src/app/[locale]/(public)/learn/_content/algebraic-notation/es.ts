@@ -133,18 +133,9 @@ Se añade **#** después de la jugada.
 
 ## Ejemplo de notación de una partida
 
-\`\`\`
-1. e4 e5
-2. Nf3 Nc6
-3. Bc4 Bc5
-4. O-O d6
-5. d3 f5
-6. exf5 Bxf5
-7. Ng5 Nh6
-8. Qh5+ g6
-9. Qxc5 dxc5
-10. Bxh6
-\`\`\`
+A continuación tienes la notación de una obra maestra real: la "partida de la Ópera", jugada por Paul Morphy en la Ópera de París en 1858. Muestra en acción los símbolos de este artículo: capturas (x), jaques (+), el enroque largo (O-O-O), una jugada desambiguada (11...Nbd7) y el jaque mate (#).
+
+![demo:opera-game]()
 
 ## Errores comunes que debes evitar
 

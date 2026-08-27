@@ -32,6 +32,10 @@
       "draw": "Empate",
       "resignation": "Desistência",
       "stalemate": "Afogamento"
+    },
+    "operaGame": {
+      "title": "A Partida da Ópera (Morphy, 1858)",
+      "hint": "Toque em qualquer lance para ver essa posição em um tabuleiro."
     }
   },
   "Repertoires": {
