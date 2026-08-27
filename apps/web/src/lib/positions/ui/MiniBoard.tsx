@@ -33,6 +33,13 @@ type Props = {
    * for legible file/rank labels. Enlarged views pass the viewer's preference.
    */
   showCoordinates?: boolean;
+  /**
+   * Corner radius utility for the `responsive` wrapper. The default suits a
+   * board inside a padded card (an attachment, a feed post); a board that
+   * runs to the screen edges on mobile passes
+   * `BOARD_RADIUS_EXPAND_ON_MOBILE` so its corners square there.
+   */
+  rounded?: string;
 };
 
 /**
@@ -58,6 +65,7 @@ export function MiniBoard({
   flipped = false,
   lastMove = null,
   showCoordinates = false,
+  rounded = 'rounded-sm',
 }: Props) {
   const { preferences } = useGamePreferences();
   const pieces = useMemo(() => parseFenPlacement(fen), [fen]);
@@ -82,7 +90,7 @@ export function MiniBoard({
   );
 
   if (responsive) {
-    return <div className="w-full overflow-hidden rounded-sm">{board}</div>;
+    return <div className={`w-full overflow-hidden ${rounded}`}>{board}</div>;
   }
 
   return (

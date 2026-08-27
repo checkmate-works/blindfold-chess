@@ -1,8 +1,11 @@
 import { isLightSquare } from '@blindfold-chess/features/common';
 
+import { roundedClass } from './BoardLayout';
+
 type Props = {
   className?: string;
-  rounded?: boolean;
+  /** Same contract as `BoardLayout`'s: boolean, or a radius utility used verbatim. */
+  rounded?: boolean | string;
 };
 
 const ROWS = 8;
@@ -12,7 +15,7 @@ export function BoardSkeleton({ className = '', rounded = true }: Props) {
   return (
     <div className={`w-full ${className}`}>
       <div
-        className={`relative w-full aspect-square overflow-hidden animate-pulse ${rounded ? 'rounded-md' : ''}`}
+        className={`relative w-full aspect-square overflow-hidden animate-pulse ${roundedClass(rounded)}`}
       >
         {Array.from({ length: ROWS }, (_, rowIndex) => (
           <div key={rowIndex} className="flex h-[12.5%]">

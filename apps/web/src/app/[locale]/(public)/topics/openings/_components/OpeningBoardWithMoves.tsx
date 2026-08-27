@@ -5,6 +5,7 @@ import { useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { BoardFrame, Button } from '@/app/_components';
+import { BOARD_RADIUS_EXPAND_ON_MOBILE } from '@/app/_components/chess/BoardFrame';
 import { useSafeLocale as useLocale } from '@/i18n/use-safe-locale';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { parsePgn } from '@blindfold-chess/features/chess-core';
@@ -77,6 +78,7 @@ export function OpeningBoardWithMoves({ fen, pgn }: Props) {
         <MiniBoard
           fen={replay.fen}
           responsive
+          rounded={BOARD_RADIUS_EXPAND_ON_MOBILE}
           flipped={effectiveFlipped}
           lastMove={display.lastMove}
           showCoordinates={display.showCoordinates}

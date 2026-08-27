@@ -61,6 +61,26 @@ export const BOARD_FRAME_CLASS = 'mx-auto w-full max-w-md';
 export const BOARD_FRAME_EXPAND_ON_MOBILE_CLASS =
   '-mx-4 self-stretch sm:mx-auto sm:w-full sm:max-w-md';
 
+/**
+ * The board's own corner radius when it is full-bleed on mobile — the other
+ * half of `expandOnMobile`, to be passed to `BoardLayout` / `ChessBoard` /
+ * `MiniBoard`'s `rounded`.
+ *
+ * A board that runs to both screen edges must square its corners there, the
+ * way every other full-bleed surface does (`PagePanel`, `BoardModal`,
+ * `INLINE_BOARD_CARD_CHROME` are all `rounded-none sm:rounded-*`): a rounded
+ * corner against the screen edge shows a notch of page background and reads
+ * as a card that failed to fit, not as a board. Keeping it beside the frame
+ * classes is what makes the pair hard to apply by halves — which is how
+ * `topics/squares` and the dojo visual aids ended up full-bleed with 6px
+ * corners while the coordinate-quiz board next to them had none.
+ *
+ * Boards that are NOT full-bleed keep their default radius: an attachment
+ * card's `MiniBoard` sits inside a padded card, where square corners would be
+ * the odd ones out.
+ */
+export const BOARD_RADIUS_EXPAND_ON_MOBILE = 'rounded-none sm:rounded-md';
+
 export function BoardFrame({ className, expandOnMobile = false, children }: Props) {
   // The expand variant drops `w-full` (a percentage width would ignore the
   // negative margins), so inside `items-center` flex columns it must force

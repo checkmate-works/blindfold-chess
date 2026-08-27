@@ -1,4 +1,5 @@
 import { BoardFrame, ChessBoard } from '@/app/_components';
+import { BOARD_RADIUS_EXPAND_ON_MOBILE } from '@/app/_components/chess/BoardFrame';
 
 type DemoType = 'board-normal' | 'single-colored' | 'stones';
 
@@ -22,6 +23,7 @@ export function ChessBoardDemo({ type }: Props) {
           pieceShapeMode={config.pieceShapeMode}
           pieceColors={config.pieceColors}
           boardTheme="lichess"
+          rounded={BOARD_RADIUS_EXPAND_ON_MOBILE}
         />
       </BoardFrame>
     </div>

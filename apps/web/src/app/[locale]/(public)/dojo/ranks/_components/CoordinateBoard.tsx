@@ -4,7 +4,10 @@ import { useCallback } from 'react';
 
 import { BoardLayout, BoardSkeleton } from '@/app/_components';
 import type { SquareRenderInfo } from '@/app/_components';
-import { BOARD_FRAME_EXPAND_ON_MOBILE_CLASS } from '@/app/_components/chess/BoardFrame';
+import {
+  BOARD_FRAME_EXPAND_ON_MOBILE_CLASS,
+  BOARD_RADIUS_EXPAND_ON_MOBILE,
+} from '@/app/_components/chess/BoardFrame';
 
 import { useBoardTheme } from './useBoardTheme';
 
@@ -38,14 +41,19 @@ export function CoordinateBoard({ className }: CoordinateBoardProps) {
   if (!isLoaded) {
     return (
       <div className={className ?? BOARD_FRAME_EXPAND_ON_MOBILE_CLASS}>
-        <BoardSkeleton />
+        <BoardSkeleton rounded={BOARD_RADIUS_EXPAND_ON_MOBILE} />
       </div>
     );
   }
 
   return (
     <div className={className ?? BOARD_FRAME_EXPAND_ON_MOBILE_CLASS}>
-      <BoardLayout showCoordinates={false} themeColors={themeColors} renderSquare={renderSquare} />
+      <BoardLayout
+        showCoordinates={false}
+        themeColors={themeColors}
+        renderSquare={renderSquare}
+        rounded={BOARD_RADIUS_EXPAND_ON_MOBILE}
+      />
     </div>
   );
 }

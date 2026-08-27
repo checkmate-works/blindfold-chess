@@ -2,6 +2,8 @@
 
 import { useTranslations } from 'next-intl';
 
+import { BOARD_RADIUS_EXPAND_ON_MOBILE } from '@/app/_components/chess/BoardFrame';
+
 import type { MoveSquares } from '@/lib/board/move-squares';
 import { MiniBoard } from '@/lib/positions/ui/MiniBoard';
 
@@ -132,6 +134,7 @@ export function BoardReviewModal({
           fen={fen}
           flipped={flipped}
           responsive
+          rounded={BOARD_RADIUS_EXPAND_ON_MOBILE}
           lastMove={display.lastMove}
           showCoordinates={display.showCoordinates}
         />

@@ -4,6 +4,7 @@ import { useCallback } from 'react';
 
 import { BoardFrame, BoardLayout, BoardSkeleton } from '@/app/_components';
 import type { SquareRenderInfo } from '@/app/_components';
+import { BOARD_RADIUS_EXPAND_ON_MOBILE } from '@/app/_components/chess/BoardFrame';
 import { Link } from '@/i18n/routing';
 
 import { getBoardThemeColors } from '@/lib/games/board-themes';
@@ -48,7 +49,7 @@ export function SquareHighlightBoard({ square, locale, disableLinks = false }: P
   if (!isLoaded) {
     return (
       <BoardFrame expandOnMobile>
-        <BoardSkeleton />
+        <BoardSkeleton rounded={BOARD_RADIUS_EXPAND_ON_MOBILE} />
       </BoardFrame>
     );
   }
@@ -60,6 +61,7 @@ export function SquareHighlightBoard({ square, locale, disableLinks = false }: P
         themeColors={themeColors}
         renderSquare={renderSquare}
         squareProps={squareProps}
+        rounded={BOARD_RADIUS_EXPAND_ON_MOBILE}
       />
     </BoardFrame>
   );
