@@ -134,18 +134,9 @@ Add **#** after the move.
 
 ## Sample Game Notation
 
-\`\`\`
-1. e4 e5
-2. Nf3 Nc6
-3. Bc4 Bc5
-4. O-O d6
-5. d3 f5
-6. exf5 Bxf5
-7. Ng5 Nh6
-8. Qh5+ g6
-9. Qxc5 dxc5
-10. Bxh6
-\`\`\`
+Below is the score of a real masterpiece — the "Opera Game", played by Paul Morphy at the Paris Opera in 1858. It shows the symbols from this article in action: captures (x), checks (+), queenside castling (O-O-O), a disambiguated move (11...Nbd7), and checkmate (#).
+
+![demo:opera-game]()
 
 ## Common Mistakes to Avoid
 
