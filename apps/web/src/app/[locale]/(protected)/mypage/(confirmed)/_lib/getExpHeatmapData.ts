@@ -2,7 +2,7 @@ import { and, eq, gte, lte, sql, sum } from 'drizzle-orm';
 
 import { db, expEvents } from '@/lib/db';
 
-import { DESKTOP_WEEKS, formatDate, getHeatmapDateRangeForWeeks } from './heatmap-utils';
+import { DESKTOP_WEEKS, getHeatmapDateRangeForWeeks, utcDateKey } from './heatmap-utils';
 
 export type ExpHeatmapData = {
   /** Daily totals keyed by 'YYYY-MM-DD'. */
@@ -20,9 +20,9 @@ export type ExpHeatmapData = {
 export async function getExpHeatmapData(userId: string): Promise<ExpHeatmapData> {
   const { startDate, endDate } = getHeatmapDateRangeForWeeks(new Date(), DESKTOP_WEEKS);
 
-  // endDate is midnight; extend to end of day for the query
+  // endDate is UTC midnight; extend to the end of the UTC day for the query
   const endOfDay = new Date(endDate);
-  endOfDay.setHours(23, 59, 59, 999);
+  endOfDay.setUTCHours(23, 59, 59, 999);
 
   const whereClause = and(
     eq(expEvents.userId, userId),
@@ -58,7 +58,7 @@ export async function getExpHeatmapData(userId: string): Promise<ExpHeatmapData>
   // derivation is named once rather than copy-pasted into each pass, where a
   // timezone fix applied to one would desync the cell from its tooltip.
   const bucketKey = (date: unknown): string =>
-    typeof date === 'string' ? date : formatDate(new Date(date as string | number | Date));
+    typeof date === 'string' ? date : utcDateKey(new Date(date as string | number | Date));
 
   const daily: Record<string, number> = Object.fromEntries(
     dailyRows.map((row) => [bucketKey(row.date), Number(row.total) || 0])
