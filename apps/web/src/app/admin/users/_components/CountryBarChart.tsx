@@ -1,6 +1,7 @@
 'use client';
 
 import { HorizontalCountBarChart } from '@/app/admin/_components/HorizontalCountBarChart';
+import { countryName } from '@/app/admin/_lib/country-name';
 import { Tooltip, YAxis } from 'recharts';
 
 import { countryCodeToFlag } from '@/lib/countries';
@@ -10,18 +11,6 @@ import type { CountryStat } from '../_lib/queries';
 // modules (admin Supabase client), which would be pulled into this client
 // component's bundle. `country-stats` itself is pure (type-only imports).
 import { UNKNOWN_COUNTRY } from '../_lib/queries/country-stats';
-
-// Admin UI is rendered in English only (see `getTranslations({ locale: 'en' })`
-// in the admin layout / page), so a fixed-locale resolver is sufficient here.
-const regionNames = new Intl.DisplayNames(['en'], { type: 'region' });
-
-function countryName(code: string): string {
-  try {
-    return regionNames.of(code) ?? code;
-  } catch {
-    return code;
-  }
-}
 
 type ChartLabels = {
   noData: string;
