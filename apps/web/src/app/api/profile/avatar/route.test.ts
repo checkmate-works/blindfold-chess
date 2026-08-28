@@ -1,10 +1,13 @@
+import { revalidateTag } from 'next/cache';
+
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { whereThenReturning } from '@/lib/db/__test-support__/query-chain';
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
+import { logActivityEvent } from '@/lib/users/activity-log';
 
-import { POST } from './route';
+import { DELETE, POST } from './route';
 
 const mockGetUser = vi.fn();
 const mockUpload = vi.fn();
@@ -67,6 +70,8 @@ vi.mock('@/lib/supabase/server', () => ({
 }));
 
 vi.mock('@/lib/moderation/ban');
+
+vi.mock('@/lib/users/activity-log');
 
 vi.mock('@/lib/security/rate-limit');
 
@@ -683,6 +688,102 @@ describe('POST /api/profile/avatar', () => {
 
       expect(mockRemove).not.toHaveBeenCalled();
       expect(mockUpload).toHaveBeenCalled();
+    });
+  });
+});
+
+describe('DELETE /api/profile/avatar', () => {
+  function createDeleteRequest(): Request {
+    return {} as unknown as Request;
+  }
+
+  beforeEach(() => {
+    mockWhere.mockReturnValue([{ username: 'tester' }]);
+    mockList.mockResolvedValue({ data: [{ name: 'avatar.webp' }] });
+    mockRemove.mockResolvedValue({ data: [] });
+  });
+
+  describe('authentication', () => {
+    it('should return 401 when user is not authenticated', async () => {
+      mockGetUser.mockResolvedValue({ data: { user: null } });
+
+      const response = await DELETE(createDeleteRequest());
+
+      expect(response.status).toBe(401);
+      expect(mockRemove).not.toHaveBeenCalled();
+    });
+
+    it('should return 403 when the user is banned', async () => {
+      mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
+      mockIsUserBanned.mockResolvedValue(true);
+
+      const response = await DELETE(createDeleteRequest());
+
+      expect(response.status).toBe(403);
+      expect(await response.json()).toEqual({ error: 'banned' });
+      expect(mockRemove).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('successful removal', () => {
+    beforeEach(() => {
+      setupAuthenticatedUser();
+    });
+
+    it('should clear the stored avatar and remove every file in the folder', async () => {
+      mockList.mockResolvedValue({ data: [{ name: 'avatar.webp' }, { name: 'avatar.png' }] });
+
+      const response = await DELETE(createDeleteRequest());
+
+      expect(response.status).toBe(200);
+      expect(await response.json()).toEqual({ success: true });
+      expect(mockList).toHaveBeenCalledWith(testUserId);
+      // Not just the canonical `avatar.webp`: pre-convention uploads kept the
+      // source extension and would otherwise be orphaned in the bucket.
+      expect(mockRemove).toHaveBeenCalledWith([
+        `${testUserId}/avatar.webp`,
+        `${testUserId}/avatar.png`,
+      ]);
+    });
+
+    it("should expire the profile's cache entry using the username the UPDATE returned", async () => {
+      mockWhere.mockReturnValue([{ username: 'someone-else' }]);
+
+      await DELETE(createDeleteRequest());
+
+      expect(revalidateTag).toHaveBeenCalledWith('profile:someone-else', { expire: 0 });
+    });
+
+    it('should record the removal in the activity log', async () => {
+      await DELETE(createDeleteRequest());
+
+      expect(logActivityEvent).toHaveBeenCalledWith({
+        userId: testUserId,
+        action: 'delete_avatar',
+        targetType: 'user',
+        targetId: testUserId,
+      });
+    });
+
+    it('should succeed when the user has no avatar to remove', async () => {
+      mockList.mockResolvedValue({ data: [] });
+
+      const response = await DELETE(createDeleteRequest());
+
+      expect(response.status).toBe(200);
+      expect(mockRemove).not.toHaveBeenCalled();
+    });
+
+    it('should still succeed when Storage removal fails', async () => {
+      // The row is already cleared at this point, so the only thing a Storage
+      // failure leaves behind is an object nothing references — not a reason
+      // to report failure to a user whose avatar is gone from every surface.
+      mockRemove.mockRejectedValue(new Error('storage down'));
+
+      const response = await DELETE(createDeleteRequest());
+
+      expect(response.status).toBe(200);
+      expect(await response.json()).toEqual({ success: true });
     });
   });
 });
