@@ -76,6 +76,14 @@ export const RATE_LIMITS = {
   setupUsername: { action: 'setup_username', maxAttempts: 5, windowMs: 600_000 },
   updateProfile: { action: 'update_profile', maxAttempts: 5, windowMs: 600_000 },
   uploadAvatar: { action: 'upload_avatar', maxAttempts: 5, windowMs: 600_000 },
+  /**
+   * Per-user limit for clearing the avatar. Its own bucket rather than a
+   * share of `uploadAvatar`: a user who has just burned the upload budget
+   * on a picture they regret must still be able to take it down, and a
+   * removal costs one small DELETE against a folder that holds a single
+   * object, so it does not need the tighter budget an upload does.
+   */
+  deleteAvatar: { action: 'delete_avatar', maxAttempts: 10, windowMs: 600_000 },
   uploadArticleImage: { action: 'upload_article_image', maxAttempts: 20, windowMs: 600_000 },
   /**
    * Per-user limit for ad-creative image uploads (avatar / thumbnail).

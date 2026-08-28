@@ -19,6 +19,8 @@ import {
 import { captureError } from '@/lib/sentry/capture-error';
 import { createAdminClient } from '@/lib/supabase/admin';
 
+import { removeAllAvatarFiles } from './avatar-storage';
+
 /**
  * Account deletion (退会) — the single source of truth for what happens when a
  * user deletes their account, and the canonical "discovery point" for the whole
@@ -126,7 +128,7 @@ export async function deleteAccount(
   await anonymiseProfile(userId); // NULL the PII columns + stamp deletedAt
   await softDeleteDraftChunks(userId); // retire unpublished WIP chunks
   await deleteReceivedLikes(userId); // drop likes received on the user's content
-  await removeAvatarFiles(adminClient, userId); // best-effort Storage cleanup
+  await removeAllAvatarFiles(adminClient, userId); // best-effort Storage cleanup
 
   return { ok: true };
 }
@@ -247,20 +249,3 @@ const PROFILE_ANONYMISED_VALUES = {
 export const PROFILE_PII_COLUMNS = Object.keys(
   PROFILE_ANONYMISED_VALUES
 ) as (keyof typeof PROFILE_ANONYMISED_VALUES)[];
-
-async function removeAvatarFiles(
-  adminClient: ReturnType<typeof createAdminClient>,
-  userId: string
-): Promise<void> {
-  try {
-    const { data: existingFiles } = await adminClient.storage.from('avatars').list(userId);
-    if (existingFiles?.length) {
-      await adminClient.storage
-        .from('avatars')
-        .remove(existingFiles.map((f) => `${userId}/${f.name}`));
-    }
-  } catch (err) {
-    // Best-effort: never block account deletion on a Storage failure.
-    console.warn(`Failed to remove avatar files for deleted user ${userId}:`, err);
-  }
-}

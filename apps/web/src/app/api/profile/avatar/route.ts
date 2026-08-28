@@ -12,6 +12,8 @@ import { ALLOWED_IMAGE_MIME_TYPES, AVATAR_MAX_FILE_SIZE } from '@/lib/images/pol
 import { SHARP_DECODE_OPTIONS } from '@/lib/images/sharp-options';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { createClient } from '@/lib/supabase/server';
+import { logActivityEvent } from '@/lib/users/activity-log';
+import { AVATAR_BUCKET, avatarFilePath, removeAllAvatarFiles } from '@/lib/users/avatar-storage';
 
 /**
  * Pre-resize dimensions for stored avatars. 256×256 covers retina up to a
@@ -63,15 +65,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'invalid_file_type' }, { status: 400 });
   }
 
-  const filePath = `${user.id}/avatar.webp`;
+  const filePath = avatarFilePath(user.id);
 
-  const { data: existingFiles } = await supabase.storage.from('avatars').list(user.id);
-  if (existingFiles?.length) {
-    await supabase.storage.from('avatars').remove(existingFiles.map((f) => `${user.id}/${f.name}`));
-  }
+  // Clear the folder before writing. `upsert` alone only replaces the object
+  // at `filePath`; avatars uploaded before the fixed-name convention carry
+  // the source extension and would survive untouched.
+  await removeAllAvatarFiles(supabase, user.id);
 
   const { error: uploadError } = await supabase.storage
-    .from('avatars')
+    .from(AVATAR_BUCKET)
     .upload(filePath, processed, {
       contentType: 'image/webp',
       upsert: true,
@@ -81,7 +83,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'upload_failed' }, { status: 500 });
   }
 
-  const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(filePath);
+  const { data: urlData } = supabase.storage.from(AVATAR_BUCKET).getPublicUrl(filePath);
 
   // Append timestamp to bust cache when avatar is updated
   const avatarUrl = `${urlData.publicUrl}?t=${Date.now()}`;
@@ -100,4 +102,59 @@ export async function POST(request: Request) {
   }
 
   return NextResponse.json({ avatarUrl });
+}
+
+/**
+ * Clears the viewer's avatar: `profiles.avatar_url` back to NULL and the
+ * Storage objects removed, so the UI falls back to the default silhouette.
+ *
+ * Ordering matters. The row is updated first and Storage second: if the
+ * Storage call then fails, what survives is an object nothing references —
+ * invisible, and overwritten by the next upload. The reverse order fails the
+ * other way, leaving `avatar_url` pointing at a deleted object, which renders
+ * as a broken image everywhere an avatar appears until the user uploads again.
+ *
+ * Succeeds when there is no avatar to remove. A no-op DELETE and a real one
+ * are indistinguishable to the caller by design — the client only knows the
+ * avatar it last rendered, which may already be stale, and reporting "nothing
+ * to delete" would surface a race as an error for a request whose
+ * postcondition ("this user has no avatar") already holds.
+ */
+export async function DELETE(request: Request) {
+  const guardResult = await guardApiMutation(request, RATE_LIMITS.deleteAvatar);
+  if ('response' in guardResult) {
+    return guardResult.response;
+  }
+  const { user } = guardResult;
+
+  const supabase = await createClient();
+
+  const [updated] = await db
+    .update(profiles)
+    .set({ avatarUrl: null, updatedAt: new Date() })
+    .where(eq(profiles.id, user.id))
+    .returning({ username: profiles.username });
+
+  if (updated) {
+    revalidateTag(profileCacheTag(updated.username), { expire: 0 });
+  }
+
+  await removeAllAvatarFiles(supabase, user.id);
+
+  // A removal is logged where the upload is not, and the asymmetry is the
+  // point: an upload leaves its own evidence (the object, and the URL on the
+  // row), while a removal destroys both and leaves the profile
+  // indistinguishable from one that never had a picture. Without this entry
+  // there would be no record that an image ever existed — the same
+  // "overwritten value is unrecoverable" reasoning that puts profile edits in
+  // the log. The old URL is deliberately not recorded: the object behind it is
+  // gone, so it would preserve nothing but a dead link.
+  logActivityEvent({
+    userId: user.id,
+    action: 'delete_avatar',
+    targetType: 'user',
+    targetId: user.id,
+  });
+
+  return NextResponse.json({ success: true });
 }
