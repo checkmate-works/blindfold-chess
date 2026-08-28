@@ -6,12 +6,15 @@ import { formatDate } from '@/app/admin/_lib/format';
 import type { User } from '@supabase/supabase-js';
 import { FaExternalLinkAlt } from 'react-icons/fa';
 
+import type { AdminUserFilters } from '../_lib/filters';
 import { CopyUserIdButton } from './CopyUserIdButton';
+import { CountryFilterFlag } from './CountryFilterFlag';
 import { StatusBadge } from './StatusBadge';
 
 type Profile = {
   id: string;
   username: string | null;
+  country: string | null;
   bannedAt: Date | null;
   deletedAt: Date | null;
 };
@@ -19,6 +22,8 @@ type Profile = {
 type UserRowProps = {
   user: User;
   profile: Profile | undefined;
+  /** Filters currently applied — carried over by the country flag's filter link. */
+  filters: AdminUserFilters;
   hasSubscription: boolean;
   banReason: string | null;
   signupMethod: 'google' | 'email' | 'unknown';
@@ -37,12 +42,14 @@ type UserRowProps = {
     copyUserIdSuccess: string;
     revealEmail: string;
     hideEmail: string;
+    filterByCountry: string;
   };
 };
 
 export function UserRow({
   user,
   profile,
+  filters,
   hasSubscription,
   banReason,
   signupMethod,
@@ -65,7 +72,7 @@ export function UserRow({
           labels={{ revealEmail: labels.revealEmail, hideEmail: labels.hideEmail }}
         />
       </td>
-      <td className="px-4 py-3">
+      <td className="whitespace-nowrap px-4 py-3">
         {profile?.username ? (
           <Link
             href={`/en/u/${encodeURIComponent(profile.username)}`}
@@ -76,6 +83,17 @@ export function UserRow({
             {profile.username}
             <FaExternalLinkAlt className="h-3 w-3" />
           </Link>
+        ) : null}
+        {/* Trailing, and outside the profile link: a leading flag would indent
+            the names of flagged users only (users without a country get no
+            placeholder), breaking the column's scannability — and a link may
+            not nest inside another link. */}
+        {profile?.country ? (
+          <CountryFilterFlag
+            code={profile.country}
+            filters={filters}
+            label={labels.filterByCountry}
+          />
         ) : null}
       </td>
       <td className="px-4 py-3">

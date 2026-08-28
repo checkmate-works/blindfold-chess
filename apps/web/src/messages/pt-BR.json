@@ -4407,6 +4407,7 @@
       "deleted": "Excluído",
       "signupMethod": "Método de Cadastro",
       "filterByProvider": "Método de Cadastro",
+      "filterByCountry": "Filter by country",
       "allProviders": "Todos",
       "providerGoogle": "Google",
       "providerEmail": "E-mail",

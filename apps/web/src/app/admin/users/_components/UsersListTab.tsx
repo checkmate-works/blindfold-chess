@@ -56,6 +56,7 @@ export async function UsersListTab({
     copyUserIdSuccess: t('usersTable.copyUserIdSuccess'),
     revealEmail: t('usersTable.revealEmail'),
     hideEmail: t('usersTable.hideEmail'),
+    filterByCountry: t('usersTable.filterByCountry'),
     ...providerNames,
   };
 
@@ -103,6 +104,7 @@ export async function UsersListTab({
             key={user.id}
             user={user}
             profile={profileMap.get(user.id)}
+            filters={filters}
             hasSubscription={subscriptionMap.has(user.id)}
             banReason={banReasonMap.get(user.id) ?? null}
             signupMethod={getSignupMethod(user)}

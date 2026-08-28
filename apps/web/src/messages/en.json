@@ -4379,6 +4379,7 @@
       "deleted": "Deleted",
       "signupMethod": "Signup Method",
       "filterByProvider": "Signup Method",
+      "filterByCountry": "Filter by country",
       "allProviders": "All",
       "providerGoogle": "Google",
       "providerEmail": "Email",
