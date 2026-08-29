@@ -34,6 +34,24 @@ export function isEditRequestStatus(value: unknown): value is EditRequestStatus 
  */
 export const EDIT_REQUEST_COMMENT_MAX_LENGTH = 2000;
 
+/**
+ * Blocking is enforced when a suggestion is created, not when it is resolved:
+ * `assertNotBlocked` guards the two submit paths, while accept, reject and
+ * withdraw deliberately carry no guard.
+ *
+ * Each of the three disposes of a row that already exists, so refusing it
+ * would strand that row rather than protect anyone. Withdraw is the proposer
+ * retracting their own suggestion and reject is the owner clearing it from
+ * their review surface — blocking those makes the suggestion unremovable for
+ * exactly the pair that most wants the interaction over with. Accept is the
+ * owner choosing to take the content, on their own entity, by their own
+ * hand; the proposer's notification is suppressed by `createNotification`'s
+ * block check either way.
+ *
+ * What blocking does not do here is hide a suggestion submitted before the
+ * block from the owner's list — a read-path concern, not a write guard.
+ * Tracking: GitHub issue #96.
+ */
 export type EditRequestAction = 'accept' | 'reject' | 'withdraw';
 
 export type EditRequestTerminalStatus = Exclude<EditRequestStatus, 'pending'>;
