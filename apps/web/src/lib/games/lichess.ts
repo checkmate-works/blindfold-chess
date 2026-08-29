@@ -1,5 +1,7 @@
 import 'server-only';
 
+import { createFetchWithTimeout } from '@/lib/http/fetch-with-timeout';
+
 /**
  * Lichess game export client for the topic post attachment flow.
  *
@@ -29,8 +31,19 @@ import 'server-only';
  */
 
 const LICHESS_GAME_ID_RE = /^[a-zA-Z0-9]{8}$/;
+
+/**
+ * Deadline for the export request, covering the streamed body read as well:
+ * the signal stays attached to the response, so a connection that stalls
+ * halfway through the PGN aborts on the same budget as one that never
+ * answers. The user is waiting on this inside a Server Action, and the
+ * fallback (paste the PGN directly) is cheap, so five seconds is plenty for
+ * a document capped at {@link LICHESS_MAX_RESPONSE_BYTES}.
+ */
 const LICHESS_FETCH_TIMEOUT_MS = 5_000;
 const LICHESS_MAX_RESPONSE_BYTES = 102_400;
+
+const fetchWithTimeout = createFetchWithTimeout(LICHESS_FETCH_TIMEOUT_MS);
 
 const LICHESS_THROTTLE_TOKENS_PER_MINUTE = 30;
 const LICHESS_THROTTLE_CAPACITY = 30;
@@ -132,8 +145,6 @@ export async function fetchLichessGamePgn(
   }
 
   const url = `https://lichess.org/game/export/${gameId}`;
-  const ac = new AbortController();
-  const timeout = setTimeout(() => ac.abort(), LICHESS_FETCH_TIMEOUT_MS);
 
   try {
     // SSRF defense in depth: `redirect: 'manual'` ensures Node's undici-based
@@ -143,9 +154,8 @@ export async function fetchLichessGamePgn(
     // user-facing error rather than as a request to whatever Location: was
     // returned. This closes a hypothetical SSRF vector should an upstream
     // CDN/edge ever start emitting cross-origin redirects.
-    const res = await fetch(url, {
+    const res = await fetchWithTimeout(url, {
       headers: { Accept: 'application/x-chess-pgn' },
-      signal: ac.signal,
       redirect: 'manual',
     });
 
@@ -188,8 +198,7 @@ export async function fetchLichessGamePgn(
     const pgn = new TextDecoder('utf-8').decode(merged);
     return { ok: true, pgn, canonicalUrl: `https://lichess.org/${gameId}` };
   } catch {
+    // Network failure, or the deadline aborting the request or its body read.
     return { ok: false, error: 'fetch_failed' };
-  } finally {
-    clearTimeout(timeout);
   }
 }
