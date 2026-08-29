@@ -1,5 +1,7 @@
 const content = `# Introducción de funciones: Cambiar la apariencia de las piezas
 
+## Limitar la información visual paso a paso
+
 Es raro que alguien pueda jugar ajedrez a ciegas sin ningún entrenamiento previo.
 Por eso, este servicio ayuda a los usuarios a acostumbrarse gradualmente al ajedrez a ciegas, limitando progresivamente la información visual disponible respecto a una partida estándar de ajedrez.
 

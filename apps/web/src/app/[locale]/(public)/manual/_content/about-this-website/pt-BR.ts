@@ -1,5 +1,7 @@
 const content = `# Sobre este site
 
+## O tema deste site
+
 O tema deste site é o xadrez às cegas.
 
 ## O que você pode fazer

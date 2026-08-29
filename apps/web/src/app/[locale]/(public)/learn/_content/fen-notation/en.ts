@@ -1,5 +1,7 @@
 const content = `# Using FEN Notation
 
+## Have You Seen This Notation?
+
 Have you heard of Forsyth–Edwards Notation (FEN)?
 Even if you're not familiar with the term, you may have seen strings like \`rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1\` in the analysis or sharing features of lichess or chess.com.
 The example above represents the starting position in FEN.

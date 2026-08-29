@@ -1,5 +1,7 @@
 const content = `# Feature Introduction: Changing Piece Appearance
 
+## Limiting Visual Information Step by Step
+
 It's rare for someone to be able to play blindfold chess without any prior training.
 Therefore, this service helps users gradually become accustomed to blindfold chess by progressively limiting the visual information available from a standard chess game.
 

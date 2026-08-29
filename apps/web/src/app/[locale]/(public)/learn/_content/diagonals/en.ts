@@ -1,5 +1,7 @@
 const content = `# Understanding Diagonals
 
+## Files, Ranks, and Diagonals
+
 There are three terms in chess to describe directions on the board.
 
 Vertical lines are called **files**, horizontal lines are called **ranks**, and diagonal lines are called **diagonals**.  

@@ -1,5 +1,7 @@
 const content = `# Apresentação de recursos: Alterar a aparência das peças
 
+## Limitar as informações visuais aos poucos
+
 É raro alguém conseguir jogar xadrez às cegas sem nenhum treinamento prévio.
 Por isso, este serviço ajuda os usuários a se acostumarem gradualmente ao xadrez às cegas, limitando progressivamente as informações visuais disponíveis em uma partida de xadrez convencional.
 

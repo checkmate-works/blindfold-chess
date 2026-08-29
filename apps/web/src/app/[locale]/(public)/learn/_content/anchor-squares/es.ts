@@ -1,5 +1,7 @@
 const content = `# Reconoce casillas al instante con el método de puntos de anclaje
 
+## Qué es el método de puntos de anclaje
+
 Un tablero de ajedrez tiene 64 casillas.
 En lugar de memorizar cada una individualmente, existe una forma eficiente de aprenderlas usando casillas específicas como referencia.
 Es el método de puntos de anclaje.

@@ -1,5 +1,7 @@
 const content = `# Usar la simetría para aprender las coordenadas
 
+## Reducir lo que hay que memorizar
+
 Un tablero de ajedrez tiene 64 casillas, pero no necesitas memorizar cada una individualmente.
 Aprovechando la simetría del tablero, puedes reducir la cantidad de información que necesitas recordar.
 

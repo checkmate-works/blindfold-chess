@@ -1,5 +1,7 @@
 const content = `# Instantly Recognize Squares using the Anchor Point Method
 
+## What the Anchor Point Method Is
+
 A chessboard has 64 squares.
 Instead of memorizing all of them individually, there is a way to memorize them efficiently by using specific squares.
 That is the Anchor Point Method.

@@ -1,5 +1,7 @@
 const content = `# Superar la confusión de coordenadas en espejo
 
+## El error más frecuente en el ajedrez a ciegas
+
 Uno de los errores más frecuentes en el ajedrez a ciegas es confundir la columna a con la columna h.
 Este problema se acentúa especialmente cuando juegas con negras. Veamos las causas y las soluciones.
 

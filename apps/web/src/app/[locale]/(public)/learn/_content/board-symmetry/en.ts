@@ -1,5 +1,7 @@
 const content = `# Using Symmetry to Learn Coordinates
 
+## Reducing What You Have to Memorize
+
 A chessboard has 64 squares, but you don't need to memorize each one individually.  
 By focusing on the symmetry of the chessboard, you can reduce the amount of information you need to remember.
 

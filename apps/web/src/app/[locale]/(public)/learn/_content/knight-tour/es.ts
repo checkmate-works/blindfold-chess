@@ -1,5 +1,7 @@
 const content = `# El recorrido del Caballo
 
+## Qué es el recorrido del Caballo
+
 El recorrido del Caballo es un rompecabezas en el que se mueve un Caballo por todo el tablero de ajedrez, visitando cada casilla exactamente una vez.
 
 Utilizar el Caballo, la pieza con el movimiento más singular del ajedrez, hace de este un excelente ejercicio para desarrollar habilidades de visualización del tablero.
