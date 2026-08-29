@@ -1,5 +1,25 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+/**
+ * The module's real deadline is seconds, so the factory is swapped for one
+ * that hands out a millisecond deadline. The recorded argument is what the
+ * module actually asked for, which is the half worth asserting.
+ */
+const { recordedDeadlinesMs, TEST_DEADLINE_MS } = vi.hoisted(() => ({
+  recordedDeadlinesMs: [] as number[],
+  TEST_DEADLINE_MS: 50,
+}));
+
+vi.mock('@/lib/http/fetch-with-timeout', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/http/fetch-with-timeout')>();
+  return {
+    createFetchWithTimeout: (timeoutMs: number) => {
+      recordedDeadlinesMs.push(timeoutMs);
+      return actual.createFetchWithTimeout(TEST_DEADLINE_MS);
+    },
+  };
+});
+
 const CSS_WITH_BOTH_WEIGHTS = `
 @font-face {
   font-family: 'Noto Sans JP';
@@ -25,7 +45,18 @@ const respondByUrl = (url: string) => (String(url).includes('/css2?') ? okCss() 
  */
 async function importFresh() {
   vi.resetModules();
+  recordedDeadlinesMs.length = 0;
   return import('./load-og-fonts');
+}
+
+/** A Google Fonts that accepts the connection and then says nothing. */
+function stallingFetch(_url: string, init?: RequestInit) {
+  return new Promise((_resolve, reject) => {
+    const signal = init?.signal;
+    if (!signal) return;
+    if (signal.aborted) reject(signal.reason);
+    else signal.addEventListener('abort', () => reject(signal.reason));
+  });
 }
 
 describe('loadOgFonts', () => {
@@ -95,6 +126,41 @@ describe('loadOgFonts', () => {
 
     expect(await loadOgFonts('a')).toEqual([]);
 
+    fetchMock.mockImplementation(respondByUrl);
+    expect(await loadOgFonts('a')).toHaveLength(2);
+  });
+
+  it('gives its Google Fonts requests a deadline short enough to degrade on', async () => {
+    await importFresh();
+
+    expect(recordedDeadlinesMs).toEqual([3_000]);
+  });
+
+  it('degrades to [] when the css2 request hangs instead of never settling', async () => {
+    fetchMock.mockImplementation(stallingFetch);
+    const { loadOgFonts } = await importFresh();
+
+    expect(await loadOgFonts('a')).toEqual([]);
+  });
+
+  it('degrades to [] when a font binary hangs', async () => {
+    fetchMock.mockImplementation((url: string, init?: RequestInit) =>
+      String(url).includes('/css2?') ? okCss() : stallingFetch(url, init)
+    );
+    const { loadOgFonts } = await importFresh();
+
+    expect(await loadOgFonts('a')).toEqual([]);
+  });
+
+  it('does not leave the hung promise cached under the text key', async () => {
+    fetchMock.mockImplementation(stallingFetch);
+    const { loadOgFonts } = await importFresh();
+
+    expect(await loadOgFonts('a')).toEqual([]);
+
+    // Before the deadline existed, this second call awaited the first call's
+    // promise — which never settled — so the caller hung forever on a
+    // character set that had once been unlucky.
     fetchMock.mockImplementation(respondByUrl);
     expect(await loadOgFonts('a')).toHaveLength(2);
   });
