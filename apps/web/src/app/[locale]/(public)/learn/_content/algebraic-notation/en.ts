@@ -113,6 +113,10 @@ Add **#** after the move.
 - **Qh7#**: Queen moves to h7, checkmating
 - **Rd8#**: Rook moves to d8, checkmating
 
+**++** is also accepted for checkmate.
+
+Note that FIDE treats + and # as optional (Appendix C.13). Leaving them out is not wrong notation, but books and game scores conventionally include them, and they make a score much easier to follow — so this article always writes them.
+
 ## Common Symbols
 
 ### Move Quality
@@ -140,8 +144,8 @@ Below is the score of a real masterpiece — the "Opera Game", played by Paul Mo
 
 ## Common Mistakes to Avoid
 
-1.  **Forgetting piece symbols**: Write Nf3, not nf3.
+1.  **Lowercasing piece symbols**: Write Nf3, not nf3. Piece letters are capitals, and a lowercase b is indistinguishable from a b-file pawn move.
 2.  **Insufficient disambiguation**: Forgetting to specify which piece when multiple can move to the same square.
-3.  **Forgetting check symbols**: Always add + for a check.`;
+3.  **Prefixing pawn moves**: Write e4, not Pe4. The pawn is the one piece with no letter — the absence of a letter is what marks it as a pawn.`;
 
 export default content;
