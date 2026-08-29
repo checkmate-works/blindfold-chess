@@ -1,5 +1,7 @@
 const content = `# Knight's Tour
 
+## What the Knight's Tour Is
+
 The Knight's Tour is a puzzle where you move a knight across a chessboard, visiting every square exactly once.
 
 Using the knight—the piece with the most unique movement in chess—makes this an excellent exercise for developing board visualization skills.

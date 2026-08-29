@@ -1,5 +1,7 @@
 const content = `# Comprender las diagonales
 
+## Columnas, filas y diagonales
+
 En el ajedrez existen tres términos para describir las direcciones en el tablero.
 
 Las líneas verticales se llaman **columnas**, las líneas horizontales se llaman **filas** y las líneas oblicuas se llaman **diagonales**.

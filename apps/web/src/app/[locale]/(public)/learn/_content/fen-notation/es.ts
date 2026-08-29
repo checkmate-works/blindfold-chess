@@ -1,5 +1,7 @@
 const content = `# Uso de la notación FEN
 
+## ¿Has visto esta notación?
+
 ¿Has oído hablar de la Notación Forsyth-Edwards (FEN)?
 Aunque no estés familiarizado con el término, es posible que hayas visto cadenas como \`rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1\` en las funciones de análisis o de compartir de lichess o chess.com.
 El ejemplo anterior representa la posición inicial en FEN.

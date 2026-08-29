@@ -1,5 +1,7 @@
 const content = `# Overcoming Coordinate Mirror Confusion
 
+## The Most Common Blindfold Mistake
+
 One of the most common mistakes in blindfold chess is confusing the a-file with the h-file.  
 This problem becomes particularly pronounced when playing as Black. Let's explore the causes and solutions.
 

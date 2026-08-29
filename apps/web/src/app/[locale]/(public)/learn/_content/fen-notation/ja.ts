@@ -1,5 +1,7 @@
 const content = `# FENの活用
 
+## この記法を見たことがありますか
+
 Forsyth–Edwards Notation (FEN) という記法をご存知ですか？
 この用語を知らない人でも、 \`rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1\` のような書式をlichessやchess.comの解析や共有機能で見たことがあるかもしれません。
 上記は FEN によって初期配置を表現したものです。
