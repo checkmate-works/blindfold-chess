@@ -1,5 +1,7 @@
 const content = `# About This Website
 
+## The Theme of This Site
+
 The theme of this website is blindfold chess.
 
 ## What You Can Do

@@ -1,5 +1,7 @@
 const content = `# Acerca de este sitio web
 
+## El tema de este sitio
+
 El tema de este sitio web es el ajedrez a ciegas.
 
 ## Qué puedes hacer
