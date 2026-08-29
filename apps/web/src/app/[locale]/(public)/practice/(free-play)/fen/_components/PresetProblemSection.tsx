@@ -9,13 +9,10 @@ import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 import type { BoardTheme } from '@/lib/games/board-themes';
 
 import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';
-import {
-  toggleKnobClass,
-  toggleTrackClass,
-} from '@/app/[locale]/_components/toggle-switch-classes';
 
 import type { PresetPosition } from '../_data/positions';
 import presetPositions from '../_data/presetPositions.json';
+import { ProblemCountAndShuffle } from './ProblemCountAndShuffle';
 
 type Props = {
   problemCount: number;
@@ -76,47 +73,13 @@ export function PresetProblemSection({
         )}
       </div>
 
-      {/* Problem Count */}
-      <div>
-        <label htmlFor="problemCount" className="block text-sm font-medium text-foreground mb-2">
-          {t('problemCount')}: {Math.min(problemCount, presetCount)}{' '}
-          {Math.min(problemCount, presetCount) > 1 ? t('problems') : ''}
-        </label>
-        <input
-          id="problemCount"
-          type="range"
-          min="1"
-          max={presetCount}
-          step="1"
-          value={Math.min(problemCount, presetCount)}
-          onChange={(e) => onProblemCountChange(parseInt(e.target.value))}
-          className="w-full h-2 bg-secondary rounded-md appearance-none cursor-pointer accent-foreground"
-        />
-        <div className="flex justify-between text-xs text-muted-foreground mt-1">
-          <span>1</span>
-          <span>{presetCount}</span>
-        </div>
-      </div>
-
-      {/* Shuffle Problems */}
-      {problemCount > 1 && (
-        <div className="flex items-center justify-end gap-3">
-          <label htmlFor="shuffle" className="text-sm text-muted-foreground">
-            {t('shuffle')}
-          </label>
-          <button
-            id="shuffle"
-            type="button"
-            role="switch"
-            aria-checked={shuffleProblems}
-            onClick={() => onShuffleChange(!shuffleProblems)}
-            className={toggleTrackClass('control', shuffleProblems)}
-          >
-            <span className="sr-only">{t('shuffle')}</span>
-            <span className={toggleKnobClass('control', shuffleProblems)} />
-          </button>
-        </div>
-      )}
+      <ProblemCountAndShuffle
+        availableCount={presetCount}
+        problemCount={problemCount}
+        shuffleProblems={shuffleProblems}
+        onProblemCountChange={onProblemCountChange}
+        onShuffleChange={onShuffleChange}
+      />
     </>
   );
 }
