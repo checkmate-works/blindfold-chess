@@ -13,7 +13,7 @@ import {
 import { getLiveGameAuthorId } from '@/lib/db/games-read';
 import { performEntityToggleLike } from '@/lib/db/like-actions';
 import type { ToggleLikeResult } from '@/lib/db/like-actions';
-import { isBlockedBetween } from '@/lib/moderation/block';
+import { assertNotBlocked } from '@/lib/moderation/block';
 import { createNotification } from '@/lib/notifications/notification';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { handleServerActionError } from '@/lib/server-action-error';
@@ -98,13 +98,8 @@ export async function addGameCommentAction(
     // Hoisted so the top-level notification below can reuse it.
     const ownerId = parentId === null ? await getLiveGameAuthorId(input.gameId) : undefined;
     const blockTarget = parentId === null ? ownerId : parentAuthorId;
-    if (
-      blockTarget != null &&
-      blockTarget !== user.id &&
-      (await isBlockedBetween(user.id, blockTarget))
-    ) {
-      return { success: false, error: 'moderation.blocked' };
-    }
+    const blocked = await assertNotBlocked(user.id, blockTarget);
+    if (blocked) return { success: false, ...blocked };
 
     const { id, createdAt, updatedAt } = await insertGameComment({
       gameId: input.gameId,

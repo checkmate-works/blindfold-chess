@@ -7,7 +7,7 @@ import { assertSupportedLocale } from '@/i18n/assertSupportedLocale';
 import { authenticateGuardAndRequireProfile } from '@/lib/auth';
 import { db, topicPosts } from '@/lib/db';
 import type { DbTx } from '@/lib/db/types';
-import { isBlockedBetween } from '@/lib/moderation/block';
+import { assertNotBlocked } from '@/lib/moderation/block';
 import { createNotification } from '@/lib/notifications/notification';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { MAX_CONTENT_LENGTH } from '@/lib/validations/content';
@@ -108,9 +108,8 @@ async function insertReply(
 
   // Once either party has blocked the other, the blocked user may not reply to
   // the other's post.
-  if (notifyUserId && notifyUserId !== user.id && (await isBlockedBetween(user.id, notifyUserId))) {
-    return { error: 'moderation.blocked' };
-  }
+  const blocked = await assertNotBlocked(user.id, notifyUserId);
+  if (blocked) return blocked;
 
   const permissionError = await enforceReplyPermission(permissionPost, user.id);
   if (permissionError) {

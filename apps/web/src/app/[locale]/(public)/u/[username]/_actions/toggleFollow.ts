@@ -9,7 +9,7 @@ import { and, eq, isNull } from 'drizzle-orm';
 import { authenticateGuardAndRequireProfile } from '@/lib/auth';
 import { db, profiles, userFollows } from '@/lib/db';
 import { toggleByInsert } from '@/lib/db/toggle-by-insert';
-import { isBlockedBetween } from '@/lib/moderation/block';
+import { assertNotBlocked } from '@/lib/moderation/block';
 import { createNotification } from '@/lib/notifications/notification';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { logActivityEvent } from '@/lib/users/activity-log';
@@ -46,9 +46,8 @@ export async function toggleFollow(
   // A block (either direction) severs the follow graph and bars re-following.
   // Since blocking deletes any existing follow row, the only reachable toggle
   // here would be a fresh follow — reject it outright.
-  if (await isBlockedBetween(user.id, targetProfile.id)) {
-    return { error: 'blocked' };
-  }
+  const blocked = await assertNotBlocked(user.id, targetProfile.id);
+  if (blocked) return blocked;
 
   const following = await toggleByInsert(
     () => db.insert(userFollows).values({ followerId: user.id, followingId: targetProfile.id }),

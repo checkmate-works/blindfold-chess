@@ -7,7 +7,7 @@ import { authenticateGuardAndRequireProfile } from '@/lib/auth';
 import { db, topicPosts } from '@/lib/db';
 import type { ToggleLikeResult } from '@/lib/db/like-actions';
 import { toggleLikeForTarget } from '@/lib/db/like-actions';
-import { isBlockedBetween } from '@/lib/moderation/block';
+import { assertNotBlocked } from '@/lib/moderation/block';
 import { createNotification } from '@/lib/notifications/notification';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { validateUUID } from '@/lib/validations/uuid';
@@ -59,9 +59,8 @@ export async function toggleLikeBase(params: {
     .where(eq(topicPosts.id, postId))
     .limit(1);
 
-  if (post?.userId && post.userId !== user.id && (await isBlockedBetween(user.id, post.userId))) {
-    return { error: 'moderation.blocked' };
-  }
+  const blocked = await assertNotBlocked(user.id, post?.userId);
+  if (blocked) return blocked;
 
   const { liked, likeCount } = await toggleLikeForTarget({
     userId: user.id,

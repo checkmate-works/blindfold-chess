@@ -107,10 +107,10 @@ export const NAMESPACE_CLASSIFICATION = {
   interview: 'client',
   largeDownloadConsent: 'client',
   leaderboard: 'client',
-  // moderation: Server Actions return the error CODE 'moderation.blocked'
-  // (createPost/createReply/toggleLike, like-actions); client forms resolve
-  // it against the global translator in `resolvePostFormError`, so the
-  // namespace must reach the client dictionary. ~50 bytes.
+  // moderation: every write choke point that a block bars returns the error
+  // CODE 'moderation.blocked' (`assertNotBlocked`); the topic forms resolve it
+  // against the global translator in `resolvePostFormError`, so the namespace
+  // must reach the client dictionary. ~50 bytes.
   moderation: 'client',
   navigation: 'client',
   newGame: 'client',
