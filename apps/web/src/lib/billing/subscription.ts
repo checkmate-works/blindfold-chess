@@ -7,7 +7,6 @@ import {
 } from '@/lib/billing/subscription-constants';
 import { SUBSCRIPTION_STATUS_CACHE_TAG } from '@/lib/cache-tags';
 import { db, subscriptions } from '@/lib/db';
-import { withTimeout } from '@/lib/db-timeout';
 import { cachedExistenceCheck } from '@/lib/db/cached-existence-check';
 
 export const hasActiveSubscription = cachedExistenceCheck(
@@ -31,18 +30,16 @@ export const hasActiveSubscription = cachedExistenceCheck(
 
 export async function getUserSubscription(userId: string) {
   try {
-    const [row] = await withTimeout(
-      db
-        .select()
-        .from(subscriptions)
-        .where(
-          and(
-            eq(subscriptions.userId, userId),
-            inArray(subscriptions.status, [...DISPLAYABLE_STATUSES])
-          )
+    const [row] = await db
+      .select()
+      .from(subscriptions)
+      .where(
+        and(
+          eq(subscriptions.userId, userId),
+          inArray(subscriptions.status, [...DISPLAYABLE_STATUSES])
         )
-        .limit(1)
-    );
+      )
+      .limit(1);
     return row ?? null;
   } catch (error) {
     console.warn('Failed to get user subscription:', error);

@@ -19,10 +19,6 @@ vi.mock('@/lib/db', async () => ({
   },
 }));
 
-vi.mock('@/lib/db-timeout', () => ({
-  withTimeout: (promise: Promise<unknown>) => promise,
-}));
-
 vi.mock('next/cache', () => ({
   unstable_cache: (fn: (...args: unknown[]) => unknown) => fn,
   revalidateTag: vi.fn(),
