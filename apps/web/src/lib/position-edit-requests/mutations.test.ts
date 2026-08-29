@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
+import { MODERATION_BLOCKED_ERROR, assertNotBlocked } from '@/lib/moderation/block';
 
 const mockAuthenticateAndGuard = vi.fn();
 const mockSelectLimit = vi.fn();
@@ -44,6 +45,8 @@ vi.mock('./queries', () => ({
 vi.mock('./apply-position-edit-proposal', () => ({
   applyAcceptedPositionProposal: (...args: unknown[]) => mockApplyAcceptedProposal(...args),
 }));
+
+vi.mock('@/lib/moderation/block');
 
 vi.mock('@/lib/security/rate-limit');
 
@@ -166,6 +169,21 @@ describe('submitPositionEditRequestEntry', () => {
       payload: { proposedThemeIds: [], proposedChunkIds: [CHUNK_A] },
     });
     expect(result).toEqual({ error: 'ownerCannotPropose' });
+  });
+
+  it('rejects the suggestion when a block exists in either direction', async () => {
+    mockPosition();
+    vi.mocked(assertNotBlocked).mockResolvedValueOnce({ error: MODERATION_BLOCKED_ERROR });
+    const { submitPositionEditRequestEntry } = await import('./mutations');
+    const result = await submitPositionEditRequestEntry({
+      positionId: POSITION_ID,
+      payload: { proposedThemeIds: [], proposedChunkIds: [CHUNK_A] },
+    });
+    expect(result).toEqual({ error: MODERATION_BLOCKED_ERROR });
+    expect(assertNotBlocked).toHaveBeenCalledWith(PROPOSER_ID, OWNER_ID);
+    // The owner's notification is suppressed centrally either way; what this
+    // guard adds is keeping the row out of their suggestion list.
+    expect(mockInsertValues).not.toHaveBeenCalled();
   });
 
   it('returns alreadyHasPending when the viewer already has a pending request', async () => {

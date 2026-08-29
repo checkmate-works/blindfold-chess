@@ -9,7 +9,7 @@ import { authenticateCheckBanAndRequireProfile } from '@/lib/auth';
 import { TOPIC_POST_COUNTS_CACHE_TAG } from '@/lib/cache-tags';
 import { db, feedItems, topicPosts } from '@/lib/db';
 import type { DbTx } from '@/lib/db/types';
-import { isBlockedBetween } from '@/lib/moderation/block';
+import { assertNotBlocked } from '@/lib/moderation/block';
 import {
   notifyFollowersOfNewPost,
   notifyTopicAuthorOfNewComment,
@@ -110,13 +110,8 @@ async function insertPost(
 
   // Commenting on someone's content (topicAuthorId set) is a user→user write;
   // once either party has blocked the other, reject it.
-  if (
-    topicAuthorId &&
-    topicAuthorId !== user.id &&
-    (await isBlockedBetween(user.id, topicAuthorId))
-  ) {
-    return { error: 'moderation.blocked' };
-  }
+  const blocked = await assertNotBlocked(user.id, topicAuthorId);
+  if (blocked) return blocked;
 
   const contentResult = validateContent(formData);
   if ('error' in contentResult) {

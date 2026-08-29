@@ -5,6 +5,7 @@ import { useMemo, useState } from 'react';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import type { GameCommentItem } from '@/lib/db/game-comments';
+import { MODERATION_BLOCKED_ERROR } from '@/lib/moderation/blocked-error';
 
 import {
   addGameCommentAction,
@@ -46,7 +47,7 @@ export function useGameCommentThread({
     if (code === 'rateLimited') return t('errors.rateLimited');
     if (code === 'forbidden') return t('errors.forbidden');
     if (code === 'not_found') return t('errors.notFound');
-    if (code === 'moderation.blocked') return t('errors.blocked');
+    if (code === MODERATION_BLOCKED_ERROR) return t('errors.blocked');
     return t('errors.generic');
   };
 

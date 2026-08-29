@@ -2,7 +2,7 @@ import { and, eq } from 'drizzle-orm';
 
 import { authenticateAndGuard } from '@/lib/auth';
 import { countRows } from '@/lib/db/list-query';
-import { isBlockedBetween } from '@/lib/moderation/block';
+import { assertNotBlocked } from '@/lib/moderation/block';
 import { createNotification } from '@/lib/notifications/notification';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { logActivityEvent } from '@/lib/users/activity-log';
@@ -125,13 +125,8 @@ export async function performEntityToggleLike<TExtra>(params: {
   // before vs after the toggle is equivalent.)
   const owner = await fetchOwner(id);
 
-  if (
-    owner?.userId &&
-    owner.userId !== user.id &&
-    (await isBlockedBetween(user.id, owner.userId))
-  ) {
-    return { error: 'moderation.blocked' };
-  }
+  const blocked = await assertNotBlocked(user.id, owner?.userId);
+  if (blocked) return blocked;
 
   const { liked, likeCount } = await toggleLikeForTarget({
     userId: user.id,

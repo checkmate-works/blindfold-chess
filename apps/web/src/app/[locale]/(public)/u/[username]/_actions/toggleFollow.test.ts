@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
+import { MODERATION_BLOCKED_ERROR, assertNotBlocked } from '@/lib/moderation/block';
 import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
 import { logActivityEvent } from '@/lib/users/activity-log';
 
@@ -10,12 +11,8 @@ const mockSelectFromWhere = vi.fn();
 const mockSelectProfile = vi.fn();
 const mockInsertValues = vi.fn();
 const mockDeleteWhere = vi.fn();
-const mockIsBlockedBetween = vi.fn();
 
-vi.mock('@/lib/moderation/block', () => ({
-  isBlockedBetween: (...args: unknown[]) => mockIsBlockedBetween(...args),
-  hasBlocked: () => Promise.resolve(false),
-}));
+vi.mock('@/lib/moderation/block');
 
 vi.mock('@/lib/users/activity-log');
 
@@ -66,7 +63,6 @@ const targetProfileId = 'target-00000000-0000-0000-0000-000000000001';
 describe('toggleFollow', () => {
   beforeEach(() => {
     mockSelectProfile.mockResolvedValue([{ id: testUserId }]);
-    mockIsBlockedBetween.mockResolvedValue(false);
   });
 
   describe('authentication', () => {
@@ -189,12 +185,12 @@ describe('toggleFollow', () => {
       mockSelectFromWhere.mockResolvedValue([{ id: targetProfileId }]);
     });
 
-    it('rejects the follow with "blocked" when a block exists in either direction', async () => {
-      mockIsBlockedBetween.mockResolvedValue(true);
+    it('rejects the follow when a block exists in either direction', async () => {
+      vi.mocked(assertNotBlocked).mockResolvedValueOnce({ error: MODERATION_BLOCKED_ERROR });
 
       const result = await toggleFollow('validuser', 'en');
-      expect(result).toEqual({ error: 'blocked' });
-      expect(mockIsBlockedBetween).toHaveBeenCalledWith(testUserId, targetProfileId);
+      expect(result).toEqual({ error: MODERATION_BLOCKED_ERROR });
+      expect(assertNotBlocked).toHaveBeenCalledWith(testUserId, targetProfileId);
       expect(mockInsertValues).not.toHaveBeenCalled();
       expect(mockDeleteWhere).not.toHaveBeenCalled();
     });

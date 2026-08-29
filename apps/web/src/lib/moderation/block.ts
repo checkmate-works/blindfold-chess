@@ -2,6 +2,9 @@ import { and, eq, or } from 'drizzle-orm';
 import 'server-only';
 
 import { db, userBlocks } from '../db';
+import { MODERATION_BLOCKED_ERROR } from './blocked-error';
+
+export { MODERATION_BLOCKED_ERROR };
 
 /**
  * Has `blockerId` blocked `blockedId`? Directional — used by the profile
@@ -39,4 +42,30 @@ export async function isBlockedBetween(a: string, b: string): Promise<boolean> {
     )
     .limit(1);
   return !!row;
+}
+
+/**
+ * Guard for a user→user write: reject it once either party has blocked the
+ * other.
+ *
+ * `otherId` is nullable because the counterparty is routinely unknown — an
+ * account-less game, an anonymised author, a row whose owner column is null.
+ * There is nobody to be blocked by in those cases, so the write proceeds. A
+ * self-directed write (liking your own post, commenting on your own game) is
+ * likewise never blocked, and short-circuits before the query runs.
+ *
+ * @returns The rejection to hand straight back to the caller's client, or
+ * `null` when the interaction is allowed:
+ *
+ * ```ts
+ * const blocked = await assertNotBlocked(user.id, owner.userId);
+ * if (blocked) return blocked;
+ * ```
+ */
+export async function assertNotBlocked(
+  viewerId: string,
+  otherId: string | null | undefined
+): Promise<{ error: typeof MODERATION_BLOCKED_ERROR } | null> {
+  if (!otherId || otherId === viewerId) return null;
+  return (await isBlockedBetween(viewerId, otherId)) ? { error: MODERATION_BLOCKED_ERROR } : null;
 }
