@@ -26,54 +26,62 @@ export function getExpLevel(amount: number, maxAmount: number): number {
 }
 
 /**
- * Generates an array of dates from startDate to endDate (inclusive),
- * formatted as 'YYYY-MM-DD' strings.
+ * Generates an array of UTC calendar dates from startDate to endDate
+ * (inclusive), formatted as 'YYYY-MM-DD' strings.
  */
 export function generateDateRange(startDate: Date, endDate: Date): string[] {
   const dates: string[] = [];
   const current = new Date(startDate);
 
   while (current <= endDate) {
-    dates.push(formatDate(current));
-    current.setDate(current.getDate() + 1);
+    dates.push(utcDateKey(current));
+    current.setUTCDate(current.getUTCDate() + 1);
   }
 
   return dates;
 }
 
 /**
- * Builds a date range for a given number of weeks, aligned to full weeks
+ * Builds a date range for a given number of weeks, aligned to full UTC weeks
  * starting on Sunday.
  *
  * Used by the responsive heatmap: 53 weeks on desktop, 26 weeks on mobile.
+ * Anchored to UTC calendar days so the range agrees with the UTC-day
+ * bucketing `getExpHeatmapData` uses to aggregate Exp events — otherwise the
+ * grid's "today" column can disagree with which day an event was bucketed
+ * under, for any viewer not on UTC.
  */
 export function getHeatmapDateRangeForWeeks(
   today: Date,
   totalWeeks: number
 ): { startDate: Date; endDate: Date } {
-  const endDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const endDate = new Date(
+    Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate())
+  );
 
-  const dayOfWeek = endDate.getDay();
+  const dayOfWeek = endDate.getUTCDay();
   const currentSunday = new Date(endDate);
-  currentSunday.setDate(endDate.getDate() - dayOfWeek);
+  currentSunday.setUTCDate(endDate.getUTCDate() - dayOfWeek);
 
   const startDate = new Date(currentSunday);
-  startDate.setDate(currentSunday.getDate() - (totalWeeks - 1) * 7);
+  startDate.setUTCDate(currentSunday.getUTCDate() - (totalWeeks - 1) * 7);
 
   return { startDate, endDate };
 }
 
 /**
- * Returns an array of the most recent `days` date strings (YYYY-MM-DD),
+ * Returns an array of the most recent `days` UTC date strings (YYYY-MM-DD),
  * ending on `today`, in ascending chronological order.
  */
 export function getRecentDays(today: Date, days: number): string[] {
   const result: string[] = [];
-  const current = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-  current.setDate(current.getDate() - (days - 1));
+  const current = new Date(
+    Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate())
+  );
+  current.setUTCDate(current.getUTCDate() - (days - 1));
   for (let i = 0; i < days; i++) {
-    result.push(formatDate(current));
-    current.setDate(current.getDate() + 1);
+    result.push(utcDateKey(current));
+    current.setUTCDate(current.getUTCDate() + 1);
   }
   return result;
 }
@@ -139,10 +147,16 @@ export function buildWeeks(allDates: string[]): (string | null)[][] {
   return weeks;
 }
 
-/** Formats a Date as 'YYYY-MM-DD'. */
-export function formatDate(date: Date): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
+/**
+ * Formats a Date as 'YYYY-MM-DD' using its UTC calendar day — the same
+ * convention `getExpHeatmapData` buckets Exp events under
+ * (`DATE(created_at AT TIME ZONE 'UTC')`), so a cell's key always matches
+ * the day its data was aggregated into, regardless of the viewer's or
+ * server's local timezone.
+ */
+export function utcDateKey(date: Date): string {
+  const y = date.getUTCFullYear();
+  const m = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(date.getUTCDate()).padStart(2, '0');
   return `${y}-${m}-${d}`;
 }

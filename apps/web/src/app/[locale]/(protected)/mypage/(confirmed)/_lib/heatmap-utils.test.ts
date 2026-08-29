@@ -2,12 +2,12 @@ import { describe, expect, it } from 'vitest';
 
 import {
   buildWeeks,
-  formatDate,
   generateDateRange,
   getExpLevel,
   getHeatmapDateRangeForWeeks,
   getMonthLabelsForWeeks,
   getRecentDays,
+  utcDateKey,
 } from './heatmap-utils';
 
 describe('getExpLevel', () => {
@@ -128,22 +128,29 @@ describe('generateDateRange', () => {
   });
 });
 
-describe('formatDate', () => {
+describe('utcDateKey', () => {
   it('formats date as YYYY-MM-DD', () => {
-    expect(formatDate(new Date(2026, 0, 1))).toBe('2026-01-01');
-    expect(formatDate(new Date(2026, 11, 31))).toBe('2026-12-31');
+    expect(utcDateKey(new Date(Date.UTC(2026, 0, 1)))).toBe('2026-01-01');
+    expect(utcDateKey(new Date(Date.UTC(2026, 11, 31)))).toBe('2026-12-31');
   });
 
   it('pads single-digit month and day', () => {
-    expect(formatDate(new Date(2026, 2, 5))).toBe('2026-03-05');
+    expect(utcDateKey(new Date(Date.UTC(2026, 2, 5)))).toBe('2026-03-05');
   });
 
   it('formats double-digit month and day without extra padding', () => {
-    expect(formatDate(new Date(2026, 10, 25))).toBe('2026-11-25');
+    expect(utcDateKey(new Date(Date.UTC(2026, 10, 25)))).toBe('2026-11-25');
   });
 
   it('formats February 29 in a leap year', () => {
-    expect(formatDate(new Date(2024, 1, 29))).toBe('2024-02-29');
+    expect(utcDateKey(new Date(Date.UTC(2024, 1, 29)))).toBe('2024-02-29');
+  });
+
+  it('keys by UTC calendar day, not the local one', () => {
+    // 2026-08-19T23:30:00Z is 2026-08-20 08:30 in JST (UTC+9) — the exact
+    // instant from the timezone-mismatch bug report. The key must stay on
+    // the UTC day so it agrees with how getExpHeatmapData buckets events.
+    expect(utcDateKey(new Date('2026-08-19T23:30:00.000Z'))).toBe('2026-08-19');
   });
 });
 
@@ -151,7 +158,7 @@ describe('getHeatmapDateRangeForWeeks', () => {
   it('returns a range ending on the given date', () => {
     const today = new Date(2026, 3, 8); // Wednesday
     const { endDate } = getHeatmapDateRangeForWeeks(today, 53);
-    expect(formatDate(endDate)).toBe('2026-04-08');
+    expect(utcDateKey(endDate)).toBe('2026-04-08');
   });
 
   it('starts on a Sunday', () => {
@@ -182,7 +189,7 @@ describe('getHeatmapDateRangeForWeeks', () => {
     const sunday = new Date(2026, 3, 5); // Sunday
     const { startDate, endDate } = getHeatmapDateRangeForWeeks(sunday, 26);
     expect(startDate.getDay()).toBe(0);
-    expect(formatDate(endDate)).toBe('2026-04-05');
+    expect(utcDateKey(endDate)).toBe('2026-04-05');
     const diffDays = Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
     expect(diffDays).toBe(175); // 25 weeks
   });
@@ -191,7 +198,7 @@ describe('getHeatmapDateRangeForWeeks', () => {
     const wednesday = new Date(2026, 3, 8); // Wednesday
     const { startDate, endDate } = getHeatmapDateRangeForWeeks(wednesday, 1);
     expect(startDate.getDay()).toBe(0); // Sunday
-    expect(formatDate(endDate)).toBe('2026-04-08');
+    expect(utcDateKey(endDate)).toBe('2026-04-08');
     const diffDays = Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
     // totalWeeks=1 means (1-1)*7=0 weeks back from current Sunday, so start is current Sunday
     expect(diffDays).toBe(3); // Wednesday - Sunday = 3 days
@@ -201,7 +208,7 @@ describe('getHeatmapDateRangeForWeeks', () => {
     const saturday = new Date(2026, 3, 4); // Saturday
     const { startDate, endDate } = getHeatmapDateRangeForWeeks(saturday, 26);
     expect(startDate.getDay()).toBe(0);
-    expect(formatDate(endDate)).toBe('2026-04-04');
+    expect(utcDateKey(endDate)).toBe('2026-04-04');
     const diffDays = Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
     expect(diffDays).toBe(175 + 6); // 25 weeks + 6 days (Saturday)
   });
@@ -210,7 +217,7 @@ describe('getHeatmapDateRangeForWeeks', () => {
     const jan15 = new Date(2026, 0, 15); // Thursday
     const { startDate, endDate } = getHeatmapDateRangeForWeeks(jan15, 26);
     expect(startDate.getDay()).toBe(0);
-    expect(formatDate(endDate)).toBe('2026-01-15');
+    expect(utcDateKey(endDate)).toBe('2026-01-15');
     // 25 weeks back from Sunday 2026-01-11 = 2025-07-20
     expect(startDate.getFullYear()).toBe(2025);
     expect(startDate.getMonth()).toBe(6); // July
