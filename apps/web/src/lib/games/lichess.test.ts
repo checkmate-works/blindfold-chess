@@ -2,6 +2,27 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { createLichessThrottle, fetchLichessGamePgn } from './lichess';
 
+/**
+ * The module's real deadline is 5s, so the factory is swapped for one that
+ * hands out a millisecond deadline — the timeout tests below then run in
+ * milliseconds while `recordedDeadlinesMs` still pins the budget the module
+ * actually asked for.
+ */
+const { recordedDeadlinesMs, TEST_DEADLINE_MS } = vi.hoisted(() => ({
+  recordedDeadlinesMs: [] as number[],
+  TEST_DEADLINE_MS: 50,
+}));
+
+vi.mock('@/lib/http/fetch-with-timeout', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/http/fetch-with-timeout')>();
+  return {
+    createFetchWithTimeout: (timeoutMs: number) => {
+      recordedDeadlinesMs.push(timeoutMs);
+      return actual.createFetchWithTimeout(TEST_DEADLINE_MS);
+    },
+  };
+});
+
 describe('createLichessThrottle', () => {
   it('starts full and decrements on each acquire', () => {
     const now = 1_000;
@@ -188,13 +209,49 @@ describe('fetchLichessGamePgn — error mapping', () => {
   });
 
   it("returns 'fetch_failed' when AbortError fires (timeout simulated)", async () => {
-    // The implementation uses `AbortController` + `setTimeout`; we simulate
-    // the timeout having already fired by rejecting with AbortError.
+    // The implementation puts the request behind `createFetchWithTimeout`; we
+    // simulate the deadline having already fired by rejecting with AbortError.
     globalThis.fetch = vi.fn().mockImplementation(() => {
       const err = new Error('aborted');
       err.name = 'AbortError';
       return Promise.reject(err);
     }) as unknown as typeof fetch;
+
+    const result = await fetchLichessGamePgn('abcd1234', alwaysOpenThrottle());
+    expect(result).toEqual({ ok: false, error: 'fetch_failed' });
+  });
+
+  it('asks for the 5s deadline it documents', () => {
+    expect(recordedDeadlinesMs).toEqual([5_000]);
+  });
+
+  it("returns 'fetch_failed' when Lichess accepts the connection and then stalls", async () => {
+    globalThis.fetch = vi.fn().mockImplementation((_url: string, init?: RequestInit) => {
+      return new Promise((_resolve, reject) => {
+        init?.signal?.addEventListener('abort', () => reject(init.signal?.reason));
+      });
+    }) as unknown as typeof fetch;
+
+    const result = await fetchLichessGamePgn('abcd1234', alwaysOpenThrottle());
+    expect(result).toEqual({ ok: false, error: 'fetch_failed' });
+  });
+
+  it("returns 'fetch_failed' when the body stream stalls mid-PGN", async () => {
+    // The deadline has to outlive the response headers: the signal stays
+    // attached to the body, which is where a truncated export would hang.
+    globalThis.fetch = vi.fn().mockImplementation((_url: string, init?: RequestInit) => ({
+      status: 200,
+      ok: true,
+      body: {
+        getReader: () => ({
+          read: () =>
+            new Promise((_resolve, reject) => {
+              init?.signal?.addEventListener('abort', () => reject(init.signal?.reason));
+            }),
+          cancel: async () => {},
+        }),
+      },
+    })) as unknown as typeof fetch;
 
     const result = await fetchLichessGamePgn('abcd1234', alwaysOpenThrottle());
     expect(result).toEqual({ ok: false, error: 'fetch_failed' });

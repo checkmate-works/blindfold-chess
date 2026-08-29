@@ -15,10 +15,29 @@
  * is no supported "give me a parseable format" query param, so spoofing the
  * UA is the only lever.
  */
+import { createFetchWithTimeout } from '@/lib/http/fetch-with-timeout';
 
 const FONT_FAMILY = 'Noto Sans JP';
 const OLD_UA = 'Mozilla/5.0 (Windows NT 6.1; rv:2.0.1) Gecko/20100101 Firefox/4.0.1';
 const CACHE_LIMIT = 50;
+
+/**
+ * Deadline for each Google Fonts request (the css2 lookup, then each font
+ * binary).
+ *
+ * Deliberately short, because the failure here is cheap: no fonts means a
+ * board-only card, which is what {@link loadOgFonts} already returns for an
+ * outage. Nobody is served by waiting longer than the social crawler that
+ * asked for the image is willing to wait — and the payload is a `text=`
+ * subset of a few glyphs, so a healthy round trip is far inside this.
+ *
+ * Without a deadline the degrade path was unreachable for the failure that
+ * matters most: a hang is not a rejection, so `fetchOgFonts` simply never
+ * settled and neither did the OG route.
+ */
+const OG_FONT_FETCH_TIMEOUT_MS = 3_000;
+
+const fetchWithTimeout = createFetchWithTimeout(OG_FONT_FETCH_TIMEOUT_MS);
 
 export type OgFont = { name: string; data: ArrayBuffer; weight: 400 | 700; style: 'normal' };
 
@@ -31,7 +50,7 @@ function cacheKeyFor(text: string): string {
 
 async function fetchOgFonts(text: string): Promise<OgFont[]> {
   const cssUrl = `https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&text=${encodeURIComponent(text)}`;
-  const cssRes = await fetch(cssUrl, { headers: { 'User-Agent': OLD_UA } });
+  const cssRes = await fetchWithTimeout(cssUrl, { headers: { 'User-Agent': OLD_UA } });
   if (!cssRes.ok) return [];
   const css = await cssRes.text();
 
@@ -49,7 +68,7 @@ async function fetchOgFonts(text: string): Promise<OgFont[]> {
 
   const loaded = await Promise.all(
     sources.map(async ({ url, weight }) => {
-      const res = await fetch(url);
+      const res = await fetchWithTimeout(url);
       if (!res.ok) return null;
       const data = await res.arrayBuffer();
       return { name: FONT_FAMILY, data, weight, style: 'normal' as const };
@@ -70,6 +89,11 @@ async function fetchOgFonts(text: string): Promise<OgFont[]> {
  * card for that character set rendering with no glyphs for the lifetime
  * of the serverless instance.
  *
+ * Eviction only works because every fetch has a deadline. A hung request
+ * settles neither way, so before {@link OG_FONT_FETCH_TIMEOUT_MS} it left a
+ * promise in this map that no handler below could ever remove — and every
+ * later render of that character set awaited the same one.
+ *
  * Reads refresh recency (delete + re-set), making eviction LRU rather
  * than insertion-order FIFO — otherwise the hottest keys are the first
  * to be evicted.
@@ -78,8 +102,10 @@ const fontCache = new Map<string, Promise<OgFont[]>>();
 
 /**
  * Resolve satori `fonts` entries covering every character in `text`. Returns
- * `[]` (never throws) on any fetch/parse failure so a transient Google Fonts
- * outage degrades the OG card to a text-less board rather than a 500.
+ * `[]` (never throws) on any fetch/parse failure — including a request that
+ * outlives {@link OG_FONT_FETCH_TIMEOUT_MS} — so a transient Google Fonts
+ * outage degrades the OG card to a text-less board rather than a 500 or a
+ * render that never finishes.
  */
 export async function loadOgFonts(text: string): Promise<OgFont[]> {
   if (text.length === 0) return [];

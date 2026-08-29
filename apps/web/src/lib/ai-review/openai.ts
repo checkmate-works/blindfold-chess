@@ -1,6 +1,8 @@
 import { type Result, err, ok } from '@blindfold-chess/features/utils';
 import 'server-only';
 
+import { createFetchWithTimeout } from '@/lib/http/fetch-with-timeout';
+
 import type { LlmClient, LlmCompletionRequest, LlmError } from './llm-client';
 
 /**
@@ -25,6 +27,27 @@ const OPENAI_CHAT_COMPLETIONS_URL = 'https://api.openai.com/v1/chat/completions'
  * `OPENAI_MODEL` to re-tune cost/quality without a code change.
  */
 const DEFAULT_MODEL = 'gpt-5-mini';
+
+/**
+ * Deadline for one completion call.
+ *
+ * A reasoning model writing ~8000 tokens of coaching prose legitimately takes
+ * tens of seconds, so the budget has to be generous — but the call runs
+ * inside `processAiReviewJob`, which `after()` keeps alive only for the
+ * triggering route's `maxDuration = 60`. Forty-five seconds leaves that
+ * window room for the bookkeeping a failed job still owes the author (the
+ * refund, the status write, the notification) instead of being killed
+ * mid-transaction, while a provider that accepts the connection and then
+ * stalls stops holding the function open for the full minute.
+ *
+ * A timeout surfaces as a retryable `transport` error, so it costs at most
+ * one more attempt before the job fails and refunds; if the two attempts
+ * together outlive the `after()` window, the cron sweeper picks the job up as
+ * stale. See `./jobs.ts`.
+ */
+const OPENAI_FETCH_TIMEOUT_MS = 45_000;
+
+const fetchWithTimeout = createFetchWithTimeout(OPENAI_FETCH_TIMEOUT_MS);
 
 function requireApiKey(): string {
   const key = process.env.OPENAI_API_KEY;
@@ -86,7 +109,7 @@ export function createOpenAiClient(
           body.reasoning_effort = 'low';
         }
 
-        const response = await fetch(OPENAI_CHAT_COMPLETIONS_URL, {
+        const response = await fetchWithTimeout(OPENAI_CHAT_COMPLETIONS_URL, {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${requireApiKey()}`,
@@ -113,9 +136,10 @@ export function createOpenAiClient(
         }
         return ok(content);
       } catch (cause) {
-        // fetch rejects on DNS / connection / abort failures, and
-        // response.json() on a malformed body — neither reached a decision
-        // the provider made, so both are retryable transport faults.
+        // fetch rejects on DNS / connection / abort failures (including the
+        // deadline above firing), and response.json() on a malformed body —
+        // neither reached a decision the provider made, so both are retryable
+        // transport faults.
         return err({ kind: 'transport', cause });
       }
     },
