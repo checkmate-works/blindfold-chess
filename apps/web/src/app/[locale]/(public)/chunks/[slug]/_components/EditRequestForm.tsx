@@ -21,6 +21,7 @@ import { flushSync } from 'react-dom';
 import type { ChunkEditRequestValidationError } from '@/lib/chunk-edit-requests/validation';
 import type { ChunkFeedbackTopic } from '@/lib/chunks/validation';
 import { localizeActionError } from '@/lib/i18n/localize-action-error';
+import { MODERATION_BLOCKED_ERROR } from '@/lib/moderation/blocked-error';
 
 import { submitEditRequest } from '../_actions/submitEditRequest';
 
@@ -68,7 +69,6 @@ const WELL_KNOWN_ERRORS = new Set([
   'rateLimited',
   'notFound',
   'ownerCannotPropose',
-  'blocked',
   'chunkNotDraft',
   'alreadyHasPending',
   // Validation verdicts. They were absent here until 2026-08, so
@@ -210,7 +210,15 @@ export function EditRequestForm({
     const hidden =
       (field === 'title' && !titlePrimary) || (field === 'description' && !descriptionPrimary);
     if (hidden) flushSync(() => setOtherOpen(true));
-    submitError.report(field ?? null, localizeActionError(code, t, WELL_KNOWN_ERRORS));
+    // The block rejection arrives namespace-qualified, since the guard that
+    // produces it is shared across features. Answer it with this form's own
+    // sentence rather than the global "you can't interact with this user",
+    // which would leave the proposer guessing which action was refused.
+    const message =
+      code === MODERATION_BLOCKED_ERROR
+        ? t('errors.blocked')
+        : localizeActionError(code, t, WELL_KNOWN_ERRORS);
+    submitError.report(field ?? null, message);
   }
 
   async function handleSubmit(e: React.FormEvent) {

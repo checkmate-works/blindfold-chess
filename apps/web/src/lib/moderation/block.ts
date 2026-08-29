@@ -2,6 +2,9 @@ import { and, eq, or } from 'drizzle-orm';
 import 'server-only';
 
 import { db, userBlocks } from '../db';
+import { MODERATION_BLOCKED_ERROR } from './blocked-error';
+
+export { MODERATION_BLOCKED_ERROR };
 
 /**
  * Has `blockerId` blocked `blockedId`? Directional — used by the profile
@@ -40,22 +43,6 @@ export async function isBlockedBetween(a: string, b: string): Promise<boolean> {
     .limit(1);
   return !!row;
 }
-
-/**
- * The single error code every write choke point returns when a block bars the
- * interaction.
- *
- * Namespace-qualified on purpose. `assertNotBlocked` is shared by features
- * that each own a different error dictionary, and a bare `blocked` only
- * renders in the ones that happen to carry their own sentence for it — the
- * topic forms resolve unknown bare codes to a generic "something went wrong",
- * so a namespace without the key would degrade silently. A dotted code always
- * resolves against the global `moderation` dictionary instead, so a new choke
- * point gets a correct message with no catalogue work; a surface that wants
- * wording tailored to its own action still maps the code to a local sentence
- * (the chunk / position suggestion forms and the game comment thread do).
- */
-export const MODERATION_BLOCKED_ERROR = 'moderation.blocked';
 
 /**
  * Guard for a user→user write: reject it once either party has blocked the

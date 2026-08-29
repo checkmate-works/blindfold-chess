@@ -20,6 +20,7 @@ import { flushSync } from 'react-dom';
 
 import type { ChunkOption } from '@/lib/chunks/types';
 import { localizeActionError } from '@/lib/i18n/localize-action-error';
+import { MODERATION_BLOCKED_ERROR } from '@/lib/moderation/blocked-error';
 import type { PositionTagBundle } from '@/lib/positions/tag-loader';
 import type { ThemeOption } from '@/lib/themes/types';
 
@@ -49,7 +50,6 @@ const WELL_KNOWN_ERRORS = new Set([
   'rateLimited',
   'notFound',
   'ownerCannotPropose',
-  'blocked',
   'alreadyHasPending',
   'invalidTheme',
   'invalidChunk',
@@ -154,10 +154,15 @@ export function PositionEditRequestForm({ positionId, current, available, cancel
       // Shown against the control at fault — the comment cap is the reachable
       // one (the box has no client-side limit), and it used to be reported at
       // the top of the form, past the whole tag picker.
-      submitError.report(
-        FIELD_BY_ERROR[result.error] ?? null,
-        localizeActionError(result.error, t, WELL_KNOWN_ERRORS)
-      );
+      // The block rejection arrives namespace-qualified, since the guard that
+      // produces it is shared across features. Answer it with this form's own
+      // sentence rather than the global "you can't interact with this user",
+      // which would leave the proposer guessing which action was refused.
+      const message =
+        result.error === MODERATION_BLOCKED_ERROR
+          ? t('errors.blocked')
+          : localizeActionError(result.error, t, WELL_KNOWN_ERRORS);
+      submitError.report(FIELD_BY_ERROR[result.error] ?? null, message);
       return;
     }
 
