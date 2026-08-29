@@ -140,7 +140,7 @@ Below is the score of a real masterpiece — the "Opera Game", played by Paul Mo
 
 ## Common Mistakes to Avoid
 
-1.  **Forgetting piece symbols**: Write Nf3, not nf3.
+1.  **Lowercasing piece symbols**: Write Nf3, not nf3. Piece letters are capitals, and a lowercase b is indistinguishable from a b-file pawn move.
 2.  **Insufficient disambiguation**: Forgetting to specify which piece when multiple can move to the same square.
 3.  **Forgetting check symbols**: Always add + for a check.`;
 

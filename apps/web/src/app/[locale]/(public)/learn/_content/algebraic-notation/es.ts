@@ -139,7 +139,7 @@ A continuación tienes la notación de una obra maestra real: la "partida de la 
 
 ## Errores comunes que debes evitar
 
-1.  **Olvidar los símbolos de las piezas**: Escribe Nf3, no nf3.
+1.  **Escribir las piezas en minúscula**: Escribe Nf3, no nf3. Las letras de las piezas van en mayúscula, y una b minúscula no se distingue de una jugada de peón de la columna b.
 2.  **Desambiguación insuficiente**: Olvidar especificar qué pieza se mueve cuando varias pueden ir a la misma casilla.
 3.  **Olvidar el símbolo de jaque**: Añade siempre + cuando hay jaque.`;
 
