@@ -1,5 +1,7 @@
 const content = `# El experimento de De Groot: el secreto de la memoria de los maestros de ajedrez
 
+## El contexto
+
 En 1946, el psicólogo neerlandés Adriaan de Groot realizó un famoso experimento.
 Él mismo era un jugador de nivel maestro, y adoptó un enfoque científico para responder a la pregunta de qué diferencia a los grandes jugadores de los jugadores promedio.
 

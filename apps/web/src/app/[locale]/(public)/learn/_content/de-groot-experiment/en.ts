@@ -1,5 +1,7 @@
 const content = `# De Groot's Experiment: The Secret of Chess Master Memory
 
+## Background
+
 In 1946, Dutch psychologist Adriaan de Groot conducted a famous experiment.
 He himself was a master-level chess player, and he took a scientific approach to the question of what differentiates great players from average ones.
 
