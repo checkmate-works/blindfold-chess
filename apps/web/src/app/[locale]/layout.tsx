@@ -60,32 +60,33 @@ export const dynamicParams = false;
 
 /**
  * Default ISR interval for every static route in this tree (pages may set
- * their own; dynamic routes ignore it). One day, up from one hour (2026-08),
- * because ISR Writes had become the largest usage line on the bill after the
- * subscription itself — 0.24 USD-equivalent/day against Fluid Provisioned
- * Memory's 0.14 once the pool-drain keepalive stopped inflating the latter.
+ * their own; dynamic routes ignore it). Seven days, up from one day, which
+ * was itself up from one hour (both steps 2026-08), because ISR Writes had
+ * become the largest usage line on the bill after the subscription itself.
  *
  * What the interval sets is a ceiling, not a rate. An entry is rewritten only
  * when a request arrives after it went stale, so a page costs
  * `min(requests, 86400 / interval)` re-renders per day, each ~4 ISR Writes
- * under PPR. Dropping the ceiling from 24/day to 1/day therefore only pays
- * off on pages background traffic hits more than once a day, and production
- * deploys put a floor under the total by invalidating whatever was not
- * prerendered at build. Expect a real cut on the crawler-swept content
- * surface — not a 24-fold one.
+ * under PPR. Measuring the 1h -> 24h step showed where the remaining spend
+ * lives: daily cost fell by about a third (0.27 -> 0.17 USD-equivalent), and
+ * the residual is request-bound — background traffic (crawler sweeps) touches
+ * most of the static surface about once a day, so under a 24h ceiling each
+ * touched page still rewrote daily. Production deploys turned out to be a
+ * minor term: a zero-deploy day cost the same as a one-deploy day, roughly
+ * 0.04/deploy at the margin. A 7-day ceiling cuts those once-a-day rewrites
+ * to ~1/7; `false` would zero them but remove the backstop below entirely.
+ * Daily numbers for both steps: GitHub issue #178.
  *
- * The hourly bound existed for the announcement banner the Header bakes into
- * every prerendered page, but the banner does not rely on this timer: admin
- * announcement mutations invalidate the `announcements` cache tag
- * (`admin/announcements/_lib/revalidate.ts`), which marks every page that
- * read the banner query stale, so each page re-renders on its next visit —
- * propagation is visit-driven, not timer-driven. This timer only backstops
- * banner changes made outside the admin actions (a direct SQL / service-role
- * write, a path we do not use), and even there the banner fetch's own 24h
- * `unstable_cache` TTL (see `getLatestBannerAnnouncement`) already dominated
- * the worst case.
+ * Freshness does not depend on this timer. Runtime content baked into
+ * prerendered pages propagates through cache tags — admin announcement
+ * mutations invalidate the `announcements` tag
+ * (`admin/announcements/_lib/revalidate.ts`), articles and ad creatives have
+ * their own — which marks every page that read the query stale, so each
+ * re-renders on its next visit. The timer only backstops writes that bypass
+ * those actions (a direct SQL / service-role write, a path we do not use);
+ * such a write now takes up to seven days to surface on prerendered pages.
  */
-export const revalidate = 86400;
+export const revalidate = 604800;
 
 /**
  * Route segment config, inherited by every page below. The platform default
