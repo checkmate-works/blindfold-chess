@@ -6,12 +6,18 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
+import { readJson, writeJson } from '@/lib/persistent-settings/local-storage-adapter';
+
 import { ProblemResultList } from '@/app/[locale]/(public)/practice/_components/ProblemResultList';
 import { createPracticeResultClient } from '@/app/[locale]/(public)/practice/_lib/createPracticeResultClient';
 import { getCommonPracticeCompleteLabels } from '@/app/[locale]/(public)/practice/_lib/get-common-practice-labels';
 import type { PracticeCompleteLabels } from '@/app/[locale]/(public)/practice/_lib/practice-complete-types';
 
 import { parseResults, parseStats as parseStatsShared } from '../_lib/result-serde';
+
+const POSITION_MEMORY_SETTINGS_KEY = 'positionMemorySettings';
+
+type StoredPositionMemorySettings = { customFenInput?: string };
 
 function PositionMemoryChildren() {
   const searchParams = useSearchParams();
@@ -46,26 +52,23 @@ function PositionMemoryChildren() {
 
   const handleDeleteFen = useCallback(
     (fenToDelete: string) => {
-      try {
-        const savedSettings = localStorage.getItem('positionMemorySettings');
-        if (savedSettings) {
-          const settings = JSON.parse(savedSettings);
-          if (settings.customFenInput) {
-            const fensFromStorage = settings.customFenInput
-              .trim()
-              .split('\n')
-              .filter((line: string) => line.trim());
-            const updatedFens = fensFromStorage.filter(
-              (fen: string) => fen.trim() !== fenToDelete.trim()
-            );
-            settings.customFenInput = updatedFens.join('\n');
-            localStorage.setItem('positionMemorySettings', JSON.stringify(settings));
-            router.refresh();
-          }
-        }
-      } catch (error) {
-        console.error('Failed to delete FEN from localStorage:', error);
-      }
+      const settings = readJson<StoredPositionMemorySettings | null>(
+        POSITION_MEMORY_SETTINGS_KEY,
+        null
+      );
+      if (!settings?.customFenInput) return;
+
+      const remaining = settings.customFenInput
+        .trim()
+        .split('\n')
+        .filter((line) => line.trim())
+        .filter((fen) => fen.trim() !== fenToDelete.trim());
+
+      writeJson(POSITION_MEMORY_SETTINGS_KEY, {
+        ...settings,
+        customFenInput: remaining.join('\n'),
+      });
+      router.refresh();
     },
     [router]
   );
