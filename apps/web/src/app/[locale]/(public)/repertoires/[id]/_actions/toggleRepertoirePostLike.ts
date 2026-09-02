@@ -1,7 +1,6 @@
 'use server';
 
-import { getRepertoireById } from '@/lib/repertoires/queries';
-
+import { REPERTOIRE_TOPIC } from '@/app/[locale]/(public)/repertoires/_lib/wrapper-config';
 import { toggleLikeBase } from '@/app/[locale]/(public)/topics/_actions/toggleLike';
 
 export async function toggleRepertoirePostLike(
@@ -13,7 +12,6 @@ export async function toggleRepertoirePostLike(
     postId,
     locale,
     topicIdentifier: repertoireId,
-    topicType: 'repertoire',
-    validateTopic: async (id) => (await getRepertoireById(id)) !== null,
+    ...REPERTOIRE_TOPIC,
   });
 }

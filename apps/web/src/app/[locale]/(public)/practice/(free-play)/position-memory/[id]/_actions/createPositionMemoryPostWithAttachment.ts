@@ -4,8 +4,10 @@ import { getPositionById } from '@/lib/positions/queries';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { validateContent } from '@/lib/validations/content';
 
+import { POSITION_MEMORY_TOPIC } from '@/app/[locale]/(public)/practice/(free-play)/_lib/wrapper-config';
 import type { CreatePostState } from '@/app/[locale]/(public)/topics/_actions/createPost';
 import { createPostWithAttachmentBase } from '@/app/[locale]/(public)/topics/_actions/createPostWithAttachmentBase';
+import { parentPagePostRedirect } from '@/app/[locale]/(public)/topics/_lib/parent-page-redirects';
 
 export async function createPositionMemoryPostWithAttachment(
   locale: string,
@@ -18,17 +20,17 @@ export async function createPositionMemoryPostWithAttachment(
   return createPostWithAttachmentBase({
     locale,
     topicIdentifier: positionId,
-    topicType: 'position_memory',
+    ...POSITION_MEMORY_TOPIC,
     topicKey: positionId,
-    urlSegment: 'practice/position-memory',
+    // The row is already in hand for `topicAuthorId`, so re-validate against
+    // it rather than letting the config's validator issue a second query.
     validateTopic: () => position !== null,
     invalidTopicError: 'Invalid position',
     rateLimit: RATE_LIMITS.createPost,
     validateContent,
     emitFeedItem: false,
     topicAuthorId: position?.userId,
-    redirectPath: (postId) =>
-      `/${locale}/practice/position-memory/${positionId}?toast=post_created#post-${postId}`,
+    redirectPath: parentPagePostRedirect(locale, POSITION_MEMORY_TOPIC.urlSegment, positionId),
     formData,
   });
 }

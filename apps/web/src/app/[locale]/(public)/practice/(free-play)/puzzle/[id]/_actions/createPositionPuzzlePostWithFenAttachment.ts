@@ -5,8 +5,10 @@ import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { readSpoilerFlag } from '@/lib/spoiler-flag';
 import { validateContent } from '@/lib/validations/content';
 
+import { PUZZLE_TOPIC } from '@/app/[locale]/(public)/practice/(free-play)/_lib/wrapper-config';
 import type { CreatePostState } from '@/app/[locale]/(public)/topics/_actions/createPost';
 import { createPostWithFenAttachmentBase } from '@/app/[locale]/(public)/topics/_actions/createPostWithFenAttachmentBase';
+import { parentPagePostRedirect } from '@/app/[locale]/(public)/topics/_lib/parent-page-redirects';
 
 export async function createPositionPuzzlePostWithFenAttachment(
   locale: string,
@@ -14,25 +16,23 @@ export async function createPositionPuzzlePostWithFenAttachment(
   _prevState: CreatePostState,
   formData: FormData
 ): Promise<CreatePostState> {
-  const isSpoiler = readSpoilerFlag(formData);
-
   const position = await getPositionById({ id: positionId, type: 'puzzle' });
 
   return createPostWithFenAttachmentBase({
     locale,
     topicIdentifier: positionId,
-    topicType: 'position_puzzle',
+    ...PUZZLE_TOPIC,
     topicKey: positionId,
-    urlSegment: 'practice/puzzle',
+    // The row is already in hand for `topicAuthorId`, so re-validate against
+    // it rather than letting the config's validator issue a second query.
     validateTopic: () => position !== null,
     invalidTopicError: 'Invalid position',
     rateLimit: RATE_LIMITS.createPost,
     validateContent,
     emitFeedItem: false,
-    isSpoiler,
+    isSpoiler: readSpoilerFlag(formData),
     topicAuthorId: position?.userId,
-    redirectPath: (postId) =>
-      `/${locale}/practice/puzzle/${positionId}?toast=post_created#post-${postId}`,
+    redirectPath: parentPagePostRedirect(locale, PUZZLE_TOPIC.urlSegment, positionId),
     formData,
   });
 }
