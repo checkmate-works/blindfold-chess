@@ -5,10 +5,10 @@ import {
   generatePgn,
   getFenAfterMoves,
 } from '@blindfold-chess/features/chess-core';
+import { formatMovesToPgn, formatPgnToText } from '@blindfold-chess/features/chess-core/pgn-format';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import { parseFenMeta } from '../_lib/fen-utils';
-import type { FormattedPgnMove } from '../_lib/pgn-parser';
 
 type UseNotationOptions = {
   initialMoves?: AlgebraicNotation[];
@@ -71,89 +71,12 @@ export function useNotation(initialMovesOrOptions: AlgebraicNotation[] | UseNota
     return startingFen;
   }, [startingFen]);
 
-  const getSimplePgn = useCallback(() => {
-    if (moves.length === 0) {
-      return '';
-    }
-
-    const { startsAsBlack, startMoveNumber } = parseFenMeta(startingFen);
-
-    const formattedMoves: string[] = [];
-
-    if (startsAsBlack) {
-      // First move is black's
-      formattedMoves.push(`${startMoveNumber}... ${moves[0]}`);
-      for (let i = 1; i < moves.length; i += 2) {
-        const moveNumber = startMoveNumber + Math.floor((i + 1) / 2);
-        const whiteMove = moves[i];
-        const blackMove = moves[i + 1];
-
-        if (blackMove) {
-          formattedMoves.push(`${moveNumber}. ${whiteMove} ${blackMove}`);
-        } else {
-          formattedMoves.push(`${moveNumber}. ${whiteMove}`);
-        }
-      }
-    } else {
-      for (let i = 0; i < moves.length; i += 2) {
-        const moveNumber = startMoveNumber + Math.floor(i / 2);
-        const whiteMove = moves[i];
-        const blackMove = moves[i + 1];
-
-        if (blackMove) {
-          formattedMoves.push(`${moveNumber}. ${whiteMove} ${blackMove}`);
-        } else {
-          formattedMoves.push(`${moveNumber}. ${whiteMove}`);
-        }
-      }
-    }
-
-    return formattedMoves.join(' ');
-  }, [moves, startingFen]);
-
   const formattedPgn = useMemo(() => {
-    if (moves.length === 0) {
-      return [];
-    }
-
     const { startsAsBlack, startMoveNumber } = parseFenMeta(startingFen);
-
-    const formattedMoves: FormattedPgnMove[] = [];
-
-    if (startsAsBlack) {
-      // First move is black's
-      formattedMoves.push({
-        moveNumber: startMoveNumber,
-        blackMove: moves[0],
-        blackMoveIndex: 0,
-      });
-      // Pair remaining moves (white, black, white, black...)
-      for (let i = 1; i < moves.length; i += 2) {
-        const moveNumber = startMoveNumber + Math.floor((i + 1) / 2);
-        formattedMoves.push({
-          moveNumber,
-          whiteMove: moves[i],
-          whiteMoveIndex: i,
-          blackMove: moves[i + 1],
-          blackMoveIndex: moves[i + 1] !== undefined ? i + 1 : undefined,
-        });
-      }
-    } else {
-      // Normal: first move is white's
-      for (let i = 0; i < moves.length; i += 2) {
-        const moveNumber = startMoveNumber + Math.floor(i / 2);
-        formattedMoves.push({
-          moveNumber,
-          whiteMove: moves[i],
-          whiteMoveIndex: i,
-          blackMove: moves[i + 1],
-          blackMoveIndex: moves[i + 1] !== undefined ? i + 1 : undefined,
-        });
-      }
-    }
-
-    return formattedMoves;
+    return formatMovesToPgn(moves, startsAsBlack, startMoveNumber);
   }, [moves, startingFen]);
+
+  const getSimplePgn = useCallback(() => formatPgnToText(formattedPgn), [formattedPgn]);
 
   return {
     moves,
