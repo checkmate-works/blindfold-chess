@@ -1,6 +1,7 @@
 import { useRef, useEffect } from "react";
 import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { useTranslation } from "react-i18next";
+import { formatMovesToPgn } from "@blindfold-chess/features/chess-core/pgn-format";
 import type { AlgebraicNotation } from "@blindfold-chess/types";
 import {
   useTheme,
@@ -41,15 +42,15 @@ export function MoveHistory({ moves }: MoveHistoryProps) {
     );
   }
 
-  // Group moves in pairs (1. e4 e5, 2. Nf3 Nc6, ...)
-  const movePairs: { number: number; white: string; black?: string }[] = [];
-  for (let i = 0; i < moves.length; i += 2) {
-    movePairs.push({
-      number: Math.floor(i / 2) + 1,
-      white: moves[i],
-      black: moves[i + 1],
-    });
-  }
+  // Group moves in pairs (1. e4 e5, 2. Nf3 Nc6, ...).
+  //
+  // The AI game always begins from the standard position — `useGameSession`
+  // holds no starting FEN and never hands one to the engine — hence White
+  // first at move 1. Those two facts are arguments here rather than arithmetic
+  // baked into the loop, so the day the session gains custom starts this call
+  // is the whole change; pairing by hand is how the web build ended up
+  // labelling a game resumed at move 24 as "1.".
+  const movePairs = formatMovesToPgn(moves, false, 1);
 
   const lastMoveIndex = moves.length - 1;
 
@@ -62,46 +63,44 @@ export function MoveHistory({ moves }: MoveHistoryProps) {
     >
       <ScrollView ref={scrollViewRef} style={styles.scrollView}>
         {movePairs.map((pair) => {
-          const whiteIndex = (pair.number - 1) * 2;
-          const blackIndex = whiteIndex + 1;
+          const whiteIsLast = pair.whiteMoveIndex === lastMoveIndex;
+          const blackIsLast = pair.blackMoveIndex === lastMoveIndex;
 
           return (
-            <View key={pair.number} style={styles.moveRow}>
+            <View key={pair.moveNumber} style={styles.moveRow}>
               <Text
                 style={[styles.moveNumber, { color: colors.mutedForeground }]}
               >
-                {pair.number}.
+                {pair.moveNumber}.
               </Text>
               <Text
                 style={[
                   styles.moveText,
                   {
                     color: colors.foreground,
-                    backgroundColor:
-                      whiteIndex === lastMoveIndex
-                        ? colors.accent
-                        : "transparent",
+                    backgroundColor: whiteIsLast
+                      ? colors.accent
+                      : "transparent",
                   },
-                  whiteIndex === lastMoveIndex && styles.highlightedMove,
+                  whiteIsLast && styles.highlightedMove,
                 ]}
               >
-                {pair.white}
+                {pair.whiteMove}
               </Text>
-              {pair.black && (
+              {pair.blackMove && (
                 <Text
                   style={[
                     styles.moveText,
                     {
                       color: colors.foreground,
-                      backgroundColor:
-                        blackIndex === lastMoveIndex
-                          ? colors.accent
-                          : "transparent",
+                      backgroundColor: blackIsLast
+                        ? colors.accent
+                        : "transparent",
                     },
-                    blackIndex === lastMoveIndex && styles.highlightedMove,
+                    blackIsLast && styles.highlightedMove,
                   ]}
                 >
-                  {pair.black}
+                  {pair.blackMove}
                 </Text>
               )}
             </View>
