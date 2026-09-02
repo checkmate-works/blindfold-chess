@@ -37,10 +37,6 @@ export type PracticeCompleteLabels = {
   problem?: string;
   original?: string;
   yourRecreation?: string;
-  deleteFenTitle?: string;
-  deleteFenMessage?: string;
-  deleteFenConfirm?: string;
-  deleteFenCancel?: string;
   skipped?: string;
   analyzeOnLichess?: string;
   relatedLearning?: string;
