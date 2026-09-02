@@ -1,8 +1,11 @@
 import { type MaiaRating, isMaiaRating } from '@blindfold-chess/features/ai-game/maia';
+import { formatMovesToPgn, formatPgnToText } from '@blindfold-chess/features/chess-core/pgn-format';
 import type { Side } from '@blindfold-chess/types';
 
 import { type EngineKind, isEngineKind } from '@/lib/engines';
 import type { SkillLevel } from '@/lib/games/saved-game-types';
+
+import { parseFenMeta } from '@/app/[locale]/(public)/games/play/_lib/fen-utils';
 
 export type InitialPgnState = {
   pgn: string;
@@ -28,25 +31,15 @@ export function deriveInitialPgnState(searchParams: URLSearchParams): InitialPgn
     try {
       const movesArray = JSON.parse(urlMoves) as string[];
       if (movesArray.length > 0) {
-        const pgnParts: string[] = [];
-
-        if (urlFen) {
-          pgnParts.push(`[SetUp "1"]`);
-          pgnParts.push(`[FEN "${urlFen}"]`);
-          pgnParts.push('');
-        }
-
-        for (let i = 0; i < movesArray.length; i += 2) {
-          const moveNumber = Math.floor(i / 2) + 1;
-          const whiteMove = movesArray[i];
-          const blackMove = movesArray[i + 1];
-          if (blackMove) {
-            pgnParts.push(`${moveNumber}. ${whiteMove} ${blackMove}`);
-          } else {
-            pgnParts.push(`${moveNumber}. ${whiteMove}`);
-          }
-        }
-        pgn = pgnParts.join(urlFen ? '\n' : ' ');
+        // The movetext has to be numbered from the same position the `[FEN]`
+        // header names, or the two halves of this PGN contradict each other:
+        // numbering by hand from 1 turned a game resumed at move 24 with Black
+        // to move into `[FEN "... b ... 24"]` followed by `1. <black move>`.
+        const { startsAsBlack, startMoveNumber } = parseFenMeta(urlFen);
+        pgn = formatPgnToText(
+          formatMovesToPgn(movesArray, startsAsBlack, startMoveNumber),
+          urlFen ?? undefined
+        );
       }
     } catch (error) {
       console.error('Failed to parse moves from URL:', error);
