@@ -17,7 +17,7 @@ import { formatDate, formatDateTime } from '@/app/admin/_lib/format';
 import { FaExternalLinkAlt } from 'react-icons/fa';
 
 import { getOptionalUser } from '@/lib/auth';
-import { BENEFIT_ACTIVE_STATUSES } from '@/lib/billing/subscription-constants';
+import { isSubscriptionActive } from '@/lib/billing/subscription-constants';
 import { ALL_RANK_SLUGS, isMukyuSlug } from '@/lib/db/data/ranks';
 import { createAdminClient } from '@/lib/supabase/admin';
 
@@ -80,9 +80,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
 
   const isDeleted = profile?.deletedAt != null;
   const isBanned = profile?.bannedAt != null;
-  const isPremium = subscriptions.some((s) =>
-    (BENEFIT_ACTIVE_STATUSES as readonly string[]).includes(s.status)
-  );
+  const isPremium = subscriptions.some((s) => isSubscriptionActive(s));
   const signupMethod = getSignupMethod(authUser);
 
   const rankName = (slug: string) => t(`stats.rankNames.${slug}`);

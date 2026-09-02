@@ -54,8 +54,39 @@ describe('cancelAllActiveSubscriptions', () => {
 
     const values = mockUpdateSet.mock.calls[0][0];
     expect(values.status).toBe('canceled');
-    expect(values.cancelAt).toBeInstanceOf(Date);
     expect(values.updatedAt).toBeInstanceOf(Date);
+  });
+
+  it('clears cancelAt rather than stamping it with the cancellation time', async () => {
+    mockSelectWhere.mockResolvedValue([
+      { id: 'row-1', stripeSubscriptionId: 'sub_1', status: 'active' },
+    ]);
+
+    await cancelAllActiveSubscriptions(testUserId);
+
+    // `cancelAt` means "a cancellation is scheduled for this moment", which the
+    // /mypage subscription card renders as "access until <date>". A terminated
+    // subscription has nothing scheduled, so it must be null — a timestamp here
+    // would make the dead row read as permanently about to cancel.
+    expect(mockUpdateSet.mock.calls[0][0].cancelAt).toBeNull();
+  });
+
+  it('writes exactly the columns and values handleSubscriptionDeleted writes', async () => {
+    mockSelectWhere.mockResolvedValue([
+      { id: 'row-1', stripeSubscriptionId: 'sub_1', status: 'active' },
+    ]);
+
+    await cancelAllActiveSubscriptions(testUserId);
+
+    // Cancelling through Stripe always emits `customer.subscription.deleted`, so
+    // the webhook write normally lands on top of this one. The two are only
+    // idempotent while this exact shape matches the one asserted for
+    // `handleSubscriptionDeleted` in stripe-webhook-handlers.test.ts.
+    expect(mockUpdateSet).toHaveBeenCalledWith({
+      status: 'canceled',
+      cancelAt: null,
+      updatedAt: expect.any(Date),
+    });
   });
 
   it('skips a row already canceled without calling Stripe', async () => {

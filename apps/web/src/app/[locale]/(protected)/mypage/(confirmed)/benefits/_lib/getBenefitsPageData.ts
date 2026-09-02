@@ -1,7 +1,7 @@
 import { and, desc, eq, isNull } from 'drizzle-orm';
 
 import { getUserSubscription } from '@/lib/billing/subscription';
-import { BENEFIT_ACTIVE_STATUSES } from '@/lib/billing/subscription-constants';
+import { isSubscriptionActive } from '@/lib/billing/subscription-constants';
 import { db, userGrants } from '@/lib/db';
 import { type GrantType, isGrantType } from '@/lib/db/data/grant-types';
 import type { GrantPeriodStatus } from '@/lib/users/user-grants';
@@ -39,7 +39,7 @@ type EntitlementRow = {
 
 export type BenefitsPageData = {
   adFreeActive: boolean;
-  /** Latest expiresAt across the active subscription and active grants, or null if neither covers `now`. */
+  /** Latest expiresAt across the active subscription's period and the active grants, or null if the user has neither. */
   latestExpiresAt: Date | null;
   /** Up to 5 most recent entitlement rows (subscription + grants), sorted by startsAt desc. */
   entitlementRows: EntitlementRow[];
@@ -74,10 +74,7 @@ export async function getBenefitsPageData(userId: string): Promise<BenefitsPageD
 
   const now = new Date();
 
-  const subscriptionActive =
-    !!subscription &&
-    (BENEFIT_ACTIVE_STATUSES as readonly string[]).includes(subscription.status) &&
-    new Date(subscription.currentPeriodEnd) > now;
+  const subscriptionActive = subscription !== null && isSubscriptionActive(subscription);
 
   const subscriptionExpiresAt = subscriptionActive ? new Date(subscription.currentPeriodEnd) : null;
 

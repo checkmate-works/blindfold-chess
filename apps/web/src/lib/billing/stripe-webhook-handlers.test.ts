@@ -758,6 +758,23 @@ describe('handleSubscriptionDeleted', () => {
     );
   });
 
+  it('writes exactly the columns and values cancelAllActiveSubscriptions writes', async () => {
+    mockUpdateReturning.mockResolvedValue([{ id: 'some-id' }]);
+
+    await handleSubscriptionDeleted(createMockSubscription());
+
+    // Account deletion cancels through Stripe and then syncs the row itself, so
+    // this handler and `cancelAllActiveSubscriptions` both write the row for the
+    // same cancellation, in an order nobody controls. They are only idempotent
+    // while this exact shape matches the one asserted in
+    // cancel-subscriptions.test.ts.
+    expect(mockUpdateSetWhere).toHaveBeenCalledWith({
+      status: 'canceled',
+      cancelAt: null,
+      updatedAt: expect.any(Date),
+    });
+  });
+
   it('should force cancelAt to null regardless of input', async () => {
     mockUpdateReturning.mockResolvedValue([{ id: 'some-id' }]);
 

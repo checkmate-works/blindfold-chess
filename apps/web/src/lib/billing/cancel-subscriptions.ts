@@ -20,9 +20,18 @@ import { db, subscriptions } from '@/lib/db';
  * - Rows already at `status === 'canceled'` are skipped (no Stripe call).
  * - If Stripe reports the subscription is already gone (404 / `resource_missing`),
  *   that is treated as success and we still sync the local row.
- * - The local row is also written by the `customer.subscription.deleted` webhook;
- *   the inline DB update here is idempotent with it (status → `canceled`,
- *   `cancelAt` → now).
+ * - The local row is also written by the `customer.subscription.deleted`
+ *   webhook, which `stripe.subscriptions.cancel()` always emits, so that write
+ *   normally lands second. Both writers set exactly `status` → `canceled`,
+ *   `cancelAt` → `null`, which is what makes the pair idempotent: whichever
+ *   arrives last leaves the row in the same state.
+ * - `cancelAt` is the timestamp at which a *scheduled* cancellation will take
+ *   effect (Stripe sets it when a user cancels through the customer portal),
+ *   not a record of when a cancellation was carried out. The subscription card
+ *   on /mypage renders a non-null `cancelAt` as "cancellation pending, access
+ *   until then". A subscription we have just terminated has nothing pending,
+ *   so `null` is the correct value; writing `now` would leave a dead
+ *   subscription displaying as forever about to cancel.
  *
  * ## Failure mode
  * A genuine Stripe failure (anything other than "already gone") is **rethrown**
@@ -64,11 +73,12 @@ export async function cancelAllActiveSubscriptions(userId: string): Promise<void
       );
     }
 
-    // Sync the local mirror inline rather than waiting on the webhook. Idempotent
-    // with `handleSubscriptionDeleted`.
+    // Sync the local mirror inline rather than waiting on the webhook. These are
+    // the same three columns and the same values `handleSubscriptionDeleted`
+    // writes, so the two writes are interchangeable in either order.
     await db
       .update(subscriptions)
-      .set({ status: 'canceled', cancelAt: new Date(), updatedAt: new Date() })
+      .set({ status: 'canceled', cancelAt: null, updatedAt: new Date() })
       .where(eq(subscriptions.id, row.id));
 
     // Leave a trail for manual reconciliation (NOT activity_log — see OVERVIEW).

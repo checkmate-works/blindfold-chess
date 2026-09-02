@@ -9,6 +9,18 @@ import { SUBSCRIPTION_STATUS_CACHE_TAG } from '@/lib/cache-tags';
 import { db, subscriptions } from '@/lib/db';
 import { cachedExistenceCheck } from '@/lib/db/cached-existence-check';
 
+/**
+ * True when the user holds a subscription that grants subscriber benefits.
+ *
+ * This is the SQL half of the rule `isSubscriptionActive` applies to a fetched
+ * row: same status list, expressed as a filter so the database can answer
+ * without shipping rows back. Keep the two in step.
+ *
+ * The result is cached per user and invalidated by cache tag, so it must not
+ * depend on the current time — that is also why "active" is status alone and
+ * does not look at `currentPeriodEnd`. See `isSubscriptionActive` for the full
+ * reasoning.
+ */
 export const hasActiveSubscription = cachedExistenceCheck(
   {
     keyParts: ['has-active-subscription'],

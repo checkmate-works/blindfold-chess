@@ -20,10 +20,6 @@ vi.mock('../_actions/createPortalSession', () => ({
   createPortalSession: vi.fn(),
 }));
 
-vi.mock('@/lib/billing/subscription-constants', () => ({
-  BENEFIT_ACTIVE_STATUSES: ['active', 'trialing'],
-}));
-
 function buildSubscription(overrides: Partial<Subscription> = {}): Subscription {
   return {
     id: 'sub-1',
@@ -120,6 +116,38 @@ describe('SubscriptionStatus', () => {
       render(<SubscriptionStatus subscription={subscription} locale="en" />);
 
       expect(screen.queryByText('nextBilling')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('statuses the shared predicate accepts and rejects', () => {
+    it('should treat a trialing subscription as active', () => {
+      render(
+        <SubscriptionStatus subscription={buildSubscription({ status: 'trialing' })} locale="en" />
+      );
+
+      expect(screen.getByText('statusActive')).toBeInTheDocument();
+    });
+
+    it('should treat a past_due subscription as inactive', () => {
+      render(
+        <SubscriptionStatus subscription={buildSubscription({ status: 'past_due' })} locale="en" />
+      );
+
+      expect(screen.getByText('statusInactive')).toBeInTheDocument();
+    });
+
+    it('should show a terminated subscription as inactive, not canceling', () => {
+      // This is the row both cancellation writers leave behind: status canceled
+      // with cancelAt cleared, because nothing is scheduled any more.
+      render(
+        <SubscriptionStatus
+          subscription={buildSubscription({ status: 'canceled', cancelAt: null })}
+          locale="en"
+        />
+      );
+
+      expect(screen.getByText('statusInactive')).toBeInTheDocument();
+      expect(screen.queryByText('cancelingNote')).not.toBeInTheDocument();
     });
   });
 

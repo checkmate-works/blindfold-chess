@@ -3,7 +3,10 @@
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import * as Sentry from '@sentry/nextjs';
 
-import { BENEFIT_ACTIVE_STATUSES } from '@/lib/billing/subscription-constants';
+import {
+  isCancellationScheduled,
+  isSubscriptionActive,
+} from '@/lib/billing/subscription-constants';
 import type { Subscription } from '@/lib/db';
 
 import { createPortalSession } from '../_actions/createPortalSession';
@@ -40,10 +43,8 @@ export function SubscriptionStatus({ subscription, locale }: Props) {
     );
   }
 
-  const isActive = BENEFIT_ACTIVE_STATUSES.includes(
-    subscription.status as (typeof BENEFIT_ACTIVE_STATUSES)[number]
-  );
-  const isCanceling = subscription.cancelAt !== null;
+  const isActive = isSubscriptionActive(subscription);
+  const isCanceling = isCancellationScheduled(subscription);
 
   return (
     <div className="rounded-xl border border-border bg-card p-6">
