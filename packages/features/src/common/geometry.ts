@@ -1,4 +1,4 @@
-import type { Square } from "@blindfold-chess/types";
+import type { ResolvedBoardOrientation, Square } from "@blindfold-chess/types";
 
 import { BOARD_LAST_INDEX } from "./constants";
 import {
@@ -66,7 +66,7 @@ export function flipIndex(index: number, flipped: boolean): number {
 export function flipForOrientation(
   file: number,
   rank: number,
-  orientation: "white" | "black",
+  orientation: ResolvedBoardOrientation,
 ): { file: number; rank: number } {
   const flipped = orientation === "black";
   return { file: flipIndex(file, flipped), rank: flipIndex(rank, flipped) };

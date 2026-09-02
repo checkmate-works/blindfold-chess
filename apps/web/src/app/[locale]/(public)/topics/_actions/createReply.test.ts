@@ -3,7 +3,6 @@ import { redirect } from 'next/navigation';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { whereThenRows } from '@/lib/db/__test-support__/query-chain';
 import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
 import { createNotification } from '@/lib/notifications/notification';
 import { checkRateLimit } from '@/lib/security/rate-limit';
@@ -25,66 +24,15 @@ vi.mock('@/lib/notifications/notification');
 
 vi.mock('@/lib/supabase/server');
 
-const txInsert = () => ({
-  values: (...args: unknown[]) => {
-    mockInsertValues(...args);
-    return {
-      returning: () => mockInsertReturning(),
-    };
-  },
-});
+vi.mock('@/lib/db', async () => {
+  const { topicReplyDbMock } = await import('@/lib/db/__test-support__/topic-reply-db-mock');
 
-vi.mock('@/lib/db', () => {
-  const profilesTable = { id: 'id' };
-
-  return {
-    db: {
-      select: () => ({
-        from: (table: unknown) => {
-          // The auth guard's own-profile lookup selects from `profiles` with
-          // `.where(...).limit(1)`; route it to mockSelectProfile so it never
-          // consumes mockSelectFromWhere's queued results.
-          if (table === profilesTable) {
-            return {
-              where: () => ({
-                limit: () => mockSelectProfile(),
-              }),
-            };
-          }
-          return {
-            where: whereThenRows(mockSelectFromWhere),
-          };
-        },
-      }),
-      insert: () => ({
-        values: (...args: unknown[]) => {
-          mockInsertValues(...args);
-          return {
-            returning: () => mockInsertReturning(),
-          };
-        },
-      }),
-      transaction: async (cb: (tx: { insert: typeof txInsert }) => Promise<unknown>) =>
-        cb({ insert: txInsert }),
-    },
-    topicPosts: {
-      id: 'id',
-      userId: 'user_id',
-      topicType: 'topic_type',
-      topicKey: 'topic_key',
-      parentId: 'parent_id',
-      rootPostId: 'root_post_id',
-      content: 'content',
-      deletedAt: 'deleted_at',
-      replyPermission: 'reply_permission',
-    },
-    userFollows: {
-      id: 'id',
-      followerId: 'follower_id',
-      followingId: 'following_id',
-    },
-    profiles: profilesTable,
-  };
+  return topicReplyDbMock(() => ({
+    selectFromWhere: mockSelectFromWhere,
+    selectProfile: mockSelectProfile,
+    insertValues: mockInsertValues,
+    insertReturning: mockInsertReturning,
+  }));
 });
 
 vi.mock('@/lib/moderation/ban');

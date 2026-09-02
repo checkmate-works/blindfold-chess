@@ -5,7 +5,7 @@ import type { ReactNode } from 'react';
 import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FlagIcon, UndoIcon } from '@blindfold-chess/icons';
-import type { AlgebraicNotation, FinalGameOutcome } from '@blindfold-chess/types';
+import type { AlgebraicNotation, FinalGameOutcome, PieceColor } from '@blindfold-chess/types';
 import { FaClipboardList } from 'react-icons/fa';
 
 import type { MoveInputMethod } from '@/lib/games/saved-game-types';
@@ -32,7 +32,7 @@ type Props = {
   handleSubmitMove: (move: AlgebraicNotation) => boolean | void | Promise<void>;
   moves: AlgebraicNotation[];
   confirmationDialogs: ConfirmationDialogs;
-  playerColor?: 'w' | 'b';
+  playerColor?: PieceColor;
   inlineBoardView?: ReactNode;
   onMoveCommitted?: (inputMethod: MoveInputMethod) => void;
   onMovePeek?: () => void;

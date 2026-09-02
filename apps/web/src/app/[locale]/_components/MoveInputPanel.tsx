@@ -4,7 +4,7 @@ import { type ReactNode, useMemo } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { getLegalMoves } from '@blindfold-chess/features/chess-core';
-import type { AlgebraicNotation } from '@blindfold-chess/types';
+import type { AlgebraicNotation, PieceColor } from '@blindfold-chess/types';
 import { FaGamepad, FaKeyboard, FaList } from 'react-icons/fa';
 
 import type { MoveInputMethod } from '@/lib/games/saved-game-types';
@@ -31,7 +31,7 @@ type Props = {
   inputPlaceholder?: string;
   selectPlaceholder?: string;
   toggleTitle?: string;
-  playerColor?: 'w' | 'b';
+  playerColor?: PieceColor;
   onMoveCommitted?: (inputMethod: MoveInputMethod) => void;
   onMovePeek?: () => void;
   /**

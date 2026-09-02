@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { Game } from '@/lib/games/saved-game-types';
+import { createMockGame } from '@/lib/games/__test-support__/game-fixture';
 
 import { VsAiCard } from './VsAiCard';
 
@@ -34,18 +34,6 @@ vi.mock('@/app/[locale]/_components/ColorIcon', () => ({
 }));
 
 // --- Helpers ---
-
-function createMockGame(overrides: Partial<Game> & { id: string }): Game {
-  return {
-    date: new Date('2024-01-01').toISOString(),
-    lastPlayed: new Date('2024-01-02').toISOString(),
-    moves: [],
-    playerColor: 'white',
-    engineConfig: { kind: 'stockfish', skillLevel: 1 },
-    status: 'in_progress',
-    ...overrides,
-  };
-}
 
 // --- Tests ---
 

@@ -1,4 +1,5 @@
 import { validateFenStructure } from '@blindfold-chess/features/chess-core';
+import type { PieceColor } from '@blindfold-chess/types';
 
 import { type BoardAnnotations, EMPTY_BOARD_ANNOTATIONS } from '@/lib/board-annotations/types';
 import {
@@ -78,7 +79,7 @@ export type ChunkDraftV1 = {
   /** Tracks which editor tab was last active so re-entering /new restores it. */
   activeTab: 'board' | 'fen';
   /** White / black to move — encoded redundantly with the FEN for cheap reads. */
-  sideToMove: 'w' | 'b';
+  sideToMove: PieceColor;
   /** Board orientation flipped (black at the bottom). */
   flipped: boolean;
   /** Whether the orientation was changed by the user (suppresses auto-flip). */

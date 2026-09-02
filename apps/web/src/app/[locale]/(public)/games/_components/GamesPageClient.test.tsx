@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { createMockGame, createMockGames } from '@/lib/games/__test-support__/game-fixture';
 import type { Game } from '@/lib/games/saved-game-types';
 
 import { GamesPageClient } from './GamesPageClient';
@@ -118,22 +119,6 @@ vi.mock('./SortButton', () => ({
 }));
 
 // --- Helpers ---
-
-function createMockGame(overrides: Partial<Game> & { id: string }): Game {
-  return {
-    date: new Date('2024-01-01').toISOString(),
-    lastPlayed: new Date('2024-01-02').toISOString(),
-    moves: [],
-    playerColor: 'white',
-    engineConfig: { kind: 'stockfish', skillLevel: 1 },
-    status: 'in_progress',
-    ...overrides,
-  };
-}
-
-function createMockGames(count: number): Game[] {
-  return Array.from({ length: count }, (_, i) => createMockGame({ id: `game-${i + 1}` }));
-}
 
 // --- Tests ---
 

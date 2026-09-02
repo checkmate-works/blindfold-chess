@@ -1,8 +1,9 @@
-import type { Square } from "@blindfold-chess/types";
-import {
-  BOARD_ORIENTATIONS,
-  type BoardOrientation,
+import type {
+  BoardOrientation,
+  ResolvedBoardOrientation,
+  Square,
 } from "@blindfold-chess/types";
+import { BOARD_ORIENTATIONS } from "@blindfold-chess/types";
 
 import {
   FEEDBACK_SPEED_MS,
@@ -23,7 +24,7 @@ export type { FeedbackSpeed };
 
 export type CoordinateQuestion = {
   targetSquare: Square;
-  orientation: Exclude<BoardOrientation, "random">;
+  orientation: ResolvedBoardOrientation;
 };
 
 export type QuizSettings = BasePracticeSettings & {

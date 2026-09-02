@@ -1,13 +1,13 @@
 'use server';
 
-import { getPositionById } from '@/lib/positions/queries';
-
+import { POSITION_MEMORY_TOPIC } from '@/app/[locale]/(public)/practice/(free-play)/_lib/wrapper-config';
 import type { CreateReplyState } from '@/app/[locale]/(public)/topics/_actions/createReply';
 import { createReplyWithFenAttachmentBase } from '@/app/[locale]/(public)/topics/_actions/createReplyWithFenAttachmentBase';
+import { parentPageReplyRedirect } from '@/app/[locale]/(public)/topics/_lib/parent-page-redirects';
 
 /**
  * Thin wrapper around `createReplyWithFenAttachmentBase` for the
- * position-memory inline reply surface (#84 phase D).
+ * position-memory inline reply surface.
  */
 export async function createReplyWithFenAttachment(
   locale: string,
@@ -20,12 +20,9 @@ export async function createReplyWithFenAttachment(
     locale,
     topicIdentifier: positionId,
     postId,
-    topicType: 'position_memory',
+    ...POSITION_MEMORY_TOPIC,
     topicKey: positionId,
-    urlSegment: 'practice/position-memory',
-    validateTopic: async (id) => (await getPositionById({ id, type: 'memory' })) !== null,
-    redirectPath: (_postId, replyId) =>
-      `/${locale}/practice/position-memory/${positionId}?toast=post_created#post-${replyId}`,
+    redirectPath: parentPageReplyRedirect(locale, POSITION_MEMORY_TOPIC.urlSegment, positionId),
     formData,
   });
 }

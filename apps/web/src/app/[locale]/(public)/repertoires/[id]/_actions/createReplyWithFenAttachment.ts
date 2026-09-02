@@ -1,10 +1,11 @@
 'use server';
 
-import { getRepertoireById } from '@/lib/repertoires/queries';
 import { readSpoilerFlag } from '@/lib/spoiler-flag';
 
+import { REPERTOIRE_TOPIC } from '@/app/[locale]/(public)/repertoires/_lib/wrapper-config';
 import type { CreateReplyState } from '@/app/[locale]/(public)/topics/_actions/createReply';
 import { createReplyWithFenAttachmentBase } from '@/app/[locale]/(public)/topics/_actions/createReplyWithFenAttachmentBase';
+import { parentPageReplyRedirect } from '@/app/[locale]/(public)/topics/_lib/parent-page-redirects';
 
 /** Thin wrapper around `createReplyWithFenAttachmentBase` for repertoire comments. */
 export async function createReplyWithFenAttachment(
@@ -14,19 +15,14 @@ export async function createReplyWithFenAttachment(
   _prevState: CreateReplyState,
   formData: FormData
 ): Promise<CreateReplyState> {
-  const isSpoiler = readSpoilerFlag(formData);
-
   return createReplyWithFenAttachmentBase({
     locale,
     topicIdentifier: repertoireId,
     postId,
-    topicType: 'repertoire',
+    ...REPERTOIRE_TOPIC,
     topicKey: repertoireId,
-    urlSegment: 'repertoires',
-    validateTopic: async (id) => (await getRepertoireById(id)) !== null,
-    redirectPath: (_postId, replyId) =>
-      `/${locale}/repertoires/${repertoireId}?toast=post_created#post-${replyId}`,
-    isSpoiler,
+    redirectPath: parentPageReplyRedirect(locale, REPERTOIRE_TOPIC.urlSegment, repertoireId),
+    isSpoiler: readSpoilerFlag(formData),
     formData,
   });
 }

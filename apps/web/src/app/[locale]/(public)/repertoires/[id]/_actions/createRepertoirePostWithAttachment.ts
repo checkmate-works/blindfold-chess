@@ -5,8 +5,10 @@ import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { readSpoilerFlag } from '@/lib/spoiler-flag';
 import { validateContent } from '@/lib/validations/content';
 
+import { REPERTOIRE_TOPIC } from '@/app/[locale]/(public)/repertoires/_lib/wrapper-config';
 import type { CreatePostState } from '@/app/[locale]/(public)/topics/_actions/createPost';
 import { createPostWithAttachmentBase } from '@/app/[locale]/(public)/topics/_actions/createPostWithAttachmentBase';
+import { parentPagePostRedirect } from '@/app/[locale]/(public)/topics/_lib/parent-page-redirects';
 
 export async function createRepertoirePostWithAttachment(
   locale: string,
@@ -14,25 +16,23 @@ export async function createRepertoirePostWithAttachment(
   _prevState: CreatePostState,
   formData: FormData
 ): Promise<CreatePostState> {
-  const isSpoiler = readSpoilerFlag(formData);
-
   const repertoire = await getRepertoireById(repertoireId);
 
   return createPostWithAttachmentBase({
     locale,
     topicIdentifier: repertoireId,
-    topicType: 'repertoire',
+    ...REPERTOIRE_TOPIC,
     topicKey: repertoireId,
-    urlSegment: 'repertoires',
+    // The row is already in hand for `topicAuthorId`, so re-validate against
+    // it rather than letting the config's validator issue a second query.
     validateTopic: () => repertoire !== null,
     invalidTopicError: 'Invalid repertoire',
     rateLimit: RATE_LIMITS.createPost,
     validateContent,
     emitFeedItem: false,
-    isSpoiler,
+    isSpoiler: readSpoilerFlag(formData),
     topicAuthorId: repertoire?.userId,
-    redirectPath: (postId) =>
-      `/${locale}/repertoires/${repertoireId}?toast=post_created#post-${postId}`,
+    redirectPath: parentPagePostRedirect(locale, REPERTOIRE_TOPIC.urlSegment, repertoireId),
     formData,
   });
 }

@@ -1,4 +1,4 @@
-import type { PieceColorMode, Side } from '@blindfold-chess/types';
+import type { PieceColor, PieceColorMode, Side } from '@blindfold-chess/types';
 import { PIECE_SHAPE_MODES } from '@blindfold-chess/types';
 
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -64,7 +64,7 @@ export const PAWN_HIDE_SIDE_MODES = ['all', 'own', 'opponent'] as const satisfie
 >;
 
 // Which colours to sample for each Piece Color option.
-export const PIECE_COLOR_SAMPLES: Record<PieceColorMode, ReadonlyArray<'w' | 'b'>> = {
+export const PIECE_COLOR_SAMPLES: Record<PieceColorMode, ReadonlyArray<PieceColor>> = {
   normal: ['w', 'b'],
   'white-only': ['w'],
   'black-only': ['b'],
@@ -152,12 +152,12 @@ export function realignShapeMode(
  * Colour samples for the per-option glyphs: "own" follows the player's side.
  */
 export function getSideColorSamples(playerSide: Side): {
-  ownColor: 'w' | 'b';
-  oppColor: 'w' | 'b';
-  sideSamples: Record<PieceVisibilityMode, ReadonlyArray<'w' | 'b'>>;
+  ownColor: PieceColor;
+  oppColor: PieceColor;
+  sideSamples: Record<PieceVisibilityMode, ReadonlyArray<PieceColor>>;
 } {
-  const ownColor: 'w' | 'b' = playerSide === 'white' ? 'w' : 'b';
-  const oppColor: 'w' | 'b' = ownColor === 'w' ? 'b' : 'w';
+  const ownColor: PieceColor = playerSide === 'white' ? 'w' : 'b';
+  const oppColor: PieceColor = ownColor === 'w' ? 'b' : 'w';
   return {
     ownColor,
     oppColor,

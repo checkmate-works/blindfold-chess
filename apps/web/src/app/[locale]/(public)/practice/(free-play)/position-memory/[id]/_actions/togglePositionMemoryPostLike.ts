@@ -1,7 +1,6 @@
 'use server';
 
-import { getPositionById } from '@/lib/positions/queries';
-
+import { POSITION_MEMORY_TOPIC } from '@/app/[locale]/(public)/practice/(free-play)/_lib/wrapper-config';
 import { toggleLikeBase } from '@/app/[locale]/(public)/topics/_actions/toggleLike';
 
 export async function togglePositionMemoryPostLike(
@@ -13,7 +12,6 @@ export async function togglePositionMemoryPostLike(
     postId,
     locale,
     topicIdentifier: positionId,
-    topicType: 'position_memory',
-    validateTopic: async (id) => (await getPositionById({ id, type: 'memory' })) !== null,
+    ...POSITION_MEMORY_TOPIC,
   });
 }

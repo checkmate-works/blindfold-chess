@@ -1,8 +1,8 @@
 'use server';
 
-import { getPositionById } from '@/lib/positions/queries';
 import { readSpoilerFlag } from '@/lib/spoiler-flag';
 
+import { PUZZLE_TOPIC } from '@/app/[locale]/(public)/practice/(free-play)/_lib/wrapper-config';
 import { createReplyForImageAttachBase } from '@/app/[locale]/(public)/topics/_actions/createReply';
 import type { ImageAttachResult } from '@/app/[locale]/(public)/topics/_lib/image-attach-types';
 
@@ -16,17 +16,13 @@ export async function createReplyForImageAttach(
   postId: string,
   formData: FormData
 ): Promise<ImageAttachResult> {
-  const isSpoiler = readSpoilerFlag(formData);
-
   return createReplyForImageAttachBase({
     locale,
     topicIdentifier: positionId,
     postId,
-    topicType: 'position_puzzle',
+    ...PUZZLE_TOPIC,
     topicKey: positionId,
-    urlSegment: 'practice/puzzle',
-    validateTopic: async (id) => (await getPositionById({ id, type: 'puzzle' })) !== null,
-    isSpoiler,
+    isSpoiler: readSpoilerFlag(formData),
     formData,
   });
 }

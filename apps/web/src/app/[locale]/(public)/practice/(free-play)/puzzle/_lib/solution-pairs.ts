@@ -1,3 +1,5 @@
+import type { PieceColor } from '@blindfold-chess/types';
+
 import type { PuzzleSolutionMove } from '@/lib/db/schema/positions';
 
 export type SolutionPair = {
@@ -15,7 +17,7 @@ export type SolutionPair = {
  */
 export function buildSolutionPairs(
   moves: PuzzleSolutionMove[],
-  firstTurn: 'w' | 'b',
+  firstTurn: PieceColor,
   startFullmove: number
 ): SolutionPair[] {
   const pairs: SolutionPair[] = [];

@@ -2,6 +2,23 @@ export const BOARD_ORIENTATIONS = ["white", "black", "random"] as const;
 export type BoardOrientation = (typeof BOARD_ORIENTATIONS)[number];
 
 /**
+ * A board orientation with `"random"` already resolved into a real side.
+ *
+ * `"random"` is a *setting*: it says how to pick a side at the start of a
+ * question, not which way a board is currently drawn. Everything downstream of
+ * that draw — geometry, a rendered board, a generated question — can only ever
+ * face white or black, and saying so in the type is what stops a raw setting
+ * being passed where a resolved orientation belongs.
+ *
+ * Derived from {@link BOARD_ORIENTATIONS} rather than written out, so a board
+ * that ever gains an orientation cannot leave this describing the old set.
+ * Its consumers had spelled the two members out again instead — including two
+ * files inside the coordinate-quiz feature, whose own `CoordinateQuestion`
+ * already expressed it as the exclusion.
+ */
+export type ResolvedBoardOrientation = Exclude<BoardOrientation, "random">;
+
+/**
  * Board colour schemes, following the same `as const` convention as its
  * neighbours below: the array is the runtime source of truth and the type
  * derives from it.

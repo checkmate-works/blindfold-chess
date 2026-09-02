@@ -5,8 +5,9 @@ import { coordinatesToSquare } from "@blindfold-chess/features/coordinate-quiz";
 import type { Square, AnswerFeedback } from "../lib/types";
 import { useTheme, spacing } from "../../../theme";
 
+import type { ResolvedBoardOrientation } from "@blindfold-chess/types";
 type ChessBoardProps = {
-  orientation: "white" | "black";
+  orientation: ResolvedBoardOrientation;
   targetSquare: Square | null;
   feedback: AnswerFeedback;
   onSquarePress: (square: Square) => void;

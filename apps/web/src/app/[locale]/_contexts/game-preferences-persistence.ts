@@ -1,5 +1,6 @@
 import { writeBoardVisibilityCookieClient } from '@/lib/games/board-visibility-cookie';
 import { writeMoveInputCookieClient } from '@/lib/games/move-input-cookie';
+import { readJson, writeJson } from '@/lib/persistent-settings/local-storage-adapter';
 
 import type { GamePreferences } from './GamePreferencesContext';
 import { validatePreferences } from './game-preferences-validation';
@@ -25,10 +26,10 @@ export const PREFERENCES_STORAGE_KEY = 'blindfold-chess-game-preferences';
  * Returns null when nothing is stored or the read/parse fails.
  */
 export function loadStoredPreferences(defaults: GamePreferences): GamePreferences | null {
+  const stored = readJson<unknown>(PREFERENCES_STORAGE_KEY, null);
+  if (stored === null) return null;
   try {
-    const stored = localStorage.getItem(PREFERENCES_STORAGE_KEY);
-    if (!stored) return null;
-    const validated = validatePreferences(JSON.parse(stored));
+    const validated = validatePreferences(stored);
     const merged = { ...defaults, ...validated };
     // If current moveInputMode is not in enabledMoveInputModes, switch to
     // the first enabled mode.
@@ -44,11 +45,7 @@ export function loadStoredPreferences(defaults: GamePreferences): GamePreference
 
 /** Persist the full preferences object (localStorage is the source of truth). */
 export function persistPreferences(preferences: GamePreferences): void {
-  try {
-    localStorage.setItem(PREFERENCES_STORAGE_KEY, JSON.stringify(preferences));
-  } catch (error) {
-    console.warn('Failed to save game preferences to localStorage:', error);
-  }
+  writeJson(PREFERENCES_STORAGE_KEY, preferences);
 }
 
 /**

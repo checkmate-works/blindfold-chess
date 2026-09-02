@@ -4,6 +4,7 @@ import { getPositionById } from '@/lib/positions/queries';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { validateContent } from '@/lib/validations/content';
 
+import { POSITION_MEMORY_TOPIC } from '@/app/[locale]/(public)/practice/(free-play)/_lib/wrapper-config';
 import { createPostForImageAttachBase } from '@/app/[locale]/(public)/topics/_actions/createPost';
 import type { ImageAttachResult } from '@/app/[locale]/(public)/topics/_lib/image-attach-types';
 
@@ -21,9 +22,10 @@ export async function createPositionMemoryPostForImageAttach(
   return createPostForImageAttachBase({
     locale,
     topicIdentifier: positionId,
-    topicType: 'position_memory',
+    ...POSITION_MEMORY_TOPIC,
     topicKey: positionId,
-    urlSegment: 'practice/position-memory',
+    // The row is already in hand for `topicAuthorId`, so re-validate against
+    // it rather than letting the config's validator issue a second query.
     validateTopic: () => position !== null,
     invalidTopicError: 'Invalid position',
     rateLimit: RATE_LIMITS.createPost,

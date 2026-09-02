@@ -1,5 +1,5 @@
 import { boardIndexToSquare, fenToBoardFlat } from '@blindfold-chess/features/chess-core/fen';
-import type { FinalGameOutcome, Side } from '@blindfold-chess/types';
+import type { FinalGameOutcome, PieceColor, Side } from '@blindfold-chess/types';
 
 /** Why the losing side's king is marked. */
 export type TerminationMarkKind = 'checkmate' | 'resignation';
@@ -55,7 +55,7 @@ export function isFinalPosition(currentPosition: number, movesLength: number): b
 export function resolveLosingColor(
   playerResult: FinalGameOutcome | null,
   playerSide: Side
-): 'w' | 'b' | null {
+): PieceColor | null {
   if (playerResult !== 'win' && playerResult !== 'loss') return null;
   const playerColor = playerSide === 'white' ? 'w' : 'b';
   const opponentColor = playerColor === 'w' ? 'b' : 'w';
@@ -89,7 +89,7 @@ export function resolveTerminationMark({
   /** The final position. */
   fen: string;
   /** Which colour lost, or null for a draw / game in progress. */
-  losingColor: 'w' | 'b' | null;
+  losingColor: PieceColor | null;
   /** Whether the final position is itself checkmate. */
   isCheckmate: boolean;
 }): TerminationMark | null {

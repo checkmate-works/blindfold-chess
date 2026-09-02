@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 
 import { ChessPiece } from '@/app/_components/chess/ChessPiece';
 import type { CastlingToken, NotationChar } from '@blindfold-chess/features/ai-game/notation-input';
-import type { AlgebraicNotation, PieceType } from '@blindfold-chess/types';
+import type { AlgebraicNotation, PieceColor, PieceType } from '@blindfold-chess/types';
 import { FaBackspace, FaCheck, FaTrash } from 'react-icons/fa';
 
 import { CoordinateInput } from '@/app/[locale]/_components/CoordinateInput';
@@ -19,7 +19,7 @@ type Props = {
   fen: string;
   onSubmit: (move: AlgebraicNotation) => void;
   disabled?: boolean;
-  playerColor?: 'w' | 'b';
+  playerColor?: PieceColor;
   onClearError?: () => void;
 };
 

@@ -1,5 +1,5 @@
 import { type Result, err, ok } from "../utils/result";
-import type { AlgebraicNotation } from "@blindfold-chess/types";
+import type { AlgebraicNotation, PieceColor } from "@blindfold-chess/types";
 import { Chess, DEFAULT_POSITION } from "chess.js";
 
 import { boardFrom } from "./replay";
@@ -32,7 +32,7 @@ import { parsePgnMoves, flattenPgnMoves } from "./pgn-format";
 export type ParsedMoveSequence = {
   fen: string;
   moves: AlgebraicNotation[];
-  playerColor: "w" | "b";
+  playerColor: PieceColor;
 };
 
 // ── chess.js-dependent operations ────────────────────────────

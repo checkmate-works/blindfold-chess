@@ -1,5 +1,7 @@
+import type { PieceColor } from '@blindfold-chess/types';
+
 type Props = {
-  color: 'w' | 'b';
+  color: PieceColor;
   /** Diameter in pixels. */
   size?: number;
 };

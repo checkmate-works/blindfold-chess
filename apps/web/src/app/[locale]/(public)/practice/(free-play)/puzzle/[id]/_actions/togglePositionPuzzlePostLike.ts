@@ -1,7 +1,6 @@
 'use server';
 
-import { getPositionById } from '@/lib/positions/queries';
-
+import { PUZZLE_TOPIC } from '@/app/[locale]/(public)/practice/(free-play)/_lib/wrapper-config';
 import { toggleLikeBase } from '@/app/[locale]/(public)/topics/_actions/toggleLike';
 
 export async function togglePositionPuzzlePostLike(
@@ -13,7 +12,6 @@ export async function togglePositionPuzzlePostLike(
     postId,
     locale,
     topicIdentifier: positionId,
-    topicType: 'position_puzzle',
-    validateTopic: async (id) => (await getPositionById({ id, type: 'puzzle' })) !== null,
+    ...PUZZLE_TOPIC,
   });
 }

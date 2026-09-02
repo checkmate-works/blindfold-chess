@@ -8,6 +8,7 @@ import { BoardFrame, ChessBoard } from '@/app/_components';
 import type { ClientTranslator } from '@/i18n/translator';
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 import { fullmoveNumberFromFen } from '@blindfold-chess/features/chess-core/fen';
+import type { PieceColor } from '@blindfold-chess/types';
 import { FaPlay, FaRedo } from 'react-icons/fa';
 
 import type { PuzzleSolutionMove } from '@/lib/db/schema/positions';
@@ -66,7 +67,7 @@ export function PuzzleSolutionReplay({
   const tCommon = useTranslations('practice.common');
 
   const isBlackToMove = isBlackToMoveFromFen(fen);
-  const firstTurn: 'w' | 'b' = isBlackToMove ? 'b' : 'w';
+  const firstTurn: PieceColor = isBlackToMove ? 'b' : 'w';
 
   const replayMoveSans = useMemo(() => solutionMoves.map((m) => m.san), [solutionMoves]);
   const {

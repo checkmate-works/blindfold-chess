@@ -1,9 +1,9 @@
 'use server';
 
-import { getPositionById } from '@/lib/positions/queries';
-
+import { POSITION_MEMORY_TOPIC } from '@/app/[locale]/(public)/practice/(free-play)/_lib/wrapper-config';
 import type { CreateReplyState } from '@/app/[locale]/(public)/topics/_actions/createReply';
 import { createReplyBase } from '@/app/[locale]/(public)/topics/_actions/createReply';
+import { parentPageReplyRedirect } from '@/app/[locale]/(public)/topics/_lib/parent-page-redirects';
 
 export async function createReply(
   locale: string,
@@ -16,12 +16,9 @@ export async function createReply(
     locale,
     topicIdentifier: positionId,
     postId,
-    topicType: 'position_memory',
+    ...POSITION_MEMORY_TOPIC,
     topicKey: positionId,
-    urlSegment: 'practice/position-memory',
-    validateTopic: async (id) => (await getPositionById({ id, type: 'memory' })) !== null,
-    redirectPath: (_postId, replyId) =>
-      `/${locale}/practice/position-memory/${positionId}?toast=post_created#post-${replyId}`,
+    redirectPath: parentPageReplyRedirect(locale, POSITION_MEMORY_TOPIC.urlSegment, positionId),
     formData,
   });
 }

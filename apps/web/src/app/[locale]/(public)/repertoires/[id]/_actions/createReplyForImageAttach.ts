@@ -1,8 +1,8 @@
 'use server';
 
-import { getRepertoireById } from '@/lib/repertoires/queries';
 import { readSpoilerFlag } from '@/lib/spoiler-flag';
 
+import { REPERTOIRE_TOPIC } from '@/app/[locale]/(public)/repertoires/_lib/wrapper-config';
 import { createReplyForImageAttachBase } from '@/app/[locale]/(public)/topics/_actions/createReply';
 import type { ImageAttachResult } from '@/app/[locale]/(public)/topics/_lib/image-attach-types';
 
@@ -13,17 +13,13 @@ export async function createReplyForImageAttach(
   postId: string,
   formData: FormData
 ): Promise<ImageAttachResult> {
-  const isSpoiler = readSpoilerFlag(formData);
-
   return createReplyForImageAttachBase({
     locale,
     topicIdentifier: repertoireId,
     postId,
-    topicType: 'repertoire',
+    ...REPERTOIRE_TOPIC,
     topicKey: repertoireId,
-    urlSegment: 'repertoires',
-    validateTopic: async (id) => (await getRepertoireById(id)) !== null,
-    isSpoiler,
+    isSpoiler: readSpoilerFlag(formData),
     formData,
   });
 }

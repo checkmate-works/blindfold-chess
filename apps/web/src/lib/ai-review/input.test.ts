@@ -1,15 +1,11 @@
+import type { Side } from '@blindfold-chess/types';
 import { describe, expect, it } from 'vitest';
 
 import type { MoveAnalysis, MoveJudgment } from '@/lib/games/analysis/types';
 
 import { MAX_REVIEW_MOMENTS, buildReviewInput } from './input';
 
-function analysis(
-  ply: number,
-  color: 'white' | 'black',
-  cpLoss: number,
-  judgment: MoveJudgment
-): MoveAnalysis {
+function analysis(ply: number, color: Side, cpLoss: number, judgment: MoveJudgment): MoveAnalysis {
   return {
     ply,
     san: 'e4',
