@@ -1,7 +1,9 @@
 import type { ReactElement } from 'react';
 
+import type { PieceColor } from '@blindfold-chess/types';
+
 type Props = {
-  color: 'w' | 'b';
+  color: PieceColor;
   /** Tailwind size utility pair for the outer span; defaults to `h-3 w-3`. */
   sizeClass?: string;
   className?: string;

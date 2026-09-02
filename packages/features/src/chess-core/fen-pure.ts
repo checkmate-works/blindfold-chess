@@ -209,7 +209,7 @@ export function toPositionKey(fen: string): string {
   return fen.split(" ").slice(0, 4).join(" ");
 }
 
-export function getTurnFromFen(fen: string): "w" | "b" {
+export function getTurnFromFen(fen: string): PieceColor {
   const parts = fen.split(" ");
   if (parts.length < 6) {
     throw new Error("Invalid FEN: incomplete FEN string");

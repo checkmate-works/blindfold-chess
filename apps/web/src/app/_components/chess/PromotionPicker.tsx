@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { flipIndex } from '@blindfold-chess/features/common';
 import { PROMOTION_PIECES, type PromotionPiece } from '@blindfold-chess/types';
+import type { PieceColor } from '@blindfold-chess/types';
 
 import { ChessPiece } from './ChessPiece';
 
@@ -16,7 +17,7 @@ type Props = {
   /** Whether the board is rendered flipped (black at bottom). */
   flipped: boolean;
   /** The color that is doing the promoting — drives the piece icons. */
-  promotingColor: 'w' | 'b';
+  promotingColor: PieceColor;
   /** Fires with the chosen promotion type. The parent commits the move. */
   onSelect: (type: PromotionPiece) => void;
   /** Fires when the user dismisses the picker (backdrop click, Esc, etc.). */

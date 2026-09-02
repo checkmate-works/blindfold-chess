@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 import { fullmoveNumberFromFen } from '@blindfold-chess/features/chess-core/fen';
+import type { PieceColor } from '@blindfold-chess/types';
 
 import { CircleMarker } from './CircleMarker';
 
@@ -186,7 +187,7 @@ export function buildCells(
  * has an empty white cell and the move number stays at the FEN's starting
  * fullmove (it has not yet ticked over to the next number).
  */
-export function buildRows(cells: Cell[], firstTurn: 'w' | 'b', startFullmove: number): Row[] {
+export function buildRows(cells: Cell[], firstTurn: PieceColor, startFullmove: number): Row[] {
   const rows: Row[] = [];
 
   let cellIdx = 0;
@@ -311,7 +312,7 @@ export function AttemptHistoryPanel({ fen, solutionSans, attempts, notes = [] }:
   const rows = useMemo(() => {
     const groups = groupAttemptsByPlayerStep(attempts);
     const cells = buildCells(solutionSans, groups, notes);
-    const firstTurn: 'w' | 'b' = isBlackToMoveFromFen(fen) ? 'b' : 'w';
+    const firstTurn: PieceColor = isBlackToMoveFromFen(fen) ? 'b' : 'w';
     return buildRows(cells, firstTurn, fullmoveNumberFromFen(fen));
   }, [fen, solutionSans, attempts, notes]);
 

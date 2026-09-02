@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
-import type { AlgebraicNotation } from '@blindfold-chess/types';
+import type { AlgebraicNotation, PieceColor } from '@blindfold-chess/types';
 
 import type { PuzzleSolutionMove } from '@/lib/db/schema/positions';
 
@@ -60,7 +60,7 @@ export function PuzzleSessionClient({
   const tPlay = useTranslations('play');
   const { preferences, updatePreferences } = useGamePreferences();
 
-  const playerColor: 'w' | 'b' = isBlackToMoveFromFen(fen) ? 'b' : 'w';
+  const playerColor: PieceColor = isBlackToMoveFromFen(fen) ? 'b' : 'w';
 
   // Pre-parse the solution lines once so per-submit matching does not re-split
   // SAN tokens on every keystroke. See `parseSolutionLines` for why a puzzle's
@@ -182,7 +182,7 @@ export function PuzzleSessionClient({
   // When `isSolved` flips to true *without* navigation yet, the "Correct!"
   // confirmation below takes focus, so we revert the title to the puzzle
   // name instead of pinning the last opponent move there.
-  const opponentColor: 'w' | 'b' = playerColor === 'w' ? 'b' : 'w';
+  const opponentColor: PieceColor = playerColor === 'w' ? 'b' : 'w';
   const opponentStatusKey = opponentColor === 'w' ? 'whitePlayed' : 'blackPlayed';
   const showOpponentStatus = session.lastOpponentMove !== null && !isSolved;
   // Once the user lands a first correct move, `lockedSolutionIndex` pins the

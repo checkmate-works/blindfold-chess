@@ -1,4 +1,4 @@
-import type { AlgebraicNotation } from "@blindfold-chess/types";
+import type { AlgebraicNotation, PieceColor } from "@blindfold-chess/types";
 import type { Color, PieceSymbol, Square } from "chess.js";
 import { Chess } from "chess.js";
 
@@ -24,7 +24,7 @@ export class ChessGameManager {
     return this.chess.fen();
   }
 
-  turn(): "w" | "b" {
+  turn(): PieceColor {
     return this.chess.turn();
   }
 

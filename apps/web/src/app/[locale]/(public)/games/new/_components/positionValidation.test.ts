@@ -1,3 +1,4 @@
+import type { PieceColor } from '@blindfold-chess/types';
 import { describe, expect, it } from 'vitest';
 
 import { validateFen } from '@/app/[locale]/(public)/games/play/_lib/pgn-parser';
@@ -7,7 +8,7 @@ import type { CastlingRights } from './PositionSettings';
 
 function validatePosition(
   boardFen: string,
-  turn: 'w' | 'b' = 'w',
+  turn: PieceColor = 'w',
   castling: CastlingRights = { K: false, Q: false, k: false, q: false },
   enPassant: string = '-'
 ): { valid: boolean; isEmpty: boolean } {

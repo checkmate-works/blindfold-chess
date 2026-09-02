@@ -1,4 +1,8 @@
-import type { AlgebraicNotation, PromotionPiece } from "@blindfold-chess/types";
+import type {
+  AlgebraicNotation,
+  PieceColor,
+  PromotionPiece,
+} from "@blindfold-chess/types";
 import type { PieceSymbol, Square } from "chess.js";
 import { Chess } from "chess.js";
 
@@ -140,7 +144,7 @@ export function replayMoves(
  */
 export function getPlayerMovesFromSequence(
   moves: AlgebraicNotation[],
-  playerColor: "w" | "b",
+  playerColor: PieceColor,
 ): AlgebraicNotation[] {
   const startIndex = playerColor === "w" ? 0 : 1;
   const playerMoves: AlgebraicNotation[] = [];

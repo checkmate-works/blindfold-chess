@@ -1,3 +1,4 @@
+import type { PieceColor } from '@blindfold-chess/types';
 import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
@@ -14,7 +15,7 @@ function getCircleMarker(li: HTMLElement): HTMLElement {
   return marker as HTMLElement;
 }
 
-function expectMarkerColor(li: HTMLElement, color: 'w' | 'b'): void {
+function expectMarkerColor(li: HTMLElement, color: PieceColor): void {
   const marker = getCircleMarker(li);
   if (color === 'w') {
     expect(marker.className).toContain('bg-card');

@@ -2,13 +2,14 @@
 
 import type { ReactNode } from 'react';
 
+import type { PieceColor } from '@blindfold-chess/types';
 import { FaTimes } from 'react-icons/fa';
 
 import { CircleMarker } from './CircleMarker';
 
 type Props = {
   moves: string[];
-  firstTurn: 'w' | 'b';
+  firstTurn: PieceColor;
   onRemoveLast: () => void;
   removeAriaLabel: string;
   disabled?: boolean;

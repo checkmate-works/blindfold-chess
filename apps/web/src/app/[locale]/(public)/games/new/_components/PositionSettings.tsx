@@ -2,6 +2,7 @@
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FILES } from '@blindfold-chess/types';
+import type { PieceColor } from '@blindfold-chess/types';
 
 export type CastlingRights = {
   K: boolean;
@@ -11,7 +12,7 @@ export type CastlingRights = {
 };
 
 type Props = {
-  turn: 'w' | 'b';
+  turn: PieceColor;
   castling: CastlingRights;
   castlingAvailability: CastlingRights;
   onCastlingChange: (castling: CastlingRights) => void;
@@ -20,9 +21,9 @@ type Props = {
   onEnPassantChange: (square: string) => void;
 };
 
-const EN_PASSANT_RANKS: Record<'w' | 'b', string> = { w: '6', b: '3' };
+const EN_PASSANT_RANKS: Record<PieceColor, string> = { w: '6', b: '3' };
 
-function getEnPassantOptions(turn: 'w' | 'b'): string[] {
+function getEnPassantOptions(turn: PieceColor): string[] {
   const rank = EN_PASSANT_RANKS[turn];
   return FILES.map((f) => `${f}${rank}`);
 }

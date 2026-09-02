@@ -6,7 +6,7 @@ import { useEffect, useMemo } from 'react';
 import { DiscPiece } from '@/app/_components/chess/DiscPiece';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { ChessPieceIcon } from '@blindfold-chess/icons';
-import type { Side } from '@blindfold-chess/types';
+import type { PieceColor, Side } from '@blindfold-chess/types';
 import { PIECE_COLOR_MODES } from '@blindfold-chess/types';
 
 import {
@@ -38,7 +38,7 @@ function PieceGlyphs({
   colors,
   disc = false,
 }: {
-  colors: ReadonlyArray<'w' | 'b'>;
+  colors: ReadonlyArray<PieceColor>;
   disc?: boolean;
 }) {
   return (

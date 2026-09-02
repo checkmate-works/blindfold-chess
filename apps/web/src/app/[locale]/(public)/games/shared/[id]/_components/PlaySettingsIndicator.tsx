@@ -3,7 +3,7 @@
 import { DiscPiece } from '@/app/_components/chess/DiscPiece';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { ChessPieceIcon } from '@blindfold-chess/icons';
-import type { Side } from '@blindfold-chess/types';
+import type { PieceColor, Side } from '@blindfold-chess/types';
 import { FaEyeSlash } from 'react-icons/fa';
 
 import { BOARD_VISIBILITY_ICON } from '@/lib/games/board-visibility-icons';
@@ -46,7 +46,7 @@ export function PlaySettingsIndicator({ settings, playerColor, label }: Props) {
     settings.pieceShapeMode !== 'normal' ||
     settings.pieceColors !== 'normal';
 
-  const colorFor = (side: 'own' | 'opponent'): 'w' | 'b' => {
+  const colorFor = (side: 'own' | 'opponent'): PieceColor => {
     if (settings.pieceColors === 'white-only') return 'w';
     if (settings.pieceColors === 'black-only') return 'b';
     const ownIsWhite = playerColor === 'white';

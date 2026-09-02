@@ -1,5 +1,6 @@
 import { fenToBoardFlat } from '@blindfold-chess/features/chess-core/fen';
 import { FILES } from '@blindfold-chess/types';
+import type { PieceColor } from '@blindfold-chess/types';
 
 /**
  * Given a board FEN (piece placement only) and the side to move,
@@ -12,7 +13,7 @@ import { FILES } from '@blindfold-chess/types';
  */
 export function getEnPassantAvailability(
   boardFen: string,
-  turn: 'w' | 'b'
+  turn: PieceColor
 ): Record<string, boolean> {
   const board = fenToBoardFlat(boardFen);
 

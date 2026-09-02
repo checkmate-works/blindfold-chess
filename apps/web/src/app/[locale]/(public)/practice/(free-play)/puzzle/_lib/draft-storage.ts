@@ -1,3 +1,5 @@
+import type { PieceColor } from '@blindfold-chess/types';
+
 import {
   clearSessionDraft,
   hasCommonDraftFields,
@@ -45,7 +47,7 @@ export type PuzzleDraftV1 = {
   moves: string[];
   notes: string[];
   activeTab: 'board' | 'fen';
-  sideToMove: 'w' | 'b';
+  sideToMove: PieceColor;
   flipped: boolean;
   userFlipped: boolean;
   themeIds?: string[];

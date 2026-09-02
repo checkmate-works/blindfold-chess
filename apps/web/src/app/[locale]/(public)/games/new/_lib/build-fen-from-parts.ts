@@ -1,8 +1,10 @@
+import type { PieceColor } from '@blindfold-chess/types';
+
 import type { CastlingRights } from '../_components/PositionSettings';
 
 export function buildFenFromParts(
   boardFen: string,
-  turn: 'w' | 'b',
+  turn: PieceColor,
   castling: CastlingRights,
   enPassant: string
 ): string {
