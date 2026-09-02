@@ -60,7 +60,7 @@ export function GameListItemBase({ game, before, after, statusIconClassName = ''
             <EngineConfigBadge config={game.engineConfig} levelLabel={t('level')} />
 
             <span className="font-medium font-mono">
-              {formatLastMove(game.moves, game.playerColor)}
+              {formatLastMove(game.moves, game.playerColor, game.startingFen)}
             </span>
           </div>
         </div>
