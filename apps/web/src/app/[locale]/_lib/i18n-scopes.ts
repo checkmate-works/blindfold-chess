@@ -51,7 +51,6 @@ export const GLOBAL_CLIENT_NAMESPACES = [
   'AuthStatusDisplay',
   'Common',
   'MobileTabBar',
-  'announcements',
   'contact',
   // error: no reachable call site today (the root error boundary
   // deliberately avoids useTranslations), kept as a 0.2 KB safety net for

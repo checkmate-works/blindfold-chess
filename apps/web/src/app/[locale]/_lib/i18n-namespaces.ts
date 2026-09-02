@@ -59,6 +59,11 @@ export const NAMESPACE_CLASSIFICATION = {
   MypageLikes: 'server',
   MypagePosts: 'server',
   affiliateDisclosure: 'server',
+  // announcements: the members-only lock chip was the last client reader.
+  // It stopped consulting `useAuth` (the chip marks the announcement, not
+  // the viewer) and became a Server Component, so nothing renders these
+  // strings outside `getTranslations` any more.
+  announcements: 'server',
   articles: 'server',
   banned: 'server',
   gamesPage: 'server',
@@ -86,7 +91,6 @@ export const NAMESPACE_CLASSIFICATION = {
   MypagePoints: 'client',
   MypageSubscription: 'client',
   Preferences: 'client',
-  announcements: 'client',
   attachment: 'client',
   authPrompt: 'client',
   bulkDelete: 'client',
