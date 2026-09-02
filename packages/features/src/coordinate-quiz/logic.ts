@@ -1,4 +1,4 @@
-import type { Square } from "@blindfold-chess/types";
+import type { ResolvedBoardOrientation, Square } from "@blindfold-chess/types";
 
 import {
   type RandomSource,
@@ -60,7 +60,7 @@ export function checkAnswer(
  */
 export function squareToCoordinates(
   square: Square,
-  orientation: "white" | "black",
+  orientation: ResolvedBoardOrientation,
 ): { file: number; rank: number } {
   // For each orientation, mirror across the axis that turns chess coordinates
   // into screen coordinates: white flips rank, black flips file.
@@ -80,7 +80,7 @@ export function squareToCoordinates(
 export function coordinatesToSquare(
   file: number,
   rank: number,
-  orientation: "white" | "black",
+  orientation: ResolvedBoardOrientation,
 ): Square {
   const screenSquare = fileRankToSquare(file, rank);
   const screenAxis = orientation === "white" ? "rank" : "file";
