@@ -1,16 +1,15 @@
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { formatLocalDate } from '@/lib/i18n/format-date';
 import { buildPageHref, getPaginationParams } from '@/lib/pagination';
 
-import { ListLink, ListLinkContainer, PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import { ListLinkContainer, PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { MembersOnlyBadge } from './_components/MembersOnlyBadge';
+import { AnnouncementListLink } from './_components/AnnouncementListLink';
 import { getPublishedAnnouncementCount, getPublishedAnnouncementsPaginated } from './_lib/queries';
 
 // 24h ISR window. Admin create/update/delete actions also call
@@ -21,9 +20,9 @@ import { getPublishedAnnouncementCount, getPublishedAnnouncementsPaginated } fro
 // SQL etc.). The previous 600s timer added no real freshness over the
 // tag-driven invalidation but did generate a steady drip of ISR Writes;
 // 86400s removes the drip without losing any user-visible behaviour.
-// The members-only lock badge that previously kept this page on
-// `force-dynamic` has moved into `MembersOnlyBadge` (client component,
-// reads `useAuth`).
+// The members-only lock badge that once kept this page on `force-dynamic`
+// no longer reads the viewer at all — it marks the announcement, not the
+// reader — so nothing on this page varies per request.
 export const revalidate = 86400;
 
 const ANNOUNCEMENTS_PER_PAGE = 20;
@@ -76,26 +75,13 @@ export default async function AnnouncementsPage({ params, searchParams }: Props)
       ) : (
         <>
           <ListLinkContainer>
-            {announcements.map((announcement) => {
-              const publishedDate = announcement.publishedAt
-                ? formatLocalDate(new Date(announcement.publishedAt), locale)
-                : undefined;
-
-              return (
-                <ListLink
-                  key={announcement.id}
-                  href={`/announcements/${announcement.slug}`}
-                  icon="📢"
-                  title={announcement.title}
-                  meta={publishedDate}
-                  locale={locale}
-                  isPinned={announcement.pinnedAt !== null}
-                  badge={
-                    announcement.visibility === 'members_only' ? <MembersOnlyBadge /> : undefined
-                  }
-                />
-              );
-            })}
+            {announcements.map((announcement) => (
+              <AnnouncementListLink
+                key={announcement.id}
+                announcement={announcement}
+                locale={locale}
+              />
+            ))}
           </ListLinkContainer>
           <PaginationNav
             currentPage={currentPage}
