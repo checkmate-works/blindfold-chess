@@ -1,7 +1,6 @@
 'use server';
 
-import { getPositionById } from '@/lib/positions/queries';
-
+import { POSITION_MEMORY_TOPIC } from '@/app/[locale]/(public)/practice/(free-play)/_lib/wrapper-config';
 import { createReplyForImageAttachBase } from '@/app/[locale]/(public)/topics/_actions/createReply';
 import type { ImageAttachResult } from '@/app/[locale]/(public)/topics/_lib/image-attach-types';
 
@@ -16,10 +15,8 @@ export async function createReplyForImageAttach(
     locale,
     topicIdentifier: positionId,
     postId,
-    topicType: 'position_memory',
+    ...POSITION_MEMORY_TOPIC,
     topicKey: positionId,
-    urlSegment: 'practice/position-memory',
-    validateTopic: async (id) => (await getPositionById({ id, type: 'memory' })) !== null,
     formData,
   });
 }
