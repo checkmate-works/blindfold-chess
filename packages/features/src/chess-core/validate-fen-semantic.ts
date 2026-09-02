@@ -30,7 +30,13 @@
 
 import { Chess } from "chess.js";
 
-import { fenToBoardFlat } from "./fen-pure";
+import type { CastlingRight } from "./fen-pure";
+import {
+  CASTLING_RIGHTS,
+  castlingRightSatisfied,
+  fenToBoardFlat,
+  squareToBoardIndex,
+} from "./fen-pure";
 import { validateFenStructure } from "./validate-fen-structure";
 
 export type FenSemanticReason =
@@ -49,40 +55,7 @@ export type FenSemanticReason =
  * failure context without an extra `undefined` guard.
  */
 export type FenSemanticResult =
-  | { ok: true }
-  | { ok: false; reason: FenSemanticReason; error: string };
-
-const FILE_INDEX: Record<string, number> = {
-  a: 0,
-  b: 1,
-  c: 2,
-  d: 3,
-  e: 4,
-  f: 5,
-  g: 6,
-  h: 7,
-};
-
-/**
- * Convert algebraic square name (e.g. "e4") to a flat index where 0 = a8 and
- * 63 = h1. Returns `null` for malformed input.
- */
-function squareToIndex(square: string): number | null {
-  if (square.length !== 2) return null;
-  const fileIdx = FILE_INDEX[square[0]];
-  const rankNum = parseInt(square[1], 10);
-  if (
-    fileIdx === undefined ||
-    Number.isNaN(rankNum) ||
-    rankNum < 1 ||
-    rankNum > 8
-  ) {
-    return null;
-  }
-  // rank 8 → row 0, rank 1 → row 7
-  const rowIdx = 8 - rankNum;
-  return rowIdx * 8 + fileIdx;
-}
+  { ok: true } | { ok: false; reason: FenSemanticReason; error: string };
 
 /**
  * Validate a FEN string for semantic legality on top of structural validity.
@@ -214,50 +187,17 @@ function checkPieceCounts(tally: BoardTally): FenSemanticFailure | null {
 }
 
 /**
- * One castling right and the king + rook squares it implies. A right is only
- * legal when both pieces sit on their starting squares.
+ * What to tell the caller when a declared right is not backed by the placement.
+ * Spelled out per right rather than assembled from
+ * {@link CASTLING_REQUIREMENTS} so the message reads as prose ("kingside", not
+ * "h-side") — the squares themselves come from the shared table.
  */
-const CASTLING_REQUIREMENTS: ReadonlyArray<{
-  right: string;
-  kingSquare: string;
-  kingPiece: string;
-  rookSquare: string;
-  rookPiece: string;
-  error: string;
-}> = [
-  {
-    right: "K",
-    kingSquare: "e1",
-    kingPiece: "K",
-    rookSquare: "h1",
-    rookPiece: "R",
-    error: "White kingside castling right requires K on e1 and R on h1",
-  },
-  {
-    right: "Q",
-    kingSquare: "e1",
-    kingPiece: "K",
-    rookSquare: "a1",
-    rookPiece: "R",
-    error: "White queenside castling right requires K on e1 and R on a1",
-  },
-  {
-    right: "k",
-    kingSquare: "e8",
-    kingPiece: "k",
-    rookSquare: "h8",
-    rookPiece: "r",
-    error: "Black kingside castling right requires k on e8 and r on h8",
-  },
-  {
-    right: "q",
-    kingSquare: "e8",
-    kingPiece: "k",
-    rookSquare: "a8",
-    rookPiece: "r",
-    error: "Black queenside castling right requires k on e8 and r on a8",
-  },
-];
+const CASTLING_RIGHT_ERRORS: Readonly<Record<CastlingRight, string>> = {
+  K: "White kingside castling right requires K on e1 and R on h1",
+  Q: "White queenside castling right requires K on e1 and R on a1",
+  k: "Black kingside castling right requires k on e8 and r on h8",
+  q: "Black queenside castling right requires k on e8 and r on a8",
+};
 
 /** Every declared castling right must have its king + rook on home squares. */
 function checkCastlingRights(
@@ -266,13 +206,14 @@ function checkCastlingRights(
 ): FenSemanticFailure | null {
   if (castling === "-") return null;
   // We already know castling matches /^[KQkq]+$/ from validateFenStructure.
-  for (const req of CASTLING_REQUIREMENTS) {
-    if (!castling.includes(req.right)) continue;
-    // Square names are constants → squareToIndex never returns null here.
-    const kingIdx = squareToIndex(req.kingSquare)!;
-    const rookIdx = squareToIndex(req.rookSquare)!;
-    if (board[kingIdx] !== req.kingPiece || board[rookIdx] !== req.rookPiece) {
-      return { ok: false, reason: "castling_rights", error: req.error };
+  for (const right of CASTLING_RIGHTS) {
+    if (!castling.includes(right)) continue;
+    if (!castlingRightSatisfied(board, right)) {
+      return {
+        ok: false,
+        reason: "castling_rights",
+        error: CASTLING_RIGHT_ERRORS[right],
+      };
     }
   }
   return null;
@@ -306,7 +247,7 @@ function checkEnPassant(
   // Locate the pawn that just double-pushed.
   const pawnRank = sideToMove === "w" ? "5" : "4";
   const pawnSquare = enPassant[0] + pawnRank;
-  const pawnIdx = squareToIndex(pawnSquare);
+  const pawnIdx = squareToBoardIndex(pawnSquare);
   if (pawnIdx === null) {
     return {
       ok: false,
@@ -323,7 +264,7 @@ function checkEnPassant(
     };
   }
   // The ep target square itself must be empty.
-  const targetIdx = squareToIndex(enPassant);
+  const targetIdx = squareToBoardIndex(enPassant);
   if (targetIdx === null || board[targetIdx] !== "") {
     return {
       ok: false,

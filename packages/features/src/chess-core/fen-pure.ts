@@ -341,3 +341,86 @@ export function validateFenFormat(fen: string): boolean {
 
   return true;
 }
+
+const FILE_INDEX: Record<string, number> = {
+  a: 0,
+  b: 1,
+  c: 2,
+  d: 3,
+  e: 4,
+  f: 5,
+  g: 6,
+  h: 7,
+};
+
+/**
+ * Convert an algebraic square name (e.g. "e4") to a flat board index where
+ * 0 = a8 and 63 = h1 — the inverse of {@link boardIndexToSquare}, and the
+ * convention {@link fenToBoardFlat} produces. Returns `null` for malformed
+ * input, so it can be pointed at a FEN field the user supplied.
+ */
+export function squareToBoardIndex(square: string): number | null {
+  if (square.length !== 2) return null;
+  const fileIdx = FILE_INDEX[square[0]];
+  const rankNum = parseInt(square[1], 10);
+  if (
+    fileIdx === undefined ||
+    Number.isNaN(rankNum) ||
+    rankNum < 1 ||
+    rankNum > 8
+  ) {
+    return null;
+  }
+  // rank 8 → row 0, rank 1 → row 7
+  const rowIdx = 8 - rankNum;
+  return rowIdx * 8 + fileIdx;
+}
+
+/** A castling right as it appears in a FEN's third field. */
+export type CastlingRight = "K" | "Q" | "k" | "q";
+
+/** Every castling right, in the order a FEN spells them. */
+export const CASTLING_RIGHTS: readonly CastlingRight[] = ["K", "Q", "k", "q"];
+
+/**
+ * One castling right and the king + rook placement it implies. A right only
+ * means anything while both pieces still stand on their starting squares.
+ *
+ * The same four facts answer two different questions, which is why they live
+ * here rather than inside either caller: semantic FEN validation asks whether a
+ * *declared* right is consistent with the placement, and a position editor asks
+ * which rights it may *offer* for the placement in hand. Written once, a
+ * mistake in a home square is one mistake rather than two that disagree.
+ */
+export const CASTLING_REQUIREMENTS: Readonly<
+  Record<
+    CastlingRight,
+    {
+      kingSquare: string;
+      kingPiece: string;
+      rookSquare: string;
+      rookPiece: string;
+    }
+  >
+> = {
+  K: { kingSquare: "e1", kingPiece: "K", rookSquare: "h1", rookPiece: "R" },
+  Q: { kingSquare: "e1", kingPiece: "K", rookSquare: "a1", rookPiece: "R" },
+  k: { kingSquare: "e8", kingPiece: "k", rookSquare: "h8", rookPiece: "r" },
+  q: { kingSquare: "e8", kingPiece: "k", rookSquare: "a8", rookPiece: "r" },
+};
+
+/**
+ * Whether `board` (as produced by {@link fenToBoardFlat}) still has the king
+ * and rook that `right` requires on their home squares.
+ */
+export function castlingRightSatisfied(
+  board: readonly string[],
+  right: CastlingRight,
+): boolean {
+  const req = CASTLING_REQUIREMENTS[right];
+  // Square names are constants → squareToBoardIndex never returns null here.
+  return (
+    board[squareToBoardIndex(req.kingSquare)!] === req.kingPiece &&
+    board[squareToBoardIndex(req.rookSquare)!] === req.rookPiece
+  );
+}
