@@ -121,7 +121,6 @@ export default async function RootPage({ searchParams }: { searchParams: SearchP
           siteName={metaT('siteName')}
           displayName={displayName}
           avatarUrl={avatarUrl}
-          userId={user.id}
         />
         <GlobalFooter locale={locale} hideLanguageSwitcher={true} />
       </>

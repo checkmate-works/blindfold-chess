@@ -3,21 +3,16 @@ import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 import { FaBullhorn } from 'react-icons/fa';
 
-import { formatLocalDate } from '@/lib/i18n/format-date';
-
+import { AnnouncementListLink } from '@/app/[locale]/(public)/announcements/_components/AnnouncementListLink';
 import { getPublishedAnnouncementsPaginated } from '@/app/[locale]/(public)/announcements/_lib/queries';
-import { ListLink, ListLinkContainer, SectionTitle } from '@/app/[locale]/_components';
+import { ListLinkContainer, SectionTitle } from '@/app/[locale]/_components';
 
 type Props = {
   locale: string;
-  userId?: string;
 };
 
-export async function LatestAnnouncements({ locale, userId }: Props) {
-  const [t, tAnnouncements] = await Promise.all([
-    getTranslations({ locale, namespace: 'landing' }),
-    getTranslations({ locale, namespace: 'announcements' }),
-  ]);
+export async function LatestAnnouncements({ locale }: Props) {
+  const t = await getTranslations({ locale, namespace: 'landing' });
 
   const announcements = await getPublishedAnnouncementsPaginated(locale, 3, 0);
 
@@ -30,28 +25,9 @@ export async function LatestAnnouncements({ locale, userId }: Props) {
         <SectionTitle className="flex-1 mb-2">{t('dashboard.announcements')}</SectionTitle>
       </div>
       <ListLinkContainer>
-        {announcements.map((announcement) => {
-          const publishedDate = announcement.publishedAt
-            ? formatLocalDate(new Date(announcement.publishedAt), locale)
-            : undefined;
-
-          return (
-            <ListLink
-              key={announcement.id}
-              href={`/announcements/${announcement.slug}`}
-              icon="📢"
-              title={announcement.title}
-              meta={publishedDate}
-              locale={locale}
-              isPinned={announcement.pinnedAt !== null}
-              badge={
-                announcement.visibility === 'members_only' && !userId
-                  ? tAnnouncements('membersOnlyBadge')
-                  : undefined
-              }
-            />
-          );
-        })}
+        {announcements.map((announcement) => (
+          <AnnouncementListLink key={announcement.id} announcement={announcement} locale={locale} />
+        ))}
       </ListLinkContainer>
       <div className="mt-4 text-right">
         <Link

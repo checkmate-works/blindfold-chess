@@ -14,7 +14,7 @@ type Props = {
 /**
  * Guest-only sign-up CTA. Auth state is resolved client-side via `useAuth`
  * (nothing renders until the check completes), mirroring the
- * `RankAchievedBadge` / `MembersOnlyBadge` pattern: the previous server-side
+ * `RankAchievedBadge` pattern: the previous server-side
  * `getOptionalUser()` read put an auth-cookie dependency into otherwise
  * static/ISR pages (dojo/ranks, leaderboard) and forced them dynamic. The
  * label strings stay resolved by the Server Component caller and arrive as

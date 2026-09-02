@@ -13,17 +13,9 @@ type Props = {
   siteName: string;
   displayName: string | null;
   avatarUrl: string | null;
-  userId?: string;
 };
 
-export function DashboardPlaceholder({
-  t,
-  locale,
-  siteName,
-  displayName,
-  avatarUrl,
-  userId,
-}: Props) {
+export function DashboardPlaceholder({ t, locale, siteName, displayName, avatarUrl }: Props) {
   return (
     <main className="min-h-screen bg-secondary/30 text-foreground pb-20">
       <DashboardHero t={t} siteName={siteName} />
@@ -46,7 +38,7 @@ export function DashboardPlaceholder({
 
         {/* Announcements Section */}
         <div>
-          <LatestAnnouncements locale={locale} userId={userId} />
+          <LatestAnnouncements locale={locale} />
         </div>
       </div>
     </main>
