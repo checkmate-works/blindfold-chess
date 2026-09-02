@@ -1,12 +1,10 @@
 'use client';
 
-import { useCallback, useMemo } from 'react';
+import { useMemo } from 'react';
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-
-import { readJson, writeJson } from '@/lib/persistent-settings/local-storage-adapter';
 
 import { ProblemResultList } from '@/app/[locale]/(public)/practice/_components/ProblemResultList';
 import { createPracticeResultClient } from '@/app/[locale]/(public)/practice/_lib/createPracticeResultClient';
@@ -15,18 +13,12 @@ import type { PracticeCompleteLabels } from '@/app/[locale]/(public)/practice/_l
 
 import { parseResults, parseStats as parseStatsShared } from '../_lib/result-serde';
 
-const POSITION_MEMORY_SETTINGS_KEY = 'positionMemorySettings';
-
-type StoredPositionMemorySettings = { customFenInput?: string };
-
 function PositionMemoryChildren() {
   const searchParams = useSearchParams();
   const t = useTranslations('practice.positionMemory');
   const tPractice = useTranslations('practice') as unknown as (key: string) => string;
-  const router = useRouter();
 
   const dataParam = searchParams.get('data');
-  const isCustomFen = searchParams.get('custom') === 'true';
 
   const problemResults = useMemo(() => parseResults(dataParam), [dataParam]);
 
@@ -42,45 +34,11 @@ function PositionMemoryChildren() {
     problem: t('problem'),
     original: t('original'),
     yourRecreation: t('yourRecreation'),
-    deleteFenTitle: t('deleteFenTitle'),
-    deleteFenMessage: t('deleteFenMessage'),
-    deleteFenConfirm: t('deleteFenConfirm'),
-    deleteFenCancel: t('deleteFenCancel'),
     skipped: t('skipped'),
     analyzeOnLichess: t('analyzeOnLichess'),
   };
 
-  const handleDeleteFen = useCallback(
-    (fenToDelete: string) => {
-      const settings = readJson<StoredPositionMemorySettings | null>(
-        POSITION_MEMORY_SETTINGS_KEY,
-        null
-      );
-      if (!settings?.customFenInput) return;
-
-      const remaining = settings.customFenInput
-        .trim()
-        .split('\n')
-        .filter((line) => line.trim())
-        .filter((fen) => fen.trim() !== fenToDelete.trim());
-
-      writeJson(POSITION_MEMORY_SETTINGS_KEY, {
-        ...settings,
-        customFenInput: remaining.join('\n'),
-      });
-      router.refresh();
-    },
-    [router]
-  );
-
-  return (
-    <ProblemResultList
-      problemResults={problemResults}
-      labels={labels}
-      isCustomFen={isCustomFen}
-      onDeleteFen={handleDeleteFen}
-    />
-  );
+  return <ProblemResultList problemResults={problemResults} labels={labels} />;
 }
 
 function parseStats(searchParams: URLSearchParams) {
@@ -137,10 +95,6 @@ export const ResultClient = createPracticeResultClient({
       problem: ctx.t('problem'),
       original: ctx.t('original'),
       yourRecreation: ctx.t('yourRecreation'),
-      deleteFenTitle: ctx.t('deleteFenTitle'),
-      deleteFenMessage: ctx.t('deleteFenMessage'),
-      deleteFenConfirm: ctx.t('deleteFenConfirm'),
-      deleteFenCancel: ctx.t('deleteFenCancel'),
       skipped: ctx.t('skipped'),
       analyzeOnLichess: ctx.t('analyzeOnLichess'),
       averageTime: undefined,

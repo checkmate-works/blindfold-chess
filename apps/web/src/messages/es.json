@@ -1395,10 +1395,6 @@
       "invalid_fen": "Contiene formato FEN inválido",
       "problemDetails": "Detalles del Problema",
       "problem": "Problema",
-      "deleteFenTitle": "Eliminar Problema",
-      "deleteFenMessage": "¿Estás seguro de que deseas eliminar este problema de tu lista de FEN personalizados?",
-      "deleteFenConfirm": "Eliminar",
-      "deleteFenCancel": "Cancelar",
       "skipped": "Saltado",
       "tutorial": {
         "title": "Tutorial",

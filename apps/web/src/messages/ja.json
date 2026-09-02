@@ -1395,10 +1395,6 @@
       "invalid_fen": "無効なFEN形式が含まれています",
       "problemDetails": "問題ごとの結果",
       "problem": "問題",
-      "deleteFenTitle": "問題を削除",
-      "deleteFenMessage": "この問題をカスタムFENリストから削除しますか？",
-      "deleteFenConfirm": "削除",
-      "deleteFenCancel": "キャンセル",
       "skipped": "スキップ",
       "tutorial": {
         "title": "チュートリアル",

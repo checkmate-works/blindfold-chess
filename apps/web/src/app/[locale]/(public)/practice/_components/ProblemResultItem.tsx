@@ -2,7 +2,7 @@
 
 import { Button } from '@/app/_components';
 import { fenToLichessUrl } from '@blindfold-chess/features/chess-core/fen';
-import { FaChevronDown, FaChevronRight, FaExternalLinkAlt, FaTrash } from 'react-icons/fa';
+import { FaChevronDown, FaChevronRight, FaExternalLinkAlt } from 'react-icons/fa';
 
 import type { PracticeCompleteLabels, ProblemResult } from '../_lib/practice-complete-types';
 import { AnimatedChessBoard } from './AnimatedChessBoard';
@@ -13,19 +13,10 @@ type Props = {
   result: ProblemResult;
   isExpanded: boolean;
   labels: PracticeCompleteLabels;
-  isCustomFen?: boolean;
   onToggle: () => void;
-  onDeleteClick?: (e: React.MouseEvent, fen: string) => void;
 };
 
-export function ProblemResultItem({
-  result,
-  isExpanded,
-  labels,
-  isCustomFen,
-  onToggle,
-  onDeleteClick,
-}: Props) {
+export function ProblemResultItem({ result, isExpanded, labels, onToggle }: Props) {
   return (
     <div className="border border-border rounded-lg overflow-hidden">
       <button
@@ -150,19 +141,6 @@ export function ProblemResultItem({
               >
                 {labels.analyzeOnLichess}
               </Button>
-            </div>
-          )}
-
-          {/* Delete button (only for custom FEN) */}
-          {isCustomFen && onDeleteClick && (
-            <div className="flex justify-end mt-3">
-              <button
-                onClick={(e) => onDeleteClick(e, result.fen)}
-                className="p-2 text-muted-foreground hover:text-destructive transition-colors"
-                title="Delete FEN"
-              >
-                <FaTrash className="w-4 h-4" />
-              </button>
             </div>
           )}
         </div>
