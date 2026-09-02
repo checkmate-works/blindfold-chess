@@ -83,6 +83,8 @@ export async function fetchUsersPageData(
       : [];
   const roleMap = new Map(roles.map((r) => [r.userId, r.role]));
 
+  // Same "grants subscriber benefits" rule as `isSubscriptionActive`, pushed
+  // into SQL so one query covers the whole page of users.
   const userSubscriptions =
     userIds.length > 0
       ? await db
