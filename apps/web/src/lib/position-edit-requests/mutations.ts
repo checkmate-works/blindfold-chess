@@ -2,7 +2,7 @@ import { and, eq, sql } from 'drizzle-orm';
 import 'server-only';
 
 import type { ActionResult } from '@/lib/action-types';
-import { authenticateAndGuard } from '@/lib/auth';
+import { authenticateAndGuard, authenticateGuardAndRequireProfile } from '@/lib/auth';
 import { db, positionChunks, positionEditRequests, positionThemes, positions } from '@/lib/db';
 import { isUniqueViolation } from '@/lib/db/extract-pg-error-code';
 import { EDIT_REQUEST_TERMINAL_STATUS, type EditRequestAction } from '@/lib/edit-requests/shared';
@@ -61,7 +61,15 @@ export async function submitPositionEditRequestEntry(params: {
   positionId: string;
   payload: SubmitPositionEditRequestPayload;
 }): Promise<SubmitPositionEditRequestResult> {
-  const guardResult = await authenticateAndGuard(RATE_LIMITS.submitPositionEditRequest);
+  // A suggestion is rendered to the position's owner (and to anyone reading
+  // the position's suggestion list) with the proposer's avatar and name,
+  // falling back to the "deleted proposer" label when no profile row backs
+  // it — see `EditRequestHeader`. So the profile has to exist before the row
+  // lands. Accept / reject / withdraw below stay on the plain guard: they
+  // resolve a suggestion that already exists rather than attributing a new one.
+  const guardResult = await authenticateGuardAndRequireProfile(
+    RATE_LIMITS.submitPositionEditRequest
+  );
   if ('error' in guardResult) {
     return { error: guardResult.error };
   }

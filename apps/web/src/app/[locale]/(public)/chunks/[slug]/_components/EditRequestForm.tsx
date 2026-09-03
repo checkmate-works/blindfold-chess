@@ -69,6 +69,7 @@ const WELL_KNOWN_ERRORS = new Set([
   'rateLimited',
   'notFound',
   'ownerCannotPropose',
+  'profileRequired',
   'chunkNotDraft',
   'alreadyHasPending',
   // Validation verdicts. They were absent here until 2026-08, so

@@ -287,7 +287,8 @@
       "banned": "Your account is restricted.",
       "rateLimited": "Too many attempts. Please try again later.",
       "generic": "Something went wrong. Please try again.",
-      "insufficient_balance": "You don't have enough coins."
+      "insufficient_balance": "You don't have enough coins.",
+      "profileRequired": "Please set up your username to create a Kata"
     },
     "visibility": {
       "legend": "Who can see this Kata",
@@ -1486,7 +1487,10 @@
         "title": "Preview Problem",
         "createCta": "Create",
         "backToEditCta": "Back to edit",
-        "createError": "An unexpected error occurred. Please try again."
+        "createError": "An unexpected error occurred. Please try again.",
+        "errors": {
+          "profileRequired": "Please set up your username to create a problem"
+        }
       },
       "edit": {
         "title": "Edit Problem",
@@ -1621,7 +1625,10 @@
         "moveCount": "{count} {count, plural, one {move} other {moves}}",
         "createCta": "Create",
         "backToEditCta": "Back to edit",
-        "createError": "An unexpected error occurred. Please try again."
+        "createError": "An unexpected error occurred. Please try again.",
+        "errors": {
+          "profileRequired": "Please set up your username to create a puzzle"
+        }
       },
       "whitePieces": "White Pieces",
       "blackPieces": "Black Pieces",
@@ -2139,7 +2146,8 @@
         "invalidTheme": "One or more selected themes are unavailable. Refresh and try again.",
         "invalidTagId": "One or more selected tags are invalid.",
         "nothingToAdd": "Pick at least one theme or chunk that isn't linked yet.",
-        "blocked": "You can't suggest edits to this user's content."
+        "blocked": "You can't suggest edits to this user's content.",
+        "profileRequired": "Please set up your username to submit a suggestion"
       },
       "pageTitle": "Pattern suggestions · {name}",
       "breadcrumb": "Pattern suggestions",
@@ -3592,7 +3600,8 @@
         "cannotEditPublished": "This chunk is published and is no longer editable. Publishing is one-way — to revise, delete this chunk and create a new one.",
         "descriptionRequired": "This chunk needs a description before it can be published.",
         "descriptionTooLong": "Description must be {max} characters or fewer.",
-        "invalidFeedbackTopic": "Unknown feedback topic. Please refresh the page and try again."
+        "invalidFeedbackTopic": "Unknown feedback topic. Please refresh the page and try again.",
+        "profileRequired": "Please set up your username to create a chunk"
       },
       "draft": {
         "toggleLabel": "Ask for feedback first",
@@ -3748,7 +3757,8 @@
         "descriptionTooLong": "That description is too long.",
         "descriptionUnchanged": "That's the description it already has — change it to suggest something.",
         "nothingProposed": "Change the title or the description before suggesting an edit.",
-        "commentTooLong": "That explanation is too long."
+        "commentTooLong": "That explanation is too long.",
+        "profileRequired": "Please set up your username to submit a suggestion"
       }
     }
   },

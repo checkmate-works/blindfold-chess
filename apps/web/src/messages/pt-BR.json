@@ -287,7 +287,8 @@
       "banned": "Sua conta está restrita.",
       "rateLimited": "Muitas tentativas. Tente novamente mais tarde.",
       "generic": "Algo deu errado. Tente novamente.",
-      "insufficient_balance": "Você não tem moedas suficientes."
+      "insufficient_balance": "Você não tem moedas suficientes.",
+      "profileRequired": "Configure seu nome de usuário para criar um Kata"
     },
     "visibility": {
       "legend": "Quem pode ver este Kata",
@@ -1486,7 +1487,10 @@
         "title": "Pré-visualizar Problema",
         "createCta": "Criar",
         "backToEditCta": "Voltar para editar",
-        "createError": "Ocorreu um erro inesperado. Tente novamente."
+        "createError": "Ocorreu um erro inesperado. Tente novamente.",
+        "errors": {
+          "profileRequired": "Configure seu nome de usuário para criar um problema"
+        }
       },
       "edit": {
         "title": "Editar Problema",
@@ -1621,7 +1625,10 @@
         "moveCount": "{count} {count, plural, one {lance} other {lances}}",
         "createCta": "Criar",
         "backToEditCta": "Voltar para editar",
-        "createError": "Ocorreu um erro inesperado. Tente novamente."
+        "createError": "Ocorreu um erro inesperado. Tente novamente.",
+        "errors": {
+          "profileRequired": "Configure seu nome de usuário para criar um puzzle"
+        }
       },
       "whitePieces": "Peças Brancas",
       "blackPieces": "Peças Pretas",
@@ -2139,7 +2146,8 @@
         "invalidTheme": "Um ou mais temas selecionados estão indisponíveis. Atualize e tente novamente.",
         "invalidTagId": "Uma ou mais tags selecionadas são inválidas.",
         "nothingToAdd": "Escolha ao menos um tema ou chunk que ainda não esteja vinculado.",
-        "blocked": "Você não pode sugerir edições ao conteúdo deste usuário."
+        "blocked": "Você não pode sugerir edições ao conteúdo deste usuário.",
+        "profileRequired": "Configure seu nome de usuário para enviar uma sugestão"
       },
       "pageTitle": "Sugestões de padrões · {name}",
       "breadcrumb": "Sugestões de padrões",
@@ -3592,7 +3600,8 @@
         "cannotEditPublished": "Este chunk está publicado e não pode mais ser editado. A publicação é irreversível — para revisá-lo, exclua este chunk e crie um novo.",
         "descriptionRequired": "Este chunk precisa de uma descrição antes de poder ser publicado.",
         "descriptionTooLong": "A descrição deve ter no máximo {max} caracteres.",
-        "invalidFeedbackTopic": "Tópico de feedback desconhecido. Atualize a página e tente novamente."
+        "invalidFeedbackTopic": "Tópico de feedback desconhecido. Atualize a página e tente novamente.",
+        "profileRequired": "Configure seu nome de usuário para criar um chunk"
       },
       "draft": {
         "toggleLabel": "Pedir sugestões primeiro",
@@ -3748,7 +3757,8 @@
         "descriptionTooLong": "Essa descrição é longa demais.",
         "descriptionUnchanged": "É a descrição que ele já tem — altere-a para propor algo.",
         "nothingProposed": "Altere o título ou a descrição antes de propor uma edição.",
-        "commentTooLong": "Essa explicação é longa demais."
+        "commentTooLong": "Essa explicação é longa demais.",
+        "profileRequired": "Configure seu nome de usuário para enviar uma sugestão"
       }
     }
   },

@@ -2,7 +2,7 @@ import { and, eq, isNull } from 'drizzle-orm';
 import 'server-only';
 
 import type { ActionResult } from '@/lib/action-types';
-import { authenticateAndGuard } from '@/lib/auth';
+import { authenticateAndGuard, authenticateGuardAndRequireProfile } from '@/lib/auth';
 import { db, feedItems, positionContentRevisions, positions } from '@/lib/db';
 import type { GrantedRank } from '@/lib/db/data/ranks';
 import { diffFields } from '@/lib/db/diff-fields';
@@ -173,7 +173,13 @@ export async function createPositionEntry(params: {
   const config = POSITION_KINDS[params.kind];
   const { data } = params;
 
-  const guardResult = await authenticateAndGuard(params.rateLimit);
+  // A problem (puzzle / position-memory entry) is browsable by everyone and
+  // shows its author, so the profile row that supplies that name has to exist
+  // before the row lands — a provisional user (session, no `profiles` row)
+  // would author a problem attributed to "(deleted user)". Update and delete
+  // below stay on the plain guard: they act on a row the author already owns,
+  // and blocking those would strand them with content they cannot remove.
+  const guardResult = await authenticateGuardAndRequireProfile(params.rateLimit);
   if ('error' in guardResult) {
     return { error: guardResult.error };
   }

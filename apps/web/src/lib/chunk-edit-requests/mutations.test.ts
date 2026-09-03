@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 
 const mockAuthenticateAndGuard = vi.fn();
+const mockUserHasProfile = vi.fn(async () => true);
 const mockSelectLimit = vi.fn();
 const mockInsertReturning = vi.fn();
 const mockInsertValues = vi.fn();
@@ -19,6 +20,15 @@ vi.mock('@/lib/moderation/block');
 
 vi.mock('@/lib/auth', () => ({
   authenticateAndGuard: (...args: unknown[]) => mockAuthenticateAndGuard(...args),
+  // Composed rather than stubbed flat, exactly as the real helper composes it:
+  // the plain guard first, then the `profiles` lookup. That keeps every
+  // existing guard assertion (signInRequired, banned, rateLimited) exercising
+  // one path regardless of which of the two guards the call site picked.
+  authenticateGuardAndRequireProfile: async (...args: unknown[]) => {
+    const guardResult = await mockAuthenticateAndGuard(...args);
+    if ('error' in guardResult) return guardResult;
+    return (await mockUserHasProfile()) ? guardResult : { error: 'profileRequired' };
+  },
 }));
 
 vi.mock('@/lib/users/activity-log', () => ({
@@ -134,6 +144,20 @@ describe('submitEditRequestEntry', () => {
     });
 
     expect(result).toEqual({ error: 'signInRequired' });
+    expect(mockSelectLimit).not.toHaveBeenCalled();
+    expect(mockInsertValues).not.toHaveBeenCalled();
+  });
+
+  it('rejects a provisional proposer with profileRequired before the suggestion lands', async () => {
+    mockUserHasProfile.mockResolvedValueOnce(false);
+
+    const { submitEditRequestEntry } = await import('./mutations');
+    const result = await submitEditRequestEntry({
+      chunkId: CHUNK_ID,
+      payload: { proposedTitle: 'Kingside fianchetto' },
+    });
+
+    expect(result).toEqual({ error: 'profileRequired' });
     expect(mockSelectLimit).not.toHaveBeenCalled();
     expect(mockInsertValues).not.toHaveBeenCalled();
   });

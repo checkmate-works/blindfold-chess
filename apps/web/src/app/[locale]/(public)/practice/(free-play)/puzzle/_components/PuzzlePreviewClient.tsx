@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 
 import type { ChunkOption } from '@/lib/chunks/types';
 import type { PuzzleSolutionMove } from '@/lib/db/schema/positions';
+import { localizeActionError } from '@/lib/i18n/localize-action-error';
 import type { ThemeOption } from '@/lib/themes/types';
 
 import {
@@ -21,6 +22,14 @@ import type { PuzzleDraftV1 } from '../_lib/draft-storage';
 import { draftToSolutionMoves } from '../_lib/draft-to-solution-moves';
 import { PuzzleSolutionReplay } from './PuzzleSolutionReplay';
 import { PuzzleStepIndicator } from './PuzzleStepIndicator';
+
+/**
+ * Rejections this screen has copy for. Everything else falls through as the
+ * raw code on purpose — an unrecognised failure stays visible to the author
+ * and to whoever reads the bug report, rather than being flattened into a
+ * sentence that says nothing.
+ */
+const CREATE_ERROR_CODES = new Set(['profileRequired']);
 
 type Props = {
   /** Tag catalog used to resolve the draft's persisted theme/chunk IDs into
@@ -70,7 +79,9 @@ export function PuzzlePreviewClient({ availableThemes, availableChunks }: Props)
         chunkIds: draft.chunkIds,
         forkedFromId: draft.forkedFromId ?? null,
       });
-      if ('error' in result) return { error: result.error };
+      if ('error' in result) {
+        return { error: localizeActionError(result.error, t, CREATE_ERROR_CODES) };
+      }
 
       clearDraft();
 

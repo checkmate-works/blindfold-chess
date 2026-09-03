@@ -26,6 +26,7 @@ const mockInsertValues = vi.fn();
 const mockDeleteWhere = vi.fn();
 const mockSelectCount = vi.fn();
 const mockSelectPositionAuthor = vi.fn();
+const mockSelectProfile = vi.fn();
 const mockRevalidatePath = vi.fn();
 
 vi.mock('@/lib/users/activity-log');
@@ -41,6 +42,7 @@ vi.mock('@/lib/security/rate-limit');
 vi.mock('@/lib/db', () => {
   const positionsTable = { id: 'id', userId: 'user_id', type: 'type' };
   const likesTable = { userId: 'user_id', targetType: 'target_type', targetId: 'target_id' };
+  const profilesTable = { id: 'id' };
 
   return {
     db: {
@@ -56,6 +58,12 @@ vi.mock('@/lib/db', () => {
             if (table === positionsTable) {
               return { limit: () => mockSelectPositionAuthor() };
             }
+            // The guard's `userHasProfile` lookup — a like is publicly
+            // attributed, so a provisional liker is rejected before the row
+            // is written.
+            if (table === profilesTable) {
+              return { limit: () => mockSelectProfile() };
+            }
             return mockSelectCount();
           },
         }),
@@ -63,6 +71,7 @@ vi.mock('@/lib/db', () => {
     },
     positions: positionsTable,
     likes: likesTable,
+    profiles: profilesTable,
   };
 });
 
@@ -78,6 +87,7 @@ const testLocale = 'en';
 describe('toggleLike (position-memory)', () => {
   beforeEach(() => {
     mockSelectPositionAuthor.mockResolvedValue([{ userId: testPositionAuthorId, type: 'memory' }]);
+    mockSelectProfile.mockResolvedValue([{ id: testUserId }]);
   });
 
   describe('input validation', () => {
@@ -104,6 +114,17 @@ describe('toggleLike (position-memory)', () => {
       const result = await toggleLike(testPositionId, testLocale);
       expect(result).toEqual({ error: 'banned' });
       expect(mockInsertValues).not.toHaveBeenCalled();
+    });
+
+    it('should return profileRequired when the liker has no profile', async () => {
+      mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
+      mockIsUserBanned.mockResolvedValue(false);
+      mockSelectProfile.mockResolvedValue([]);
+
+      const result = await toggleLike(testPositionId, testLocale);
+      expect(result).toEqual({ error: 'profileRequired' });
+      expect(mockInsertValues).not.toHaveBeenCalled();
+      expect(mockDeleteWhere).not.toHaveBeenCalled();
     });
   });
 

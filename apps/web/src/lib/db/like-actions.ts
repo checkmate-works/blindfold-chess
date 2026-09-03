@@ -1,6 +1,6 @@
 import { and, eq } from 'drizzle-orm';
 
-import { authenticateAndGuard } from '@/lib/auth';
+import { authenticateGuardAndRequireProfile } from '@/lib/auth';
 import { countRows } from '@/lib/db/list-query';
 import { assertNotBlocked } from '@/lib/moderation/block';
 import { createNotification } from '@/lib/notifications/notification';
@@ -64,7 +64,7 @@ export async function toggleLikeForTarget(params: {
  * Every "like a polymorphic entity" action (positions, chunks, ...) needs
  * the same orchestration around `toggleLikeForTarget`:
  *   1. UUID-validate the target id.
- *   2. Authenticate + ban + rate-limit guard.
+ *   2. Authenticate + ban + rate-limit + completed-profile guard.
  *   3. Toggle the like.
  *   4. Look up the entity to discover its owner (and any extra context).
  *   5. Notify the owner on a fresh like (skipping self-likes and unlikes).
@@ -115,7 +115,13 @@ export async function performEntityToggleLike<TExtra>(params: {
   const uuidError = validateUUID(id, fieldName);
   if (uuidError) return uuidError;
 
-  const guardResult = await authenticateAndGuard(RATE_LIMITS.toggleLike);
+  // A like is publicly attributed twice over: it names the liker in the
+  // owner's notification and it counts toward the liker's public activity.
+  // A provisional user (session, no `profiles` row) has no name to render,
+  // so the notification arrives with an empty actor. Topic likes have always
+  // required a profile — requiring one here stops the same gesture from being
+  // gated differently depending on what is being liked.
+  const guardResult = await authenticateGuardAndRequireProfile(RATE_LIMITS.toggleLike);
   if ('error' in guardResult) return { error: guardResult.error };
   const { user } = guardResult;
 

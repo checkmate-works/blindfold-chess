@@ -287,7 +287,8 @@
       "banned": "Tu cuenta está restringida.",
       "rateLimited": "Demasiados intentos. Inténtalo más tarde.",
       "generic": "Algo salió mal. Inténtalo de nuevo.",
-      "insufficient_balance": "No tienes monedas suficientes."
+      "insufficient_balance": "No tienes monedas suficientes.",
+      "profileRequired": "Configura tu nombre de usuario para crear un Kata"
     },
     "visibility": {
       "legend": "Quién puede ver este Kata",
@@ -1486,7 +1487,10 @@
         "title": "Previsualizar Problema",
         "createCta": "Crear",
         "backToEditCta": "Volver a editar",
-        "createError": "Ocurrió un error inesperado. Inténtalo de nuevo."
+        "createError": "Ocurrió un error inesperado. Inténtalo de nuevo.",
+        "errors": {
+          "profileRequired": "Configura tu nombre de usuario para crear un problema"
+        }
       },
       "edit": {
         "title": "Editar Problema",
@@ -1621,7 +1625,10 @@
         "moveCount": "{count} {count, plural, one {movimiento} other {movimientos}}",
         "createCta": "Crear",
         "backToEditCta": "Volver a editar",
-        "createError": "Ocurrió un error inesperado. Inténtalo de nuevo."
+        "createError": "Ocurrió un error inesperado. Inténtalo de nuevo.",
+        "errors": {
+          "profileRequired": "Configura tu nombre de usuario para crear un puzzle"
+        }
       },
       "whitePieces": "Piezas Blancas",
       "blackPieces": "Piezas Negras",
@@ -2139,7 +2146,8 @@
         "invalidTheme": "Uno o más temas seleccionados no están disponibles. Actualiza e inténtalo de nuevo.",
         "invalidTagId": "Una o más etiquetas seleccionadas no son válidas.",
         "nothingToAdd": "Elige al menos un tema o chunk que aún no esté vinculado.",
-        "blocked": "No puedes sugerir ediciones al contenido de este usuario."
+        "blocked": "No puedes sugerir ediciones al contenido de este usuario.",
+        "profileRequired": "Configura tu nombre de usuario para enviar una sugerencia"
       },
       "pageTitle": "Sugerencias de patrones · {name}",
       "breadcrumb": "Sugerencias de patrones",
@@ -3592,7 +3600,8 @@
         "cannotEditPublished": "Este chunk está publicado y ya no se puede editar. La publicación es irreversible: para modificarlo, elimina este chunk y crea uno nuevo.",
         "descriptionRequired": "Este chunk necesita una descripción antes de poder publicarse.",
         "descriptionTooLong": "La descripción debe tener {max} caracteres o menos.",
-        "invalidFeedbackTopic": "Tema de comentarios desconocido. Actualiza la página e inténtalo de nuevo."
+        "invalidFeedbackTopic": "Tema de comentarios desconocido. Actualiza la página e inténtalo de nuevo.",
+        "profileRequired": "Configura tu nombre de usuario para crear un chunk"
       },
       "draft": {
         "toggleLabel": "Pedir sugerencias primero",
@@ -3748,7 +3757,8 @@
         "descriptionTooLong": "Esa descripción es demasiado larga.",
         "descriptionUnchanged": "Es la descripción que ya tiene: cámbiala para proponer algo.",
         "nothingProposed": "Cambia el título o la descripción antes de proponer una edición.",
-        "commentTooLong": "Esa explicación es demasiado larga."
+        "commentTooLong": "Esa explicación es demasiado larga.",
+        "profileRequired": "Configura tu nombre de usuario para enviar una sugerencia"
       }
     }
   },

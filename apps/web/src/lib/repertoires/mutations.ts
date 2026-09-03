@@ -5,7 +5,7 @@ import type { Side } from '@blindfold-chess/types';
 import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
-import { authenticateAndGuard } from '@/lib/auth';
+import { authenticateAndGuard, authenticateGuardAndRequireProfile } from '@/lib/auth';
 import { REPERTOIRE_CATALOG_CACHE_TAG } from '@/lib/cache-tags';
 import {
   chessOpenings,
@@ -647,7 +647,14 @@ export async function updateRepertoireDetails(params: {
 export async function createRepertoireEntry(
   input: RepertoireImportInput
 ): Promise<CreateRepertoireResult> {
-  const guard = await authenticateAndGuard(RATE_LIMITS.createRepertoire);
+  // A course is listed in the public catalog under its author's name, so the
+  // profile row that supplies that name has to exist before the row lands —
+  // a provisional user (session, no `profiles` row) would publish a course
+  // attributed to "(deleted user)". The owner-scoped transitions below
+  // (delete / publish / visibility) stay on the plain guard: they act on a
+  // course that already exists, and blocking them would strand an author
+  // who can no longer take their own content down.
+  const guard = await authenticateGuardAndRequireProfile(RATE_LIMITS.createRepertoire);
   if ('error' in guard) return { error: guard.error };
   const { user } = guard;
 
