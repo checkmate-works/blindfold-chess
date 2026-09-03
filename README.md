@@ -29,6 +29,17 @@ This repository is a Monorepo managed by [Turborepo](https://turbo.build/).
 > This project uses [Volta](https://volta.sh/) to pin the Node.js version.
 > If you have Volta installed, it will automatically switch to the correct Node.js version defined in `package.json`.
 >
+> Volta works through shims in `~/.volta/bin` that resolve the version from
+> `package.json` on each invocation, so that directory has to be on your `PATH`.
+> Without it, `node` and `pnpm` are "command not found" even though
+> `volta install` reported success. The official `curl` installer appends the
+> necessary lines to your shell profile; the Homebrew formula does not, and
+> prints no caveat saying so. Run this once per machine, then open a new shell:
+>
+> ```bash
+> volta setup
+> ```
+>
 > To pin versions (updates package.json):
 >
 > ```bash
