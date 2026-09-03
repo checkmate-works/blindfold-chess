@@ -4,8 +4,6 @@ import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 
 import CoordinateQuiz from './_components/CoordinateQuiz';
 
-export const revalidate = 3600;
-
 const { generateMetadata, Page } = createPracticeTopPage({
   i18nKey: 'coordinateQuiz',
   canonicalPath: 'practice/coordinate-quiz',

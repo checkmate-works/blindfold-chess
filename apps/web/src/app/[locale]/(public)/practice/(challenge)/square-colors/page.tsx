@@ -5,8 +5,6 @@ import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 
 import { SquareColorsSetup } from './_components/SquareColorsSetup';
 
-export const revalidate = 3600;
-
 const { generateMetadata, Page } = createPracticeTopPage({
   i18nKey: 'squareColors',
   canonicalPath: 'practice/square-colors',
