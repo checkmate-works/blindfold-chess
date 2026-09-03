@@ -113,12 +113,14 @@ export function ScoreLeaderboardSkeleton() {
 
       {/*
         SignUpBanner fallback — fixed height matching SignUpBannerUI's
-        resolved box. Auto-hidden for authenticated users via the layout's
+        resolved box, in neutral skeleton colours rather than the banner's
+        primary tint (a blue outline amid grey placeholders reads as loaded
+        content). Auto-hidden for authenticated users via the layout's
         scoped inline style rule (`leaderboard/layout.tsx`).
       */}
       <div
         data-banner-placeholder
-        className="h-24 rounded-lg border border-primary/30 bg-primary/5 sm:h-20"
+        className="h-24 rounded-lg border border-border bg-card sm:h-20"
       />
 
       {/* LeaderboardTabs (2 buttons) */}

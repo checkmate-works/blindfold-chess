@@ -43,10 +43,47 @@ export function ExpGainSkeleton({ className = '' }: { className?: string }) {
   );
 }
 
-/** Mirrors `SignUpBannerUI` — shown to anonymous players only. */
+/**
+ * Mirrors `RecordSection` — shown to signed-in players on modules that record
+ * to `challenge_results`, in the same slot the sign-up banner occupies for
+ * guests. The real card is a fixed shape (header row, three `text-sm` rows
+ * — this run, last run, previous best — and one centred link row) so this
+ * reserves it exactly; the header badge is optional on the real card but
+ * sits inside the row's line box, so it does not change the height either
+ * way.
+ */
+export function RecordSectionSkeleton() {
+  return (
+    <div className="rounded-lg border border-border bg-card p-4">
+      <div className="flex items-center justify-between gap-3">
+        <Skeleton className="h-5 w-24 rounded" />
+      </div>
+      <div className="mt-3 space-y-2">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="flex items-center justify-between gap-3">
+            <Skeleton className="h-5 w-28 rounded" />
+            <Skeleton className="h-5 w-12 rounded" />
+          </div>
+        ))}
+      </div>
+      <div className="mt-3">
+        <Skeleton className="mx-auto h-5 w-56 max-w-full rounded" />
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Mirrors `SignUpBannerUI` — shown to anonymous players only.
+ *
+ * Only the box is copied (1px border, padding, inner rows); the real banner's
+ * primary-tinted border and fill are not. Colour has no effect on the reserved
+ * height, and a blue-outlined box in the middle of an otherwise grey skeleton
+ * read as already-loaded content rather than a placeholder.
+ */
 export function SignUpBannerSkeleton() {
   return (
-    <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 sm:p-6">
+    <div className="rounded-lg border border-border bg-card p-4 sm:p-6">
       <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-between">
         <div className="w-full">
           <Skeleton className="h-5 w-40 rounded" />

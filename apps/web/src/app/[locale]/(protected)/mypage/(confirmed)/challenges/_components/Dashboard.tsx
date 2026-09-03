@@ -5,6 +5,8 @@ import dynamic from 'next/dynamic';
 import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
+import type { ChallengeMenuType } from '@/lib/db/practice-menu-types';
+
 import type { LeaderboardModule } from '@/app/[locale]/(public)/leaderboard/_lib/types';
 import { buildChallengePath } from '@/app/[locale]/(public)/leaderboard/_lib/types';
 import { SectionTitle } from '@/app/[locale]/_components';
@@ -30,7 +32,13 @@ const ScoreChart = dynamic(() => import('./ScoreChart').then((mod) => mod.ScoreC
   loading: () => <ScoreChartSkeleton />,
 });
 
-export function Dashboard({ locale }: { locale: string }) {
+type Props = {
+  locale: string;
+  /** Menu to open on first load (from `?menu=`); the server reconciles it against the period's records. */
+  initialMenu?: ChallengeMenuType;
+};
+
+export function Dashboard({ locale, initialMenu }: Props) {
   const t = useTranslations('Mypage');
   const {
     selectedMenu,
@@ -50,7 +58,7 @@ export function Dashboard({ locale }: { locale: string }) {
     chartData,
     tableRows,
     hasMoreResults,
-  } = useDashboardData(locale);
+  } = useDashboardData(locale, initialMenu);
 
   const comparisonLabel = getComparisonLabel(selectedPeriod, t);
   const navigablePrevPeriod = getNavigablePreviousPeriod(selectedPeriod);

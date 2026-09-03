@@ -1,5 +1,6 @@
 import {
   ExpGainSkeleton,
+  RecordSectionSkeleton,
   SignUpBannerSkeleton,
 } from '@/app/[locale]/(public)/practice/_components/skeletons';
 import { SectionTitle } from '@/app/[locale]/_components';
@@ -30,21 +31,27 @@ import { Skeleton } from '@/app/[locale]/_components/Skeleton';
  * than slight over-allocation — the same tradeoff documented on the loading
  * skeleton.
  *
- * `ExpGainDisplay` (authenticated) and `SignUpBanner` (anonymous) are mutually
- * exclusive by auth state and module-dependent (not every module grants EXP or
- * shows the banner), so they are opt-in via `reserveExp` / `reserveSignUpBanner`
- * — the callers set them from the resolved auth state plus per-module config.
+ * `ExpGainDisplay` (authenticated) and the slot above the buttons — the
+ * sign-up banner (anonymous) or the record section (authenticated, on modules
+ * that record to `challenge_results`) — are mutually exclusive by auth state
+ * and module-dependent (not every module grants EXP, shows the banner, or
+ * keeps records), so they are opt-in via `reserveExp` / `reserveSignUpBanner`
+ * / `reserveRecordSection` — the callers set them from the resolved auth
+ * state plus per-module config.
  */
 type Props = {
   /** Reserve the EXP gain card (between the summary and the action buttons). */
   reserveExp?: boolean;
   /** Reserve the sign-up banner (just above the action buttons). */
   reserveSignUpBanner?: boolean;
+  /** Reserve the record section (same slot as the banner, for signed-in players). */
+  reserveRecordSection?: boolean;
 };
 
 export function PracticeResultPanelSkeleton({
   reserveExp = false,
   reserveSignUpBanner = false,
+  reserveRecordSection = false,
 }: Props = {}) {
   return (
     <>
@@ -86,6 +93,10 @@ export function PracticeResultPanelSkeleton({
       {/* SignUpBanner placeholder — only reserved for anonymous users on modules
           that show it (see `reserveSignUpBanner`). Matches SignUpBannerUI. */}
       {reserveSignUpBanner && <SignUpBannerSkeleton />}
+
+      {/* RecordSection placeholder — the signed-in counterpart of the banner
+          slot, for modules that record to challenge_results. */}
+      {reserveRecordSection && <RecordSectionSkeleton />}
 
       {/* Action buttons (Try Again / Change Settings, etc.) */}
       <div className="space-y-4">

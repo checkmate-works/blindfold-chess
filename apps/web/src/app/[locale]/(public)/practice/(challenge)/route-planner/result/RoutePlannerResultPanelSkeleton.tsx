@@ -1,5 +1,6 @@
 import {
   ExpGainSkeleton,
+  RecordSectionSkeleton,
   SignUpBannerSkeleton,
 } from '@/app/[locale]/(public)/practice/_components/skeletons';
 import { SectionTitle } from '@/app/[locale]/_components';
@@ -32,6 +33,11 @@ type Props = {
    * `reserveExp`.
    */
   reserveSignUpBanner?: boolean;
+  /**
+   * Reserve space for the record section — the signed-in occupant of the
+   * banner's slot (route-planner records to `challenge_results`).
+   */
+  reserveRecordSection?: boolean;
 };
 
 /**
@@ -57,6 +63,7 @@ export function RoutePlannerResultPanelSkeleton({
   labels,
   reserveExp = false,
   reserveSignUpBanner = false,
+  reserveRecordSection = false,
 }: Props) {
   return (
     <>
@@ -118,6 +125,9 @@ export function RoutePlannerResultPanelSkeleton({
           anonymous users only (mirrors `beforeActions`). Matches SignUpBannerUI:
           primary-tinted bordered box with two text lines and a CTA button. */}
       {reserveSignUpBanner && <SignUpBannerSkeleton />}
+
+      {/* RecordSection placeholder — same slot, signed-in players. */}
+      {reserveRecordSection && <RecordSectionSkeleton />}
 
       {/* Action buttons (Try Again / More Practice) */}
       <div className="space-y-4">

@@ -98,7 +98,7 @@ export default function BoardSymmetryChallenge({ locale }: Props) {
   });
 
   if (isFinished) {
-    return <PracticeResultSkeleton grantsExp showsSignUpBanner />;
+    return <PracticeResultSkeleton grantsExp showsSignUpBanner showsRecordSection />;
   }
 
   if (!problem) {

@@ -1,13 +1,29 @@
 import { getTranslations } from 'next-intl/server';
 
+import type { ChallengeMenuType } from '@/lib/db/practice-menu-types';
+import { CHALLENGE_MENU_TYPES } from '@/lib/db/practice-menu-types';
+
 import { HelpTourButton, PageLayout } from '@/app/[locale]/_components';
 import type { HelpStep } from '@/app/[locale]/_components';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
-import type { LocalePageProps } from '@/app/[locale]/_lib/types';
+import type { LocaleSearchPageProps } from '@/app/[locale]/_lib/types';
 
 import { Dashboard } from './_components/Dashboard';
 
-type Props = LocalePageProps;
+type Props = LocaleSearchPageProps;
+
+/**
+ * `?menu=<ChallengeMenuType>` preselects the dashboard's menu — the practice
+ * result page's "see your progress" link deep-links here for the module the
+ * player just finished. An unknown value is ignored rather than 404ed: the
+ * dashboard then falls back to its default (first menu with records), which
+ * is a better landing than an error for a hand-edited URL.
+ */
+function readMenuParam(menu: string | string[] | undefined): ChallengeMenuType | undefined {
+  return typeof menu === 'string' && CHALLENGE_MENU_TYPES.includes(menu as ChallengeMenuType)
+    ? (menu as ChallengeMenuType)
+    : undefined;
+}
 
 export function generateMetadata({ params }: Props) {
   return createPageMetadata({
@@ -18,8 +34,9 @@ export function generateMetadata({ params }: Props) {
   });
 }
 
-export default async function ChallengesPage({ params }: Props) {
-  const { locale } = await params;
+export default async function ChallengesPage({ params, searchParams }: Props) {
+  const [{ locale }, { menu }] = await Promise.all([params, searchParams]);
+  const initialMenu = readMenuParam(menu);
   const t = await getTranslations({ locale, namespace: 'MypageChallenges' });
   const tHelp = await getTranslations({ locale, namespace: 'MypageChallenges.help' });
 
@@ -65,7 +82,7 @@ export default async function ChallengesPage({ params }: Props) {
           Actions authenticate from cookies on the server, so waiting for the
           client AuthContext to resolve before mounting only chained an extra
           round-trip in front of the first data fetch. */}
-      <Dashboard locale={locale} />
+      <Dashboard locale={locale} initialMenu={initialMenu} />
     </PageLayout>
   );
 }

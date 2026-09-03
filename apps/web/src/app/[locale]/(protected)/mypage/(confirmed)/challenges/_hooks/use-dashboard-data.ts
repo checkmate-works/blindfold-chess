@@ -71,7 +71,7 @@ const DASHBOARD_TABLE_ROWS = 5;
  * Public API is preserved byte-for-byte from the previous single-hook
  * implementation so Dashboard/Filters/Results consumers need no changes.
  */
-export function useDashboardData(locale: string) {
+export function useDashboardData(locale: string, initialMenu?: ChallengeMenuType) {
   const {
     selectedPeriod,
     setSelectedPeriod,
@@ -106,7 +106,7 @@ export function useDashboardData(locale: string) {
     selectedMenu,
     setSelectedMenu,
     isLoading,
-  } = useChallengeSessionsQuery(selectedPeriod, handleSessionsLoaded);
+  } = useChallengeSessionsQuery(selectedPeriod, handleSessionsLoaded, initialMenu);
 
   // Reset filters when menu changes
   useEffect(() => {

@@ -1041,6 +1041,16 @@
       "description": "スコアを保存して上達を確認しましょう",
       "cta": "無料登録"
     },
+    "record": {
+      "thisTime": "今回",
+      "title": "あなたの記録",
+      "previousBest": "これまでのベスト",
+      "previousLast": "前回",
+      "scoreValue": "{score} 問",
+      "newBest": "自己ベスト更新！",
+      "firstRecord": "初めての記録",
+      "viewMyRecords": "マイレコードで推移を見る"
+    },
     "settings": {
       "title": "練習設定",
       "timeLimit": "制限時間",
