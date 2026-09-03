@@ -53,6 +53,15 @@ function mockLineForViewer() {
   });
 }
 
+// Loaded once at module scope rather than inside each `it`: pulling this
+// graph costs a few hundred milliseconds, and inside a test body that cost is
+// charged to vitest's 5s `testTimeout`, which the first test can cross when
+// the suite is competing for CPU. Later tests hit the module cache, so the
+// symptom is one flaky test rather than a slow file. The `vi.mock` calls
+// above are hoisted over this statement, so the load needs no per-test setup.
+const { addRepertoireChunkAction, deleteRepertoireChunkAction } =
+  await import('./repertoire-chunks');
+
 describe('addRepertoireChunkAction', () => {
   beforeEach(() => {
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: CALLER } });
@@ -62,7 +71,6 @@ describe('addRepertoireChunkAction', () => {
   });
 
   it('derives position_key server-side from the replayed line, never from client input', async () => {
-    const { addRepertoireChunkAction } = await import('./repertoire-chunks');
     const result = await addRepertoireChunkAction({
       repertoireId: REPERTOIRE_ID,
       lineNo: 1,
@@ -85,7 +93,6 @@ describe('addRepertoireChunkAction', () => {
   });
 
   it('scopes the linkability check to the calling user', async () => {
-    const { addRepertoireChunkAction } = await import('./repertoire-chunks');
     await addRepertoireChunkAction({
       repertoireId: REPERTOIRE_ID,
       lineNo: 1,
@@ -97,7 +104,6 @@ describe('addRepertoireChunkAction', () => {
   });
 
   it('rejects ply beyond the line length without inserting', async () => {
-    const { addRepertoireChunkAction } = await import('./repertoire-chunks');
     const result = await addRepertoireChunkAction({
       repertoireId: REPERTOIRE_ID,
       lineNo: 1,
@@ -112,7 +118,6 @@ describe('addRepertoireChunkAction', () => {
   it.each([0, -1, 1.5])(
     'rejects a non-positive-integer ply (%s) without inserting',
     async (ply) => {
-      const { addRepertoireChunkAction } = await import('./repertoire-chunks');
       const result = await addRepertoireChunkAction({
         repertoireId: REPERTOIRE_ID,
         lineNo: 1,
@@ -129,7 +134,6 @@ describe('addRepertoireChunkAction', () => {
   it('returns not_found for a line the viewer may not see (or that does not exist)', async () => {
     mockGetLineForViewer.mockResolvedValue(null);
 
-    const { addRepertoireChunkAction } = await import('./repertoire-chunks');
     const result = await addRepertoireChunkAction({
       repertoireId: REPERTOIRE_ID,
       lineNo: 1,
@@ -142,7 +146,6 @@ describe('addRepertoireChunkAction', () => {
   });
 
   it('notifies the repertoire owner of a link that landed', async () => {
-    const { addRepertoireChunkAction } = await import('./repertoire-chunks');
     await addRepertoireChunkAction({
       repertoireId: REPERTOIRE_ID,
       lineNo: 1,
@@ -163,7 +166,6 @@ describe('addRepertoireChunkAction', () => {
   it('rejects a chunk the caller may not link, without inserting', async () => {
     mockIsLinkable.mockResolvedValue(false);
 
-    const { addRepertoireChunkAction } = await import('./repertoire-chunks');
     const result = await addRepertoireChunkAction({
       repertoireId: REPERTOIRE_ID,
       lineNo: 1,
@@ -179,7 +181,6 @@ describe('addRepertoireChunkAction', () => {
   it('surfaces a duplicate link as already_linked rather than an error, without notifying', async () => {
     mockInsert.mockResolvedValue(null);
 
-    const { addRepertoireChunkAction } = await import('./repertoire-chunks');
     const result = await addRepertoireChunkAction({
       repertoireId: REPERTOIRE_ID,
       lineNo: 1,
@@ -194,7 +195,6 @@ describe('addRepertoireChunkAction', () => {
   it('never reaches the line lookup when auth fails', async () => {
     mockAuthenticateAndGuard.mockResolvedValue({ error: 'signInRequired' });
 
-    const { addRepertoireChunkAction } = await import('./repertoire-chunks');
     const result = await addRepertoireChunkAction({
       repertoireId: REPERTOIRE_ID,
       lineNo: 1,
@@ -217,7 +217,6 @@ describe('deleteRepertoireChunkAction', () => {
   it('forbids an unrelated user (neither suggester nor repertoire owner)', async () => {
     mockGetForDelete.mockResolvedValue({ suggestedById: SUGGESTER, repertoireOwnerId: OWNER });
 
-    const { deleteRepertoireChunkAction } = await import('./repertoire-chunks');
     const result = await deleteRepertoireChunkAction(LINK_ID);
 
     expect(result).toEqual({ success: false, error: 'forbidden' });
@@ -227,7 +226,6 @@ describe('deleteRepertoireChunkAction', () => {
   it('allows the user who added the link', async () => {
     mockGetForDelete.mockResolvedValue({ suggestedById: CALLER, repertoireOwnerId: OWNER });
 
-    const { deleteRepertoireChunkAction } = await import('./repertoire-chunks');
     const result = await deleteRepertoireChunkAction(LINK_ID);
 
     expect(result).toEqual({ success: true });
@@ -237,7 +235,6 @@ describe('deleteRepertoireChunkAction', () => {
   it("allows the repertoire's registered owner (even for someone else's link)", async () => {
     mockGetForDelete.mockResolvedValue({ suggestedById: SUGGESTER, repertoireOwnerId: CALLER });
 
-    const { deleteRepertoireChunkAction } = await import('./repertoire-chunks');
     const result = await deleteRepertoireChunkAction(LINK_ID);
 
     expect(result).toEqual({ success: true });
@@ -247,7 +244,6 @@ describe('deleteRepertoireChunkAction', () => {
   it('does not treat an account-less repertoire (null owner) as ownable by the caller', async () => {
     mockGetForDelete.mockResolvedValue({ suggestedById: SUGGESTER, repertoireOwnerId: null });
 
-    const { deleteRepertoireChunkAction } = await import('./repertoire-chunks');
     const result = await deleteRepertoireChunkAction(LINK_ID);
 
     expect(result).toEqual({ success: false, error: 'forbidden' });
@@ -257,7 +253,6 @@ describe('deleteRepertoireChunkAction', () => {
   it('returns not_found when the link is missing', async () => {
     mockGetForDelete.mockResolvedValue(undefined);
 
-    const { deleteRepertoireChunkAction } = await import('./repertoire-chunks');
     const result = await deleteRepertoireChunkAction(LINK_ID);
 
     expect(result).toEqual({ success: false, error: 'not_found' });
@@ -267,7 +262,6 @@ describe('deleteRepertoireChunkAction', () => {
   it('returns the guard error and never looks up the link when auth fails', async () => {
     mockAuthenticateAndGuard.mockResolvedValue({ error: 'signInRequired' });
 
-    const { deleteRepertoireChunkAction } = await import('./repertoire-chunks');
     const result = await deleteRepertoireChunkAction(LINK_ID);
 
     expect(result).toEqual({ success: false, error: 'signInRequired' });

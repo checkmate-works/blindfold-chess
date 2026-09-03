@@ -61,6 +61,24 @@ vi.mock('@/app/[locale]/_components/Breadcrumb', () => ({
   },
 }));
 
+/**
+ * Load the page once here, at module scope, instead of inside the first
+ * `it`. Every dependency the page reaches is stubbed by the `vi.mock` calls
+ * above — the vitest transform hoists those above this statement — so there
+ * is no ordering reason to defer the load, and deferring it is actively
+ * harmful: pulling this graph (leaderboard queries, breadcrumb, next-intl)
+ * costs 1-2s on an idle machine, and inside a test body that second is
+ * charged to vitest's 5s `testTimeout`. Under `turbo run test` the web suite
+ * shares the CPU with the package suites and the first test crossed the
+ * limit; the rest of the file hit the module cache and stayed fast, so the
+ * failure looked like one specific assertion being flaky. Module scope has
+ * no timeout budget at all.
+ */
+const { default: Page, generateMetadata } = await import('./page');
+// Rendering the returned RSC tree is what makes the Breadcrumb mock run;
+// hoisted for the same reason as the page itself.
+const { renderToStaticMarkup } = await import('react-dom/server');
+
 beforeEach(() => {
   vi.mocked(notFound).mockClear();
   capturedBreadcrumbItems.length = 0;
@@ -68,7 +86,6 @@ beforeEach(() => {
 
 describe('ScoreLeaderboardDetailPage validation', () => {
   it('calls notFound() for an invalid period like "daily"', async () => {
-    const { default: Page } = await import('./page');
     await expect(
       Page({
         params: Promise.resolve({
@@ -84,7 +101,6 @@ describe('ScoreLeaderboardDetailPage validation', () => {
   });
 
   it('calls notFound() for an invalid module slug', async () => {
-    const { default: Page } = await import('./page');
     await expect(
       Page({
         params: Promise.resolve({
@@ -100,7 +116,6 @@ describe('ScoreLeaderboardDetailPage validation', () => {
   });
 
   it('calls notFound() for a key that does not belong to the module', async () => {
-    const { default: Page } = await import('./page');
     await expect(
       Page({
         params: Promise.resolve({
@@ -116,7 +131,6 @@ describe('ScoreLeaderboardDetailPage validation', () => {
   });
 
   it('generateMetadata returns empty object for invalid period', async () => {
-    const { generateMetadata } = await import('./page');
     const result = await generateMetadata({
       params: Promise.resolve({
         locale: 'en',
@@ -136,7 +150,6 @@ describe('ScoreLeaderboardDetailPage breadcrumb', () => {
     key: string,
     period = 'weekly'
   ): Promise<BreadcrumbItem[]> {
-    const { default: Page } = await import('./page');
     const element = await Page({
       params: Promise.resolve({
         locale: 'en',
@@ -148,7 +161,6 @@ describe('ScoreLeaderboardDetailPage breadcrumb', () => {
     });
     // The page returns an RSC tree; rendering it forces the Breadcrumb mock
     // to run and push the items into `capturedBreadcrumbItems`.
-    const { renderToStaticMarkup } = await import('react-dom/server');
     renderToStaticMarkup(element as React.ReactElement);
     const captured = capturedBreadcrumbItems[capturedBreadcrumbItems.length - 1];
     expect(captured).toBeDefined();

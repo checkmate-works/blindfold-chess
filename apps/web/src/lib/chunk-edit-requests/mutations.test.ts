@@ -124,6 +124,19 @@ function mockDraftChunk(overrides: Partial<Record<string, unknown>> = {}) {
   ]);
 }
 
+// Loaded once at module scope rather than inside each `it`: pulling this
+// graph costs a few hundred milliseconds, and inside a test body that cost is
+// charged to vitest's 5s `testTimeout`, which the first test can cross when
+// the suite is competing for CPU. Later tests hit the module cache, so the
+// symptom is one flaky test rather than a slow file. The `vi.mock` calls
+// above are hoisted over this statement, so the load needs no per-test setup.
+const {
+  submitEditRequestEntry,
+  acceptEditRequestEntry,
+  rejectEditRequestEntry,
+  withdrawEditRequestEntry,
+} = await import('./mutations');
+
 describe('submitEditRequestEntry', () => {
   beforeEach(() => {
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: PROPOSER_ID } });
@@ -137,7 +150,6 @@ describe('submitEditRequestEntry', () => {
   it('propagates signInRequired from the guard', async () => {
     mockAuthenticateAndGuard.mockResolvedValue({ error: 'signInRequired' });
 
-    const { submitEditRequestEntry } = await import('./mutations');
     const result = await submitEditRequestEntry({
       chunkId: CHUNK_ID,
       payload: { proposedTitle: 'Kingside fianchetto' },
@@ -163,7 +175,6 @@ describe('submitEditRequestEntry', () => {
   });
 
   it('returns notFound when the chunkId is empty', async () => {
-    const { submitEditRequestEntry } = await import('./mutations');
     const result = await submitEditRequestEntry({
       chunkId: '',
       payload: { proposedTitle: 'X' },
@@ -175,7 +186,6 @@ describe('submitEditRequestEntry', () => {
   it('returns notFound when the chunk does not exist', async () => {
     mockSelectLimit.mockResolvedValue([]);
 
-    const { submitEditRequestEntry } = await import('./mutations');
     const result = await submitEditRequestEntry({
       chunkId: CHUNK_ID,
       payload: { proposedTitle: 'X' },
@@ -189,7 +199,6 @@ describe('submitEditRequestEntry', () => {
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: OWNER_ID } });
     mockDraftChunk();
 
-    const { submitEditRequestEntry } = await import('./mutations');
     const result = await submitEditRequestEntry({
       chunkId: CHUNK_ID,
       payload: { proposedTitle: 'Kingside fianchetto' },
@@ -202,7 +211,6 @@ describe('submitEditRequestEntry', () => {
   it('returns chunkNotDraft when the chunk is published', async () => {
     mockDraftChunk({ status: 'published' });
 
-    const { submitEditRequestEntry } = await import('./mutations');
     const result = await submitEditRequestEntry({
       chunkId: CHUNK_ID,
       payload: { proposedTitle: 'Kingside fianchetto' },
@@ -220,7 +228,6 @@ describe('submitEditRequestEntry', () => {
     mockDraftChunk();
     mockGetViewerPendingEditRequestForChunk.mockResolvedValue('existing-pending-req-id');
 
-    const { submitEditRequestEntry } = await import('./mutations');
     const result = await submitEditRequestEntry({
       chunkId: CHUNK_ID,
       payload: { proposedTitle: 'Kingside fianchetto' },
@@ -241,7 +248,6 @@ describe('submitEditRequestEntry', () => {
     mockInsertReturning.mockRejectedValueOnce(new Error('duplicate key value'));
     mockIsUniqueViolation.mockReturnValue(true);
 
-    const { submitEditRequestEntry } = await import('./mutations');
     const result = await submitEditRequestEntry({
       chunkId: CHUNK_ID,
       payload: { proposedTitle: 'Kingside fianchetto' },
@@ -253,7 +259,6 @@ describe('submitEditRequestEntry', () => {
   it('returns a validation error when neither field changed', async () => {
     mockDraftChunk();
 
-    const { submitEditRequestEntry } = await import('./mutations');
     const result = await submitEditRequestEntry({
       chunkId: CHUNK_ID,
       payload: { proposedTitle: 'Rook Battery' }, // identical to current
@@ -266,7 +271,6 @@ describe('submitEditRequestEntry', () => {
   it('inserts the request with only the changed fields populated', async () => {
     mockDraftChunk();
 
-    const { submitEditRequestEntry } = await import('./mutations');
     const result = await submitEditRequestEntry({
       chunkId: CHUNK_ID,
       payload: { proposedTitle: 'Kingside fianchetto', comment: 'cleaner name' },
@@ -285,7 +289,6 @@ describe('submitEditRequestEntry', () => {
   it('notifies the chunk owner without writing an activity-log row', async () => {
     mockDraftChunk();
 
-    const { submitEditRequestEntry } = await import('./mutations');
     await submitEditRequestEntry({
       chunkId: CHUNK_ID,
       payload: { proposedTitle: 'Kingside fianchetto' },
@@ -306,7 +309,6 @@ describe('submitEditRequestEntry', () => {
   it('skips owner notification when the chunk is orphaned (userId null)', async () => {
     mockDraftChunk({ userId: null });
 
-    const { submitEditRequestEntry } = await import('./mutations');
     await submitEditRequestEntry({
       chunkId: CHUNK_ID,
       payload: { proposedTitle: 'X' },
@@ -333,7 +335,6 @@ describe('acceptEditRequestEntry', () => {
     });
     mockDraftChunk();
 
-    const { acceptEditRequestEntry } = await import('./mutations');
     const result = await acceptEditRequestEntry(REQUEST_ID);
 
     expect(result).toEqual({ error: 'unauthorized' });
@@ -350,7 +351,6 @@ describe('acceptEditRequestEntry', () => {
       status: 'accepted',
     });
 
-    const { acceptEditRequestEntry } = await import('./mutations');
     const result = await acceptEditRequestEntry(REQUEST_ID);
 
     expect(result).toEqual({ error: 'alreadyResolved' });
@@ -367,7 +367,6 @@ describe('acceptEditRequestEntry', () => {
     });
     mockDraftChunk({ status: 'published' });
 
-    const { acceptEditRequestEntry } = await import('./mutations');
     const result = await acceptEditRequestEntry(REQUEST_ID);
 
     expect(result).toEqual({ error: 'chunkNotDraft' });
@@ -385,7 +384,6 @@ describe('acceptEditRequestEntry', () => {
     });
     mockDraftChunk();
 
-    const { acceptEditRequestEntry } = await import('./mutations');
     const result = await acceptEditRequestEntry(REQUEST_ID);
 
     expect(result).toEqual({ success: true });
@@ -415,7 +413,6 @@ describe('acceptEditRequestEntry', () => {
     });
     mockDraftChunk();
 
-    const { acceptEditRequestEntry } = await import('./mutations');
     await acceptEditRequestEntry(REQUEST_ID);
 
     expect(mockTxUpdateChunkEditRequests).toHaveBeenCalledTimes(1);
@@ -433,7 +430,6 @@ describe('acceptEditRequestEntry', () => {
     });
     mockDraftChunk();
 
-    const { acceptEditRequestEntry } = await import('./mutations');
     await acceptEditRequestEntry(REQUEST_ID);
 
     expect(mockCreateNotification).toHaveBeenCalledWith(
@@ -462,7 +458,6 @@ describe('rejectEditRequestEntry', () => {
     });
     mockDraftChunk();
 
-    const { rejectEditRequestEntry } = await import('./mutations');
     const result = await rejectEditRequestEntry(REQUEST_ID);
 
     expect(result).toEqual({ success: true });
@@ -490,7 +485,6 @@ describe('rejectEditRequestEntry', () => {
     });
     mockDraftChunk();
 
-    const { rejectEditRequestEntry } = await import('./mutations');
     await rejectEditRequestEntry(REQUEST_ID);
 
     expect(mockCreateNotification).not.toHaveBeenCalled();
@@ -512,7 +506,6 @@ describe('withdrawEditRequestEntry', () => {
     });
     mockDraftChunk();
 
-    const { withdrawEditRequestEntry } = await import('./mutations');
     const result = await withdrawEditRequestEntry(REQUEST_ID);
 
     expect(result).toEqual({ error: 'unauthorized' });
@@ -528,7 +521,6 @@ describe('withdrawEditRequestEntry', () => {
     });
     mockDraftChunk({ status: 'published' }); // withdraw stays legal regardless
 
-    const { withdrawEditRequestEntry } = await import('./mutations');
     const result = await withdrawEditRequestEntry(REQUEST_ID);
 
     expect(result).toEqual({ success: true });
@@ -553,7 +545,6 @@ describe('withdrawEditRequestEntry', () => {
     });
     mockDraftChunk();
 
-    const { withdrawEditRequestEntry } = await import('./mutations');
     await withdrawEditRequestEntry(REQUEST_ID);
 
     expect(mockCreateNotification).not.toHaveBeenCalled();
