@@ -72,6 +72,28 @@ describe('selectChartData', () => {
     }
   });
 
+  it('labels week periods by weekday, so a previous-only day never shows a future date', () => {
+    // 2026-04-15 is a Wednesday; the previous week's Friday and Sunday have
+    // data, the current week only Wednesday.
+    const current = [makeSession(0, 10)];
+    const prev = [makeSession(5, 30, 'fri'), makeSession(3, 40, 'sun')];
+    const result = selectChartData(current, prev, 'thisWeek', 'en');
+    expect(result.map((p) => p.date)).toEqual(['Wed', 'Fri', 'Sun']);
+    expect(result.map((p) => p.score)).toEqual([10, null, null]);
+    expect(result.map((p) => p.previousScore)).toEqual([null, 30, 40]);
+  });
+
+  it('labels month periods by day of month', () => {
+    const current = [makeSession(0, 10), makeSession(14, 20)];
+    const result = selectChartData(current, [], 'thisMonth', 'en');
+    expect(result.map((p) => p.date)).toEqual(['1', '15']);
+  });
+
+  it('formats labels for the given locale', () => {
+    const result = selectChartData([makeSession(0, 10)], [], 'thisWeek', 'ja');
+    expect(result[0].date).toBe('水');
+  });
+
   it('is a pure function — does not mutate its input arrays', () => {
     const sessions = [makeSession(0, 10), makeSession(1, 20)];
     const sessionsCopy = [...sessions];
