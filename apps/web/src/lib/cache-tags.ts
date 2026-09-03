@@ -91,14 +91,21 @@ export const REPERTOIRE_CATALOG_CACHE_TAG = 'repertoire-catalog' as const;
 /**
  * The glossary master data — terms, their translations, aliases and example
  * positions. Read by the eight `unstable_cache` wrappers in the glossary
- * queries and in `@/lib/glossary/term-positions`, all on a 1 hour
+ * queries and in `@/lib/glossary/term-positions`, all on a 7 day
  * `revalidate`.
  *
- * Note that nothing calls `revalidateTag` with it: an admin edit to a glossary
- * term becomes visible when the hour elapses, not when it is saved. The tag is
- * defined anyway because it is the handle a writer would need, and because
- * eight inlined `'glossary'` literals were the exact drift this module's rule
- * against inline tags exists to prevent.
+ * That interval is long because the terms are code, not content:
+ * `lib/db/data/terms/*.ts` is the source and `db:seed` copies it into the
+ * table, so a term only changes as part of a deploy, which drops the whole
+ * ISR cache anyway. The one exception is the position annotations, which an
+ * admin edits at runtime — `updateTermPositionAnnotations` expires this tag
+ * and the affected public paths, so those land on the next visit rather than
+ * waiting out the week.
+ *
+ * The interval does constrain one operational sequence: run `db:seed` before
+ * the deploy that ships the term change, or redeploy after it. Seeding a live
+ * deployment leaves the prerendered pages serving the previous rows for up to
+ * a week, where they used to catch up within the hour.
  */
 export const GLOSSARY_CACHE_TAG = 'glossary' as const;
 

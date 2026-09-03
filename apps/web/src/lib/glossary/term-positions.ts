@@ -57,5 +57,5 @@ export const getPositionsForTerm = unstable_cache(
     return problems;
   },
   ['glossary-term-positions'],
-  { tags: [GLOSSARY_CACHE_TAG], revalidate: 3600 }
+  { tags: [GLOSSARY_CACHE_TAG], revalidate: 604800 }
 );

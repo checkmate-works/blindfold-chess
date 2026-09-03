@@ -27,8 +27,6 @@ const GlossaryPositionBoard = dynamic(() =>
   import('../_components/GlossaryPositionBoard').then((mod) => mod.GlossaryPositionBoard)
 );
 
-export const revalidate = 3600;
-
 type Props = {
   params: Promise<{ locale: Locale; slug: string }>;
   searchParams: Promise<{ tab?: string }>;

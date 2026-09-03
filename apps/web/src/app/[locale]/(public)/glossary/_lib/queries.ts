@@ -200,7 +200,7 @@ export const getGlossaryTerms = unstable_cache(
     return mergeTermRows(aliasRows, positionRows);
   },
   ['glossary-terms'],
-  { tags: [GLOSSARY_CACHE_TAG], revalidate: 3600 }
+  { tags: [GLOSSARY_CACHE_TAG], revalidate: 604800 }
 );
 
 /**
@@ -223,7 +223,7 @@ export const getGlossaryTermBySlug = unstable_cache(
     return term ?? null;
   },
   ['glossary-term-by-slug'],
-  { tags: [GLOSSARY_CACHE_TAG], revalidate: 3600 }
+  { tags: [GLOSSARY_CACHE_TAG], revalidate: 604800 }
 );
 
 export const getTermsByLetter = unstable_cache(
@@ -239,7 +239,7 @@ export const getTermsByLetter = unstable_cache(
     return mergeTermRows(aliasRows, positionRows);
   },
   ['glossary-terms-by-letter'],
-  { tags: [GLOSSARY_CACHE_TAG], revalidate: 3600 }
+  { tags: [GLOSSARY_CACHE_TAG], revalidate: 604800 }
 );
 
 export const getTermsByCategory = unstable_cache(
@@ -256,7 +256,7 @@ export const getTermsByCategory = unstable_cache(
     return mergeTermRows(aliasRows, positionRows);
   },
   ['glossary-terms-by-category'],
-  { tags: [GLOSSARY_CACHE_TAG], revalidate: 3600 }
+  { tags: [GLOSSARY_CACHE_TAG], revalidate: 604800 }
 );
 
 export const getUniqueLetters = unstable_cache(
@@ -271,7 +271,7 @@ export const getUniqueLetters = unstable_cache(
     return rows.map((r) => r.letter);
   },
   ['glossary-unique-letters'],
-  { tags: [GLOSSARY_CACHE_TAG], revalidate: 3600 }
+  { tags: [GLOSSARY_CACHE_TAG], revalidate: 604800 }
 );
 
 export const getLetterCounts = unstable_cache(
@@ -291,7 +291,7 @@ export const getLetterCounts = unstable_cache(
     return counts;
   },
   ['glossary-letter-counts'],
-  { tags: [GLOSSARY_CACHE_TAG], revalidate: 3600 }
+  { tags: [GLOSSARY_CACHE_TAG], revalidate: 604800 }
 );
 
 export const getCategoryCounts = unstable_cache(
@@ -311,5 +311,5 @@ export const getCategoryCounts = unstable_cache(
     return counts;
   },
   ['glossary-category-counts'],
-  { tags: [GLOSSARY_CACHE_TAG], revalidate: 3600 }
+  { tags: [GLOSSARY_CACHE_TAG], revalidate: 604800 }
 );
