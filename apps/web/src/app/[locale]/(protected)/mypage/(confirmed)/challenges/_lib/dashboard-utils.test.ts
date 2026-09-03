@@ -6,7 +6,7 @@ import type { ChallengeResultRow } from '../_actions/get-challenge-sessions';
 import { getPreviousPeriodLabel } from './dashboard-ui-utils';
 import {
   aggregateByDay,
-  computePercentChange,
+  computeAbsoluteChange,
   computeStats,
   formatDate,
   formatShortDate,
@@ -132,41 +132,40 @@ describe('computeStats', () => {
 });
 
 // ---------------------------------------------------------------------------
-// computePercentChange
+// computeAbsoluteChange
 // ---------------------------------------------------------------------------
 
-describe('computePercentChange', () => {
+describe('computeAbsoluteChange', () => {
   it('returns null when current is null', () => {
-    expect(computePercentChange(null, 10)).toBeNull();
+    expect(computeAbsoluteChange(null, 10)).toBeNull();
   });
 
   it('returns null when previous is null', () => {
-    expect(computePercentChange(10, null)).toBeNull();
+    expect(computeAbsoluteChange(10, null)).toBeNull();
   });
 
   it('returns null when both are null', () => {
-    expect(computePercentChange(null, null)).toBeNull();
+    expect(computeAbsoluteChange(null, null)).toBeNull();
   });
 
-  it('returns null when previous is 0 (division by zero)', () => {
-    expect(computePercentChange(10, 0)).toBeNull();
+  it('compares against a previous period of 0 (a percentage could not)', () => {
+    expect(computeAbsoluteChange(10, 0)).toBe(10);
   });
 
-  it('computes positive percent change', () => {
-    expect(computePercentChange(20, 10)).toBe(100);
+  it('computes a positive difference', () => {
+    expect(computeAbsoluteChange(20, 10)).toBe(10);
   });
 
-  it('computes negative percent change', () => {
-    expect(computePercentChange(5, 10)).toBe(-50);
+  it('computes a negative difference', () => {
+    expect(computeAbsoluteChange(5, 10)).toBe(-5);
   });
 
   it('returns 0 when current equals previous', () => {
-    expect(computePercentChange(10, 10)).toBe(0);
+    expect(computeAbsoluteChange(10, 10)).toBe(0);
   });
 
-  it('handles fractional results', () => {
-    const result = computePercentChange(1, 3);
-    expect(result).toBeCloseTo(-66.6667, 3);
+  it('keeps fractional differences for averages', () => {
+    expect(computeAbsoluteChange(8.5, 10)).toBeCloseTo(-1.5, 6);
   });
 });
 

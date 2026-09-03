@@ -26,20 +26,12 @@ export function DashboardStatsSection({
       <StatsCard
         label={t('bestScore')}
         value={bestScore !== null ? bestScore.toString() : '-'}
-        comparison={{
-          percentChange: bestScoreComparison,
-          absoluteChange: null,
-          label: comparisonLabel,
-        }}
+        comparison={{ change: bestScoreComparison, label: comparisonLabel }}
       />
       <StatsCard
         label={t('avgScore')}
         value={avgCompletionScore !== null ? avgCompletionScore.toFixed(1) : '-'}
-        comparison={{
-          percentChange: avgScoreComparison,
-          absoluteChange: null,
-          label: comparisonLabel,
-        }}
+        comparison={{ change: avgScoreComparison, label: comparisonLabel, fractionDigits: 1 }}
       />
     </div>
   );

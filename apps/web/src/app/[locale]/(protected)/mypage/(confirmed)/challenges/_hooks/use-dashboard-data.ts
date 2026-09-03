@@ -4,7 +4,7 @@ import { MISTAKE_LIMIT } from '@/lib/challenge/constants';
 import type { ChallengeMenuType } from '@/lib/db/practice-menu-types';
 
 import type { ChallengeResultRow } from '../_actions/get-challenge-sessions';
-import { computePercentChange, computeStats, formatDate } from '../_lib/dashboard-utils';
+import { computeAbsoluteChange, computeStats, formatDate } from '../_lib/dashboard-utils';
 import { derivePieceSelectionFromSessions } from '../_lib/derive-piece-filter';
 import { selectChartData } from '../_lib/select-chart-data';
 import type { ChartDataPoint } from '../_lib/select-chart-data';
@@ -66,7 +66,7 @@ const DASHBOARD_TABLE_ROWS = 5;
  *   - `useChallengeSessionsQuery` — fetching
  *   - `useDashboardFilters`       — UI filter state
  *   - `selectChartData`           — pure chart-data selector
- *   - `computeStats` / `computePercentChange` — pure stats helpers
+ *   - `computeStats` / `computeAbsoluteChange` — pure stats helpers
  *
  * Public API is preserved byte-for-byte from the previous single-hook
  * implementation so Dashboard/Filters/Results consumers need no changes.
@@ -154,12 +154,12 @@ export function useDashboardData(locale: string, initialMenu?: ChallengeMenuType
   }, [filteredSessions, locale]);
 
   const bestScoreComparison = useMemo(
-    () => computePercentChange(currentStats.bestScore, prevStats.bestScore),
+    () => computeAbsoluteChange(currentStats.bestScore, prevStats.bestScore),
     [currentStats.bestScore, prevStats.bestScore]
   );
 
   const avgScoreComparison = useMemo(
-    () => computePercentChange(currentStats.avgCompletionScore, prevStats.avgCompletionScore),
+    () => computeAbsoluteChange(currentStats.avgCompletionScore, prevStats.avgCompletionScore),
     [currentStats.avgCompletionScore, prevStats.avgCompletionScore]
   );
 

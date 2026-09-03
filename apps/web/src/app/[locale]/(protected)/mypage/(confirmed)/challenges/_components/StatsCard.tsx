@@ -1,38 +1,38 @@
+import {
+  DELTA_TONE_CLASSES,
+  formatSignedDelta,
+  signedDeltaTone,
+} from '@/lib/challenge/signed-delta';
+
 type Props = {
   label: string;
   value: string;
   sub?: string;
+  /**
+   * Period-over-period change, written as a signed count in the same unit as
+   * `value` (`+3 vs last week`). `change: null` means there is nothing to
+   * compare against (no records in the previous period) and the line is
+   * omitted. Absolute, not percent: the values are small counts of correct
+   * answers, where a percentage exaggerates — see `formatSignedDelta`.
+   */
   comparison?: {
-    percentChange: number | null;
-    absoluteChange: number | null;
+    change: number | null;
     label: string;
+    /** Decimals to show; matches how `value` itself is formatted. */
+    fractionDigits?: number;
   };
 };
 
 export function StatsCard({ label, value, sub, comparison }: Props) {
   const renderComparison = () => {
-    if (!comparison) return null;
+    if (!comparison || comparison.change === null) return null;
 
-    const { percentChange, absoluteChange, label: compLabel } = comparison;
-
-    if (percentChange === null && absoluteChange === null) return null;
-
-    const displayValue =
-      percentChange !== null
-        ? `${Math.abs(Math.round(percentChange * 10) / 10)}%`
-        : `${Math.abs(absoluteChange!)}`;
-
-    const changeValue = percentChange ?? absoluteChange ?? 0;
-
-    if (changeValue === 0) {
-      return <p className="text-xs text-muted-foreground mt-1">&mdash; {compLabel}</p>;
-    }
-
-    const isPositive = changeValue > 0;
+    const { change, label: compLabel, fractionDigits = 0 } = comparison;
+    const tone = signedDeltaTone(change, fractionDigits);
 
     return (
-      <p className={`text-xs mt-1 ${isPositive ? 'text-success' : 'text-destructive'}`}>
-        {isPositive ? '\u25B2' : '\u25BC'} {displayValue} {compLabel}
+      <p className={`text-xs mt-1 ${DELTA_TONE_CLASSES[tone]}`}>
+        {formatSignedDelta(change, fractionDigits)} {compLabel}
       </p>
     );
   };

@@ -2,6 +2,11 @@ import { getTranslations } from 'next-intl/server';
 
 import { Link } from '@/i18n/routing';
 
+import {
+  DELTA_TONE_CLASSES,
+  formatSignedDelta,
+  signedDeltaTone,
+} from '@/lib/challenge/signed-delta';
 import type { ChallengeMenuType } from '@/lib/db/practice-menu-types';
 import type { ScoreComparison } from '@/lib/db/score-comparison';
 
@@ -104,19 +109,17 @@ export async function RecordSection({ locale, menuType, comparison }: Props) {
 }
 
 /**
- * Change against the last run as a signed count (`+2`, `−7`, `±0`), in the
- * colours the My Records dashboard uses for its period-over-period stats.
- *
- * A signed count rather than the dashboard's ▲/▼ glyphs or a percentage: the
- * score is a handful of correct answers, so a percentage swings wildly (1 → 3
- * is +200%, 0 → anything is undefined) and the triangles left it unclear
- * whether "▼7" was the amount lost or a value. `+2` reads as "two more than
- * last time" with the "last time" row directly beneath it. The minus is
- * U+2212 so it matches the plus in width and weight.
+ * Change against the last run, in the app-wide signed-count form (`+2`,
+ * `−7`, `±0`) and colours that the My Records stats cards also use — see
+ * `formatSignedDelta` for why it is neither a percentage nor a ▲/▼ glyph.
+ * It reads as "two more than last time" with the "last time" row directly
+ * beneath it.
  */
 function DiffFromLast({ diff }: { diff: number | undefined }) {
   if (diff === undefined) return null;
-  if (diff === 0) return <span className="text-xs text-muted-foreground">±0</span>;
-  if (diff > 0) return <span className="text-xs text-success">+{diff}</span>;
-  return <span className="text-xs text-destructive">−{Math.abs(diff)}</span>;
+  return (
+    <span className={`text-xs ${DELTA_TONE_CLASSES[signedDeltaTone(diff)]}`}>
+      {formatSignedDelta(diff)}
+    </span>
+  );
 }
