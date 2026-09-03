@@ -35,6 +35,14 @@ const OWNER = 'dddddddd-dddd-dddd-dddd-dddddddddddd';
 const GAME_ID = 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee';
 const CHUNK_ID = 'ffffffff-ffff-ffff-ffff-ffffffffffff';
 
+// Loaded once at module scope rather than inside each `it`: pulling this
+// graph costs a few hundred milliseconds, and inside a test body that cost is
+// charged to vitest's 5s `testTimeout`, which the first test can cross when
+// the suite is competing for CPU. Later tests hit the module cache, so the
+// symptom is one flaky test rather than a slow file. The `vi.mock` calls
+// above are hoisted over this statement, so the load needs no per-test setup.
+const { addGameChunkAction, deleteGameChunkAction } = await import('./game-chunks');
+
 describe('addGameChunkAction', () => {
   beforeEach(() => {
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: CALLER } });
@@ -46,7 +54,6 @@ describe('addGameChunkAction', () => {
   // check cannot be answered without knowing who is asking — passing the
   // caller through is what makes the own-draft carve-out possible at all.
   it('scopes the linkability check to the calling user', async () => {
-    const { addGameChunkAction } = await import('./game-chunks');
     const result = await addGameChunkAction({ gameId: GAME_ID, ply: 3, chunkId: CHUNK_ID });
 
     expect(mockIsLinkable).toHaveBeenCalledWith(CHUNK_ID, CALLER);
@@ -68,7 +75,6 @@ describe('addGameChunkAction', () => {
   // action does not resolve the owner itself — that lookup, the self-link
   // guard and the anonymous-game case all live in `notifyGameOwnerOfChunkLink`.
   it("notifies the game's owner of a link that landed", async () => {
-    const { addGameChunkAction } = await import('./game-chunks');
     await addGameChunkAction({ gameId: GAME_ID, ply: 3, chunkId: CHUNK_ID });
 
     expect(mockNotifyGameOwner).toHaveBeenCalledWith({
@@ -82,7 +88,6 @@ describe('addGameChunkAction', () => {
   it('rejects a chunk the caller may not link, without inserting', async () => {
     mockIsLinkable.mockResolvedValue(false);
 
-    const { addGameChunkAction } = await import('./game-chunks');
     const result = await addGameChunkAction({ gameId: GAME_ID, ply: 3, chunkId: CHUNK_ID });
 
     expect(result).toEqual({ success: false, error: 'chunk_not_available' });
@@ -93,7 +98,6 @@ describe('addGameChunkAction', () => {
   it('surfaces a duplicate link as already_linked rather than an error', async () => {
     mockInsert.mockResolvedValue(null);
 
-    const { addGameChunkAction } = await import('./game-chunks');
     const result = await addGameChunkAction({ gameId: GAME_ID, ply: 3, chunkId: CHUNK_ID });
 
     expect(result).toEqual({ success: false, error: 'already_linked' });
@@ -104,7 +108,6 @@ describe('addGameChunkAction', () => {
   it('never reaches the linkability check when auth fails', async () => {
     mockAuthenticateAndGuard.mockResolvedValue({ error: 'signInRequired' });
 
-    const { addGameChunkAction } = await import('./game-chunks');
     const result = await addGameChunkAction({ gameId: GAME_ID, ply: 3, chunkId: CHUNK_ID });
 
     expect(result).toEqual({ success: false, error: 'signInRequired' });
@@ -122,7 +125,6 @@ describe('deleteGameChunkAction', () => {
   it('forbids an unrelated user (neither suggester nor game owner)', async () => {
     mockGetForDelete.mockResolvedValue({ suggestedById: SUGGESTER, gameAuthorId: OWNER });
 
-    const { deleteGameChunkAction } = await import('./game-chunks');
     const result = await deleteGameChunkAction(LINK_ID);
 
     expect(result).toEqual({ success: false, error: 'forbidden' });
@@ -132,7 +134,6 @@ describe('deleteGameChunkAction', () => {
   it('allows the user who added the link', async () => {
     mockGetForDelete.mockResolvedValue({ suggestedById: CALLER, gameAuthorId: OWNER });
 
-    const { deleteGameChunkAction } = await import('./game-chunks');
     const result = await deleteGameChunkAction(LINK_ID);
 
     expect(result).toEqual({ success: true });
@@ -142,7 +143,6 @@ describe('deleteGameChunkAction', () => {
   it("allows the game's registered owner (even for someone else's link)", async () => {
     mockGetForDelete.mockResolvedValue({ suggestedById: SUGGESTER, gameAuthorId: CALLER });
 
-    const { deleteGameChunkAction } = await import('./game-chunks');
     const result = await deleteGameChunkAction(LINK_ID);
 
     expect(result).toEqual({ success: true });
@@ -152,7 +152,6 @@ describe('deleteGameChunkAction', () => {
   it('does not treat an anonymous game (null author) as ownable by the caller', async () => {
     mockGetForDelete.mockResolvedValue({ suggestedById: SUGGESTER, gameAuthorId: null });
 
-    const { deleteGameChunkAction } = await import('./game-chunks');
     const result = await deleteGameChunkAction(LINK_ID);
 
     expect(result).toEqual({ success: false, error: 'forbidden' });
@@ -162,7 +161,6 @@ describe('deleteGameChunkAction', () => {
   it('returns not_found when the link is missing', async () => {
     mockGetForDelete.mockResolvedValue(undefined);
 
-    const { deleteGameChunkAction } = await import('./game-chunks');
     const result = await deleteGameChunkAction(LINK_ID);
 
     expect(result).toEqual({ success: false, error: 'not_found' });
@@ -172,7 +170,6 @@ describe('deleteGameChunkAction', () => {
   it('returns the guard error and never looks up the link when auth fails', async () => {
     mockAuthenticateAndGuard.mockResolvedValue({ error: 'signInRequired' });
 
-    const { deleteGameChunkAction } = await import('./game-chunks');
     const result = await deleteGameChunkAction(LINK_ID);
 
     expect(result).toEqual({ success: false, error: 'signInRequired' });

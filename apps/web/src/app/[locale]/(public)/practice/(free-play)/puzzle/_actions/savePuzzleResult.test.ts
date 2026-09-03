@@ -34,6 +34,14 @@ vi.mock('@/lib/server-action-error', () => ({
 
 const TEST_USER_ID = 'user-00000000-0000-0000-0000-000000000001';
 
+// Loaded once at module scope rather than inside each `it`: pulling this
+// graph costs a few hundred milliseconds, and inside a test body that cost is
+// charged to vitest's 5s `testTimeout`, which the first test can cross when
+// the suite is competing for CPU. Later tests hit the module cache, so the
+// symptom is one flaky test rather than a slow file. The `vi.mock` calls
+// above are hoisted over this statement, so the load needs no per-test setup.
+const { savePuzzleResult } = await import('./savePuzzleResult');
+
 describe('savePuzzleResult', () => {
   beforeEach(() => {
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: TEST_USER_ID } });
@@ -48,8 +56,6 @@ describe('savePuzzleResult', () => {
   });
 
   it('returns success without DB writes when playerMoveCount=0', async () => {
-    const { savePuzzleResult } = await import('./savePuzzleResult');
-
     const result = await savePuzzleResult({
       playerMoveCount: 0,
       incorrectAttempts: 2,
@@ -63,7 +69,6 @@ describe('savePuzzleResult', () => {
 
   it('early-returns for playerMoveCount=0 BEFORE the auth guard', async () => {
     mockAuthenticateAndGuard.mockResolvedValue({ error: 'signInRequired' });
-    const { savePuzzleResult } = await import('./savePuzzleResult');
 
     const result = await savePuzzleResult({
       playerMoveCount: 0,
@@ -76,8 +81,6 @@ describe('savePuzzleResult', () => {
   });
 
   it('sanitizes negative counts to 0 (treated as zero-grant, early return)', async () => {
-    const { savePuzzleResult } = await import('./savePuzzleResult');
-
     const result = await savePuzzleResult({
       playerMoveCount: -3,
       incorrectAttempts: -1,
@@ -89,8 +92,6 @@ describe('savePuzzleResult', () => {
   });
 
   it('rounds fractional counts before calling saveFreePlayResult', async () => {
-    const { savePuzzleResult } = await import('./savePuzzleResult');
-
     await savePuzzleResult({
       playerMoveCount: 3.6,
       incorrectAttempts: 1.4,
@@ -107,8 +108,6 @@ describe('savePuzzleResult', () => {
   });
 
   it('combines incorrectAttempts and peekCount into mistakes', async () => {
-    const { savePuzzleResult } = await import('./savePuzzleResult');
-
     await savePuzzleResult({
       playerMoveCount: 3,
       incorrectAttempts: 2,
@@ -124,8 +123,6 @@ describe('savePuzzleResult', () => {
   });
 
   it('returns {success, expEventId} on successful grant', async () => {
-    const { savePuzzleResult } = await import('./savePuzzleResult');
-
     const result = await savePuzzleResult({
       playerMoveCount: 3,
       incorrectAttempts: 0,
@@ -143,7 +140,6 @@ describe('savePuzzleResult', () => {
 
   it('propagates signInRequired from authenticateAndGuard', async () => {
     mockAuthenticateAndGuard.mockResolvedValue({ error: 'signInRequired' });
-    const { savePuzzleResult } = await import('./savePuzzleResult');
 
     const result = await savePuzzleResult({
       playerMoveCount: 3,
@@ -157,7 +153,6 @@ describe('savePuzzleResult', () => {
 
   it('propagates banned from authenticateAndGuard', async () => {
     mockAuthenticateAndGuard.mockResolvedValue({ error: 'banned' });
-    const { savePuzzleResult } = await import('./savePuzzleResult');
 
     const result = await savePuzzleResult({
       playerMoveCount: 1,
@@ -171,7 +166,6 @@ describe('savePuzzleResult', () => {
 
   it('propagates rateLimited from authenticateAndGuard', async () => {
     mockAuthenticateAndGuard.mockResolvedValue({ error: 'rateLimited' });
-    const { savePuzzleResult } = await import('./savePuzzleResult');
 
     const result = await savePuzzleResult({
       playerMoveCount: 1,
@@ -184,7 +178,6 @@ describe('savePuzzleResult', () => {
 
   it('routes thrown errors through handleServerActionError', async () => {
     mockSaveFreePlayResult.mockRejectedValueOnce(new Error('db_down'));
-    const { savePuzzleResult } = await import('./savePuzzleResult');
 
     const result = await savePuzzleResult({
       playerMoveCount: 3,

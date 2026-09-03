@@ -60,6 +60,14 @@ const TEST_USER_ID = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
 const OTHER_USER_ID = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
 const TEST_POSITION_ID = 'cccccccc-cccc-cccc-cccc-cccccccccccc';
 
+// Loaded once at module scope rather than inside each `it`: pulling this
+// graph costs a few hundred milliseconds, and inside a test body that cost is
+// charged to vitest's 5s `testTimeout`, which the first test can cross when
+// the suite is competing for CPU. Later tests hit the module cache, so the
+// symptom is one flaky test rather than a slow file. The `vi.mock` calls
+// above are hoisted over this statement, so the load needs no per-test setup.
+const { deletePosition } = await import('./deletePosition');
+
 describe('deletePosition', () => {
   beforeEach(() => {
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: TEST_USER_ID } });
@@ -69,7 +77,6 @@ describe('deletePosition', () => {
   it('returns guard error when authentication fails', async () => {
     mockAuthenticateAndGuard.mockResolvedValue({ error: 'signInRequired' });
 
-    const { deletePosition } = await import('./deletePosition');
     const result = await deletePosition(TEST_POSITION_ID, 'en');
 
     expect(result).toEqual({ error: 'signInRequired' });
@@ -79,7 +86,6 @@ describe('deletePosition', () => {
   it('returns notFound when position does not exist', async () => {
     mockSelectLimit.mockResolvedValue([]);
 
-    const { deletePosition } = await import('./deletePosition');
     const result = await deletePosition(TEST_POSITION_ID, 'en');
 
     expect(result).toEqual({ error: 'notFound' });
@@ -95,7 +101,6 @@ describe('deletePosition', () => {
       },
     ]);
 
-    const { deletePosition } = await import('./deletePosition');
     const result = await deletePosition(TEST_POSITION_ID, 'en');
 
     expect(result).toEqual({ error: 'notFound' });
@@ -112,7 +117,6 @@ describe('deletePosition', () => {
       },
     ]);
 
-    const { deletePosition } = await import('./deletePosition');
     const result = await deletePosition(TEST_POSITION_ID, 'en');
 
     expect(result).toEqual({ error: 'unauthorized' });
@@ -130,7 +134,6 @@ describe('deletePosition', () => {
       },
     ]);
 
-    const { deletePosition } = await import('./deletePosition');
     const result = await deletePosition(TEST_POSITION_ID, 'en');
 
     expect(result).toEqual({ error: 'alreadyDeleted' });
@@ -147,7 +150,6 @@ describe('deletePosition', () => {
       },
     ]);
 
-    const { deletePosition } = await import('./deletePosition');
     const result = await deletePosition(TEST_POSITION_ID, 'en');
 
     expect(result).toEqual({ success: true });

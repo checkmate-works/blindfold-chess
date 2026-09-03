@@ -34,6 +34,14 @@ vi.mock('@/lib/server-action-error', () => ({
 
 const TEST_USER_ID = 'user-00000000-0000-0000-0000-000000000001';
 
+// Loaded once at module scope rather than inside each `it`: pulling this
+// graph costs a few hundred milliseconds, and inside a test body that cost is
+// charged to vitest's 5s `testTimeout`, which the first test can cross when
+// the suite is competing for CPU. Later tests hit the module cache, so the
+// symptom is one flaky test rather than a slow file. The `vi.mock` calls
+// above are hoisted over this statement, so the load needs no per-test setup.
+const { savePositionMemoryResult } = await import('./save-result');
+
 describe('savePositionMemoryResult', () => {
   beforeEach(() => {
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: TEST_USER_ID } });
@@ -48,8 +56,6 @@ describe('savePositionMemoryResult', () => {
   });
 
   it('returns success without DB writes when isCustomFen=true', async () => {
-    const { savePositionMemoryResult } = await import('./save-result');
-
     const result = await savePositionMemoryResult({
       correctCount: 10,
       mistakes: 0,
@@ -62,8 +68,6 @@ describe('savePositionMemoryResult', () => {
   });
 
   it('returns success without DB writes when correctCount=0 (skipped run)', async () => {
-    const { savePositionMemoryResult } = await import('./save-result');
-
     const result = await savePositionMemoryResult({
       correctCount: 0,
       mistakes: 3,
@@ -79,7 +83,6 @@ describe('savePositionMemoryResult', () => {
     // Strong guard against the failure mode where the auth check runs first
     // and guests get an error for a run that would earn 0 EXP anyway.
     mockAuthenticateAndGuard.mockResolvedValue({ error: 'signInRequired' });
-    const { savePositionMemoryResult } = await import('./save-result');
 
     const result = await savePositionMemoryResult({
       correctCount: 0,
@@ -92,8 +95,6 @@ describe('savePositionMemoryResult', () => {
   });
 
   it('sanitizes negative counts to 0 (treated as zero-grant, early return)', async () => {
-    const { savePositionMemoryResult } = await import('./save-result');
-
     const result = await savePositionMemoryResult({
       correctCount: -3,
       mistakes: -1,
@@ -105,8 +106,6 @@ describe('savePositionMemoryResult', () => {
   });
 
   it('rounds fractional counts before calling saveFreePlayResult', async () => {
-    const { savePositionMemoryResult } = await import('./save-result');
-
     await savePositionMemoryResult({
       correctCount: 10.6,
       mistakes: 2.4,
@@ -122,8 +121,6 @@ describe('savePositionMemoryResult', () => {
   });
 
   it('returns {success, expEventId} on successful grant', async () => {
-    const { savePositionMemoryResult } = await import('./save-result');
-
     const result = await savePositionMemoryResult({
       correctCount: 10,
       mistakes: 0,
@@ -141,7 +138,6 @@ describe('savePositionMemoryResult', () => {
 
   it('propagates signInRequired from authenticateAndGuard', async () => {
     mockAuthenticateAndGuard.mockResolvedValue({ error: 'signInRequired' });
-    const { savePositionMemoryResult } = await import('./save-result');
 
     const result = await savePositionMemoryResult({
       correctCount: 10,
@@ -155,7 +151,6 @@ describe('savePositionMemoryResult', () => {
 
   it('propagates banned from authenticateAndGuard', async () => {
     mockAuthenticateAndGuard.mockResolvedValue({ error: 'banned' });
-    const { savePositionMemoryResult } = await import('./save-result');
 
     const result = await savePositionMemoryResult({
       correctCount: 5,
@@ -169,7 +164,6 @@ describe('savePositionMemoryResult', () => {
 
   it('propagates rateLimited from authenticateAndGuard', async () => {
     mockAuthenticateAndGuard.mockResolvedValue({ error: 'rateLimited' });
-    const { savePositionMemoryResult } = await import('./save-result');
 
     const result = await savePositionMemoryResult({
       correctCount: 5,
@@ -182,7 +176,6 @@ describe('savePositionMemoryResult', () => {
 
   it('routes thrown errors through handleServerActionError', async () => {
     mockSaveFreePlayResult.mockRejectedValueOnce(new Error('db_down'));
-    const { savePositionMemoryResult } = await import('./save-result');
 
     const result = await savePositionMemoryResult({
       correctCount: 5,
