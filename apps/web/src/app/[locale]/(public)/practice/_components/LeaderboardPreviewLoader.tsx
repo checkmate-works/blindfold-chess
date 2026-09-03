@@ -18,12 +18,10 @@ type Props = {
  * Fetch the practice landing page's TOP3 teaser after hydration and hand it to
  * {@link LeaderboardPreview}.
  *
- * The teaser is the one piece of these otherwise deploy-static pages that
- * changes between deploys, and reading it on the server pinned each page to a
- * one-minute ISR interval and re-invalidated it on every completed challenge —
- * see {@link getLeaderboardPreview} for the mechanism. Loading it here keeps
- * the page itself static and, as a side effect, makes the teaser live rather
- * than up to a minute stale.
+ * Fetched after hydration so the landing pages read no leaderboard data
+ * during their static render; {@link getLeaderboardPreview} explains why that
+ * matters. A side effect is that the teaser is live rather than up to a
+ * minute stale.
  *
  * Nothing renders until the rows arrive. The teaser sits below the fold under
  * the related-articles block, and `LeaderboardPreview` already renders nothing

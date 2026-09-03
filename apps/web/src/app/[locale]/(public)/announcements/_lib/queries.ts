@@ -235,17 +235,10 @@ export const getPublishedAnnouncement = cache(
  * preferences, etc. — racking up ~50–70 writes/day each despite no
  * `export const revalidate` on those routes).
  *
- * The reach runs the other way too, and that is the part worth keeping in
- * mind before shortening this number again. A route's effective revalidate
- * is the minimum of its segment config and every data-cache entry the render
- * touched, so this one value is a ceiling on every static page under
- * `[locale]` — including pages whose own `export const revalidate` is longer.
- * While it sat at 86400 the layout's `revalidate = 604800` was inert: the
- * build's route table showed 1d against every inheriting page, and raising
- * the layout from a day to a week moved the ISR Writes meter by 8%, inside
- * the day-to-day noise. Keeping the two in step is what makes the layout's
- * declared interval mean something. Measured either side of that step:
- * GitHub issue #182.
+ * The reach runs the other way too: because every page reads this entry, its
+ * interval is a ceiling on every static page under `[locale]`, whatever their
+ * segment config says. Keep it in step with the layout's `revalidate` — the
+ * TSDoc there explains the mechanism and carries the measurements.
  *
  * Admin announcement CRUD calls `revalidateTag('announcements', ...)`,
  * so newly published banners surface immediately. The timer is only

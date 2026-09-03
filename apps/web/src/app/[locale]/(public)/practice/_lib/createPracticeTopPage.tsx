@@ -33,12 +33,7 @@ type PracticeTopPageConfig = {
    * page only ships the help tour for some locales.
    */
   renderTitleAction?: (t: ServerTranslator, locale: Locale) => ReactNode;
-  /**
-   * Optional TOP3 teaser. Loaded client-side after hydration, not rendered on
-   * the server: reading the ranking during the render pinned these pages to a
-   * one-minute ISR interval and let ordinary gameplay invalidate them. See
-   * `_actions/getLeaderboardPreview`.
-   */
+  /** Optional TOP3 teaser, loaded client-side by `LeaderboardPreviewLoader` so the page stays static. */
   leaderboard?: {
     module: LeaderboardModule;
     defaultKey: string;

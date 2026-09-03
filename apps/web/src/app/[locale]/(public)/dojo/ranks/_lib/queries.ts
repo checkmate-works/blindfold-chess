@@ -22,11 +22,10 @@ import { resolveAchievedSlugs } from './rank-progression';
  * nothing more than rank names and colours. Cached, the sweep costs one
  * connection per revalidation instead of one per page.
  *
- * The revalidate is the only freshness bound (see {@link RANKS_CACHE_TAG}),
- * and it matches the layout's ISR default rather than undercutting it: this
- * value floors the effective interval of every prerendered dojo page that
- * reads it, so an hour here quietly held `dojo/ranks` and the rank and guide
- * detail pages at an hour whatever their own segment config said.
+ * The revalidate is the only freshness bound (see {@link RANKS_CACHE_TAG}).
+ * It matches the layout's ISR default because a data-cache interval is also a
+ * floor on every prerendered page that reads it — the `revalidate` TSDoc in
+ * `[locale]/layout.tsx` has the mechanism.
  * The rows are JSON round-tripped, so `createdAt` arrives as a string — no
  * dojo consumer reads it.
  *
