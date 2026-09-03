@@ -52,6 +52,7 @@ export function PostFooter({
 }: Props) {
   const t = useTranslations(i18nNamespace);
   const tTopics = useTranslations('topics');
+  const tCommon = useTranslations('Common');
 
   // Replies affordance: when a `postHref` is provided, the comment icon +
   // count opens the post detail page where the reader can read the thread
@@ -94,12 +95,16 @@ export function PostFooter({
       {replyMeta.replyCount > 0 && (
         <div className="flex items-center gap-3 ml-auto">
           <div className="flex -space-x-2">
-            {replyMeta.repliers.map((replier, i) =>
-              replier.avatarUrl ? (
+            {replyMeta.repliers.map((replier, i) => {
+              // The query layer leaves an unnamed commenter as `null` so the
+              // word is chosen here, in the viewer's language, rather than
+              // baked into the SELECT.
+              const replierName = replier.displayName ?? tCommon('deletedUser');
+              return replier.avatarUrl ? (
                 <Image
                   key={i}
                   src={replier.avatarUrl}
-                  alt={replier.displayName}
+                  alt={replierName}
                   width={24}
                   height={24}
                   className="rounded-full border-2 border-card object-cover w-6 h-6"
@@ -112,11 +117,11 @@ export function PostFooter({
                   className="w-6 h-6 rounded-full bg-muted border-2 border-card flex items-center justify-center"
                 >
                   <span className="text-[10px] text-muted-foreground">
-                    {replier.displayName.charAt(0).toUpperCase()}
+                    {replierName.charAt(0).toUpperCase()}
                   </span>
                 </div>
-              )
-            )}
+              );
+            })}
             {replyMeta.uniqueReplierCount > replyMeta.repliers.length && (
               <div className="w-6 h-6 rounded-full bg-muted border-2 border-card flex items-center justify-center">
                 <span className="text-[10px] text-muted-foreground">

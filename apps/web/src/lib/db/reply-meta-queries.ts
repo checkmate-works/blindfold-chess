@@ -17,7 +17,15 @@ import { AUTHOR_PROFILE_COLUMNS, liveProfileJoinOn } from './profile-select';
 /** One commenter's avatar-stack entry, as rendered beside a reply count. */
 export type Replier = {
   avatarUrl: string | null;
-  displayName: string;
+  /**
+   * `null` when the commenter has neither a display name nor a username —
+   * deliberately not a string here. This runs on the server and hands a
+   * finished value to a Client Component, so any word chosen at this layer
+   * ships in whatever language the query was written in and no amount of
+   * fixing the component reaches it. Naming it is the renderer's job; see
+   * `PostFooter`.
+   */
+  displayName: string | null;
 };
 
 export type ReplyMeta = {
@@ -97,7 +105,7 @@ function assembleReplyMeta<S extends ReplyMetaStatsRow, R extends ReplyMetaRepli
       .slice(0, MAX_REPLIERS_DISPLAY)
       .map<Replier>((r) => ({
         avatarUrl: r.avatarUrl,
-        displayName: r.displayName || r.username || 'Anonymous',
+        displayName: r.displayName || r.username || null,
       }));
     map.set(key, {
       replyCount: s?.replyCount ?? 0,
