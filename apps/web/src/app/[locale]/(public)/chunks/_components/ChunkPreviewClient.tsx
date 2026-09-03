@@ -35,6 +35,7 @@ const PREVIEW_ERROR_CODES = new Set([
   'alreadyDeleted',
   'invalidFeedbackTopic',
   'descriptionRequired',
+  'profileRequired',
   'cannotEditPublished',
 ]);
 

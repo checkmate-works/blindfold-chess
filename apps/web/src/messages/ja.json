@@ -287,7 +287,8 @@
       "banned": "アカウントが制限されています。",
       "rateLimited": "試行回数が多すぎます。しばらくしてからお試しください。",
       "generic": "問題が発生しました。もう一度お試しください。",
-      "insufficient_balance": "コインが不足しています。"
+      "insufficient_balance": "コインが不足しています。",
+      "profileRequired": "型を作成するにはユーザー名の設定が必要です"
     },
     "visibility": {
       "legend": "この型を見られる人",
@@ -1486,7 +1487,10 @@
         "title": "問題をプレビュー",
         "createCta": "作成",
         "backToEditCta": "編集に戻る",
-        "createError": "予期しないエラーが発生しました。もう一度お試しください。"
+        "createError": "予期しないエラーが発生しました。もう一度お試しください。",
+        "errors": {
+          "profileRequired": "問題を作成するにはユーザー名の設定が必要です"
+        }
       },
       "edit": {
         "title": "問題を編集",
@@ -1621,7 +1625,10 @@
         "moveCount": "{count} 手",
         "createCta": "作成",
         "backToEditCta": "編集に戻る",
-        "createError": "予期しないエラーが発生しました。もう一度お試しください。"
+        "createError": "予期しないエラーが発生しました。もう一度お試しください。",
+        "errors": {
+          "profileRequired": "パズルを作成するにはユーザー名の設定が必要です"
+        }
       },
       "whitePieces": "白の駒",
       "blackPieces": "黒の駒",
@@ -2139,7 +2146,8 @@
         "invalidTheme": "選択されたテーマの一部が利用できません。再読み込みしてお試しください。",
         "invalidTagId": "選択されたタグの一部が不正です。",
         "nothingToAdd": "まだ紐づいていないテーマまたはチャンクを1つ以上選んでください。",
-        "blocked": "このユーザーのコンテンツには編集を提案できません。"
+        "blocked": "このユーザーのコンテンツには編集を提案できません。",
+        "profileRequired": "提案を送信するにはユーザー名の設定が必要です"
       },
       "pageTitle": "パターンの提案 · {name}",
       "breadcrumb": "パターンの提案",
@@ -3592,7 +3600,8 @@
         "cannotEditPublished": "このチャンクは公開済みのため編集できません。公開は一方通行です。修正したい場合は一度削除して新たに作成してください。",
         "descriptionRequired": "このチャンクは公開する前に説明を入力する必要があります。",
         "descriptionTooLong": "説明は{max}文字以内で入力してください。",
-        "invalidFeedbackTopic": "不明なフィードバック項目です。ページを再読み込みしてもう一度お試しください。"
+        "invalidFeedbackTopic": "不明なフィードバック項目です。ページを再読み込みしてもう一度お試しください。",
+        "profileRequired": "チャンクを作成するにはユーザー名の設定が必要です"
       },
       "draft": {
         "toggleLabel": "まず提案を募集する",
@@ -3748,7 +3757,8 @@
         "descriptionTooLong": "説明が長すぎます。",
         "descriptionUnchanged": "現在の説明と同じです。変更してから提案してください。",
         "nothingProposed": "タイトルか説明のどちらかを変更してから提案してください。",
-        "commentTooLong": "理由が長すぎます。"
+        "commentTooLong": "理由が長すぎます。",
+        "profileRequired": "提案を送信するにはユーザー名の設定が必要です"
       }
     }
   },

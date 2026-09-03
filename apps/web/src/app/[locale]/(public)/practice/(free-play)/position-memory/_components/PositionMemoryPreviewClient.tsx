@@ -8,6 +8,7 @@ import { BoardFrame } from '@/app/_components';
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 
 import type { ChunkOption } from '@/lib/chunks/types';
+import { localizeActionError } from '@/lib/i18n/localize-action-error';
 import type { ThemeOption } from '@/lib/themes/types';
 
 import {
@@ -23,6 +24,14 @@ import { clearDraft, readDraft } from '../_lib/draft-storage';
 import type { PositionMemoryDraftV1 } from '../_lib/draft-storage';
 import { PositionMemoryStepIndicator } from './PositionMemoryStepIndicator';
 import { PositionDetailBoard } from './single-position/PositionDetailBoard';
+
+/**
+ * Rejections this screen has copy for. Everything else falls through as the
+ * raw code on purpose — an unrecognised failure stays visible to the author
+ * and to whoever reads the bug report, rather than being flattened into a
+ * sentence that says nothing.
+ */
+const CREATE_ERROR_CODES = new Set(['profileRequired']);
 
 type Props = {
   /** Tag catalog used to resolve the draft's persisted theme/chunk IDs into
@@ -74,7 +83,9 @@ export function PositionMemoryPreviewClient({ availableThemes, availableChunks }
         chunkIds: draft.chunkIds,
         forkedFromId: draft.forkedFromId ?? null,
       });
-      if ('error' in result) return { error: result.error };
+      if ('error' in result) {
+        return { error: localizeActionError(result.error, t, CREATE_ERROR_CODES) };
+      }
 
       // Stash any belt-rank grants triggered by this submission so the
       // RankAchievementModal on the destination page can pick them up.
