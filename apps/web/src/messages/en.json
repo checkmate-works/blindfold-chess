@@ -1042,6 +1042,7 @@
       "cta": "Sign Up Free"
     },
     "record": {
+      "thisTime": "This time",
       "title": "Your record",
       "previousBest": "Previous best",
       "previousLast": "Last time",

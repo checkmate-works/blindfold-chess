@@ -1042,6 +1042,7 @@
       "cta": "無料登録"
     },
     "record": {
+      "thisTime": "今回",
       "title": "あなたの記録",
       "previousBest": "これまでのベスト",
       "previousLast": "前回",

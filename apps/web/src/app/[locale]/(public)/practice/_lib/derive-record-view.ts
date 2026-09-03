@@ -15,6 +15,8 @@ export type RecordStatus = 'first' | 'new-best' | 'none';
 
 export type RecordView = {
   status: RecordStatus;
+  /** The run being shown; `undefined` when no `?grant=` resolved. */
+  currentScore: number | undefined;
   previousBestScore: number | undefined;
   previousLastScore: number | undefined;
   /** Current score minus last score; `undefined` unless both are known. */
@@ -39,6 +41,7 @@ export function deriveRecordView(comparison: ScoreComparison): RecordView {
 
   return {
     status,
+    currentScore: current?.score,
     previousBestScore: previousBest?.score,
     previousLastScore: previousLast?.score,
     diffFromLast: current && previousLast ? current.score - previousLast.score : undefined,

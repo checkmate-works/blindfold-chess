@@ -2,7 +2,8 @@
  * `RecordSection` is the signed-in counterpart of the sign-up banner on the
  * practice result page. Its `loading.tsx` placeholder reserves a fixed shape,
  * so beyond the copy these tests pin the structural invariant: every state
- * renders the same header row, two history rows and one link row.
+ * renders the same header row, three rows (this run, last run, previous
+ * best) and one link row.
  */
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
@@ -35,22 +36,33 @@ async function renderSection(comparison: ScoreComparison) {
 
 function expectFixedShape() {
   const card = screen.getByTestId('record-section');
-  expect(card.querySelectorAll('dt')).toHaveLength(2);
-  expect(card.querySelectorAll('dd')).toHaveLength(2);
-  expect(screen.getByText('viewMyRecords').closest('a')).toHaveAttribute(
+  expect([...card.querySelectorAll('dt')].map((dt) => dt.textContent)).toEqual([
+    'thisTime',
+    'previousLast',
+    'previousBest',
+  ]);
+  expect(card.querySelectorAll('dd')).toHaveLength(3);
+  expect(screen.getByText('viewMyRecords', { exact: false }).closest('a')).toHaveAttribute(
     'href',
     '/mypage/challenges?menu=coordinate_quiz'
   );
 }
 
+/** The `<dd>` paired with the given row label. */
+function rowValue(label: string) {
+  return screen.getByText(label).nextElementSibling as HTMLElement;
+}
+
 describe('RecordSection', () => {
-  it('renders both history rows with a diff and no badge for an ordinary run', async () => {
+  it('renders all three rows, with the diff on the "this time" row, and no badge for an ordinary run', async () => {
     await renderSection({ current: run(8), previousBest: run(12), previousLast: run(9) });
 
     expectFixedShape();
-    expect(screen.getByText('scoreValue:{"score":12}')).toBeInTheDocument();
-    expect(screen.getByText('scoreValue:{"score":9}')).toBeInTheDocument();
-    expect(screen.getByText('▼1')).toBeInTheDocument();
+    expect(rowValue('thisTime')).toHaveTextContent('scoreValue:{"score":8}');
+    expect(rowValue('thisTime')).toHaveTextContent('▼1');
+    expect(rowValue('previousLast')).toHaveTextContent('scoreValue:{"score":9}');
+    expect(rowValue('previousLast')).not.toHaveTextContent('▼');
+    expect(rowValue('previousBest')).toHaveTextContent('scoreValue:{"score":12}');
     expect(screen.queryByText('newBest')).not.toBeInTheDocument();
     expect(screen.queryByText('firstRecord')).not.toBeInTheDocument();
   });
@@ -68,13 +80,15 @@ describe('RecordSection', () => {
 
     expectFixedShape();
     expect(screen.getByText('firstRecord')).toBeInTheDocument();
+    expect(rowValue('thisTime')).toHaveTextContent('scoreValue:{"score":5}');
     expect(screen.getAllByText('—')).toHaveLength(2);
   });
 
-  it('shows history without a badge or diff when no current run resolves', async () => {
+  it('shows history with a dash for "this time" and no badge or diff when no current run resolves', async () => {
     await renderSection({ current: undefined, previousBest: run(12), previousLast: run(12) });
 
     expectFixedShape();
+    expect(rowValue('thisTime')).toHaveTextContent('—');
     expect(screen.queryByText('newBest')).not.toBeInTheDocument();
     expect(screen.queryByText('firstRecord')).not.toBeInTheDocument();
     expect(screen.queryByText(/[▲▼±]/)).not.toBeInTheDocument();

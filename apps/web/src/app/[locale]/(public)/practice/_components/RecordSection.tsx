@@ -23,18 +23,24 @@ type Props = {
  * round-trip (which is what produced the layout shift the banner used to
  * cause).
  *
- * The card is a fixed shape on purpose: a header row, exactly two history
- * rows, and one link row. Its `loading.tsx` placeholder
- * (`RecordSectionSkeleton`) can therefore reserve the exact height without
- * knowing whether this is the player's first run, a new best, or an ordinary
- * one — those states only swap the badge inside the header row and the
- * values inside the rows. An earlier draft stacked a "first record" note and
- * a badge as extra lines, which would have shifted the buttons below on
- * every first run.
+ * The card is a fixed shape on purpose: a header row, exactly three rows
+ * (this run, last run, previous best), and one link row. Its `loading.tsx`
+ * placeholder (`RecordSectionSkeleton`) can therefore reserve the exact
+ * height without knowing whether this is the player's first run, a new
+ * best, or an ordinary one — those states only swap the badge inside the
+ * header row and the values inside the rows. An earlier draft stacked a
+ * "first record" note and a badge as extra lines, which would have shifted
+ * the buttons below on every first run.
  *
- * The My Records link is deliberately a text link and not a button: this is
- * the moment a player is most curious about their trend, and the page is
- * otherwise buried under My Page.
+ * The change against the last run sits on the "this time" row, next to the
+ * value it describes — the ticker convention (current value, then its delta).
+ * A first draft put it on the "last time" row, where "▼7" read as a fact
+ * about the previous run rather than this one.
+ *
+ * The My Records link is a centred text link with the same 📈 icon as the
+ * My Records card on My Page, so the two read as the same destination. Not
+ * a button: this is the moment a player is most curious about their trend,
+ * and the page is otherwise buried under My Page.
  */
 export async function RecordSection({ locale, menuType, comparison }: Props) {
   const t = await getTranslations({ locale, namespace: 'practice.record' });
@@ -68,25 +74,29 @@ export async function RecordSection({ locale, menuType, comparison }: Props) {
 
       <dl className="mt-3 space-y-2 text-sm">
         <div className="flex items-center justify-between gap-3">
-          <dt className="text-muted-foreground">{t('previousBest')}</dt>
-          <dd className="font-semibold text-foreground">{formatScore(view.previousBestScore)}</dd>
+          <dt className="text-muted-foreground">{t('thisTime')}</dt>
+          <dd className="flex items-center gap-2 font-semibold text-foreground">
+            {formatScore(view.currentScore)}
+            <DiffFromLast diff={view.diffFromLast} />
+          </dd>
         </div>
         <div className="flex items-center justify-between gap-3">
           <dt className="text-muted-foreground">{t('previousLast')}</dt>
-          <dd className="flex items-center gap-2 font-semibold text-foreground">
-            <DiffFromLast diff={view.diffFromLast} />
-            {formatScore(view.previousLastScore)}
-          </dd>
+          <dd className="font-semibold text-foreground">{formatScore(view.previousLastScore)}</dd>
+        </div>
+        <div className="flex items-center justify-between gap-3">
+          <dt className="text-muted-foreground">{t('previousBest')}</dt>
+          <dd className="font-semibold text-foreground">{formatScore(view.previousBestScore)}</dd>
         </div>
       </dl>
 
-      <p className="mt-3 text-sm">
+      <p className="mt-3 text-center text-sm font-medium">
         <Link
           href={`/mypage/challenges?menu=${menuType}`}
           locale={locale}
           className={TEXT_LINK_CLASSES}
         >
-          {t('viewMyRecords')}
+          <span aria-hidden="true">📈</span> {t('viewMyRecords')}
         </Link>
       </p>
     </div>

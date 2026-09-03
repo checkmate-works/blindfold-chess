@@ -46,10 +46,11 @@ export function ExpGainSkeleton({ className = '' }: { className?: string }) {
 /**
  * Mirrors `RecordSection` — shown to signed-in players on modules that record
  * to `challenge_results`, in the same slot the sign-up banner occupies for
- * guests. The real card is a fixed shape (header row, two `text-sm` history
- * rows, one link row) so this reserves it exactly; the header badge is
- * optional on the real card but sits inside the row's line box, so it does
- * not change the height either way.
+ * guests. The real card is a fixed shape (header row, three `text-sm` rows
+ * — this run, last run, previous best — and one centred link row) so this
+ * reserves it exactly; the header badge is optional on the real card but
+ * sits inside the row's line box, so it does not change the height either
+ * way.
  */
 export function RecordSectionSkeleton() {
   return (
@@ -58,7 +59,7 @@ export function RecordSectionSkeleton() {
         <Skeleton className="h-5 w-24 rounded" />
       </div>
       <div className="mt-3 space-y-2">
-        {Array.from({ length: 2 }).map((_, i) => (
+        {Array.from({ length: 3 }).map((_, i) => (
           <div key={i} className="flex items-center justify-between gap-3">
             <Skeleton className="h-5 w-28 rounded" />
             <Skeleton className="h-5 w-12 rounded" />
@@ -66,7 +67,7 @@ export function RecordSectionSkeleton() {
         ))}
       </div>
       <div className="mt-3">
-        <Skeleton className="h-5 w-48 max-w-full rounded" />
+        <Skeleton className="mx-auto h-5 w-56 max-w-full rounded" />
       </div>
     </div>
   );

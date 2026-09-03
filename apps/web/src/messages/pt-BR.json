@@ -1042,6 +1042,7 @@
       "cta": "Cadastro Gratuito"
     },
     "record": {
+      "thisTime": "Desta vez",
       "title": "Seu registro",
       "previousBest": "Melhor anterior",
       "previousLast": "Última vez",

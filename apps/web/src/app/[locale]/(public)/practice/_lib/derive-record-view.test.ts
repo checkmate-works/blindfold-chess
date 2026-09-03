@@ -14,6 +14,7 @@ describe('deriveRecordView', () => {
       deriveRecordView({ current: run(8), previousBest: undefined, previousLast: undefined })
     ).toEqual({
       status: 'first',
+      currentScore: 8,
       previousBestScore: undefined,
       previousLastScore: undefined,
       diffFromLast: undefined,
@@ -60,6 +61,7 @@ describe('deriveRecordView', () => {
     });
     expect(view).toEqual({
       status: 'none',
+      currentScore: undefined,
       previousBestScore: 12,
       previousLastScore: 9,
       diffFromLast: undefined,
