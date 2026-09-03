@@ -21,8 +21,8 @@ type Props = {
 };
 
 /**
- * "Your record" card for a signed-in player, rendered in the slot above the
- * action buttons where guests see the sign-up banner. The result page
+ * "Your record" card for a signed-in player, rendered directly under the
+ * EXP card — the slot where guests see the sign-up banner. The result page
  * decides which of the two to mount from the server-resolved user, so the
  * block is in the HTML on first paint — never gated on a client auth
  * round-trip (which is what produced the layout shift the banner used to

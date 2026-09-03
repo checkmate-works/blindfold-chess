@@ -55,7 +55,8 @@ export type ResultClientProps = {
    */
   expInfo?: ExpInfo | null;
   /**
-   * Guest sign-up banner, rendered above the action buttons. Decided and
+   * Guest sign-up banner, rendered directly under the EXP card (so right
+   * after the score summary — guests have no EXP card). Decided and
    * rendered by the result page Server Component (`undefined` for a
    * signed-in viewer) so it is in the initial HTML — see the TSDoc on the
    * auth slot in `createPracticeResultPage` for why it is not client-gated.
@@ -173,11 +174,11 @@ type ResultClientConfig = {
    */
   renderAfterComplete?: (ctx: ResultContext, adBanner?: ReactNode) => ReactNode;
   /**
-   * Whether to fill the slot directly above the action buttons
-   * (PracticeComplete's `beforeActions`) with the server-provided
-   * `signUpBanner` / `recordSection`. Defaults to true. Modules that opt out
-   * get neither — the slot is auth-exclusive, and a module that does not
-   * want to nudge guests has no records to compare for members either.
+   * Whether to fill the slot under the EXP card (PracticeComplete's
+   * `afterExp`) with the server-provided `signUpBanner` / `recordSection`.
+   * Defaults to true. Modules that opt out get neither — the slot is
+   * auth-exclusive, and a module that does not want to nudge guests has no
+   * records to compare for members either.
    */
   showSignUpBanner?: boolean;
   /**
@@ -366,7 +367,7 @@ export function createPracticeResultClient(config: ResultClientConfig) {
             href: `/${locale}/practice`,
             label: tPractice('doOtherPractice'),
           }}
-          beforeActions={authSlotContent}
+          afterExp={authSlotContent}
           {...extraProps}
         >
           {renderChildren ? renderChildren(ctx) : undefined}

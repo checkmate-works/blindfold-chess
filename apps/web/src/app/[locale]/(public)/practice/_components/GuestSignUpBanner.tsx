@@ -7,8 +7,9 @@ type Props = {
 };
 
 /**
- * Sign-up banner for the practice result page, for a viewer the page has
- * already established to be a guest. Purely presentational: the auth
+ * Sign-up banner for the practice result page, shown directly under the
+ * score summary to a viewer the page has already established to be a
+ * guest. Purely presentational: the auth
  * decision is hoisted into the result page factory, which resolves the user
  * on the server (the result routes are `force-dynamic` and read the user for
  * the EXP card anyway) and mounts either this or `RecordSection`.
