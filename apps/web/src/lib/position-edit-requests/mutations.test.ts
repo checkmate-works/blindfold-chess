@@ -164,7 +164,6 @@ describe('submitPositionEditRequestEntry', () => {
 
   it('rejects a provisional proposer with profileRequired before the suggestion lands', async () => {
     mockUserHasProfile.mockResolvedValueOnce(false);
-    const { submitPositionEditRequestEntry } = await import('./mutations');
     const result = await submitPositionEditRequestEntry({
       positionId: POSITION_ID,
       payload: { proposedThemeIds: [], proposedChunkIds: [CHUNK_A] },

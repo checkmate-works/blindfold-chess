@@ -226,7 +226,6 @@ describe('createChunkEntry', () => {
   it('rejects a provisional author with profileRequired before the chunk lands', async () => {
     mockUserHasProfile.mockResolvedValueOnce(false);
 
-    const { createChunkEntry } = await import('./user-chunk-mutations');
     const result = await createChunkEntry(baseCreateInput);
 
     expect(result).toEqual({ error: 'profileRequired' });

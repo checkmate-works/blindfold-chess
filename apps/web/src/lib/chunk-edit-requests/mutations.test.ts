@@ -163,7 +163,6 @@ describe('submitEditRequestEntry', () => {
   it('rejects a provisional proposer with profileRequired before the suggestion lands', async () => {
     mockUserHasProfile.mockResolvedValueOnce(false);
 
-    const { submitEditRequestEntry } = await import('./mutations');
     const result = await submitEditRequestEntry({
       chunkId: CHUNK_ID,
       payload: { proposedTitle: 'Kingside fianchetto' },
