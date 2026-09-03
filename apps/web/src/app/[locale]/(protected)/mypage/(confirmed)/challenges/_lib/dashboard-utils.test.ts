@@ -287,4 +287,16 @@ describe('getDayIndex', () => {
     const periodStart = new Date('2025-06-02T00:00:00');
     expect(getDayIndex('2025-06-01', periodStart)).toBe(-1);
   });
+
+  it('does not lose a day when one day in between is an hour short or long (DST)', () => {
+    // A DST change makes one local day 23 or 25 hours long, so the midnight-to-
+    // midnight difference is a whole number of days ± 1 hour. The test
+    // runner's zone has no DST on these dates, so the hour is simulated by
+    // shifting the period start; the arithmetic under test is the same.
+    const base = new Date('2025-06-02T00:00:00');
+    const anHourLate = new Date(base.getTime() + 60 * 60 * 1000);
+    const anHourEarly = new Date(base.getTime() - 60 * 60 * 1000);
+    expect(getDayIndex('2025-06-09', anHourLate)).toBe(7);
+    expect(getDayIndex('2025-06-09', anHourEarly)).toBe(7);
+  });
 });

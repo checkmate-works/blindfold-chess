@@ -104,10 +104,20 @@ export function aggregateByDay(sessions: ChallengeResultRow[], locale: string): 
     }));
 }
 
+/**
+ * Whole days from `periodStart` (local midnight) to the local date `dateKey`.
+ *
+ * Rounded, not floored: both instants are local midnights, so the difference
+ * is a whole number of days except across a DST change, where one day is 23
+ * or 25 hours long. Flooring turned every day after a spring-forward into
+ * the day before it (6.96 → 6), so two days of the chart collapsed onto one
+ * index and the later day's average overwrote the earlier one's. Rounding
+ * absorbs the hour either way.
+ */
 export function getDayIndex(dateKey: string, periodStart: Date): number {
   const d = new Date(dateKey + 'T00:00:00');
   const diff = d.getTime() - periodStart.getTime();
-  return Math.floor(diff / (1000 * 60 * 60 * 24));
+  return Math.round(diff / (1000 * 60 * 60 * 24));
 }
 
 export function getPeriodStart(period: DatePeriod): Date {
