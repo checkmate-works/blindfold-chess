@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { and, count, desc, eq, isNull } from 'drizzle-orm';
+import { and, count, desc, eq } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { AUTHOR_PROFILE_COLUMNS, db, profiles, userFollows } from '@/lib/db';
@@ -78,7 +78,12 @@ export default async function FollowersPage({ params, searchParams }: Props) {
     })
     .from(userFollows)
     .innerJoin(profiles, eq(userFollows.followerId, profiles.id))
-    .where(and(eq(userFollows.followingId, profile.id), isNull(profiles.deletedAt)))
+    // The filter is the helper rather than the join's `isNull(profiles.deletedAt)`
+    // so this list and the count above apply one predicate. The two spellings do
+    // not always agree, and a count that outruns its list is a pager offering a
+    // page with nothing on it. See the helper's `@design` note for why its form
+    // is also the cheaper one.
+    .where(and(eq(userFollows.followingId, profile.id), profileNotDeleted(userFollows.followerId)))
     .orderBy(desc(userFollows.createdAt))
     .limit(PAGE_SIZE)
     .offset(offset);

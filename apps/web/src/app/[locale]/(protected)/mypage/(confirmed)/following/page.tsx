@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 
-import { and, count, desc, eq, isNull } from 'drizzle-orm';
+import { and, count, desc, eq } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { getAuthenticatedUser } from '@/lib/auth';
@@ -56,7 +56,12 @@ export default async function FollowingPage({ params, searchParams }: Props) {
     })
     .from(userFollows)
     .innerJoin(profiles, eq(userFollows.followingId, profiles.id))
-    .where(and(eq(userFollows.followerId, user.id), isNull(profiles.deletedAt)))
+    // The filter is the helper rather than the join's `isNull(profiles.deletedAt)`
+    // so this list and the count above apply one predicate. The two spellings do
+    // not always agree, and a count that outruns its list is a pager offering a
+    // page with nothing on it. See the helper's `@design` note for why its form
+    // is also the cheaper one.
+    .where(and(eq(userFollows.followerId, user.id), profileNotDeleted(userFollows.followingId)))
     .orderBy(desc(userFollows.createdAt))
     .limit(PAGE_SIZE)
     .offset(offset);

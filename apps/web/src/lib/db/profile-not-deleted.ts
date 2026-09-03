@@ -30,6 +30,14 @@ import { profiles } from './schema';
  *
  * Use this wherever the number of rows being filtered can grow. A single-row
  * lookup that already has the profile in hand does not need it.
+ *
+ * A list and the count that pages it must both be filtered with this, and not
+ * one each way. The two spellings are not interchangeable at the row level —
+ * `isNull(profiles.deletedAt)` on an inner join also drops a row whose profile
+ * is gone entirely, where this returns true for it — so mixing them lets the
+ * count outrun the list and the pager offer a page with nothing on it. Both
+ * follower lists and the problem-author sitemap query used to be split that
+ * way.
  */
 /*
  * The parentheses are written out rather than delegated to drizzle's
