@@ -72,10 +72,17 @@ export function RecordSectionSkeleton() {
   );
 }
 
-/** Mirrors `SignUpBannerUI` — shown to anonymous players only. */
+/**
+ * Mirrors `SignUpBannerUI` — shown to anonymous players only.
+ *
+ * Only the box is copied (1px border, padding, inner rows); the real banner's
+ * primary-tinted border and fill are not. Colour has no effect on the reserved
+ * height, and a blue-outlined box in the middle of an otherwise grey skeleton
+ * read as already-loaded content rather than a placeholder.
+ */
 export function SignUpBannerSkeleton() {
   return (
-    <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 sm:p-6">
+    <div className="rounded-lg border border-border bg-card p-4 sm:p-6">
       <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-between">
         <div className="w-full">
           <Skeleton className="h-5 w-40 rounded" />
