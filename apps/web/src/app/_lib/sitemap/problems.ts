@@ -4,6 +4,7 @@ import { SUPPORTED_LOCALES } from '@/config';
 import { and, eq, isNull } from 'drizzle-orm';
 
 import { db, positions, profiles } from '@/lib/db';
+import { profileNotDeleted } from '@/lib/db/profile-not-deleted';
 
 import { BASE_URL, buildSitemapSection, generateAlternates } from './shared';
 
@@ -26,8 +27,17 @@ async function buildProblemAuthorEntries(
       .selectDistinct({ username: profiles.username })
       .from(positions)
       .innerJoin(profiles, eq(positions.userId, profiles.id))
+      // `profileNotDeleted` rather than `isNull(profiles.deletedAt)`: the
+      // exclusion has to hold over every row in `positions`, and testing the
+      // live side of `profiles` there is what the helper's `@design` note
+      // documents as the spelling that seq-scans the whole table. The join
+      // stays — it is how the username is projected — but it no longer filters.
       .where(
-        and(eq(positions.type, type), isNull(positions.deletedAt), isNull(profiles.deletedAt))
+        and(
+          eq(positions.type, type),
+          isNull(positions.deletedAt),
+          profileNotDeleted(positions.userId)
+        )
       );
 
     for (const { username } of authors) {
