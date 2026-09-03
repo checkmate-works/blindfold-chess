@@ -25,7 +25,7 @@ pnpm install
 # Copy Stockfish AI engine files (required for AI opponent)
 pnpm run copy-stockfish
 
-# Start Supabase local (from apps/web; first run downloads Docker images)
+# Start Supabase local (works from apps/web or the repo root; first run downloads Docker images)
 pnpm supabase start
 ```
 

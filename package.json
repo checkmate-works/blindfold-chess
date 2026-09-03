@@ -13,6 +13,7 @@
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "format": "prettier --write \"**/*.{ts,tsx,md,json}\"",
+    "supabase": "pnpm --filter web exec supabase",
     "prepare": "husky"
   },
   "pnpm": {
