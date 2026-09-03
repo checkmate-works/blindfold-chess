@@ -34,7 +34,7 @@ type Props = {
  *
  * The change against the last run sits on the "this time" row, next to the
  * value it describes — the ticker convention (current value, then its delta).
- * A first draft put it on the "last time" row, where "▼7" read as a fact
+ * A first draft put it on the "last time" row, where a "−7" read as a fact
  * about the previous run rather than this one.
  *
  * The My Records link is a centred text link with the same 📈 icon as the
@@ -104,13 +104,19 @@ export async function RecordSection({ locale, menuType, comparison }: Props) {
 }
 
 /**
- * Change against the last run, in the same glyphs and colours the My Records
- * dashboard uses for its period-over-period stats, so the two surfaces read
- * as one.
+ * Change against the last run as a signed count (`+2`, `−7`, `±0`), in the
+ * colours the My Records dashboard uses for its period-over-period stats.
+ *
+ * A signed count rather than the dashboard's ▲/▼ glyphs or a percentage: the
+ * score is a handful of correct answers, so a percentage swings wildly (1 → 3
+ * is +200%, 0 → anything is undefined) and the triangles left it unclear
+ * whether "▼7" was the amount lost or a value. `+2` reads as "two more than
+ * last time" with the "last time" row directly beneath it. The minus is
+ * U+2212 so it matches the plus in width and weight.
  */
 function DiffFromLast({ diff }: { diff: number | undefined }) {
   if (diff === undefined) return null;
   if (diff === 0) return <span className="text-xs text-muted-foreground">±0</span>;
-  if (diff > 0) return <span className="text-xs text-success">▲{diff}</span>;
-  return <span className="text-xs text-destructive">▼{Math.abs(diff)}</span>;
+  if (diff > 0) return <span className="text-xs text-success">+{diff}</span>;
+  return <span className="text-xs text-destructive">−{Math.abs(diff)}</span>;
 }

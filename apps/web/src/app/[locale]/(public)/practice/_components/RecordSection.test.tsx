@@ -59,20 +59,20 @@ describe('RecordSection', () => {
 
     expectFixedShape();
     expect(rowValue('thisTime')).toHaveTextContent('scoreValue:{"score":8}');
-    expect(rowValue('thisTime')).toHaveTextContent('▼1');
+    expect(rowValue('thisTime')).toHaveTextContent('−1');
     expect(rowValue('previousLast')).toHaveTextContent('scoreValue:{"score":9}');
-    expect(rowValue('previousLast')).not.toHaveTextContent('▼');
+    expect(rowValue('previousLast')).not.toHaveTextContent('−');
     expect(rowValue('previousBest')).toHaveTextContent('scoreValue:{"score":12}');
     expect(screen.queryByText('newBest')).not.toBeInTheDocument();
     expect(screen.queryByText('firstRecord')).not.toBeInTheDocument();
   });
 
-  it('shows the new-best badge and a positive diff when the run beats the previous best', async () => {
+  it('shows the new-best badge and a signed positive diff when the run beats the previous best', async () => {
     await renderSection({ current: run(14), previousBest: run(12), previousLast: run(9) });
 
     expectFixedShape();
     expect(screen.getByText('newBest')).toBeInTheDocument();
-    expect(screen.getByText('▲5')).toBeInTheDocument();
+    expect(screen.getByText('+5')).toBeInTheDocument();
   });
 
   it('shows the first-record badge and dashes on a first-ever run', async () => {
@@ -91,7 +91,7 @@ describe('RecordSection', () => {
     expect(rowValue('thisTime')).toHaveTextContent('—');
     expect(screen.queryByText('newBest')).not.toBeInTheDocument();
     expect(screen.queryByText('firstRecord')).not.toBeInTheDocument();
-    expect(screen.queryByText(/[▲▼±]/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/^[+−±]\d*$/)).not.toBeInTheDocument();
   });
 
   it('renders ±0 when the run ties the last one', async () => {
