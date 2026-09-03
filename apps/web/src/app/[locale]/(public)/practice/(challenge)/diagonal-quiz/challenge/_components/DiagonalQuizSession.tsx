@@ -113,7 +113,7 @@ export default function DiagonalQuizSession({ locale, initialTimeLimit }: Props)
   // by contrast, is about to render the playing screen — use the matching
   // play-shaped skeleton so the fallback doesn't diverge from what renders.
   if (isFinished) {
-    return <PracticeResultSkeleton grantsExp showsSignUpBanner />;
+    return <PracticeResultSkeleton grantsExp showsSignUpBanner showsRecordSection />;
   }
   if (!currentSquare) {
     return <DiagonalQuizPlaySkeleton showHeader />;

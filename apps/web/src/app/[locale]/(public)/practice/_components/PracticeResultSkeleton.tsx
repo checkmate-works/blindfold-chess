@@ -16,6 +16,12 @@ type Props = {
    * reserved for anonymous users. Defaults to false for the same reason.
    */
   showsSignUpBanner?: boolean;
+  /**
+   * Whether this module records to `challenge_results`. When true, the record
+   * section is reserved for authenticated users — it fills the banner's slot
+   * for them.
+   */
+  showsRecordSection?: boolean;
 };
 
 /**
@@ -33,10 +39,11 @@ type Props = {
  * stable panel layout instead of jumping from a tiny score placeholder to the
  * full result and shifting twice.
  *
- * The EXP card (authenticated) and sign-up banner (anonymous) are mutually
- * exclusive by auth state; the caller declares via `grantsExp` /
- * `showsSignUpBanner` which the module actually renders, and this component
- * reserves the matching one for the current user.
+ * The EXP card and record section (authenticated) and the sign-up banner
+ * (anonymous) are mutually exclusive by auth state; the caller declares via
+ * `grantsExp` / `showsSignUpBanner` / `showsRecordSection` which the module
+ * actually renders, and this component reserves the matching ones for the
+ * current user.
  *
  * The wrapping `space-y-8` mirrors `PagePanel`'s own child rhythm so the blocks
  * are spaced identically to the real page.
@@ -44,6 +51,7 @@ type Props = {
 export function PracticeResultSkeleton({
   grantsExp = false,
   showsSignUpBanner = false,
+  showsRecordSection = false,
 }: Props = {}) {
   const { user, isLoading } = useAuth();
   // While auth is still resolving, reserve neither — the window is brief and
@@ -56,6 +64,7 @@ export function PracticeResultSkeleton({
       <PracticeResultPanelSkeleton
         reserveExp={grantsExp && authed}
         reserveSignUpBanner={showsSignUpBanner && anon}
+        reserveRecordSection={showsRecordSection && authed}
       />
     </div>
   );

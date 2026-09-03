@@ -45,9 +45,10 @@ type Props = {
   };
   /**
    * Slot rendered directly above the action buttons (try-again / more-practice).
-   * Used for the anonymous sign-up banner so the prompt lands before the
-   * buttons can carry the guest away — mirroring the EXP card's position for
-   * signed-in users (the two are mutually exclusive).
+   * Holds the guest sign-up banner so the prompt lands before the buttons can
+   * carry the guest away, or — for a signed-in player on a module that keeps
+   * records — the record comparison, which lands at the moment the player is
+   * most curious about their trend. The two are mutually exclusive by auth.
    */
   beforeActions?: React.ReactNode;
   beforeRelatedContent?: React.ReactNode;

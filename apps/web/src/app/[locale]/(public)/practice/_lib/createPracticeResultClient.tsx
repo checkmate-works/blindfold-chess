@@ -15,7 +15,6 @@ import type {
 import { LeaderboardPreview } from '@/app/[locale]/(public)/practice/_components/LeaderboardPreview';
 import { PracticeComplete } from '@/app/[locale]/(public)/practice/_components/PracticeComplete';
 import { PracticeResultPage } from '@/app/[locale]/(public)/practice/_components/PracticeResultPage';
-import { SignUpBanner } from '@/app/[locale]/(public)/practice/_components/SignUpBanner';
 import { getCommonPracticeCompleteLabels } from '@/app/[locale]/(public)/practice/_lib/get-common-practice-labels';
 import type {
   PracticeCompleteLabels,
@@ -55,6 +54,18 @@ export type ResultClientProps = {
    * the param is missing, or the event could not be found.
    */
   expInfo?: ExpInfo | null;
+  /**
+   * Guest sign-up banner, rendered above the action buttons. Decided and
+   * rendered by the result page Server Component (`undefined` for a
+   * signed-in viewer) so it is in the initial HTML — see the TSDoc on the
+   * auth slot in `createPracticeResultPage` for why it is not client-gated.
+   */
+  signUpBanner?: ReactNode;
+  /**
+   * Signed-in counterpart of `signUpBanner`: the player's record comparison,
+   * in the same slot. Only leaderboard result pages provide it.
+   */
+  recordSection?: ReactNode;
 };
 
 // ---------------------------------------------------------------------------
@@ -162,8 +173,11 @@ type ResultClientConfig = {
    */
   renderAfterComplete?: (ctx: ResultContext, adBanner?: ReactNode) => ReactNode;
   /**
-   * Whether to render the SignUpBanner directly above the action buttons (via
-   * PracticeComplete's `beforeActions` slot). Defaults to true.
+   * Whether to fill the slot directly above the action buttons
+   * (PracticeComplete's `beforeActions`) with the server-provided
+   * `signUpBanner` / `recordSection`. Defaults to true. Modules that opt out
+   * get neither — the slot is auth-exclusive, and a module that does not
+   * want to nudge guests has no records to compare for members either.
    */
   showSignUpBanner?: boolean;
   /**
@@ -240,6 +254,8 @@ export function createPracticeResultClient(config: ResultClientConfig) {
     leaderboardDetailPath,
     leaderboardPeriod,
     expInfo = null,
+    signUpBanner,
+    recordSection,
   }: ResultClientProps) {
     const t = useTranslations(`practice.${i18nKey}`);
     const tPractice = useTranslations('practice');
@@ -320,6 +336,10 @@ export function createPracticeResultClient(config: ResultClientConfig) {
       ? extraCompleteProps(ctx, { adBanner, adBannerWide })
       : {};
 
+    // The page provides at most one of the two (guest → banner, member →
+    // record section); whichever arrived fills the slot.
+    const authSlotContent = showSignUpBanner ? (signUpBanner ?? recordSection) : undefined;
+
     return (
       <PracticeResultPage
         locale={locale}
@@ -346,7 +366,7 @@ export function createPracticeResultClient(config: ResultClientConfig) {
             href: `/${locale}/practice`,
             label: tPractice('doOtherPractice'),
           }}
-          beforeActions={showSignUpBanner ? <SignUpBanner locale={locale} /> : undefined}
+          beforeActions={authSlotContent}
           {...extraProps}
         >
           {renderChildren ? renderChildren(ctx) : undefined}

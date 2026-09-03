@@ -114,7 +114,7 @@ export default function LegalMovesSession({ locale, selectedPieces, selectedPiec
   });
 
   if (isFinished) {
-    return <PracticeResultSkeleton grantsExp showsSignUpBanner />;
+    return <PracticeResultSkeleton grantsExp showsSignUpBanner showsRecordSection />;
   }
 
   if (!currentQuestion) {

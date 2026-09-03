@@ -17,5 +17,5 @@ export default createLeaderboardPracticeResultPage(ResultClient, {
   module: 'diagonal_quiz',
   resolveKey: () => 'default',
   // Keep the inner chunk-load fallback consistent with loading.tsx.
-  loadingFallback: <PracticeResultLoadingSkeleton grantsExp showsSignUpBanner />,
+  loadingFallback: <PracticeResultLoadingSkeleton grantsExp showsSignUpBanner showsRecordSection />,
 });

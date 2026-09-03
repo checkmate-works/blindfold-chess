@@ -17,5 +17,5 @@ export default createLeaderboardPracticeResultPage(ResultClient, {
   module: 'coordinate_quiz',
   resolveKey: (sp) => (typeof sp.orientation === 'string' ? sp.orientation : 'random'),
   // Keep the inner chunk-load fallback consistent with loading.tsx.
-  loadingFallback: <PracticeResultLoadingSkeleton grantsExp showsSignUpBanner />,
+  loadingFallback: <PracticeResultLoadingSkeleton grantsExp showsSignUpBanner showsRecordSection />,
 });

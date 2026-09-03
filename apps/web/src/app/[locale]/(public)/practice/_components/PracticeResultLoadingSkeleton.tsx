@@ -14,6 +14,8 @@ type Props = {
   grantsExp?: boolean;
   /** Whether this module shows the sign-up banner (reserve it for anonymous users). */
   showsSignUpBanner?: boolean;
+  /** Whether this module records to `challenge_results` (reserve the record section for authenticated users). */
+  showsRecordSection?: boolean;
 };
 
 /**
@@ -46,6 +48,7 @@ type Props = {
 export async function PracticeResultLoadingSkeleton({
   grantsExp = false,
   showsSignUpBanner = false,
+  showsRecordSection = false,
 }: Props = {}) {
   const locale = await getLocaleFromPathnameHeader();
   const [tPractice, tNav] = await Promise.all([
@@ -54,9 +57,9 @@ export async function PracticeResultLoadingSkeleton({
   ]);
 
   // Only resolve the user when a conditional block could be reserved; modules
-  // that show neither (the default) skip the auth round-trip entirely.
+  // that show none of them (the default) skip the auth round-trip entirely.
   let isAuthed = false;
-  if (grantsExp || showsSignUpBanner) {
+  if (grantsExp || showsSignUpBanner || showsRecordSection) {
     const user = await getOptionalUser();
     isAuthed = !!user;
   }
@@ -71,6 +74,7 @@ export async function PracticeResultLoadingSkeleton({
         <PracticeResultPanelSkeleton
           reserveExp={grantsExp && isAuthed}
           reserveSignUpBanner={showsSignUpBanner && !isAuthed}
+          reserveRecordSection={showsRecordSection && isAuthed}
         />
 
         {/* Mirror `PageLayout`'s trailing `!mt-4 space-y-4` block (see

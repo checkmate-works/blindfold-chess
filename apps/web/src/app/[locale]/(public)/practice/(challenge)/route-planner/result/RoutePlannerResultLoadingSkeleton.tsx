@@ -71,6 +71,7 @@ export async function RoutePlannerResultLoadingSkeleton() {
           }}
           reserveExp={isAuthed}
           reserveSignUpBanner={!isAuthed}
+          reserveRecordSection={isAuthed}
         />
 
         {/* Mirror `PageLayout`'s trailing `!mt-4 space-y-4` block so the

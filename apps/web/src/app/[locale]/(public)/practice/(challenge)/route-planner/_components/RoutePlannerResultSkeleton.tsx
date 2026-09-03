@@ -21,9 +21,9 @@ export function RoutePlannerResultSkeleton() {
   const tPractice = useTranslations('practice');
   const { user, isLoading } = useAuth();
 
-  // Authenticated runs land on the EXP card; anonymous runs land on the sign-up
-  // banner. While auth is still resolving, reserve neither (this window is
-  // brief and guessing wrong would itself shift).
+  // Authenticated runs land on the EXP card and the record section; anonymous
+  // runs land on the sign-up banner. While auth is still resolving, reserve
+  // none (this window is brief and guessing wrong would itself shift).
   const reserveExp = !isLoading && !!user;
   const reserveSignUpBanner = !isLoading && !user;
 
@@ -39,6 +39,7 @@ export function RoutePlannerResultSkeleton() {
         }}
         reserveExp={reserveExp}
         reserveSignUpBanner={reserveSignUpBanner}
+        reserveRecordSection={reserveExp}
       />
     </div>
   );
