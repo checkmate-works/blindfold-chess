@@ -280,6 +280,26 @@ describe('PuzzlePreviewClient', () => {
       expect(mockPush).not.toHaveBeenCalled();
     });
 
+    it('on profileRequired: shows the translated copy, not the raw code', async () => {
+      seedDraft();
+      mockCreatePuzzle.mockResolvedValue({ error: 'profileRequired' });
+
+      render(<PuzzlePreviewClient availableThemes={[]} availableChunks={[]} />);
+
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: 'createCta' }));
+      });
+
+      // The identity translator echoes the resolved key, so seeing
+      // `errors.profileRequired` (and not the bare `profileRequired` the
+      // action returned) is what proves the code was looked up rather than
+      // printed straight into the banner.
+      expect(screen.getByText('errors.profileRequired')).toBeInTheDocument();
+      expect(screen.queryByText('profileRequired')).not.toBeInTheDocument();
+      expect(sessionStorage.getItem(DRAFT_STORAGE_KEY)).not.toBeNull();
+      expect(mockPush).not.toHaveBeenCalled();
+    });
+
     it('on thrown error: surfaces the generic createError message and keeps the draft', async () => {
       seedDraft();
       mockCreatePuzzle.mockRejectedValue(new Error('network down'));

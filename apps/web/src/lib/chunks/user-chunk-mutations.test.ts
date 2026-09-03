@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+const mockUserHasProfile = vi.fn(async () => true);
 const mockAuthenticateAndGuard = vi.fn();
 const mockSelectLimit = vi.fn();
 const mockInsertReturning = vi.fn();
@@ -22,6 +23,15 @@ const mockLinkNewChunkToGameMove = vi.fn();
 
 vi.mock('@/lib/auth', () => ({
   authenticateAndGuard: (...args: unknown[]) => mockAuthenticateAndGuard(...args),
+  // Composed rather than stubbed flat, exactly as the real helper composes it:
+  // the plain guard first, then the `profiles` lookup. That keeps every
+  // existing guard assertion (signInRequired, banned, rateLimited) exercising
+  // one path regardless of which of the two guards the call site picked.
+  authenticateGuardAndRequireProfile: async (...args: unknown[]) => {
+    const guardResult = await mockAuthenticateAndGuard(...args);
+    if ('error' in guardResult) return guardResult;
+    return (await mockUserHasProfile()) ? guardResult : { error: 'profileRequired' };
+  },
 }));
 
 vi.mock('@/lib/users/activity-log', () => ({
@@ -203,6 +213,17 @@ describe('createChunkEntry', () => {
     const result = await createChunkEntry(baseCreateInput);
 
     expect(result).toEqual({ error: 'rateLimited' });
+    expect(mockInsertReturning).not.toHaveBeenCalled();
+  });
+
+  it('rejects a provisional author with profileRequired before the chunk lands', async () => {
+    mockUserHasProfile.mockResolvedValueOnce(false);
+
+    const { createChunkEntry } = await import('./user-chunk-mutations');
+    const result = await createChunkEntry(baseCreateInput);
+
+    expect(result).toEqual({ error: 'profileRequired' });
+    expect(mockFindChunkBySlug).not.toHaveBeenCalled();
     expect(mockInsertReturning).not.toHaveBeenCalled();
   });
 

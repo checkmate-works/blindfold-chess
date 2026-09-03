@@ -12,6 +12,7 @@ import { feedItems, positionContentRevisions } from '@/lib/db/schema';
  * evaluation.
  */
 
+const mockUserHasProfile = vi.fn(async () => true);
 const mockAuthenticateAndGuard = vi.fn();
 const mockSelectLimit = vi.fn();
 const mockInsertReturning = vi.fn();
@@ -43,6 +44,15 @@ vi.mock('@/lib/ads/ads-hidden-cookie-writer', () => ({
 
 vi.mock('@/lib/auth', () => ({
   authenticateAndGuard: (...args: unknown[]) => mockAuthenticateAndGuard(...args),
+  // Composed rather than stubbed flat, exactly as the real helper composes it:
+  // the plain guard first, then the `profiles` lookup. That keeps every
+  // existing guard assertion (signInRequired, banned, rateLimited) exercising
+  // one path regardless of which of the two guards the call site picked.
+  authenticateGuardAndRequireProfile: async (...args: unknown[]) => {
+    const guardResult = await mockAuthenticateAndGuard(...args);
+    if ('error' in guardResult) return guardResult;
+    return (await mockUserHasProfile()) ? guardResult : { error: 'profileRequired' };
+  },
 }));
 
 vi.mock('@/lib/db/rank-evaluation', () => ({
@@ -153,6 +163,16 @@ describe('createPositionEntry', () => {
     const result = await createPositionEntry(baseCreateParams);
 
     expect(result).toEqual({ error: 'signInRequired' });
+    expect(mockInsertReturning).not.toHaveBeenCalled();
+  });
+
+  it('rejects a provisional author with profileRequired before the position lands', async () => {
+    mockUserHasProfile.mockResolvedValueOnce(false);
+
+    const { createPositionEntry } = await import('./user-position-mutations');
+    const result = await createPositionEntry(baseCreateParams);
+
+    expect(result).toEqual({ error: 'profileRequired' });
     expect(mockInsertReturning).not.toHaveBeenCalled();
   });
 
