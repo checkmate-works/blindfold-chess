@@ -64,6 +64,20 @@ vi.mock('@/lib/billing/subscription-constants', () => ({
   BENEFIT_ACTIVE_STATUSES: ['active'],
 }));
 
+// Loaded once at module scope rather than inside each `it`: pulling this
+// graph costs a few hundred milliseconds, and inside a test body that cost is
+// charged to vitest's 5s `testTimeout`, which the first test can cross when
+// the suite is competing for CPU. Later tests hit the module cache, so the
+// symptom is one flaky test rather than a slow file. The `vi.mock` calls
+// above are hoisted over this statement, so the load needs no per-test setup.
+const {
+  fetchUsersPageData,
+  fetchCountryStats,
+  fetchRankStats,
+  getSignupMethod,
+  fetchSignupMethodStats,
+} = await import('./queries');
+
 describe('fetchUsersPageData', () => {
   it('should return totalCount in the result when no status filter is applied', async () => {
     const mockUsers = [
@@ -73,7 +87,6 @@ describe('fetchUsersPageData', () => {
 
     const mockAdminClient = createMockAdminClient(mockUsers, { total: 50 });
 
-    const { fetchUsersPageData } = await import('./queries');
     const result = await fetchUsersPageData(mockAdminClient as never, 1, EMPTY_ADMIN_USER_FILTERS);
 
     expect(result).toHaveProperty('totalCount');
@@ -90,7 +103,6 @@ describe('fetchUsersPageData', () => {
     const mockAdminClient = createMockAdminClient(mockUsers, { total: 3 });
 
     // All users have no profile → they are all "anonymous"
-    const { fetchUsersPageData } = await import('./queries');
     const result = await fetchUsersPageData(mockAdminClient as never, 1, {
       ...EMPTY_ADMIN_USER_FILTERS,
       statusFilter: 'anonymous',
@@ -103,7 +115,6 @@ describe('fetchUsersPageData', () => {
   it('should return totalCount of 0 when no users match the filter', async () => {
     const mockAdminClient = createMockAdminClient([], { total: 0 });
 
-    const { fetchUsersPageData } = await import('./queries');
     const result = await fetchUsersPageData(mockAdminClient as never, 1, {
       ...EMPTY_ADMIN_USER_FILTERS,
       statusFilter: 'active',
@@ -116,7 +127,6 @@ describe('fetchUsersPageData', () => {
   it('should return totalCount of 0 when no status filter and API returns total 0', async () => {
     const mockAdminClient = createMockAdminClient([], { total: 0 });
 
-    const { fetchUsersPageData } = await import('./queries');
     const result = await fetchUsersPageData(mockAdminClient as never, 1, EMPTY_ADMIN_USER_FILTERS);
 
     expect(result.totalCount).toBe(0);
@@ -137,7 +147,6 @@ describe('fetchUsersPageData', () => {
       },
     };
 
-    const { fetchUsersPageData } = await import('./queries');
     const result = await fetchUsersPageData(mockAdminClient as never, 1, EMPTY_ADMIN_USER_FILTERS);
 
     expect(result.totalCount).toBe(0);
@@ -168,7 +177,6 @@ describe('fetchUsersPageData', () => {
       }),
     });
 
-    const { fetchUsersPageData } = await import('./queries');
     const result = await fetchUsersPageData(mockAdminClient as never, 1, {
       ...EMPTY_ADMIN_USER_FILTERS,
       statusFilter: 'active',
@@ -201,7 +209,6 @@ describe('fetchUsersPageData', () => {
       }),
     });
 
-    const { fetchUsersPageData } = await import('./queries');
     const result = await fetchUsersPageData(mockAdminClient as never, 1, {
       ...EMPTY_ADMIN_USER_FILTERS,
       statusFilter: 'banned',
@@ -234,7 +241,6 @@ describe('fetchUsersPageData', () => {
       }),
     });
 
-    const { fetchUsersPageData } = await import('./queries');
     const result = await fetchUsersPageData(mockAdminClient as never, 1, {
       ...EMPTY_ADMIN_USER_FILTERS,
       statusFilter: 'deleted',
@@ -252,7 +258,6 @@ describe('fetchUsersPageData', () => {
     }));
     const mockAdminClient = createMockAdminClient(mockUsers, { total: 25 });
 
-    const { fetchUsersPageData } = await import('./queries');
     const result = await fetchUsersPageData(mockAdminClient as never, 2, EMPTY_ADMIN_USER_FILTERS);
 
     expect(result.totalCount).toBe(25);
@@ -264,7 +269,6 @@ describe('fetchUsersPageData', () => {
   it('should include all required properties in UsersPageData', async () => {
     const mockAdminClient = createMockAdminClient([], { total: 0 });
 
-    const { fetchUsersPageData } = await import('./queries');
     const result = await fetchUsersPageData(mockAdminClient as never, 1, EMPTY_ADMIN_USER_FILTERS);
 
     expect(result).toHaveProperty('users');
@@ -304,7 +308,6 @@ describe('fetchCountryStats', () => {
       }),
     });
 
-    const { fetchCountryStats } = await import('./queries');
     const result = await fetchCountryStats(mockAdminClient as never, EMPTY_ADMIN_USER_FILTERS);
 
     expect(result).toEqual([
@@ -342,7 +345,6 @@ describe('fetchCountryStats', () => {
       }),
     });
 
-    const { fetchCountryStats } = await import('./queries');
     const result = await fetchCountryStats(mockAdminClient as never, EMPTY_ADMIN_USER_FILTERS);
 
     expect(result).toEqual([
@@ -376,7 +378,6 @@ describe('fetchCountryStats', () => {
       }),
     });
 
-    const { fetchCountryStats } = await import('./queries');
     const result = await fetchCountryStats(mockAdminClient as never, EMPTY_ADMIN_USER_FILTERS);
 
     expect(result).toEqual([
@@ -388,7 +389,6 @@ describe('fetchCountryStats', () => {
   it('should return empty array when there are no users', async () => {
     const mockAdminClient = createMockAdminClient([], { total: 0 });
 
-    const { fetchCountryStats } = await import('./queries');
     const result = await fetchCountryStats(mockAdminClient as never, EMPTY_ADMIN_USER_FILTERS);
 
     expect(result).toEqual([]);
@@ -419,7 +419,6 @@ describe('fetchCountryStats', () => {
       }),
     });
 
-    const { fetchCountryStats } = await import('./queries');
     const result = await fetchCountryStats(mockAdminClient as never, {
       ...EMPTY_ADMIN_USER_FILTERS,
       statusFilter: 'active',
@@ -454,7 +453,6 @@ describe('fetchCountryStats', () => {
       }),
     });
 
-    const { fetchCountryStats } = await import('./queries');
     const result = await fetchCountryStats(mockAdminClient as never, {
       ...EMPTY_ADMIN_USER_FILTERS,
       statusFilter: 'banned',
@@ -489,7 +487,6 @@ describe('fetchCountryStats', () => {
       }),
     });
 
-    const { fetchCountryStats } = await import('./queries');
     const result = await fetchCountryStats(mockAdminClient as never, {
       ...EMPTY_ADMIN_USER_FILTERS,
       statusFilter: 'anonymous',
@@ -522,7 +519,6 @@ describe('fetchCountryStats', () => {
       }),
     });
 
-    const { fetchCountryStats } = await import('./queries');
     const result = await fetchCountryStats(mockAdminClient as never, {
       ...EMPTY_ADMIN_USER_FILTERS,
       statusFilter: 'deleted',
@@ -557,7 +553,6 @@ describe('fetchCountryStats', () => {
       }),
     });
 
-    const { fetchCountryStats } = await import('./queries');
     const result = await fetchCountryStats(mockAdminClient as never, EMPTY_ADMIN_USER_FILTERS);
 
     expect(result).toEqual([{ country: 'JP', count: 3 }]);
@@ -586,7 +581,6 @@ describe('fetchCountryStats', () => {
       }),
     });
 
-    const { fetchCountryStats } = await import('./queries');
     const result = await fetchCountryStats(mockAdminClient as never, EMPTY_ADMIN_USER_FILTERS);
 
     expect(result).toEqual([{ country: 'Unknown', count: 2 }]);
@@ -672,7 +666,6 @@ describe('fetchRankStats', () => {
       userRankRows: [], // no users have ranks
     });
 
-    const { fetchRankStats } = await import('./queries');
     const result = await fetchRankStats(mockAdminClient as never, EMPTY_ADMIN_USER_FILTERS);
 
     // All 3 users should be counted as mukyu
@@ -703,7 +696,6 @@ describe('fetchRankStats', () => {
       userRankRows: [],
     });
 
-    const { fetchRankStats } = await import('./queries');
     const { ALL_RANK_SLUGS: allSlugs } = await import('@/lib/db/data/ranks');
     const result = await fetchRankStats(mockAdminClient as never, EMPTY_ADMIN_USER_FILTERS);
 
@@ -732,7 +724,6 @@ describe('fetchRankStats', () => {
       userRankRows: [],
     });
 
-    const { fetchRankStats } = await import('./queries');
     const result = await fetchRankStats(mockAdminClient as never, EMPTY_ADMIN_USER_FILTERS);
 
     for (let i = 1; i < result.length; i++) {
@@ -770,7 +761,6 @@ describe('fetchRankStats', () => {
       ],
     });
 
-    const { fetchRankStats } = await import('./queries');
     const result = await fetchRankStats(mockAdminClient as never, EMPTY_ADMIN_USER_FILTERS);
 
     // Coming Soon ranks should exist with count 0
@@ -816,7 +806,6 @@ describe('fetchRankStats', () => {
       ],
     });
 
-    const { fetchRankStats } = await import('./queries');
     const result = await fetchRankStats(mockAdminClient as never, EMPTY_ADMIN_USER_FILTERS);
 
     // 2 users have 5kyu, 1 has 4kyu, 2 are unranked (mukyu)
@@ -844,7 +833,6 @@ describe('fetchRankStats', () => {
       userRankRows: [],
     });
 
-    const { fetchRankStats } = await import('./queries');
     const result = await fetchRankStats(mockAdminClient as never, EMPTY_ADMIN_USER_FILTERS);
 
     // All ranks should have count 0, including mukyu
@@ -869,7 +857,6 @@ describe('fetchRankStats', () => {
       userRankRows: [],
     });
 
-    const { fetchRankStats } = await import('./queries');
     const { BELT_COLOR_HEX: beltColors, RANK_COLORS: rankColors } =
       await import('@/lib/db/data/ranks');
     const result = await fetchRankStats(mockAdminClient as never, EMPTY_ADMIN_USER_FILTERS);
@@ -897,7 +884,6 @@ describe('fetchRankStats', () => {
       userRankRows: [],
     });
 
-    const { fetchRankStats } = await import('./queries');
     const result = await fetchRankStats(mockAdminClient as never, EMPTY_ADMIN_USER_FILTERS);
 
     expect(result.find((r) => r.slug === 'mukyu')!.level).toBe(0);
@@ -937,7 +923,6 @@ describe('fetchRankStats', () => {
       ],
     });
 
-    const { fetchRankStats } = await import('./queries');
     const result = await fetchRankStats(mockAdminClient as never, EMPTY_ADMIN_USER_FILTERS);
 
     // user-1 holds ranks, user-2 does not → mukyu = 1
@@ -964,7 +949,6 @@ describe('fetchRankStats', () => {
       userRankRows: [],
     });
 
-    const { fetchRankStats } = await import('./queries');
     const result = await fetchRankStats(mockAdminClient as never, EMPTY_ADMIN_USER_FILTERS);
 
     for (const rank of result) {
@@ -1000,7 +984,6 @@ describe('fetchRankStats', () => {
       ],
     });
 
-    const { fetchRankStats } = await import('./queries');
     const result = await fetchRankStats(mockAdminClient as never, {
       ...EMPTY_ADMIN_USER_FILTERS,
       statusFilter: 'active',
@@ -1033,7 +1016,6 @@ describe('fetchFilteredUsers — country filter', () => {
       userRankRows: [],
     });
 
-    const { fetchUsersPageData } = await import('./queries');
     const result = await fetchUsersPageData(mockAdminClient as never, 1, {
       ...EMPTY_ADMIN_USER_FILTERS,
       countryFilter: 'JP',
@@ -1053,7 +1035,6 @@ describe('fetchFilteredUsers — country filter', () => {
       userRankRows: [],
     });
 
-    const { fetchUsersPageData } = await import('./queries');
     const result = await fetchUsersPageData(mockAdminClient as never, 1, {
       ...EMPTY_ADMIN_USER_FILTERS,
       countryFilter: 'FR',
@@ -1079,7 +1060,6 @@ describe('fetchFilteredUsers — country filter', () => {
       userRankRows: [],
     });
 
-    const { fetchUsersPageData } = await import('./queries');
     const result = await fetchUsersPageData(mockAdminClient as never, 1, {
       ...EMPTY_ADMIN_USER_FILTERS,
       countryFilter: 'Unknown',
@@ -1097,7 +1077,6 @@ describe('fetchFilteredUsers — country filter', () => {
     ];
     const mockAdminClient = createMockAdminClient(mockUsers);
 
-    const { fetchUsersPageData } = await import('./queries');
     // No filters → direct API path (no fetchFilteredUsers)
     const result = await fetchUsersPageData(mockAdminClient as never, 1, EMPTY_ADMIN_USER_FILTERS);
 
@@ -1128,7 +1107,6 @@ describe('fetchFilteredUsers — rank filter', () => {
       ],
     });
 
-    const { fetchUsersPageData } = await import('./queries');
     const result = await fetchUsersPageData(mockAdminClient as never, 1, {
       ...EMPTY_ADMIN_USER_FILTERS,
       rankFilter: '5kyu',
@@ -1158,7 +1136,6 @@ describe('fetchFilteredUsers — rank filter', () => {
       ],
     });
 
-    const { fetchUsersPageData } = await import('./queries');
     const result = await fetchUsersPageData(mockAdminClient as never, 1, {
       ...EMPTY_ADMIN_USER_FILTERS,
       rankFilter: 'mukyu',
@@ -1179,7 +1156,6 @@ describe('fetchFilteredUsers — rank filter', () => {
       userRankRows: [], // no ranks at all
     });
 
-    const { fetchUsersPageData } = await import('./queries');
     const result = await fetchUsersPageData(mockAdminClient as never, 1, {
       ...EMPTY_ADMIN_USER_FILTERS,
       rankFilter: '5kyu',
@@ -1222,7 +1198,6 @@ describe('fetchFilteredUsers — rank filter', () => {
       const mockAdminClient = createMockAdminClient(mockUsers);
       await setupMultiRankMock();
 
-      const { fetchUsersPageData } = await import('./queries');
       const result = await fetchUsersPageData(mockAdminClient as never, 1, {
         ...EMPTY_ADMIN_USER_FILTERS,
         rankFilter: '1kyu',
@@ -1236,7 +1211,6 @@ describe('fetchFilteredUsers — rank filter', () => {
       const mockAdminClient = createMockAdminClient(mockUsers);
       await setupMultiRankMock();
 
-      const { fetchUsersPageData } = await import('./queries');
       const result = await fetchUsersPageData(mockAdminClient as never, 1, {
         ...EMPTY_ADMIN_USER_FILTERS,
         rankFilter: '1dan',
@@ -1250,7 +1224,6 @@ describe('fetchFilteredUsers — rank filter', () => {
       const mockAdminClient = createMockAdminClient(mockUsers);
       await setupMultiRankMock();
 
-      const { fetchRankStats, fetchUsersPageData } = await import('./queries');
       const stats = await fetchRankStats(mockAdminClient as never, EMPTY_ADMIN_USER_FILTERS);
 
       for (const slug of ['1kyu', '1dan', 'mukyu']) {
@@ -1283,7 +1256,6 @@ describe('fetchFilteredUsers — username/email filter', () => {
       userRankRows: [],
     });
 
-    const { fetchUsersPageData } = await import('./queries');
     const result = await fetchUsersPageData(mockAdminClient as never, 1, {
       ...EMPTY_ADMIN_USER_FILTERS,
       usernameFilter: 'ALI',
@@ -1311,7 +1283,6 @@ describe('fetchFilteredUsers — username/email filter', () => {
       userRankRows: [],
     });
 
-    const { fetchUsersPageData } = await import('./queries');
     const result = await fetchUsersPageData(mockAdminClient as never, 1, {
       ...EMPTY_ADMIN_USER_FILTERS,
       usernameFilter: 'example.com',
@@ -1337,7 +1308,6 @@ describe('fetchFilteredUsers — username/email filter', () => {
       userRankRows: [],
     });
 
-    const { fetchUsersPageData } = await import('./queries');
     const result = await fetchUsersPageData(mockAdminClient as never, 1, {
       ...EMPTY_ADMIN_USER_FILTERS,
       usernameFilter: 'ALICE@example',
@@ -1361,7 +1331,6 @@ describe('fetchFilteredUsers — username/email filter', () => {
       userRankRows: [],
     });
 
-    const { fetchUsersPageData } = await import('./queries');
     const result = await fetchUsersPageData(mockAdminClient as never, 1, {
       ...EMPTY_ADMIN_USER_FILTERS,
       usernameFilter: 'anon@',
@@ -1383,7 +1352,6 @@ describe('fetchFilteredUsers — username/email filter', () => {
       userRankRows: [],
     });
 
-    const { fetchUsersPageData } = await import('./queries');
     const result = await fetchUsersPageData(mockAdminClient as never, 1, {
       ...EMPTY_ADMIN_USER_FILTERS,
       usernameFilter: 'zzz',
@@ -1422,7 +1390,6 @@ describe('fetchFilteredUsers — combined filters (AND)', () => {
       ],
     });
 
-    const { fetchUsersPageData } = await import('./queries');
     // active + JP + 5kyu → only user-1
     const result = await fetchUsersPageData(mockAdminClient as never, 1, {
       ...EMPTY_ADMIN_USER_FILTERS,
@@ -1453,7 +1420,6 @@ describe('fetchFilteredUsers — combined filters (AND)', () => {
       ],
     });
 
-    const { fetchUsersPageData } = await import('./queries');
     // active + US + 5kyu → user-2 is US but has no 5kyu; user-1 is JP
     const result = await fetchUsersPageData(mockAdminClient as never, 1, {
       ...EMPTY_ADMIN_USER_FILTERS,
@@ -1486,7 +1452,6 @@ describe('fetchFilteredUsers — combined filters (AND)', () => {
       ],
     });
 
-    const { fetchUsersPageData } = await import('./queries');
     // JP + mukyu → only user-2
     const result = await fetchUsersPageData(mockAdminClient as never, 1, {
       ...EMPTY_ADMIN_USER_FILTERS,
@@ -1518,7 +1483,6 @@ describe('fetchUsersPageData — hasFilter branch', () => {
       userRankRows: [],
     });
 
-    const { fetchUsersPageData } = await import('./queries');
     // status is '', country is 'JP' → hasFilter is truthy because of countryFilter
     const result = await fetchUsersPageData(mockAdminClient as never, 1, {
       ...EMPTY_ADMIN_USER_FILTERS,
@@ -1547,7 +1511,6 @@ describe('fetchUsersPageData — hasFilter branch', () => {
       ],
     });
 
-    const { fetchUsersPageData } = await import('./queries');
     // status is '', rank is '5kyu' → hasFilter is truthy because of rankFilter
     const result = await fetchUsersPageData(mockAdminClient as never, 1, {
       ...EMPTY_ADMIN_USER_FILTERS,
@@ -1578,7 +1541,6 @@ describe('fetchCountryStats — with country/rank filters', () => {
       userRankRows: [],
     });
 
-    const { fetchCountryStats } = await import('./queries');
     // Filter by country=JP → only JP users included
     const result = await fetchCountryStats(mockAdminClient as never, {
       ...EMPTY_ADMIN_USER_FILTERS,
@@ -1609,7 +1571,6 @@ describe('fetchCountryStats — with country/rank filters', () => {
       ],
     });
 
-    const { fetchCountryStats } = await import('./queries');
     // Filter by rank=5kyu → user-1 (JP) and user-3 (JP)
     const result = await fetchCountryStats(mockAdminClient as never, {
       ...EMPTY_ADMIN_USER_FILTERS,
@@ -1648,7 +1609,6 @@ describe('fetchRankStats — with country/rank filters', () => {
       ],
     });
 
-    const { fetchRankStats } = await import('./queries');
     // country=JP → user-1 (5kyu) and user-3 (mukyu)
     const result = await fetchRankStats(mockAdminClient as never, {
       ...EMPTY_ADMIN_USER_FILTERS,
@@ -1684,7 +1644,6 @@ describe('fetchRankStats — with country/rank filters', () => {
       ],
     });
 
-    const { fetchRankStats } = await import('./queries');
     // rank=mukyu → fetchFilteredUsers filters to user-3 only (no rank records)
     // Then fetchRankStats re-queries userRanks for [user-3], mock returns all rows
     // but only user-1 and user-2 have ranks → rankedUserIds = {user-1, user-2}
@@ -1732,7 +1691,6 @@ describe('fetchRankStats — with country/rank filters', () => {
       userRankRows: [],
     });
 
-    const { fetchRankStats } = await import('./queries');
     // rank=mukyu → both users have no ranks → both pass the filter
     const result = await fetchRankStats(mockAdminClient as never, {
       ...EMPTY_ADMIN_USER_FILTERS,
@@ -1762,7 +1720,6 @@ describe('fetchRankStats — with country/rank filters', () => {
       userRankRows: [],
     });
 
-    const { fetchRankStats } = await import('./queries');
     // active + JP → only user-1
     const result = await fetchRankStats(mockAdminClient as never, {
       ...EMPTY_ADMIN_USER_FILTERS,
@@ -1776,31 +1733,26 @@ describe('fetchRankStats — with country/rank filters', () => {
 
 describe('getSignupMethod', () => {
   it('should return "google" when app_metadata.provider is "google"', async () => {
-    const { getSignupMethod } = await import('./queries');
     const user = makeUser('u1', { appMetadataProvider: 'google' });
     expect(getSignupMethod(user as never)).toBe('google');
   });
 
   it('should return "email" when app_metadata.provider is "email"', async () => {
-    const { getSignupMethod } = await import('./queries');
     const user = makeUser('u1', { appMetadataProvider: 'email' });
     expect(getSignupMethod(user as never)).toBe('email');
   });
 
   it('should return "unknown" for an unrecognized provider like "apple"', async () => {
-    const { getSignupMethod } = await import('./queries');
     const user = makeUser('u1', { appMetadataProvider: 'apple' });
     expect(getSignupMethod(user as never)).toBe('unknown');
   });
 
   it('should return "unknown" when app_metadata.provider is an empty string', async () => {
-    const { getSignupMethod } = await import('./queries');
     const user = makeUser('u1', { appMetadataProvider: '' });
     expect(getSignupMethod(user as never)).toBe('unknown');
   });
 
   it('should fall back to identities[0].provider when app_metadata is missing', async () => {
-    const { getSignupMethod } = await import('./queries');
     const user = makeUser('u1', {
       appMetadataMissing: true,
       identityProviders: ['google'],
@@ -1809,7 +1761,6 @@ describe('getSignupMethod', () => {
   });
 
   it('should fall back to identities[0].provider when app_metadata has no provider key', async () => {
-    const { getSignupMethod } = await import('./queries');
     // app_metadata exists as {} (no provider key) — falls through to identities
     const user = makeUser('u1', {
       appMetadataProvider: undefined,
@@ -1819,25 +1770,21 @@ describe('getSignupMethod', () => {
   });
 
   it('should return "unknown" when both app_metadata and identities are missing', async () => {
-    const { getSignupMethod } = await import('./queries');
     const user = makeUser('u1', { appMetadataMissing: true, noIdentities: true });
     expect(getSignupMethod(user as never)).toBe('unknown');
   });
 
   it('should return "unknown" when identities array is present but empty', async () => {
-    const { getSignupMethod } = await import('./queries');
     const user = makeUser('u1', { appMetadataMissing: true, identityProviders: [] });
     expect(getSignupMethod(user as never)).toBe('unknown');
   });
 
   it('should return "unknown" defensively when app_metadata is null', async () => {
-    const { getSignupMethod } = await import('./queries');
     const user = makeUser('u1', { appMetadataNull: true, noIdentities: true });
     expect(getSignupMethod(user as never)).toBe('unknown');
   });
 
   it('should return "unknown" when identities[0].provider is an unrecognized string', async () => {
-    const { getSignupMethod } = await import('./queries');
     const user = makeUser('u1', {
       appMetadataMissing: true,
       identityProviders: ['facebook'],
@@ -1846,7 +1793,6 @@ describe('getSignupMethod', () => {
   });
 
   it('should prefer app_metadata.provider over identities[0].provider when both are set', async () => {
-    const { getSignupMethod } = await import('./queries');
     const user = makeUser('u1', {
       appMetadataProvider: 'google',
       identityProviders: ['email'],
@@ -1874,7 +1820,6 @@ describe('fetchUsersPageData — provider filter', () => {
       userRankRows: [],
     });
 
-    const { fetchUsersPageData } = await import('./queries');
     const result = await fetchUsersPageData(mockAdminClient as never, 1, {
       ...EMPTY_ADMIN_USER_FILTERS,
       providerFilter: 'google',
@@ -1902,7 +1847,6 @@ describe('fetchUsersPageData — provider filter', () => {
       userRankRows: [],
     });
 
-    const { fetchUsersPageData } = await import('./queries');
     const result = await fetchUsersPageData(mockAdminClient as never, 1, {
       ...EMPTY_ADMIN_USER_FILTERS,
       providerFilter: 'email',
@@ -1930,7 +1874,6 @@ describe('fetchUsersPageData — provider filter', () => {
       userRankRows: [],
     });
 
-    const { fetchUsersPageData } = await import('./queries');
     const result = await fetchUsersPageData(mockAdminClient as never, 1, {
       ...EMPTY_ADMIN_USER_FILTERS,
       providerFilter: 'unknown',
@@ -1950,7 +1893,6 @@ describe('fetchUsersPageData — provider filter', () => {
 
     // No filter at all → takes the non-filtered branch of fetchUsersPageData,
     // which reads total from the Supabase response.
-    const { fetchUsersPageData } = await import('./queries');
     const result = await fetchUsersPageData(mockAdminClient as never, 1, EMPTY_ADMIN_USER_FILTERS);
 
     expect(result.totalCount).toBe(3);
@@ -1975,7 +1917,6 @@ describe('fetchUsersPageData — provider filter', () => {
       userRankRows: [],
     });
 
-    const { fetchUsersPageData } = await import('./queries');
     const result = await fetchUsersPageData(mockAdminClient as never, 1, {
       ...EMPTY_ADMIN_USER_FILTERS,
       statusFilter: 'active',
@@ -2004,7 +1945,6 @@ describe('fetchSignupMethodStats', () => {
       userRankRows: [],
     });
 
-    const { fetchSignupMethodStats } = await import('./queries');
     const result = await fetchSignupMethodStats(mockAdminClient as never, EMPTY_ADMIN_USER_FILTERS);
 
     // Fixed order — unknown bucket still present with count 0
@@ -2038,7 +1978,6 @@ describe('fetchSignupMethodStats', () => {
       userRankRows: [],
     });
 
-    const { fetchSignupMethodStats } = await import('./queries');
     const result = await fetchSignupMethodStats(mockAdminClient as never, EMPTY_ADMIN_USER_FILTERS);
 
     expect(result).toEqual([
@@ -2066,7 +2005,6 @@ describe('fetchSignupMethodStats', () => {
       userRankRows: [],
     });
 
-    const { fetchSignupMethodStats } = await import('./queries');
     const result = await fetchSignupMethodStats(mockAdminClient as never, {
       ...EMPTY_ADMIN_USER_FILTERS,
       statusFilter: 'active',
@@ -2097,7 +2035,6 @@ describe('fetchSignupMethodStats', () => {
       userRankRows: [],
     });
 
-    const { fetchSignupMethodStats } = await import('./queries');
     const result = await fetchSignupMethodStats(mockAdminClient as never, {
       ...EMPTY_ADMIN_USER_FILTERS,
       countryFilter: 'JP',
@@ -2131,7 +2068,6 @@ describe('fetchSignupMethodStats', () => {
       ],
     });
 
-    const { fetchSignupMethodStats } = await import('./queries');
     const result = await fetchSignupMethodStats(mockAdminClient as never, {
       ...EMPTY_ADMIN_USER_FILTERS,
       rankFilter: '5kyu',
@@ -2147,7 +2083,6 @@ describe('fetchSignupMethodStats', () => {
   it('should return all three buckets with count 0 for an empty user set', async () => {
     const mockAdminClient = createMockAdminClient([], { total: 0 });
 
-    const { fetchSignupMethodStats } = await import('./queries');
     const result = await fetchSignupMethodStats(mockAdminClient as never, EMPTY_ADMIN_USER_FILTERS);
 
     expect(result).toEqual([

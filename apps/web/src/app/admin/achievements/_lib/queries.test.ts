@@ -140,6 +140,20 @@ function resetMockState() {
 
 // --- Tests ----------------------------------------------------------------
 
+// Loaded once at module scope rather than inside each `it`: pulling this
+// graph costs a few hundred milliseconds, and inside a test body that cost is
+// charged to vitest's 5s `testTimeout`, which the first test can cross when
+// the suite is competing for CPU. Later tests hit the module cache, so the
+// symptom is one flaky test rather than a slow file. The `vi.mock` calls
+// above are hoisted over this statement, so the load needs no per-test setup.
+const {
+  listAchievementsWithHolderCount,
+  countAchievements,
+  getAchievementById,
+  listAchievementHolders,
+  countAchievementHolders,
+} = await import('./queries');
+
 describe('listAchievementsWithHolderCount', () => {
   beforeEach(resetMockState);
 
@@ -157,7 +171,6 @@ describe('listAchievementsWithHolderCount', () => {
       },
     ]);
 
-    const { listAchievementsWithHolderCount } = await import('./queries');
     const rows = await listAchievementsWithHolderCount({ limit: 20, offset: 0 });
 
     expect(rows).toHaveLength(1);
@@ -222,7 +235,6 @@ describe('listAchievementsWithHolderCount', () => {
       },
     ]);
 
-    const { listAchievementsWithHolderCount } = await import('./queries');
     const rows = await listAchievementsWithHolderCount({ limit: 50, offset: 0 });
 
     expect(rows[0].holderCount).toBe(0);
@@ -231,7 +243,6 @@ describe('listAchievementsWithHolderCount', () => {
 
   it('forwards limit and offset for pagination windows', async () => {
     dbResultQueue.push([]);
-    const { listAchievementsWithHolderCount } = await import('./queries');
     await listAchievementsWithHolderCount({ limit: 7, offset: 42 });
 
     expect(lastLimit.value).toBe(7);
@@ -244,7 +255,6 @@ describe('countAchievements', () => {
 
   it('returns the count value from the first row', async () => {
     dbResultQueue.push([{ count: 13 }]);
-    const { countAchievements } = await import('./queries');
     await expect(countAchievements()).resolves.toBe(13);
 
     // Must be FROM achievements
@@ -256,7 +266,6 @@ describe('countAchievements', () => {
 
   it('returns 0 when the underlying query returns no rows', async () => {
     dbResultQueue.push([]);
-    const { countAchievements } = await import('./queries');
     await expect(countAchievements()).resolves.toBe(0);
   });
 });
@@ -276,7 +285,6 @@ describe('getAchievementById', () => {
     };
     dbResultQueue.push([row]);
 
-    const { getAchievementById } = await import('./queries');
     const result = await getAchievementById('ach-42');
 
     expect(result).toEqual(row);
@@ -290,7 +298,6 @@ describe('getAchievementById', () => {
 
   it('returns null when no row matches', async () => {
     dbResultQueue.push([]);
-    const { getAchievementById } = await import('./queries');
     await expect(getAchievementById('missing')).resolves.toBeNull();
   });
 });
@@ -306,7 +313,6 @@ describe('listAchievementHolders', () => {
       { id: 'ua-1', userId: 'u-2', achievedAt: at1, metadata: null, username: null },
     ]);
 
-    const { listAchievementHolders } = await import('./queries');
     const rows = await listAchievementHolders('ach-1', { limit: 10, offset: 5 });
 
     expect(rows).toHaveLength(2);
@@ -383,7 +389,6 @@ describe('listAchievementHolders', () => {
       },
     ]);
 
-    const { listAchievementHolders } = await import('./queries');
     const rows = await listAchievementHolders('ach-monthly', { limit: 100, offset: 0 });
 
     expect(rows).toHaveLength(3);
@@ -397,7 +402,6 @@ describe('countAchievementHolders', () => {
 
   it('returns the count value (including duplicates for repeatable badges)', async () => {
     dbResultQueue.push([{ count: 12 }]);
-    const { countAchievementHolders } = await import('./queries');
     await expect(countAchievementHolders('ach-monthly')).resolves.toBe(12);
 
     // FROM user_achievements
@@ -418,7 +422,6 @@ describe('countAchievementHolders', () => {
 
   it('returns 0 when the query returns no rows', async () => {
     dbResultQueue.push([]);
-    const { countAchievementHolders } = await import('./queries');
     await expect(countAchievementHolders('ach-x')).resolves.toBe(0);
   });
 });
