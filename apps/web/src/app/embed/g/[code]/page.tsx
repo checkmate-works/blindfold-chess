@@ -17,7 +17,7 @@ import { DEFAULT_BOARD_THEME } from '@/lib/games/board-themes';
 import { gameUsedNotablePlaySettings } from '@/lib/games/play-settings-log';
 import { decodeGameShortId } from '@/lib/games/short-id';
 import { resolveLosingColor, resolveTerminationMark } from '@/lib/games/termination-mark';
-import { resolveDisplayName } from '@/lib/users/display-name';
+import { resolveAuthorName } from '@/lib/users/display-name';
 import { UUID_RE } from '@/lib/validations/uuid';
 
 import { parseEmbedParams } from '../../_lib/embed-params';
@@ -147,7 +147,7 @@ export default async function EmbedGamePage({ params, searchParams }: Props) {
         terminationMarkLabel={terminationMark ? tCommon(`termination.${terminationMark.kind}`) : ''}
         attribution={{
           title: game.title,
-          author: author ? resolveDisplayName(author) : null,
+          author: author ? resolveAuthorName(author, { fallback: tCommon('deletedUser') }) : null,
           // Campaign-tagged so embed referrals are countable, and pointed at
           // the canonical page rather than `/g/<code>`: the reader is one
           // click from the game itself, with no redirect hop.
