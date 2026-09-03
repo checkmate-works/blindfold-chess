@@ -5,6 +5,7 @@ import type { ChallengeMenuType } from '@/lib/db/practice-menu-types';
 
 import type { ChallengeResultRow } from '../_actions/get-challenge-sessions';
 import { computeAbsoluteChange, computeStats, formatDate } from '../_lib/dashboard-utils';
+import { deriveOrientationFromSessions } from '../_lib/derive-orientation-filter';
 import { derivePieceSelectionFromSessions } from '../_lib/derive-piece-filter';
 import { selectChartData } from '../_lib/select-chart-data';
 import type { ChartDataPoint } from '../_lib/select-chart-data';
@@ -102,9 +103,11 @@ export function useDashboardData(locale: string, initialMenu?: ChallengeMenuType
       resetFilters();
       if (menu === 'legal_moves') {
         setPieceFilter(derivePieceSelectionFromSessions(sessions));
+      } else if (menu === 'coordinate_quiz') {
+        setBoardOrientationFilter(deriveOrientationFromSessions(sessions));
       }
     },
-    [resetFilters, setPieceFilter]
+    [resetFilters, setPieceFilter, setBoardOrientationFilter]
   );
 
   const {

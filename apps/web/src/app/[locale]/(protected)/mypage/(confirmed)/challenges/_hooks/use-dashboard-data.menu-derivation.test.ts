@@ -29,10 +29,10 @@ const knightRun = (id: string, daysAgo: number): ChallengeResultRow => ({
   createdAt: new Date(Date.now() - daysAgo * 86_400_000),
 });
 
-const whiteRun = (id: string): ChallengeResultRow => ({
+const orientationRun = (id: string, leaderboardKey: string): ChallengeResultRow => ({
   id,
   menuType: 'coordinate_quiz',
-  leaderboardKey: 'white',
+  leaderboardKey,
   score: 12,
   incorrectAnswers: 0,
   timeTaken: 60,
@@ -44,6 +44,22 @@ beforeEach(() => {
 });
 
 describe('useDashboardData – filter derivation when the menu is adopted', () => {
+  it('derives the orientation filter when coordinate_quiz is auto-selected with black-only runs', async () => {
+    mockGetDashboardData.mockResolvedValue({
+      success: true,
+      availableMenuTypes: ['coordinate_quiz'],
+      selectedMenu: 'coordinate_quiz',
+      sessions: [orientationRun('b1', 'black')],
+      previousSessions: [],
+    });
+
+    const { result } = renderHook(() => useDashboardData('en'));
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(result.current.boardOrientationFilter).toBe('black');
+    expect(result.current.tableRows).toHaveLength(1);
+  });
+
   it('derives the piece filter when the server auto-selects legal_moves on first load', async () => {
     mockGetDashboardData.mockResolvedValue({
       success: true,
@@ -67,7 +83,7 @@ describe('useDashboardData – filter derivation when the menu is adopted', () =
       success: true,
       availableMenuTypes: ['coordinate_quiz'],
       selectedMenu: 'coordinate_quiz',
-      sessions: [whiteRun('w')],
+      sessions: [orientationRun('w', 'white')],
       previousSessions: [],
     });
 

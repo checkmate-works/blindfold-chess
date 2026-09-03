@@ -7,7 +7,11 @@ import { DEFAULT_PIECE_SELECTION, derivePieceSelectionFromSessions } from './der
 // Helpers to build test session data
 // ---------------------------------------------------------------------------
 
-function makeLegalMovesSession(leaderboardKey: string, id = 'session-1'): ChallengeResultRow {
+function makeLegalMovesSession(
+  leaderboardKey: string,
+  id = 'session-1',
+  daysAgo = 0
+): ChallengeResultRow {
   return {
     id,
     menuType: 'legal_moves',
@@ -15,7 +19,7 @@ function makeLegalMovesSession(leaderboardKey: string, id = 'session-1'): Challe
     score: 5,
     incorrectAnswers: 1,
     timeTaken: 30,
-    createdAt: new Date(),
+    createdAt: new Date(Date.UTC(2026, 8, 10 - daysAgo)),
   };
 }
 
@@ -117,20 +121,30 @@ describe('derivePieceSelectionFromSessions', () => {
   });
 
   describe('multiple legal_moves sessions with different pieces', () => {
-    it('returns random when sessions have different piece configurations', () => {
+    it('follows the most recent run, regardless of array order', () => {
       const sessions = [
-        makeLegalMovesSession('knight', 's-1'),
-        makeLegalMovesSession('bishop', 's-2'),
+        makeLegalMovesSession('knight', 's-1', 2),
+        makeLegalMovesSession('bishop', 's-2', 0),
+        makeLegalMovesSession('rook', 's-3', 1),
+      ];
+      expect(derivePieceSelectionFromSessions(sessions)).toBe('b');
+      expect(derivePieceSelectionFromSessions([...sessions].reverse())).toBe('b');
+    });
+
+    it('follows a most recent "random" run over an older specific piece', () => {
+      const sessions = [
+        makeLegalMovesSession('knight', 's-1', 1),
+        makeLegalMovesSession('random', 's-2', 0),
       ];
       expect(derivePieceSelectionFromSessions(sessions)).toBe('random');
     });
 
-    it('returns random when one session has a specific piece and another has random', () => {
+    it('follows a most recent specific piece over an older "random" run', () => {
       const sessions = [
-        makeLegalMovesSession('knight', 's-1'),
-        makeLegalMovesSession('random', 's-2'),
+        makeLegalMovesSession('random', 's-1', 1),
+        makeLegalMovesSession('knight', 's-2', 0),
       ];
-      expect(derivePieceSelectionFromSessions(sessions)).toBe('random');
+      expect(derivePieceSelectionFromSessions(sessions)).toBe('n');
     });
   });
 
