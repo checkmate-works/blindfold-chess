@@ -115,6 +115,19 @@ function mockPosition(overrides: Partial<Record<string, unknown>> = {}) {
   ]);
 }
 
+// Loaded once at module scope rather than inside each `it`: pulling this
+// graph costs a few hundred milliseconds, and inside a test body that cost is
+// charged to vitest's 5s `testTimeout`, which the first test can cross when
+// the suite is competing for CPU. Later tests hit the module cache, so the
+// symptom is one flaky test rather than a slow file. The `vi.mock` calls
+// above are hoisted over this statement, so the load needs no per-test setup.
+const {
+  submitPositionEditRequestEntry,
+  acceptPositionEditRequestEntry,
+  rejectPositionEditRequestEntry,
+  withdrawPositionEditRequestEntry,
+} = await import('./mutations');
+
 describe('submitPositionEditRequestEntry', () => {
   beforeEach(() => {
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: PROPOSER_ID } });
@@ -131,7 +144,6 @@ describe('submitPositionEditRequestEntry', () => {
 
   it('propagates signInRequired from the guard', async () => {
     mockAuthenticateAndGuard.mockResolvedValue({ error: 'signInRequired' });
-    const { submitPositionEditRequestEntry } = await import('./mutations');
     const result = await submitPositionEditRequestEntry({
       positionId: POSITION_ID,
       payload: { proposedThemeIds: [], proposedChunkIds: [CHUNK_A] },
@@ -141,7 +153,6 @@ describe('submitPositionEditRequestEntry', () => {
   });
 
   it('returns notFound for a malformed positionId', async () => {
-    const { submitPositionEditRequestEntry } = await import('./mutations');
     const result = await submitPositionEditRequestEntry({
       positionId: 'nope',
       payload: { proposedThemeIds: [], proposedChunkIds: [CHUNK_A] },
@@ -151,7 +162,6 @@ describe('submitPositionEditRequestEntry', () => {
 
   it('returns notFound when the position is soft-deleted', async () => {
     mockPosition({ deletedAt: new Date() });
-    const { submitPositionEditRequestEntry } = await import('./mutations');
     const result = await submitPositionEditRequestEntry({
       positionId: POSITION_ID,
       payload: { proposedThemeIds: [], proposedChunkIds: [CHUNK_A] },
@@ -163,7 +173,6 @@ describe('submitPositionEditRequestEntry', () => {
   it('returns ownerCannotPropose when the proposer owns the position', async () => {
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: OWNER_ID } });
     mockPosition();
-    const { submitPositionEditRequestEntry } = await import('./mutations');
     const result = await submitPositionEditRequestEntry({
       positionId: POSITION_ID,
       payload: { proposedThemeIds: [], proposedChunkIds: [CHUNK_A] },
@@ -174,7 +183,6 @@ describe('submitPositionEditRequestEntry', () => {
   it('rejects the suggestion when a block exists in either direction', async () => {
     mockPosition();
     vi.mocked(assertNotBlocked).mockResolvedValueOnce({ error: MODERATION_BLOCKED_ERROR });
-    const { submitPositionEditRequestEntry } = await import('./mutations');
     const result = await submitPositionEditRequestEntry({
       positionId: POSITION_ID,
       payload: { proposedThemeIds: [], proposedChunkIds: [CHUNK_A] },
@@ -189,7 +197,6 @@ describe('submitPositionEditRequestEntry', () => {
   it('returns alreadyHasPending when the viewer already has a pending request', async () => {
     mockPosition();
     mockGetViewerPending.mockResolvedValue('existing-id');
-    const { submitPositionEditRequestEntry } = await import('./mutations');
     const result = await submitPositionEditRequestEntry({
       positionId: POSITION_ID,
       payload: { proposedThemeIds: [], proposedChunkIds: [CHUNK_A] },
@@ -202,7 +209,6 @@ describe('submitPositionEditRequestEntry', () => {
     mockPosition();
     mockGetLinkedChunkIds.mockResolvedValue([CHUNK_A]);
     mockGetLinkedThemeIds.mockResolvedValue([THEME_A]);
-    const { submitPositionEditRequestEntry } = await import('./mutations');
     const result = await submitPositionEditRequestEntry({
       positionId: POSITION_ID,
       payload: { proposedThemeIds: [THEME_A], proposedChunkIds: [CHUNK_A] },
@@ -214,7 +220,6 @@ describe('submitPositionEditRequestEntry', () => {
   it('returns invalidChunk when a proposed chunk is not published / available', async () => {
     mockPosition();
     mockValidateAndDedupeTagIds.mockResolvedValue({ ok: false, error: 'invalidChunk' });
-    const { submitPositionEditRequestEntry } = await import('./mutations');
     const result = await submitPositionEditRequestEntry({
       positionId: POSITION_ID,
       payload: { proposedThemeIds: [], proposedChunkIds: [CHUNK_A] },
@@ -226,7 +231,6 @@ describe('submitPositionEditRequestEntry', () => {
   it('propagates invalidTheme when a proposed theme is not theme-eligible', async () => {
     mockPosition();
     mockValidateAndDedupeTagIds.mockResolvedValue({ ok: false, error: 'invalidTheme' });
-    const { submitPositionEditRequestEntry } = await import('./mutations');
     const result = await submitPositionEditRequestEntry({
       positionId: POSITION_ID,
       payload: { proposedThemeIds: [THEME_A], proposedChunkIds: [] },
@@ -237,7 +241,6 @@ describe('submitPositionEditRequestEntry', () => {
 
   it('re-asserts both tag kinds against the live catalogs before inserting', async () => {
     mockPosition();
-    const { submitPositionEditRequestEntry } = await import('./mutations');
     await submitPositionEditRequestEntry({
       positionId: POSITION_ID,
       payload: { proposedThemeIds: [THEME_A], proposedChunkIds: [CHUNK_A] },
@@ -250,7 +253,6 @@ describe('submitPositionEditRequestEntry', () => {
 
   it('inserts a theme-only proposal', async () => {
     mockPosition();
-    const { submitPositionEditRequestEntry } = await import('./mutations');
     const result = await submitPositionEditRequestEntry({
       positionId: POSITION_ID,
       payload: { proposedThemeIds: [THEME_A], proposedChunkIds: [] },
@@ -265,7 +267,6 @@ describe('submitPositionEditRequestEntry', () => {
     mockPosition();
     mockInsertReturning.mockRejectedValueOnce(new Error('duplicate key value'));
     mockIsUniqueViolation.mockReturnValue(true);
-    const { submitPositionEditRequestEntry } = await import('./mutations');
     const result = await submitPositionEditRequestEntry({
       positionId: POSITION_ID,
       payload: { proposedThemeIds: [], proposedChunkIds: [CHUNK_A] },
@@ -275,7 +276,6 @@ describe('submitPositionEditRequestEntry', () => {
 
   it('inserts the proposed tags and notifies the owner with positionType metadata', async () => {
     mockPosition();
-    const { submitPositionEditRequestEntry } = await import('./mutations');
     const result = await submitPositionEditRequestEntry({
       positionId: POSITION_ID,
       payload: {
@@ -318,7 +318,6 @@ describe('acceptPositionEditRequestEntry', () => {
       status: 'pending',
     });
     mockPosition();
-    const { acceptPositionEditRequestEntry } = await import('./mutations');
     const result = await acceptPositionEditRequestEntry(REQUEST_ID);
     expect(result).toEqual({ error: 'unauthorized' });
     expect(mockTxUpdate).not.toHaveBeenCalled();
@@ -333,7 +332,6 @@ describe('acceptPositionEditRequestEntry', () => {
       proposedChunkIds: [CHUNK_A],
       status: 'accepted',
     });
-    const { acceptPositionEditRequestEntry } = await import('./mutations');
     const result = await acceptPositionEditRequestEntry(REQUEST_ID);
     expect(result).toEqual({ error: 'alreadyResolved' });
     expect(mockTxUpdate).not.toHaveBeenCalled();
@@ -349,7 +347,6 @@ describe('acceptPositionEditRequestEntry', () => {
       status: 'pending',
     });
     mockPosition();
-    const { acceptPositionEditRequestEntry } = await import('./mutations');
     const result = await acceptPositionEditRequestEntry(REQUEST_ID);
     expect(result).toEqual({ success: true });
     expect(mockTxUpdate).toHaveBeenCalledTimes(1);
@@ -397,7 +394,6 @@ describe('rejectPositionEditRequestEntry', () => {
       status: 'pending',
     });
     mockPosition();
-    const { rejectPositionEditRequestEntry } = await import('./mutations');
     const result = await rejectPositionEditRequestEntry(REQUEST_ID);
     expect(result).toEqual({ success: true });
     const reqUpdate = mockTxUpdate.mock.calls[0][0] as { values: Record<string, unknown> };
@@ -422,7 +418,6 @@ describe('withdrawPositionEditRequestEntry', () => {
       status: 'pending',
     });
     mockPosition();
-    const { withdrawPositionEditRequestEntry } = await import('./mutations');
     const result = await withdrawPositionEditRequestEntry(REQUEST_ID);
     expect(result).toEqual({ error: 'unauthorized' });
     expect(mockTxUpdate).not.toHaveBeenCalled();
@@ -437,7 +432,6 @@ describe('withdrawPositionEditRequestEntry', () => {
       status: 'pending',
     });
     mockPosition();
-    const { withdrawPositionEditRequestEntry } = await import('./mutations');
     const result = await withdrawPositionEditRequestEntry(REQUEST_ID);
     expect(result).toEqual({ success: true });
     const reqUpdate = mockTxUpdate.mock.calls[0][0] as { values: Record<string, unknown> };

@@ -176,6 +176,15 @@ const baseCreateInput = {
   userId: '', // ignored — server overrides with authenticated user
 };
 
+// Loaded once at module scope rather than inside each `it`: pulling this
+// graph costs a few hundred milliseconds, and inside a test body that cost is
+// charged to vitest's 5s `testTimeout`, which the first test can cross when
+// the suite is competing for CPU. Later tests hit the module cache, so the
+// symptom is one flaky test rather than a slow file. The `vi.mock` calls
+// above are hoisted over this statement, so the load needs no per-test setup.
+const { createChunkEntry, updateChunkEntry, deleteChunkEntry, publishChunkEntry } =
+  await import('./user-chunk-mutations');
+
 describe('createChunkEntry', () => {
   beforeEach(() => {
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: TEST_USER_ID } });
@@ -188,7 +197,6 @@ describe('createChunkEntry', () => {
   it('propagates signInRequired from the guard', async () => {
     mockAuthenticateAndGuard.mockResolvedValue({ error: 'signInRequired' });
 
-    const { createChunkEntry } = await import('./user-chunk-mutations');
     const result = await createChunkEntry(baseCreateInput);
 
     expect(result).toEqual({ error: 'signInRequired' });
@@ -199,7 +207,6 @@ describe('createChunkEntry', () => {
   it('propagates rateLimited from the guard', async () => {
     mockAuthenticateAndGuard.mockResolvedValue({ error: 'rateLimited' });
 
-    const { createChunkEntry } = await import('./user-chunk-mutations');
     const result = await createChunkEntry(baseCreateInput);
 
     expect(result).toEqual({ error: 'rateLimited' });
@@ -207,7 +214,6 @@ describe('createChunkEntry', () => {
   });
 
   it('returns validation error when FEN is empty', async () => {
-    const { createChunkEntry } = await import('./user-chunk-mutations');
     const result = await createChunkEntry({ ...baseCreateInput, representativeFen: '' });
 
     expect(result).toEqual({ error: 'Representative FEN is required' });
@@ -215,7 +221,6 @@ describe('createChunkEntry', () => {
   });
 
   it('returns validation error when slug is empty', async () => {
-    const { createChunkEntry } = await import('./user-chunk-mutations');
     const result = await createChunkEntry({ ...baseCreateInput, slug: '' });
 
     expect(result).toEqual({ error: 'Slug is required' });
@@ -225,7 +230,6 @@ describe('createChunkEntry', () => {
   it('returns slugTaken when preflight finds an existing chunk with that slug', async () => {
     mockFindChunkBySlug.mockResolvedValue({ id: 'other', slug: TEST_SLUG, deletedAt: null });
 
-    const { createChunkEntry } = await import('./user-chunk-mutations');
     const result = await createChunkEntry(baseCreateInput);
 
     expect(result).toEqual({ error: 'slugTaken' });
@@ -239,7 +243,6 @@ describe('createChunkEntry', () => {
       deletedAt: new Date('2025-01-01'),
     });
 
-    const { createChunkEntry } = await import('./user-chunk-mutations');
     const result = await createChunkEntry(baseCreateInput);
 
     expect(result).toEqual({ error: 'slugTaken' });
@@ -249,7 +252,6 @@ describe('createChunkEntry', () => {
     mockInsertReturning.mockRejectedValue(new Error('duplicate'));
     mockIsUniqueViolation.mockReturnValue(true);
 
-    const { createChunkEntry } = await import('./user-chunk-mutations');
     const result = await createChunkEntry(baseCreateInput);
 
     expect(result).toEqual({ error: 'slugTaken' });
@@ -259,12 +261,10 @@ describe('createChunkEntry', () => {
     mockInsertReturning.mockRejectedValue(new Error('disk full'));
     mockIsUniqueViolation.mockReturnValue(false);
 
-    const { createChunkEntry } = await import('./user-chunk-mutations');
     await expect(createChunkEntry(baseCreateInput)).rejects.toThrow('disk full');
   });
 
   it('inserts with the authenticated userId (ignoring any client-supplied userId)', async () => {
-    const { createChunkEntry } = await import('./user-chunk-mutations');
     const result = await createChunkEntry({
       ...baseCreateInput,
       userId: OTHER_USER_ID, // attempt to spoof author
@@ -278,7 +278,6 @@ describe('createChunkEntry', () => {
   });
 
   it('writes no activity-log row and revalidates nothing', async () => {
-    const { createChunkEntry } = await import('./user-chunk-mutations');
     await createChunkEntry(baseCreateInput);
 
     // The chunks row itself is the durable record of a creation, so it is not
@@ -292,7 +291,6 @@ describe('createChunkEntry', () => {
     mockInsertReturning.mockResolvedValue([{ id: TEST_CHUNK_ID, slug: TEST_SLUG }]);
     mockFindChunkBySlug.mockResolvedValue(null);
 
-    const { createChunkEntry } = await import('./user-chunk-mutations');
     await createChunkEntry({
       ...baseCreateInput,
       status: 'draft',
@@ -313,7 +311,6 @@ describe('createChunkEntry', () => {
     mockInsertReturning.mockResolvedValue([{ id: TEST_CHUNK_ID, slug: TEST_SLUG }]);
     mockFindChunkBySlug.mockResolvedValue(null);
 
-    const { createChunkEntry } = await import('./user-chunk-mutations');
     await createChunkEntry({
       ...baseCreateInput,
       status: 'published',
@@ -329,7 +326,6 @@ describe('createChunkEntry', () => {
     // feed_items row with kind=published from `publishChunkEntry`.
     mockInsertReturning.mockResolvedValue([{ id: TEST_CHUNK_ID, slug: TEST_SLUG }]);
 
-    const { createChunkEntry } = await import('./user-chunk-mutations');
     await createChunkEntry({ ...baseCreateInput, status: 'draft' });
 
     expect(mockTxFeedInsertValues).toHaveBeenCalledTimes(1);
@@ -344,7 +340,6 @@ describe('createChunkEntry', () => {
   it('notifies followers with kind=created when a draft is submitted', async () => {
     mockInsertReturning.mockResolvedValue([{ id: TEST_CHUNK_ID, slug: TEST_SLUG }]);
 
-    const { createChunkEntry } = await import('./user-chunk-mutations');
     await createChunkEntry({ ...baseCreateInput, status: 'draft' });
 
     expect(mockNotifyFollowersOfNewChunk).toHaveBeenCalledTimes(1);
@@ -362,7 +357,6 @@ describe('createChunkEntry', () => {
     // double-announce the same chunk.
     mockInsertReturning.mockResolvedValue([{ id: TEST_CHUNK_ID, slug: TEST_SLUG }]);
 
-    const { createChunkEntry } = await import('./user-chunk-mutations');
     await createChunkEntry({ ...baseCreateInput, status: 'published' });
 
     expect(mockTxFeedInsertValues).toHaveBeenCalledTimes(1);
@@ -380,7 +374,6 @@ describe('createChunkEntry', () => {
     mockInsertReturning.mockResolvedValue([{ id: TEST_CHUNK_ID, slug: TEST_SLUG }]);
     mockFindChunkBySlug.mockResolvedValue(null);
 
-    const { createChunkEntry } = await import('./user-chunk-mutations');
     await createChunkEntry({
       ...baseCreateInput,
       status: 'draft',
@@ -397,7 +390,6 @@ describe('createChunkEntry', () => {
     const GAME_ID = 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee';
 
     it('links the new chunk to the move and reports it', async () => {
-      const { createChunkEntry } = await import('./user-chunk-mutations');
       const result = await createChunkEntry(baseCreateInput, {
         linkTarget: { gameId: GAME_ID, ply: 16 },
       });
@@ -417,7 +409,6 @@ describe('createChunkEntry', () => {
     // per-move picker does — otherwise the flow that creates the most links
     // would be the silent one.
     it("notifies the game's owner when the link lands", async () => {
-      const { createChunkEntry } = await import('./user-chunk-mutations');
       await createChunkEntry(baseCreateInput, { linkTarget: { gameId: GAME_ID, ply: 16 } });
 
       expect(mockNotifyGameOwnerOfChunkLink).toHaveBeenCalledWith({
@@ -431,14 +422,12 @@ describe('createChunkEntry', () => {
     it('does not notify when the link was refused', async () => {
       mockLinkNewChunkToGameMove.mockResolvedValue(false);
 
-      const { createChunkEntry } = await import('./user-chunk-mutations');
       await createChunkEntry(baseCreateInput, { linkTarget: { gameId: GAME_ID, ply: 999 } });
 
       expect(mockNotifyGameOwnerOfChunkLink).not.toHaveBeenCalled();
     });
 
     it('does not touch game_chunks when no link target is given', async () => {
-      const { createChunkEntry } = await import('./user-chunk-mutations');
       const result = await createChunkEntry(baseCreateInput);
 
       expect(mockLinkNewChunkToGameMove).not.toHaveBeenCalled();
@@ -451,7 +440,6 @@ describe('createChunkEntry', () => {
     it('still creates the chunk when the link is refused', async () => {
       mockLinkNewChunkToGameMove.mockResolvedValue(false);
 
-      const { createChunkEntry } = await import('./user-chunk-mutations');
       const result = await createChunkEntry(baseCreateInput, {
         linkTarget: { gameId: GAME_ID, ply: 999 },
       });
@@ -463,7 +451,6 @@ describe('createChunkEntry', () => {
     // ply 0 is the game's first move; a truthiness check on the ply
     // instead of the target would silently drop the link there.
     it('links at ply 0', async () => {
-      const { createChunkEntry } = await import('./user-chunk-mutations');
       await createChunkEntry(baseCreateInput, { linkTarget: { gameId: GAME_ID, ply: 0 } });
 
       expect(mockLinkNewChunkToGameMove).toHaveBeenCalledWith(
@@ -487,7 +474,6 @@ describe('updateChunkEntry', () => {
   it('propagates signInRequired from the guard', async () => {
     mockAuthenticateAndGuard.mockResolvedValue({ error: 'signInRequired' });
 
-    const { updateChunkEntry } = await import('./user-chunk-mutations');
     const result = await updateChunkEntry(TEST_CHUNK_ID, {
       representativeFen: VALID_FEN,
       title: 'New title',
@@ -499,7 +485,6 @@ describe('updateChunkEntry', () => {
   });
 
   it('returns notFound when chunk id is missing', async () => {
-    const { updateChunkEntry } = await import('./user-chunk-mutations');
     const result = await updateChunkEntry('', {
       representativeFen: VALID_FEN,
       title: 'Title',
@@ -512,7 +497,6 @@ describe('updateChunkEntry', () => {
   it('returns notFound when chunk does not exist', async () => {
     mockSelectLimit.mockResolvedValue([]);
 
-    const { updateChunkEntry } = await import('./user-chunk-mutations');
     const result = await updateChunkEntry(TEST_CHUNK_ID, {
       representativeFen: VALID_FEN,
       title: 'Title',
@@ -528,7 +512,6 @@ describe('updateChunkEntry', () => {
       { id: TEST_CHUNK_ID, userId: OTHER_USER_ID, slug: TEST_SLUG, deletedAt: null },
     ]);
 
-    const { updateChunkEntry } = await import('./user-chunk-mutations');
     const result = await updateChunkEntry(TEST_CHUNK_ID, {
       representativeFen: VALID_FEN,
       title: 'Title',
@@ -549,7 +532,6 @@ describe('updateChunkEntry', () => {
       },
     ]);
 
-    const { updateChunkEntry } = await import('./user-chunk-mutations');
     const result = await updateChunkEntry(TEST_CHUNK_ID, {
       representativeFen: VALID_FEN,
       title: 'Title',
@@ -565,7 +547,6 @@ describe('updateChunkEntry', () => {
       { id: TEST_CHUNK_ID, userId: TEST_USER_ID, slug: TEST_SLUG, deletedAt: null },
     ]);
 
-    const { updateChunkEntry } = await import('./user-chunk-mutations');
     const result = await updateChunkEntry(TEST_CHUNK_ID, {
       representativeFen: VALID_FEN,
       title: 'New title',
@@ -598,7 +579,6 @@ describe('updateChunkEntry', () => {
       { id: TEST_CHUNK_ID, userId: TEST_USER_ID, slug: TEST_SLUG, deletedAt: null },
     ]);
 
-    const { updateChunkEntry } = await import('./user-chunk-mutations');
     const result = await updateChunkEntry(TEST_CHUNK_ID, {
       representativeFen: VALID_FEN,
       title: 'Title',
@@ -616,7 +596,6 @@ describe('updateChunkEntry', () => {
       { id: TEST_CHUNK_ID, userId: TEST_USER_ID, slug: TEST_SLUG, deletedAt: null },
     ]);
 
-    const { updateChunkEntry } = await import('./user-chunk-mutations');
     const result = await updateChunkEntry(TEST_CHUNK_ID, {
       representativeFen: VALID_FEN,
       title: 'Title',
@@ -657,7 +636,6 @@ describe('updateChunkEntry', () => {
     ]);
     mockFindChunkBySlug.mockResolvedValue({ id: 'other-chunk-id', slug: 'taken-slug' });
 
-    const { updateChunkEntry } = await import('./user-chunk-mutations');
     const result = await updateChunkEntry(TEST_CHUNK_ID, {
       representativeFen: VALID_FEN,
       title: 'Title',
@@ -682,7 +660,6 @@ describe('updateChunkEntry', () => {
     });
     mockIsUniqueViolation.mockReturnValue(true);
 
-    const { updateChunkEntry } = await import('./user-chunk-mutations');
     const result = await updateChunkEntry(TEST_CHUNK_ID, {
       representativeFen: VALID_FEN,
       title: 'Title',
@@ -708,7 +685,6 @@ describe('updateChunkEntry', () => {
       },
     ]);
 
-    const { updateChunkEntry } = await import('./user-chunk-mutations');
     await updateChunkEntry(TEST_CHUNK_ID, {
       representativeFen: VALID_FEN,
       title: 'Title',
@@ -747,7 +723,6 @@ describe('updateChunkEntry', () => {
       },
     ]);
 
-    const { updateChunkEntry } = await import('./user-chunk-mutations');
     await updateChunkEntry(TEST_CHUNK_ID, {
       representativeFen: VALID_FEN,
       title: 'New title',
@@ -774,7 +749,6 @@ describe('updateChunkEntry', () => {
       },
     ]);
 
-    const { updateChunkEntry } = await import('./user-chunk-mutations');
     await updateChunkEntry(TEST_CHUNK_ID, {
       representativeFen: VALID_FEN,
       title: 'New title',
@@ -804,7 +778,6 @@ describe('updateChunkEntry', () => {
       },
     ]);
 
-    const { updateChunkEntry } = await import('./user-chunk-mutations');
     await updateChunkEntry(TEST_CHUNK_ID, {
       representativeFen: VALID_FEN,
       title: 'New title',
@@ -825,7 +798,6 @@ describe('deleteChunkEntry', () => {
   it('propagates signInRequired from the guard', async () => {
     mockAuthenticateAndGuard.mockResolvedValue({ error: 'signInRequired' });
 
-    const { deleteChunkEntry } = await import('./user-chunk-mutations');
     const result = await deleteChunkEntry(TEST_CHUNK_ID);
 
     expect(result).toEqual({ error: 'signInRequired' });
@@ -833,7 +805,6 @@ describe('deleteChunkEntry', () => {
   });
 
   it('returns notFound when chunk id is empty', async () => {
-    const { deleteChunkEntry } = await import('./user-chunk-mutations');
     const result = await deleteChunkEntry('');
     expect(result).toEqual({ error: 'notFound' });
   });
@@ -841,7 +812,6 @@ describe('deleteChunkEntry', () => {
   it('returns notFound when chunk does not exist', async () => {
     mockSelectLimit.mockResolvedValue([]);
 
-    const { deleteChunkEntry } = await import('./user-chunk-mutations');
     const result = await deleteChunkEntry(TEST_CHUNK_ID);
 
     expect(result).toEqual({ error: 'notFound' });
@@ -859,7 +829,6 @@ describe('deleteChunkEntry', () => {
       },
     ]);
 
-    const { deleteChunkEntry } = await import('./user-chunk-mutations');
     const result = await deleteChunkEntry(TEST_CHUNK_ID);
 
     expect(result).toEqual({ error: 'unauthorized' });
@@ -877,7 +846,6 @@ describe('deleteChunkEntry', () => {
       },
     ]);
 
-    const { deleteChunkEntry } = await import('./user-chunk-mutations');
     const result = await deleteChunkEntry(TEST_CHUNK_ID);
 
     expect(result).toEqual({ error: 'alreadyDeleted' });
@@ -895,7 +863,6 @@ describe('deleteChunkEntry', () => {
       },
     ]);
 
-    const { deleteChunkEntry } = await import('./user-chunk-mutations');
     const result = await deleteChunkEntry(TEST_CHUNK_ID);
 
     expect(result).toEqual({ success: true });
@@ -919,7 +886,6 @@ describe('deleteChunkEntry', () => {
       },
     ]);
 
-    const { deleteChunkEntry } = await import('./user-chunk-mutations');
     await deleteChunkEntry(TEST_CHUNK_ID);
 
     // delete_chunk is a soft-delete (deletedAt), so the chunks row survives as
@@ -941,7 +907,6 @@ describe('deleteChunkEntry', () => {
       },
     ]);
 
-    const { deleteChunkEntry } = await import('./user-chunk-mutations');
     await deleteChunkEntry(TEST_CHUNK_ID);
 
     expect(mockTxEditRequestsUpdateWhere).toHaveBeenCalledTimes(1);
@@ -964,7 +929,6 @@ describe('createChunkEntry — status', () => {
   });
 
   it('persists an explicit status="draft" through to the INSERT', async () => {
-    const { createChunkEntry } = await import('./user-chunk-mutations');
     const result = await createChunkEntry({ ...baseCreateInput, status: 'draft' });
 
     expect(result).toMatchObject({ success: true, id: TEST_CHUNK_ID, slug: TEST_SLUG });
@@ -972,14 +936,12 @@ describe('createChunkEntry — status', () => {
   });
 
   it('defaults to "published" when the caller omits status', async () => {
-    const { createChunkEntry } = await import('./user-chunk-mutations');
     await createChunkEntry(baseCreateInput);
 
     expect(mockInsertValues).toHaveBeenCalledWith(expect.objectContaining({ status: 'published' }));
   });
 
   it('rejects publish-on-create with an empty description (descriptionRequired)', async () => {
-    const { createChunkEntry } = await import('./user-chunk-mutations');
     const result = await createChunkEntry({
       ...baseCreateInput,
       status: 'published',
@@ -991,7 +953,6 @@ describe('createChunkEntry — status', () => {
   });
 
   it('allows creating a draft with an empty description', async () => {
-    const { createChunkEntry } = await import('./user-chunk-mutations');
     const result = await createChunkEntry({
       ...baseCreateInput,
       status: 'draft',
@@ -1020,7 +981,6 @@ describe('updateChunkEntry — published lock', () => {
       },
     ]);
 
-    const { updateChunkEntry } = await import('./user-chunk-mutations');
     const result = await updateChunkEntry(TEST_CHUNK_ID, {
       representativeFen: VALID_FEN,
       title: 'New title',
@@ -1042,7 +1002,6 @@ describe('updateChunkEntry — published lock', () => {
       },
     ]);
 
-    const { updateChunkEntry } = await import('./user-chunk-mutations');
     const result = await updateChunkEntry(TEST_CHUNK_ID, {
       representativeFen: VALID_FEN,
       title: 'New title',
@@ -1072,7 +1031,6 @@ describe('publishChunkEntry', () => {
       },
     ]);
 
-    const { publishChunkEntry } = await import('./user-chunk-mutations');
     const result = await publishChunkEntry(TEST_CHUNK_ID);
 
     expect(result).toEqual({ success: true });
@@ -1135,7 +1093,6 @@ describe('publishChunkEntry', () => {
       },
     ]);
 
-    const { publishChunkEntry } = await import('./user-chunk-mutations');
     const result = await publishChunkEntry(TEST_CHUNK_ID);
 
     expect(result).toEqual({ success: true });
@@ -1155,7 +1112,6 @@ describe('publishChunkEntry', () => {
       },
     ]);
 
-    const { publishChunkEntry } = await import('./user-chunk-mutations');
     const result = await publishChunkEntry(TEST_CHUNK_ID);
 
     expect(result).toEqual({ error: 'descriptionRequired' });
@@ -1174,7 +1130,6 @@ describe('publishChunkEntry', () => {
       },
     ]);
 
-    const { publishChunkEntry } = await import('./user-chunk-mutations');
     const result = await publishChunkEntry(TEST_CHUNK_ID);
 
     expect(result).toEqual({ error: 'descriptionRequired' });
@@ -1193,7 +1148,6 @@ describe('publishChunkEntry', () => {
       },
     ]);
 
-    const { publishChunkEntry } = await import('./user-chunk-mutations');
     const result = await publishChunkEntry(TEST_CHUNK_ID);
 
     expect(result).toEqual({ error: 'unauthorized' });
@@ -1212,7 +1166,6 @@ describe('publishChunkEntry', () => {
       },
     ]);
 
-    const { publishChunkEntry } = await import('./user-chunk-mutations');
     const result = await publishChunkEntry(TEST_CHUNK_ID);
 
     expect(result).toEqual({ error: 'alreadyDeleted' });
@@ -1222,7 +1175,6 @@ describe('publishChunkEntry', () => {
   it('propagates signInRequired from the guard', async () => {
     mockAuthenticateAndGuard.mockResolvedValue({ error: 'signInRequired' });
 
-    const { publishChunkEntry } = await import('./user-chunk-mutations');
     expect(await publishChunkEntry(TEST_CHUNK_ID)).toEqual({ error: 'signInRequired' });
     expect(mockSelectLimit).not.toHaveBeenCalled();
   });
