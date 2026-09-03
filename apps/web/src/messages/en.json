@@ -1041,6 +1041,15 @@
       "description": "Save your scores and track your improvement",
       "cta": "Sign Up Free"
     },
+    "record": {
+      "title": "Your record",
+      "previousBest": "Previous best",
+      "previousLast": "Last time",
+      "scoreValue": "{score} correct",
+      "newBest": "New personal best!",
+      "firstRecord": "First record",
+      "viewMyRecords": "See your progress in My Records"
+    },
     "settings": {
       "title": "Practice Settings",
       "timeLimit": "Time Limit",

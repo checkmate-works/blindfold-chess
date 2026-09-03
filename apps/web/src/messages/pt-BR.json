@@ -1041,6 +1041,15 @@
       "description": "Salve suas pontuações e acompanhe seu progresso",
       "cta": "Cadastro Gratuito"
     },
+    "record": {
+      "title": "Seu registro",
+      "previousBest": "Melhor anterior",
+      "previousLast": "Última vez",
+      "scoreValue": "{score} corretas",
+      "newBest": "Novo recorde pessoal!",
+      "firstRecord": "Primeiro registro",
+      "viewMyRecords": "Ver seu progresso em Meus Registros"
+    },
     "settings": {
       "title": "Configuração de Prática",
       "timeLimit": "Limite de Tempo",
