@@ -23,12 +23,6 @@ type FilterContext = {
 
 type SessionFilter = (session: ChallengeResultRow, ctx: FilterContext) => boolean;
 
-/** Menu types that support the board orientation filter UI. */
-export const ORIENTATION_FILTER_MENUS = new Set<ChallengeMenuType>(['coordinate_quiz']);
-
-/** Menu types that support the piece selection filter UI. */
-export const PIECE_FILTER_MENUS = new Set<ChallengeMenuType>(['legal_moves']);
-
 /**
  * Derives the leaderboard key that corresponds to a board orientation filter value.
  * coordinate_quiz uses boardOrientation as leaderboardKey directly.

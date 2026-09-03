@@ -11,12 +11,13 @@ import type { ChallengeMenuType } from '@/lib/db/practice-menu-types';
 
 import { BoardOrientationSelector } from '@/app/[locale]/(public)/practice/(challenge)/_components/BoardOrientationSelector';
 
-import { ORIENTATION_FILTER_MENUS, PIECE_FILTER_MENUS } from '../../_hooks/use-dashboard-data';
 import {
   PIECE_NAME_TO_SHORT,
   PIECE_SHORT_TO_NAME,
   type PieceFullName,
 } from '../../_lib/derive-piece-filter';
+import { ORIENTATION_FILTER_MENUS, PIECE_FILTER_MENUS } from '../../_lib/keyed-menus';
+import { buildResultsPath } from '../../_lib/results-href';
 import { selectClassName } from '../../_lib/ui-constants';
 
 type Props = {
@@ -27,17 +28,7 @@ type Props = {
 };
 
 function buildResultsHref(locale: string, menu?: string, key?: string): string {
-  const params = new URLSearchParams();
-  if (menu) params.set('menu', menu);
-  if (key) params.set('key', key);
-  const qs = params.toString();
-  return `/${locale}/mypage/challenges/results${qs ? `?${qs}` : ''}`;
-}
-
-function getDefaultKey(menu: ChallengeMenuType): string | undefined {
-  if (ORIENTATION_FILTER_MENUS.has(menu)) return 'white';
-  if (PIECE_FILTER_MENUS.has(menu)) return 'random';
-  return undefined;
+  return `/${locale}${buildResultsPath(menu, key)}`;
 }
 
 export function ResultsFilters({ locale, availableMenuTypes, currentMenu, currentKey }: Props) {
@@ -45,10 +36,11 @@ export function ResultsFilters({ locale, availableMenuTypes, currentMenu, curren
   const tResults = useTranslations('MypageChallengeResults');
   const router = useRouter();
 
+  // No key on a menu change: the page resolves it from the player's most
+  // recent record for that menu, so a keyed menu never opens on a key they
+  // have not played.
   const handleMenuChange = (value: string) => {
-    const menu = value || undefined;
-    const defaultKey = menu ? getDefaultKey(menu as ChallengeMenuType) : undefined;
-    router.push(buildResultsHref(locale, menu, defaultKey));
+    router.push(buildResultsHref(locale, value || undefined));
   };
 
   const handleOrientationChange = (value: BoardOrientation) => {

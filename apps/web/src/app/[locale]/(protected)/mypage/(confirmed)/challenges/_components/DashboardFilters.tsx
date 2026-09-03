@@ -9,7 +9,7 @@ import type { ChallengeMenuType } from '@/lib/db/practice-menu-types';
 
 import { BoardOrientationSelector } from '@/app/[locale]/(public)/practice/(challenge)/_components/BoardOrientationSelector';
 
-import { ORIENTATION_FILTER_MENUS, PIECE_FILTER_MENUS } from '../_hooks/use-dashboard-data';
+import { ORIENTATION_FILTER_MENUS, PIECE_FILTER_MENUS } from '../_lib/keyed-menus';
 import type { DatePeriod } from '../_lib/period-utils';
 import { selectClassName } from '../_lib/ui-constants';
 

@@ -88,7 +88,7 @@ describe('ResultsFilters', () => {
     expect(screen.queryAllByRole('button')).toHaveLength(0);
   });
 
-  it('navigates to correct URL with default key when menu is changed to coordinate_quiz', () => {
+  it('navigates with the menu only when changed to coordinate_quiz — the page resolves the key', () => {
     renderWithProviders(
       <ResultsFilters locale="en" availableMenuTypes={['coordinate_quiz', 'legal_moves']} />
     );
@@ -96,12 +96,10 @@ describe('ResultsFilters', () => {
     const select = screen.getByRole('combobox');
     fireEvent.change(select, { target: { value: 'coordinate_quiz' } });
 
-    expect(mockPush).toHaveBeenCalledWith(
-      '/en/mypage/challenges/results?menu=coordinate_quiz&key=white'
-    );
+    expect(mockPush).toHaveBeenCalledWith('/en/mypage/challenges/results?menu=coordinate_quiz');
   });
 
-  it('navigates to correct URL with default key when menu is changed to legal_moves', () => {
+  it('navigates with the menu only when changed to legal_moves — the page resolves the key', () => {
     renderWithProviders(
       <ResultsFilters locale="en" availableMenuTypes={['coordinate_quiz', 'legal_moves']} />
     );
@@ -109,9 +107,7 @@ describe('ResultsFilters', () => {
     const select = screen.getByRole('combobox');
     fireEvent.change(select, { target: { value: 'legal_moves' } });
 
-    expect(mockPush).toHaveBeenCalledWith(
-      '/en/mypage/challenges/results?menu=legal_moves&key=random'
-    );
+    expect(mockPush).toHaveBeenCalledWith('/en/mypage/challenges/results?menu=legal_moves');
   });
 
   it('navigates to URL without params when menu is cleared', () => {
@@ -181,9 +177,7 @@ describe('ResultsFilters', () => {
     const select = screen.getByRole('combobox');
     fireEvent.change(select, { target: { value: 'coordinate_quiz' } });
 
-    expect(mockPush).toHaveBeenCalledWith(
-      '/ja/mypage/challenges/results?menu=coordinate_quiz&key=white'
-    );
+    expect(mockPush).toHaveBeenCalledWith('/ja/mypage/challenges/results?menu=coordinate_quiz');
   });
 
   it('sets current menu as selected value', () => {

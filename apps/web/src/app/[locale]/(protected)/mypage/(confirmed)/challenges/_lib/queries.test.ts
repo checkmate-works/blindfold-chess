@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { db } from '@/lib/db';
 
-import { getChallengeResultsPaginated } from './queries';
+import { getChallengeResultsPaginated, getLatestLeaderboardKey } from './queries';
 
 vi.mock('@/lib/db', () => {
   const mockDb = {
@@ -306,5 +306,23 @@ describe('getChallengeResultsPaginated', () => {
 
     const offsetFn = (itemsChain as Record<string, ReturnType<typeof vi.fn>>).offset;
     expect(offsetFn).toHaveBeenCalledWith(0); // clamped to page 1 (totalPages=1)
+  });
+});
+
+describe('getLatestLeaderboardKey', () => {
+  it('returns the key of the most recent record for the menu', async () => {
+    const chain = mockChain([{ leaderboardKey: 'knight' }]);
+    mockDb.select.mockReturnValueOnce(chain as unknown as ReturnType<typeof mockDb.select>);
+
+    await expect(getLatestLeaderboardKey('user-1', 'legal_moves')).resolves.toBe('knight');
+    expect(chain.orderBy).toHaveBeenCalledTimes(1);
+    expect(chain.limit).toHaveBeenCalledWith(1);
+  });
+
+  it('returns undefined when the player has no record for the menu', async () => {
+    const chain = mockChain([]);
+    mockDb.select.mockReturnValueOnce(chain as unknown as ReturnType<typeof mockDb.select>);
+
+    await expect(getLatestLeaderboardKey('user-1', 'legal_moves')).resolves.toBeUndefined();
   });
 });

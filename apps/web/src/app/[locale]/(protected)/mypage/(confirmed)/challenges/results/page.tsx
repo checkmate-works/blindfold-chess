@@ -15,7 +15,8 @@ import type { LocaleSearchPageProps } from '@/app/[locale]/_lib/types';
 
 import { getAvailableMenuTypes } from '../_actions/get-challenge-sessions';
 import { formatDate } from '../_lib/dashboard-utils';
-import { getChallengeResultsPaginated } from '../_lib/queries';
+import { isKeyedMenu } from '../_lib/keyed-menus';
+import { getChallengeResultsPaginated, getLatestLeaderboardKey } from '../_lib/queries';
 import { ResultsFilters } from './_components/ResultsFilters';
 
 const searchParamsCache = createSearchParamsCache({
@@ -47,7 +48,16 @@ export default async function ChallengeResultsPage({ params, searchParams }: Pro
     menu && CHALLENGE_MENU_TYPES.includes(menu as ChallengeMenuType)
       ? (menu as ChallengeMenuType)
       : undefined;
-  const leaderboardKey = key || undefined;
+  // A keyed menu (orientation / piece) is always shown through one key, as on
+  // the dashboard. When the URL names the menu but not the key — the filter
+  // select and the dashboard's "view all" link both do — follow the player's
+  // most recent record for it rather than a fixed default that may match
+  // nothing they ever played.
+  const leaderboardKey =
+    key ||
+    (menuType && isKeyedMenu(menuType)
+      ? await getLatestLeaderboardKey(user.id, menuType)
+      : undefined);
 
   const [{ items, totalPages }, availableMenuTypes] = await Promise.all([
     getChallengeResultsPaginated(user.id, page, menuType, leaderboardKey),
