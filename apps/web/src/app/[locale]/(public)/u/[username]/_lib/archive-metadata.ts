@@ -43,7 +43,7 @@ export async function buildProfileArchiveMetadata({
   const t = await getTranslations({ locale, namespace: 'publicProfile' });
 
   return {
-    title: resolveTitle(`${t(labelKey)} - ${profile.displayName ?? username}`, locale),
+    title: resolveTitle(`${t(labelKey)} - ${profile.displayName || username}`, locale),
     alternates: {
       canonical: `/${locale}/u/${username}/${segment}`,
     },

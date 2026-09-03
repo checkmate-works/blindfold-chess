@@ -57,7 +57,7 @@ export default async function AchievementsPage({ params }: Props) {
     getUserAchievementGroups(profile.id),
   ]);
 
-  const displayName = profile.displayName ?? username;
+  const displayName = profile.displayName || username;
 
   return (
     <PageLayout

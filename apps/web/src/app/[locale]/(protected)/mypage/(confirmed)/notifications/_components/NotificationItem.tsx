@@ -12,6 +12,7 @@ import { FiBell, FiBellOff } from 'react-icons/fi';
 
 import { formatLocalDate } from '@/lib/i18n/format-date';
 import { isMutableNotificationType } from '@/lib/notifications/mutable-types';
+import { resolveAuthorName } from '@/lib/users/display-name';
 
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 
@@ -43,7 +44,7 @@ export function NotificationItem({ notification, currentUsername, isTypeMuted = 
   const [isMuting, startMuteTransition] = useTransition();
 
   const actor = notification.actor;
-  const actorName = actor?.displayName ?? actor?.username ?? '';
+  const actorName = resolveAuthorName(actor, { fallback: '' });
   const isMutable = isMutableNotificationType(notification.type);
   const typeLabel = isMutable ? tRoot(`Preferences.notifications.types.${notification.type}`) : '';
 

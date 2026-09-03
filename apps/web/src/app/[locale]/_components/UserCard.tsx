@@ -12,7 +12,7 @@ type Props = {
 };
 
 export function UserCard({ username, displayName, avatarUrl, locale, actions }: Props) {
-  const name = displayName ?? username;
+  const name = displayName || username;
 
   return (
     <div className="flex items-center gap-4 rounded-lg border border-border p-4 transition-colors hover:bg-muted/50">

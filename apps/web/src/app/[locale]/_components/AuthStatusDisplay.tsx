@@ -63,7 +63,7 @@ export function AuthStatusDisplay({ isAuthenticated, avatarUrl, displayName }: P
             />
           ) : (
             <span className="flex items-center justify-center w-8 h-8 rounded-full bg-muted text-muted-foreground text-xs">
-              {(displayName ?? user?.email ?? '?').charAt(0).toUpperCase()}
+              {(displayName || user?.email || '?').charAt(0).toUpperCase()}
             </span>
           )}
         </button>

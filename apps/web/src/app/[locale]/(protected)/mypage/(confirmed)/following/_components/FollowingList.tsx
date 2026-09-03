@@ -5,6 +5,7 @@ import { useOptimistic, useState, useTransition } from 'react';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import type { IdentifiedAuthorProfile } from '@/lib/users/author-profile';
+import { resolveAuthorName } from '@/lib/users/display-name';
 
 import { toggleFollow } from '@/app/[locale]/(public)/u/[username]/_actions/toggleFollow';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
@@ -78,7 +79,7 @@ export function FollowingList({ initialList, locale }: Props) {
         isOpen={confirmTarget !== null}
         title={t('unfollowConfirmTitle')}
         message={t('unfollowConfirmMessage', {
-          name: confirmTarget?.displayName ?? confirmTarget?.username ?? '',
+          name: resolveAuthorName(confirmTarget, { fallback: '' }),
         })}
         confirmText={t('unfollow')}
         cancelText={t('cancel')}

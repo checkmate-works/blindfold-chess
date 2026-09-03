@@ -21,6 +21,7 @@ import { getLevelProgress } from '@blindfold-chess/features/exp';
 import { CoinIcon } from '@blindfold-chess/icons';
 
 import { getAuthenticatedUser } from '@/lib/auth';
+import { resolveAuthorName } from '@/lib/users/display-name';
 
 import {
   DashboardCard,
@@ -72,14 +73,14 @@ export default async function MypagePage({ params }: Props) {
         <UserAvatar
           profileHref={null}
           avatarUrl={data.avatarUrl}
-          displayName={data.displayName ?? data.username ?? ''}
+          displayName={resolveAuthorName(data, { fallback: '' })}
           locale={locale}
           size="lg"
           showName={false}
         />
         <div className="min-w-0">
           <h2 className="text-lg font-semibold text-foreground truncate">
-            {data.displayName ?? data.username ?? t('title')}
+            {resolveAuthorName(data, { fallback: t('title') })}
           </h2>
           {data.username && <p className="text-sm text-muted-foreground">@{data.username}</p>}
           <div className="mt-1.5 flex flex-wrap items-center gap-2">
