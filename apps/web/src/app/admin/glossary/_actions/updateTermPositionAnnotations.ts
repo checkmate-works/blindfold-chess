@@ -1,12 +1,13 @@
 'use server';
 
-// eslint-disable-next-line no-restricted-imports -- TermPositionEditor has no router.refresh(); this revalidate is what re-renders the term page with the saved annotations
-import { revalidatePath } from 'next/cache';
+// eslint-disable-next-line no-restricted-imports -- TermPositionEditor has no router.refresh(); this revalidate is what re-renders the admin editor with the saved annotations
+import { revalidatePath, revalidateTag } from 'next/cache';
 
 import { requireAdmin } from '@/app/admin/_lib/auth';
 import { and, eq } from 'drizzle-orm';
 
 import { parseBoardAnnotations } from '@/lib/board-annotations/parse';
+import { glossaryPositionsTag } from '@/lib/cache-tags';
 import { db, glossaryTermPositions } from '@/lib/db';
 import { isValidUUID } from '@/lib/validations/uuid';
 
@@ -49,5 +50,13 @@ export async function updateTermPositionAnnotations(
   }
 
   revalidatePath(`/admin/glossary/${termSlug}`);
+
+  // The public term page renders these annotations too, prerendered in every
+  // locale. Its route-cache entries carry the per-term tag `getPositionsForTerm`
+  // stamps on them, so expiring that one tag re-renders exactly those pages on
+  // their next visit. Without it the edit waited out the page's ISR interval —
+  // an hour once, now the layout's week.
+  revalidateTag(glossaryPositionsTag(termSlug), { expire: 0 });
+
   return { success: true };
 }

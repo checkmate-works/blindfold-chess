@@ -21,8 +21,6 @@ import { buildPracticeHelpTour } from '@/app/[locale]/(public)/practice/_lib/pra
 
 import RoutePlanner from './_components/RoutePlanner';
 
-export const revalidate = 3600;
-
 const { generateMetadata, Page } = createPracticeTopPage({
   i18nKey: 'routePlanner',
   canonicalPath: 'practice/route-planner',

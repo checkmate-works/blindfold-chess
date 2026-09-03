@@ -51,11 +51,13 @@
  * - {@link RANKS_CACHE_TAG} — the `ranks` master rows the dojo reads
  *   (`getAllRanks`, `getRankBySlug`). Nothing writes `ranks` at runtime —
  *   the table is code-seeded on deploy — so no action invalidates this tag
- *   today; the hourly revalidate on the readers is the only freshness bound.
- *   Declared so a future admin editor has a handle to pull.
+ *   today, and the readers sit on the same seven-day revalidate as the rest
+ *   of the static tree. A `db:seed` run against a live deployment therefore
+ *   needs a redeploy behind it to surface. Declared so a future admin editor
+ *   has a handle to pull.
  * - {@link OPENINGS_CACHE_TAG} — the `chess_openings` master
  *   (`getOpenings` and every lookup derived from it). Same situation as
- *   `ranks`: seeded at deploy, no runtime writer, hourly revalidate, no
+ *   `ranks`: seeded at deploy, no runtime writer, seven-day revalidate, no
  *   invalidator today.
  * - {@link TOPIC_POST_COUNTS_CACHE_TAG} — the top-level post COUNTs that
  *   paginate the topic index pages (`getPostCountByTopicType`,
@@ -91,16 +93,39 @@ export const REPERTOIRE_CATALOG_CACHE_TAG = 'repertoire-catalog' as const;
 /**
  * The glossary master data — terms, their translations, aliases and example
  * positions. Read by the eight `unstable_cache` wrappers in the glossary
- * queries and in `@/lib/glossary/term-positions`, all on a 1 hour
+ * queries and in `@/lib/glossary/term-positions`, all on a 7 day
  * `revalidate`.
  *
- * Note that nothing calls `revalidateTag` with it: an admin edit to a glossary
- * term becomes visible when the hour elapses, not when it is saved. The tag is
- * defined anyway because it is the handle a writer would need, and because
- * eight inlined `'glossary'` literals were the exact drift this module's rule
- * against inline tags exists to prevent.
+ * That interval is long because the terms are code, not content:
+ * `lib/db/data/terms/*.ts` is the source and `db:seed` copies it into the
+ * table, so a term only changes as part of a deploy, which drops the whole
+ * ISR cache anyway. The one runtime writer, the admin annotation editor, does
+ * not expire this tag: it is stamped on every glossary page's route-cache
+ * entry (the index, 26 letter pages, the categories and every term, times
+ * four locales), so one annotation save would re-render the lot. It expires
+ * {@link glossaryPositionsTag} for the one term instead.
+ *
+ * The interval does constrain one operational sequence: run `db:seed` before
+ * the deploy that ships the term change, or redeploy after it. Seeding a live
+ * deployment leaves the prerendered pages serving the previous rows for up to
+ * a week, where they used to catch up within the hour.
  */
 export const GLOSSARY_CACHE_TAG = 'glossary' as const;
+
+/**
+ * The practice positions linked to one glossary term, as read by
+ * `getPositionsForTerm` — one tag per term slug, carried alongside
+ * {@link GLOSSARY_CACHE_TAG} on the same entry.
+ *
+ * Exists so that `updateTermPositionAnnotations` can drop exactly the pages
+ * that render the edited annotations. `unstable_cache` stamps its tags on the
+ * route-cache entry of every page that read it during prerender, so expiring
+ * this tag re-renders `/[locale]/glossary/[slug]` for that one slug in each
+ * locale on its next visit, where expiring the shared tag would re-render the
+ * whole glossary.
+ */
+export const glossaryPositionsTag = (slug: string): `glossary-positions:${string}` =>
+  `glossary-positions:${slug}`;
 
 /**
  * The public profile row behind `/u/[username]`, one Data Cache entry (and one

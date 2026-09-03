@@ -18,8 +18,6 @@ import { getGlossaryTerms } from './_lib/queries';
 
 export const generateStaticParams = generateLocaleStaticParams;
 
-export const revalidate = 3600;
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return createPageMetadata({ params, namespace: 'metadata.glossary', path: 'glossary' });
 }

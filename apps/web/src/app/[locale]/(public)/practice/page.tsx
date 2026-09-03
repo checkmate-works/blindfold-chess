@@ -43,6 +43,9 @@ type Props = {
 
 export const generateStaticParams = generateLocaleStaticParams;
 
+// Lands at 1h in the route table, not the layout's week, via `DailyPuzzleCard`
+// → `getDailyPuzzle`. Deliberate; see `selectDailyPuzzle`.
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return createPageMetadata({ params, namespace: 'metadata.practice', path: 'practice' });
 }

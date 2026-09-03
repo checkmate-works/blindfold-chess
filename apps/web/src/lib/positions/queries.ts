@@ -123,8 +123,7 @@ function buildListConditions({
   userId,
   forkedFromId,
 }: Pick<ListPositionsOptions, 'type' | 'includeDeleted' | 'userId' | 'forkedFromId'>):
-  | SQL
-  | undefined {
+  SQL | undefined {
   const conditions: SQL[] = [];
   if (type) conditions.push(eq(positions.type, type));
   if (!includeDeleted) conditions.push(isNull(positions.deletedAt));
@@ -271,6 +270,14 @@ export function utcDayKey(now: Date = new Date()): string {
  * {@link DAILY_PUZZLE_CACHE_TAG} for an immediate swap, so the hourly
  * revalidate is only a backstop for un-tagged writes (e.g. an owner deleting
  * their own featured puzzle from the public side).
+ *
+ * Do not lengthen the hour to match the rest of the app's data caches. A
+ * prerendered page that renders the card — `/[locale]/practice` — takes this
+ * interval as its own ISR floor, and rolling the day forward picks a new
+ * cache key here without touching the route cache holding that page's HTML.
+ * The interval is therefore what actually swaps the card over on a static
+ * page; at a week it would show last week's puzzle. `/practice` reading `1h`
+ * in the build's route table is this, and is correct.
  */
 const selectDailyPuzzle = unstable_cache(
   async (dayKey: string) => {

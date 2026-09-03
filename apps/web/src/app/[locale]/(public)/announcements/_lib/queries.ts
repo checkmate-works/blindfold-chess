@@ -217,10 +217,10 @@ export const getPublishedAnnouncement = cache(
  * not surface a banner. The BANNER_DISPLAY_DAYS window still applies on top, so
  * an opted-in banner auto-expires after a few days even if left checked.
  *
- * Wrapped with unstable_cache (cross-request, 24h revalidation, tag-driven)
+ * Wrapped with unstable_cache (cross-request, 7 day revalidation, tag-driven)
  * and React.cache (per-request deduplication).
  *
- * @design 24h revalidate, not minutes
+ * @design This value, not the layout's, is the ISR ceiling for the whole tree
  * This function is consumed by `<Header>` inside `[locale]/layout.tsx`, so
  * every page in the `[locale]/(public)` subtree reads it on render. Under
  * Next.js 16's segment cache, when this data-cache entry invalidates, the
@@ -235,12 +235,16 @@ export const getPublishedAnnouncement = cache(
  * preferences, etc. — racking up ~50–70 writes/day each despite no
  * `export const revalidate` on those routes).
  *
+ * The reach runs the other way too: because every page reads this entry, its
+ * interval is a ceiling on every static page under `[locale]`, whatever their
+ * segment config says. Keep it in step with the layout's `revalidate` — the
+ * TSDoc there explains the mechanism and carries the measurements.
+ *
  * Admin announcement CRUD calls `revalidateTag('announcements', ...)`,
- * so newly published banners surface immediately. The 24h timer is only
+ * so newly published banners surface immediately. The timer is only
  * the upper bound for the "no banner currently set, then one is added by
  * a service-role / SQL path that doesn't go through the admin action" —
- * which is not a path we use. Going longer than 24h is fine in principle;
- * 24h is just the conventional safety net.
+ * which is not a path we use.
  */
 export const getLatestBannerAnnouncement = cache(
   unstable_cache(
@@ -266,6 +270,6 @@ export const getLatestBannerAnnouncement = cache(
       return deduplicateBySlug(rows, locale)[0] ?? null;
     },
     ['latest-banner-announcement'],
-    { tags: [ANNOUNCEMENTS_CACHE_TAG], revalidate: 86400 }
+    { tags: [ANNOUNCEMENTS_CACHE_TAG], revalidate: 604800 }
   )
 );

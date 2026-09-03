@@ -7,11 +7,9 @@ import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
 
 import { PricingPlans } from './_components/PricingPlans';
 
-// Pricing tiers are code-defined and i18n-driven; the only per-user state is
-// the "Current Plan" badge and the subscribe / manage CTA, both of which the
-// `PricingPlans` client component overlays after hydration. Long ISR window
-// is fine — pricing copy only changes on deploy.
-export const revalidate = 3600;
+// Safe to prerender: pricing tiers are code-defined and i18n-driven, and the
+// only per-user state — the "Current Plan" badge and the subscribe / manage
+// CTA — is overlaid by the `PricingPlans` client component after hydration.
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return createPageMetadata({ params, namespace: 'pricing', path: 'pricing' });

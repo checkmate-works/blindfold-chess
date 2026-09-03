@@ -49,8 +49,6 @@ import type { LocalePageProps } from '@/app/[locale]/_lib/types';
 import { RANKS_GRID_CLASSES, RanksGrid } from './_components/RanksGrid';
 import { getAllRanks } from './_lib/queries';
 
-export const revalidate = 1800; // 30 minutes — ranks are code-seeded; long TTL is fine
-
 export async function generateMetadata({ params }: LocalePageProps): Promise<Metadata> {
   return createPageMetadata({ params, namespace: 'metadata.ranks', path: 'dojo/ranks' });
 }

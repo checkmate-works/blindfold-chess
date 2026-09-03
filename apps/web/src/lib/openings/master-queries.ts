@@ -39,5 +39,5 @@ export const getOpenings = unstable_cache(
     return db.select().from(chessOpenings).orderBy(asc(chessOpenings.sortOrder));
   },
   ['chess-openings'],
-  { tags: [OPENINGS_CACHE_TAG], revalidate: 3600 }
+  { tags: [OPENINGS_CACHE_TAG], revalidate: 604800 }
 );

@@ -75,7 +75,17 @@ export const dynamicParams = false;
  * minor term: a zero-deploy day cost the same as a one-deploy day, roughly
  * 0.04/deploy at the margin. A 7-day ceiling cuts those once-a-day rewrites
  * to ~1/7; `false` would zero them but remove the backstop below entirely.
- * Daily numbers for both steps: GitHub issue #178.
+ *
+ * This number alone does not set the ceiling. A route's effective revalidate
+ * is the minimum of its segment config and every data-cache entry the render
+ * touched, and `<Header>` below reads the banner announcement on every page
+ * in this tree. So whatever `getLatestBannerAnnouncement` is cached for is
+ * the real ceiling, and while that sat at a day this constant did nothing:
+ * the 1h -> 24h step landed only because the banner query was raised from
+ * 300s to a day in the same change, and the 24h -> 7d step, made here alone,
+ * moved ISR Writes by 8% — inside the day-to-day noise. Read the build's
+ * route table, not this line, to know what a page actually gets.
+ * Daily numbers for both steps: GitHub issues #178 and #182.
  *
  * Freshness does not depend on this timer. Runtime content baked into
  * prerendered pages propagates through cache tags — admin announcement

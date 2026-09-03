@@ -6,13 +6,11 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import type { ServerTranslator } from '@/i18n/translator';
 
 import type { LeaderboardModule } from '@/app/[locale]/(public)/leaderboard/_lib/types';
-import { LeaderboardPreview } from '@/app/[locale]/(public)/practice/_components/LeaderboardPreview';
+import { LeaderboardPreviewLoader } from '@/app/[locale]/(public)/practice/_components/LeaderboardPreviewLoader';
 import { PageLayout } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
-
-import { resolveLeaderboardWithFallback } from './resolveLeaderboardWithFallback';
 
 type Props = {
   params: Promise<{
@@ -35,17 +33,12 @@ type PracticeTopPageConfig = {
    * page only ships the help tour for some locales.
    */
   renderTitleAction?: (t: ServerTranslator, locale: Locale) => ReactNode;
-  /** Optional leaderboard preview (reuses LeaderboardPreview from result pages) */
+  /** Optional TOP3 teaser, loaded client-side by `LeaderboardPreviewLoader` so the page stays static. */
   leaderboard?: {
     module: LeaderboardModule;
     defaultKey: string;
   };
 };
-
-async function resolveLeaderboardData(lb: PracticeTopPageConfig['leaderboard']) {
-  if (!lb) return null;
-  return resolveLeaderboardWithFallback(lb.module, lb.defaultKey);
-}
 
 export function createPracticeTopPage(config: PracticeTopPageConfig) {
   async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -64,8 +57,6 @@ export function createPracticeTopPage(config: PracticeTopPageConfig) {
     setRequestLocale(locale);
     const t = await getTranslations({ locale });
 
-    const leaderboardData = await resolveLeaderboardData(config.leaderboard);
-
     const titleAction = config.renderTitleAction?.(t, locale);
 
     return (
@@ -82,11 +73,10 @@ export function createPracticeTopPage(config: PracticeTopPageConfig) {
 
         {config.renderArticles(t, locale)}
 
-        {leaderboardData && (
-          <LeaderboardPreview
-            rows={leaderboardData.rows}
-            detailPath={leaderboardData.detailPath}
-            period={leaderboardData.period}
+        {config.leaderboard && (
+          <LeaderboardPreviewLoader
+            module={config.leaderboard.module}
+            defaultKey={config.leaderboard.defaultKey}
             locale={locale}
           />
         )}

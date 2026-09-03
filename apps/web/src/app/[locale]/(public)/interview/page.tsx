@@ -7,11 +7,10 @@ import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
 
 import { InterviewQuestionGrid } from './_components/InterviewQuestionGrid';
 
-// Interview questions are code-defined (`INTERVIEW_QUESTION_KEYS`) and the
-// labels are i18n-driven, so the page itself only changes on deploy. The
-// per-user "answered ✓" badge is overlaid client-side by
-// `InterviewQuestionGrid` after hydration.
-export const revalidate = 3600;
+// Safe to prerender: interview questions are code-defined
+// (`INTERVIEW_QUESTION_KEYS`) and the labels are i18n-driven, and the per-user
+// "answered ✓" badge is overlaid client-side by `InterviewQuestionGrid` after
+// hydration.
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return createPageMetadata({ params, namespace: 'metadata.interview', path: 'interview' });

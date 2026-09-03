@@ -22,8 +22,6 @@ import { buildPracticeHelpTour } from '@/app/[locale]/(public)/practice/_lib/pra
 
 import { DiagonalQuizSetup } from './_components/DiagonalQuizSetup';
 
-export const revalidate = 3600;
-
 const { generateMetadata, Page } = createPracticeTopPage({
   i18nKey: 'diagonalQuiz',
   canonicalPath: 'practice/diagonal-quiz',

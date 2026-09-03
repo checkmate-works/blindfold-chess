@@ -22,9 +22,10 @@ import { resolveAchievedSlugs } from './rank-progression';
  * nothing more than rank names and colours. Cached, the sweep costs one
  * connection per revalidation instead of one per page.
  *
- * The hourly revalidate is the only freshness bound (see
- * {@link RANKS_CACHE_TAG}); a re-seeded row surfacing within the hour is
- * the same latitude `dojo/ranks/page.tsx` already takes with its own ISR.
+ * The revalidate is the only freshness bound (see {@link RANKS_CACHE_TAG}).
+ * It matches the layout's ISR default because a data-cache interval is also a
+ * floor on every prerendered page that reads it — the `revalidate` TSDoc in
+ * `[locale]/layout.tsx` has the mechanism.
  * The rows are JSON round-tripped, so `createdAt` arrives as a string — no
  * dojo consumer reads it.
  *
@@ -33,7 +34,7 @@ import { resolveAchievedSlugs } from './rank-progression';
 export const getAllRanks = unstable_cache(
   async () => db.select().from(ranks).orderBy(asc(ranks.level)),
   ['ranks-all'],
-  { tags: [RANKS_CACHE_TAG], revalidate: 3600 }
+  { tags: [RANKS_CACHE_TAG], revalidate: 604800 }
 );
 
 export const getRankBySlug = unstable_cache(
@@ -42,7 +43,7 @@ export const getRankBySlug = unstable_cache(
     return rows[0] ?? null;
   },
   ['rank-by-slug'],
-  { tags: [RANKS_CACHE_TAG], revalidate: 3600 }
+  { tags: [RANKS_CACHE_TAG], revalidate: 604800 }
 );
 
 export async function getUserAchievedRankIds(userId: string): Promise<Set<string>> {
