@@ -7,11 +7,11 @@ import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
 
 import { PricingPlans } from './_components/PricingPlans';
 
-// Pricing tiers are code-defined and i18n-driven; the only per-user state is
-// the "Current Plan" badge and the subscribe / manage CTA, both of which the
-// `PricingPlans` client component overlays after hydration. Long ISR window
-// is fine — pricing copy only changes on deploy.
-export const revalidate = 3600;
+// No `revalidate` of its own: pricing tiers are code-defined and i18n-driven,
+// and the only per-user state is the "Current Plan" badge and the subscribe /
+// manage CTA, both of which the `PricingPlans` client component overlays after
+// hydration. Nothing here changes between deploys, so the page wants the
+// layout's interval rather than a shorter one of its own.
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return createPageMetadata({ params, namespace: 'pricing', path: 'pricing' });

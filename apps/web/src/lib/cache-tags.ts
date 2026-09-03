@@ -51,11 +51,13 @@
  * - {@link RANKS_CACHE_TAG} — the `ranks` master rows the dojo reads
  *   (`getAllRanks`, `getRankBySlug`). Nothing writes `ranks` at runtime —
  *   the table is code-seeded on deploy — so no action invalidates this tag
- *   today; the hourly revalidate on the readers is the only freshness bound.
- *   Declared so a future admin editor has a handle to pull.
+ *   today, and the readers sit on the same seven-day revalidate as the rest
+ *   of the static tree. A `db:seed` run against a live deployment therefore
+ *   needs a redeploy behind it to surface. Declared so a future admin editor
+ *   has a handle to pull.
  * - {@link OPENINGS_CACHE_TAG} — the `chess_openings` master
  *   (`getOpenings` and every lookup derived from it). Same situation as
- *   `ranks`: seeded at deploy, no runtime writer, hourly revalidate, no
+ *   `ranks`: seeded at deploy, no runtime writer, seven-day revalidate, no
  *   invalidator today.
  * - {@link TOPIC_POST_COUNTS_CACHE_TAG} — the top-level post COUNTs that
  *   paginate the topic index pages (`getPostCountByTopicType`,
