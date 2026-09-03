@@ -2,7 +2,7 @@ import { and, eq, isNull } from 'drizzle-orm';
 import 'server-only';
 
 import type { ActionResult } from '@/lib/action-types';
-import { authenticateAndGuard } from '@/lib/auth';
+import { authenticateAndGuard, authenticateGuardAndRequireProfile } from '@/lib/auth';
 import { chunkFeedbackTopics, chunks, db, feedItems, topicPosts } from '@/lib/db';
 import { diffFields } from '@/lib/db/diff-fields';
 import { isUniqueViolation } from '@/lib/db/extract-pg-error-code';
@@ -140,7 +140,14 @@ export async function createChunkEntry(
   data: ChunkMutationData,
   options?: CreateChunkOptions
 ): Promise<CreateChunkResult> {
-  const guardResult = await authenticateAndGuard(RATE_LIMITS.createChunk);
+  // A chunk carries its author's name on its detail page and in every feed
+  // that lists it, so the profile row that supplies that name has to exist
+  // before the row lands — a provisional user (session, no `profiles` row)
+  // would author a chunk that renders as "(deleted user)" forever. Editing,
+  // publishing and deleting an already-owned chunk stay on the plain guard:
+  // the attribution is already made, and locking an author out of managing
+  // or removing their own row is the worse failure.
+  const guardResult = await authenticateGuardAndRequireProfile(RATE_LIMITS.createChunk);
   if ('error' in guardResult) {
     return { error: guardResult.error };
   }
