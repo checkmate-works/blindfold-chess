@@ -57,10 +57,12 @@ export default async function FollowingPage({ params, searchParams }: Props) {
     .from(userFollows)
     .innerJoin(profiles, eq(userFollows.followingId, profiles.id))
     // The filter is the helper rather than the join's `isNull(profiles.deletedAt)`
-    // so this list and the count above apply one predicate. The two spellings do
-    // not always agree, and a count that outruns its list is a pager offering a
-    // page with nothing on it. See the helper's `@design` note for why its form
-    // is also the cheaper one.
+    // so this list and the count above apply one predicate; mixing the two gives
+    // a count that outruns its list and a pager offering a page with nothing on
+    // it. The join stays only to project the profile columns. That it does not
+    // narrow the result any further — the two questions differ on a follow whose
+    // profile row is absent rather than soft-deleted — is argued on the helper's
+    // `@design` note, from the cascade pair on `auth.users`.
     .where(and(eq(userFollows.followerId, user.id), profileNotDeleted(userFollows.followingId)))
     .orderBy(desc(userFollows.createdAt))
     .limit(PAGE_SIZE)
