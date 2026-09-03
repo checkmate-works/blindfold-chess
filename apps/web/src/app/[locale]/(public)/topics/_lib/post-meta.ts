@@ -112,7 +112,8 @@ export async function attachPostMeta(
     uniqueRepliersByPost.set(row.rootPostId, repliers);
     repliers.push({
       avatarUrl: row.avatarUrl,
-      displayName: row.displayName || row.username || 'Anonymous',
+      // `null`, not a word: see the `Replier.displayName` TSDoc.
+      displayName: row.displayName || row.username || null,
     });
   }
 

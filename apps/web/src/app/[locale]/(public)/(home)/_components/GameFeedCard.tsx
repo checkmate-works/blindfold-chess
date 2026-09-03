@@ -6,7 +6,7 @@ import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
-import { resolveDisplayName } from '@/lib/users/display-name';
+import { resolveAuthorName } from '@/lib/users/display-name';
 
 import { toggleGameLikeAction } from '@/app/[locale]/(public)/games/shared/[id]/_actions/game-like';
 import { AiReviewedBadge } from '@/app/[locale]/(public)/games/shared/_components/AiReviewedBadge';
@@ -36,8 +36,9 @@ export const GameFeedCard = memo(function GameFeedCard({
 }: Props) {
   const tFeed = useTranslations('home.feed.game');
   const tSharedGames = useTranslations('sharedGames');
+  const tCommon = useTranslations('Common');
   const { preferences } = useGamePreferences();
-  const displayName = resolveDisplayName(data.author);
+  const displayName = resolveAuthorName(data.author, { fallback: tCommon('deletedUser') });
   const href = `/games/shared/${data.id}`;
 
   return (

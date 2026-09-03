@@ -90,7 +90,7 @@ export default async function FollowersPage({ params, searchParams }: Props) {
     .limit(PAGE_SIZE)
     .offset(offset);
 
-  const displayName = profile.displayName ?? username;
+  const displayName = profile.displayName || username;
 
   const buildHref = buildPageHref(`/${locale}/u/${username}/followers`);
 

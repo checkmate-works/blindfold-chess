@@ -60,7 +60,7 @@ export async function ProblemsTypePage({
     searchParamsCache.parse(searchParams),
   ]);
 
-  const [context, problemsData, t, tType] = await Promise.all([
+  const [context, problemsData, t, tType, tCommon] = await Promise.all([
     loadProfileArchiveContext({ locale, username }),
     loadProblemsPageData({
       profileId: viewer.profile.id,
@@ -74,6 +74,7 @@ export async function ProblemsTypePage({
       locale,
       namespace: type === 'puzzle' ? 'practice.puzzle' : 'practice.positionMemory',
     }),
+    getTranslations({ locale, namespace: 'Common' }),
   ]);
 
   const buildHref = buildPageHref(`/${locale}/u/${username}/problems/${TYPE_ROUTE_SEGMENT[type]}`);
@@ -108,6 +109,7 @@ export async function ProblemsTypePage({
         locale={locale}
         buildHref={buildHref}
         justNowLabel={tType('justNow')}
+        deletedUserLabel={tCommon('deletedUser')}
         labels={{ noProblems: t('noProblems') }}
       />
     </ProfileShell>

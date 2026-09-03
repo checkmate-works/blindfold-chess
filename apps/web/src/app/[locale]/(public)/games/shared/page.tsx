@@ -58,10 +58,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function SharedGamesPage({ params, searchParams }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const [t, openingNameT, tPlay, sp, totalCount, currentUser] = await Promise.all([
+  const [t, openingNameT, tPlay, tCommon, sp, totalCount, currentUser] = await Promise.all([
     getTranslations({ locale, namespace: 'sharedGames' }),
     getTranslations({ locale, namespace: 'topics.openings.names' }),
     getTranslations({ locale, namespace: 'play' }),
+    getTranslations({ locale, namespace: 'Common' }),
     searchParams,
     countSharedGames(),
     getOptionalUser(),
@@ -80,6 +81,7 @@ export default async function SharedGamesPage({ params, searchParams }: Props) {
     currentUser ? getMyPublishedGames(currentUser.id) : null,
   ]);
   const justNowLabel = t('detail.justNow');
+  const deletedUserLabel = tCommon('deletedUser');
 
   return (
     <PageLayout title={t('list.title')} locale={locale}>
@@ -137,6 +139,7 @@ export default async function SharedGamesPage({ params, searchParams }: Props) {
               colorLabels={{ white: tPlay('playerColor.white'), black: tPlay('playerColor.black') }}
               resolveOpeningName={(slug, name) => getOpeningDisplayName(openingNameT, slug, name)}
               justNowLabel={justNowLabel}
+              deletedUserLabel={deletedUserLabel}
               locale={locale}
             />
           ))}

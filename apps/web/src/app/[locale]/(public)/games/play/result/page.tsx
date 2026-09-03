@@ -8,7 +8,7 @@ import { getExpInfoBySource } from '@/lib/db/get-exp-info-by-source';
 import { AI_GAME_RESULT_SOURCE } from '@/lib/db/save-exp';
 import { getOpeningEntries } from '@/lib/openings/detect-game-opening';
 import { createClient } from '@/lib/supabase/server';
-import { resolveDisplayName } from '@/lib/users/display-name';
+import { resolveAuthorName } from '@/lib/users/display-name';
 
 import { PageLayout } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
@@ -49,15 +49,17 @@ export default async function ResultPage({ params, searchParams }: Props) {
   // The result game lives only in the browser's localStorage, so the opening
   // is detected client-side; ship the (cached, ~100-row) opening master for
   // it. It is viewer-independent, so it loads alongside the session lookup.
-  const [tMetadata, tPlay, tGames, tShared, supabase, sp, openingEntries] = await Promise.all([
-    getTranslations({ locale, namespace: 'metadata' }),
-    getTranslations({ locale, namespace: 'play' }),
-    getTranslations({ locale, namespace: 'gamesPage' }),
-    getTranslations({ locale, namespace: 'sharedGames' }),
-    createClient(),
-    searchParams,
-    getOpeningEntries(),
-  ]);
+  const [tMetadata, tPlay, tGames, tShared, tCommon, supabase, sp, openingEntries] =
+    await Promise.all([
+      getTranslations({ locale, namespace: 'metadata' }),
+      getTranslations({ locale, namespace: 'play' }),
+      getTranslations({ locale, namespace: 'gamesPage' }),
+      getTranslations({ locale, namespace: 'sharedGames' }),
+      getTranslations({ locale, namespace: 'Common' }),
+      createClient(),
+      searchParams,
+      getOpeningEntries(),
+    ]);
 
   const {
     data: { user },
@@ -83,7 +85,9 @@ export default async function ResultPage({ params, searchParams }: Props) {
   ]);
   const player = {
     profile: playerProfile,
-    displayName: playerProfile ? resolveDisplayName(playerProfile) : tShared('detail.guest'),
+    displayName: playerProfile
+      ? resolveAuthorName(playerProfile, { fallback: tCommon('deletedUser') })
+      : tShared('detail.guest'),
   };
 
   // The middle "Game" step links back to the finished-game view; that URL needs

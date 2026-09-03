@@ -23,6 +23,7 @@ type Props = {
   /** Localised opening name for a (slug, fallback name) pair. */
   resolveOpeningName: (slug: string, name: string) => string;
   justNowLabel: string;
+  deletedUserLabel: string;
   locale: Locale;
   /** Rendered under the colour/opening row — the chunk list adds ply chips. */
   extraMeta?: ReactNode;
@@ -46,6 +47,7 @@ export function SharedGameListCard({
   colorLabels,
   resolveOpeningName,
   justNowLabel,
+  deletedUserLabel,
   locale,
   extraMeta,
 }: Props) {
@@ -82,6 +84,7 @@ export function SharedGameListCard({
       i18nNamespace="sharedGames.detail"
       toggleLikeAction={toggleGameLikeAction}
       justNowLabel={justNowLabel}
+      deletedUserLabel={deletedUserLabel}
       locale={locale}
       topicKey=""
       badge={<AiReviewedBadge reviewed={reviewed} label={aiReviewedBadgeLabel} />}

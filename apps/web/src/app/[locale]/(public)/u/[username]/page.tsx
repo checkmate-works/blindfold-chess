@@ -82,9 +82,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const t = await getTranslations({ locale, namespace: 'publicProfile' });
 
   return {
-    title: resolveTitle(t('title', { displayName: profile.displayName ?? username }), locale),
+    title: resolveTitle(t('title', { displayName: profile.displayName || username }), locale),
     description:
-      profile.bio || t('defaultDescription', { displayName: profile.displayName ?? username }),
+      profile.bio || t('defaultDescription', { displayName: profile.displayName || username }),
     alternates: {
       canonical: `/${locale}/u/${username}`,
     },

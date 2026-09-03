@@ -18,6 +18,7 @@ type Props = {
   reviewedGameIds: ReadonlySet<string>;
   locale: Locale;
   justNowLabel: string;
+  deletedUserLabel: string;
   colorLabels: { white: string; black: string };
   /** Resolves an opening's localized display name from its slug + English fallback. */
   resolveOpeningName: (slug: string, fallbackName: string) => string;
@@ -48,6 +49,7 @@ export function RelatedGamesList({
   reviewedGameIds,
   locale,
   justNowLabel,
+  deletedUserLabel,
   colorLabels,
   resolveOpeningName,
   emptyLabel,
@@ -83,6 +85,7 @@ export function RelatedGamesList({
           colorLabels={colorLabels}
           resolveOpeningName={resolveOpeningName}
           justNowLabel={justNowLabel}
+          deletedUserLabel={deletedUserLabel}
           locale={locale}
           extraMeta={
             g.plies.length > 0 && (

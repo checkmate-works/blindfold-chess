@@ -18,7 +18,7 @@ type ProfileLike = {
 type Props = {
   /** Profile of the author. May be null for anonymous / deleted users. */
   profile: ProfileLike;
-  /** Pre-resolved display name (use `resolveDisplayName(profile)` at the call site). */
+  /** Pre-resolved display name (use `resolveAuthorName(profile, { fallback })` at the call site). */
   displayName: string;
   /**
    * Small caption above the avatar row, e.g. translated "Created by" — makes

@@ -79,14 +79,16 @@ async function ChunksListContent({ params, searchParams }: Props) {
   // small COUNT(*)s on a public catalog are cheap enough to do every
   // page load, and lets the chip labels stay accurate after every
   // publish / new-draft transition without revalidation gymnastics.
-  const [user, totalCount, draftCount, publishedCount, t, tTopicChunks] = await Promise.all([
-    getOptionalUser(),
-    countChunks({ includeDeleted: false, status: statusFilter }),
-    countChunks({ includeDeleted: false, status: 'draft' }),
-    countChunks({ includeDeleted: false, status: 'published' }),
-    getTranslations({ locale, namespace: 'chunks' }),
-    getTranslations({ locale, namespace: 'topics.chunks' }),
-  ]);
+  const [user, totalCount, draftCount, publishedCount, t, tTopicChunks, tCommon] =
+    await Promise.all([
+      getOptionalUser(),
+      countChunks({ includeDeleted: false, status: statusFilter }),
+      countChunks({ includeDeleted: false, status: 'draft' }),
+      countChunks({ includeDeleted: false, status: 'published' }),
+      getTranslations({ locale, namespace: 'chunks' }),
+      getTranslations({ locale, namespace: 'topics.chunks' }),
+      getTranslations({ locale, namespace: 'Common' }),
+    ]);
   const allCount = draftCount + publishedCount;
   const { currentPage, totalPages, limit, offset } = getPaginationParams(
     page,
@@ -119,6 +121,7 @@ async function ChunksListContent({ params, searchParams }: Props) {
   ]);
 
   const justNowLabel = tTopicChunks('justNow');
+  const deletedUserLabel = tCommon('deletedUser');
 
   const filterChipClass = (active: boolean) =>
     `inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
@@ -228,6 +231,7 @@ async function ChunksListContent({ params, searchParams }: Props) {
                 i18nNamespace="topics.chunks"
                 toggleLikeAction={toggleLike}
                 justNowLabel={justNowLabel}
+                deletedUserLabel={deletedUserLabel}
                 locale={locale}
                 topicKey={chunk.id}
                 badge={

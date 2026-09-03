@@ -24,7 +24,7 @@ export function ProfileHeader({
   locale,
   action,
 }: Props) {
-  const altText = displayName ?? username;
+  const altText = displayName || username;
 
   return (
     <div className="flex items-start justify-between gap-4">

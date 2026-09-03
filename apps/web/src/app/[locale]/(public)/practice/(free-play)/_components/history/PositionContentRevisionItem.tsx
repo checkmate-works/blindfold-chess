@@ -5,6 +5,7 @@ import type { ServerTranslator } from '@/i18n/translator';
 import type { PuzzleSolutionMove } from '@/lib/db/schema/positions';
 import { buildProfileHref } from '@/lib/users/author-profile';
 import type { AuthorProfile } from '@/lib/users/author-profile';
+import { resolveAuthorName } from '@/lib/users/display-name';
 
 import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';
 import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
@@ -27,7 +28,7 @@ type Props = {
 export async function PositionContentRevisionItem({ changes, createdAt, editor, locale }: Props) {
   const t = await getTranslations({ locale, namespace: 'practice.positionHistory' });
 
-  const editorName = editor?.displayName ?? editor?.username ?? t('deletedEditor');
+  const editorName = resolveAuthorName(editor, { fallback: t('deletedEditor') });
   const profileHref = buildProfileHref(editor);
 
   return (

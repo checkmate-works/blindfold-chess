@@ -237,6 +237,7 @@ export function createPositionForksPage(route: PositionRouteKind) {
 
     const t = await getTranslations({ locale, namespace });
     const tNav = await getTranslations({ locale, namespace: 'navigation' });
+    const tCommon = await getTranslations({ locale, namespace: 'Common' });
 
     // Data assembly lives in the injected-style loader so this Page stays
     // thin wiring like the edit / create factories.
@@ -250,6 +251,7 @@ export function createPositionForksPage(route: PositionRouteKind) {
       });
 
     const justNowLabel = t('justNow');
+    const deletedUserLabel = tCommon('deletedUser');
     const buildHref = buildPageHref(`/${locale}/practice/${slug}/${id}/forks`);
 
     return (
@@ -281,6 +283,7 @@ export function createPositionForksPage(route: PositionRouteKind) {
                   i18nNamespace={namespace}
                   toggleLikeAction={toggleLike}
                   justNowLabel={justNowLabel}
+                  deletedUserLabel={deletedUserLabel}
                   locale={locale}
                 />
               );

@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const t = await getTranslations({ locale, namespace: 'publicProfile' });
-  const displayName = profile.displayName ?? username;
+  const displayName = profile.displayName || username;
 
   return {
     title: resolveTitle(t('blockPageTitle', { displayName }), locale),
@@ -59,7 +59,7 @@ export default async function BlockUserPage({ params }: Props) {
     getTranslations({ locale, namespace: 'publicProfile' }),
     hasBlocked(user.id, profile.id),
   ]);
-  const displayName = profile.displayName ?? username;
+  const displayName = profile.displayName || username;
 
   return (
     <PageLayout

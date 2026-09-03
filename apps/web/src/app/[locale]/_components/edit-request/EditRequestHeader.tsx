@@ -1,6 +1,7 @@
 import type { EditRequestStatus } from '@/lib/edit-requests/shared';
 import { buildProfileHref } from '@/lib/users/author-profile';
 import type { AuthorProfile } from '@/lib/users/author-profile';
+import { resolveAuthorName } from '@/lib/users/display-name';
 
 import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';
 import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
@@ -33,7 +34,7 @@ type Props = {
 
 /** Avatar, submission time and lifecycle badge across the top of a request row. */
 export function EditRequestHeader({ proposer, createdAt, status, locale, labels }: Props) {
-  const proposerName = proposer?.displayName ?? proposer?.username ?? labels.deletedProposer;
+  const proposerName = resolveAuthorName(proposer, { fallback: labels.deletedProposer });
   const profileHref = buildProfileHref(proposer);
 
   return (

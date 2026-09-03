@@ -17,6 +17,7 @@ type Props = {
   i18nNamespace: string;
   toggleLikeAction: ToggleLikeAction;
   justNowLabel: string;
+  deletedUserLabel: string;
   locale: string;
   badge?: ReactNode;
   actions?: ReactNode;

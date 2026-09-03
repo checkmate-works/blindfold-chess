@@ -6,7 +6,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 type Props = {
   /** Player's profile. Null for anonymous / account-less players. */
   profile: { username?: string | null; avatarUrl?: string | null } | null;
-  /** Pre-resolved display name (`resolveDisplayName(profile)`, or a guest fallback). */
+  /** Pre-resolved display name (`resolveAuthorName(profile, { fallback })`, or a guest fallback). */
   displayName: string;
   /** Translated "Played by" caption. Passed in so this stays namespace-agnostic. */
   playedByLabel: string;

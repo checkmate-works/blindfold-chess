@@ -76,6 +76,7 @@ export function createMyProblemsPage(config: MyProblemsPageConfig) {
     const { locale } = await params;
     const t = await getTranslations({ locale, namespace: listNamespace });
     const tFooter = await getTranslations({ locale, namespace: footerNamespace });
+    const tCommon = await getTranslations({ locale, namespace: 'Common' });
 
     const user = await getAuthenticatedUser();
 
@@ -101,6 +102,7 @@ export function createMyProblemsPage(config: MyProblemsPageConfig) {
     ]);
 
     const justNowLabel = tFooter('justNow');
+    const deletedUserLabel = tCommon('deletedUser');
 
     const buildHref = buildPageHref(`/${locale}/mypage/problems/${pathSegment}`);
 
@@ -132,6 +134,7 @@ export function createMyProblemsPage(config: MyProblemsPageConfig) {
                   i18nNamespace={footerNamespace}
                   toggleLikeAction={toggleLike}
                   justNowLabel={justNowLabel}
+                  deletedUserLabel={deletedUserLabel}
                   locale={locale}
                   actions={
                     <Link

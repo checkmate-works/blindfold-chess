@@ -18,7 +18,7 @@ import { GAME_LIKE_TARGET, getLikeMeta } from '@/lib/db/like-queries';
 import { hasPlayedGifVariant } from '@/lib/games/gif/preview-frames';
 import { gameUsedNotablePlaySettings } from '@/lib/games/play-settings-log';
 import { detectGameOpening } from '@/lib/openings/detect-game-opening';
-import { resolveDisplayName } from '@/lib/users/display-name';
+import { resolveAuthorName } from '@/lib/users/display-name';
 import { UUID_RE } from '@/lib/validations/uuid';
 
 import { GameSocialFooter } from '@/app/[locale]/(public)/games/_components/GameSocialFooter';
@@ -58,15 +58,18 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
   // account-less ownership via manage token is resolved client-side inside
   // OwnerActions) and translations are independent of the game row, so they
   // ride alongside it instead of after it.
-  const [detail, user, t] = await Promise.all([
+  const [detail, user, t, tCommon] = await Promise.all([
     getGameById(id),
     getOptionalUser(),
     getTranslations({ locale, namespace: 'sharedGames' }),
+    getTranslations({ locale, namespace: 'Common' }),
   ]);
   if (!detail) notFound();
 
   const { game, author } = detail;
-  const authorDisplayName = author ? resolveDisplayName(author) : t('detail.guest');
+  const authorDisplayName = author
+    ? resolveAuthorName(author, { fallback: tCommon('deletedUser') })
+    : t('detail.guest');
   const isRegisteredOwner = game.authorId != null && user?.id === game.authorId;
 
   // Wave 2 — everything keyed on (game, viewer), all mutually independent:
