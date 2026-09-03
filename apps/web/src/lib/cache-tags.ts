@@ -99,10 +99,11 @@ export const REPERTOIRE_CATALOG_CACHE_TAG = 'repertoire-catalog' as const;
  * That interval is long because the terms are code, not content:
  * `lib/db/data/terms/*.ts` is the source and `db:seed` copies it into the
  * table, so a term only changes as part of a deploy, which drops the whole
- * ISR cache anyway. The one exception is the position annotations, which an
- * admin edits at runtime — `updateTermPositionAnnotations` expires this tag
- * and the affected public paths, so those land on the next visit rather than
- * waiting out the week.
+ * ISR cache anyway. The one runtime writer, the admin annotation editor, does
+ * not expire this tag: it is stamped on every glossary page's route-cache
+ * entry (the index, 26 letter pages, the categories and every term, times
+ * four locales), so one annotation save would re-render the lot. It expires
+ * {@link glossaryPositionsTag} for the one term instead.
  *
  * The interval does constrain one operational sequence: run `db:seed` before
  * the deploy that ships the term change, or redeploy after it. Seeding a live
@@ -110,6 +111,21 @@ export const REPERTOIRE_CATALOG_CACHE_TAG = 'repertoire-catalog' as const;
  * a week, where they used to catch up within the hour.
  */
 export const GLOSSARY_CACHE_TAG = 'glossary' as const;
+
+/**
+ * The practice positions linked to one glossary term, as read by
+ * `getPositionsForTerm` — one tag per term slug, carried alongside
+ * {@link GLOSSARY_CACHE_TAG} on the same entry.
+ *
+ * Exists so that `updateTermPositionAnnotations` can drop exactly the pages
+ * that render the edited annotations. `unstable_cache` stamps its tags on the
+ * route-cache entry of every page that read it during prerender, so expiring
+ * this tag re-renders `/[locale]/glossary/[slug]` for that one slug in each
+ * locale on its next visit, where expiring the shared tag would re-render the
+ * whole glossary.
+ */
+export const glossaryPositionsTag = (slug: string): `glossary-positions:${string}` =>
+  `glossary-positions:${slug}`;
 
 /**
  * The public profile row behind `/u/[username]`, one Data Cache entry (and one

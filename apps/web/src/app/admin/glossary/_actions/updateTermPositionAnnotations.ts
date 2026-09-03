@@ -1,14 +1,13 @@
 'use server';
 
-// eslint-disable-next-line no-restricted-imports -- TermPositionEditor has no router.refresh(), so this is what re-renders the admin editor; the public term page is prerendered, which no tag alone can drop
+// eslint-disable-next-line no-restricted-imports -- TermPositionEditor has no router.refresh(); this revalidate is what re-renders the admin editor with the saved annotations
 import { revalidatePath, revalidateTag } from 'next/cache';
 
 import { requireAdmin } from '@/app/admin/_lib/auth';
-import { SUPPORTED_LOCALES } from '@/config';
 import { and, eq } from 'drizzle-orm';
 
 import { parseBoardAnnotations } from '@/lib/board-annotations/parse';
-import { GLOSSARY_CACHE_TAG } from '@/lib/cache-tags';
+import { glossaryPositionsTag } from '@/lib/cache-tags';
 import { db, glossaryTermPositions } from '@/lib/db';
 import { isValidUUID } from '@/lib/validations/uuid';
 
@@ -52,17 +51,12 @@ export async function updateTermPositionAnnotations(
 
   revalidatePath(`/admin/glossary/${termSlug}`);
 
-  // The public term page renders these annotations too, and it is prerendered
-  // for every locale. Two invalidations are needed because they reach
-  // different caches: the tag expires the `getPositionsForTerm` Data Cache
-  // entry, and the path calls drop the Full Route Cache entries built from it.
-  // Without this pair an admin edit stayed invisible on `/[locale]/glossary/
-  // [slug]` until that page's ISR interval elapsed — survivable while the
-  // interval was an hour, a week once it follows the layout default.
-  revalidateTag(GLOSSARY_CACHE_TAG, { expire: 0 });
-  for (const locale of SUPPORTED_LOCALES) {
-    revalidatePath(`/${locale}/glossary/${termSlug}`);
-  }
+  // The public term page renders these annotations too, prerendered in every
+  // locale. Its route-cache entries carry the per-term tag `getPositionsForTerm`
+  // stamps on them, so expiring that one tag re-renders exactly those pages on
+  // their next visit. Without it the edit waited out the page's ISR interval —
+  // an hour once, now the layout's week.
+  revalidateTag(glossaryPositionsTag(termSlug), { expire: 0 });
 
   return { success: true };
 }

@@ -29,7 +29,7 @@ export function revalidatePathBan(prefix = "") {
                 name: "next/cache",
                 importNames: ["revalidatePath"],
                 message:
-                  "revalidatePath purges nothing on this app's dynamic routes (the only cached page is /[locale]/articles/[slug]) but still re-renders the current page into the Server Action response. Before using it, check: (1) is the target page actually cached (SSG/ISR)? (2) does the calling component already router.refresh()/push() or own the state? See 'revalidatePath Is Lint-Banned by Default' in apps/web/CLAUDE.md; if genuinely needed, eslint-disable this line with a reason.",
+                  "revalidatePath purges nothing on this app's dynamic routes, and on its SSG/ISR routes under /[locale] the cache tags already reach the Full Route Cache entry, but it still re-renders the current page into the Server Action response. Before using it, check: (1) is the target page actually cached (SSG/ISR)? (2) does the calling component already router.refresh()/push() or own the state? See 'revalidatePath Is Lint-Banned by Default' in apps/web/CLAUDE.md; if genuinely needed, eslint-disable this line with a reason.",
               },
             ],
           },
