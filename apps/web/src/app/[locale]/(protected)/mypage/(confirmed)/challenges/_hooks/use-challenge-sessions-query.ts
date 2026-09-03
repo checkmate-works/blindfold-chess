@@ -35,14 +35,21 @@ export type ChallengeSessionsQueryResult = {
  * Callers are notified via `onSessionsLoaded` when a successful fetch
  * completes, so they can derive piece-filter defaults without this hook
  * needing to know about them.
+ *
+ * `initialMenu` seeds the very first request's `preferredMenu` (a deep link
+ * from a practice result page). It goes through the same server-side
+ * reconciliation as a user's pick, so a menu with no records in the default
+ * period falls back to the first one that has some instead of an empty
+ * dashboard.
  */
 export function useChallengeSessionsQuery(
   selectedPeriod: DatePeriod,
-  onSessionsLoaded?: (menu: ChallengeMenuType, sessions: ChallengeResultRow[]) => void
+  onSessionsLoaded?: (menu: ChallengeMenuType, sessions: ChallengeResultRow[]) => void,
+  initialMenu?: ChallengeMenuType
 ): ChallengeSessionsQueryResult {
   const [allSessions, setAllSessions] = useState<ChallengeResultRow[]>([]);
   const [previousSessions, setPreviousSessions] = useState<ChallengeResultRow[]>([]);
-  const [selectedMenu, setSelectedMenu] = useState<ChallengeMenuType | null>(null);
+  const [selectedMenu, setSelectedMenu] = useState<ChallengeMenuType | null>(initialMenu ?? null);
   const [availableMenuTypes, setAvailableMenuTypes] = useState<ChallengeMenuType[] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const lastAppliedKey = useRef<string | null>(null);
