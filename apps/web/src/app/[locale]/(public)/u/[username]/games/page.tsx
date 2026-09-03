@@ -51,14 +51,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function ProfileGamesPage({ params, searchParams }: Props) {
   const { locale, username } = await params;
 
-  const [context, parsedParams, t, tPlay, tSharedGames, tOpeningNames] = await Promise.all([
-    loadProfileArchiveContext({ locale, username }),
-    searchParamsCache.parse(searchParams),
-    getTranslations({ locale, namespace: 'publicProfile' }),
-    getTranslations({ locale, namespace: 'play' }),
-    getTranslations({ locale, namespace: 'sharedGames' }),
-    getTranslations({ locale, namespace: 'topics.openings.names' }),
-  ]);
+  const [context, parsedParams, t, tPlay, tSharedGames, tOpeningNames, tCommon] = await Promise.all(
+    [
+      loadProfileArchiveContext({ locale, username }),
+      searchParamsCache.parse(searchParams),
+      getTranslations({ locale, namespace: 'publicProfile' }),
+      getTranslations({ locale, namespace: 'play' }),
+      getTranslations({ locale, namespace: 'sharedGames' }),
+      getTranslations({ locale, namespace: 'topics.openings.names' }),
+      getTranslations({ locale, namespace: 'Common' }),
+    ]
+  );
 
   const { currentPage, totalPages, offset } = resolvePagination(
     parsedParams.page,
@@ -97,6 +100,7 @@ export default async function ProfileGamesPage({ params, searchParams }: Props) 
         locale={locale}
         buildHref={buildHref}
         justNowLabel={tSharedGames('detail.justNow')}
+        deletedUserLabel={tCommon('deletedUser')}
         colorLabels={{
           white: tPlay('playerColor.white'),
           black: tPlay('playerColor.black'),

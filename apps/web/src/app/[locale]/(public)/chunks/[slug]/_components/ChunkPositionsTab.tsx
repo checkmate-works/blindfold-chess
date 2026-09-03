@@ -33,11 +33,12 @@ export async function ChunkPositionsTab({
   likeMetaMap: ChunkDetailData['linkedLikeMetaMap'];
   replyMetaMap: ChunkDetailData['linkedReplyMetaMap'];
 }) {
-  const [tChunks, tPuzzle, tMemory, tCreate] = await Promise.all([
+  const [tChunks, tPuzzle, tMemory, tCreate, tCommon] = await Promise.all([
     getTranslations({ locale, namespace: 'chunks' }),
     getTranslations({ locale, namespace: 'practice.puzzle' }),
     getTranslations({ locale, namespace: 'practice.positionMemory' }),
     getTranslations({ locale, namespace: 'sharedGames.create' }),
+    getTranslations({ locale, namespace: 'Common' }),
   ]);
 
   if (linkedPositions.length === 0) {
@@ -81,6 +82,7 @@ export async function ChunkPositionsTab({
               i18nNamespace={isPuzzle ? 'practice.puzzle' : 'practice.positionMemory'}
               toggleLikeAction={togglePositionLike}
               justNowLabel={isPuzzle ? tPuzzle('justNow') : tMemory('justNow')}
+              deletedUserLabel={tCommon('deletedUser')}
               locale={locale}
               badge={
                 <span

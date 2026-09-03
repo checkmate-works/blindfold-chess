@@ -101,10 +101,11 @@ export function createPositionListPage(config: PositionListPageConfig) {
     const { locale } = await params;
     // TODO: Consider a composite index on (type, deleted_at, created_at DESC)
     // if the count query becomes slow with large data volumes.
-    const [{ page, sort }, t, tNav, totalCount, currentUser] = await Promise.all([
+    const [{ page, sort }, t, tNav, tCommon, totalCount, currentUser] = await Promise.all([
       searchParamsCache.parse(searchParams),
       getTranslations({ locale, namespace }),
       getTranslations({ locale, namespace: 'navigation' }),
+      getTranslations({ locale, namespace: 'Common' }),
       countPositions({ type: positionType }),
       getOptionalUser(),
     ]);
@@ -133,6 +134,7 @@ export function createPositionListPage(config: PositionListPageConfig) {
     const buildHref = (p: number) => buildPaginationHref(locale, basePath, p, sortBy);
 
     const justNowLabel = t('justNow');
+    const deletedUserLabel = tCommon('deletedUser');
 
     // In-list native ad (opt-in per page via `nativeAdSlot`). Server-gated on
     // entitlement by `resolveNativeAds` — ad-free users get no node; the
@@ -216,6 +218,7 @@ export function createPositionListPage(config: PositionListPageConfig) {
                   i18nNamespace={namespace}
                   toggleLikeAction={toggleLike}
                   justNowLabel={justNowLabel}
+                  deletedUserLabel={deletedUserLabel}
                   locale={locale}
                 />
                 {nativeAd && index === Math.min(NATIVE_AD_AFTER_INDEX, rows.length - 1) && (

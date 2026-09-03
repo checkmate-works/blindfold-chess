@@ -9,7 +9,7 @@ import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
 import { truncate } from '@/lib/text';
 import { buildProfileHref } from '@/lib/users/author-profile';
 import type { AuthorProfile } from '@/lib/users/author-profile';
-import { resolveDisplayName } from '@/lib/users/display-name';
+import { resolveAuthorName } from '@/lib/users/display-name';
 
 import { PostFooter } from '@/app/[locale]/(public)/topics/_components/PostFooter';
 import type { ToggleLikeAction } from '@/app/[locale]/(public)/topics/_lib/action-types';
@@ -70,6 +70,16 @@ type Props = {
   toggleLikeAction: ToggleLikeAction;
   /** Resolved `t('justNow')` from `i18nNamespace`. */
   justNowLabel: string;
+  /**
+   * Resolved `Common.deletedUser`, shown when `profile` has neither a display
+   * name nor a username. Supplied by the caller rather than read here because
+   * this card renders from both Server and Client Components, which reach
+   * next-intl through different APIs — the same reason `justNowLabel` is a
+   * prop. Passing it also keeps the card's fallback identical to the one the
+   * matching detail page shows, which is what drifted: the card said
+   * "Anonymous" where the detail page said "(deleted user)".
+   */
+  deletedUserLabel: string;
   locale: string;
   /**
    * The opaque key forwarded as the 3rd positional arg to
@@ -128,13 +138,14 @@ export function CatalogListCard({
   i18nNamespace,
   toggleLikeAction,
   justNowLabel,
+  deletedUserLabel,
   locale,
   topicKey,
   badge,
   meta,
   actions,
 }: Props) {
-  const displayName = resolveDisplayName(profile);
+  const displayName = resolveAuthorName(profile, { fallback: deletedUserLabel });
   const descriptionExcerpt = truncate(description);
 
   return (

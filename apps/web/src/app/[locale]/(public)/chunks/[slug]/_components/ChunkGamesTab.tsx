@@ -25,13 +25,14 @@ export async function ChunkGamesTab({
   replyMetaMap: ChunkDetailData['relatedGamesReplyMetaMap'];
   reviewedGameIds: ChunkDetailData['relatedGamesReviewedIds'];
 }) {
-  const [t, tChunks, tSharedGames, tPlay, tOpeningNames, tHome] = await Promise.all([
+  const [t, tChunks, tSharedGames, tPlay, tOpeningNames, tHome, tCommon] = await Promise.all([
     getTranslations({ locale, namespace: 'topics.chunks' }),
     getTranslations({ locale, namespace: 'chunks' }),
     getTranslations({ locale, namespace: 'sharedGames' }),
     getTranslations({ locale, namespace: 'play' }),
     getTranslations({ locale, namespace: 'topics.openings.names' }),
     getTranslations({ locale, namespace: 'home.gameList' }),
+    getTranslations({ locale, namespace: 'Common' }),
   ]);
 
   return (
@@ -47,6 +48,7 @@ export async function ChunkGamesTab({
         reviewedGameIds={reviewedGameIds}
         locale={locale}
         justNowLabel={tSharedGames('detail.justNow')}
+        deletedUserLabel={tCommon('deletedUser')}
         colorLabels={{
           white: tPlay('playerColor.white'),
           black: tPlay('playerColor.black'),

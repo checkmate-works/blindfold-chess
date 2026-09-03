@@ -49,7 +49,10 @@ export async function RepertoireListCard({
   metaRow,
 }: Props) {
   const { repertoire, profile, thumbnailFen } = card;
-  const t = await getTranslations({ locale, namespace: 'Repertoires' });
+  const [t, tCommon] = await Promise.all([
+    getTranslations({ locale, namespace: 'Repertoires' }),
+    getTranslations({ locale, namespace: 'Common' }),
+  ]);
 
   return (
     <CatalogListCard
@@ -65,6 +68,7 @@ export async function RepertoireListCard({
       i18nNamespace="Repertoires"
       toggleLikeAction={toggleLike}
       justNowLabel={t('justNow')}
+      deletedUserLabel={tCommon('deletedUser')}
       locale={locale}
       topicKey={repertoire.id}
       meta={metaRow}
