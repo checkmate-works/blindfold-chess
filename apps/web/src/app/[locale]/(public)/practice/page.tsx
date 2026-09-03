@@ -43,6 +43,15 @@ type Props = {
 
 export const generateStaticParams = generateLocaleStaticParams;
 
+// The one static page in this tree that does not get the layout's seven-day
+// ISR interval, and deliberately so. `DailyPuzzleCard` reads `getDailyPuzzle`,
+// whose cache is keyed by the UTC day and revalidates hourly; a data-cache
+// interval floors the route that reads it, so this page lands at an hour.
+// Rolling the day forward picks a new cache key but does not touch the route
+// cache holding the rendered HTML, so the interval is what actually makes the
+// card change over — stretching it to a week would leave last week's puzzle on
+// the page. Nothing to fix here; the route table showing `1h` is correct.
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return createPageMetadata({ params, namespace: 'metadata.practice', path: 'practice' });
 }

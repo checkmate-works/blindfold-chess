@@ -2,10 +2,8 @@
 
 import type { LeaderboardModule } from '@/app/[locale]/(public)/leaderboard/_lib/types';
 
-import {
-  type LeaderboardPreviewData,
-  resolveLeaderboardWithFallback,
-} from '../_lib/resolveLeaderboardWithFallback';
+import type { LeaderboardPreviewData } from '../_lib/resolveLeaderboardWithFallback';
+import { resolveLeaderboardWithFallback } from '../_lib/resolveLeaderboardWithFallback';
 
 /**
  * Client-callable wrapper around {@link resolveLeaderboardWithFallback} for
