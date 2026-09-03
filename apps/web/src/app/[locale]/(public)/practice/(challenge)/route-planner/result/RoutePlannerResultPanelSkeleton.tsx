@@ -28,9 +28,9 @@ type Props = {
    */
   reserveExp?: boolean;
   /**
-   * Reserve space for the sign-up banner (rendered just above the action
-   * buttons). Only anonymous users see it, so it is the auth-state mirror of
-   * `reserveExp`.
+   * Reserve space for the sign-up banner (rendered under the EXP card, above
+   * the Problem Details). Only anonymous users see it, so it is the
+   * auth-state mirror of `reserveExp`.
    */
   reserveSignUpBanner?: boolean;
   /**
@@ -98,6 +98,12 @@ export function RoutePlannerResultPanelSkeleton({
           and intentionally not reserved. The "EXP" label is a literal, not i18n. */}
       {reserveExp && <ExpGainSkeleton className="mt-4" />}
 
+      {/* The auth slot under the EXP card (PracticeComplete's `afterExp`):
+          sign-up banner for anonymous users, record section for signed-in
+          players. Sits ABOVE the Problem Details, where the real page puts it. */}
+      {reserveSignUpBanner && <SignUpBannerSkeleton />}
+      {reserveRecordSection && <RecordSectionSkeleton />}
+
       {/* Problem Details: heading (static i18n) + collapsed result rows */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold text-muted-foreground mb-4">
@@ -120,14 +126,6 @@ export function RoutePlannerResultPanelSkeleton({
           ))}
         </div>
       </div>
-
-      {/* SignUpBanner placeholder — rendered just above the action buttons for
-          anonymous users only (mirrors `beforeActions`). Matches SignUpBannerUI:
-          primary-tinted bordered box with two text lines and a CTA button. */}
-      {reserveSignUpBanner && <SignUpBannerSkeleton />}
-
-      {/* RecordSection placeholder — same slot, signed-in players. */}
-      {reserveRecordSection && <RecordSectionSkeleton />}
 
       {/* Action buttons (Try Again / More Practice) */}
       <div className="space-y-4">

@@ -45,8 +45,8 @@ export function ExpGainSkeleton({ className = '' }: { className?: string }) {
 
 /**
  * Mirrors `RecordSection` — shown to signed-in players on modules that record
- * to `challenge_results`, in the same slot the sign-up banner occupies for
- * guests. The real card is a fixed shape (header row, three `text-sm` rows
+ * to `challenge_results`, under the EXP card in the same slot the sign-up
+ * banner occupies for guests. The real card is a fixed shape (header row, three `text-sm` rows
  * — this run, last run, previous best — and one centred link row) so this
  * reserves it exactly; the header badge is optional on the real card but
  * sits inside the row's line box, so it does not change the height either

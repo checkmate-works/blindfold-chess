@@ -65,12 +65,12 @@ export async function resolveExpInfoFromGrantParam(
 }
 
 // ---------------------------------------------------------------------------
-// Shared: the auth-exclusive slot above the action buttons
+// Shared: the auth-exclusive slot under the EXP card
 // ---------------------------------------------------------------------------
 
 /**
- * The slot directly above the action buttons holds exactly one of two
- * blocks: the sign-up banner for guests, or (on modules that record to
+ * The slot directly under the EXP card holds exactly one of two blocks:
+ * the sign-up banner for guests, or (on modules that record to
  * `challenge_results`) the player's record comparison. Which one is decided
  * HERE, on the server, from the same `getOptionalUser()` read the EXP card
  * already needs — not in a client component gated on `useAuth()`.

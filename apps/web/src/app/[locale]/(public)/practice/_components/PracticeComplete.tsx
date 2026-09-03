@@ -44,13 +44,19 @@ type Props = {
     label: string;
   };
   /**
-   * Slot rendered directly above the action buttons (try-again / more-practice).
-   * Holds the guest sign-up banner so the prompt lands before the buttons can
-   * carry the guest away, or — for a signed-in player on a module that keeps
-   * records — the record comparison, which lands at the moment the player is
-   * most curious about their trend. The two are mutually exclusive by auth.
+   * Slot rendered directly under the EXP card — that is, right after the
+   * score summary, before any problem list or module-specific children.
+   * Holds the guest sign-up banner, or — for a signed-in player on a module
+   * that keeps records — the record comparison. The two are mutually
+   * exclusive by auth, and sit in the same place so the page keeps one
+   * shape either way.
+   *
+   * It used to sit just above the action buttons. On modules with a
+   * problem list (diagonal quiz, route planner) that put it below the fold,
+   * where nobody found it; here it is the first thing after the score,
+   * which is also where the EXP card the record complements already is.
    */
-  beforeActions?: React.ReactNode;
+  afterExp?: React.ReactNode;
   beforeRelatedContent?: React.ReactNode;
   /** EXP gained info for the current result, fetched server-side and passed down. */
   expInfo?: ExpInfo | null;
@@ -69,7 +75,7 @@ export function PracticeComplete({
   onExit,
   children,
   otherPracticeLink,
-  beforeActions,
+  afterExp,
   beforeRelatedContent,
   expInfo = null,
 }: Props) {
@@ -87,13 +93,13 @@ export function PracticeComplete({
 
       <ExpGainDisplay expInfo={expInfo} />
 
+      {/* Sign-up banner (guest) or record comparison (member) — see `afterExp`. */}
+      {afterExp}
+
       {problemResults && <ProblemResultList problemResults={problemResults} labels={labels} />}
 
       {/* Custom children (e.g. Route Planner results) */}
       {children}
-
-      {/* Rendered directly above the action buttons (see `beforeActions` prop). */}
-      {beforeActions}
 
       <div className="space-y-4 mt-6">
         <Button

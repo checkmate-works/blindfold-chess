@@ -15,26 +15,32 @@ export {
 export const DEFAULT_PIECE_SELECTION: PieceSelection = 'random';
 
 /**
- * Derive a piece selection from session data.
- * - If all legal_moves sessions use the same leaderboardKey (piece), returns that piece.
- * - If all sessions use 'random', returns 'random'.
- * - Otherwise (mixed or no data), returns 'random'.
+ * The piece filter to open a legal-moves menu on: the piece of the player's
+ * most recent legal-moves run among `sessions` (`random` included), or
+ * `random` when there is none or the key is not a piece.
+ *
+ * Most recent, not "all the same or else random": the filter decides which
+ * runs the dashboard shows at all, so it has to be one the player actually
+ * played in the period. The earlier rule fell back to `random` for a mixed
+ * week — a knight-and-bishop player then saw an empty dashboard, since none
+ * of their runs had the key `random`. `sessions` arrive newest-first from the
+ * query, but the pick is by timestamp so the order is not load-bearing.
  */
 export function derivePieceSelectionFromSessions(sessions: ChallengeResultRow[]): PieceSelection {
-  const legalMovesSessions = sessions.filter((s) => s.menuType === 'legal_moves');
+  const latest = sessions
+    .filter((s) => s.menuType === 'legal_moves')
+    .reduce<ChallengeResultRow | undefined>(
+      (best, s) => (!best || s.createdAt > best.createdAt ? s : best),
+      undefined
+    );
+  if (!latest) return DEFAULT_PIECE_SELECTION;
 
-  if (legalMovesSessions.length === 0) return DEFAULT_PIECE_SELECTION;
-
-  const firstKey = legalMovesSessions[0].leaderboardKey;
-  const allSame = legalMovesSessions.every((s) => s.leaderboardKey === firstKey);
-
-  if (!allSame) return DEFAULT_PIECE_SELECTION;
-
-  if (firstKey === 'random') return 'random';
+  const key = latest.leaderboardKey;
+  if (key === 'random') return 'random';
 
   // Convert full piece name to short code for PieceSelection
-  if (!(firstKey in PIECE_NAME_TO_SHORT)) return DEFAULT_PIECE_SELECTION;
-  const shortCode = PIECE_NAME_TO_SHORT[firstKey as PieceFullName];
+  if (!(key in PIECE_NAME_TO_SHORT)) return DEFAULT_PIECE_SELECTION;
+  const shortCode = PIECE_NAME_TO_SHORT[key as PieceFullName];
   if (
     shortCode &&
     shortCode !== 'random' &&

@@ -55,12 +55,19 @@ export function computeStats(sessions: ChallengeResultRow[], mistakeLimit: numbe
   return { bestScore, avgCompletionScore, totalSessions: sessions.length };
 }
 
-export function computePercentChange(
+/**
+ * Period-over-period change as a plain difference in the stat's own unit,
+ * or `null` when either period has no value to compare. This replaced a
+ * percentage: the stats are small counts of correct answers, where 1 → 3 is
+ * "+200%" and a previous period of 0 has no percentage at all — the same
+ * reasoning as the result page's record card (`formatSignedDelta`).
+ */
+export function computeAbsoluteChange(
   current: number | null,
   previous: number | null
 ): number | null {
-  if (current === null || previous === null || previous === 0) return null;
-  return ((current - previous) / previous) * 100;
+  if (current === null || previous === null) return null;
+  return current - previous;
 }
 
 export type DailyAggregation = {
@@ -97,10 +104,20 @@ export function aggregateByDay(sessions: ChallengeResultRow[], locale: string): 
     }));
 }
 
+/**
+ * Whole days from `periodStart` (local midnight) to the local date `dateKey`.
+ *
+ * Rounded, not floored: both instants are local midnights, so the difference
+ * is a whole number of days except across a DST change, where one day is 23
+ * or 25 hours long. Flooring turned every day after a spring-forward into
+ * the day before it (6.96 → 6), so two days of the chart collapsed onto one
+ * index and the later day's average overwrote the earlier one's. Rounding
+ * absorbs the hour either way.
+ */
 export function getDayIndex(dateKey: string, periodStart: Date): number {
   const d = new Date(dateKey + 'T00:00:00');
   const diff = d.getTime() - periodStart.getTime();
-  return Math.floor(diff / (1000 * 60 * 60 * 24));
+  return Math.round(diff / (1000 * 60 * 60 * 24));
 }
 
 export function getPeriodStart(period: DatePeriod): Date {

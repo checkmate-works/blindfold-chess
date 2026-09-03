@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 
 import { MISTAKE_LIMIT } from '@/lib/challenge/constants';
 import type { ChallengeMenuType } from '@/lib/db/practice-menu-types';
 
 import type { ChallengeResultRow } from '../_actions/get-challenge-sessions';
-import { computePercentChange, computeStats, formatDate } from '../_lib/dashboard-utils';
+import { computeAbsoluteChange, computeStats, formatDate } from '../_lib/dashboard-utils';
+import { deriveOrientationFromSessions } from '../_lib/derive-orientation-filter';
 import { derivePieceSelectionFromSessions } from '../_lib/derive-piece-filter';
 import { selectChartData } from '../_lib/select-chart-data';
 import type { ChartDataPoint } from '../_lib/select-chart-data';
@@ -22,12 +23,6 @@ type FilterContext = {
 };
 
 type SessionFilter = (session: ChallengeResultRow, ctx: FilterContext) => boolean;
-
-/** Menu types that support the board orientation filter UI. */
-export const ORIENTATION_FILTER_MENUS = new Set<ChallengeMenuType>(['coordinate_quiz']);
-
-/** Menu types that support the piece selection filter UI. */
-export const PIECE_FILTER_MENUS = new Set<ChallengeMenuType>(['legal_moves']);
 
 /**
  * Derives the leaderboard key that corresponds to a board orientation filter value.
@@ -66,7 +61,7 @@ const DASHBOARD_TABLE_ROWS = 5;
  *   - `useChallengeSessionsQuery` — fetching
  *   - `useDashboardFilters`       — UI filter state
  *   - `selectChartData`           — pure chart-data selector
- *   - `computeStats` / `computePercentChange` — pure stats helpers
+ *   - `computeStats` / `computeAbsoluteChange` — pure stats helpers
  *
  * Public API is preserved byte-for-byte from the previous single-hook
  * implementation so Dashboard/Filters/Results consumers need no changes.
@@ -84,19 +79,35 @@ export function useDashboardData(locale: string, initialMenu?: ChallengeMenuType
     activePiece,
   } = useDashboardFilters();
 
-  // Track whether piece filter should be derived from session data on next
-  // fetch. Set to true when menu changes; consumed (set to false) after
-  // derivation in the `onSessionsLoaded` callback.
-  const shouldDerivePieceFilter = useRef(true);
+  // The menu whose sessions were last applied. Filters are (re)derived from
+  // the loaded sessions only when the loaded menu differs from it: on first
+  // load, when the player picks another menu, and when the server reconciled
+  // the selection to another menu for a new period. A period change that
+  // keeps the menu keeps the player's filters.
+  //
+  // This replaced a `useEffect` on `selectedMenu` that reset the filters.
+  // That effect ran AFTER the fetch callback had derived the piece filter
+  // from the sessions — the response sets `selectedMenu` and the derived
+  // filter in one batch, then the effect fired on the menu change and put
+  // the filter back to "random". A player whose only legal-moves runs that
+  // week were with the knight landed on an empty dashboard (nothing matched
+  // "random") whenever the menu came from server reconciliation rather than
+  // their own pick. Deriving at the same point the menu is adopted makes the
+  // two impossible to order wrongly.
+  const lastLoadedMenu = useRef<ChallengeMenuType | null>(null);
 
   const handleSessionsLoaded = useCallback(
     (menu: ChallengeMenuType, sessions: ChallengeResultRow[]) => {
-      if (menu === 'legal_moves' && shouldDerivePieceFilter.current) {
+      if (menu === lastLoadedMenu.current) return;
+      lastLoadedMenu.current = menu;
+      resetFilters();
+      if (menu === 'legal_moves') {
         setPieceFilter(derivePieceSelectionFromSessions(sessions));
-        shouldDerivePieceFilter.current = false;
+      } else if (menu === 'coordinate_quiz') {
+        setBoardOrientationFilter(deriveOrientationFromSessions(sessions));
       }
     },
-    [setPieceFilter]
+    [resetFilters, setPieceFilter, setBoardOrientationFilter]
   );
 
   const {
@@ -107,12 +118,6 @@ export function useDashboardData(locale: string, initialMenu?: ChallengeMenuType
     setSelectedMenu,
     isLoading,
   } = useChallengeSessionsQuery(selectedPeriod, handleSessionsLoaded, initialMenu);
-
-  // Reset filters when menu changes
-  useEffect(() => {
-    resetFilters();
-    shouldDerivePieceFilter.current = true;
-  }, [selectedMenu, resetFilters]);
 
   const filterCtx = useMemo<FilterContext>(
     () => ({ boardOrientationFilter, activePiece }),
@@ -154,12 +159,12 @@ export function useDashboardData(locale: string, initialMenu?: ChallengeMenuType
   }, [filteredSessions, locale]);
 
   const bestScoreComparison = useMemo(
-    () => computePercentChange(currentStats.bestScore, prevStats.bestScore),
+    () => computeAbsoluteChange(currentStats.bestScore, prevStats.bestScore),
     [currentStats.bestScore, prevStats.bestScore]
   );
 
   const avgScoreComparison = useMemo(
-    () => computePercentChange(currentStats.avgCompletionScore, prevStats.avgCompletionScore),
+    () => computeAbsoluteChange(currentStats.avgCompletionScore, prevStats.avgCompletionScore),
     [currentStats.avgCompletionScore, prevStats.avgCompletionScore]
   );
 

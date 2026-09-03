@@ -18,6 +18,8 @@ import {
   getNavigablePreviousPeriod,
   getPreviousPeriodLabel,
 } from '../_lib/dashboard-ui-utils';
+import { ORIENTATION_FILTER_MENUS, PIECE_FILTER_MENUS } from '../_lib/keyed-menus';
+import { buildResultsPath } from '../_lib/results-href';
 import { DashboardFilters } from './DashboardFilters';
 import {
   DashboardContentSkeleton,
@@ -62,6 +64,16 @@ export function Dashboard({ locale, initialMenu }: Props) {
 
   const comparisonLabel = getComparisonLabel(selectedPeriod, t);
   const navigablePrevPeriod = getNavigablePreviousPeriod(selectedPeriod);
+
+  // The key the dashboard is currently filtered by, for menus that have one.
+  // Carried into the full results list so "view all" keeps showing the same
+  // slice, and into the practice link so the next run uses the same setting.
+  const activeKey =
+    selectedMenu && ORIENTATION_FILTER_MENUS.has(selectedMenu)
+      ? boardOrientationFilter
+      : selectedMenu && PIECE_FILTER_MENUS.has(selectedMenu)
+        ? activePiece
+        : undefined;
 
   // Only the very first load (before we know anything) shows the full-page
   // skeleton. Once `availableMenuTypes` is an array we always render the
@@ -155,7 +167,10 @@ export function Dashboard({ locale, initialMenu }: Props) {
             </div>
             {hasMoreResults && (
               <div className="text-center mt-3">
-                <Link href="/mypage/challenges/results" className={`text-sm ${TEXT_LINK_CLASSES}`}>
+                <Link
+                  href={buildResultsPath(selectedMenu ?? undefined, activeKey)}
+                  className={`text-sm ${TEXT_LINK_CLASSES}`}
+                >
                   {t('viewAllResults')}
                 </Link>
               </div>
@@ -167,11 +182,10 @@ export function Dashboard({ locale, initialMenu }: Props) {
               <Link
                 href={buildChallengePath(
                   selectedMenu as LeaderboardModule,
-                  selectedMenu === 'coordinate_quiz'
-                    ? boardOrientationFilter
-                    : selectedMenu === 'legal_moves'
-                      ? activePiece
-                      : 'default'
+                  // Route planner's key is a piece too, but the dashboard has
+                  // no piece filter for it, so send the setup page's own
+                  // default rather than a `default` key it does not know.
+                  activeKey ?? (selectedMenu === 'route_planner' ? 'knight' : 'default')
                 )}
                 locale={locale}
                 className="inline-flex items-center justify-center whitespace-nowrap rounded-md bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"

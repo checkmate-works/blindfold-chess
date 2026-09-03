@@ -31,7 +31,7 @@ import { Skeleton } from '@/app/[locale]/_components/Skeleton';
  * than slight over-allocation — the same tradeoff documented on the loading
  * skeleton.
  *
- * `ExpGainDisplay` (authenticated) and the slot above the buttons — the
+ * `ExpGainDisplay` (authenticated) and the slot under it — the
  * sign-up banner (anonymous) or the record section (authenticated, on modules
  * that record to `challenge_results`) — are mutually exclusive by auth state
  * and module-dependent (not every module grants EXP, shows the banner, or
@@ -42,7 +42,7 @@ import { Skeleton } from '@/app/[locale]/_components/Skeleton';
 type Props = {
   /** Reserve the EXP gain card (between the summary and the action buttons). */
   reserveExp?: boolean;
-  /** Reserve the sign-up banner (just above the action buttons). */
+  /** Reserve the sign-up banner (under the EXP card). */
   reserveSignUpBanner?: boolean;
   /** Reserve the record section (same slot as the banner, for signed-in players). */
   reserveRecordSection?: boolean;
@@ -90,7 +90,8 @@ export function PracticeResultPanelSkeleton({
           level/progress); the "Level Up!" badge is rare and not reserved. */}
       {reserveExp && <ExpGainSkeleton className="mt-4" />}
 
-      {/* SignUpBanner placeholder — only reserved for anonymous users on modules
+      {/* The auth slot under the EXP card (PracticeComplete's `afterExp`).
+          SignUpBanner placeholder — only reserved for anonymous users on modules
           that show it (see `reserveSignUpBanner`). Matches SignUpBannerUI. */}
       {reserveSignUpBanner && <SignUpBannerSkeleton />}
 

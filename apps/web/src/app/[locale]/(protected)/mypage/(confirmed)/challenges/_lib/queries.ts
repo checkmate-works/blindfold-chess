@@ -53,3 +53,26 @@ export async function getChallengeResultsPaginated(
 
   return { items, totalPages };
 }
+
+/**
+ * The `leaderboard_key` of the player's most recent record for `menuType`,
+ * or `undefined` when they have none.
+ *
+ * The results page uses it as the key filter when the URL carries a menu
+ * but no key. It used to fall back to a fixed key (`white`, `random`), which
+ * for a player who only ever practised the knight meant "Legal Moves → no
+ * results" while their records sat one click away. The most recent key is
+ * never empty and is the setting they are most likely to want next.
+ */
+export async function getLatestLeaderboardKey(
+  userId: string,
+  menuType: ChallengeMenuType
+): Promise<string | undefined> {
+  const [row] = await db
+    .select({ leaderboardKey: challengeResults.leaderboardKey })
+    .from(challengeResults)
+    .where(and(eq(challengeResults.userId, userId), eq(challengeResults.menuType, menuType)))
+    .orderBy(desc(challengeResults.createdAt))
+    .limit(1);
+  return row?.leaderboardKey;
+}

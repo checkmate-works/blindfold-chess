@@ -6,7 +6,7 @@ import type { ChallengeResultRow } from '../_actions/get-challenge-sessions';
 import { getPreviousPeriodLabel } from './dashboard-ui-utils';
 import {
   aggregateByDay,
-  computePercentChange,
+  computeAbsoluteChange,
   computeStats,
   formatDate,
   formatShortDate,
@@ -132,41 +132,40 @@ describe('computeStats', () => {
 });
 
 // ---------------------------------------------------------------------------
-// computePercentChange
+// computeAbsoluteChange
 // ---------------------------------------------------------------------------
 
-describe('computePercentChange', () => {
+describe('computeAbsoluteChange', () => {
   it('returns null when current is null', () => {
-    expect(computePercentChange(null, 10)).toBeNull();
+    expect(computeAbsoluteChange(null, 10)).toBeNull();
   });
 
   it('returns null when previous is null', () => {
-    expect(computePercentChange(10, null)).toBeNull();
+    expect(computeAbsoluteChange(10, null)).toBeNull();
   });
 
   it('returns null when both are null', () => {
-    expect(computePercentChange(null, null)).toBeNull();
+    expect(computeAbsoluteChange(null, null)).toBeNull();
   });
 
-  it('returns null when previous is 0 (division by zero)', () => {
-    expect(computePercentChange(10, 0)).toBeNull();
+  it('compares against a previous period of 0 (a percentage could not)', () => {
+    expect(computeAbsoluteChange(10, 0)).toBe(10);
   });
 
-  it('computes positive percent change', () => {
-    expect(computePercentChange(20, 10)).toBe(100);
+  it('computes a positive difference', () => {
+    expect(computeAbsoluteChange(20, 10)).toBe(10);
   });
 
-  it('computes negative percent change', () => {
-    expect(computePercentChange(5, 10)).toBe(-50);
+  it('computes a negative difference', () => {
+    expect(computeAbsoluteChange(5, 10)).toBe(-5);
   });
 
   it('returns 0 when current equals previous', () => {
-    expect(computePercentChange(10, 10)).toBe(0);
+    expect(computeAbsoluteChange(10, 10)).toBe(0);
   });
 
-  it('handles fractional results', () => {
-    const result = computePercentChange(1, 3);
-    expect(result).toBeCloseTo(-66.6667, 3);
+  it('keeps fractional differences for averages', () => {
+    expect(computeAbsoluteChange(8.5, 10)).toBeCloseTo(-1.5, 6);
   });
 });
 
@@ -287,5 +286,17 @@ describe('getDayIndex', () => {
   it('returns negative index for days before period start', () => {
     const periodStart = new Date('2025-06-02T00:00:00');
     expect(getDayIndex('2025-06-01', periodStart)).toBe(-1);
+  });
+
+  it('does not lose a day when one day in between is an hour short or long (DST)', () => {
+    // A DST change makes one local day 23 or 25 hours long, so the midnight-to-
+    // midnight difference is a whole number of days ± 1 hour. The test
+    // runner's zone has no DST on these dates, so the hour is simulated by
+    // shifting the period start; the arithmetic under test is the same.
+    const base = new Date('2025-06-02T00:00:00');
+    const anHourLate = new Date(base.getTime() + 60 * 60 * 1000);
+    const anHourEarly = new Date(base.getTime() - 60 * 60 * 1000);
+    expect(getDayIndex('2025-06-09', anHourLate)).toBe(7);
+    expect(getDayIndex('2025-06-09', anHourEarly)).toBe(7);
   });
 });

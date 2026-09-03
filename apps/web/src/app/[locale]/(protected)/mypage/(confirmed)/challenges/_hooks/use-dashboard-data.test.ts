@@ -3,12 +3,8 @@ import { resolve } from 'path';
 import { describe, expect, it } from 'vitest';
 
 import { PIECE_SHORT_TO_NAME } from '../_lib/derive-piece-filter';
-import {
-  ORIENTATION_FILTER_MENUS,
-  PIECE_FILTER_MENUS,
-  PIECE_TYPES,
-  type PieceSelection,
-} from './use-dashboard-data';
+import { ORIENTATION_FILTER_MENUS, PIECE_FILTER_MENUS } from '../_lib/keyed-menus';
+import { PIECE_TYPES, type PieceSelection } from './use-dashboard-data';
 
 describe('DASHBOARD_TABLE_ROWS', () => {
   it('is set to 5 (dashboard shows only recent 5 results)', () => {
