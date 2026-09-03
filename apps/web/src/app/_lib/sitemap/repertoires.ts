@@ -3,7 +3,7 @@ import type { MetadataRoute } from 'next';
 import { SUPPORTED_LOCALES } from '@/config';
 
 import { db, repertoires } from '@/lib/db';
-import { publicRepertoiresOnly } from '@/lib/repertoires/queries';
+import { publicRepertoiresOnly } from '@/lib/db/repertoire-visibility';
 
 import { BASE_URL, buildSitemapSection, generateAlternates } from './shared';
 

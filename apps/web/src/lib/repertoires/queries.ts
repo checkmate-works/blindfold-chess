@@ -21,6 +21,7 @@ import {
 } from '@/lib/db';
 import { repertoireLines } from '@/lib/db';
 import { countRows, runPaginatedSelect } from '@/lib/db/list-query';
+import { publicRepertoiresOnly } from '@/lib/db/repertoire-visibility';
 import { guardOwnership } from '@/lib/ownership-guard';
 import { isFollowing } from '@/lib/social/follows';
 import type { AuthorProfile } from '@/lib/users/author-profile';
@@ -116,18 +117,6 @@ export async function toCards(rows: RepertoireCardRow[]): Promise<RepertoireWith
 
 /** Ordering offered on the opening page's Repertoires tab. */
 export type RepertoireSort = 'new' | 'popular';
-
-/**
- * Live repertoires visible to everyone.
- *
- * Filters on `status = 'public'` even though nothing writes that column today
- * (every repertoire is public by default): the paid-plan "make private" toggle
- * then becomes a UI change with no query to revisit — and, more importantly, a
- * repertoire that IS private must never appear in a public listing.
- */
-export function publicRepertoiresOnly() {
-  return and(eq(repertoires.status, 'public'), isNull(repertoires.deletedAt));
-}
 
 /** {@link publicRepertoiresOnly}, optionally narrowed to one side (catalog filter). */
 function publicRepertoiresForSide(side?: Side) {

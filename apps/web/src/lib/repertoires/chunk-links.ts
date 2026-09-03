@@ -1,9 +1,10 @@
 import { and, desc, eq, inArray } from 'drizzle-orm';
 
 import { db, liveProfileJoinOn, profiles, repertoireChunks, repertoires } from '@/lib/db';
+import { publicRepertoiresOnly } from '@/lib/db/repertoire-visibility';
 
 import type { RepertoireCardRow, RepertoireWithProfile } from './queries';
-import { REPERTOIRE_CARD_COLUMNS, publicRepertoiresOnly, toCards } from './queries';
+import { REPERTOIRE_CARD_COLUMNS, toCards } from './queries';
 import { resolveLinePositionsForKeys } from './resolve-line-position';
 
 /** A place in the course where the chunk applies — the `?move=` deep link. */
