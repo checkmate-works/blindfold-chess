@@ -5,6 +5,7 @@ import {
   StorageAvailabilityProvider,
   useStorageAvailabilityContext,
 } from './StorageAvailabilityProvider';
+import { makeWorkingLocalStorage } from './__test-support__/storage-mocks';
 import * as detectModule from './storage-availability';
 
 /**
@@ -18,21 +19,6 @@ import * as detectModule from './storage-availability';
  * we would silently multiply probe work by the number of consumers. The
  * "single probe" test below is the regression guard for that.
  */
-
-type StorageMock = Pick<Storage, 'setItem' | 'removeItem' | 'getItem'>;
-
-function makeWorkingLocalStorage(): StorageMock {
-  const data = new Map<string, string>();
-  return {
-    getItem: (key) => data.get(key) ?? null,
-    setItem: (key, value) => {
-      data.set(key, value);
-    },
-    removeItem: (key) => {
-      data.delete(key);
-    },
-  };
-}
 
 describe('StorageAvailabilityProvider', () => {
   const originalLocalStorage = Object.getOwnPropertyDescriptor(window, 'localStorage');

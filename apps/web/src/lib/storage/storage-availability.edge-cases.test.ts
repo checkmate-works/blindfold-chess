@@ -1,5 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import {
+  type StorageMock,
+  installIndexedDB,
+  installLocalStorage,
+  makeThrowingLocalStorage,
+  makeWorkingLocalStorage,
+} from './__test-support__/storage-mocks';
 import { detectStorageAvailability } from './storage-availability';
 
 /**
@@ -14,47 +21,6 @@ import { detectStorageAvailability } from './storage-availability';
  *     results (no global state contamination).
  *   - Partial-mock window: some properties are present, others are stripped.
  */
-
-type StorageMock = Pick<Storage, 'setItem' | 'removeItem' | 'getItem'>;
-
-function installLocalStorage(mock: StorageMock | null): void {
-  Object.defineProperty(window, 'localStorage', {
-    configurable: true,
-    value: mock,
-  });
-}
-
-function installIndexedDB(value: unknown): void {
-  Object.defineProperty(window, 'indexedDB', {
-    configurable: true,
-    value,
-  });
-}
-
-function makeWorkingLocalStorage(): StorageMock {
-  const data = new Map<string, string>();
-  return {
-    getItem: (key) => data.get(key) ?? null,
-    setItem: (key, value) => {
-      data.set(key, value);
-    },
-    removeItem: (key) => {
-      data.delete(key);
-    },
-  };
-}
-
-function makeThrowingLocalStorage(error: Error): StorageMock {
-  return {
-    getItem: () => null,
-    setItem: () => {
-      throw error;
-    },
-    removeItem: () => {
-      throw error;
-    },
-  };
-}
 
 function withBlockedCookie(fn: () => void): void {
   // Overrides document.cookie so writes are silently dropped (getter always
