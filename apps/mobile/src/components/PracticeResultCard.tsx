@@ -1,12 +1,7 @@
 import { View, Text, StyleSheet } from "react-native";
+import type { StatItem } from "@blindfold-chess/features/common";
 import { Card } from "./Card";
 import { useTheme, fontSize, fontWeight, spacing } from "../theme";
-
-type StatItem = {
-  label: string;
-  value: string;
-  highlight?: boolean;
-};
 
 type PracticeResultCardProps = {
   scoreLabel: string;
