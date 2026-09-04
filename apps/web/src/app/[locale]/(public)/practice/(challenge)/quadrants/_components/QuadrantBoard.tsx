@@ -4,7 +4,11 @@ import { useCallback } from 'react';
 
 import { BoardLayout, BoardSkeleton } from '@/app/_components';
 import type { SquareRenderInfo } from '@/app/_components';
-import type { QuadrantId } from '@blindfold-chess/features/quadrants';
+import {
+  type QuadrantId,
+  getVisualQuadrant,
+  visualQuadrantToId,
+} from '@blindfold-chess/features/quadrants';
 import type { Side } from '@blindfold-chess/types';
 
 import { getBoardThemeColors } from '@/lib/games/board-themes';
@@ -27,15 +31,6 @@ type Props = {
  * q3 (BL): file 0-3, rank 0-3
  * q4 (BR): file 4-7, rank 0-3
  */
-function getQuadrantId(fileIndex: number, rankIndex: number): QuadrantId {
-  const isTopHalf = rankIndex < 4; // rankIndex 0..3 corresponds to ranks 8,7,6,5
-  const isLeftHalf = fileIndex < 4; // fileIndex 0..3 corresponds to files a,b,c,d
-  if (isTopHalf && isLeftHalf) return 'q2';
-  if (isTopHalf && !isLeftHalf) return 'q1';
-  if (!isTopHalf && isLeftHalf) return 'q3';
-  return 'q4';
-}
-
 export default function QuadrantBoard({
   correctQuadrant,
   wrongQuadrant,
@@ -98,7 +93,7 @@ export default function QuadrantBoard({
 
   const renderSquare = useCallback(
     ({ fileIndex, rankIndex }: SquareRenderInfo) => {
-      const qId = getQuadrantId(fileIndex, rankIndex);
+      const qId = visualQuadrantToId(getVisualQuadrant(fileIndex, rankIndex));
       const highlightClass = getHighlightClass(qId);
       if (!highlightClass) return null;
       return <div className={`absolute inset-0 ${highlightClass} z-10 pointer-events-none`} />;
@@ -108,7 +103,7 @@ export default function QuadrantBoard({
 
   const squareProps = useCallback(
     ({ fileIndex, rankIndex }: SquareRenderInfo) => {
-      const qId = getQuadrantId(fileIndex, rankIndex);
+      const qId = visualQuadrantToId(getVisualQuadrant(fileIndex, rankIndex));
       return {
         onClick: disabled ? undefined : () => onQuadrantClick(qId),
       };

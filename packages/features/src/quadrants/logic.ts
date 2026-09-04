@@ -8,7 +8,34 @@ import {
   squareToRankIndex,
 } from "../common";
 import { BOARD_SIZE } from "../common/constants";
-import type { BoardOrientation, QuadrantId, QuadrantQuestion } from "./types";
+import type {
+  BoardOrientation,
+  QuadrantId,
+  QuadrantQuestion,
+  VisualQuadrant,
+} from "./types";
+
+const QUADRANT_ID_BY_VISUAL_QUADRANT: Record<VisualQuadrant, QuadrantId> = {
+  "top-left": "q2",
+  "top-right": "q1",
+  "bottom-left": "q3",
+  "bottom-right": "q4",
+};
+
+/** Classify zero-based board indices whose origin is the visual top-left. */
+export function getVisualQuadrant(
+  fileIndex: number,
+  rankIndex: number,
+): VisualQuadrant {
+  const halfBoard = BOARD_SIZE / 2;
+  const vertical = rankIndex < halfBoard ? "top" : "bottom";
+  const horizontal = fileIndex < halfBoard ? "left" : "right";
+  return `${vertical}-${horizontal}`;
+}
+
+export function visualQuadrantToId(quadrant: VisualQuadrant): QuadrantId {
+  return QUADRANT_ID_BY_VISUAL_QUADRANT[quadrant];
+}
 
 /**
  * Determine which quadrant a square belongs to (from white's perspective).
@@ -21,16 +48,9 @@ import type { BoardOrientation, QuadrantId, QuadrantQuestion } from "./types";
  * Ranks 1-4 = Your side, Ranks 5-8 = Opponent side
  */
 export function getCorrectQuadrant(square: Square): QuadrantId {
-  // BOARD_SIZE / 2 partitions the 8 files into two 4-file halves
-  // (a-d = queen-side, e-h = king-side) and the 8 ranks into two 4-rank halves.
-  const halfBoard = BOARD_SIZE / 2;
-  const isKingSide = squareToFileIndex(square) >= halfBoard;
-  const isUpper = squareToRankIndex(square) >= halfBoard;
-
-  if (isKingSide && isUpper) return "q1";
-  if (!isKingSide && isUpper) return "q2";
-  if (!isKingSide && !isUpper) return "q3";
-  return "q4";
+  const fileIndex = squareToFileIndex(square);
+  const topOriginRankIndex = BOARD_SIZE - 1 - squareToRankIndex(square);
+  return visualQuadrantToId(getVisualQuadrant(fileIndex, topOriginRankIndex));
 }
 
 /**
