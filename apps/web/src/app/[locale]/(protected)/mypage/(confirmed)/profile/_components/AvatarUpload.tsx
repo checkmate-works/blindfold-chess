@@ -10,6 +10,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import * as Sentry from '@sentry/nextjs';
 
 import { prepareImageForUpload } from '@/lib/client-images/prepare-image-for-upload';
+import { readApiError } from '@/lib/http/read-api-error';
 import { AVATAR_MAX_FILE_SIZE, isAllowedImageMimeType } from '@/lib/images/policy';
 
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
@@ -116,8 +117,7 @@ export function AvatarUpload({ currentAvatarUrl }: Props) {
       });
 
       if (!res.ok) {
-        const data = await res.json();
-        switch (data.error) {
+        switch (await readApiError(res)) {
           case 'invalid_file_type':
             setError(t('avatarInvalidType'));
             break;

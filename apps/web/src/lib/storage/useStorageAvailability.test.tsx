@@ -3,6 +3,7 @@ import { StrictMode } from 'react';
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { type StorageMock, makeWorkingLocalStorage } from './__test-support__/storage-mocks';
 import { useStorageAvailability } from './useStorageAvailability';
 
 /**
@@ -18,21 +19,6 @@ import { useStorageAvailability } from './useStorageAvailability';
  *   - Under `StrictMode`, React intentionally double-invokes effects. The hook
  *     must still end up with a valid availability value.
  */
-
-type StorageMock = Pick<Storage, 'setItem' | 'removeItem' | 'getItem'>;
-
-function makeWorkingLocalStorage(): StorageMock {
-  const data = new Map<string, string>();
-  return {
-    getItem: (key) => data.get(key) ?? null,
-    setItem: (key, value) => {
-      data.set(key, value);
-    },
-    removeItem: (key) => {
-      data.delete(key);
-    },
-  };
-}
 
 describe('useStorageAvailability', () => {
   const originalLocalStorage = Object.getOwnPropertyDescriptor(window, 'localStorage');

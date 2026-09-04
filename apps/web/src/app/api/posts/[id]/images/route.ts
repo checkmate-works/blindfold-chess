@@ -23,6 +23,7 @@ import {
 } from '@/lib/post-images/validation';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { persistWithUploadRollback } from '@/lib/supabase/persist-with-upload-rollback';
 import { createClient as createServerClient } from '@/lib/supabase/server';
 import { loadAuthoredPost } from '@/lib/topic-posts';
 
@@ -208,40 +209,42 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: 'upload_failed' }, { status: 500 });
   }
 
-  let inserted;
-  try {
-    [inserted] = await db
-      .insert(postImageAttachments)
-      .values({
-        postId,
-        storagePath,
-        contentType: POST_IMAGE_OUTPUT_MIME,
-        fileSize: processedBuffer.byteLength,
-        width: finalDimensions.width,
-        height: finalDimensions.height,
-        altText,
-      })
-      .returning();
-  } catch (err) {
+  const persistence = await persistWithUploadRollback({
+    persist: async () => {
+      const [inserted] = await db
+        .insert(postImageAttachments)
+        .values({
+          postId,
+          storagePath,
+          contentType: POST_IMAGE_OUTPUT_MIME,
+          fileSize: processedBuffer.byteLength,
+          width: finalDimensions.width,
+          height: finalDimensions.height,
+          altText,
+        })
+        .returning();
+      return inserted;
+    },
+    // The admin client is required because the session upload client cannot
+    // reliably remove an object after the database insert was rejected.
+    rollback: () => createAdminClient().storage.from(POST_IMAGES_BUCKET).remove([storagePath]),
+  });
+  if (!persistence.ok) {
     // DB rejected the insert — could be the per-post cap trigger
     // ('post_image_count_exceeded'), a CHECK violation, or anything else.
-    // Roll back the orphan storage object via the admin client (the only
-    // admin-client use in this handler).
-    const admin = createAdminClient();
-    await admin.storage.from(POST_IMAGES_BUCKET).remove([storagePath]);
-
-    const message = err instanceof Error ? err.message : '';
+    const message = persistence.error instanceof Error ? persistence.error.message : '';
     if (message.includes('post_image_count_exceeded')) {
       return NextResponse.json({ error: 'too_many_images' }, { status: 409 });
     }
     console.error('[post-images] insert_failed', {
       postId,
       storagePath,
-      error: err,
+      error: persistence.error,
     });
     return NextResponse.json({ error: 'insert_failed' }, { status: 500 });
   }
 
+  const inserted = persistence.value;
   const { data: urlData } = sessionSupabase.storage
     .from(POST_IMAGES_BUCKET)
     .getPublicUrl(storagePath);

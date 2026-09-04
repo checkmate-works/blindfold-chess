@@ -10,6 +10,9 @@ export type { BoardOrientation };
 
 export type QuadrantId = "q1" | "q2" | "q3" | "q4";
 
+export type VisualQuadrant =
+  "top-left" | "top-right" | "bottom-left" | "bottom-right";
+
 export type QuadrantQuestion = {
   square: Square;
   orientation: ResolvedBoardOrientation;

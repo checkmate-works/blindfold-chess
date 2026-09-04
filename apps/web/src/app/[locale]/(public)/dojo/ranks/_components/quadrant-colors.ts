@@ -1,4 +1,6 @@
-export type Quadrant = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+import { type VisualQuadrant, getVisualQuadrant } from '@blindfold-chess/features/quadrants';
+
+export type Quadrant = VisualQuadrant;
 
 /**
  * Tint per board quadrant, shared by the two rank-guide boards so the legend
@@ -18,10 +20,5 @@ export const QUADRANT_COLORS: Record<Quadrant, string> = {
 
 /** Which quadrant a square falls in. Indices are 0-based from the top-left. */
 export function getQuadrant(fileIndex: number, rankIndex: number): Quadrant {
-  const isTopHalf = rankIndex < 4;
-  const isLeftHalf = fileIndex < 4;
-  if (isTopHalf && isLeftHalf) return 'top-left';
-  if (isTopHalf && !isLeftHalf) return 'top-right';
-  if (!isTopHalf && isLeftHalf) return 'bottom-left';
-  return 'bottom-right';
+  return getVisualQuadrant(fileIndex, rankIndex);
 }

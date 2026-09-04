@@ -5,10 +5,26 @@ import {
   generateQuadrantQuestion,
   generateQuadrantQuestionBatch,
   getCorrectQuadrant,
+  getVisualQuadrant,
+  visualQuadrantToId,
 } from "./logic";
 
 const FILES = ["a", "b", "c", "d", "e", "f", "g", "h"] as const;
 const RANKS = ["1", "2", "3", "4", "5", "6", "7", "8"] as const;
+
+describe("getVisualQuadrant", () => {
+  it.each([
+    [0, 0, "top-left", "q2"],
+    [3, 3, "top-left", "q2"],
+    [4, 3, "top-right", "q1"],
+    [3, 4, "bottom-left", "q3"],
+    [4, 4, "bottom-right", "q4"],
+    [7, 7, "bottom-right", "q4"],
+  ] as const)("classifies (%i, %i) as %s", (file, rank, visual, id) => {
+    expect(getVisualQuadrant(file, rank)).toBe(visual);
+    expect(visualQuadrantToId(visual)).toBe(id);
+  });
+});
 
 describe("getCorrectQuadrant", () => {
   it("identifies q1 (king side upper): e-h files, ranks 5-8", () => {
