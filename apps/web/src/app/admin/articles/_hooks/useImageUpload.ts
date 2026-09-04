@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import type { Editor } from '@tiptap/core';
 
+import { readApiError } from '@/lib/http/read-api-error';
 import {
   ADMIN_IMAGE_MAX_FILE_SIZE,
   ALLOWED_IMAGE_MIME_TYPES,
@@ -83,9 +84,8 @@ export function useImageUpload({ editor, articleId, onImageUploadError }: UseIma
         });
 
         if (!res.ok) {
-          const data = await res.json();
           removePlaceholderImage(currentEditor, placeholderId);
-          onImageUploadError?.(data.error ?? 'Upload failed');
+          onImageUploadError?.((await readApiError(res)) ?? 'Upload failed');
           return;
         }
 

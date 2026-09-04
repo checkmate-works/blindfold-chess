@@ -20,6 +20,8 @@
  */
 import * as Sentry from '@sentry/nextjs';
 
+import { readApiError } from '@/lib/http/read-api-error';
+
 export type UploadPostImagesResult = { ok: true } | { ok: false; error: string };
 
 export async function uploadPostImages(
@@ -45,13 +47,13 @@ export async function uploadPostImages(
       return { ok: false, error: 'attachment.image.error.uploadFailed' };
     }
     if (!res.ok) {
-      const body = (await res.json().catch(() => ({}))) as { error?: string };
+      const serverError = await readApiError(res);
       Sentry.captureMessage('post-image-upload-rejected', {
         level: 'error',
         tags: { feature: 'post-image-upload', phase: 'server', status: String(res.status) },
-        extra: { postId, status: res.status, serverError: body.error ?? null, file: fileMeta },
+        extra: { postId, status: res.status, serverError: serverError ?? null, file: fileMeta },
       });
-      return { ok: false, error: body.error ?? 'attachment.image.error.uploadFailed' };
+      return { ok: false, error: serverError ?? 'attachment.image.error.uploadFailed' };
     }
   }
   return { ok: true };

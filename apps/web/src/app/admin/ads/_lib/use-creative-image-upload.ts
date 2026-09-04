@@ -2,12 +2,9 @@
 
 import { useState } from 'react';
 
-export type CreativeImageTarget = 'avatar' | 'thumbnail';
+import { readApiError } from '@/lib/http/read-api-error';
 
-async function errorFromResponse(res: Response, fallback: string): Promise<string> {
-  const data = (await res.json().catch(() => ({}))) as { error?: string };
-  return data.error ?? fallback;
-}
+export type CreativeImageTarget = 'avatar' | 'thumbnail';
 
 /**
  * Client for `/api/admin/ads/[id]/image`: upload or remove a native-card
@@ -40,7 +37,7 @@ export function useCreativeImageUpload(
       body.append('target', target);
       const res = await fetch(`/api/admin/ads/${creativeId}/image`, { method: 'POST', body });
       if (!res.ok) {
-        onError(await errorFromResponse(res, 'upload_failed'));
+        onError((await readApiError(res)) ?? 'upload_failed');
         return null;
       }
       const data = (await res.json()) as { imagePath: string };
@@ -59,7 +56,7 @@ export function useCreativeImageUpload(
         method: 'DELETE',
       });
       if (!res.ok) {
-        onError(await errorFromResponse(res, 'delete_failed'));
+        onError((await readApiError(res)) ?? 'delete_failed');
         return false;
       }
       return true;
