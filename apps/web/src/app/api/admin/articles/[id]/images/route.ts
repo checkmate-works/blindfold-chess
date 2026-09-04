@@ -10,6 +10,7 @@ import { articleImages, articles, db } from '@/lib/db';
 import { SHARP_DECODE_OPTIONS } from '@/lib/images/sharp-options';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/security/rate-limit';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { persistWithUploadRollback } from '@/lib/supabase/persist-with-upload-rollback';
 
 import { ARTICLE_IMAGES_BUCKET } from './image-validation';
 
@@ -115,29 +116,35 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
   const { data: urlData } = supabase.storage.from(ARTICLE_IMAGES_BUCKET).getPublicUrl(storagePath);
 
-  let inserted;
-  try {
-    [inserted] = await db
-      .insert(articleImages)
-      .values({
-        articleId,
-        storagePath,
-        publicUrl: urlData.publicUrl,
-        altText,
-        contentType: file.type,
-        // Use the post-Sharp byte length so the row reflects what's
-        // actually in Storage; SVG falls through with its original size.
-        fileSize: payloadByteLength,
-      })
-      .returning();
-  } catch (err) {
-    // DB insert failed after Storage upload succeeded — clean up the orphan file
-    await supabase.storage.from(ARTICLE_IMAGES_BUCKET).remove([storagePath]);
-    console.warn('article-images: DB insert failed, cleaned up storage file', storagePath, err);
+  const persistence = await persistWithUploadRollback({
+    persist: async () => {
+      const [inserted] = await db
+        .insert(articleImages)
+        .values({
+          articleId,
+          storagePath,
+          publicUrl: urlData.publicUrl,
+          altText,
+          contentType: file.type,
+          // Use the post-Sharp byte length so the row reflects what's
+          // actually in Storage; SVG falls through with its original size.
+          fileSize: payloadByteLength,
+        })
+        .returning();
+      return inserted;
+    },
+    rollback: () => supabase.storage.from(ARTICLE_IMAGES_BUCKET).remove([storagePath]),
+  });
+  if (!persistence.ok) {
+    console.warn(
+      'article-images: DB insert failed, cleaned up storage file',
+      storagePath,
+      persistence.error
+    );
     return NextResponse.json({ error: 'insert_failed' }, { status: 500 });
   }
 
-  return NextResponse.json(inserted, { status: 201 });
+  return NextResponse.json(persistence.value, { status: 201 });
 }
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {

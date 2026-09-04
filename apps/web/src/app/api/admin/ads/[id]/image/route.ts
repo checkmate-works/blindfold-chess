@@ -14,6 +14,7 @@ import { adCreatives, db } from '@/lib/db';
 import { SHARP_DECODE_OPTIONS } from '@/lib/images/sharp-options';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/security/rate-limit';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { persistWithUploadRollback } from '@/lib/supabase/persist-with-upload-rollback';
 
 type ImageTarget = 'avatar' | 'thumbnail';
 
@@ -143,14 +144,15 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const previousPath = storagePathFromPublicUrl(currentImageUrl(payload, target));
   const nextPayload = withTargetImage(payload, target, urlData.publicUrl);
 
-  try {
-    await db
-      .update(adCreatives)
-      .set({ payload: nextPayload, updatedAt: new Date() })
-      .where(eq(adCreatives.id, id));
-  } catch {
-    // DB update failed after upload — remove the just-uploaded orphan file.
-    await supabase.storage.from(AD_CREATIVES_BUCKET).remove([storagePath]);
+  const persistence = await persistWithUploadRollback({
+    persist: () =>
+      db
+        .update(adCreatives)
+        .set({ payload: nextPayload, updatedAt: new Date() })
+        .where(eq(adCreatives.id, id)),
+    rollback: () => supabase.storage.from(AD_CREATIVES_BUCKET).remove([storagePath]),
+  });
+  if (!persistence.ok) {
     return NextResponse.json({ error: 'update_failed' }, { status: 500 });
   }
 
