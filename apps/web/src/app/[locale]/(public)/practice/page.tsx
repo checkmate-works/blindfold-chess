@@ -23,6 +23,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { DailyPuzzleCard } from '@/app/_components/DailyPuzzleCard';
 import { SITE_URL } from '@/config';
 
+import type { PracticeMenuType } from '@/lib/db/practice-menu-types';
 import { JsonLd, generateItemListSchema } from '@/lib/seo/jsonld';
 
 import { PracticeMenuCard } from '@/app/[locale]/(public)/practice/_components/PracticeMenuCard';
@@ -33,6 +34,15 @@ import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { Locale } from '@/app/[locale]/_lib/types';
+
+type PracticeEntry = {
+  /** Route segment under `/practice`. */
+  id: string;
+  /** Keys the rank mapping and the card's example band. */
+  menuType: PracticeMenuType;
+  title: string;
+  icon: string;
+};
 
 type Props = {
   params: Promise<{
@@ -55,7 +65,7 @@ export default async function PracticePage({ params }: Props) {
   const t = await getTranslations({ locale });
   const tRanks = await getTranslations({ locale, namespace: 'ranks' });
 
-  const sections = [
+  const sections: { title: string; practices: PracticeEntry[] }[] = [
     {
       title: t('practice.levelBeginner'),
       practices: [
@@ -63,21 +73,18 @@ export default async function PracticePage({ params }: Props) {
           id: 'square-colors',
           menuType: 'square_colors',
           title: t('practice.squareColors.title'),
-          description: t('practice.squareColors.description'),
           icon: PRACTICE_EMOJIS.square_colors,
         },
         {
           id: 'coordinate-quiz',
           menuType: 'coordinate_quiz',
           title: t('practice.coordinateQuiz.title'),
-          description: t('practice.coordinateQuiz.description'),
           icon: PRACTICE_EMOJIS.coordinate_quiz,
         },
         {
           id: 'legal-moves',
           menuType: 'legal_moves',
           title: t('practice.legalMoves.title'),
-          description: t('practice.legalMoves.description'),
           icon: PRACTICE_EMOJIS.legal_moves,
         },
       ],
@@ -89,21 +96,18 @@ export default async function PracticePage({ params }: Props) {
           id: 'diagonal-quiz',
           menuType: 'diagonal_quiz',
           title: t('practice.diagonalQuiz.title'),
-          description: t('practice.diagonalQuiz.description'),
           icon: PRACTICE_EMOJIS.diagonal_quiz,
         },
         {
           id: 'board-symmetry',
           menuType: 'board_symmetry',
           title: t('practice.boardSymmetry.title'),
-          description: t('practice.boardSymmetry.description'),
           icon: PRACTICE_EMOJIS.board_symmetry,
         },
         {
           id: 'route-planner',
           menuType: 'route_planner',
           title: t('practice.routePlanner.title'),
-          description: t('practice.routePlanner.description'),
           icon: PRACTICE_EMOJIS.route_planner,
         },
       ],
@@ -115,14 +119,12 @@ export default async function PracticePage({ params }: Props) {
           id: 'position-memory',
           menuType: 'position_memory',
           title: t('practice.positionMemory.title'),
-          description: t('practice.positionMemory.description'),
           icon: PRACTICE_EMOJIS.position_memory,
         },
         {
           id: 'puzzle',
           menuType: 'puzzle',
           title: t('practice.puzzle.title'),
-          description: t('practice.puzzle.description'),
           icon: PRACTICE_EMOJIS.puzzle,
         },
       ],
@@ -134,14 +136,12 @@ export default async function PracticePage({ params }: Props) {
           id: 'knight-tour',
           menuType: 'knight_tour',
           title: t('practice.knightTour.title'),
-          description: t('practice.knightTour.description'),
           icon: PRACTICE_EMOJIS.knight_tour,
         },
         {
           id: 'recall',
           menuType: 'recall',
           title: t('recall.title'),
-          description: t('recall.description'),
           icon: PRACTICE_EMOJIS.recall,
         },
       ],
@@ -153,21 +153,18 @@ export default async function PracticePage({ params }: Props) {
           id: 'algebraic-notation',
           menuType: 'algebraic_notation',
           title: t('practice.algebraicNotation.title'),
-          description: t('practice.algebraicNotation.description'),
           icon: PRACTICE_EMOJIS.algebraic_notation,
         },
         {
           id: 'fen',
           menuType: 'fen',
           title: t('practice.fen.title'),
-          description: t('practice.fen.description'),
           icon: PRACTICE_EMOJIS.fen,
         },
         {
           id: 'quadrants',
           menuType: 'quadrant_anchors',
           title: t('practice.quadrantAnchors.title'),
-          description: t('practice.quadrantAnchors.description'),
           icon: PRACTICE_EMOJIS.quadrant_anchors,
         },
       ],
@@ -205,7 +202,7 @@ export default async function PracticePage({ params }: Props) {
                     href={`/practice/${practice.id}`}
                     icon={practice.icon}
                     title={practice.title}
-                    description={practice.description}
+                    menuType={practice.menuType}
                     rank={rankSlug && rankLabel ? { slug: rankSlug, label: rankLabel } : null}
                     detailLabel={t('practice.detail')}
                   />

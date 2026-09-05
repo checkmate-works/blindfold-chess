@@ -2,20 +2,23 @@ import { Link } from '@/i18n/routing';
 import { HiChevronRight } from 'react-icons/hi2';
 
 import type { RankSlug } from '@/lib/db/data/ranks';
+import type { PracticeMenuType } from '@/lib/db/practice-menu-types';
 
 import { BeltRankBadge } from '@/app/[locale]/(public)/dojo/_components/BeltRankBadge';
+import { PracticeCardVisual } from '@/app/[locale]/(public)/practice/_components/PracticeCardVisual';
 
 type Props = {
   /** Emoji for the module, from `PRACTICE_EMOJIS`. Prefixes the title. */
   icon: string;
   title: string;
   /**
-   * One line on what the practice trains. This is the card's substitute for a
-   * worked example: most modules ask about a whole board position, which does
-   * not survive being shrunk to a thumbnail the way a hand of tiles does, so
-   * the card says what the practice is instead of showing it.
+   * Which module this is — the card draws its example band from it.
+   *
+   * The card carries no description. The band shows the question and the
+   * shape of its answer, and once it is next to the title a sentence like
+   * "マスが明るいか暗いかを素早く識別する能力を鍛えます" has nothing left to add.
    */
-  description: string;
+  menuType: PracticeMenuType;
   /** Practice route, locale-prefixed by `Link`. */
   href: string;
   /**
@@ -41,7 +44,7 @@ type Props = {
 export function PracticeMenuCard({
   icon,
   title,
-  description,
+  menuType,
   href,
   rank,
   locale,
@@ -63,11 +66,7 @@ export function PracticeMenuCard({
             </div>
           )}
         </div>
-        {/* Two lines at most, so a long description cannot push one card's
-            link row out of line with its neighbour's in the grid. */}
-        <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
-          {description}
-        </p>
+        <PracticeCardVisual menuType={menuType} />
       </div>
       <div className="mt-4 flex justify-end">
         <Link
