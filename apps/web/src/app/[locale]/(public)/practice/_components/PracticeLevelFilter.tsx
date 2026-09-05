@@ -64,24 +64,31 @@ function FilteredList({
       <h2 className="sr-only">{listHeading}</h2>
 
       {/* The selected option is a raised card surface, as in every other
-          segmented control here (`tabItemClass('segmented')`), not a
-          primary fill: primary is the colour of the buttons that do things,
-          and a filter option painted like one reads as a call to action
-          rather than a state.
+          segmented control here (`tabItemClass('segmented')`), not a primary
+          fill: primary is the colour of the buttons that do things, and a
+          filter option painted like one reads as a call to action rather
+          than a state.
 
-          One row that fills the width, its options sharing the space in
-          proportion to their labels. Four options fit a 390px phone in every
-          locale at the small text size (the widest, es "Todos Principiante
-          Intermedio Avanzado", measures ~300px against ~350px available);
-          the dots stack above the label on phones and sit beside it from
-          `sm` up, so they never push the row past the edge. Should a locale
-          or a device ever be narrower than that, the row scrolls rather
-          than wraps — wrapping turned it into a two-line block over every
-          card. */}
+          Two rows of three on a phone, one row from `md` up. Six options —
+          five bands and "All" — do not fit a phone in any locale: English
+          alone needs ~450px of labels against ~330px of room. The row used
+          to scroll, which hid the last two options behind a swipe and, worse,
+          invited fixing the width by merging bands instead (see
+          `PRACTICE_LEVELS`). Wrapping shows all six at once for the price of
+          one line of height, and six divides evenly into two rows of three.
+
+          The wide layout wraps too rather than squeezing: with `flex-wrap`,
+          a row that runs out of room takes a second line instead of shrinking
+          every option until the shortest one clips — "All" was the first to
+          lose its letters, which reads as a rendering fault rather than a
+          tight fit. In the phone grid, where the three columns are fixed, a
+          label longer than its column truncates instead of widening the
+          block. The dots stack above the label on phones and sit beside it
+          from `md` up. */}
       <div
         role="group"
         aria-label={filterLabel}
-        className="flex gap-1 overflow-x-auto rounded-lg bg-secondary p-1"
+        className="grid grid-cols-3 gap-1 rounded-lg bg-secondary p-1 md:flex md:flex-wrap"
       >
         {options.map((option) => {
           const isActive = option.level === selected;
@@ -93,14 +100,14 @@ function FilteredList({
               // throw the reader back to the top of it.
               scroll={false}
               aria-current={isActive ? 'true' : undefined}
-              className={`flex flex-auto shrink-0 flex-col items-center justify-center gap-1 rounded-md px-2 py-1.5 text-xs font-medium transition-colors sm:flex-row sm:gap-1.5 sm:text-sm ${
+              className={`flex min-w-0 flex-col items-center justify-center gap-1 rounded-md px-2 py-1.5 text-xs font-medium transition-colors md:flex-auto md:flex-row md:gap-1.5 md:text-sm ${
                 isActive
                   ? 'bg-card text-foreground shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               {option.level && <PracticeLevelDots level={option.level} />}
-              {option.label}
+              <span className="max-w-full truncate md:overflow-visible">{option.label}</span>
             </Link>
           );
         })}

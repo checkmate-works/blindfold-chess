@@ -75,9 +75,12 @@ export function PracticeMenuCard({
   return (
     <div className="relative flex h-full flex-col rounded-2xl border border-border bg-card p-5 transition-all hover:-translate-y-1 hover:border-primary/30 focus-within:border-primary/30">
       <div className="flex min-h-7 items-center justify-between gap-2">
-        <p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+        {/* `min-w-0` + `truncate`: without them the eyebrow's own content is
+            the card's minimum width, and on a 320px phone "Beginner" beside
+            the rank badge made every card wider than the screen. */}
+        <p className="flex min-w-0 items-center gap-1.5 text-xs font-medium text-muted-foreground">
           <PracticeLevelDots level={level} />
-          {levelLabel}
+          <span className="truncate">{levelLabel}</span>
         </p>
         {rank && (
           <div className="relative z-10 shrink-0">

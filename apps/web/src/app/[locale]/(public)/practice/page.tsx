@@ -6,9 +6,9 @@
  * it contributes toward, and an example band showing the question it asks
  * (`PracticeCardVisual`). One grid, narrowed by difficulty through
  * `PracticeLevelFilter` rather than split under per-level headings — the
- * headings pushed the later bands (Expert, Introduction) below the fold on a
- * phone, and a reader looking for "something at my level" had to scroll past
- * the other four bands to find out what was in theirs.
+ * headings pushed the later bands below the fold on a phone, and a reader
+ * looking for "something at my level" had to scroll past the other bands to
+ * find out what was in theirs.
  *
  * Leads with the Daily Puzzle card (the same one the signed-in dashboard
  * shows) so the page offers a concrete thing to do before the module grid.
@@ -17,18 +17,19 @@
  *
  * @flow
  * - Daily Puzzle: today's puzzle, seeded on the UTC date
- * - Beginner: Algebraic Notation, FEN Reconstruction, Quadrant Anchors,
- *   Square Colors, Coordinate Quiz, Legal Moves
+ * - Beginner: Square Colors, Coordinate Quiz, Legal Moves
  * - Intermediate: Diagonal Quiz, Board Symmetry, Route Planner
- * - Advanced: Position Memory, Puzzle, Knight's Tour, Recall
+ * - Advanced: Position Memory, Puzzle
+ * - Expert: Knight's Tour, Recall
+ * - Introduction: Algebraic Notation, FEN Reconstruction, Quadrant Anchors
  *
- * Three bands, not the five there used to be. "Introduction" (the three
- * notation-reading modules) and "Expert" (Knight's Tour, Recall) were bands
- * of their own, which put six options in the level filter — too many to fit
- * a phone in any locale, so the filter always scrolled — and left
- * Introduction, the place to start, at the bottom of the list. The
- * notation modules are the foundation of Beginner and now open it; the two
- * hardest modules are the top of Advanced.
+ * The bands each say something the others do not, so the list keeps all
+ * five. Merging them to fit the filter into one row on a phone was tried
+ * (2026-09) and cost more than it saved: Expert inside Advanced hid which
+ * two modules are the hard ones, and Introduction inside Beginner both lost
+ * "this is reference material, not a step" and moved the notation modules
+ * to the top of the unfiltered grid, where the list had always ended with
+ * them. The filter wraps instead. See `PRACTICE_LEVELS`.
  */
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
@@ -89,24 +90,6 @@ export default async function PracticePage({ params }: Props) {
       level: 'beginner',
       practices: [
         {
-          id: 'algebraic-notation',
-          menuType: 'algebraic_notation',
-          title: t('practice.algebraicNotation.title'),
-          icon: PRACTICE_EMOJIS.algebraic_notation,
-        },
-        {
-          id: 'fen',
-          menuType: 'fen',
-          title: t('practice.fen.title'),
-          icon: PRACTICE_EMOJIS.fen,
-        },
-        {
-          id: 'quadrants',
-          menuType: 'quadrant_anchors',
-          title: t('practice.quadrantAnchors.title'),
-          icon: PRACTICE_EMOJIS.quadrant_anchors,
-        },
-        {
           id: 'square-colors',
           menuType: 'square_colors',
           title: t('practice.squareColors.title'),
@@ -164,6 +147,11 @@ export default async function PracticePage({ params }: Props) {
           title: t('practice.puzzle.title'),
           icon: PRACTICE_EMOJIS.puzzle,
         },
+      ],
+    },
+    {
+      level: 'expert',
+      practices: [
         {
           id: 'knight-tour',
           menuType: 'knight_tour',
@@ -175,6 +163,29 @@ export default async function PracticePage({ params }: Props) {
           menuType: 'recall',
           title: t('recall.title'),
           icon: PRACTICE_EMOJIS.recall,
+        },
+      ],
+    },
+    {
+      level: 'introduction',
+      practices: [
+        {
+          id: 'algebraic-notation',
+          menuType: 'algebraic_notation',
+          title: t('practice.algebraicNotation.title'),
+          icon: PRACTICE_EMOJIS.algebraic_notation,
+        },
+        {
+          id: 'fen',
+          menuType: 'fen',
+          title: t('practice.fen.title'),
+          icon: PRACTICE_EMOJIS.fen,
+        },
+        {
+          id: 'quadrants',
+          menuType: 'quadrant_anchors',
+          title: t('practice.quadrantAnchors.title'),
+          icon: PRACTICE_EMOJIS.quadrant_anchors,
         },
       ],
     },
@@ -191,6 +202,8 @@ export default async function PracticePage({ params }: Props) {
     beginner: t('practice.levelBeginner'),
     intermediate: t('practice.levelIntermediate'),
     advanced: t('practice.levelAdvanced'),
+    expert: t('practice.levelExpert'),
+    introduction: t('practice.levelIntroduction'),
   };
 
   // Every card is rendered here, on the server, and the filter only decides

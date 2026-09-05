@@ -982,6 +982,8 @@
     "levelBeginner": "Beginner",
     "levelIntermediate": "Intermediate",
     "levelAdvanced": "Advanced",
+    "levelExpert": "Expert",
+    "levelIntroduction": "Introduction",
     "viewLeaderboard": "View Leaderboard",
     "viewDojo": "View Dojo",
     "related": "Related",
