@@ -20,13 +20,12 @@
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
-import { ChallengeCard } from '@/app/_components';
 import { DailyPuzzleCard } from '@/app/_components/DailyPuzzleCard';
 import { SITE_URL } from '@/config';
 
 import { JsonLd, generateItemListSchema } from '@/lib/seo/jsonld';
 
-import { BeltRankBadge } from '@/app/[locale]/(public)/dojo/_components/BeltRankBadge';
+import { PracticeMenuCard } from '@/app/[locale]/(public)/practice/_components/PracticeMenuCard';
 import { getRankSlugForMenuType } from '@/app/[locale]/(public)/practice/_lib/module-rank-mapping';
 import { PRACTICE_EMOJIS } from '@/app/[locale]/(public)/practice/_lib/practice-emojis';
 import { ListLink, ListLinkContainer, PageLayout, SectionTitle } from '@/app/[locale]/_components';
@@ -64,18 +63,21 @@ export default async function PracticePage({ params }: Props) {
           id: 'square-colors',
           menuType: 'square_colors',
           title: t('practice.squareColors.title'),
+          description: t('practice.squareColors.description'),
           icon: PRACTICE_EMOJIS.square_colors,
         },
         {
           id: 'coordinate-quiz',
           menuType: 'coordinate_quiz',
           title: t('practice.coordinateQuiz.title'),
+          description: t('practice.coordinateQuiz.description'),
           icon: PRACTICE_EMOJIS.coordinate_quiz,
         },
         {
           id: 'legal-moves',
           menuType: 'legal_moves',
           title: t('practice.legalMoves.title'),
+          description: t('practice.legalMoves.description'),
           icon: PRACTICE_EMOJIS.legal_moves,
         },
       ],
@@ -87,18 +89,21 @@ export default async function PracticePage({ params }: Props) {
           id: 'diagonal-quiz',
           menuType: 'diagonal_quiz',
           title: t('practice.diagonalQuiz.title'),
+          description: t('practice.diagonalQuiz.description'),
           icon: PRACTICE_EMOJIS.diagonal_quiz,
         },
         {
           id: 'board-symmetry',
           menuType: 'board_symmetry',
           title: t('practice.boardSymmetry.title'),
+          description: t('practice.boardSymmetry.description'),
           icon: PRACTICE_EMOJIS.board_symmetry,
         },
         {
           id: 'route-planner',
           menuType: 'route_planner',
           title: t('practice.routePlanner.title'),
+          description: t('practice.routePlanner.description'),
           icon: PRACTICE_EMOJIS.route_planner,
         },
       ],
@@ -110,12 +115,14 @@ export default async function PracticePage({ params }: Props) {
           id: 'position-memory',
           menuType: 'position_memory',
           title: t('practice.positionMemory.title'),
+          description: t('practice.positionMemory.description'),
           icon: PRACTICE_EMOJIS.position_memory,
         },
         {
           id: 'puzzle',
           menuType: 'puzzle',
           title: t('practice.puzzle.title'),
+          description: t('practice.puzzle.description'),
           icon: PRACTICE_EMOJIS.puzzle,
         },
       ],
@@ -127,12 +134,14 @@ export default async function PracticePage({ params }: Props) {
           id: 'knight-tour',
           menuType: 'knight_tour',
           title: t('practice.knightTour.title'),
+          description: t('practice.knightTour.description'),
           icon: PRACTICE_EMOJIS.knight_tour,
         },
         {
           id: 'recall',
           menuType: 'recall',
           title: t('recall.title'),
+          description: t('recall.description'),
           icon: PRACTICE_EMOJIS.recall,
         },
       ],
@@ -144,18 +153,21 @@ export default async function PracticePage({ params }: Props) {
           id: 'algebraic-notation',
           menuType: 'algebraic_notation',
           title: t('practice.algebraicNotation.title'),
+          description: t('practice.algebraicNotation.description'),
           icon: PRACTICE_EMOJIS.algebraic_notation,
         },
         {
           id: 'fen',
           menuType: 'fen',
           title: t('practice.fen.title'),
+          description: t('practice.fen.description'),
           icon: PRACTICE_EMOJIS.fen,
         },
         {
           id: 'quadrants',
           menuType: 'quadrant_anchors',
           title: t('practice.quadrantAnchors.title'),
+          description: t('practice.quadrantAnchors.description'),
           icon: PRACTICE_EMOJIS.quadrant_anchors,
         },
       ],
@@ -182,22 +194,21 @@ export default async function PracticePage({ params }: Props) {
         {sections.map((section) => (
           <section key={section.title} className="space-y-4">
             <SectionTitle>{section.title}</SectionTitle>
-            <div className="flex flex-wrap justify-center gap-3">
+            <div className="grid gap-4 sm:grid-cols-2">
               {section.practices.map((practice) => {
                 const rankSlug = getRankSlugForMenuType(practice.menuType);
                 const rankLabel = rankSlug ? tRanks(`rankNames.${rankSlug}`) : null;
                 return (
-                  <div key={practice.id} className="flex flex-col items-center gap-5">
-                    <ChallengeCard
-                      locale={locale}
-                      href={`/practice/${practice.id}`}
-                      label={practice.title}
-                      icon={practice.icon}
-                    />
-                    {rankSlug && rankLabel ? (
-                      <BeltRankBadge slug={rankSlug} label={rankLabel} locale={locale} />
-                    ) : null}
-                  </div>
+                  <PracticeMenuCard
+                    key={practice.id}
+                    locale={locale}
+                    href={`/practice/${practice.id}`}
+                    icon={practice.icon}
+                    title={practice.title}
+                    description={practice.description}
+                    rank={rankSlug && rankLabel ? { slug: rankSlug, label: rankLabel } : null}
+                    detailLabel={t('practice.detail')}
+                  />
                 );
               })}
             </div>

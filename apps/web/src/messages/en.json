@@ -974,6 +974,7 @@
       "algebraicKeyboardHint": "Type a letter (a–h) then a number (1–8). Backspace: delete."
     },
     "title": "Practice",
+    "detail": "View details",
     "modulesTitle": "Practice Modules",
     "levelBeginner": "Beginner",
     "levelIntermediate": "Intermediate",

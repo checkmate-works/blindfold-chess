@@ -974,6 +974,7 @@
       "algebraicKeyboardHint": "Escribe una letra (a–h) y luego un número (1–8). Retroceso: borrar."
     },
     "title": "Práctica",
+    "detail": "Ver detalles",
     "modulesTitle": "Módulos de Práctica",
     "levelBeginner": "Principiante",
     "levelIntermediate": "Intermedio",
