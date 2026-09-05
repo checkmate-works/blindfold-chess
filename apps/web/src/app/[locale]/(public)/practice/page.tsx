@@ -6,9 +6,9 @@
  * it contributes toward, and an example band showing the question it asks
  * (`PracticeCardVisual`). One grid, narrowed by difficulty through
  * `PracticeLevelFilter` rather than split under per-level headings — the
- * headings pushed the later bands (Expert, Introduction) below the fold on a
- * phone, and a reader looking for "something at my level" had to scroll past
- * the other four bands to find out what was in theirs.
+ * headings pushed the later bands below the fold on a phone, and a reader
+ * looking for "something at my level" had to scroll past the other bands to
+ * find out what was in theirs.
  *
  * Leads with the Daily Puzzle card (the same one the signed-in dashboard
  * shows) so the page offers a concrete thing to do before the module grid.
@@ -17,18 +17,18 @@
  *
  * @flow
  * - Daily Puzzle: today's puzzle, seeded on the UTC date
- * - Beginner: Algebraic Notation, FEN Reconstruction, Quadrant Anchors,
- *   Square Colors, Coordinate Quiz, Legal Moves
+ * - Beginner: Square Colors, Coordinate Quiz, Legal Moves
  * - Intermediate: Diagonal Quiz, Board Symmetry, Route Planner
  * - Advanced: Position Memory, Puzzle, Knight's Tour, Recall
+ * - Introduction: Algebraic Notation, FEN Reconstruction, Quadrant Anchors
  *
- * Three bands, not the five there used to be. "Introduction" (the three
- * notation-reading modules) and "Expert" (Knight's Tour, Recall) were bands
- * of their own, which put six options in the level filter — too many to fit
- * a phone in any locale, so the filter always scrolled — and left
- * Introduction, the place to start, at the bottom of the list. The
- * notation modules are the foundation of Beginner and now open it; the two
- * hardest modules are the top of Advanced.
+ * Four bands, not the five there used to be: "Expert" (Knight's Tour,
+ * Recall) is folded into Advanced, since those two are the top of the same
+ * progression rather than a rung above it. Introduction keeps its own band
+ * and its place at the end of the list — it teaches how to read and name
+ * what the other bands ask you to do, so it is reference material rather
+ * than a step, and folding it into Beginner both lost that distinction and
+ * put it at the top of the unfiltered grid. See `PRACTICE_LEVELS`.
  */
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
@@ -88,24 +88,6 @@ export default async function PracticePage({ params }: Props) {
     {
       level: 'beginner',
       practices: [
-        {
-          id: 'algebraic-notation',
-          menuType: 'algebraic_notation',
-          title: t('practice.algebraicNotation.title'),
-          icon: PRACTICE_EMOJIS.algebraic_notation,
-        },
-        {
-          id: 'fen',
-          menuType: 'fen',
-          title: t('practice.fen.title'),
-          icon: PRACTICE_EMOJIS.fen,
-        },
-        {
-          id: 'quadrants',
-          menuType: 'quadrant_anchors',
-          title: t('practice.quadrantAnchors.title'),
-          icon: PRACTICE_EMOJIS.quadrant_anchors,
-        },
         {
           id: 'square-colors',
           menuType: 'square_colors',
@@ -178,6 +160,29 @@ export default async function PracticePage({ params }: Props) {
         },
       ],
     },
+    {
+      level: 'introduction',
+      practices: [
+        {
+          id: 'algebraic-notation',
+          menuType: 'algebraic_notation',
+          title: t('practice.algebraicNotation.title'),
+          icon: PRACTICE_EMOJIS.algebraic_notation,
+        },
+        {
+          id: 'fen',
+          menuType: 'fen',
+          title: t('practice.fen.title'),
+          icon: PRACTICE_EMOJIS.fen,
+        },
+        {
+          id: 'quadrants',
+          menuType: 'quadrant_anchors',
+          title: t('practice.quadrantAnchors.title'),
+          icon: PRACTICE_EMOJIS.quadrant_anchors,
+        },
+      ],
+    },
   ];
 
   const itemListItems = sections.flatMap((section) =>
@@ -191,6 +196,7 @@ export default async function PracticePage({ params }: Props) {
     beginner: t('practice.levelBeginner'),
     intermediate: t('practice.levelIntermediate'),
     advanced: t('practice.levelAdvanced'),
+    introduction: t('practice.levelIntroduction'),
   };
 
   // Every card is rendered here, on the server, and the filter only decides

@@ -70,14 +70,18 @@ function FilteredList({
           rather than a state.
 
           One row that fills the width, its options sharing the space in
-          proportion to their labels. Four options fit a 390px phone in every
-          locale at the small text size (the widest, es "Todos Principiante
-          Intermedio Avanzado", measures ~300px against ~350px available);
-          the dots stack above the label on phones and sit beside it from
-          `sm` up, so they never push the row past the edge. Should a locale
-          or a device ever be narrower than that, the row scrolls rather
-          than wraps — wrapping turned it into a two-line block over every
-          card. */}
+          proportion to their labels, and the dots stacked above the label on
+          phones so they cost height rather than width.
+
+          Five options fit a 360px phone in Japanese and overflow it in the
+          other three locales (en, the widest, needs ~450px against ~330px
+          available — "Intermediate" and "Introduction" are 12 characters
+          each). Those scroll, which is the trade for keeping Introduction a
+          band of its own rather than a heading-less appendix to Beginner.
+          Scrolling, not wrapping: wrapping turned the row into a two-line
+          block sitting over every card, and truncating instead — what the
+          shared `tabItemClass('segmented')` does — would cut both long
+          labels in the locale that needs them most. */}
       <div
         role="group"
         aria-label={filterLabel}
