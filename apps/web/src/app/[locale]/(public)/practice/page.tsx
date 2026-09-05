@@ -255,8 +255,14 @@ export default async function PracticePage({ params }: Props) {
             leaderboard — so the module grid is where the page's own content
             ends, and that is where the ad belongs. Under the links it was
             the last thing on the page, past the point a reader has already
-            decided to leave. */}
-        <AdSlot slot="content-bottom" />
+            decided to leave.
+
+            `content-middle`, because that is the slot this position takes
+            everywhere else (the learn articles, the glossary lists, the
+            catalogues). The two banner slots are separate AdSense units, so
+            the name is not cosmetic — it decides which unit serves here and
+            where the revenue is reported. */}
+        <AdSlot slot="content-middle" />
 
         <section className="space-y-4">
           <SectionTitle>{t('practice.related')}</SectionTitle>
