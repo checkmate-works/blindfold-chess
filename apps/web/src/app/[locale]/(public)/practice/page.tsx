@@ -19,16 +19,17 @@
  * - Daily Puzzle: today's puzzle, seeded on the UTC date
  * - Beginner: Square Colors, Coordinate Quiz, Legal Moves
  * - Intermediate: Diagonal Quiz, Board Symmetry, Route Planner
- * - Advanced: Position Memory, Puzzle, Knight's Tour, Recall
+ * - Advanced: Position Memory, Puzzle
+ * - Expert: Knight's Tour, Recall
  * - Introduction: Algebraic Notation, FEN Reconstruction, Quadrant Anchors
  *
- * Four bands, not the five there used to be: "Expert" (Knight's Tour,
- * Recall) is folded into Advanced, since those two are the top of the same
- * progression rather than a rung above it. Introduction keeps its own band
- * and its place at the end of the list — it teaches how to read and name
- * what the other bands ask you to do, so it is reference material rather
- * than a step, and folding it into Beginner both lost that distinction and
- * put it at the top of the unfiltered grid. See `PRACTICE_LEVELS`.
+ * The bands each say something the others do not, so the list keeps all
+ * five. Merging them to fit the filter into one row on a phone was tried
+ * (2026-09) and cost more than it saved: Expert inside Advanced hid which
+ * two modules are the hard ones, and Introduction inside Beginner both lost
+ * "this is reference material, not a step" and moved the notation modules
+ * to the top of the unfiltered grid, where the list had always ended with
+ * them. The filter wraps instead. See `PRACTICE_LEVELS`.
  */
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
@@ -146,6 +147,11 @@ export default async function PracticePage({ params }: Props) {
           title: t('practice.puzzle.title'),
           icon: PRACTICE_EMOJIS.puzzle,
         },
+      ],
+    },
+    {
+      level: 'expert',
+      practices: [
         {
           id: 'knight-tour',
           menuType: 'knight_tour',
@@ -196,6 +202,7 @@ export default async function PracticePage({ params }: Props) {
     beginner: t('practice.levelBeginner'),
     intermediate: t('practice.levelIntermediate'),
     advanced: t('practice.levelAdvanced'),
+    expert: t('practice.levelExpert'),
     introduction: t('practice.levelIntroduction'),
   };
 

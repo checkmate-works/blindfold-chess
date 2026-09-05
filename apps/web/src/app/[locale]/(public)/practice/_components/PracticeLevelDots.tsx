@@ -5,16 +5,16 @@ import {
 } from '@/app/[locale]/(public)/practice/_lib/practice-levels';
 
 /**
- * A difficulty band as a row of three dots, one lit for Beginner through all
- * three for Advanced.
+ * A difficulty band as a row of dots, one lit for Beginner through all four
+ * for Expert.
  *
  * The same mark is drawn in the level filter's options and in the line above
  * each card's title, so the option a reader picked and the cards it left
  * visible carry the same symbol — the level is recognisable without reading
- * its name, and a card's band can be matched to the filter at a glance.
- * Three dots also say, as a word cannot, that the bands are a scale.
+ * its name, and a card's band can be matched to the filter at a glance. The
+ * dots also say, as a word cannot, that the bands are a scale.
  *
- * A band that is not on that scale — Introduction — draws nothing. Three
+ * A band that is not on that scale — Introduction — draws nothing. A row of
  * unlit dots would have put it at position zero of a scale it is listed
  * after, which is the one reading to avoid. The dots still take their space
  * (`invisible`, not unrendered) so an Introduction label lines up with the

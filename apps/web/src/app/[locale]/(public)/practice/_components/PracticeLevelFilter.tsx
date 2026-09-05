@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, type ReactNode, Suspense, useEffect, useRef } from 'react';
+import { Fragment, type ReactNode, Suspense } from 'react';
 
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -56,17 +56,6 @@ function FilteredList({
     ...PRACTICE_LEVELS.map((level) => ({ level, label: levelLabels[level] })),
   ];
 
-  // Where the row scrolls — every locale but Japanese, on a phone — the
-  // option a reader just picked can sit past the right edge, so the filter
-  // shows no selection at all on the page it just loaded. Bring it into the
-  // row. `block: 'nearest'` keeps this horizontal: the row is at the top of
-  // the page on arrival, and scrolling the window to it would push the Daily
-  // Puzzle above the fold for a reader who only changed a filter.
-  const activeRef = useRef<HTMLAnchorElement>(null);
-  useEffect(() => {
-    activeRef.current?.scrollIntoView({ block: 'nearest', inline: 'center' });
-  }, [selected]);
-
   return (
     <div className="space-y-6">
       {/* The per-level headings this filter replaced were the page's only h2.
@@ -75,48 +64,50 @@ function FilteredList({
       <h2 className="sr-only">{listHeading}</h2>
 
       {/* The selected option is a raised card surface, as in every other
-          segmented control here (`tabItemClass('segmented')`), not a
-          primary fill: primary is the colour of the buttons that do things,
-          and a filter option painted like one reads as a call to action
-          rather than a state.
+          segmented control here (`tabItemClass('segmented')`), not a primary
+          fill: primary is the colour of the buttons that do things, and a
+          filter option painted like one reads as a call to action rather
+          than a state.
 
-          One row that fills the width, its options sharing the space in
-          proportion to their labels, and the dots stacked above the label on
-          phones so they cost height rather than width.
+          Two rows of three on a phone, one row from `md` up. Six options —
+          five bands and "All" — do not fit a phone in any locale: English
+          alone needs ~450px of labels against ~330px of room. The row used
+          to scroll, which hid the last two options behind a swipe and, worse,
+          invited fixing the width by merging bands instead (see
+          `PRACTICE_LEVELS`). Wrapping shows all six at once for the price of
+          one line of height, and six divides evenly into two rows of three.
 
-          Five options fit a 360px phone in Japanese and overflow it in the
-          other three locales (en, the widest, needs ~450px against ~330px
-          available — "Intermediate" and "Introduction" are 12 characters
-          each). Those scroll, which is the trade for keeping Introduction a
-          band of its own rather than a heading-less appendix to Beginner.
-          Scrolling, not wrapping: wrapping turned the row into a two-line
-          block sitting over every card, and truncating instead — what the
-          shared `tabItemClass('segmented')` does — would cut both long
-          labels in the locale that needs them most. */}
+          The wide layout wraps too rather than squeezing: with `flex-wrap`,
+          a row that runs out of room takes a second line instead of shrinking
+          every option until the shortest one clips — "All" was the first to
+          lose its letters, which reads as a rendering fault rather than a
+          tight fit. In the phone grid, where the three columns are fixed, a
+          label longer than its column truncates instead of widening the
+          block. The dots stack above the label on phones and sit beside it
+          from `md` up. */}
       <div
         role="group"
         aria-label={filterLabel}
-        className="flex gap-1 overflow-x-auto rounded-lg bg-secondary p-1"
+        className="grid grid-cols-3 gap-1 rounded-lg bg-secondary p-1 md:flex md:flex-wrap"
       >
         {options.map((option) => {
           const isActive = option.level === selected;
           return (
             <Link
               key={option.label}
-              ref={isActive ? activeRef : undefined}
               href={option.level ? `${basePath}?${PRACTICE_LEVEL_PARAM}=${option.level}` : basePath}
               // The list is on this same page, so a filter change should not
               // throw the reader back to the top of it.
               scroll={false}
               aria-current={isActive ? 'true' : undefined}
-              className={`flex flex-auto shrink-0 flex-col items-center justify-center gap-1 rounded-md px-2 py-1.5 text-xs font-medium transition-colors sm:flex-row sm:gap-1.5 sm:text-sm ${
+              className={`flex min-w-0 flex-col items-center justify-center gap-1 rounded-md px-2 py-1.5 text-xs font-medium transition-colors md:flex-auto md:flex-row md:gap-1.5 md:text-sm ${
                 isActive
                   ? 'bg-card text-foreground shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               {option.level && <PracticeLevelDots level={option.level} />}
-              {option.label}
+              <span className="max-w-full truncate md:overflow-visible">{option.label}</span>
             </Link>
           );
         })}
