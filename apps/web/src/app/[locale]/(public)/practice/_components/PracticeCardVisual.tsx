@@ -27,6 +27,14 @@ const LONE_KNIGHT = '8/8/8/8/4N3/8/8/8 w - - 0 1';
  * square name and two empty answer slots, not a diagram. The bands therefore
  * draw the real stimulus: a board only where the module shows one.
  *
+ * The band has no fill of its own. The mahjong strip is laid on the deep
+ * green of a mahjong table because nearly every one of its examples is a hand
+ * of tiles, and the green says "this is the table". Here only five of the
+ * thirteen examples show a board, so a tinted strip behind the other eight
+ * was a grey slab framing two words of notation — it drew more attention than
+ * what it contained. The fixed height stays: it is what keeps the "View
+ * details" rows of two cards side by side in line with each other.
+ *
  * Nothing here carries text that needs translating — squares, notation, piece
  * glyphs and `??` read the same in every locale, which is why the band can be
  * built once for all four. It is `aria-hidden` for the same reason the
@@ -37,7 +45,7 @@ export function PracticeCardVisual({ menuType }: { menuType: PracticeMenuType })
   return (
     <div
       aria-hidden="true"
-      className="mt-4 flex h-24 flex-col items-center justify-center gap-1.5 overflow-hidden rounded-lg bg-muted px-3"
+      className="mt-4 flex h-24 flex-col items-center justify-center gap-1.5 overflow-hidden px-3"
     >
       <VisualBody menuType={menuType} />
     </div>
@@ -239,7 +247,7 @@ function SquareTile({
     tone === 'blank'
       ? 'border border-dashed border-muted-foreground/50 text-muted-foreground'
       : tone === 'plain'
-        ? 'bg-card text-foreground'
+        ? 'bg-muted text-foreground'
         : computeSquareColor(label as Square) === 'light'
           ? `${THEME.light} ${THEME.lightCoordinates}`
           : `${THEME.dark} ${THEME.darkCoordinates}`;
