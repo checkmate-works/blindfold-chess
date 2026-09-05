@@ -5,6 +5,7 @@ import { computeSquareColor } from '@blindfold-chess/features/common';
 import type { Square } from '@blindfold-chess/types';
 import { FaArrowRight } from 'react-icons/fa';
 
+import type { BoardAnnotations } from '@/lib/board-annotations/types';
 import type { PracticeMenuType } from '@/lib/db/practice-menu-types';
 import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/games/board-themes';
 import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
@@ -14,7 +15,19 @@ const THEME = getBoardThemeColors(DEFAULT_BOARD_THEME);
 /** Placement-only positions the bands draw. Complete FENs; `BoardThumbnail` parses the placement. */
 const EMPTY_BOARD = '8/8/8/8/8/8/8/8 w - - 0 1';
 const SAMPLE_POSITION = 'r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 1';
-const LONE_KNIGHT = '8/8/8/8/4N3/8/8/8 w - - 0 1';
+
+/**
+ * The two lines a diagonal-quiz question asks for, crossing at e4. Green is
+ * the a1-h8 direction, blue the h1-a8 one — the split the module's own labels
+ * make (`diagonalLabel` / `antiDiagonalLabel`).
+ */
+const E4_DIAGONALS: BoardAnnotations = {
+  arrows: [
+    { from: 'b1', to: 'h7', color: 'green' },
+    { from: 'a8', to: 'h1', color: 'blue' },
+  ],
+  circles: [],
+};
 
 /**
  * The band under a practice card's title: what the module puts in front of
@@ -60,9 +73,10 @@ function VisualBody({ menuType }: { menuType: PracticeMenuType }): ReactNode {
       return (
         <>
           <Row>
-            {/* The one module whose square must NOT be drawn in its own
-                colour — that is the answer. */}
-            <SquareTile label="e4" tone="plain" />
+            {/* The one square that must NOT be drawn in its own colour — that
+                is the answer. With no colour to show it is not a tile at all,
+                just the name, the way Algebraic Notation shows its move. */}
+            <Notation>e4</Notation>
           </Row>
           <Row>
             <Swatch tone="light" />
@@ -98,15 +112,24 @@ function VisualBody({ menuType }: { menuType: PracticeMenuType }): ReactNode {
         </>
       );
 
-    // Two lines cross every square, so the answer is two blanks, not one.
+    // The question is a bare square name, but the thing being asked about is
+    // what a bishop on it sees, and that is a picture. Two lines cross every
+    // square, so the answer is two blanks, not one.
     case 'diagonal_quiz':
       return (
         <>
           <Row>
-            <SquareTile label="e4" />
+            {/* The bishop is beside the board, not on it: at the size a board
+                fits here a piece is six pixels across and disappears under
+                the arrows crossing it. */}
+            <Piece type="b" />
+            <BoardThumbnail
+              fen={EMPTY_BOARD}
+              flipped={false}
+              annotations={E4_DIAGONALS}
+              className="size-16"
+            />
           </Row>
-          {/* Two lines cross a square, so two answers are wanted — spaced
-              apart so the pair does not read as one long blank. */}
           <span className="flex items-center gap-3">
             <Blank>??–??</Blank>
             <Blank>??–??</Blank>
@@ -171,14 +194,20 @@ function VisualBody({ menuType }: { menuType: PracticeMenuType }): ReactNode {
         </Row>
       );
 
-    // One knight, every square once — hence the count as the answer.
+    // One knight, every square once — hence the count as the answer. The
+    // knight is drawn on its own rather than on a board: at the size a board
+    // fits here its pieces are a few pixels across, and a lone knight on one
+    // read as an empty board.
     case 'knight_tour':
       return (
-        <Row>
-          <BoardThumbnail fen={LONE_KNIGHT} flipped={false} className="size-20" />
-          <Arrow />
-          <span className="font-mono text-lg font-bold text-foreground">64</span>
-        </Row>
+        <>
+          <Row>
+            <Piece type="n" size={44} />
+          </Row>
+          <Row>
+            <span className="font-mono text-sm font-bold text-foreground">64</span>
+          </Row>
+        </>
       );
 
     case 'algebraic_notation':
@@ -236,21 +265,13 @@ function Row({ children }: { children: ReactNode }) {
  * light/dark information the board would. `blank` is for a square the reader
  * is being asked for — it has no colour yet.
  */
-function SquareTile({
-  label,
-  tone = 'auto',
-}: {
-  label: string;
-  tone?: 'auto' | 'plain' | 'blank';
-}) {
+function SquareTile({ label, tone = 'auto' }: { label: string; tone?: 'auto' | 'blank' }) {
   const colorClasses =
     tone === 'blank'
       ? 'border border-dashed border-muted-foreground/50 text-muted-foreground'
-      : tone === 'plain'
-        ? 'bg-muted text-foreground'
-        : computeSquareColor(label as Square) === 'light'
-          ? `${THEME.light} ${THEME.lightCoordinates}`
-          : `${THEME.dark} ${THEME.darkCoordinates}`;
+      : computeSquareColor(label as Square) === 'light'
+        ? `${THEME.light} ${THEME.lightCoordinates}`
+        : `${THEME.dark} ${THEME.darkCoordinates}`;
 
   return (
     <span
@@ -283,8 +304,9 @@ function Notation({ children, className = '' }: { children: ReactNode; className
   );
 }
 
-function Piece({ type }: { type: 'n' }) {
-  return <ChessPiece type={type} color="w" size={22} />;
+/** A piece glyph. `size` defaults to what fits inline beside a square tile. */
+function Piece({ type, size = 22 }: { type: 'n' | 'b'; size?: number }) {
+  return <ChessPiece type={type} color="w" size={size} />;
 }
 
 function Arrow() {
