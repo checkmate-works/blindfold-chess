@@ -2,39 +2,29 @@
 
 import { createPracticeResultClient } from '@/app/[locale]/(public)/practice/_lib/createPracticeResultClient';
 
+import { parseFenResultData } from './fen-result-data';
+
 export const ResultClient = createPracticeResultClient({
   moduleSlug: 'fen',
   i18nKey: 'fen',
   titleKey: 'pageTitle',
   resolveScoreTotal: (sp) => {
-    const dataParam = sp.get('data');
-    if (!dataParam) return { score: 0, total: 0 };
-    try {
-      const parsed = JSON.parse(decodeURIComponent(dataParam));
-      return { score: parsed.score ?? 0, total: parsed.total ?? 0 };
-    } catch {
-      return { score: 0, total: 0 };
-    }
+    const data = parseFenResultData(sp.get('data'));
+    return { score: data?.score ?? 0, total: data?.total ?? 0 };
   },
   buildTryAgainUrl: (ctx) => `/${ctx.locale}/practice/fen`,
   buildSettingsUrl: (ctx) => `/${ctx.locale}/practice/fen`,
   buildAverageTimeText: () => undefined,
   showSignUpBanner: false,
   buildScoreStats: (ctx) => {
-    const dataParam = ctx.searchParams.get('data');
-    if (!dataParam) return { correct: 0, incorrect: 0, total: 0 };
-    try {
-      const parsed = JSON.parse(decodeURIComponent(dataParam));
-      return (
-        parsed.detailedStats ?? {
-          correct: ctx.score,
-          incorrect: ctx.total - ctx.score,
-          total: ctx.total,
-        }
-      );
-    } catch {
-      return { correct: ctx.score, incorrect: ctx.total - ctx.score, total: ctx.total };
-    }
+    const data = parseFenResultData(ctx.searchParams.get('data'));
+    return (
+      data?.detailedStats ?? {
+        correct: ctx.score,
+        incorrect: ctx.total - ctx.score,
+        total: ctx.total,
+      }
+    );
   },
   labelOverrides: (ctx) => ({
     score: ctx.searchParams.get('scoreText') || ctx.tPractice('score'),
@@ -53,16 +43,7 @@ export const ResultClient = createPracticeResultClient({
     averageTime: undefined,
   }),
   extraCompleteProps: (ctx, { adBanner }) => {
-    const dataParam = ctx.searchParams.get('data');
-    let results: unknown[] = [];
-    if (dataParam) {
-      try {
-        const parsed = JSON.parse(decodeURIComponent(dataParam));
-        results = parsed.results ?? [];
-      } catch {
-        // ignore
-      }
-    }
+    const results = parseFenResultData(ctx.searchParams.get('data'))?.results ?? [];
     return {
       problemResults: results,
       beforeRelatedContent: adBanner,
