@@ -22,6 +22,15 @@ type Props = {
   /** Practice route, locale-prefixed by `Link`. */
   href: string;
   /**
+   * The difficulty band the practice sits in ("Beginner"), shown as a small
+   * line above the title. The list used to say this with a heading over
+   * each group of cards; now that a filter narrows one grid instead, the
+   * unfiltered grid has no other way to say which band a card is in — the
+   * rank badge is the rank the practice counts toward, which is a different
+   * thing, and half the cards have none.
+   */
+  levelLabel: string;
+  /**
    * The rank this practice contributes toward, or `null` when no rank
    * requires it — then no badge is drawn. A "no rank" label is not worth the
    * space: leaving the corner empty makes the cards that do carry a rank
@@ -46,25 +55,26 @@ type Props = {
  * of height for a label that said nothing the title did not — and the card
  * already lifted on hover, promising a click it then did not honour.
  */
-export function PracticeMenuCard({ icon, title, menuType, href, rank, locale }: Props) {
+export function PracticeMenuCard({ icon, title, menuType, href, levelLabel, rank, locale }: Props) {
   // Stable and unique per page: every module is listed exactly once.
   const titleId = `practice-card-${menuType}-title`;
 
   return (
     <div className="relative flex h-full flex-col rounded-2xl border border-border bg-card p-5 transition-all hover:-translate-y-1 hover:border-primary/30 focus-within:border-primary/30">
-      <div className="flex items-center justify-between gap-2">
-        <h3 id={titleId} className="text-base font-bold text-foreground">
-          <span aria-hidden="true" className="mr-1.5">
-            {icon}
-          </span>
-          {title}
-        </h3>
+      <div className="flex min-h-7 items-center justify-between gap-2">
+        <p className="text-xs font-medium text-muted-foreground">{levelLabel}</p>
         {rank && (
           <div className="relative z-10 shrink-0">
             <BeltRankBadge slug={rank.slug} label={rank.label} locale={locale} />
           </div>
         )}
       </div>
+      <h3 id={titleId} className="mt-1 text-base font-bold text-foreground">
+        <span aria-hidden="true" className="mr-1.5">
+          {icon}
+        </span>
+        {title}
+      </h3>
       <PracticeCardVisual menuType={menuType} />
       <Link
         href={href}

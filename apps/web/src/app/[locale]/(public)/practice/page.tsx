@@ -190,6 +190,14 @@ export default async function PracticePage({ params }: Props) {
     }))
   );
 
+  const levelLabels: Record<PracticeLevel, string> = {
+    beginner: t('practice.levelBeginner'),
+    intermediate: t('practice.levelIntermediate'),
+    advanced: t('practice.levelAdvanced'),
+    expert: t('practice.levelExpert'),
+    introduction: t('practice.levelIntroduction'),
+  };
+
   // Every card is rendered here, on the server, and the filter only decides
   // which of them to show — so the prerendered HTML carries the whole list.
   const items: PracticeLevelFilterItem[] = sections.flatMap((section) =>
@@ -203,6 +211,7 @@ export default async function PracticePage({ params }: Props) {
           <PracticeMenuCard
             locale={locale}
             href={`/practice/${practice.id}`}
+            levelLabel={levelLabels[section.level]}
             icon={practice.icon}
             title={practice.title}
             menuType={practice.menuType}
@@ -226,13 +235,7 @@ export default async function PracticePage({ params }: Props) {
         <PracticeLevelFilter
           items={items}
           basePath={`/${locale}/practice`}
-          levelLabels={{
-            beginner: t('practice.levelBeginner'),
-            intermediate: t('practice.levelIntermediate'),
-            advanced: t('practice.levelAdvanced'),
-            expert: t('practice.levelExpert'),
-            introduction: t('practice.levelIntroduction'),
-          }}
+          levelLabels={levelLabels}
           allLabel={t('practice.filter.all')}
           filterLabel={t('practice.filter.label')}
           listHeading={t('practice.modulesTitle')}
