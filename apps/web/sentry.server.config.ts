@@ -4,6 +4,7 @@
 import * as Sentry from '@sentry/nextjs';
 
 import type { QueryDeadlineDiagnostics } from '@/lib/db/query-deadline';
+import { tagDeploymentIdInPlace } from '@/lib/sentry/deployment-id';
 import { scrubRequestInPlace } from '@/lib/sentry/scrub';
 
 /**
@@ -69,6 +70,7 @@ Sentry.init({
     }
 
     scrubRequestInPlace(event);
+    tagDeploymentIdInPlace(event);
     return event;
   },
 });

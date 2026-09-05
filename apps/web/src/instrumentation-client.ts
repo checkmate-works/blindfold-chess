@@ -3,6 +3,8 @@
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 import * as Sentry from '@sentry/nextjs';
 
+import { tagDeploymentIdInPlace } from '@/lib/sentry/deployment-id';
+
 // ---------------------------------------------------------------------------
 // Suppress "Recoverable Error" dev overlay for known HMR-related SSR failures
 // ---------------------------------------------------------------------------
@@ -165,6 +167,12 @@ Sentry.init({
     ) {
       return null;
     }
+
+    // Tagged last so it lands only on events that survive the filters above.
+    // On the client this is the tag that separates deployment skew from a bug
+    // in current production: a tab that loaded its bundle before a deploy goes
+    // on reporting against the deployment it started with.
+    tagDeploymentIdInPlace(event);
 
     return event;
   },
