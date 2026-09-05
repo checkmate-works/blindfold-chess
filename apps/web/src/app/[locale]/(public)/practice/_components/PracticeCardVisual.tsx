@@ -38,6 +38,20 @@ const E4_DIAGONALS: BoardAnnotations = {
 };
 
 /**
+ * A route-planner answer: the knight's two-jump path from e2 to f5. Two
+ * jumps, not one — the module asks for the squares in between, and a
+ * one-jump route (e2→g3) has none, so it showed the answer as three blanks
+ * for a question that had no blank.
+ */
+const KNIGHT_ROUTE_E2_F5: BoardAnnotations = {
+  arrows: [
+    { from: 'e2', to: 'g3', color: 'green' },
+    { from: 'g3', to: 'f5', color: 'green' },
+  ],
+  circles: [],
+};
+
+/**
  * Three jumps of a knight's tour, up the middle of the board. They zigzag —
  * right, left, right — because at 64px three jumps in the same direction
  * (a1→b3→d4→f5) merged into one straight line and stopped looking like
@@ -178,23 +192,26 @@ function VisualBody({ menuType }: { menuType: PracticeMenuType }): ReactNode {
         </Row>
       );
 
-    // Answered as a path, so the answer row is a chain of squares rather than
-    // the single blank the other square-to-square modules take.
+    // From e2 to f5 with a knight: the path is the answer, and the square in
+    // the middle of it is the part the reader types.
     case 'route_planner':
       return (
         <>
           <Row>
             <Piece type="n" />
-            <SquareTile label="e2" />
-            <Arrow />
-            <SquareTile label="g3" />
+            <BoardThumbnail
+              fen={EMPTY_BOARD}
+              flipped={false}
+              annotations={KNIGHT_ROUTE_E2_F5}
+              className={BOARD_SIZE}
+            />
           </Row>
           <Row>
-            <SquareTile label="??" tone="blank" />
+            <SquareTile label="e2" />
             <Arrow />
-            <SquareTile label="??" tone="blank" />
+            <SquareTile label="g3" answer />
             <Arrow />
-            <SquareTile label="??" tone="blank" />
+            <SquareTile label="f5" />
           </Row>
         </>
       );
@@ -251,14 +268,24 @@ function VisualBody({ menuType }: { menuType: PracticeMenuType }): ReactNode {
         </>
       );
 
+    // The move is shown, and the notation is chosen from a few candidates —
+    // this way round, not "here is Nf3, which move is it": the module's
+    // questions each present a move and offer four spellings of it.
     case 'algebraic_notation':
       return (
-        <Row>
-          <Notation>Nf3</Notation>
-          <Arrow />
-          <Piece type="n" />
-          <SquareTile label="f3" />
-        </Row>
+        <>
+          <Row>
+            <Piece type="n" />
+            <SquareTile label="g1" />
+            <Arrow />
+            <SquareTile label="f3" />
+          </Row>
+          <Row>
+            <Chip>nf3</Chip>
+            <Chip answer>Nf3</Chip>
+            <Chip>Kf3</Chip>
+          </Row>
+        </>
       );
 
     // Read the string, put the board back together.
@@ -295,11 +322,27 @@ function Row({ children }: { children: ReactNode }) {
 }
 
 /**
+ * The one mark that says "this is what you answer". Every band shows a
+ * question already answered, and this ring is how the answer is told apart
+ * from the question around it — a swatch, a tile, a chip or a written move,
+ * whichever shape the module's answer takes.
+ */
+const ANSWER_RING = 'ring-2 ring-primary/60';
+
+/**
  * A square drawn in its own colour, so `e2 → e4` on a card carries the same
  * light/dark information the board would. `blank` is for a square the reader
  * is being asked for — it has no colour yet.
  */
-function SquareTile({ label, tone = 'auto' }: { label: string; tone?: 'auto' | 'blank' }) {
+function SquareTile({
+  label,
+  tone = 'auto',
+  answer = false,
+}: {
+  label: string;
+  tone?: 'auto' | 'blank';
+  answer?: boolean;
+}) {
   const colorClasses =
     tone === 'blank'
       ? 'border border-dashed border-muted-foreground/70 text-muted-foreground'
@@ -309,7 +352,7 @@ function SquareTile({ label, tone = 'auto' }: { label: string; tone?: 'auto' | '
 
   return (
     <span
-      className={`inline-flex h-7 min-w-7 items-center justify-center rounded px-1 font-mono text-xs font-bold ${colorClasses}`}
+      className={`inline-flex h-7 min-w-7 items-center justify-center rounded px-1 font-mono text-xs font-bold ${colorClasses} ${answer ? ANSWER_RING : ''}`}
     >
       {label}
     </span>
@@ -325,10 +368,24 @@ function Swatch({ tone }: { tone: 'light' | 'dark' }) {
   );
 }
 
-/** A yes/no answer, sized to sit level with a `SquareTile`. */
-function Chip({ children, className }: { children: ReactNode; className: string }) {
+/**
+ * One of a few options to choose from — a verdict, a spelling — sized to sit
+ * level with a `SquareTile`. Unstyled, it is written notation on the card's
+ * own background; `className` gives a verdict its colour.
+ */
+function Chip({
+  children,
+  className = 'bg-muted font-mono text-foreground',
+  answer = false,
+}: {
+  children: ReactNode;
+  className?: string;
+  answer?: boolean;
+}) {
   return (
-    <span className={`inline-flex h-7 items-center rounded px-2.5 text-xs font-bold ${className}`}>
+    <span
+      className={`inline-flex h-7 items-center rounded px-2.5 text-xs font-bold ${className} ${answer ? ANSWER_RING : ''}`}
+    >
       {children}
     </span>
   );
