@@ -974,12 +974,14 @@
       "algebraicKeyboardHint": "Escribe una letra (a–h) y luego un número (1–8). Retroceso: borrar."
     },
     "title": "Práctica",
+    "filter": {
+      "all": "Todos",
+      "label": "Filtrar prácticas por nivel"
+    },
     "modulesTitle": "Módulos de Práctica",
     "levelBeginner": "Principiante",
     "levelIntermediate": "Intermedio",
     "levelAdvanced": "Avanzado",
-    "levelExpert": "Experto",
-    "levelIntroduction": "Introducción",
     "viewLeaderboard": "Ver Clasificación",
     "viewDojo": "Ver Dojo",
     "related": "Relacionado",

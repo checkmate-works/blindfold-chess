@@ -2,31 +2,48 @@
  * Practice List (`/practice`)
  *
  * @description
- * Lists all available practice modules grouped by difficulty level (Beginner,
- * Intermediate, Advanced, Introduction). Each module links to its dedicated
- * practice page. Uses PRACTICE_EMOJIS as the single source of truth for icons.
+ * Lists every practice module as a card carrying the module's emoji, the rank
+ * it contributes toward, and an example band showing the question it asks
+ * (`PracticeCardVisual`). One grid, narrowed by difficulty through
+ * `PracticeLevelFilter` rather than split under per-level headings — the
+ * headings pushed the later bands (Expert, Introduction) below the fold on a
+ * phone, and a reader looking for "something at my level" had to scroll past
+ * the other four bands to find out what was in theirs.
  *
  * Leads with the Daily Puzzle card (the same one the signed-in dashboard
  * shows) so the page offers a concrete thing to do before the module grid.
  *
+ * Uses PRACTICE_EMOJIS as the single source of truth for icons.
+ *
  * @flow
  * - Daily Puzzle: today's puzzle, seeded on the UTC date
- * - Beginner: Square Colors, Coordinate Quiz, Legal Moves
+ * - Beginner: Algebraic Notation, FEN Reconstruction, Quadrant Anchors,
+ *   Square Colors, Coordinate Quiz, Legal Moves
  * - Intermediate: Diagonal Quiz, Board Symmetry, Route Planner
- * - Advanced: Position Memory, Puzzle
- * - Expert: Knight's Tour, Recall
- * - Introduction: Algebraic Notation, FEN Reconstruction, Quadrant Anchors
+ * - Advanced: Position Memory, Puzzle, Knight's Tour, Recall
+ *
+ * Three bands, not the five there used to be. "Introduction" (the three
+ * notation-reading modules) and "Expert" (Knight's Tour, Recall) were bands
+ * of their own, which put six options in the level filter — too many to fit
+ * a phone in any locale, so the filter always scrolled — and left
+ * Introduction, the place to start, at the bottom of the list. The
+ * notation modules are the foundation of Beginner and now open it; the two
+ * hardest modules are the top of Advanced.
  */
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
-import { ChallengeCard } from '@/app/_components';
 import { DailyPuzzleCard } from '@/app/_components/DailyPuzzleCard';
 import { SITE_URL } from '@/config';
 
+import type { PracticeMenuType } from '@/lib/db/practice-menu-types';
 import { JsonLd, generateItemListSchema } from '@/lib/seo/jsonld';
 
-import { BeltRankBadge } from '@/app/[locale]/(public)/dojo/_components/BeltRankBadge';
+import {
+  PracticeLevelFilter,
+  type PracticeLevelFilterItem,
+} from '@/app/[locale]/(public)/practice/_components/PracticeLevelFilter';
+import { PracticeMenuCard } from '@/app/[locale]/(public)/practice/_components/PracticeMenuCard';
 import { getRankSlugForMenuType } from '@/app/[locale]/(public)/practice/_lib/module-rank-mapping';
 import { PRACTICE_EMOJIS } from '@/app/[locale]/(public)/practice/_lib/practice-emojis';
 import { ListLink, ListLinkContainer, PageLayout, SectionTitle } from '@/app/[locale]/_components';
@@ -34,6 +51,17 @@ import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { Locale } from '@/app/[locale]/_lib/types';
+
+import type { PracticeLevel } from './_lib/practice-levels';
+
+type PracticeEntry = {
+  /** Route segment under `/practice`. */
+  id: string;
+  /** Keys the rank mapping and the card's example band. */
+  menuType: PracticeMenuType;
+  title: string;
+  icon: string;
+};
 
 type Props = {
   params: Promise<{
@@ -56,10 +84,28 @@ export default async function PracticePage({ params }: Props) {
   const t = await getTranslations({ locale });
   const tRanks = await getTranslations({ locale, namespace: 'ranks' });
 
-  const sections = [
+  const sections: { level: PracticeLevel; practices: PracticeEntry[] }[] = [
     {
-      title: t('practice.levelBeginner'),
+      level: 'beginner',
       practices: [
+        {
+          id: 'algebraic-notation',
+          menuType: 'algebraic_notation',
+          title: t('practice.algebraicNotation.title'),
+          icon: PRACTICE_EMOJIS.algebraic_notation,
+        },
+        {
+          id: 'fen',
+          menuType: 'fen',
+          title: t('practice.fen.title'),
+          icon: PRACTICE_EMOJIS.fen,
+        },
+        {
+          id: 'quadrants',
+          menuType: 'quadrant_anchors',
+          title: t('practice.quadrantAnchors.title'),
+          icon: PRACTICE_EMOJIS.quadrant_anchors,
+        },
         {
           id: 'square-colors',
           menuType: 'square_colors',
@@ -81,7 +127,7 @@ export default async function PracticePage({ params }: Props) {
       ],
     },
     {
-      title: t('practice.levelIntermediate'),
+      level: 'intermediate',
       practices: [
         {
           id: 'diagonal-quiz',
@@ -104,7 +150,7 @@ export default async function PracticePage({ params }: Props) {
       ],
     },
     {
-      title: t('practice.levelAdvanced'),
+      level: 'advanced',
       practices: [
         {
           id: 'position-memory',
@@ -118,11 +164,6 @@ export default async function PracticePage({ params }: Props) {
           title: t('practice.puzzle.title'),
           icon: PRACTICE_EMOJIS.puzzle,
         },
-      ],
-    },
-    {
-      title: t('practice.levelExpert'),
-      practices: [
         {
           id: 'knight-tour',
           menuType: 'knight_tour',
@@ -137,29 +178,6 @@ export default async function PracticePage({ params }: Props) {
         },
       ],
     },
-    {
-      title: t('practice.levelIntroduction'),
-      practices: [
-        {
-          id: 'algebraic-notation',
-          menuType: 'algebraic_notation',
-          title: t('practice.algebraicNotation.title'),
-          icon: PRACTICE_EMOJIS.algebraic_notation,
-        },
-        {
-          id: 'fen',
-          menuType: 'fen',
-          title: t('practice.fen.title'),
-          icon: PRACTICE_EMOJIS.fen,
-        },
-        {
-          id: 'quadrants',
-          menuType: 'quadrant_anchors',
-          title: t('practice.quadrantAnchors.title'),
-          icon: PRACTICE_EMOJIS.quadrant_anchors,
-        },
-      ],
-    },
   ];
 
   const itemListItems = sections.flatMap((section) =>
@@ -167,6 +185,37 @@ export default async function PracticePage({ params }: Props) {
       name: practice.title,
       url: `${SITE_URL}/${locale}/practice/${practice.id}`,
     }))
+  );
+
+  const levelLabels: Record<PracticeLevel, string> = {
+    beginner: t('practice.levelBeginner'),
+    intermediate: t('practice.levelIntermediate'),
+    advanced: t('practice.levelAdvanced'),
+  };
+
+  // Every card is rendered here, on the server, and the filter only decides
+  // which of them to show — so the prerendered HTML carries the whole list.
+  const items: PracticeLevelFilterItem[] = sections.flatMap((section) =>
+    section.practices.map((practice) => {
+      const rankSlug = getRankSlugForMenuType(practice.menuType);
+      const rankLabel = rankSlug ? tRanks(`rankNames.${rankSlug}`) : null;
+      return {
+        key: practice.id,
+        level: section.level,
+        card: (
+          <PracticeMenuCard
+            locale={locale}
+            href={`/practice/${practice.id}`}
+            level={section.level}
+            levelLabel={levelLabels[section.level]}
+            icon={practice.icon}
+            title={practice.title}
+            menuType={practice.menuType}
+            rank={rankSlug && rankLabel ? { slug: rankSlug, label: rankLabel } : null}
+          />
+        ),
+      };
+    })
   );
 
   return (
@@ -179,30 +228,14 @@ export default async function PracticePage({ params }: Props) {
       >
         <DailyPuzzleCard locale={locale} variant="compact" />
 
-        {sections.map((section) => (
-          <section key={section.title} className="space-y-4">
-            <SectionTitle>{section.title}</SectionTitle>
-            <div className="flex flex-wrap justify-center gap-3">
-              {section.practices.map((practice) => {
-                const rankSlug = getRankSlugForMenuType(practice.menuType);
-                const rankLabel = rankSlug ? tRanks(`rankNames.${rankSlug}`) : null;
-                return (
-                  <div key={practice.id} className="flex flex-col items-center gap-5">
-                    <ChallengeCard
-                      locale={locale}
-                      href={`/practice/${practice.id}`}
-                      label={practice.title}
-                      icon={practice.icon}
-                    />
-                    {rankSlug && rankLabel ? (
-                      <BeltRankBadge slug={rankSlug} label={rankLabel} locale={locale} />
-                    ) : null}
-                  </div>
-                );
-              })}
-            </div>
-          </section>
-        ))}
+        <PracticeLevelFilter
+          items={items}
+          basePath={`/${locale}/practice`}
+          levelLabels={levelLabels}
+          allLabel={t('practice.filter.all')}
+          filterLabel={t('practice.filter.label')}
+          listHeading={t('practice.modulesTitle')}
+        />
 
         <section className="space-y-4">
           <SectionTitle>{t('practice.related')}</SectionTitle>

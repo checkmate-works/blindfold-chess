@@ -2,9 +2,10 @@
  * Local-only dev seed.
  *
  * Populates auth users, profiles, challenge_results / challenge_best_scores,
- * belt ranks, and a published kata (型) with predictable test data so the
- * practice leaderboards and the /repertoires catalog have entries — and so rank
- * conditions can be exercised from a known rung — during local development.
+ * belt ranks, a published kata (型), and a featured puzzle pool with
+ * predictable test data so the practice leaderboards, the /repertoires
+ * catalog and the Daily Puzzle card have entries — and so rank conditions can
+ * be exercised from a known rung — during local development.
  * Refuses to run against any non-local DB or Supabase URL (host check) — the
  * master-data seed (`pnpm db:seed`) remains the prod path.
  *
@@ -21,7 +22,10 @@ import dotenv from 'dotenv';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 
+import { DAILY_PUZZLE_CACHE_TAG } from '../src/lib/cache-tags';
 import { reseedChallenges } from './dev-seed/challenges';
+import { purgeDataCacheTag } from './dev-seed/next-cache';
+import { reseedPuzzles } from './dev-seed/puzzles';
 import { grantRanksUpTo } from './dev-seed/ranks';
 import { reseedRepertoires } from './dev-seed/repertoires';
 import { SEED_PASSWORD, SEED_USERS, ensureSeedUser } from './dev-seed/users';
@@ -97,6 +101,18 @@ async function main() {
     console.log(`  ${u.username.padEnd(12)} → ${granted.join(', ')}`);
     console.log(`  ${''.padEnd(12)}   sign in as ${u.email} / ${SEED_PASSWORD}`);
   }
+
+  // Puzzles are attributed to the players rather than to the admin, for the
+  // same reason the kata is: the catalog is public UGC and shows its author.
+  const puzzleOwners = SEED_USERS.map((u, i) => (u.isAdmin ? null : userIds[i])).filter(
+    (id): id is string => id !== null
+  );
+  console.log('dev-seed: seeding puzzles (and the Daily Puzzle pool)...');
+  for (const puzzle of await reseedPuzzles(db, puzzleOwners)) {
+    console.log(`  ${puzzle.title.padEnd(24)} → ${puzzle.moveCount} move(s), featured`);
+  }
+  const purged = purgeDataCacheTag(DAILY_PUZZLE_CACHE_TAG);
+  console.log(`  dropped ${purged} cached "pool is empty" answer(s) — restart the dev server`);
 
   // Alice authors the kata: the catalog is public UGC, so it reads more like
   // production coming from a player account than from the admin one.

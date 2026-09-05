@@ -974,12 +974,14 @@
       "algebraicKeyboardHint": "Type a letter (a–h) then a number (1–8). Backspace: delete."
     },
     "title": "Practice",
+    "filter": {
+      "all": "All",
+      "label": "Filter practices by level"
+    },
     "modulesTitle": "Practice Modules",
     "levelBeginner": "Beginner",
     "levelIntermediate": "Intermediate",
     "levelAdvanced": "Advanced",
-    "levelExpert": "Expert",
-    "levelIntroduction": "Introduction",
     "viewLeaderboard": "View Leaderboard",
     "viewDojo": "View Dojo",
     "related": "Related",
