@@ -17,11 +17,18 @@
  *
  * @flow
  * - Daily Puzzle: today's puzzle, seeded on the UTC date
- * - Beginner: Square Colors, Coordinate Quiz, Legal Moves
+ * - Beginner: Algebraic Notation, FEN Reconstruction, Quadrant Anchors,
+ *   Square Colors, Coordinate Quiz, Legal Moves
  * - Intermediate: Diagonal Quiz, Board Symmetry, Route Planner
- * - Advanced: Position Memory, Puzzle
- * - Expert: Knight's Tour, Recall
- * - Introduction: Algebraic Notation, FEN Reconstruction, Quadrant Anchors
+ * - Advanced: Position Memory, Puzzle, Knight's Tour, Recall
+ *
+ * Three bands, not the five there used to be. "Introduction" (the three
+ * notation-reading modules) and "Expert" (Knight's Tour, Recall) were bands
+ * of their own, which put six options in the level filter — too many to fit
+ * a phone in any locale, so the filter always scrolled — and left
+ * Introduction, the place to start, at the bottom of the list. The
+ * notation modules are the foundation of Beginner and now open it; the two
+ * hardest modules are the top of Advanced.
  */
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
@@ -82,6 +89,24 @@ export default async function PracticePage({ params }: Props) {
       level: 'beginner',
       practices: [
         {
+          id: 'algebraic-notation',
+          menuType: 'algebraic_notation',
+          title: t('practice.algebraicNotation.title'),
+          icon: PRACTICE_EMOJIS.algebraic_notation,
+        },
+        {
+          id: 'fen',
+          menuType: 'fen',
+          title: t('practice.fen.title'),
+          icon: PRACTICE_EMOJIS.fen,
+        },
+        {
+          id: 'quadrants',
+          menuType: 'quadrant_anchors',
+          title: t('practice.quadrantAnchors.title'),
+          icon: PRACTICE_EMOJIS.quadrant_anchors,
+        },
+        {
           id: 'square-colors',
           menuType: 'square_colors',
           title: t('practice.squareColors.title'),
@@ -139,11 +164,6 @@ export default async function PracticePage({ params }: Props) {
           title: t('practice.puzzle.title'),
           icon: PRACTICE_EMOJIS.puzzle,
         },
-      ],
-    },
-    {
-      level: 'expert',
-      practices: [
         {
           id: 'knight-tour',
           menuType: 'knight_tour',
@@ -155,29 +175,6 @@ export default async function PracticePage({ params }: Props) {
           menuType: 'recall',
           title: t('recall.title'),
           icon: PRACTICE_EMOJIS.recall,
-        },
-      ],
-    },
-    {
-      level: 'introduction',
-      practices: [
-        {
-          id: 'algebraic-notation',
-          menuType: 'algebraic_notation',
-          title: t('practice.algebraicNotation.title'),
-          icon: PRACTICE_EMOJIS.algebraic_notation,
-        },
-        {
-          id: 'fen',
-          menuType: 'fen',
-          title: t('practice.fen.title'),
-          icon: PRACTICE_EMOJIS.fen,
-        },
-        {
-          id: 'quadrants',
-          menuType: 'quadrant_anchors',
-          title: t('practice.quadrantAnchors.title'),
-          icon: PRACTICE_EMOJIS.quadrant_anchors,
         },
       ],
     },
@@ -194,8 +191,6 @@ export default async function PracticePage({ params }: Props) {
     beginner: t('practice.levelBeginner'),
     intermediate: t('practice.levelIntermediate'),
     advanced: t('practice.levelAdvanced'),
-    expert: t('practice.levelExpert'),
-    introduction: t('practice.levelIntroduction'),
   };
 
   // Every card is rendered here, on the server, and the filter only decides

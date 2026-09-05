@@ -5,14 +5,8 @@ import { Fragment, type ReactNode, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 
-/** The difficulty bands the list can be narrowed to. */
-export const PRACTICE_LEVELS = [
-  'beginner',
-  'intermediate',
-  'advanced',
-  'expert',
-  'introduction',
-] as const;
+/** The difficulty bands the list can be narrowed to, easiest first. */
+export const PRACTICE_LEVELS = ['beginner', 'intermediate', 'advanced'] as const;
 
 export type PracticeLevel = (typeof PRACTICE_LEVELS)[number];
 
@@ -115,8 +109,10 @@ function FilterFromQuery(props: Props) {
   const level = useSearchParams().get(PRACTICE_LEVEL_PARAM);
 
   // An unknown level shows everything rather than 404ing or emptying the
-  // grid: if the bands are ever renamed, an old shared link should still
-  // land on a usable practice list.
+  // grid, so an old shared link still lands on a usable practice list. This
+  // is not hypothetical: `?level=introduction` and `?level=expert` were
+  // real values until those two bands were folded into Beginner and
+  // Advanced.
   const selected = level !== null && isPracticeLevel(level) ? level : undefined;
 
   return <FilteredList {...props} selected={selected} />;
