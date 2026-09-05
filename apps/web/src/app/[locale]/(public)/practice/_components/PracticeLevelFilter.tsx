@@ -5,17 +5,15 @@ import { Fragment, type ReactNode, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 
-/** The difficulty bands the list can be narrowed to, easiest first. */
-export const PRACTICE_LEVELS = ['beginner', 'intermediate', 'advanced'] as const;
-
-export type PracticeLevel = (typeof PRACTICE_LEVELS)[number];
+import { PracticeLevelDots } from '@/app/[locale]/(public)/practice/_components/PracticeLevelDots';
+import {
+  PRACTICE_LEVELS,
+  type PracticeLevel,
+  isPracticeLevel,
+} from '@/app/[locale]/(public)/practice/_lib/practice-levels';
 
 /** Query key carrying the selected level (`/practice?level=beginner`). */
 export const PRACTICE_LEVEL_PARAM = 'level';
-
-function isPracticeLevel(value: string): value is PracticeLevel {
-  return (PRACTICE_LEVELS as readonly string[]).includes(value);
-}
 
 /** One card, already rendered on the server, plus the level it belongs to. */
 export type PracticeLevelFilterItem = {
@@ -65,12 +63,15 @@ function FilteredList({
           hanging directly off the page's h1. */}
       <h2 className="sr-only">{listHeading}</h2>
 
-      {/* One row, always. Six options do not fit a narrow phone in any
-          locale — エキスパート alone is six characters, and the en/es/pt-BR
-          labels (Intermediate … Introduction) are longer still — and wrapping
-          them turned the filter into a two-line block sitting above every
-          card. Scrolling keeps it the single strip it reads as, the same
-          answer the preferences tabs reach for. */}
+      {/* One row that fills the width, its options sharing the space in
+          proportion to their labels. Four options fit a 390px phone in every
+          locale at the small text size (the widest, es "Todos Principiante
+          Intermedio Avanzado", measures ~300px against ~350px available);
+          the dots stack above the label on phones and sit beside it from
+          `sm` up, so they never push the row past the edge. Should a locale
+          or a device ever be narrower than that, the row scrolls rather
+          than wraps — wrapping turned it into a two-line block over every
+          card. */}
       <div
         role="group"
         aria-label={filterLabel}
@@ -86,10 +87,13 @@ function FilteredList({
               // throw the reader back to the top of it.
               scroll={false}
               aria-current={isActive ? 'true' : undefined}
-              className={`shrink-0 rounded-md px-2.5 py-1.5 text-sm font-medium transition-colors ${
-                isActive ? 'bg-card text-foreground' : 'text-muted-foreground hover:text-foreground'
+              className={`flex flex-auto shrink-0 flex-col items-center justify-center gap-1 rounded-md px-2 py-1.5 text-xs font-medium transition-colors sm:flex-row sm:gap-1.5 sm:text-sm ${
+                isActive
+                  ? 'bg-primary text-primary-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
+              {option.level && <PracticeLevelDots level={option.level} />}
               {option.label}
             </Link>
           );

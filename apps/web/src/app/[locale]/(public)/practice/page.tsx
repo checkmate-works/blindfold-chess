@@ -52,7 +52,7 @@ import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import type { PracticeLevel } from './_components/PracticeLevelFilter';
+import type { PracticeLevel } from './_lib/practice-levels';
 
 type PracticeEntry = {
   /** Route segment under `/practice`. */
@@ -206,6 +206,7 @@ export default async function PracticePage({ params }: Props) {
           <PracticeMenuCard
             locale={locale}
             href={`/practice/${practice.id}`}
+            level={section.level}
             levelLabel={levelLabels[section.level]}
             icon={practice.icon}
             title={practice.title}

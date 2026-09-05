@@ -6,6 +6,8 @@ import type { PracticeMenuType } from '@/lib/db/practice-menu-types';
 
 import { BeltRankBadge } from '@/app/[locale]/(public)/dojo/_components/BeltRankBadge';
 import { PracticeCardVisual } from '@/app/[locale]/(public)/practice/_components/PracticeCardVisual';
+import { PracticeLevelDots } from '@/app/[locale]/(public)/practice/_components/PracticeLevelDots';
+import type { PracticeLevel } from '@/app/[locale]/(public)/practice/_lib/practice-levels';
 
 type Props = {
   /** Emoji for the module, from `PRACTICE_EMOJIS`. Prefixes the title. */
@@ -22,13 +24,15 @@ type Props = {
   /** Practice route, locale-prefixed by `Link`. */
   href: string;
   /**
-   * The difficulty band the practice sits in ("Beginner"), shown as a small
-   * line above the title. The list used to say this with a heading over
-   * each group of cards; now that a filter narrows one grid instead, the
-   * unfiltered grid has no other way to say which band a card is in — the
-   * rank badge is the rank the practice counts toward, which is a different
-   * thing, and half the cards have none.
+   * The difficulty band the practice sits in, shown as a small line above
+   * the title: the band's dots (the same mark the level filter draws) and
+   * its name. The list used to say this with a heading over each group of
+   * cards; now that a filter narrows one grid instead, the unfiltered grid
+   * has no other way to say which band a card is in — the rank badge is the
+   * rank the practice counts toward, which is a different thing, and half
+   * the cards have none.
    */
+  level: PracticeLevel;
   levelLabel: string;
   /**
    * The rank this practice contributes toward, or `null` when no rank
@@ -55,14 +59,26 @@ type Props = {
  * of height for a label that said nothing the title did not — and the card
  * already lifted on hover, promising a click it then did not honour.
  */
-export function PracticeMenuCard({ icon, title, menuType, href, levelLabel, rank, locale }: Props) {
+export function PracticeMenuCard({
+  icon,
+  title,
+  menuType,
+  href,
+  level,
+  levelLabel,
+  rank,
+  locale,
+}: Props) {
   // Stable and unique per page: every module is listed exactly once.
   const titleId = `practice-card-${menuType}-title`;
 
   return (
     <div className="relative flex h-full flex-col rounded-2xl border border-border bg-card p-5 transition-all hover:-translate-y-1 hover:border-primary/30 focus-within:border-primary/30">
       <div className="flex min-h-7 items-center justify-between gap-2">
-        <p className="text-xs font-medium text-muted-foreground">{levelLabel}</p>
+        <p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+          <PracticeLevelDots level={level} />
+          {levelLabel}
+        </p>
         {rank && (
           <div className="relative z-10 shrink-0">
             <BeltRankBadge slug={rank.slug} label={rank.label} locale={locale} />
