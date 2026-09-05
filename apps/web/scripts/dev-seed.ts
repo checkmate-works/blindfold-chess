@@ -22,7 +22,9 @@ import dotenv from 'dotenv';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 
+import { DAILY_PUZZLE_CACHE_TAG } from '../src/lib/cache-tags';
 import { reseedChallenges } from './dev-seed/challenges';
+import { purgeDataCacheTag } from './dev-seed/next-cache';
 import { reseedPuzzles } from './dev-seed/puzzles';
 import { grantRanksUpTo } from './dev-seed/ranks';
 import { reseedRepertoires } from './dev-seed/repertoires';
@@ -109,6 +111,8 @@ async function main() {
   for (const puzzle of await reseedPuzzles(db, puzzleOwners)) {
     console.log(`  ${puzzle.title.padEnd(24)} → ${puzzle.moveCount} move(s), featured`);
   }
+  const purged = purgeDataCacheTag(DAILY_PUZZLE_CACHE_TAG);
+  console.log(`  dropped ${purged} cached "pool is empty" answer(s) — restart the dev server`);
 
   // Alice authors the kata: the catalog is public UGC, so it reads more like
   // production coming from a player account than from the admin one.
