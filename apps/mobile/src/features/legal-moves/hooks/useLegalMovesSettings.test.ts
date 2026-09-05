@@ -1,18 +1,8 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { clearMockAsyncStorage } from "../../../../vitest.setup";
+import { describe, expect, it } from "vitest";
 import { useLegalMovesSettings } from "./useLegalMovesSettings";
 
 describe("useLegalMovesSettings", () => {
-  beforeEach(() => {
-    clearMockAsyncStorage();
-    vi.clearAllMocks();
-  });
-
-  afterEach(() => {
-    clearMockAsyncStorage();
-  });
-
   it("returns default settings initially", async () => {
     const { result } = renderHook(() => useLegalMovesSettings());
 

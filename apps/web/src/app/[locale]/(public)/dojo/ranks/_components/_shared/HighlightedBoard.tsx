@@ -15,7 +15,7 @@ import { useBoardTheme } from '../useBoardTheme';
  * Coordinate of a single square on the SVG overlay (0..100 viewBox space).
  * Each square is 12.5 x 12.5 in this coordinate system.
  */
-type SquareCoord = { x: number; y: number };
+export type SquareCoord = { x: number; y: number };
 
 /**
  * Endpoints of an arrow line on the SVG overlay (0..100 viewBox space).

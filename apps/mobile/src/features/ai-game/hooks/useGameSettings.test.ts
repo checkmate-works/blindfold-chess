@@ -1,19 +1,9 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { clearMockAsyncStorage } from "../../../../vitest.setup";
+import { describe, expect, it } from "vitest";
 import { useGameSettings } from "./useGameSettings";
 
 describe("useGameSettings", () => {
-  beforeEach(() => {
-    clearMockAsyncStorage();
-    vi.clearAllMocks();
-  });
-
-  afterEach(() => {
-    clearMockAsyncStorage();
-  });
-
   it("returns isLoaded=false initially, then isLoaded=true after loading", async () => {
     const { result } = renderHook(() => useGameSettings());
 

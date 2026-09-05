@@ -8,6 +8,7 @@ import {
   squareToFileIndex,
   squareToRankIndex,
 } from "../common";
+import { calculateAnswerAccuracy } from "../common/practice-result";
 import { allSquares } from "./squares";
 import type { BoardOrientation, CoordinateQuestion } from "./types";
 
@@ -96,7 +97,7 @@ export function calculateScore(
   timeTaken: number,
   timeLimit: number,
 ): { points: number; accuracy: number; averageTime: number } {
-  const accuracy = total > 0 ? (correct / total) * 100 : 0;
+  const accuracy = calculateAnswerAccuracy(correct, total);
   const averageTime = correct > 0 ? timeTaken / correct : 0;
 
   // Base points for correct answers
