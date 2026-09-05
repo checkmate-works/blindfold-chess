@@ -14,12 +14,15 @@ import {
  * its name, and a card's band can be matched to the filter at a glance. The
  * dots also say, as a word cannot, that the bands are a scale.
  *
- * A band that is not on that scale — Introduction — draws nothing. A row of
- * unlit dots would have put it at position zero of a scale it is listed
- * after, which is the one reading to avoid. The dots still take their space
- * (`invisible`, not unrendered) so an Introduction label lines up with the
- * labels of the bands that do carry dots, in the filter row and across the
- * card grid.
+ * A band that is not on that scale — Introduction — draws the same four
+ * dots with none of them lit. It first drew nothing at all, on the argument
+ * that an empty row of dots claims position zero of a scale Introduction is
+ * listed *after*. That argument is right about the scale and wrong about
+ * what a reader sees: one band in the row missing a mark every other band
+ * has reads as something forgotten, not as something deliberately off the
+ * scale. None-of-four says the same thing without the gap — this is where
+ * you are before the first level — and it is the reading Introduction wants
+ * anyway.
  *
  * Drawn in `currentColor`, so the dots take the colour of whatever text they
  * sit beside: the foreground inside the filter's selected option, muted in a
@@ -29,10 +32,7 @@ export function PracticeLevelDots({ level }: { level: PracticeLevel }) {
   const rung = difficultyRung(level);
 
   return (
-    <span
-      aria-hidden="true"
-      className={`inline-flex shrink-0 items-center gap-0.5 ${rung < 0 ? 'invisible' : ''}`}
-    >
+    <span aria-hidden="true" className="inline-flex shrink-0 items-center gap-0.5">
       {DIFFICULTY_RUNGS.map((slot, i) => (
         <span
           key={slot}
