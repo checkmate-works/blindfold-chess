@@ -250,6 +250,14 @@ export default async function PracticePage({ params }: Props) {
           listHeading={t('practice.modulesTitle')}
         />
 
+        {/* Above the "Related" heading, not under it. Everything below that
+            heading is navigation off this page — the dojo and the
+            leaderboard — so the module grid is where the page's own content
+            ends, and that is where the ad belongs. Under the links it was
+            the last thing on the page, past the point a reader has already
+            decided to leave. */}
+        <AdSlot slot="content-bottom" />
+
         <section className="space-y-4">
           <SectionTitle>{t('practice.related')}</SectionTitle>
           <ListLinkContainer>
@@ -262,8 +270,6 @@ export default async function PracticePage({ params }: Props) {
             />
           </ListLinkContainer>
         </section>
-
-        <AdSlot slot="content-bottom" />
       </PageLayout>
     </>
   );
