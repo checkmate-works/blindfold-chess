@@ -25,6 +25,27 @@ const EMPTY_BOARD = '8/8/8/8/8/8/8/8 w - - 0 1';
 const SAMPLE_POSITION = 'r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 1';
 
 /**
+ * `SAMPLE_POSITION` part-way through being rebuilt from memory: kings, pawns
+ * and one bishop placed, the rest still to come. An empty board on the right
+ * of the Position Memory card said "then you get an empty board", which is
+ * true but is not the task; a half-rebuilt one says "then you put it back".
+ */
+const PARTIALLY_REBUILT_POSITION = '4k3/pppp1ppp/8/4p3/2B1P3/8/PPPP1PPP/4K3 w - - 0 1';
+
+/**
+ * The position before Scholar's Mate — 1.e4 e5 2.Bc4 Nc6 3.Qh5 Nf6?? — the
+ * one puzzle position a reader is likeliest to know the answer to on sight.
+ * The card draws the answer on it (`SCHOLARS_MATE_ANSWER`, Qxf7#).
+ */
+const SCHOLARS_MATE_POSITION =
+  'r1bqkb1r/pppp1ppp/2n2n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 4 4';
+
+const SCHOLARS_MATE_ANSWER: BoardAnnotations = {
+  arrows: [{ from: 'h5', to: 'f7', color: 'green' }],
+  circles: [],
+};
+
+/**
  * The two lines a diagonal-quiz question asks for, crossing at e4. Green is
  * the a1-h8 direction, blue the h1-a8 one — the split the module's own labels
  * make (`diagonalLabel` / `antiDiagonalLabel`).
@@ -88,20 +109,25 @@ const KNIGHT_TOUR_OPENING: BoardAnnotations = {
  * what it contained. The fixed height stays: it is what keeps two cards side
  * by side the same height, whatever their bands hold.
  *
- * Every band is written in the same vocabulary. A named square is a
- * `SquareTile` in the square's own colour; a square the reader is asked for
- * is the same tile drawn blank, so the answer row is recognisably "the same
- * kind of thing, not filled in yet" rather than a stray `??` in small type. A
- * board is always the same size, and where the question and its answer fit
- * on one line they sit on one line, question on the left — the layout
- * `e2 → e4` reads as. Bands that need two lines put the question above the
- * answer.
+ * Every band is one question already answered, with the answer ringed
+ * (`ANSWER_RING`). The bands used to leave the answer blank — a dashed `??`
+ * tile — on the grounds that a blank says "you answer this". It does, but a
+ * reader who does not yet know the module cannot tell from `e4 → ??` what
+ * kind of thing goes in the blank, and that is the one thing the card is
+ * there to say. A worked example says it: `e4 → d4` under a board with both
+ * squares marked is the symmetry quiz, in one glance, in any language.
  *
- * Nothing here carries text that needs translating — squares, notation, piece
- * glyphs and `??` read the same in every locale, which is why the band can be
+ * Every band is written in the same vocabulary. A named square is a
+ * `SquareTile` in the square's own colour; a board is always the same size;
+ * where the question and its answer fit on one line they sit on one line,
+ * question on the left — the layout `e2 → e4` reads as. Bands that need two
+ * lines put the question above the answer.
+ *
+ * Nothing here carries text that needs translating — squares, notation and
+ * piece glyphs read the same in every locale, which is why the band can be
  * built once for all four. It is `aria-hidden` for the same reason the
  * mahjong strip is: the title and the module's own page already say what the
- * practice is, and spelling out "e4, question mark" adds nothing.
+ * practice is, and reading out "e4, arrow, d4" adds nothing.
  */
 export function PracticeCardVisual({ menuType }: { menuType: PracticeMenuType }) {
   return (
@@ -126,20 +152,23 @@ function VisualBody({ menuType }: { menuType: PracticeMenuType }): ReactNode {
               just the name, the way Algebraic Notation shows its move. */}
           <Notation>e4</Notation>
           <Arrow />
-          <Swatch tone="light" />
+          <Swatch tone="light" answer />
           <Swatch tone="dark" />
         </Row>
       );
 
-    // The one module that puts the name on the board and asks for the square.
+    // The one module whose answer is a square on the board rather than a
+    // name: the name is asked, and the square is tapped. The circle is the
+    // tap. (The module itself prints the name over the board; here the name
+    // sits beside it, because printed over a 64px board it covered the very
+    // square being pointed at.)
     case 'coordinate_quiz':
       return (
-        <div className="relative">
-          <BoardThumbnail fen={EMPTY_BOARD} flipped={false} className={BOARD_SIZE} />
-          <span className="absolute inset-0 flex items-center justify-center font-mono text-lg font-black text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.7)]">
-            e4
-          </span>
-        </div>
+        <Row>
+          <Notation>e4</Notation>
+          <Arrow />
+          <MarkedBoard marks={[{ square: 'e4', role: 'answer' }]} />
+        </Row>
       );
 
     case 'legal_moves':
@@ -152,15 +181,19 @@ function VisualBody({ menuType }: { menuType: PracticeMenuType }): ReactNode {
             <SquareTile label="e4" />
           </Row>
           <Row>
+            {/* A knight cannot go e2→e4, so the verdict is ×. */}
             <Chip className="bg-success/10 text-success">○</Chip>
-            <Chip className="bg-destructive/10 text-destructive">×</Chip>
+            <Chip className="bg-destructive/10 text-destructive" answer>
+              ×
+            </Chip>
           </Row>
         </>
       );
 
     // The question is a bare square name, but the thing being asked about is
     // what a bishop on it sees, and that is a picture. Two lines cross every
-    // square, so the answer is two blanks, not one.
+    // square, so the answer is two pairs of end squares, named under the
+    // lines that join them.
     case 'diagonal_quiz':
       return (
         <>
@@ -177,19 +210,31 @@ function VisualBody({ menuType }: { menuType: PracticeMenuType }): ReactNode {
             />
           </Row>
           <span className="flex items-center gap-3">
-            <DiagonalBlank />
-            <DiagonalBlank />
+            <Diagonal from="b1" to="h7" />
+            <Diagonal from="a8" to="h1" />
           </span>
         </>
       );
 
+    // "The left-right mirror of e4?" — d4. Shown on a board as well as in
+    // tiles, because `e4 ↔ d4` alone does not say which way the mirror runs.
     case 'board_symmetry':
       return (
-        <Row>
-          <SquareTile label="e4" />
-          <span className="text-base text-muted-foreground">↔</span>
-          <SquareTile label="??" tone="blank" />
-        </Row>
+        <>
+          <Row>
+            <MarkedBoard
+              marks={[
+                { square: 'e4', role: 'question' },
+                { square: 'd4', role: 'answer' },
+              ]}
+            />
+          </Row>
+          <Row>
+            <SquareTile label="e4" />
+            <span className="text-base text-muted-foreground">↔</span>
+            <SquareTile label="d4" answer />
+          </Row>
+        </>
       );
 
     // From e2 to f5 with a knight: the path is the answer, and the square in
@@ -225,22 +270,29 @@ function VisualBody({ menuType }: { menuType: PracticeMenuType }): ReactNode {
         </Row>
       );
 
-    // Look at a position, then rebuild it on an empty board.
+    // Look at a position, then rebuild it from memory.
     case 'position_memory':
       return (
         <Row>
           <BoardThumbnail fen={SAMPLE_POSITION} flipped={false} className={BOARD_SIZE} />
           <Arrow />
-          <BoardThumbnail fen={EMPTY_BOARD} flipped={false} className={BOARD_SIZE} />
+          <BoardThumbnail fen={PARTIALLY_REBUILT_POSITION} flipped={false} className={BOARD_SIZE} />
         </Row>
       );
 
+    // Find the best move. The answer is a move, written as one — a square
+    // tile here would have said "name a square".
     case 'puzzle':
       return (
         <Row>
-          <BoardThumbnail fen={SAMPLE_POSITION} flipped={false} className={BOARD_SIZE} />
+          <BoardThumbnail
+            fen={SCHOLARS_MATE_POSITION}
+            flipped={false}
+            annotations={SCHOLARS_MATE_ANSWER}
+            className={BOARD_SIZE}
+          />
           <Arrow />
-          <SquareTile label="??" tone="blank" />
+          <Chip answer>Qxf7#</Chip>
         </Row>
       );
 
@@ -298,12 +350,13 @@ function VisualBody({ menuType }: { menuType: PracticeMenuType }): ReactNode {
         </Row>
       );
 
-    // A game replayed a move at a time, so what is shown is the moves so far.
+    // A game replayed a move at a time from memory: the moves so far, and
+    // the next one recalled.
     case 'recall':
       return (
         <Row>
           <Notation>1.e4 e5 2.Nf3</Notation>
-          <SquareTile label="??" tone="blank" />
+          <Chip answer>Nc6</Chip>
         </Row>
       );
 
@@ -331,24 +384,13 @@ const ANSWER_RING = 'ring-2 ring-primary/60';
 
 /**
  * A square drawn in its own colour, so `e2 → e4` on a card carries the same
- * light/dark information the board would. `blank` is for a square the reader
- * is being asked for — it has no colour yet.
+ * light/dark information the board would.
  */
-function SquareTile({
-  label,
-  tone = 'auto',
-  answer = false,
-}: {
-  label: string;
-  tone?: 'auto' | 'blank';
-  answer?: boolean;
-}) {
+function SquareTile({ label, answer = false }: { label: Square; answer?: boolean }) {
   const colorClasses =
-    tone === 'blank'
-      ? 'border border-dashed border-muted-foreground/70 text-muted-foreground'
-      : computeSquareColor(label as Square) === 'light'
-        ? `${THEME.light} ${THEME.lightCoordinates}`
-        : `${THEME.dark} ${THEME.darkCoordinates}`;
+    computeSquareColor(label) === 'light'
+      ? `${THEME.light} ${THEME.lightCoordinates}`
+      : `${THEME.dark} ${THEME.darkCoordinates}`;
 
   return (
     <span
@@ -359,11 +401,49 @@ function SquareTile({
   );
 }
 
+/**
+ * An empty board with squares picked out by a dot: the answer's in the
+ * answer colour, a question's in a neutral one. A dot, not a
+ * `BoardAnnotations` circle — the shared overlay draws circles at a stroke
+ * width chosen for a full-size board, and at 64px that ring is a hairline.
+ * Positions are fractions of the board, so the dots follow whatever size
+ * `BOARD_SIZE` is. White-at-the-bottom orientation, like every board here.
+ */
+function MarkedBoard({ marks }: { marks: { square: Square; role: 'question' | 'answer' }[] }) {
+  return (
+    <span className="relative inline-block">
+      <BoardThumbnail fen={EMPTY_BOARD} flipped={false} className={BOARD_SIZE} />
+      {marks.map(({ square, role }) => {
+        const file = square.charCodeAt(0) - 'a'.charCodeAt(0);
+        const rank = Number(square[1]);
+        // The dot fills the middle 60% of its square: 20% in from each edge.
+        const left = (file + 0.2) / 8;
+        const top = (8 - rank + 0.2) / 8;
+        const size = 0.6 / 8;
+        return (
+          <span
+            key={square}
+            className={`absolute rounded-full ${role === 'answer' ? 'bg-primary' : 'bg-foreground/60'}`}
+            style={{
+              left: `${left * 100}%`,
+              top: `${top * 100}%`,
+              width: `${size * 100}%`,
+              height: `${size * 100}%`,
+            }}
+          />
+        );
+      })}
+    </span>
+  );
+}
+
 /** A square-sized block of one board colour: the shape of a "light or dark" answer. */
-function Swatch({ tone }: { tone: 'light' | 'dark' }) {
+function Swatch({ tone, answer = false }: { tone: 'light' | 'dark'; answer?: boolean }) {
   return (
     <span
-      className={`size-7 rounded ${tone === 'light' ? THEME.light : THEME.dark} ring-1 ring-border`}
+      className={`size-7 rounded ${tone === 'light' ? THEME.light : THEME.dark} ${
+        answer ? ANSWER_RING : 'ring-1 ring-border'
+      }`}
     />
   );
 }
@@ -391,14 +471,17 @@ function Chip({
   );
 }
 
-/** The blank for one diagonal: its two end squares, both still to be named. */
-function DiagonalBlank() {
+/**
+ * One diagonal named by its two end squares, ringed as a pair: the answer
+ * is the line, not either square.
+ */
+function Diagonal({ from, to }: { from: Square; to: Square }) {
   return (
-    <Row>
-      <SquareTile label="??" tone="blank" />
+    <span className={`inline-flex items-center gap-1 rounded-md p-0.5 ${ANSWER_RING}`}>
+      <SquareTile label={from} />
       <span className="text-xs text-muted-foreground">–</span>
-      <SquareTile label="??" tone="blank" />
-    </Row>
+      <SquareTile label={to} />
+    </span>
   );
 }
 
