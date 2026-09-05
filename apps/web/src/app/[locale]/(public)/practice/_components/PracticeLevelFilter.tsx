@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, type ReactNode, Suspense } from 'react';
+import { Fragment, type ReactNode, Suspense, useEffect, useRef } from 'react';
 
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -56,6 +56,17 @@ function FilteredList({
     ...PRACTICE_LEVELS.map((level) => ({ level, label: levelLabels[level] })),
   ];
 
+  // Where the row scrolls — every locale but Japanese, on a phone — the
+  // option a reader just picked can sit past the right edge, so the filter
+  // shows no selection at all on the page it just loaded. Bring it into the
+  // row. `block: 'nearest'` keeps this horizontal: the row is at the top of
+  // the page on arrival, and scrolling the window to it would push the Daily
+  // Puzzle above the fold for a reader who only changed a filter.
+  const activeRef = useRef<HTMLAnchorElement>(null);
+  useEffect(() => {
+    activeRef.current?.scrollIntoView({ block: 'nearest', inline: 'center' });
+  }, [selected]);
+
   return (
     <div className="space-y-6">
       {/* The per-level headings this filter replaced were the page's only h2.
@@ -92,6 +103,7 @@ function FilteredList({
           return (
             <Link
               key={option.label}
+              ref={isActive ? activeRef : undefined}
               href={option.level ? `${basePath}?${PRACTICE_LEVEL_PARAM}=${option.level}` : basePath}
               // The list is on this same page, so a filter change should not
               // throw the reader back to the top of it.
