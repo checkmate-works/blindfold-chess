@@ -12,6 +12,14 @@ import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
 
 const THEME = getBoardThemeColors(DEFAULT_BOARD_THEME);
 
+/**
+ * Every board in a band is this size. 64px is the largest at which
+ * `board → board` (Position Memory) still fits a phone-width card, and one
+ * size for all of them is what stops the grid reading as thirteen unrelated
+ * illustrations.
+ */
+const BOARD_SIZE = 'size-16';
+
 /** Placement-only positions the bands draw. Complete FENs; `BoardThumbnail` parses the placement. */
 const EMPTY_BOARD = '8/8/8/8/8/8/8/8 w - - 0 1';
 const SAMPLE_POSITION = 'r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 1';
@@ -45,8 +53,17 @@ const E4_DIAGONALS: BoardAnnotations = {
  * of tiles, and the green says "this is the table". Here only five of the
  * thirteen examples show a board, so a tinted strip behind the other eight
  * was a grey slab framing two words of notation — it drew more attention than
- * what it contained. The fixed height stays: it is what keeps the "View
- * details" rows of two cards side by side in line with each other.
+ * what it contained. The fixed height stays: it is what keeps two cards side
+ * by side the same height, whatever their bands hold.
+ *
+ * Every band is written in the same vocabulary. A named square is a
+ * `SquareTile` in the square's own colour; a square the reader is asked for
+ * is the same tile drawn blank, so the answer row is recognisably "the same
+ * kind of thing, not filled in yet" rather than a stray `??` in small type. A
+ * board is always the same size, and where the question and its answer fit
+ * on one line they sit on one line, question on the left — the layout
+ * `e2 → e4` reads as. Bands that need two lines put the question above the
+ * answer.
  *
  * Nothing here carries text that needs translating — squares, notation, piece
  * glyphs and `??` read the same in every locale, which is why the band can be
@@ -58,7 +75,7 @@ export function PracticeCardVisual({ menuType }: { menuType: PracticeMenuType })
   return (
     <div
       aria-hidden="true"
-      className="mt-4 flex h-24 flex-col items-center justify-center gap-1.5 overflow-hidden px-3"
+      className="mt-4 flex h-28 flex-col items-center justify-center gap-2 overflow-hidden px-3"
     >
       <VisualBody menuType={menuType} />
     </div>
@@ -71,25 +88,22 @@ function VisualBody({ menuType }: { menuType: PracticeMenuType }): ReactNode {
     // the board's own two colours rather than the words for them.
     case 'square_colors':
       return (
-        <>
-          <Row>
-            {/* The one square that must NOT be drawn in its own colour — that
-                is the answer. With no colour to show it is not a tile at all,
-                just the name, the way Algebraic Notation shows its move. */}
-            <Notation>e4</Notation>
-          </Row>
-          <Row>
-            <Swatch tone="light" />
-            <Swatch tone="dark" />
-          </Row>
-        </>
+        <Row>
+          {/* The one square that must NOT be drawn in its own colour — that
+              is the answer. With no colour to show it is not a tile at all,
+              just the name, the way Algebraic Notation shows its move. */}
+          <Notation>e4</Notation>
+          <Arrow />
+          <Swatch tone="light" />
+          <Swatch tone="dark" />
+        </Row>
       );
 
     // The one module that puts the name on the board and asks for the square.
     case 'coordinate_quiz':
       return (
         <div className="relative">
-          <BoardThumbnail fen={EMPTY_BOARD} flipped={false} className="size-20" />
+          <BoardThumbnail fen={EMPTY_BOARD} flipped={false} className={BOARD_SIZE} />
           <span className="absolute inset-0 flex items-center justify-center font-mono text-lg font-black text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.7)]">
             e4
           </span>
@@ -127,12 +141,12 @@ function VisualBody({ menuType }: { menuType: PracticeMenuType }): ReactNode {
               fen={EMPTY_BOARD}
               flipped={false}
               annotations={E4_DIAGONALS}
-              className="size-16"
+              className={BOARD_SIZE}
             />
           </Row>
           <span className="flex items-center gap-3">
-            <Blank>??–??</Blank>
-            <Blank>??–??</Blank>
+            <DiagonalBlank />
+            <DiagonalBlank />
           </span>
         </>
       );
@@ -141,7 +155,7 @@ function VisualBody({ menuType }: { menuType: PracticeMenuType }): ReactNode {
       return (
         <Row>
           <SquareTile label="e4" />
-          <span className="text-sm text-muted-foreground">↔</span>
+          <span className="text-base text-muted-foreground">↔</span>
           <SquareTile label="??" tone="blank" />
         </Row>
       );
@@ -158,37 +172,38 @@ function VisualBody({ menuType }: { menuType: PracticeMenuType }): ReactNode {
             <SquareTile label="g3" />
           </Row>
           <Row>
-            <Blank>?? → ?? → ??</Blank>
+            <SquareTile label="??" tone="blank" />
+            <Arrow />
+            <SquareTile label="??" tone="blank" />
+            <Arrow />
+            <SquareTile label="??" tone="blank" />
           </Row>
         </>
       );
 
     case 'quadrant_anchors':
       return (
-        <>
-          <Row>
-            <SquareTile label="e4" />
-          </Row>
-          <Row>
-            <QuadrantGlyph />
-          </Row>
-        </>
+        <Row>
+          <SquareTile label="e4" />
+          <Arrow />
+          <QuadrantGlyph />
+        </Row>
       );
 
     // Look at a position, then rebuild it on an empty board.
     case 'position_memory':
       return (
         <Row>
-          <BoardThumbnail fen={SAMPLE_POSITION} flipped={false} className="size-16" />
+          <BoardThumbnail fen={SAMPLE_POSITION} flipped={false} className={BOARD_SIZE} />
           <Arrow />
-          <BoardThumbnail fen={EMPTY_BOARD} flipped={false} className="size-16" />
+          <BoardThumbnail fen={EMPTY_BOARD} flipped={false} className={BOARD_SIZE} />
         </Row>
       );
 
     case 'puzzle':
       return (
         <Row>
-          <BoardThumbnail fen={SAMPLE_POSITION} flipped={false} className="size-20" />
+          <BoardThumbnail fen={SAMPLE_POSITION} flipped={false} className={BOARD_SIZE} />
           <Arrow />
           <SquareTile label="??" tone="blank" />
         </Row>
@@ -212,15 +227,12 @@ function VisualBody({ menuType }: { menuType: PracticeMenuType }): ReactNode {
 
     case 'algebraic_notation':
       return (
-        <>
-          <Row>
-            <Notation>Nf3</Notation>
-          </Row>
-          <Row>
-            <Piece type="n" />
-            <SquareTile label="f3" />
-          </Row>
-        </>
+        <Row>
+          <Notation>Nf3</Notation>
+          <Arrow />
+          <Piece type="n" />
+          <SquareTile label="f3" />
+        </Row>
       );
 
     // Read the string, put the board back together.
@@ -229,21 +241,17 @@ function VisualBody({ menuType }: { menuType: PracticeMenuType }): ReactNode {
         <Row>
           <Notation className="max-w-[7.5rem] truncate">r1bqkb1r/pp…</Notation>
           <Arrow />
-          <BoardThumbnail fen={SAMPLE_POSITION} flipped={false} className="size-20" />
+          <BoardThumbnail fen={SAMPLE_POSITION} flipped={false} className={BOARD_SIZE} />
         </Row>
       );
 
     // A game replayed a move at a time, so what is shown is the moves so far.
     case 'recall':
       return (
-        <>
-          <Row>
-            <Notation>1.e4 e5 2.Nf3</Notation>
-          </Row>
-          <Row>
-            <Blank>??</Blank>
-          </Row>
-        </>
+        <Row>
+          <Notation>1.e4 e5 2.Nf3</Notation>
+          <SquareTile label="??" tone="blank" />
+        </Row>
       );
 
     default: {
@@ -268,7 +276,7 @@ function Row({ children }: { children: ReactNode }) {
 function SquareTile({ label, tone = 'auto' }: { label: string; tone?: 'auto' | 'blank' }) {
   const colorClasses =
     tone === 'blank'
-      ? 'border border-dashed border-muted-foreground/50 text-muted-foreground'
+      ? 'border border-dashed border-muted-foreground/70 text-muted-foreground'
       : computeSquareColor(label as Square) === 'light'
         ? `${THEME.light} ${THEME.lightCoordinates}`
         : `${THEME.dark} ${THEME.darkCoordinates}`;
@@ -282,20 +290,33 @@ function SquareTile({ label, tone = 'auto' }: { label: string; tone?: 'auto' | '
   );
 }
 
+/** A square-sized block of one board colour: the shape of a "light or dark" answer. */
 function Swatch({ tone }: { tone: 'light' | 'dark' }) {
   return (
     <span
-      className={`size-5 rounded-sm ${tone === 'light' ? THEME.light : THEME.dark} ring-1 ring-black/10`}
+      className={`size-7 rounded ${tone === 'light' ? THEME.light : THEME.dark} ring-1 ring-border`}
     />
   );
 }
 
+/** A yes/no answer, sized to sit level with a `SquareTile`. */
 function Chip({ children, className }: { children: ReactNode; className: string }) {
-  return <span className={`rounded px-2 py-0.5 text-xs font-bold ${className}`}>{children}</span>;
+  return (
+    <span className={`inline-flex h-7 items-center rounded px-2.5 text-xs font-bold ${className}`}>
+      {children}
+    </span>
+  );
 }
 
-function Blank({ children }: { children: ReactNode }) {
-  return <span className="font-mono text-[11px] text-muted-foreground">{children}</span>;
+/** The blank for one diagonal: its two end squares, both still to be named. */
+function DiagonalBlank() {
+  return (
+    <Row>
+      <SquareTile label="??" tone="blank" />
+      <span className="text-xs text-muted-foreground">–</span>
+      <SquareTile label="??" tone="blank" />
+    </Row>
+  );
 }
 
 function Notation({ children, className = '' }: { children: ReactNode; className?: string }) {
@@ -323,7 +344,7 @@ function QuadrantGlyph() {
       {['a', 'b', 'c', 'd'].map((cell) => (
         <span
           key={cell}
-          className={`size-4 rounded-[2px] ${cell === 'd' ? 'bg-primary' : 'bg-muted-foreground/25'}`}
+          className={`size-3.5 rounded-[2px] ${cell === 'd' ? 'bg-primary' : 'bg-muted-foreground/40'}`}
         />
       ))}
     </span>
