@@ -5,6 +5,7 @@ import { useCallback, useRef } from "react";
 import type { Square } from "@blindfold-chess/types";
 
 import { flashFeedbackDuration } from "../common/flash-policy";
+import { calculateAnswerAccuracy } from "../common/practice-result";
 import { useLatestRef } from "../common/use-latest-ref";
 import { usePracticeCompletion } from "../practice-session/use-practice-completion";
 import {
@@ -81,7 +82,7 @@ export function useRoutePlannerSession({
         problems: problemResultsRef.current,
         totalProblems: total,
         correctCount,
-        accuracy: total > 0 ? (correctCount / total) * 100 : 0,
+        accuracy: calculateAnswerAccuracy(correctCount, total),
       };
     },
     onComplete,

@@ -22,6 +22,7 @@ export {
   isCountdownActive,
 } from "./countdown";
 export {
+  calculateAnswerAccuracy,
   computePracticeResult,
   deriveResultStats,
   type StatItem,

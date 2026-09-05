@@ -20,6 +20,14 @@ export type DeriveResultStatsLabels = {
   averageTime: string;
 };
 
+/** Calculate the percentage of correct answers, treating an empty set as 0%. */
+export function calculateAnswerAccuracy(
+  correct: number,
+  total: number,
+): number {
+  return total > 0 ? (correct / total) * 100 : 0;
+}
+
 /**
  * Computes a practice result from raw session data.
  * Pure function — no side effects, no dependency on Date.now().
@@ -32,8 +40,7 @@ export function computePracticeResult(
   questionTimes: number[],
 ): PracticeResultWithMistakes {
   const totalQuestions = correctCount + incorrectCount;
-  const accuracy =
-    totalQuestions > 0 ? (correctCount / totalQuestions) * 100 : 0;
+  const accuracy = calculateAnswerAccuracy(correctCount, totalQuestions);
   const averageTime =
     questionTimes.length > 0
       ? questionTimes.reduce((a, b) => a + b, 0) / questionTimes.length

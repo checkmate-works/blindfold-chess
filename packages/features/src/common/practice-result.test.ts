@@ -1,6 +1,20 @@
 import { describe, expect, it } from "vitest";
 
-import { computePracticeResult, deriveResultStats } from "./practice-result";
+import {
+  calculateAnswerAccuracy,
+  computePracticeResult,
+  deriveResultStats,
+} from "./practice-result";
+
+describe("calculateAnswerAccuracy", () => {
+  it("returns the correct-answer percentage", () => {
+    expect(calculateAnswerAccuracy(3, 4)).toBe(75);
+  });
+
+  it("returns zero for an empty answer set", () => {
+    expect(calculateAnswerAccuracy(0, 0)).toBe(0);
+  });
+});
 
 describe("computePracticeResult", () => {
   it("computes basic result with correct and incorrect counts", () => {
