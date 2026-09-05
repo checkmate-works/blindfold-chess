@@ -3,6 +3,7 @@
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 import * as Sentry from '@sentry/nextjs';
 
+import { tagDeploymentIdInPlace } from '@/lib/sentry/deployment-id';
 import { scrubRequestInPlace } from '@/lib/sentry/scrub';
 
 Sentry.init({
@@ -23,6 +24,7 @@ Sentry.init({
   // is what keeps the two in step.
   beforeSend(event, _hint) {
     scrubRequestInPlace(event);
+    tagDeploymentIdInPlace(event);
     return event;
   },
 });

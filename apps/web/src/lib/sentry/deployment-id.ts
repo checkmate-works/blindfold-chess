@@ -38,7 +38,10 @@ export function normalizeDeploymentId(raw: unknown): string | undefined {
  * its tests can hand it plain objects. Mirrors `./scrub`.
  */
 type EventWithTags = {
-  tags?: Record<string, string | number | boolean | null | undefined>;
+  // Mirrors Sentry's own `Primitive`, which the `Event['tags']` bag is keyed
+  // to. Narrowing it here (to `string`, say) makes the structural type reject
+  // the real event object.
+  tags?: Record<string, string | number | bigint | boolean | symbol | null | undefined>;
 };
 
 /**

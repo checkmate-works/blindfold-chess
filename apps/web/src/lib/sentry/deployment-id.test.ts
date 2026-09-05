@@ -29,7 +29,7 @@ describe('normalizeDeploymentId', () => {
 describe('tagDeploymentIdInPlace', () => {
   it('tags the event with the deployment id', () => {
     vi.stubEnv('NEXT_DEPLOYMENT_ID', 'dpl_KP2S24UF6s3Toudt1GSGkTtWAfN6');
-    const event: { tags?: Record<string, string | number | boolean | null | undefined> } = {};
+    const event: { tags?: Record<string, string> } = {};
 
     tagDeploymentIdInPlace(event);
 
@@ -50,7 +50,7 @@ describe('tagDeploymentIdInPlace', () => {
 
   it('leaves the event untouched when no deployment id is available', () => {
     vi.stubEnv('NEXT_DEPLOYMENT_ID', undefined);
-    const event: { tags?: Record<string, string | number | boolean | null | undefined> } = {};
+    const event: { tags?: Record<string, string> } = {};
 
     tagDeploymentIdInPlace(event);
 

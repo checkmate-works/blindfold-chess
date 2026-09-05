@@ -18,7 +18,12 @@
     "build": {
       "dependsOn": ["^build"],
       "outputs": [".next/**", "!.next/cache/**"],
-      "env": ["POSTGRES_URL", "POSTGRES_URL_NON_POOLING", "DB_RUNTIME_URL"],
+      "env": [
+        "POSTGRES_URL",
+        "POSTGRES_URL_NON_POOLING",
+        "DB_RUNTIME_URL",
+        "NEXT_DEPLOYMENT_ID"
+      ],
       "passThroughEnv": [
         "DATABASE_URL",
         "SUPABASE_SERVICE_ROLE_KEY",
