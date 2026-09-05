@@ -1,5 +1,5 @@
 import "@testing-library/jest-dom";
-import { vi } from "vitest";
+import { beforeEach, vi } from "vitest";
 
 // Mock AsyncStorage
 const store: Record<string, string> = {};
@@ -22,7 +22,11 @@ vi.mock("@react-native-async-storage/async-storage", () => ({
   },
 }));
 
-// Helper to clear the mock store between tests
-export function clearMockAsyncStorage() {
+function clearMockAsyncStorage() {
   Object.keys(store).forEach((key) => delete store[key]);
 }
+
+beforeEach(() => {
+  clearMockAsyncStorage();
+  vi.clearAllMocks();
+});
