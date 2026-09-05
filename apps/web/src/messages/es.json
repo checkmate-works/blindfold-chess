@@ -974,7 +974,6 @@
       "algebraicKeyboardHint": "Escribe una letra (a–h) y luego un número (1–8). Retroceso: borrar."
     },
     "title": "Práctica",
-    "detail": "Ver detalles",
     "filter": {
       "all": "Todos",
       "label": "Filtrar prácticas por nivel"

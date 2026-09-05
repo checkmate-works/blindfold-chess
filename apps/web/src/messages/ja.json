@@ -974,7 +974,6 @@
       "algebraicKeyboardHint": "ファイル（a〜h）とランク（1〜8）を入力。Backspace で削除。"
     },
     "title": "練習",
-    "detail": "くわしく見る",
     "filter": {
       "all": "すべて",
       "label": "レベルで絞り込む"

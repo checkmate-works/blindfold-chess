@@ -29,55 +29,53 @@ type Props = {
    */
   rank: { readonly slug: RankSlug; readonly label: string } | null;
   locale: string;
-  /** Wording of the card's own link ("View details"). */
-  detailLabel: string;
 };
 
 /**
  * A practice module's entry in the practice list.
  *
- * The card itself is not a link. The rank badge inside it is one, and a link
- * cannot be nested in a link, so the card's destination is the explicit
- * "View details" row at the bottom — the badge and the practice are two
- * different places to go, and the card has to be able to offer both.
+ * The whole card goes to the practice. The rank badge inside it is a link of
+ * its own, and a link cannot be nested in a link, so the card's link is not a
+ * wrapper around its content: it is an empty anchor stretched over the card
+ * (`absolute inset-0`), and the badge is raised above it (`relative z-10`)
+ * so a tap on the badge reaches the badge. The stretched anchor has no text,
+ * so it takes its accessible name from the title.
+ *
+ * The chevron in the corner is the only visible trace of the link. It used
+ * to be a "View details" row along the bottom, which cost every card a line
+ * of height for a label that said nothing the title did not — and the card
+ * already lifted on hover, promising a click it then did not honour.
  */
-export function PracticeMenuCard({
-  icon,
-  title,
-  menuType,
-  href,
-  rank,
-  locale,
-  detailLabel,
-}: Props) {
+export function PracticeMenuCard({ icon, title, menuType, href, rank, locale }: Props) {
+  // Stable and unique per page: every module is listed exactly once.
+  const titleId = `practice-card-${menuType}-title`;
+
   return (
-    <div className="flex h-full flex-col justify-between rounded-2xl border border-border bg-card p-5 transition-all hover:-translate-y-1 hover:border-primary/30">
-      <div>
-        <div className="flex items-start justify-between gap-2">
-          <h3 className="text-base font-bold text-foreground">
-            <span aria-hidden="true" className="mr-1.5">
-              {icon}
-            </span>
-            {title}
-          </h3>
-          {rank && (
-            <div className="shrink-0">
-              <BeltRankBadge slug={rank.slug} label={rank.label} locale={locale} />
-            </div>
-          )}
-        </div>
-        <PracticeCardVisual menuType={menuType} />
+    <div className="relative flex h-full flex-col rounded-2xl border border-border bg-card p-5 transition-all hover:-translate-y-1 hover:border-primary/30 focus-within:border-primary/30">
+      <div className="flex items-center justify-between gap-2">
+        <h3 id={titleId} className="text-base font-bold text-foreground">
+          <span aria-hidden="true" className="mr-1.5">
+            {icon}
+          </span>
+          {title}
+        </h3>
+        {rank && (
+          <div className="relative z-10 shrink-0">
+            <BeltRankBadge slug={rank.slug} label={rank.label} locale={locale} />
+          </div>
+        )}
       </div>
-      <div className="mt-4 flex justify-end">
-        <Link
-          href={href}
-          locale={locale}
-          className="flex items-center text-sm font-bold text-primary transition-opacity hover:opacity-80"
-        >
-          {detailLabel}
-          <HiChevronRight aria-hidden="true" className="ml-1 size-4" />
-        </Link>
-      </div>
+      <PracticeCardVisual menuType={menuType} />
+      <Link
+        href={href}
+        locale={locale}
+        aria-labelledby={titleId}
+        className="absolute inset-0 rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+      />
+      <HiChevronRight
+        aria-hidden="true"
+        className="pointer-events-none absolute right-4 bottom-4 size-4 text-primary"
+      />
     </div>
   );
 }

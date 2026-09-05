@@ -207,7 +207,6 @@ export default async function PracticePage({ params }: Props) {
             title={practice.title}
             menuType={practice.menuType}
             rank={rankSlug && rankLabel ? { slug: rankSlug, label: rankLabel } : null}
-            detailLabel={t('practice.detail')}
           />
         ),
       };
