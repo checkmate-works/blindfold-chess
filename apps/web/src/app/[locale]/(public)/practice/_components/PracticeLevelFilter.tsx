@@ -63,7 +63,13 @@ function FilteredList({
           hanging directly off the page's h1. */}
       <h2 className="sr-only">{listHeading}</h2>
 
-      {/* One row that fills the width, its options sharing the space in
+      {/* The selected option is a raised card surface, as in every other
+          segmented control here (`tabItemClass('segmented')`), not a
+          primary fill: primary is the colour of the buttons that do things,
+          and a filter option painted like one reads as a call to action
+          rather than a state.
+
+          One row that fills the width, its options sharing the space in
           proportion to their labels. Four options fit a 390px phone in every
           locale at the small text size (the widest, es "Todos Principiante
           Intermedio Avanzado", measures ~300px against ~350px available);
@@ -89,7 +95,7 @@ function FilteredList({
               aria-current={isActive ? 'true' : undefined}
               className={`flex flex-auto shrink-0 flex-col items-center justify-center gap-1 rounded-md px-2 py-1.5 text-xs font-medium transition-colors sm:flex-row sm:gap-1.5 sm:text-sm ${
                 isActive
-                  ? 'bg-primary text-primary-foreground shadow-sm'
+                  ? 'bg-card text-foreground shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
