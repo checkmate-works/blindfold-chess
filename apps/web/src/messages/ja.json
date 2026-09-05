@@ -975,6 +975,10 @@
     },
     "title": "練習",
     "detail": "くわしく見る",
+    "filter": {
+      "all": "すべて",
+      "label": "レベルで絞り込む"
+    },
     "modulesTitle": "練習メニュー一覧",
     "levelBeginner": "初級",
     "levelIntermediate": "中級",

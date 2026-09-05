@@ -2,12 +2,18 @@
  * Practice List (`/practice`)
  *
  * @description
- * Lists all available practice modules grouped by difficulty level (Beginner,
- * Intermediate, Advanced, Introduction). Each module links to its dedicated
- * practice page. Uses PRACTICE_EMOJIS as the single source of truth for icons.
+ * Lists every practice module as a card carrying the module's emoji, the rank
+ * it contributes toward, and an example band showing the question it asks
+ * (`PracticeCardVisual`). One grid, narrowed by difficulty through
+ * `PracticeLevelFilter` rather than split under per-level headings — the
+ * headings pushed the later bands (Expert, Introduction) below the fold on a
+ * phone, and a reader looking for "something at my level" had to scroll past
+ * the other four bands to find out what was in theirs.
  *
  * Leads with the Daily Puzzle card (the same one the signed-in dashboard
  * shows) so the page offers a concrete thing to do before the module grid.
+ *
+ * Uses PRACTICE_EMOJIS as the single source of truth for icons.
  *
  * @flow
  * - Daily Puzzle: today's puzzle, seeded on the UTC date
@@ -26,6 +32,10 @@ import { SITE_URL } from '@/config';
 import type { PracticeMenuType } from '@/lib/db/practice-menu-types';
 import { JsonLd, generateItemListSchema } from '@/lib/seo/jsonld';
 
+import {
+  PracticeLevelFilter,
+  type PracticeLevelFilterItem,
+} from '@/app/[locale]/(public)/practice/_components/PracticeLevelFilter';
 import { PracticeMenuCard } from '@/app/[locale]/(public)/practice/_components/PracticeMenuCard';
 import { getRankSlugForMenuType } from '@/app/[locale]/(public)/practice/_lib/module-rank-mapping';
 import { PRACTICE_EMOJIS } from '@/app/[locale]/(public)/practice/_lib/practice-emojis';
@@ -34,6 +44,8 @@ import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { Locale } from '@/app/[locale]/_lib/types';
+
+import type { PracticeLevel } from './_components/PracticeLevelFilter';
 
 type PracticeEntry = {
   /** Route segment under `/practice`. */
@@ -65,9 +77,9 @@ export default async function PracticePage({ params }: Props) {
   const t = await getTranslations({ locale });
   const tRanks = await getTranslations({ locale, namespace: 'ranks' });
 
-  const sections: { title: string; practices: PracticeEntry[] }[] = [
+  const sections: { level: PracticeLevel; practices: PracticeEntry[] }[] = [
     {
-      title: t('practice.levelBeginner'),
+      level: 'beginner',
       practices: [
         {
           id: 'square-colors',
@@ -90,7 +102,7 @@ export default async function PracticePage({ params }: Props) {
       ],
     },
     {
-      title: t('practice.levelIntermediate'),
+      level: 'intermediate',
       practices: [
         {
           id: 'diagonal-quiz',
@@ -113,7 +125,7 @@ export default async function PracticePage({ params }: Props) {
       ],
     },
     {
-      title: t('practice.levelAdvanced'),
+      level: 'advanced',
       practices: [
         {
           id: 'position-memory',
@@ -130,7 +142,7 @@ export default async function PracticePage({ params }: Props) {
       ],
     },
     {
-      title: t('practice.levelExpert'),
+      level: 'expert',
       practices: [
         {
           id: 'knight-tour',
@@ -147,7 +159,7 @@ export default async function PracticePage({ params }: Props) {
       ],
     },
     {
-      title: t('practice.levelIntroduction'),
+      level: 'introduction',
       practices: [
         {
           id: 'algebraic-notation',
@@ -178,6 +190,30 @@ export default async function PracticePage({ params }: Props) {
     }))
   );
 
+  // Every card is rendered here, on the server, and the filter only decides
+  // which of them to show — so the prerendered HTML carries the whole list.
+  const items: PracticeLevelFilterItem[] = sections.flatMap((section) =>
+    section.practices.map((practice) => {
+      const rankSlug = getRankSlugForMenuType(practice.menuType);
+      const rankLabel = rankSlug ? tRanks(`rankNames.${rankSlug}`) : null;
+      return {
+        key: practice.id,
+        level: section.level,
+        card: (
+          <PracticeMenuCard
+            locale={locale}
+            href={`/practice/${practice.id}`}
+            icon={practice.icon}
+            title={practice.title}
+            menuType={practice.menuType}
+            rank={rankSlug && rankLabel ? { slug: rankSlug, label: rankLabel } : null}
+            detailLabel={t('practice.detail')}
+          />
+        ),
+      };
+    })
+  );
+
   return (
     <>
       <JsonLd data={generateItemListSchema(itemListItems)} />
@@ -188,29 +224,20 @@ export default async function PracticePage({ params }: Props) {
       >
         <DailyPuzzleCard locale={locale} variant="compact" />
 
-        {sections.map((section) => (
-          <section key={section.title} className="space-y-4">
-            <SectionTitle>{section.title}</SectionTitle>
-            <div className="grid gap-4 sm:grid-cols-2">
-              {section.practices.map((practice) => {
-                const rankSlug = getRankSlugForMenuType(practice.menuType);
-                const rankLabel = rankSlug ? tRanks(`rankNames.${rankSlug}`) : null;
-                return (
-                  <PracticeMenuCard
-                    key={practice.id}
-                    locale={locale}
-                    href={`/practice/${practice.id}`}
-                    icon={practice.icon}
-                    title={practice.title}
-                    menuType={practice.menuType}
-                    rank={rankSlug && rankLabel ? { slug: rankSlug, label: rankLabel } : null}
-                    detailLabel={t('practice.detail')}
-                  />
-                );
-              })}
-            </div>
-          </section>
-        ))}
+        <PracticeLevelFilter
+          items={items}
+          basePath={`/${locale}/practice`}
+          levelLabels={{
+            beginner: t('practice.levelBeginner'),
+            intermediate: t('practice.levelIntermediate'),
+            advanced: t('practice.levelAdvanced'),
+            expert: t('practice.levelExpert'),
+            introduction: t('practice.levelIntroduction'),
+          }}
+          allLabel={t('practice.filter.all')}
+          filterLabel={t('practice.filter.label')}
+          listHeading={t('practice.modulesTitle')}
+        />
 
         <section className="space-y-4">
           <SectionTitle>{t('practice.related')}</SectionTitle>

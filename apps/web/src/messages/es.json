@@ -975,6 +975,10 @@
     },
     "title": "Práctica",
     "detail": "Ver detalles",
+    "filter": {
+      "all": "Todos",
+      "label": "Filtrar prácticas por nivel"
+    },
     "modulesTitle": "Módulos de Práctica",
     "levelBeginner": "Principiante",
     "levelIntermediate": "Intermedio",

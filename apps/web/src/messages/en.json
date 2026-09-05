@@ -975,6 +975,10 @@
     },
     "title": "Practice",
     "detail": "View details",
+    "filter": {
+      "all": "All",
+      "label": "Filter practices by level"
+    },
     "modulesTitle": "Practice Modules",
     "levelBeginner": "Beginner",
     "levelIntermediate": "Intermediate",
