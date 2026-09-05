@@ -38,6 +38,24 @@ const E4_DIAGONALS: BoardAnnotations = {
 };
 
 /**
+ * Three jumps of a knight's tour, up the middle of the board. They zigzag —
+ * right, left, right — because at 64px three jumps in the same direction
+ * (a1→b3→d4→f5) merged into one straight line and stopped looking like
+ * knight moves at all; and they run through the centre rather than along an
+ * edge, where the same zigzag was a squiggle under the bottom rank. Green
+ * throughout: these are all the same kind of line, unlike the two diagonals
+ * above.
+ */
+const KNIGHT_TOUR_OPENING: BoardAnnotations = {
+  arrows: [
+    { from: 'c3', to: 'e4', color: 'green' },
+    { from: 'e4', to: 'c5', color: 'green' },
+    { from: 'c5', to: 'e6', color: 'green' },
+  ],
+  circles: [],
+};
+
+/**
  * The band under a practice card's title: what the module puts in front of
  * you, and what shape the answer takes.
  *
@@ -209,18 +227,26 @@ function VisualBody({ menuType }: { menuType: PracticeMenuType }): ReactNode {
         </Row>
       );
 
-    // One knight, every square once — hence the count as the answer. The
-    // knight is drawn on its own rather than on a board: at the size a board
-    // fits here its pieces are a few pixels across, and a lone knight on one
-    // read as an empty board.
+    // One knight, every square once. A lone knight over the number 64 said
+    // nothing about what the 64 was; the tour's first jumps drawn on the
+    // board do, and the count under them is the shape of the goal — how many
+    // of the 64 the path has reached. The knight is beside the board, not on
+    // it, for the same reason the bishop is on the diagonal card: at this
+    // size a piece on the board is a few pixels under the arrows.
     case 'knight_tour':
       return (
         <>
           <Row>
-            <Piece type="n" size={44} />
+            <Piece type="n" />
+            <BoardThumbnail
+              fen={EMPTY_BOARD}
+              flipped={false}
+              annotations={KNIGHT_TOUR_OPENING}
+              className={BOARD_SIZE}
+            />
           </Row>
           <Row>
-            <span className="font-mono text-sm font-bold text-foreground">64</span>
+            <Notation>4 / 64</Notation>
           </Row>
         </>
       );
