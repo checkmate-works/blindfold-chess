@@ -71,10 +71,16 @@ function FilteredList({
           hanging directly off the page's h1. */}
       <h2 className="sr-only">{listHeading}</h2>
 
+      {/* One row, always. Six options do not fit a narrow phone in any
+          locale — エキスパート alone is six characters, and the en/es/pt-BR
+          labels (Intermediate … Introduction) are longer still — and wrapping
+          them turned the filter into a two-line block sitting above every
+          card. Scrolling keeps it the single strip it reads as, the same
+          answer the preferences tabs reach for. */}
       <div
         role="group"
         aria-label={filterLabel}
-        className="flex flex-wrap gap-1 rounded-lg bg-secondary p-1"
+        className="flex gap-1 overflow-x-auto rounded-lg bg-secondary p-1"
       >
         {options.map((option) => {
           const isActive = option.level === selected;
@@ -86,7 +92,7 @@ function FilteredList({
               // throw the reader back to the top of it.
               scroll={false}
               aria-current={isActive ? 'true' : undefined}
-              className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+              className={`shrink-0 rounded-md px-2.5 py-1.5 text-sm font-medium transition-colors ${
                 isActive ? 'bg-card text-foreground' : 'text-muted-foreground hover:text-foreground'
               }`}
             >
