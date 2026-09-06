@@ -1,12 +1,10 @@
-import Link from 'next/link';
-
 import { AdminDataTable } from '@/app/admin/_components/AdminDataTable';
+import { AdminExternalLink } from '@/app/admin/_components/AdminExternalLink';
 import { AdminListSummary } from '@/app/admin/_components/AdminListSummary';
 import { AdminPageLayout } from '@/app/admin/_components/AdminPageLayout';
 import { AdminPaginationNav } from '@/app/admin/_components/AdminPaginationNav';
 import { adminPageSearchParamsCache } from '@/app/admin/_lib/admin-search-params';
 import { formatDateTime } from '@/app/admin/_lib/format';
-import { FaExternalLinkAlt } from 'react-icons/fa';
 
 import { countChunks, listChunks } from '@/lib/chunks/queries';
 import { DEFAULT_PAGE_SIZE, getPaginationParams } from '@/lib/pagination';
@@ -51,15 +49,9 @@ export default async function AdminChunksPage({
         renderRow={(chunk) => (
           <tr key={chunk.id} className="border-t border-border">
             <td className="px-4 py-3">
-              <Link
-                href={`/en/chunks/${chunk.slug}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-primary hover:underline"
-              >
+              <AdminExternalLink path={`/chunks/${chunk.slug}`}>
                 <span className="font-medium">{chunk.title}</span>
-                <FaExternalLinkAlt className="h-3 w-3" />
-              </Link>
+              </AdminExternalLink>
             </td>
             <td className="px-4 py-3">
               <BoardThumbnail fen={chunk.representativeFen} className="w-20 h-20" />

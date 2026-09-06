@@ -1,10 +1,10 @@
 import Link from 'next/link';
 
 import { AdminBadge } from '@/app/admin/_components/AdminBadge';
+import { AdminExternalLink } from '@/app/admin/_components/AdminExternalLink';
 import { MaskedEmail } from '@/app/admin/_components/MaskedEmail';
 import { formatDate } from '@/app/admin/_lib/format';
 import type { User } from '@supabase/supabase-js';
-import { FaExternalLinkAlt } from 'react-icons/fa';
 
 import type { AdminUserFilters } from '../_lib/filters';
 import { CopyUserIdButton } from './CopyUserIdButton';
@@ -74,15 +74,9 @@ export function UserRow({
       </td>
       <td className="whitespace-nowrap px-4 py-3">
         {profile?.username ? (
-          <Link
-            href={`/en/u/${encodeURIComponent(profile.username)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-primary hover:underline"
-          >
+          <AdminExternalLink path={`/u/${encodeURIComponent(profile.username)}`}>
             {profile.username}
-            <FaExternalLinkAlt className="h-3 w-3" />
-          </Link>
+          </AdminExternalLink>
         ) : null}
         {/* Trailing, and outside the profile link: a leading flag would indent
             the names of flagged users only (users without a country get no
