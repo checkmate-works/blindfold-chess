@@ -1,4 +1,4 @@
-import { type PositionKind, getPositionKindDetailPath } from './kind';
+import { type PositionKind, getPositionKindDetailPath, isPositionKind } from './kind';
 import type { PositionType } from './types';
 
 /**
@@ -24,6 +24,17 @@ export function getPositionDetailPath(type: PositionType, id: string): string | 
       return _exhaustive;
     }
   }
+}
+
+/**
+ * {@link getPositionDetailPath} for a raw `positions.type` value read back from
+ * the database, where the column is a plain `varchar` and the caller has no
+ * `PositionType` to hand. `null` covers both answers the typed version gives
+ * `null` for and one it cannot have: a type this build has never heard of,
+ * written by a newer deploy.
+ */
+export function getPositionDetailPathForStoredType(type: string, id: string): string | null {
+  return isPositionKind(type) ? getPositionKindDetailPath(type, id) : null;
 }
 
 /**

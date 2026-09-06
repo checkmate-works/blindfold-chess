@@ -1,8 +1,6 @@
-import { getPositionKindForTopicType, getPositionPostAnchorPath } from '@/lib/positions/kind';
 import { getPositionDetailPath } from '@/lib/positions/routes';
-import { parseMoveTopicKey } from '@/lib/repertoires/move-topic-key';
 
-import { buildTopicPostPath } from '@/app/[locale]/(public)/topics/_lib/topic-paths';
+import { buildTopicPostHref } from '@/app/[locale]/(public)/topics/_lib/topic-paths';
 
 import type { NotificationWithActor } from './queries';
 import type { PositionMetadata } from './type-guards';
@@ -67,66 +65,6 @@ function resolvePositionEditRequestsLinkFromMetadata(
 ): string | null {
   const detailPath = resolvePositionLinkFromMetadata(id, metadata);
   return detailPath === null ? null : `${detailPath}/suggestions`;
-}
-
-/**
- * Build the post-detail URL for a notification keyed off `topicType`.
- *
- * `topic_posts` is polymorphic, but the routes that render those posts
- * are not:
- *   - `square` / `opening` → `/topics/{segment}/{key}/posts/{postId}`
- *     detail page. The page renders the OP and every reply as a single-root
- *     `CommentNode` tree, where every node has `id="post-{id}"` — same
- *     anchor scheme as the position pages, so reply deep-links use
- *     `#post-{replyId}`.
- *   - `chunk` / `position_memory` / `position_puzzle` → no detail page; the
- *     parent page (the chunk detail page, or the puzzle / position page)
- *     renders the same inline tree. Both top-level and reply notifications
- *     point at `parent#post-{targetId}` (replyId for replies, postId for
- *     top-level).
- */
-function buildPostDetailUrl(
-  topicType: string,
-  topicKey: string,
-  postId: string,
-  replyId?: string
-): string {
-  const positionKind = getPositionKindForTopicType(topicType);
-  if (positionKind) {
-    return getPositionPostAnchorPath(positionKind, topicKey, replyId ?? postId);
-  }
-  if (topicType === 'repertoire') {
-    // The repertoire detail page renders the inline comment tree (like puzzles),
-    // so both top-level and reply notifications deep-link to it.
-    const targetId = replyId ?? postId;
-    return `/repertoires/${topicKey}#post-${targetId}`;
-  }
-  if (topicType === 'repertoire_move') {
-    // topicKey packs `${repertoireId}_${positionHash}`; the hash isn't reversible
-    // to a line here, so deep-link to the position resolver route, which finds a
-    // line + ply reaching it and redirects to that move's thread.
-    const targetId = replyId ?? postId;
-    const parsed = parseMoveTopicKey(topicKey);
-    if (parsed) {
-      // `post` rides as a query (not a #fragment): the resolver redirects
-      // server-side, and fragments are not sent to / preserved by the server.
-      return `/repertoires/${parsed.repertoireId}/position/${parsed.positionHash}?post=${targetId}`;
-    }
-    return `/repertoires#post-${targetId}`;
-  }
-  if (topicType === 'chunk') {
-    // Chunks have no per-post detail page: the chunk detail page
-    // (/chunks/{slug}) renders the full inline comment tree, where every
-    // node has `id="post-{id}"`. Deep-link to that anchor — same scheme as
-    // the position pages — for both top-level posts and replies.
-    // The comment tree only renders under `?tab=comments`; without it the
-    // page opens on Positions (or the first non-empty tab) and the
-    // `#post-{id}` anchor has no target, so the param is required.
-    const targetId = replyId ?? postId;
-    return `/chunks/${topicKey}?tab=comments#post-${targetId}`;
-  }
-  const baseUrl = buildTopicPostPath(topicType, topicKey, postId);
-  return replyId ? `${baseUrl}#post-${replyId}` : baseUrl;
 }
 
 /**
@@ -329,7 +267,7 @@ function buildEngagementLink(notification: NotificationWithActor): string | null
       isReplyMetadata(notification.metadata)
         ? notification.metadata.replyId
         : undefined;
-    return buildPostDetailUrl(
+    return buildTopicPostHref(
       notification.metadata.topicType,
       notification.metadata.topicKey,
       notification.metadata.postId,
@@ -361,7 +299,7 @@ function buildEngagementLink(notification: NotificationWithActor): string | null
     // via the snapshotted slug — `targetId` holds the chunk id, but the
     // route is keyed by slug (`/chunks/[slug]`), so the id would 404.
     // (A like on a comment in the chunk thread is `targetType: 'topic_post'`
-    // with `topicType: 'chunk'`, handled above by `buildPostDetailUrl`.)
+    // with `topicType: 'chunk'`, handled above by `buildTopicPostHref`.)
     return `/chunks/${notification.metadata.slug}`;
   }
   return null;
