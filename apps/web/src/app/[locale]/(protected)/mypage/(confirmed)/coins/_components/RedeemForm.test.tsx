@@ -8,9 +8,7 @@ import { RedeemForm } from './RedeemForm';
 
 expect.extend(matchers);
 
-vi.mock('next-intl', () => ({
-  useTranslations: () => (key: string) => key,
-}));
+vi.mock('next-intl');
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ refresh: vi.fn() }),
