@@ -8,6 +8,7 @@ import { DevGeoPicker } from '@/app/_components/DevGeoPicker';
 import { GoogleScripts } from '@/app/_components/GoogleScripts';
 import { ADSENSE_PUBLISHER_ID, AUTHOR_NAME, GA_MEASUREMENT_ID, SITE_URL } from '@/config';
 import { OG_LOCALE_MAP } from '@/i18n/og-locale';
+import { resolveLocale } from '@/i18n/resolve-locale';
 import { routing } from '@/i18n/routing';
 import { generateThemeCSS } from '@blindfold-chess/ui';
 import { EnvironmentRibbon } from 'env-ribbon';
@@ -134,10 +135,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale: rawLocale } = await params;
-  // Narrow `locale` (typed as plain `string` from params) to a supported
-  // `Locale` so exhaustive `Record<Locale, _>` maps (OG, SITE_NAMES) can be
-  // indexed without a fallback. Unknown locales fall back to the default.
-  const locale = hasLocale(routing.locales, rawLocale) ? rawLocale : routing.defaultLocale;
+  const locale = resolveLocale(rawLocale);
 
   const t = await getMetadataTranslator(locale, 'generateMetadata');
 

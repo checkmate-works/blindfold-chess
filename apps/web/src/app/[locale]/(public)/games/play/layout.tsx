@@ -1,8 +1,7 @@
 import type { Metadata } from 'next';
-import { hasLocale } from 'next-intl';
 import { getTranslations } from 'next-intl/server';
 
-import { routing } from '@/i18n/routing';
+import { resolveLocale } from '@/i18n/resolve-locale';
 
 import { buildPageTitle, generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 
@@ -13,10 +12,7 @@ type LayoutProps = {
 
 export async function generateMetadata({ params }: LayoutProps): Promise<Metadata> {
   const { locale: rawLocale } = await params;
-  // Narrow route-segment `locale` (typed as plain string by Next.js) to the
-  // supported `Locale` union so `generateCanonicalMetadata` and
-  // `buildPageTitle` can index their exhaustive `Record<Locale, _>` maps.
-  const locale = hasLocale(routing.locales, rawLocale) ? rawLocale : routing.defaultLocale;
+  const locale = resolveLocale(rawLocale);
   const t = await getTranslations({ locale, namespace: 'metadata.play' });
 
   const title = t('title');
