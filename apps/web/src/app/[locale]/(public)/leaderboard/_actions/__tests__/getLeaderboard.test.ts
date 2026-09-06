@@ -4,6 +4,10 @@ import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import type { LeaderboardPage, RankedLeaderboardRow } from '@/lib/db/challenge-queries';
 import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
 
+import {
+  challengeQueriesMock,
+  challengeQueryMocks,
+} from '../../_lib/__test-support__/challenge-queries-mock';
 import type { LeaderboardModule, LeaderboardPeriod } from '../../_lib/types';
 
 // ---------------------------------------------------------------------------
@@ -14,27 +18,16 @@ vi.mock('next/cache', () => ({
   unstable_cache: (fn: (...args: unknown[]) => unknown) => fn,
 }));
 
-const mockGetAllTimeRanking = vi.fn();
-const mockGetWeeklyRanking = vi.fn();
-const mockGetMonthlyRanking = vi.fn();
-const mockGetUserAllTimeRankedRow = vi.fn();
-const mockGetUserWeeklyRankedRow = vi.fn();
-const mockGetUserMonthlyRankedRow = vi.fn();
-const mockGetUserAllTimeRank = vi.fn();
-const mockGetUserWeeklyRank = vi.fn();
-const mockGetUserMonthlyRank = vi.fn();
+vi.mock('@/lib/db/challenge-queries', () => challengeQueriesMock());
 
-vi.mock('@/lib/db/challenge-queries', () => ({
-  getAllTimeRanking: (...args: unknown[]) => mockGetAllTimeRanking(...args),
-  getWeeklyRanking: (...args: unknown[]) => mockGetWeeklyRanking(...args),
-  getMonthlyRanking: (...args: unknown[]) => mockGetMonthlyRanking(...args),
-  getUserAllTimeRankedRow: (...args: unknown[]) => mockGetUserAllTimeRankedRow(...args),
-  getUserWeeklyRankedRow: (...args: unknown[]) => mockGetUserWeeklyRankedRow(...args),
-  getUserMonthlyRankedRow: (...args: unknown[]) => mockGetUserMonthlyRankedRow(...args),
-  getUserAllTimeRank: (...args: unknown[]) => mockGetUserAllTimeRank(...args),
-  getUserWeeklyRank: (...args: unknown[]) => mockGetUserWeeklyRank(...args),
-  getUserMonthlyRank: (...args: unknown[]) => mockGetUserMonthlyRank(...args),
-}));
+const {
+  getAllTimeRanking: mockGetAllTimeRanking,
+  getWeeklyRanking: mockGetWeeklyRanking,
+  getMonthlyRanking: mockGetMonthlyRanking,
+  getUserAllTimeRankedRow: mockGetUserAllTimeRankedRow,
+  getUserWeeklyRankedRow: mockGetUserWeeklyRankedRow,
+  getUserMonthlyRankedRow: mockGetUserMonthlyRankedRow,
+} = challengeQueryMocks;
 
 vi.mock('@/lib/supabase/server');
 

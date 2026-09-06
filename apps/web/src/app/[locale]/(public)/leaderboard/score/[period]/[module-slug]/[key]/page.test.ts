@@ -13,6 +13,8 @@ import { notFound } from 'next/navigation';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { getUserMock } from '@/lib/supabase/__mocks__/server';
+
 vi.mock('next/navigation');
 
 vi.mock('next-intl/server', () => ({
@@ -29,11 +31,7 @@ vi.mock('@/i18n/routing', () => ({
   getPathname: () => '/',
 }));
 
-vi.mock('@/lib/supabase/server', () => ({
-  createClient: vi.fn(async () => ({
-    auth: { getUser: async () => ({ data: { user: null } }) },
-  })),
-}));
+vi.mock('@/lib/supabase/server');
 
 vi.mock('@/app/[locale]/(public)/leaderboard/_actions/getLeaderboard', () => ({
   getLeaderboard: vi.fn(async () => ({ rows: [], totalCount: 0, currentUserRank: null })),
@@ -82,6 +80,9 @@ const { renderToStaticMarkup } = await import('react-dom/server');
 beforeEach(() => {
   vi.mocked(notFound).mockClear();
   capturedBreadcrumbItems.length = 0;
+  // Every case here renders for a signed-out visitor; the page only asks who
+  // the viewer is to decide whether to highlight their own row.
+  getUserMock.mockResolvedValue({ data: { user: null } });
 });
 
 describe('ScoreLeaderboardDetailPage validation', () => {
