@@ -8,38 +8,9 @@
  * `Link` which prepends the active locale.
  */
 import type { GrantType } from '@/lib/db/data/grant-types';
-import {
-  getPositionKindDetailPath,
-  getPositionKindForTopicType,
-  getPositionPostAnchorPath,
-  isPositionKind,
-} from '@/lib/positions/kind';
+import { getPositionDetailPathForStoredType } from '@/lib/positions/routes';
 
-import { buildTopicPostPath } from '@/app/[locale]/(public)/topics/_lib/topic-paths';
-
-/**
- * Build a public detail path for a topic_post (no locale prefix). The
- * position_memory / position_puzzle topic types live under
- * `/practice/...#post-...` (matching NotificationItem's anchor scheme); all
- * others route to `/topics/...`. position_memory / position_puzzle no
- * longer earn grants today (see TOPIC_POST_GRANT_TOPIC_TYPES) — the
- * branches are kept so historical rows whose grants were issued before the
- * scope change still resolve to a usable link.
- */
-function buildTopicPostHref(topicType: string, topicKey: string, postId: string): string {
-  const positionKind = getPositionKindForTopicType(topicType);
-  if (positionKind) return getPositionPostAnchorPath(positionKind, topicKey, postId);
-  return buildTopicPostPath(topicType, topicKey, postId);
-}
-
-/**
- * Build a public detail path for a `positions` row (no locale prefix).
- * Returns `null` for position types without a dedicated detail page (e.g.,
- * `'sequence'`); callers render the row without a link in that case.
- */
-function buildPositionHref(positionType: string, positionId: string): string | null {
-  return isPositionKind(positionType) ? getPositionKindDetailPath(positionType, positionId) : null;
-}
+import { buildTopicPostHref } from '@/app/[locale]/(public)/topics/_lib/topic-paths';
 
 type TopicPostMeta = { id: string; topicType: string; topicKey: string };
 type PositionMeta = { id: string; type: string };
@@ -89,7 +60,7 @@ export function resolveGrantSourceMeta(
     const pos = positionMap.get(grant.sourceId);
     return {
       labelKey: 'position_creation',
-      href: pos ? buildPositionHref(pos.type, pos.id) : null,
+      href: pos ? getPositionDetailPathForStoredType(pos.type, pos.id) : null,
     };
   }
   return { labelKey: 'topic_post', href: null };

@@ -27,12 +27,8 @@ export default async function AdminActivityLogPage({
   const adminClient = createAdminClient();
   const userFilter = rawUser.trim();
 
-  const { logs, currentPage, totalPages, profileMap, actionTypes } = await fetchActivityLogPageData(
-    adminClient,
-    page,
-    actionFilter,
-    userFilter
-  );
+  const { logs, currentPage, totalPages, profileMap, targetLinks, actionTypes } =
+    await fetchActivityLogPageData(adminClient, page, actionFilter, userFilter);
 
   const buildHref = buildAdminListHref('/admin/activity-log', {
     action: actionFilter,
@@ -94,6 +90,7 @@ export default async function AdminActivityLogPage({
                 log={log}
                 profileMap={profileMap}
                 deletedUserLabel={t('deletedUser')}
+                targetLinks={targetLinks}
               />
             ))}
             {logs.length === 0 && (

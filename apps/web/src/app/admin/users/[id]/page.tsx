@@ -22,6 +22,7 @@ import { ALL_RANK_SLUGS, isMukyuSlug } from '@/lib/db/data/ranks';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 import { AdminDataTable } from '../../_components/AdminDataTable';
+import { AdminExternalLink } from '../../_components/AdminExternalLink';
 import { AdminPageLayout } from '../../_components/AdminPageLayout';
 import { AdminUserLink } from '../../_components/AdminUserLink';
 import { BanButton } from '../_components/BanButton';
@@ -147,15 +148,9 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
             </InfoRow>
             <InfoRow label={t('usersTable.username')}>
               {profile?.username ? (
-                <Link
-                  href={`/en/u/${encodeURIComponent(profile.username)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-primary hover:underline"
-                >
+                <AdminExternalLink path={`/u/${encodeURIComponent(profile.username)}`}>
                   {profile.username}
-                  <FaExternalLinkAlt className="h-3 w-3" />
-                </Link>
+                </AdminExternalLink>
               ) : (
                 '—'
               )}

@@ -1,3 +1,6 @@
+import { getPositionKindForTopicType, getPositionPostAnchorPath } from '@/lib/positions/kind';
+import { parseMoveTopicKey } from '@/lib/repertoires/move-topic-key';
+
 import type { TopicType } from './constants';
 
 /**
@@ -27,4 +30,58 @@ export function buildTopicPostPath(
   postId: string
 ): string {
   return `/topics/${topicSegment(topicType)}/${topicKey}/posts/${postId}`;
+}
+
+/**
+ * The public page a `topic_posts` row is read on, deep-linked at the post
+ * itself (or at `replyId` when linking a reply inside the thread).
+ *
+ * `topic_posts` is polymorphic but the routes that render it are not, so the
+ * topic type decides both the page and how the post is addressed on it:
+ *   - `square` / `opening` — the only types with a per-post detail page
+ *     ({@link buildTopicPostPath}). It renders the OP and its replies as one
+ *     `CommentNode` tree where every node carries `id="post-{id}"`, so a
+ *     reply is that URL plus `#post-{replyId}`.
+ *   - `position_memory` / `position_puzzle` — no detail page; the position
+ *     page renders the same inline tree, so both a post and a reply are an
+ *     anchor on it.
+ *   - `chunk` — likewise on `/chunks/{slug}`, but the comment tree only
+ *     mounts under `?tab=comments`; without the param the page opens on
+ *     Positions and the anchor has no target, so the param is required.
+ *   - `repertoire` — the course detail page renders the tree inline.
+ *   - `repertoire_move` — `topicKey` packs `${repertoireId}_${positionHash}`
+ *     and the hash is not reversible to a line here, so this routes to the
+ *     position resolver, which finds a line + ply reaching that position and
+ *     redirects to the move's thread. The post rides as a query parameter,
+ *     not a fragment: the resolver redirects server-side and fragments never
+ *     reach the server.
+ *
+ * The returned path carries no locale prefix.
+ */
+export function buildTopicPostHref(
+  topicType: TopicType | string,
+  topicKey: string,
+  postId: string,
+  replyId?: string
+): string {
+  const positionKind = getPositionKindForTopicType(topicType);
+  if (positionKind) {
+    return getPositionPostAnchorPath(positionKind, topicKey, replyId ?? postId);
+  }
+  const targetId = replyId ?? postId;
+  if (topicType === 'repertoire') {
+    return `/repertoires/${topicKey}#post-${targetId}`;
+  }
+  if (topicType === 'repertoire_move') {
+    const parsed = parseMoveTopicKey(topicKey);
+    if (parsed) {
+      return `/repertoires/${parsed.repertoireId}/position/${parsed.positionHash}?post=${targetId}`;
+    }
+    return `/repertoires#post-${targetId}`;
+  }
+  if (topicType === 'chunk') {
+    return `/chunks/${topicKey}?tab=comments#post-${targetId}`;
+  }
+  const baseUrl = buildTopicPostPath(topicType, topicKey, postId);
+  return replyId ? `${baseUrl}#post-${replyId}` : baseUrl;
 }

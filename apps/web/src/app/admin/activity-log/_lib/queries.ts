@@ -7,6 +7,7 @@ import type { Profile, UserActivityLog } from '@/lib/db/schema';
 import { getPaginationParams } from '@/lib/pagination';
 
 import { resolveUserFilter } from '../../_lib/resolve-user-filter';
+import { type ActivityTargetLinkMap, resolveActivityTargetLinks } from './target-links';
 
 const PAGE_SIZE = 20;
 
@@ -15,6 +16,7 @@ export type ActivityLogPageData = {
   currentPage: number;
   totalPages: number;
   profileMap: Map<string, Profile>;
+  targetLinks: ActivityTargetLinkMap;
   actionTypes: { action: string }[];
 };
 
@@ -74,6 +76,9 @@ export async function fetchActivityLogPageData(
       : [];
   const profileMap = new Map(lookupProfiles.map((p) => [p.id, p]));
 
+  // Resolve the public page each UGC target is read on
+  const targetLinks = await resolveActivityTargetLinks(logs);
+
   // Get distinct action types for filter dropdown
   const actionTypes = await db
     .selectDistinct({ action: userActivityLog.action })
@@ -85,6 +90,7 @@ export async function fetchActivityLogPageData(
     currentPage,
     totalPages,
     profileMap,
+    targetLinks,
     actionTypes,
   };
 }

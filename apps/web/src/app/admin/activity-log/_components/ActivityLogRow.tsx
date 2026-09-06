@@ -1,8 +1,14 @@
 import { AdminBadge, type AdminBadgeVariant } from '@/app/admin/_components/AdminBadge';
+import { AdminExternalLink } from '@/app/admin/_components/AdminExternalLink';
 import { AdminUserLink } from '@/app/admin/_components/AdminUserLink';
 import { formatDateTime } from '@/app/admin/_lib/format';
 
 import type { UserActivityLog } from '@/lib/db/schema';
+
+import { type ActivityTargetLinkMap, activityTargetKey } from '../_lib/target-links';
+
+/** Characters of the raw id shown for a target the row has no name for. */
+const ID_PREFIX_LENGTH = 8;
 
 function actionBadgeVariant(action: string): AdminBadgeVariant {
   switch (action) {
@@ -37,14 +43,79 @@ function actionBadgeVariant(action: string): AdminBadgeVariant {
   }
 }
 
+type ActivityTargetProps = {
+  log: UserActivityLog;
+  profileMap: Map<string, { username: string | null }>;
+  deletedUserLabel: string;
+  targetLinks: ActivityTargetLinkMap;
+};
+
+/**
+ * The Target column's content, minus the `[target_type]` prefix.
+ *
+ * Three kinds of target, in order: a person, who links to their admin detail
+ * page; a UGC row, which links out to the public page it is read on; and
+ * everything else, which is the raw id — the only handle left on a target
+ * whose row is gone or whose type has no page.
+ */
+function ActivityTarget({ log, profileMap, deletedUserLabel, targetLinks }: ActivityTargetProps) {
+  const metadata = log.metadata as Record<string, unknown> | null;
+
+  if (log.targetType === 'user' && log.targetId) {
+    return (
+      <AdminUserLink
+        userId={log.targetId}
+        username={profileMap.get(log.targetId)?.username}
+        deletedLabel={deletedUserLabel}
+      />
+    );
+  }
+
+  if (log.targetType === 'rank') {
+    return (
+      <span className="text-xs">
+        {metadata?.rankSlug ? String(metadata.rankSlug) : (log.targetId ?? '-')}
+      </span>
+    );
+  }
+
+  const link =
+    log.targetType && log.targetId
+      ? targetLinks.get(activityTargetKey(log.targetType, log.targetId))
+      : undefined;
+
+  if (link && log.targetId) {
+    return (
+      <AdminExternalLink path={link.path}>
+        <span className="text-xs">
+          {link.label ?? `${log.targetId.slice(0, ID_PREFIX_LENGTH)}...`}
+        </span>
+      </AdminExternalLink>
+    );
+  }
+
+  return (
+    <span className="text-xs" title={log.targetId ?? undefined}>
+      {log.targetId ?? '-'}
+    </span>
+  );
+}
+
 type ActivityLogRowProps = {
   log: UserActivityLog;
   profileMap: Map<string, { username: string | null }>;
   /** Shown for actors and targets whose profile row is gone. */
   deletedUserLabel: string;
+  /** Public links for this page's UGC targets, from `resolveActivityTargetLinks`. */
+  targetLinks: ActivityTargetLinkMap;
 };
 
-export function ActivityLogRow({ log, profileMap, deletedUserLabel }: ActivityLogRowProps) {
+export function ActivityLogRow({
+  log,
+  profileMap,
+  deletedUserLabel,
+  targetLinks,
+}: ActivityLogRowProps) {
   const metadataStr = log.metadata ? JSON.stringify(log.metadata) : '-';
   const metadata = log.metadata as Record<string, unknown> | null;
 
@@ -64,23 +135,12 @@ export function ActivityLogRow({ log, profileMap, deletedUserLabel }: ActivityLo
         {log.targetType ? (
           <>
             <span className="text-muted-foreground text-xs mr-1">[{log.targetType}]</span>
-            {log.targetType === 'user' && log.targetId ? (
-              <AdminUserLink
-                userId={log.targetId}
-                username={profileMap.get(log.targetId)?.username}
-                deletedLabel={deletedUserLabel}
-              />
-            ) : log.targetType === 'rank' ? (
-              <span className="text-xs">
-                {metadata?.rankSlug ? String(metadata.rankSlug) : (log.targetId ?? '-')}
-              </span>
-            ) : log.targetType === 'topic_post' && log.targetId ? (
-              <span className="text-xs" title={log.targetId}>
-                {log.targetId.slice(0, 8)}...
-              </span>
-            ) : (
-              <span className="text-xs">{log.targetId ?? '-'}</span>
-            )}
+            <ActivityTarget
+              log={log}
+              profileMap={profileMap}
+              deletedUserLabel={deletedUserLabel}
+              targetLinks={targetLinks}
+            />
           </>
         ) : (
           <span className="text-muted-foreground">-</span>
