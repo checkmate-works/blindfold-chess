@@ -7,6 +7,7 @@ export {
 export type { ThemeColors } from "@blindfold-chess/ui";
 
 export { ThemeProvider, useTheme } from "./ThemeProvider";
+export { useFeedbackColor } from "./use-feedback-color";
 
 export const spacing = {
   xs: 4,
