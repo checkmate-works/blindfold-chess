@@ -31,13 +31,6 @@ vi.mock('@/lib/db', async () => {
   return {
     ...(await actualDbSchema()),
     db: mockDb,
-    SOCIAL_AUTHOR_COLUMNS: {
-      username: 'username',
-      displayName: 'display_name',
-      avatarUrl: 'avatar_url',
-      flair: 'flair',
-      country: 'country',
-    },
     liveProfileJoinOn: vi.fn((ownerColumn: unknown) => ['liveProfileJoinOn', ownerColumn]),
   };
 });

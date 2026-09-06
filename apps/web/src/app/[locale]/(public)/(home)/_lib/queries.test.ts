@@ -68,18 +68,6 @@ vi.mock('@/lib/db', async () => ({
   profiles: { id: 'id' },
   topicPostRatings: { postId: 'post_id' },
   chessOpenings: { slug: 'slug', name: 'name', fen: 'fen' },
-  AUTHOR_PROFILE_COLUMNS: {
-    username: 'username',
-    displayName: 'display_name',
-    avatarUrl: 'avatar_url',
-  },
-  SOCIAL_AUTHOR_COLUMNS: {
-    username: 'username',
-    displayName: 'display_name',
-    avatarUrl: 'avatar_url',
-    flair: 'flair',
-    country: 'country',
-  },
   liveProfileJoinOn: (ownerColumn: unknown) => ['liveProfileJoinOn', ownerColumn],
 }));
 
