@@ -587,58 +587,6 @@ describe('fetchCountryStats', () => {
   });
 });
 
-/**
- * Helper to create a db.select mock that dispatches by table reference.
- *
- * fetchRankStats internally calls:
- *   1. db.select().from(profiles).where(...)          — via fetchFilteredUsers (skipped if 0 users)
- *   2. db.select().from(ranks)                        — all rank records (directly awaited)
- *   3. db.select().from(userRanks).where(...)         — user rank rows (skipped if 0 filtered users)
- */
-async function setupRankStatsMock(options: {
-  profileRows: Array<{ id: string; bannedAt: Date | null; deletedAt: Date | null }>;
-  rankRows: Array<{ id: number; slug: string }>;
-  userRankRows: Array<{ userId: string; rankId: number }>;
-}) {
-  const dbMod = await import('@/lib/db');
-  const mockSelect = dbMod.db.select as ReturnType<typeof vi.fn>;
-  const ranksRef = dbMod.ranks;
-  const userRanksRef = dbMod.userRanks;
-
-  mockSelect.mockImplementation(() => ({
-    from: vi.fn().mockImplementation((table: unknown) => {
-      if (table === ranksRef) {
-        // ranks query — directly awaited, no .where()
-        return {
-          where: vi.fn().mockReturnValue({
-            then: (resolve: (val: unknown[]) => void, reject?: (err: unknown) => void) =>
-              Promise.resolve(options.rankRows).then(resolve, reject),
-          }),
-          then: (resolve: (val: unknown[]) => void, reject?: (err: unknown) => void) =>
-            Promise.resolve(options.rankRows).then(resolve, reject),
-        };
-      } else if (table === userRanksRef) {
-        // userRanks query
-        return {
-          where: vi.fn().mockReturnValue({
-            then: (resolve: (val: unknown[]) => void, reject?: (err: unknown) => void) =>
-              Promise.resolve(options.userRankRows).then(resolve, reject),
-          }),
-        };
-      } else {
-        // Default: profiles and other tables
-        return {
-          where: vi.fn().mockReturnValue({
-            orderBy: vi.fn().mockResolvedValue([]),
-            then: (resolve: (val: unknown[]) => void, reject?: (err: unknown) => void) =>
-              Promise.resolve(options.profileRows).then(resolve, reject),
-          }),
-        };
-      }
-    }),
-  }));
-}
-
 describe('fetchRankStats', () => {
   it('should count all users as mukyu when no user has a rank', async () => {
     const mockUsers = [
@@ -649,7 +597,7 @@ describe('fetchRankStats', () => {
 
     const mockAdminClient = createMockAdminClient(mockUsers, { total: 3 });
 
-    await setupRankStatsMock({
+    await setupFilterMock({
       profileRows: [
         { id: 'user-1', bannedAt: null, deletedAt: null },
         { id: 'user-2', bannedAt: null, deletedAt: null },
@@ -683,7 +631,7 @@ describe('fetchRankStats', () => {
   it('should include all ranks from ALL_RANK_SLUGS in results', async () => {
     const mockAdminClient = createMockAdminClient([], { total: 0 });
 
-    await setupRankStatsMock({
+    await setupFilterMock({
       profileRows: [],
       rankRows: [
         { id: 1, slug: '5kyu' },
@@ -711,7 +659,7 @@ describe('fetchRankStats', () => {
 
     const mockAdminClient = createMockAdminClient(mockUsers, { total: 1 });
 
-    await setupRankStatsMock({
+    await setupFilterMock({
       profileRows: [{ id: 'user-1', bannedAt: null, deletedAt: null }],
       rankRows: [
         { id: 1, slug: '5kyu' },
@@ -743,7 +691,7 @@ describe('fetchRankStats', () => {
 
     const mockAdminClient = createMockAdminClient(mockUsers, { total: 2 });
 
-    await setupRankStatsMock({
+    await setupFilterMock({
       profileRows: [
         { id: 'user-1', bannedAt: null, deletedAt: null },
         { id: 'user-2', bannedAt: null, deletedAt: null },
@@ -783,7 +731,7 @@ describe('fetchRankStats', () => {
 
     const mockAdminClient = createMockAdminClient(mockUsers, { total: 5 });
 
-    await setupRankStatsMock({
+    await setupFilterMock({
       profileRows: [
         { id: 'user-1', bannedAt: null, deletedAt: null },
         { id: 'user-2', bannedAt: null, deletedAt: null },
@@ -820,7 +768,7 @@ describe('fetchRankStats', () => {
   it('should return all ranks with count 0 when there are no users', async () => {
     const mockAdminClient = createMockAdminClient([], { total: 0 });
 
-    await setupRankStatsMock({
+    await setupFilterMock({
       profileRows: [],
       rankRows: [
         { id: 1, slug: '5kyu' },
@@ -844,7 +792,7 @@ describe('fetchRankStats', () => {
   it('should assign correct colors from BELT_COLOR_HEX for each rank', async () => {
     const mockAdminClient = createMockAdminClient([], { total: 0 });
 
-    await setupRankStatsMock({
+    await setupFilterMock({
       profileRows: [],
       rankRows: [
         { id: 1, slug: '5kyu' },
@@ -871,7 +819,7 @@ describe('fetchRankStats', () => {
   it('should assign correct level values from seed data', async () => {
     const mockAdminClient = createMockAdminClient([], { total: 0 });
 
-    await setupRankStatsMock({
+    await setupFilterMock({
       profileRows: [],
       rankRows: [
         { id: 1, slug: '5kyu' },
@@ -903,7 +851,7 @@ describe('fetchRankStats', () => {
 
     const mockAdminClient = createMockAdminClient(mockUsers, { total: 2 });
 
-    await setupRankStatsMock({
+    await setupFilterMock({
       profileRows: [
         { id: 'user-1', bannedAt: null, deletedAt: null },
         { id: 'user-2', bannedAt: null, deletedAt: null },
@@ -936,7 +884,7 @@ describe('fetchRankStats', () => {
   it('should use name equal to slug for each rank', async () => {
     const mockAdminClient = createMockAdminClient([], { total: 0 });
 
-    await setupRankStatsMock({
+    await setupFilterMock({
       profileRows: [],
       rankRows: [
         { id: 1, slug: '5kyu' },
@@ -965,7 +913,7 @@ describe('fetchRankStats', () => {
 
     const mockAdminClient = createMockAdminClient(mockUsers, { total: 3 });
 
-    await setupRankStatsMock({
+    await setupFilterMock({
       profileRows: [
         { id: 'user-1', bannedAt: null, deletedAt: null },
         { id: 'user-2', bannedAt: new Date('2024-01-15'), deletedAt: null },

@@ -74,9 +74,16 @@ export function makeUser(
 /**
  * Configure the (already-mocked) `db.select` chain to dispatch by table
  * reference, returning the supplied row sets for ranks / user_ranks /
- * profiles. Used by the country / rank / signup-method filter tests so
- * they can declare the underlying data without re-implementing the
- * thenable chain in each test body.
+ * profiles. Used by the country / rank / signup-method filter tests and by
+ * `fetchRankStats` so they can declare the underlying data without
+ * re-implementing the thenable chain in each test body.
+ *
+ * Dispatching by table rather than by call order is what lets one helper
+ * serve both. `fetchRankStats` reads profiles (through `fetchFilteredUsers`),
+ * then ranks, then user_ranks — but skips the first and third when the filter
+ * matches nobody, so the sequence is not fixed. Each of the three branches
+ * also has to answer whether it is awaited directly or through `.where()`:
+ * the ranks query takes every row and has no `.where()` at all.
  *
  * Assumes `vi.mock('@/lib/db', ...)` has already replaced `db.select`
  * with a `vi.fn()` — see the top of `queries.test.ts`. We import
