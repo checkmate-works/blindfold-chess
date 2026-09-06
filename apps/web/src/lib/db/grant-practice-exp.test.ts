@@ -2,10 +2,11 @@
  * Unit tests for `grantPracticeExp` — the free-play practice EXP writer
  * introduced alongside the position-memory EXP feature.
  *
- * These tests mirror the mocking strategy used by `save-exp.test.ts`
- * (`grantChallengeExp`) but are kept in a separate file so we can install
- * dedicated mocks for `calculatePracticeExp` and `getModuleWeight` without
- * interfering with the existing challenge-flow test setup.
+ * Kept separate from the challenge-flow suite so `calculatePracticeExp` and
+ * `getModuleWeight` can be stubbed without disturbing its setup. The
+ * scaffolding both suites need -- the tx double, the schema and operator
+ * stubs, `buildExpInfo` over the mocked level curve -- comes from
+ * `__test-support__/exp-tx-mock`.
  *
  * Invariants verified:
  * - Calculator is called with `getModuleWeight(menuType)`
@@ -17,6 +18,14 @@
  *   does NOT re-upsert `user_exp` (matches challenge behavior)
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import {
+  buildExpInfoWith,
+  createExpMockTx,
+  drizzleOperatorMocks,
+  expDbMock,
+  expSchemaMock,
+} from '@/lib/db/__test-support__/exp-tx-mock';
 
 // ---------------------------------------------------------------------------
 // Mock setup
@@ -34,61 +43,17 @@ vi.mock('@blindfold-chess/features/exp', () => ({
   getModuleWeight: (...args: unknown[]) => mockGetModuleWeight(...args),
   getLevel: (...args: unknown[]) => mockGetLevel(...args),
   getLevelProgress: (...args: unknown[]) => mockGetLevelProgress(...args),
-  buildExpInfo: (
-    grantResult: { totalExp: number; alreadyGranted: boolean; existingAmount?: number },
-    grantedAmount: number
-  ) => {
-    // Mirrors the real buildExpInfo but routed through the mocked level
-    // functions so the tests keep controlling level-up behaviour.
-    const totalExp = grantResult.totalExp;
-    const level = mockGetLevel(totalExp) as number;
-    const progressPercent = Math.round(
-      (mockGetLevelProgress(totalExp) as { progress: number }).progress * 100
-    );
-    if (grantResult.alreadyGranted) {
-      return {
-        earnedExp: grantResult.existingAmount,
-        totalExp,
-        level,
-        levelUp: false,
-        progressPercent,
-      };
-    }
-    const levelBefore = mockGetLevel(totalExp - grantedAmount) as number;
-    return {
-      earnedExp: grantedAmount,
-      totalExp,
-      level,
-      levelUp: level > levelBefore,
-      progressPercent,
-    };
-  },
+  buildExpInfo: buildExpInfoWith(
+    (exp) => mockGetLevel(exp) as number,
+    (exp) => mockGetLevelProgress(exp) as { progress: number }
+  ),
 }));
 
-vi.mock('drizzle-orm', () => ({
-  sql: Object.assign((strings: TemplateStringsArray, ..._values: unknown[]) => strings.join(''), {
-    raw: (s: string) => s,
-  }),
-  and: (...args: unknown[]) => ({ __and: args }),
-  eq: (a: unknown, b: unknown) => ({ __eq: [a, b] }),
-}));
+vi.mock('drizzle-orm', () => drizzleOperatorMocks());
 
-vi.mock('./index', () => ({
-  db: { transaction: vi.fn() },
-}));
+vi.mock('./index', () => expDbMock());
 
-vi.mock('./schema', () => ({
-  expEvents: {
-    id: 'id',
-    userId: 'user_id',
-    source: 'source',
-    sourceId: 'source_id',
-    amount: 'amount',
-    metadata: 'metadata',
-    createdAt: 'created_at',
-  },
-  userExp: { userId: 'user_id', totalExp: 'total_exp' },
-}));
+vi.mock('./schema', () => expSchemaMock());
 
 // Stable UUID so we can assert on source_id propagation without a real RNG.
 // Must expose both the named export AND a default (node built-in module
@@ -102,74 +67,6 @@ vi.mock('node:crypto', async (importOriginal) => {
     randomUUID: stub,
   };
 });
-
-// ---------------------------------------------------------------------------
-// Mock tx builder (mirrors save-exp.test.ts helper)
-// ---------------------------------------------------------------------------
-
-function createMockTx(opts: {
-  totalExpAfterGrant: number;
-  insertedRows?: Array<{ id: string }>;
-  existingEventRow?: { amount: number; metadata: Record<string, unknown> };
-  existingUserExpRow?: { totalExp: number };
-}) {
-  const insertedRows = opts.insertedRows ?? [{ id: 'new-event-id' }];
-  const capturedValues: unknown[] = [];
-  const capturedOnConflictDoNothing: unknown[] = [];
-  const userExpUpsert = vi.fn();
-
-  let insertCallCount = 0;
-  let selectCallCount = 0;
-
-  const tx = {
-    insert: vi.fn().mockImplementation(() => {
-      insertCallCount++;
-      const callNum = insertCallCount;
-      return {
-        values: vi.fn().mockImplementation((value: unknown) => {
-          capturedValues.push(value);
-          if (callNum === 1) {
-            return {
-              onConflictDoNothing: vi.fn().mockImplementation((config: unknown) => {
-                capturedOnConflictDoNothing.push(config);
-                return {
-                  returning: vi.fn().mockResolvedValue(insertedRows),
-                };
-              }),
-            };
-          }
-          userExpUpsert(value);
-          return {
-            onConflictDoUpdate: vi.fn().mockReturnValue({
-              returning: vi.fn().mockResolvedValue([{ totalExp: opts.totalExpAfterGrant }]),
-            }),
-          };
-        }),
-      };
-    }),
-    select: vi.fn().mockImplementation(() => {
-      selectCallCount++;
-      const callNum = selectCallCount;
-      return {
-        from: vi.fn().mockReturnValue({
-          where: vi.fn().mockReturnValue({
-            limit: vi.fn().mockImplementation(() => {
-              if (callNum === 1) {
-                return Promise.resolve(opts.existingEventRow ? [opts.existingEventRow] : []);
-              }
-              return Promise.resolve(opts.existingUserExpRow ? [opts.existingUserExpRow] : []);
-            }),
-          }),
-        }),
-      };
-    }),
-    capturedValues,
-    capturedOnConflictDoNothing,
-    userExpUpsert,
-  };
-
-  return tx;
-}
 
 // ---------------------------------------------------------------------------
 // Tests
@@ -200,7 +97,7 @@ describe('grantPracticeExp', () => {
   });
 
   it('resolves the module weight via getModuleWeight and passes it to calculatePracticeExp', async () => {
-    const tx = createMockTx({ totalExpAfterGrant: 75 });
+    const tx = createExpMockTx({ totalExpAfterGrant: 75 });
     const { grantPracticeExp } = await import('./save-exp');
 
     await grantPracticeExp(tx as never, baseParams);
@@ -214,7 +111,7 @@ describe('grantPracticeExp', () => {
   });
 
   it("writes exp_events with source='practice_result' and the expected metadata shape", async () => {
-    const tx = createMockTx({ totalExpAfterGrant: 75 });
+    const tx = createExpMockTx({ totalExpAfterGrant: 75 });
     const { grantPracticeExp } = await import('./save-exp');
 
     await grantPracticeExp(tx as never, baseParams);
@@ -239,7 +136,7 @@ describe('grantPracticeExp', () => {
   });
 
   it('returns the generated expEventId for grant refetch propagation', async () => {
-    const tx = createMockTx({ totalExpAfterGrant: 75 });
+    const tx = createExpMockTx({ totalExpAfterGrant: 75 });
     const { grantPracticeExp } = await import('./save-exp');
 
     const result = await grantPracticeExp(tx as never, baseParams);
@@ -261,7 +158,7 @@ describe('grantPracticeExp', () => {
       accuracyMultiplier: 1.5,
       totalExp: 60,
     });
-    const tx = createMockTx({ totalExpAfterGrant: 120 });
+    const tx = createExpMockTx({ totalExpAfterGrant: 120 });
     const { grantPracticeExp } = await import('./save-exp');
 
     const result = await grantPracticeExp(tx as never, baseParams);
@@ -273,7 +170,7 @@ describe('grantPracticeExp', () => {
   });
 
   it('passes the partial-index predicate to onConflictDoNothing (regression guard)', async () => {
-    const tx = createMockTx({ totalExpAfterGrant: 75 });
+    const tx = createExpMockTx({ totalExpAfterGrant: 75 });
     const { grantPracticeExp } = await import('./save-exp');
 
     await grantPracticeExp(tx as never, baseParams);
@@ -308,7 +205,7 @@ describe('grantPracticeExp idempotent replay', () => {
     // grant-path idempotent branch is still exercised here by forcing an
     // insert conflict at the mock level. This guards the shared
     // `grantExp → alreadyGranted` branch for the practice flow specifically.
-    const tx = createMockTx({
+    const tx = createExpMockTx({
       totalExpAfterGrant: 9999, // would only be touched on a fresh insert
       insertedRows: [],
       existingEventRow: {
@@ -343,7 +240,7 @@ describe('grantPracticeExp idempotent replay', () => {
     // Simulate a historical grant recorded under a different calculation
     // (e.g. legacy 90 EXP). The replay must surface the stored 90, not the
     // current mock's 75. Guards against accidental "recompute on replay".
-    const tx = createMockTx({
+    const tx = createExpMockTx({
       totalExpAfterGrant: 0,
       insertedRows: [],
       existingEventRow: {
