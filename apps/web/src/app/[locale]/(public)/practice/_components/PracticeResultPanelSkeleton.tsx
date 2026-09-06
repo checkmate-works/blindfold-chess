@@ -1,5 +1,6 @@
 import {
   ExpGainSkeleton,
+  LeaderboardPreviewSkeleton,
   RecordSectionSkeleton,
   SignUpBannerSkeleton,
 } from '@/app/[locale]/(public)/practice/_components/skeletons';
@@ -111,25 +112,7 @@ export function PracticeResultPanelSkeleton({
           createPracticeResultClient. */}
       <CardLinkSkeleton />
 
-      {/* LeaderboardPreview — header + 5-row table (rank | name | score) */}
-      <div className="space-y-3">
-        <SectionTitle>
-          <span className="inline-block h-5 md:h-6 w-40 bg-muted rounded align-middle animate-pulse" />
-        </SectionTitle>
-        <div className="overflow-hidden rounded-lg border border-border">
-          <div className="h-10 bg-muted" />
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div
-              key={i}
-              className="flex items-center gap-3 border-t border-border px-4 py-3 animate-pulse"
-            >
-              <div className="h-4 w-6 bg-muted rounded" />
-              <div className="h-4 flex-1 bg-muted rounded" />
-              <div className="h-4 w-12 bg-muted rounded" />
-            </div>
-          ))}
-        </div>
-      </div>
+      <LeaderboardPreviewSkeleton />
     </>
   );
 }
