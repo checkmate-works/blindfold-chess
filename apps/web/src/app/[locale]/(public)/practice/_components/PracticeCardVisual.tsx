@@ -1,3 +1,5 @@
+'use client';
+
 import type { ReactNode } from 'react';
 
 import { ChessPiece } from '@/app/_components/chess/ChessPiece';
@@ -7,10 +9,26 @@ import { FaArrowRight } from 'react-icons/fa';
 
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
 import type { PracticeMenuType } from '@/lib/db/practice-menu-types';
-import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/games/board-themes';
+import { getBoardThemeColors } from '@/lib/games/board-themes';
 import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
 
-const THEME = getBoardThemeColors(DEFAULT_BOARD_THEME);
+import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+
+/**
+ * The board colours the reader chose in Preferences. The bands used to be
+ * drawn in the default (lichess brown) whatever that setting said, so a
+ * reader on the chess.com green or monotone board met thirteen brown
+ * examples of the boards they were about to play on. Reading the preference
+ * is what makes this file a client component: the setting lives in
+ * localStorage, and this page is statically rendered, so no server render
+ * can know it. Same source as every other board on the site
+ * (`useGamePreferences`); the practice segment's layout supplies the
+ * provider.
+ */
+function useThemeColors() {
+  const { preferences } = useGamePreferences();
+  return getBoardThemeColors(preferences.boardTheme);
+}
 
 /**
  * Every board in a band is this size. 64px is the largest at which
@@ -202,12 +220,7 @@ function VisualBody({ menuType }: { menuType: PracticeMenuType }): ReactNode {
                 fits here a piece is six pixels across and disappears under
                 the arrows crossing it. */}
             <Piece type="b" />
-            <BoardThumbnail
-              fen={EMPTY_BOARD}
-              flipped={false}
-              annotations={E4_DIAGONALS}
-              className={BOARD_SIZE}
-            />
+            <Board fen={EMPTY_BOARD} annotations={E4_DIAGONALS} />
           </Row>
           <span className="flex items-center gap-3">
             <Diagonal from="b1" to="h7" />
@@ -244,12 +257,7 @@ function VisualBody({ menuType }: { menuType: PracticeMenuType }): ReactNode {
         <>
           <Row>
             <Piece type="n" />
-            <BoardThumbnail
-              fen={EMPTY_BOARD}
-              flipped={false}
-              annotations={KNIGHT_ROUTE_E2_F5}
-              className={BOARD_SIZE}
-            />
+            <Board fen={EMPTY_BOARD} annotations={KNIGHT_ROUTE_E2_F5} />
           </Row>
           <Row>
             <SquareTile label="e2" />
@@ -274,9 +282,9 @@ function VisualBody({ menuType }: { menuType: PracticeMenuType }): ReactNode {
     case 'position_memory':
       return (
         <Row>
-          <BoardThumbnail fen={SAMPLE_POSITION} flipped={false} className={BOARD_SIZE} />
+          <Board fen={SAMPLE_POSITION} />
           <Arrow />
-          <BoardThumbnail fen={PARTIALLY_REBUILT_POSITION} flipped={false} className={BOARD_SIZE} />
+          <Board fen={PARTIALLY_REBUILT_POSITION} />
         </Row>
       );
 
@@ -285,12 +293,7 @@ function VisualBody({ menuType }: { menuType: PracticeMenuType }): ReactNode {
     case 'puzzle':
       return (
         <Row>
-          <BoardThumbnail
-            fen={SCHOLARS_MATE_POSITION}
-            flipped={false}
-            annotations={SCHOLARS_MATE_ANSWER}
-            className={BOARD_SIZE}
-          />
+          <Board fen={SCHOLARS_MATE_POSITION} annotations={SCHOLARS_MATE_ANSWER} />
           <Arrow />
           <Chip answer>Qxf7#</Chip>
         </Row>
@@ -307,12 +310,7 @@ function VisualBody({ menuType }: { menuType: PracticeMenuType }): ReactNode {
         <>
           <Row>
             <Piece type="n" />
-            <BoardThumbnail
-              fen={EMPTY_BOARD}
-              flipped={false}
-              annotations={KNIGHT_TOUR_OPENING}
-              className={BOARD_SIZE}
-            />
+            <Board fen={EMPTY_BOARD} annotations={KNIGHT_TOUR_OPENING} />
           </Row>
           <Row>
             <Notation>4 / 64</Notation>
@@ -346,7 +344,7 @@ function VisualBody({ menuType }: { menuType: PracticeMenuType }): ReactNode {
         <Row>
           <Notation className="max-w-[7.5rem] truncate">r1bqkb1r/pp…</Notation>
           <Arrow />
-          <BoardThumbnail fen={SAMPLE_POSITION} flipped={false} className={BOARD_SIZE} />
+          <Board fen={SAMPLE_POSITION} />
         </Row>
       );
 
@@ -375,6 +373,34 @@ function Row({ children }: { children: ReactNode }) {
 }
 
 /**
+ * A board in a band: the reader's own board colours, always `BOARD_SIZE`,
+ * always white at the bottom. The orientation is pinned rather than left to
+ * `BoardThumbnail`, which otherwise turns the board around whenever the FEN
+ * says black is to move — a band is a picture of a task, and the tasks must
+ * not face different ways depending on which side each example's position
+ * happens to be waiting on.
+ */
+function Board({
+  fen,
+  annotations = null,
+}: {
+  fen: string;
+  annotations?: BoardAnnotations | null;
+}) {
+  const { preferences } = useGamePreferences();
+
+  return (
+    <BoardThumbnail
+      fen={fen}
+      flipped={false}
+      annotations={annotations}
+      boardTheme={preferences.boardTheme}
+      className={BOARD_SIZE}
+    />
+  );
+}
+
+/**
  * The one mark that says "this is what you answer". Every band shows a
  * question already answered, and this ring is how the answer is told apart
  * from the question around it — a swatch, a tile, a chip or a written move,
@@ -387,10 +413,11 @@ const ANSWER_RING = 'ring-2 ring-primary/60';
  * light/dark information the board would.
  */
 function SquareTile({ label, answer = false }: { label: Square; answer?: boolean }) {
+  const theme = useThemeColors();
   const colorClasses =
     computeSquareColor(label) === 'light'
-      ? `${THEME.light} ${THEME.lightCoordinates}`
-      : `${THEME.dark} ${THEME.darkCoordinates}`;
+      ? `${theme.light} ${theme.lightCoordinates}`
+      : `${theme.dark} ${theme.darkCoordinates}`;
 
   return (
     <span
@@ -412,7 +439,7 @@ function SquareTile({ label, answer = false }: { label: Square; answer?: boolean
 function MarkedBoard({ marks }: { marks: { square: Square; role: 'question' | 'answer' }[] }) {
   return (
     <span className="relative inline-block">
-      <BoardThumbnail fen={EMPTY_BOARD} flipped={false} className={BOARD_SIZE} />
+      <Board fen={EMPTY_BOARD} />
       {marks.map(({ square, role }) => {
         const file = square.charCodeAt(0) - 'a'.charCodeAt(0);
         const rank = Number(square[1]);
@@ -439,9 +466,11 @@ function MarkedBoard({ marks }: { marks: { square: Square; role: 'question' | 'a
 
 /** A square-sized block of one board colour: the shape of a "light or dark" answer. */
 function Swatch({ tone, answer = false }: { tone: 'light' | 'dark'; answer?: boolean }) {
+  const theme = useThemeColors();
+
   return (
     <span
-      className={`size-7 rounded ${tone === 'light' ? THEME.light : THEME.dark} ${
+      className={`size-7 rounded ${tone === 'light' ? theme.light : theme.dark} ${
         answer ? ANSWER_RING : 'ring-1 ring-border'
       }`}
     />
