@@ -5,6 +5,7 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
+import { resolveAuthorName } from '@/lib/users/display-name';
 
 import { attachPostFenFromForm } from '@/app/[locale]/(public)/topics/_actions/attachPostFen';
 import { attachPostPgn } from '@/app/[locale]/(public)/topics/_actions/attachPostPgn';
@@ -171,7 +172,7 @@ export function createTopicPostDetailPage<
         : null;
 
     const tCommon = await getTranslations({ locale, namespace: 'Common' });
-    const authorName = post.author?.displayName || post.author?.username || tCommon('deletedUser');
+    const authorName = resolveAuthorName(post.author, { fallback: tCommon('deletedUser') });
 
     const view = await config.buildView({ locale, params: resolved, topic, post, authorName });
 

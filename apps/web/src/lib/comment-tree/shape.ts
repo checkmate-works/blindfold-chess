@@ -15,6 +15,7 @@
  *
  * Pure module: safe to import from client components.
  */
+import { resolveAuthorName } from '@/lib/users/display-name';
 
 /** Anything with children of its own type. */
 type HasChildren<N> = { children: N[] };
@@ -69,7 +70,7 @@ export type FlatReply<N> = {
  */
 function displayNameOf(node: Attributable): string | null {
   if (node.deletedAt) return null;
-  return node.author?.displayName || node.author?.username || null;
+  return resolveAuthorName(node.author, { fallback: null });
 }
 
 /**

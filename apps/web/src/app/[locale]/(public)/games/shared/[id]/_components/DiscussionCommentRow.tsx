@@ -4,6 +4,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import type { Side } from '@blindfold-chess/types';
 
 import { buildProfileHref } from '@/lib/users/author-profile';
+import { resolveAuthorName } from '@/lib/users/display-name';
 
 import { formatAbsoluteDateTime } from '@/app/[locale]/(public)/topics/_lib/absolute-time';
 import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
@@ -30,7 +31,7 @@ export function DiscussionCommentRow({ node, locale, moves, startingFen, playerC
   const t = useTranslations('sharedGames');
   const tCommon = useTranslations('Common');
 
-  const displayName = node.author?.displayName || node.author?.username || tCommon('deletedUser');
+  const displayName = resolveAuthorName(node.author, { fallback: tCommon('deletedUser') });
   const profileHref = buildProfileHref(node.author);
   const replyCount = countDescendants(node);
 

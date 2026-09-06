@@ -9,6 +9,7 @@ import { getStartingFen } from '@blindfold-chess/features/chess-core';
 
 import { truncateContent } from '@/lib/content/truncate-content';
 import { MiniBoard } from '@/lib/positions/ui/MiniBoard';
+import { resolveAuthorName } from '@/lib/users/display-name';
 
 import { PostFooter } from '@/app/[locale]/(public)/topics/_components/PostFooter';
 import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';
@@ -54,7 +55,7 @@ export const TopicPostCard = memo(function TopicPostCard({
 }: Props) {
   const tTopics = useTranslations('topics');
   const tCommon = useTranslations('Common');
-  const displayName = post.author?.displayName || post.author?.username || tCommon('deletedUser');
+  const displayName = resolveAuthorName(post.author, { fallback: tCommon('deletedUser') });
   const contentPreview = truncateContent(post.content);
   const isTruncated = contentPreview !== post.content;
   const isOpening = post.topicType === 'opening';

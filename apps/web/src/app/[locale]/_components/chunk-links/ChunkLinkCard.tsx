@@ -4,6 +4,7 @@ import { useState } from 'react';
 
 import type { ChunkLinkCardItem } from '@/lib/chunks/types';
 import { buildProfileHref } from '@/lib/users/author-profile';
+import { resolveAuthorName } from '@/lib/users/display-name';
 
 import { formatAbsoluteDateTime } from '@/app/[locale]/(public)/topics/_lib/absolute-time';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
@@ -86,7 +87,7 @@ export function ChunkLinkCard<T extends ChunkLinkCardItem>({
   // from the most recent link in the run.
   const head = items[0];
   const latest = items[items.length - 1];
-  const displayName = head.suggester?.displayName || head.suggester?.username || labels.deletedUser;
+  const displayName = resolveAuthorName(head.suggester, { fallback: labels.deletedUser });
   const profileHref = buildProfileHref(head.suggester);
 
   return (

@@ -1,6 +1,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { resolveAuthorName } from '@/lib/users/display-name';
+
 type PlayerInfo = {
   username: string;
   displayName?: string | null;
@@ -13,7 +15,7 @@ type Props = {
 };
 
 export function PlayerCell({ row, locale }: Props) {
-  const name = row.displayName || row.username;
+  const name = resolveAuthorName(row, { fallback: row.username });
 
   return (
     <Link href={`/${locale}/u/${row.username}`} className="flex items-center gap-3 min-w-0 group">

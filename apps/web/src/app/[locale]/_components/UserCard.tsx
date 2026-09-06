@@ -3,6 +3,8 @@ import type { ReactNode } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { resolveAuthorName } from '@/lib/users/display-name';
+
 type Props = {
   username: string;
   displayName: string | null;
@@ -12,7 +14,7 @@ type Props = {
 };
 
 export function UserCard({ username, displayName, avatarUrl, locale, actions }: Props) {
-  const name = displayName || username;
+  const name = resolveAuthorName({ displayName, username }, { fallback: username });
 
   return (
     <div className="flex items-center gap-4 rounded-lg border border-border p-4 transition-colors hover:bg-muted/50">

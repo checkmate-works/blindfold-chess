@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { buildProfileHref } from '@/lib/users/author-profile';
+import { resolveAuthorName } from '@/lib/users/display-name';
 
 import { GameCommentBody } from '@/app/[locale]/(public)/games/shared/[id]/_components/GameCommentBody';
 import { CommentNodeLayout } from '@/app/[locale]/_components/CommentNodeLayout';
@@ -92,7 +93,7 @@ export function CommentNode({ node, replyGroups, flatReplies, replyToDisplayName
   const [localUpdatedAt, setLocalUpdatedAt] = useState<Date>(new Date(node.updatedAt));
 
   const isDeleted = node.deletedAt !== null;
-  const displayName = node.author?.displayName || node.author?.username || tCommon('deletedUser');
+  const displayName = resolveAuthorName(node.author, { fallback: tCommon('deletedUser') });
   const profileHref = buildProfileHref(node.author);
 
   // Tombstones never run spoiler / like / reply / delete affordances — those

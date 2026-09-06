@@ -10,6 +10,7 @@ import { truncateContent } from '@/lib/content/truncate-content';
 import type { LikeMeta } from '@/lib/db/like-queries';
 import type { ReplyMeta } from '@/lib/db/reply-meta-queries';
 import type { SocialAuthorProfile } from '@/lib/users/author-profile';
+import { resolveAuthorName } from '@/lib/users/display-name';
 
 import { LinkedText } from '@/app/[locale]/_components';
 import { ActivityCard } from '@/app/[locale]/_components/ActivityCard';
@@ -93,7 +94,7 @@ export function BaseTopicPostCard({
   // can't see the full text.
   const [isClamped, setIsClamped] = useState(false);
   const bodyRef = useRef<HTMLParagraphElement>(null);
-  const displayName = author?.displayName || author?.username || tCommon('deletedUser');
+  const displayName = resolveAuthorName(author, { fallback: tCommon('deletedUser') });
   const hasContent = content.length > 0;
   const contentPreview = truncateContent(content);
   const showSpoilerOverlay = isSpoiler && !isRevealed;
