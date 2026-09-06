@@ -3,7 +3,6 @@
 // eslint-disable-next-line no-restricted-imports -- UnbanButton has no router.refresh(); this revalidate is what re-renders the admin users surface with the cleared ban
 import { revalidatePath, revalidateTag } from 'next/cache';
 
-import * as Sentry from '@sentry/nextjs';
 import { eq } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
@@ -62,7 +61,7 @@ export async function unbanUser(targetUserId: string): Promise<ActionResult> {
       });
     });
   } catch (error) {
-    Sentry.captureException(error);
+    captureError(error, `Failed to clear ban state for user ${targetUserId}`);
     // Rollback Supabase Auth: re-ban the user, restoring original bannedAt
     await adminClient.auth.admin.updateUserById(targetUserId, {
       ban_duration: '876000h',
