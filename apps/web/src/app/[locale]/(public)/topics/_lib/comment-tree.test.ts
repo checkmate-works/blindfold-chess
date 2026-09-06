@@ -1,29 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
+import { makePost } from './__test-support__/post-fixture';
 import { buildCommentTree, countDescendants, flattenReplies, groupReplies } from './comment-tree';
 import type { PostWithReplyMeta } from './shared';
-
-function makePost(overrides: Partial<PostWithReplyMeta> & { id: string }): PostWithReplyMeta {
-  const defaults: PostWithReplyMeta = {
-    id: overrides.id,
-    userId: 'user-default',
-    topicType: 'position_puzzle',
-    topicKey: 'pos-1',
-    parentId: null,
-    rootPostId: null,
-    content: 'content',
-    replyPermission: 'everyone',
-    isSpoiler: false,
-    imageAttachmentCount: 0,
-    deletedAt: null,
-    createdAt: new Date('2026-01-01T00:00:00Z'),
-    updatedAt: new Date('2026-01-01T00:00:00Z'),
-    author: null,
-    replyMeta: { replyCount: 0, latestReplyAt: null, repliers: [], uniqueReplierCount: 0 },
-    likeMeta: { likeCount: 0, likedByMe: false },
-  } as PostWithReplyMeta;
-  return { ...defaults, ...overrides };
-}
 
 describe('buildCommentTree', () => {
   it('returns each top-level post as a root with empty children when there are no replies', () => {
