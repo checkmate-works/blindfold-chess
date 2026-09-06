@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { View, StyleSheet } from "react-native";
 import { spacing } from "../theme";
 import { OptionsField } from "./OptionsField";
@@ -43,3 +44,42 @@ const styles = StyleSheet.create({
     gap: spacing.lg,
   },
 });
+
+type TimeLimitOnlySettingsProps = {
+  timeLimit: number;
+  onUpdateTimeLimit: (timeLimit: number) => void;
+};
+
+/**
+ * {@link TimeLimitSettingsForm} bound to one module's i18n namespace, as that
+ * module's `SettingsForm`.
+ *
+ * square-colors, board-symmetry and diagonal-quiz each had this as a file of
+ * its own, and the three were identical apart from the namespace in the two
+ * message keys -- which is the only thing a module with no other setting gets
+ * to decide.
+ *
+ * A module that grows a second setting stops calling this and writes its own
+ * `SettingsForm` composing `OptionsField`, the way legal-moves and
+ * coordinate-quiz already do. That is the intended exit, not a reason to add
+ * parameters here.
+ */
+export function createTimeLimitSettingsForm(i18nNamespace: string) {
+  return function SettingsForm({
+    timeLimit,
+    onUpdateTimeLimit,
+  }: TimeLimitOnlySettingsProps) {
+    const { t } = useTranslation();
+
+    return (
+      <TimeLimitSettingsForm
+        timeLimit={timeLimit}
+        onUpdateTimeLimit={onUpdateTimeLimit}
+        timeLimitLabel={t(`${i18nNamespace}.settings.timeLimit`)}
+        formatSeconds={(seconds) =>
+          t(`${i18nNamespace}.settings.seconds`, { seconds })
+        }
+      />
+    );
+  };
+}
