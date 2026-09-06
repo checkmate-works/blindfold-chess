@@ -9,6 +9,11 @@ import { vi } from 'vitest';
 // cached query — which is exactly what happened when a shared predicate grew a
 // new import. `unstable_cache` passes the function straight through because
 // the tests care what the query returns, not that it was memoized.
+//
+// Twenty-six files were declaring one anyway, each keeping whichever one or
+// two of the three it happened to need. Do not add another: reach the spies
+// with `import { revalidateTag } from 'next/cache'`, which `clearMocks`
+// resets between tests like any other.
 vi.mock('next/cache', () => ({
   unstable_cache: (fn: (...args: unknown[]) => unknown) => fn,
   revalidatePath: vi.fn(),
