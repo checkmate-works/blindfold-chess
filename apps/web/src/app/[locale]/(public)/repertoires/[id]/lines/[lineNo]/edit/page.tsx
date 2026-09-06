@@ -11,8 +11,10 @@ import { notFound } from 'next/navigation';
 import { formatMovesToPgn } from '@blindfold-chess/features/chess-core';
 
 import { getOptionalUser } from '@/lib/auth';
-import { isEmptyBoardAnnotations } from '@/lib/board-annotations/types';
-import { getAnnotationsForRepertoire } from '@/lib/repertoires/annotation-queries';
+import {
+  getAnnotationsForRepertoire,
+  toLineFormAnnotationInputs,
+} from '@/lib/repertoires/annotation-queries';
 import { lineFallbackTitle } from '@/lib/repertoires/line-display-name';
 import { getRepertoireLineForViewer, listChaptersForRepertoire } from '@/lib/repertoires/queries';
 import { replayRepertoireLine } from '@/lib/repertoires/replay-line';
@@ -69,14 +71,7 @@ export default async function EditRepertoireLinePage({ params }: Props) {
     getAnnotationsForRepertoire(id),
     listChaptersForRepertoire(id),
   ]);
-  const initialAnnotations = Object.fromEntries(
-    [...annotationViews].filter(([, v]) => v.text).map(([key, v]) => [key, v.text])
-  );
-  const initialShapes = Object.fromEntries(
-    [...annotationViews]
-      .filter(([, v]) => !isEmptyBoardAnnotations(v.shapes))
-      .map(([key, v]) => [key, v.shapes])
-  );
+  const { initialAnnotations, initialShapes } = toLineFormAnnotationInputs(annotationViews);
 
   // `chapters`: the sections this line can be re-filed into. Empty for a
   // course with no chapters, which hides the picker rather than offering only

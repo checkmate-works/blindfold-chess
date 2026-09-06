@@ -2,6 +2,7 @@ import { eq } from 'drizzle-orm';
 
 import { parseBoardAnnotations } from '@/lib/board-annotations/parse';
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
+import { isEmptyBoardAnnotations } from '@/lib/board-annotations/types';
 import { db, repertoireAnnotations } from '@/lib/db';
 
 /** A single position's owner-authored note + board markup. */
@@ -42,4 +43,30 @@ export async function getAnnotationsForRepertoire(
     });
   }
   return map;
+}
+
+/**
+ * {@link getAnnotationsForRepertoire}'s map split into the two records
+ * `LineForm` seeds its note editor and its drawing surface from.
+ *
+ * Both the new-line and edit-line pages need this, and neither wants the
+ * empties: a position with a blank note or nothing drawn on it would give the
+ * form a key whose value is indistinguishable from "the author cleared it",
+ * which is what its dirty check compares against.
+ */
+export function toLineFormAnnotationInputs(annotations: Map<string, AnnotationView>): {
+  initialAnnotations: Record<string, string>;
+  initialShapes: Record<string, BoardAnnotations>;
+} {
+  const entries = [...annotations];
+  return {
+    initialAnnotations: Object.fromEntries(
+      entries.filter(([, v]) => v.text).map(([key, v]) => [key, v.text])
+    ),
+    initialShapes: Object.fromEntries(
+      entries
+        .filter(([, v]) => !isEmptyBoardAnnotations(v.shapes))
+        .map(([key, v]) => [key, v.shapes])
+    ),
+  };
 }
