@@ -6,6 +6,7 @@ import {
   STANDARD_RANK_ROWS,
   createMockAdminClient,
   makeUser,
+  mockProfilesSelect,
   setupFilterMock,
 } from './__test-helpers__/admin-users-mocks';
 import { EMPTY_ADMIN_USER_FILTERS } from './filters';
@@ -162,20 +163,10 @@ describe('fetchUsersPageData', () => {
     const mockAdminClient = createMockAdminClient(mockUsers, { total: 3 });
 
     // Mock profiles: user-1 is active, user-2 is banned, user-3 has no profile (anonymous)
-    const { db } = await import('@/lib/db');
-    const mockSelect = db.select as ReturnType<typeof vi.fn>;
-    mockSelect.mockReturnValue({
-      from: vi.fn().mockReturnValue({
-        where: vi.fn().mockReturnValue({
-          orderBy: vi.fn().mockResolvedValue([]),
-          then: (resolve: (val: unknown[]) => void) =>
-            Promise.resolve([
-              { id: 'user-1', bannedAt: null, deletedAt: null },
-              { id: 'user-2', bannedAt: new Date('2024-01-15'), deletedAt: null },
-            ]).then(resolve),
-        }),
-      }),
-    });
+    await mockProfilesSelect([
+      { id: 'user-1', bannedAt: null, deletedAt: null },
+      { id: 'user-2', bannedAt: new Date('2024-01-15'), deletedAt: null },
+    ]);
 
     const result = await fetchUsersPageData(mockAdminClient as never, 1, {
       ...EMPTY_ADMIN_USER_FILTERS,
@@ -194,20 +185,10 @@ describe('fetchUsersPageData', () => {
 
     const mockAdminClient = createMockAdminClient(mockUsers, { total: 2 });
 
-    const { db } = await import('@/lib/db');
-    const mockSelect = db.select as ReturnType<typeof vi.fn>;
-    mockSelect.mockReturnValue({
-      from: vi.fn().mockReturnValue({
-        where: vi.fn().mockReturnValue({
-          orderBy: vi.fn().mockResolvedValue([]),
-          then: (resolve: (val: unknown[]) => void) =>
-            Promise.resolve([
-              { id: 'user-1', bannedAt: null, deletedAt: null },
-              { id: 'user-2', bannedAt: new Date('2024-01-15'), deletedAt: null },
-            ]).then(resolve),
-        }),
-      }),
-    });
+    await mockProfilesSelect([
+      { id: 'user-1', bannedAt: null, deletedAt: null },
+      { id: 'user-2', bannedAt: new Date('2024-01-15'), deletedAt: null },
+    ]);
 
     const result = await fetchUsersPageData(mockAdminClient as never, 1, {
       ...EMPTY_ADMIN_USER_FILTERS,
@@ -226,20 +207,10 @@ describe('fetchUsersPageData', () => {
 
     const mockAdminClient = createMockAdminClient(mockUsers, { total: 2 });
 
-    const { db } = await import('@/lib/db');
-    const mockSelect = db.select as ReturnType<typeof vi.fn>;
-    mockSelect.mockReturnValue({
-      from: vi.fn().mockReturnValue({
-        where: vi.fn().mockReturnValue({
-          orderBy: vi.fn().mockResolvedValue([]),
-          then: (resolve: (val: unknown[]) => void) =>
-            Promise.resolve([
-              { id: 'user-1', bannedAt: null, deletedAt: null },
-              { id: 'user-2', bannedAt: null, deletedAt: new Date('2024-06-01') },
-            ]).then(resolve),
-        }),
-      }),
-    });
+    await mockProfilesSelect([
+      { id: 'user-1', bannedAt: null, deletedAt: null },
+      { id: 'user-2', bannedAt: null, deletedAt: new Date('2024-06-01') },
+    ]);
 
     const result = await fetchUsersPageData(mockAdminClient as never, 1, {
       ...EMPTY_ADMIN_USER_FILTERS,
@@ -292,21 +263,11 @@ describe('fetchCountryStats', () => {
 
     const mockAdminClient = createMockAdminClient(mockUsers, { total: 3 });
 
-    const { db } = await import('@/lib/db');
-    const mockSelect = db.select as ReturnType<typeof vi.fn>;
-    mockSelect.mockReturnValue({
-      from: vi.fn().mockReturnValue({
-        where: vi.fn().mockReturnValue({
-          orderBy: vi.fn().mockResolvedValue([]),
-          then: (resolve: (val: unknown[]) => void) =>
-            Promise.resolve([
-              { id: 'user-1', country: 'JP', bannedAt: null, deletedAt: null },
-              { id: 'user-2', country: 'US', bannedAt: null, deletedAt: null },
-              { id: 'user-3', country: 'JP', bannedAt: null, deletedAt: null },
-            ]).then(resolve),
-        }),
-      }),
-    });
+    await mockProfilesSelect([
+      { id: 'user-1', country: 'JP', bannedAt: null, deletedAt: null },
+      { id: 'user-2', country: 'US', bannedAt: null, deletedAt: null },
+      { id: 'user-3', country: 'JP', bannedAt: null, deletedAt: null },
+    ]);
 
     const result = await fetchCountryStats(mockAdminClient as never, EMPTY_ADMIN_USER_FILTERS);
 
@@ -327,23 +288,13 @@ describe('fetchCountryStats', () => {
 
     const mockAdminClient = createMockAdminClient(mockUsers, { total: 5 });
 
-    const { db } = await import('@/lib/db');
-    const mockSelect = db.select as ReturnType<typeof vi.fn>;
-    mockSelect.mockReturnValue({
-      from: vi.fn().mockReturnValue({
-        where: vi.fn().mockReturnValue({
-          orderBy: vi.fn().mockResolvedValue([]),
-          then: (resolve: (val: unknown[]) => void) =>
-            Promise.resolve([
-              { id: 'user-1', country: 'FR', bannedAt: null, deletedAt: null },
-              { id: 'user-2', country: 'US', bannedAt: null, deletedAt: null },
-              { id: 'user-3', country: 'US', bannedAt: null, deletedAt: null },
-              { id: 'user-4', country: 'US', bannedAt: null, deletedAt: null },
-              { id: 'user-5', country: 'FR', bannedAt: null, deletedAt: null },
-            ]).then(resolve),
-        }),
-      }),
-    });
+    await mockProfilesSelect([
+      { id: 'user-1', country: 'FR', bannedAt: null, deletedAt: null },
+      { id: 'user-2', country: 'US', bannedAt: null, deletedAt: null },
+      { id: 'user-3', country: 'US', bannedAt: null, deletedAt: null },
+      { id: 'user-4', country: 'US', bannedAt: null, deletedAt: null },
+      { id: 'user-5', country: 'FR', bannedAt: null, deletedAt: null },
+    ]);
 
     const result = await fetchCountryStats(mockAdminClient as never, EMPTY_ADMIN_USER_FILTERS);
 
@@ -362,21 +313,11 @@ describe('fetchCountryStats', () => {
 
     const mockAdminClient = createMockAdminClient(mockUsers, { total: 3 });
 
-    const { db } = await import('@/lib/db');
-    const mockSelect = db.select as ReturnType<typeof vi.fn>;
-    mockSelect.mockReturnValue({
-      from: vi.fn().mockReturnValue({
-        where: vi.fn().mockReturnValue({
-          orderBy: vi.fn().mockResolvedValue([]),
-          then: (resolve: (val: unknown[]) => void) =>
-            Promise.resolve([
-              { id: 'user-1', country: null, bannedAt: null, deletedAt: null },
-              { id: 'user-2', country: 'JP', bannedAt: null, deletedAt: null },
-              { id: 'user-3', country: null, bannedAt: null, deletedAt: null },
-            ]).then(resolve),
-        }),
-      }),
-    });
+    await mockProfilesSelect([
+      { id: 'user-1', country: null, bannedAt: null, deletedAt: null },
+      { id: 'user-2', country: 'JP', bannedAt: null, deletedAt: null },
+      { id: 'user-3', country: null, bannedAt: null, deletedAt: null },
+    ]);
 
     const result = await fetchCountryStats(mockAdminClient as never, EMPTY_ADMIN_USER_FILTERS);
 
@@ -403,21 +344,11 @@ describe('fetchCountryStats', () => {
 
     const mockAdminClient = createMockAdminClient(mockUsers, { total: 3 });
 
-    const { db } = await import('@/lib/db');
-    const mockSelect = db.select as ReturnType<typeof vi.fn>;
-    mockSelect.mockReturnValue({
-      from: vi.fn().mockReturnValue({
-        where: vi.fn().mockReturnValue({
-          orderBy: vi.fn().mockResolvedValue([]),
-          then: (resolve: (val: unknown[]) => void) =>
-            Promise.resolve([
-              { id: 'user-1', country: 'JP', bannedAt: null, deletedAt: null },
-              { id: 'user-2', country: 'US', bannedAt: new Date('2024-01-15'), deletedAt: null },
-              { id: 'user-3', country: 'JP', bannedAt: null, deletedAt: null },
-            ]).then(resolve),
-        }),
-      }),
-    });
+    await mockProfilesSelect([
+      { id: 'user-1', country: 'JP', bannedAt: null, deletedAt: null },
+      { id: 'user-2', country: 'US', bannedAt: new Date('2024-01-15'), deletedAt: null },
+      { id: 'user-3', country: 'JP', bannedAt: null, deletedAt: null },
+    ]);
 
     const result = await fetchCountryStats(mockAdminClient as never, {
       ...EMPTY_ADMIN_USER_FILTERS,
@@ -437,21 +368,11 @@ describe('fetchCountryStats', () => {
 
     const mockAdminClient = createMockAdminClient(mockUsers, { total: 3 });
 
-    const { db } = await import('@/lib/db');
-    const mockSelect = db.select as ReturnType<typeof vi.fn>;
-    mockSelect.mockReturnValue({
-      from: vi.fn().mockReturnValue({
-        where: vi.fn().mockReturnValue({
-          orderBy: vi.fn().mockResolvedValue([]),
-          then: (resolve: (val: unknown[]) => void) =>
-            Promise.resolve([
-              { id: 'user-1', country: 'JP', bannedAt: null, deletedAt: null },
-              { id: 'user-2', country: 'US', bannedAt: new Date('2024-01-15'), deletedAt: null },
-              { id: 'user-3', country: 'FR', bannedAt: new Date('2024-02-01'), deletedAt: null },
-            ]).then(resolve),
-        }),
-      }),
-    });
+    await mockProfilesSelect([
+      { id: 'user-1', country: 'JP', bannedAt: null, deletedAt: null },
+      { id: 'user-2', country: 'US', bannedAt: new Date('2024-01-15'), deletedAt: null },
+      { id: 'user-3', country: 'FR', bannedAt: new Date('2024-02-01'), deletedAt: null },
+    ]);
 
     const result = await fetchCountryStats(mockAdminClient as never, {
       ...EMPTY_ADMIN_USER_FILTERS,
@@ -473,19 +394,7 @@ describe('fetchCountryStats', () => {
 
     const mockAdminClient = createMockAdminClient(mockUsers, { total: 3 });
 
-    const { db } = await import('@/lib/db');
-    const mockSelect = db.select as ReturnType<typeof vi.fn>;
-    mockSelect.mockReturnValue({
-      from: vi.fn().mockReturnValue({
-        where: vi.fn().mockReturnValue({
-          orderBy: vi.fn().mockResolvedValue([]),
-          then: (resolve: (val: unknown[]) => void) =>
-            Promise.resolve([
-              { id: 'user-1', country: 'JP', bannedAt: null, deletedAt: null },
-            ]).then(resolve),
-        }),
-      }),
-    });
+    await mockProfilesSelect([{ id: 'user-1', country: 'JP', bannedAt: null, deletedAt: null }]);
 
     const result = await fetchCountryStats(mockAdminClient as never, {
       ...EMPTY_ADMIN_USER_FILTERS,
@@ -504,20 +413,10 @@ describe('fetchCountryStats', () => {
 
     const mockAdminClient = createMockAdminClient(mockUsers, { total: 2 });
 
-    const { db } = await import('@/lib/db');
-    const mockSelect = db.select as ReturnType<typeof vi.fn>;
-    mockSelect.mockReturnValue({
-      from: vi.fn().mockReturnValue({
-        where: vi.fn().mockReturnValue({
-          orderBy: vi.fn().mockResolvedValue([]),
-          then: (resolve: (val: unknown[]) => void) =>
-            Promise.resolve([
-              { id: 'user-1', country: 'US', bannedAt: null, deletedAt: null },
-              { id: 'user-2', country: 'JP', bannedAt: null, deletedAt: new Date('2024-06-01') },
-            ]).then(resolve),
-        }),
-      }),
-    });
+    await mockProfilesSelect([
+      { id: 'user-1', country: 'US', bannedAt: null, deletedAt: null },
+      { id: 'user-2', country: 'JP', bannedAt: null, deletedAt: new Date('2024-06-01') },
+    ]);
 
     const result = await fetchCountryStats(mockAdminClient as never, {
       ...EMPTY_ADMIN_USER_FILTERS,
@@ -537,21 +436,11 @@ describe('fetchCountryStats', () => {
 
     const mockAdminClient = createMockAdminClient(mockUsers, { total: 3 });
 
-    const { db } = await import('@/lib/db');
-    const mockSelect = db.select as ReturnType<typeof vi.fn>;
-    mockSelect.mockReturnValue({
-      from: vi.fn().mockReturnValue({
-        where: vi.fn().mockReturnValue({
-          orderBy: vi.fn().mockResolvedValue([]),
-          then: (resolve: (val: unknown[]) => void) =>
-            Promise.resolve([
-              { id: 'user-1', country: 'JP', bannedAt: null, deletedAt: null },
-              { id: 'user-2', country: 'JP', bannedAt: null, deletedAt: null },
-              { id: 'user-3', country: 'JP', bannedAt: null, deletedAt: null },
-            ]).then(resolve),
-        }),
-      }),
-    });
+    await mockProfilesSelect([
+      { id: 'user-1', country: 'JP', bannedAt: null, deletedAt: null },
+      { id: 'user-2', country: 'JP', bannedAt: null, deletedAt: null },
+      { id: 'user-3', country: 'JP', bannedAt: null, deletedAt: null },
+    ]);
 
     const result = await fetchCountryStats(mockAdminClient as never, EMPTY_ADMIN_USER_FILTERS);
 
@@ -566,20 +455,10 @@ describe('fetchCountryStats', () => {
 
     const mockAdminClient = createMockAdminClient(mockUsers, { total: 2 });
 
-    const { db } = await import('@/lib/db');
-    const mockSelect = db.select as ReturnType<typeof vi.fn>;
-    mockSelect.mockReturnValue({
-      from: vi.fn().mockReturnValue({
-        where: vi.fn().mockReturnValue({
-          orderBy: vi.fn().mockResolvedValue([]),
-          then: (resolve: (val: unknown[]) => void) =>
-            Promise.resolve([
-              { id: 'user-1', country: null, bannedAt: null, deletedAt: null },
-              { id: 'user-2', country: null, bannedAt: null, deletedAt: null },
-            ]).then(resolve),
-        }),
-      }),
-    });
+    await mockProfilesSelect([
+      { id: 'user-1', country: null, bannedAt: null, deletedAt: null },
+      { id: 'user-2', country: null, bannedAt: null, deletedAt: null },
+    ]);
 
     const result = await fetchCountryStats(mockAdminClient as never, EMPTY_ADMIN_USER_FILTERS);
 
