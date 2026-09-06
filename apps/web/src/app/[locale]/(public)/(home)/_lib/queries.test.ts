@@ -52,36 +52,9 @@ vi.mock('@/lib/db', async () => ({
       }),
     }),
   },
-  feedItems: {
-    id: 'id',
-    entityType: 'entity_type',
-    entityId: 'entity_id',
-    actorId: 'actor_id',
-    createdAt: 'created_at',
-  },
-  topicPosts: {
-    id: 'id',
-    userId: 'user_id',
-    deletedAt: 'deleted_at',
-    topicKey: 'topic_key',
-  },
-  profiles: { id: 'id' },
-  topicPostRatings: { postId: 'post_id' },
-  chessOpenings: { slug: 'slug', name: 'name', fen: 'fen' },
-  AUTHOR_PROFILE_COLUMNS: {
-    username: 'username',
-    displayName: 'display_name',
-    avatarUrl: 'avatar_url',
-  },
-  SOCIAL_AUTHOR_COLUMNS: {
-    username: 'username',
-    displayName: 'display_name',
-    avatarUrl: 'avatar_url',
-    flair: 'flair',
-    country: 'country',
-  },
-  liveProfileJoinOn: (ownerColumn: unknown) => ['liveProfileJoinOn', ownerColumn],
 }));
+
+const { feedItems } = await import('@/lib/db');
 
 // Stubbed to a sentinel: what it compiles to is `feed-liveness.test.ts`'s
 // job; here we only need it not to build real subqueries against the db mock.
@@ -299,7 +272,7 @@ describe('getFeedData', () => {
 
       await getFeedData({ limit: 10, actorId: 'actor-1' });
 
-      expect(mockEq).toHaveBeenCalledWith('actor_id', 'actor-1');
+      expect(mockEq).toHaveBeenCalledWith(feedItems.actorId, 'actor-1');
     });
 
     it('should pass currentUserId to attachProfilePostMeta', async () => {

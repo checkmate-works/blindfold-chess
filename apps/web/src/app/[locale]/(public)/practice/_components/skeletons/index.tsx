@@ -1,3 +1,4 @@
+import { SectionTitle } from '@/app/[locale]/_components';
 import { Skeleton } from '@/app/[locale]/_components/Skeleton';
 
 /**
@@ -8,7 +9,9 @@ import { Skeleton } from '@/app/[locale]/_components/Skeleton';
  * space and produces the layout shift it exists to prevent. Both blocks below
  * were written out with their Tailwind class lists spelled in full across four
  * and five files, which meant a change to `ExpGainDisplay` or `SignUpBannerUI`
- * silently invalidated every copy.
+ * silently invalidated every copy. The leaderboard preview below arrived the
+ * same way: two result skeletons that are otherwise deliberately separate
+ * carried it byte for byte, comment included.
  *
  * The page-level skeletons still differ (problem lists, board comparisons, one
  * card vs. a grid) and stay separate; these are the parts that did not.
@@ -90,6 +93,37 @@ export function SignUpBannerSkeleton() {
           <Skeleton className="mt-2 h-4 w-56 max-w-full rounded" />
         </div>
         <Skeleton className="h-9 w-28 flex-shrink-0 rounded-md" />
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Mirrors `LeaderboardPreview` — its heading plus the five-row table (rank |
+ * name | score).
+ *
+ * The heading is a placeholder bar rather than real text because the real
+ * title names the period and the leaderboard key, which the skeleton does not
+ * know. Five rows because that is the preview's fixed page size.
+ */
+export function LeaderboardPreviewSkeleton() {
+  return (
+    <div className="space-y-3">
+      <SectionTitle>
+        <span className="inline-block h-5 md:h-6 w-40 bg-muted rounded align-middle animate-pulse" />
+      </SectionTitle>
+      <div className="overflow-hidden rounded-lg border border-border">
+        <div className="h-10 bg-muted" />
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div
+            key={i}
+            className="flex items-center gap-3 border-t border-border px-4 py-3 animate-pulse"
+          >
+            <div className="h-4 w-6 bg-muted rounded" />
+            <div className="h-4 flex-1 bg-muted rounded" />
+            <div className="h-4 w-12 bg-muted rounded" />
+          </div>
+        ))}
       </div>
     </div>
   );

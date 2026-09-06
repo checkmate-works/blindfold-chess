@@ -17,11 +17,6 @@ vi.mock('@/lib/db', async () => ({
   },
 }));
 
-vi.mock('next/cache', () => ({
-  unstable_cache: (fn: (...args: unknown[]) => unknown) => fn,
-  revalidateTag: vi.fn(),
-}));
-
 const { calcGrantStartsAt, classifyGrantPeriod } = await import('./user-grants');
 
 describe('calcGrantStartsAt', () => {

@@ -8,6 +8,7 @@ import type {
   PositionSubmissionCountRequirement,
   RankRequirement,
 } from '@/lib/db/data/ranks';
+import { POSITION_KIND_CONFIG, type PositionKind } from '@/lib/positions/kind';
 
 import type { RequirementDivider, RequirementItem } from '../_components/RequirementsList';
 import { getBeltColorHex } from './belt-colors';
@@ -68,13 +69,13 @@ function buildChallengeScoreItem(
   };
 }
 
-function positionSubmissionRouteSegment(positionType: 'memory' | 'puzzle'): string {
-  return positionType === 'memory' ? 'position-memory' : 'puzzle';
+function positionSubmissionRouteSegment(positionType: PositionKind): string {
+  return POSITION_KIND_CONFIG[positionType].slug;
 }
 
 function positionSubmissionLabel(
   req: PositionSubmissionCountRequirement,
-  positionType: 'memory' | 'puzzle',
+  positionType: PositionKind,
   t: InterpolatingTranslator
 ): string {
   return t('submissionCount', {

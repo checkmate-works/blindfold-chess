@@ -1,32 +1,28 @@
 import { describe, expect, it, vi } from 'vitest';
 
+import {
+  challengeQueriesMock,
+  challengeQueryMocks,
+} from '../__test-support__/challenge-queries-mock';
 import type { LeaderboardPeriod } from '../types';
 
 // ---------------------------------------------------------------------------
 // Mocks
 // ---------------------------------------------------------------------------
 
-const mockGetAllTimeRanking = vi.fn();
-const mockGetWeeklyRanking = vi.fn();
-const mockGetMonthlyRanking = vi.fn();
-const mockGetUserAllTimeRankedRow = vi.fn();
-const mockGetUserWeeklyRankedRow = vi.fn();
-const mockGetUserMonthlyRankedRow = vi.fn();
-const mockGetUserAllTimeRank = vi.fn();
-const mockGetUserWeeklyRank = vi.fn();
-const mockGetUserMonthlyRank = vi.fn();
+vi.mock('@/lib/db/challenge-queries', () => challengeQueriesMock());
 
-vi.mock('@/lib/db/challenge-queries', () => ({
-  getAllTimeRanking: (...args: unknown[]) => mockGetAllTimeRanking(...args),
-  getWeeklyRanking: (...args: unknown[]) => mockGetWeeklyRanking(...args),
-  getMonthlyRanking: (...args: unknown[]) => mockGetMonthlyRanking(...args),
-  getUserAllTimeRankedRow: (...args: unknown[]) => mockGetUserAllTimeRankedRow(...args),
-  getUserWeeklyRankedRow: (...args: unknown[]) => mockGetUserWeeklyRankedRow(...args),
-  getUserMonthlyRankedRow: (...args: unknown[]) => mockGetUserMonthlyRankedRow(...args),
-  getUserAllTimeRank: (...args: unknown[]) => mockGetUserAllTimeRank(...args),
-  getUserWeeklyRank: (...args: unknown[]) => mockGetUserWeeklyRank(...args),
-  getUserMonthlyRank: (...args: unknown[]) => mockGetUserMonthlyRank(...args),
-}));
+const {
+  getAllTimeRanking: mockGetAllTimeRanking,
+  getWeeklyRanking: mockGetWeeklyRanking,
+  getMonthlyRanking: mockGetMonthlyRanking,
+  getUserAllTimeRankedRow: mockGetUserAllTimeRankedRow,
+  getUserWeeklyRankedRow: mockGetUserWeeklyRankedRow,
+  getUserMonthlyRankedRow: mockGetUserMonthlyRankedRow,
+  getUserAllTimeRank: mockGetUserAllTimeRank,
+  getUserWeeklyRank: mockGetUserWeeklyRank,
+  getUserMonthlyRank: mockGetUserMonthlyRank,
+} = challengeQueryMocks;
 
 const { getQueriesForPeriod } = await import('../period-queries');
 

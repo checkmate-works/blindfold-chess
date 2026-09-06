@@ -1,6 +1,12 @@
 import { View, Text, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
-import { useTheme, fontSize, fontWeight, spacing } from "../../../theme";
+import {
+  useFeedbackColor,
+  useTheme,
+  fontSize,
+  fontWeight,
+  spacing,
+} from "../../../theme";
 
 type SquareQuestionProps = {
   square: string;
@@ -9,18 +15,13 @@ type SquareQuestionProps = {
 
 export function SquareQuestion({ square, isCorrect }: SquareQuestionProps) {
   const { t } = useTranslation();
-  const { colors, feedbackColors } = useTheme();
+  const { colors } = useTheme();
+  const feedbackColor = useFeedbackColor(isCorrect);
 
   const getFeedbackText = () => {
     if (isCorrect === true) return t("squareColors.session.correct");
     if (isCorrect === false) return t("squareColors.session.incorrect");
     return null;
-  };
-
-  const getFeedbackColor = () => {
-    if (isCorrect === true) return feedbackColors.success;
-    if (isCorrect === false) return feedbackColors.error;
-    return colors.mutedForeground;
   };
 
   const feedbackText = getFeedbackText();
@@ -37,7 +38,7 @@ export function SquareQuestion({ square, isCorrect }: SquareQuestionProps) {
 
       <View style={styles.feedbackContainer}>
         {feedbackText && (
-          <Text style={[styles.feedbackText, { color: getFeedbackColor() }]}>
+          <Text style={[styles.feedbackText, { color: feedbackColor }]}>
             {feedbackText}
           </Text>
         )}

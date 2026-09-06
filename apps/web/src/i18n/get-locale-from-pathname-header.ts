@@ -1,7 +1,6 @@
-import { hasLocale } from 'next-intl';
 import { headers } from 'next/headers';
 
-import { routing } from './routing';
+import { resolveLocale } from './resolve-locale';
 
 /**
  * Resolves the active `[locale]` segment from the `x-pathname` header (set by
@@ -33,5 +32,5 @@ import { routing } from './routing';
 export async function getLocaleFromPathnameHeader() {
   const pathname = (await headers()).get('x-pathname') ?? '';
   const candidate = pathname.split('/')[1];
-  return hasLocale(routing.locales, candidate) ? candidate : routing.defaultLocale;
+  return resolveLocale(candidate);
 }

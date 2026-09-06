@@ -5,11 +5,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { whereThenReturning } from '@/lib/db/__test-support__/query-chain';
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
+import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
+import { storageClientMock } from '@/lib/supabase/__test-support__/storage-client-mock';
 import { logActivityEvent } from '@/lib/users/activity-log';
 
 import { DELETE, POST } from './route';
 
-const mockGetUser = vi.fn();
 const mockUpload = vi.fn();
 const mockGetPublicUrl = vi.fn();
 const mockList = vi.fn();
@@ -52,22 +53,14 @@ vi.mock('@/lib/auth', () => ({
   },
 }));
 
-vi.mock('@/lib/supabase/server', () => ({
-  createClient: () =>
-    Promise.resolve({
-      auth: {
-        getUser: mockGetUser,
-      },
-      storage: {
-        from: () => ({
-          upload: mockUpload,
-          getPublicUrl: mockGetPublicUrl,
-          list: mockList,
-          remove: mockRemove,
-        }),
-      },
-    }),
-}));
+vi.mock('@/lib/supabase/server', () =>
+  storageClientMock(() => ({
+    upload: mockUpload,
+    getPublicUrl: mockGetPublicUrl,
+    list: mockList,
+    remove: mockRemove,
+  }))
+);
 
 vi.mock('@/lib/moderation/ban');
 

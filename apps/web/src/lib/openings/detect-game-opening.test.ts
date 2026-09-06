@@ -4,10 +4,6 @@ import { describe, expect, it, vi } from 'vitest';
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 
 // Pass-through cache wrappers so the real loader/index logic runs in the test.
-vi.mock('next/cache', () => ({
-  unstable_cache: (fn: (...args: unknown[]) => unknown) => fn,
-}));
-
 const fen = (moves: string[]) => getFenAfterMoves(getStartingFen(), moves);
 
 const ROWS = [

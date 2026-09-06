@@ -1,7 +1,10 @@
 import { Link } from '@/i18n/routing';
 import { FiGitBranch } from 'react-icons/fi';
 
-import { POSITION_KIND_PATH_PREFIX as KIND_PATH_PREFIX } from '../_lib/fork-provenance';
+import {
+  type ForkPositionKind,
+  POSITION_KIND_PATH_PREFIX as KIND_PATH_PREFIX,
+} from '../_lib/fork-provenance';
 import { ForkSourceLine } from './ForkSourceLine';
 
 /**
@@ -39,7 +42,7 @@ export function ForkProvenanceNote({
   forkParent: {
     id: string;
     title: string;
-    type: 'memory' | 'puzzle';
+    type: ForkPositionKind;
     deletedAt: Date | null;
   } | null;
   forkCount: number;

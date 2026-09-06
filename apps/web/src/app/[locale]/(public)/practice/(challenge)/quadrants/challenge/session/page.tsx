@@ -1,6 +1,7 @@
 import dynamic from 'next/dynamic';
 
 import type { BoardOrientation } from '@blindfold-chess/features/quadrants';
+import { isBoardOrientation } from '@blindfold-chess/types';
 
 import { createPracticeChallengeSessionPage } from '@/app/[locale]/(public)/practice/_lib/createPracticeSessionPages';
 
@@ -17,11 +18,9 @@ const { generateMetadata, generateStaticParams, Page } = createPracticeChallenge
   ],
   renderContent: ({ locale, searchParams }) => {
     const orientationParam = searchParams.orientation;
-    const orientation: BoardOrientation =
-      typeof orientationParam === 'string' &&
-      ['white', 'black', 'random'].includes(orientationParam)
-        ? (orientationParam as BoardOrientation)
-        : 'white';
+    const orientation: BoardOrientation = isBoardOrientation(orientationParam)
+      ? orientationParam
+      : 'white';
 
     return <QuadrantsChallenge locale={locale} orientation={orientation} />;
   },

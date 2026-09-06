@@ -1,9 +1,11 @@
 /**
  * Unit tests for `grantGameExp` — the AI-game Exp writer.
  *
- * Kept separate from `save-exp.test.ts` / `grant-practice-exp.test.ts` so the
- * extra daily-cap SUM read (which the other grant paths don't perform) gets a
- * tailored mock tx without disturbing their setups.
+ * Kept separate from `save-exp.test.ts` / `grant-practice-exp.test.ts`
+ * because this path reads a daily-cap SUM the others do not, and uses the
+ * real formula where they stub it. The shared tx double in
+ * `__test-support__/exp-tx-mock` answers that read; the suites differ in what
+ * they stub, not in how they build the transaction.
  *
  * The real `calculateGameExp` and `applyDailyCap` from `@blindfold-chess/
  * features/exp` are used (only `getLevel` / `getLevelProgress` are stubbed), so
@@ -20,6 +22,14 @@
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import {
+  buildExpInfoWith,
+  createExpMockTx,
+  drizzleOperatorMocks,
+  expDbMock,
+  expSchemaMock,
+} from '@/lib/db/__test-support__/exp-tx-mock';
+
 const mockGetLevel = vi.fn();
 const mockGetLevelProgress = vi.fn();
 
@@ -29,144 +39,22 @@ vi.mock('@blindfold-chess/features/exp', async (importOriginal) => {
     ...actual,
     getLevel: (...args: unknown[]) => mockGetLevel(...args),
     getLevelProgress: (...args: unknown[]) => mockGetLevelProgress(...args),
-    buildExpInfo: (
-      grantResult: { totalExp: number; alreadyGranted: boolean; existingAmount?: number },
-      grantedAmount: number
-    ) => {
-      // Mirrors the real buildExpInfo but routed through the mocked level
-      // functions so the tests keep controlling level-up behaviour.
-      const totalExp = grantResult.totalExp;
-      const level = mockGetLevel(totalExp) as number;
-      const progressPercent = Math.round(
-        (mockGetLevelProgress(totalExp) as { progress: number }).progress * 100
-      );
-      if (grantResult.alreadyGranted) {
-        return {
-          earnedExp: grantResult.existingAmount,
-          totalExp,
-          level,
-          levelUp: false,
-          progressPercent,
-        };
-      }
-      const levelBefore = mockGetLevel(totalExp - grantedAmount) as number;
-      return {
-        earnedExp: grantedAmount,
-        totalExp,
-        level,
-        levelUp: level > levelBefore,
-        progressPercent,
-      };
-    },
+    buildExpInfo: buildExpInfoWith(
+      (exp) => mockGetLevel(exp) as number,
+      (exp) => mockGetLevelProgress(exp) as { progress: number }
+    ),
   };
 });
 
-vi.mock('drizzle-orm', () => ({
-  sql: Object.assign((strings: TemplateStringsArray, ..._values: unknown[]) => strings.join(''), {
-    raw: (s: string) => s,
-  }),
-  and: (...args: unknown[]) => ({ __and: args }),
-  eq: (a: unknown, b: unknown) => ({ __eq: [a, b] }),
-  gte: (a: unknown, b: unknown) => ({ __gte: [a, b] }),
-}));
+vi.mock('drizzle-orm', () => drizzleOperatorMocks());
 
-vi.mock('./index', () => ({
-  db: { transaction: vi.fn() },
-}));
+vi.mock('./index', () => expDbMock());
 
 vi.mock('./period-range', () => ({
   startOfUtcDay: () => new Date('2026-05-31T00:00:00.000Z'),
 }));
 
-vi.mock('./schema', () => ({
-  expEvents: {
-    id: 'id',
-    userId: 'user_id',
-    source: 'source',
-    sourceId: 'source_id',
-    amount: 'amount',
-    metadata: 'metadata',
-    createdAt: 'created_at',
-  },
-  userExp: { userId: 'user_id', totalExp: 'total_exp' },
-}));
-
-/**
- * Mock tx for grantGameExp. Select call sequence:
- *  1. daily-cap SUM — `select().from().where()` awaited directly (no .limit())
- *  2. (conflict only) expEvents re-SELECT — `...where().limit()`
- *  3. (conflict only) userExp re-SELECT — `...where().limit()`
- *
- * `where()` returns an object that is both awaitable (resolves to the cap rows
- * for call #1) and exposes `.limit()` (for the conflict re-selects).
- */
-function createMockTx(opts: {
-  earnedToday?: number;
-  totalExpAfterGrant: number;
-  insertedRows?: Array<{ id: string }>;
-  existingEventRow?: { amount: number; metadata: Record<string, unknown> };
-  existingUserExpRow?: { totalExp: number };
-}) {
-  const insertedRows = opts.insertedRows ?? [{ id: 'new-event-id' }];
-  const capturedValues: unknown[] = [];
-  const capturedOnConflictDoNothing: unknown[] = [];
-  const userExpUpsert = vi.fn();
-
-  let insertCallCount = 0;
-  let selectCallCount = 0;
-
-  const tx = {
-    insert: vi.fn().mockImplementation(() => {
-      insertCallCount++;
-      const callNum = insertCallCount;
-      return {
-        values: vi.fn().mockImplementation((value: unknown) => {
-          capturedValues.push(value);
-          if (callNum === 1) {
-            return {
-              onConflictDoNothing: vi.fn().mockImplementation((config: unknown) => {
-                capturedOnConflictDoNothing.push(config);
-                return { returning: vi.fn().mockResolvedValue(insertedRows) };
-              }),
-            };
-          }
-          userExpUpsert(value);
-          return {
-            onConflictDoUpdate: vi.fn().mockReturnValue({
-              returning: vi.fn().mockResolvedValue([{ totalExp: opts.totalExpAfterGrant }]),
-            }),
-          };
-        }),
-      };
-    }),
-    select: vi.fn().mockImplementation(() => {
-      selectCallCount++;
-      const callNum = selectCallCount;
-      const whereResult = {
-        // Awaitable: the cap SUM (call #1) awaits where() directly.
-        then: (resolve: (rows: unknown) => void) =>
-          resolve(callNum === 1 ? [{ total: opts.earnedToday ?? 0 }] : []),
-        // The conflict branch (calls #2/#3) chains .limit() instead.
-        limit: vi.fn().mockImplementation(() => {
-          if (callNum === 2) {
-            return Promise.resolve(opts.existingEventRow ? [opts.existingEventRow] : []);
-          }
-          return Promise.resolve(opts.existingUserExpRow ? [opts.existingUserExpRow] : []);
-        }),
-      };
-      return {
-        from: vi.fn().mockReturnValue({
-          where: vi.fn().mockReturnValue(whereResult),
-        }),
-      };
-    }),
-    capturedValues,
-    capturedOnConflictDoNothing,
-    userExpUpsert,
-  };
-
-  return tx;
-}
+vi.mock('./schema', () => expSchemaMock());
 
 const baseParams = {
   userId: 'user-001',
@@ -189,7 +77,7 @@ describe('grantGameExp', () => {
   });
 
   it("writes exp_events with source='ai_game_result', game id, and the breakdown metadata", async () => {
-    const tx = createMockTx({ earnedToday: 0, totalExpAfterGrant: 180 });
+    const tx = createExpMockTx({ earnedToday: 0, totalExpAfterGrant: 180 });
     const { grantGameExp } = await import('./save-exp');
 
     // clean win vs Maia 2600 → base 120 × 1.0 × 1.5 = 180
@@ -220,7 +108,7 @@ describe('grantGameExp', () => {
   });
 
   it('reports the granted amount and a level-up on the fresh path', async () => {
-    const tx = createMockTx({ earnedToday: 0, totalExpAfterGrant: 180 });
+    const tx = createExpMockTx({ earnedToday: 0, totalExpAfterGrant: 180 });
     const { grantGameExp } = await import('./save-exp');
 
     const exp = await grantGameExp(tx as never, baseParams);
@@ -234,7 +122,7 @@ describe('grantGameExp', () => {
 
   it('clamps the grant to the remaining daily budget', async () => {
     // earnedToday 480, cap 500 → only 20 of the 180 earned may be granted
-    const tx = createMockTx({ earnedToday: 480, totalExpAfterGrant: 500 });
+    const tx = createExpMockTx({ earnedToday: 480, totalExpAfterGrant: 500 });
     const { grantGameExp } = await import('./save-exp');
 
     const exp = await grantGameExp(tx as never, baseParams);
@@ -246,7 +134,7 @@ describe('grantGameExp', () => {
   });
 
   it('grants nothing once the daily cap is reached', async () => {
-    const tx = createMockTx({ earnedToday: 500, totalExpAfterGrant: 500 });
+    const tx = createExpMockTx({ earnedToday: 500, totalExpAfterGrant: 500 });
     const { grantGameExp } = await import('./save-exp');
 
     const exp = await grantGameExp(tx as never, baseParams);
@@ -258,7 +146,7 @@ describe('grantGameExp', () => {
   });
 
   it('passes the partial-index predicate to onConflictDoNothing (regression guard)', async () => {
-    const tx = createMockTx({ earnedToday: 0, totalExpAfterGrant: 180 });
+    const tx = createExpMockTx({ earnedToday: 0, totalExpAfterGrant: 180 });
     const { grantGameExp } = await import('./save-exp');
 
     await grantGameExp(tx as never, baseParams);
@@ -282,7 +170,7 @@ describe('grantGameExp idempotent replay', () => {
   });
 
   it('returns the stored amount and does NOT re-upsert user_exp on replay', async () => {
-    const tx = createMockTx({
+    const tx = createExpMockTx({
       earnedToday: 180,
       totalExpAfterGrant: 9999, // only touched on a fresh insert
       insertedRows: [], // force conflict

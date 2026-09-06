@@ -6,7 +6,6 @@ const mockAuthenticateAndGuard = vi.fn();
 const mockUserHasProfile = vi.fn(async () => true);
 const mockValidateRepertoireImport = vi.fn();
 const mockTxInsertReturning = vi.fn();
-const mockRevalidateTag = vi.fn();
 
 vi.mock('@/lib/auth', () => ({
   authenticateAndGuard: (...args: unknown[]) => mockAuthenticateAndGuard(...args),
@@ -17,10 +16,6 @@ vi.mock('@/lib/auth', () => ({
     if ('error' in guardResult) return guardResult;
     return (await mockUserHasProfile()) ? guardResult : { error: 'profileRequired' };
   },
-}));
-
-vi.mock('next/cache', () => ({
-  revalidateTag: (...args: unknown[]) => mockRevalidateTag(...args),
 }));
 
 vi.mock('./validation', async (importOriginal) => {

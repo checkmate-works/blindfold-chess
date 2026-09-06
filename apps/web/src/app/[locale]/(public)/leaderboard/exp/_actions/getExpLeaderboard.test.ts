@@ -45,10 +45,6 @@ const hoisted = vi.hoisted(() => {
 
 // Mock server-only (imported transitively)
 // Mock next/cache — unstable_cache should just call the function directly
-vi.mock('next/cache', () => ({
-  unstable_cache: (fn: (...args: unknown[]) => unknown, _keys?: string[], _opts?: object) => fn,
-}));
-
 // Mock @sentry/nextjs (used by handleServerActionError)
 vi.mock('@sentry/nextjs');
 

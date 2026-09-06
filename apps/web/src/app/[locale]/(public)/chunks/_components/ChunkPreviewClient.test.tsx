@@ -5,10 +5,7 @@ import { ChunkPreviewClient } from './ChunkPreviewClient';
 
 // Echo translation keys so the warning is assertable by key (it renders
 // `body` + `hint`), exactly as the form-side tests used to do.
-vi.mock('next-intl', () => ({
-  useTranslations: () => Object.assign((key: string) => key, { has: () => true }),
-  useLocale: () => 'en',
-}));
+vi.mock('next-intl');
 
 vi.mock('@/i18n/routing', () => ({ useRouter: () => ({ push: vi.fn(), replace: vi.fn() }) }));
 

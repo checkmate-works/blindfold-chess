@@ -4,6 +4,7 @@ import 'server-only';
 
 import { db, notifications, userFollows } from '../db';
 import { isBlockedBetween } from '../moderation/block';
+import type { PositionKind } from '../positions/kind';
 import { captureError } from '../sentry/capture-error';
 import { isMutableNotificationType } from './mutable-types';
 import { isNotificationTypeMuted } from './mutes';
@@ -274,7 +275,7 @@ export function notifyFollowersOfNewPost(params: {
 export function notifyFollowersOfNewPosition(params: {
   actorId: string;
   positionId: string;
-  positionType: 'memory' | 'puzzle';
+  positionType: PositionKind;
 }): void {
   broadcastToFollowers(
     params.actorId,
@@ -314,8 +315,8 @@ export function notifyPositionForked(params: {
   actorId: string;
   ownerId: string;
   newPositionId: string;
-  outputType: 'memory' | 'puzzle';
-  sourceType: 'memory' | 'puzzle';
+  outputType: PositionKind;
+  sourceType: PositionKind;
 }): void {
   createNotification({
     userId: params.ownerId,

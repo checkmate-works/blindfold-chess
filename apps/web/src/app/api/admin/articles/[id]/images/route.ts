@@ -1,14 +1,13 @@
 import { NextResponse } from 'next/server';
 
-import { adminApiGuard } from '@/app/admin/_lib/auth';
 import { eq } from 'drizzle-orm';
 import sharp from 'sharp';
 
 import { MIME_TO_EXTENSION, parseAdminImageUpload } from '@/lib/admin-images/validation';
-import { checkMutationOrigin, parseJsonBody } from '@/lib/api-mutation-guard';
+import { guardAdminApiMutation, parseJsonBody } from '@/lib/api-mutation-guard';
 import { articleImages, articles, db } from '@/lib/db';
 import { SHARP_DECODE_OPTIONS } from '@/lib/images/sharp-options';
-import { RATE_LIMITS, checkRateLimit } from '@/lib/security/rate-limit';
+import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { persistWithUploadRollback } from '@/lib/supabase/persist-with-upload-rollback';
 
@@ -54,16 +53,8 @@ async function parseAndValidateFile(request: Request) {
 }
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const originError = checkMutationOrigin(request);
-  if (originError) return originError;
-
-  const auth = await adminApiGuard();
+  const auth = await guardAdminApiMutation(request, RATE_LIMITS.uploadArticleImage);
   if ('response' in auth) return auth.response;
-
-  const rateLimitResult = await checkRateLimit(auth.userId, RATE_LIMITS.uploadArticleImage);
-  if ('error' in rateLimitResult) {
-    return NextResponse.json({ error: 'rateLimited' }, { status: 429 });
-  }
 
   const { id: articleId } = await params;
 
@@ -148,10 +139,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 }
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const originError = checkMutationOrigin(request);
-  if (originError) return originError;
-
-  const auth = await adminApiGuard();
+  const auth = await guardAdminApiMutation(request);
   if ('response' in auth) return auth.response;
 
   const { id: articleId } = await params;

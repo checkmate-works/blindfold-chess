@@ -19,11 +19,6 @@ vi.mock('@/lib/db', async () => ({
   },
 }));
 
-vi.mock('next/cache', () => ({
-  unstable_cache: (fn: (...args: unknown[]) => unknown) => fn,
-  revalidateTag: vi.fn(),
-}));
-
 const { hasDanTierRank } = await import('./dan-rank');
 
 describe('hasDanTierRank', () => {

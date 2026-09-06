@@ -5,6 +5,7 @@ import { memo } from 'react';
 import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
+import { resolveAuthorName } from '@/lib/users/display-name';
 import { getMedalEmoji } from '@/lib/users/rank-emoji';
 
 import { getLeaderboardIcon } from '@/app/[locale]/(public)/leaderboard/_lib/icons';
@@ -56,7 +57,7 @@ export const ChallengeRankUpdateCard = memo(function ChallengeRankUpdateCard({
 }: Props) {
   const tFeed = useTranslations('home.feed.rankUpdate');
   const tLeaderboard = useTranslations('leaderboard');
-  const displayName = data.actor.displayName || data.actor.username;
+  const displayName = resolveAuthorName(data.actor, { fallback: data.actor.username });
   const moduleSlug = moduleToSlug(data.menuType as LeaderboardModule);
   const href = `/leaderboard/score/all-time/${moduleSlug}/${data.leaderboardKey}`;
   const moduleName = tLeaderboard(`module.${data.menuType}` as Parameters<typeof tLeaderboard>[0]);

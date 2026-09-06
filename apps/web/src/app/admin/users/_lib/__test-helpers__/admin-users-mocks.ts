@@ -71,12 +71,27 @@ export function makeUser(
   return user;
 }
 
+/** The `profiles` columns the admin user queries read back. */
+export type AdminProfileRow = {
+  id: string;
+  country?: string | null;
+  bannedAt: Date | null;
+  deletedAt: Date | null;
+};
+
 /**
  * Configure the (already-mocked) `db.select` chain to dispatch by table
  * reference, returning the supplied row sets for ranks / user_ranks /
- * profiles. Used by the country / rank / signup-method filter tests so
- * they can declare the underlying data without re-implementing the
- * thenable chain in each test body.
+ * profiles. Used by the country / rank / signup-method filter tests and by
+ * `fetchRankStats` so they can declare the underlying data without
+ * re-implementing the thenable chain in each test body.
+ *
+ * Dispatching by table rather than by call order is what lets one helper
+ * serve both. `fetchRankStats` reads profiles (through `fetchFilteredUsers`),
+ * then ranks, then user_ranks — but skips the first and third when the filter
+ * matches nobody, so the sequence is not fixed. Each of the three branches
+ * also has to answer whether it is awaited directly or through `.where()`:
+ * the ranks query takes every row and has no `.where()` at all.
  *
  * Assumes `vi.mock('@/lib/db', ...)` has already replaced `db.select`
  * with a `vi.fn()` — see the top of `queries.test.ts`. We import
@@ -84,12 +99,7 @@ export function makeUser(
  * `vi.mock` factory wins over a static module-load-time import.
  */
 export async function setupFilterMock(options: {
-  profileRows: Array<{
-    id: string;
-    country?: string | null;
-    bannedAt: Date | null;
-    deletedAt: Date | null;
-  }>;
+  profileRows: AdminProfileRow[];
   rankRows: Array<{ id: number; slug: string }>;
   userRankRows: Array<{ userId: string; rankId: number }>;
 }) {
@@ -125,4 +135,30 @@ export async function setupFilterMock(options: {
       }
     }),
   }));
+}
+
+/**
+ * Point the (already-mocked) `db.select` at one set of profile rows, for the
+ * queries that read `profiles` and nothing else.
+ *
+ * The chain answers two ways because its two callers consume it differently:
+ * `.orderBy()` for the paginated list, and awaiting `where()` directly for the
+ * count. Twelve tests had written both arms out to vary nothing but the rows.
+ *
+ * Same precondition as {@link setupFilterMock}: `vi.mock('@/lib/db', ...)` has
+ * already replaced `db.select`, and `@/lib/db` is imported inside so the test
+ * file's hoisted factory wins.
+ */
+export async function mockProfilesSelect(profileRows: AdminProfileRow[]) {
+  const { db } = await import('@/lib/db');
+  const mockSelect = db.select as ReturnType<typeof vi.fn>;
+
+  mockSelect.mockReturnValue({
+    from: vi.fn().mockReturnValue({
+      where: vi.fn().mockReturnValue({
+        orderBy: vi.fn().mockResolvedValue([]),
+        then: (resolve: (val: unknown[]) => void) => Promise.resolve(profileRows).then(resolve),
+      }),
+    }),
+  });
 }

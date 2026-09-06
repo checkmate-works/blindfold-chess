@@ -8,6 +8,7 @@ import { FiEdit2 } from 'react-icons/fi';
 import type { PostAttachment } from '@/lib/games/get-attachments-for-posts';
 import { buildProfileHref } from '@/lib/users/author-profile';
 import type { SocialAuthorProfile } from '@/lib/users/author-profile';
+import { resolveAuthorName } from '@/lib/users/display-name';
 
 import { ActionsMenu, ActionsMenuButton } from '@/app/[locale]/_components/ActionsMenu';
 import { LinkedText } from '@/app/[locale]/_components/LinkedText';
@@ -125,7 +126,7 @@ export function OpCard({
   const canEdit = isOwnPost && editPostAction !== undefined;
   const wasEdited = localUpdatedAt.getTime() > createdAt.getTime();
 
-  const authorName = author?.displayName || author?.username || tCommon('deletedUser');
+  const authorName = resolveAuthorName(author, { fallback: tCommon('deletedUser') });
   const profileHref = buildProfileHref(author);
 
   return (

@@ -1,8 +1,15 @@
 import { describe, expect, it } from 'vitest';
 
+import { makePost as makeBasePost } from './__test-support__/post-fixture';
 import type { PostWithReplyMeta } from './shared';
 import { sortPosts } from './shared';
 
+/**
+ * The three fields these cases order by, flattened out of the nested meta
+ * objects they live in — every case below sets one or two of them and nothing
+ * else, so `likeCount: 5` reads better here than the `likeMeta` literal the
+ * row actually carries.
+ */
 function makePost(
   overrides: Partial<{
     id: string;
@@ -11,31 +18,11 @@ function makePost(
     latestReplyAt: Date | null;
   }> = {}
 ): PostWithReplyMeta {
+  const base = makeBasePost({ id: overrides.id, createdAt: overrides.createdAt });
   return {
-    id: overrides.id ?? 'post-1',
-    userId: 'user-1',
-    topicType: 'square',
-    topicKey: 'e4',
-    parentId: null,
-    rootPostId: null,
-    content: 'test',
-    replyPermission: 'everyone',
-    isSpoiler: false,
-    imageAttachmentCount: 0,
-    createdAt: overrides.createdAt ?? new Date('2025-01-01'),
-    updatedAt: new Date('2025-01-01'),
-    deletedAt: null,
-    author: null,
-    replyMeta: {
-      replyCount: 0,
-      latestReplyAt: overrides.latestReplyAt ?? null,
-      repliers: [],
-      uniqueReplierCount: 0,
-    },
-    likeMeta: {
-      likeCount: overrides.likeCount ?? 0,
-      likedByMe: false,
-    },
+    ...base,
+    replyMeta: { ...base.replyMeta, latestReplyAt: overrides.latestReplyAt ?? null },
+    likeMeta: { ...base.likeMeta, likeCount: overrides.likeCount ?? 0 },
   };
 }
 

@@ -1,3 +1,5 @@
+import { revalidateTag as mockRevalidateTag } from 'next/cache';
+
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
@@ -7,7 +9,6 @@ const mockSelectFor = vi.fn();
 const mockUpdateSet = vi.fn();
 const mockUpdateSetWhere = vi.fn();
 const mockModerationInsert = vi.fn();
-const mockRevalidateTag = vi.fn();
 const mockGetClientIp = vi.fn();
 
 vi.mock('@/app/admin/_lib/auth', () => ({
@@ -52,10 +53,6 @@ vi.mock('@/lib/db', async () => ({
   },
   userGrants: userGrantsTable,
   moderationActions: moderationActionsTable,
-}));
-
-vi.mock('next/cache', () => ({
-  revalidateTag: (...args: unknown[]) => mockRevalidateTag(...args),
 }));
 
 vi.mock('@/lib/security/client-ip', () => ({

@@ -1,6 +1,12 @@
 import { View, Text, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
-import { useTheme, fontSize, fontWeight, spacing } from "../../../theme";
+import {
+  useFeedbackColor,
+  useTheme,
+  fontSize,
+  fontWeight,
+  spacing,
+} from "../../../theme";
 import type { BoardSymmetryProblem } from "../lib/types";
 
 type SymmetryQuestionProps = {
@@ -19,13 +25,8 @@ export function SymmetryQuestion({
   correctSolution,
 }: SymmetryQuestionProps) {
   const { t } = useTranslation();
-  const { colors, feedbackColors } = useTheme();
-
-  const getAnswerColor = () => {
-    if (isCorrect === true) return feedbackColors.success;
-    if (isCorrect === false) return feedbackColors.error;
-    return colors.mutedForeground;
-  };
+  const { colors } = useTheme();
+  const answerColor = useFeedbackColor(isCorrect);
 
   const getFeedbackText = () => {
     if (isCorrect === true) return t("boardSymmetry.session.correct");
@@ -51,7 +52,7 @@ export function SymmetryQuestion({
         <Text style={[styles.arrow, { color: colors.mutedForeground }]}>
           {"\u2192"}
         </Text>
-        <Text style={[styles.squareText, { color: getAnswerColor() }]}>
+        <Text style={[styles.squareText, { color: answerColor }]}>
           {selectedFile && selectedRank
             ? `${selectedFile}${selectedRank}`
             : "?"}
@@ -60,7 +61,7 @@ export function SymmetryQuestion({
 
       <View style={styles.feedbackContainer}>
         {feedbackText && (
-          <Text style={[styles.feedbackText, { color: getAnswerColor() }]}>
+          <Text style={[styles.feedbackText, { color: answerColor }]}>
             {feedbackText}
           </Text>
         )}

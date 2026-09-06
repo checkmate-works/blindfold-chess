@@ -6,6 +6,7 @@ import { PieceSelector } from '@/app/_components';
 import type { PieceSelection } from '@/app/_components/practice/PieceSelector';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { BoardOrientation } from '@blindfold-chess/types';
+import { isBoardOrientation } from '@blindfold-chess/types';
 
 import type { ChallengeMenuType } from '@/lib/db/practice-menu-types';
 
@@ -60,10 +61,9 @@ export function ResultsFilters({ locale, availableMenuTypes, currentMenu, curren
       ? (PIECE_NAME_TO_SHORT[currentKey as PieceFullName] ?? 'random')
       : 'random';
 
-  const currentOrientation: BoardOrientation =
-    currentKey === 'white' || currentKey === 'black' || currentKey === 'random'
-      ? currentKey
-      : 'white';
+  const currentOrientation: BoardOrientation = isBoardOrientation(currentKey)
+    ? currentKey
+    : 'white';
 
   return (
     <div className="space-y-4">

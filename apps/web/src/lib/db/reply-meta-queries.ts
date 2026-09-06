@@ -11,6 +11,8 @@ import {
   max,
 } from 'drizzle-orm';
 
+import { resolveAuthorName } from '@/lib/users/display-name';
+
 import { db, gameComments, profiles, topicPosts } from './index';
 import { AUTHOR_PROFILE_COLUMNS, liveProfileJoinOn } from './profile-select';
 
@@ -105,7 +107,7 @@ function assembleReplyMeta<S extends ReplyMetaStatsRow, R extends ReplyMetaRepli
       .slice(0, MAX_REPLIERS_DISPLAY)
       .map<Replier>((r) => ({
         avatarUrl: r.avatarUrl,
-        displayName: r.displayName || r.username || null,
+        displayName: resolveAuthorName(r, { fallback: null }),
       }));
     map.set(key, {
       replyCount: s?.replyCount ?? 0,

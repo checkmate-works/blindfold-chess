@@ -8,6 +8,7 @@ export {
 } from "./CoordinateKeyRow";
 export { CountdownOverlay } from "./CountdownOverlay";
 export { OptionsField } from "./OptionsField";
+export { PieceSelectionField } from "./PieceSelectionField";
 export { QuizTimer } from "./QuizTimer";
 export { ScoreFooter } from "./ScoreFooter";
 export { Screen } from "./Screen";
@@ -23,4 +24,5 @@ export { PracticeStatsResultCard } from "./PracticeStatsResultCard";
 export {
   TIME_LIMIT_OPTIONS,
   TimeLimitSettingsForm,
+  createTimeLimitSettingsForm,
 } from "./TimeLimitSettingsForm";

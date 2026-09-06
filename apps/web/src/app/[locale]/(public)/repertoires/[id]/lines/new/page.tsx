@@ -9,8 +9,10 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { getOptionalUser } from '@/lib/auth';
-import { isEmptyBoardAnnotations } from '@/lib/board-annotations/types';
-import { getAnnotationsForRepertoire } from '@/lib/repertoires/annotation-queries';
+import {
+  getAnnotationsForRepertoire,
+  toLineFormAnnotationInputs,
+} from '@/lib/repertoires/annotation-queries';
 import { getRepertoireForViewer, listChaptersForRepertoire } from '@/lib/repertoires/queries';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
@@ -65,14 +67,7 @@ export default async function NewRepertoireLinePage({ params, searchParams }: Pr
     getAnnotationsForRepertoire(id),
     listChaptersForRepertoire(id),
   ]);
-  const initialAnnotations = Object.fromEntries(
-    [...annotationViews].filter(([, v]) => v.text).map(([key, v]) => [key, v.text])
-  );
-  const initialShapes = Object.fromEntries(
-    [...annotationViews]
-      .filter(([, v]) => !isEmptyBoardAnnotations(v.shapes))
-      .map(([key, v]) => [key, v.shapes])
-  );
+  const { initialAnnotations, initialShapes } = toLineFormAnnotationInputs(annotationViews);
 
   // `chapters`: the sections the line can be filed into. Empty for a course
   // with no chapters, which hides the picker rather than offering only

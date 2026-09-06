@@ -1,7 +1,7 @@
-import { View, Text, StyleSheet } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
-import { OptionsField, SelectableChip } from "../../../components";
-import { useTheme, fontSize, fontWeight, spacing } from "../../../theme";
+import { OptionsField, PieceSelectionField } from "../../../components";
+import { spacing } from "../../../theme";
 import type { RoutePlannerPieceType } from "../lib/types";
 import { ROUTE_PLANNER_PIECES, PIECE_DISPLAY_MAP } from "../lib/types";
 
@@ -21,7 +21,6 @@ export function SettingsForm({
   onTogglePiece,
 }: SettingsFormProps) {
   const { t } = useTranslation();
-  const { colors } = useTheme();
 
   return (
     <View style={styles.container}>
@@ -33,24 +32,14 @@ export function SettingsForm({
         formatOption={(count) => t("routePlanner.setup.problemUnit", { count })}
       />
 
-      {/* Not an `OptionsField`: pieces are a multi-select, so every chip
-          carries its own selected state rather than one value winning. */}
-      <View style={styles.section}>
-        <Text style={[styles.label, { color: colors.foreground }]}>
-          {t("routePlanner.setup.pieceSelection")}
-        </Text>
-        <View style={styles.optionsRow}>
-          {ROUTE_PLANNER_PIECES.map((piece) => (
-            <SelectableChip
-              key={piece}
-              icon={PIECE_DISPLAY_MAP[piece]}
-              label={t(`routePlanner.pieces.${piece}`)}
-              selected={selectedPieces.includes(piece)}
-              onPress={() => onTogglePiece(piece)}
-            />
-          ))}
-        </View>
-      </View>
+      <PieceSelectionField
+        label={t("routePlanner.setup.pieceSelection")}
+        pieces={ROUTE_PLANNER_PIECES}
+        displayMap={PIECE_DISPLAY_MAP}
+        selected={selectedPieces}
+        labelFor={(piece) => t(`routePlanner.pieces.${piece}`)}
+        onToggle={onTogglePiece}
+      />
     </View>
   );
 }
@@ -58,17 +47,5 @@ export function SettingsForm({
 const styles = StyleSheet.create({
   container: {
     gap: spacing.lg,
-  },
-  section: {
-    gap: spacing.sm,
-  },
-  label: {
-    fontSize: fontSize.md,
-    fontWeight: fontWeight.medium,
-  },
-  optionsRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: spacing.sm,
   },
 });

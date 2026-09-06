@@ -10,7 +10,6 @@ const mockInsertReturning = vi.fn();
 const mockInsertValues = vi.fn();
 const mockTxUpdate = vi.fn();
 const mockCreateNotification = vi.fn();
-const mockRevalidatePath = vi.fn();
 const mockGetRequestById = vi.fn();
 const mockGetViewerPending = vi.fn();
 const mockGetLinkedChunkIds = vi.fn();
@@ -59,10 +58,6 @@ vi.mock('./apply-position-edit-proposal', () => ({
 vi.mock('@/lib/moderation/block');
 
 vi.mock('@/lib/security/rate-limit');
-
-vi.mock('next/cache', () => ({
-  revalidatePath: (...args: unknown[]) => mockRevalidatePath(...args),
-}));
 
 const POSITION_EDIT_REQUESTS_TABLE = { __table: 'position_edit_requests' };
 const POSITIONS_TABLE = { __table: 'positions' };

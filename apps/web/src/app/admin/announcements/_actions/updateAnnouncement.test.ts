@@ -1,3 +1,8 @@
+import {
+  revalidatePath as mockRevalidatePath,
+  revalidateTag as mockRevalidateTag,
+} from 'next/cache';
+
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { whereThenLimit } from '@/lib/db/__test-support__/query-chain';
@@ -8,8 +13,6 @@ import { updateAnnouncement } from './updateAnnouncement';
 
 const mockSelectFromWhere = vi.fn();
 const mockUpdateSetWhere = vi.fn();
-const mockRevalidatePath = vi.fn();
-const mockRevalidateTag = vi.fn();
 const mockNotifyAllUsersOfAnnouncement = vi.fn();
 const mockHasAnnouncementNotification = vi.fn();
 
@@ -29,11 +32,6 @@ vi.mock('@/lib/db', async () => ({
       }),
     }),
   },
-}));
-
-vi.mock('next/cache', () => ({
-  revalidatePath: (...args: unknown[]) => mockRevalidatePath(...args),
-  revalidateTag: (...args: unknown[]) => mockRevalidateTag(...args),
 }));
 
 vi.mock('@/lib/notifications/announcement-notification', () => ({

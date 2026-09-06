@@ -10,6 +10,7 @@ import {
 } from '@/lib/db';
 import type { Profile, TopicPost, TopicPostRating } from '@/lib/db';
 import type { Replier } from '@/lib/db/reply-meta-queries';
+import { resolveAuthorName } from '@/lib/users/display-name';
 
 import type { PostWithReplyMeta, ProfilePostWithReplyMeta, TopicPostWithAuthor } from './shared';
 
@@ -113,7 +114,7 @@ export async function attachPostMeta(
     repliers.push({
       avatarUrl: row.avatarUrl,
       // `null`, not a word: see the `Replier.displayName` TSDoc.
-      displayName: row.displayName || row.username || null,
+      displayName: resolveAuthorName(row, { fallback: null }),
     });
   }
 
