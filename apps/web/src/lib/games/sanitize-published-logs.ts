@@ -1,3 +1,5 @@
+import { isValidSquare } from '@blindfold-chess/features/common';
+
 import type { MoveSquares } from '@/lib/board/move-squares';
 
 import type { MoveOperationLog, UndoneMoveLog } from './saved-game-types';
@@ -37,17 +39,15 @@ export const MAX_INVALID_ATTEMPT_LEN = 12;
 export const MAX_SANS_PER_UNDO = 2;
 export const MAX_SAN_LEN = 10;
 
-const ALGEBRAIC_SQUARE_RE = /^[a-h][1-8]$/;
-
 /** Shape guard for one `invalidAttemptSquares` slot's `{ from, to }` object. */
 function isAlgebraicSquarePair(value: unknown): value is MoveSquares {
   if (!value || typeof value !== 'object') return false;
   const v = value as Record<string, unknown>;
   return (
     typeof v.from === 'string' &&
-    ALGEBRAIC_SQUARE_RE.test(v.from) &&
+    isValidSquare(v.from) &&
     typeof v.to === 'string' &&
-    ALGEBRAIC_SQUARE_RE.test(v.to)
+    isValidSquare(v.to)
   );
 }
 

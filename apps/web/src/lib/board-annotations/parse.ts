@@ -1,12 +1,11 @@
+import { isValidSquare } from '@blindfold-chess/features/common';
 import type { Square } from '@blindfold-chess/types';
 
 import type { AnnotationColor, Arrow, BoardAnnotations, Circle } from './types';
 import { ANNOTATION_COLORS, EMPTY_BOARD_ANNOTATIONS, isEmptyBoardAnnotations } from './types';
 
-const SQUARE_PATTERN = /^[a-h][1-8]$/;
-
 function isSquare(value: unknown): value is Square {
-  return typeof value === 'string' && SQUARE_PATTERN.test(value);
+  return typeof value === 'string' && isValidSquare(value);
 }
 
 function isColor(value: unknown): value is AnnotationColor {
