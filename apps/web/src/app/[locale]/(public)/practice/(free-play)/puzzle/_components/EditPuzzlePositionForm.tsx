@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
@@ -48,17 +48,12 @@ export function EditPuzzlePositionForm({ positionId, initial, available }: Props
   const initialMoves = initialMovesRef.current;
   const initialNotes = initialNotesRef.current;
   const initialDescription = initial.description ?? '';
-  const initialThemeIdsRef = useRef(initial.themes.map((t) => t.id));
-  const initialChunkIdsRef = useRef(initial.chunks.map((c) => c.id));
 
   const [title, setTitle] = useState(initial.title);
   const [description, setDescription] = useState(initialDescription);
 
   const board = useFenBoardEditor({ initialFen: initial.fen });
   const tags = useTagSelection({ initialThemes: initial.themes, initialChunks: initial.chunks });
-
-  const themeIds = useMemo(() => tags.selectedThemes.map((t) => t.id), [tags.selectedThemes]);
-  const chunkIds = useMemo(() => tags.selectedChunks.map((c) => c.id), [tags.selectedChunks]);
 
   const step = usePuzzlePositionStep({
     board,
@@ -77,8 +72,8 @@ export function EditPuzzlePositionForm({ positionId, initial, available }: Props
         activeTab: board.activeTab,
         sideToMove: board.sideToMove,
         flipped: board.flipped,
-        themeIds,
-        chunkIds,
+        themeIds: tags.themeIds,
+        chunkIds: tags.chunkIds,
       }),
     nextPath: `/practice/puzzle/${positionId}/edit/solution`,
     draftWriteFailedMessage: t('draftWriteFailed'),
@@ -103,16 +98,6 @@ export function EditPuzzlePositionForm({ positionId, initial, available }: Props
     },
   });
 
-  const tagsChanged = useMemo(() => {
-    const initialThemeIds = initialThemeIdsRef.current;
-    const initialChunkIds = initialChunkIdsRef.current;
-    if (themeIds.length !== initialThemeIds.length) return true;
-    if (chunkIds.length !== initialChunkIds.length) return true;
-    const themeSet = new Set(initialThemeIds);
-    const chunkSet = new Set(initialChunkIds);
-    return themeIds.some((id) => !themeSet.has(id)) || chunkIds.some((id) => !chunkSet.has(id));
-  }, [themeIds, chunkIds]);
-
   const isDirty =
     !step.submitted &&
     (title !== initial.title ||
@@ -120,7 +105,7 @@ export function EditPuzzlePositionForm({ positionId, initial, available }: Props
       board.fenInput.trim() !== initial.fen ||
       !stringArraysEqual(step.carriedMoves, initialMoves) ||
       !stringArraysEqual(step.carriedNotes, initialNotes) ||
-      tagsChanged);
+      tags.changed);
 
   const { isBlocking, confirm, cancel } = useUnsavedChanges({ isDirty });
 

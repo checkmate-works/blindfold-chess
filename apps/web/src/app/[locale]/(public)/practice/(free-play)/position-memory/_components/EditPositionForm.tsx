@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
+import { useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
@@ -48,8 +48,6 @@ export function EditPositionForm({ positionId, initial, available }: Props) {
   const tCreate = useTranslations('practice.positionMemory.create');
 
   const initialDescription = initial.description ?? '';
-  const initialThemeIdsRef = useRef(initial.themes.map((th) => th.id));
-  const initialChunkIdsRef = useRef(initial.chunks.map((c) => c.id));
 
   const board = useFenBoardEditor({ initialFen: initial.fen });
   const tags = useTagSelection({ initialThemes: initial.themes, initialChunks: initial.chunks });
@@ -64,25 +62,12 @@ export function EditPositionForm({ positionId, initial, available }: Props) {
     field === 'title' ? 'title' : board.activeTab === 'board' ? 'position-editor' : 'fen'
   );
 
-  const themeIds = useMemo(() => tags.selectedThemes.map((th) => th.id), [tags.selectedThemes]);
-  const chunkIds = useMemo(() => tags.selectedChunks.map((c) => c.id), [tags.selectedChunks]);
-
-  const tagsChanged = useMemo(() => {
-    const initialThemeIds = initialThemeIdsRef.current;
-    const initialChunkIds = initialChunkIdsRef.current;
-    if (themeIds.length !== initialThemeIds.length) return true;
-    if (chunkIds.length !== initialChunkIds.length) return true;
-    const themeSet = new Set(initialThemeIds);
-    const chunkSet = new Set(initialChunkIds);
-    return themeIds.some((id) => !themeSet.has(id)) || chunkIds.some((id) => !chunkSet.has(id));
-  }, [themeIds, chunkIds]);
-
   const isDirty =
     !submitted &&
     (title !== initial.title ||
       description !== initialDescription ||
       board.fenInput.trim() !== initial.fen ||
-      tagsChanged);
+      tags.changed);
 
   const { isBlocking, confirm, cancel } = useUnsavedChanges({ isDirty });
 
@@ -108,8 +93,8 @@ export function EditPositionForm({ positionId, initial, available }: Props) {
         fen: board.trimmedFen,
         title,
         description: description || null,
-        themeIds,
-        chunkIds,
+        themeIds: tags.themeIds,
+        chunkIds: tags.chunkIds,
       });
 
       if ('error' in result) {
