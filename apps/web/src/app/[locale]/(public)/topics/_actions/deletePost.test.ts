@@ -3,30 +3,21 @@ import { describe, expect, it, vi } from 'vitest';
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
 import { clawbackPointsForPost } from '@/lib/points';
+import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
+import { storageClientMock } from '@/lib/supabase/__test-support__/storage-client-mock';
 import { logActivityEvent } from '@/lib/users/activity-log';
 
 import { deletePost } from './deletePost';
 
-const mockGetUser = vi.fn();
 const mockSelectFromWhereLimit = vi.fn();
 const mockUpdateSetWhere = vi.fn();
 const mockTxUpdateSetWhere = vi.fn();
 
 vi.mock('@/lib/users/activity-log');
 
-vi.mock('@/lib/supabase/server', () => ({
-  createClient: () =>
-    Promise.resolve({
-      auth: {
-        getUser: mockGetUser,
-      },
-      storage: {
-        from: () => ({
-          remove: vi.fn().mockResolvedValue({ error: null }),
-        }),
-      },
-    }),
-}));
+vi.mock('@/lib/supabase/server', () =>
+  storageClientMock(() => ({ remove: vi.fn().mockResolvedValue({ error: null }) }))
+);
 
 vi.mock('@/lib/db', async () => ({
   ...(await actualDbSchema()),
