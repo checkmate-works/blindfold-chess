@@ -67,6 +67,23 @@ function request(method: 'POST' | 'DELETE', body?: string): Request {
   });
 }
 
+type ImageRouteHandler = (
+  request: Request,
+  context: { params: Promise<{ id: string }> }
+) => Promise<Response | undefined>;
+
+/**
+ * The handlers' inferred return type admits `undefined`, because the shared
+ * upload parser's error slot is optional and one branch returns it directly.
+ * No path actually produces it, so fail loudly here rather than spread
+ * non-null assertions across every assertion below.
+ */
+async function call(handler: ImageRouteHandler, request: Request): Promise<Response> {
+  const response = await handler(request, { params });
+  if (!response) throw new Error('handler returned no response');
+  return response;
+}
+
 beforeEach(() => {
   vi.clearAllMocks();
   mockIsValidOrigin.mockReturnValue(true);
@@ -85,7 +102,7 @@ describe.each([
   it('rejects a request from another origin without consulting the database', async () => {
     mockIsValidOrigin.mockReturnValue(false);
 
-    const response = await handler(makeRequest(), { params });
+    const response = await call(handler, makeRequest());
 
     expect(response.status).toBe(403);
     await expect(response.json()).resolves.toEqual({ error: 'forbidden' });
@@ -95,7 +112,7 @@ describe.each([
   it('rejects a signed-out caller as unauthorized', async () => {
     mockGetUser.mockResolvedValue({ data: { user: null } });
 
-    const response = await handler(makeRequest(), { params });
+    const response = await call(handler, makeRequest());
 
     expect(response.status).toBe(401);
     await expect(response.json()).resolves.toEqual({ error: 'unauthorized' });
@@ -104,7 +121,7 @@ describe.each([
   it('rejects a signed-in non-admin as unauthorized', async () => {
     mockUserRoleRows.mockReturnValue([{ role: 'user' }]);
 
-    const response = await handler(makeRequest(), { params });
+    const response = await call(handler, makeRequest());
 
     expect(response.status).toBe(401);
     await expect(response.json()).resolves.toEqual({ error: 'unauthorized' });
@@ -113,7 +130,7 @@ describe.each([
 
 describe('POST', () => {
   it('charges the article-image upload budget against the admin', async () => {
-    await POST(request('POST'), { params });
+    await call(POST, request('POST'));
 
     const { RATE_LIMITS } = await import('@/lib/security/rate-limit');
     expect(checkRateLimit).toHaveBeenCalledWith(adminUserId, RATE_LIMITS.uploadArticleImage);
@@ -122,14 +139,14 @@ describe('POST', () => {
   it('answers 429 once that budget is spent', async () => {
     vi.mocked(checkRateLimit).mockResolvedValue({ error: 'rateLimited' });
 
-    const response = await POST(request('POST'), { params });
+    const response = await call(POST, request('POST'));
 
     expect(response.status).toBe(429);
     await expect(response.json()).resolves.toEqual({ error: 'rateLimited' });
   });
 
   it('lets an admin within budget through to the article lookup', async () => {
-    const response = await POST(request('POST'), { params });
+    const response = await call(POST, request('POST'));
 
     expect(response.status).toBe(404);
     await expect(response.json()).resolves.toEqual({ error: 'article_not_found' });
@@ -138,13 +155,13 @@ describe('POST', () => {
 
 describe('DELETE', () => {
   it('does not charge the upload budget', async () => {
-    await DELETE(request('DELETE', 'not json'), { params });
+    await call(DELETE, request('DELETE', 'not json'));
 
     expect(checkRateLimit).not.toHaveBeenCalled();
   });
 
   it('lets an admin through to the request body', async () => {
-    const response = await DELETE(request('DELETE', 'not json'), { params });
+    const response = await call(DELETE, request('DELETE', 'not json'));
 
     expect(response.status).toBe(400);
     await expect(response.json()).resolves.toEqual({ error: 'invalid_body' });
