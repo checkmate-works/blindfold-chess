@@ -1,14 +1,9 @@
 import type { BoardOrientation } from '@blindfold-chess/types';
+import { isBoardOrientation } from '@blindfold-chess/types';
 
 import type { ChallengeResultRow } from '../_actions/get-challenge-sessions';
 
 export const DEFAULT_BOARD_ORIENTATION: BoardOrientation = 'white';
-
-const ORIENTATIONS: readonly BoardOrientation[] = ['white', 'black', 'random'];
-
-function isBoardOrientation(key: string): key is BoardOrientation {
-  return (ORIENTATIONS as readonly string[]).includes(key);
-}
 
 /**
  * The orientation filter to open a coordinate-quiz menu on: the orientation

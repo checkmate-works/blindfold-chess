@@ -2,6 +2,20 @@ export const BOARD_ORIENTATIONS = ["white", "black", "random"] as const;
 export type BoardOrientation = (typeof BOARD_ORIENTATIONS)[number];
 
 /**
+ * Narrow an untyped orientation -- a `?orientation=` search param, a stored
+ * `leaderboardKey`, a filter value read off the URL -- to a real one.
+ *
+ * Every caller that validates such a value had written the three members out
+ * again beside the type it already imported: as an array to `.includes()`, or
+ * as a chain of `===` comparisons followed by a cast. The type was derived
+ * from {@link BOARD_ORIENTATIONS} and the checks were not, so an orientation
+ * added here would type-check everywhere and be rejected at every entry point.
+ */
+export function isBoardOrientation(value: unknown): value is BoardOrientation {
+  return (BOARD_ORIENTATIONS as readonly unknown[]).includes(value);
+}
+
+/**
  * A board orientation with `"random"` already resolved into a real side.
  *
  * `"random"` is a *setting*: it says how to pick a side at the start of a
