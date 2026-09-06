@@ -23,6 +23,7 @@
  * Level values use gaps (10, 20, ...) to allow future intermediate ranks
  * without renumbering.
  */
+import type { PositionKind } from '@/lib/positions/kind';
 
 export type ChallengeScoreRequirement = {
   type: 'challenge_score';
@@ -41,7 +42,7 @@ export type ChallengeScoreRequirement = {
  */
 export type PositionSubmissionCountRequirement = {
   type: 'position_submission_count';
-  positionTypes: readonly ('memory' | 'puzzle')[];
+  positionTypes: readonly PositionKind[];
   minCount: number;
 };
 

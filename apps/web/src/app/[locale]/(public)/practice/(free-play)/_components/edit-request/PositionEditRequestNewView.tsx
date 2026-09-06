@@ -3,10 +3,9 @@ import { notFound, redirect } from 'next/navigation';
 
 import { getOptionalUser } from '@/lib/auth';
 import { getViewerPendingEditRequestForPosition } from '@/lib/position-edit-requests/queries';
-import { POSITION_KIND_CONFIG, getPositionListPath } from '@/lib/positions/kind';
+import { POSITION_KIND_CONFIG, type PositionKind, getPositionListPath } from '@/lib/positions/kind';
 import { getPositionWithProfileById } from '@/lib/positions/queries';
 import { loadAvailableTags, loadPositionTags } from '@/lib/positions/tag-loader';
-import type { PositionType } from '@/lib/positions/types';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -15,8 +14,8 @@ import { PositionEditRequestForm } from './PositionEditRequestForm';
 
 type Props = {
   positionId: string;
-  /** 'memory' | 'puzzle' — drives the namespace + breadcrumb paths. */
-  positionType: Extract<PositionType, 'memory' | 'puzzle'>;
+  /** Drives the namespace + breadcrumb paths. */
+  positionType: PositionKind;
   locale: Locale;
 };
 

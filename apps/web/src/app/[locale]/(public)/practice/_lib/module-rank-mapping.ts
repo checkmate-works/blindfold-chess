@@ -1,5 +1,6 @@
 import { MUKYU_SLUG, ranksSeedData } from '@/lib/db/data/ranks';
 import type { RankSlug } from '@/lib/db/data/ranks';
+import type { PositionKind } from '@/lib/positions/kind';
 
 /**
  * Maps a `position_submission_count` requirement's `positionTypes` entries to
@@ -11,7 +12,7 @@ import type { RankSlug } from '@/lib/db/data/ranks';
  *   submitting a position-memory problem OR a puzzle, so it surfaces on both
  *   the Position Memory and Puzzle cards.
  */
-const POSITION_TYPE_TO_MENU_TYPE: Record<'memory' | 'puzzle', string> = {
+const POSITION_TYPE_TO_MENU_TYPE: Record<PositionKind, string> = {
   memory: 'position_memory',
   puzzle: 'puzzle',
 };

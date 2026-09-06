@@ -2,9 +2,8 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { listContentRevisionsForPosition } from '@/lib/positions/content-revision-queries';
-import { POSITION_KIND_CONFIG, getPositionListPath } from '@/lib/positions/kind';
+import { POSITION_KIND_CONFIG, type PositionKind, getPositionListPath } from '@/lib/positions/kind';
 import { getPositionWithProfileById } from '@/lib/positions/queries';
-import type { PositionType } from '@/lib/positions/types';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -13,8 +12,8 @@ import { PositionContentRevisionItem } from './PositionContentRevisionItem';
 
 type Props = {
   positionId: string;
-  /** 'memory' | 'puzzle' — drives the namespace + breadcrumb paths. */
-  positionType: Extract<PositionType, 'memory' | 'puzzle'>;
+  /** Drives the namespace + breadcrumb paths. */
+  positionType: PositionKind;
   locale: Locale;
 };
 

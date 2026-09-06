@@ -8,9 +8,9 @@ import { getAuthenticatedUser } from '@/lib/auth';
 import { EMPTY_LIKE_META } from '@/lib/db/like-queries';
 import { EMPTY_REPLY_META, getReplyMetaMap } from '@/lib/db/reply-meta-queries';
 import { buildPageHref, getPaginationParams } from '@/lib/pagination';
+import type { PositionKind } from '@/lib/positions/kind';
 import { getPositionLikeMetaMap } from '@/lib/positions/like-queries';
 import { countPositions, listPositionsWithProfile } from '@/lib/positions/queries';
-import type { PositionType } from '@/lib/positions/types';
 
 import { toggleLike } from '@/app/[locale]/(public)/practice/(free-play)/_actions/toggleLike';
 import { PositionListCard } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionListCard';
@@ -29,7 +29,7 @@ const PAGE_SIZE = 12;
  */
 export type MyProblemsPageConfig = {
   /** `positions` discriminator for the list/count queries. */
-  positionType: Extract<PositionType, 'memory' | 'puzzle'>;
+  positionType: PositionKind;
   /** `topic_posts.topic_type` used to fetch reply meta for these positions. */
   replyMetaType: string;
   /** i18n namespace for page chrome (title / breadcrumb / empty / actions). */
