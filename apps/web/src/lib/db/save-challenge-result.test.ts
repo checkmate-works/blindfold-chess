@@ -1,3 +1,5 @@
+import { revalidateTag as mockRevalidateTag } from 'next/cache';
+
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { ChallengeResultInput } from './save-challenge-result';
@@ -12,7 +14,6 @@ const mockOnConflictDoUpdate = vi.fn();
 const mockTransaction = vi.fn();
 const mockSelectResult = vi.fn<() => unknown[]>().mockReturnValue([]);
 const mockExecute = vi.fn();
-const mockRevalidateTag = vi.fn();
 
 const mockGetUserAllTimeRank = vi.fn().mockResolvedValue({ rank: 5 });
 const mockEvaluateRanksAfterCreate = vi.fn().mockResolvedValue([]);
@@ -22,10 +23,6 @@ const mockGrantChallengeExp = vi.fn().mockResolvedValue({
   level: 2,
   levelUp: false,
 });
-
-vi.mock('next/cache', () => ({
-  revalidateTag: (...args: unknown[]) => mockRevalidateTag(...args),
-}));
 
 // Cuts the request-layer cookie chain (next/headers, billing, grants) out of
 // this DB-focused test; the helper itself is unit-tested in

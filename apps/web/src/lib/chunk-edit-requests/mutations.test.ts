@@ -11,7 +11,6 @@ const mockTxUpdateChunkEditRequests = vi.fn();
 const mockTxUpdateChunks = vi.fn();
 const mockLogActivityEvent = vi.fn();
 const mockCreateNotification = vi.fn();
-const mockRevalidatePath = vi.fn();
 const mockGetEditRequestById = vi.fn();
 const mockGetViewerPendingEditRequestForChunk = vi.fn();
 const mockIsUniqueViolation = vi.fn();
@@ -50,10 +49,6 @@ vi.mock('./queries', () => ({
 }));
 
 vi.mock('@/lib/security/rate-limit');
-
-vi.mock('next/cache', () => ({
-  revalidatePath: (...args: unknown[]) => mockRevalidatePath(...args),
-}));
 
 // Distinguish UPDATE writes to `chunk_edit_requests` vs `chunks` inside
 // the transaction by tagging the table identifier in the mock.

@@ -1,3 +1,4 @@
+import { revalidateTag as mockRevalidateTag } from 'next/cache';
 import type { NextResponse } from 'next/server';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -18,11 +19,6 @@ vi.mock('./ads-hidden-cookie-compute', () => ({
 const mockCookieStore = { set: vi.fn(), delete: vi.fn() };
 vi.mock('next/headers', () => ({
   cookies: () => Promise.resolve(mockCookieStore),
-}));
-
-const mockRevalidateTag = vi.fn();
-vi.mock('next/cache', () => ({
-  revalidateTag: (...args: unknown[]) => mockRevalidateTag(...args),
 }));
 
 const { refreshAdsHiddenCookieOnDanPromotion, refreshAdsHiddenCookieOnResponse } =
@@ -153,7 +149,7 @@ describe('refreshAdsHiddenCookieOnDanPromotion', () => {
   beforeEach(() => {
     mockCookieStore.set.mockReset();
     mockCookieStore.delete.mockReset();
-    mockRevalidateTag.mockReset();
+    vi.mocked(mockRevalidateTag).mockReset();
   });
 
   it('is a no-op for an empty grant batch', async () => {

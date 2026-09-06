@@ -1,3 +1,5 @@
+import { revalidatePath as mockRevalidatePath } from 'next/cache';
+
 import { eq } from 'drizzle-orm';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -27,7 +29,6 @@ const mockDeleteWhere = vi.fn();
 const mockSelectCount = vi.fn();
 const mockSelectPositionAuthor = vi.fn();
 const mockSelectProfile = vi.fn();
-const mockRevalidatePath = vi.fn();
 
 vi.mock('@/lib/users/activity-log');
 
@@ -74,10 +75,6 @@ vi.mock('@/lib/db', () => {
     profiles: profilesTable,
   };
 });
-
-vi.mock('next/cache', () => ({
-  revalidatePath: (...args: unknown[]) => mockRevalidatePath(...args),
-}));
 
 const testUserId = 'user-00000000-0000-0000-0000-000000000001';
 const testPositionAuthorId = 'user-00000000-0000-0000-0000-000000000002';

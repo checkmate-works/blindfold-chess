@@ -1,9 +1,10 @@
+import { revalidateTag as mockRevalidateTag } from 'next/cache';
+
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockRequireAdmin = vi.fn();
 const mockUserGrantsInsert = vi.fn();
 const mockModerationInsert = vi.fn();
-const mockRevalidateTag = vi.fn();
 const mockCalcGrantStartsAt = vi.fn();
 const mockCreateNotification = vi.fn();
 const mockGetClientIp = vi.fn();
@@ -56,10 +57,6 @@ vi.mock('@/lib/users/user-grants', () => ({
 
 vi.mock('@/lib/notifications/notification', () => ({
   createNotification: (...args: unknown[]) => mockCreateNotification(...args),
-}));
-
-vi.mock('next/cache', () => ({
-  revalidateTag: (...args: unknown[]) => mockRevalidateTag(...args),
 }));
 
 vi.mock('@/lib/security/client-ip', () => ({

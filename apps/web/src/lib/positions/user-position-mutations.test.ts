@@ -1,3 +1,5 @@
+import { revalidatePath as mockRevalidatePath } from 'next/cache';
+
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
@@ -29,11 +31,6 @@ const mockNotifyFollowersOfNewPosition = vi.fn();
 const mockNotifyPositionForked = vi.fn();
 const mockEvaluateRanksAfterCreate = vi.fn();
 const mockLogActivityEvent = vi.fn();
-const mockRevalidatePath = vi.fn();
-
-vi.mock('next/cache', () => ({
-  revalidatePath: (...args: unknown[]) => mockRevalidatePath(...args),
-}));
 
 // Cuts the request-layer cookie chain (next/headers, billing, grants) out of
 // this mutation-focused test; the helper itself is unit-tested in

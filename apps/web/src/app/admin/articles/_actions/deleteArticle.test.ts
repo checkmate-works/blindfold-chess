@@ -1,3 +1,8 @@
+import {
+  revalidatePath as mockRevalidatePath,
+  revalidateTag as mockRevalidateTag,
+} from 'next/cache';
+
 import { SUPPORTED_LOCALES } from '@/config';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -9,8 +14,6 @@ import { deleteArticle } from './deleteArticle';
 
 const mockSelectFromWhere = vi.fn();
 const mockDeleteWhere = vi.fn();
-const mockRevalidatePath = vi.fn();
-const mockRevalidateTag = vi.fn();
 
 vi.mock('@/lib/supabase/server');
 
@@ -26,11 +29,6 @@ vi.mock('@/lib/db', async () => ({
       where: mockDeleteWhere,
     }),
   },
-}));
-
-vi.mock('next/cache', () => ({
-  revalidatePath: (...args: unknown[]) => mockRevalidatePath(...args),
-  revalidateTag: (...args: unknown[]) => mockRevalidateTag(...args),
 }));
 
 const adminUserId = 'admin-00000000-0000-0000-0000-000000000001';

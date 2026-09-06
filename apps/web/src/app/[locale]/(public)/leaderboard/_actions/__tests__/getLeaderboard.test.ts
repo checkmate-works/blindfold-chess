@@ -14,10 +14,6 @@ import type { LeaderboardModule, LeaderboardPeriod } from '../../_lib/types';
 // Mocks
 // ---------------------------------------------------------------------------
 
-vi.mock('next/cache', () => ({
-  unstable_cache: (fn: (...args: unknown[]) => unknown) => fn,
-}));
-
 vi.mock('@/lib/db/challenge-queries', () => challengeQueriesMock());
 
 const {

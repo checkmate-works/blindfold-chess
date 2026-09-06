@@ -1,3 +1,8 @@
+import {
+  revalidatePath as mockRevalidatePath,
+  revalidateTag as mockRevalidateTag,
+} from 'next/cache';
+
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
@@ -7,8 +12,6 @@ const mockSelectFromWhereLimit = vi.fn();
 const mockUserRanksInsert = vi.fn();
 const mockUserRanksReturning = vi.fn();
 const mockModerationInsert = vi.fn();
-const mockRevalidatePath = vi.fn();
-const mockRevalidateTag = vi.fn();
 const mockGetClientIp = vi.fn();
 const mockCreateNotification = vi.fn();
 
@@ -59,11 +62,6 @@ vi.mock('@/lib/db', async () => ({
   ranks: ranksTable,
   userRanks: userRanksTable,
   moderationActions: moderationActionsTable,
-}));
-
-vi.mock('next/cache', () => ({
-  revalidatePath: (...args: unknown[]) => mockRevalidatePath(...args),
-  revalidateTag: (...args: unknown[]) => mockRevalidateTag(...args),
 }));
 
 vi.mock('@/lib/security/client-ip', () => ({

@@ -1,3 +1,5 @@
+import { revalidatePath as mockRevalidatePath } from 'next/cache';
+
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockUserHasProfile = vi.fn(async () => true);
@@ -17,7 +19,6 @@ const mockNotifyGameOwnerOfChunkLink = vi.fn();
 const mockFindChunkBySlug = vi.fn();
 const mockClawbackPointsForPost = vi.fn();
 const mockLogActivityEvent = vi.fn();
-const mockRevalidatePath = vi.fn();
 const mockIsUniqueViolation = vi.fn();
 const mockLinkNewChunkToGameMove = vi.fn();
 
@@ -167,10 +168,6 @@ vi.mock('@/lib/db', () => ({
 }));
 
 vi.mock('@/lib/security/rate-limit');
-
-vi.mock('next/cache', () => ({
-  revalidatePath: (...args: unknown[]) => mockRevalidatePath(...args),
-}));
 
 const VALID_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 const TEST_USER_ID = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';

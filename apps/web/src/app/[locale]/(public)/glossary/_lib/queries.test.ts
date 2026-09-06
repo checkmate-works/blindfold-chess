@@ -15,10 +15,6 @@ import {
 import type { TermWithAliasRow, TermWithPositionRow } from './queries';
 import type { ChessTerm } from './types';
 
-vi.mock('next/cache', () => ({
-  unstable_cache: (fn: (...args: unknown[]) => unknown) => fn,
-}));
-
 // Mock the db module before importing queries
 vi.mock('@/lib/db', async () => {
   const mockDb = {

@@ -1,3 +1,8 @@
+import {
+  revalidatePath as mockRevalidatePath,
+  revalidateTag as mockRevalidateTag,
+} from 'next/cache';
+
 import { SUPPORTED_LOCALES } from '@/config';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -9,8 +14,6 @@ import { createArticle } from './createArticle';
 
 const mockSelectFromWhere = vi.fn();
 const mockInsertValuesReturning = vi.fn();
-const mockRevalidatePath = vi.fn();
-const mockRevalidateTag = vi.fn();
 
 const generatedId = 'generated-00000000-0000-0000-0000-000000000001';
 
@@ -36,11 +39,6 @@ vi.mock('@/lib/db', async () => ({
       }),
     }),
   },
-}));
-
-vi.mock('next/cache', () => ({
-  revalidatePath: (...args: unknown[]) => mockRevalidatePath(...args),
-  revalidateTag: (...args: unknown[]) => mockRevalidateTag(...args),
 }));
 
 const adminUserId = 'admin-00000000-0000-0000-0000-000000000001';
