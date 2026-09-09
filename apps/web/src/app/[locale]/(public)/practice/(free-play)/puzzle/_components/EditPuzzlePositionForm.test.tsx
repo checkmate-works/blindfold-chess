@@ -31,33 +31,7 @@ vi.mock('@/app/[locale]/(public)/practice/(free-play)/_components/EditableChessB
 
 vi.mock('next-navigation-guard');
 
-vi.mock('@/app/[locale]/_components/ConfirmationModal', () => ({
-  ConfirmationModal: ({
-    isOpen,
-    title,
-    confirmText,
-    cancelText,
-    onConfirm,
-    onCancel,
-  }: {
-    isOpen: boolean;
-    title: string;
-    confirmText?: string;
-    cancelText?: string;
-    onConfirm: () => void;
-    onCancel: () => void;
-  }) =>
-    isOpen ? (
-      <div role="dialog" aria-label={title}>
-        <button type="button" onClick={onConfirm}>
-          {confirmText ?? 'Confirm'}
-        </button>
-        <button type="button" onClick={onCancel}>
-          {cancelText ?? 'Cancel'}
-        </button>
-      </div>
-    ) : null,
-}));
+vi.mock('@/app/[locale]/_components/ConfirmationModal');
 
 vi.mock('@/app/_components', () => ({
   FormActionFooter: ({
