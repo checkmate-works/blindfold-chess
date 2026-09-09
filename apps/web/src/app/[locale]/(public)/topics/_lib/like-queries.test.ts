@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
+import { mockChain } from '@/lib/db/__test-support__/query-chain';
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import { topicPosts } from '@/lib/db/schema';
 
@@ -37,27 +38,6 @@ vi.mock('@/lib/db', async () => {
 
 const { db } = await import('@/lib/db');
 const mockDb = vi.mocked(db);
-
-function mockChain(rows: unknown[]) {
-  const chain: Record<string, unknown> = {};
-  const methods = [
-    'select',
-    'from',
-    'leftJoin',
-    'innerJoin',
-    'where',
-    'orderBy',
-    'groupBy',
-    'limit',
-    'offset',
-    '$dynamic',
-  ];
-  for (const m of methods) {
-    chain[m] = vi.fn().mockReturnValue(chain);
-  }
-  chain.then = (resolve: (v: unknown) => void) => resolve(rows);
-  return chain;
-}
 
 const userId = 'user-00000000-0000-0000-0000-000000000001';
 

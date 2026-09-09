@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { EMPTY_BOARD_ANNOTATIONS } from '@/lib/board-annotations/types';
+import { mockChain } from '@/lib/db/__test-support__/query-chain';
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 
 import {
@@ -30,22 +31,6 @@ vi.mock('@/lib/db', async () => {
 
 const { db } = await import('@/lib/db');
 const mockDb = vi.mocked(db);
-
-/**
- * Creates a chainable mock that resolves to `rows` when awaited.
- * Each chained method (select, from, leftJoin, where, orderBy, groupBy)
- * returns the same object so the Drizzle-style chaining works.
- */
-function mockChain(rows: unknown[]) {
-  const chain: Record<string, unknown> = {};
-  const methods = ['select', 'selectDistinct', 'from', 'leftJoin', 'where', 'orderBy', 'groupBy'];
-  for (const m of methods) {
-    chain[m] = vi.fn().mockReturnValue(chain);
-  }
-  // Make it thenable so `await` resolves to rows
-  chain.then = (resolve: (v: unknown) => void) => resolve(rows);
-  return chain;
-}
 
 /**
  * Sets up mock for two parallel queries (alias query + position query).
