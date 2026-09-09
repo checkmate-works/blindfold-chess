@@ -135,7 +135,7 @@ export function RoutePlannerSession({
                 <div className="flex pt-4 mt-2 -mx-4 sm:mx-0">
                   <Button
                     onClick={handleSubmitAnswer}
-                    disabled={moves.length === 0 && problem.start === problem.end}
+                    disabled={moves.length === 0}
                     variant="primary"
                     size="lg"
                     className="w-full"

@@ -209,6 +209,7 @@ export default function RoutePlannerSessionScreen() {
                     title={t("routePlanner.session.submit")}
                     onPress={handleSubmit}
                     size="md"
+                    disabled={moves.length === 0}
                     style={styles.actionButton}
                   />
                 </View>

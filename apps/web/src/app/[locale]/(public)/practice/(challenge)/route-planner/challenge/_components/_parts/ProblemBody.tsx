@@ -148,8 +148,6 @@ export function ProblemBody({
       />
       <SubmitArea
         piece={currentProblem.piece}
-        start={currentProblem.start}
-        end={currentProblem.end}
         selectedFile={staged.selectedFile}
         selectedRank={staged.selectedRank}
         onFilePress={handleFilePress}

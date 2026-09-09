@@ -11,8 +11,6 @@ import type { PieceType } from '../../../_lib/pieces';
 
 type Props = {
   piece: PieceType;
-  start: string;
-  end: string;
   selectedFile: string | null;
   selectedRank: string | null;
   onFilePress: (file: string) => void;
@@ -24,8 +22,6 @@ type Props = {
 
 export function SubmitArea({
   piece,
-  start,
-  end,
   selectedFile,
   selectedRank,
   onFilePress,
@@ -51,7 +47,7 @@ export function SubmitArea({
         <div className="flex pt-4 mt-2 -mx-4 sm:mx-0">
           <Button
             onClick={onSubmit}
-            disabled={isDisabled || (movesCount === 0 && start === end)}
+            disabled={isDisabled || movesCount === 0}
             variant="primary"
             size="lg"
             className="w-full"
