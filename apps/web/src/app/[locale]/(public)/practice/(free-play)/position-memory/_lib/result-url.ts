@@ -66,6 +66,32 @@ export function buildMultiResultUrl({
   return `/${locale}/practice/position-memory/result?${params.toString()}`;
 }
 
+type SingleRunParamsArgs = {
+  results: SerializedResultItem[];
+  stats: SerializedStats;
+  timeLimit: number;
+};
+
+/**
+ * The query payload a single-position run carries to its result page,
+ * whichever of the two routes ({@link buildSingleResultUrl},
+ * {@link buildCustomResultUrl}) it lands on.
+ *
+ * `score` keeps its decimal via `toFixed(1)` so the result page can show
+ * "97.5%" for one position, where the multi-problem URL rounds; `total` is
+ * the fixed 100 that score is out of.
+ */
+function singleRunParams({ results, stats, timeLimit }: SingleRunParamsArgs): URLSearchParams {
+  const first = results[0];
+  const params = new URLSearchParams();
+  params.set('score', (first?.a ?? 0).toFixed(1));
+  params.set('total', '100');
+  params.set('data', serializeResults(results));
+  params.set('stats', serializeStats(stats));
+  params.set('timeLimit', timeLimit.toString());
+  return params;
+}
+
 export type BuildCustomResultUrlArgs = {
   locale: Locale;
   /** Base64URL FEN token identifying the instant problem (for "try again"). */
@@ -98,13 +124,7 @@ export function buildCustomResultUrl({
   skipMemorize,
   returnTo,
 }: BuildCustomResultUrlArgs): string {
-  const first = results[0];
-  const params = new URLSearchParams();
-  params.set('score', (first?.a ?? 0).toFixed(1));
-  params.set('total', '100');
-  params.set('data', serializeResults(results));
-  params.set('stats', serializeStats(stats));
-  params.set('timeLimit', timeLimit.toString());
+  const params = singleRunParams({ results, stats, timeLimit });
   if (skipMemorize) params.set('skipMemorize', '1');
   if (returnTo) params.set('returnTo', returnTo);
 
@@ -132,13 +152,7 @@ export function buildSingleResultUrl({
   results,
   stats,
 }: BuildSingleResultUrlArgs): string {
-  const first = results[0];
-  const params = new URLSearchParams();
-  params.set('score', (first?.a ?? 0).toFixed(1));
-  params.set('total', '100');
-  params.set('data', serializeResults(results));
-  params.set('stats', serializeStats(stats));
-  params.set('timeLimit', timeLimit.toString());
+  const params = singleRunParams({ results, stats, timeLimit });
 
   return `/${locale}/practice/position-memory/${positionId}/result?${params.toString()}`;
 }
