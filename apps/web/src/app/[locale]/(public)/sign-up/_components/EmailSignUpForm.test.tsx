@@ -23,6 +23,33 @@ vi.mock('../_actions/signUp', () => ({
   signUp: (...args: unknown[]) => mockSignUp(...args),
 }));
 
+/**
+ * Fills the three fields and submits. `email` defaults to the one address
+ * every case uses and `confirmPassword` to `password`, which is every case
+ * except the mismatch one.
+ */
+function fillAndSubmit({
+  email = 'test@example.com',
+  password,
+  confirmPassword = password,
+}: {
+  email?: string;
+  password: string;
+  confirmPassword?: string;
+}) {
+  fireEvent.change(screen.getByLabelText('emailLabel'), {
+    target: { value: email },
+  });
+  fireEvent.change(screen.getByLabelText('passwordLabel'), {
+    target: { value: password },
+  });
+  fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
+    target: { value: confirmPassword },
+  });
+
+  fireEvent.submit(screen.getByRole('button', { name: 'emailSignUp' }));
+}
+
 describe('EmailSignUpForm', () => {
   it('should render the form with email, password, and confirm password fields', () => {
     render(<EmailSignUpForm />);
@@ -36,17 +63,7 @@ describe('EmailSignUpForm', () => {
   it('should show password mismatch error when passwords do not match', async () => {
     render(<EmailSignUpForm />);
 
-    fireEvent.change(screen.getByLabelText('emailLabel'), {
-      target: { value: 'test@example.com' },
-    });
-    fireEvent.change(screen.getByLabelText('passwordLabel'), {
-      target: { value: 'password123' },
-    });
-    fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
-      target: { value: 'differentpassword' },
-    });
-
-    fireEvent.submit(screen.getByRole('button', { name: 'emailSignUp' }));
+    fillAndSubmit({ password: 'password123', confirmPassword: 'differentpassword' });
 
     await waitFor(() => {
       expect(screen.getByText('passwordMismatch')).toBeInTheDocument();
@@ -57,17 +74,7 @@ describe('EmailSignUpForm', () => {
   it('should show password too short error when password is less than MIN_PASSWORD_LENGTH', async () => {
     render(<EmailSignUpForm />);
 
-    fireEvent.change(screen.getByLabelText('emailLabel'), {
-      target: { value: 'test@example.com' },
-    });
-    fireEvent.change(screen.getByLabelText('passwordLabel'), {
-      target: { value: 'ab1' },
-    });
-    fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
-      target: { value: 'ab1' },
-    });
-
-    fireEvent.submit(screen.getByRole('button', { name: 'emailSignUp' }));
+    fillAndSubmit({ password: 'ab1' });
 
     await waitFor(() => {
       expect(screen.getByText('tooShort')).toBeInTheDocument();
@@ -78,17 +85,7 @@ describe('EmailSignUpForm', () => {
   it('should show missingLetter error when password has no letters', async () => {
     render(<EmailSignUpForm />);
 
-    fireEvent.change(screen.getByLabelText('emailLabel'), {
-      target: { value: 'test@example.com' },
-    });
-    fireEvent.change(screen.getByLabelText('passwordLabel'), {
-      target: { value: '12345678' },
-    });
-    fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
-      target: { value: '12345678' },
-    });
-
-    fireEvent.submit(screen.getByRole('button', { name: 'emailSignUp' }));
+    fillAndSubmit({ password: '12345678' });
 
     await waitFor(() => {
       expect(screen.getByText('missingLetter')).toBeInTheDocument();
@@ -99,17 +96,7 @@ describe('EmailSignUpForm', () => {
   it('should show missingDigit error when password has no digits', async () => {
     render(<EmailSignUpForm />);
 
-    fireEvent.change(screen.getByLabelText('emailLabel'), {
-      target: { value: 'test@example.com' },
-    });
-    fireEvent.change(screen.getByLabelText('passwordLabel'), {
-      target: { value: 'abcdefgh' },
-    });
-    fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
-      target: { value: 'abcdefgh' },
-    });
-
-    fireEvent.submit(screen.getByRole('button', { name: 'emailSignUp' }));
+    fillAndSubmit({ password: 'abcdefgh' });
 
     await waitFor(() => {
       expect(screen.getByText('missingDigit')).toBeInTheDocument();
@@ -122,17 +109,7 @@ describe('EmailSignUpForm', () => {
 
     render(<EmailSignUpForm />);
 
-    fireEvent.change(screen.getByLabelText('emailLabel'), {
-      target: { value: 'test@example.com' },
-    });
-    fireEvent.change(screen.getByLabelText('passwordLabel'), {
-      target: { value: 'validpassword123' },
-    });
-    fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
-      target: { value: 'validpassword123' },
-    });
-
-    fireEvent.submit(screen.getByRole('button', { name: 'emailSignUp' }));
+    fillAndSubmit({ password: 'validpassword123' });
 
     await waitFor(() => {
       expect(mockSignUp).toHaveBeenCalledWith('test@example.com', 'validpassword123', undefined);
@@ -146,17 +123,7 @@ describe('EmailSignUpForm', () => {
 
     render(<EmailSignUpForm />);
 
-    fireEvent.change(screen.getByLabelText('emailLabel'), {
-      target: { value: 'test@example.com' },
-    });
-    fireEvent.change(screen.getByLabelText('passwordLabel'), {
-      target: { value: 'validpassword123' },
-    });
-    fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
-      target: { value: 'validpassword123' },
-    });
-
-    fireEvent.submit(screen.getByRole('button', { name: 'emailSignUp' }));
+    fillAndSubmit({ password: 'validpassword123' });
 
     await waitFor(() => {
       expect(screen.getByText('tooShort')).toBeInTheDocument();
@@ -169,17 +136,7 @@ describe('EmailSignUpForm', () => {
 
     render(<EmailSignUpForm />);
 
-    fireEvent.change(screen.getByLabelText('emailLabel'), {
-      target: { value: 'test@example.com' },
-    });
-    fireEvent.change(screen.getByLabelText('passwordLabel'), {
-      target: { value: 'validpassword123' },
-    });
-    fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
-      target: { value: 'validpassword123' },
-    });
-
-    fireEvent.submit(screen.getByRole('button', { name: 'emailSignUp' }));
+    fillAndSubmit({ password: 'validpassword123' });
 
     await waitFor(() => {
       expect(screen.getByText('missingLetter')).toBeInTheDocument();
@@ -192,17 +149,7 @@ describe('EmailSignUpForm', () => {
 
     render(<EmailSignUpForm />);
 
-    fireEvent.change(screen.getByLabelText('emailLabel'), {
-      target: { value: 'test@example.com' },
-    });
-    fireEvent.change(screen.getByLabelText('passwordLabel'), {
-      target: { value: 'validpassword123' },
-    });
-    fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
-      target: { value: 'validpassword123' },
-    });
-
-    fireEvent.submit(screen.getByRole('button', { name: 'emailSignUp' }));
+    fillAndSubmit({ password: 'validpassword123' });
 
     await waitFor(() => {
       expect(screen.getByText('missingDigit')).toBeInTheDocument();
@@ -215,17 +162,7 @@ describe('EmailSignUpForm', () => {
 
     render(<EmailSignUpForm />);
 
-    fireEvent.change(screen.getByLabelText('emailLabel'), {
-      target: { value: 'test@example.com' },
-    });
-    fireEvent.change(screen.getByLabelText('passwordLabel'), {
-      target: { value: 'validpassword123' },
-    });
-    fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
-      target: { value: 'validpassword123' },
-    });
-
-    fireEvent.submit(screen.getByRole('button', { name: 'emailSignUp' }));
+    fillAndSubmit({ password: 'validpassword123' });
 
     await waitFor(() => {
       expect(screen.getByText('weak')).toBeInTheDocument();
@@ -238,17 +175,7 @@ describe('EmailSignUpForm', () => {
 
     render(<EmailSignUpForm />);
 
-    fireEvent.change(screen.getByLabelText('emailLabel'), {
-      target: { value: 'test@example.com' },
-    });
-    fireEvent.change(screen.getByLabelText('passwordLabel'), {
-      target: { value: 'validpassword123' },
-    });
-    fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
-      target: { value: 'validpassword123' },
-    });
-
-    fireEvent.submit(screen.getByRole('button', { name: 'emailSignUp' }));
+    fillAndSubmit({ password: 'validpassword123' });
 
     await waitFor(() => {
       expect(screen.getByText('emailSignUpError')).toBeInTheDocument();
@@ -261,17 +188,7 @@ describe('EmailSignUpForm', () => {
 
     render(<EmailSignUpForm />);
 
-    fireEvent.change(screen.getByLabelText('emailLabel'), {
-      target: { value: 'test@example.com' },
-    });
-    fireEvent.change(screen.getByLabelText('passwordLabel'), {
-      target: { value: 'validpassword123' },
-    });
-    fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
-      target: { value: 'validpassword123' },
-    });
-
-    fireEvent.submit(screen.getByRole('button', { name: 'emailSignUp' }));
+    fillAndSubmit({ password: 'validpassword123' });
 
     await waitFor(() => {
       expect(screen.getByText('emailSignUpError')).toBeInTheDocument();
@@ -284,17 +201,7 @@ describe('EmailSignUpForm', () => {
 
     render(<EmailSignUpForm />);
 
-    fireEvent.change(screen.getByLabelText('emailLabel'), {
-      target: { value: 'test@example.com' },
-    });
-    fireEvent.change(screen.getByLabelText('passwordLabel'), {
-      target: { value: 'validpassword123' },
-    });
-    fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
-      target: { value: 'validpassword123' },
-    });
-
-    fireEvent.submit(screen.getByRole('button', { name: 'emailSignUp' }));
+    fillAndSubmit({ password: 'validpassword123' });
 
     await waitFor(() => {
       expect(screen.getByText('rateLimited')).toBeInTheDocument();
