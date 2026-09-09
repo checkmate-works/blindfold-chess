@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { db } from '@/lib/db';
+import { mockChain } from '@/lib/db/__test-support__/query-chain';
 
 import { getChallengeResultsPaginated, getLatestLeaderboardKey } from './queries';
 
@@ -37,20 +38,6 @@ vi.mock('@/lib/db/schema', () => ({
 }));
 
 const mockDb = vi.mocked(db);
-
-/**
- * Creates a chainable mock that resolves to `rows` when awaited.
- * Each chained method returns the same object so the Drizzle-style chaining works.
- */
-function mockChain(rows: unknown[]) {
-  const chain: Record<string, unknown> = {};
-  const methods = ['select', 'from', 'where', 'orderBy', 'limit', 'offset'];
-  for (const m of methods) {
-    chain[m] = vi.fn().mockReturnValue(chain);
-  }
-  chain.then = (resolve: (v: unknown) => void) => resolve(rows);
-  return chain;
-}
 
 const makeRow = (overrides: Record<string, unknown> = {}) => ({
   id: 'row-1',

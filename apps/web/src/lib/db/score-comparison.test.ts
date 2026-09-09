@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { db } from '@/lib/db';
+import { mockChain } from '@/lib/db/__test-support__/query-chain';
 
 import { getScoreComparison } from './score-comparison';
 
@@ -37,15 +38,6 @@ vi.mock('drizzle-orm', () => {
 const mockDb = vi.mocked(db);
 
 /** Chainable Drizzle-style mock resolving to `rows`; records the `where` arg. */
-function mockChain(rows: unknown[]) {
-  const chain: Record<string, unknown> = {};
-  for (const m of ['select', 'from', 'where', 'orderBy', 'limit']) {
-    chain[m] = vi.fn().mockReturnValue(chain);
-  }
-  chain.then = (resolve: (v: unknown) => void) => resolve(rows);
-  return chain;
-}
-
 function whereOps(chain: Record<string, unknown>): string[] {
   const where = chain.where as ReturnType<typeof vi.fn>;
   const arg = where.mock.calls[0][0] as { args: { op: string; args: unknown[] }[] };

@@ -1,8 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
-
-import { BoardFrame, Button } from '@/app/_components';
+import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { fenToLichessUrl } from '@blindfold-chess/features/chess-core/fen';
 import { FaExternalLinkAlt } from 'react-icons/fa';
@@ -10,12 +8,13 @@ import { FaExternalLinkAlt } from 'react-icons/fa';
 import type { BoardTheme } from '@/lib/games/board-themes';
 import { DEFAULT_BOARD_THEME } from '@/lib/games/board-themes';
 
-import { ChessBoardWithOverlay } from '@/app/[locale]/(public)/practice/(free-play)/_components/ChessBoardWithOverlay';
-import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';
+import { ProblemResultActions } from '@/app/[locale]/(public)/practice/(free-play)/_components/ProblemResultActions';
+import { RecreationComparison } from '@/app/[locale]/(public)/practice/(free-play)/_components/RecreationComparison';
 import { PieceRecreationProgress } from '@/app/[locale]/(public)/practice/_components/PieceRecreationProgress';
 
-import { calculateSquareDifferences } from '../../_lib/preset-problems';
 import type { PositionAccuracy, PositionData } from '../../_lib/types';
+
+const NAMESPACE = 'practice.positionMemory';
 
 type Props = {
   accuracy: PositionAccuracy;
@@ -42,14 +41,8 @@ export function PositionMemoryProblemResult({
   onViewResults,
   onFinishTutorial,
 }: Props) {
-  const t = useTranslations('practice.positionMemory');
+  const t = useTranslations(NAMESPACE);
   const isLastProblem = currentProblemIndex >= totalProblems - 1;
-
-  // Calculate square differences for overlay display
-  const squareDifferences = useMemo(
-    () => calculateSquareDifferences(originalPosition.fen, recreatedPosition),
-    [originalPosition.fen, recreatedPosition]
-  );
 
   return (
     <div className="space-y-4">
@@ -62,59 +55,24 @@ export function PositionMemoryProblemResult({
           </h2>
 
           {/* Recreation Progress Bar */}
-          <PieceRecreationProgress accuracy={accuracy} namespace="practice.positionMemory" />
+          <PieceRecreationProgress accuracy={accuracy} namespace={NAMESPACE} />
 
-          {/* Board Comparison */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground mb-2">{t('original')}</p>
-              <BoardFrame>
-                <AnimatedChessBoard
-                  initialFen={originalPosition.fen}
-                  showCoordinates={false}
-                  flipped={originalPosition.isBlackToMove}
-                  boardTheme={boardTheme}
-                />
-              </BoardFrame>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-muted-foreground mb-2">
-                {t('yourRecreation')}
-              </p>
-              <BoardFrame>
-                <ChessBoardWithOverlay
-                  fen={recreatedPosition}
-                  flipped={originalPosition.isBlackToMove}
-                  squareDifferences={squareDifferences}
-                  boardTheme={boardTheme}
-                />
-              </BoardFrame>
-            </div>
-          </div>
+          <RecreationComparison
+            namespace={NAMESPACE}
+            originalPosition={originalPosition}
+            recreatedPosition={recreatedPosition}
+            boardTheme={boardTheme}
+            showCoordinates={{ original: false, recreation: true }}
+          />
 
-          {/* Action Buttons */}
-          {isTutorial ? (
-            <div className="space-y-3">
-              <p className="text-sm text-muted-foreground whitespace-pre-line">
-                {t('tutorialComplete')}
-              </p>
-              <Button onClick={onFinishTutorial} variant="primary" size="lg" fullWidth>
-                {t('finishTutorial')}
-              </Button>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {isLastProblem ? (
-                <Button onClick={onViewResults} variant="primary" size="lg" fullWidth>
-                  {t('viewResults')}
-                </Button>
-              ) : (
-                <Button onClick={onNextProblem} variant="primary" size="lg" fullWidth>
-                  {t('nextProblem')}
-                </Button>
-              )}
-
-              {/* Analyze on Lichess Button */}
+          <ProblemResultActions
+            namespace={NAMESPACE}
+            isTutorial={isTutorial}
+            isLastProblem={isLastProblem}
+            onNextProblem={onNextProblem}
+            onViewResults={onViewResults}
+            onFinishTutorial={onFinishTutorial}
+            extraActions={
               <Button
                 onClick={() => {
                   const lichessUrl = fenToLichessUrl(originalPosition.fen);
@@ -127,8 +85,8 @@ export function PositionMemoryProblemResult({
               >
                 {t('analyzeOnLichess')}
               </Button>
-            </div>
-          )}
+            }
+          />
         </div>
       </div>
     </div>

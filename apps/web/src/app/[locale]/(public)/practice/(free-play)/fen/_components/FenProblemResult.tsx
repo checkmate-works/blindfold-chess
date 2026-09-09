@@ -1,19 +1,17 @@
 'use client';
 
-import { useMemo } from 'react';
-
-import { BoardFrame, Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { calculateSquareDifferences } from '@blindfold-chess/features/common';
 import type { PositionAccuracy } from '@blindfold-chess/features/common';
 
 import type { BoardTheme } from '@/lib/games/board-themes';
 import { DEFAULT_BOARD_THEME } from '@/lib/games/board-themes';
 
-import { ChessBoardWithOverlay } from '@/app/[locale]/(public)/practice/(free-play)/_components/ChessBoardWithOverlay';
-import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';
+import { ProblemResultActions } from '@/app/[locale]/(public)/practice/(free-play)/_components/ProblemResultActions';
+import { RecreationComparison } from '@/app/[locale]/(public)/practice/(free-play)/_components/RecreationComparison';
 import { PieceRecreationProgress } from '@/app/[locale]/(public)/practice/_components/PieceRecreationProgress';
 import type { PositionData } from '@/app/[locale]/(public)/practice/_lib/types';
+
+const NAMESPACE = 'practice.fen';
 
 type Props = {
   accuracy: PositionAccuracy;
@@ -42,14 +40,8 @@ export function FenProblemResult({
   onViewResults,
   onFinishTutorial,
 }: Props) {
-  const t = useTranslations('practice.fen');
+  const t = useTranslations(NAMESPACE);
   const isLastProblem = currentProblemIndex >= totalProblems - 1;
-
-  // Calculate square differences for overlay display
-  const squareDifferences = useMemo(
-    () => calculateSquareDifferences(originalPosition.fen, recreatedPosition),
-    [originalPosition.fen, recreatedPosition]
-  );
 
   return (
     <div className="space-y-4">
@@ -63,56 +55,24 @@ export function FenProblemResult({
             </p>
           </div>
 
-          <PieceRecreationProgress accuracy={accuracy} namespace="practice.fen" />
+          <PieceRecreationProgress accuracy={accuracy} namespace={NAMESPACE} />
 
-          {/* Board Comparison */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground mb-2">{t('original')}</p>
-              <BoardFrame>
-                <AnimatedChessBoard
-                  initialFen={originalPosition.fen}
-                  showCoordinates={showCoordinates}
-                  flipped={originalPosition.isBlackToMove}
-                  boardTheme={boardTheme}
-                />
-              </BoardFrame>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-muted-foreground mb-2">
-                {t('yourRecreation')}
-              </p>
-              <BoardFrame>
-                <ChessBoardWithOverlay
-                  fen={recreatedPosition}
-                  flipped={originalPosition.isBlackToMove}
-                  squareDifferences={squareDifferences}
-                  boardTheme={boardTheme}
-                  showCoordinates={showCoordinates}
-                />
-              </BoardFrame>
-            </div>
-          </div>
+          <RecreationComparison
+            namespace={NAMESPACE}
+            originalPosition={originalPosition}
+            recreatedPosition={recreatedPosition}
+            boardTheme={boardTheme}
+            showCoordinates={{ original: showCoordinates, recreation: showCoordinates }}
+          />
 
-          {/* Action Button */}
-          {isTutorial ? (
-            <div className="space-y-3">
-              <p className="text-sm text-muted-foreground whitespace-pre-line">
-                {t('tutorialComplete')}
-              </p>
-              <Button onClick={onFinishTutorial} variant="primary" size="lg" fullWidth>
-                {t('finishTutorial')}
-              </Button>
-            </div>
-          ) : isLastProblem ? (
-            <Button onClick={onViewResults} variant="primary" size="lg" fullWidth>
-              {t('viewResults')}
-            </Button>
-          ) : (
-            <Button onClick={onNextProblem} variant="primary" size="lg" fullWidth>
-              {t('nextProblem')}
-            </Button>
-          )}
+          <ProblemResultActions
+            namespace={NAMESPACE}
+            isTutorial={isTutorial}
+            isLastProblem={isLastProblem}
+            onNextProblem={onNextProblem}
+            onViewResults={onViewResults}
+            onFinishTutorial={onFinishTutorial}
+          />
         </div>
       </div>
     </div>
