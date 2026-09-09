@@ -1,60 +1,23 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
-import { clawbackPointsForPost } from '@/lib/points';
+import {
+  mockAuthenticateAndGuard,
+  mockSelectLimit,
+  mockUpdateWhere,
+  positionDeleteMocks,
+} from '../../_lib/__test-support__/position-delete-mocks';
 
-const mockAuthenticateAndGuard = vi.fn();
-const mockSelectLimit = vi.fn();
-const mockUpdateWhere = vi.fn();
-
-vi.mock('@/lib/auth', () => ({
-  authenticateAndGuard: (...args: unknown[]) => mockAuthenticateAndGuard(...args),
-}));
+vi.mock('@/lib/auth', () => positionDeleteMocks.auth());
 
 vi.mock('@/lib/users/activity-log');
 
-vi.mock('@/lib/db', async () => {
-  const updateChain = {
-    set: () => ({
-      where: (...args: unknown[]) => mockUpdateWhere(...args),
-    }),
-  };
-  return {
-    ...(await actualDbSchema()),
-    db: {
-      select: () => ({
-        from: () => ({
-          where: () => ({
-            limit: () => mockSelectLimit(),
-          }),
-        }),
-      }),
-      update: () => updateChain,
-      transaction: async (fn: (tx: unknown) => Promise<unknown>) =>
-        fn({ update: () => updateChain }),
-    },
-    positions: {
-      id: 'id',
-      userId: 'user_id',
-      type: 'type',
-      deletedAt: 'deleted_at',
-    },
-  };
-});
+vi.mock('@/lib/db', () => positionDeleteMocks.db());
 
-vi.mock('@/lib/points', () => ({
-  clawbackPointsForPost: vi.fn().mockResolvedValue(undefined),
-}));
+vi.mock('@/lib/points', () => positionDeleteMocks.points());
 
 vi.mock('@/lib/security/rate-limit');
 
-// Cuts the request-layer cookie chain (next/headers, billing, grants) that
-// the shared position-mutation lib pulls in via its dan-promotion cookie
-// refresh; the helper itself is unit-tested in
-// `@/lib/ads/ads-hidden-cookie-writer.test.ts`.
-vi.mock('@/lib/ads/ads-hidden-cookie-writer', () => ({
-  refreshAdsHiddenCookieOnDanPromotion: vi.fn(),
-}));
+vi.mock('@/lib/ads/ads-hidden-cookie-writer', () => positionDeleteMocks.adsHiddenCookieWriter());
 
 const TEST_USER_ID = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
 const OTHER_USER_ID = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
@@ -67,6 +30,7 @@ const TEST_POSITION_ID = 'cccccccc-cccc-cccc-cccc-cccccccccccc';
 // symptom is one flaky test rather than a slow file. The `vi.mock` calls
 // above are hoisted over this statement, so the load needs no per-test setup.
 const { deletePosition } = await import('./deletePosition');
+const { clawbackPointsForPost } = await import('@/lib/points');
 
 describe('deletePosition', () => {
   beforeEach(() => {
