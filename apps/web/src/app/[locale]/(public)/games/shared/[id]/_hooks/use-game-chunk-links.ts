@@ -4,6 +4,7 @@ import { useEffect, useMemo } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
+import { localizeChunkLinkError, seedSuggester } from '@/lib/chunks/optimistic-chunk-link';
 import type { ChunkOption } from '@/lib/chunks/types';
 import { useChunkLinkStaging } from '@/lib/chunks/use-chunk-link-staging';
 import type { GameChunkItem } from '@/lib/db/game-chunks';
@@ -46,12 +47,7 @@ export function useGameChunkLinks({
 }: Params) {
   const t = useTranslations('sharedGames.chunks');
 
-  const localizeError = (code: string): string => {
-    if (code === 'already_linked') return t('errors.alreadyLinked');
-    if (code === 'chunk_not_available') return t('errors.chunkNotAvailable');
-    if (code === 'rateLimited') return t('errors.rateLimited');
-    return t('errors.generic');
-  };
+  const localizeError = (code: string) => localizeChunkLinkError(code, t);
 
   const staging = useChunkLinkStaging<GameChunkItem>({
     items: chunks,
@@ -76,15 +72,7 @@ export function useGameChunkLinks({
       status: chunk.status,
       createdAt: new Date(accepted.createdAt),
       suggestedById: currentUser?.id ?? null,
-      // Seed the suggester from the viewer so the freshly-linked card shows
-      // the same avatar / name as it will after a reload.
-      suggester: currentUser
-        ? {
-            username: currentUser.username,
-            displayName: currentUser.displayName,
-            avatarUrl: currentUser.avatarUrl,
-          }
-        : null,
+      suggester: seedSuggester(currentUser),
     }),
     deleteAction: deleteGameChunkAction,
     localizeError,
