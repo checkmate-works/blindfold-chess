@@ -172,6 +172,7 @@ export function PositionMemorySessionView({
         currentAccuracy={currentAccuracy}
         countdown={countdown}
         boardTheme={preferences.boardTheme}
+        showCoordinates={preferences.showCoordinates}
         isTutorial={mode === 'tutorial'}
         enablePause={enablePause}
         isPaused={isPaused}

@@ -23,6 +23,7 @@ type Props = {
   currentProblemIndex: number;
   totalProblems: number;
   boardTheme?: BoardTheme;
+  showCoordinates?: boolean;
   isTutorial?: boolean;
   onNextProblem: () => void;
   onViewResults: () => void;
@@ -36,6 +37,7 @@ export function PositionMemoryProblemResult({
   currentProblemIndex,
   totalProblems,
   boardTheme = DEFAULT_BOARD_THEME,
+  showCoordinates = true,
   isTutorial = false,
   onNextProblem,
   onViewResults,
@@ -62,7 +64,7 @@ export function PositionMemoryProblemResult({
             originalPosition={originalPosition}
             recreatedPosition={recreatedPosition}
             boardTheme={boardTheme}
-            showCoordinates={{ original: false, recreation: true }}
+            showCoordinates={showCoordinates}
           />
 
           <ProblemResultActions
