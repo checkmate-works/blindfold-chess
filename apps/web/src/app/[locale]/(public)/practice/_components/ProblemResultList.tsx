@@ -1,7 +1,6 @@
 'use client';
 
-import { useState } from 'react';
-
+import { useExpandedIndexSet } from '../_hooks/use-expanded-index-set';
 import type { PracticeCompleteLabels, ProblemResult } from '../_lib/practice-complete-types';
 import { ProblemResultItem } from './ProblemResultItem';
 
@@ -11,19 +10,7 @@ type Props = {
 };
 
 export function ProblemResultList({ problemResults, labels }: Props) {
-  const [expandedProblems, setExpandedProblems] = useState<Set<number>>(new Set());
-
-  const toggleProblem = (index: number) => {
-    setExpandedProblems((prev) => {
-      const next = new Set(prev);
-      if (next.has(index)) {
-        next.delete(index);
-      } else {
-        next.add(index);
-      }
-      return next;
-    });
-  };
+  const { expanded: expandedProblems, toggle: toggleProblem } = useExpandedIndexSet();
 
   if (problemResults.length === 0 || !labels.problemDetails) return null;
 

@@ -19,6 +19,32 @@ vi.mock('../_actions/changePassword', () => ({
   changePassword: (...args: unknown[]) => mockChangePassword(...args),
 }));
 
+/**
+ * Fills the three password fields and submits. `confirmPassword` defaults to
+ * `newPassword`, which is every case except the mismatch ones.
+ */
+function fillAndSubmit({
+  currentPassword,
+  newPassword,
+  confirmPassword = newPassword,
+}: {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword?: string;
+}) {
+  fireEvent.change(screen.getByLabelText('currentPasswordLabel'), {
+    target: { value: currentPassword },
+  });
+  fireEvent.change(screen.getByLabelText('newPasswordLabel'), {
+    target: { value: newPassword },
+  });
+  fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
+    target: { value: confirmPassword },
+  });
+
+  fireEvent.submit(screen.getByRole('button', { name: 'submit' }));
+}
+
 describe('ChangePasswordForm', () => {
   it('should render the form with current password, new password, and confirm password fields', () => {
     render(<ChangePasswordForm />);
@@ -32,17 +58,11 @@ describe('ChangePasswordForm', () => {
   it('should show password mismatch error when new passwords do not match', async () => {
     render(<ChangePasswordForm />);
 
-    fireEvent.change(screen.getByLabelText('currentPasswordLabel'), {
-      target: { value: 'currentpass123' },
+    fillAndSubmit({
+      currentPassword: 'currentpass123',
+      newPassword: 'newpassword123',
+      confirmPassword: 'differentpassword',
     });
-    fireEvent.change(screen.getByLabelText('newPasswordLabel'), {
-      target: { value: 'newpassword123' },
-    });
-    fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
-      target: { value: 'differentpassword' },
-    });
-
-    fireEvent.submit(screen.getByRole('button', { name: 'submit' }));
 
     await waitFor(() => {
       expect(screen.getByText('passwordMismatch')).toBeInTheDocument();
@@ -53,17 +73,7 @@ describe('ChangePasswordForm', () => {
   it('should show password too short error when new password is less than MIN_PASSWORD_LENGTH', async () => {
     render(<ChangePasswordForm />);
 
-    fireEvent.change(screen.getByLabelText('currentPasswordLabel'), {
-      target: { value: 'currentpass123' },
-    });
-    fireEvent.change(screen.getByLabelText('newPasswordLabel'), {
-      target: { value: 'ab1' },
-    });
-    fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
-      target: { value: 'ab1' },
-    });
-
-    fireEvent.submit(screen.getByRole('button', { name: 'submit' }));
+    fillAndSubmit({ currentPassword: 'currentpass123', newPassword: 'ab1' });
 
     await waitFor(() => {
       expect(screen.getByText('tooShort')).toBeInTheDocument();
@@ -74,17 +84,7 @@ describe('ChangePasswordForm', () => {
   it('should show missingLetter error when new password has no letters', async () => {
     render(<ChangePasswordForm />);
 
-    fireEvent.change(screen.getByLabelText('currentPasswordLabel'), {
-      target: { value: 'currentpass123' },
-    });
-    fireEvent.change(screen.getByLabelText('newPasswordLabel'), {
-      target: { value: '12345678' },
-    });
-    fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
-      target: { value: '12345678' },
-    });
-
-    fireEvent.submit(screen.getByRole('button', { name: 'submit' }));
+    fillAndSubmit({ currentPassword: 'currentpass123', newPassword: '12345678' });
 
     await waitFor(() => {
       expect(screen.getByText('missingLetter')).toBeInTheDocument();
@@ -95,17 +95,7 @@ describe('ChangePasswordForm', () => {
   it('should show missingDigit error when new password has no digits', async () => {
     render(<ChangePasswordForm />);
 
-    fireEvent.change(screen.getByLabelText('currentPasswordLabel'), {
-      target: { value: 'currentpass123' },
-    });
-    fireEvent.change(screen.getByLabelText('newPasswordLabel'), {
-      target: { value: 'abcdefgh' },
-    });
-    fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
-      target: { value: 'abcdefgh' },
-    });
-
-    fireEvent.submit(screen.getByRole('button', { name: 'submit' }));
+    fillAndSubmit({ currentPassword: 'currentpass123', newPassword: 'abcdefgh' });
 
     await waitFor(() => {
       expect(screen.getByText('missingDigit')).toBeInTheDocument();
@@ -116,17 +106,7 @@ describe('ChangePasswordForm', () => {
   it('should show error when new password is the same as current password', async () => {
     render(<ChangePasswordForm />);
 
-    fireEvent.change(screen.getByLabelText('currentPasswordLabel'), {
-      target: { value: 'samepassword123' },
-    });
-    fireEvent.change(screen.getByLabelText('newPasswordLabel'), {
-      target: { value: 'samepassword123' },
-    });
-    fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
-      target: { value: 'samepassword123' },
-    });
-
-    fireEvent.submit(screen.getByRole('button', { name: 'submit' }));
+    fillAndSubmit({ currentPassword: 'samepassword123', newPassword: 'samepassword123' });
 
     await waitFor(() => {
       expect(screen.getByText('passwordSameAsCurrent')).toBeInTheDocument();
@@ -139,17 +119,7 @@ describe('ChangePasswordForm', () => {
 
     render(<ChangePasswordForm />);
 
-    fireEvent.change(screen.getByLabelText('currentPasswordLabel'), {
-      target: { value: 'currentpass123' },
-    });
-    fireEvent.change(screen.getByLabelText('newPasswordLabel'), {
-      target: { value: 'newpassword123' },
-    });
-    fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
-      target: { value: 'newpassword123' },
-    });
-
-    fireEvent.submit(screen.getByRole('button', { name: 'submit' }));
+    fillAndSubmit({ currentPassword: 'currentpass123', newPassword: 'newpassword123' });
 
     await waitFor(() => {
       expect(mockChangePassword).toHaveBeenCalledWith('currentpass123', 'newpassword123');
@@ -191,17 +161,7 @@ describe('ChangePasswordForm', () => {
 
     render(<ChangePasswordForm />);
 
-    fireEvent.change(screen.getByLabelText('currentPasswordLabel'), {
-      target: { value: 'wrongcurrent123' },
-    });
-    fireEvent.change(screen.getByLabelText('newPasswordLabel'), {
-      target: { value: 'newpassword123' },
-    });
-    fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
-      target: { value: 'newpassword123' },
-    });
-
-    fireEvent.submit(screen.getByRole('button', { name: 'submit' }));
+    fillAndSubmit({ currentPassword: 'wrongcurrent123', newPassword: 'newpassword123' });
 
     await waitFor(() => {
       expect(screen.getByText('currentPasswordIncorrect')).toBeInTheDocument();
@@ -214,17 +174,7 @@ describe('ChangePasswordForm', () => {
 
     render(<ChangePasswordForm />);
 
-    fireEvent.change(screen.getByLabelText('currentPasswordLabel'), {
-      target: { value: 'currentpass123' },
-    });
-    fireEvent.change(screen.getByLabelText('newPasswordLabel'), {
-      target: { value: 'newpassword123' },
-    });
-    fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
-      target: { value: 'newpassword123' },
-    });
-
-    fireEvent.submit(screen.getByRole('button', { name: 'submit' }));
+    fillAndSubmit({ currentPassword: 'currentpass123', newPassword: 'newpassword123' });
 
     await waitFor(() => {
       expect(screen.getByText('rateLimited')).toBeInTheDocument();
@@ -237,17 +187,7 @@ describe('ChangePasswordForm', () => {
 
     render(<ChangePasswordForm />);
 
-    fireEvent.change(screen.getByLabelText('currentPasswordLabel'), {
-      target: { value: 'currentpass123' },
-    });
-    fireEvent.change(screen.getByLabelText('newPasswordLabel'), {
-      target: { value: 'newpassword123' },
-    });
-    fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
-      target: { value: 'newpassword123' },
-    });
-
-    fireEvent.submit(screen.getByRole('button', { name: 'submit' }));
+    fillAndSubmit({ currentPassword: 'currentpass123', newPassword: 'newpassword123' });
 
     await waitFor(() => {
       expect(screen.getByText('tooShort')).toBeInTheDocument();
@@ -259,17 +199,7 @@ describe('ChangePasswordForm', () => {
 
     render(<ChangePasswordForm />);
 
-    fireEvent.change(screen.getByLabelText('currentPasswordLabel'), {
-      target: { value: 'currentpass123' },
-    });
-    fireEvent.change(screen.getByLabelText('newPasswordLabel'), {
-      target: { value: 'newpassword123' },
-    });
-    fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
-      target: { value: 'newpassword123' },
-    });
-
-    fireEvent.submit(screen.getByRole('button', { name: 'submit' }));
+    fillAndSubmit({ currentPassword: 'currentpass123', newPassword: 'newpassword123' });
 
     await waitFor(() => {
       expect(screen.getByText('missingLetter')).toBeInTheDocument();
@@ -281,17 +211,7 @@ describe('ChangePasswordForm', () => {
 
     render(<ChangePasswordForm />);
 
-    fireEvent.change(screen.getByLabelText('currentPasswordLabel'), {
-      target: { value: 'currentpass123' },
-    });
-    fireEvent.change(screen.getByLabelText('newPasswordLabel'), {
-      target: { value: 'newpassword123' },
-    });
-    fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
-      target: { value: 'newpassword123' },
-    });
-
-    fireEvent.submit(screen.getByRole('button', { name: 'submit' }));
+    fillAndSubmit({ currentPassword: 'currentpass123', newPassword: 'newpassword123' });
 
     await waitFor(() => {
       expect(screen.getByText('missingDigit')).toBeInTheDocument();
@@ -303,17 +223,7 @@ describe('ChangePasswordForm', () => {
 
     render(<ChangePasswordForm />);
 
-    fireEvent.change(screen.getByLabelText('currentPasswordLabel'), {
-      target: { value: 'currentpass123' },
-    });
-    fireEvent.change(screen.getByLabelText('newPasswordLabel'), {
-      target: { value: 'newpassword123' },
-    });
-    fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
-      target: { value: 'newpassword123' },
-    });
-
-    fireEvent.submit(screen.getByRole('button', { name: 'submit' }));
+    fillAndSubmit({ currentPassword: 'currentpass123', newPassword: 'newpassword123' });
 
     await waitFor(() => {
       expect(screen.getByText('weak')).toBeInTheDocument();
@@ -325,17 +235,7 @@ describe('ChangePasswordForm', () => {
 
     render(<ChangePasswordForm />);
 
-    fireEvent.change(screen.getByLabelText('currentPasswordLabel'), {
-      target: { value: 'currentpass123' },
-    });
-    fireEvent.change(screen.getByLabelText('newPasswordLabel'), {
-      target: { value: 'newpassword123' },
-    });
-    fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
-      target: { value: 'newpassword123' },
-    });
-
-    fireEvent.submit(screen.getByRole('button', { name: 'submit' }));
+    fillAndSubmit({ currentPassword: 'currentpass123', newPassword: 'newpassword123' });
 
     await waitFor(() => {
       expect(screen.getByText('error')).toBeInTheDocument();
@@ -347,17 +247,7 @@ describe('ChangePasswordForm', () => {
 
     render(<ChangePasswordForm />);
 
-    fireEvent.change(screen.getByLabelText('currentPasswordLabel'), {
-      target: { value: 'currentpass123' },
-    });
-    fireEvent.change(screen.getByLabelText('newPasswordLabel'), {
-      target: { value: 'newpassword123' },
-    });
-    fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
-      target: { value: 'newpassword123' },
-    });
-
-    fireEvent.submit(screen.getByRole('button', { name: 'submit' }));
+    fillAndSubmit({ currentPassword: 'currentpass123', newPassword: 'newpassword123' });
 
     await waitFor(() => {
       expect(screen.getByText('passwordSameAsCurrent')).toBeInTheDocument();
@@ -369,17 +259,7 @@ describe('ChangePasswordForm', () => {
 
     render(<ChangePasswordForm />);
 
-    fireEvent.change(screen.getByLabelText('currentPasswordLabel'), {
-      target: { value: 'currentpass123' },
-    });
-    fireEvent.change(screen.getByLabelText('newPasswordLabel'), {
-      target: { value: 'newpassword123' },
-    });
-    fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
-      target: { value: 'newpassword123' },
-    });
-
-    fireEvent.submit(screen.getByRole('button', { name: 'submit' }));
+    fillAndSubmit({ currentPassword: 'currentpass123', newPassword: 'newpassword123' });
 
     await waitFor(() => {
       expect(screen.getByText('error')).toBeInTheDocument();
@@ -391,17 +271,7 @@ describe('ChangePasswordForm', () => {
 
     render(<ChangePasswordForm />);
 
-    fireEvent.change(screen.getByLabelText('currentPasswordLabel'), {
-      target: { value: 'currentpass123' },
-    });
-    fireEvent.change(screen.getByLabelText('newPasswordLabel'), {
-      target: { value: 'newpassword123' },
-    });
-    fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
-      target: { value: 'newpassword123' },
-    });
-
-    fireEvent.submit(screen.getByRole('button', { name: 'submit' }));
+    fillAndSubmit({ currentPassword: 'currentpass123', newPassword: 'newpassword123' });
 
     await waitFor(() => {
       expect(screen.getByText('error')).toBeInTheDocument();
@@ -440,17 +310,11 @@ describe('ChangePasswordForm', () => {
     render(<ChangePasswordForm />);
 
     // First submission with mismatched passwords
-    fireEvent.change(screen.getByLabelText('currentPasswordLabel'), {
-      target: { value: 'currentpass123' },
+    fillAndSubmit({
+      currentPassword: 'currentpass123',
+      newPassword: 'newpassword123',
+      confirmPassword: 'differentpassword',
     });
-    fireEvent.change(screen.getByLabelText('newPasswordLabel'), {
-      target: { value: 'newpassword123' },
-    });
-    fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
-      target: { value: 'differentpassword' },
-    });
-
-    fireEvent.submit(screen.getByRole('button', { name: 'submit' }));
 
     await waitFor(() => {
       expect(screen.getByText('passwordMismatch')).toBeInTheDocument();

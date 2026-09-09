@@ -6,8 +6,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ChunkOption } from '@/lib/chunks/types';
 import type { ThemeOption } from '@/lib/themes/types';
 
-import { makeGamePreferences } from '@/app/[locale]/_contexts/__test-support__/preferences-fixture';
-
 import { editDraftStorageKey } from '../_lib/edit-draft-storage';
 import type { PuzzleEditDraftV1 } from '../_lib/edit-draft-storage';
 import { EditPuzzlePositionForm } from './EditPuzzlePositionForm';
@@ -23,15 +21,7 @@ vi.mock('@/i18n/routing', () => ({
 
 vi.mock('next-intl');
 
-vi.mock('@/app/[locale]/_contexts/GamePreferencesContext', () => ({
-  useGamePreferences: () => ({
-    preferences: makeGamePreferences(),
-    isLoaded: true,
-    isHydrated: true,
-    updatePreferences: () => {},
-    resetPreferences: () => {},
-  }),
-}));
+vi.mock('@/app/[locale]/_contexts/GamePreferencesContext');
 
 vi.mock('@/app/[locale]/(public)/practice/(free-play)/_components/EditableChessBoard', () => ({
   EditableChessBoard: ({ fen }: { fen: string }) => (
@@ -41,33 +31,7 @@ vi.mock('@/app/[locale]/(public)/practice/(free-play)/_components/EditableChessB
 
 vi.mock('next-navigation-guard');
 
-vi.mock('@/app/[locale]/_components/ConfirmationModal', () => ({
-  ConfirmationModal: ({
-    isOpen,
-    title,
-    confirmText,
-    cancelText,
-    onConfirm,
-    onCancel,
-  }: {
-    isOpen: boolean;
-    title: string;
-    confirmText?: string;
-    cancelText?: string;
-    onConfirm: () => void;
-    onCancel: () => void;
-  }) =>
-    isOpen ? (
-      <div role="dialog" aria-label={title}>
-        <button type="button" onClick={onConfirm}>
-          {confirmText ?? 'Confirm'}
-        </button>
-        <button type="button" onClick={onCancel}>
-          {cancelText ?? 'Cancel'}
-        </button>
-      </div>
-    ) : null,
-}));
+vi.mock('@/app/[locale]/_components/ConfirmationModal');
 
 vi.mock('@/app/_components', () => ({
   FormActionFooter: ({

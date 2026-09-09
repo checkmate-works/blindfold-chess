@@ -2,14 +2,9 @@ import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useRouter } from "expo-router";
 
-import { Button, Card, Screen } from "../../../components";
-import {
-  useTheme,
-  fontSize,
-  fontWeight,
-  spacing,
-  shadows,
-} from "../../../theme";
+import { Screen } from "../../../components";
+import { AiGameCard } from "../../../features/ai-game/components/AiGameCard";
+import { useTheme, fontSize, fontWeight, spacing } from "../../../theme";
 
 export default function PlayTab() {
   const { t } = useTranslation();
@@ -33,22 +28,10 @@ export default function PlayTab() {
           </Text>
         </View>
 
-        <Card style={styles.gameCard} padding="lg">
-          <Text style={[styles.cardTitle, { color: colors.foreground }]}>
-            {t("aiGame.title")}
-          </Text>
-          <Text
-            style={[styles.cardDescription, { color: colors.mutedForeground }]}
-          >
-            {t("aiGame.description")}
-          </Text>
-          <Button
-            title={t("aiGame.setup.startGame")}
-            onPress={handlePlayAi}
-            size="md"
-            fullWidth
-          />
-        </Card>
+        <AiGameCard
+          buttonTitle={t("aiGame.setup.startGame")}
+          onPress={handlePlayAi}
+        />
       </ScrollView>
     </Screen>
   );
@@ -67,18 +50,5 @@ const styles = StyleSheet.create({
   title: {
     fontSize: fontSize.xxxl,
     fontWeight: fontWeight.bold,
-  },
-  gameCard: {
-    marginBottom: spacing.lg,
-    ...shadows.md,
-  },
-  cardTitle: {
-    fontSize: fontSize.xl,
-    fontWeight: fontWeight.semibold,
-    marginBottom: spacing.xs,
-  },
-  cardDescription: {
-    fontSize: fontSize.md,
-    marginBottom: spacing.lg,
   },
 });

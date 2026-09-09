@@ -1,7 +1,6 @@
 'use client';
 
-import { Field, Select } from '@/app/admin/_components/forms';
-import { parseAsInteger, parseAsString, useQueryStates } from 'nuqs';
+import { StatusQueryFilter } from '@/app/admin/_components/StatusQueryFilter';
 
 type StatusFilterProps = {
   labels: {
@@ -15,31 +14,16 @@ type StatusFilterProps = {
 };
 
 export function StatusFilter({ labels }: StatusFilterProps) {
-  const [{ status }, setParams] = useQueryStates({
-    status: parseAsString.withDefault(''),
-    page: parseAsInteger.withDefault(1),
-  });
-
   return (
-    <Field label={labels.filterByStatus} htmlFor="status-filter">
-      <Select
-        surface="card"
-        fullWidth={false}
-        id="status-filter"
-        value={status}
-        onChange={(e) => {
-          setParams(
-            { status: e.target.value || null, page: null },
-            { history: 'push', shallow: false }
-          );
-        }}
-      >
-        <option value="">{labels.allStatuses}</option>
-        <option value="active">{labels.active}</option>
-        <option value="banned">{labels.banned}</option>
-        <option value="anonymous">{labels.anonymous}</option>
-        <option value="deleted">{labels.deleted}</option>
-      </Select>
-    </Field>
+    <StatusQueryFilter
+      id="status-filter"
+      labels={labels}
+      options={[
+        { value: 'active', label: labels.active },
+        { value: 'banned', label: labels.banned },
+        { value: 'anonymous', label: labels.anonymous },
+        { value: 'deleted', label: labels.deleted },
+      ]}
+    />
   );
 }

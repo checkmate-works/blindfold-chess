@@ -5,8 +5,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { MoveSquares } from '@/lib/board/move-squares';
 
-import { makeGamePreferences } from '@/app/[locale]/_contexts/__test-support__/preferences-fixture';
-
 import { PuzzleSessionClient } from './PuzzleSessionClient';
 
 // `useRouter` is provided by the i18n routing wrapper, which is just a thin
@@ -44,15 +42,7 @@ vi.mock('@/i18n/routing', () => ({
 // strings without depending on locale bundles.
 vi.mock('next-intl');
 
-vi.mock('@/app/[locale]/_contexts/GamePreferencesContext', () => ({
-  useGamePreferences: () => ({
-    preferences: makeGamePreferences(),
-    isLoaded: true,
-    isHydrated: true,
-    updatePreferences: () => {},
-    resetPreferences: () => {},
-  }),
-}));
+vi.mock('@/app/[locale]/_contexts/GamePreferencesContext');
 
 vi.mock('@/app/[locale]/(public)/games/play/_components/InlineBoardView', () => ({
   // The puzzle's single peek style is the inline accordion. Expose its `onPeek`
