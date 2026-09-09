@@ -4,6 +4,7 @@ import { BoardFrame, BoardSkeleton } from '@/app/_components';
 import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 
 import { MOVE_NAV_ROW_CLASS } from '@/app/[locale]/(public)/games/play/_lib/skeleton-layout-classes';
+import { PostCardSkeleton } from '@/app/[locale]/(public)/topics/_components/PostCardSkeleton';
 import { ReplyCardsSkeleton } from '@/app/[locale]/(public)/topics/_components/ReplyCardsSkeleton';
 import { PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { BreadcrumbSkeleton } from '@/app/[locale]/_components/Breadcrumb';
@@ -50,30 +51,15 @@ export default async function OpeningPostDetailLoading() {
         </div>
 
         {/* Post card: avatar + name/date + rating + body + actions */}
-        <div className="p-4 bg-card border border-border rounded-lg space-y-4">
-          <div className="flex items-start gap-3 animate-pulse">
-            <div className="w-10 h-10 rounded-full bg-muted flex-shrink-0" />
-            <div className="flex-1 min-w-0 space-y-2">
-              <div className="h-4 w-32 bg-muted rounded" />
-              <div className="h-3 w-48 bg-muted rounded" />
+        <PostCardSkeleton
+          afterHeader={
+            /* RatingDisplay (preference + proficiency) — opening-only */
+            <div className="space-y-2 animate-pulse">
+              <div className="h-4 w-40 bg-muted rounded" />
+              <div className="h-4 w-40 bg-muted rounded" />
             </div>
-          </div>
-          {/* RatingDisplay (preference + proficiency) — opening-only */}
-          <div className="space-y-2 animate-pulse">
-            <div className="h-4 w-40 bg-muted rounded" />
-            <div className="h-4 w-40 bg-muted rounded" />
-          </div>
-          {/* Post body */}
-          <div className="space-y-2 animate-pulse">
-            <div className="h-4 bg-muted rounded w-full" />
-            <div className="h-4 bg-muted rounded w-11/12" />
-            <div className="h-4 bg-muted rounded w-4/5" />
-          </div>
-          {/* Like + (maybe) delete button */}
-          <div className="flex items-center gap-4 animate-pulse">
-            <div className="h-8 w-20 bg-muted rounded" />
-          </div>
-        </div>
+          }
+        />
 
         {/* Replies section */}
         <SectionTitle>
