@@ -1,13 +1,15 @@
 'use server';
 
 import { assertSupportedLocale } from '@/i18n/assertSupportedLocale';
-import { and, eq, isNull, or } from 'drizzle-orm';
+import { and, eq, or } from 'drizzle-orm';
 
 import { authenticateGuardAndRequireProfile } from '@/lib/auth';
-import { db, profiles, userBlocks, userFollows } from '@/lib/db';
+import { db, userBlocks, userFollows } from '@/lib/db';
 import { toggleByInsert } from '@/lib/db/toggle-by-insert';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { logActivityEvent } from '@/lib/users/activity-log';
+
+import { findLiveProfileIdByUsername } from '../_lib/queries';
 
 type ToggleBlockResult = { blocked: boolean } | { error: string };
 
@@ -23,26 +25,22 @@ export async function toggleBlock(
   }
   const { user } = guardResult;
 
-  const [targetProfile] = await db
-    .select({ id: profiles.id })
-    .from(profiles)
-    .where(and(eq(profiles.username, targetUsername), isNull(profiles.deletedAt)))
-    .limit(1);
+  const targetProfileId = await findLiveProfileIdByUsername(targetUsername);
 
-  if (!targetProfile) {
+  if (!targetProfileId) {
     return { error: 'userNotFound' };
   }
 
-  if (targetProfile.id === user.id) {
+  if (targetProfileId === user.id) {
     return { error: 'cannotBlockSelf' };
   }
 
   const blocked = await toggleByInsert(
-    () => db.insert(userBlocks).values({ blockerId: user.id, blockedId: targetProfile.id }),
+    () => db.insert(userBlocks).values({ blockerId: user.id, blockedId: targetProfileId }),
     () =>
       db
         .delete(userBlocks)
-        .where(and(eq(userBlocks.blockerId, user.id), eq(userBlocks.blockedId, targetProfile.id)))
+        .where(and(eq(userBlocks.blockerId, user.id), eq(userBlocks.blockedId, targetProfileId)))
   );
 
   // Blocking severs the follow graph in BOTH directions: you no longer follow
@@ -52,8 +50,8 @@ export async function toggleBlock(
       .delete(userFollows)
       .where(
         or(
-          and(eq(userFollows.followerId, user.id), eq(userFollows.followingId, targetProfile.id)),
-          and(eq(userFollows.followerId, targetProfile.id), eq(userFollows.followingId, user.id))
+          and(eq(userFollows.followerId, user.id), eq(userFollows.followingId, targetProfileId)),
+          and(eq(userFollows.followerId, targetProfileId), eq(userFollows.followingId, user.id))
         )
       );
   }
@@ -62,7 +60,7 @@ export async function toggleBlock(
     userId: user.id,
     action: blocked ? 'block' : 'unblock',
     targetType: 'user',
-    targetId: targetProfile.id,
+    targetId: targetProfileId,
   });
 
   // No revalidatePath: all three routes are dynamic, and `BlockActions` calls

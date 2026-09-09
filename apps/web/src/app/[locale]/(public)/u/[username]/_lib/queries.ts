@@ -70,3 +70,21 @@ const loadProfileByUsername = (username: string) =>
 export const getProfileByUsername = cache(async (username: string) =>
   loadProfileByUsername(username)
 );
+
+/**
+ * The id of the live profile registered under `username`, or null when no
+ * such member exists or the account has been deleted.
+ *
+ * Uncached on purpose: this is the target lookup of a mutation (follow,
+ * block), which must act on the row as it is now, not as the profile page
+ * last rendered it. The follow and block actions each wrote this SELECT
+ * out; both need the same answer and both then compare it to the caller.
+ */
+export async function findLiveProfileIdByUsername(username: string): Promise<string | null> {
+  const [target] = await db
+    .select({ id: profiles.id })
+    .from(profiles)
+    .where(and(eq(profiles.username, username), isNull(profiles.deletedAt)))
+    .limit(1);
+  return target?.id ?? null;
+}
