@@ -3,7 +3,7 @@
 import { getOptionalUser } from '@/lib/auth';
 import { authorizeGameMutation } from '@/lib/db/games-auth';
 import { softDeleteSharedGame, updateSharedGameFields } from '@/lib/db/games-write';
-import { MAX_DESCRIPTION_LENGTH, MAX_TITLE_LENGTH } from '@/lib/games/publish-constants';
+import { MAX_DESCRIPTION_LENGTH, isValidGameTitle } from '@/lib/games/publish-constants';
 import { handleServerActionError } from '@/lib/server-action-error';
 import { UUID_RE } from '@/lib/validations/uuid';
 
@@ -64,7 +64,7 @@ export async function updateSharedGameAction(
     }
 
     const title = typeof input.title === 'string' ? input.title.trim() : '';
-    if (title.length === 0 || title.length > MAX_TITLE_LENGTH) {
+    if (!isValidGameTitle(title)) {
       return { success: false, error: 'invalid_title' };
     }
 

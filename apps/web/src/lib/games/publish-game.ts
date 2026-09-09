@@ -18,7 +18,7 @@ import { isBoardVisibility } from './board-visibility';
 import { computeGameStats } from './compute-game-stats';
 import { isOperationTotals } from './operation-totals';
 import { normalizePlaySettingsLog } from './play-settings-log';
-import { MAX_DESCRIPTION_LENGTH, MAX_MOVES, MAX_TITLE_LENGTH } from './publish-constants';
+import { MAX_DESCRIPTION_LENGTH, MAX_MOVES, isValidGameTitle } from './publish-constants';
 import { sanitizeOperationLogs, sanitizeUndoneLogs } from './sanitize-published-logs';
 import type {
   GamePlaySettings,
@@ -130,7 +130,7 @@ export function validatePublishSnapshot(input: unknown): ValidatePublishResult {
   const v = input as Record<string, unknown>;
 
   const title = typeof v.title === 'string' ? v.title.trim() : '';
-  if (title.length === 0 || title.length > MAX_TITLE_LENGTH) {
+  if (!isValidGameTitle(title)) {
     return { ok: false, error: 'invalid_title' };
   }
 

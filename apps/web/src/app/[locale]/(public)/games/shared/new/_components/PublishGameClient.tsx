@@ -8,7 +8,7 @@ import { Button, FormErrorBanner } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { LocalStorageGameRepository } from '@/lib/games/local-storage-repository';
-import { MAX_DESCRIPTION_LENGTH, MAX_TITLE_LENGTH } from '@/lib/games/publish-constants';
+import { isValidGameTitle } from '@/lib/games/publish-constants';
 import type { Game } from '@/lib/games/saved-game-types';
 import { recordSharedGame } from '@/lib/games/shared-game-store';
 
@@ -17,6 +17,7 @@ import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { publishGameAction } from '../../_actions/publish-game';
+import { GameTitleDescriptionFields } from '../../_components/GameTitleDescriptionFields';
 
 type Props = { locale: Locale };
 
@@ -79,8 +80,7 @@ export function PublishGameClient({ locale }: Props) {
   }
   const result = game.status; // narrowed to win | loss | draw
   const trimmedTitle = title.trim();
-  const canSubmit =
-    trimmedTitle.length > 0 && trimmedTitle.length <= MAX_TITLE_LENGTH && !submitting;
+  const canSubmit = isValidGameTitle(trimmedTitle) && !submitting;
 
   async function handleSubmit() {
     if (!canSubmit) return;
@@ -136,37 +136,13 @@ export function PublishGameClient({ locale }: Props) {
     <div className="space-y-6">
       <SectionTitle>{t('new.sectionTitle')}</SectionTitle>
 
-      {/* Title */}
-      <div className="space-y-1.5">
-        <label htmlFor="game-title" className="block text-sm font-medium">
-          {t('new.titleLabel')}
-        </label>
-        <input
-          id="game-title"
-          type="text"
-          value={title}
-          maxLength={MAX_TITLE_LENGTH}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder={t('new.titlePlaceholder')}
-          className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
-        />
-      </div>
-
-      {/* Description */}
-      <div className="space-y-1.5">
-        <label htmlFor="game-description" className="block text-sm font-medium">
-          {t('new.descriptionLabel')}
-        </label>
-        <textarea
-          id="game-description"
-          value={description}
-          maxLength={MAX_DESCRIPTION_LENGTH}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder={t('new.descriptionPlaceholder')}
-          rows={4}
-          className="w-full resize-y rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
-        />
-      </div>
+      <GameTitleDescriptionFields
+        idPrefix="game"
+        title={title}
+        description={description}
+        onTitleChange={setTitle}
+        onDescriptionChange={setDescription}
+      />
 
       {/* Both verdicts here (rate limit / unexpected failure) belong to the
           form, not to the title or description box. */}
