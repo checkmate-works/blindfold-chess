@@ -92,6 +92,7 @@ export function ScoreChart({
                         role={isClickable ? 'button' : undefined}
                         tabIndex={isClickable ? 0 : undefined}
                         className={
+                          // eslint-disable-next-line no-restricted-syntax -- chart legend, a list: the entries are the affordance; hover is a pointer nicety
                           isClickable ? 'cursor-pointer hover:underline select-none' : 'select-none'
                         }
                         onClick={isClickable ? onPreviousLabelClick : undefined}

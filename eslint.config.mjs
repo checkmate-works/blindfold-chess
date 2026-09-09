@@ -1,6 +1,7 @@
 import { config as baseConfig } from "@blindfold-chess/eslint-config/base";
 import { nextJsConfig } from "@blindfold-chess/eslint-config/next";
 import { reactConfig } from "@blindfold-chess/eslint-config/react";
+import { hoverUnderlineBan } from "@blindfold-chess/eslint-config/hover-underline-ban";
 import { revalidatePathBan } from "@blindfold-chess/eslint-config/revalidate-path-ban";
 
 /** @type {import("eslint").Linter.Config} */
@@ -19,6 +20,7 @@ export default [
     // rule here, `eslint --fix` on commit strips the reason-annotated
     // eslint-disable comments in apps/web as unused directives.
     ...revalidatePathBan("apps/web/"),
+    ...hoverUnderlineBan("apps/web/"),
     {
         ignores: [
             "apps/web/.next/**",

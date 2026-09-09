@@ -145,6 +145,7 @@ export function UserAvatar({
   );
 
   if (layout === 'inline') {
+    // eslint-disable-next-line no-restricted-syntax -- byline: the avatar beside the name is the affordance; hover is a pointer nicety
     const nameClassName = `font-medium text-foreground${profileHref ? ' hover:underline' : ''}`;
     const inner = (
       <>
@@ -214,6 +215,7 @@ export function UserAvatar({
             <Link
               href={profileHref}
               locale={locale}
+              // eslint-disable-next-line no-restricted-syntax -- byline: the avatar beside the name is the affordance; hover is a pointer nicety
               className="font-medium text-foreground hover:underline"
             >
               {displayName}
@@ -246,6 +248,7 @@ export function UserAvatar({
           <button
             type="button"
             onClick={handleClick}
+            // eslint-disable-next-line no-restricted-syntax -- byline: the avatar beside the name is the affordance; hover is a pointer nicety
             className="font-medium text-foreground hover:underline cursor-pointer"
           >
             {displayName}
