@@ -8,6 +8,7 @@ import { buildProfileHref } from '@/lib/users/author-profile';
 import type { ActionsMenuItem } from '@/app/[locale]/_components/ActionsMenu';
 import { ActionsMenu } from '@/app/[locale]/_components/ActionsMenu';
 import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
+import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 type ProfileLike = {
@@ -88,7 +89,7 @@ export function PositionAuthorHeader({
               {formatLocalDate(createdAt, locale, 'long')}
             </time>
             {edited && editedLabel && editedHref && (
-              <Link href={editedHref} className="hover:text-foreground hover:underline">
+              <Link href={editedHref} className={TEXT_LINK_MUTED_CLASSES}>
                 {editedLabel}
               </Link>
             )}

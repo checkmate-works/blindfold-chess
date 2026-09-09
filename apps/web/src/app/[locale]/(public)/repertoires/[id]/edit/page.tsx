@@ -23,6 +23,7 @@ import { getLinkedOpeningIds, getOpeningOptions } from '@/lib/repertoires/openin
 import { getRepertoireForViewer } from '@/lib/repertoires/queries';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -90,7 +91,7 @@ export default async function EditRepertoirePage({ params }: Props) {
       {data.lines.length > 1 && (
         <Link
           href={`/${locale}/repertoires/${id}/lines`}
-          className="inline-flex items-center gap-1.5 text-sm text-link-primary transition-colors hover:underline"
+          className={`inline-flex items-center gap-1.5 text-sm ${TEXT_LINK_CLASSES}`}
         >
           <HiBars3 aria-hidden className="size-4" />
           {t('lines.title')}

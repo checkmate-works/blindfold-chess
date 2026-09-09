@@ -26,6 +26,7 @@ import type { MoveNotationLine } from '@/app/[locale]/(public)/topics/_lib/move-
 import type { ActionsMenuItem } from '@/app/[locale]/_components/ActionsMenu';
 import { ActionsMenu } from '@/app/[locale]/_components/ActionsMenu';
 import { useBoardDisplay } from '@/app/[locale]/_hooks/use-board-display';
+import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 import type { ContinuationLink } from '../_lib/line-continuations';
 import type { LineMove } from '../_lib/line-moves';
@@ -268,7 +269,7 @@ export function LineDetailBoard({
                   link: (chunks) => (
                     <Link
                       href={`/${locale}/repertoires/${repertoireId}/lines/${c.lineNo}?move=${c.ply}`}
-                      className="font-medium text-foreground underline-offset-2 hover:underline"
+                      className={`font-medium ${TEXT_LINK_CLASSES}`}
                     >
                       {chunks}
                     </Link>

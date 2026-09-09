@@ -15,6 +15,7 @@ import type { MoveJudgment } from '@/lib/games/analysis/types';
 import { MoveJudgmentBadge } from '@/lib/games/evaluation';
 
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
+import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import type { AiReviewGenerationState } from '../_hooks/use-ai-review-generation';
@@ -130,11 +131,7 @@ export function AiReviewPanel({
         >
           <div className="h-full bg-primary transition-all" style={{ width: `${percent}%` }} />
         </div>
-        <button
-          type="button"
-          onClick={onCancel}
-          className="text-sm text-muted-foreground hover:text-foreground hover:underline"
-        >
+        <button type="button" onClick={onCancel} className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
           {t('aiReview.cancel')}
         </button>
       </div>

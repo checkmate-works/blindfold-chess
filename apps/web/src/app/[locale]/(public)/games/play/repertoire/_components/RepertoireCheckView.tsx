@@ -6,6 +6,8 @@ import type { Side } from '@blindfold-chess/types';
 
 import type { RepertoireCheckEntry } from '@/lib/repertoires/check-report';
 
+import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
+
 import { buildReplayModel } from '../_lib/build-replay';
 import { REPERTOIRE_CHECK_PATH, buildRepertoireCheckQuery } from '../_lib/check-url';
 import { MATCH_STATUS_BADGE, MATCH_STATUS_KEY, type MatchStatus } from '../_lib/match-status';
@@ -78,7 +80,7 @@ export async function RepertoireCheckView({
         <div className="flex flex-wrap items-center gap-2">
           <Link
             href={`/${locale}/repertoires/${repertoire.id}`}
-            className="text-base font-semibold text-foreground hover:underline"
+            className={`text-base font-semibold ${TEXT_LINK_CLASSES}`}
           >
             {repertoire.name}
           </Link>
