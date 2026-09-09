@@ -1,3 +1,4 @@
+import { TabsSkeleton } from '@/app/[locale]/(public)/leaderboard/_components/TabsSkeleton';
 import { PagePanel } from '@/app/[locale]/_components';
 import { Skeleton } from '@/app/[locale]/_components/Skeleton';
 
@@ -13,17 +14,10 @@ export default function ExpLeaderboardPeriodLoading() {
       <Skeleton className="h-8 w-56 rounded" />
 
       {/* LeaderboardTabs */}
-      <div className="flex rounded-lg bg-secondary p-1">
-        <div className="h-10 flex-1 rounded-md" />
-        <div className="h-10 flex-1 rounded-md" />
-      </div>
+      <TabsSkeleton segments={2} />
 
       {/* PeriodTabs */}
-      <div className="flex rounded-lg bg-secondary p-1">
-        <div className="h-10 flex-1 rounded-md" />
-        <div className="h-10 flex-1 rounded-md" />
-        <div className="h-10 flex-1 rounded-md" />
-      </div>
+      <TabsSkeleton segments={3} />
 
       {/* Table: header + 50 rows */}
       <div className="overflow-hidden rounded-lg border border-border">

@@ -17,6 +17,7 @@ import { LeaderboardTopContent } from './LeaderboardTopContent';
 import { type CurrentSlug, ModuleFilter } from './ModuleFilter';
 import { PeriodTabs } from './PeriodTabs';
 import { SignUpBanner } from './SignUpBanner';
+import { TabsSkeleton } from './TabsSkeleton';
 
 /**
  * The score leaderboard page body, shared by `/leaderboard/score/[period]` and
@@ -124,24 +125,13 @@ export function ScoreLeaderboardSkeleton() {
       />
 
       {/* LeaderboardTabs (2 buttons) */}
-      <div className="flex rounded-lg bg-secondary p-1">
-        <div className="h-10 flex-1 rounded-md" />
-        <div className="h-10 flex-1 rounded-md" />
-      </div>
+      <TabsSkeleton segments={2} />
 
       {/* PeriodTabs (3 buttons) */}
-      <div className="flex rounded-lg bg-secondary p-1">
-        <div className="h-10 flex-1 rounded-md" />
-        <div className="h-10 flex-1 rounded-md" />
-        <div className="h-10 flex-1 rounded-md" />
-      </div>
+      <TabsSkeleton segments={3} />
 
       {/* ModuleFilter (7 buttons: all + 6 modules) */}
-      <div className="flex rounded-lg bg-secondary p-1">
-        {Array.from({ length: 7 }).map((_, i) => (
-          <div key={i} className="h-10 flex-1 rounded-md" />
-        ))}
-      </div>
+      <TabsSkeleton segments={7} />
 
       {/* Card grid (6 cards) */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
