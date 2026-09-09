@@ -6,8 +6,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ChunkOption } from '@/lib/chunks/types';
 import type { ThemeOption } from '@/lib/themes/types';
 
-import { makeGamePreferences } from '@/app/[locale]/_contexts/__test-support__/preferences-fixture';
-
 import { editDraftStorageKey } from '../_lib/edit-draft-storage';
 import type { PuzzleEditDraftV1 } from '../_lib/edit-draft-storage';
 import { EditPuzzlePositionForm } from './EditPuzzlePositionForm';
@@ -23,15 +21,7 @@ vi.mock('@/i18n/routing', () => ({
 
 vi.mock('next-intl');
 
-vi.mock('@/app/[locale]/_contexts/GamePreferencesContext', () => ({
-  useGamePreferences: () => ({
-    preferences: makeGamePreferences(),
-    isLoaded: true,
-    isHydrated: true,
-    updatePreferences: () => {},
-    resetPreferences: () => {},
-  }),
-}));
+vi.mock('@/app/[locale]/_contexts/GamePreferencesContext');
 
 vi.mock('@/app/[locale]/(public)/practice/(free-play)/_components/EditableChessBoard', () => ({
   EditableChessBoard: ({ fen }: { fen: string }) => (
