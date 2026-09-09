@@ -2,25 +2,11 @@
 
 import { useCallback } from 'react';
 
-import { BoardLayout, BoardSkeleton } from '@/app/_components';
 import type { SquareRenderInfo } from '@/app/_components';
-import {
-  BOARD_FRAME_EXPAND_ON_MOBILE_CLASS,
-  BOARD_RADIUS_EXPAND_ON_MOBILE,
-} from '@/app/_components/chess/BoardFrame';
 import { ChessPieceIcon } from '@blindfold-chess/icons';
 
-import { useBoardTheme } from '../useBoardTheme';
+import { ThemedBoardLayout } from './ThemedBoardLayout';
 import type { StaticPiecePlacement } from './fen-to-static-placements';
-
-/**
- * These aids sit in prose (`/dojo/guides`, the rank Tips card, learn/manual
- * articles), where the board is the explanation — so it gets the same
- * full-bleed-on-mobile frame every other board in the app has. A caller may
- * still replace it: the Tips card passes `mx-auto max-w-[10rem]` for a
- * thumbnail.
- */
-const DEFAULT_CLASS_NAME = BOARD_FRAME_EXPAND_ON_MOBILE_CLASS;
 
 type StaticPositionBoardProps = {
   placements: ReadonlyArray<StaticPiecePlacement>;
@@ -34,12 +20,7 @@ type StaticPositionBoardProps = {
  * the 2kyu guide). Unlike `PieceMovementBoard` this places many pieces at
  * once; unlike `ChessBoard` it skips all FEN parsing and move handling.
  */
-export function StaticPositionBoard({
-  placements,
-  className = DEFAULT_CLASS_NAME,
-}: StaticPositionBoardProps) {
-  const { themeColors, showCoordinates, isLoaded } = useBoardTheme();
-
+export function StaticPositionBoard({ placements, className }: StaticPositionBoardProps) {
   const renderSquare = useCallback(
     ({ square }: SquareRenderInfo) => {
       const placement = placements.find((p) => p.square === square);
@@ -49,22 +30,5 @@ export function StaticPositionBoard({
     [placements]
   );
 
-  if (!isLoaded) {
-    return (
-      <div className={className}>
-        <BoardSkeleton rounded={BOARD_RADIUS_EXPAND_ON_MOBILE} />
-      </div>
-    );
-  }
-
-  return (
-    <div className={className}>
-      <BoardLayout
-        showCoordinates={showCoordinates}
-        themeColors={themeColors}
-        renderSquare={renderSquare}
-        rounded={BOARD_RADIUS_EXPAND_ON_MOBILE}
-      />
-    </div>
-  );
+  return <ThemedBoardLayout renderSquare={renderSquare} className={className} />;
 }

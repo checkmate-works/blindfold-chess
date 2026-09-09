@@ -2,14 +2,9 @@
 
 import { useCallback } from 'react';
 
-import { BoardLayout, BoardSkeleton } from '@/app/_components';
 import type { SquareRenderInfo } from '@/app/_components';
-import {
-  BOARD_FRAME_EXPAND_ON_MOBILE_CLASS,
-  BOARD_RADIUS_EXPAND_ON_MOBILE,
-} from '@/app/_components/chess/BoardFrame';
 
-import { useBoardTheme } from './useBoardTheme';
+import { ThemedBoardLayout } from './_shared/ThemedBoardLayout';
 
 const DEFAULT_ANCHOR_SQUARES = ['a8', 'h8', 'a1', 'h1'];
 
@@ -22,8 +17,6 @@ export function AnchorPointsBoard({
   squares = DEFAULT_ANCHOR_SQUARES,
   className,
 }: AnchorPointsBoardProps) {
-  const { themeColors, showCoordinates, isLoaded } = useBoardTheme();
-
   const renderSquare = useCallback(() => null, []);
 
   const squareProps = useCallback(
@@ -33,23 +26,11 @@ export function AnchorPointsBoard({
     [squares]
   );
 
-  if (!isLoaded) {
-    return (
-      <div className={className ?? BOARD_FRAME_EXPAND_ON_MOBILE_CLASS}>
-        <BoardSkeleton rounded={BOARD_RADIUS_EXPAND_ON_MOBILE} />
-      </div>
-    );
-  }
-
   return (
-    <div className={className ?? BOARD_FRAME_EXPAND_ON_MOBILE_CLASS}>
-      <BoardLayout
-        showCoordinates={showCoordinates}
-        themeColors={themeColors}
-        renderSquare={renderSquare}
-        squareProps={squareProps}
-        rounded={BOARD_RADIUS_EXPAND_ON_MOBILE}
-      />
-    </div>
+    <ThemedBoardLayout
+      renderSquare={renderSquare}
+      squareProps={squareProps}
+      className={className}
+    />
   );
 }

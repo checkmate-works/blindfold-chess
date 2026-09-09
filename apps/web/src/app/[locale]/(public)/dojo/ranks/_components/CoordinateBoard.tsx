@@ -2,14 +2,9 @@
 
 import { useCallback } from 'react';
 
-import { BoardLayout, BoardSkeleton } from '@/app/_components';
 import type { SquareRenderInfo } from '@/app/_components';
-import {
-  BOARD_FRAME_EXPAND_ON_MOBILE_CLASS,
-  BOARD_RADIUS_EXPAND_ON_MOBILE,
-} from '@/app/_components/chess/BoardFrame';
 
-import { useBoardTheme } from './useBoardTheme';
+import { ThemedBoardLayout } from './_shared/ThemedBoardLayout';
 
 type CoordinateBoardProps = {
   className?: string;
@@ -23,8 +18,6 @@ type CoordinateBoardProps = {
  * name (e.g. "a8", "e4") so users can learn the mapping visually.
  */
 export function CoordinateBoard({ className }: CoordinateBoardProps) {
-  const { themeColors, isLoaded } = useBoardTheme();
-
   const renderSquare = useCallback(
     ({ square, isLight }: SquareRenderInfo) => (
       <span
@@ -38,22 +31,7 @@ export function CoordinateBoard({ className }: CoordinateBoardProps) {
     []
   );
 
-  if (!isLoaded) {
-    return (
-      <div className={className ?? BOARD_FRAME_EXPAND_ON_MOBILE_CLASS}>
-        <BoardSkeleton rounded={BOARD_RADIUS_EXPAND_ON_MOBILE} />
-      </div>
-    );
-  }
-
   return (
-    <div className={className ?? BOARD_FRAME_EXPAND_ON_MOBILE_CLASS}>
-      <BoardLayout
-        showCoordinates={false}
-        themeColors={themeColors}
-        renderSquare={renderSquare}
-        rounded={BOARD_RADIUS_EXPAND_ON_MOBILE}
-      />
-    </div>
+    <ThemedBoardLayout renderSquare={renderSquare} showCoordinates={false} className={className} />
   );
 }
