@@ -32,6 +32,7 @@ export function AnnouncementBanner({ id, title, href }: Props) {
       className="bg-primary text-primary-foreground"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between py-2 text-sm">
+        {/* eslint-disable-next-line no-restricted-syntax -- the coloured bar is the affordance, and the link colour would break contrast on it; hover is a pointer nicety */}
         <Link href={href} className="truncate hover:underline">
           📢 {title}
         </Link>

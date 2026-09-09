@@ -7,7 +7,8 @@
     "./base": "./base.js",
     "./next": "./next.js",
     "./react": "./react.js",
-    "./revalidate-path-ban": "./revalidate-path-ban.js"
+    "./revalidate-path-ban": "./revalidate-path-ban.js",
+    "./hover-underline-ban": "./hover-underline-ban.js"
   },
   "dependencies": {
     "@eslint/js": "^9.39.4",

@@ -40,6 +40,7 @@ import { buildPageHref, getPageRange } from '@/lib/pagination';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
+import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -175,7 +176,7 @@ export default async function BenefitHistoryPage({ params, searchParams }: Props
                             <Link
                               href={row.sourceHref}
                               locale={locale}
-                              className="text-link-primary hover:underline"
+                              className={TEXT_LINK_CLASSES}
                             >
                               {sourceLabel}
                             </Link>

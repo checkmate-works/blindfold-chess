@@ -173,6 +173,10 @@ export async function deletePost(postId: string, locale: string) {
 - **`revalidateTag` stays allowed** — it is the correct tool for `unstable_cache` tags — but inside a Server Action it pays the same current-page re-render + response-embed cost. Do NOT switch to it just to silence this rule; use it only when a tagged cache actually exists.
 - Test files are exempt (they import the mocked `revalidatePath` to assert it is or is not called).
 
+### `hover:underline` Is Lint-Banned Under `src/app`
+
+A link whose only affordance is a hover-time underline is invisible as a link on a touch screen, so `hover:underline` in a class string is an ESLint error outside `admin/` (`hoverUnderlineBan` in `packages/eslint-config`). Use `TEXT_LINK_CLASSES` / `TEXT_LINK_MUTED_CLASSES` from `src/app/[locale]/_lib/link-classes.ts` — underline at rest plus focus ring. That module's TSDoc says where an underline is _not_ wanted (a label inside a clickable card, a navigation list such as the footer columns or a term list); a site in one of those exceptions keeps its pointer-only underline behind an `eslint-disable-next-line` that names the exception.
+
 ### Barrel File (index.ts) Convention
 
 - **Keep barrel imports for client-safe components** - Components are re-exported from `_components/index.ts` barrel files. Use barrel imports (e.g., `from './_components'`) to keep import statements concise.

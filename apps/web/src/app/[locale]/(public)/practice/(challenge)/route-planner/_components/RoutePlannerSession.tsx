@@ -5,12 +5,11 @@ import { ChessPiece } from '@/app/_components/chess/ChessPiece';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaArrowRight, FaFlagCheckered, FaUndo } from 'react-icons/fa';
 
-import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
+import { TrainingFooter } from '@/app/[locale]/(public)/practice/(challenge)/_components/TrainingFooter';
 import { AlgebraicKeyboardHint } from '@/app/[locale]/(public)/practice/_components/KeyboardHint';
 import { PieceCoordinateInput } from '@/app/[locale]/(public)/practice/_components/PieceCoordinateInput';
 import { useAlgebraicKeyboardInput } from '@/app/[locale]/(public)/practice/_hooks/use-algebraic-keyboard-input';
 
-import { TrainingChallengeCTA } from '../../_components/TrainingChallengeCTA';
 import { useRoutePlannerGame } from '../_hooks/use-route-planner-game';
 import { useStagedCoordinate } from '../_hooks/use-staged-coordinate';
 import { PIECES } from '../_lib/pieces';
@@ -162,35 +161,13 @@ export function RoutePlannerSession({
         )}
       </div>
 
-      <ScoreCounter
+      <TrainingFooter
         correct={results.filter((r) => r.success).length}
         incorrect={results.filter((r) => !r.success).length}
-        className="mt-8"
+        onEndTraining={handleEndTraining}
+        challengeHref={`/${locale}/practice/route-planner/challenge`}
+        onSkip={gameState === 'playing' ? handleSkip : undefined}
       />
-
-      {/* Skip / End Training section outside the card */}
-      <div className="mt-6 text-center space-y-2">
-        {gameState === 'playing' && (
-          <div>
-            <button
-              onClick={handleSkip}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {tPractice('skip')}
-            </button>
-          </div>
-        )}
-        <div>
-          <button
-            onClick={handleEndTraining}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            {tPractice('endTraining')}
-          </button>
-        </div>
-      </div>
-
-      <TrainingChallengeCTA challengeHref={`/${locale}/practice/route-planner/challenge`} />
     </div>
   );
 }

@@ -43,6 +43,7 @@ export async function GlossaryTermList({ terms, locale }: Props) {
               <h3 className="text-xl font-bold text-foreground">
                 <Link
                   href={`/${locale}/glossary/${term.slug ?? slugifyTerm(term.term)}`}
+                  // eslint-disable-next-line no-restricted-syntax -- navigation list: the list of terms under its letter is the affordance; hover is a pointer nicety
                   className="hover:text-link-primary hover:underline"
                 >
                   {term.term}

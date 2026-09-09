@@ -7,9 +7,24 @@
  * shift on hover, focus-visible ring for keyboard users) so the link nature is
  * apparent on every input modality.
  *
- * Use at ordinary text-link sites. For decorative labels inside a card that is
- * itself the click target (e.g. "Show more" spans inside a clickable feed
- * row), do NOT apply these — let the card handle the affordance.
+ * Use at ordinary text-link sites: a link inside running text, or a lone word
+ * standing by itself ("Back", "Quit", "Skip" under a score). The test is
+ * whether anything *around* the link says it can be tapped. Two kinds of
+ * place pass that test on their own and must NOT take these classes:
+ *
+ * - Decorative labels inside a card that is itself the click target (e.g.
+ *   "Show more" spans inside a clickable feed row) — let the card handle
+ *   the affordance.
+ * - Navigation lists: the header, the footer's link columns, tab bars,
+ *   breadcrumbs, a glossary's list of terms. The list under a heading is the
+ *   affordance; a column of underlined items reads as an error, and the
+ *   site's own header, tab bar and breadcrumb do not underline either. A
+ *   `hover:underline` there is not wrong, just inert on touch — a color
+ *   shift on hover is all such a list needs.
+ *
+ * The distinction was settled in 2026-09 while unifying the practice
+ * sessions' "Quit"/"Skip" (lone words: underlined) against the footer
+ * (a list: left alone).
  */
 
 /** Focus-visible ring treatment, exported for reuse on non-text-link targets

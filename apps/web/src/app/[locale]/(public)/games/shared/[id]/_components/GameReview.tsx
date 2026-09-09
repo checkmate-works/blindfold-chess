@@ -36,6 +36,7 @@ import { GameStatsOverview } from '@/app/[locale]/(public)/games/play/result/_co
 import { StatsAuthGate } from '@/app/[locale]/(public)/games/play/result/_components/StatsAuthGate';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { useTerminationMarkLabel } from '@/app/[locale]/_hooks/use-termination-mark-label';
+import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { useAiReviewGeneration } from '../_hooks/use-ai-review-generation';
@@ -852,7 +853,7 @@ export function GameReview({
           <button
             type="button"
             onClick={handleCommitPosition}
-            className="flex w-full items-center justify-center gap-1.5 text-sm font-medium text-primary hover:underline"
+            className={`flex w-full items-center justify-center gap-1.5 text-sm font-medium ${TEXT_LINK_CLASSES}`}
           >
             {t('openPosition')}
             <FaArrowRight className="h-3 w-3" aria-hidden />

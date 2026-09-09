@@ -11,6 +11,8 @@ import { HiBars3, HiChevronDown, HiChevronUp, HiPlus, HiXMark } from 'react-icon
 
 import { REPERTOIRE_CHAPTERS_MAX, REPERTOIRE_CHAPTER_NAME_MAX } from '@/lib/repertoires/line-order';
 
+import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
+
 import { reorderLines } from '../../_actions/reorderLines';
 import type { ArrangeRow } from './arrangement-rows';
 import {
@@ -329,7 +331,7 @@ export function LineOrderList({
         // Mirrors the server's REPERTOIRE_CHAPTERS_MAX so the cap reads as a
         // disabled button, not a failed save.
         disabled={rows.filter((row) => row.kind === 'chapter').length >= REPERTOIRE_CHAPTERS_MAX}
-        className="flex items-center gap-1.5 text-sm text-link-primary transition-colors hover:underline disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:no-underline"
+        className={`flex items-center gap-1.5 text-sm ${TEXT_LINK_CLASSES} disabled:cursor-not-allowed disabled:opacity-40 disabled:no-underline`}
       >
         <HiPlus aria-hidden className="size-4" />
         {labels.addChapter}

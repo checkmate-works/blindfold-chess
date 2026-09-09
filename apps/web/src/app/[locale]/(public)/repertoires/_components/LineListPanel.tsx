@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { FaPlus } from 'react-icons/fa';
 import { HiBars3 } from 'react-icons/hi2';
 
+import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
+
 type Props = {
   /** Section heading ("Lines"), resolved by the caller. */
   heading: string;
@@ -48,7 +50,7 @@ export function LineListPanel({
         {manageHref && manageLabel && (
           <Link
             href={manageHref}
-            className="flex flex-shrink-0 items-center gap-1 text-xs text-link-primary transition-colors hover:underline"
+            className={`flex flex-shrink-0 items-center gap-1 text-xs ${TEXT_LINK_CLASSES}`}
           >
             <HiBars3 aria-hidden className="size-3.5" />
             {manageLabel}

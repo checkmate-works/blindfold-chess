@@ -7,6 +7,7 @@ import { formatLocalDate } from '@/lib/i18n/format-date';
 
 import { getLatestPublishedArticles } from '@/app/[locale]/(public)/articles/_lib/queries';
 import { ListLink, ListLinkContainer, SectionTitle } from '@/app/[locale]/_components';
+import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 type Props = {
   locale: string;
@@ -47,7 +48,7 @@ export async function LatestArticles({ locale }: Props) {
         <Link
           href="/articles"
           locale={locale}
-          className="text-sm text-primary hover:underline font-medium"
+          className={`text-sm font-medium ${TEXT_LINK_CLASSES}`}
         >
           {t('dashboard.viewAll')}
         </Link>

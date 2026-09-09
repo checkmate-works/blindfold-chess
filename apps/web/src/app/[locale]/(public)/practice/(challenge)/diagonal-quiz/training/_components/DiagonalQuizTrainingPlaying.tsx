@@ -8,10 +8,7 @@ import type { ActiveField } from '@blindfold-chess/features/diagonal-quiz';
 import { useDiagonalInput } from '@blindfold-chess/features/diagonal-quiz/client';
 import type { Square } from '@blindfold-chess/types';
 
-import {
-  TRAINING_TEXT_ACTION_CLASSES,
-  TrainingFooter,
-} from '@/app/[locale]/(public)/practice/(challenge)/_components/TrainingFooter';
+import { TrainingFooter } from '@/app/[locale]/(public)/practice/(challenge)/_components/TrainingFooter';
 import { useAlgebraicKeyboardInput } from '@/app/[locale]/(public)/practice/_hooks/use-algebraic-keyboard-input';
 import { SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -191,15 +188,8 @@ export function DiagonalQuizTrainingPlaying({
         incorrect={incorrectCount}
         onEndTraining={onEndTraining}
         challengeHref={challengeHref}
-      >
-        {!isDisabled && (
-          <div>
-            <button onClick={onSkip} className={TRAINING_TEXT_ACTION_CLASSES}>
-              {tp('skip')}
-            </button>
-          </div>
-        )}
-      </TrainingFooter>
+        onSkip={isDisabled ? undefined : onSkip}
+      />
     </div>
   );
 }

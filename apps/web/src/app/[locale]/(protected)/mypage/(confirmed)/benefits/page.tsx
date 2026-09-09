@@ -54,6 +54,7 @@ import { Link } from '@/i18n/routing';
 import { getAuthenticatedUser } from '@/lib/auth';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
 
@@ -169,11 +170,7 @@ export default async function BenefitsPage({ params }: Props) {
                     <tr key={row.id}>
                       <td className="px-4 py-3 font-medium text-foreground">
                         {row.sourceHref ? (
-                          <Link
-                            href={row.sourceHref}
-                            locale={locale}
-                            className="text-link-primary hover:underline"
-                          >
+                          <Link href={row.sourceHref} locale={locale} className={TEXT_LINK_CLASSES}>
                             {sourceLabel(row.sourceLabelKey)}
                           </Link>
                         ) : (

@@ -37,6 +37,7 @@ import { RepertoireListCard } from '@/app/[locale]/(public)/repertoires/_compone
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import type { HelpStep } from '@/app/[locale]/_components/HelpTourButton';
 import { HelpTourButton } from '@/app/[locale]/_components/HelpTourButton';
+import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -275,7 +276,7 @@ export default async function RepertoireCheckPage({ params, searchParams }: Prop
         <p className="text-center">
           <Link
             href={`/${locale}/games/play/result?gameId=${gameId}`}
-            className="text-sm text-muted-foreground hover:text-foreground hover:underline"
+            className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}
           >
             {t('repertoireCheck.backToResult')}
           </Link>

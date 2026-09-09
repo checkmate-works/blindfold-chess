@@ -1,4 +1,5 @@
 import { nextJsConfig } from '@blindfold-chess/eslint-config/next';
+import { hoverUnderlineBan } from '@blindfold-chess/eslint-config/hover-underline-ban';
 import { revalidatePathBan } from '@blindfold-chess/eslint-config/revalidate-path-ban';
 import globals from 'globals';
 
@@ -29,4 +30,5 @@ export default [
     },
   },
   ...revalidatePathBan(),
+  ...hoverUnderlineBan(),
 ];

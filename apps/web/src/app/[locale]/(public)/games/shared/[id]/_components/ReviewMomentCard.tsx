@@ -2,6 +2,8 @@
 
 import type { AiReviewMomentComment, ReviewMoment } from '@/lib/ai-review/types';
 
+import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
+
 import { ReviewMomentFacts, formatMomentMoveLabel } from './ReviewMomentFacts';
 import { ReviewPrincipleCallout } from './ReviewPrincipleCallout';
 
@@ -28,7 +30,7 @@ export function ReviewMomentCard({
         <button
           type="button"
           onClick={() => onJumpToPly(moment.ply)}
-          className="font-mono text-sm font-semibold text-primary hover:underline"
+          className={`font-mono text-sm font-semibold ${TEXT_LINK_CLASSES}`}
         >
           {formatMomentMoveLabel(moment)}
         </button>

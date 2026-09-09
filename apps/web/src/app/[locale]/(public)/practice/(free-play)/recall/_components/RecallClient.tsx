@@ -17,7 +17,7 @@ import { useQuickPeekModal } from '@/app/[locale]/(public)/games/play/_hooks/use
 import { ACTION_ROW_CONTAINER_CLASSES } from '@/app/[locale]/(public)/games/play/_lib';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
-import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
+import { TEXT_LINK_CLASSES, TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 import { useRecallGame } from '../_hooks';
 import { useOpponentMoveAnnouncement } from '../_hooks/use-opponent-move-announcement';
@@ -450,7 +450,7 @@ export function RecallClient({
           <button
             type="button"
             onClick={quickPeek.commit}
-            className="flex w-full items-center justify-center gap-1.5 text-sm font-medium text-primary hover:underline"
+            className={`flex w-full items-center justify-center gap-1.5 text-sm font-medium ${TEXT_LINK_CLASSES}`}
           >
             {t('openPosition')}
             <FaArrowRight className="h-3 w-3" aria-hidden />
