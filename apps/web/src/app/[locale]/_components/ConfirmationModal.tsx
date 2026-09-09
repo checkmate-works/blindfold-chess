@@ -79,9 +79,24 @@ export function ConfirmationModal({
         `flex-col-reverse` keeps the confirm above cancel while leaving the
         confirm last in DOM order, so tab order and screen readers still reach
         cancel first.
+
+        `min-h-11` raises the phone tap target to 44px: the default `sm` button
+        padding leaves these at 36px, which is below the 44px both platform
+        guidelines ask for, and it read as too short next to the 48px submit
+        button and the 44px coordinate keys on the practice sessions this
+        dialog opens over. It also evens out the 2px the `secondary` cancel
+        gains from its border. Released from `sm` up, where a pointer is
+        driving and the row would otherwise grow for no one's benefit — the
+        same shape the coordinate keypad uses (`h-11 sm:h-9`).
       */}
       <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-        <Button type="button" onClick={onCancel} disabled={isLoading} variant="secondary">
+        <Button
+          type="button"
+          onClick={onCancel}
+          disabled={isLoading}
+          variant="secondary"
+          className="min-h-11 sm:min-h-0"
+        >
           {cancelText}
         </Button>
 
@@ -91,6 +106,7 @@ export function ConfirmationModal({
           disabled={isLoading}
           loading={isLoading}
           variant={getConfirmVariant()}
+          className="min-h-11 sm:min-h-0"
         >
           {confirmText}
         </Button>
