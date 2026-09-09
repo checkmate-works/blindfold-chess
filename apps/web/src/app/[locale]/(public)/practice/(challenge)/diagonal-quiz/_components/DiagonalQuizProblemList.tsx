@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 import { ChessPiece, Square } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
@@ -19,6 +19,7 @@ import {
   getBoardThemeColors,
 } from '@/lib/games/board-themes';
 
+import { useExpandedIndexSet } from '@/app/[locale]/(public)/practice/_hooks/use-expanded-index-set';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import { DiagonalAnswerComparison } from './DiagonalAnswerComparison';
@@ -125,19 +126,7 @@ function DiagonalLabel({ type }: { type: 'diagonal' | 'antiDiagonal' }) {
 export function DiagonalQuizProblemList({ results }: { results: QuestionResult[] }) {
   const t = useTranslations('practice.diagonalQuiz');
   const { preferences } = useGamePreferences();
-  const [expandedProblems, setExpandedProblems] = useState<Set<number>>(new Set());
-
-  const toggleProblem = (index: number) => {
-    setExpandedProblems((prev) => {
-      const next = new Set(prev);
-      if (next.has(index)) {
-        next.delete(index);
-      } else {
-        next.add(index);
-      }
-      return next;
-    });
-  };
+  const { expanded: expandedProblems, toggle: toggleProblem } = useExpandedIndexSet();
 
   if (results.length === 0) return null;
 
