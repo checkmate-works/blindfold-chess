@@ -24,14 +24,8 @@ type Props = {
   /** FEN the player rebuilt; each square's verdict is drawn over it. */
   recreatedPosition: string;
   boardTheme: BoardTheme;
-  /**
-   * Per board, because the two result screens do not agree: the FEN drill
-   * follows the reader's preference on both, while position-memory hides the
-   * coordinates on the original and shows them on the recreation. Spelled
-   * out here rather than folded into one flag so that asymmetry stays
-   * visible at the call site instead of being silently normalised.
-   */
-  showCoordinates: { original: boolean; recreation: boolean };
+  /** Applied to both boards, as the reader's coordinate preference is elsewhere. */
+  showCoordinates: boolean;
 };
 
 /**
@@ -59,7 +53,7 @@ export function RecreationComparison({
         <BoardFrame>
           <AnimatedChessBoard
             initialFen={originalPosition.fen}
-            showCoordinates={showCoordinates.original}
+            showCoordinates={showCoordinates}
             flipped={originalPosition.isBlackToMove}
             boardTheme={boardTheme}
           />
@@ -73,7 +67,7 @@ export function RecreationComparison({
             flipped={originalPosition.isBlackToMove}
             squareDifferences={squareDifferences}
             boardTheme={boardTheme}
-            showCoordinates={showCoordinates.recreation}
+            showCoordinates={showCoordinates}
           />
         </BoardFrame>
       </div>

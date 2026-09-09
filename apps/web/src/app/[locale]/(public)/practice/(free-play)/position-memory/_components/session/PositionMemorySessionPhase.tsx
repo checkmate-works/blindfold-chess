@@ -25,6 +25,7 @@ type Props = {
   currentAccuracy: PositionAccuracy | null;
   countdown: number | null;
   boardTheme: BoardTheme;
+  showCoordinates: boolean;
   isTutorial: boolean;
   enablePause: boolean;
   isPaused: boolean;
@@ -70,6 +71,7 @@ export function PositionMemorySessionPhase({
   currentAccuracy,
   countdown,
   boardTheme,
+  showCoordinates,
   isTutorial,
   enablePause,
   isPaused,
@@ -143,6 +145,7 @@ export function PositionMemorySessionPhase({
         currentProblemIndex={currentProblemIndex}
         totalProblems={problemCount}
         boardTheme={boardTheme}
+        showCoordinates={showCoordinates}
         isTutorial={isTutorial}
         onNextProblem={onNextProblem}
         onViewResults={onViewResults}

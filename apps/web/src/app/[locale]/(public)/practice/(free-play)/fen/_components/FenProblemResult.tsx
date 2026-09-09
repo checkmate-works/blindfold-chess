@@ -62,7 +62,7 @@ export function FenProblemResult({
             originalPosition={originalPosition}
             recreatedPosition={recreatedPosition}
             boardTheme={boardTheme}
-            showCoordinates={{ original: showCoordinates, recreation: showCoordinates }}
+            showCoordinates={showCoordinates}
           />
 
           <ProblemResultActions
