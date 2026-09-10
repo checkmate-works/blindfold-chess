@@ -226,7 +226,7 @@ export function AttachmentModal({ isOpen, onClose, onApply }: Props) {
         </div>
 
         {/* Footer */}
-        <div className="sticky bottom-0 z-10 mt-4 flex justify-end gap-2 border-t border-border bg-card pt-3">
+        <div className="sticky bottom-0 z-10 mt-3 flex justify-end gap-3 border-t border-border bg-card pt-3">
           <Button type="button" variant="secondary" onClick={onClose}>
             {/* TODO(i18n): attachment.modal.cancel */}
             Cancel
