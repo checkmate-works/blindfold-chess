@@ -4,6 +4,7 @@ import { useId } from 'react';
 
 import Link from 'next/link';
 
+import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { FinalGameOutcome } from '@blindfold-chess/types';
 import { FaBook, FaBrain, FaClipboardList, FaCloudUploadAlt } from 'react-icons/fa';
@@ -210,30 +211,27 @@ export function GameFinishModal({
           <div className="flex flex-col items-center gap-3">
             {/* Both actions full-width at matching heights — mismatched
                 widths/heights read as visual noise in a stacked pair. */}
-            <Link
-              href={guestSignUpHref!}
-              className="w-full rounded-md border border-transparent bg-primary px-4 py-2.5 text-center font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-            >
-              {t('finishModal.guestPromotion.signUp')}
+            <Link href={guestSignUpHref!} className="block w-full">
+              <Button asChild variant="primary" size="lg" fullWidth>
+                {t('finishModal.guestPromotion.signUp')}
+              </Button>
             </Link>
-            <button
-              type="button"
-              onClick={onShare}
-              className="w-full rounded-md border border-border px-4 py-2.5 text-center font-semibold text-foreground transition-colors hover:border-foreground/30"
-            >
+            <Button type="button" onClick={onShare} variant="outline" size="lg" fullWidth>
               {t('finishModal.guestPromotion.publishAnonymously')}
-            </button>
+            </Button>
             {skipButton}
           </div>
         ) : showPromotion ? (
           <div className="flex flex-col items-center gap-3">
-            <button
+            <Button
               type="button"
               onClick={onShare}
-              className="w-full rounded-md bg-primary px-4 py-2.5 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 sm:w-auto sm:px-8"
+              variant="primary"
+              size="lg"
+              className="w-full sm:w-auto sm:px-8"
             >
               {t('finishModal.promotion.publish')}
-            </button>
+            </Button>
             {skipButton}
           </div>
         ) : (
