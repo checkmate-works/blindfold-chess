@@ -5,6 +5,7 @@ import { useId } from 'react';
 
 import dynamic from 'next/dynamic';
 
+import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaBrain, FaComments, FaHeart, FaLink, FaShareAlt } from 'react-icons/fa';
 
@@ -147,14 +148,10 @@ export function PublishPromptModal(props: Props) {
         </ul>
 
         <div className="flex flex-col gap-3 pt-2">
-          <button
-            type="button"
-            onClick={onShare}
-            className="flex w-full items-center justify-center gap-2 rounded-md px-4 py-2 text-center font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-          >
+          <Button type="button" onClick={onShare} variant="primary" size="lg" fullWidth>
             <FaShareAlt className="h-4 w-4" aria-hidden />
             {isShared ? t('result.viewShared') : t('result.publish')}
-          </button>
+          </Button>
         </div>
       </div>
     </Modal>

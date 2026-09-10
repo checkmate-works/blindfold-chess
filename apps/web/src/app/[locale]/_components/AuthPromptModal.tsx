@@ -2,6 +2,7 @@
 
 import { useId } from 'react';
 
+import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 import { useSafeLocale as useLocale } from '@/i18n/use-safe-locale';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
@@ -26,6 +27,10 @@ type Props = {
  *
  * Both are surfaced from the same `isOpen`, so every `useAuthGuard` call site
  * gets the right prompt without knowing which state the viewer is in.
+ *
+ * The actions are links (a navigation, not a form submit) wearing `Button`'s
+ * `asChild` span, so they get the same 48px full-width treatment as the
+ * practice result screens' primary actions instead of a hand-rolled 40px.
  */
 export function AuthPromptModal({ isOpen, onClose }: Props) {
   const t = useTranslations('authPrompt');
@@ -63,10 +68,12 @@ export function AuthPromptModal({ isOpen, onClose }: Props) {
               <Link
                 href="/mypage/setup-username"
                 locale={locale}
-                className="block w-full rounded-md px-4 py-2 text-center font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                className="block w-full"
                 onClick={onClose}
               >
-                {t('provisional.button')}
+                <Button asChild variant="primary" size="lg" fullWidth>
+                  {t('provisional.button')}
+                </Button>
               </Link>
             </div>
           </>
@@ -82,18 +89,22 @@ export function AuthPromptModal({ isOpen, onClose }: Props) {
               <Link
                 href={`/sign-up?next=${next}`}
                 locale={locale}
-                className="block w-full rounded-md px-4 py-2 text-center font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                className="block w-full"
                 onClick={onClose}
               >
-                {t('signUpButton')}
+                <Button asChild variant="primary" size="lg" fullWidth>
+                  {t('signUpButton')}
+                </Button>
               </Link>
               <Link
                 href={`/sign-in?next=${next}`}
                 locale={locale}
-                className="block w-full rounded-md px-4 py-2 text-center font-medium bg-card border border-border text-foreground hover:bg-muted transition-colors"
+                className="block w-full"
                 onClick={onClose}
               >
-                {t('signInButton')}
+                <Button asChild variant="outline" size="lg" fullWidth>
+                  {t('signInButton')}
+                </Button>
               </Link>
             </div>
           </>

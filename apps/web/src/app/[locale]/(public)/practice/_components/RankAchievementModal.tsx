@@ -4,12 +4,14 @@ import { useEffect, useId, useState } from 'react';
 
 import Link from 'next/link';
 
+import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { BELT_COLOR_HEX } from '@/lib/db/data/ranks';
 import type { GrantedRank } from '@/lib/db/data/ranks';
 
 import { Modal } from '@/app/[locale]/_components/Modal';
+import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 import { takeGrantedRanks } from '../_lib/granted-ranks-stash';
 
@@ -75,16 +77,12 @@ export function RankAchievementModal({ locale }: Props) {
 
         {/* CTA: Link to ranks page */}
         <div className="mt-6 flex flex-col gap-3">
-          <Link
-            href={`/${locale}/dojo/ranks`}
-            className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            {t('viewRanks')}
+          <Link href={`/${locale}/dojo/ranks`} className="block w-full">
+            <Button asChild variant="primary" size="lg" fullWidth>
+              {t('viewRanks')}
+            </Button>
           </Link>
-          <button
-            onClick={() => setIsOpen(false)}
-            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-          >
+          <button onClick={() => setIsOpen(false)} className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
             {t('close')}
           </button>
         </div>
