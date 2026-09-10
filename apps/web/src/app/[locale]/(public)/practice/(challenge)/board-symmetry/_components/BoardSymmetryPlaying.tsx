@@ -64,7 +64,7 @@ export function BoardSymmetryPlaying({
         countdown={countdown}
         isPaused={isPaused}
         onTogglePause={onTogglePause}
-        className="py-2 text-center"
+        className="pt-2 text-center"
       >
         <BoardSymmetryQuestionPanel
           problem={problem}
@@ -94,7 +94,6 @@ export function BoardSymmetryPlaying({
       </ChallengeSessionVeil>
 
       <ChallengeQuitControl
-        className="mt-6 text-center"
         onQuitRequest={onQuitRequest}
         showQuitModal={showQuitModal}
         onQuitConfirm={onQuitConfirm}

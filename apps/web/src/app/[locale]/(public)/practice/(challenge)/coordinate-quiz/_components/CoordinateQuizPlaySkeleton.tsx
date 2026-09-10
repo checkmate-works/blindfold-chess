@@ -31,22 +31,24 @@ type Props = {
  */
 export function CoordinateQuizPlaySkeleton({ showHeader = false }: Props) {
   return (
-    <div className="-mx-4 p-8 text-center overflow-hidden sm:mx-0">
-      <div className="max-w-md mx-auto mb-8">
-        {/* Lives (left) + pause/timer (right) header — challenge only */}
-        {showHeader && (
-          <PlayHeaderSkeleton className="mb-4 flex items-center justify-between min-h-[50px]" />
-        )}
+    <div>
+      <div className="-mx-4 p-8 text-center overflow-hidden sm:mx-0">
+        <div className="max-w-md mx-auto mb-8">
+          {/* Lives (left) + pause/timer (right) header — challenge only */}
+          {showHeader && (
+            <PlayHeaderSkeleton className="mb-4 flex items-center justify-between min-h-[50px]" />
+          )}
 
-        {/* Orientation indicator (dot + label) */}
-        <div className="mb-4 flex items-center justify-center gap-2">
-          <Skeleton className="h-5 w-5 rounded-full" disableAnimation />
-          <Skeleton className="h-5 w-24 rounded-md" disableAnimation />
-        </div>
+          {/* Orientation indicator (dot + label) */}
+          <div className="mb-4 flex items-center justify-center gap-2">
+            <Skeleton className="h-5 w-5 rounded-full" disableAnimation />
+            <Skeleton className="h-5 w-24 rounded-md" disableAnimation />
+          </div>
 
-        {/* Square board */}
-        <div className="-mx-8 sm:mx-0">
-          <BoardSkeleton />
+          {/* Square board */}
+          <div className="-mx-8 sm:mx-0">
+            <BoardSkeleton />
+          </div>
         </div>
       </div>
 
@@ -54,7 +56,7 @@ export function CoordinateQuizPlaySkeleton({ showHeader = false }: Props) {
       <PlayScoreCounterSkeleton className="mt-4 flex justify-center items-center gap-12" />
 
       {/* Quit / end-training link */}
-      <PlayQuitLinkSkeleton className="mt-6 flex justify-center" />
+      <PlayQuitLinkSkeleton />
     </div>
   );
 }

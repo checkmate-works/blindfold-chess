@@ -1,9 +1,8 @@
 'use client';
 
-import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
-import { Modal } from '@/app/[locale]/_components/Modal';
+import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 
 type Props = {
   isOpen: boolean;
@@ -27,24 +26,26 @@ type Props = {
  * user's connection state and only mount this when the answer is yes.
  * That keeps Wi-Fi users free of friction and the prompt focused on the
  * audience that actually benefits from it.
+ *
+ * Built on `ConfirmationModal` so its action row is the one every confirm
+ * dialog shares — same order, same stacking on a phone, same 12px gap and
+ * 44px targets. It used to hand-roll the same row with an 8px gap.
  */
 export function LargeDownloadConsentDialog({ isOpen, onConfirm, onCancel, sizeLabel }: Props) {
   const t = useTranslations('largeDownloadConsent');
 
   return (
-    <Modal isOpen={isOpen} title={t('title')} onClose={onCancel} maxWidth="max-w-md" trapFocus>
-      <div className="space-y-4">
-        <p className="text-foreground">{t('body', { size: sizeLabel })}</p>
-        <p className="text-sm text-muted-foreground">{t('cachedNote')}</p>
-        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-2">
-          <Button variant="secondary" onClick={onCancel}>
-            {t('cancel')}
-          </Button>
-          <Button variant="primary" onClick={onConfirm}>
-            {t('continue')}
-          </Button>
-        </div>
-      </div>
-    </Modal>
+    <ConfirmationModal
+      isOpen={isOpen}
+      title={t('title')}
+      message={t('body', { size: sizeLabel })}
+      confirmText={t('continue')}
+      cancelText={t('cancel')}
+      onConfirm={onConfirm}
+      onCancel={onCancel}
+      trapFocus
+    >
+      <p className="mt-4 text-sm text-muted-foreground">{t('cachedNote')}</p>
+    </ConfirmationModal>
   );
 }

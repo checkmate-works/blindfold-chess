@@ -1,5 +1,6 @@
 import {
   PlayHeaderSkeleton,
+  PlayQuitLinkSkeleton,
   PlayScoreCounterSkeleton,
 } from '@/app/[locale]/(public)/practice/_components/PlaySkeletonParts';
 import { Skeleton } from '@/app/[locale]/_components';
@@ -29,7 +30,7 @@ type Props = {
 export function DiagonalQuizPlaySkeleton({ showHeader = false }: Props) {
   return (
     <div className="max-w-md mx-auto">
-      <div className="text-center">
+      <div className="pt-2 text-center">
         {/* Question prompt */}
         <Skeleton className="h-7 w-3/4 mx-auto mb-4 rounded-md" />
 
@@ -59,10 +60,12 @@ export function DiagonalQuizPlaySkeleton({ showHeader = false }: Props) {
           <Skeleton className="h-11 w-full rounded-md" />
           <Skeleton className="mt-1 h-11 w-full rounded-md" />
         </div>
+        {/* Score counter */}
+        <PlayScoreCounterSkeleton className="mt-8 flex justify-center items-center gap-12" />
       </div>
 
-      {/* Score counter */}
-      <PlayScoreCounterSkeleton className="mt-8 flex justify-center items-center gap-12" />
+      {/* Quit / end-training link */}
+      <PlayQuitLinkSkeleton />
     </div>
   );
 }

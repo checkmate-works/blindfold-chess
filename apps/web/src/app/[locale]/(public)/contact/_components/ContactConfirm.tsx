@@ -84,7 +84,7 @@ export function ContactConfirm({ formData, locale }: Props) {
         </div>
       </div>
 
-      <div className="mt-8 flex flex-col-reverse sm:flex-row gap-4">
+      <div className="mt-8 flex flex-col-reverse sm:flex-row gap-3">
         <Button
           type="button"
           onClick={handleBack}

@@ -16,6 +16,8 @@ type Props = {
   cancelText?: string;
   confirmVariant?: 'primary' | 'danger';
   isLoading?: boolean;
+  /** Keep keyboard focus inside the dialog while open. Opt-in, as on `Modal`. */
+  trapFocus?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
 };
@@ -30,6 +32,7 @@ export function ConfirmationModal({
   cancelText = 'Cancel',
   confirmVariant = 'primary',
   isLoading = false,
+  trapFocus = false,
   onConfirm,
   onCancel,
 }: Props) {
@@ -51,6 +54,7 @@ export function ConfirmationModal({
       isOpen={isOpen}
       onClose={onCancel}
       maxWidth="max-w-md"
+      trapFocus={trapFocus}
       aria-labelledby={titleId}
       aria-describedby={message ? messageId : undefined}
     >

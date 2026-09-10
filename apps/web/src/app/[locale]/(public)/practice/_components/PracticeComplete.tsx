@@ -101,7 +101,7 @@ export function PracticeComplete({
       {/* Custom children (e.g. Route Planner results) */}
       {children}
 
-      <div className="space-y-4 mt-6">
+      <div className="space-y-3 mt-6">
         <Button
           onClick={onTryAgain}
           variant="primary"

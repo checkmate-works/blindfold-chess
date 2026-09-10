@@ -63,7 +63,7 @@ export async function KnightTourResultLoadingSkeleton() {
             </div>
 
             {/* Actions */}
-            <div className="mt-6 space-y-4">
+            <div className="mt-6 space-y-3">
               {/* SignUpBanner — anonymous players only. */}
               {!isAuthed && <SignUpBannerSkeleton />}
 
