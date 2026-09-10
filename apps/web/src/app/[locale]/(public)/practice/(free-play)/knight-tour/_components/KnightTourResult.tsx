@@ -81,7 +81,7 @@ export function KnightTourResult({
         </div>
 
         {/* Actions */}
-        <div className="mt-6 space-y-4">
+        <div className="mt-6 space-y-3">
           {isTutorial ? (
             <>
               <p className="text-muted-foreground whitespace-pre-line">{t('tutorialComplete')}</p>

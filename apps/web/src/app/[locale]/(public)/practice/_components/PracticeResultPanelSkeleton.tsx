@@ -101,7 +101,7 @@ export function PracticeResultPanelSkeleton({
       {reserveRecordSection && <RecordSectionSkeleton />}
 
       {/* Action buttons (Try Again / Change Settings, etc.) */}
-      <div className="space-y-4">
+      <div className="space-y-3">
         <Skeleton className="h-12 w-full rounded-lg" />
         <Skeleton className="h-12 w-full rounded-lg" />
       </div>
