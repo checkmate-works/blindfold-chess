@@ -33,7 +33,7 @@ type Props = {
 export function RoutePlannerPlaySkeleton({ showHeader = false }: Props) {
   return (
     <div className={`min-h-screen mx-auto ${showHeader ? 'max-w-2xl' : 'max-w-md'}`}>
-      <div className={showHeader ? '' : 'text-center'}>
+      <div className={showHeader ? 'pt-2' : 'text-center'}>
         {/* Lives (left) + pause/timer (right) header — challenge only */}
         {showHeader && <PlayHeaderSkeleton className="flex justify-between items-center mb-4" />}
 
@@ -83,7 +83,7 @@ export function RoutePlannerPlaySkeleton({ showHeader = false }: Props) {
       <PlayScoreCounterSkeleton className="mt-8 flex justify-center items-center gap-12" />
 
       {/* Quit / end-training link */}
-      <PlayQuitLinkSkeleton className="mt-6 flex justify-center" />
+      <PlayQuitLinkSkeleton />
     </div>
   );
 }

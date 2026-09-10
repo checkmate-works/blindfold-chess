@@ -32,7 +32,7 @@ type Props = {
 export function QuadrantsPlaySkeleton({ showHeader = false }: Props) {
   return (
     <div className="max-w-2xl mx-auto">
-      <div className="p-6 text-center overflow-hidden space-y-4">
+      <div className="px-6 pt-6 text-center overflow-hidden space-y-4">
         {/* Lives (left) + pause/timer (right) header — challenge only */}
         {showHeader && <PlayHeaderSkeleton className="flex justify-between items-center" />}
 
@@ -51,13 +51,12 @@ export function QuadrantsPlaySkeleton({ showHeader = false }: Props) {
             <BoardSkeleton />
           </div>
         </div>
+        {/* Score counter */}
+        <PlayScoreCounterSkeleton className="mt-8 flex justify-center items-center gap-12" />
       </div>
 
-      {/* Score counter */}
-      <PlayScoreCounterSkeleton className="mt-8 flex justify-center items-center gap-12" />
-
       {/* Quit / end-training link */}
-      <PlayQuitLinkSkeleton className="mt-6 flex justify-center" />
+      <PlayQuitLinkSkeleton />
     </div>
   );
 }

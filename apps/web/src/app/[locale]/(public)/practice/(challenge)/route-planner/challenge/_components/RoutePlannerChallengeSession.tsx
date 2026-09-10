@@ -141,12 +141,12 @@ export default function RoutePlannerChallengeSession({
   const problemKey = `${currentProblem.piece}:${currentProblem.start}:${currentProblem.end}`;
 
   return (
-    <div id="route-planner-challenge-session" className="min-h-screen max-w-2xl mx-auto space-y-4">
+    <div id="route-planner-challenge-session" className="min-h-screen max-w-2xl mx-auto">
       <ChallengeSessionVeil
         countdown={countdown}
         isPaused={isPaused}
         onTogglePause={togglePause}
-        className="py-2 space-y-6"
+        className="pt-2 space-y-6"
       >
         <SessionHeader
           incorrectCount={incorrectCount}
@@ -171,12 +171,11 @@ export default function RoutePlannerChallengeSession({
           onRecordResult={recordProblemResult}
         />
 
-        <ScoreCounter correct={correctCount} incorrect={incorrectCount} />
+        <ScoreCounter correct={correctCount} incorrect={incorrectCount} className="mt-8" />
       </ChallengeSessionVeil>
 
       {/* Quit section (no Skip in challenge mode) */}
       <ChallengeQuitControl
-        className="flex flex-col items-center gap-2"
         onQuitRequest={handleQuitRequest}
         showQuitModal={showQuitModal}
         onQuitConfirm={handleQuitConfirm}

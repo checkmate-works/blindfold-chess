@@ -58,7 +58,7 @@ export function SquareColorsPlaying({
         countdown={countdown}
         isPaused={isPaused}
         onTogglePause={onTogglePause}
-        className="p-8 text-center"
+        className="px-8 pt-8 text-center"
       >
         <div className="mb-6">
           <ChallengeStatusHeader
@@ -85,7 +85,6 @@ export function SquareColorsPlaying({
       </ChallengeSessionVeil>
 
       <ChallengeQuitControl
-        className="mt-6 text-center"
         onQuitRequest={onQuitRequest}
         showQuitModal={showQuitModal}
         onQuitConfirm={onQuitConfirm}

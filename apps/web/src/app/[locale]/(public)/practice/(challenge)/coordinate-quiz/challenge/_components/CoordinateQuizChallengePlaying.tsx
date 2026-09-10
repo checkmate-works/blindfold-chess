@@ -95,7 +95,6 @@ export function CoordinateQuizChallengePlaying({
       <ScoreCounter correct={correctAnswers} incorrect={wrongAnswers} className="mt-4" />
 
       <ChallengeQuitControl
-        className="mt-6 text-center"
         onQuitRequest={onQuitRequest}
         showQuitModal={showQuitModal}
         onQuitConfirm={onQuitConfirm}

@@ -93,7 +93,7 @@ export function DiagonalQuizPlaying({
         countdown={countdown}
         isPaused={isPaused}
         onTogglePause={onTogglePause}
-        className="py-2 text-center"
+        className="pt-2 text-center"
       >
         <SectionTitle className="mb-4">{t('question', { square: currentSquare })}</SectionTitle>
 
@@ -141,7 +141,6 @@ export function DiagonalQuizPlaying({
           there is no run to abandon, so none of the handlers are passed. */}
       {onQuitRequest && onQuitConfirm && onQuitCancel && (
         <ChallengeQuitControl
-          className="mt-6 text-center"
           onQuitRequest={onQuitRequest}
           showQuitModal={showQuitModal ?? false}
           onQuitConfirm={onQuitConfirm}

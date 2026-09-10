@@ -74,7 +74,7 @@ export function QuadrantsPlaying({
         countdown={countdown}
         isPaused={isPaused}
         onTogglePause={onTogglePause}
-        className="p-6 text-center space-y-4"
+        className="px-6 pt-6 text-center space-y-4"
       >
         <div>
           <ChallengeStatusHeader
@@ -132,7 +132,6 @@ export function QuadrantsPlaying({
       </ChallengeSessionVeil>
 
       <ChallengeQuitControl
-        className="mt-6 text-center"
         onQuitRequest={onQuitRequest}
         showQuitModal={showQuitModal}
         onQuitConfirm={onQuitConfirm}

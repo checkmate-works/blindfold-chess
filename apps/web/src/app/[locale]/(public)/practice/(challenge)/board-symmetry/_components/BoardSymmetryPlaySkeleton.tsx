@@ -31,33 +31,34 @@ type Props = {
 export function BoardSymmetryPlaySkeleton({ showHeader = false }: Props) {
   return (
     <div className="max-w-md mx-auto">
-      <div className="p-8 text-center overflow-hidden">
-        {/* Question heading */}
-        <Skeleton className="mx-auto mb-8 h-8 w-3/4 rounded-md" disableAnimation />
+      <div className="pt-2">
+        <div className="p-8 text-center overflow-hidden">
+          {/* Question heading */}
+          <Skeleton className="mx-auto mb-8 h-8 w-3/4 rounded-md" disableAnimation />
 
-        {/* Lives (left) + pause/timer (right) header — challenge only */}
-        {showHeader && <PlayHeaderSkeleton className="mb-6 flex justify-between items-center" />}
+          {/* Lives (left) + pause/timer (right) header — challenge only */}
+          {showHeader && <PlayHeaderSkeleton className="mb-6 flex justify-between items-center" />}
 
-        {/* `square → ?` transform display */}
-        <div className="mb-8">
-          <Skeleton className="mx-auto mb-4 h-[60px] w-48 rounded-md" />
-        </div>
-
-        {/* File/rank coordinate keypad + keyboard hint */}
-        <div className="space-y-4 -mx-8 sm:mx-0">
-          <div className="flex flex-col gap-2 max-w-md mx-auto">
-            <Skeleton className="h-9 w-full rounded-md" />
-            <Skeleton className="h-9 w-full rounded-md" />
+          {/* `square → ?` transform display */}
+          <div className="mb-8">
+            <Skeleton className="mx-auto mb-4 h-[60px] w-48 rounded-md" />
           </div>
-          <Skeleton className="mx-auto h-4 w-40 rounded-md" disableAnimation />
+
+          {/* File/rank coordinate keypad + keyboard hint */}
+          <div className="space-y-4 -mx-8 sm:mx-0">
+            <div className="flex flex-col gap-2 max-w-md mx-auto">
+              <Skeleton className="h-9 w-full rounded-md" />
+              <Skeleton className="h-9 w-full rounded-md" />
+            </div>
+            <Skeleton className="mx-auto h-4 w-40 rounded-md" disableAnimation />
+          </div>
         </div>
+        {/* Score counter */}
+        <PlayScoreCounterSkeleton className="mt-8 flex justify-center items-center gap-12" />
       </div>
 
-      {/* Score counter */}
-      <PlayScoreCounterSkeleton className="mt-4 flex justify-center items-center gap-12" />
-
       {/* Quit / end-training link */}
-      <PlayQuitLinkSkeleton className="mt-4 flex justify-center" />
+      <PlayQuitLinkSkeleton />
     </div>
   );
 }

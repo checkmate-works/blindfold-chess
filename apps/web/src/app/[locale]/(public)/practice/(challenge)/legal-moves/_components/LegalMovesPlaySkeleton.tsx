@@ -30,7 +30,7 @@ type Props = {
 export function LegalMovesPlaySkeleton({ showHeader = false }: Props) {
   return (
     <div>
-      <div className="relative p-8 text-center overflow-hidden">
+      <div className="relative px-8 pt-8 text-center overflow-hidden">
         {/* Lives (left) + pause/timer (right) header — challenge only */}
         {showHeader && <PlayHeaderSkeleton className="mb-8 flex items-center justify-between" />}
 
@@ -45,13 +45,12 @@ export function LegalMovesPlaySkeleton({ showHeader = false }: Props) {
           <Skeleton className="h-[60px] rounded-md" />
           <Skeleton className="h-[60px] rounded-md" />
         </div>
+        {/* Score counter */}
+        <PlayScoreCounterSkeleton className="mt-8 flex justify-center items-center gap-12" />
       </div>
 
-      {/* Score counter */}
-      <PlayScoreCounterSkeleton className="mt-8 flex justify-center items-center gap-12" />
-
       {/* Quit / end-training link */}
-      <PlayQuitLinkSkeleton className="mt-6 flex justify-center" />
+      <PlayQuitLinkSkeleton />
     </div>
   );
 }
