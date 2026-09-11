@@ -146,7 +146,7 @@ export function SinglePositionResult({
               originalPosition={resultItem}
               recreatedPosition={resultItem.recreatedFen || EMPTY_BOARD_FEN}
               boardTheme={preferences.boardTheme}
-              showCoordinates={false}
+              showCoordinates={preferences.showCoordinates}
             />
           )}
 
