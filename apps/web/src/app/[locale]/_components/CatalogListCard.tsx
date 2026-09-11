@@ -55,7 +55,7 @@ type Props = {
    * destination page's actual comments anchor when it supports one — e.g.
    * `${detailHref}#comments` for puzzle/position-memory detail pages,
    * `${detailHref}#game-overview` for shared-game pages, or
-   * `${detailHref}?tab=comments#chunk-tabs` for chunk pages — so tapping the
+   * `buildChunkCommentsTabHref(slug)` for chunk pages — so tapping the
    * comment icon lands scrolled to that section instead of the page top.
    * The hash/target is caller-specific because `CatalogListCard` is reused
    * across several entity families with different destination layouts.

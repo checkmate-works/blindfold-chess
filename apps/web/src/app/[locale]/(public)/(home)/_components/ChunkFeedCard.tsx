@@ -9,6 +9,7 @@ import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
 import { resolveAuthorName } from '@/lib/users/display-name';
 
 import { toggleLike } from '@/app/[locale]/(public)/chunks/_actions/toggleLike';
+import { buildChunkCommentsTabHref } from '@/app/[locale]/(public)/chunks/_lib/chunk-paths';
 import { PostFooter } from '@/app/[locale]/(public)/topics/_components/PostFooter';
 import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';
 import { ActivityCard } from '@/app/[locale]/_components/ActivityCard';
@@ -78,10 +79,10 @@ export const ChunkFeedCard = memo(function ChunkFeedCard({
           replyMeta={data.replyMeta}
           toggleLikeAction={toggleLike}
           i18nNamespace="topics.chunks"
-          // Comment icon opens the Comments tab and scrolls to the tab bar
-          // (`id="chunk-tabs"`); the rest of the card keeps linking to the
-          // plain detail page (default tab).
-          postHref={`${href}?tab=comments#chunk-tabs`}
+          // Comment icon opens the Comments tab scrolled to the tab bar; the
+          // rest of the card keeps linking to the plain detail page (default
+          // tab).
+          postHref={buildChunkCommentsTabHref(data.slug)}
           actionSize={actionSize}
         />
       }
