@@ -46,7 +46,7 @@ import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/ser
 import { FeedSkeleton } from '@/app/[locale]/(public)/(home)/_components/FeedSkeleton';
 import { HelpTourButton, PageLayout } from '@/app/[locale]/_components';
 import type { HelpStep } from '@/app/[locale]/_components';
-import { resolveTitle } from '@/app/[locale]/_lib/metadata';
+import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { ProfileBlockedNotice } from './_components/ProfileBlockedNotice';
@@ -80,14 +80,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const t = await getTranslations({ locale, namespace: 'publicProfile' });
+  const displayName = profile.displayName || username;
+  const title = t('title', { displayName });
+  const description = profile.bio || t('defaultDescription', { displayName });
 
   return {
-    title: resolveTitle(t('title', { displayName: profile.displayName || username }), locale),
-    description:
-      profile.bio || t('defaultDescription', { displayName: profile.displayName || username }),
-    alternates: {
-      canonical: `/${locale}/u/${username}`,
-    },
+    ...generateCanonicalMetadata({ locale, path: `/u/${username}`, title, description }),
+    title: resolveTitle(title, locale),
+    description,
   };
 }
 

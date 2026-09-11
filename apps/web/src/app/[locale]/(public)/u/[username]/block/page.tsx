@@ -6,7 +6,7 @@ import { getOptionalUser } from '@/lib/auth';
 import { hasBlocked } from '@/lib/moderation/block';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
-import { resolveTitle } from '@/app/[locale]/_lib/metadata';
+import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { getProfileByUsername } from '../_lib/queries';
@@ -30,13 +30,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const t = await getTranslations({ locale, namespace: 'publicProfile' });
   const displayName = profile.displayName || username;
+  const title = t('blockPageTitle', { displayName });
 
   return {
-    title: resolveTitle(t('blockPageTitle', { displayName }), locale),
+    ...generateCanonicalMetadata({ locale, path: `/u/${username}/block`, title }),
+    title: resolveTitle(title, locale),
     robots: { index: false, follow: false },
-    alternates: {
-      canonical: `/${locale}/u/${username}/block`,
-    },
   };
 }
 
