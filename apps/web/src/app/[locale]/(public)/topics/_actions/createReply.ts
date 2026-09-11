@@ -10,7 +10,7 @@ import type { DbTx } from '@/lib/db/types';
 import { assertNotBlocked } from '@/lib/moderation/block';
 import { createNotification } from '@/lib/notifications/notification';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
-import { MAX_CONTENT_LENGTH } from '@/lib/validations/content';
+import { validateContent } from '@/lib/validations/content';
 import { UUID_RE, validateUUID } from '@/lib/validations/uuid';
 
 import type { TopicType } from '../_lib/constants';
@@ -116,15 +116,11 @@ async function insertReply(
     return permissionError;
   }
 
-  const content = formData.get('content');
-
-  if (!content || typeof content !== 'string' || content.trim().length === 0) {
-    return { error: 'contentRequired' };
+  const contentResult = validateContent(formData);
+  if ('error' in contentResult) {
+    return { error: contentResult.error };
   }
-
-  if (content.length > MAX_CONTENT_LENGTH) {
-    return { error: 'contentTooLong' };
-  }
+  const { content } = contentResult;
 
   const inserted = await db.transaction(async (tx) => {
     const [reply] = await tx
@@ -135,7 +131,7 @@ async function insertReply(
         topicKey,
         parentId,
         rootPostId,
-        content: content.trim(),
+        content,
         ...(isSpoiler !== undefined ? { isSpoiler } : {}),
       })
       .returning({ id: topicPosts.id });

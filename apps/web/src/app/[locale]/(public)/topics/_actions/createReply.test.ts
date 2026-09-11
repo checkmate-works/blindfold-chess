@@ -262,6 +262,16 @@ describe('createReplyBase', () => {
       ).rejects.toThrow('NEXT_REDIRECT');
       expect(mockInsertValues).toHaveBeenCalled();
     });
+
+    // The stored value is trimmed, so the limit is measured after trimming:
+    // 1998 characters plus five trailing spaces is 2003 as typed but fits.
+    it('should accept 1998 characters followed by five spaces', async () => {
+      const body = 'a'.repeat(1998);
+      await expect(
+        createReplyBase({ ...baseParams, formData: makeFormData(`${body}     `) })
+      ).rejects.toThrow('NEXT_REDIRECT');
+      expect(mockInsertValues).toHaveBeenCalledWith(expect.objectContaining({ content: body }));
+    });
   });
 
   describe('successful reply creation', () => {

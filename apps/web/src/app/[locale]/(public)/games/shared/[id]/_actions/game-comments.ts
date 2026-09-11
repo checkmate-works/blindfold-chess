@@ -17,9 +17,8 @@ import { assertNotBlocked } from '@/lib/moderation/block';
 import { createNotification } from '@/lib/notifications/notification';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { handleServerActionError } from '@/lib/server-action-error';
+import { validateContentValue } from '@/lib/validations/content';
 import { UUID_RE } from '@/lib/validations/uuid';
-
-import { MAX_GAME_COMMENT_LENGTH } from '../_lib/comment-constants';
 
 export type AddGameCommentInput = {
   gameId: string;
@@ -39,10 +38,15 @@ export type EditGameCommentResponse =
 
 export type DeleteGameCommentResponse = { success: true } | { success: false; error: string };
 
+/**
+ * Same body rule as topic posts (required, at most `MAX_CONTENT_LENGTH` once
+ * trimmed). This surface folds both failure reasons into a single
+ * `invalid_body` code: the form enforces the limit client-side, so the
+ * distinction never reaches a user.
+ */
 function normalizeBody(body: unknown): string | null {
-  const trimmed = typeof body === 'string' ? body.trim() : '';
-  if (trimmed.length === 0 || trimmed.length > MAX_GAME_COMMENT_LENGTH) return null;
-  return trimmed;
+  const result = validateContentValue(body);
+  return 'error' in result ? null : result.content;
 }
 
 /**
