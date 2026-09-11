@@ -14,6 +14,8 @@ import { LocalStorageGameRepository } from '@/lib/games/local-storage-repository
 import { PageTitle } from '@/app/[locale]/_components/PageTitle';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { labelMoveAt, labelMoveList } from '../_lib/error-move-labels';
+
 type Props = {
   locale: Locale;
 };
@@ -46,6 +48,8 @@ export function PlayErrorClient({ locale }: Props) {
   } catch {
     // Invalid JSON in URL, use empty array
   }
+
+  const labeledValidMoves = labelMoveList(validMoves, startingFen);
 
   const handleRecover = async () => {
     setIsProcessing(true);
@@ -138,7 +142,7 @@ export function PlayErrorClient({ locale }: Props) {
                   {t('invalidMove')}:
                 </span>
                 <div className="font-mono text-lg text-destructive mt-1">
-                  {invalidIndex + 1}. {invalidMove}
+                  {labelMoveAt(invalidIndex, startingFen)} {invalidMove}
                 </div>
               </div>
 
@@ -149,9 +153,9 @@ export function PlayErrorClient({ locale }: Props) {
                 <div className="font-mono text-sm mt-1">
                   {validMoves.length > 0 ? (
                     <div className="space-x-2">
-                      {validMoves.map((move: string, idx: number) => (
+                      {labeledValidMoves.map(({ move, label }, idx) => (
                         <span key={idx} className="text-foreground/80">
-                          {idx % 2 === 0 && `${Math.floor(idx / 2) + 1}.`} {move}
+                          {label} {move}
                         </span>
                       ))}
                     </div>
