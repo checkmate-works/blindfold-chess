@@ -4,6 +4,7 @@ import { getChunkBySlug } from '@/lib/chunks/queries';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { validateContent } from '@/lib/validations/content';
 
+import { buildChunkCommentHref } from '@/app/[locale]/(public)/chunks/_lib/chunk-paths';
 import type { CreatePostState } from '@/app/[locale]/(public)/topics/_actions/createPost';
 import { createPostBase } from '@/app/[locale]/(public)/topics/_actions/createPost';
 
@@ -33,7 +34,8 @@ export async function createChunkPost(
     validateContent,
     emitFeedItem: false,
     topicAuthorId: chunk?.userId,
-    redirectPath: (postId) => `/${locale}/chunks/${slug}?toast=post_created#post-${postId}`,
+    redirectPath: (postId) =>
+      buildChunkCommentHref(slug, postId, { locale, toast: 'post_created' }),
     formData,
   });
 }

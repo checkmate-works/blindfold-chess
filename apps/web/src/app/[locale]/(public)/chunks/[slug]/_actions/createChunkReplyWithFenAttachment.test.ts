@@ -132,7 +132,7 @@ describe('createChunkReplyWithFenAttachment', () => {
     mockSelectProfile.mockResolvedValue([{ id: testUserId }]);
   });
 
-  it('happy path inserts the FEN row keyed on the new reply id and redirects to the list page anchor', async () => {
+  it('happy path inserts the FEN row keyed on the new reply id and redirects to the Comments tab anchor', async () => {
     setupHappyAuth();
     setupParentPost();
 
@@ -153,7 +153,7 @@ describe('createChunkReplyWithFenAttachment', () => {
       caption: 'starting position',
     });
     expect(vi.mocked(redirect)).toHaveBeenCalledWith(
-      `/en/chunks/${testSlug}?toast=post_created#post-${generatedReplyId}`
+      `/en/chunks/${testSlug}?tab=comments&toast=post_created#post-${generatedReplyId}`
     );
   });
 

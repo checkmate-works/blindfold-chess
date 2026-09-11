@@ -146,13 +146,16 @@ describe('createChunkReply', () => {
     );
   });
 
-  it('redirects to /{locale}/chunks/{slug}#post-{replyId}', async () => {
+  // The comment tree only mounts under ?tab=comments: without the param a
+  // chunk with linked positions opens on Positions and the reply's anchor has
+  // no target.
+  it('redirects to the Comments tab anchored at the new reply', async () => {
     await expect(
       createChunkReply('ja', testSlug, validPostId, {}, makeFormData('hi'))
     ).rejects.toThrow('NEXT_REDIRECT');
 
     expect(vi.mocked(redirect)).toHaveBeenCalledWith(
-      `/ja/chunks/${testSlug}?toast=post_created#post-${generatedReplyId}`
+      `/ja/chunks/${testSlug}?tab=comments&toast=post_created#post-${generatedReplyId}`
     );
   });
 
