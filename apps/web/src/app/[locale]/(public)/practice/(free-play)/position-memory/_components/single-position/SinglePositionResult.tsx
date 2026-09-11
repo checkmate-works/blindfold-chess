@@ -5,7 +5,7 @@ import { type ReactNode, useMemo } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 
-import { BoardFrame, Button } from '@/app/_components';
+import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { fenToLichessUrl } from '@blindfold-chess/features/chess-core/fen';
 import type { ExpInfo } from '@blindfold-chess/features/exp';
@@ -15,9 +15,8 @@ import { sanitizeNext } from '@/lib/safe-next';
 import { buildProfileHref } from '@/lib/users/author-profile';
 
 import { toggleLike } from '@/app/[locale]/(public)/practice/(free-play)/_actions/toggleLike';
-import { ChessBoardWithOverlay } from '@/app/[locale]/(public)/practice/(free-play)/_components/ChessBoardWithOverlay';
+import { RecreationComparison } from '@/app/[locale]/(public)/practice/(free-play)/_components/RecreationComparison';
 import { ResultLikeCta } from '@/app/[locale]/(public)/practice/(free-play)/_components/ResultLikeCta';
-import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';
 import { ExpGainDisplay } from '@/app/[locale]/(public)/practice/_components/ExpGainDisplay';
 import { PieceRecreationProgress } from '@/app/[locale]/(public)/practice/_components/PieceRecreationProgress';
 import { SignUpBanner } from '@/app/[locale]/(public)/practice/_components/SignUpBanner';
@@ -27,9 +26,10 @@ import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCont
 import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { calculateSquareDifferences } from '../../_lib/preset-problems';
 import { parseResults, parseStats } from '../../_lib/result-serde';
 import type { PositionAccuracy } from '../../_lib/types';
+
+const EMPTY_BOARD_FEN = '8/8/8/8/8/8/8/8 w - - 0 1';
 
 type ProfileLike = {
   username?: string | null;
@@ -99,12 +99,6 @@ export function SinglePositionResult({
   }, [searchParams]);
   const stats = useMemo(() => parseStats(searchParams.get('stats')), [searchParams]);
 
-  const squareDifferences = useMemo(() => {
-    if (!resultItem) return [];
-    return calculateSquareDifferences(resultItem.fen, resultItem.recreatedFen);
-  }, [resultItem]);
-
-  const isBlackToMove = resultItem ? resultItem.isBlackToMove : false;
   const isSkipped = resultItem ? resultItem.skipped : false;
 
   const accuracy: PositionAccuracy | null = stats
@@ -142,34 +136,18 @@ export function SinglePositionResult({
             <PieceRecreationProgress accuracy={accuracy} namespace="practice.positionMemory" />
           )}
 
-          {/* Board comparison */}
+          {/* Board comparison. A skipped run serialises no recreation, and
+              an empty string parses to the same all-empty board as the empty
+              FEN, so the diff overlay marks every original piece as missing
+              either way. */}
           {resultItem && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground mb-2">{t('original')}</p>
-                <BoardFrame>
-                  <AnimatedChessBoard
-                    initialFen={resultItem.fen}
-                    showCoordinates={false}
-                    flipped={isBlackToMove}
-                    boardTheme={preferences.boardTheme}
-                  />
-                </BoardFrame>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground mb-2">
-                  {t('yourRecreation')}
-                </p>
-                <BoardFrame>
-                  <ChessBoardWithOverlay
-                    fen={resultItem.recreatedFen || '8/8/8/8/8/8/8/8 w - - 0 1'}
-                    flipped={isBlackToMove}
-                    squareDifferences={squareDifferences}
-                    boardTheme={preferences.boardTheme}
-                  />
-                </BoardFrame>
-              </div>
-            </div>
+            <RecreationComparison
+              namespace="practice.positionMemory"
+              originalPosition={resultItem}
+              recreatedPosition={resultItem.recreatedFen || EMPTY_BOARD_FEN}
+              boardTheme={preferences.boardTheme}
+              showCoordinates={preferences.showCoordinates}
+            />
           )}
 
           {/* EXP gained — placed after the board comparison (all result

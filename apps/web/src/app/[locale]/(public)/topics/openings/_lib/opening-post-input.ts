@@ -1,6 +1,6 @@
 import { topicPostRatings } from '@/lib/db';
 import type { DbTx } from '@/lib/db/types';
-import { MAX_CONTENT_LENGTH } from '@/lib/validations/content';
+import { validateContentValue } from '@/lib/validations/content';
 
 /**
  * Parse a 1-5 preference / proficiency rating from raw FormData input.
@@ -26,10 +26,18 @@ export function validateOpeningPostContent(
   formData: FormData,
   attachmentField: string
 ): { error: string } | { content: string } {
-  const content = formData.get('content');
   const attachmentRaw = formData.get(attachmentField);
 
-  const contentStr = typeof content === 'string' ? content.trim() : '';
+  // The shared rule reports an empty body as `contentRequired`, but here an
+  // empty body is fine when a rating or an attachment stands in for it — so
+  // only the length verdict is taken from it, and "something to post" is the
+  // combined check below.
+  const contentResult = validateContentValue(formData.get('content'));
+  if ('error' in contentResult && contentResult.error === 'contentTooLong') {
+    return { error: contentResult.error };
+  }
+  const contentStr = 'content' in contentResult ? contentResult.content : '';
+
   const preferenceRating = parseRating(formData.get('preferenceRating'));
   const proficiencyRating = parseRating(formData.get('proficiencyRating'));
   const hasAttachment = typeof attachmentRaw === 'string' && attachmentRaw.trim().length > 0;
@@ -39,10 +47,6 @@ export function validateOpeningPostContent(
 
   if (!hasContent && !hasRating && !hasAttachment) {
     return { error: 'contentOrRatingRequired' };
-  }
-
-  if (contentStr.length > MAX_CONTENT_LENGTH) {
-    return { error: 'contentTooLong' };
   }
 
   return { content: contentStr };
