@@ -2,6 +2,7 @@
 
 import { getChunkBySlug } from '@/lib/chunks/queries';
 
+import { buildChunkCommentHref } from '@/app/[locale]/(public)/chunks/_lib/chunk-paths';
 import type { CreateReplyState } from '@/app/[locale]/(public)/topics/_actions/createReply';
 import { createReplyWithFenAttachmentBase } from '@/app/[locale]/(public)/topics/_actions/createReplyWithFenAttachmentBase';
 
@@ -28,7 +29,7 @@ export async function createChunkReplyWithFenAttachment(
     urlSegment: 'chunks',
     validateTopic: async (s) => (await getChunkBySlug(s)) !== null,
     redirectPath: (_parentPostId, replyId) =>
-      `/${locale}/chunks/${slug}?toast=post_created#post-${replyId}`,
+      buildChunkCommentHref(slug, replyId, { locale, toast: 'post_created' }),
     formData,
   });
 }

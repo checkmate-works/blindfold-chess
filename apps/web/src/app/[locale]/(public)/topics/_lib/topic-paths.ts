@@ -1,6 +1,8 @@
 import { getPositionKindForTopicType, getPositionPostAnchorPath } from '@/lib/positions/kind';
 import { parseMoveTopicKey } from '@/lib/repertoires/move-topic-key';
 
+import { buildChunkCommentHref } from '@/app/[locale]/(public)/chunks/_lib/chunk-paths';
+
 import type { TopicType } from './constants';
 
 /**
@@ -46,8 +48,8 @@ export function buildTopicPostPath(
  *     page renders the same inline tree, so both a post and a reply are an
  *     anchor on it.
  *   - `chunk` — likewise on `/chunks/{slug}`, but the comment tree only
- *     mounts under `?tab=comments`; without the param the page opens on
- *     Positions and the anchor has no target, so the param is required.
+ *     mounts under the Comments tab, so the anchor rides on the tab link
+ *     ({@link buildChunkCommentHref}).
  *   - `repertoire` — the course detail page renders the tree inline.
  *   - `repertoire_move` — `topicKey` packs `${repertoireId}_${positionHash}`
  *     and the hash is not reversible to a line here, so this routes to the
@@ -80,7 +82,7 @@ export function buildTopicPostHref(
     return `/repertoires#post-${targetId}`;
   }
   if (topicType === 'chunk') {
-    return `/chunks/${topicKey}?tab=comments#post-${targetId}`;
+    return buildChunkCommentHref(topicKey, targetId);
   }
   const baseUrl = buildTopicPostPath(topicType, topicKey, postId);
   return replyId ? `${baseUrl}#post-${replyId}` : baseUrl;

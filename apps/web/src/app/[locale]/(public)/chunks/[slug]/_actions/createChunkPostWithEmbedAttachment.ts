@@ -22,6 +22,7 @@ import { parseChesscomEmboardUrl } from '@/lib/games/parse-embed-url';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/security/rate-limit';
 import { validateContent } from '@/lib/validations/content';
 
+import { buildChunkCommentHref } from '@/app/[locale]/(public)/chunks/_lib/chunk-paths';
 import type { CreatePostState } from '@/app/[locale]/(public)/topics/_actions/createPost';
 import { createPostBase } from '@/app/[locale]/(public)/topics/_actions/createPost';
 
@@ -155,7 +156,8 @@ export async function createChunkPostWithEmbedAttachment(
     validateContent,
     emitFeedItem: false,
     topicAuthorId: chunk?.userId,
-    redirectPath: (postId) => `/${locale}/chunks/${slug}?toast=post_created#post-${postId}`,
+    redirectPath: (postId) =>
+      buildChunkCommentHref(slug, postId, { locale, toast: 'post_created' }),
     afterInsert: async (tx, postId) => {
       // Defensive PGN/embed exclusivity check. The post is brand-new
       // (just inserted in this transaction) so this can only fire if a

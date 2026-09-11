@@ -176,10 +176,10 @@ describe('createChunkReplyWithAttachment', () => {
     // No attachment row, no per-attachment rate-limit hit.
     expect(mockTxAttachmentValues).not.toHaveBeenCalled();
     expect(vi.mocked(checkRateLimit)).toHaveBeenCalledTimes(1);
-    // The redirect carries the new reply id as the URL anchor (chunks
-    // list-page contract — the reply lands as a comment under the chunk).
+    // The redirect opens the chunk's Comments tab (the only tab that mounts
+    // the thread) anchored at the new reply.
     expect(vi.mocked(redirect)).toHaveBeenCalledWith(
-      `/en/chunks/${testSlug}?toast=post_created#post-${generatedReplyId}`
+      `/en/chunks/${testSlug}?tab=comments&toast=post_created#post-${generatedReplyId}`
     );
     expect(revalidatePath).not.toHaveBeenCalled();
   });

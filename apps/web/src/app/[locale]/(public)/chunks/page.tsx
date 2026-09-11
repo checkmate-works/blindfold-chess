@@ -39,6 +39,7 @@ import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { toggleLike } from './_actions/toggleLike';
+import { buildChunkCommentsTabHref } from './_lib/chunk-paths';
 
 type Props = {
   params: Promise<{ locale: Locale }>;
@@ -224,10 +225,10 @@ async function ChunksListContent({ params, searchParams }: Props) {
                 likeMeta={likeMetaMap.get(chunk.id) ?? EMPTY_LIKE_META}
                 replyMeta={replyMetaMap.get(chunk.slug) ?? EMPTY_REPLY_META}
                 detailHref={`/chunks/${chunk.slug}`}
-                // Chunk detail pages scroll to the tab bar via
-                // id="chunk-tabs" + a ?tab=comments query param, not a plain
-                // #comments id — see ChunkFeedCard's home-feed equivalent.
-                commentHref={`/chunks/${chunk.slug}?tab=comments#chunk-tabs`}
+                // The comment icon opens the Comments tab scrolled to the tab
+                // bar, not a plain #comments id — same as ChunkFeedCard's
+                // home-feed equivalent.
+                commentHref={buildChunkCommentsTabHref(chunk.slug)}
                 i18nNamespace="topics.chunks"
                 toggleLikeAction={toggleLike}
                 justNowLabel={justNowLabel}
