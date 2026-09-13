@@ -90,13 +90,22 @@ async function processAchievementDef(
 
   const { menuType, leaderboardKey, placement } = criteria;
 
-  // Query top N users for this menu_type + leaderboard_key in the previous month.
-  // Uses DISTINCT ON to get each user's best score, then ranks them.
-  // Ranking: Score DESC -> Incorrect ASC -> Time ASC
+  // Query the users at this placement for this menu_type + leaderboard_key in
+  // the previous month. Uses DISTINCT ON to get each user's best score, then
+  // ranks them. Ranking: Score DESC -> Incorrect ASC -> Time ASC
+  //
+  // `RANK()`, matching how the leaderboard itself ranks (see
+  // `@/lib/db/challenge-queries`): players who match on all three columns are
+  // shown as sharing a placement, so they must share the badge for it too.
+  // Under `ROW_NUMBER()` the two were ordered arbitrarily, which handed one of
+  // two players shown as joint 1st the gold badge and the other the silver
+  // one — and gave the player shown 3rd the badge for 2nd. A shared placement
+  // grants the badge to everyone holding it and leaves the placements it
+  // swallowed ungranted, exactly as the board reads.
   //
   // Users with `profiles.hidden_from_leaderboard` (checked at batch execution
   // time — the flag's current value is the policy) are excluded BEFORE
-  // ROW_NUMBER, not by skipping the grant afterwards: skipping after ranking
+  // ranking, not by skipping the grant afterwards: skipping after ranking
   // would let a hidden user absorb a placement, so the user shown at that
   // placement on the public leaderboard would get no badge.
   const rankedRows = await db.execute<RankedRow>(sql`
@@ -104,7 +113,7 @@ async function processAchievementDef(
     FROM (
       SELECT
         best.user_id, best.score, best.incorrect_answers, best.time_taken,
-        ROW_NUMBER() OVER (
+        RANK() OVER (
           ORDER BY best.score DESC, best.incorrect_answers ASC, best.time_taken ASC
         ) AS rank
       FROM (
@@ -126,10 +135,12 @@ async function processAchievementDef(
   let skipped = 0;
   const grantedBadges: ProcessedAchievement['granted'] = [];
 
-  // NOTE: The WHERE clause `rank = ${placement}` ensures each query returns
-  // at most 1 row, so the per-row idempotency check + INSERT below does not
-  // cause an N+1 problem. If the placement filter is ever relaxed to return
-  // multiple rows, consider switching to a bulk INSERT with ON CONFLICT.
+  // NOTE: The WHERE clause `rank = ${placement}` keeps this to the handful of
+  // users actually holding that placement — one, except in the rare month when
+  // players tie on score, incorrect answers AND time — so the per-row
+  // idempotency check + INSERT below does not cause an N+1 problem. If the
+  // placement filter is ever relaxed to return whole pages, consider switching
+  // to a bulk INSERT with ON CONFLICT.
   for (const row of rankedRows) {
     // Idempotency check: skip if badge already granted for this year/month.
     const existing = await db

@@ -67,12 +67,13 @@ export async function getPublicLeaderboard(
   const offset = (page - 1) * PAGE_SIZE;
 
   try {
+    // Rows arrive already ranked. Rank belongs to the query, not to this
+    // mapping: players who tie share a rank, and a row's position on the page
+    // cannot express that — numbering rows here as `offset + i + 1` would put
+    // the list one ahead of every other rank in the product (a user's own rank
+    // lookup, the number quoted in their feed item) from the first tie on.
     const { rows, total } = await getCachedRanking(module, key, period, offset, PAGE_SIZE);
-    const leaderboardRows: LeaderboardRow[] = rows.map((r, i) => ({
-      ...r,
-      rank: offset + i + 1,
-    }));
-    return { rows: leaderboardRows, totalCount: total };
+    return { rows, totalCount: total };
   } catch (error) {
     handleServerActionError(error, '[getPublicLeaderboard]');
     return EMPTY_RESULT;
