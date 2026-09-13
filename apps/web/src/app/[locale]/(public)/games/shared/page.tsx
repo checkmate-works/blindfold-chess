@@ -81,7 +81,10 @@ export default async function SharedGamesPage({ params, searchParams }: Props) {
     currentUser ? getMyPublishedGames(currentUser.id) : null,
   ]);
   const justNowLabel = t('detail.justNow');
-  const deletedUserLabel = tCommon('deletedUser');
+  const authorLabels = {
+    anonymous: tCommon('anonymousUser'),
+    deleted: tCommon('deletedUser'),
+  };
 
   return (
     <PageLayout title={t('list.title')} locale={locale}>
@@ -139,7 +142,7 @@ export default async function SharedGamesPage({ params, searchParams }: Props) {
               colorLabels={{ white: tPlay('playerColor.white'), black: tPlay('playerColor.black') }}
               resolveOpeningName={(slug, name) => getOpeningDisplayName(openingNameT, slug, name)}
               justNowLabel={justNowLabel}
-              deletedUserLabel={deletedUserLabel}
+              authorLabels={authorLabels}
               locale={locale}
             />
           ))}

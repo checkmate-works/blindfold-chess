@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { resolveAuthorName } from './display-name';
+import { resolveAuthorName, resolveNullableAuthorName } from './display-name';
 
 const DELETED = '(deleted user)';
+const ANONYMOUS = 'Anonymous';
+const LABELS = { anonymous: ANONYMOUS, deleted: DELETED };
 
 describe('resolveAuthorName', () => {
   it('prefers displayName over username', () => {
@@ -55,5 +57,40 @@ describe('resolveAuthorName', () => {
     expect(
       resolveAuthorName({ displayName: '   ', username: 'alice99' }, { fallback: DELETED })
     ).toBe('   ');
+  });
+});
+
+describe('resolveNullableAuthorName', () => {
+  it('names the author when the profile joined', () => {
+    expect(
+      resolveNullableAuthorName(
+        { authorId: 'u1', profile: { displayName: 'Alice', username: 'alice99' } },
+        LABELS
+      )
+    ).toBe('Alice');
+  });
+
+  // The bug this function exists for: a game published without signing in has
+  // no owner at all, and the gallery called every one of them "(deleted user)".
+  it('calls a game nobody owns anonymous, not deleted', () => {
+    expect(resolveNullableAuthorName({ authorId: null, profile: null }, LABELS)).toBe(ANONYMOUS);
+  });
+
+  // The other half of the same null: an owner exists, but their profile was
+  // soft-deleted, so the join dropped it.
+  it('calls an owned game with no profile deleted, not anonymous', () => {
+    expect(resolveNullableAuthorName({ authorId: 'u1', profile: null }, LABELS)).toBe(DELETED);
+  });
+
+  // A provisional account — signed in, no profile row yet — reaches the same
+  // state as a deleted one, which is why `publishGameAction` stores a null
+  // authorId for those authors rather than their user id.
+  it('falls back to deleted for a profile with neither name field', () => {
+    expect(
+      resolveNullableAuthorName(
+        { authorId: 'u1', profile: { displayName: '', username: '' } },
+        LABELS
+      )
+    ).toBe(DELETED);
   });
 });

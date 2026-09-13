@@ -18,7 +18,7 @@ import { GAME_LIKE_TARGET, getLikeMeta } from '@/lib/db/like-queries';
 import { hasPlayedGifVariant } from '@/lib/games/gif/preview-frames';
 import { gameUsedNotablePlaySettings } from '@/lib/games/play-settings-log';
 import { detectGameOpening } from '@/lib/openings/detect-game-opening';
-import { resolveAuthorName } from '@/lib/users/display-name';
+import { resolveNullableAuthorName } from '@/lib/users/display-name';
 import { UUID_RE } from '@/lib/validations/uuid';
 
 import { GameSocialFooter } from '@/app/[locale]/(public)/games/_components/GameSocialFooter';
@@ -67,9 +67,10 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
   if (!detail) notFound();
 
   const { game, author } = detail;
-  const authorDisplayName = author
-    ? resolveAuthorName(author, { fallback: tCommon('deletedUser') })
-    : t('detail.guest');
+  const authorDisplayName = resolveNullableAuthorName(
+    { authorId: game.authorId, profile: author },
+    { anonymous: tCommon('anonymousUser'), deleted: tCommon('deletedUser') }
+  );
   const isRegisteredOwner = game.authorId != null && user?.id === game.authorId;
 
   // Wave 2 — everything keyed on (game, viewer), all mutually independent:

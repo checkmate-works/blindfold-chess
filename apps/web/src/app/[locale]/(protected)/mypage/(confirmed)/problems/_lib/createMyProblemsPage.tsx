@@ -102,7 +102,7 @@ export function createMyProblemsPage(config: MyProblemsPageConfig) {
     ]);
 
     const justNowLabel = tFooter('justNow');
-    const deletedUserLabel = tCommon('deletedUser');
+    const authorFallbackLabel = tCommon('deletedUser');
 
     const buildHref = buildPageHref(`/${locale}/mypage/problems/${pathSegment}`);
 
@@ -134,7 +134,7 @@ export function createMyProblemsPage(config: MyProblemsPageConfig) {
                   i18nNamespace={footerNamespace}
                   toggleLikeAction={toggleLike}
                   justNowLabel={justNowLabel}
-                  deletedUserLabel={deletedUserLabel}
+                  authorFallbackLabel={authorFallbackLabel}
                   locale={locale}
                   actions={
                     <Link

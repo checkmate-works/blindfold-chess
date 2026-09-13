@@ -22,7 +22,7 @@ type Props = {
   locale: Locale;
   buildHref: (page: number) => string;
   justNowLabel: string;
-  deletedUserLabel: string;
+  authorFallbackLabel: string;
   labels: {
     noProblems: string;
   };
@@ -50,7 +50,7 @@ export function ProblemPositionList({
   locale,
   buildHref,
   justNowLabel,
-  deletedUserLabel,
+  authorFallbackLabel,
   labels,
 }: Props) {
   return (
@@ -68,7 +68,7 @@ export function ProblemPositionList({
               i18nNamespace={type === 'puzzle' ? 'practice.puzzle' : 'practice.positionMemory'}
               toggleLikeAction={toggleLike}
               justNowLabel={justNowLabel}
-              deletedUserLabel={deletedUserLabel}
+              authorFallbackLabel={authorFallbackLabel}
               locale={locale}
             />
           ))

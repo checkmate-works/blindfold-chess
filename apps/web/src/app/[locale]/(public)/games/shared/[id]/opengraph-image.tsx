@@ -8,7 +8,7 @@ import { getGameById } from '@/lib/db/games-read';
 import { playSettingsToThumbnailDisplay } from '@/lib/games/play-settings-thumbnail';
 import { resolveLosingColor, resolveTerminationMark } from '@/lib/games/termination-mark';
 import { loadOgFonts } from '@/lib/og/load-og-fonts';
-import { resolveAuthorName } from '@/lib/users/display-name';
+import { resolveNullableAuthorName } from '@/lib/users/display-name';
 import { UUID_RE } from '@/lib/validations/uuid';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -61,12 +61,16 @@ export default async function Image({ params }: Props) {
   });
   const boardDataUri = `data:image/svg+xml;base64,${Buffer.from(boardSvg).toString('base64')}`;
 
-  const [t, summary] = await Promise.all([
+  const [t, tCommon, summary] = await Promise.all([
     getTranslations({ locale, namespace: 'sharedGames' }),
+    getTranslations({ locale, namespace: 'Common' }),
     buildGameOgDescription({ locale, game }),
   ]);
 
-  const authorName = resolveAuthorName(author, { fallback: t('detail.guest') });
+  const authorName = resolveNullableAuthorName(
+    { authorId: game.authorId, profile: author },
+    { anonymous: tCommon('anonymousUser'), deleted: tCommon('deletedUser') }
+  );
   const blindfoldDisplay = playSettingsToThumbnailDisplay(game.playSettings, game.playerColor);
   const siteName = (await getTranslations({ locale, namespace: 'metadata' }))('siteName');
 

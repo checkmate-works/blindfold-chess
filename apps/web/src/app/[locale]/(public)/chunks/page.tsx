@@ -122,7 +122,7 @@ async function ChunksListContent({ params, searchParams }: Props) {
   ]);
 
   const justNowLabel = tTopicChunks('justNow');
-  const deletedUserLabel = tCommon('deletedUser');
+  const authorFallbackLabel = tCommon('deletedUser');
 
   const filterChipClass = (active: boolean) =>
     `inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
@@ -232,7 +232,7 @@ async function ChunksListContent({ params, searchParams }: Props) {
                 i18nNamespace="topics.chunks"
                 toggleLikeAction={toggleLike}
                 justNowLabel={justNowLabel}
-                deletedUserLabel={deletedUserLabel}
+                authorFallbackLabel={authorFallbackLabel}
                 locale={locale}
                 topicKey={chunk.id}
                 badge={

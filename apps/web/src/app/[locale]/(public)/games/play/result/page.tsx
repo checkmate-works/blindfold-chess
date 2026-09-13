@@ -49,17 +49,15 @@ export default async function ResultPage({ params, searchParams }: Props) {
   // The result game lives only in the browser's localStorage, so the opening
   // is detected client-side; ship the (cached, ~100-row) opening master for
   // it. It is viewer-independent, so it loads alongside the session lookup.
-  const [tMetadata, tPlay, tGames, tShared, tCommon, supabase, sp, openingEntries] =
-    await Promise.all([
-      getTranslations({ locale, namespace: 'metadata' }),
-      getTranslations({ locale, namespace: 'play' }),
-      getTranslations({ locale, namespace: 'gamesPage' }),
-      getTranslations({ locale, namespace: 'sharedGames' }),
-      getTranslations({ locale, namespace: 'Common' }),
-      createClient(),
-      searchParams,
-      getOpeningEntries(),
-    ]);
+  const [tMetadata, tPlay, tGames, tCommon, supabase, sp, openingEntries] = await Promise.all([
+    getTranslations({ locale, namespace: 'metadata' }),
+    getTranslations({ locale, namespace: 'play' }),
+    getTranslations({ locale, namespace: 'gamesPage' }),
+    getTranslations({ locale, namespace: 'Common' }),
+    createClient(),
+    searchParams,
+    getOpeningEntries(),
+  ]);
 
   const {
     data: { user },
@@ -77,8 +75,8 @@ export default async function ResultPage({ params, searchParams }: Props) {
   //
   // `playerProfile`: the player of a local game is whoever is looking at it.
   // Resolved here so the "Played by" header matches the shared game's, which
-  // reads the author row from the DB; signed-out players get the same guest
-  // fallback.
+  // reads the author row from the DB; a signed-out player gets the same
+  // anonymous label a game published without an account carries.
   const [initialExp, playerProfile] = await Promise.all([
     user && gameId ? getExpInfoBySource(user.id, AI_GAME_RESULT_SOURCE, gameId) : null,
     user ? getCommentUserProfile(user.id) : null,
@@ -87,7 +85,7 @@ export default async function ResultPage({ params, searchParams }: Props) {
     profile: playerProfile,
     displayName: playerProfile
       ? resolveAuthorName(playerProfile, { fallback: tCommon('deletedUser') })
-      : tShared('detail.guest'),
+      : tCommon('anonymousUser'),
   };
 
   // The middle "Game" step links back to the finished-game view; that URL needs

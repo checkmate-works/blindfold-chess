@@ -1,6 +1,7 @@
 {
   "Common": {
     "deletedUser": "(deleted user)",
+    "anonymousUser": "Anonymous",
     "lastUpdated": "Last Updated: {date}",
     "pagination": {
       "navLabel": "Pagination",
@@ -2595,7 +2596,6 @@
       "by": "Posted by {name}",
       "playedBy": "Played by",
       "moreActions": "More actions",
-      "guest": "Guest",
       "cleanRate": "Clean",
       "like": "Like",
       "unlike": "Unlike",
