@@ -251,7 +251,7 @@ export function createPositionForksPage(route: PositionRouteKind) {
       });
 
     const justNowLabel = t('justNow');
-    const deletedUserLabel = tCommon('deletedUser');
+    const authorFallbackLabel = tCommon('deletedUser');
     const buildHref = buildPageHref(`/${locale}/practice/${slug}/${id}/forks`);
 
     return (
@@ -283,7 +283,7 @@ export function createPositionForksPage(route: PositionRouteKind) {
                   i18nNamespace={namespace}
                   toggleLikeAction={toggleLike}
                   justNowLabel={justNowLabel}
-                  deletedUserLabel={deletedUserLabel}
+                  authorFallbackLabel={authorFallbackLabel}
                   locale={locale}
                 />
               );

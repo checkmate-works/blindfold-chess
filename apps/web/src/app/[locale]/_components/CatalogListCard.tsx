@@ -71,15 +71,21 @@ type Props = {
   /** Resolved `t('justNow')` from `i18nNamespace`. */
   justNowLabel: string;
   /**
-   * Resolved `Common.deletedUser`, shown when `profile` has neither a display
-   * name nor a username. Supplied by the caller rather than read here because
-   * this card renders from both Server and Client Components, which reach
-   * next-intl through different APIs — the same reason `justNowLabel` is a
-   * prop. Passing it also keeps the card's fallback identical to the one the
-   * matching detail page shows, which is what drifted: the card said
-   * "Anonymous" where the detail page said "(deleted user)".
+   * The word that fills the name slot when `profile` is null — for most
+   * catalogs `Common.deletedUser`, since nothing but a game can be published
+   * without an account. A games list resolves it per row instead: a game
+   * nobody signed in to publish is anonymous, not abandoned, and calling it
+   * "(deleted user)" is what the whole `/games/shared` gallery used to say.
+   * See `resolveNullableAuthorName`.
+   *
+   * Supplied by the caller rather than read here because this card renders
+   * from both Server and Client Components, which reach next-intl through
+   * different APIs — the same reason `justNowLabel` is a prop. Passing it also
+   * keeps the card's fallback identical to the one the matching detail page
+   * shows, which is what drifted: the card said "Anonymous" where the detail
+   * page said "(deleted user)".
    */
-  deletedUserLabel: string;
+  authorFallbackLabel: string;
   locale: string;
   /**
    * The opaque key forwarded as the 3rd positional arg to
@@ -138,14 +144,14 @@ export function CatalogListCard({
   i18nNamespace,
   toggleLikeAction,
   justNowLabel,
-  deletedUserLabel,
+  authorFallbackLabel,
   locale,
   topicKey,
   badge,
   meta,
   actions,
 }: Props) {
-  const displayName = resolveAuthorName(profile, { fallback: deletedUserLabel });
+  const displayName = resolveAuthorName(profile, { fallback: authorFallbackLabel });
   const descriptionExcerpt = truncate(description);
 
   return (

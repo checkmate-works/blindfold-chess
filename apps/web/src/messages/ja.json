@@ -1,6 +1,7 @@
 {
   "Common": {
     "deletedUser": "(退会したユーザー)",
+    "anonymousUser": "匿名ユーザー",
     "lastUpdated": "最終更新日: {date}",
     "pagination": {
       "navLabel": "ページ送り",
@@ -2595,7 +2596,6 @@
       "by": "{name} さんの対局",
       "playedBy": "対局者",
       "moreActions": "その他の操作",
-      "guest": "ゲスト",
       "cleanRate": "クリーン率",
       "like": "いいね",
       "unlike": "いいねを取り消す",

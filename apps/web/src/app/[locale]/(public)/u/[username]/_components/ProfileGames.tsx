@@ -18,7 +18,7 @@ type Props = {
   locale: Locale;
   buildHref: (page: number) => string;
   justNowLabel: string;
-  deletedUserLabel: string;
+  authorLabels: { anonymous: string; deleted: string };
   colorLabels: {
     white: string;
     black: string;
@@ -48,7 +48,7 @@ export function ProfileGames({
   locale,
   buildHref,
   justNowLabel,
-  deletedUserLabel,
+  authorLabels,
   colorLabels,
   resolveOpeningName,
   labels,
@@ -68,7 +68,7 @@ export function ProfileGames({
               colorLabels={colorLabels}
               resolveOpeningName={resolveOpeningName}
               justNowLabel={justNowLabel}
-              deletedUserLabel={deletedUserLabel}
+              authorLabels={authorLabels}
               locale={locale}
             />
           ))

@@ -109,7 +109,7 @@ export async function ProblemsTypePage({
         locale={locale}
         buildHref={buildHref}
         justNowLabel={tType('justNow')}
-        deletedUserLabel={tCommon('deletedUser')}
+        authorFallbackLabel={tCommon('deletedUser')}
         labels={{ noProblems: t('noProblems') }}
       />
     </ProfileShell>

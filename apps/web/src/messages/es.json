@@ -1,6 +1,7 @@
 {
   "Common": {
     "deletedUser": "(usuario eliminado)",
+    "anonymousUser": "Anónimo",
     "lastUpdated": "Última actualización: {date}",
     "pagination": {
       "navLabel": "Paginación",
@@ -2595,7 +2596,6 @@
       "by": "Publicado por {name}",
       "playedBy": "Jugado por",
       "moreActions": "Más acciones",
-      "guest": "Invitado",
       "cleanRate": "Limpias",
       "like": "Me gusta",
       "unlike": "Quitar me gusta",
