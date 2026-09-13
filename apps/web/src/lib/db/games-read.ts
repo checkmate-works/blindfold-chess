@@ -25,7 +25,11 @@ import { gameChunks, games, profiles } from './schema';
 
 export type SharedGameDetail = {
   game: GameRecord;
-  /** Author profile, or null for account-less / hard-deleted authors. */
+  /**
+   * Author profile, or null both for an account-less game and for one whose
+   * author has since deleted their account. `game.authorId` separates the two
+   * — see {@link resolveNullableAuthorName}, which is what renders them.
+   */
   author: AuthorProfile | null;
 };
 
@@ -52,7 +56,8 @@ export const getGameById = cache(async (id: string): Promise<SharedGameDetail | 
   if (!row) return null;
 
   // username is NOT NULL on profiles, so its presence means the join matched a
-  // real author; null means an account-less (anonymous) game.
+  // live author. Null means there is nobody to attribute — either an
+  // account-less game or a deleted account, which `game.authorId` tells apart.
   const author: AuthorProfile | null = row.authorUsername
     ? {
         username: row.authorUsername,
@@ -89,6 +94,13 @@ export type SharedGameListItem = {
   thumbnailDisplay: BlindfoldDisplaySettings | null;
   moveCount: number;
   cleanRate: number | null;
+  /**
+   * Owner of the game, or null when nobody signed in to publish it. Carried
+   * alongside `author` because the two nulls do not mean the same thing: a
+   * null `author` with an `authorId` is a deleted account, and the card owes
+   * those two cases different words. See {@link resolveNullableAuthorName}.
+   */
+  authorId: string | null;
   /** Author profile for the card avatar; null for an account-less author. */
   author: AuthorProfile | null;
   /**
@@ -125,6 +137,7 @@ function gameListQuery() {
       moveCount: games.moveCount,
       cleanRate: games.cleanRate,
       moves: games.moves,
+      authorId: games.authorId,
       authorUsername: profiles.username,
       authorDisplayName: profiles.displayName,
       authorAvatarUrl: profiles.avatarUrl,
@@ -156,6 +169,7 @@ function mapGameRowsToListItems(rows: GameListRow[]): Promise<SharedGameListItem
       thumbnailDisplay: playSettingsToThumbnailDisplay(r.playSettings, r.playerColor),
       moveCount: r.moveCount,
       cleanRate: r.cleanRate,
+      authorId: r.authorId,
       author: r.authorUsername
         ? {
             username: r.authorUsername,
