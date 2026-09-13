@@ -251,32 +251,46 @@ describe('getLeaderboard', () => {
   // -----------------------------------------------------------------------
 
   describe('rank assignment', () => {
-    it('assigns rank starting from 1 for page 1', async () => {
+    it('serves the rank the ranking query computed', async () => {
       const rows = [
-        makeLeaderboardRow({ userId: 'u1', score: 100 }),
-        makeLeaderboardRow({ userId: 'u2', score: 90 }),
-        makeLeaderboardRow({ userId: 'u3', score: 80 }),
+        makeLeaderboardRow({ userId: 'u1', score: 100, rank: 1 }),
+        makeLeaderboardRow({ userId: 'u2', score: 90, rank: 2 }),
+        makeLeaderboardRow({ userId: 'u3', score: 80, rank: 3 }),
       ];
       mockGetAllTimeRanking.mockResolvedValue(makeLeaderboardPage(rows, 3));
 
       const result = await getLeaderboard('coordinate_quiz', 'white', 'all-time', 1);
 
-      expect(result.rows[0]!.rank).toBe(1);
-      expect(result.rows[1]!.rank).toBe(2);
-      expect(result.rows[2]!.rank).toBe(3);
+      expect(result.rows.map((r) => r.rank)).toEqual([1, 2, 3]);
     });
 
-    it('assigns rank starting from 21 for page 2', async () => {
+    it('keeps the ranks of a later page as the query numbered them', async () => {
       const rows = [
-        makeLeaderboardRow({ userId: 'u21', score: 50 }),
-        makeLeaderboardRow({ userId: 'u22', score: 49 }),
+        makeLeaderboardRow({ userId: 'u21', score: 50, rank: 21 }),
+        makeLeaderboardRow({ userId: 'u22', score: 49, rank: 22 }),
       ];
       mockGetAllTimeRanking.mockResolvedValue(makeLeaderboardPage(rows, 22));
 
       const result = await getLeaderboard('coordinate_quiz', 'white', 'all-time', 2);
 
-      expect(result.rows[0]!.rank).toBe(21);
-      expect(result.rows[1]!.rank).toBe(22);
+      expect(result.rows.map((r) => r.rank)).toEqual([21, 22]);
+    });
+
+    // Tied players share a rank, so a page's ranks are not its row positions —
+    // the reason this action must not renumber the rows it was handed.
+    it('leaves a shared rank shared, and the rank after it skipped', async () => {
+      const tied = { score: 90, incorrectAnswers: 1, timeTaken: 40 };
+      const rows = [
+        makeLeaderboardRow({ userId: 'u1', score: 100, rank: 1 }),
+        makeLeaderboardRow({ userId: 'u2', ...tied, rank: 2 }),
+        makeLeaderboardRow({ userId: 'u3', ...tied, rank: 2 }),
+        makeLeaderboardRow({ userId: 'u4', score: 80, rank: 4 }),
+      ];
+      mockGetAllTimeRanking.mockResolvedValue(makeLeaderboardPage(rows, 4));
+
+      const result = await getLeaderboard('coordinate_quiz', 'white', 'all-time', 1);
+
+      expect(result.rows.map((r) => r.rank)).toEqual([1, 2, 2, 4]);
     });
   });
 
