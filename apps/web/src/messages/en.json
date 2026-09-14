@@ -5855,6 +5855,7 @@
     "emptyState": "No scores recorded yet. Be the first to set a record!",
     "yourRank": "You",
     "hiddenNotice": "You're hidden from leaderboards by your privacy settings.",
+    "optOutLink": "Hide my rank",
     "moduleFilterLabel": "Module filter",
     "moduleFilter": {
       "all": "All",
