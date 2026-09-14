@@ -8,6 +8,8 @@ import type { MoveQuestion } from '../../_lib/types';
 
 type Props = {
   locale: Locale;
+  /** The `piece` this session is drilling, carried into the challenge CTA. */
+  selectedPiece: string;
   currentQuestion: MoveQuestion;
   showResult: boolean;
   lastAnswer: {
@@ -24,6 +26,7 @@ type Props = {
 
 export function LegalMovesTrainingPlaying({
   locale,
+  selectedPiece,
   currentQuestion,
   showResult,
   lastAnswer,
@@ -53,7 +56,9 @@ export function LegalMovesTrainingPlaying({
         correct={correctCount}
         incorrect={incorrectCount}
         onEndTraining={onEndTraining}
-        challengeHref={`/${locale}/practice/legal-moves/challenge/session`}
+        // Carries the piece across: the CTA drops the player straight into a
+        // session, so a bare URL would silently start a random-piece run.
+        challengeHref={`/${locale}/practice/legal-moves/challenge/session?piece=${selectedPiece}`}
       />
     </div>
   );
