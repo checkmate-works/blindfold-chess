@@ -9,12 +9,7 @@ const { generateMetadata, generateStaticParams, Page } = createPracticeChallenge
     { labelKey: 'routePlanner.title', href: '/practice/route-planner' },
     { labelKey: 'modeTimed' },
   ],
-  renderContent: ({ locale, searchParams }) => (
-    <RoutePlannerChallengeSetup
-      locale={locale}
-      piece={(searchParams.piece as string) ?? 'knight'}
-    />
-  ),
+  renderContent: ({ locale }) => <RoutePlannerChallengeSetup locale={locale} />,
 });
 
 export { generateMetadata, generateStaticParams };
