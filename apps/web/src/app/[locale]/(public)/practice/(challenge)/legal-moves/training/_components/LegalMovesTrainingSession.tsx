@@ -16,11 +16,17 @@ import { LegalMovesTrainingPlaying } from './LegalMovesTrainingPlaying';
 type Props = {
   locale: Locale;
   selectedPieces: PieceType[];
+  /** The `piece` the session is drilling, carried on into the challenge CTA. */
+  selectedPiece: string;
 };
 
 const BATCH_SIZE = 100;
 
-export default function LegalMovesTrainingSession({ locale, selectedPieces }: Props) {
+export default function LegalMovesTrainingSession({
+  locale,
+  selectedPieces,
+  selectedPiece,
+}: Props) {
   const t = useTranslations('practice.legalMoves');
 
   const getQuestion = (from: string, to: string) => t('questionFormat', { from, to });
@@ -64,6 +70,7 @@ export default function LegalMovesTrainingSession({ locale, selectedPieces }: Pr
     <div id={sessionElementId} className="min-h-screen">
       <LegalMovesTrainingPlaying
         locale={locale}
+        selectedPiece={selectedPiece}
         currentQuestion={currentQuestion}
         showResult={showResult}
         lastAnswer={

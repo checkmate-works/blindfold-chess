@@ -20,10 +20,8 @@ export const ResultClient = createPracticeResultClient({
     if (extra.piece) params.set('piece', extra.piece);
     return `/${ctx.locale}/practice/legal-moves/challenge/session?${params.toString()}`;
   },
-  buildSettingsUrl: (ctx, extra) => {
-    const params = new URLSearchParams();
-    if (extra.piece) params.set('piece', extra.piece);
-    return `/${ctx.locale}/practice/legal-moves/challenge?${params.toString()}`;
-  },
+  // No `piece` here: the setup screen reads the stored setting, which already
+  // holds whatever this run used.
+  buildSettingsUrl: (ctx) => `/${ctx.locale}/practice/legal-moves/challenge`,
   buildAverageTimeText: formatAverageTimePerAnswer,
 });

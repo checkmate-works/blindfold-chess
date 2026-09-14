@@ -18,12 +18,9 @@ export const ResultClient = createPracticeResultClient({
     if (extra.feedbackSpeed) params.set('feedbackSpeed', extra.feedbackSpeed);
     return `/${ctx.locale}/practice/coordinate-quiz/challenge/session?${params.toString()}`;
   },
-  buildSettingsUrl: (ctx, extra) => {
-    const params = new URLSearchParams();
-    if (extra.orientation) params.set('orientation', extra.orientation);
-    if (extra.feedbackSpeed) params.set('feedbackSpeed', extra.feedbackSpeed);
-    return `/${ctx.locale}/practice/coordinate-quiz/challenge?${params.toString()}`;
-  },
+  // No settings in the query here: the setup screen reads the stored ones,
+  // which already hold whatever this run used.
+  buildSettingsUrl: (ctx) => `/${ctx.locale}/practice/coordinate-quiz/challenge`,
   buildAverageTimeText: formatAverageTimePerAnswer,
   extraCompleteProps: (_ctx, { adBannerWide }) => ({
     beforeRelatedContent: adBannerWide,

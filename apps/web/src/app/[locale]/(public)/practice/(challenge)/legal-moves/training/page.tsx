@@ -36,7 +36,13 @@ const { generateMetadata, Page } = createPracticeTrainingPage({
     const selectedPieces: PieceType[] =
       validPieceName === 'random' ? allPieceTypes : [PIECE_NAME_TO_TYPE[validPieceName]];
 
-    return <LegalMovesTrainingSession locale={locale} selectedPieces={selectedPieces} />;
+    return (
+      <LegalMovesTrainingSession
+        locale={locale}
+        selectedPieces={selectedPieces}
+        selectedPiece={validPieceName}
+      />
+    );
   },
 });
 

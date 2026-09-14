@@ -1,7 +1,5 @@
 'use client';
 
-import { useState } from 'react';
-
 import { useTranslations } from 'next-intl';
 
 import { Button } from '@/app/_components';
@@ -12,13 +10,8 @@ import { FaPlay } from 'react-icons/fa';
 import { SegmentedControl } from '@/app/[locale]/(public)/practice/_components/SegmentedControl';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
-import {
-  DEFAULT_DISPLAY_MODE,
-  DEFAULT_TIME_LIMIT,
-  type DisplayMode,
-  MAX_TIME_LIMIT,
-  MIN_TIME_LIMIT,
-} from '../../_lib/session-config';
+import { usePositionMemorySettings } from '../../_hooks/use-position-memory-settings';
+import { type DisplayMode, MAX_TIME_LIMIT, MIN_TIME_LIMIT } from '../../_lib/session-config';
 
 type Props = {
   /**
@@ -32,8 +25,8 @@ type Props = {
 };
 
 export function PositionStartForm({ sessionPath, locale }: Props) {
-  const [timeLimit, setTimeLimit] = useState(DEFAULT_TIME_LIMIT);
-  const [displayMode, setDisplayMode] = useState<DisplayMode>(DEFAULT_DISPLAY_MODE);
+  const { settings, updateSettings } = usePositionMemorySettings();
+  const { timeLimit, displayMode } = settings;
   const router = useRouter();
   const t = useTranslations('practice.positionMemory.detail');
 
@@ -55,7 +48,7 @@ export function PositionStartForm({ sessionPath, locale }: Props) {
             { value: 'text', label: t('displayModeText') },
           ]}
           value={displayMode}
-          onChange={setDisplayMode}
+          onChange={(next: DisplayMode) => updateSettings({ displayMode: next })}
         />
       </div>
 
@@ -69,7 +62,7 @@ export function PositionStartForm({ sessionPath, locale }: Props) {
           max={MAX_TIME_LIMIT}
           step="5"
           value={timeLimit}
-          onChange={(e) => setTimeLimit(Number(e.target.value))}
+          onChange={(e) => updateSettings({ timeLimit: Number(e.target.value) })}
           className="w-full h-2 bg-secondary rounded-md appearance-none cursor-pointer accent-foreground"
         />
         <div className="flex justify-between text-xs text-muted-foreground mt-1">
