@@ -9,13 +9,7 @@ const { generateMetadata, generateStaticParams, Page } = createPracticeChallenge
     { labelKey: 'coordinateQuiz.title', href: '/practice/coordinate-quiz' },
     { labelKey: 'modeTimed' },
   ],
-  renderContent: ({ locale, searchParams }) => (
-    <CoordinateQuizChallengeSetup
-      locale={locale}
-      boardOrientation={(searchParams.orientation as string) || 'white'}
-      feedbackSpeed={(searchParams.feedbackSpeed as string) || 'normal'}
-    />
-  ),
+  renderContent: ({ locale }) => <CoordinateQuizChallengeSetup locale={locale} />,
 });
 
 export { generateMetadata, generateStaticParams };
