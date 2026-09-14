@@ -5855,6 +5855,7 @@
     "emptyState": "まだスコアが記録されていません。最初の記録を作りましょう！",
     "yourRank": "あなた",
     "hiddenNotice": "プライバシー設定により、ランキングに表示されていません。",
+    "optOutLink": "順位を非表示にする",
     "moduleFilterLabel": "モジュールフィルター",
     "moduleFilter": {
       "all": "全",

@@ -5855,6 +5855,7 @@
     "emptyState": "Aún no hay puntuaciones registradas. ¡Sé el primero en establecer un récord!",
     "yourRank": "Tú",
     "hiddenNotice": "Tu configuración de privacidad te oculta de la clasificación.",
+    "optOutLink": "Ocultar mi posición",
     "moduleFilterLabel": "Filtro de módulo",
     "moduleFilter": {
       "all": "Todos",

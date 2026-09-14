@@ -18,6 +18,37 @@ type Props = {
   viewerHidden?: boolean;
 };
 
+/**
+ * Footer line linking to the privacy tab of the preferences page.
+ *
+ * `standalone` draws the rule that separates the footer area from the table.
+ * Below a `CurrentUserRankRow` that rule is already drawn, so a second one
+ * would box the rank row in.
+ */
+function PrivacySettingsLink({
+  label,
+  locale,
+  standalone,
+}: {
+  label: string;
+  locale: string;
+  standalone: boolean;
+}) {
+  return (
+    <div className={standalone ? 'border-t-2 border-border mt-2' : undefined}>
+      <p className="px-3 py-3 text-xs text-muted-foreground">
+        <Link
+          href="/preferences?tab=privacy"
+          locale={locale}
+          className="underline underline-offset-2 hover:text-foreground"
+        >
+          {label}
+        </Link>
+      </p>
+    </div>
+  );
+}
+
 export function LeaderboardTable({
   rows,
   currentUserId,
@@ -31,20 +62,27 @@ export function LeaderboardTable({
     return <LeaderboardEmptyState message={t('emptyState')} />;
   }
 
-  const footer = currentUserRank ? (
-    <CurrentUserRankRow row={currentUserRank} locale={locale} />
-  ) : viewerHidden ? (
-    <div className="border-t-2 border-border mt-2">
-      <p className="px-3 py-3 text-xs text-muted-foreground">
-        <Link
-          href="/preferences?tab=privacy"
-          locale={locale}
-          className="underline underline-offset-2 hover:text-foreground"
-        >
-          {t('hiddenNotice')}
-        </Link>
-      </p>
-    </div>
+  // Named on this page: either highlighted inside the ranking itself, or
+  // appended below it as the own-rank row when the viewer's rank falls on
+  // another page.
+  const viewerIsNamed =
+    currentUserRank !== null ||
+    (currentUserId !== null && rows.some((r) => r.userId === currentUserId));
+
+  const footer = viewerHidden ? (
+    <PrivacySettingsLink label={t('hiddenNotice')} locale={locale} standalone />
+  ) : viewerIsNamed ? (
+    <>
+      {currentUserRank && <CurrentUserRankRow row={currentUserRank} locale={locale} />}
+      {/* Seeing their own name is the only moment a viewer who would rather
+          not be listed learns that opting out is possible — the setting is
+          otherwise buried in preferences, which they have no reason to open. */}
+      <PrivacySettingsLink
+        label={t('optOutLink')}
+        locale={locale}
+        standalone={currentUserRank === null}
+      />
+    </>
   ) : null;
 
   return (
