@@ -1,0 +1,113 @@
+# Claude Merge PR — manual, bot-attributed squash merge
+#
+# Why this is a workflow rather than a click in the web UI:
+#   Merging from the UI emits a public `PullRequestEvent` whose actor is the
+#   person who clicked, and public events are what reach followers' activity
+#   feeds. `workflow_dispatch` is not one of GitHub's public event types, so
+#   dispatching this from a phone attributes nothing to the person dispatching
+#   it, while the merge itself — performed with GITHUB_TOKEN — is attributed to
+#   github-actions[bot]. Together with claude-issue-solve.yml, which opens the
+#   PR the same way, the only public event the whole pipeline attributes to the
+#   repository owner is the `@claude` comment that starts it.
+#
+# What it deliberately does not do:
+#   It merges one named PR and nothing else. There is no merge-on-green,
+#   because the thing this replaces is a human reading the diff: the dispatch
+#   IS the approval, and it has to stay a decision rather than become a
+#   schedule.
+
+name: Claude Merge PR
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: "Number of the claude/* PR to squash-merge"
+        required: true
+        type: string
+
+# Least privilege: grant nothing at the workflow level.
+permissions: {}
+
+concurrency:
+  group: claude-merge-pr
+  cancel-in-progress: false
+
+jobs:
+  merge:
+    name: Squash-merge a claude/* PR
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # workflow_dispatch already requires write access, so this only narrows an
+    # already-narrow surface — but it keeps the owner-only rule visible in the
+    # same place as the other two workflows state it.
+    if: github.actor == 'k0kishima'
+    permissions:
+      contents: write # merge into main, delete the head ref
+      pull-requests: write # merge the PR
+
+    steps:
+      - name: Squash-merge and delete the branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ inputs.pr }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          case "$PR" in
+            ''|*[!0-9]*) echo "::error::pr must be a number, got: $PR"; exit 1 ;;
+          esac
+
+          # Read the PR once, then check every property that makes it safe to
+          # merge unattended. Requiring a `claude/*` head and a bot author is
+          # what stops this from being a general-purpose "merge anything"
+          # button: a dispatch can only land a branch this pipeline produced,
+          # so a stray PR number is rejected rather than merged.
+          pr_json=$(gh pr view "$PR" --repo "$REPO" \
+            --json state,isDraft,headRefName,baseRefName,author,mergeable,title,body)
+          state=$(printf '%s' "$pr_json" | jq -r '.state')
+          draft=$(printf '%s' "$pr_json" | jq -r '.isDraft')
+          head=$(printf '%s' "$pr_json" | jq -r '.headRefName')
+          base=$(printf '%s' "$pr_json" | jq -r '.baseRefName')
+          author=$(printf '%s' "$pr_json" | jq -r '.author.login')
+          mergeable=$(printf '%s' "$pr_json" | jq -r '.mergeable')
+
+          [ "$state" = "OPEN" ] || { echo "::error::PR #$PR is $state"; exit 1; }
+          [ "$draft" = "false" ] || { echo "::error::PR #$PR is a draft"; exit 1; }
+          [ "$base" = "main" ] || { echo "::error::PR #$PR targets $base, not main"; exit 1; }
+          case "$head" in
+            claude/*) ;;
+            *) echo "::error::head branch $head is not a claude/* branch"; exit 1 ;;
+          esac
+          # gh spells a GitHub App author `app/<slug>`; both this pipeline's
+          # bots are accepted, a human author is not.
+          case "$author" in
+            app/github-actions | app/claude | github-actions | claude) ;;
+            *) echo "::error::PR #$PR was authored by $author, not by the pipeline"; exit 1 ;;
+          esac
+          # UNKNOWN means GitHub has not finished computing mergeability; let
+          # the merge call itself be the arbiter in that case, and only refuse
+          # on a definite conflict.
+          [ "$mergeable" != "CONFLICTING" ] || { echo "::error::PR #$PR has conflicts"; exit 1; }
+
+          # The squash message has to be passed explicitly. This repository's
+          # squash setting builds it from the branch's commit messages, and
+          # claude-code-action writes a `Co-authored-by:` trailer naming the
+          # account that typed the mention — a trailer that reaches main counts
+          # towards that account's contribution graph, which is the thing the
+          # bot attribution exists to prevent. Taking the subject and body from
+          # the PR instead keeps the message readable and leaves the trailer
+          # behind on the branch, which the next line deletes.
+          subject=$(printf '%s' "$pr_json" | jq -r '.title')
+          printf '%s' "$pr_json" | jq -r '.body' \
+            | grep -viE '^co-authored-by:' > "$RUNNER_TEMP/squash-body.md" || true
+
+          gh pr merge "$PR" --repo "$REPO" --squash \
+            --subject "$subject (#$PR)" --body-file "$RUNNER_TEMP/squash-body.md"
+
+          # delete_branch_on_merge is off for this repository, and
+          # `gh pr merge --delete-branch` prunes through a local clone that this
+          # job does not have. Delete the remote ref directly instead.
+          gh api -X DELETE "repos/$REPO/git/refs/heads/$head"
+          echo "Merged PR #$PR and deleted $head."
