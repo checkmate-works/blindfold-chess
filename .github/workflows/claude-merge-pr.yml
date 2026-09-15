@@ -45,6 +45,7 @@ jobs:
     permissions:
       contents: write # merge into main, delete the head ref
       pull-requests: write # merge the PR
+      issues: write # close the issues the PR says it closes
 
     steps:
       - name: Squash-merge and delete the branch
@@ -65,7 +66,7 @@ jobs:
           # button: a dispatch can only land a branch this pipeline produced,
           # so a stray PR number is rejected rather than merged.
           pr_json=$(gh pr view "$PR" --repo "$REPO" \
-            --json state,isDraft,headRefName,baseRefName,author,mergeable,title,body)
+            --json state,isDraft,headRefName,baseRefName,author,mergeable,title,body,closingIssuesReferences)
           state=$(printf '%s' "$pr_json" | jq -r '.state')
           draft=$(printf '%s' "$pr_json" | jq -r '.isDraft')
           head=$(printf '%s' "$pr_json" | jq -r '.headRefName')
@@ -110,4 +111,21 @@ jobs:
           # `gh pr merge --delete-branch` prunes through a local clone that this
           # job does not have. Delete the remote ref directly instead.
           gh api -X DELETE "repos/$REPO/git/refs/heads/$head"
+
+          # GitHub does not close the linked issues here, even though it
+          # records the link and the `referenced` timeline event: a merge
+          # performed with GITHUB_TOKEN does not fire the automatic close.
+          # Observed on PR #184 / issue #129, which stayed open after a clean
+          # merge with a `Closes #129` body and a populated
+          # closingIssuesReferences. Close them explicitly, still as
+          # github-actions[bot], so that no `IssuesEvent` is attributed to a
+          # person either.
+          printf '%s' "$pr_json" | jq -r '.closingIssuesReferences[]?.number' \
+            | while read -r issue; do
+                [ -n "$issue" ] || continue
+                gh issue close "$issue" --repo "$REPO" \
+                  --reason completed --comment "Closed by #$PR."
+                echo "Closed issue #$issue."
+              done
+
           echo "Merged PR #$PR and deleted $head."
