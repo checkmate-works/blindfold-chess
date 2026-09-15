@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { requireAdmin } from '@/app/admin/_lib/auth';
+import { adminApiGuard } from '@/app/admin/_lib/auth';
 import { ilike } from 'drizzle-orm';
 
 import { db, profiles } from '@/lib/db';
@@ -11,9 +11,9 @@ function escapeLikePattern(s: string): string {
 }
 
 export async function GET(request: Request) {
-  const auth = await requireAdmin();
-  if ('error' in auth) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const auth = await adminApiGuard();
+  if ('response' in auth) {
+    return auth.response;
   }
 
   const { searchParams } = new URL(request.url);
