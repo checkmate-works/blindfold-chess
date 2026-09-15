@@ -4,6 +4,7 @@ import { BoardFrame, BoardSkeleton } from '@/app/_components';
 import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 
 import { getOptionalUser } from '@/lib/auth';
+import { NEXT_PUZZLE_COUNT } from '@/lib/positions/next-puzzles';
 
 import {
   ExpGainSkeleton,
@@ -33,6 +34,10 @@ import { Skeleton } from '@/app/[locale]/_components/Skeleton';
  * same slot above the buttons and are mutually exclusive by auth state, so the
  * user is resolved here and exactly one full-height placeholder is reserved —
  * matching the real card/banner rather than a thin bar.
+ *
+ * The next-puzzle grid is always reserved. It only disappears when the whole
+ * catalog has no other puzzle, so reserving it is right in every realistic
+ * case, and without it the action buttons would jump down on hydrate.
  */
 export async function PuzzleResultContentSkeleton() {
   const locale = await getLocaleFromPathnameHeader();
@@ -66,6 +71,17 @@ export async function PuzzleResultContentSkeleton() {
           mutually exclusive. Reserve the matching full-height block so the real
           content does not push the buttons down on hydrate. */}
       {isAuthed ? <ExpGainSkeleton /> : <SignUpBannerSkeleton />}
+
+      {/* NextPuzzlesSection: section title + square tiles (2 columns on phones,
+          4 on desktop — same grid as the real component). */}
+      <div className="space-y-3">
+        <SectionTitle>{t('result.nextPuzzles')}</SectionTitle>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {Array.from({ length: NEXT_PUZZLE_COUNT }, (_, i) => (
+            <Skeleton key={i} className="aspect-square w-full rounded-xl" />
+          ))}
+        </div>
+      </div>
 
       {/* Action buttons (Try Again / Back to Puzzles / Analyze on Lichess) —
           three full-width buttons, matching the real `flex flex-col gap-3 pt-4`

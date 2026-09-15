@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { type ReactNode, useEffect, useMemo, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
@@ -19,7 +19,6 @@ import { ExpGainDisplay } from '@/app/[locale]/(public)/practice/_components/Exp
 import { SignUpBanner } from '@/app/[locale]/(public)/practice/_components/SignUpBanner';
 import { SectionTitle } from '@/app/[locale]/_components';
 import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
-import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { ResultLikeCta } from '../../_components/ResultLikeCta';
@@ -56,6 +55,13 @@ type Props = {
   profile: ProfileLike;
   /** Pre-resolved display name (use `resolveAuthorName(profile, ...)` at the call site). */
   displayName: string;
+  /**
+   * Server-rendered "next puzzle" tile grid (`<NextPuzzlesSection>`), slotted
+   * in directly above the action buttons. Built by the page so the candidate
+   * query and its result stay out of this client bundle; `null` when there
+   * are no candidates.
+   */
+  nextPuzzles?: ReactNode;
 };
 
 export function PuzzleResultClient({
@@ -69,6 +75,7 @@ export function PuzzleResultClient({
   initialLikedByMe,
   profile,
   displayName,
+  nextPuzzles,
 }: Props) {
   const t = useTranslations('practice.puzzle.result');
   const tPuzzle = useTranslations('practice.puzzle');
@@ -201,20 +208,13 @@ export function PuzzleResultClient({
         />
       </div>
 
-      {/* Same-author discovery link, right below the attribution — points
-          at this author's puzzle-only list (not the mixed profile view),
-          so solvers who liked this puzzle can find more like it. */}
-      {profile?.username && (
-        <div className="text-right text-sm">
-          <Link
-            href={`/u/${profile.username}/problems/puzzles`}
-            locale={locale}
-            className={TEXT_LINK_MUTED_CLASSES}
-          >
-            {tPuzzle('detail.viewOtherPuzzles')}
-          </Link>
-        </div>
-      )}
+      {/* Next-puzzle tiles, directly above the action buttons: solving
+          puzzles is a streak activity, so the strongest "what now" answer
+          belongs where the eye lands after the like / attribution rows. The
+          same-author list link that used to stand alone here now renders as
+          the section's header action (the tiles are author-first, so the two
+          read as one unit). */}
+      {nextPuzzles}
 
       {/* (D) Action buttons */}
       <div className="flex flex-col gap-3 pt-4">
