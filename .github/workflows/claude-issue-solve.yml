@@ -270,8 +270,15 @@ jobs:
             git log --reverse --format='- %s' "origin/main..origin/$BRANCH" \
               > "$RUNNER_TEMP/pr-body.md"
           fi
-          printf '\nCloses #%s\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n' \
-            "$N" >> "$RUNNER_TEMP/pr-body.md"
+          # Claude usually writes its own closing keyword into the commit
+          # message. Appending a second one renders as a duplicated
+          # "Closes #129" in the PR and then in the squash commit, so only add
+          # it when the body does not already close this issue.
+          if ! grep -qiE "(close[sd]?|fix(e[sd])?|resolve[sd]?) #$N\b" "$RUNNER_TEMP/pr-body.md"; then
+            printf '\nCloses #%s\n' "$N" >> "$RUNNER_TEMP/pr-body.md"
+          fi
+          printf '\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n' \
+            >> "$RUNNER_TEMP/pr-body.md"
 
           url=$(gh pr create --repo "$REPO" --base main --head "$BRANCH" \
             --title "$title" --body-file "$RUNNER_TEMP/pr-body.md")
