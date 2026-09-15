@@ -160,10 +160,14 @@ jobs:
       # `claude/*` branch that a human can delete.
       #
       # `branch_name` is an output of claude-code-action (verified against
-      # v1.0.199's action.yml; re-verify on every SHA bump). It is empty when
-      # Claude finished without committing anything — the normal outcome for a
-      # mention that only asked a question — which is a no-op here, not a
-      # failure.
+      # v1.0.199: action.yml exposes it, run.ts sets it from the branch the
+      # tag mode prepared; re-verify on every SHA bump). For an issue trigger
+      # it is always a fresh `claude/issue-N-<timestamp>` name, whether or not
+      # Claude went on to commit anything: the action creates the branch
+      # locally up front and only pushes it if there is something to push
+      # (branch-cleanup.ts). So "Claude answered a question and changed
+      # nothing" — a normal outcome — shows up here as a branch name with no
+      # matching remote ref, and that has to be a no-op, not a failure.
       - name: Guard — validate the pushed branch
         id: guard
         env:
@@ -188,6 +192,11 @@ jobs:
           # stored credential is dead by now. Point origin back at the job's
           # GITHUB_TOKEN before fetching.
           git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git"
+          if ! git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null; then
+            echo "Claude made no changes; $BRANCH was never pushed."
+            echo "open=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
           git fetch --no-tags origin "$BRANCH" main
 
           changed=$(git diff --name-only "origin/main...origin/$BRANCH")
