@@ -112,19 +112,21 @@ jobs:
           # job does not have. Delete the remote ref directly instead.
           gh api -X DELETE "repos/$REPO/git/refs/heads/$head"
 
-          # GitHub does not close the linked issues here, even though it
-          # records the link and the `referenced` timeline event: a merge
-          # performed with GITHUB_TOKEN does not fire the automatic close.
-          # Observed on PR #184 / issue #129, which stayed open after a clean
-          # merge with a `Closes #129` body and a populated
-          # closingIssuesReferences. Close them explicitly, still as
-          # github-actions[bot], so that no `IssuesEvent` is attributed to a
-          # person either.
+          # GitHub does not close the linked issues after this merge. The link
+          # is there — closingIssuesReferences is populated and the issue's
+          # timeline records a `referenced` event at merge time — but no
+          # `closed` event follows. The exact rule GitHub applies to a merge
+          # performed by GITHUB_TOKEN is not documented; what is certain is the
+          # observation, on PR #184 / issue #129, that a clean merge with a
+          # `Closes #129` body left the issue open. Close them explicitly,
+          # still as github-actions[bot], so that no `IssuesEvent` is
+          # attributed to a person either. No comment is posted: the timeline
+          # already shows the merged PR, and a bot comment would only start a
+          # claude-issue-solve run that exists to be skipped.
           printf '%s' "$pr_json" | jq -r '.closingIssuesReferences[]?.number' \
             | while read -r issue; do
                 [ -n "$issue" ] || continue
-                gh issue close "$issue" --repo "$REPO" \
-                  --reason completed --comment "Closed by #$PR."
+                gh issue close "$issue" --repo "$REPO" --reason completed
                 echo "Closed issue #$issue."
               done
 
