@@ -20,8 +20,10 @@ type LeaderboardRow = {
   flair: string | null;
 };
 
+export type RankedLeaderboardRow = LeaderboardRow & { rank: number };
+
 export type LeaderboardPage = {
-  rows: LeaderboardRow[];
+  rows: RankedLeaderboardRow[];
   total: number;
 };
 
@@ -49,11 +51,50 @@ function byBestScore(cols: {
   return [desc(cols.score), asc(cols.incorrectAnswers), asc(cols.timeTaken)];
 }
 
+/**
+ * Display ordering: the tie-break rule, then `user_id` as an arbitrary but
+ * stable last resort. Rows that match on all three ranking columns share a
+ * rank (see {@link rankOver}), so nothing in the rule itself separates them
+ * and the database may return them in any order — which makes a page's row
+ * order jitter between reads and, across a page boundary, lets one tied row
+ * repeat on both pages while another is never shown. `user_id` is unique per
+ * row in every score source here, so appending it makes the ordering total.
+ * It is deliberately NOT part of the ranking rule: it orders tied rows without
+ * splitting their rank.
+ */
+function byBestScoreThenUser(cols: {
+  userId: Parameters<typeof asc>[0];
+  score: Parameters<typeof desc>[0];
+  incorrectAnswers: Parameters<typeof asc>[0];
+  timeTaken: Parameters<typeof asc>[0];
+}): SQL[] {
+  return [...byBestScore(cols), asc(cols.userId)];
+}
+
 /** Raw-SQL twin of {@link byBestScore}. */
 const BEST_SCORE_ORDER_SQL = sql`score DESC, incorrect_answers ASC, time_taken ASC`;
 
-/** 1-based rank over the tie-break rule, for use in a SELECT list. */
-const RANK_WINDOW_SQL = sql`ROW_NUMBER() OVER (ORDER BY ${BEST_SCORE_ORDER_SQL})`;
+/**
+ * 1-based rank over the tie-break rule, for use in a SELECT list.
+ *
+ * `RANK()`, not `ROW_NUMBER()`: users who match on score, incorrect answers
+ * AND time taken are indistinguishable under the rule, so they share a rank —
+ * two players tied for 3rd are both 3rd and the next player is 5th. Under
+ * `ROW_NUMBER()` the database handed them consecutive positions in an
+ * unspecified order, which let the same user be called 3rd by their own rank
+ * lookup (the number quoted in their `challenge_rank_update` feed item) and
+ * 4th by the list they were sent to.
+ */
+const RANK_WINDOW_SQL = sql`RANK() OVER (ORDER BY ${BEST_SCORE_ORDER_SQL})`;
+
+/** Drizzle-builder twin of {@link RANK_WINDOW_SQL}, for a paginated read. */
+function rankOver(cols: {
+  score: Parameters<typeof desc>[0];
+  incorrectAnswers: Parameters<typeof asc>[0];
+  timeTaken: Parameters<typeof asc>[0];
+}): SQL<number> {
+  return sql<number>`cast(rank() over (order by ${sql.join(byBestScore(cols), sql`, `)}) as int)`;
+}
 
 /**
  * Derived table of every all-time best score for a menu/key, shaped as
@@ -62,8 +103,8 @@ const RANK_WINDOW_SQL = sql`ROW_NUMBER() OVER (ORDER BY ${BEST_SCORE_ORDER_SQL})
  *
  * Excludes users who opted out via `profiles.hidden_from_leaderboard`. The
  * filter deliberately lives HERE (the score-source layer) rather than in the
- * display queries: rank numbers are derived from row position over this
- * source, so filtering here keeps a visible user's own rank (`lookupRank`)
+ * display queries: rank numbers are derived from this source's rows, so
+ * filtering here keeps a visible user's own rank (`lookupRank`)
  * consistent with the public list, and makes a hidden user's rank resolve to
  * null — which also suppresses their `challenge_rank_update` feed items
  * (see `decideChallengeRankFeedItem`).
@@ -116,6 +157,11 @@ export async function getAllTimeRanking(
         score: challengeBestScores.score,
         incorrectAnswers: challengeBestScores.incorrectAnswers,
         timeTaken: challengeBestScores.timeTaken,
+        // Ranked in the database, over the whole board: a window function is
+        // evaluated before LIMIT/OFFSET, so page 2 row 1 knows it is 21st (or
+        // 20th, if the rows above it include a tie). Numbering the page rows
+        // in TS instead cannot see the ties it is paginating over.
+        rank: rankOver(challengeBestScores),
         ...AUTHOR_PROFILE_COLUMNS,
         country: profiles.country,
         flair: profiles.flair,
@@ -129,7 +175,7 @@ export async function getAllTimeRanking(
           notHiddenFromLeaderboard()
         )
       )
-      .orderBy(...byBestScore(challengeBestScores))
+      .orderBy(...byBestScoreThenUser(challengeBestScores))
       .offset(offset)
       .limit(limit),
     // The count joins profiles for the same hidden-from-leaderboard filter as
@@ -193,13 +239,14 @@ async function getPeriodRanking(
         score: bestPerUser.score,
         incorrectAnswers: bestPerUser.incorrectAnswers,
         timeTaken: bestPerUser.timeTaken,
+        rank: rankOver(bestPerUser),
         ...AUTHOR_PROFILE_COLUMNS,
         country: profiles.country,
         flair: profiles.flair,
       })
       .from(bestPerUser)
       .innerJoin(profiles, eq(bestPerUser.userId, profiles.id))
-      .orderBy(...byBestScore(bestPerUser))
+      .orderBy(...byBestScoreThenUser(bestPerUser))
       .offset(offset)
       .limit(limit),
     db.select({ count: sql<number>`count(*)::int` }).from(bestPerUser),
@@ -302,8 +349,6 @@ export async function getUserMonthlyRank(
 // ---------------------------------------------------------------------------
 // User's ranked row (rank + full profile data for "your rank" display)
 // ---------------------------------------------------------------------------
-
-export type RankedLeaderboardRow = LeaderboardRow & { rank: number };
 
 type RawRankedRow = {
   user_id: string;

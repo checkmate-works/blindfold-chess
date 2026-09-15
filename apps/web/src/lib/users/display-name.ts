@@ -26,3 +26,36 @@ export function resolveAuthorName<F extends string | null>(
 ): string | F {
   return profile?.displayName || profile?.username || fallback;
 }
+
+/**
+ * Resolve the name for content whose author column is nullable, where a null
+ * profile has two different meanings and one wrong word for each.
+ *
+ * A published game is the only content of that kind: publishing is open to
+ * account-less players, so `authorId` is null for a game nobody signed in to
+ * post. Every other entity requires an account. Both cases nonetheless reach
+ * the renderer as a null profile, because the profile join excludes
+ * soft-deleted accounts — so a game by someone who has since deleted their
+ * account is indistinguishable from an anonymous one unless `authorId` is
+ * consulted, which is exactly what this does:
+ *
+ * - no `authorId` → nobody ever owned it → the anonymous label
+ * - an `authorId` with no profile → the owner deleted their account → the
+ *   deleted-user label
+ *
+ * Collapsing the two is what shipped "(deleted user)" under every anonymous
+ * game in the `/games/shared` gallery.
+ */
+export function resolveNullableAuthorName(
+  {
+    authorId,
+    profile,
+  }: {
+    authorId: string | null;
+    profile: { displayName?: string | null; username?: string | null } | null | undefined;
+  },
+  labels: { anonymous: string; deleted: string }
+): string {
+  if (profile) return resolveAuthorName(profile, { fallback: labels.deleted });
+  return authorId === null ? labels.anonymous : labels.deleted;
+}

@@ -82,7 +82,7 @@ export async function ChunkPositionsTab({
               i18nNamespace={isPuzzle ? 'practice.puzzle' : 'practice.positionMemory'}
               toggleLikeAction={togglePositionLike}
               justNowLabel={isPuzzle ? tPuzzle('justNow') : tMemory('justNow')}
-              deletedUserLabel={tCommon('deletedUser')}
+              authorFallbackLabel={tCommon('deletedUser')}
               locale={locale}
               badge={
                 <span

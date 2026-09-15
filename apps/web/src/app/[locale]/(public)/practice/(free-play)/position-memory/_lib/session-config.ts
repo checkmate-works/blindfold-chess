@@ -1,9 +1,11 @@
 /**
  * Shared session configuration constants for the position-memory feature.
  *
- * The time limit range and default are referenced by both the single-position
- * start form (`[id]/page.tsx` → `PositionStartForm`) and the single-position
- * session entry (`[id]/session/page.tsx`), so they live in one place.
+ * The time limit range is referenced by the single-position start form
+ * (`[id]/page.tsx` → `PositionStartForm`), the defaults seed the stored
+ * preferences it edits (`use-position-memory-settings.ts`), and the
+ * single-position session entry (`[id]/session/page.tsx`) clamps against the
+ * same range, so they live in one place.
  */
 export const MIN_TIME_LIMIT = 5;
 export const MAX_TIME_LIMIT = 60;

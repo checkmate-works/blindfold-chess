@@ -1,6 +1,7 @@
 {
   "Common": {
     "deletedUser": "(退会したユーザー)",
+    "anonymousUser": "匿名ユーザー",
     "lastUpdated": "最終更新日: {date}",
     "pagination": {
       "navLabel": "ページ送り",
@@ -2596,7 +2597,6 @@
       "by": "{name} さんの対局",
       "playedBy": "対局者",
       "moreActions": "その他の操作",
-      "guest": "ゲスト",
       "cleanRate": "クリーン率",
       "like": "いいね",
       "unlike": "いいねを取り消す",
@@ -5856,6 +5856,7 @@
     "emptyState": "まだスコアが記録されていません。最初の記録を作りましょう！",
     "yourRank": "あなた",
     "hiddenNotice": "プライバシー設定により、ランキングに表示されていません。",
+    "optOutLink": "順位を非表示にする",
     "moduleFilterLabel": "モジュールフィルター",
     "moduleFilter": {
       "all": "全",

@@ -134,7 +134,7 @@ export function createPositionListPage(config: PositionListPageConfig) {
     const buildHref = (p: number) => buildPaginationHref(locale, basePath, p, sortBy);
 
     const justNowLabel = t('justNow');
-    const deletedUserLabel = tCommon('deletedUser');
+    const authorFallbackLabel = tCommon('deletedUser');
 
     // In-list native ad (opt-in per page via `nativeAdSlot`). Server-gated on
     // entitlement by `resolveNativeAds` — ad-free users get no node; the
@@ -218,7 +218,7 @@ export function createPositionListPage(config: PositionListPageConfig) {
                   i18nNamespace={namespace}
                   toggleLikeAction={toggleLike}
                   justNowLabel={justNowLabel}
-                  deletedUserLabel={deletedUserLabel}
+                  authorFallbackLabel={authorFallbackLabel}
                   locale={locale}
                 />
                 {nativeAd && index === Math.min(NATIVE_AD_AFTER_INDEX, rows.length - 1) && (

@@ -48,7 +48,10 @@ export async function ChunkGamesTab({
         reviewedGameIds={reviewedGameIds}
         locale={locale}
         justNowLabel={tSharedGames('detail.justNow')}
-        deletedUserLabel={tCommon('deletedUser')}
+        authorLabels={{
+          anonymous: tCommon('anonymousUser'),
+          deleted: tCommon('deletedUser'),
+        }}
         colorLabels={{
           white: tPlay('playerColor.white'),
           black: tPlay('playerColor.black'),

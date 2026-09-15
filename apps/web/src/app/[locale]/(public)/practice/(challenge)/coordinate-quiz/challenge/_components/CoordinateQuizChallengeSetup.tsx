@@ -1,7 +1,5 @@
 'use client';
 
-import { useState } from 'react';
-
 import { useRouter } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
@@ -11,41 +9,18 @@ import { StandardChallengeRules } from '@/app/[locale]/(public)/practice/(challe
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { CoordinateQuizSettings } from '../../_components/CoordinateQuizSettings';
-import type { BoardOrientation, FeedbackSpeed } from '../../_lib/types';
-import { BOARD_ORIENTATIONS, FEEDBACK_SPEEDS } from '../../_lib/types';
+import { useCoordinateQuizSettings } from '../../_hooks/use-coordinate-quiz-settings';
 
 type Props = {
   locale: Locale;
-  boardOrientation: string;
-  feedbackSpeed: string;
 };
 
-function parseOrientation(value: string): BoardOrientation {
-  return (BOARD_ORIENTATIONS as readonly string[]).includes(value)
-    ? (value as BoardOrientation)
-    : 'white';
-}
-
-function parseFeedbackSpeed(value: string): FeedbackSpeed {
-  return (FEEDBACK_SPEEDS as readonly string[]).includes(value)
-    ? (value as FeedbackSpeed)
-    : 'normal';
-}
-
-export function CoordinateQuizChallengeSetup({
-  locale,
-  boardOrientation: initialOrientation,
-  feedbackSpeed: initialFeedbackSpeed,
-}: Props) {
+export function CoordinateQuizChallengeSetup({ locale }: Props) {
   const t = useTranslations('practice');
   const router = useRouter();
 
-  const [boardOrientation, setBoardOrientation] = useState<BoardOrientation>(
-    parseOrientation(initialOrientation)
-  );
-  const [feedbackSpeed, setFeedbackSpeed] = useState<FeedbackSpeed>(
-    parseFeedbackSpeed(initialFeedbackSpeed)
-  );
+  const { settings, updateSettings } = useCoordinateQuizSettings();
+  const { boardOrientation, feedbackSpeed } = settings;
 
   const handleStart = () => {
     const params = new URLSearchParams({
@@ -60,8 +35,8 @@ export function CoordinateQuizChallengeSetup({
       <CoordinateQuizSettings
         boardOrientation={boardOrientation}
         feedbackSpeed={feedbackSpeed}
-        onBoardOrientationChange={setBoardOrientation}
-        onFeedbackSpeedChange={setFeedbackSpeed}
+        onBoardOrientationChange={(next) => updateSettings({ boardOrientation: next })}
+        onFeedbackSpeedChange={(next) => updateSettings({ feedbackSpeed: next })}
       />
     </ChallengeSetupShell>
   );

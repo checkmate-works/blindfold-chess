@@ -68,7 +68,7 @@ export async function RepertoireListCard({
       i18nNamespace="Repertoires"
       toggleLikeAction={toggleLike}
       justNowLabel={t('justNow')}
-      deletedUserLabel={tCommon('deletedUser')}
+      authorFallbackLabel={tCommon('deletedUser')}
       locale={locale}
       topicKey={repertoire.id}
       meta={metaRow}

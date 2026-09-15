@@ -100,7 +100,10 @@ export default async function ProfileGamesPage({ params, searchParams }: Props) 
         locale={locale}
         buildHref={buildHref}
         justNowLabel={tSharedGames('detail.justNow')}
-        deletedUserLabel={tCommon('deletedUser')}
+        authorLabels={{
+          anonymous: tCommon('anonymousUser'),
+          deleted: tCommon('deletedUser'),
+        }}
         colorLabels={{
           white: tPlay('playerColor.white'),
           black: tPlay('playerColor.black'),

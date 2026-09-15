@@ -6,12 +6,15 @@ import { PracticeHowToPlaySection } from '@/app/[locale]/(public)/practice/(chal
 import { PracticeSetupActions } from '@/app/[locale]/(public)/practice/(challenge)/_components/PracticeSetupActions';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { useQuadrantsSettings } from '../_hooks/use-quadrants-settings';
+
 type Props = {
   locale: Locale;
 };
 
 export function QuadrantsSetup({ locale }: Props) {
   const t = useTranslations('practice.quadrantAnchors');
+  const { settings } = useQuadrantsSettings();
 
   return (
     <div>
@@ -24,7 +27,10 @@ export function QuadrantsSetup({ locale }: Props) {
         locale={locale}
         moduleSlug="quadrants"
         challengeHref={`/${locale}/practice/quadrants/challenge`}
-        trainingHref={`/${locale}/practice/quadrants/training#quadrants-training-session`}
+        // The training screen takes its orientation from the URL and has no
+        // selector of its own, so a bare link would answer every question from
+        // a white board no matter what the player picked for the challenge.
+        trainingHref={`/${locale}/practice/quadrants/training?orientation=${settings.orientation}#quadrants-training-session`}
       />
     </div>
   );

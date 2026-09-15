@@ -1,6 +1,7 @@
 {
   "Common": {
     "deletedUser": "(usuario eliminado)",
+    "anonymousUser": "Anónimo",
     "lastUpdated": "Última actualización: {date}",
     "pagination": {
       "navLabel": "Paginación",
@@ -2596,7 +2597,6 @@
       "by": "Publicado por {name}",
       "playedBy": "Jugado por",
       "moreActions": "Más acciones",
-      "guest": "Invitado",
       "cleanRate": "Limpias",
       "like": "Me gusta",
       "unlike": "Quitar me gusta",
@@ -5856,6 +5856,7 @@
     "emptyState": "Aún no hay puntuaciones registradas. ¡Sé el primero en establecer un récord!",
     "yourRank": "Tú",
     "hiddenNotice": "Tu configuración de privacidad te oculta de la clasificación.",
+    "optOutLink": "Ocultar mi posición",
     "moduleFilterLabel": "Filtro de módulo",
     "moduleFilter": {
       "all": "Todos",

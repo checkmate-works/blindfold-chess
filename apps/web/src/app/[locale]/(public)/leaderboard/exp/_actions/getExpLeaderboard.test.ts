@@ -123,6 +123,7 @@ vi.mock('@/lib/db', async () => {
 // Mock drizzle-orm operators (used in query construction)
 vi.mock('drizzle-orm', () => ({
   and: (...conds: unknown[]) => ({ __and: conds }),
+  asc: (col: unknown) => ({ __asc: col }),
   desc: (col: unknown) => ({ __desc: col }),
   eq: (a: unknown, b: unknown) => ({ __eq: { a, b } }),
   gte: (a: unknown, b: unknown) => ({ __gte: { a, b } }),
@@ -256,6 +257,19 @@ describe('getExpLeaderboard', () => {
 
       expect(result.rows[0]!.rank).toBe(1);
       expect(result.rows[1]!.rank).toBe(2);
+    });
+
+    it('gives players on the same EXP the same rank, and skips the next', async () => {
+      hoisted.state.periodRows = [
+        { ...mockPeriodRows[0]!, userId: 'user-a', totalExp: 120 },
+        { ...mockPeriodRows[0]!, userId: 'user-b', totalExp: 80 },
+        { ...mockPeriodRows[0]!, userId: 'user-c', totalExp: 80 },
+        { ...mockPeriodRows[0]!, userId: 'user-d', totalExp: 50 },
+      ];
+
+      const result = await getExpLeaderboard('weekly');
+
+      expect(result.rows.map((r) => r.rank)).toEqual([1, 2, 2, 4]);
     });
   });
 

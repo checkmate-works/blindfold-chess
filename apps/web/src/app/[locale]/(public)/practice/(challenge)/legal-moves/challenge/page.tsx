@@ -9,9 +9,7 @@ const { generateMetadata, generateStaticParams, Page } = createPracticeChallenge
     { labelKey: 'legalMoves.title', href: '/practice/legal-moves' },
     { labelKey: 'modeTimed' },
   ],
-  renderContent: ({ locale, searchParams }) => (
-    <LegalMovesChallengeSetup locale={locale} piece={(searchParams.piece as string) ?? 'random'} />
-  ),
+  renderContent: ({ locale }) => <LegalMovesChallengeSetup locale={locale} />,
 });
 
 export { generateMetadata, generateStaticParams };

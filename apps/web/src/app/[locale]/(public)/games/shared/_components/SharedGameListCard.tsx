@@ -5,6 +5,7 @@ import { getStartingFen } from '@blindfold-chess/features/chess-core';
 import type { SharedGameListItem } from '@/lib/db/games-read';
 import { EMPTY_LIKE_META, type LikeMeta } from '@/lib/db/like-queries';
 import type { ReplyMeta } from '@/lib/db/reply-meta-queries';
+import { resolveNullableAuthorName } from '@/lib/users/display-name';
 
 import { CatalogListCard } from '@/app/[locale]/_components/CatalogListCard';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -23,7 +24,12 @@ type Props = {
   /** Localised opening name for a (slug, fallback name) pair. */
   resolveOpeningName: (slug: string, name: string) => string;
   justNowLabel: string;
-  deletedUserLabel: string;
+  /**
+   * Both words the name slot can need. A game is the one entity an
+   * account-less player can publish, so an authorless row here is anonymous
+   * rather than abandoned — see {@link resolveNullableAuthorName}.
+   */
+  authorLabels: { anonymous: string; deleted: string };
   locale: Locale;
   /** Rendered under the colour/opening row — the chunk list adds ply chips. */
   extraMeta?: ReactNode;
@@ -47,7 +53,7 @@ export function SharedGameListCard({
   colorLabels,
   resolveOpeningName,
   justNowLabel,
-  deletedUserLabel,
+  authorLabels,
   locale,
   extraMeta,
 }: Props) {
@@ -84,7 +90,10 @@ export function SharedGameListCard({
       i18nNamespace="sharedGames.detail"
       toggleLikeAction={toggleGameLikeAction}
       justNowLabel={justNowLabel}
-      deletedUserLabel={deletedUserLabel}
+      authorFallbackLabel={resolveNullableAuthorName(
+        { authorId: game.authorId, profile: game.author },
+        authorLabels
+      )}
       locale={locale}
       topicKey=""
       badge={<AiReviewedBadge reviewed={reviewed} label={aiReviewedBadgeLabel} />}
