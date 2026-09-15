@@ -39,10 +39,9 @@ export async function requireAdmin(): Promise<AuthResult> {
  * ```
  *
  * The admin image routes had this wrapper byte-for-byte in each file. Sharing
- * it matters less for the four lines than for the response body: a client that
- * switches on `error` sees one code for an expired admin session, and the third
- * admin route proves how easily that drifts -- it answers `Unauthorized` with a
- * capital U for the same condition.
+ * it matters less for the four lines than for the response body: it keeps
+ * every admin API route answering the same `{ error: 'unauthorized' }` for an
+ * expired admin session, instead of each route hand-rolling its own casing.
  *
  * Server Actions do not use this; they propagate `requireAdmin`'s
  * `{ error: 'unauthorized' }` to the client component instead.
