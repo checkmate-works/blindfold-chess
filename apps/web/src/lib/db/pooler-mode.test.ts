@@ -51,6 +51,14 @@ describe('resolvePoolMax', () => {
     }
   );
 
+  it('halves the runtime cap for local on the local Supavisor pooler port (54329)', () => {
+    expect(resolvePoolMax('local', false, '54329')).toBe(5);
+  });
+
+  it('gives local the full runtime cap of 10 on the direct Postgres port (54322)', () => {
+    expect(resolvePoolMax('local', false, '54322')).toBe(10);
+  });
+
   it.each<PoolerMode>(['session', 'transaction', 'direct', 'local', 'unknown'])(
     'clamps to 2 during `next build` regardless of mode (%s)',
     (mode) => {
