@@ -1702,6 +1702,7 @@
         "analyzeOnLichess": "Analisar no Lichess",
         "viewResult": "Ver Resultado",
         "peekCount": "Visualizações do Tabuleiro: {count}",
+        "nextPuzzles": "Próximos puzzles",
         "statusSolved": "Resolvido",
         "statusPartial": "{correct}/{total} resolvidos",
         "statusRevealed": "Solução revelada"
