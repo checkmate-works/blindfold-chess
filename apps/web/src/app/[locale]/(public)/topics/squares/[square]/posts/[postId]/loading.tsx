@@ -4,6 +4,7 @@ import { BoardFrame, BoardSkeleton } from '@/app/_components';
 import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 
 import { PostCardSkeleton } from '@/app/[locale]/(public)/topics/_components/PostCardSkeleton';
+import { ReplyAffordanceSkeleton } from '@/app/[locale]/(public)/topics/_components/ReplyAffordanceSkeleton';
 import { ReplyCardsSkeleton } from '@/app/[locale]/(public)/topics/_components/ReplyCardsSkeleton';
 import { PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { BreadcrumbSkeleton } from '@/app/[locale]/_components/Breadcrumb';
@@ -42,6 +43,9 @@ export default async function SquarePostDetailLoading() {
           {st('replies.title')}
           <span className="ml-1 inline-block h-4 w-12 align-middle bg-muted rounded animate-pulse" />
         </SectionTitle>
+
+        {/* Reply affordance: the CTA, or the reply-permission notice in its place */}
+        <ReplyAffordanceSkeleton />
 
         {/* Reply cards */}
         <ReplyCardsSkeleton />
