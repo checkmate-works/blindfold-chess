@@ -11,12 +11,14 @@
  * all. A platform 502 or gateway timeout answers with an HTML page; a
  * function killed mid-flight answers with nothing; a connection dropped after
  * the headers arrived makes the body stream reject while it is being read. In
- * all three `response.json()` rejects, and an unguarded `await` would replace
- * the failure the caller set out to report with `SyntaxError: Unexpected
- * token '<'`. The user is then shown a JSON parse error where "upload failed"
- * belonged, and the real status is lost. The shape checks after the parse are
- * the same argument one level in: a body that is `null`, an array, or carries
- * a non-string `error` holds no code we could display.
+ * all three `response.json()` rejects, and an unguarded `await` throws out of
+ * the very branch that exists to report the failure: the caller's deliberate
+ * handling — reverting a preview, mapping a code to the right message — is
+ * skipped, and what reaches the user is whatever an enclosing `catch` happens
+ * to say, or a raw `SyntaxError: Unexpected token '<'` where there is none.
+ * The shape checks after the parse are the same argument one level in: a body
+ * that is `null`, an array, or carries a non-string `error` holds no code we
+ * could display.
  *
  * Returning `undefined` rather than a fallback string keeps the wording with
  * the caller. The four call sites want different things from a miss — one
