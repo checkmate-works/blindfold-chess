@@ -5,6 +5,7 @@ import { eq } from 'drizzle-orm';
 import type { ActionResult } from '@/lib/action-types';
 import { isNativeCardPayload } from '@/lib/ads/payload';
 import { adCreatives, db } from '@/lib/db';
+import { handleAdminActionError } from '@/lib/server-action-error';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 import { requireAdmin } from '../../_lib/auth';
@@ -25,8 +26,8 @@ export async function deleteAdCreative(id: string): Promise<ActionResult> {
     // Delete the DB row first (authoritative), then best-effort clean up an
     // uploaded avatar from Storage — same ordering as the article-images flow.
     await db.delete(adCreatives).where(eq(adCreatives.id, id));
-  } catch {
-    return { error: 'Failed to delete ad creative' };
+  } catch (error) {
+    return handleAdminActionError(error, '[deleteAdCreative]', 'Failed to delete ad creative');
   }
 
   if (isNativeCardPayload(row.payload) && row.payload.avatarImagePath) {

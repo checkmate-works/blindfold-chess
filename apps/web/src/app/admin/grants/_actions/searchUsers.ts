@@ -6,6 +6,7 @@ import { gte, isNotNull, isNull, lt } from 'drizzle-orm';
 
 import { db, profiles } from '@/lib/db';
 import { combineConditions } from '@/lib/db/list-query';
+import { handleAdminActionError } from '@/lib/server-action-error';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 export type ProfileStatus = 'all' | 'anonymous' | 'has_profile';
@@ -110,7 +111,6 @@ export async function searchUsers(params: SearchUsersParams): Promise<ActionResu
 
     return { users };
   } catch (error) {
-    console.error('Failed to search users:', error);
-    return { error: 'Failed to search users' };
+    return handleAdminActionError(error, '[searchUsers]', 'Failed to search users');
   }
 }

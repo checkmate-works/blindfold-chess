@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nextjs';
 import { describe, expect, it, vi } from 'vitest';
 
 import { whereThenLimit, whereThenReturning } from '@/lib/db/__test-support__/query-chain';
@@ -68,6 +69,10 @@ vi.mock('@/lib/supabase/admin', () => ({
 }));
 
 vi.mock('@/lib/security/client-ip');
+
+vi.mock('@sentry/nextjs', () => ({
+  captureException: vi.fn(),
+}));
 
 const adminUserId = 'admin-00000000-0000-0000-0000-000000000001';
 const targetUserId = 'target-00000000-0000-0000-0000-000000000001';
@@ -240,6 +245,39 @@ describe('banUser', () => {
     expect(mockUpdateUserById).toHaveBeenNthCalledWith(2, targetUserId, {
       ban_duration: 'none',
     });
+
+    db.transaction = originalTransaction;
+  });
+
+  it('reports the failure to Sentry when the Supabase Auth ban fails', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+    const authError = new Error('Auth error');
+    mockUpdateUserById.mockResolvedValue({ error: authError });
+
+    await banUser(targetUserId, 'Spamming');
+
+    expect(Sentry.captureException).toHaveBeenCalledWith(authError);
+  });
+
+  it('reports the failure to Sentry when the DB transaction fails', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+    mockUpdateUserById.mockResolvedValue({ error: null });
+
+    const dbError = new Error('DB transaction failed');
+    const { db } = await import('@/lib/db');
+    const originalTransaction = db.transaction;
+    db.transaction = vi.fn().mockRejectedValueOnce(dbError);
+
+    const result = await banUser(targetUserId, 'Spamming');
+
+    expect(result).toEqual({ error: 'failedToBan' });
+    // The cause reaches Sentry before the rollback runs, so it survives even
+    // when the rollback itself throws and replaces the propagating error.
+    expect(Sentry.captureException).toHaveBeenCalledWith(dbError);
 
     db.transaction = originalTransaction;
   });

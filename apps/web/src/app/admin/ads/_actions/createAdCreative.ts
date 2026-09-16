@@ -5,6 +5,7 @@ import { eq, sql } from 'drizzle-orm';
 import { kindForSlot } from '@/lib/ads/registry';
 import type { AdSlot } from '@/lib/ads/registry';
 import { adCreatives, db } from '@/lib/db';
+import { handleAdminActionError } from '@/lib/server-action-error';
 
 import { adminMutationGuard } from '../../_lib/action-factories';
 import { revalidateAdCreatives } from '../_lib/revalidate';
@@ -44,7 +45,7 @@ export async function createAdCreative(data: CreateAdCreativeData): Promise<Crea
 
     revalidateAdCreatives();
     return { success: true, id: inserted.id };
-  } catch {
-    return { error: 'Failed to create ad creative' };
+  } catch (error) {
+    return handleAdminActionError(error, '[createAdCreative]', 'Failed to create ad creative');
   }
 }

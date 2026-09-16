@@ -10,6 +10,7 @@ import { GRANT_STATUS_CACHE_TAG } from '@/lib/cache-tags';
 import { db, userGrants } from '@/lib/db';
 import { logModerationAction } from '@/lib/moderation/audit';
 import { getClientIp } from '@/lib/security/client-ip';
+import { handleAdminActionError } from '@/lib/server-action-error';
 
 type RevokeTxResult = { ok: true } | { error: 'notFound' | 'alreadyRevoked' };
 
@@ -75,7 +76,6 @@ export async function revokeGrant(grantId: string): Promise<ActionResult> {
     // next authenticated page load or when the cookie TTL expires.
     return { success: true };
   } catch (error) {
-    console.error('Failed to revoke grant:', error);
-    return { error: 'Failed to revoke grant' };
+    return handleAdminActionError(error, '[revokeGrant]', 'Failed to revoke grant');
   }
 }

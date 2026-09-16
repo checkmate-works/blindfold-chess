@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nextjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { checkRateLimit } from '@/lib/security/rate-limit';
@@ -41,6 +42,14 @@ vi.mock('@/lib/billing/stripe-customer', () => ({
 }));
 
 vi.mock('@/lib/security/rate-limit');
+
+// `getGlobalScope` is not what this suite asserts on, but `@/lib/db` tags the
+// global scope with the pooler mode at import time and is reachable from the
+// action's module graph, so the double has to answer it or the import throws.
+vi.mock('@sentry/nextjs', () => ({
+  captureException: vi.fn(),
+  getGlobalScope: () => ({ setTag: vi.fn() }),
+}));
 
 // `createCheckoutSession.ts` reads `SITE_URL` from `@/config` at the top of
 // the module. We pin it so the regression assertion below is deterministic
@@ -113,6 +122,34 @@ describe('createCheckoutSession — Stripe success_url regression', () => {
     expect(params.customer).toBe('cus_test_123');
     expect(params.line_items).toEqual([{ price: 'price_test_123', quantity: 1 }]);
     expect(params.subscription_data).toEqual({ metadata: { supabaseUserId: 'user-123' } });
+  });
+
+  it('reports a thrown Stripe error instead of swallowing it', async () => {
+    // A checkout that never starts looks exactly like a user who changed
+    // their mind: the action returns an error string and the page renders a
+    // message. Without this report, a Stripe outage, a revoked key or a price
+    // id that no longer exists all read as zero conversions rather than as an
+    // incident, for as long as they last.
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const stripeError = new Error('No such price: price_test_123');
+    mockSessionsCreate.mockRejectedValueOnce(stripeError);
+
+    const result = await createCheckoutSession('en');
+
+    expect(result).toEqual({ error: 'sessionCreationFailed' });
+    expect(Sentry.captureException).toHaveBeenCalledWith(stripeError);
+  });
+
+  it('reports a failure to resolve the Stripe customer instead of swallowing it', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const customerError = new Error('customer lookup failed');
+    mockGetOrCreateStripeCustomerId.mockRejectedValueOnce(customerError);
+
+    const result = await createCheckoutSession('en');
+
+    expect(result).toEqual({ error: 'sessionCreationFailed' });
+    expect(Sentry.captureException).toHaveBeenCalledWith(customerError);
+    expect(mockSessionsCreate).not.toHaveBeenCalled();
   });
 
   it('returns rateLimited error before hitting Stripe when the user has exceeded the limit', async () => {

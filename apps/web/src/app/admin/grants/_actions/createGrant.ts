@@ -10,6 +10,7 @@ import { GRANT_STATUS_CACHE_TAG } from '@/lib/cache-tags';
 import { db } from '@/lib/db';
 import { isBenefitType } from '@/lib/db/data/grant-types';
 import { getClientIp } from '@/lib/security/client-ip';
+import { handleAdminActionError } from '@/lib/server-action-error';
 
 import { insertAdminGrant, notifyAdminGrant } from '../_lib/grant-mutations';
 import { validateDurationDays } from '../_lib/validation';
@@ -78,7 +79,6 @@ export async function createGrant(formData: FormData): Promise<ActionResult> {
 
     return { success: true };
   } catch (error) {
-    console.error('Failed to create grant:', error);
-    return { error: 'Failed to create grant' };
+    return handleAdminActionError(error, '[createGrant]', 'Failed to create grant');
   }
 }
