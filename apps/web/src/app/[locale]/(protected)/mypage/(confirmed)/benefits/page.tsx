@@ -3,16 +3,20 @@
  *
  * @description
  * End-user view of current benefit entitlements. Shows active ad_free status
- * aggregated across both sources:
+ * from every source the site gates ads on:
  *   - Stripe subscriptions (managed at /mypage/subscription)
  *   - user_grants table (automated UGC bonuses + admin manual grants)
- * Both the aggregate status banner and the entitlement table read from the
- * same population: non-revoked ad_free grants for the user, regardless of
- * grantType, plus the active subscription (if any). admin_manual and
- * automated UGC grants (e.g., topic_post) appear together, differentiated
- * only by their per-row sourceLabel. This keeps the banner and the table
- * consistent — a user who sees "active" in the banner also sees the
- * contributing rows in the table below.
+ *   - the dan-tier belt perk, which is derived from user_ranks and never
+ *     materialized as a grant, so it contributes no row to the table
+ * The banner's active/inactive verdict comes from the same helper the ad
+ * gates use, so this page cannot disagree with whether ads are actually
+ * shown. The entitlement table below lists the dated sources: non-revoked
+ * ad_free grants for the user, regardless of grantType, plus the active
+ * subscription (if any). admin_manual and automated UGC grants (e.g.,
+ * topic_post) appear together, differentiated only by their per-row
+ * sourceLabel. A dan holder with no subscription and no grant therefore sees
+ * an active banner marked as permanent and no table — there is no dated row
+ * to show, and inventing one would imply an expiry the perk does not have.
  * Guidance on how to earn benefits lives in the FAQ (/faq#ad-free-benefits),
  * linked from this page when ad_free is inactive.
  *
@@ -34,9 +38,10 @@
  *
  * @flow
  * 1. User opens /mypage/benefits.
- * 2. Page queries Stripe subscription status (via existing helper) +
- *    user_grants (benefitType='ad_free', not revoked), computes latest
- *    effective expiresAt across both sources.
+ * 2. Page asks hasAdFreeEntitlement() whether the benefit is active at all,
+ *    and queries Stripe subscription status (via existing helper) +
+ *    user_grants (benefitType='ad_free', not revoked) for the rows and the
+ *    latest effective expiresAt across those two dated sources.
  * 3. Renders aggregate status banner, then a unified entitlement table:
  *    one row for the active subscription (if any) + up to 5 most recent
  *    grants, sorted by startsAt desc. Each row shows source / period /
@@ -78,10 +83,23 @@ export default async function BenefitsPage({ params }: Props) {
   const t = await getTranslations({ locale, namespace: 'MypageBenefits' });
 
   const user = await getAuthenticatedUser();
-  const { adFreeActive, latestExpiresAt, entitlementRows, hasMoreGrants } =
+  const { adFreeActive, adFreePermanent, latestExpiresAt, entitlementRows, hasMoreGrants } =
     await getBenefitsPageData(user.id);
 
   const dateFmt = (d: Date) => d.toLocaleDateString(locale);
+
+  // How long the benefit lasts, as a line under the "active" heading. A
+  // permanent entitlement (the dan-tier perk) has no end date to print and
+  // outlives any subscription or grant the same user may also hold, so it
+  // wins over `latestExpiresAt`. The line is omitted rather than guessed when
+  // the benefit is active with neither a permanent source nor a dated one:
+  // the two come from separate queries, so a subscription or grant that ends
+  // between them can leave the entitlement true with no date to show.
+  const activeDurationLabel = adFreePermanent
+    ? t('adFree.activeIndefinitely')
+    : latestExpiresAt
+      ? t('adFree.activeUntil', { date: dateFmt(latestExpiresAt) })
+      : null;
 
   const sourceLabel = (key: EntitlementSourceLabelKey): string =>
     key === 'subscription' ? t('adFree.sourceSubscription') : t(`grantTypeLabel.${key}`);
@@ -124,14 +142,16 @@ export default async function BenefitsPage({ params }: Props) {
               : 'border-border bg-card'
           }`}
         >
-          {adFreeActive && latestExpiresAt ? (
+          {adFreeActive ? (
             <>
               <h2 className="font-semibold text-green-900 dark:text-green-100">
                 {t('adFree.statusActive')}
               </h2>
-              <p className="mt-1 text-sm text-green-800 dark:text-green-200">
-                {t('adFree.activeUntil', { date: dateFmt(latestExpiresAt) })}
-              </p>
+              {activeDurationLabel && (
+                <p className="mt-1 text-sm text-green-800 dark:text-green-200">
+                  {activeDurationLabel}
+                </p>
+              )}
             </>
           ) : (
             <>

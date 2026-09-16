@@ -3899,6 +3899,7 @@
       "statusActive": "Ad-free is active",
       "statusInactive": "Ad-free is not currently active",
       "activeUntil": "until {date}",
+      "activeIndefinitely": "Permanent — no expiry date",
       "sourceSubscription": "Subscription",
       "learnHowToEarn": "Learn how to earn ad-free benefits",
       "viewFullHistory": "View full history",
