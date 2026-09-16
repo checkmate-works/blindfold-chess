@@ -60,4 +60,9 @@ next-env.d.ts
 # worktree.symlinkDirectories in .claude/settings.json), and ignoring only
 # the contents would leave the symlink itself visible as untracked — one
 # careless `git add -A` away from committing an absolute local path.
-/engines/
+#
+# No trailing slash, for that last reason: git reads `engines/` as
+# directory-only, and a symlink is not a directory, so the slashed pattern
+# covered the main checkout and matched nothing in a worktree — where the
+# symlink is the only thing there is to ignore.
+/engines
