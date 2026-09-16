@@ -10,6 +10,7 @@ import 'server-only';
 import { linkableChunkPredicate } from '@/lib/chunks/linkability';
 
 import { CHUNK_LINK_COLUMNS, type ChunkLink, mapChunkLinkRow } from './chunk-link-row';
+import { visibleToViewer } from './games-visibility';
 import { db } from './index';
 import { liveProfileJoinOn } from './profile-select';
 import { chunks, gameChunks, games, profiles } from './schema';
@@ -58,6 +59,30 @@ export async function isLinkableChunkForViewer(
     .select({ id: chunks.id })
     .from(chunks)
     .where(and(eq(chunks.id, chunkId), isNull(chunks.deletedAt), linkableChunkPredicate(viewerId)))
+    .limit(1);
+  return row !== undefined;
+}
+
+/**
+ * True if `viewerId` may link a chunk to this game: it exists, is live, and is
+ * either public or their own (`visibleToViewer`).
+ *
+ * The chunk half of a link is vetted by {@link isLinkableChunkForViewer}; this
+ * is the game half, and without it the only thing standing between a link row
+ * and an arbitrary `game_id` is the foreign key. A stale or guessed id would
+ * otherwise attach a suggestion to a game the site 404s for the member sending
+ * it — and make `notifyGameOwnerOfChunkLink` ping that game's owner about one
+ * they had unpublished.
+ *
+ * The own-game arm costs nothing in reach: the notification no-ops on a
+ * self-link, so widening the gate by the viewer's own games cannot be used to
+ * reach anybody.
+ */
+export async function isLinkableGameForViewer(gameId: string, viewerId: string): Promise<boolean> {
+  const [row] = await db
+    .select({ id: games.id })
+    .from(games)
+    .where(and(eq(games.id, gameId), visibleToViewer(viewerId)))
     .limit(1);
   return row !== undefined;
 }
