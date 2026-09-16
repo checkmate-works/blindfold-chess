@@ -10,6 +10,7 @@ import 'server-only';
 import { linkableChunkPredicate } from '@/lib/chunks/linkability';
 
 import { CHUNK_LINK_COLUMNS, type ChunkLink, mapChunkLinkRow } from './chunk-link-row';
+import { publiclyVisible } from './games-visibility';
 import { db } from './index';
 import { liveProfileJoinOn } from './profile-select';
 import { chunks, gameChunks, games, profiles } from './schema';
@@ -63,6 +64,35 @@ export async function isLinkableChunkForViewer(
 }
 
 /**
+ * True if a chunk may be linked to this game at all: it exists and is publicly
+ * visible (live and published).
+ *
+ * The chunk half of a link is vetted by {@link isLinkableChunkForViewer}; this
+ * is the game half, and without it the only thing standing between a link row
+ * and an arbitrary `game_id` is the foreign key. A stale or guessed id would
+ * otherwise attach a suggestion to a game nobody can open, and make
+ * `notifyGameOwnerOfChunkLink` ping that game's owner about one they had
+ * unpublished or deleted.
+ *
+ * Unlike the chunk half, this takes no viewer — deliberately. The chunk
+ * catalog shows an author their own unpublished drafts, so its rule cannot be
+ * answered without knowing who asks; a shared game has no such carve-out. The
+ * detail page (`getGameById`) serves `publiclyVisible()` games and nothing
+ * else, so a game that is soft-deleted or not yet published is a 404 for its
+ * author too. Admitting the author here would let a link, and a row in
+ * `game_chunks`, exist against a page that answers 404 to every request
+ * including theirs.
+ */
+export async function isLinkableGame(gameId: string): Promise<boolean> {
+  const [row] = await db
+    .select({ id: games.id })
+    .from(games)
+    .where(and(eq(games.id, gameId), publiclyVisible()))
+    .limit(1);
+  return row !== undefined;
+}
+
+/**
  * Link a chunk to a move. Idempotent via the (game, ply, chunk) unique
  * constraint — a duplicate link is a no-op that returns `null`.
  */
@@ -94,12 +124,19 @@ type GameChunkWriteTx = Pick<typeof db, 'select' | 'insert'>;
  * row landed.
  *
  * @design why this validates instead of leaning on the FK
- * `insertGameChunk` lets the `game_id` foreign key reject a bad game,
- * because there the failed insert is the whole operation. Here the insert
- * shares a transaction with the chunk itself, so a raised FK would roll the
- * chunk back too — losing the thing the author actually came to write over
- * a stale or hand-edited `?game=`. The existence check moves the failure
- * from "abort" to "skip".
+ * Here the insert shares a transaction with the chunk itself, so a raised FK
+ * would roll the chunk back too — losing the thing the author actually came
+ * to write over a stale or hand-edited `?game=`. The existence check moves
+ * that failure from "abort" to "skip".
+ *
+ * The lookup is filtered by `publiclyVisible()`, the same rule
+ * {@link isLinkableGame} applies to the picker path: a foreign key is happy
+ * with any game id, including one that is soft-deleted or was never
+ * published, and `createChunkEntry` notifies the game's owner whenever this
+ * returns true. Without the filter a hand-edited `?game=` would reach the
+ * owner of a game the site serves to nobody. Folding it into the move-count
+ * SELECT costs no extra round-trip; a game the filter rejects simply looks
+ * missing, which this already handles by skipping the link.
  *
  * The ply is bounds-checked against the game's move list for the same
  * reason a link needs a target at all: `game_chunks.ply` has no DB
@@ -118,7 +155,7 @@ export async function linkNewChunkToGameMove(
   const [game] = await tx
     .select({ moveCount: sql<number>`coalesce(jsonb_array_length(${games.moves}), 0)` })
     .from(games)
-    .where(eq(games.id, params.gameId))
+    .where(and(eq(games.id, params.gameId), publiclyVisible()))
     .limit(1);
   if (!game || params.ply < 0 || params.ply >= game.moveCount) return false;
 

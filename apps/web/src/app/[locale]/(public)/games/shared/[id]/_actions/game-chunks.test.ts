@@ -4,6 +4,7 @@ const mockAuthenticateAndGuard = vi.fn();
 const mockGetForDelete = vi.fn();
 const mockDelete = vi.fn();
 const mockIsLinkable = vi.fn();
+const mockIsLinkableGame = vi.fn();
 const mockInsert = vi.fn();
 const mockNotifyGameOwner = vi.fn();
 
@@ -20,6 +21,7 @@ vi.mock('@/lib/db/game-chunks', () => ({
   deleteGameChunk: (...args: unknown[]) => mockDelete(...args),
   insertGameChunk: (...args: unknown[]) => mockInsert(...args),
   isLinkableChunkForViewer: (...args: unknown[]) => mockIsLinkable(...args),
+  isLinkableGame: (...args: unknown[]) => mockIsLinkableGame(...args),
 }));
 
 vi.mock('@/lib/security/rate-limit');
@@ -46,6 +48,7 @@ const { addGameChunkAction, deleteGameChunkAction } = await import('./game-chunk
 describe('addGameChunkAction', () => {
   beforeEach(() => {
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: CALLER } });
+    mockIsLinkableGame.mockResolvedValue(true);
     mockIsLinkable.mockResolvedValue(true);
     mockInsert.mockResolvedValue({ id: LINK_ID, createdAt: new Date('2026-07-30T00:00:00Z') });
   });
@@ -85,6 +88,26 @@ describe('addGameChunkAction', () => {
     });
   });
 
+  // The id in the request decides which game gets a suggestion row and whose
+  // owner gets notified, and nothing but the foreign key used to look at it.
+  // `isLinkableGame` collapses the three ways a game can be unreachable —
+  // never existed, soft-deleted, not published — into one answer; which rows
+  // that query admits is `publiclyVisible()`, asserted against generated SQL
+  // in `lib/db/game-chunks.test.ts`.
+  it('rejects a game that cannot be opened, without inserting or notifying', async () => {
+    mockIsLinkableGame.mockResolvedValue(false);
+
+    const result = await addGameChunkAction({ gameId: GAME_ID, ply: 3, chunkId: CHUNK_ID });
+
+    expect(result).toEqual({ success: false, error: 'not_found' });
+    expect(mockIsLinkableGame).toHaveBeenCalledWith(GAME_ID);
+    expect(mockInsert).not.toHaveBeenCalled();
+    expect(mockNotifyGameOwner).not.toHaveBeenCalled();
+    // Chunk eligibility is work owed to a real target; an unreachable parent
+    // is answered before any of it happens.
+    expect(mockIsLinkable).not.toHaveBeenCalled();
+  });
+
   it('rejects a chunk the caller may not link, without inserting', async () => {
     mockIsLinkable.mockResolvedValue(false);
 
@@ -111,6 +134,7 @@ describe('addGameChunkAction', () => {
     const result = await addGameChunkAction({ gameId: GAME_ID, ply: 3, chunkId: CHUNK_ID });
 
     expect(result).toEqual({ success: false, error: 'signInRequired' });
+    expect(mockIsLinkableGame).not.toHaveBeenCalled();
     expect(mockIsLinkable).not.toHaveBeenCalled();
     expect(mockInsert).not.toHaveBeenCalled();
   });
