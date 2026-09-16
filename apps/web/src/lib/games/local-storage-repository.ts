@@ -6,6 +6,7 @@ import type { AlgebraicNotation } from '@blindfold-chess/types';
 import type { Game, GameSortOption, SortDirection } from '@/lib/games/saved-game-types';
 import { normaliseStoredGame } from '@/lib/games/stored-game-migration';
 import { isValidStoredGame } from '@/lib/games/stored-game-validator';
+import { readJson, writeJson } from '@/lib/persistent-settings/local-storage-adapter';
 
 type UpdateOptions = {
   updateLastPlayed?: boolean;
@@ -72,7 +73,12 @@ export class LocalStorageGameRepository implements IGameRepository {
 
       const newGame: Game = { ...game, id: gameId, date: now, lastPlayed: now };
       const next = [...games, newGame];
-      this.saveToStorage(next);
+      const written = this.saveToStorage(next);
+      // Only adopt the new list once the browser has taken it. Caching a list
+      // the write never stored would leave the session reading back a game
+      // that is not there — every later read is served from this field, so
+      // the app would show the move as saved and lose it on reload.
+      if (!written.ok) return err({ kind: 'storage-failed', cause: written.error });
       this.cachedGames = next;
 
       return ok(gameId);
@@ -106,7 +112,9 @@ export class LocalStorageGameRepository implements IGameRepository {
       const next = [...games];
       next[index] = { ...game, id, date: games[index].date, lastPlayed };
 
-      this.saveToStorage(next);
+      const written = this.saveToStorage(next);
+      // As in `create`: the cache only moves forward if the write landed.
+      if (!written.ok) return err({ kind: 'storage-failed', cause: written.error });
       this.cachedGames = next;
       return ok(undefined);
     } catch (cause) {
@@ -138,19 +146,18 @@ export class LocalStorageGameRepository implements IGameRepository {
       return this.cachedGames;
     }
 
+    // `readJson` absorbs the missing key, the browser that refuses to be read
+    // at all, and the unparseable payload into the same fallback, so an empty
+    // list is the answer to all three. That matches what this method already
+    // did; the point of routing through it is that the app now has one answer
+    // to "the browser will not store" instead of a per-caller one.
+    const parsed = readJson<unknown>(this.storageKey, null);
+    if (!Array.isArray(parsed)) {
+      this.cachedGames = [];
+      return this.cachedGames;
+    }
+
     try {
-      const data = localStorage.getItem(this.storageKey);
-      if (!data) {
-        this.cachedGames = [];
-        return this.cachedGames;
-      }
-
-      const parsed = JSON.parse(data);
-      if (!Array.isArray(parsed)) {
-        this.cachedGames = [];
-        return this.cachedGames;
-      }
-
       // Validate, normalise legacy `skillLevel`-only records into the
       // new `engineConfig` shape, and ensure `lastPlayed` exists. The
       // validator + migrator live in their own modules so this class
@@ -158,13 +165,16 @@ export class LocalStorageGameRepository implements IGameRepository {
       this.cachedGames = parsed
         .filter(isValidStoredGame)
         .map((stored) => normaliseStoredGame(stored));
-
-      return this.cachedGames;
     } catch (error) {
-      console.error('Failed to load games from localStorage:', error);
+      // A record that gets past the validator but trips the migrator would
+      // otherwise take down every screen that lists games. One unreadable
+      // payload costs the user their local history; it should not also cost
+      // them the page.
+      console.error('Failed to normalise stored games:', error);
       this.cachedGames = [];
-      return this.cachedGames;
     }
+
+    return this.cachedGames;
   }
 
   async loadAllSorted(sortBy: GameSortOption, direction: SortDirection = 'desc'): Promise<Game[]> {
@@ -199,16 +209,28 @@ export class LocalStorageGameRepository implements IGameRepository {
     }
   }
 
+  /**
+   * Remove a game, throwing if the browser would not store the shortened list.
+   *
+   * This is the one write here that still signals by throwing, and it is not
+   * an oversight: all four call sites await it inside a try/catch and use the
+   * rejection to tell the user the deletion did not happen — an error toast on
+   * the home game list and on bulk delete, inline error text on the result
+   * page. A deletion that silently does not delete is worse than a failed one,
+   * because the row is still there on the next render with no explanation.
+   *
+   * `create` and `update` report through `Result` instead because their
+   * failure has no such consumer: the auto-save loop logs it and moves on.
+   */
   async delete(id: string): Promise<void> {
-    try {
-      const games = await this.ensureCache();
-      const filteredGames = games.filter((game) => game.id !== id);
-      this.saveToStorage(filteredGames);
-      this.cachedGames = filteredGames;
-    } catch (error) {
-      console.error('Failed to delete game:', error);
-      throw new Error('Failed to delete game');
+    const games = await this.ensureCache();
+    const filteredGames = games.filter((game) => game.id !== id);
+    const written = this.saveToStorage(filteredGames);
+    if (!written.ok) {
+      console.error('Failed to delete game:', written.error);
+      throw new Error('Failed to delete game', { cause: written.error });
     }
+    this.cachedGames = filteredGames;
   }
 
   async saveMove(gameId: string, move: AlgebraicNotation): Promise<Result<void, GameSaveError>> {
@@ -231,11 +253,15 @@ export class LocalStorageGameRepository implements IGameRepository {
   }
 
   /**
-   * Throws raw (quota exceeded, storage disabled); the writing method maps
-   * the throw to `{ kind: 'storage-failed' }` with the original cause.
+   * Hand the full game list to the shared `localStorage` entry point.
+   *
+   * The outcome comes back as a value rather than a throw. Every caller must
+   * check it before touching `cachedGames`: a failed write that still advanced
+   * the cache would leave the rest of the session reading a list the browser
+   * never took, so the save would look successful until the next reload.
    */
-  private saveToStorage(games: Game[]): void {
-    localStorage.setItem(this.storageKey, JSON.stringify(games));
+  private saveToStorage(games: Game[]): Result<void, unknown> {
+    return writeJson(this.storageKey, games);
   }
 
   private validateMoves(moves: string[], startingFen?: string): GameSaveError | null {

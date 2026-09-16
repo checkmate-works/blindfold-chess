@@ -1,5 +1,11 @@
 import { MAX_GAMES } from '@/config';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+import type { StorageMock } from '@/lib/storage/__test-support__/storage-mocks';
+import {
+  installLocalStorage,
+  makeUnreadableLocalStorage,
+} from '@/lib/storage/__test-support__/storage-mocks';
 
 import { LocalStorageGameRepository } from './local-storage-repository';
 
@@ -938,6 +944,159 @@ describe('LocalStorageGameRepository', () => {
         expect(game?.preferenceChangeLog).toEqual([
           { atMoveIndex: 4, key: 'boardVisibility', from: 'peek', to: 'always' },
         ]);
+      });
+    });
+  });
+
+  /**
+   * A browser that refuses to store is the one condition where the three
+   * public write paths deliberately behave differently, so each is pinned
+   * here: `create` / `update` report `storage-failed` as a value, `delete`
+   * rejects (its callers show an error toast off that rejection), and the
+   * reads degrade to an empty list. The rule they share is that none of them
+   * may advance the in-memory cache past what the browser actually took.
+   */
+  describe('when the browser refuses to store', () => {
+    const originalLocalStorage = Object.getOwnPropertyDescriptor(window, 'localStorage');
+
+    /**
+     * Storage that accepts `allowedWrites` writes and then rejects every one
+     * after — the shape of filling up a quota mid-session, which is when a
+     * player is most likely to hit this.
+     */
+    function makeStorageFillingUp(allowedWrites: number, error: Error): StorageMock {
+      const data = new Map<string, string>();
+      let writes = 0;
+      return {
+        getItem: (key) => data.get(key) ?? null,
+        setItem: (key, value) => {
+          if (writes++ >= allowedWrites) throw error;
+          data.set(key, value);
+        },
+        removeItem: (key) => {
+          data.delete(key);
+        },
+      };
+    }
+
+    const newGame = {
+      moves: [],
+      playerColor: 'white',
+      engineConfig: { kind: 'stockfish', skillLevel: 5 },
+      status: 'in_progress',
+    } satisfies Parameters<LocalStorageGameRepository['create']>[0];
+
+    beforeEach(() => {
+      // These paths log on the way out; the assertions are about the values.
+      vi.spyOn(console, 'error').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      if (originalLocalStorage) {
+        Object.defineProperty(window, 'localStorage', originalLocalStorage);
+      }
+    });
+
+    describe('reads', () => {
+      it('loadAll gives an empty list when localStorage is absent', async () => {
+        installLocalStorage(null);
+
+        await expect(new LocalStorageGameRepository().loadAll()).resolves.toEqual([]);
+      });
+
+      it('loadAll gives an empty list when localStorage throws on access', async () => {
+        installLocalStorage(makeUnreadableLocalStorage(new Error('SecurityError')));
+
+        await expect(new LocalStorageGameRepository().loadAll()).resolves.toEqual([]);
+      });
+
+      it('load gives null when localStorage throws on access', async () => {
+        installLocalStorage(makeUnreadableLocalStorage(new Error('SecurityError')));
+
+        await expect(new LocalStorageGameRepository().load('any-id')).resolves.toBeNull();
+      });
+    });
+
+    describe('create', () => {
+      it('returns storage-failed carrying what the browser threw', async () => {
+        const quotaError = new Error('QuotaExceededError');
+        installLocalStorage(makeStorageFillingUp(0, quotaError));
+
+        const result = await new LocalStorageGameRepository().create(newGame);
+
+        expect(result.ok).toBe(false);
+        if (!result.ok) {
+          expect(result.error.kind).toBe('storage-failed');
+          if (result.error.kind === 'storage-failed') {
+            expect(result.error.cause).toBe(quotaError);
+          }
+        }
+      });
+
+      it('does not leave the game in the cache after a refused write', async () => {
+        installLocalStorage(makeStorageFillingUp(0, new Error('QuotaExceededError')));
+        const repo = new LocalStorageGameRepository();
+
+        await repo.create(newGame);
+
+        // The whole point: if the cache had taken the new list, this would
+        // report a saved game that no reload will ever find.
+        await expect(repo.loadAll()).resolves.toEqual([]);
+      });
+
+      it('rejects rather than throws, so no caller sees an exception', async () => {
+        installLocalStorage(makeStorageFillingUp(0, new Error('QuotaExceededError')));
+
+        await expect(new LocalStorageGameRepository().create(newGame)).resolves.toMatchObject({
+          ok: false,
+        });
+      });
+    });
+
+    describe('update', () => {
+      it('returns storage-failed and keeps the previously saved moves', async () => {
+        const quotaError = new Error('QuotaExceededError');
+        // One write gets through (the create), the next is refused.
+        installLocalStorage(makeStorageFillingUp(1, quotaError));
+        const repo = new LocalStorageGameRepository();
+        const created = await repo.create(newGame);
+        expect(created.ok).toBe(true);
+        if (!created.ok) return;
+
+        const result = await repo.update(created.value, { ...newGame, moves: ['e4'] });
+
+        expect(result.ok).toBe(false);
+        if (!result.ok && result.error.kind === 'storage-failed') {
+          expect(result.error.cause).toBe(quotaError);
+        }
+        const stored = await repo.load(created.value);
+        expect(stored?.moves).toEqual([]);
+      });
+    });
+
+    describe('delete', () => {
+      it('rejects when the shortened list cannot be written', async () => {
+        installLocalStorage(makeStorageFillingUp(1, new Error('QuotaExceededError')));
+        const repo = new LocalStorageGameRepository();
+        const created = await repo.create(newGame);
+        expect(created.ok).toBe(true);
+        if (!created.ok) return;
+
+        // The home list, bulk delete, and the result page all key their error
+        // toast off this rejection.
+        await expect(repo.delete(created.value)).rejects.toThrow('Failed to delete game');
+      });
+
+      it('leaves the game in place when the write was refused', async () => {
+        installLocalStorage(makeStorageFillingUp(1, new Error('QuotaExceededError')));
+        const repo = new LocalStorageGameRepository();
+        const created = await repo.create(newGame);
+        expect(created.ok).toBe(true);
+        if (!created.ok) return;
+
+        await expect(repo.delete(created.value)).rejects.toThrow();
+
+        await expect(repo.load(created.value)).resolves.not.toBeNull();
       });
     });
   });

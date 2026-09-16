@@ -32,3 +32,17 @@ export function makeThrowingLocalStorage(error: Error): StorageMock {
     },
   };
 }
+
+/**
+ * A storage whose every accessor throws, including `getItem`.
+ *
+ * `makeThrowingLocalStorage` deliberately keeps reads working, because the
+ * availability probe only ever writes. Reproducing a browser that refuses the
+ * whole API — Firefox ETP, a sandboxed iframe — needs the read to throw too.
+ */
+export function makeUnreadableLocalStorage(error: Error): StorageMock {
+  const raise = (): never => {
+    throw error;
+  };
+  return { getItem: raise, setItem: raise, removeItem: raise };
+}

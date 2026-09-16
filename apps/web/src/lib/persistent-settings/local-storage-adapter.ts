@@ -1,4 +1,48 @@
 import type { PersistentStorage } from '@blindfold-chess/features/common';
+import { type Result, err, ok } from '@blindfold-chess/features/utils';
+
+/**
+ * Stand-in cause for a write attempted where `localStorage` does not exist at
+ * all — a server render, or a browser that does not expose the object.
+ * Nothing threw, so there is no real cause to hand back, and a caller that
+ * logs `result.error` would otherwise print `undefined`.
+ */
+const NO_STORAGE = new Error('localStorage is not available in this environment');
+
+/**
+ * The single place in the app that calls `localStorage.setItem`.
+ *
+ * Returns the outcome rather than throwing or swallowing, so each caller can
+ * pick its own posture: most ignore the result (a browser that will not store
+ * a preference is not an error condition), while the saved-game repository
+ * turns a failure into `{ kind: 'storage-failed' }` and keeps its in-memory
+ * cache untouched so it does not start reporting a save that never landed.
+ *
+ * The error is whatever the browser threw — a `QuotaExceededError` at quota,
+ * a `SecurityError` under Firefox ETP or in a sandboxed iframe — because that
+ * distinction is the only thing that tells "the user is out of room" apart
+ * from "this browser refuses storage entirely" once it reaches a log.
+ *
+ * `lib/storage/storage-availability.ts` answers a different question and is
+ * not a substitute for this catch. It runs a one-off probe write at startup
+ * to decide whether to inject AdSense / GA / CMP at all, so its answer is a
+ * property of the browser, taken once. Whether *this* write lands also
+ * depends on the payload — a browser with working storage still rejects the
+ * save that crosses the quota — so the per-call outcome has to come from the
+ * call itself.
+ */
+function writeRaw(key: string, value: string): Result<void, unknown> {
+  if (typeof window === 'undefined') return err(NO_STORAGE);
+  try {
+    window.localStorage.setItem(key, value);
+    return ok(undefined);
+  } catch (cause) {
+    // Reaching the property can throw as readily as the call: Firefox ETP
+    // leaves `window.localStorage` in place and raises on access, so the
+    // guard above is not a substitute for this catch.
+    return err(cause);
+  }
+}
 
 /**
  * SSR-safe `PersistentStorage` adapter backed by `window.localStorage`.
@@ -22,12 +66,11 @@ export const localStorageAdapter = {
     }
   },
   set(key: string, value: string): void {
-    if (typeof window === 'undefined') return;
-    try {
-      window.localStorage.setItem(key, value);
-    } catch {
-      // Swallow quota / private-mode errors.
-    }
+    // Deliberately void: `PersistentStorage` types `set` as `void |
+    // Promise<void>`, which is a union rather than bare `void`, so a
+    // signature returning anything else would stop satisfying it. Callers
+    // that need to know whether the write landed use `writeJson`.
+    writeRaw(key, value);
   },
   // `satisfies`, not an annotation: PersistentStorage allows an async `get`
   // (the React Native adapter is), and annotating would widen this one's
@@ -60,7 +103,23 @@ export function readJson<T>(key: string, fallback: T): T {
   }
 }
 
-/** Serialize and store a value for {@link readJson}. Inert on the server. */
-export function writeJson(key: string, value: unknown): void {
-  localStorageAdapter.set(key, JSON.stringify(value));
+/**
+ * Serialize and store a value for {@link readJson}. Inert on the server.
+ *
+ * The result reports whether the browser actually took the write. Ignoring it
+ * is the norm and is safe — it degrades to the same silent no-op the raw
+ * adapter always performed. Read it when losing the write is something the
+ * caller must act on rather than merely tolerate.
+ *
+ * Serialization failures (a circular structure) come back through the same
+ * channel, so no call to this function throws.
+ */
+export function writeJson(key: string, value: unknown): Result<void, unknown> {
+  let serialized: string;
+  try {
+    serialized = JSON.stringify(value);
+  } catch (cause) {
+    return err(cause);
+  }
+  return writeRaw(key, serialized);
 }
