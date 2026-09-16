@@ -4,6 +4,7 @@ const mockAuthenticateAndGuard = vi.fn();
 const mockGetForDelete = vi.fn();
 const mockDelete = vi.fn();
 const mockIsLinkable = vi.fn();
+const mockIsLinkableGame = vi.fn();
 const mockInsert = vi.fn();
 const mockNotifyGameOwner = vi.fn();
 
@@ -20,6 +21,7 @@ vi.mock('@/lib/db/game-chunks', () => ({
   deleteGameChunk: (...args: unknown[]) => mockDelete(...args),
   insertGameChunk: (...args: unknown[]) => mockInsert(...args),
   isLinkableChunkForViewer: (...args: unknown[]) => mockIsLinkable(...args),
+  isLinkableGameForViewer: (...args: unknown[]) => mockIsLinkableGame(...args),
 }));
 
 vi.mock('@/lib/security/rate-limit');
@@ -46,6 +48,7 @@ const { addGameChunkAction, deleteGameChunkAction } = await import('./game-chunk
 describe('addGameChunkAction', () => {
   beforeEach(() => {
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: CALLER } });
+    mockIsLinkableGame.mockResolvedValue(true);
     mockIsLinkable.mockResolvedValue(true);
     mockInsert.mockResolvedValue({ id: LINK_ID, createdAt: new Date('2026-07-30T00:00:00Z') });
   });
@@ -85,6 +88,35 @@ describe('addGameChunkAction', () => {
     });
   });
 
+  // The id in the request decides which game gets a suggestion row and whose
+  // owner gets notified, and nothing but the foreign key used to look at it.
+  // `isLinkableGameForViewer` collapses the three ways a game can be
+  // unreachable — never existed, soft-deleted, unpublished and not the
+  // caller's — into one answer; which rows that query actually admits is
+  // asserted against the generated SQL in `lib/db/games-visibility.test.ts`.
+  it('rejects a game the caller cannot reach, without inserting or notifying', async () => {
+    mockIsLinkableGame.mockResolvedValue(false);
+
+    const result = await addGameChunkAction({ gameId: GAME_ID, ply: 3, chunkId: CHUNK_ID });
+
+    expect(result).toEqual({ success: false, error: 'not_found' });
+    expect(mockInsert).not.toHaveBeenCalled();
+    expect(mockNotifyGameOwner).not.toHaveBeenCalled();
+    // Chunk eligibility is work owed to a real target; an unreachable parent
+    // is answered before any of it happens.
+    expect(mockIsLinkable).not.toHaveBeenCalled();
+  });
+
+  // Own-game reachability is the whole reason the check takes a viewer: an
+  // author linking a chunk to a game they have not published yet is allowed,
+  // and only the caller's id can tell that case from a stranger poking at the
+  // same unpublished id.
+  it('scopes the game check to the calling user', async () => {
+    await addGameChunkAction({ gameId: GAME_ID, ply: 3, chunkId: CHUNK_ID });
+
+    expect(mockIsLinkableGame).toHaveBeenCalledWith(GAME_ID, CALLER);
+  });
+
   it('rejects a chunk the caller may not link, without inserting', async () => {
     mockIsLinkable.mockResolvedValue(false);
 
@@ -111,6 +143,7 @@ describe('addGameChunkAction', () => {
     const result = await addGameChunkAction({ gameId: GAME_ID, ply: 3, chunkId: CHUNK_ID });
 
     expect(result).toEqual({ success: false, error: 'signInRequired' });
+    expect(mockIsLinkableGame).not.toHaveBeenCalled();
     expect(mockIsLinkable).not.toHaveBeenCalled();
     expect(mockInsert).not.toHaveBeenCalled();
   });

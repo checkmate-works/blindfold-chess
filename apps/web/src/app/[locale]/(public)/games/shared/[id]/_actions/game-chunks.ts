@@ -7,6 +7,7 @@ import {
   getGameChunkForDelete,
   insertGameChunk,
   isLinkableChunkForViewer,
+  isLinkableGameForViewer,
 } from '@/lib/db/game-chunks';
 import { notifyGameOwnerOfChunkLink } from '@/lib/notifications/game-chunk-link-notification';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
@@ -30,6 +31,15 @@ export type DeleteGameChunkResponse = { success: true } | { success: false; erro
  * may suggest a link; it is deduped by the (game, ply, chunk) unique
  * constraint, so a repeat link surfaces as `already_linked` rather than an error.
  *
+ * @design the target game is resolved for the viewer, not taken on trust
+ * `gameId` arrives from the client, and the `game_id` foreign key only asks
+ * that SOME game exist. `isLinkableGameForViewer` asks the question the
+ * surface actually implies — is this a game this member could be looking at
+ * — so a stale or guessed id cannot attach a suggestion to a game that 404s
+ * for its sender, nor make `notifyGameOwnerOfChunkLink` ping an owner about
+ * a game they unpublished or deleted. `not_found` is the same answer the
+ * repertoire-side action gives for an unreachable parent.
+ *
  * Eligible chunks are the published catalog plus the caller's own drafts —
  * see `linkableChunkPredicate`. The check re-asserts server-side what
  * `getLinkableChunkOptionsForViewer` already filtered for the picker.
@@ -52,6 +62,10 @@ export async function addGameChunkAction(input: AddGameChunkInput): Promise<AddG
     const guardResult = await authenticateGuardAndRequireProfile(RATE_LIMITS.linkGameChunk);
     if ('error' in guardResult) return { success: false, error: guardResult.error };
     const { user } = guardResult;
+
+    if (!(await isLinkableGameForViewer(input.gameId, user.id))) {
+      return { success: false, error: 'not_found' };
+    }
 
     if (!(await isLinkableChunkForViewer(input.chunkId, user.id))) {
       return { success: false, error: 'chunk_not_available' };
