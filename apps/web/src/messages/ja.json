@@ -3899,6 +3899,7 @@
       "statusActive": "広告非表示が有効です",
       "statusInactive": "現在広告非表示は有効ではありません",
       "activeUntil": "{date}まで",
+      "activeIndefinitely": "永年有効（期限なし）",
       "sourceSubscription": "サブスクリプション",
       "learnHowToEarn": "広告非表示特典の獲得方法を見る",
       "viewFullHistory": "すべての履歴を見る",
