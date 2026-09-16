@@ -40,6 +40,15 @@ export const DISPLAYABLE_STATUSES = ['active', 'trialing', 'past_due'] as const;
  *   tag. So a stricter rule applied only in memory would let /mypage/benefits
  *   report that ads are back while ads are in fact still suppressed.
  *
+ * What this leaves open is the mirror image: if the event that should have
+ * moved the status never arrives, the row grants benefits forever. That is
+ * measured rather than pre-empted — a daily job reports any benefit-active row
+ * whose period ended days ago, so a lost webhook surfaces as a warning to
+ * reconcile instead of as a silent perk (see
+ * `stale-subscription-periods.ts`). Revoking on the timestamp would trade that
+ * rare over-grant for an outage on every slow renewal, which is the more
+ * frequent event by far.
+ *
  * A scheduled cancellation is a separate question — see
  * {@link isCancellationScheduled}. A subscription with one pending is still
  * active until Stripe actually terminates it.
