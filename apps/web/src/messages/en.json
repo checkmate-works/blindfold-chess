@@ -3014,7 +3014,8 @@
     "recoverGame": "Recover and Continue",
     "recoverDescription": "Continue playing from move {count}. All invalid moves will be discarded.",
     "deleteGame": "Delete Game",
-    "deleteDescription": "Remove this corrupted game from your history and start fresh."
+    "deleteDescription": "Remove this corrupted game from your history and start fresh.",
+    "deleteFailed": "Could not delete the game. Your browser is not saving changes right now — this often happens in private browsing or when storage is full."
   },
   "largeDownloadConsent": {
     "title": "Large download required",

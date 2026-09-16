@@ -39,17 +39,17 @@ export function useGameDelete(): Return {
     if (!deleteConfirmGameId) return;
 
     const gameRepository = new LocalStorageGameRepository();
+    // The repository logs what the browser threw; the only thing left to
+    // decide here is which toast the user gets.
+    const deleted = await gameRepository.delete(deleteConfirmGameId);
 
-    try {
-      await gameRepository.delete(deleteConfirmGameId);
+    if (deleted.ok) {
       notifyGameListUpdated();
       showToast(t('gameDeletedToast'), 'success');
-    } catch (error) {
-      console.error('Failed to delete game:', error);
+    } else {
       showToast(t('deleteFailedToast'), 'error');
-    } finally {
-      setDeleteConfirmGameId(null);
     }
+    setDeleteConfirmGameId(null);
   };
 
   const cancelDelete = () => {

@@ -116,7 +116,7 @@ describe('useGameDelete', () => {
     });
 
     it('should delete the game and show success toast', async () => {
-      mockDelete.mockResolvedValue(undefined);
+      mockDelete.mockResolvedValue({ ok: true, value: undefined });
       const { result } = renderHook(() => useGameDelete());
 
       act(() => {
@@ -132,9 +132,13 @@ describe('useGameDelete', () => {
       expect(result.current.deleteConfirmGameId).toBeNull();
     });
 
-    it('should show error toast when delete fails', async () => {
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-      mockDelete.mockRejectedValue(new Error('Delete failed'));
+    it('should show error toast when the browser refuses the write', async () => {
+      // The repository reports a refused write as a value; the success toast
+      // must not fire off a delete that did not happen.
+      mockDelete.mockResolvedValue({
+        ok: false,
+        error: { kind: 'storage-failed', cause: new Error('QuotaExceededError') },
+      });
       const { result } = renderHook(() => useGameDelete());
 
       act(() => {
@@ -146,13 +150,15 @@ describe('useGameDelete', () => {
       });
 
       expect(mockShowToast).toHaveBeenCalledWith('deleteFailedToast', 'error');
+      expect(mockShowToast).not.toHaveBeenCalledWith('gameDeletedToast', 'success');
       expect(result.current.deleteConfirmGameId).toBeNull();
-      consoleErrorSpy.mockRestore();
     });
 
     it('should reset deleteConfirmGameId even on failure', async () => {
-      vi.spyOn(console, 'error').mockImplementation(() => {});
-      mockDelete.mockRejectedValue(new Error('Delete failed'));
+      mockDelete.mockResolvedValue({
+        ok: false,
+        error: { kind: 'storage-failed', cause: new Error('QuotaExceededError') },
+      });
       const { result } = renderHook(() => useGameDelete());
 
       act(() => {
@@ -170,7 +176,7 @@ describe('useGameDelete', () => {
 
   describe('confirmationModalProps callbacks', () => {
     it('onConfirm should trigger confirmDeleteGame', async () => {
-      mockDelete.mockResolvedValue(undefined);
+      mockDelete.mockResolvedValue({ ok: true, value: undefined });
       const { result } = renderHook(() => useGameDelete());
 
       act(() => {

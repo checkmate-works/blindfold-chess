@@ -35,7 +35,7 @@ interface IGameRepository {
   load(id: string): Promise<Game | null>;
   loadAll(): Promise<Game[]>;
   loadAllSorted(sortBy: GameSortOption, direction?: SortDirection): Promise<Game[]>;
-  delete(id: string): Promise<void>;
+  delete(id: string): Promise<Result<void, GameSaveError>>;
   saveMove(gameId: string, move: AlgebraicNotation): Promise<Result<void, GameSaveError>>;
 }
 
@@ -210,27 +210,33 @@ export class LocalStorageGameRepository implements IGameRepository {
   }
 
   /**
-   * Remove a game, throwing if the browser would not store the shortened list.
+   * Remove a game, reporting whether the browser stored the shortened list.
    *
-   * This is the one write here that still signals by throwing, and it is not
-   * an oversight: all four call sites await it inside a try/catch and use the
-   * rejection to tell the user the deletion did not happen — an error toast on
-   * the home game list and on bulk delete, inline error text on the result
-   * page. A deletion that silently does not delete is worse than a failed one,
-   * because the row is still there on the next render with no explanation.
+   * A deletion that silently does not delete is worse than a failed one — the
+   * row is still there on the next render with no explanation — so every call
+   * site has something to say to the user here: an error toast on the home
+   * game list and on bulk delete, inline error text on the result page and on
+   * the recovery page. Signalling that by rejecting left the obligation
+   * invisible to the compiler, and the recovery page had already dropped it,
+   * awaiting this method outside any try/catch. There a refused write became
+   * an unhandled rejection: the button stayed spinning, the redirect never
+   * ran, and the user was told nothing.
    *
-   * `create` and `update` report through `Result` instead because their
-   * failure has no such consumer: the auto-save loop logs it and moves on.
+   * Reporting as a value puts the failure in the same channel `create` and
+   * `update` already use, so the repository has one answer to "the browser
+   * would not store", and that answer is in the signature rather than in a
+   * control flow a reader has to reconstruct from the call site.
    */
-  async delete(id: string): Promise<void> {
+  async delete(id: string): Promise<Result<void, GameSaveError>> {
     const games = await this.ensureCache();
     const filteredGames = games.filter((game) => game.id !== id);
     const written = this.saveToStorage(filteredGames);
     if (!written.ok) {
       console.error('Failed to delete game:', written.error);
-      throw new Error('Failed to delete game', { cause: written.error });
+      return err({ kind: 'storage-failed', cause: written.error });
     }
     this.cachedGames = filteredGames;
+    return ok(undefined);
   }
 
   async saveMove(gameId: string, move: AlgebraicNotation): Promise<Result<void, GameSaveError>> {

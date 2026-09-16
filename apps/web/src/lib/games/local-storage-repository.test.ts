@@ -555,6 +555,38 @@ describe('LocalStorageGameRepository', () => {
     });
   });
 
+  describe('delete', () => {
+    it('removes the game and reports the write as landed', async () => {
+      const gameId = await createOk({
+        moves: ['e4'],
+        playerColor: 'white',
+        engineConfig: { kind: 'stockfish', skillLevel: 5 },
+        status: 'in_progress',
+      });
+
+      const result = await repository.delete(gameId);
+
+      expect(result.ok).toBe(true);
+      await expect(repository.load(gameId)).resolves.toBeNull();
+    });
+
+    it('leaves the other games alone', async () => {
+      const newGame = {
+        moves: [],
+        playerColor: 'white',
+        engineConfig: { kind: 'stockfish', skillLevel: 5 },
+        status: 'in_progress',
+      } satisfies Parameters<LocalStorageGameRepository['create']>[0];
+      const doomed = await createOk(newGame);
+      const kept = await createOk(newGame);
+
+      await repository.delete(doomed);
+
+      const remaining = await repository.loadAll();
+      expect(remaining.map((game) => game.id)).toEqual([kept]);
+    });
+  });
+
   describe('legacy format migration on read', () => {
     it('normalises a record with only the legacy skillLevel field into a Stockfish engineConfig', async () => {
       // Hand-craft a localStorage payload in the pre-migration shape — this is
@@ -949,12 +981,11 @@ describe('LocalStorageGameRepository', () => {
   });
 
   /**
-   * A browser that refuses to store is the one condition where the three
-   * public write paths deliberately behave differently, so each is pinned
-   * here: `create` / `update` report `storage-failed` as a value, `delete`
-   * rejects (its callers show an error toast off that rejection), and the
-   * reads degrade to an empty list. The rule they share is that none of them
-   * may advance the in-memory cache past what the browser actually took.
+   * A browser that refuses to store is pinned here for every public path:
+   * the three writes report `storage-failed` as a value and the reads degrade
+   * to an empty list. The rule they share is that none of them may advance
+   * the in-memory cache past what the browser actually took, so a refused
+   * write is still readable as the state the browser is holding.
    */
   describe('when the browser refuses to store', () => {
     const originalLocalStorage = Object.getOwnPropertyDescriptor(window, 'localStorage');
@@ -1075,16 +1106,31 @@ describe('LocalStorageGameRepository', () => {
     });
 
     describe('delete', () => {
-      it('rejects when the shortened list cannot be written', async () => {
+      it('returns storage-failed carrying what the browser threw', async () => {
+        const quotaError = new Error('QuotaExceededError');
+        // One write gets through (the create), the delete is refused.
+        installLocalStorage(makeStorageFillingUp(1, quotaError));
+        const repo = new LocalStorageGameRepository();
+        const created = await repo.create(newGame);
+        expect(created.ok).toBe(true);
+        if (!created.ok) return;
+
+        const result = await repo.delete(created.value);
+
+        expect(result.ok).toBe(false);
+        if (!result.ok && result.error.kind === 'storage-failed') {
+          expect(result.error.cause).toBe(quotaError);
+        }
+      });
+
+      it('does not throw, so a caller that forgets to check cannot crash', async () => {
         installLocalStorage(makeStorageFillingUp(1, new Error('QuotaExceededError')));
         const repo = new LocalStorageGameRepository();
         const created = await repo.create(newGame);
         expect(created.ok).toBe(true);
         if (!created.ok) return;
 
-        // The home list, bulk delete, and the result page all key their error
-        // toast off this rejection.
-        await expect(repo.delete(created.value)).rejects.toThrow('Failed to delete game');
+        await expect(repo.delete(created.value)).resolves.toMatchObject({ ok: false });
       });
 
       it('leaves the game in place when the write was refused', async () => {
@@ -1094,7 +1140,7 @@ describe('LocalStorageGameRepository', () => {
         expect(created.ok).toBe(true);
         if (!created.ok) return;
 
-        await expect(repo.delete(created.value)).rejects.toThrow();
+        await repo.delete(created.value);
 
         await expect(repo.load(created.value)).resolves.not.toBeNull();
       });
