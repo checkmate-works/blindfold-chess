@@ -8,6 +8,7 @@ import { validateUserId } from '@/app/admin/_lib/validators';
 import { GRANT_STATUS_CACHE_TAG } from '@/lib/cache-tags';
 import { db } from '@/lib/db';
 import { getClientIp } from '@/lib/security/client-ip';
+import { handleAdminActionError } from '@/lib/server-action-error';
 
 import type { CreatedAdminGrant } from '../_lib/grant-mutations';
 import { insertAdminGrant, notifyAdminGrant } from '../_lib/grant-mutations';
@@ -76,7 +77,6 @@ export async function createBulkGrants(params: BulkGrantParams): Promise<BulkGra
 
     return { success: true, grantedCount: created.length };
   } catch (error) {
-    console.error('Failed to create bulk grants:', error);
-    return { error: 'Failed to create bulk grants' };
+    return handleAdminActionError(error, '[createBulkGrants]', 'Failed to create bulk grants');
   }
 }

@@ -13,6 +13,7 @@ import { logModerationAction } from '@/lib/moderation/audit';
 import { validateModerationReason } from '@/lib/moderation/validate-reason';
 import { createNotification } from '@/lib/notifications/notification';
 import { getClientIp } from '@/lib/security/client-ip';
+import { handleAdminActionError } from '@/lib/server-action-error';
 
 import { requireAdmin } from '../../_lib/auth';
 
@@ -92,8 +93,7 @@ export async function grantRank(
     if (error instanceof RankAlreadyGrantedError) {
       return { error: 'alreadyGranted' };
     }
-    console.error('Failed to grant rank:', error);
-    return { error: 'failedToGrantRank' };
+    return handleAdminActionError(error, '[grantRank]', 'failedToGrantRank');
   }
 
   // No revalidatePath: the admin user page is dynamic, and `GrantRankButton`

@@ -12,6 +12,7 @@ import { logModerationAction } from '@/lib/moderation/audit';
 import { createNotification } from '@/lib/notifications/notification';
 import { grantAdminPoints } from '@/lib/points';
 import { getClientIp } from '@/lib/security/client-ip';
+import { handleAdminActionError } from '@/lib/server-action-error';
 
 import { validateAmount } from '../_lib/validation';
 
@@ -89,7 +90,6 @@ export async function createPointGrant(formData: FormData): Promise<ActionResult
     revalidatePath('/admin/coins');
     return { success: true };
   } catch (error) {
-    console.error('Failed to create point grant:', error);
-    return { error: 'Failed to create point grant' };
+    return handleAdminActionError(error, '[createPointGrant]', 'Failed to create point grant');
   }
 }
