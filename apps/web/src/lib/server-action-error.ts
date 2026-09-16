@@ -36,20 +36,20 @@ export function handleServerActionError(
  *
  * Same reporting as {@link handleServerActionError}, different response:
  * admin actions return the `{ error }` branch of `ActionResult`, with no
- * `success` key and with a message the admin UI renders verbatim (admin
- * surfaces are English-only and not translated), rather than an error code
- * a client component maps to a translation. That shape mismatch is why the
- * admin actions never adopted `handleServerActionError` and instead each
- * hand-rolled a bare `console.error` — or nothing at all — leaving their
- * failures out of Sentry entirely.
+ * `success` key. That shape mismatch is why they never adopted
+ * `handleServerActionError` and instead each hand-rolled a bare
+ * `console.error` — or nothing at all — leaving their failures out of Sentry
+ * entirely.
  *
- * `message` is required: it is the string the caller already returns today,
- * and defaulting it would invite a call site to silently change what the
- * admin sees.
+ * `message` is required and is passed through untouched. What the admin
+ * surface does with it is the caller's business and varies: some sites return
+ * prose the component renders as-is, others a short code a local map turns
+ * into a sentence. Defaulting this argument would invite a call site to
+ * silently change what the admin sees.
  *
  * @param error - The caught error
  * @param context - A human-readable label for the log message (e.g. "[createGrant]")
- * @param message - The message returned to the admin UI, unchanged
+ * @param message - The error string the caller returns, passed through unchanged
  */
 export function handleAdminActionError(
   error: unknown,
