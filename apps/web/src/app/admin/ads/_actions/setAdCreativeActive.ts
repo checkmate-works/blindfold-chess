@@ -4,6 +4,7 @@ import { eq } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
 import { adCreatives, db } from '@/lib/db';
+import { handleAdminActionError } from '@/lib/server-action-error';
 
 import { requireAdmin } from '../../_lib/auth';
 import { revalidateAdCreatives } from '../_lib/revalidate';
@@ -27,7 +28,7 @@ export async function setAdCreativeActive(id: string, isActive: boolean): Promis
 
     revalidateAdCreatives();
     return { success: true };
-  } catch {
-    return { error: 'Failed to update ad creative' };
+  } catch (error) {
+    return handleAdminActionError(error, '[setAdCreativeActive]', 'Failed to update ad creative');
   }
 }

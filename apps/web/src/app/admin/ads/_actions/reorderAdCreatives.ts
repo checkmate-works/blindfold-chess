@@ -5,6 +5,7 @@ import { eq } from 'drizzle-orm';
 import type { ActionResult } from '@/lib/action-types';
 import { isAdSlot } from '@/lib/ads/registry';
 import { adCreatives, db } from '@/lib/db';
+import { handleAdminActionError } from '@/lib/server-action-error';
 
 import { requireAdmin } from '../../_lib/auth';
 import { revalidateAdCreatives } from '../_lib/revalidate';
@@ -47,7 +48,7 @@ export async function reorderAdCreatives(
 
     revalidateAdCreatives();
     return { success: true };
-  } catch {
-    return { error: 'Failed to reorder ad creatives' };
+  } catch (error) {
+    return handleAdminActionError(error, '[reorderAdCreatives]', 'Failed to reorder ad creatives');
   }
 }

@@ -11,6 +11,7 @@ import { db, profiles } from '@/lib/db';
 import { logModerationAction } from '@/lib/moderation/audit';
 import { validateModerationReason } from '@/lib/moderation/validate-reason';
 import { getClientIp } from '@/lib/security/client-ip';
+import { handleAdminActionError } from '@/lib/server-action-error';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 import { requireAdmin } from '../../_lib/auth';
@@ -39,7 +40,11 @@ export async function banUser(targetUserId: string, reason: string): Promise<Act
   });
 
   if (error) {
-    return { error: 'failedToBan' };
+    return handleAdminActionError(
+      error,
+      `[banUser] Supabase Auth ban ${targetUserId}`,
+      'failedToBan'
+    );
   }
 
   // 2. Update profile and record audit log atomically in a DB transaction
@@ -67,12 +72,20 @@ export async function banUser(targetUserId: string, reason: string): Promise<Act
 
       return updated?.username;
     });
-  } catch {
+  } catch (error) {
+    // Report before rolling back: the rollback is itself an external call
+    // that can throw, and losing the original cause would leave a user banned
+    // at the auth level with no profile row or audit entry explaining it.
+    const failure = handleAdminActionError(
+      error,
+      `[banUser] ban state for ${targetUserId}`,
+      'failedToBan'
+    );
     // Rollback Supabase Auth ban if DB transaction fails
     await adminClient.auth.admin.updateUserById(targetUserId, {
       ban_duration: 'none',
     });
-    return { error: 'failedToBan' };
+    return failure;
   }
 
   // A ban does not change the cached public-profile projection, but every
