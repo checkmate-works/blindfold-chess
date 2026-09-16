@@ -3014,7 +3014,8 @@
     "recoverGame": "Recuperar e Continuar",
     "recoverDescription": "Continuar jogando a partir do movimento {count}. Todos os movimentos inválidos serão descartados.",
     "deleteGame": "Excluir Partida",
-    "deleteDescription": "Excluir esta partida corrompida do seu histórico e começar do zero."
+    "deleteDescription": "Excluir esta partida corrompida do seu histórico e começar do zero.",
+    "deleteFailed": "Não foi possível excluir a partida. Seu navegador não está salvando alterações no momento — isso costuma acontecer na navegação privada ou quando o armazenamento está cheio."
   },
   "largeDownloadConsent": {
     "title": "Download grande necessário",

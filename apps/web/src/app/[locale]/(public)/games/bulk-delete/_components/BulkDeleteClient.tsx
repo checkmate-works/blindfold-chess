@@ -41,14 +41,20 @@ export function BulkDeleteClient() {
       const gameRepository = new LocalStorageGameRepository();
 
       for (const gameId of gameIdsToDelete) {
-        await gameRepository.delete(gameId);
+        const deleted = await gameRepository.delete(gameId);
+        // Stop at the first refusal rather than trying the rest: they all go
+        // to the storage that just said no. The games deleted before it are
+        // genuinely gone, so this leaves a partially shortened history; the
+        // alternative is pressing on and reporting a deleted count that
+        // includes games still sitting in storage.
+        if (!deleted.ok) {
+          showToast(t('deleteFailedToast'), 'error');
+          return;
+        }
       }
 
       showToast(t('deletedToast', { count: gameIdsToDelete.length }), 'success');
       router.push('/games');
-    } catch (error) {
-      console.error('Failed to delete games:', error);
-      showToast(t('deleteFailedToast'), 'error');
     } finally {
       setIsProcessing(false);
     }

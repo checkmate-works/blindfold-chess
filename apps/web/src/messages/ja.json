@@ -3014,7 +3014,8 @@
     "recoverGame": "修復して続行",
     "recoverDescription": "{count}手目から続行します。無効な手はすべて破棄されます。",
     "deleteGame": "ゲームを削除",
-    "deleteDescription": "破損したゲームを履歴から削除して、新しく始めます。"
+    "deleteDescription": "破損したゲームを履歴から削除して、新しく始めます。",
+    "deleteFailed": "ゲームを削除できませんでした。ブラウザが現在変更を保存できない状態です。プライベートブラウジング中や保存容量がいっぱいのときに起こります。"
   },
   "largeDownloadConsent": {
     "title": "大きなファイルのダウンロード",

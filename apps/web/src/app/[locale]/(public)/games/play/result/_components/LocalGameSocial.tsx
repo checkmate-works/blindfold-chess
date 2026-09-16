@@ -79,16 +79,18 @@ export function LocalGameSocial({
   async function handleDelete() {
     setPending(true);
     setError(null);
-    try {
-      await new LocalStorageGameRepository().delete(gameId);
-      notifyGameListUpdated();
-      // The page's own game just went away — `replace` so Back doesn't return
-      // to a result screen that can no longer load.
-      router.replace(`/${locale}/games`);
-    } catch {
+
+    const deleted = await new LocalStorageGameRepository().delete(gameId);
+    if (!deleted.ok) {
       setPending(false);
       setError(t('detail.errors.generic'));
+      return;
     }
+
+    notifyGameListUpdated();
+    // The page's own game just went away — `replace` so Back doesn't return
+    // to a result screen that can no longer load.
+    router.replace(`/${locale}/games`);
   }
 
   return (

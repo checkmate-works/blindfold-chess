@@ -3014,7 +3014,8 @@
     "recoverGame": "Recuperar y Continuar",
     "recoverDescription": "Continuar jugando desde el movimiento {count}. Todos los movimientos inválidos serán descartados.",
     "deleteGame": "Eliminar Partida",
-    "deleteDescription": "Eliminar esta partida dañada de tu historial y empezar de nuevo."
+    "deleteDescription": "Eliminar esta partida dañada de tu historial y empezar de nuevo.",
+    "deleteFailed": "No se pudo eliminar la partida. Tu navegador no está guardando cambios en este momento; suele ocurrir en navegación privada o cuando el almacenamiento está lleno."
   },
   "largeDownloadConsent": {
     "title": "Se requiere una descarga grande",

@@ -25,6 +25,7 @@ export function PlayErrorClient({ locale }: Props) {
   const router = useRouter();
   const t = useTranslations('playError');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   // Get error details from URL params
   const invalidMove = searchParams.get('invalidMove') || '';
@@ -113,11 +114,20 @@ export function PlayErrorClient({ locale }: Props) {
 
   const handleDelete = async () => {
     setIsProcessing(true);
+    setDeleteError(null);
 
     if (gameId) {
-      // Delete from localStorage
       const gameRepository = new LocalStorageGameRepository();
-      await gameRepository.delete(gameId);
+      const deleted = await gameRepository.delete(gameId);
+      if (!deleted.ok) {
+        // Unlike the recover path above, going on to the redirect would be a
+        // claim rather than a shortcut: the corrupted game is still in the
+        // list, and the next time the user opens it they land back here with
+        // no idea why. Stay put and say so.
+        setDeleteError(t('deleteFailed'));
+        setIsProcessing(false);
+        return;
+      }
     }
 
     // Redirect to home
@@ -221,6 +231,12 @@ export function PlayErrorClient({ locale }: Props) {
             </div>
           </div>
         </button>
+
+        {deleteError && (
+          <p role="alert" className="text-sm text-destructive">
+            {deleteError}
+          </p>
+        )}
       </div>
     </div>
   );
