@@ -65,7 +65,10 @@ type CreateTopicPostDetailPageConfig<
   }) =>
     | Promise<{ title: string; description?: string; path: string }>
     | { title: string; description?: string; path: string };
-  /** Base i18n namespace holding `replies.followRequired` (e.g. `topics.openings`). */
+  /**
+   * Base i18n namespace holding `replies.followRequired` and
+   * `replies.repliesDisabled` (e.g. `topics.openings`).
+   */
   topicNamespace: string;
   /** Assemble the topic-specific layout props. */
   buildView: (ctx: {
@@ -166,10 +169,21 @@ export function createTopicPostDetailPage<
     );
 
     const rt = await getTranslations({ locale, namespace: config.topicNamespace });
+    // Why the post's own setting decides this rather than `!canReply`:
+    // `canReply` is false for every signed-out reader, including on a post
+    // anyone may reply to, where the honest response is the sign-in CTA and not
+    // a restriction notice. Read off `replyPermission` and the message covers
+    // exactly the restricted posts, signed-out readers included — who would
+    // otherwise get no notice at all, plus a sign-in prompt implying a reply
+    // box that signing in alone does not produce.
     const replyRestrictionMessage =
-      !isAuthor && post.replyPermission === 'followers' && !canReply
-        ? rt('replies.followRequired')
-        : null;
+      isAuthor || canReply
+        ? null
+        : post.replyPermission === 'nobody'
+          ? rt('replies.repliesDisabled')
+          : post.replyPermission === 'followers'
+            ? rt('replies.followRequired')
+            : null;
 
     const tCommon = await getTranslations({ locale, namespace: 'Common' });
     const authorName = resolveAuthorName(post.author, { fallback: tCommon('deletedUser') });

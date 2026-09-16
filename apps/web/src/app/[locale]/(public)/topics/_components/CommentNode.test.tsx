@@ -133,11 +133,14 @@ describe('CommentNode', () => {
       expect(screen.getByText('replyButton')).toBeDefined();
     });
 
-    it('hides the reply button when the viewer is not logged in', () => {
+    // A signed-out viewer reaches the tree with canReply already false —
+    // `canUserReply` answers false whenever there is no user id — so the row
+    // has no separate signed-in condition to test.
+    it('hides the reply button for a signed-out viewer', () => {
       renderNode({
         node: makeNode({ id: 'a' }),
         currentUserId: undefined,
-        canReply: true,
+        canReply: false,
         replyGroups: [],
       });
 

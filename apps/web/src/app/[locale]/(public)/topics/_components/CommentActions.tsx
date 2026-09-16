@@ -23,8 +23,7 @@ type Props = {
  */
 export function CommentActions({ node, onReply }: Props) {
   const tTopics = useTranslations('topics');
-  const { locale, topicKey, currentUserId, canReply, toggleLikeAction, i18n } =
-    useCommentTreeContext();
+  const { locale, topicKey, canReply, toggleLikeAction, i18n } = useCommentTreeContext();
 
   return (
     <div className="flex items-center gap-4">
@@ -37,7 +36,14 @@ export function CommentActions({ node, onReply }: Props) {
         toggleLikeAction={toggleLikeAction}
         i18nNamespace={i18n.likeNamespace}
       />
-      {canReply && currentUserId !== undefined && (
+      {/*
+        `canReply` alone decides this: it is false for a signed-out reader on
+        any post, so there is no second "is the viewer logged in?" condition to
+        add here. Adding one would restate the reply rule in the UI, and a
+        restatement is what let a signed-out reader of a followers-only post be
+        told nothing about the restriction while being offered a sign-in prompt.
+      */}
+      {canReply && (
         <button
           type="button"
           onClick={onReply}

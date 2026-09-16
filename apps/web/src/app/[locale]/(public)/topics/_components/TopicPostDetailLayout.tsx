@@ -63,15 +63,17 @@ type Props = {
   user: User | null;
   topicKey: string;
   /**
-   * Whether the *current user* may post replies in this thread (derived from
-   * the OP's `replyPermission`). Controls whether the JoinConversationToggle
-   * / ReplyForm renders or whether the restriction message is shown instead.
+   * Whether the viewer may post replies in this thread (derived from the OP's
+   * `replyPermission`). False for a signed-out viewer, who cannot reply to any
+   * post — so a false here does not mean the thread is restricted. Whether it
+   * is restricted, and why, is what `replyRestrictionMessage` carries.
    */
   canReply: boolean;
   /**
-   * Human-readable explanation shown when `canReply` is false because of a
-   * follower-only / nobody restriction (rather than because the user is
-   * signed out).
+   * Human-readable explanation of the OP's reply restriction, shown in place of
+   * the composer / CTA when this viewer is blocked by it. Null when the post
+   * carries no restriction for this viewer — including for a signed-out viewer
+   * of an open post, who gets the sign-in CTA instead.
    */
   replyRestrictionMessage: string | null;
   toggleLikeAction: ToggleLikeAction;
@@ -212,6 +214,45 @@ export async function TopicPostDetailLayout({
   // out of the empty-state (reply-form) branch.
   const replyCount = replies.filter((r) => !r.deletedAt).length;
 
+  // The collapsed CTA. A signed-in reader expands it into the composer; a
+  // signed-out one gets the sign-in prompt the toggle itself raises.
+  const joinCta = (
+    <JoinConversationToggle count={comments.count} joinLabel={tTopics('joinConversation')}>
+      <ReplyForm
+        locale={locale}
+        topicKey={topicKey}
+        postId={rootWithMeta.id}
+        attachmentActions={replyAttachmentActions}
+        i18nNamespace={i18n.replyNamespace}
+      />
+    </JoinConversationToggle>
+  );
+
+  // Exactly one of three answers to "can I join this thread?":
+  //  - the OP restricts replies and this viewer is blocked by it — say so, and
+  //    offer nothing. Signed-out viewers land here too: the sign-in CTA would
+  //    promise them a reply box that the restriction still withholds after they
+  //    sign in, while saying nothing about the restriction itself.
+  //  - the viewer may reply — the composer, or the CTA that expands into it.
+  //  - the viewer is signed out on an unrestricted post — the CTA, whose click
+  //    raises the sign-in prompt.
+  // The trailing null is for a caller that passes `canReply: false` with no
+  // message: better an absent composer than one whose submit the Server Action
+  // would reject with an error the page never explained.
+  const replyAffordance = replyRestrictionMessage ? (
+    <p className="text-sm text-muted-foreground italic">{replyRestrictionMessage}</p>
+  ) : canReply && replyCount === 0 ? (
+    <ReplyForm
+      locale={locale}
+      topicKey={topicKey}
+      postId={rootWithMeta.id}
+      attachmentActions={replyAttachmentActions}
+      i18nNamespace={i18n.replyNamespace}
+    />
+  ) : canReply || !user ? (
+    joinCta
+  ) : null;
+
   return (
     <PageLayout title={pageTitle} locale={locale} breadcrumb={breadcrumbItems} divider={false}>
       <ScrollToHashOnMount />
@@ -257,29 +298,7 @@ export async function TopicPostDetailLayout({
 
       <SectionTitle id="comments">{comments.sectionTitle}</SectionTitle>
 
-      {user && !canReply ? (
-        replyRestrictionMessage && (
-          <p className="text-sm text-muted-foreground italic">{replyRestrictionMessage}</p>
-        )
-      ) : user && replyCount === 0 ? (
-        <ReplyForm
-          locale={locale}
-          topicKey={topicKey}
-          postId={rootWithMeta.id}
-          attachmentActions={replyAttachmentActions}
-          i18nNamespace={i18n.replyNamespace}
-        />
-      ) : (
-        <JoinConversationToggle count={comments.count} joinLabel={tTopics('joinConversation')}>
-          <ReplyForm
-            locale={locale}
-            topicKey={topicKey}
-            postId={rootWithMeta.id}
-            attachmentActions={replyAttachmentActions}
-            i18nNamespace={i18n.replyNamespace}
-          />
-        </JoinConversationToggle>
-      )}
+      {replyAffordance}
 
       {replyCount > 0 && (
         <>
