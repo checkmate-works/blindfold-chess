@@ -24,6 +24,10 @@
     {
       "path": "/api/cron/purge-deleted-accounts",
       "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/audit-subscription-periods",
+      "schedule": "0 7 * * *"
     }
   ]
 }
