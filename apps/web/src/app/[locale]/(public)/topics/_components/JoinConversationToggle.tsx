@@ -4,6 +4,7 @@ import { type ReactNode, useState } from 'react';
 
 import { FaRegComment } from 'react-icons/fa';
 
+import { JOIN_CONVERSATION_TOGGLE_CHROME } from '@/app/[locale]/(public)/topics/_lib/skeleton-layout-classes';
 import { AuthPromptModal } from '@/app/[locale]/_components/AuthPromptModal';
 import { useAuthGuard } from '@/app/[locale]/_hooks/use-auth-guard';
 
@@ -79,7 +80,7 @@ export function JoinConversationToggle({
       <button
         type="button"
         onClick={() => guardAction(onActivate ?? (() => setIsOpen(true)))}
-        className="flex w-full items-center justify-center gap-2 rounded-md border border-border bg-card px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary focus:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+        className={`${JOIN_CONVERSATION_TOGGLE_CHROME} text-foreground transition-colors hover:bg-secondary focus:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer`}
       >
         {icon}
         <span className="text-muted-foreground">{count.toLocaleString()}</span>
