@@ -1,4 +1,4 @@
-import { and, eq, isNull, or } from 'drizzle-orm';
+import { and, eq, isNull } from 'drizzle-orm';
 
 import { games } from './schema';
 
@@ -21,26 +21,4 @@ import { games } from './schema';
  */
 export function publiclyVisible() {
   return and(isNull(games.deletedAt), eq(games.status, 'public'));
-}
-
-/**
- * The same rule widened by one viewer: a game they may act on because it is
- * public, or because it is theirs. Soft-deleted is excluded on BOTH branches —
- * deleting a game removes it from its author's reach as well, which is why the
- * owner arm repeats `deleted_at IS NULL` rather than being an unguarded `OR
- * author_id = …`.
- *
- * `author_id` is null on an account-less game, so such a game only ever
- * qualifies through the public branch — no `viewerId` can match it.
- *
- * This is for write paths that need "could this member be looking at this
- * game": linking a chunk to a move, say, where accepting an id the site would
- * 404 for its sender lets a stale or guessed id reach the owner's
- * notifications. Read paths whose OUTPUT is viewer-independent — the gallery,
- * a feed row, a backlink list — must keep using {@link publiclyVisible}, or
- * they start rendering one member's unpublished game to that member only, with
- * no marker saying so.
- */
-export function visibleToViewer(viewerId: string) {
-  return or(publiclyVisible(), and(isNull(games.deletedAt), eq(games.authorId, viewerId)));
 }

@@ -7,7 +7,7 @@ import {
   getGameChunkForDelete,
   insertGameChunk,
   isLinkableChunkForViewer,
-  isLinkableGameForViewer,
+  isLinkableGame,
 } from '@/lib/db/game-chunks';
 import { notifyGameOwnerOfChunkLink } from '@/lib/notifications/game-chunk-link-notification';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
@@ -31,13 +31,15 @@ export type DeleteGameChunkResponse = { success: true } | { success: false; erro
  * may suggest a link; it is deduped by the (game, ply, chunk) unique
  * constraint, so a repeat link surfaces as `already_linked` rather than an error.
  *
- * @design the target game is resolved for the viewer, not taken on trust
+ * @design the target game is resolved, not taken on trust
  * `gameId` arrives from the client, and the `game_id` foreign key only asks
- * that SOME game exist. `isLinkableGameForViewer` asks the question the
- * surface actually implies — is this a game this member could be looking at
- * — so a stale or guessed id cannot attach a suggestion to a game that 404s
- * for its sender, nor make `notifyGameOwnerOfChunkLink` ping an owner about
- * a game they unpublished or deleted. `not_found` is the same answer the
+ * that SOME game exist. `isLinkableGame` asks what this surface actually
+ * implies — that the game is one the site will serve — so a stale or guessed
+ * id cannot attach a suggestion to a game that 404s, nor make
+ * `notifyGameOwnerOfChunkLink` ping an owner about one they unpublished or
+ * deleted. That holds for the game's own author as well: the detail page
+ * shows them no more than anyone else, so a game they have not published is
+ * no more linkable for them. `not_found` is the same answer the
  * repertoire-side action gives for an unreachable parent.
  *
  * Eligible chunks are the published catalog plus the caller's own drafts —
@@ -63,7 +65,7 @@ export async function addGameChunkAction(input: AddGameChunkInput): Promise<AddG
     if ('error' in guardResult) return { success: false, error: guardResult.error };
     const { user } = guardResult;
 
-    if (!(await isLinkableGameForViewer(input.gameId, user.id))) {
+    if (!(await isLinkableGame(input.gameId))) {
       return { success: false, error: 'not_found' };
     }
 

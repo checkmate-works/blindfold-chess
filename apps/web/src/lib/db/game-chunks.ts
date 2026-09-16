@@ -10,7 +10,7 @@ import 'server-only';
 import { linkableChunkPredicate } from '@/lib/chunks/linkability';
 
 import { CHUNK_LINK_COLUMNS, type ChunkLink, mapChunkLinkRow } from './chunk-link-row';
-import { visibleToViewer } from './games-visibility';
+import { publiclyVisible } from './games-visibility';
 import { db } from './index';
 import { liveProfileJoinOn } from './profile-select';
 import { chunks, gameChunks, games, profiles } from './schema';
@@ -64,25 +64,30 @@ export async function isLinkableChunkForViewer(
 }
 
 /**
- * True if `viewerId` may link a chunk to this game: it exists, is live, and is
- * either public or their own (`visibleToViewer`).
+ * True if a chunk may be linked to this game at all: it exists and is publicly
+ * visible (live and published).
  *
  * The chunk half of a link is vetted by {@link isLinkableChunkForViewer}; this
  * is the game half, and without it the only thing standing between a link row
  * and an arbitrary `game_id` is the foreign key. A stale or guessed id would
- * otherwise attach a suggestion to a game the site 404s for the member sending
- * it — and make `notifyGameOwnerOfChunkLink` ping that game's owner about one
- * they had unpublished.
+ * otherwise attach a suggestion to a game nobody can open, and make
+ * `notifyGameOwnerOfChunkLink` ping that game's owner about one they had
+ * unpublished or deleted.
  *
- * The own-game arm costs nothing in reach: the notification no-ops on a
- * self-link, so widening the gate by the viewer's own games cannot be used to
- * reach anybody.
+ * Unlike the chunk half, this takes no viewer — deliberately. The chunk
+ * catalog shows an author their own unpublished drafts, so its rule cannot be
+ * answered without knowing who asks; a shared game has no such carve-out. The
+ * detail page (`getGameById`) serves `publiclyVisible()` games and nothing
+ * else, so a game that is soft-deleted or not yet published is a 404 for its
+ * author too. Admitting the author here would let a link, and a row in
+ * `game_chunks`, exist against a page that answers 404 to every request
+ * including theirs.
  */
-export async function isLinkableGameForViewer(gameId: string, viewerId: string): Promise<boolean> {
+export async function isLinkableGame(gameId: string): Promise<boolean> {
   const [row] = await db
     .select({ id: games.id })
     .from(games)
-    .where(and(eq(games.id, gameId), visibleToViewer(viewerId)))
+    .where(and(eq(games.id, gameId), publiclyVisible()))
     .limit(1);
   return row !== undefined;
 }
