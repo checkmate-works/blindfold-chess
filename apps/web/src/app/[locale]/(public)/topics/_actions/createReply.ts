@@ -15,7 +15,8 @@ import { UUID_RE, validateUUID } from '@/lib/validations/uuid';
 
 import type { TopicType } from '../_lib/constants';
 import type { ImageAttachResult } from '../_lib/image-attach-types';
-import { enforceReplyPermission, resolveReplyTarget } from '../_lib/reply-resolution';
+import { enforceReplyPermission } from '../_lib/permissions';
+import { resolveReplyTarget } from '../_lib/reply-resolution';
 
 export type CreateReplyState = {
   error?: string;

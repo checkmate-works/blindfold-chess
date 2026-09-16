@@ -1,14 +1,16 @@
 import { and, eq, isNull } from 'drizzle-orm';
 
-import { db, topicPosts, userFollows } from '@/lib/db';
+import { db, topicPosts } from '@/lib/db';
+
+import type { PermissionPost } from './permissions';
 
 /** The reply's thread attachment plus the post that governs its permission. */
 export type ReplyTarget = {
   parentId: string;
   rootPostId: string;
-  // userId is nullable: the governing post's author may have been anonymised
-  // (account purged → user_id NULL). Notifications to a null author are skipped.
-  permissionPost: { userId: string | null; replyPermission: string };
+  permissionPost: PermissionPost;
+  // Null when the replied-to post's author was anonymised (account purged →
+  // user_id NULL). Notifications to a null author are skipped.
   notifyUserId: string | null;
 };
 
@@ -91,42 +93,4 @@ export async function resolveReplyTarget(
     permissionPost: rootPost,
     notifyUserId: targetReply.userId,
   };
-}
-
-/**
- * Enforce the reply-permission gate (`nobody` / `followers`) for a non-author
- * replier. Returns `{ error }` when the gate blocks the reply, or `null` when
- * it is allowed. The post author is always allowed.
- */
-export async function enforceReplyPermission(
-  permissionPost: { userId: string | null; replyPermission: string },
-  userId: string
-): Promise<{ error: string } | null> {
-  if (permissionPost.userId === userId) {
-    return null;
-  }
-
-  if (permissionPost.replyPermission === 'nobody') {
-    return { error: 'repliesDisabled' };
-  }
-
-  if (permissionPost.replyPermission === 'followers') {
-    // An anonymised (purged) author can't be followed, so the gate can never
-    // be satisfied — and there is no id to match against.
-    if (!permissionPost.userId) {
-      return { error: 'followRequired' };
-    }
-    const [follow] = await db
-      .select({ id: userFollows.id })
-      .from(userFollows)
-      .where(
-        and(eq(userFollows.followerId, userId), eq(userFollows.followingId, permissionPost.userId))
-      );
-
-    if (!follow) {
-      return { error: 'followRequired' };
-    }
-  }
-
-  return null;
 }
