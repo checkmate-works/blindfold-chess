@@ -173,9 +173,9 @@ export function createTopicPostDetailPage<
     // `canReply` is false for every signed-out reader, including on a post
     // anyone may reply to, where the honest response is the sign-in CTA and not
     // a restriction notice. Read off `replyPermission` and the message covers
-    // exactly the restricted posts — for signed-out readers too, who until now
-    // saw no notice at all and a sign-in prompt implying they could reply once
-    // signed in.
+    // exactly the restricted posts, signed-out readers included — who would
+    // otherwise get no notice at all, plus a sign-in prompt implying a reply
+    // box that signing in alone does not produce.
     const replyRestrictionMessage =
       isAuthor || canReply
         ? null
