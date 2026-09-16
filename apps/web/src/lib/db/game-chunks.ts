@@ -124,12 +124,19 @@ type GameChunkWriteTx = Pick<typeof db, 'select' | 'insert'>;
  * row landed.
  *
  * @design why this validates instead of leaning on the FK
- * `insertGameChunk` lets the `game_id` foreign key reject a bad game,
- * because there the failed insert is the whole operation. Here the insert
- * shares a transaction with the chunk itself, so a raised FK would roll the
- * chunk back too — losing the thing the author actually came to write over
- * a stale or hand-edited `?game=`. The existence check moves the failure
- * from "abort" to "skip".
+ * Here the insert shares a transaction with the chunk itself, so a raised FK
+ * would roll the chunk back too — losing the thing the author actually came
+ * to write over a stale or hand-edited `?game=`. The existence check moves
+ * that failure from "abort" to "skip".
+ *
+ * The lookup is filtered by `publiclyVisible()`, the same rule
+ * {@link isLinkableGame} applies to the picker path: a foreign key is happy
+ * with any game id, including one that is soft-deleted or was never
+ * published, and `createChunkEntry` notifies the game's owner whenever this
+ * returns true. Without the filter a hand-edited `?game=` would reach the
+ * owner of a game the site serves to nobody. Folding it into the move-count
+ * SELECT costs no extra round-trip; a game the filter rejects simply looks
+ * missing, which this already handles by skipping the link.
  *
  * The ply is bounds-checked against the game's move list for the same
  * reason a link needs a target at all: `game_chunks.ply` has no DB
@@ -148,7 +155,7 @@ export async function linkNewChunkToGameMove(
   const [game] = await tx
     .select({ moveCount: sql<number>`coalesce(jsonb_array_length(${games.moves}), 0)` })
     .from(games)
-    .where(eq(games.id, params.gameId))
+    .where(and(eq(games.id, params.gameId), publiclyVisible()))
     .limit(1);
   if (!game || params.ply < 0 || params.ply >= game.moveCount) return false;
 

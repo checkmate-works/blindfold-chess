@@ -444,6 +444,24 @@ describe('createChunkEntry', () => {
       expect(mockNotifyGameOwnerOfChunkLink).not.toHaveBeenCalled();
     });
 
+    // `gameId` reaches here from a `?game=` query param, so it can name a
+    // game that was soft-deleted, was never published, or never existed.
+    // `linkNewChunkToGameMove` looks it up under the same publicly-visible
+    // rule the detail page uses and refuses all three, which is what keeps
+    // the notification — the one part of this flow that reaches another
+    // person — from firing on an id the author typed.
+    it('does not notify for a game id that no longer resolves', async () => {
+      mockLinkNewChunkToGameMove.mockResolvedValue(false);
+
+      const result = await createChunkEntry(baseCreateInput, {
+        linkTarget: { gameId: GAME_ID, ply: 4 },
+      });
+
+      expect(mockNotifyGameOwnerOfChunkLink).not.toHaveBeenCalled();
+      // The chunk is still the author's to keep.
+      expect(result).toMatchObject({ success: true, id: TEST_CHUNK_ID });
+    });
+
     it('does not touch game_chunks when no link target is given', async () => {
       const result = await createChunkEntry(baseCreateInput);
 
