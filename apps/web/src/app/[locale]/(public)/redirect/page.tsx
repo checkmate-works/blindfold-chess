@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { isInternalUrl } from '@/lib/content/linkify-urls';
+import { classifyLinkTarget } from '@/lib/content/link-target';
 
 import { PagePanel } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
@@ -9,18 +9,6 @@ import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
 
 import { RedirectActions } from './_components/RedirectActions';
-
-function isValidExternalUrl(url: string): boolean {
-  try {
-    const parsed = new URL(url);
-    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
-      return false;
-    }
-    return !isInternalUrl(url);
-  } catch {
-    return false;
-  }
-}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
@@ -38,7 +26,11 @@ export default async function RedirectPage({ params, searchParams }: Props) {
   const url = typeof sp.url === 'string' ? sp.url : '';
   const t = await getTranslations({ locale, namespace: 'redirect' });
 
-  if (!url || !isValidExternalUrl(url)) {
+  // The interstitial exists to show the user where an off-site link leads,
+  // so anything that is not an off-site link has no business here: an
+  // internal destination needs no warning, and an unrenderable one must not
+  // be handed to the "continue" anchor.
+  if (classifyLinkTarget(url) !== 'external') {
     return (
       <PagePanel>
         <div className="max-w-lg mx-auto py-16 text-center">
