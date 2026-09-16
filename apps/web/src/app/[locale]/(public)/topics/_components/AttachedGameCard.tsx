@@ -7,7 +7,8 @@ import dynamic from 'next/dynamic';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
-import { buildCushionPageUrl, isDangerousUrl, isInternalUrl } from '@/lib/content/linkify-urls';
+import { classifyLinkTarget } from '@/lib/content/link-target';
+import { buildCushionPageUrl } from '@/lib/content/linkify-urls';
 import { MiniBoard } from '@/lib/positions/ui/MiniBoard';
 
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
@@ -84,7 +85,9 @@ type Props = {
  * full destination URL to the user before navigation, mitigating the
  * phishing concern, so we now route external Site URLs through it.
  * `javascript:` / `data:` / other dangerous schemes are still
- * rejected up-front via `isDangerousUrl`.
+ * rejected up-front — `classifyLinkTarget` calls anything but an
+ * absolute `http:` / `https:` URL unsafe, and unsafe lands in the same
+ * inert-text branch as free text such as `[Site "Internet"]`.
  */
 function classifySiteHeader(
   siteText: string | null
@@ -93,19 +96,9 @@ function classifySiteHeader(
   | { kind: 'text'; value: string }
   | { kind: 'link'; href: string; isExternal: boolean } {
   if (!siteText) return { kind: 'empty' };
-  let url: URL;
-  try {
-    url = new URL(siteText);
-  } catch {
-    return { kind: 'text', value: siteText };
-  }
-  if (url.protocol !== 'http:' && url.protocol !== 'https:') {
-    return { kind: 'text', value: siteText };
-  }
-  if (isDangerousUrl(siteText)) {
-    return { kind: 'text', value: siteText };
-  }
-  return { kind: 'link', href: siteText, isExternal: !isInternalUrl(siteText) };
+  const target = classifyLinkTarget(siteText);
+  if (target === 'unsafe') return { kind: 'text', value: siteText };
+  return { kind: 'link', href: siteText, isExternal: target === 'external' };
 }
 
 export function AttachedGameCard({ attachment }: Props) {

@@ -1,6 +1,7 @@
 import type { BannerPayload, NativeCardPayload } from '@/lib/ads/payload';
 import type { AdKind } from '@/lib/ads/registry';
 import { isAdSlot, kindForSlot } from '@/lib/ads/registry';
+import { MAX_LINK_HREF_LENGTH, classifyLinkTarget } from '@/lib/content/link-target';
 import { isValidCountryCode } from '@/lib/countries';
 
 export type CreateAdCreativeData = {
@@ -24,7 +25,9 @@ export type UpdateAdCreativeData = {
  * `maxLength` attributes are the same numbers and cannot drift.
  */
 export const AD_CREATIVE_LIMITS = {
-  href: 2048,
+  /** Same cap `classifyLinkTarget` enforces, so the form's `maxLength` and
+   * the validator's rejection threshold are one number. */
+  href: MAX_LINK_HREF_LENGTH,
   imagePath: 1024,
   alt: 255,
   /** Title / description copy. */
@@ -43,15 +46,17 @@ function validateTargetCountry(country: string | null): string | null {
   return null;
 }
 
+/**
+ * A creative's click-through must be an absolute `http:` / `https:` URL —
+ * internal destinations are allowed (house ads point at our own pages), a
+ * bare path is not, because the href is rendered from the stored value with
+ * no page to resolve it against.
+ */
 function validateHref(href: string): string | null {
-  if (!href || href.length > AD_CREATIVE_LIMITS.href) return 'invalid href';
-  try {
-    const url = new URL(href);
-    if (!['https:', 'http:'].includes(url.protocol)) return 'invalid href';
-  } catch {
-    return 'invalid href';
-  }
-  return null;
+  // The `string` type is a compile-time promise only: these validators run on
+  // Server Action payloads, which arrive from the network unchecked.
+  if (typeof href !== 'string') return 'invalid href';
+  return classifyLinkTarget(href) === 'unsafe' ? 'invalid href' : null;
 }
 
 function validateImagePath(imagePath: string): string | null {

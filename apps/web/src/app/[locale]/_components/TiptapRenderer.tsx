@@ -5,6 +5,7 @@ import type { TiptapJsonContent, TiptapMark, TiptapNode } from '@/app/admin/arti
 import { extractYouTubeVideoId } from '@/app/admin/articles/_lib/youtube';
 import { Tweet } from 'react-tweet';
 
+import { classifyLinkTarget } from '@/lib/content/link-target';
 import { IS_LOCAL_SUPABASE } from '@/lib/image-optimization';
 
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
@@ -172,16 +173,13 @@ function applyMark(children: React.ReactNode, mark: TiptapMark): React.ReactNode
       );
     case 'link': {
       const href = (mark.attrs?.href as string) ?? '';
-      const isSafeUrl =
-        href.startsWith('/') ||
-        href.startsWith('#') ||
-        href.startsWith('http://') ||
-        href.startsWith('https://');
-      if (!isSafeUrl) {
+      // Editor-authored links are written as site paths as well as absolute
+      // URLs, so this is the one caller that opts into site-relative hrefs.
+      const target = classifyLinkTarget(href, { allowSiteRelative: true });
+      if (target === 'unsafe') {
         return children;
       }
-      const isInternal = href.startsWith('/') || href.startsWith('#');
-      if (isInternal) {
+      if (target === 'internal') {
         return (
           <Link href={href} className={TEXT_LINK_CLASSES}>
             {children}
