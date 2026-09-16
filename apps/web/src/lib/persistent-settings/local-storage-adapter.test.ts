@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
   installLocalStorage,
@@ -68,6 +68,48 @@ describe('local-storage-adapter', () => {
 
     it('leaves the void adapter `set` inert', () => {
       installLocalStorage(null);
+
+      expect(() => localStorageAdapter.set('key', 'value')).not.toThrow();
+    });
+  });
+
+  /**
+   * Next's App Router executes client modules during server render and at
+   * build time, where there is no `window` to reach `localStorage` through.
+   * The `typeof window` guard is the only thing standing between that render
+   * and a `ReferenceError`, and jsdom always supplies a window, so the branch
+   * is unreachable in this suite unless the global is stubbed away.
+   */
+  describe('when there is no window at all (server render)', () => {
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    it('reads the fallback', () => {
+      vi.stubGlobal('window', undefined);
+
+      expect(readJson('key', 'fallback')).toBe('fallback');
+      expect(localStorageAdapter.get('key')).toBeNull();
+    });
+
+    it('reports the write as failed and carries a cause a caller can log', () => {
+      vi.stubGlobal('window', undefined);
+
+      const written = writeJson('key', { a: 1 });
+
+      expect(written.ok).toBe(false);
+      // Nothing threw here, so there is no browser error to hand back. The
+      // stand-in matters because the saved-game repository puts this value in
+      // `{ kind: 'storage-failed', cause }` and logs it; a bare `undefined`
+      // would make a server-side write indistinguishable from a failure with
+      // no diagnosis at all. Matching on the message is what tells the
+      // stand-in apart from the `TypeError` an unguarded `window.localStorage`
+      // would have produced.
+      if (!written.ok) expect((written.error as Error).message).toMatch(/not available/);
+    });
+
+    it('leaves the void adapter `set` inert', () => {
+      vi.stubGlobal('window', undefined);
 
       expect(() => localStorageAdapter.set('key', 'value')).not.toThrow();
     });
