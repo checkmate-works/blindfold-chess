@@ -54,6 +54,7 @@ type ActivityTargetProps = {
   log: UserActivityLog;
   profileMap: Map<string, { username: string | null }>;
   userLabels: UserLabels;
+  purgedUserIds: Set<string>;
   targetLinks: ActivityTargetLinkMap;
 };
 
@@ -65,7 +66,13 @@ type ActivityTargetProps = {
  * everything else, which is the raw id — the only handle left on a target
  * whose row is gone or whose type has no page.
  */
-function ActivityTarget({ log, profileMap, userLabels, targetLinks }: ActivityTargetProps) {
+function ActivityTarget({
+  log,
+  profileMap,
+  userLabels,
+  purgedUserIds,
+  targetLinks,
+}: ActivityTargetProps) {
   const metadata = log.metadata as Record<string, unknown> | null;
 
   if (log.targetType === 'user' && log.targetId) {
@@ -75,6 +82,7 @@ function ActivityTarget({ log, profileMap, userLabels, targetLinks }: ActivityTa
         username={profileMap.get(log.targetId)?.username}
         deletedLabel={userLabels.deleted}
         provisionalLabel={userLabels.provisional}
+        accountExists={!purgedUserIds.has(log.targetId)}
       />
     );
   }
@@ -114,11 +122,19 @@ type ActivityLogRowProps = {
   profileMap: Map<string, { username: string | null }>;
   /** Labels for actors and targets that have no profile row to name them. */
   userLabels: UserLabels;
+  /** User targets whose account is gone, from `fetchActivityLogPageData`. */
+  purgedUserIds: Set<string>;
   /** Public links for this page's UGC targets, from `resolveActivityTargetLinks`. */
   targetLinks: ActivityTargetLinkMap;
 };
 
-export function ActivityLogRow({ log, profileMap, userLabels, targetLinks }: ActivityLogRowProps) {
+export function ActivityLogRow({
+  log,
+  profileMap,
+  userLabels,
+  purgedUserIds,
+  targetLinks,
+}: ActivityLogRowProps) {
   const metadataStr = log.metadata ? JSON.stringify(log.metadata) : '-';
   const metadata = log.metadata as Record<string, unknown> | null;
 
@@ -143,6 +159,7 @@ export function ActivityLogRow({ log, profileMap, userLabels, targetLinks }: Act
               log={log}
               profileMap={profileMap}
               userLabels={userLabels}
+              purgedUserIds={purgedUserIds}
               targetLinks={targetLinks}
             />
           </>

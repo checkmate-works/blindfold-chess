@@ -2,6 +2,7 @@ import { getTranslations } from 'next-intl/server';
 
 import { Button, Field, Input, Select } from '@/app/admin/_components/forms';
 import { buildAdminListHref } from '@/app/admin/_lib/build-list-href';
+import { findPurgedUserIds } from '@/app/admin/_lib/find-purged-user-ids';
 import { formatDateTime } from '@/app/admin/_lib/format';
 import { resolveUserFilter } from '@/app/admin/_lib/resolve-user-filter';
 import { and, desc, eq, inArray, sql } from 'drizzle-orm';
@@ -16,6 +17,9 @@ import { AdminDataTable } from '../_components/AdminDataTable';
 import { AdminPageLayout } from '../_components/AdminPageLayout';
 import { AdminPaginationNav } from '../_components/AdminPaginationNav';
 import { AdminUserLink } from '../_components/AdminUserLink';
+
+/** Characters of the raw id shown for a target that is not a person. */
+const ID_PREFIX_LENGTH = 8;
 
 const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
@@ -93,10 +97,14 @@ export default async function AdminAuditLogPage({
           .limit(limit)
           .offset(offset);
 
-  // Collect unique user IDs for target and actor lookups
-  const targetIds = [...new Set(logs.map((l) => l.targetId))];
+  // Collect unique user IDs for target and actor lookups. `target_id` is
+  // polymorphic — a ban names a user, a delete names the post or chunk it
+  // removed — so only the `user` rows belong in a profile lookup.
+  const targetUserIds = [
+    ...new Set(logs.filter((l) => l.targetType === 'user').map((l) => l.targetId)),
+  ];
   const actorIds = [...new Set(logs.map((l) => l.actorId))];
-  const allUserIds = [...new Set([...targetIds, ...actorIds])];
+  const allUserIds = [...new Set([...targetUserIds, ...actorIds])];
 
   // Fetch profiles for targets and for the acting admins alike — both
   // columns render a username.
@@ -105,6 +113,15 @@ export default async function AdminAuditLogPage({
       ? await db.select().from(profiles).where(inArray(profiles.id, allUserIds))
       : [];
   const profileMap = new Map(rowProfiles.map((p) => [p.id, p]));
+
+  // An actor is FK-bound to `auth.users` and so always exists; a target is
+  // not, and a moderated user who has since been purged would otherwise read
+  // as one who never finished registering. Ask auth about the targets that
+  // named no profile — on a normal page, none of them.
+  const purgedUserIds = await findPurgedUserIds(
+    adminClient,
+    targetUserIds.filter((id) => !profileMap.has(id))
+  );
 
   // Build search params for pagination links
   const buildHref = buildAdminListHref('/admin/audit-log', {
@@ -170,12 +187,20 @@ export default async function AdminAuditLogPage({
                 <AdminBadge variant={actionBadgeVariant(log.action)}>{log.action}</AdminBadge>
               </td>
               <td className="px-4 py-3">
-                <AdminUserLink
-                  userId={log.targetId}
-                  username={profileMap.get(log.targetId)?.username}
-                  deletedLabel={t('deletedUser')}
-                  provisionalLabel={t('provisionalUser')}
-                />
+                {log.targetType === 'user' ? (
+                  <AdminUserLink
+                    userId={log.targetId}
+                    username={profileMap.get(log.targetId)?.username}
+                    deletedLabel={t('deletedUser')}
+                    provisionalLabel={t('provisionalUser')}
+                    accountExists={!purgedUserIds.has(log.targetId)}
+                  />
+                ) : (
+                  <span className="text-xs" title={log.targetId}>
+                    <span className="text-muted-foreground mr-1">[{log.targetType}]</span>
+                    {`${log.targetId.slice(0, ID_PREFIX_LENGTH)}…`}
+                  </span>
+                )}
               </td>
               <td className="px-4 py-3">
                 <AdminUserLink

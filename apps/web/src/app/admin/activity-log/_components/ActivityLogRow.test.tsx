@@ -22,7 +22,11 @@ function makeLog(overrides: Partial<UserActivityLog> = {}): UserActivityLog {
   } as UserActivityLog;
 }
 
-function renderRow(log: UserActivityLog, targetLinks: ActivityTargetLinkMap = new Map()) {
+function renderRow(
+  log: UserActivityLog,
+  targetLinks: ActivityTargetLinkMap = new Map(),
+  purgedUserIds: Set<string> = new Set()
+) {
   return render(
     <table>
       <tbody>
@@ -30,6 +34,7 @@ function renderRow(log: UserActivityLog, targetLinks: ActivityTargetLinkMap = ne
           log={log}
           profileMap={new Map([[ACTOR_ID, { username: 'alice' }]])}
           userLabels={{ deleted: '(deleted user)', provisional: '(registration incomplete)' }}
+          purgedUserIds={purgedUserIds}
           targetLinks={targetLinks}
         />
       </tbody>
@@ -67,6 +72,24 @@ describe('ActivityLogRow target column', () => {
 
     expect(screen.queryByRole('link', { name: /2f6b870a/ })).not.toBeInTheDocument();
     expect(screen.getByText(TARGET_ID)).toBeInTheDocument();
+  });
+
+  it('calls a nameless user target provisional while their account still exists', () => {
+    renderRow(makeLog({ action: 'follow', targetType: 'user', targetId: TARGET_ID }));
+
+    const link = screen.getByRole('link', { name: /registration incomplete/ });
+    expect(link).toHaveAttribute('href', `/admin/users/${TARGET_ID}`);
+  });
+
+  it('calls a nameless user target deleted once their account is known to be gone', () => {
+    renderRow(
+      makeLog({ action: 'ban', targetType: 'user', targetId: TARGET_ID }),
+      new Map(),
+      new Set([TARGET_ID])
+    );
+
+    expect(screen.getByText('(deleted user) (2f6b870a…)')).toBeInTheDocument();
+    expect(screen.queryByText(/registration incomplete/)).not.toBeInTheDocument();
   });
 
   it('sends a user target to the admin detail page rather than the public profile', () => {
