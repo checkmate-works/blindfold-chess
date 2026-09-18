@@ -24,13 +24,26 @@ export function getModuleWeight(menuType: string): number {
 /**
  * Accuracy bonus based on number of incorrect answers.
  * Challenges end after 3 misses (burst), so incorrectAnswers is always 0–3.
+ *
+ * Entries must stay sorted by ascending `misses`: the lookup walks the ladder
+ * in order and takes the first rung whose `misses` the player has not exceeded.
+ * Miss counts above the last rung get {@link NO_ACCURACY_BONUS_MULTIPLIER}
+ * instead of an entry of their own.
  */
 export const MISS_BONUS: { misses: number; multiplier: number }[] = [
   { misses: 0, multiplier: 1.5 }, // Perfect — no mistakes
   { misses: 1, multiplier: 1.2 },
   { misses: 2, multiplier: 1.1 },
-  // 3 misses (burst) = no bonus (1.0)
 ];
+
+/**
+ * Multiplier for miss counts past the last rung of {@link MISS_BONUS} — today
+ * that is the 3-miss burst. Exp is left untouched rather than penalised, so
+ * this is exactly 1, and it is named here (rather than inlined at the lookup)
+ * because the FAQ renders the same fall-through as the bottom row of its
+ * accuracy-bonus table.
+ */
+export const NO_ACCURACY_BONUS_MULTIPLIER = 1.0;
 
 // レベルカーブ: requiredExp(level) = floor(BASE * level^EXPONENT)
 export const EXP_CURVE = { base: 100, exponent: 1.5 } as const;
