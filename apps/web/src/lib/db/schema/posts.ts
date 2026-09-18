@@ -148,7 +148,9 @@ export const topicPosts = pgTable(
     // predicate needs an index — the expression in the GROUP BY does not — and
     // without one the aggregation sequentially scans the whole table. Partial
     // on `deleted_at IS NULL` because every aggregation over this table
-    // carries that filter, so tombstones would be dead weight in the b-tree.
+    // carries that filter: tombstones stay out of the b-tree, and the
+    // predicate needs no heap recheck, so the aggregation plans as an index-
+    // only scan.
     //
     // This table is the one that proved the scan does not stay affordable: the
     // aggregation was cancelled by the server's 30s statement_timeout in
