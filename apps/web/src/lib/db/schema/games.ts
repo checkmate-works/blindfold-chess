@@ -188,6 +188,14 @@ export const games = pgTable(
     index('idx_games_public')
       .on(table.id.desc())
       .where(sql`deleted_at IS NULL AND status = 'public'`),
+    // The admin dashboard's UGC aggregation: a `created_at` range with
+    // `deleted_at IS NULL`, bucketed per day. `idx_games_public` cannot serve
+    // it — that index is keyed on `id` and is narrowed to public rows, while
+    // the aggregation counts every non-deleted game. Partial on the
+    // soft-delete filter the aggregation always carries.
+    index('idx_games_created_at')
+      .on(table.createdAt)
+      .where(sql`deleted_at IS NULL`),
     index('idx_games_engine_elo').on(table.engineElo),
     index('idx_games_clean_rate').on(table.cleanRate),
     // The coin history's charge → game lookup (`resolveHistoryLinks`) — always

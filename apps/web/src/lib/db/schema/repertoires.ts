@@ -122,6 +122,14 @@ export const repertoires = pgTable(
   },
   (table) => [
     index('idx_repertoires_user').on(table.userId, table.createdAt),
+    // The admin dashboard's UGC aggregation: a `created_at` range with
+    // `deleted_at IS NULL`, bucketed per day. Neither existing index serves it
+    // — `idx_repertoires_user` leads on `user_id`, and `idx_repertoires_public`
+    // is keyed on `published_at` and narrowed to public rows, while the
+    // aggregation counts courses from creation regardless of status.
+    index('idx_repertoires_created_at')
+      .on(table.createdAt)
+      .where(sql`deleted_at IS NULL`),
     // Sorted on published_at (not id) so the catalog's "newest" ordering
     // matches what listPublicRepertoires actually queries — id (UUIDv7) only
     // tracks creation order, which diverges from publish order once a course
@@ -261,6 +269,13 @@ export const repertoireLines = pgTable(
   },
   (table) => [
     index('idx_repertoire_lines_repertoire').on(table.repertoireId, table.chapterId, table.seq),
+    // The admin dashboard's UGC aggregation: a `created_at` range with
+    // `deleted_at IS NULL`, bucketed per day. Lines are the largest of the
+    // aggregated sources (a course contributes one row plus one per
+    // variation), so this is the source most likely to reach the timeout next.
+    index('idx_repertoire_lines_created_at')
+      .on(table.createdAt)
+      .where(sql`deleted_at IS NULL`),
     // Covers soft-deleted rows too: a retired number must never be handed to a
     // new line, or an old URL would silently resolve to different moves.
     unique('uq_repertoire_line_no').on(table.repertoireId, table.lineNo),
