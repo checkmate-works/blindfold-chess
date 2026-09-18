@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { calculateExp } from "./calc";
+import { MISS_BONUS, NO_ACCURACY_BONUS_MULTIPLIER } from "./constants";
 
 describe("calculateExp", () => {
   // ----------------------------------------------------------
@@ -109,6 +110,34 @@ describe("calculateExp", () => {
       // baseExp = 10 * 1 = 10, incorrectAnswers=3 -> 1.0
       expect(result.accuracyMultiplier).toBe(1.0);
       expect(result.totalExp).toBe(10);
+    });
+
+    it("MISS_BONUS の最終段を超えるミス数には NO_ACCURACY_BONUS_MULTIPLIER が適用される", () => {
+      const beyondLadder = MISS_BONUS[MISS_BONUS.length - 1].misses + 1;
+      const result = calculateExp({
+        score: 10,
+        incorrectAnswers: beyondLadder,
+        menuType: "coordinate_quiz",
+      });
+      expect(result.accuracyMultiplier).toBe(NO_ACCURACY_BONUS_MULTIPLIER);
+    });
+  });
+
+  // ----------------------------------------------------------
+  // ラダーの前提条件
+  // ----------------------------------------------------------
+  describe("MISS_BONUS の前提条件", () => {
+    it("ミス数の昇順に並んでいる（先頭一致のルックアップと最終段の導出が依存する）", () => {
+      const missCounts = MISS_BONUS.map(({ misses }) => misses);
+      expect(missCounts).toEqual([...missCounts].sort((a, b) => a - b));
+    });
+
+    it("最終段より上の倍率を自前のエントリとして持たない", () => {
+      expect(
+        MISS_BONUS.some(
+          ({ multiplier }) => multiplier === NO_ACCURACY_BONUS_MULTIPLIER,
+        ),
+      ).toBe(false);
     });
   });
 

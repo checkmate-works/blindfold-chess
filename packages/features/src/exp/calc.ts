@@ -14,6 +14,7 @@ import {
   MIN_COMPLETION_EXP,
   MISS_BONUS,
   MODULE_WEIGHT,
+  NO_ACCURACY_BONUS_MULTIPLIER,
 } from "./constants";
 import type { ExpInput, ExpResult } from "./types";
 
@@ -23,7 +24,7 @@ function getAccuracyMultiplier(incorrectAnswers: number): number {
       return multiplier;
     }
   }
-  return 1.0;
+  return NO_ACCURACY_BONUS_MULTIPLIER;
 }
 
 export function calculateExp(input: ExpInput): ExpResult {
