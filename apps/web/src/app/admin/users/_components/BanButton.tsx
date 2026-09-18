@@ -4,6 +4,7 @@ import { useRef } from 'react';
 
 import { Textarea } from '@/app/_components';
 import { useConfirmModalAction } from '@/app/admin/_hooks/useConfirmModalAction';
+import { adminErrorMessageFor } from '@/app/admin/_lib/action-errors';
 
 import { MODERATION_REASON_MAX_LENGTH } from '@/lib/moderation/validate-reason';
 
@@ -18,7 +19,7 @@ export function BanButton({ userId }: { userId: string }) {
   async function handleBan() {
     const reason = reasonRef.current?.value.trim();
     if (!reason) {
-      setError('Reason is required');
+      setError(adminErrorMessageFor('reasonRequired'));
       return;
     }
 

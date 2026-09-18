@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 
 import { Select, Textarea } from '@/app/admin/_components/forms';
 import { useConfirmModalAction } from '@/app/admin/_hooks/useConfirmModalAction';
+import { adminErrorMessageFor } from '@/app/admin/_lib/action-errors';
 
 import { MODERATION_REASON_MAX_LENGTH } from '@/lib/moderation/validate-reason';
 
@@ -21,16 +22,6 @@ type Props = {
   availableRanks: RankOption[];
 };
 
-const ERROR_MESSAGES: Record<string, string> = {
-  invalidRank: 'Unknown rank.',
-  reasonRequired: 'Reason is required.',
-  reasonTooLong: 'Reason is too long.',
-  rankNotFound: 'That rank has no matching database row yet.',
-  alreadyGranted: 'This user already holds that rank.',
-  unauthorized: 'You are not authorized to do this.',
-  failedToGrantRank: 'Failed to grant rank.',
-};
-
 export function GrantRankButton({ userId, availableRanks }: Props) {
   const router = useRouter();
   const { isOpen, open, cancel, isPending, error, setError, run } = useConfirmModalAction();
@@ -44,7 +35,7 @@ export function GrantRankButton({ userId, availableRanks }: Props) {
   async function handleGrant() {
     const trimmedReason = reason.trim();
     if (!trimmedReason) {
-      setError(ERROR_MESSAGES.reasonRequired);
+      setError(adminErrorMessageFor('reasonRequired'));
       return;
     }
 
@@ -55,8 +46,7 @@ export function GrantRankButton({ userId, availableRanks }: Props) {
         const remaining = availableRanks.filter((r) => r.slug !== rankSlug);
         setRankSlug(remaining[0]?.slug ?? '');
         router.refresh();
-      },
-      (code) => ERROR_MESSAGES[code] ?? code
+      }
     );
   }
 
