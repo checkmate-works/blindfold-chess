@@ -8,7 +8,8 @@ export function HeaderRightSection() {
   // Avatar/display name ride on the same getSessionUser() round-trip that
   // resolves `user` — this component must not fetch them separately (it once
   // paid a second waterfall request to /api/header-profile for exactly this
-  // data, gated on `user` resolving first).
+  // data, gated on `user` resolving first). The bell's unread count rides
+  // along too, read from the context inside NotificationBadge.
   const { user, isLoading, profile } = useAuth();
   const isAuthenticated = !!user;
 
