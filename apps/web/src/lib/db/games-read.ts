@@ -13,6 +13,7 @@ import 'server-only';
 import type { EngineKind } from '@/lib/engines';
 import { playSettingsToThumbnailDisplay } from '@/lib/games/play-settings-thumbnail';
 import type { SharedGamesSortMode } from '@/lib/games/shared-sort';
+import { excludeBlockedAuthors } from '@/lib/moderation/block';
 import { type DetectedOpening, detectGameOpening } from '@/lib/openings/detect-game-opening';
 import type { AuthorProfile } from '@/lib/users/author-profile';
 
@@ -199,14 +200,21 @@ function sharedGamesOrderBy(sort: SharedGamesSort): SQL[] {
  * One page of publicly-listed games for the gallery, ordered per
  * {@link sharedGamesOrderBy}. Pair with {@link countSharedGames} to compute the
  * page count.
+ *
+ * `viewerId` names the signed-in reader, whose blocked counterparties are left
+ * out of the page; omit it for the anonymous and crawler reads, which see the
+ * gallery whole. The count is deliberately not narrowed the same way — see
+ * {@link excludeBlockedAuthors} — so a viewer with a block gets a page a few
+ * cards short of the stated total rather than a per-viewer denominator.
  */
 export async function listSharedGames(
   sort: SharedGamesSort = 'new',
   limit: number,
-  offset: number
+  offset: number,
+  viewerId?: string
 ): Promise<SharedGameListItem[]> {
   const rows = await gameListQuery()
-    .where(publiclyVisible())
+    .where(and(publiclyVisible(), await excludeBlockedAuthors(games.authorId, viewerId)))
     .orderBy(...sharedGamesOrderBy(sort))
     .limit(limit)
     .offset(offset);

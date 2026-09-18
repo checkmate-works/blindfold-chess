@@ -1,6 +1,7 @@
 import { and, desc, eq, inArray, lt } from 'drizzle-orm';
 
 import { db, feedItems } from '@/lib/db';
+import { excludeBlockedAuthors } from '@/lib/moderation/block';
 
 import { liveFeedRow } from './feed-liveness';
 import { loadChunksForFeed } from './feed-queries/load-chunks';
@@ -46,6 +47,19 @@ export const TOPICS_FEED_ENTITY_TYPES = ['topic_post', 'chunk'] as const;
  * deleted between this query and the loader's own is a dropped item, not a
  * crash — that race is the only way a page can now come up short.
  *
+ * @design Blocked authors are excluded here, in the same WHERE
+ * A signed-in viewer does not see items posted by someone either of them has
+ * blocked. The filter sits beside {@link liveFeedRow} rather than in the
+ * per-entity loaders or in `assembleFeedItems` for the reason the liveness
+ * predicate moved here: a row dropped after the fetch still consumes one of
+ * the `LIMIT n + 1` slots, so a viewer with an active block would get short
+ * pages and, once a block streak fills a whole page, a live cursor with
+ * nothing on it — which the infinite scroll answers by asking again.
+ *
+ * It is scoped to `currentUserId`, so the signed-out and crawler views of the
+ * home and topics feeds are unchanged, and it hides nothing from the entity's
+ * own page: this is a "stop showing me this" filter, not a privacy boundary.
+ *
  * @design Options object
  * Both filters below narrow the same query and are optional, and a positional
  * signature had already reached four parameters with two of them optional —
@@ -63,7 +77,10 @@ export async function getFeedData({
 }: {
   cursor?: string;
   limit: number;
-  /** The viewer, for `likedByMe` and other per-viewer meta. */
+  /**
+   * The viewer, for `likedByMe` and other per-viewer meta, and for the
+   * blocked-author exclusion above. Omit it for an anonymous read.
+   */
   currentUserId?: string;
   /**
    * Optional whitelist of `feed_items.entityType` values to include. Omit (the
@@ -87,7 +104,8 @@ export async function getFeedData({
         cursor ? lt(feedItems.createdAt, new Date(cursor)) : undefined,
         entityTypes ? inArray(feedItems.entityType, [...entityTypes]) : undefined,
         actorId ? eq(feedItems.actorId, actorId) : undefined,
-        liveFeedRow()
+        liveFeedRow(),
+        await excludeBlockedAuthors(feedItems.actorId, currentUserId)
       )
     )
     .orderBy(desc(feedItems.createdAt))

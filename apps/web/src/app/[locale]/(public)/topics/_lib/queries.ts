@@ -7,6 +7,7 @@ import { and, asc, desc, eq, inArray, isNull, or, sql } from 'drizzle-orm';
 import { TOPIC_POST_COUNTS_CACHE_TAG } from '@/lib/cache-tags';
 import { SOCIAL_AUTHOR_COLUMNS, db, liveProfileJoinOn, profiles, topicPosts } from '@/lib/db';
 import { countRows } from '@/lib/db/list-query';
+import { excludeBlockedAuthors } from '@/lib/moderation/block';
 import { UUID_RE } from '@/lib/validations/uuid';
 
 import { sortRoots } from './comment-tree';
@@ -71,13 +72,26 @@ export const getPostCountByTopicType = unstable_cache(
 /**
  * Get top-level posts for a specific topicType + topicKey, with author info.
  * Base function shared by squares and openings.
+ *
+ * `viewerId` is the signed-in reader: their blocked counterparties' posts are
+ * left out. Every top-level list on a topic page takes the same treatment,
+ * while the replies under an individual post do not — a thread with its
+ * answers cut out reads as broken, and the writes that would extend it are
+ * already refused.
  */
 async function getTopLevelPostsByTopicKey(
   topicType: TopicType,
-  topicKey: string
+  topicKey: string,
+  viewerId?: string
 ): Promise<TopicPostWithAuthor[]> {
   const results = await selectPostsWithAuthor()
-    .where(liveTopLevelPosts(topicType, eq(topicPosts.topicKey, topicKey)))
+    .where(
+      liveTopLevelPosts(
+        topicType,
+        eq(topicPosts.topicKey, topicKey),
+        await excludeBlockedAuthors(topicPosts.userId, viewerId)
+      )
+    )
     .orderBy(desc(topicPosts.createdAt));
 
   return toPostsWithAuthor(results);
@@ -136,7 +150,7 @@ export async function getPostsWithReplyMetaByTopicKey(
   currentUserId?: string,
   sortBy: SortMode = 'new'
 ): Promise<PostWithReplyMeta[]> {
-  const posts = await getTopLevelPostsByTopicKey(topicType, topicKey);
+  const posts = await getTopLevelPostsByTopicKey(topicType, topicKey, currentUserId);
   const postsWithMeta = await attachPostMeta(posts, currentUserId);
 
   return sortPosts(postsWithMeta, sortBy);
@@ -181,7 +195,13 @@ export async function getPostsWithReplyMetaPaginatedByTopicKey(
 
   // For 'new' sort, use SQL-level pagination (posts already ordered by createdAt DESC)
   const results = await selectPostsWithAuthor()
-    .where(liveTopLevelPosts(topicType, eq(topicPosts.topicKey, topicKey)))
+    .where(
+      liveTopLevelPosts(
+        topicType,
+        eq(topicPosts.topicKey, topicKey),
+        await excludeBlockedAuthors(topicPosts.userId, currentUserId)
+      )
+    )
     .orderBy(desc(topicPosts.createdAt))
     .limit(limit)
     .offset(offset);
@@ -202,7 +222,9 @@ export async function getPostsByTopicTypePaginated(
   currentUserId?: string
 ): Promise<PostWithReplyMeta[]> {
   const results = await selectPostsWithAuthor()
-    .where(liveTopLevelPosts(topicType))
+    .where(
+      liveTopLevelPosts(topicType, await excludeBlockedAuthors(topicPosts.userId, currentUserId))
+    )
     .orderBy(desc(topicPosts.createdAt))
     .limit(limit)
     .offset(offset);

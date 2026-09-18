@@ -71,7 +71,7 @@ export default async function SharedGamesPage({ params, searchParams }: Props) {
   const page = Number(sp.page) || 1;
 
   const { currentPage, totalPages, limit, offset } = getPaginationParams(page, totalCount);
-  const items = await listSharedGames(sort, limit, offset);
+  const items = await listSharedGames(sort, limit, offset, currentUser?.id);
 
   const ids = items.map((g) => g.id);
   const [likeMetaMap, commentMetaMap, reviewedIds, myPublished] = await Promise.all([
