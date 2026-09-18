@@ -12,6 +12,7 @@ import type { GameCommentItem } from '@/lib/db/game-comments';
 
 import { parseFenMeta } from '@/app/[locale]/(public)/games/play/_lib/fen-utils';
 import { ChunkLinkCard } from '@/app/[locale]/_components/chunk-links/ChunkLinkCard';
+import { buildChunkLinkCardLabels } from '@/app/[locale]/_components/chunk-links/chunk-link-card-labels';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { buildDiscussionGroups } from '../_lib/build-discussion-groups';
@@ -56,7 +57,7 @@ export function GameDiscussionFeed({
   onJumpToPly,
   locale,
 }: Props) {
-  const t = useTranslations('sharedGames');
+  const tChunks = useTranslations('sharedGames.chunks');
   const tCommon = useTranslations('Common');
 
   const groups = useMemo(
@@ -106,20 +107,12 @@ export function GameDiscussionFeed({
                 <ChunkLinkCard
                   key={run[0].id}
                   items={run}
-                  badge={t('chunks.badge')}
-                  draftBadge={t('chunks.draftBadge')}
+                  badge={tChunks('badge')}
+                  draftBadge={tChunks('draftBadge')}
                   locale={locale}
                   canRemove={() => false}
                   onRemove={NOOP_REMOVE}
-                  labels={{
-                    linkedAction: (count) => t('chunks.linkedAction', { count }),
-                    remove: (title) => t('chunks.remove', { title }),
-                    delete: t('chunks.delete'),
-                    confirmUnlinkTitle: t('chunks.confirmUnlinkTitle'),
-                    confirmUnlinkBody: t('chunks.confirmUnlinkBody'),
-                    confirmCancel: t('chunks.confirmCancel'),
-                    deletedUser: tCommon('deletedUser'),
-                  }}
+                  labels={buildChunkLinkCardLabels(tChunks, tCommon)}
                 />
               ))}
             </ul>

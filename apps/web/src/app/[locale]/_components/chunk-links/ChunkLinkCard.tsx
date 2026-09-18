@@ -28,16 +28,22 @@ type Props<T extends ChunkLinkCardItem> = {
   canRemove: (item: T) => boolean;
   /** Unlink a chunk; resolves with a localized `error` on failure. */
   onRemove: (item: T) => Promise<{ error?: string }>;
-  labels: {
-    /** "{actor} linked N chunks" system line, pluralized on `items.length`. */
-    linkedAction: (count: number) => string;
-    remove: (title: string) => string;
-    delete: string;
-    confirmUnlinkTitle: string;
-    confirmUnlinkBody: string;
-    confirmCancel: string;
-    deletedUser: string;
-  };
+  labels: ChunkLinkCardLabels;
+};
+
+/**
+ * The card's copy, supplied by the feature that renders it. Built from a
+ * feature namespace by `buildChunkLinkCardLabels` in this directory.
+ */
+export type ChunkLinkCardLabels = {
+  /** "{actor} linked N chunks" system line, pluralized on `items.length`. */
+  linkedAction: (count: number) => string;
+  remove: (title: string) => string;
+  delete: string;
+  confirmUnlinkTitle: string;
+  confirmUnlinkBody: string;
+  confirmCancel: string;
+  deletedUser: string;
 };
 
 /**
