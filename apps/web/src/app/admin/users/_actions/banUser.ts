@@ -5,7 +5,6 @@ import { revalidatePath, revalidateTag } from 'next/cache';
 
 import { eq } from 'drizzle-orm';
 
-import type { ActionResult } from '@/lib/action-types';
 import { profileCacheTag } from '@/lib/cache-tags';
 import { db, profiles } from '@/lib/db';
 import { logModerationAction } from '@/lib/moderation/audit';
@@ -14,9 +13,16 @@ import { getClientIp } from '@/lib/security/client-ip';
 import { handleAdminActionError } from '@/lib/server-action-error';
 import { createAdminClient } from '@/lib/supabase/admin';
 
+import type { AdminActionResult } from '../../_lib/action-errors';
 import { requireAdmin } from '../../_lib/auth';
 
-export async function banUser(targetUserId: string, reason: string): Promise<ActionResult> {
+type BanUserError =
+  'unauthorized' | 'cannotBanSelf' | 'reasonRequired' | 'reasonTooLong' | 'failedToBan';
+
+export async function banUser(
+  targetUserId: string,
+  reason: string
+): Promise<AdminActionResult<BanUserError>> {
   const auth = await requireAdmin();
   if ('error' in auth) {
     return auth;

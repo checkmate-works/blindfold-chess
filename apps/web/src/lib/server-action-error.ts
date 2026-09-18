@@ -42,20 +42,26 @@ export function handleServerActionError(
  * entirely.
  *
  * `message` is required and is passed through untouched. What the admin
- * surface does with it is the caller's business and varies: some sites return
- * prose the component renders as-is, others a short code a local map turns
- * into a sentence. Defaulting this argument would invite a call site to
- * silently change what the admin sees.
+ * surface does with it is the caller's business and varies: the grants and
+ * user-moderation actions return an error code that `adminErrorMessage` turns
+ * into a sentence at the UI boundary, while the ads, articles, announcements
+ * and coins actions still return prose their component renders as-is.
+ * Defaulting this argument would invite a call site to silently change what
+ * the admin sees.
+ *
+ * The literal type of `message` is preserved in the return type, so a caller
+ * whose result type names the codes it may fail with — `AdminActionResult` —
+ * still gets an error if the code handed here is not one of them.
  *
  * @param error - The caught error
  * @param context - A human-readable label for the log message (e.g. "[createGrant]")
  * @param message - The error string the caller returns, passed through unchanged
  */
-export function handleAdminActionError(
+export function handleAdminActionError<TMessage extends string>(
   error: unknown,
   context: string,
-  message: string
-): { error: string } {
+  message: TMessage
+): { error: TMessage } {
   reportUnexpectedActionError(error, context);
   return { error: message };
 }

@@ -184,7 +184,7 @@ describe('deletePostAdmin', () => {
     mockSelectFromWhere.mockReturnValueOnce([{ role: 'admin' }]).mockReturnValueOnce([]);
 
     const result = await deletePostAdmin(testPostId, 'Spam content');
-    expect(result).toEqual({ error: 'notFound' });
+    expect(result).toEqual({ error: 'postNotFound' });
   });
 
   it('should successfully delete post and create moderation_actions record', async () => {

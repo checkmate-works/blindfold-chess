@@ -4,7 +4,6 @@ import { revalidateTag } from 'next/cache';
 
 import { eq } from 'drizzle-orm';
 
-import type { ActionResult } from '@/lib/action-types';
 import { RANK_STATUS_CACHE_TAG } from '@/lib/cache-tags';
 import { db, ranks, userRanks } from '@/lib/db';
 import { ALL_RANK_SLUGS, isMukyuSlug } from '@/lib/db/data/ranks';
@@ -15,6 +14,7 @@ import { createNotification } from '@/lib/notifications/notification';
 import { getClientIp } from '@/lib/security/client-ip';
 import { handleAdminActionError } from '@/lib/server-action-error';
 
+import type { AdminActionResult } from '../../_lib/action-errors';
 import { requireAdmin } from '../../_lib/auth';
 
 function isGrantableRankSlug(value: string): value is RankSlug {
@@ -41,11 +41,20 @@ class RankAlreadyGrantedError extends Error {}
  * audit row recording who granted it, to whom, and why — mirroring the
  * `insertAdminGrant` pattern used by `/admin/grants`.
  */
+type GrantRankError =
+  | 'unauthorized'
+  | 'invalidRank'
+  | 'reasonRequired'
+  | 'reasonTooLong'
+  | 'rankNotFound'
+  | 'alreadyGranted'
+  | 'failedToGrantRank';
+
 export async function grantRank(
   targetUserId: string,
   rankSlug: string,
   reason: string
-): Promise<ActionResult> {
+): Promise<AdminActionResult<GrantRankError>> {
   const auth = await requireAdmin();
   if ('error' in auth) return auth;
 
