@@ -6,6 +6,7 @@ import { combineConditions, countRows } from '@/lib/db/list-query';
 import type { Profile, UserActivityLog } from '@/lib/db/schema';
 import { getPaginationParams } from '@/lib/pagination';
 
+import { findPurgedUserIds } from '../../_lib/find-purged-user-ids';
 import { resolveUserFilter } from '../../_lib/resolve-user-filter';
 import { type ActivityTargetLinkMap, resolveActivityTargetLinks } from './target-links';
 
@@ -16,6 +17,8 @@ export type ActivityLogPageData = {
   currentPage: number;
   totalPages: number;
   profileMap: Map<string, Profile>;
+  /** User targets on this page whose account has been purged (see below). */
+  purgedUserIds: Set<string>;
   targetLinks: ActivityTargetLinkMap;
   actionTypes: { action: string }[];
 };
@@ -76,6 +79,18 @@ export async function fetchActivityLogPageData(
       : [];
   const profileMap = new Map(lookupProfiles.map((p) => [p.id, p]));
 
+  // A `user` target is the one id on this page a FK does not vouch for: the
+  // actor's rows go with their account (`user_id` is CASCADE), but rows
+  // *about* them survive the purge with the id still in `target_id`. Ask auth
+  // about the ones that named no profile, so a purged account is not mistaken
+  // for a registration that was never finished.
+  const profilelessTargetUserIds = logs
+    .filter((l) => l.targetType === 'user' && l.targetId && !profileMap.has(l.targetId))
+    .map((l) => l.targetId!);
+  const purgedUserIds = await findPurgedUserIds(adminClient, [
+    ...new Set(profilelessTargetUserIds),
+  ]);
+
   // Resolve the public page each UGC target is read on
   const targetLinks = await resolveActivityTargetLinks(logs);
 
@@ -90,6 +105,7 @@ export async function fetchActivityLogPageData(
     currentPage,
     totalPages,
     profileMap,
+    purgedUserIds,
     targetLinks,
     actionTypes,
   };

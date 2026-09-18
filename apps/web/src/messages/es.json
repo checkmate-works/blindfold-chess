@@ -4308,6 +4308,7 @@
     "dashboard": "Panel",
     "users": "Usuarios",
     "deletedUser": "(usuario eliminado)",
+    "provisionalUser": "(registro incompleto)",
     "auditLog": "Registro de Auditoría",
     "dashboardKpi": {
       "from": "Desde",
@@ -4396,7 +4397,7 @@
       "defaultRole": "usuario",
       "banned": "Suspendido",
       "active": "Activo",
-      "anonymous": "Anónimo",
+      "anonymous": "Registro incompleto",
       "viewPosts": "Publicaciones",
       "viewActivity": "Actividad",
       "username": "Nombre de usuario",

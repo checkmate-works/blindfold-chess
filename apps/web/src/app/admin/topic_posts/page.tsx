@@ -142,6 +142,7 @@ export default async function AdminTopicPostsPage({
                   userId={post.userId}
                   username={authorProfile?.username}
                   deletedLabel={t('deletedUser')}
+                  provisionalLabel={t('provisionalUser')}
                 />
               </td>
               <td className="px-4 py-3">

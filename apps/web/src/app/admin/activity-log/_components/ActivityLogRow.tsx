@@ -43,10 +43,18 @@ function actionBadgeVariant(action: string): AdminBadgeVariant {
   }
 }
 
+type UserLabels = {
+  /** Shown for an actor or target whose account is gone. */
+  deleted: string;
+  /** Shown for an actor or target that never finished username setup. */
+  provisional: string;
+};
+
 type ActivityTargetProps = {
   log: UserActivityLog;
   profileMap: Map<string, { username: string | null }>;
-  deletedUserLabel: string;
+  userLabels: UserLabels;
+  purgedUserIds: Set<string>;
   targetLinks: ActivityTargetLinkMap;
 };
 
@@ -58,7 +66,13 @@ type ActivityTargetProps = {
  * everything else, which is the raw id — the only handle left on a target
  * whose row is gone or whose type has no page.
  */
-function ActivityTarget({ log, profileMap, deletedUserLabel, targetLinks }: ActivityTargetProps) {
+function ActivityTarget({
+  log,
+  profileMap,
+  userLabels,
+  purgedUserIds,
+  targetLinks,
+}: ActivityTargetProps) {
   const metadata = log.metadata as Record<string, unknown> | null;
 
   if (log.targetType === 'user' && log.targetId) {
@@ -66,7 +80,9 @@ function ActivityTarget({ log, profileMap, deletedUserLabel, targetLinks }: Acti
       <AdminUserLink
         userId={log.targetId}
         username={profileMap.get(log.targetId)?.username}
-        deletedLabel={deletedUserLabel}
+        deletedLabel={userLabels.deleted}
+        provisionalLabel={userLabels.provisional}
+        accountExists={!purgedUserIds.has(log.targetId)}
       />
     );
   }
@@ -104,8 +120,10 @@ function ActivityTarget({ log, profileMap, deletedUserLabel, targetLinks }: Acti
 type ActivityLogRowProps = {
   log: UserActivityLog;
   profileMap: Map<string, { username: string | null }>;
-  /** Shown for actors and targets whose profile row is gone. */
-  deletedUserLabel: string;
+  /** Labels for actors and targets that have no profile row to name them. */
+  userLabels: UserLabels;
+  /** User targets whose account is gone, from `fetchActivityLogPageData`. */
+  purgedUserIds: Set<string>;
   /** Public links for this page's UGC targets, from `resolveActivityTargetLinks`. */
   targetLinks: ActivityTargetLinkMap;
 };
@@ -113,7 +131,8 @@ type ActivityLogRowProps = {
 export function ActivityLogRow({
   log,
   profileMap,
-  deletedUserLabel,
+  userLabels,
+  purgedUserIds,
   targetLinks,
 }: ActivityLogRowProps) {
   const metadataStr = log.metadata ? JSON.stringify(log.metadata) : '-';
@@ -128,7 +147,8 @@ export function ActivityLogRow({
         <AdminUserLink
           userId={log.userId}
           username={profileMap.get(log.userId)?.username}
-          deletedLabel={deletedUserLabel}
+          deletedLabel={userLabels.deleted}
+          provisionalLabel={userLabels.provisional}
         />
       </td>
       <td className="px-4 py-3">
@@ -138,7 +158,8 @@ export function ActivityLogRow({
             <ActivityTarget
               log={log}
               profileMap={profileMap}
-              deletedUserLabel={deletedUserLabel}
+              userLabels={userLabels}
+              purgedUserIds={purgedUserIds}
               targetLinks={targetLinks}
             />
           </>
