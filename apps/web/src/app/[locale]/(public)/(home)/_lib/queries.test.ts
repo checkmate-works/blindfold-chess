@@ -71,6 +71,13 @@ vi.mock('@/app/[locale]/(public)/topics/_lib/shared', () => ({
   ratingSelect: {},
 }));
 
+// The blocked-author exclusion runs its own query against the real `db`,
+// which the mock above is not shaped for. The shared manual mock answers
+// "nothing to exclude" and records the call, which is all the WHERE assertions
+// below need.
+vi.mock('@/lib/moderation/block');
+const { excludeBlockedAuthors } = await import('@/lib/moderation/block');
+
 // --- Helpers ---
 
 function createFeedRow(
@@ -287,6 +294,26 @@ describe('getFeedData', () => {
       await getFeedData({ limit: 10, currentUserId: userId });
 
       expect(mockAttachProfilePostMeta).toHaveBeenCalledWith(expect.anything(), userId);
+    });
+
+    it('should exclude authors the viewer has a block with, in SQL', async () => {
+      // In the WHERE rather than after the fetch: a row dropped later still
+      // spends one of the `limit + 1` slots, which is what leaves an infinite
+      // scroll asking again behind a live cursor.
+      mockDbSelectResult.mockResolvedValue([createFeedRow({ entityType: 'some_future_type' })]);
+
+      const userId = 'user-00000000-0000-0000-0000-000000000001';
+      await getFeedData({ limit: 10, currentUserId: userId });
+
+      expect(excludeBlockedAuthors).toHaveBeenCalledWith(feedItems.actorId, userId);
+    });
+
+    it('should leave the anonymous feed unfiltered', async () => {
+      mockDbSelectResult.mockResolvedValue([createFeedRow({ entityType: 'some_future_type' })]);
+
+      await getFeedData({ limit: 10 });
+
+      expect(excludeBlockedAuthors).toHaveBeenCalledWith(feedItems.actorId, undefined);
     });
   });
 });
