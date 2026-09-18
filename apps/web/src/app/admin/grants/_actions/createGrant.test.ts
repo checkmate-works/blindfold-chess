@@ -103,7 +103,7 @@ describe('createGrant', () => {
       durationDays: '30',
     });
     const result = await createGrant(fd);
-    expect(result).toEqual({ error: 'User ID is required' });
+    expect(result).toEqual({ error: 'userIdRequired' });
   });
 
   it('should return error when userId is not a valid UUID', async () => {
@@ -115,7 +115,7 @@ describe('createGrant', () => {
       durationDays: '30',
     });
     const result = await createGrant(fd);
-    expect(result).toEqual({ error: 'Invalid User ID format (expected UUID)' });
+    expect(result).toEqual({ error: 'invalidUserId' });
   });
 
   it('should return error when benefitType is empty', async () => {
@@ -127,7 +127,7 @@ describe('createGrant', () => {
       durationDays: '30',
     });
     const result = await createGrant(fd);
-    expect(result).toEqual({ error: 'Benefit type is required' });
+    expect(result).toEqual({ error: 'benefitTypeRequired' });
   });
 
   it('should return error when benefitType is not in the allow-list', async () => {
@@ -141,7 +141,7 @@ describe('createGrant', () => {
       durationDays: '30',
     });
     const result = await createGrant(fd);
-    expect(result).toEqual({ error: 'Unknown benefit type: free_unicorns' });
+    expect(result).toEqual({ error: 'unknownBenefitType' });
   });
 
   it('should reject the removed maia_access benefit type', async () => {
@@ -156,7 +156,7 @@ describe('createGrant', () => {
       durationDays: '30',
     });
     const result = await createGrant(fd);
-    expect(result).toEqual({ error: 'Unknown benefit type: maia_access' });
+    expect(result).toEqual({ error: 'unknownBenefitType' });
   });
 
   it('should return error when durationDays is 0', async () => {
@@ -168,7 +168,7 @@ describe('createGrant', () => {
       durationDays: '0',
     });
     const result = await createGrant(fd);
-    expect(result).toEqual({ error: 'Duration must be a positive number' });
+    expect(result).toEqual({ error: 'invalidDuration' });
   });
 
   it('should return error when durationDays is negative', async () => {
@@ -180,7 +180,7 @@ describe('createGrant', () => {
       durationDays: '-5',
     });
     const result = await createGrant(fd);
-    expect(result).toEqual({ error: 'Duration must be a positive number' });
+    expect(result).toEqual({ error: 'invalidDuration' });
   });
 
   it('should return error when durationDays exceeds 3650', async () => {
@@ -192,7 +192,7 @@ describe('createGrant', () => {
       durationDays: '3651',
     });
     const result = await createGrant(fd);
-    expect(result).toEqual({ error: 'Duration must not exceed 3650 days (10 years)' });
+    expect(result).toEqual({ error: 'durationTooLong' });
   });
 
   it('should return success and insert into user_grants when all inputs are valid', async () => {

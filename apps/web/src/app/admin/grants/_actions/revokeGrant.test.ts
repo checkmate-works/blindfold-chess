@@ -88,7 +88,7 @@ describe('revokeGrant', () => {
     mockRequireAdmin.mockResolvedValue({ userId: 'admin-id' });
 
     const result = await revokeGrant('');
-    expect(result).toEqual({ error: 'Grant ID is required' });
+    expect(result).toEqual({ error: 'grantIdRequired' });
   });
 
   it('should return error when grant does not exist', async () => {
@@ -96,7 +96,7 @@ describe('revokeGrant', () => {
     mockSelectFor.mockResolvedValue([]);
 
     const result = await revokeGrant('grant-123');
-    expect(result).toEqual({ error: 'notFound' });
+    expect(result).toEqual({ error: 'grantNotFound' });
     expect(mockUpdateSet).not.toHaveBeenCalled();
     expect(mockModerationInsert).not.toHaveBeenCalled();
   });

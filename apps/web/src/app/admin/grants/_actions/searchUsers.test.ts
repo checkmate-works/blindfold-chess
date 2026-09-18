@@ -107,7 +107,7 @@ describe('searchUsers', () => {
     mockProfileRows = [];
 
     const result = await searchUsers({});
-    expect(result).toEqual({ users: [] });
+    expect(result).toEqual({ success: true, users: [] });
   });
 
   it('should filter by lastSignInFrom', async () => {
@@ -143,7 +143,7 @@ describe('searchUsers', () => {
     mockProfileRows = [];
 
     const result = await searchUsers({});
-    expect(result).toEqual({ users: [] });
+    expect(result).toEqual({ success: true, users: [] });
     expect(mockGetUserById).not.toHaveBeenCalled();
   });
 
@@ -237,7 +237,7 @@ describe('searchUsers', () => {
     const result = await searchUsers({});
     expect('error' in result).toBe(true);
     if ('error' in result) {
-      expect(result.error).toBe('Failed to search users');
+      expect(result.error).toBe('failedToSearchUsers');
     }
   });
 });

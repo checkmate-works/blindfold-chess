@@ -2,24 +2,27 @@
 
 import { revalidateTag } from 'next/cache';
 
+import type { AdminActionResult } from '@/app/admin/_lib/action-errors';
 import { requireAdmin } from '@/app/admin/_lib/auth';
 import { eq } from 'drizzle-orm';
 
-import type { ActionResult } from '@/lib/action-types';
 import { GRANT_STATUS_CACHE_TAG } from '@/lib/cache-tags';
 import { db, userGrants } from '@/lib/db';
 import { logModerationAction } from '@/lib/moderation/audit';
 import { getClientIp } from '@/lib/security/client-ip';
 import { handleAdminActionError } from '@/lib/server-action-error';
 
-type RevokeTxResult = { ok: true } | { error: 'notFound' | 'alreadyRevoked' };
+type RevokeGrantError =
+  'unauthorized' | 'grantIdRequired' | 'grantNotFound' | 'alreadyRevoked' | 'failedToRevokeGrant';
 
-export async function revokeGrant(grantId: string): Promise<ActionResult> {
+type RevokeTxResult = { ok: true } | { error: 'grantNotFound' | 'alreadyRevoked' };
+
+export async function revokeGrant(grantId: string): Promise<AdminActionResult<RevokeGrantError>> {
   const auth = await requireAdmin();
   if ('error' in auth) return { error: 'unauthorized' };
 
   if (!grantId) {
-    return { error: 'Grant ID is required' };
+    return { error: 'grantIdRequired' };
   }
 
   const ipAddress = await getClientIp();
@@ -42,7 +45,7 @@ export async function revokeGrant(grantId: string): Promise<ActionResult> {
         .for('update');
 
       if (!grant) {
-        return { error: 'notFound' };
+        return { error: 'grantNotFound' };
       }
       if (grant.revokedAt !== null) {
         return { error: 'alreadyRevoked' };
@@ -76,6 +79,6 @@ export async function revokeGrant(grantId: string): Promise<ActionResult> {
     // next authenticated page load or when the cookie TTL expires.
     return { success: true };
   } catch (error) {
-    return handleAdminActionError(error, '[revokeGrant]', 'Failed to revoke grant');
+    return handleAdminActionError(error, '[revokeGrant]', 'failedToRevokeGrant');
   }
 }
