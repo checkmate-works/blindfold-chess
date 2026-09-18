@@ -4308,6 +4308,7 @@
     "dashboard": "Dashboard",
     "users": "Users",
     "deletedUser": "(削除済みユーザー)",
+    "provisionalUser": "(本登録未完了)",
     "auditLog": "Audit Log",
     "dashboardKpi": {
       "from": "開始日",

@@ -4308,6 +4308,7 @@
     "dashboard": "Dashboard",
     "users": "Users",
     "deletedUser": "(deleted user)",
+    "provisionalUser": "(registration incomplete)",
     "auditLog": "Audit Log",
     "dashboardKpi": {
       "from": "From",

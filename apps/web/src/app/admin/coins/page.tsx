@@ -182,6 +182,7 @@ export default async function AdminCoinsPage({
                   userId={row.userId}
                   username={profile?.username}
                   deletedLabel={t('deletedUser')}
+                  provisionalLabel={t('provisionalUser')}
                 />
               </td>
               <td className="px-4 py-3">{tKind(row.kind)}</td>

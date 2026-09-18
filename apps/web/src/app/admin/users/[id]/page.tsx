@@ -236,6 +236,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
                     userId={entry.actorId}
                     username={entry.actorUsername}
                     deletedLabel={t('deletedUser')}
+                    provisionalLabel={t('provisionalUser')}
                   />
                 </td>
                 <td className="px-4 py-3 text-muted-foreground">

@@ -184,6 +184,7 @@ export default async function AdminGrantsPage({
                   userId={grant.userId}
                   username={profile?.username}
                   deletedLabel={t('deletedUser')}
+                  provisionalLabel={t('provisionalUser')}
                 />
               </td>
               <td className="px-4 py-3">{grant.benefitType}</td>

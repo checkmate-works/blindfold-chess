@@ -4308,6 +4308,7 @@
     "dashboard": "Panel",
     "users": "Usuarios",
     "deletedUser": "(usuario eliminado)",
+    "provisionalUser": "(registro incompleto)",
     "auditLog": "Registro de Auditoría",
     "dashboardKpi": {
       "from": "Desde",

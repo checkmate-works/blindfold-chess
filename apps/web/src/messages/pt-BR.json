@@ -4336,6 +4336,7 @@
     "dashboard": "Painel",
     "users": "Usuários",
     "deletedUser": "(usuário excluído)",
+    "provisionalUser": "(cadastro incompleto)",
     "auditLog": "Registro de Auditoria",
     "dashboardKpi": {
       "from": "De",

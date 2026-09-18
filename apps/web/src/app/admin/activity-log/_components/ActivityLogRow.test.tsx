@@ -29,7 +29,7 @@ function renderRow(log: UserActivityLog, targetLinks: ActivityTargetLinkMap = ne
         <ActivityLogRow
           log={log}
           profileMap={new Map([[ACTOR_ID, { username: 'alice' }]])}
-          deletedUserLabel="(deleted user)"
+          userLabels={{ deleted: '(deleted user)', provisional: '(registration incomplete)' }}
           targetLinks={targetLinks}
         />
       </tbody>

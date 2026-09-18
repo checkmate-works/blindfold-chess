@@ -174,6 +174,7 @@ export default async function AdminAuditLogPage({
                   userId={log.targetId}
                   username={profileMap.get(log.targetId)?.username}
                   deletedLabel={t('deletedUser')}
+                  provisionalLabel={t('provisionalUser')}
                 />
               </td>
               <td className="px-4 py-3">
@@ -181,6 +182,7 @@ export default async function AdminAuditLogPage({
                   userId={log.actorId}
                   username={profileMap.get(log.actorId)?.username}
                   deletedLabel={t('deletedUser')}
+                  provisionalLabel={t('provisionalUser')}
                 />
               </td>
               <td className="px-4 py-3">

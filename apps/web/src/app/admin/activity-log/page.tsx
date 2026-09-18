@@ -89,7 +89,7 @@ export default async function AdminActivityLogPage({
                 key={log.id}
                 log={log}
                 profileMap={profileMap}
-                deletedUserLabel={t('deletedUser')}
+                userLabels={{ deleted: t('deletedUser'), provisional: t('provisionalUser') }}
                 targetLinks={targetLinks}
               />
             ))}
