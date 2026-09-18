@@ -7,6 +7,7 @@ import { publiclyVisible } from '@/lib/db/games-visibility';
 import { EMPTY_LIKE_META, GAME_LIKE_TARGET, getLikeMetaMap } from '@/lib/db/like-queries';
 import { EMPTY_REPLY_META, getGameCommentMetaMap } from '@/lib/db/reply-meta-queries';
 import { playSettingsToThumbnailDisplay } from '@/lib/games/play-settings-thumbnail';
+import { toSocialAuthorProfile } from '@/lib/users/author-profile';
 
 import type { GameFeedData } from '../types';
 
@@ -58,15 +59,7 @@ export async function loadGamesForFeed(
       thumbnailDisplay: playSettingsToThumbnailDisplay(row.playSettings, row.playerColor),
       result: row.result,
       createdAt: row.createdAt.toISOString(),
-      author: row.author?.username
-        ? {
-            username: row.author.username,
-            displayName: row.author.displayName,
-            avatarUrl: row.author.avatarUrl,
-            country: row.author.country,
-            flair: row.author.flair,
-          }
-        : null,
+      author: toSocialAuthorProfile(row.author),
       likeMeta: likeMetaMap.get(row.id) ?? EMPTY_LIKE_META,
       replyMeta: commentMetaMap.get(row.id) ?? EMPTY_REPLY_META,
       aiReviewed: reviewedIds.has(row.id),
