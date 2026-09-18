@@ -105,6 +105,13 @@ export function localeFromPathname(pathname: string): Locale {
  *
  * `logPrefix` labels the development console line for boundaries deep enough
  * that "which page threw this" is not obvious from the error alone.
+ *
+ * The report is not routed through `captureError` (`@/lib/sentry/capture-error`)
+ * even though it is the same console-plus-Sentry pair: that helper logs
+ * unconditionally, which is right for its server-side callers — server actions,
+ * route handlers, cron jobs — where the console is our own log, and wrong here,
+ * where the console belongs to the visitor's browser. This boundary reports to
+ * Sentry always and writes to the console only in development.
  */
 export function useErrorBoundary(
   error: Error & { digest?: string },
