@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState, useTransition } from 'react';
+import { useCallback, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
@@ -13,6 +13,7 @@ import {
   fieldErrorProps,
 } from '@/app/_components';
 import { AdminFormTopBar } from '@/app/admin/_components/forms';
+import { useDraftPublishWorkflow } from '@/app/admin/_hooks/useDraftPublishWorkflow';
 import { LuSettings } from 'react-icons/lu';
 
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
@@ -123,9 +124,7 @@ export function ArticleForm({
 }: ArticleFormProps) {
   const router = useRouter();
   const { showToast } = useToast();
-  const [isPending, startTransition] = useTransition();
   const [metadataOpen, setMetadataOpen] = useState(false);
-  const [publishedConfirmOpen, setPublishedConfirmOpen] = useState(false);
   const [isNavigatingToPublish, setIsNavigatingToPublish] = useState(false);
 
   // This form is a full-height editor with a side panel, so a rejection
@@ -215,49 +214,34 @@ export function ArticleForm({
     window.location.replace(`/admin/articles/${id}/edit`);
   };
 
-  const executeSave = () => {
-    submitError.clear();
-    startTransition(async () => {
-      const result = await onSaveDraft(buildFormData());
-
-      if ('error' in result) {
-        reportSaveError(result);
-      } else {
-        showToast(isPublished ? labels.publishedSaved : labels.draftSaved, 'success');
-        // For new articles, redirect to edit page so subsequent saves are updates
-        if (!defaultValues) {
-          redirectAfterSave(result.id);
-        }
+  const {
+    isPending,
+    publishedConfirmOpen,
+    requestSave: handleSaveDraft,
+    confirmPublishedSave: handlePublishedConfirm,
+    cancelPublishedSave,
+    saveThen,
+  } = useDraftPublishWorkflow({
+    isPublished,
+    buildFormData,
+    onSaveDraft,
+    clearErrors: submitError.clear,
+    onSaveError: reportSaveError,
+    onSaved: (result) => {
+      showToast(isPublished ? labels.publishedSaved : labels.draftSaved, 'success');
+      // For new articles, redirect to edit page so subsequent saves are updates
+      if (!defaultValues) {
+        redirectAfterSave(result.id);
       }
-    });
-  };
-
-  const handleSaveDraft = () => {
-    if (isPublished) {
-      setPublishedConfirmOpen(true);
-    } else {
-      executeSave();
-    }
-  };
-
-  const handlePublishedConfirm = () => {
-    setPublishedConfirmOpen(false);
-    executeSave();
-  };
+    },
+  });
 
   const handlePublishSettings = () => {
-    submitError.clear();
     setIsNavigatingToPublish(true);
-    startTransition(async () => {
-      const result = await onSaveDraft(buildFormData());
-
-      if ('error' in result) {
-        reportSaveError(result);
-        setIsNavigatingToPublish(false);
-      } else {
-        router.push(`/admin/articles/${result.id}/publish`);
-      }
-    });
+    saveThen(
+      (result) => router.push(`/admin/articles/${result.id}/publish`),
+      () => setIsNavigatingToPublish(false)
+    );
   };
 
   return (
@@ -411,7 +395,7 @@ export function ArticleForm({
           confirmLabel={labels.publishedConfirmConfirm}
           cancelLabel={labels.publishedConfirmCancel}
           onConfirm={handlePublishedConfirm}
-          onCancel={() => setPublishedConfirmOpen(false)}
+          onCancel={cancelPublishedSave}
         />
 
         {metadataOpen && (
