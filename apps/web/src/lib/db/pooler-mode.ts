@@ -33,6 +33,15 @@ export function derivePoolerMode(connectionString: string): PoolerMode {
 }
 
 /**
+ * Port of the local Supavisor session pooler, from `[db.pooler] port` in
+ * `apps/web/supabase/config.toml`. Not derivable from `PoolerMode` alone:
+ * `derivePoolerMode` tags any loopback host `'local'` before looking at the
+ * port, so `'local'` covers both the pooler (54329) and the direct
+ * `[db]` connection (54322, `port` in the same file).
+ */
+const LOCAL_SUPAVISOR_POOLER_PORT = '54329';
+
+/**
  * Per-process connection cap for the postgres.js pool.
  *
  * ## Runtime (`isBuildPhase: false`)
@@ -43,6 +52,16 @@ export function derivePoolerMode(connectionString: string): PoolerMode {
  * before raising the 5. This axis scales with traffic (more concurrent
  * requests → more warm instances × max each) and is a capacity-planning
  * problem, not a code one.
+ *
+ * `'local'` gets the same 5 when the connection's port is the local
+ * Supavisor pooler's (54329, see `LOCAL_SUPAVISOR_POOLER_PORT`): since
+ * 2026-08-08 local development runs through that pooler in session mode too,
+ * and sizing it like production lets local reproduce production's budget
+ * arithmetic instead of silently running twice the per-instance connection
+ * pressure. A `'local'` connection on the direct port (54322) still gets 10 —
+ * no pooler is in the path there, so nothing to mirror. `derivePoolerMode`'s
+ * return value and the `db.pooler_mode` Sentry tag are unaffected; this is a
+ * sizing-only distinction.
  *
  * ## Build (`isBuildPhase: true`) — clamp to 2
  *
@@ -71,7 +90,27 @@ export function derivePoolerMode(connectionString: string): PoolerMode {
  * (Distinct from the 2026-07 "connection black hole" incident — that was the
  * transaction pooler swallowing queries, a mode problem, not exhaustion.)
  */
-export function resolvePoolMax(poolerMode: PoolerMode, isBuildPhase: boolean): number {
+export function resolvePoolMax(
+  poolerMode: PoolerMode,
+  isBuildPhase: boolean,
+  port?: string
+): number {
   if (isBuildPhase) return 2;
-  return poolerMode === 'session' ? 5 : 10;
+  if (poolerMode === 'session') return 5;
+  if (poolerMode === 'local' && port === LOCAL_SUPAVISOR_POOLER_PORT) return 5;
+  return 10;
+}
+
+/**
+ * Extracts the port from a connection string for `resolvePoolMax`'s local/
+ * pooler-port check. Returns `undefined` on an unparseable string, matching
+ * `derivePoolerMode`'s own fallback — the caller already has `poolerMode`
+ * from that function to decide whether the port matters.
+ */
+export function parseConnectionPort(connectionString: string): string | undefined {
+  try {
+    return new URL(connectionString).port || undefined;
+  } catch {
+    return undefined;
+  }
 }
