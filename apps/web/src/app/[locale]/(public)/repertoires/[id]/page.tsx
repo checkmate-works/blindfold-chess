@@ -17,7 +17,7 @@ import { getRepertoireLikeMetaMap } from '@/lib/repertoires/like-queries';
 import { getLinkedOpenings } from '@/lib/repertoires/opening-queries';
 import { getRepertoireForViewer } from '@/lib/repertoires/queries';
 import { replayRepertoireLine } from '@/lib/repertoires/replay-line';
-import { truncate } from '@/lib/text';
+import { toMetaDescription } from '@/lib/seo/meta-description';
 import { resolveAuthorName } from '@/lib/users/display-name';
 
 import { OpeningTag } from '@/app/[locale]/(public)/games/shared/_components/OpeningTag';
@@ -43,23 +43,6 @@ type Props = {
   params: Promise<{ locale: Locale; id: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
-
-/**
- * Cut-off for the meta description built from the author's free-text course
- * description (`REPERTOIRE_DESCRIPTION_MAX` allows 2000 chars). Search results
- * show roughly 150–160 characters; anything past that is dead weight.
- */
-const META_DESCRIPTION_MAX = 160;
-
-/**
- * The course description is a multi-line textarea; its newlines and blank
- * lines survive into the `content` attribute verbatim, so collapse runs of
- * whitespace into single spaces before truncating (otherwise the cut-off can
- * also land inside a run of blank lines and spend the budget on nothing).
- */
-function toMetaDescription(text: string | null): string | undefined {
-  return truncate(text?.replace(/\s+/g, ' ').trim(), META_DESCRIPTION_MAX) || undefined;
-}
 
 /**
  * The course's own name is the title — kata names routinely carry the opening
@@ -91,7 +74,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const { repertoire } = data;
   const title = repertoire.name;
-  const description = toMetaDescription(repertoire.description);
+  // The course description is a free-text textarea allowing 2000 characters
+  // (`REPERTOIRE_DESCRIPTION_MAX`), so it needs both the whitespace collapsing
+  // and the cut-off. An empty one drops the key rather than emitting `""`.
+  const description = toMetaDescription(repertoire.description) || undefined;
 
   return {
     ...generateCanonicalMetadata({ locale, path: `repertoires/${id}`, title, description }),
