@@ -62,14 +62,17 @@ export class EngineBusyError extends Error {
 }
 
 /**
- * Thrown by {@link ChessEngine.getBestMove} when the engine answered the `go`
- * command but the `bestmove` line carried no move (`bestmove (none)`, or a
- * malformed reply). Distinct from a timeout: the engine was alive and
- * responsive, it just had nothing to play. Exposed as a class — like
- * {@link EngineBusyError} — so boundary adapters can tell the two apart with
- * `instanceof` rather than by matching message text; the mobile hook maps it
- * to `EngineError{kind:"no-move"}`, which is reported to the player as a
- * final failure instead of "the engine is slow, try again".
+ * Thrown by {@link ChessEngine.getBestMove} when the `bestmove` request
+ * settled without a move. Defensive: the awaited value is typed
+ * `string | undefined` because that is what a pending-request slot can hold,
+ * but today's parser only settles the slot on a `bestmove` line it could read
+ * a move out of, so nothing currently takes this path. Distinct from a
+ * timeout all the same — the engine answered, it just answered with nothing.
+ *
+ * A class rather than a bare `Error` — like {@link EngineBusyError} — so a
+ * boundary adapter can separate it from a missed deadline by `instanceof`
+ * instead of by matching message text. The mobile hook maps it to
+ * `EngineError{kind:"no-move"}`.
  */
 export class EngineNoMoveError extends Error {
   constructor() {
