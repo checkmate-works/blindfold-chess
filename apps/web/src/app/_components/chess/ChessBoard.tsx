@@ -26,7 +26,8 @@ import {
   getLegalMoves,
   isBlackToMoveFromFen,
 } from '@blindfold-chess/features/chess-core';
-import type { Side } from '@blindfold-chess/types';
+import { isValidSquare } from '@blindfold-chess/features/common';
+import type { Side, Square } from '@blindfold-chess/types';
 import { createPortal } from 'react-dom';
 
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
@@ -322,15 +323,15 @@ export const ChessBoard = memo(function ChessBoard({
   // Selected square for click-to-move (and for the in-flight drag source).
   // Cleared whenever the position changes so a freshly applied move (or a
   // navigation jump) does not leave a stale selection ring on the board.
-  const [selectedSquare, setSelectedSquare] = useState<string | null>(null);
+  const [selectedSquare, setSelectedSquare] = useState<Square | null>(null);
 
   // Pending promotion choice. Populated when the player attempts a move
   // whose (from, to) pair has multiple legal candidates (one per promotion
   // piece). While set, the promotion picker is overlaid on the board and
   // the actual onMove emit is deferred until the player picks a piece.
   const [promotionPending, setPromotionPending] = useState<{
-    from: string;
-    to: string;
+    from: Square;
+    to: Square;
     candidates: MoveResult[];
   } | null>(null);
 
@@ -407,7 +408,7 @@ export const ChessBoard = memo(function ChessBoard({
   // Candidate-count branching and the illegal-attempt policy live in
   // classifyMoveAttempt.
   const attemptMove = useCallback(
-    (from: string, to: string) => {
+    (from: Square, to: Square) => {
       if (!onMove) return;
       applyClickAction(classifyMoveAttempt(from, to, findLegalMovesByCoords(fen, from, to)));
     },
@@ -539,7 +540,7 @@ export const ChessBoard = memo(function ChessBoard({
   // The state machine itself — including the blindfold illegal-attempt
   // counting policy — lives in the pure classifyBoardClick.
   const handleInteractiveClick = useCallback(
-    (square: string) => {
+    (square: Square) => {
       if (!onMove) return;
       applyClickAction(
         classifyBoardClick({
@@ -561,7 +562,14 @@ export const ChessBoard = memo(function ChessBoard({
       if (consumeTrailingClick()) return;
       const target = (e.target as HTMLElement).closest<HTMLElement>('[data-square]');
       const square = target?.dataset.square;
-      if (!square) return;
+      // The one place a board square crosses in from the DOM, which can only
+      // hand back a plain string. Parsing here is what lets the click policy,
+      // the selection state and `MoveSquares` all speak `Square` instead of
+      // `string`. The attribute is written by this component's own renderer,
+      // so a non-square value means the click landed on something that is not
+      // one of our squares — the same nothing-was-clicked case as a missing
+      // attribute, and ignored identically.
+      if (!square || !isValidSquare(square)) return;
       if (onMove) {
         handleInteractiveClick(square);
       } else if (onSquareClick) {
