@@ -15,7 +15,7 @@ import { type DailyCount, fillDateRange } from './aggregate-by-day';
  *
  * The KPI card, the time-series chart, and the KPI summary table all iterate
  * over `UGC_SOURCES` so that adding a new UGC entity is a one-line change
- * here.
+ * here — plus the index `createdAtColumn` documents.
  *
  * If a future UGC table does not use soft-delete, set `deletedAtColumn` to
  * `null` and the aggregation will skip the `IS NULL` filter for that source.
@@ -26,6 +26,15 @@ export type UgcSource = {
   /** Stable identifier used as a key in summary responses and i18n lookups. */
   name: 'topic_posts' | 'positions' | 'chunks' | 'games' | 'repertoires' | 'repertoire_lines';
   table: PgTable;
+  /**
+   * Bucketing column. Every aggregation here filters it by range and nothing
+   * else, so the table needs an index on it — partial on `deleted_at IS NULL`
+   * to match `liveInPeriodConditions`. Without one the aggregation
+   * sequentially scans the whole table, which is how `topic_posts` reached
+   * the server's 30s statement_timeout in production on 2026-08-05
+   * (SQLSTATE 57014). A composite index that merely *contains* the column is
+   * no substitute: it has to lead on it.
+   */
   createdAtColumn: PgColumn;
   deletedAtColumn: PgColumn | null;
   /**
@@ -207,6 +216,9 @@ async function getUgcSourceCountsByDate(
  * Sums contributions from every entry in `UGC_SOURCES` into a single combined
  * series. Soft-deleted rows are excluded. To add a new UGC entity, append it
  * to `UGC_SOURCES` — no changes are needed here.
+ *
+ * Cost scales with the number of sources: one grouped range scan per entry,
+ * issued in parallel, each against its own `created_at` index.
  */
 export async function getPostsPerDay(
   startDate: string,

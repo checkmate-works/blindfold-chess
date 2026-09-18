@@ -113,6 +113,14 @@ export const positions = pgTable(
     index('idx_positions_type_created_at')
       .on(table.type, table.createdAt.desc())
       .where(sql`deleted_at IS NULL`),
+    // The admin dashboard's UGC aggregation: a `created_at` range with
+    // `deleted_at IS NULL`, bucketed per day. `idx_positions_type_created_at`
+    // cannot serve it — that index leads on `type`, which the aggregation does
+    // not constrain. Partial for the same reason it is: every read of this
+    // table excludes soft-deleted rows.
+    index('idx_positions_created_at')
+      .on(table.createdAt)
+      .where(sql`deleted_at IS NULL`),
     // Reverse lookup: "show forks of this position". Partial, so the index
     // only carries rows that actually have a parent (NULL is the common case).
     index('idx_positions_forked_from')

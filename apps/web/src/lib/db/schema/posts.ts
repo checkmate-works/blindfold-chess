@@ -142,6 +142,20 @@ export const topicPosts = pgTable(
     index('idx_topic_posts_topic')
       .on(table.topicType, table.topicKey)
       .where(sql`deleted_at IS NULL`),
+    // The admin dashboard's UGC aggregation buckets rows by day over a
+    // caller-chosen window: `created_at` between two bounds, `deleted_at IS
+    // NULL`, grouped by `DATE(created_at AT TIME ZONE 'UTC')`. Only the range
+    // predicate needs an index — the expression in the GROUP BY does not — and
+    // without one the aggregation sequentially scans the whole table. Partial
+    // on `deleted_at IS NULL` because every aggregation over this table
+    // carries that filter, so tombstones would be dead weight in the b-tree.
+    //
+    // This table is the one that proved the scan does not stay affordable: the
+    // aggregation was cancelled by the server's 30s statement_timeout in
+    // production on 2026-08-05 (SQLSTATE 57014).
+    index('idx_topic_posts_created_at')
+      .on(table.createdAt)
+      .where(sql`deleted_at IS NULL`),
     index('idx_topic_posts_user').on(table.userId),
     index('idx_topic_posts_parent').on(table.parentId),
     index('idx_topic_posts_root').on(table.rootPostId),
