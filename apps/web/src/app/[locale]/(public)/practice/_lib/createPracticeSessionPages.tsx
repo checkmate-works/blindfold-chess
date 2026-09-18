@@ -108,11 +108,29 @@ async function renderSessionPage(props: LocaleSearchPageProps, config: SessionPa
   );
 }
 
+/**
+ * Assemble the three exports a session-style page module needs from a body
+ * config and its own metadata generator. Every session factory below ends
+ * with these same six lines; only the metadata differs between them.
+ */
+function finishSessionPageFactory(
+  config: SessionPageBodyConfig & { staticParams?: boolean },
+  generateMetadata: (props: LocalePageProps) => Promise<Metadata>
+) {
+  const staticParams = config.staticParams !== false ? generateLocaleStaticParams : undefined;
+
+  async function Page(props: LocaleSearchPageProps) {
+    return renderSessionPage(props, config);
+  }
+
+  return { generateMetadata, generateStaticParams: staticParams, Page };
+}
+
 // ---------------------------------------------------------------------------
-// Challenge page factory
+// Mode page factories (challenge, training)
 // ---------------------------------------------------------------------------
 
-type ChallengePageConfig = {
+type SessionModePageConfig = {
   /** i18n key under "practice" namespace, e.g. "coordinateQuiz" */
   i18nKey: string;
   /** Canonical path, e.g. "practice/coordinate-quiz/challenge" */
@@ -133,48 +151,36 @@ type ChallengePageConfig = {
   }) => ReactNode;
 };
 
-export function createPracticeChallengePage(config: ChallengePageConfig) {
-  const generateMetadata = createPracticeSessionMetadata({
-    i18nKey: config.i18nKey,
-    canonicalPath: config.canonicalPath,
-    modeLabelKey: 'modeTimed',
-    robots: config.robots,
-  });
+/**
+ * A timed challenge page and a training page differ in exactly one thing: the
+ * mode label appended to the document title. Everything else — the config
+ * they accept, the body they render, the three exports they return — is the
+ * same, so the mode label is a value passed in rather than a second copy of
+ * the factory.
+ */
+function createSessionModePage(config: SessionModePageConfig, modeLabelKey: string) {
+  return finishSessionPageFactory(
+    config,
+    createPracticeSessionMetadata({
+      i18nKey: config.i18nKey,
+      canonicalPath: config.canonicalPath,
+      modeLabelKey,
+      robots: config.robots,
+    })
+  );
+}
 
-  const staticParams = config.staticParams !== false ? generateLocaleStaticParams : undefined;
-
-  async function Page(props: LocaleSearchPageProps) {
-    return renderSessionPage(props, config);
-  }
-
-  return { generateMetadata, generateStaticParams: staticParams, Page };
+export function createPracticeChallengePage(config: SessionModePageConfig) {
+  return createSessionModePage(config, 'modeTimed');
 }
 
 // ---------------------------------------------------------------------------
 // Challenge session page factory
 // ---------------------------------------------------------------------------
 
-type ChallengeSessionPageConfig = {
-  /** i18n key under "practice" namespace, e.g. "coordinateQuiz" */
-  i18nKey: string;
-  /** Canonical path, e.g. "practice/coordinate-quiz/challenge/session" */
-  canonicalPath: string;
+type ChallengeSessionPageConfig = SessionModePageConfig & {
   /** i18n key for the session label (resolved as practice.<i18nKey>.<sessionLabelKey>) */
   sessionLabelKey: string;
-  /** Breadcrumb segments (excluding "Practice" which is always first) */
-  breadcrumbSegments: BreadcrumbSegment[];
-  /** Whether to export generateStaticParams. Defaults to true. */
-  staticParams?: boolean;
-  /** Optional robots meta tag override */
-  robots?: Metadata['robots'];
-  /** Whether to show the divider in PracticeSessionPage. Defaults to true. */
-  showDivider?: boolean;
-  /** Render the inner component. */
-  renderContent: (context: {
-    locale: Locale;
-    searchParams: Record<string, string | string[] | undefined>;
-    t: ServerTranslator;
-  }) => ReactNode;
 };
 
 export function createPracticeChallengeSessionPage(config: ChallengeSessionPageConfig) {
@@ -196,13 +202,7 @@ export function createPracticeChallengeSessionPage(config: ChallengeSessionPageC
     };
   };
 
-  const staticParams = config.staticParams !== false ? generateLocaleStaticParams : undefined;
-
-  async function Page(props: LocaleSearchPageProps) {
-    return renderSessionPage(props, config);
-  }
-
-  return { generateMetadata, generateStaticParams: staticParams, Page };
+  return finishSessionPageFactory(config, generateMetadata);
 }
 
 // ---------------------------------------------------------------------------
@@ -301,40 +301,6 @@ export function createPracticeTutorialPage(config: TutorialPageConfig) {
 // Training page factory
 // ---------------------------------------------------------------------------
 
-type TrainingPageConfig = {
-  /** i18n key under "practice" namespace, e.g. "coordinateQuiz" */
-  i18nKey: string;
-  /** Canonical path, e.g. "practice/coordinate-quiz/training" */
-  canonicalPath: string;
-  /** Breadcrumb segments (excluding "Practice" which is always first) */
-  breadcrumbSegments: BreadcrumbSegment[];
-  /** Whether to export generateStaticParams. Defaults to true. */
-  staticParams?: boolean;
-  /** Optional robots meta tag override */
-  robots?: Metadata['robots'];
-  /** Whether to show the divider in PracticeSessionPage. Defaults to true. */
-  showDivider?: boolean;
-  /** Render the inner component. */
-  renderContent: (context: {
-    locale: Locale;
-    searchParams: Record<string, string | string[] | undefined>;
-    t: ServerTranslator;
-  }) => ReactNode;
-};
-
-export function createPracticeTrainingPage(config: TrainingPageConfig) {
-  const generateMetadata = createPracticeSessionMetadata({
-    i18nKey: config.i18nKey,
-    canonicalPath: config.canonicalPath,
-    modeLabelKey: 'modeTraining',
-    robots: config.robots,
-  });
-
-  const staticParams = config.staticParams !== false ? generateLocaleStaticParams : undefined;
-
-  async function Page(props: LocaleSearchPageProps) {
-    return renderSessionPage(props, config);
-  }
-
-  return { generateMetadata, generateStaticParams: staticParams, Page };
+export function createPracticeTrainingPage(config: SessionModePageConfig) {
+  return createSessionModePage(config, 'modeTraining');
 }
