@@ -10,6 +10,7 @@ import { chessTerms } from '@/lib/db/data/chess-terms';
 import { slugifyTerm } from '@/lib/glossary/slug';
 import { getPositionsForTerm } from '@/lib/glossary/term-positions';
 import { JsonLd, generateDefinedTermSchema } from '@/lib/seo/jsonld';
+import { toMetaDescription } from '@/lib/seo/meta-description';
 
 import { LinkTabs, PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import type { LinkTabItem } from '@/app/[locale]/_components';
@@ -70,7 +71,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const name = displayName(term, locale);
-  const description = displayDefinition(term, locale).slice(0, 160).replace(/\n/g, ' ').trim();
+  const description = toMetaDescription(displayDefinition(term, locale));
 
   return {
     ...generateCanonicalMetadata({ locale, path: `glossary/${slug}`, title: name, description }),

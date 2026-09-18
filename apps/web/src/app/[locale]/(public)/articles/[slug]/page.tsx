@@ -10,6 +10,7 @@ import { routing } from '@/i18n/routing';
 
 import { formatLocalDate } from '@/lib/i18n/format-date';
 import { JsonLd, generateBlogPostingSchema } from '@/lib/seo/jsonld';
+import { toMetaDescription } from '@/lib/seo/meta-description';
 
 import { PageLayout } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
@@ -66,7 +67,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     : undefined;
   const isFallback = articleLocale !== locale;
   const title = article.title;
-  const description = article.content.slice(0, 160).replace(/\n/g, ' ').trim();
+  const description = toMetaDescription(article.content);
 
   return {
     ...generateCanonicalMetadata({
@@ -106,7 +107,10 @@ export default async function ArticlePage({ params }: Props) {
       <JsonLd
         data={generateBlogPostingSchema({
           title: article.title,
-          description: article.content.slice(0, 160),
+          // Same call as `generateMetadata`'s, so the structured data and the
+          // `<meta name="description">` tag report one description of this
+          // page rather than two.
+          description: toMetaDescription(article.content),
           slug: article.slug,
           publishedAt: article.publishedAt,
           locale,
