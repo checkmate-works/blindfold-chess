@@ -6,6 +6,7 @@ import { Button, Field, FormMessage, Input, Select, Textarea } from '@/app/admin
 import { useAdminFormSubmit } from '@/app/admin/_hooks/useAdminFormSubmit';
 
 import { BENEFIT_TYPES, type BenefitType } from '@/lib/db/data/grant-types';
+import { MODERATION_REASON_MAX_LENGTH } from '@/lib/moderation/validate-reason';
 
 import { createGrant } from '../_actions/createGrant';
 
@@ -62,6 +63,7 @@ export function GrantForm() {
           id="reason"
           name="reason"
           rows={3}
+          maxLength={MODERATION_REASON_MAX_LENGTH}
           placeholder="Shown to the user as the notification message (e.g., 'Compensation for outage')"
         />
       </Field>

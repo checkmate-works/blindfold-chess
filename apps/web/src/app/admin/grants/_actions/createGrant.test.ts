@@ -3,6 +3,7 @@ import { revalidateTag as mockRevalidateTag } from 'next/cache';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
+import { MODERATION_REASON_MAX_LENGTH } from '@/lib/moderation/validate-reason';
 
 const mockRequireAdmin = vi.fn();
 const mockUserGrantsInsert = vi.fn();
@@ -193,6 +194,19 @@ describe('createGrant', () => {
     });
     const result = await createGrant(fd);
     expect(result).toEqual({ error: 'durationTooLong' });
+  });
+
+  it('should return error when reason exceeds the moderation reason limit', async () => {
+    mockRequireAdmin.mockResolvedValue({ userId: 'admin-id' });
+
+    const fd = makeFormData({
+      userId: validUserId,
+      benefitType: 'ad_free',
+      durationDays: '30',
+      reason: 'a'.repeat(MODERATION_REASON_MAX_LENGTH + 1),
+    });
+    const result = await createGrant(fd);
+    expect(result).toEqual({ error: 'reasonTooLong' });
   });
 
   it('should return success and insert into user_grants when all inputs are valid', async () => {

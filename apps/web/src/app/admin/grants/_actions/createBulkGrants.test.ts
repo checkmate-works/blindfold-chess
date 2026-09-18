@@ -2,6 +2,8 @@ import { revalidateTag as mockRevalidateTag } from 'next/cache';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { MODERATION_REASON_MAX_LENGTH } from '@/lib/moderation/validate-reason';
+
 const mockRequireAdmin = vi.fn();
 const mockUserGrantsInsert = vi.fn();
 const mockModerationInsert = vi.fn();
@@ -150,6 +152,17 @@ describe('createBulkGrants', () => {
       reason: '   ',
     });
     expect(result).toEqual({ error: 'reasonRequired' });
+  });
+
+  it('should return error when reason exceeds the moderation reason limit', async () => {
+    mockRequireAdmin.mockResolvedValue({ userId: 'admin-id' });
+
+    const result = await createBulkGrants({
+      userIds: [validUserId1],
+      durationDays: 30,
+      reason: 'a'.repeat(MODERATION_REASON_MAX_LENGTH + 1),
+    });
+    expect(result).toEqual({ error: 'reasonTooLong' });
   });
 
   it('should create grants for all users and return success', async () => {

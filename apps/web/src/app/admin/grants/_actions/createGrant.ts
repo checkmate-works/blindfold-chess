@@ -9,6 +9,7 @@ import { validateUserId } from '@/app/admin/_lib/validators';
 import { GRANT_STATUS_CACHE_TAG } from '@/lib/cache-tags';
 import { db } from '@/lib/db';
 import { isBenefitType } from '@/lib/db/data/grant-types';
+import { MODERATION_REASON_MAX_LENGTH } from '@/lib/moderation/validate-reason';
 import { getClientIp } from '@/lib/security/client-ip';
 import { handleAdminActionError } from '@/lib/server-action-error';
 
@@ -23,6 +24,7 @@ type CreateGrantError =
   | 'unknownBenefitType'
   | 'invalidDuration'
   | 'durationTooLong'
+  | 'reasonTooLong'
   | 'failedToCreateGrant';
 
 export async function createGrant(
@@ -61,6 +63,12 @@ export async function createGrant(
   const trimmedUserId = userId.trim();
   const trimmedBenefitType = benefitType.trim();
   const trimmedReason = reason?.trim() || null;
+  // The reason is optional here (unlike the bulk action) but bounded the same
+  // way once given, so a single grant and a bulk grant cannot disagree about
+  // how long an audit note may be.
+  if (trimmedReason && trimmedReason.length > MODERATION_REASON_MAX_LENGTH) {
+    return { error: 'reasonTooLong' };
+  }
   const ipAddress = await getClientIp();
 
   // The grant + audit rows are written in one transaction so the

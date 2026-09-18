@@ -8,6 +8,7 @@ import { validateUserId } from '@/app/admin/_lib/validators';
 
 import { GRANT_STATUS_CACHE_TAG } from '@/lib/cache-tags';
 import { db } from '@/lib/db';
+import { validateModerationReason } from '@/lib/moderation/validate-reason';
 import { getClientIp } from '@/lib/security/client-ip';
 import { handleAdminActionError } from '@/lib/server-action-error';
 
@@ -28,6 +29,7 @@ type BulkGrantError =
   | 'invalidDuration'
   | 'durationTooLong'
   | 'reasonRequired'
+  | 'reasonTooLong'
   | 'failedToCreateBulkGrants';
 
 type BulkGrantResult = AdminActionResult<BulkGrantError, { grantedCount: number }>;
@@ -53,11 +55,14 @@ export async function createBulkGrants(params: BulkGrantParams): Promise<BulkGra
     return { error: durationError };
   }
 
-  if (!reason || !reason.trim()) {
-    return { error: 'reasonRequired' };
+  // A bulk grant writes one `moderation_actions` row per recipient, so its
+  // reason is held to the same rules as any other audited admin write.
+  const reasonResult = validateModerationReason(reason ?? '');
+  if ('error' in reasonResult) {
+    return reasonResult;
   }
 
-  const trimmedReason = reason.trim();
+  const trimmedReason = reasonResult.trimmed;
   const ipAddress = await getClientIp();
 
   try {
