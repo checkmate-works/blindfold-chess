@@ -1,11 +1,11 @@
 import { getTranslations } from 'next-intl/server';
-import { notFound, redirect } from 'next/navigation';
+import { redirect } from 'next/navigation';
 
 import { getOptionalUser } from '@/lib/auth';
 import { getViewerPendingEditRequestForPosition } from '@/lib/position-edit-requests/queries';
-import { POSITION_KIND_CONFIG, type PositionKind, getPositionListPath } from '@/lib/positions/kind';
-import { getPositionWithProfileById } from '@/lib/positions/queries';
+import type { PositionKind } from '@/lib/positions/kind';
 import { loadAvailableTags, loadPositionTags } from '@/lib/positions/tag-loader';
+import { resolvePositionViewContext } from '@/lib/positions/view-context';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -33,15 +33,10 @@ type Props = {
  * meaningful.
  */
 export async function PositionEditRequestNewView({ positionId, positionType, locale }: Props) {
-  const row = await getPositionWithProfileById({ id: positionId, type: positionType });
-  if (!row) {
-    notFound();
-  }
-  const { position } = row;
-
-  const { namespace } = POSITION_KIND_CONFIG[positionType];
-  const listPath = getPositionListPath(positionType);
-  const detailPath = `${listPath}/${position.id}`;
+  const { position, namespace, listPath, detailPath } = await resolvePositionViewContext(
+    positionId,
+    positionType
+  );
   const suggestionsPath = `${detailPath}/suggestions`;
 
   const [user, t, tNav, tType] = await Promise.all([

@@ -1,9 +1,8 @@
 import { getTranslations } from 'next-intl/server';
-import { notFound } from 'next/navigation';
 
 import { listContentRevisionsForPosition } from '@/lib/positions/content-revision-queries';
-import { POSITION_KIND_CONFIG, type PositionKind, getPositionListPath } from '@/lib/positions/kind';
-import { getPositionWithProfileById } from '@/lib/positions/queries';
+import type { PositionKind } from '@/lib/positions/kind';
+import { resolvePositionViewContext } from '@/lib/positions/view-context';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -34,15 +33,10 @@ type Props = {
  * "never edited".
  */
 export async function PositionHistoryView({ positionId, positionType, locale }: Props) {
-  const row = await getPositionWithProfileById({ id: positionId, type: positionType });
-  if (!row) {
-    notFound();
-  }
-  const { position } = row;
-
-  const { namespace } = POSITION_KIND_CONFIG[positionType];
-  const listPath = getPositionListPath(positionType);
-  const detailPath = `${listPath}/${position.id}`;
+  const { position, namespace, listPath, detailPath } = await resolvePositionViewContext(
+    positionId,
+    positionType
+  );
 
   const [revisions, t, tNav, tType] = await Promise.all([
     listContentRevisionsForPosition(position.id),
