@@ -562,13 +562,14 @@ export const ChessBoard = memo(function ChessBoard({
       if (consumeTrailingClick()) return;
       const target = (e.target as HTMLElement).closest<HTMLElement>('[data-square]');
       const square = target?.dataset.square;
-      // The one place a board square crosses in from the DOM, which can only
-      // hand back a plain string. Parsing here is what lets the click policy,
-      // the selection state and `MoveSquares` all speak `Square` instead of
-      // `string`. The attribute is written by this component's own renderer,
-      // so a non-square value means the click landed on something that is not
-      // one of our squares — the same nothing-was-clicked case as a missing
-      // attribute, and ignored identically.
+      // A board square crossing in from the DOM, which can only hand back a
+      // plain string. Parsing at each such read — this one, plus the drag
+      // source and drop target in `useBoardDragDrop` — is what lets the click
+      // policy, the selection state and `MoveSquares` all speak `Square`
+      // instead of `string`. The attribute is written by this component's own
+      // renderer, so a non-square value means the click landed on something
+      // that is not one of our squares — the same nothing-was-clicked case as
+      // a missing attribute, and ignored identically.
       if (!square || !isValidSquare(square)) return;
       if (onMove) {
         handleInteractiveClick(square);
