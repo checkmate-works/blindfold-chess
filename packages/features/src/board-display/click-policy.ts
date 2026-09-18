@@ -1,3 +1,5 @@
+import type { Square } from "@blindfold-chess/types";
+
 import type { PieceColor } from "./types";
 
 /**
@@ -19,11 +21,11 @@ import type { PieceColor } from "./types";
  */
 export type BoardClickAction<M> =
   | { type: "noop" }
-  | { type: "select"; square: string }
+  | { type: "select"; square: Square }
   | { type: "deselect" }
-  | { type: "illegal-clear"; from: string; to: string }
+  | { type: "illegal-clear"; from: Square; to: Square }
   | { type: "move"; move: M }
-  | { type: "promotion"; from: string; to: string; candidates: M[] };
+  | { type: "promotion"; from: Square; to: Square; candidates: M[] };
 
 /**
  * Classify a completed move attempt (drag-drop, or click-to-move with a
@@ -33,8 +35,8 @@ export type BoardClickAction<M> =
  * always counts as one illegal move regardless of obfuscation.
  */
 export function classifyMoveAttempt<M>(
-  from: string,
-  to: string,
+  from: Square,
+  to: Square,
   candidates: M[],
 ): BoardClickAction<M> {
   if (candidates.length === 0) return { type: "illegal-clear", from, to };
@@ -70,13 +72,13 @@ export function classifyMoveAttempt<M>(
  * click might complete a move.
  */
 export function classifyBoardClick<M>(params: {
-  square: string;
-  selectedSquare: string | null;
+  square: Square;
+  selectedSquare: Square | null;
   /** Color of the piece on the clicked square, or null when empty. */
   pieceColor: PieceColor | null;
   /** The color the user is allowed to pick up (own color, or side to move). */
   movableColor: PieceColor;
-  findCandidates: (from: string, to: string) => M[];
+  findCandidates: (from: Square, to: Square) => M[];
 }): BoardClickAction<M> {
   const { square, selectedSquare, pieceColor, movableColor } = params;
   const clickedMovable = pieceColor !== null && pieceColor === movableColor;

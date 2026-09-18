@@ -3,6 +3,8 @@
 import { useCallback } from 'react';
 
 import type { BoardPiece } from '@blindfold-chess/features/chess-core';
+import { isValidSquare } from '@blindfold-chess/features/common';
+import type { Square } from '@blindfold-chess/types';
 
 import { usePointerDragGesture } from './use-pointer-drag-gesture';
 
@@ -15,14 +17,14 @@ type Params = {
   movableColorChar: string;
   pieceAt: (square: string) => BoardPiece | null;
   /** Apply a completed move from `from` to `to` (validates + may promote). */
-  attemptMove: (from: string, to: string) => void;
+  attemptMove: (from: Square, to: Square) => void;
   /** Clear the click-to-move selection (a starting drag / cancel drops it). */
   clearSelection: () => void;
 };
 
 type Result = {
   /** Source square of the active drag, or `null`. Gets the "selected" tint. */
-  dragFrom: string | null;
+  dragFrom: Square | null;
   /** Side length (px) of one square, used to size the floating piece. */
   dragSize: number | null;
   handleBoardPointerDown: (e: React.PointerEvent<HTMLDivElement>) => void;
@@ -55,7 +57,13 @@ export function useBoardDragDrop({
     (e: React.PointerEvent) => {
       const square = (e.target as HTMLElement).closest<HTMLElement>('[data-square]')?.dataset
         .square;
-      if (!square) return null;
+      // `data-square` arrives as a plain string — the DOM has no narrower
+      // type — so it is parsed into a `Square` here, at the boundary, rather
+      // than widening everything downstream. The board's own renderer writes
+      // the attribute, so a value that is not a square means the press was
+      // not on one of our squares: treated as no source, exactly like a press
+      // with no `data-square` at all.
+      if (!square || !isValidSquare(square)) return null;
       const piece = pieceAt(square);
       // Only movable pieces drag (own color by default; the side to move in
       // recall). Other presses (empty square, non-movable piece) fall
@@ -73,8 +81,11 @@ export function useBoardDragDrop({
   );
 
   const handleDrop = useCallback(
-    (from: string, to: string | undefined) => {
-      if (to && to !== from) {
+    (from: Square, to: string | undefined) => {
+      // Same parse as `resolveSource`, for the square under the release: an
+      // unreadable one is indistinguishable from a release off the board, and
+      // both drop the selection instead of attempting a move.
+      if (to && isValidSquare(to) && to !== from) {
         attemptMove(from, to);
       } else {
         clearSelection();
@@ -84,7 +95,7 @@ export function useBoardDragDrop({
   );
 
   const { dragSource, dragSize, handlePointerDown, floatingRef, consumeTrailingClick } =
-    usePointerDragGesture<string>({
+    usePointerDragGesture<Square>({
       enabled,
       resetKey: fen,
       resolveSource,
