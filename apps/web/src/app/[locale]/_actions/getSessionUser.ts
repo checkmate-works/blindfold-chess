@@ -8,6 +8,8 @@ import { writeAdsHiddenCookieForUser } from '@/lib/ads/ads-hidden-cookie-writer'
 import { getOptionalUser } from '@/lib/auth';
 import { db, profiles } from '@/lib/db';
 
+import { getUnreadCount as getUnreadNotificationCount } from '@/app/[locale]/(protected)/mypage/(confirmed)/notifications/_lib/queries';
+
 /**
  * The viewer's session and registration state, resolved server-side.
  *
@@ -27,6 +29,20 @@ export type SessionUser = {
    * and provisional viewers alike.
    */
   profile: { avatarUrl: string | null; displayName: string | null } | null;
+  /**
+   * Unread notifications for the header bell, counted during the same session
+   * round-trip (issued in parallel with the profile lookup, so it costs extra
+   * latency only when it is the slower of the two). The badge used to call a
+   * `getUnreadCount` Server Action from an effect keyed on `usePathname()`,
+   * which meant one `POST /<current-path>` — function invocation, auth check
+   * and count query — on every soft navigation, for a number that changes a
+   * handful of times a day at most.
+   *
+   * `0` for anonymous viewers, and `0` whenever the count query fails: no
+   * badge is the honest rendering of "we do not know", and a bell count must
+   * never be able to fail the auth resolution it now rides on.
+   */
+  unreadNotificationCount: number;
 };
 
 /**
@@ -65,7 +81,7 @@ export async function getSessionUser(): Promise<SessionUser> {
     user = await getOptionalUser();
   } catch (error) {
     Sentry.captureException(error);
-    return { user: null, hasProfile: false, profile: null };
+    return { user: null, hasProfile: false, profile: null, unreadNotificationCount: 0 };
   }
 
   // Whether this signed-in user has completed registration (has a profile row).
@@ -74,9 +90,15 @@ export async function getSessionUser(): Promise<SessionUser> {
   // profile guard is the real gate for content mutations.
   let hasProfile = false;
   let profile: SessionUser['profile'] = null;
+  let unreadNotificationCount = 0;
   if (user) {
-    try {
-      const [row] = await db
+    // The two reads are issued together rather than one after the other: the
+    // bell count lives here to spare the header a request, so it must not
+    // turn a single round-trip into a two-query waterfall. `allSettled` keeps
+    // them independent — each result is coerced separately below, and neither
+    // rejection can escape into the auth resolution the provider waits on.
+    const [profileResult, unreadResult] = await Promise.allSettled([
+      db
         .select({
           id: profiles.id,
           avatarUrl: profiles.avatarUrl,
@@ -84,15 +106,20 @@ export async function getSessionUser(): Promise<SessionUser> {
         })
         .from(profiles)
         .where(eq(profiles.id, user.id))
-        .limit(1);
-      hasProfile = row != null;
-      profile = row
-        ? { avatarUrl: row.avatarUrl ?? null, displayName: row.displayName ?? null }
-        : null;
-    } catch {
-      hasProfile = false;
-      profile = null;
-    }
+        .limit(1),
+      // Provisional viewers are counted too, matching what the badge's former
+      // Server Action did — it authenticated with `getOptionalUser`, not with
+      // a profile guard. Their count is 0 in practice: nothing addresses a
+      // notification to a user who has not finished registration.
+      getUnreadNotificationCount(user.id),
+    ]);
+
+    const row = profileResult.status === 'fulfilled' ? profileResult.value[0] : undefined;
+    hasProfile = row != null;
+    profile = row
+      ? { avatarUrl: row.avatarUrl ?? null, displayName: row.displayName ?? null }
+      : null;
+    unreadNotificationCount = unreadResult.status === 'fulfilled' ? unreadResult.value : 0;
   }
 
   try {
@@ -103,5 +130,5 @@ export async function getSessionUser(): Promise<SessionUser> {
     // on the next page load. The cookie's 7-day TTL also bounds the lag.
   }
 
-  return { user, hasProfile, profile };
+  return { user, hasProfile, profile, unreadNotificationCount };
 }
