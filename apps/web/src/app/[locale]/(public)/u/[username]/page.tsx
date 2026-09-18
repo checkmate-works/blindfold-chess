@@ -43,6 +43,8 @@ import { redirect } from 'next/navigation';
 
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
+import { toMetaDescription } from '@/lib/seo/meta-description';
+
 import { FeedSkeleton } from '@/app/[locale]/(public)/(home)/_components/FeedSkeleton';
 import { HelpTourButton, PageLayout } from '@/app/[locale]/_components';
 import type { HelpStep } from '@/app/[locale]/_components';
@@ -82,7 +84,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const t = await getTranslations({ locale, namespace: 'publicProfile' });
   const displayName = profile.displayName || username;
   const title = t('title', { displayName });
-  const description = profile.bio || t('defaultDescription', { displayName });
+  // The bio is a free-text field allowing 500 characters (`BIO_MAX_LENGTH`)
+  // and it was going into the description tag verbatim, newlines and all.
+  // A bio that is only whitespace excerpts to nothing and falls back to the
+  // generic copy, which is what a plain empty bio already did.
+  const description = toMetaDescription(profile.bio) || t('defaultDescription', { displayName });
 
   return {
     ...generateCanonicalMetadata({ locale, path: `/u/${username}`, title, description }),
