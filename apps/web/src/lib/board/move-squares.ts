@@ -12,9 +12,10 @@ import type { Square } from '@blindfold-chess/types';
  *
  * `Square` costs the producers nothing: nearly every value here comes from
  * `getLastMoveDetails` or a `MoveResult`, which are typed that way already.
- * The one source that is not is the interactive board, which reads its
- * squares out of `dataset.square` — the DOM has no narrower type to offer —
- * and parses them with `isValidSquare` at that single boundary, so nothing
- * downstream of it needs a cast.
+ * The exception is the interactive board, whose squares arrive as
+ * `dataset.square` strings — the DOM has no narrower type to offer. It runs
+ * every one of those reads through `isValidSquare` at the read itself — the
+ * click target, the drag source, and the square under a drop — so nothing
+ * downstream of them needs a cast.
  */
 export type MoveSquares = { from: Square; to: Square };
