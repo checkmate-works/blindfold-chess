@@ -1,6 +1,12 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import { META_DESCRIPTION_MAX, toMetaDescription } from './meta-description';
+
+const APP_ROOT = join(import.meta.dirname, '../../app/[locale]/(public)');
+
+const readPage = (relativePath: string) => readFileSync(join(APP_ROOT, relativePath), 'utf8');
 
 describe('toMetaDescription', () => {
   describe('whitespace normalization', () => {
@@ -111,6 +117,39 @@ describe('toMetaDescription', () => {
 
     it('is falsy for empty input so callers can spell "omit the key"', () => {
       expect(toMetaDescription(null) || undefined).toBeUndefined();
+    });
+  });
+
+  describe('the description a page reports about itself', () => {
+    /**
+     * The article page describes itself twice — once in `generateMetadata` as
+     * the `<meta name="description">` / `openGraph.description`, once in the
+     * page body as the `description` of its BlogPosting JSON-LD. Those two
+     * used to be written out separately, and the JSON-LD one skipped the
+     * newline collapsing, so any article with a line break told Google two
+     * different things about the same page. Both now go through the same call
+     * on the same input, which is what these assertions pin down.
+     */
+    const articlePage = readPage('articles/[slug]/page.tsx');
+
+    it('is built by the same call on both of the article page surfaces', () => {
+      const calls = articlePage.match(/toMetaDescription\(article\.content\)/g);
+
+      expect(calls).toHaveLength(2);
+    });
+
+    it('is never re-derived by hand on the article page', () => {
+      expect(articlePage).not.toMatch(/article\.content\.slice\(/);
+    });
+
+    it('produces one string for content whose line breaks made it two', () => {
+      const content = 'An opening survey.\n\nThe main line runs 1.e4 e5 2.Nf3.';
+
+      const metaTag = toMetaDescription(content);
+      const jsonLd = toMetaDescription(content);
+
+      expect(metaTag).toBe(jsonLd);
+      expect(metaTag).not.toContain('\n');
     });
   });
 

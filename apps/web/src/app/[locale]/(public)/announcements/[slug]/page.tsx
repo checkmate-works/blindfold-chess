@@ -10,6 +10,7 @@ import { getOptionalUser } from '@/lib/auth';
 import { withReturnPath } from '@/lib/auth-return-path';
 import { getCurrentReturnTarget } from '@/lib/current-return-target';
 import { formatLocalDate } from '@/lib/i18n/format-date';
+import { toMetaDescription } from '@/lib/seo/meta-description';
 
 import { PageLayout } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
@@ -54,7 +55,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     : undefined;
   const isFallback = announcementLocale !== locale;
   const title = announcement.title;
-  const description = announcement.content.slice(0, 160).replace(/\n/g, ' ').trim();
+  const description = toMetaDescription(announcement.content);
 
   return {
     ...generateCanonicalMetadata({
