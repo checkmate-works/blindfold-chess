@@ -7,6 +7,8 @@ import { useRouter } from 'next/navigation';
 import { Select, Textarea } from '@/app/admin/_components/forms';
 import { useConfirmModalAction } from '@/app/admin/_hooks/useConfirmModalAction';
 
+import { MODERATION_REASON_MAX_LENGTH } from '@/lib/moderation/validate-reason';
+
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 
 import { grantRank } from '../../_actions/grantRank';
@@ -108,7 +110,7 @@ export function GrantRankButton({ userId, availableRanks }: Props) {
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               rows={3}
-              maxLength={1000}
+              maxLength={MODERATION_REASON_MAX_LENGTH}
               fullWidth
               placeholder="Why is this rank being granted manually? (e.g., 'Met the 1dan requirement before the rank shipped')"
             />

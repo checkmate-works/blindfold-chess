@@ -5,6 +5,8 @@ import { useRef } from 'react';
 import { Textarea } from '@/app/_components';
 import { useConfirmModalAction } from '@/app/admin/_hooks/useConfirmModalAction';
 
+import { MODERATION_REASON_MAX_LENGTH } from '@/lib/moderation/validate-reason';
+
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 
 import { banUser } from '../_actions/banUser';
@@ -52,7 +54,7 @@ export function BanButton({ userId }: { userId: string }) {
           ref={reasonRef}
           inputSize="sm"
           rows={3}
-          maxLength={1000}
+          maxLength={MODERATION_REASON_MAX_LENGTH}
           placeholder="Enter reason for banning this user..."
         />
       </ConfirmationModal>
