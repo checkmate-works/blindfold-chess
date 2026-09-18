@@ -32,7 +32,8 @@ type ChannelBehaviour =
   | { kind: "success" }
   | { kind: "uciOkFails"; reason?: string }
   | { kind: "readyOkFails"; reason?: string }
-  | { kind: "bestMoveFails"; reason?: string };
+  | { kind: "bestMoveFails"; reason?: string }
+  | { kind: "bestMoveSilent" };
 
 type FakeChannel = UciMessageChannel & {
   behaviour: ChannelBehaviour;
@@ -48,6 +49,7 @@ type FakeChannel = UciMessageChannel & {
  * - `readyOkFails` → replies `uciok` normally, then fires a fatal error
  *   before `readyok`.
  * - `bestMoveFails` → handshake succeeds; fatal error on `go ...`.
+ * - `bestMoveSilent` → handshake succeeds; `go ...` is never answered.
  *
  * Responses are dispatched via microtask so that the caller's `await`
  * promise chain can register its resolver before the reply fires.
@@ -89,6 +91,7 @@ function createFakeChannel(behaviour: ChannelBehaviour): FakeChannel {
       return;
     }
     if (command.startsWith("go")) {
+      if (behaviour.kind === "bestMoveSilent") return;
       queueMicrotask(() => {
         if (behaviour.kind === "bestMoveFails") {
           fireError(behaviour.reason ?? "bestmove failure");
@@ -426,5 +429,49 @@ describe("ChessEngine — instance isolation", () => {
     // After destroy, a subsequent getBestMove must spin up a fresh channel.
     await engine.getBestMove(STARTING_FEN);
     expect(created).toHaveLength(2);
+  });
+});
+
+describe("ChessEngine bestMoveTimeoutMs option", () => {
+  it("derives the bestmove deadline from the search budget", async () => {
+    const { factory } = makeChannelFactory({ kind: "bestMoveSilent" });
+    vi.useFakeTimers();
+    // What the mobile hook passes: the budget plus a fixed grace period.
+    const engine = new ChessEngine(factory, {
+      bestMoveTimeoutMs: (searchTimeMs) => searchTimeMs + 5000,
+    });
+
+    const settled = vi.fn();
+    const moveP = engine
+      .getBestMove(STARTING_FEN, [], 8000)
+      .catch((err: unknown) => err as Error)
+      .finally(settled);
+
+    // The transport's own 10s default would already have fired by here.
+    await vi.advanceTimersByTimeAsync(12999);
+    expect(settled).not.toHaveBeenCalled();
+
+    await vi.advanceTimersByTimeAsync(1);
+    const err = await moveP;
+    expect((err as Error).message).toMatch(/Engine command timeout/);
+  });
+
+  it("falls back to the transport default when no option is given", async () => {
+    const { factory } = makeChannelFactory({ kind: "bestMoveSilent" });
+    vi.useFakeTimers();
+    const engine = new ChessEngine(factory);
+
+    const settled = vi.fn();
+    const moveP = engine
+      .getBestMove(STARTING_FEN, [], 8000)
+      .catch((err: unknown) => err as Error)
+      .finally(settled);
+
+    await vi.advanceTimersByTimeAsync(9999);
+    expect(settled).not.toHaveBeenCalled();
+
+    await vi.advanceTimersByTimeAsync(1);
+    const err = await moveP;
+    expect((err as Error).message).toMatch(/Engine command timeout/);
   });
 });
