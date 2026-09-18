@@ -17,6 +17,7 @@ import {
 import type { Profile, TopicPost, TopicPostRating } from '@/lib/db';
 import type { LikeMeta } from '@/lib/db/like-queries';
 import { countRows } from '@/lib/db/list-query';
+import { excludeBlockedAuthors } from '@/lib/moderation/block';
 import { UUID_RE } from '@/lib/validations/uuid';
 
 import { buildProfilePostQuery } from '@/app/[locale]/(public)/topics/_lib/build-profile-post-query';
@@ -58,8 +59,15 @@ export type OpeningPostWithAuthor = TopicPost & {
 
 /**
  * Get top-level posts for a specific opening slug, with author and rating info.
+ *
+ * `viewerId` is the signed-in reader: their blocked counterparties' posts are
+ * left out. The opening page paginates this list in memory, so its "community
+ * thoughts" count follows the filtered list rather than drifting from it.
  */
-async function getPostsForOpening(slug: string): Promise<OpeningPostWithAuthor[]> {
+async function getPostsForOpening(
+  slug: string,
+  viewerId?: string
+): Promise<OpeningPostWithAuthor[]> {
   const results = await db
     .select({
       post: topicPosts,
@@ -69,7 +77,13 @@ async function getPostsForOpening(slug: string): Promise<OpeningPostWithAuthor[]
     .from(topicPosts)
     .leftJoin(profiles, liveProfileJoinOn(topicPosts.userId))
     .leftJoin(topicPostRatings, eq(topicPosts.id, topicPostRatings.postId))
-    .where(liveTopLevelPosts('opening', eq(topicPosts.topicKey, slug)))
+    .where(
+      liveTopLevelPosts(
+        'opening',
+        eq(topicPosts.topicKey, slug),
+        await excludeBlockedAuthors(topicPosts.userId, viewerId)
+      )
+    )
     .orderBy(desc(topicPosts.createdAt));
 
   return results.map((r) => ({
@@ -140,7 +154,7 @@ export async function getOpeningPostsWithReplyMeta(
   currentUserId?: string,
   sortBy: SortMode = 'new'
 ): Promise<OpeningPostWithReplyMeta[]> {
-  const posts = await getPostsForOpening(slug);
+  const posts = await getPostsForOpening(slug, currentUserId);
   const postsWithMeta = await attachPostMeta(posts, currentUserId);
 
   // Merge rating data back onto the enriched posts
@@ -176,7 +190,13 @@ async function getProfileOpeningPostsPaginated(
   currentUserId?: string
 ): Promise<ProfilePostWithReplyMeta[]> {
   const results = await buildProfilePostQuery()
-    .where(liveTopLevelPosts('opening', extra))
+    .where(
+      liveTopLevelPosts(
+        'opening',
+        extra,
+        await excludeBlockedAuthors(topicPosts.userId, currentUserId)
+      )
+    )
     .orderBy(desc(topicPosts.createdAt))
     .limit(limit)
     .offset(offset);
