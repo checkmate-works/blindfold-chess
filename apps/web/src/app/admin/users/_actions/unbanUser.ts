@@ -9,7 +9,7 @@ import { profileCacheTag } from '@/lib/cache-tags';
 import { db, profiles } from '@/lib/db';
 import { logModerationAction } from '@/lib/moderation/audit';
 import { getClientIp } from '@/lib/security/client-ip';
-import { captureError } from '@/lib/sentry/capture-error';
+import { handleAdminActionError } from '@/lib/server-action-error';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 import type { AdminActionResult } from '../../_lib/action-errors';
@@ -38,8 +38,11 @@ export async function unbanUser(targetUserId: string): Promise<AdminActionResult
   });
 
   if (error) {
-    captureError(error, `Failed to unban user ${targetUserId} at Supabase Auth level`);
-    return { error: 'failedToUnban' };
+    return handleAdminActionError(
+      error,
+      `[unbanUser] Supabase Auth unban ${targetUserId}`,
+      'failedToUnban'
+    );
   }
 
   // 3. Clear ban info and record audit log atomically in a DB transaction
@@ -63,7 +66,13 @@ export async function unbanUser(targetUserId: string): Promise<AdminActionResult
       });
     });
   } catch (error) {
-    captureError(error, `Failed to clear ban state for user ${targetUserId}`);
+    // Report before rolling back, for the reason spelled out in `banUser`:
+    // the rollback is itself an external call that can throw.
+    const failure = handleAdminActionError(
+      error,
+      `[unbanUser] cleared ban state for ${targetUserId}`,
+      'failedToUnban'
+    );
     // Rollback Supabase Auth: re-ban the user, restoring original bannedAt
     await adminClient.auth.admin.updateUserById(targetUserId, {
       ban_duration: '876000h',
@@ -75,7 +84,7 @@ export async function unbanUser(targetUserId: string): Promise<AdminActionResult
         updatedAt: new Date(),
       })
       .where(eq(profiles.id, targetUserId));
-    return { error: 'failedToUnban' };
+    return failure;
   }
 
   // An unban does not change the cached public-profile projection, but every
