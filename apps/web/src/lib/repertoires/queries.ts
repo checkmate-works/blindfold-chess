@@ -22,6 +22,7 @@ import {
 import { repertoireLines } from '@/lib/db';
 import { countRows, runPaginatedSelect } from '@/lib/db/list-query';
 import { publicRepertoiresOnly } from '@/lib/db/repertoire-visibility';
+import { excludeBlockedAuthors } from '@/lib/moderation/block';
 import { guardOwnership } from '@/lib/ownership-guard';
 import { isFollowing } from '@/lib/social/follows';
 import type { AuthorProfile } from '@/lib/users/author-profile';
@@ -193,11 +194,20 @@ export const countPublicRepertoiresForOpening = unstable_cache(
  * "make private" toggle must never leak a private course here either. Sorts
  * on `published_at`, not `created_at`: a course can sit in `building` for a
  * while before publishing, and should read as new when it finally does.
+ *
+ * `viewerId` names the signed-in reader, whose blocked counterparties are left
+ * out of the page; omit it for the anonymous and crawler reads, which see the
+ * catalog whole. {@link countPublicRepertoires} is not narrowed to match —
+ * it is a Data Cache entry keyed without the viewer, so a per-viewer
+ * denominator would publish one reader's block list to the next reader of the
+ * cache. The page therefore renders a few cards short of its stated total for
+ * a viewer with a block.
  */
 export async function listPublicRepertoires(
   limit: number,
   offset: number,
-  side?: Side
+  side?: Side,
+  viewerId?: string
 ): Promise<RepertoireWithProfile[]> {
   const rows = await runPaginatedSelect(
     db
@@ -206,7 +216,10 @@ export async function listPublicRepertoires(
       .leftJoin(profiles, liveProfileJoinOn(repertoires.userId))
       .$dynamic(),
     {
-      where: publicRepertoiresForSide(side),
+      where: and(
+        publicRepertoiresForSide(side),
+        await excludeBlockedAuthors(repertoires.userId, viewerId)
+      ),
       orderBy: [desc(repertoires.publishedAt)],
       limit,
       offset,

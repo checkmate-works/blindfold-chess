@@ -86,7 +86,7 @@ export default async function RepertoiresPage({ params, searchParams }: Props) {
   );
 
   const [rows, buildingRows] = await Promise.all([
-    listPublicRepertoires(limit, offset, side),
+    listPublicRepertoires(limit, offset, side, user?.id),
     user ? listBuildingRepertoiresForUser(user.id) : Promise.resolve([]),
   ]);
 

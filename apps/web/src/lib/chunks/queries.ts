@@ -17,6 +17,7 @@ import {
   repertoires,
 } from '@/lib/db';
 import { combineConditions, countRows, runPaginatedSelect } from '@/lib/db/list-query';
+import { excludeBlockedAuthors } from '@/lib/moderation/block';
 import { UUID_RE } from '@/lib/validations/uuid';
 
 import { linkableChunkPredicate } from './linkability';
@@ -71,6 +72,12 @@ type ListChunksOptions = {
   status?: ChunkStatus;
   limit: number;
   offset: number;
+  /**
+   * The signed-in reader, for the blocked-author exclusion. Only
+   * {@link listChunksWithProfile} honours it — the count variants share this
+   * option type but deliberately stay viewer-independent.
+   */
+  viewerId?: string;
 };
 
 function buildListConditions({
@@ -103,14 +110,24 @@ export async function listChunks({ includeDeleted, status, limit, offset }: List
  * `userId` is nullable on `chunks` (orphaned-author rows survive hard
  * account deletes), and the join is `LEFT` so those rows still surface
  * with a null profile.
+ *
+ * `viewerId` names the signed-in reader, whose blocked counterparties are left
+ * out of the page; omit it for the anonymous and crawler reads, which see the
+ * catalog whole. {@link countChunks} — which also feeds the filter chips' own
+ * counts — is not narrowed to match, so a viewer with a block gets a page a
+ * few cards short of the number on the chip.
  */
 export async function listChunksWithProfile({
   includeDeleted,
   status,
   limit,
   offset,
+  viewerId,
 }: ListChunksOptions) {
-  const where = buildListConditions({ includeDeleted, status });
+  const where = and(
+    buildListConditions({ includeDeleted, status }),
+    await excludeBlockedAuthors(chunks.userId, viewerId)
+  );
   const query = db
     .select({
       chunk: chunks,

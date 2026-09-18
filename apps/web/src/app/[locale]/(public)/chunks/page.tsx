@@ -102,6 +102,7 @@ async function ChunksListContent({ params, searchParams }: Props) {
     status: statusFilter,
     limit,
     offset,
+    viewerId: user?.id,
   });
 
   // Three parallel polymorphic lookups:
