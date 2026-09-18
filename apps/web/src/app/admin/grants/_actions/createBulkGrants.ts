@@ -2,11 +2,13 @@
 
 import { revalidateTag } from 'next/cache';
 
+import type { AdminActionResult } from '@/app/admin/_lib/action-errors';
 import { requireAdmin } from '@/app/admin/_lib/auth';
 import { validateUserId } from '@/app/admin/_lib/validators';
 
 import { GRANT_STATUS_CACHE_TAG } from '@/lib/cache-tags';
 import { db } from '@/lib/db';
+import { validateModerationReason } from '@/lib/moderation/validate-reason';
 import { getClientIp } from '@/lib/security/client-ip';
 import { handleAdminActionError } from '@/lib/server-action-error';
 
@@ -20,7 +22,17 @@ export type BulkGrantParams = {
   reason: string;
 };
 
-type BulkGrantResult = { success: true; grantedCount: number } | { error: string };
+type BulkGrantError =
+  | 'unauthorized'
+  | 'noUsersSelected'
+  | 'invalidUserId'
+  | 'invalidDuration'
+  | 'durationTooLong'
+  | 'reasonRequired'
+  | 'reasonTooLong'
+  | 'failedToCreateBulkGrants';
+
+type BulkGrantResult = AdminActionResult<BulkGrantError, { grantedCount: number }>;
 
 export async function createBulkGrants(params: BulkGrantParams): Promise<BulkGrantResult> {
   const auth = await requireAdmin();
@@ -29,13 +41,12 @@ export async function createBulkGrants(params: BulkGrantParams): Promise<BulkGra
   const { userIds, durationDays, reason } = params;
 
   if (!userIds || userIds.length === 0) {
-    return { error: 'No users selected' };
+    return { error: 'noUsersSelected' };
   }
 
   for (const id of userIds) {
-    const uuidError = validateUserId(id);
-    if (uuidError) {
-      return { error: uuidError };
+    if (validateUserId(id)) {
+      return { error: 'invalidUserId' };
     }
   }
 
@@ -44,11 +55,14 @@ export async function createBulkGrants(params: BulkGrantParams): Promise<BulkGra
     return { error: durationError };
   }
 
-  if (!reason || !reason.trim()) {
-    return { error: 'Reason is required for bulk grants' };
+  // A bulk grant writes one `moderation_actions` row per recipient, so its
+  // reason is held to the same rules as any other audited admin write.
+  const reasonResult = validateModerationReason(reason ?? '');
+  if ('error' in reasonResult) {
+    return reasonResult;
   }
 
-  const trimmedReason = reason.trim();
+  const trimmedReason = reasonResult.trimmed;
   const ipAddress = await getClientIp();
 
   try {
@@ -77,6 +91,6 @@ export async function createBulkGrants(params: BulkGrantParams): Promise<BulkGra
 
     return { success: true, grantedCount: created.length };
   } catch (error) {
-    return handleAdminActionError(error, '[createBulkGrants]', 'Failed to create bulk grants');
+    return handleAdminActionError(error, '[createBulkGrants]', 'failedToCreateBulkGrants');
   }
 }

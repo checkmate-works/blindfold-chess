@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 
+import { adminErrorMessage } from '@/app/admin/_lib/action-errors';
+
 import { searchUsers } from '../_actions/searchUsers';
 import type { SearchedUser } from '../_actions/searchUsers';
 import type { UserSearchFilters } from './useUserSearchFilters';
@@ -52,7 +54,7 @@ export function useUserSearchResults(): UseUserSearchResultsReturn {
     setSearching(false);
 
     if ('error' in result) {
-      setError(result.error);
+      setError(adminErrorMessage(result.error));
       setUsers([]);
       setSelectedIds(new Set());
       return;

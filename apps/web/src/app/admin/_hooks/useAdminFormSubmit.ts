@@ -3,6 +3,7 @@
 import { useState } from 'react';
 
 import type { FormMessageState } from '@/app/admin/_components/forms';
+import { adminErrorMessage } from '@/app/admin/_lib/action-errors';
 
 import type { ActionResult } from '@/lib/action-types';
 
@@ -18,6 +19,11 @@ import type { ActionResult } from '@/lib/action-types';
  * Intentionally scoped to the plain `useState`-style forms — the richer
  * admin forms (announcements, articles, banners) use `useTransition` plus
  * unsaved-changes / multi-path submit and are deliberately left alone.
+ *
+ * The `{ error }` branch goes through `adminErrorMessage`, so an action that
+ * returns a code gets a sentence and one that still returns prose is shown as
+ * written — the same boundary `useConfirmModalAction` applies to the modal
+ * flows, so both halves of the admin surface read the same way.
  */
 export function useAdminFormSubmit(
   action: (formData: FormData) => Promise<ActionResult>,
@@ -37,7 +43,7 @@ export function useAdminFormSubmit(
     setPending(false);
 
     if ('error' in result) {
-      setMessage({ type: 'error', text: result.error });
+      setMessage({ type: 'error', text: adminErrorMessage(result.error) });
       return;
     }
 

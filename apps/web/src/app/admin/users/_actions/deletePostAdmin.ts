@@ -5,7 +5,6 @@ import { revalidatePath } from 'next/cache';
 
 import { eq } from 'drizzle-orm';
 
-import type { ActionResult } from '@/lib/action-types';
 import { db, topicPosts } from '@/lib/db';
 import { logModerationAction } from '@/lib/moderation/audit';
 import { validateModerationReason } from '@/lib/moderation/validate-reason';
@@ -16,9 +15,15 @@ import {
   purgePostImageAttachmentsFromStorage,
 } from '@/lib/topic-posts/delete-core';
 
+import type { AdminActionResult } from '../../_lib/action-errors';
 import { requireAdmin } from '../../_lib/auth';
 
-export async function deletePostAdmin(postId: string, reason: string): Promise<ActionResult> {
+type DeletePostAdminError = 'unauthorized' | 'reasonRequired' | 'reasonTooLong' | 'postNotFound';
+
+export async function deletePostAdmin(
+  postId: string,
+  reason: string
+): Promise<AdminActionResult<DeletePostAdminError>> {
   const auth = await requireAdmin();
   if ('error' in auth) {
     return auth;
@@ -43,7 +48,7 @@ export async function deletePostAdmin(postId: string, reason: string): Promise<A
     .limit(1);
 
   if (!post) {
-    return { error: 'notFound' };
+    return { error: 'postNotFound' };
   }
 
   const ipAddress = await getClientIp();

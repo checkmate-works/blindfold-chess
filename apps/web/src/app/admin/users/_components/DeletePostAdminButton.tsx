@@ -5,6 +5,8 @@ import { useRef } from 'react';
 import { Textarea } from '@/app/_components';
 import { useConfirmModalAction } from '@/app/admin/_hooks/useConfirmModalAction';
 
+import { MODERATION_REASON_MAX_LENGTH } from '@/lib/moderation/validate-reason';
+
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 
 import { deletePostAdmin } from '../_actions/deletePostAdmin';
@@ -67,7 +69,7 @@ export function DeletePostAdminButton({
           ref={reasonRef}
           inputSize="sm"
           rows={3}
-          maxLength={1000}
+          maxLength={MODERATION_REASON_MAX_LENGTH}
           placeholder={labels.deleteModalReasonPlaceholder}
         />
       </ConfirmationModal>

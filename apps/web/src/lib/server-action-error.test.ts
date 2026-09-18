@@ -37,7 +37,7 @@ describe('handleAdminActionError', () => {
   it('reports the error to Sentry', () => {
     const error = new Error('transaction rolled back');
 
-    handleAdminActionError(error, '[createGrant]', 'Failed to create grant');
+    handleAdminActionError(error, '[createGrant]', 'failedToCreateGrant');
 
     expect(Sentry.captureException).toHaveBeenCalledWith(error);
   });
@@ -52,13 +52,13 @@ describe('handleAdminActionError', () => {
   it('logs the context alongside the caught value', () => {
     const error = new Error('boom');
 
-    handleAdminActionError(error, '[revokeGrant]', 'Failed to revoke grant');
+    handleAdminActionError(error, '[revokeGrant]', 'failedToRevokeGrant');
 
     expect(console.error).toHaveBeenCalledWith('[revokeGrant]: unexpected error:', error);
   });
 
   it('reports a thrown non-Error value rather than collapsing it to a string', () => {
-    handleAdminActionError('just a string', '[searchUsers]', 'Failed to search users');
+    handleAdminActionError('just a string', '[searchUsers]', 'failedToSearchUsers');
 
     expect(Sentry.captureException).toHaveBeenCalledWith('just a string');
   });

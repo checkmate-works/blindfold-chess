@@ -2,6 +2,8 @@
 
 import { Button, Field, Input } from '@/app/admin/_components/forms';
 
+import { MODERATION_REASON_MAX_LENGTH } from '@/lib/moderation/validate-reason';
+
 type BulkGrantParamsFormProps = {
   durationDays: number;
   reason: string;
@@ -39,6 +41,7 @@ export function BulkGrantParamsForm({
             id="bulkReason"
             value={reason}
             onChange={(e) => onReasonChange(e.target.value)}
+            maxLength={MODERATION_REASON_MAX_LENGTH}
             placeholder="Shown to users as the notification message (e.g., 'New Year campaign')"
           />
         </Field>

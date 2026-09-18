@@ -6,6 +6,9 @@ import { useRouter } from 'next/navigation';
 
 import { Select, Textarea } from '@/app/admin/_components/forms';
 import { useConfirmModalAction } from '@/app/admin/_hooks/useConfirmModalAction';
+import { adminErrorMessageFor } from '@/app/admin/_lib/action-errors';
+
+import { MODERATION_REASON_MAX_LENGTH } from '@/lib/moderation/validate-reason';
 
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 
@@ -17,16 +20,6 @@ type Props = {
   userId: string;
   /** Ranks the user does not already hold, ascending by level. */
   availableRanks: RankOption[];
-};
-
-const ERROR_MESSAGES: Record<string, string> = {
-  invalidRank: 'Unknown rank.',
-  reasonRequired: 'Reason is required.',
-  reasonTooLong: 'Reason is too long.',
-  rankNotFound: 'That rank has no matching database row yet.',
-  alreadyGranted: 'This user already holds that rank.',
-  unauthorized: 'You are not authorized to do this.',
-  failedToGrantRank: 'Failed to grant rank.',
 };
 
 export function GrantRankButton({ userId, availableRanks }: Props) {
@@ -42,7 +35,7 @@ export function GrantRankButton({ userId, availableRanks }: Props) {
   async function handleGrant() {
     const trimmedReason = reason.trim();
     if (!trimmedReason) {
-      setError(ERROR_MESSAGES.reasonRequired);
+      setError(adminErrorMessageFor('reasonRequired'));
       return;
     }
 
@@ -53,8 +46,7 @@ export function GrantRankButton({ userId, availableRanks }: Props) {
         const remaining = availableRanks.filter((r) => r.slug !== rankSlug);
         setRankSlug(remaining[0]?.slug ?? '');
         router.refresh();
-      },
-      (code) => ERROR_MESSAGES[code] ?? code
+      }
     );
   }
 
@@ -108,7 +100,7 @@ export function GrantRankButton({ userId, availableRanks }: Props) {
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               rows={3}
-              maxLength={1000}
+              maxLength={MODERATION_REASON_MAX_LENGTH}
               fullWidth
               placeholder="Why is this rank being granted manually? (e.g., 'Met the 1dan requirement before the rank shipped')"
             />

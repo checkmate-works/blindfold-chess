@@ -2,6 +2,8 @@ import { revalidateTag as mockRevalidateTag } from 'next/cache';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { MODERATION_REASON_MAX_LENGTH } from '@/lib/moderation/validate-reason';
+
 const mockRequireAdmin = vi.fn();
 const mockUserGrantsInsert = vi.fn();
 const mockModerationInsert = vi.fn();
@@ -94,7 +96,7 @@ describe('createBulkGrants', () => {
       durationDays: 30,
       reason: 'test',
     });
-    expect(result).toEqual({ error: 'No users selected' });
+    expect(result).toEqual({ error: 'noUsersSelected' });
   });
 
   it('should return error when a userId is invalid', async () => {
@@ -105,7 +107,7 @@ describe('createBulkGrants', () => {
       durationDays: 30,
       reason: 'test',
     });
-    expect(result).toEqual({ error: 'Invalid User ID format: not-a-uuid' });
+    expect(result).toEqual({ error: 'invalidUserId' });
   });
 
   it('should return error when durationDays is 0', async () => {
@@ -116,7 +118,7 @@ describe('createBulkGrants', () => {
       durationDays: 0,
       reason: 'test',
     });
-    expect(result).toEqual({ error: 'Duration must be a positive number' });
+    expect(result).toEqual({ error: 'invalidDuration' });
   });
 
   it('should return error when durationDays exceeds 3650', async () => {
@@ -127,7 +129,7 @@ describe('createBulkGrants', () => {
       durationDays: 3651,
       reason: 'test',
     });
-    expect(result).toEqual({ error: 'Duration must not exceed 3650 days (10 years)' });
+    expect(result).toEqual({ error: 'durationTooLong' });
   });
 
   it('should return error when reason is empty', async () => {
@@ -138,7 +140,7 @@ describe('createBulkGrants', () => {
       durationDays: 30,
       reason: '',
     });
-    expect(result).toEqual({ error: 'Reason is required for bulk grants' });
+    expect(result).toEqual({ error: 'reasonRequired' });
   });
 
   it('should return error when reason is whitespace only', async () => {
@@ -149,7 +151,18 @@ describe('createBulkGrants', () => {
       durationDays: 30,
       reason: '   ',
     });
-    expect(result).toEqual({ error: 'Reason is required for bulk grants' });
+    expect(result).toEqual({ error: 'reasonRequired' });
+  });
+
+  it('should return error when reason exceeds the moderation reason limit', async () => {
+    mockRequireAdmin.mockResolvedValue({ userId: 'admin-id' });
+
+    const result = await createBulkGrants({
+      userIds: [validUserId1],
+      durationDays: 30,
+      reason: 'a'.repeat(MODERATION_REASON_MAX_LENGTH + 1),
+    });
+    expect(result).toEqual({ error: 'reasonTooLong' });
   });
 
   it('should create grants for all users and return success', async () => {
@@ -254,7 +267,7 @@ describe('createBulkGrants', () => {
       reason: 'test',
     });
 
-    expect(result).toEqual({ error: 'Failed to create bulk grants' });
+    expect(result).toEqual({ error: 'failedToCreateBulkGrants' });
   });
 
   it('should process duplicate userIds (grants created for each occurrence)', async () => {
@@ -303,7 +316,7 @@ describe('createBulkGrants', () => {
       reason: 'test',
     });
 
-    expect(result).toEqual({ error: 'Duration must be a positive number' });
+    expect(result).toEqual({ error: 'invalidDuration' });
   });
 
   it('should pass the transaction client to calcGrantStartsAt', async () => {
@@ -347,7 +360,7 @@ describe('createBulkGrants', () => {
       reason: 'test',
     });
 
-    expect(result).toEqual({ error: 'Invalid User ID format: invalid-uuid' });
+    expect(result).toEqual({ error: 'invalidUserId' });
     expect(mockUserGrantsInsert).not.toHaveBeenCalled();
     expect(mockCalcGrantStartsAt).not.toHaveBeenCalled();
   });
@@ -379,7 +392,7 @@ describe('createBulkGrants', () => {
       reason: 'test',
     });
 
-    expect(result).toEqual({ error: 'Failed to create bulk grants' });
+    expect(result).toEqual({ error: 'failedToCreateBulkGrants' });
     expect(mockRevalidateTag).not.toHaveBeenCalled();
   });
 });

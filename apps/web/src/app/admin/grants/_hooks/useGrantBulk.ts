@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 
+import { adminErrorMessage } from '@/app/admin/_lib/action-errors';
+
 import { createBulkGrants } from '../_actions/createBulkGrants';
 
 type UseGrantBulkResult = {
@@ -11,6 +13,7 @@ type UseGrantBulkResult = {
   error: string | null;
   setDurationDays: (v: number) => void;
   setReason: (v: string) => void;
+  /** Resolves with the granted count, or with the message to show the admin. */
   submit: (userIds: string[]) => Promise<{ grantedCount: number } | { error: string }>;
   clearError: () => void;
 };
@@ -38,8 +41,9 @@ export function useGrantBulk(): UseGrantBulkResult {
     setGranting(false);
 
     if ('error' in result) {
-      setError(result.error);
-      return { error: result.error };
+      const message = adminErrorMessage(result.error);
+      setError(message);
+      return { error: message };
     }
 
     return { grantedCount: result.grantedCount };

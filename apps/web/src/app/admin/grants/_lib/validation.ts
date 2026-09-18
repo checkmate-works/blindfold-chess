@@ -1,11 +1,14 @@
-const MAX_DURATION_DAYS = 3650;
+/** Longest duration an admin grant may be given: ten years, expressed in days. */
+export const MAX_GRANT_DURATION_DAYS = 3650;
 
-export function validateDurationDays(durationDays: number): string | null {
+export function validateDurationDays(
+  durationDays: number
+): 'invalidDuration' | 'durationTooLong' | null {
   if (!durationDays || durationDays <= 0) {
-    return 'Duration must be a positive number';
+    return 'invalidDuration';
   }
-  if (durationDays > MAX_DURATION_DAYS) {
-    return `Duration must not exceed ${MAX_DURATION_DAYS} days (10 years)`;
+  if (durationDays > MAX_GRANT_DURATION_DAYS) {
+    return 'durationTooLong';
   }
   return null;
 }

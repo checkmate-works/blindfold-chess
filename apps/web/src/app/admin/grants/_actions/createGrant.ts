@@ -2,20 +2,34 @@
 
 import { revalidateTag } from 'next/cache';
 
+import type { AdminActionResult } from '@/app/admin/_lib/action-errors';
 import { requireAdmin } from '@/app/admin/_lib/auth';
 import { validateUserId } from '@/app/admin/_lib/validators';
 
-import type { ActionResult } from '@/lib/action-types';
 import { GRANT_STATUS_CACHE_TAG } from '@/lib/cache-tags';
 import { db } from '@/lib/db';
 import { isBenefitType } from '@/lib/db/data/grant-types';
+import { MODERATION_REASON_MAX_LENGTH } from '@/lib/moderation/validate-reason';
 import { getClientIp } from '@/lib/security/client-ip';
 import { handleAdminActionError } from '@/lib/server-action-error';
 
 import { insertAdminGrant, notifyAdminGrant } from '../_lib/grant-mutations';
 import { validateDurationDays } from '../_lib/validation';
 
-export async function createGrant(formData: FormData): Promise<ActionResult> {
+type CreateGrantError =
+  | 'unauthorized'
+  | 'userIdRequired'
+  | 'invalidUserId'
+  | 'benefitTypeRequired'
+  | 'unknownBenefitType'
+  | 'invalidDuration'
+  | 'durationTooLong'
+  | 'reasonTooLong'
+  | 'failedToCreateGrant';
+
+export async function createGrant(
+  formData: FormData
+): Promise<AdminActionResult<CreateGrantError>> {
   const auth = await requireAdmin();
   if ('error' in auth) return { error: 'unauthorized' };
 
@@ -25,19 +39,20 @@ export async function createGrant(formData: FormData): Promise<ActionResult> {
   const reason = formData.get('reason') as string | null;
 
   if (!userId || !userId.trim()) {
-    return { error: 'User ID is required' };
+    return { error: 'userIdRequired' };
   }
-  const uuidError = validateUserId(userId.trim());
-  if (uuidError) {
-    return { error: 'Invalid User ID format (expected UUID)' };
+  if (validateUserId(userId.trim())) {
+    return { error: 'invalidUserId' };
   }
   if (!benefitType || !benefitType.trim()) {
-    return { error: 'Benefit type is required' };
+    return { error: 'benefitTypeRequired' };
   }
   if (!isBenefitType(benefitType.trim())) {
     // Guard against form tampering — the UI dropdown only renders known
-    // benefit types, but a hand-crafted POST could supply anything.
-    return { error: `Unknown benefit type: ${benefitType}` };
+    // benefit types, but a hand-crafted POST could supply anything. The
+    // rejected value is not echoed back: only a tampered request can reach
+    // here, and the operator who sees the message is not the one who chose it.
+    return { error: 'unknownBenefitType' };
   }
   const durationDays = Number(durationDaysStr);
   const durationError = validateDurationDays(durationDays);
@@ -48,6 +63,12 @@ export async function createGrant(formData: FormData): Promise<ActionResult> {
   const trimmedUserId = userId.trim();
   const trimmedBenefitType = benefitType.trim();
   const trimmedReason = reason?.trim() || null;
+  // The reason is optional here (unlike the bulk action) but bounded the same
+  // way once given, so a single grant and a bulk grant cannot disagree about
+  // how long an audit note may be.
+  if (trimmedReason && trimmedReason.length > MODERATION_REASON_MAX_LENGTH) {
+    return { error: 'reasonTooLong' };
+  }
   const ipAddress = await getClientIp();
 
   // The grant + audit rows are written in one transaction so the
@@ -79,6 +100,6 @@ export async function createGrant(formData: FormData): Promise<ActionResult> {
 
     return { success: true };
   } catch (error) {
-    return handleAdminActionError(error, '[createGrant]', 'Failed to create grant');
+    return handleAdminActionError(error, '[createGrant]', 'failedToCreateGrant');
   }
 }

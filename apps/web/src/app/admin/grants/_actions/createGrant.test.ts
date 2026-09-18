@@ -3,6 +3,7 @@ import { revalidateTag as mockRevalidateTag } from 'next/cache';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
+import { MODERATION_REASON_MAX_LENGTH } from '@/lib/moderation/validate-reason';
 
 const mockRequireAdmin = vi.fn();
 const mockUserGrantsInsert = vi.fn();
@@ -103,7 +104,7 @@ describe('createGrant', () => {
       durationDays: '30',
     });
     const result = await createGrant(fd);
-    expect(result).toEqual({ error: 'User ID is required' });
+    expect(result).toEqual({ error: 'userIdRequired' });
   });
 
   it('should return error when userId is not a valid UUID', async () => {
@@ -115,7 +116,7 @@ describe('createGrant', () => {
       durationDays: '30',
     });
     const result = await createGrant(fd);
-    expect(result).toEqual({ error: 'Invalid User ID format (expected UUID)' });
+    expect(result).toEqual({ error: 'invalidUserId' });
   });
 
   it('should return error when benefitType is empty', async () => {
@@ -127,7 +128,7 @@ describe('createGrant', () => {
       durationDays: '30',
     });
     const result = await createGrant(fd);
-    expect(result).toEqual({ error: 'Benefit type is required' });
+    expect(result).toEqual({ error: 'benefitTypeRequired' });
   });
 
   it('should return error when benefitType is not in the allow-list', async () => {
@@ -141,7 +142,7 @@ describe('createGrant', () => {
       durationDays: '30',
     });
     const result = await createGrant(fd);
-    expect(result).toEqual({ error: 'Unknown benefit type: free_unicorns' });
+    expect(result).toEqual({ error: 'unknownBenefitType' });
   });
 
   it('should reject the removed maia_access benefit type', async () => {
@@ -156,7 +157,7 @@ describe('createGrant', () => {
       durationDays: '30',
     });
     const result = await createGrant(fd);
-    expect(result).toEqual({ error: 'Unknown benefit type: maia_access' });
+    expect(result).toEqual({ error: 'unknownBenefitType' });
   });
 
   it('should return error when durationDays is 0', async () => {
@@ -168,7 +169,7 @@ describe('createGrant', () => {
       durationDays: '0',
     });
     const result = await createGrant(fd);
-    expect(result).toEqual({ error: 'Duration must be a positive number' });
+    expect(result).toEqual({ error: 'invalidDuration' });
   });
 
   it('should return error when durationDays is negative', async () => {
@@ -180,7 +181,7 @@ describe('createGrant', () => {
       durationDays: '-5',
     });
     const result = await createGrant(fd);
-    expect(result).toEqual({ error: 'Duration must be a positive number' });
+    expect(result).toEqual({ error: 'invalidDuration' });
   });
 
   it('should return error when durationDays exceeds 3650', async () => {
@@ -192,7 +193,20 @@ describe('createGrant', () => {
       durationDays: '3651',
     });
     const result = await createGrant(fd);
-    expect(result).toEqual({ error: 'Duration must not exceed 3650 days (10 years)' });
+    expect(result).toEqual({ error: 'durationTooLong' });
+  });
+
+  it('should return error when reason exceeds the moderation reason limit', async () => {
+    mockRequireAdmin.mockResolvedValue({ userId: 'admin-id' });
+
+    const fd = makeFormData({
+      userId: validUserId,
+      benefitType: 'ad_free',
+      durationDays: '30',
+      reason: 'a'.repeat(MODERATION_REASON_MAX_LENGTH + 1),
+    });
+    const result = await createGrant(fd);
+    expect(result).toEqual({ error: 'reasonTooLong' });
   });
 
   it('should return success and insert into user_grants when all inputs are valid', async () => {

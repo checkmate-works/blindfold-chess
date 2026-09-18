@@ -1,5 +1,6 @@
 'use server';
 
+import type { AdminActionResult } from '@/app/admin/_lib/action-errors';
 import { requireAdmin } from '@/app/admin/_lib/auth';
 import type { SQL } from 'drizzle-orm';
 import { gte, isNotNull, isNull, lt } from 'drizzle-orm';
@@ -27,9 +28,11 @@ export type SearchedUser = {
   lastSignInAt: string | null;
 };
 
-type ActionResult = { users: SearchedUser[] } | { error: string };
+type SearchUsersError = 'unauthorized' | 'failedToSearchUsers';
 
-export async function searchUsers(params: SearchUsersParams): Promise<ActionResult> {
+type SearchUsersResult = AdminActionResult<SearchUsersError, { users: SearchedUser[] }>;
+
+export async function searchUsers(params: SearchUsersParams): Promise<SearchUsersResult> {
   const auth = await requireAdmin();
   if ('error' in auth) return { error: 'unauthorized' };
 
@@ -63,7 +66,7 @@ export async function searchUsers(params: SearchUsersParams): Promise<ActionResu
       .where(combineConditions(conditions));
 
     if (profileRows.length === 0) {
-      return { users: [] };
+      return { success: true, users: [] };
     }
 
     // Fetch auth users for lastSignInAt via Supabase Admin API — the field
@@ -109,8 +112,8 @@ export async function searchUsers(params: SearchUsersParams): Promise<ActionResu
       users = users.filter((u) => u.lastSignInAt !== null && new Date(u.lastSignInAt) < nextDay);
     }
 
-    return { users };
+    return { success: true, users };
   } catch (error) {
-    return handleAdminActionError(error, '[searchUsers]', 'Failed to search users');
+    return handleAdminActionError(error, '[searchUsers]', 'failedToSearchUsers');
   }
 }
