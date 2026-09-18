@@ -17,6 +17,18 @@ type StatusBadgeProps = {
   };
 };
 
+/**
+ * The account's lifecycle state, from the profile row alone.
+ *
+ * The no-profile case is an account that never finished username setup, and
+ * `labels.anonymous` is the word for it — the i18n key and the `anonymous`
+ * status filter value are stored identifiers and stay as they are, but the
+ * copy they carry says registration is incomplete. "Anonymous" is taken:
+ * published games may be posted with no account at all, and that is what the
+ * word means on the public side (`resolveNullableAuthorName`). One word for
+ * both states is how these accounts came to read as deleted elsewhere in
+ * admin — see `AdminUserLink`.
+ */
 export function StatusBadge({ profile, banReason, labels }: StatusBadgeProps) {
   if (!profile) {
     return <AdminBadge variant="warning">{labels.anonymous}</AdminBadge>;

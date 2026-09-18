@@ -4425,7 +4425,7 @@
       "defaultRole": "usuário",
       "banned": "Suspenso",
       "active": "Ativo",
-      "anonymous": "Anônimo",
+      "anonymous": "Cadastro incompleto",
       "viewPosts": "Publicações",
       "viewActivity": "Atividade",
       "username": "Nome de usuário",

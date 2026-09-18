@@ -4397,7 +4397,7 @@
       "defaultRole": "user",
       "banned": "Banned",
       "active": "Active",
-      "anonymous": "Anonymous",
+      "anonymous": "本登録未完了",
       "viewPosts": "投稿",
       "viewActivity": "アクティビティ",
       "username": "Username",
