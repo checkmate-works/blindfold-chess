@@ -25,11 +25,20 @@ vi.mock('@/lib/db', async () => ({
     select: () => ({
       from: () => ({
         where: () => ({
-          limit: () => Promise.resolve(mockProfileRows()),
+          // `async` so a `mockProfileRows` that throws surfaces as a rejected
+          // query (what a failing DB round-trip looks like) rather than as a
+          // synchronous throw at builder-call time.
+          limit: async () => mockProfileRows(),
         }),
       }),
     }),
   },
+}));
+
+// The unread-notification count that now rides along on the same round-trip.
+const mockUnreadCount = vi.fn<(userId: string) => Promise<number>>();
+vi.mock('@/app/[locale]/(protected)/mypage/(confirmed)/notifications/_lib/queries', () => ({
+  getUnreadCount: (userId: string) => mockUnreadCount(userId),
 }));
 
 const { getSessionUser } = await import('./getSessionUser');
@@ -43,6 +52,7 @@ describe('getSessionUser', () => {
     mockProfileRows.mockReturnValue([
       { id: 'user-123', avatarUrl: 'https://example.com/a.png', displayName: 'Tester' },
     ]);
+    mockUnreadCount.mockResolvedValue(3);
   });
 
   describe('authenticated user', () => {
@@ -55,6 +65,7 @@ describe('getSessionUser', () => {
         user: mockUser,
         hasProfile: true,
         profile: { avatarUrl: 'https://example.com/a.png', displayName: 'Tester' },
+        unreadNotificationCount: 3,
       });
       expect(mockWriteAdsHiddenCookieForUser).toHaveBeenCalledTimes(1);
       expect(mockWriteAdsHiddenCookieForUser).toHaveBeenCalledWith(mockUser);
@@ -66,7 +77,46 @@ describe('getSessionUser', () => {
 
       const result = await getSessionUser();
 
-      expect(result).toEqual({ user: mockUser, hasProfile: false, profile: null });
+      // The unread count is not gated on registration, matching the Server
+      // Action the header badge used to call (it authenticated with
+      // `getOptionalUser`, not with a profile guard).
+      expect(result).toEqual({
+        user: mockUser,
+        hasProfile: false,
+        profile: null,
+        unreadNotificationCount: 3,
+      });
+    });
+
+    it('still resolves the profile when the unread count query fails', async () => {
+      mockGetUser.mockResolvedValue({ data: { user: mockUser } });
+      mockUnreadCount.mockRejectedValue(new Error('count timed out'));
+
+      const result = await getSessionUser();
+
+      expect(result).toEqual({
+        user: mockUser,
+        hasProfile: true,
+        profile: { avatarUrl: 'https://example.com/a.png', displayName: 'Tester' },
+        // No badge is the honest rendering of an unknown count.
+        unreadNotificationCount: 0,
+      });
+    });
+
+    it('still resolves the unread count when the profile lookup fails', async () => {
+      mockGetUser.mockResolvedValue({ data: { user: mockUser } });
+      mockProfileRows.mockImplementation(() => {
+        throw new Error('profiles lookup failed');
+      });
+
+      const result = await getSessionUser();
+
+      expect(result).toEqual({
+        user: mockUser,
+        hasProfile: false,
+        profile: null,
+        unreadNotificationCount: 3,
+      });
     });
   });
 
@@ -76,7 +126,14 @@ describe('getSessionUser', () => {
 
       const result = await getSessionUser();
 
-      expect(result).toEqual({ user: null, hasProfile: false, profile: null });
+      expect(result).toEqual({
+        user: null,
+        hasProfile: false,
+        profile: null,
+        unreadNotificationCount: 0,
+      });
+      // Nobody to count notifications for — the query must not be issued.
+      expect(mockUnreadCount).not.toHaveBeenCalled();
       // Passing null deletes the cookie inside the writer. Critical for
       // sign-out flows: a user who was previously an ad-free subscriber
       // must not keep seeing no-ads after logging out.
@@ -92,7 +149,12 @@ describe('getSessionUser', () => {
 
       const result = await getSessionUser();
 
-      expect(result).toEqual({ user: null, hasProfile: false, profile: null });
+      expect(result).toEqual({
+        user: null,
+        hasProfile: false,
+        profile: null,
+        unreadNotificationCount: 0,
+      });
       // When we cannot determine the auth state at all, leaving the
       // cookie in its previous state is the safe choice — flipping it
       // in either direction on an unknown user would be wrong.
@@ -120,6 +182,7 @@ describe('getSessionUser', () => {
         user: mockUser,
         hasProfile: true,
         profile: { avatarUrl: 'https://example.com/a.png', displayName: 'Tester' },
+        unreadNotificationCount: 3,
       });
       expect(mockWriteAdsHiddenCookieForUser).toHaveBeenCalledTimes(1);
       // Cookie-writer failures are cosmetic (entitlement queries already
