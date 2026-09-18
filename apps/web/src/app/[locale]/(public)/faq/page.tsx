@@ -2,7 +2,11 @@ import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { Link } from '@/i18n/routing';
-import { getModuleWeight } from '@blindfold-chess/features/exp';
+import {
+  MISS_BONUS,
+  NO_ACCURACY_BONUS_MULTIPLIER,
+  getModuleWeight,
+} from '@blindfold-chess/features/exp';
 
 import { JsonLd, generateFAQPageSchema } from '@/lib/seo/jsonld';
 
@@ -31,6 +35,33 @@ const WEIGHT_DISPLAY_ORDER = [
   'diagonal_quiz',
   'route_planner',
 ] as const;
+
+/**
+ * Rows of the accuracy-bonus table: one per rung of the Exp bonus ladder, plus
+ * the row the ladder itself does not carry. `MISS_BONUS` stops at the last rung
+ * that still earns a bonus; any higher miss count — today the 3-miss burst —
+ * falls through to `NO_ACCURACY_BONUS_MULTIPLIER`, so that row is derived from
+ * the last rung rather than written out. Adding or removing a rung then moves
+ * the table with it instead of leaving it quietly showing stale multipliers.
+ */
+const ACCURACY_BONUS_ROWS: { misses: number; multiplier: number }[] = [
+  ...MISS_BONUS,
+  {
+    misses: (MISS_BONUS.at(-1)?.misses ?? -1) + 1,
+    multiplier: NO_ACCURACY_BONUS_MULTIPLIER,
+  },
+];
+
+/**
+ * Formats a multiplier the way the table reads it: always at least one decimal
+ * place, so 1 renders as `×1.0` alongside `×1.5`, and never rounded away, so a
+ * two-decimal rung would print in full instead of collapsing onto its
+ * neighbour.
+ */
+function formatMultiplier(multiplier: number): string {
+  const decimals = (multiplier.toString().split('.')[1] ?? '').length;
+  return `×${multiplier.toFixed(Math.max(1, decimals))}`;
+}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return createPageMetadata({ params, namespace: 'faq', path: 'faq' });
@@ -147,19 +178,21 @@ export default async function FAQPage({ params }: Props) {
               </tr>
             </thead>
             <tbody>
-              {(
-                [
-                  ['misses0', 'multiplier15'],
-                  ['misses1', 'multiplier12'],
-                  ['misses2', 'multiplier11'],
-                  ['misses3', 'multiplier10'],
-                ] as const
-              ).map(([missKey, mulKey]) => (
-                <tr key={missKey} className="border-b border-border">
-                  <td className="py-1.5 px-2">{t(`items.expSystem.${missKey}`)}</td>
-                  <td className="py-1.5 px-2">{t(`items.expSystem.${mulKey}`)}</td>
-                </tr>
-              ))}
+              {ACCURACY_BONUS_ROWS.map(({ misses, multiplier }) => {
+                // Miss-count labels carry a per-locale annotation ("0 (Perfect)",
+                // "3 (Burst)") that a bare number cannot express, so they stay in
+                // the messages. A rung added ahead of its translation falls back
+                // to the plain count rather than rendering an undefined key.
+                const labelKey = `items.expSystem.misses${misses}`;
+                return (
+                  <tr key={misses} className="border-b border-border">
+                    <td className="py-1.5 px-2">
+                      {t.has(labelKey) ? t(labelKey) : misses.toString()}
+                    </td>
+                    <td className="py-1.5 px-2">{formatMultiplier(multiplier)}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
