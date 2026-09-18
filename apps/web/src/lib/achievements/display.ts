@@ -1,4 +1,5 @@
 import type { InterpolatingTranslator } from '@/i18n/translator';
+import type { AchievementCategory } from '@blindfold-chess/types';
 
 /**
  * Derive a display-friendly badge name from slug.
@@ -131,8 +132,16 @@ export function getAchievementDisplayName(
  *
  * The translation function `t` is expected to resolve keys like
  * `achievementCategory.monthly_leaderboard`, etc.
+ *
+ * Keyed by {@link AchievementCategory} rather than by `string`, so a category
+ * added to the criteria union fails to compile here until it has a name.
+ * Callers still index the result with the raw `achievements.category` column
+ * value and fall back to it on a miss: the column is a varchar and may hold a
+ * value this build does not know about.
  */
-export function getAchievementCategoryNames(t: (key: string) => string): Record<string, string> {
+export function getAchievementCategoryNames(
+  t: (key: string) => string
+): Record<AchievementCategory, string> {
   return {
     monthly_leaderboard: t('achievementCategory.monthly_leaderboard'),
     cumulative: t('achievementCategory.cumulative'),

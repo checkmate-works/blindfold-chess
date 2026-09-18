@@ -60,3 +60,14 @@ export type AchievementCriteria =
   | OneShotCriteria
   | SocialCriteria
   | AiDefeatCriteria;
+
+/**
+ * The `category` discriminator on its own — the set of values
+ * `achievements.category` may hold.
+ *
+ * Derived rather than spelled out so that adding a member to
+ * {@link AchievementCriteria} reaches the surfaces keyed by category (the
+ * display-name map, any future per-category grouping) as a compile error
+ * instead of a silently missing entry.
+ */
+export type AchievementCategory = AchievementCriteria["category"];

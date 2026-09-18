@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, useTransition } from 'react';
+import { useRef, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
@@ -10,6 +10,7 @@ import { FieldError, fieldErrorProps } from '@/app/_components/FieldError';
 import { GenerateSlugButton } from '@/app/_components/GenerateSlugButton';
 import { UnsavedChangesDialog } from '@/app/_components/UnsavedChangesDialog';
 import { AdminFormTopBar } from '@/app/admin/_components/forms';
+import { useDraftPublishWorkflow } from '@/app/admin/_hooks/useDraftPublishWorkflow';
 
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 
@@ -81,8 +82,6 @@ export function AnnouncementForm({
 }: AnnouncementFormProps) {
   const router = useRouter();
   const { showToast } = useToast();
-  const [isPending, startTransition] = useTransition();
-  const [publishedConfirmOpen, setPublishedConfirmOpen] = useState(false);
   const [isNavigatingToPreview, setIsNavigatingToPreview] = useState(false);
 
   // Same full-height layout as ArticleForm, so the same rule: a rejection is
@@ -125,40 +124,31 @@ export function AnnouncementForm({
     cancel: cancelNavigation,
   } = useUnsavedChanges({ isDirty });
 
-  const executeSave = () => {
-    submitError.clear();
-    startTransition(async () => {
-      const result = await onSaveDraft({ slug, title, content, locale });
-
-      if ('error' in result) {
-        reportSaveError(result);
-      } else {
-        isSubmittedRef.current = true;
-        showToast(isPublished ? labels.publishedSaved : labels.draftSaved, 'success');
-        // For new announcements, redirect to edit so subsequent saves are updates.
-        // For existing announcements, stay on the page.
-        if (!defaultValues) {
-          window.location.replace(`/admin/announcements/${result.id}/edit`);
-        }
+  const {
+    isPending,
+    publishedConfirmOpen,
+    requestSave: handleSaveDraft,
+    confirmPublishedSave: handlePublishedConfirm,
+    cancelPublishedSave,
+    saveThen,
+  } = useDraftPublishWorkflow({
+    isPublished,
+    buildFormData: () => ({ slug, title, content, locale }),
+    onSaveDraft,
+    clearErrors: submitError.clear,
+    onSaveError: reportSaveError,
+    onSaved: (result) => {
+      isSubmittedRef.current = true;
+      showToast(isPublished ? labels.publishedSaved : labels.draftSaved, 'success');
+      // For new announcements, redirect to edit so subsequent saves are updates.
+      // For existing announcements, stay on the page.
+      if (!defaultValues) {
+        window.location.replace(`/admin/announcements/${result.id}/edit`);
       }
-    });
-  };
-
-  const handleSaveDraft = () => {
-    if (isPublished) {
-      setPublishedConfirmOpen(true);
-    } else {
-      executeSave();
-    }
-  };
-
-  const handlePublishedConfirm = () => {
-    setPublishedConfirmOpen(false);
-    executeSave();
-  };
+    },
+  });
 
   const handlePreview = () => {
-    submitError.clear();
     // Disable the unsaved-changes guard BEFORE the save fires. Setting state
     // synchronously here forces a re-render that propagates `enabled: false`
     // into next-navigation-guard before router.push is called below; otherwise
@@ -166,17 +156,13 @@ export function AnnouncementForm({
     // out — leaving the just-saved record behind and producing a duplicate
     // (slug, locale) error on the next attempt.
     setIsNavigatingToPreview(true);
-    startTransition(async () => {
-      const result = await onSaveDraft({ slug, title, content, locale });
-
-      if ('error' in result) {
-        reportSaveError(result);
-        setIsNavigatingToPreview(false);
-      } else {
+    saveThen(
+      (result) => {
         isSubmittedRef.current = true;
         router.push(`/admin/announcements/${result.id}/preview`);
-      }
-    });
+      },
+      () => setIsNavigatingToPreview(false)
+    );
   };
 
   return (
@@ -311,7 +297,7 @@ export function AnnouncementForm({
         confirmLabel={labels.publishedConfirmConfirm}
         cancelLabel={labels.publishedConfirmCancel}
         onConfirm={handlePublishedConfirm}
-        onCancel={() => setPublishedConfirmOpen(false)}
+        onCancel={cancelPublishedSave}
       />
     </div>
   );

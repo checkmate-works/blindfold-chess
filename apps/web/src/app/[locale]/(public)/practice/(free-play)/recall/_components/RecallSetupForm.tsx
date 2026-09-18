@@ -75,8 +75,11 @@ export function RecallSetupForm() {
         const lastMoveEntry = history[history.length - 1];
         setColor(lastMoveEntry.color === 'w' ? 'black' : 'white');
       } else {
-        const turnFromFen = getPgnHeaders(pgn).FEN?.split(' ')[1];
-        if (turnFromFen) setColor(turnFromFen === 'w' ? 'white' : 'black');
+        // No moves yet: the side to move in the setup FEN is the side the
+        // user played. Read it through parseFenMeta rather than indexing the
+        // FEN here, so this agrees with every other FEN-to-side derivation.
+        const setupFen = getPgnHeaders(pgn).FEN;
+        if (setupFen) setColor(parseFenMeta(setupFen).startsAsBlack ? 'black' : 'white');
       }
     } catch {
       // Keep the current selection if the PGN can't be parsed yet.

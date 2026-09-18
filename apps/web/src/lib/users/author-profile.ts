@@ -70,3 +70,30 @@ export function buildProfileHref(
 ): string | null {
   return profile?.username ? `/u/${profile.username}` : null;
 }
+
+/**
+ * Narrow a joined profile row to exactly the {@link SocialAuthorProfile}
+ * fields, or `null` when the content has no live author.
+ *
+ * A `LEFT JOIN profiles` selected through `SOCIAL_AUTHOR_COLUMNS` already
+ * produces this shape, so the pick is not a conversion — it is a boundary.
+ * The three home-feed loaders serialise their result straight into the page
+ * payload, and re-listing the fields is what keeps a column added to
+ * `SOCIAL_AUTHOR_COLUMNS` for one surface from silently shipping to every
+ * feed card. Each loader wrote the same ternary out, and one of them guarded
+ * on `author.username` rather than on `author`; per the note on
+ * {@link SocialAuthorProfile} those are the same test, because a missing
+ * author is the whole object being `null` and never a nameless one.
+ */
+export function toSocialAuthorProfile(
+  author: SocialAuthorProfile | null | undefined
+): SocialAuthorProfile | null {
+  if (!author) return null;
+  return {
+    username: author.username,
+    displayName: author.displayName,
+    avatarUrl: author.avatarUrl,
+    country: author.country,
+    flair: author.flair,
+  };
+}

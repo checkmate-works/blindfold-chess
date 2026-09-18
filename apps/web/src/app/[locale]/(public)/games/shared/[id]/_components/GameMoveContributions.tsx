@@ -15,6 +15,7 @@ import { JoinConversationToggle } from '@/app/[locale]/(public)/topics/_componen
 import { ChunkLinkCard } from '@/app/[locale]/_components/chunk-links/ChunkLinkCard';
 import { ChunkPicker } from '@/app/[locale]/_components/chunk-links/ChunkPicker';
 import { StagedChunkCard } from '@/app/[locale]/_components/chunk-links/StagedChunkCard';
+import { buildChunkLinkCardLabels } from '@/app/[locale]/_components/chunk-links/chunk-link-card-labels';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { useGameChunkLinks } from '../_hooks/use-game-chunk-links';
@@ -94,6 +95,7 @@ export function GameMoveContributions({
   aiReviewMoment,
 }: Props) {
   const t = useTranslations('sharedGames');
+  const tChunks = useTranslations('sharedGames.chunks');
   const tCommon = useTranslations('Common');
   const currentUserId = currentUser?.id;
 
@@ -241,20 +243,12 @@ export function GameMoveContributions({
             <ChunkLinkCard
               key={group[0].id}
               items={group}
-              badge={t('chunks.badge')}
-              draftBadge={t('chunks.draftBadge')}
+              badge={tChunks('badge')}
+              draftBadge={tChunks('draftBadge')}
               locale={locale}
               canRemove={links.canRemove}
               onRemove={(item) => links.handleRemoveSaved(item.id)}
-              labels={{
-                linkedAction: (count) => t('chunks.linkedAction', { count }),
-                remove: (title) => t('chunks.remove', { title }),
-                delete: t('chunks.delete'),
-                confirmUnlinkTitle: t('chunks.confirmUnlinkTitle'),
-                confirmUnlinkBody: t('chunks.confirmUnlinkBody'),
-                confirmCancel: t('chunks.confirmCancel'),
-                deletedUser: tCommon('deletedUser'),
-              }}
+              labels={buildChunkLinkCardLabels(tChunks, tCommon)}
             />
           ))}
         </ul>

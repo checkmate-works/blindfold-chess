@@ -5,6 +5,7 @@ import { getChunkLikeMetaMap } from '@/lib/chunks/like-queries';
 import { SOCIAL_AUTHOR_COLUMNS, chunks, db, liveProfileJoinOn, profiles } from '@/lib/db';
 import { EMPTY_LIKE_META } from '@/lib/db/like-queries';
 import { EMPTY_REPLY_META, getReplyMetaMap } from '@/lib/db/reply-meta-queries';
+import { toSocialAuthorProfile } from '@/lib/users/author-profile';
 
 import type { ChunkFeedData } from '../types';
 
@@ -64,15 +65,7 @@ export async function loadChunksForFeed(
       annotations: parseBoardAnnotations(row.annotations),
       kind: 'created',
       createdAt: row.createdAt.toISOString(),
-      author: row.author
-        ? {
-            username: row.author.username,
-            displayName: row.author.displayName,
-            avatarUrl: row.author.avatarUrl,
-            country: row.author.country,
-            flair: row.author.flair,
-          }
-        : null,
+      author: toSocialAuthorProfile(row.author),
       likeMeta,
       replyMeta,
     });

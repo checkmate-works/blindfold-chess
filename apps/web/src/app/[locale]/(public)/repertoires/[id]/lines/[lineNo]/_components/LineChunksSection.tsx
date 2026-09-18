@@ -13,6 +13,7 @@ import { SectionTitle } from '@/app/[locale]/_components';
 import { ChunkLinkCard } from '@/app/[locale]/_components/chunk-links/ChunkLinkCard';
 import { ChunkPicker } from '@/app/[locale]/_components/chunk-links/ChunkPicker';
 import { StagedChunkCard } from '@/app/[locale]/_components/chunk-links/StagedChunkCard';
+import { buildChunkLinkCardLabels } from '@/app/[locale]/_components/chunk-links/chunk-link-card-labels';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import type { LineChunksUser } from '../_hooks/use-repertoire-chunk-links';
@@ -133,15 +134,7 @@ export function LineChunksSection({
               locale={locale}
               canRemove={links.canRemove}
               onRemove={(item) => links.handleRemoveSaved(item.id)}
-              labels={{
-                linkedAction: (count) => t('linkedAction', { count }),
-                remove: (title) => t('remove', { title }),
-                delete: t('delete'),
-                confirmUnlinkTitle: t('confirmUnlinkTitle'),
-                confirmUnlinkBody: t('confirmUnlinkBody'),
-                confirmCancel: t('confirmCancel'),
-                deletedUser: tCommon('deletedUser'),
-              }}
+              labels={buildChunkLinkCardLabels(t, tCommon)}
             />
           ))}
         </ul>
