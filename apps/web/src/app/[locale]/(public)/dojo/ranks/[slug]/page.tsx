@@ -28,6 +28,7 @@ import { HiArrowRight } from 'react-icons/hi2';
 import { ALL_RANK_SLUGS, isMukyuSlug } from '@/lib/db/data/ranks';
 import type { RankSlug } from '@/lib/db/data/ranks';
 import { buildGuidePath, getRankGuide, paragraphToPlainText } from '@/lib/guides';
+import { toMetaDescription } from '@/lib/seo/meta-description';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
@@ -57,10 +58,6 @@ type Props = {
 };
 
 type TFunc = ServerTranslator;
-
-function truncateTeaser(text: string): string {
-  return text.length > 100 ? `${text.slice(0, 100)}…` : text;
-}
 
 /**
  * Board visual shown in the Tips card, keyed by rank slug. Ranks not listed
@@ -108,7 +105,11 @@ function TipsCard({
   return (
     <div className="space-y-3 rounded-lg bg-amber-50 p-4 dark:bg-amber-950/20">
       <p className="font-semibold text-foreground">💡 {t('detail.tips')}</p>
-      <p className="text-foreground/80">{truncateTeaser(teaser)}</p>
+      {/* The teaser is the guide's opening paragraph, excerpted to stand in
+          for the guide the card links to — the same job a search snippet
+          does for a page, so it is cut to the same budget with the same
+          ellipsis rather than to a second hand-picked number. */}
+      <p className="text-foreground/80">{toMetaDescription(teaser)}</p>
       <Link
         href={buildGuidePath(locale, slug, { kind: 'root' })}
         className="block"
