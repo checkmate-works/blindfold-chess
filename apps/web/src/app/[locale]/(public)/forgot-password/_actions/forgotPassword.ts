@@ -1,13 +1,13 @@
 'use server';
 
 import { SITE_URL } from '@/config';
-import { z } from 'zod';
 
 import type { ActionResult } from '@/lib/action-types';
 import { getOptionalUser } from '@/lib/auth';
 import { guardByIpRateLimit } from '@/lib/security/rate-limit-ip';
 import { createClient } from '@/lib/supabase/server';
 import { logActivityEvent } from '@/lib/users/activity-log';
+import { isValidEmail } from '@/lib/validations/email';
 
 export type ForgotPasswordResult = ActionResult;
 
@@ -17,8 +17,7 @@ export async function forgotPassword(email: string): Promise<ForgotPasswordResul
     return ipRateLimited;
   }
 
-  const emailSchema = z.string().email().max(254);
-  if (!emailSchema.safeParse(email).success) {
+  if (!isValidEmail(email)) {
     return { error: 'resetFailed' };
   }
 
