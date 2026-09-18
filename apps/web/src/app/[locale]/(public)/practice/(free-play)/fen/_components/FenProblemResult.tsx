@@ -6,9 +6,7 @@ import type { PositionAccuracy } from '@blindfold-chess/features/common';
 import type { BoardTheme } from '@/lib/games/board-themes';
 import { DEFAULT_BOARD_THEME } from '@/lib/games/board-themes';
 
-import { ProblemResultActions } from '@/app/[locale]/(public)/practice/(free-play)/_components/ProblemResultActions';
-import { RecreationComparison } from '@/app/[locale]/(public)/practice/(free-play)/_components/RecreationComparison';
-import { PieceRecreationProgress } from '@/app/[locale]/(public)/practice/_components/PieceRecreationProgress';
+import { ProblemRecreationSections } from '@/app/[locale]/(public)/practice/(free-play)/_components/ProblemRecreationSections';
 import type { PositionData } from '@/app/[locale]/(public)/practice/_lib/types';
 
 const NAMESPACE = 'practice.fen';
@@ -41,7 +39,6 @@ export function FenProblemResult({
   onFinishTutorial,
 }: Props) {
   const t = useTranslations(NAMESPACE);
-  const isLastProblem = currentProblemIndex >= totalProblems - 1;
 
   return (
     <div className="space-y-4">
@@ -55,20 +52,16 @@ export function FenProblemResult({
             </p>
           </div>
 
-          <PieceRecreationProgress accuracy={accuracy} namespace={NAMESPACE} />
-
-          <RecreationComparison
+          <ProblemRecreationSections
             namespace={NAMESPACE}
+            accuracy={accuracy}
             originalPosition={originalPosition}
             recreatedPosition={recreatedPosition}
+            currentProblemIndex={currentProblemIndex}
+            totalProblems={totalProblems}
             boardTheme={boardTheme}
             showCoordinates={showCoordinates}
-          />
-
-          <ProblemResultActions
-            namespace={NAMESPACE}
             isTutorial={isTutorial}
-            isLastProblem={isLastProblem}
             onNextProblem={onNextProblem}
             onViewResults={onViewResults}
             onFinishTutorial={onFinishTutorial}
