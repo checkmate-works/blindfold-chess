@@ -8,7 +8,8 @@ export { UciTransport } from "./uci-transport";
 export {
   ChessEngine,
   EngineBusyError,
+  EngineNoMoveError,
   INIT_RETRY_DELAYS_MS,
   MAX_INIT_ATTEMPTS,
 } from "./chess-engine";
-export type { EvaluationResult } from "./chess-engine";
+export type { ChessEngineOptions, EvaluationResult } from "./chess-engine";

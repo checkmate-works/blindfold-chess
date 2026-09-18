@@ -3,7 +3,9 @@
  *
  * Apps implement this interface once per platform:
  * - Web wraps a Stockfish Web Worker (`new Worker(workerPath)`).
- * - Mobile will wrap a WebView bridge (Phase 2).
+ * - Mobile wraps a `react-native-webview` bridge: commands go out through
+ *   `injectJavaScript`, replies come back through the component's `onMessage`
+ *   prop, which the app-side channel feeds to the registered handlers.
  *
  * The interface intentionally has no chess / UCI semantics — it just moves
  * UTF-8 strings between the app and the engine process. `UciTransport`

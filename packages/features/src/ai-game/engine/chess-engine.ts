@@ -46,13 +46,6 @@ export function toWhitePerspectiveEvaluation(
 }
 
 /**
- * Number of attempts `ensureInitialized` makes before surfacing the last
- * initialization error to the caller. Engine spin-up can transiently fail
- * (Worker / WASM boot race, tab throttling, `onerror` from Stockfish) — a
- * small bounded retry makes first-move experience far more robust without
- * hiding genuine configuration errors.
- */
-/**
  * Thrown by {@link ChessEngine.getBestMove} / {@link ChessEngine.getEvaluation}
  * when a request arrives while a previous one is still in flight (StrictMode
  * double-invocation, overlapping orchestration rounds). Exposed as a class —
@@ -68,6 +61,41 @@ export class EngineBusyError extends Error {
   }
 }
 
+/**
+ * Thrown by {@link ChessEngine.getBestMove} when the engine answered the `go`
+ * command but the `bestmove` line carried no move (`bestmove (none)`, or a
+ * malformed reply). Distinct from a timeout: the engine was alive and
+ * responsive, it just had nothing to play. Exposed as a class — like
+ * {@link EngineBusyError} — so boundary adapters can tell the two apart with
+ * `instanceof` rather than by matching message text; the mobile hook maps it
+ * to `EngineError{kind:"no-move"}`, which is reported to the player as a
+ * final failure instead of "the engine is slow, try again".
+ */
+export class EngineNoMoveError extends Error {
+  constructor() {
+    super("Engine failed to return a move");
+    this.name = "EngineNoMoveError";
+  }
+}
+
+/**
+ * Per-platform knobs the engine cannot derive on its own.
+ */
+export type ChessEngineOptions = Readonly<{
+  /**
+   * Deadline for the `go` → `bestmove` roundtrip, derived from that call's
+   * search budget. Omit it to keep {@link UciTransport}'s flat 10s default.
+   */
+  bestMoveTimeoutMs?: (searchTimeMs: number) => number;
+}>;
+
+/**
+ * Number of attempts `ensureInitialized` makes before surfacing the last
+ * initialization error to the caller. Engine spin-up can transiently fail
+ * (Worker / WASM boot race, tab throttling, `onerror` from Stockfish) — a
+ * small bounded retry makes first-move experience far more robust without
+ * hiding genuine configuration errors.
+ */
 export const MAX_INIT_ATTEMPTS = 3;
 
 /**
@@ -101,9 +129,28 @@ export class ChessEngine {
   private initializationPromise: Promise<void> | null = null;
   private skillLevel: SkillLevel = 5;
   private isProcessing = false;
+  private bestMoveTimeoutMs: ((searchTimeMs: number) => number) | undefined;
 
-  constructor(channelFactory: () => UciMessageChannel) {
+  constructor(
+    channelFactory: () => UciMessageChannel,
+    options: ChessEngineOptions = {},
+  ) {
     this.channelFactory = channelFactory;
+    this.bestMoveTimeoutMs = options.bestMoveTimeoutMs;
+  }
+
+  /**
+   * Run the handshake now instead of on the first request.
+   *
+   * `getBestMove` / `getEvaluation` already initialize on demand, so this is
+   * only for callers that have their own notion of "the engine is up" to
+   * report — the mobile hook flips its `engineState` to `ready` on this
+   * promise, so the handshake (and its retries) finish before the first move
+   * request rather than inside it. Repeat calls are cheap: they join the
+   * in-flight attempt, or return immediately once initialized.
+   */
+  async initialize(): Promise<void> {
+    await this.ensureInitialized();
   }
 
   private async ensureInitialized(): Promise<void> {
@@ -243,10 +290,11 @@ export class ChessEngine {
       // Get best move
       const move = await this.transport.waitForBestMove(
         buildGoCommand({ movetime: timeLimit }),
+        this.bestMoveTimeoutMs?.(timeLimit),
       );
 
       if (!move) {
-        throw new Error("Engine failed to return a move");
+        throw new EngineNoMoveError();
       }
 
       return move as UciMove;
