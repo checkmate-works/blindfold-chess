@@ -16,6 +16,14 @@ import { vi } from 'vitest';
  */
 export const isBlockedBetween = vi.fn(async () => false);
 export const hasBlocked = vi.fn(async () => false);
+export const getBlockedUserIds = vi.fn<() => Promise<string[]>>(async () => []);
+/**
+ * Resolves to `undefined`, the "no blocks, add nothing to the WHERE" answer.
+ * A list-query test that wants the filter present asserts on this spy rather
+ * than on the SQL: the real fragment is built from a drizzle column the db
+ * mocks in those suites do not carry.
+ */
+export const excludeBlockedAuthors = vi.fn<() => Promise<undefined>>(async () => undefined);
 export const MODERATION_BLOCKED_ERROR = 'moderation.blocked';
 export const assertNotBlocked = vi.fn<
   () => Promise<{ error: typeof MODERATION_BLOCKED_ERROR } | null>
