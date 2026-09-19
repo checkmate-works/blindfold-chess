@@ -79,15 +79,10 @@ export function deriveMoveAnalyses(
     const rawLoss = color === 'white' ? evalBefore - evalAfter : evalAfter - evalBefore;
     const cpLoss = playedBest ? 0 : Math.max(0, rawLoss);
 
-    let bestMoveSan: string | null = null;
-    if (bestMoveUci) {
-      try {
-        bestMoveSan = uciToAlgebraic(bestMoveUci, fenBefore);
-      } catch {
-        // Illegal / malformed UCI for this position — drop it rather than fail.
-        bestMoveSan = null;
-      }
-    }
+    // Illegal / malformed UCI for this position — drop the suggestion rather
+    // than fail the whole analysis over one ply's unusable best move.
+    const converted = bestMoveUci ? uciToAlgebraic(bestMoveUci, fenBefore) : null;
+    const bestMoveSan: string | null = converted?.ok ? converted.value : null;
 
     return {
       ply,

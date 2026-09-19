@@ -317,7 +317,7 @@ describe("ChessEngine getBestMove — position command", () => {
     // FINAL position. The old `position fen <post-move-fen> moves <full game>`
     // form let Stockfish apply that move, flip the side to move, and return a
     // WHITE move (`c3b5`) that is illegal against the real black-to-move FEN —
-    // crashing `uciToAlgebraic`. The fix sends `position fen <start> moves …`.
+    // failing the UCI -> SAN conversion. The fix sends `position fen <start> moves …`.
     const game = [
       "d4",
       "d6",

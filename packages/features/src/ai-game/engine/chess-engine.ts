@@ -82,6 +82,38 @@ export class EngineNoMoveError extends Error {
 }
 
 /**
+ * Thrown by {@link ChessEngine.convertUciToAlgebraic} when the engine's UCI
+ * move cannot be read as SAN in the position it was requested against —
+ * because the string does not decode into squares, because the move is not
+ * legal there, or because the FEN itself is unparseable. All three mean the
+ * same thing to the caller: the move just produced cannot be played, so the
+ * round has to fail instead of advancing the game.
+ *
+ * A class rather than a bare `Error` — like {@link EngineBusyError} and
+ * {@link EngineNoMoveError} — so a boundary adapter can separate it from a
+ * missed deadline or a dead channel by `instanceof` instead of by matching
+ * message text. The distinction is worth making because the two failures
+ * call for opposite responses: a timeout is transient and retrying the same
+ * position may well succeed, whereas an unplayable move is deterministic and
+ * a retry against the same position reproduces it exactly. The mobile hook
+ * still folds it into its `timeout` kind today, which is precisely the
+ * conflation this class makes fixable.
+ *
+ * `cause` carries chess.js's own rejection. Without it the whole report is
+ * the UCI string, which is the one thing the reader already had.
+ */
+export class UciConversionError extends Error {
+  constructor(
+    readonly uciMove: UciMove,
+    readonly fen: Fen,
+    options?: { cause?: unknown },
+  ) {
+    super(`Invalid UCI move: ${uciMove}`, options);
+    this.name = "UciConversionError";
+  }
+}
+
+/**
  * Per-platform knobs the engine cannot derive on its own.
  */
 export type ChessEngineOptions = Readonly<{
@@ -278,7 +310,7 @@ export class ChessEngine {
       // first move's coordinates happen to form a legal (unrelated) move in
       // the final position, Stockfish applies it, flips the side to move, and
       // then generates a move for the WRONG colour. That move is illegal when
-      // converted against the real `fen`, crashing `uciToAlgebraic`.
+      // converted against the real `fen`, so `convertUciToAlgebraic` rejects it.
       //
       // With no history (e.g. a custom starting position with no moves yet),
       // `fen` alone fully describes the position.
@@ -368,13 +400,25 @@ export class ChessEngine {
     return movesToUci(moves, startingFen);
   }
 
+  /**
+   * Read the engine's UCI move as SAN in `fen`, throwing
+   * {@link UciConversionError} when it cannot be played there.
+   *
+   * Throws rather than forwarding `uciToAlgebraic`'s `Result` because this
+   * method sits with the rest of `ChessEngine`'s surface, which is uniformly
+   * throw-based (`getBestMove`, `getEvaluation`), and both adapters that call
+   * it already translate thrown values into their own `Result` kinds inside a
+   * single `try`. Handing one method back a `Result` would give those adapters
+   * two error protocols to fold together for no gain.
+   */
   convertUciToAlgebraic(uciMove: UciMove, fen: Fen): AlgebraicNotation {
-    try {
-      return uciToAlgebraic(uciMove, fen);
-    } catch (error) {
-      console.error("Failed to convert UCI to algebraic:", uciMove, error);
-      throw new Error(`Invalid UCI move: ${uciMove}`);
+    const converted = uciToAlgebraic(uciMove, fen);
+    if (converted.ok) {
+      return converted.value;
     }
+    throw new UciConversionError(uciMove, fen, {
+      cause: converted.error.cause,
+    });
   }
 
   get isReady(): boolean {

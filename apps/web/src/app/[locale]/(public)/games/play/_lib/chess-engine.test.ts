@@ -1,4 +1,4 @@
-import { ChessEngine } from '@blindfold-chess/features/ai-game/engine';
+import { ChessEngine, UciConversionError } from '@blindfold-chess/features/ai-game/engine';
 import type { Fen, UciMove } from '@blindfold-chess/types';
 import { beforeEach, describe, expect, it } from 'vitest';
 
@@ -125,16 +125,34 @@ describe('ChessEngine', () => {
     });
 
     describe('error handling', () => {
-      it('should throw error for invalid UCI move', () => {
+      it('should throw UciConversionError for invalid UCI move', () => {
         expect(() => {
           engine.convertUciToAlgebraic('invalid' as UciMove, startingFen);
-        }).toThrow('Invalid UCI move');
+        }).toThrow(UciConversionError);
       });
 
-      it('should throw error for illegal move', () => {
+      it('should throw UciConversionError for illegal move', () => {
         expect(() => {
           engine.convertUciToAlgebraic('e1e8' as UciMove, startingFen);
-        }).toThrow('Invalid UCI move');
+        }).toThrow(UciConversionError);
+      });
+
+      // The throw is what a report of this failure is built from, so it has to
+      // carry more than the UCI string the reader already has: the position it
+      // was rejected from, and chess.js's own rejection with its stack.
+      it('should carry the move, the position and the underlying cause', () => {
+        let thrown: unknown;
+        try {
+          engine.convertUciToAlgebraic('e1e8' as UciMove, startingFen);
+        } catch (error) {
+          thrown = error;
+        }
+
+        expect(thrown).toBeInstanceOf(UciConversionError);
+        const error = thrown as UciConversionError;
+        expect(error.uciMove).toBe('e1e8');
+        expect(error.fen).toBe(startingFen);
+        expect(error.cause).toBeDefined();
       });
     });
   });

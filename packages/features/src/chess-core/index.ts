@@ -11,6 +11,8 @@
 
 export type { BoardPiece, Color, MoveResult } from "./types";
 
+export type { UciConversionFailure } from "./moves";
+
 export { toMoveResult } from "./types";
 
 export {

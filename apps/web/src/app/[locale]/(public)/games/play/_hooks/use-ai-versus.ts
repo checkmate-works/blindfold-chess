@@ -89,15 +89,17 @@ export function useAiVersus(engineConfig: EngineConfig) {
       if (!result.ok) {
         return result;
       }
-      try {
-        return ok(uciToAlgebraic(result.value.move, fen));
-      } catch (cause) {
-        // uciToAlgebraic throws when the engine produced a move that is not
-        // legal in `fen` (see the position-command TSDoc in ChessEngine for
-        // how that can happen); surface it as a generation failure so the
-        // orchestration's error path (Retry button) handles it.
-        return err({ kind: 'move-generation-failed', cause });
+      const san = uciToAlgebraic(result.value.move, fen);
+      if (!san.ok) {
+        // The engine produced a move that is not legal in `fen` (see the
+        // position-command TSDoc in ChessEngine for how that can happen);
+        // surface it as a generation failure so the orchestration's error
+        // path (Retry button) handles it. `cause` is chess.js's rejection,
+        // which is the only part of the failure that says what was wrong
+        // with the move.
+        return err({ kind: 'move-generation-failed', cause: san.error.cause });
       }
+      return ok(san.value);
     },
     []
   );
