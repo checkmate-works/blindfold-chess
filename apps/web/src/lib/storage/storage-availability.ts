@@ -1,13 +1,13 @@
 /**
  * Browser-storage feature detection.
  *
- * Used to gate the injection of Google AdSense / Google Analytics / CMP
- * (Privacy & messaging) scripts. When the browser blocks storage (Firefox Enhanced
- * Tracking Protection, adblockers, private mode, sandboxed iframes, etc.)
- * those scripts can neither store consent nor function correctly, and they
- * tend to throw `NS_ERROR_NOT_INITIALIZED` from inside Google's bundled
- * code — which floods Sentry. The cleanest fix is to never load them at all
- * in those environments.
+ * Used to gate the consent banner and the injection of Google Analytics.
+ * When the browser blocks storage (Firefox Enhanced Tracking Protection,
+ * adblockers, private mode, sandboxed iframes, etc.) the decision cannot be
+ * recorded and the script cannot function correctly, and it tends to throw
+ * `NS_ERROR_NOT_INITIALIZED` from inside Google's bundled code — which floods
+ * Sentry. The cleanest fix is to never ask, and never load, in those
+ * environments.
  *
  * SSR-tolerant: `detectStorageAvailability()` is safe to bundle into
  * server-rendered modules — every probe early-returns when the relevant
@@ -76,9 +76,10 @@ export type StorageAvailability = {
   /** Whether `document.cookie` writes round-trip successfully. */
   cookies: boolean;
   /**
-   * `true` iff every probed mechanism is usable. The Google script gate uses
-   * this as its single signal — if any of the three is blocked, AdSense / GA /
-   * CMP cannot reliably store consent, so we do not load them at all.
+   * `true` iff every probed mechanism is usable. The consent banner and the
+   * Google Analytics gate use this as their single signal — if any of the
+   * three is blocked, the visitor's decision cannot be stored reliably, so we
+   * neither ask for it nor act on it.
    */
   all: boolean;
 };
