@@ -4777,6 +4777,7 @@
       "banners": "Ad Banners",
       "slot": "Slot",
       "href": "Link URL",
+      "hrefHint": "Paste the URL exactly as the network gave it. For Awin and Amazon links a sub-ID identifying this creative (clickref / ascsubtag) is appended automatically at render time, so their reports break clicks down per creative — don't add one by hand unless you want to override it.",
       "imagePath": "Image Path",
       "imagePreview": "Preview",
       "alt": "Alt Text",

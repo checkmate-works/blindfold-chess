@@ -4777,6 +4777,7 @@
       "banners": "広告バナー",
       "slot": "スロット",
       "href": "リンク URL",
+      "hrefHint": "ネットワークから受け取った URL をそのまま貼ってください。Awin と Amazon のリンクには、この creative を識別する sub-ID（clickref / ascsubtag）が描画時に自動で付与され、各社のレポートで creative 別にクリックを分解できます。上書きしたい場合を除き、手動で付けないでください。",
       "imagePath": "画像パス",
       "imagePreview": "プレビュー",
       "alt": "代替テキスト",

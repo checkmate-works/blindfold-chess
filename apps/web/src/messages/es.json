@@ -4777,6 +4777,7 @@
       "banners": "Banners Publicitarios",
       "slot": "Espacio",
       "href": "URL del Enlace",
+      "hrefHint": "Pega la URL tal como te la dio la red. En los enlaces de Awin y Amazon se añade automáticamente al renderizar un sub-ID que identifica este creativo (clickref / ascsubtag), de modo que sus informes desglosan los clics por creativo; no lo añadas a mano salvo que quieras sobrescribirlo.",
       "imagePath": "Ruta de Imagen",
       "imagePreview": "Vista Previa",
       "alt": "Texto Alternativo",
