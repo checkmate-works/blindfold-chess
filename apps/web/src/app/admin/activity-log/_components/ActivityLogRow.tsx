@@ -3,12 +3,16 @@ import { AdminExternalLink } from '@/app/admin/_components/AdminExternalLink';
 import { AdminUserLink } from '@/app/admin/_components/AdminUserLink';
 import { formatDateTime } from '@/app/admin/_lib/format';
 
+import { truncateContent } from '@/lib/content/truncate-content';
 import type { UserActivityLog } from '@/lib/db/schema';
 
 import { type ActivityTargetLinkMap, activityTargetKey } from '../_lib/target-links';
 
 /** Characters of the raw id shown for a target the row has no name for. */
 const ID_PREFIX_LENGTH = 8;
+
+/** Metadata budget for the collapsed `<summary>`; expanding shows the full JSON. */
+const METADATA_SUMMARY_LENGTH = 60;
 
 function actionBadgeVariant(action: string): AdminBadgeVariant {
   switch (action) {
@@ -171,7 +175,7 @@ export function ActivityLogRow({
         {metadataStr !== '-' && metadataStr !== '{}' ? (
           <details>
             <summary className="cursor-pointer text-xs text-muted-foreground hover:text-foreground">
-              {metadataStr.length > 60 ? `${metadataStr.slice(0, 60)}...` : metadataStr}
+              {truncateContent(metadataStr, METADATA_SUMMARY_LENGTH)}
             </summary>
             <pre className="mt-2 max-w-md whitespace-pre-wrap break-words rounded bg-muted px-2 py-1 text-xs text-foreground">
               {JSON.stringify(metadata, null, 2)}

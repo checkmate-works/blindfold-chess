@@ -1,6 +1,11 @@
 import { AdminBadge } from '@/app/admin/_components/AdminBadge';
 import { formatDate } from '@/app/admin/_lib/format';
 
+import { truncateContent } from '@/lib/content/truncate-content';
+
+/** Ban-reason budget under the badge; the full text stays in the `title`. */
+const BAN_REASON_LENGTH = 50;
+
 type Profile = {
   bannedAt: Date | null;
   deletedAt: Date | null;
@@ -49,7 +54,7 @@ export function StatusBadge({ profile, banReason, labels }: StatusBadgeProps) {
         <AdminBadge variant="danger">{labels.banned}</AdminBadge>
         {banReason && (
           <p className="text-xs text-muted-foreground mt-1" title={banReason}>
-            {banReason.length > 50 ? `${banReason.slice(0, 50)}...` : banReason}
+            {truncateContent(banReason, BAN_REASON_LENGTH)}
           </p>
         )}
         <p className="text-xs text-muted-foreground">{formatDate(profile.bannedAt)}</p>
