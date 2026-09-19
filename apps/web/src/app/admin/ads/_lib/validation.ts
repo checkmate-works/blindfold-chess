@@ -4,21 +4,17 @@ import type { NativeCardPayload } from '@/lib/ads/payload';
 import type { AdKind } from '@/lib/ads/registry';
 import { isAdSlot } from '@/lib/ads/registry';
 import { MAX_LINK_HREF_LENGTH, classifyLinkTarget } from '@/lib/content/link-target';
-import { isValidCountryCode } from '@/lib/countries';
 
 export type CreateAdCreativeData = {
   slot: string;
   href: string;
   isActive: boolean;
-  /** ISO-3166 alpha-2 target country; null = global. */
-  targetCountry: string | null;
   payload: NativeCardPayload;
 };
 
 export type UpdateAdCreativeData = {
   href: string;
   isActive: boolean;
-  targetCountry: string | null;
   payload: NativeCardPayload;
 };
 
@@ -37,16 +33,6 @@ export const AD_CREATIVE_LIMITS = {
   /** Thumbnail board FEN (a full FEN is well under 100 chars). */
   fen: 100,
 } as const;
-
-function validateTargetCountry(country: string | null): string | null {
-  if (country === null) return null;
-  // Must be a real ISO 3166-1 alpha-2 code, not just two letters — this
-  // rejects typos like "UK" (the ISO code is "GB"), "XX", etc.
-  if (typeof country !== 'string' || !isValidCountryCode(country)) {
-    return 'invalid country code';
-  }
-  return null;
-}
 
 /**
  * A creative's click-through must be an absolute `http:` / `https:` URL —
@@ -140,8 +126,6 @@ export function validateCreateAdCreative(data: CreateAdCreativeData): string | n
   if (!isAdSlot(data.slot)) return 'invalid slot';
   const hrefError = validateHref(data.href);
   if (hrefError) return hrefError;
-  const countryError = validateTargetCountry(data.targetCountry);
-  if (countryError) return countryError;
   return validateNativeCardPayload(data.payload);
 }
 
@@ -149,7 +133,5 @@ export function validateCreateAdCreative(data: CreateAdCreativeData): string | n
 export function validateUpdateAdCreative(kind: AdKind, data: UpdateAdCreativeData): string | null {
   const hrefError = validateHref(data.href);
   if (hrefError) return hrefError;
-  const countryError = validateTargetCountry(data.targetCountry);
-  if (countryError) return countryError;
   return validatePayloadForKind(kind, data.payload);
 }

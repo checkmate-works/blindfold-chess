@@ -26,7 +26,6 @@ export default async function EditCreativePage({ params }: Props) {
   const common: CommonCreativeValues = {
     href: row.href,
     isActive: row.isActive,
-    targetCountry: row.targetCountry,
   };
 
   return (

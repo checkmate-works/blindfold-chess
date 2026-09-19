@@ -13,7 +13,6 @@ type Props = { params: Promise<{ slot: string }> };
 const EMPTY_COMMON: CommonCreativeValues = {
   href: '',
   isActive: true,
-  targetCountry: null,
 };
 
 export default async function NewCreativePage({ params }: Props) {

@@ -4,7 +4,6 @@ import type { FormEvent, ReactNode } from 'react';
 
 import Link from 'next/link';
 
-import { CountrySelect } from '@/app/_components/CountrySelect';
 import { FormErrorBanner } from '@/app/_components/FormErrorBanner';
 import { Button, Field, Input } from '@/app/admin/_components/forms';
 
@@ -25,9 +24,8 @@ type Props = {
 
 /**
  * The layout shared by every per-kind creative form: error banner, the common
- * `href`, the kind-specific fields (as `children`), then the shared metadata
- * (active / country targeting) and the save/cancel buttons. Per-kind forms own
- * only their payload fields.
+ * `href`, the kind-specific fields (as `children`), then the active toggle and
+ * the save/cancel buttons. Per-kind forms own only their payload fields.
  */
 export function CreativeFormShell({
   common,
@@ -60,22 +58,6 @@ export function CreativeFormShell({
         </Field>
 
         {children}
-
-        <Field
-          label={labels.targetCountry}
-          htmlFor="targetCountry"
-          description={labels.targetCountryHint}
-        >
-          <CountrySelect
-            value={common.countryText}
-            onChange={common.setCountryText}
-            locale="en"
-            placeholder="All countries (global)"
-            searchPlaceholder="Search countries…"
-            clearLabel="Clear"
-            noResults="No countries found"
-          />
-        </Field>
 
         <div className="flex items-center pb-2">
           <label className="flex items-center gap-2 text-sm font-medium">

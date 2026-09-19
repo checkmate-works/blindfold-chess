@@ -40,7 +40,6 @@ export async function updateAdCreative(
       .set({
         href: data.href,
         isActive: data.isActive,
-        targetCountry: data.targetCountry,
         payload: data.payload,
         updatedAt: new Date(),
       })

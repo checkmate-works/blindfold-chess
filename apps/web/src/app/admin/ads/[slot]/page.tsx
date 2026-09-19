@@ -22,7 +22,7 @@ export default async function AdminSlotCreativesPage({ params }: Props) {
   const creatives = (await getAllAdCreatives()).filter((c) => c.slot === slot);
 
   const rows: SlotCreativeRow[] = creatives.map((c) => {
-    const base = { id: c.id, isActive: c.isActive, targetCountry: c.targetCountry };
+    const base = { id: c.id, isActive: c.isActive };
     if (isNativeCardPayload(c.payload)) {
       const thumb = resolveNativeThumbnail(c.payload);
       return {
@@ -66,8 +66,6 @@ export default async function AdminSlotCreativesPage({ params }: Props) {
           confirm: t('deleteConfirm'),
           reorderHint: t('reorderHint'),
           empty: t('noCreatives'),
-          filterAll: t('filterAll'),
-          filterReorderHint: t('filterReorderHint'),
         }}
       />
     </AdminPageLayout>
