@@ -30,7 +30,9 @@ describe('withCreativeSubId', () => {
     expect(tagged).toContain(`ued=${ued}`);
   });
 
-  it('keeps a hand-written clickref rather than adding a second one', () => {
+  it('never adds a second clickref to a URL that already carries one', () => {
+    // The admin form rejects these on the way in; this is the last line of
+    // defence for a row written before that check existed.
     const href = 'https://awin1.com/cread.php?awinmid=1&clickref=spring-campaign';
     expect(withCreativeSubId(href, ID)).toBe(href);
   });

@@ -39,12 +39,20 @@ export const AD_CREATIVE_LIMITS = {
  * internal destinations are allowed (house ads point at our own pages), a
  * bare path is not, because the href is rendered from the stored value with
  * no page to resolve it against.
+ *
+ * A `clickref` already in the URL is rejected rather than accepted as an
+ * override. `withCreativeSubId` leaves a pre-tagged URL alone, so such a link
+ * reports every one of its clicks under whatever value is already there —
+ * and the value that actually turns up is the sample Awin's own UI hands out
+ * with the link, copied in by accident. Losing per-creative attribution
+ * silently is worse than making the admin strip six characters.
  */
 function validateHref(href: string): string | null {
   // The `string` type is a compile-time promise only: these validators run on
   // Server Action payloads, which arrive from the network unchecked.
   if (typeof href !== 'string') return 'invalid href';
-  return classifyLinkTarget(href) === 'unsafe' ? 'invalid href' : null;
+  if (classifyLinkTarget(href) === 'unsafe') return 'invalid href';
+  return /[?&]clickref=/.test(href) ? 'href already carries a clickref' : null;
 }
 
 function validateImagePath(imagePath: string): string | null {

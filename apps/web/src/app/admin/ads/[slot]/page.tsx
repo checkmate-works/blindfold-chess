@@ -61,9 +61,8 @@ export default async function AdminSlotCreativesPage({ params }: Props) {
           active: t('active'),
           inactive: t('inactive'),
           edit: t('edit'),
-          delete: t('delete'),
-          deleting: t('deleting'),
-          confirm: t('deleteConfirm'),
+          copyId: t('copyId'),
+          copiedId: t('copiedId'),
           reorderHint: t('reorderHint'),
           empty: t('noCreatives'),
         }}

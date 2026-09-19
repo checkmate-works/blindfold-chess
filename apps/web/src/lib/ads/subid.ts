@@ -18,6 +18,15 @@
  * Networks without a known parameter are left untouched — a guessed parameter
  * name is worse than none, because some merchants treat unknown query strings
  * as cache-busting junk or drop them at redirect time.
+ *
+ * This is also why the admin has no way to delete a creative. The sub-ID *is*
+ * the creative's row id, so a line in Awin's report is only readable for as
+ * long as that row exists; deleting one turns every historical click it
+ * earned into an id that resolves to nothing, and no later report can recover
+ * it. Stopping a creative is therefore `is_active = false`, which leaves the
+ * row — and the meaning of its id — in place. An uploaded image whose
+ * creative is switched off is left in storage; an orphan object costs
+ * nothing next to an unreadable report.
  */
 
 /**
@@ -55,8 +64,11 @@ function subIdParamFor(href: string): string | null {
  * The creative's outbound URL, tagged with its id as the network's sub-ID.
  *
  * Returns `href` unchanged when the network is unknown, when the URL is not
- * absolute, or when the URL already carries that parameter — a hand-written
- * `clickref` in the admin is a deliberate act and outranks the generated one.
+ * absolute, or when the URL already carries that parameter. In practice that
+ * last case does not arise: the admin form rejects an `href` that already has
+ * a `clickref`, because the one that shows up in real links is the sample
+ * value copied along with the link out of Awin's own UI, and letting it stand
+ * would attribute every click to that sample instead of to the creative.
  *
  * The parameter is appended to the raw string rather than rebuilt through
  * `URL.searchParams`, which would re-encode the entire query. Awin's

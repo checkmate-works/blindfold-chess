@@ -14,7 +14,6 @@ import {
 
 import { reorderAdCreatives } from '../_actions/reorderAdCreatives';
 import { setAdCreativeActive } from '../_actions/setAdCreativeActive';
-import { CreativeDeleteButton } from './CreativeDeleteButton';
 
 export type SlotCreativeRow = {
   id: string;
@@ -35,9 +34,8 @@ type Props = {
     active: string;
     inactive: string;
     edit: string;
-    delete: string;
-    deleting: string;
-    confirm: string;
+    copyId: string;
+    copiedId: string;
     reorderHint: string;
     empty: string;
   };
@@ -56,6 +54,12 @@ function move<T>(list: T[], from: number, to: number): T[] {
  * {@link reorderAdCreatives}. Uses native HTML5 drag events — sufficient for
  * this desktop-only admin surface, no external DnD dependency. On a failed
  * save the server order is restored via `router.refresh()`.
+ *
+ * There is no delete: a creative is stopped with the active toggle and keeps
+ * its row, because the row id is the sub-ID the affiliate network reports
+ * clicks under — see the opening TSDoc of `@/lib/ads/subid`. Each row shows
+ * that id for exactly that reason: it is what a line in the network's report
+ * has to be matched against.
  */
 export function SlotCreativeList({ slot, rows: initialRows, editHrefBase, labels }: Props) {
   const router = useRouter();
@@ -63,7 +67,21 @@ export function SlotCreativeList({ slot, rows: initialRows, editHrefBase, labels
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   // Order at drag start, to skip the save when a drag ends where it began.
   const dragStartOrderRef = useRef<string>('');
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  // `navigator.clipboard` is absent on insecure origins and can reject when
+  // the document is not focused; either way the id is still selectable as
+  // text, so a failed copy just leaves the label alone.
+  const copyId = (id: string) => {
+    navigator.clipboard?.writeText(id).then(
+      () => {
+        setCopiedId(id);
+        window.setTimeout(() => setCopiedId((current) => (current === id ? null : current)), 1500);
+      },
+      () => {}
+    );
+  };
 
   if (rows.length === 0) {
     return (
@@ -146,20 +164,21 @@ export function SlotCreativeList({ slot, rows: initialRows, editHrefBase, labels
             <span className="min-w-0 flex-1 truncate">{row.summary || '—'}</span>
 
             <div className="flex shrink-0 items-center gap-2">
+              <button
+                type="button"
+                onClick={() => copyId(row.id)}
+                title={copiedId === row.id ? labels.copiedId : labels.copyId}
+                aria-label={`${labels.copyId}: ${row.id}`}
+                className="rounded border border-border bg-card px-2 py-1 font-mono text-xs text-muted-foreground transition-colors hover:bg-secondary"
+              >
+                {copiedId === row.id ? labels.copiedId : row.id}
+              </button>
               <Link
                 href={`${editHrefBase}/${row.id}/edit`}
                 className="rounded border border-border bg-card px-3 py-1 text-xs font-medium text-foreground transition-colors hover:bg-secondary"
               >
                 {labels.edit}
               </Link>
-              <CreativeDeleteButton
-                id={row.id}
-                labels={{
-                  delete: labels.delete,
-                  deleting: labels.deleting,
-                  confirm: labels.confirm,
-                }}
-              />
             </div>
 
             <div className="flex shrink-0 items-center gap-2 pl-1">
