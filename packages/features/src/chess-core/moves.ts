@@ -6,6 +6,7 @@ import type {
 import type { PieceSymbol, Square } from "chess.js";
 import { Chess } from "chess.js";
 
+import { type Result, err, ok } from "../utils/result";
 import { boardFrom, replaySan } from "./replay";
 import type { MoveResult } from "./types";
 import { asEngineSan, toMoveResult } from "./types";
@@ -89,17 +90,56 @@ export function movesToUci(moves: string[], startingFen?: string): string[] {
   ).applied;
 }
 
+/**
+ * Why a UCI move could not be read as SAN in a given position.
+ *
+ * Deliberately one shape rather than a malformed/illegal/bad-FEN split.
+ * chess.js rejects all three the same way — a string that does not decode
+ * into squares (`"invalid"` slices into from `"in"`, to `"va"`) reaches
+ * `move()` looking exactly like a well-formed move that happens to be
+ * illegal here — so telling them apart would mean re-validating the UCI
+ * grammar in this module, and no caller branches on the distinction: every
+ * one of them treats "this move cannot be played" as a single outcome.
+ * `cause` is what says which of the three actually happened, and it is the
+ * only value here that carries a stack from the real failure.
+ */
+export type UciConversionFailure = {
+  /** The UCI string as given, e.g. `"e2e5"`. */
+  readonly uciMove: string;
+  /** The position it was rejected from. */
+  readonly fen: string;
+  /** chess.js's own rejection. `unknown` because chess.js is free to throw anything. */
+  readonly cause: unknown;
+};
+
+/**
+ * Convert a UCI move (`e2e4`, `a7a8q`) to SAN in the position `fen`
+ * describes.
+ *
+ * Returns a {@link Result} because failure here is ordinary, not
+ * exceptional: the input is engine output or a stored analysis line, and a
+ * move that was legal in the position it was generated for is simply
+ * illegal when replayed against a different one. Its sibling
+ * {@link executeMove} models the same condition with `| null`; this one
+ * carries an error payload instead so the caller can report *why* chess.js
+ * refused the move — the distinction between a malformed string and a
+ * legal-elsewhere move is invisible in the UCI text alone.
+ */
 export function uciToAlgebraic(
   uciMove: string,
   fen: string,
-): AlgebraicNotation {
-  const chess = new Chess(fen);
-  const from = uciMove.slice(0, 2);
-  const to = uciMove.slice(2, 4);
-  const promotion = uciMove.slice(4) || undefined;
+): Result<AlgebraicNotation, UciConversionFailure> {
+  try {
+    const chess = new Chess(fen);
+    const from = uciMove.slice(0, 2);
+    const to = uciMove.slice(2, 4);
+    const promotion = uciMove.slice(4) || undefined;
 
-  const result = chess.move({ from, to, promotion });
-  return asEngineSan(result.san);
+    const result = chess.move({ from, to, promotion });
+    return ok(asEngineSan(result.san));
+  } catch (cause) {
+    return err({ uciMove, fen, cause });
+  }
 }
 
 export function getLastMoveDetails(

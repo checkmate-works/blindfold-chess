@@ -190,21 +190,42 @@ describe("movesToUci", () => {
 // ============================================================
 describe("uciToAlgebraic", () => {
   it("converts a UCI pawn move to algebraic", () => {
-    const san = uciToAlgebraic("e2e4", STARTING_FEN);
-    expect(san).toBe("e4");
+    const result = uciToAlgebraic("e2e4", STARTING_FEN);
+    expect(result).toEqual({ ok: true, value: "e4" });
   });
 
   it("converts a UCI knight move to algebraic", () => {
-    const san = uciToAlgebraic("g1f3", STARTING_FEN);
-    expect(san).toBe("Nf3");
+    const result = uciToAlgebraic("g1f3", STARTING_FEN);
+    expect(result).toEqual({ ok: true, value: "Nf3" });
   });
 
-  it("throws for an invalid UCI move", () => {
-    expect(() => uciToAlgebraic("invalid", STARTING_FEN)).toThrow();
+  it("converts a UCI promotion to algebraic", () => {
+    const result = uciToAlgebraic("e7e8q", "1k6/4P3/8/8/8/8/8/4K3 w - - 0 1");
+    expect(result).toEqual({ ok: true, value: "e8=Q+" });
   });
 
-  it("throws for an illegal UCI move", () => {
-    expect(() => uciToAlgebraic("e1e8", STARTING_FEN)).toThrow();
+  it("fails without throwing for a malformed UCI move", () => {
+    const result = uciToAlgebraic("invalid", STARTING_FEN);
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error.uciMove).toBe("invalid");
+    expect(result.error.fen).toBe(STARTING_FEN);
+    // The point of the payload: chess.js's own rejection survives the
+    // conversion, so a report of this failure can say more than the input.
+    expect(result.error.cause).toBeDefined();
+  });
+
+  it("fails without throwing for a UCI move that is illegal in the position", () => {
+    const result = uciToAlgebraic("e1e8", STARTING_FEN);
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error.uciMove).toBe("e1e8");
+    expect(result.error.cause).toBeDefined();
+  });
+
+  it("fails without throwing for an unparseable FEN", () => {
+    const result = uciToAlgebraic("e2e4", "not a fen");
+    expect(result.ok).toBe(false);
   });
 });
 
