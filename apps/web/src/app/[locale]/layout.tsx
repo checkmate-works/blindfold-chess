@@ -15,6 +15,7 @@ import { EnvironmentRibbon } from 'env-ribbon';
 
 import { AdHideBootstrapScript } from '@/lib/ads/AdHideBootstrapScript';
 import { ConsentBootstrapScript } from '@/lib/consent/ConsentBootstrapScript';
+import { CONSENT_BANNER_HIDE_CSS } from '@/lib/consent/consent-bootstrap-script';
 import { JsonLd, generateOrganizationSchema, generateWebSiteSchema } from '@/lib/seo/jsonld';
 import { StorageAvailabilityProvider } from '@/lib/storage/StorageAvailabilityProvider';
 import { ThemeScript } from '@/lib/theme';
@@ -261,7 +262,7 @@ export default async function Layout({
         <style
           suppressHydrationWarning
           dangerouslySetInnerHTML={{
-            __html: `${generateThemeCSS()}\n\n/* No-flash ad-hide — see [locale]/layout.tsx comment near the bootstrap script. */\nhtml[data-ads-hidden='true'] .ad-slot-wrapper{display:none!important;}\n\n/* No-flash consent banner — the attribute means "already answered". */\nhtml[data-consent] .consent-banner{display:none!important;}`,
+            __html: `${generateThemeCSS()}\n\n/* No-flash ad-hide — see [locale]/layout.tsx comment near the bootstrap script. */\nhtml[data-ads-hidden='true'] .ad-slot-wrapper{display:none!important;}\n\n/* No-flash consent banner — the attribute means "already answered". */\n${CONSENT_BANNER_HIDE_CSS}`,
           }}
         />
         {/*

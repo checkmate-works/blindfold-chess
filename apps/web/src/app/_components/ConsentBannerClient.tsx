@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 
 import { Button } from '@/app/_components/Button';
 
+import { CONSENT_BANNER_CLASS } from '@/lib/consent/consent-bootstrap-script';
 import { recordConsent } from '@/lib/consent/consent-client';
 import { useStorageAvailabilityContext } from '@/lib/storage/StorageAvailabilityProvider';
 
@@ -50,7 +51,7 @@ export function ConsentBannerClient({ regionLabel, acceptLabel, denyLabel, child
 
   return (
     <div
-      className="consent-banner fixed inset-x-0 bottom-0 z-50 border-t border-border bg-card shadow-lg pb-[env(safe-area-inset-bottom)]"
+      className={`${CONSENT_BANNER_CLASS} fixed inset-x-0 bottom-0 z-50 border-t border-border bg-card shadow-lg pb-[env(safe-area-inset-bottom)]`}
       role="region"
       aria-label={regionLabel}
     >

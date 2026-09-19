@@ -10,6 +10,7 @@ import { generateThemeCSS } from '@blindfold-chess/ui';
 import { EnvironmentRibbon } from 'env-ribbon';
 
 import { ConsentBootstrapScript } from '@/lib/consent/ConsentBootstrapScript';
+import { CONSENT_BANNER_HIDE_CSS } from '@/lib/consent/consent-bootstrap-script';
 import { getLocaleFromRequest } from '@/lib/locale';
 import { JsonLd, generateOrganizationSchema, generateWebSiteSchema } from '@/lib/seo/jsonld';
 import { StorageAvailabilityProvider } from '@/lib/storage/StorageAvailabilityProvider';
@@ -79,7 +80,7 @@ export default async function LandingLayout({ children }: { children: React.Reac
         <style
           suppressHydrationWarning
           dangerouslySetInnerHTML={{
-            __html: `${generateThemeCSS()}\n\n/* No-flash consent banner — the attribute means "already answered". */\nhtml[data-consent] .consent-banner{display:none!important;}`,
+            __html: `${generateThemeCSS()}\n\n/* No-flash consent banner — the attribute means "already answered". */\n${CONSENT_BANNER_HIDE_CSS}`,
           }}
         />
         {/*
