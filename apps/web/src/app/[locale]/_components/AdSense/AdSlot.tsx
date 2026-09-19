@@ -20,6 +20,11 @@ type Props = {
  * Call sites only choose *placement* (and optionally selection); whether the
  * viewer sees ads and what fills the slot are owned here + in the client. The
  * only sanctioned way to render a fixed-placement ad.
+ *
+ * Placement is manual on purpose: a developer puts the slot at a UX-vetted
+ * spot on each page, never inside gameplay (a page that must stay ad-free
+ * end to end goes under a `(no-ads)` route group instead). There is no
+ * auto-placement, and *where* an ad may appear is not an admin setting.
  */
 export function AdSlot({ slot, selection }: Props) {
   if (isNoAdsScope()) return null;

@@ -39,7 +39,16 @@ type AdSlotConfig = { kind: AdKind; defaultSelection: AdSelection };
  * Slot → config binding. Slots are a fixed set (each needs a code-level
  * renderer + an AdSense fallback), keyed by physical placement. `content-*`
  * mirror the `AdSlotKind` used by the AdSense display components and their
- * reserved dimensions.
+ * reserved dimensions. The admin index (`/admin/ads`) iterates this object,
+ * so a new entry here appears there with no admin change.
+ *
+ * A slot's creative pool is per slot *key*, not per page: every page that
+ * renders `<AdSlot slot="content-bottom">` draws from the same pool, in the
+ * same order. Per-page targeting for the banner slots was deliberately not
+ * built — it would be a "sub-slot" extension of this registry, and nothing
+ * has needed it. The native-card surfaces already get one slot each
+ * (feed / puzzle list / position-memory list), which is per-surface
+ * targeting by construction.
  */
 export const AD_SLOTS = {
   'content-middle': { kind: 'banner', defaultSelection: 'priority' },
