@@ -2,8 +2,9 @@
  * CSP `'sha256-...'` source expressions for the app's build-time-constant
  * inline scripts.
  *
- * Three inline `<script>`s ship in the always-mounted layout tree (theme
- * bootstrap, ad-hide bootstrap, announcement-dismiss). Allowing them by hash
+ * Four inline `<script>`s ship in the always-mounted layout tree (theme
+ * bootstrap, ad-hide bootstrap, consent bootstrap, announcement-dismiss).
+ * Allowing them by hash
  * instead of a per-request nonce means no Server Component ever needs to read
  * `headers()` for CSP purposes — which is what previously forced every route
  * under `[locale]/` into dynamic rendering and silently disabled all static
@@ -29,6 +30,9 @@ export const THEME_BOOTSTRAP_HASH_DEV = 'sha256-R22D1ttAgCjVJflyZ32IYDAtwknib67f
 /** `AdHideBootstrapScript` (`AD_HIDE_BOOTSTRAP_SCRIPT`). */
 export const AD_HIDE_BOOTSTRAP_HASH = 'sha256-IEdY+K3I4FDlGORZ4jH5V/zSq3MDltJ7P6Vec7gBCmQ=';
 
+/** `ConsentBootstrapScript` (`CONSENT_BOOTSTRAP_SCRIPT`). */
+export const CONSENT_BOOTSTRAP_HASH = 'sha256-xmzn5e/LNLH5u2+nNdAEWfsy8/GUWpbij7cq1+W+w20=';
+
 /** Header announcement-dismiss script (`ANNOUNCEMENT_DISMISS_SCRIPT`). */
 export const ANNOUNCEMENT_DISMISS_HASH = 'sha256-7WaHfrrc+R9fXX0kuBv6WNXaVJurHB5qlpc8rQk/ZXA=';
 
@@ -42,6 +46,7 @@ export function inlineScriptHashes(isDevelopment: boolean): string[] {
   return [
     isDevelopment ? THEME_BOOTSTRAP_HASH_DEV : THEME_BOOTSTRAP_HASH_PROD,
     AD_HIDE_BOOTSTRAP_HASH,
+    CONSENT_BOOTSTRAP_HASH,
     ANNOUNCEMENT_DISMISS_HASH,
   ].map((h) => `'${h}'`);
 }
