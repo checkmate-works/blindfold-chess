@@ -9,6 +9,7 @@ export {
   ChessEngine,
   EngineBusyError,
   EngineNoMoveError,
+  UciConversionError,
   INIT_RETRY_DELAYS_MS,
   MAX_INIT_ATTEMPTS,
 } from "./chess-engine";
