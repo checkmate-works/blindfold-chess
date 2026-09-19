@@ -26,11 +26,6 @@ vi.mock('@/i18n/routing', () => ({
   useRouter: () => stableRouter,
 }));
 
-// Identity translator — same pattern as PuzzleSessionClient.test.tsx.
-vi.mock('next-intl', () => ({
-  useLocale: () => 'en',
-}));
-
 vi.mock('@/i18n/use-safe-translations', () => ({
   useSafeTranslations: () => (key: string, params?: Record<string, unknown>) =>
     params ? `${key}:${JSON.stringify(params)}` : key,

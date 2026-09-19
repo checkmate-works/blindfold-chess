@@ -1,7 +1,6 @@
 'use client';
 
-import { useLocale } from 'next-intl';
-
+import { useSafeLocale as useLocale } from '@/i18n/use-safe-locale';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FiAlertTriangle } from 'react-icons/fi';
 

@@ -3,7 +3,7 @@ import { nextJsConfig } from "@blindfold-chess/eslint-config/next";
 import { reactConfig } from "@blindfold-chess/eslint-config/react";
 import { hoverUnderlineBan } from "@blindfold-chess/eslint-config/hover-underline-ban";
 import { revalidatePathBan } from "@blindfold-chess/eslint-config/revalidate-path-ban";
-import { clientTranslationsBan } from "@blindfold-chess/eslint-config/client-translations-ban";
+import { clientIntlHooksBan } from "@blindfold-chess/eslint-config/client-intl-hooks-ban";
 
 /** @type {import("eslint").Linter.Config} */
 export default [
@@ -22,7 +22,7 @@ export default [
     // eslint-disable comments in apps/web as unused directives.
     ...revalidatePathBan("apps/web/"),
     ...hoverUnderlineBan("apps/web/"),
-    ...clientTranslationsBan("apps/web/"),
+    ...clientIntlHooksBan("apps/web/"),
     {
         ignores: [
             "apps/web/.next/**",
