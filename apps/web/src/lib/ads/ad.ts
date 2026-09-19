@@ -12,6 +12,7 @@ import { filterByCountry, getRequestCountry } from './country';
 import type { BannerPayload, NativeCardThumbnail } from './payload';
 import { isBannerPayload, isNativeCardPayload, resolveNativeThumbnail } from './payload';
 import type { AdKind, AdSlot } from './registry';
+import { withCreativeSubId } from './subid';
 
 /**
  * Pure decision function: determine whether ads should be shown for a given user.
@@ -27,7 +28,11 @@ export async function shouldShowAdsForUser(userId: string | null): Promise<boole
   return !(await hasAdFreeEntitlement(userId));
 }
 
-/** Admin read — every creative, active or not. */
+/**
+ * Admin read — every creative, active or not, with `href` exactly as it was
+ * entered. The sub-ID tag is a render-time concern (see {@link withCreativeSubId});
+ * showing a tagged URL back in the edit form would let it accumulate.
+ */
 export async function getAllAdCreatives() {
   try {
     return await db.select().from(adCreatives).orderBy(adCreatives.slot, adCreatives.sortOrder);
@@ -104,7 +109,8 @@ export function getActiveCreatives(slot: AdSlot): Promise<ActiveCreative[]> {
 /**
  * Native-card view for a given slot: the active native-card creatives (filtered
  * to the visitor's country), mapped to the serializable `NativeAdView` that
- * client card renderers use. Delegates to the cached `getActiveCreatives`, so
+ * client card renderers use. `href` comes out sub-ID tagged, so a click lands
+ * in the network's report attributed to this creative. Delegates to the cached `getActiveCreatives`, so
  * every consuming surface (the home/topics feed, the puzzle and
  * position-memory lists — all `force-dynamic`, so reading the geo header
  * server-side is free) shares the same tag-invalidated pool. `country` comes
@@ -121,7 +127,7 @@ export async function getNativeAdCreatives(
     return [
       {
         id: c.id,
-        href: c.href,
+        href: withCreativeSubId(c.href, c.id),
         avatarImagePath: c.payload.avatarImagePath,
         avatarAlt: c.payload.avatarAlt,
         title: c.payload.title,
@@ -157,7 +163,8 @@ export type BannerAdView = { href: string; payload: BannerPayload };
 /**
  * Banner sibling of {@link getNativeAdCreatives}: a slot's active banner
  * creatives eligible in the visitor's country, kind-narrowed and projected to
- * the serializable view. Keeps both payload projections in this module.
+ * the serializable view, `href` sub-ID tagged the same way. Keeps both payload
+ * projections in this module.
  */
 export async function getBannerCreatives(
   slot: AdSlot,
@@ -165,6 +172,8 @@ export async function getBannerCreatives(
 ): Promise<BannerAdView[]> {
   const creatives = filterByCountry(await getActiveCreatives(slot), country);
   return creatives.flatMap((c) =>
-    isBannerPayload(c.payload) ? [{ href: c.href, payload: c.payload }] : []
+    isBannerPayload(c.payload)
+      ? [{ href: withCreativeSubId(c.href, c.id), payload: c.payload }]
+      : []
   );
 }

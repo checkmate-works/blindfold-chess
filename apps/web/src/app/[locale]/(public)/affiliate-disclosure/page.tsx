@@ -12,7 +12,7 @@ import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
 export const generateStaticParams = generateLocaleStaticParams;
 
 /** Date this disclosure was last revised (single source of truth, not per-locale). */
-const LAST_UPDATED = '2025-03-11';
+const LAST_UPDATED = '2026-09-19';
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return createPageMetadata({
@@ -30,6 +30,8 @@ export default async function AffiliateDisclosurePage({ params }: Props) {
   return (
     <PageLayout title={t('title')} locale={locale} breadcrumb={[{ label: t('title') }]}>
       <ProseArticle className="space-y-4">
+        <SectionTitle>{t('networksDisclosureTitle')}</SectionTitle>
+        <p>{t('networksDisclosureDescription')}</p>
         <SectionTitle>{t('amazonDisclosureTitle')}</SectionTitle>
         <p>{t('amazonDisclosureDescription')}</p>
         <div className="text-right">

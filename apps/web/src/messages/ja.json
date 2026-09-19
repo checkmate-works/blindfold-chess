@@ -3184,6 +3184,8 @@
   "affiliateDisclosure": {
     "title": "アフィリエイト・ポリシー",
     "description": "アフィリエイトプログラムに関する開示事項",
+    "networksDisclosureTitle": "アフィリエイトネットワークについて",
+    "networksDisclosureDescription": "当サイトは、Awin をはじめとする第三者のアフィリエイトネットワークが運営するプログラムにも参加しています。サイト内のチェス書籍・ソフトウェア・サービスへのリンクはアフィリエイトリンクである場合があり、そこから商品が購入された場合、当サイトが紹介料を受け取ることがあります。購入者のお支払い額が増えることはありません。広告・スポンサー枠には表示箇所ごとに広告である旨を明示しており、アフィリエイトリンクであることが商品の紹介内容に影響することはありません。",
     "amazonDisclosureTitle": "Amazonアソシエイト・プログラムに関する開示",
     "amazonDisclosureDescription": "Amazonのアソシエイトとして、blindfold-chess.onlineは適格販売により収入を得ています。当サイトは、Amazon.co.jpを宣伝しリンクすることによってサイトが紹介料を獲得できる手段を提供することを目的に設定されたアフィリエイトプログラムである、Amazonアソシエイト・プログラムの参加者です。",
     "footerText": "As an Amazon Associate I earn from qualifying purchases."
@@ -4777,6 +4779,7 @@
       "banners": "広告バナー",
       "slot": "スロット",
       "href": "リンク URL",
+      "hrefHint": "ネットワークから受け取った URL をそのまま貼ってください。Awin と Amazon のリンクには、この creative を識別する sub-ID（clickref / ascsubtag）が描画時に自動で付与され、各社のレポートで creative 別にクリックを分解できます。上書きしたい場合を除き、手動で付けないでください。",
       "imagePath": "画像パス",
       "imagePreview": "プレビュー",
       "alt": "代替テキスト",

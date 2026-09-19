@@ -26,8 +26,8 @@ type Props = {
 /**
  * The layout shared by every per-kind creative form: error banner, the common
  * `href`, the kind-specific fields (as `children`), then the shared metadata
- * (sort order / active / schedule / country targeting) and the save/cancel
- * buttons. Per-kind forms own only their payload fields.
+ * (active / country targeting) and the save/cancel buttons. Per-kind forms own
+ * only their payload fields.
  */
 export function CreativeFormShell({
   common,
@@ -47,7 +47,7 @@ export function CreativeFormShell({
       )}
 
       <form onSubmit={onSubmit} className="bg-card border border-border rounded-lg p-6 space-y-4">
-        <Field label={labels.href} htmlFor="href">
+        <Field label={labels.href} htmlFor="href" description={labels.hrefHint}>
           <Input
             id="href"
             type="text"

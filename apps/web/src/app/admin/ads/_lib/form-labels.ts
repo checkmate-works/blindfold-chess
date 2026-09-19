@@ -2,6 +2,7 @@ export type AdCreativeFormLabels = {
   slot: string;
   kind: string;
   href: string;
+  hrefHint: string;
   hrefPlaceholder: string;
   isActive: string;
   imagePath: string;
@@ -42,6 +43,7 @@ export function buildAdCreativeFormLabels(t: (key: string) => string): AdCreativ
     slot: t('slot'),
     kind: t('kind'),
     href: t('href'),
+    hrefHint: t('hrefHint'),
     hrefPlaceholder: t('hrefPlaceholder'),
     isActive: t('isActive'),
     imagePath: t('imagePath'),

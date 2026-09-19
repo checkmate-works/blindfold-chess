@@ -9,6 +9,7 @@ import { CreativeThumbnail } from '@/lib/ads/ui/CreativeThumbnail';
 
 import { ActivityCard } from '@/app/[locale]/_components/ActivityCard';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+import { CARD_PERMALINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 type Props = {
   /** The creative to render (title/description/avatar/href), from the DB. */
@@ -38,6 +39,18 @@ type Props = {
  * call site cannot forget it. Surfaces with per-row chrome that must collapse
  * along with the card (the feed's divider) merge it in via `className`.
  *
+ * The title carries the card's real anchor. `ActivityCard`'s whole-card link
+ * is `aria-hidden` and out of the tab order on the assumption that the
+ * `permalink` slot holds a focusable anchor — here that slot holds the
+ * disclosure badge, which must not be a link, so without the title anchor the
+ * ad would be clickable by pointer only. Its accessible name is prefixed with
+ * the disclosure label so a link list reads "Ad: <title>" rather than an
+ * unmarked recommendation.
+ *
+ * Both anchors carry `rel="sponsored"` per Google's link-attribute guidance —
+ * `aria-hidden` hides the background link from assistive tech, not from
+ * crawlers.
+ *
  * i18n note: the ad-chrome strings still live under the `home.feed.nativeAd`
  * namespace for historical reasons (this card originated in the feed). They are
  * surface-neutral ("Ad" / sponsor / disclosure); a future rename to a neutral
@@ -52,6 +65,8 @@ export function NativeAdCard({ creative, locale, variant = 'feed', className }: 
       <ActivityCard
         href={creative.href}
         locale={locale}
+        rel="sponsored noopener noreferrer"
+        target="_blank"
         variant={variant}
         thumbnail={
           <CreativeThumbnail
@@ -91,7 +106,17 @@ export function NativeAdCard({ creative, locale, variant = 'feed', className }: 
           </span>
         }
       >
-        <p className="text-sm font-medium text-foreground mt-1">{creative.title}</p>
+        <p className="text-sm font-medium text-foreground mt-1">
+          <a
+            href={creative.href}
+            target="_blank"
+            rel="sponsored noopener noreferrer"
+            aria-label={`${t('disclosure')}: ${creative.title}`}
+            className={CARD_PERMALINK_CLASSES}
+          >
+            {creative.title}
+          </a>
+        </p>
         <p className="text-sm text-muted-foreground line-clamp-2">{creative.description}</p>
       </ActivityCard>
     </div>
