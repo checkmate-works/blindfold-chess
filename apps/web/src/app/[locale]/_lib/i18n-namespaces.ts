@@ -30,6 +30,10 @@ export const NAMESPACE_CLASSIFICATION = {
   manual: 'server',
   gettingStarted: 'server',
   privacy: 'server',
+  // The consent banner is a Server Component in every root layout; its
+  // client half receives the copy as props, so nothing here reaches a
+  // `useTranslations` call and the sitewide dictionary stays as it was.
+  consent: 'server',
   terms: 'server',
   company: 'server',
   landing: 'server',

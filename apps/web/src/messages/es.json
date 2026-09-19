@@ -3181,6 +3181,13 @@
     "changesTitle": "Cambios en la Política de Privacidad",
     "changesDescription": "El Sitio puede actualizar esta Política de Privacidad según sea necesario. La Política de Privacidad actualizada entrará en vigor desde el momento en que se publique en esta página. Por favor, revisa esta página periódicamente."
   },
+  "consent": {
+    "regionLabel": "Consentimiento de cookies",
+    "message": "Usamos cookies analíticas para entender cómo se utiliza el sitio. Solo se instalan si das tu consentimiento. Consulta nuestra <privacyLink>Política de Privacidad</privacyLink> para más información.",
+    "accept": "Aceptar",
+    "deny": "Rechazar",
+    "settings": "Configuración de cookies"
+  },
   "affiliateDisclosure": {
     "title": "Divulgación de Afiliados",
     "description": "Información sobre enlaces de afiliados en Ajedrez a Ciegas",

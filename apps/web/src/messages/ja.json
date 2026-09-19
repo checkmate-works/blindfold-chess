@@ -3181,6 +3181,13 @@
     "changesTitle": "プライバシーポリシーの変更",
     "changesDescription": "当サイトは、必要に応じて本プライバシーポリシーを変更することがあります。変更後のプライバシーポリシーは、本ページに掲載した時点で効力を生じるものとします。定期的に本ページをご確認ください。"
   },
+  "consent": {
+    "regionLabel": "Cookieの同意",
+    "message": "当サイトでは、利用状況を把握するためにアクセス解析のCookieを使用します。Cookieは同意いただいた場合にのみ設定されます。詳しくは<privacyLink>プライバシーポリシー</privacyLink>をご覧ください。",
+    "accept": "同意する",
+    "deny": "同意しない",
+    "settings": "Cookie設定"
+  },
   "affiliateDisclosure": {
     "title": "アフィリエイト・ポリシー",
     "description": "アフィリエイトプログラムに関する開示事項",

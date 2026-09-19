@@ -4,6 +4,7 @@ import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server
 import { Inter } from 'next/font/google';
 import { notFound } from 'next/navigation';
 
+import { ConsentBanner } from '@/app/_components/ConsentBanner';
 import { GoogleScripts } from '@/app/_components/GoogleScripts';
 import { ADSENSE_PUBLISHER_ID, AUTHOR_NAME, GA_MEASUREMENT_ID, SITE_URL } from '@/config';
 import { OG_LOCALE_MAP } from '@/i18n/og-locale';
@@ -13,6 +14,7 @@ import { generateThemeCSS } from '@blindfold-chess/ui';
 import { EnvironmentRibbon } from 'env-ribbon';
 
 import { AdHideBootstrapScript } from '@/lib/ads/AdHideBootstrapScript';
+import { ConsentBootstrapScript } from '@/lib/consent/ConsentBootstrapScript';
 import { JsonLd, generateOrganizationSchema, generateWebSiteSchema } from '@/lib/seo/jsonld';
 import { StorageAvailabilityProvider } from '@/lib/storage/StorageAvailabilityProvider';
 import { ThemeScript } from '@/lib/theme';
@@ -259,7 +261,7 @@ export default async function Layout({
         <style
           suppressHydrationWarning
           dangerouslySetInnerHTML={{
-            __html: `${generateThemeCSS()}\n\n/* No-flash ad-hide — see [locale]/layout.tsx comment near the bootstrap script. */\nhtml[data-ads-hidden='true'] .ad-slot-wrapper{display:none!important;}`,
+            __html: `${generateThemeCSS()}\n\n/* No-flash ad-hide — see [locale]/layout.tsx comment near the bootstrap script. */\nhtml[data-ads-hidden='true'] .ad-slot-wrapper{display:none!important;}\n\n/* No-flash consent banner — the attribute means "already answered". */\nhtml[data-consent] .consent-banner{display:none!important;}`,
           }}
         />
         {/*
@@ -278,6 +280,14 @@ export default async function Layout({
           synchronously before first paint.
         */}
         <AdHideBootstrapScript />
+        {/*
+          No-flash consent bootstrap. Reads the `bfc_consent` cookie and, when
+          it carries a decision, flags `<html data-consent="granted|denied">`,
+          which the CSS rule above uses to keep the banner out of sight for
+          anyone who has already answered. Same shape and the same reasons as
+          the ad-hide bootstrap directly above.
+        */}
+        <ConsentBootstrapScript />
       </head>
       <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
         <EnvironmentRibbon />
@@ -299,6 +309,12 @@ export default async function Layout({
               {/* Spacer to prevent the fixed MobileTabBar from covering the footer */}
               <div className="h-14 md:h-0" />
               <MobileTabBar />
+              {/*
+                Rendered on every page, hidden by CSS once the visitor has
+                answered. `position: fixed` keeps it out of the flow, so it
+                costs no layout shift whenever it does appear.
+              */}
+              <ConsentBanner locale={locale} />
             </div>
           </Providers>
         </StorageAvailabilityProvider>

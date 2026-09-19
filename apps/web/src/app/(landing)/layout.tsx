@@ -3,11 +3,13 @@ import { getMessages, getTranslations } from 'next-intl/server';
 import { Inter } from 'next/font/google';
 import { cookies } from 'next/headers';
 
+import { ConsentBanner } from '@/app/_components/ConsentBanner';
 import { GoogleScripts } from '@/app/_components/GoogleScripts';
 import { ADSENSE_PUBLISHER_ID, AUTHOR_NAME, GA_MEASUREMENT_ID, SITE_URL } from '@/config';
 import { generateThemeCSS } from '@blindfold-chess/ui';
 import { EnvironmentRibbon } from 'env-ribbon';
 
+import { ConsentBootstrapScript } from '@/lib/consent/ConsentBootstrapScript';
 import { getLocaleFromRequest } from '@/lib/locale';
 import { JsonLd, generateOrganizationSchema, generateWebSiteSchema } from '@/lib/seo/jsonld';
 import { StorageAvailabilityProvider } from '@/lib/storage/StorageAvailabilityProvider';
@@ -74,7 +76,20 @@ export default async function LandingLayout({ children }: { children: React.Reac
         <ThemeScript />
         <JsonLd data={generateWebSiteSchema(locale, t('siteName'))} />
         <JsonLd data={generateOrganizationSchema()} />
-        <style suppressHydrationWarning dangerouslySetInnerHTML={{ __html: generateThemeCSS() }} />
+        <style
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{
+            __html: `${generateThemeCSS()}\n\n/* No-flash consent banner — the attribute means "already answered". */\nhtml[data-consent] .consent-banner{display:none!important;}`,
+          }}
+        />
+        {/*
+          No-flash consent bootstrap. Sets `<html data-consent>` from the
+          cookie before first paint so a visitor who has already answered
+          never sees the banner flash past. The rule it drives is in the
+          inline <style> directly above rather than in `globals.css`, so it is
+          render-blocking with <head> even on a cold cache.
+        */}
+        <ConsentBootstrapScript />
       </head>
       <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
         <EnvironmentRibbon />
@@ -93,6 +108,8 @@ export default async function LandingLayout({ children }: { children: React.Reac
           <Providers locale={locale} messages={messages}>
             {children}
           </Providers>
+          {/* Fixed to the viewport bottom — it shifts nothing on the page. */}
+          <ConsentBanner locale={locale} />
         </StorageAvailabilityProvider>
       </body>
     </html>

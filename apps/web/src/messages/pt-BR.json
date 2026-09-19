@@ -3181,6 +3181,13 @@
     "changesTitle": "Alterações na Política de Privacidade",
     "changesDescription": "O Site pode atualizar esta Política de Privacidade conforme necessário. A Política de Privacidade atualizada entrará em vigor a partir do momento em que for publicada nesta página. Por favor, verifique esta página periodicamente."
   },
+  "consent": {
+    "regionLabel": "Consentimento de cookies",
+    "message": "Usamos cookies de análise para entender como o site é utilizado. Eles só são definidos se você concordar. Consulte nossa <privacyLink>Política de Privacidade</privacyLink> para mais detalhes.",
+    "accept": "Aceitar",
+    "deny": "Recusar",
+    "settings": "Configurações de cookies"
+  },
   "affiliateDisclosure": {
     "title": "Divulgação de Afiliados",
     "description": "Informações sobre links de afiliados no Xadrez às Cegas",

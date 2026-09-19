@@ -3181,6 +3181,13 @@
     "changesTitle": "Changes to Privacy Policy",
     "changesDescription": "The Site may update this Privacy Policy as needed. Updated Privacy Policy will take effect from the time it is posted on this page. Please check this page regularly."
   },
+  "consent": {
+    "regionLabel": "Cookie consent",
+    "message": "We use analytics cookies to understand how the site is used. They are only set if you agree. See our <privacyLink>Privacy Policy</privacyLink> for details.",
+    "accept": "Agree",
+    "deny": "Decline",
+    "settings": "Cookie settings"
+  },
   "affiliateDisclosure": {
     "title": "Affiliate Disclosure",
     "description": "Information about affiliate links on Blindfold Chess",
