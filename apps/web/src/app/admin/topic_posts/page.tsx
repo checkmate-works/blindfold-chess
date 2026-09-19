@@ -5,6 +5,7 @@ import { buildAdminListHref } from '@/app/admin/_lib/build-list-href';
 import { formatDateTime } from '@/app/admin/_lib/format';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
+import { truncateContent } from '@/lib/content/truncate-content';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 import { AdminBadge } from '../_components/AdminBadge';
@@ -14,6 +15,9 @@ import { AdminPaginationNav } from '../_components/AdminPaginationNav';
 import { AdminUserLink } from '../_components/AdminUserLink';
 import { DeletePostAdminButton } from '../users/_components/DeletePostAdminButton';
 import { getAdminTopicPostsPageData } from './_lib/getAdminTopicPostsPageData';
+
+/** Post-body budget for the table cell, which is itself capped at `max-w-md`. */
+const CONTENT_CELL_LENGTH = 100;
 
 const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
@@ -132,7 +136,7 @@ export default async function AdminTopicPostsPage({
             <tr key={post.id} className={`border-t border-border ${isDeleted ? 'opacity-50' : ''}`}>
               <td className="px-4 py-3 max-w-md">
                 <span className={isDeleted ? 'line-through' : ''}>
-                  {post.content.length > 100 ? `${post.content.slice(0, 100)}...` : post.content}
+                  {truncateContent(post.content, CONTENT_CELL_LENGTH)}
                 </span>
               </td>
               <td className="px-4 py-3 text-muted-foreground">{post.topicType}</td>
