@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 
-import { useLocale } from 'next-intl';
 import dynamic from 'next/dynamic';
 
+import { useSafeLocale as useLocale } from '@/i18n/use-safe-locale';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { classifyLinkTarget } from '@/lib/content/link-target';
