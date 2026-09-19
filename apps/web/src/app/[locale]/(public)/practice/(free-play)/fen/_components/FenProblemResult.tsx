@@ -1,6 +1,5 @@
 'use client';
 
-import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { PositionAccuracy } from '@blindfold-chess/features/common';
 
 import type { BoardTheme } from '@/lib/games/board-themes';
@@ -25,6 +24,7 @@ type Props = {
   onFinishTutorial?: () => void;
 };
 
+/** The FEN drill's per-problem result: the shared recreation block, read from this module's namespace. */
 export function FenProblemResult({
   accuracy,
   originalPosition,
@@ -38,34 +38,20 @@ export function FenProblemResult({
   onViewResults,
   onFinishTutorial,
 }: Props) {
-  const t = useTranslations(NAMESPACE);
-
   return (
-    <div className="space-y-4">
-      <div>
-        <div className="flex flex-col gap-6">
-          {/* Accuracy Title */}
-          <h2 className="text-2xl font-bold text-center">
-            {t('accuracy')}: {accuracy.accuracy.toFixed(1)}% ({accuracy.correctPieces}/
-            {accuracy.totalPieces})
-          </h2>
-
-          <ProblemRecreationSections
-            namespace={NAMESPACE}
-            accuracy={accuracy}
-            originalPosition={originalPosition}
-            recreatedPosition={recreatedPosition}
-            currentProblemIndex={currentProblemIndex}
-            totalProblems={totalProblems}
-            boardTheme={boardTheme}
-            showCoordinates={showCoordinates}
-            isTutorial={isTutorial}
-            onNextProblem={onNextProblem}
-            onViewResults={onViewResults}
-            onFinishTutorial={onFinishTutorial}
-          />
-        </div>
-      </div>
-    </div>
+    <ProblemRecreationSections
+      namespace={NAMESPACE}
+      accuracy={accuracy}
+      originalPosition={originalPosition}
+      recreatedPosition={recreatedPosition}
+      currentProblemIndex={currentProblemIndex}
+      totalProblems={totalProblems}
+      boardTheme={boardTheme}
+      showCoordinates={showCoordinates}
+      isTutorial={isTutorial}
+      onNextProblem={onNextProblem}
+      onViewResults={onViewResults}
+      onFinishTutorial={onFinishTutorial}
+    />
   );
 }

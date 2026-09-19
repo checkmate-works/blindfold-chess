@@ -28,6 +28,10 @@ type Props = {
   onFinishTutorial?: () => void;
 };
 
+/**
+ * Position memory's per-problem result: the shared recreation block, plus the
+ * one button only this module offers — open the position on Lichess.
+ */
 export function PositionMemoryProblemResult({
   accuracy,
   originalPosition,
@@ -44,45 +48,33 @@ export function PositionMemoryProblemResult({
   const t = useTranslations(NAMESPACE);
 
   return (
-    <div className="space-y-4">
-      <div>
-        <div className="flex flex-col gap-6">
-          {/* Accuracy Title */}
-          <h2 className="text-2xl font-bold text-center">
-            {t('accuracy')}: {accuracy.accuracy.toFixed(1)}% ({accuracy.correctPieces}/
-            {accuracy.totalPieces})
-          </h2>
-
-          <ProblemRecreationSections
-            namespace={NAMESPACE}
-            accuracy={accuracy}
-            originalPosition={originalPosition}
-            recreatedPosition={recreatedPosition}
-            currentProblemIndex={currentProblemIndex}
-            totalProblems={totalProblems}
-            boardTheme={boardTheme}
-            showCoordinates={showCoordinates}
-            isTutorial={isTutorial}
-            onNextProblem={onNextProblem}
-            onViewResults={onViewResults}
-            onFinishTutorial={onFinishTutorial}
-            extraActions={
-              <Button
-                onClick={() => {
-                  const lichessUrl = fenToLichessUrl(originalPosition.fen);
-                  window.open(lichessUrl, '_blank');
-                }}
-                variant="secondary"
-                size="lg"
-                fullWidth
-                icon={<FaExternalLinkAlt className="w-4 h-4" />}
-              >
-                {t('analyzeOnLichess')}
-              </Button>
-            }
-          />
-        </div>
-      </div>
-    </div>
+    <ProblemRecreationSections
+      namespace={NAMESPACE}
+      accuracy={accuracy}
+      originalPosition={originalPosition}
+      recreatedPosition={recreatedPosition}
+      currentProblemIndex={currentProblemIndex}
+      totalProblems={totalProblems}
+      boardTheme={boardTheme}
+      showCoordinates={showCoordinates}
+      isTutorial={isTutorial}
+      onNextProblem={onNextProblem}
+      onViewResults={onViewResults}
+      onFinishTutorial={onFinishTutorial}
+      extraActions={
+        <Button
+          onClick={() => {
+            const lichessUrl = fenToLichessUrl(originalPosition.fen);
+            window.open(lichessUrl, '_blank');
+          }}
+          variant="secondary"
+          size="lg"
+          fullWidth
+          icon={<FaExternalLinkAlt className="w-4 h-4" />}
+        >
+          {t('analyzeOnLichess')}
+        </Button>
+      }
+    />
   );
 }
