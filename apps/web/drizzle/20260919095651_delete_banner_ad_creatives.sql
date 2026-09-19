@@ -1,0 +1,20 @@
+-- Data-only migration: no schema change.
+--
+-- The `banner` creative kind is gone from the code — its slots
+-- (`content-middle`, `content-bottom`), its payload type, its guard and its
+-- renderer were all removed. Rows with `kind = 'banner'` are therefore
+-- unreachable: no slot maps to that kind any more, so nothing reads them and
+-- the admin UI has no form that can open one.
+--
+-- Deleting rather than deactivating is a deliberate exception to the rule that
+-- a stopped creative keeps its row. That rule exists because the affiliate
+-- network's `clickref` is the creative id, so deleting a row leaves a line in
+-- their report pointing at an id nothing resolves. It is accepted here because
+-- the banner format is retired rather than paused: no future click can carry
+-- these ids, and the historical ones are not worth keeping an unreachable kind
+-- alive in a table the code no longer understands.
+--
+-- Uploaded banner images in storage are left behind deliberately: an orphan
+-- object costs nothing, and deleting by row would risk removing an image a
+-- native card also points at.
+DELETE FROM ad_creatives WHERE kind = 'banner';

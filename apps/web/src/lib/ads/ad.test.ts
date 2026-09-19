@@ -36,11 +36,17 @@ const { getAllAdCreatives, shouldShowAdsForUser } = await import('./ad');
 describe('getAllAdCreatives', () => {
   it('should return creatives array when they exist', async () => {
     const creatives = [
-      { id: '1', kind: 'banner', slot: 'content-middle', href: 'https://example.com', payload: {} },
+      {
+        id: '1',
+        kind: 'native_card',
+        slot: 'feed-native-ad',
+        href: 'https://example.com',
+        payload: {},
+      },
       {
         id: '2',
         kind: 'native_card',
-        slot: 'feed-native-ad',
+        slot: 'puzzle-list-native-ad',
         href: 'https://example.com',
         payload: {},
       },

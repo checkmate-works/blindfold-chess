@@ -9,8 +9,8 @@ import { adCreatives, db } from '@/lib/db';
 
 import { hasAdFreeEntitlement } from './ad-free-entitlement';
 import { filterByCountry, getRequestCountry } from './country';
-import type { BannerPayload, NativeCardThumbnail } from './payload';
-import { isBannerPayload, isNativeCardPayload, resolveNativeThumbnail } from './payload';
+import type { NativeCardThumbnail } from './payload';
+import { isNativeCardPayload, resolveNativeThumbnail } from './payload';
 import type { AdKind, AdSlot } from './registry';
 import { withCreativeSubId } from './subid';
 
@@ -65,11 +65,10 @@ async function queryActiveCreatives(slot: string) {
 }
 
 /**
- * A slot's active, priority-ordered creatives — the raw pool the
- * `<AdSlot>` waterfall picks from. `payload` is `unknown`; render sites narrow
- * it with the kind guards in `@/lib/ads/payload`. Cached per slot (tag +
- * time-bounded) so ad-bearing pages stay static/ISR: the pool is baked at
- * build/revalidate and refreshed by `revalidateTag(AD_CREATIVES_CACHE_TAG)`
+ * A slot's active, priority-ordered creatives. `payload` is `unknown`; render
+ * sites narrow it with the kind guards in `@/lib/ads/payload`. Cached per slot
+ * (tag + time-bounded) so ad-bearing pages stay static/ISR: the pool is baked
+ * at build/revalidate and refreshed by `revalidateTag(AD_CREATIVES_CACHE_TAG)`
  * on admin writes; the per-user hide stays on the cookie/CSS layer.
  */
 export type ActiveCreative = {
@@ -155,25 +154,4 @@ export async function resolveNativeAds(
 
   const country = getRequestCountry(await headers());
   return { showAds: true, creatives: await getNativeAdCreatives(slot, country) };
-}
-
-/** A banner creative as `/api/ad-slot/[slot]` serves it to `AdSlotClient`. */
-export type BannerAdView = { href: string; payload: BannerPayload };
-
-/**
- * Banner sibling of {@link getNativeAdCreatives}: a slot's active banner
- * creatives eligible in the visitor's country, kind-narrowed and projected to
- * the serializable view, `href` sub-ID tagged the same way. Keeps both payload
- * projections in this module.
- */
-export async function getBannerCreatives(
-  slot: AdSlot,
-  country: string | null
-): Promise<BannerAdView[]> {
-  const creatives = filterByCountry(await getActiveCreatives(slot), country);
-  return creatives.flatMap((c) =>
-    isBannerPayload(c.payload)
-      ? [{ href: withCreativeSubId(c.href, c.id), payload: c.payload }]
-      : []
-  );
 }

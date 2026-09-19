@@ -526,6 +526,13 @@
       "when": 1789726998721,
       "tag": "20260918102318_index_ugc_created_at",
       "breakpoints": true
+    },
+    {
+      "idx": 75,
+      "version": "7",
+      "when": 1789811811072,
+      "tag": "20260919095651_delete_banner_ad_creatives",
+      "breakpoints": true
     }
   ]
 }

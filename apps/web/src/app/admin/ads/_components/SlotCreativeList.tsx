@@ -21,11 +21,11 @@ export type SlotCreativeRow = {
   id: string;
   isActive: boolean;
   targetCountry: string | null;
-  /** Title (native) or alt (banner); may be empty. */
+  /** The card's title; empty when the stored payload fails its guard. */
   summary: string;
-  /** Override/banner image URL; takes priority over the board when set. */
+  /** Thumbnail override image; takes priority over the board when set. */
   imageUrl: string | null;
-  /** Board FEN for native cards (null for banners); rendered when no image. */
+  /** Thumbnail board FEN; rendered when there is no override image. */
   boardFen: string | null;
 };
 

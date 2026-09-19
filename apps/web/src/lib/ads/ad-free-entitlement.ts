@@ -12,13 +12,14 @@ import { hasActiveGrant } from '@/lib/users/user-grants';
  * This is THE single decision point for ad-free status. Both ad-gating
  * layers delegate here:
  * - `computeAdsHiddenValueForUser` (the `bfc_ads_hidden` cookie that hides
- *   banner slots via CSS), and
- * - `shouldShowAdsForUser` (the server-side gate for native-ad surfaces).
+ *   `.ad-slot-wrapper` via CSS before the first paint), and
+ * - `shouldShowAdsForUser` (the server-side gate that decides whether a
+ *   surface reads its creatives at all).
  *
  * Before this module existed the two layers each duplicated the same
- * subscription-OR-grant check, and a new entitlement source added to one
- * but not the other would silently split behavior between banner and
- * native ads. Add new sources HERE, nowhere else.
+ * subscription-OR-grant check, and a new entitlement source added to one but
+ * not the other would silently leave a viewer entitled by one layer and not
+ * the other. Add new sources HERE, nowhere else.
  *
  * Anonymous visitors (`null` userId) are never entitled.
  */

@@ -2,12 +2,11 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { AdminPageLayout } from '@/app/admin/_components/AdminPageLayout';
-import { BannerCreativeForm } from '@/app/admin/ads/_components/BannerCreativeForm';
 import { NativeCardCreativeForm } from '@/app/admin/ads/_components/NativeCardCreativeForm';
 import { buildAdCreativeFormLabels } from '@/app/admin/ads/_lib/form-labels';
 import type { CommonCreativeValues } from '@/app/admin/ads/_lib/use-common-creative-state';
 
-import { isAdSlot, kindForSlot } from '@/lib/ads/registry';
+import { isAdSlot } from '@/lib/ads/registry';
 
 type Props = { params: Promise<{ slot: string }> };
 
@@ -32,21 +31,12 @@ export default async function NewCreativePage({ params }: Props) {
         { label: t('createTitle') },
       ]}
     >
-      {kindForSlot(slot) === 'banner' ? (
-        <BannerCreativeForm
-          mode="create"
-          slot={slot}
-          labels={labels}
-          initial={{ ...EMPTY_COMMON, payload: {} }}
-        />
-      ) : (
-        <NativeCardCreativeForm
-          mode="create"
-          slot={slot}
-          labels={labels}
-          initial={{ ...EMPTY_COMMON, payload: {} }}
-        />
-      )}
+      <NativeCardCreativeForm
+        mode="create"
+        slot={slot}
+        labels={labels}
+        initial={{ ...EMPTY_COMMON, payload: {} }}
+      />
     </AdminPageLayout>
   );
 }

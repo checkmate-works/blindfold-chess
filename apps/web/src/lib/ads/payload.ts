@@ -7,14 +7,6 @@ import type { AdKind } from './registry';
  */
 export const DEFAULT_AD_ALT = 'Advertisement';
 
-/** Rectangle image banner (the generic, non-feed placements). */
-export type BannerPayload = {
-  imagePath: string;
-  alt: string;
-  width: number;
-  height: number;
-};
-
 /**
  * The native card's thumbnail. A board `fen` is always present (the fallback);
  * an optional uploaded `imagePath` (e.g. a book cover) overrides the board when
@@ -89,20 +81,8 @@ export function resolveNativeThumbnail(payload: NativeCardPayload): NativeCardTh
 }
 
 export type AdPayloadByKind = {
-  banner: BannerPayload;
   native_card: NativeCardPayload;
 };
-
-export function isBannerPayload(value: unknown): value is BannerPayload {
-  if (typeof value !== 'object' || value === null) return false;
-  const p = value as Record<string, unknown>;
-  return (
-    typeof p.imagePath === 'string' &&
-    typeof p.alt === 'string' &&
-    typeof p.width === 'number' &&
-    typeof p.height === 'number'
-  );
-}
 
 export function isNativeCardPayload(value: unknown): value is NativeCardPayload {
   if (typeof value !== 'object' || value === null) return false;
@@ -120,7 +100,6 @@ export function isNativeCardPayload(value: unknown): value is NativeCardPayload 
 }
 
 const PAYLOAD_GUARDS: { [K in AdKind]: (value: unknown) => value is AdPayloadByKind[K] } = {
-  banner: isBannerPayload,
   native_card: isNativeCardPayload,
 };
 
