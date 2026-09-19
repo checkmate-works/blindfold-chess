@@ -1,6 +1,7 @@
 import * as Sentry from '@sentry/nextjs';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { cancelAllActiveSubscriptions } from '@/lib/billing/cancel-subscriptions';
 import { whereThenLimit, whereThenReturning } from '@/lib/db/__test-support__/query-chain';
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
@@ -70,6 +71,10 @@ vi.mock('@/lib/supabase/admin', () => ({
 
 vi.mock('@/lib/security/client-ip');
 
+vi.mock('@/lib/billing/cancel-subscriptions', () => ({
+  cancelAllActiveSubscriptions: vi.fn(),
+}));
+
 vi.mock('@sentry/nextjs', () => ({
   captureException: vi.fn(),
 }));
@@ -78,6 +83,14 @@ const adminUserId = 'admin-00000000-0000-0000-0000-000000000001';
 const targetUserId = 'target-00000000-0000-0000-0000-000000000001';
 
 describe('banUser', () => {
+  beforeEach(() => {
+    // The rollback tests below queue a one-shot throw on `mockTransaction` and
+    // then bypass it by replacing `db.transaction`, so the throw would
+    // otherwise fire in whichever test calls the transaction next.
+    mockTransaction.mockReset();
+    vi.mocked(cancelAllActiveSubscriptions).mockReset().mockResolvedValue(undefined);
+  });
+
   it('should return unauthorized when user is not authenticated', async () => {
     mockGetUser.mockResolvedValue({ data: { user: null } });
 
@@ -298,5 +311,67 @@ describe('banUser', () => {
     await expect(banUser(targetUserId, 'Spamming')).rejects.toThrow('Auth rollback failed');
 
     db.transaction = originalTransaction;
+  });
+
+  describe('subscription cancellation', () => {
+    it("cancels the banned user's subscriptions once the ban has committed", async () => {
+      mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+      mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+      mockUpdateUserById.mockResolvedValue({ error: null });
+
+      const result = await banUser(targetUserId, 'Spamming');
+
+      expect(result).toEqual({ success: true });
+      expect(cancelAllActiveSubscriptions).toHaveBeenCalledWith(targetUserId);
+      // The ban (audit insert) lands before Stripe is touched, so a Stripe
+      // failure can never leave a paying user unbanned.
+      const insertOrder = mockInsertValues.mock.invocationCallOrder[0];
+      const cancelOrder = vi.mocked(cancelAllActiveSubscriptions).mock.invocationCallOrder[0];
+      expect(insertOrder).toBeLessThan(cancelOrder);
+    });
+
+    it('does not touch Stripe when the Supabase Auth ban fails', async () => {
+      vi.spyOn(console, 'error').mockImplementation(() => {});
+      mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+      mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+      mockUpdateUserById.mockResolvedValue({ error: new Error('Auth error') });
+
+      await banUser(targetUserId, 'Spamming');
+
+      expect(cancelAllActiveSubscriptions).not.toHaveBeenCalled();
+    });
+
+    it('does not touch Stripe when the DB transaction fails', async () => {
+      vi.spyOn(console, 'error').mockImplementation(() => {});
+      mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+      mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+      mockUpdateUserById.mockResolvedValue({ error: null });
+      const { db } = await import('@/lib/db');
+      const originalTransaction = db.transaction;
+      db.transaction = vi.fn().mockRejectedValueOnce(new Error('DB transaction failed'));
+
+      await banUser(targetUserId, 'Spamming');
+
+      expect(cancelAllActiveSubscriptions).not.toHaveBeenCalled();
+      db.transaction = originalTransaction;
+    });
+
+    it('keeps the ban and reports bannedButSubscriptionNotCanceled when Stripe fails', async () => {
+      vi.spyOn(console, 'error').mockImplementation(() => {});
+      mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+      mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+      mockUpdateUserById.mockResolvedValue({ error: null });
+      const stripeError = new Error('Stripe is down');
+      vi.mocked(cancelAllActiveSubscriptions).mockRejectedValueOnce(stripeError);
+
+      const result = await banUser(targetUserId, 'Spamming');
+
+      expect(result).toEqual({ error: 'bannedButSubscriptionNotCanceled' });
+      // No Auth rollback: the user stays banned, only the billing follow-up is
+      // left to the operator.
+      expect(mockUpdateUserById).toHaveBeenCalledTimes(1);
+      expect(mockInsertValues).toHaveBeenCalledTimes(1);
+      expect(Sentry.captureException).toHaveBeenCalledWith(stripeError);
+    });
   });
 });

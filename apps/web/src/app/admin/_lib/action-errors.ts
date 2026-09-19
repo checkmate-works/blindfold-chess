@@ -43,6 +43,8 @@ const ADMIN_ERROR_MESSAGES = {
   // Users and moderation (/admin/users).
   cannotBanSelf: 'You cannot ban yourself.',
   failedToBan: 'Failed to ban user.',
+  bannedButSubscriptionNotCanceled:
+    'User was banned, but their Stripe subscription could not be canceled. Cancel it in the Stripe dashboard.',
   failedToUnban: 'Failed to unban user.',
   invalidRank: 'Unknown rank.',
   rankNotFound: 'That rank has no matching database row yet.',

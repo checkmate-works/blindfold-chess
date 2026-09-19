@@ -5,6 +5,7 @@ import { revalidatePath, revalidateTag } from 'next/cache';
 
 import { eq } from 'drizzle-orm';
 
+import { cancelAllActiveSubscriptions } from '@/lib/billing/cancel-subscriptions';
 import { profileCacheTag } from '@/lib/cache-tags';
 import { db, profiles } from '@/lib/db';
 import { logModerationAction } from '@/lib/moderation/audit';
@@ -17,8 +18,30 @@ import type { AdminActionResult } from '../../_lib/action-errors';
 import { requireAdmin } from '../../_lib/auth';
 
 type BanUserError =
-  'unauthorized' | 'cannotBanSelf' | 'reasonRequired' | 'reasonTooLong' | 'failedToBan';
+  | 'unauthorized'
+  | 'cannotBanSelf'
+  | 'reasonRequired'
+  | 'reasonTooLong'
+  | 'failedToBan'
+  | 'bannedButSubscriptionNotCanceled';
 
+/**
+ * Ban a user: block them at Supabase Auth, flag the profile, record the audit
+ * entry, then cancel any Stripe subscription they hold.
+ *
+ * The subscription is canceled **immediately** and **after** the ban has
+ * committed, in that order on purpose. A banned user cannot reach the
+ * subscription page (the `(protected)` layout sends them to `/banned`) and the
+ * billing actions reject them, so a subscription left running would keep
+ * charging for a service they can no longer use, with no self-service way to
+ * stop it. Canceling first would risk the opposite failure: a Stripe call that
+ * succeeds followed by a ban that does not, leaving a paying user unbanned
+ * with their plan revoked. So the ban lands first, and a Stripe failure is
+ * reported as `bannedButSubscriptionNotCanceled` rather than rolled back: the
+ * moderation outcome stands, and the operator is told to finish the
+ * cancellation in the Stripe dashboard. Unbanning does not restore the plan;
+ * the user subscribes again if they wish.
+ */
 export async function banUser(
   targetUserId: string,
   reason: string
@@ -101,6 +124,16 @@ export async function banUser(
   }
 
   revalidatePath('/admin/users');
+
+  try {
+    await cancelAllActiveSubscriptions(targetUserId);
+  } catch (error) {
+    return handleAdminActionError(
+      error,
+      `[banUser] cancel subscriptions for ${targetUserId}`,
+      'bannedButSubscriptionNotCanceled'
+    );
+  }
 
   return { success: true };
 }

@@ -47,6 +47,10 @@ export function BanButton({ userId }: { userId: string }) {
         onConfirm={handleBan}
         onCancel={cancel}
       >
+        <p className="text-sm text-muted-foreground mb-4">
+          The user loses access immediately. Any active subscription is canceled at once, without a
+          refund for the remaining period.
+        </p>
         <label htmlFor={`ban-reason-${userId}`} className="block text-sm font-medium mb-2">
           Reason for ban
         </label>
