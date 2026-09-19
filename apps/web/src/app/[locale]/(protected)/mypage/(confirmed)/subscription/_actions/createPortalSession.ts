@@ -6,24 +6,34 @@ import { SITE_URL } from '@/config';
 import { assertSupportedLocale } from '@/i18n/assertSupportedLocale';
 import type Stripe from 'stripe';
 
-import { getAuthenticatedUser } from '@/lib/auth';
+import { authenticateAndGuard } from '@/lib/auth';
 import { getStripe } from '@/lib/billing/stripe';
 import { getStripeCustomerId } from '@/lib/billing/stripe-customer';
-import { RATE_LIMITS, checkRateLimit } from '@/lib/security/rate-limit';
+import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { captureError } from '@/lib/sentry/capture-error';
 
-type PortalError = { error: 'rateLimited' | 'noSubscription' | 'portalSessionFailed' };
+type GuardError = 'signInRequired' | 'banned' | 'rateLimited';
+type PortalError = { error: GuardError | 'noSubscription' | 'portalSessionFailed' };
 
+/**
+ * Opens the Stripe Billing Portal for the signed-in customer.
+ *
+ * Guarded by `authenticateAndGuard` (auth + ban + rate limit). The
+ * `(protected)` layout redirects a banned user away from the subscription
+ * page, but a Server Action is a POST endpoint that no layout renders around,
+ * so the ban has to be checked here as well or the portal stays reachable by
+ * a direct call.
+ */
 export async function createPortalSession(locale: string): Promise<PortalError> {
   assertSupportedLocale(locale);
 
-  const user = await getAuthenticatedUser();
-
-  // Rate limit
-  const rlResult = await checkRateLimit(user.id, RATE_LIMITS.createPortalSession);
-  if ('error' in rlResult) {
-    return { error: 'rateLimited' as const };
+  const guard = await authenticateAndGuard(RATE_LIMITS.createPortalSession);
+  if ('error' in guard) {
+    // The guard types its code as `string`; these three are the only values
+    // it emits (see its TSDoc in `@/lib/auth`).
+    return { error: guard.error as GuardError };
   }
+  const { user } = guard;
 
   const stripeCustomerId = await getStripeCustomerId(user.id);
   if (!stripeCustomerId) {

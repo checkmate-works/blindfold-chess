@@ -6,24 +6,35 @@ import { SITE_URL } from '@/config';
 import { assertSupportedLocale } from '@/i18n/assertSupportedLocale';
 import type Stripe from 'stripe';
 
-import { getAuthenticatedUser } from '@/lib/auth';
+import { authenticateAndGuard } from '@/lib/auth';
 import { getStripe, getStripePriceId } from '@/lib/billing/stripe';
 import { getOrCreateStripeCustomerId } from '@/lib/billing/stripe-customer';
-import { RATE_LIMITS, checkRateLimit } from '@/lib/security/rate-limit';
+import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { captureError } from '@/lib/sentry/capture-error';
 
-type CheckoutError = { error: 'rateLimited' | 'sessionCreationFailed' };
+type GuardError = 'signInRequired' | 'banned' | 'rateLimited';
+type CheckoutError = { error: GuardError | 'sessionCreationFailed' };
 
+/**
+ * Starts a Stripe Checkout session for the ad-free subscription.
+ *
+ * Guarded by `authenticateAndGuard` (auth + ban + rate limit) rather than by
+ * the `(protected)` layout: this action is called from the public `/pricing`
+ * page, and a Server Action is a POST endpoint that no layout renders around.
+ * The layout's `/banned` redirect protects the mypage HTML, not this call, so
+ * without the ban check a banned account could pay for a subscription it can
+ * never use, and the webhook would then grant it the entitlement.
+ */
 export async function createCheckoutSession(locale: string): Promise<CheckoutError> {
   assertSupportedLocale(locale);
 
-  const user = await getAuthenticatedUser();
-
-  // Rate limit
-  const rlResult = await checkRateLimit(user.id, RATE_LIMITS.createCheckoutSession);
-  if ('error' in rlResult) {
-    return { error: 'rateLimited' as const };
+  const guard = await authenticateAndGuard(RATE_LIMITS.createCheckoutSession);
+  if ('error' in guard) {
+    // The guard types its code as `string`; these three are the only values
+    // it emits (see its TSDoc in `@/lib/auth`).
+    return { error: guard.error as GuardError };
   }
+  const { user } = guard;
 
   let stripeCustomerId: string;
   try {

@@ -1,7 +1,10 @@
 import * as Sentry from '@sentry/nextjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
+import { isUserBanned } from '@/lib/moderation/ban';
 import { checkRateLimit } from '@/lib/security/rate-limit';
+import { getUserMock } from '@/lib/supabase/__mocks__/server';
 
 /**
  * Regression test for the Stripe Checkout `success_url`.
@@ -19,15 +22,20 @@ import { checkRateLimit } from '@/lib/security/rate-limit';
  * to `stripe.checkout.sessions.create`.
  */
 
-const mockGetAuthenticatedUser = vi.fn();
 const mockGetOrCreateStripeCustomerId = vi.fn();
 const mockGetStripePriceId = vi.fn(() => 'price_test_123');
 const mockSessionsCreate = vi.fn();
 
 vi.mock('next/navigation');
 
-vi.mock('@/lib/auth', () => ({
-  getAuthenticatedUser: (...args: unknown[]) => mockGetAuthenticatedUser(...args),
+// The real `@/lib/auth` guard runs, driven through its leaves, so the suite
+// proves the action consults the ban check rather than that it calls a
+// helper by name.
+vi.mock('@/lib/supabase/server');
+vi.mock('@/lib/moderation/ban');
+vi.mock('@/lib/db', async () => ({
+  ...(await actualDbSchema()),
+  db: {},
 }));
 
 vi.mock('@/lib/billing/stripe', () => ({
@@ -63,7 +71,8 @@ const { createCheckoutSession } = await import('./createCheckoutSession');
 
 describe('createCheckoutSession — Stripe success_url regression', () => {
   beforeEach(() => {
-    mockGetAuthenticatedUser.mockResolvedValue({ id: 'user-123', email: 'u@example.com' });
+    getUserMock.mockResolvedValue({ data: { user: { id: 'user-123', email: 'u@example.com' } } });
+    vi.mocked(isUserBanned).mockResolvedValue(false);
     vi.mocked(checkRateLimit).mockResolvedValue({ success: true });
     mockGetOrCreateStripeCustomerId.mockResolvedValue('cus_test_123');
     mockSessionsCreate.mockResolvedValue({ url: 'https://checkout.stripe.com/c/pay/cs_test_xyz' });
@@ -158,6 +167,31 @@ describe('createCheckoutSession — Stripe success_url regression', () => {
     const result = await createCheckoutSession('en');
 
     expect(result).toEqual({ error: 'rateLimited' });
+    expect(mockSessionsCreate).not.toHaveBeenCalled();
+  });
+
+  it('refuses a banned user before creating a Stripe customer or session', async () => {
+    // The action is reachable from the public /pricing page and by direct
+    // POST, so the `(protected)` layout's `/banned` redirect never runs for
+    // it. Without this check a banned account could pay for a subscription
+    // it cannot use.
+    vi.mocked(isUserBanned).mockResolvedValueOnce(true);
+
+    const result = await createCheckoutSession('en');
+
+    expect(result).toEqual({ error: 'banned' });
+    expect(mockGetOrCreateStripeCustomerId).not.toHaveBeenCalled();
+    expect(mockSessionsCreate).not.toHaveBeenCalled();
+    expect(checkRateLimit).not.toHaveBeenCalled();
+  });
+
+  it('returns signInRequired for an anonymous caller instead of touching Stripe', async () => {
+    getUserMock.mockResolvedValueOnce({ data: { user: null } });
+
+    const result = await createCheckoutSession('en');
+
+    expect(result).toEqual({ error: 'signInRequired' });
+    expect(mockGetOrCreateStripeCustomerId).not.toHaveBeenCalled();
     expect(mockSessionsCreate).not.toHaveBeenCalled();
   });
 });
