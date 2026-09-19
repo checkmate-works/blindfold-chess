@@ -794,7 +794,7 @@
       },
       "ads": {
         "question": "Por que há anúncios neste site?",
-        "answer": "Este serviço é fornecido gratuitamente, mas manter servidores e domínios tem custos. A receita publicitária ajuda a cobrir essas despesas. Além disso, a receita de programas de afiliados como Amazon Associates também é utilizada para cobrir os custos operacionais. Para mais informações, consulte nossa <affiliateLink>Divulgação de Afiliados</affiliateLink>."
+        "answer": "Este serviço é fornecido gratuitamente, mas manter servidores e domínios tem custos. A receita publicitária ajuda a cobrir essas despesas. Além disso, a receita de programas de afiliados também é utilizada para cobrir os custos operacionais. Para mais informações, consulte nossa <affiliateLink>Divulgação de Afiliados</affiliateLink>."
       },
       "chessEngine": {
         "question": "Que motor de xadrez a IA usa?",
@@ -3185,10 +3185,8 @@
     "title": "Divulgação de Afiliados",
     "description": "Informações sobre links de afiliados no Xadrez às Cegas",
     "networksDisclosureTitle": "Redes de afiliados",
-    "networksDisclosureDescription": "O blindfold-chess.online também participa de programas de afiliados administrados por redes de terceiros, incluindo a Awin. Os links para livros, softwares e serviços de xadrez neste site podem ser links de afiliado: se você comprar algo depois de seguir um deles, podemos receber uma comissão. Isso nunca acrescenta nada ao preço que você paga. Anúncios e espaços patrocinados são identificados como tais onde quer que apareçam, e o fato de um link ser de afiliado nunca muda o que dizemos sobre o produto.",
-    "amazonDisclosureTitle": "Divulgação do Programa de Associados da Amazon",
-    "amazonDisclosureDescription": "Como Associado da Amazon, ganho com compras qualificadas. blindfold-chess.online participa do Programa de Associados da Amazon Services LLC, um programa de publicidade de afiliados projetado para fornecer um meio para que os sites ganhem taxas de publicidade através de publicidade e links para Amazon.com.",
-    "footerText": "Como Associado da Amazon, ganho com compras qualificadas."
+    "networksDisclosureDescription": "O blindfold-chess.online participa de programas de afiliados administrados por redes de terceiros, incluindo a Awin. Os links para livros, softwares e serviços de xadrez neste site podem ser links de afiliado: se você comprar algo depois de seguir um deles, podemos receber uma comissão. Isso nunca acrescenta nada ao preço que você paga. Anúncios e espaços patrocinados são identificados como tais onde quer que apareçam, e o fato de um link ser de afiliado nunca muda o que dizemos sobre o produto.",
+    "footerText": "Alguns links deste site são links de afiliados, e podemos receber uma comissão por compras qualificadas."
   },
   "terms": {
     "title": "Termos de Serviço",
@@ -4778,7 +4776,7 @@
       "title": "Gestão de Anúncios",
       "slot": "Espaço",
       "href": "URL do Link",
-      "hrefHint": "Cole a URL exatamente como a rede a forneceu. Em links da Awin e da Amazon, um sub-ID que identifica este criativo (clickref / ascsubtag) é anexado automaticamente na renderização, para que os relatórios delas separem os cliques por criativo — não adicione um manualmente, a menos que queira sobrescrevê-lo.",
+      "hrefHint": "Cole a URL exatamente como a rede a forneceu. Em links da Awin, um sub-ID que identifica este criativo (clickref) é anexado automaticamente na renderização, para que os relatórios da Awin separem os cliques por criativo — não adicione um manualmente.",
       "isActive": "Ativo",
       "actions": "Ações",
       "edit": "Editar",

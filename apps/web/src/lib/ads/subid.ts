@@ -22,12 +22,12 @@
 
 /**
  * Sub-ID parameter per affiliate network, keyed by the host that serves the
- * click. Names are the network's own: Awin calls it `clickref`, Amazon calls
- * it `ascsubtag`.
+ * click. The name is the network's own: Awin calls it `clickref`.
  *
- * Amazon's short domains (`amzn.to`, `amzn.asia`) are deliberately absent —
- * the shortener resolves to a plain product URL and does not carry an appended
- * query string through the redirect, so tagging one silently does nothing.
+ * A one-entry list rather than a constant, because the parameter name is the
+ * part that varies between networks — there is no cross-network standard for
+ * it. Keeping the lookup keyed by host is what makes adding a second network
+ * a new entry instead of a rewrite of {@link withCreativeSubId}.
  */
 const SUB_ID_PARAM_BY_NETWORK: ReadonlyArray<{
   matchesHost: (host: string) => boolean;
@@ -36,10 +36,6 @@ const SUB_ID_PARAM_BY_NETWORK: ReadonlyArray<{
   {
     matchesHost: (host) => host === 'awin1.com' || host.endsWith('.awin1.com'),
     param: 'clickref',
-  },
-  {
-    matchesHost: (host) => /^(?:[a-z0-9-]+\.)*amazon\.[a-z]{2,}(?:\.[a-z]{2,})?$/.test(host),
-    param: 'ascsubtag',
   },
 ];
 
