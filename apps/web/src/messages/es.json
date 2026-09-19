@@ -4809,7 +4809,7 @@
       "avatarHintCreate": "Guarda primero y luego sube un avatar en la pantalla de edición.",
       "cardTitle": "Título",
       "cardDescription": "Descripción",
-      "cardCopyHint": "Escribe en el idioma del país de destino (inglés si es global).",
+      "cardCopyHint": "Escribe el texto para cada idioma. El inglés es obligatorio y es lo que ve quien navega en un idioma que dejaste vacío.",
       "targetCountry": "País de destino",
       "targetCountryHint": "Dejar vacío para segmentar todos los países.",
       "reorderHint": "Arrastra para reordenar.",
@@ -4823,7 +4823,7 @@
       "filterAll": "Todos los países",
       "filterReorderHint": "Quita el filtro para reordenar.",
       "preview": "Vista previa",
-      "previewCaption": "La etiqueta “Ad” y el nombre del patrocinador se localizan por espectador al renderizar.",
+      "previewCaption": "La vista previa muestra el texto en inglés. La etiqueta “Anuncio” y el nombre del patrocinador se localizan para cada visitante al renderizar.",
       "thumbnailImageOverride": "Imagen de reemplazo (opcional)",
       "thumbnailImageRemove": "Eliminar imagen"
     },

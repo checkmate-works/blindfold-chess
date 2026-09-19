@@ -4809,7 +4809,7 @@
       "avatarHintCreate": "先に保存すると、編集画面でアバターをアップロードできます。",
       "cardTitle": "タイトル",
       "cardDescription": "説明",
-      "cardCopyHint": "対象国の言語で記載（全世界対象なら英語）。",
+      "cardCopyHint": "各言語のコピーを入力してください。英語は必須で、未入力の言語ではこの英語が表示されます。",
       "targetCountry": "配信対象の国",
       "targetCountryHint": "未選択で全世界に配信。",
       "reorderHint": "ドラッグで並べ替え。",
@@ -4823,7 +4823,7 @@
       "filterAll": "すべての国",
       "filterReorderHint": "並べ替えるにはフィルタを解除してください。",
       "preview": "プレビュー",
-      "previewCaption": "「Ad」ラベルとスポンサー名は、表示時に閲覧者の言語でローカライズされます。",
+      "previewCaption": "プレビューは英語のコピーです。「広告」ラベルとスポンサー名は描画時に閲覧者ごとにローカライズされます。",
       "thumbnailImageOverride": "上書き画像（任意）",
       "thumbnailImageRemove": "画像を削除"
     },

@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { getAllAdCreatives } from '@/lib/ads/ad';
-import { isNativeCardPayload, resolveNativeThumbnail } from '@/lib/ads/payload';
+import { isNativeCardPayload, resolveNativeCopy, resolveNativeThumbnail } from '@/lib/ads/payload';
 import { isAdSlot, kindForSlot } from '@/lib/ads/registry';
 
 import { AdminBadge } from '../../_components/AdminBadge';
@@ -27,7 +27,9 @@ export default async function AdminSlotCreativesPage({ params }: Props) {
       const thumb = resolveNativeThumbnail(c.payload);
       return {
         ...base,
-        summary: c.payload.title,
+        // The admin surface has no locale of its own; `en` is the copy every
+        // creative is required to carry.
+        summary: resolveNativeCopy(c.payload, 'en').title,
         imageUrl: thumb.imagePath ?? null,
         boardFen: thumb.fen,
       };

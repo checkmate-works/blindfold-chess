@@ -4809,7 +4809,7 @@
       "avatarHintCreate": "Save first, then upload an avatar on the edit screen.",
       "cardTitle": "Title",
       "cardDescription": "Description",
-      "cardCopyHint": "Write in the target country's language (English if global).",
+      "cardCopyHint": "Write the copy for each language. English is required and is what a visitor sees when their language is left blank.",
       "targetCountry": "Target country",
       "targetCountryHint": "Leave empty to target all countries.",
       "reorderHint": "Drag to reorder.",
@@ -4823,7 +4823,7 @@
       "filterAll": "All countries",
       "filterReorderHint": "Clear the filter to reorder.",
       "preview": "Preview",
-      "previewCaption": "The “Ad” label and sponsor name are localized per viewer at render time.",
+      "previewCaption": "The English copy is previewed. The “Ad” label and sponsor name are localized per viewer at render time.",
       "thumbnailImageOverride": "Override image (optional)",
       "thumbnailImageRemove": "Remove image"
     },

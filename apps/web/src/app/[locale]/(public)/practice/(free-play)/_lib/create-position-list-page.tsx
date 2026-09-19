@@ -126,7 +126,7 @@ export function createPositionListPage(config: PositionListPageConfig) {
     const [likeMetaMap, replyMetaMap, resolvedNativeAds] = await Promise.all([
       getPositionLikeMetaMap(positionIds, currentUser?.id),
       getReplyMetaMap(replyMetaType, positionIds),
-      nativeAdSlot ? resolveNativeAds(nativeAdSlot, currentUser?.id ?? null) : null,
+      nativeAdSlot ? resolveNativeAds(nativeAdSlot, currentUser?.id ?? null, locale) : null,
     ]);
 
     const buildHref = (p: number) => buildPaginationHref(locale, basePath, p, sortBy);

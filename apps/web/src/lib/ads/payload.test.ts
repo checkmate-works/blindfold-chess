@@ -2,9 +2,12 @@ import { describe, expect, it } from 'vitest';
 
 import {
   DEFAULT_NATIVE_THUMBNAIL_FEN,
+  fromLocalizedCopyDraft,
   isNativeCardPayload,
   isPayloadForKind,
+  resolveNativeCopy,
   resolveNativeThumbnail,
+  toLocalizedCopyDraft,
 } from './payload';
 
 describe('isNativeCardPayload with thumbnail', () => {
@@ -24,7 +27,12 @@ describe('isNativeCardPayload with thumbnail', () => {
 });
 
 describe('resolveNativeThumbnail', () => {
-  const base = { avatarImagePath: null, avatarAlt: 'Ad', title: 't', description: 'd' };
+  const base = {
+    avatarImagePath: null,
+    avatarAlt: 'Ad',
+    title: { en: 't' },
+    description: { en: 'd' },
+  };
 
   it('defaults to the Ruy Lopez board when unset', () => {
     expect(resolveNativeThumbnail(base)).toEqual({ fen: DEFAULT_NATIVE_THUMBNAIL_FEN });
@@ -62,5 +70,64 @@ describe('isPayloadForKind', () => {
   });
   it('rejects a payload that is not shaped for the kind', () => {
     expect(isPayloadForKind('native_card', { imagePath: '/x.png', alt: 'a' })).toBe(false);
+  });
+});
+
+describe('isNativeCardPayload copy shapes', () => {
+  const base = { avatarImagePath: null, avatarAlt: 'Ad' };
+
+  it('accepts per-locale copy carrying en', () => {
+    expect(
+      isNativeCardPayload({ ...base, title: { en: 't', ja: 'タ' }, description: { en: 'd' } })
+    ).toBe(true);
+  });
+  it('accepts the legacy bare string still in the DB', () => {
+    expect(isNativeCardPayload({ ...base, title: 't', description: 'd' })).toBe(true);
+  });
+  it('rejects per-locale copy with no en fallback', () => {
+    expect(isNativeCardPayload({ ...base, title: { ja: 'タ' }, description: { en: 'd' } })).toBe(
+      false
+    );
+  });
+});
+
+describe('resolveNativeCopy', () => {
+  const base = { avatarImagePath: null, avatarAlt: 'Ad' } as const;
+
+  it("returns the locale's own copy when it exists", () => {
+    const payload = { ...base, title: { en: 't', ja: 'タ' }, description: { en: 'd', ja: 'デ' } };
+    expect(resolveNativeCopy(payload, 'ja')).toEqual({ title: 'タ', description: 'デ' });
+  });
+
+  it('falls back to en for a locale the admin left blank', () => {
+    const payload = { ...base, title: { en: 't', ja: 'タ' }, description: { en: 'd' } };
+    expect(resolveNativeCopy(payload, 'ja')).toEqual({ title: 'タ', description: 'd' });
+  });
+
+  it('reads a legacy bare string as en, so old rows keep rendering', () => {
+    const legacy = { ...base, title: 't', description: 'd' } as never;
+    expect(resolveNativeCopy(legacy, 'pt-BR')).toEqual({ title: 't', description: 'd' });
+  });
+});
+
+describe('localized copy drafts', () => {
+  it('spreads a legacy bare string into en and leaves the rest blank', () => {
+    expect(toLocalizedCopyDraft('t')).toEqual({ en: 't', es: '', 'pt-BR': '', ja: '' });
+  });
+
+  it('does not pre-fill unwritten locales with the en fallback', () => {
+    expect(toLocalizedCopyDraft({ en: 't', ja: 'タ' })).toEqual({
+      en: 't',
+      es: '',
+      'pt-BR': '',
+      ja: 'タ',
+    });
+  });
+
+  it('drops blank locales on the way back so they keep falling back to en', () => {
+    expect(fromLocalizedCopyDraft({ en: ' t ', es: '', 'pt-BR': '  ', ja: 'タ' })).toEqual({
+      en: 't',
+      ja: 'タ',
+    });
   });
 });
