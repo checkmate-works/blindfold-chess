@@ -1,8 +1,7 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
-
 import { FormErrorBanner, LocalizedUnsavedChangesDialog } from '@/app/_components';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import type { PuzzleSolutionStepApi } from '../_hooks/use-puzzle-solution-step';
 import { PuzzleSolutionFields } from './PuzzleSolutionFields';

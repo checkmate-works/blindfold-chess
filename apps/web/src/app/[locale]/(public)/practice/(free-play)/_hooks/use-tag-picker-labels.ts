@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 
-import { useTranslations } from 'next-intl';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 export function useTagPickerLabels() {
   const t = useTranslations('practice.tags');

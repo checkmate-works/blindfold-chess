@@ -6,6 +6,8 @@ import type { ThemeOption } from '@/lib/themes/types';
 
 import { PreviewTags } from './PreviewTags';
 
+vi.mock('@/i18n/use-safe-translations');
+
 vi.mock('next-intl');
 
 // The card is a static (non-link) div in the preview, but RelatedTags still

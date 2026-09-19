@@ -2,12 +2,11 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-import { useTranslations } from 'next-intl';
-
 import { useSubmitError } from '@/_hooks/useSubmitError';
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
 import { Button, FormErrorBanner, LocalizedUnsavedChangesDialog } from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 import { flushSync } from 'react-dom';
 

@@ -76,6 +76,7 @@ Route segment names use **singular or plural form depending on the nature of the
 ## Internationalization
 
 - **next-intl** - For i18n support
+- **One client entry point** - Client code imports `useSafeTranslations` (aliased to `useTranslations`) from `@/i18n/use-safe-translations`, never `useTranslations` from `next-intl`; a lint rule enforces it. Server Components keep using `getTranslations` from `next-intl/server`. See "`useTranslations` from `next-intl` Is Lint-Banned in Client Code" below for the reason and for what it means for test mocks.
 - **URL Path-based Locales** - Use `/[locale]/` pattern
 - **Source of truth** - `SUPPORTED_LOCALES` exported from `@/config` is the single source of truth for every locale-derived artifact (metadata, OG tags, `hreflang`, sitemap, JSON-LD, routing, `<html lang>`, message file resolution). All i18n-aware code derives from this constant — there is no second list to keep in sync.
 - **Currently supported (for quick reference)** - `en`, `es`, `pt-BR`, `ja`. This prose may lag the code; when in doubt, `SUPPORTED_LOCALES` wins.
@@ -176,6 +177,16 @@ export async function deletePost(postId: string, locale: string) {
 ### `hover:underline` Is Lint-Banned Under `src/app`
 
 A link whose only affordance is a hover-time underline is invisible as a link on a touch screen, so `hover:underline` in a class string is an ESLint error outside `admin/` (`hoverUnderlineBan` in `packages/eslint-config`). Use `TEXT_LINK_CLASSES` / `TEXT_LINK_MUTED_CLASSES` from `src/app/[locale]/_lib/link-classes.ts` — underline at rest plus focus ring. That module's TSDoc says where an underline is _not_ wanted (a label inside a clickable card, a navigation list such as the footer columns or a term list); a site in one of those exceptions keeps its pointer-only underline behind an `eslint-disable-next-line` that names the exception.
+
+### `useTranslations` from `next-intl` Is Lint-Banned in Client Code
+
+Client components and hooks get their translator from `useSafeTranslations` (`src/i18n/use-safe-translations.ts`), imported as `import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations'` so the call site still reads `useTranslations('namespace')`. Importing `useTranslations` from `next-intl` is an ESLint error (`clientTranslationsBan` in `packages/eslint-config`).
+
+The wrapper is a drop-in: same signature, same `t`. What it adds is a guard for the window during HMR in which `NextIntlClientProvider` has been torn down but the subtree below it has already re-rendered — Turbopack does a full reload when `.env.local` changes, and next-intl's hook throws on the `undefined` intl context instead of degrading, which surfaces as a dev-overlay error on an unrelated component. The wrapper detects that through `IntlAvailableContext` and returns a translator that echoes the key until the provider is back. In production the provider is always mounted, so the cost is one `useContext` plus one `useRef`.
+
+Two exemptions, both narrow: the wrapper itself may import what it wraps, and `import type { useTranslations } from 'next-intl'` is allowed — `@/i18n/translator` and `@/lib/i18n/localize-action-error` derive the shape of `t` from it, and a type cannot throw at runtime. Server Components are not involved at all: they call `getTranslations` from `next-intl/server`, a different module the rule does not touch.
+
+**In tests this matters more than it looks.** `IntlAvailableContext` defaults to `false` and nothing under jsdom mounts the provider that flips it, so the wrapper always takes its fallback branch and never reaches next-intl. A `vi.mock('next-intl')` therefore does not intercept a component that uses the wrapper, and the component renders the fallback's dotted `namespace.key` rather than the bare key. Mock `@/i18n/use-safe-translations` instead — bare, to pick up the shared identity translator in `src/i18n/__mocks__/`, or with a factory when the copy is what the test is about. Keep a `next-intl` mock alongside only when something in the tree still reads `useLocale` or `useFormatter` from it.
 
 ### Barrel File (index.ts) Convention
 

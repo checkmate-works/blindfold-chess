@@ -2,8 +2,6 @@
 
 import { useState } from 'react';
 
-import { useTranslations } from 'next-intl';
-
 import {
   FieldError,
   FlipBoardButton,
@@ -11,6 +9,7 @@ import {
   fieldBorderClass,
   fieldErrorProps,
 } from '@/app/_components';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { STARTING_FEN } from '@blindfold-chess/features/chess-core/fen';
 
 import type { BoardAnnotations } from '@/lib/board-annotations/types';

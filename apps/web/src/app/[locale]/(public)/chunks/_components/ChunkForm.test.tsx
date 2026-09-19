@@ -13,7 +13,7 @@ const nav = vi.hoisted(() => ({ search: '' }));
 const boardState = vi.hoisted(() => ({ trimmedFen: '' }));
 
 // Echo translation keys so the "draft restored" banner is assertable by key.
-vi.mock('next-intl');
+vi.mock('@/i18n/use-safe-translations');
 
 vi.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(nav.search),

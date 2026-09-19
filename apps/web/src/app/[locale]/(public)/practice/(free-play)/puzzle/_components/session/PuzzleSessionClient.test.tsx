@@ -40,6 +40,8 @@ vi.mock('@/i18n/routing', () => ({
 
 // Return translation keys unchanged so assertions can target deterministic
 // strings without depending on locale bundles.
+vi.mock('@/i18n/use-safe-translations');
+
 vi.mock('next-intl');
 
 vi.mock('@/app/[locale]/_contexts/GamePreferencesContext');

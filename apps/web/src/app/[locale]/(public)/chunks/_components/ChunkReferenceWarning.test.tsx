@@ -5,7 +5,10 @@ import { ChunkReferenceWarning } from './ChunkReferenceWarning';
 
 vi.mock('next-intl', () => ({
   useLocale: () => 'en',
-  useTranslations: () => {
+}));
+
+vi.mock('@/i18n/use-safe-translations', () => ({
+  useSafeTranslations: () => {
     const t = (key: string, values?: Record<string, unknown>) => {
       if (key === 'scopePositions') return `${values?.count} positions`;
       if (key === 'scopeGames') return `${values?.count} games`;

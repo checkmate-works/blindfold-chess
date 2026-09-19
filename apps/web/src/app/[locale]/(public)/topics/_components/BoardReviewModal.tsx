@@ -1,8 +1,7 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
-
 import { BOARD_RADIUS_EXPAND_ON_MOBILE } from '@/app/_components/chess/BoardFrame';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import type { MoveSquares } from '@/lib/board/move-squares';
 import { MiniBoard } from '@/lib/positions/ui/MiniBoard';

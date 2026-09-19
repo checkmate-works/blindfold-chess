@@ -2,10 +2,9 @@
 
 import { type ReactNode, useEffect, useMemo, useState } from 'react';
 
-import { useTranslations } from 'next-intl';
-
 import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { fenToLichessUrl } from '@blindfold-chess/features/chess-core/fen';
 import type { ExpInfo } from '@blindfold-chess/features/exp';
 import { FaExternalLinkAlt, FaEye } from 'react-icons/fa';

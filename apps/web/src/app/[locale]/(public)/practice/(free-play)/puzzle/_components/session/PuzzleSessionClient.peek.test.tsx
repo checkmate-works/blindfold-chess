@@ -25,6 +25,8 @@ vi.mock('@/i18n/routing', () => ({
   useRouter: () => ({ push: mockPush }),
 }));
 
+vi.mock('@/i18n/use-safe-translations');
+
 vi.mock('next-intl');
 
 type Preferences = {

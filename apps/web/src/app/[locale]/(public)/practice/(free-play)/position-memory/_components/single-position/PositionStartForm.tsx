@@ -1,10 +1,9 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
-
 import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 import { useRouter } from '@/i18n/routing';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaPlay } from 'react-icons/fa';
 
 import { SegmentedControl } from '@/app/[locale]/(public)/practice/_components/SegmentedControl';

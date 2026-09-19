@@ -2,9 +2,8 @@
 
 import { useState } from 'react';
 
-import { useTranslations } from 'next-intl';
-
 import { useRouter } from '@/i18n/routing';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { localizeActionErrorOrGeneric } from '@/lib/i18n/localize-action-error';
 // Pure catalog leaf (not the '@/lib/points' barrel) — client-safe, no server-only.

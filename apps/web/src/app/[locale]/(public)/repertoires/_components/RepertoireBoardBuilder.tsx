@@ -2,11 +2,10 @@
 
 import { useEffect, useState } from 'react';
 
-import { useTranslations } from 'next-intl';
-
 import { BoardFrame } from '@/app/_components/chess/BoardFrame';
 import { ChessBoard } from '@/app/_components/chess/ChessBoard';
 import { FlipBoardButton } from '@/app/_components/chess/FlipBoardButton';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { useLatestRef } from '@blindfold-chess/features/common/client';
 import type { Side } from '@blindfold-chess/types';
 import { FaTrash } from 'react-icons/fa';

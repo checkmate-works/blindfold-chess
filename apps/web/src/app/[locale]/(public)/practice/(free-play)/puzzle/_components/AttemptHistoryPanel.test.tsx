@@ -14,8 +14,8 @@ import {
 // assertions can match deterministic strings without depending on locale
 // bundles. The badge uses `t('statusPartial', {correct, total})`, so we
 // surface those values for the assertion to inspect.
-vi.mock('next-intl', () => ({
-  useTranslations: () => (key: string, args?: Record<string, unknown>) =>
+vi.mock('@/i18n/use-safe-translations', () => ({
+  useSafeTranslations: () => (key: string, args?: Record<string, unknown>) =>
     args ? `${key}:${JSON.stringify(args)}` : key,
 }));
 

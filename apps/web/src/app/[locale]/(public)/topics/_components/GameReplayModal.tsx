@@ -2,8 +2,7 @@
 
 import { useMemo, useState } from 'react';
 
-import { useTranslations } from 'next-intl';
-
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { getStartingFen, parsePgnWithFen } from '@blindfold-chess/features/chess-core';
 
 import { usePgnReplay } from '@/app/[locale]/_hooks/use-pgn-replay';

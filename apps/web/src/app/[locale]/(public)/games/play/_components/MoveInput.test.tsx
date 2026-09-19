@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { MoveInput } from './MoveInput';
 
-vi.mock('next-intl');
+vi.mock('@/i18n/use-safe-translations');
 
 // The autocomplete suggestion engine hits chess-core; stub it so this test
 // exercises only the rendered DOM shape.

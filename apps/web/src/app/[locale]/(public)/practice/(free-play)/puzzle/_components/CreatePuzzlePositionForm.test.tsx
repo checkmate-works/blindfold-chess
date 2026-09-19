@@ -34,7 +34,7 @@ vi.mock('next/navigation', () => ({
   useSearchParams: () => ({ get: mockSearchParamsGet }),
 }));
 
-vi.mock('next-intl');
+vi.mock('@/i18n/use-safe-translations');
 
 vi.mock('@/app/[locale]/_contexts/GamePreferencesContext');
 

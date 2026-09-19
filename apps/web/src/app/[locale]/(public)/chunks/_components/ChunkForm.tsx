@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
 
 import { useSubmitError } from '@/_hooks/useSubmitError';
@@ -14,6 +13,7 @@ import {
   LocalizedUnsavedChangesDialog,
 } from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { validateFenStructure } from '@blindfold-chess/features/chess-core';
 import { flushSync } from 'react-dom';
 

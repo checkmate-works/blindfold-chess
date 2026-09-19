@@ -8,7 +8,7 @@ import { RedeemForm } from './RedeemForm';
 
 expect.extend(matchers);
 
-vi.mock('next-intl');
+vi.mock('@/i18n/use-safe-translations');
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ refresh: vi.fn() }),

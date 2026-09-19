@@ -2,9 +2,8 @@
 
 import { useRef } from 'react';
 
-import { useTranslations } from 'next-intl';
-
 import { ChessPiece } from '@/app/_components/chess/ChessPiece';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { CastlingToken, NotationChar } from '@blindfold-chess/features/ai-game/notation-input';
 import type { AlgebraicNotation, PieceColor, PieceType } from '@blindfold-chess/types';
 import { FaBackspace, FaCheck, FaTrash } from 'react-icons/fa';

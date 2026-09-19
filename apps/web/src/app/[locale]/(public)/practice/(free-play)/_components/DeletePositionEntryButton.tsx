@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 
-import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FiTrash2 } from 'react-icons/fi';
 
 import type { ActionResult } from '@/lib/action-types';

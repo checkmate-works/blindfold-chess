@@ -2,10 +2,10 @@
 
 import { useState, useTransition } from 'react';
 
-import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { Button, FieldError, FormErrorBanner, fieldErrorProps } from '@/app/_components';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import type { AdFreeRedemptionBlock } from '@/lib/ads/ad-free-redemption';
 

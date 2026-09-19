@@ -1,7 +1,8 @@
 'use client';
 
-import { useLocale, useTranslations } from 'next-intl';
+import { useLocale } from 'next-intl';
 
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FiAlertTriangle } from 'react-icons/fi';
 
 import type { ChangedIdentityField } from '../_lib/identity-changes';
