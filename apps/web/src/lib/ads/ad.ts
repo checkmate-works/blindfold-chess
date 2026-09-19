@@ -27,7 +27,7 @@ export async function shouldShowAdsForUser(userId: string | null): Promise<boole
   return !(await hasAdFreeEntitlement(userId));
 }
 
-/** Admin read — every creative regardless of active/schedule state. */
+/** Admin read — every creative, active or not. */
 export async function getAllAdCreatives() {
   try {
     return await db.select().from(adCreatives).orderBy(adCreatives.slot, adCreatives.sortOrder);
@@ -60,7 +60,7 @@ async function queryActiveCreatives(slot: string) {
 }
 
 /**
- * A slot's active, in-schedule, priority-ordered creatives — the raw pool the
+ * A slot's active, priority-ordered creatives — the raw pool the
  * `<AdSlot>` waterfall picks from. `payload` is `unknown`; render sites narrow
  * it with the kind guards in `@/lib/ads/payload`. Cached per slot (tag +
  * time-bounded) so ad-bearing pages stay static/ISR: the pool is baked at

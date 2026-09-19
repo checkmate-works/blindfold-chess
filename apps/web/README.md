@@ -173,12 +173,11 @@ See [docs/stripe-setup.md](docs/stripe-setup.md) for setup instructions.
 
 ## Ads (first-party + AdSense)
 
-Self-served affiliate creatives with an AdSense fallback, country targeting,
-and a single entitlement-based hide for ad-free viewers. Covers the `AdSlot`
-boundary, the `ad_creatives` model, the native card, and the `/admin/ads`
-management UI.
-
-See [docs/ad-slot-design.md](docs/ad-slot-design.md) for details.
+Self-served affiliate creatives with an AdSense fallback, managed at
+`/admin/ads`. The design is documented in TSDoc next to the code; start at
+`src/lib/ads/registry.ts` (slots) and the `adCreatives` table in
+`src/lib/db/schema/notifications.ts` (data model), then `AdSlot` and
+`NativeAdCard` under `src/app/[locale]/_components/` (rendering).
 
 ## Cron Jobs
 
