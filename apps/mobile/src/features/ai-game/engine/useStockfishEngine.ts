@@ -1,14 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  ChessEngine,
-  EngineBusyError,
-  EngineNoMoveError,
-} from "@blindfold-chess/features/ai-game/engine";
+import { ChessEngine } from "@blindfold-chess/features/ai-game/engine";
 import { type Result, err, ok } from "@blindfold-chess/features/utils";
 import type { AlgebraicNotation, Fen, UciMove } from "@blindfold-chess/types";
 
 import type { SkillLevel } from "../lib/types";
-import type { EngineError } from "./engine-errors";
+import { type EngineError, toEngineError } from "./engine-errors";
 import type { StockfishWebViewHandle } from "./StockfishWebView";
 import {
   createWebViewMessageChannel,
@@ -140,16 +136,7 @@ export function useStockfishEngine() {
 
         return ok({ uciMove, algebraicMove });
       } catch (cause) {
-        if (cause instanceof EngineBusyError) {
-          return err({ kind: "busy" });
-        }
-        if (cause instanceof EngineNoMoveError) {
-          return err({ kind: "no-move" });
-        }
-        // What is left is a command that missed its deadline, a bridge that
-        // died mid-request, or a move that is illegal in `fen` and so failed
-        // the UCI -> SAN conversion.
-        return err({ kind: "timeout", cause });
+        return err(toEngineError(cause));
       }
     },
     [engine],
