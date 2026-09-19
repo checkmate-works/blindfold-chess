@@ -9,6 +9,7 @@ import {
 import {
   AD_HIDE_BOOTSTRAP_HASH,
   ANNOUNCEMENT_DISMISS_HASH,
+  CONSENT_BOOTSTRAP_HASH,
   THEME_BOOTSTRAP_HASH_DEV,
   THEME_BOOTSTRAP_HASH_PROD,
 } from './inline-script-hashes';
@@ -43,16 +44,17 @@ describe('buildCspHeader', () => {
   });
 
   it('embeds the hash sources for the constant inline bootstrap scripts (prod set)', () => {
-    // The theme / ad-hide / announcement-dismiss bootstrap scripts carry no
-    // nonce (a `headers()` read to fetch one would force dynamic rendering),
-    // so the nonce policy must allow them by hash or every page view logs
-    // three script-src violations.
+    // The theme / ad-hide / consent / announcement-dismiss bootstrap scripts
+    // carry no nonce (a `headers()` read to fetch one would force dynamic
+    // rendering), so the nonce policy must allow them by hash or every page
+    // view logs four script-src violations.
     const header = buildCspHeader(
       { mode: 'per-request-nonce', nonce: 'abc' },
       { isDevelopment: false }
     );
     expect(header).toContain(`'${THEME_BOOTSTRAP_HASH_PROD}'`);
     expect(header).toContain(`'${AD_HIDE_BOOTSTRAP_HASH}'`);
+    expect(header).toContain(`'${CONSENT_BOOTSTRAP_HASH}'`);
     expect(header).toContain(`'${ANNOUNCEMENT_DISMISS_HASH}'`);
     expect(header).not.toContain(`'${THEME_BOOTSTRAP_HASH_DEV}'`);
   });
@@ -108,7 +110,7 @@ describe('buildCspHeader', () => {
     expect(header).toContain('connect-src');
     expect(header).toContain('*.sentry.io');
     expect(header).toContain('frame-src');
-    expect(header).toContain('googleads.g.doubleclick.net');
+    expect(header).toContain('www.chess.com');
     expect(header).toContain("frame-ancestors 'none'");
     expect(header).toContain("object-src 'none'");
     expect(header).toContain("base-uri 'self'");
@@ -123,65 +125,33 @@ describe('buildCspHeader', () => {
     expect(header).toContain("worker-src 'self' blob:");
   });
 
-  it('allow-lists the confirmed third-party hosts (Google Fonts)', () => {
+  it('names no third-party font or stylesheet host', () => {
+    // Every face the app renders is self-hosted by next/font. The Google Fonts
+    // pair that used to be here served the Google Sans face the ad stack's UI
+    // pulled in, and the OG image route's Google Fonts fetch happens on the
+    // server, where no CSP applies.
     const header = buildCspHeader(
       { mode: 'per-request-nonce', nonce: 'n' },
       { isDevelopment: false }
     );
 
     const fontSrc = header.split('; ').find((d) => d.startsWith('font-src '));
-    expect(fontSrc).toContain('fonts.gstatic.com');
+    expect(fontSrc).toBe("font-src 'self' data:");
 
     const styleSrc = header.split('; ').find((d) => d.startsWith('style-src '));
-    expect(styleSrc).toContain('fonts.googleapis.com');
+    expect(styleSrc).toBe("style-src 'self' 'unsafe-inline'");
   });
 
-  it('allow-lists AdSense Ad Traffic Quality beacon host in connect-src (ep1)', () => {
-    // AdSense's Ad Traffic Quality system fetches https://ep1.adtrafficquality.google
-    // — the connect-src counterpart of the ep2 frame host. Missing it floods
-    // production with connect-src violations.
-    const header = buildCspHeader(
-      { mode: 'per-request-nonce', nonce: 'n' },
-      { isDevelopment: false }
-    );
-    const connectSrc = header.split('; ').find((d) => d.startsWith('connect-src '));
-    expect(connectSrc).toContain('ep1.adtrafficquality.google');
-  });
-
-  it('allow-lists the Ad Traffic Quality pixel host in img-src (ep1)', () => {
-    // ep1.adtrafficquality.google is fetched as an <img> pixel as well as an
-    // XHR beacon, so connect-src alone is not enough.
-    const header = buildCspHeader(
-      { mode: 'per-request-nonce', nonce: 'n' },
-      { isDevelopment: false }
-    );
-    const imgSrc = header.split('; ').find((d) => d.startsWith('img-src '));
-    expect(imgSrc).toContain('ep1.adtrafficquality.google');
-  });
-
-  it('allow-lists the Funding Choices CMP host in connect-src', () => {
-    // Google's Privacy & messaging consent UI is delivered by adsbygoogle.js and
-    // beacons fundingchoicesmessages.google.com over XHR. `'strict-dynamic'`
-    // covers the injected script but not connect-src, so the host must be named.
-    const header = buildCspHeader(
-      { mode: 'per-request-nonce', nonce: 'n' },
-      { isDevelopment: false }
-    );
-    const connectSrc = header.split('; ').find((d) => d.startsWith('connect-src '));
-    expect(connectSrc).toContain('fundingchoicesmessages.google.com');
-  });
-
-  it('allow-lists the AdSense RUM and conversion endpoints in connect-src', () => {
-    // rum.js (loaded from pagead2) beacons csi.gstatic.com; gtag/AdSense
-    // conversion pings go to the bare www.google.com host. `'strict-dynamic'`
-    // covers loading those scripts but not where they connect.
+  it("allow-lists gtag's conversion endpoint in connect-src (www.google.com)", () => {
+    // gtag.js posts `/ccm/collect` to the bare www.google.com host, which
+    // neither *.google-analytics.com nor www.googletagmanager.com covers.
+    // `'strict-dynamic'` covers loading gtag.js but not where it connects.
     const connectSrc = buildCspHeader(
       { mode: 'per-request-nonce', nonce: 'n' },
       { isDevelopment: false }
     )
       .split('; ')
       .find((d) => d.startsWith('connect-src '));
-    expect(connectSrc).toContain('csi.gstatic.com');
     expect(connectSrc).toContain('www.google.com');
   });
 
@@ -197,11 +167,11 @@ describe('buildCspHeader', () => {
     expect(imgSrc).toContain('www.googletagmanager.com');
   });
 
-  it("allows AdSense's data: placeholder iframes in frame-src, but never in script-src", () => {
-    // AdSense seeds each slot with `<iframe src="data:text/html,...">`. A
-    // data: document has an opaque origin so it cannot reach into this page;
-    // `data:` in script-src, by contrast, would be a straight XSS bypass and
-    // must stay out of every variant.
+  it('allows no data: document anywhere — not as a frame, and never as a script', () => {
+    // `data:` sat in frame-src for the ad stack, which seeded each slot with
+    // `<iframe src="data:text/html,...">`; the app renders no data: frame of
+    // its own, so it went with the ads. In script-src it would be a straight
+    // XSS bypass and must stay out of BOTH variants.
     const header = buildCspHeader(
       { mode: 'per-request-nonce', nonce: 'n' },
       { isDevelopment: false }
@@ -209,7 +179,7 @@ describe('buildCspHeader', () => {
     const tokensOf = (name: string) =>
       (header.split('; ').find((d) => d.startsWith(`${name} `)) ?? '').split(/\s+/).slice(1);
 
-    expect(tokensOf('frame-src')).toContain('data:');
+    expect(tokensOf('frame-src')).not.toContain('data:');
     expect(tokensOf('script-src')).not.toContain('data:');
     expect(
       buildCspHeader({ mode: 'static-content' }, { isDevelopment: false })
@@ -219,16 +189,17 @@ describe('buildCspHeader', () => {
     ).not.toContain('data:');
   });
 
-  it('allow-lists the AdSense iframe host in frame-src (pagead2)', () => {
-    // Some AdSense ad iframes are served from pagead2.googlesyndication.com.
-    const header = buildCspHeader(
+  it('keeps frame-src down to the two origins a page deliberately embeds', () => {
+    // A Chess.com board and a YouTube video on the privacy-enhanced host,
+    // plus our own origin for the share dialog's embed preview. Every ad
+    // iframe host is gone; this is the guard against one drifting back in.
+    const frameSrc = buildCspHeader(
       { mode: 'per-request-nonce', nonce: 'n' },
       { isDevelopment: false }
-    );
-    const frameSrc = header.split('; ').find((d) => d.startsWith('frame-src '));
-    expect(frameSrc).toContain('pagead2.googlesyndication.com');
-    // Sanity: the existing ep2 iframe host is still present.
-    expect(frameSrc).toContain('ep2.adtrafficquality.google');
+    )
+      .split('; ')
+      .find((d) => d.startsWith('frame-src '));
+    expect(frameSrc).toBe("frame-src 'self' www.chess.com www.youtube-nocookie.com");
   });
 
   it("allows framing our own origin, which the share dialog's embed preview needs", () => {
