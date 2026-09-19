@@ -11,12 +11,15 @@ import { buildAdminListHref } from '@/app/admin/_lib/build-list-href';
 import { formatDateTime } from '@/app/admin/_lib/format';
 import { FaExternalLinkAlt } from 'react-icons/fa';
 
+import { truncateContent } from '@/lib/content/truncate-content';
 import type { Position } from '@/lib/db';
 import { DEFAULT_PAGE_SIZE, getPaginationParams } from '@/lib/pagination';
 import { countPositions, listPositions } from '@/lib/positions/queries';
 import type { PositionType } from '@/lib/positions/types';
 import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
-import { truncate } from '@/lib/text';
+
+/** Description budget for the table cell, which is itself `max-w-xs truncate`. */
+const DESCRIPTION_CELL_LENGTH = 80;
 
 type PositionsListPageProps = {
   /** Position type filter; also determines the admin base path `/admin/positions/{type}`. */
@@ -93,7 +96,9 @@ export async function PositionsListPage({
               <BoardThumbnail fen={position.fen} className="w-20 h-20" />
             </td>
             <td className="px-4 py-3 text-muted-foreground max-w-xs truncate">
-              {position.description ? truncate(position.description) : '-'}
+              {position.description
+                ? truncateContent(position.description, DESCRIPTION_CELL_LENGTH)
+                : '-'}
             </td>
             <td className="px-4 py-3 text-muted-foreground text-sm">
               {formatDateTime(position.createdAt)}

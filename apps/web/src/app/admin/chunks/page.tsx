@@ -7,11 +7,14 @@ import { adminPageSearchParamsCache } from '@/app/admin/_lib/admin-search-params
 import { formatDateTime } from '@/app/admin/_lib/format';
 
 import { countChunks, listChunks } from '@/lib/chunks/queries';
+import { truncateContent } from '@/lib/content/truncate-content';
 import { DEFAULT_PAGE_SIZE, getPaginationParams } from '@/lib/pagination';
 import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
-import { truncate } from '@/lib/text';
 
 import { DeleteChunkButton } from './_components/DeleteChunkButton';
+
+/** Description budget for the table cell, which is itself `max-w-xs truncate`. */
+const DESCRIPTION_CELL_LENGTH = 80;
 
 export default async function AdminChunksPage({
   searchParams,
@@ -57,7 +60,9 @@ export default async function AdminChunksPage({
               <BoardThumbnail fen={chunk.representativeFen} className="w-20 h-20" />
             </td>
             <td className="px-4 py-3 text-muted-foreground max-w-xs truncate">
-              {chunk.description ? truncate(chunk.description) : '-'}
+              {chunk.description
+                ? truncateContent(chunk.description, DESCRIPTION_CELL_LENGTH)
+                : '-'}
             </td>
             <td className="px-4 py-3 text-muted-foreground text-sm">
               {formatDateTime(chunk.createdAt)}
