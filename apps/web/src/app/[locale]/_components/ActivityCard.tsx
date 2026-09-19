@@ -55,9 +55,12 @@ type Props = {
    * `relative z-10` and keep working unchanged.
    *
    * The background link is `aria-hidden` and removed from the tab
-   * order — keyboard and screen-reader users use the visible permalink
-   * Link in the `permalink` slot, which carries the semantic
-   * <a href> for SEO and a11y.
+   * order, so the card MUST also contain a real, focusable anchor to the
+   * same destination — otherwise the card is reachable by pointer only.
+   * Usually that is the permalink Link in the `permalink` slot, which
+   * carries the semantic <a href> for SEO and a11y; a card with no
+   * permalink (e.g. `NativeAdCard`) must put the anchor on its title
+   * instead.
    *
    * Pass `null`/`undefined` for cards with no whole-card destination
    * (e.g. a position-feed entry whose detail page does not exist yet).
@@ -65,6 +68,18 @@ type Props = {
   href?: string | null;
   /** Locale forwarded to the background link (and to next-intl). */
   locale?: string;
+  /**
+   * `rel` for the background link. Needed whenever `href` leaves the site:
+   * `aria-hidden` takes the link out of the accessibility tree, but a crawler
+   * reads the raw `<a href>` and neither knows nor cares about ARIA — so an
+   * affiliate destination is an unmarked paid link to Google unless it carries
+   * `rel="sponsored"` here, and user-submitted destinations want
+   * `nofollow ugc`. Pair it with `target="_blank"` and include
+   * `noopener noreferrer`.
+   */
+  rel?: string;
+  /** `target` for the background link (e.g. `_blank` for off-site links). */
+  target?: string;
 };
 
 export const ActivityCard = memo(function ActivityCard({
@@ -77,6 +92,8 @@ export const ActivityCard = memo(function ActivityCard({
   children,
   href,
   locale,
+  rel,
+  target,
 }: Props) {
   const baseFlex = 'flex gap-4 p-4';
   const variantClass = variant === 'card' ? ' rounded-md border border-border bg-card' : '';
@@ -109,6 +126,8 @@ export const ActivityCard = memo(function ActivityCard({
         <Link
           href={href}
           locale={locale}
+          rel={rel}
+          target={target}
           aria-hidden="true"
           tabIndex={-1}
           className="absolute inset-0 z-0"
