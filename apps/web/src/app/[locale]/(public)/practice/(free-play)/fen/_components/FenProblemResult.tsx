@@ -42,15 +42,13 @@ export function FenProblemResult({
 
   return (
     <div className="space-y-4">
-      <div className="bg-card rounded-md border border-border p-4">
+      <div>
         <div className="flex flex-col gap-6">
-          {/* Accuracy Result */}
-          <div className="text-center">
-            <p className="text-2xl font-bold">
-              {t('accuracy')}: {accuracy.accuracy.toFixed(1)}% ({accuracy.correctPieces}/
-              {accuracy.totalPieces})
-            </p>
-          </div>
+          {/* Accuracy Title */}
+          <h2 className="text-2xl font-bold text-center">
+            {t('accuracy')}: {accuracy.accuracy.toFixed(1)}% ({accuracy.correctPieces}/
+            {accuracy.totalPieces})
+          </h2>
 
           <ProblemRecreationSections
             namespace={NAMESPACE}
