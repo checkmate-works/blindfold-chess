@@ -5,7 +5,7 @@ import { cookies } from 'next/headers';
 
 import { ConsentBanner } from '@/app/_components/ConsentBanner';
 import { GoogleScripts } from '@/app/_components/GoogleScripts';
-import { ADSENSE_PUBLISHER_ID, AUTHOR_NAME, GA_MEASUREMENT_ID, SITE_URL } from '@/config';
+import { AUTHOR_NAME, GA_MEASUREMENT_ID, SITE_URL } from '@/config';
 import { generateThemeCSS } from '@blindfold-chess/ui';
 import { EnvironmentRibbon } from 'env-ribbon';
 
@@ -101,10 +101,7 @@ export default async function LandingLayout({ children }: { children: React.Reac
           />
         )}
         <StorageAvailabilityProvider>
-          <GoogleScripts
-            adsensePublisherId={ADSENSE_PUBLISHER_ID}
-            gaMeasurementId={GA_MEASUREMENT_ID}
-          />
+          <GoogleScripts gaMeasurementId={GA_MEASUREMENT_ID} />
           <Providers locale={locale} messages={messages}>
             {children}
           </Providers>

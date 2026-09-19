@@ -1,101 +1,68 @@
 'use client';
 
-import Script from 'next/script';
-
 import { GoogleAnalytics } from '@next/third-parties/google';
 
+import { useConsentDecision } from '@/lib/consent/useConsentDecision';
 import { useStorageAvailabilityContext } from '@/lib/storage/StorageAvailabilityProvider';
 
 type GoogleScriptsProps = {
-  /** AdSense client publisher ID (`ca-pub-xxxx`). Pass `undefined` to skip injection. */
-  adsensePublisherId?: string;
   /** GA4 measurement ID (`G-XXXX`). Pass `undefined` to skip injection. */
   gaMeasurementId?: string;
 };
 
 /**
- * Conditionally injects the AdSense loader and Google Analytics scripts —
- * but only after a client-side probe confirms that `localStorage`,
- * `indexedDB`, and `document.cookie` are all writable.
+ * Injects Google Analytics, and only once two gates are open: the visitor has
+ * granted consent, and a client-side probe has confirmed that `localStorage`,
+ * `indexedDB` and `document.cookie` are all writable.
  *
- * No separate CMP/consent-message tag is injected here. AdSense's own
- * "Privacy & messaging" (formerly Funding Choices) is configured entirely in
- * the AdSense dashboard and is delivered automatically through this same
- * `adsbygoogle.js` loader once enabled there — Google's own docs state the
- * message requires "the AdSense code" to be present on the page, with no
- * distinct message-only script for plain AdSense (as opposed to Ad Manager)
- * publishers. This is also why `adsensePublisherId` is now passed at every
- * layout that mounts `GoogleScripts` (not just the pages that actually show
- * an ad unit) — the loader must be present sitewide for the consent message
- * (and therefore Consent-Mode-gated GA4) to appear on every page.
+ * Why the consent gate is "do not load it" rather than Consent Mode: with GA4
+ * as the only tag on the site, withholding the script is both simpler and
+ * stricter than loading gtag in a default-denied state. Nothing is requested
+ * from Google at all before the visitor agrees — there is no cookieless ping
+ * to explain, and no consent signal to keep in sync with a second system. The
+ * decision itself lives on `<html data-consent>`; see `@/lib/consent`.
  *
- * Why all-or-nothing: the CMP only matters if it can persist consent;
- * AdSense / GA only matter if the CMP can grant them consent. When any
- * storage layer is blocked (Firefox ETP, adblockers, sandboxed iframes,
- * private mode, etc.) every link of that chain is broken, so loading the
- * scripts at all just produces failed network requests and `NS_ERROR_NOT_-
- * INITIALIZED` Sentry noise. Per product decision, we render nothing in
- * that case.
+ * Why all-or-nothing on storage: consent only means anything if it can be
+ * persisted, and analytics only means anything if the visitor can consent.
+ * When any storage layer is blocked (Firefox ETP, adblockers, sandboxed
+ * iframes, private mode, etc.) every link of that chain is broken, so loading
+ * the script at all just produces failed network requests and
+ * `NS_ERROR_NOT_INITIALIZED` Sentry noise. Per product decision, we render
+ * nothing in that case — and the banner applies the same gate, so nobody is
+ * asked for a decision that could not be stored.
  *
  * Why a shared context: this component may render in nested layouts (e.g.
- * `(public)/layout.tsx` is nested inside `[locale]/layout.tsx`), and we
- * want the storage probe to run at most once per page load. The root
- * layouts mount `StorageAvailabilityProvider` exactly once each; every
- * `GoogleScripts` instance below reads from that single provider, so
- * adding more nested mounts never duplicates the probe. Each instance
- * renders `<Script id="adsbygoogle-loader">` with the same `id`, and
- * `next/script` dedupes by `id`, so the loader is only actually injected
- * once even though it may appear in more than one layout's render tree.
+ * `(public)/layout.tsx` is nested inside `[locale]/layout.tsx`), and we want
+ * the storage probe to run at most once per page load. The root layouts mount
+ * `StorageAvailabilityProvider` exactly once each; every `GoogleScripts`
+ * instance below reads from that single provider, so adding more nested
+ * mounts never duplicates the probe.
  *
- * ─── Design tradeoff: consent-message latency ──────────────────────────
- * Both scripts below use `strategy="lazyOnload"` + this availability gate.
- * Because the gate returns `null` until the post-mount probe finishes AND
- * `lazyOnload` defers injection until after `window.onload`, the consent
- * message first paints noticeably later than a classic `afterInteractive`
- * mount would. This is intentional:
+ * ─── Design tradeoff: analytics accuracy ───────────────────────────────
+ * `GoogleAnalytics` (`@next/third-parties/google`) defaults to
+ * `afterInteractive`, and that default is kept — but the gates above mean the
+ * script is injected no earlier than the post-mount probe, and on a first
+ * visit no earlier than the click that grants consent. First-visit
+ * `page_view` events are therefore measurably less complete than they would
+ * be with an ungated `afterInteractive` mount: a visitor who reads one page
+ * and leaves without answering the banner is never counted at all.
  *
- *   - Core Web Vitals (LCP/INP) win from deferring the AdSense loader.
- *   - Users with blocked storage never see the message anyway — for them
- *     the latency is infinite, and that is the desired behavior.
- *
- * Accepted cost: users with storage available see the consent message a
- * few hundred ms later than they would with `afterInteractive`.
- *
- * Note on `GoogleAnalytics` (`@next/third-parties/google`): the helper
- * defaults to `afterInteractive`. We intentionally keep it on its default
- * rather than forcing it onto `lazyOnload` via a manual `<Script>`,
- * because:
- *   - First-visit GA page_view events are materially more accurate when
- *     GA runs before onload (otherwise a user who clicks away during load
- *     is never counted).
- *   - GA is small (~45 KB) and fetched via `gtag.js` with `async`; it does
- *     not block paint.
- *   - The availability gate above still short-circuits it when storage
- *     is blocked, which was the whole point of this module.
- * If analytics accuracy ever matters less than absolute uniformity, swap
- * the `<GoogleAnalytics>` below for a manual `<Script strategy="lazyOnload">`
- * that emits the equivalent gtag bootstrap.
+ * That is the accepted cost of not running analytics before permission, and
+ * it is not recoverable by moving the script earlier — earlier is precisely
+ * what consent forbids. What it does mean is that GA4 session counts
+ * undercount real traffic by however many visitors never answer, so the
+ * numbers are a floor rather than a measurement.
  */
-export function GoogleScripts({ adsensePublisherId, gaMeasurementId }: GoogleScriptsProps) {
+export function GoogleScripts({ gaMeasurementId }: GoogleScriptsProps) {
   const availability = useStorageAvailabilityContext();
+  const consent = useConsentDecision();
 
-  // Render nothing during SSR / first render (`null`) and when any storage
-  // mechanism is blocked. This keeps the server-rendered HTML stable across
-  // all environments and guarantees zero outbound Google requests when
-  // storage is unavailable.
+  // Render nothing during SSR / first render (both hooks report `null`) and
+  // whenever either gate is closed. This keeps the server-rendered HTML
+  // stable across all environments and guarantees zero outbound Google
+  // requests until the visitor has said yes.
   if (!availability?.all) return null;
+  if (consent !== 'granted') return null;
 
-  return (
-    <>
-      {adsensePublisherId && (
-        <Script
-          id="adsbygoogle-loader"
-          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsensePublisherId}`}
-          strategy="lazyOnload"
-          crossOrigin="anonymous"
-        />
-      )}
-      {gaMeasurementId && <GoogleAnalytics gaId={gaMeasurementId} />}
-    </>
-  );
+  return <>{gaMeasurementId && <GoogleAnalytics gaId={gaMeasurementId} />}</>;
 }

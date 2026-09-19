@@ -6,7 +6,7 @@ import { notFound } from 'next/navigation';
 
 import { ConsentBanner } from '@/app/_components/ConsentBanner';
 import { GoogleScripts } from '@/app/_components/GoogleScripts';
-import { ADSENSE_PUBLISHER_ID, AUTHOR_NAME, GA_MEASUREMENT_ID, SITE_URL } from '@/config';
+import { AUTHOR_NAME, GA_MEASUREMENT_ID, SITE_URL } from '@/config';
 import { OG_LOCALE_MAP } from '@/i18n/og-locale';
 import { resolveLocale } from '@/i18n/resolve-locale';
 import { routing } from '@/i18n/routing';
@@ -292,10 +292,7 @@ export default async function Layout({
       <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
         <EnvironmentRibbon />
         <StorageAvailabilityProvider>
-          <GoogleScripts
-            adsensePublisherId={ADSENSE_PUBLISHER_ID}
-            gaMeasurementId={GA_MEASUREMENT_ID}
-          />
+          <GoogleScripts gaMeasurementId={GA_MEASUREMENT_ID} />
           <Providers locale={locale} messages={messages}>
             <div className="flex flex-col min-h-screen">
               <Header locale={locale} />
