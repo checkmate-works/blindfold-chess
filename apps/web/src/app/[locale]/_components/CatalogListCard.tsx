@@ -19,9 +19,9 @@ import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 import { CARD_PERMALINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 /**
- * Excerpt budget for the card's description line. Shorter than the 200 a
- * standalone post preview gets because the excerpt sits under a thumbnail in a
- * two-line clamp, so anything past this is cropped by CSS anyway.
+ * Excerpt budget for the card's description line. The paragraph it lands in is
+ * also `line-clamp-2`, so this is the first of two limits rather than the only
+ * one — a narrow card can hide text this cut left in.
  */
 const DESCRIPTION_EXCERPT_LENGTH = 80;
 

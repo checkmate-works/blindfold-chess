@@ -59,7 +59,7 @@ type Props = {
 
 type TFunc = ServerTranslator;
 
-/** Teaser budget for the guide link card's one-paragraph preview. */
+/** Teaser budget for the Tips card's guide-preview paragraph. */
 const TEASER_LENGTH = 100;
 
 /**
