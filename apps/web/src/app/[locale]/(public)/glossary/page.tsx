@@ -7,7 +7,6 @@ import { SITE_URL } from '@/config';
 import { JsonLd, generateDefinedTermSetSchema } from '@/lib/seo/jsonld';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
-import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
@@ -57,8 +56,6 @@ export default async function GlossaryIndexPage({ params }: Props) {
           <SectionTitle>{t('index.byCategory')}</SectionTitle>
           <CategoryIndex locale={locale} />
         </div>
-
-        <AdSlot slot="content-bottom" />
       </PageLayout>
     </>
   );

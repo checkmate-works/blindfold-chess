@@ -11,7 +11,6 @@ import {
 import { JsonLd, generateFAQPageSchema } from '@/lib/seo/jsonld';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
-import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
@@ -218,8 +217,6 @@ export default async function FAQPage({ params }: Props) {
       <PageLayout title={t('title')} locale={locale} breadcrumb={[{ label: t('title') }]}>
         <SectionTitle>{t('title')}</SectionTitle>
         <FAQClient items={faqItems} />
-
-        <AdSlot slot="content-bottom" />
       </PageLayout>
     </>
   );

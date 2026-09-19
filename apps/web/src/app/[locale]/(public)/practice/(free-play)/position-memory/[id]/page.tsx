@@ -18,7 +18,6 @@ import { MoveNotationText } from '@/app/[locale]/(public)/topics/_components/Mov
 import { validateSort } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import { Divider, SectionTitle } from '@/app/[locale]/_components';
 import { ActionsMenu, type ActionsMenuItem } from '@/app/[locale]/_components/ActionsMenu';
-import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { RelatedTags } from '@/app/[locale]/_components/RelatedTags';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -167,7 +166,6 @@ export default async function PositionDetailPage({ params, searchParams }: Props
       title={position.title}
       locale={locale}
       headerNote={forkedFromNote}
-      bottomAdSense={<AdSlot slot="content-bottom" />}
       breadcrumbItems={[
         { label: tNav('practice'), href: '/practice' },
         { label: t('list.title'), href: '/practice/position-memory' },
@@ -259,14 +257,6 @@ export default async function PositionDetailPage({ params, searchParams }: Props
         locale={locale}
         likeMeta={likeMeta}
       />
-
-      {/*
-       * Mid-page ad above the comment thread. Only when there are comments:
-       * with zero comments the page ends just below here, so `content-bottom`
-       * is already near the fold and a second ad would only crowd it.
-       * `commentCount` is already loaded, so this adds no query.
-       */}
-      {commentCount > 0 && <AdSlot slot="content-middle" />}
 
       <PositionCommentSection
         locale={locale}

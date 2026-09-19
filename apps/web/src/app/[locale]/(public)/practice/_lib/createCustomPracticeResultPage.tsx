@@ -31,12 +31,12 @@ type CustomPracticeResultConfig = {
   /** Validate the locale against SUPPORTED_LOCALES and `notFound()` if invalid. */
   validateLocale?: boolean;
   /** Render the entire result body. */
-  renderContent: (args: { locale: Locale; adBanner?: ReactNode }) => ReactNode;
+  renderContent: (args: { locale: Locale }) => ReactNode;
 };
 
 /**
  * Factory for practice result pages that render a fully custom body instead of
- * the standard `PracticeComplete` + leaderboard + ads layout (currently just
+ * the standard `PracticeComplete` + leaderboard layout (currently just
  * knight-tour). It provides only the shared `PracticeResultPage` shell with
  * breadcrumbs and hands the rest to `renderContent`.
  *
@@ -57,7 +57,7 @@ export function createCustomPracticeResultPage(config: CustomPracticeResultConfi
     renderContent,
   } = config;
 
-  function ResultClient({ locale, adBanner, adBannerStandard }: ResultClientProps) {
+  function ResultClient({ locale }: ResultClientProps) {
     const t = useTranslations(`practice.${i18nKey}`);
     const tPractice = useTranslations('practice');
     const tNavigation = useTranslations('navigation');
@@ -81,9 +81,7 @@ export function createCustomPracticeResultPage(config: CustomPracticeResultConfi
         containerClassName={containerClassName}
         dividerClassName={dividerClassName}
       >
-        {renderContent({ locale, adBanner })}
-        {/* `ad-slot-wrapper` so the spacer collapses with the ad for ad-free viewers. */}
-        {adBannerStandard && <div className="mt-8 ad-slot-wrapper">{adBannerStandard}</div>}
+        {renderContent({ locale })}
       </PracticeResultPage>
     );
   }

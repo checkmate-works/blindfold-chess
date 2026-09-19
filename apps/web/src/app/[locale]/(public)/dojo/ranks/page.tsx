@@ -39,7 +39,6 @@ import {
   PageTitle,
   SectionTitle,
 } from '@/app/[locale]/_components';
-import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { BreadcrumbSkeleton } from '@/app/[locale]/_components/Breadcrumb';
 import { SignUpBanner } from '@/app/[locale]/_components/SignUpBanner';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
@@ -87,8 +86,6 @@ async function RanksContent({ params }: LocalePageProps) {
           {tDojo('backToDojo')}
         </Link>
       </div>
-
-      <AdSlot slot="content-bottom" />
     </PageLayout>
   );
 }

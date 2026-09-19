@@ -23,7 +23,6 @@ import {
   SectionTitle,
 } from '@/app/[locale]/_components';
 import { ActionsMenu } from '@/app/[locale]/_components/ActionsMenu';
-import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -152,16 +151,6 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
           repertoires: relatedRepertoires.length,
           comments: commentCount,
         });
-
-  // When every tab is empty the page is short enough that `content-bottom`
-  // sits just below the fold, so a mid-page ad above the (all-zero) tab bar
-  // would only crowd the layout. Show it only when at least one tab has
-  // content — the counts are already loaded, so this adds no query.
-  const hasTabContent =
-    linkedPositions.length > 0 ||
-    relatedGames.length > 0 ||
-    relatedRepertoires.length > 0 ||
-    commentCount > 0;
 
   const [t, tChunks, tEditRequests] = await Promise.all([
     getTranslations({ locale, namespace: 'topics.chunks' }),
@@ -356,13 +345,6 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
        * always render so the tab set is stable and the count tells you what's
        * inside.
        */}
-      {/*
-       * `id` + `scroll-mt-20`: lets a link from elsewhere (e.g. the home feed's
-       * comment-count icon) land on this tab bar via `#chunk-tabs` instead of
-       * the top of the page — the tabs sit well below the description/board/
-       * metadata block above.
-       */}
-      {hasTabContent && <AdSlot slot="content-middle" />}
 
       <div id="chunk-tabs" className="scroll-mt-20">
         <LinkTabs
@@ -441,8 +423,6 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
           representativeFen={chunk.representativeFen}
         />
       )}
-
-      <AdSlot slot="content-bottom" />
     </PageLayout>
   );
 }

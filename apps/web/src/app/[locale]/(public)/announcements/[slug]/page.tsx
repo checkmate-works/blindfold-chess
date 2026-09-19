@@ -13,7 +13,6 @@ import { formatLocalDate } from '@/lib/i18n/format-date';
 import { toMetaDescription } from '@/lib/seo/meta-description';
 
 import { PageLayout } from '@/app/[locale]/_components';
-import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { ProseArticle } from '@/app/[locale]/_components/ProseArticle';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -108,8 +107,6 @@ export default async function AnnouncementPage({ params }: Props) {
               {t('signInToView')}
             </Link>
           </div>
-
-          <AdSlot slot="content-bottom" />
         </PageLayout>
       );
     }
@@ -133,8 +130,6 @@ export default async function AnnouncementPage({ params }: Props) {
       </ProseArticle>
 
       {publishedDate && <p className="text-sm text-muted-foreground text-right">{publishedDate}</p>}
-
-      <AdSlot slot="content-bottom" />
     </PageLayout>
   );
 }

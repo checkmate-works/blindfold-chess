@@ -9,7 +9,4 @@ export const ResultClient = createPracticeResultClient({
   validateLocale: true,
   buildSettingsUrl: (ctx) => `/${ctx.locale}/practice/square-colors/challenge`,
   buildTryAgainUrl: (ctx) => `/${ctx.locale}/practice/square-colors/challenge/session`,
-  extraCompleteProps: (_ctx, { adBannerWide }) => ({
-    beforeRelatedContent: adBannerWide,
-  }),
 });

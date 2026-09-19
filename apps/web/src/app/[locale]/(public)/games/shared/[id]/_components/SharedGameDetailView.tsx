@@ -26,7 +26,6 @@ import { resolveTermPreviews } from '@/app/[locale]/(public)/glossary/_lib/term-
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import { MoveNotationText } from '@/app/[locale]/(public)/topics/_components/MoveNotationText';
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
-import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { GlossaryTermModalProvider } from '@/app/[locale]/_components/glossary-term/GlossaryTermModalProvider';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -264,10 +263,6 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
           }
         />
       </div>
-
-      {/* Content-bottom ad, between the review and the breadcrumb — same slot and
-          position as the result screen (games/play/result). */}
-      <AdSlot slot="content-bottom" />
     </PageLayout>
   );
 }

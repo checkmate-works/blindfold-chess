@@ -9,7 +9,4 @@ export const ResultClient = createPracticeResultClient({
   validateLocale: true,
   buildTryAgainUrl: (ctx) => `/${ctx.locale}/practice/board-symmetry/challenge/session`,
   buildSettingsUrl: (ctx) => `/${ctx.locale}/practice/board-symmetry`,
-  extraCompleteProps: (_ctx, { adBannerWide }) => ({
-    beforeRelatedContent: adBannerWide,
-  }),
 });

@@ -19,7 +19,6 @@ import { notFound } from 'next/navigation';
 
 import { Link } from '@/i18n/routing';
 
-import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { PagePanel } from '@/app/[locale]/_components/PagePanel';
 import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -104,8 +103,6 @@ export default async function ExpLeaderboardPeriodPage({ params }: Props) {
           {t('backToList')}
         </Link>
       </div>
-
-      <AdSlot slot="content-bottom" />
     </PagePanel>
   );
 }

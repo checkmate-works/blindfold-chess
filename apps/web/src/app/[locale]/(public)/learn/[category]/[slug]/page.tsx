@@ -9,7 +9,6 @@ import { SUPPORTED_LOCALES } from '@/config';
 import { JsonLd, generateArticleSchema } from '@/lib/seo/jsonld';
 
 import { CardLink, PageLayout, SectionTitle } from '@/app/[locale]/_components';
-import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { ProseArticle } from '@/app/[locale]/_components/ProseArticle';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import {
@@ -135,8 +134,6 @@ export default async function LearnArticlePage({ params }: Props) {
           <LazyMarkdownRenderer content={article.content} skipFirstH1={true} />
         </ProseArticle>
 
-        <AdSlot slot="content-middle" />
-
         {relatedPracticeModules && (
           <div className="space-y-4">
             <SectionTitle>{t('learn.practiceYourSkills')}</SectionTitle>
@@ -201,8 +198,6 @@ export default async function LearnArticlePage({ params }: Props) {
             })}
           </div>
         </div>
-
-        <AdSlot slot="content-bottom" />
       </PageLayout>
     </>
   );

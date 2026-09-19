@@ -11,7 +11,6 @@ import { createClient } from '@/lib/supabase/server';
 import { resolveAuthorName } from '@/lib/users/display-name';
 
 import { PageLayout } from '@/app/[locale]/_components';
-import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { Divider } from '@/app/[locale]/_components/Divider';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
@@ -114,13 +113,10 @@ export default async function ResultPage({ params, searchParams }: Props) {
         />
       </Suspense>
 
-      <AdSlot slot="content-bottom" />
-
-      {/* Breadcrumb sits below the content-bottom ad, matching the standard
-          PageLayout trailing block (content → ad → divider+breadcrumb). It is
-          rendered here rather than inside ResultClient so the ad stays above
-          it. `!mt-4` halves the panel's `space-y-8` gap; the inner `space-y-4`
-          groups the divider with the breadcrumb. */}
+      {/* Breadcrumb sits in the standard PageLayout trailing block, rendered
+          here rather than inside ResultClient so it stays outside the
+          Suspense boundary. `!mt-4` halves the panel's `space-y-8` gap; the
+          inner `space-y-4` groups the divider with the breadcrumb. */}
       <div className="!mt-4 space-y-4">
         <Divider />
         {breadcrumb}

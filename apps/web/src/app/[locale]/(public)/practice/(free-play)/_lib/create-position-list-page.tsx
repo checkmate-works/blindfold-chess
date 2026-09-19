@@ -21,7 +21,6 @@ import { buildPaginationHref } from '@/app/[locale]/(public)/topics/_lib/paginat
 import { validateSort } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import { HelpTourButton, PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import type { HelpStep } from '@/app/[locale]/_components';
-import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { NativeAdCard } from '@/app/[locale]/_components/NativeAdCard';
 import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
@@ -61,8 +60,7 @@ export interface PositionListPageConfig {
   /**
    * When set, a native ad card (same shell as the list cards) is interleaved
    * into the list from this `native_card` slot's active creatives. Omit to
-   * render no in-list ad. The page keeps its bottom `content-bottom` AdSlot
-   * regardless.
+   * render no ad at all — this is the page's only placement.
    */
   nativeAdSlot?: AdSlotId;
 }
@@ -235,8 +233,6 @@ export function createPositionListPage(config: PositionListPageConfig) {
           totalPages={totalPages}
           buildHref={buildHref}
         />
-
-        <AdSlot slot="content-bottom" />
       </PageLayout>
     );
   }

@@ -11,7 +11,6 @@ import { getPositionWithProfileById } from '@/lib/positions/queries';
 import { resolveAuthorName } from '@/lib/users/display-name';
 import { UUID_RE } from '@/lib/validations/uuid';
 
-import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -80,8 +79,6 @@ export default async function PositionResultPage({ params, searchParams }: Props
   const currentUser = await getOptionalUser();
   const likeMeta = position ? await getPositionLikeMeta(position.id, currentUser?.id) : undefined;
 
-  const adBannerStandard = <AdSlot slot="content-bottom" />;
-
   const breadcrumb = (
     <Breadcrumb
       items={[
@@ -104,7 +101,6 @@ export default async function PositionResultPage({ params, searchParams }: Props
       <SinglePositionResult
         locale={locale}
         sessionPath={`/practice/position-memory/${id}/session`}
-        adBannerStandard={adBannerStandard}
         breadcrumb={breadcrumb}
         expInfo={expInfo}
         positionId={position?.id}

@@ -23,7 +23,6 @@ import { FaPlusCircle } from 'react-icons/fa';
 
 import { PiecesInfo } from '@/app/[locale]/(public)/practice/_components/PiecesInfo';
 import { Divider, SectionTitle } from '@/app/[locale]/_components';
-import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -68,7 +67,6 @@ export default async function CustomPositionStartPage({ params }: Props) {
     <PositionDetailLayout
       title={t('custom.title')}
       locale={locale}
-      bottomAdSense={<AdSlot slot="content-bottom" />}
       breadcrumbItems={[
         { label: tNav('practice'), href: '/practice' },
         { label: t('list.title'), href: '/practice/position-memory' },

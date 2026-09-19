@@ -15,7 +15,6 @@ import type {
   LeaderboardPeriod,
   LeaderboardRow,
 } from '@/app/[locale]/(public)/leaderboard/_lib/types';
-import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale, LocalePageProps, LocaleSearchPageProps } from '@/app/[locale]/_lib/types';
 
@@ -135,8 +134,6 @@ export function createPracticeResultMetadata(config: MetadataConfig) {
 
 type SimpleResultClientProps = {
   locale: Locale;
-  adBanner?: ReactNode;
-  adBannerStandard?: ReactNode;
   expInfo?: ExpInfo | null;
   /** Server-decided guest banner; `undefined` for a signed-in viewer. */
   signUpBanner?: ReactNode;
@@ -186,8 +183,6 @@ export function createSimplePracticeResultPage(
           locale={locale}
           expInfo={expInfo}
           signUpBanner={user ? undefined : <GuestSignUpBanner locale={locale} />}
-          adBanner={<AdSlot slot="content-middle" />}
-          adBannerStandard={<AdSlot slot="content-bottom" />}
         />
       </Suspense>
     );
@@ -200,8 +195,6 @@ export function createSimplePracticeResultPage(
 
 type LeaderboardResultClientProps = AuthSlot & {
   locale: Locale;
-  adBannerWide?: ReactNode;
-  adBannerStandard?: ReactNode;
   leaderboardRows?: LeaderboardRow[];
   leaderboardDetailPath?: string;
   leaderboardPeriod?: LeaderboardPeriod;
@@ -217,11 +210,6 @@ type LeaderboardConfig = {
    * Return the resolved key string (with fallback applied).
    */
   resolveKey: (searchParams: Record<string, string | string[] | undefined>) => string;
-  /** Ad banner slots to render. Defaults to both wide and standard. */
-  adSlots?: {
-    wide?: boolean;
-    standard?: boolean;
-  };
   /**
    * Fallback shown while the client `ResultClient` chunk is in flight on a soft
    * navigation (see the inner `<Suspense>` below). Defaults to the shared
@@ -236,8 +224,6 @@ export function createLeaderboardPracticeResultPage(
   ResultClient: ComponentType<LeaderboardResultClientProps>,
   leaderboard: LeaderboardConfig
 ) {
-  const { wide = true, standard = true } = leaderboard.adSlots ?? {};
-
   return async function Page(props: LocaleSearchPageProps) {
     const { locale } = await props.params;
     setRequestLocale(locale);
@@ -262,12 +248,6 @@ export function createLeaderboardPracticeResultPage(
         }
       : { signUpBanner: <GuestSignUpBanner locale={locale} />, recordSection: undefined };
 
-    // `adBannerWide` (content-middle) is the top half of a sandwich around the
-    // leaderboard. When there are no leaderboard rows, `LeaderboardPreview`
-    // renders nothing, so the wide banner would become an orphan "top half". Hide
-    // it in that case so the sandwich is all-or-nothing.
-    const hasLeaderboardRows = leaderboardData !== null;
-
     return (
       // See createSimplePracticeResultPage for why this fallback exists: it
       // covers the soft-navigation gap between the route `loading.tsx`
@@ -276,8 +256,6 @@ export function createLeaderboardPracticeResultPage(
       <Suspense fallback={leaderboard.loadingFallback ?? <PracticeResultLoadingSkeleton />}>
         <ResultClient
           locale={locale}
-          adBannerWide={wide && hasLeaderboardRows ? <AdSlot slot="content-middle" /> : undefined}
-          adBannerStandard={standard ? <AdSlot slot="content-bottom" /> : undefined}
           leaderboardRows={leaderboardData?.rows}
           leaderboardDetailPath={leaderboardData?.detailPath}
           leaderboardPeriod={leaderboardData?.period}

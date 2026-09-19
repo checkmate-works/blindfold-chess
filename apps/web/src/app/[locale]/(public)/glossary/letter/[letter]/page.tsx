@@ -5,7 +5,6 @@ import { setRequestLocale } from 'next-intl/server';
 import { SUPPORTED_LOCALES } from '@/config';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
-import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -75,13 +74,9 @@ export default async function GlossaryLetterPage({ params }: Props) {
 
       <GlossaryTermList terms={filteredTerms} locale={locale} />
 
-      <AdSlot slot="content-middle" />
-
       <SectionTitle>{t('alphabeticalIndexTitle')}</SectionTitle>
 
       <AlphabeticalIndex locale={locale} currentLetter={letter.toLowerCase()} />
-
-      <AdSlot slot="content-bottom" />
     </PageLayout>
   );
 }

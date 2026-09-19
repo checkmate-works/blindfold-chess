@@ -30,8 +30,6 @@ import {
   SectionTitle,
 } from '@/app/[locale]/_components';
 import type { HelpStep } from '@/app/[locale]/_components';
-import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
-import { CATALOG_MIN_CARDS_FOR_MID_AD } from '@/app/[locale]/_components/AdSense/mid-ad-threshold';
 import { CatalogListCard } from '@/app/[locale]/_components/CatalogListCard';
 import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
 import { Skeleton } from '@/app/[locale]/_components/Skeleton';
@@ -203,8 +201,6 @@ async function ChunksListContent({ params, searchParams }: Props) {
         </Link>
       </nav>
 
-      {rows.length >= CATALOG_MIN_CARDS_FOR_MID_AD && <AdSlot slot="content-middle" />}
-
       {rows.length === 0 ? (
         <p className="text-muted-foreground text-center py-8">
           {filter === 'drafts' ? t('list.emptyDrafts') : t('list.empty')}
@@ -282,8 +278,6 @@ async function ChunksListContent({ params, searchParams }: Props) {
           </Link>
         </div>
       )}
-
-      <AdSlot slot="content-bottom" />
     </PageLayout>
   );
 }

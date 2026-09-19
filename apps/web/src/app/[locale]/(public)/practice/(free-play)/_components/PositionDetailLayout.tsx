@@ -21,11 +21,6 @@ type Props = {
    * the heading rather than be buried in the content area.
    */
   headerNote?: ReactNode;
-  /**
-   * Optional bottom AdSense slot. Rendered between the content area and
-   * the divider.
-   */
-  bottomAdSense?: ReactNode;
 };
 
 /**
@@ -44,13 +39,11 @@ export function PositionDetailLayout({
   children,
   breadcrumbItems,
   headerNote,
-  bottomAdSense,
 }: Props) {
   return (
     <PageLayout title={title} locale={locale} breadcrumb={breadcrumbItems} headerNote={headerNote}>
       <ScrollToHashOnMount />
       <div className="space-y-6">{children}</div>
-      {bottomAdSense}
     </PageLayout>
   );
 }

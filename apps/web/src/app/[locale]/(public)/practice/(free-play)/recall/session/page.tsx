@@ -6,7 +6,6 @@ import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import { sanitizeNext } from '@/lib/safe-next';
 
-import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
 
@@ -77,7 +76,6 @@ export default async function RecallSessionPage({ params, searchParams }: Props)
         { label: t('recall.title'), href: '/practice/recall' },
         { label: t('recall.session') },
       ]}
-      adBanner={<AdSlot slot="content-bottom" />}
     />
   );
 }

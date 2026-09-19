@@ -14,7 +14,6 @@ import { toMetaDescription } from '@/lib/seo/meta-description';
 
 import { LinkTabs, PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import type { LinkTabItem } from '@/app/[locale]/_components';
-import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -202,8 +201,6 @@ export default async function GlossaryTermPage({ params, searchParams }: Props) 
             currentLetter={hasLetterCrumb ? firstChar.toLowerCase() : undefined}
           />
         </div>
-
-        <AdSlot slot="content-bottom" />
       </PageLayout>
     </>
   );

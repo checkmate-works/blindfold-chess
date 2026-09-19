@@ -16,7 +16,6 @@ import {
   PageTitle,
   SectionTitle,
 } from '@/app/[locale]/_components';
-import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { BreadcrumbSkeleton } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -101,8 +100,6 @@ async function LearnCategoryContent({ params }: Props) {
           ))}
         </ListLinkContainer>
       )}
-
-      <AdSlot slot="content-bottom" />
     </PageLayout>
   );
 }

@@ -38,9 +38,6 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 export type ResultClientProps = {
   locale: Locale;
-  adBanner?: ReactNode;
-  adBannerWide?: ReactNode;
-  adBannerStandard?: ReactNode;
   leaderboardRows?: LeaderboardRow[];
   leaderboardDetailPath?: string;
   /**
@@ -169,10 +166,9 @@ type ResultClientConfig = {
    */
   renderChildren?: (ctx: ResultContext) => ReactNode;
   /**
-   * Render custom content after PracticeComplete but before leaderboard/ads.
-   * adBanner is provided for modules that need to position it within custom content.
+   * Render custom content after PracticeComplete but before the leaderboard.
    */
-  renderAfterComplete?: (ctx: ResultContext, adBanner?: ReactNode) => ReactNode;
+  renderAfterComplete?: (ctx: ResultContext) => ReactNode;
   /**
    * Whether to fill the slot under the EXP card (PracticeComplete's
    * `afterExp`) with the server-provided `signUpBanner` / `recordSection`.
@@ -185,10 +181,7 @@ type ResultClientConfig = {
    * Additional PracticeComplete props (e.g. relatedModule, problemResults,
    * beforeRelatedContent).
    */
-  extraCompleteProps?: (
-    ctx: ResultContext,
-    adProps: { adBanner?: ReactNode; adBannerWide?: ReactNode }
-  ) => Record<string, unknown>;
+  extraCompleteProps?: (ctx: ResultContext) => Record<string, unknown>;
 };
 
 // ---------------------------------------------------------------------------
@@ -248,9 +241,6 @@ export function createPracticeResultClient(config: ResultClientConfig) {
 
   function ResultClient({
     locale,
-    adBanner,
-    adBannerWide,
-    adBannerStandard,
     leaderboardRows,
     leaderboardDetailPath,
     leaderboardPeriod,
@@ -333,9 +323,7 @@ export function createPracticeResultClient(config: ResultClientConfig) {
         : () => router.push(tryAgainUrl);
 
     // Extra PracticeComplete props
-    const extraProps = extraCompleteProps
-      ? extraCompleteProps(ctx, { adBanner, adBannerWide })
-      : {};
+    const extraProps = extraCompleteProps ? extraCompleteProps(ctx) : {};
 
     // The page provides at most one of the two (guest → banner, member →
     // record section); whichever arrived fills the slot.
@@ -373,7 +361,7 @@ export function createPracticeResultClient(config: ResultClientConfig) {
           {renderChildren ? renderChildren(ctx) : undefined}
         </PracticeComplete>
 
-        {renderAfterComplete ? renderAfterComplete(ctx, adBanner) : null}
+        {renderAfterComplete ? renderAfterComplete(ctx) : null}
 
         {leaderboardRows && leaderboardDetailPath && (
           <LeaderboardPreview
@@ -383,11 +371,6 @@ export function createPracticeResultClient(config: ResultClientConfig) {
             locale={locale}
           />
         )}
-        {/* The middle ad (`adBanner`) is positioned by modules via
-            `renderAfterComplete` above; the bottom ad is rendered here.
-            `ad-slot-wrapper` so the spacer collapses with the ad for ad-free
-            viewers. */}
-        {adBannerStandard && <div className="mt-8 ad-slot-wrapper">{adBannerStandard}</div>}
       </PracticeResultPage>
     );
   }

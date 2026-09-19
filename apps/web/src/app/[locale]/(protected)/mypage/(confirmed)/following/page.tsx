@@ -9,7 +9,6 @@ import { profileNotDeleted } from '@/lib/db/profile-not-deleted';
 import { buildPageHref, resolvePagination } from '@/lib/pagination';
 
 import { PageLayout } from '@/app/[locale]/_components';
-import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps } from '@/app/[locale]/_lib/types';
@@ -84,8 +83,6 @@ export default async function FollowingPage({ params, searchParams }: Props) {
         buildHref={buildHref}
         locale={locale}
       />
-
-      <AdSlot slot="content-bottom" />
     </PageLayout>
   );
 }

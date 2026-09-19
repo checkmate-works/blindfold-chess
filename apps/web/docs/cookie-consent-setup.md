@@ -19,7 +19,7 @@ This guide explains how to set up Google AdSense's "Privacy & messaging" (former
 
 Privacy & messaging is **not** a separate script you copy into the site. Per Google's own documentation, the consent message is delivered through the same `adsbygoogle.js` loader the site already uses for ads — the message will only appear on pages where that loader is present. There is no "Install on site" snippet to fetch for plain AdSense publishers (that separate-tag flow only applies to Google Ad Manager).
 
-This is why `apps/web/src/app/_components/GoogleScripts.tsx` now passes `adsensePublisherId` from **every** layout that mounts it (`[locale]/layout.tsx`, `(landing)/layout.tsx`), not just the nested `(public)/layout.tsx` where actual ad units render. Loading the AdSense script sitewide is what makes the consent message (and therefore Consent-Mode-gated GA4) cover every page. Pages outside `(public)` still show zero ad units — the `(no-ads)` route-group guard is unaffected — they just also load the loader script needed for the consent message.
+This is why `apps/web/src/app/_components/GoogleScripts.tsx` now passes `adsensePublisherId` from **every** layout that mounts it (`[locale]/layout.tsx`, `(landing)/layout.tsx`), not just the nested `(public)/layout.tsx` where actual ad units render. Loading the AdSense script sitewide is what makes the consent message (and therefore Consent-Mode-gated GA4) cover every page. Pages outside `(public)` still show zero ad units; they just also load the loader script needed for the consent message.
 
 ## Setup Instructions
 

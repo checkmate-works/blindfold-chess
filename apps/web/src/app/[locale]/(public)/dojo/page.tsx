@@ -47,7 +47,6 @@ import {
   SectionTitle,
 } from '@/app/[locale]/_components';
 import type { HelpStep } from '@/app/[locale]/_components';
-import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps } from '@/app/[locale]/_lib/types';
@@ -258,8 +257,6 @@ export default async function DojoPage({ params }: LocalePageProps) {
           </div>
         )}
       </section>
-
-      <AdSlot slot="content-bottom" />
     </PageLayout>
   );
 }

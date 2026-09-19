@@ -260,7 +260,7 @@ export default async function Layout({
         <style
           suppressHydrationWarning
           dangerouslySetInnerHTML={{
-            __html: `${generateThemeCSS()}\n\n/* No-flash ad-hide — see [locale]/layout.tsx comment near the bootstrap script. */\nhtml[data-ads-hidden='true'] .ad-slot-wrapper,\nhtml[data-ads-hidden='true'] .adsbygoogle{display:none!important;}`,
+            __html: `${generateThemeCSS()}\n\n/* No-flash ad-hide — see [locale]/layout.tsx comment near the bootstrap script. */\nhtml[data-ads-hidden='true'] .ad-slot-wrapper{display:none!important;}`,
           }}
         />
         {/*

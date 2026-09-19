@@ -8,7 +8,6 @@ import type { ServerTranslator } from '@/i18n/translator';
 import type { LeaderboardModule } from '@/app/[locale]/(public)/leaderboard/_lib/types';
 import { LeaderboardPreviewLoader } from '@/app/[locale]/(public)/practice/_components/LeaderboardPreviewLoader';
 import { PageLayout } from '@/app/[locale]/_components';
-import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -80,8 +79,6 @@ export function createPracticeTopPage(config: PracticeTopPageConfig) {
             locale={locale}
           />
         )}
-
-        <AdSlot slot="content-bottom" />
       </PageLayout>
     );
   }

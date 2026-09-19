@@ -10,7 +10,6 @@ import { profileNotDeleted } from '@/lib/db/profile-not-deleted';
 import { buildPageHref, resolvePagination } from '@/lib/pagination';
 
 import { PageLayout, UserCard } from '@/app/[locale]/_components';
-import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -125,8 +124,6 @@ export default async function FollowersPage({ params, searchParams }: Props) {
         totalPages={totalPages}
         buildHref={buildHref}
       />
-
-      <AdSlot slot="content-bottom" />
     </PageLayout>
   );
 }

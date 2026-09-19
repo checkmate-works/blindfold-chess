@@ -4,7 +4,6 @@ import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -46,8 +45,6 @@ export default async function CustomPositionResultPage({ params }: Props) {
   const t = await getTranslations({ locale, namespace: 'practice.positionMemory' });
   const tNav = await getTranslations({ locale, namespace: 'navigation' });
 
-  const adBannerStandard = <AdSlot slot="content-bottom" />;
-
   const breadcrumb = (
     <Breadcrumb
       items={[
@@ -73,7 +70,6 @@ export default async function CustomPositionResultPage({ params }: Props) {
       <SinglePositionResult
         locale={locale}
         sessionPath={`/practice/position-memory/custom/${token}/session`}
-        adBannerStandard={adBannerStandard}
         breadcrumb={breadcrumb}
         expInfo={null}
       />

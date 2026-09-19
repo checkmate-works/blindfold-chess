@@ -4,7 +4,6 @@ import { getTranslations } from 'next-intl/server';
 import { classifyLinkTarget } from '@/lib/content/link-target';
 
 import { PagePanel } from '@/app/[locale]/_components';
-import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
 
@@ -37,7 +36,6 @@ export default async function RedirectPage({ params, searchParams }: Props) {
           <h1 className="text-2xl font-bold mb-4">{t('title')}</h1>
           <p className="text-muted-foreground">{t('invalidUrl')}</p>
         </div>
-        <AdSlot slot="content-bottom" />
       </PagePanel>
     );
   }
@@ -55,7 +53,6 @@ export default async function RedirectPage({ params, searchParams }: Props) {
         </div>
         <RedirectActions url={url} locale={locale} />
       </div>
-      <AdSlot slot="content-bottom" />
     </PagePanel>
   );
 }

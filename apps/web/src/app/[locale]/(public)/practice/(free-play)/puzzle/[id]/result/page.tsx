@@ -15,7 +15,6 @@ import { resolveAuthorName } from '@/lib/users/display-name';
 
 import { resolveExpInfoFromGrantParam } from '@/app/[locale]/(public)/practice/_lib/createPracticeResultPage';
 import { PageLayout } from '@/app/[locale]/_components';
-import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -91,8 +90,6 @@ export default async function PuzzleResultPage({ params, searchParams }: Props) 
   const solutionMoveLists = solutions.map((s) => s.solutionMoves);
   const solutionLines = solutionMoveLists.map((moves) => moves.map((m) => m.san).join(' '));
 
-  const adBannerStandard = <AdSlot slot="content-bottom" />;
-
   const nextPuzzlesSection = (
     <NextPuzzlesSection
       puzzles={nextPuzzles}
@@ -143,9 +140,6 @@ export default async function PuzzleResultPage({ params, searchParams }: Props) 
           nextPuzzles={nextPuzzlesSection}
         />
       </Suspense>
-
-      {/* `ad-slot-wrapper` so the spacer collapses with the ad for ad-free viewers. */}
-      {adBannerStandard && <div className="mt-8 ad-slot-wrapper">{adBannerStandard}</div>}
     </PageLayout>
   );
 }

@@ -6,7 +6,6 @@ import { LazyMarkdownRenderer } from '@/app/_components/LazyMarkdownRenderer';
 import { SUPPORTED_LOCALES } from '@/config';
 
 import { PageLayout } from '@/app/[locale]/_components';
-import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { ProseArticle } from '@/app/[locale]/_components/ProseArticle';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -76,8 +75,6 @@ export default async function ManualArticlePage({ params }: Props) {
       <ProseArticle>
         <LazyMarkdownRenderer content={article.content} skipFirstH1={true} />
       </ProseArticle>
-
-      <AdSlot slot="content-bottom" />
     </PageLayout>
   );
 }

@@ -7,8 +7,8 @@ import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { PuzzleSessionClient } from '../../../_components/session/PuzzleSessionClient';
-import { loadPuzzleWithSolutions } from '../../../_lib/load-puzzle';
+import { PuzzleSessionClient } from '../../_components/session/PuzzleSessionClient';
+import { loadPuzzleWithSolutions } from '../../_lib/load-puzzle';
 
 type Props = {
   params: Promise<{
