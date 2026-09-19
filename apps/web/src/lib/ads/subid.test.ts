@@ -11,15 +11,9 @@ describe('withCreativeSubId', () => {
     );
   });
 
-  it('tags an Amazon product URL with ascsubtag', () => {
-    expect(withCreativeSubId('https://www.amazon.co.jp/dp/B000?tag=aff-22', ID)).toBe(
-      `https://www.amazon.co.jp/dp/B000?tag=aff-22&ascsubtag=${ID}`
-    );
-  });
-
   it('uses ? when the URL has no query yet', () => {
-    expect(withCreativeSubId('https://www.amazon.com/dp/B000', ID)).toBe(
-      `https://www.amazon.com/dp/B000?ascsubtag=${ID}`
+    expect(withCreativeSubId('https://www.awin1.com/cread.php', ID)).toBe(
+      `https://www.awin1.com/cread.php?clickref=${ID}`
     );
   });
 
@@ -36,14 +30,16 @@ describe('withCreativeSubId', () => {
     expect(tagged).toContain(`ued=${ued}`);
   });
 
-  it('keeps a hand-written clickref rather than adding a second one', () => {
+  it('never adds a second clickref to a URL that already carries one', () => {
+    // The admin form rejects these on the way in; this is the last line of
+    // defence for a row written before that check existed.
     const href = 'https://awin1.com/cread.php?awinmid=1&clickref=spring-campaign';
     expect(withCreativeSubId(href, ID)).toBe(href);
   });
 
   it('appends before the fragment so the anchor still resolves', () => {
-    expect(withCreativeSubId('https://www.amazon.com/dp/B000?tag=x#reviews', ID)).toBe(
-      `https://www.amazon.com/dp/B000?tag=x&ascsubtag=${ID}#reviews`
+    expect(withCreativeSubId('https://awin1.com/cread.php?awinmid=1#reviews', ID)).toBe(
+      `https://awin1.com/cread.php?awinmid=1&clickref=${ID}#reviews`
     );
   });
 
@@ -52,13 +48,8 @@ describe('withCreativeSubId', () => {
     expect(withCreativeSubId(href, ID)).toBe(href);
   });
 
-  it('leaves Amazon short links untouched — the shortener drops the query', () => {
-    const href = 'https://amzn.to/3abcdef';
-    expect(withCreativeSubId(href, ID)).toBe(href);
-  });
-
   it('does not match a look-alike host that merely contains the network name', () => {
-    const href = 'https://amazon.evil.example.com/dp/B000';
+    const href = 'https://awin1.com.evil.example.com/cread.php?awinmid=1';
     expect(withCreativeSubId(href, ID)).toBe(href);
   });
 

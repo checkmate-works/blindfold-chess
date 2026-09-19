@@ -1,22 +1,20 @@
+import { SUPPORTED_LOCALES } from '@/config';
+
 import type { NativeCardPayload } from '@/lib/ads/payload';
 import type { AdKind } from '@/lib/ads/registry';
 import { isAdSlot } from '@/lib/ads/registry';
 import { MAX_LINK_HREF_LENGTH, classifyLinkTarget } from '@/lib/content/link-target';
-import { isValidCountryCode } from '@/lib/countries';
 
 export type CreateAdCreativeData = {
   slot: string;
   href: string;
   isActive: boolean;
-  /** ISO-3166 alpha-2 target country; null = global. */
-  targetCountry: string | null;
   payload: NativeCardPayload;
 };
 
 export type UpdateAdCreativeData = {
   href: string;
   isActive: boolean;
-  targetCountry: string | null;
   payload: NativeCardPayload;
 };
 
@@ -36,27 +34,25 @@ export const AD_CREATIVE_LIMITS = {
   fen: 100,
 } as const;
 
-function validateTargetCountry(country: string | null): string | null {
-  if (country === null) return null;
-  // Must be a real ISO 3166-1 alpha-2 code, not just two letters — this
-  // rejects typos like "UK" (the ISO code is "GB"), "XX", etc.
-  if (typeof country !== 'string' || !isValidCountryCode(country)) {
-    return 'invalid country code';
-  }
-  return null;
-}
-
 /**
  * A creative's click-through must be an absolute `http:` / `https:` URL —
  * internal destinations are allowed (house ads point at our own pages), a
  * bare path is not, because the href is rendered from the stored value with
  * no page to resolve it against.
+ *
+ * A `clickref` already in the URL is rejected rather than accepted as an
+ * override. `withCreativeSubId` leaves a pre-tagged URL alone, so such a link
+ * reports every one of its clicks under whatever value is already there —
+ * and the value that actually turns up is the sample Awin's own UI hands out
+ * with the link, copied in by accident. Losing per-creative attribution
+ * silently is worse than making the admin strip six characters.
  */
 function validateHref(href: string): string | null {
   // The `string` type is a compile-time promise only: these validators run on
   // Server Action payloads, which arrive from the network unchecked.
   if (typeof href !== 'string') return 'invalid href';
-  return classifyLinkTarget(href) === 'unsafe' ? 'invalid href' : null;
+  if (classifyLinkTarget(href) === 'unsafe') return 'invalid href';
+  return /[?&]clickref=/.test(href) ? 'href already carries a clickref' : null;
 }
 
 function validateImagePath(imagePath: string): string | null {
@@ -64,9 +60,29 @@ function validateImagePath(imagePath: string): string | null {
   return null;
 }
 
-function validateText(value: string, field: string): string | null {
+function validateText(value: unknown, field: string): string | null {
   if (typeof value !== 'string' || value.length === 0 || value.length > AD_CREATIVE_LIMITS.text) {
     return `invalid ${field}`;
+  }
+  return null;
+}
+
+/**
+ * Per-locale copy: `en` must be there (every other locale falls back to it),
+ * and each locale that *is* present gets the same length cap as the old
+ * single string — the cap is about how much text a card can hold, which does
+ * not change with the language. Unknown keys are rejected rather than stored
+ * and silently never read.
+ */
+function validateLocalizedCopy(value: NativeCardPayload['title'], field: string): string | null {
+  if (typeof value !== 'object' || value === null) return `invalid ${field}`;
+  const copy = value as Record<string, unknown>;
+  const enError = validateText(copy.en, `${field}.en`);
+  if (enError) return enError;
+  for (const key of Object.keys(copy)) {
+    if (!(SUPPORTED_LOCALES as readonly string[]).includes(key)) return `invalid ${field} locale`;
+    const localeError = validateText(copy[key], `${field}.${key}`);
+    if (localeError) return localeError;
   }
   return null;
 }
@@ -98,9 +114,9 @@ function validateNativeCardPayload(payload: NativeCardPayload): string | null {
   if (typeof payload.avatarAlt !== 'string' || payload.avatarAlt.length > AD_CREATIVE_LIMITS.alt) {
     return 'invalid avatarAlt';
   }
-  const titleError = validateText(payload.title, 'title');
+  const titleError = validateLocalizedCopy(payload.title, 'title');
   if (titleError) return titleError;
-  const descriptionError = validateText(payload.description, 'description');
+  const descriptionError = validateLocalizedCopy(payload.description, 'description');
   if (descriptionError) return descriptionError;
   return validateThumbnail(payload.thumbnail);
 }
@@ -118,8 +134,6 @@ export function validateCreateAdCreative(data: CreateAdCreativeData): string | n
   if (!isAdSlot(data.slot)) return 'invalid slot';
   const hrefError = validateHref(data.href);
   if (hrefError) return hrefError;
-  const countryError = validateTargetCountry(data.targetCountry);
-  if (countryError) return countryError;
   return validateNativeCardPayload(data.payload);
 }
 
@@ -127,7 +141,5 @@ export function validateCreateAdCreative(data: CreateAdCreativeData): string | n
 export function validateUpdateAdCreative(kind: AdKind, data: UpdateAdCreativeData): string | null {
   const hrefError = validateHref(data.href);
   if (hrefError) return hrefError;
-  const countryError = validateTargetCountry(data.targetCountry);
-  if (countryError) return countryError;
   return validatePayloadForKind(kind, data.payload);
 }

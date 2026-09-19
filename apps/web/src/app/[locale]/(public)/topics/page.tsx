@@ -54,7 +54,7 @@ async function TopicsContent({ params }: Props) {
       currentUserId: user?.id,
       entityTypes: TOPICS_FEED_ENTITY_TYPES,
     }),
-    resolveNativeAds(FEED_NATIVE_AD_SLOT, user?.id ?? null),
+    resolveNativeAds(FEED_NATIVE_AD_SLOT, user?.id ?? null, locale),
   ]);
 
   return (

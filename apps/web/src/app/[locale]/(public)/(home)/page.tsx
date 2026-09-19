@@ -67,7 +67,7 @@ async function HomeFeed({ locale }: { locale: Locale }) {
   const [initialFeed, { showAds, creatives: nativeAdCreatives }, tTopics, tSquares, tPagination] =
     await Promise.all([
       getFeedData({ limit: INITIAL_FEED_SIZE, currentUserId: user?.id }),
-      resolveNativeAds(FEED_NATIVE_AD_SLOT, user?.id ?? null),
+      resolveNativeAds(FEED_NATIVE_AD_SLOT, user?.id ?? null, locale),
       getTranslations({ locale, namespace: 'topics' }),
       getTranslations({ locale, namespace: 'topics.squares' }),
       getTranslations({ locale, namespace: 'Common.pagination' }),

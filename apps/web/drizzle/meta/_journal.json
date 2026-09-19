@@ -533,6 +533,13 @@
       "when": 1789811811072,
       "tag": "20260919095651_delete_banner_ad_creatives",
       "breakpoints": true
+    },
+    {
+      "idx": 76,
+      "version": "7",
+      "when": 1789814444391,
+      "tag": "20260919104044_drop_ad_creatives_target_country",
+      "breakpoints": true
     }
   ]
 }

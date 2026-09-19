@@ -22,7 +22,9 @@ type Props = {
  * none of which exist under the (locale-less) admin layout. This mirrors the
  * card's layout closely enough to judge the thumbnail, avatar, and copy while
  * editing. The chrome strings ("Ad" / sponsor / disclosure) are shown in
- * English here; the live card localizes them per viewer.
+ * English here; the live card localizes them per viewer. The creative's own
+ * copy is previewed in `en` for the same reason — it is the one locale every
+ * creative must fill in, and the fallback the others resolve to.
  */
 export function NativeCardPreview({
   avatarImagePath,

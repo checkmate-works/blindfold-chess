@@ -794,7 +794,7 @@
       },
       "ads": {
         "question": "なぜ広告が掲載されているのですか？",
-        "answer": "本サービスは無料で提供していますが、サーバーやドメインの維持費がかかります。広告収入でこれらの費用を賄っています。また、Amazonアソシエイトなどのアフィリエイトプログラムを通じた収益も運営費に充てられています。詳しくは<affiliateLink>アフィリエイト・ポリシー</affiliateLink>をご覧ください。"
+        "answer": "本サービスは無料で提供していますが、サーバーやドメインの維持費がかかります。広告収入でこれらの費用を賄っています。また、アフィリエイトプログラムを通じた収益も運営費に充てられています。詳しくは<affiliateLink>アフィリエイト・ポリシー</affiliateLink>をご覧ください。"
       },
       "chessEngine": {
         "question": "AIは具体的に何のチェスエンジンを利用しているのですか？",
@@ -3185,10 +3185,8 @@
     "title": "アフィリエイト・ポリシー",
     "description": "アフィリエイトプログラムに関する開示事項",
     "networksDisclosureTitle": "アフィリエイトネットワークについて",
-    "networksDisclosureDescription": "当サイトは、Awin をはじめとする第三者のアフィリエイトネットワークが運営するプログラムにも参加しています。サイト内のチェス書籍・ソフトウェア・サービスへのリンクはアフィリエイトリンクである場合があり、そこから商品が購入された場合、当サイトが紹介料を受け取ることがあります。購入者のお支払い額が増えることはありません。広告・スポンサー枠には表示箇所ごとに広告である旨を明示しており、アフィリエイトリンクであることが商品の紹介内容に影響することはありません。",
-    "amazonDisclosureTitle": "Amazonアソシエイト・プログラムに関する開示",
-    "amazonDisclosureDescription": "Amazonのアソシエイトとして、blindfold-chess.onlineは適格販売により収入を得ています。当サイトは、Amazon.co.jpを宣伝しリンクすることによってサイトが紹介料を獲得できる手段を提供することを目的に設定されたアフィリエイトプログラムである、Amazonアソシエイト・プログラムの参加者です。",
-    "footerText": "As an Amazon Associate I earn from qualifying purchases."
+    "networksDisclosureDescription": "当サイトは、Awin をはじめとする第三者のアフィリエイトネットワークが運営するプログラムに参加しています。サイト内のチェス書籍・ソフトウェア・サービスへのリンクはアフィリエイトリンクである場合があり、そこから商品が購入された場合、当サイトが紹介料を受け取ることがあります。購入者のお支払い額が増えることはありません。広告・スポンサー枠には表示箇所ごとに広告である旨を明示しており、アフィリエイトリンクであることが商品の紹介内容に影響することはありません。",
+    "footerText": "当サイトのリンクの一部はアフィリエイトリンクであり、適格販売により紹介料を受け取ることがあります。"
   },
   "terms": {
     "title": "利用規約",
@@ -4778,10 +4776,13 @@
       "title": "広告管理",
       "slot": "スロット",
       "href": "リンク URL",
-      "hrefHint": "ネットワークから受け取った URL をそのまま貼ってください。Awin と Amazon のリンクには、この creative を識別する sub-ID（clickref / ascsubtag）が描画時に自動で付与され、各社のレポートで creative 別にクリックを分解できます。上書きしたい場合を除き、手動で付けないでください。",
+      "hrefHint": "ネットワークから受け取った URL を、clickref を付けずにそのまま貼ってください（Awin の管理画面がサンプルの clickref を付けて渡してくることがあり、そのままだとこの creative の計測が潰れます）。この creative を識別する clickref は描画時に自動で付与され、Awin のレポートで creative 別にクリックを分解できます。",
       "isActive": "有効",
       "actions": "操作",
       "edit": "編集",
+      "creativeId": "クリエイティブ ID",
+      "copyId": "クリエイティブ ID をコピー",
+      "copiedId": "コピーしました",
       "save": "保存",
       "cancel": "キャンセル",
       "saving": "保存中...",
@@ -4798,9 +4799,6 @@
       "creating": "作成中...",
       "kind": "種別",
       "summary": "概要",
-      "delete": "削除",
-      "deleting": "削除中...",
-      "deleteConfirm": "この広告クリエイティブを削除しますか？この操作は取り消せません。",
       "editTitle": "広告クリエイティブの編集",
       "avatar": "アバター",
       "avatarAlt": "アバターの代替テキスト",
@@ -4809,9 +4807,7 @@
       "avatarHintCreate": "先に保存すると、編集画面でアバターをアップロードできます。",
       "cardTitle": "タイトル",
       "cardDescription": "説明",
-      "cardCopyHint": "対象国の言語で記載（全世界対象なら英語）。",
-      "targetCountry": "配信対象の国",
-      "targetCountryHint": "未選択で全世界に配信。",
+      "cardCopyHint": "各言語のコピーを入力してください。英語は必須で、未入力の言語ではこの英語が表示されます。",
       "reorderHint": "ドラッグで並べ替え。",
       "thumbnail": "サムネイル",
       "thumbnailFen": "盤面（FEN）",
@@ -4820,10 +4816,8 @@
       "thumbnailImageUploading": "アップロード中...",
       "thumbnailImageHintCreate": "先に保存してから、編集画面でサムネイル画像をアップロードしてください。",
       "thumbnailAlt": "サムネイルの代替テキスト",
-      "filterAll": "すべての国",
-      "filterReorderHint": "並べ替えるにはフィルタを解除してください。",
       "preview": "プレビュー",
-      "previewCaption": "「Ad」ラベルとスポンサー名は、表示時に閲覧者の言語でローカライズされます。",
+      "previewCaption": "プレビューは英語のコピーです。「広告」ラベルとスポンサー名は描画時に閲覧者ごとにローカライズされます。",
       "thumbnailImageOverride": "上書き画像（任意）",
       "thumbnailImageRemove": "画像を削除"
     },

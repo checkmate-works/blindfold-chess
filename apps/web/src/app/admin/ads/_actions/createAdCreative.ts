@@ -38,7 +38,6 @@ export async function createAdCreative(data: CreateAdCreativeData): Promise<Crea
         href: data.href,
         isActive: data.isActive,
         sortOrder: nextOrder,
-        targetCountry: data.targetCountry,
         payload: data.payload,
       })
       .returning({ id: adCreatives.id });

@@ -1,3 +1,7 @@
+import { SUPPORTED_LOCALES } from '@/config';
+
+import type { Locale } from '@/app/[locale]/_lib/types';
+
 import type { AdKind } from './registry';
 
 /**
@@ -28,22 +32,106 @@ export const DEFAULT_NATIVE_THUMBNAIL_FEN =
   'r1bqkbnr/pppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3';
 
 /**
+ * Copy for one card field, written once per locale. `en` is required and is
+ * the fallback for every locale left blank, so a card always has something to
+ * render no matter which language the visitor is reading in.
+ *
+ * Copy used to be a single string. That worked because a creative was
+ * country-targeted (`target_country`) and was therefore written in that one
+ * country's language. The targeting itself only ever existed to point a
+ * creative at the right Amazon storefront (amazon.com vs amazon.fr), so it
+ * went away with Amazon — and the locale, already a route parameter, is a
+ * better lever for the language than a geo lookup ever was: a Japanese
+ * speaker browsing from Germany gets Japanese copy, which country targeting
+ * could not express. Per-locale copy is what replaced it, not an
+ * afterthought.
+ */
+export type LocalizedCopy = Partial<Record<Locale, string>> & { en: string };
+
+/**
  * In-feed native card — renders inside the timeline with the same shell as a
  * real feed item. `avatarImagePath` is nullable: when absent the card falls
  * back to a text placeholder (see `NativeAdCard`). `title`/`description` are
- * single strings, not per-locale maps: a creative is country-targeted
- * (`target_country`), so its copy is written in that country's language (or
- * English for a global creative). `thumbnail` is optional for backward
+ * per-locale maps, resolved for the viewer by `resolveNativeCopy`; rows
+ * written before the split still hold a bare string and are read as `en`, so
+ * no JSONB data migration is needed. `thumbnail` is optional for backward
  * compatibility — absent means the default board (see
  * `DEFAULT_NATIVE_THUMBNAIL_FEN` / `resolveNativeThumbnail`).
  */
 export type NativeCardPayload = {
   avatarImagePath: string | null;
   avatarAlt: string;
-  title: string;
-  description: string;
+  title: LocalizedCopy;
+  description: LocalizedCopy;
   thumbnail?: NativeCardThumbnail;
 };
+
+/**
+ * One field's copy for `locale`: the locale's own string when the admin wrote
+ * one, `en` otherwise. A bare string — the pre-split shape, still in the DB —
+ * counts as `en`. Returns `''` for a payload whose copy is neither, which the
+ * guard already rejects; the render sites treat empty copy as a blank line
+ * rather than throwing.
+ */
+function copyForLocale(value: unknown, locale: Locale): string {
+  if (typeof value === 'string') return value;
+  if (typeof value !== 'object' || value === null) return '';
+  const map = value as Record<string, unknown>;
+  const localized = map[locale];
+  if (typeof localized === 'string' && localized.length > 0) return localized;
+  return typeof map.en === 'string' ? map.en : '';
+}
+
+/**
+ * The card's copy as the viewer should read it. Mirrors
+ * {@link resolveNativeThumbnail}: normalize at read time so both the current
+ * per-locale shape and the legacy single string render, and the JSONB column
+ * never needs rewriting.
+ */
+export function resolveNativeCopy(
+  payload: NativeCardPayload,
+  locale: Locale
+): { title: string; description: string } {
+  return {
+    title: copyForLocale(payload.title, locale),
+    description: copyForLocale(payload.description, locale),
+  };
+}
+
+/**
+ * The stored copy spread over every supported locale, for the admin form.
+ * A legacy bare string lands in `en`; a locale the admin never wrote comes
+ * back empty rather than pre-filled with the English fallback, which would
+ * silently freeze today's English into every language on the next save.
+ */
+export function toLocalizedCopyDraft(value: unknown): Record<Locale, string> {
+  const draft = Object.fromEntries(SUPPORTED_LOCALES.map((l) => [l, ''])) as Record<Locale, string>;
+  if (typeof value === 'string') {
+    draft.en = value;
+    return draft;
+  }
+  if (typeof value === 'object' && value !== null) {
+    for (const locale of SUPPORTED_LOCALES) {
+      const localized = (value as Record<string, unknown>)[locale];
+      if (typeof localized === 'string') draft[locale] = localized;
+    }
+  }
+  return draft;
+}
+
+/**
+ * A form draft as the shape that gets stored: blank locales are dropped
+ * rather than saved as empty strings, so they keep falling back to `en`
+ * instead of rendering a blank card.
+ */
+export function fromLocalizedCopyDraft(draft: Record<Locale, string>): LocalizedCopy {
+  const stored: Partial<Record<Locale, string>> = {};
+  for (const locale of SUPPORTED_LOCALES) {
+    const value = draft[locale].trim();
+    if (value.length > 0) stored[locale] = value;
+  }
+  return { ...stored, en: draft.en.trim() };
+}
 
 /**
  * The effective thumbnail, normalized to the current shape. Handles unset
@@ -84,6 +172,17 @@ export type AdPayloadByKind = {
   native_card: NativeCardPayload;
 };
 
+/**
+ * Both copy shapes pass: the per-locale map (which must carry `en`, the
+ * fallback every other locale leans on) and the bare string rows written
+ * before the split, which `resolveNativeCopy` reads as `en`.
+ */
+function isLocalizedCopy(value: unknown): boolean {
+  if (typeof value === 'string') return true;
+  if (typeof value !== 'object' || value === null) return false;
+  return typeof (value as Record<string, unknown>).en === 'string';
+}
+
 export function isNativeCardPayload(value: unknown): value is NativeCardPayload {
   if (typeof value !== 'object' || value === null) return false;
   const p = value as Record<string, unknown>;
@@ -94,8 +193,8 @@ export function isNativeCardPayload(value: unknown): value is NativeCardPayload 
   return (
     (p.avatarImagePath === null || typeof p.avatarImagePath === 'string') &&
     typeof p.avatarAlt === 'string' &&
-    typeof p.title === 'string' &&
-    typeof p.description === 'string'
+    isLocalizedCopy(p.title) &&
+    isLocalizedCopy(p.description)
   );
 }
 

@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { getAllAdCreatives } from '@/lib/ads/ad';
-import { isNativeCardPayload, resolveNativeThumbnail } from '@/lib/ads/payload';
+import { isNativeCardPayload, resolveNativeCopy, resolveNativeThumbnail } from '@/lib/ads/payload';
 import { isAdSlot, kindForSlot } from '@/lib/ads/registry';
 
 import { AdminBadge } from '../../_components/AdminBadge';
@@ -22,12 +22,14 @@ export default async function AdminSlotCreativesPage({ params }: Props) {
   const creatives = (await getAllAdCreatives()).filter((c) => c.slot === slot);
 
   const rows: SlotCreativeRow[] = creatives.map((c) => {
-    const base = { id: c.id, isActive: c.isActive, targetCountry: c.targetCountry };
+    const base = { id: c.id, isActive: c.isActive };
     if (isNativeCardPayload(c.payload)) {
       const thumb = resolveNativeThumbnail(c.payload);
       return {
         ...base,
-        summary: c.payload.title,
+        // The admin surface has no locale of its own; `en` is the copy every
+        // creative is required to carry.
+        summary: resolveNativeCopy(c.payload, 'en').title,
         imageUrl: thumb.imagePath ?? null,
         boardFen: thumb.fen,
       };
@@ -59,13 +61,10 @@ export default async function AdminSlotCreativesPage({ params }: Props) {
           active: t('active'),
           inactive: t('inactive'),
           edit: t('edit'),
-          delete: t('delete'),
-          deleting: t('deleting'),
-          confirm: t('deleteConfirm'),
+          copyId: t('copyId'),
+          copiedId: t('copiedId'),
           reorderHint: t('reorderHint'),
           empty: t('noCreatives'),
-          filterAll: t('filterAll'),
-          filterReorderHint: t('filterReorderHint'),
         }}
       />
     </AdminPageLayout>

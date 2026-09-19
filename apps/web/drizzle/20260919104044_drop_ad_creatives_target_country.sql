@@ -1,0 +1,13 @@
+-- Country targeting is gone from the code: the geo lookup, the filter and the
+-- admin field were all removed, so nothing reads or writes this column.
+--
+-- It existed to point a creative at the right Amazon storefront (amazon.com vs
+-- amazon.fr) — a per-country affiliate link needs a per-country audience. With
+-- Amazon dropped, the only job left was matching the copy's language to the
+-- reader, and the card's copy is now a per-locale map keyed by the locale
+-- already in the URL. That is strictly better: a Japanese speaker browsing
+-- from Germany gets Japanese copy, which a country filter could not express.
+--
+-- No data is lost that anything could still use: production has no non-NULL
+-- row, and a code here would have no effect on any read path that remains.
+ALTER TABLE "ad_creatives" DROP COLUMN "target_country";

@@ -31,8 +31,6 @@ export default async function AffiliateDisclosurePage({ params }: Props) {
       <ProseArticle className="space-y-4">
         <SectionTitle>{t('networksDisclosureTitle')}</SectionTitle>
         <p>{t('networksDisclosureDescription')}</p>
-        <SectionTitle>{t('amazonDisclosureTitle')}</SectionTitle>
-        <p>{t('amazonDisclosureDescription')}</p>
         <div className="text-right">
           <LastUpdated locale={locale} date={LAST_UPDATED} />
         </div>

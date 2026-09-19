@@ -1,12 +1,11 @@
 'use client';
 
-import { useMemo, useRef, useState, useTransition } from 'react';
+import { useRef, useState, useTransition } from 'react';
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import { CreativeThumbnail } from '@/lib/ads/ui/CreativeThumbnail';
-import { countryCodeToFlag } from '@/lib/countries';
 
 import {
   toggleKnobClass,
@@ -15,12 +14,10 @@ import {
 
 import { reorderAdCreatives } from '../_actions/reorderAdCreatives';
 import { setAdCreativeActive } from '../_actions/setAdCreativeActive';
-import { CreativeDeleteButton } from './CreativeDeleteButton';
 
 export type SlotCreativeRow = {
   id: string;
   isActive: boolean;
-  targetCountry: string | null;
   /** The card's title; empty when the stored payload fails its guard. */
   summary: string;
   /** Thumbnail override image; takes priority over the board when set. */
@@ -37,17 +34,12 @@ type Props = {
     active: string;
     inactive: string;
     edit: string;
-    delete: string;
-    deleting: string;
-    confirm: string;
+    copyId: string;
+    copiedId: string;
     reorderHint: string;
     empty: string;
-    filterAll: string;
-    filterReorderHint: string;
   };
 };
-
-const ALL = '__all__';
 
 function move<T>(list: T[], from: number, to: number): T[] {
   const next = list.slice();
@@ -62,6 +54,12 @@ function move<T>(list: T[], from: number, to: number): T[] {
  * {@link reorderAdCreatives}. Uses native HTML5 drag events — sufficient for
  * this desktop-only admin surface, no external DnD dependency. On a failed
  * save the server order is restored via `router.refresh()`.
+ *
+ * There is no delete: a creative is stopped with the active toggle and keeps
+ * its row, because the row id is the sub-ID the affiliate network reports
+ * clicks under — see the opening TSDoc of `@/lib/ads/subid`. Each row shows
+ * that id for exactly that reason: it is what a line in the network's report
+ * has to be matched against.
  */
 export function SlotCreativeList({ slot, rows: initialRows, editHrefBase, labels }: Props) {
   const router = useRouter();
@@ -69,16 +67,21 @@ export function SlotCreativeList({ slot, rows: initialRows, editHrefBase, labels
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   // Order at drag start, to skip the save when a drag ends where it began.
   const dragStartOrderRef = useRef<string>('');
-  const [country, setCountry] = useState<string>(ALL);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  // The distinct countries actually targeted in this slot — the only filter
-  // options worth offering (plus "all").
-  const countries = useMemo(() => {
-    const set = new Set<string>();
-    for (const r of initialRows) if (r.targetCountry) set.add(r.targetCountry);
-    return [...set].sort();
-  }, [initialRows]);
+  // `navigator.clipboard` is absent on insecure origins and can reject when
+  // the document is not focused; either way the id is still selectable as
+  // text, so a failed copy just leaves the label alone.
+  const copyId = (id: string) => {
+    navigator.clipboard?.writeText(id).then(
+      () => {
+        setCopiedId(id);
+        window.setTimeout(() => setCopiedId((current) => (current === id ? null : current)), 1500);
+      },
+      () => {}
+    );
+  };
 
   if (rows.length === 0) {
     return (
@@ -87,14 +90,6 @@ export function SlotCreativeList({ slot, rows: initialRows, editHrefBase, labels
       </div>
     );
   }
-
-  // A country's viewers see global (null) creatives plus that country's. When
-  // filtered, the list is read-only: reordering a country-scoped projection of
-  // a single global order is ambiguous, so we only allow DnD on the full list.
-  const filtering = country !== ALL;
-  const displayed = filtering
-    ? rows.filter((r) => r.targetCountry === null || r.targetCountry === country)
-    : rows;
 
   const persist = (ordered: SlotCreativeRow[]) => {
     startTransition(async () => {
@@ -128,52 +123,32 @@ export function SlotCreativeList({ slot, rows: initialRows, editHrefBase, labels
 
   return (
     <div>
-      <div className="mb-2 flex items-center justify-between gap-3">
-        <p className="text-xs text-muted-foreground">
-          {filtering ? labels.filterReorderHint : labels.reorderHint}
-        </p>
-        {countries.length > 0 && (
-          <select
-            value={country}
-            onChange={(e) => setCountry(e.target.value)}
-            className="rounded-md border border-border bg-card px-2 py-1 text-sm text-foreground"
-          >
-            <option value={ALL}>{labels.filterAll}</option>
-            {countries.map((c) => (
-              <option key={c} value={c}>
-                {countryCodeToFlag(c)} {c}
-              </option>
-            ))}
-          </select>
-        )}
+      <div className="mb-2">
+        <p className="text-xs text-muted-foreground">{labels.reorderHint}</p>
       </div>
       <ul className={`space-y-2 ${isPending ? 'opacity-70' : ''}`}>
-        {displayed.map((row, index) => (
+        {rows.map((row, index) => (
           <li
             key={row.id}
-            draggable={!filtering}
+            draggable
             onDragStart={() => {
-              if (filtering) return;
               setDragIndex(index);
               dragStartOrderRef.current = rows.map((r) => r.id).join(',');
             }}
             onDragOver={(e) => {
-              if (filtering) return;
               e.preventDefault();
               if (dragIndex === null || dragIndex === index) return;
               setRows((prev) => move(prev, dragIndex, index));
               setDragIndex(index);
             }}
-            onDrop={filtering ? undefined : handleDrop}
-            onDragEnd={filtering ? undefined : handleDrop}
+            onDrop={handleDrop}
+            onDragEnd={handleDrop}
             className="flex items-center gap-3 rounded-lg border border-border bg-card px-3 py-2"
           >
             <span
               aria-hidden
-              className={`select-none px-1 text-muted-foreground ${
-                filtering ? 'opacity-30' : 'cursor-grab'
-              }`}
-              title={filtering ? labels.filterReorderHint : labels.reorderHint}
+              className="cursor-grab select-none px-1 text-muted-foreground"
+              title={labels.reorderHint}
             >
               ⠿
             </span>
@@ -188,27 +163,22 @@ export function SlotCreativeList({ slot, rows: initialRows, editHrefBase, labels
 
             <span className="min-w-0 flex-1 truncate">{row.summary || '—'}</span>
 
-            <span className="shrink-0 whitespace-nowrap text-muted-foreground">
-              {row.targetCountry
-                ? `${countryCodeToFlag(row.targetCountry)} ${row.targetCountry}`
-                : '🌐'}
-            </span>
-
             <div className="flex shrink-0 items-center gap-2">
+              <button
+                type="button"
+                onClick={() => copyId(row.id)}
+                title={copiedId === row.id ? labels.copiedId : labels.copyId}
+                aria-label={`${labels.copyId}: ${row.id}`}
+                className="rounded border border-border bg-card px-2 py-1 font-mono text-xs text-muted-foreground transition-colors hover:bg-secondary"
+              >
+                {copiedId === row.id ? labels.copiedId : row.id}
+              </button>
               <Link
                 href={`${editHrefBase}/${row.id}/edit`}
                 className="rounded border border-border bg-card px-3 py-1 text-xs font-medium text-foreground transition-colors hover:bg-secondary"
               >
                 {labels.edit}
               </Link>
-              <CreativeDeleteButton
-                id={row.id}
-                labels={{
-                  delete: labels.delete,
-                  deleting: labels.deleting,
-                  confirm: labels.confirm,
-                }}
-              />
             </div>
 
             <div className="flex shrink-0 items-center gap-2 pl-1">

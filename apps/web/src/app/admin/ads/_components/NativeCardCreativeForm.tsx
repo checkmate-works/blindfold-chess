@@ -6,15 +6,21 @@ import { useState } from 'react';
 import Image from 'next/image';
 
 import { Field, Input, Textarea } from '@/app/admin/_components/forms';
+import { SUPPORTED_LOCALES } from '@/config';
+import { LOCALE_LABELS } from '@/i18n/locale-labels';
 
 import type { NativeCardPayload, NativeCardThumbnail } from '@/lib/ads/payload';
 import {
   DEFAULT_AD_ALT,
   DEFAULT_NATIVE_THUMBNAIL_FEN,
+  fromLocalizedCopyDraft,
   resolveNativeThumbnail,
+  toLocalizedCopyDraft,
 } from '@/lib/ads/payload';
 import type { AdSlot } from '@/lib/ads/registry';
 import { CreativeThumbnail } from '@/lib/ads/ui/CreativeThumbnail';
+
+import type { Locale } from '@/app/[locale]/_lib/types';
 
 import type { AdCreativeFormLabels } from '../_lib/form-labels';
 import { useCommonCreativeState } from '../_lib/use-common-creative-state';
@@ -47,8 +53,15 @@ export function NativeCardCreativeForm({ mode, slot, creativeId, initial, labels
     initial.payload.avatarImagePath ?? null
   );
   const [avatarAlt, setAvatarAlt] = useState(initial.payload.avatarAlt ?? DEFAULT_AD_ALT);
-  const [title, setTitle] = useState(initial.payload.title ?? '');
-  const [description, setDescription] = useState(initial.payload.description ?? '');
+  // One input per locale. `en` is required and is what every unfilled locale
+  // falls back to at render time, so the others stay optional.
+  const [title, setTitle] = useState(() => toLocalizedCopyDraft(initial.payload.title));
+  const [description, setDescription] = useState(() =>
+    toLocalizedCopyDraft(initial.payload.description)
+  );
+
+  const setCopy = (set: typeof setTitle, locale: Locale) => (value: string) =>
+    set((prev) => ({ ...prev, [locale]: value }));
 
   // Normalize (also recovers legacy `{type:'image'}` thumbnails still in the DB).
   const initThumb = resolveNativeThumbnail(initial.payload as NativeCardPayload);
@@ -91,8 +104,8 @@ export function NativeCardCreativeForm({ mode, slot, creativeId, initial, labels
     submit(mode, creativeId, common.toFields(), {
       avatarImagePath,
       avatarAlt,
-      title,
-      description,
+      title: fromLocalizedCopyDraft(title),
+      description: fromLocalizedCopyDraft(description),
       thumbnail: currentThumbnail,
     });
   };
@@ -225,34 +238,47 @@ export function NativeCardCreativeForm({ mode, slot, creativeId, initial, labels
           />
         </Field>
 
-        <Field label={labels.title} htmlFor="title" description={labels.cardCopyHint}>
-          <Input
-            id="title"
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            required
-            maxLength={AD_CREATIVE_LIMITS.text}
-          />
-        </Field>
-        <Field label={labels.description} htmlFor="description">
-          <Textarea
-            id="description"
-            rows={2}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            required
-            maxLength={AD_CREATIVE_LIMITS.text}
-          />
-        </Field>
+        {SUPPORTED_LOCALES.map((locale) => (
+          <Field
+            key={`title-${locale}`}
+            label={`${labels.title} (${LOCALE_LABELS[locale]})`}
+            htmlFor={`title-${locale}`}
+            description={locale === 'en' ? labels.cardCopyHint : undefined}
+          >
+            <Input
+              id={`title-${locale}`}
+              type="text"
+              value={title[locale]}
+              onChange={(e) => setCopy(setTitle, locale)(e.target.value)}
+              required={locale === 'en'}
+              maxLength={AD_CREATIVE_LIMITS.text}
+            />
+          </Field>
+        ))}
+        {SUPPORTED_LOCALES.map((locale) => (
+          <Field
+            key={`description-${locale}`}
+            label={`${labels.description} (${LOCALE_LABELS[locale]})`}
+            htmlFor={`description-${locale}`}
+          >
+            <Textarea
+              id={`description-${locale}`}
+              rows={2}
+              value={description[locale]}
+              onChange={(e) => setCopy(setDescription, locale)(e.target.value)}
+              required={locale === 'en'}
+              maxLength={AD_CREATIVE_LIMITS.text}
+            />
+          </Field>
+        ))}
       </CreativeFormShell>
 
       <aside className="lg:sticky lg:top-4">
         <NativeCardPreview
           avatarImagePath={avatarImagePath}
           avatarAlt={avatarAlt}
-          title={title}
-          description={description}
+          title={title.en}
+          description={description.en}
           thumbnail={currentThumbnail}
           label={labels.preview}
           caption={labels.previewCaption}

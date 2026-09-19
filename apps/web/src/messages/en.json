@@ -794,7 +794,7 @@
       },
       "ads": {
         "question": "Why are there advertisements on this site?",
-        "answer": "This service is provided free of charge, but maintaining servers and domains incurs costs. Ad revenue helps cover these expenses. Additionally, revenue from affiliate programs such as Amazon Associates is also used to cover operating costs. For more information, please see our <affiliateLink>Affiliate Disclosure</affiliateLink>."
+        "answer": "This service is provided free of charge, but maintaining servers and domains incurs costs. Ad revenue helps cover these expenses. Additionally, revenue from affiliate programs is also used to cover operating costs. For more information, please see our <affiliateLink>Affiliate Disclosure</affiliateLink>."
       },
       "chessEngine": {
         "question": "What chess engine does the AI use?",
@@ -3185,10 +3185,8 @@
     "title": "Affiliate Disclosure",
     "description": "Information about affiliate links on Blindfold Chess",
     "networksDisclosureTitle": "Affiliate Networks",
-    "networksDisclosureDescription": "blindfold-chess.online also takes part in affiliate programmes run by third-party networks, including Awin. Links to chess books, software and services on this site may be affiliate links: if you buy something after following one, we may receive a commission. This never adds anything to the price you pay. Advertising and sponsored placements are labelled as such wherever they appear, and a link being an affiliate link never changes what we say about the product.",
-    "amazonDisclosureTitle": "Amazon Associate Program Disclosure",
-    "amazonDisclosureDescription": "As an Amazon Associate I earn from qualifying purchases. blindfold-chess.online is a participant in the Amazon Services LLC Associates Program, an affiliate advertising program designed to provide a means for sites to earn advertising fees by advertising and linking to Amazon.com.",
-    "footerText": "As an Amazon Associate I earn from qualifying purchases."
+    "networksDisclosureDescription": "blindfold-chess.online takes part in affiliate programmes run by third-party networks, including Awin. Links to chess books, software and services on this site may be affiliate links: if you buy something after following one, we may receive a commission. This never adds anything to the price you pay. Advertising and sponsored placements are labelled as such wherever they appear, and a link being an affiliate link never changes what we say about the product.",
+    "footerText": "Some links on this site are affiliate links, and we may earn a commission from qualifying purchases."
   },
   "terms": {
     "title": "Terms of Service",
@@ -4778,10 +4776,13 @@
       "title": "Ads Management",
       "slot": "Slot",
       "href": "Link URL",
-      "hrefHint": "Paste the URL exactly as the network gave it. For Awin and Amazon links a sub-ID identifying this creative (clickref / ascsubtag) is appended automatically at render time, so their reports break clicks down per creative — don't add one by hand unless you want to override it.",
+      "hrefHint": "Paste the URL exactly as the network gave it, with no clickref on it — Awin's UI hands out a sample one that would swallow this creative's attribution. A clickref identifying this creative is appended automatically at render time, so Awin's reports break clicks down per creative.",
       "isActive": "Active",
       "actions": "Actions",
       "edit": "Edit",
+      "creativeId": "Creative ID",
+      "copyId": "Copy creative ID",
+      "copiedId": "Copied",
       "save": "Save",
       "cancel": "Cancel",
       "saving": "Saving...",
@@ -4798,9 +4799,6 @@
       "creating": "Creating...",
       "kind": "Kind",
       "summary": "Summary",
-      "delete": "Delete",
-      "deleting": "Deleting...",
-      "deleteConfirm": "Delete this creative? This cannot be undone.",
       "editTitle": "Edit Ad Creative",
       "avatar": "Avatar",
       "avatarAlt": "Avatar Alt Text",
@@ -4809,9 +4807,7 @@
       "avatarHintCreate": "Save first, then upload an avatar on the edit screen.",
       "cardTitle": "Title",
       "cardDescription": "Description",
-      "cardCopyHint": "Write in the target country's language (English if global).",
-      "targetCountry": "Target country",
-      "targetCountryHint": "Leave empty to target all countries.",
+      "cardCopyHint": "Write the copy for each language. English is required and is what a visitor sees when their language is left blank.",
       "reorderHint": "Drag to reorder.",
       "thumbnail": "Thumbnail",
       "thumbnailFen": "Board position (FEN)",
@@ -4820,10 +4816,8 @@
       "thumbnailImageUploading": "Uploading...",
       "thumbnailImageHintCreate": "Save first, then upload a thumbnail image on the edit screen.",
       "thumbnailAlt": "Thumbnail alt text",
-      "filterAll": "All countries",
-      "filterReorderHint": "Clear the filter to reorder.",
       "preview": "Preview",
-      "previewCaption": "The “Ad” label and sponsor name are localized per viewer at render time.",
+      "previewCaption": "The English copy is previewed. The “Ad” label and sponsor name are localized per viewer at render time.",
       "thumbnailImageOverride": "Override image (optional)",
       "thumbnailImageRemove": "Remove image"
     },

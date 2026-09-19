@@ -26,7 +26,6 @@ export default async function EditCreativePage({ params }: Props) {
   const common: CommonCreativeValues = {
     href: row.href,
     isActive: row.isActive,
-    targetCountry: row.targetCountry,
   };
 
   return (
@@ -36,6 +35,14 @@ export default async function EditCreativePage({ params }: Props) {
         { label: slot, href: `/admin/ads/${slot}` },
         { label: t('editTitle') },
       ]}
+      /* The id is the sub-ID this creative's clicks are reported under, so it
+         is the value an Awin report line has to be matched against — see the
+         opening TSDoc of `@/lib/ads/subid`. */
+      actions={
+        <span className="font-mono text-xs text-muted-foreground">
+          {t('creativeId')}: {id}
+        </span>
+      }
     >
       {/* A stored payload that fails its kind's guard (e.g. written before the
           validation tightened) starts the form empty instead of feeding it

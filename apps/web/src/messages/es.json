@@ -794,7 +794,7 @@
       },
       "ads": {
         "question": "¿Por qué hay anuncios en este sitio?",
-        "answer": "Este servicio se proporciona de forma gratuita, pero mantener servidores y dominios tiene costos. Los ingresos publicitarios ayudan a cubrir estos gastos. Además, los ingresos de programas de afiliados como Amazon Associates también se utilizan para cubrir los costos operativos. Para más información, consulta nuestra <affiliateLink>Divulgación de Afiliados</affiliateLink>."
+        "answer": "Este servicio se proporciona de forma gratuita, pero mantener servidores y dominios tiene costos. Los ingresos publicitarios ayudan a cubrir estos gastos. Además, los ingresos de programas de afiliados también se utilizan para cubrir los costos operativos. Para más información, consulta nuestra <affiliateLink>Divulgación de Afiliados</affiliateLink>."
       },
       "chessEngine": {
         "question": "¿Qué motor de ajedrez usa la IA?",
@@ -3185,10 +3185,8 @@
     "title": "Divulgación de Afiliados",
     "description": "Información sobre enlaces de afiliados en Ajedrez a Ciegas",
     "networksDisclosureTitle": "Redes de afiliados",
-    "networksDisclosureDescription": "blindfold-chess.online también participa en programas de afiliados gestionados por redes de terceros, entre ellas Awin. Los enlaces a libros, software y servicios de ajedrez de este sitio pueden ser enlaces de afiliado: si compras algo después de seguir uno, es posible que recibamos una comisión. Esto nunca incrementa el precio que pagas. La publicidad y los espacios patrocinados se identifican como tales allí donde aparecen, y que un enlace sea de afiliado nunca cambia lo que decimos sobre el producto.",
-    "amazonDisclosureTitle": "Divulgación del Programa de Asociados de Amazon",
-    "amazonDisclosureDescription": "Como Asociado de Amazon, obtengo ingresos por compras que califican. blindfold-chess.online participa en el Programa de Asociados de Amazon Services LLC, un programa de publicidad de afiliados diseñado para proporcionar un medio para que los sitios ganen tarifas de publicidad mediante publicidad y enlaces a Amazon.com.",
-    "footerText": "Como Asociado de Amazon, obtengo ingresos por compras que califican."
+    "networksDisclosureDescription": "blindfold-chess.online participa en programas de afiliados gestionados por redes de terceros, entre ellas Awin. Los enlaces a libros, software y servicios de ajedrez de este sitio pueden ser enlaces de afiliado: si compras algo después de seguir uno, es posible que recibamos una comisión. Esto nunca incrementa el precio que pagas. La publicidad y los espacios patrocinados se identifican como tales allí donde aparecen, y que un enlace sea de afiliado nunca cambia lo que decimos sobre el producto.",
+    "footerText": "Algunos enlaces de este sitio son enlaces de afiliados, y podemos recibir una comisión por las compras que califiquen."
   },
   "terms": {
     "title": "Términos de Servicio",
@@ -4778,10 +4776,13 @@
       "title": "Gestión de Anuncios",
       "slot": "Espacio",
       "href": "URL del Enlace",
-      "hrefHint": "Pega la URL tal como te la dio la red. En los enlaces de Awin y Amazon se añade automáticamente al renderizar un sub-ID que identifica este creativo (clickref / ascsubtag), de modo que sus informes desglosan los clics por creativo; no lo añadas a mano salvo que quieras sobrescribirlo.",
+      "hrefHint": "Pega la URL tal como te la dio la red, sin ningún clickref: la interfaz de Awin entrega uno de muestra que se tragaría la atribución de este creativo. Al renderizar se añade automáticamente un clickref que identifica este creativo, de modo que los informes de Awin desglosan los clics por creativo.",
       "isActive": "Activo",
       "actions": "Acciones",
       "edit": "Editar",
+      "creativeId": "ID del creativo",
+      "copyId": "Copiar el ID del creativo",
+      "copiedId": "Copiado",
       "save": "Guardar",
       "cancel": "Cancelar",
       "saving": "Guardando...",
@@ -4798,9 +4799,6 @@
       "creating": "Creando...",
       "kind": "Tipo",
       "summary": "Resumen",
-      "delete": "Eliminar",
-      "deleting": "Eliminando...",
-      "deleteConfirm": "¿Eliminar este creativo? Esta acción no se puede deshacer.",
       "editTitle": "Editar creativo de anuncio",
       "avatar": "Avatar",
       "avatarAlt": "Texto alternativo del avatar",
@@ -4809,9 +4807,7 @@
       "avatarHintCreate": "Guarda primero y luego sube un avatar en la pantalla de edición.",
       "cardTitle": "Título",
       "cardDescription": "Descripción",
-      "cardCopyHint": "Escribe en el idioma del país de destino (inglés si es global).",
-      "targetCountry": "País de destino",
-      "targetCountryHint": "Dejar vacío para segmentar todos los países.",
+      "cardCopyHint": "Escribe el texto para cada idioma. El inglés es obligatorio y es lo que ve quien navega en un idioma que dejaste vacío.",
       "reorderHint": "Arrastra para reordenar.",
       "thumbnail": "Miniatura",
       "thumbnailFen": "Posición del tablero (FEN)",
@@ -4820,10 +4816,8 @@
       "thumbnailImageUploading": "Subiendo...",
       "thumbnailImageHintCreate": "Guarda primero y luego sube una imagen de miniatura en la pantalla de edición.",
       "thumbnailAlt": "Texto alternativo de la miniatura",
-      "filterAll": "Todos los países",
-      "filterReorderHint": "Quita el filtro para reordenar.",
       "preview": "Vista previa",
-      "previewCaption": "La etiqueta “Ad” y el nombre del patrocinador se localizan por espectador al renderizar.",
+      "previewCaption": "La vista previa muestra el texto en inglés. La etiqueta “Anuncio” y el nombre del patrocinador se localizan para cada visitante al renderizar.",
       "thumbnailImageOverride": "Imagen de reemplazo (opcional)",
       "thumbnailImageRemove": "Eliminar imagen"
     },

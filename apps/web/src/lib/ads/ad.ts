@@ -1,5 +1,4 @@
 import { unstable_cache } from 'next/cache';
-import { headers } from 'next/headers';
 
 import { IS_LOCAL_DEV } from '@/config';
 import { and, asc, eq } from 'drizzle-orm';
@@ -7,10 +6,11 @@ import { and, asc, eq } from 'drizzle-orm';
 import { AD_CREATIVES_CACHE_TAG } from '@/lib/cache-tags';
 import { adCreatives, db } from '@/lib/db';
 
+import type { Locale } from '@/app/[locale]/_lib/types';
+
 import { hasAdFreeEntitlement } from './ad-free-entitlement';
-import { filterByCountry, getRequestCountry } from './country';
 import type { NativeCardThumbnail } from './payload';
-import { isNativeCardPayload, resolveNativeThumbnail } from './payload';
+import { isNativeCardPayload, resolveNativeCopy, resolveNativeThumbnail } from './payload';
 import type { AdKind, AdSlot } from './registry';
 import { withCreativeSubId } from './subid';
 
@@ -76,7 +76,6 @@ export type ActiveCreative = {
   kind: AdKind;
   href: string;
   sortOrder: number;
-  targetCountry: string | null;
   payload: unknown;
 };
 
@@ -89,7 +88,6 @@ const getActiveCreativesCached = unstable_cache(
         kind: row.kind as AdKind,
         href: row.href,
         sortOrder: row.sortOrder,
-        targetCountry: row.targetCountry,
         payload: row.payload,
       }));
     } catch (error) {
@@ -106,31 +104,31 @@ export function getActiveCreatives(slot: AdSlot): Promise<ActiveCreative[]> {
 }
 
 /**
- * Native-card view for a given slot: the active native-card creatives (filtered
- * to the visitor's country), mapped to the serializable `NativeAdView` that
- * client card renderers use. `href` comes out sub-ID tagged, so a click lands
- * in the network's report attributed to this creative. Delegates to the cached `getActiveCreatives`, so
- * every consuming surface (the home/topics feed, the puzzle and
- * position-memory lists — all `force-dynamic`, so reading the geo header
- * server-side is free) shares the same tag-invalidated pool. `country` comes
- * from `getRequestCountry(headers())`; null = geo unknown (only global
- * creatives qualify).
+ * Native-card view for a given slot: the active native-card creatives mapped
+ * to the serializable `NativeAdView` that client card renderers use. `href`
+ * comes out sub-ID tagged, so a click lands in the network's report
+ * attributed to this creative. Delegates to the cached `getActiveCreatives`,
+ * so every consuming surface (the home/topics feed, the puzzle and
+ * position-memory lists) shares the same tag-invalidated pool.
+ *
+ * Copy is resolved here rather than in the card: `locale` picks the visitor's
+ * language out of each creative's per-locale copy (see `resolveNativeCopy`),
+ * which leaves `NativeAdView` a flat, already-localized shape the client
+ * renderer can take as-is.
  */
-export async function getNativeAdCreatives(
-  slot: AdSlot,
-  country: string | null
-): Promise<NativeAdView[]> {
-  const creatives = filterByCountry(await getActiveCreatives(slot), country);
+export async function getNativeAdCreatives(slot: AdSlot, locale: Locale): Promise<NativeAdView[]> {
+  const creatives = await getActiveCreatives(slot);
   return creatives.flatMap((c) => {
     if (!isNativeCardPayload(c.payload)) return [];
+    const { title, description } = resolveNativeCopy(c.payload, locale);
     return [
       {
         id: c.id,
         href: withCreativeSubId(c.href, c.id),
         avatarImagePath: c.payload.avatarImagePath,
         avatarAlt: c.payload.avatarAlt,
-        title: c.payload.title,
-        description: c.payload.description,
+        title,
+        description,
         thumbnail: resolveNativeThumbnail(c.payload),
       },
     ];
@@ -141,17 +139,16 @@ export async function getNativeAdCreatives(
  * The one-call server prologue for a native-card surface: the viewer's ad
  * entitlement (`showAds`, with the `IS_LOCAL_DEV` force-on so placements are
  * testable locally) and — only when ads show at all — the slot's creatives
- * filtered to the request's country. Reads `headers()` for the geo, so callers
- * must be request-scoped (every native-card surface is `force-dynamic`, which
- * makes that read free). Ad-free viewers skip the creative read entirely.
+ * with their copy resolved for `locale`. Ad-free viewers skip the creative
+ * read entirely.
  */
 export async function resolveNativeAds(
   slot: AdSlot,
-  userId: string | null
+  userId: string | null,
+  locale: Locale
 ): Promise<{ showAds: boolean; creatives: NativeAdView[] }> {
   const showAds = IS_LOCAL_DEV || (await shouldShowAdsForUser(userId));
   if (!showAds) return { showAds: false, creatives: [] };
 
-  const country = getRequestCountry(await headers());
-  return { showAds: true, creatives: await getNativeAdCreatives(slot, country) };
+  return { showAds: true, creatives: await getNativeAdCreatives(slot, locale) };
 }
