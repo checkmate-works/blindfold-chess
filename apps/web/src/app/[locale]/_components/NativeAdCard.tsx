@@ -23,8 +23,8 @@ type Props = {
 
 /**
  * Native ad card — the same `ActivityCard` shell as the surfaces it blends
- * into (board thumbnail, avatar row, body text) rather than an AdSense `<ins>`
- * slot. Content is admin-managed (`ad_creatives`, any `native_card` slot);
+ * into (board thumbnail, avatar row, body text), which is what makes it
+ * native. Content is admin-managed (`ad_creatives`, any `native_card` slot);
  * only the disclosure label, avatar fallback, and board are chrome. The whole
  * card links to the creative's `href` (an affiliate URL).
  *

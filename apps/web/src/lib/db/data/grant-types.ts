@@ -17,7 +17,7 @@ export type GrantType = (typeof GRANT_TYPES)[number];
 /**
  * Every benefit type that an admin or automated grant can issue.
  *
- * - `ad_free`        Hides AdSense slots site-wide.
+ * - `ad_free`        Hides every ad placement site-wide.
  * - `paywall_access` Unlocks a scoped resource (currently article paywall).
  *                    Scoped via `resourceType` + `resourceId` on the row.
  *

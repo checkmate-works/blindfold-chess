@@ -8,11 +8,11 @@ const ADS_HIDDEN_COOKIE_MATCH = new RegExp(`(?:^|; )${ADS_HIDDEN_COOKIE_NAME}=1(
  * script in `<head>` (see `AdHideBootstrapScript`) runs only at initial
  * document parse, so cookies written after that — chiefly the very first
  * sign-in within a session — would never be reflected on the attribute.
- * `AdSenseDisplay` / `AdSenseInFeed` gate `push()` solely on this attribute,
- * so without this re-assertion the user would see ads on subsequent
- * client-side navigations (e.g., language switch) despite being entitled
- * to hide them. A reload masks the symptom because the bootstrap then runs
- * with the cookie already present.
+ * The CSS hide keys off this attribute alone, so without the re-assertion
+ * the user would keep seeing ads for the rest of the session — including
+ * across client-side navigations (e.g. a language switch), which never
+ * re-parse the document. A reload masks the symptom because the bootstrap
+ * then runs with the cookie already present.
  *
  * Lives with the other ads-hidden plumbing; the auth provider calls it at
  * session-resolution time because sign-in is when the cookie gets rewritten.
