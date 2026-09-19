@@ -319,6 +319,7 @@ The moderation system uses a **dual-source pattern** adopted from Discourse, Git
 - **`reason`** (text) — human-readable justification. For BAN, replaces the former `profiles.ban_reason` column.
 - **`ip_address`** — for forensic analysis of admin actions.
 - **FK** (`actor_id` → `auth.users`) — defined in Supabase-side SQL, following established pattern.
+- **A ban cancels the user's Stripe subscription immediately** — `banUser` calls `cancelAllActiveSubscriptions` after the ban has committed; a Stripe failure keeps the ban and reports `bannedButSubscriptionNotCanceled` to the operator instead of rolling back. Unban does not restore the plan. The ordering rationale is in the `banUser` TSDoc.
 
 ### Usage Patterns
 

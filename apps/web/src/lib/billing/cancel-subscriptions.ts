@@ -6,15 +6,21 @@ import { getStripe } from '@/lib/billing/stripe';
 import { db, subscriptions } from '@/lib/db';
 
 /**
- * Immediately cancel every active Stripe subscription a user holds, used as
- * part of account deletion (退会). See {@link import('@/lib/users/delete-account').deleteAccount}
- * for the overall deletion flow and the policy behind it — including why this
- * runs first, before anything irreversible.
+ * Immediately cancel every active Stripe subscription a user holds. Two flows
+ * call it, and they place it differently for the same reason (billing must
+ * not outlive the account's usefulness):
+ * - account deletion (退会) runs it **first**, before anything irreversible,
+ *   and aborts if it fails — see
+ *   {@link import('@/lib/users/delete-account').deleteAccount};
+ * - an admin ban runs it **last**, after the ban has committed, and reports
+ *   a failure to the operator instead of undoing the ban — see `banUser` in
+ *   `src/app/admin/users/_actions/`.
  *
  * ## Why immediate (not period-end) cancellation
  * The product decision is to cancel **immediately** (`stripe.subscriptions.cancel`),
- * not at period end, so a deleted account can never keep getting billed. No
- * proration / day-rate refund is issued — Stripe's default behaviour is fine.
+ * not at period end, so a deleted or banned account can never keep getting
+ * billed. No proration / day-rate refund is issued — Stripe's default
+ * behaviour is fine.
  *
  * ## Idempotency
  * - Rows already at `status === 'canceled'` are skipped (no Stripe call).
@@ -35,8 +41,9 @@ import { db, subscriptions } from '@/lib/db';
  *
  * ## Failure mode
  * A genuine Stripe failure (anything other than "already gone") is **rethrown**
- * so the caller can abort account deletion and surface a retryable error — we
- * must confirm billing has stopped before completing the deletion.
+ * so the caller can decide: deletion aborts and surfaces a retryable error,
+ * since billing must be confirmed stopped before the account goes; a ban
+ * stands and tells the operator to finish the cancellation by hand.
  */
 export async function cancelAllActiveSubscriptions(userId: string): Promise<void> {
   // Fetch the user's not-already-canceled subscriptions. The vast majority of
@@ -62,8 +69,8 @@ export async function cancelAllActiveSubscriptions(userId: string): Promise<void
       await stripe.subscriptions.cancel(row.stripeSubscriptionId);
     } catch (err) {
       if (!isMissingSubscriptionError(err)) {
-        // A real failure: abort. The caller turns this into a 500 and the user
-        // can retry — we must not complete deletion while billing might continue.
+        // A real failure: abort this row and let the caller decide (deletion
+        // retries; a ban reports it) — never silently leave billing running.
         throw err;
       }
       // Already gone on Stripe's side: treat as success, fall through to DB sync.
