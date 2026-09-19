@@ -14,7 +14,7 @@ vi.mock('@/i18n/routing', () => ({
   useRouter: () => stableRouter,
 }));
 
-vi.mock('next-intl');
+vi.mock('@/i18n/use-safe-translations');
 
 const { mockUpdatePuzzle } = vi.hoisted(() => ({ mockUpdatePuzzle: vi.fn() }));
 vi.mock('../_actions/updatePuzzle', () => ({

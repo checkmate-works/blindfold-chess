@@ -22,8 +22,8 @@ vi.mock('@/i18n/routing', () => ({
 }));
 
 // Identity translator; stringifies params so moveCount is assertable.
-vi.mock('next-intl', () => ({
-  useTranslations: () => (key: string, params?: Record<string, unknown>) =>
+vi.mock('@/i18n/use-safe-translations', () => ({
+  useSafeTranslations: () => (key: string, params?: Record<string, unknown>) =>
     params ? `${key}:${JSON.stringify(params)}` : key,
 }));
 

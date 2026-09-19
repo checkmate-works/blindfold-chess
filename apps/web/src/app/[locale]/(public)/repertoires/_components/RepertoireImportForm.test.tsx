@@ -10,7 +10,7 @@ vi.mock('@/i18n/routing', () => ({
 // Echo the key, and answer `t.has` only for copy the message files really
 // carry — that lookup is what decides whether a rejection is shown as itself
 // or as the generic fallback.
-vi.mock('next-intl', () => {
+vi.mock('@/i18n/use-safe-translations', () => {
   const KNOWN = new Set([
     'errors.nameRequired',
     'errors.nameTooLong',
@@ -21,7 +21,7 @@ vi.mock('next-intl', () => {
     'errors.generic',
   ]);
   const t = Object.assign((key: string) => key, { has: (key: string) => KNOWN.has(key) });
-  return { useTranslations: () => t };
+  return { useSafeTranslations: () => t };
 });
 
 vi.mock('next-navigation-guard');

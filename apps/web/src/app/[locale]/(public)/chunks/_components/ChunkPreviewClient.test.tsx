@@ -5,6 +5,10 @@ import { ChunkPreviewClient } from './ChunkPreviewClient';
 
 // Echo translation keys so the warning is assertable by key (it renders
 // `body` + `hint`), exactly as the form-side tests used to do.
+vi.mock('@/i18n/use-safe-translations');
+
+// `ChunkReferenceWarning` still reads `useLocale` straight from next-intl to
+// format its counts, and there is no provider under jsdom.
 vi.mock('next-intl');
 
 vi.mock('@/i18n/routing', () => ({ useRouter: () => ({ push: vi.fn(), replace: vi.fn() }) }));

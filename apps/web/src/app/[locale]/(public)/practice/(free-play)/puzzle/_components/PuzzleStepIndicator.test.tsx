@@ -3,6 +3,8 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { PuzzleStepIndicator } from './PuzzleStepIndicator';
 
+vi.mock('@/i18n/use-safe-translations');
+
 vi.mock('next-intl');
 
 describe('PuzzleStepIndicator', () => {
