@@ -42,10 +42,19 @@ import { createdAtOnly, timestamps } from './columns';
  * registry. This is deliberately unlike the old `ad_banners.slot` UNIQUE
  * (one-row-per-slot) model it replaced.
  *
- * NOT related to the Google-AdSense display system (`AdSlot`,
- * `ads_hidden` cookie, `AdSlotKind`) — that renders third-party `<ins>`
- * tags and never reads this table. These are first-party creatives we host
- * and link ourselves (affiliate links etc.).
+ * These are first-party creatives we host and link ourselves (affiliate
+ * links etc.). Every placement runs the same waterfall — the top eligible
+ * creative from this table, else the slot's AdSense unit — so an empty table
+ * simply means AdSense shows everywhere, exactly as before this table
+ * existed. The fixed banner slots read it through `/api/ad-slot/[slot]`
+ * (`AdSlotClient`), the native-card surfaces through `resolveNativeAds`.
+ *
+ * @design No `provider` column
+ *
+ * Priority across networks (e.g. Amazon above Awin, both above AdSense) is
+ * already expressed by `sort_order` plus the AdSense fallback, so a column
+ * naming the network would only duplicate what the order says. Add one when
+ * per-network reporting is needed — not before.
  */
 export const adCreatives = pgTable(
   'ad_creatives',
@@ -57,6 +66,12 @@ export const adCreatives = pgTable(
     slot: varchar('slot', { length: 50 }).notNull(),
     /** Click destination (affiliate URL etc.), common to every kind. */
     href: varchar('href', { length: 2048 }).notNull(),
+    /**
+     * The only on/off switch. The table once also carried a schedule
+     * (`start_at` / `end_at`, filtered at read time); it was removed in
+     * 2026-07 after real use showed no need for it, so there is no second
+     * condition that can silently take a creative out of rotation.
+     */
     isActive: boolean('is_active').notNull().default(true),
     sortOrder: integer('sort_order').notNull().default(0),
     /**
