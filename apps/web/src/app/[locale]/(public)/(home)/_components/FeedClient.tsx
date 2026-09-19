@@ -13,7 +13,6 @@ import { buildDisplayItems } from '../_lib/feed-display';
 import type { DisplayItem, FeedItem, FeedResponse } from '../_lib/types';
 import { FeedCard } from './FeedCard';
 import { FeedSkeleton } from './FeedSkeleton';
-import { ResponsiveAdSlot } from './ResponsiveAdSlot';
 
 type Props = {
   /**
@@ -47,9 +46,10 @@ type Props = {
   /**
    * Admin-configured native-ad creatives for the in-feed slot, resolved
    * server-side (active + in-schedule, priority-ordered). Each ad slot is
-   * filled by the next creative (rotating `adIndex % n`); when the list is
-   * empty the slot falls back to the AdSense in-feed unit. An empty list does
-   * NOT suppress the slot — `showAds` alone decides whether ads appear.
+   * filled by the next creative (rotating `adIndex % n`). An empty list
+   * suppresses the slots entirely: a native card is the only thing that can
+   * fill one, so an ad row with nothing to put in it would be a blank row
+   * carrying a divider.
    */
   nativeAdCreatives?: NativeAdView[];
   /**
@@ -137,7 +137,10 @@ export function FeedClient({
     () => (showAds ? (nativeAdCreatives ?? []) : []),
     [showAds, nativeAdCreatives]
   );
-  const displayItems = useMemo(() => buildDisplayItems(items, showAds), [items, showAds]);
+  const displayItems = useMemo(
+    () => buildDisplayItems(items, adCreatives.length > 0),
+    [items, adCreatives]
+  );
 
   // In `card` layout each item is a self-contained bordered card spaced by the
   // container's `space-y-3`; in `feed` layout items share a continuous list and
@@ -147,14 +150,13 @@ export function FeedClient({
   const renderDisplayItem = useCallback(
     (index: number, displayItem: DisplayItem) => {
       if (displayItem.type === 'ad') {
-        // Waterfall: highest-priority admin creative, else AdSense fallback.
-        // The `bfc_ads_hidden` no-flash CSS hide rides on `.ad-slot-wrapper`:
-        // `NativeAdCard` owns its own, and takes the row divider classes via
-        // `className` so the whole row collapses with it; the AdSense fallback
-        // row carries the class here for the same reason.
-        const creative =
-          adCreatives.length > 0 ? adCreatives[displayItem.adIndex % adCreatives.length] : null;
-        return creative ? (
+        // Ad rows exist only when the pool is non-empty (see `displayItems`),
+        // so the modulo always lands on a creative. The `bfc_ads_hidden`
+        // no-flash CSS hide rides on `.ad-slot-wrapper`, which `NativeAdCard`
+        // owns; it takes the row divider classes via `className` so the whole
+        // row collapses with it.
+        const creative = adCreatives[displayItem.adIndex % adCreatives.length];
+        return (
           <NativeAdCard
             key={`ad-${index}`}
             creative={creative}
@@ -162,10 +164,6 @@ export function FeedClient({
             variant={variant}
             className={itemWrapperClass}
           />
-        ) : (
-          <div key={`ad-${index}`} className={`${itemWrapperClass} ad-slot-wrapper`.trim()}>
-            <ResponsiveAdSlot />
-          </div>
         );
       }
       return (
