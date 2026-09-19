@@ -3184,6 +3184,8 @@
   "affiliateDisclosure": {
     "title": "Divulgación de Afiliados",
     "description": "Información sobre enlaces de afiliados en Ajedrez a Ciegas",
+    "networksDisclosureTitle": "Redes de afiliados",
+    "networksDisclosureDescription": "blindfold-chess.online también participa en programas de afiliados gestionados por redes de terceros, entre ellas Awin. Los enlaces a libros, software y servicios de ajedrez de este sitio pueden ser enlaces de afiliado: si compras algo después de seguir uno, es posible que recibamos una comisión. Esto nunca incrementa el precio que pagas. La publicidad y los espacios patrocinados se identifican como tales allí donde aparecen, y que un enlace sea de afiliado nunca cambia lo que decimos sobre el producto.",
     "amazonDisclosureTitle": "Divulgación del Programa de Asociados de Amazon",
     "amazonDisclosureDescription": "Como Asociado de Amazon, obtengo ingresos por compras que califican. blindfold-chess.online participa en el Programa de Asociados de Amazon Services LLC, un programa de publicidad de afiliados diseñado para proporcionar un medio para que los sitios ganen tarifas de publicidad mediante publicidad y enlaces a Amazon.com.",
     "footerText": "Como Asociado de Amazon, obtengo ingresos por compras que califican."

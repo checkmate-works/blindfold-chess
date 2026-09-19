@@ -3184,6 +3184,8 @@
   "affiliateDisclosure": {
     "title": "Affiliate Disclosure",
     "description": "Information about affiliate links on Blindfold Chess",
+    "networksDisclosureTitle": "Affiliate Networks",
+    "networksDisclosureDescription": "blindfold-chess.online also takes part in affiliate programmes run by third-party networks, including Awin. Links to chess books, software and services on this site may be affiliate links: if you buy something after following one, we may receive a commission. This never adds anything to the price you pay. Advertising and sponsored placements are labelled as such wherever they appear, and a link being an affiliate link never changes what we say about the product.",
     "amazonDisclosureTitle": "Amazon Associate Program Disclosure",
     "amazonDisclosureDescription": "As an Amazon Associate I earn from qualifying purchases. blindfold-chess.online is a participant in the Amazon Services LLC Associates Program, an affiliate advertising program designed to provide a means for sites to earn advertising fees by advertising and linking to Amazon.com.",
     "footerText": "As an Amazon Associate I earn from qualifying purchases."
