@@ -39,20 +39,34 @@ export function PricingCard(props: Props) {
 
   async function handleSubscribe() {
     if (props.variant !== 'paid') return;
+    // `?returnTo=` was never read by anything; the parameter the sign-in
+    // flow acts on is `?next=`. A guest tapping "subscribe" used to be
+    // dropped on mypage and had to find their way back to pricing.
+    const signInUrl = withReturnPath(`/${props.locale}/sign-in`, `/${props.locale}/pricing`);
     if (!props.isAuthenticated) {
-      // `?returnTo=` was never read by anything; the parameter the sign-in
-      // flow acts on is `?next=`. A guest tapping "subscribe" used to be
-      // dropped on mypage and had to find their way back to pricing.
-      router.push(withReturnPath(`/${props.locale}/sign-in`, `/${props.locale}/pricing`));
+      router.push(signInUrl);
       return;
     }
     const result = await createCheckoutSession(props.locale);
-    if (result && 'error' in result) {
-      // Handle error (rate limit, etc.)
-      console.error('Checkout error:', result.error);
-      Sentry.captureException(new Error(`Checkout session error: ${result.error}`));
+    if (!result || !('error' in result)) {
+      // Success redirects to Stripe from inside the Server Action.
+      return;
     }
-    // If successful, redirect happens via Server Action
+    switch (result.error) {
+      case 'signInRequired':
+        // The session lapsed between render and click; same destination the
+        // guest branch above uses, so signing in resumes here.
+        router.push(signInUrl);
+        return;
+      case 'banned':
+        // Mirrors the `(protected)` layout, which sends a banned user to the
+        // same page instead of rendering mypage.
+        router.push(`/${props.locale}/banned`);
+        return;
+      default:
+        console.error('Checkout error:', result.error);
+        Sentry.captureException(new Error(`Checkout session error: ${result.error}`));
+    }
   }
 
   return (
