@@ -22,14 +22,12 @@ import { getPaginationParams } from '@/lib/pagination';
 
 import { getOpeningDisplayName } from '@/app/[locale]/(public)/topics/openings/_lib/get-opening-display-name';
 import { PageLayout } from '@/app/[locale]/_components';
-import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { GamesTabs } from '../_components/GamesTabs';
-import { MIN_GAMES_FOR_MID_AD } from '../_lib/mid-ad';
 import { PublishExistingGameButton } from './_components/PublishExistingGameButton';
 import { SharedGameListCard } from './_components/SharedGameListCard';
 import { SharedGamesSort } from './_components/SharedGamesSort';
@@ -94,14 +92,6 @@ export default async function SharedGamesPage({ params, searchParams }: Props) {
       <PublishExistingGameButton locale={locale} />
 
       {/*
-       * Mid-page ad above the sort control, before the list. Only once the
-       * catalog is long enough (>= MIN_GAMES_FOR_MID_AD): a short list keeps
-       * content-bottom near the fold, so a second ad would only crowd it.
-       * `totalCount` is already loaded, no query.
-       */}
-      {totalCount >= MIN_GAMES_FOR_MID_AD && <AdSlot slot="content-middle" />}
-
-      {/*
        * "My published games" points at the viewer's own profile archive
        * (`/u/[username]/games`) rather than filtering this list in place: the
        * archive already renders the same cards scoped to one author, so an
@@ -160,8 +150,6 @@ export default async function SharedGamesPage({ params, searchParams }: Props) {
         }}
         locale={locale}
       />
-
-      <AdSlot slot="content-bottom" />
     </PageLayout>
   );
 }

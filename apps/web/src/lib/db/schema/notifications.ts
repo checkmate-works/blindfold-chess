@@ -21,40 +21,38 @@ import { createdAtOnly, timestamps } from './columns';
  *
  * @design One table, many creative kinds (discriminator + JSONB payload)
  *
- * A single table backs every self-hosted ad format on the site — the
- * in-feed native card, generic rectangle banners, and whatever comes next.
- * `kind` is the discriminator; format-specific fields live in `payload`
- * (JSONB) instead of a wide grid of mostly-NULL columns. This mirrors the
- * `feed_items.entity_type + data` and `moderation_actions.action + metadata`
- * patterns already used elsewhere: adding a new ad format is a new `kind`
- * value + payload type + type guard + renderer, with no migration. The
- * fields that are genuinely common to every format (`href`, `is_active`,
- * `slot`, `sort_order`) stay first-class columns so an "active creatives for
- * this slot right now" query is kind-agnostic.
+ * A single table backs every self-hosted ad format on the site. `kind` is the
+ * discriminator; format-specific fields live in `payload` (JSONB) instead of a
+ * wide grid of mostly-NULL columns. This mirrors the `feed_items.entity_type +
+ * data` and `moderation_actions.action + metadata` patterns already used
+ * elsewhere: adding a new ad format is a new `kind` value + payload type +
+ * type guard + renderer, with no migration. `native_card` is the only kind in
+ * use — the structure is what makes a second one cheap. The fields that are
+ * genuinely common to every format (`href`, `is_active`, `slot`, `sort_order`)
+ * stay first-class columns so an "active creatives for this slot right now"
+ * query is kind-agnostic.
  *
  * @design `slot` is NOT unique — creatives rotate within a placement
  *
- * `slot` identifies a placement (e.g. `feed-native-ad`, `content-bottom`), and
- * multiple active creatives may share one slot so they can rotate. The
- * (slot → allowed kind) binding is enforced in application code by
- * `AD_SLOTS` in `@/lib/ads/registry` (a DB row cannot express "this slot
- * only accepts native_card"), so writes must validate against that
- * registry. This is deliberately unlike the old `ad_banners.slot` UNIQUE
- * (one-row-per-slot) model it replaced.
+ * `slot` identifies a placement (e.g. `feed-native-ad`), and multiple active
+ * creatives may share one slot so they can rotate. The (slot → allowed kind)
+ * binding is enforced in application code by `AD_SLOTS` in
+ * `@/lib/ads/registry` (a DB row cannot express "this slot only accepts
+ * native_card"), so writes must validate against that registry. This is
+ * deliberately unlike the old `ad_banners.slot` UNIQUE (one-row-per-slot)
+ * model it replaced.
  *
- * These are first-party creatives we host and link ourselves (affiliate
- * links etc.). Every placement runs the same waterfall — the top eligible
- * creative from this table, else the slot's AdSense unit — so an empty table
- * simply means AdSense shows everywhere, exactly as before this table
- * existed. The fixed banner slots read it through `/api/ad-slot/[slot]`
- * (`AdSlotClient`), the native-card surfaces through `resolveNativeAds`.
+ * These are first-party creatives we host and link ourselves (affiliate links
+ * etc.), read through `resolveNativeAds`. A slot whose pool is empty renders
+ * nothing at all — there is no third-party network behind it to fall through
+ * to.
  *
  * @design No `provider` column
  *
- * Priority across networks (e.g. Amazon above Awin, both above AdSense) is
- * already expressed by `sort_order` plus the AdSense fallback, so a column
- * naming the network would only duplicate what the order says. Add one when
- * per-network reporting is needed — not before.
+ * Affiliate traffic goes through one network, and priority within a slot is
+ * already expressed by `sort_order`, so a column naming the network would say
+ * nothing the order does not. Add one when per-network reporting is needed —
+ * not before.
  */
 export const adCreatives = pgTable(
   'ad_creatives',

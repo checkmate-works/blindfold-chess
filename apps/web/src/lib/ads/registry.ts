@@ -8,54 +8,42 @@
  * format starts here: add the slot (and, for a new format, the `kind`),
  * then add its payload type/guard (`@/lib/ads/payload`) and a renderer.
  *
+ * `native_card` is currently the only kind, because a native ad is by
+ * definition shaped like the surface it sits in and each surface already
+ * gets its own slot. The one-kind-per-slot structure is kept anyway: a
+ * future surface whose card shape differs from a feed item's (a practice
+ * menu tile, say) is a new `kind` plus its payload type, guard and
+ * renderer, and nothing outside those three places has to know.
+ *
  * Mirrors the "one registry, everything derives from it" pattern used by
  * `PRACTICE_MODULE_REGISTRY`.
  */
 
-export const AD_KINDS = ['banner', 'native_card'] as const;
+export const AD_KINDS = ['native_card'] as const;
 export type AdKind = (typeof AD_KINDS)[number];
 
 export function isAdKind(value: string): value is AdKind {
   return (AD_KINDS as readonly string[]).includes(value);
 }
 
-/**
- * How a slot with multiple active creatives chooses which one to show.
- * - `priority`: always the top `sort_order` (deterministic).
- * - `rotation`: the feed rotates within a page (per interleave index); a
- *   single fixed slot picks at render time, so an ISR-cached page freezes the
- *   pick until revalidation ("rotates on revalidate"). Passed per call site.
- */
-export const AD_SELECTIONS = ['priority', 'rotation'] as const;
-export type AdSelection = (typeof AD_SELECTIONS)[number];
-
-export function isAdSelection(value: string): value is AdSelection {
-  return (AD_SELECTIONS as readonly string[]).includes(value);
-}
-
-type AdSlotConfig = { kind: AdKind; defaultSelection: AdSelection };
+type AdSlotConfig = { kind: AdKind };
 
 /**
- * Slot → config binding. Slots are a fixed set (each needs a code-level
- * renderer + an AdSense fallback), keyed by physical placement. `content-*`
- * mirror the `AdSlotKind` used by the AdSense display components and their
- * reserved dimensions. The admin index (`/admin/ads`) iterates this object,
- * so a new entry here appears there with no admin change.
+ * Slot → config binding, keyed by physical placement. Each slot needs a
+ * code-level renderer, so the set is fixed. The admin index (`/admin/ads`)
+ * iterates this object, so a new entry here appears there with no admin
+ * change.
  *
- * A slot's creative pool is per slot *key*, not per page: every page that
- * renders `<AdSlot slot="content-bottom">` draws from the same pool, in the
- * same order. Per-page targeting for the banner slots was deliberately not
- * built — it would be a "sub-slot" extension of this registry, and nothing
- * has needed it. The native-card surfaces already get one slot each
- * (feed / puzzle list / position-memory list), which is per-surface
- * targeting by construction.
+ * A slot's creative pool is per slot *key*, not per page. Every native-card
+ * surface gets one slot of its own (feed / puzzle list / position-memory
+ * list), which is per-surface targeting by construction; a surface that
+ * needed two independently-filled placements would add a second slot rather
+ * than a "sub-slot" extension of this registry.
  */
 export const AD_SLOTS = {
-  'content-middle': { kind: 'banner', defaultSelection: 'priority' },
-  'content-bottom': { kind: 'banner', defaultSelection: 'priority' },
-  'feed-native-ad': { kind: 'native_card', defaultSelection: 'rotation' },
-  'puzzle-list-native-ad': { kind: 'native_card', defaultSelection: 'rotation' },
-  'position-memory-list-native-ad': { kind: 'native_card', defaultSelection: 'rotation' },
+  'feed-native-ad': { kind: 'native_card' },
+  'puzzle-list-native-ad': { kind: 'native_card' },
+  'position-memory-list-native-ad': { kind: 'native_card' },
 } as const satisfies Record<string, AdSlotConfig>;
 
 export type AdSlot = keyof typeof AD_SLOTS;
@@ -70,16 +58,5 @@ export function kindForSlot(slot: AdSlot): AdKind {
   return AD_SLOTS[slot].kind;
 }
 
-export function selectionForSlot(slot: AdSlot): AdSelection {
-  return AD_SLOTS[slot].defaultSelection;
-}
-
 /** The one slot the in-feed native ad card reads. */
 export const FEED_NATIVE_AD_SLOT = 'feed-native-ad' satisfies AdSlot;
-
-/** Fixed slots whose first-party creative is an image banner. */
-export type BannerSlot = 'content-middle' | 'content-bottom';
-
-export function isBannerSlot(slot: AdSlot): slot is BannerSlot {
-  return AD_SLOTS[slot].kind === 'banner';
-}

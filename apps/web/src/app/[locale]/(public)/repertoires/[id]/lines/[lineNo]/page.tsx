@@ -30,7 +30,6 @@ import { resolveAuthorName } from '@/lib/users/display-name';
 import { PositionAuthorHeader } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionAuthorHeader';
 import type { MoveNotationLine } from '@/app/[locale]/(public)/topics/_lib/move-notation';
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
-import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -296,8 +295,6 @@ export default async function RepertoireLineDetailPage({ params, searchParams }:
           currentUserId={currentUser?.id}
         />
       )}
-
-      <AdSlot slot="content-bottom" />
     </PageLayout>
   );
 }

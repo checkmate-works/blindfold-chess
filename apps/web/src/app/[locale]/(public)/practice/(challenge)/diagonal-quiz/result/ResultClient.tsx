@@ -74,7 +74,4 @@ export const ResultClient = createPracticeResultClient({
     return ctx.tPractice('secondsFormat', { seconds: avg });
   },
   renderChildren: () => <DiagonalQuizChildren />,
-  extraCompleteProps: (_ctx, { adBannerWide }) => ({
-    beforeRelatedContent: adBannerWide,
-  }),
 });

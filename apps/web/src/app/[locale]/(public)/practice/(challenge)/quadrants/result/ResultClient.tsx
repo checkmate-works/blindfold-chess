@@ -39,10 +39,5 @@ export const ResultClient = createPracticeResultClient({
     score: ctx.tPractice('correctAnswers'),
     averageTime: undefined,
   }),
-  renderAfterComplete: (ctx, adBanner) => (
-    <>
-      {adBanner}
-      <QuadrantsAfterContent locale={ctx.locale} />
-    </>
-  ),
+  renderAfterComplete: (ctx) => <QuadrantsAfterContent locale={ctx.locale} />,
 });

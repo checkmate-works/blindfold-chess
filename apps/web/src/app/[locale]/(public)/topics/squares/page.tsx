@@ -15,7 +15,6 @@ import { TopicTabsSkeleton } from '@/app/[locale]/(public)/topics/_components/To
 import { renderAttachment } from '@/app/[locale]/(public)/topics/_components/render-attachment';
 import { TOPIC_PAGE_SIZE } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import { PageLayout, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
-import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
@@ -103,16 +102,12 @@ async function SquaresContent({ params, searchParams }: Props) {
         locale={locale}
       />
 
-      <AdSlot slot="content-middle" />
-
       {currentPage === 1 && (
         <>
           <SectionTitle>{t('squares.sectionTitle')}</SectionTitle>
           <SquareBoard locale={locale} />
         </>
       )}
-
-      <AdSlot slot="content-bottom" />
     </PageLayout>
   );
 }

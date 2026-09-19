@@ -52,14 +52,14 @@ const REDEMPTION_BLOCK_ERRORS: Record<
  * @design `writeAdsHiddenCookieForUser`
  *
  * Ad display is gated by the `bfc_ads_hidden` cookie (see
- * `ads-hidden-cookie.ts` design note) — the inline no-flash script reads
- * it on first paint to decide whether to render slots, and AdSenseDisplay
- * skips the `adsbygoogle.push({})` call when it is set. Cache invalidation
- * alone does not update the cookie, so without this step a successful
- * redemption would leave the user still seeing ads until their next
- * subscription-page visit or until the cookie expires (7 days). Since the
- * Server Action runs in the redeeming user's session, we have a writable
- * cookie store and can refresh the value inline.
+ * `ads-hidden-cookie.ts` design note) — the inline no-flash script reads it
+ * on first paint and flags `<html>`, which is what the CSS rule hiding
+ * `.ad-slot-wrapper` keys off. Cache invalidation alone does not update the
+ * cookie, so without this step a successful redemption would leave the user
+ * still seeing ads until their next subscription-page visit or until the
+ * cookie expires (7 days). Since the Server Action runs in the redeeming
+ * user's session, we have a writable cookie store and can refresh the value
+ * inline.
  */
 export async function redeemAdFree(cost: number): Promise<RedeemAdFreeResult> {
   const auth = await authenticateAndCheckBan();

@@ -6,7 +6,6 @@ import { notFound } from 'next/navigation';
 import { SUPPORTED_LOCALES } from '@/config';
 
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
-import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -79,13 +78,9 @@ export default async function GlossaryCategoryPage({ params }: Props) {
 
         <GlossaryTermList terms={filteredTerms} locale={locale} />
 
-        <AdSlot slot="content-middle" />
-
         <SectionTitle>{t('categoryPage.categoriesTitle')}</SectionTitle>
 
         <CategoryIndex locale={locale} currentCategory={category} />
-
-        <AdSlot slot="content-bottom" />
 
         {/* Mirror `PageLayout`'s trailing block — see PageLayout.tsx. The page
             uses a custom-styled `<PageTitle>` (icon + label flex layout) that

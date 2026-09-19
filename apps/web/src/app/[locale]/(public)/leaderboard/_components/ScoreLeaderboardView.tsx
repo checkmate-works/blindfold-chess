@@ -5,7 +5,6 @@ import { getTranslations } from 'next-intl/server';
 import { getOptionalUser } from '@/lib/auth';
 
 import { Divider, PagePanel, Skeleton } from '@/app/[locale]/_components';
-import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import type { BreadcrumbItem } from '@/app/[locale]/_components/Breadcrumb';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
@@ -85,8 +84,6 @@ export async function ScoreLeaderboardView({
       >
         <LeaderboardTopContent locale={locale} period={period} moduleFilter={moduleFilter} />
       </Suspense>
-
-      <AdSlot slot="content-bottom" />
 
       {/* Mirror `PageLayout`'s trailing block — see PageLayout.tsx. */}
       <div className="!mt-4 space-y-4">

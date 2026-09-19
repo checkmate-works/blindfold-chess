@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { getAllAdCreatives } from '@/lib/ads/ad';
-import { isBannerPayload, isNativeCardPayload, resolveNativeThumbnail } from '@/lib/ads/payload';
+import { isNativeCardPayload, resolveNativeThumbnail } from '@/lib/ads/payload';
 import { isAdSlot, kindForSlot } from '@/lib/ads/registry';
 
 import { AdminBadge } from '../../_components/AdminBadge';
@@ -23,9 +23,6 @@ export default async function AdminSlotCreativesPage({ params }: Props) {
 
   const rows: SlotCreativeRow[] = creatives.map((c) => {
     const base = { id: c.id, isActive: c.isActive, targetCountry: c.targetCountry };
-    if (isBannerPayload(c.payload)) {
-      return { ...base, summary: c.payload.alt, imageUrl: c.payload.imagePath, boardFen: null };
-    }
     if (isNativeCardPayload(c.payload)) {
       const thumb = resolveNativeThumbnail(c.payload);
       return {
@@ -66,7 +63,7 @@ export default async function AdminSlotCreativesPage({ params }: Props) {
           deleting: t('deleting'),
           confirm: t('deleteConfirm'),
           reorderHint: t('reorderHint'),
-          empty: t('noBanners'),
+          empty: t('noCreatives'),
           filterAll: t('filterAll'),
           filterReorderHint: t('filterReorderHint'),
         }}

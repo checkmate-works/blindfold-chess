@@ -55,15 +55,12 @@ describe('resolveNativeThumbnail', () => {
 });
 
 describe('isPayloadForKind', () => {
-  const banner = { imagePath: '/x.png', alt: 'a', width: 10, height: 10 };
   const native = { avatarImagePath: null, avatarAlt: 'Ad', title: 't', description: 'd' };
 
   it('dispatches to the guard matching the kind', () => {
-    expect(isPayloadForKind('banner', banner)).toBe(true);
     expect(isPayloadForKind('native_card', native)).toBe(true);
   });
-  it('rejects a payload written for the other kind', () => {
-    expect(isPayloadForKind('banner', native)).toBe(false);
-    expect(isPayloadForKind('native_card', banner)).toBe(false);
+  it('rejects a payload that is not shaped for the kind', () => {
+    expect(isPayloadForKind('native_card', { imagePath: '/x.png', alt: 'a' })).toBe(false);
   });
 });

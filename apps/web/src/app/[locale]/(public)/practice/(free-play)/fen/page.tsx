@@ -15,7 +15,6 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { buildPracticeIntroHelpTour } from '@/app/[locale]/(public)/practice/_lib/practice-help-tour';
 import { PageLayout } from '@/app/[locale]/_components';
-import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
@@ -57,8 +56,6 @@ export default async function FenPracticePage({ params }: Props) {
       breadcrumb={breadcrumbItems}
     >
       <FenPageContent locale={locale} />
-
-      <AdSlot slot="content-bottom" />
     </PageLayout>
   );
 }

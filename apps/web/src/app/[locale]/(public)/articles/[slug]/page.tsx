@@ -13,7 +13,6 @@ import { JsonLd, generateBlogPostingSchema } from '@/lib/seo/jsonld';
 import { toMetaDescription } from '@/lib/seo/meta-description';
 
 import { PageLayout } from '@/app/[locale]/_components';
-import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { ProseArticle } from '@/app/[locale]/_components/ProseArticle';
 import { TiptapRenderer } from '@/app/[locale]/_components/TiptapRenderer';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -138,8 +137,6 @@ export default async function ArticlePage({ params }: Props) {
         {publishedDate && (
           <p className="text-sm text-muted-foreground text-right">{publishedDate}</p>
         )}
-
-        <AdSlot slot="content-bottom" />
       </PageLayout>
     </>
   );

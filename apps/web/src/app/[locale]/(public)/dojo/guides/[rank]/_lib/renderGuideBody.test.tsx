@@ -140,7 +140,7 @@ vi.mock('@/app/[locale]/(public)/dojo/ranks/_lib/queries', () => ({
   getRankBySlug: (...args: unknown[]) => getRankBySlugMock(...args),
 }));
 
-// Footer: stub out the AdSense/Divider/Breadcrumb stack to keep the DOM lean.
+// Footer: stub out the Divider/Breadcrumb stack to keep the DOM lean.
 vi.mock('@/app/[locale]/(public)/dojo/guides/_components/GuidePageFooter', () => ({
   GuidePageFooter: ({ items }: { items: Array<{ label: string; href?: string }> }) => (
     <nav data-testid="guide-page-footer">

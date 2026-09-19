@@ -13,7 +13,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { KnightTourResult } from '../_components/KnightTourResult';
 
-function KnightTourContent({ locale, adBanner }: { locale: Locale; adBanner?: React.ReactNode }) {
+function KnightTourContent({ locale }: { locale: Locale }) {
   const t = useTranslations('practice.knightTour');
   const tPractice = useTranslations('practice');
   const router = useRouter();
@@ -97,8 +97,6 @@ function KnightTourContent({ locale, adBanner }: { locale: Locale; adBanner?: Re
         onFinishTutorial={handleFinishTutorial}
       />
 
-      {adBanner}
-
       {!isTutorial && (
         <PracticeLayout>
           <div className="mt-8 space-y-3">
@@ -125,7 +123,5 @@ function KnightTourContent({ locale, adBanner }: { locale: Locale; adBanner?: Re
 export const ResultClient = createCustomPracticeResultPage({
   moduleSlug: 'knight-tour',
   i18nKey: 'knightTour',
-  renderContent: ({ locale, adBanner }) => (
-    <KnightTourContent locale={locale} adBanner={adBanner} />
-  ),
+  renderContent: ({ locale }) => <KnightTourContent locale={locale} />,
 });

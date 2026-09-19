@@ -10,7 +10,7 @@
  * without a first-party click table, an interstitial redirect, or an extra
  * network hop that could cost a conversion.
  *
- * Applied at read time (see `getNativeAdCreatives` / `getBannerCreatives`), not
+ * Applied at read time (see `getNativeAdCreatives`), not
  * at write time: the admin keeps seeing and editing the exact URL the network
  * gave them, and a creative duplicated in the admin gets its own tag
  * automatically because the tag is its row id.

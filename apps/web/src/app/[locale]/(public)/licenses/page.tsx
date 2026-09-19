@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
-import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { LastUpdated } from '@/app/[locale]/_components/LastUpdated';
 import { ProseArticle } from '@/app/[locale]/_components/ProseArticle';
 import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
@@ -125,7 +124,6 @@ export default async function LicensesPage({ params }: Props) {
           <LastUpdated locale={locale} date={LAST_UPDATED} />
         </div>
       </ProseArticle>
-      <AdSlot slot="content-bottom" />
     </PageLayout>
   );
 }

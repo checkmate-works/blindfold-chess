@@ -5,12 +5,6 @@ export type AdCreativeFormLabels = {
   hrefHint: string;
   hrefPlaceholder: string;
   isActive: string;
-  imagePath: string;
-  imagePathPlaceholder: string;
-  alt: string;
-  altPlaceholder: string;
-  width: string;
-  height: string;
   avatar: string;
   avatarAlt: string;
   avatarUpload: string;
@@ -46,12 +40,6 @@ export function buildAdCreativeFormLabels(t: (key: string) => string): AdCreativ
     hrefHint: t('hrefHint'),
     hrefPlaceholder: t('hrefPlaceholder'),
     isActive: t('isActive'),
-    imagePath: t('imagePath'),
-    imagePathPlaceholder: t('imagePathPlaceholder'),
-    alt: t('alt'),
-    altPlaceholder: t('altPlaceholder'),
-    width: t('width'),
-    height: t('height'),
     avatar: t('avatar'),
     avatarAlt: t('avatarAlt'),
     avatarUpload: t('avatarUpload'),

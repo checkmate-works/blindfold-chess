@@ -46,7 +46,6 @@ import {
   isValidPeriod,
 } from '@/app/[locale]/(public)/leaderboard/_lib/validators';
 import { Divider, PagePanel } from '@/app/[locale]/_components';
-import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -205,8 +204,6 @@ export default async function ScoreLeaderboardDetailPage({ params, searchParams 
           </Link>
         </div>
       </div>
-
-      <AdSlot slot="content-bottom" />
 
       {/* Mirror `PageLayout`'s trailing block — see PageLayout.tsx. */}
       <div className="!mt-4 space-y-4">

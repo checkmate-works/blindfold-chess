@@ -9,7 +9,6 @@ import { buildPageHref, getPaginationParams } from '@/lib/pagination';
 import { JsonLd, generateItemListSchema } from '@/lib/seo/jsonld';
 
 import { ListLink, ListLinkContainer, PageLayout, SectionTitle } from '@/app/[locale]/_components';
-import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -91,8 +90,6 @@ export default async function ArticlesPage({ params, searchParams }: Props) {
             />
           </>
         )}
-
-        <AdSlot slot="content-bottom" />
       </PageLayout>
     </>
   );

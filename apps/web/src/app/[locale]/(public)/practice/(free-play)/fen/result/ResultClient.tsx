@@ -42,11 +42,10 @@ export const ResultClient = createPracticeResultClient({
     skipped: ctx.t('skipped'),
     averageTime: undefined,
   }),
-  extraCompleteProps: (ctx, { adBanner }) => {
+  extraCompleteProps: (ctx) => {
     const results = parseFenResultData(ctx.searchParams.get('data'))?.results ?? [];
     return {
       problemResults: results,
-      beforeRelatedContent: adBanner,
       relatedModule: {
         href: '/learn/notation/fen-notation',
         icon: '📝',

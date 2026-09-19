@@ -60,12 +60,6 @@ vi.mock('@/app/[locale]/_components/NativeAdCard', () => ({
   ),
 }));
 
-// ResponsiveAdSlot (the AdSense fallback) uses a matchMedia-backed hook jsdom
-// doesn't implement; stub it since these tests exercise wrapper structure.
-vi.mock('./ResponsiveAdSlot', () => ({
-  ResponsiveAdSlot: () => <div data-testid="ad-slot-fallback">adsense</div>,
-}));
-
 // --- Helpers ---
 
 const defaultProps = {
@@ -404,13 +398,14 @@ describe('FeedClient', () => {
     });
   });
 
-  describe('ad fallback when ad_creatives has no eligible rows', () => {
-    it('renders the AdSense fallback, wrapped in .ad-slot-wrapper, instead of a native ad card', () => {
-      // Any non-empty page carries the leading ad slot. With
-      // nativeAdCreatives empty (mirrors an empty ad_creatives table), the
-      // slot must fall back to ResponsiveAdSlot rather than being skipped.
+  describe('no ad row when ad_creatives has no eligible rows', () => {
+    it('renders the feed with no ad row at all, not an empty one', () => {
+      // A native card is the only thing that can fill an ad row, so with
+      // nativeAdCreatives empty (mirrors an empty ad_creatives table) the
+      // leading slot must not be emitted — an emitted-but-unfilled row would
+      // be a blank row carrying the feed's divider.
       const initialItems = Array.from({ length: 10 }, (_, i) => makeTopicPostItem(`noad-${i}`));
-      render(
+      const { container } = render(
         <FeedClient
           {...defaultProps}
           nativeAdCreatives={[]}
@@ -420,15 +415,13 @@ describe('FeedClient', () => {
       );
 
       expect(screen.queryByTestId('ad-slot')).toBeNull();
-      const fallback = screen.getByTestId('ad-slot-fallback');
-      expect(fallback).toBeInTheDocument();
 
-      // The `bfc_ads_hidden` no-flash CSS rule hides `.ad-slot-wrapper`; if
-      // the fallback ever rendered outside that wrapper, ad-free viewers
-      // (subscribers / ad_free grant holders) would still see the AdSense
-      // unit.
-      const wrapper = fallback.parentElement;
-      expect(wrapper?.className).toContain('ad-slot-wrapper');
+      // 10 feed wrappers and nothing else: no leftover divider-bearing row.
+      const wrappers = Array.from(
+        container.querySelectorAll<HTMLElement>('div.border-b.border-border')
+      );
+      expect(wrappers.length).toBe(10);
+      expect(container.querySelector('.ad-slot-wrapper')).toBeNull();
     });
   });
 

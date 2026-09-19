@@ -1,6 +1,6 @@
-import type { BannerPayload, NativeCardPayload } from '@/lib/ads/payload';
+import type { NativeCardPayload } from '@/lib/ads/payload';
 import type { AdKind } from '@/lib/ads/registry';
-import { isAdSlot, kindForSlot } from '@/lib/ads/registry';
+import { isAdSlot } from '@/lib/ads/registry';
 import { MAX_LINK_HREF_LENGTH, classifyLinkTarget } from '@/lib/content/link-target';
 import { isValidCountryCode } from '@/lib/countries';
 
@@ -10,14 +10,14 @@ export type CreateAdCreativeData = {
   isActive: boolean;
   /** ISO-3166 alpha-2 target country; null = global. */
   targetCountry: string | null;
-  payload: BannerPayload | NativeCardPayload;
+  payload: NativeCardPayload;
 };
 
 export type UpdateAdCreativeData = {
   href: string;
   isActive: boolean;
   targetCountry: string | null;
-  payload: BannerPayload | NativeCardPayload;
+  payload: NativeCardPayload;
 };
 
 /**
@@ -71,17 +71,6 @@ function validateText(value: string, field: string): string | null {
   return null;
 }
 
-function validateBannerPayload(payload: BannerPayload): string | null {
-  const imageError = validateImagePath(payload.imagePath);
-  if (imageError) return imageError;
-  if (typeof payload.alt !== 'string' || payload.alt.length > AD_CREATIVE_LIMITS.alt) {
-    return 'invalid alt';
-  }
-  if (!payload.width || payload.width <= 0) return 'invalid width';
-  if (!payload.height || payload.height <= 0) return 'invalid height';
-  return null;
-}
-
 function validateThumbnail(thumbnail: NativeCardPayload['thumbnail']): string | null {
   if (thumbnail === undefined) return null;
   if (
@@ -116,13 +105,13 @@ function validateNativeCardPayload(payload: NativeCardPayload): string | null {
   return validateThumbnail(payload.thumbnail);
 }
 
-/** Validate a payload against the kind bound to its slot. */
-export function validatePayloadForKind(
-  kind: AdKind,
-  payload: BannerPayload | NativeCardPayload
-): string | null {
-  if (kind === 'banner') return validateBannerPayload(payload as BannerPayload);
-  return validateNativeCardPayload(payload as NativeCardPayload);
+/**
+ * Validate a payload against the kind bound to its slot. `native_card` is the
+ * only kind today; the indirection stays so a second kind is one branch here
+ * rather than a rewrite of both call sites.
+ */
+export function validatePayloadForKind(_kind: AdKind, payload: NativeCardPayload): string | null {
+  return validateNativeCardPayload(payload);
 }
 
 export function validateCreateAdCreative(data: CreateAdCreativeData): string | null {
@@ -131,7 +120,7 @@ export function validateCreateAdCreative(data: CreateAdCreativeData): string | n
   if (hrefError) return hrefError;
   const countryError = validateTargetCountry(data.targetCountry);
   if (countryError) return countryError;
-  return validatePayloadForKind(kindForSlot(data.slot), data.payload);
+  return validateNativeCardPayload(data.payload);
 }
 
 /** Update validation needs the row's kind (slot is immutable, from the DB). */

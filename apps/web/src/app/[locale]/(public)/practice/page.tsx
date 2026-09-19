@@ -48,7 +48,6 @@ import { PracticeMenuCard } from '@/app/[locale]/(public)/practice/_components/P
 import { getRankSlugForMenuType } from '@/app/[locale]/(public)/practice/_lib/module-rank-mapping';
 import { PRACTICE_EMOJIS } from '@/app/[locale]/(public)/practice/_lib/practice-emojis';
 import { ListLink, ListLinkContainer, PageLayout, SectionTitle } from '@/app/[locale]/_components';
-import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -249,20 +248,6 @@ export default async function PracticePage({ params }: Props) {
           filterLabel={t('practice.filter.label')}
           listHeading={t('practice.modulesTitle')}
         />
-
-        {/* Above the "Related" heading, not under it. Everything below that
-            heading is navigation off this page — the dojo and the
-            leaderboard — so the module grid is where the page's own content
-            ends, and that is where the ad belongs. Under the links it was
-            the last thing on the page, past the point a reader has already
-            decided to leave.
-
-            `content-middle`, because that is the slot this position takes
-            everywhere else (the learn articles, the glossary lists, the
-            catalogues). The two banner slots are separate AdSense units, so
-            the name is not cosmetic — it decides which unit serves here and
-            where the revenue is reported. */}
-        <AdSlot slot="content-middle" />
 
         <section className="space-y-4">
           <SectionTitle>{t('practice.related')}</SectionTitle>

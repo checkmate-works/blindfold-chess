@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
-import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { LastUpdated } from '@/app/[locale]/_components/LastUpdated';
 import { ProseArticle } from '@/app/[locale]/_components/ProseArticle';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
@@ -108,7 +107,6 @@ export default async function TermsPage({ params }: Props) {
           <LastUpdated locale={locale} date={LAST_UPDATED} />
         </div>
       </ProseArticle>
-      <AdSlot slot="content-bottom" />
     </PageLayout>
   );
 }

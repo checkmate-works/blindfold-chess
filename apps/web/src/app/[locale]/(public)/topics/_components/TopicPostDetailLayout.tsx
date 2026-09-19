@@ -7,7 +7,6 @@ import type { User } from '@supabase/supabase-js';
 import type { PostAttachment } from '@/lib/games/get-attachments-for-posts';
 
 import { PageLayout, ScrollToHashOnMount, SectionTitle } from '@/app/[locale]/_components';
-import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import type { BreadcrumbItem } from '@/app/[locale]/_components/Breadcrumb';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -329,8 +328,6 @@ export async function TopicPostDetailLayout({
           />
         </>
       )}
-
-      <AdSlot slot="content-bottom" />
     </PageLayout>
   );
 }

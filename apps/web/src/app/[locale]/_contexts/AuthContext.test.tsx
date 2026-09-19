@@ -390,7 +390,7 @@ describe('AuthContext', () => {
     // `bfc_ads_hidden` cookie is written by `getSessionUser()` AFTER the
     // bootstrap has already run, so without an explicit client-side
     // re-assertion the `<html data-ads-hidden>` attribute is never set even
-    // though the cookie is. AdSense gates push solely on the attribute, so
+    // though the cookie is. The CSS hide keys off the attribute alone, so
     // ads would leak on subsequent client-side navigations (e.g., language
     // switch) until a hard reload re-ran the bootstrap with the cookie now
     // present. Confirmed in production by manual repro 2026-05-09.

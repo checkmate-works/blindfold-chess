@@ -14,8 +14,7 @@ export const ResultClient = createPracticeResultClient({
   labelOverrides: () => ({
     averageTime: undefined,
   }),
-  extraCompleteProps: (ctx, { adBanner }) => ({
-    beforeRelatedContent: adBanner,
+  extraCompleteProps: (ctx) => ({
     relatedModule: {
       href: '/learn/notation/algebraic-notation',
       icon: '🔤',

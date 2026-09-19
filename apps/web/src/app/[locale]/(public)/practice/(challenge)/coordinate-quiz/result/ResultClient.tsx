@@ -22,7 +22,4 @@ export const ResultClient = createPracticeResultClient({
   // which already hold whatever this run used.
   buildSettingsUrl: (ctx) => `/${ctx.locale}/practice/coordinate-quiz/challenge`,
   buildAverageTimeText: formatAverageTimePerAnswer,
-  extraCompleteProps: (_ctx, { adBannerWide }) => ({
-    beforeRelatedContent: adBannerWide,
-  }),
 });

@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-import type { BannerPayload, NativeCardPayload } from '@/lib/ads/payload';
+import type { NativeCardPayload } from '@/lib/ads/payload';
 import type { AdSlot } from '@/lib/ads/registry';
 
 import { createAdCreative } from '../_actions/createAdCreative';
@@ -25,7 +25,7 @@ export function useCreativeSubmit(slot: AdSlot) {
     mode: 'create' | 'edit',
     creativeId: string | undefined,
     common: CommonCreativeValues,
-    payload: BannerPayload | NativeCardPayload
+    payload: NativeCardPayload
   ) => {
     setError(null);
     startTransition(async () => {

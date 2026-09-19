@@ -45,7 +45,6 @@ type Props = {
    * from whether the run came from a saved position or an instant one.
    */
   sessionPath: string;
-  adBannerStandard?: ReactNode;
   breadcrumb?: ReactNode;
   expInfo?: ExpInfo | null;
   /**
@@ -64,7 +63,6 @@ type Props = {
 export function SinglePositionResult({
   locale,
   sessionPath,
-  adBannerStandard,
   breadcrumb,
   expInfo,
   positionId,
@@ -263,9 +261,6 @@ export function SinglePositionResult({
               />
             </div>
           </div>
-
-          {/* `ad-slot-wrapper` so the spacer collapses with the ad for ad-free viewers. */}
-          {adBannerStandard && <div className="mt-8 ad-slot-wrapper">{adBannerStandard}</div>}
         </div>
 
         {breadcrumb && (

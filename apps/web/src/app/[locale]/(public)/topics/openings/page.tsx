@@ -17,7 +17,6 @@ import { renderAttachment } from '@/app/[locale]/(public)/topics/_components/ren
 import { TOPIC_PAGE_SIZE } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import { isValidSquare } from '@/app/[locale]/(public)/topics/squares/_lib/squares';
 import { PageLayout, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
-import { AdSlot } from '@/app/[locale]/_components/AdSense/AdSlot';
 import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
 import { Skeleton } from '@/app/[locale]/_components/Skeleton';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
@@ -138,8 +137,6 @@ async function OpeningsContent({ params, searchParams }: Props) {
         </>
       )}
 
-      <AdSlot slot="content-middle" />
-
       {firstMoveSquare
         ? currentPage === 1 && (
             <>
@@ -179,8 +176,6 @@ async function OpeningsContent({ params, searchParams }: Props) {
               <OpeningsListByCategory openings={openings} locale={locale} />
             </Suspense>
           )}
-
-      <AdSlot slot="content-bottom" />
     </PageLayout>
   );
 }

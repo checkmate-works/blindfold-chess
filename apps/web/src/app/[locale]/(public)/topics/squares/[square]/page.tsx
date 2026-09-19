@@ -174,7 +174,6 @@ async function SquarePostsContent({ params, searchParams }: Props) {
       pageTitle={t('squares.pageTitle')}
       sectionTitle={square}
       topicHeader={topicHeader}
-      showMiddleAd
       communitySection={communitySection}
       hasPosts={posts.length > 0}
       postCards={posts.map((post) => {

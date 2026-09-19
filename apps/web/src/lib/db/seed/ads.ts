@@ -1,4 +1,4 @@
-import type { BannerPayload, NativeCardPayload } from '@/lib/ads/payload';
+import type { NativeCardPayload } from '@/lib/ads/payload';
 
 import { adCreatives, db } from '../index';
 
@@ -11,13 +11,12 @@ type SeedCreative = {
   slot: string;
   href: string;
   sortOrder: number;
-  payload: BannerPayload | NativeCardPayload;
+  payload: NativeCardPayload;
 };
 
-// Deliberately empty at launch: nothing is configured for any slot, so every
-// slot (banner and in-feed alike) falls back to AdSense — the intended "no
-// visible change on release" state. Admins add real creatives via /admin/ads
-// afterward.
+// Deliberately empty: a slot with no creative renders nothing, which is the
+// correct state for a fresh database. Admins add real creatives via
+// /admin/ads.
 const seedCreatives: SeedCreative[] = [];
 
 export async function seedAds() {

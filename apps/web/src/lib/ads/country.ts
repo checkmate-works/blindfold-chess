@@ -7,9 +7,9 @@ export const DEV_COUNTRY_COOKIE = 'bfc_dev_country';
  * Vercel's `x-vercel-ip-country` header never exists locally, so country
  * targeting is otherwise untestable off-platform. Setting this cookie (e.g.
  * `document.cookie = 'bfc_dev_country=JP; path=/'` in the browser console, or
- * `-H 'cookie: bfc_dev_country=JP'` via curl) makes both the SSR feed path and
- * the `/api/ad-slot/[slot]` fetch resolve to that country, because both read
- * from the same request `Headers`. Compiled out in production: the cookie is
+ * `-H 'cookie: bfc_dev_country=JP'` via curl) makes the server render resolve
+ * to that country, because the override is read from the same request
+ * `Headers` as the real one. Compiled out in production: the cookie is
  * never consulted when `NODE_ENV === 'production'`, so the live geo path is
  * byte-for-byte unchanged.
  */
