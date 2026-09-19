@@ -8,6 +8,7 @@ import { resolveUserFilter } from '@/app/admin/_lib/resolve-user-filter';
 import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
+import { truncateContent } from '@/lib/content/truncate-content';
 import { db, moderationActions, profiles } from '@/lib/db';
 import { getPaginationParams } from '@/lib/pagination';
 import { createAdminClient } from '@/lib/supabase/admin';
@@ -20,6 +21,9 @@ import { AdminUserLink } from '../_components/AdminUserLink';
 
 /** Characters of the raw id shown for a target that is not a person. */
 const ID_PREFIX_LENGTH = 8;
+
+/** Reason budget for the table cell; the full text stays in the `title`. */
+const REASON_CELL_LENGTH = 50;
 
 const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
@@ -212,9 +216,7 @@ export default async function AdminAuditLogPage({
               </td>
               <td className="px-4 py-3">
                 {log.reason ? (
-                  <span title={log.reason}>
-                    {log.reason.length > 50 ? `${log.reason.slice(0, 50)}...` : log.reason}
-                  </span>
+                  <span title={log.reason}>{truncateContent(log.reason, REASON_CELL_LENGTH)}</span>
                 ) : (
                   <span className="text-muted-foreground">-</span>
                 )}

@@ -3,10 +3,10 @@ import type { ReactNode } from 'react';
 import { Link } from '@/i18n/routing';
 import type { BlindfoldDisplaySettings } from '@blindfold-chess/features/board-display';
 
+import { truncateContent } from '@/lib/content/truncate-content';
 import type { LikeMeta } from '@/lib/db/like-queries';
 import type { ReplyMeta } from '@/lib/db/reply-meta-queries';
 import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
-import { truncate } from '@/lib/text';
 import { buildProfileHref } from '@/lib/users/author-profile';
 import type { AuthorProfile } from '@/lib/users/author-profile';
 import { resolveAuthorName } from '@/lib/users/display-name';
@@ -17,6 +17,13 @@ import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative
 import { ActivityCard } from '@/app/[locale]/_components/ActivityCard';
 import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 import { CARD_PERMALINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
+
+/**
+ * Excerpt budget for the card's description line. The paragraph it lands in is
+ * also `line-clamp-2`, so this is the first of two limits rather than the only
+ * one — a narrow card can hide text this cut left in.
+ */
+const DESCRIPTION_EXCERPT_LENGTH = 80;
 
 type Props = {
   /** Entity id. Used as the LikeButton's `postId` (the action's first arg). */
@@ -152,7 +159,9 @@ export function CatalogListCard({
   actions,
 }: Props) {
   const displayName = resolveAuthorName(profile, { fallback: authorFallbackLabel });
-  const descriptionExcerpt = truncate(description);
+  const descriptionExcerpt = description
+    ? truncateContent(description, DESCRIPTION_EXCERPT_LENGTH)
+    : '';
 
   return (
     <ActivityCard

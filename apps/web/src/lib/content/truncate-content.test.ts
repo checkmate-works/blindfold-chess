@@ -105,4 +105,29 @@ describe('truncateContent', () => {
     const result = truncateContent(content);
     expect(result).toBe(content.slice(0, 200) + '...');
   });
+
+  it('should append three ASCII dots, never the U+2026 ellipsis character', () => {
+    const result = truncateContent('a'.repeat(201));
+    expect(result.endsWith('...')).toBe(true);
+    expect(result).not.toContain('…');
+  });
+
+  it('should trim a tab or newline at the cut, not only spaces', () => {
+    // slice(0, 5) is 'abc\n\t'; trimEnd() takes both whitespace characters.
+    expect(truncateContent('abc\n\tdefgh', 5)).toBe('abc...');
+  });
+
+  // The list screens each pass their own budget rather than sharing one
+  // default, so the exact-fit / one-over boundary is pinned for the lengths
+  // actually in use — a change to either is a visible change to a list.
+  it.each([80, 100])('should cut at the %i-character budget, not before it', (maxLength) => {
+    const exactFit = 'a'.repeat(maxLength);
+    expect(truncateContent(exactFit, maxLength)).toBe(exactFit);
+    expect(truncateContent(exactFit + 'b', maxLength)).toBe(exactFit + '...');
+  });
+
+  it('should drop the space a mid-word cut lands on for a short budget', () => {
+    // The old `lib/text` helper skipped this trim and rendered 'foo ...'.
+    expect(truncateContent('foo bar', 4)).toBe('foo...');
+  });
 });

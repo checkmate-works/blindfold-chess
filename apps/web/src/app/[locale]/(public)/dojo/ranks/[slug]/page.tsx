@@ -25,6 +25,7 @@ import { SUPPORTED_LOCALES } from '@/config';
 import type { ServerTranslator } from '@/i18n/translator';
 import { HiArrowRight } from 'react-icons/hi2';
 
+import { truncateContent } from '@/lib/content/truncate-content';
 import { ALL_RANK_SLUGS, isMukyuSlug } from '@/lib/db/data/ranks';
 import type { RankSlug } from '@/lib/db/data/ranks';
 import { buildGuidePath, getRankGuide, paragraphToPlainText } from '@/lib/guides';
@@ -58,9 +59,8 @@ type Props = {
 
 type TFunc = ServerTranslator;
 
-function truncateTeaser(text: string): string {
-  return text.length > 100 ? `${text.slice(0, 100)}…` : text;
-}
+/** Teaser budget for the Tips card's guide-preview paragraph. */
+const TEASER_LENGTH = 100;
 
 /**
  * Board visual shown in the Tips card, keyed by rank slug. Ranks not listed
@@ -108,7 +108,7 @@ function TipsCard({
   return (
     <div className="space-y-3 rounded-lg bg-amber-50 p-4 dark:bg-amber-950/20">
       <p className="font-semibold text-foreground">💡 {t('detail.tips')}</p>
-      <p className="text-foreground/80">{truncateTeaser(teaser)}</p>
+      <p className="text-foreground/80">{truncateContent(teaser, TEASER_LENGTH)}</p>
       <Link
         href={buildGuidePath(locale, slug, { kind: 'root' })}
         className="block"
