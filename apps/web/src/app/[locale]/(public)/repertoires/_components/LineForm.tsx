@@ -2,8 +2,6 @@
 
 import { useState } from 'react';
 
-import { useTranslations } from 'next-intl';
-
 import { useSubmitError } from '@/_hooks/useSubmitError';
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
 import {
@@ -18,6 +16,7 @@ import {
 import { LocalizedUnsavedChangesDialog } from '@/app/_components/LocalizedUnsavedChangesDialog';
 import { INPUT_BASE_CLASSES, invalidBorderClasses } from '@/app/_components/inputStyles';
 import { useRouter } from '@/i18n/routing';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { Side } from '@blindfold-chess/types';
 import { flushSync } from 'react-dom';
 

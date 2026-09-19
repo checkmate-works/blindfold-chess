@@ -1,7 +1,6 @@
 import type { ReactElement, ReactNode } from 'react';
 
-import { useTranslations } from 'next-intl';
-
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { GiBlackBelt } from 'react-icons/gi';
 import { HiShieldCheck } from 'react-icons/hi2';
 

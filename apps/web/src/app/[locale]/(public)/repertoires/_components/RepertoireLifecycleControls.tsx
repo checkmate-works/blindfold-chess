@@ -2,9 +2,8 @@
 
 import { useState } from 'react';
 
-import { useTranslations } from 'next-intl';
-
 import { useRouter } from '@/i18n/routing';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FiSend } from 'react-icons/fi';
 
 import type { Repertoire } from '@/lib/db';

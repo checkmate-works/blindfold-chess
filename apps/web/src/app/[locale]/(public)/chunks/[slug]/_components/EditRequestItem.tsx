@@ -1,8 +1,7 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
-
 import { useRouter } from '@/i18n/routing';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import type { EditRequestStatus } from '@/lib/edit-requests/shared';
 import { localizeActionError } from '@/lib/i18n/localize-action-error';

@@ -2,8 +2,6 @@
 
 import { useState } from 'react';
 
-import { useTranslations } from 'next-intl';
-
 import { useSubmitError } from '@/_hooks/useSubmitError';
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
 import {
@@ -13,6 +11,7 @@ import {
   LocalizedUnsavedChangesDialog,
 } from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { flushSync } from 'react-dom';
 
 import type { ChunkOption } from '@/lib/chunks/types';

@@ -2,8 +2,7 @@
 
 import { useMemo } from 'react';
 
-import { useTranslations } from 'next-intl';
-
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 import { fullmoveNumberFromFen } from '@blindfold-chess/features/chess-core/fen';
 import type { PieceColor } from '@blindfold-chess/types';

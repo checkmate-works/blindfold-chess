@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo } from 'react';
 
-import { useTranslations } from 'next-intl';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import type { ChunkOption } from '@/lib/chunks/types';
 import type { PuzzleSolutionMove } from '@/lib/db/schema/positions';

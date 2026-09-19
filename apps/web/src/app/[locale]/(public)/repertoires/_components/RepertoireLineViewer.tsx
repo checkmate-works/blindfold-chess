@@ -2,11 +2,11 @@
 
 import { Fragment, useState } from 'react';
 
-import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 
 import { Button } from '@/app/_components';
 import { ChessBoard } from '@/app/_components/chess/ChessBoard';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { FormattedPgnMove } from '@blindfold-chess/features/chess-core';
 import type { Side } from '@blindfold-chess/types';
 import { HiChevronDown, HiChevronRight, HiChevronUp } from 'react-icons/hi2';

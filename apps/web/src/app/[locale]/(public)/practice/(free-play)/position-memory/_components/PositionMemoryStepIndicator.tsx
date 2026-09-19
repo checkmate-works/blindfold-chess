@@ -1,6 +1,6 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { StepIndicator } from '@/app/[locale]/(public)/practice/(free-play)/_components/StepIndicator';
 

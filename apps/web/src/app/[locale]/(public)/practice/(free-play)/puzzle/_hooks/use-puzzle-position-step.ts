@@ -2,10 +2,9 @@
 
 import { useRef, useState } from 'react';
 
-import { useTranslations } from 'next-intl';
-
 import { useSubmitError } from '@/_hooks/useSubmitError';
 import { useRouter } from '@/i18n/routing';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { flushSync } from 'react-dom';
 
 import type { useFenBoardEditor } from '../../_hooks/use-fen-board-editor';

@@ -1,6 +1,6 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { usePuzzleSolutionStep } from '../_hooks/use-puzzle-solution-step';
 import { readDraft, writeDraft } from '../_lib/draft-storage';

@@ -2,9 +2,8 @@
 
 import { useState } from 'react';
 
-import { useTranslations } from 'next-intl';
-
 import { useRouter } from '@/i18n/routing';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FiEdit2, FiTrash2 } from 'react-icons/fi';
 
 import { ActionsMenu, ActionsMenuButton } from '@/app/[locale]/_components/ActionsMenu';

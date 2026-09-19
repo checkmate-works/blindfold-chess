@@ -2,10 +2,9 @@
 
 import { useState } from 'react';
 
-import { useTranslations } from 'next-intl';
-
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
 import { Button, LocalizedUnsavedChangesDialog, Textarea } from '@/app/_components';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FiEdit2, FiPlus, FiTrash2 } from 'react-icons/fi';
 
 import { REPERTOIRE_ANNOTATION_MAX } from '@/lib/repertoires/validation';

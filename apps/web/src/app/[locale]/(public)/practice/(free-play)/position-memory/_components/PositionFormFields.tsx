@@ -2,9 +2,8 @@
 
 import { useCallback } from 'react';
 
-import { useTranslations } from 'next-intl';
-
 import { BoardFrame, BoardSkeleton } from '@/app/_components';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import type { ChunkOption } from '@/lib/chunks/types';
 import type { ThemeOption } from '@/lib/themes/types';
