@@ -34,11 +34,15 @@ type AdSlotConfig = { kind: AdKind };
  * iterates this object, so a new entry here appears there with no admin
  * change.
  *
- * A slot's creative pool is per slot *key*, not per page. Every native-card
- * surface gets one slot of its own (feed / puzzle list / position-memory
- * list), which is per-surface targeting by construction; a surface that
- * needed two independently-filled placements would add a second slot rather
- * than a "sub-slot" extension of this registry.
+ * A slot keys a creative pool, not a surface. Two surfaces may name the same
+ * slot when they want the same pool: the home feed and `/topics` both read
+ * `feed-native-ad`, because `/topics` is the home timeline machinery
+ * (`getFeedData` + `FeedClient`) scoped to topic entities, so a card written
+ * for one reads correctly in the other. A surface that wants its own pool —
+ * or two independently-filled placements — adds a slot rather than a
+ * "sub-slot" extension of this registry. Splitting a shared pool that way is
+ * a content decision as much as a wiring one: creatives are authored per slot
+ * key, so the new slot renders nothing until someone writes one for it.
  *
  * Every slot here is in-content, and that is deliberate. This registry used
  * to also carry fixed banner placements — a `banner` kind rendered into
@@ -69,5 +73,5 @@ export function kindForSlot(slot: AdSlot): AdKind {
   return AD_SLOTS[slot].kind;
 }
 
-/** The one slot the in-feed native ad card reads. */
+/** The pool the home feed and `/topics` both draw their native card from. */
 export const FEED_NATIVE_AD_SLOT = 'feed-native-ad' satisfies AdSlot;
