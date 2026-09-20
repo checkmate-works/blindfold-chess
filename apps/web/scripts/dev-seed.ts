@@ -2,15 +2,17 @@
  * Local-only dev seed.
  *
  * Populates auth users, profiles, challenge_results / challenge_best_scores,
- * belt ranks, a published kata (型), and a featured puzzle pool with
- * predictable test data so the practice leaderboards, the /repertoires
- * catalog and the Daily Puzzle card have entries — and so rank conditions can
- * be exercised from a known rung — during local development.
+ * belt ranks, a published kata (型), a featured puzzle pool and a set of
+ * square/opening discussion threads with predictable test data so the
+ * practice leaderboards, the /repertoires catalog, the Daily Puzzle card and
+ * the /topics timeline have entries — and so rank conditions can be exercised
+ * from a known rung — during local development.
  * Refuses to run against any non-local DB or Supabase URL (host check) — the
  * master-data seed (`pnpm db:seed`) remains the prod path.
  *
- * Run `pnpm db:seed` first: the rank grants look up `ranks` by slug, and the
- * kata's opening links look up `chess_openings` by position.
+ * Run `pnpm db:seed` first: the rank grants look up `ranks` by slug, and both
+ * the kata's opening links and the opening discussion threads look up
+ * `chess_openings`.
  *
  * Required env in apps/web/.env.local:
  *   - NEXT_PUBLIC_SUPABASE_URL  (defaults to http://127.0.0.1:54321 if unset)
@@ -28,6 +30,7 @@ import { purgeDataCacheTag } from './dev-seed/next-cache';
 import { reseedPuzzles } from './dev-seed/puzzles';
 import { grantRanksUpTo } from './dev-seed/ranks';
 import { reseedRepertoires } from './dev-seed/repertoires';
+import { reseedTopics } from './dev-seed/topics';
 import { SEED_PASSWORD, SEED_USERS, ensureSeedUser } from './dev-seed/users';
 
 dotenv.config({ path: ['.env.local', '.env'] });
@@ -121,6 +124,22 @@ async function main() {
   for (const kata of await reseedRepertoires(db, userIds[kataOwner])) {
     const openings = kata.openingSlugs.join(', ') || 'no opening links (run `pnpm db:seed`)';
     console.log(`  ${kata.name} → ${kata.lineCount} lines, ${openings}`);
+  }
+
+  // Threads are attributed to the players, like the puzzles and the kata: the
+  // timeline shows its author, and every card coming from the admin account
+  // would misrepresent what the feed looks like.
+  console.log('dev-seed: seeding topic threads...');
+  const { threads, skippedOpenings } = await reseedTopics(db, puzzleOwners);
+  for (const thread of threads) {
+    const replies = thread.replyCount === 1 ? '1 reply' : `${thread.replyCount} replies`;
+    console.log(`  ${thread.topicType.padEnd(8)} ${thread.topicKey.padEnd(16)} → ${replies}`);
+  }
+  if (skippedOpenings.length > 0) {
+    console.log(
+      `  skipped ${skippedOpenings.length} opening thread(s) — no such slug in chess_openings ` +
+        `(run \`pnpm db:seed\`): ${skippedOpenings.join(', ')}`
+    );
   }
 }
 
