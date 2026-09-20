@@ -57,7 +57,23 @@ type Props = {
    * which is also where the EXP card the record complements already is.
    */
   afterExp?: React.ReactNode;
-  beforeRelatedContent?: React.ReactNode;
+  /**
+   * The screen's native ad card, server-rendered by the result page and
+   * placed between the action buttons and the Related Learning block.
+   *
+   * This slot was `beforeRelatedContent`, a hole left by the fixed banner
+   * placements that were retired with the `banner` kind — nothing had passed
+   * anything to it since. It is named for what goes in it now, because a
+   * generic "content before the related block" is exactly the kind of slot
+   * something announces itself in later.
+   *
+   * Not inside the Related Learning block: that heading is a promise about
+   * what follows, and only two modules pass a `relatedModule` at all, so on
+   * most screens the ad would be the only thing under a heading it does not
+   * belong to. The card carries its own sponsor line and disclosure badge, so
+   * it needs no heading of its own either.
+   */
+  nativeAd?: React.ReactNode;
   /** EXP gained info for the current result, fetched server-side and passed down. */
   expInfo?: ExpInfo | null;
 };
@@ -76,7 +92,7 @@ export function PracticeComplete({
   children,
   otherPracticeLink,
   afterExp,
-  beforeRelatedContent,
+  nativeAd,
   expInfo = null,
 }: Props) {
   const router = useRouter();
@@ -135,8 +151,7 @@ export function PracticeComplete({
         )}
       </div>
 
-      {/* Ad banner before related content */}
-      {beforeRelatedContent && <div className="mt-12">{beforeRelatedContent}</div>}
+      {nativeAd && <div className="mt-12">{nativeAd}</div>}
 
       {/* Related learning module */}
       {relatedModule && (

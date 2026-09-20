@@ -1,6 +1,7 @@
 import { SUPPORTED_LOCALES } from '@/config';
 
 import type { LocalizedCopy } from '@/lib/ads/copy';
+import { isPlaceholderAdHref } from '@/lib/ads/placeholder';
 import type { AdKind } from '@/lib/ads/registry';
 import { isAdSlot, kindForSlot } from '@/lib/ads/registry';
 import type { NativeCardThumbnail } from '@/lib/ads/thumbnail';
@@ -69,6 +70,28 @@ function validateHref(href: string): string | null {
   if (typeof href !== 'string') return 'invalid href';
   if (classifyLinkTarget(href) === 'unsafe') return 'invalid href';
   return /[?&]clickref=/.test(href) ? 'href already carries a clickref' : null;
+}
+
+/**
+ * A creative may not be switched on while its link still points at a
+ * documentation host. Every slot ships with a seeded placeholder so the admin
+ * has an example of the slot's card to edit (`@/lib/db/seed/ads`), and the one
+ * field an example cannot supply is the destination; activating it as it
+ * stands would put a card on a live surface whose click goes to
+ * `example.com`.
+ *
+ * Checked here rather than only in `setAdCreativeActive` because the toggle on
+ * the slot list is not the only way to turn a creative on — the edit form has
+ * an Active checkbox, and saving it goes through the validator instead. The
+ * rule has to sit on both paths or it only covers the one an admin happens not
+ * to use.
+ *
+ * An inactive creative with a placeholder href is fine and is the whole point:
+ * the seed writes exactly that, and a half-finished draft should be saveable.
+ */
+function validateActivation(fields: AdCreativeFields): string | null {
+  if (!fields.isActive) return null;
+  return isPlaceholderAdHref(fields.href) ? 'href is still the placeholder' : null;
 }
 
 function validateImagePath(imagePath: unknown, field: string): string | null {
@@ -175,8 +198,26 @@ function validateNativeTileFields(fields: AdCreativeFields): string | null {
 }
 
 /**
+ * A thumb is a board thumbnail and a one-line title: no emoji, no author row.
+ *
+ * Its description is still required, and that is a storage contract rather
+ * than a rendering one — `ad_creative_translations_chk_en_complete` holds the
+ * `en` row to both fields, because every other locale falls back to it field
+ * by field. The thumb tile never draws the description; the authoring form
+ * says so beside the input, so nobody spends time on copy that has no place
+ * to appear. Relaxing the constraint per kind would mean teaching the
+ * fallback which fields a kind uses, which is a larger change than the one
+ * unused string it would save.
+ */
+function validateNativeThumbFields(fields: AdCreativeFields): string | null {
+  if (fields.icon !== null) return 'invalid icon';
+  if (fields.avatarImagePath !== null || fields.avatarAlt !== null) return 'invalid avatar';
+  return validateCommonFields(fields);
+}
+
+/**
  * Validate the fields against the kind bound to the slot. Exhaustive over
- * `AdKind`, so a third kind is a compile error here rather than a row that
+ * `AdKind`, so a new kind is a compile error here rather than a row that
  * reaches the DB unchecked.
  */
 export function validateFieldsForKind(kind: AdKind, fields: AdCreativeFields): string | null {
@@ -185,6 +226,8 @@ export function validateFieldsForKind(kind: AdKind, fields: AdCreativeFields): s
       return validateNativeCardFields(fields);
     case 'native_tile':
       return validateNativeTileFields(fields);
+    case 'native_thumb':
+      return validateNativeThumbFields(fields);
   }
 }
 
@@ -192,6 +235,8 @@ export function validateCreateAdCreative(data: CreateAdCreativeData): string | n
   if (!isAdSlot(data.slot)) return 'invalid slot';
   const hrefError = validateHref(data.href);
   if (hrefError) return hrefError;
+  const activationError = validateActivation(data);
+  if (activationError) return activationError;
   // The slot decides the kind, so the fields are checked against the shape
   // this slot can actually render — not against whichever kind came first.
   return validateFieldsForKind(kindForSlot(data.slot), data);
@@ -201,5 +246,7 @@ export function validateCreateAdCreative(data: CreateAdCreativeData): string | n
 export function validateUpdateAdCreative(kind: AdKind, data: UpdateAdCreativeData): string | null {
   const hrefError = validateHref(data.href);
   if (hrefError) return hrefError;
+  const activationError = validateActivation(data);
+  if (activationError) return activationError;
   return validateFieldsForKind(kind, data);
 }

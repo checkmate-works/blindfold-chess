@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { AD_INTERVAL } from './constants';
+import { AD_INTERVAL } from '@/lib/ads/placement';
+
 import { buildDisplayItems } from './feed-display';
 import type { FeedItem } from './types';
 
@@ -94,14 +95,15 @@ describe('buildDisplayItems adIndex', () => {
   const item = (id: string) => ({ id }) as never;
 
   it('numbers ad slots consecutively from zero', () => {
-    // 21 items → slots before index 0, 10 and 20.
-    const items = Array.from({ length: 21 }, (_, i) => item(`i${i}`));
+    // Slots land before index 0, AD_INTERVAL and 2 * AD_INTERVAL; the extra
+    // item is what makes the third slot exist.
+    const items = Array.from({ length: AD_INTERVAL * 2 + 1 }, (_, i) => item(`i${i}`));
     const ads = buildDisplayItems(items, true).filter((d) => d.type === 'ad');
     expect(ads.map((a) => (a.type === 'ad' ? a.adIndex : -1))).toEqual([0, 1, 2]);
   });
 
   it('derives the ordinal from the slot position, so no index repeats', () => {
-    const items = Array.from({ length: 40 }, (_, i) => item(`i${i}`));
+    const items = Array.from({ length: AD_INTERVAL * 8 }, (_, i) => item(`i${i}`));
     const ads = buildDisplayItems(items, true).filter((d) => d.type === 'ad');
     const indices = ads.map((a) => (a.type === 'ad' ? a.adIndex : -1));
     expect(new Set(indices).size).toBe(indices.length);

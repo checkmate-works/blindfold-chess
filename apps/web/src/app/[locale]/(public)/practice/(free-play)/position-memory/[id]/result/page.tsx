@@ -4,9 +4,12 @@ import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
+import { getNativeThumbCreatives } from '@/lib/ads/ad';
+import { POSITION_MEMORY_RESULT_NATIVE_AD_SLOT } from '@/lib/ads/registry';
 import { getOptionalUser } from '@/lib/auth';
 import { getExpInfoBySource } from '@/lib/db/get-exp-info-by-source';
 import { getPositionLikeMeta } from '@/lib/positions/like-queries';
+import { loadNextPositions } from '@/lib/positions/next-positions';
 import { getPositionWithProfileById } from '@/lib/positions/queries';
 import { resolveAuthorName } from '@/lib/users/display-name';
 import { UUID_RE } from '@/lib/validations/uuid';
@@ -15,6 +18,7 @@ import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { NextPositionsSection } from '../../../_components/NextPositionsSection';
 import { SinglePositionResult } from '../../_components/single-position/SinglePositionResult';
 import { SinglePositionResultLoadingSkeleton } from '../../_components/single-position/SinglePositionResultLoadingSkeleton';
 
@@ -79,6 +83,35 @@ export default async function PositionResultPage({ params, searchParams }: Props
   const currentUser = await getOptionalUser();
   const likeMeta = position ? await getPositionLikeMeta(position.id, currentUser?.id) : undefined;
 
+  // Both reads are skipped when the position is gone: this page tolerates a
+  // missing or soft-deleted one (unlike the puzzle result page, which 404s),
+  // and with nothing to rank against there is no grid — and therefore no cell
+  // for an ad either.
+  const [nextPositions, nativeAdCreatives] = position
+    ? await Promise.all([
+        loadNextPositions(position, 'memory'),
+        getNativeThumbCreatives(POSITION_MEMORY_RESULT_NATIVE_AD_SLOT, locale),
+      ])
+    : [[], []];
+
+  const nextPositionsSection = position ? (
+    <NextPositionsSection
+      positions={nextPositions}
+      nativeAdCreatives={nativeAdCreatives}
+      locale={locale}
+      basePath="/practice/position-memory"
+      labels={{ sectionTitle: t('nextProblems') }}
+      authorLink={
+        row?.profile?.username
+          ? {
+              href: `/u/${row.profile.username}/problems/position-memory`,
+              label: t('detail.viewOtherPositions'),
+            }
+          : undefined
+      }
+    />
+  ) : null;
+
   const breadcrumb = (
     <Breadcrumb
       items={[
@@ -108,6 +141,7 @@ export default async function PositionResultPage({ params, searchParams }: Props
         displayName={displayName}
         initialLikeCount={likeMeta?.likeCount}
         initialLikedByMe={likeMeta?.likedByMe}
+        nextPositions={nextPositionsSection}
       />
     </Suspense>
   );

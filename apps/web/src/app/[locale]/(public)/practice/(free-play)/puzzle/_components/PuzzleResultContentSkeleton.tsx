@@ -4,7 +4,7 @@ import { BoardFrame, BoardSkeleton } from '@/app/_components';
 import { getLocaleFromPathnameHeader } from '@/i18n/get-locale-from-pathname-header';
 
 import { getOptionalUser } from '@/lib/auth';
-import { NEXT_PUZZLE_COUNT } from '@/lib/positions/next-puzzles';
+import { NEXT_POSITION_COUNT } from '@/lib/positions/next-positions';
 
 import {
   ExpGainSkeleton,
@@ -72,12 +72,12 @@ export async function PuzzleResultContentSkeleton() {
           content does not push the buttons down on hydrate. */}
       {isAuthed ? <ExpGainSkeleton /> : <SignUpBannerSkeleton />}
 
-      {/* NextPuzzlesSection: section title + square tiles (2 columns on phones,
+      {/* NextPositionsSection: section title + square tiles (2 columns on phones,
           4 on desktop — same grid as the real component). */}
       <div className="space-y-3">
         <SectionTitle>{t('result.nextPuzzles')}</SectionTitle>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {Array.from({ length: NEXT_PUZZLE_COUNT }, (_, i) => (
+          {Array.from({ length: NEXT_POSITION_COUNT }, (_, i) => (
             <Skeleton key={i} className="aspect-square w-full rounded-xl" />
           ))}
         </div>

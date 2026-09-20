@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 
 import { getNativeAdCreatives } from '@/lib/ads/ad';
-import { withNativeAdCard } from '@/lib/ads/in-list-placement';
+import { withRepeatingNativeAds } from '@/lib/ads/placement';
 import { GLOSSARY_TERM_LIST_NATIVE_AD_SLOT } from '@/lib/ads/registry';
 import { slugifyTerm } from '@/lib/glossary/slug';
 
@@ -42,7 +42,6 @@ export async function GlossaryTermList({ terms, locale }: Props) {
     getTranslations({ locale, namespace: 'glossary' }),
     getNativeAdCreatives(GLOSSARY_TERM_LIST_NATIVE_AD_SLOT, locale),
   ]);
-  const nativeAd = nativeAdCreatives[0] ?? null;
 
   if (terms.length === 0) {
     return (
@@ -54,7 +53,7 @@ export async function GlossaryTermList({ terms, locale }: Props) {
 
   return (
     <div className="space-y-4">
-      {withNativeAdCard(
+      {withRepeatingNativeAds(
         terms.map((term) => (
           <div
             key={term.term}
@@ -119,8 +118,9 @@ export async function GlossaryTermList({ terms, locale }: Props) {
             )}
           </div>
         )),
-        nativeAd && (
-          <NativeAdCard key="native-ad" creative={nativeAd} locale={locale} variant="card" />
+        nativeAdCreatives,
+        (creative, key) => (
+          <NativeAdCard key={key} creative={creative} locale={locale} variant="card" />
         )
       )}
     </div>

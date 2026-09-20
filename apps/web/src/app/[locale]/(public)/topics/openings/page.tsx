@@ -6,7 +6,7 @@ import { getTranslations } from 'next-intl/server';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
 import { resolveNativeAds } from '@/lib/ads/ad';
-import { withNativeAdCard } from '@/lib/ads/in-list-placement';
+import { withRepeatingNativeAds } from '@/lib/ads/placement';
 import { TOPIC_CATALOG_NATIVE_AD_SLOT } from '@/lib/ads/registry';
 import { getOptionalUser } from '@/lib/auth';
 import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
@@ -97,10 +97,9 @@ async function OpeningsContent({ params, searchParams }: Props) {
   ]);
   const fallbackVideoTitle = tVideo('fallbackTitle');
 
-  // Server-gated: an ad-free reader gets an empty pool and therefore no node
-  // at all. The `.ad-slot-wrapper` CSS hide that `NativeAdCard` owns is the
-  // second layer, for the first paint.
-  const nativeAd = nativeAdCreatives[0] ?? null;
+  // Server-gated: an ad-free reader gets an empty pool, and an empty pool
+  // places no cards at all. The `.ad-slot-wrapper` CSS hide that
+  // `NativeAdCard` owns is the second layer, for the first paint.
 
   const buildHref = buildPageHref(`/${locale}/topics/openings`, {
     first_move: firstMoveSquare,
@@ -122,7 +121,7 @@ async function OpeningsContent({ params, searchParams }: Props) {
         <>
           <SectionTitle>{t('openings.recentPosts')}</SectionTitle>
           <div className="space-y-3">
-            {withNativeAdCard(
+            {withRepeatingNativeAds(
               recentPosts.map((post) => {
                 const tTopic = post.topicType === 'opening' ? tOpenings : tSquares;
                 const att = attachments.get(post.id);
@@ -138,8 +137,9 @@ async function OpeningsContent({ params, searchParams }: Props) {
                   />
                 );
               }),
-              nativeAd && (
-                <NativeAdCard key="native-ad" creative={nativeAd} locale={locale} variant="card" />
+              nativeAdCreatives,
+              (creative, key) => (
+                <NativeAdCard key={key} creative={creative} locale={locale} variant="card" />
               )
             )}
           </div>

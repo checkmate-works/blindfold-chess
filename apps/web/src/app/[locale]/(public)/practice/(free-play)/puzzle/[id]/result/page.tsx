@@ -6,10 +6,12 @@ import { notFound } from 'next/navigation';
 
 import { eq } from 'drizzle-orm';
 
+import { getNativeThumbCreatives } from '@/lib/ads/ad';
+import { PUZZLE_RESULT_NATIVE_AD_SLOT } from '@/lib/ads/registry';
 import { getOptionalUser } from '@/lib/auth';
 import { db, puzzleSolutions } from '@/lib/db';
 import { getPositionLikeMeta } from '@/lib/positions/like-queries';
-import { loadNextPuzzles } from '@/lib/positions/next-puzzles';
+import { loadNextPositions } from '@/lib/positions/next-positions';
 import { getPositionWithProfileById } from '@/lib/positions/queries';
 import { resolveAuthorName } from '@/lib/users/display-name';
 
@@ -18,7 +20,7 @@ import { PageLayout } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { NextPuzzlesSection } from '../../_components/NextPuzzlesSection';
+import { NextPositionsSection } from '../../../_components/NextPositionsSection';
 import { PuzzleResultClient } from '../../_components/PuzzleResultClient';
 import { PuzzleResultContentSkeleton } from '../../_components/PuzzleResultContentSkeleton';
 
@@ -77,23 +79,30 @@ export default async function PuzzleResultPage({ params, searchParams }: Props) 
 
   const currentUser = await getOptionalUser();
 
-  const [solutions, expInfo, likeMeta, nextPuzzles] = await Promise.all([
+  // The viewer-independent read, not `resolveNativeAds`: this route is
+  // already dynamic, but the thumb pool does not depend on who is asking, and
+  // the per-reader hide is the `bfc_ads_hidden` cookie and the CSS rule on
+  // `.ad-slot-wrapper` that `NativeAdThumb` owns.
+  const [solutions, expInfo, likeMeta, nextPuzzles, nativeAdCreatives] = await Promise.all([
     db
       .select({ solutionMoves: puzzleSolutions.solutionMoves })
       .from(puzzleSolutions)
       .where(eq(puzzleSolutions.positionId, position.id)),
     resolveExpInfoFromGrantParam(resolvedSearchParams, 'practice_result'),
     getPositionLikeMeta(position.id, currentUser?.id),
-    loadNextPuzzles(position),
+    loadNextPositions(position, 'puzzle'),
+    getNativeThumbCreatives(PUZZLE_RESULT_NATIVE_AD_SLOT, locale),
   ]);
 
   const solutionMoveLists = solutions.map((s) => s.solutionMoves);
   const solutionLines = solutionMoveLists.map((moves) => moves.map((m) => m.san).join(' '));
 
   const nextPuzzlesSection = (
-    <NextPuzzlesSection
-      puzzles={nextPuzzles}
+    <NextPositionsSection
+      positions={nextPuzzles}
+      nativeAdCreatives={nativeAdCreatives}
       locale={locale}
+      basePath="/practice/puzzle"
       labels={{
         sectionTitle: t('result.nextPuzzles'),
         whiteToMove: t('detail.whiteToMove'),

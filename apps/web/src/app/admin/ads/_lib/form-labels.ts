@@ -26,6 +26,7 @@ export type AdCreativeFormLabels = {
   title: string;
   description: string;
   cardCopyHint: string;
+  thumbDescriptionHint: string;
   save: string;
   saving: string;
   cancel: string;
@@ -61,6 +62,7 @@ export function buildAdCreativeFormLabels(t: (key: string) => string): AdCreativ
     title: t('cardTitle'),
     description: t('cardDescription'),
     cardCopyHint: t('cardCopyHint'),
+    thumbDescriptionHint: t('thumbDescriptionHint'),
     save: t('save'),
     saving: t('saving'),
     cancel: t('cancel'),

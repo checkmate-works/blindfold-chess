@@ -27,7 +27,6 @@ import {
   validateSort,
 } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import { Divider, LinkTabs, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
-import { NativeAdCard } from '@/app/[locale]/_components/NativeAdCard';
 import { Skeleton } from '@/app/[locale]/_components/Skeleton';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -146,10 +145,9 @@ async function OpeningDetailContent({ params, searchParams }: Props) {
     resolveNativeAds(TOPIC_DETAIL_NATIVE_AD_SLOT, user?.id ?? null, locale),
   ]);
   const fallbackVideoTitle = tVideo('fallbackTitle');
-  // Server-gated: an ad-free reader gets an empty pool and therefore no node
-  // at all. The `.ad-slot-wrapper` CSS hide that `NativeAdCard` owns is the
-  // second layer, for the first paint.
-  const nativeAd = nativeAdCreatives[0] ?? null;
+  // Server-gated: an ad-free reader gets an empty pool, and the layout places
+  // no cards from one. The `.ad-slot-wrapper` CSS hide that `NativeAdCard`
+  // owns is the second layer, for the first paint.
 
   const buildHref = (p: number) =>
     buildPaginationHref(locale, `/topics/openings/${slug}`, p, sortBy);
@@ -248,11 +246,7 @@ async function OpeningDetailContent({ params, searchParams }: Props) {
       }
       communitySection={isRepertoiresTab ? repertoiresSection : communitySection}
       hasPosts={posts.length > 0}
-      nativeAd={
-        nativeAd && (
-          <NativeAdCard key="native-ad" creative={nativeAd} locale={locale} variant="card" />
-        )
-      }
+      nativeAdCreatives={nativeAdCreatives}
       postCards={posts.map((post) => {
         const att = attachments.get(post.id);
         return (

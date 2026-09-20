@@ -229,6 +229,45 @@ export async function getNativeTileCreatives(
 }
 
 /**
+ * Serializable view of a native-thumb creative — a destination, a thumbnail
+ * and one line of title. No description: the tiles it sits among carry none,
+ * so a creative that had one would be the one cell in the row that is taller
+ * than its neighbours. The column is still populated (see
+ * `validateNativeThumbFields`); it just has nowhere to go here.
+ */
+export type NativeThumbView = {
+  id: string;
+  href: string;
+  title: string;
+  thumbnail: NativeCardThumbnail;
+};
+
+/**
+ * Native-thumb view for a given slot. The thumb twin of
+ * {@link getNativeAdCreatives}: same cached pool, same sub-ID tagging, same
+ * read-time copy resolution — only the narrowing and the resulting shape
+ * differ.
+ */
+export async function getNativeThumbCreatives(
+  slot: AdSlot,
+  locale: Locale
+): Promise<NativeThumbView[]> {
+  const creatives = await getActiveCreatives(slot);
+  return creatives.flatMap((c) => {
+    if (c.kind !== 'native_thumb') return [];
+    const { title } = resolveNativeCopy(c.copy, locale);
+    return [
+      {
+        id: c.id,
+        href: withCreativeSubId(c.href, c.id),
+        title,
+        thumbnail: c.thumbnail,
+      },
+    ];
+  });
+}
+
+/**
  * The one-call server prologue for a native-card surface: the viewer's ad
  * entitlement (`showAds`, with the `IS_LOCAL_DEV` force-on so placements are
  * testable locally) and — only when ads show at all — the slot's creatives

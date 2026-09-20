@@ -7,7 +7,10 @@ import { Link } from '@/i18n/routing';
 import { FaPlusCircle, FaPuzzlePiece } from 'react-icons/fa';
 import { FiEdit2, FiGitBranch } from 'react-icons/fi';
 
+import { getNativeThumbCreatives } from '@/lib/ads/ad';
+import { POSITION_MEMORY_DETAIL_NATIVE_AD_SLOT } from '@/lib/ads/registry';
 import { getOptionalUser } from '@/lib/auth';
+import { loadNextPositions } from '@/lib/positions/next-positions';
 import { getPositionWithProfileById } from '@/lib/positions/queries';
 import { resolveAuthorName } from '@/lib/users/display-name';
 
@@ -23,6 +26,7 @@ import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/met
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { ForkProvenanceNote } from '../../_components/ForkProvenanceNote';
+import { NextPositionsSection } from '../../_components/NextPositionsSection';
 import { PositionAuthorHeader } from '../../_components/PositionAuthorHeader';
 import { PositionDetailLayout } from '../../_components/PositionDetailLayout';
 import { PositionEngagementRow } from '../../_components/PositionEngagementRow';
@@ -106,6 +110,15 @@ export default async function PositionDetailPage({ params, searchParams }: Props
     locale,
     sortBy,
   });
+
+  // The same grid the result screen carries, ranked the same way, scoped to
+  // this catalog: a puzzle offered here would be a different task under the
+  // same heading. The thumb pool is read viewer-independently — the per-reader
+  // hide is the `bfc_ads_hidden` cookie and the CSS rule `NativeAdThumb` owns.
+  const [otherPositions, nativeAdCreatives] = await Promise.all([
+    loadNextPositions(position, 'memory'),
+    getNativeThumbCreatives(POSITION_MEMORY_DETAIL_NATIVE_AD_SLOT, locale),
+  ]);
 
   const forkedFromNote = (
     <ForkProvenanceNote
@@ -256,6 +269,28 @@ export default async function PositionDetailPage({ params, searchParams }: Props
         kind="memory"
         locale={locale}
         likeMeta={likeMeta}
+      />
+
+      {/* Above the comments, for the same reason as on a puzzle: a reader who
+          has scrolled past the whole thread has already decided this is not
+          the position they want, and the grid is how they leave for one that
+          is. No side-to-move dot here — nothing else on this page names a
+          side to move, and the task is to rebuild the board, not to find a
+          move. */}
+      <NextPositionsSection
+        positions={otherPositions}
+        nativeAdCreatives={nativeAdCreatives}
+        locale={locale}
+        basePath="/practice/position-memory"
+        labels={{ sectionTitle: t('detail.otherProblems') }}
+        authorLink={
+          profile?.username
+            ? {
+                href: `/u/${profile.username}/problems/position-memory`,
+                label: t('detail.viewOtherPositions'),
+              }
+            : undefined
+        }
       />
 
       <PositionCommentSection

@@ -55,7 +55,7 @@ type Props = {
   /** Pre-resolved display name (use `resolveAuthorName(profile, ...)` at the call site). */
   displayName: string;
   /**
-   * Server-rendered "next puzzle" tile grid (`<NextPuzzlesSection>`), slotted
+   * Server-rendered "next puzzle" tile grid (`<NextPositionsSection>`), slotted
    * in directly above the action buttons. Built by the page so the candidate
    * query and its result stay out of this client bundle; `null` when there
    * are no candidates.

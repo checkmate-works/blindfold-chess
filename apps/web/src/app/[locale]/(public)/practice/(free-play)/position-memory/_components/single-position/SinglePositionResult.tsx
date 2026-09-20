@@ -23,7 +23,6 @@ import { SignUpBanner } from '@/app/[locale]/(public)/practice/_components/SignU
 import { CardLink, Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
-import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { parseResults, parseStats } from '../../_lib/result-serde';
@@ -58,6 +57,13 @@ type Props = {
   displayName?: string;
   initialLikeCount?: number;
   initialLikedByMe?: boolean;
+  /**
+   * Server-rendered "next problems" tile grid (`<NextPositionsSection>`),
+   * slotted in directly above the action buttons. Built by the page so the
+   * candidate query and its result stay out of this client bundle; `null`
+   * when there are no candidates.
+   */
+  nextPositions?: ReactNode;
 };
 
 export function SinglePositionResult({
@@ -70,6 +76,7 @@ export function SinglePositionResult({
   displayName,
   initialLikeCount,
   initialLikedByMe,
+  nextPositions,
 }: Props) {
   const searchParams = useSearchParams();
   const t = useTranslations('practice.positionMemory');
@@ -188,23 +195,18 @@ export function SinglePositionResult({
                     layout="inline"
                   />
                 </div>
-
-                {/* Same-author discovery link, right below the attribution —
-                    points at this author's position-memory-only list (not
-                    the mixed profile view), so solvers who liked this
-                    position can find more like it. */}
-                {profile?.username && (
-                  <div className="text-right text-sm">
-                    <Link
-                      href={`/${locale}/u/${profile.username}/problems/position-memory`}
-                      className={TEXT_LINK_MUTED_CLASSES}
-                    >
-                      {t('detail.viewOtherPositions')}
-                    </Link>
-                  </div>
-                )}
               </>
             )}
+
+          {/* Next problems, between the attribution and the action buttons:
+              the tiles are author-first, so they read as a continuation of
+              the row that just named the author, and they are the thing to
+              offer before Try Again and Back to list carry the reader away.
+              The same-author list link used to stand alone under the
+              attribution and is now this section's header action, so the two
+              read as one unit — the same move the puzzle result screen
+              made. */}
+          {nextPositions}
 
           {/* Action Buttons */}
           <div className="space-y-3">

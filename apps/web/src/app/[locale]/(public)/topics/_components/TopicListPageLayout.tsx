@@ -1,9 +1,11 @@
 import type { ReactNode } from 'react';
 
-import { withNativeAdCard } from '@/lib/ads/in-list-placement';
+import type { NativeAdView } from '@/lib/ads/ad';
+import { withRepeatingNativeAds } from '@/lib/ads/placement';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import type { BreadcrumbItem } from '@/app/[locale]/_components/Breadcrumb';
+import { NativeAdCard } from '@/app/[locale]/_components/NativeAdCard';
 import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -29,12 +31,15 @@ type Props = {
    */
   postCards: ReactNode[];
   /**
-   * The thread's native ad card, or nothing. Placed by
-   * `withNativeAdCard`, which also absorbs the "no card" case — including
-   * the repertoires tab, where the page passes no posts and an ad alone
-   * would be the only thing in the list.
+   * The thread's native ad pool, as the slot resolved it. The layout places
+   * AND renders the cards: both thread pages drew an identical
+   * `<NativeAdCard variant="card">`, and the placement rule has to live in
+   * one place or the two threads drift apart. `withRepeatingNativeAds`
+   * absorbs the "no card" case — an ad-free reader and an unfilled slot both
+   * arrive as an empty pool — including the repertoires tab, where the page
+   * passes no posts and an ad alone would be the only thing in the list.
    */
-  nativeAd?: ReactNode;
+  nativeAdCreatives?: readonly NativeAdView[];
   /** Whether there are posts to render in the post list. */
   hasPosts: boolean;
   pagination: {
@@ -52,7 +57,7 @@ export function TopicListPageLayout({
   topicHeader,
   communitySection,
   postCards,
-  nativeAd,
+  nativeAdCreatives = [],
   hasPosts,
   pagination,
   breadcrumbItems,
@@ -65,7 +70,13 @@ export function TopicListPageLayout({
 
       {communitySection}
 
-      {hasPosts && <div className="space-y-3">{withNativeAdCard(postCards, nativeAd ?? null)}</div>}
+      {hasPosts && (
+        <div className="space-y-3">
+          {withRepeatingNativeAds(postCards, nativeAdCreatives, (creative, key) => (
+            <NativeAdCard key={key} creative={creative} locale={locale} variant="card" />
+          ))}
+        </div>
+      )}
 
       <PaginationNav
         currentPage={pagination.currentPage}
