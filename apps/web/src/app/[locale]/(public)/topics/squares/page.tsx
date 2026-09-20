@@ -5,6 +5,9 @@ import { getTranslations } from 'next-intl/server';
 
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
+import { resolveNativeAds } from '@/lib/ads/ad';
+import { withNativeAdCard } from '@/lib/ads/in-list-placement';
+import { TOPIC_CATALOG_NATIVE_AD_SLOT } from '@/lib/ads/registry';
 import { getOptionalUser } from '@/lib/auth';
 import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 import { buildPageHref, getPaginationParams } from '@/lib/pagination';
@@ -15,6 +18,7 @@ import { TopicTabsSkeleton } from '@/app/[locale]/(public)/topics/_components/To
 import { renderAttachment } from '@/app/[locale]/(public)/topics/_components/render-attachment';
 import { TOPIC_PAGE_SIZE } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import { PageLayout, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { NativeAdCard } from '@/app/[locale]/_components/NativeAdCard';
 import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
@@ -49,7 +53,17 @@ async function SquaresContent({ params, searchParams }: Props) {
     TOPIC_PAGE_SIZE
   );
 
-  const recentPosts = await getPostsAcrossSquaresPaginated(limit, offset, user?.id);
+  // The ad pool is keyed on the slot and the reader's entitlement, the posts
+  // on the page window — independent, so one round for both.
+  const [recentPosts, { creatives: nativeAdCreatives }] = await Promise.all([
+    getPostsAcrossSquaresPaginated(limit, offset, user?.id),
+    resolveNativeAds(TOPIC_CATALOG_NATIVE_AD_SLOT, user?.id ?? null, locale),
+  ]);
+
+  // Server-gated: an ad-free reader gets an empty pool and therefore no node
+  // at all. The `.ad-slot-wrapper` CSS hide that `NativeAdCard` owns is the
+  // second layer, for the first paint.
+  const nativeAd = nativeAdCreatives[0] ?? null;
 
   // Pre-resolve each visible post's attachment slot upstream because
   // PostCard is a client component and `getAttachmentsForPosts` is
@@ -79,19 +93,24 @@ async function SquaresContent({ params, searchParams }: Props) {
         <p className="text-muted-foreground text-center py-8">{t('squares.noRecentPosts')}</p>
       ) : (
         <div className="space-y-3">
-          {recentPosts.map((post) => {
-            const att = attachments.get(post.id);
-            return (
-              <PostCard
-                key={post.id}
-                post={post}
-                locale={locale}
-                square={post.topicKey}
-                showSquareBadge
-                attachment={att ? renderAttachment(att, fallbackVideoTitle) : undefined}
-              />
-            );
-          })}
+          {withNativeAdCard(
+            recentPosts.map((post) => {
+              const att = attachments.get(post.id);
+              return (
+                <PostCard
+                  key={post.id}
+                  post={post}
+                  locale={locale}
+                  square={post.topicKey}
+                  showSquareBadge
+                  attachment={att ? renderAttachment(att, fallbackVideoTitle) : undefined}
+                />
+              );
+            }),
+            nativeAd && (
+              <NativeAdCard key="native-ad" creative={nativeAd} locale={locale} variant="card" />
+            )
+          )}
         </div>
       )}
 

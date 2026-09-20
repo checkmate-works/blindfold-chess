@@ -57,6 +57,7 @@ type AdSlotConfig = { kind: AdKind };
  */
 export const AD_SLOTS = {
   'feed-native-ad': { kind: 'native_card' },
+  'topic-catalog-native-ad': { kind: 'native_card' },
   'puzzle-list-native-ad': { kind: 'native_card' },
   'position-memory-list-native-ad': { kind: 'native_card' },
 } as const satisfies Record<string, AdSlotConfig>;
@@ -75,3 +76,13 @@ export function kindForSlot(slot: AdSlot): AdKind {
 
 /** The pool the home feed and `/topics` both draw their native card from. */
 export const FEED_NATIVE_AD_SLOT = 'feed-native-ad' satisfies AdSlot;
+
+/**
+ * The pool the two topic catalogs — `/topics/squares` and `/topics/openings`
+ * — draw their native card from. Separate from `feed-native-ad` on purpose:
+ * attribution is per creative (see `withCreativeSubId`), so two surfaces that
+ * share a pool are indistinguishable in the network's own report, and a
+ * catalog reader browsing one square or opening at a time is a different
+ * reader from the one scrolling the timeline.
+ */
+export const TOPIC_CATALOG_NATIVE_AD_SLOT = 'topic-catalog-native-ad' satisfies AdSlot;
