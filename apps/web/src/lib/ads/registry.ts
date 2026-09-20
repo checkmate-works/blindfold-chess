@@ -33,7 +33,37 @@ export function isAdKind(value: string): value is AdKind {
   return (AD_KINDS as readonly string[]).includes(value);
 }
 
-type AdSlotConfig = { kind: AdKind };
+/**
+ * A place one of a slot's creatives actually renders, written so an admin can
+ * go and look at it.
+ *
+ * It lives beside the slot rather than in the slot's prose because
+ * `/admin/ads` is where someone stands when they need it — about to activate
+ * a creative, with no way to tell from a key like
+ * `topic-catalog-native-ad` which of the two catalogs it means, or whether
+ * `feed-native-ad` reaches `/topics` as well as the home page. The prose
+ * below each slot constant explains *why* the pool is split the way it is;
+ * this is the part that has to be clickable.
+ *
+ * It is the one thing in this registry that code does not enforce: a page
+ * that starts reading a slot does not have to declare itself here, so a
+ * missing entry is possible in a way a missing `kind` is not. Adding the
+ * render site to the slot's entry is part of wiring up a surface — the two
+ * edits sit one scroll apart for that reason.
+ */
+type AdSurface = {
+  /** The route under `/[locale]`, spelled as the app tree spells it. */
+  route: string;
+  /**
+   * A path that opens the route, when some value of every dynamic segment is
+   * guaranteed to resolve. Omitted otherwise — an opening's slug is seeded
+   * content an admin can delete, so a link to one would rot, and a rotted
+   * link is worse than a route the reader navigates to themselves.
+   */
+  href?: string;
+};
+
+type AdSlotConfig = { kind: AdKind; surfaces: readonly AdSurface[] };
 
 /**
  * Slot → config binding, keyed by physical placement. Each slot needs a
@@ -63,13 +93,50 @@ type AdSlotConfig = { kind: AdKind };
  * put a banner?" is that there is nowhere for one to go.
  */
 export const AD_SLOTS = {
-  'feed-native-ad': { kind: 'native_card' },
-  'topic-catalog-native-ad': { kind: 'native_card' },
-  'topic-detail-native-ad': { kind: 'native_card' },
-  'glossary-term-list-native-ad': { kind: 'native_card' },
-  'practice-grid-native-ad': { kind: 'native_tile' },
-  'puzzle-list-native-ad': { kind: 'native_card' },
-  'position-memory-list-native-ad': { kind: 'native_card' },
+  'feed-native-ad': {
+    kind: 'native_card',
+    surfaces: [
+      { route: '/', href: '/' },
+      { route: '/topics', href: '/topics' },
+    ],
+  },
+  'topic-catalog-native-ad': {
+    kind: 'native_card',
+    surfaces: [
+      { route: '/topics/squares', href: '/topics/squares' },
+      { route: '/topics/openings', href: '/topics/openings' },
+    ],
+  },
+  'topic-detail-native-ad': {
+    kind: 'native_card',
+    surfaces: [
+      // Squares are derived from the board, so e4 is always there; an
+      // opening's slug is seeded content and is not.
+      { route: '/topics/squares/[square]', href: '/topics/squares/e4' },
+      { route: '/topics/openings/[slug]' },
+    ],
+  },
+  'glossary-term-list-native-ad': {
+    kind: 'native_card',
+    surfaces: [
+      // Both segments come from fixed lists (A-Z, and the five category
+      // keys), and both pages are prerendered with `dynamicParams = false`.
+      { route: '/glossary/letter/[letter]', href: '/glossary/letter/a' },
+      { route: '/glossary/category/[category]', href: '/glossary/category/notation' },
+    ],
+  },
+  'practice-grid-native-ad': {
+    kind: 'native_tile',
+    surfaces: [{ route: '/practice', href: '/practice' }],
+  },
+  'puzzle-list-native-ad': {
+    kind: 'native_card',
+    surfaces: [{ route: '/practice/puzzle', href: '/practice/puzzle' }],
+  },
+  'position-memory-list-native-ad': {
+    kind: 'native_card',
+    surfaces: [{ route: '/practice/position-memory', href: '/practice/position-memory' }],
+  },
 } as const satisfies Record<string, AdSlotConfig>;
 
 export type AdSlot = keyof typeof AD_SLOTS;
@@ -83,6 +150,13 @@ export function isAdSlot(value: string): value is AdSlot {
 export function kindForSlot(slot: AdSlot): AdKind {
   return AD_SLOTS[slot].kind;
 }
+
+/** Where the slot's creatives render. See {@link AdSurface}. */
+export function surfacesForSlot(slot: AdSlot): readonly AdSurface[] {
+  return AD_SLOTS[slot].surfaces;
+}
+
+export type { AdSurface };
 
 /** The pool the home feed and `/topics` both draw their native card from. */
 export const FEED_NATIVE_AD_SLOT = 'feed-native-ad' satisfies AdSlot;

@@ -1,8 +1,10 @@
 import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 
+import { DEFAULT_LOCALE } from '@/config';
+
 import { getAllAdCreatives } from '@/lib/ads/ad';
-import { AD_SLOT_VALUES, kindForSlot } from '@/lib/ads/registry';
+import { AD_SLOT_VALUES, kindForSlot, surfacesForSlot } from '@/lib/ads/registry';
 
 import { AdminBadge } from '../_components/AdminBadge';
 import { AdminPageLayout } from '../_components/AdminPageLayout';
@@ -27,6 +29,7 @@ export default async function AdminAdsPage() {
             <tr>
               <th className="text-left px-4 py-3 font-medium">{t('slot')}</th>
               <th className="text-left px-4 py-3 font-medium">{t('kind')}</th>
+              <th className="text-left px-4 py-3 font-medium">{t('surfaces')}</th>
               <th className="text-left px-4 py-3 font-medium">{t('creatives')}</th>
               <th className="text-left px-4 py-3 font-medium">{t('actions')}</th>
             </tr>
@@ -39,6 +42,28 @@ export default async function AdminAdsPage() {
                   <td className="px-4 py-3 font-medium">{slot}</td>
                   <td className="px-4 py-3">
                     <AdminBadge variant="neutral">{kindForSlot(slot)}</AdminBadge>
+                  </td>
+                  <td className="px-4 py-3">
+                    <ul className="space-y-0.5">
+                      {surfacesForSlot(slot).map((surface) => (
+                        <li key={surface.route} className="font-mono text-xs">
+                          {surface.href ? (
+                            <a
+                              href={`/${DEFAULT_LOCALE}${surface.href === '/' ? '' : surface.href}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-foreground underline underline-offset-2 hover:bg-secondary"
+                            >
+                              {surface.route}
+                            </a>
+                          ) : (
+                            // No value of the dynamic segment is guaranteed to
+                            // resolve, so the route is shown for reading only.
+                            <span className="text-muted-foreground">{surface.route}</span>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">
                     {counts.active} / {counts.total}

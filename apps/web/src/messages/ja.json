@@ -4775,6 +4775,7 @@
     "adsManagement": {
       "title": "広告管理",
       "slot": "スロット",
+      "surfaces": "掲載面",
       "href": "リンク URL",
       "hrefHint": "ネットワークから受け取った URL を、clickref を付けずにそのまま貼ってください（Awin の管理画面がサンプルの clickref を付けて渡してくることがあり、そのままだとこの creative の計測が潰れます）。この creative を識別する clickref は描画時に自動で付与され、Awin のレポートで creative 別にクリックを分解できます。",
       "hrefNotSet": "URL 未設定",

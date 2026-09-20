@@ -4775,6 +4775,7 @@
     "adsManagement": {
       "title": "Gestão de Anúncios",
       "slot": "Espaço",
+      "surfaces": "Onde aparece",
       "href": "URL do Link",
       "hrefHint": "Cole a URL exatamente como a rede a forneceu, sem nenhum clickref — a interface da Awin entrega um de exemplo que engoliria a atribuição deste criativo. Um clickref que identifica este criativo é anexado automaticamente na renderização, para que os relatórios da Awin separem os cliques por criativo.",
       "hrefNotSet": "URL não definida",

@@ -4775,6 +4775,7 @@
     "adsManagement": {
       "title": "Ads Management",
       "slot": "Slot",
+      "surfaces": "Where it appears",
       "href": "Link URL",
       "hrefHint": "Paste the URL exactly as the network gave it, with no clickref on it — Awin's UI hands out a sample one that would swallow this creative's attribution. A clickref identifying this creative is appended automatically at render time, so Awin's reports break clicks down per creative.",
       "hrefNotSet": "URL not set",
