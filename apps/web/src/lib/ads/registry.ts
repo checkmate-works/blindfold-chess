@@ -147,6 +147,14 @@ export const AD_SLOTS = {
     kind: 'native_thumb',
     surfaces: [{ route: '/practice/puzzle/[id]' }],
   },
+  'position-memory-result-native-ad': {
+    kind: 'native_thumb',
+    surfaces: [{ route: '/practice/position-memory/[id]/result' }],
+  },
+  'position-memory-detail-native-ad': {
+    kind: 'native_thumb',
+    surfaces: [{ route: '/practice/position-memory/[id]' }],
+  },
   'practice-grid-native-ad': {
     kind: 'native_tile',
     surfaces: [{ route: '/practice', href: '/practice' }],
@@ -273,6 +281,35 @@ export const PUZZLE_RESULT_NATIVE_AD_SLOT = 'puzzle-result-native-ad' satisfies 
  * and this reader has not started.
  */
 export const PUZZLE_DETAIL_NATIVE_AD_SLOT = 'puzzle-detail-native-ad' satisfies AdSlot;
+
+/**
+ * The pools the position-memory catalog's two grids draw their native thumb
+ * from: the result screen after a run, and a position's own page above the
+ * comments.
+ *
+ * Four thumb pools now exist — these two and the puzzle pair — and they are
+ * four because the reader is somewhere different at each. Two axes, both
+ * real. Across catalogs: a puzzle asks for the best move, a memory position
+ * asks you to rebuild the board, and someone who has chosen one of those has
+ * told you something about what they are here for. Within a catalog: before
+ * versus after, which is the same split `topic-catalog-native-ad` and
+ * `topic-detail-native-ad` make.
+ *
+ * The cost of the split is four pools to write for instead of one, and that
+ * cost is the point: a creative here is a card written for the surface it
+ * lands in, and attribution is per creative (`withCreativeSubId`), so pools
+ * that share would be one line in the network's report with no way to tell
+ * afterwards which surface earned it. Slots that turn out not to deserve
+ * their own copy can be pointed at the same creative text; slots that were
+ * never separated cannot be separated after the fact without losing the
+ * history.
+ */
+export const POSITION_MEMORY_RESULT_NATIVE_AD_SLOT =
+  'position-memory-result-native-ad' satisfies AdSlot;
+
+/** See {@link POSITION_MEMORY_RESULT_NATIVE_AD_SLOT}. */
+export const POSITION_MEMORY_DETAIL_NATIVE_AD_SLOT =
+  'position-memory-detail-native-ad' satisfies AdSlot;
 
 /**
  * The pool the `/practice` module grid draws its native tile from — the one

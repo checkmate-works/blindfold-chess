@@ -159,6 +159,32 @@ const PLACEHOLDER_CREATIVES = {
       },
     },
   },
+  'position-memory-result-native-ad': {
+    id: 'ae34e6a7-2a63-4013-8ff4-dd31921d1e26',
+    copy: {
+      title: {
+        en: '[Placeholder] Next-problems thumb (position memory)',
+        ja: '【プレースホルダ】次の問題のサムネイル（局面記憶）',
+      },
+      description: {
+        en: 'Not rendered on this surface. Replace the link, the title and the thumbnail image.',
+        ja: 'この面では描画されません。リンク・タイトル・サムネイル画像を差し替えてください。',
+      },
+    },
+  },
+  'position-memory-detail-native-ad': {
+    id: '2208deef-6156-4162-8448-55b982081ddf',
+    copy: {
+      title: {
+        en: '[Placeholder] Other-problems thumb (position memory)',
+        ja: '【プレースホルダ】他の問題のサムネイル（局面記憶）',
+      },
+      description: {
+        en: 'Not rendered on this surface. Replace the link, the title and the thumbnail image.',
+        ja: 'この面では描画されません。リンク・タイトル・サムネイル画像を差し替えてください。',
+      },
+    },
+  },
   'practice-grid-native-ad': {
     id: '5b3f64e0-495c-47eb-8514-23e9c7e6de59',
     // The one `native_tile` slot, and the emoji is not optional there: a tile

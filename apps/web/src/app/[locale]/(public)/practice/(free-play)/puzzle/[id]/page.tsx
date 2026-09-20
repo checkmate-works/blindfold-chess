@@ -10,7 +10,7 @@ import { FiEdit2, FiGitBranch } from 'react-icons/fi';
 import { getNativeThumbCreatives } from '@/lib/ads/ad';
 import { PUZZLE_DETAIL_NATIVE_AD_SLOT } from '@/lib/ads/registry';
 import { getOptionalUser } from '@/lib/auth';
-import { loadNextPuzzles } from '@/lib/positions/next-puzzles';
+import { loadNextPositions } from '@/lib/positions/next-positions';
 import { resolveAuthorName } from '@/lib/users/display-name';
 
 import { PositionCommentSection } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionCommentSection';
@@ -25,6 +25,7 @@ import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/met
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { ForkProvenanceNote } from '../../_components/ForkProvenanceNote';
+import { NextPositionsSection } from '../../_components/NextPositionsSection';
 import { PositionAuthorHeader } from '../../_components/PositionAuthorHeader';
 import { PositionDetailLayout } from '../../_components/PositionDetailLayout';
 import { PositionEngagementRow } from '../../_components/PositionEngagementRow';
@@ -32,7 +33,6 @@ import { PositionPeekBoard } from '../../_components/PositionPeekBoard';
 import { PositionEditRequestSuggestLink } from '../../_components/edit-request/PositionEditRequestLinks';
 import { loadPositionDetailPage } from '../../_lib/load-position-detail-page';
 import { DeletePuzzleButton } from '../_components/DeletePuzzleButton';
-import { NextPuzzlesSection } from '../_components/NextPuzzlesSection';
 import { loadPuzzleWithSolutions } from '../_lib/load-puzzle';
 import { loadMorePuzzleComments } from './_actions/loadMorePuzzleComments';
 import { NewPostForm } from './_components/NewPostForm';
@@ -116,7 +116,7 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
   // viewer-independently, like the result screen's: the per-reader hide is
   // the `bfc_ads_hidden` cookie and the CSS rule `NativeAdThumb` owns.
   const [otherPuzzles, nativeAdCreatives] = await Promise.all([
-    loadNextPuzzles(position),
+    loadNextPositions(position, 'puzzle'),
     getNativeThumbCreatives(PUZZLE_DETAIL_NATIVE_AD_SLOT, locale),
   ]);
 
@@ -269,10 +269,11 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
           want, and the grid is how they leave for one that is. The heading
           differs from the result screen's ("Next puzzles") because this
           reader has not solved anything yet. */}
-      <NextPuzzlesSection
-        puzzles={otherPuzzles}
+      <NextPositionsSection
+        positions={otherPuzzles}
         nativeAdCreatives={nativeAdCreatives}
         locale={locale}
+        basePath="/practice/puzzle"
         labels={{
           sectionTitle: t('detail.otherPuzzles'),
           whiteToMove: t('detail.whiteToMove'),

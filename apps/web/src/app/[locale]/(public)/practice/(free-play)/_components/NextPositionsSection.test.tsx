@@ -1,9 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { NEXT_PUZZLE_COUNT } from '@/lib/positions/next-puzzles';
+import { NEXT_POSITION_COUNT } from '@/lib/positions/next-positions';
 
-import { NextPuzzlesSection } from './NextPuzzlesSection';
+import { NextPositionsSection } from './NextPositionsSection';
 
 vi.mock('@/i18n/routing');
 
@@ -50,20 +50,28 @@ const labels = {
   blackToMove: 'Black to move',
 };
 
-describe('NextPuzzlesSection', () => {
+describe('NextPositionsSection', () => {
   it('renders nothing when there are no candidates', () => {
-    const { container } = render(<NextPuzzlesSection puzzles={[]} locale="en" labels={labels} />);
+    const { container } = render(
+      <NextPositionsSection
+        positions={[]}
+        locale="en"
+        basePath="/practice/puzzle"
+        labels={labels}
+      />
+    );
     expect(container).toBeEmptyDOMElement();
   });
 
   it('links each tile to the puzzle detail page with prefetch deferred', () => {
     render(
-      <NextPuzzlesSection
-        puzzles={[
+      <NextPositionsSection
+        positions={[
           { id: 'p1', fen: WHITE_TO_MOVE, title: 'Back rank' },
           { id: 'p2', fen: BLACK_TO_MOVE, title: 'Rook lift' },
         ]}
         locale="ja"
+        basePath="/practice/puzzle"
         labels={labels}
       />
     );
@@ -84,12 +92,13 @@ describe('NextPuzzlesSection', () => {
 
   it('labels the side-to-move dot from the FEN', () => {
     render(
-      <NextPuzzlesSection
-        puzzles={[
+      <NextPositionsSection
+        positions={[
           { id: 'p1', fen: WHITE_TO_MOVE, title: 'Back rank' },
           { id: 'p2', fen: BLACK_TO_MOVE, title: 'Rook lift' },
         ]}
         locale="en"
+        basePath="/practice/puzzle"
         labels={labels}
       />
     );
@@ -105,48 +114,56 @@ describe('NextPuzzlesSection', () => {
       title: 'A book about calculation',
       thumbnail: { fen: WHITE_TO_MOVE },
     };
-    const puzzles = Array.from({ length: NEXT_PUZZLE_COUNT }, (_, i) => ({
+    const puzzles = Array.from({ length: NEXT_POSITION_COUNT }, (_, i) => ({
       id: `p${i}`,
       fen: WHITE_TO_MOVE,
       title: `Puzzle ${i}`,
     }));
 
-    it('takes the first cell and keeps the grid at NEXT_PUZZLE_COUNT cells', () => {
+    it('takes the first cell and keeps the grid at NEXT_POSITION_COUNT cells', () => {
       // A fifth cell would sit alone on a second row at both breakpoints and
       // push the result screen's action buttons down, so the last puzzle is
       // what gives way — not the grid's width.
       const { container } = render(
-        <NextPuzzlesSection
-          puzzles={puzzles}
+        <NextPositionsSection
+          positions={puzzles}
           locale="en"
+          basePath="/practice/puzzle"
           labels={labels}
           nativeAdCreatives={[creative]}
         />
       );
 
       const cells = Array.from(container.querySelectorAll('li'));
-      expect(cells).toHaveLength(NEXT_PUZZLE_COUNT);
+      expect(cells).toHaveLength(NEXT_POSITION_COUNT);
       expect(cells[0].querySelector('[data-testid="ad-thumb"]')).not.toBeNull();
-      expect(screen.queryByText(`Puzzle ${NEXT_PUZZLE_COUNT - 1}`)).not.toBeInTheDocument();
+      expect(screen.queryByText(`Puzzle ${NEXT_POSITION_COUNT - 1}`)).not.toBeInTheDocument();
     });
 
     it('shows every puzzle when the pool is empty', () => {
       // How an ad-free reader and an unfilled slot both arrive.
       const { container } = render(
-        <NextPuzzlesSection puzzles={puzzles} locale="en" labels={labels} nativeAdCreatives={[]} />
+        <NextPositionsSection
+          positions={puzzles}
+          locale="en"
+          basePath="/practice/puzzle"
+          labels={labels}
+          nativeAdCreatives={[]}
+        />
       );
 
-      expect(container.querySelectorAll('li')).toHaveLength(NEXT_PUZZLE_COUNT);
+      expect(container.querySelectorAll('li')).toHaveLength(NEXT_POSITION_COUNT);
       expect(screen.queryByTestId('ad-thumb')).not.toBeInTheDocument();
-      expect(screen.getByText(`Puzzle ${NEXT_PUZZLE_COUNT - 1}`)).toBeInTheDocument();
+      expect(screen.getByText(`Puzzle ${NEXT_POSITION_COUNT - 1}`)).toBeInTheDocument();
     });
 
     it('stays hidden on a section that has no puzzles to offer', () => {
       // An ad alone is not a "next puzzles" section.
       const { container } = render(
-        <NextPuzzlesSection
-          puzzles={[]}
+        <NextPositionsSection
+          positions={[]}
           locale="en"
+          basePath="/practice/puzzle"
           labels={labels}
           nativeAdCreatives={[creative]}
         />
@@ -158,9 +175,10 @@ describe('NextPuzzlesSection', () => {
 
   it('renders the same-author link as the header action when given', () => {
     render(
-      <NextPuzzlesSection
-        puzzles={[{ id: 'p1', fen: WHITE_TO_MOVE, title: 'Back rank' }]}
+      <NextPositionsSection
+        positions={[{ id: 'p1', fen: WHITE_TO_MOVE, title: 'Back rank' }]}
         locale="en"
+        basePath="/practice/puzzle"
         labels={labels}
         authorLink={{ href: '/u/alice/problems/puzzles', label: 'More by this author' }}
       />

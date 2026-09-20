@@ -11,7 +11,7 @@ import { PUZZLE_RESULT_NATIVE_AD_SLOT } from '@/lib/ads/registry';
 import { getOptionalUser } from '@/lib/auth';
 import { db, puzzleSolutions } from '@/lib/db';
 import { getPositionLikeMeta } from '@/lib/positions/like-queries';
-import { loadNextPuzzles } from '@/lib/positions/next-puzzles';
+import { loadNextPositions } from '@/lib/positions/next-positions';
 import { getPositionWithProfileById } from '@/lib/positions/queries';
 import { resolveAuthorName } from '@/lib/users/display-name';
 
@@ -20,7 +20,7 @@ import { PageLayout } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { NextPuzzlesSection } from '../../_components/NextPuzzlesSection';
+import { NextPositionsSection } from '../../../_components/NextPositionsSection';
 import { PuzzleResultClient } from '../../_components/PuzzleResultClient';
 import { PuzzleResultContentSkeleton } from '../../_components/PuzzleResultContentSkeleton';
 
@@ -90,7 +90,7 @@ export default async function PuzzleResultPage({ params, searchParams }: Props) 
       .where(eq(puzzleSolutions.positionId, position.id)),
     resolveExpInfoFromGrantParam(resolvedSearchParams, 'practice_result'),
     getPositionLikeMeta(position.id, currentUser?.id),
-    loadNextPuzzles(position),
+    loadNextPositions(position, 'puzzle'),
     getNativeThumbCreatives(PUZZLE_RESULT_NATIVE_AD_SLOT, locale),
   ]);
 
@@ -98,10 +98,11 @@ export default async function PuzzleResultPage({ params, searchParams }: Props) 
   const solutionLines = solutionMoveLists.map((moves) => moves.map((m) => m.san).join(' '));
 
   const nextPuzzlesSection = (
-    <NextPuzzlesSection
-      puzzles={nextPuzzles}
+    <NextPositionsSection
+      positions={nextPuzzles}
       nativeAdCreatives={nativeAdCreatives}
       locale={locale}
+      basePath="/practice/puzzle"
       labels={{
         sectionTitle: t('result.nextPuzzles'),
         whiteToMove: t('detail.whiteToMove'),
