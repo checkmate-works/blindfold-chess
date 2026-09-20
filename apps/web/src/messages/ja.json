@@ -4816,6 +4816,8 @@
       "thumbnailImageUploading": "アップロード中...",
       "thumbnailImageHintCreate": "先に保存してから、編集画面でサムネイル画像をアップロードしてください。",
       "thumbnailAlt": "サムネイルの代替テキスト",
+      "tileIcon": "タイルの絵文字",
+      "tileIconHint": "タイトルの前に表示する絵文字を1つ。練習グリッドのタイルはすべて絵文字を持つので、これがないとそのタイルだけが周囲から浮きます。",
       "preview": "プレビュー",
       "previewCaption": "プレビューは英語のコピーです。「広告」ラベルとスポンサー名は描画時に閲覧者ごとにローカライズされます。",
       "thumbnailImageOverride": "上書き画像（任意）",

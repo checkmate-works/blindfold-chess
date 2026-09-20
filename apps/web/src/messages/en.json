@@ -4816,6 +4816,8 @@
       "thumbnailImageUploading": "Uploading...",
       "thumbnailImageHintCreate": "Save first, then upload a thumbnail image on the edit screen.",
       "thumbnailAlt": "Thumbnail alt text",
+      "tileIcon": "Tile emoji",
+      "tileIconHint": "One emoji, shown before the title. Every tile in the practice grid carries one, so a tile without it is the only thing on the page that looks unlike the rest.",
       "preview": "Preview",
       "previewCaption": "The English copy is previewed. The “Ad” label and sponsor name are localized per viewer at render time.",
       "thumbnailImageOverride": "Override image (optional)",

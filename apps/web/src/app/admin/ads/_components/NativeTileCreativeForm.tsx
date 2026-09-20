@@ -3,11 +3,9 @@
 import type { FormEvent } from 'react';
 import { useState } from 'react';
 
-import Image from 'next/image';
-
 import { Field, Input } from '@/app/admin/_components/forms';
 
-import type { NativeCardPayload, NativeCardThumbnail } from '@/lib/ads/payload';
+import type { NativeCardThumbnail, NativeTilePayload } from '@/lib/ads/payload';
 import {
   DEFAULT_AD_ALT,
   DEFAULT_NATIVE_THUMBNAIL_FEN,
@@ -17,8 +15,6 @@ import {
 } from '@/lib/ads/payload';
 import type { AdSlot } from '@/lib/ads/registry';
 
-import type { Locale } from '@/app/[locale]/_lib/types';
-
 import type { AdCreativeFormLabels } from '../_lib/form-labels';
 import { useCommonCreativeState } from '../_lib/use-common-creative-state';
 import type { CommonCreativeValues } from '../_lib/use-common-creative-state';
@@ -27,43 +23,40 @@ import { useCreativeSubmit } from '../_lib/use-creative-submit';
 import { AD_CREATIVE_LIMITS } from '../_lib/validation';
 import { CreativeFormShell } from './CreativeFormShell';
 import { CreativeThumbnailFields } from './CreativeThumbnailFields';
-import { ImageFileButton } from './ImageFileButton';
 import { LocalizedCopyFields } from './LocalizedCopyFields';
-import { NativeCardPreview } from './NativeCardPreview';
+import { NativeTilePreview } from './NativeTilePreview';
 
-export type NativeCardFormInitial = CommonCreativeValues & {
-  payload: Partial<NativeCardPayload>;
+export type NativeTileFormInitial = CommonCreativeValues & {
+  payload: Partial<NativeTilePayload>;
 };
 
 type Props = {
   mode: 'create' | 'edit';
   slot: AdSlot;
   creativeId?: string;
-  initial: NativeCardFormInitial;
+  initial: NativeTileFormInitial;
   labels: AdCreativeFormLabels;
 };
 
-/** Create/edit form for native-card creatives (thumbnail + avatar + copy). */
-export function NativeCardCreativeForm({ mode, slot, creativeId, initial, labels }: Props) {
+/**
+ * Create/edit form for native-tile creatives (emoji + copy + thumbnail).
+ *
+ * The card form's fields minus the author row, plus the emoji. Both share
+ * `CreativeThumbnailFields` and `LocalizedCopyFields`, so the parts of a
+ * creative that do not vary by kind are edited by the same code in both.
+ */
+export function NativeTileCreativeForm({ mode, slot, creativeId, initial, labels }: Props) {
   const common = useCommonCreativeState(initial);
   const { submit, isPending, error, setError } = useCreativeSubmit(slot);
 
-  const [avatarImagePath, setAvatarImagePath] = useState<string | null>(
-    initial.payload.avatarImagePath ?? null
-  );
-  const [avatarAlt, setAvatarAlt] = useState(initial.payload.avatarAlt ?? DEFAULT_AD_ALT);
-  // One input per locale. `en` is required and is what every unfilled locale
-  // falls back to at render time, so the others stay optional.
+  const [icon, setIcon] = useState(initial.payload.icon ?? '');
   const [title, setTitle] = useState(() => toLocalizedCopyDraft(initial.payload.title));
   const [description, setDescription] = useState(() =>
     toLocalizedCopyDraft(initial.payload.description)
   );
 
-  const setCopy = (set: typeof setTitle, locale: Locale) => (value: string) =>
-    set((prev) => ({ ...prev, [locale]: value }));
-
-  // Normalize (also recovers legacy `{type:'image'}` thumbnails still in the DB).
-  const initThumb = resolveNativeThumbnail(initial.payload as NativeCardPayload);
+  // Normalize (also recovers legacy thumbnail shapes still in the DB).
+  const initThumb = resolveNativeThumbnail(initial.payload as NativeTilePayload);
   const [thumbnailFen, setThumbnailFen] = useState(initThumb.fen);
   const [thumbnailImagePath, setThumbnailImagePath] = useState<string | null>(
     initThumb.imagePath ?? null
@@ -71,13 +64,7 @@ export function NativeCardCreativeForm({ mode, slot, creativeId, initial, labels
   const [thumbnailAlt, setThumbnailAlt] = useState(initThumb.imageAlt || DEFAULT_AD_ALT);
 
   const { upload, remove, isBusy } = useCreativeImageUpload(creativeId, setError);
-  const isUploading = isBusy('avatar');
   const isThumbUploading = isBusy('thumbnail');
-
-  const handleAvatarUpload = async (file: File) => {
-    const path = await upload('avatar', file);
-    if (path) setAvatarImagePath(path);
-  };
 
   const handleThumbnailUpload = async (file: File) => {
     const path = await upload('thumbnail', file);
@@ -85,14 +72,9 @@ export function NativeCardCreativeForm({ mode, slot, creativeId, initial, labels
   };
 
   const removeThumbnailImage = async () => {
-    // With no saved creative yet, the image only lives in local state and
-    // `remove` reports success without an API call.
     if (await remove('thumbnail')) setThumbnailImagePath(null);
   };
 
-  // The effective thumbnail from the current inputs: the board `fen` always,
-  // plus the override image when one is set. Shared by the live preview and
-  // submit.
   const currentThumbnail: NativeCardThumbnail = {
     fen: thumbnailFen.trim() || DEFAULT_NATIVE_THUMBNAIL_FEN,
     ...(thumbnailImagePath ? { imagePath: thumbnailImagePath, imageAlt: thumbnailAlt } : {}),
@@ -101,8 +83,7 @@ export function NativeCardCreativeForm({ mode, slot, creativeId, initial, labels
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     submit(mode, creativeId, common.toFields(), {
-      avatarImagePath,
-      avatarAlt,
+      icon: icon.trim(),
       title: fromLocalizedCopyDraft(title),
       description: fromLocalizedCopyDraft(description),
       thumbnail: currentThumbnail,
@@ -132,58 +113,31 @@ export function NativeCardCreativeForm({ mode, slot, creativeId, initial, labels
           onAltChange={setThumbnailAlt}
         />
 
-        <Field label={labels.avatar} htmlFor="avatar">
-          <div className="flex items-center gap-3">
-            {avatarImagePath ? (
-              <Image
-                src={avatarImagePath}
-                alt={avatarAlt}
-                width={48}
-                height={48}
-                className="w-12 h-12 rounded-full object-cover"
-                unoptimized
-              />
-            ) : (
-              <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center text-xs text-muted-foreground">
-                Ad
-              </div>
-            )}
-            {mode === 'edit' ? (
-              <ImageFileButton
-                idleLabel={labels.avatarUpload}
-                busyLabel={labels.avatarUploading}
-                busy={isUploading}
-                onFile={handleAvatarUpload}
-                inputId="avatar"
-              />
-            ) : (
-              <p className="text-xs text-muted-foreground">{labels.avatarHintCreate}</p>
-            )}
-          </div>
-        </Field>
-        <Field label={labels.avatarAlt} htmlFor="avatarAlt">
+        <Field label={labels.icon} htmlFor="icon" description={labels.iconHint}>
           <Input
-            id="avatarAlt"
+            id="icon"
             type="text"
-            value={avatarAlt}
-            onChange={(e) => setAvatarAlt(e.target.value)}
-            maxLength={AD_CREATIVE_LIMITS.alt}
+            value={icon}
+            onChange={(e) => setIcon(e.target.value)}
+            required
+            maxLength={AD_CREATIVE_LIMITS.icon}
           />
         </Field>
 
         <LocalizedCopyFields
           labels={labels}
           title={title}
-          onTitleChange={(locale, value) => setCopy(setTitle, locale)(value)}
+          onTitleChange={(locale, value) => setTitle((prev) => ({ ...prev, [locale]: value }))}
           description={description}
-          onDescriptionChange={(locale, value) => setCopy(setDescription, locale)(value)}
+          onDescriptionChange={(locale, value) =>
+            setDescription((prev) => ({ ...prev, [locale]: value }))
+          }
         />
       </CreativeFormShell>
 
       <aside className="lg:sticky lg:top-4">
-        <NativeCardPreview
-          avatarImagePath={avatarImagePath}
-          avatarAlt={avatarAlt}
+        <NativeTilePreview
+          icon={icon}
           title={title.en}
           description={description.en}
           thumbnail={currentThumbnail}

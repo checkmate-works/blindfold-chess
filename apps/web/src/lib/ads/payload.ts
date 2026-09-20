@@ -67,6 +67,28 @@ export type NativeCardPayload = {
 };
 
 /**
+ * Practice-grid native tile — the shape a `/practice` module tile has:
+ * an emoji before the title, a line of copy, and the creative's thumbnail
+ * where a module's example band sits. No author row, because the tiles it
+ * stands among have no author; the disclosure badge takes the corner the
+ * rank badge occupies on a module tile.
+ *
+ * `icon` is the one field a card does not have and the one that makes the
+ * tile read as a tile. It is required: an empty corner is how a module tile
+ * says "no rank", and a title with no emoji is how nothing else on that grid
+ * looks.
+ */
+export type NativeTilePayload = {
+  icon: string;
+  title: LocalizedCopy;
+  description: LocalizedCopy;
+  thumbnail?: NativeCardThumbnail;
+};
+
+/** Structural shape of the copy both kinds carry, for {@link resolveNativeCopy}. */
+export type LocalizedCopyPair = { title: LocalizedCopy; description: LocalizedCopy };
+
+/**
  * One field's copy for `locale`: the locale's own string when the admin wrote
  * one, `en` otherwise. A bare string — the pre-split shape, still in the DB —
  * counts as `en`. Returns `''` for a payload whose copy is neither, which the
@@ -89,7 +111,7 @@ function copyForLocale(value: unknown, locale: Locale): string {
  * never needs rewriting.
  */
 export function resolveNativeCopy(
-  payload: NativeCardPayload,
+  payload: LocalizedCopyPair,
   locale: Locale
 ): { title: string; description: string } {
   return {
@@ -139,7 +161,7 @@ export function fromLocalizedCopyDraft(draft: Record<Locale, string>): Localized
  * still in the DB, so a schema-free JSONB migration is unnecessary: an old
  * image thumbnail becomes an override image over the default board.
  */
-export function resolveNativeThumbnail(payload: NativeCardPayload): NativeCardThumbnail {
+export function resolveNativeThumbnail(payload: AdPayload): NativeCardThumbnail {
   const t = payload.thumbnail as Record<string, unknown> | null | undefined;
   if (!t) return { fen: DEFAULT_NATIVE_THUMBNAIL_FEN };
 
@@ -170,7 +192,12 @@ export function resolveNativeThumbnail(payload: NativeCardPayload): NativeCardTh
 
 export type AdPayloadByKind = {
   native_card: NativeCardPayload;
+  native_tile: NativeTilePayload;
 };
+
+/** Any kind's payload — what a validator or an admin form holds before it
+ * knows (or after it has forgotten) which kind the slot binds. */
+export type AdPayload = AdPayloadByKind[AdKind];
 
 /**
  * Both copy shapes pass: the per-locale map (which must carry `en`, the
@@ -198,8 +225,26 @@ export function isNativeCardPayload(value: unknown): value is NativeCardPayload 
   );
 }
 
+/**
+ * The tile's thumbnail is unvalidated here for the same reason the card's is
+ * — it is optional and normalized at read time — and `icon` is checked for
+ * presence only. Which emoji it is is an editorial judgement the admin makes,
+ * not something a guard can hold an opinion about.
+ */
+export function isNativeTilePayload(value: unknown): value is NativeTilePayload {
+  if (typeof value !== 'object' || value === null) return false;
+  const p = value as Record<string, unknown>;
+  return (
+    typeof p.icon === 'string' &&
+    p.icon.length > 0 &&
+    isLocalizedCopy(p.title) &&
+    isLocalizedCopy(p.description)
+  );
+}
+
 const PAYLOAD_GUARDS: { [K in AdKind]: (value: unknown) => value is AdPayloadByKind[K] } = {
   native_card: isNativeCardPayload,
+  native_tile: isNativeTilePayload,
 };
 
 /** Type-guard a raw JSONB payload against the guard for the given kind. */
@@ -208,4 +253,25 @@ export function isPayloadForKind<K extends AdKind>(
   value: unknown
 ): value is AdPayloadByKind[K] {
   return PAYLOAD_GUARDS[kind](value);
+}
+
+/**
+ * The title and thumbnail the admin list shows for a creative of any kind,
+ * or `null` when the stored payload does not match the kind its slot binds
+ * (a row written before a guard tightened, say).
+ *
+ * Both kinds carry per-locale copy and an optional thumbnail, so this is the
+ * whole of what the list needs and the one place that has to know a third
+ * kind exists too.
+ */
+export function resolveAdSummary(
+  kind: AdKind,
+  payload: unknown,
+  locale: Locale
+): { title: string; thumbnail: NativeCardThumbnail } | null {
+  if (!isPayloadForKind(kind, payload)) return null;
+  return {
+    title: resolveNativeCopy(payload, locale).title,
+    thumbnail: resolveNativeThumbnail(payload),
+  };
 }

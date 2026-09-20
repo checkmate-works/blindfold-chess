@@ -10,7 +10,12 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { hasAdFreeEntitlement } from './ad-free-entitlement';
 import type { NativeCardThumbnail } from './payload';
-import { isNativeCardPayload, resolveNativeCopy, resolveNativeThumbnail } from './payload';
+import {
+  isNativeCardPayload,
+  isNativeTilePayload,
+  resolveNativeCopy,
+  resolveNativeThumbnail,
+} from './payload';
 import type { AdKind, AdSlot } from './registry';
 import { withCreativeSubId } from './subid';
 
@@ -127,6 +132,46 @@ export async function getNativeAdCreatives(slot: AdSlot, locale: Locale): Promis
         href: withCreativeSubId(c.href, c.id),
         avatarImagePath: c.payload.avatarImagePath,
         avatarAlt: c.payload.avatarAlt,
+        title,
+        description,
+        thumbnail: resolveNativeThumbnail(c.payload),
+      },
+    ];
+  });
+}
+
+/**
+ * Serializable view of a native-tile creative — the card view plus the emoji
+ * and minus the author row, which is the difference between the two shapes.
+ */
+export type NativeTileView = {
+  id: string;
+  href: string;
+  icon: string;
+  title: string;
+  description: string;
+  thumbnail: NativeCardThumbnail;
+};
+
+/**
+ * Native-tile view for a given slot. The tile twin of
+ * {@link getNativeAdCreatives}: same cached pool, same sub-ID tagging, same
+ * read-time copy resolution — only the guard and the resulting shape differ,
+ * because the slot's kind decides which payload its creatives hold.
+ */
+export async function getNativeTileCreatives(
+  slot: AdSlot,
+  locale: Locale
+): Promise<NativeTileView[]> {
+  const creatives = await getActiveCreatives(slot);
+  return creatives.flatMap((c) => {
+    if (!isNativeTilePayload(c.payload)) return [];
+    const { title, description } = resolveNativeCopy(c.payload, locale);
+    return [
+      {
+        id: c.id,
+        href: withCreativeSubId(c.href, c.id),
+        icon: c.payload.icon,
         title,
         description,
         thumbnail: resolveNativeThumbnail(c.payload),

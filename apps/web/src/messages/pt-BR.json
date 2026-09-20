@@ -4816,6 +4816,8 @@
       "thumbnailImageUploading": "Enviando...",
       "thumbnailImageHintCreate": "Salve primeiro e depois envie uma imagem de miniatura na tela de edição.",
       "thumbnailAlt": "Texto alternativo da miniatura",
+      "tileIcon": "Emoji do bloco",
+      "tileIconHint": "Um emoji, exibido antes do título. Todos os blocos da grade de prática têm um, então um bloco sem ele é a única coisa na página que destoa do resto.",
       "preview": "Pré-visualização",
       "previewCaption": "A prévia mostra o texto em inglês. O rótulo “Anúncio” e o nome do patrocinador são localizados por visitante na renderização.",
       "thumbnailImageOverride": "Imagem de substituição (opcional)",

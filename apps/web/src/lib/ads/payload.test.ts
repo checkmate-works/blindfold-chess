@@ -4,6 +4,7 @@ import {
   DEFAULT_NATIVE_THUMBNAIL_FEN,
   fromLocalizedCopyDraft,
   isNativeCardPayload,
+  isNativeTilePayload,
   isPayloadForKind,
   resolveNativeCopy,
   resolveNativeThumbnail,
@@ -129,5 +130,39 @@ describe('localized copy drafts', () => {
       en: 't',
       ja: 'タ',
     });
+  });
+});
+
+describe('isNativeTilePayload', () => {
+  const valid = {
+    icon: '♞',
+    title: { en: 'Master the Ruy Lopez' },
+    description: { en: 'A closer look at a very old opening.' },
+  };
+
+  it('accepts a tile with an icon and both copy fields', () => {
+    expect(isNativeTilePayload(valid)).toBe(true);
+  });
+
+  it('rejects a tile with no icon', () => {
+    // An empty icon is not a tile with a blank corner — it is a title that
+    // starts where every neighbouring tile's emoji does.
+    expect(isNativeTilePayload({ ...valid, icon: '' })).toBe(false);
+    expect(isNativeTilePayload({ title: valid.title, description: valid.description })).toBe(false);
+  });
+
+  it('rejects a card payload, which carries no icon', () => {
+    expect(
+      isNativeTilePayload({
+        avatarImagePath: null,
+        avatarAlt: 'Ad',
+        title: valid.title,
+        description: valid.description,
+      })
+    ).toBe(false);
+  });
+
+  it('accepts a malformed thumbnail, which is normalized at read time', () => {
+    expect(isNativeTilePayload({ ...valid, thumbnail: { type: 'board' } })).toBe(true);
   });
 });

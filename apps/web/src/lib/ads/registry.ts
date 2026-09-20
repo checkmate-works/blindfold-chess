@@ -8,18 +8,24 @@
  * format starts here: add the slot (and, for a new format, the `kind`),
  * then add its payload type/guard (`@/lib/ads/payload`) and a renderer.
  *
- * `native_card` is currently the only kind, because a native ad is by
- * definition shaped like the surface it sits in and each surface already
- * gets its own slot. The one-kind-per-slot structure is kept anyway: a
- * future surface whose card shape differs from a feed item's (a practice
- * menu tile, say) is a new `kind` plus its payload type, guard and
- * renderer, and nothing outside those three places has to know.
+ * There are two kinds, because there are two card shapes to blend into.
+ * `native_card` is a row in a list — a feed item, a post, a glossary term.
+ * `native_tile` is a cell in the `/practice` grid, where the neighbours are
+ * module tiles with an emoji, a title and an example band and a row-shaped
+ * card would be the only thing on the page that is not a tile.
+ *
+ * A third kind is the answer whenever a new surface's cards are a third
+ * shape. It is a payload type and guard (`@/lib/ads/payload`), a renderer,
+ * a branch in the admin's payload validator, and an authoring form — the
+ * type system names the first two for you, since `PAYLOAD_GUARDS` and
+ * `AdPayloadByKind` are keyed by `AdKind`, but the admin pages pick their
+ * form from the slot's kind at runtime and will not.
  *
  * Mirrors the "one registry, everything derives from it" pattern used by
  * `PRACTICE_MODULE_REGISTRY`.
  */
 
-export const AD_KINDS = ['native_card'] as const;
+export const AD_KINDS = ['native_card', 'native_tile'] as const;
 export type AdKind = (typeof AD_KINDS)[number];
 
 export function isAdKind(value: string): value is AdKind {

@@ -4816,6 +4816,8 @@
       "thumbnailImageUploading": "Subiendo...",
       "thumbnailImageHintCreate": "Guarda primero y luego sube una imagen de miniatura en la pantalla de edición.",
       "thumbnailAlt": "Texto alternativo de la miniatura",
+      "tileIcon": "Emoji del mosaico",
+      "tileIconHint": "Un emoji, mostrado antes del título. Todos los mosaicos de la cuadrícula de práctica llevan uno, así que un mosaico sin él es lo único de la página que no se parece al resto.",
       "preview": "Vista previa",
       "previewCaption": "La vista previa muestra el texto en inglés. La etiqueta “Anuncio” y el nombre del patrocinador se localizan para cada visitante al renderizar.",
       "thumbnailImageOverride": "Imagen de reemplazo (opcional)",

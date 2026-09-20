@@ -1,21 +1,21 @@
 import { SUPPORTED_LOCALES } from '@/config';
 
-import type { NativeCardPayload } from '@/lib/ads/payload';
+import type { AdPayload, NativeCardPayload, NativeTilePayload } from '@/lib/ads/payload';
 import type { AdKind } from '@/lib/ads/registry';
-import { isAdSlot } from '@/lib/ads/registry';
+import { isAdSlot, kindForSlot } from '@/lib/ads/registry';
 import { MAX_LINK_HREF_LENGTH, classifyLinkTarget } from '@/lib/content/link-target';
 
 export type CreateAdCreativeData = {
   slot: string;
   href: string;
   isActive: boolean;
-  payload: NativeCardPayload;
+  payload: AdPayload;
 };
 
 export type UpdateAdCreativeData = {
   href: string;
   isActive: boolean;
-  payload: NativeCardPayload;
+  payload: AdPayload;
 };
 
 /**
@@ -32,6 +32,9 @@ export const AD_CREATIVE_LIMITS = {
   text: 2000,
   /** Thumbnail board FEN (a full FEN is well under 100 chars). */
   fen: 100,
+  /** The tile's emoji. Long enough for a multi-codepoint emoji sequence
+   * (skin tone, ZWJ) and short enough that nothing else fits. */
+  icon: 16,
 } as const;
 
 /**
@@ -121,20 +124,42 @@ function validateNativeCardPayload(payload: NativeCardPayload): string | null {
   return validateThumbnail(payload.thumbnail);
 }
 
+function validateNativeTilePayload(payload: NativeTilePayload): string | null {
+  if (
+    typeof payload.icon !== 'string' ||
+    payload.icon.trim().length === 0 ||
+    payload.icon.length > AD_CREATIVE_LIMITS.icon
+  ) {
+    return 'invalid icon';
+  }
+  const titleError = validateLocalizedCopy(payload.title, 'title');
+  if (titleError) return titleError;
+  const descriptionError = validateLocalizedCopy(payload.description, 'description');
+  if (descriptionError) return descriptionError;
+  return validateThumbnail(payload.thumbnail);
+}
+
 /**
- * Validate a payload against the kind bound to its slot. `native_card` is the
- * only kind today; the indirection stays so a second kind is one branch here
- * rather than a rewrite of both call sites.
+ * Validate a payload against the kind bound to its slot. Exhaustive over
+ * `AdKind`, so a third kind is a compile error here rather than a payload
+ * that reaches the DB unchecked.
  */
-export function validatePayloadForKind(_kind: AdKind, payload: NativeCardPayload): string | null {
-  return validateNativeCardPayload(payload);
+export function validatePayloadForKind(kind: AdKind, payload: AdPayload): string | null {
+  switch (kind) {
+    case 'native_card':
+      return validateNativeCardPayload(payload as NativeCardPayload);
+    case 'native_tile':
+      return validateNativeTilePayload(payload as NativeTilePayload);
+  }
 }
 
 export function validateCreateAdCreative(data: CreateAdCreativeData): string | null {
   if (!isAdSlot(data.slot)) return 'invalid slot';
   const hrefError = validateHref(data.href);
   if (hrefError) return hrefError;
-  return validateNativeCardPayload(data.payload);
+  // The slot decides the kind, so the payload is checked against the shape
+  // this slot can actually render — not against whichever kind came first.
+  return validatePayloadForKind(kindForSlot(data.slot), data.payload);
 }
 
 /** Update validation needs the row's kind (slot is immutable, from the DB). */
