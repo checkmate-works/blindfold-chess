@@ -72,9 +72,20 @@ async function queryActiveCreatives(slot: string) {
 /**
  * A slot's active, priority-ordered creatives. `payload` is `unknown`; render
  * sites narrow it with the kind guards in `@/lib/ads/payload`. Cached per slot
- * (tag + time-bounded) so ad-bearing pages stay static/ISR: the pool is baked
- * at build/revalidate and refreshed by `revalidateTag(AD_CREATIVES_CACHE_TAG)`
- * on admin writes; the per-user hide stays on the cookie/CSS layer.
+ * so ad-bearing pages stay static/ISR: the pool is baked at build/revalidate
+ * and refreshed by `revalidateTag(AD_CREATIVES_CACHE_TAG)` on admin writes;
+ * the per-user hide stays on the cookie/CSS layer.
+ *
+ * The tag is what actually keeps the pool fresh — every mutation path goes
+ * through `revalidateAdCreatives`, so an edit is visible within the minute
+ * whatever this interval says. The interval is only the backstop, and it is
+ * a day rather than the five minutes it used to be because a route's
+ * effective `revalidate` is the minimum over every data-cache entry its
+ * render reads: a five-minute pool silently pulled each static surface that
+ * shows an ad down to a five-minute ISR interval, whatever that page had
+ * chosen for itself. Both static ad surfaces have longer budgets on
+ * purpose — the glossary a week, `/practice` an hour for the daily puzzle —
+ * and ISR writes are metered.
  */
 export type ActiveCreative = {
   id: string;
@@ -101,7 +112,7 @@ const getActiveCreativesCached = unstable_cache(
     }
   },
   ['active-ad-creatives'],
-  { tags: [AD_CREATIVES_CACHE_TAG], revalidate: 300 }
+  { tags: [AD_CREATIVES_CACHE_TAG], revalidate: 60 * 60 * 24 }
 );
 
 export function getActiveCreatives(slot: AdSlot): Promise<ActiveCreative[]> {
