@@ -2236,13 +2236,6 @@
           "created": "Posted a chunk draft",
           "published": "Published a chunk"
         }
-      },
-      "nativeAd": {
-        "avatarLabel": "Ad",
-        "sponsorName": "Recommended Reading",
-        "disclosure": "Ad",
-        "title": "Master the Ruy Lopez",
-        "description": "A closer look at one of chess's oldest and most respected openings."
       }
     },
     "vsAi": {
@@ -2266,6 +2259,11 @@
         "description": "Topics like openings and new puzzles show up in the feed. Leaderboard top-rank changes appear too, but feed entries of this kind are kept for one month — older ones are removed."
       }
     }
+  },
+  "nativeAd": {
+    "avatarLabel": "Ad",
+    "sponsorName": "Recommended Reading",
+    "disclosure": "Ad"
   },
   "gamesPage": {
     "tabs": {

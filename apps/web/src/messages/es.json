@@ -2236,13 +2236,6 @@
           "created": "Publicó un borrador de chunk",
           "published": "Publicó un chunk"
         }
-      },
-      "nativeAd": {
-        "avatarLabel": "Ad",
-        "sponsorName": "Lectura recomendada",
-        "disclosure": "Anuncio",
-        "title": "Domina la Ruy López",
-        "description": "Un vistazo más de cerca a una de las aperturas más antiguas y respetadas del ajedrez."
       }
     },
     "vsAi": {
@@ -2266,6 +2259,11 @@
         "description": "En la cronología aparecen temas como aperturas y nuevos puzles. También se muestran los cambios en lo más alto de la clasificación, pero las entradas de este tipo se conservan un mes — las más antiguas se eliminan."
       }
     }
+  },
+  "nativeAd": {
+    "avatarLabel": "Ad",
+    "sponsorName": "Lectura recomendada",
+    "disclosure": "Anuncio"
   },
   "gamesPage": {
     "tabs": {

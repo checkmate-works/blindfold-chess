@@ -2236,13 +2236,6 @@
           "created": "Publicou um rascunho de chunk",
           "published": "Publicou um chunk"
         }
-      },
-      "nativeAd": {
-        "avatarLabel": "Ad",
-        "sponsorName": "Leitura recomendada",
-        "disclosure": "Anúncio",
-        "title": "Domine o Ruy Lopez",
-        "description": "Uma análise mais profunda de uma das aberturas mais antigas e respeitadas do xadrez."
       }
     },
     "vsAi": {
@@ -2266,6 +2259,11 @@
         "description": "Tópicos como aberturas e novos quebra-cabeças aparecem na linha do tempo. Mudanças no topo do ranking também são exibidas, mas entradas desse tipo são mantidas por um mês — as mais antigas são removidas."
       }
     }
+  },
+  "nativeAd": {
+    "avatarLabel": "Ad",
+    "sponsorName": "Leitura recomendada",
+    "disclosure": "Anúncio"
   },
   "gamesPage": {
     "tabs": {

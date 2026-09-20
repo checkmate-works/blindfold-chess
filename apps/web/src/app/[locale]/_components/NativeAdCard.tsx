@@ -51,13 +51,15 @@ type Props = {
  * `aria-hidden` hides the background link from assistive tech, not from
  * crawlers.
  *
- * i18n note: the ad-chrome strings still live under the `home.feed.nativeAd`
- * namespace for historical reasons (this card originated in the feed). They are
- * surface-neutral ("Ad" / sponsor / disclosure); a future rename to a neutral
- * namespace is a safe isolated follow-up (only this file references it).
+ * The ad-chrome strings ("Ad" / sponsor / disclosure) have a namespace of
+ * their own rather than the `home.feed.nativeAd` corner they started in. A
+ * scoped client dictionary is per subtree and replaces its parent wholesale
+ * (see `INTL_SCOPES`), so every subtree that shows an ad had to ship the
+ * entire `home` namespace to read three words — which is what a static
+ * informational subtree like the glossary would otherwise pay for one card.
  */
 export function NativeAdCard({ creative, locale, variant = 'feed', className }: Props) {
-  const t = useTranslations('home.feed.nativeAd');
+  const t = useTranslations('nativeAd');
   const { preferences } = useGamePreferences();
 
   return (
