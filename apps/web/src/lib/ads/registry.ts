@@ -58,6 +58,7 @@ type AdSlotConfig = { kind: AdKind };
 export const AD_SLOTS = {
   'feed-native-ad': { kind: 'native_card' },
   'topic-catalog-native-ad': { kind: 'native_card' },
+  'topic-detail-native-ad': { kind: 'native_card' },
   'puzzle-list-native-ad': { kind: 'native_card' },
   'position-memory-list-native-ad': { kind: 'native_card' },
 } as const satisfies Record<string, AdSlotConfig>;
@@ -86,3 +87,13 @@ export const FEED_NATIVE_AD_SLOT = 'feed-native-ad' satisfies AdSlot;
  * reader from the one scrolling the timeline.
  */
 export const TOPIC_CATALOG_NATIVE_AD_SLOT = 'topic-catalog-native-ad' satisfies AdSlot;
+
+/**
+ * The pool the two topic discussion threads — an opening's page and a
+ * square's — draw their native card from. Split from the catalogs' pool
+ * because the reader is at a different point: the catalog reader is still
+ * choosing what to read, while this one has already picked a subject and is
+ * reading other people's posts about it, which is the moment a creative
+ * written to be read rather than clicked past has to earn.
+ */
+export const TOPIC_DETAIL_NATIVE_AD_SLOT = 'topic-detail-native-ad' satisfies AdSlot;

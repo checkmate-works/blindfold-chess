@@ -8,6 +8,8 @@ import { BoardFrame, BoardSkeleton } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
+import { resolveNativeAds } from '@/lib/ads/ad';
+import { TOPIC_DETAIL_NATIVE_AD_SLOT } from '@/lib/ads/registry';
 import { getOptionalUser } from '@/lib/auth';
 import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 import { getPaginationParams } from '@/lib/pagination';
@@ -26,6 +28,7 @@ import { OpeningCard } from '@/app/[locale]/(public)/topics/openings/_components
 import { getOpeningDisplayName } from '@/app/[locale]/(public)/topics/openings/_lib/get-opening-display-name';
 import { getOpeningsByFirstMoveSquare } from '@/app/[locale]/(public)/topics/openings/_lib/queries';
 import { PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { NativeAdCard } from '@/app/[locale]/_components/NativeAdCard';
 import { Skeleton } from '@/app/[locale]/_components/Skeleton';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -100,9 +103,16 @@ async function SquarePostsContent({ params, searchParams }: Props) {
   // call the server-only `getAttachmentsForPosts` itself. Posts with no
   // attachment row drop out of the map.
   const postIds = posts.map((p) => p.id);
-  const attachments = postIds.length > 0 ? await getAttachmentsForPosts(postIds) : new Map();
-  const tVideo = await getTranslations({ locale, namespace: 'postVideoAttachmentRender' });
+  const [attachments, tVideo, { creatives: nativeAdCreatives }] = await Promise.all([
+    postIds.length > 0 ? getAttachmentsForPosts(postIds) : new Map(),
+    getTranslations({ locale, namespace: 'postVideoAttachmentRender' }),
+    resolveNativeAds(TOPIC_DETAIL_NATIVE_AD_SLOT, user?.id ?? null, locale),
+  ]);
   const fallbackVideoTitle = tVideo('fallbackTitle');
+  // Server-gated: an ad-free reader gets an empty pool and therefore no node
+  // at all. The `.ad-slot-wrapper` CSS hide that `NativeAdCard` owns is the
+  // second layer, for the first paint.
+  const nativeAd = nativeAdCreatives[0] ?? null;
 
   const MAX_OPENING_CARDS = 3;
   const visibleOpenings = openingsForSquare.slice(0, MAX_OPENING_CARDS);
@@ -176,6 +186,11 @@ async function SquarePostsContent({ params, searchParams }: Props) {
       topicHeader={topicHeader}
       communitySection={communitySection}
       hasPosts={posts.length > 0}
+      nativeAd={
+        nativeAd && (
+          <NativeAdCard key="native-ad" creative={nativeAd} locale={locale} variant="card" />
+        )
+      }
       postCards={posts.map((post) => {
         const att = attachments.get(post.id);
         return (
