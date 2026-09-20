@@ -58,6 +58,11 @@ export const GLOBAL_CLIENT_NAMESPACES = [
   'error',
   'forgotPassword',
   'interview',
+  // Three words of ad chrome. Here rather than in a scope of its own for
+  // the glossary, the one ad-bearing subtree with no scoped dictionary:
+  // giving it one would mean re-listing everything else it reads to save
+  // 0.2 KB sitewide.
+  'nativeAd',
   'openingSearch',
   'pricing',
   'redirect',
@@ -89,6 +94,7 @@ export const INTL_SCOPES = {
       'home',
       'leaderboard',
       'moderation',
+      'nativeAd',
       'navigation',
       'newGame',
       'pgnDiagnosis',
@@ -115,6 +121,7 @@ export const INTL_SCOPES = {
       'home',
       'leaderboard',
       'moderation',
+      'nativeAd',
       'pgnDiagnosis',
       'play',
       'postFenAttachment',
@@ -207,6 +214,7 @@ export const INTL_SCOPES = {
       'authPrompt',
       'home',
       'leaderboard',
+      'nativeAd',
       'sharedGames',
       'topics',
       'unsavedChanges',
@@ -223,6 +231,7 @@ export const INTL_SCOPES = {
       'authPrompt',
       'home',
       'leaderboard',
+      'nativeAd',
       'publicProfile',
       'sharedGames',
       'topics',

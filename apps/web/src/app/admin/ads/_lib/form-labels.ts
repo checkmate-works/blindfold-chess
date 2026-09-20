@@ -19,6 +19,8 @@ export type AdCreativeFormLabels = {
   thumbnailImageRemove: string;
   thumbnailImageHintCreate: string;
   thumbnailAlt: string;
+  icon: string;
+  iconHint: string;
   preview: string;
   previewCaption: string;
   title: string;
@@ -52,6 +54,8 @@ export function buildAdCreativeFormLabels(t: (key: string) => string): AdCreativ
     thumbnailImageRemove: t('thumbnailImageRemove'),
     thumbnailImageHintCreate: t('thumbnailImageHintCreate'),
     thumbnailAlt: t('thumbnailAlt'),
+    icon: t('tileIcon'),
+    iconHint: t('tileIconHint'),
     preview: t('preview'),
     previewCaption: t('previewCaption'),
     title: t('cardTitle'),

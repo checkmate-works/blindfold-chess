@@ -5,6 +5,8 @@ import { Fragment, type ReactNode, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 
+import { withNativeAdCard } from '@/lib/ads/in-list-placement';
+
 import { PracticeLevelDots } from '@/app/[locale]/(public)/practice/_components/PracticeLevelDots';
 import {
   PRACTICE_LEVELS,
@@ -34,6 +36,17 @@ type Props = {
   readonly filterLabel: string;
   /** Heading for the list itself. Not shown — it only fills the heading level. */
   readonly listHeading: string;
+  /**
+   * The grid's native ad tile, or nothing.
+   *
+   * It sits among the filtered cards rather than beside the grid, and it
+   * carries no `level` of its own: an ad belongs to no difficulty band, and
+   * giving it one would make it disappear under four of the five filters and
+   * claim a difficulty nobody assigned to it. `withNativeAdCard` places it
+   * relative to whatever is visible, so narrowing the grid to two cards
+   * leaves the tile at the end of those two rather than off the page.
+   */
+  readonly nativeAd?: ReactNode;
 };
 
 type ListProps = Props & {
@@ -48,6 +61,7 @@ function FilteredList({
   allLabel,
   filterLabel,
   listHeading,
+  nativeAd,
   selected,
 }: ListProps) {
   const visible = selected ? items.filter((item) => item.level === selected) : items;
@@ -114,9 +128,10 @@ function FilteredList({
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        {visible.map((item) => (
-          <Fragment key={item.key}>{item.card}</Fragment>
-        ))}
+        {withNativeAdCard(
+          visible.map((item) => <Fragment key={item.key}>{item.card}</Fragment>),
+          nativeAd ?? null
+        )}
       </div>
     </div>
   );

@@ -7,6 +7,8 @@ import { notFound } from 'next/navigation';
 import { BoardFrame } from '@/app/_components';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
+import { resolveNativeAds } from '@/lib/ads/ad';
+import { TOPIC_DETAIL_NATIVE_AD_SLOT } from '@/lib/ads/registry';
 import { getOptionalUser } from '@/lib/auth';
 import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 import { paginateItems } from '@/lib/pagination';
@@ -25,6 +27,7 @@ import {
   validateSort,
 } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import { Divider, LinkTabs, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { NativeAdCard } from '@/app/[locale]/_components/NativeAdCard';
 import { Skeleton } from '@/app/[locale]/_components/Skeleton';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -137,11 +140,16 @@ async function OpeningDetailContent({ params, searchParams }: Props) {
   // is server-only. The OpeningPostCard composes this with the
   // optional rating display in its `extraContent` slot.
   const postIds = posts.map((p) => p.id);
-  const [attachments, tVideo] = await Promise.all([
+  const [attachments, tVideo, { creatives: nativeAdCreatives }] = await Promise.all([
     postIds.length > 0 ? getAttachmentsForPosts(postIds) : new Map(),
     getTranslations({ locale, namespace: 'postVideoAttachmentRender' }),
+    resolveNativeAds(TOPIC_DETAIL_NATIVE_AD_SLOT, user?.id ?? null, locale),
   ]);
   const fallbackVideoTitle = tVideo('fallbackTitle');
+  // Server-gated: an ad-free reader gets an empty pool and therefore no node
+  // at all. The `.ad-slot-wrapper` CSS hide that `NativeAdCard` owns is the
+  // second layer, for the first paint.
+  const nativeAd = nativeAdCreatives[0] ?? null;
 
   const buildHref = (p: number) =>
     buildPaginationHref(locale, `/topics/openings/${slug}`, p, sortBy);
@@ -240,6 +248,11 @@ async function OpeningDetailContent({ params, searchParams }: Props) {
       }
       communitySection={isRepertoiresTab ? repertoiresSection : communitySection}
       hasPosts={posts.length > 0}
+      nativeAd={
+        nativeAd && (
+          <NativeAdCard key="native-ad" creative={nativeAd} locale={locale} variant="card" />
+        )
+      }
       postCards={posts.map((post) => {
         const att = attachments.get(post.id);
         return (

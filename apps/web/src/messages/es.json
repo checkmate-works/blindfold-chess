@@ -2236,13 +2236,6 @@
           "created": "Publicó un borrador de chunk",
           "published": "Publicó un chunk"
         }
-      },
-      "nativeAd": {
-        "avatarLabel": "Ad",
-        "sponsorName": "Lectura recomendada",
-        "disclosure": "Anuncio",
-        "title": "Domina la Ruy López",
-        "description": "Un vistazo más de cerca a una de las aperturas más antiguas y respetadas del ajedrez."
       }
     },
     "vsAi": {
@@ -2266,6 +2259,11 @@
         "description": "En la cronología aparecen temas como aperturas y nuevos puzles. También se muestran los cambios en lo más alto de la clasificación, pero las entradas de este tipo se conservan un mes — las más antiguas se eliminan."
       }
     }
+  },
+  "nativeAd": {
+    "avatarLabel": "Ad",
+    "sponsorName": "Lectura recomendada",
+    "disclosure": "Anuncio"
   },
   "gamesPage": {
     "tabs": {
@@ -4818,6 +4816,8 @@
       "thumbnailImageUploading": "Subiendo...",
       "thumbnailImageHintCreate": "Guarda primero y luego sube una imagen de miniatura en la pantalla de edición.",
       "thumbnailAlt": "Texto alternativo de la miniatura",
+      "tileIcon": "Emoji del mosaico",
+      "tileIconHint": "Un emoji, mostrado antes del título. Todos los mosaicos de la cuadrícula de práctica llevan uno, así que un mosaico sin él es lo único de la página que no se parece al resto.",
       "preview": "Vista previa",
       "previewCaption": "La vista previa muestra el texto en inglés. La etiqueta “Anuncio” y el nombre del patrocinador se localizan para cada visitante al renderizar.",
       "thumbnailImageOverride": "Imagen de reemplazo (opcional)",

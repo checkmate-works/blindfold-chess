@@ -2236,13 +2236,6 @@
           "created": "Posted a chunk draft",
           "published": "Published a chunk"
         }
-      },
-      "nativeAd": {
-        "avatarLabel": "Ad",
-        "sponsorName": "Recommended Reading",
-        "disclosure": "Ad",
-        "title": "Master the Ruy Lopez",
-        "description": "A closer look at one of chess's oldest and most respected openings."
       }
     },
     "vsAi": {
@@ -2266,6 +2259,11 @@
         "description": "Topics like openings and new puzzles show up in the feed. Leaderboard top-rank changes appear too, but feed entries of this kind are kept for one month — older ones are removed."
       }
     }
+  },
+  "nativeAd": {
+    "avatarLabel": "Ad",
+    "sponsorName": "Recommended Reading",
+    "disclosure": "Ad"
   },
   "gamesPage": {
     "tabs": {
@@ -4818,6 +4816,8 @@
       "thumbnailImageUploading": "Uploading...",
       "thumbnailImageHintCreate": "Save first, then upload a thumbnail image on the edit screen.",
       "thumbnailAlt": "Thumbnail alt text",
+      "tileIcon": "Tile emoji",
+      "tileIconHint": "One emoji, shown before the title. Every tile in the practice grid carries one, so a tile without it is the only thing on the page that looks unlike the rest.",
       "preview": "Preview",
       "previewCaption": "The English copy is previewed. The “Ad” label and sponsor name are localized per viewer at render time.",
       "thumbnailImageOverride": "Override image (optional)",

@@ -2236,13 +2236,6 @@
           "created": "チャンクの下書きを投稿しました",
           "published": "チャンクを公開しました"
         }
-      },
-      "nativeAd": {
-        "avatarLabel": "広告",
-        "sponsorName": "おすすめの書籍",
-        "disclosure": "広告",
-        "title": "ルイ・ロペスを極める",
-        "description": "チェス最古かつ最も評価の高いオープニングの一つを深掘りする一冊。"
       }
     },
     "vsAi": {
@@ -2266,6 +2259,11 @@
         "description": "オープニングなどのトピックや新しいパズルの問題がフィードとして表示されます。リーダーボード上位の入れ替わりも表示されますが、この種のフィードの表示期間は1ヶ月で、それ以前のものは消えます。"
       }
     }
+  },
+  "nativeAd": {
+    "avatarLabel": "広告",
+    "sponsorName": "おすすめの書籍",
+    "disclosure": "広告"
   },
   "gamesPage": {
     "tabs": {
@@ -4818,6 +4816,8 @@
       "thumbnailImageUploading": "アップロード中...",
       "thumbnailImageHintCreate": "先に保存してから、編集画面でサムネイル画像をアップロードしてください。",
       "thumbnailAlt": "サムネイルの代替テキスト",
+      "tileIcon": "タイルの絵文字",
+      "tileIconHint": "タイトルの前に表示する絵文字を1つ。練習グリッドのタイルはすべて絵文字を持つので、これがないとそのタイルだけが周囲から浮きます。",
       "preview": "プレビュー",
       "previewCaption": "プレビューは英語のコピーです。「広告」ラベルとスポンサー名は描画時に閲覧者ごとにローカライズされます。",
       "thumbnailImageOverride": "上書き画像（任意）",

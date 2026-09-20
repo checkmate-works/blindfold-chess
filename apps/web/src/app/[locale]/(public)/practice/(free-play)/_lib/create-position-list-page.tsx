@@ -1,5 +1,3 @@
-import { Fragment } from 'react';
-
 import { getTranslations } from 'next-intl/server';
 
 import { Button } from '@/app/_components';
@@ -8,6 +6,7 @@ import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/ser
 import { FaPlus } from 'react-icons/fa';
 
 import { resolveNativeAds } from '@/lib/ads/ad';
+import { withNativeAdCard } from '@/lib/ads/in-list-placement';
 import type { AdSlot as AdSlotId } from '@/lib/ads/registry';
 import { getOptionalUser } from '@/lib/auth';
 import { EMPTY_LIKE_META } from '@/lib/db/like-queries';
@@ -64,9 +63,6 @@ export interface PositionListPageConfig {
    */
   nativeAdSlot?: AdSlotId;
 }
-
-/** 0-based list index the interleaved native ad is inserted after. */
-const NATIVE_AD_AFTER_INDEX = 5;
 
 /**
  * Build the `generateMetadata` + `Page` pair for a position-list page.
@@ -205,9 +201,10 @@ export function createPositionListPage(config: PositionListPageConfig) {
           <p className="text-muted-foreground text-center py-8">{t('list.empty')}</p>
         ) : (
           <div className="space-y-3">
-            {rows.map(({ position, profile }, index) => (
-              <Fragment key={position.id}>
+            {withNativeAdCard(
+              rows.map(({ position, profile }) => (
                 <PositionListCard
+                  key={position.id}
                   position={position}
                   profile={profile}
                   likeMeta={likeMetaMap.get(position.id) ?? EMPTY_LIKE_META}
@@ -219,11 +216,11 @@ export function createPositionListPage(config: PositionListPageConfig) {
                   authorFallbackLabel={authorFallbackLabel}
                   locale={locale}
                 />
-                {nativeAd && index === Math.min(NATIVE_AD_AFTER_INDEX, rows.length - 1) && (
-                  <NativeAdCard creative={nativeAd} locale={locale} variant="card" />
-                )}
-              </Fragment>
-            ))}
+              )),
+              nativeAd && (
+                <NativeAdCard key="native-ad" creative={nativeAd} locale={locale} variant="card" />
+              )
+            )}
           </div>
         )}
 

@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-import type { NativeCardPayload } from '@/lib/ads/payload';
+import type { AdPayload } from '@/lib/ads/payload';
 import type { AdSlot } from '@/lib/ads/registry';
 
 import { createAdCreative } from '../_actions/createAdCreative';
@@ -13,8 +13,8 @@ import type { CommonCreativeValues } from './use-common-creative-state';
 
 /**
  * Shared create/update + redirect for the per-kind creative forms. On create,
- * routes to the new creative's edit page (so a native card's avatar can be
- * uploaded next); on update, back to the slot's creative list.
+ * routes to the new creative's edit page (so an image can be uploaded next —
+ * the upload needs a creative id to file the object under); on update, back to the slot's creative list.
  */
 export function useCreativeSubmit(slot: AdSlot) {
   const router = useRouter();
@@ -25,7 +25,7 @@ export function useCreativeSubmit(slot: AdSlot) {
     mode: 'create' | 'edit',
     creativeId: string | undefined,
     common: CommonCreativeValues,
-    payload: NativeCardPayload
+    payload: AdPayload
   ) => {
     setError(null);
     startTransition(async () => {

@@ -2236,13 +2236,6 @@
           "created": "Publicou um rascunho de chunk",
           "published": "Publicou um chunk"
         }
-      },
-      "nativeAd": {
-        "avatarLabel": "Ad",
-        "sponsorName": "Leitura recomendada",
-        "disclosure": "Anúncio",
-        "title": "Domine o Ruy Lopez",
-        "description": "Uma análise mais profunda de uma das aberturas mais antigas e respeitadas do xadrez."
       }
     },
     "vsAi": {
@@ -2266,6 +2259,11 @@
         "description": "Tópicos como aberturas e novos quebra-cabeças aparecem na linha do tempo. Mudanças no topo do ranking também são exibidas, mas entradas desse tipo são mantidas por um mês — as mais antigas são removidas."
       }
     }
+  },
+  "nativeAd": {
+    "avatarLabel": "Ad",
+    "sponsorName": "Leitura recomendada",
+    "disclosure": "Anúncio"
   },
   "gamesPage": {
     "tabs": {
@@ -4818,6 +4816,8 @@
       "thumbnailImageUploading": "Enviando...",
       "thumbnailImageHintCreate": "Salve primeiro e depois envie uma imagem de miniatura na tela de edição.",
       "thumbnailAlt": "Texto alternativo da miniatura",
+      "tileIcon": "Emoji do bloco",
+      "tileIconHint": "Um emoji, exibido antes do título. Todos os blocos da grade de prática têm um, então um bloco sem ele é a única coisa na página que destoa do resto.",
       "preview": "Pré-visualização",
       "previewCaption": "A prévia mostra o texto em inglês. O rótulo “Anúncio” e o nome do patrocinador são localizados por visitante na renderização.",
       "thumbnailImageOverride": "Imagem de substituição (opcional)",

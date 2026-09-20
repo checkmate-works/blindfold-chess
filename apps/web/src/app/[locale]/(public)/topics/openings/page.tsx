@@ -5,6 +5,9 @@ import { getTranslations } from 'next-intl/server';
 
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
+import { resolveNativeAds } from '@/lib/ads/ad';
+import { withNativeAdCard } from '@/lib/ads/in-list-placement';
+import { TOPIC_CATALOG_NATIVE_AD_SLOT } from '@/lib/ads/registry';
 import { getOptionalUser } from '@/lib/auth';
 import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 import { buildPageHref, getPaginationParams } from '@/lib/pagination';
@@ -17,6 +20,7 @@ import { renderAttachment } from '@/app/[locale]/(public)/topics/_components/ren
 import { TOPIC_PAGE_SIZE } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import { isValidSquare } from '@/app/[locale]/(public)/topics/squares/_lib/squares';
 import { PageLayout, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { NativeAdCard } from '@/app/[locale]/_components/NativeAdCard';
 import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
 import { Skeleton } from '@/app/[locale]/_components/Skeleton';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
@@ -86,11 +90,17 @@ async function OpeningsContent({ params, searchParams }: Props) {
   // TopicPostCard is a client component and `getAttachmentsForPosts`
   // is server-only. Posts with no attachment row drop out of the map.
   const postIds = recentPosts.map((p) => p.id);
-  const [attachments, tVideo] = await Promise.all([
+  const [attachments, tVideo, { creatives: nativeAdCreatives }] = await Promise.all([
     postIds.length > 0 ? getAttachmentsForPosts(postIds) : new Map(),
     getTranslations({ locale, namespace: 'postVideoAttachmentRender' }),
+    resolveNativeAds(TOPIC_CATALOG_NATIVE_AD_SLOT, user?.id ?? null, locale),
   ]);
   const fallbackVideoTitle = tVideo('fallbackTitle');
+
+  // Server-gated: an ad-free reader gets an empty pool and therefore no node
+  // at all. The `.ad-slot-wrapper` CSS hide that `NativeAdCard` owns is the
+  // second layer, for the first paint.
+  const nativeAd = nativeAdCreatives[0] ?? null;
 
   const buildHref = buildPageHref(`/${locale}/topics/openings`, {
     first_move: firstMoveSquare,
@@ -112,21 +122,26 @@ async function OpeningsContent({ params, searchParams }: Props) {
         <>
           <SectionTitle>{t('openings.recentPosts')}</SectionTitle>
           <div className="space-y-3">
-            {recentPosts.map((post) => {
-              const tTopic = post.topicType === 'opening' ? tOpenings : tSquares;
-              const att = attachments.get(post.id);
-              return (
-                <TopicPostCard
-                  key={post.id}
-                  post={post}
-                  locale={locale}
-                  showMoreLabel={t('showMore')}
-                  justNowLabel={tTopic('justNow')}
-                  variant="card"
-                  attachment={att ? renderAttachment(att, fallbackVideoTitle) : undefined}
-                />
-              );
-            })}
+            {withNativeAdCard(
+              recentPosts.map((post) => {
+                const tTopic = post.topicType === 'opening' ? tOpenings : tSquares;
+                const att = attachments.get(post.id);
+                return (
+                  <TopicPostCard
+                    key={post.id}
+                    post={post}
+                    locale={locale}
+                    showMoreLabel={t('showMore')}
+                    justNowLabel={tTopic('justNow')}
+                    variant="card"
+                    attachment={att ? renderAttachment(att, fallbackVideoTitle) : undefined}
+                  />
+                );
+              }),
+              nativeAd && (
+                <NativeAdCard key="native-ad" creative={nativeAd} locale={locale} variant="card" />
+              )
+            )}
           </div>
           <PaginationNav
             currentPage={currentPage}

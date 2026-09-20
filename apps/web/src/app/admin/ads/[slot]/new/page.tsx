@@ -3,10 +3,11 @@ import { notFound } from 'next/navigation';
 
 import { AdminPageLayout } from '@/app/admin/_components/AdminPageLayout';
 import { NativeCardCreativeForm } from '@/app/admin/ads/_components/NativeCardCreativeForm';
+import { NativeTileCreativeForm } from '@/app/admin/ads/_components/NativeTileCreativeForm';
 import { buildAdCreativeFormLabels } from '@/app/admin/ads/_lib/form-labels';
 import type { CommonCreativeValues } from '@/app/admin/ads/_lib/use-common-creative-state';
 
-import { isAdSlot } from '@/lib/ads/registry';
+import { isAdSlot, kindForSlot } from '@/lib/ads/registry';
 
 type Props = { params: Promise<{ slot: string }> };
 
@@ -21,6 +22,7 @@ export default async function NewCreativePage({ params }: Props) {
 
   const t = await getTranslations({ locale: 'en', namespace: 'Admin.adsManagement' });
   const labels = buildAdCreativeFormLabels(t);
+  const kind = kindForSlot(slot);
 
   return (
     <AdminPageLayout
@@ -30,12 +32,24 @@ export default async function NewCreativePage({ params }: Props) {
         { label: t('createTitle') },
       ]}
     >
-      <NativeCardCreativeForm
-        mode="create"
-        slot={slot}
-        labels={labels}
-        initial={{ ...EMPTY_COMMON, payload: {} }}
-      />
+      {/* The slot decides the shape, so it decides the form. A slot accepts
+          exactly one kind and a creative cannot be moved between slots, so
+          there is never a form to switch mid-edit. */}
+      {kind === 'native_tile' ? (
+        <NativeTileCreativeForm
+          mode="create"
+          slot={slot}
+          labels={labels}
+          initial={{ ...EMPTY_COMMON, payload: {} }}
+        />
+      ) : (
+        <NativeCardCreativeForm
+          mode="create"
+          slot={slot}
+          labels={labels}
+          initial={{ ...EMPTY_COMMON, payload: {} }}
+        />
+      )}
     </AdminPageLayout>
   );
 }

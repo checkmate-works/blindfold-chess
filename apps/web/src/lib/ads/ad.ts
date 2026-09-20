@@ -10,7 +10,12 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { hasAdFreeEntitlement } from './ad-free-entitlement';
 import type { NativeCardThumbnail } from './payload';
-import { isNativeCardPayload, resolveNativeCopy, resolveNativeThumbnail } from './payload';
+import {
+  isNativeCardPayload,
+  isNativeTilePayload,
+  resolveNativeCopy,
+  resolveNativeThumbnail,
+} from './payload';
 import type { AdKind, AdSlot } from './registry';
 import { withCreativeSubId } from './subid';
 
@@ -67,9 +72,20 @@ async function queryActiveCreatives(slot: string) {
 /**
  * A slot's active, priority-ordered creatives. `payload` is `unknown`; render
  * sites narrow it with the kind guards in `@/lib/ads/payload`. Cached per slot
- * (tag + time-bounded) so ad-bearing pages stay static/ISR: the pool is baked
- * at build/revalidate and refreshed by `revalidateTag(AD_CREATIVES_CACHE_TAG)`
- * on admin writes; the per-user hide stays on the cookie/CSS layer.
+ * so ad-bearing pages stay static/ISR: the pool is baked at build/revalidate
+ * and refreshed by `revalidateTag(AD_CREATIVES_CACHE_TAG)` on admin writes;
+ * the per-user hide stays on the cookie/CSS layer.
+ *
+ * The tag is what actually keeps the pool fresh — every mutation path goes
+ * through `revalidateAdCreatives`, so an edit is visible within the minute
+ * whatever this interval says. The interval is only the backstop, and it is
+ * a day rather than the five minutes it used to be because a route's
+ * effective `revalidate` is the minimum over every data-cache entry its
+ * render reads: a five-minute pool silently pulled each static surface that
+ * shows an ad down to a five-minute ISR interval, whatever that page had
+ * chosen for itself. Both static ad surfaces have longer budgets on
+ * purpose — the glossary a week, `/practice` an hour for the daily puzzle —
+ * and ISR writes are metered.
  */
 export type ActiveCreative = {
   id: string;
@@ -96,7 +112,7 @@ const getActiveCreativesCached = unstable_cache(
     }
   },
   ['active-ad-creatives'],
-  { tags: [AD_CREATIVES_CACHE_TAG], revalidate: 300 }
+  { tags: [AD_CREATIVES_CACHE_TAG], revalidate: 60 * 60 * 24 }
 );
 
 export function getActiveCreatives(slot: AdSlot): Promise<ActiveCreative[]> {
@@ -127,6 +143,46 @@ export async function getNativeAdCreatives(slot: AdSlot, locale: Locale): Promis
         href: withCreativeSubId(c.href, c.id),
         avatarImagePath: c.payload.avatarImagePath,
         avatarAlt: c.payload.avatarAlt,
+        title,
+        description,
+        thumbnail: resolveNativeThumbnail(c.payload),
+      },
+    ];
+  });
+}
+
+/**
+ * Serializable view of a native-tile creative — the card view plus the emoji
+ * and minus the author row, which is the difference between the two shapes.
+ */
+export type NativeTileView = {
+  id: string;
+  href: string;
+  icon: string;
+  title: string;
+  description: string;
+  thumbnail: NativeCardThumbnail;
+};
+
+/**
+ * Native-tile view for a given slot. The tile twin of
+ * {@link getNativeAdCreatives}: same cached pool, same sub-ID tagging, same
+ * read-time copy resolution — only the guard and the resulting shape differ,
+ * because the slot's kind decides which payload its creatives hold.
+ */
+export async function getNativeTileCreatives(
+  slot: AdSlot,
+  locale: Locale
+): Promise<NativeTileView[]> {
+  const creatives = await getActiveCreatives(slot);
+  return creatives.flatMap((c) => {
+    if (!isNativeTilePayload(c.payload)) return [];
+    const { title, description } = resolveNativeCopy(c.payload, locale);
+    return [
+      {
+        id: c.id,
+        href: withCreativeSubId(c.href, c.id),
+        icon: c.payload.icon,
         title,
         description,
         thumbnail: resolveNativeThumbnail(c.payload),

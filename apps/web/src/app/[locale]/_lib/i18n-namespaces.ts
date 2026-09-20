@@ -112,6 +112,10 @@ export const NAMESPACE_CLASSIFICATION = {
   forgotPassword: 'client',
   guides: 'client',
   home: 'client',
+  // Ad-card chrome. Its own namespace rather than a corner of `home`: every
+  // subtree that shows a native ad has to ship it, and the whole home
+  // dictionary is a steep price for three words of disclosure.
+  nativeAd: 'client',
   interview: 'client',
   largeDownloadConsent: 'client',
   leaderboard: 'client',

@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { getAllAdCreatives } from '@/lib/ads/ad';
-import { isNativeCardPayload, resolveNativeCopy, resolveNativeThumbnail } from '@/lib/ads/payload';
+import { resolveAdSummary } from '@/lib/ads/payload';
 import { isAdSlot, kindForSlot } from '@/lib/ads/registry';
 
 import { AdminBadge } from '../../_components/AdminBadge';
@@ -23,18 +23,16 @@ export default async function AdminSlotCreativesPage({ params }: Props) {
 
   const rows: SlotCreativeRow[] = creatives.map((c) => {
     const base = { id: c.id, isActive: c.isActive };
-    if (isNativeCardPayload(c.payload)) {
-      const thumb = resolveNativeThumbnail(c.payload);
-      return {
-        ...base,
-        // The admin surface has no locale of its own; `en` is the copy every
-        // creative is required to carry.
-        summary: resolveNativeCopy(c.payload, 'en').title,
-        imageUrl: thumb.imagePath ?? null,
-        boardFen: thumb.fen,
-      };
-    }
-    return { ...base, summary: '', imageUrl: null, boardFen: null };
+    // The admin surface has no locale of its own; `en` is the copy every
+    // creative is required to carry.
+    const summary = resolveAdSummary(kindForSlot(slot), c.payload, 'en');
+    if (!summary) return { ...base, summary: '', imageUrl: null, boardFen: null };
+    return {
+      ...base,
+      summary: summary.title,
+      imageUrl: summary.thumbnail.imagePath ?? null,
+      boardFen: summary.thumbnail.fen,
+    };
   });
 
   return (
