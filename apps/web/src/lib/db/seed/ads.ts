@@ -145,6 +145,20 @@ const PLACEHOLDER_CREATIVES = {
       },
     },
   },
+  'puzzle-detail-native-ad': {
+    id: '6d11adb1-b5b0-487e-a609-d07788e917f4',
+    copy: {
+      title: {
+        en: '[Placeholder] Other-puzzles thumb',
+        ja: '【プレースホルダ】他のパズルのサムネイル',
+      },
+      // Stored because the `en` row must carry both fields, and never drawn.
+      description: {
+        en: 'Not rendered on this surface. Replace the link, the title and the thumbnail image.',
+        ja: 'この面では描画されません。リンク・タイトル・サムネイル画像を差し替えてください。',
+      },
+    },
+  },
   'practice-grid-native-ad': {
     id: '5b3f64e0-495c-47eb-8514-23e9c7e6de59',
     // The one `native_tile` slot, and the emoji is not optional there: a tile

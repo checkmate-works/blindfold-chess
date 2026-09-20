@@ -143,6 +143,10 @@ export const AD_SLOTS = {
     // can make, so the route is shown without a link.
     surfaces: [{ route: '/practice/puzzle/[id]/result' }],
   },
+  'puzzle-detail-native-ad': {
+    kind: 'native_thumb',
+    surfaces: [{ route: '/practice/puzzle/[id]' }],
+  },
   'practice-grid-native-ad': {
     kind: 'native_tile',
     surfaces: [{ route: '/practice', href: '/practice' }],
@@ -250,6 +254,25 @@ export const GLOSSARY_TERM_LIST_NATIVE_AD_SLOT = 'glossary-term-list-native-ad' 
  * to Try Again.
  */
 export const PUZZLE_RESULT_NATIVE_AD_SLOT = 'puzzle-result-native-ad' satisfies AdSlot;
+
+/**
+ * The pool a puzzle's own page draws its native thumb from, in the "other
+ * puzzles" grid above the comments.
+ *
+ * Split from the result screen's pool even though the two grids are the same
+ * component and the same shape, because the reader is at opposite ends of the
+ * same task: here they are about to solve and are reading the position, there
+ * they have just finished one. It is the split between
+ * `topic-catalog-native-ad` and `topic-detail-native-ad` again — and, as
+ * there, attribution is per creative (`withCreativeSubId`), so two surfaces
+ * sharing a pool are one line in the network's report and cannot be told
+ * apart afterwards.
+ *
+ * The section carries a different heading for the same reason it carries a
+ * different pool: "Next puzzles" is what you offer someone who has finished,
+ * and this reader has not started.
+ */
+export const PUZZLE_DETAIL_NATIVE_AD_SLOT = 'puzzle-detail-native-ad' satisfies AdSlot;
 
 /**
  * The pool the `/practice` module grid draws its native tile from — the one

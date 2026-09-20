@@ -7,7 +7,10 @@ import { Link } from '@/i18n/routing';
 import { FaBrain, FaPlay, FaPlusCircle } from 'react-icons/fa';
 import { FiEdit2, FiGitBranch } from 'react-icons/fi';
 
+import { getNativeThumbCreatives } from '@/lib/ads/ad';
+import { PUZZLE_DETAIL_NATIVE_AD_SLOT } from '@/lib/ads/registry';
 import { getOptionalUser } from '@/lib/auth';
+import { loadNextPuzzles } from '@/lib/positions/next-puzzles';
 import { resolveAuthorName } from '@/lib/users/display-name';
 
 import { PositionCommentSection } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionCommentSection';
@@ -29,6 +32,7 @@ import { PositionPeekBoard } from '../../_components/PositionPeekBoard';
 import { PositionEditRequestSuggestLink } from '../../_components/edit-request/PositionEditRequestLinks';
 import { loadPositionDetailPage } from '../../_lib/load-position-detail-page';
 import { DeletePuzzleButton } from '../_components/DeletePuzzleButton';
+import { NextPuzzlesSection } from '../_components/NextPuzzlesSection';
 import { loadPuzzleWithSolutions } from '../_lib/load-puzzle';
 import { loadMorePuzzleComments } from './_actions/loadMorePuzzleComments';
 import { NewPostForm } from './_components/NewPostForm';
@@ -105,6 +109,16 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
     locale,
     sortBy,
   });
+
+  // The same two-tier ranking the result screen uses (this author first, then
+  // the newest), and the same grid — only the heading and the ad pool differ,
+  // because this reader has not solved anything yet. The thumb pool is read
+  // viewer-independently, like the result screen's: the per-reader hide is
+  // the `bfc_ads_hidden` cookie and the CSS rule `NativeAdThumb` owns.
+  const [otherPuzzles, nativeAdCreatives] = await Promise.all([
+    loadNextPuzzles(position),
+    getNativeThumbCreatives(PUZZLE_DETAIL_NATIVE_AD_SLOT, locale),
+  ]);
 
   const forkedFromNote = (
     <ForkProvenanceNote
@@ -248,6 +262,30 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
         kind="puzzle"
         locale={locale}
         likeMeta={likeMeta}
+      />
+
+      {/* Above the comments, not below them: a reader who has scrolled past
+          the whole thread has already decided this is not the puzzle they
+          want, and the grid is how they leave for one that is. The heading
+          differs from the result screen's ("Next puzzles") because this
+          reader has not solved anything yet. */}
+      <NextPuzzlesSection
+        puzzles={otherPuzzles}
+        nativeAdCreatives={nativeAdCreatives}
+        locale={locale}
+        labels={{
+          sectionTitle: t('detail.otherPuzzles'),
+          whiteToMove: t('detail.whiteToMove'),
+          blackToMove: t('detail.blackToMove'),
+        }}
+        authorLink={
+          profile?.username
+            ? {
+                href: `/u/${profile.username}/problems/puzzles`,
+                label: t('detail.viewOtherPuzzles'),
+              }
+            : undefined
+        }
       />
 
       <PositionCommentSection

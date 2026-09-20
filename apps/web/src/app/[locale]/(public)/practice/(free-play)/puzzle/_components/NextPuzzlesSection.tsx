@@ -38,11 +38,17 @@ type Props = {
 };
 
 /**
- * "Next puzzle" grid on the result screen: up to four tappable board
- * thumbnails so a solver can go straight to another puzzle without the
- * detour through the list. Four tiles lay out as one row on desktop and two
- * rows of two on a phone, which keeps the section short enough that the
- * action buttons below stay within reach.
+ * Grid of up to four tappable board thumbnails, so a reader can go straight
+ * to another puzzle without the detour through the list. Four tiles lay out
+ * as one row on desktop and two rows of two on a phone, which keeps the
+ * section short enough that whatever follows it stays within reach.
+ *
+ * Two surfaces render it, and the caller supplies what differs. The result
+ * screen heads it "Next puzzles" for someone who has just solved one; a
+ * puzzle's own page heads it "Other puzzles", above the comments, for someone
+ * who has not started. They draw from different ad pools for that same reason
+ * (`PUZZLE_RESULT_NATIVE_AD_SLOT` / `PUZZLE_DETAIL_NATIVE_AD_SLOT`). The
+ * ranking behind both is one function, `loadNextPuzzles`.
  *
  * A native ad takes the first cell when there is one to show, and the grid
  * stays four cells wide — the fourth puzzle drops off rather than the section
