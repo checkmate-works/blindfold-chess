@@ -155,6 +155,14 @@ export const AD_SLOTS = {
     kind: 'native_thumb',
     surfaces: [{ route: '/practice/position-memory/[id]' }],
   },
+  'practice-result-native-ad': {
+    kind: 'native_tile',
+    // One entry for a slot that renders on every practice module's result
+    // screen. The route is listed once with a representative module, because
+    // the placement is the shared `PracticeComplete` layout rather than any
+    // one module's page.
+    surfaces: [{ route: '/practice/<module>/result', href: '/practice/square-colors/result' }],
+  },
   'practice-grid-native-ad': {
     kind: 'native_tile',
     surfaces: [{ route: '/practice', href: '/practice' }],
@@ -310,6 +318,32 @@ export const POSITION_MEMORY_RESULT_NATIVE_AD_SLOT =
 /** See {@link POSITION_MEMORY_RESULT_NATIVE_AD_SLOT}. */
 export const POSITION_MEMORY_DETAIL_NATIVE_AD_SLOT =
   'position-memory-detail-native-ad' satisfies AdSlot;
+
+/**
+ * The pool every practice module's result screen draws its native card from,
+ * rendered in the `link` variant of `native_tile` — the `CardLink` shape that
+ * screen already uses for "Related Learning".
+ *
+ * One slot for every module rather than one per module, which is the first
+ * time this registry has shared a pool across placements that are not the
+ * same machinery. The reader is the same at all of them: someone who has just
+ * finished a drill and is looking at their score. A square-colors solver and
+ * a route-planner solver are not, at that moment, two audiences.
+ *
+ * The cost is stated rather than hidden: attribution is per creative
+ * (`withCreativeSubId`), so a shared pool cannot be broken down per module in
+ * the network's report, and splitting later does not recover the history from
+ * before the split. That trade is worth taking only while no creative has run
+ * here — which is now. A module that turns out to deserve its own pitch takes
+ * its own slot then, and loses only the undifferentiated numbers it would
+ * have had anyway.
+ *
+ * It does NOT go in the "Related Learning" block. That heading is a promise
+ * about what follows, and only two modules pass a `relatedModule` at all, so
+ * on most screens the ad would be the only thing under a heading it does not
+ * belong to. It sits above that block, labelled by its own chrome.
+ */
+export const PRACTICE_RESULT_NATIVE_AD_SLOT = 'practice-result-native-ad' satisfies AdSlot;
 
 /**
  * The pool the `/practice` module grid draws its native tile from — the one

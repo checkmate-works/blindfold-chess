@@ -64,6 +64,14 @@ export type ResultClientProps = {
    * in the same slot. Only leaderboard result pages provide it.
    */
   recordSection?: ReactNode;
+  /**
+   * The screen's native ad card, rendered by the result page Server Component
+   * for the same reason `signUpBanner` is: the creative pool is a server read,
+   * and keeping it there leaves the query and its result out of this client
+   * bundle. Both result-page factories supply it, so every practice module
+   * gets the placement without a per-module change.
+   */
+  nativeAd?: ReactNode;
 };
 
 // ---------------------------------------------------------------------------
@@ -177,10 +185,7 @@ type ResultClientConfig = {
    * records to compare for members either.
    */
   showSignUpBanner?: boolean;
-  /**
-   * Additional PracticeComplete props (e.g. relatedModule, problemResults,
-   * beforeRelatedContent).
-   */
+  /** Additional PracticeComplete props (e.g. relatedModule, problemResults). */
   extraCompleteProps?: (ctx: ResultContext) => Record<string, unknown>;
 };
 
@@ -246,6 +251,7 @@ export function createPracticeResultClient(config: ResultClientConfig) {
     leaderboardPeriod,
     expInfo = null,
     signUpBanner,
+    nativeAd,
     recordSection,
   }: ResultClientProps) {
     const t = useTranslations(`practice.${i18nKey}`);
@@ -356,6 +362,7 @@ export function createPracticeResultClient(config: ResultClientConfig) {
             label: tPractice('doOtherPractice'),
           }}
           afterExp={authSlotContent}
+          nativeAd={nativeAd}
           {...extraProps}
         >
           {renderChildren ? renderChildren(ctx) : undefined}

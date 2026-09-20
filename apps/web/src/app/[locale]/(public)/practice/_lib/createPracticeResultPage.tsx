@@ -5,6 +5,8 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import type { ExpInfo } from '@blindfold-chess/features/exp';
 
+import { getNativeTileCreatives } from '@/lib/ads/ad';
+import { PRACTICE_RESULT_NATIVE_AD_SLOT } from '@/lib/ads/registry';
 import { getOptionalUser } from '@/lib/auth';
 import { getExpInfoBySource } from '@/lib/db/get-exp-info-by-source';
 import type { ScoreComparison } from '@/lib/db/score-comparison';
@@ -15,6 +17,7 @@ import type {
   LeaderboardPeriod,
   LeaderboardRow,
 } from '@/app/[locale]/(public)/leaderboard/_lib/types';
+import { NativeAdTile } from '@/app/[locale]/_components/NativeAdTile';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale, LocalePageProps, LocaleSearchPageProps } from '@/app/[locale]/_lib/types';
 
@@ -128,6 +131,23 @@ export function createPracticeResultMetadata(config: MetadataConfig) {
   };
 }
 
+/**
+ * The result screen's native ad card, or nothing.
+ *
+ * Read here rather than in either factory's body so both give every practice
+ * module the same placement from the same pool — a module that opts into a
+ * result page at all gets it, and there is no per-module wiring to forget.
+ *
+ * Viewer-independent, like the other surfaces that read a pool directly: the
+ * per-reader hide is the `bfc_ads_hidden` cookie and the CSS rule
+ * `NativeAdTile` owns. The `link` variant is the `CardLink` shape this screen
+ * already speaks in.
+ */
+async function resolvePracticeResultNativeAd(locale: Locale): Promise<ReactNode> {
+  const [creative] = await getNativeTileCreatives(PRACTICE_RESULT_NATIVE_AD_SLOT, locale);
+  return creative ? <NativeAdTile creative={creative} variant="link" /> : undefined;
+}
+
 // ---------------------------------------------------------------------------
 // Simple result page factory (no leaderboard)
 // ---------------------------------------------------------------------------
@@ -137,6 +157,8 @@ type SimpleResultClientProps = {
   expInfo?: ExpInfo | null;
   /** Server-decided guest banner; `undefined` for a signed-in viewer. */
   signUpBanner?: ReactNode;
+  /** The screen's native ad card; `undefined` when the slot's pool is empty. */
+  nativeAd?: ReactNode;
 };
 
 type SimpleResultPageOptions = {
@@ -169,7 +191,10 @@ export function createSimplePracticeResultPage(
     const searchParams = await props.searchParams;
     const grant = readGrantParam(searchParams);
     const user = await getOptionalUser();
-    const expInfo = user && grant ? await getExpInfoBySource(user.id, expSource, grant) : null;
+    const [expInfo, nativeAd] = await Promise.all([
+      user && grant ? getExpInfoBySource(user.id, expSource, grant) : null,
+      resolvePracticeResultNativeAd(locale),
+    ]);
     return (
       // Fallback mirrors the route `loading.tsx`. The outer `loading.tsx`
       // boundary resolves the instant this server `Page` returns (after the
@@ -182,6 +207,7 @@ export function createSimplePracticeResultPage(
         <ResultClient
           locale={locale}
           expInfo={expInfo}
+          nativeAd={nativeAd}
           signUpBanner={user ? undefined : <GuestSignUpBanner locale={locale} />}
         />
       </Suspense>
@@ -199,6 +225,8 @@ type LeaderboardResultClientProps = AuthSlot & {
   leaderboardDetailPath?: string;
   leaderboardPeriod?: LeaderboardPeriod;
   expInfo?: ExpInfo | null;
+  /** The screen's native ad card; `undefined` when the slot's pool is empty. */
+  nativeAd?: ReactNode;
 };
 
 type LeaderboardConfig = {
@@ -233,10 +261,11 @@ export function createLeaderboardPracticeResultPage(
     const grant = readGrantParam(searchParams);
 
     const user = await getOptionalUser();
-    const [leaderboardData, expInfo, comparison] = await Promise.all([
+    const [leaderboardData, expInfo, comparison, nativeAd] = await Promise.all([
       resolveLeaderboardWithFallback(leaderboard.module, key),
       user && grant ? getExpInfoBySource(user.id, 'challenge_result', grant) : null,
       user ? fetchComparisonOrEmpty(user.id, leaderboard.module, key, grant) : undefined,
+      resolvePracticeResultNativeAd(locale),
     ]);
 
     const authSlot: AuthSlot = user
@@ -260,6 +289,7 @@ export function createLeaderboardPracticeResultPage(
           leaderboardDetailPath={leaderboardData?.detailPath}
           leaderboardPeriod={leaderboardData?.period}
           expInfo={expInfo}
+          nativeAd={nativeAd}
           {...authSlot}
         />
       </Suspense>

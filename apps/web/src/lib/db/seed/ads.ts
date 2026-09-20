@@ -185,6 +185,22 @@ const PLACEHOLDER_CREATIVES = {
       },
     },
   },
+  'practice-result-native-ad': {
+    id: 'afccd388-6b89-402e-8a81-3d58c909afe6',
+    // Required by the tile kind's row constraint, and drawn at 2xl on the
+    // left of the card — the same position a `CardLink`'s emoji occupies.
+    icon: '📖',
+    copy: {
+      title: {
+        en: '[Placeholder] Practice result card',
+        ja: '【プレースホルダ】練習リザルトのカード',
+      },
+      description: {
+        en: 'Replace the link and this copy with a real creative. The reader has just finished a drill and is looking at their score, on any of the practice modules — so write for someone measuring their own progress, not for someone browsing.',
+        ja: 'リンクと本文を実際のクリエイティブに差し替えてください。読者はいずれかの練習モジュールを1本終えてスコアを見ている状態です。回遊中の人ではなく、自分の上達を測っている人に向けて書きます。',
+      },
+    },
+  },
   'practice-grid-native-ad': {
     id: '5b3f64e0-495c-47eb-8514-23e9c7e6de59',
     // The one `native_tile` slot, and the emoji is not optional there: a tile
