@@ -7,14 +7,13 @@ import { Field, Input } from '@/app/admin/_components/forms';
 
 import { fromLocalizedCopyDraft, toLocalizedCopyDraft } from '@/lib/ads/copy';
 import type { AdSlot } from '@/lib/ads/registry';
-import type { NativeCardThumbnail } from '@/lib/ads/thumbnail';
-import { DEFAULT_AD_ALT, DEFAULT_NATIVE_THUMBNAIL_FEN } from '@/lib/ads/thumbnail';
 
 import type { AdCreativeFormLabels } from '../_lib/form-labels';
 import { useCommonCreativeState } from '../_lib/use-common-creative-state';
 import type { CreativeFormInitial } from '../_lib/use-common-creative-state';
 import { useCreativeImageUpload } from '../_lib/use-creative-image-upload';
 import { useCreativeSubmit } from '../_lib/use-creative-submit';
+import { useCreativeThumbnailState } from '../_lib/use-creative-thumbnail-state';
 import { AD_CREATIVE_LIMITS } from '../_lib/validation';
 import { CreativeFormShell } from './CreativeFormShell';
 import { CreativeThumbnailFields } from './CreativeThumbnailFields';
@@ -44,29 +43,8 @@ export function NativeTileCreativeForm({ mode, slot, creativeId, initial, labels
   const [title, setTitle] = useState(() => toLocalizedCopyDraft(initial.title));
   const [description, setDescription] = useState(() => toLocalizedCopyDraft(initial.description));
 
-  const initThumb = initial.thumbnail ?? { fen: DEFAULT_NATIVE_THUMBNAIL_FEN };
-  const [thumbnailFen, setThumbnailFen] = useState(initThumb.fen);
-  const [thumbnailImagePath, setThumbnailImagePath] = useState<string | null>(
-    initThumb.imagePath ?? null
-  );
-  const [thumbnailAlt, setThumbnailAlt] = useState(initThumb.imageAlt || DEFAULT_AD_ALT);
-
-  const { upload, remove, isBusy } = useCreativeImageUpload(creativeId, setError);
-  const isThumbUploading = isBusy('thumbnail');
-
-  const handleThumbnailUpload = async (file: File) => {
-    const path = await upload('thumbnail', file, thumbnailAlt);
-    if (path) setThumbnailImagePath(path);
-  };
-
-  const removeThumbnailImage = async () => {
-    if (await remove('thumbnail')) setThumbnailImagePath(null);
-  };
-
-  const currentThumbnail: NativeCardThumbnail = {
-    fen: thumbnailFen.trim() || DEFAULT_NATIVE_THUMBNAIL_FEN,
-    ...(thumbnailImagePath ? { imagePath: thumbnailImagePath, imageAlt: thumbnailAlt } : {}),
-  };
+  const images = useCreativeImageUpload(creativeId, setError);
+  const thumbnail = useCreativeThumbnailState(initial.thumbnail, images);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -75,7 +53,7 @@ export function NativeTileCreativeForm({ mode, slot, creativeId, initial, labels
       icon: icon.trim(),
       avatarImagePath: null,
       avatarAlt: null,
-      thumbnail: currentThumbnail,
+      thumbnail: thumbnail.current,
       title: fromLocalizedCopyDraft(title),
       description: fromLocalizedCopyDraft(description),
     });
@@ -91,18 +69,7 @@ export function NativeTileCreativeForm({ mode, slot, creativeId, initial, labels
         onSubmit={handleSubmit}
         cancelHref={`/admin/ads/${slot}`}
       >
-        <CreativeThumbnailFields
-          mode={mode}
-          labels={labels}
-          fen={thumbnailFen}
-          onFenChange={setThumbnailFen}
-          imagePath={thumbnailImagePath}
-          onUpload={handleThumbnailUpload}
-          onRemove={removeThumbnailImage}
-          isUploading={isThumbUploading}
-          alt={thumbnailAlt}
-          onAltChange={setThumbnailAlt}
-        />
+        <CreativeThumbnailFields mode={mode} labels={labels} {...thumbnail.fieldProps} />
 
         <Field label={labels.icon} htmlFor="icon" description={labels.iconHint}>
           <Input
@@ -131,7 +98,7 @@ export function NativeTileCreativeForm({ mode, slot, creativeId, initial, labels
           icon={icon}
           title={title.en}
           description={description.en}
-          thumbnail={currentThumbnail}
+          thumbnail={thumbnail.current}
           label={labels.preview}
           caption={labels.previewCaption}
         />

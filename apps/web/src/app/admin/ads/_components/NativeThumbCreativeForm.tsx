@@ -5,14 +5,13 @@ import { useState } from 'react';
 
 import { fromLocalizedCopyDraft, toLocalizedCopyDraft } from '@/lib/ads/copy';
 import type { AdSlot } from '@/lib/ads/registry';
-import type { NativeCardThumbnail } from '@/lib/ads/thumbnail';
-import { DEFAULT_AD_ALT, DEFAULT_NATIVE_THUMBNAIL_FEN } from '@/lib/ads/thumbnail';
 
 import type { AdCreativeFormLabels } from '../_lib/form-labels';
 import { useCommonCreativeState } from '../_lib/use-common-creative-state';
 import type { CreativeFormInitial } from '../_lib/use-common-creative-state';
 import { useCreativeImageUpload } from '../_lib/use-creative-image-upload';
 import { useCreativeSubmit } from '../_lib/use-creative-submit';
+import { useCreativeThumbnailState } from '../_lib/use-creative-thumbnail-state';
 import { CreativeFormShell } from './CreativeFormShell';
 import { CreativeThumbnailFields } from './CreativeThumbnailFields';
 import { LocalizedCopyFields } from './LocalizedCopyFields';
@@ -45,29 +44,8 @@ export function NativeThumbCreativeForm({ mode, slot, creativeId, initial, label
   const [title, setTitle] = useState(() => toLocalizedCopyDraft(initial.title));
   const [description, setDescription] = useState(() => toLocalizedCopyDraft(initial.description));
 
-  const initThumb = initial.thumbnail ?? { fen: DEFAULT_NATIVE_THUMBNAIL_FEN };
-  const [thumbnailFen, setThumbnailFen] = useState(initThumb.fen);
-  const [thumbnailImagePath, setThumbnailImagePath] = useState<string | null>(
-    initThumb.imagePath ?? null
-  );
-  const [thumbnailAlt, setThumbnailAlt] = useState(initThumb.imageAlt || DEFAULT_AD_ALT);
-
-  const { upload, remove, isBusy } = useCreativeImageUpload(creativeId, setError);
-  const isThumbUploading = isBusy('thumbnail');
-
-  const handleThumbnailUpload = async (file: File) => {
-    const path = await upload('thumbnail', file, thumbnailAlt);
-    if (path) setThumbnailImagePath(path);
-  };
-
-  const removeThumbnailImage = async () => {
-    if (await remove('thumbnail')) setThumbnailImagePath(null);
-  };
-
-  const currentThumbnail: NativeCardThumbnail = {
-    fen: thumbnailFen.trim() || DEFAULT_NATIVE_THUMBNAIL_FEN,
-    ...(thumbnailImagePath ? { imagePath: thumbnailImagePath, imageAlt: thumbnailAlt } : {}),
-  };
+  const images = useCreativeImageUpload(creativeId, setError);
+  const thumbnail = useCreativeThumbnailState(initial.thumbnail, images);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -76,7 +54,7 @@ export function NativeThumbCreativeForm({ mode, slot, creativeId, initial, label
       icon: null,
       avatarImagePath: null,
       avatarAlt: null,
-      thumbnail: currentThumbnail,
+      thumbnail: thumbnail.current,
       title: fromLocalizedCopyDraft(title),
       description: fromLocalizedCopyDraft(description),
     });
@@ -92,18 +70,7 @@ export function NativeThumbCreativeForm({ mode, slot, creativeId, initial, label
         onSubmit={handleSubmit}
         cancelHref={`/admin/ads/${slot}`}
       >
-        <CreativeThumbnailFields
-          mode={mode}
-          labels={labels}
-          fen={thumbnailFen}
-          onFenChange={setThumbnailFen}
-          imagePath={thumbnailImagePath}
-          onUpload={handleThumbnailUpload}
-          onRemove={removeThumbnailImage}
-          isUploading={isThumbUploading}
-          alt={thumbnailAlt}
-          onAltChange={setThumbnailAlt}
-        />
+        <CreativeThumbnailFields mode={mode} labels={labels} {...thumbnail.fieldProps} />
 
         <LocalizedCopyFields
           labels={labels}
@@ -120,7 +87,7 @@ export function NativeThumbCreativeForm({ mode, slot, creativeId, initial, label
       <aside className="lg:sticky lg:top-4">
         <NativeThumbPreview
           title={title.en}
-          thumbnail={currentThumbnail}
+          thumbnail={thumbnail.current}
           label={labels.preview}
           caption={labels.previewCaption}
         />
