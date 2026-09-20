@@ -155,6 +155,10 @@ export const AD_SLOTS = {
     kind: 'native_thumb',
     surfaces: [{ route: '/practice/position-memory/[id]' }],
   },
+  'leaderboard-top-native-ad': {
+    kind: 'native_tile',
+    surfaces: [{ route: '/leaderboard', href: '/leaderboard' }],
+  },
   'practice-result-native-ad': {
     kind: 'native_tile',
     // One entry for a slot that renders on every practice module's result
@@ -318,6 +322,37 @@ export const POSITION_MEMORY_RESULT_NATIVE_AD_SLOT =
 /** See {@link POSITION_MEMORY_RESULT_NATIVE_AD_SLOT}. */
 export const POSITION_MEMORY_DETAIL_NATIVE_AD_SLOT =
   'position-memory-detail-native-ad' satisfies AdSlot;
+
+/**
+ * The pool the `/leaderboard` module grid draws its native tile from,
+ * rendered in the `iconTile` variant — the `IconTileCard` shape that grid is
+ * built from.
+ *
+ * It is the only ad placement in the whole leaderboard section, and that is a
+ * decision rather than an omission.
+ *
+ * @design No creative may be placed inside a ranking
+ *
+ * The detail pages (`/leaderboard/score/...`, `/leaderboard/exp/...`) are a
+ * table of rank, player and score, paginated. Nothing goes in it. Everywhere
+ * else on this site, a native creative works because it is a card written for
+ * the surface it lands in and the reader can take it on the same terms as its
+ * neighbours — but here the neighbours are claims about what real people
+ * achieved, and a row that reads on those terms is a row claiming a rank.
+ * Blending in is the whole technique, and this is the one surface where
+ * succeeding at it would be the problem.
+ *
+ * That also rules out the obvious shortcut: the table is a list, so
+ * `withRepeatingNativeAds` would fit it mechanically. It must not be used
+ * there.
+ *
+ * Below the table was considered and rejected too, for a different reason:
+ * there is nothing down there but the challenge CTA, so a card placed there
+ * blends with nothing and is a rectangle added for the ad — which is what the
+ * retired `banner` kind was, and what this registry decided against. The
+ * module grid is the one leaderboard surface with a card vocabulary to join.
+ */
+export const LEADERBOARD_TOP_NATIVE_AD_SLOT = 'leaderboard-top-native-ad' satisfies AdSlot;
 
 /**
  * The pool every practice module's result screen draws its native card from,

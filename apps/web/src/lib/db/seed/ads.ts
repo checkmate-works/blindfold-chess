@@ -185,6 +185,21 @@ const PLACEHOLDER_CREATIVES = {
       },
     },
   },
+  'leaderboard-top-native-ad': {
+    id: '6ffaca71-aa1e-4741-aa7c-1e144d2a133e',
+    // Sits in the 40px badge the module tiles put their leaderboard icon in.
+    icon: '🏅',
+    copy: {
+      title: {
+        en: '[Placeholder] Leaderboard grid tile',
+        ja: '【プレースホルダ】リーダーボード一覧のタイル',
+      },
+      description: {
+        en: 'Replace the link and this copy. Keep the description to one line — the neighbouring tiles put the reader\u2019s own rank there, and this line truncates rather than wrapping.',
+        ja: 'リンクと本文を差し替えてください。説明は1行に収めます。隣のタイルはそこに読者自身の順位を出しており、この行は折り返さず省略されます。',
+      },
+    },
+  },
   'practice-result-native-ad': {
     id: 'afccd388-6b89-402e-8a81-3d58c909afe6',
     // Required by the tile kind's row constraint, and drawn at 2xl on the
