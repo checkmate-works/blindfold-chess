@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { getAdCreativeCopy, getAllAdCreatives } from '@/lib/ads/ad';
+import { isPlaceholderAdHref } from '@/lib/ads/placeholder';
 import { isAdSlot, kindForSlot } from '@/lib/ads/registry';
 
 import { AdminBadge } from '../../_components/AdminBadge';
@@ -26,6 +27,7 @@ export default async function AdminSlotCreativesPage({ params }: Props) {
   const rows: SlotCreativeRow[] = creatives.map((c) => ({
     id: c.id,
     isActive: c.isActive,
+    hasPlaceholderHref: isPlaceholderAdHref(c.href),
     summary: copyById.get(c.id)?.title.en ?? '',
     imageUrl: c.thumbnailImagePath,
     boardFen: c.thumbnailFen,
@@ -57,6 +59,8 @@ export default async function AdminSlotCreativesPage({ params }: Props) {
           edit: t('edit'),
           copyId: t('copyId'),
           copiedId: t('copiedId'),
+          hrefNotSet: t('hrefNotSet'),
+          hrefNotSetHint: t('hrefNotSetHint'),
           reorderHint: t('reorderHint'),
           empty: t('noCreatives'),
         }}

@@ -12,12 +12,15 @@ import {
   toggleTrackClass,
 } from '@/app/[locale]/_components/toggle-switch-classes';
 
+import { AdminBadge } from '../../_components/AdminBadge';
 import { reorderAdCreatives } from '../_actions/reorderAdCreatives';
 import { setAdCreativeActive } from '../_actions/setAdCreativeActive';
 
 export type SlotCreativeRow = {
   id: string;
   isActive: boolean;
+  /** Its click-through is still the seeded placeholder, so it cannot be activated. */
+  hasPlaceholderHref: boolean;
   /** The creative's English title; empty only for a row with no `en` copy, which the validator forbids. */
   summary: string;
   /** Thumbnail override image; takes priority over the board when set. */
@@ -36,6 +39,8 @@ type Props = {
     edit: string;
     copyId: string;
     copiedId: string;
+    hrefNotSet: string;
+    hrefNotSetHint: string;
     reorderHint: string;
     empty: string;
   };
@@ -163,6 +168,12 @@ export function SlotCreativeList({ slot, rows: initialRows, editHrefBase, labels
 
             <span className="min-w-0 flex-1 truncate">{row.summary || '—'}</span>
 
+            {row.hasPlaceholderHref && (
+              <span className="shrink-0" title={labels.hrefNotSetHint}>
+                <AdminBadge variant="warning">{labels.hrefNotSet}</AdminBadge>
+              </span>
+            )}
+
             <div className="flex shrink-0 items-center gap-2">
               <button
                 type="button"
@@ -185,13 +196,19 @@ export function SlotCreativeList({ slot, rows: initialRows, editHrefBase, labels
               <span className="whitespace-nowrap text-xs text-muted-foreground">
                 {row.isActive ? labels.active : labels.inactive}
               </span>
+              {/* A placeholder creative can still be switched off, only not on:
+                  `setAdCreativeActive` refuses the activation, and a control
+                  that reports success optimistically and then snaps back with
+                  no message reads as a glitch rather than as a rule. */}
               <button
                 type="button"
                 role="switch"
                 aria-checked={row.isActive}
                 aria-label={row.isActive ? labels.active : labels.inactive}
+                disabled={row.hasPlaceholderHref && !row.isActive}
+                title={row.hasPlaceholderHref && !row.isActive ? labels.hrefNotSetHint : undefined}
                 onClick={() => toggleActive(row.id, !row.isActive)}
-                className={`${toggleTrackClass('setting', row.isActive)} shrink-0`}
+                className={`${toggleTrackClass('setting', row.isActive)} shrink-0 disabled:cursor-not-allowed disabled:opacity-50`}
               >
                 <span className={toggleKnobClass('setting', row.isActive)} />
               </button>

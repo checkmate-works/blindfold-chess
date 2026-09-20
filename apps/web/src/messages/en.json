@@ -4777,6 +4777,8 @@
       "slot": "Slot",
       "href": "Link URL",
       "hrefHint": "Paste the URL exactly as the network gave it, with no clickref on it — Awin's UI hands out a sample one that would swallow this creative's attribution. A clickref identifying this creative is appended automatically at render time, so Awin's reports break clicks down per creative.",
+      "hrefNotSet": "URL not set",
+      "hrefNotSetHint": "This creative still links to the placeholder URL from the seed. Replace it with the real destination before activating.",
       "isActive": "Active",
       "actions": "Actions",
       "edit": "Edit",

@@ -4777,6 +4777,8 @@
       "slot": "Espaço",
       "href": "URL do Link",
       "hrefHint": "Cole a URL exatamente como a rede a forneceu, sem nenhum clickref — a interface da Awin entrega um de exemplo que engoliria a atribuição deste criativo. Um clickref que identifica este criativo é anexado automaticamente na renderização, para que os relatórios da Awin separem os cliques por criativo.",
+      "hrefNotSet": "URL não definida",
+      "hrefNotSetHint": "Este criativo ainda aponta para a URL de espaço reservado do seed. Substitua pelo destino real antes de ativá-lo.",
       "isActive": "Ativo",
       "actions": "Ações",
       "edit": "Editar",

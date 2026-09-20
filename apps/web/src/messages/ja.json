@@ -4777,6 +4777,8 @@
       "slot": "スロット",
       "href": "リンク URL",
       "hrefHint": "ネットワークから受け取った URL を、clickref を付けずにそのまま貼ってください（Awin の管理画面がサンプルの clickref を付けて渡してくることがあり、そのままだとこの creative の計測が潰れます）。この creative を識別する clickref は描画時に自動で付与され、Awin のレポートで creative 別にクリックを分解できます。",
+      "hrefNotSet": "URL 未設定",
+      "hrefNotSetHint": "シードのプレースホルダ URL のままです。実際のリンク先に差し替えてから有効化してください。",
       "isActive": "有効",
       "actions": "操作",
       "edit": "編集",
