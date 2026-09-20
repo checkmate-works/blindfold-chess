@@ -2,11 +2,12 @@
  * Local-only dev seed.
  *
  * Populates auth users, profiles, challenge_results / challenge_best_scores,
- * belt ranks, a published kata (型), a featured puzzle pool, a chunk catalog
- * and a set of square/opening discussion threads with predictable test data
- * so the practice leaderboards, the /repertoires catalog, the Daily Puzzle
- * card, /chunks and the /topics timeline have entries — and so rank
- * conditions can be exercised from a known rung — during local development.
+ * belt ranks, a published kata (型), a featured puzzle pool, a
+ * position-memory catalog, a chunk catalog and a set of square/opening
+ * discussion threads with predictable test data so the practice leaderboards,
+ * the /repertoires catalog, the Daily Puzzle card, both position catalogs,
+ * /chunks and the /topics timeline have entries — and so rank conditions can
+ * be exercised from a known rung — during local development.
  * Refuses to run against any non-local DB or Supabase URL (host check) — the
  * master-data seed (`pnpm db:seed`) remains the prod path.
  *
@@ -28,6 +29,7 @@ import { DAILY_PUZZLE_CACHE_TAG } from '../src/lib/cache-tags';
 import { reseedChallenges } from './dev-seed/challenges';
 import { reseedChunks } from './dev-seed/chunks';
 import { purgeDataCacheTag } from './dev-seed/next-cache';
+import { reseedPositionMemory } from './dev-seed/position-memory';
 import { reseedPuzzles } from './dev-seed/puzzles';
 import { grantRanksUpTo } from './dev-seed/ranks';
 import { reseedRepertoires } from './dev-seed/repertoires';
@@ -117,6 +119,15 @@ async function main() {
   }
   const purged = purgeDataCacheTag(DAILY_PUZZLE_CACHE_TAG);
   console.log(`  dropped ${purged} cached "pool is empty" answer(s) — restart the dev server`);
+
+  // The other position catalog. Same owners as the puzzles, because both
+  // catalogs are public UGC and the "other problems" grid ranks the author's
+  // own entries first — a catalog owned by one account would make that tier
+  // indistinguishable from the newest tier.
+  console.log('dev-seed: seeding position-memory problems...');
+  for (const memory of await reseedPositionMemory(db, puzzleOwners)) {
+    console.log(`  ${memory.title.padEnd(36)} → ${memory.pieceCount} pieces`);
+  }
 
   // Alice authors the kata: the catalog is public UGC, so it reads more like
   // production coming from a player account than from the admin one.
