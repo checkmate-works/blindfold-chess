@@ -44,6 +44,33 @@ describe('validateCreateAdCreative href', () => {
   });
 });
 
+describe('validateCreateAdCreative native_thumb', () => {
+  const thumbData = (overrides: Partial<AdCreativeFields> = {}): CreateAdCreativeData =>
+    data({ ...card, ...overrides }, { slot: 'puzzle-result-native-ad' });
+
+  it('accepts a thumb with no emoji and no author row', () => {
+    expect(validateCreateAdCreative(thumbData())).toBeNull();
+  });
+
+  it('rejects an emoji, which the shape has nowhere to draw', () => {
+    expect(validateCreateAdCreative(thumbData({ icon: '♞' }))).toBe('invalid icon');
+  });
+
+  it('rejects an author row, which the shape has nowhere to draw', () => {
+    expect(validateCreateAdCreative(thumbData({ avatarImagePath: '/a.png' }))).toBe(
+      'invalid avatar'
+    );
+  });
+
+  it('still requires a description, because the en translation row must be complete', () => {
+    // `ad_creative_translations_chk_en_complete` holds the en row to both
+    // fields; the thumb tile never draws this one.
+    expect(validateCreateAdCreative(thumbData({ description: { en: '' } }))).toBe(
+      'invalid description.en'
+    );
+  });
+});
+
 describe('validateCreateAdCreative activation', () => {
   it('rejects a creative activated while its href is still the placeholder', () => {
     // The seed ships one such creative per slot so the admin has an example

@@ -4811,6 +4811,7 @@
       "cardTitle": "タイトル",
       "cardDescription": "説明",
       "cardCopyHint": "各言語のコピーを入力してください。英語は必須で、未入力の言語ではこの英語が表示されます。",
+      "thumbDescriptionHint": "保存形式の都合で必須ですが、次のパズルのグリッドでは描画されません（あのタイルはサムネイルと1行のタイトルのみ）。読者の目に触れないので内容は何でも構いません。",
       "reorderHint": "ドラッグで並べ替え。",
       "thumbnail": "サムネイル",
       "thumbnailFen": "盤面（FEN）",

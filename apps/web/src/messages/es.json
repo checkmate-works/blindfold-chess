@@ -4811,6 +4811,7 @@
       "cardTitle": "Título",
       "cardDescription": "Descripción",
       "cardCopyHint": "Escribe el texto para cada idioma. El inglés es obligatorio y es lo que ve quien navega en un idioma que dejaste vacío.",
+      "thumbDescriptionHint": "Obligatorio por el formato de almacenamiento, pero no se muestra en la cuadrícula de siguientes puzzles: esa tarjeta es una miniatura y una línea de título. Nadie lo lee.",
       "reorderHint": "Arrastra para reordenar.",
       "thumbnail": "Miniatura",
       "thumbnailFen": "Posición del tablero (FEN)",

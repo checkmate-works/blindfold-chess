@@ -4811,6 +4811,7 @@
       "cardTitle": "Título",
       "cardDescription": "Descrição",
       "cardCopyHint": "Escreva o texto para cada idioma. O inglês é obrigatório e é o que aparece para quem navega em um idioma que você deixou em branco.",
+      "thumbDescriptionHint": "Obrigatório pelo formato de armazenamento, mas não é exibido na grade de próximos puzzles — aquele bloco é uma miniatura e uma linha de título. Nenhum leitor vê isso.",
       "reorderHint": "Arraste para reordenar.",
       "thumbnail": "Miniatura",
       "thumbnailFen": "Posição do tabuleiro (FEN)",

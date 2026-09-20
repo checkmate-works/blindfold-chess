@@ -198,8 +198,26 @@ function validateNativeTileFields(fields: AdCreativeFields): string | null {
 }
 
 /**
+ * A thumb is a board thumbnail and a one-line title: no emoji, no author row.
+ *
+ * Its description is still required, and that is a storage contract rather
+ * than a rendering one — `ad_creative_translations_chk_en_complete` holds the
+ * `en` row to both fields, because every other locale falls back to it field
+ * by field. The thumb tile never draws the description; the authoring form
+ * says so beside the input, so nobody spends time on copy that has no place
+ * to appear. Relaxing the constraint per kind would mean teaching the
+ * fallback which fields a kind uses, which is a larger change than the one
+ * unused string it would save.
+ */
+function validateNativeThumbFields(fields: AdCreativeFields): string | null {
+  if (fields.icon !== null) return 'invalid icon';
+  if (fields.avatarImagePath !== null || fields.avatarAlt !== null) return 'invalid avatar';
+  return validateCommonFields(fields);
+}
+
+/**
  * Validate the fields against the kind bound to the slot. Exhaustive over
- * `AdKind`, so a third kind is a compile error here rather than a row that
+ * `AdKind`, so a new kind is a compile error here rather than a row that
  * reaches the DB unchecked.
  */
 export function validateFieldsForKind(kind: AdKind, fields: AdCreativeFields): string | null {
@@ -208,6 +226,8 @@ export function validateFieldsForKind(kind: AdKind, fields: AdCreativeFields): s
       return validateNativeCardFields(fields);
     case 'native_tile':
       return validateNativeTileFields(fields);
+    case 'native_thumb':
+      return validateNativeThumbFields(fields);
   }
 }
 

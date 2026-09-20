@@ -15,6 +15,14 @@ type Props = {
   onTitleChange: (locale: Locale, value: string) => void;
   description: Record<Locale, string>;
   onDescriptionChange: (locale: Locale, value: string) => void;
+  /**
+   * Shown under the `en` description. `native_thumb` passes one saying the
+   * field is not rendered on its surface: the row constraint still requires
+   * it (`ad_creative_translations_chk_en_complete`), so the input cannot
+   * simply be dropped, and an unexplained required field is one somebody
+   * writes real copy into.
+   */
+  descriptionHint?: string;
 };
 
 /**
@@ -30,6 +38,7 @@ export function LocalizedCopyFields({
   onTitleChange,
   description,
   onDescriptionChange,
+  descriptionHint,
 }: Props) {
   return (
     <>
@@ -55,6 +64,7 @@ export function LocalizedCopyFields({
           key={`description-${locale}`}
           label={`${labels.description} (${LOCALE_LABELS[locale]})`}
           htmlFor={`description-${locale}`}
+          description={locale === 'en' ? descriptionHint : undefined}
         >
           <Textarea
             id={`description-${locale}`}

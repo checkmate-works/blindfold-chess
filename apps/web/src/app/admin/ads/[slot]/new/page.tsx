@@ -2,8 +2,7 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { AdminPageLayout } from '@/app/admin/_components/AdminPageLayout';
-import { NativeCardCreativeForm } from '@/app/admin/ads/_components/NativeCardCreativeForm';
-import { NativeTileCreativeForm } from '@/app/admin/ads/_components/NativeTileCreativeForm';
+import { CreativeFormForKind } from '@/app/admin/ads/_components/CreativeFormForKind';
 import { buildAdCreativeFormLabels } from '@/app/admin/ads/_lib/form-labels';
 import type { CreativeFormInitial } from '@/app/admin/ads/_lib/use-common-creative-state';
 
@@ -32,14 +31,13 @@ export default async function NewCreativePage({ params }: Props) {
         { label: t('createTitle') },
       ]}
     >
-      {/* The slot decides the shape, so it decides the form. A slot accepts
-          exactly one kind and a creative cannot be moved between slots, so
-          there is never a form to switch mid-edit. */}
-      {kind === 'native_tile' ? (
-        <NativeTileCreativeForm mode="create" slot={slot} labels={labels} initial={EMPTY_INITIAL} />
-      ) : (
-        <NativeCardCreativeForm mode="create" slot={slot} labels={labels} initial={EMPTY_INITIAL} />
-      )}
+      <CreativeFormForKind
+        kind={kind}
+        mode="create"
+        slot={slot}
+        labels={labels}
+        initial={EMPTY_INITIAL}
+      />
     </AdminPageLayout>
   );
 }

@@ -2,8 +2,7 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { AdminPageLayout } from '@/app/admin/_components/AdminPageLayout';
-import { NativeCardCreativeForm } from '@/app/admin/ads/_components/NativeCardCreativeForm';
-import { NativeTileCreativeForm } from '@/app/admin/ads/_components/NativeTileCreativeForm';
+import { CreativeFormForKind } from '@/app/admin/ads/_components/CreativeFormForKind';
 import { buildAdCreativeFormLabels } from '@/app/admin/ads/_lib/form-labels';
 import type { CreativeFormInitial } from '@/app/admin/ads/_lib/use-common-creative-state';
 import { eq } from 'drizzle-orm';
@@ -57,26 +56,14 @@ export default async function EditCreativePage({ params }: Props) {
         </span>
       }
     >
-      {/* The slot decides the shape, so it decides the form. A slot accepts
-          exactly one kind and a creative cannot be moved between slots, so
-          there is never a form to switch mid-edit. */}
-      {kind === 'native_tile' ? (
-        <NativeTileCreativeForm
-          mode="edit"
-          slot={slot}
-          creativeId={id}
-          labels={labels}
-          initial={initial}
-        />
-      ) : (
-        <NativeCardCreativeForm
-          mode="edit"
-          slot={slot}
-          creativeId={id}
-          labels={labels}
-          initial={initial}
-        />
-      )}
+      <CreativeFormForKind
+        kind={kind}
+        mode="edit"
+        slot={slot}
+        creativeId={id}
+        labels={labels}
+        initial={initial}
+      />
     </AdminPageLayout>
   );
 }

@@ -129,6 +129,22 @@ const PLACEHOLDER_CREATIVES = {
       },
     },
   },
+  'puzzle-result-native-ad': {
+    id: 'e247fb01-fc71-497a-9787-cc99ab5330af',
+    copy: {
+      title: {
+        en: '[Placeholder] Next-puzzles thumb',
+        ja: '【プレースホルダ】次のパズルのサムネイル',
+      },
+      // Stored because the `en` row must carry both fields, and never drawn:
+      // the thumb tile is a thumbnail and one line of title. Kept short so
+      // nobody mistakes it for copy that reaches a reader.
+      description: {
+        en: 'Not rendered on this surface. Replace the link, the title and the thumbnail image.',
+        ja: 'この面では描画されません。リンク・タイトル・サムネイル画像を差し替えてください。',
+      },
+    },
+  },
   'practice-grid-native-ad': {
     id: '5b3f64e0-495c-47eb-8514-23e9c7e6de59',
     // The one `native_tile` slot, and the emoji is not optional there: a tile

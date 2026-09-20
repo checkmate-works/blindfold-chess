@@ -9,24 +9,31 @@
  * the format its columns and CHECK (`@/lib/db/schema/notifications`), its
  * branch in the admin validator, and a renderer.
  *
- * There are two kinds, because there are two card shapes to blend into.
+ * There are three kinds, because there are three card shapes to blend into.
  * `native_card` is a row in a list — a feed item, a post, a glossary term.
  * `native_tile` is a cell in the `/practice` grid, where the neighbours are
  * module tiles with an emoji, a title and an example band and a row-shaped
  * card would be the only thing on the page that is not a tile.
+ * `native_thumb` is a cell in the puzzle result screen's "next puzzles"
+ * grid: a square board thumbnail with a one-line title under it and nothing
+ * else. It is the card minus the author row and minus the description,
+ * because the tiles beside it have neither and a creative that carried them
+ * would be the one cell in the row that is taller than its neighbours.
  *
- * A third kind is the answer whenever a new surface's cards are a third
- * shape. It is a migration adding its columns and extending
- * `ad_creatives_chk_fields_for_kind`, a branch in the admin's field
- * validator, a renderer, and an authoring form. The validator's switch is
- * exhaustive over `AdKind`, so the compiler names that one for you; the
- * admin pages pick their form from the slot's kind at runtime and will not.
+ * A fourth kind is the answer whenever a new surface's cards are a fourth
+ * shape. It extends `ad_creatives_chk_kind` and
+ * `ad_creatives_chk_fields_for_kind` (adding columns only if its shape needs
+ * a field no other kind has — `native_thumb` needed none), a branch in the
+ * admin's field validator, a renderer, and an authoring form. The
+ * validator's switch is exhaustive over `AdKind`, so the compiler names that
+ * one for you; the admin pages pick their form from the slot's kind at
+ * runtime and will not.
  *
  * Mirrors the "one registry, everything derives from it" pattern used by
  * `PRACTICE_MODULE_REGISTRY`.
  */
 
-export const AD_KINDS = ['native_card', 'native_tile'] as const;
+export const AD_KINDS = ['native_card', 'native_tile', 'native_thumb'] as const;
 export type AdKind = (typeof AD_KINDS)[number];
 
 export function isAdKind(value: string): value is AdKind {
@@ -129,6 +136,13 @@ export const AD_SLOTS = {
       { route: '/glossary/category/[category]', href: '/glossary/category/notation' },
     ],
   },
+  'puzzle-result-native-ad': {
+    kind: 'native_thumb',
+    // The result screen exists per puzzle, and every puzzle id resolves for
+    // as long as that puzzle does — which is not a guarantee this registry
+    // can make, so the route is shown without a link.
+    surfaces: [{ route: '/practice/puzzle/[id]/result' }],
+  },
   'practice-grid-native-ad': {
     kind: 'native_tile',
     surfaces: [{ route: '/practice', href: '/practice' }],
@@ -218,6 +232,24 @@ export const CHUNK_LIST_NATIVE_AD_SLOT = 'chunk-list-native-ad' satisfies AdSlot
  * which is the layer that exists for exactly this case.
  */
 export const GLOSSARY_TERM_LIST_NATIVE_AD_SLOT = 'glossary-term-list-native-ad' satisfies AdSlot;
+
+/**
+ * The pool the puzzle result screen's "next puzzles" grid draws its native
+ * thumb from — the one slot bound to `native_thumb`, because it is the one
+ * surface whose cards are a board thumbnail and a single line of text.
+ *
+ * The grid is four cells wide and stays four cells wide: the ad takes the
+ * first one and the fourth puzzle drops off, rather than the section growing
+ * a fifth cell that would sit alone on a second row at both breakpoints. A
+ * reader who sees no ads gets four puzzles.
+ *
+ * Leading the grid rather than trailing it is the same rule every vertical
+ * list follows (see `AD_INTERVAL` in `@/lib/ads/placement`), and it matters
+ * more here than anywhere: this section sits above the result screen's action
+ * buttons, so a trailing cell is the thing a solver scrolls past on their way
+ * to Try Again.
+ */
+export const PUZZLE_RESULT_NATIVE_AD_SLOT = 'puzzle-result-native-ad' satisfies AdSlot;
 
 /**
  * The pool the `/practice` module grid draws its native tile from — the one

@@ -4811,6 +4811,7 @@
       "cardTitle": "Title",
       "cardDescription": "Description",
       "cardCopyHint": "Write the copy for each language. English is required and is what a visitor sees when their language is left blank.",
+      "thumbDescriptionHint": "Required by the storage format, but not rendered in the next-puzzles grid — that tile is a thumbnail and one line of title. Anything will do; no reader sees it.",
       "reorderHint": "Drag to reorder.",
       "thumbnail": "Thumbnail",
       "thumbnailFen": "Board position (FEN)",
