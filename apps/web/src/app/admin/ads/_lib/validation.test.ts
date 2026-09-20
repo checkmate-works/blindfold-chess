@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
+import { PLACEHOLDER_AD_HREF } from '@/lib/ads/placeholder';
+
 import type { AdCreativeFields, CreateAdCreativeData } from './validation';
 import { validateCreateAdCreative } from './validation';
 
@@ -39,6 +41,27 @@ describe('validateCreateAdCreative href', () => {
 
   it('rejects a bare path, which has no page to resolve against at render time', () => {
     expect(validateCreateAdCreative(data(card, { href: '/internal/page' }))).toBe('invalid href');
+  });
+});
+
+describe('validateCreateAdCreative activation', () => {
+  it('rejects a creative activated while its href is still the placeholder', () => {
+    // The seed ships one such creative per slot so the admin has an example
+    // of the slot's card to edit; the click has to be replaced before it can
+    // go anywhere near a reader.
+    expect(
+      validateCreateAdCreative(data(card, { href: PLACEHOLDER_AD_HREF, isActive: true }))
+    ).toBe('href is still the placeholder');
+  });
+
+  it('accepts the same creative while it is inactive', () => {
+    expect(
+      validateCreateAdCreative(data(card, { href: PLACEHOLDER_AD_HREF, isActive: false }))
+    ).toBeNull();
+  });
+
+  it('accepts a real destination on an active creative', () => {
+    expect(validateCreateAdCreative(data(card, { isActive: true }))).toBeNull();
   });
 });
 
