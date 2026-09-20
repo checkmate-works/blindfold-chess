@@ -1,13 +1,20 @@
-import { AD_INTERVAL } from './constants';
+import { AD_INTERVAL } from '@/lib/ads/placement';
+
 import type { DisplayItem, FeedItem } from './types';
 
 /**
  * Build an interleaved list of feed items and ad placeholders.
  *
- * An ad slot is placed BEFORE every `AD_INTERVAL`-th item, starting with the
- * very first one, whenever ads are inserted for this viewer: `[ad, 1..10, ad,
- * 11..20, ad, ...]`. Leading with a slot puts one ad in the first viewport of
- * the server-rendered page; the earlier "after every `AD_INTERVAL` items"
+ * The placement rule — a slot before every `AD_INTERVAL`-th item, starting
+ * with the first — is the one every vertical list on the site follows, and it
+ * is explained where the constant lives (`@/lib/ads/placement`). What is
+ * specific here is the shape: the feed is a client component that renders
+ * from a cursor-paged array, so slots are emitted as `DisplayItem`s for the
+ * client to map, rather than as the finished nodes `withRepeatingNativeAds`
+ * splices into an already-rendered list.
+ *
+ * Leading with a slot puts one ad in the first viewport of the
+ * server-rendered page; the earlier "after every `AD_INTERVAL` items"
  * placement left the first slot at the tail of the initial page — technically
  * in the SSR HTML, but a full page-length of scrolling below the fold, so the
  * most-viewed part of the feed carried no ad at all. Placing slots before an

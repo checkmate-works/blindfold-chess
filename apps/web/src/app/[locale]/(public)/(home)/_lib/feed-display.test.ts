@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { AD_INTERVAL } from './constants';
+import { AD_INTERVAL } from '@/lib/ads/placement';
+
 import { buildDisplayItems } from './feed-display';
 import type { FeedItem } from './types';
 

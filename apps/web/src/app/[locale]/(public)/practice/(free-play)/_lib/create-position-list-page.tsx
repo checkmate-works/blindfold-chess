@@ -6,7 +6,7 @@ import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/ser
 import { FaPlus } from 'react-icons/fa';
 
 import { resolveNativeAds } from '@/lib/ads/ad';
-import { withNativeAdCard } from '@/lib/ads/in-list-placement';
+import { withRepeatingNativeAds } from '@/lib/ads/placement';
 import type { AdSlot as AdSlotId } from '@/lib/ads/registry';
 import { getOptionalUser } from '@/lib/auth';
 import { EMPTY_LIKE_META } from '@/lib/db/like-queries';
@@ -130,11 +130,11 @@ export function createPositionListPage(config: PositionListPageConfig) {
     const justNowLabel = t('justNow');
     const authorFallbackLabel = tCommon('deletedUser');
 
-    // In-list native ad (opt-in per page via `nativeAdSlot`). Server-gated on
-    // entitlement by `resolveNativeAds` — ad-free users get no node; the
-    // component-owned `.ad-slot-wrapper` CSS-hide is the un-forgettable
-    // second layer.
-    const nativeAd = resolvedNativeAds?.creatives[0] ?? null;
+    // In-list native ads (opt-in per page via `nativeAdSlot`). Server-gated
+    // on entitlement by `resolveNativeAds` — ad-free users get an empty pool,
+    // which places no cards; the component-owned `.ad-slot-wrapper` CSS-hide
+    // is the un-forgettable second layer.
+    const nativeAdCreatives = resolvedNativeAds?.creatives ?? [];
 
     // Help-tour steps: explain what the module is and — only when the create
     // CTA is rendered (signed-in users) — point at it. When `tutorialPath` is
@@ -201,7 +201,7 @@ export function createPositionListPage(config: PositionListPageConfig) {
           <p className="text-muted-foreground text-center py-8">{t('list.empty')}</p>
         ) : (
           <div className="space-y-3">
-            {withNativeAdCard(
+            {withRepeatingNativeAds(
               rows.map(({ position, profile }) => (
                 <PositionListCard
                   key={position.id}
@@ -217,8 +217,9 @@ export function createPositionListPage(config: PositionListPageConfig) {
                   locale={locale}
                 />
               )),
-              nativeAd && (
-                <NativeAdCard key="native-ad" creative={nativeAd} locale={locale} variant="card" />
+              nativeAdCreatives,
+              (creative, key) => (
+                <NativeAdCard key={key} creative={creative} locale={locale} variant="card" />
               )
             )}
           </div>

@@ -28,7 +28,6 @@ import { OpeningCard } from '@/app/[locale]/(public)/topics/openings/_components
 import { getOpeningDisplayName } from '@/app/[locale]/(public)/topics/openings/_lib/get-opening-display-name';
 import { getOpeningsByFirstMoveSquare } from '@/app/[locale]/(public)/topics/openings/_lib/queries';
 import { PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
-import { NativeAdCard } from '@/app/[locale]/_components/NativeAdCard';
 import { Skeleton } from '@/app/[locale]/_components/Skeleton';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -109,10 +108,9 @@ async function SquarePostsContent({ params, searchParams }: Props) {
     resolveNativeAds(TOPIC_DETAIL_NATIVE_AD_SLOT, user?.id ?? null, locale),
   ]);
   const fallbackVideoTitle = tVideo('fallbackTitle');
-  // Server-gated: an ad-free reader gets an empty pool and therefore no node
-  // at all. The `.ad-slot-wrapper` CSS hide that `NativeAdCard` owns is the
-  // second layer, for the first paint.
-  const nativeAd = nativeAdCreatives[0] ?? null;
+  // Server-gated: an ad-free reader gets an empty pool, and the layout places
+  // no cards from one. The `.ad-slot-wrapper` CSS hide that `NativeAdCard`
+  // owns is the second layer, for the first paint.
 
   const MAX_OPENING_CARDS = 3;
   const visibleOpenings = openingsForSquare.slice(0, MAX_OPENING_CARDS);
@@ -186,11 +184,7 @@ async function SquarePostsContent({ params, searchParams }: Props) {
       topicHeader={topicHeader}
       communitySection={communitySection}
       hasPosts={posts.length > 0}
-      nativeAd={
-        nativeAd && (
-          <NativeAdCard key="native-ad" creative={nativeAd} locale={locale} variant="card" />
-        )
-      }
+      nativeAdCreatives={nativeAdCreatives}
       postCards={posts.map((post) => {
         const att = attachments.get(post.id);
         return (

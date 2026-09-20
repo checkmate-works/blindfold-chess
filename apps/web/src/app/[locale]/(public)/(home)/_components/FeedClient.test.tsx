@@ -1,8 +1,9 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { AD_INTERVAL } from '@/lib/ads/placement';
+
 import { getFeed } from '../_actions/getFeed';
-import { AD_INTERVAL } from '../_lib/constants';
 import type { FeedItem } from '../_lib/types';
 import { FeedClient } from './FeedClient';
 
