@@ -19,6 +19,17 @@
  * name is worse than none, because some merchants treat unknown query strings
  * as cache-busting junk or drop them at redirect time.
  *
+ * Sub-IDs are also the whole of the measurement story for now. The network's
+ * own report, read by creative id, answers "which card earns clicks?" without
+ * this app storing a single click — which is why there is no first-party
+ * click or impression table, and why the admin shows raw creative ids to
+ * paste into that report. The obvious next step, if the network's reporting
+ * ever proves too coarse, is an append-only `ad_events` table: one row per
+ * click, written and never updated. It must not become columns on
+ * `ad_creatives`. That row is a creative's definition, edited by hand in the
+ * admin and read on every page that shows an ad; counters on it would put a
+ * write on the serving path and make every edit race with traffic.
+ *
  * This is also why the admin has no way to delete a creative. The sub-ID *is*
  * the creative's row id, so a line in Awin's report is only readable for as
  * long as that row exists; deleting one turns every historical click it

@@ -2,9 +2,11 @@ import { createHash } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 
 import { AD_HIDE_BOOTSTRAP_SCRIPT } from '@/lib/ads/ad-hide-bootstrap-script';
+import { CONSENT_BOOTSTRAP_SCRIPT } from '@/lib/consent/consent-bootstrap-script';
 import {
   AD_HIDE_BOOTSTRAP_HASH,
   ANNOUNCEMENT_DISMISS_HASH,
+  CONSENT_BOOTSTRAP_HASH,
   THEME_BOOTSTRAP_HASH_DEV,
   THEME_BOOTSTRAP_HASH_PROD,
 } from '@/lib/security/inline-script-hashes';
@@ -32,6 +34,7 @@ describe('inline script CSP hashes', () => {
     ['theme bootstrap (prod)', THEME_BOOTSTRAP_SCRIPT_PROD, THEME_BOOTSTRAP_HASH_PROD],
     ['theme bootstrap (dev)', THEME_BOOTSTRAP_SCRIPT_DEV, THEME_BOOTSTRAP_HASH_DEV],
     ['ad-hide bootstrap', AD_HIDE_BOOTSTRAP_SCRIPT, AD_HIDE_BOOTSTRAP_HASH],
+    ['consent bootstrap', CONSENT_BOOTSTRAP_SCRIPT, CONSENT_BOOTSTRAP_HASH],
     ['announcement dismiss', ANNOUNCEMENT_DISMISS_SCRIPT, ANNOUNCEMENT_DISMISS_HASH],
   ])('%s hash matches its script source', (_name, script, hash) => {
     expect(hash).toBe(cspSha256(script));

@@ -3,11 +3,14 @@ import { getMessages, getTranslations } from 'next-intl/server';
 import { Inter } from 'next/font/google';
 import { cookies } from 'next/headers';
 
+import { ConsentBanner } from '@/app/_components/ConsentBanner';
 import { GoogleScripts } from '@/app/_components/GoogleScripts';
-import { ADSENSE_PUBLISHER_ID, AUTHOR_NAME, GA_MEASUREMENT_ID, SITE_URL } from '@/config';
+import { AUTHOR_NAME, GA_MEASUREMENT_ID, SITE_URL } from '@/config';
 import { generateThemeCSS } from '@blindfold-chess/ui';
 import { EnvironmentRibbon } from 'env-ribbon';
 
+import { ConsentBootstrapScript } from '@/lib/consent/ConsentBootstrapScript';
+import { CONSENT_BANNER_HIDE_CSS } from '@/lib/consent/consent-bootstrap-script';
 import { getLocaleFromRequest } from '@/lib/locale';
 import { JsonLd, generateOrganizationSchema, generateWebSiteSchema } from '@/lib/seo/jsonld';
 import { StorageAvailabilityProvider } from '@/lib/storage/StorageAvailabilityProvider';
@@ -74,7 +77,20 @@ export default async function LandingLayout({ children }: { children: React.Reac
         <ThemeScript />
         <JsonLd data={generateWebSiteSchema(locale, t('siteName'))} />
         <JsonLd data={generateOrganizationSchema()} />
-        <style suppressHydrationWarning dangerouslySetInnerHTML={{ __html: generateThemeCSS() }} />
+        <style
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{
+            __html: `${generateThemeCSS()}\n\n/* No-flash consent banner — the attribute means "already answered". */\n${CONSENT_BANNER_HIDE_CSS}`,
+          }}
+        />
+        {/*
+          No-flash consent bootstrap. Sets `<html data-consent>` from the
+          cookie before first paint so a visitor who has already answered
+          never sees the banner flash past. The rule it drives is in the
+          inline <style> directly above rather than in `globals.css`, so it is
+          render-blocking with <head> even on a cold cache.
+        */}
+        <ConsentBootstrapScript />
       </head>
       <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
         <EnvironmentRibbon />
@@ -86,13 +102,12 @@ export default async function LandingLayout({ children }: { children: React.Reac
           />
         )}
         <StorageAvailabilityProvider>
-          <GoogleScripts
-            adsensePublisherId={ADSENSE_PUBLISHER_ID}
-            gaMeasurementId={GA_MEASUREMENT_ID}
-          />
+          <GoogleScripts gaMeasurementId={GA_MEASUREMENT_ID} />
           <Providers locale={locale} messages={messages}>
             {children}
           </Providers>
+          {/* Fixed to the viewport bottom — it shifts nothing on the page. */}
+          <ConsentBanner locale={locale} />
         </StorageAvailabilityProvider>
       </body>
     </html>

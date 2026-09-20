@@ -22,12 +22,13 @@ const inter = Inter({
  * alongside `(landing)` and `[locale]`.
  *
  * What is missing from it is the point. There is no header, footer, nav,
- * announcement banner, cookie/CMP UI, analytics, or ad script, because this
- * document renders inside somebody else's article: every one of those would
- * be an uninvited guest on their page, and the ad scripts additionally must
- * not run in a third-party frame at all (AdSense forbids serving ads in an
- * iframe on a site that is not the publisher's). The widget is what the
- * reader asked for, plus one attribution link back here.
+ * announcement banner, consent UI, analytics, or advertising, because this
+ * document renders inside somebody else's article, where every one of those
+ * would be an uninvited guest. The consent banner would be the worst of
+ * them: it would ask the reader of another site for a decision about this
+ * one, from inside a frame they may not realise is a different site at all.
+ * The widget is what the reader asked for, plus one attribution link back
+ * here.
  *
  * `noindex` applies to the whole segment: the embed is the same game as
  * `/[locale]/games/shared/[id]`, which is the URL that should rank. It is not

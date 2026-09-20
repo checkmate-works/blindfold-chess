@@ -25,7 +25,7 @@ const NO_STORAGE = new Error('localStorage is not available in this environment'
  *
  * `lib/storage/storage-availability.ts` answers a different question and is
  * not a substitute for this catch. It runs a one-off probe write at startup
- * to decide whether to inject AdSense / GA / CMP at all, so its answer is a
+ * to decide whether to inject Google Analytics at all, so its answer is a
  * property of the browser, taken once. Whether *this* write lands also
  * depends on the payload — a browser with working storage still rejects the
  * save that crosses the quota — so the per-call outcome has to come from the

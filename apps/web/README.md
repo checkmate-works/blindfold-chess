@@ -171,13 +171,13 @@ Stripe-based subscription billing ($1/month ad-free plan). Covers API keys, Prod
 
 See [docs/stripe-setup.md](docs/stripe-setup.md) for setup instructions.
 
-## Ads (first-party + AdSense)
+## Ads (first-party native cards)
 
-Self-served affiliate creatives with an AdSense fallback, managed at
-`/admin/ads`. The design is documented in TSDoc next to the code; start at
-`src/lib/ads/registry.ts` (slots) and the `adCreatives` table in
-`src/lib/db/schema/notifications.ts` (data model), then `AdSlot` and
-`NativeAdCard` under `src/app/[locale]/_components/` (rendering).
+Self-served affiliate creatives, managed at `/admin/ads`. The design is
+documented in TSDoc next to the code; start at `src/lib/ads/registry.ts`
+(slots) and the `adCreatives` table in
+`src/lib/db/schema/notifications.ts` (data model), then `NativeAdCard`
+under `src/app/[locale]/_components/` (rendering).
 
 ## Cron Jobs
 

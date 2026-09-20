@@ -3,6 +3,7 @@ import { Suspense } from 'react';
 import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 
+import { ConsentSettingsButton } from '@/app/_components/ConsentSettingsButton';
 import { SITE_DOMAIN } from '@/config';
 import { FaGithub } from 'react-icons/fa';
 
@@ -27,6 +28,7 @@ export async function Footer({ locale, hideLanguageSwitcher }: Props) {
     tCompany,
     tAffiliate,
     tLicenses,
+    tConsent,
   ] = await Promise.all([
     getTranslations({ locale, namespace: 'Footer' }),
     getTranslations({ locale, namespace: 'manual' }),
@@ -40,6 +42,7 @@ export async function Footer({ locale, hideLanguageSwitcher }: Props) {
     getTranslations({ locale, namespace: 'company' }),
     getTranslations({ locale, namespace: 'affiliateDisclosure' }),
     getTranslations({ locale, namespace: 'licenses' }),
+    getTranslations({ locale, namespace: 'consent' }),
   ]);
 
   const isContactFormEnabled = !!process.env.RESEND_API_KEY;
@@ -173,6 +176,17 @@ export async function Footer({ locale, hideLanguageSwitcher }: Props) {
                 >
                   {tLicenses('title')}
                 </Link>
+              </li>
+              <li>
+                {/*
+                  Not a page — it erases the consent cookie so the banner comes
+                  back. Styled as its siblings because it sits in the same nav
+                  list and reads as one more entry in it.
+                */}
+                <ConsentSettingsButton
+                  label={tConsent('settings')}
+                  className="hover:text-foreground transition-colors"
+                />
               </li>
             </ul>
           </div>

@@ -10,14 +10,6 @@ export const SITE_DOMAIN = (() => {
 })();
 export const AUTHOR_NAME = 'CheckmateWorks';
 export const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
-
-/**
- * The site no longer has AdSense ad units — only the `adsbygoogle.js` loader,
- * which the "Privacy & messaging" consent banner is delivered through. The
- * publisher id is what the loader needs, so it stays; the six per-unit slot
- * and layout-key variables went with the units.
- */
-export const ADSENSE_PUBLISHER_ID = process.env.NEXT_PUBLIC_ADSENSE_PUBLISHER_ID;
 export const IS_LOCAL_DEV =
   process.env.NODE_ENV === 'development' || process.env.NEXT_PUBLIC_SITE_URL?.includes('localhost');
 

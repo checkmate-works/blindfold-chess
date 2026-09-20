@@ -64,11 +64,9 @@ The application supports Google Analytics 4 for usage tracking. To enable it:
 NEXT_PUBLIC_GA_MEASUREMENT_ID=G-XXXXXXXXXX
 ```
 
-### Cookie Consent Banner (Required for EU/US users)
+### Cookie Consent Banner (Required for EU/UK users)
 
-The application uses Google AdSense's "Privacy & messaging" (formerly Funding Choices) for GDPR/CCPA compliance. It is configured entirely in the AdSense dashboard and reuses `NEXT_PUBLIC_ADSENSE_PUBLISHER_ID` — no separate environment variable is needed.
-
-For detailed setup instructions, see [cookie-consent-setup.md](cookie-consent-setup.md).
+The consent banner is this repository's own code and needs no configuration: it stores the visitor's decision in a cookie and withholds Google Analytics until consent is granted. There is no dashboard to visit and no environment variable to set. Start at `src/app/_components/ConsentBanner.tsx` for the rationale and `src/lib/consent/` for the mechanism.
 
 ### Error Tracking (Optional)
 

@@ -39,6 +39,17 @@ type AdSlotConfig = { kind: AdKind };
  * list), which is per-surface targeting by construction; a surface that
  * needed two independently-filled placements would add a second slot rather
  * than a "sub-slot" extension of this registry.
+ *
+ * Every slot here is in-content, and that is deliberate. This registry used
+ * to also carry fixed banner placements — a `banner` kind rendered into
+ * reserved rectangles above and below page content — and they were removed
+ * rather than left unused. A banner is the opposite of a native ad: it
+ * announces itself as an ad block in a shape belonging to no surface, which
+ * is precisely what a native ad is defined by not doing. The affiliate
+ * networks do supply ready-made banner creatives, and this site uses none of
+ * them; a creative here is a card written for the surface it lands in. So a
+ * new placement is a new in-content surface, and the answer to "where do we
+ * put a banner?" is that there is nowhere for one to go.
  */
 export const AD_SLOTS = {
   'feed-native-ad': { kind: 'native_card' },

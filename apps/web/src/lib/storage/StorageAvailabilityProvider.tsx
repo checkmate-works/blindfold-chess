@@ -24,8 +24,8 @@ const StorageAvailabilityContext = createContext<StorageAvailability | null>(nul
  * `(landing)/layout.tsx`) — they are sibling root layouts, each with its
  * own `<html>`/`<body>`, so each needs its own provider instance. Nested
  * layouts (e.g. `[locale]/(public)/layout.tsx`) MUST NOT mount another
- * provider; they and their `GoogleScripts` / ad components consume the
- * parent provider, guaranteeing a single probe per page load.
+ * provider; they and their `GoogleScripts` / consent-banner / ad components
+ * consume the parent provider, guaranteeing a single probe per page load.
  */
 export function StorageAvailabilityProvider({ children }: { children: ReactNode }) {
   const availability = useStorageAvailability();
@@ -42,8 +42,10 @@ export function StorageAvailabilityProvider({ children }: { children: ReactNode 
  * `StorageAvailabilityProvider`. Returns `null` until the post-mount probe
  * completes, or when the component tree is rendered outside a provider.
  *
- * Callers that gate Google / AdSense scripts should treat `null` exactly
- * like `{ all: false }` — render nothing.
+ * Callers that gate Google Analytics should treat `null` exactly like
+ * `{ all: false }` — render nothing. The consent banner is the one caller
+ * that does not: it renders through `null` so it stays in the
+ * server-rendered HTML, and removes itself only on a positive `all: false`.
  */
 export function useStorageAvailabilityContext(): StorageAvailability | null {
   return useContext(StorageAvailabilityContext);

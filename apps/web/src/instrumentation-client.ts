@@ -154,8 +154,8 @@ Sentry.init({
     // of a `ui.click` breadcrumb on a navigation control, zero users impacted.
     // The most frequent trigger is the landing page's "Get Started" CTA, which
     // crosses from the `(landing)` root layout into the `[locale]` one and so
-    // navigates as an MPA (a real unload) with the AdSense loader, GA
-    // `/g/collect` and RSC prefetches still in flight.
+    // navigates as an MPA (a real unload) with GA `/g/collect` and RSC
+    // prefetches still in flight.
     //
     // Both conditions are required. Matching on the mechanism keeps a future
     // `captureException(undefined)` from our own code visible, and the strict

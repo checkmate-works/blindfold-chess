@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
+import Link from 'next/link';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { LastUpdated } from '@/app/[locale]/_components/LastUpdated';
@@ -12,7 +13,7 @@ import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
 export const generateStaticParams = generateLocaleStaticParams;
 
 /** Date this policy was last revised (single source of truth, not per-locale). */
-const LAST_UPDATED = '2026-03-13';
+const LAST_UPDATED = '2026-09-19';
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return createPageMetadata({ params, namespace: 'privacy', path: 'privacy' });
@@ -21,7 +22,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function PrivacyPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const t = await getTranslations({ locale, namespace: 'privacy' });
+  const [t, tAffiliate] = await Promise.all([
+    getTranslations({ locale, namespace: 'privacy' }),
+    getTranslations({ locale, namespace: 'affiliateDisclosure' }),
+  ]);
 
   return (
     <PageLayout title={t('title')} locale={locale} breadcrumb={[{ label: t('title') }]}>
@@ -50,35 +54,19 @@ export default async function PrivacyPage({ params }: Props) {
             {t('googlePrivacyPolicyLink')}
           </a>
         </p>
+        <p>{t('analyticsConsent')}</p>
 
-        <SectionTitle>{t('adsenseTitle')}</SectionTitle>
-        <p>{t('adsenseDescription')}</p>
-        <ul className="list-disc ml-6 space-y-2">
-          <li className="text-foreground/90 pl-2">{t('adsenseItem1')}</li>
-          <li className="text-foreground/90 pl-2">{t('adsenseItem2')}</li>
-          <li className="text-foreground/90 pl-2">{t('adsenseItem3')}</li>
-        </ul>
+        <SectionTitle>{t('advertisingTitle')}</SectionTitle>
+        <p>{t('advertisingDescription')}</p>
         <p>
-          {t('adsenseOptOut')}{' '}
-          <a
-            href="https://www.google.com/settings/ads"
-            target="_blank"
-            rel="noopener noreferrer"
+          {t('advertisingLearnMore')}{' '}
+          <Link
+            href={`/${locale}/affiliate-disclosure`}
+            prefetch={false}
             className={TEXT_LINK_MUTED_CLASSES}
           >
-            {t('adsSettingsLink')}
-          </a>
-        </p>
-        <p>
-          {t('adsenseLearnMore')}{' '}
-          <a
-            href="https://policies.google.com/technologies/partner-sites"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={TEXT_LINK_MUTED_CLASSES}
-          >
-            {t('partnerSitesLink')}
-          </a>
+            {tAffiliate('title')}
+          </Link>
         </p>
 
         <SectionTitle>{t('localStorageTitle')}</SectionTitle>

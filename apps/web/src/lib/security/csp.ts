@@ -17,8 +17,8 @@
  *   `next/script`) pick up the nonce automatically: Next extracts it from the
  *   `Content-Security-Policy(-Report-Only)` header visible to the renderer
  *   and stamps it on every script it emits during a dynamic render.
- * - The app's own three build-time-constant inline bootstrap scripts (theme,
- *   ad-hide, announcement-dismiss) are allowed via `'sha256-...'` hash
+ * - The app's own four build-time-constant inline bootstrap scripts (theme,
+ *   ad-hide, consent, announcement-dismiss) are allowed via `'sha256-...'` hash
  *   sources (`./inline-script-hashes.ts`) rather than the nonce. Hashes are
  *   honored alongside `'strict-dynamic'` (CSP3), and — critically — they need
  *   no `headers()` read in Server Components. The previous design threaded
@@ -223,10 +223,6 @@ export function buildCspHeader(
     'www.googletagmanager.com',
     'www.google-analytics.com',
     '*.sentry.io',
-    'pagead2.googlesyndication.com',
-    'adservice.google.com',
-    'adservice.google.co.jp',
-    '*.doubleclick.net',
     ...(isDevelopment ? ["'unsafe-eval'"] : []),
   ];
 
@@ -241,40 +237,22 @@ export function buildCspHeader(
     // blob worker falls through to `default-src 'self'` and is blocked — so it
     // must be named here. `'self'` also covers any same-origin worker scripts.
     "worker-src 'self' blob:",
-    // `'unsafe-inline'` on styles is out of scope to remove (CSS-in-JS).
-    // `fonts.googleapis.com` serves the @font-face stylesheet for the Google
-    // Sans fonts that Google's AdSense / consent UI injects.
-    "style-src 'self' 'unsafe-inline' fonts.googleapis.com",
-    // `ep1.adtrafficquality.google`: the Ad Traffic Quality endpoint is not
-    // only an XHR beacon target (see `connect-src` below) — it is also fetched
-    // as a tracking pixel via `<img>`, so it must be named in BOTH directives.
-    //
+    // `'unsafe-inline'` on styles is out of scope to remove (CSS-in-JS). No
+    // third-party stylesheet host is named: the app's own Inter is self-hosted
+    // via `next/font`, and the Google Fonts entry that used to sit here served
+    // the Google Sans face that the ad stack's in-page UI pulled in.
+    "style-src 'self' 'unsafe-inline'",
     // `www.googletagmanager.com`: GA4 delivers some measurement hits as image
     // beacons (`/td?id=G-...`) rather than XHR — gtag.js picks the transport
     // itself depending on browser and payload size, so the host is needed in
     // `img-src` as well as `script-src`.
     "img-src 'self' data: blob: *.supabase.co" +
       (supabaseOrigin ? ` ${supabaseOrigin}` : '') +
-      ' pagead2.googlesyndication.com *.doubleclick.net ep1.adtrafficquality.google' +
       ' www.googletagmanager.com',
-    // `fonts.gstatic.com`: woff2 files for the Google Sans font that AdSense's
-    // in-page UI pulls in (the app's own Inter is self-hosted via next/font).
-    "font-src 'self' data: fonts.gstatic.com",
-    // `ep1.adtrafficquality.google`: AdSense's Ad Traffic Quality system POSTs
-    // beacons here via fetch/XHR (the iframe counterpart `ep2.adtrafficquality.google`
-    // lives in `frame-src` below). Without it production logs a flood of
-    // connect-src violations.
-    //
-    // `fundingchoicesmessages.google.com`: Google's Privacy & messaging (Funding
-    // Choices) CMP. Plain AdSense publishers get no separate CMP tag — the
-    // consent message is delivered by `adsbygoogle.js` itself, which then
-    // fetches / beacons this host via XHR on every page load. The host was
-    // dropped from `script-src` when the standalone CMP tag was removed
-    // (a91d72fc5); under `'strict-dynamic'` the injected script needs no
-    // script-src entry, but `connect-src` has no such escape hatch, so this
-    // entry is required. Missing it produced a steady stream of connect-src
-    // violation reports in production.
-    //
+    // No font host: every face the app renders is self-hosted by `next/font`.
+    // The OG image route does fetch Google Fonts, but it does so on the server,
+    // where no CSP applies (`@/lib/og/load-og-fonts`).
+    "font-src 'self' data:",
     // `*.google-analytics.com` (not the literal `www.google-analytics.com`):
     // gtag.js sends measurement hits to region-prefixed hosts such as
     // `region1.google-analytics.com` / `region2.google-analytics.com` for
@@ -282,20 +260,14 @@ export function buildCspHeader(
     // Google implementation detail outside our control, so the wildcard is
     // required to avoid a flood of connect-src violation reports.
     //
-    // `csi.gstatic.com`: AdSense's RUM script (`pagead2.googlesyndication.com
-    // /pagead/js/rum.js`) posts its client-side instrumentation to Google's
-    // CSI collector. Same situation as the CMP above — `'strict-dynamic'`
-    // covers loading rum.js but says nothing about where it may connect.
-    //
-    // `www.google.com`: AdSense / gtag conversion and user-list pings
-    // (`/pagead/...`, `/ccm/collect`) go to the bare google.com host, which is
-    // covered by neither `*.google-analytics.com` nor the syndication hosts.
-    // Already present in `frame-src` for the same ad stack.
+    // `www.google.com`: gtag's conversion / user-list pings (`/ccm/collect`)
+    // go to the bare google.com host, which neither `*.google-analytics.com`
+    // nor `www.googletagmanager.com` covers. `'strict-dynamic'` covers loading
+    // gtag.js but says nothing about where it may then connect.
     "connect-src 'self' *.google-analytics.com *.sentry.io *.ingest.sentry.io *.supabase.co" +
       (supabaseOrigin ? ` ${supabaseOrigin}` : '') +
       (supabaseWsOrigin ? ` ${supabaseWsOrigin}` : '') +
-      ' pagead2.googlesyndication.com adservice.google.com ep1.adtrafficquality.google' +
-      ' fundingchoicesmessages.google.com csi.gstatic.com www.google.com',
+      ' www.google.com',
     // `'self'`: the share dialog previews the embeddable replay by framing our
     // own `/embed/g/<code>` — without this the preview is a blank box the
     // moment the policy is enforced (issue #89), which is the one thing that
@@ -303,18 +275,14 @@ export function buildCspHeader(
     // it was added, since `frame-src` does not fall back to `default-src`
     // once the directive is present.
     //
-    // `pagead2.googlesyndication.com`: AdSense also renders some ad iframes from
-    // this host (in addition to googleads.g.doubleclick.net / tpc.googlesyndication.com).
-    //
-    // `data:`: AdSense seeds every ad slot with a placeholder
-    // `<iframe src="data:text/html,...">` before swapping in the real creative.
-    // Reported from every ad-bearing page across Chrome/Firefox/Edge; the app
-    // itself renders no `data:` frame (nor any `srcDoc`), so this entry exists
-    // solely for the ad stack. The relaxation is narrow: a `data:` document
-    // gets an opaque origin, so it cannot read this page's DOM, storage, or
-    // cookies — unlike `data:` in `script-src`, which would be an XSS bypass
-    // and stays forbidden. Drop this the day the site stops serving ads.
-    "frame-src 'self' data: googleads.g.doubleclick.net tpc.googlesyndication.com pagead2.googlesyndication.com ep2.adtrafficquality.google www.google.com www.chess.com www.youtube-nocookie.com",
+    // Only two third-party origins remain, both of them content a page
+    // deliberately embeds: a Chess.com board and a YouTube video on its
+    // privacy-enhanced host. `data:` used to be here for the ad stack, which
+    // seeded every slot with a placeholder `<iframe src="data:text/html,...">`;
+    // the app itself renders no `data:` frame and no `srcDoc`, so it went with
+    // the ads. In `script-src` a `data:` source would be a straight XSS bypass
+    // and is forbidden in every variant.
+    "frame-src 'self' www.chess.com www.youtube-nocookie.com",
     // `'self'` covers the host that served the document; `siteOrigin` covers the
     // absolute canonical manifest URL emitted by `metadataBase` when the request
     // was served on a non-canonical host. See `siteOrigin` derivation above.
