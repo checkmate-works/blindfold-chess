@@ -27,17 +27,25 @@ import { createdAtOnly, timestamps } from './columns';
  * Kind-specific fields used to live in a `payload` JSONB column, on the
  * argument that a new ad format should be a new `kind` plus a type guard and
  * a renderer, with no migration. That held while a `banner` format sat next
- * to the native card. Once banners were retired, the two kinds left differ by
- * three nullable columns — `icon` for the tile, `avatar_image_path` /
- * `avatar_alt` for the card — and the JSONB was buying a migration-free path
- * nothing used, at the price of every constraint below: a row it could not
- * render was stored anyway and dropped at read time, silently.
+ * to the native card. Once banners were retired, the kinds left differed only
+ * by which of three nullable columns they use — `icon` for the tile,
+ * `avatar_image_path` / `avatar_alt` for the card, neither for the thumb —
+ * and the JSONB was buying a migration-free path nothing used, at the price
+ * of every constraint below: a row it could not render was stored anyway and
+ * dropped at read time, silently.
+ *
+ * `native_thumb` is what that trade looks like in practice. It arrived after
+ * the column migration, for the puzzle result screen's board-thumbnail grid,
+ * and needed no new column at all — it is the card's columns minus the author
+ * row. What it cost was two CHECK constraints widened in one migration, in
+ * exchange for the guarantee that a thumb carrying an emoji cannot be stored.
  *
  * The set of kinds is closed at compile time. `AD_KINDS` in
  * `@/lib/ads/registry` is a const tuple, and every kind has a hand-written
  * renderer and authoring form, so there is no shape the schema could fail to
- * anticipate. A new kind is still those code changes; it now also adds its
- * columns here and extends `ad_creatives_chk_fields_for_kind`.
+ * anticipate. A new kind is still those code changes; it also extends
+ * `ad_creatives_chk_kind` and `ad_creatives_chk_fields_for_kind` here, and
+ * adds columns only if its shape needs a field no other kind has.
  *
  * `kind` is derived from `slot` by the registry and written, never chosen
  * (`createAdCreative`). It is stored because it is what the CHECK constraints
@@ -107,13 +115,17 @@ export const adCreatives = pgTable(
   },
   (table) => [
     index('idx_ad_creatives_slot_active').on(table.slot, table.isActive),
-    check('ad_creatives_chk_kind', sql`${table.kind} IN ('native_card', 'native_tile')`),
+    check(
+      'ad_creatives_chk_kind',
+      sql`${table.kind} IN ('native_card', 'native_tile', 'native_thumb')`
+    ),
     // The invariant the JSONB guard used to enforce by dropping the row at
     // read time, made a write-time error: a tile has an emoji and no author
-    // row; a card has no emoji.
+    // row; a card has no emoji; a thumb has neither, because it is a
+    // thumbnail with a one-line title and nothing else.
     check(
       'ad_creatives_chk_fields_for_kind',
-      sql`(${table.kind} = 'native_tile' AND ${table.icon} IS NOT NULL AND ${table.icon} <> '' AND ${table.avatarImagePath} IS NULL AND ${table.avatarAlt} IS NULL) OR (${table.kind} = 'native_card' AND ${table.icon} IS NULL)`
+      sql`(${table.kind} = 'native_tile' AND ${table.icon} IS NOT NULL AND ${table.icon} <> '' AND ${table.avatarImagePath} IS NULL AND ${table.avatarAlt} IS NULL) OR (${table.kind} = 'native_card' AND ${table.icon} IS NULL) OR (${table.kind} = 'native_thumb' AND ${table.icon} IS NULL AND ${table.avatarImagePath} IS NULL AND ${table.avatarAlt} IS NULL)`
     ),
     check(
       'ad_creatives_chk_avatar_alt_with_image',

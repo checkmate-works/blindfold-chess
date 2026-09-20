@@ -1,0 +1,4 @@
+ALTER TABLE "ad_creatives" DROP CONSTRAINT "ad_creatives_chk_kind";--> statement-breakpoint
+ALTER TABLE "ad_creatives" DROP CONSTRAINT "ad_creatives_chk_fields_for_kind";--> statement-breakpoint
+ALTER TABLE "ad_creatives" ADD CONSTRAINT "ad_creatives_chk_kind" CHECK ("ad_creatives"."kind" IN ('native_card', 'native_tile', 'native_thumb'));--> statement-breakpoint
+ALTER TABLE "ad_creatives" ADD CONSTRAINT "ad_creatives_chk_fields_for_kind" CHECK (("ad_creatives"."kind" = 'native_tile' AND "ad_creatives"."icon" IS NOT NULL AND "ad_creatives"."icon" <> '' AND "ad_creatives"."avatar_image_path" IS NULL AND "ad_creatives"."avatar_alt" IS NULL) OR ("ad_creatives"."kind" = 'native_card' AND "ad_creatives"."icon" IS NULL) OR ("ad_creatives"."kind" = 'native_thumb' AND "ad_creatives"."icon" IS NULL AND "ad_creatives"."avatar_image_path" IS NULL AND "ad_creatives"."avatar_alt" IS NULL));

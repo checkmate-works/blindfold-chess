@@ -554,6 +554,13 @@
       "when": 1789879298199,
       "tag": "20260920044138_drop_ad_creatives_payload",
       "breakpoints": true
+    },
+    {
+      "idx": 79,
+      "version": "7",
+      "when": 1789889006943,
+      "tag": "20260920072326_allow_native_thumb_ad_kind",
+      "breakpoints": true
     }
   ]
 }
