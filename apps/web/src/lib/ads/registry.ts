@@ -59,6 +59,7 @@ export const AD_SLOTS = {
   'feed-native-ad': { kind: 'native_card' },
   'topic-catalog-native-ad': { kind: 'native_card' },
   'topic-detail-native-ad': { kind: 'native_card' },
+  'glossary-term-list-native-ad': { kind: 'native_card' },
   'puzzle-list-native-ad': { kind: 'native_card' },
   'position-memory-list-native-ad': { kind: 'native_card' },
 } as const satisfies Record<string, AdSlotConfig>;
@@ -97,3 +98,17 @@ export const TOPIC_CATALOG_NATIVE_AD_SLOT = 'topic-catalog-native-ad' satisfies 
  * written to be read rather than clicked past has to earn.
  */
 export const TOPIC_DETAIL_NATIVE_AD_SLOT = 'topic-detail-native-ad' satisfies AdSlot;
+
+/**
+ * The pool the glossary term lists — a letter's page and a category's —
+ * draw their native card from.
+ *
+ * This is the first static surface to carry an ad, and it reaches the pool
+ * differently from every other one. `resolveNativeAds` needs the viewer, and
+ * reading the viewer means `cookies()`, which would turn 30-odd prerendered
+ * pages dynamic. The term lists call `getNativeAdCreatives` instead — the
+ * viewer-independent, tag-invalidated read — and leave the entitlement to the
+ * `bfc_ads_hidden` cookie and the CSS rule that hides `.ad-slot-wrapper`,
+ * which is the layer that exists for exactly this case.
+ */
+export const GLOSSARY_TERM_LIST_NATIVE_AD_SLOT = 'glossary-term-list-native-ad' satisfies AdSlot;

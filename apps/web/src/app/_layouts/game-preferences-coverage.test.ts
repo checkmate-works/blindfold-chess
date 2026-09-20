@@ -19,6 +19,11 @@ const INDIRECT_CONSUMER_TOKENS = [
   'MoveReferencePreviewModal',
   'GameCommentBody',
   'MoveNotationText',
+  // The ad card's thumbnail is a board, so it reads the theme. It spreads
+  // faster than the components above — a new surface is a slot plus a render
+  // site — and each new render site is a chance to land in a subtree with no
+  // provider, which is a runtime throw rather than a missing theme.
+  'NativeAdCard',
 ];
 
 function walk(dir: string, out: string[] = []): string[] {
