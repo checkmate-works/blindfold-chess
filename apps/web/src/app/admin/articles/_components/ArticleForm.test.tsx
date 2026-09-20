@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ArticleForm } from './ArticleForm';
+import { articleFormLabels } from './__test-support__/article-form-labels';
 
 const mockPush = vi.fn();
 const mockReplace = vi.fn();
@@ -86,45 +87,7 @@ vi.mock('@/app/[locale]/_contexts/ToastContext', () => ({
   }),
 }));
 
-const defaultLabels = {
-  formTitle: 'Create Article',
-  slug: 'Slug',
-  slugPlaceholder: 'e.g. new-feature-release',
-  generateSlugFromTitle: 'Generate from title',
-  title: 'Title',
-  titlePlaceholder: 'Article title',
-  content: 'Content',
-  contentPlaceholder: 'Article content...',
-  locale: 'Locale',
-  saveDraft: 'Save Draft',
-  savingDraft: 'Saving...',
-  draftSaved: 'Draft saved',
-  preview: 'Publish Settings',
-  cancel: 'Cancel',
-  excerpt: 'Excerpt',
-  excerptPlaceholder: 'Brief summary of the article...',
-  description: 'Description (SEO)',
-  descriptionPlaceholder: 'Meta description for search engines...',
-  category: 'Category',
-  categoryNone: 'None',
-  icon: 'Icon',
-  iconPlaceholder: 'e.g. ♟️',
-  metadata: 'Metadata',
-  tabEdit: 'Edit',
-  tabPreview: 'Preview',
-  unsavedChangesTitle: 'Unsaved Changes',
-  unsavedChangesMessage: 'You have unsaved changes. Are you sure you want to leave?',
-  unsavedChangesConfirm: 'Leave',
-  unsavedChangesCancel: 'Stay',
-  savePublished: 'Save',
-  savingPublished: 'Saving...',
-  publishedSaved: 'Article saved',
-  publishedConfirmTitle: 'Confirm Save',
-  publishedConfirmMessage:
-    'This article is published. Your changes will be reflected immediately. Are you sure?',
-  publishedConfirmConfirm: 'Save',
-  publishedConfirmCancel: 'Cancel',
-};
+const defaultLabels = articleFormLabels('Create Article');
 
 function openMetadataPanel() {
   fireEvent.click(screen.getByTitle('Metadata'));

@@ -9,8 +9,7 @@ import { Field, Input } from '@/app/admin/_components/forms';
 
 import { fromLocalizedCopyDraft, toLocalizedCopyDraft } from '@/lib/ads/copy';
 import type { AdSlot } from '@/lib/ads/registry';
-import type { NativeCardThumbnail } from '@/lib/ads/thumbnail';
-import { DEFAULT_AD_ALT, DEFAULT_NATIVE_THUMBNAIL_FEN } from '@/lib/ads/thumbnail';
+import { DEFAULT_AD_ALT } from '@/lib/ads/thumbnail';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -19,6 +18,7 @@ import { useCommonCreativeState } from '../_lib/use-common-creative-state';
 import type { CreativeFormInitial } from '../_lib/use-common-creative-state';
 import { useCreativeImageUpload } from '../_lib/use-creative-image-upload';
 import { useCreativeSubmit } from '../_lib/use-creative-submit';
+import { useCreativeThumbnailState } from '../_lib/use-creative-thumbnail-state';
 import { AD_CREATIVE_LIMITS } from '../_lib/validation';
 import { CreativeFormShell } from './CreativeFormShell';
 import { CreativeThumbnailFields } from './CreativeThumbnailFields';
@@ -51,39 +51,13 @@ export function NativeCardCreativeForm({ mode, slot, creativeId, initial, labels
   const setCopy = (set: typeof setTitle, locale: Locale) => (value: string) =>
     set((prev) => ({ ...prev, [locale]: value }));
 
-  const initThumb = initial.thumbnail ?? { fen: DEFAULT_NATIVE_THUMBNAIL_FEN };
-  const [thumbnailFen, setThumbnailFen] = useState(initThumb.fen);
-  const [thumbnailImagePath, setThumbnailImagePath] = useState<string | null>(
-    initThumb.imagePath ?? null
-  );
-  const [thumbnailAlt, setThumbnailAlt] = useState(initThumb.imageAlt || DEFAULT_AD_ALT);
-
-  const { upload, remove, isBusy } = useCreativeImageUpload(creativeId, setError);
-  const isUploading = isBusy('avatar');
-  const isThumbUploading = isBusy('thumbnail');
+  const images = useCreativeImageUpload(creativeId, setError);
+  const isUploading = images.isBusy('avatar');
+  const thumbnail = useCreativeThumbnailState(initial.thumbnail, images);
 
   const handleAvatarUpload = async (file: File) => {
-    const path = await upload('avatar', file, avatarAlt);
+    const path = await images.upload('avatar', file, avatarAlt);
     if (path) setAvatarImagePath(path);
-  };
-
-  const handleThumbnailUpload = async (file: File) => {
-    const path = await upload('thumbnail', file, thumbnailAlt);
-    if (path) setThumbnailImagePath(path);
-  };
-
-  const removeThumbnailImage = async () => {
-    // With no saved creative yet, the image only lives in local state and
-    // `remove` reports success without an API call.
-    if (await remove('thumbnail')) setThumbnailImagePath(null);
-  };
-
-  // The effective thumbnail from the current inputs: the board `fen` always,
-  // plus the override image when one is set. Shared by the live preview and
-  // submit.
-  const currentThumbnail: NativeCardThumbnail = {
-    fen: thumbnailFen.trim() || DEFAULT_NATIVE_THUMBNAIL_FEN,
-    ...(thumbnailImagePath ? { imagePath: thumbnailImagePath, imageAlt: thumbnailAlt } : {}),
   };
 
   const handleSubmit = (e: FormEvent) => {
@@ -93,7 +67,7 @@ export function NativeCardCreativeForm({ mode, slot, creativeId, initial, labels
       icon: null,
       avatarImagePath,
       avatarAlt,
-      thumbnail: currentThumbnail,
+      thumbnail: thumbnail.current,
       title: fromLocalizedCopyDraft(title),
       description: fromLocalizedCopyDraft(description),
     });
@@ -109,18 +83,7 @@ export function NativeCardCreativeForm({ mode, slot, creativeId, initial, labels
         onSubmit={handleSubmit}
         cancelHref={`/admin/ads/${slot}`}
       >
-        <CreativeThumbnailFields
-          mode={mode}
-          labels={labels}
-          fen={thumbnailFen}
-          onFenChange={setThumbnailFen}
-          imagePath={thumbnailImagePath}
-          onUpload={handleThumbnailUpload}
-          onRemove={removeThumbnailImage}
-          isUploading={isThumbUploading}
-          alt={thumbnailAlt}
-          onAltChange={setThumbnailAlt}
-        />
+        <CreativeThumbnailFields mode={mode} labels={labels} {...thumbnail.fieldProps} />
 
         <Field label={labels.avatar} htmlFor="avatar">
           <div className="flex items-center gap-3">
@@ -176,7 +139,7 @@ export function NativeCardCreativeForm({ mode, slot, creativeId, initial, labels
           avatarAlt={avatarAlt}
           title={title.en}
           description={description.en}
-          thumbnail={currentThumbnail}
+          thumbnail={thumbnail.current}
           label={labels.preview}
           caption={labels.previewCaption}
         />

@@ -8,6 +8,8 @@ import { buildChunkCommentHref } from '@/app/[locale]/(public)/chunks/_lib/chunk
 import type { CreatePostState } from '@/app/[locale]/(public)/topics/_actions/createPost';
 import { createPostWithFenAttachmentBase } from '@/app/[locale]/(public)/topics/_actions/createPostWithFenAttachmentBase';
 
+import { CHUNK_TOPIC } from '../../_lib/wrapper-config';
+
 /**
  * Thin wrapper around `createPostWithFenAttachmentBase` (#84 step 2).
  *
@@ -26,10 +28,8 @@ export async function createChunkPostWithFenAttachment(
   return createPostWithFenAttachmentBase({
     locale,
     topicIdentifier: slug,
-    topicType: 'chunk',
+    ...CHUNK_TOPIC,
     topicKey: slug,
-    urlSegment: 'chunks',
-    validateTopic: async (s) => (await getChunkBySlug(s)) !== null,
     invalidTopicError: 'Invalid chunk',
     rateLimit: RATE_LIMITS.createPost,
     validateContent,

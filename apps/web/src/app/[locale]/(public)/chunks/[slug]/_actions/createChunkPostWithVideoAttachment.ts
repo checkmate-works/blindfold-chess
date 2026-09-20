@@ -24,6 +24,8 @@ import { buildChunkCommentHref } from '@/app/[locale]/(public)/chunks/_lib/chunk
 import type { CreatePostState } from '@/app/[locale]/(public)/topics/_actions/createPost';
 import { createPostBase } from '@/app/[locale]/(public)/topics/_actions/createPost';
 
+import { CHUNK_TOPIC } from '../../_lib/wrapper-config';
+
 /**
  * Server Action: create a chunk-topic post with an attached YouTube
  * video in a single transaction.
@@ -87,10 +89,8 @@ export async function createChunkPostWithVideoAttachment(
     return await createPostBase({
       locale,
       topicIdentifier: slug,
-      topicType: 'chunk',
+      ...CHUNK_TOPIC,
       topicKey: slug,
-      urlSegment: 'chunks',
-      validateTopic: () => chunk !== null,
       invalidTopicError: 'Invalid chunk',
       rateLimit: RATE_LIMITS.createPost,
       validateContent,

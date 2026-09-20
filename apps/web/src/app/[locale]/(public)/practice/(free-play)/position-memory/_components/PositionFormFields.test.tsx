@@ -15,11 +15,7 @@ vi.mock('@/app/[locale]/_contexts/GamePreferencesContext', () => ({
   }),
 }));
 
-vi.mock('@/app/[locale]/(public)/practice/(free-play)/_components/EditableChessBoard', () => ({
-  EditableChessBoard: ({ fen, flipped }: { fen: string; flipped?: boolean }) => (
-    <div data-testid="editable-board" data-fen={fen} data-flipped={String(flipped)} />
-  ),
-}));
+vi.mock('@/app/[locale]/(public)/practice/(free-play)/_components/EditableChessBoard');
 
 vi.mock('@/app/[locale]/(public)/practice/(free-play)/_components/TagPicker', () => ({
   TagPicker: () => <div data-testid="tag-picker" />,

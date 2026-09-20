@@ -26,6 +26,8 @@ import { buildChunkCommentHref } from '@/app/[locale]/(public)/chunks/_lib/chunk
 import type { CreatePostState } from '@/app/[locale]/(public)/topics/_actions/createPost';
 import { createPostBase } from '@/app/[locale]/(public)/topics/_actions/createPost';
 
+import { CHUNK_TOPIC } from '../../_lib/wrapper-config';
+
 /**
  * Translates URL-parser failure reasons into the `attachment.embed.*` i18n
  * key used by the input form.
@@ -147,10 +149,8 @@ export async function createChunkPostWithEmbedAttachment(
   return createPostBase({
     locale,
     topicIdentifier: slug,
-    topicType: 'chunk',
+    ...CHUNK_TOPIC,
     topicKey: slug,
-    urlSegment: 'chunks',
-    validateTopic: () => chunk !== null,
     invalidTopicError: 'Invalid chunk',
     rateLimit: RATE_LIMITS.createPost,
     validateContent,
