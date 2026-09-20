@@ -8,27 +8,23 @@ import { buildChunkCommentHref } from '@/app/[locale]/(public)/chunks/_lib/chunk
 import type { CreatePostState } from '@/app/[locale]/(public)/topics/_actions/createPost';
 import { createPostBase } from '@/app/[locale]/(public)/topics/_actions/createPost';
 
+import { CHUNK_TOPIC } from '../../_lib/wrapper-config';
+
 export async function createChunkPost(
   locale: string,
   slug: string,
   _prevState: CreatePostState,
   formData: FormData
 ): Promise<CreatePostState> {
-  // getChunkBySlug is React.cache-wrapped, so this fetch and validateTopic
-  // share one query. userId may be null (orphaned author) — the notification
-  // no-ops in that case.
+  // Read only for `topicAuthorId`; the existence check is `CHUNK_TOPIC`'s.
+  // userId may be null (orphaned author) — the notification no-ops then.
   const chunk = await getChunkBySlug(slug);
 
   return createPostBase({
     locale,
     topicIdentifier: slug,
-    topicType: 'chunk',
+    ...CHUNK_TOPIC,
     topicKey: slug,
-    // urlSegment is unused when redirectPath is provided, but we still pass a
-    // sensible value so the deletePost / activity-log paths that derive their
-    // URL from `chunk → 'chunks'` stay consistent across the codebase.
-    urlSegment: 'chunks',
-    validateTopic: () => chunk !== null,
     invalidTopicError: 'Invalid chunk',
     rateLimit: RATE_LIMITS.createPost,
     validateContent,

@@ -7,6 +7,8 @@ import { validateContent } from '@/lib/validations/content';
 import { createPostForImageAttachBase } from '@/app/[locale]/(public)/topics/_actions/createPost';
 import type { ImageAttachResult } from '@/app/[locale]/(public)/topics/_lib/image-attach-types';
 
+import { CHUNK_TOPIC } from '../../_lib/wrapper-config';
+
 /**
  * Create-post entry point for the chunk topic's 2-step image flow.
  *
@@ -24,10 +26,8 @@ export async function createChunkPostForImageAttach(
   return createPostForImageAttachBase({
     locale,
     topicIdentifier: slug,
-    topicType: 'chunk',
+    ...CHUNK_TOPIC,
     topicKey: slug,
-    urlSegment: 'chunks',
-    validateTopic: () => chunk !== null,
     invalidTopicError: 'Invalid chunk',
     rateLimit: RATE_LIMITS.createPost,
     validateContent,
