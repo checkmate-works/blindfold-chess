@@ -4,10 +4,15 @@ import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
+import { getNativeThumbCreatives } from '@/lib/ads/ad';
+import { POSITION_MEMORY_RESULT_NATIVE_AD_SLOT } from '@/lib/ads/registry';
+import { loadNextPositions } from '@/lib/positions/next-positions';
+
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { NextPositionsSection } from '../../../../_components/NextPositionsSection';
 import { SinglePositionResult } from '../../../_components/single-position/SinglePositionResult';
 import { SinglePositionResultLoadingSkeleton } from '../../../_components/single-position/SinglePositionResultLoadingSkeleton';
 import { resolveCustomProblem } from '../../../_lib/custom-problem';
@@ -61,6 +66,23 @@ export default async function CustomPositionResultPage({ params }: Props) {
     />
   );
 
+  // A token run has no catalog position behind it, so there is no author tier
+  // and nothing to exclude — the grid is simply the newest of this catalog.
+  // Which is the point of putting it here: this screen used to end at Try
+  // Again and Back to list, with nothing to go on to, and a reader who has
+  // just rebuilt a board somebody handed them has no other way into the
+  // catalog.
+  //
+  // It shares the saved-position result screen's ad pool rather than taking
+  // its own: same catalog, same moment in it. The two axes the thumb pools
+  // split on (see `POSITION_MEMORY_RESULT_NATIVE_AD_SLOT`) both read the same
+  // here, and whether a DB row backed the run is not something a creative
+  // would be written differently for.
+  const [nextPositions, nativeAdCreatives] = await Promise.all([
+    loadNextPositions(null, 'memory'),
+    getNativeThumbCreatives(POSITION_MEMORY_RESULT_NATIVE_AD_SLOT, locale),
+  ]);
+
   return (
     // Fallback covers the soft-navigation gap between loading.tsx resolving and
     // the SinglePositionResult client chunk arriving. That component owns the
@@ -72,6 +94,15 @@ export default async function CustomPositionResultPage({ params }: Props) {
         sessionPath={`/practice/position-memory/custom/${token}/session`}
         breadcrumb={breadcrumb}
         expInfo={null}
+        nextPositions={
+          <NextPositionsSection
+            positions={nextPositions}
+            nativeAdCreatives={nativeAdCreatives}
+            locale={locale}
+            basePath="/practice/position-memory"
+            labels={{ sectionTitle: t('nextProblems') }}
+          />
+        }
       />
     </Suspense>
   );

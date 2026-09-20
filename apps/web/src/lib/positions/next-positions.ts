@@ -24,15 +24,20 @@ type Tier = readonly Position[];
  * reader is already on is dropped, duplicates across tiers are collapsed on
  * id, and the result is capped at `NEXT_POSITION_COUNT`.
  *
+ * `currentPositionId` is null for a run with no catalog position behind it —
+ * an instant FEN entered from a token link, say. There is nothing to exclude
+ * then, which is a real state and not a missing argument: every candidate is
+ * something the reader has not just been looking at.
+ *
  * Pure so the ranking rule is unit-testable without a database; the tiers
  * themselves come from {@link loadNextPositions}.
  */
 export function mergeNextPositionCandidates(
-  currentPositionId: string,
+  currentPositionId: string | null,
   tiers: readonly Tier[],
   limit: number = NEXT_POSITION_COUNT
 ): Position[] {
-  const seen = new Set<string>([currentPositionId]);
+  const seen = new Set<string>(currentPositionId ? [currentPositionId] : []);
   const merged: Position[] = [];
 
   for (const tier of tiers) {
@@ -62,6 +67,12 @@ export function mergeNextPositionCandidates(
  * memory position asks you to reconstruct it; offering one in the other's grid
  * would be offering a different task under the same heading.
  *
+ * `current` is null for a run with no catalog position behind it — the
+ * token-based custom-FEN result screen. There is then no author tier (there
+ * is no author) and nothing to exclude, so the grid is simply the newest of
+ * that catalog: for a reader who just rebuilt a board somebody handed them,
+ * that is the whole offer.
+ *
  * Deliberately not filtered by "already solved": free-play solves grant an
  * EXP event but do not record which position was solved, so there is nothing
  * server-side to filter on. The current position is the only exclusion.
@@ -70,9 +81,9 @@ export function mergeNextPositionCandidates(
  * share one read per request.
  */
 export const loadNextPositions = cache(
-  async (current: Pick<Position, 'id' | 'userId'>, type: 'puzzle' | 'memory') => {
+  async (current: Pick<Position, 'id' | 'userId'> | null, type: 'puzzle' | 'memory') => {
     const [byAuthor, newest] = await Promise.all([
-      current.userId
+      current?.userId
         ? listPositions({
             type,
             userId: current.userId,
@@ -83,6 +94,6 @@ export const loadNextPositions = cache(
       listPositions({ type, limit: CANDIDATE_FETCH_LIMIT, offset: 0 }),
     ]);
 
-    return mergeNextPositionCandidates(current.id, [byAuthor, newest]);
+    return mergeNextPositionCandidates(current?.id ?? null, [byAuthor, newest]);
   }
 );

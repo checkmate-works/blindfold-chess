@@ -51,4 +51,12 @@ describe('mergeNextPositionCandidates', () => {
     expect(ids(mergeNextPositionCandidates('current', [[], [position('current')]]))).toEqual([]);
     expect(ids(mergeNextPositionCandidates('current', [[position('a1')], []]))).toEqual(['a1']);
   });
+
+  it('excludes nothing when there is no current position', () => {
+    // A run with no catalog position behind it (the token-based custom-FEN
+    // result): every candidate is one the reader has not just been looking at.
+    const newest = [position('n1'), position('n2')];
+
+    expect(ids(mergeNextPositionCandidates(null, [newest]))).toEqual(['n1', 'n2']);
+  });
 });
