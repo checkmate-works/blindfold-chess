@@ -2,6 +2,7 @@ import { act, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { getFeed } from '../_actions/getFeed';
+import { AD_INTERVAL } from '../_lib/constants';
 import type { FeedItem } from '../_lib/types';
 import { FeedClient } from './FeedClient';
 
@@ -355,11 +356,13 @@ describe('FeedClient', () => {
 
   describe('leading ad slot', () => {
     it('renders the ad wrapper as the first block, sharing the per-item wrapper pattern, and never as the last block of an AD_INTERVAL-sized page', () => {
-      // AD_INTERVAL is 10. Render exactly 10 items with showAds=true -> the
-      // only ad slot leads the list (before item 1); the slot that precedes
-      // item 11 does not exist until item 11 loads, so with initialCursor=null
-      // the last DOM child is a feed card, not an ad.
-      const initialItems = Array.from({ length: 10 }, (_, i) => makeTopicPostItem(`ad-edge-${i}`));
+      // Render exactly AD_INTERVAL items with showAds=true -> the slot that
+      // precedes item AD_INTERVAL + 1 does not exist until that item loads,
+      // so with initialCursor=null the last DOM child is a feed card, not an
+      // ad, and the leading slot is the only one on the page.
+      const initialItems = Array.from({ length: AD_INTERVAL }, (_, i) =>
+        makeTopicPostItem(`ad-edge-${i}`)
+      );
       const { container } = render(
         <FeedClient {...defaultProps} initialItems={initialItems} initialCursor={null} />
       );
@@ -367,8 +370,8 @@ describe('FeedClient', () => {
       const wrappers = Array.from(
         container.querySelectorAll<HTMLElement>('div.border-b.border-border')
       );
-      // 1 ad wrapper + 10 feed wrappers.
-      expect(wrappers.length).toBe(11);
+      // 1 ad wrapper + AD_INTERVAL feed wrappers.
+      expect(wrappers.length).toBe(AD_INTERVAL + 1);
 
       const firstWrapper = wrappers[0];
       expect(firstWrapper.matches(':first-child')).toBe(true);
@@ -380,7 +383,9 @@ describe('FeedClient', () => {
 
       const lastWrapper = wrappers[wrappers.length - 1];
       expect(lastWrapper.matches(':last-child')).toBe(true);
-      expect(lastWrapper.querySelector('[data-testid="feed-card-ad-edge-9"]')).not.toBeNull();
+      expect(
+        lastWrapper.querySelector(`[data-testid="feed-card-ad-edge-${AD_INTERVAL - 1}"]`)
+      ).not.toBeNull();
       expect(lastWrapper.dataset.testid).not.toBe('ad-slot');
     });
   });
