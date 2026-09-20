@@ -46,6 +46,11 @@ type Props = {
   };
 };
 
+/** Whether this row's toggle is the one direction the server refuses: off → on. */
+function isBlocked(row: SlotCreativeRow): boolean {
+  return row.hasPlaceholderHref && !row.isActive;
+}
+
 function move<T>(list: T[], from: number, to: number): T[] {
   const next = list.slice();
   const [item] = next.splice(from, 1);
@@ -169,7 +174,7 @@ export function SlotCreativeList({ slot, rows: initialRows, editHrefBase, labels
             <span className="min-w-0 flex-1 truncate">{row.summary || '—'}</span>
 
             {row.hasPlaceholderHref && (
-              <span className="shrink-0" title={labels.hrefNotSetHint}>
+              <span id={`${row.id}-blocked`} className="shrink-0" title={labels.hrefNotSetHint}>
                 <AdminBadge variant="warning">{labels.hrefNotSet}</AdminBadge>
               </span>
             )}
@@ -199,19 +204,27 @@ export function SlotCreativeList({ slot, rows: initialRows, editHrefBase, labels
               {/* A placeholder creative can still be switched off, only not on:
                   `setAdCreativeActive` refuses the activation, and a control
                   that reports success optimistically and then snaps back with
-                  no message reads as a glitch rather than as a rule. */}
-              <button
-                type="button"
-                role="switch"
-                aria-checked={row.isActive}
-                aria-label={row.isActive ? labels.active : labels.inactive}
-                disabled={row.hasPlaceholderHref && !row.isActive}
-                title={row.hasPlaceholderHref && !row.isActive ? labels.hrefNotSetHint : undefined}
-                onClick={() => toggleActive(row.id, !row.isActive)}
-                className={`${toggleTrackClass('setting', row.isActive)} shrink-0 disabled:cursor-not-allowed disabled:opacity-50`}
-              >
-                <span className={toggleKnobClass('setting', row.isActive)} />
-              </button>
+                  no message reads as a glitch rather than as a rule.
+
+                  The reason is carried by the wrapper rather than by the
+                  button, because a disabled form control takes no pointer
+                  events and so never shows its own `title` — the tooltip that
+                  explains the block would be on the one element that cannot
+                  display it. */}
+              <span className="shrink-0" title={isBlocked(row) ? labels.hrefNotSetHint : undefined}>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={row.isActive}
+                  aria-label={row.isActive ? labels.active : labels.inactive}
+                  aria-describedby={isBlocked(row) ? `${row.id}-blocked` : undefined}
+                  disabled={isBlocked(row)}
+                  onClick={() => toggleActive(row.id, !row.isActive)}
+                  className={`${toggleTrackClass('setting', row.isActive)} shrink-0 disabled:cursor-not-allowed disabled:opacity-50`}
+                >
+                  <span className={toggleKnobClass('setting', row.isActive)} />
+                </button>
+              </span>
             </div>
           </li>
         ))}
