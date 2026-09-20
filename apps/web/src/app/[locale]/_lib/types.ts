@@ -1,6 +1,6 @@
-import type { SUPPORTED_LOCALES } from '@/config';
+import type { Locale } from '@blindfold-chess/types';
 
-export type Locale = (typeof SUPPORTED_LOCALES)[number];
+export type { Locale };
 
 export type LocalePageProps = {
   params: Promise<{ locale: Locale }>;

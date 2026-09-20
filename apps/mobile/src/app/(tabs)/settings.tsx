@@ -8,25 +8,30 @@ import {
   spacing,
   borderRadius,
 } from "../../theme";
-import {
-  changeLanguage,
-  SUPPORTED_LANGUAGES,
-  type SupportedLanguage,
-} from "../../i18n";
+import { changeLanguage, type Locale } from "../../i18n";
 
-const LANGUAGE_LABELS: Record<SupportedLanguage, string> = {
+const LANGUAGE_LABELS: Record<Locale, string> = {
   ja: "settings.languageJapanese",
   en: "settings.languageEnglish",
   es: "settings.languageSpanish",
   "pt-BR": "settings.languagePortuguese",
 };
 
+/**
+ * The order the picker lists the languages in — Japanese first, which is
+ * not the order the shared SUPPORTED_LOCALES declares. Taken from the label
+ * map's keys so the membership list stays single-sourced: `Record<Locale,
+ * string>` makes the compiler demand an entry per locale, so a locale added
+ * to the shared list cannot go missing from the picker.
+ */
+const LANGUAGE_ORDER = Object.keys(LANGUAGE_LABELS) as Locale[];
+
 export default function SettingsTab() {
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
-  const currentLanguage = i18n.language as SupportedLanguage;
+  const currentLanguage = i18n.language as Locale;
 
-  const handleLanguageChange = (language: SupportedLanguage) => {
+  const handleLanguageChange = (language: Locale) => {
     if (language !== currentLanguage) {
       changeLanguage(language);
     }
@@ -55,9 +60,9 @@ export default function SettingsTab() {
               { backgroundColor: colors.card, borderColor: colors.border },
             ]}
           >
-            {SUPPORTED_LANGUAGES.map((language, index) => {
+            {LANGUAGE_ORDER.map((language, index) => {
               const isSelected = language === currentLanguage;
-              const isLast = index === SUPPORTED_LANGUAGES.length - 1;
+              const isLast = index === LANGUAGE_ORDER.length - 1;
               return (
                 <TouchableOpacity
                   key={language}
