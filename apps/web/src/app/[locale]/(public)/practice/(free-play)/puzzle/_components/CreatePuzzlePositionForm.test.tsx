@@ -38,11 +38,7 @@ vi.mock('@/i18n/use-safe-translations');
 
 vi.mock('@/app/[locale]/_contexts/GamePreferencesContext');
 
-vi.mock('@/app/[locale]/(public)/practice/(free-play)/_components/EditableChessBoard', () => ({
-  EditableChessBoard: ({ fen }: { fen: string }) => (
-    <div data-testid="editable-board" data-fen={fen} />
-  ),
-}));
+vi.mock('@/app/[locale]/(public)/practice/(free-play)/_components/EditableChessBoard');
 
 // Spied so the unsaved-changes tests can read the `enabled` flag the form
 // derives from `isDirty` — the dialog itself is stubbed out below, so this
