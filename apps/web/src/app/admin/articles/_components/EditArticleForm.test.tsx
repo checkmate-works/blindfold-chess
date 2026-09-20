@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { EditArticleForm } from './EditArticleForm';
+import { articleFormLabels } from './__test-support__/article-form-labels';
 
 const mockPush = vi.fn();
 const mockReplace = vi.fn();
@@ -91,45 +92,7 @@ vi.mock('../_actions/updateArticle', () => ({
 
 const testId = 'art-00000000-0000-0000-0000-000000000001';
 
-const defaultLabels = {
-  formTitle: 'Edit Article',
-  slug: 'Slug',
-  slugPlaceholder: 'e.g. new-feature-release',
-  generateSlugFromTitle: 'Generate from title',
-  title: 'Title',
-  titlePlaceholder: 'Article title',
-  content: 'Content',
-  contentPlaceholder: 'Article content...',
-  locale: 'Locale',
-  saveDraft: 'Save Draft',
-  savingDraft: 'Saving...',
-  draftSaved: 'Draft saved',
-  preview: 'Publish Settings',
-  cancel: 'Cancel',
-  excerpt: 'Excerpt',
-  excerptPlaceholder: 'Brief summary of the article...',
-  description: 'Description (SEO)',
-  descriptionPlaceholder: 'Meta description for search engines...',
-  category: 'Category',
-  categoryNone: 'None',
-  icon: 'Icon',
-  iconPlaceholder: 'e.g. ♟️',
-  metadata: 'Metadata',
-  tabEdit: 'Edit',
-  tabPreview: 'Preview',
-  unsavedChangesTitle: 'Unsaved Changes',
-  unsavedChangesMessage: 'You have unsaved changes. Are you sure you want to leave?',
-  unsavedChangesConfirm: 'Leave',
-  unsavedChangesCancel: 'Stay',
-  savePublished: 'Save',
-  savingPublished: 'Saving...',
-  publishedSaved: 'Article saved',
-  publishedConfirmTitle: 'Confirm Save',
-  publishedConfirmMessage:
-    'This article is published. Your changes will be reflected immediately. Are you sure?',
-  publishedConfirmConfirm: 'Save',
-  publishedConfirmCancel: 'Cancel',
-};
+const defaultLabels = articleFormLabels('Edit Article');
 
 const defaultValues = {
   slug: 'existing-slug',
