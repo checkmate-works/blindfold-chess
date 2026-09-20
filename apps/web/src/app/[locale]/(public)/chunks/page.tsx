@@ -7,6 +7,9 @@ import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 import { FaPlus } from 'react-icons/fa';
 
+import { resolveNativeAds } from '@/lib/ads/ad';
+import { withRepeatingNativeAds } from '@/lib/ads/placement';
+import { CHUNK_LIST_NATIVE_AD_SLOT } from '@/lib/ads/registry';
 import { getOptionalUser } from '@/lib/auth';
 import { getChunkLikeMetaMap } from '@/lib/chunks/like-queries';
 import {
@@ -31,6 +34,7 @@ import {
 } from '@/app/[locale]/_components';
 import type { HelpStep } from '@/app/[locale]/_components';
 import { CatalogListCard } from '@/app/[locale]/_components/CatalogListCard';
+import { NativeAdCard } from '@/app/[locale]/_components/NativeAdCard';
 import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
 import { Skeleton } from '@/app/[locale]/_components/Skeleton';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
@@ -112,13 +116,21 @@ async function ChunksListContent({ params, searchParams }: Props) {
   const chunkIds = rows.map((r) => r.chunk.id);
   const chunkSlugs = rows.map((r) => r.chunk.slug);
   const draftChunkIds = rows.filter((r) => r.chunk.status === 'draft').map((r) => r.chunk.id);
-  const [likeMetaMap, replyMetaMap, feedbackTopicsByChunk] = await Promise.all([
-    getChunkLikeMetaMap(chunkIds, user?.id),
-    getReplyMetaMap('chunk', chunkSlugs),
-    draftChunkIds.length > 0
-      ? getFeedbackTopicsForChunks(draftChunkIds)
-      : Promise.resolve(new Map<string, ChunkFeedbackTopic[]>()),
-  ]);
+  //
+  // The ad pool joins them: it is keyed on the slot and the reader's
+  // entitlement, neither of which depends on the page window. Server-gated —
+  // an ad-free reader gets an empty pool and therefore no cards at all; the
+  // `.ad-slot-wrapper` CSS hide that `NativeAdCard` owns is the second layer,
+  // for the first paint.
+  const [likeMetaMap, replyMetaMap, feedbackTopicsByChunk, { creatives: nativeAdCreatives }] =
+    await Promise.all([
+      getChunkLikeMetaMap(chunkIds, user?.id),
+      getReplyMetaMap('chunk', chunkSlugs),
+      draftChunkIds.length > 0
+        ? getFeedbackTopicsForChunks(draftChunkIds)
+        : Promise.resolve(new Map<string, ChunkFeedbackTopic[]>()),
+      resolveNativeAds(CHUNK_LIST_NATIVE_AD_SLOT, user?.id ?? null, locale),
+    ]);
 
   const justNowLabel = tTopicChunks('justNow');
   const authorFallbackLabel = tCommon('deletedUser');
@@ -207,51 +219,57 @@ async function ChunksListContent({ params, searchParams }: Props) {
         </p>
       ) : (
         <div className="space-y-3">
-          {rows.map(({ chunk, profile }) => {
-            const isDraft = chunk.status === 'draft';
-            const topics = isDraft ? (feedbackTopicsByChunk.get(chunk.id) ?? []) : [];
-            return (
-              <CatalogListCard
-                key={chunk.id}
-                id={chunk.id}
-                fen={chunk.representativeFen}
-                title={chunk.title}
-                description={chunk.description}
-                createdAt={chunk.createdAt}
-                profile={profile}
-                likeMeta={likeMetaMap.get(chunk.id) ?? EMPTY_LIKE_META}
-                replyMeta={replyMetaMap.get(chunk.slug) ?? EMPTY_REPLY_META}
-                detailHref={`/chunks/${chunk.slug}`}
-                // The comment icon opens the Comments tab scrolled to the tab
-                // bar, not a plain #comments id — same as ChunkFeedCard's
-                // home-feed equivalent.
-                commentHref={buildChunkCommentsTabHref(chunk.slug)}
-                i18nNamespace="topics.chunks"
-                toggleLikeAction={toggleLike}
-                justNowLabel={justNowLabel}
-                authorFallbackLabel={authorFallbackLabel}
-                locale={locale}
-                topicKey={chunk.id}
-                badge={
-                  isDraft ? (
-                    <span className="inline-flex flex-wrap items-center gap-1">
-                      <span className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-900 dark:bg-amber-900 dark:text-amber-100">
-                        {t('statusDraft')}
-                      </span>
-                      {topics.map((topic) => (
-                        <span
-                          key={topic}
-                          className="inline-flex items-center rounded-full bg-amber-200 px-2 py-0.5 text-[10px] font-medium text-amber-900 dark:bg-amber-800 dark:text-amber-100"
-                        >
-                          {t(`list.feedbackChip.${topic}` as 'list.feedbackChip.title')}
+          {withRepeatingNativeAds(
+            rows.map(({ chunk, profile }) => {
+              const isDraft = chunk.status === 'draft';
+              const topics = isDraft ? (feedbackTopicsByChunk.get(chunk.id) ?? []) : [];
+              return (
+                <CatalogListCard
+                  key={chunk.id}
+                  id={chunk.id}
+                  fen={chunk.representativeFen}
+                  title={chunk.title}
+                  description={chunk.description}
+                  createdAt={chunk.createdAt}
+                  profile={profile}
+                  likeMeta={likeMetaMap.get(chunk.id) ?? EMPTY_LIKE_META}
+                  replyMeta={replyMetaMap.get(chunk.slug) ?? EMPTY_REPLY_META}
+                  detailHref={`/chunks/${chunk.slug}`}
+                  // The comment icon opens the Comments tab scrolled to the tab
+                  // bar, not a plain #comments id — same as ChunkFeedCard's
+                  // home-feed equivalent.
+                  commentHref={buildChunkCommentsTabHref(chunk.slug)}
+                  i18nNamespace="topics.chunks"
+                  toggleLikeAction={toggleLike}
+                  justNowLabel={justNowLabel}
+                  authorFallbackLabel={authorFallbackLabel}
+                  locale={locale}
+                  topicKey={chunk.id}
+                  badge={
+                    isDraft ? (
+                      <span className="inline-flex flex-wrap items-center gap-1">
+                        <span className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-900 dark:bg-amber-900 dark:text-amber-100">
+                          {t('statusDraft')}
                         </span>
-                      ))}
-                    </span>
-                  ) : undefined
-                }
-              />
-            );
-          })}
+                        {topics.map((topic) => (
+                          <span
+                            key={topic}
+                            className="inline-flex items-center rounded-full bg-amber-200 px-2 py-0.5 text-[10px] font-medium text-amber-900 dark:bg-amber-800 dark:text-amber-100"
+                          >
+                            {t(`list.feedbackChip.${topic}` as 'list.feedbackChip.title')}
+                          </span>
+                        ))}
+                      </span>
+                    ) : undefined
+                  }
+                />
+              );
+            }),
+            nativeAdCreatives,
+            (creative, key) => (
+              <NativeAdCard key={key} creative={creative} locale={locale} variant="card" />
+            )
+          )}
         </div>
       )}
 

@@ -116,6 +116,10 @@ export const AD_SLOTS = {
       { route: '/topics/openings/[slug]' },
     ],
   },
+  'chunk-list-native-ad': {
+    kind: 'native_card',
+    surfaces: [{ route: '/chunks', href: '/chunks' }],
+  },
   'glossary-term-list-native-ad': {
     kind: 'native_card',
     surfaces: [
@@ -180,6 +184,26 @@ export const TOPIC_CATALOG_NATIVE_AD_SLOT = 'topic-catalog-native-ad' satisfies 
  * written to be read rather than clicked past has to earn.
  */
 export const TOPIC_DETAIL_NATIVE_AD_SLOT = 'topic-detail-native-ad' satisfies AdSlot;
+
+/**
+ * The pool the chunk catalog (`/chunks`) draws its native card from.
+ *
+ * Its own pool rather than the feed's, even though `/topics` already shows
+ * chunk entities through `feed-native-ad`. Those are chunk *events* passing
+ * through a timeline — someone published one — and the reader is scrolling.
+ * Here the same chunks are the subject: a catalog of piece-coordination
+ * patterns, browsed by someone deciding what to memorise next, twenty to a
+ * page. A creative written for one reader is not the creative for the other,
+ * and sharing a pool would make the two indistinguishable in the network's
+ * report as well (see `withCreativeSubId`).
+ *
+ * The chunk *detail* page has no slot yet. It is a pattern plus its
+ * discussion thread, which is the shape `topic-detail-native-ad` already
+ * serves for openings and squares; whether it joins that pool or takes its
+ * own is the same content decision as every other split here, and nothing
+ * needs it answered until a creative is written for it.
+ */
+export const CHUNK_LIST_NATIVE_AD_SLOT = 'chunk-list-native-ad' satisfies AdSlot;
 
 /**
  * The pool the glossary term lists — a letter's page and a category's —

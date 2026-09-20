@@ -103,6 +103,19 @@ const PLACEHOLDER_CREATIVES = {
       },
     },
   },
+  'chunk-list-native-ad': {
+    id: '0b16ebdb-7f28-4606-bab5-9e6e0f54d1cd',
+    copy: {
+      title: {
+        en: '[Placeholder] Chunk catalog card',
+        ja: '【プレースホルダ】チャンク一覧のカード',
+      },
+      description: {
+        en: 'Replace the link and this copy with a real creative. The reader is browsing piece-coordination patterns to memorise, twenty to a page, so a creative about learning or retention belongs here more than one about playing.',
+        ja: 'リンクと本文を実際のクリエイティブに差し替えてください。読者は「次に覚える駒の配置パターン」を1ページ20件で見ている状態なので、対局そのものより学習・記憶に寄せた内容が合います。',
+      },
+    },
+  },
   'glossary-term-list-native-ad': {
     id: '47da2a50-feb2-467d-a5a6-59a0ddebed7d',
     copy: {
