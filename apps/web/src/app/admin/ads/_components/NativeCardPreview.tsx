@@ -1,6 +1,6 @@
 import Image from 'next/image';
 
-import type { NativeCardThumbnail } from '@/lib/ads/payload';
+import type { NativeCardThumbnail } from '@/lib/ads/thumbnail';
 import { CreativeThumbnail } from '@/lib/ads/ui/CreativeThumbnail';
 
 type Props = {

@@ -2,7 +2,7 @@
 
 import { Field, Input } from '@/app/admin/_components/forms';
 
-import { DEFAULT_NATIVE_THUMBNAIL_FEN } from '@/lib/ads/payload';
+import { DEFAULT_NATIVE_THUMBNAIL_FEN } from '@/lib/ads/thumbnail';
 import { CreativeThumbnail } from '@/lib/ads/ui/CreativeThumbnail';
 
 import type { AdCreativeFormLabels } from '../_lib/form-labels';

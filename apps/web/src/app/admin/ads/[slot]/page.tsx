@@ -2,8 +2,7 @@ import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-import { getAllAdCreatives } from '@/lib/ads/ad';
-import { resolveAdSummary } from '@/lib/ads/payload';
+import { getAdCreativeCopy, getAllAdCreatives } from '@/lib/ads/ad';
 import { isAdSlot, kindForSlot } from '@/lib/ads/registry';
 
 import { AdminBadge } from '../../_components/AdminBadge';
@@ -20,20 +19,17 @@ export default async function AdminSlotCreativesPage({ params }: Props) {
   const t = await getTranslations({ locale: 'en', namespace: 'Admin.adsManagement' });
   // Already ordered by (slot, sort_order) — the row order is the display order.
   const creatives = (await getAllAdCreatives()).filter((c) => c.slot === slot);
+  const copyById = await getAdCreativeCopy(creatives.map((c) => c.id));
 
-  const rows: SlotCreativeRow[] = creatives.map((c) => {
-    const base = { id: c.id, isActive: c.isActive };
-    // The admin surface has no locale of its own; `en` is the copy every
-    // creative is required to carry.
-    const summary = resolveAdSummary(kindForSlot(slot), c.payload, 'en');
-    if (!summary) return { ...base, summary: '', imageUrl: null, boardFen: null };
-    return {
-      ...base,
-      summary: summary.title,
-      imageUrl: summary.thumbnail.imagePath ?? null,
-      boardFen: summary.thumbnail.fen,
-    };
-  });
+  // The admin surface has no locale of its own; `en` is the copy every
+  // creative is required to carry.
+  const rows: SlotCreativeRow[] = creatives.map((c) => ({
+    id: c.id,
+    isActive: c.isActive,
+    summary: copyById.get(c.id)?.title.en ?? '',
+    imageUrl: c.thumbnailImagePath,
+    boardFen: c.thumbnailFen,
+  }));
 
   return (
     <AdminPageLayout
