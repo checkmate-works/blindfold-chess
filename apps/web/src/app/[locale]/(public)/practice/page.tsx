@@ -37,6 +37,8 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { DailyPuzzleCard } from '@/app/_components/DailyPuzzleCard';
 import { SITE_URL } from '@/config';
 
+import { getNativeTileCreatives } from '@/lib/ads/ad';
+import { PRACTICE_GRID_NATIVE_AD_SLOT } from '@/lib/ads/registry';
 import type { PracticeMenuType } from '@/lib/db/practice-menu-types';
 import { JsonLd, generateItemListSchema } from '@/lib/seo/jsonld';
 
@@ -48,6 +50,7 @@ import { PracticeMenuCard } from '@/app/[locale]/(public)/practice/_components/P
 import { getRankSlugForMenuType } from '@/app/[locale]/(public)/practice/_lib/module-rank-mapping';
 import { PRACTICE_EMOJIS } from '@/app/[locale]/(public)/practice/_lib/practice-emojis';
 import { ListLink, ListLinkContainer, PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import { NativeAdTile } from '@/app/[locale]/_components/NativeAdTile';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -83,6 +86,14 @@ export default async function PracticePage({ params }: Props) {
   setRequestLocale(locale);
   const t = await getTranslations({ locale });
   const tRanks = await getTranslations({ locale, namespace: 'ranks' });
+
+  // The viewer-independent read, not `resolveNativeAds`: this page is
+  // prerendered, and resolving the viewer's entitlement here would read
+  // `cookies()` and make it dynamic. Hiding the tile from a paying reader is
+  // the `bfc_ads_hidden` cookie's job, through the CSS rule on the
+  // `.ad-slot-wrapper` that `NativeAdTile` owns.
+  const nativeAdCreatives = await getNativeTileCreatives(PRACTICE_GRID_NATIVE_AD_SLOT, locale);
+  const nativeAd = nativeAdCreatives[0] ?? null;
 
   const sections: { level: PracticeLevel; practices: PracticeEntry[] }[] = [
     {
@@ -247,6 +258,7 @@ export default async function PracticePage({ params }: Props) {
           allLabel={t('practice.filter.all')}
           filterLabel={t('practice.filter.label')}
           listHeading={t('practice.modulesTitle')}
+          nativeAd={nativeAd && <NativeAdTile key="native-ad" creative={nativeAd} />}
         />
 
         <section className="space-y-4">

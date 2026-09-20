@@ -66,6 +66,7 @@ export const AD_SLOTS = {
   'topic-catalog-native-ad': { kind: 'native_card' },
   'topic-detail-native-ad': { kind: 'native_card' },
   'glossary-term-list-native-ad': { kind: 'native_card' },
+  'practice-grid-native-ad': { kind: 'native_tile' },
   'puzzle-list-native-ad': { kind: 'native_card' },
   'position-memory-list-native-ad': { kind: 'native_card' },
 } as const satisfies Record<string, AdSlotConfig>;
@@ -118,3 +119,15 @@ export const TOPIC_DETAIL_NATIVE_AD_SLOT = 'topic-detail-native-ad' satisfies Ad
  * which is the layer that exists for exactly this case.
  */
 export const GLOSSARY_TERM_LIST_NATIVE_AD_SLOT = 'glossary-term-list-native-ad' satisfies AdSlot;
+
+/**
+ * The pool the `/practice` module grid draws its native tile from — the one
+ * slot bound to `native_tile`, because it is the one surface whose cards are
+ * tiles.
+ *
+ * Static, like the glossary term lists, and reached the same way: the grid
+ * calls `getNativeTileCreatives` rather than `resolveNativeAds`, because
+ * reading the viewer would read `cookies()` and `/practice` is prerendered.
+ * The `bfc_ads_hidden` cookie and its CSS rule are the entitlement layer.
+ */
+export const PRACTICE_GRID_NATIVE_AD_SLOT = 'practice-grid-native-ad' satisfies AdSlot;
