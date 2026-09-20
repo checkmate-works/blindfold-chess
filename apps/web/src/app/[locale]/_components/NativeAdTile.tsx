@@ -71,9 +71,39 @@ type Props = {
  * of the ad-free entitlement) is owned here, on the component's own wrapper,
  * exactly as `NativeAdCard` owns its own — a call site cannot forget it.
  */
+/**
+ * The `tile` variant's board thumbnail, split out so the hook that themes the
+ * board is called only where a board is drawn.
+ *
+ * `useGamePreferences` throws when no `GamePreferencesProvider` is above it,
+ * and the provider is mounted per section — home, topics, practice, glossary
+ * and so on each carry their own; `/leaderboard` does not. Calling it at the
+ * top of `NativeAdTile` therefore made every variant require a provider that
+ * only one of them has anything to do with, and the `iconTile` variant
+ * crashed the leaderboard grid on its first render there. A hook cannot be
+ * called conditionally, so the conditional part is a component.
+ *
+ * The fix is deliberately not "mount the provider on /leaderboard": that
+ * section renders no boards, and adding a client provider to it to satisfy an
+ * ad tile that does not use board themes would be paying for the mistake
+ * rather than correcting it.
+ */
+function TileThumbnail({ thumbnail }: { thumbnail: NativeTileView['thumbnail'] }) {
+  const { preferences } = useGamePreferences();
+
+  return (
+    <CreativeThumbnail
+      imagePath={thumbnail.imagePath}
+      imageAlt={thumbnail.imageAlt}
+      fen={thumbnail.fen}
+      boardTheme={preferences.boardTheme}
+      className="aspect-[2/1] w-full"
+    />
+  );
+}
+
 export function NativeAdTile({ creative, variant = 'tile', className }: Props) {
   const t = useTranslations('nativeAd');
-  const { preferences } = useGamePreferences();
 
   if (variant === 'link') {
     return (
@@ -181,13 +211,7 @@ export function NativeAdTile({ creative, variant = 'tile', className }: Props) {
         <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{creative.description}</p>
 
         <div className="mt-3 overflow-hidden rounded-lg border border-border">
-          <CreativeThumbnail
-            imagePath={creative.thumbnail.imagePath}
-            imageAlt={creative.thumbnail.imageAlt}
-            fen={creative.thumbnail.fen}
-            boardTheme={preferences.boardTheme}
-            className="aspect-[2/1] w-full"
-          />
+          <TileThumbnail thumbnail={creative.thumbnail} />
         </div>
       </div>
     </div>
