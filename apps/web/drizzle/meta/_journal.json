@@ -540,6 +540,20 @@
       "when": 1789814444391,
       "tag": "20260919104044_drop_ad_creatives_target_country",
       "breakpoints": true
+    },
+    {
+      "idx": 77,
+      "version": "7",
+      "when": 1789879290482,
+      "tag": "20260920044130_normalize_ad_creatives",
+      "breakpoints": true
+    },
+    {
+      "idx": 78,
+      "version": "7",
+      "when": 1789879298199,
+      "tag": "20260920044138_drop_ad_creatives_payload",
+      "breakpoints": true
     }
   ]
 }

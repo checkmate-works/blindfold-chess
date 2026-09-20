@@ -908,6 +908,7 @@ REVOKE ALL ON TABLE public.featured_puzzles FROM authenticated, anon;
 REVOKE ALL ON TABLE public.user_grants FROM authenticated, anon;
 REVOKE ALL ON TABLE public.announcements FROM authenticated, anon;
 REVOKE ALL ON TABLE public.ad_creatives FROM authenticated, anon;
+REVOKE ALL ON TABLE public.ad_creative_translations FROM authenticated, anon;
 REVOKE ALL ON TABLE public.articles FROM authenticated, anon;
 REVOKE ALL ON TABLE public.game_tokens FROM authenticated, anon;
 REVOKE ALL ON TABLE public.point_batch_watermarks FROM authenticated, anon;
