@@ -1,12 +1,7 @@
 import { View, Text, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
-import {
-  useFeedbackColor,
-  useTheme,
-  fontSize,
-  fontWeight,
-  spacing,
-} from "../../../theme";
+import { SquarePrompt } from "../../../components";
+import { useFeedbackColor, fontSize, fontWeight } from "../../../theme";
 
 type QuestionCardProps = {
   square: string;
@@ -24,7 +19,6 @@ export function QuestionCard({
   lastAnswer,
 }: QuestionCardProps) {
   const { t } = useTranslation();
-  const { colors } = useTheme();
   const feedbackColor = useFeedbackColor(isCorrect);
 
   const getFeedbackText = () => {
@@ -41,17 +35,12 @@ export function QuestionCard({
   const feedbackText = getFeedbackText();
 
   return (
-    <View style={styles.container}>
-      <Text style={[styles.questionLabel, { color: colors.mutedForeground }]}>
-        {t("diagonalQuiz.session.question", {
-          square: square.toUpperCase(),
-        })}
-      </Text>
-
-      <Text style={[styles.squareText, { color: colors.foreground }]}>
-        {square}
-      </Text>
-
+    <SquarePrompt
+      question={t("diagonalQuiz.session.question", {
+        square: square.toUpperCase(),
+      })}
+      square={square}
+    >
       <View style={styles.feedbackContainer}>
         {feedbackText && (
           <Text style={[styles.feedbackText, { color: feedbackColor }]}>
@@ -59,24 +48,11 @@ export function QuestionCard({
           </Text>
         )}
       </View>
-    </View>
+    </SquarePrompt>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    alignItems: "center",
-    gap: spacing.md,
-  },
-  questionLabel: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.medium,
-  },
-  squareText: {
-    fontSize: 72,
-    fontWeight: fontWeight.bold,
-    fontVariant: ["tabular-nums"],
-  },
   feedbackContainer: {
     minHeight: 40,
     justifyContent: "center",
