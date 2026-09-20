@@ -2,11 +2,11 @@
  * Local-only dev seed.
  *
  * Populates auth users, profiles, challenge_results / challenge_best_scores,
- * belt ranks, a published kata (型), a featured puzzle pool and a set of
- * square/opening discussion threads with predictable test data so the
- * practice leaderboards, the /repertoires catalog, the Daily Puzzle card and
- * the /topics timeline have entries — and so rank conditions can be exercised
- * from a known rung — during local development.
+ * belt ranks, a published kata (型), a featured puzzle pool, a chunk catalog
+ * and a set of square/opening discussion threads with predictable test data
+ * so the practice leaderboards, the /repertoires catalog, the Daily Puzzle
+ * card, /chunks and the /topics timeline have entries — and so rank
+ * conditions can be exercised from a known rung — during local development.
  * Refuses to run against any non-local DB or Supabase URL (host check) — the
  * master-data seed (`pnpm db:seed`) remains the prod path.
  *
@@ -26,6 +26,7 @@ import postgres from 'postgres';
 
 import { DAILY_PUZZLE_CACHE_TAG } from '../src/lib/cache-tags';
 import { reseedChallenges } from './dev-seed/challenges';
+import { reseedChunks } from './dev-seed/chunks';
 import { purgeDataCacheTag } from './dev-seed/next-cache';
 import { reseedPuzzles } from './dev-seed/puzzles';
 import { grantRanksUpTo } from './dev-seed/ranks';
@@ -135,6 +136,14 @@ async function main() {
     const replies = thread.replyCount === 1 ? '1 reply' : `${thread.replyCount} replies`;
     console.log(`  ${thread.topicType.padEnd(8)} ${thread.topicKey.padEnd(16)} → ${replies}`);
   }
+  // Chunks are the other half of what the /topics timeline shows (a chunk is
+  // a feed entity in its own right, not a post), and their own catalog page
+  // carries a native ad slot that an empty table renders nothing into.
+  console.log('dev-seed: seeding chunks...');
+  for (const chunk of await reseedChunks(db, puzzleOwners)) {
+    console.log(`  ${chunk.slug.padEnd(32)} → ${chunk.status}`);
+  }
+
   if (skippedOpenings.length > 0) {
     console.log(
       `  skipped ${skippedOpenings.length} opening thread(s) — no such slug in chess_openings ` +
