@@ -1,26 +1,39 @@
 import { SUPPORTED_LOCALES } from '@/config';
 
-import type { AdPayload, NativeCardPayload, NativeTilePayload } from '@/lib/ads/payload';
+import type { LocalizedCopy } from '@/lib/ads/copy';
 import type { AdKind } from '@/lib/ads/registry';
 import { isAdSlot, kindForSlot } from '@/lib/ads/registry';
+import type { NativeCardThumbnail } from '@/lib/ads/thumbnail';
 import { MAX_LINK_HREF_LENGTH, classifyLinkTarget } from '@/lib/content/link-target';
 
-export type CreateAdCreativeData = {
-  slot: string;
+/**
+ * A creative as the forms submit it: every field of every kind, with the
+ * fields the kind does not have set to `null`. The slot decides the kind, and
+ * {@link validateFieldsForKind} holds each kind to its own shape — the same
+ * rule `ad_creatives_chk_fields_for_kind` enforces in the database, checked
+ * here first so the admin sees a named field rather than a constraint name.
+ */
+export type AdCreativeFields = {
   href: string;
   isActive: boolean;
-  payload: AdPayload;
+  /** `native_tile` only; `null` on a card. */
+  icon: string | null;
+  /** `native_card` only; `null` on a tile. */
+  avatarImagePath: string | null;
+  avatarAlt: string | null;
+  thumbnail: NativeCardThumbnail;
+  title: LocalizedCopy;
+  description: LocalizedCopy;
 };
 
-export type UpdateAdCreativeData = {
-  href: string;
-  isActive: boolean;
-  payload: AdPayload;
-};
+export type CreateAdCreativeData = AdCreativeFields & { slot: string };
+
+export type UpdateAdCreativeData = AdCreativeFields;
 
 /**
  * Length caps enforced by these validators, exported so the forms' input
- * `maxLength` attributes are the same numbers and cannot drift.
+ * `maxLength` attributes are the same numbers and cannot drift. Each one is
+ * also the width of the column it lands in (`@/lib/db/schema/notifications`).
  */
 export const AD_CREATIVE_LIMITS = {
   /** Same cap `classifyLinkTarget` enforces, so the form's `maxLength` and
@@ -58,8 +71,19 @@ function validateHref(href: string): string | null {
   return /[?&]clickref=/.test(href) ? 'href already carries a clickref' : null;
 }
 
-function validateImagePath(imagePath: string): string | null {
-  if (!imagePath || imagePath.length > AD_CREATIVE_LIMITS.imagePath) return 'invalid imagePath';
+function validateImagePath(imagePath: unknown, field: string): string | null {
+  if (
+    typeof imagePath !== 'string' ||
+    !imagePath ||
+    imagePath.length > AD_CREATIVE_LIMITS.imagePath
+  ) {
+    return `invalid ${field}`;
+  }
+  return null;
+}
+
+function validateAlt(alt: unknown, field: string): string | null {
+  if (typeof alt !== 'string' || alt.length > AD_CREATIVE_LIMITS.alt) return `invalid ${field}`;
   return null;
 }
 
@@ -72,12 +96,12 @@ function validateText(value: unknown, field: string): string | null {
 
 /**
  * Per-locale copy: `en` must be there (every other locale falls back to it),
- * and each locale that *is* present gets the same length cap as the old
- * single string — the cap is about how much text a card can hold, which does
- * not change with the language. Unknown keys are rejected rather than stored
- * and silently never read.
+ * and each locale that *is* present gets the same length cap — the cap is
+ * about how much text a card can hold, which does not change with the
+ * language. Unknown keys are rejected rather than stored and silently never
+ * read.
  */
-function validateLocalizedCopy(value: NativeCardPayload['title'], field: string): string | null {
+function validateLocalizedCopy(value: unknown, field: string): string | null {
   if (typeof value !== 'object' || value === null) return `invalid ${field}`;
   const copy = value as Record<string, unknown>;
   const enError = validateText(copy.en, `${field}.en`);
@@ -90,66 +114,77 @@ function validateLocalizedCopy(value: NativeCardPayload['title'], field: string)
   return null;
 }
 
-function validateThumbnail(thumbnail: NativeCardPayload['thumbnail']): string | null {
-  if (thumbnail === undefined) return null;
+function validateThumbnail(thumbnail: unknown): string | null {
+  if (typeof thumbnail !== 'object' || thumbnail === null) return 'invalid thumbnail';
+  const t = thumbnail as Record<string, unknown>;
   if (
-    typeof thumbnail.fen !== 'string' ||
-    thumbnail.fen.trim().length === 0 ||
-    thumbnail.fen.length > AD_CREATIVE_LIMITS.fen
+    typeof t.fen !== 'string' ||
+    t.fen.trim().length === 0 ||
+    t.fen.length > AD_CREATIVE_LIMITS.fen
   ) {
     return 'invalid thumbnail fen';
   }
-  if (thumbnail.imagePath !== undefined && thumbnail.imagePath !== null) {
-    const imageError = validateImagePath(thumbnail.imagePath);
-    if (imageError) return 'invalid thumbnail image';
+  if (t.imagePath !== undefined && t.imagePath !== null) {
+    const imageError = validateImagePath(t.imagePath, 'thumbnail image');
+    if (imageError) return imageError;
   }
-  if (thumbnail.imageAlt !== undefined && thumbnail.imageAlt.length > AD_CREATIVE_LIMITS.alt) {
-    return 'invalid thumbnail alt';
+  if (t.imageAlt !== undefined) {
+    const altError = validateAlt(t.imageAlt, 'thumbnail alt');
+    if (altError) return altError;
   }
   return null;
 }
 
-function validateNativeCardPayload(payload: NativeCardPayload): string | null {
-  if (payload.avatarImagePath !== null) {
-    const imageError = validateImagePath(payload.avatarImagePath);
-    if (imageError) return imageError;
-  }
-  if (typeof payload.avatarAlt !== 'string' || payload.avatarAlt.length > AD_CREATIVE_LIMITS.alt) {
-    return 'invalid avatarAlt';
-  }
-  const titleError = validateLocalizedCopy(payload.title, 'title');
+/** The fields every kind carries. */
+function validateCommonFields(fields: AdCreativeFields): string | null {
+  const titleError = validateLocalizedCopy(fields.title, 'title');
   if (titleError) return titleError;
-  const descriptionError = validateLocalizedCopy(payload.description, 'description');
+  const descriptionError = validateLocalizedCopy(fields.description, 'description');
   if (descriptionError) return descriptionError;
-  return validateThumbnail(payload.thumbnail);
+  return validateThumbnail(fields.thumbnail);
 }
 
-function validateNativeTilePayload(payload: NativeTilePayload): string | null {
-  if (
-    typeof payload.icon !== 'string' ||
-    payload.icon.trim().length === 0 ||
-    payload.icon.length > AD_CREATIVE_LIMITS.icon
-  ) {
-    return 'invalid icon';
+function validateNativeCardFields(fields: AdCreativeFields): string | null {
+  if (fields.icon !== null) return 'invalid icon';
+  if (fields.avatarImagePath !== null) {
+    const imageError = validateImagePath(fields.avatarImagePath, 'avatar image');
+    if (imageError) return imageError;
   }
-  const titleError = validateLocalizedCopy(payload.title, 'title');
-  if (titleError) return titleError;
-  const descriptionError = validateLocalizedCopy(payload.description, 'description');
-  if (descriptionError) return descriptionError;
-  return validateThumbnail(payload.thumbnail);
+  if (fields.avatarAlt !== null) {
+    const altError = validateAlt(fields.avatarAlt, 'avatarAlt');
+    if (altError) return altError;
+  }
+  return validateCommonFields(fields);
 }
 
 /**
- * Validate a payload against the kind bound to its slot. Exhaustive over
- * `AdKind`, so a third kind is a compile error here rather than a payload
- * that reaches the DB unchecked.
+ * `icon` is checked for presence and length only. Which emoji it is is an
+ * editorial judgement the admin makes, not something a validator can hold an
+ * opinion about.
  */
-export function validatePayloadForKind(kind: AdKind, payload: AdPayload): string | null {
+function validateNativeTileFields(fields: AdCreativeFields): string | null {
+  if (
+    typeof fields.icon !== 'string' ||
+    fields.icon.trim().length === 0 ||
+    fields.icon.length > AD_CREATIVE_LIMITS.icon
+  ) {
+    return 'invalid icon';
+  }
+  if (fields.avatarImagePath !== null || fields.avatarAlt !== null) return 'invalid avatar';
+  return validateCommonFields(fields);
+}
+
+/**
+ * Validate the fields against the kind bound to the slot. Exhaustive over
+ * `AdKind`, so a third kind is a compile error here rather than a row that
+ * reaches the DB unchecked.
+ */
+export function validateFieldsForKind(kind: AdKind, fields: AdCreativeFields): string | null {
   switch (kind) {
     case 'native_card':
-      return validateNativeCardPayload(payload as NativeCardPayload);
+      return validateNativeCardFields(fields);
     case 'native_tile':
-      return validateNativeTilePayload(payload as NativeTilePayload);
+      return validateNativeTileFields(fields);
   }
 }
 
@@ -157,14 +192,14 @@ export function validateCreateAdCreative(data: CreateAdCreativeData): string | n
   if (!isAdSlot(data.slot)) return 'invalid slot';
   const hrefError = validateHref(data.href);
   if (hrefError) return hrefError;
-  // The slot decides the kind, so the payload is checked against the shape
+  // The slot decides the kind, so the fields are checked against the shape
   // this slot can actually render — not against whichever kind came first.
-  return validatePayloadForKind(kindForSlot(data.slot), data.payload);
+  return validateFieldsForKind(kindForSlot(data.slot), data);
 }
 
 /** Update validation needs the row's kind (slot is immutable, from the DB). */
 export function validateUpdateAdCreative(kind: AdKind, data: UpdateAdCreativeData): string | null {
   const hrefError = validateHref(data.href);
   if (hrefError) return hrefError;
-  return validatePayloadForKind(kind, data.payload);
+  return validateFieldsForKind(kind, data);
 }

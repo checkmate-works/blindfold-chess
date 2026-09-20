@@ -5,19 +5,14 @@ import { useState } from 'react';
 
 import { Field, Input } from '@/app/admin/_components/forms';
 
-import type { NativeCardThumbnail, NativeTilePayload } from '@/lib/ads/payload';
-import {
-  DEFAULT_AD_ALT,
-  DEFAULT_NATIVE_THUMBNAIL_FEN,
-  fromLocalizedCopyDraft,
-  resolveNativeThumbnail,
-  toLocalizedCopyDraft,
-} from '@/lib/ads/payload';
+import { fromLocalizedCopyDraft, toLocalizedCopyDraft } from '@/lib/ads/copy';
 import type { AdSlot } from '@/lib/ads/registry';
+import type { NativeCardThumbnail } from '@/lib/ads/thumbnail';
+import { DEFAULT_AD_ALT, DEFAULT_NATIVE_THUMBNAIL_FEN } from '@/lib/ads/thumbnail';
 
 import type { AdCreativeFormLabels } from '../_lib/form-labels';
 import { useCommonCreativeState } from '../_lib/use-common-creative-state';
-import type { CommonCreativeValues } from '../_lib/use-common-creative-state';
+import type { CreativeFormInitial } from '../_lib/use-common-creative-state';
 import { useCreativeImageUpload } from '../_lib/use-creative-image-upload';
 import { useCreativeSubmit } from '../_lib/use-creative-submit';
 import { AD_CREATIVE_LIMITS } from '../_lib/validation';
@@ -26,15 +21,11 @@ import { CreativeThumbnailFields } from './CreativeThumbnailFields';
 import { LocalizedCopyFields } from './LocalizedCopyFields';
 import { NativeTilePreview } from './NativeTilePreview';
 
-export type NativeTileFormInitial = CommonCreativeValues & {
-  payload: Partial<NativeTilePayload>;
-};
-
 type Props = {
   mode: 'create' | 'edit';
   slot: AdSlot;
   creativeId?: string;
-  initial: NativeTileFormInitial;
+  initial: CreativeFormInitial;
   labels: AdCreativeFormLabels;
 };
 
@@ -49,14 +40,11 @@ export function NativeTileCreativeForm({ mode, slot, creativeId, initial, labels
   const common = useCommonCreativeState(initial);
   const { submit, isPending, error, setError } = useCreativeSubmit(slot);
 
-  const [icon, setIcon] = useState(initial.payload.icon ?? '');
-  const [title, setTitle] = useState(() => toLocalizedCopyDraft(initial.payload.title));
-  const [description, setDescription] = useState(() =>
-    toLocalizedCopyDraft(initial.payload.description)
-  );
+  const [icon, setIcon] = useState(initial.icon ?? '');
+  const [title, setTitle] = useState(() => toLocalizedCopyDraft(initial.title));
+  const [description, setDescription] = useState(() => toLocalizedCopyDraft(initial.description));
 
-  // Normalize (also recovers legacy thumbnail shapes still in the DB).
-  const initThumb = resolveNativeThumbnail(initial.payload as NativeTilePayload);
+  const initThumb = initial.thumbnail ?? { fen: DEFAULT_NATIVE_THUMBNAIL_FEN };
   const [thumbnailFen, setThumbnailFen] = useState(initThumb.fen);
   const [thumbnailImagePath, setThumbnailImagePath] = useState<string | null>(
     initThumb.imagePath ?? null
@@ -67,7 +55,7 @@ export function NativeTileCreativeForm({ mode, slot, creativeId, initial, labels
   const isThumbUploading = isBusy('thumbnail');
 
   const handleThumbnailUpload = async (file: File) => {
-    const path = await upload('thumbnail', file);
+    const path = await upload('thumbnail', file, thumbnailAlt);
     if (path) setThumbnailImagePath(path);
   };
 
@@ -82,11 +70,14 @@ export function NativeTileCreativeForm({ mode, slot, creativeId, initial, labels
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    submit(mode, creativeId, common.toFields(), {
+    submit(mode, creativeId, {
+      ...common.toFields(),
       icon: icon.trim(),
+      avatarImagePath: null,
+      avatarAlt: null,
+      thumbnail: currentThumbnail,
       title: fromLocalizedCopyDraft(title),
       description: fromLocalizedCopyDraft(description),
-      thumbnail: currentThumbnail,
     });
   };
 

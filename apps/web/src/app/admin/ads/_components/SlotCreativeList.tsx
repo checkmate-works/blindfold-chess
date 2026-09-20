@@ -18,7 +18,7 @@ import { setAdCreativeActive } from '../_actions/setAdCreativeActive';
 export type SlotCreativeRow = {
   id: string;
   isActive: boolean;
-  /** The card's title; empty when the stored payload fails its guard. */
+  /** The creative's English title; empty only for a row with no `en` copy, which the validator forbids. */
   summary: string;
   /** Thumbnail override image; takes priority over the board when set. */
   imageUrl: string | null;

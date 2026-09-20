@@ -1,23 +1,20 @@
 import { unstable_cache } from 'next/cache';
 
 import { IS_LOCAL_DEV } from '@/config';
-import { and, asc, eq } from 'drizzle-orm';
+import { and, asc, eq, inArray } from 'drizzle-orm';
 
 import { AD_CREATIVES_CACHE_TAG } from '@/lib/cache-tags';
-import { adCreatives, db } from '@/lib/db';
+import { adCreativeTranslations, adCreatives, db } from '@/lib/db';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { hasAdFreeEntitlement } from './ad-free-entitlement';
-import type { NativeCardThumbnail } from './payload';
-import {
-  isNativeCardPayload,
-  isNativeTilePayload,
-  resolveNativeCopy,
-  resolveNativeThumbnail,
-} from './payload';
+import type { CreativeCopy } from './copy';
+import { copyFromTranslationRows, resolveNativeCopy } from './copy';
 import type { AdKind, AdSlot } from './registry';
 import { withCreativeSubId } from './subid';
+import type { NativeCardThumbnail } from './thumbnail';
+import { thumbnailFromColumns } from './thumbnail';
 
 /**
  * Pure decision function: determine whether ads should be shown for a given user.
@@ -48,6 +45,30 @@ export async function getAllAdCreatives() {
 }
 
 /**
+ * The stored copy of the given creatives, keyed by creative id. A creative
+ * with no translation rows is absent from the map; callers that render it
+ * substitute empty copy, which the validator forbids saving in the first
+ * place.
+ */
+export async function getAdCreativeCopy(
+  ids: readonly string[]
+): Promise<Map<string, CreativeCopy>> {
+  if (ids.length === 0) return new Map();
+  const rows = await db
+    .select({
+      creativeId: adCreativeTranslations.creativeId,
+      locale: adCreativeTranslations.locale,
+      title: adCreativeTranslations.title,
+      description: adCreativeTranslations.description,
+    })
+    .from(adCreativeTranslations)
+    .where(inArray(adCreativeTranslations.creativeId, [...ids]));
+  return copyFromTranslationRows(rows);
+}
+
+const EMPTY_COPY: CreativeCopy = { title: {}, description: {} };
+
+/**
  * Serializable view of a native-card creative, safe to pass from a Server
  * Component into the client `FeedClient`.
  */
@@ -70,11 +91,12 @@ async function queryActiveCreatives(slot: string) {
 }
 
 /**
- * A slot's active, priority-ordered creatives. `payload` is `unknown`; render
- * sites narrow it with the kind guards in `@/lib/ads/payload`. Cached per slot
- * so ad-bearing pages stay static/ISR: the pool is baked at build/revalidate
- * and refreshed by `revalidateTag(AD_CREATIVES_CACHE_TAG)` on admin writes;
- * the per-user hide stays on the cookie/CSS layer.
+ * A slot's active, priority-ordered creatives with their copy in every
+ * locale, the thumbnail already in the renderers' shape, and the
+ * kind-specific columns as stored. Cached per slot so ad-bearing pages stay
+ * static/ISR: the pool is baked at build/revalidate and refreshed by
+ * `revalidateTag(AD_CREATIVES_CACHE_TAG)` on admin writes; the per-user hide
+ * stays on the cookie/CSS layer.
  *
  * The tag is what actually keeps the pool fresh — every mutation path goes
  * through `revalidateAdCreatives`, so an edit is visible within the minute
@@ -92,19 +114,28 @@ export type ActiveCreative = {
   kind: AdKind;
   href: string;
   sortOrder: number;
-  payload: unknown;
+  icon: string | null;
+  avatarImagePath: string | null;
+  avatarAlt: string | null;
+  thumbnail: NativeCardThumbnail;
+  copy: CreativeCopy;
 };
 
 const getActiveCreativesCached = unstable_cache(
   async (slot: string): Promise<ActiveCreative[]> => {
     try {
       const rows = await queryActiveCreatives(slot);
+      const copyById = await getAdCreativeCopy(rows.map((row) => row.id));
       return rows.map((row) => ({
         id: row.id,
         kind: row.kind as AdKind,
         href: row.href,
         sortOrder: row.sortOrder,
-        payload: row.payload,
+        icon: row.icon,
+        avatarImagePath: row.avatarImagePath,
+        avatarAlt: row.avatarAlt,
+        thumbnail: thumbnailFromColumns(row),
+        copy: copyById.get(row.id) ?? EMPTY_COPY,
       }));
     } catch (error) {
       console.warn('Failed to fetch active ad creatives:', error);
@@ -131,21 +162,25 @@ export function getActiveCreatives(slot: AdSlot): Promise<ActiveCreative[]> {
  * language out of each creative's per-locale copy (see `resolveNativeCopy`),
  * which leaves `NativeAdView` a flat, already-localized shape the client
  * renderer can take as-is.
+ *
+ * A slot binds exactly one kind (`AD_SLOTS`), so every row in the pool is
+ * expected to be a card; the kind test narrows the row rather than filters
+ * the pool.
  */
 export async function getNativeAdCreatives(slot: AdSlot, locale: Locale): Promise<NativeAdView[]> {
   const creatives = await getActiveCreatives(slot);
   return creatives.flatMap((c) => {
-    if (!isNativeCardPayload(c.payload)) return [];
-    const { title, description } = resolveNativeCopy(c.payload, locale);
+    if (c.kind !== 'native_card') return [];
+    const { title, description } = resolveNativeCopy(c.copy, locale);
     return [
       {
         id: c.id,
         href: withCreativeSubId(c.href, c.id),
-        avatarImagePath: c.payload.avatarImagePath,
-        avatarAlt: c.payload.avatarAlt,
+        avatarImagePath: c.avatarImagePath,
+        avatarAlt: c.avatarAlt ?? '',
         title,
         description,
-        thumbnail: resolveNativeThumbnail(c.payload),
+        thumbnail: c.thumbnail,
       },
     ];
   });
@@ -167,8 +202,10 @@ export type NativeTileView = {
 /**
  * Native-tile view for a given slot. The tile twin of
  * {@link getNativeAdCreatives}: same cached pool, same sub-ID tagging, same
- * read-time copy resolution — only the guard and the resulting shape differ,
- * because the slot's kind decides which payload its creatives hold.
+ * read-time copy resolution — only the narrowing and the resulting shape
+ * differ. A tile row always has an emoji (`ad_creatives_chk_fields_for_kind`);
+ * the null test exists to narrow the column's type, not because a row can
+ * lack one.
  */
 export async function getNativeTileCreatives(
   slot: AdSlot,
@@ -176,16 +213,16 @@ export async function getNativeTileCreatives(
 ): Promise<NativeTileView[]> {
   const creatives = await getActiveCreatives(slot);
   return creatives.flatMap((c) => {
-    if (!isNativeTilePayload(c.payload)) return [];
-    const { title, description } = resolveNativeCopy(c.payload, locale);
+    if (c.kind !== 'native_tile' || c.icon === null) return [];
+    const { title, description } = resolveNativeCopy(c.copy, locale);
     return [
       {
         id: c.id,
         href: withCreativeSubId(c.href, c.id),
-        icon: c.payload.icon,
+        icon: c.icon,
         title,
         description,
-        thumbnail: resolveNativeThumbnail(c.payload),
+        thumbnail: c.thumbnail,
       },
     ];
   });

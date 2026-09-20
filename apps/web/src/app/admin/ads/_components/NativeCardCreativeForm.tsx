@@ -7,21 +7,16 @@ import Image from 'next/image';
 
 import { Field, Input } from '@/app/admin/_components/forms';
 
-import type { NativeCardPayload, NativeCardThumbnail } from '@/lib/ads/payload';
-import {
-  DEFAULT_AD_ALT,
-  DEFAULT_NATIVE_THUMBNAIL_FEN,
-  fromLocalizedCopyDraft,
-  resolveNativeThumbnail,
-  toLocalizedCopyDraft,
-} from '@/lib/ads/payload';
+import { fromLocalizedCopyDraft, toLocalizedCopyDraft } from '@/lib/ads/copy';
 import type { AdSlot } from '@/lib/ads/registry';
+import type { NativeCardThumbnail } from '@/lib/ads/thumbnail';
+import { DEFAULT_AD_ALT, DEFAULT_NATIVE_THUMBNAIL_FEN } from '@/lib/ads/thumbnail';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import type { AdCreativeFormLabels } from '../_lib/form-labels';
 import { useCommonCreativeState } from '../_lib/use-common-creative-state';
-import type { CommonCreativeValues } from '../_lib/use-common-creative-state';
+import type { CreativeFormInitial } from '../_lib/use-common-creative-state';
 import { useCreativeImageUpload } from '../_lib/use-creative-image-upload';
 import { useCreativeSubmit } from '../_lib/use-creative-submit';
 import { AD_CREATIVE_LIMITS } from '../_lib/validation';
@@ -31,15 +26,11 @@ import { ImageFileButton } from './ImageFileButton';
 import { LocalizedCopyFields } from './LocalizedCopyFields';
 import { NativeCardPreview } from './NativeCardPreview';
 
-export type NativeCardFormInitial = CommonCreativeValues & {
-  payload: Partial<NativeCardPayload>;
-};
-
 type Props = {
   mode: 'create' | 'edit';
   slot: AdSlot;
   creativeId?: string;
-  initial: NativeCardFormInitial;
+  initial: CreativeFormInitial;
   labels: AdCreativeFormLabels;
 };
 
@@ -49,21 +40,18 @@ export function NativeCardCreativeForm({ mode, slot, creativeId, initial, labels
   const { submit, isPending, error, setError } = useCreativeSubmit(slot);
 
   const [avatarImagePath, setAvatarImagePath] = useState<string | null>(
-    initial.payload.avatarImagePath ?? null
+    initial.avatarImagePath ?? null
   );
-  const [avatarAlt, setAvatarAlt] = useState(initial.payload.avatarAlt ?? DEFAULT_AD_ALT);
+  const [avatarAlt, setAvatarAlt] = useState(initial.avatarAlt ?? DEFAULT_AD_ALT);
   // One input per locale. `en` is required and is what every unfilled locale
   // falls back to at render time, so the others stay optional.
-  const [title, setTitle] = useState(() => toLocalizedCopyDraft(initial.payload.title));
-  const [description, setDescription] = useState(() =>
-    toLocalizedCopyDraft(initial.payload.description)
-  );
+  const [title, setTitle] = useState(() => toLocalizedCopyDraft(initial.title));
+  const [description, setDescription] = useState(() => toLocalizedCopyDraft(initial.description));
 
   const setCopy = (set: typeof setTitle, locale: Locale) => (value: string) =>
     set((prev) => ({ ...prev, [locale]: value }));
 
-  // Normalize (also recovers legacy `{type:'image'}` thumbnails still in the DB).
-  const initThumb = resolveNativeThumbnail(initial.payload as NativeCardPayload);
+  const initThumb = initial.thumbnail ?? { fen: DEFAULT_NATIVE_THUMBNAIL_FEN };
   const [thumbnailFen, setThumbnailFen] = useState(initThumb.fen);
   const [thumbnailImagePath, setThumbnailImagePath] = useState<string | null>(
     initThumb.imagePath ?? null
@@ -75,12 +63,12 @@ export function NativeCardCreativeForm({ mode, slot, creativeId, initial, labels
   const isThumbUploading = isBusy('thumbnail');
 
   const handleAvatarUpload = async (file: File) => {
-    const path = await upload('avatar', file);
+    const path = await upload('avatar', file, avatarAlt);
     if (path) setAvatarImagePath(path);
   };
 
   const handleThumbnailUpload = async (file: File) => {
-    const path = await upload('thumbnail', file);
+    const path = await upload('thumbnail', file, thumbnailAlt);
     if (path) setThumbnailImagePath(path);
   };
 
@@ -100,12 +88,14 @@ export function NativeCardCreativeForm({ mode, slot, creativeId, initial, labels
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    submit(mode, creativeId, common.toFields(), {
+    submit(mode, creativeId, {
+      ...common.toFields(),
+      icon: null,
       avatarImagePath,
       avatarAlt,
+      thumbnail: currentThumbnail,
       title: fromLocalizedCopyDraft(title),
       description: fromLocalizedCopyDraft(description),
-      thumbnail: currentThumbnail,
     });
   };
 

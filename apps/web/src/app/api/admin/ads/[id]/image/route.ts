@@ -2,12 +2,12 @@ import { NextResponse } from 'next/server';
 
 import { revalidateAdCreatives } from '@/app/admin/ads/_lib/revalidate';
 import { AD_CREATIVES_BUCKET, storagePathFromPublicUrl } from '@/app/admin/ads/_lib/storage';
+import { AD_CREATIVE_LIMITS } from '@/app/admin/ads/_lib/validation';
 import { eq } from 'drizzle-orm';
 import sharp from 'sharp';
 
 import { MIME_TO_EXTENSION, parseAdminImageUpload } from '@/lib/admin-images/validation';
-import type { NativeCardPayload } from '@/lib/ads/payload';
-import { DEFAULT_NATIVE_THUMBNAIL_FEN, isNativeCardPayload } from '@/lib/ads/payload';
+import { DEFAULT_AD_ALT } from '@/lib/ads/thumbnail';
 import { guardAdminApiMutation } from '@/lib/api-mutation-guard';
 import { adCreatives, db } from '@/lib/db';
 import { SHARP_DECODE_OPTIONS } from '@/lib/images/sharp-options';
@@ -31,56 +31,85 @@ function parseTarget(value: unknown): ImageTarget | null {
   return value === 'avatar' || value === 'thumbnail' ? value : null;
 }
 
-/**
- * The creative's payload, narrowed to native-card — or the error response.
- * Only native-card creatives have uploaded images; banner images are managed
- * as plain paths, not uploads.
- */
-async function loadNativeCardPayload(id: string): Promise<NextResponse | NativeCardPayload> {
+/** The image columns of one creative, and the kind that decides which apply. */
+type CreativeImages = {
+  kind: string;
+  avatarImagePath: string | null;
+  avatarAlt: string | null;
+  thumbnailImagePath: string | null;
+  thumbnailImageAlt: string | null;
+};
+
+/** The creative's image columns — or the 404. */
+async function loadCreativeImages(id: string): Promise<NextResponse | CreativeImages> {
   const [row] = await db
-    .select({ payload: adCreatives.payload })
+    .select({
+      kind: adCreatives.kind,
+      avatarImagePath: adCreatives.avatarImagePath,
+      avatarAlt: adCreatives.avatarAlt,
+      thumbnailImagePath: adCreatives.thumbnailImagePath,
+      thumbnailImageAlt: adCreatives.thumbnailImageAlt,
+    })
     .from(adCreatives)
     .where(eq(adCreatives.id, id))
     .limit(1);
   if (!row) {
     return NextResponse.json({ error: 'not_found' }, { status: 404 });
   }
-  if (!isNativeCardPayload(row.payload)) {
-    return NextResponse.json({ error: 'unsupported_kind' }, { status: 400 });
-  }
-  return row.payload;
-}
-
-/** The image URL the target currently points at (`''` when unset). */
-function currentImageUrl(payload: NativeCardPayload, target: ImageTarget): string {
-  return target === 'thumbnail'
-    ? (payload.thumbnail?.imagePath ?? '')
-    : (payload.avatarImagePath ?? '');
+  return row;
 }
 
 /**
- * The payload with the target's image replaced, or cleared when `imagePath`
- * is null. The thumbnail keeps its board `fen` either way — the uploaded
- * image is an override on top of it.
+ * Every kind has a thumbnail; only a card has an avatar, and the row
+ * constraint would reject one on a tile, so that case is refused with a
+ * reason rather than left to surface as a constraint name.
  */
-function withTargetImage(
-  payload: NativeCardPayload,
-  target: ImageTarget,
-  imagePath: string | null
-): NativeCardPayload {
-  if (target === 'avatar') {
-    return { ...payload, avatarImagePath: imagePath };
+function refuseTargetForKind(row: CreativeImages, target: ImageTarget): NextResponse | null {
+  if (target === 'avatar' && row.kind !== 'native_card') {
+    return NextResponse.json({ error: 'unsupported_kind' }, { status: 400 });
   }
-  const fen = payload.thumbnail?.fen ?? DEFAULT_NATIVE_THUMBNAIL_FEN;
-  return {
-    ...payload,
-    thumbnail: imagePath
-      ? { fen, imagePath, imageAlt: payload.thumbnail?.imageAlt ?? '' }
-      : { fen },
-  };
+  return null;
 }
 
-/** The shared admin-image gate, plus this endpoint's own `target` field. */
+/** The image URL the target currently points at (`''` when unset). */
+function currentImageUrl(row: CreativeImages, target: ImageTarget): string {
+  return (target === 'thumbnail' ? row.thumbnailImagePath : row.avatarImagePath) ?? '';
+}
+
+/**
+ * The columns that give the target its new image, or clear it when
+ * `imagePath` is null. An image and its alt are stored as a pair, so setting
+ * one sets both: the alt the form sent with the upload, else the one already
+ * on the row, else the default. Clearing the thumbnail image leaves the board
+ * `fen` alone — the image was an override on top of it.
+ */
+function targetImageColumns(
+  row: CreativeImages,
+  target: ImageTarget,
+  imagePath: string | null,
+  alt: string | null
+): Partial<CreativeImages> {
+  if (target === 'avatar') {
+    return imagePath
+      ? { avatarImagePath: imagePath, avatarAlt: alt ?? row.avatarAlt ?? DEFAULT_AD_ALT }
+      : { avatarImagePath: null, avatarAlt: null };
+  }
+  return imagePath
+    ? {
+        thumbnailImagePath: imagePath,
+        thumbnailImageAlt: alt ?? row.thumbnailImageAlt ?? DEFAULT_AD_ALT,
+      }
+    : { thumbnailImagePath: null, thumbnailImageAlt: null };
+}
+
+/** The optional alt sent with the file; blank counts as not sent. */
+function parseAlt(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+  const alt = value.trim();
+  return alt.length > 0 && alt.length <= AD_CREATIVE_LIMITS.alt ? alt : null;
+}
+
+/** The shared admin-image gate, plus this endpoint's own `target` and `alt` fields. */
 async function parseAndValidateFile(request: Request) {
   const upload = await parseAdminImageUpload(request);
   if (upload.error) return { error: upload.error } as const;
@@ -90,7 +119,12 @@ async function parseAndValidateFile(request: Request) {
     return { error: NextResponse.json({ error: 'invalid_target' }, { status: 400 }) } as const;
   }
 
-  return { file: upload.file, buffer: upload.buffer, target } as const;
+  return {
+    file: upload.file,
+    buffer: upload.buffer,
+    target,
+    alt: parseAlt(upload.formData.get('alt')),
+  } as const;
 }
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -99,12 +133,15 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
   const { id } = await params;
 
-  const payload = await loadNativeCardPayload(id);
-  if (payload instanceof NextResponse) return payload;
+  const row = await loadCreativeImages(id);
+  if (row instanceof NextResponse) return row;
 
   const fileResult = await parseAndValidateFile(request);
   if ('error' in fileResult) return fileResult.error;
-  const { file, buffer, target } = fileResult;
+  const { file, buffer, target, alt } = fileResult;
+
+  const refused = refuseTargetForKind(row, target);
+  if (refused) return refused;
 
   const maxEdge = MAX_LONG_EDGE[target];
   let processed: Buffer;
@@ -132,14 +169,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const { data: urlData } = supabase.storage.from(AD_CREATIVES_BUCKET).getPublicUrl(storagePath);
 
   // The previous image this upload replaces, for cleanup after the row flips.
-  const previousPath = storagePathFromPublicUrl(currentImageUrl(payload, target));
-  const nextPayload = withTargetImage(payload, target, urlData.publicUrl);
+  const previousPath = storagePathFromPublicUrl(currentImageUrl(row, target));
 
   const persistence = await persistWithUploadRollback({
     persist: () =>
       db
         .update(adCreatives)
-        .set({ payload: nextPayload, updatedAt: new Date() })
+        .set({ ...targetImageColumns(row, target, urlData.publicUrl, alt), updatedAt: new Date() })
         .where(eq(adCreatives.id, id)),
     rollback: () => supabase.storage.from(AD_CREATIVES_BUCKET).remove([storagePath]),
   });
@@ -175,14 +211,16 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     return NextResponse.json({ error: 'invalid_target' }, { status: 400 });
   }
 
-  const payload = await loadNativeCardPayload(id);
-  if (payload instanceof NextResponse) return payload;
+  const row = await loadCreativeImages(id);
+  if (row instanceof NextResponse) return row;
+  const refused = refuseTargetForKind(row, target);
+  if (refused) return refused;
 
-  const removedUrl = currentImageUrl(payload, target);
+  const removedUrl = currentImageUrl(row, target);
 
   await db
     .update(adCreatives)
-    .set({ payload: withTargetImage(payload, target, null), updatedAt: new Date() })
+    .set({ ...targetImageColumns(row, target, null, null), updatedAt: new Date() })
     .where(eq(adCreatives.id, id));
 
   revalidateAdCreatives();

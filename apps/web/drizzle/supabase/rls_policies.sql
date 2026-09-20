@@ -690,6 +690,10 @@ ALTER TABLE "announcements" FORCE ROW LEVEL SECURITY;
 ALTER TABLE "ad_creatives" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "ad_creatives" FORCE ROW LEVEL SECURITY;
 
+-- Per-locale copy for the rows above: same posture, same reader.
+ALTER TABLE "ad_creative_translations" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "ad_creative_translations" FORCE ROW LEVEL SECURITY;
+
 -- =============================================================================
 -- articles (admin-only write; deny-by-default)
 -- =============================================================================

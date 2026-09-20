@@ -3,11 +3,13 @@
 import { eq } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
+import { copyToTranslationRows } from '@/lib/ads/copy';
 import { isAdKind } from '@/lib/ads/registry';
-import { adCreatives, db } from '@/lib/db';
+import { adCreativeTranslations, adCreatives, db } from '@/lib/db';
 import { handleAdminActionError } from '@/lib/server-action-error';
 
 import { requireAdmin } from '../../_lib/auth';
+import { toAdCreativeColumns } from '../_lib/creative-columns';
 import { revalidateAdCreatives } from '../_lib/revalidate';
 import type { UpdateAdCreativeData } from '../_lib/validation';
 import { validateUpdateAdCreative } from '../_lib/validation';
@@ -21,7 +23,7 @@ export async function updateAdCreative(
     return auth;
   }
 
-  // Kind is immutable and drives payload validation — read it from the row
+  // Kind is immutable and drives field validation — read it from the row
   // rather than trusting the client (the slot/kind can't be changed on edit).
   const [row] = await db
     .select({ kind: adCreatives.kind })
@@ -34,16 +36,22 @@ export async function updateAdCreative(
   const validationError = validateUpdateAdCreative(row.kind, data);
   if (validationError) return { error: validationError };
 
+  // `kind` comes back as the row's own, so the spread below cannot change it.
+  const columns = toAdCreativeColumns(row.kind, data);
+
   try {
-    await db
-      .update(adCreatives)
-      .set({
-        href: data.href,
-        isActive: data.isActive,
-        payload: data.payload,
-        updatedAt: new Date(),
-      })
-      .where(eq(adCreatives.id, id));
+    // The form is the whole truth about the copy, so the translation rows
+    // are replaced rather than merged: a locale the admin blanked out must
+    // lose its row, or it would keep overriding `en`.
+    await db.transaction(async (tx) => {
+      await tx
+        .update(adCreatives)
+        .set({ ...columns, updatedAt: new Date() })
+        .where(eq(adCreatives.id, id));
+      await tx.delete(adCreativeTranslations).where(eq(adCreativeTranslations.creativeId, id));
+      const copyRows = copyToTranslationRows(id, data);
+      if (copyRows.length > 0) await tx.insert(adCreativeTranslations).values(copyRows);
+    });
 
     revalidateAdCreatives();
     return { success: true };

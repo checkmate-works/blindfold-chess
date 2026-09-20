@@ -1,26 +1,29 @@
 import { describe, expect, it } from 'vitest';
 
-import type { CreateAdCreativeData } from './validation';
+import type { AdCreativeFields, CreateAdCreativeData } from './validation';
 import { validateCreateAdCreative } from './validation';
 
-const payload = {
+const card: AdCreativeFields = {
+  href: 'https://awin1.com/cread.php?awinmid=1&awinaffid=2',
+  isActive: true,
+  icon: null,
   avatarImagePath: null,
-  avatarAlt: 'Ad',
+  avatarAlt: null,
+  thumbnail: { fen: 'r1bqkbnr/pppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3' },
   title: { en: 'Title' },
   description: { en: 'Description' },
 };
 
-const data = (overrides: Partial<CreateAdCreativeData> = {}): CreateAdCreativeData => ({
-  slot: 'feed-native-ad',
-  href: 'https://awin1.com/cread.php?awinmid=1&awinaffid=2',
-  isActive: true,
-  payload,
-  ...overrides,
-});
+const tile: AdCreativeFields = { ...card, icon: '♞' };
+
+const data = (
+  fields: AdCreativeFields,
+  overrides: Partial<CreateAdCreativeData> = {}
+): CreateAdCreativeData => ({ slot: 'feed-native-ad', ...fields, ...overrides });
 
 describe('validateCreateAdCreative href', () => {
   it('accepts an untagged network URL', () => {
-    expect(validateCreateAdCreative(data())).toBeNull();
+    expect(validateCreateAdCreative(data(card))).toBeNull();
   });
 
   it('rejects an href that already carries a clickref', () => {
@@ -29,47 +32,70 @@ describe('validateCreateAdCreative href', () => {
     // under the sample instead of this creative.
     expect(
       validateCreateAdCreative(
-        data({ href: 'https://awin1.com/cread.php?awinmid=1&clickref=sample' })
+        data(card, { href: 'https://awin1.com/cread.php?awinmid=1&clickref=sample' })
       )
     ).toBe('href already carries a clickref');
   });
 
   it('rejects a bare path, which has no page to resolve against at render time', () => {
-    expect(validateCreateAdCreative(data({ href: '/internal/page' }))).toBe('invalid href');
+    expect(validateCreateAdCreative(data(card, { href: '/internal/page' }))).toBe('invalid href');
   });
 });
 
 describe('validateCreateAdCreative localized copy', () => {
   it('accepts copy in a subset of locales as long as en is there', () => {
     expect(
-      validateCreateAdCreative(
-        data({ payload: { ...payload, title: { en: 'Title', ja: 'タイトル' } } })
-      )
+      validateCreateAdCreative(data(card, { title: { en: 'Title', ja: 'タイトル' } }))
     ).toBeNull();
   });
 
   it('rejects copy with no en fallback', () => {
-    expect(
-      validateCreateAdCreative(
-        data({ payload: { ...payload, title: { ja: 'タイトル' } as never } })
-      )
-    ).toBe('invalid title.en');
+    expect(validateCreateAdCreative(data(card, { title: { ja: 'タイトル' } as never }))).toBe(
+      'invalid title.en'
+    );
   });
 
   it('rejects an unsupported locale key rather than storing something never read', () => {
     expect(
-      validateCreateAdCreative(
-        data({ payload: { ...payload, description: { en: 'd', fr: 'Bonjour' } as never } })
-      )
+      validateCreateAdCreative(data(card, { description: { en: 'd', fr: 'Bonjour' } as never }))
     ).toBe('invalid description locale');
   });
 
   it('applies the length cap to every locale, not just en', () => {
     const tooLong = 'x'.repeat(2001);
+    expect(validateCreateAdCreative(data(card, { title: { en: 'Title', ja: tooLong } }))).toBe(
+      'invalid title.ja'
+    );
+  });
+});
+
+describe('validateCreateAdCreative fields for kind', () => {
+  // The slot decides the kind: `feed-native-ad` binds a card,
+  // `practice-grid-native-ad` a tile. These mirror
+  // `ad_creatives_chk_fields_for_kind`, so the admin sees a field name
+  // rather than a constraint name.
+  it('rejects an emoji on a card', () => {
+    expect(validateCreateAdCreative(data(card, { icon: '♞' }))).toBe('invalid icon');
+  });
+
+  it('requires an emoji on a tile', () => {
+    expect(validateCreateAdCreative(data(tile, { slot: 'practice-grid-native-ad' }))).toBeNull();
+    expect(
+      validateCreateAdCreative(data(tile, { slot: 'practice-grid-native-ad', icon: '  ' }))
+    ).toBe('invalid icon');
+  });
+
+  it('rejects an author row on a tile', () => {
     expect(
       validateCreateAdCreative(
-        data({ payload: { ...payload, title: { en: 'Title', ja: tooLong } } })
+        data(tile, { slot: 'practice-grid-native-ad', avatarImagePath: '/a.png', avatarAlt: 'a' })
       )
-    ).toBe('invalid title.ja');
+    ).toBe('invalid avatar');
+  });
+
+  it('rejects a blank thumbnail board', () => {
+    expect(validateCreateAdCreative(data(card, { thumbnail: { fen: ' ' } }))).toBe(
+      'invalid thumbnail fen'
+    );
   });
 });

@@ -1,10 +1,11 @@
 // Auto-split from schema/tables.ts on 2026-05-27. Per-domain
 // schema slice — notifications.
 //
-// Ad-banner inventory and in-app notification rows.
+// Self-served ad creatives, their per-locale copy, and in-app notification rows.
 import { sql } from 'drizzle-orm';
 import {
   boolean,
+  check,
   index,
   integer,
   jsonb,
@@ -14,38 +15,56 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core';
 
+import { DEFAULT_NATIVE_THUMBNAIL_FEN } from '@/lib/ads/thumbnail';
+
 import { createdAtOnly, timestamps } from './columns';
 
 /**
  * Self-served ad inventory ("creatives").
  *
- * @design One table, many creative kinds (discriminator + JSONB payload)
+ * @design Columns, not a JSONB payload
  *
- * A single table backs every self-hosted ad format on the site. `kind` is the
- * discriminator; format-specific fields live in `payload` (JSONB) instead of a
- * wide grid of mostly-NULL columns. This mirrors the `feed_items.entity_type +
- * data` and `moderation_actions.action + metadata` patterns already used
- * elsewhere: adding a new ad format is a new `kind` value + payload type +
- * type guard + renderer, with no migration. `native_card` is the only kind in
- * use — the structure is what makes a second one cheap. The fields that are
- * genuinely common to every format (`href`, `is_active`, `slot`, `sort_order`)
- * stay first-class columns so an "active creatives for this slot right now"
- * query is kind-agnostic.
+ * Kind-specific fields used to live in a `payload` JSONB column, on the
+ * argument that a new ad format should be a new `kind` plus a type guard and
+ * a renderer, with no migration. That held while a `banner` format sat next
+ * to the native card. Once banners were retired, the two kinds left differ by
+ * three nullable columns — `icon` for the tile, `avatar_image_path` /
+ * `avatar_alt` for the card — and the JSONB was buying a migration-free path
+ * nothing used, at the price of every constraint below: a row it could not
+ * render was stored anyway and dropped at read time, silently.
+ *
+ * The set of kinds is closed at compile time. `AD_KINDS` in
+ * `@/lib/ads/registry` is a const tuple, and every kind has a hand-written
+ * renderer and authoring form, so there is no shape the schema could fail to
+ * anticipate. A new kind is still those code changes; it now also adds its
+ * columns here and extends `ad_creatives_chk_fields_for_kind`.
+ *
+ * `kind` is derived from `slot` by the registry and written, never chosen
+ * (`createAdCreative`). It is stored because it is what the CHECK constraints
+ * key on: a CHECK cannot read the registry, and a row written by hand never
+ * passes through it.
  *
  * @design `slot` is NOT unique — creatives rotate within a placement
  *
  * `slot` identifies a placement (e.g. `feed-native-ad`), and multiple active
  * creatives may share one slot so they can rotate. The (slot → allowed kind)
  * binding is enforced in application code by `AD_SLOTS` in
- * `@/lib/ads/registry` (a DB row cannot express "this slot only accepts
- * native_card"), so writes must validate against that registry. This is
- * deliberately unlike the old `ad_banners.slot` UNIQUE (one-row-per-slot)
- * model it replaced.
+ * `@/lib/ads/registry`, so writes must validate against that registry. There
+ * is no CHECK on `slot` on purpose: the registry owns the set and it grows
+ * with every new placement, whereas `kind` changes only with a new format.
  *
  * These are first-party creatives we host and link ourselves (affiliate links
  * etc.), read through `resolveNativeAds`. A slot whose pool is empty renders
  * nothing at all — there is no third-party network behind it to fall through
  * to.
+ *
+ * @design An image and its alt are a pair
+ *
+ * `avatar_alt` may be set only with `avatar_image_path`, and
+ * `thumbnail_image_alt` only with `thumbnail_image_path`. Alt text describes
+ * an image; without one it is a stray string the renderers would have to
+ * know to ignore. `thumbnail_fen` is NOT NULL with a default board instead,
+ * because the board is the thumbnail's fallback, not an optional extra.
  *
  * @design No `provider` column
  *
@@ -72,14 +91,92 @@ export const adCreatives = pgTable(
      */
     isActive: boolean('is_active').notNull().default(true),
     sortOrder: integer('sort_order').notNull().default(0),
-    /** Kind-specific fields — see the `*Payload` types in `@/lib/ads/payload`. */
-    payload: jsonb('payload').notNull(),
+    /** `native_tile` only: the emoji that makes the tile read as a tile. */
+    icon: varchar('icon', { length: 16 }),
+    /** `native_card` only: the author-row image, or NULL for the text placeholder. */
+    avatarImagePath: varchar('avatar_image_path', { length: 1024 }),
+    avatarAlt: varchar('avatar_alt', { length: 255 }),
+    /** The board shown when there is no override image — see `@/lib/ads/thumbnail`. */
+    thumbnailFen: varchar('thumbnail_fen', { length: 100 })
+      .notNull()
+      .default(DEFAULT_NATIVE_THUMBNAIL_FEN),
+    /** An uploaded image (a book cover, say) shown instead of the board. */
+    thumbnailImagePath: varchar('thumbnail_image_path', { length: 1024 }),
+    thumbnailImageAlt: varchar('thumbnail_image_alt', { length: 255 }),
     ...timestamps,
   },
-  (table) => [index('idx_ad_creatives_slot_active').on(table.slot, table.isActive)]
+  (table) => [
+    index('idx_ad_creatives_slot_active').on(table.slot, table.isActive),
+    check('ad_creatives_chk_kind', sql`${table.kind} IN ('native_card', 'native_tile')`),
+    // The invariant the JSONB guard used to enforce by dropping the row at
+    // read time, made a write-time error: a tile has an emoji and no author
+    // row; a card has no emoji.
+    check(
+      'ad_creatives_chk_fields_for_kind',
+      sql`(${table.kind} = 'native_tile' AND ${table.icon} IS NOT NULL AND ${table.icon} <> '' AND ${table.avatarImagePath} IS NULL AND ${table.avatarAlt} IS NULL) OR (${table.kind} = 'native_card' AND ${table.icon} IS NULL)`
+    ),
+    check(
+      'ad_creatives_chk_avatar_alt_with_image',
+      sql`${table.avatarAlt} IS NULL OR ${table.avatarImagePath} IS NOT NULL`
+    ),
+    check(
+      'ad_creatives_chk_thumbnail_alt_with_image',
+      sql`${table.thumbnailImageAlt} IS NULL OR ${table.thumbnailImagePath} IS NOT NULL`
+    ),
+  ]
 );
 
 export type AdCreativeRecord = typeof adCreatives.$inferSelect;
+
+/**
+ * Per-locale copy for a creative — the `glossary_term_translations` pattern.
+ *
+ * Both fields are nullable so a locale can override either one alone: a
+ * Japanese title over the English description is a row with a NULL
+ * description, and the reader gets the `en` description through
+ * `resolveNativeCopy` (`@/lib/ads/copy`). A row that overrides nothing has no
+ * reason to exist (`chk_says_something`), and the `en` row, being what every
+ * other locale falls back to, must be complete (`chk_en_complete`). That the
+ * `en` row exists at all is the admin validator's job — "at least one child
+ * per parent" is not a CHECK — and the forms cannot save without it.
+ *
+ * Why a child table and not one row per locale on `ad_creatives`, the way
+ * `articles` and `announcements` do it: a creative's locales are one
+ * creative. They share the href, the on/off switch, the sort order and,
+ * above all, the id, which is the sub-ID the affiliate network reports clicks
+ * under (`@/lib/ads/subid`). Split rows would report one creative as two.
+ *
+ * `locale` has no CHECK against the supported set for the same reason `slot`
+ * has none: `SUPPORTED_LOCALES` is owned by the code and grows without a
+ * migration. A row for a locale the site no longer serves is skipped at read
+ * time.
+ */
+export const adCreativeTranslations = pgTable(
+  'ad_creative_translations',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    creativeId: uuid('creative_id')
+      .notNull()
+      .references(() => adCreatives.id, { onDelete: 'cascade' }),
+    locale: varchar('locale', { length: 10 }).notNull(), // BCP 47
+    title: varchar('title', { length: 2000 }),
+    description: varchar('description', { length: 2000 }),
+    ...timestamps,
+  },
+  (table) => [
+    unique('uq_ad_creative_translation_locale').on(table.creativeId, table.locale),
+    check(
+      'ad_creative_translations_chk_says_something',
+      sql`${table.title} IS NOT NULL OR ${table.description} IS NOT NULL`
+    ),
+    check(
+      'ad_creative_translations_chk_en_complete',
+      sql`${table.locale} <> 'en' OR (${table.title} IS NOT NULL AND ${table.description} IS NOT NULL)`
+    ),
+  ]
+);
+
+export type AdCreativeTranslationRecord = typeof adCreativeTranslations.$inferSelect;
 export type NewAdCreativeRecord = typeof adCreatives.$inferInsert;
 
 // Notifications

@@ -5,11 +5,12 @@ import { AdminPageLayout } from '@/app/admin/_components/AdminPageLayout';
 import { NativeCardCreativeForm } from '@/app/admin/ads/_components/NativeCardCreativeForm';
 import { NativeTileCreativeForm } from '@/app/admin/ads/_components/NativeTileCreativeForm';
 import { buildAdCreativeFormLabels } from '@/app/admin/ads/_lib/form-labels';
-import type { CommonCreativeValues } from '@/app/admin/ads/_lib/use-common-creative-state';
+import type { CreativeFormInitial } from '@/app/admin/ads/_lib/use-common-creative-state';
 import { eq } from 'drizzle-orm';
 
-import { isPayloadForKind } from '@/lib/ads/payload';
+import { getAdCreativeCopy } from '@/lib/ads/ad';
 import { isAdSlot, kindForSlot } from '@/lib/ads/registry';
+import { thumbnailFromColumns } from '@/lib/ads/thumbnail';
 import { adCreatives, db } from '@/lib/db';
 
 type Props = { params: Promise<{ slot: string; id: string }> };
@@ -21,12 +22,22 @@ export default async function EditCreativePage({ params }: Props) {
   const [row] = await db.select().from(adCreatives).where(eq(adCreatives.id, id)).limit(1);
   if (!row || row.slot !== slot) notFound();
 
-  const t = await getTranslations({ locale: 'en', namespace: 'Admin.adsManagement' });
+  const [t, copyById] = await Promise.all([
+    getTranslations({ locale: 'en', namespace: 'Admin.adsManagement' }),
+    getAdCreativeCopy([id]),
+  ]);
   const labels = buildAdCreativeFormLabels(t);
+  const copy = copyById.get(id);
 
-  const common: CommonCreativeValues = {
+  const initial: CreativeFormInitial = {
     href: row.href,
     isActive: row.isActive,
+    icon: row.icon,
+    avatarImagePath: row.avatarImagePath,
+    avatarAlt: row.avatarAlt,
+    thumbnail: thumbnailFromColumns(row),
+    title: copy?.title,
+    description: copy?.description,
   };
   const kind = kindForSlot(slot);
 
@@ -46,20 +57,16 @@ export default async function EditCreativePage({ params }: Props) {
         </span>
       }
     >
-      {/* The slot decides the shape, so it decides the form. A stored payload
-          that fails its kind's guard (e.g. written before the validation
-          tightened) starts the form empty instead of feeding it garbage
-          fields. */}
+      {/* The slot decides the shape, so it decides the form. A slot accepts
+          exactly one kind and a creative cannot be moved between slots, so
+          there is never a form to switch mid-edit. */}
       {kind === 'native_tile' ? (
         <NativeTileCreativeForm
           mode="edit"
           slot={slot}
           creativeId={id}
           labels={labels}
-          initial={{
-            ...common,
-            payload: isPayloadForKind(kind, row.payload) ? row.payload : {},
-          }}
+          initial={initial}
         />
       ) : (
         <NativeCardCreativeForm
@@ -67,10 +74,7 @@ export default async function EditCreativePage({ params }: Props) {
           slot={slot}
           creativeId={id}
           labels={labels}
-          initial={{
-            ...common,
-            payload: isPayloadForKind(kind, row.payload) ? row.payload : {},
-          }}
+          initial={initial}
         />
       )}
     </AdminPageLayout>

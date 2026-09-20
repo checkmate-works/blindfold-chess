@@ -4,9 +4,10 @@
  * Every ad slot (placement) accepts exactly one creative `kind`. The DB
  * (`ad_creatives`) cannot express that constraint — `slot` and `kind` are
  * just varchars — so writes validate against this registry, and readers
- * derive the payload type from the slot's kind. Adding a new placement or
- * format starts here: add the slot (and, for a new format, the `kind`),
- * then add its payload type/guard (`@/lib/ads/payload`) and a renderer.
+ * narrow a row by the kind its slot binds. Adding a new placement or format
+ * starts here: add the slot (and, for a new format, the `kind`), then give
+ * the format its columns and CHECK (`@/lib/db/schema/notifications`), its
+ * branch in the admin validator, and a renderer.
  *
  * There are two kinds, because there are two card shapes to blend into.
  * `native_card` is a row in a list — a feed item, a post, a glossary term.
@@ -15,11 +16,11 @@
  * card would be the only thing on the page that is not a tile.
  *
  * A third kind is the answer whenever a new surface's cards are a third
- * shape. It is a payload type and guard (`@/lib/ads/payload`), a renderer,
- * a branch in the admin's payload validator, and an authoring form — the
- * type system names the first two for you, since `PAYLOAD_GUARDS` and
- * `AdPayloadByKind` are keyed by `AdKind`, but the admin pages pick their
- * form from the slot's kind at runtime and will not.
+ * shape. It is a migration adding its columns and extending
+ * `ad_creatives_chk_fields_for_kind`, a branch in the admin's field
+ * validator, a renderer, and an authoring form. The validator's switch is
+ * exhaustive over `AdKind`, so the compiler names that one for you; the
+ * admin pages pick their form from the slot's kind at runtime and will not.
  *
  * Mirrors the "one registry, everything derives from it" pattern used by
  * `PRACTICE_MODULE_REGISTRY`.
