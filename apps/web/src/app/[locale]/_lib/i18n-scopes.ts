@@ -166,6 +166,7 @@ export const INTL_SCOPES = {
       'authPrompt',
       'chunks',
       'moderation',
+      'nativeAd',
       'pgnDiagnosis',
       'play',
       'postFenAttachment',
@@ -223,7 +224,7 @@ export const INTL_SCOPES = {
   },
   leaderboard: {
     dir: '[locale]/(public)/leaderboard',
-    namespaces: ['Common', 'expLeaderboard', 'leaderboard', 'unsavedChanges'],
+    namespaces: ['Common', 'expLeaderboard', 'leaderboard', 'nativeAd', 'unsavedChanges'],
   },
   profile: {
     dir: '[locale]/(public)/u',
