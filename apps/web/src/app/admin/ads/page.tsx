@@ -22,7 +22,17 @@ export default async function AdminAdsPage() {
   }
 
   return (
-    <AdminPageLayout breadcrumbs={[{ label: t('title') }]}>
+    <AdminPageLayout
+      breadcrumbs={[{ label: t('title') }]}
+      actions={
+        <Link
+          href="/admin/ads/links"
+          className="px-4 py-2 text-sm rounded bg-card text-foreground hover:bg-secondary border border-border transition-colors"
+        >
+          {t('linksTitle')}
+        </Link>
+      }
+    >
       <div className="overflow-x-auto rounded-lg border border-border">
         <table className="w-full text-sm">
           <thead className="bg-accent">

@@ -4,8 +4,10 @@
  * Seeding strategy:
  * - Master data (glossary) → onConflictDoUpdate (upsert)
  *   Overwritten with the latest code data on every deploy. Code is the source of truth.
- * - Initial data (ad_creatives) → insert only when the table is empty
- *   Inserted only on first run; DB is the source of truth afterward.
+ * - Initial data (ad_creatives) → insert-only per row, keyed on a fixed id
+ *   A row is written the first time its id is missing and never again, so a
+ *   creative added to the seed later still lands on the next deploy, while
+ *   the DB is the source of truth for every row that already exists.
  *   Values modified via admin UI are never overwritten.
  *
  * This distinction mirrors the seed() (always update) vs seed_once() (first-time only)

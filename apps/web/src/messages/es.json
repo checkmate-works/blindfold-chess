@@ -4828,7 +4828,13 @@
       "preview": "Vista previa",
       "previewCaption": "La vista previa muestra el texto en inglés. La etiqueta “Anuncio” y el nombre del patrocinador se localizan para cada visitante al renderizar.",
       "thumbnailImageOverride": "Imagen de reemplazo (opcional)",
-      "thumbnailImageRemove": "Eliminar imagen"
+      "thumbnailImageRemove": "Eliminar imagen",
+      "linksTitle": "Enlaces por título",
+      "linksIntro": "Las creatividades con el mismo título en inglés anuncian lo mismo en distintos espacios. Define aquí su enlace una vez y se aplicará a todas; su estado activo no cambia.",
+      "linksMixed": "Enlaces distintos",
+      "linksApply": "Aplicar a {count}",
+      "linksApplied": "Creatividades actualizadas: {count}",
+      "linksActiveCount": "{active} / {total} activas"
     },
     "coins": {
       "title": "Monedas",

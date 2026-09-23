@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { PLACEHOLDER_AD_HREF } from '@/lib/ads/placeholder';
 
 import type { AdCreativeFields, CreateAdCreativeData } from './validation';
-import { validateCreateAdCreative } from './validation';
+import { validateBulkCreativeHref, validateCreateAdCreative } from './validation';
 
 const card: AdCreativeFields = {
   href: 'https://awin1.com/cread.php?awinmid=1&awinaffid=2',
@@ -147,5 +147,24 @@ describe('validateCreateAdCreative fields for kind', () => {
     expect(validateCreateAdCreative(data(card, { thumbnail: { fen: ' ' } }))).toBe(
       'invalid thumbnail fen'
     );
+  });
+});
+
+describe('validateBulkCreativeHref', () => {
+  it('accepts an untagged network URL', () => {
+    expect(
+      validateBulkCreativeHref('https://awin1.com/cread.php?awinmid=1&awinaffid=2')
+    ).toBeNull();
+  });
+
+  it('refuses the placeholder, which could land on rows that are already active', () => {
+    expect(validateBulkCreativeHref(PLACEHOLDER_AD_HREF)).toBe('href is still the placeholder');
+  });
+
+  it('holds the link to the same rules as the edit form', () => {
+    expect(validateBulkCreativeHref('https://awin1.com/cread.php?clickref=sample')).toBe(
+      'href already carries a clickref'
+    );
+    expect(validateBulkCreativeHref('/internal/page')).toBe('invalid href');
   });
 });
