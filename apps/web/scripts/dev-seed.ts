@@ -3,10 +3,11 @@
  *
  * Populates auth users, profiles, challenge_results / challenge_best_scores,
  * belt ranks, a published kata (型), a featured puzzle pool, a
- * position-memory catalog, a chunk catalog and a set of square/opening
- * discussion threads with predictable test data so the practice leaderboards,
- * the /repertoires catalog, the Daily Puzzle card, both position catalogs,
- * /chunks and the /topics timeline have entries — and so rank conditions can
+ * position-memory catalog, a chunk catalog, a set of square/opening
+ * discussion threads and a public game gallery with predictable test data so
+ * the practice leaderboards, the /repertoires catalog, the Daily Puzzle card,
+ * both position catalogs, /chunks, /games/shared and the /topics timeline
+ * have entries — and so rank conditions can
  * be exercised from a known rung — during local development.
  * Refuses to run against any non-local DB or Supabase URL (host check) — the
  * master-data seed (`pnpm db:seed`) remains the prod path.
@@ -33,6 +34,7 @@ import { reseedPositionMemory } from './dev-seed/position-memory';
 import { reseedPuzzles } from './dev-seed/puzzles';
 import { grantRanksUpTo } from './dev-seed/ranks';
 import { reseedRepertoires } from './dev-seed/repertoires';
+import { reseedSharedGames } from './dev-seed/shared-games';
 import { reseedTopics } from './dev-seed/topics';
 import { SEED_PASSWORD, SEED_USERS, ensureSeedUser } from './dev-seed/users';
 
@@ -153,6 +155,13 @@ async function main() {
   console.log('dev-seed: seeding chunks...');
   for (const chunk of await reseedChunks(db, puzzleOwners)) {
     console.log(`  ${chunk.slug.padEnd(32)} → ${chunk.status}`);
+  }
+
+  // The public game gallery. Same owners as the rest of the UGC; eight games
+  // so the list carries its ad slot twice.
+  console.log('dev-seed: seeding shared games...');
+  for (const game of await reseedSharedGames(db, puzzleOwners)) {
+    console.log(`  ${game.title.padEnd(40)} → ${game.result}`);
   }
 
   if (skippedOpenings.length > 0) {
