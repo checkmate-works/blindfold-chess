@@ -184,7 +184,7 @@ export const AD_SLOTS = {
     surfaces: [{ route: '/games/shared', href: '/games/shared' }],
   },
   'my-game-list-native-ad': {
-    kind: 'native_card',
+    kind: 'native_tile',
     surfaces: [{ route: '/games', href: '/games' }],
   },
 } as const satisfies Record<string, AdSlotConfig>;
@@ -419,16 +419,18 @@ export const PRACTICE_GRID_NATIVE_AD_SLOT = 'practice-grid-native-ad' satisfies 
 export const SHARED_GAME_LIST_NATIVE_AD_SLOT = 'shared-game-list-native-ad' satisfies AdSlot;
 
 /**
- * The pool the viewer's own saved games (`/games`) draw their native card
- * from, rendered in the `feed` variant as one more row of that list.
+ * The pool the viewer's own saved games (`/games`) draw their native ad
+ * from, rendered in the `row` variant of `native_tile` as one more line of
+ * that list.
  *
- * The rows around it are not cards: each is a single line — result icon,
- * colour, engine, last move — with no board thumbnail, so the creative is
- * roughly three rows tall and is the one entry in the list that is not that
- * shape. That is accepted rather than answered with a fourth kind. The
- * `feed` variant is borderless and padded like a row, so it sits inside the
- * list's frame and dividers instead of as a rectangle beside it, which is the
- * part that keeps it in-content.
+ * The rows around it are not cards: each is a single line — a result square,
+ * colour, engine, last move — with no board thumbnail. A `native_card` was
+ * tried here first, drawn as a borderless row, and it did not pass as native:
+ * it was three rows tall and the only entry with a board and a paragraph.
+ * The tile kind already stores what a one-line row needs — an emoji for the
+ * result square and a title — so the row is a variant of it rather than a
+ * fourth kind; like the leaderboard's `iconTile`, it simply draws fewer of
+ * the stored fields.
  *
  * Split from the gallery's pool because the reader is looking back over
  * their own games rather than browsing other people's, which is the reader a

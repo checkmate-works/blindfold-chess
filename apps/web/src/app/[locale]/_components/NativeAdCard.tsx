@@ -19,8 +19,6 @@ type Props = {
   /** Extra classes for the wrapper (e.g. the feed's row divider), merged with
    * the component-owned `ad-slot-wrapper` so they collapse together. */
   className?: string;
-  /** The wrapper element — `li` when the card is a row of a `<ul>`. */
-  as?: 'div' | 'li';
 };
 
 /**
@@ -60,18 +58,12 @@ type Props = {
  * entire `home` namespace to read three words — which is what a static
  * informational subtree like the glossary would otherwise pay for one card.
  */
-export function NativeAdCard({
-  creative,
-  locale,
-  variant = 'feed',
-  className,
-  as: Wrapper = 'div',
-}: Props) {
+export function NativeAdCard({ creative, locale, variant = 'feed', className }: Props) {
   const t = useTranslations('nativeAd');
   const { preferences } = useGamePreferences();
 
   return (
-    <Wrapper className={`ad-slot-wrapper${className ? ` ${className}` : ''}`}>
+    <div className={`ad-slot-wrapper${className ? ` ${className}` : ''}`}>
       <ActivityCard
         href={creative.href}
         locale={locale}
@@ -129,6 +121,6 @@ export function NativeAdCard({
         </p>
         <p className="text-sm text-muted-foreground line-clamp-2">{creative.description}</p>
       </ActivityCard>
-    </Wrapper>
+    </div>
   );
 }

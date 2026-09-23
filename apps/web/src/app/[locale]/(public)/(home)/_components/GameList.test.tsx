@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
-import type { NativeAdView } from '@/lib/ads/ad';
+import type { NativeTileView } from '@/lib/ads/ad';
 import { createMockGames } from '@/lib/games/__test-support__/game-fixture';
 
 import { GameList } from './GameList';
@@ -10,17 +10,13 @@ vi.mock('./GameListItem', () => ({
   GameListItem: ({ game }: { game: { id: string } }) => <li data-testid="game-row">{game.id}</li>,
 }));
 
-vi.mock('@/app/[locale]/_components/NativeAdCard', () => ({
-  NativeAdCard: ({
-    creative,
-    as: Wrapper = 'div',
-  }: {
-    creative: NativeAdView;
-    as?: 'div' | 'li';
-  }) => <Wrapper data-testid="ad-row">{creative.title}</Wrapper>,
+vi.mock('@/app/[locale]/_components/NativeAdTile', () => ({
+  NativeAdTile: ({ creative }: { creative: NativeTileView }) => (
+    <li data-testid="ad-row">{creative.title}</li>
+  ),
 }));
 
-const creative = { title: 'Master games' } as NativeAdView;
+const creative = { title: 'Master games' } as NativeTileView;
 
 describe('GameList', () => {
   it('interleaves ad rows as list items of the same <ul>', () => {

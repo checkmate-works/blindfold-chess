@@ -273,6 +273,8 @@ const PLACEHOLDER_CREATIVES = {
     },
   },
   'my-game-list-native-ad': {
+    // Sits in the 28px square the rows put their result mark in.
+    icon: '📚',
     id: '4ce7a64d-580e-4704-94a0-0d34b0161c4a',
     copy: {
       title: {
@@ -280,8 +282,8 @@ const PLACEHOLDER_CREATIVES = {
         ja: '【プレースホルダ】自分の対局一覧のカード',
       },
       description: {
-        en: "Replace the link and this copy with a real creative. The surrounding rows are the reader's own saved games, so something to study after playing — a collection of annotated master games, say — fits here.",
-        ja: 'リンクと本文を実際のクリエイティブに差し替えてください。周囲は読者自身の保存済み対局なので、対局後に読むもの（名局集など）が合います。',
+        en: "Replace the link and this copy with a real creative. The surrounding rows are the reader's own saved games, one line each, so only the emoji and the title are shown; something to study after playing — a collection of annotated master games, say — fits here.",
+        ja: 'リンクと本文を実際のクリエイティブに差し替えてください。周囲は読者自身の保存済み対局（各 1 行）なので、表示されるのは絵文字とタイトルだけです。対局後に読むもの（名局集など）が合います。',
       },
     },
   },

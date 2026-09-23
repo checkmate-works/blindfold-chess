@@ -13,7 +13,7 @@
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
-import { getNativeAdCreatives } from '@/lib/ads/ad';
+import { getNativeTileCreatives } from '@/lib/ads/ad';
 import { MY_GAME_LIST_NATIVE_AD_SLOT } from '@/lib/ads/registry';
 
 import { HelpTourButton, PageLayout } from '@/app/[locale]/_components';
@@ -46,7 +46,7 @@ export default async function GamesPage({ params }: Props) {
   const [t, tHelp, nativeAdCreatives] = await Promise.all([
     getTranslations({ locale, namespace: 'gamesPage' }),
     getTranslations({ locale, namespace: 'gamesPage.help' }),
-    getNativeAdCreatives(MY_GAME_LIST_NATIVE_AD_SLOT, locale),
+    getNativeTileCreatives(MY_GAME_LIST_NATIVE_AD_SLOT, locale),
   ]);
 
   const helpSteps: HelpStep[] = [

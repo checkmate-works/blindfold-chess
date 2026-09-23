@@ -1,8 +1,8 @@
-import type { NativeAdView } from '@/lib/ads/ad';
+import type { NativeTileView } from '@/lib/ads/ad';
 import { withRepeatingNativeAds } from '@/lib/ads/placement';
 import type { Game } from '@/lib/games/saved-game-types';
 
-import { NativeAdCard } from '@/app/[locale]/_components/NativeAdCard';
+import { NativeAdTile } from '@/app/[locale]/_components/NativeAdTile';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { GameListItem } from './GameListItem';
@@ -12,7 +12,7 @@ type Props = {
   locale: Locale;
   onDeleteGame: (gameId: string) => void;
   /** Creatives to interleave as rows; empty places none. */
-  nativeAdCreatives?: readonly NativeAdView[];
+  nativeAdCreatives?: readonly NativeTileView[];
 };
 
 export function GameList({ games, locale, onDeleteGame, nativeAdCreatives = [] }: Props) {
@@ -27,12 +27,10 @@ export function GameList({ games, locale, onDeleteGame, nativeAdCreatives = [] }
           // The same divider as `GameListItem`, on the wrapper that the
           // ad-free CSS hide collapses, so a hidden ad takes its line with it.
           (creative, key) => (
-            <NativeAdCard
+            <NativeAdTile
               key={key}
-              as="li"
               creative={creative}
-              locale={locale}
-              variant="feed"
+              variant="row"
               className="border-b border-border last:border-b-0"
             />
           )

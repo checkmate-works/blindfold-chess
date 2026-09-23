@@ -8,7 +8,7 @@ import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaExclamationTriangle, FaPlus } from 'react-icons/fa';
 
-import type { NativeAdView } from '@/lib/ads/ad';
+import type { NativeTileView } from '@/lib/ads/ad';
 import type { GameSortOption, SortDirection } from '@/lib/games/saved-game-types';
 
 import { BeltRankBadge } from '@/app/[locale]/(public)/dojo/_components/BeltRankBadge';
@@ -28,7 +28,7 @@ const GAMES_PAGE_MAX_COUNT = 20;
 
 type Props = {
   locale: Locale;
-  nativeAdCreatives?: readonly NativeAdView[];
+  nativeAdCreatives?: readonly NativeTileView[];
 };
 
 export function GamesPageClient({ locale, nativeAdCreatives }: Props) {
