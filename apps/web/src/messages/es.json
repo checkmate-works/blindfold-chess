@@ -4830,11 +4830,14 @@
       "thumbnailImageOverride": "Imagen de reemplazo (opcional)",
       "thumbnailImageRemove": "Eliminar imagen",
       "linksTitle": "Enlaces por título",
-      "linksIntro": "Las creatividades con el mismo título en inglés anuncian lo mismo en distintos espacios. Define aquí su enlace una vez y se aplicará a todas; su estado activo no cambia.",
+      "linksIntro": "Las creatividades con el mismo título en inglés anuncian lo mismo en distintos espacios. Define aquí su enlace una vez y se aplicará a todas; después puedes activarlas o desactivarlas juntas.",
       "linksMixed": "Enlaces distintos",
       "linksApply": "Aplicar a {count}",
       "linksApplied": "Creatividades actualizadas: {count}",
-      "linksActiveCount": "{active} / {total} activas"
+      "linksActiveCount": "{active} / {total} activas",
+      "linksActivate": "Activar las {count}",
+      "linksDeactivate": "Desactivar las {count}",
+      "linksActivateBlocked": "Define primero el enlace: algunas de estas creatividades aún apuntan a la URL de marcador de posición."
     },
     "coins": {
       "title": "Monedas",
