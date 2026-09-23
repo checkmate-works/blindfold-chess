@@ -265,3 +265,20 @@ export function validateBulkCreativeHref(href: string): string | null {
   if (hrefError) return hrefError;
   return isPlaceholderAdHref(href) ? 'href is still the placeholder' : null;
 }
+
+/**
+ * Switching on every creative that shares one English title
+ * (`setAdCreativeActiveByTitle`), given the links those rows carry now. The
+ * gate is the one on switching a single row on, applied to the whole group:
+ * if any row is still on the placeholder, none of them is switched on.
+ *
+ * Refusing the group rather than activating the rows that are ready is
+ * deliberate. A book whose link was pasted per row, and missed in one slot,
+ * would otherwise go live everywhere except that slot and report success —
+ * and nothing on a live page tells the admin a slot is dark. The error sends
+ * them back to the link field, which fixes every row at once.
+ */
+export function validateBulkActivation(hrefs: readonly string[]): string | null {
+  if (hrefs.length === 0) return 'not found';
+  return hrefs.some(isPlaceholderAdHref) ? 'href is still the placeholder' : null;
+}
