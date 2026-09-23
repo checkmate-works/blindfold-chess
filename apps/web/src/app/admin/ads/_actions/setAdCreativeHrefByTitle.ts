@@ -1,12 +1,13 @@
 'use server';
 
-import { and, eq, inArray } from 'drizzle-orm';
+import { inArray } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
-import { adCreativeTranslations, adCreatives, db } from '@/lib/db';
+import { adCreatives, db } from '@/lib/db';
 import { handleAdminActionError } from '@/lib/server-action-error';
 
 import { requireAdmin } from '../../_lib/auth';
+import { creativeIdsWithEnglishTitle } from '../_lib/creatives-by-title';
 import { revalidateAdCreatives } from '../_lib/revalidate';
 import { validateBulkCreativeHref } from '../_lib/validation';
 
@@ -15,10 +16,6 @@ import { validateBulkCreativeHref } from '../_lib/validation';
  * rows across all the slots it runs in (see `groupCreativesByTitle` for why
  * the title is the key). Only `href` changes: whether each row is active, and
  * everything else about it, stays as it was.
- *
- * The rows are looked up again here rather than taken from the client, so a
- * creative added or retitled since the page loaded is included or left out
- * by what the database says now.
  */
 export async function setAdCreativeHrefByTitle(
   title: string,
@@ -31,14 +28,10 @@ export async function setAdCreativeHrefByTitle(
   if (hrefError) return { error: hrefError };
 
   try {
-    const matching = db
-      .select({ id: adCreativeTranslations.creativeId })
-      .from(adCreativeTranslations)
-      .where(and(eq(adCreativeTranslations.locale, 'en'), eq(adCreativeTranslations.title, title)));
     const updated = await db
       .update(adCreatives)
       .set({ href, updatedAt: new Date() })
-      .where(inArray(adCreatives.id, matching))
+      .where(inArray(adCreatives.id, creativeIdsWithEnglishTitle(title)))
       .returning({ id: adCreatives.id });
     if (updated.length === 0) return { error: 'not found' };
 
