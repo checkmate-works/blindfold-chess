@@ -272,6 +272,19 @@ const PLACEHOLDER_CREATIVES = {
       },
     },
   },
+  'my-game-list-native-ad': {
+    id: '4ce7a64d-580e-4704-94a0-0d34b0161c4a',
+    copy: {
+      title: {
+        en: '[Placeholder] My games list card',
+        ja: '【プレースホルダ】自分の対局一覧のカード',
+      },
+      description: {
+        en: "Replace the link and this copy with a real creative. The surrounding rows are the reader's own saved games, so something to study after playing — a collection of annotated master games, say — fits here.",
+        ja: 'リンクと本文を実際のクリエイティブに差し替えてください。周囲は読者自身の保存済み対局なので、対局後に読むもの（名局集など）が合います。',
+      },
+    },
+  },
 } satisfies Record<AdSlot, PlaceholderCreative>;
 
 const seedCreatives: SeedCreative[] = AD_SLOT_VALUES.map((slot) => ({

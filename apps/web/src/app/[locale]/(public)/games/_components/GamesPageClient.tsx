@@ -8,6 +8,7 @@ import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaExclamationTriangle, FaPlus } from 'react-icons/fa';
 
+import type { NativeAdView } from '@/lib/ads/ad';
 import type { GameSortOption, SortDirection } from '@/lib/games/saved-game-types';
 
 import { BeltRankBadge } from '@/app/[locale]/(public)/dojo/_components/BeltRankBadge';
@@ -27,9 +28,10 @@ const GAMES_PAGE_MAX_COUNT = 20;
 
 type Props = {
   locale: Locale;
+  nativeAdCreatives?: readonly NativeAdView[];
 };
 
-export function GamesPageClient({ locale }: Props) {
+export function GamesPageClient({ locale, nativeAdCreatives }: Props) {
   const t = useTranslations('home.gameList');
   const tRanks = useTranslations('ranks');
   const [sortBy, setSortBy] = useState<GameSortOption>('lastPlayed');
@@ -137,7 +139,12 @@ export function GamesPageClient({ locale }: Props) {
       ) : (
         <>
           <div data-tour-id="games-list">
-            <GameList games={displayGames} locale={locale} onDeleteGame={handleDeleteGame} />
+            <GameList
+              games={displayGames}
+              locale={locale}
+              onDeleteGame={handleDeleteGame}
+              nativeAdCreatives={nativeAdCreatives}
+            />
           </div>
           <div className="mt-4 text-right">
             <Link

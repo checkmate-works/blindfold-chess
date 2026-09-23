@@ -183,6 +183,10 @@ export const AD_SLOTS = {
     kind: 'native_card',
     surfaces: [{ route: '/games/shared', href: '/games/shared' }],
   },
+  'my-game-list-native-ad': {
+    kind: 'native_card',
+    surfaces: [{ route: '/games', href: '/games' }],
+  },
 } as const satisfies Record<string, AdSlotConfig>;
 
 export type AdSlot = keyof typeof AD_SLOTS;
@@ -413,3 +417,26 @@ export const PRACTICE_GRID_NATIVE_AD_SLOT = 'practice-grid-native-ad' satisfies 
  * than a catalog, and whether an ad belongs on it is a separate decision.
  */
 export const SHARED_GAME_LIST_NATIVE_AD_SLOT = 'shared-game-list-native-ad' satisfies AdSlot;
+
+/**
+ * The pool the viewer's own saved games (`/games`) draw their native card
+ * from, rendered in the `feed` variant as one more row of that list.
+ *
+ * The rows around it are not cards: each is a single line — result icon,
+ * colour, engine, last move — with no board thumbnail, so the creative is
+ * roughly three rows tall and is the one entry in the list that is not that
+ * shape. That is accepted rather than answered with a fourth kind. The
+ * `feed` variant is borderless and padded like a row, so it sits inside the
+ * list's frame and dividers instead of as a rectangle beside it, which is the
+ * part that keeps it in-content.
+ *
+ * Split from the gallery's pool because the reader is looking back over
+ * their own games rather than browsing other people's, which is the reader a
+ * collection of annotated master games is written for.
+ *
+ * Static, like the glossary term lists: the page is prerendered per locale
+ * and the list itself is read from the browser, so the pool comes from
+ * `getNativeAdCreatives` and the `bfc_ads_hidden` cookie's CSS rule is the
+ * entitlement layer.
+ */
+export const MY_GAME_LIST_NATIVE_AD_SLOT = 'my-game-list-native-ad' satisfies AdSlot;
