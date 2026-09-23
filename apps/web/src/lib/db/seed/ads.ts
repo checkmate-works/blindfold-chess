@@ -31,18 +31,19 @@ type SeedCreative = {
 };
 
 /**
- * A book the seed advertises. Its copy, thumbnail and link are the same in
- * every slot it runs in; only the row id differs, because the id is the
- * sub-ID a click is reported under and a report is only useful if it can
- * tell the slots apart.
+ * A book the seed advertises. Its copy and thumbnail are the same in every
+ * slot it runs in; only the row id differs, because the id is the sub-ID a
+ * click is reported under and a report is only useful if it can tell the
+ * slots apart.
+ *
+ * There is deliberately no link here. This repository is public, and an
+ * affiliate link is the site's own business configuration rather than code:
+ * a fork or a local checkout should not inherit it, and changing it should
+ * not take a deploy. Every row is seeded with {@link PLACEHOLDER_AD_HREF},
+ * which also keeps it from being switched on, and the real link is pasted in
+ * once per book from `/admin/ads/links`.
  */
 type SeedBook = {
-  /**
-   * The affiliate link, one per book so it is pasted once and not once per
-   * slot. {@link PLACEHOLDER_AD_HREF} until someone has it, which also keeps
-   * every row carrying it from being switched on.
-   */
-  href: string;
   /** The `native_tile` glyph. Ignored by the other kinds, which have none. */
   icon: string;
   /**
@@ -68,7 +69,6 @@ type SeedBook = {
  */
 const BOOKS = {
   woodpecker2: {
-    href: PLACEHOLDER_AD_HREF,
     icon: '🐦',
     // Morphy vs Duke Karl / Count Isouard, Paris 1858 (the Opera Game),
     // before 16.Qb8+ Nxb8 17.Rd8#.
@@ -82,7 +82,6 @@ const BOOKS = {
     },
   },
   endgameStudies: {
-    href: PLACEHOLDER_AD_HREF,
     icon: '🏁',
     // The Saavedra position: 1.c7 wins, but only by underpromoting to a rook.
     fen: '8/8/1KP5/3r4/8/8/8/k7 w - - 0 1',
@@ -98,7 +97,6 @@ const BOOKS = {
     },
   },
   russianEndgame: {
-    href: PLACEHOLDER_AD_HREF,
     icon: '📕',
     // The Lucena position, the rook ending every player has to know.
     fen: '1K6/1P1k4/8/8/8/8/r7/2R5 w - - 0 1',
@@ -111,7 +109,6 @@ const BOOKS = {
     },
   },
   e4Bible: {
-    href: PLACEHOLDER_AD_HREF,
     icon: '📖',
     // 1.e4
     fen: 'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1',
@@ -124,7 +121,6 @@ const BOOKS = {
     },
   },
   carlsenVariation: {
-    href: PLACEHOLDER_AD_HREF,
     icon: '⚔️',
     // 1.e4 c5 2.Nc3 d6 3.d4 cxd4 4.Qxd4
     fen: 'rnbqkbnr/pp2pppp/3p4/8/3QP3/2N5/PPP2PPP/R1B1KBNR b KQkq - 0 4',
@@ -140,7 +136,6 @@ const BOOKS = {
     },
   },
   sicilianWarfare: {
-    href: PLACEHOLDER_AD_HREF,
     icon: '🗡️',
     // 1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3, the Open Sicilian.
     fen: 'rnbqkb1r/pp2pppp/3p1n2/8/3NP3/2N5/PPP2PPP/R1BQKB1R b KQkq - 2 5',
@@ -153,7 +148,6 @@ const BOOKS = {
     },
   },
   winWithTheFrench: {
-    href: PLACEHOLDER_AD_HREF,
     icon: '🛡️',
     // 1.e4 e6 2.d4 d5
     fen: 'rnbqkbnr/ppp2ppp/4p3/3p4/3PP3/8/PPP2PPP/RNBQKBNR w KQkq - 0 3',
@@ -166,7 +160,6 @@ const BOOKS = {
     },
   },
   kingsIndianAttack: {
-    href: PLACEHOLDER_AD_HREF,
     icon: '👑',
     // 1.Nf3 d5 2.g3 Nf6 3.Bg2
     fen: 'rnbqkb1r/ppp1pppp/5n2/3p4/8/5NP1/PPPPPPBP/RNBQK2R b KQkq - 2 3',
@@ -182,7 +175,6 @@ const BOOKS = {
     },
   },
   expandYourStrategy: {
-    href: PLACEHOLDER_AD_HREF,
     icon: '🧭',
     // 1.d4 d5 2.c4 e6 3.Nc3 Nf6 4.cxd5 exd5, the Carlsbad structure.
     fen: 'rnbqkb1r/ppp2ppp/5n2/3p4/3P4/2N5/PP2PPPP/R1BQKBNR w KQkq - 0 5',
@@ -195,7 +187,6 @@ const BOOKS = {
     },
   },
   masteringExchanges: {
-    href: PLACEHOLDER_AD_HREF,
     icon: '🔄',
     // The Opera Game after 13.Rxd7: White gives up the exchange to open the
     // d-file.
@@ -209,7 +200,6 @@ const BOOKS = {
     },
   },
   killerAttacking: {
-    href: PLACEHOLDER_AD_HREF,
     icon: '🔥',
     // Anderssen vs Kieseritzky, London 1851 (the Immortal Game), before
     // 22.Qf6+ Nxf6 23.Be7#, with both rooks and a bishop already given away.
@@ -226,7 +216,6 @@ const BOOKS = {
     },
   },
   improveYourChessNow: {
-    href: PLACEHOLDER_AD_HREF,
     icon: '📈',
     // The Réti study (1921): the king catches the h-pawn by walking the
     // diagonal that also supports its own pawn.
@@ -240,7 +229,6 @@ const BOOKS = {
     },
   },
   korchnoiBestGames: {
-    href: PLACEHOLDER_AD_HREF,
     icon: '📚',
     // 1.e4 e6 2.d4 d5 3.Nc3 Bb4, the French Winawer — Korchnoi's lifelong
     // defence rather than one particular game.
@@ -257,7 +245,6 @@ const BOOKS = {
     },
   },
   learnFromLarsen: {
-    href: PLACEHOLDER_AD_HREF,
     icon: '📚',
     // 1.b3 e5 2.Bb2 Nc6, the opening that carries Larsen's name.
     fen: 'r1bqkbnr/pppp1ppp/2n5/4p3/8/1P6/PBPPPPPP/RN1QKBNR w KQkq - 2 3',
@@ -270,7 +257,6 @@ const BOOKS = {
     },
   },
   theMentalGame: {
-    href: PLACEHOLDER_AD_HREF,
     icon: '🧠',
     // Deep Blue vs Kasparov, New York 1997, game 6, after 8.Nxe6: the
     // sacrifice Kasparov let in, in the game that decided the match.
@@ -391,8 +377,17 @@ const SLOT_BOOKS = {
 
 const seedCreatives: SeedCreative[] = AD_SLOT_VALUES.flatMap((slot) =>
   SLOT_BOOKS[slot].map(({ id, book }, sortOrder) => {
-    const { href, icon, fen, copy } = BOOKS[book];
-    return { id, slot, href, isActive: false, sortOrder, icon, thumbnail: { fen }, copy };
+    const { icon, fen, copy } = BOOKS[book];
+    return {
+      id,
+      slot,
+      href: PLACEHOLDER_AD_HREF,
+      isActive: false,
+      sortOrder,
+      icon,
+      thumbnail: { fen },
+      copy,
+    };
   })
 );
 
