@@ -259,6 +259,34 @@ const PLACEHOLDER_CREATIVES = {
       },
     },
   },
+  'shared-game-list-native-ad': {
+    id: 'b35bf68a-c87c-44d9-94e1-baa5c9a00bec',
+    copy: {
+      title: {
+        en: '[Placeholder] Shared game list card',
+        ja: '【プレースホルダ】公開対局一覧のカード',
+      },
+      description: {
+        en: 'Replace the link and this copy with a real creative. The surrounding cards are games other players published, led by a board thumbnail, which is the shape this card blends into.',
+        ja: 'リンクと本文を実際のクリエイティブに差し替えてください。周囲は他のプレイヤーが公開した対局のカード（盤面サムネイル付き）なので、その形に馴染ませます。',
+      },
+    },
+  },
+  'my-game-list-native-ad': {
+    // Sits in the 28px square the rows put their result mark in.
+    icon: '📚',
+    id: '4ce7a64d-580e-4704-94a0-0d34b0161c4a',
+    copy: {
+      title: {
+        en: '[Placeholder] My games list card',
+        ja: '【プレースホルダ】自分の対局一覧のカード',
+      },
+      description: {
+        en: "Replace the link and this copy with a real creative. The surrounding rows are the reader's own saved games, one line each, so only the emoji and the title are shown; something to study after playing — a collection of annotated master games, say — fits here.",
+        ja: 'リンクと本文を実際のクリエイティブに差し替えてください。周囲は読者自身の保存済み対局（各 1 行）なので、表示されるのは絵文字とタイトルだけです。対局後に読むもの（名局集など）が合います。',
+      },
+    },
+  },
 } satisfies Record<AdSlot, PlaceholderCreative>;
 
 const seedCreatives: SeedCreative[] = AD_SLOT_VALUES.map((slot) => ({

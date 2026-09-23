@@ -49,6 +49,20 @@ describe('NativeAdTile without a GamePreferencesProvider', () => {
     expect(screen.getByText(creative.description)).toBeInTheDocument();
     expect(screen.queryByTestId('thumbnail')).not.toBeInTheDocument();
   });
+
+  it('renders the row variant as a one-line list item with no board or description', () => {
+    render(
+      <ul>
+        <NativeAdTile creative={creative} variant="row" />
+      </ul>
+    );
+
+    const row = screen.getByRole('listitem');
+    expect(row).toHaveClass('ad-slot-wrapper');
+    expect(screen.getByRole('link', { name: `disclosure: ${creative.title}` })).toBeInTheDocument();
+    expect(screen.queryByText(creative.description)).not.toBeInTheDocument();
+    expect(screen.queryByTestId('thumbnail')).not.toBeInTheDocument();
+  });
 });
 
 describe('NativeAdTile link attributes', () => {

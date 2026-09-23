@@ -13,6 +13,9 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { Link } from '@/i18n/routing';
 
+import { resolveNativeAds } from '@/lib/ads/ad';
+import { withRepeatingNativeAds } from '@/lib/ads/placement';
+import { SHARED_GAME_LIST_NATIVE_AD_SLOT } from '@/lib/ads/registry';
 import { getReviewedGameIdSet } from '@/lib/ai-review/queries';
 import { getOptionalUser } from '@/lib/auth';
 import { countSharedGames, listSharedGames } from '@/lib/db/games-read';
@@ -22,6 +25,7 @@ import { getPaginationParams } from '@/lib/pagination';
 
 import { getOpeningDisplayName } from '@/app/[locale]/(public)/topics/openings/_lib/get-opening-display-name';
 import { PageLayout } from '@/app/[locale]/_components';
+import { NativeAdCard } from '@/app/[locale]/_components/NativeAdCard';
 import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -72,12 +76,17 @@ export default async function SharedGamesPage({ params, searchParams }: Props) {
   const items = await listSharedGames(sort, limit, offset, currentUser?.id);
 
   const ids = items.map((g) => g.id);
-  const [likeMetaMap, commentMetaMap, reviewedIds, myPublished] = await Promise.all([
-    getLikeMetaMap(GAME_LIKE_TARGET, ids, currentUser?.id),
-    getGameCommentMetaMap(ids),
-    getReviewedGameIdSet(ids),
-    currentUser ? getMyPublishedGames(currentUser.id) : null,
-  ]);
+  // The ad pool is server-gated: an ad-free reader gets an empty pool and
+  // therefore no cards at all. The `.ad-slot-wrapper` CSS hide that
+  // `NativeAdCard` owns is the second layer, for the first paint.
+  const [likeMetaMap, commentMetaMap, reviewedIds, myPublished, { creatives: nativeAdCreatives }] =
+    await Promise.all([
+      getLikeMetaMap(GAME_LIKE_TARGET, ids, currentUser?.id),
+      getGameCommentMetaMap(ids),
+      getReviewedGameIdSet(ids),
+      currentUser ? getMyPublishedGames(currentUser.id) : null,
+      resolveNativeAds(SHARED_GAME_LIST_NATIVE_AD_SLOT, currentUser?.id ?? null, locale),
+    ]);
   const justNowLabel = t('detail.justNow');
   const authorLabels = {
     anonymous: tCommon('anonymousUser'),
@@ -121,21 +130,30 @@ export default async function SharedGamesPage({ params, searchParams }: Props) {
         <p className="py-8 text-center text-muted-foreground">{t('list.empty')}</p>
       ) : (
         <div className="space-y-3">
-          {items.map((g) => (
-            <SharedGameListCard
-              key={g.id}
-              game={g}
-              likeMeta={likeMetaMap.get(g.id)}
-              replyMeta={commentMetaMap.get(g.id) ?? EMPTY_REPLY_META}
-              reviewed={reviewedIds.has(g.id)}
-              aiReviewedBadgeLabel={t('list.aiReviewedBadge')}
-              colorLabels={{ white: tPlay('playerColor.white'), black: tPlay('playerColor.black') }}
-              resolveOpeningName={(slug, name) => getOpeningDisplayName(openingNameT, slug, name)}
-              justNowLabel={justNowLabel}
-              authorLabels={authorLabels}
-              locale={locale}
-            />
-          ))}
+          {withRepeatingNativeAds(
+            items.map((g) => (
+              <SharedGameListCard
+                key={g.id}
+                game={g}
+                likeMeta={likeMetaMap.get(g.id)}
+                replyMeta={commentMetaMap.get(g.id) ?? EMPTY_REPLY_META}
+                reviewed={reviewedIds.has(g.id)}
+                aiReviewedBadgeLabel={t('list.aiReviewedBadge')}
+                colorLabels={{
+                  white: tPlay('playerColor.white'),
+                  black: tPlay('playerColor.black'),
+                }}
+                resolveOpeningName={(slug, name) => getOpeningDisplayName(openingNameT, slug, name)}
+                justNowLabel={justNowLabel}
+                authorLabels={authorLabels}
+                locale={locale}
+              />
+            )),
+            nativeAdCreatives,
+            (creative, key) => (
+              <NativeAdCard key={key} creative={creative} locale={locale} variant="card" />
+            )
+          )}
         </div>
       )}
 

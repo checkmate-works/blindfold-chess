@@ -13,6 +13,9 @@
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
+import { getNativeTileCreatives } from '@/lib/ads/ad';
+import { MY_GAME_LIST_NATIVE_AD_SLOT } from '@/lib/ads/registry';
+
 import { HelpTourButton, PageLayout } from '@/app/[locale]/_components';
 import type { HelpStep } from '@/app/[locale]/_components';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
@@ -37,8 +40,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function GamesPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const t = await getTranslations({ locale, namespace: 'gamesPage' });
-  const tHelp = await getTranslations({ locale, namespace: 'gamesPage.help' });
+  // The cached, viewer-independent read: this page is prerendered, and
+  // `resolveNativeAds` would read `cookies()` and turn it dynamic. An ad-free
+  // reader is handled by the `bfc_ads_hidden` CSS rule instead.
+  const [t, tHelp, nativeAdCreatives] = await Promise.all([
+    getTranslations({ locale, namespace: 'gamesPage' }),
+    getTranslations({ locale, namespace: 'gamesPage.help' }),
+    getNativeTileCreatives(MY_GAME_LIST_NATIVE_AD_SLOT, locale),
+  ]);
 
   const helpSteps: HelpStep[] = [
     {
@@ -77,7 +86,7 @@ export default async function GamesPage({ params }: Props) {
       <div className="mb-6">
         <GamesTabs active="mine" locale={locale} />
       </div>
-      <GamesPageClient locale={locale} />
+      <GamesPageClient locale={locale} nativeAdCreatives={nativeAdCreatives} />
     </PageLayout>
   );
 }

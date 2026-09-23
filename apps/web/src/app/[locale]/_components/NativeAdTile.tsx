@@ -19,13 +19,17 @@ type Props = {
    *   under "Related Learning".
    * - `iconTile` — the `IconTileCard` of the `/leaderboard` module grid: a
    *   40px icon badge, a title, and one line under it.
+   * - `row` — a row of the `/games` saved-game list: a 28px icon square, a
+   *   title, and the disclosure where the row's delete button sits.
    *
    * Each drops whatever its neighbours do not carry. `link` and `iconTile`
    * drop the board thumbnail, and `iconTile` also drops the sponsor line,
    * because its neighbours are two lines high and a grid row is sized by its
    * tallest cell — a third line would grow every row the ad appears in.
+   * `row` drops the description as well, because its neighbours are a single
+   * line each.
    */
-  variant?: 'tile' | 'link' | 'iconTile';
+  variant?: 'tile' | 'link' | 'iconTile' | 'row';
   /** Extra classes for the wrapper, merged with the component-owned
    * `ad-slot-wrapper` so they collapse together. */
   className?: string;
@@ -46,7 +50,14 @@ type Props = {
  * badge, a title, and one line under it where the neighbours show the
  * reader's own rank.
  *
- * All three are the same stored fields drawn for a different neighbour, which
+ * `row` is a line of the `/games` saved-game list, and renders as the `<li>`
+ * itself because it sits inside that list's `<ul>`. The neighbours are a
+ * result square, a colour dot, an engine badge and a move; the ad keeps the
+ * square (holding its emoji instead of a result mark) and the padding, puts
+ * its title where the game's details go, and the disclosure where the delete
+ * button sits. The caller passes the row divider through `className`.
+ *
+ * All four are the same stored fields drawn for a different neighbour, which
  * is what makes them variants rather than kinds: a kind is a field set (which
  * is why `native_thumb` is one, having neither emoji nor description), and
  * these differ only in what they draw.
@@ -104,6 +115,40 @@ function TileThumbnail({ thumbnail }: { thumbnail: NativeTileView['thumbnail'] }
 
 export function NativeAdTile({ creative, variant = 'tile', className }: Props) {
   const t = useTranslations('nativeAd');
+
+  if (variant === 'row') {
+    return (
+      <li
+        className={`ad-slot-wrapper relative transition-all duration-200 hover:bg-muted focus-within:bg-muted${className ? ` ${className}` : ''}`}
+      >
+        <div className="px-4 py-3 sm:px-6">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex min-w-0 flex-1 items-center gap-3">
+              {/* The 28px square the rows put their result mark in. */}
+              <span
+                aria-hidden="true"
+                className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-muted text-base"
+              >
+                {creative.icon}
+              </span>
+              <a
+                href={creative.href}
+                target="_blank"
+                rel="sponsored noopener noreferrer"
+                aria-label={`${t('disclosure')}: ${creative.title}`}
+                className="min-w-0 truncate text-sm font-medium text-foreground after:absolute after:inset-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              >
+                {creative.title}
+              </a>
+            </div>
+            <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+              {t('disclosure')}
+            </span>
+          </div>
+        </div>
+      </li>
+    );
+  }
 
   if (variant === 'link') {
     return (

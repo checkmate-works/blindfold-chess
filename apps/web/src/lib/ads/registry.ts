@@ -179,6 +179,14 @@ export const AD_SLOTS = {
     kind: 'native_card',
     surfaces: [{ route: '/practice/position-memory', href: '/practice/position-memory' }],
   },
+  'shared-game-list-native-ad': {
+    kind: 'native_card',
+    surfaces: [{ route: '/games/shared', href: '/games/shared' }],
+  },
+  'my-game-list-native-ad': {
+    kind: 'native_tile',
+    surfaces: [{ route: '/games', href: '/games' }],
+  },
 } as const satisfies Record<string, AdSlotConfig>;
 
 export type AdSlot = keyof typeof AD_SLOTS;
@@ -391,3 +399,46 @@ export const PRACTICE_RESULT_NATIVE_AD_SLOT = 'practice-result-native-ad' satisf
  * The `bfc_ads_hidden` cookie and its CSS rule are the entitlement layer.
  */
 export const PRACTICE_GRID_NATIVE_AD_SLOT = 'practice-grid-native-ad' satisfies AdSlot;
+
+/**
+ * The pool the public game gallery (`/games/shared`) draws its native card
+ * from, in the `card` variant — the `CatalogListCard` shape every published
+ * game in that list is drawn with.
+ *
+ * Its own pool rather than the puzzle or position-memory lists', although all
+ * three are the same card in the same column. The reader here is browsing
+ * other players' blindfold games — whole games, not a position to solve or
+ * rebuild — and attribution is per creative (`withCreativeSubId`), so a
+ * shared pool would make this surface indistinguishable from the others in
+ * the network's report.
+ *
+ * The profile archive (`/u/[username]/games`) renders the same cards scoped
+ * to one author and does not read this slot: it is a person's page rather
+ * than a catalog, and whether an ad belongs on it is a separate decision.
+ */
+export const SHARED_GAME_LIST_NATIVE_AD_SLOT = 'shared-game-list-native-ad' satisfies AdSlot;
+
+/**
+ * The pool the viewer's own saved games (`/games`) draw their native ad
+ * from, rendered in the `row` variant of `native_tile` as one more line of
+ * that list.
+ *
+ * The rows around it are not cards: each is a single line — a result square,
+ * colour, engine, last move — with no board thumbnail. A `native_card` was
+ * tried here first, drawn as a borderless row, and it did not pass as native:
+ * it was three rows tall and the only entry with a board and a paragraph.
+ * The tile kind already stores what a one-line row needs — an emoji for the
+ * result square and a title — so the row is a variant of it rather than a
+ * fourth kind; like the leaderboard's `iconTile`, it simply draws fewer of
+ * the stored fields.
+ *
+ * Split from the gallery's pool because the reader is looking back over
+ * their own games rather than browsing other people's, which is the reader a
+ * collection of annotated master games is written for.
+ *
+ * Static, like the glossary term lists: the page is prerendered per locale
+ * and the list itself is read from the browser, so the pool comes from
+ * `getNativeAdCreatives` and the `bfc_ads_hidden` cookie's CSS rule is the
+ * entitlement layer.
+ */
+export const MY_GAME_LIST_NATIVE_AD_SLOT = 'my-game-list-native-ad' satisfies AdSlot;

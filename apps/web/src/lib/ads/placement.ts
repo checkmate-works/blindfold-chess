@@ -3,8 +3,9 @@ import type { ReactNode } from 'react';
 /**
  * Number of entries between consecutive native ad slots, everywhere a list of
  * cards is stacked vertically: the home timeline, `/topics`, the topic
- * catalogs and threads, the glossary term lists, and the puzzle and
- * position-memory lists.
+ * catalogs and threads, the glossary term lists, the puzzle and
+ * position-memory lists, and both game lists (the viewer's own and the
+ * public gallery).
  *
  * The first slot leads the list (before entry 1); the next precedes entry
  * `AD_INTERVAL + 1`, and so on. The leading slot is a separate decision from
