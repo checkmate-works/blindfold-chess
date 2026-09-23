@@ -4830,11 +4830,14 @@
       "thumbnailImageOverride": "上書き画像（任意）",
       "thumbnailImageRemove": "画像を削除",
       "linksTitle": "タイトル別リンク",
-      "linksIntro": "英語タイトルが同じクリエイティブは、スロットが違っても同じものの広告です。ここでリンクを一度設定すると、そのすべてに反映されます。有効・無効はそのまま変わりません。",
+      "linksIntro": "英語タイトルが同じクリエイティブは、スロットが違っても同じものの広告です。ここでリンクを一度設定するとそのすべてに反映され、有効・無効もまとめて切り替えられます。",
       "linksMixed": "リンクが不一致",
       "linksApply": "{count} 件に適用",
       "linksApplied": "{count} 件のクリエイティブを更新しました。",
-      "linksActiveCount": "{active} / {total} 件が有効"
+      "linksActiveCount": "{active} / {total} 件が有効",
+      "linksActivate": "{count} 件をまとめて有効化",
+      "linksDeactivate": "{count} 件をまとめて無効化",
+      "linksActivateBlocked": "先にリンクを設定してください。プレースホルダ URL のままのクリエイティブがあります。"
     },
     "coins": {
       "title": "コイン",

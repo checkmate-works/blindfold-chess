@@ -7,7 +7,7 @@ import { CreativeLinkGroupList } from '../_components/CreativeLinkGroupList';
 import { groupCreativesByTitle } from '../_lib/link-groups';
 
 /**
- * Set a book's link once for every slot it runs in. The per-creative edit
+ * Set a book's link, and switch it on or off, once for every slot it runs in. The per-creative edit
  * form still works for a single row; this page exists because one book is
  * many rows (one per slot, so the network's report can tell them apart) and
  * pasting the same link into each of them is where mistakes happen.
@@ -40,6 +40,9 @@ export default async function AdminAdLinksPage() {
           applied: t.raw('linksApplied') as string,
           slots: t('slot'),
           activeCount: t.raw('linksActiveCount') as string,
+          activate: t.raw('linksActivate') as string,
+          deactivate: t.raw('linksDeactivate') as string,
+          activateBlocked: t('linksActivateBlocked'),
           empty: t('noCreatives'),
         }}
       />

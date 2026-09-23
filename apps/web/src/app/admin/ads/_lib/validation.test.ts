@@ -3,7 +3,11 @@ import { describe, expect, it } from 'vitest';
 import { PLACEHOLDER_AD_HREF } from '@/lib/ads/placeholder';
 
 import type { AdCreativeFields, CreateAdCreativeData } from './validation';
-import { validateBulkCreativeHref, validateCreateAdCreative } from './validation';
+import {
+  validateBulkActivation,
+  validateBulkCreativeHref,
+  validateCreateAdCreative,
+} from './validation';
 
 const card: AdCreativeFields = {
   href: 'https://awin1.com/cread.php?awinmid=1&awinaffid=2',
@@ -166,5 +170,23 @@ describe('validateBulkCreativeHref', () => {
       'href already carries a clickref'
     );
     expect(validateBulkCreativeHref('/internal/page')).toBe('invalid href');
+  });
+});
+
+describe('validateBulkActivation', () => {
+  it('accepts a group whose rows all carry a real link', () => {
+    expect(
+      validateBulkActivation(['https://awin1.com/cread.php?a=1', 'https://awin1.com/cread.php?a=2'])
+    ).toBeNull();
+  });
+
+  it('refuses the whole group when any one row is still on the placeholder', () => {
+    expect(validateBulkActivation(['https://awin1.com/cread.php?a=1', PLACEHOLDER_AD_HREF])).toBe(
+      'href is still the placeholder'
+    );
+  });
+
+  it('reports a group with no rows as not found', () => {
+    expect(validateBulkActivation([])).toBe('not found');
   });
 });
