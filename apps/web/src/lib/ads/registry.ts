@@ -179,6 +179,10 @@ export const AD_SLOTS = {
     kind: 'native_card',
     surfaces: [{ route: '/practice/position-memory', href: '/practice/position-memory' }],
   },
+  'shared-game-list-native-ad': {
+    kind: 'native_card',
+    surfaces: [{ route: '/games/shared', href: '/games/shared' }],
+  },
 } as const satisfies Record<string, AdSlotConfig>;
 
 export type AdSlot = keyof typeof AD_SLOTS;
@@ -391,3 +395,21 @@ export const PRACTICE_RESULT_NATIVE_AD_SLOT = 'practice-result-native-ad' satisf
  * The `bfc_ads_hidden` cookie and its CSS rule are the entitlement layer.
  */
 export const PRACTICE_GRID_NATIVE_AD_SLOT = 'practice-grid-native-ad' satisfies AdSlot;
+
+/**
+ * The pool the public game gallery (`/games/shared`) draws its native card
+ * from, in the `card` variant — the `CatalogListCard` shape every published
+ * game in that list is drawn with.
+ *
+ * Its own pool rather than the puzzle or position-memory lists', although all
+ * three are the same card in the same column. The reader here is browsing
+ * other players' blindfold games — whole games, not a position to solve or
+ * rebuild — and attribution is per creative (`withCreativeSubId`), so a
+ * shared pool would make this surface indistinguishable from the others in
+ * the network's report.
+ *
+ * The profile archive (`/u/[username]/games`) renders the same cards scoped
+ * to one author and does not read this slot: it is a person's page rather
+ * than a catalog, and whether an ad belongs on it is a separate decision.
+ */
+export const SHARED_GAME_LIST_NATIVE_AD_SLOT = 'shared-game-list-native-ad' satisfies AdSlot;

@@ -259,6 +259,19 @@ const PLACEHOLDER_CREATIVES = {
       },
     },
   },
+  'shared-game-list-native-ad': {
+    id: 'b35bf68a-c87c-44d9-94e1-baa5c9a00bec',
+    copy: {
+      title: {
+        en: '[Placeholder] Shared game list card',
+        ja: '【プレースホルダ】公開対局一覧のカード',
+      },
+      description: {
+        en: 'Replace the link and this copy with a real creative. The surrounding cards are games other players published, led by a board thumbnail, which is the shape this card blends into.',
+        ja: 'リンクと本文を実際のクリエイティブに差し替えてください。周囲は他のプレイヤーが公開した対局のカード（盤面サムネイル付き）なので、その形に馴染ませます。',
+      },
+    },
+  },
 } satisfies Record<AdSlot, PlaceholderCreative>;
 
 const seedCreatives: SeedCreative[] = AD_SLOT_VALUES.map((slot) => ({

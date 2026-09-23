@@ -142,6 +142,7 @@ export const INTL_SCOPES = {
       'buttonInput',
       'home',
       'largeDownloadConsent',
+      'nativeAd',
       'newGame',
       'openingSearch',
       'pgnDiagnosis',
