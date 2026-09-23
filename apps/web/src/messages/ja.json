@@ -4828,7 +4828,13 @@
       "preview": "プレビュー",
       "previewCaption": "プレビューは英語のコピーです。「広告」ラベルとスポンサー名は描画時に閲覧者ごとにローカライズされます。",
       "thumbnailImageOverride": "上書き画像（任意）",
-      "thumbnailImageRemove": "画像を削除"
+      "thumbnailImageRemove": "画像を削除",
+      "linksTitle": "タイトル別リンク",
+      "linksIntro": "英語タイトルが同じクリエイティブは、スロットが違っても同じものの広告です。ここでリンクを一度設定すると、そのすべてに反映されます。有効・無効はそのまま変わりません。",
+      "linksMixed": "リンクが不一致",
+      "linksApply": "{count} 件に適用",
+      "linksApplied": "{count} 件のクリエイティブを更新しました。",
+      "linksActiveCount": "{active} / {total} 件が有効"
     },
     "coins": {
       "title": "コイン",

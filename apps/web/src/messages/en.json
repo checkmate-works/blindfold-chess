@@ -4828,7 +4828,13 @@
       "preview": "Preview",
       "previewCaption": "The English copy is previewed. The “Ad” label and sponsor name are localized per viewer at render time.",
       "thumbnailImageOverride": "Override image (optional)",
-      "thumbnailImageRemove": "Remove image"
+      "thumbnailImageRemove": "Remove image",
+      "linksTitle": "Links by title",
+      "linksIntro": "Creatives with the same English title advertise the same thing across slots. Set its link here once and every one of them gets it; whether each is active is left as it is.",
+      "linksMixed": "Links differ",
+      "linksApply": "Apply to {count}",
+      "linksApplied": "Creatives updated: {count}",
+      "linksActiveCount": "{active} / {total} active"
     },
     "coins": {
       "title": "Coins",

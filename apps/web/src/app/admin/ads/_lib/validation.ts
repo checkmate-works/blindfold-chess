@@ -250,3 +250,18 @@ export function validateUpdateAdCreative(kind: AdKind, data: UpdateAdCreativeDat
   if (activationError) return activationError;
   return validateFieldsForKind(kind, data);
 }
+
+/**
+ * A link applied to every creative sharing one English title
+ * (`setAdCreativeHrefByTitle`). The same rules as the edit form's href, plus
+ * one: the placeholder is refused outright. The rows it lands on may already
+ * be active, and the per-row forms only allow a placeholder on an inactive
+ * row — so a bulk write of it would put active cards back on a link that
+ * goes nowhere. There is no reason to write the placeholder in bulk anyway;
+ * stopping a book is the active toggle's job.
+ */
+export function validateBulkCreativeHref(href: string): string | null {
+  const hrefError = validateHref(href);
+  if (hrefError) return hrefError;
+  return isPlaceholderAdHref(href) ? 'href is still the placeholder' : null;
+}
