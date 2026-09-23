@@ -59,8 +59,10 @@ type SeedBook = {
 /**
  * The books the ads link to. Titles stay in English in every locale because
  * that is the title printed on the book and on the store page the link opens;
- * the Japanese description says it is an English-language book so a reader
- * is not surprised by that page.
+ * every other locale's description says it is an English-language book so
+ * a reader is not surprised by that page. The `es` and `pt-BR` titles are
+ * left out for the same reason: a blank locale falls back to `en` per field,
+ * which is the title the book has.
  *
  * Every board below was produced by replaying the named moves, not typed by
  * hand, and both games taken from their final position (the Opera Game and
@@ -78,6 +80,9 @@ const BOOKS = {
       description: {
         en: 'The sequel to the tactics workout built on repetition: solve the same set again and again until the patterns become automatic.',
         ja: '同じ問題集を繰り返し解いて戦術パターンを身体に染み込ませる、ウッドペッカー・メソッドの続編（洋書）。',
+        es: 'La continuación del método de táctica basado en la repetición: resuelve el mismo conjunto una y otra vez hasta que los patrones salgan solos (libro en inglés).',
+        'pt-BR':
+          'A continuação do treino tático baseado em repetição: resolva o mesmo conjunto de novo e de novo até os padrões virarem automáticos (livro em inglês).',
       },
     },
   },
@@ -93,6 +98,9 @@ const BOOKS = {
       description: {
         en: 'A hundred endgame studies: a few pieces on an open board, and one surprising way to win or draw.',
         ja: '少ない駒の中に意外な勝ち筋・引き分け筋が隠れた、エンドゲーム・スタディ100題（洋書）。',
+        es: 'Cien estudios de finales: pocas piezas en un tablero abierto y una manera sorprendente de ganar o hacer tablas (libro en inglés).',
+        'pt-BR':
+          'Cem estudos de finais: poucas peças num tabuleiro aberto e uma maneira surpreendente de vencer ou empatar (livro em inglês).',
       },
     },
   },
@@ -105,6 +113,9 @@ const BOOKS = {
       description: {
         en: 'The endgame positions every player needs, taught the way the Russian school teaches them.',
         ja: 'ロシア流の指導で押さえる、実戦で必須のエンドゲーム（洋書）。',
+        es: 'Los finales que todo jugador necesita, enseñados como los enseña la escuela rusa (libro en inglés).',
+        'pt-BR':
+          'Os finais de que todo jogador precisa, ensinados como a escola russa os ensina (livro em inglês).',
       },
     },
   },
@@ -117,6 +128,9 @@ const BOOKS = {
       description: {
         en: 'An opening repertoire for White built around 1.e4.',
         ja: '1.e4 から組み立てる白番のオープニング・レパートリー（洋書）。',
+        es: 'Un repertorio de aperturas para las blancas construido en torno a 1.e4 (libro en inglés).',
+        'pt-BR':
+          'Um repertório de aberturas para as brancas construído em torno de 1.e4 (livro em inglês).',
       },
     },
   },
@@ -132,6 +146,9 @@ const BOOKS = {
       description: {
         en: '1.e4 c5 2.Nc3 d6 3.d4 cxd4 4.Qxd4 — the anti-Sicilian Magnus Carlsen brought to top-level play.',
         ja: 'カールセンがトップレベルで採用したアンチ・シシリアン、1.e4 c5 2.Nc3 d6 3.d4 cxd4 4.Qxd4 を解説（洋書）。',
+        es: '1.e4 c5 2.Nc3 d6 3.d4 cxd4 4.Qxd4: la variante antisiciliana que Magnus Carlsen llevó a la élite (libro en inglés).',
+        'pt-BR':
+          '1.e4 c5 2.Nc3 d6 3.d4 cxd4 4.Qxd4: a anti-siciliana que Magnus Carlsen levou à elite (livro em inglês).',
       },
     },
   },
@@ -144,6 +161,9 @@ const BOOKS = {
       description: {
         en: 'The sharp battles the Sicilian Defence leads to, and the plans behind them.',
         ja: 'シシリアン・ディフェンスから生まれる激しい戦いと、その裏にある作戦を学ぶ（洋書）。',
+        es: 'Las batallas afiladas a las que lleva la Defensa Siciliana y los planes que hay detrás (libro en inglés).',
+        'pt-BR':
+          'As batalhas afiadas a que a Defesa Siciliana leva e os planos por trás delas (livro em inglês).',
       },
     },
   },
@@ -156,6 +176,9 @@ const BOOKS = {
       description: {
         en: 'A fighting repertoire for Black with the French Defence, 1.e4 e6.',
         ja: '1.e4 e6、フレンチ・ディフェンスで黒番を戦うためのレパートリー（洋書）。',
+        es: 'Un repertorio combativo para las negras con la Defensa Francesa, 1.e4 e6 (libro en inglés).',
+        'pt-BR':
+          'Um repertório combativo para as pretas com a Defesa Francesa, 1.e4 e6 (livro em inglês).',
       },
     },
   },
@@ -171,6 +194,9 @@ const BOOKS = {
       description: {
         en: 'IM Cyrus Lakdawala on a flexible system for White: Nf3, g3, Bg2, castle, and play a middlegame you already know.',
         ja: 'IM サイラス・ラクダワラが解説する、Nf3・g3・Bg2 で組む白番のシステム（洋書）。',
+        es: 'El MI Cyrus Lakdawala explica un sistema flexible para las blancas: Nf3, g3, Bg2, enroque y un medio juego que ya conoces (libro en inglés).',
+        'pt-BR':
+          'O MI Cyrus Lakdawala explica um sistema flexível para as brancas: Nf3, g3, Bg2, roque e um meio-jogo que você já conhece (livro em inglês).',
       },
     },
   },
@@ -183,6 +209,9 @@ const BOOKS = {
       description: {
         en: 'Pawn structures, plans, and what to do when there is nothing to calculate.',
         ja: 'ポーン構造や作戦の立て方など、読みだけでは届かない局面判断を広げる（洋書）。',
+        es: 'Estructuras de peones, planes y qué hacer cuando no hay nada que calcular (libro en inglés).',
+        'pt-BR':
+          'Estruturas de peões, planos e o que fazer quando não há nada para calcular (livro em inglês).',
       },
     },
   },
@@ -196,6 +225,9 @@ const BOOKS = {
       description: {
         en: 'When to trade pieces and when to keep them — one of the hardest decisions in chess, taken apart.',
         ja: 'どの駒を交換し、どれを残すか。実戦で最も難しい判断のひとつを掘り下げる（洋書）。',
+        es: 'Cuándo cambiar piezas y cuándo conservarlas: una de las decisiones más difíciles del ajedrez, analizada a fondo (libro en inglés).',
+        'pt-BR':
+          'Quando trocar peças e quando mantê-las: uma das decisões mais difíceis do xadrez, destrinchada (livro em inglês).',
       },
     },
   },
@@ -212,6 +244,9 @@ const BOOKS = {
       description: {
         en: 'GM Jacob Aagaard on how to attack: building it up, striking at the right moment, and finishing it.',
         ja: 'GM ヤコブ・アーガードが教える、攻撃の組み立て方と仕留めどころ（洋書）。',
+        es: 'El GM Jacob Aagaard enseña a atacar: preparar el ataque, golpear en el momento justo y rematarlo (libro en inglés).',
+        'pt-BR':
+          'O GM Jacob Aagaard ensina a atacar: preparar o ataque, golpear na hora certa e concluí-lo (livro em inglês).',
       },
     },
   },
@@ -225,6 +260,9 @@ const BOOKS = {
       description: {
         en: 'How to think at the board: candidate moves, calculation, and the habits that stop blunders.',
         ja: '候補手の選び方と読みの鍛え方。盤上での考え方を変える一冊（洋書）。',
+        es: 'Cómo pensar ante el tablero: jugadas candidatas, cálculo y los hábitos que evitan los errores graves (libro en inglés).',
+        'pt-BR':
+          'Como pensar diante do tabuleiro: lances candidatos, cálculo e os hábitos que evitam erros graves (livro em inglês).',
       },
     },
   },
@@ -241,6 +279,9 @@ const BOOKS = {
       description: {
         en: 'Korchnoi annotates his own best games — honest, detailed, and full of fight.',
         ja: 'コルチノイが自身の名局を自ら解説した対局集（洋書）。',
+        es: 'Korchnoi comenta sus propias mejores partidas: con honestidad, en detalle y llenas de lucha (libro en inglés).',
+        'pt-BR':
+          'Korchnoi comenta as próprias melhores partidas: com honestidade, em detalhe e cheias de luta (livro em inglês).',
       },
     },
   },
@@ -253,6 +294,9 @@ const BOOKS = {
       description: {
         en: 'The games and ideas of Bent Larsen, one of the most original and combative players of his era.',
         ja: '独創的で闘争的な棋風で知られたベント・ラーセンの対局から学ぶ（洋書）。',
+        es: 'Las partidas y las ideas de Bent Larsen, uno de los jugadores más originales y combativos de su época (libro en inglés).',
+        'pt-BR':
+          'As partidas e as ideias de Bent Larsen, um dos jogadores mais originais e combativos de sua época (livro em inglês).',
       },
     },
   },
@@ -266,6 +310,9 @@ const BOOKS = {
       description: {
         en: 'The psychological side of chess: nerves, time trouble, and staying sharp from the first move to the last.',
         ja: '緊張、時間切迫、集中力。チェスの心理面と向き合うための一冊（洋書）。',
+        es: 'El lado psicológico del ajedrez: los nervios, los apuros de tiempo y mantener la concentración de la primera jugada a la última (libro en inglés).',
+        'pt-BR':
+          'O lado psicológico do xadrez: nervosismo, falta de tempo e manter a concentração do primeiro ao último lance (livro em inglês).',
       },
     },
   },
