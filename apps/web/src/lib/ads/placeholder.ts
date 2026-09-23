@@ -2,13 +2,11 @@
  * The href a creative carries before anyone has pasted a real destination
  * into it, and the test that recognizes it again.
  *
- * Every slot is seeded with one inactive creative so that `/admin/ads` shows
- * a row per placement rather than seven empty lists — the pool is the only
- * thing that tells an admin what a slot's card is supposed to look like, and
- * an empty slot renders nothing, so a fresh database gives no hint that a
- * placement exists at all. The cost of that convenience is a row that is
- * complete in every respect except the one that matters: its link goes
- * nowhere. Activating it would put a card on a live surface that sends the
+ * Every slot is seeded with inactive creatives so that a fresh database
+ * already carries the copy and thumbnail of each card, and going live is a
+ * matter of pasting in a link and switching it on. Until that link exists
+ * the seed writes this one, so the rows are complete in every respect except
+ * the one that matters: the link goes nowhere. Activating it would put a card on a live surface that sends the
  * reader to `example.com`, which is worse than showing no ad.
  *
  * So activation is gated on the href no longer being a placeholder. The test
