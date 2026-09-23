@@ -1,15 +1,23 @@
 import { readFileSync, readdirSync, rmSync } from 'fs';
 import { join } from 'path';
 
-/** Next's on-disk Data Cache, relative to `apps/web`. */
-const FETCH_CACHE_DIR = join('.next', 'cache', 'fetch-cache');
+/**
+ * Next's on-disk Data Cache, relative to `apps/web`. Two of them: `next dev`
+ * keeps its own under `.next/dev` so a dev server and a production build do
+ * not share entries, and purging only the build's copy leaves the dev
+ * server — the one this script is run for — serving the stale answer.
+ */
+const FETCH_CACHE_DIRS = [
+  join('.next', 'dev', 'cache', 'fetch-cache'),
+  join('.next', 'cache', 'fetch-cache'),
+];
 
 /**
  * Drop the Data Cache entries carrying a given `revalidateTag` tag.
  *
  * Seeding rows is not enough to make them show up. `getDailyPuzzle` is an
  * `unstable_cache` read, so the "pool is empty → null" answer from before the
- * seed is written to `.next/cache/fetch-cache` and survives a dev-server
+ * seed is written to the on-disk fetch cache and survives a dev-server
  * restart — the card stays missing for up to the hour of its `revalidate`,
  * with nothing on screen to say why. The app revalidates this tag when an
  * admin features a puzzle; a script writing straight to the DB has no way to
@@ -27,16 +35,20 @@ const FETCH_CACHE_DIR = join('.next', 'cache', 'fetch-cache');
  * it still has to be restarted afterwards.
  */
 export function purgeDataCacheTag(tag: string): number {
+  return FETCH_CACHE_DIRS.reduce((removed, dir) => removed + purgeDirTag(dir, tag), 0);
+}
+
+function purgeDirTag(dir: string, tag: string): number {
   let entries: string[];
   try {
-    entries = readdirSync(FETCH_CACHE_DIR);
+    entries = readdirSync(dir);
   } catch {
-    return 0; // no build yet — nothing cached to contradict the seed
+    return 0; // never run in this mode — nothing cached to contradict the seed
   }
 
   let removed = 0;
   for (const name of entries) {
-    const path = join(FETCH_CACHE_DIR, name);
+    const path = join(dir, name);
     let tags: unknown;
     try {
       tags = (JSON.parse(readFileSync(path, 'utf-8')) as { tags?: unknown }).tags;
