@@ -165,13 +165,39 @@ const SHAPE_CASES: ShapeCase[] = [
   },
 
   {
-    name: "a ';' comment runs to the end of the movetext, not the end of its line",
-    // `tokenizeMovetext` joins the lines (to drop the header lines) before it
-    // strips comments, so by the time the `;` pattern runs there is no newline
-    // left to stop it and everything after the `;` is discarded. Pinned as the
-    // current behaviour; fixing the tokenizer changes this expectation.
+    name: "a ';' comment ends at the end of its line",
     pgn: "1. e4 e5 ; open game\n2. Nf3 Nc6",
-    shape: "e4 e5",
+    shape: "e4 e5 Nf3 Nc6",
+  },
+  {
+    name: "a ';' comment ends at a CRLF line break too",
+    pgn: "1. e4 e5 ; open game\r\n2. Nf3 Nc6",
+    shape: "e4 e5 Nf3 Nc6",
+  },
+  {
+    name: "a ';' comment on the last line",
+    pgn: "1. e4 e5 2. Nf3 ; main line",
+    shape: "e4 e5 Nf3",
+  },
+  {
+    name: "a ';' inside a brace comment is comment text, not a line comment",
+    pgn: "1. e4 {sharp; very sharp} e5 2. Nf3",
+    shape: "e4 e5 Nf3",
+  },
+  {
+    name: "a '{' inside a ';' comment does not open a brace comment",
+    pgn: "1. e4 e5 ; see {the notes\n2. Nf3 Nc6 {end}",
+    shape: "e4 e5 Nf3 Nc6",
+  },
+  {
+    name: "a brace comment may span lines",
+    pgn: "1. e4 {a long\nnote} e5 2. Nf3",
+    shape: "e4 e5 Nf3",
+  },
+  {
+    name: "a ';' comment between a move and its variation",
+    pgn: "1. e4 e5 ; the usual\n(1... c5) 2. Nf3",
+    shape: "e4 (e5 Nf3 | c5)",
   },
 
   // ---- result markers ---------------------------------------------------------
