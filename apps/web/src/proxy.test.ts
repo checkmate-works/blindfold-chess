@@ -1,3 +1,4 @@
+import { unstable_doesMiddlewareMatch } from 'next/experimental/testing/server';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -52,7 +53,7 @@ vi.mock('@/lib/ads/ads-hidden-cookie-compute', () => ({
 vi.mock('@sentry/nextjs');
 
 // Import AFTER the mock above so the module picks up the mocked dependency.
-const { proxy } = await import('./proxy');
+const { proxy, config } = await import('./proxy');
 
 function makeRequest(path: string): NextRequest {
   return new NextRequest(new URL(path, 'https://example.test'));
@@ -242,5 +243,25 @@ describe('proxy', () => {
       expect(location.host).toBe('example.test');
       expect(location.pathname).toBe('/en/mypage');
     });
+  });
+});
+
+/**
+ * Route handlers under `/api/` are called by clients the proxy would get in
+ * the way of — an uptime monitor probing `/api/health` unauthenticated, cron
+ * invocations, browsers posting CSP reports — and do their own auth where
+ * they need it. The proxy runs for them only if the matcher says so, so the
+ * exclusion is pinned here rather than trusted to the regex by eye.
+ */
+describe('proxy matcher', () => {
+  it.each(['/api/health', '/api/csp-report', '/api/cron/ai-review-jobs'])(
+    'does not run for route handler %s',
+    (url) => {
+      expect(unstable_doesMiddlewareMatch({ config, url })).toBe(false);
+    }
+  );
+
+  it('still runs for locale pages', () => {
+    expect(unstable_doesMiddlewareMatch({ config, url: '/en' })).toBe(true);
   });
 });
