@@ -114,6 +114,7 @@ export function createPositionListPage(config: PositionListPageConfig) {
     const rows = await listPositionsWithProfile({
       type: positionType,
       sort: sortBy,
+      viewerId: currentUser?.id,
       limit,
       offset,
     });
