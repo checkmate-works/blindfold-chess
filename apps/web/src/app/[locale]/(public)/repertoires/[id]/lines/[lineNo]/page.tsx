@@ -38,8 +38,8 @@ import { LineDetailBoard } from './_components/LineDetailBoard';
 import { LineNavList } from './_components/LineNavList';
 import { MoveCommentsSection } from './_components/MoveCommentsSection';
 import { RepertoireLineActionsMenu } from './_components/RepertoireLineActionsMenu';
-import { buildContinuationLinks } from './_lib/line-continuations';
 import { buildLineMoves } from './_lib/line-moves';
+import { buildTranspositionLinks } from './_lib/transposition-links';
 
 type Props = {
   params: Promise<{ locale: Locale; id: string; lineNo: string }>;
@@ -154,15 +154,16 @@ export default async function RepertoireLineDetailPage({ params, searchParams }:
     navUnfiledLabel: t('lines.unfiled'),
   };
 
-  // Transposition continuations: where this line's final position keeps
-  // going in a sibling line, reached by a different move order. Detection
+  // Transpositions: where this line's final position keeps going in a
+  // sibling line (continuations), and every run of positions it shares with a
+  // sibling reached by a different move order (shared segments). Detection
   // reuses the replay above rather than re-parsing PGN; label/lineNo for the
   // target come from `navItems` (id-keyed) so they read identically to the
   // sidebar entry a reader would otherwise click.
   const navLabelById = new Map(
     navItems.map((item) => [item.id, { lineNo: item.lineNo, label: item.label }])
   );
-  const continuations = buildContinuationLinks(
+  const { continuations } = buildTranspositionLinks(
     { id: line.id, positions },
     replayedLines
       .filter((rl) => rl.line.id !== line.id)
