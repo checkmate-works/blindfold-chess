@@ -163,7 +163,7 @@ export default async function RepertoireLineDetailPage({ params, searchParams }:
   const navLabelById = new Map(
     navItems.map((item) => [item.id, { lineNo: item.lineNo, label: item.label }])
   );
-  const { continuations } = buildTranspositionLinks(
+  const { continuations, sharedSegments } = buildTranspositionLinks(
     { id: line.id, positions },
     replayedLines
       .filter((rl) => rl.line.id !== line.id)
@@ -244,6 +244,7 @@ export default async function RepertoireLineDetailPage({ params, searchParams }:
           moveNotation={moveNotation}
           branchPgns={branchPgns}
           continuations={continuations}
+          sharedSegments={sharedSegments}
           {...navProps}
         />
       )}
