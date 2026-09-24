@@ -32,9 +32,9 @@ export function DateRangePicker({ startDate, endDate, labels }: Props) {
   ] as const;
 
   return (
-    <div className="flex flex-wrap items-center gap-3">
-      <div className="flex items-center gap-2">
-        <label htmlFor="date-from" className="text-sm text-muted-foreground">
+    <div className="flex flex-wrap items-end gap-4">
+      <div className="flex min-w-0 flex-col gap-1.5">
+        <label htmlFor="date-from" className="text-xs font-medium text-muted-foreground">
           {labels.from}
         </label>
         <input
@@ -43,11 +43,11 @@ export function DateRangePicker({ startDate, endDate, labels }: Props) {
           value={startDate}
           max={endDate}
           onChange={(e) => setParams({ from: e.target.value })}
-          className="border border-border rounded px-3 py-1.5 text-sm bg-card"
+          className="h-9 min-w-0 rounded-md border border-border bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         />
       </div>
-      <div className="flex items-center gap-2">
-        <label htmlFor="date-to" className="text-sm text-muted-foreground">
+      <div className="flex min-w-0 flex-col gap-1.5">
+        <label htmlFor="date-to" className="text-xs font-medium text-muted-foreground">
           {labels.to}
         </label>
         <input
@@ -57,10 +57,10 @@ export function DateRangePicker({ startDate, endDate, labels }: Props) {
           min={startDate}
           max={today()}
           onChange={(e) => setParams({ to: e.target.value })}
-          className="border border-border rounded px-3 py-1.5 text-sm bg-card"
+          className="h-9 min-w-0 rounded-md border border-border bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         />
       </div>
-      <div className="flex gap-1.5">
+      <div className="flex flex-wrap gap-2">
         {presets.map((preset) => {
           const presetFrom = daysAgo(preset.days);
           const presetTo = today();
@@ -70,8 +70,9 @@ export function DateRangePicker({ startDate, endDate, labels }: Props) {
             <button
               key={preset.days}
               type="button"
+              aria-pressed={isActive}
               onClick={() => setParams({ from: presetFrom, to: presetTo })}
-              className={`px-3 py-1.5 text-xs rounded border transition-colors ${
+              className={`h-9 rounded-md border px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                 isActive
                   ? 'bg-primary text-primary-foreground border-primary'
                   : 'border-border bg-secondary text-secondary-foreground hover:bg-background'
@@ -82,6 +83,7 @@ export function DateRangePicker({ startDate, endDate, labels }: Props) {
           );
         })}
       </div>
+      <span className="pb-2 text-xs text-muted-foreground">UTC</span>
     </div>
   );
 }
