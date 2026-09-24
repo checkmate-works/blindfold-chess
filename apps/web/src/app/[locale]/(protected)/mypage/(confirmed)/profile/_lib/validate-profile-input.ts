@@ -1,4 +1,5 @@
 import { isValidCountryCode } from '@/lib/countries';
+import { checkDisplayNameHomoglyphs } from '@/lib/users/display-name-homoglyph';
 import { BIO_MAX_LENGTH, DISPLAY_NAME_MAX_LENGTH } from '@/lib/users/profile-limits';
 
 import {
@@ -62,6 +63,7 @@ export type ProfileValidationError =
   | 'display_name_required'
   | 'display_name_too_long'
   | 'display_name_inappropriate'
+  | 'display_name_impersonation'
   | 'bio_too_long'
   | 'invalid_country'
   | 'flair_too_long'
@@ -165,6 +167,10 @@ export function validateProfileInput(
   }
   if (deps.isLameName(displayName)) {
     return { ok: false, error: 'display_name_inappropriate' };
+  }
+  const homoglyphError = checkDisplayNameHomoglyphs(displayName, deps);
+  if (homoglyphError) {
+    return { ok: false, error: homoglyphError };
   }
 
   const bio = normalize(input.bio);

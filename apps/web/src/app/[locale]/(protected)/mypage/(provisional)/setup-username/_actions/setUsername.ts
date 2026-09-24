@@ -10,6 +10,7 @@ import { isLameName } from '@/lib/content/lame-name';
 import { db, profiles } from '@/lib/db';
 import { isUniqueViolation } from '@/lib/db/extract-pg-error-code';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
+import { checkDisplayNameHomoglyphs } from '@/lib/users/display-name-homoglyph';
 import { DISPLAY_NAME_MAX_LENGTH } from '@/lib/users/profile-limits';
 
 export type SetUsernameInput = {
@@ -63,6 +64,11 @@ export async function setUsername(input: SetUsernameInput): Promise<SetUsernameR
 
   if (isLameName(displayName)) {
     return { error: 'display_name_inappropriate' };
+  }
+
+  const homoglyphError = checkDisplayNameHomoglyphs(displayName, { isLameName });
+  if (homoglyphError) {
+    return { error: homoglyphError };
   }
 
   // Check if profile already exists (prevent double creation)

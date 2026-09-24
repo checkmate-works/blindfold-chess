@@ -4222,6 +4222,7 @@
       "error": "An error occurred. Please try again.",
       "usernameInappropriate": "This username is not allowed.",
       "displayNameInappropriate": "This display name is not allowed.",
+      "displayNameImpersonation": "This display name looks like a reserved or official name. Please choose a different one.",
       "reserved": "This username is not available."
     }
   },
@@ -4267,6 +4268,7 @@
     "youtubeHandlePlaceholder": "Your YouTube handle",
     "youtubeHandleInvalidFormat": "YouTube handle may only contain letters, digits, periods, hyphens, and underscores.",
     "displayNameInappropriate": "This display name is not allowed.",
+    "displayNameImpersonation": "This display name looks like a reserved or official name. Please choose a different one.",
     "avatarAlt": "Profile picture",
     "avatarUploadLabel": "Upload profile picture",
     "avatarHint": "JPEG, PNG, WebP, or HEIC (max 2MB)",

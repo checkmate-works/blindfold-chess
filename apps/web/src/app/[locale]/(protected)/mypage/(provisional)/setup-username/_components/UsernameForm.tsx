@@ -58,6 +58,8 @@ export function UsernameForm({ locale }: Props) {
           return t('validation.usernameInappropriate');
         case 'display_name_inappropriate':
           return t('validation.displayNameInappropriate');
+        case 'display_name_impersonation':
+          return t('validation.displayNameImpersonation');
         default:
           return t('validation.error');
       }

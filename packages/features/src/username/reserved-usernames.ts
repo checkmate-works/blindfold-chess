@@ -204,10 +204,11 @@ const IMPERSONATION_NAMES = [
  *
  * Reserving major platform names, widely spoken language names, and
  * two-letter country-code TLDs prevents trademark confusion and
- * impersonation of well-known entities.
+ * impersonation of well-known entities. The three groups are kept as
+ * separate arrays only so that {@link IMPERSONATION_SENSITIVE_NAMES} can take
+ * the platform names without the language names and country codes.
  */
-const BRAND_AND_GEO_NAMES = [
-  // Major platforms and services
+const PLATFORM_NAMES = [
   "github",
   "twitter",
   "facebook",
@@ -226,6 +227,9 @@ const BRAND_AND_GEO_NAMES = [
   "linkedin",
   "chess_com",
   "lichess",
+] as const;
+
+const LANGUAGE_NAMES = [
   // Top spoken languages (matching username character rules)
   "english",
   "spanish",
@@ -264,6 +268,9 @@ const BRAND_AND_GEO_NAMES = [
   "kannada",
   "urdu",
   "punjabi",
+] as const;
+
+const COUNTRY_CODE_NAMES = [
   // Two-letter country-code TLDs
   "us",
   "uk",
@@ -412,7 +419,9 @@ const RESERVED_USERNAMES: ReadonlySet<string> = new Set([
   ...RFC_2142_ROLE_NAMES,
   ...URL_ROUTING_NAMES,
   ...IMPERSONATION_NAMES,
-  ...BRAND_AND_GEO_NAMES,
+  ...PLATFORM_NAMES,
+  ...LANGUAGE_NAMES,
+  ...COUNTRY_CODE_NAMES,
   ...CHESS_DOMAIN_NAMES,
   ...TESTING_AND_DEV_NAMES,
   ...GENERIC_PLACEHOLDER_NAMES,
@@ -421,3 +430,27 @@ const RESERVED_USERNAMES: ReadonlySet<string> = new Set([
 export function isReservedUsername(username: string): boolean {
   return RESERVED_USERNAMES.has(username);
 }
+
+/**
+ * The reserved names that identify a *someone* — a role account, a staff
+ * position, a well-known platform — and so are worth impersonating in a
+ * free-text display name, plus `"admin"`.
+ *
+ * Username reservation blocks the full list above, but most of it exists to
+ * protect URL paths and generic words ("new", "app", "king", "us"), and
+ * nobody gains anything by making their display name look like one of those.
+ * Checking display names against that whole list would reject legitimate
+ * names for no benefit: an accent-stripped "Pró" or "Nó" would collide with
+ * "pro" and "no". This subset is what a display-name impersonation check
+ * should compare against.
+ *
+ * `"admin"` is added here even though it is not a reserved *username*: it is
+ * left out of that list only so the operator can register it for themselves,
+ * which is exactly why a display name dressed up as "admin" is a problem.
+ */
+export const IMPERSONATION_SENSITIVE_NAMES: readonly string[] = [
+  "admin",
+  ...RFC_2142_ROLE_NAMES,
+  ...IMPERSONATION_NAMES,
+  ...PLATFORM_NAMES,
+];

@@ -4222,6 +4222,7 @@
       "error": "エラーが発生しました。もう一度お試しください。",
       "usernameInappropriate": "このユーザー名は使用できません。",
       "displayNameInappropriate": "この表示名は使用できません。",
+      "displayNameImpersonation": "この表示名は予約済みの名前や公式の名前と紛らわしいため使用できません。別の名前を選んでください。",
       "reserved": "このユーザー名は使用できません。"
     }
   },
@@ -4267,6 +4268,7 @@
     "youtubeHandlePlaceholder": "YouTube のハンドル名",
     "youtubeHandleInvalidFormat": "YouTube ハンドルは英数字・ピリオド・ハイフン・アンダースコアのみ使用できます。",
     "displayNameInappropriate": "この表示名は使用できません。",
+    "displayNameImpersonation": "この表示名は予約済みの名前や公式の名前と紛らわしいため使用できません。別の名前を選んでください。",
     "avatarAlt": "プロフィール画像",
     "avatarUploadLabel": "プロフィール画像をアップロード",
     "avatarHint": "JPEG、PNG、WebP、HEIC（最大2MB）",

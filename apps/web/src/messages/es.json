@@ -4222,6 +4222,7 @@
       "error": "Ocurrió un error. Por favor, inténtalo de nuevo.",
       "usernameInappropriate": "Este nombre de usuario no está permitido.",
       "displayNameInappropriate": "Este nombre para mostrar no está permitido.",
+      "displayNameImpersonation": "Este nombre para mostrar se parece a un nombre reservado u oficial. Elige otro.",
       "reserved": "Este nombre de usuario no está disponible."
     }
   },
@@ -4267,6 +4268,7 @@
     "youtubeHandlePlaceholder": "Tu handle de YouTube",
     "youtubeHandleInvalidFormat": "El handle de YouTube solo puede contener letras, dígitos, puntos, guiones y guiones bajos.",
     "displayNameInappropriate": "Este nombre para mostrar no está permitido.",
+    "displayNameImpersonation": "Este nombre para mostrar se parece a un nombre reservado u oficial. Elige otro.",
     "avatarAlt": "Foto de perfil",
     "avatarUploadLabel": "Subir foto de perfil",
     "avatarHint": "JPEG, PNG, WebP o HEIC (máx. 2MB)",
