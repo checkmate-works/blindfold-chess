@@ -4,6 +4,8 @@ import { headers } from 'next/headers';
 import { SITE_URL } from '@/config';
 import { negotiateLocale } from '@/i18n/negotiate-locale';
 
+import { parseEmbedParamsFromSearch } from './_lib/embed-params';
+
 /**
  * What a reader sees when the embedded game is gone — deleted, unpublished,
  * or never existed (a mistyped code).
@@ -16,7 +18,15 @@ import { negotiateLocale } from '@/i18n/negotiate-locale';
  * so plainly and still offers the way back to the site.
  */
 export default async function EmbedNotFound() {
-  const locale = negotiateLocale((await headers()).get('accept-language'));
+  const requestHeaders = await headers();
+  // Resolved exactly as the layout resolves `<html lang>`: a boundary has no
+  // `searchParams` either. Honouring a pinned `?lang=` is not only about
+  // agreeing with the layout — a pinned embed is stored by the CDN, 404
+  // included, and a negotiated language here would be the first reader's
+  // language served to every later one.
+  const locale =
+    parseEmbedParamsFromSearch(requestHeaders.get('x-search') ?? '').lang ??
+    negotiateLocale(requestHeaders.get('accept-language'));
   const t = await getTranslations({ locale, namespace: 'embed' });
   const tMetadata = await getTranslations({ locale, namespace: 'metadata' });
 
