@@ -3,8 +3,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { RepertoireImportForm } from './RepertoireImportForm';
 
+const { mockPush } = vi.hoisted(() => ({ mockPush: vi.fn() }));
 vi.mock('@/i18n/routing', () => ({
-  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
+  useRouter: () => ({ push: mockPush, replace: vi.fn() }),
 }));
 
 // Echo the key, and answer `t.has` only for copy the message files really
@@ -47,15 +48,70 @@ function submitForm(container: HTMLElement) {
   fireEvent.submit(container.querySelector('form')!);
 }
 
-function renderForm(): { container: HTMLElement } {
+function renderForm(spendableBalance = 0): { container: HTMLElement } {
   return render(
-    <RepertoireImportForm openings={[]} spendableBalance={0} initialName="My System" />
+    <RepertoireImportForm
+      openings={[]}
+      spendableBalance={spendableBalance}
+      initialName="My System"
+    />
   );
+}
+
+function chooseVisibility(container: HTMLElement, value: string) {
+  fireEvent.click(container.querySelector(`input[name="visibility"][value="${value}"]`)!);
 }
 
 describe('RepertoireImportForm', () => {
   beforeEach(() => {
     mockCreateRepertoire.mockReset();
+    mockPush.mockReset();
+  });
+
+  it('publishes a public kata straight away and lands on it', async () => {
+    mockCreateRepertoire.mockResolvedValue({ id: 'r1' });
+    const { container } = renderForm();
+
+    submitForm(container);
+
+    await waitFor(() => {
+      expect(mockPush).toHaveBeenCalledWith('/repertoires/r1');
+    });
+    expect(mockCreateRepertoire).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText('visibility.confirmTitle')).not.toBeInTheDocument();
+  });
+
+  it('asks before charging coins for a paid tier, and writes nothing on cancel', () => {
+    const { container } = renderForm(10);
+    chooseVisibility(container, 'private');
+
+    submitForm(container);
+
+    expect(screen.getByText('visibility.confirmTitle')).toBeInTheDocument();
+    expect(mockCreateRepertoire).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'visibility.cancel' }));
+
+    expect(screen.queryByText('visibility.confirmTitle')).not.toBeInTheDocument();
+    expect(mockCreateRepertoire).not.toHaveBeenCalled();
+  });
+
+  it('writes a paid-tier kata once the charge is confirmed', async () => {
+    mockCreateRepertoire.mockResolvedValue({ id: 'r2' });
+    const { container } = renderForm(10);
+    chooseVisibility(container, 'private');
+    submitForm(container);
+
+    fireEvent.click(screen.getByRole('button', { name: 'visibility.confirm' }));
+
+    await waitFor(() => {
+      expect(mockPush).toHaveBeenCalledWith('/repertoires/r2');
+    });
+    expect(mockCreateRepertoire).toHaveBeenCalledWith(
+      expect.objectContaining({ visibility: 'private' })
+    );
+    // The dialog closed as the write started, not only once it landed.
+    expect(screen.queryByText('visibility.confirmTitle')).not.toBeInTheDocument();
   });
 
   it('reports a rejected PGN at the moves editor, not only in the form banner', async () => {

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-import { useSubmitError } from '@/_hooks/useSubmitError';
+import { useSubmitLifecycle } from '@/_hooks/useSubmitLifecycle';
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
 import {
   Button,
@@ -13,10 +13,8 @@ import {
   fieldErrorProps,
 } from '@/app/_components';
 import { LocalizedUnsavedChangesDialog } from '@/app/_components/LocalizedUnsavedChangesDialog';
-import { useRouter } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { Side } from '@blindfold-chess/types';
-import { flushSync } from 'react-dom';
 import { FaPlus } from 'react-icons/fa';
 
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
@@ -90,8 +88,6 @@ export function RepertoireImportForm({
   initialName,
 }: Props) {
   const t = useTranslations('Repertoires');
-  const router = useRouter();
-
   const [name, setName] = useState(initialName ?? '');
   const [description, setDescription] = useState('');
   const [side, setSide] = useState<Side>(initialSide ?? 'white');
@@ -99,7 +95,6 @@ export function RepertoireImportForm({
   // Visibility to create-and-publish at. `public` is free; the paid tiers open
   // a coin-confirm modal before submitting.
   const [visibility, setVisibility] = useState<RepertoireVisibility>('public');
-  const [confirmOpen, setConfirmOpen] = useState(false);
   const [openingIds, setOpeningIds] = useState<string[]>([]);
   const [pgn, setPgn] = useState(initialPgn ?? '');
   // How the moves are entered: pasting a PGN or playing them on a board. Both
@@ -111,22 +106,19 @@ export function RepertoireImportForm({
   const [annotations, setAnnotations] = useState<Record<string, string>>({});
   const [shapes, setShapes] = useState<Record<string, BoardAnnotations>>({});
   const [cursor, setCursor] = useState<{ positionKey: string; label: string } | null>(null);
-  const [pending, setPending] = useState(false);
-  // A rejected submit is reported against the control at fault (see
-  // `repertoireErrorField`) and focuses it — this form is several screens tall,
-  // so a message rendered only next to the button leaves the author reading
-  // "Please paste a PGN" nowhere near the moves field it is about. The moves
-  // editor anchors on its section wrapper while the board tab is up, since the
-  // PGN textarea isn't mounted there.
-  const submitError = useSubmitError<RepertoireFormField>((field) => {
+  // Submit protocol: editing → (coin confirm →) submitting → succeeded, then
+  // the redirect to the new kata. A rejected submit is reported against the
+  // control at fault (see `repertoireErrorField`) and focuses it — this form
+  // is several screens tall, so a message rendered only next to the button
+  // leaves the author reading "Please paste a PGN" nowhere near the moves
+  // field it is about. The moves editor anchors on its section wrapper while
+  // the board tab is up, since the PGN textarea isn't mounted there.
+  const lifecycle = useSubmitLifecycle<RepertoireFormField>((field) => {
     if (field === 'name') return 'repertoire-name';
     return inputMode === 'board' ? 'repertoire-moves' : 'repertoire-pgn';
   });
-  const nameError = submitError.messageFor('name');
-  const movesError = submitError.messageFor('moves');
-  // Successful submit: flipped (synchronously) before router.push so the
-  // navigation guard below doesn't challenge the redirect to the new kata.
-  const [submitted, setSubmitted] = useState(false);
+  const nameError = lifecycle.messageFor('name');
+  const movesError = lifecycle.messageFor('moves');
 
   // Guard back/away navigation once the author has changed the content
   // fields (name / moves) from what the page loaded with — prefills don't
@@ -135,7 +127,7 @@ export function RepertoireImportForm({
     Object.values(annotations).some((text) => text.trim()) ||
     Object.values(shapes).some((s) => !isEmptyBoardAnnotations(s));
   const isDirty =
-    !submitted &&
+    !lifecycle.submitted &&
     (name !== (initialName ?? '') ||
       description !== '' ||
       pgn !== (initialPgn ?? '') ||
@@ -169,44 +161,38 @@ export function RepertoireImportForm({
 
   const visibilityCost = REPERTOIRE_VISIBILITY_COST[visibility];
 
-  async function submit() {
-    setConfirmOpen(false);
-    setPending(true);
-    submitError.clear();
-
-    const result = await createRepertoire({
-      name,
-      description,
-      side,
-      phase,
-      pgn,
-      visibility,
-      openingIds: phase === 'opening' ? openingIds : [],
-      annotations,
-      shapes,
+  function submit() {
+    return lifecycle.run(async () => {
+      const result = await createRepertoire({
+        name,
+        description,
+        side,
+        phase,
+        pgn,
+        visibility,
+        openingIds: phase === 'opening' ? openingIds : [],
+        annotations,
+        shapes,
+      });
+      if ('error' in result) {
+        // An error the form has copy for is shown as itself; anything else (an
+        // unexpected server failure) falls back to the generic message. Where
+        // it is shown is decided by which control the rejection belongs to.
+        return {
+          ok: false,
+          field: repertoireErrorField(result.error, FIELDS),
+          message: localizeActionErrorOrGeneric(result.error, t),
+        };
+      }
+      return { ok: true, href: `/repertoires/${result.id}` };
     });
-    if ('error' in result) {
-      setPending(false);
-      // An error the form has copy for is shown as itself; anything else (an
-      // unexpected server failure) falls back to the generic message. Where it
-      // is shown is decided by which control the rejection belongs to.
-      submitError.report(
-        repertoireErrorField(result.error, FIELDS),
-        localizeActionErrorOrGeneric(result.error, t)
-      );
-      return;
-    }
-    // flushSync so the isDirty -> false re-render completes before
-    // router.push triggers the navigation guard (same as ChunkForm).
-    flushSync(() => setSubmitted(true));
-    router.push(`/repertoires/${result.id}`);
   }
 
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     // A paid tier confirms the coin charge first; public publishes straight away.
     if (visibilityCost > 0) {
-      setConfirmOpen(true);
+      lifecycle.requestConfirm();
       return;
     }
     void submit();
@@ -303,7 +289,7 @@ export function RepertoireImportForm({
 
       {/* `id` + `tabIndex` make the whole moves block a focus target: a
           rejection about the moves can land while the board tab is up, where
-          there is no textarea to focus. See `submitError` above. */}
+          there is no textarea to focus. See `lifecycle` above. */}
       <div
         id="repertoire-moves"
         tabIndex={-1}
@@ -420,10 +406,10 @@ export function RepertoireImportForm({
       {/* Form-wide errors only — anything attributable to a control is
           rendered against that control instead, so the same sentence never
           appears twice. */}
-      <FormErrorBanner ref={submitError.summaryRef} message={submitError.formMessage} />
+      <FormErrorBanner ref={lifecycle.summaryRef} message={lifecycle.formMessage} />
 
       <ConfirmationModal
-        isOpen={confirmOpen}
+        isOpen={lifecycle.confirmOpen}
         title={t('visibility.confirmTitle')}
         message={
           spendableBalance >= visibilityCost
@@ -438,9 +424,9 @@ export function RepertoireImportForm({
         }
         confirmText={t('visibility.confirm')}
         cancelText={t('visibility.cancel')}
-        isLoading={pending}
+        isLoading={lifecycle.busy}
         onConfirm={() => void submit()}
-        onCancel={() => setConfirmOpen(false)}
+        onCancel={lifecycle.cancelConfirm}
       />
 
       <LocalizedUnsavedChangesDialog open={isBlocking} onConfirm={confirm} onCancel={cancel} />
@@ -452,7 +438,7 @@ export function RepertoireImportForm({
           size="lg"
           icon={<FaPlus />}
           fullWidth
-          loading={pending}
+          loading={lifecycle.busy}
         >
           {t('form.submit')}
         </Button>
