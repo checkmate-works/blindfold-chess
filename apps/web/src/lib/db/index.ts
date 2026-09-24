@@ -6,6 +6,7 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import type { Sql } from 'postgres';
 import postgres from 'postgres';
 
+import { type ProbeOutcome, probeDatabase } from './health-probe';
 import { derivePoolerMode, parseConnectionPort, resolvePoolMax } from './pooler-mode';
 import {
   type DeadlineRetry,
@@ -405,6 +406,35 @@ const clientFacade = new Proxy((() => {}) as unknown as Sql, {
 });
 
 export const db = drizzle(clientFacade, { schema });
+
+/**
+ * Check that the shared pool can reach the database, for the health endpoint.
+ *
+ * @design Why this does not go through `db`
+ * A query issued via Drizzle travels `unsafe()` on the top-level client, which
+ * is the path that carries both transparent retries. Neither suits a probe:
+ *
+ * - The pooler-at-capacity retry would wait out a full pooler for up to a
+ *   few seconds and compete with real users for the slot that frees up —
+ *   while "the pooler is full" is precisely the outage the probe exists to
+ *   report. A health check should say so at once, not paper over it.
+ * - The deadline retry rebuilds the pool and re-issues on it. Letting an
+ *   unauthenticated, externally scheduled GET decide to tear down the pool
+ *   every live request is using is not a probe's call to make.
+ *
+ * The tagged-template call on the deadline wrapper is the one path that never
+ * retries (its fragments cannot be re-issued by value), yet it still counts as
+ * an in-flight query for the pool-drain keepalive — so the probe's connection
+ * is reaped before the instance suspends, like any other — and still gets the
+ * wrapper's deadline and wedge detection if it hangs. It runs on the CURRENT
+ * shared pool: the probe never opens a pool of its own, and at most borrows
+ * one connection for one trivial statement.
+ *
+ * `timeoutMs` bounds what the caller waits; see {@link probeDatabase}.
+ */
+export function pingDatabase(timeoutMs: number): Promise<ProbeOutcome> {
+  return probeDatabase(() => activeWrapped`select 1`, timeoutMs);
+}
 
 // Re-export schema for convenience
 export * from './schema';
