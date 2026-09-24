@@ -35,9 +35,9 @@ export default async function AdminDashboardPage({
   });
 
   return (
-    <AdminPageLayout breadcrumbs={[{ label: t('dashboard') }]}>
+    <AdminPageLayout breadcrumbs={[{ label: t('dashboard') }]} contentClassName="space-y-6">
       {/* Date range picker */}
-      <div className="mb-6">
+      <div className="rounded-lg border border-border bg-card p-4">
         <DateRangePicker
           startDate={startDate}
           endDate={endDate}
@@ -52,26 +52,28 @@ export default async function AdminDashboardPage({
       </div>
 
       {/* Period summary cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-        <div className="rounded-lg border border-border bg-secondary p-6">
-          <p className="text-sm text-muted-foreground">{t('dashboardKpi.newUsersPeriodTotal')}</p>
-          <p className="text-3xl font-semibold mt-1">{newUsersData.total}</p>
-          <p className="text-xs text-muted-foreground mt-1">
-            {startDate} ~ {endDate} (UTC)
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="rounded-lg border border-border bg-card p-4 sm:p-5">
+          <h2 className="text-sm font-medium text-muted-foreground">
+            {t('dashboardKpi.newUsersPeriodTotal')}
+          </h2>
+          <p className="mt-2 text-2xl font-semibold tabular-nums tracking-tight">
+            {newUsersData.total.toLocaleString('en')}
           </p>
         </div>
-        <div className="rounded-lg border border-border bg-secondary p-6">
-          <p className="text-sm text-muted-foreground">{t('dashboardKpi.ugcPostsPeriodTotal')}</p>
-          <p className="text-3xl font-semibold mt-1">{postsData.total}</p>
-          <p className="text-xs text-muted-foreground mt-1">
-            {startDate} ~ {endDate} (UTC)
+        <div className="rounded-lg border border-border bg-card p-4 sm:p-5">
+          <h2 className="text-sm font-medium text-muted-foreground">
+            {t('dashboardKpi.ugcPostsPeriodTotal')}
+          </h2>
+          <p className="mt-2 text-2xl font-semibold tabular-nums tracking-tight">
+            {postsData.total.toLocaleString('en')}
           </p>
         </div>
       </div>
 
       {/* Daily trend chart */}
-      <div className="rounded-lg border border-border bg-secondary p-6">
-        <h2 className="text-lg font-semibold mb-4">{t('dashboardKpi.dailyTrends')}</h2>
+      <div className="rounded-lg border border-border bg-card p-4 sm:p-5">
+        <h2 className="mb-4 text-base font-semibold">{t('dashboardKpi.dailyTrends')}</h2>
         <DailyTrendChart
           newUsersData={newUsersData.daily}
           postsData={postsData.daily}
@@ -84,8 +86,10 @@ export default async function AdminDashboardPage({
       </div>
 
       {/* KPI summary table */}
-      <div className="mt-6">
-        <h2 className="text-lg font-semibold mb-4">{t('dashboardKpi.summaryTable.title')}</h2>
+      <section aria-labelledby="kpi-summary-title" className="min-w-0">
+        <h2 id="kpi-summary-title" className="mb-4 text-base font-semibold">
+          {t('dashboardKpi.summaryTable.title')}
+        </h2>
         <KpiSummaryTable
           data={kpiSummary}
           labels={{
@@ -156,7 +160,7 @@ export default async function AdminDashboardPage({
             },
           }}
         />
-      </div>
+      </section>
     </AdminPageLayout>
   );
 }

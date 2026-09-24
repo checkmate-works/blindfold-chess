@@ -27,11 +27,12 @@ export function UsersTabNav({ tabs }: Props) {
         {tabs.map((tab) => (
           <button
             key={tab.id}
+            aria-pressed={activeTab === tab.id}
             onClick={() => handleTabChange(tab.id)}
-            className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
+            className={`rounded-t-md border-b-2 px-4 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
               activeTab === tab.id
-                ? 'border-foreground text-foreground'
-                : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
+                ? 'border-primary bg-accent font-semibold text-accent-foreground'
+                : 'border-transparent font-medium text-muted-foreground hover:bg-secondary hover:text-foreground'
             }`}
           >
             {tab.label}

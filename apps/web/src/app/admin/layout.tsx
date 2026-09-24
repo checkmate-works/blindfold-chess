@@ -18,6 +18,7 @@ import { AdminShell } from './_components/AdminShell';
 import { type AdminNavGroup, AdminSidebarNav } from './_components/AdminSidebarNav';
 import { AdminToastContainer } from './_components/AdminToastContainer';
 import { requireAdmin } from './_lib/auth';
+import './admin-theme.css';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -89,7 +90,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   ];
 
   return (
-    <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
+    <html className="admin-theme" lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
         <ThemeScript />
         <style suppressHydrationWarning dangerouslySetInnerHTML={{ __html: generateThemeCSS() }} />

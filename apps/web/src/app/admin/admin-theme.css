@@ -1,0 +1,43 @@
+/* Admin-only palette. Root specificity keeps it above the shared theme tokens,
+   including for dialogs portaled into document.body. */
+:root.admin-theme {
+  color-scheme: light;
+  --color-background: #ffffff;
+  --color-foreground: #202020;
+  --color-card: #f7f7f7;
+  --color-card-foreground: #202020;
+  --color-primary: #262626;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #eeeeee;
+  --color-secondary-foreground: #333333;
+  --color-muted: #eeeeee;
+  --color-muted-foreground: #606060;
+  --color-accent: #dedede;
+  --color-accent-foreground: #202020;
+  --color-border: #cccccc;
+  --color-input: #ffffff;
+  --color-ring: #262626;
+  --color-link-primary: #262626;
+  --color-link-secondary: #606060;
+}
+
+:root.admin-theme.dark {
+  color-scheme: dark;
+  --color-background: #141414;
+  --color-foreground: #eeeeee;
+  --color-card: #202020;
+  --color-card-foreground: #eeeeee;
+  --color-primary: #eeeeee;
+  --color-primary-foreground: #181818;
+  --color-secondary: #292929;
+  --color-secondary-foreground: #e5e5e5;
+  --color-muted: #292929;
+  --color-muted-foreground: #b3b3b3;
+  --color-accent: #383838;
+  --color-accent-foreground: #f5f5f5;
+  --color-border: #484848;
+  --color-input: #141414;
+  --color-ring: #eeeeee;
+  --color-link-primary: #eeeeee;
+  --color-link-secondary: #b3b3b3;
+}

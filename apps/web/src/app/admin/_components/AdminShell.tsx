@@ -56,7 +56,7 @@ export function AdminShell({ sidebar, children }: { sidebar: ReactNode; children
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-56 flex-col border-r border-border bg-secondary transition-transform lg:static lg:z-auto lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-56 shrink-0 flex-col border-r border-border bg-secondary transition-transform lg:static lg:z-auto lg:translate-x-0 ${
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -86,7 +86,7 @@ export function AdminShell({ sidebar, children }: { sidebar: ReactNode; children
             <FaBars className="h-5 w-5" />
           </button>
         </header>
-        <main className="flex-1 p-8">{children}</main>
+        <main className="min-w-0 flex-1 p-4 sm:p-6 xl:p-8">{children}</main>
       </div>
     </div>
   );

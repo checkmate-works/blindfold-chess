@@ -52,22 +52,24 @@ export function MarkdownEditor({
       <div className="flex border-b border-border shrink-0">
         <button
           type="button"
+          aria-pressed={activeTab === 'edit'}
           onClick={() => setActiveTab('edit')}
-          className={`px-4 py-2 text-sm font-medium transition-colors ${
+          className={`rounded-t-md border-b-2 px-4 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
             activeTab === 'edit'
-              ? 'border-b-2 border-primary text-primary'
-              : 'text-muted-foreground hover:text-foreground'
+              ? 'border-primary bg-accent font-semibold text-accent-foreground'
+              : 'border-transparent font-medium text-muted-foreground hover:bg-secondary hover:text-foreground'
           }`}
         >
           {tabEditLabel}
         </button>
         <button
           type="button"
+          aria-pressed={activeTab === 'preview'}
           onClick={() => setActiveTab('preview')}
-          className={`px-4 py-2 text-sm font-medium transition-colors ${
+          className={`rounded-t-md border-b-2 px-4 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
             activeTab === 'preview'
-              ? 'border-b-2 border-primary text-primary'
-              : 'text-muted-foreground hover:text-foreground'
+              ? 'border-primary bg-accent font-semibold text-accent-foreground'
+              : 'border-transparent font-medium text-muted-foreground hover:bg-secondary hover:text-foreground'
           }`}
         >
           {tabPreviewLabel}
