@@ -3,9 +3,9 @@ import { Skeleton } from '@/app/[locale]/_components/Skeleton';
 function StatsCardSkeleton() {
   return (
     <div className="bg-card border border-border rounded-lg p-4">
-      <Skeleton className="h-3 w-20 mb-3 rounded-md" />
-      <Skeleton className="h-8 w-16 mb-2 rounded-md" />
-      <Skeleton className="h-3 w-28 rounded-md" />
+      <Skeleton className="h-3 w-20 mt-0.5 mb-1.5 rounded-md" />
+      <Skeleton className="h-8 w-16 rounded-md" />
+      <Skeleton className="h-3 w-28 mt-1.5 mb-0.5 rounded-md" />
     </div>
   );
 }
@@ -63,23 +63,20 @@ function PeriodSelectorSkeleton() {
 export function DashboardContentSkeleton() {
   return (
     <>
-      <div>
-        <Skeleton className="h-6 w-24 mb-4 rounded-md" />
-        <div className="grid grid-cols-2 gap-4 mt-4">
-          <StatsCardSkeleton />
-          <StatsCardSkeleton />
-        </div>
+      <div className="grid grid-cols-2 gap-4">
+        <StatsCardSkeleton />
+        <StatsCardSkeleton />
       </div>
 
       <div className="min-w-0">
-        <Skeleton className="h-6 w-32 mb-4 rounded-md" />
+        <Skeleton className="h-5 md:h-6 w-32 rounded-md" />
         <div className="mt-4">
           <ScoreChartSkeleton />
         </div>
       </div>
 
       <div>
-        <Skeleton className="h-6 w-28 mb-4 rounded-md" />
+        <Skeleton className="h-5 md:h-6 w-28 rounded-md" />
         <div className="mt-4">
           <SessionHistoryTableSkeleton />
         </div>
