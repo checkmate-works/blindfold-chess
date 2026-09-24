@@ -7,7 +7,7 @@ import { Link } from '@/i18n/routing';
 import { FaPlusCircle, FaPuzzlePiece } from 'react-icons/fa';
 import { FiEdit2, FiGitBranch } from 'react-icons/fi';
 
-import { getNativeThumbCreatives } from '@/lib/ads/ad';
+import { resolveNativeThumbCreatives } from '@/lib/ads/ad';
 import { POSITION_MEMORY_DETAIL_NATIVE_AD_SLOT } from '@/lib/ads/registry';
 import { getOptionalUser } from '@/lib/auth';
 import { loadNextPositions } from '@/lib/positions/next-positions';
@@ -113,11 +113,15 @@ export default async function PositionDetailPage({ params, searchParams }: Props
 
   // The same grid the result screen carries, ranked the same way, scoped to
   // this catalog: a puzzle offered here would be a different task under the
-  // same heading. The thumb pool is read viewer-independently — the per-reader
-  // hide is the `bfc_ads_hidden` cookie and the CSS rule `NativeAdThumb` owns.
+  // same heading. The thumb pool is empty for an ad-free reader, which puts
+  // the grid back to four positions.
   const [otherPositions, nativeAdCreatives] = await Promise.all([
     loadNextPositions(position, 'memory'),
-    getNativeThumbCreatives(POSITION_MEMORY_DETAIL_NATIVE_AD_SLOT, locale),
+    resolveNativeThumbCreatives(
+      POSITION_MEMORY_DETAIL_NATIVE_AD_SLOT,
+      currentUser?.id ?? null,
+      locale
+    ),
   ]);
 
   const forkedFromNote = (

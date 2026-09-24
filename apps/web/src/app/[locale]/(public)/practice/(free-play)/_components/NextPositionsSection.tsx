@@ -33,9 +33,14 @@ type Props = {
     label: string;
   };
   /**
-   * The slot's pool, as `getNativeThumbCreatives` resolved it. Empty for an
-   * ad-free reader and for a slot nobody has written a creative for, which is
-   * how the grid goes back to four puzzles with no branch at the call site.
+   * The slot's pool, as `resolveNativeThumbCreatives` resolved it. Empty for
+   * an ad-free reader and for a slot nobody has written a creative for, which
+   * is how the grid goes back to four puzzles with no branch at the call site.
+   *
+   * The empty pool is the only ad-free path that works here. The
+   * `bfc_ads_hidden` CSS rule collapses `NativeAdThumb`'s own wrapper but not
+   * the `<li>` this section wraps it in, so a creative passed for an ad-free
+   * reader leaves a blank first cell with the fourth puzzle already dropped.
    */
   nativeAdCreatives?: readonly NativeThumbView[];
 };

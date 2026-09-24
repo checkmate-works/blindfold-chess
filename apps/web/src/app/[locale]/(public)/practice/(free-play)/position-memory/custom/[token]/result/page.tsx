@@ -4,8 +4,9 @@ import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { getNativeThumbCreatives } from '@/lib/ads/ad';
+import { resolveNativeThumbCreatives } from '@/lib/ads/ad';
 import { POSITION_MEMORY_RESULT_NATIVE_AD_SLOT } from '@/lib/ads/registry';
+import { getOptionalUser } from '@/lib/auth';
 import { loadNextPositions } from '@/lib/positions/next-positions';
 
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
@@ -78,9 +79,14 @@ export default async function CustomPositionResultPage({ params }: Props) {
   // split on (see `POSITION_MEMORY_RESULT_NATIVE_AD_SLOT`) both read the same
   // here, and whether a DB row backed the run is not something a creative
   // would be written differently for.
+  const currentUser = await getOptionalUser();
   const [nextPositions, nativeAdCreatives] = await Promise.all([
     loadNextPositions(null, 'memory'),
-    getNativeThumbCreatives(POSITION_MEMORY_RESULT_NATIVE_AD_SLOT, locale),
+    resolveNativeThumbCreatives(
+      POSITION_MEMORY_RESULT_NATIVE_AD_SLOT,
+      currentUser?.id ?? null,
+      locale
+    ),
   ]);
 
   return (

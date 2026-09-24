@@ -4,7 +4,7 @@ import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { getNativeThumbCreatives } from '@/lib/ads/ad';
+import { resolveNativeThumbCreatives } from '@/lib/ads/ad';
 import { POSITION_MEMORY_RESULT_NATIVE_AD_SLOT } from '@/lib/ads/registry';
 import { getOptionalUser } from '@/lib/auth';
 import { getExpInfoBySource } from '@/lib/db/get-exp-info-by-source';
@@ -90,7 +90,11 @@ export default async function PositionResultPage({ params, searchParams }: Props
   const [nextPositions, nativeAdCreatives] = position
     ? await Promise.all([
         loadNextPositions(position, 'memory'),
-        getNativeThumbCreatives(POSITION_MEMORY_RESULT_NATIVE_AD_SLOT, locale),
+        resolveNativeThumbCreatives(
+          POSITION_MEMORY_RESULT_NATIVE_AD_SLOT,
+          currentUser?.id ?? null,
+          locale
+        ),
       ])
     : [[], []];
 
