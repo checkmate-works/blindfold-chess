@@ -410,7 +410,7 @@ describe('pooler-at-capacity retry', () => {
     const queries = [rejectsWith(poolerFullError()), resolvesWith([{ id: 1 }])];
     const db = withQueryDeadline(fakeClient({ unsafe: () => queries.shift() }));
     const report = vi.fn();
-    setCapacityRetry({ dispatch: () => queries.shift(), report });
+    setCapacityRetry({ dispatch: () => queries.shift(), report, begin: vi.fn() });
 
     // Subscribing is what dispatches the query, so it must precede the clock.
     const settled = (db.unsafe('insert into likes values (1)') as Promise<unknown>).then((r) => r);
@@ -424,7 +424,7 @@ describe('pooler-at-capacity retry', () => {
     const queries = [rejectsWith(poolerFullError()), resolvesWith([])];
     const db = withQueryDeadline(fakeClient({ unsafe: () => queries.shift() }));
     const dispatch = vi.fn(() => queries.shift());
-    setCapacityRetry({ dispatch, report: vi.fn() });
+    setCapacityRetry({ dispatch, report: vi.fn(), begin: vi.fn() });
 
     const settled = (
       db.unsafe('update profiles set display_name = $1', ['x']) as Promise<unknown>
@@ -439,7 +439,7 @@ describe('pooler-at-capacity retry', () => {
     const alwaysFull = () => rejectsWith(poolerFullError());
     const db = withQueryDeadline(fakeClient({ unsafe: alwaysFull }));
     const report = vi.fn();
-    setCapacityRetry({ dispatch: alwaysFull, report });
+    setCapacityRetry({ dispatch: alwaysFull, report, begin: vi.fn() });
 
     const settled = (db.unsafe('select 1') as Promise<unknown>).catch((e: unknown) => e);
     await vi.advanceTimersByTimeAsync(2_000);
@@ -454,7 +454,7 @@ describe('pooler-at-capacity retry', () => {
     const queries = [rejectsWith(poolerFullError())];
     const db = withQueryDeadline(fakeClient({ unsafe: () => queries.shift() }));
     const report = vi.fn();
-    setCapacityRetry({ dispatch: () => hungAttempt, report });
+    setCapacityRetry({ dispatch: () => hungAttempt, report, begin: vi.fn() });
 
     const settled = (db.unsafe('select 1') as Promise<unknown>).catch((e: unknown) => e);
     // Backoff (≤300ms jittered) + the 2s attempt timeout, well before the 10s
@@ -472,7 +472,7 @@ describe('pooler-at-capacity retry', () => {
   it('hands back a non-capacity error from a retry instead of masking it', async () => {
     const queries = [rejectsWith(poolerFullError()), rejectsWith(new Error('syntax error'))];
     const db = withQueryDeadline(fakeClient({ unsafe: () => queries.shift() }));
-    setCapacityRetry({ dispatch: () => queries.shift(), report: vi.fn() });
+    setCapacityRetry({ dispatch: () => queries.shift(), report: vi.fn(), begin: vi.fn() });
 
     const settled = (db.unsafe('select bogus') as Promise<unknown>).catch((e: unknown) => e);
     await vi.advanceTimersByTimeAsync(400);
@@ -483,9 +483,269 @@ describe('pooler-at-capacity retry', () => {
   it('leaves ordinary query errors alone', async () => {
     const db = withQueryDeadline(fakeClient({ unsafe: () => rejectsWith(new Error('boom')) }));
     const dispatch = vi.fn();
-    setCapacityRetry({ dispatch, report: vi.fn() });
+    setCapacityRetry({ dispatch, report: vi.fn(), begin: vi.fn() });
 
     await expect(db.unsafe('select 1')).rejects.toThrow('boom');
     expect(dispatch).not.toHaveBeenCalled();
+  });
+});
+
+describe('pooler-at-capacity retry of a transaction begin', () => {
+  type Callback = (tx: Sql) => unknown;
+
+  /** A `begin` the pooler refuses before it ever reaches the callback. */
+  function refusedBegin() {
+    return vi.fn((_callback: Callback) => Promise.reject(poolerFullError()));
+  }
+
+  /** A `begin` that gets a connection and runs the callback to completion. */
+  function workingBegin() {
+    return vi.fn((callback: Callback) => Promise.resolve(callback(fakeClient())));
+  }
+
+  it('re-runs the whole begin(callback) through the retry and resolves transparently', async () => {
+    const retryBegin = workingBegin();
+    const report = vi.fn();
+    setCapacityRetry({
+      dispatch: vi.fn(),
+      report,
+      begin: (args) => retryBegin(args[0] as Callback),
+    });
+    const db = withQueryDeadline(fakeClient({ begin: refusedBegin() }));
+    const callback = vi.fn(async () => 'committed');
+
+    const settled = db.begin(callback) as Promise<unknown>;
+    await vi.advanceTimersByTimeAsync(400);
+
+    await expect(settled).resolves.toBe('committed');
+    expect(retryBegin).toHaveBeenCalledTimes(1);
+    expect(callback).toHaveBeenCalledTimes(1);
+    expect(report).toHaveBeenCalledWith('rescued', 'begin', 1, expect.any(Number));
+  });
+
+  it('passes the begin options through to the retry', async () => {
+    const retryBegin = vi.fn((_options: unknown, callback: Callback) =>
+      Promise.resolve(callback(fakeClient()))
+    );
+    setCapacityRetry({
+      dispatch: vi.fn(),
+      report: vi.fn(),
+      begin: (args) => retryBegin(args[0], args[1] as Callback),
+    });
+    const db = withQueryDeadline(
+      fakeClient({ begin: vi.fn(() => Promise.reject(poolerFullError())) })
+    );
+
+    const settled = (
+      db.begin as unknown as (options: string, callback: Callback) => Promise<unknown>
+    )('read write', async () => 'ok');
+    await vi.advanceTimersByTimeAsync(400);
+
+    await expect(settled).resolves.toBe('ok');
+    expect(retryBegin).toHaveBeenCalledWith('read write', expect.any(Function));
+  });
+
+  it('never re-runs a callback that already started, whatever the error looks like', async () => {
+    // Once the callback runs, statements may have reached Postgres: running it
+    // again could apply the transaction's writes twice.
+    const retryBegin = vi.fn();
+    setCapacityRetry({ dispatch: vi.fn(), report: vi.fn(), begin: retryBegin });
+    const begin = vi.fn(async (callback: Callback) => {
+      await callback(fakeClient());
+      throw poolerFullError();
+    });
+    const db = withQueryDeadline(fakeClient({ begin }));
+    const callback = vi.fn(async () => {});
+
+    const settled = (db.begin(callback) as Promise<unknown>).catch((e: unknown) => e);
+    await vi.advanceTimersByTimeAsync(2_000);
+
+    expect((await settled) as Error).toHaveProperty(
+      'message',
+      expect.stringContaining('EMAXCONNSESSION')
+    );
+    expect(callback).toHaveBeenCalledTimes(1);
+    expect(retryBegin).not.toHaveBeenCalled();
+  });
+
+  it('stops retrying once a retried callback has started', async () => {
+    const retryBegin = vi.fn(async (callback: Callback) => {
+      await callback(fakeClient());
+      throw poolerFullError();
+    });
+    const report = vi.fn();
+    setCapacityRetry({
+      dispatch: vi.fn(),
+      report,
+      begin: (args) => retryBegin(args[0] as Callback),
+    });
+    const db = withQueryDeadline(fakeClient({ begin: refusedBegin() }));
+    const callback = vi.fn(async () => {});
+
+    const settled = (db.begin(callback) as Promise<unknown>).catch((e: unknown) => e);
+    await vi.advanceTimersByTimeAsync(2_000);
+    await settled;
+
+    expect(retryBegin).toHaveBeenCalledTimes(1);
+    expect(callback).toHaveBeenCalledTimes(1);
+    // The pooler did let the transaction in; how it ended is its own business.
+    expect(report).toHaveBeenCalledWith('rescued', 'begin', 1, expect.any(Number));
+  });
+
+  it('gives up after the backoff list and rejects with the original refusal', async () => {
+    const retryBegin = refusedBegin();
+    const report = vi.fn();
+    setCapacityRetry({
+      dispatch: vi.fn(),
+      report,
+      begin: (args) => retryBegin(args[0] as Callback),
+    });
+    const db = withQueryDeadline(fakeClient({ begin: refusedBegin() }));
+    const callback = vi.fn();
+
+    const settled = (db.begin(callback) as Promise<unknown>).catch((e: unknown) => e);
+    await vi.advanceTimersByTimeAsync(2_000);
+
+    expect((await settled) as Error).toHaveProperty(
+      'message',
+      expect.stringContaining('EMAXCONNSESSION')
+    );
+    expect(retryBegin).toHaveBeenCalledTimes(2);
+    expect(callback).not.toHaveBeenCalled();
+    expect(report).toHaveBeenCalledWith('failed', 'begin', 2, expect.any(Number));
+  });
+
+  it('abandons a retry stuck acquiring a connection, and never runs its callback later', async () => {
+    let connectionArrives: (() => Promise<unknown>) | undefined;
+    const report = vi.fn();
+    setCapacityRetry({
+      dispatch: vi.fn(),
+      report,
+      // Stands in for postgres.js: once a connection is had, the callback runs
+      // and its outcome settles the begin promise.
+      begin: (args) =>
+        new Promise((resolve, reject) => {
+          connectionArrives = () =>
+            Promise.resolve()
+              .then(() => (args[0] as Callback)(fakeClient()))
+              .then(resolve, reject);
+        }),
+    });
+    const db = withQueryDeadline(fakeClient({ begin: refusedBegin() }));
+    const callback = vi.fn(async () => 'committed');
+
+    const settled = (db.begin(callback) as Promise<unknown>).catch((e: unknown) => e);
+    // Backoff (≤300ms jittered) + the 2s attempt timeout.
+    await vi.advanceTimersByTimeAsync(3_000);
+
+    expect((await settled) as Error).toHaveProperty(
+      'message',
+      expect.stringContaining('EMAXCONNSESSION')
+    );
+    expect(report).toHaveBeenCalledTimes(1);
+    expect(report).toHaveBeenCalledWith('failed', 'begin', 1, expect.any(Number));
+
+    // The caller already has its answer, so a connection arriving now must not
+    // run the transaction behind its back.
+    await connectionArrives!();
+    expect(callback).not.toHaveBeenCalled();
+    expect(report).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not cut short a retried transaction that outlasts the attempt timeout', async () => {
+    setCapacityRetry({
+      dispatch: vi.fn(),
+      report: vi.fn(),
+      // The connection takes a moment to arrive, as it would for postgres.js.
+      begin: async (args) => {
+        await new Promise((wake) => setTimeout(wake, 100));
+        return (args[0] as Callback)(fakeClient());
+      },
+    });
+    const db = withQueryDeadline(fakeClient({ begin: refusedBegin() }));
+
+    const settled = (
+      db.begin(async () => {
+        await new Promise((wake) => setTimeout(wake, 5_000));
+        return 'slow but fine';
+      }) as Promise<unknown>
+    ).catch((e: unknown) => e);
+    await vi.advanceTimersByTimeAsync(6_000);
+
+    expect(await settled).toBe('slow but fine');
+  });
+
+  it('hands back a non-capacity error from a retry instead of masking it', async () => {
+    setCapacityRetry({
+      dispatch: vi.fn(),
+      report: vi.fn(),
+      begin: () => Promise.reject(new Error('Tenant or user not found')),
+    });
+    const db = withQueryDeadline(fakeClient({ begin: refusedBegin() }));
+
+    const settled = (db.begin(async () => {}) as Promise<unknown>).catch((e: unknown) => e);
+    await vi.advanceTimersByTimeAsync(400);
+
+    expect((await settled) as Error).toHaveProperty('message', 'Tenant or user not found');
+  });
+
+  it('leaves an ordinary begin error alone', async () => {
+    const retryBegin = vi.fn();
+    setCapacityRetry({ dispatch: vi.fn(), report: vi.fn(), begin: retryBegin });
+    const db = withQueryDeadline(
+      fakeClient({ begin: vi.fn(() => Promise.reject(new Error('boom'))) })
+    );
+
+    await expect(db.begin(async () => {})).rejects.toThrow('boom');
+    expect(retryBegin).not.toHaveBeenCalled();
+  });
+
+  it('never retries a savepoint, which lives inside a transaction already under way', async () => {
+    const retryBegin = vi.fn();
+    setCapacityRetry({ dispatch: vi.fn(), report: vi.fn(), begin: retryBegin });
+    const transactionClient = fakeClient({
+      savepoint: vi.fn(() => Promise.reject(poolerFullError())),
+    });
+    const db = withQueryDeadline(
+      fakeClient({ begin: (callback: Callback) => Promise.resolve(callback(transactionClient)) })
+    );
+
+    const settled = (
+      db.begin(async (tx) =>
+        (tx as unknown as { savepoint: (cb: Callback) => Promise<unknown> }).savepoint(
+          async () => {}
+        )
+      ) as Promise<unknown>
+    ).catch((e: unknown) => e);
+    await vi.advanceTimersByTimeAsync(2_000);
+
+    expect((await settled) as Error).toHaveProperty(
+      'message',
+      expect.stringContaining('EMAXCONNSESSION')
+    );
+    expect(retryBegin).not.toHaveBeenCalled();
+  });
+
+  it('rejects with the raw refusal when no capacity retry is registered', async () => {
+    const db = withQueryDeadline(fakeClient({ begin: refusedBegin() }));
+
+    await expect(db.begin(async () => {})).rejects.toThrow('EMAXCONNSESSION');
+  });
+
+  it('still gives the retried transaction client a deadline', async () => {
+    const query = neverSettles();
+    setCapacityRetry({
+      dispatch: vi.fn(),
+      report: vi.fn(),
+      begin: (args) => Promise.resolve((args[0] as Callback)(fakeClient({ unsafe: () => query }))),
+    });
+    const db = withQueryDeadline(fakeClient({ begin: refusedBegin() }));
+
+    const settled = (
+      db.begin(async (tx) => tx.unsafe('insert into x values (1)')) as Promise<unknown>
+    ).catch((e: unknown) => e);
+    await vi.advanceTimersByTimeAsync(11_000);
+
+    expect(await settled).toBeInstanceOf(QueryDeadlineError);
   });
 });

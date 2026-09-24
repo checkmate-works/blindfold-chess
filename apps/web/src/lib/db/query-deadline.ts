@@ -179,6 +179,16 @@ const CAPACITY_RETRY_BACKOFF_MS = [150, 450];
  */
 const CAPACITY_ATTEMPT_TIMEOUT_MS = 2_000;
 
+/** Sleep one {@link CAPACITY_RETRY_BACKOFF_MS} step, with up to 100% jitter. */
+function capacityBackoff(backoffMs: number): Promise<void> {
+  return new Promise<void>((wake) => {
+    const t = setTimeout(wake, backoffMs + Math.random() * backoffMs);
+    // Node-only, and typed loosely because this file also compiles under the
+    // DOM lib: a pending backoff must not hold a local process open.
+    (t as { unref?: () => void }).unref?.();
+  });
+}
+
 export type CapacityRetry = {
   /**
    * Re-dispatch the same `unsafe(...)` arguments on the CURRENT pool. Unlike
@@ -187,7 +197,20 @@ export type CapacityRetry = {
    * that worse.
    */
   dispatch: (unsafeArgs: unknown[]) => PendingQuery | undefined;
-  /** Outcome hook for logging/metrics. `waitedMs` is the total added latency. */
+  /**
+   * Re-open a transaction with the same `begin(...)` arguments on the CURRENT
+   * client — never on the one the first attempt used, which a pool rebuild
+   * during the backoff may already have ended. Same no-rebuild rule as
+   * `dispatch`. The callback among the arguments is already wrapped (inner
+   * client deadlines, and the did-it-start bookkeeping the retry relies on),
+   * so it must be passed through as is. Returns the begin promise, or
+   * undefined when a retry is not possible right now.
+   */
+  begin: (beginArgs: unknown[]) => PromiseLike<unknown> | undefined;
+  /**
+   * Outcome hook for logging/metrics. `waitedMs` is the total added latency.
+   * `sql` is `'begin'` for a transaction retry.
+   */
   report: (outcome: 'rescued' | 'failed', sql: string, attempts: number, waitedMs: number) => void;
 };
 
@@ -210,6 +233,27 @@ let capacityRetry: CapacityRetry | undefined;
  * Consequently {@link isPoolerAtCapacity} must stay narrow enough that it can
  * only match a refusal at connection setup. Widening it to cover errors that
  * a server might have already acted on would break that guarantee.
+ *
+ * @design What it covers
+ * - Single statements issued through the top-level client's `unsafe()` — the
+ *   path Drizzle uses outside a transaction.
+ * - Transactions opened through the top-level client's `begin(callback)` —
+ *   the path `db.transaction()` takes, and where most writes live. postgres.js
+ *   acquires the connection by sending `BEGIN`, and only calls the callback
+ *   once that has succeeded, so a refusal there means the transaction never
+ *   started and the whole `begin(callback)` can simply be issued again. The
+ *   retry re-runs it from the top; it never resumes a partial transaction.
+ *   That argument holds only until the callback is called — from then on its
+ *   statements may have reached Postgres — so the retry is gated on the
+ *   callback not having started, whatever the error looks like. See
+ *   `retryBeginWhilePoolerIsFull`.
+ *
+ * Not covered: statements inside a transaction and `savepoint` (the
+ * connection is already held, and a retry cannot reproduce the transaction's
+ * state), the `sql` tagged-template call (its fragments cannot be re-issued by
+ * value), and `reserve()`. A refused `reserve()` would be as safe to retry as
+ * `begin`, but nothing in this app calls it, and a retry path with no caller
+ * would be untested against the shape real code gives it.
  */
 export function setCapacityRetry(retry: CapacityRetry | undefined): void {
   capacityRetry = retry;
@@ -431,13 +475,7 @@ function wrapQuery<T extends PendingQuery>(
           const startedAt = performance.now();
           let attempts = 0;
           for (const backoffMs of CAPACITY_RETRY_BACKOFF_MS) {
-            await new Promise<void>((wake) => {
-              const t = setTimeout(wake, backoffMs + Math.random() * backoffMs);
-              // Node-only, and typed loosely because this file also compiles
-              // under the DOM lib: a pending backoff must not hold a local
-              // process open.
-              (t as { unref?: () => void }).unref?.();
-            });
+            await capacityBackoff(backoffMs);
             if (settled) return;
 
             const attempt = safeDispatch(() => capacityRetry?.dispatch(retryArgs!));
@@ -557,6 +595,186 @@ function isPendingQuery(value: unknown): value is PendingQuery {
   );
 }
 
+/** What {@link CapacityRetry.report} receives as the statement for a transaction. */
+const BEGIN_REPORT_LABEL = 'begin';
+
+/**
+ * One attempt at `begin(...)`: its arguments, with the callback instrumented
+ * so the retry can tell whether the transaction has started.
+ */
+type BeginAttempt = {
+  args: unknown[];
+  /** Whether the callback has been called, i.e. the transaction is under way. */
+  started: () => boolean;
+  /** Milliseconds from `since` to the callback's start, or undefined if it never started. */
+  startedAfterMs: (since: number) => number | undefined;
+  /** Register what to do the moment the callback is called. */
+  onStart: (listener: () => void) => void;
+  /** From now on, make the callback throw instead of running if it is ever called. */
+  abandon: () => void;
+};
+
+function prepareBeginAttempt(args: unknown[], wrapInner: (inner: Sql) => Sql): BeginAttempt {
+  let startedAt: number | undefined;
+  let abandoned = false;
+  let onStart: (() => void) | undefined;
+  return {
+    args: args.map((arg) =>
+      typeof arg === 'function'
+        ? (inner: Sql, ...rest: unknown[]) => {
+            if (abandoned) {
+              // Thrown inside the callback, so postgres.js rolls back the empty
+              // transaction and releases the connection it finally got.
+              throw new Error('Transaction attempt abandoned: its caller was already answered');
+            }
+            startedAt = performance.now();
+            onStart?.();
+            return (arg as (...a: unknown[]) => unknown)(wrapInner(inner), ...rest);
+          }
+        : arg
+    ),
+    started: () => startedAt !== undefined,
+    startedAfterMs: (since) =>
+      startedAt === undefined ? undefined : Math.round(startedAt - since),
+    onStart: (listener) => {
+      onStart = listener;
+    },
+    abandon: () => {
+      abandoned = true;
+    },
+  };
+}
+
+type BeginOutcome =
+  | { kind: 'resolved'; value: unknown }
+  | { kind: 'rejected'; error: unknown }
+  | { kind: 'timed-out' };
+
+/**
+ * Wait for one retried `begin`, giving up if it has not reached its callback
+ * within {@link CAPACITY_ATTEMPT_TIMEOUT_MS}.
+ *
+ * The timeout bounds only the wait for a connection, not the transaction: it
+ * is cleared the moment the callback starts. A transaction may legitimately
+ * run for seconds, and its statements are already bounded one by one by the
+ * deadline on the transaction client; cutting it off mid-way would also mean
+ * abandoning a transaction that is actually running. What the timeout guards
+ * against is the same thing it guards against for a single statement: an
+ * attempt that hangs before it has even got a connection has hit something
+ * worse than a full pooler.
+ *
+ * Unlike a query, a pending `begin` has no `cancel()`, so walking away cannot
+ * stop the attempt. {@link BeginAttempt.abandon} is what makes it safe: should
+ * a connection turn up after the caller has been answered, the callback throws
+ * before running anything and the transaction rolls back empty.
+ */
+function settleBeginAttempt(
+  pending: PromiseLike<unknown>,
+  attempt: BeginAttempt
+): Promise<BeginOutcome> {
+  return new Promise((settle) => {
+    // A `begin` that calls its callback synchronously has already started by
+    // now, and there is no connection left to wait for.
+    const timer = attempt.started()
+      ? undefined
+      : setTimeout(() => {
+          attempt.abandon();
+          settle({ kind: 'timed-out' });
+        }, CAPACITY_ATTEMPT_TIMEOUT_MS);
+    (timer as { unref?: () => void } | undefined)?.unref?.();
+    attempt.onStart(() => clearTimeout(timer));
+    // After a timeout this still subscribes, which keeps the abandoned
+    // attempt's eventual rejection from going unhandled.
+    Promise.resolve(pending).then(
+      (value) => {
+        clearTimeout(timer);
+        settle({ kind: 'resolved', value });
+      },
+      (error: unknown) => {
+        clearTimeout(timer);
+        settle({ kind: 'rejected', error });
+      }
+    );
+  });
+}
+
+/**
+ * Re-issue a whole `begin(...)` refused by a full pooler, walking
+ * {@link CAPACITY_RETRY_BACKOFF_MS} through {@link CapacityRetry.begin}.
+ *
+ * The loop ends for good the first time an attempt's callback starts: from
+ * that point the transaction has a connection, its statements may have
+ * reached Postgres, and whatever it then resolves or rejects with is the
+ * caller's answer — even an error that happens to look like a capacity
+ * refusal, because re-running a started callback could apply its writes
+ * twice. That is also the point at which the refusal counts as overcome, so
+ * it is reported as `rescued`, with `waitedMs` measured up to the start rather
+ * than including however long the transaction itself then ran.
+ */
+async function retryBeginWhilePoolerIsFull(
+  args: unknown[],
+  wrapInner: (inner: Sql) => Sql,
+  originalError: unknown
+): Promise<unknown> {
+  const retryStartedAt = performance.now();
+  const elapsed = () => Math.round(performance.now() - retryStartedAt);
+  let attempts = 0;
+  for (const backoffMs of CAPACITY_RETRY_BACKOFF_MS) {
+    await capacityBackoff(backoffMs);
+
+    const attempt = prepareBeginAttempt(args, wrapInner);
+    let pending: PromiseLike<unknown> | undefined;
+    try {
+      pending = capacityRetry?.begin(attempt.args);
+    } catch {
+      // A retry must never be able to crash the path that hosts it.
+      pending = undefined;
+    }
+    if (!pending) break;
+    attempts += 1;
+
+    const outcome = await settleBeginAttempt(pending, attempt);
+    if (outcome.kind === 'timed-out') {
+      capacityRetry?.report('failed', BEGIN_REPORT_LABEL, attempts, elapsed());
+      throw originalError;
+    }
+    if (outcome.kind === 'resolved' || attempt.started()) {
+      capacityRetry?.report(
+        'rescued',
+        BEGIN_REPORT_LABEL,
+        attempts,
+        attempt.startedAfterMs(retryStartedAt) ?? elapsed()
+      );
+      if (outcome.kind === 'resolved') return outcome.value;
+      throw outcome.error;
+    }
+    if (!isPoolerAtCapacity(outcome.error)) throw outcome.error;
+  }
+  capacityRetry?.report('failed', BEGIN_REPORT_LABEL, attempts, elapsed());
+  throw originalError;
+}
+
+/**
+ * Open a transaction on the top-level client, re-issuing the whole
+ * `begin(...)` if the pooler refused its connection — see the coverage notes
+ * on {@link setCapacityRetry}. The first attempt runs on the client this
+ * wrapper was built around; only retries go through
+ * {@link CapacityRetry.begin}.
+ */
+async function beginWithCapacityRetry(
+  open: (args: unknown[]) => unknown,
+  args: unknown[],
+  wrapInner: (inner: Sql) => Sql
+): Promise<unknown> {
+  const first = prepareBeginAttempt(args, wrapInner);
+  try {
+    return await open(first.args);
+  } catch (error) {
+    if (first.started() || !capacityRetry || !isPoolerAtCapacity(error)) throw error;
+    return retryBeginWhilePoolerIsFull(args, wrapInner, error);
+  }
+}
+
 /**
  * Give every query issued through `client` a client-side deadline.
  *
@@ -589,12 +807,21 @@ function isPendingQuery(value: unknown): value is PendingQuery {
  * handed to a transaction callback — covers every path into the driver. A
  * shape that somehow slipped past would simply not get a deadline, which is
  * the behaviour that existed before this wrapper.
+ *
+ * @design Which paths retry
+ * Only the top-level client's paths do. Its `unsafe()` statements get the
+ * deadline retry (SELECTs only, see {@link setDeadlineRetry}) and the
+ * pooler-at-capacity retry (any statement); its `begin(callback)` gets the
+ * pooler-at-capacity retry for the whole transaction, as long as the refusal
+ * came before the callback started (see {@link setCapacityRetry}). The client
+ * handed to a transaction callback, and `savepoint` on it, get deadlines but
+ * never a retry.
  */
 export function withQueryDeadline(client: Sql): Sql {
-  // `withRetry` marks the top-level client: only statements dispatched there
-  // may be transparently retried on deadline. Inside a transaction a retry
-  // would re-run one statement outside its transaction's state, so inner
-  // clients never get retry powers.
+  // `withRetry` marks the top-level client: only statements and transactions
+  // dispatched there may be transparently retried. Inside a transaction a
+  // retry would re-run one statement outside its transaction's state, so
+  // inner clients never get retry powers.
   const wrapClient = (target: Sql, withRetry: boolean): Sql =>
     new Proxy(target, {
       // The client is itself callable, as the sql`...` tag. Template calls
@@ -617,16 +844,26 @@ export function withQueryDeadline(client: Sql): Sql {
         // Queries inside a transaction run on the client the callback is
         // handed, not on this one, so that client needs wrapping too.
         if (property === 'begin' || property === 'reserve' || property === 'savepoint') {
+          // `savepoint` only exists on a transaction client, which this proxy
+          // also wraps — hence the index through an untyped view.
+          const open = (sql as unknown as Record<string, (...a: unknown[]) => unknown>)[property];
+          const wrapInner = (inner: Sql) => wrapClient(inner, false);
+
+          // Only a top-level `begin` may be re-issued on a capacity refusal:
+          // a `savepoint` (or a nested client's `begin`) already sits inside a
+          // transaction holding its connection.
+          if (property === 'begin' && withRetry) {
+            return (...args: unknown[]) =>
+              beginWithCapacityRetry((attemptArgs) => open(...attemptArgs), args, wrapInner);
+          }
+
           return (...args: unknown[]) => {
             const wrapped = args.map((arg) =>
               typeof arg === 'function'
                 ? (inner: Sql, ...rest: unknown[]) =>
-                    (arg as (...a: unknown[]) => unknown)(wrapClient(inner, false), ...rest)
+                    (arg as (...a: unknown[]) => unknown)(wrapInner(inner), ...rest)
                 : arg
             );
-            // `savepoint` only exists on a transaction client, which this
-            // proxy also wraps — hence the index through an untyped view.
-            const open = (sql as unknown as Record<string, (...a: unknown[]) => unknown>)[property];
             return open(...wrapped);
           };
         }
