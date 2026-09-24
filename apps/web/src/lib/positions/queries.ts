@@ -16,6 +16,7 @@ import {
   topicPosts,
 } from '@/lib/db';
 import { combineConditions, countRows, runPaginatedSelect } from '@/lib/db/list-query';
+import { excludeBlockedAuthors } from '@/lib/moderation/block';
 import { UUID_RE } from '@/lib/validations/uuid';
 
 import type { PositionSortMode, PositionType } from './types';
@@ -79,6 +80,11 @@ type ListPositionsOptions = {
    * cannot be done by sorting a single fetched page in memory.
    */
   sort?: PositionSortMode;
+  /**
+   * The signed-in reader, whose blocked counterparties are left out of the
+   * page. Read by {@link listPositionsWithProfile} only.
+   */
+  viewerId?: string;
   limit: number;
   offset: number;
 };
@@ -154,6 +160,12 @@ export async function listPositions({
 
 /**
  * Fetch a paginated list of positions joined with author profiles.
+ *
+ * `viewerId` names the signed-in reader, whose blocked counterparties are left
+ * out of the page; omit it for the anonymous and crawler reads, which see the
+ * catalog whole. {@link countPositions} is not narrowed to match, so a viewer
+ * with a block gets a page a few cards short of the stated total, the same
+ * trade the chunk, kata and topic catalogs make.
  */
 export async function listPositionsWithProfile({
   type,
@@ -161,10 +173,14 @@ export async function listPositionsWithProfile({
   userId,
   forkedFromId,
   sort = 'new',
+  viewerId,
   limit,
   offset,
 }: ListPositionsOptions) {
-  const where = buildListConditions({ type, includeDeleted, userId, forkedFromId });
+  const where = and(
+    buildListConditions({ type, includeDeleted, userId, forkedFromId }),
+    await excludeBlockedAuthors(positions.userId, viewerId)
+  );
   const topicType = type ? `position_${type}` : undefined;
   const query = db
     .select({

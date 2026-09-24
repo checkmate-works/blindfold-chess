@@ -2,11 +2,9 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { and, count, desc, eq } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
-import { AUTHOR_PROFILE_COLUMNS, db, profiles, userFollows } from '@/lib/db';
-import { profileNotDeleted } from '@/lib/db/profile-not-deleted';
+import { getOptionalUser } from '@/lib/auth';
 import { buildPageHref, resolvePagination } from '@/lib/pagination';
 
 import { PageLayout, UserCard } from '@/app/[locale]/_components';
@@ -16,6 +14,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { buildProfileArchiveMetadata } from '../_lib/archive-metadata';
 import { getProfileByUsername } from '../_lib/queries';
 import { redirectIfBlockedFromProfile } from '../_lib/redirect-if-blocked';
+import { countVisibleFollowers, listVisibleFollowers } from './_lib/queries';
 
 // Per-user, per-locale URLs explode the on-demand ISR cache (one entry per
 // (locale, username, ?page=N)), and the 5-min revalidate cycle previously
@@ -54,40 +53,24 @@ export default async function FollowersPage({ params, searchParams }: Props) {
   }
 
   // The block check and the follower count are both keyed on the profile row
-  // only; a redirect thrown by the check wins over the discarded count.
-  const [, { page }, t, [countResult]] = await Promise.all([
+  // only; a redirect thrown by the check wins over the discarded count. The
+  // viewer is resolved first because the count leaves out the followers they
+  // are in a block with; `getOptionalUser` is request-cached, so the check's
+  // own lookup reuses it.
+  const viewer = await getOptionalUser();
+  const [, { page }, t, totalCount] = await Promise.all([
     redirectIfBlockedFromProfile({ locale, username, profileId: profile.id }),
     searchParamsCache.parse(searchParams),
     getTranslations({ locale, namespace: 'publicProfile' }),
-    db
-      .select({ count: count() })
-      .from(userFollows)
-      .where(
-        and(eq(userFollows.followingId, profile.id), profileNotDeleted(userFollows.followerId))
-      ),
+    countVisibleFollowers(profile.id, viewer?.id),
   ]);
 
-  const totalCount = countResult.count;
   const { currentPage, totalPages, offset } = resolvePagination(page, totalCount, PAGE_SIZE);
 
-  const followerList = await db
-    .select({
-      ...AUTHOR_PROFILE_COLUMNS,
-      id: profiles.id,
-    })
-    .from(userFollows)
-    .innerJoin(profiles, eq(userFollows.followerId, profiles.id))
-    // The filter is the helper rather than the join's `isNull(profiles.deletedAt)`
-    // so this list and the count above apply one predicate; mixing the two gives
-    // a count that outruns its list and a pager offering a page with nothing on
-    // it. The join stays only to project the profile columns. That it does not
-    // narrow the result any further — the two questions differ on a follow whose
-    // profile row is absent rather than soft-deleted — is argued on the helper's
-    // `@design` note, from the cascade pair on `auth.users`.
-    .where(and(eq(userFollows.followingId, profile.id), profileNotDeleted(userFollows.followerId)))
-    .orderBy(desc(userFollows.createdAt))
-    .limit(PAGE_SIZE)
-    .offset(offset);
+  const followerList = await listVisibleFollowers(profile.id, viewer?.id, {
+    limit: PAGE_SIZE,
+    offset,
+  });
 
   const displayName = profile.displayName || username;
 

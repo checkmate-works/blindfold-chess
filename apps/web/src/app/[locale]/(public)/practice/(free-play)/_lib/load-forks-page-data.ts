@@ -41,14 +41,15 @@ export async function loadForksPageData({
     totalCount,
     pageSize
   );
+  const currentUser = await getOptionalUser();
   const rows = await listPositionsWithProfile({
     type: positionType,
     forkedFromId: parentId,
+    viewerId: currentUser?.id,
     limit,
     offset,
   });
 
-  const currentUser = await getOptionalUser();
   const positionIds = rows.map((r) => r.position.id);
   const [likeMetaMap, replyMetaMap] =
     positionIds.length > 0
