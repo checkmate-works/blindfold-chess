@@ -625,6 +625,9 @@ export async function updateRepertoireDetails(params: {
   return { ok: true, name };
 }
 
+/** Thrown inside the create transaction to roll the course insert back. */
+class InsufficientBalanceError extends Error {}
+
 /**
  * Create a repertoire (型) for the authenticated user, decomposing the imported
  * PGN into one `repertoire_lines` row per line, and publish it at the chosen
@@ -663,8 +666,9 @@ export async function createRepertoireEntry(
   const { name, side, phase, description, visibility, startingFen, lines, annotations } =
     validated.data;
 
-  const result = await db.transaction(
-    async (tx): Promise<{ ok: true; id: string } | { ok: false }> => {
+  let id: string;
+  try {
+    id = await db.transaction(async (tx) => {
       const [repertoire] = await tx
         .insert(repertoires)
         .values({
@@ -715,16 +719,21 @@ export async function createRepertoireEntry(
           repertoireId: repertoire.id,
           target: visibility,
         });
-        if (!charge.ok) return { ok: false };
+        // Thrown, not returned: drizzle commits whatever the callback resolves
+        // with, so a plain `return` here would keep the course, its lines and
+        // its notes — a paid tier the author never paid for.
+        if (!charge.ok) throw new InsufficientBalanceError();
       }
 
-      return { ok: true, id: repertoire.id };
-    }
-  );
+      return repertoire.id;
+    });
+  } catch (error) {
+    if (error instanceof InsufficientBalanceError) return { error: 'insufficient_balance' };
+    throw error;
+  }
 
-  if (!result.ok) return { error: 'insufficient_balance' };
   revalidateRepertoireCatalog();
-  return { success: true, id: result.id };
+  return { success: true, id };
 }
 
 /**
