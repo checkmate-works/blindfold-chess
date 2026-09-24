@@ -6,6 +6,9 @@ const mockAuthenticateAndGuard = vi.fn();
 const mockUserHasProfile = vi.fn(async () => true);
 const mockValidateRepertoireImport = vi.fn();
 const mockTxInsertReturning = vi.fn();
+const mockChargeRepertoireVisibility = vi.fn();
+/** Outcome of each `db.transaction` call, as drizzle would settle it. */
+const transactionOutcomes: Array<'committed' | 'rolledBack'> = [];
 
 vi.mock('@/lib/auth', () => ({
   authenticateAndGuard: (...args: unknown[]) => mockAuthenticateAndGuard(...args),
@@ -31,7 +34,7 @@ vi.mock('./queries', () => ({
 }));
 
 vi.mock('@/lib/points', () => ({
-  chargeRepertoireVisibility: vi.fn(),
+  chargeRepertoireVisibility: (...args: unknown[]) => mockChargeRepertoireVisibility(...args),
   clawbackPointsForPost: vi.fn(),
 }));
 
@@ -42,12 +45,22 @@ vi.mock('@/lib/db/list-query', () => ({
 vi.mock('@/lib/db', () => ({
   db: {
     select: () => ({ from: () => ({ where: () => ({ limit: () => Promise.resolve([]) }) }) }),
-    transaction: async (fn: (tx: unknown) => Promise<unknown>) =>
-      fn({
-        insert: () => ({
-          values: () => ({ returning: () => mockTxInsertReturning() }),
-        }),
-      }),
+    // Settles like drizzle: the transaction commits whenever the callback
+    // resolves — whatever it resolves with — and rolls back only on a throw.
+    transaction: async (fn: (tx: unknown) => Promise<unknown>) => {
+      try {
+        const value = await fn({
+          insert: () => ({
+            values: () => ({ returning: () => mockTxInsertReturning() }),
+          }),
+        });
+        transactionOutcomes.push('committed');
+        return value;
+      } catch (error) {
+        transactionOutcomes.push('rolledBack');
+        throw error;
+      }
+    },
   },
   chessOpenings: {},
   repertoireAnnotations: {},
@@ -94,6 +107,52 @@ describe('createRepertoireEntry', () => {
     expect(result).toEqual({ error: 'profileRequired' });
     expect(mockValidateRepertoireImport).not.toHaveBeenCalled();
     expect(mockTxInsertReturning).not.toHaveBeenCalled();
+  });
+
+  describe('with a valid import', () => {
+    beforeEach(() => {
+      transactionOutcomes.length = 0;
+      mockTxInsertReturning.mockResolvedValue([{ id: 'repertoire-1' }]);
+      mockValidateRepertoireImport.mockReturnValue({
+        ok: true,
+        data: {
+          name: 'Italian Game',
+          side: 'white',
+          phase: 'opening',
+          description: '',
+          visibility: 'followers_only',
+          startingFen: null,
+          lines: [{ pgn: '1. e4 e5 2. Nf3 Nc6 3. Bc4', startingFen: null }],
+          annotations: [],
+        },
+      });
+    });
+
+    it('rolls the course back when the wallet cannot cover a paid tier', async () => {
+      mockChargeRepertoireVisibility.mockResolvedValue({
+        ok: false,
+        error: 'insufficient_balance',
+      });
+
+      const { createRepertoireEntry } = await import('./mutations');
+      const result = await createRepertoireEntry({ ...baseInput, visibility: 'followers_only' });
+
+      // The course row and its lines are written before the charge, so a
+      // refused charge has to undo them: committing would hand the author a
+      // paid-tier course for free while telling them it failed.
+      expect(result).toEqual({ error: 'insufficient_balance' });
+      expect(transactionOutcomes).toEqual(['rolledBack']);
+    });
+
+    it('commits the course once the paid tier is charged', async () => {
+      mockChargeRepertoireVisibility.mockResolvedValue({ ok: true, charged: 1 });
+
+      const { createRepertoireEntry } = await import('./mutations');
+      const result = await createRepertoireEntry({ ...baseInput, visibility: 'followers_only' });
+
+      expect(result).toEqual({ success: true, id: 'repertoire-1' });
+      expect(transactionOutcomes).toEqual(['committed']);
+    });
   });
 
   it('reaches validation once the author has a profile', async () => {
