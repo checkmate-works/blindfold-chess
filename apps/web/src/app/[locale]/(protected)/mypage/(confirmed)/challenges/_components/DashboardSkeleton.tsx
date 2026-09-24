@@ -64,11 +64,16 @@ function SectionTitleSkeleton() {
   );
 }
 
+/**
+ * The period and menu selects stack at every breakpoint, period first. The
+ * orientation / piece filter row is left out: whether it renders depends on
+ * the menu, which is not known until the data arrives.
+ */
 function PeriodSelectorSkeleton() {
   return (
-    <div className="flex flex-col sm:flex-row gap-3">
-      <Skeleton className="w-full sm:w-64 h-[38px] rounded-lg" />
+    <div className="space-y-6">
       <Skeleton className="w-full sm:w-48 h-[38px] rounded-lg" />
+      <Skeleton className="w-full sm:w-64 h-[38px] rounded-lg" />
     </div>
   );
 }
