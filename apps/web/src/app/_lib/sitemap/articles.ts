@@ -4,6 +4,26 @@ import { getPublishedArticlesForSitemap } from '@/app/[locale]/(public)/articles
 
 import { BASE_URL, buildSitemapSection, generateAlternates } from './shared';
 
+/**
+ * The later of `updatedAt` and `publishedAt`, so `<lastmod>` agrees with the
+ * article page's BlogPosting JSON-LD (`generateBlogPostingSchema`), which omits
+ * `dateModified` when `updatedAt` does not postdate `publishedAt` and so leaves
+ * `datePublished` as the page's latest date.
+ *
+ * `updatedAt` alone can predate publication: `publishedAt` is a datetime typed
+ * into the admin publish form, not the time of the save, so a save made before
+ * the date it names leaves `updatedAt` behind it. A `<lastmod>` earlier than
+ * the page's own publication date would be the same contradiction.
+ *
+ * Both come from the row this entry's URL renders — the sitemap lists only
+ * locales that have their own row, never a locale-fallback URL.
+ */
+function lastModifiedOf(article: { updatedAt: Date | null; publishedAt: Date | null }) {
+  const { updatedAt, publishedAt } = article;
+  if (updatedAt && publishedAt) return updatedAt > publishedAt ? updatedAt : publishedAt;
+  return updatedAt ?? publishedAt;
+}
+
 export async function buildArticleEntries(now: Date): Promise<MetadataRoute.Sitemap> {
   return buildSitemapSection('Error fetching articles for sitemap', async () => {
     const entries: MetadataRoute.Sitemap = [];
@@ -29,7 +49,7 @@ export async function buildArticleEntries(now: Date): Promise<MetadataRoute.Site
       const availableLocales = localesBySlug.get(article.slug) ?? [article.locale];
       entries.push({
         url: `${BASE_URL}/${article.locale}${path}`,
-        lastModified: article.updatedAt ?? article.publishedAt ?? now,
+        lastModified: lastModifiedOf(article) ?? now,
         alternates: generateAlternates(path, availableLocales),
       });
     }
