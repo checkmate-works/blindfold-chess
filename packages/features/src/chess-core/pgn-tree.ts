@@ -85,8 +85,11 @@ function describeFailure(failure: PgnParseFailure): string {
 }
 
 /**
- * Thrown by {@link parsePgnTree}. Carries {@link PgnParseFailure} so callers can
- * render a located, translated message instead of a bare "invalid PGN".
+ * A {@link PgnParseFailure} as an `Error`, for a caller that has to report the
+ * failure through a throw or a log line rather than render it. It keeps the
+ * structured failure alongside the English message, so a catch site can still
+ * show the located, translated text instead of a bare "invalid PGN".
+ * {@link parsePgnTree} itself never throws it — it returns the failure.
  */
 export class PgnParseError extends Error {
   readonly failure: PgnParseFailure;
@@ -144,84 +147,176 @@ function normalizeMoveToken(token: string): string {
 }
 
 /**
- * Parse the moves of one line starting from `beforeFen`, recursing into each
- * `( ... )` as a set of *alternatives to the immediately preceding move*
- * (PGN variation semantics — a variation branches from the position before the
- * move it follows, so its first move is a sibling of that move).
+ * The movetext with its parentheses resolved into nesting: every `( ... )`
+ * becomes one `variation` item holding its own items, so the line parser
+ * never has to track where a variation ends.
+ */
+type LineItem =
+  { kind: "token"; raw: string } | { kind: "variation"; items: LineItem[] };
+
+/**
+ * Group `tokens` from `start` into {@link LineItem}s until the `)` that closes
+ * this level, returning the index just past it.
  *
- * Returns the sibling list rooted at `beforeFen` and the index just past the
- * `)` that closed this line (or the end of the token stream at top level).
+ * Unbalanced input is accepted rather than rejected: a variation left open
+ * runs to the end of the movetext, and a stray `)` at the top level ends the
+ * movetext there (everything after it is ignored).
+ */
+function groupVariations(
+  tokens: readonly string[],
+  start: number,
+): { items: LineItem[]; next: number } {
+  const items: LineItem[] = [];
+  let i = start;
+  while (i < tokens.length) {
+    const raw = tokens[i];
+    if (raw === ")") return { items, next: i + 1 };
+    if (raw === "(") {
+      const variation = groupVariations(tokens, i + 1);
+      items.push({ kind: "variation", items: variation.items });
+      i = variation.next;
+    } else {
+      items.push({ kind: "token", raw });
+      i += 1;
+    }
+  }
+  return { items, next: i };
+}
+
+/**
+ * One move of a line, together with the variations that replace it.
+ *
+ * A PGN variation is an alternative to the move it *follows*, so it branches
+ * from `fenBefore` — the position this move was played from — and its first
+ * move becomes a sibling of this one. `alternatives` holds those siblings
+ * already built, in the order the variations appeared.
+ */
+type LineMove = {
+  readonly san: AlgebraicNotation;
+  /** Position before this move — where its alternatives branch from. */
+  readonly fenBefore: string;
+  /** Position after this move — where the line continues from. */
+  readonly fen: string;
+  readonly alternatives: readonly MoveTreeNode[];
+};
+
+/**
+ * Everything the parser knows part-way through one line: the moves played so
+ * far (each carrying its alternatives) and the position the next move is
+ * played from. Each step function builds the next state from the previous one
+ * in a single return, so no step can observe a state another step has only
+ * partly updated.
+ */
+type LineState = {
+  readonly moves: readonly LineMove[];
+  /** Position the next move of this line is played from. */
+  readonly fen: string;
+};
+
+type LineStep = Result<LineState, PgnParseFailure>;
+
+/**
+ * A move, move number or result marker. Move numbers ("12.", "3...") and
+ * result markers leave the state as it is; a move must be legal from
+ * `state.fen` and advances the line to the position after it.
+ */
+function stepToken(state: LineState, raw: string): LineStep {
+  const san = normalizeMoveToken(raw);
+  if (!san || RESULT_MARKERS.has(raw) || RESULT_MARKERS.has(san)) {
+    return ok(state);
+  }
+
+  const chess = new Chess(state.fen);
+  let played: ReturnType<Chess["move"]> | null;
+  try {
+    played = chess.move(san);
+  } catch {
+    played = null;
+  }
+  if (!played) {
+    return err({ reason: "illegalMove", san, ...locateMove(state.fen) });
+  }
+
+  const move: LineMove = {
+    san: asEngineSan(played.san),
+    fenBefore: state.fen,
+    fen: chess.fen(),
+    alternatives: [],
+  };
+  return ok({ moves: [...state.moves, move], fen: move.fen });
+}
+
+/**
+ * A `( ... )` variation: parsed from the position before the latest move and
+ * added as alternatives to it. The line's own position is untouched, so the
+ * moves after the `)` continue the line exactly where it left off.
+ */
+function stepVariation(state: LineState, items: readonly LineItem[]): LineStep {
+  const latest = state.moves.at(-1);
+  if (!latest) return err({ reason: "danglingVariation" });
+
+  const variation = parseLine(latest.fenBefore, items);
+  if (!variation.ok) return variation;
+
+  const extended: LineMove = {
+    ...latest,
+    alternatives: [...latest.alternatives, ...variation.value],
+  };
+  return ok({ ...state, moves: [...state.moves.slice(0, -1), extended] });
+}
+
+function stepItem(state: LineState, item: LineItem): LineStep {
+  return item.kind === "token"
+    ? stepToken(state, item.raw)
+    : stepVariation(state, item.items);
+}
+
+/**
+ * Turn a line's moves into its tree: each move's node is followed by its
+ * alternatives, and the next move's sibling list becomes its children.
+ * Built from the last move backwards, so each node is created once with its
+ * children already in hand.
+ */
+function buildLine(moves: readonly LineMove[]): MoveTreeNode[] {
+  return moves.reduceRight<MoveTreeNode[]>(
+    (children, move) => [
+      { san: move.san, fen: move.fen, children },
+      ...move.alternatives,
+    ],
+    [],
+  );
+}
+
+/**
+ * Parse one line from `beforeFen` into the sibling list rooted there: the
+ * line's first move followed by the first moves of the variations that
+ * replace it. Stops at the first failure, which is the first one in movetext
+ * order since variations are parsed where they appear.
  */
 function parseLine(
   beforeFen: string,
-  tokens: string[],
-  start: number,
-): { nodes: MoveTreeNode[]; next: number } {
-  const head: MoveTreeNode[] = [];
-  let prevNode: MoveTreeNode | null = null;
-  // The array `prevNode` lives in, so sibling variations attach next to it.
-  let prevContainer: MoveTreeNode[] = head;
-  // Position *before* `prevNode`'s move — the branch point for its variations.
-  let fenBeforePrev = beforeFen;
-  let currentFen = beforeFen;
-  let i = start;
+  items: readonly LineItem[],
+): Result<MoveTreeNode[], PgnParseFailure> {
+  const initial: LineStep = ok({ moves: [], fen: beforeFen });
+  const final = items.reduce<LineStep>(
+    (step, item) => (step.ok ? stepItem(step.value, item) : step),
+    initial,
+  );
+  return final.ok ? ok(buildLine(final.value.moves)) : final;
+}
 
-  while (i < tokens.length) {
-    const raw = tokens[i];
-
-    if (raw === ")") {
-      return { nodes: head, next: i + 1 };
-    }
-
-    if (raw === "(") {
-      if (!prevNode) {
-        throw new PgnParseError({ reason: "danglingVariation" });
-      }
-      const variation = parseLine(fenBeforePrev, tokens, i + 1);
-      for (const node of variation.nodes) {
-        prevContainer.push(node);
-      }
-      i = variation.next;
-      continue;
-    }
-
-    const san = normalizeMoveToken(raw);
-    if (!san || RESULT_MARKERS.has(raw) || RESULT_MARKERS.has(san)) {
-      i += 1;
-      continue;
-    }
-
-    const chess = new Chess(currentFen);
-    let result: ReturnType<Chess["move"]> | null = null;
-    try {
-      result = chess.move(san);
-    } catch {
-      result = null;
-    }
-    if (!result) {
-      throw new PgnParseError({
-        reason: "illegalMove",
-        san,
-        ...locateMove(currentFen),
-      });
-    }
-
-    const node: MoveTreeNode = {
-      san: asEngineSan(result.san),
-      fen: chess.fen(),
-      children: [],
-    };
-    const container = prevNode ? prevNode.children : head;
-    container.push(node);
-
-    prevContainer = container;
-    fenBeforePrev = currentFen;
-    prevNode = node;
-    currentFen = node.fen;
-    i += 1;
+/** Read the `[FEN]` root, or report why it is not a playable position. */
+function readStartingFen(pgn: string): Result<string, PgnParseFailure> {
+  const startingFen = extractStartingFen(pgn);
+  if (startingFen === DEFAULT_POSITION) return ok(startingFen);
+  try {
+    // Construct only to validate the FEN; throws if the position is illegal.
+    const probe = new Chess(startingFen);
+    void probe;
+  } catch {
+    return err({ reason: "badFen" });
   }
-
-  return { nodes: head, next: i };
+  return ok(startingFen);
 }
 
 /**
@@ -230,47 +325,22 @@ function parseLine(
  *
  * A PGN reaching this function is user-typed or user-pasted text, so failing
  * to parse is an ordinary outcome, not an exception: the failure says *which*
- * move was illegal and where, and as a throw that payload was discarded by
- * every application caller (`catch {}` → a bare "invalidPgn").
- *
- * The recursive `parseLine` still signals failure by throwing
- * {@link PgnParseError} internally — rewriting its cursor walk is tracked
- * separately (GitHub issue #109) — and this boundary converts it to a value.
- * A non-`PgnParseError` throw is a bug in the parser, not an expected
- * failure, and is deliberately left to propagate.
+ * move was illegal and where, and is returned as a value all the way from the
+ * step that detected it. A throw out of here is a bug in the parser, not an
+ * expected failure.
  */
 export function parsePgnTree(pgn: string): Result<PgnTree, PgnParseFailure> {
-  try {
-    return ok(parsePgnTreeOrThrow(pgn));
-  } catch (error) {
-    if (error instanceof PgnParseError) return err(error.failure);
-    throw error;
-  }
-}
+  if (!pgn.trim()) return err({ reason: "empty" });
 
-function parsePgnTreeOrThrow(pgn: string): PgnTree {
-  if (!pgn.trim()) {
-    throw new PgnParseError({ reason: "empty" });
-  }
+  const startingFen = readStartingFen(pgn);
+  if (!startingFen.ok) return startingFen;
 
-  const startingFen = extractStartingFen(pgn);
-  if (startingFen !== DEFAULT_POSITION) {
-    try {
-      // Construct only to validate the FEN; throws if the position is illegal.
-      const probe = new Chess(startingFen);
-      void probe;
-    } catch {
-      throw new PgnParseError({ reason: "badFen" });
-    }
-  }
+  const { items } = groupVariations(tokenizeMovetext(pgn), 0);
+  const nodes = parseLine(startingFen.value, items);
+  if (!nodes.ok) return nodes;
+  if (nodes.value.length === 0) return err({ reason: "noMoves" });
 
-  const tokens = tokenizeMovetext(pgn);
-  const { nodes } = parseLine(startingFen, tokens, 0);
-  if (nodes.length === 0) {
-    throw new PgnParseError({ reason: "noMoves" });
-  }
-
-  return { startingFen, children: nodes };
+  return ok({ startingFen: startingFen.value, children: nodes.value });
 }
 
 /**
