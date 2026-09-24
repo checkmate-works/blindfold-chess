@@ -51,6 +51,19 @@ function SessionHistoryTableSkeleton() {
   );
 }
 
+/**
+ * Stands in for the `SectionTitle` ("Records") the dashboard renders above its
+ * filters. The border and `pb-2` are the real heading's; the bar takes the
+ * height of its single line (`text-base md:text-lg` at `leading-normal`).
+ */
+function SectionTitleSkeleton() {
+  return (
+    <div className="border-b border-border pb-2">
+      <Skeleton className="h-6 md:h-[27px] w-24 rounded-md" />
+    </div>
+  );
+}
+
 function PeriodSelectorSkeleton() {
   return (
     <div className="flex flex-col sm:flex-row gap-3">
@@ -88,6 +101,7 @@ export function DashboardContentSkeleton() {
 export function DashboardSkeleton() {
   return (
     <div className="space-y-6">
+      <SectionTitleSkeleton />
       <PeriodSelectorSkeleton />
       <DashboardContentSkeleton />
     </div>
