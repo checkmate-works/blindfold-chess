@@ -276,12 +276,23 @@ setDeadlineRetry({
  *
  * Re-issuing is safe for writes here, which is what makes it worth doing —
  * see the `setCapacityRetry` TSDoc in `./query-deadline` for why a capacity
- * refusal can be retried when a deadline cannot.
+ * refusal can be retried when a deadline cannot. That covers `db.transaction()`
+ * too: a transaction refused before its callback started is re-opened whole,
+ * and reports under the same event with `db_capacity.sql` set to `begin`.
+ *
+ * Both dispatchers go through `activeClient` rather than the client the first
+ * attempt ran on: a wedge or deadline elsewhere may rebuild the pool during
+ * the backoff, and the retired client is being `end()`ed, so re-issuing on it
+ * would fail for a reason that has nothing to do with the pooler.
  */
 setCapacityRetry({
   dispatch: (unsafeArgs) => {
     const unsafe = activeClient.unsafe as (...a: unknown[]) => unknown;
     return unsafe(...unsafeArgs) as ReturnType<DeadlineRetry['dispatch']>;
+  },
+  begin: (beginArgs) => {
+    const begin = activeClient.begin as (...a: unknown[]) => PromiseLike<unknown>;
+    return begin(...beginArgs);
   },
   report: (outcome, sql, attempts, waitedMs) => {
     console.error(
