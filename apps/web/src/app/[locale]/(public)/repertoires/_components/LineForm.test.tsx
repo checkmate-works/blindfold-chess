@@ -111,6 +111,19 @@ describe('LineForm', () => {
     expect(container.querySelector('button[type="submit"]')).not.toBeDisabled();
   });
 
+  it('forgets the board cursor across a board → PGN → board round trip', () => {
+    renderForm(async () => ({ ok: true, nextHref: '/done' }));
+    fireEvent.click(screen.getByRole('button', { name: 'pick-move' }));
+    expect(screen.getByRole('textbox', { name: 'line.annotation.title' })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('tab', { name: 'inputModePgn' }));
+    fireEvent.click(screen.getByRole('tab', { name: 'inputModeBoard' }));
+
+    // The remounted builder has not reported a cursor, so there is no move to
+    // annotate yet — not the one picked before the switch.
+    expect(screen.queryByRole('textbox', { name: 'line.annotation.title' })).toBeNull();
+  });
+
   it('keeps a failed note write form-level and does not navigate', async () => {
     mockSaveAnnotation.mockResolvedValue({ ok: false });
     const { container } = renderForm(async () => ({ ok: true, nextHref: '/done' }));

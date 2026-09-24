@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useReducer, useState } from 'react';
 
 import { useSubmitLifecycle } from '@/_hooks/useSubmitLifecycle';
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
@@ -39,10 +39,12 @@ import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal'
 import { PgnDiagnosisHint } from '@/app/[locale]/_components/PgnDiagnosisHint';
 
 import { createRepertoire } from '../_actions/createRepertoire';
+import { INITIAL_OPENING_LINKS, openingLinksReducer } from '../_lib/opening-links';
 import { VISIBILITY_I18N_KEY } from '../_lib/visibility-i18n';
 import { MoveAnnotationField } from './MoveAnnotationField';
 import { OpeningLinksField } from './OpeningLinksField';
 import { RepertoireBoardBuilder } from './RepertoireBoardBuilder';
+import { useMovesEditor } from './use-moves-editor';
 
 /**
  * Only `opening` can be authored today: a middlegame or endgame repertoire is
@@ -95,17 +97,22 @@ export function RepertoireImportForm({
   // Visibility to create-and-publish at. `public` is free; the paid tiers open
   // a coin-confirm modal before submitting.
   const [visibility, setVisibility] = useState<RepertoireVisibility>('public');
-  const [openingIds, setOpeningIds] = useState<string[]>([]);
-  const [pgn, setPgn] = useState(initialPgn ?? '');
-  // How the moves are entered: pasting a PGN or playing them on a board. Both
-  // modes read and write the same `pgn` state — the board serializes its move
-  // tree through it — so detection, validation and submission are shared.
-  const [inputMode, setInputMode] = useState<'pgn' | 'board'>('pgn');
+  // Linked openings, auto-detected from the PGN until the author picks by
+  // hand — auto-detection is a starting point, not a correction.
+  const [openingLinks, dispatchOpeningLinks] = useReducer(
+    openingLinksReducer,
+    INITIAL_OPENING_LINKS
+  );
+  const openingIds = openingLinks.ids;
+  // How the moves are entered — pasting a PGN or playing them on a board —
+  // over one shared `pgn`, so detection, validation and submission don't care
+  // which mode filled it. Opens on the paste tab.
+  const moves = useMovesEditor('pgn', initialPgn ?? '');
+  const { pgn, cursor } = moves;
   // Per-position "why this move" drafts and board markup, authored on the
   // board for whichever move the cursor rests on; created with the kata.
   const [annotations, setAnnotations] = useState<Record<string, string>>({});
   const [shapes, setShapes] = useState<Record<string, BoardAnnotations>>({});
-  const [cursor, setCursor] = useState<{ positionKey: string; label: string } | null>(null);
   // Submit protocol: editing → (coin confirm →) submitting → succeeded, then
   // the redirect to the new kata. A rejected submit is reported against the
   // control at fault (see `repertoireErrorField`) and focuses it — this form
@@ -115,7 +122,7 @@ export function RepertoireImportForm({
   // the board tab is up, since the PGN textarea isn't mounted there.
   const lifecycle = useSubmitLifecycle<RepertoireFormField>((field) => {
     if (field === 'name') return 'repertoire-name';
-    return inputMode === 'board' ? 'repertoire-moves' : 'repertoire-pgn';
+    return moves.mode === 'board' ? 'repertoire-moves' : 'repertoire-pgn';
   });
   const nameError = lifecycle.messageFor('name');
   const movesError = lifecycle.messageFor('moves');
@@ -134,29 +141,25 @@ export function RepertoireImportForm({
       hasAnnotationDrafts);
   const { isBlocking, confirm, cancel } = useUnsavedChanges({ isDirty });
 
-  // Once the author picks or removes an opening by hand, the PGN stops driving
-  // the links — auto-detection is a starting point, not a correction.
-  const openingsEdited = useRef(false);
-
   // Derive the opening links from what was pasted, while the author hasn't
   // touched the picker. Debounced so a long PGN isn't re-parsed per keystroke.
+  const openingSource = openingLinks.source;
   useEffect(() => {
-    if (phase !== 'opening' || openingsEdited.current) return;
+    if (phase !== 'opening' || openingSource === 'manual') return;
     const timer = setTimeout(() => {
-      setOpeningIds(detectOpeningIdsFromPgn(pgn, openings));
+      dispatchOpeningLinks({ type: 'detected', ids: detectOpeningIdsFromPgn(pgn, openings) });
     }, 300);
     return () => clearTimeout(timer);
-  }, [pgn, phase, openings]);
+  }, [pgn, phase, openings, openingSource]);
 
   function changePhase(next: RepertoirePhase) {
     setPhase(next);
     // Opening links only make sense for opening repertoires.
-    if (next !== 'opening') setOpeningIds([]);
+    if (next !== 'opening') dispatchOpeningLinks({ type: 'cleared' });
   }
 
   function changeOpeningIds(ids: string[]) {
-    openingsEdited.current = true;
-    setOpeningIds(ids);
+    dispatchOpeningLinks({ type: 'picked', ids });
   }
 
   const visibilityCost = REPERTOIRE_VISIBILITY_COST[visibility];
@@ -295,7 +298,7 @@ export function RepertoireImportForm({
         tabIndex={-1}
         role="group"
         aria-label={t('form.movesLabel')}
-        aria-describedby={movesError && inputMode === 'board' ? 'repertoire-pgn-error' : undefined}
+        aria-describedby={movesError && moves.mode === 'board' ? 'repertoire-pgn-error' : undefined}
         className="space-y-2"
       >
         <span className="block text-sm font-medium text-foreground">
@@ -304,18 +307,18 @@ export function RepertoireImportForm({
         {/* Same switcher chrome as the chunk / puzzle position editors — here
             the text tab holds a PGN instead of a FEN. */}
         <BoardFenTabs
-          activeTab={inputMode === 'board' ? 'board' : 'fen'}
-          onTabChange={(tab) => setInputMode(tab === 'board' ? 'board' : 'pgn')}
+          activeTab={moves.mode === 'board' ? 'board' : 'fen'}
+          onTabChange={(tab) => moves.switchMode(tab === 'board' ? 'board' : 'pgn')}
           boardLabel={t('form.inputModeBoard')}
           fenLabel={t('form.inputModePgn')}
         />
-        {inputMode === 'pgn' ? (
+        {moves.mode === 'pgn' ? (
           <>
             <p className="text-xs text-muted-foreground">{t('form.pgnHelp')}</p>
             <Textarea
               id="repertoire-pgn"
               value={pgn}
-              onChange={(e) => setPgn(e.target.value)}
+              onChange={(e) => moves.setPgn(e.target.value)}
               placeholder={t('form.pgnPlaceholder')}
               rows={10}
               inputSize="sm"
@@ -333,8 +336,8 @@ export function RepertoireImportForm({
             <RepertoireBoardBuilder
               side={side}
               initialPgn={pgn}
-              onPgnChange={setPgn}
-              onCursorChange={setCursor}
+              onPgnChange={moves.setPgn}
+              onCursorChange={moves.setCursor}
               shapes={shapes}
               onShapesChange={(positionKey, next) =>
                 setShapes((prev) => ({ ...prev, [positionKey]: next }))
