@@ -38,11 +38,16 @@ export async function OpeningRepertoiresSection({
 }: Props) {
   const t = await getTranslations({ locale, namespace: 'Repertoires' });
 
-  if (count === 0) {
-    return <p className="py-8 text-center text-muted-foreground">{t('empty')}</p>;
-  }
+  const empty = <p className="py-8 text-center text-muted-foreground">{t('empty')}</p>;
 
-  const rows = await listPublicRepertoiresForOpening(slug, MAX_REPERTOIRES, sort);
+  if (count === 0) return empty;
+
+  const rows = await listPublicRepertoiresForOpening(slug, MAX_REPERTOIRES, sort, currentUserId);
+  // `count` is viewer-independent, so it can be non-zero while every course
+  // behind it belongs to someone the viewer has a block with. A sort control
+  // over no cards would read as a broken panel; say it is empty instead.
+  if (rows.length === 0) return empty;
+
   const cardMeta = await getRepertoireCardMeta(
     rows.map((r) => r.repertoire.id),
     currentUserId

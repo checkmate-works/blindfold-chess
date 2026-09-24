@@ -135,11 +135,19 @@ function publicRepertoiresForOpening(openingSlug: string) {
  * `popular` orders by like count (the same polymorphic `likes` rows the cards
  * render), newest first among ties, so a repertoire nobody has liked yet still
  * has a stable place.
+ *
+ * `viewerId` drops the signed-in reader's blocked counterparties, exactly as
+ * {@link listPublicRepertoires} does for the catalog; the anonymous and
+ * crawler reads see every public course. {@link countPublicRepertoiresForOpening}
+ * stays viewer-independent for the same Data Cache reason, so for a viewer
+ * with a block the panel can hold fewer cards than the tab label counts, or
+ * none at all.
  */
 export async function listPublicRepertoiresForOpening(
   openingSlug: string,
   limit: number,
-  sort: RepertoireSort = 'new'
+  sort: RepertoireSort = 'new',
+  viewerId?: string
 ): Promise<RepertoireWithProfile[]> {
   const likeCount = db.$count(
     likes,
@@ -152,7 +160,12 @@ export async function listPublicRepertoiresForOpening(
     .innerJoin(chessOpenings, eq(chessOpenings.id, repertoireOpenings.openingId))
     .innerJoin(repertoires, eq(repertoires.id, repertoireOpenings.repertoireId))
     .leftJoin(profiles, liveProfileJoinOn(repertoires.userId))
-    .where(publicRepertoiresForOpening(openingSlug))
+    .where(
+      and(
+        publicRepertoiresForOpening(openingSlug),
+        await excludeBlockedAuthors(repertoires.userId, viewerId)
+      )
+    )
     .orderBy(
       ...(sort === 'popular'
         ? [desc(likeCount), desc(repertoires.publishedAt)]
