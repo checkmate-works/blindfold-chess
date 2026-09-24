@@ -19,8 +19,13 @@ vi.mock('@/lib/db', async () => ({
   },
 }));
 
-const { checkIpRateLimitGuard, checkEmailRateLimitGuard, IP_RATE_LIMITS, EMAIL_RATE_LIMITS } =
-  await import('./rate-limit-ip');
+const {
+  checkIpRateLimitGuard,
+  checkEmailRateLimitGuard,
+  consumeEmailRateLimit,
+  IP_RATE_LIMITS,
+  EMAIL_RATE_LIMITS,
+} = await import('./rate-limit-ip');
 
 const config = { maxRequests: 3, windowMs: 60_000 };
 
@@ -110,6 +115,39 @@ describe('checkEmailRateLimitGuard', () => {
     const key = (mockInsertValues.mock.calls[0][0] as { subjectKey: string }).subjectKey;
     expect(key).not.toContain('secret@example.com');
     expect(key).not.toContain('@');
+  });
+});
+
+describe('consumeEmailRateLimit', () => {
+  beforeEach(() => {
+    mockInsertValues.mockResolvedValue(undefined);
+  });
+
+  it('returns true and records an event under the action key when under the limit', async () => {
+    mockSelectFromWhere.mockResolvedValue([{ count: 2 }]);
+    expect(await consumeEmailRateLimit('forgotPassword', 'user@example.com')).toBe(true);
+    expect(mockInsertValues).toHaveBeenCalledTimes(1);
+    const args = mockInsertValues.mock.calls[0][0] as { subjectKey: string; action: string };
+    expect(args.action).toBe('forgotPassword');
+    expect(args.subjectKey.startsWith('email:')).toBe(true);
+    expect(args.subjectKey).not.toContain('@');
+  });
+
+  it('returns false and records nothing once the configured maximum is reached', async () => {
+    mockSelectFromWhere.mockResolvedValue([
+      { count: EMAIL_RATE_LIMITS.forgotPassword.maxRequests },
+    ]);
+    expect(await consumeEmailRateLimit('forgotPassword', 'user@example.com')).toBe(false);
+    expect(mockInsertValues).not.toHaveBeenCalled();
+  });
+
+  it('shares a bucket with checkEmailRateLimitGuard and across case / whitespace variants', async () => {
+    mockSelectFromWhere.mockResolvedValue([{ count: 0 }]);
+    await consumeEmailRateLimit('forgotPassword', '  User@Example.com ');
+    await checkEmailRateLimitGuard('user@example.com', 'forgotPassword', config);
+    const key1 = (mockInsertValues.mock.calls[0][0] as { subjectKey: string }).subjectKey;
+    const key2 = (mockInsertValues.mock.calls[1][0] as { subjectKey: string }).subjectKey;
+    expect(key1).toBe(key2);
   });
 });
 

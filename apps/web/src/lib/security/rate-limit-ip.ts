@@ -134,13 +134,13 @@ export async function checkIpRateLimitGuard(
 }
 
 /**
- * Hash an email for use as a rate-limit key. Lowercased + trimmed first to
+ * Build the rate-limit key for an email. Lowercased + trimmed first to
  * normalise trivial casing / whitespace differences; SHA-256 to avoid storing
  * the raw email as the limiter key (the limiter table is server-side only,
  * but hashing also prevents accidental leakage via logs / backups).
  */
-function hashEmail(email: string): string {
-  return createHash('sha256').update(email.toLowerCase().trim()).digest('hex');
+function emailSubjectKey(email: string): string {
+  return `email:${createHash('sha256').update(email.toLowerCase().trim()).digest('hex')}`;
 }
 
 /**
@@ -160,12 +160,42 @@ export async function checkEmailRateLimitGuard(
   action: string,
   config: IpRateLimitConfig
 ): Promise<{ error: 'rateLimited' } | null> {
-  const hashed = hashEmail(email);
-  const { allowed } = await checkKeyRateLimit(`email:${hashed}`, action, config);
+  const { allowed } = await checkKeyRateLimit(emailSubjectKey(email), action, config);
   if (!allowed) {
     return { error: 'rateLimited' };
   }
   return null;
+}
+
+/**
+ * Per-email limiter for flows that must never show the caller that it fired.
+ *
+ * Draws from the same `email:<sha256>` bucket as `checkEmailRateLimitGuard`
+ * (same normalisation, same table), but answers with a plain boolean instead
+ * of a client-facing `{ error: 'rateLimited' }`. The caller decides what to
+ * skip; nothing in the return value is shaped to be forwarded to the client.
+ * Password reset uses this so that a full bucket suppresses the email while
+ * the response stays byte-for-byte the same as a real send.
+ *
+ * Like every limiter here, an allowed call records an event (it consumes one
+ * slot) and a refused call records nothing, so a full bucket drains on its
+ * own once the window passes the earliest recorded attempt.
+ *
+ * @param action - Key into `EMAIL_RATE_LIMITS`; also the bucket's action key.
+ * @param email - The submitted address, raw; normalised and hashed here.
+ * @returns `true` when the attempt was within the limit and has been
+ *   recorded, `false` when the bucket is full.
+ */
+export async function consumeEmailRateLimit(
+  action: keyof typeof EMAIL_RATE_LIMITS,
+  email: string
+): Promise<boolean> {
+  const { allowed } = await checkKeyRateLimit(
+    emailSubjectKey(email),
+    action,
+    EMAIL_RATE_LIMITS[action]
+  );
+  return allowed;
 }
 
 /**
