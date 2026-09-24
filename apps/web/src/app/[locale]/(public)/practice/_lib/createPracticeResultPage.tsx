@@ -5,7 +5,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import type { ExpInfo } from '@blindfold-chess/features/exp';
 
-import { getNativeTileCreatives } from '@/lib/ads/ad';
+import { resolveNativeTileCreatives } from '@/lib/ads/ad';
 import { PRACTICE_RESULT_NATIVE_AD_SLOT } from '@/lib/ads/registry';
 import { getOptionalUser } from '@/lib/auth';
 import { getExpInfoBySource } from '@/lib/db/get-exp-info-by-source';
@@ -138,13 +138,21 @@ export function createPracticeResultMetadata(config: MetadataConfig) {
  * module the same placement from the same pool — a module that opts into a
  * result page at all gets it, and there is no per-module wiring to forget.
  *
- * Viewer-independent, like the other surfaces that read a pool directly: the
- * per-reader hide is the `bfc_ads_hidden` cookie and the CSS rule
- * `NativeAdTile` owns. The `link` variant is the `CardLink` shape this screen
+ * Nothing for an ad-free viewer, rather than a card left to the CSS hide:
+ * `PracticeComplete` spaces the ad with a `mt-12` wrapper of its own, which
+ * the `.ad-slot-wrapper` rule does not reach, so a hidden card still left its
+ * margin behind. The `link` variant is the `CardLink` shape this screen
  * already speaks in.
  */
-async function resolvePracticeResultNativeAd(locale: Locale): Promise<ReactNode> {
-  const [creative] = await getNativeTileCreatives(PRACTICE_RESULT_NATIVE_AD_SLOT, locale);
+async function resolvePracticeResultNativeAd(
+  userId: string | null,
+  locale: Locale
+): Promise<ReactNode> {
+  const [creative] = await resolveNativeTileCreatives(
+    PRACTICE_RESULT_NATIVE_AD_SLOT,
+    userId,
+    locale
+  );
   return creative ? <NativeAdTile creative={creative} variant="link" /> : undefined;
 }
 
@@ -193,7 +201,7 @@ export function createSimplePracticeResultPage(
     const user = await getOptionalUser();
     const [expInfo, nativeAd] = await Promise.all([
       user && grant ? getExpInfoBySource(user.id, expSource, grant) : null,
-      resolvePracticeResultNativeAd(locale),
+      resolvePracticeResultNativeAd(user?.id ?? null, locale),
     ]);
     return (
       // Fallback mirrors the route `loading.tsx`. The outer `loading.tsx`
@@ -265,7 +273,7 @@ export function createLeaderboardPracticeResultPage(
       resolveLeaderboardWithFallback(leaderboard.module, key),
       user && grant ? getExpInfoBySource(user.id, 'challenge_result', grant) : null,
       user ? fetchComparisonOrEmpty(user.id, leaderboard.module, key, grant) : undefined,
-      resolvePracticeResultNativeAd(locale),
+      resolvePracticeResultNativeAd(user?.id ?? null, locale),
     ]);
 
     const authSlot: AuthSlot = user

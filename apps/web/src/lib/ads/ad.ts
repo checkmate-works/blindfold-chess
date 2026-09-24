@@ -294,6 +294,23 @@ export async function resolveNativeThumbCreatives(
 }
 
 /**
+ * {@link getNativeTileCreatives} gated on the viewer's ad entitlement, for the
+ * same reason {@link resolveNativeThumbCreatives} exists: a surface that
+ * spaces the tile with a wrapper of its own keeps that wrapper, and its
+ * margin, after the CSS rule hides the tile inside it. The practice result
+ * screen's `PracticeComplete` is one. Same no-force-on rule as the thumb gate.
+ */
+export async function resolveNativeTileCreatives(
+  slot: AdSlot,
+  userId: string | null,
+  locale: Locale
+): Promise<NativeTileView[]> {
+  if (!(await shouldShowAdsForUser(userId))) return [];
+
+  return getNativeTileCreatives(slot, locale);
+}
+
+/**
  * The one-call server prologue for a native-card surface: the viewer's ad
  * entitlement (`showAds`, with the `IS_LOCAL_DEV` force-on so placements are
  * testable locally) and — only when ads show at all — the slot's creatives

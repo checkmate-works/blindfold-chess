@@ -38,9 +38,13 @@ vi.mock('@/lib/users/dan-rank', () => ({
   hasDanTierRank: (...args: unknown[]) => mockHasDanTierRank(...args),
 }));
 
-const { getAllAdCreatives, resolveNativeThumbCreatives, shouldShowAdsForUser } =
-  await import('./ad');
-const { PUZZLE_DETAIL_NATIVE_AD_SLOT } = await import('./registry');
+const {
+  getAllAdCreatives,
+  resolveNativeThumbCreatives,
+  resolveNativeTileCreatives,
+  shouldShowAdsForUser,
+} = await import('./ad');
+const { PRACTICE_RESULT_NATIVE_AD_SLOT, PUZZLE_DETAIL_NATIVE_AD_SLOT } = await import('./registry');
 
 describe('getAllAdCreatives', () => {
   it('should return creatives array when they exist', async () => {
@@ -147,6 +151,28 @@ describe('resolveNativeThumbCreatives', () => {
 
   it('reads the slot pool for a guest', async () => {
     await resolveNativeThumbCreatives(PUZZLE_DETAIL_NATIVE_AD_SLOT, null, 'en');
+    expect(mockSelect).toHaveBeenCalled();
+  });
+});
+
+describe('resolveNativeTileCreatives', () => {
+  beforeEach(() => {
+    mockSelect.mockClear();
+    mockHasActiveSubscription.mockResolvedValue(false);
+    mockHasActiveGrant.mockResolvedValue(false);
+    mockHasDanTierRank.mockResolvedValue(false);
+  });
+
+  it('returns an empty pool for an ad-free viewer without reading creatives', async () => {
+    mockHasActiveGrant.mockResolvedValue(true);
+
+    const result = await resolveNativeTileCreatives(PRACTICE_RESULT_NATIVE_AD_SLOT, 'user-1', 'en');
+    expect(result).toEqual([]);
+    expect(mockSelect).not.toHaveBeenCalled();
+  });
+
+  it('reads the slot pool for a guest', async () => {
+    await resolveNativeTileCreatives(PRACTICE_RESULT_NATIVE_AD_SLOT, null, 'en');
     expect(mockSelect).toHaveBeenCalled();
   });
 });
