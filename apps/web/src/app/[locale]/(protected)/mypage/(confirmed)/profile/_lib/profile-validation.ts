@@ -34,6 +34,7 @@ const VALIDATION_RULES: { field: string; regex: RegExp; errorKey: string }[] = [
 export const SERVER_ERROR_MAP: Record<string, { messageKey: string; field: string }> = {
   display_name_required: { messageKey: 'displayNameRequired', field: 'displayName' },
   display_name_inappropriate: { messageKey: 'displayNameInappropriate', field: 'displayName' },
+  display_name_impersonation: { messageKey: 'displayNameImpersonation', field: 'displayName' },
   bio_too_long: { messageKey: 'bioMaxLength', field: 'bio' },
   invalid_country: { messageKey: 'countryInvalid', field: 'country' },
   fide_id_invalid_format: { messageKey: 'fideIdInvalidFormat', field: 'fideId' },

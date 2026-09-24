@@ -45,6 +45,24 @@ describe('setUsername', () => {
     });
   });
 
+  describe('display name homoglyphs', () => {
+    it('should reject a display name that disguises a reserved name', async () => {
+      // "support" with a Cyrillic ѕ (U+0455) and о (U+043E).
+      const displayName = `${String.fromCodePoint(0x0455)}upp${String.fromCodePoint(0x043e)}rt`;
+
+      const result = await setUsername({ username: 'tester', displayName });
+
+      expect(result).toEqual({ error: 'display_name_impersonation' });
+      expect(mockInsertValues).not.toHaveBeenCalled();
+    });
+
+    it('should accept a display name written in a non-Latin script', async () => {
+      const result = await setUsername({ username: 'tester', displayName: 'Алексей' });
+
+      expect(result).toEqual({ success: true });
+    });
+  });
+
   describe('display name length', () => {
     // This action creates the profile, and it is the trust boundary: the setup
     // form's `maxLength` stops typing, not a request. A display name longer

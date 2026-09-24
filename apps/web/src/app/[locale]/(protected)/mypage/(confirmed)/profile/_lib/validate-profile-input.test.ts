@@ -11,6 +11,9 @@ const noLameNames: ValidateDeps = { isLameName: () => false };
 const validate = (input: ProfileInput, d: ValidateDeps = deps) =>
   validateProfileInput({ displayName: 'Valid Name', ...input }, d);
 
+/** "admin" spelled with a Cyrillic а (U+0430). */
+const CYRILLIC_ADMIN = `${String.fromCodePoint(0x0430)}dmin`;
+
 describe('validateProfileInput', () => {
   describe('rejections', () => {
     const cases: [string, ProfileInput, string][] = [
@@ -18,6 +21,16 @@ describe('validateProfileInput', () => {
       ['displayName whitespace-only', { displayName: '   ' }, 'display_name_required'],
       ['displayName over 50 chars', { displayName: 'a'.repeat(51) }, 'display_name_too_long'],
       ['displayName inappropriate', { displayName: 'badname' }, 'display_name_inappropriate'],
+      [
+        'displayName disguising a reserved name with a look-alike letter',
+        { displayName: CYRILLIC_ADMIN },
+        'display_name_impersonation',
+      ],
+      [
+        'displayName hiding a lame word behind full-width letters',
+        { displayName: 'ｂａｄｎａｍｅ' },
+        'display_name_inappropriate',
+      ],
       ['bio over 500 chars', { bio: 'a'.repeat(501) }, 'bio_too_long'],
       ['country not two letters', { country: 'USA' }, 'invalid_country'],
       ['country two letters but not ISO 3166-1', { country: 'ZZ' }, 'invalid_country'],
@@ -121,6 +134,11 @@ describe('validateProfileInput', () => {
           youtubeHandle: null,
         },
       });
+    });
+
+    it('keeps a display name written in a non-Latin script', () => {
+      const result = validate({ displayName: '山田 Алексей' });
+      expect(result.ok && result.values.displayName).toBe('山田 Алексей');
     });
 
     it('uppercases a lowercase country code rather than rejecting it', () => {
