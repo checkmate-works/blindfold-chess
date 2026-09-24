@@ -56,9 +56,9 @@ export function AdminPageLayout({
       {/* min-w-0 + break-words lets long unbreakable headings (emails, UUIDs,
           usernames) wrap instead of overflowing the narrow admin content
           column on tablet widths; shrink-0 keeps the actions intact. */}
-      <div className="mb-6 flex items-center justify-between gap-4">
-        <h1 className="min-w-0 break-words text-2xl font-bold">{heading}</h1>
-        {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <h1 className="min-w-0 break-words text-xl font-semibold tracking-tight">{heading}</h1>
+        {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
       </div>
 
       <div className={contentClassName}>{children}</div>
