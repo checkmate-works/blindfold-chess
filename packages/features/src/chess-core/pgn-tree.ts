@@ -127,15 +127,20 @@ function extractStartingFen(pgn: string): string {
  * tokens. Headers, `{...}` / `;` comments and `$n` NAGs are dropped entirely —
  * dropping comments also sidesteps the chess.js adjacent-comment-block bug,
  * since we never hand them to chess.js.
+ *
+ * The lines are rejoined with their newlines intact because a `;` comment ends
+ * at the end of its line; joined with spaces it would swallow every move after
+ * it. Both comment kinds are stripped in one pass so that whichever opens first
+ * wins: a `;` inside `{...}` is comment text, not the start of a `;` comment,
+ * and a `{` after a `;` does not open a brace comment that runs past the line.
  */
 function tokenizeMovetext(pgn: string): string[] {
   const withoutHeaders = pgn
     .split("\n")
     .filter((line) => !line.trimStart().startsWith("["))
-    .join(" ");
+    .join("\n");
   const cleaned = withoutHeaders
-    .replace(/\{[^}]*\}/g, " ")
-    .replace(/;[^\n]*/g, " ")
+    .replace(/\{[^}]*\}|;[^\n]*/g, " ")
     .replace(/\$\d+/g, " ")
     .replace(/[()]/g, (paren) => ` ${paren} `);
   return cleaned.split(/\s+/).filter(Boolean);
