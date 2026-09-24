@@ -604,6 +604,20 @@
         "lichess": "Lichess風",
         "chesscom": "Chess.com風"
       },
+      "difficulty": {
+        "title": "難易度",
+        "level": "レベル{level}",
+        "custom": "カスタム",
+        "customDescription": "下の設定を自分で組み合わせた状態",
+        "customize": "詳細設定",
+        "levels": {
+          "level1": "盤面を常に表示",
+          "level2": "盤面を隠し、必要なときにピーク",
+          "level3": "ピーク時は自分の駒だけ表示",
+          "level4": "ピーク時は自分の駒だけ（ポーンなし）",
+          "level5": "完全な目隠し（盤面なし）"
+        }
+      },
       "displayOptions": "表示オプション",
       "showCoordinates": "座標を表示",
       "highlightLastMove": "最終手をハイライト",
@@ -643,6 +657,14 @@
       },
       "tour": {
         "label": "設定ガイド",
+        "preset": {
+          "title": "難易度",
+          "text": "レベルを選ぶと設定がまとめて切り替わります。上のレベルほど難しくなるので、低いレベルから順に上げていきましょう。"
+        },
+        "customize": {
+          "title": "詳細設定",
+          "text": "個別の設定を細かく調整できます。どのレベルにも当てはまらない組み合わせは「カスタム」と表示されます。"
+        },
         "boardVisibility": {
           "title": "盤面の見せ方",
           "text": "盤面を常に表示／のぞき見だけ／完全に隠す、を選びます。ブラインド度の基本です。"

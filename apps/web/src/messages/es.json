@@ -604,6 +604,20 @@
         "lichess": "Estilo Lichess",
         "chesscom": "Estilo Chess.com"
       },
+      "difficulty": {
+        "title": "Dificultad",
+        "level": "Nivel {level}",
+        "custom": "Personalizado",
+        "customDescription": "Tu propia combinación de los ajustes de abajo",
+        "customize": "Personalizar",
+        "levels": {
+          "level1": "Tablero siempre visible",
+          "level2": "Tablero oculto: vistazo bajo demanda",
+          "level3": "Al echar un vistazo solo ves tus piezas",
+          "level4": "Al echar un vistazo, tus piezas sin peones",
+          "level5": "A ciegas total: sin tablero"
+        }
+      },
       "displayOptions": "Opciones de Visualización",
       "showCoordinates": "Mostrar coordenadas",
       "highlightLastMove": "Resaltar último movimiento",
@@ -643,6 +657,14 @@
       },
       "tour": {
         "label": "Guía de ajustes",
+        "preset": {
+          "title": "Dificultad",
+          "text": "Elige un nivel para ajustarlo todo de una vez. Cada nivel es más difícil que el anterior: empieza bajo y sube a medida que mejore tu visualización."
+        },
+        "customize": {
+          "title": "Personalizar",
+          "text": "Ajusta cada opción por separado. Si la combinación no coincide con ningún nivel, se muestra como «Personalizado»."
+        },
         "boardVisibility": {
           "title": "Visibilidad del tablero",
           "text": "Muestra el tablero siempre, solo al espiar, u ocúltalo del todo: tu base a ciegas."

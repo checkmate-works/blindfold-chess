@@ -604,6 +604,20 @@
         "lichess": "Lichess-style",
         "chesscom": "Chess.com-style"
       },
+      "difficulty": {
+        "title": "Difficulty",
+        "level": "Level {level}",
+        "custom": "Custom",
+        "customDescription": "Your own combination of the settings below",
+        "customize": "Customize",
+        "levels": {
+          "level1": "Board always visible",
+          "level2": "Board hidden — peek on demand",
+          "level3": "Peeks show only your own pieces",
+          "level4": "Peeks show your pieces, without pawns",
+          "level5": "Full blindfold — no board at all"
+        }
+      },
       "displayOptions": "Display Options",
       "showCoordinates": "Show coordinates",
       "highlightLastMove": "Highlight last move",
@@ -643,6 +657,14 @@
       },
       "tour": {
         "label": "Settings guide",
+        "preset": {
+          "title": "Difficulty",
+          "text": "Pick a level to set everything at once. Each level is harder than the one before; start low and climb as your visualisation improves."
+        },
+        "customize": {
+          "title": "Customize",
+          "text": "Fine-tune the individual settings. A combination that no level covers shows as \"Custom\"."
+        },
         "boardVisibility": {
           "title": "Board visibility",
           "text": "Show the board always, only on a peek, or hide it entirely — your blindfold baseline."
