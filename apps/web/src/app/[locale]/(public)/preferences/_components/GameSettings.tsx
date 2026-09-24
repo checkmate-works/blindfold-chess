@@ -39,8 +39,8 @@ export function GameSettings() {
   return (
     <div className="max-w-4xl">
       {/* Reuse the same board-settings card as the new-game forms so the
-          "Game" tab and the game-start screen stay in lockstep (full-width
-          visibility picker, peek-mode picker, collapsible visual settings). */}
+          "Game" tab and the game-start screen stay in lockstep (difficulty
+          ladder, then the detailed blindfold settings under "Customize"). */}
       <CollapsibleGameSettings settings={preferences} onSettingsChange={updatePreferences} />
 
       <div className="my-8 border-t border-border" />
