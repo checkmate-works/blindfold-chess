@@ -394,18 +394,19 @@ describe('post_game_embed_attachments — RLS policies (#39〜#41)', () => {
     }
   });
 
-  // non-author cannot INSERT for someone else's post
-  it('a non-author user cannot INSERT into post_game_embed_attachments for someone else', async (ctx) => {
+  // Client roles hold no write privilege on this table at all (see the closing
+  // REVOKE in foreign_keys_and_grants.sql): embeds are attached and detached by
+  // the post Server Actions on the Drizzle connection. So even the post's own
+  // author is refused at the privilege check, before RLS is consulted.
+  async function expectPermissionDenied(run: () => Promise<unknown>) {
+    await expect(run()).rejects.toThrow(/permission denied for table post_game_embed_attachments/);
+  }
+
+  it('the post author cannot INSERT an embed through the client role', async (ctx) => {
     const db = requireDb(ctx);
 
-    // Run the INSERT inside a transaction as the OTHER user. The RLS
-    // INSERT WITH CHECK policy requires (a) the parent post belongs to
-    // auth.uid() and (b) the parent post is non-soft-deleted. The
-    // OTHER user fails (a), so the INSERT is denied.
-    let denied = false;
-    let unexpectedError: unknown = null;
-    try {
-      await asAuthenticated(db, otherUserId, async (tx) => {
+    await expectPermissionDenied(() =>
+      asAuthenticated(db, ownerUserId, async (tx) => {
         await tx`
           INSERT INTO post_game_embed_attachments (
             post_id, embed_provider, embed_id
@@ -414,31 +415,13 @@ describe('post_game_embed_attachments — RLS policies (#39〜#41)', () => {
             ${testPostId}::uuid, 'chesscom', 'frnd1234'
           )
         `;
-      });
-    } catch (err) {
-      // Postgres reports RLS rejections as
-      //   `new row violates row-level security policy for table ...`
-      const msg = err instanceof Error ? err.message : String(err);
-      if (/row-level security/i.test(msg)) {
-        denied = true;
-      } else {
-        unexpectedError = err;
-      }
-    }
-
-    if (unexpectedError) {
-      throw unexpectedError;
-    }
-    expect(denied).toBe(true);
+      })
+    );
   });
 
-  // The author CAN DELETE their embed row when the parent post is NOT
-  // soft-deleted (positive control). The companion test below pins the
-  // symmetric 0-rows behaviour when the parent IS soft-deleted.
-  it('author CAN DELETE their embed row when their post is NOT soft-deleted (positive control)', async (ctx) => {
+  it('the post author cannot DELETE their embed through the client role', async (ctx) => {
     const db = requireDb(ctx);
 
-    // Pre-state: owner inserts a row (post is non-soft-deleted).
     await db`
       INSERT INTO post_game_embed_attachments (
         post_id, embed_provider, embed_id
@@ -449,97 +432,15 @@ describe('post_game_embed_attachments — RLS policies (#39〜#41)', () => {
     `;
 
     try {
-      const result = await asAuthenticated(db, ownerUserId, async (tx) => {
-        const r = await tx`
-          DELETE FROM post_game_embed_attachments
-          WHERE post_id = ${secondPostId}::uuid
-        `;
-        return { affected: r.count };
-      });
-      expect(result.affected).toBe(1);
+      await expectPermissionDenied(() =>
+        asAuthenticated(db, ownerUserId, async (tx) => {
+          await tx`
+            DELETE FROM post_game_embed_attachments
+            WHERE post_id = ${secondPostId}::uuid
+          `;
+        })
+      );
     } finally {
-      // The transaction was rolled back, so the row persists. Drop it.
-      await db`
-        DELETE FROM post_game_embed_attachments
-        WHERE post_id = ${secondPostId}::uuid
-      `;
-    }
-  });
-
-  // pins the actual (symmetric) behavior of DELETE under a
-  // soft-deleted post. The SELECT policy's `deleted_at IS NULL` clause hides
-  // the row from row-fetch during DELETE (per Postgres docs: "Row Security
-  // Policies"), so even the author sees 0 affected rows. ADR §2.3 has been
-  // updated to match this reality. Regression guard: a future RLS change
-  // that accidentally widens author-side SELECT under soft-deletes would
-  // flip this test.
-  it('author DELETE under a soft-deleted post returns 0 rows (RLS SELECT policy gates DELETE row-fetch)', async (ctx) => {
-    const db = requireDb(ctx);
-
-    // Pre-state: insert embed row for secondPostId (not soft-deleted yet).
-    await db`
-      INSERT INTO post_game_embed_attachments (
-        post_id, embed_provider, embed_id
-      )
-      VALUES (
-        ${secondPostId}::uuid, 'chesscom', 'asym9999'
-      )
-    `;
-
-    // Soft-delete the parent post.
-    await db`
-      UPDATE topic_posts SET deleted_at = now() WHERE id = ${secondPostId}::uuid
-    `;
-
-    try {
-      const result = await asAuthenticated(db, ownerUserId, async (tx) => {
-        const r = await tx`
-          DELETE FROM post_game_embed_attachments
-          WHERE post_id = ${secondPostId}::uuid
-        `;
-        return { affected: r.count };
-      });
-      expect(result.affected).toBe(0);
-    } finally {
-      // Undo soft-delete and remove the embed row.
-      await db`
-        UPDATE topic_posts SET deleted_at = NULL WHERE id = ${secondPostId}::uuid
-      `;
-      await db`
-        DELETE FROM post_game_embed_attachments
-        WHERE post_id = ${secondPostId}::uuid
-      `;
-    }
-  });
-
-  // ─── Belt-and-braces: same DELETE under a different user is denied ───
-  it('a non-author cannot DELETE the embed row even when the parent post is non-soft-deleted', async (ctx) => {
-    const db = requireDb(ctx);
-
-    await db`
-      INSERT INTO post_game_embed_attachments (
-        post_id, embed_provider, embed_id
-      )
-      VALUES (
-        ${secondPostId}::uuid, 'chesscom', 'pria1234'
-      )
-    `;
-
-    try {
-      // Other user attempts DELETE — should affect 0 rows because the
-      // RLS DELETE policy hides the row from a non-owner perspective.
-      // (Postgres does NOT throw for RLS-hidden DELETE; it silently
-      // affects zero rows. That is the documented behavior.)
-      const result = await asAuthenticated(db, otherUserId, async (tx) => {
-        return tx`
-          DELETE FROM post_game_embed_attachments
-          WHERE post_id = ${secondPostId}::uuid
-        `;
-      });
-      expect(result.count).toBe(0);
-    } finally {
-      // Cleanup — the persisted row is still there (no superuser-tx
-      // rollback affects it). Drop it directly.
       await db`
         DELETE FROM post_game_embed_attachments
         WHERE post_id = ${secondPostId}::uuid

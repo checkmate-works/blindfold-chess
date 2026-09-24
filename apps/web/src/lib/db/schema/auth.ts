@@ -32,7 +32,7 @@ import { createdAtOnly, softDeleteTimestamp } from './columns';
  * internal Supabase paths that go via `auth.users` (e.g. auth hooks), the
  * update is centralized at the DB trigger layer instead of Drizzle's
  * `$onUpdateFn`.
- * See: apps/web/drizzle/supabase/rls_policies.sql L35-47
+ * See the `profiles_updated_at` trigger in apps/web/drizzle/supabase/rls_policies.sql.
  */
 export const profiles = pgTable(
   'profiles',

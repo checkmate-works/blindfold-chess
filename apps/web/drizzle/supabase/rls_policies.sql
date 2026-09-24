@@ -9,6 +9,24 @@
 -- All statements are convergent-idempotent (safe to run multiple times).
 -- Re-running will recreate policies and triggers to match the expected
 -- definitions, correcting any configuration drift.
+--
+-- Read-only for client roles
+-- --------------------------
+-- Every policy this file creates is FOR SELECT. `anon` and `authenticated` hold
+-- no INSERT / UPDATE / DELETE on any `public` table (see the closing block of
+-- foreign_keys_and_grants.sql), and no write policy exists for a re-added grant
+-- to fall through to: RLS enabled with no matching policy denies. Every write
+-- runs through a Server Action or cron on the Drizzle connection, which
+-- bypasses RLS.
+--
+-- The write policies that used to exist are still dropped by name below, so a
+-- database that has them (production) converges on the next deploy. They were
+-- removed because a policy can only answer "is this row yours?", while what
+-- the Server Actions enforce is everything else: format and reserved-name
+-- checks, content filters, rate limits, bans, blocks, coin charges. Any table a
+-- client could write through PostgREST was a way around all of it — a user
+-- without a profile yet could, for example, INSERT one with a reserved or
+-- malformed username directly.
 
 -- =============================================================================
 -- user_roles
@@ -26,8 +44,6 @@ CREATE POLICY "profiles_select_policy" ON "profiles"
   FOR SELECT USING (deleted_at IS NULL);
 
 DROP POLICY IF EXISTS "profiles_insert_policy" ON "profiles";
-CREATE POLICY "profiles_insert_policy" ON "profiles"
-  FOR INSERT WITH CHECK (auth.uid() = id);
 
 -- No UPDATE policy: `auth.uid() = id` reads like "your own profile" but grants
 -- "any column of your own row", and the columns that matter here (`username`,
@@ -61,12 +77,8 @@ CREATE POLICY "likes_select" ON "likes"
   FOR SELECT USING (true);
 
 DROP POLICY IF EXISTS "likes_insert" ON "likes";
-CREATE POLICY "likes_insert" ON "likes"
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 DROP POLICY IF EXISTS "likes_delete" ON "likes";
-CREATE POLICY "likes_delete" ON "likes"
-  FOR DELETE USING (auth.uid() = user_id);
 
 -- =============================================================================
 -- user_follows
@@ -78,12 +90,8 @@ CREATE POLICY "user_follows_select" ON "user_follows"
   FOR SELECT USING (true);
 
 DROP POLICY IF EXISTS "user_follows_insert" ON "user_follows";
-CREATE POLICY "user_follows_insert" ON "user_follows"
-  FOR INSERT WITH CHECK (auth.uid() = follower_id);
 
 DROP POLICY IF EXISTS "user_follows_delete" ON "user_follows";
-CREATE POLICY "user_follows_delete" ON "user_follows"
-  FOR DELETE USING (auth.uid() = follower_id);
 
 -- =============================================================================
 -- user_blocks
@@ -95,12 +103,8 @@ CREATE POLICY "user_blocks_select" ON "user_blocks"
   FOR SELECT USING (auth.uid() = blocker_id);
 
 DROP POLICY IF EXISTS "user_blocks_insert" ON "user_blocks";
-CREATE POLICY "user_blocks_insert" ON "user_blocks"
-  FOR INSERT WITH CHECK (auth.uid() = blocker_id);
 
 DROP POLICY IF EXISTS "user_blocks_delete" ON "user_blocks";
-CREATE POLICY "user_blocks_delete" ON "user_blocks"
-  FOR DELETE USING (auth.uid() = blocker_id);
 
 -- =============================================================================
 -- moderation_actions
@@ -118,16 +122,7 @@ CREATE POLICY "moderation_actions_select" ON "moderation_actions"
     )
   );
 
--- Only admins can insert moderation actions
 DROP POLICY IF EXISTS "moderation_actions_insert" ON "moderation_actions";
-CREATE POLICY "moderation_actions_insert" ON "moderation_actions"
-  FOR INSERT WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM user_roles
-      WHERE user_roles.user_id = auth.uid()
-      AND user_roles.role = 'admin'
-    )
-  );
 
 -- =============================================================================
 -- topic_posts
@@ -139,8 +134,6 @@ CREATE POLICY "topic_posts_select" ON "topic_posts"
   FOR SELECT USING (true);
 
 DROP POLICY IF EXISTS "topic_posts_insert" ON "topic_posts";
-CREATE POLICY "topic_posts_insert" ON "topic_posts"
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- No DELETE policy: user-initiated deletion is a soft-delete plus grant revoke
 -- plus coin clawback in one transaction (`@/lib/topic-posts/delete-core`), none
@@ -172,10 +165,7 @@ CREATE POLICY "user_activity_log_select" ON "user_activity_log"
     )
   );
 
--- Authenticated users can insert their own activity logs
 DROP POLICY IF EXISTS "user_activity_log_insert" ON "user_activity_log";
-CREATE POLICY "user_activity_log_insert" ON "user_activity_log"
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- =============================================================================
 -- notifications
@@ -187,17 +177,9 @@ DROP POLICY IF EXISTS "notifications_select" ON "notifications";
 CREATE POLICY "notifications_select" ON "notifications"
   FOR SELECT USING (auth.uid() = user_id);
 
--- Users can mark their own notifications as read
 DROP POLICY IF EXISTS "notifications_update" ON "notifications";
-CREATE POLICY "notifications_update" ON "notifications"
-  FOR UPDATE
-  USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
 
--- Users can delete their own notifications
 DROP POLICY IF EXISTS "notifications_delete" ON "notifications";
-CREATE POLICY "notifications_delete" ON "notifications"
-  FOR DELETE USING (auth.uid() = user_id);
 
 -- =============================================================================
 -- notification_mutes
@@ -209,12 +191,8 @@ CREATE POLICY "notification_mutes_select" ON "notification_mutes"
   FOR SELECT USING (auth.uid() = user_id);
 
 DROP POLICY IF EXISTS "notification_mutes_insert" ON "notification_mutes";
-CREATE POLICY "notification_mutes_insert" ON "notification_mutes"
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 DROP POLICY IF EXISTS "notification_mutes_delete" ON "notification_mutes";
-CREATE POLICY "notification_mutes_delete" ON "notification_mutes"
-  FOR DELETE USING (auth.uid() = user_id);
 
 -- =============================================================================
 -- chess_openings (master data — public read, service role only write)
@@ -265,19 +243,11 @@ CREATE POLICY "article_images_select" ON "article_images"
   FOR SELECT USING (true);
 
 DROP POLICY IF EXISTS "article_images_insert_admin" ON "article_images";
-CREATE POLICY "article_images_insert_admin" ON "article_images"
-  FOR INSERT WITH CHECK (
-    (auth.jwt() ->> 'user_role') = 'admin'
-  );
 
 DROP POLICY IF EXISTS "article_images_delete_admin" ON "article_images";
-CREATE POLICY "article_images_delete_admin" ON "article_images"
-  FOR DELETE USING (
-    (auth.jwt() ->> 'user_role') = 'admin'
-  );
 
 -- =============================================================================
--- feed_items (public timeline — public read, authenticated insert)
+-- feed_items (public timeline — public read, service-role write)
 -- =============================================================================
 ALTER TABLE "feed_items" ENABLE ROW LEVEL SECURITY;
 
@@ -311,7 +281,7 @@ CREATE POLICY "subscriptions_select" ON "subscriptions"
   FOR SELECT USING (auth.uid() = user_id);
 
 -- =============================================================================
--- user_interview_answers (public read, own insert/update)
+-- user_interview_answers (public read, service-role write)
 -- =============================================================================
 ALTER TABLE "user_interview_answers" ENABLE ROW LEVEL SECURITY;
 
@@ -320,16 +290,10 @@ CREATE POLICY "user_interview_answers_select" ON "user_interview_answers"
   FOR SELECT USING (true);
 
 DROP POLICY IF EXISTS "user_interview_answers_insert" ON "user_interview_answers";
-CREATE POLICY "user_interview_answers_insert" ON "user_interview_answers"
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 DROP POLICY IF EXISTS "user_interview_answers_delete" ON "user_interview_answers";
 
 DROP POLICY IF EXISTS "user_interview_answers_update" ON "user_interview_answers";
-CREATE POLICY "user_interview_answers_update" ON "user_interview_answers"
-  FOR UPDATE
-  USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
 
 -- =============================================================================
 -- ranks (master data — read-only for all, write via service role only)
@@ -386,12 +350,11 @@ CREATE POLICY "user_exp_select_policy" ON "user_exp"
   FOR SELECT USING (true);
 
 -- =============================================================================
--- positions (UGC — public read for catalog, owner INSERT, service-role edit)
+-- positions (UGC — public read for catalog, service-role write)
 -- =============================================================================
 -- Positions are user-submitted chess boards used across multiple practice
 -- modules. SELECT is open (catalog listings filter `deleted_at IS NULL` at
--- the application layer). INSERT is restricted to the owner. UPDATE and
--- physical DELETE are service-role only: owners DO edit and deprecate their own
+-- the application layer). Owners DO create, edit and deprecate their own
 -- positions, but only through the Server Actions, which re-validate and keep
 -- the revision history. RLS cannot express "own row except `deleted_at`", so an
 -- owner-writable UPDATE policy would let an author undo an admin soft-delete.
@@ -402,20 +365,18 @@ CREATE POLICY "positions_select" ON "positions"
   FOR SELECT USING (true);
 
 DROP POLICY IF EXISTS "positions_insert" ON "positions";
-CREATE POLICY "positions_insert" ON "positions"
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- No UPDATE policy — see the topic_posts note above. Deny-by-default keeps a
 -- future re-grant from reopening the `deleted_at` restore path.
 DROP POLICY IF EXISTS "positions_update" ON "positions";
 
 -- =============================================================================
--- chunks (UGC public catalog — open read, owner INSERT, service-role edit)
+-- chunks (UGC public catalog — open read, service-role write)
 -- =============================================================================
 -- Chunks are user-submitted but function as a global public catalog: anyone
--- can SELECT, but only the creator may INSERT. Editing and logical delete via
--- `deleted_at` are owner-initiated yet service-role-executed, for the same
--- reason as positions above. Physical DELETE is service-role only.
+-- can SELECT. Creating, editing and logical delete via `deleted_at` are
+-- owner-initiated yet service-role-executed, for the same reason as positions
+-- above. Physical DELETE is service-role only.
 -- Filtering out soft-deleted rows is done at the application layer so that
 -- admin tooling via the service role can still see them.
 ALTER TABLE "chunks" ENABLE ROW LEVEL SECURITY;
@@ -425,8 +386,6 @@ CREATE POLICY "chunks_select" ON "chunks"
   FOR SELECT USING (true);
 
 DROP POLICY IF EXISTS "chunks_insert" ON "chunks";
-CREATE POLICY "chunks_insert" ON "chunks"
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- No UPDATE policy — see the topic_posts note above.
 DROP POLICY IF EXISTS "chunks_update" ON "chunks";
@@ -436,12 +395,9 @@ DROP POLICY IF EXISTS "chunks_update" ON "chunks";
 -- =============================================================================
 -- SELECT is open so the discussion is visible to anyone (the owner reviews
 -- on the chunk page, and other users can see what's already been proposed).
--- INSERT is restricted to the proposer and is additionally gated at the
--- application layer (rate limit, draft-only check, non-owner check); the
--- WITH CHECK below is the structural backstop. UPDATE is granted to either
--- the proposer (so they can withdraw) or the chunk owner (so they can
--- accept / reject) — the application layer enforces the per-transition
--- preconditions (pending only, idempotence on terminal states).
+-- Proposing (rate limit, draft-only check, non-owner check), withdrawing, and
+-- accepting / rejecting (pending only, idempotence on terminal states) all run
+-- in the Server Actions on the service role.
 ALTER TABLE "chunk_edit_requests" ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "chunk_edit_requests_select" ON "chunk_edit_requests";
@@ -449,51 +405,17 @@ CREATE POLICY "chunk_edit_requests_select" ON "chunk_edit_requests"
   FOR SELECT USING (true);
 
 DROP POLICY IF EXISTS "chunk_edit_requests_insert" ON "chunk_edit_requests";
-CREATE POLICY "chunk_edit_requests_insert" ON "chunk_edit_requests"
-  FOR INSERT WITH CHECK (
-    auth.uid() = proposer_id
-    AND EXISTS (
-      SELECT 1 FROM chunks c
-      WHERE c.id = chunk_id
-        AND c.deleted_at IS NULL
-        AND c.status = 'draft'
-        AND c.user_id IS NOT NULL
-        AND c.user_id != auth.uid()
-    )
-  );
 
 DROP POLICY IF EXISTS "chunk_edit_requests_update" ON "chunk_edit_requests";
-CREATE POLICY "chunk_edit_requests_update" ON "chunk_edit_requests"
-  FOR UPDATE
-  USING (
-    auth.uid() = proposer_id
-    OR EXISTS (
-      SELECT 1 FROM chunks c
-      WHERE c.id = chunk_id AND c.user_id = auth.uid()
-    )
-  )
-  WITH CHECK (
-    auth.uid() = proposer_id
-    OR EXISTS (
-      SELECT 1 FROM chunks c
-      WHERE c.id = chunk_id AND c.user_id = auth.uid()
-    )
-  );
 
 -- =============================================================================
 -- position_edit_requests (Qiita-style tag-link suggestions on a position)
 -- =============================================================================
--- SELECT is open so anyone can see what's already been proposed. INSERT is
--- restricted to the proposer (non-owner, against a non-deleted position) and
--- additionally gated at the application layer (rate limit, one-pending check,
--- and validation that the proposed themes are is_theme = true and the proposed
--- chunks are published / non-deleted — neither of which can be expressed in a
--- CHECK over a jsonb array). UPDATE is granted
--- to either the proposer (withdraw) or the position owner (accept / reject);
--- the application layer enforces the per-transition preconditions. Unlike
--- chunk_edit_requests there is no `status = 'draft'` gate (positions have no
--- status column) and no `user_id IS NOT NULL` guard (positions.user_id is
--- NOT NULL).
+-- SELECT is open so anyone can see what's already been proposed. Proposing
+-- (non-owner, non-deleted position, rate limit, one-pending check, and
+-- validation that the proposed themes are is_theme = true and the proposed
+-- chunks are published / non-deleted) and the withdraw / accept / reject
+-- transitions all run in the Server Actions on the service role.
 ALTER TABLE "position_edit_requests" ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "position_edit_requests_select" ON "position_edit_requests";
@@ -501,34 +423,8 @@ CREATE POLICY "position_edit_requests_select" ON "position_edit_requests"
   FOR SELECT USING (true);
 
 DROP POLICY IF EXISTS "position_edit_requests_insert" ON "position_edit_requests";
-CREATE POLICY "position_edit_requests_insert" ON "position_edit_requests"
-  FOR INSERT WITH CHECK (
-    auth.uid() = proposer_id
-    AND EXISTS (
-      SELECT 1 FROM positions p
-      WHERE p.id = position_id
-        AND p.deleted_at IS NULL
-        AND p.user_id != auth.uid()
-    )
-  );
 
 DROP POLICY IF EXISTS "position_edit_requests_update" ON "position_edit_requests";
-CREATE POLICY "position_edit_requests_update" ON "position_edit_requests"
-  FOR UPDATE
-  USING (
-    auth.uid() = proposer_id
-    OR EXISTS (
-      SELECT 1 FROM positions p
-      WHERE p.id = position_id AND p.user_id = auth.uid()
-    )
-  )
-  WITH CHECK (
-    auth.uid() = proposer_id
-    OR EXISTS (
-      SELECT 1 FROM positions p
-      WHERE p.id = position_id AND p.user_id = auth.uid()
-    )
-  );
 
 -- =============================================================================
 -- position_content_revisions (append-only edit-history trail; read-only for all, write via the app's own server-side mutation path only)
@@ -543,10 +439,8 @@ CREATE POLICY "position_content_revisions_select" ON "position_content_revisions
 -- chunk_feedback_topics (author-flagged "I want feedback on these fields")
 -- =============================================================================
 -- SELECT is open so visitors can see which fields the author is workshopping
--- (the detail-page callout and the suggestion form both read this). Writes
--- are restricted to the chunk owner; the application layer additionally
--- limits writes to drafts and resets the row set on every chunk save. The
--- WITH CHECK below is the structural backstop against direct API misuse.
+-- (the detail-page callout and the suggestion form both read this). The chunk
+-- save Server Action rewrites the row set, owner-only and drafts-only.
 ALTER TABLE "chunk_feedback_topics" ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "chunk_feedback_topics_select" ON "chunk_feedback_topics";
@@ -554,30 +448,15 @@ CREATE POLICY "chunk_feedback_topics_select" ON "chunk_feedback_topics"
   FOR SELECT USING (true);
 
 DROP POLICY IF EXISTS "chunk_feedback_topics_insert" ON "chunk_feedback_topics";
-CREATE POLICY "chunk_feedback_topics_insert" ON "chunk_feedback_topics"
-  FOR INSERT WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM chunks c
-      WHERE c.id = chunk_id
-        AND c.user_id = auth.uid()
-        AND c.deleted_at IS NULL
-    )
-  );
 
 DROP POLICY IF EXISTS "chunk_feedback_topics_delete" ON "chunk_feedback_topics";
-CREATE POLICY "chunk_feedback_topics_delete" ON "chunk_feedback_topics"
-  FOR DELETE USING (
-    EXISTS (
-      SELECT 1 FROM chunks c
-      WHERE c.id = chunk_id AND c.user_id = auth.uid()
-    )
-  );
 
 -- =============================================================================
--- position_chunks (junction — public read, position-owner write)
+-- position_chunks (junction — public read, service-role write)
 -- =============================================================================
--- INSERT/DELETE are gated on the POSITION owner, not the chunk owner. Chunk
--- creators have no veto over which positions reference their chunks.
+-- Attaching and detaching is the POSITION owner's call, not the chunk owner's
+-- (enforced in the Server Actions): chunk creators have no veto over which
+-- positions reference their chunks.
 ALTER TABLE "position_chunks" ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "position_chunks_select" ON "position_chunks";
@@ -585,38 +464,15 @@ CREATE POLICY "position_chunks_select" ON "position_chunks"
   FOR SELECT USING (true);
 
 DROP POLICY IF EXISTS "position_chunks_insert" ON "position_chunks";
-CREATE POLICY "position_chunks_insert" ON "position_chunks"
-  FOR INSERT WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM positions p
-      WHERE p.id = position_id
-      AND p.user_id = auth.uid()
-      AND p.deleted_at IS NULL
-    )
-    AND EXISTS (
-      SELECT 1 FROM chunks c
-      WHERE c.id = chunk_id
-      AND c.deleted_at IS NULL
-    )
-  );
 
 DROP POLICY IF EXISTS "position_chunks_delete" ON "position_chunks";
-CREATE POLICY "position_chunks_delete" ON "position_chunks"
-  FOR DELETE USING (
-    EXISTS (
-      SELECT 1 FROM positions p
-      WHERE p.id = position_id
-      AND p.user_id = auth.uid()
-    )
-  );
 
 -- =============================================================================
--- position_themes (junction — public read, position-owner write)
+-- position_themes (junction — public read, service-role write)
 -- =============================================================================
--- Mirrors `position_chunks`: INSERT/DELETE are gated on the POSITION owner.
--- The INSERT path additionally requires `glossary_terms.is_theme = true` so
--- non-theme glossary entries (Calculation, Flank, Algebraic notation, etc.)
--- cannot be attached as theme tags even by a direct REST write.
+-- Mirrors `position_chunks`: attaching is the POSITION owner's call, and only
+-- `glossary_terms.is_theme = true` entries may be attached as theme tags —
+-- both enforced in the Server Actions.
 ALTER TABLE "position_themes" ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "position_themes_select" ON "position_themes";
@@ -624,30 +480,8 @@ CREATE POLICY "position_themes_select" ON "position_themes"
   FOR SELECT USING (true);
 
 DROP POLICY IF EXISTS "position_themes_insert" ON "position_themes";
-CREATE POLICY "position_themes_insert" ON "position_themes"
-  FOR INSERT WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM positions p
-      WHERE p.id = position_id
-      AND p.user_id = auth.uid()
-      AND p.deleted_at IS NULL
-    )
-    AND EXISTS (
-      SELECT 1 FROM glossary_terms gt
-      WHERE gt.id = term_id
-      AND gt.is_theme = true
-    )
-  );
 
 DROP POLICY IF EXISTS "position_themes_delete" ON "position_themes";
-CREATE POLICY "position_themes_delete" ON "position_themes"
-  FOR DELETE USING (
-    EXISTS (
-      SELECT 1 FROM positions p
-      WHERE p.id = position_id
-      AND p.user_id = auth.uid()
-    )
-  );
 
 -- =============================================================================
 -- puzzle_solutions (public read, service role only write)
@@ -701,31 +535,28 @@ ALTER TABLE "articles" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "articles" FORCE ROW LEVEL SECURITY;
 
 -- =============================================================================
--- positions (UGC public catalog — open read, owner INSERT; FORCE RLS)
+-- positions (UGC public catalog — open read, service-role write; FORCE RLS)
 -- =============================================================================
--- NOT admin-only write, despite what this header used to claim: the per-action
--- policies above grant the owner INSERT. This pair is the belt-and-suspenders
--- half — see the chunks entry below for what FORCE buys.
+-- Belt-and-suspenders half of the entry above — see the chunks entry below for
+-- what FORCE buys.
 ALTER TABLE "positions" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "positions" FORCE ROW LEVEL SECURITY;
 
 -- =============================================================================
--- chunks (UGC public catalog — open read, owner INSERT; FORCE RLS)
+-- chunks (UGC public catalog — open read, service-role write; FORCE RLS)
 -- =============================================================================
--- Belt-and-suspenders pair on top of the per-action policies defined above
--- (chunks_select / chunks_insert). FORCE makes owners and
--- superusers also obey RLS when they connect via the standard pooler — only
--- BYPASSRLS roles (service_role, supabase_admin) can write outside the
--- per-action policies. Mirrors the `positions` entry.
+-- Belt-and-suspenders pair on top of the chunks_select policy defined above.
+-- FORCE makes the table owner also obey RLS when it connects via the standard
+-- pooler — only BYPASSRLS roles (service_role, supabase_admin) can write.
+-- Mirrors the `positions` entry.
 ALTER TABLE "chunks" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "chunks" FORCE ROW LEVEL SECURITY;
 
 -- =============================================================================
--- position_chunks (UGC junction — open read, position-owner write; FORCE RLS)
+-- position_chunks (UGC junction — open read, service-role write; FORCE RLS)
 -- =============================================================================
--- Mirrors the chunks entry. The per-action policies
--- (position_chunks_select / position_chunks_insert / position_chunks_delete)
--- are defined above; this block adds FORCE so even table owners obey them.
+-- Mirrors the chunks entry: adds FORCE on top of position_chunks_select above
+-- so even the table owner obeys it.
 ALTER TABLE "position_chunks" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "position_chunks" FORCE ROW LEVEL SECURITY;
 
@@ -777,41 +608,11 @@ CREATE POLICY "post_game_pgn_attachments_select" ON "post_game_pgn_attachments"
 -- from accidentally re-exposing orphaned attachment rows that survive
 -- a soft delete.
 
--- INSERT: only the parent post's author may attach a game, and only while the
--- post is not soft-deleted. The application path inserts the attachment in the
--- same transaction as the post (via createPostBase's afterInsert hook); this
--- policy is the secondary guard against direct REST writes.
+-- The attachment is inserted in the same transaction as the post (via
+-- createPostBase's afterInsert hook) and is immutable once created (mirrors the
+-- "no edit on posts" rule from the comment system); it goes away with its post.
 DROP POLICY IF EXISTS "post_game_pgn_attachments_insert" ON "post_game_pgn_attachments";
-CREATE POLICY "post_game_pgn_attachments_insert" ON "post_game_pgn_attachments"
-  FOR INSERT WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM topic_posts p
-      WHERE p.id = post_game_pgn_attachments.post_id
-        AND p.user_id = auth.uid()
-        AND p.deleted_at IS NULL
-    )
-  );
-
--- No UPDATE policy: attachments are immutable once created (mirrors the
--- "no edit on posts" rule from the comment system).
-
--- DELETE: post owner may delete their attachment. In practice the path is
--- "delete post → CASCADE attachment", but the explicit policy keeps the
--- direct delete path closed to non-owners.
--- Note: INSERT requires deleted_at IS NULL (cannot attach to a soft-deleted post).
--- The DELETE policy's own USING clause has no deleted_at guard, but Postgres
--- applies the SELECT policy to row-fetch during DELETE — so DELETE against a
--- soft-deleted post's attachment also reports 0 rows in practice. The typical
--- path is "delete post → CASCADE attachment", not direct attachment delete.
 DROP POLICY IF EXISTS "post_game_pgn_attachments_delete" ON "post_game_pgn_attachments";
-CREATE POLICY "post_game_pgn_attachments_delete" ON "post_game_pgn_attachments"
-  FOR DELETE USING (
-    EXISTS (
-      SELECT 1 FROM topic_posts p
-      WHERE p.id = post_game_pgn_attachments.post_id
-        AND p.user_id = auth.uid()
-    )
-  );
 
 -- =============================================================================
 -- post_game_embed_attachments (1:0..1 extension of topic_posts)
@@ -829,38 +630,17 @@ CREATE POLICY "post_game_embed_attachments_select" ON "post_game_embed_attachmen
   );
 
 DROP POLICY IF EXISTS "post_game_embed_attachments_insert" ON "post_game_embed_attachments";
-CREATE POLICY "post_game_embed_attachments_insert" ON "post_game_embed_attachments"
-  FOR INSERT WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM topic_posts p
-      WHERE p.id = post_game_embed_attachments.post_id
-        AND p.user_id = auth.uid()
-        AND p.deleted_at IS NULL
-    )
-  );
 
 -- No UPDATE policy: embed attachments are immutable once created.
 
 DROP POLICY IF EXISTS "post_game_embed_attachments_delete" ON "post_game_embed_attachments";
-CREATE POLICY "post_game_embed_attachments_delete" ON "post_game_embed_attachments"
-  FOR DELETE USING (
-    EXISTS (
-      SELECT 1 FROM topic_posts p
-      WHERE p.id = post_game_embed_attachments.post_id
-        AND p.user_id = auth.uid()
-    )
-  );
 
 -- =============================================================================
 -- post_image_attachments (N:1 image attachments on topic_posts, max 3 per post)
 -- =============================================================================
 -- Mirrors the posture of post_game_pgn_attachments / post_game_embed_attachments:
--- defense-in-depth select gated on parent post NOT being soft-deleted, INSERT
--- restricted to the parent post's owner (and the storage_path's first folder
--- must match auth.uid() — last-line-of-defense against a request that smuggled
--- in a path pointing at another user's folder), DELETE restricted to the
--- parent post's owner. No UPDATE policy — attachments are immutable once
--- created.
+-- defense-in-depth select gated on parent post NOT being soft-deleted;
+-- attachments are written with their post and immutable once created.
 ALTER TABLE "post_image_attachments" ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "post_image_attachments_select" ON "post_image_attachments";
@@ -873,42 +653,18 @@ CREATE POLICY "post_image_attachments_select" ON "post_image_attachments"
     )
   );
 
--- INSERT: owner of the parent post (which must not be soft-deleted) AND
--- storage_path's first folder segment must match the calling user's id.
--- The application handler is responsible for building the storage_path
--- correctly; this policy is the secondary guard against a direct REST
--- write that submits a storage_path pointing at someone else's folder.
 DROP POLICY IF EXISTS "post_image_attachments_insert" ON "post_image_attachments";
-CREATE POLICY "post_image_attachments_insert" ON "post_image_attachments"
-  FOR INSERT WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM topic_posts p
-      WHERE p.id = post_image_attachments.post_id
-        AND p.user_id = auth.uid()
-        AND p.deleted_at IS NULL
-    )
-    AND split_part(post_image_attachments.storage_path, '/', 1) = auth.uid()::text
-  );
 
 -- No UPDATE policy: image attachments are immutable once created.
 
 DROP POLICY IF EXISTS "post_image_attachments_delete" ON "post_image_attachments";
-CREATE POLICY "post_image_attachments_delete" ON "post_image_attachments"
-  FOR DELETE USING (
-    EXISTS (
-      SELECT 1 FROM topic_posts p
-      WHERE p.id = post_image_attachments.post_id
-        AND p.user_id = auth.uid()
-    )
-  );
 
 -- =============================================================================
 -- post_fen_attachments (1:0..1 FEN attachment per topic_post)
 -- =============================================================================
 -- Mirrors the posture of post_game_pgn_attachments / post_game_embed_attachments:
--- defense-in-depth select gated on parent post NOT being soft-deleted, INSERT
--- restricted to the parent post's owner, DELETE restricted to the parent
--- post's owner. No UPDATE policy — attachments are immutable once created.
+-- defense-in-depth select gated on parent post NOT being soft-deleted;
+-- attachments are written with their post and immutable once created.
 -- The 1:0..1 invariant is enforced at the DB by the UNIQUE constraint on
 -- post_id (set in the migration), not in policy.
 ALTER TABLE "post_fen_attachments" ENABLE ROW LEVEL SECURITY;
@@ -924,35 +680,17 @@ CREATE POLICY "post_fen_attachments_select" ON "post_fen_attachments"
   );
 
 DROP POLICY IF EXISTS "post_fen_attachments_insert" ON "post_fen_attachments";
-CREATE POLICY "post_fen_attachments_insert" ON "post_fen_attachments"
-  FOR INSERT WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM topic_posts p
-      WHERE p.id = post_fen_attachments.post_id
-        AND p.user_id = auth.uid()
-        AND p.deleted_at IS NULL
-    )
-  );
 
 -- No UPDATE policy: FEN attachments are immutable once created.
 
 DROP POLICY IF EXISTS "post_fen_attachments_delete" ON "post_fen_attachments";
-CREATE POLICY "post_fen_attachments_delete" ON "post_fen_attachments"
-  FOR DELETE USING (
-    EXISTS (
-      SELECT 1 FROM topic_posts p
-      WHERE p.id = post_fen_attachments.post_id
-        AND p.user_id = auth.uid()
-    )
-  );
 
 -- =============================================================================
 -- post_video_attachments (1:0..1 video attachment per topic_post)
 -- =============================================================================
 -- Mirrors the posture of post_fen_attachments: defense-in-depth select gated
--- on parent post NOT being soft-deleted, INSERT restricted to the parent
--- post's owner, DELETE restricted to the parent post's owner. No UPDATE
--- policy — attachments are immutable once created. The 1:0..1 invariant is
+-- on parent post NOT being soft-deleted; attachments are written with their
+-- post and immutable once created. The 1:0..1 invariant is
 -- enforced at the DB by the UNIQUE constraint on post_id (set in the
 -- migration), not in policy.
 ALTER TABLE "post_video_attachments" ENABLE ROW LEVEL SECURITY;
@@ -968,27 +706,10 @@ CREATE POLICY "post_video_attachments_select" ON "post_video_attachments"
   );
 
 DROP POLICY IF EXISTS "post_video_attachments_insert" ON "post_video_attachments";
-CREATE POLICY "post_video_attachments_insert" ON "post_video_attachments"
-  FOR INSERT WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM topic_posts p
-      WHERE p.id = post_video_attachments.post_id
-        AND p.user_id = auth.uid()
-        AND p.deleted_at IS NULL
-    )
-  );
 
 -- No UPDATE policy: video attachments are immutable once created.
 
 DROP POLICY IF EXISTS "post_video_attachments_delete" ON "post_video_attachments";
-CREATE POLICY "post_video_attachments_delete" ON "post_video_attachments"
-  FOR DELETE USING (
-    EXISTS (
-      SELECT 1 FROM topic_posts p
-      WHERE p.id = post_video_attachments.post_id
-        AND p.user_id = auth.uid()
-    )
-  );
 
 -- =============================================================================
 -- point_events (append-only point ledger — authenticated SELECT own rows, service role only write)

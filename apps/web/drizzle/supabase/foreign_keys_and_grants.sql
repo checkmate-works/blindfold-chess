@@ -112,7 +112,7 @@ SELECT public.ensure_auth_users_fk('profiles', 'profiles_id_fkey', 'id', 'CASCAD
 -- All profile writes run through Server Actions on the Drizzle connection
 -- (`updateProfile`, `@/lib/users/delete-account`), which bypasses RLS and
 -- validates every field first, so the client never needed this privilege.
-GRANT SELECT, INSERT ON TABLE public.profiles TO authenticated;
+GRANT SELECT ON TABLE public.profiles TO authenticated;
 GRANT SELECT ON TABLE public.profiles TO anon;
 REVOKE UPDATE ON TABLE public.profiles FROM authenticated;
 
@@ -156,7 +156,7 @@ $$;
 -- trigger behind it. A physical `DELETE /rest/v1/topic_posts?id=eq.<own>`
 -- therefore let an author keep the coins for content they had removed. Physical
 -- deletion is service-role only (the account-purge cron).
-GRANT SELECT, INSERT ON TABLE public.topic_posts TO authenticated;
+GRANT SELECT ON TABLE public.topic_posts TO authenticated;
 GRANT SELECT ON TABLE public.topic_posts TO anon;
 -- GRANT is additive and this file is re-applied on every deploy, so narrowing
 -- the statement above does not withdraw a privilege an earlier deploy handed
@@ -174,14 +174,12 @@ REVOKE UPDATE, DELETE ON TABLE public.topic_posts FROM authenticated;
 -- initialisation (they survive pg_upgrade), so a freshly initialised database
 -- exposed nothing through PostgREST while production exposed everything RLS
 -- allowed. Declare the intended surface so both derive it from this file, not
--- from when they were initialised. Authors may attach and detach an embed on
--- their own post; the RLS policies scope both to the post owner.
-GRANT SELECT, INSERT, DELETE ON TABLE public.post_game_embed_attachments TO authenticated;
+-- from when they were initialised. Authors attach and detach an embed through
+-- the post Server Actions, never through PostgREST.
+GRANT SELECT ON TABLE public.post_game_embed_attachments TO authenticated;
 GRANT SELECT ON TABLE public.post_game_embed_attachments TO anon;
--- Embed attachments are immutable once created (rls_policies.sql declares no
--- UPDATE policy), and no write is anon's to make (every write policy keys on
--- auth.uid()). Databases initialised before the default-privilege change
--- handed all of these out; withdraw them.
+-- Databases initialised before the default-privilege change handed all of
+-- these out; withdraw them.
 REVOKE UPDATE ON TABLE public.post_game_embed_attachments FROM authenticated, anon;
 REVOKE INSERT, DELETE ON TABLE public.post_game_embed_attachments FROM anon;
 
@@ -193,7 +191,7 @@ REVOKE INSERT, DELETE ON TABLE public.post_game_embed_attachments FROM anon;
 SELECT public.ensure_auth_users_fk('moderation_actions', 'moderation_actions_actor_id_fkey', 'actor_id', 'CASCADE');
 
 -- Grant necessary permissions
-GRANT SELECT, INSERT ON TABLE public.moderation_actions TO authenticated;
+GRANT SELECT ON TABLE public.moderation_actions TO authenticated;
 
 -- =============================================================================
 -- user_follows & user_blocks
@@ -212,9 +210,9 @@ SELECT public.ensure_auth_users_fk('user_blocks', 'user_blocks_blocker_id_fkey',
 SELECT public.ensure_auth_users_fk('user_blocks', 'user_blocks_blocked_id_fkey', 'blocked_id', 'CASCADE');
 
 -- Grant necessary permissions
-GRANT SELECT, INSERT, DELETE ON TABLE public.user_follows TO authenticated;
+GRANT SELECT ON TABLE public.user_follows TO authenticated;
 GRANT SELECT ON TABLE public.user_follows TO anon;
-GRANT SELECT, INSERT, DELETE ON TABLE public.user_blocks TO authenticated;
+GRANT SELECT ON TABLE public.user_blocks TO authenticated;
 
 -- =============================================================================
 -- notifications
@@ -227,7 +225,7 @@ SELECT public.ensure_auth_users_fk('notifications', 'notifications_user_id_fkey'
 SELECT public.ensure_auth_users_fk('notifications', 'notifications_actor_id_fkey', 'actor_id', 'SET NULL');
 
 -- Grant necessary permissions (no INSERT — controlled by server-side only)
-GRANT SELECT, UPDATE, DELETE ON TABLE public.notifications TO authenticated;
+GRANT SELECT ON TABLE public.notifications TO authenticated;
 
 -- =============================================================================
 -- notification_mutes
@@ -236,8 +234,8 @@ GRANT SELECT, UPDATE, DELETE ON TABLE public.notifications TO authenticated;
 -- FK constraint: notification_mutes.user_id → auth.users(id) ON DELETE CASCADE
 SELECT public.ensure_auth_users_fk('notification_mutes', 'notification_mutes_user_id_fkey', 'user_id', 'CASCADE');
 
--- Grant necessary permissions (users manage their own mute rows directly, like user_follows)
-GRANT SELECT, INSERT, DELETE ON TABLE public.notification_mutes TO authenticated;
+-- Grant necessary permissions (own-row read; mutes are toggled via Server Actions)
+GRANT SELECT ON TABLE public.notification_mutes TO authenticated;
 
 -- =============================================================================
 -- rate_limit_events
@@ -266,7 +264,7 @@ REVOKE ALL ON TABLE public.rate_limit_key_events FROM authenticated, anon;
 SELECT public.ensure_auth_users_fk('user_activity_log', 'user_activity_log_user_id_fkey', 'user_id', 'CASCADE');
 
 -- Grant necessary permissions
-GRANT SELECT, INSERT ON TABLE public.user_activity_log TO authenticated;
+GRANT SELECT ON TABLE public.user_activity_log TO authenticated;
 
 -- =============================================================================
 -- user_roles
@@ -325,7 +323,7 @@ $$;
 SELECT public.ensure_auth_users_fk('likes', 'likes_user_id_fkey', 'user_id', 'SET NULL');
 
 -- Grant necessary permissions
-GRANT SELECT, INSERT, DELETE ON TABLE public.likes TO authenticated;
+GRANT SELECT ON TABLE public.likes TO authenticated;
 GRANT SELECT ON TABLE public.likes TO anon;
 
 -- =============================================================================
@@ -430,8 +428,8 @@ GRANT SELECT ON TABLE public.subscriptions TO authenticated;
 -- reads filter by the live caller's id, so anonymised rows never surface.
 SELECT public.ensure_auth_users_fk('user_interview_answers', 'user_interview_answers_user_id_fkey', 'user_id', 'SET NULL');
 
--- Grant necessary permissions (public read, authenticated insert/delete)
-GRANT SELECT, INSERT, UPDATE ON TABLE public.user_interview_answers TO authenticated;
+-- Grant necessary permissions (public read; answers are saved via Server Actions)
+GRANT SELECT ON TABLE public.user_interview_answers TO authenticated;
 GRANT SELECT ON TABLE public.user_interview_answers TO anon;
 
 -- =============================================================================
@@ -486,8 +484,7 @@ GRANT SELECT ON TABLE public.user_exp TO anon;
 -- usual deprecation path.
 SELECT public.ensure_auth_users_fk('positions', 'positions_user_id_fkey', 'user_id', 'SET NULL');
 
--- Grant necessary permissions (public read for catalog listings; authenticated
--- users create their own positions; UPDATE and physical DELETE are
+-- Grant necessary permissions (public read for catalog listings; every write is
 -- service-role only)
 --
 -- Editing is deliberately NOT granted here even though owners can edit their
@@ -498,7 +495,7 @@ SELECT public.ensure_auth_users_fk('positions', 'positions_user_id_fkey', 'user_
 -- say "own row" — not "not the `deleted_at` column" — so the grant let an author
 -- clear `deleted_at` and restore a position an admin had removed, with no
 -- revision row and no audit-log entry for the restore.
-GRANT SELECT, INSERT ON TABLE public.positions TO authenticated;
+GRANT SELECT ON TABLE public.positions TO authenticated;
 GRANT SELECT ON TABLE public.positions TO anon;
 -- See the topic_posts note: narrowing the GRANT does not revoke what earlier
 -- deploys already granted.
@@ -516,12 +513,11 @@ REVOKE UPDATE ON TABLE public.positions FROM authenticated;
 -- normal deprecation path remains logical delete via `chunks.deleted_at`.
 SELECT public.ensure_auth_users_fk('chunks', 'chunks_user_id_fkey', 'user_id', 'SET NULL');
 
--- Grant necessary permissions (public read for catalog listing; authenticated
--- users create their own chunks; UPDATE and physical DELETE are service-role
--- only). Same reasoning as positions above: owner edits go through
+-- Grant necessary permissions (public read for catalog listing; every write is
+-- service-role only). Same reasoning as positions above: owner edits go through
 -- `@/lib/chunks/user-chunk-mutations`, and a column-blind RLS UPDATE let an
 -- author clear `deleted_at` to undo an admin soft-delete.
-GRANT SELECT, INSERT ON TABLE public.chunks TO authenticated;
+GRANT SELECT ON TABLE public.chunks TO authenticated;
 GRANT SELECT ON TABLE public.chunks TO anon;
 REVOKE UPDATE ON TABLE public.chunks FROM authenticated;
 
@@ -543,10 +539,9 @@ SELECT public.ensure_auth_users_fk('chunk_edit_requests', 'chunk_edit_requests_r
 
 -- The FK to chunks is managed by Drizzle (ON DELETE CASCADE — physical
 -- chunk deletion takes its requests with it). Grants: open read so
--- anyone can see the discussion; authenticated INSERT for proposers and
--- authenticated UPDATE for the proposer-or-owner transitions (gated by
--- the RLS policies).
-GRANT SELECT, INSERT, UPDATE ON TABLE public.chunk_edit_requests TO authenticated;
+-- anyone can see the discussion; proposals and their transitions are
+-- written by the Server Actions.
+GRANT SELECT ON TABLE public.chunk_edit_requests TO authenticated;
 GRANT SELECT ON TABLE public.chunk_edit_requests TO anon;
 
 -- =============================================================================
@@ -567,9 +562,9 @@ SELECT public.ensure_auth_users_fk('position_edit_requests', 'position_edit_requ
 
 -- The FK to positions is managed by Drizzle (ON DELETE CASCADE — physical
 -- position deletion takes its requests with it). Grants: open read so anyone
--- can see the discussion; authenticated INSERT for proposers and authenticated
--- UPDATE for the proposer-or-owner transitions (gated by the RLS policies).
-GRANT SELECT, INSERT, UPDATE ON TABLE public.position_edit_requests TO authenticated;
+-- can see the discussion; proposals and their transitions are written by the
+-- Server Actions.
+GRANT SELECT ON TABLE public.position_edit_requests TO authenticated;
 GRANT SELECT ON TABLE public.position_edit_requests TO anon;
 
 -- =============================================================================
@@ -596,11 +591,8 @@ GRANT SELECT ON TABLE public.position_content_revisions TO anon;
 -- The FK to chunks is managed by Drizzle (ON DELETE CASCADE — physical
 -- chunk deletion takes its feedback flags with it). Grants: open read so
 -- the detail-page callout and the suggestion form can render the flags
--- to anyone; authenticated INSERT / DELETE for the chunk owner (gated by
--- the RLS policies). No UPDATE — the write strategy is "DELETE all rows
--- for this chunk + INSERT new set", so the column-level mutations never
--- need UPDATE.
-GRANT SELECT, INSERT, DELETE ON TABLE public.chunk_feedback_topics TO authenticated;
+-- to anyone; the chunk save Server Action rewrites them.
+GRANT SELECT ON TABLE public.chunk_feedback_topics TO authenticated;
 GRANT SELECT ON TABLE public.chunk_feedback_topics TO anon;
 
 -- =============================================================================
@@ -615,8 +607,8 @@ GRANT SELECT ON TABLE public.chunk_feedback_topics TO anon;
 SELECT public.ensure_auth_users_fk('position_chunks', 'position_chunks_attached_by_user_id_fkey', 'attached_by_user_id', 'SET NULL');
 
 -- The FKs to positions and chunks are managed by Drizzle. Grants only: public
--- read, authenticated INSERT/DELETE gated by RLS on the position's owner.
-GRANT SELECT, INSERT, DELETE ON TABLE public.position_chunks TO authenticated;
+-- read.
+GRANT SELECT ON TABLE public.position_chunks TO authenticated;
 GRANT SELECT ON TABLE public.position_chunks TO anon;
 
 -- =============================================================================
@@ -629,9 +621,8 @@ GRANT SELECT ON TABLE public.position_chunks TO anon;
 SELECT public.ensure_auth_users_fk('position_themes', 'position_themes_attached_by_user_id_fkey', 'attached_by_user_id', 'SET NULL');
 
 -- The FKs to positions and glossary_terms are managed by Drizzle. Grants only:
--- public read, authenticated INSERT/DELETE gated by RLS on the position's
--- owner (and DB-enforced is_theme = true on insert).
-GRANT SELECT, INSERT, DELETE ON TABLE public.position_themes TO authenticated;
+-- public read.
+GRANT SELECT ON TABLE public.position_themes TO authenticated;
 GRANT SELECT ON TABLE public.position_themes TO anon;
 
 -- =============================================================================
@@ -820,43 +811,38 @@ GRANT SELECT ON TABLE public.puzzle_solutions TO authenticated;
 GRANT SELECT ON TABLE public.puzzle_solutions TO anon;
 
 -- =============================================================================
--- article_images (admin-curated article images — public read, authenticated write)
+-- article_images (admin-curated article images — public read, service-role write)
 -- =============================================================================
--- Public read for article display. INSERT/DELETE gated by admin role in RLS;
--- no UPDATE policy (images are immutable once placed).
-GRANT SELECT, INSERT, DELETE ON TABLE public.article_images TO authenticated;
+-- Public read for article display. The admin image API route records rows.
+GRANT SELECT ON TABLE public.article_images TO authenticated;
 GRANT SELECT ON TABLE public.article_images TO anon;
 
 -- =============================================================================
 -- post_game_pgn_attachments (PGN attachment on topic_posts)
 -- =============================================================================
--- SELECT gated on parent post not being soft-deleted; INSERT/DELETE restricted
--- to the parent post's author. No UPDATE policy (immutable once created).
-GRANT SELECT, INSERT, DELETE ON TABLE public.post_game_pgn_attachments TO authenticated;
+-- SELECT gated on parent post not being soft-deleted. Written with the post.
+GRANT SELECT ON TABLE public.post_game_pgn_attachments TO authenticated;
 GRANT SELECT ON TABLE public.post_game_pgn_attachments TO anon;
 
 -- =============================================================================
 -- post_image_attachments (image attachments on topic_posts, max 3 per post)
 -- =============================================================================
--- Mirrors post_game_pgn_attachments posture. SELECT gated on parent post
--- visibility; INSERT/DELETE restricted to parent post's owner. No UPDATE.
-GRANT SELECT, INSERT, DELETE ON TABLE public.post_image_attachments TO authenticated;
+-- Mirrors post_game_pgn_attachments posture.
+GRANT SELECT ON TABLE public.post_image_attachments TO authenticated;
 GRANT SELECT ON TABLE public.post_image_attachments TO anon;
 
 -- =============================================================================
 -- post_fen_attachments (FEN attachment on topic_posts)
 -- =============================================================================
--- Mirrors post_game_pgn_attachments posture. SELECT gated on parent post
--- visibility; INSERT/DELETE restricted to parent post's owner. No UPDATE.
-GRANT SELECT, INSERT, DELETE ON TABLE public.post_fen_attachments TO authenticated;
+-- Mirrors post_game_pgn_attachments posture.
+GRANT SELECT ON TABLE public.post_fen_attachments TO authenticated;
 GRANT SELECT ON TABLE public.post_fen_attachments TO anon;
 
 -- =============================================================================
 -- post_video_attachments (video attachment on topic_posts)
 -- =============================================================================
--- Mirrors post_game_pgn_attachments posture. SELECT gated on parent post
--- visibility; INSERT/DELETE restricted to parent post's owner. No UPDATE.
-GRANT SELECT, INSERT, DELETE ON TABLE public.post_video_attachments TO authenticated;
+-- Mirrors post_game_pgn_attachments posture.
+GRANT SELECT ON TABLE public.post_video_attachments TO authenticated;
 GRANT SELECT ON TABLE public.post_video_attachments TO anon;
 
 -- =============================================================================
@@ -914,3 +900,22 @@ REVOKE ALL ON TABLE public.game_tokens FROM authenticated, anon;
 REVOKE ALL ON TABLE public.point_batch_watermarks FROM authenticated, anon;
 REVOKE ALL ON TABLE public.topic_post_ratings FROM authenticated, anon;
 REVOKE ALL ON TABLE public.game_ai_review_jobs FROM authenticated, anon;
+
+-- =============================================================================
+-- No client writes, anywhere in `public`
+-- =============================================================================
+-- `anon` and `authenticated` may read what the GRANTs above allow and write
+-- nothing. The app never touches a table through the Supabase JS client (that
+-- client is used for `auth` and `storage` only): every write is a Server Action
+-- or cron on the Drizzle connection, which bypasses RLS. PostgREST, meanwhile,
+-- serves `public` to anyone holding the anon key shipped in the browser bundle,
+-- so a write privilege here is a second door to the same rows — one with none
+-- of the checks the Server Actions make: username format and reserved names,
+-- content filters, rate limits, bans, blocks, coin charges. RLS cannot stand in
+-- for them; it can only say whose row it is.
+--
+-- This is re-applied after the GRANTs above on every deploy, so it also
+-- withdraws what earlier deploys granted and what a database initialised
+-- before Supabase stopped granting table privileges by default still holds —
+-- including on tables created later by migrations. Keep it last.
+REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON ALL TABLES IN SCHEMA public FROM anon, authenticated;

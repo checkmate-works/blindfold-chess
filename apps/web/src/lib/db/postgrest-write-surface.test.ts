@@ -11,14 +11,15 @@
  * so any signed-in user can send `PATCH /rest/v1/<table>` with their own JWT and
  * get whatever `authenticated` has been granted.
  *
- * That makes a write grant to `authenticated` a second, unguarded entry point to
- * the same rows the Server Actions guard — one with no validation, no rate
- * limiting, no coin ledger, and no moderation checks. The tables below therefore
- * grant `authenticated` reads (and, where users genuinely create rows, INSERT)
- * but never UPDATE, because RLS can express "your own row" and cannot express
- * "your own row, except the `deleted_at` column an admin set". Without that
- * distinction an author could clear `deleted_at` over PostgREST and restore
- * content a moderator had removed, leaving no audit trail for the restore.
+ * That makes any write grant to `authenticated` a second, unguarded entry point
+ * to the same rows the Server Actions guard — one with no validation, no rate
+ * limiting, no coin ledger, and no ban, block or moderation checks. RLS cannot
+ * close it: a policy can express "your own row", not "a row the Server Action
+ * would have accepted". An owner-scoped UPDATE let an author clear `deleted_at`
+ * and restore content a moderator had removed; an owner-scoped INSERT on
+ * `profiles` let a user without a profile create one with a reserved or
+ * malformed username. So client roles get reads only, on every table, and no
+ * write policy exists for a re-added grant to fall through to.
  *
  * Why it is a static test and not an integration test
  * ---------------------------------------------------
@@ -76,14 +77,6 @@ function effectivePrivileges(sql: string, table: string, role: string): Set<Priv
   return held;
 }
 
-/** Policy names declared via CREATE POLICY, i.e. actually in force. */
-function createdPoliciesFor(table: string): string[] {
-  const created = rlsSql.matchAll(
-    new RegExp(`^\\s*CREATE\\s+POLICY\\s+"([^"]+)"\\s+ON\\s+"${table}"\\s+([\\s\\S]*?);`, 'gim')
-  );
-  return [...created].map(([, name]) => name);
-}
-
 /** Tables that appear in rls_policies.sql via ALTER TABLE ... ENABLE ROW LEVEL SECURITY. */
 function tablesWithRlsEnabled(): Set<string> {
   const tables = new Set<string>();
@@ -119,85 +112,61 @@ function policyCommandsFor(table: string): Set<string> {
   return commands;
 }
 
-/**
- * Tables where a client may create its own row but must never update one,
- * because "your own row" (all RLS can say) is not "your own row except the
- * columns an admin or the system owns" (what is actually required).
- */
-const OWNER_INSERT_NEVER_UPDATE = [
-  // A moderator soft-deletes via `deleted_at`; the author must not clear it.
-  'topic_posts',
-  'positions',
-  'chunks',
-  // `username` (ban-evasion hold), `banned_at`, `deleted_at` and
-  // `hidden_from_leaderboard` are not the user's to set.
-  'profiles',
-  // Immutable once created: changing an embed is delete + re-insert, both of
-  // which the RLS policies scope to the post owner.
-  'post_game_embed_attachments',
-  // Immutable once created: same posture as post_game_embed_attachments.
-  'post_game_pgn_attachments',
-  'post_image_attachments',
-  'post_fen_attachments',
-  'post_video_attachments',
-] as const;
+const WRITE_PRIVILEGES = ['INSERT', 'UPDATE', 'DELETE'] as const;
 
-/**
- * Tables that are publicly readable but must be written only by the service
- * role, because the thing RLS can check (does this row name me?) is not the
- * thing that matters (is what this row asserts true?).
- */
-const READ_ONLY_FOR_AUTHENTICATED = [
-  // Self-reported achievement: feeds the public leaderboards, the
-  // `challenge_score` belt-rank requirement, and the monthly badge cron.
-  'challenge_results',
-  'challenge_best_scores',
-  // Public timeline: the payload columns (`entity_type` / `entity_id` /
-  // `metadata` / `created_at`) are what a forger controls, and RLS cannot
-  // constrain them.
-  'feed_items',
-] as const;
+/** Every table any GRANT or REVOKE in foreign_keys_and_grants.sql names. */
+const GRANTED_TABLES = [...tablesWithGrantsOrRevokes()];
 
-describe('PostgREST write surface for `authenticated`', () => {
-  describe.each(OWNER_INSERT_NEVER_UPDATE)('%s', (table) => {
-    it('does not grant UPDATE (a column-blind RLS policy cannot protect `deleted_at`)', () => {
-      expect(effectivePrivileges(grantsSql, table, 'authenticated')).not.toContain('UPDATE');
-    });
+/** Every table rls_policies.sql creates at least one policy on. */
+const TABLES_WITH_POLICIES = [
+  ...new Set(
+    [...rlsSql.matchAll(/^\s*CREATE\s+POLICY\s+"[^"]+"\s+ON\s+"([^"]+)"/gim)].map(([, t]) => t)
+  ),
+];
 
-    it('has no UPDATE policy, so a re-added grant fails closed instead of open', () => {
-      expect(policyCommandsFor(table)).not.toContain('UPDATE');
-      expect(createdPoliciesFor(table)).not.toContain(`${table}_update`);
-      expect(createdPoliciesFor(table)).not.toContain(`${table}_update_policy`);
-    });
+/** The last `;`-terminated statement of `sql`, comments stripped. */
+function lastStatement(sql: string): string {
+  const statements = sql
+    .replace(/--[^\n]*/g, '')
+    .split(';')
+    .map((statement) => statement.trim())
+    .filter(Boolean);
+  return statements[statements.length - 1];
+}
 
-    it('still allows public reads (these rows are public by design)', () => {
-      expect(effectivePrivileges(grantsSql, table, 'anon')).toContain('SELECT');
-    });
+describe('PostgREST write surface for client roles', () => {
+  it.each(GRANTED_TABLES)('%s: `authenticated` is granted no write privilege', (table) => {
+    const held = effectivePrivileges(grantsSql, table, 'authenticated');
+    for (const write of WRITE_PRIVILEGES) {
+      expect(held, `authenticated must not hold ${write} on ${table}`).not.toContain(write);
+    }
   });
 
-  // Physical deletion skips the transaction that revokes earned grants and claws
-  // back coins, so it must stay with the service role even for one's own rows.
-  describe.each(['topic_posts'] as const)('%s', (table) => {
-    it('does not grant DELETE (row removal skips the clawback transaction)', () => {
-      expect(effectivePrivileges(grantsSql, table, 'authenticated')).not.toContain('DELETE');
-    });
-
-    it('has no DELETE policy, so a re-added grant fails closed', () => {
-      expect(policyCommandsFor(table)).not.toContain('DELETE');
-    });
-  });
-
-  describe.each(READ_ONLY_FOR_AUTHENTICATED)('%s', (table) => {
-    it('grants SELECT and nothing else', () => {
-      expect([...effectivePrivileges(grantsSql, table, 'authenticated')]).toEqual(['SELECT']);
-    });
-
-    it('has no write policy at all, so a re-added grant fails closed', () => {
+  it.each(TABLES_WITH_POLICIES)(
+    '%s: has no write policy, so a re-added grant fails closed',
+    (table) => {
       const commands = policyCommandsFor(table);
-      for (const write of ['INSERT', 'UPDATE', 'DELETE', 'ALL']) {
+      for (const write of [...WRITE_PRIVILEGES, 'ALL']) {
         expect(commands, `${table} must have no ${write} policy`).not.toContain(write);
       }
-    });
+    }
+  );
+
+  // The per-table GRANTs above only say what is granted; this is what withdraws
+  // everything else — privileges earlier deploys handed out and the wide
+  // defaults an old database was initialised with, including on tables no
+  // GRANT names. It must run after every GRANT, or a later GRANT re-opens a
+  // write.
+  it('ends by revoking every write on `public` from both client roles', () => {
+    expect(lastStatement(grantsSql)).toMatch(
+      /^REVOKE\s+INSERT,\s*UPDATE,\s*DELETE,\s*TRUNCATE\s+ON\s+ALL\s+TABLES\s+IN\s+SCHEMA\s+public\s+FROM\s+anon,\s*authenticated$/i
+    );
+  });
+
+  it('still allows public reads of the public catalogs', () => {
+    for (const table of ['profiles', 'topic_posts', 'positions', 'chunks', 'likes']) {
+      expect(effectivePrivileges(grantsSql, table, 'anon'), table).toContain('SELECT');
+    }
   });
 
   it('never grants a write privilege to `anon`', () => {
