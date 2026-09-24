@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-import { useSubmitError } from '@/_hooks/useSubmitError';
+import { useSubmitLifecycle } from '@/_hooks/useSubmitLifecycle';
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
 import {
   Button,
@@ -18,7 +18,6 @@ import { INPUT_BASE_CLASSES, invalidBorderClasses } from '@/app/_components/inpu
 import { useRouter } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { Side } from '@blindfold-chess/types';
-import { flushSync } from 'react-dom';
 
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
 import type { RepertoireFormField } from '@/lib/repertoires/form-error-fields';
@@ -132,23 +131,23 @@ export function LineForm({
   // the stored line when editing, the prefilled line when appending. The PGN
   // tab remains for raw editing.
   const [inputMode, setInputMode] = useState<'pgn' | 'board'>('board');
-  const [pending, setPending] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
 
-  // A rejected save is reported against the control at fault and focuses it —
+  // Submit protocol: editing → submitting → succeeded, then the redirect the
+  // save action names (no confirmation step — nothing here costs coins). A
+  // rejected save is reported against the control at fault and focuses it —
   // same rule as the import / chunk forms, and it matters just as much here:
   // the board editor alone is taller than a phone screen, so a message beside
   // the button says nothing about the moves it is complaining about. The moves
   // editor anchors on its section wrapper while the board tab is up, since the
   // PGN textarea isn't mounted there.
-  const submitError = useSubmitError<RepertoireFormField>((field) => {
+  const lifecycle = useSubmitLifecycle<RepertoireFormField>((field) => {
     if (field === 'name') return 'line-name';
     if (field === 'chapter') return 'line-chapter';
     return inputMode === 'board' ? 'line-moves' : 'line-pgn';
   });
-  const nameError = submitError.messageFor('name');
-  const chapterError = submitError.messageFor('chapter');
-  const movesError = submitError.messageFor('moves');
+  const nameError = lifecycle.messageFor('name');
+  const chapterError = lifecycle.messageFor('chapter');
+  const movesError = lifecycle.messageFor('moves');
 
   // Note drafts that differ from what the server holds (trimmed comparison —
   // whitespace-only edits are not changes worth writing).
@@ -164,7 +163,7 @@ export function LineForm({
   // Same leave-guard pieces as the import / chunk / puzzle forms. A prefilled
   // pgn doesn't count as dirty — leaving without touching anything is fine.
   const isDirty =
-    !submitted &&
+    !lifecycle.submitted &&
     (name !== initialName ||
       chapterId !== (initialChapterId ?? '') ||
       pgn !== initialPgn ||
@@ -172,50 +171,48 @@ export function LineForm({
       changedShapes.length > 0);
   const { isBlocking, confirm, cancel } = useUnsavedChanges({ isDirty });
 
-  async function handleSubmit(event: React.FormEvent) {
+  function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
-    setPending(true);
-    submitError.clear();
+    void lifecycle.run(async () => {
+      const result = await saveLine({
+        name: name.trim() || null,
+        chapterId: chapterId || null,
+        pgn,
+      });
+      if (!result.ok) {
+        const known = KNOWN_LINE_FORM_ERRORS.has(result.error);
+        return {
+          ok: false,
+          field: known
+            ? repertoireErrorField(result.error, chapters.length > 0 ? FIELDS_WITH_CHAPTER : FIELDS)
+            : null,
+          message: known ? t(`errors.${result.error}`) : t('errors.generic'),
+        };
+      }
 
-    const result = await saveLine({ name: name.trim() || null, chapterId: chapterId || null, pgn });
-    if (!result.ok) {
-      setPending(false);
-      const known = KNOWN_LINE_FORM_ERRORS.has(result.error);
-      submitError.report(
-        known
-          ? repertoireErrorField(result.error, chapters.length > 0 ? FIELDS_WITH_CHAPTER : FIELDS)
-          : null,
-        known ? t(`errors.${result.error}`) : t('errors.generic')
-      );
-      return;
-    }
+      // Persist the changed per-move notes and board markup alongside the
+      // line. Position-keyed writes are independent of each other and of the
+      // line row, so a partial failure leaves the successful ones in place; we
+      // stay on the page (still dirty) and a retry re-sends what differs from
+      // the load.
+      const noteResults = await Promise.all([
+        ...changedAnnotations.map(([positionKey, text]) =>
+          text.trim()
+            ? saveAnnotation({ repertoireId, positionKey, text: text.trim() })
+            : deleteAnnotation({ repertoireId, positionKey })
+        ),
+        ...changedShapes.map(([positionKey, value]) =>
+          saveShapes({ repertoireId, positionKey, shapes: value })
+        ),
+      ]);
+      if (noteResults.some((r) => !r.ok)) {
+        // Note / markup writes belong to no single control (they span every
+        // annotated position), so this one stays form-level.
+        return { ok: false, field: null, message: t('errors.generic') };
+      }
 
-    // Persist the changed per-move notes and board markup alongside the line.
-    // Position-keyed writes are independent of each other and of the line row,
-    // so a partial failure leaves the successful ones in place; we stay on the
-    // page (still dirty) and a retry re-sends what differs from the load.
-    const noteResults = await Promise.all([
-      ...changedAnnotations.map(([positionKey, text]) =>
-        text.trim()
-          ? saveAnnotation({ repertoireId, positionKey, text: text.trim() })
-          : deleteAnnotation({ repertoireId, positionKey })
-      ),
-      ...changedShapes.map(([positionKey, value]) =>
-        saveShapes({ repertoireId, positionKey, shapes: value })
-      ),
-    ]);
-    if (noteResults.some((r) => !r.ok)) {
-      setPending(false);
-      // Note / markup writes belong to no single control (they span every
-      // annotated position), so this one stays form-level.
-      submitError.report(null, t('errors.generic'));
-      return;
-    }
-
-    // flushSync so the isDirty -> false re-render completes before
-    // router.push triggers the navigation guard (same as ChunkForm).
-    flushSync(() => setSubmitted(true));
-    router.push(result.nextHref);
+      return { ok: true, href: result.nextHref };
+    });
   }
 
   return (
@@ -267,7 +264,7 @@ export function LineForm({
 
       {/* `id` + `tabIndex` make the whole moves block a focus target: a
           rejection about the moves can land while the board tab is up, where
-          there is no textarea to focus. See `submitError` above. */}
+          there is no textarea to focus. See `lifecycle` above. */}
       <div
         id="line-moves"
         tabIndex={-1}
@@ -337,22 +334,26 @@ export function LineForm({
 
       {/* Form-wide errors only — anything attributable to a control is
           rendered against that control instead. */}
-      <FormErrorBanner ref={submitError.summaryRef} message={submitError.formMessage} />
+      <FormErrorBanner ref={lifecycle.summaryRef} message={lifecycle.formMessage} />
 
       <LocalizedUnsavedChangesDialog open={isBlocking} onConfirm={confirm} onCancel={cancel} />
 
       <FormActionFooter
-        cancel={{ label: t('cancel'), onClick: () => router.push(cancelHref), disabled: pending }}
+        cancel={{
+          label: t('cancel'),
+          onClick: () => router.push(cancelHref),
+          disabled: lifecycle.busy,
+        }}
       >
         <Button
           type="submit"
           variant="primary"
           size="lg"
           fullWidth
-          loading={pending}
-          disabled={pending}
+          loading={lifecycle.busy}
+          disabled={lifecycle.busy}
         >
-          {pending ? submitLabels.saving : submitLabels.idle}
+          {lifecycle.busy ? submitLabels.saving : submitLabels.idle}
         </Button>
       </FormActionFooter>
     </form>
