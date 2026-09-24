@@ -32,6 +32,8 @@ import { MoveAnnotationField } from '@/app/[locale]/(public)/repertoires/_compon
 import { RepertoireBoardBuilder } from '@/app/[locale]/(public)/repertoires/_components/RepertoireBoardBuilder';
 import { PgnDiagnosisHint } from '@/app/[locale]/_components/PgnDiagnosisHint';
 
+import { useMovesEditor } from './use-moves-editor';
+
 /**
  * Outcome of persisting the line row itself. On success the caller names the
  * URL to land on — appending a line needs the server-assigned `lineNo` that
@@ -120,17 +122,16 @@ export function LineForm({
   // '' is the unfiled bucket — <option value=""> cannot carry null, and the
   // empty string is not a chapter id either way.
   const [chapterId, setChapterId] = useState(initialChapterId ?? '');
-  const [pgn, setPgn] = useState(initialPgn);
+  // Opens on the board: the moves handed in are the point of both pages —
+  // the stored line when editing, the prefilled line when appending. The PGN
+  // tab remains for raw editing.
+  const moves = useMovesEditor('board', initialPgn);
+  const { pgn, cursor } = moves;
   // Per-position "why this move" drafts, edited inline under the board for
   // whichever move the cursor rests on, and persisted on Save alongside the
   // line (notes are position-keyed, so they need no line row to exist).
   const [annotations, setAnnotations] = useState<Record<string, string>>(initialAnnotations);
   const [shapes, setShapes] = useState<Record<string, BoardAnnotations>>(initialShapes);
-  const [cursor, setCursor] = useState<{ positionKey: string; label: string } | null>(null);
-  // Opens on the board: the moves handed in are the point of both pages —
-  // the stored line when editing, the prefilled line when appending. The PGN
-  // tab remains for raw editing.
-  const [inputMode, setInputMode] = useState<'pgn' | 'board'>('board');
 
   // Submit protocol: editing → submitting → succeeded, then the redirect the
   // save action names (no confirmation step — nothing here costs coins). A
@@ -143,7 +144,7 @@ export function LineForm({
   const lifecycle = useSubmitLifecycle<RepertoireFormField>((field) => {
     if (field === 'name') return 'line-name';
     if (field === 'chapter') return 'line-chapter';
-    return inputMode === 'board' ? 'line-moves' : 'line-pgn';
+    return moves.mode === 'board' ? 'line-moves' : 'line-pgn';
   });
   const nameError = lifecycle.messageFor('name');
   const chapterError = lifecycle.messageFor('chapter');
@@ -270,25 +271,25 @@ export function LineForm({
         tabIndex={-1}
         role="group"
         aria-label={tForm('movesLabel')}
-        aria-describedby={movesError && inputMode === 'board' ? 'line-pgn-error' : undefined}
+        aria-describedby={movesError && moves.mode === 'board' ? 'line-pgn-error' : undefined}
         className="space-y-2"
       >
         <span className="block text-sm font-medium text-foreground">
           {tForm('movesLabel')} <span className="text-destructive">*</span>
         </span>
         <BoardFenTabs
-          activeTab={inputMode === 'board' ? 'board' : 'fen'}
-          onTabChange={(tab) => setInputMode(tab === 'board' ? 'board' : 'pgn')}
+          activeTab={moves.mode === 'board' ? 'board' : 'fen'}
+          onTabChange={(tab) => moves.switchMode(tab === 'board' ? 'board' : 'pgn')}
           boardLabel={tForm('inputModeBoard')}
           fenLabel={tForm('inputModePgn')}
         />
-        {inputMode === 'pgn' ? (
+        {moves.mode === 'pgn' ? (
           <>
             <p className="text-xs text-muted-foreground">{t('pgnHelp')}</p>
             <Textarea
               id="line-pgn"
               value={pgn}
-              onChange={(e) => setPgn(e.target.value)}
+              onChange={(e) => moves.setPgn(e.target.value)}
               rows={8}
               className="font-mono text-sm"
               aria-label={t('pgnLabel')}
@@ -304,9 +305,9 @@ export function LineForm({
             <RepertoireBoardBuilder
               side={side}
               initialPgn={pgn}
-              onPgnChange={setPgn}
+              onPgnChange={moves.setPgn}
               singleLine
-              onCursorChange={setCursor}
+              onCursorChange={moves.setCursor}
               shapes={shapes}
               onShapesChange={(positionKey, next) =>
                 setShapes((prev) => ({ ...prev, [positionKey]: next }))
