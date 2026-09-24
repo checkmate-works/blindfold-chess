@@ -7,6 +7,7 @@ import { forgotPassword } from './forgotPassword';
 const mockResetPasswordForEmail = vi.fn();
 const mockGetUser = vi.fn();
 const mockGuardByIpRateLimit = vi.fn();
+const mockConsumeEmailRateLimit = vi.fn();
 
 vi.mock('@/lib/users/activity-log');
 
@@ -22,6 +23,7 @@ vi.mock('@/lib/supabase/server', () => ({
 
 vi.mock('@/lib/security/rate-limit-ip', () => ({
   guardByIpRateLimit: (...args: unknown[]) => mockGuardByIpRateLimit(...args),
+  consumeEmailRateLimit: (...args: unknown[]) => mockConsumeEmailRateLimit(...args),
 }));
 
 vi.mock('@/config', () => ({
@@ -33,6 +35,7 @@ const mockUserId = 'user-00000000-0000-0000-0000-000000000001';
 describe('forgotPassword', () => {
   beforeEach(() => {
     mockGuardByIpRateLimit.mockResolvedValue(null);
+    mockConsumeEmailRateLimit.mockResolvedValue(true);
     mockGetUser.mockResolvedValue({ data: { user: null } });
   });
 
@@ -78,6 +81,59 @@ describe('forgotPassword', () => {
 
     expect(result).toEqual({ error: 'resetFailed' });
     expect(mockResetPasswordForEmail).not.toHaveBeenCalled();
+  });
+
+  describe('per-email limit', () => {
+    it('sends the reset email when the per-email bucket has room', async () => {
+      mockResetPasswordForEmail.mockResolvedValue({ error: null });
+
+      const result = await forgotPassword('test@example.com');
+
+      expect(result).toEqual({ success: true });
+      expect(mockConsumeEmailRateLimit).toHaveBeenCalledWith('forgotPassword', 'test@example.com');
+      expect(mockResetPasswordForEmail).toHaveBeenCalledTimes(1);
+    });
+
+    it('suppresses the email but still answers success when the bucket is full', async () => {
+      mockConsumeEmailRateLimit.mockResolvedValue(false);
+      const info = vi.spyOn(console, 'info').mockImplementation(() => {});
+
+      const result = await forgotPassword('test@example.com');
+
+      expect(result).toEqual({ success: true });
+      expect(mockResetPasswordForEmail).not.toHaveBeenCalled();
+      expect(info).toHaveBeenCalledTimes(1);
+      expect(JSON.stringify(info.mock.calls)).not.toContain('test@example.com');
+      info.mockRestore();
+    });
+
+    it('answers identically whether or not the email was suppressed', async () => {
+      mockResetPasswordForEmail.mockResolvedValue({ error: null });
+      const sent = await forgotPassword('test@example.com');
+
+      mockConsumeEmailRateLimit.mockResolvedValue(false);
+      const info = vi.spyOn(console, 'info').mockImplementation(() => {});
+      const suppressed = await forgotPassword('test@example.com');
+      info.mockRestore();
+
+      expect(suppressed).toEqual(sent);
+    });
+
+    it('does not consume a slot for an invalid email', async () => {
+      await forgotPassword('not-an-email');
+
+      expect(mockConsumeEmailRateLimit).not.toHaveBeenCalled();
+    });
+
+    it('does not consume a slot when the IP limit already refused the request', async () => {
+      mockGuardByIpRateLimit.mockResolvedValue({ error: 'rateLimited' });
+
+      const result = await forgotPassword('test@example.com');
+
+      expect(result).toEqual({ error: 'rateLimited' });
+      expect(mockConsumeEmailRateLimit).not.toHaveBeenCalled();
+      expect(mockResetPasswordForEmail).not.toHaveBeenCalled();
+    });
   });
 
   describe('activity logging', () => {
