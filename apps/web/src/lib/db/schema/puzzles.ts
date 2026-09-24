@@ -97,9 +97,10 @@ export type NewPuzzleSolution = typeof puzzleSolutions.$inferInsert;
  * Curation is editorial data owned by admins, not an attribute of the UGC
  * row. Keeping it out of `positions` follows the same normalization
  * rationale as `puzzle_solutions` above, and lets RLS make the whole table
- * deny-by-default (ENABLE + FORCE, no policies — see rls_policies.sql):
- * `positions` has an owner-writable UPDATE policy, so a flag column there
- * would be self-settable by the puzzle's author via PostgREST.
+ * deny-by-default (ENABLE + FORCE, no policies — see rls_policies.sql). A flag
+ * column on `positions` would be one client-grant regression away from being
+ * self-settable by the puzzle's author via PostgREST; a separate table with no
+ * policies does not depend on the `positions` grants staying narrow.
  *
  * @design No `featured_by` column, no `updated_at`
  * Who featured what (and the unfeature history) lives in

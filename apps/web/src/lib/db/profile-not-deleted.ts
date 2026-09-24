@@ -59,7 +59,7 @@ import { profiles } from './schema';
  *   `user_follows_follower_id_fkey` and `user_follows_following_id_fkey`,
  *   which are `ON DELETE CASCADE` too, so the follow rows go in the same
  *   statement. No other path deletes a profile: no application code does, the
- *   `authenticated` and `anon` roles are granted only SELECT and INSERT on the
+ *   `authenticated` and `anon` roles are granted no write privilege on the
  *   table, and there is no DELETE policy. (All three constraints are in
  *   `drizzle/supabase/foreign_keys_and_grants.sql` and `rls_policies.sql`.)
  *

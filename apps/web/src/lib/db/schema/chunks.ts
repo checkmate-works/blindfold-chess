@@ -80,8 +80,8 @@ const EMPTY_BOARD_ANNOTATIONS_DEFAULT: BoardAnnotations = { arrows: [], circles:
  *   creator.
  * - Physical DELETE is restricted to the service role.
  * - Chunk creators cannot veto which positions link to their chunks —
- *   linking is governed by the position's owner (see `position_chunks`
- *   RLS), not by the chunk's owner.
+ *   linking is governed by the position's owner (enforced in the
+ *   `position_chunks` Server Actions), not by the chunk's owner.
  *
  * @design representative_fen is not unique
  * Multiple chunks may legitimately share the same `representative_fen`,
