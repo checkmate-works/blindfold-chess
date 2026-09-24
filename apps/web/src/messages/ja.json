@@ -178,7 +178,9 @@
       "positionActions": "この局面の操作",
       "memorizeUpToHere": "ここまでを記憶する",
       "transposition": {
-        "continuesIn": "この局面の続きが<link>{lineLabel}</link>にあります（+{count}手）"
+        "continuesIn": "この局面の続きが<link>{lineLabel}</link>にあります（+{count}手）",
+        "passesThrough": "<link>{lineLabel}</link>も同じ局面を通ります",
+        "passesThroughMore": "他 {count} 件"
       },
       "annotation": {
         "title": "この手の狙い",
@@ -195,6 +197,8 @@
         "save": "保存",
         "cancel": "キャンセル",
         "sharedHelp": "このメモは、同じ局面を通るこの型のすべてのラインで共有されます。",
+        "sharedBadge": "他のラインと共有",
+        "sharedBadgeHint": "メモは局面ごとに保存されるため、手順が違っても同じ局面に到達するすべてのラインで同じメモが表示されます。",
         "moreActions": "その他の操作",
         "deleteAction": "削除",
         "deleteConfirmTitle": "このメモを削除しますか？",

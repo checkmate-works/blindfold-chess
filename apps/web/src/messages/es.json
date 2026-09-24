@@ -178,7 +178,9 @@
       "positionActions": "Acciones de la posición",
       "memorizeUpToHere": "Memorizar hasta aquí",
       "transposition": {
-        "continuesIn": "Esta posición continúa en <link>{lineLabel}</link> (+{count, plural, one {# jugada} other {# jugadas}} más)"
+        "continuesIn": "Esta posición continúa en <link>{lineLabel}</link> (+{count, plural, one {# jugada} other {# jugadas}} más)",
+        "passesThrough": "<link>{lineLabel}</link> también pasa por esta posición",
+        "passesThroughMore": "y {count, plural, one {# línea más} other {# líneas más}}"
       },
       "annotation": {
         "title": "Por qué esta jugada",
@@ -195,6 +197,8 @@
         "save": "Guardar",
         "cancel": "Cancelar",
         "sharedHelp": "Esta nota se comparte entre todas las líneas de este kata que alcanzan esta posición.",
+        "sharedBadge": "Compartida con otras líneas",
+        "sharedBadgeHint": "Las notas se guardan por posición, así que la misma nota aparece en todas las líneas que alcanzan esta posición, sea cual sea el orden de jugadas.",
         "moreActions": "Más acciones",
         "deleteAction": "Eliminar",
         "deleteConfirmTitle": "¿Eliminar esta nota?",
