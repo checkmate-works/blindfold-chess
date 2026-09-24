@@ -178,7 +178,9 @@
       "positionActions": "Position actions",
       "memorizeUpToHere": "Memorize up to here",
       "transposition": {
-        "continuesIn": "This position continues in <link>{lineLabel}</link> (+{count, plural, one {# move} other {# moves}} more)"
+        "continuesIn": "This position continues in <link>{lineLabel}</link> (+{count, plural, one {# move} other {# moves}} more)",
+        "passesThrough": "<link>{lineLabel}</link> passes through this position too",
+        "passesThroughMore": "and {count, plural, one {# more line} other {# more lines}}"
       },
       "annotation": {
         "title": "Why this move",
@@ -195,6 +197,8 @@
         "save": "Save",
         "cancel": "Cancel",
         "sharedHelp": "This note is shared by every line in this kata that reaches this position.",
+        "sharedBadge": "Shared with other lines",
+        "sharedBadgeHint": "Notes are saved per position, so the same note appears on every line that reaches this position, whatever the move order.",
         "moreActions": "More actions",
         "deleteAction": "Delete",
         "deleteConfirmTitle": "Delete this note?",

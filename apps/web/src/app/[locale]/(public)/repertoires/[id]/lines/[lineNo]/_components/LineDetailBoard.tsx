@@ -28,8 +28,13 @@ import { ActionsMenu } from '@/app/[locale]/_components/ActionsMenu';
 import { useBoardDisplay } from '@/app/[locale]/_hooks/use-board-display';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
-import type { ContinuationLink } from '../_lib/line-continuations';
 import type { LineMove } from '../_lib/line-moves';
+import type { SharedSegmentLink } from '../_lib/shared-segment-links';
+import {
+  isPositionSharedWithOtherLines,
+  selectSharedPositionLinks,
+} from '../_lib/shared-segment-links';
+import type { ContinuationLink } from '../_lib/transposition-links';
 import { AnnotationPanel } from './AnnotationPanel';
 import { LineAnnotationIndex } from './LineAnnotationIndex';
 import type { LineNavItem } from './LineNavList';
@@ -68,6 +73,12 @@ type Props = {
   branchPgns: string[];
   /** Where this line's final position continues in a sibling line (transposition). */
   continuations: ContinuationLink[];
+  /**
+   * Runs of plies this line shares with a sibling line reached by a different
+   * move order, for the "Line N passes through this position too" note and the
+   * annotation panel's shared badge.
+   */
+  sharedSegments: SharedSegmentLink[];
 };
 
 /** How many continuation links to show before the list gets noisy. */
@@ -102,6 +113,7 @@ export function LineDetailBoard({
   navUnfiledLabel,
   branchPgns,
   continuations,
+  sharedSegments,
 }: Props) {
   const tLine = useTranslations('Repertoires.line');
   const tCommon = useTranslations('Common');
@@ -146,6 +158,14 @@ export function LineDetailBoard({
   const lastMove = clampedPly > 0 ? current.lastMove : null;
   const display = useBoardDisplay(lastMove);
   const focusedMove = clampedPly > 0 ? moves[clampedPly - 1] : null;
+
+  const showContinuations = clampedPly === maxPly && maxPly >= 1 && continuations.length > 0;
+  const sharedPosition = selectSharedPositionLinks({
+    segments: sharedSegments,
+    ply: clampedPly,
+    maxPly,
+    hasContinuations: showContinuations,
+  });
 
   // Markup is keyed by the position a move reaches, so the start position (ply
   // 0) has none. Read-only here — drawing belongs to the line editor, which
@@ -257,9 +277,9 @@ export function LineDetailBoard({
         </div>
 
         {/* Only meaningful at the line's final position — a mid-line shared
-            run is a different indicator's job. Plain text links, since
-            this is a note about the position rather than an action on it. */}
-        {clampedPly === maxPly && maxPly >= 1 && continuations.length > 0 && (
+            run is the note below's job. Plain text links, since this is a
+            note about the position rather than an action on it. */}
+        {showContinuations && (
           <div className="space-y-1 text-sm text-muted-foreground">
             {continuations.slice(0, MAX_CONTINUATION_LINKS).map((c) => (
               <p key={`${c.lineNo}-${c.ply}`}>
@@ -279,6 +299,31 @@ export function LineDetailBoard({
             ))}
           </div>
         )}
+
+        {/* Same slot and treatment as the continuations above, which take the
+            slot at the final position (see `selectSharedPositionLinks`). */}
+        {sharedPosition.links.length > 0 && (
+          <div className="space-y-1 text-sm text-muted-foreground">
+            {sharedPosition.links.map((s) => (
+              <p key={s.lineNo}>
+                {tTransposition.rich('passesThrough', {
+                  lineLabel: s.label,
+                  link: (chunks) => (
+                    <Link
+                      href={`/${locale}/repertoires/${repertoireId}/lines/${s.lineNo}?move=${s.ply}`}
+                      className={`font-medium ${TEXT_LINK_CLASSES}`}
+                    >
+                      {chunks}
+                    </Link>
+                  ),
+                })}
+              </p>
+            ))}
+            {sharedPosition.remaining > 0 && (
+              <p>{tTransposition('passesThroughMore', { count: sharedPosition.remaining })}</p>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="lg:order-3 lg:col-span-3">
@@ -292,6 +337,7 @@ export function LineDetailBoard({
             initialText={focusedMove.annotation}
             moveNotation={moveNotation}
             isOwner={isOwner}
+            sharedWithOtherLines={isPositionSharedWithOtherLines(sharedSegments, clampedPly)}
           />
         ) : (
           // At the start position (ply 0) no single move is in focus, so instead

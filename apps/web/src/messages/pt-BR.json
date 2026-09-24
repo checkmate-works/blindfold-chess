@@ -178,7 +178,9 @@
       "positionActions": "Ações da posição",
       "memorizeUpToHere": "Memorizar até aqui",
       "transposition": {
-        "continuesIn": "Esta posição continua em <link>{lineLabel}</link> (+{count, plural, one {# lance} other {# lances}} a mais)"
+        "continuesIn": "Esta posição continua em <link>{lineLabel}</link> (+{count, plural, one {# lance} other {# lances}} a mais)",
+        "passesThrough": "<link>{lineLabel}</link> também passa por esta posição",
+        "passesThroughMore": "e mais {count, plural, one {# linha} other {# linhas}}"
       },
       "annotation": {
         "title": "Por que este lance",
@@ -195,6 +197,8 @@
         "save": "Salvar",
         "cancel": "Cancelar",
         "sharedHelp": "Esta nota é compartilhada por todas as linhas deste kata que alcançam esta posição.",
+        "sharedBadge": "Compartilhada com outras linhas",
+        "sharedBadgeHint": "As notas são salvas por posição, então a mesma nota aparece em todas as linhas que alcançam esta posição, qualquer que seja a ordem dos lances.",
         "moreActions": "Mais ações",
         "deleteAction": "Excluir",
         "deleteConfirmTitle": "Excluir esta nota?",

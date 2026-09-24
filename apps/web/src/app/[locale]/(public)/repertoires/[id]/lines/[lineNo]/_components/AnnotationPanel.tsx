@@ -32,6 +32,12 @@ type Props = {
    */
   moveNotation: MoveNotationLine;
   isOwner: boolean;
+  /**
+   * Another line reaches this position by a different move order, so this
+   * note shows there too. Only flags the fact — which lines is the shared-
+   * position note under the board's job.
+   */
+  sharedWithOtherLines: boolean;
 };
 
 /**
@@ -59,6 +65,7 @@ export function AnnotationPanel({
   initialText,
   moveNotation,
   isOwner,
+  sharedWithOtherLines,
 }: Props) {
   const t = useTranslations('Repertoires.line.annotation');
   // What the server holds (as far as this component knows) vs. the editor's
@@ -125,9 +132,24 @@ export function AnnotationPanel({
   // the note reads as a peer of the discussion — "Why this move · 1. Nf3" over
   // "Comments" — rather than a differently-styled sidebar label. The move it
   // names is de-emphasised so the "why this move" label stays the header.
+  //
+  // The "shared" badge rides in the heading because it qualifies the note
+  // itself: notes are keyed by position, not by line, so a note that leans on
+  // this line's move order ("…c5 came first here") reads wrong on a line that
+  // transposes into the same position. The reason is spelled out in the
+  // tooltip and, for screen readers, in visually hidden text.
   const headingContent = (
     <>
       {t('title')} <span className="font-normal text-muted-foreground">· {moveLabel}</span>
+      {sharedWithOtherLines && (
+        <span
+          title={t('sharedBadgeHint')}
+          className="ml-2 inline-flex items-center rounded-full bg-muted px-2 py-0.5 align-middle text-xs font-normal text-muted-foreground"
+        >
+          {t('sharedBadge')}
+          <span className="sr-only">: {t('sharedBadgeHint')}</span>
+        </span>
+      )}
     </>
   );
   const heading = <SectionTitle>{headingContent}</SectionTitle>;
