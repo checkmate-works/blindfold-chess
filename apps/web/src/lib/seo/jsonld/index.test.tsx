@@ -426,6 +426,45 @@ describe('JSON-LD Schema Generators', () => {
 
       expect(schema.datePublished).toBe('2024-06-15T08:45:30.500Z');
     });
+
+    it('omits dateModified when updatedAt is not provided', () => {
+      const schema = generateBlogPostingSchema(basePost);
+
+      expect(schema).not.toHaveProperty('dateModified');
+    });
+
+    it('emits dateModified when updatedAt is later than publishedAt', () => {
+      const post: BlogPostData = { ...basePost, updatedAt: new Date('2024-03-01T09:00:00Z') };
+      const schema = generateBlogPostingSchema(post);
+
+      expect(schema.dateModified).toBe('2024-03-01T09:00:00.000Z');
+    });
+
+    it('omits dateModified when updatedAt predates publishedAt', () => {
+      // An admin save made before the publication date typed into the form.
+      const post: BlogPostData = { ...basePost, updatedAt: new Date('2024-01-19T00:00:00Z') };
+      const schema = generateBlogPostingSchema(post);
+
+      expect(schema).not.toHaveProperty('dateModified');
+    });
+
+    it('omits dateModified when updatedAt equals publishedAt', () => {
+      const post: BlogPostData = { ...basePost, updatedAt: new Date('2024-01-20T14:30:00Z') };
+      const schema = generateBlogPostingSchema(post);
+
+      expect(schema).not.toHaveProperty('dateModified');
+    });
+
+    it('emits dateModified as-is when publishedAt is null', () => {
+      const post: BlogPostData = {
+        ...basePost,
+        publishedAt: null,
+        updatedAt: new Date('2024-03-01T09:00:00Z'),
+      };
+      const schema = generateBlogPostingSchema(post);
+
+      expect(schema.dateModified).toBe('2024-03-01T09:00:00.000Z');
+    });
   });
 
   describe('generateItemListSchema', () => {

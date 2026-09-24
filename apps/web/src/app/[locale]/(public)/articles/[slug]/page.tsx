@@ -112,6 +112,10 @@ export default async function ArticlePage({ params }: Props) {
           description: toMetaDescription(article.content),
           slug: article.slug,
           publishedAt: article.publishedAt,
+          // From the row being rendered, which under locale fallback is another
+          // locale's: its edits, not the untranslated locale's, are what this
+          // page shows.
+          updatedAt: article.updatedAt,
           locale,
         })}
       />
