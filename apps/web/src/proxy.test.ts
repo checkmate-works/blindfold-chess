@@ -150,6 +150,52 @@ describe('proxy', () => {
     expect(capturedRequestHeaders).toBeUndefined();
   });
 
+  describe('embed surface', () => {
+    const cspOf = (response: Response) =>
+      response.headers.get('Content-Security-Policy-Report-Only');
+
+    it('serves a pinned-language embed a request-invariant policy, since the CDN stores its body', async () => {
+      const a = await proxy(makeRequest('/embed/g/abc123?lang=ja'));
+      const b = await proxy(makeRequest('/embed/g/abc123?lang=ja'));
+
+      expect(scriptSrcOf(a)).not.toContain("'nonce-");
+      expect(scriptSrcOf(a)).toContain("'unsafe-inline'");
+      expect(cspOf(a)).toBe(cspOf(b));
+      // Still framable — the variant change must not touch frame-ancestors.
+      expect(cspOf(a)).toContain('frame-ancestors *');
+    });
+
+    it('keeps the nonce policy on a negotiated embed, which renders per request', async () => {
+      for (const path of ['/embed/g/abc123', '/embed/g/abc123?lang=fr']) {
+        const response = await proxy(makeRequest(path));
+        expect(scriptSrcOf(response), path).toContain("'nonce-");
+        expect(cspOf(response), path).toContain('frame-ancestors *');
+      }
+    });
+
+    it('does not refresh the session, so no Set-Cookie can reach a stored copy', async () => {
+      const { updateSession } = await import('@/lib/supabase/proxy');
+      vi.mocked(updateSession).mockClear();
+
+      const response = await proxy(makeRequest('/embed/g/abc123?lang=ja&bg=dark'));
+
+      expect(updateSession).not.toHaveBeenCalled();
+      expect(response.headers.get('set-cookie')).toBeNull();
+      // The layout still needs the query string it cannot otherwise see.
+      expect(response.headers.get('x-middleware-request-x-search')).toBe('?lang=ja&bg=dark');
+    });
+
+    it('collapses a repeated lang to its first value before anything renders', async () => {
+      const response = await proxy(makeRequest('/embed/g/abc123?lang=xx&view=plain&lang=ja'));
+
+      expect(response.status).toBe(307);
+      const location = new URL(response.headers.get('location') as string);
+      expect(location.pathname).toBe('/embed/g/abc123');
+      expect(location.searchParams.getAll('lang')).toEqual(['xx']);
+      expect(location.searchParams.get('view')).toBe('plain');
+    });
+  });
+
   describe('post-auth return target', () => {
     const locationOf = (response: Response) => new URL(response.headers.get('location') as string);
 
