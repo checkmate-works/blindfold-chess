@@ -43,8 +43,10 @@ export function AdminSidebarNav({ groups }: { groups: AdminNavGroup[] }) {
                 key={link.href}
                 href={link.href}
                 aria-current={active ? 'page' : undefined}
-                className={`block px-3 py-2 rounded text-sm transition-colors ${
-                  active ? 'bg-background font-medium' : 'hover:bg-background'
+                className={`block rounded-md border-l-4 px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-secondary ${
+                  active
+                    ? 'border-primary bg-primary font-semibold text-primary-foreground'
+                    : 'border-transparent text-secondary-foreground hover:bg-accent'
                 }`}
               >
                 {link.label}
