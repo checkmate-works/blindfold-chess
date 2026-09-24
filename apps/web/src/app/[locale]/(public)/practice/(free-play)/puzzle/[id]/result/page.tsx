@@ -6,7 +6,7 @@ import { notFound } from 'next/navigation';
 
 import { eq } from 'drizzle-orm';
 
-import { getNativeThumbCreatives } from '@/lib/ads/ad';
+import { resolveNativeThumbCreatives } from '@/lib/ads/ad';
 import { PUZZLE_RESULT_NATIVE_AD_SLOT } from '@/lib/ads/registry';
 import { getOptionalUser } from '@/lib/auth';
 import { db, puzzleSolutions } from '@/lib/db';
@@ -79,10 +79,8 @@ export default async function PuzzleResultPage({ params, searchParams }: Props) 
 
   const currentUser = await getOptionalUser();
 
-  // The viewer-independent read, not `resolveNativeAds`: this route is
-  // already dynamic, but the thumb pool does not depend on who is asking, and
-  // the per-reader hide is the `bfc_ads_hidden` cookie and the CSS rule on
-  // `.ad-slot-wrapper` that `NativeAdThumb` owns.
+  // The thumb pool is empty for an ad-free reader, which puts the grid back
+  // to four puzzles.
   const [solutions, expInfo, likeMeta, nextPuzzles, nativeAdCreatives] = await Promise.all([
     db
       .select({ solutionMoves: puzzleSolutions.solutionMoves })
@@ -91,7 +89,7 @@ export default async function PuzzleResultPage({ params, searchParams }: Props) 
     resolveExpInfoFromGrantParam(resolvedSearchParams, 'practice_result'),
     getPositionLikeMeta(position.id, currentUser?.id),
     loadNextPositions(position, 'puzzle'),
-    getNativeThumbCreatives(PUZZLE_RESULT_NATIVE_AD_SLOT, locale),
+    resolveNativeThumbCreatives(PUZZLE_RESULT_NATIVE_AD_SLOT, currentUser?.id ?? null, locale),
   ]);
 
   const solutionMoveLists = solutions.map((s) => s.solutionMoves);

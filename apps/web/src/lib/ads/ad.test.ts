@@ -3,19 +3,26 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 
 const mockOrderBy = vi.fn();
+// Counts every read so a test can assert that none was made; the chain behind
+// it only serves `getAllAdCreatives`.
+const mockSelect = vi.fn(() => ({
+  from: () => ({
+    orderBy: () => mockOrderBy(),
+  }),
+}));
 
 vi.mock('@/lib/db', async () => ({
   ...(await actualDbSchema()),
   db: {
-    select: () => ({
-      from: () => ({
-        orderBy: () => mockOrderBy(),
-      }),
-    }),
+    select: () => mockSelect(),
   },
 }));
 
 // unstable_cache wraps a function; for unit tests we just run the inner fn.
+vi.mock('next/cache', () => ({
+  unstable_cache: <T>(fn: T) => fn,
+}));
+
 const mockHasActiveSubscription = vi.fn();
 vi.mock('@/lib/billing/subscription', () => ({
   hasActiveSubscription: (...args: unknown[]) => mockHasActiveSubscription(...args),
@@ -31,7 +38,13 @@ vi.mock('@/lib/users/dan-rank', () => ({
   hasDanTierRank: (...args: unknown[]) => mockHasDanTierRank(...args),
 }));
 
-const { getAllAdCreatives, shouldShowAdsForUser } = await import('./ad');
+const {
+  getAllAdCreatives,
+  resolveNativeThumbCreatives,
+  resolveNativeTileCreatives,
+  shouldShowAdsForUser,
+} = await import('./ad');
+const { PRACTICE_RESULT_NATIVE_AD_SLOT, PUZZLE_DETAIL_NATIVE_AD_SLOT } = await import('./registry');
 
 describe('getAllAdCreatives', () => {
   it('should return creatives array when they exist', async () => {
@@ -117,5 +130,49 @@ describe('shouldShowAdsForUser', () => {
     expect(mockHasActiveSubscription).toHaveBeenCalledWith('user-456');
     expect(mockHasActiveGrant).toHaveBeenCalledWith('user-456', 'ad_free');
     expect(mockHasDanTierRank).toHaveBeenCalledWith('user-456');
+  });
+});
+
+describe('resolveNativeThumbCreatives', () => {
+  beforeEach(() => {
+    mockSelect.mockClear();
+    mockHasActiveSubscription.mockResolvedValue(false);
+    mockHasActiveGrant.mockResolvedValue(false);
+    mockHasDanTierRank.mockResolvedValue(false);
+  });
+
+  it('returns an empty pool for an ad-free viewer without reading creatives', async () => {
+    mockHasActiveSubscription.mockResolvedValue(true);
+
+    const result = await resolveNativeThumbCreatives(PUZZLE_DETAIL_NATIVE_AD_SLOT, 'user-1', 'en');
+    expect(result).toEqual([]);
+    expect(mockSelect).not.toHaveBeenCalled();
+  });
+
+  it('reads the slot pool for a guest', async () => {
+    await resolveNativeThumbCreatives(PUZZLE_DETAIL_NATIVE_AD_SLOT, null, 'en');
+    expect(mockSelect).toHaveBeenCalled();
+  });
+});
+
+describe('resolveNativeTileCreatives', () => {
+  beforeEach(() => {
+    mockSelect.mockClear();
+    mockHasActiveSubscription.mockResolvedValue(false);
+    mockHasActiveGrant.mockResolvedValue(false);
+    mockHasDanTierRank.mockResolvedValue(false);
+  });
+
+  it('returns an empty pool for an ad-free viewer without reading creatives', async () => {
+    mockHasActiveGrant.mockResolvedValue(true);
+
+    const result = await resolveNativeTileCreatives(PRACTICE_RESULT_NATIVE_AD_SLOT, 'user-1', 'en');
+    expect(result).toEqual([]);
+    expect(mockSelect).not.toHaveBeenCalled();
+  });
+
+  it('reads the slot pool for a guest', async () => {
+    await resolveNativeTileCreatives(PRACTICE_RESULT_NATIVE_AD_SLOT, null, 'en');
+    expect(mockSelect).toHaveBeenCalled();
   });
 });

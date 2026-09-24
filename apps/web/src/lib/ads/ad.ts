@@ -268,6 +268,49 @@ export async function getNativeThumbCreatives(
 }
 
 /**
+ * {@link getNativeThumbCreatives} gated on the viewer's ad entitlement: an
+ * ad-free viewer gets an empty pool, and the creative read is skipped.
+ *
+ * The thumb surfaces cannot leave the hide to the `bfc_ads_hidden` CSS layer
+ * the way the card and tile surfaces do. `NextPositionsSection` trades its
+ * fourth position for the ad cell and wraps that cell in a grid `<li>`; the
+ * CSS rule collapses `NativeAdThumb`'s own wrapper but not the `<li>` around
+ * it, so an ad-free reader was served a blank first cell and one position
+ * fewer. An empty pool here is what puts the grid back to four positions.
+ *
+ * Unlike {@link resolveNativeAds} there is no `IS_LOCAL_DEV` force-on: the
+ * CSS layer still hides the ad locally for an ad-free viewer, so forcing the
+ * pool on would reproduce the blank cell in development instead of showing
+ * the placement.
+ */
+export async function resolveNativeThumbCreatives(
+  slot: AdSlot,
+  userId: string | null,
+  locale: Locale
+): Promise<NativeThumbView[]> {
+  if (!(await shouldShowAdsForUser(userId))) return [];
+
+  return getNativeThumbCreatives(slot, locale);
+}
+
+/**
+ * {@link getNativeTileCreatives} gated on the viewer's ad entitlement, for the
+ * same reason {@link resolveNativeThumbCreatives} exists: a surface that
+ * spaces the tile with a wrapper of its own keeps that wrapper, and its
+ * margin, after the CSS rule hides the tile inside it. The practice result
+ * screen's `PracticeComplete` is one. Same no-force-on rule as the thumb gate.
+ */
+export async function resolveNativeTileCreatives(
+  slot: AdSlot,
+  userId: string | null,
+  locale: Locale
+): Promise<NativeTileView[]> {
+  if (!(await shouldShowAdsForUser(userId))) return [];
+
+  return getNativeTileCreatives(slot, locale);
+}
+
+/**
  * The one-call server prologue for a native-card surface: the viewer's ad
  * entitlement (`showAds`, with the `IS_LOCAL_DEV` force-on so placements are
  * testable locally) and — only when ads show at all — the slot's creatives

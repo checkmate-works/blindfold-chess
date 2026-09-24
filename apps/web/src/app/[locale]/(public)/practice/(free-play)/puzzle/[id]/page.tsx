@@ -7,7 +7,7 @@ import { Link } from '@/i18n/routing';
 import { FaBrain, FaPlay, FaPlusCircle } from 'react-icons/fa';
 import { FiEdit2, FiGitBranch } from 'react-icons/fi';
 
-import { getNativeThumbCreatives } from '@/lib/ads/ad';
+import { resolveNativeThumbCreatives } from '@/lib/ads/ad';
 import { PUZZLE_DETAIL_NATIVE_AD_SLOT } from '@/lib/ads/registry';
 import { getOptionalUser } from '@/lib/auth';
 import { loadNextPositions } from '@/lib/positions/next-positions';
@@ -112,12 +112,11 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
 
   // The same two-tier ranking the result screen uses (this author first, then
   // the newest), and the same grid — only the heading and the ad pool differ,
-  // because this reader has not solved anything yet. The thumb pool is read
-  // viewer-independently, like the result screen's: the per-reader hide is
-  // the `bfc_ads_hidden` cookie and the CSS rule `NativeAdThumb` owns.
+  // because this reader has not solved anything yet. The thumb pool is empty
+  // for an ad-free reader, which puts the grid back to four puzzles.
   const [otherPuzzles, nativeAdCreatives] = await Promise.all([
     loadNextPositions(position, 'puzzle'),
-    getNativeThumbCreatives(PUZZLE_DETAIL_NATIVE_AD_SLOT, locale),
+    resolveNativeThumbCreatives(PUZZLE_DETAIL_NATIVE_AD_SLOT, currentUser?.id ?? null, locale),
   ]);
 
   const forkedFromNote = (
