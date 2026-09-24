@@ -80,6 +80,13 @@ DROP POLICY IF EXISTS "likes_insert" ON "likes";
 
 DROP POLICY IF EXISTS "likes_delete" ON "likes";
 
+-- Renaming the table from `topic_post_likes` kept its policies under their old
+-- names, so the drops above never matched them and production still carried
+-- this owner-scoped INSERT / DELETE pair after the write grants were revoked.
+DROP POLICY IF EXISTS "topic_post_likes_select" ON "likes";
+DROP POLICY IF EXISTS "topic_post_likes_insert" ON "likes";
+DROP POLICY IF EXISTS "topic_post_likes_delete" ON "likes";
+
 -- =============================================================================
 -- user_follows
 -- =============================================================================
