@@ -19,6 +19,9 @@
   --color-ring: #262626;
   --color-link-primary: #262626;
   --color-link-secondary: #606060;
+  /* Data marks get their own mid-grey: the monochrome primary is near-black here and
+     near-white in dark mode, which reads as a solid slab rather than as data. */
+  --color-chart-bar: #767676;
 }
 
 :root.admin-theme.dark {
@@ -40,4 +43,5 @@
   --color-ring: #eeeeee;
   --color-link-primary: #eeeeee;
   --color-link-secondary: #b3b3b3;
+  --color-chart-bar: #9a9a9a;
 }

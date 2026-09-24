@@ -64,7 +64,7 @@ export function HorizontalCountBarChart<T>({
         {tooltip}
         <Bar
           dataKey="count"
-          fill="var(--color-primary)"
+          fill="var(--color-chart-bar)"
           radius={[0, 4, 4, 0]}
           cursor={onBarClick ? 'pointer' : undefined}
           onClick={(row) => onBarClick?.(row as unknown as T)}
