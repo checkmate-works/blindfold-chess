@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 
 import { driver } from 'driver.js';
 import 'driver.js/dist/driver.css';
+import { flushSync } from 'react-dom';
 import { FaQuestionCircle } from 'react-icons/fa';
 
 export type HelpStep = {
@@ -21,9 +22,16 @@ type Props = {
   steps: HelpStep[];
   /** aria-label for the trigger button. */
   label: string;
+  /**
+   * Runs before the steps' targets are looked up, for a caller whose tour walks
+   * through content that may be collapsed (it can expand it here). Any state it
+   * sets is flushed synchronously, so the revealed targets are already in the
+   * DOM when the lookup below skips absent ones.
+   */
+  onBeforeStart?: () => void;
 };
 
-export function HelpTourButton({ steps, label }: Props) {
+export function HelpTourButton({ steps, label, onBeforeStart }: Props) {
   const driverRef = useRef<ReturnType<typeof driver> | null>(null);
   const pathname = usePathname();
 
@@ -39,6 +47,7 @@ export function HelpTourButton({ steps, label }: Props) {
 
   const startTour = () => {
     driverRef.current?.destroy();
+    if (onBeforeStart) flushSync(onBeforeStart);
     // Only walk through controls that are actually on screen. A step whose
     // target is absent (e.g. a control that only appears in a particular view)
     // is skipped rather than shown as a centered popover pointing at nothing.
