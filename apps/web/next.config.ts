@@ -286,6 +286,27 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      {
+        // CDN copy of an embed whose language is pinned by `?lang=` — see
+        // `src/lib/games/embed-cdn-cache.ts` for why only then, why this
+        // header rather than `Cache-Control`, and the TTL. The value is
+        // `EMBED_CDN_CACHE_CONTROL` and the locales are `SUPPORTED_LOCALES`,
+        // repeated as literals for the same reason as the embed prefix above;
+        // `embed-cdn-cache.test.ts` asserts neither drifts.
+        //
+        // The explicit `^…$` is redundant under Next's own matcher, which
+        // anchors `value` itself, but the rule is re-evaluated by Vercel's
+        // router on deploy and an unanchored `en` would also match `?lang=xen`
+        // — a value the page does not accept and therefore negotiates.
+        source: '/embed/:path*',
+        has: [{ type: 'query', key: 'lang', value: '^(?:en|es|pt-BR|ja)$' }],
+        headers: [
+          {
+            key: 'Vercel-CDN-Cache-Control',
+            value: 's-maxage=300, stale-while-revalidate=900',
+          },
+        ],
+      },
       // NOTE: Cache headers for the Maia ONNX model are set inside the
       // /api/engines/maia/[file] handler itself, not here. The model is
       // no longer a public static asset — it's served from a server-only

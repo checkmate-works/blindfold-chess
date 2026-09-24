@@ -6,7 +6,9 @@ import * as Sentry from '@sentry/nextjs';
 
 import { refreshAdsHiddenCookieOnResponse } from '@/lib/ads/ads-hidden-cookie-writer';
 import { resolveReturnPath, returnTargetFor, withReturnPath } from '@/lib/auth-return-path';
+import { embedLangNeedsCollapse, isCdnCacheableEmbedRequest } from '@/lib/games/embed-cdn-cache';
 import {
+  type ScriptPolicy,
   buildCspHeader,
   buildReportToHeader,
   buildReportingEndpointsHeader,
@@ -72,18 +74,36 @@ function isAdsCookieRefreshPath(pathname: string): boolean {
 }
 
 /**
- * Apply CSP + reporting endpoint headers to a response, given the request
- * nonce and path.
+ * The `script-src` variant for a request.
  *
- * The path decides two things:
- * - `frame-ancestors`: the embed surface is meant to be put in someone
- *   else's `<iframe>`, everything else must not be. See
- *   `@/lib/security/framing`, which the static `X-Frame-Options` rule in
- *   `next.config.ts` mirrors.
- * - the `script-src` variant: prerendered (SSG/ISR) content routes cannot
- *   carry a per-request nonce in their cached HTML, so they get the
- *   static-content policy instead — see `@/lib/security/static-content-paths`
- *   and the module doc in `@/lib/security/csp`.
+ * A per-request nonce only works when the HTML is rendered for that request:
+ * Next copies the nonce from this header into the scripts it emits, so HTML
+ * that is shared between requests would carry some earlier request's nonce
+ * under this one's header. Two kinds of response are shared and get the
+ * static-content variant instead:
+ *
+ * - prerendered (SSG/ISR) content routes — see
+ *   `@/lib/security/static-content-paths` and the module doc in
+ *   `@/lib/security/csp`;
+ * - embeds stored by the CDN — see `@/lib/games/embed-cdn-cache`. The header
+ *   is still stamped per request (the proxy runs ahead of the CDN), but it is
+ *   request-invariant, so a stored body always matches it.
+ */
+function scriptPolicyFor(request: NextRequest): ScriptPolicy {
+  const { pathname, searchParams } = request.nextUrl;
+  return isStaticContentPath(pathname) || isCdnCacheableEmbedRequest(pathname, searchParams)
+    ? { mode: 'static-content' }
+    : { mode: 'per-request-nonce', nonce: generateCspNonce() };
+}
+
+/**
+ * Apply CSP + reporting endpoint headers to a response, given its
+ * `script-src` variant (see {@link scriptPolicyFor}) and path.
+ *
+ * The path decides `frame-ancestors`: the embed surface is meant to be put in
+ * someone else's `<iframe>`, everything else must not be. See
+ * `@/lib/security/framing`, which the static `X-Frame-Options` rule in
+ * `next.config.ts` mirrors.
  *
  * Extracted into a helper so every `return` branch below can stamp the
  * headers consistently. The CSP is currently emitted as `Report-Only` — the
@@ -98,10 +118,11 @@ function isAdsCookieRefreshPath(pathname: string): boolean {
  * `Report-To` (its deprecated JSON predecessor) are emitted concurrently so
  * supporting browsers use the former while older ones keep working.
  */
-function applyCspHeaders(response: NextResponse, nonce: string, pathname: string): NextResponse {
-  const scriptPolicy = isStaticContentPath(pathname)
-    ? ({ mode: 'static-content' } as const)
-    : ({ mode: 'per-request-nonce', nonce } as const);
+function applyCspHeaders(
+  response: NextResponse,
+  scriptPolicy: ScriptPolicy,
+  pathname: string
+): NextResponse {
   response.headers.set(
     'Content-Security-Policy-Report-Only',
     buildCspHeader(scriptPolicy, { allowFraming: isFramablePath(pathname) })
@@ -138,14 +159,25 @@ export async function proxy(request: NextRequest) {
     return redirect;
   }
 
-  // Generate a per-request nonce for the CSP header on dynamic routes.
-  // Next.js extracts it from the `Content-Security-Policy(-Report-Only)`
-  // header (set in `applyCspHeaders` below) and stamps it on the scripts it
-  // emits during a dynamic render — no Server Component reads it. The app's
-  // own inline bootstrap scripts are allowed by `'sha256-...'` hash sources
-  // instead (see `@/lib/security/inline-script-hashes`), precisely so that
-  // no layout needs a `headers()` call that would force dynamic rendering.
-  const nonce = generateCspNonce();
+  // One `lang` per embed URL, before anything renders or is cached — see
+  // `embedLangNeedsCollapse()`. The first value is kept because that is the
+  // one the embed itself honours, so the redirect never changes what the
+  // reader would have seen. No CSP headers, as with the redirect above.
+  const firstLang = request.nextUrl.searchParams.get('lang');
+  if (firstLang !== null && embedLangNeedsCollapse(pathname, request.nextUrl.searchParams)) {
+    const collapsedUrl = request.nextUrl.clone();
+    collapsedUrl.searchParams.set('lang', firstLang);
+    return NextResponse.redirect(collapsedUrl, 307);
+  }
+
+  // On dynamic routes this carries a per-request nonce, which Next.js
+  // extracts from the `Content-Security-Policy(-Report-Only)` header (set in
+  // `applyCspHeaders` below) and stamps on the scripts it emits during a
+  // dynamic render — no Server Component reads it. The app's own inline
+  // bootstrap scripts are allowed by `'sha256-...'` hash sources instead (see
+  // `@/lib/security/inline-script-hashes`), precisely so that no layout needs
+  // a `headers()` call that would force dynamic rendering.
+  const scriptPolicy = scriptPolicyFor(request);
   const requestHeaders = new Headers(request.headers);
   // Expose the request pathname to Server Components via `headers()`. Layouts
   // use it to pick a route-appropriate Suspense fallback (loading skeleton),
@@ -159,11 +191,23 @@ export async function proxy(request: NextRequest) {
   // late. Includes the leading `?`, or is empty when there is no query.
   requestHeaders.set('x-search', request.nextUrl.search);
 
+  // The embed surface never refreshes the session. It reads no cookie and
+  // renders nothing per user, so the refresh would only cost a claims check
+  // per iframe load — and it can answer with `Set-Cookie`, which must never
+  // ride on a response the CDN stores for every reader of that URL.
+  if (isFramablePath(pathname)) {
+    return applyCspHeaders(
+      NextResponse.next({ request: { headers: requestHeaders } }),
+      scriptPolicy,
+      pathname
+    );
+  }
+
   const { response, authenticated, userId } = await updateSession(request, { requestHeaders });
 
   // Return 404 for unauthenticated admin access to hide admin panel existence
   if (isAdminPath(pathname) && !authenticated) {
-    return applyCspHeaders(new NextResponse(null, { status: 404 }), nonce, pathname);
+    return applyCspHeaders(new NextResponse(null, { status: 404 }), scriptPolicy, pathname);
   }
 
   // Redirect unauthenticated users away from auth-required pages, remembering
@@ -176,7 +220,7 @@ export async function proxy(request: NextRequest) {
       withReturnPath(`/${locale}/sign-in`, returnTargetFor(pathname, request.nextUrl.search)),
       request.url
     );
-    return applyCspHeaders(NextResponse.redirect(signInUrl), nonce, pathname);
+    return applyCspHeaders(NextResponse.redirect(signInUrl), scriptPolicy, pathname);
   }
 
   // Redirect authenticated users away from the sign-in page — to their return
@@ -189,7 +233,7 @@ export async function proxy(request: NextRequest) {
     // `resolveReturnPath` rejects `/sign-in` itself, so this cannot loop.
     const next = resolveReturnPath(request.nextUrl.searchParams.get('next'));
     const destination = new URL(next ?? `/${locale}/mypage?toast=already_logged_in`, request.url);
-    return applyCspHeaders(NextResponse.redirect(destination), nonce, pathname);
+    return applyCspHeaders(NextResponse.redirect(destination), scriptPolicy, pathname);
   }
 
   // Refresh the `bfc_ads_hidden` cookie on the response when the user is
@@ -211,7 +255,7 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  return applyCspHeaders(response, nonce, pathname);
+  return applyCspHeaders(response, scriptPolicy, pathname);
 }
 
 export const config = {

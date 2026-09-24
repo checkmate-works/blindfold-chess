@@ -65,6 +65,13 @@ async function loadGame(code: string) {
  * is negotiated per request, as `/g/<code>` does, with `?lang=` as the
  * override for a blogger who wants their article's language pinned.
  *
+ * That split also decides caching. A pinned URL renders the same body for
+ * every reader, so the CDN stores it for a few minutes and a popular article
+ * stops costing one render per page view; a negotiated one varies by
+ * `Accept-Language` and renders every time. The rule, the TTL, and what the
+ * body must avoid for the stored copy to stay correct are in
+ * `@/lib/games/embed-cdn-cache`.
+ *
  * The framing headers that make this path embeddable live in
  * `@/lib/security/framing`; the bare document around it is `../../layout.tsx`.
  */
