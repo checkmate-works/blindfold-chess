@@ -3,10 +3,10 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-import * as Sentry from '@sentry/nextjs';
 import { FiCheck } from 'react-icons/fi';
 
 import { withReturnPath } from '@/lib/auth-return-path';
+import { captureError } from '@/lib/sentry/capture-error';
 
 import { createCheckoutSession } from '@/app/[locale]/(protected)/mypage/(confirmed)/subscription/_actions/createCheckoutSession';
 
@@ -64,8 +64,7 @@ export function PricingCard(props: Props) {
         router.push(`/${props.locale}/banned`);
         return;
       default:
-        console.error('Checkout error:', result.error);
-        Sentry.captureException(new Error(`Checkout session error: ${result.error}`));
+        captureError(new Error(`Checkout session error: ${result.error}`), 'Checkout error');
     }
   }
 

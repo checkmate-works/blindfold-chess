@@ -3,7 +3,8 @@
 import { useCallback, useRef, useState } from 'react';
 
 import { useRouter } from '@/i18n/routing';
-import * as Sentry from '@sentry/nextjs';
+
+import { captureError } from '@/lib/sentry/capture-error';
 
 import { savePuzzleResult } from '../_actions/savePuzzleResult';
 import type { Attempt } from '../_lib/puzzle-match';
@@ -89,7 +90,7 @@ export function usePuzzleCompletion({ positionId, fen }: Options): Return {
           }
         })
         .catch((err) => {
-          Sentry.captureException(err);
+          captureError(err, '[usePuzzleCompletion] savePuzzleResult');
         });
 
       setTimeout(() => {

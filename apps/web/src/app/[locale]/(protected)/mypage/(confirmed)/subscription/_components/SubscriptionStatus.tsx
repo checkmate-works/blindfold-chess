@@ -1,13 +1,13 @@
 'use client';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import * as Sentry from '@sentry/nextjs';
 
 import {
   isCancellationScheduled,
   isSubscriptionActive,
 } from '@/lib/billing/subscription-constants';
 import type { Subscription } from '@/lib/db';
+import { captureError } from '@/lib/sentry/capture-error';
 
 import { createPortalSession } from '../_actions/createPortalSession';
 
@@ -22,8 +22,7 @@ export function SubscriptionStatus({ subscription, locale }: Props) {
   async function handleManage() {
     const result = await createPortalSession(locale);
     if (result && 'error' in result) {
-      console.error('Portal error:', result.error);
-      Sentry.captureException(new Error(`Portal session error: ${result.error}`));
+      captureError(new Error(`Portal session error: ${result.error}`), 'Portal error');
     }
     // If successful, redirect happens via Server Action
   }
