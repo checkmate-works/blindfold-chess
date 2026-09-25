@@ -1,6 +1,7 @@
 import {
   PIECE_NAME_TO_SHORT,
   PIECE_SHORT_TO_NAME,
+  PIECE_TYPES,
   type PieceFullName,
 } from '@/lib/games/chess-pieces';
 
@@ -30,3 +31,19 @@ export const VALID_PIECE_NAMES = [
   'knight',
   'random',
 ] as const satisfies readonly PieceFullName[];
+
+/**
+ * Resolve the `piece` query parameter the challenge and training pages both
+ * read. A missing or unknown value falls back to `random`, which drills every
+ * piece; a named piece narrows the session to that one piece.
+ */
+export function parsePieceParam(raw: string | undefined): {
+  selectedPiece: string;
+  selectedPieces: PieceType[];
+} {
+  const selectedPiece =
+    raw && (VALID_PIECE_NAMES as readonly string[]).includes(raw) ? raw : 'random';
+  const selectedPieces: PieceType[] =
+    selectedPiece === 'random' ? [...PIECE_TYPES] : [PIECE_NAME_TO_TYPE[selectedPiece]];
+  return { selectedPiece, selectedPieces };
+}

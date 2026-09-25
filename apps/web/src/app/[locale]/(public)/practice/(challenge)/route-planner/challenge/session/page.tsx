@@ -4,8 +4,7 @@ import { CHALLENGE_TIME_LIMIT } from '@/lib/challenge/constants';
 
 import { createPracticeChallengeSessionPage } from '@/app/[locale]/(public)/practice/_lib/createPracticeSessionPages';
 
-import type { PieceType } from '../../_lib/pieces';
-import { PIECE_NAME_TO_TYPE, VALID_PIECE_NAMES } from '../../_lib/query-params';
+import { parsePieceParam } from '../../_lib/query-params';
 
 const RoutePlannerChallengeSession = dynamic(
   () => import('../_components/RoutePlannerChallengeSession')
@@ -23,10 +22,7 @@ const { generateMetadata, generateStaticParams, Page } = createPracticeChallenge
     { labelKey: 'routePlanner.session' },
   ],
   renderContent: ({ locale, searchParams }) => {
-    const piece = searchParams.piece as string | undefined;
-    const validPieceName =
-      piece && (VALID_PIECE_NAMES as readonly string[]).includes(piece) ? piece : 'knight';
-    const allowedPieces: PieceType[] = [PIECE_NAME_TO_TYPE[validPieceName]];
+    const allowedPieces = parsePieceParam(searchParams.piece as string | undefined);
 
     return (
       <RoutePlannerChallengeSession

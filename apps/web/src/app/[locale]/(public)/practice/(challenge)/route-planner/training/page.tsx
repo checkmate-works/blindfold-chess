@@ -13,8 +13,7 @@ import dynamic from 'next/dynamic';
 
 import { createPracticeTrainingPage } from '@/app/[locale]/(public)/practice/_lib/createPracticeSessionPages';
 
-import type { PieceType } from '../_lib/pieces';
-import { PIECE_NAME_TO_TYPE, VALID_PIECE_NAMES } from '../_lib/query-params';
+import { parsePieceParam } from '../_lib/query-params';
 
 const RoutePlannerSession = dynamic(() =>
   import('../_components/RoutePlannerSession').then((mod) => mod.RoutePlannerSession)
@@ -31,10 +30,7 @@ const { generateMetadata, Page } = createPracticeTrainingPage({
     { labelKey: 'modeTraining' },
   ],
   renderContent: ({ locale, searchParams }) => {
-    const piece = searchParams.piece as string | undefined;
-    const validPieceName =
-      piece && (VALID_PIECE_NAMES as readonly string[]).includes(piece) ? piece : 'knight';
-    const allowedPieces: PieceType[] = [PIECE_NAME_TO_TYPE[validPieceName]];
+    const allowedPieces = parsePieceParam(searchParams.piece as string | undefined);
 
     return <RoutePlannerSession locale={locale} allowedPieces={allowedPieces} mode="training" />;
   },

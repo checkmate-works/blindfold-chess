@@ -2,10 +2,12 @@
 
 import { ChessPiece } from '@/app/_components/chess/ChessPiece';
 
+import { PIECE_TYPES, type PieceShortCode } from '@/lib/games/chess-pieces';
+
 import { CoordinateInput } from '@/app/[locale]/_components/CoordinateInput';
 
 type Props = {
-  activePiece: 'k' | 'q' | 'r' | 'b' | 'n';
+  activePiece: PieceShortCode;
   selectedFile: string | null;
   selectedRank: string | null;
   onFileToggle: (file: string) => void;
@@ -40,7 +42,7 @@ export function PieceCoordinateInput({
     <div className="flex flex-col gap-3 p-4">
       {/* Piece Row (Read Only Indicator) */}
       <div className="flex gap-2 justify-center">
-        {(['k', 'q', 'r', 'b', 'n'] as const).map((piece) => (
+        {PIECE_TYPES.map((piece) => (
           <button
             key={piece}
             disabled

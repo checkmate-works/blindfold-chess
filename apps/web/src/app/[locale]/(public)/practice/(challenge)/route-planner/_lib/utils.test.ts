@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { PIECES } from './pieces';
 import type { RoutePlannerPieceSelection } from './pieces';
-import { PIECE_NAME_TO_TYPE, PIECE_TYPE_TO_NAME } from './query-params';
+import { PIECE_NAME_TO_TYPE, PIECE_TYPE_TO_NAME, parsePieceParam } from './query-params';
 
 describe('route-planner _lib pieces and query-params', () => {
   describe('PIECES', () => {
@@ -65,6 +65,19 @@ describe('route-planner _lib pieces and query-params', () => {
       for (const sel of selections) {
         expect(typeof sel).toBe('string');
       }
+    });
+  });
+
+  describe('parsePieceParam', () => {
+    it('narrows the session to the named piece', () => {
+      expect(parsePieceParam('bishop')).toEqual(['b']);
+      expect(parsePieceParam('knight')).toEqual(['n']);
+    });
+
+    it('falls back to the knight when the param is missing or unknown', () => {
+      expect(parsePieceParam(undefined)).toEqual(['n']);
+      expect(parsePieceParam('queen')).toEqual(['n']);
+      expect(parsePieceParam('')).toEqual(['n']);
     });
   });
 });
