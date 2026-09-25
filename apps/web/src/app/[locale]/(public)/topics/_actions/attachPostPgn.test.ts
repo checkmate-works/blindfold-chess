@@ -33,10 +33,16 @@ vi.mock('@/lib/db', async () => ({
   },
 }));
 
-vi.mock('@/lib/games/build-pgn-attachment-values', () => ({
-  buildPgnAttachmentValues: (...args: unknown[]) => mockBuildValues(...args),
-  pgnAttachmentErrorKey: (key: string) => `attachment.error.${key}`,
-}));
+vi.mock('@/lib/games/build-pgn-attachment-values', async () => {
+  const actual = await vi.importActual<typeof import('@/lib/games/build-pgn-attachment-values')>(
+    '@/lib/games/build-pgn-attachment-values'
+  );
+  return {
+    buildPgnAttachmentValues: (...args: unknown[]) => mockBuildValues(...args),
+    pgnAttachmentErrorKey: (key: string) => `attachment.error.${key}`,
+    pgnAttachmentConstraintErrorKey: actual.pgnAttachmentConstraintErrorKey,
+  };
+});
 
 vi.mock('@/lib/moderation/ban');
 
@@ -169,5 +175,33 @@ describe('attachPostPgn', () => {
 
     const result = await attachPostPgn(testPostId, 'en', fdWithAttachment('1. e4 e5'));
     expect(result).toEqual({ error: 'alreadyAttached' });
+  });
+
+  it.each([
+    ['23514', 'check_violation'],
+    ['22001', 'string_data_right_truncation'],
+  ])('maps a %s (%s) INSERT failure to the invalid-PGN key instead of throwing', async (code) => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
+    mockIsUserBanned.mockResolvedValue(false);
+    mockSelectLimit.mockResolvedValueOnce([ownedPostRow]);
+    mockBuildValues.mockResolvedValueOnce({ ok: true, values: validatedValues });
+    const pgErr = new Error('constraint') as Error & { code?: string };
+    pgErr.code = code;
+    mockInsertReturning.mockRejectedValueOnce(pgErr);
+
+    const result = await attachPostPgn(testPostId, 'en', fdWithAttachment('1. e4 e5'));
+    expect(result).toEqual({ error: 'attachment.error.invalidPgn' });
+  });
+
+  it('rethrows an INSERT failure that is not a constraint violation', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
+    mockIsUserBanned.mockResolvedValue(false);
+    mockSelectLimit.mockResolvedValueOnce([ownedPostRow]);
+    mockBuildValues.mockResolvedValueOnce({ ok: true, values: validatedValues });
+    mockInsertReturning.mockRejectedValueOnce(new Error('connection reset'));
+
+    await expect(attachPostPgn(testPostId, 'en', fdWithAttachment('1. e4 e5'))).rejects.toThrow(
+      'connection reset'
+    );
   });
 });

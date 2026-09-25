@@ -1,6 +1,7 @@
 'use server';
 
 import type { DbTx } from '@/lib/db/types';
+import { pgnAttachmentConstraintErrorKey } from '@/lib/games/build-pgn-attachment-values';
 import type { RateLimitConfig } from '@/lib/security/rate-limit';
 import { resolvePgnAttachment } from '@/lib/topic-posts/attachment-steps';
 
@@ -69,10 +70,23 @@ export async function createPostWithAttachmentBase(args: {
     return { error: attachment.error };
   }
 
-  return createPostBase({
-    ...topicSpec,
-    afterInsert:
-      attachment.kind === 'none' ? extraAfterInsert : attachment.afterInsert(extraAfterInsert),
-    formData,
-  });
+  if (attachment.kind === 'none') {
+    return createPostBase({ ...topicSpec, afterInsert: extraAfterInsert, formData });
+  }
+
+  // Only the attachment path is wrapped, so a constraint failure on a plain
+  // post is never reported as a bad PGN.
+  try {
+    return await createPostBase({
+      ...topicSpec,
+      afterInsert: attachment.afterInsert(extraAfterInsert),
+      formData,
+    });
+  } catch (err) {
+    const error = pgnAttachmentConstraintErrorKey(err);
+    if (error) {
+      return { error };
+    }
+    throw err;
+  }
 }

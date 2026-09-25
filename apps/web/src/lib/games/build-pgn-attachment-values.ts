@@ -1,6 +1,8 @@
 import { validateAttachedPgn } from '@blindfold-chess/features/chess-core';
 
 import type { NewPostGamePgnAttachment } from '@/lib/db';
+import { extractPgErrorCode } from '@/lib/db/extract-pg-error-code';
+import { PGN_HEADER_COLUMN_LENGTHS } from '@/lib/db/schema';
 import { resolveLichessAttachmentPgn } from '@/lib/games/resolve-lichess-attachment';
 import { sanitizePgnHeader } from '@/lib/games/sanitize-pgn-header';
 import { detectAttachmentInput } from '@/lib/games/validation';
@@ -116,6 +118,7 @@ export async function buildPgnAttachmentValues(
   }
 
   const validated = validateAttachedPgn(pgnText, { anonymize });
+  const widths = PGN_HEADER_COLUMN_LENGTHS;
   if (!validated.ok) {
     return { ok: false, error: validated.error };
   }
@@ -130,12 +133,14 @@ export async function buildPgnAttachmentValues(
       pgnByteLength: validated.byteLength,
       startingFen: validated.startingFen,
       moveCount: validated.moveCount,
-      headerWhite: sanitizePgnHeader(validated.headers.white),
-      headerBlack: sanitizePgnHeader(validated.headers.black),
-      headerResult: sanitizePgnHeader(validated.headers.result),
-      headerEvent: sanitizePgnHeader(validated.headers.event),
-      headerSite: sanitizePgnHeader(validated.headers.site),
-      headerDate: sanitizePgnHeader(validated.headers.date),
+      // Each header is cut to its own column's width: the columns differ
+      // (100 / 10 / 200 / 20) and chess.js puts no bound on a header value.
+      headerWhite: sanitizePgnHeader(validated.headers.white, widths.white),
+      headerBlack: sanitizePgnHeader(validated.headers.black, widths.black),
+      headerResult: sanitizePgnHeader(validated.headers.result, widths.result),
+      headerEvent: sanitizePgnHeader(validated.headers.event, widths.event),
+      headerSite: sanitizePgnHeader(validated.headers.site, widths.site),
+      headerDate: sanitizePgnHeader(validated.headers.date, widths.date),
       anonymized: anonymize,
       attributionPlatform,
       attributionPath,
@@ -185,4 +190,24 @@ export function pgnAttachmentErrorKey(err: PgnAttachmentErrorKind): string {
       return 'attachment.error.invalidPgn';
     }
   }
+}
+
+/**
+ * Translate a CHECK (`23514`) or column-width (`22001`) violation raised by the
+ * `post_game_pgn_attachments` INSERT into the invalid-PGN error key, or `null`
+ * if the error is neither — in which case the caller must rethrow.
+ *
+ * Both are unreachable while `buildPgnAttachmentValues` keeps every value
+ * inside the table's CHECKs and column widths. They are mapped anyway so that
+ * the day one of those drifts apart, the poster gets "invalid PGN" instead of
+ * a Server Action that throws — the FEN and video attachments already map the
+ * same two codes. `23505` (a second attachment on one post) is left to the
+ * caller: only the attach-later flow can hit it, and it has its own copy.
+ */
+export function pgnAttachmentConstraintErrorKey(err: unknown): string | null {
+  const code = extractPgErrorCode(err);
+  if (code === '23514' || code === '22001') {
+    return pgnAttachmentErrorKey('invalid_pgn');
+  }
+  return null;
 }

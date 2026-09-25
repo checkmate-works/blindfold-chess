@@ -3,10 +3,15 @@
  *
  * @description
  * Thin wrapper around the generic
- * {@link import('../security/sanitize-user-text').sanitizeUserText} helper
- * with the PGN-header column cap pinned (200 chars — matches the widest of
- * `post_game_pgn_attachments.header_*` columns; the slice keeps every
- * downstream column safe under one rule).
+ * {@link import('../security/sanitize-user-text').sanitizeUserText} helper.
+ *
+ * The `post_game_pgn_attachments.header_*` columns are not one width —
+ * `header_white` / `header_black` are 100, `header_result` 10, `header_date`
+ * 20, `header_event` / `header_site` 200 — and chess.js accepts a header value
+ * of any length. A writer must therefore pass the width of the column the
+ * value is going into as `maxLength`; anything longer is rejected by Postgres
+ * as `22001` at INSERT. The 200-char default only bounds callers that do not
+ * store the value.
  *
  * @design Web-side, not chess-core
  *
@@ -32,6 +37,9 @@ import { sanitizeUserText } from '@/lib/security/sanitize-user-text';
 
 const PGN_HEADER_MAX_LENGTH = 200;
 
-export function sanitizePgnHeader(value: string | null | undefined): string | null {
-  return sanitizeUserText(value, { maxLength: PGN_HEADER_MAX_LENGTH });
+export function sanitizePgnHeader(
+  value: string | null | undefined,
+  maxLength: number = PGN_HEADER_MAX_LENGTH
+): string | null {
+  return sanitizeUserText(value, { maxLength });
 }
