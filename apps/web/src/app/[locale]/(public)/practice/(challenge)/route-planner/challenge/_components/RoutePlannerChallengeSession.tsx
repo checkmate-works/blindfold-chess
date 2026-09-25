@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useState } from 'react';
 
+import type { RoutePlannerProblemResult } from '@blindfold-chess/features/route-planner';
 import { useRoutePlannerSession } from '@blindfold-chess/features/route-planner/client';
 
 import { MISTAKE_LIMIT } from '@/lib/challenge/constants';
@@ -18,7 +19,6 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { RoutePlannerPlaySkeleton } from '../../_components/RoutePlannerPlaySkeleton';
 import { RoutePlannerResultSkeleton } from '../../_components/RoutePlannerResultSkeleton';
 import type { PieceType } from '../../_lib/pieces';
-import type { ProblemResult } from './_parts/ProblemBody';
 import { ProblemBody } from './_parts/ProblemBody';
 import { SessionHeader } from './_parts/SessionHeader';
 
@@ -33,7 +33,7 @@ export default function RoutePlannerChallengeSession({
   initialTimeLimit,
   allowedPieces,
 }: Props) {
-  const [problemResults, setProblemResults] = useState<ProblemResult[]>([]);
+  const [problemResults, setProblemResults] = useState<RoutePlannerProblemResult[]>([]);
 
   const piecesForGeneration = useMemo(
     () => (allowedPieces.length > 0 ? allowedPieces : (['n', 'b'] as PieceType[])),
@@ -63,7 +63,7 @@ export default function RoutePlannerChallengeSession({
 
   const isDisabled = showFeedback || isPaused || countdown !== null;
 
-  const recordProblemResult = useCallback((result: ProblemResult) => {
+  const recordProblemResult = useCallback((result: RoutePlannerProblemResult) => {
     setProblemResults((prev) => [...prev, result]);
   }, []);
 

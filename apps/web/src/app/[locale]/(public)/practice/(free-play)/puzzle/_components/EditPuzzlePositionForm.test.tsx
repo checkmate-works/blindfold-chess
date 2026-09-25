@@ -1,5 +1,3 @@
-import type { ReactNode } from 'react';
-
 import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -29,56 +27,7 @@ vi.mock('next-navigation-guard');
 
 vi.mock('@/app/[locale]/_components/ConfirmationModal');
 
-vi.mock('@/app/_components', () => ({
-  FormActionFooter: ({
-    children,
-    cancel,
-  }: {
-    children: ReactNode;
-    cancel?: { label: ReactNode; onClick: () => void; disabled?: boolean };
-  }) => (
-    <div>
-      {children}
-      {cancel && (
-        <button type="button" onClick={cancel.onClick} disabled={cancel.disabled}>
-          {cancel.label}
-        </button>
-      )}
-    </div>
-  ),
-  FieldError: ({ id, message }: { id: string; message: string | null }) =>
-    message ? (
-      <p id={id} role="alert">
-        {message}
-      </p>
-    ) : null,
-  fieldErrorProps: (id: string, message: string | null) =>
-    message ? { 'aria-invalid': true, 'aria-describedby': id } : {},
-  fieldBorderClass: (message: string | null) => (message ? 'border-destructive' : 'border-border'),
-  FormErrorBanner: ({ message }: { message: string | null }) =>
-    message ? <div role="alert">{message}</div> : null,
-  BoardFrame: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  LocalizedUnsavedChangesDialog: () => null,
-  Button: ({
-    children,
-    type,
-    disabled,
-    onClick,
-  }: {
-    children: ReactNode;
-    type?: 'button' | 'submit' | 'reset';
-    disabled?: boolean;
-    onClick?: () => void;
-  }) => (
-    <button type={type ?? 'button'} disabled={disabled} onClick={onClick}>
-      {children}
-    </button>
-  ),
-  FlipBoardButton: ({ onClick, title }: { onClick: () => void; title: string }) => (
-    <button type="button" onClick={onClick} title={title} />
-  ),
-  BoardSkeleton: () => <div data-testid="board-skeleton" />,
-}));
+vi.mock('@/app/_components');
 
 const POSITION_ID = '11111111-1111-1111-1111-111111111111';
 const VALID_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';

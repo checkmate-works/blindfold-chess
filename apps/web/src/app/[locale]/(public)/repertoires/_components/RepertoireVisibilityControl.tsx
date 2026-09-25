@@ -11,6 +11,7 @@ import type { RepertoireVisibility } from '@/lib/points/spend-catalog';
 import { REPERTOIRE_VISIBILITIES, repertoireVisibilityCharge } from '@/lib/points/spend-catalog';
 
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
+import { useConfirmAction } from '@/app/[locale]/_hooks/use-confirm-action';
 
 import { changeVisibility } from '../[id]/_actions/changeVisibility';
 import { VISIBILITY_I18N_KEY } from '../_lib/visibility-i18n';
@@ -43,10 +44,8 @@ export function RepertoireVisibilityControl({
 }: Props) {
   const t = useTranslations('Repertoires');
   const router = useRouter();
-  const [open, setOpen] = useState(false);
   const [target, setTarget] = useState<RepertoireVisibility>(current);
-  const [pending, setPending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { isOpen, open, cancel, isPending, error, setError, run } = useConfirmAction();
 
   const cost = repertoireVisibilityCharge(target, visibilityPaid);
   const changed = target !== current;
@@ -54,25 +53,19 @@ export function RepertoireVisibilityControl({
   function openModal() {
     setTarget(current);
     setError(null);
-    setOpen(true);
+    open();
   }
 
   async function apply() {
     if (!changed) {
-      setOpen(false);
+      cancel();
       return;
     }
-    setPending(true);
-    setError(null);
-    const result = await changeVisibility({ id, target, locale });
-    if ('error' in result) {
-      setPending(false);
-      setError(localizeActionErrorOrGeneric(result.error, t));
-      return;
-    }
-    setPending(false);
-    setOpen(false);
-    router.refresh();
+    await run(
+      () => changeVisibility({ id, target, locale }),
+      (result) => ('error' in result ? localizeActionErrorOrGeneric(result.error, t) : null),
+      () => router.refresh()
+    );
   }
 
   return (
@@ -85,14 +78,14 @@ export function RepertoireVisibilityControl({
         {t('visibility.change')}
       </button>
       <ConfirmationModal
-        isOpen={open}
+        isOpen={isOpen}
         title={t('visibility.changeTitle')}
         error={error}
         confirmText={t('visibility.changeConfirm')}
         cancelText={t('visibility.cancel')}
-        isLoading={pending}
+        isLoading={isPending}
         onConfirm={() => void apply()}
-        onCancel={() => setOpen(false)}
+        onCancel={cancel}
       >
         <div className="mt-2 space-y-2">
           {REPERTOIRE_VISIBILITIES.map((value) => {

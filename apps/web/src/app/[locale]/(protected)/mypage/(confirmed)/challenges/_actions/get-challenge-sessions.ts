@@ -1,6 +1,5 @@
 'use server';
 
-import * as Sentry from '@sentry/nextjs';
 import { and, desc, eq, gte, lt } from 'drizzle-orm';
 
 import { getOptionalUser } from '@/lib/auth';
@@ -8,6 +7,7 @@ import { db } from '@/lib/db';
 import type { ChallengeMenuType } from '@/lib/db/practice-menu-types';
 import { CHALLENGE_MENU_TYPES } from '@/lib/db/practice-menu-types';
 import { challengeResults } from '@/lib/db/schema';
+import { captureError } from '@/lib/sentry/capture-error';
 import { handleServerActionError } from '@/lib/server-action-error';
 
 export type ChallengeResultRow = {
@@ -192,7 +192,7 @@ export async function getAvailableMenuTypes(
       rangeStart && rangeEnd ? { start: new Date(rangeStart), end: new Date(rangeEnd) } : undefined;
     return await listAvailableMenuTypes(userId, range);
   } catch (error) {
-    Sentry.captureException(error);
+    captureError(error, '[getAvailableMenuTypes]');
     return [];
   }
 }

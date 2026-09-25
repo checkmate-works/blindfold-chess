@@ -4,7 +4,7 @@ import { useCallback, useRef } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-import * as Sentry from '@sentry/nextjs';
+import { captureError } from '@/lib/sentry/capture-error';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -90,7 +90,7 @@ export function SinglePositionSession({
           router.push(baseUrl);
         })
         .catch((error) => {
-          Sentry.captureException(error);
+          captureError(error, '[SinglePositionSession] savePositionMemoryResult');
           router.push(baseUrl);
         });
     },

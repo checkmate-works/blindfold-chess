@@ -1,7 +1,5 @@
 'use client';
 
-import { useState } from 'react';
-
 import { useRouter } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FiEdit2, FiTrash2 } from 'react-icons/fi';
@@ -10,6 +8,7 @@ import type { Repertoire } from '@/lib/db';
 
 import { ActionsMenu, ActionsMenuButton } from '@/app/[locale]/_components/ActionsMenu';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
+import { useConfirmAction } from '@/app/[locale]/_hooks/use-confirm-action';
 
 import { deleteRepertoire } from '../_actions/deleteRepertoire';
 import { RepertoireLifecycleControls } from './RepertoireLifecycleControls';
@@ -31,22 +30,14 @@ type Props = {
 export function RepertoireActionsMenu({ id, locale, status, lineCount }: Props) {
   const t = useTranslations('Repertoires');
   const router = useRouter();
-  const [open, setOpen] = useState(false);
-  const [pending, setPending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { isOpen, open, cancel, isPending, error, run } = useConfirmAction();
 
-  async function handleConfirm() {
-    setPending(true);
-    setError(null);
-    const result = await deleteRepertoire({ id });
-    if ('error' in result) {
-      setPending(false);
-      setError(t('errors.generic'));
-      return;
-    }
-    setPending(false);
-    setOpen(false);
-    router.push('/repertoires');
+  function handleConfirm() {
+    return run(
+      () => deleteRepertoire({ id }),
+      (result) => ('error' in result ? t('errors.generic') : null),
+      () => router.push('/repertoires')
+    );
   }
 
   return (
@@ -68,22 +59,22 @@ export function RepertoireActionsMenu({ id, locale, status, lineCount }: Props) 
           status={status}
           lineCount={lineCount}
         />
-        <ActionsMenuButton tone="danger" onClick={() => setOpen(true)} disabled={pending}>
+        <ActionsMenuButton tone="danger" onClick={open} disabled={isPending}>
           <FiTrash2 className="h-4 w-4" aria-hidden />
           {t('delete.button')}
         </ActionsMenuButton>
       </ActionsMenu>
       <ConfirmationModal
-        isOpen={open}
+        isOpen={isOpen}
         title={t('delete.title')}
         message={t('delete.message')}
         error={error}
         confirmText={t('delete.confirm')}
         cancelText={t('delete.cancel')}
         confirmVariant="danger"
-        isLoading={pending}
+        isLoading={isPending}
         onConfirm={handleConfirm}
-        onCancel={() => setOpen(false)}
+        onCancel={cancel}
       />
     </>
   );

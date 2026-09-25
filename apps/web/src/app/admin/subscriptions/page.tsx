@@ -5,6 +5,7 @@ import { formatDate } from '@/app/admin/_lib/format';
 import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
+import { truncateContent } from '@/lib/content/truncate-content';
 import { db, profiles, subscriptions } from '@/lib/db';
 import { getPaginationParams } from '@/lib/pagination';
 
@@ -36,11 +37,6 @@ function statusBadgeVariant(status: string): AdminBadgeVariant {
     default:
       return 'neutral';
   }
-}
-
-function truncateId(id: string, maxLength = 16): string {
-  if (id.length <= maxLength) return id;
-  return `${id.slice(0, maxLength)}...`;
 }
 
 export default async function AdminSubscriptionsPage({
@@ -158,10 +154,10 @@ export default async function AdminSubscriptionsPage({
                 />
               </td>
               <td className="px-4 py-3 font-mono text-xs" title={sub.stripeSubscriptionId}>
-                {truncateId(sub.stripeSubscriptionId)}
+                {truncateContent(sub.stripeSubscriptionId, 16)}
               </td>
               <td className="px-4 py-3 font-mono text-xs" title={sub.stripePriceId}>
-                {truncateId(sub.stripePriceId)}
+                {truncateContent(sub.stripePriceId, 16)}
               </td>
               <td className="px-4 py-3">
                 <AdminBadge variant={statusBadgeVariant(sub.status)}>{sub.status}</AdminBadge>

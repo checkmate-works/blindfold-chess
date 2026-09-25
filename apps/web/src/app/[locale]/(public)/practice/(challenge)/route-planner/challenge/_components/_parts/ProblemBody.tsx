@@ -3,6 +3,7 @@
 import { useCallback, useState } from 'react';
 
 import { isValidSquare } from '@blindfold-chess/features/common';
+import type { RoutePlannerProblemResult } from '@blindfold-chess/features/route-planner';
 import type { Square } from '@blindfold-chess/types';
 
 import { useAlgebraicKeyboardInput } from '@/app/[locale]/(public)/practice/_hooks/use-algebraic-keyboard-input';
@@ -13,15 +14,6 @@ import { findShortestPath, validateUserPath } from '../../../_lib/route-planner-
 import { MovesHistory } from './MovesHistory';
 import { SubmitArea } from './SubmitArea';
 
-export type ProblemResult = {
-  piece: PieceType;
-  start: Square;
-  end: Square;
-  success: boolean;
-  userPath: Square[];
-  shortestPath: Square[];
-};
-
 type Props = {
   currentProblem: { piece: PieceType; start: Square; end: Square };
   isDisabled: boolean;
@@ -29,7 +21,7 @@ type Props = {
   isPaused: boolean;
   countdown: number | null;
   onAnswer: (success: boolean) => void;
-  onRecordResult: (result: ProblemResult) => void;
+  onRecordResult: (result: RoutePlannerProblemResult) => void;
 };
 
 /**

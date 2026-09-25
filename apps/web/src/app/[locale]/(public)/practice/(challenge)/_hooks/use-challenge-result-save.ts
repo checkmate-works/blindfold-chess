@@ -4,8 +4,7 @@ import { useEffect, useRef } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-import * as Sentry from '@sentry/nextjs';
-
+import { captureError } from '@/lib/sentry/capture-error';
 import { writeSessionItem } from '@/lib/storage/session-storage';
 
 import { stashGrantedRanks } from '@/app/[locale]/(public)/practice/_lib/granted-ranks-stash';
@@ -83,8 +82,7 @@ export function useChallengeResultSave({
           }
         })
         .catch((error) => {
-          console.error(`Failed to save ${moduleName} result:`, error);
-          Sentry.captureException(error);
+          captureError(error, `Failed to save ${moduleName} result`);
           writeSessionItem(SESSION_STORAGE_KEYS.SHOW_SAVE_ERROR_TOAST, 'true');
         })
         .finally(() => {

@@ -13,15 +13,7 @@ vi.mock('@/_hooks/useUnsavedChanges', () => ({
   useUnsavedChanges: () => ({ isBlocking: false, confirm: vi.fn(), cancel: vi.fn() }),
 }));
 
-vi.mock('@/app/_components', () => ({
-  BoardFrame: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  Button: ({ children }: { children: React.ReactNode }) => (
-    <button type="button">{children}</button>
-  ),
-  FormErrorBanner: ({ message }: { message: string | null }) =>
-    message ? <div role="alert">{message}</div> : null,
-  LocalizedUnsavedChangesDialog: () => null,
-}));
+vi.mock('@/app/_components');
 
 vi.mock('@/app/[locale]/_components', () => ({
   SectionTitle: ({ children }: { children: React.ReactNode }) => <h2>{children}</h2>,

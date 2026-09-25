@@ -28,12 +28,10 @@ import { InlineBoardView } from './InlineBoardView';
 // reproducing the fallback format in every assertion.
 vi.mock('@/i18n/use-safe-translations');
 
-vi.mock('@/app/_components', () => ({
-  BoardFrame: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+// The shared stubs, plus a board this suite drives.
+vi.mock('@/app/_components', async () => ({
+  ...(await import('@/app/_components/__mocks__')),
   ChessBoard: () => <div data-testid="chess-board" />,
-  FlipBoardButton: ({ onClick }: { onClick?: () => void }) => (
-    <button type="button" data-testid="flip-board" onClick={onClick} />
-  ),
 }));
 
 vi.mock('./HorizontalMoveList', () => ({

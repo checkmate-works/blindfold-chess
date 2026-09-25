@@ -49,32 +49,9 @@ vi.mock('@/app/[locale]/_components/MoveInputPanel', () => ({
 
 vi.mock('next-navigation-guard');
 
-vi.mock('@/app/_components', () => ({
-  FormErrorBanner: ({ message }: { message: string | null }) =>
-    message ? <div role="alert">{message}</div> : null,
-  BoardFrame: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  LocalizedUnsavedChangesDialog: () => null,
-  BoardSkeleton: () => <div data-testid="board-skeleton" />,
-  Button: ({
-    children,
-    type,
-    disabled,
-    onClick,
-    loading,
-  }: {
-    children: React.ReactNode;
-    type?: 'button' | 'submit' | 'reset';
-    disabled?: boolean;
-    onClick?: () => void;
-    loading?: boolean;
-  }) => (
-    <button type={type ?? 'button'} disabled={disabled} onClick={onClick} data-loading={loading}>
-      {children}
-    </button>
-  ),
-  FlipBoardButton: ({ onClick, title }: { onClick: () => void; title: string }) => (
-    <button type="button" onClick={onClick} title={title} />
-  ),
+// The shared stubs, plus a board this suite drives.
+vi.mock('@/app/_components', async () => ({
+  ...(await import('@/app/_components/__mocks__')),
   ChessBoard: ({ fen, onMove }: { fen: string; onMove?: (san: string) => void }) => (
     <div data-testid="chess-board" data-fen={fen} data-interactive={onMove ? 'true' : 'false'}>
       {onMove && (

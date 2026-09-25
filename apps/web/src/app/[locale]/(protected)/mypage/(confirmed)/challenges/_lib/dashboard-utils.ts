@@ -2,7 +2,7 @@ import type { MISTAKE_LIMIT } from '@/lib/challenge/constants';
 
 import type { ChallengeResultRow } from '../_actions/get-challenge-sessions';
 import type { DatePeriod } from './period-utils';
-import { getPeriodRange, getPreviousPeriodRange } from './period-utils';
+import { formatLocalIsoDate, getPeriodRange, getPreviousPeriodRange } from './period-utils';
 
 /**
  * Completion detection: `incorrectAnswers < MISTAKE_LIMIT` (the session ran out
@@ -81,7 +81,7 @@ export function aggregateByDay(sessions: ChallengeResultRow[], locale: string): 
 
   for (const s of sessions) {
     const d = new Date(s.createdAt);
-    const dateKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const dateKey = formatLocalIsoDate(d);
     const existing = dailyMap.get(dateKey);
     if (existing) {
       existing.total += s.score;

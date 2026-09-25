@@ -66,27 +66,7 @@ vi.mock('next-navigation-guard');
 // Stub the barrel's two consumed exports directly. Importing the real barrel
 // pulls in server-only via downstream ChessBoard / modal chain, which fails
 // in the jsdom test environment.
-vi.mock('@/app/_components', () => ({
-  FormErrorBanner: ({ message }: { message: string | null }) =>
-    message ? <div role="alert">{message}</div> : null,
-  BoardFrame: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  Button: ({
-    children,
-    onClick,
-    disabled,
-    type,
-  }: {
-    children: React.ReactNode;
-    onClick?: () => void;
-    disabled?: boolean;
-    type?: 'button' | 'submit';
-  }) => (
-    <button type={type ?? 'button'} onClick={onClick} disabled={disabled}>
-      {children}
-    </button>
-  ),
-  LocalizedUnsavedChangesDialog: () => null,
-}));
+vi.mock('@/app/_components');
 
 // SectionTitle comes from a per-locale barrel that may also touch server-only
 // via sibling exports. Stub the single symbol we consume.
