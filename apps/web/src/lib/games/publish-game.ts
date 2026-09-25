@@ -258,3 +258,34 @@ export function deriveGameColumns(game: ValidatedGame): GameColumns {
     cleanRate,
   };
 }
+
+/**
+ * The `games` row a validated snapshot publishes as, minus who and when.
+ *
+ * `publishGame` and the dev seed both insert published games, and a column
+ * added to one list but not the other would leave seeded games quietly unlike
+ * real ones. Both build the row here and add only `authorId` (and, for the
+ * seed, a back-dated `createdAt`).
+ */
+export function toGameInsertValues(game: ValidatedGame, columns: GameColumns) {
+  return {
+    title: game.title,
+    description: game.description,
+    moves: game.moves,
+    startingFen: game.startingFen,
+    setupPlies: game.setupPlies,
+    playerColor: game.playerColor,
+    engineConfig: game.engineConfig,
+    operationLogs: game.operationLogs,
+    operationTotals: game.operationTotals,
+    undoneLogs: game.undoneLogs,
+    playSettings: game.playSettings,
+    playSettingsLog: game.playSettingsLog,
+    maiaChargeId: game.maiaChargeId,
+    result: game.result,
+    engineKind: columns.engineKind,
+    engineElo: columns.engineElo,
+    moveCount: columns.moveCount,
+    cleanRate: columns.cleanRate,
+  };
+}

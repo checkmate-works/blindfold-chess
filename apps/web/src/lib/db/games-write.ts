@@ -16,6 +16,7 @@ import 'server-only';
 
 import { generateManageToken } from '@/lib/games/manage-token';
 import type { GameColumns, ValidatedGame } from '@/lib/games/publish-game';
+import { toGameInsertValues } from '@/lib/games/publish-game';
 import { clawbackPointsForPost } from '@/lib/points';
 import { createAdminClient } from '@/lib/supabase/admin';
 
@@ -46,24 +47,7 @@ export async function publishGame(params: {
       .insert(games)
       .values({
         authorId,
-        title: game.title,
-        description: game.description,
-        moves: game.moves,
-        startingFen: game.startingFen,
-        setupPlies: game.setupPlies,
-        playerColor: game.playerColor,
-        engineConfig: game.engineConfig,
-        operationLogs: game.operationLogs,
-        operationTotals: game.operationTotals,
-        undoneLogs: game.undoneLogs,
-        playSettings: game.playSettings,
-        playSettingsLog: game.playSettingsLog,
-        maiaChargeId: game.maiaChargeId,
-        result: game.result,
-        engineKind: columns.engineKind,
-        engineElo: columns.engineElo,
-        moveCount: columns.moveCount,
-        cleanRate: columns.cleanRate,
+        ...toGameInsertValues(game, columns),
       })
       .returning({ id: games.id });
 

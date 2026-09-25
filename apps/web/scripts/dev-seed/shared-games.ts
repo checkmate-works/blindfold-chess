@@ -2,7 +2,11 @@ import { and, eq, inArray } from 'drizzle-orm';
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 
 import { feedItems, games } from '../../src/lib/db/schema';
-import { deriveGameColumns, validatePublishSnapshot } from '../../src/lib/games/publish-game';
+import {
+  deriveGameColumns,
+  toGameInsertValues,
+  validatePublishSnapshot,
+} from '../../src/lib/games/publish-game';
 
 type SeedGame = {
   title: string;
@@ -285,24 +289,7 @@ export async function reseedSharedGames(
       .insert(games)
       .values({
         authorId,
-        title: game.title,
-        description: game.description,
-        moves: game.moves,
-        startingFen: game.startingFen,
-        setupPlies: game.setupPlies,
-        playerColor: game.playerColor,
-        engineConfig: game.engineConfig,
-        operationLogs: game.operationLogs,
-        operationTotals: game.operationTotals,
-        undoneLogs: game.undoneLogs,
-        playSettings: game.playSettings,
-        playSettingsLog: game.playSettingsLog,
-        maiaChargeId: game.maiaChargeId,
-        result: game.result,
-        engineKind: columns.engineKind,
-        engineElo: columns.engineElo,
-        moveCount: columns.moveCount,
-        cleanRate: columns.cleanRate,
+        ...toGameInsertValues(game, columns),
         createdAt,
       })
       .returning({ id: games.id });
