@@ -11,6 +11,7 @@ import { getSharedGameByPublishedId, removeSharedGame } from '@/lib/games/shared
 
 import { ActionsMenu, ActionsMenuButton } from '@/app/[locale]/_components/ActionsMenu';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
+import { useConfirmAction } from '@/app/[locale]/_hooks/use-confirm-action';
 
 import { deleteSharedGameAction } from '../_actions/manage-shared-game';
 
@@ -41,9 +42,7 @@ export function OwnerActions({ gameId, isRegisteredOwner, locale }: Props) {
   const [localGameId, setLocalGameId] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
 
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  const [pending, setPending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { isOpen, open, cancel, isPending, error, setError, run } = useConfirmAction();
 
   useEffect(() => {
     const found = getSharedGameByPublishedId(gameId);
@@ -56,20 +55,20 @@ export function OwnerActions({ gameId, isRegisteredOwner, locale }: Props) {
   const isOwner = isRegisteredOwner || token != null;
   if (!isOwner) return null;
 
-  async function handleDelete() {
-    setPending(true);
-    setError(null);
-    const res = await deleteSharedGameAction(gameId, token ?? undefined);
-    setPending(false);
-    if (!res.success) {
-      setError(
-        res.error === 'forbidden' ? t('detail.errors.forbidden') : t('detail.errors.generic')
-      );
-      return;
-    }
-    setConfirmOpen(false);
-    if (localGameId) removeSharedGame(localGameId);
-    router.push(`/${locale}/games/shared`);
+  function handleDelete() {
+    return run(
+      () => deleteSharedGameAction(gameId, token ?? undefined),
+      (res) =>
+        res.success
+          ? null
+          : res.error === 'forbidden'
+            ? t('detail.errors.forbidden')
+            : t('detail.errors.generic'),
+      () => {
+        if (localGameId) removeSharedGame(localGameId);
+        router.push(`/${locale}/games/shared`);
+      }
+    );
   }
 
   return (
@@ -89,26 +88,26 @@ export function OwnerActions({ gameId, isRegisteredOwner, locale }: Props) {
           tone="danger"
           onClick={() => {
             setError(null);
-            setConfirmOpen(true);
+            open();
           }}
-          disabled={pending}
+          disabled={isPending}
         >
           <FiTrash2 className="h-4 w-4" aria-hidden />
-          {pending ? t('detail.deleting') : t('detail.delete')}
+          {isPending ? t('detail.deleting') : t('detail.delete')}
         </ActionsMenuButton>
       </ActionsMenu>
 
       <ConfirmationModal
-        isOpen={confirmOpen}
+        isOpen={isOpen}
         title={t('detail.deleteConfirmTitle')}
         message={t('detail.deleteConfirmBody')}
         error={error}
         confirmText={t('detail.delete')}
         cancelText={t('detail.cancel')}
         confirmVariant="danger"
-        isLoading={pending}
+        isLoading={isPending}
         onConfirm={handleDelete}
-        onCancel={() => setConfirmOpen(false)}
+        onCancel={cancel}
       />
     </>
   );

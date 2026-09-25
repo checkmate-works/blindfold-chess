@@ -1,13 +1,12 @@
 'use client';
 
-import { useState } from 'react';
-
 import { useRouter } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FiEdit2, FiTrash2 } from 'react-icons/fi';
 
 import { ActionsMenu, ActionsMenuButton } from '@/app/[locale]/_components/ActionsMenu';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
+import { useConfirmAction } from '@/app/[locale]/_hooks/use-confirm-action';
 
 import { deleteLine } from '../_actions/deleteLine';
 
@@ -28,22 +27,14 @@ type Props = {
 export function RepertoireLineActionsMenu({ repertoireId, lineNo, locale }: Props) {
   const t = useTranslations('Repertoires');
   const router = useRouter();
-  const [open, setOpen] = useState(false);
-  const [pending, setPending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { isOpen, open, cancel, isPending, error, run } = useConfirmAction();
 
-  async function handleConfirm() {
-    setPending(true);
-    setError(null);
-    const result = await deleteLine({ repertoireId, lineNo });
-    if (!result.ok) {
-      setPending(false);
-      setError(t('errors.generic'));
-      return;
-    }
-    setPending(false);
-    setOpen(false);
-    router.push(`/repertoires/${repertoireId}`);
+  function handleConfirm() {
+    return run(
+      () => deleteLine({ repertoireId, lineNo }),
+      (result) => (result.ok ? null : t('errors.generic')),
+      () => router.push(`/repertoires/${repertoireId}`)
+    );
   }
 
   return (
@@ -59,22 +50,22 @@ export function RepertoireLineActionsMenu({ repertoireId, lineNo, locale }: Prop
           },
         ]}
       >
-        <ActionsMenuButton tone="danger" onClick={() => setOpen(true)} disabled={pending}>
+        <ActionsMenuButton tone="danger" onClick={open} disabled={isPending}>
           <FiTrash2 className="h-4 w-4" aria-hidden />
           {t('line.delete.button')}
         </ActionsMenuButton>
       </ActionsMenu>
       <ConfirmationModal
-        isOpen={open}
+        isOpen={isOpen}
         title={t('line.delete.title')}
         message={t('line.delete.message')}
         error={error}
         confirmText={t('line.delete.confirm')}
         cancelText={t('line.delete.cancel')}
         confirmVariant="danger"
-        isLoading={pending}
+        isLoading={isPending}
         onConfirm={handleConfirm}
-        onCancel={() => setOpen(false)}
+        onCancel={cancel}
       />
     </>
   );

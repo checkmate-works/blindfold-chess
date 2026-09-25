@@ -1,15 +1,16 @@
 'use client';
 
-import { useState } from 'react';
-
 import { adminErrorMessage } from '@/app/admin/_lib/action-errors';
 
 import type { ActionResult } from '@/lib/action-types';
 
+import { useConfirmAction } from '@/app/[locale]/_hooks/use-confirm-action';
+
 /**
- * State machine shared by the admin "click a button -> confirm in a modal ->
- * call a Server Action -> show error or close" flows (GrantRankButton,
- * BanButton, UnbanButton, DeletePostAdminButton, RevokeButton).
+ * Admin flavour of {@link useConfirmAction}, shared by the admin "click a
+ * button -> confirm in a modal -> call a Server Action -> show error or close"
+ * flows (GrantRankButton, BanButton, UnbanButton, DeletePostAdminButton,
+ * RevokeButton). Unlike the base hook, `cancel` also clears the error.
  *
  * Deliberately holds ONLY the state machine. Success-side effects that
  * differ per button (e.g. GrantRankButton clearing its reason field and
@@ -26,38 +27,23 @@ import type { ActionResult } from '@/lib/action-types';
  * an action that has not adopted codes passes through unchanged.
  */
 export function useConfirmModalAction() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isPending, setIsPending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { isOpen, open, cancel, isPending, error, setError, run } = useConfirmAction();
 
-  function open() {
-    setIsOpen(true);
-  }
-
-  function cancel() {
-    setIsOpen(false);
+  function cancelAndClear() {
+    cancel();
     setError(null);
   }
 
-  async function run<T extends ActionResult>(
+  function runAction<T extends ActionResult>(
     action: () => Promise<T>,
     onSuccess?: (result: Exclude<T, { error: string }>) => void
   ): Promise<void> {
-    setIsPending(true);
-    setError(null);
-
-    const result = await action();
-
-    if ('error' in result) {
-      setError(adminErrorMessage(result.error));
-      setIsPending(false);
-      return;
-    }
-
-    setIsOpen(false);
-    setIsPending(false);
-    onSuccess?.(result as Exclude<T, { error: string }>);
+    return run(
+      action,
+      (result) => ('error' in result ? adminErrorMessage(result.error) : null),
+      onSuccess && ((result) => onSuccess(result as Exclude<T, { error: string }>))
+    );
   }
 
-  return { isOpen, open, cancel, isPending, error, setError, run };
+  return { isOpen, open, cancel: cancelAndClear, isPending, error, setError, run: runAction };
 }

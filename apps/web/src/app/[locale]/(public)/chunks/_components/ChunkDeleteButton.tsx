@@ -1,7 +1,5 @@
 'use client';
 
-import { useState } from 'react';
-
 import { useRouter } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FiTrash2 } from 'react-icons/fi';
@@ -10,6 +8,7 @@ import { localizeActionError } from '@/lib/i18n/localize-action-error';
 
 import { ActionsMenuButton } from '@/app/[locale]/_components/ActionsMenu';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
+import { useConfirmAction } from '@/app/[locale]/_hooks/use-confirm-action';
 
 import { deleteChunk } from '../_actions/deleteChunk';
 
@@ -41,43 +40,37 @@ type Props = {
 export function ChunkDeleteButton({ chunkId }: Props) {
   const t = useTranslations('chunks');
   const router = useRouter();
-  const [pending, setPending] = useState(false);
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { isOpen, open, cancel, isPending, error, run } = useConfirmAction();
 
-  async function handleConfirm() {
-    setPending(true);
-    setError(null);
-
-    const result = await deleteChunk(chunkId);
-    setPending(false);
-
-    if ('error' in result) {
-      setError(localizeActionError(result.error, t, DELETE_ERROR_CODES, 'form.errors'));
-      return;
-    }
-    setConfirmOpen(false);
-    router.push('/chunks');
+  function handleConfirm() {
+    return run(
+      () => deleteChunk(chunkId),
+      (result) =>
+        'error' in result
+          ? localizeActionError(result.error, t, DELETE_ERROR_CODES, 'form.errors')
+          : null,
+      () => router.push('/chunks')
+    );
   }
 
   return (
     <>
-      <ActionsMenuButton tone="danger" onClick={() => setConfirmOpen(true)} disabled={pending}>
+      <ActionsMenuButton tone="danger" onClick={open} disabled={isPending}>
         <FiTrash2 className="h-4 w-4" aria-hidden />
-        {pending ? t('form.actions.deleting') : t('form.actions.delete')}
+        {isPending ? t('form.actions.deleting') : t('form.actions.delete')}
       </ActionsMenuButton>
 
       <ConfirmationModal
-        isOpen={confirmOpen}
+        isOpen={isOpen}
         title={t('form.delete.confirmTitle')}
         message={t('form.delete.confirmBody')}
         error={error}
         confirmText={t('form.delete.confirm')}
         cancelText={t('form.delete.cancel')}
         confirmVariant="danger"
-        isLoading={pending}
+        isLoading={isPending}
         onConfirm={handleConfirm}
-        onCancel={() => setConfirmOpen(false)}
+        onCancel={cancel}
       />
     </>
   );
