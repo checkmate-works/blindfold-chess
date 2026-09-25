@@ -19,3 +19,13 @@ export const PIECE_NAME_TO_TYPE: Record<string, RoutePlannerPieceType> = {
  * challenge/training pages.
  */
 export const VALID_PIECE_NAMES = ['bishop', 'knight'] as const;
+
+/**
+ * Resolve the `piece` query parameter the challenge and training pages both
+ * read into the single piece the session drills. A missing or unknown value
+ * falls back to the knight.
+ */
+export function parsePieceParam(raw: string | undefined): RoutePlannerPieceType[] {
+  const pieceName = raw && (VALID_PIECE_NAMES as readonly string[]).includes(raw) ? raw : 'knight';
+  return [PIECE_NAME_TO_TYPE[pieceName]];
+}

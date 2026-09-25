@@ -1,10 +1,6 @@
 import dynamic from 'next/dynamic';
 
-import {
-  PIECE_NAME_TO_TYPE,
-  VALID_PIECE_NAMES,
-} from '@/app/[locale]/(public)/practice/(challenge)/legal-moves/_lib/query-params';
-import type { PieceType } from '@/app/[locale]/(public)/practice/(challenge)/legal-moves/_lib/types';
+import { parsePieceParam } from '@/app/[locale]/(public)/practice/(challenge)/legal-moves/_lib/query-params';
 import { createPracticeChallengeSessionPage } from '@/app/[locale]/(public)/practice/_lib/createPracticeSessionPages';
 
 const LegalMovesSession = dynamic(() => import('../_components/LegalMovesSession'));
@@ -19,18 +15,15 @@ const { generateMetadata, generateStaticParams, Page } = createPracticeChallenge
     { labelKey: 'legalMoves.session' },
   ],
   renderContent: ({ locale, searchParams }) => {
-    const piece = searchParams.piece as string | undefined;
-    const allPieceTypes: PieceType[] = ['k', 'q', 'r', 'b', 'n'];
-    const validPieceName =
-      piece && (VALID_PIECE_NAMES as readonly string[]).includes(piece) ? piece : 'random';
-    const selectedPieces: PieceType[] =
-      validPieceName === 'random' ? allPieceTypes : [PIECE_NAME_TO_TYPE[validPieceName]];
+    const { selectedPiece, selectedPieces } = parsePieceParam(
+      searchParams.piece as string | undefined
+    );
 
     return (
       <LegalMovesSession
         locale={locale}
         selectedPieces={selectedPieces}
-        selectedPiece={validPieceName}
+        selectedPiece={selectedPiece}
       />
     );
   },
