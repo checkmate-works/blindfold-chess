@@ -275,6 +275,23 @@ export type TopicPostRating = typeof topicPostRatings.$inferSelect;
 export type NewTopicPostRating = typeof topicPostRatings.$inferInsert;
 
 /**
+ * Widths of the `post_game_pgn_attachments.header_*` columns.
+ *
+ * Exported because the writer has to cut each value to fit: chess.js accepts a
+ * PGN header of any length, and Postgres rejects an over-long value with
+ * `22001` instead of truncating it. `buildPgnAttachmentValues` reads these so
+ * the column and the cut cannot drift apart.
+ */
+export const PGN_HEADER_COLUMN_LENGTHS = {
+  white: 100,
+  black: 100,
+  result: 10,
+  event: 200,
+  site: 200,
+  date: 20,
+} as const;
+
+/**
  * PGN Game Attachments — PGN-stored chess game attached to a topic post.
  *
  * @description
@@ -409,12 +426,12 @@ export const postGamePgnAttachments = pgTable(
     moveCount: integer('move_count').notNull().default(0),
     // Extracted PGN headers (denormalized for list/preview without re-parsing).
     // All nullable: minimal "1. e4 e5" PGN has no headers.
-    headerWhite: varchar('header_white', { length: 100 }),
-    headerBlack: varchar('header_black', { length: 100 }),
-    headerResult: varchar('header_result', { length: 10 }), // '1-0' | '0-1' | '1/2-1/2' | '*'
-    headerEvent: varchar('header_event', { length: 200 }),
-    headerSite: varchar('header_site', { length: 200 }),
-    headerDate: varchar('header_date', { length: 20 }),
+    headerWhite: varchar('header_white', { length: PGN_HEADER_COLUMN_LENGTHS.white }),
+    headerBlack: varchar('header_black', { length: PGN_HEADER_COLUMN_LENGTHS.black }),
+    headerResult: varchar('header_result', { length: PGN_HEADER_COLUMN_LENGTHS.result }), // '1-0' | '0-1' | '1/2-1/2' | '*'
+    headerEvent: varchar('header_event', { length: PGN_HEADER_COLUMN_LENGTHS.event }),
+    headerSite: varchar('header_site', { length: PGN_HEADER_COLUMN_LENGTHS.site }),
+    headerDate: varchar('header_date', { length: PGN_HEADER_COLUMN_LENGTHS.date }),
     // Privacy: poster opted to anonymize player names. The stored PGN is
     // already anonymized when this is true; the original headers are
     // discarded at save time (we never persist the real names).

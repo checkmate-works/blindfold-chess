@@ -1,6 +1,7 @@
 import { validateAttachedPgn } from '@blindfold-chess/features/chess-core';
 
 import type { NewPostGamePgnAttachment } from '@/lib/db';
+import { PGN_HEADER_COLUMN_LENGTHS } from '@/lib/db/schema';
 import { resolveLichessAttachmentPgn } from '@/lib/games/resolve-lichess-attachment';
 import { sanitizePgnHeader } from '@/lib/games/sanitize-pgn-header';
 import { detectAttachmentInput } from '@/lib/games/validation';
@@ -116,6 +117,7 @@ export async function buildPgnAttachmentValues(
   }
 
   const validated = validateAttachedPgn(pgnText, { anonymize });
+  const widths = PGN_HEADER_COLUMN_LENGTHS;
   if (!validated.ok) {
     return { ok: false, error: validated.error };
   }
@@ -130,12 +132,14 @@ export async function buildPgnAttachmentValues(
       pgnByteLength: validated.byteLength,
       startingFen: validated.startingFen,
       moveCount: validated.moveCount,
-      headerWhite: sanitizePgnHeader(validated.headers.white),
-      headerBlack: sanitizePgnHeader(validated.headers.black),
-      headerResult: sanitizePgnHeader(validated.headers.result),
-      headerEvent: sanitizePgnHeader(validated.headers.event),
-      headerSite: sanitizePgnHeader(validated.headers.site),
-      headerDate: sanitizePgnHeader(validated.headers.date),
+      // Each header is cut to its own column's width: the columns differ
+      // (100 / 10 / 200 / 20) and chess.js puts no bound on a header value.
+      headerWhite: sanitizePgnHeader(validated.headers.white, widths.white),
+      headerBlack: sanitizePgnHeader(validated.headers.black, widths.black),
+      headerResult: sanitizePgnHeader(validated.headers.result, widths.result),
+      headerEvent: sanitizePgnHeader(validated.headers.event, widths.event),
+      headerSite: sanitizePgnHeader(validated.headers.site, widths.site),
+      headerDate: sanitizePgnHeader(validated.headers.date, widths.date),
       anonymized: anonymize,
       attributionPlatform,
       attributionPath,
