@@ -4,9 +4,9 @@ import { ChessPiece } from '@/app/_components/chess/ChessPiece';
 import type { PieceType } from '@blindfold-chess/types';
 import { FaQuestion } from 'react-icons/fa';
 
-export type PieceSelection = PieceType | 'random';
+import { PIECE_TYPES } from '@/lib/games/chess-pieces';
 
-const PIECE_OPTIONS: PieceType[] = ['k', 'q', 'r', 'b', 'n'];
+export type PieceSelection = PieceType | 'random';
 
 type Props = {
   selected: PieceSelection;
@@ -16,7 +16,7 @@ type Props = {
 };
 
 export function PieceSelector({ selected, onSelect, getLabel, showLabel = false }: Props) {
-  const options: PieceSelection[] = [...PIECE_OPTIONS, 'random'];
+  const options: PieceSelection[] = [...PIECE_TYPES, 'random'];
 
   return (
     <div className="flex flex-col items-center">

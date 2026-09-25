@@ -1,6 +1,7 @@
 import {
   PIECE_NAME_TO_SHORT,
   PIECE_SHORT_TO_NAME,
+  PIECE_TYPES,
   type PieceFullName,
 } from '@/lib/games/chess-pieces';
 
@@ -42,8 +43,7 @@ export function parsePieceParam(raw: string | undefined): {
 } {
   const selectedPiece =
     raw && (VALID_PIECE_NAMES as readonly string[]).includes(raw) ? raw : 'random';
-  const allPieceTypes: PieceType[] = ['k', 'q', 'r', 'b', 'n'];
   const selectedPieces: PieceType[] =
-    selectedPiece === 'random' ? allPieceTypes : [PIECE_NAME_TO_TYPE[selectedPiece]];
+    selectedPiece === 'random' ? [...PIECE_TYPES] : [PIECE_NAME_TO_TYPE[selectedPiece]];
   return { selectedPiece, selectedPieces };
 }
