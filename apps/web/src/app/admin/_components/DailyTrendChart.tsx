@@ -83,19 +83,30 @@ export function DailyTrendChart({ newUsersData, postsData, labels }: Props) {
           type="monotone"
           dataKey="newUsers"
           name={labels.newUsers}
-          stroke="var(--color-primary)"
+          legendType="plainline"
+          stroke="var(--color-chart-1)"
           strokeWidth={2}
-          dot={{ fill: 'var(--color-primary)', r: 3 }}
-          activeDot={{ fill: 'var(--color-primary)', r: 5 }}
+          dot={{ fill: 'var(--color-chart-1)', r: 3 }}
+          activeDot={{ fill: 'var(--color-chart-1)', r: 5 }}
         />
+        {/* Dashed with hollow dots: in a monochrome palette the two series must
+            differ by shape as well as by grey. `plainline` carries the dash
+            into the legend swatch, which the default `line` icon drops. */}
         <Line
           type="monotone"
           dataKey="posts"
           name={labels.posts}
-          stroke="var(--color-accent-purple)"
+          legendType="plainline"
+          stroke="var(--color-chart-2)"
           strokeWidth={2}
-          dot={{ fill: 'var(--color-accent-purple)', r: 3 }}
-          activeDot={{ fill: 'var(--color-accent-purple)', r: 5 }}
+          strokeDasharray="6 4"
+          dot={{
+            fill: 'var(--color-card)',
+            stroke: 'var(--color-chart-2)',
+            strokeDasharray: '',
+            r: 3,
+          }}
+          activeDot={{ fill: 'var(--color-chart-2)', r: 5 }}
         />
       </LineChart>
     </ResponsiveContainer>
