@@ -1,5 +1,3 @@
-import type { ReactNode } from 'react';
-
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { type Mock, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -28,41 +26,7 @@ vi.mock('@/_hooks/useUnsavedChanges', () => ({
 // `Button` forwards `type` so the submit button really submits, and the
 // banner keeps its ref + role — the error-routing tests below assert on
 // the real submit path and on where focus lands.
-vi.mock('@/app/_components', () => ({
-  FormActionFooter: ({
-    children,
-    cancel,
-  }: {
-    children: ReactNode;
-    cancel?: { label: ReactNode; onClick: () => void; disabled?: boolean };
-  }) => (
-    <div>
-      {children}
-      {cancel && (
-        <button type="button" onClick={cancel.onClick} disabled={cancel.disabled}>
-          {cancel.label}
-        </button>
-      )}
-    </div>
-  ),
-  BoardFrame: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  Button: ({ children, type }: { children: React.ReactNode; type?: 'button' | 'submit' }) => (
-    <button type={type}>{children}</button>
-  ),
-  FormErrorBanner: ({
-    message,
-    ref,
-  }: {
-    message: string | null;
-    ref?: React.Ref<HTMLDivElement>;
-  }) =>
-    message ? (
-      <div ref={ref} tabIndex={-1} role="alert">
-        {message}
-      </div>
-    ) : null,
-  LocalizedUnsavedChangesDialog: () => null,
-}));
+vi.mock('@/app/_components');
 
 // Stub the board editor + heavy children so the test isolates the draft-vs-
 // injectedFen precedence (the banner only appears when recovery actually ran).

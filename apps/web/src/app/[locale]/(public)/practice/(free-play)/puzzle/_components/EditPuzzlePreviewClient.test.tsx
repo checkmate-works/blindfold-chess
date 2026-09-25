@@ -52,27 +52,7 @@ vi.mock('./PuzzleSolutionReplay', () => ({
 
 vi.mock('next-navigation-guard');
 
-vi.mock('@/app/_components', () => ({
-  FormErrorBanner: ({ message }: { message: string | null }) =>
-    message ? <div role="alert">{message}</div> : null,
-  BoardFrame: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  Button: ({
-    children,
-    onClick,
-    disabled,
-    type,
-  }: {
-    children: React.ReactNode;
-    onClick?: () => void;
-    disabled?: boolean;
-    type?: 'button' | 'submit';
-  }) => (
-    <button type={type ?? 'button'} onClick={onClick} disabled={disabled}>
-      {children}
-    </button>
-  ),
-  LocalizedUnsavedChangesDialog: () => null,
-}));
+vi.mock('@/app/_components');
 
 vi.mock('@/app/[locale]/_components', () => ({
   SectionTitle: ({ children }: { children: React.ReactNode }) => <h2>{children}</h2>,
