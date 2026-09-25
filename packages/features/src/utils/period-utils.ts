@@ -14,6 +14,18 @@ export function getMondayOfWeek(date: Date): Date {
   return d;
 }
 
+/**
+ * Local-calendar `YYYY-MM-DD` for `date` — the day the viewer sees on their
+ * own clock, not the UTC day. Use a UTC key instead when matching buckets
+ * that SQL computed in UTC.
+ */
+export function formatLocalIsoDate(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 /** Local-midnight truncation of the reference instant. */
 function startOfDay(now: Date): Date {
   return new Date(now.getFullYear(), now.getMonth(), now.getDate());

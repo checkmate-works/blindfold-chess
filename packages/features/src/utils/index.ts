@@ -4,6 +4,7 @@ export { type PaginatedResult, paginateItems } from "./pagination";
 export {
   type DatePeriod,
   type PeriodRange,
+  formatLocalIsoDate,
   getMondayOfWeek,
   getPeriodRange,
   getPreviousPeriodRange,

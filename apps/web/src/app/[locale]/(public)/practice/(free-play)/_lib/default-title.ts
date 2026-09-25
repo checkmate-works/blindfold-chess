@@ -1,10 +1,4 @@
-/** Local-timezone `YYYY-MM-DD` — used as the date segment of default titles. */
-function formatLocalIsoDate(d: Date): string {
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
+import { formatLocalIsoDate } from '@blindfold-chess/features/utils';
 
 /**
  * Build the default title for a newly created practice item, e.g.
