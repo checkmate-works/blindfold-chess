@@ -5,6 +5,7 @@ import { db, postGamePgnAttachments } from '@/lib/db';
 import { extractPgErrorCode } from '@/lib/db/extract-pg-error-code';
 import {
   buildPgnAttachmentValues,
+  pgnAttachmentConstraintErrorKey,
   pgnAttachmentErrorKey,
 } from '@/lib/games/build-pgn-attachment-values';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
@@ -92,6 +93,10 @@ export async function attachPostPgn(
     const code = extractPgErrorCode(err);
     if (code === '23505') {
       return { error: 'alreadyAttached' };
+    }
+    const error = pgnAttachmentConstraintErrorKey(err);
+    if (error) {
+      return { error };
     }
     throw err;
   }
