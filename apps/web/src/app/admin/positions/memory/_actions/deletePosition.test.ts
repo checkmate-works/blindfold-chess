@@ -2,7 +2,6 @@ import { revalidatePath } from 'next/cache';
 
 import { describe, expect, it, vi } from 'vitest';
 
-import { whereThenLimit } from '@/lib/db/__test-support__/query-chain';
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
 
@@ -18,30 +17,16 @@ vi.mock('@/lib/supabase/server');
 vi.mock('@/lib/security/client-ip');
 
 vi.mock('@/lib/db', async () => {
-  const makeDbOps = () => ({
-    select: () => ({
-      from: () => ({
-        where: whereThenLimit(mockSelectFromWhere),
-      }),
-    }),
-    update: () => ({
-      set: () => ({
-        where: mockUpdateSetWhere,
-      }),
-    }),
-    insert: () => ({
-      values: mockInsertValues,
-    }),
-  });
+  const { adminModerationDbMock } =
+    await import('@/lib/db/__test-support__/admin-moderation-db-mock');
 
   return {
-    db: {
-      ...makeDbOps(),
-      transaction: async (fn: (tx: ReturnType<typeof makeDbOps>) => Promise<void>) => {
-        mockTransaction();
-        return fn(makeDbOps());
-      },
-    },
+    ...adminModerationDbMock(() => ({
+      selectFromWhere: mockSelectFromWhere,
+      updateWhere: mockUpdateSetWhere,
+      insertValues: mockInsertValues,
+      transaction: mockTransaction,
+    })),
     positions: {
       ...(await actualDbSchema()),
       id: 'id',
@@ -50,16 +35,6 @@ vi.mock('@/lib/db', async () => {
       fen: 'fen',
       title: 'title',
       deletedAt: 'deleted_at',
-    },
-    userRoles: { userId: 'user_id' },
-    moderationActions: {
-      actorId: 'actor_id',
-      action: 'action',
-      targetType: 'target_type',
-      targetId: 'target_id',
-      reason: 'reason',
-      metadata: 'metadata',
-      ipAddress: 'ip_address',
     },
   };
 });
