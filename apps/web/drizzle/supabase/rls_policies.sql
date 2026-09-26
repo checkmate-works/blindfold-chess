@@ -134,11 +134,13 @@ DROP POLICY IF EXISTS "moderation_actions_insert" ON "moderation_actions";
 -- =============================================================================
 -- topic_posts
 -- =============================================================================
+-- Direct API reads must exclude soft-deleted content just like app queries.
+-- The service-role connection bypasses RLS for moderation and retention.
 ALTER TABLE "topic_posts" ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "topic_posts_select" ON "topic_posts";
 CREATE POLICY "topic_posts_select" ON "topic_posts"
-  FOR SELECT USING (true);
+  FOR SELECT USING (deleted_at IS NULL);
 
 DROP POLICY IF EXISTS "topic_posts_insert" ON "topic_posts";
 
@@ -294,7 +296,7 @@ ALTER TABLE "user_interview_answers" ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "user_interview_answers_select" ON "user_interview_answers";
 CREATE POLICY "user_interview_answers_select" ON "user_interview_answers"
-  FOR SELECT USING (true);
+  FOR SELECT USING (deleted_at IS NULL);
 
 DROP POLICY IF EXISTS "user_interview_answers_insert" ON "user_interview_answers";
 
@@ -360,8 +362,8 @@ CREATE POLICY "user_exp_select_policy" ON "user_exp"
 -- positions (UGC — public read for catalog, service-role write)
 -- =============================================================================
 -- Positions are user-submitted chess boards used across multiple practice
--- modules. SELECT is open (catalog listings filter `deleted_at IS NULL` at
--- the application layer). Owners DO create, edit and deprecate their own
+-- modules. SELECT is public for non-deleted rows, matching catalog listings.
+-- Owners DO create, edit and deprecate their own
 -- positions, but only through the Server Actions, which re-validate and keep
 -- the revision history. RLS cannot express "own row except `deleted_at`", so an
 -- owner-writable UPDATE policy would let an author undo an admin soft-delete.
@@ -369,7 +371,7 @@ ALTER TABLE "positions" ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "positions_select" ON "positions";
 CREATE POLICY "positions_select" ON "positions"
-  FOR SELECT USING (true);
+  FOR SELECT USING (deleted_at IS NULL);
 
 DROP POLICY IF EXISTS "positions_insert" ON "positions";
 
@@ -381,16 +383,17 @@ DROP POLICY IF EXISTS "positions_update" ON "positions";
 -- chunks (UGC public catalog — open read, service-role write)
 -- =============================================================================
 -- Chunks are user-submitted but function as a global public catalog: anyone
--- can SELECT. Creating, editing and logical delete via `deleted_at` are
+-- can SELECT non-deleted rows, including drafts used for collaboration.
+-- Creating, editing and logical delete via `deleted_at` are
 -- owner-initiated yet service-role-executed, for the same reason as positions
 -- above. Physical DELETE is service-role only.
--- Filtering out soft-deleted rows is done at the application layer so that
--- admin tooling via the service role can still see them.
+-- RLS also excludes soft-deleted rows from direct API reads. Admin tooling
+-- uses the service-role connection, which bypasses RLS and can still see them.
 ALTER TABLE "chunks" ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "chunks_select" ON "chunks";
 CREATE POLICY "chunks_select" ON "chunks"
-  FOR SELECT USING (true);
+  FOR SELECT USING (deleted_at IS NULL);
 
 DROP POLICY IF EXISTS "chunks_insert" ON "chunks";
 
@@ -603,17 +606,8 @@ CREATE POLICY "post_game_pgn_attachments_select" ON "post_game_pgn_attachments"
         AND p.deleted_at IS NULL
     )
   );
--- Note: this policy is intentionally stricter than `topic_posts_select`
--- (which uses `USING (true)` and lets every row through, relying on
--- the application layer to filter `deleted_at IS NULL`). The deleted-post
--- check here is intentional defense-in-depth for attachment data: while
--- soft-deleted `topic_posts` rows themselves are filtered by application-
--- layer queries, an attached game (with full PGN, original player names,
--- and source URL) is markedly more sensitive than the post text and
--- warrants DB-level enforcement. Pushing the deleted-post check into
--- RLS prevents a future caller (debug tool, REST client, ad-hoc migration)
--- from accidentally re-exposing orphaned attachment rows that survive
--- a soft delete.
+-- Matches `topic_posts_select`: neither the post nor its attachments are
+-- visible to client roles after a soft delete.
 
 -- The attachment is inserted in the same transaction as the post (via
 -- createPostBase's afterInsert hook) and is immutable once created (mirrors the

@@ -124,6 +124,35 @@ const TABLES_WITH_POLICIES = [
   ),
 ];
 
+describe('PostgREST visibility of soft-deleted content', () => {
+  it.each(['topic_posts', 'positions', 'chunks', 'user_interview_answers'])(
+    '%s: client reads exclude deleted rows, including rows owned by the caller',
+    (table) => {
+      const sql = rlsSql.replace(/--[^\n]*/g, '');
+      const policies = [
+        ...sql.matchAll(
+          new RegExp(`CREATE\\s+POLICY\\s+"[^"]+"\\s+ON\\s+"${table}"\\s+([^;]+);`, 'gi')
+        ),
+      ].map(([, body]) => body.trim());
+
+      // Permissive policies are ORed: an additional SELECT/ALL policy can
+      // expose deleted rows even when the named policy remains restricted.
+      // A single unqualified policy covers both anon and authenticated.
+      expect(policies).toHaveLength(1);
+      expect(policies[0]).toMatch(/^FOR\s+SELECT\s+USING\s*\(\s*deleted_at\s+IS\s+NULL\s*\)$/i);
+      expect(tablesWithRlsEnabled()).toContain(table);
+      for (const role of ['anon', 'authenticated']) {
+        expect(effectivePrivileges(grantsSql, table, role)).toContain('SELECT');
+      }
+      // The migration runner reapplies this file to existing databases.
+      const drop = `DROP POLICY IF EXISTS "${table}_select" ON "${table}";`;
+      const create = `CREATE POLICY "${table}_select" ON "${table}"`;
+      expect(sql.indexOf(drop)).toBeGreaterThanOrEqual(0);
+      expect(sql.indexOf(drop)).toBeLessThan(sql.indexOf(create));
+    }
+  );
+});
+
 /** The last `;`-terminated statement of `sql`, comments stripped. */
 function lastStatement(sql: string): string {
   const statements = sql
