@@ -143,6 +143,18 @@ export const AD_SLOTS = {
     // as the term is in `chessTerms`.
     surfaces: [{ route: '/glossary/[slug]', href: '/glossary/decoy' }],
   },
+  'dojo-native-ad': {
+    kind: 'native_card',
+    // Rank slugs are a fixed list, and 5kyu is a rank with a published guide.
+    surfaces: [
+      { route: '/dojo', href: '/dojo' },
+      { route: '/dojo/guides', href: '/dojo/guides' },
+      { route: '/dojo/guides/[rank]', href: '/dojo/guides/5kyu' },
+      { route: '/dojo/guides/[rank]/[...rest]' },
+      { route: '/dojo/ranks', href: '/dojo/ranks' },
+      { route: '/dojo/ranks/[slug]', href: '/dojo/ranks/5kyu' },
+    ],
+  },
   'puzzle-result-native-ad': {
     kind: 'native_thumb',
     // The result screen exists per puzzle, and every puzzle id resolves for
@@ -550,3 +562,26 @@ export const LEARN_NATIVE_AD_SLOT = 'learn-native-ad' satisfies AdSlot;
  * layer does not already do.
  */
 export const GLOSSARY_TERM_NATIVE_AD_SLOT = 'glossary-term-native-ad' satisfies AdSlot;
+
+/**
+ * The pool the Dojo — the hub, the rank guides and the rank pages — draws its
+ * native card from, one card per page.
+ *
+ * Every page places it where its reading ends and before what sends the
+ * reader onward: a guide page after its paragraphs and above the challenge
+ * CTA and the pager, a chapter list after the chapters, a rank page after its
+ * requirements, the guide and rank indexes after their grids, and the hub
+ * after the curriculum. The next-rank card and its requirement links on the
+ * hub are the page's point, so the ad comes after them rather than between.
+ *
+ * One pool for the whole section, like the articles and `/learn`: the reader
+ * everywhere under `/dojo` is working through the belt progression, and a
+ * creative written for one of its pages reads the same on another.
+ *
+ * Read through `getNativeAdCreatives` everywhere. The guides and rank pages
+ * are prerendered, so the `bfc_ads_hidden` cookie's CSS rule is the
+ * entitlement layer there; the hub is dynamic and already knows its viewer,
+ * but taking the same read keeps one rule for the section, and the CSS layer
+ * hides the card from a dan holder just the same.
+ */
+export const DOJO_NATIVE_AD_SLOT = 'dojo-native-ad' satisfies AdSlot;
