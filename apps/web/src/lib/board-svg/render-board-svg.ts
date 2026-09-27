@@ -4,10 +4,16 @@ import type {
 } from '@blindfold-chess/features/board-display';
 import { resolvePieceDisplay } from '@blindfold-chess/features/board-display';
 import { fenCharToPiece, fenToBoardFlat } from '@blindfold-chess/features/chess-core/fen';
-import { flipIndex, isLightSquare } from '@blindfold-chess/features/common';
+import {
+  BOARD_LAST_INDEX,
+  flipIndex,
+  isLightSquare,
+  squareToFileIndex,
+  squareToRankIndex,
+} from '@blindfold-chess/features/common';
 import type { SvgElement } from '@blindfold-chess/icons/data';
 import { flagData, getPieceData, undoData } from '@blindfold-chess/icons/data';
-import type { PieceColor } from '@blindfold-chess/types';
+import type { PieceColor, Square } from '@blindfold-chess/types';
 import type { BoardTheme } from '@blindfold-chess/types';
 import { boardThemeColors } from '@blindfold-chess/ui';
 
@@ -83,8 +89,8 @@ function toPixelColRow(rankFromTop: number, fileIdx: number, flipped: boolean) {
 }
 
 function squareToColRow(square: string, flipped: boolean) {
-  const fileIdx = square.charCodeAt(0) - 'a'.charCodeAt(0);
-  const rankFromTop = 8 - Number(square[1]);
+  const fileIdx = squareToFileIndex(square as Square);
+  const rankFromTop = BOARD_LAST_INDEX - squareToRankIndex(square as Square);
   return toPixelColRow(rankFromTop, fileIdx, flipped);
 }
 

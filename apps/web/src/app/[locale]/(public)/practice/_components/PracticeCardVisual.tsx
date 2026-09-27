@@ -3,7 +3,12 @@
 import type { ReactNode } from 'react';
 
 import { ChessPiece } from '@/app/_components/chess/ChessPiece';
-import { computeSquareColor } from '@blindfold-chess/features/common';
+import {
+  BOARD_LAST_INDEX,
+  computeSquareColor,
+  squareToFileIndex,
+  squareToRankIndex,
+} from '@blindfold-chess/features/common';
 import type { Square } from '@blindfold-chess/types';
 import { FaArrowRight } from 'react-icons/fa';
 
@@ -441,11 +446,11 @@ function MarkedBoard({ marks }: { marks: { square: Square; role: 'question' | 'a
     <span className="relative inline-block">
       <Board fen={EMPTY_BOARD} />
       {marks.map(({ square, role }) => {
-        const file = square.charCodeAt(0) - 'a'.charCodeAt(0);
-        const rank = Number(square[1]);
+        const file = squareToFileIndex(square);
+        const rank = squareToRankIndex(square);
         // The dot fills the middle 60% of its square: 20% in from each edge.
         const left = (file + 0.2) / 8;
-        const top = (8 - rank + 0.2) / 8;
+        const top = (BOARD_LAST_INDEX - rank + 0.2) / 8;
         const size = 0.6 / 8;
         return (
           <span
