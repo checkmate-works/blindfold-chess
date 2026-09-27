@@ -1,13 +1,12 @@
 'use server';
 
-import type { DbTx } from '@/lib/db/types';
 import { pgnAttachmentConstraintErrorKey } from '@/lib/games/build-pgn-attachment-values';
-import type { RateLimitConfig } from '@/lib/security/rate-limit';
 import { resolvePgnAttachment } from '@/lib/topic-posts/attachment-steps';
 
-import type { TopicType } from '@/app/[locale]/(public)/topics/_lib/constants';
+import type { WithExtraAfterInsert } from '@/app/[locale]/(public)/topics/_lib/attachment-insert';
+import { mapAttachmentInsertError } from '@/app/[locale]/(public)/topics/_lib/attachment-insert';
 
-import type { CreatePostState } from './createPost';
+import type { CreatePostParams, CreatePostState } from './createPost';
 import { createPostBase } from './createPost';
 
 /**
@@ -26,8 +25,6 @@ import { createPostBase } from './createPost';
  * new attribution platform) lands in one file instead of five.
  */
 
-type ExtraAfterInsert = (tx: DbTx, postId: string) => Promise<void>;
-
 /**
  * Shared attachment-aware createPost body. Each topicType wrapper
  * forwards a topic-specific spec (validateTopic / redirectPath /
@@ -44,25 +41,9 @@ type ExtraAfterInsert = (tx: DbTx, postId: string) => Promise<void>;
  * attachment row and the per-attachment rate limit is NOT consumed
  * (chunks contract).
  */
-export async function createPostWithAttachmentBase(args: {
-  locale: string;
-  topicIdentifier: string;
-  topicType: TopicType;
-  topicKey: string;
-  urlSegment: string;
-  validateTopic: (identifier: string) => boolean | Promise<boolean>;
-  invalidTopicError: string;
-  rateLimit: RateLimitConfig;
-  validateContent: (formData: FormData) => { error: string } | { content: string };
-  redirectPath?: (postId: string) => string;
-  emitFeedItem?: boolean;
-  isSpoiler?: boolean;
-  topicAuthorId?: string | null;
-  /** Topic-specific extra rows to insert inside the same transaction
-   *  as the post + PGN attachment (e.g. opening rating). */
-  extraAfterInsert?: ExtraAfterInsert;
-  formData: FormData;
-}): Promise<CreatePostState> {
+export async function createPostWithAttachmentBase(
+  args: WithExtraAfterInsert<CreatePostParams>
+): Promise<CreatePostState> {
   const { formData, extraAfterInsert, ...topicSpec } = args;
 
   const attachment = await resolvePgnAttachment(formData);
@@ -76,17 +57,13 @@ export async function createPostWithAttachmentBase(args: {
 
   // Only the attachment path is wrapped, so a constraint failure on a plain
   // post is never reported as a bad PGN.
-  try {
-    return await createPostBase({
-      ...topicSpec,
-      afterInsert: attachment.afterInsert(extraAfterInsert),
-      formData,
-    });
-  } catch (err) {
-    const error = pgnAttachmentConstraintErrorKey(err);
-    if (error) {
-      return { error };
-    }
-    throw err;
-  }
+  return mapAttachmentInsertError(
+    () =>
+      createPostBase({
+        ...topicSpec,
+        afterInsert: attachment.afterInsert(extraAfterInsert),
+        formData,
+      }),
+    pgnAttachmentConstraintErrorKey
+  );
 }
