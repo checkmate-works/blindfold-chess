@@ -23,6 +23,16 @@ export const MAX_FILE_SIZE = ADMIN_IMAGE_MAX_FILE_SIZE;
 export const MIME_TO_EXTENSION: Record<string, string> = IMAGE_MIME_TO_EXTENSION;
 
 /**
+ * Storage object path for an uploaded admin image: a folder per owning record
+ * (the ad creative or the article) and an epoch-millisecond filename, so a
+ * replacement upload never overwrites the object a published page may still
+ * be serving.
+ */
+export function buildAdminImageStoragePath(ownerId: string, mimeType: string): string {
+  return `${ownerId}/${Date.now()}.${MIME_TO_EXTENSION[mimeType]}`;
+}
+
+/**
  * {@link parseImageUpload} bound to the admin policy above. Both admin
  * endpoints go through this so neither can drift from the other's allow-list
  * or cap.

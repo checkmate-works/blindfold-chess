@@ -6,7 +6,7 @@ import { AD_CREATIVE_LIMITS } from '@/app/admin/ads/_lib/validation';
 import { eq } from 'drizzle-orm';
 import sharp from 'sharp';
 
-import { MIME_TO_EXTENSION, parseAdminImageUpload } from '@/lib/admin-images/validation';
+import { buildAdminImageStoragePath, parseAdminImageUpload } from '@/lib/admin-images/validation';
 import { DEFAULT_AD_ALT } from '@/lib/ads/thumbnail';
 import { guardAdminApiMutation } from '@/lib/api-mutation-guard';
 import { adCreatives, db } from '@/lib/db';
@@ -154,9 +154,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: 'invalid_file_type' }, { status: 400 });
   }
 
-  const ext = MIME_TO_EXTENSION[file.type];
-  const timestamp = Date.now();
-  const storagePath = `${id}/${timestamp}.${ext}`;
+  const storagePath = buildAdminImageStoragePath(id, file.type);
 
   const supabase = createAdminClient();
   const { error: uploadError } = await supabase.storage
