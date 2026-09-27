@@ -1,14 +1,14 @@
 'use server';
 
-import type { DbTx } from '@/lib/db/types';
 import {
   fenAttachmentInsertErrorKey,
   resolveFenAttachment,
 } from '@/lib/topic-posts/attachment-steps';
 
-import type { TopicType } from '@/app/[locale]/(public)/topics/_lib/constants';
+import type { WithExtraAfterInsert } from '@/app/[locale]/(public)/topics/_lib/attachment-insert';
+import { mapAttachmentInsertError } from '@/app/[locale]/(public)/topics/_lib/attachment-insert';
 
-import type { CreateReplyState } from './createReply';
+import type { CreateReplyParams, CreateReplyState } from './createReply';
 import { createReplyBase } from './createReply';
 
 /**
@@ -22,22 +22,9 @@ import { createReplyBase } from './createReply';
  * `fenAttachmentPgErrorKind`.
  */
 
-type ExtraAfterInsert = (tx: DbTx, replyId: string) => Promise<void>;
-
-export async function createReplyWithFenAttachmentBase(args: {
-  locale: string;
-  topicIdentifier: string;
-  postId: string;
-  topicType: TopicType;
-  topicKey: string;
-  urlSegment: string;
-  validateTopic: (identifier: string) => boolean | Promise<boolean>;
-  redirectPath?: (postId: string, replyId: string) => string;
-  isSpoiler?: boolean;
-  /** Topic-specific extra rows to insert inside the same transaction. */
-  extraAfterInsert?: ExtraAfterInsert;
-  formData: FormData;
-}): Promise<CreateReplyState> {
+export async function createReplyWithFenAttachmentBase(
+  args: WithExtraAfterInsert<CreateReplyParams>
+): Promise<CreateReplyState> {
   const { formData, extraAfterInsert, ...replySpec } = args;
 
   const attachment = resolveFenAttachment(formData);
@@ -45,17 +32,13 @@ export async function createReplyWithFenAttachmentBase(args: {
     return { error: attachment.error };
   }
 
-  try {
-    return await createReplyBase({
-      ...replySpec,
-      afterInsert: attachment.afterInsert(extraAfterInsert),
-      formData,
-    });
-  } catch (err) {
-    const error = fenAttachmentInsertErrorKey(err);
-    if (error) {
-      return { error };
-    }
-    throw err;
-  }
+  return mapAttachmentInsertError(
+    () =>
+      createReplyBase({
+        ...replySpec,
+        afterInsert: attachment.afterInsert(extraAfterInsert),
+        formData,
+      }),
+    fenAttachmentInsertErrorKey
+  );
 }

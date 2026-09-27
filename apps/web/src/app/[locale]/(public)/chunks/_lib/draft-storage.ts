@@ -8,6 +8,7 @@ import {
   isChunkFeedbackTopic,
   isChunkStatus,
 } from '@/lib/chunks/validation';
+import { clearDraftSlot, readDraftSlot, writeDraftSlot } from '@/lib/storage/session-draft';
 
 import { type ChunkLinkTarget, isChunkLinkTarget } from './link-target';
 
@@ -145,39 +146,17 @@ function isChunkDraftV1(value: unknown): value is ChunkDraftV1 {
  * payload.
  */
 export function readChunkDraft(): ChunkDraftV1 | null {
-  if (typeof window === 'undefined' || typeof sessionStorage === 'undefined') {
-    return null;
-  }
-  let raw: string | null;
-  try {
-    raw = sessionStorage.getItem(CHUNK_DRAFT_STORAGE_KEY);
-  } catch {
-    return null;
-  }
-  if (raw === null) return null;
-
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(raw);
-  } catch {
-    clearChunkDraft();
-    return null;
-  }
-
-  if (!isChunkDraftV1(parsed)) {
-    clearChunkDraft();
-    return null;
-  }
-
-  if (!validateFenStructure(parsed.representativeFen).ok) {
-    clearChunkDraft();
-    return null;
-  }
+  const draft = readDraftSlot(
+    CHUNK_DRAFT_STORAGE_KEY,
+    (value): value is ChunkDraftV1 =>
+      isChunkDraftV1(value) && validateFenStructure(value.representativeFen).ok
+  );
+  if (draft === null) return null;
 
   // Backfill the post-v1.0 field so the rest of the codebase can rely
   // on `feedbackTopics` always being present without juggling
   // `undefined` everywhere.
-  return { ...parsed, feedbackTopics: parsed.feedbackTopics ?? [] };
+  return { ...draft, feedbackTopics: draft.feedbackTopics ?? [] };
 }
 
 /**
@@ -187,15 +166,7 @@ export function readChunkDraft(): ChunkDraftV1 | null {
  * the preview would immediately bounce back.
  */
 export function writeChunkDraft(draft: ChunkDraftV1): boolean {
-  if (typeof window === 'undefined' || typeof sessionStorage === 'undefined') {
-    return false;
-  }
-  try {
-    sessionStorage.setItem(CHUNK_DRAFT_STORAGE_KEY, JSON.stringify(draft));
-    return true;
-  } catch {
-    return false;
-  }
+  return writeDraftSlot(CHUNK_DRAFT_STORAGE_KEY, draft);
 }
 
 /**
@@ -203,14 +174,7 @@ export function writeChunkDraft(draft: ChunkDraftV1): boolean {
  * sessionStorage is unavailable — failures are swallowed.
  */
 export function clearChunkDraft(): void {
-  if (typeof window === 'undefined' || typeof sessionStorage === 'undefined') {
-    return;
-  }
-  try {
-    sessionStorage.removeItem(CHUNK_DRAFT_STORAGE_KEY);
-  } catch {
-    // ignore
-  }
+  clearDraftSlot(CHUNK_DRAFT_STORAGE_KEY);
 }
 
 /**

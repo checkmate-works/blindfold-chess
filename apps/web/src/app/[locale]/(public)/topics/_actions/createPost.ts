@@ -25,7 +25,7 @@ export type CreatePostState = {
   error?: string;
 };
 
-type CreatePostParams = {
+export type CreatePostParams = {
   locale: string;
   topicIdentifier: string;
   topicType: TopicType;

@@ -1,12 +1,12 @@
 'use server';
 
-import type { DbTx } from '@/lib/db/types';
 import { pgnAttachmentConstraintErrorKey } from '@/lib/games/build-pgn-attachment-values';
 import { resolvePgnAttachment } from '@/lib/topic-posts/attachment-steps';
 
-import type { TopicType } from '@/app/[locale]/(public)/topics/_lib/constants';
+import type { WithExtraAfterInsert } from '@/app/[locale]/(public)/topics/_lib/attachment-insert';
+import { mapAttachmentInsertError } from '@/app/[locale]/(public)/topics/_lib/attachment-insert';
 
-import type { CreateReplyState } from './createReply';
+import type { CreateReplyParams, CreateReplyState } from './createReply';
 import { createReplyBase } from './createReply';
 
 /**
@@ -23,23 +23,9 @@ import { createReplyBase } from './createReply';
  * overrides.
  */
 
-type ExtraAfterInsert = (tx: DbTx, replyId: string) => Promise<void>;
-
-export async function createReplyWithAttachmentBase(args: {
-  locale: string;
-  topicIdentifier: string;
-  postId: string;
-  topicType: TopicType;
-  topicKey: string;
-  urlSegment: string;
-  validateTopic: (identifier: string) => boolean | Promise<boolean>;
-  redirectPath?: (postId: string, replyId: string) => string;
-  isSpoiler?: boolean;
-  /** Topic-specific extra rows to insert inside the same transaction
-   *  as the reply + PGN attachment. */
-  extraAfterInsert?: ExtraAfterInsert;
-  formData: FormData;
-}): Promise<CreateReplyState> {
+export async function createReplyWithAttachmentBase(
+  args: WithExtraAfterInsert<CreateReplyParams>
+): Promise<CreateReplyState> {
   const { formData, extraAfterInsert, ...replySpec } = args;
 
   const attachment = await resolvePgnAttachment(formData);
@@ -53,17 +39,13 @@ export async function createReplyWithAttachmentBase(args: {
 
   // Only the attachment path is wrapped, so a constraint failure on a plain
   // post is never reported as a bad PGN.
-  try {
-    return await createReplyBase({
-      ...replySpec,
-      afterInsert: attachment.afterInsert(extraAfterInsert),
-      formData,
-    });
-  } catch (err) {
-    const error = pgnAttachmentConstraintErrorKey(err);
-    if (error) {
-      return { error };
-    }
-    throw err;
-  }
+  return mapAttachmentInsertError(
+    () =>
+      createReplyBase({
+        ...replySpec,
+        afterInsert: attachment.afterInsert(extraAfterInsert),
+        formData,
+      }),
+    pgnAttachmentConstraintErrorKey
+  );
 }

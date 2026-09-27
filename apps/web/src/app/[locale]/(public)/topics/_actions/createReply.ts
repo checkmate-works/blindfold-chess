@@ -22,7 +22,7 @@ export type CreateReplyState = {
   error?: string;
 };
 
-type CreateReplyParams = {
+export type CreateReplyParams = {
   locale: string;
   topicIdentifier: string;
   postId: string;

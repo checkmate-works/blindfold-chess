@@ -1,14 +1,13 @@
-import { CHUNK_TITLE_MAX_LENGTH } from '@/lib/chunks/validation';
+import { CHUNK_DESCRIPTION_MAX_LENGTH, CHUNK_TITLE_MAX_LENGTH } from '@/lib/chunks/validation';
 import { EDIT_REQUEST_COMMENT_MAX_LENGTH } from '@/lib/edit-requests/shared';
 
 /**
- * Description length cap reused from the chunk validation rules so a
- * proposed value stays compatible with the column the accept path
- * eventually writes. Kept inline rather than re-imported from the
- * chunks module to avoid creating a circular dependency in either
- * direction.
+ * Description length cap for a proposed edit. It is the chunk's own cap
+ * because accepting the request writes the proposed value straight into
+ * `chunks.description`, so a proposal that exceeded it could never be
+ * accepted.
  */
-export const CHUNK_EDIT_REQUEST_DESCRIPTION_MAX_LENGTH = 5000;
+export const CHUNK_EDIT_REQUEST_DESCRIPTION_MAX_LENGTH = CHUNK_DESCRIPTION_MAX_LENGTH;
 
 type CurrentChunkSnapshot = {
   title: string;
