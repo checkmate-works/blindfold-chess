@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 
 import { notFound } from 'next/navigation';
 
+import type { NativeAdView } from '@/lib/ads/ad';
 import type { RankRequirement, RankSlug } from '@/lib/db/data/ranks';
 import { buildChapterHref, findChapter } from '@/lib/guides';
 import type { ChapteredGuide } from '@/lib/guides';
@@ -10,6 +11,7 @@ import { JsonLd } from '@/lib/seo/jsonld';
 import { GuidePageFooter } from '@/app/[locale]/(public)/dojo/guides/_components/GuidePageFooter';
 import { RankHeader } from '@/app/[locale]/(public)/dojo/ranks/_components/RankHeader';
 import { Divider, PageLayout } from '@/app/[locale]/_components';
+import { NativeAdCard } from '@/app/[locale]/_components/NativeAdCard';
 import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -33,7 +35,8 @@ export async function renderChapterBody(
   ctx: GuideContext,
   guide: ChapteredGuide,
   props: ChapterBodyProps,
-  _requirements: RankRequirement[]
+  _requirements: RankRequirement[],
+  nativeAd: NativeAdView | undefined
 ): Promise<ReactNode> {
   // `_requirements` is accepted for symmetry with `renderFlatBody` and to
   // leave the door open for a chapter-last-page CTA later. Currently unused.
@@ -82,6 +85,8 @@ export async function renderChapterBody(
         <RankHeader beltColor={beltColor}>{chapter.title}</RankHeader>
 
         {renderPageParagraphs({ rankSlug, pageNumber, page: currentPage, tGuides, locale })}
+
+        {nativeAd && <NativeAdCard creative={nativeAd} locale={locale} variant="card" />}
 
         {showPagination && (
           <>

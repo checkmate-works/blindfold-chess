@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 
+import type { NativeAdView } from '@/lib/ads/ad';
 import { buildChapterHref } from '@/lib/guides';
 import type { ChapteredGuide } from '@/lib/guides';
 import { JsonLd } from '@/lib/seo/jsonld';
@@ -8,11 +9,16 @@ import { GuidePageFooter } from '@/app/[locale]/(public)/dojo/guides/_components
 import { GuideLinkCard } from '@/app/[locale]/(public)/dojo/ranks/_components/GuideLinkCard';
 import { RankHeader } from '@/app/[locale]/(public)/dojo/ranks/_components/RankHeader';
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import { NativeAdCard } from '@/app/[locale]/_components/NativeAdCard';
 
 import { buildChapterListBreadcrumbs, buildChapterListItemListSchema } from '../guide-metadata';
 import type { GuideContext } from './context';
 
-export function renderChapterList(ctx: GuideContext, guide: ChapteredGuide): ReactNode {
+export function renderChapterList(
+  ctx: GuideContext,
+  guide: ChapteredGuide,
+  nativeAd: NativeAdView | undefined
+): ReactNode {
   const { locale, rankSlug, rankName, beltColor, tGuides } = ctx;
 
   const breadcrumbItems = buildChapterListBreadcrumbs(tGuides, rankName);
@@ -40,6 +46,8 @@ export function renderChapterList(ctx: GuideContext, guide: ChapteredGuide): Rea
             </li>
           ))}
         </ul>
+
+        {nativeAd && <NativeAdCard creative={nativeAd} locale={locale} variant="card" />}
 
         <GuidePageFooter locale={locale} items={breadcrumbItems} />
       </PageLayout>

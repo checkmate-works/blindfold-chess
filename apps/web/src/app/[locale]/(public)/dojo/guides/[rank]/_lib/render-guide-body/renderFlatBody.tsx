@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
+import type { NativeAdView } from '@/lib/ads/ad';
 import { isMukyuSlug } from '@/lib/db/data/ranks';
 import type { RankRequirement, RankSlug } from '@/lib/db/data/ranks';
 import { buildFlatHref } from '@/lib/guides';
@@ -15,6 +16,7 @@ import { RequirementsList } from '@/app/[locale]/(public)/dojo/ranks/_components
 import { buildRequirementItems } from '@/app/[locale]/(public)/dojo/ranks/_lib/requirement-items';
 import { resolveTermPreviews } from '@/app/[locale]/(public)/glossary/_lib/term-previews';
 import { Divider, PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import { NativeAdCard } from '@/app/[locale]/_components/NativeAdCard';
 import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
 import { GlossaryTermModalProvider } from '@/app/[locale]/_components/glossary-term/GlossaryTermModalProvider';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
@@ -36,7 +38,8 @@ export async function renderFlatBody(
   ctx: GuideContext,
   guide: FlatGuide,
   props: FlatBodyProps,
-  requirements: RankRequirement[]
+  requirements: RankRequirement[],
+  nativeAd: NativeAdView | undefined
 ): Promise<ReactNode> {
   const { locale, rankSlug, rankName, beltColor, tRanks, tGuides } = ctx;
   const { pageNumber } = props;
@@ -116,6 +119,8 @@ export async function renderFlatBody(
         ) : (
           paragraphsNode
         )}
+
+        {nativeAd && <NativeAdCard creative={nativeAd} locale={locale} variant="card" />}
 
         {showChallengeCta && (
           <>

@@ -25,12 +25,15 @@ import { SUPPORTED_LOCALES } from '@/config';
 import type { ServerTranslator } from '@/i18n/translator';
 import { HiArrowRight } from 'react-icons/hi2';
 
+import { getNativeAdCreatives } from '@/lib/ads/ad';
+import { DOJO_NATIVE_AD_SLOT } from '@/lib/ads/registry';
 import { truncateContent } from '@/lib/content/truncate-content';
 import { ALL_RANK_SLUGS, isMukyuSlug } from '@/lib/db/data/ranks';
 import type { RankSlug } from '@/lib/db/data/ranks';
 import { buildGuidePath, getRankGuide, paragraphToPlainText } from '@/lib/guides';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import { NativeAdCard } from '@/app/[locale]/_components/NativeAdCard';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -151,10 +154,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function RankDetailPage({ params }: Props) {
   const { locale, slug } = await params;
 
-  const t = await getTranslations({ locale, namespace: 'ranks' });
-  const tDojo = await getTranslations({ locale, namespace: 'dojo' });
-
-  const tGuides = await getTranslations({ locale, namespace: 'guides' });
+  const [t, tDojo, tGuides, [nativeAd]] = await Promise.all([
+    getTranslations({ locale, namespace: 'ranks' }),
+    getTranslations({ locale, namespace: 'dojo' }),
+    getTranslations({ locale, namespace: 'guides' }),
+    getNativeAdCreatives(DOJO_NATIVE_AD_SLOT, locale),
+  ]);
   const guidesPages = tGuides.raw('pages') as Record<string, unknown>;
 
   // Extract a short teaser paragraph for the "tips" card, if the rank has a
@@ -250,6 +255,8 @@ export default async function RankDetailPage({ params }: Props) {
           />
         </div>
 
+        {nativeAd && <NativeAdCard creative={nativeAd} locale={locale} variant="card" />}
+
         <RankNavigation locale={locale} slug={slug} t={t} />
       </PageLayout>
     );
@@ -329,6 +336,8 @@ export default async function RankDetailPage({ params }: Props) {
           <p className="text-emerald-600 dark:text-emerald-400">{t('detail.benefitsAdFree')}</p>
         </div>
       )}
+
+      {nativeAd && <NativeAdCard creative={nativeAd} locale={locale} variant="card" />}
 
       <RankNavigation locale={locale} slug={rankSlug} t={t} />
     </PageLayout>

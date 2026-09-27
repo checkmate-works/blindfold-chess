@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react';
 
+import { getNativeAdCreatives } from '@/lib/ads/ad';
+import { DOJO_NATIVE_AD_SLOT } from '@/lib/ads/registry';
 import type { RankSlug } from '@/lib/db/data/ranks';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -51,13 +53,21 @@ export type GuideBodyProps = FlatBodyProps | ChapterListProps | ChapterBodyProps
  *   - `flat`         → `renderFlatBody` (+ DB requirements for CTA)
  *   - `chapter-body` → `renderChapterBody` (+ DB requirements, reserved)
  *
+ * The Dojo's native ad card is read here, alongside the context, and handed
+ * to whichever renderer runs. It stays out of `GuideContext` because that
+ * context promises not to touch the database, and the ad pool is a (cached)
+ * database read.
+ *
  * "Unreachable" format mismatches (e.g. a `chapter-list` props object paired
  * with a flat guide) throw a thrown Error rather than silently returning
  * `notFound()`, so that a future routing bug surfaces loudly instead of
  * being masked as a 404.
  */
 export async function renderGuideBody(props: GuideBodyProps): Promise<ReactNode> {
-  const ctx = await resolveGuideContext(props.locale, props.slug);
+  const [ctx, [nativeAd]] = await Promise.all([
+    resolveGuideContext(props.locale, props.slug),
+    getNativeAdCreatives(DOJO_NATIVE_AD_SLOT, props.locale),
+  ]);
   const { guide } = ctx;
 
   if (props.kind === 'chapter-list') {
@@ -67,7 +77,7 @@ export async function renderGuideBody(props: GuideBodyProps): Promise<ReactNode>
           `The routing layer should only request 'chapter-list' for chaptered ranks.`
       );
     }
-    return renderChapterList(ctx, guide);
+    return renderChapterList(ctx, guide, nativeAd);
   }
 
   if (props.kind === 'flat') {
@@ -78,7 +88,7 @@ export async function renderGuideBody(props: GuideBodyProps): Promise<ReactNode>
       );
     }
     const requirements = await loadRequirements(ctx.rankSlug);
-    return renderFlatBody(ctx, guide, props, requirements);
+    return renderFlatBody(ctx, guide, props, requirements, nativeAd);
   }
 
   // kind === 'chapter-body'
@@ -89,5 +99,5 @@ export async function renderGuideBody(props: GuideBodyProps): Promise<ReactNode>
     );
   }
   const requirements = await loadRequirements(ctx.rankSlug);
-  return renderChapterBody(ctx, guide, props, requirements);
+  return renderChapterBody(ctx, guide, props, requirements, nativeAd);
 }
