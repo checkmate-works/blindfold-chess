@@ -193,6 +193,19 @@ export const AD_SLOTS = {
     // guaranteed to resolve.
     surfaces: [{ route: '/articles', href: '/articles' }, { route: '/articles/[slug]' }],
   },
+  'learn-native-ad': {
+    kind: 'native_card',
+    surfaces: [
+      { route: '/learn', href: '/learn' },
+      // Categories and slugs come from content files in the repo, so these
+      // resolve for as long as the content does.
+      { route: '/learn/[category]', href: '/learn/notation' },
+      {
+        route: '/learn/[category]/[slug]',
+        href: '/learn/notation/algebraic-notation',
+      },
+    ],
+  },
 } as const satisfies Record<string, AdSlotConfig>;
 
 export type AdSlot = keyof typeof AD_SLOTS;
@@ -478,3 +491,27 @@ export const MY_GAME_LIST_NATIVE_AD_SLOT = 'my-game-list-native-ad' satisfies Ad
  * layer.
  */
 export const ARTICLE_NATIVE_AD_SLOT = 'article-native-ad' satisfies AdSlot;
+
+/**
+ * The pool the `/learn` pages — the category index, a category's article
+ * list, and each article — draw their native card from, one card per page.
+ *
+ * The placement follows `ARTICLE_NATIVE_AD_SLOT`'s reasoning, because the
+ * pages have the same shapes. An article carries its card where the body
+ * ends, above the practice links and related articles that follow it. The
+ * category list is a column of one-line links inside one bordered box, so its
+ * card sits below the box rather than inside it. The index is a short menu of
+ * categories, and its card follows the menu rather than leading it.
+ *
+ * Its own pool rather than the articles'. The two are different content:
+ * `/articles` is admin-authored posts about the site and the game, while
+ * `/learn` is the repository's own curriculum on the skills blindfold play is
+ * built from — board geometry, notation, memory — read by someone who is
+ * studying rather than browsing. One pool across its three pages, for the
+ * same reason the articles share one.
+ *
+ * Static: every page is prerendered from content files, so the pool comes
+ * from `getNativeAdCreatives` and the `bfc_ads_hidden` cookie's CSS rule is
+ * the entitlement layer.
+ */
+export const LEARN_NATIVE_AD_SLOT = 'learn-native-ad' satisfies AdSlot;
