@@ -7,6 +7,9 @@ import { notFound } from 'next/navigation';
 
 import { SUPPORTED_LOCALES } from '@/config';
 
+import { getNativeAdCreatives } from '@/lib/ads/ad';
+import { LEARN_NATIVE_AD_SLOT } from '@/lib/ads/registry';
+
 import {
   Divider,
   ListLink,
@@ -17,6 +20,7 @@ import {
   SectionTitle,
 } from '@/app/[locale]/_components';
 import { BreadcrumbSkeleton } from '@/app/[locale]/_components/Breadcrumb';
+import { NativeAdCard } from '@/app/[locale]/_components/NativeAdCard';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -73,7 +77,10 @@ async function LearnCategoryContent({ params }: Props) {
   }
 
   const t = await getTranslations({ locale });
-  const articles = await getArticlesByCategory(category as ArticleCategory, locale);
+  const [articles, [nativeAd]] = await Promise.all([
+    getArticlesByCategory(category as ArticleCategory, locale),
+    getNativeAdCreatives(LEARN_NATIVE_AD_SLOT, locale),
+  ]);
 
   const categoryLabel = t(`learn.categories.${category}`);
 
@@ -100,6 +107,8 @@ async function LearnCategoryContent({ params }: Props) {
           ))}
         </ListLinkContainer>
       )}
+
+      {nativeAd && <NativeAdCard creative={nativeAd} locale={locale} variant="card" />}
     </PageLayout>
   );
 }

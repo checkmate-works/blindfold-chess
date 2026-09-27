@@ -333,7 +333,7 @@ type SlotEntry = { id: string; book: BookKey };
  * puzzles and on practice results, game collections next to game lists and
  * the position-memory problems, and the broad how-to-improve books wherever
  * the reader has not yet chosen a subject (the home feed, the glossary, the
- * articles).
+ * articles, the learn curriculum).
  * A surface that shows one creative rather than a rotating list shows the
  * first entry.
  */
@@ -425,6 +425,11 @@ const SLOT_BOOKS = {
     { id: 'bd23c1cb-2113-495b-b3d4-98dafdb9d8d4', book: 'improveYourChessNow' },
     { id: 'baccf2e0-9f6c-4455-9b60-5f0a240b1cd8', book: 'expandYourStrategy' },
     { id: 'f1610e40-3a96-43c0-bbf1-243bc53a0632', book: 'theMentalGame' },
+  ],
+  'learn-native-ad': [
+    { id: '7b9d783e-440b-4fde-8e54-c2aec225add3', book: 'improveYourChessNow' },
+    { id: '8c660ac0-6bad-4104-a1d7-baabee994bb8', book: 'theMentalGame' },
+    { id: '91005972-b749-4604-bf8b-2e0a00551189', book: 'woodpecker2' },
   ],
 } satisfies Record<AdSlot, readonly [SlotEntry, ...SlotEntry[]]>;
 
