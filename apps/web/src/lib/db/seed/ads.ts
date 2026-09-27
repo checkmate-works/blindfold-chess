@@ -332,7 +332,8 @@ type SlotEntry = { id: string; book: BookKey };
  * books sit on the topic pages, the tactics and endgame books next to
  * puzzles and on practice results, game collections next to game lists and
  * the position-memory problems, and the broad how-to-improve books wherever
- * the reader has not yet chosen a subject (the home feed, the glossary).
+ * the reader has not yet chosen a subject (the home feed, the glossary, the
+ * articles).
  * A surface that shows one creative rather than a rotating list shows the
  * first entry.
  */
@@ -419,6 +420,11 @@ const SLOT_BOOKS = {
     { id: 'e65233ac-3ffc-4108-8044-f8c9ebf18601', book: 'korchnoiBestGames' },
     { id: '0d6d667a-852c-4200-bb83-139c6c05770a', book: 'learnFromLarsen' },
     { id: 'fe38d0b1-c60a-41d1-8ba8-eee74628821f', book: 'theMentalGame' },
+  ],
+  'article-native-ad': [
+    { id: 'bd23c1cb-2113-495b-b3d4-98dafdb9d8d4', book: 'improveYourChessNow' },
+    { id: 'baccf2e0-9f6c-4455-9b60-5f0a240b1cd8', book: 'expandYourStrategy' },
+    { id: 'f1610e40-3a96-43c0-bbf1-243bc53a0632', book: 'theMentalGame' },
   ],
 } satisfies Record<AdSlot, readonly [SlotEntry, ...SlotEntry[]]>;
 
