@@ -6,7 +6,8 @@ import { SITE_URL } from '@/config';
 import { assertSupportedLocale } from '@/i18n/assertSupportedLocale';
 import type Stripe from 'stripe';
 
-import { type AuthGuardError, authenticateAndGuard } from '@/lib/auth';
+import type { AuthGuardError } from '@/lib/auth';
+import { authenticateAndGuard } from '@/lib/auth';
 import { getStripe } from '@/lib/billing/stripe';
 import { getStripeCustomerId } from '@/lib/billing/stripe-customer';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
