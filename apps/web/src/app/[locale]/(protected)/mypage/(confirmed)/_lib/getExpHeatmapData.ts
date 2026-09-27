@@ -9,6 +9,14 @@ export type ExpHeatmapData = {
   daily: Record<string, number>;
   /** Daily totals broken down by module (menuType), keyed by 'YYYY-MM-DD'. */
   dailyByModule: Record<string, Record<string, number>>;
+  /**
+   * ISO timestamp of the instant the date range was derived from. The client
+   * lays out the grid and the recent-days chart from this rather than its own
+   * clock: a client whose `new Date()` falls on a different UTC day (slow
+   * hydration, or a payload replayed from the router cache) would otherwise
+   * draw a range the data does not cover.
+   */
+  asOf: string;
 };
 
 /**
@@ -17,8 +25,11 @@ export type ExpHeatmapData = {
  * Uses the existing `idx_exp_events_user_created(userId, createdAt)` index
  * for efficient range scanning.
  */
-export async function getExpHeatmapData(userId: string): Promise<ExpHeatmapData> {
-  const { startDate, endDate } = getHeatmapDateRangeForWeeks(new Date(), DESKTOP_WEEKS);
+export async function getExpHeatmapData(
+  userId: string,
+  now: Date = new Date()
+): Promise<ExpHeatmapData> {
+  const { startDate, endDate } = getHeatmapDateRangeForWeeks(now, DESKTOP_WEEKS);
 
   // endDate is UTC midnight; extend to the end of the UTC day for the query
   const endOfDay = new Date(endDate);
@@ -74,5 +85,5 @@ export async function getExpHeatmapData(userId: string): Promise<ExpHeatmapData>
     };
   }
 
-  return { daily, dailyByModule };
+  return { daily, dailyByModule, asOf: now.toISOString() };
 }
