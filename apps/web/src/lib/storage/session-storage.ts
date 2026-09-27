@@ -17,13 +17,15 @@
  * did not appear", never to lost user data.
  */
 
-function available(): boolean {
+/** Whether `sessionStorage` exists here at all (it does not under SSR). A
+ *  `true` still does not mean a call will succeed — wrap each one. */
+export function sessionStorageAvailable(): boolean {
   return typeof window !== 'undefined' && typeof sessionStorage !== 'undefined';
 }
 
 /** The stored string, or `null` if absent or unreadable. */
 export function readSessionItem(key: string): string | null {
-  if (!available()) return null;
+  if (!sessionStorageAvailable()) return null;
   try {
     return sessionStorage.getItem(key);
   } catch {
@@ -33,7 +35,7 @@ export function readSessionItem(key: string): string | null {
 
 /** Store `value`; a no-op when storage is unavailable or refuses the write. */
 export function writeSessionItem(key: string, value: string): void {
-  if (!available()) return;
+  if (!sessionStorageAvailable()) return;
   try {
     sessionStorage.setItem(key, value);
   } catch {
@@ -43,7 +45,7 @@ export function writeSessionItem(key: string, value: string): void {
 
 /** Remove `key`; a no-op when storage is unavailable. */
 export function removeSessionItem(key: string): void {
-  if (!available()) return;
+  if (!sessionStorageAvailable()) return;
   try {
     sessionStorage.removeItem(key);
   } catch {
