@@ -130,11 +130,18 @@ export const AD_SLOTS = {
   'glossary-term-list-native-ad': {
     kind: 'native_card',
     surfaces: [
+      { route: '/glossary', href: '/glossary' },
       // Both segments come from fixed lists (A-Z, and the five category
       // keys), and both pages are prerendered with `dynamicParams = false`.
       { route: '/glossary/letter/[letter]', href: '/glossary/letter/a' },
       { route: '/glossary/category/[category]', href: '/glossary/category/notation' },
     ],
+  },
+  'glossary-term-native-ad': {
+    kind: 'native_card',
+    // Terms are code-defined seed data, so a term's page resolves for as long
+    // as the term is in `chessTerms`.
+    surfaces: [{ route: '/glossary/[slug]', href: '/glossary/decoy' }],
   },
   'puzzle-result-native-ad': {
     kind: 'native_thumb',
@@ -272,7 +279,12 @@ export const CHUNK_LIST_NATIVE_AD_SLOT = 'chunk-list-native-ad' satisfies AdSlot
 
 /**
  * The pool the glossary term lists — a letter's page and a category's —
- * draw their native card from.
+ * draw their native card from, and the glossary index with them.
+ *
+ * The index has no term list of its own, only the A-Z links and the category
+ * tiles, so it carries one card after both rather than the repeating rule.
+ * It shares the lists' pool because its reader is the lists' reader one click
+ * earlier: still browsing the glossary, not yet on a term.
  *
  * This is the first static surface to carry an ad, and it reaches the pool
  * differently from every other one. `resolveNativeAds` needs the viewer, and
@@ -515,3 +527,26 @@ export const ARTICLE_NATIVE_AD_SLOT = 'article-native-ad' satisfies AdSlot;
  * the entitlement layer.
  */
 export const LEARN_NATIVE_AD_SLOT = 'learn-native-ad' satisfies AdSlot;
+
+/**
+ * The pool a glossary term's own page (`/glossary/[slug]`) draws its native
+ * card from, one card per page.
+ *
+ * Its own pool rather than the term lists', because this is the page search
+ * traffic lands on: a reader who looked one term up and arrived at its
+ * definition, not someone browsing the glossary. Attribution is per creative
+ * (`withCreativeSubId`), so only a pool of its own lets the network's report
+ * say how that landing page performs.
+ *
+ * The card sits where the definition ends — after the description, its
+ * example positions and the category chip — and above the related problems
+ * and the A-Z index, which are where a reader goes next rather than part of
+ * what they came to read.
+ *
+ * Read through `getNativeAdCreatives`, like the lists: most term pages are
+ * prerendered, and the `bfc_ads_hidden` cookie's CSS rule is the entitlement
+ * layer. A term with related problems reads `searchParams` for its tab and
+ * renders dynamically, but reading the viewer there would buy nothing the CSS
+ * layer does not already do.
+ */
+export const GLOSSARY_TERM_NATIVE_AD_SLOT = 'glossary-term-native-ad' satisfies AdSlot;
