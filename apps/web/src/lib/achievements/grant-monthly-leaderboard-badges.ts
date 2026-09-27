@@ -3,6 +3,13 @@ import { and, eq, sql } from 'drizzle-orm';
 import { db } from '@/lib/db/index';
 import { achievements, notifications, userAchievements } from '@/lib/db/schema';
 
+import {
+  type GrantedBadgeInfo,
+  getMonthRange,
+  getPreviousMonth,
+  groupGrantedBadgesByUser,
+  monthlyGrantNotificationGroupKey,
+} from './monthly-leaderboard-grants';
 import { isMonthlyLeaderboardCriteria } from './type-guards';
 
 // ---------------------------------------------------------------------------
@@ -26,13 +33,6 @@ type GrantSummary = {
   skipped: number;
 };
 
-type GrantedBadgeInfo = {
-  slug: string;
-  menuType: string;
-  leaderboardKey: string;
-  placement: number;
-};
-
 export type GrantMonthlyLeaderboardBadgesResult = {
   year: number;
   month: number;
@@ -41,24 +41,6 @@ export type GrantMonthlyLeaderboardBadgesResult = {
   notificationsSent: number;
   results: GrantSummary[];
 };
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-/** Returns the previous month's year and month relative to `now`. */
-function getPreviousMonth(now: Date): { year: number; month: number } {
-  const year = now.getUTCMonth() === 0 ? now.getUTCFullYear() - 1 : now.getUTCFullYear();
-  const month = now.getUTCMonth() === 0 ? 12 : now.getUTCMonth(); // getUTCMonth() is 0-based
-  return { year, month };
-}
-
-/** Returns the start and end dates of the given year/month (UTC). */
-function getMonthRange(year: number, month: number): { start: Date; end: Date } {
-  const start = new Date(Date.UTC(year, month - 1, 1));
-  const end = new Date(Date.UTC(year, month, 1)); // first day of next month
-  return { start, end };
-}
 
 // ---------------------------------------------------------------------------
 // Per-definition processing
@@ -201,7 +183,7 @@ async function sendGrantNotifications(
 ): Promise<number> {
   let notificationsSent = 0;
   for (const [userId, badges] of grantedByUser) {
-    const groupKey = `achievement-monthly-${userId}-${year}-${month}`;
+    const groupKey = monthlyGrantNotificationGroupKey(userId, year, month);
 
     const existingNotification = await db
       .select({ id: notifications.id })
@@ -249,23 +231,18 @@ export async function grantMonthlyLeaderboardBadges(
     return { year, month, totalGranted: 0, totalSkipped: 0, notificationsSent: 0, results: [] };
   }
 
-  const results: GrantSummary[] = [];
-  // Aggregates granted badges per user so each user gets a single notification.
-  const grantedByUser = new Map<string, GrantedBadgeInfo[]>();
-
+  const outcomes: ProcessedAchievement[] = [];
   for (const def of achievementDefs) {
     const outcome = await processAchievementDef(def, range, year, month);
-    if (!outcome) continue;
-
-    results.push(outcome.summary);
-    for (const { userId, info } of outcome.granted) {
-      const badges = grantedByUser.get(userId) ?? [];
-      badges.push(info);
-      grantedByUser.set(userId, badges);
-    }
+    if (outcome) outcomes.push(outcome);
   }
+  const results = outcomes.map((o) => o.summary);
 
-  const notificationsSent = await sendGrantNotifications(grantedByUser, year, month);
+  const notificationsSent = await sendGrantNotifications(
+    groupGrantedBadgesByUser(outcomes.flatMap((o) => o.granted)),
+    year,
+    month
+  );
 
   return {
     year,
