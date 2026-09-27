@@ -5,7 +5,7 @@ import {
   StorageAvailabilityProvider,
   useStorageAvailabilityContext,
 } from './StorageAvailabilityProvider';
-import { makeWorkingLocalStorage } from './__test-support__/storage-mocks';
+import { makeWorkingLocalStorage, snapshotWindowStorage } from './__test-support__/storage-mocks';
 import * as detectModule from './storage-availability';
 
 /**
@@ -21,8 +21,7 @@ import * as detectModule from './storage-availability';
  */
 
 describe('StorageAvailabilityProvider', () => {
-  const originalLocalStorage = Object.getOwnPropertyDescriptor(window, 'localStorage');
-  const originalIndexedDB = Object.getOwnPropertyDescriptor(window, 'indexedDB');
+  const restoreWindowStorage = snapshotWindowStorage();
 
   beforeEach(() => {
     Object.defineProperty(window, 'localStorage', {
@@ -37,12 +36,7 @@ describe('StorageAvailabilityProvider', () => {
 
   afterEach(() => {
     cleanup();
-    if (originalLocalStorage) {
-      Object.defineProperty(window, 'localStorage', originalLocalStorage);
-    }
-    if (originalIndexedDB) {
-      Object.defineProperty(window, 'indexedDB', originalIndexedDB);
-    }
+    restoreWindowStorage();
     vi.restoreAllMocks();
   });
 
