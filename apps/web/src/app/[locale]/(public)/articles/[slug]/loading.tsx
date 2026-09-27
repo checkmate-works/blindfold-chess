@@ -7,18 +7,15 @@ import { ProseArticle } from '@/app/[locale]/_components/ProseArticle';
  *
  * Mirrors `articles/[slug]/page.tsx`: PageTitle (the article title) + PagePanel
  * holding the prose body, the right-aligned publish date, and the Divider +
- * compact Breadcrumb that `PageLayout` appends. Without this file the route
- * inherits `articles/loading.tsx`, which reserves the index page's list rows
- * and "all articles" section title — a layout this page never renders.
+ * compact Breadcrumb that `PageLayout` appends.
  *
  * Deliberately reads no locale and no translations. The route is statically
  * generated (`generateStaticParams` + `revalidate`), and a server-side locale
  * read in a loading boundary (`headers()`, or `getLocale()`, which falls
  * through to a `headers()` probe) would force the whole route dynamic. The
- * inherited index skeleton did exactly that. The one static label the real
- * page shows — the "Articles" crumb — lives in the server-only `articles`
- * namespace, so rather than shipping it to the client dictionary for a Client
- * Component, every text slot here is a bar.
+ * one static label the real page shows — the "Articles" crumb — lives in the
+ * server-only `articles` namespace, so rather than shipping it to the client
+ * dictionary for a Client Component, every text slot here is a bar.
  */
 export default function ArticleLoading() {
   return (

@@ -12,7 +12,7 @@ import { MypageDashboardSkeleton } from './MypageDashboardSkeleton';
  * route-aware auth-gate fallback so a hard load / refresh of (and the
  * post-sign-in landing on) the dashboard streams a matching skeleton.
  * PageTitle renders the real translated string rather than a bar placeholder,
- * matching the convention in articles/loading.tsx etc.
+ * matching the convention in articles/(index)/loading.tsx etc.
  *
  * Client Component (not an async Server Component calling `getTranslations`):
  * `resolveLoadingFallback` — which constructs this element — is imported from
