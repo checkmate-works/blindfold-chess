@@ -3,6 +3,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 
 const mockInsertValues = vi.fn();
+const mockCaptureError = vi.fn();
+
+vi.mock('@/lib/sentry/capture-error', () => ({
+  captureError: (...args: unknown[]) => mockCaptureError(...args),
+}));
 
 vi.mock('@/lib/db', async () => ({
   ...(await actualDbSchema()),
@@ -190,6 +195,22 @@ describe('logActivityEvent', () => {
           action: 'login',
         })
       ).not.toThrow();
+    });
+
+    it('should report the failure instead of dropping it silently', () => {
+      const dbError = new Error('DB connection lost');
+      mockInsertValues.mockReturnValue({
+        then: () => ({
+          catch: (fn: (err: Error) => void) => fn(dbError),
+        }),
+      });
+
+      logActivityEvent({ userId: 'user-123', action: 'login' });
+
+      expect(mockCaptureError).toHaveBeenCalledWith(
+        dbError,
+        '[logActivityEvent] failed to record login'
+      );
     });
 
     it('should call db.insert even when called rapidly (no debounce/throttle)', () => {
