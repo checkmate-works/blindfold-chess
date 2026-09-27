@@ -26,8 +26,8 @@ type Props = {
 };
 
 /**
- * The terms under a letter or a category, and the one place the glossary
- * carries an ad.
+ * The terms under a letter or a category, with a native ad card spliced in
+ * by the repeating rule of `AD_INTERVAL`.
  *
  * The creatives come from the cached, viewer-independent read rather than
  * `resolveNativeAds`: both pages that render this list are prerendered, and

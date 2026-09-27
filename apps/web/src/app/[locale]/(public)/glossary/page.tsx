@@ -4,9 +4,12 @@ import { setRequestLocale } from 'next-intl/server';
 
 import { SITE_URL } from '@/config';
 
+import { getNativeAdCreatives } from '@/lib/ads/ad';
+import { GLOSSARY_TERM_LIST_NATIVE_AD_SLOT } from '@/lib/ads/registry';
 import { JsonLd, generateDefinedTermSetSchema } from '@/lib/seo/jsonld';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import { NativeAdCard } from '@/app/[locale]/_components/NativeAdCard';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
@@ -28,7 +31,10 @@ export default async function GlossaryIndexPage({ params }: Props) {
 
   const glossaryUrl = `${SITE_URL}/${locale}/glossary`;
 
-  const allTerms = await getGlossaryTerms(locale);
+  const [allTerms, [nativeAd]] = await Promise.all([
+    getGlossaryTerms(locale),
+    getNativeAdCreatives(GLOSSARY_TERM_LIST_NATIVE_AD_SLOT, locale),
+  ]);
   const definedTerms = allTerms.map((term) => ({
     name: locale === 'ja' && term.termJa ? term.termJa : term.term,
     description: term.definition,
@@ -56,6 +62,8 @@ export default async function GlossaryIndexPage({ params }: Props) {
           <SectionTitle>{t('index.byCategory')}</SectionTitle>
           <CategoryIndex locale={locale} />
         </div>
+
+        {nativeAd && <NativeAdCard creative={nativeAd} locale={locale} variant="card" />}
       </PageLayout>
     </>
   );

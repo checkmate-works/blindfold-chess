@@ -6,6 +6,8 @@ import { notFound } from 'next/navigation';
 
 import { SITE_URL, SUPPORTED_LOCALES } from '@/config';
 
+import { getNativeAdCreatives } from '@/lib/ads/ad';
+import { GLOSSARY_TERM_NATIVE_AD_SLOT } from '@/lib/ads/registry';
 import { chessTerms } from '@/lib/db/data/chess-terms';
 import { slugifyTerm } from '@/lib/glossary/slug';
 import { getPositionsForTerm } from '@/lib/glossary/term-positions';
@@ -14,6 +16,7 @@ import { toMetaDescription } from '@/lib/seo/meta-description';
 
 import { LinkTabs, PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import type { LinkTabItem } from '@/app/[locale]/_components';
+import { NativeAdCard } from '@/app/[locale]/_components/NativeAdCard';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -85,11 +88,12 @@ export default async function GlossaryTermPage({ params, searchParams }: Props) 
 
   // The related problems are slug-keyed like the term row itself, so both
   // queries run in one round (the empty result on a miss is discarded by the
-  // notFound below).
-  const [term, t, problems] = await Promise.all([
+  // notFound below). The ad pool depends on neither and joins them.
+  const [term, t, problems, [nativeAd]] = await Promise.all([
     getGlossaryTermBySlug(slug, locale),
     getTranslations({ locale, namespace: 'glossary' }),
     getPositionsForTerm(slug),
+    getNativeAdCreatives(GLOSSARY_TERM_NATIVE_AD_SLOT, locale),
   ]);
   if (!term) notFound();
 
@@ -179,6 +183,8 @@ export default async function GlossaryTermPage({ params, searchParams }: Props) 
             )}
           </div>
         )}
+
+        {nativeAd && <NativeAdCard creative={nativeAd} locale={locale} variant="card" />}
 
         {hasRelated && activeTab && (
           <div className="space-y-6">
