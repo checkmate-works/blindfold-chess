@@ -204,6 +204,7 @@ export const INTL_SCOPES = {
       'dojo',
       'guides',
       'home',
+      'nativeAd',
       'play',
       'ranks',
       'unsavedChanges',

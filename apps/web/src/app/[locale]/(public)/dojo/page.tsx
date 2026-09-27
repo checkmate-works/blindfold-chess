@@ -18,6 +18,8 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 
+import { getNativeAdCreatives } from '@/lib/ads/ad';
+import { DOJO_NATIVE_AD_SLOT } from '@/lib/ads/registry';
 import { getOptionalUser } from '@/lib/auth';
 import { CURRICULUM } from '@/lib/db/data/curriculum';
 import { ALL_RANK_SLUGS } from '@/lib/db/data/ranks';
@@ -47,6 +49,7 @@ import {
   SectionTitle,
 } from '@/app/[locale]/_components';
 import type { HelpStep } from '@/app/[locale]/_components';
+import { NativeAdCard } from '@/app/[locale]/_components/NativeAdCard';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps } from '@/app/[locale]/_lib/types';
@@ -64,12 +67,13 @@ export default async function DojoPage({ params }: LocalePageProps) {
   const { locale } = await params;
   // The rank master is viewer-independent, so it loads with the translations
   // and the supabase client instead of waiting behind the session lookup.
-  const [t, tHelp, tRanks, tGuides, dbRanks] = await Promise.all([
+  const [t, tHelp, tRanks, tGuides, dbRanks, [nativeAd]] = await Promise.all([
     getTranslations({ locale, namespace: 'dojo' }),
     getTranslations({ locale, namespace: 'dojo.help' }),
     getTranslations({ locale, namespace: 'ranks' }),
     getTranslations({ locale, namespace: 'guides' }),
     getAllRanks(),
+    getNativeAdCreatives(DOJO_NATIVE_AD_SLOT, locale),
   ]);
   const guidesPages = tGuides.raw('pages') as Record<string, unknown>;
 
@@ -257,6 +261,12 @@ export default async function DojoPage({ params }: LocalePageProps) {
           </div>
         )}
       </section>
+
+      {nativeAd && (
+        <div className="mt-8">
+          <NativeAdCard creative={nativeAd} locale={locale} variant="card" />
+        </div>
+      )}
     </PageLayout>
   );
 }

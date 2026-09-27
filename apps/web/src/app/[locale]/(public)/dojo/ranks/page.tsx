@@ -30,6 +30,8 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 
+import { getNativeAdCreatives } from '@/lib/ads/ad';
+import { DOJO_NATIVE_AD_SLOT } from '@/lib/ads/registry';
 import { ALL_RANK_SLUGS } from '@/lib/db/data/ranks';
 
 import {
@@ -40,6 +42,7 @@ import {
   SectionTitle,
 } from '@/app/[locale]/_components';
 import { BreadcrumbSkeleton } from '@/app/[locale]/_components/Breadcrumb';
+import { NativeAdCard } from '@/app/[locale]/_components/NativeAdCard';
 import { SignUpBanner } from '@/app/[locale]/_components/SignUpBanner';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
@@ -54,10 +57,12 @@ export async function generateMetadata({ params }: LocalePageProps): Promise<Met
 
 async function RanksContent({ params }: LocalePageProps) {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'ranks' });
-  const tDojo = await getTranslations({ locale, namespace: 'dojo' });
-
-  const dbRanks = await getAllRanks();
+  const [t, tDojo, dbRanks, [nativeAd]] = await Promise.all([
+    getTranslations({ locale, namespace: 'ranks' }),
+    getTranslations({ locale, namespace: 'dojo' }),
+    getAllRanks(),
+    getNativeAdCreatives(DOJO_NATIVE_AD_SLOT, locale),
+  ]);
 
   return (
     <PageLayout
@@ -78,6 +83,8 @@ async function RanksContent({ params }: LocalePageProps) {
       </Suspense>
 
       <RanksGrid locale={locale} dbRanks={dbRanks} />
+
+      {nativeAd && <NativeAdCard creative={nativeAd} locale={locale} variant="card" />}
 
       {/* Reciprocal link back to the Dojo hub — beyond the breadcrumb above,
           this gives a visible way back for readers who scrolled past it. */}
