@@ -4,11 +4,14 @@ import { notFound } from 'next/navigation';
 
 import { SITE_URL } from '@/config';
 
+import { getNativeAdCreatives } from '@/lib/ads/ad';
+import { ARTICLE_NATIVE_AD_SLOT } from '@/lib/ads/registry';
 import { formatLocalDate } from '@/lib/i18n/format-date';
 import { buildPageHref, getPaginationParams } from '@/lib/pagination';
 import { JsonLd, generateItemListSchema } from '@/lib/seo/jsonld';
 
 import { ListLink, ListLinkContainer, PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import { NativeAdCard } from '@/app/[locale]/_components/NativeAdCard';
 import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -47,7 +50,10 @@ export default async function ArticlesPage({ params, searchParams }: Props) {
   if (currentPage > totalPages && totalPages > 0) {
     notFound();
   }
-  const articles = await getPublishedArticlesPaginated(locale, ARTICLES_PER_PAGE, offset);
+  const [articles, [nativeAd]] = await Promise.all([
+    getPublishedArticlesPaginated(locale, ARTICLES_PER_PAGE, offset),
+    getNativeAdCreatives(ARTICLE_NATIVE_AD_SLOT, locale),
+  ]);
 
   const itemListItems = articles.map((article) => ({
     name: article.title,
@@ -82,6 +88,7 @@ export default async function ArticlesPage({ params, searchParams }: Props) {
                 );
               })}
             </ListLinkContainer>
+            {nativeAd && <NativeAdCard creative={nativeAd} locale={locale} variant="card" />}
             <PaginationNav
               currentPage={currentPage}
               totalPages={totalPages}

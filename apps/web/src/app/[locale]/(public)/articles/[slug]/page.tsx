@@ -8,11 +8,14 @@ import type { TiptapJsonContent } from '@/app/admin/articles/_lib/types';
 import { SUPPORTED_LOCALES } from '@/config';
 import { routing } from '@/i18n/routing';
 
+import { getNativeAdCreatives } from '@/lib/ads/ad';
+import { ARTICLE_NATIVE_AD_SLOT } from '@/lib/ads/registry';
 import { formatLocalDate } from '@/lib/i18n/format-date';
 import { JsonLd, generateBlogPostingSchema } from '@/lib/seo/jsonld';
 import { toMetaDescription } from '@/lib/seo/meta-description';
 
 import { PageLayout } from '@/app/[locale]/_components';
+import { NativeAdCard } from '@/app/[locale]/_components/NativeAdCard';
 import { ProseArticle } from '@/app/[locale]/_components/ProseArticle';
 import { TiptapRenderer } from '@/app/[locale]/_components/TiptapRenderer';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -87,8 +90,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ArticlePage({ params }: Props) {
   const { locale, slug } = await params;
-  const result = await getPublishedArticle(slug, locale);
-  const t = await getTranslations({ locale, namespace: 'articles' });
+  const [result, t, [nativeAd]] = await Promise.all([
+    getPublishedArticle(slug, locale),
+    getTranslations({ locale, namespace: 'articles' }),
+    getNativeAdCreatives(ARTICLE_NATIVE_AD_SLOT, locale),
+  ]);
 
   if (!result) {
     notFound();
@@ -141,6 +147,8 @@ export default async function ArticlePage({ params }: Props) {
         {publishedDate && (
           <p className="text-sm text-muted-foreground text-right">{publishedDate}</p>
         )}
+
+        {nativeAd && <NativeAdCard creative={nativeAd} locale={locale} variant="card" />}
       </PageLayout>
     </>
   );
