@@ -9,6 +9,8 @@ import { loadAuthoredPost } from '@/lib/topic-posts';
 import { logActivityEvent } from '@/lib/users/activity-log';
 import { validateContent } from '@/lib/validations/content';
 
+import { planPostEdit } from '../_lib/post-edit-plan';
+
 export type EditPostResult =
   { success: true; content: string; isSpoiler: boolean; updatedAt: Date } | { error: string };
 
@@ -58,16 +60,12 @@ export async function editPost(
     return { error: contentResult.error };
   }
 
-  // isSpoiler is only surfaced in the UI for `position_puzzle` today. Ignore
-  // the field for every other topic type so a hand-crafted FormData cannot
-  // flip the column on, say, an opening post.
-  const nextIsSpoiler =
-    post.topicType === 'position_puzzle' ? formData.get('isSpoiler') === 'on' : post.isSpoiler;
+  const plan = planPostEdit(post, {
+    content: contentResult.content,
+    isSpoilerChecked: formData.get('isSpoiler') === 'on',
+  });
 
-  const contentChanged = contentResult.content !== post.content;
-  const spoilerChanged = nextIsSpoiler !== post.isSpoiler;
-
-  if (!contentChanged && !spoilerChanged) {
+  if (!plan) {
     // No-op edit (user opened the form and saved without changes). Return
     // the existing values so the client doesn't show a stale "(edited)"
     // mark on a row whose `updatedAt` did not move.
@@ -85,23 +83,11 @@ export async function editPost(
   await db
     .update(topicPosts)
     .set({
-      content: contentResult.content,
-      isSpoiler: nextIsSpoiler,
+      content: plan.content,
+      isSpoiler: plan.isSpoiler,
       updatedAt: now,
     })
     .where(eq(topicPosts.id, postId));
-
-  // A topic_post edit overwrites content / isSpoiler in place with no
-  // revision history, so the activity log preserves the overwritten values
-  // (old → new). Only the fields that actually changed are recorded; the
-  // early no-op return above guarantees at least one did.
-  const changes: Record<string, { from: unknown; to: unknown }> = {};
-  if (contentChanged) {
-    changes.content = { from: post.content, to: contentResult.content };
-  }
-  if (spoilerChanged) {
-    changes.isSpoiler = { from: post.isSpoiler, to: nextIsSpoiler };
-  }
 
   logActivityEvent({
     userId: user.id,
@@ -111,14 +97,14 @@ export async function editPost(
     metadata: {
       topicType: post.topicType,
       topicKey: post.topicKey,
-      changes,
+      changes: plan.changes,
     },
   });
 
   return {
     success: true,
-    content: contentResult.content,
-    isSpoiler: nextIsSpoiler,
+    content: plan.content,
+    isSpoiler: plan.isSpoiler,
     updatedAt: now,
   };
 }
