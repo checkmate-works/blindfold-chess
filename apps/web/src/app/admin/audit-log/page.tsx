@@ -1,6 +1,5 @@
 import { getTranslations } from 'next-intl/server';
 
-import { Button, Field, Input, Select } from '@/app/admin/_components/forms';
 import { buildAdminListHref } from '@/app/admin/_lib/build-list-href';
 import { findPurgedUserIds } from '@/app/admin/_lib/find-purged-user-ids';
 import { formatDateTime } from '@/app/admin/_lib/format';
@@ -13,6 +12,7 @@ import { db, moderationActions, profiles } from '@/lib/db';
 import { getPaginationParams } from '@/lib/pagination';
 import { createAdminClient } from '@/lib/supabase/admin';
 
+import { ActionUserFilterForm } from '../_components/ActionUserFilterForm';
 import { AdminBadge, type AdminBadgeVariant } from '../_components/AdminBadge';
 import { AdminDataTable } from '../_components/AdminDataTable';
 import { AdminPageLayout } from '../_components/AdminPageLayout';
@@ -24,6 +24,19 @@ const ID_PREFIX_LENGTH = 8;
 
 /** Reason budget for the table cell; the full text stays in the `title`. */
 const REASON_CELL_LENGTH = 50;
+
+/** The moderation actions the filter offers, in display order. */
+const FILTERABLE_ACTIONS = [
+  'ban',
+  'unban',
+  'delete_post',
+  'delete_position',
+  'feature_puzzle',
+  'unfeature_puzzle',
+  'create_grant',
+  'revoke_grant',
+  'create_point_grant',
+] as const;
 
 const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
@@ -135,43 +148,16 @@ export default async function AdminAuditLogPage({
 
   return (
     <AdminPageLayout breadcrumbs={[{ label: t('auditLog') }]}>
-      {/* Filters */}
-      <form className="flex gap-4 mb-6 items-end">
-        <Field label={t('auditLogTable.filterByAction')} htmlFor="action-filter">
-          <Select
-            surface="card"
-            fullWidth={false}
-            id="action-filter"
-            name="action"
-            defaultValue={actionFilter}
-          >
-            <option value="">{t('auditLogTable.allActions')}</option>
-            <option value="ban">ban</option>
-            <option value="unban">unban</option>
-            <option value="delete_post">delete_post</option>
-            <option value="delete_position">delete_position</option>
-            <option value="feature_puzzle">feature_puzzle</option>
-            <option value="unfeature_puzzle">unfeature_puzzle</option>
-            <option value="create_grant">create_grant</option>
-            <option value="revoke_grant">revoke_grant</option>
-            <option value="create_point_grant">create_point_grant</option>
-          </Select>
-        </Field>
-        <Field label={t('auditLogTable.filterByUser')} htmlFor="user-filter">
-          <Input
-            surface="card"
-            fullWidth={false}
-            id="user-filter"
-            name="user"
-            type="text"
-            defaultValue={userFilter}
-            placeholder="email or username"
-          />
-        </Field>
-        <Button type="submit" variant="primary">
-          Filter
-        </Button>
-      </form>
+      <ActionUserFilterForm
+        labels={{
+          filterByAction: t('auditLogTable.filterByAction'),
+          allActions: t('auditLogTable.allActions'),
+          filterByUser: t('auditLogTable.filterByUser'),
+        }}
+        actionOptions={FILTERABLE_ACTIONS}
+        actionFilter={actionFilter}
+        userFilter={userFilter}
+      />
 
       <AdminDataTable
         headers={[

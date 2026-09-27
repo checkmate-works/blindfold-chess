@@ -1,11 +1,11 @@
 import { getTranslations } from 'next-intl/server';
 
-import { Button, Field, Input, Select } from '@/app/admin/_components/forms';
 import { buildAdminListHref } from '@/app/admin/_lib/build-list-href';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
 import { createAdminClient } from '@/lib/supabase/admin';
 
+import { ActionUserFilterForm } from '../_components/ActionUserFilterForm';
 import { AdminPageLayout } from '../_components/AdminPageLayout';
 import { AdminPaginationNav } from '../_components/AdminPaginationNav';
 import { ActivityLogRow } from './_components/ActivityLogRow';
@@ -37,39 +37,16 @@ export default async function AdminActivityLogPage({
 
   return (
     <AdminPageLayout breadcrumbs={[{ label: t('activityLog') }]}>
-      {/* Filters */}
-      <form className="flex gap-4 mb-6 items-end">
-        <Field label={t('activityLogTable.filterByAction')} htmlFor="action-filter">
-          <Select
-            surface="card"
-            fullWidth={false}
-            id="action-filter"
-            name="action"
-            defaultValue={actionFilter}
-          >
-            <option value="">{t('activityLogTable.allActions')}</option>
-            {actionTypes.map((at) => (
-              <option key={at.action} value={at.action}>
-                {at.action}
-              </option>
-            ))}
-          </Select>
-        </Field>
-        <Field label={t('activityLogTable.filterByUser')} htmlFor="user-filter">
-          <Input
-            surface="card"
-            fullWidth={false}
-            id="user-filter"
-            name="user"
-            type="text"
-            defaultValue={userFilter}
-            placeholder="email or username"
-          />
-        </Field>
-        <Button type="submit" variant="primary">
-          Filter
-        </Button>
-      </form>
+      <ActionUserFilterForm
+        labels={{
+          filterByAction: t('activityLogTable.filterByAction'),
+          allActions: t('activityLogTable.allActions'),
+          filterByUser: t('activityLogTable.filterByUser'),
+        }}
+        actionOptions={actionTypes.map((at) => at.action)}
+        actionFilter={actionFilter}
+        userFilter={userFilter}
+      />
 
       {/* Table */}
       <div className="overflow-x-auto rounded-lg border border-border">
