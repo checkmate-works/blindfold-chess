@@ -74,6 +74,11 @@ export async function renderFlatBody(
   // (`requirements: []` in seed data). The guide itself stays reachable.
   const showChallengeCta = isLastPage && !isMukyuSlug(rankSlug) && requirements.length > 0;
   const showPagination = pages.length > 1;
+  // The ad card follows the body only where the reading ends. On any earlier
+  // page it goes below the pager instead, so it does not stand between a
+  // reader and the link to the next page of the same guide.
+  const adAfterBody = nativeAd !== undefined && isLastPage;
+  const adAfterPagination = nativeAd !== undefined && !isLastPage;
 
   const breadcrumbItems = buildFlatBodyBreadcrumbs(
     tGuides,
@@ -120,7 +125,7 @@ export async function renderFlatBody(
           paragraphsNode
         )}
 
-        {nativeAd && <NativeAdCard creative={nativeAd} locale={locale} variant="card" />}
+        {adAfterBody && <NativeAdCard creative={nativeAd} locale={locale} variant="card" />}
 
         {showChallengeCta && (
           <>
@@ -146,6 +151,8 @@ export async function renderFlatBody(
             />
           </>
         )}
+
+        {adAfterPagination && <NativeAdCard creative={nativeAd} locale={locale} variant="card" />}
 
         {isLastPage && <RankNavigation ctx={ctx} />}
 

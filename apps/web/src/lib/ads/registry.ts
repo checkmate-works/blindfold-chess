@@ -568,11 +568,16 @@ export const GLOSSARY_TERM_NATIVE_AD_SLOT = 'glossary-term-native-ad' satisfies 
  * native card from, one card per page.
  *
  * Every page places it where its reading ends and before what sends the
- * reader onward: a guide page after its paragraphs and above the challenge
- * CTA and the pager, a chapter list after the chapters, a rank page after its
+ * reader onward: a guide's last page after its paragraphs and above the
+ * challenge CTA, a chapter list after the chapters, a rank page after its
  * requirements, the guide and rank indexes after their grids, and the hub
  * after the curriculum. The next-rank card and its requirement links on the
  * hub are the page's point, so the ad comes after them rather than between.
+ *
+ * A guide's earlier pages are the exception. Their reading does not end at
+ * the last paragraph — it continues on the next page — so the card goes
+ * below the pager, where it does not sit between the reader and the link
+ * that continues the guide.
  *
  * One pool for the whole section, like the articles and `/learn`: the reader
  * everywhere under `/dojo` is working through the belt progression, and a

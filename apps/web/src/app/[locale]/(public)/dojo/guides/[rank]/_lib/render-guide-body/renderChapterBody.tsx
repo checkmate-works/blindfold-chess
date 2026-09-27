@@ -51,6 +51,13 @@ export async function renderChapterBody(
 
   const currentPage = chapter.pages[pageNumber - 1];
   const showPagination = chapter.pages.length > 1;
+  // Same rule as `renderFlatBody`: the ad card follows the body only on the
+  // chapter's last page, and sits below the pager on every earlier one.
+  // "Last" is per chapter because the pager is — the next chapter is a
+  // separate page set reached from the chapter list, not from this pager.
+  const isLastPageOfChapter = pageNumber === chapter.pages.length;
+  const adAfterBody = nativeAd !== undefined && isLastPageOfChapter;
+  const adAfterPagination = nativeAd !== undefined && !isLastPageOfChapter;
   // "Last reachable page of this rank's guide" — only true on the final
   // page of the final chapter. Lower-walks the same termination semantics
   // as `renderFlatBody::isLastPage`.
@@ -86,7 +93,7 @@ export async function renderChapterBody(
 
         {renderPageParagraphs({ rankSlug, pageNumber, page: currentPage, tGuides, locale })}
 
-        {nativeAd && <NativeAdCard creative={nativeAd} locale={locale} variant="card" />}
+        {adAfterBody && <NativeAdCard creative={nativeAd} locale={locale} variant="card" />}
 
         {showPagination && (
           <>
@@ -99,6 +106,8 @@ export async function renderChapterBody(
             />
           </>
         )}
+
+        {adAfterPagination && <NativeAdCard creative={nativeAd} locale={locale} variant="card" />}
 
         {isLastPageOfRank && <RankNavigation ctx={ctx} />}
 
