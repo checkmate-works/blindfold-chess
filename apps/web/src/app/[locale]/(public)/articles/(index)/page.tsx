@@ -13,7 +13,7 @@ import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { getPublishedArticleCount, getPublishedArticlesPaginated } from './_lib/queries';
+import { getPublishedArticleCount, getPublishedArticlesPaginated } from '../_lib/queries';
 
 export const revalidate = 1800;
 

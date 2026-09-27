@@ -13,6 +13,17 @@ import { BreadcrumbSkeleton } from '@/app/[locale]/_components/Breadcrumb';
  * to minimise CLS when the real content swaps in. Static labels (PageTitle,
  * SectionTitle) render the real translated strings; dynamic article rows use
  * bar placeholders.
+ *
+ * Lives in the `(index)` route group, not directly under `articles/`, so that
+ * it bounds the listing page alone. A `loading.tsx` stays in the tree of every
+ * route beneath its segment — a child's own `loading.tsx` nests inside it
+ * rather than replacing it — so at `articles/loading.tsx` this skeleton was
+ * rendered into `articles/[slug]` too. Its `headers()` read then kept that
+ * statically generated route dynamic: with a published article in the DB, the
+ * build listed `/[locale]/articles/[slug]` as `ƒ` and prerendered nothing,
+ * and a probe build with `dynamic = 'error'` named `headers()` as the cause.
+ * The listing itself is dynamic anyway (it reads `searchParams`), which is
+ * what makes the header read acceptable here.
  */
 export default async function ArticlesLoading() {
   const locale = await getLocaleFromPathnameHeader();
@@ -43,7 +54,7 @@ export default async function ArticlesLoading() {
         <Divider />
 
         {/* Breadcrumb: [Home logo] / Articles. Single static crumb mirrors
-            `articles/page.tsx`'s `<Breadcrumb items={[{ label: t('pageTitle') }]} />`. */}
+            `(index)/page.tsx`'s `<Breadcrumb items={[{ label: t('pageTitle') }]} />`. */}
         <BreadcrumbSkeleton crumbs={[{ label: t('pageTitle'), current: true }]} />
       </PagePanel>
     </div>

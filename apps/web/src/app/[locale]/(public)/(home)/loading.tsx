@@ -21,7 +21,7 @@ import { FeedSkeleton } from './_components/FeedSkeleton';
  * The skeleton should mirror the layout of the real page (PageTitle + VsAiCard
  * + Feed) to minimise CLS when the actual content replaces it. PageTitle
  * renders the real translated string (static per locale) rather than a bar
- * placeholder, matching the convention in articles/loading.tsx etc. The
+ * placeholder, matching the convention in articles/(index)/loading.tsx etc. The
  * HelpTourButton "?" icon next to it (always rendered on Home — its `steps`
  * list is non-empty) gets a same-size circular placeholder so that row
  * doesn't shift width once the real button mounts.
