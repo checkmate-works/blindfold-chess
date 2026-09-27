@@ -368,6 +368,11 @@ const SLOT_BOOKS = {
     { id: 'b7d22e2c-7175-4ba8-a3b7-50721d68158d', book: 'expandYourStrategy' },
     { id: '598a9d0e-7a94-41d7-a20b-7617b04f3e21', book: 'e4Bible' },
   ],
+  'glossary-term-native-ad': [
+    { id: '74380155-4c00-4774-923f-d2cc637d9a03', book: 'improveYourChessNow' },
+    { id: 'd98736cd-e669-47b4-a98d-8d17120198e3', book: 'expandYourStrategy' },
+    { id: '6b9c6035-438e-4d02-bbc7-fd0f70d99985', book: 'e4Bible' },
+  ],
   'puzzle-result-native-ad': [
     { id: 'e29c3f11-63f4-455a-aab4-bfccdf1ba460', book: 'woodpecker2' },
     { id: '9462e5f8-ca22-429b-8c0f-c17bb39779c5', book: 'killerAttacking' },

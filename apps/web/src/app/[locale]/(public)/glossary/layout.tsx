@@ -8,11 +8,12 @@ type Props = { children: React.ReactNode };
  * The subtree had no provider until the term lists started carrying a native
  * ad card, whose thumbnail is a board and therefore reads the theme. That is
  * a cost the `game-preferences-layout` TSDoc says a static informational
- * route should not pay, and it is paid here deliberately: the letter and
- * category pages are ~30 prerendered pages of search-entry traffic, and one
- * card on each is what the provider buys. The pages stay static — the ad's
- * creatives come from the viewer-independent cached read, not from
- * `resolveNativeAds` (see `GLOSSARY_TERM_LIST_NATIVE_AD_SLOT`).
+ * route should not pay, and it is paid here deliberately: the index, the
+ * letter and category pages and every term's own page are prerendered pages
+ * of search-entry traffic, and the cards on them are what the provider buys.
+ * The pages stay static — the ad's creatives come from the viewer-independent
+ * cached read, not from `resolveNativeAds` (see
+ * `GLOSSARY_TERM_LIST_NATIVE_AD_SLOT` and `GLOSSARY_TERM_NATIVE_AD_SLOT`).
  *
  * Written out rather than re-exporting `GamePreferencesLayout` so the
  * provider token stays visible to `game-preferences-coverage.test.ts`.
