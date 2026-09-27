@@ -62,24 +62,24 @@ const MONTH_NAMES = [
 const DAY_LABELS: Record<number, string> = { 1: 'Mon', 3: 'Wed', 5: 'Fri' };
 
 /** Computes weeks, max amount, and month labels for a given number of weeks. */
-function useHeatmapWeeks(daily: Record<string, number>, totalWeeks: number) {
+function useHeatmapWeeks(daily: Record<string, number>, totalWeeks: number, asOf: string) {
   return useMemo(() => {
-    const { startDate, endDate } = getHeatmapDateRangeForWeeks(new Date(), totalWeeks);
+    const { startDate, endDate } = getHeatmapDateRangeForWeeks(new Date(asOf), totalWeeks);
     const allDates = generateDateRange(startDate, endDate);
     const max = Math.max(0, ...Object.values(daily));
     const weeks = buildWeeks(allDates);
     const monthLabels = getMonthLabelsForWeeks(weeks, MONTH_NAMES);
     return { weeks, maxAmount: max, monthLabels };
-  }, [daily, totalWeeks]);
+  }, [daily, totalWeeks, asOf]);
 }
 
 export function ExpActivityHeatmap({ data, legendLess, legendMore }: Props) {
   const t = useTranslations('Mypage');
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
-  const desktop = useHeatmapWeeks(data.daily, DESKTOP_WEEKS);
+  const desktop = useHeatmapWeeks(data.daily, DESKTOP_WEEKS, data.asOf);
 
-  const recentDays = useMemo(() => getRecentDays(new Date(), BAR_CHART_DAYS), []);
+  const recentDays = useMemo(() => getRecentDays(new Date(data.asOf), BAR_CHART_DAYS), [data.asOf]);
 
   const handleCellClick = useCallback((dateStr: string) => {
     setSelectedDate((prev) => (prev === dateStr ? null : dateStr));

@@ -284,6 +284,9 @@ export async function getAiReviewJobStatus(
   if (!job) return { status: 'not_found' };
 
   switch (job.status) {
+    case 'pending':
+    case 'processing':
+      return { status: 'pending' };
     case 'done': {
       const review = await getAiReview(job.gameId, job.locale);
       // `done` without a row can only mean the review was removed since; the
@@ -293,7 +296,14 @@ export async function getAiReviewJobStatus(
     }
     case 'failed':
       return { status: 'failed', error: (job.error as AiReviewError | null) ?? 'llm_error' };
-    default:
+    default: {
+      // A new job status must decide what the poller sees; falling through
+      // to `pending` would leave the page showing "generating" forever. The
+      // column is a plain varchar, so a value outside the union can still be
+      // read at runtime — that keeps the old `pending` answer.
+      const _exhaustive: never = job.status;
+      void _exhaustive;
       return { status: 'pending' };
+    }
   }
 }

@@ -59,6 +59,13 @@ describe('getExpHeatmapData', () => {
     });
   });
 
+  it('reports the injected instant the range was derived from', async () => {
+    const now = new Date('2026-04-02T23:59:00Z');
+    const result = await getExpHeatmapData('user-123', now);
+
+    expect(result.asOf).toBe('2026-04-02T23:59:00.000Z');
+  });
+
   it('calls db.select twice (daily + module)', async () => {
     await getExpHeatmapData('user-123');
 

@@ -16,6 +16,7 @@ import { UUID_RE, validateUUID } from '@/lib/validations/uuid';
 import type { TopicType } from '../_lib/constants';
 import type { ImageAttachResult } from '../_lib/image-attach-types';
 import { enforceReplyPermission } from '../_lib/permissions';
+import { planReplyNotifications } from '../_lib/reply-notifications';
 import { resolveReplyTarget } from '../_lib/reply-resolution';
 
 export type CreateReplyState = {
@@ -144,46 +145,23 @@ async function insertReply(
     return reply;
   });
 
-  // On /topics (opening/square) the root topic_post is itself authored
-  // content, so anything landing in its thread is "a comment on your post"
-  // for the post author — the mutable 'new_comment_on_topic' type, same as
-  // comments on positions/chunks/repertoires. Everywhere else the root post
-  // is already a comment on some other entity (whose owner was notified via
-  // notifyTopicAuthorOfNewComment when it was created), so replies stay the
-  // person-to-person 'reply' type, which is deliberately not mutable.
-  const rootIsAuthoredPost = topicType === 'opening' || topicType === 'square';
-
-  // (createNotification no-ops when notifyUserId is null — anonymised author.)
-  if (notifyUserId !== user.id) {
+  const notifications = planReplyNotifications({
+    topicType,
+    actorId: user.id,
+    parentId,
+    rootPostId,
+    notifyUserId,
+    rootPostAuthorId: permissionPost.userId,
+  });
+  for (const { userId, type } of notifications) {
     createNotification({
-      userId: notifyUserId,
+      userId,
       actorId: user.id,
-      // A direct reply to the top-level post notifies its author; on
-      // authored-post topics that is a comment on their content.
-      type: rootIsAuthoredPost && parentId === rootPostId ? 'new_comment_on_topic' : 'reply',
+      type,
       targetType: 'topic_post',
       targetId: postId,
       metadata: { topicType, topicKey, postId, replyId: inserted.id },
     });
-  }
-
-  // Case B: Also notify the root post author (thread owner) if different
-  if (parentId !== rootPostId) {
-    // This is a reply-to-reply; notify the thread owner too.
-    const rootPostAuthorId = permissionPost.userId;
-    if (rootPostAuthorId !== user.id && rootPostAuthorId !== notifyUserId) {
-      createNotification({
-        userId: rootPostAuthorId,
-        actorId: user.id,
-        // For the post author, activity anywhere in their post's thread is
-        // still "a comment on your post"; for a comment author (positions
-        // etc.) it is thread-reply noise, kept as 'reply'.
-        type: rootIsAuthoredPost ? 'new_comment_on_topic' : 'reply',
-        targetType: 'topic_post',
-        targetId: postId,
-        metadata: { topicType, topicKey, postId, replyId: inserted.id },
-      });
-    }
   }
 
   return { ok: true, replyId: inserted.id };

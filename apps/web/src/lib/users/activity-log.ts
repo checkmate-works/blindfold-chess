@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { db, userActivityLog } from '../db';
+import { captureError } from '../sentry/capture-error';
 
 type ActivityEvent = {
   userId: string;
@@ -11,8 +12,11 @@ type ActivityEvent = {
 };
 
 /**
- * Record a user activity event. Fire-and-forget — failures are silently
- * caught so that activity logging never breaks the main action.
+ * Record a user activity event. Fire-and-forget — a failed insert never
+ * breaks the main action, but it is still reported via {@link captureError}.
+ * This table is the only source of the admin Activity Log, so a failure that
+ * is dropped silently (a schema drift or an RLS change on
+ * `user_activity_log`) would empty that page with nothing alerting anyone.
  */
 export function logActivityEvent(event: ActivityEvent): void {
   db.insert(userActivityLog)
@@ -24,5 +28,7 @@ export function logActivityEvent(event: ActivityEvent): void {
       metadata: event.metadata ?? {},
     })
     .then(() => {})
-    .catch(() => {});
+    .catch((error: unknown) => {
+      captureError(error, `[logActivityEvent] failed to record ${event.action}`);
+    });
 }

@@ -12,8 +12,8 @@ import { getPositionDetailPathForStoredType } from '@/lib/positions/routes';
 
 import { buildTopicPostHref } from '@/app/[locale]/(public)/topics/_lib/topic-paths';
 
-type TopicPostMeta = { id: string; topicType: string; topicKey: string };
-type PositionMeta = { id: string; type: string };
+export type TopicPostMeta = { id: string; topicType: string; topicKey: string };
+export type PositionMeta = { id: string; type: string };
 
 type GrantLike = {
   grantType: GrantType;

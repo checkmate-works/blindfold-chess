@@ -63,11 +63,8 @@ import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
 
-import {
-  type EntitlementSourceLabelKey,
-  type RowStatus,
-  getBenefitsPageData,
-} from './_lib/getBenefitsPageData';
+import { type EntitlementSourceLabelKey, type RowStatus } from './_lib/entitlement-rows';
+import { getBenefitsPageData } from './_lib/getBenefitsPageData';
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return createPageMetadata({
