@@ -79,6 +79,9 @@ export async function authenticateAndCheckBan(): Promise<{ user: User } | { erro
   return { user };
 }
 
+/** Every error code {@link authenticateAndGuard} can return. */
+export type AuthGuardError = 'signInRequired' | 'banned' | 'rateLimited';
+
 /**
  * Auth + ban + rate limit guard for Server Actions.
  *
@@ -87,7 +90,7 @@ export async function authenticateAndCheckBan(): Promise<{ user: User } | { erro
  */
 export async function authenticateAndGuard(
   rateLimitConfig: RateLimitConfig
-): Promise<{ user: User } | { error: string }> {
+): Promise<{ user: User } | { error: AuthGuardError }> {
   const user = await getOptionalUser();
 
   if (!user) {
