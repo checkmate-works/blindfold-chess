@@ -187,6 +187,12 @@ export const AD_SLOTS = {
     kind: 'native_tile',
     surfaces: [{ route: '/games', href: '/games' }],
   },
+  'article-native-ad': {
+    kind: 'native_card',
+    // An article's slug is admin-authored content, so only the index is
+    // guaranteed to resolve.
+    surfaces: [{ route: '/articles', href: '/articles' }, { route: '/articles/[slug]' }],
+  },
 } as const satisfies Record<string, AdSlotConfig>;
 
 export type AdSlot = keyof typeof AD_SLOTS;
@@ -442,3 +448,33 @@ export const SHARED_GAME_LIST_NATIVE_AD_SLOT = 'shared-game-list-native-ad' sati
  * entitlement layer.
  */
 export const MY_GAME_LIST_NATIVE_AD_SLOT = 'my-game-list-native-ad' satisfies AdSlot;
+
+/**
+ * The pool the articles — the index (`/articles`) and each article
+ * (`/articles/[slug]`) — draw their native card from, one card per page.
+ *
+ * One card rather than the repeating rule of `AD_INTERVAL`, on both pages.
+ * An article is a single piece of reading, and the card goes where the
+ * reading ends, below the body. The index is a column of one-line links
+ * inside one bordered box, not a stack of cards: a card spliced between two
+ * of those rows would be the only thing in the box with a board and a
+ * paragraph, which is the failure the `/games` row variant exists to avoid.
+ * So the index carries its card below the box, above the pager, where it sits
+ * beside the list rather than inside it. Both pages show the pool's first
+ * creative — `sortOrder` is the admin's priority, and a surface that shows
+ * one card shows the top of it.
+ *
+ * One pool for both pages, unlike the catalog/thread split of the topics.
+ * The two readers differ less here: someone on the index is choosing an
+ * article, someone on an article has chosen one, and both are reading about
+ * how to play rather than browsing a particular subject. The cost is the
+ * usual one of a shared pool — the network's report cannot tell the two
+ * pages apart (see `withCreativeSubId`) — and splitting it later is adding a
+ * slot, not changing this one.
+ *
+ * Static, like the glossary term lists: both pages are ISR, so they call
+ * `getNativeAdCreatives` rather than `resolveNativeAds`, and the
+ * `bfc_ads_hidden` cookie's CSS rule on `.ad-slot-wrapper` is the entitlement
+ * layer.
+ */
+export const ARTICLE_NATIVE_AD_SLOT = 'article-native-ad' satisfies AdSlot;
