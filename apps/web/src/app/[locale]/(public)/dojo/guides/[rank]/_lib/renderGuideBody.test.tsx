@@ -79,6 +79,19 @@ vi.mock('next-intl/server', () => ({
 
 vi.mock('next/navigation');
 
+// The Dojo native ad card reaches the locale-aware `Link` that next-intl's
+// `createNavigation` builds, whose ESM build asks for `next/navigation` from
+// inside next-intl's own `node_modules` — which pnpm's isolated store does not
+// have, so the whole file fails to load. The shared mock
+// (`src/i18n/__mocks__/routing.ts`) short-circuits the chain.
+vi.mock('@/i18n/routing');
+
+// The ad slot is not what these tests are about; serve no creatives so the
+// renderer never reaches the DB-backed lookup.
+vi.mock('@/lib/ads/ad', () => ({
+  getNativeAdCreatives: async () => [],
+}));
+
 // `resolveGuideContext` now reads the per-request CSP nonce via
 // `resolveCspNonce()`, which calls `next/headers`. In jsdom there is no
 // request scope, so we stub `headers()` to a minimal `Headers`-like object
