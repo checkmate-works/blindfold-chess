@@ -7,6 +7,7 @@ import type { FinalGameOutcome } from '@blindfold-chess/types';
 import type { EngineConfig } from '@/lib/engines';
 import { computeGameStats } from '@/lib/games/compute-game-stats';
 import type { MoveOperationLog } from '@/lib/games/saved-game-types';
+import { captureError } from '@/lib/sentry/capture-error';
 
 import { saveGameResult } from '../result/_actions/save-game-result';
 
@@ -56,8 +57,10 @@ export function useAiGameExpGrant({
       engine: engineConfig,
       playerMoveCount: stats.totalMoves,
       aidedMoveCount: stats.aidedMoves,
-    }).catch(() => {
-      // Best-effort: a failed grant must never break the finished screen.
+    }).catch((error: unknown) => {
+      // Best-effort: a failed grant must never break the finished screen, but
+      // it is still reported so a systemic grant failure does not go unseen.
+      captureError(error, '[useAiGameExpGrant] saveGameResult');
     });
   }, [
     isFinishedView,

@@ -2,6 +2,7 @@ import { and, eq, sql } from 'drizzle-orm';
 
 import { db } from '@/lib/db/index';
 import { achievements, notifications, userAchievements } from '@/lib/db/schema';
+import type { DbTx } from '@/lib/db/types';
 
 import {
   type GrantedBadgeInfo,
@@ -41,6 +42,25 @@ export type GrantMonthlyLeaderboardBadgesResult = {
   notificationsSent: number;
   results: GrantSummary[];
 };
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Serialise the check-then-insert for one grant key across concurrent runs of
+ * this batch. `user_achievements` deliberately has no unique constraint
+ * (repeatable badges legitimately have several rows per user/achievement), and
+ * notifications have none on `group_key`, so the existence check alone is
+ * racy: two overlapping runs — a repeated cron delivery, or a manual re-run
+ * while the scheduled one is in flight — can both see "not granted yet" and
+ * both insert. A transaction-scoped advisory lock makes the second run wait
+ * for the first to commit, after which its check sees the row. It is released
+ * at commit, so it is safe behind a transaction-mode connection pooler.
+ */
+async function lockGrantKey(tx: DbTx, key: string): Promise<void> {
+  await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext(${key}))`);
+}
 
 // ---------------------------------------------------------------------------
 // Per-definition processing
@@ -124,39 +144,46 @@ async function processAchievementDef(
   // placement filter is ever relaxed to return whole pages, consider switching
   // to a bulk INSERT with ON CONFLICT.
   for (const row of rankedRows) {
-    // Idempotency check: skip if badge already granted for this year/month.
-    const existing = await db
-      .select({ id: userAchievements.id })
-      .from(userAchievements)
-      .where(
-        and(
-          eq(userAchievements.userId, row.user_id),
-          eq(userAchievements.achievementId, def.id),
-          sql`${userAchievements.metadata}->>'year' = ${String(year)}`,
-          sql`${userAchievements.metadata}->>'month' = ${String(month)}`
-        )
-      )
-      .limit(1);
+    const inserted = await db.transaction(async (tx) => {
+      await lockGrantKey(tx, `monthly-badge:${row.user_id}:${def.id}:${year}-${month}`);
 
-    if (existing.length > 0) {
+      // Idempotency check: skip if badge already granted for this year/month.
+      const existing = await tx
+        .select({ id: userAchievements.id })
+        .from(userAchievements)
+        .where(
+          and(
+            eq(userAchievements.userId, row.user_id),
+            eq(userAchievements.achievementId, def.id),
+            sql`${userAchievements.metadata}->>'year' = ${String(year)}`,
+            sql`${userAchievements.metadata}->>'month' = ${String(month)}`
+          )
+        )
+        .limit(1);
+
+      if (existing.length > 0) return false;
+
+      await tx.insert(userAchievements).values({
+        userId: row.user_id,
+        achievementId: def.id,
+        metadata: {
+          year,
+          month,
+          menuType,
+          leaderboardKey,
+          placement,
+          score: row.score,
+          incorrectAnswers: row.incorrect_answers,
+          timeTaken: row.time_taken,
+        },
+      });
+      return true;
+    });
+
+    if (!inserted) {
       skipped += 1;
       continue;
     }
-
-    await db.insert(userAchievements).values({
-      userId: row.user_id,
-      achievementId: def.id,
-      metadata: {
-        year,
-        month,
-        menuType,
-        leaderboardKey,
-        placement,
-        score: row.score,
-        incorrectAnswers: row.incorrect_answers,
-        timeTaken: row.time_taken,
-      },
-    });
 
     granted += 1;
     grantedBadges.push({
@@ -185,25 +212,30 @@ async function sendGrantNotifications(
   for (const [userId, badges] of grantedByUser) {
     const groupKey = monthlyGrantNotificationGroupKey(userId, year, month);
 
-    const existingNotification = await db
-      .select({ id: notifications.id })
-      .from(notifications)
-      .where(and(eq(notifications.userId, userId), eq(notifications.groupKey, groupKey)))
-      .limit(1);
+    const inserted = await db.transaction(async (tx) => {
+      await lockGrantKey(tx, groupKey);
 
-    if (existingNotification.length > 0) {
-      continue;
-    }
+      const existingNotification = await tx
+        .select({ id: notifications.id })
+        .from(notifications)
+        .where(and(eq(notifications.userId, userId), eq(notifications.groupKey, groupKey)))
+        .limit(1);
 
-    await db.insert(notifications).values({
-      userId,
-      actorId: null,
-      type: 'achievement_granted',
-      targetType: 'achievement',
-      targetId: null,
-      groupKey,
-      metadata: { badges, year, month },
+      if (existingNotification.length > 0) return false;
+
+      await tx.insert(notifications).values({
+        userId,
+        actorId: null,
+        type: 'achievement_granted',
+        targetType: 'achievement',
+        targetId: null,
+        groupKey,
+        metadata: { badges, year, month },
+      });
+      return true;
     });
+
+    if (!inserted) continue;
 
     notificationsSent += 1;
   }
