@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { eq } from 'drizzle-orm';
 import sharp from 'sharp';
 
-import { MIME_TO_EXTENSION, parseAdminImageUpload } from '@/lib/admin-images/validation';
+import { buildAdminImageStoragePath, parseAdminImageUpload } from '@/lib/admin-images/validation';
 import { guardAdminApiMutation, parseJsonBody } from '@/lib/api-mutation-guard';
 import { articleImages, articles, db } from '@/lib/db';
 import { SHARP_DECODE_OPTIONS } from '@/lib/images/sharp-options';
@@ -88,9 +88,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: 'invalid_file_type' }, { status: 400 });
   }
 
-  const ext = MIME_TO_EXTENSION[file.type];
-  const timestamp = Date.now();
-  const storagePath = `${articleId}/${timestamp}.${ext}`;
+  const storagePath = buildAdminImageStoragePath(articleId, file.type);
 
   const supabase = createAdminClient();
 

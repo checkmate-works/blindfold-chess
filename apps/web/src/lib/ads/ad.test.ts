@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { hasActiveSubscription } from '@/lib/billing/subscription';
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
+import { hasDanTierRank } from '@/lib/users/dan-rank';
+import { hasActiveGrant } from '@/lib/users/user-grants';
 
 const mockOrderBy = vi.fn();
 // Counts every read so a test can assert that none was made; the chain behind
@@ -23,20 +26,13 @@ vi.mock('next/cache', () => ({
   unstable_cache: <T>(fn: T) => fn,
 }));
 
-const mockHasActiveSubscription = vi.fn();
-vi.mock('@/lib/billing/subscription', () => ({
-  hasActiveSubscription: (...args: unknown[]) => mockHasActiveSubscription(...args),
-}));
+vi.mock('@/lib/billing/subscription');
+vi.mock('@/lib/users/user-grants');
+vi.mock('@/lib/users/dan-rank');
 
-const mockHasActiveGrant = vi.fn();
-vi.mock('@/lib/users/user-grants', () => ({
-  hasActiveGrant: (...args: unknown[]) => mockHasActiveGrant(...args),
-}));
-
-const mockHasDanTierRank = vi.fn();
-vi.mock('@/lib/users/dan-rank', () => ({
-  hasDanTierRank: (...args: unknown[]) => mockHasDanTierRank(...args),
-}));
+const mockHasActiveSubscription = vi.mocked(hasActiveSubscription);
+const mockHasActiveGrant = vi.mocked(hasActiveGrant);
+const mockHasDanTierRank = vi.mocked(hasDanTierRank);
 
 const {
   getAllAdCreatives,

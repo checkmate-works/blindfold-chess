@@ -5,6 +5,7 @@ import {
   installLocalStorage,
   makeThrowingLocalStorage,
   makeWorkingLocalStorage,
+  snapshotWindowStorage,
 } from './__test-support__/storage-mocks';
 import { detectStorageAvailability } from './storage-availability';
 
@@ -12,8 +13,7 @@ describe('detectStorageAvailability', () => {
   // jsdom gives us a working localStorage / indexedDB / document.cookie by
   // default. Each test installs its own overrides via Object.defineProperty
   // and restores them in afterEach.
-  const originalLocalStorage = Object.getOwnPropertyDescriptor(window, 'localStorage');
-  const originalIndexedDB = Object.getOwnPropertyDescriptor(window, 'indexedDB');
+  const restoreWindowStorage = snapshotWindowStorage();
 
   beforeEach(() => {
     // Reset cookies between tests so leftover probe values don't bleed across
@@ -27,12 +27,7 @@ describe('detectStorageAvailability', () => {
   });
 
   afterEach(() => {
-    if (originalLocalStorage) {
-      Object.defineProperty(window, 'localStorage', originalLocalStorage);
-    }
-    if (originalIndexedDB) {
-      Object.defineProperty(window, 'indexedDB', originalIndexedDB);
-    }
+    restoreWindowStorage();
     vi.restoreAllMocks();
   });
 

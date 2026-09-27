@@ -8,6 +8,24 @@ export function installIndexedDB(value: unknown): void {
   Object.defineProperty(window, 'indexedDB', { configurable: true, value });
 }
 
+/**
+ * Capture jsdom's own `window.localStorage` / `window.indexedDB` descriptors
+ * and return a function that puts them back — call it in `afterEach` so the
+ * doubles a suite installs cannot leak into the next suite in the worker.
+ */
+export function snapshotWindowStorage(): () => void {
+  const originalLocalStorage = Object.getOwnPropertyDescriptor(window, 'localStorage');
+  const originalIndexedDB = Object.getOwnPropertyDescriptor(window, 'indexedDB');
+  return () => {
+    if (originalLocalStorage) {
+      Object.defineProperty(window, 'localStorage', originalLocalStorage);
+    }
+    if (originalIndexedDB) {
+      Object.defineProperty(window, 'indexedDB', originalIndexedDB);
+    }
+  };
+}
+
 export function makeWorkingLocalStorage(): StorageMock {
   const data = new Map<string, string>();
   return {

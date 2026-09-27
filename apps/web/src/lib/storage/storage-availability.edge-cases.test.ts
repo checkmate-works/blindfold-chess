@@ -6,6 +6,7 @@ import {
   installLocalStorage,
   makeThrowingLocalStorage,
   makeWorkingLocalStorage,
+  snapshotWindowStorage,
 } from './__test-support__/storage-mocks';
 import { detectStorageAvailability } from './storage-availability';
 
@@ -38,8 +39,7 @@ function withBlockedCookie(fn: () => void): void {
 }
 
 describe('detectStorageAvailability — combined failure modes', () => {
-  const originalLocalStorage = Object.getOwnPropertyDescriptor(window, 'localStorage');
-  const originalIndexedDB = Object.getOwnPropertyDescriptor(window, 'indexedDB');
+  const restoreWindowStorage = snapshotWindowStorage();
 
   beforeEach(() => {
     document.cookie.split(';').forEach((entry) => {
@@ -51,12 +51,7 @@ describe('detectStorageAvailability — combined failure modes', () => {
   });
 
   afterEach(() => {
-    if (originalLocalStorage) {
-      Object.defineProperty(window, 'localStorage', originalLocalStorage);
-    }
-    if (originalIndexedDB) {
-      Object.defineProperty(window, 'indexedDB', originalIndexedDB);
-    }
+    restoreWindowStorage();
     vi.restoreAllMocks();
   });
 

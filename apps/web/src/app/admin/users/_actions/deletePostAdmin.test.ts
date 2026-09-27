@@ -2,6 +2,7 @@ import { revalidatePath } from 'next/cache';
 
 import { describe, expect, it, vi } from 'vitest';
 
+import { lastQueuedRows } from '@/lib/db/__test-support__/query-chain';
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
 
@@ -35,9 +36,7 @@ vi.mock('@/lib/db', async () => {
           //   (b) image-attachment lookup: select().from().where() (no .limit) → array
           // To support (b), the returned object is itself a thenable so a bare
           // `await db.select()...where(...)` resolves to an empty array.
-          const lastResult =
-            mockSelectFromWhere.mock.results[mockSelectFromWhere.mock.calls.length - 1]?.value ??
-            [];
+          const lastResult = lastQueuedRows(mockSelectFromWhere);
           const chain: PromiseLike<unknown> & { limit: (n?: number) => Promise<unknown> } = {
             then: (resolve, reject) => Promise.resolve(lastResult).then(resolve, reject),
             limit: () => Promise.resolve(lastResult),

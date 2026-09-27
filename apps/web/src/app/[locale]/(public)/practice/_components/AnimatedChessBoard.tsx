@@ -7,6 +7,7 @@ import type { SquareRenderInfo } from '@/app/_components';
 import type { Color } from '@blindfold-chess/features/chess-core';
 import { executeMove, fenToBoard } from '@blindfold-chess/features/chess-core';
 import { fenToPlacements } from '@blindfold-chess/features/chess-core/fen';
+import { BOARD_LAST_INDEX, fileRankToSquare } from '@blindfold-chess/features/common';
 import type { PieceType } from '@blindfold-chess/types';
 
 import type { BoardTheme } from '@/lib/games/board-themes';
@@ -36,7 +37,7 @@ function parseFenToPieces(fen: string): Array<{ type: PieceType; color: Color; s
       for (let file = 0; file < 8; file++) {
         const piece = board[rank][file];
         if (piece) {
-          const square = String.fromCharCode(97 + file) + (8 - rank);
+          const square = fileRankToSquare(file, BOARD_LAST_INDEX - rank);
           result.push({ type: piece.type, color: piece.color, square });
         }
       }

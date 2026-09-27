@@ -3,7 +3,11 @@ import { StrictMode } from 'react';
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { type StorageMock, makeWorkingLocalStorage } from './__test-support__/storage-mocks';
+import {
+  type StorageMock,
+  makeWorkingLocalStorage,
+  snapshotWindowStorage,
+} from './__test-support__/storage-mocks';
 import { useStorageAvailability } from './useStorageAvailability';
 
 /**
@@ -21,8 +25,7 @@ import { useStorageAvailability } from './useStorageAvailability';
  */
 
 describe('useStorageAvailability', () => {
-  const originalLocalStorage = Object.getOwnPropertyDescriptor(window, 'localStorage');
-  const originalIndexedDB = Object.getOwnPropertyDescriptor(window, 'indexedDB');
+  const restoreWindowStorage = snapshotWindowStorage();
 
   beforeEach(() => {
     // Install a working storage environment for every test. jsdom's defaults
@@ -39,12 +42,7 @@ describe('useStorageAvailability', () => {
 
   afterEach(() => {
     cleanup();
-    if (originalLocalStorage) {
-      Object.defineProperty(window, 'localStorage', originalLocalStorage);
-    }
-    if (originalIndexedDB) {
-      Object.defineProperty(window, 'indexedDB', originalIndexedDB);
-    }
+    restoreWindowStorage();
     vi.restoreAllMocks();
   });
 
