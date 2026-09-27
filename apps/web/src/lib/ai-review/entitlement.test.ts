@@ -1,17 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { hasActiveSubscription } from '@/lib/billing/subscription';
 import type { GameRecord } from '@/lib/db/schema';
 
-const mockHasActiveSubscription = vi.fn();
-vi.mock('@/lib/billing/subscription', () => ({
-  hasActiveSubscription: (...args: unknown[]) => mockHasActiveSubscription(...args),
-}));
+vi.mock('@/lib/billing/subscription');
 
 const mockGetPointBalanceSummary = vi.fn();
 vi.mock('@/lib/points', () => ({
   AI_REVIEW_POINT_COST: 1,
   getPointBalanceSummary: (...args: unknown[]) => mockGetPointBalanceSummary(...args),
 }));
+
+const mockHasActiveSubscription = vi.mocked(hasActiveSubscription);
 
 const { resolveAiReviewGenerationState } = await import('./entitlement');
 

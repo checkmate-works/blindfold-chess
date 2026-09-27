@@ -1,19 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mockHasActiveSubscription = vi.fn();
-vi.mock('@/lib/billing/subscription', () => ({
-  hasActiveSubscription: (...args: unknown[]) => mockHasActiveSubscription(...args),
-}));
+import { hasActiveSubscription } from '@/lib/billing/subscription';
+import { hasDanTierRank } from '@/lib/users/dan-rank';
+import { hasActiveGrant } from '@/lib/users/user-grants';
 
-const mockHasActiveGrant = vi.fn();
-vi.mock('@/lib/users/user-grants', () => ({
-  hasActiveGrant: (...args: unknown[]) => mockHasActiveGrant(...args),
-}));
+vi.mock('@/lib/billing/subscription');
+vi.mock('@/lib/users/user-grants');
+vi.mock('@/lib/users/dan-rank');
 
-const mockHasDanTierRank = vi.fn();
-vi.mock('@/lib/users/dan-rank', () => ({
-  hasDanTierRank: (...args: unknown[]) => mockHasDanTierRank(...args),
-}));
+const mockHasActiveSubscription = vi.mocked(hasActiveSubscription);
+const mockHasActiveGrant = vi.mocked(hasActiveGrant);
+const mockHasDanTierRank = vi.mocked(hasDanTierRank);
 
 const { hasAdFreeEntitlement } = await import('./ad-free-entitlement');
 
