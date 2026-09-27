@@ -6,9 +6,12 @@ import { notFound } from 'next/navigation';
 import { LazyMarkdownRenderer } from '@/app/_components/LazyMarkdownRenderer';
 import { SUPPORTED_LOCALES } from '@/config';
 
+import { getNativeAdCreatives } from '@/lib/ads/ad';
+import { LEARN_NATIVE_AD_SLOT } from '@/lib/ads/registry';
 import { JsonLd, generateArticleSchema } from '@/lib/seo/jsonld';
 
 import { CardLink, PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import { NativeAdCard } from '@/app/[locale]/_components/NativeAdCard';
 import { ProseArticle } from '@/app/[locale]/_components/ProseArticle';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import {
@@ -82,8 +85,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function LearnArticlePage({ params }: Props) {
   const { locale, slug, category } = await params;
   setRequestLocale(locale);
-  const article = await getArticle(slug, locale);
-  const t = await getTranslations({ locale });
+  const [article, t, [nativeAd]] = await Promise.all([
+    getArticle(slug, locale),
+    getTranslations({ locale }),
+    getNativeAdCreatives(LEARN_NATIVE_AD_SLOT, locale),
+  ]);
 
   if (!article || (article.metadata.category && article.metadata.category !== category)) {
     notFound();
@@ -133,6 +139,8 @@ export default async function LearnArticlePage({ params }: Props) {
         <ProseArticle>
           <LazyMarkdownRenderer content={article.content} skipFirstH1={true} />
         </ProseArticle>
+
+        {nativeAd && <NativeAdCard creative={nativeAd} locale={locale} variant="card" />}
 
         {relatedPracticeModules && (
           <div className="space-y-4">

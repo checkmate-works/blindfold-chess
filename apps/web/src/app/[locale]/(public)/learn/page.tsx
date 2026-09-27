@@ -4,6 +4,9 @@ import type { Metadata } from 'next';
 import { setRequestLocale } from 'next-intl/server';
 import { getTranslations } from 'next-intl/server';
 
+import { getNativeAdCreatives } from '@/lib/ads/ad';
+import { LEARN_NATIVE_AD_SLOT } from '@/lib/ads/registry';
+
 import {
   CardLink,
   Divider,
@@ -13,6 +16,7 @@ import {
   SectionTitle,
 } from '@/app/[locale]/_components';
 import { BreadcrumbSkeleton } from '@/app/[locale]/_components/Breadcrumb';
+import { NativeAdCard } from '@/app/[locale]/_components/NativeAdCard';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -36,7 +40,10 @@ async function LearnContent({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations({ locale });
-  const categoryCounts = await getCategoryCounts(locale);
+  const [categoryCounts, [nativeAd]] = await Promise.all([
+    getCategoryCounts(locale),
+    getNativeAdCreatives(LEARN_NATIVE_AD_SLOT, locale),
+  ]);
   const availableCategories = getAvailableCategories();
 
   const categoryInfos = availableCategories.map((cat) => ({
@@ -73,6 +80,8 @@ async function LearnContent({ params }: Props) {
           );
         })}
       </div>
+
+      {nativeAd && <NativeAdCard creative={nativeAd} locale={locale} variant="card" />}
     </PageLayout>
   );
 }
