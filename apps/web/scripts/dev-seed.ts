@@ -4,11 +4,12 @@
  * Populates auth users, profiles, challenge_results / challenge_best_scores,
  * belt ranks, a published kata (型), a featured puzzle pool, a
  * position-memory catalog, a chunk catalog, a set of square/opening
- * discussion threads and a public game gallery with predictable test data so
- * the practice leaderboards, the /repertoires catalog, the Daily Puzzle card,
- * both position catalogs, /chunks, /games/shared and the /topics timeline
- * have entries — and so rank conditions can
- * be exercised from a known rung — during local development.
+ * discussion threads, a public game gallery and a few published articles
+ * with predictable test data so the practice leaderboards, the /repertoires
+ * catalog, the Daily Puzzle card, both position catalogs, /chunks,
+ * /games/shared, /articles and the /topics timeline have entries — and so
+ * rank conditions can be exercised from a known rung — during local
+ * development.
  * Refuses to run against any non-local DB or Supabase URL (host check) — the
  * master-data seed (`pnpm db:seed`) remains the prod path.
  *
@@ -26,7 +27,8 @@ import dotenv from 'dotenv';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 
-import { DAILY_PUZZLE_CACHE_TAG } from '../src/lib/cache-tags';
+import { ARTICLES_CACHE_TAG, DAILY_PUZZLE_CACHE_TAG } from '../src/lib/cache-tags';
+import { reseedArticles } from './dev-seed/articles';
 import { reseedChallenges } from './dev-seed/challenges';
 import { reseedChunks } from './dev-seed/chunks';
 import { purgeDataCacheTag } from './dev-seed/next-cache';
@@ -163,6 +165,17 @@ async function main() {
   for (const game of await reseedSharedGames(db, puzzleOwners)) {
     console.log(`  ${game.title.padEnd(40)} → ${game.result}`);
   }
+
+  // Articles have no author, so no owners to pass. The index's count is an
+  // `unstable_cache` read, and a count of zero cached before the seed would
+  // keep showing the empty state, so its tag is purged like the daily
+  // puzzle's.
+  console.log('dev-seed: seeding articles...');
+  for (const article of await reseedArticles(db)) {
+    console.log(`  ${article.slug.padEnd(40)} → ${article.locales.join(', ')}`);
+  }
+  const purgedArticles = purgeDataCacheTag(ARTICLES_CACHE_TAG);
+  console.log(`  dropped ${purgedArticles} cached article list answer(s)`);
 
   if (skippedOpenings.length > 0) {
     console.log(
