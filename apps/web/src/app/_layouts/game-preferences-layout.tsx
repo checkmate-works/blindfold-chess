@@ -9,7 +9,7 @@ import { GamePreferencesProvider } from '@/app/[locale]/_contexts/GamePreference
  * those components must be wrapped in this provider.
  *
  * The codebase uses a **per-subtree** mounting pattern: each feature area
- * (`ranks/`, `learn/`, `topics/`, `preferences/`, `guides/`, `u/[username]/`,
+ * (`dojo/`, `learn/`, `topics/`, `preferences/`, `u/[username]/`,
  * `practice/`, `games/`, `(home)/`, ...) owns a thin `layout.tsx` that
  * re-exports `GamePreferencesLayout` as its default. There is intentionally
  * no single global mount at the `[locale]` or `(public)` layer — static
