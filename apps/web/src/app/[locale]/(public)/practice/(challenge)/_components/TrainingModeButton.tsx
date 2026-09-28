@@ -44,7 +44,11 @@ export function TrainingModeButton({ href, buttonClassName, tourId }: Props) {
         <Divider className="flex-1" />
       </div>
 
-      <Link href={href} data-tour-id={tourId}>
+      {/* Block, not the anchor's default inline: on the challenge setup screen
+          this is the last thing before the related-practice section, and the
+          panel spaces its children with `margin-block-end`, which an inline
+          box ignores — the section's heading sat flush against the button. */}
+      <Link href={href} data-tour-id={tourId} className="block">
         <Button
           asChild
           variant="outline"
