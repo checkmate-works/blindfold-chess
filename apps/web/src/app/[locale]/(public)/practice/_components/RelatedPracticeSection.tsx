@@ -4,7 +4,11 @@ import { getTranslations } from 'next-intl/server';
 
 import { Link } from '@/i18n/routing';
 
-import { getNativeTileCreatives, resolveNativeTileCreatives } from '@/lib/ads/ad';
+import {
+  type NativeTileView,
+  getNativeTileCreatives,
+  resolveNativeTileCreatives,
+} from '@/lib/ads/ad';
 import { withSingleNativeAd } from '@/lib/ads/placement';
 import type { AdSlot } from '@/lib/ads/registry';
 
@@ -22,22 +26,39 @@ import { NativeAdTile } from '@/app/[locale]/_components/NativeAdTile';
 import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+/**
+ * Where the grid's native tile comes from.
+ *
+ * - `{ slot }` — a prerendered page, which must not read the viewer: the
+ *   viewer-independent pool is read, and the `bfc_ads_hidden` cookie's CSS
+ *   rule on the tile's `.ad-slot-wrapper` hides it from an ad-free reader.
+ * - `{ slot, userId }` — a page that already knows its viewer: the
+ *   entitlement-gated read, so an ad-free viewer gets no tile at all.
+ * - `{ creative }` — already resolved by the caller, for a page that renders
+ *   several of these grids and should not repeat the read for each.
+ */
+export type RelatedPracticeAd =
+  | { slot: AdSlot; userId?: undefined }
+  | { slot: AdSlot; userId: string | null }
+  | { creative: NativeTileView | null };
+
 type Props = {
   locale: Locale;
   /** Route segment of the module the page is about, e.g. `diagonal-quiz`. */
   practiceId: string;
-  /** The pool the grid's native tile is drawn from. */
-  adSlot: AdSlot;
-  /**
-   * The viewer, on a page that already reads it. Given, the tile is left out
-   * for an ad-free viewer instead of rendered for the CSS rule to hide.
-   * Omitted — a prerendered page, which must not read the viewer — the
-   * viewer-independent pool is read and the CSS rule does the hiding.
-   */
-  viewer?: { userId: string | null };
+  ad: RelatedPracticeAd;
   /** Extra classes for the section, for a surface that spaces by margin. */
   className?: string;
 };
+
+async function resolveAd(ad: RelatedPracticeAd, locale: Locale): Promise<NativeTileView | null> {
+  if ('creative' in ad) return ad.creative;
+  const creatives =
+    ad.userId === undefined
+      ? await getNativeTileCreatives(ad.slot, locale)
+      : await resolveNativeTileCreatives(ad.slot, ad.userId, locale);
+  return creatives[0] ?? null;
+}
 
 /**
  * The other modules in this one's band, as the practice list draws them, with
@@ -52,32 +73,18 @@ type Props = {
  * large share of it. That is accepted: the tile is drawn as one more card of
  * the grid, and a short grid is still one that a reader who came here to
  * check a record can pick something from.
- *
- * Without a `viewer` it reads the viewer-independent pool, like `/practice`,
- * so a prerendered page stays prerendered; the `bfc_ads_hidden` cookie's CSS
- * rule on the tile's `.ad-slot-wrapper` is what hides it from an ad-free
- * reader.
  */
-export async function RelatedPracticeSection({
-  locale,
-  practiceId,
-  adSlot,
-  viewer,
-  className,
-}: Props) {
+export async function RelatedPracticeSection({ locale, practiceId, ad, className }: Props) {
   const self = PRACTICE_CATALOG.find((entry) => entry.id === practiceId);
   const related = relatedPractices(practiceId);
   if (!self || related.length === 0) return null;
 
-  const [t, levelLabels, items, creatives] = await Promise.all([
+  const [t, levelLabels, items, creative] = await Promise.all([
     getTranslations({ locale, namespace: 'practice.relatedPractice' }),
     getPracticeLevelLabels(locale),
     buildPracticeCards(locale, related),
-    viewer
-      ? resolveNativeTileCreatives(adSlot, viewer.userId, locale)
-      : getNativeTileCreatives(adSlot, locale),
+    resolveAd(ad, locale),
   ]);
-  const creative = creatives[0];
 
   return (
     <section className={`space-y-4 ${className ?? ''}`.trim()}>

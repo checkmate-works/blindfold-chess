@@ -197,7 +197,7 @@ export function createPracticeChallengePage({ practiceId, ...config }: Challenge
           <RelatedPracticeSection
             locale={context.locale}
             practiceId={practiceId}
-            adSlot={PRACTICE_CHALLENGE_NATIVE_AD_SLOT}
+            ad={{ slot: PRACTICE_CHALLENGE_NATIVE_AD_SLOT }}
           />
         </>
       ),

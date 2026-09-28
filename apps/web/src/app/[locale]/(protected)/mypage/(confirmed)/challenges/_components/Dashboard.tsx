@@ -1,9 +1,13 @@
 'use client';
 
+import type { ReactNode } from 'react';
+
 import dynamic from 'next/dynamic';
 
+import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { FaPlay } from 'react-icons/fa';
 
 import type { ChallengeMenuType } from '@/lib/db/practice-menu-types';
 
@@ -38,9 +42,15 @@ type Props = {
   locale: string;
   /** Menu to open on first load (from `?menu=`); the server reconciles it against the period's records. */
   initialMenu?: ChallengeMenuType;
+  /**
+   * Each module's same-band practice grid, server-rendered by the page. The
+   * one for the selected module closes the dashboard, under the challenge
+   * button.
+   */
+  relatedPracticeByMenu?: Partial<Record<ChallengeMenuType, ReactNode>>;
 };
 
-export function Dashboard({ locale, initialMenu }: Props) {
+export function Dashboard({ locale, initialMenu, relatedPracticeByMenu }: Props) {
   const t = useTranslations('Mypage');
   const {
     selectedMenu,
@@ -112,12 +122,10 @@ export function Dashboard({ locale, initialMenu }: Props) {
       ) : availableMenuTypes.length === 0 ? (
         <div className="text-center py-12 text-muted-foreground">
           <p>{t('noData')}</p>
-          <Link
-            href="/practice"
-            locale={locale}
-            className="mt-4 inline-flex items-center justify-center whitespace-nowrap rounded-md bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            {t('goToPractice')}
+          <Link href="/practice" locale={locale} className="mt-4 block">
+            <Button asChild variant="primary" size="lg" fullWidth>
+              {t('goToPractice')}
+            </Button>
           </Link>
         </div>
       ) : (
@@ -178,22 +186,24 @@ export function Dashboard({ locale, initialMenu }: Props) {
           </div>
 
           {selectedMenu && (
-            <div className="flex justify-center py-4">
-              <Link
-                href={buildChallengePath(
-                  selectedMenu as LeaderboardModule,
-                  // Route planner's key is a piece too, but the dashboard has
-                  // no piece filter for it, so send the setup page's own
-                  // default rather than a `default` key it does not know.
-                  activeKey ?? (selectedMenu === 'route_planner' ? 'knight' : 'default')
-                )}
-                locale={locale}
-                className="inline-flex items-center justify-center whitespace-nowrap rounded-md bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-              >
-                {t('practiceThisChallenge')}
-              </Link>
-            </div>
+            <Link
+              href={buildChallengePath(
+                selectedMenu as LeaderboardModule,
+                // Route planner's key is a piece too, but the dashboard has
+                // no piece filter for it, so send the setup page's own
+                // default rather than a `default` key it does not know.
+                activeKey ?? (selectedMenu === 'route_planner' ? 'knight' : 'default')
+              )}
+              locale={locale}
+              className="block"
+            >
+              <Button asChild variant="primary" size="lg" fullWidth icon={<FaPlay />}>
+                {t('takeChallenge')}
+              </Button>
+            </Link>
           )}
+
+          {selectedMenu && relatedPracticeByMenu?.[selectedMenu]}
         </>
       )}
     </div>

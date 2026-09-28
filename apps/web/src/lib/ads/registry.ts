@@ -191,6 +191,10 @@ export const AD_SLOTS = {
     // Every result screen, as with `practice-result-native-ad`.
     surfaces: [{ route: '/practice/<module>/result', href: '/practice/square-colors/result' }],
   },
+  'mypage-challenges-native-ad': {
+    kind: 'native_tile',
+    surfaces: [{ route: '/mypage/challenges', href: '/mypage/challenges' }],
+  },
   'practice-grid-native-ad': {
     kind: 'native_tile',
     surfaces: [{ route: '/practice', href: '/practice' }],
@@ -498,6 +502,23 @@ export const PRACTICE_GRID_NATIVE_AD_SLOT = 'practice-grid-native-ad' satisfies 
  * whichever module it is.
  */
 export const PRACTICE_CHALLENGE_NATIVE_AD_SLOT = 'practice-challenge-native-ad' satisfies AdSlot;
+
+/**
+ * The pool the "related practice" grid under the challenge records dashboard
+ * (`/mypage/challenges`) draws its native tile from.
+ *
+ * The dashboard is the other end of the link into the challenge setup screen
+ * ({@link PRACTICE_CHALLENGE_NATIVE_AD_SLOT}): the reader is looking back over
+ * a module's scores, and the grid under the "take this challenge" button is
+ * the same-band modules they could turn to instead. A pool of its own for
+ * the same reason as every placement in this family — attribution is per
+ * creative, so only a separate pool says what this page earns.
+ *
+ * The page knows its viewer, so the tile is read through the entitlement
+ * gate once per request and handed to every module's grid; the dashboard
+ * switches between grids on the client as the reader changes modules.
+ */
+export const MYPAGE_CHALLENGES_NATIVE_AD_SLOT = 'mypage-challenges-native-ad' satisfies AdSlot;
 
 /**
  * The pool the public game gallery (`/games/shared`) draws its native card
