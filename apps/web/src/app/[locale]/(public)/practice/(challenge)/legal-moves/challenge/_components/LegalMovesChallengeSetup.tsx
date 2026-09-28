@@ -6,6 +6,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 
 import { ChallengeSetupShell } from '@/app/[locale]/(public)/practice/(challenge)/_components/ChallengeSetupShell';
 import { StandardChallengeRules } from '@/app/[locale]/(public)/practice/(challenge)/_components/StandardChallengeRules';
+import { trainingHrefFor } from '@/app/[locale]/(public)/practice/(challenge)/_components/TrainingModeButton';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { LegalMovesSettings } from '../../_components/LegalMovesSettings';
@@ -23,17 +24,20 @@ export function LegalMovesChallengeSetup({ locale }: Props) {
   const { settings, updateSettings } = useLegalMovesSettings();
   const { pieceSelection } = settings;
 
+  const pieceName =
+    pieceSelection === 'random' ? 'random' : (PIECE_TYPE_TO_NAME[pieceSelection] ?? 'random');
+  const settingsQuery = new URLSearchParams({ piece: pieceName }).toString();
+
   const handleStart = () => {
-    const pieceName =
-      pieceSelection === 'random' ? 'random' : (PIECE_TYPE_TO_NAME[pieceSelection] ?? 'random');
-    const params = new URLSearchParams({
-      piece: pieceName,
-    });
-    router.push(`/${locale}/practice/legal-moves/challenge/session?${params.toString()}`);
+    router.push(`/${locale}/practice/legal-moves/challenge/session?${settingsQuery}`);
   };
 
   return (
-    <ChallengeSetupShell onStart={handleStart} rules={<StandardChallengeRules t={t} />}>
+    <ChallengeSetupShell
+      onStart={handleStart}
+      trainingHref={trainingHrefFor(locale, 'legal-moves', settingsQuery)}
+      rules={<StandardChallengeRules t={t} />}
+    >
       <LegalMovesSettings
         pieceSelection={pieceSelection}
         onPieceSelect={(selection) => updateSettings({ pieceSelection: selection })}

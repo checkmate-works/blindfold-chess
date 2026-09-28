@@ -5,6 +5,7 @@ import { DiagonalQuizChallengeSetup } from './_components/DiagonalQuizChallengeS
 const { generateMetadata, generateStaticParams, Page } = createPracticeChallengePage({
   i18nKey: 'diagonalQuiz',
   canonicalPath: 'practice/diagonal-quiz/challenge',
+  practiceId: 'diagonal-quiz',
   breadcrumbSegments: [
     { labelKey: 'diagonalQuiz.title', href: '/practice/diagonal-quiz' },
     { labelKey: 'modeTimed' },

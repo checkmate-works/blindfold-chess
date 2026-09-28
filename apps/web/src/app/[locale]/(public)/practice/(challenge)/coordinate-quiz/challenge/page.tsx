@@ -5,6 +5,7 @@ import { CoordinateQuizChallengeSetup } from './_components/CoordinateQuizChalle
 const { generateMetadata, generateStaticParams, Page } = createPracticeChallengePage({
   i18nKey: 'coordinateQuiz',
   canonicalPath: 'practice/coordinate-quiz/challenge',
+  practiceId: 'coordinate-quiz',
   breadcrumbSegments: [
     { labelKey: 'coordinateQuiz.title', href: '/practice/coordinate-quiz' },
     { labelKey: 'modeTimed' },

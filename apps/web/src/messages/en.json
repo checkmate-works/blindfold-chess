@@ -1009,6 +1009,10 @@
     "viewLeaderboard": "View Leaderboard",
     "viewDojo": "View Dojo",
     "related": "Related",
+    "relatedPractice": {
+      "title": "More at This Level",
+      "viewAll": "See all {level} practices"
+    },
     "tryAgain": "Try Again",
     "changeSettings": "Change Settings",
     "doOtherPractice": "Do other practice",

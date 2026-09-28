@@ -5,6 +5,7 @@ import { QuadrantsChallengeSetup } from './_components/QuadrantsChallengeSetup';
 const { generateMetadata, generateStaticParams, Page } = createPracticeChallengePage({
   i18nKey: 'quadrantAnchors',
   canonicalPath: 'practice/quadrants/challenge',
+  practiceId: 'quadrants',
   breadcrumbSegments: [
     { labelKey: 'quadrantAnchors.title', href: '/practice/quadrants' },
     { labelKey: 'modeTimed' },

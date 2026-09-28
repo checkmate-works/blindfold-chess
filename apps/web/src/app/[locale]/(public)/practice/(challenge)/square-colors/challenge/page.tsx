@@ -5,6 +5,7 @@ import { SquareColorsChallengeSetup } from './_components/SquareColorsChallengeS
 const { generateMetadata, generateStaticParams, Page } = createPracticeChallengePage({
   i18nKey: 'squareColors',
   canonicalPath: 'practice/square-colors/challenge',
+  practiceId: 'square-colors',
   breadcrumbSegments: [
     { labelKey: 'squareColors.title', href: '/practice/square-colors' },
     { labelKey: 'modeTimed' },

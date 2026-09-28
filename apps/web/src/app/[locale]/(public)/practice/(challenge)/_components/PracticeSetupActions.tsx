@@ -4,10 +4,11 @@ import Link from 'next/link';
 
 import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { FaInfinity, FaPlay } from 'react-icons/fa';
+import { FaPlay } from 'react-icons/fa';
 
-import { Divider } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
+
+import { TrainingModeButton, trainingHrefFor } from './TrainingModeButton';
 
 type Props = {
   locale: Locale;
@@ -40,9 +41,7 @@ export function PracticeSetupActions({
 
   const qs = settingsQuery ? `?${settingsQuery}` : '';
   const challengeLink = challengeHref ?? `/${locale}/practice/${moduleSlug}/challenge/session${qs}`;
-  const trainingLink =
-    trainingHref ??
-    `/${locale}/practice/${moduleSlug}/training${qs}#${moduleSlug}-training-session`;
+  const trainingLink = trainingHref ?? trainingHrefFor(locale, moduleSlug, settingsQuery);
 
   return (
     <>
@@ -58,23 +57,11 @@ export function PracticeSetupActions({
         </Button>
       </Link>
 
-      <div className="my-6 mx-auto flex w-4/5 items-center gap-4">
-        <Divider className="flex-1" />
-        <span className="text-sm text-muted-foreground">{tp('orDivider')}</span>
-        <Divider className="flex-1" />
-      </div>
-
-      <Link href={trainingLink} data-tour-id={trainingTourId}>
-        <Button
-          asChild
-          variant="outline"
-          size="lg"
-          icon={<FaInfinity />}
-          className={buttonClassName ?? 'w-full'}
-        >
-          {tp('startTraining')}
-        </Button>
-      </Link>
+      <TrainingModeButton
+        href={trainingLink}
+        tourId={trainingTourId}
+        {...(buttonClassName ? { buttonClassName } : {})}
+      />
     </>
   );
 }

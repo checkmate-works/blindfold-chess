@@ -5,7 +5,10 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import type { ServerTranslator } from '@/i18n/translator';
 
+import { PRACTICE_CHALLENGE_NATIVE_AD_SLOT } from '@/lib/ads/registry';
+
 import { PracticeSessionPage } from '@/app/[locale]/(public)/practice/_components/PracticeSessionPage';
+import { RelatedPracticeSection } from '@/app/[locale]/(public)/practice/_components/RelatedPracticeSection';
 import { Divider, PageLayout, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -170,8 +173,37 @@ function createSessionModePage(config: SessionModePageConfig, modeLabelKey: stri
   );
 }
 
-export function createPracticeChallengePage(config: SessionModePageConfig) {
-  return createSessionModePage(config, 'modeTimed');
+type ChallengePageConfig = SessionModePageConfig & {
+  /** The module's route segment under `/practice`, e.g. `diagonal-quiz`. */
+  practiceId: string;
+};
+
+/**
+ * The challenge setup screen, followed by the other modules in its band.
+ *
+ * The related grid is here, on the setup screen, because of how readers
+ * arrive: the leaderboard, a finished or abandoned session and the tutorial
+ * all link straight to it, so it is often a reader checking a record rather
+ * than one who chose this module a moment ago — and that reader is the one
+ * most open to trying a neighbour instead.
+ */
+export function createPracticeChallengePage({ practiceId, ...config }: ChallengePageConfig) {
+  return createSessionModePage(
+    {
+      ...config,
+      renderContent: (context) => (
+        <>
+          {config.renderContent(context)}
+          <RelatedPracticeSection
+            locale={context.locale}
+            practiceId={practiceId}
+            adSlot={PRACTICE_CHALLENGE_NATIVE_AD_SLOT}
+          />
+        </>
+      ),
+    },
+    'modeTimed'
+  );
 }
 
 // ---------------------------------------------------------------------------

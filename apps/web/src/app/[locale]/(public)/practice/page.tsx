@@ -39,32 +39,19 @@ import { SITE_URL } from '@/config';
 
 import { getNativeTileCreatives } from '@/lib/ads/ad';
 import { PRACTICE_GRID_NATIVE_AD_SLOT } from '@/lib/ads/registry';
-import type { PracticeMenuType } from '@/lib/db/practice-menu-types';
 import { JsonLd, generateItemListSchema } from '@/lib/seo/jsonld';
 
+import { PracticeLevelFilter } from '@/app/[locale]/(public)/practice/_components/PracticeLevelFilter';
+import { PRACTICE_CATALOG } from '@/app/[locale]/(public)/practice/_lib/practice-catalog';
 import {
-  PracticeLevelFilter,
-  type PracticeLevelFilterItem,
-} from '@/app/[locale]/(public)/practice/_components/PracticeLevelFilter';
-import { PracticeMenuCard } from '@/app/[locale]/(public)/practice/_components/PracticeMenuCard';
-import { getRankSlugForMenuType } from '@/app/[locale]/(public)/practice/_lib/module-rank-mapping';
-import { PRACTICE_EMOJIS } from '@/app/[locale]/(public)/practice/_lib/practice-emojis';
+  buildPracticeCards,
+  getPracticeLevelLabels,
+} from '@/app/[locale]/(public)/practice/_lib/practice-catalog-cards';
 import { ListLink, ListLinkContainer, PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { NativeAdTile } from '@/app/[locale]/_components/NativeAdTile';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { Locale } from '@/app/[locale]/_lib/types';
-
-import type { PracticeLevel } from './_lib/practice-levels';
-
-type PracticeEntry = {
-  /** Route segment under `/practice`. */
-  id: string;
-  /** Keys the rank mapping and the card's example band. */
-  menuType: PracticeMenuType;
-  title: string;
-  icon: string;
-};
 
 type Props = {
   params: Promise<{
@@ -85,7 +72,6 @@ export default async function PracticePage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations({ locale });
-  const tRanks = await getTranslations({ locale, namespace: 'ranks' });
 
   // The viewer-independent read, not `resolveNativeAds`: this page is
   // prerendered, and resolving the viewer's entitlement here would read
@@ -95,151 +81,16 @@ export default async function PracticePage({ params }: Props) {
   const nativeAdCreatives = await getNativeTileCreatives(PRACTICE_GRID_NATIVE_AD_SLOT, locale);
   const nativeAd = nativeAdCreatives[0] ?? null;
 
-  const sections: { level: PracticeLevel; practices: PracticeEntry[] }[] = [
-    {
-      level: 'beginner',
-      practices: [
-        {
-          id: 'square-colors',
-          menuType: 'square_colors',
-          title: t('practice.squareColors.title'),
-          icon: PRACTICE_EMOJIS.square_colors,
-        },
-        {
-          id: 'coordinate-quiz',
-          menuType: 'coordinate_quiz',
-          title: t('practice.coordinateQuiz.title'),
-          icon: PRACTICE_EMOJIS.coordinate_quiz,
-        },
-        {
-          id: 'legal-moves',
-          menuType: 'legal_moves',
-          title: t('practice.legalMoves.title'),
-          icon: PRACTICE_EMOJIS.legal_moves,
-        },
-      ],
-    },
-    {
-      level: 'intermediate',
-      practices: [
-        {
-          id: 'diagonal-quiz',
-          menuType: 'diagonal_quiz',
-          title: t('practice.diagonalQuiz.title'),
-          icon: PRACTICE_EMOJIS.diagonal_quiz,
-        },
-        {
-          id: 'board-symmetry',
-          menuType: 'board_symmetry',
-          title: t('practice.boardSymmetry.title'),
-          icon: PRACTICE_EMOJIS.board_symmetry,
-        },
-        {
-          id: 'route-planner',
-          menuType: 'route_planner',
-          title: t('practice.routePlanner.title'),
-          icon: PRACTICE_EMOJIS.route_planner,
-        },
-      ],
-    },
-    {
-      level: 'advanced',
-      practices: [
-        {
-          id: 'position-memory',
-          menuType: 'position_memory',
-          title: t('practice.positionMemory.title'),
-          icon: PRACTICE_EMOJIS.position_memory,
-        },
-        {
-          id: 'puzzle',
-          menuType: 'puzzle',
-          title: t('practice.puzzle.title'),
-          icon: PRACTICE_EMOJIS.puzzle,
-        },
-      ],
-    },
-    {
-      level: 'expert',
-      practices: [
-        {
-          id: 'knight-tour',
-          menuType: 'knight_tour',
-          title: t('practice.knightTour.title'),
-          icon: PRACTICE_EMOJIS.knight_tour,
-        },
-        {
-          id: 'recall',
-          menuType: 'recall',
-          title: t('recall.title'),
-          icon: PRACTICE_EMOJIS.recall,
-        },
-      ],
-    },
-    {
-      level: 'introduction',
-      practices: [
-        {
-          id: 'algebraic-notation',
-          menuType: 'algebraic_notation',
-          title: t('practice.algebraicNotation.title'),
-          icon: PRACTICE_EMOJIS.algebraic_notation,
-        },
-        {
-          id: 'fen',
-          menuType: 'fen',
-          title: t('practice.fen.title'),
-          icon: PRACTICE_EMOJIS.fen,
-        },
-        {
-          id: 'quadrants',
-          menuType: 'quadrant_anchors',
-          title: t('practice.quadrantAnchors.title'),
-          icon: PRACTICE_EMOJIS.quadrant_anchors,
-        },
-      ],
-    },
-  ];
+  const itemListItems = PRACTICE_CATALOG.map((practice) => ({
+    name: t(practice.titleKey),
+    url: `${SITE_URL}/${locale}/practice/${practice.id}`,
+  }));
 
-  const itemListItems = sections.flatMap((section) =>
-    section.practices.map((practice) => ({
-      name: practice.title,
-      url: `${SITE_URL}/${locale}/practice/${practice.id}`,
-    }))
-  );
-
-  const levelLabels: Record<PracticeLevel, string> = {
-    beginner: t('practice.levelBeginner'),
-    intermediate: t('practice.levelIntermediate'),
-    advanced: t('practice.levelAdvanced'),
-    expert: t('practice.levelExpert'),
-    introduction: t('practice.levelIntroduction'),
-  };
+  const levelLabels = await getPracticeLevelLabels(locale);
 
   // Every card is rendered here, on the server, and the filter only decides
   // which of them to show — so the prerendered HTML carries the whole list.
-  const items: PracticeLevelFilterItem[] = sections.flatMap((section) =>
-    section.practices.map((practice) => {
-      const rankSlug = getRankSlugForMenuType(practice.menuType);
-      const rankLabel = rankSlug ? tRanks(`rankNames.${rankSlug}`) : null;
-      return {
-        key: practice.id,
-        level: section.level,
-        card: (
-          <PracticeMenuCard
-            locale={locale}
-            href={`/practice/${practice.id}`}
-            level={section.level}
-            levelLabel={levelLabels[section.level]}
-            icon={practice.icon}
-            title={practice.title}
-            menuType={practice.menuType}
-            rank={rankSlug && rankLabel ? { slug: rankSlug, label: rankLabel } : null}
-          />
-        ),
-      };
-    })
-  );
+  const items = await buildPracticeCards(locale, PRACTICE_CATALOG);
 
   return (
     <>

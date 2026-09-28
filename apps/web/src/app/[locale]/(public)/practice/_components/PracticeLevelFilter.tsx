@@ -10,12 +10,10 @@ import { withSingleNativeAd } from '@/lib/ads/placement';
 import { PracticeLevelDots } from '@/app/[locale]/(public)/practice/_components/PracticeLevelDots';
 import {
   PRACTICE_LEVELS,
+  PRACTICE_LEVEL_PARAM,
   type PracticeLevel,
   isPracticeLevel,
 } from '@/app/[locale]/(public)/practice/_lib/practice-levels';
-
-/** Query key carrying the selected level (`/practice?level=beginner`). */
-export const PRACTICE_LEVEL_PARAM = 'level';
 
 /** One card, already rendered on the server, plus the level it belongs to. */
 export type PracticeLevelFilterItem = {

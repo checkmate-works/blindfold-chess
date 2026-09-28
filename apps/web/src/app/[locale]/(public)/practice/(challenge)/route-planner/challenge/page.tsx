@@ -5,6 +5,7 @@ import { RoutePlannerChallengeSetup } from './_components/RoutePlannerChallengeS
 const { generateMetadata, generateStaticParams, Page } = createPracticeChallengePage({
   i18nKey: 'routePlanner',
   canonicalPath: 'practice/route-planner/challenge',
+  practiceId: 'route-planner',
   breadcrumbSegments: [
     { labelKey: 'routePlanner.title', href: '/practice/route-planner' },
     { labelKey: 'modeTimed' },
