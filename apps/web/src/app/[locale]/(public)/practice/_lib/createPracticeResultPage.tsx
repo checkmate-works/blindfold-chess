@@ -6,7 +6,10 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import type { ExpInfo } from '@blindfold-chess/features/exp';
 
 import { resolveNativeTileCreatives } from '@/lib/ads/ad';
-import { PRACTICE_RESULT_NATIVE_AD_SLOT } from '@/lib/ads/registry';
+import {
+  PRACTICE_RESULT_NATIVE_AD_SLOT,
+  PRACTICE_RESULT_RELATED_NATIVE_AD_SLOT,
+} from '@/lib/ads/registry';
 import { getOptionalUser } from '@/lib/auth';
 import { getExpInfoBySource } from '@/lib/db/get-exp-info-by-source';
 import type { ScoreComparison } from '@/lib/db/score-comparison';
@@ -17,6 +20,7 @@ import type {
   LeaderboardPeriod,
   LeaderboardRow,
 } from '@/app/[locale]/(public)/leaderboard/_lib/types';
+import { RelatedPracticeSection } from '@/app/[locale]/(public)/practice/_components/RelatedPracticeSection';
 import { NativeAdTile } from '@/app/[locale]/_components/NativeAdTile';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale, LocalePageProps, LocaleSearchPageProps } from '@/app/[locale]/_lib/types';
@@ -156,6 +160,23 @@ async function resolvePracticeResultNativeAd(
   return creative ? <NativeAdTile creative={creative} variant="link" /> : undefined;
 }
 
+/**
+ * The same-band grid every result screen ends with, under the leaderboard.
+ * `mt-12` matches the ad card and the leaderboard preview above it, the other
+ * sections of a result screen.
+ */
+function renderRelatedPractice(locale: Locale, practiceId: string, userId: string | null) {
+  return (
+    <RelatedPracticeSection
+      locale={locale}
+      practiceId={practiceId}
+      adSlot={PRACTICE_RESULT_RELATED_NATIVE_AD_SLOT}
+      viewer={{ userId }}
+      className="mt-12"
+    />
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Simple result page factory (no leaderboard)
 // ---------------------------------------------------------------------------
@@ -167,9 +188,13 @@ type SimpleResultClientProps = {
   signUpBanner?: ReactNode;
   /** The screen's native ad card; `undefined` when the slot's pool is empty. */
   nativeAd?: ReactNode;
+  /** The same-band practice grid closing the screen. */
+  relatedPractice?: ReactNode;
 };
 
 type SimpleResultPageOptions = {
+  /** The module's route segment under `/practice`, e.g. `knight-tour`. */
+  practiceId: string;
   /**
    * Source identifier used when looking up EXP events via `?grant=<id>`.
    * Defaults to `'challenge_result'` (matching the historical behavior).
@@ -189,7 +214,7 @@ type SimpleResultPageOptions = {
 
 export function createSimplePracticeResultPage(
   ResultClient: ComponentType<SimpleResultClientProps>,
-  options: SimpleResultPageOptions = {}
+  options: SimpleResultPageOptions
 ) {
   const expSource: ExpSource = options.expSource ?? 'challenge_result';
 
@@ -216,6 +241,7 @@ export function createSimplePracticeResultPage(
           locale={locale}
           expInfo={expInfo}
           nativeAd={nativeAd}
+          relatedPractice={renderRelatedPractice(locale, options.practiceId, user?.id ?? null)}
           signUpBanner={user ? undefined : <GuestSignUpBanner locale={locale} />}
         />
       </Suspense>
@@ -235,9 +261,13 @@ type LeaderboardResultClientProps = AuthSlot & {
   expInfo?: ExpInfo | null;
   /** The screen's native ad card; `undefined` when the slot's pool is empty. */
   nativeAd?: ReactNode;
+  /** The same-band practice grid closing the screen, under the leaderboard. */
+  relatedPractice?: ReactNode;
 };
 
 type LeaderboardConfig = {
+  /** The module's route segment under `/practice`, e.g. `diagonal-quiz`. */
+  practiceId: string;
   /** Leaderboard module identifier, e.g. "coordinate_quiz" */
   module: LeaderboardModule;
   /**
@@ -298,6 +328,7 @@ export function createLeaderboardPracticeResultPage(
           leaderboardPeriod={leaderboardData?.period}
           expInfo={expInfo}
           nativeAd={nativeAd}
+          relatedPractice={renderRelatedPractice(locale, leaderboard.practiceId, user?.id ?? null)}
           {...authSlot}
         />
       </Suspense>

@@ -14,6 +14,7 @@ export const generateMetadata = createPracticeResultMetadata({
 });
 
 export default createSimplePracticeResultPage(ResultClient, {
+  practiceId: 'knight-tour',
   // Knight-tour's result is a custom board layout; keep the inner chunk-load
   // fallback consistent with the bespoke route loading.tsx.
   loadingFallback: <KnightTourResultLoadingSkeleton />,

@@ -186,6 +186,11 @@ export const AD_SLOTS = {
     // one module's page.
     surfaces: [{ route: '/practice/<module>/result', href: '/practice/square-colors/result' }],
   },
+  'practice-result-related-native-ad': {
+    kind: 'native_tile',
+    // Every result screen, as with `practice-result-native-ad`.
+    surfaces: [{ route: '/practice/<module>/result', href: '/practice/square-colors/result' }],
+  },
   'practice-grid-native-ad': {
     kind: 'native_tile',
     surfaces: [{ route: '/practice', href: '/practice' }],
@@ -439,6 +444,27 @@ export const LEADERBOARD_TOP_NATIVE_AD_SLOT = 'leaderboard-top-native-ad' satisf
  * belong to. It sits above that block, labelled by its own chrome.
  */
 export const PRACTICE_RESULT_NATIVE_AD_SLOT = 'practice-result-native-ad' satisfies AdSlot;
+
+/**
+ * The pool the "related practice" grid at the foot of every result screen
+ * draws its native tile from — a second ad on a screen that already has
+ * {@link PRACTICE_RESULT_NATIVE_AD_SLOT}'s card, and deliberately so.
+ *
+ * The two sit at different depths of the page. The existing card is right
+ * under the action buttons; this grid comes after the leaderboard, reached
+ * only by a reader who scrolled past their standing looking for what to do
+ * next. It is below the leaderboard rather than above it because a grid of
+ * other modules between the score and the rankings would draw the reader
+ * away before they looked at where the score placed them — and the pull of
+ * getting onto that board is what brings them back to this module.
+ *
+ * A pool of its own rather than a second draw from the result card's pool:
+ * the two placements are the question — does a tile at the foot of the page
+ * earn anything on top of the card at the head — and attribution is per
+ * creative, so only separate pools can tell them apart.
+ */
+export const PRACTICE_RESULT_RELATED_NATIVE_AD_SLOT =
+  'practice-result-related-native-ad' satisfies AdSlot;
 
 /**
  * The pool the `/practice` module grid draws its native tile from — the one

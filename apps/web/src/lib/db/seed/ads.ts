@@ -407,6 +407,10 @@ const SLOT_BOOKS = {
     { id: '3757cc7e-8ac8-4110-9467-295fbe55970b', book: 'improveYourChessNow' },
     { id: '63c04075-1a1b-4f38-a8b7-c16ac91bba00', book: 'russianEndgame' },
   ],
+  'practice-result-related-native-ad': [
+    { id: 'b78b7479-ac09-4b4d-913a-b0290a7b580b', book: 'endgameStudies' },
+    { id: 'd9e2d085-9bda-4739-9c2b-b151874c5dc6', book: 'theMentalGame' },
+  ],
   'practice-grid-native-ad': [
     { id: '5f8f622f-497a-4c48-b938-6c5865af57fe', book: 'woodpecker2' },
     { id: 'bac48838-3235-401e-8b60-9f73268c51ca', book: 'endgameStudies' },

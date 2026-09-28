@@ -57,7 +57,7 @@ export function createCustomPracticeResultPage(config: CustomPracticeResultConfi
     renderContent,
   } = config;
 
-  function ResultClient({ locale }: ResultClientProps) {
+  function ResultClient({ locale, relatedPractice }: ResultClientProps) {
     const t = useTranslations(`practice.${i18nKey}`);
     const tPractice = useTranslations('practice');
     const tNavigation = useTranslations('navigation');
@@ -82,6 +82,7 @@ export function createCustomPracticeResultPage(config: CustomPracticeResultConfi
         dividerClassName={dividerClassName}
       >
         {renderContent({ locale })}
+        {relatedPractice}
       </PracticeResultPage>
     );
   }

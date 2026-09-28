@@ -12,4 +12,4 @@ export const generateMetadata = createPracticeResultMetadata({
   canonicalPath: 'practice/algebraic-notation/result',
 });
 
-export default createSimplePracticeResultPage(ResultClient);
+export default createSimplePracticeResultPage(ResultClient, { practiceId: 'algebraic-notation' });

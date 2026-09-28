@@ -14,6 +14,7 @@ export const generateMetadata = createPracticeResultMetadata({
 });
 
 export default createLeaderboardPracticeResultPage(ResultClient, {
+  practiceId: 'coordinate-quiz',
   module: 'coordinate_quiz',
   resolveKey: (sp) => (typeof sp.orientation === 'string' ? sp.orientation : 'random'),
   // Keep the inner chunk-load fallback consistent with loading.tsx.

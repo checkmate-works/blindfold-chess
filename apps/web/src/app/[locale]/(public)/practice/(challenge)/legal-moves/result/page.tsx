@@ -14,6 +14,7 @@ export const generateMetadata = createPracticeResultMetadata({
 });
 
 export default createLeaderboardPracticeResultPage(ResultClient, {
+  practiceId: 'legal-moves',
   module: 'legal_moves',
   resolveKey: (sp) => (typeof sp.piece === 'string' ? sp.piece : 'random'),
   // Keep the inner chunk-load fallback consistent with loading.tsx.
