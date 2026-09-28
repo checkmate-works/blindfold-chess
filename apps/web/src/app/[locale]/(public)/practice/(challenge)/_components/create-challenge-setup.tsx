@@ -8,13 +8,17 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { ChallengeSetupShell } from './ChallengeSetupShell';
+import { trainingHrefFor } from './TrainingModeButton';
 
 type PracticeTranslator = ClientTranslator;
 
 type CreateChallengeSetupOptions = {
   /** Kebab-case module slug used to build the challenge session URL. */
   moduleSlug: string;
-  /** Optional query params appended to the session URL on start. */
+  /**
+   * Optional query params appended to the session URL on start. They are
+   * challenge-only (a time limit, say) and are not carried to training.
+   */
   buildQuery?: () => URLSearchParams;
   /** Renders the `<li>` rule items, given the `practice` translator. */
   rules: (t: PracticeTranslator) => React.ReactNode;
@@ -49,6 +53,12 @@ export function createChallengeSetup({
       router.push(`/${locale}/practice/${moduleSlug}/challenge/session${search}`);
     };
 
-    return <ChallengeSetupShell onStart={handleStart} rules={rules(t)} />;
+    return (
+      <ChallengeSetupShell
+        onStart={handleStart}
+        trainingHref={trainingHrefFor(locale, moduleSlug)}
+        rules={rules(t)}
+      />
+    );
   };
 }

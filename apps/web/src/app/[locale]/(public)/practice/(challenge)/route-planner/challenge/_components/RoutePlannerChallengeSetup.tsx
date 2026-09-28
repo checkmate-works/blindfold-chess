@@ -23,16 +23,21 @@ export function RoutePlannerChallengeSetup({ locale }: Props) {
   const { settings, updateSettings } = useRoutePlannerSettings();
   const { pieceSelection } = settings;
 
+  const pieceName = PIECE_TYPE_TO_NAME[pieceSelection] ?? 'knight';
+  const settingsQuery = new URLSearchParams({ piece: pieceName }).toString();
+
   const handleStart = () => {
-    const pieceName = PIECE_TYPE_TO_NAME[pieceSelection] ?? 'knight';
-    const params = new URLSearchParams({
-      piece: pieceName,
-    });
-    router.push(`/${locale}/practice/route-planner/challenge/session?${params.toString()}`);
+    router.push(`/${locale}/practice/route-planner/challenge/session?${settingsQuery}`);
   };
 
   return (
-    <ChallengeSetupShell onStart={handleStart} rules={<StandardChallengeRules t={t} />}>
+    <ChallengeSetupShell
+      onStart={handleStart}
+      // The route planner's session element predates the shared
+      // `<slug>-training-session` id, so its fragment is spelled out.
+      trainingHref={`/${locale}/practice/route-planner/training?${settingsQuery}#route-planner-session`}
+      rules={<StandardChallengeRules t={t} />}
+    >
       <RoutePlannerSettings
         pieceSelection={pieceSelection}
         onPieceSelect={(selection) => updateSettings({ pieceSelection: selection })}

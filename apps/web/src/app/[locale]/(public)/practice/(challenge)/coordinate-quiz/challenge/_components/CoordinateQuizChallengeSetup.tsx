@@ -6,6 +6,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 
 import { ChallengeSetupShell } from '@/app/[locale]/(public)/practice/(challenge)/_components/ChallengeSetupShell';
 import { StandardChallengeRules } from '@/app/[locale]/(public)/practice/(challenge)/_components/StandardChallengeRules';
+import { trainingHrefFor } from '@/app/[locale]/(public)/practice/(challenge)/_components/TrainingModeButton';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { CoordinateQuizSettings } from '../../_components/CoordinateQuizSettings';
@@ -22,16 +23,21 @@ export function CoordinateQuizChallengeSetup({ locale }: Props) {
   const { settings, updateSettings } = useCoordinateQuizSettings();
   const { boardOrientation, feedbackSpeed } = settings;
 
+  const settingsQuery = new URLSearchParams({
+    orientation: boardOrientation,
+    feedbackSpeed,
+  }).toString();
+
   const handleStart = () => {
-    const params = new URLSearchParams({
-      orientation: boardOrientation,
-      feedbackSpeed,
-    });
-    router.push(`/${locale}/practice/coordinate-quiz/challenge/session?${params.toString()}`);
+    router.push(`/${locale}/practice/coordinate-quiz/challenge/session?${settingsQuery}`);
   };
 
   return (
-    <ChallengeSetupShell onStart={handleStart} rules={<StandardChallengeRules t={t} />}>
+    <ChallengeSetupShell
+      onStart={handleStart}
+      trainingHref={trainingHrefFor(locale, 'coordinate-quiz', settingsQuery)}
+      rules={<StandardChallengeRules t={t} />}
+    >
       <CoordinateQuizSettings
         boardOrientation={boardOrientation}
         feedbackSpeed={feedbackSpeed}
