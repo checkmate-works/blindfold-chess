@@ -14,6 +14,7 @@ export const generateMetadata = createPracticeResultMetadata({
 });
 
 export default createLeaderboardPracticeResultPage(ResultClient, {
+  practiceId: 'diagonal-quiz',
   module: 'diagonal_quiz',
   resolveKey: () => 'default',
   // Keep the inner chunk-load fallback consistent with loading.tsx.

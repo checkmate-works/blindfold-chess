@@ -14,6 +14,7 @@ export const generateMetadata = createPracticeResultMetadata({
 });
 
 export default createSimplePracticeResultPage(ResultClient, {
+  practiceId: 'quadrants',
   // Quadrants awards EXP but disables the sign-up banner (showSignUpBanner:
   // false). Reserve only EXP, consistent with loading.tsx.
   loadingFallback: <PracticeResultLoadingSkeleton grantsExp />,

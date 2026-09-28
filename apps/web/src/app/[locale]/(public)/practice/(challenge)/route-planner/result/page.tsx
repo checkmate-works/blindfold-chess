@@ -14,6 +14,7 @@ export const generateMetadata = createPracticeResultMetadata({
 });
 
 export default createLeaderboardPracticeResultPage(ResultClient, {
+  practiceId: 'route-planner',
   module: 'route_planner',
   resolveKey: (searchParams) => {
     const piece = typeof searchParams.piece === 'string' ? searchParams.piece : undefined;

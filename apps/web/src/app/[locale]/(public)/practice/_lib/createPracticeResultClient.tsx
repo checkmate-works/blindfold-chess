@@ -72,6 +72,13 @@ export type ResultClientProps = {
    * gets the placement without a per-module change.
    */
   nativeAd?: ReactNode;
+  /**
+   * The other modules in this one's band, with their own native tile,
+   * rendered by the result page Server Component. Placed last, under the
+   * leaderboard — see `PRACTICE_RESULT_RELATED_NATIVE_AD_SLOT` for why not
+   * above it.
+   */
+  relatedPractice?: ReactNode;
 };
 
 // ---------------------------------------------------------------------------
@@ -253,6 +260,7 @@ export function createPracticeResultClient(config: ResultClientConfig) {
     signUpBanner,
     nativeAd,
     recordSection,
+    relatedPractice,
   }: ResultClientProps) {
     const t = useTranslations(`practice.${i18nKey}`);
     const tPractice = useTranslations('practice');
@@ -378,6 +386,8 @@ export function createPracticeResultClient(config: ResultClientConfig) {
             locale={locale}
           />
         )}
+
+        {relatedPractice}
       </PracticeResultPage>
     );
   }

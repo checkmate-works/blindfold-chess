@@ -12,4 +12,4 @@ export const generateMetadata = createPracticeResultMetadata({
   canonicalPath: 'practice/fen/result',
 });
 
-export default createSimplePracticeResultPage(ResultClient);
+export default createSimplePracticeResultPage(ResultClient, { practiceId: 'fen' });

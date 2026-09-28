@@ -13,5 +13,6 @@ export const generateMetadata = createPracticeResultMetadata({
 });
 
 export default createSimplePracticeResultPage(ResultClient, {
+  practiceId: 'position-memory',
   expSource: 'practice_result',
 });
