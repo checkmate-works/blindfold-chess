@@ -170,8 +170,7 @@ function renderRelatedPractice(locale: Locale, practiceId: string, userId: strin
     <RelatedPracticeSection
       locale={locale}
       practiceId={practiceId}
-      adSlot={PRACTICE_RESULT_RELATED_NATIVE_AD_SLOT}
-      viewer={{ userId }}
+      ad={{ slot: PRACTICE_RESULT_RELATED_NATIVE_AD_SLOT, userId }}
       className="mt-12"
     />
   );
