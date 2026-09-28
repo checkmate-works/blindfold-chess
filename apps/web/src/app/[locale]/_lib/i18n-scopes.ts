@@ -255,6 +255,7 @@ export const INTL_SCOPES = {
       'Preferences',
       'authPrompt',
       'deleteAccount',
+      'nativeAd',
       'onboardingProfile',
       'onboardingWizard',
       'profile',

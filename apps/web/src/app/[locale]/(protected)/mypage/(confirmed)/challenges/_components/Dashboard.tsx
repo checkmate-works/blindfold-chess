@@ -1,5 +1,7 @@
 'use client';
 
+import type { ReactNode } from 'react';
+
 import dynamic from 'next/dynamic';
 
 import { Button } from '@/app/_components';
@@ -40,9 +42,15 @@ type Props = {
   locale: string;
   /** Menu to open on first load (from `?menu=`); the server reconciles it against the period's records. */
   initialMenu?: ChallengeMenuType;
+  /**
+   * Each module's same-band practice grid, server-rendered by the page. The
+   * one for the selected module closes the dashboard, under the challenge
+   * button.
+   */
+  relatedPracticeByMenu?: Partial<Record<ChallengeMenuType, ReactNode>>;
 };
 
-export function Dashboard({ locale, initialMenu }: Props) {
+export function Dashboard({ locale, initialMenu, relatedPracticeByMenu }: Props) {
   const t = useTranslations('Mypage');
   const {
     selectedMenu,
@@ -194,6 +202,8 @@ export function Dashboard({ locale, initialMenu }: Props) {
               </Button>
             </Link>
           )}
+
+          {selectedMenu && relatedPracticeByMenu?.[selectedMenu]}
         </>
       )}
     </div>

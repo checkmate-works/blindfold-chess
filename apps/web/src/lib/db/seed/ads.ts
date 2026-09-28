@@ -411,6 +411,10 @@ const SLOT_BOOKS = {
     { id: 'b78b7479-ac09-4b4d-913a-b0290a7b580b', book: 'endgameStudies' },
     { id: 'd9e2d085-9bda-4739-9c2b-b151874c5dc6', book: 'theMentalGame' },
   ],
+  'mypage-challenges-native-ad': [
+    { id: '261374b5-e454-4336-b035-53e7c1f50d0d', book: 'woodpecker2' },
+    { id: '1e3140e6-7572-46fb-b458-ebd9a5a2597f', book: 'theMentalGame' },
+  ],
   'practice-grid-native-ad': [
     { id: '5f8f622f-497a-4c48-b938-6c5865af57fe', book: 'woodpecker2' },
     { id: 'bac48838-3235-401e-8b60-9f73268c51ca', book: 'endgameStudies' },
