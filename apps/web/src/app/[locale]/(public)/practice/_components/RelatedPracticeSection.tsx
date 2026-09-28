@@ -4,7 +4,7 @@ import { getTranslations } from 'next-intl/server';
 
 import { Link } from '@/i18n/routing';
 
-import { getNativeTileCreatives } from '@/lib/ads/ad';
+import { getNativeTileCreatives, resolveNativeTileCreatives } from '@/lib/ads/ad';
 import { withSingleNativeAd } from '@/lib/ads/placement';
 import type { AdSlot } from '@/lib/ads/registry';
 
@@ -28,6 +28,15 @@ type Props = {
   practiceId: string;
   /** The pool the grid's native tile is drawn from. */
   adSlot: AdSlot;
+  /**
+   * The viewer, on a page that already reads it. Given, the tile is left out
+   * for an ad-free viewer instead of rendered for the CSS rule to hide.
+   * Omitted — a prerendered page, which must not read the viewer — the
+   * viewer-independent pool is read and the CSS rule does the hiding.
+   */
+  viewer?: { userId: string | null };
+  /** Extra classes for the section, for a surface that spaces by margin. */
+  className?: string;
 };
 
 /**
@@ -44,11 +53,18 @@ type Props = {
  * the grid, and a short grid is still one that a reader who came here to
  * check a record can pick something from.
  *
- * Reads the viewer-independent pool, like `/practice`, so the pages it sits
- * on stay prerendered; the `bfc_ads_hidden` cookie's CSS rule on the tile's
- * `.ad-slot-wrapper` is what hides it from an ad-free reader.
+ * Without a `viewer` it reads the viewer-independent pool, like `/practice`,
+ * so a prerendered page stays prerendered; the `bfc_ads_hidden` cookie's CSS
+ * rule on the tile's `.ad-slot-wrapper` is what hides it from an ad-free
+ * reader.
  */
-export async function RelatedPracticeSection({ locale, practiceId, adSlot }: Props) {
+export async function RelatedPracticeSection({
+  locale,
+  practiceId,
+  adSlot,
+  viewer,
+  className,
+}: Props) {
   const self = PRACTICE_CATALOG.find((entry) => entry.id === practiceId);
   const related = relatedPractices(practiceId);
   if (!self || related.length === 0) return null;
@@ -57,12 +73,14 @@ export async function RelatedPracticeSection({ locale, practiceId, adSlot }: Pro
     getTranslations({ locale, namespace: 'practice.relatedPractice' }),
     getPracticeLevelLabels(locale),
     buildPracticeCards(locale, related),
-    getNativeTileCreatives(adSlot, locale),
+    viewer
+      ? resolveNativeTileCreatives(adSlot, viewer.userId, locale)
+      : getNativeTileCreatives(adSlot, locale),
   ]);
   const creative = creatives[0];
 
   return (
-    <section className="space-y-4">
+    <section className={`space-y-4 ${className ?? ''}`.trim()}>
       <SectionTitle>{t('title')}</SectionTitle>
       <div className="grid gap-4 sm:grid-cols-2">
         {withSingleNativeAd(
