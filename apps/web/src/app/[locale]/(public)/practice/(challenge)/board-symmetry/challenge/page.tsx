@@ -5,6 +5,7 @@ import { BoardSymmetryChallengeSetup } from './_components/BoardSymmetryChalleng
 const { generateMetadata, generateStaticParams, Page } = createPracticeChallengePage({
   i18nKey: 'boardSymmetry',
   canonicalPath: 'practice/board-symmetry/challenge',
+  practiceId: 'board-symmetry',
   breadcrumbSegments: [
     { labelKey: 'boardSymmetry.title', href: '/practice/board-symmetry' },
     { labelKey: 'modeTimed' },

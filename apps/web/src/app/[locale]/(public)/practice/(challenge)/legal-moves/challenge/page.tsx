@@ -5,6 +5,7 @@ import { LegalMovesChallengeSetup } from './_components/LegalMovesChallengeSetup
 const { generateMetadata, generateStaticParams, Page } = createPracticeChallengePage({
   i18nKey: 'legalMoves',
   canonicalPath: 'practice/legal-moves/challenge',
+  practiceId: 'legal-moves',
   breadcrumbSegments: [
     { labelKey: 'legalMoves.title', href: '/practice/legal-moves' },
     { labelKey: 'modeTimed' },

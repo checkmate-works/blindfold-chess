@@ -411,6 +411,10 @@ const SLOT_BOOKS = {
     { id: '5f8f622f-497a-4c48-b938-6c5865af57fe', book: 'woodpecker2' },
     { id: 'bac48838-3235-401e-8b60-9f73268c51ca', book: 'endgameStudies' },
   ],
+  'practice-challenge-native-ad': [
+    { id: 'edb8430b-31eb-4371-8c95-e8813cc364a8', book: 'woodpecker2' },
+    { id: '987751b0-ee5c-4eef-9962-ead3b72aed24', book: 'improveYourChessNow' },
+  ],
   'puzzle-list-native-ad': [
     { id: '0e16b1fc-bc58-45cd-b218-42a98f21f319', book: 'woodpecker2' },
     { id: '0d686ae2-767f-4651-a470-325bb78f4ad6', book: 'killerAttacking' },

@@ -29,6 +29,15 @@ export const PRACTICE_LEVELS = [
 export type PracticeLevel = (typeof PRACTICE_LEVELS)[number];
 
 /**
+ * Query key carrying the selected level (`/practice?level=beginner`).
+ *
+ * Here rather than beside the filter that reads it, because the filter is a
+ * client module: a server component importing a plain value from one gets a
+ * client reference instead of the string.
+ */
+export const PRACTICE_LEVEL_PARAM = 'level';
+
+/**
  * The bands that ARE steps on the difficulty scale, easiest first.
  *
  * `PracticeLevelDots` draws a band as its position here — one dot lit for

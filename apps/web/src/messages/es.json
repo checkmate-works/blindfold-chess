@@ -1009,6 +1009,10 @@
     "viewLeaderboard": "Ver Clasificación",
     "viewDojo": "Ver Dojo",
     "related": "Relacionado",
+    "relatedPractice": {
+      "title": "Más prácticas de este nivel",
+      "viewAll": "Ver todas las prácticas de nivel {level}"
+    },
     "tryAgain": "Intentar de Nuevo",
     "changeSettings": "Cambiar Configuración",
     "doOtherPractice": "Hacer otra práctica",

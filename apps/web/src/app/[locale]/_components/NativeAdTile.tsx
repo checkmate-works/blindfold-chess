@@ -14,7 +14,8 @@ type Props = {
    * Which card this creative is blending into, all three drawing the same
    * stored fields the way `NativeAdCard` has a feed and a card variant:
    *
-   * - `tile` — the `/practice` grid cell (the default).
+   * - `tile` — the `/practice` grid cell (the default), also the cell of the
+   *   related-practice grid on the challenge setup screens.
    * - `link` — the full-width `CardLink` row the practice result screens use
    *   under "Related Learning".
    * - `iconTile` — the `IconTileCard` of the `/leaderboard` module grid: a

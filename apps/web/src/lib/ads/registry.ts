@@ -190,6 +190,15 @@ export const AD_SLOTS = {
     kind: 'native_tile',
     surfaces: [{ route: '/practice', href: '/practice' }],
   },
+  'practice-challenge-native-ad': {
+    kind: 'native_tile',
+    // One entry for a slot that renders on every challenge setup screen, for
+    // the same reason as the result screen's: the placement is the shared
+    // challenge page factory, not any one module's page.
+    surfaces: [
+      { route: '/practice/<module>/challenge', href: '/practice/diagonal-quiz/challenge' },
+    ],
+  },
   'puzzle-list-native-ad': {
     kind: 'native_card',
     surfaces: [{ route: '/practice/puzzle', href: '/practice/puzzle' }],
@@ -442,6 +451,27 @@ export const PRACTICE_RESULT_NATIVE_AD_SLOT = 'practice-result-native-ad' satisf
  * The `bfc_ads_hidden` cookie and its CSS rule are the entitlement layer.
  */
 export const PRACTICE_GRID_NATIVE_AD_SLOT = 'practice-grid-native-ad' satisfies AdSlot;
+
+/**
+ * The pool the "related practice" grid on every challenge setup screen draws
+ * its native tile from. The grid is the practice list's cards narrowed to the
+ * module's band, so the tile is the same `native_tile` the list uses.
+ *
+ * A separate pool from {@link PRACTICE_GRID_NATIVE_AD_SLOT} although the
+ * cards are the same, because the reader is not. Someone on `/practice` is
+ * browsing for something to do; someone here has already picked a module,
+ * usually by following a link from the leaderboard or a finished session
+ * rather than from the list, and is one click from starting it. Whether a
+ * tile earns anything at that moment is the open question this placement
+ * exists to answer, and attribution is per creative (`withCreativeSubId`), so
+ * only a pool of its own can answer it — a shared one could never be split
+ * back apart.
+ *
+ * One pool for every module rather than one each, on the result screen's
+ * reasoning ({@link PRACTICE_RESULT_NATIVE_AD_SLOT}): the moment is the same
+ * whichever module it is.
+ */
+export const PRACTICE_CHALLENGE_NATIVE_AD_SLOT = 'practice-challenge-native-ad' satisfies AdSlot;
 
 /**
  * The pool the public game gallery (`/games/shared`) draws its native card
