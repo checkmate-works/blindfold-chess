@@ -4,7 +4,7 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * Regression guard for `patches/next@16.3.0.patch`.
+ * Regression guard for `patches/next@16.3.3.patch`.
  *
  * Next.js emits the `<script>` tags for a route's JS chunks from two places:
  * `get-layer-assets` (layout / page), which stamps `nonce: ctx.nonce`, and
@@ -34,7 +34,7 @@ import { describe, expect, it } from 'vitest';
  * the installed package so that disappearance is loud.
  *
  * When upstream ships the same fix, delete the patch AND this test together.
- * Still unfixed as of 16.3.1-canary.10.
+ * Still unfixed as of 16.3.3.
  */
 describe('Next.js loading/error boundary chunks carry the CSP nonce', () => {
   const require = createRequire(import.meta.url);
