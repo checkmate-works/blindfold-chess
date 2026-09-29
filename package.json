@@ -25,7 +25,8 @@
       "webpack": "5.105.3",
       "minimatch": ">=3.1.4",
       "serialize-javascript": ">=7.0.3",
-      "esbuild": ">=0.25.0"
+      "esbuild": ">=0.25.0",
+      "vite": "^7.3.5"
     },
     "patchedDependencies": {
       "next-navigation-guard@0.2.0": "patches/next-navigation-guard@0.2.0.patch",
