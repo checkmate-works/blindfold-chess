@@ -11,8 +11,11 @@ import type * as Actual from '../subscription';
  * `@/lib/users/user-grants` and `@/lib/users/dan-rank` — and every suite
  * that exercises it had written the same three factories out by hand.
  *
- * Both of the module's exports are replaced, so the wholesale mock cannot
+ * All of the module's exports are replaced, so the wholesale mock cannot
  * hide a real function behind the test.
  */
 export const hasActiveSubscription = vi.fn<typeof Actual.hasActiveSubscription>(async () => false);
+export const hasActiveSubscriptionUncached = vi.fn<typeof Actual.hasActiveSubscriptionUncached>(
+  async () => false
+);
 export const getUserSubscription = vi.fn<typeof Actual.getUserSubscription>(async () => null);

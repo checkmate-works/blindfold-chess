@@ -10,10 +10,13 @@ import type { AuthGuardError } from '@/lib/auth';
 import { authenticateAndGuard } from '@/lib/auth';
 import { getStripe, getStripePriceId } from '@/lib/billing/stripe';
 import { getOrCreateStripeCustomerId } from '@/lib/billing/stripe-customer';
+import { hasActiveSubscriptionUncached } from '@/lib/billing/subscription';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { captureError } from '@/lib/sentry/capture-error';
 
-type CheckoutError = { error: AuthGuardError | 'sessionCreationFailed' };
+type CheckoutError = {
+  error: AuthGuardError | 'alreadySubscribed' | 'sessionCreationFailed';
+};
 
 /**
  * Starts a Stripe Checkout session for the ad-free subscription.
@@ -24,6 +27,16 @@ type CheckoutError = { error: AuthGuardError | 'sessionCreationFailed' };
  * The layout's `/banned` redirect protects the mypage HTML, not this call, so
  * without the ban check a banned account could pay for a subscription it can
  * never use, and the webhook would then grant it the entitlement.
+ *
+ * Refuses with `alreadySubscribed` when the user already holds an active
+ * subscription. Stripe does not prevent one customer from subscribing to the
+ * same price twice, so without this check a stale /pricing tab, a double
+ * submit, or a direct POST opens a second subscription and bills the user
+ * twice. The check reads the database directly rather than through the
+ * cached `hasActiveSubscription`: the cache lags a fresh purchase by up to a
+ * minute and answers `false` on failure, and a payment decision can afford
+ * neither. If the check itself fails, the Checkout is refused -- better a
+ * retry than a charge that should not have happened.
  */
 export async function createCheckoutSession(locale: string): Promise<CheckoutError> {
   assertSupportedLocale(locale);
@@ -33,6 +46,15 @@ export async function createCheckoutSession(locale: string): Promise<CheckoutErr
     return { error: guard.error };
   }
   const { user } = guard;
+
+  try {
+    if (await hasActiveSubscriptionUncached(user.id)) {
+      return { error: 'alreadySubscribed' as const };
+    }
+  } catch (error) {
+    captureError(error, '[createCheckoutSession] failed to check for an existing subscription');
+    return { error: 'sessionCreationFailed' as const };
+  }
 
   let stripeCustomerId: string;
   try {

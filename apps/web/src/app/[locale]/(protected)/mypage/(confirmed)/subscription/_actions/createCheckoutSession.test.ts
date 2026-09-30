@@ -1,6 +1,7 @@
 import * as Sentry from '@sentry/nextjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { hasActiveSubscriptionUncached } from '@/lib/billing/subscription';
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import { isUserBanned } from '@/lib/moderation/ban';
 import { checkRateLimit } from '@/lib/security/rate-limit';
@@ -44,6 +45,8 @@ vi.mock('@/lib/billing/stripe', () => ({
   }),
   getStripePriceId: () => mockGetStripePriceId(),
 }));
+
+vi.mock('@/lib/billing/subscription');
 
 vi.mock('@/lib/billing/stripe-customer', () => ({
   getOrCreateStripeCustomerId: (...args: unknown[]) => mockGetOrCreateStripeCustomerId(...args),
@@ -183,6 +186,31 @@ describe('createCheckoutSession — Stripe success_url regression', () => {
     expect(mockGetOrCreateStripeCustomerId).not.toHaveBeenCalled();
     expect(mockSessionsCreate).not.toHaveBeenCalled();
     expect(checkRateLimit).not.toHaveBeenCalled();
+  });
+
+  it('refuses a second subscription for a user who already holds an active one', async () => {
+    // Stripe lets one customer subscribe to the same price twice; this check
+    // is what stands between a stale /pricing tab and a double charge.
+    vi.mocked(hasActiveSubscriptionUncached).mockResolvedValueOnce(true);
+
+    const result = await createCheckoutSession('en');
+
+    expect(result).toEqual({ error: 'alreadySubscribed' });
+    expect(hasActiveSubscriptionUncached).toHaveBeenCalledWith('user-123');
+    expect(mockGetOrCreateStripeCustomerId).not.toHaveBeenCalled();
+    expect(mockSessionsCreate).not.toHaveBeenCalled();
+  });
+
+  it('refuses the Checkout when the existing-subscription check itself fails', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const lookupError = new Error('subscriptions lookup failed');
+    vi.mocked(hasActiveSubscriptionUncached).mockRejectedValueOnce(lookupError);
+
+    const result = await createCheckoutSession('en');
+
+    expect(result).toEqual({ error: 'sessionCreationFailed' });
+    expect(Sentry.captureException).toHaveBeenCalledWith(lookupError);
+    expect(mockSessionsCreate).not.toHaveBeenCalled();
   });
 
   it('returns signInRequired for an anonymous caller instead of touching Stripe', async () => {
