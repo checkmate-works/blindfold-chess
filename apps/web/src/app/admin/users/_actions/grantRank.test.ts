@@ -5,6 +5,7 @@ import {
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { rankStatusTag } from '@/lib/cache-tags';
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 
 const mockRequireAdmin = vi.fn();
@@ -191,7 +192,7 @@ describe('grantRank', () => {
     mockRequireAdmin.mockResolvedValue({ userId: 'admin-id' });
 
     await grantRank(targetUserId, '1dan', 'reason');
-    expect(mockRevalidateTag).toHaveBeenCalledWith('rank-status', { expire: 60 });
+    expect(mockRevalidateTag).toHaveBeenCalledWith(rankStatusTag(targetUserId), { expire: 60 });
   });
 
   it('should notify the recipient so they have a way to notice the manual grant', async () => {

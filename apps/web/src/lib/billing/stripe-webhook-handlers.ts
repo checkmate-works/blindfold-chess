@@ -6,7 +6,7 @@ import 'server-only';
 import type Stripe from 'stripe';
 
 import { getStripe } from '@/lib/billing/stripe';
-import { SUBSCRIPTION_STATUS_CACHE_TAG } from '@/lib/cache-tags';
+import { subscriptionStatusTag } from '@/lib/cache-tags';
 import { db, stripeCustomers, subscriptions } from '@/lib/db';
 
 /**
@@ -21,8 +21,8 @@ import { db, stripeCustomers, subscriptions } from '@/lib/db';
  * exactly that page, so a freshly-paid user lands with an up-to-date
  * cookie immediately after checkout. Subscription lifecycle
  * webhooks (`customer.subscription.updated`, `customer.subscription.deleted`)
- * still hit `revalidateTag('subscription-status')` below, so the next
- * visit recomputes entitlement from fresh DB state.
+ * still expire the affected user's `subscriptionStatusTag` below, so the
+ * next visit recomputes entitlement from fresh DB state.
  *
  * @note Every handler must be safe to run twice for the same event.
  *
@@ -120,7 +120,7 @@ export async function handleCheckoutCompleted(session: Stripe.Checkout.Session) 
       },
     });
 
-  revalidateTag(SUBSCRIPTION_STATUS_CACHE_TAG, { expire: 60 });
+  revalidateTag(subscriptionStatusTag(customerRecord.userId), { expire: 60 });
 }
 
 /**
@@ -147,9 +147,12 @@ export async function handleSubscriptionUpdated(payload: Stripe.Subscription) {
       updatedAt: new Date(),
     })
     .where(eq(subscriptions.stripeSubscriptionId, subscription.id))
-    .returning({ id: subscriptions.id });
+    .returning({ userId: subscriptions.userId });
 
-  if (updated.length === 0) {
+  const [existing] = updated;
+  if (existing) {
+    revalidateTag(subscriptionStatusTag(existing.userId), { expire: 60 });
+  } else {
     const customerId =
       typeof subscription.customer === 'string' ? subscription.customer : subscription.customer.id;
 
@@ -174,15 +177,15 @@ export async function handleSubscriptionUpdated(payload: Stripe.Subscription) {
             updatedAt: new Date(),
           },
         });
+      revalidateTag(subscriptionStatusTag(customerRecord.userId), { expire: 60 });
     } else {
+      // Nothing was written, so there is no user whose cached answer changed.
       Sentry.captureMessage(
         `customer.subscription.updated: no stripe_customers record for customer ${customerId} (subscription: ${subscription.id}). Manual intervention required.`,
         'warning'
       );
     }
   }
-
-  revalidateTag(SUBSCRIPTION_STATUS_CACHE_TAG, { expire: 60 });
 }
 
 export async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
@@ -194,14 +197,16 @@ export async function handleSubscriptionDeleted(subscription: Stripe.Subscriptio
       updatedAt: new Date(),
     })
     .where(eq(subscriptions.stripeSubscriptionId, subscription.id))
-    .returning({ id: subscriptions.id });
+    .returning({ userId: subscriptions.userId });
 
-  if (deleted.length === 0) {
+  const [row] = deleted;
+  if (row) {
+    revalidateTag(subscriptionStatusTag(row.userId), { expire: 60 });
+  } else {
+    // Nothing was written, so there is no user whose cached answer changed.
     Sentry.captureMessage(
       `customer.subscription.deleted: no subscription record found for subscription ${subscription.id}. The checkout.session.completed event may have been missed.`,
       'warning'
     );
   }
-
-  revalidateTag(SUBSCRIPTION_STATUS_CACHE_TAG, { expire: 60 });
 }

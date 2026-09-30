@@ -5,7 +5,7 @@ import {
   BENEFIT_ACTIVE_STATUSES,
   DISPLAYABLE_STATUSES,
 } from '@/lib/billing/subscription-constants';
-import { SUBSCRIPTION_STATUS_CACHE_TAG } from '@/lib/cache-tags';
+import { subscriptionStatusTag } from '@/lib/cache-tags';
 import { db, subscriptions } from '@/lib/db';
 import { cachedExistenceCheck } from '@/lib/db/cached-existence-check';
 
@@ -24,7 +24,7 @@ import { cachedExistenceCheck } from '@/lib/db/cached-existence-check';
 export const hasActiveSubscription = cachedExistenceCheck(
   {
     keyParts: ['has-active-subscription'],
-    tag: SUBSCRIPTION_STATUS_CACHE_TAG,
+    tag: subscriptionStatusTag,
     warning: 'Failed to check subscription status:',
   },
   selectActiveSubscription

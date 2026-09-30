@@ -65,6 +65,7 @@ const {
   handleSubscriptionDeleted,
 } = await import('./stripe-webhook-handlers');
 const { revalidateTag } = await import('next/cache');
+const { subscriptionStatusTag } = await import('@/lib/cache-tags');
 
 // ── Helper ───────────────────────────────────────────────────────────
 
@@ -464,7 +465,7 @@ describe('handleCheckoutCompleted', () => {
       })
     );
     expect(mockOnConflictDoUpdate).toHaveBeenCalled();
-    expect(revalidateTag).toHaveBeenCalledWith('subscription-status', { expire: 60 });
+    expect(revalidateTag).toHaveBeenCalledWith(subscriptionStatusTag('user_789'), { expire: 60 });
   });
 
   it('should pass subscription ID as string to stripe.subscriptions.retrieve', async () => {
@@ -539,7 +540,7 @@ async function deliverUpdated(
 
 describe('handleSubscriptionUpdated', () => {
   it('should update subscription fields in DB', async () => {
-    mockUpdateReturning.mockResolvedValue([{ id: 'some-id' }]);
+    mockUpdateReturning.mockResolvedValue([{ id: 'some-id', userId: 'user_1' }]);
 
     await deliverUpdated(createMockSubscription());
 
@@ -554,15 +555,15 @@ describe('handleSubscriptionUpdated', () => {
   });
 
   it('should call revalidateTag after update', async () => {
-    mockUpdateReturning.mockResolvedValue([{ id: 'some-id' }]);
+    mockUpdateReturning.mockResolvedValue([{ id: 'some-id', userId: 'user_1' }]);
 
     await deliverUpdated(createMockSubscription());
 
-    expect(revalidateTag).toHaveBeenCalledWith('subscription-status', { expire: 60 });
+    expect(revalidateTag).toHaveBeenCalledWith(subscriptionStatusTag('user_1'), { expire: 60 });
   });
 
   it('should pass updated fields for a past_due subscription', async () => {
-    mockUpdateReturning.mockResolvedValue([{ id: 'some-id' }]);
+    mockUpdateReturning.mockResolvedValue([{ id: 'some-id', userId: 'user_1' }]);
 
     await deliverUpdated(
       createMockSubscription({ status: 'past_due', cancel_at: 1778917194 } as Record<
@@ -580,7 +581,7 @@ describe('handleSubscriptionUpdated', () => {
   });
 
   it('should include updatedAt as a Date in the set call', async () => {
-    mockUpdateReturning.mockResolvedValue([{ id: 'some-id' }]);
+    mockUpdateReturning.mockResolvedValue([{ id: 'some-id', userId: 'user_1' }]);
 
     const before = Date.now();
     await deliverUpdated(createMockSubscription());
@@ -593,7 +594,7 @@ describe('handleSubscriptionUpdated', () => {
   });
 
   it('should update with trialing status and new period timestamps', async () => {
-    mockUpdateReturning.mockResolvedValue([{ id: 'some-id' }]);
+    mockUpdateReturning.mockResolvedValue([{ id: 'some-id', userId: 'user_1' }]);
 
     const sub = createMockSubscription({
       status: 'trialing',
@@ -628,7 +629,9 @@ describe('handleSubscriptionUpdated', () => {
       })
     );
     expect(mockOnConflictDoUpdate).toHaveBeenCalled();
-    expect(revalidateTag).toHaveBeenCalledWith('subscription-status', { expire: 60 });
+    expect(revalidateTag).toHaveBeenCalledWith(subscriptionStatusTag('user_recovered'), {
+      expire: 60,
+    });
   });
 
   it('should report to Sentry when update affects 0 rows and no customer record found', async () => {
@@ -646,7 +649,7 @@ describe('handleSubscriptionUpdated', () => {
   });
 
   it('should not attempt recovery when update affects rows', async () => {
-    mockUpdateReturning.mockResolvedValue([{ id: 'existing-id' }]);
+    mockUpdateReturning.mockResolvedValue([{ id: 'existing-id', userId: 'user_1' }]);
 
     await deliverUpdated(
       createMockSubscription({ customer: 'cus_existing' } as Record<string, unknown>)
@@ -709,10 +712,12 @@ describe('handleSubscriptionUpdated', () => {
     const sub = createMockSubscription({ customer: 'cus_reval' } as Record<string, unknown>);
     await deliverUpdated(sub);
 
-    expect(revalidateTag).toHaveBeenCalledWith('subscription-status', { expire: 60 });
+    expect(revalidateTag).toHaveBeenCalledWith(subscriptionStatusTag('user_revalidate'), {
+      expire: 60,
+    });
   });
 
-  it('should call revalidateTag even when Sentry warning is reported (no customer record)', async () => {
+  it('does not revalidate any tag when no user could be resolved for the subscription', async () => {
     mockUpdateReturning.mockResolvedValue([]);
     mockSelectLimit.mockResolvedValue([]);
 
@@ -720,7 +725,7 @@ describe('handleSubscriptionUpdated', () => {
     await deliverUpdated(sub);
 
     expect(mockCaptureMessage).toHaveBeenCalled();
-    expect(revalidateTag).toHaveBeenCalledWith('subscription-status', { expire: 60 });
+    expect(revalidateTag).not.toHaveBeenCalled();
   });
 
   it('should include correct subscription fields in recovery insert', async () => {
@@ -756,7 +761,7 @@ describe('handleSubscriptionUpdated', () => {
     await expect(deliverUpdated(createMockSubscription())).rejects.toThrow('Update query failed');
   });
   it('fetches the subscription from Stripe by the payload id instead of trusting the payload', async () => {
-    mockUpdateReturning.mockResolvedValue([{ id: 'some-id' }]);
+    mockUpdateReturning.mockResolvedValue([{ id: 'some-id', userId: 'user_1' }]);
     vi.mocked(mockStripe.subscriptions.retrieve).mockClear();
 
     await deliverUpdated(createMockSubscription({ id: 'sub_fetch_me' }));
@@ -767,7 +772,7 @@ describe('handleSubscriptionUpdated', () => {
   it('does not revive a canceled subscription when a stale active payload arrives late', async () => {
     // `deleted` was processed first; this `updated` event was created earlier
     // but delivered afterwards, still carrying `status: active`.
-    mockUpdateReturning.mockResolvedValue([{ id: 'some-id' }]);
+    mockUpdateReturning.mockResolvedValue([{ id: 'some-id', userId: 'user_1' }]);
     mockUpdateSetWhere.mockClear();
     const stalePayload = createMockSubscription({ status: 'active' });
     const current = createMockSubscription({ status: 'canceled', cancel_at: 1702592000 } as Record<
@@ -800,7 +805,7 @@ describe('handleSubscriptionUpdated', () => {
 
 describe('handleSubscriptionDeleted', () => {
   it('should set status to canceled and cancelAt to null', async () => {
-    mockUpdateReturning.mockResolvedValue([{ id: 'some-id' }]);
+    mockUpdateReturning.mockResolvedValue([{ id: 'some-id', userId: 'user_1' }]);
 
     await handleSubscriptionDeleted(createMockSubscription());
 
@@ -814,15 +819,15 @@ describe('handleSubscriptionDeleted', () => {
   });
 
   it('should call revalidateTag after deletion', async () => {
-    mockUpdateReturning.mockResolvedValue([{ id: 'some-id' }]);
+    mockUpdateReturning.mockResolvedValue([{ id: 'some-id', userId: 'user_1' }]);
 
     await handleSubscriptionDeleted(createMockSubscription());
 
-    expect(revalidateTag).toHaveBeenCalledWith('subscription-status', { expire: 60 });
+    expect(revalidateTag).toHaveBeenCalledWith(subscriptionStatusTag('user_1'), { expire: 60 });
   });
 
   it('should override whatever previous status the subscription had', async () => {
-    mockUpdateReturning.mockResolvedValue([{ id: 'some-id' }]);
+    mockUpdateReturning.mockResolvedValue([{ id: 'some-id', userId: 'user_1' }]);
 
     await handleSubscriptionDeleted(createMockSubscription({ status: 'active' }));
 
@@ -832,7 +837,7 @@ describe('handleSubscriptionDeleted', () => {
   });
 
   it('writes exactly the columns and values cancelAllActiveSubscriptions writes', async () => {
-    mockUpdateReturning.mockResolvedValue([{ id: 'some-id' }]);
+    mockUpdateReturning.mockResolvedValue([{ id: 'some-id', userId: 'user_1' }]);
 
     await handleSubscriptionDeleted(createMockSubscription());
 
@@ -849,7 +854,7 @@ describe('handleSubscriptionDeleted', () => {
   });
 
   it('should force cancelAt to null regardless of input', async () => {
-    mockUpdateReturning.mockResolvedValue([{ id: 'some-id' }]);
+    mockUpdateReturning.mockResolvedValue([{ id: 'some-id', userId: 'user_1' }]);
 
     await handleSubscriptionDeleted(
       createMockSubscription({ cancel_at: 1778917194 } as Record<string, unknown>)
@@ -859,7 +864,7 @@ describe('handleSubscriptionDeleted', () => {
   });
 
   it('should include updatedAt as a Date in the set call', async () => {
-    mockUpdateReturning.mockResolvedValue([{ id: 'some-id' }]);
+    mockUpdateReturning.mockResolvedValue([{ id: 'some-id', userId: 'user_1' }]);
 
     const before = Date.now();
     await handleSubscriptionDeleted(createMockSubscription());
@@ -872,7 +877,7 @@ describe('handleSubscriptionDeleted', () => {
   });
 
   it('should not include subscription field mapping (uses hardcoded values)', async () => {
-    mockUpdateReturning.mockResolvedValue([{ id: 'some-id' }]);
+    mockUpdateReturning.mockResolvedValue([{ id: 'some-id', userId: 'user_1' }]);
 
     await handleSubscriptionDeleted(createMockSubscription({ priceId: 'price_should_be_ignored' }));
 
@@ -895,20 +900,20 @@ describe('handleSubscriptionDeleted', () => {
   });
 
   it('should not report to Sentry when update affects rows', async () => {
-    mockUpdateReturning.mockResolvedValue([{ id: 'existing-id' }]);
+    mockUpdateReturning.mockResolvedValue([{ id: 'existing-id', userId: 'user_1' }]);
 
     await handleSubscriptionDeleted(createMockSubscription());
 
     expect(mockCaptureMessage).not.toHaveBeenCalled();
   });
 
-  it('should call revalidateTag even when Sentry warning is reported (0 rows)', async () => {
+  it('does not revalidate any tag when no row was updated', async () => {
     mockUpdateReturning.mockResolvedValue([]);
 
     await handleSubscriptionDeleted(createMockSubscription());
 
     expect(mockCaptureMessage).toHaveBeenCalled();
-    expect(revalidateTag).toHaveBeenCalledWith('subscription-status', { expire: 60 });
+    expect(revalidateTag).not.toHaveBeenCalled();
   });
 
   it('should include subscription ID in Sentry message when 0 rows affected', async () => {

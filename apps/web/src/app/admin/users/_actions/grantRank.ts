@@ -4,7 +4,7 @@ import { revalidateTag } from 'next/cache';
 
 import { eq } from 'drizzle-orm';
 
-import { RANK_STATUS_CACHE_TAG } from '@/lib/cache-tags';
+import { rankStatusTag } from '@/lib/cache-tags';
 import { db, ranks, userRanks } from '@/lib/db';
 import { ALL_RANK_SLUGS, isMukyuSlug } from '@/lib/db/data/ranks';
 import type { RankSlug } from '@/lib/db/data/ranks';
@@ -107,7 +107,7 @@ export async function grantRank(
 
   // No revalidatePath: the admin user page is dynamic, and `GrantRankButton`
   // calls `router.refresh()` on success.
-  revalidateTag(RANK_STATUS_CACHE_TAG, { expire: 60 });
+  revalidateTag(rankStatusTag(targetUserId), { expire: 60 });
 
   // The recipient has no way to notice a manually-granted rank otherwise —
   // it doesn't go through the normal challenge/game-publish flow that shows

@@ -2,6 +2,7 @@ import { revalidateTag as mockRevalidateTag } from 'next/cache';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { grantStatusTag } from '@/lib/cache-tags';
 import { MODERATION_REASON_MAX_LENGTH } from '@/lib/moderation/validate-reason';
 
 const mockRequireAdmin = vi.fn();
@@ -253,7 +254,7 @@ describe('createBulkGrants', () => {
       reason: 'test',
     });
 
-    expect(mockRevalidateTag).toHaveBeenCalledWith('grant-status', { expire: 60 });
+    expect(mockRevalidateTag).toHaveBeenCalledWith(grantStatusTag(validUserId1), { expire: 60 });
   });
 
   it('should return error when db insert fails', async () => {

@@ -6,7 +6,7 @@ import type { AdFreeRedemptionBlock } from '@/lib/ads/ad-free-redemption';
 import { getAdFreeRedemptionBlock } from '@/lib/ads/ad-free-redemption';
 import { writeAdsHiddenCookieForUser } from '@/lib/ads/ads-hidden-cookie-writer';
 import { authenticateAndCheckBan } from '@/lib/auth';
-import { GRANT_STATUS_CACHE_TAG } from '@/lib/cache-tags';
+import { grantStatusTag } from '@/lib/cache-tags';
 import { redeemPointsForAdFree } from '@/lib/points';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/security/rate-limit';
 
@@ -91,7 +91,7 @@ export async function redeemAdFree(cost: number): Promise<RedeemAdFreeResult> {
     return { ok: false, error: result.error };
   }
 
-  revalidateTag(GRANT_STATUS_CACHE_TAG, { expire: 60 });
+  revalidateTag(grantStatusTag(auth.user.id), { expire: 60 });
   await writeAdsHiddenCookieForUser(auth.user);
   // No revalidatePath: /mypage/coins and /mypage/benefits are both dynamic
   // routes, and `RedeemForm` calls `router.refresh()` on success — which is

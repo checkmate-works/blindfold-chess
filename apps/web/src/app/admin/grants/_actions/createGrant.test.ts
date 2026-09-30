@@ -2,6 +2,7 @@ import { revalidateTag as mockRevalidateTag } from 'next/cache';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { grantStatusTag } from '@/lib/cache-tags';
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import { MODERATION_REASON_MAX_LENGTH } from '@/lib/moderation/validate-reason';
 
@@ -274,7 +275,7 @@ describe('createGrant', () => {
     mockCalcGrantStartsAt.mockResolvedValue(new Date());
 
     await createGrant(validFormData());
-    expect(mockRevalidateTag).toHaveBeenCalledWith('grant-status', { expire: 60 });
+    expect(mockRevalidateTag).toHaveBeenCalledWith(grantStatusTag(validUserId), { expire: 60 });
   });
 
   it('should create a benefit_grant notification on success', async () => {

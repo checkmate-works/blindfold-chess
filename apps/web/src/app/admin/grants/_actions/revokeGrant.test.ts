@@ -2,6 +2,7 @@ import { revalidateTag as mockRevalidateTag } from 'next/cache';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { grantStatusTag } from '@/lib/cache-tags';
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 
 const mockRequireAdmin = vi.fn();
@@ -156,7 +157,7 @@ describe('revokeGrant', () => {
     mockRequireAdmin.mockResolvedValue({ userId: 'admin-id' });
 
     await revokeGrant('grant-123');
-    expect(mockRevalidateTag).toHaveBeenCalledWith('grant-status', { expire: 60 });
+    expect(mockRevalidateTag).toHaveBeenCalledWith(grantStatusTag(targetUserId), { expire: 60 });
   });
 
   it('should NOT call revalidateTag when grant is not found', async () => {

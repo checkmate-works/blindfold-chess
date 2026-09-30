@@ -17,6 +17,6 @@ export async function evaluateRanksAndRefreshEntitlements(
   context: string
 ): Promise<GrantedRank[]> {
   const grantedRanks = await evaluateRanksAfterCreate(userId, context);
-  await refreshAdsHiddenCookieOnDanPromotion(grantedRanks);
+  await refreshAdsHiddenCookieOnDanPromotion(userId, grantedRanks);
   return grantedRanks;
 }

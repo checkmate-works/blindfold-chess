@@ -12,7 +12,9 @@ const ENTITLEMENT_REVALIDATE_SECONDS = 60;
  *
  * - a failure is caught and answers `false`, so a database problem shows ads
  *   rather than handing out a perk nobody paid for;
- * - the answer is cached under a tag its writers expire, not by time alone;
+ * - the answer is cached under a tag its writers expire, not by time alone,
+ *   and the tag is derived from the call's arguments so that a writer for one
+ *   user expires that user's answer and nobody else's;
  * - `revalidate` bounds how long a stale `true` can outlive a revocation.
  *
  * None of that is visible in a call site. Writing the fourth one by hand is
@@ -34,20 +36,25 @@ const ENTITLEMENT_REVALIDATE_SECONDS = 60;
  * column and `limit(1)` — nothing here reads the row.
  */
 export function cachedExistenceCheck<Args extends unknown[]>(
-  options: { keyParts: string[]; tag: string; warning: string },
+  options: { keyParts: string[]; tag: (...args: Args) => string; warning: string },
   query: (...args: Args) => Promise<readonly unknown[]>
 ): (...args: Args) => Promise<boolean> {
-  return unstable_cache(
-    async (...args: Args): Promise<boolean> => {
-      try {
-        const rows = await query(...args);
-        return rows.length > 0;
-      } catch (error) {
-        console.warn(options.warning, error);
-        return false;
-      }
-    },
-    options.keyParts,
-    { tags: [options.tag], revalidate: ENTITLEMENT_REVALIDATE_SECONDS }
-  );
+  const check = async (...args: Args): Promise<boolean> => {
+    try {
+      const rows = await query(...args);
+      return rows.length > 0;
+    } catch (error) {
+      console.warn(options.warning, error);
+      return false;
+    }
+  };
+  // `unstable_cache` fixes its tags when the wrapper is built, so a per-call
+  // tag means building the wrapper per call. The cache entry itself is keyed
+  // by `keyParts` plus the arguments either way, so this costs nothing but the
+  // closure.
+  return (...args: Args) =>
+    unstable_cache(check, options.keyParts, {
+      tags: [options.tag(...args)],
+      revalidate: ENTITLEMENT_REVALIDATE_SECONDS,
+    })(...args);
 }

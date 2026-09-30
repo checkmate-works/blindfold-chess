@@ -4,7 +4,7 @@ import type { NextResponse } from 'next/server';
 
 import type { User } from '@supabase/supabase-js';
 
-import { RANK_STATUS_CACHE_TAG } from '@/lib/cache-tags';
+import { rankStatusTag } from '@/lib/cache-tags';
 import type { GrantedRank } from '@/lib/db/data/ranks';
 import { DAN_TIER_MIN_LEVEL } from '@/lib/db/data/ranks';
 
@@ -100,12 +100,13 @@ export async function refreshAdsHiddenCookieOnResponse(
  * anyway (within the cache's 60s revalidate window).
  */
 export async function refreshAdsHiddenCookieOnDanPromotion(
+  userId: string,
   grantedRanks: readonly GrantedRank[]
 ): Promise<void> {
   if (!grantedRanks.some((rank) => rank.level >= DAN_TIER_MIN_LEVEL)) return;
 
   try {
-    revalidateTag(RANK_STATUS_CACHE_TAG, { expire: 60 });
+    revalidateTag(rankStatusTag(userId), { expire: 60 });
     const store = await cookies();
     store.set(ADS_HIDDEN_COOKIE_NAME, '1', adsHiddenCookieOptions());
   } catch (error) {

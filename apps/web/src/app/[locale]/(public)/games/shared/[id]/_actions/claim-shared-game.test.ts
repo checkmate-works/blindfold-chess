@@ -155,7 +155,7 @@ describe('claimSharedGameAction', () => {
 
     expect(mockClaim).toHaveBeenCalledWith(GAME_ID, USER_ID);
     expect(mockEvaluateRanks).toHaveBeenCalledWith(USER_ID, 'game claim');
-    expect(mockCookieRefresh).toHaveBeenCalledWith(granted);
+    expect(mockCookieRefresh).toHaveBeenCalledWith(USER_ID, granted);
     expect(result).toEqual({ success: true, grantedRanks: granted });
   });
 
