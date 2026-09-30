@@ -401,8 +401,11 @@ describe('handleCheckoutCompleted', () => {
     expect(vi.mocked(mockStripe.subscriptions.retrieve)).toHaveBeenCalledWith('sub_from_object');
   });
 
-  it('should throw when no customer record is found', async () => {
+  it('should report to Sentry and acknowledge when no customer record is found', async () => {
+    mockCaptureMessage.mockClear();
+    vi.mocked(revalidateTag).mockClear();
     const session = {
+      id: 'cs_unknown',
       mode: 'subscription',
       subscription: 'sub_123',
       customer: 'cus_unknown',
@@ -413,10 +416,18 @@ describe('handleCheckoutCompleted', () => {
     );
     mockSelectLimit.mockResolvedValue([]);
 
-    await expect(handleCheckoutCompleted(session)).rejects.toThrow(
-      'No stripe_customers record for customer: cus_unknown'
+    // Resolving (not rejecting) is the point: the route turns a rejection
+    // into a 500 and Stripe redelivers a 500 for three days, but no retry
+    // can produce a `stripe_customers` row for a customer this app never
+    // created.
+    await expect(handleCheckoutCompleted(session)).resolves.toBeUndefined();
+
+    expect(mockCaptureMessage).toHaveBeenCalledWith(
+      expect.stringContaining('no stripe_customers record for customer cus_unknown'),
+      'error'
     );
     expect(mockInsertValues).not.toHaveBeenCalled();
+    expect(revalidateTag).not.toHaveBeenCalled();
   });
 
   it('should upsert subscription when checkout completes successfully', async () => {

@@ -65,7 +65,20 @@ export async function handleCheckoutCompleted(session: Stripe.Checkout.Session) 
     .limit(1);
 
   if (!customerRecord) {
-    throw new Error(`No stripe_customers record for customer: ${customerId}`);
+    // Every Checkout Session this app creates names a customer that is
+    // already in `stripe_customers`, so a session whose customer is unknown
+    // was created somewhere else -- a subscription set up by hand in the
+    // Stripe dashboard, or a customer that belongs to another environment.
+    // No retry can make the row appear, and throwing would turn that into a
+    // 500 that Stripe keeps redelivering for three days, inflating the
+    // endpoint's failure rate until it gives up. Record it for an operator
+    // and acknowledge the event, the same way `handleSubscriptionUpdated`
+    // treats an unknown customer.
+    Sentry.captureMessage(
+      `checkout.session.completed: no stripe_customers record for customer ${customerId} (session: ${session.id}, subscription: ${subscriptionId}). Manual intervention required.`,
+      'error'
+    );
+    return;
   }
 
   const fields = toSubscriptionFields(subscription);
