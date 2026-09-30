@@ -30,12 +30,12 @@ export default async function SubscriptionPage({ params, searchParams }: Props) 
   const subscription = await getUserSubscription(user.id);
 
   // The `bfc_ads_hidden` cookie is refreshed by the request proxy
-  // (`apps/web/src/proxy.ts`) on every navigation to this path, so a
-  // freshly-paid (or lapsed) subscription is reflected before render.
-  // The proxy mutates the outgoing response, which is the only context in
-  // which Next.js 16 allows cookie writes outside Server Actions / Route
-  // Handlers — Server Components like this one cannot call `cookies().set()`
-  // during render.
+  // (`apps/web/src/proxy.ts`) on every navigation to this path, so a lapsed
+  // subscription is reflected before render; Server Components like this one
+  // cannot call `cookies().set()` during render. `status=success` is set only
+  // by the Checkout return route (`/api/stripe/checkout/return`), which has
+  // already mirrored the new subscription, so the banner and the card below
+  // agree on the user's state.
   const showSuccessMessage = sp.status === 'success';
 
   return (

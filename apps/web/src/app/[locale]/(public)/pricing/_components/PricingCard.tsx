@@ -63,6 +63,13 @@ export function PricingCard(props: Props) {
         // same page instead of rendering mypage.
         router.push(`/${props.locale}/banned`);
         return;
+      case 'alreadySubscribed':
+        // This tab rendered before the subscription existed (or the cached
+        // status had not caught up), so the button was still offered. The
+        // subscription page shows the plan they already have and opens the
+        // portal for changes.
+        router.push(`/${props.locale}/mypage/subscription`);
+        return;
       default:
         captureError(new Error(`Checkout session error: ${result.error}`), 'Checkout error');
     }

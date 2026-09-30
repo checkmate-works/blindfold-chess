@@ -159,6 +159,13 @@ export const RATE_LIMITS = {
    */
   createOpeningPost: { action: 'create_opening_post', maxAttempts: 1, windowMs: 86_400_000 },
   createCheckoutSession: { action: 'create_checkout_session', maxAttempts: 5, windowMs: 600_000 },
+  /**
+   * The Checkout `success_url` landing. One hit per completed checkout in
+   * normal use; the limit exists because each hit is a Stripe API call driven
+   * by a URL parameter, and it is set above `createCheckoutSession` so a user
+   * who legitimately reloads the landing page is not the first one refused.
+   */
+  checkoutReturn: { action: 'checkout_return', maxAttempts: 10, windowMs: 600_000 },
   createPortalSession: { action: 'create_portal_session', maxAttempts: 5, windowMs: 600_000 },
   saveInterviewAnswer: { action: 'save_interview_answer', maxAttempts: 10, windowMs: 3_600_000 },
   deleteInterviewAnswer: {

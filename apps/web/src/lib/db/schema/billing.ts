@@ -95,3 +95,53 @@ export const subscriptions = pgTable(
 
 export type Subscription = typeof subscriptions.$inferSelect;
 export type NewSubscription = typeof subscriptions.$inferInsert;
+
+/**
+ * Stripe Webhook Events -- the ids of webhook events this app has finished
+ * processing.
+ *
+ * @description
+ * Stripe delivers each event at least once and in no particular order: a
+ * delivery that timed out is re-sent, and two events for the same
+ * subscription can arrive with the later one first. The webhook route
+ * consults this table before dispatching an event and skips one it has
+ * already processed, so a redelivery costs a primary-key lookup instead of a
+ * Stripe API call, a write, and a cache invalidation.
+ *
+ * @design Written after processing, not before
+ *
+ * The row is inserted once the handler has succeeded. Inserting first and
+ * treating a conflict as "already done" would be a tighter dedupe, but it
+ * records an event the moment it arrives, so a handler that then failed (and
+ * had the route answer 500 so that Stripe retries) would find its own retry
+ * skipped as a duplicate. Recording after success means two deliveries of the
+ * same event that overlap in flight are both processed; the handlers write
+ * the subscription's current state as fetched from Stripe, so the second
+ * write is the same as the first and the overlap is harmless.
+ *
+ * @design Ordering is not solved here
+ *
+ * This table only recognises an event id it has seen. It cannot tell that a
+ * `customer.subscription.updated` carrying `status: active` is older than the
+ * `customer.subscription.deleted` processed a moment ago -- the ids are
+ * unrelated. That is why the handlers fetch the subscription from Stripe
+ * instead of trusting the event payload: whatever order the events arrive in,
+ * each write reflects the state Stripe holds at the time it is processed.
+ *
+ * @design Retention
+ *
+ * One row per event, a few per subscriber per billing cycle. Nothing prunes
+ * the table today; at this volume it will take years to matter, and the rows
+ * double as an audit trail of what the endpoint accepted.
+ */
+export const stripeWebhookEvents = pgTable('stripe_webhook_events', {
+  /** Stripe's event id (`evt_...`). */
+  eventId: varchar('event_id', { length: 255 }).primaryKey(),
+  eventType: varchar('event_type', { length: 100 }).notNull(),
+  /** When Stripe created the event (`event.created`), for reconciliation. */
+  eventCreatedAt: timestamp('event_created_at', { withTimezone: true }).notNull(),
+  processedAt: timestamp('processed_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+export type StripeWebhookEvent = typeof stripeWebhookEvents.$inferSelect;
+export type NewStripeWebhookEvent = typeof stripeWebhookEvents.$inferInsert;

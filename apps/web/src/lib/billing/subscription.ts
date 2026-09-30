@@ -5,7 +5,7 @@ import {
   BENEFIT_ACTIVE_STATUSES,
   DISPLAYABLE_STATUSES,
 } from '@/lib/billing/subscription-constants';
-import { SUBSCRIPTION_STATUS_CACHE_TAG } from '@/lib/cache-tags';
+import { subscriptionStatusTag } from '@/lib/cache-tags';
 import { db, subscriptions } from '@/lib/db';
 import { cachedExistenceCheck } from '@/lib/db/cached-existence-check';
 
@@ -24,21 +24,45 @@ import { cachedExistenceCheck } from '@/lib/db/cached-existence-check';
 export const hasActiveSubscription = cachedExistenceCheck(
   {
     keyParts: ['has-active-subscription'],
-    tag: SUBSCRIPTION_STATUS_CACHE_TAG,
+    tag: subscriptionStatusTag,
     warning: 'Failed to check subscription status:',
   },
-  (userId: string) =>
-    db
-      .select({ id: subscriptions.id })
-      .from(subscriptions)
-      .where(
-        and(
-          eq(subscriptions.userId, userId),
-          inArray(subscriptions.status, [...BENEFIT_ACTIVE_STATUSES])
-        )
-      )
-      .limit(1)
+  selectActiveSubscription
 );
+
+/**
+ * The same question as {@link hasActiveSubscription}, answered from the
+ * database on every call and failing loud.
+ *
+ * For the one caller that is about to start a payment. `hasActiveSubscription`
+ * serves its answer from a 60-second cache and answers `false` when the query
+ * fails -- both right for deciding whether to show an ad, both wrong for
+ * deciding whether to open a second Checkout: a subscriber who paid a moment
+ * ago would still read as unsubscribed, and a database outage would read as
+ * "go ahead". Stripe itself does not stop a customer from holding two
+ * subscriptions to the same price, so this check is the only thing between a
+ * double-click (or a stale /pricing tab) and a double charge.
+ *
+ * A failure is thrown, not coerced: the caller has to refuse the Checkout
+ * when it cannot tell.
+ */
+export async function hasActiveSubscriptionUncached(userId: string): Promise<boolean> {
+  const rows = await selectActiveSubscription(userId);
+  return rows.length > 0;
+}
+
+function selectActiveSubscription(userId: string) {
+  return db
+    .select({ id: subscriptions.id })
+    .from(subscriptions)
+    .where(
+      and(
+        eq(subscriptions.userId, userId),
+        inArray(subscriptions.status, [...BENEFIT_ACTIVE_STATUSES])
+      )
+    )
+    .limit(1);
+}
 
 export async function getUserSubscription(userId: string) {
   try {

@@ -3,7 +3,7 @@ import type { NextResponse } from 'next/server';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { RANK_STATUS_CACHE_TAG } from '@/lib/cache-tags';
+import { rankStatusTag } from '@/lib/cache-tags';
 import type { GrantedRank } from '@/lib/db/data/ranks';
 
 import { ADS_HIDDEN_COOKIE_NAME, adsHiddenCookieOptions } from './ads-hidden-cookie';
@@ -153,14 +153,14 @@ describe('refreshAdsHiddenCookieOnDanPromotion', () => {
   });
 
   it('is a no-op for an empty grant batch', async () => {
-    await refreshAdsHiddenCookieOnDanPromotion([]);
+    await refreshAdsHiddenCookieOnDanPromotion('user-1', []);
 
     expect(mockRevalidateTag).not.toHaveBeenCalled();
     expect(mockCookieStore.set).not.toHaveBeenCalled();
   });
 
   it('is a no-op when the batch contains only kyū ranks', async () => {
-    await refreshAdsHiddenCookieOnDanPromotion(kyuRanks);
+    await refreshAdsHiddenCookieOnDanPromotion('user-1', kyuRanks);
 
     expect(mockRevalidateTag).not.toHaveBeenCalled();
     expect(mockCookieStore.set).not.toHaveBeenCalled();
@@ -168,9 +168,9 @@ describe('refreshAdsHiddenCookieOnDanPromotion', () => {
 
   it("revalidates the rank-status tag and sets the cookie to '1' when the batch crosses into dan", async () => {
     // The cascade case: one trigger granting [2kyu, 1kyu, 1dan] at once.
-    await refreshAdsHiddenCookieOnDanPromotion([...kyuRanks, danRank]);
+    await refreshAdsHiddenCookieOnDanPromotion('user-1', [...kyuRanks, danRank]);
 
-    expect(mockRevalidateTag).toHaveBeenCalledWith(RANK_STATUS_CACHE_TAG, { expire: 60 });
+    expect(mockRevalidateTag).toHaveBeenCalledWith(rankStatusTag('user-1'), { expire: 60 });
     expect(mockCookieStore.set).toHaveBeenCalledWith(
       ADS_HIDDEN_COOKIE_NAME,
       '1',
@@ -180,7 +180,7 @@ describe('refreshAdsHiddenCookieOnDanPromotion', () => {
   });
 
   it('never deletes the cookie — a dan promotion can only add the entitlement', async () => {
-    await refreshAdsHiddenCookieOnDanPromotion([danRank]);
+    await refreshAdsHiddenCookieOnDanPromotion('user-1', [danRank]);
 
     expect(mockCookieStore.delete).not.toHaveBeenCalled();
   });
@@ -190,6 +190,8 @@ describe('refreshAdsHiddenCookieOnDanPromotion', () => {
       throw new Error('cookies unavailable');
     });
 
-    await expect(refreshAdsHiddenCookieOnDanPromotion([danRank])).resolves.toBeUndefined();
+    await expect(
+      refreshAdsHiddenCookieOnDanPromotion('user-1', [danRank])
+    ).resolves.toBeUndefined();
   });
 });

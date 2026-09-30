@@ -11,7 +11,7 @@
  * sites.
  *
  * This module imports nothing, which is what lets any caller reach a tag.
- * `RANK_STATUS_CACHE_TAG` used to live in the rank seed data specifically so
+ * The rank-status tag used to live in the rank seed data specifically so
  * the ads cookie writer could read it without pulling the server-only DB
  * module graph into client-component unit tests; that constraint is satisfied
  * a fortiori here. Keep it that way — a tag constant behind an import is a
@@ -41,13 +41,11 @@
  *   actions are what actually makes an announcement appear.
  * - {@link AD_CREATIVES_CACHE_TAG} — the ad creative pool. Invalidated by the
  *   admin ad CRUD so a paused creative stops being served immediately.
- * - The three entitlement tags below back the ad-free decision, and each is
- *   read behind a 60-second `unstable_cache`. That interval bounds how long a
- *   revoked benefit keeps hiding ads; the explicit invalidation is what makes
- *   it usually instant.
- *   - {@link GRANT_STATUS_CACHE_TAG} — `user_grants` lookups.
- *   - {@link SUBSCRIPTION_STATUS_CACHE_TAG} — Stripe subscription mirror.
- *   - {@link RANK_STATUS_CACHE_TAG} — dan-tier belt rank.
+ * - The three entitlement tag factories ({@link grantStatusTag},
+ *   {@link subscriptionStatusTag}, {@link rankStatusTag}) back the ad-free
+ *   decision, one tag per user each. See their shared TSDoc below for why
+ *   they are keyed by user and how the 60-second read cache and the explicit
+ *   invalidation divide the work.
  * - {@link RANKS_CACHE_TAG} — the `ranks` master rows the dojo reads
  *   (`getAllRanks`, `getRankBySlug`). Nothing writes `ranks` at runtime —
  *   the table is code-seeded on deploy — so no action invalidates this tag
@@ -82,9 +80,6 @@ export const DAILY_PUZZLE_CACHE_TAG = 'daily-puzzle' as const;
 export const ARTICLES_CACHE_TAG = 'articles' as const;
 export const ANNOUNCEMENTS_CACHE_TAG = 'announcements' as const;
 export const AD_CREATIVES_CACHE_TAG = 'ad-creatives' as const;
-export const GRANT_STATUS_CACHE_TAG = 'grant-status' as const;
-export const SUBSCRIPTION_STATUS_CACHE_TAG = 'subscription-status' as const;
-export const RANK_STATUS_CACHE_TAG = 'rank-status' as const;
 export const RANKS_CACHE_TAG = 'ranks' as const;
 export const OPENINGS_CACHE_TAG = 'openings' as const;
 export const TOPIC_POST_COUNTS_CACHE_TAG = 'topic-post-counts' as const;
@@ -155,3 +150,34 @@ export const glossaryPositionsTag = (slug: string): `glossary-positions:${string
  * straight.
  */
 export const profileCacheTag = (username: string): `profile:${string}` => `profile:${username}`;
+
+/**
+ * The three entitlement reads behind the ad-free decision, one tag per user
+ * each: `user_grants` lookups ({@link grantStatusTag}), the Stripe
+ * subscription mirror ({@link subscriptionStatusTag}) and the dan-tier belt
+ * rank ({@link rankStatusTag}). All three are read through
+ * `cachedExistenceCheck` behind a 60-second `unstable_cache`; that interval
+ * bounds how long a revoked benefit keeps hiding ads, and the explicit
+ * invalidation is what makes it usually instant.
+ *
+ * ## Why one tag per user
+ *
+ * Each of these used to be a single tag shared by every user, so every
+ * writer expired every reader: one Stripe webhook for one subscriber threw
+ * away the cached subscription answer for the whole user base, and the next
+ * page load of every signed-in visitor re-ran the query. The writers all know
+ * which user they changed -- the webhook handlers read the user id back from
+ * the row they wrote, the admin grant and rank actions are given it, the
+ * self-service redemption is the user's own -- so there is no reason to
+ * invalidate anyone else. `cachedExistenceCheck` derives the tag from the
+ * arguments of each call, so the reader and writer agree by construction.
+ *
+ * The one writer that cannot name a user is a webhook whose Stripe customer
+ * is unknown to `stripe_customers`; it has no row to invalidate for and so
+ * expires nothing.
+ */
+export const grantStatusTag = (userId: string): `grant-status:${string}` =>
+  `grant-status:${userId}`;
+export const subscriptionStatusTag = (userId: string): `subscription-status:${string}` =>
+  `subscription-status:${userId}`;
+export const rankStatusTag = (userId: string): `rank-status:${string}` => `rank-status:${userId}`;

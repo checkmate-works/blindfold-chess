@@ -1,7 +1,7 @@
 import { and, eq, gt, isNull, lte, max } from 'drizzle-orm';
 import 'server-only';
 
-import { GRANT_STATUS_CACHE_TAG } from '@/lib/cache-tags';
+import { grantStatusTag } from '@/lib/cache-tags';
 import { db, userGrants } from '@/lib/db';
 import { cachedExistenceCheck } from '@/lib/db/cached-existence-check';
 import type { DbTx } from '@/lib/db/types';
@@ -13,7 +13,7 @@ import type { DbTx } from '@/lib/db/types';
 export const hasActiveGrant = cachedExistenceCheck(
   {
     keyParts: ['has-active-grant'],
-    tag: GRANT_STATUS_CACHE_TAG,
+    tag: (userId) => grantStatusTag(userId),
     warning: 'Failed to check grant status:',
   },
   (userId: string, benefitType: string) => {

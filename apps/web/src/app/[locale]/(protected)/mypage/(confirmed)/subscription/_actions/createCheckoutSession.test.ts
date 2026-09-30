@@ -1,6 +1,7 @@
 import * as Sentry from '@sentry/nextjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { hasActiveSubscriptionUncached } from '@/lib/billing/subscription';
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import { isUserBanned } from '@/lib/moderation/ban';
 import { checkRateLimit } from '@/lib/security/rate-limit';
@@ -9,13 +10,14 @@ import { getUserMock } from '@/lib/supabase/__mocks__/server';
 /**
  * Regression test for the Stripe Checkout `success_url`.
  *
- * The proxy at `apps/web/src/proxy.ts` refreshes the `bfc_ads_hidden`
- * cookie ONLY when the request path matches `/<locale>/mypage/subscription`
- * (with optional query string). If `success_url` ever drifts to a different
- * path — e.g., `/<locale>/mypage` directly, or `/checkout/return` — the
- * cookie refresh on Stripe-success silently stops working and paying users
- * see ads until the next page navigation routes them through the proxy
- * predicate.
+ * The `success_url` must point at the Checkout return route
+ * (`/api/stripe/checkout/return`) and carry the literal
+ * `{CHECKOUT_SESSION_ID}` placeholder, which Stripe substitutes on redirect.
+ * That route is what mirrors the subscription and sets the `bfc_ads_hidden`
+ * cookie before the user reaches `/mypage/subscription`; if the URL drifts
+ * back to the page itself, or the placeholder is encoded or dropped, a
+ * freshly-paid user lands ahead of the webhook and is told they have no
+ * subscription.
  *
  * This test pins the URL shape so any future change has to update the
  * assertion explicitly. It mocks the Stripe SDK and asserts what is passed
@@ -44,6 +46,8 @@ vi.mock('@/lib/billing/stripe', () => ({
   }),
   getStripePriceId: () => mockGetStripePriceId(),
 }));
+
+vi.mock('@/lib/billing/subscription');
 
 vi.mock('@/lib/billing/stripe-customer', () => ({
   getOrCreateStripeCustomerId: (...args: unknown[]) => mockGetOrCreateStripeCustomerId(...args),
@@ -78,49 +82,33 @@ describe('createCheckoutSession — Stripe success_url regression', () => {
     mockSessionsCreate.mockResolvedValue({ url: 'https://checkout.stripe.com/c/pay/cs_test_xyz' });
   });
 
-  it('passes success_url=<SITE_URL>/<locale>/mypage/subscription?status=success for en', async () => {
+  it('points success_url at the Checkout return route with the locale and the session placeholder', async () => {
     await expect(createCheckoutSession('en')).rejects.toThrow('NEXT_REDIRECT');
 
     expect(mockSessionsCreate).toHaveBeenCalledTimes(1);
     const params = mockSessionsCreate.mock.calls[0][0];
     expect(params.success_url).toBe(
-      'https://test.example.com/en/mypage/subscription?status=success'
+      'https://test.example.com/api/stripe/checkout/return?locale=en&session_id={CHECKOUT_SESSION_ID}'
     );
   });
 
-  it('passes success_url=<SITE_URL>/<locale>/mypage/subscription?status=success for ja', async () => {
-    await expect(createCheckoutSession('ja')).rejects.toThrow('NEXT_REDIRECT');
-
-    const params = mockSessionsCreate.mock.calls[0][0];
-    expect(params.success_url).toBe(
-      'https://test.example.com/ja/mypage/subscription?status=success'
-    );
-  });
-
-  it('passes success_url=<SITE_URL>/<locale>/mypage/subscription?status=success for pt-BR (region-qualified locale)', async () => {
+  it('carries a region-qualified locale through to the return route unchanged', async () => {
     await expect(createCheckoutSession('pt-BR')).rejects.toThrow('NEXT_REDIRECT');
 
     const params = mockSessionsCreate.mock.calls[0][0];
     expect(params.success_url).toBe(
-      'https://test.example.com/pt-BR/mypage/subscription?status=success'
+      'https://test.example.com/api/stripe/checkout/return?locale=pt-BR&session_id={CHECKOUT_SESSION_ID}'
     );
   });
 
-  it('the success_url path matches the proxy predicate (/<locale>/mypage/subscription)', async () => {
-    // This is the load-bearing regression: the `success_url` path (post-
-    // origin, pre-query) MUST satisfy
-    //   /^/[^/]+/mypage/subscription(/.*)?$/
-    // — the same pattern the proxy uses to gate the cookie refresh
-    // (`isAdsCookieRefreshPath` in `apps/web/src/proxy.ts`). If this
-    // assertion fails, paying users will see ads after returning from
-    // Stripe.
-    await expect(createCheckoutSession('en')).rejects.toThrow('NEXT_REDIRECT');
+  it('keeps {CHECKOUT_SESSION_ID} as a literal Stripe can substitute, not URL-encoded', async () => {
+    // Stripe replaces the exact text `{CHECKOUT_SESSION_ID}`; `%7B...%7D`
+    // would reach the return route verbatim and be rejected as a session id.
+    await expect(createCheckoutSession('ja')).rejects.toThrow('NEXT_REDIRECT');
 
     const params = mockSessionsCreate.mock.calls[0][0];
-    const url = new URL(params.success_url);
-    const proxyPredicate = /^\/[^/]+\/mypage\/subscription(\/.*)?$/;
-    expect(proxyPredicate.test(url.pathname)).toBe(true);
-    expect(url.searchParams.get('status')).toBe('success');
+    expect(params.success_url).toContain('session_id={CHECKOUT_SESSION_ID}');
+    expect(params.success_url).not.toContain('%7B');
   });
 
   it('passes the Stripe Checkout subscription mode and price line item', async () => {
@@ -183,6 +171,31 @@ describe('createCheckoutSession — Stripe success_url regression', () => {
     expect(mockGetOrCreateStripeCustomerId).not.toHaveBeenCalled();
     expect(mockSessionsCreate).not.toHaveBeenCalled();
     expect(checkRateLimit).not.toHaveBeenCalled();
+  });
+
+  it('refuses a second subscription for a user who already holds an active one', async () => {
+    // Stripe lets one customer subscribe to the same price twice; this check
+    // is what stands between a stale /pricing tab and a double charge.
+    vi.mocked(hasActiveSubscriptionUncached).mockResolvedValueOnce(true);
+
+    const result = await createCheckoutSession('en');
+
+    expect(result).toEqual({ error: 'alreadySubscribed' });
+    expect(hasActiveSubscriptionUncached).toHaveBeenCalledWith('user-123');
+    expect(mockGetOrCreateStripeCustomerId).not.toHaveBeenCalled();
+    expect(mockSessionsCreate).not.toHaveBeenCalled();
+  });
+
+  it('refuses the Checkout when the existing-subscription check itself fails', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const lookupError = new Error('subscriptions lookup failed');
+    vi.mocked(hasActiveSubscriptionUncached).mockRejectedValueOnce(lookupError);
+
+    const result = await createCheckoutSession('en');
+
+    expect(result).toEqual({ error: 'sessionCreationFailed' });
+    expect(Sentry.captureException).toHaveBeenCalledWith(lookupError);
+    expect(mockSessionsCreate).not.toHaveBeenCalled();
   });
 
   it('returns signInRequired for an anonymous caller instead of touching Stripe', async () => {

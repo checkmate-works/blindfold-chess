@@ -1,7 +1,7 @@
 import { and, eq, gte } from 'drizzle-orm';
 import 'server-only';
 
-import { RANK_STATUS_CACHE_TAG } from '@/lib/cache-tags';
+import { rankStatusTag } from '@/lib/cache-tags';
 import { db, ranks, userRanks } from '@/lib/db';
 import { cachedExistenceCheck } from '@/lib/db/cached-existence-check';
 import { DAN_TIER_MIN_LEVEL } from '@/lib/db/data/ranks';
@@ -21,7 +21,7 @@ import { DAN_TIER_MIN_LEVEL } from '@/lib/db/data/ranks';
 export const hasDanTierRank = cachedExistenceCheck(
   {
     keyParts: ['has-dan-tier-rank'],
-    tag: RANK_STATUS_CACHE_TAG,
+    tag: rankStatusTag,
     warning: 'Failed to check dan-tier rank status:',
   },
   (userId: string) =>

@@ -6,7 +6,7 @@ import type { AdminActionResult } from '@/app/admin/_lib/action-errors';
 import { requireAdmin } from '@/app/admin/_lib/auth';
 import { validateUserId } from '@/app/admin/_lib/validators';
 
-import { GRANT_STATUS_CACHE_TAG } from '@/lib/cache-tags';
+import { grantStatusTag } from '@/lib/cache-tags';
 import { db } from '@/lib/db';
 import { validateModerationReason } from '@/lib/moderation/validate-reason';
 import { getClientIp } from '@/lib/security/client-ip';
@@ -83,7 +83,9 @@ export async function createBulkGrants(params: BulkGrantParams): Promise<BulkGra
       return grants;
     });
 
-    revalidateTag(GRANT_STATUS_CACHE_TAG, { expire: 60 });
+    for (const userId of new Set(userIds)) {
+      revalidateTag(grantStatusTag(userId), { expire: 60 });
+    }
 
     for (const grant of created) {
       notifyAdminGrant(auth.userId, grant);

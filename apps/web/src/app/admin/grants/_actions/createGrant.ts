@@ -6,7 +6,7 @@ import type { AdminActionResult } from '@/app/admin/_lib/action-errors';
 import { requireAdmin } from '@/app/admin/_lib/auth';
 import { validateUserId } from '@/app/admin/_lib/validators';
 
-import { GRANT_STATUS_CACHE_TAG } from '@/lib/cache-tags';
+import { grantStatusTag } from '@/lib/cache-tags';
 import { db } from '@/lib/db';
 import { isBenefitType } from '@/lib/db/data/grant-types';
 import { MODERATION_REASON_MAX_LENGTH } from '@/lib/moderation/validate-reason';
@@ -87,7 +87,7 @@ export async function createGrant(
       })
     );
 
-    revalidateTag(GRANT_STATUS_CACHE_TAG, { expire: 60 });
+    revalidateTag(grantStatusTag(trimmedUserId), { expire: 60 });
 
     // Note: the target user's `bfc_ads_hidden` cookie cannot be updated from
     // this admin action — it runs in the admin's HTTP session, not the

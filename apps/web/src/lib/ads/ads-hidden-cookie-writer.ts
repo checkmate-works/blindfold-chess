@@ -4,7 +4,7 @@ import type { NextResponse } from 'next/server';
 
 import type { User } from '@supabase/supabase-js';
 
-import { RANK_STATUS_CACHE_TAG } from '@/lib/cache-tags';
+import { rankStatusTag } from '@/lib/cache-tags';
 import type { GrantedRank } from '@/lib/db/data/ranks';
 import { DAN_TIER_MIN_LEVEL } from '@/lib/db/data/ranks';
 
@@ -64,10 +64,11 @@ export async function writeAdsHiddenCookieForUser(user: User | null): Promise<vo
  * cannot refresh the cookie inline. The proxy attaches a `Set-Cookie` header
  * to the outgoing response instead, which the browser stores and sends with
  * the next request — so the new value is observed on the next navigation,
- * not the in-flight render. For the Stripe checkout success flow, the cookie
- * is set on the redirect response from the success URL, so it travels with
- * the very first GET to `/mypage/subscription?status=success` and the
- * inline no-flash script sees the up-to-date value on first paint.
+ * not the in-flight render. The Checkout return route
+ * (`/api/stripe/checkout/return`) uses the same variant on its redirect, so
+ * the cookie travels with the very first GET to
+ * `/mypage/subscription?status=success` and the inline no-flash script sees
+ * the up-to-date value on first paint.
  */
 export async function refreshAdsHiddenCookieOnResponse(
   response: NextResponse,
@@ -100,12 +101,13 @@ export async function refreshAdsHiddenCookieOnResponse(
  * anyway (within the cache's 60s revalidate window).
  */
 export async function refreshAdsHiddenCookieOnDanPromotion(
+  userId: string,
   grantedRanks: readonly GrantedRank[]
 ): Promise<void> {
   if (!grantedRanks.some((rank) => rank.level >= DAN_TIER_MIN_LEVEL)) return;
 
   try {
-    revalidateTag(RANK_STATUS_CACHE_TAG, { expire: 60 });
+    revalidateTag(rankStatusTag(userId), { expire: 60 });
     const store = await cookies();
     store.set(ADS_HIDDEN_COOKIE_NAME, '1', adsHiddenCookieOptions());
   } catch (error) {

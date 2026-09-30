@@ -405,8 +405,11 @@ REVOKE INSERT ON TABLE public.feed_items FROM authenticated;
 -- FK constraint: stripe_customers.user_id -> auth.users(id)
 SELECT public.ensure_auth_users_fk('stripe_customers', 'stripe_customers_user_id_fkey', 'user_id', 'CASCADE');
 
--- Server-side only writes (no INSERT/UPDATE for authenticated)
-GRANT SELECT ON TABLE public.stripe_customers TO authenticated;
+-- Server-side only. Nothing reads this table through the PostgREST client
+-- (every reader goes through Drizzle on the pooler role), and the Stripe
+-- customer id is a billing identifier, not a profile field. Revoke rather
+-- than grant so a client that starts reading it fails instead of succeeding.
+REVOKE ALL ON TABLE public.stripe_customers FROM authenticated, anon;
 
 -- =============================================================================
 -- subscriptions
@@ -415,8 +418,19 @@ GRANT SELECT ON TABLE public.stripe_customers TO authenticated;
 -- FK constraint: subscriptions.user_id -> auth.users(id)
 SELECT public.ensure_auth_users_fk('subscriptions', 'subscriptions_user_id_fkey', 'user_id', 'CASCADE');
 
--- Users can read their own subscriptions; writes are server-side only
-GRANT SELECT ON TABLE public.subscriptions TO authenticated;
+-- Server-side only, for the same reason as stripe_customers: the /mypage
+-- subscription card is rendered from a Drizzle read, and no PostgREST client
+-- reads this table.
+REVOKE ALL ON TABLE public.subscriptions FROM authenticated, anon;
+
+-- =============================================================================
+-- stripe_webhook_events
+-- =============================================================================
+
+-- No FK: the row is keyed by Stripe's event id and references nothing local.
+-- Written by the webhook route via Drizzle (pooler role, BYPASSRLS) and read
+-- only by that route. Clients must never touch this table.
+REVOKE ALL ON TABLE public.stripe_webhook_events FROM authenticated, anon;
 
 -- =============================================================================
 -- user_interview_answers
