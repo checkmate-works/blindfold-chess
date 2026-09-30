@@ -76,7 +76,10 @@ export async function createCheckoutSession(locale: string): Promise<CheckoutErr
           quantity: 1,
         },
       ],
-      success_url: `${SITE_URL}/${locale}/mypage/subscription?status=success`,
+      // `{CHECKOUT_SESSION_ID}` is a literal Stripe substitutes on redirect.
+      // The return route mirrors the subscription before the user reaches
+      // the subscription page, so they cannot land ahead of the webhook.
+      success_url: `${SITE_URL}/api/stripe/checkout/return?locale=${locale}&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${SITE_URL}/${locale}/pricing`,
       subscription_data: {
         metadata: { supabaseUserId: user.id },

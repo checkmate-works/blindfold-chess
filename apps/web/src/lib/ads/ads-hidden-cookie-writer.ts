@@ -64,10 +64,11 @@ export async function writeAdsHiddenCookieForUser(user: User | null): Promise<vo
  * cannot refresh the cookie inline. The proxy attaches a `Set-Cookie` header
  * to the outgoing response instead, which the browser stores and sends with
  * the next request — so the new value is observed on the next navigation,
- * not the in-flight render. For the Stripe checkout success flow, the cookie
- * is set on the redirect response from the success URL, so it travels with
- * the very first GET to `/mypage/subscription?status=success` and the
- * inline no-flash script sees the up-to-date value on first paint.
+ * not the in-flight render. The Checkout return route
+ * (`/api/stripe/checkout/return`) uses the same variant on its redirect, so
+ * the cookie travels with the very first GET to
+ * `/mypage/subscription?status=success` and the inline no-flash script sees
+ * the up-to-date value on first paint.
  */
 export async function refreshAdsHiddenCookieOnResponse(
   response: NextResponse,

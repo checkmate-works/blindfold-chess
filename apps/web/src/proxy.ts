@@ -40,9 +40,11 @@ const ADMIN_PATH = '/admin';
 // ordinary authenticated page loads are already covered by `getSessionUser()`
 // (called from `AuthProvider`), so we only need to handle the few entry
 // points that DON'T go through the auth provider mount — chiefly the Stripe
-// checkout `success_url` landing on `/mypage/subscription?status=success`,
-// where the user's entitlement just changed and the cookie must reflect that
-// before the page renders.
+// Billing Portal's `return_url`, which lands here after a cancellation or
+// reactivation the webhook has just mirrored, so the cookie must reflect the
+// change before the page renders. (The Checkout `success_url` used to land
+// here too; it now goes through `/api/stripe/checkout/return`, which sets
+// the cookie itself.)
 const ADS_COOKIE_REFRESH_PATH = '/mypage/subscription';
 
 function isBlockedPath(pathname: string): boolean {
@@ -237,7 +239,8 @@ export async function proxy(request: NextRequest) {
   }
 
   // Refresh the `bfc_ads_hidden` cookie on the response when the user is
-  // navigating to `/mypage/subscription` (and its Stripe-success landing).
+  // navigating to `/mypage/subscription` (including the Billing Portal's
+  // `return_url`).
   // Server Components cannot mutate cookies during render under Next.js 16,
   // so the previous in-page `refreshAdsHiddenCookie()` Server Action call
   // has been moved here. See `@/lib/ads/ads-hidden-cookie-writer.ts` for the
