@@ -14,6 +14,7 @@ import { generateThemeCSS } from '@blindfold-chess/ui';
 import { EnvironmentRibbon } from 'env-ribbon';
 
 import { AdHideBootstrapScript } from '@/lib/ads/AdHideBootstrapScript';
+import { ConsentAttributeSync } from '@/lib/consent/ConsentAttributeSync';
 import { ConsentBootstrapScript } from '@/lib/consent/ConsentBootstrapScript';
 import { CONSENT_BANNER_HIDE_CSS } from '@/lib/consent/consent-bootstrap-script';
 import { JsonLd, generateOrganizationSchema, generateWebSiteSchema } from '@/lib/seo/jsonld';
@@ -293,6 +294,12 @@ export default async function Layout({
       <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
         <EnvironmentRibbon />
         <StorageAvailabilityProvider>
+          {/*
+            Re-asserts `data-consent` from the cookie after React strips it —
+            which it does whenever `<html>` remounts on the client. Must stay
+            ahead of `GoogleScripts`; see the component for why.
+          */}
+          <ConsentAttributeSync />
           <GoogleScripts gaMeasurementId={GA_MEASUREMENT_ID} />
           <Providers locale={locale} messages={messages}>
             <div className="flex flex-col min-h-screen">
