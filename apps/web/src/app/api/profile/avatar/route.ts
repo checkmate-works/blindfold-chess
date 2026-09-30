@@ -11,7 +11,7 @@ import { parseImageUpload } from '@/lib/images/parse-upload';
 import { ALLOWED_IMAGE_MIME_TYPES, AVATAR_MAX_FILE_SIZE } from '@/lib/images/policy';
 import { SHARP_DECODE_OPTIONS } from '@/lib/images/sharp-options';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { logActivityEvent } from '@/lib/users/activity-log';
 import { AVATAR_BUCKET, avatarFilePath, removeAllAvatarFiles } from '@/lib/users/avatar-storage';
 
@@ -32,7 +32,7 @@ export async function POST(request: Request) {
   }
   const { user } = guardResult;
 
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   // Parse + allow-list + size cap + magic-byte check, in that order. Shared
   // with the admin image endpoints so the avatar path cannot quietly lose a
@@ -127,7 +127,7 @@ export async function DELETE(request: Request) {
   }
   const { user } = guardResult;
 
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const [updated] = await db
     .update(profiles)

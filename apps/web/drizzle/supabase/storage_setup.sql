@@ -22,37 +22,13 @@ ON CONFLICT (id) DO UPDATE SET
   file_size_limit = EXCLUDED.file_size_limit,
   allowed_mime_types = EXCLUDED.allowed_mime_types;
 
--- Allow authenticated users to upload to their own folder
+-- Image writes are service-role only. Session JWTs must not bypass the API's
+-- byte-signature checks, re-encoding, ban checks or rate limits. MIME metadata
+-- supplied to Storage is not proof of the actual file format.
+-- Explicit drops also close policies installed by earlier deployments.
 DROP POLICY IF EXISTS "avatars_insert_own" ON storage.objects;
-CREATE POLICY "avatars_insert_own" ON storage.objects
-  FOR INSERT TO authenticated
-  WITH CHECK (
-    bucket_id = 'avatars'
-    AND (storage.foldername(name))[1] = auth.uid()::text
-  );
-
--- Allow authenticated users to update their own files
--- WITH CHECK mirrors USING so a user cannot rename/move a file into another user's folder.
 DROP POLICY IF EXISTS "avatars_update_own" ON storage.objects;
-CREATE POLICY "avatars_update_own" ON storage.objects
-  FOR UPDATE TO authenticated
-  USING (
-    bucket_id = 'avatars'
-    AND (storage.foldername(name))[1] = auth.uid()::text
-  )
-  WITH CHECK (
-    bucket_id = 'avatars'
-    AND (storage.foldername(name))[1] = auth.uid()::text
-  );
-
--- Allow authenticated users to delete their own files
 DROP POLICY IF EXISTS "avatars_delete_own" ON storage.objects;
-CREATE POLICY "avatars_delete_own" ON storage.objects
-  FOR DELETE TO authenticated
-  USING (
-    bucket_id = 'avatars'
-    AND (storage.foldername(name))[1] = auth.uid()::text
-  );
 
 -- Allow anyone to read avatars (public bucket)
 DROP POLICY IF EXISTS "avatars_select_public" ON storage.objects;
@@ -83,29 +59,11 @@ CREATE POLICY "article_images_select_public" ON storage.objects
   FOR SELECT
   USING (bucket_id = 'article-images');
 
--- Allow admin users to upload article images
+-- Article uploads and replacements go through the validating admin API.
 DROP POLICY IF EXISTS "article_images_insert_admin" ON storage.objects;
-CREATE POLICY "article_images_insert_admin" ON storage.objects
-  FOR INSERT TO authenticated
-  WITH CHECK (
-    bucket_id = 'article-images'
-    AND (auth.jwt() ->> 'user_role') = 'admin'
-  );
 
--- Allow admin users to update article images
--- WITH CHECK mirrors USING so the post-update row must still satisfy the admin gate
--- (prevents e.g. moving/renaming the row out of 'article-images' or under a non-admin context).
+-- Withdraw the legacy direct-update policy too.
 DROP POLICY IF EXISTS "article_images_update_admin" ON storage.objects;
-CREATE POLICY "article_images_update_admin" ON storage.objects
-  FOR UPDATE TO authenticated
-  USING (
-    bucket_id = 'article-images'
-    AND (auth.jwt() ->> 'user_role') = 'admin'
-  )
-  WITH CHECK (
-    bucket_id = 'article-images'
-    AND (auth.jwt() ->> 'user_role') = 'admin'
-  );
 
 -- Allow admin users to delete article images
 DROP POLICY IF EXISTS "article_images_delete_admin" ON storage.objects;
@@ -157,30 +115,9 @@ CREATE POLICY "post_images_select_public" ON storage.objects
     )
   );
 
--- INSERT: authenticated user may write only into a path matching the
--- canonical layout `${userId-uuid}/${postId-uuid}/${randomUuid}.${ext}`.
--- The regex is byte-for-byte identical to the DB CHECK on
--- post_image_attachments.storage_path and to POST_IMAGE_STORAGE_PATH_REGEX
--- in src/lib/post-images/validation.ts. Without this regex the policy
--- only required the first folder to equal auth.uid(), which let an
--- attacker upload arbitrary bytes to `<uid>/foo.jpg` directly via
--- Supabase REST and create an unbounded user-controlled storage region
--- on the (public) bucket.
---
--- The path-traversal (`..`) and backslash checks are subsumed by the
--- regex (the character set is restricted to `[0-9a-f-/.a-z]`) but are
--- kept here because they read at a glance.
+-- Only the validated image API may upload, using its service-role client.
+-- A path regex alone cannot validate the bytes a session uploads directly.
 DROP POLICY IF EXISTS "post_images_insert_own" ON storage.objects;
-CREATE POLICY "post_images_insert_own" ON storage.objects
-  FOR INSERT TO authenticated
-  WITH CHECK (
-    bucket_id = 'post-images'
-    AND (storage.foldername(name))[1] = auth.uid()::text
-    AND name ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(jpg|png|webp)$'
-    AND position('..' in name) = 0
-    AND position('\' in name) = 0
-    AND length(name) <= 256
-  );
 
 -- DELETE: authenticated user may delete only objects under their own folder.
 -- Used by the post-deletion best-effort cleanup and the daily reaper
@@ -221,28 +158,11 @@ CREATE POLICY "ad_creatives_select_public" ON storage.objects
   FOR SELECT
   USING (bucket_id = 'ad-creatives');
 
--- Allow admin users to upload ad creative images
+-- Uploads and replacements require the validating admin API.
 DROP POLICY IF EXISTS "ad_creatives_insert_admin" ON storage.objects;
-CREATE POLICY "ad_creatives_insert_admin" ON storage.objects
-  FOR INSERT TO authenticated
-  WITH CHECK (
-    bucket_id = 'ad-creatives'
-    AND (auth.jwt() ->> 'user_role') = 'admin'
-  );
 
--- Allow admin users to update ad creative images
--- WITH CHECK mirrors USING so the post-update row must still satisfy the admin gate.
+-- Withdraw the legacy direct-update policy too.
 DROP POLICY IF EXISTS "ad_creatives_update_admin" ON storage.objects;
-CREATE POLICY "ad_creatives_update_admin" ON storage.objects
-  FOR UPDATE TO authenticated
-  USING (
-    bucket_id = 'ad-creatives'
-    AND (auth.jwt() ->> 'user_role') = 'admin'
-  )
-  WITH CHECK (
-    bucket_id = 'ad-creatives'
-    AND (auth.jwt() ->> 'user_role') = 'admin'
-  );
 
 -- Allow admin users to delete ad creative images
 DROP POLICY IF EXISTS "ad_creatives_delete_admin" ON storage.objects;
@@ -260,7 +180,7 @@ CREATE POLICY "ad_creatives_delete_admin" ON storage.objects
 -- gifs/${gameId}/${variant}.gif (variant: 'plain' | 'played'). Written only by
 -- the /api/games/[id]/gif route handler via the service-role client (which
 -- bypasses RLS entirely) — there is deliberately no INSERT/UPDATE/DELETE
--- policy for `authenticated`/`anon` here, unlike avatars/post-images.
+-- policy for `authenticated`/`anon` here.
 -- file_size_limit: 15MB (X's own attachment cap; real output is ~1-3MB).
 -- allowed_mime_types: GIF only.
 

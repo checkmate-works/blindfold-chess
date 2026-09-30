@@ -24,7 +24,6 @@ import {
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { persistWithUploadRollback } from '@/lib/supabase/persist-with-upload-rollback';
-import { createClient as createServerClient } from '@/lib/supabase/server';
 import { loadAuthoredPost } from '@/lib/topic-posts';
 
 /**
@@ -46,11 +45,11 @@ import { loadAuthoredPost } from '@/lib/topic-posts';
  *   6. Magic-byte signature check (catches MIME spoofing).
  *   7. Sharp dimension probe + 50 MP cap.
  *   8. Sharp EXIF strip + orientation bake-in (re-encodes the buffer).
- *   9. Storage upload via the user-session client (RLS still applies).
+ *   9. Storage upload via the service-role client after validation.
  *  10. DB INSERT — the BEFORE INSERT trigger consults the per-post counter
  *      under FOR UPDATE and rejects the 4th image.
  *  11. On DB failure, the **admin** client removes the orphan storage
- *      object (the only admin-client use in this handler).
+ *      object.
  *
  * The DB CHECK on `storage_path` (regex pin) and the
  * `post_image_attachments_chk_*` CHECKs are the last line of defense.
@@ -188,10 +187,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     contentType: POST_IMAGE_OUTPUT_MIME,
   });
 
-  // User-session client — RLS still applies (the bucket policy enforces
-  // that the storage_path's first folder is the calling user's id).
-  const sessionSupabase = await createServerClient();
-  const { error: uploadError } = await sessionSupabase.storage
+  // Direct session writes are disabled. Ownership and file validation above
+  // must succeed before the service-role client stores the processed bytes.
+  const storageClient = createAdminClient();
+  const { error: uploadError } = await storageClient.storage
     .from(POST_IMAGES_BUCKET)
     .upload(storagePath, processedBuffer, {
       contentType: POST_IMAGE_OUTPUT_MIME,
@@ -225,9 +224,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         .returning();
       return inserted;
     },
-    // The admin client is required because the session upload client cannot
-    // reliably remove an object after the database insert was rejected.
-    rollback: () => createAdminClient().storage.from(POST_IMAGES_BUCKET).remove([storagePath]),
+    // Remove the upload if the attachment cannot be persisted.
+    rollback: () => storageClient.storage.from(POST_IMAGES_BUCKET).remove([storagePath]),
   });
   if (!persistence.ok) {
     // DB rejected the insert — could be the per-post cap trigger
@@ -245,7 +243,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   }
 
   const inserted = persistence.value;
-  const { data: urlData } = sessionSupabase.storage
+  const { data: urlData } = storageClient.storage
     .from(POST_IMAGES_BUCKET)
     .getPublicUrl(storagePath);
 
@@ -258,8 +256,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   // `storagePath` is intentionally OMITTED — the client only needs
   // `publicUrl` (already derived from the path), and exposing the raw
   // storage path leaks the path-construction scheme to anyone with a
-  // valid auth session. The path layout is already pinned by RLS and a
-  // DB CHECK, but minimizing exposure keeps the bar high.
+  // valid auth session. The path layout is pinned by a DB CHECK.
   return NextResponse.json(
     {
       id: inserted.id,

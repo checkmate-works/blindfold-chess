@@ -778,7 +778,7 @@ start`, not just `next dev`) rather than a speculative attempt.
 
 ### Next.js is pnpm-patched for a CSP nonce bug (16.3.0)
 
-`patches/next@16.3.0.patch` (repo root) makes Next stamp the CSP nonce on the
+`patches/next@16.3.3.patch` (repo root) makes Next stamp the CSP nonce on the
 `<script>` tags it emits for a `loading` / `error` / `template` / `not-found`
 boundary. Upstream only does this for layout/page assets, so under this app's
 `'nonce-…' 'strict-dynamic'` policy that one chunk was blocked on every view of

@@ -33,7 +33,7 @@
  *   `template` / `not-found` boundary — the two live in different modules and
  *   only the former reads `ctx.nonce`. Under `'strict-dynamic'` the host
  *   fallbacks above are ignored, so that one chunk is blocked outright. Fixed
- *   by `patches/next@16.3.0.patch`, which must patch the prebuilt
+ *   by `patches/next@16.3.3.patch`, which must patch the prebuilt
  *   `dist/compiled/next-server/app-page*.runtime.prod.js` bundles and not only
  *   the readable `dist/server/app-render/*` sources — Node page rendering loads
  *   the former and reaches the latter only on the edge runtime. See the
