@@ -157,6 +157,16 @@ describe('toSubscriptionFields', () => {
     expect(fields.cancelAt).toEqual(new Date(1778917194 * 1000));
   });
 
+  it('should clear cancelAt once the subscription is canceled, even if Stripe still carries cancel_at', () => {
+    const fields = toSubscriptionFields(
+      createMockSubscription({ status: 'canceled', cancel_at: 1702592000 } as Record<
+        string,
+        unknown
+      >)
+    );
+    expect(fields).toMatchObject({ status: 'canceled', cancelAt: null });
+  });
+
   it('should map cancel_at to null when not set', () => {
     const fields = toSubscriptionFields(
       createMockSubscription({ cancel_at: null } as Record<string, unknown>)
@@ -512,11 +522,26 @@ describe('handleCheckoutCompleted', () => {
 
 // ── handleSubscriptionUpdated ────────────────────────────────────────
 
+/**
+ * Deliver a `customer.subscription.updated` payload while Stripe reports
+ * `current` (default: the payload itself) when the handler fetches the
+ * subscription back.
+ */
+async function deliverUpdated(
+  payload: Stripe.Subscription,
+  current: Stripe.Subscription = payload
+): Promise<void> {
+  vi.mocked(mockStripe.subscriptions.retrieve).mockResolvedValue(
+    current as unknown as Stripe.Response<Stripe.Subscription>
+  );
+  await handleSubscriptionUpdated(payload);
+}
+
 describe('handleSubscriptionUpdated', () => {
   it('should update subscription fields in DB', async () => {
     mockUpdateReturning.mockResolvedValue([{ id: 'some-id' }]);
 
-    await handleSubscriptionUpdated(createMockSubscription());
+    await deliverUpdated(createMockSubscription());
 
     expect(mockUpdateSetWhere).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -531,7 +556,7 @@ describe('handleSubscriptionUpdated', () => {
   it('should call revalidateTag after update', async () => {
     mockUpdateReturning.mockResolvedValue([{ id: 'some-id' }]);
 
-    await handleSubscriptionUpdated(createMockSubscription());
+    await deliverUpdated(createMockSubscription());
 
     expect(revalidateTag).toHaveBeenCalledWith('subscription-status', { expire: 60 });
   });
@@ -539,7 +564,7 @@ describe('handleSubscriptionUpdated', () => {
   it('should pass updated fields for a past_due subscription', async () => {
     mockUpdateReturning.mockResolvedValue([{ id: 'some-id' }]);
 
-    await handleSubscriptionUpdated(
+    await deliverUpdated(
       createMockSubscription({ status: 'past_due', cancel_at: 1778917194 } as Record<
         string,
         unknown
@@ -558,7 +583,7 @@ describe('handleSubscriptionUpdated', () => {
     mockUpdateReturning.mockResolvedValue([{ id: 'some-id' }]);
 
     const before = Date.now();
-    await handleSubscriptionUpdated(createMockSubscription());
+    await deliverUpdated(createMockSubscription());
     const after = Date.now();
 
     const setArgs = mockUpdateSetWhere.mock.calls[0][0];
@@ -576,7 +601,7 @@ describe('handleSubscriptionUpdated', () => {
       periodEnd: 1712678400,
     });
 
-    await handleSubscriptionUpdated(sub);
+    await deliverUpdated(sub);
 
     expect(mockUpdateSetWhere).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -592,7 +617,7 @@ describe('handleSubscriptionUpdated', () => {
     mockSelectLimit.mockResolvedValue([{ userId: 'user_recovered' }]);
 
     const sub = createMockSubscription({ customer: 'cus_recovery' } as Record<string, unknown>);
-    await handleSubscriptionUpdated(sub);
+    await deliverUpdated(sub);
 
     expect(mockInsertValues).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -611,7 +636,7 @@ describe('handleSubscriptionUpdated', () => {
     mockSelectLimit.mockResolvedValue([]);
 
     const sub = createMockSubscription({ customer: 'cus_orphan' } as Record<string, unknown>);
-    await handleSubscriptionUpdated(sub);
+    await deliverUpdated(sub);
 
     expect(mockCaptureMessage).toHaveBeenCalledWith(
       expect.stringContaining('no stripe_customers record for customer cus_orphan'),
@@ -623,7 +648,7 @@ describe('handleSubscriptionUpdated', () => {
   it('should not attempt recovery when update affects rows', async () => {
     mockUpdateReturning.mockResolvedValue([{ id: 'existing-id' }]);
 
-    await handleSubscriptionUpdated(
+    await deliverUpdated(
       createMockSubscription({ customer: 'cus_existing' } as Record<string, unknown>)
     );
 
@@ -639,7 +664,7 @@ describe('handleSubscriptionUpdated', () => {
     const sub = createMockSubscription({
       customer: { id: 'cus_from_obj' },
     } as Record<string, unknown>);
-    await handleSubscriptionUpdated(sub);
+    await deliverUpdated(sub);
 
     expect(mockInsertValues).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -656,7 +681,7 @@ describe('handleSubscriptionUpdated', () => {
     const sub = createMockSubscription({
       customer: { id: 'cus_obj_orphan' },
     } as Record<string, unknown>);
-    await handleSubscriptionUpdated(sub);
+    await deliverUpdated(sub);
 
     expect(mockCaptureMessage).toHaveBeenCalledWith(
       expect.stringContaining('no stripe_customers record for customer cus_obj_orphan'),
@@ -674,7 +699,7 @@ describe('handleSubscriptionUpdated', () => {
 
     const sub = createMockSubscription({ customer: 'cus_db_err' } as Record<string, unknown>);
 
-    await expect(handleSubscriptionUpdated(sub)).rejects.toThrow('DB connection lost');
+    await expect(deliverUpdated(sub)).rejects.toThrow('DB connection lost');
   });
 
   it('should call revalidateTag even when recovery insert is performed', async () => {
@@ -682,7 +707,7 @@ describe('handleSubscriptionUpdated', () => {
     mockSelectLimit.mockResolvedValue([{ userId: 'user_revalidate' }]);
 
     const sub = createMockSubscription({ customer: 'cus_reval' } as Record<string, unknown>);
-    await handleSubscriptionUpdated(sub);
+    await deliverUpdated(sub);
 
     expect(revalidateTag).toHaveBeenCalledWith('subscription-status', { expire: 60 });
   });
@@ -692,7 +717,7 @@ describe('handleSubscriptionUpdated', () => {
     mockSelectLimit.mockResolvedValue([]);
 
     const sub = createMockSubscription({ customer: 'cus_no_record' } as Record<string, unknown>);
-    await handleSubscriptionUpdated(sub);
+    await deliverUpdated(sub);
 
     expect(mockCaptureMessage).toHaveBeenCalled();
     expect(revalidateTag).toHaveBeenCalledWith('subscription-status', { expire: 60 });
@@ -710,7 +735,7 @@ describe('handleSubscriptionUpdated', () => {
       periodStart: 1710000000,
       periodEnd: 1712678400,
     } as Record<string, unknown>);
-    await handleSubscriptionUpdated(sub);
+    await deliverUpdated(sub);
 
     expect(mockInsertValues).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -728,9 +753,46 @@ describe('handleSubscriptionUpdated', () => {
   it('should propagate DB errors from the initial update query', async () => {
     mockUpdateReturning.mockRejectedValue(new Error('Update query failed'));
 
-    await expect(handleSubscriptionUpdated(createMockSubscription())).rejects.toThrow(
-      'Update query failed'
+    await expect(deliverUpdated(createMockSubscription())).rejects.toThrow('Update query failed');
+  });
+  it('fetches the subscription from Stripe by the payload id instead of trusting the payload', async () => {
+    mockUpdateReturning.mockResolvedValue([{ id: 'some-id' }]);
+    vi.mocked(mockStripe.subscriptions.retrieve).mockClear();
+
+    await deliverUpdated(createMockSubscription({ id: 'sub_fetch_me' }));
+
+    expect(mockStripe.subscriptions.retrieve).toHaveBeenCalledWith('sub_fetch_me');
+  });
+
+  it('does not revive a canceled subscription when a stale active payload arrives late', async () => {
+    // `deleted` was processed first; this `updated` event was created earlier
+    // but delivered afterwards, still carrying `status: active`.
+    mockUpdateReturning.mockResolvedValue([{ id: 'some-id' }]);
+    mockUpdateSetWhere.mockClear();
+    const stalePayload = createMockSubscription({ status: 'active' });
+    const current = createMockSubscription({ status: 'canceled', cancel_at: 1702592000 } as Record<
+      string,
+      unknown
+    >);
+
+    await deliverUpdated(stalePayload, current);
+
+    expect(mockUpdateSetWhere).toHaveBeenCalledWith(
+      expect.objectContaining({ status: 'canceled', cancelAt: null })
     );
+    expect(mockUpdateSetWhere).not.toHaveBeenCalledWith(
+      expect.objectContaining({ status: 'active' })
+    );
+  });
+
+  it('propagates a Stripe fetch failure so the route answers 500 and Stripe retries', async () => {
+    vi.mocked(mockStripe.subscriptions.retrieve).mockRejectedValue(new Error('stripe down'));
+    mockUpdateSetWhere.mockClear();
+
+    await expect(handleSubscriptionUpdated(createMockSubscription())).rejects.toThrow(
+      'stripe down'
+    );
+    expect(mockUpdateSetWhere).not.toHaveBeenCalled();
   });
 });
 

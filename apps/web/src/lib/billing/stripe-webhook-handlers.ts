@@ -23,21 +23,43 @@ import { db, stripeCustomers, subscriptions } from '@/lib/db';
  * webhooks (`customer.subscription.updated`, `customer.subscription.deleted`)
  * still hit `revalidateTag('subscription-status')` below, so the next
  * visit recomputes entitlement from fresh DB state.
+ *
+ * @note Every handler must be safe to run twice for the same event.
+ *
+ * The route skips an event id it has already recorded as processed
+ * (`stripe-webhook-events.ts`), but that record is written after the handler
+ * succeeds, so two deliveries of one event that overlap in flight both run.
+ * The handlers therefore write the subscription's current state as fetched
+ * from Stripe (or, for `deleted`, its terminal state), never an increment,
+ * so the second run rewrites what the first wrote.
  */
 
 /**
  * Map a Stripe Subscription object to the DB column values used for
  * both insert and upsert-update operations.
+ *
+ * `cancelAt` is forced to `null` once the subscription is `canceled`. Stripe
+ * keeps `cancel_at` on a subscription that was scheduled to end at the period
+ * boundary and then did, but in this mirror a non-null `cancelAt` means
+ * "cancellation pending" (see
+ * {@link import('@/lib/billing/subscription-constants').isCancellationScheduled})
+ * and the /mypage card renders it as such. A terminated row has nothing
+ * pending, and `handleSubscriptionDeleted` and `cancelAllActiveSubscriptions`
+ * both write `null` for the same reason; this keeps a canceled subscription
+ * that reaches the mirror through `customer.subscription.updated` in the same
+ * shape.
  */
 export function toSubscriptionFields(subscription: Stripe.Subscription) {
   const item = subscription.items.data[0];
   if (!item) {
     throw new Error(`Subscription ${subscription.id} has no items`);
   }
+  const terminated = subscription.status === 'canceled';
   return {
     stripePriceId: item.price.id,
     status: subscription.status,
-    cancelAt: subscription.cancel_at ? new Date(subscription.cancel_at * 1000) : null,
+    cancelAt:
+      !terminated && subscription.cancel_at ? new Date(subscription.cancel_at * 1000) : null,
     currentPeriodStart: new Date(item.current_period_start * 1000),
     currentPeriodEnd: new Date(item.current_period_end * 1000),
   };
@@ -101,7 +123,21 @@ export async function handleCheckoutCompleted(session: Stripe.Checkout.Session) 
   revalidateTag(SUBSCRIPTION_STATUS_CACHE_TAG, { expire: 60 });
 }
 
-export async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
+/**
+ * Mirror a subscription after a `customer.subscription.updated` event.
+ *
+ * The event payload is used only for the subscription id. Stripe does not
+ * deliver events in order, so the `status: active` in an `updated` payload
+ * may describe a subscription that a `customer.subscription.deleted` event
+ * has since terminated -- and if the delivery of that `updated` event was
+ * slow or retried, it can arrive after the `deleted` one was processed.
+ * Writing the payload would then flip the row back to `active` and the
+ * subscriber would keep their benefits with nothing left to revoke them.
+ * Fetching the subscription from Stripe at processing time makes every write
+ * reflect the state Stripe holds now, whatever order the events took.
+ */
+export async function handleSubscriptionUpdated(payload: Stripe.Subscription) {
+  const subscription = await getStripe().subscriptions.retrieve(payload.id);
   const fields = toSubscriptionFields(subscription);
 
   const updated = await db
