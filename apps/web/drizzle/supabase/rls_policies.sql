@@ -290,6 +290,12 @@ CREATE POLICY "subscriptions_select" ON "subscriptions"
   FOR SELECT USING (auth.uid() = user_id);
 
 -- =============================================================================
+-- stripe_webhook_events (server-side only; deny-by-default)
+-- =============================================================================
+ALTER TABLE "stripe_webhook_events" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "stripe_webhook_events" FORCE ROW LEVEL SECURITY;
+
+-- =============================================================================
 -- user_interview_answers (public read, service-role write)
 -- =============================================================================
 ALTER TABLE "user_interview_answers" ENABLE ROW LEVEL SECURITY;

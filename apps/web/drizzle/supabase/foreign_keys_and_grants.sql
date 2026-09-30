@@ -419,6 +419,15 @@ SELECT public.ensure_auth_users_fk('subscriptions', 'subscriptions_user_id_fkey'
 GRANT SELECT ON TABLE public.subscriptions TO authenticated;
 
 -- =============================================================================
+-- stripe_webhook_events
+-- =============================================================================
+
+-- No FK: the row is keyed by Stripe's event id and references nothing local.
+-- Written by the webhook route via Drizzle (pooler role, BYPASSRLS) and read
+-- only by that route. Clients must never touch this table.
+REVOKE ALL ON TABLE public.stripe_webhook_events FROM authenticated, anon;
+
+-- =============================================================================
 -- user_interview_answers
 -- =============================================================================
 
