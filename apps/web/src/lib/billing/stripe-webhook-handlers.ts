@@ -65,6 +65,43 @@ export function toSubscriptionFields(subscription: Stripe.Subscription) {
   };
 }
 
+/**
+ * Write a subscription's current state to the mirror row for `userId`,
+ * creating the row if this is the first time the subscription is seen, and
+ * expire that user's cached entitlement.
+ *
+ * Shared by every path that learns about a subscription from Stripe: the
+ * `checkout.session.completed` webhook, the recovery branch of
+ * `customer.subscription.updated` (an update for a subscription the mirror
+ * has never seen), and the Checkout return route, which mirrors the
+ * subscription while the user is still being redirected so they do not land
+ * ahead of the webhook. All three must write the same columns the same way,
+ * or the row's shape would depend on which of them happened to run first.
+ */
+export async function upsertSubscriptionMirror(
+  userId: string,
+  subscription: Stripe.Subscription
+): Promise<void> {
+  const fields = toSubscriptionFields(subscription);
+
+  await db
+    .insert(subscriptions)
+    .values({
+      userId,
+      stripeSubscriptionId: subscription.id,
+      ...fields,
+    })
+    .onConflictDoUpdate({
+      target: subscriptions.stripeSubscriptionId,
+      set: {
+        ...fields,
+        updatedAt: new Date(),
+      },
+    });
+
+  revalidateTag(subscriptionStatusTag(userId), { expire: 60 });
+}
+
 export async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   if (session.mode !== 'subscription' || !session.subscription) return;
 
@@ -103,24 +140,7 @@ export async function handleCheckoutCompleted(session: Stripe.Checkout.Session) 
     return;
   }
 
-  const fields = toSubscriptionFields(subscription);
-
-  await db
-    .insert(subscriptions)
-    .values({
-      userId: customerRecord.userId,
-      stripeSubscriptionId: subscription.id,
-      ...fields,
-    })
-    .onConflictDoUpdate({
-      target: subscriptions.stripeSubscriptionId,
-      set: {
-        ...fields,
-        updatedAt: new Date(),
-      },
-    });
-
-  revalidateTag(subscriptionStatusTag(customerRecord.userId), { expire: 60 });
+  await upsertSubscriptionMirror(customerRecord.userId, subscription);
 }
 
 /**
@@ -163,21 +183,7 @@ export async function handleSubscriptionUpdated(payload: Stripe.Subscription) {
       .limit(1);
 
     if (customerRecord) {
-      await db
-        .insert(subscriptions)
-        .values({
-          userId: customerRecord.userId,
-          stripeSubscriptionId: subscription.id,
-          ...fields,
-        })
-        .onConflictDoUpdate({
-          target: subscriptions.stripeSubscriptionId,
-          set: {
-            ...fields,
-            updatedAt: new Date(),
-          },
-        });
-      revalidateTag(subscriptionStatusTag(customerRecord.userId), { expire: 60 });
+      await upsertSubscriptionMirror(customerRecord.userId, subscription);
     } else {
       // Nothing was written, so there is no user whose cached answer changed.
       Sentry.captureMessage(
