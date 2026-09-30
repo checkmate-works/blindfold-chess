@@ -272,22 +272,25 @@ CREATE POLICY "feed_items_select" ON "feed_items"
 DROP POLICY IF EXISTS "feed_items_insert" ON "feed_items";
 
 -- =============================================================================
--- stripe_customers (server-side only writes, user can read own)
+-- stripe_customers (server-side only; deny-by-default)
 -- =============================================================================
 ALTER TABLE "stripe_customers" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "stripe_customers" FORCE ROW LEVEL SECURITY;
 
+-- The owner-scoped SELECT policy is dropped and not recreated. No PostgREST
+-- client reads this table (the grant is revoked in foreign_keys_and_grants.sql
+-- too), and a policy with no grant behind it is a policy someone will one day
+-- "fix" by adding the grant back.
 DROP POLICY IF EXISTS "stripe_customers_select" ON "stripe_customers";
-CREATE POLICY "stripe_customers_select" ON "stripe_customers"
-  FOR SELECT USING (auth.uid() = user_id);
 
 -- =============================================================================
--- subscriptions (server-side only writes, user can read own)
+-- subscriptions (server-side only; deny-by-default)
 -- =============================================================================
 ALTER TABLE "subscriptions" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "subscriptions" FORCE ROW LEVEL SECURITY;
 
+-- Dropped for the same reason as stripe_customers_select above.
 DROP POLICY IF EXISTS "subscriptions_select" ON "subscriptions";
-CREATE POLICY "subscriptions_select" ON "subscriptions"
-  FOR SELECT USING (auth.uid() = user_id);
 
 -- =============================================================================
 -- stripe_webhook_events (server-side only; deny-by-default)
