@@ -7,19 +7,14 @@ import type { ThemeOption } from '@/lib/themes/types';
 import { editDraftStorageKey } from '../_lib/edit-draft-storage';
 import type { PuzzleEditDraftV1 } from '../_lib/edit-draft-storage';
 import { EditPuzzlePreviewClient } from './EditPuzzlePreviewClient';
+import { mockPush, mockReplace } from './__test-support__/stable-router';
 
-// Router spies. `replace` bounces back to /edit when no draft exists; `push`
-// is used by both Back-to-edit and the successful Save branch. The object is
-// stable across renders so the hydration effect (which depends on `router`)
-// doesn't reshoot after every setState.
-const { mockPush, mockReplace, stableRouter } = vi.hoisted(() => {
-  const push = vi.fn();
-  const replace = vi.fn();
-  return { mockPush: push, mockReplace: replace, stableRouter: { push, replace } };
+vi.mock('@/i18n/routing', async () => {
+  const { stableRouter } = await import('./__test-support__/stable-router');
+  return {
+    useRouter: () => stableRouter,
+  };
 });
-vi.mock('@/i18n/routing', () => ({
-  useRouter: () => stableRouter,
-}));
 
 // Identity translator; stringifies params so moveCount is assertable.
 vi.mock('@/i18n/use-safe-translations', () => ({

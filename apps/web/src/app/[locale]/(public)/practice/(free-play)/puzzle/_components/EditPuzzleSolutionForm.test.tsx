@@ -4,15 +4,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { editDraftStorageKey } from '../_lib/edit-draft-storage';
 import type { PuzzleEditDraftV1 } from '../_lib/edit-draft-storage';
 import { EditPuzzleSolutionForm } from './EditPuzzleSolutionForm';
+import { mockPush, mockReplace } from './__test-support__/stable-router';
 
-const { mockPush, mockReplace, stableRouter } = vi.hoisted(() => {
-  const push = vi.fn();
-  const replace = vi.fn();
-  return { mockPush: push, mockReplace: replace, stableRouter: { push, replace } };
+vi.mock('@/i18n/routing', async () => {
+  const { stableRouter } = await import('./__test-support__/stable-router');
+  return {
+    useRouter: () => stableRouter,
+  };
 });
-vi.mock('@/i18n/routing', () => ({
-  useRouter: () => stableRouter,
-}));
 
 vi.mock('@/i18n/use-safe-translations');
 
