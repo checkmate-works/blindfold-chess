@@ -1,10 +1,11 @@
 'use server';
 
+import type { ActionResult } from '@/lib/action-types';
 import { updatePositionEntry } from '@/lib/positions/user-position-mutations';
 import { validatePositionMutationData } from '@/lib/positions/validation';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 
-export type UpdatePositionResult = { success: true } | { error: string };
+export type UpdatePositionResult = ActionResult;
 
 export async function updatePosition(data: {
   id: string;

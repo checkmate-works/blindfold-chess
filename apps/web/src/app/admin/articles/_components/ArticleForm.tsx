@@ -16,6 +16,8 @@ import { AdminFormTopBar } from '@/app/admin/_components/forms';
 import { useDraftPublishWorkflow } from '@/app/admin/_hooks/useDraftPublishWorkflow';
 import { LuSettings } from 'react-icons/lu';
 
+import type { ActionResult } from '@/lib/action-types';
+
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 
 import { PublishedConfirmModal } from '../../_components/PublishedConfirmModal';
@@ -33,9 +35,7 @@ type ArticleFormProps = {
   defaultSlug?: string;
   defaultLocale?: string;
   categories?: { id: string; name: string }[];
-  onSaveDraft: (
-    data: ArticleEditData
-  ) => Promise<{ success: true; id: string } | { error: string }>;
+  onSaveDraft: (data: ArticleEditData) => Promise<ActionResult<{ id: string }>>;
   labels: {
     formTitle: string;
     slug: string;

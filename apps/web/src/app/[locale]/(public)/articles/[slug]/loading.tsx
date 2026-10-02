@@ -1,6 +1,6 @@
 import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { BreadcrumbSkeleton } from '@/app/[locale]/_components/Breadcrumb';
-import { ProseArticle } from '@/app/[locale]/_components/ProseArticle';
+import { ProseArticleSkeleton } from '@/app/[locale]/_components/ProseArticleSkeleton';
 
 /**
  * Article detail loading skeleton.
@@ -25,28 +25,7 @@ export default function ArticleLoading() {
       </PageTitle>
 
       <PagePanel>
-        <ProseArticle className="animate-pulse">
-          <div className="space-y-3">
-            <div className="h-4 bg-muted rounded w-full" />
-            <div className="h-4 bg-muted rounded w-11/12" />
-            <div className="h-4 bg-muted rounded w-10/12" />
-            <div className="h-4 bg-muted rounded w-full" />
-            <div className="h-4 bg-muted rounded w-9/12" />
-          </div>
-
-          <div className="mt-6 space-y-3">
-            <div className="h-5 bg-muted rounded w-1/3" />
-            <div className="h-4 bg-muted rounded w-full" />
-            <div className="h-4 bg-muted rounded w-11/12" />
-            <div className="h-4 bg-muted rounded w-3/4" />
-          </div>
-
-          <div className="mt-6 space-y-3">
-            <div className="h-4 bg-muted rounded w-full" />
-            <div className="h-4 bg-muted rounded w-10/12" />
-            <div className="h-4 bg-muted rounded w-4/5" />
-          </div>
-        </ProseArticle>
+        <ProseArticleSkeleton />
 
         {/* Publish date */}
         <div className="flex justify-end animate-pulse">

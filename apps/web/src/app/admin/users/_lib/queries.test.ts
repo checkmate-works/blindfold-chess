@@ -11,6 +11,20 @@ import {
 } from './__test-helpers__/admin-users-mocks';
 import { EMPTY_ADMIN_USER_FILTERS } from './filters';
 
+/** Three auth users with nothing but an id and an email — the page most filter tests paginate over. */
+const THREE_USERS = [
+  { id: 'user-1', email: 'a@example.com' },
+  { id: 'user-2', email: 'b@example.com' },
+  { id: 'user-3', email: 'c@example.com' },
+];
+
+/** The profiles behind {@link THREE_USERS} for the country filter: two in JP, one in US, none banned. */
+const JP_US_JP_PROFILES = [
+  { id: 'user-1', country: 'JP', bannedAt: null, deletedAt: null },
+  { id: 'user-2', country: 'US', bannedAt: null, deletedAt: null },
+  { id: 'user-3', country: 'JP', bannedAt: null, deletedAt: null },
+];
+
 // `population.ts` now pulls in `@/lib/supabase/list-all-auth-users` →
 // `@/lib/supabase/admin` → `server-only`. The package is a no-op import
 // guard for production; in tests it throws when loaded outside an RSC.
@@ -826,19 +840,10 @@ describe('fetchRankStats', () => {
 
 describe('fetchFilteredUsers — country filter', () => {
   it('should return only users from the specified country', async () => {
-    const mockUsers = [
-      { id: 'user-1', email: 'a@example.com' },
-      { id: 'user-2', email: 'b@example.com' },
-      { id: 'user-3', email: 'c@example.com' },
-    ];
-    const mockAdminClient = createMockAdminClient(mockUsers);
+    const mockAdminClient = createMockAdminClient(THREE_USERS);
 
     await setupFilterMock({
-      profileRows: [
-        { id: 'user-1', country: 'JP', bannedAt: null, deletedAt: null },
-        { id: 'user-2', country: 'US', bannedAt: null, deletedAt: null },
-        { id: 'user-3', country: 'JP', bannedAt: null, deletedAt: null },
-      ],
+      profileRows: JP_US_JP_PROFILES,
       rankRows: STANDARD_RANK_ROWS,
       userRankRows: [],
     });
@@ -913,12 +918,7 @@ describe('fetchFilteredUsers — country filter', () => {
 
 describe('fetchFilteredUsers — rank filter', () => {
   it('should return only users with the specified rank', async () => {
-    const mockUsers = [
-      { id: 'user-1', email: 'a@example.com' },
-      { id: 'user-2', email: 'b@example.com' },
-      { id: 'user-3', email: 'c@example.com' },
-    ];
-    const mockAdminClient = createMockAdminClient(mockUsers);
+    const mockAdminClient = createMockAdminClient(THREE_USERS);
 
     await setupFilterMock({
       profileRows: [
@@ -944,12 +944,7 @@ describe('fetchFilteredUsers — rank filter', () => {
   });
 
   it('should return only unranked users when rank filter is mukyu', async () => {
-    const mockUsers = [
-      { id: 'user-1', email: 'a@example.com' },
-      { id: 'user-2', email: 'b@example.com' },
-      { id: 'user-3', email: 'c@example.com' },
-    ];
-    const mockAdminClient = createMockAdminClient(mockUsers);
+    const mockAdminClient = createMockAdminClient(THREE_USERS);
 
     await setupFilterMock({
       profileRows: [
@@ -1066,12 +1061,7 @@ describe('fetchFilteredUsers — rank filter', () => {
 
 describe('fetchFilteredUsers — username/email filter', () => {
   it('should match users by partial username (case-insensitive)', async () => {
-    const mockUsers = [
-      { id: 'user-1', email: 'a@example.com' },
-      { id: 'user-2', email: 'b@example.com' },
-      { id: 'user-3', email: 'c@example.com' },
-    ];
-    const mockAdminClient = createMockAdminClient(mockUsers);
+    const mockAdminClient = createMockAdminClient(THREE_USERS);
 
     await setupFilterMock({
       profileRows: [
@@ -1293,19 +1283,10 @@ describe('fetchFilteredUsers — combined filters (AND)', () => {
 
 describe('fetchUsersPageData — hasFilter branch', () => {
   it('should use in-memory filtering when only country filter is specified (no status)', async () => {
-    const mockUsers = [
-      { id: 'user-1', email: 'a@example.com' },
-      { id: 'user-2', email: 'b@example.com' },
-      { id: 'user-3', email: 'c@example.com' },
-    ];
-    const mockAdminClient = createMockAdminClient(mockUsers);
+    const mockAdminClient = createMockAdminClient(THREE_USERS);
 
     await setupFilterMock({
-      profileRows: [
-        { id: 'user-1', country: 'JP', bannedAt: null, deletedAt: null },
-        { id: 'user-2', country: 'US', bannedAt: null, deletedAt: null },
-        { id: 'user-3', country: 'JP', bannedAt: null, deletedAt: null },
-      ],
+      profileRows: JP_US_JP_PROFILES,
       rankRows: STANDARD_RANK_ROWS,
       userRankRows: [],
     });
@@ -1351,19 +1332,10 @@ describe('fetchUsersPageData — hasFilter branch', () => {
 
 describe('fetchCountryStats — with country/rank filters', () => {
   it('should pass country filter to fetchFilteredUsers and return stats accordingly', async () => {
-    const mockUsers = [
-      { id: 'user-1', email: 'a@example.com' },
-      { id: 'user-2', email: 'b@example.com' },
-      { id: 'user-3', email: 'c@example.com' },
-    ];
-    const mockAdminClient = createMockAdminClient(mockUsers);
+    const mockAdminClient = createMockAdminClient(THREE_USERS);
 
     await setupFilterMock({
-      profileRows: [
-        { id: 'user-1', country: 'JP', bannedAt: null, deletedAt: null },
-        { id: 'user-2', country: 'US', bannedAt: null, deletedAt: null },
-        { id: 'user-3', country: 'JP', bannedAt: null, deletedAt: null },
-      ],
+      profileRows: JP_US_JP_PROFILES,
       rankRows: STANDARD_RANK_ROWS,
       userRankRows: [],
     });
@@ -1378,12 +1350,7 @@ describe('fetchCountryStats — with country/rank filters', () => {
   });
 
   it('should pass rank filter to fetchFilteredUsers and return country stats for ranked users', async () => {
-    const mockUsers = [
-      { id: 'user-1', email: 'a@example.com' },
-      { id: 'user-2', email: 'b@example.com' },
-      { id: 'user-3', email: 'c@example.com' },
-    ];
-    const mockAdminClient = createMockAdminClient(mockUsers);
+    const mockAdminClient = createMockAdminClient(THREE_USERS);
 
     await setupFilterMock({
       profileRows: [
@@ -1412,12 +1379,7 @@ describe('fetchRankStats — with country/rank filters', () => {
   it('should pass country filter and return rank stats for that country', async () => {
     // Only include JP users in the test data to match what fetchFilteredUsers returns after country=JP
     // The mock doesn't do real SQL filtering, so we only include users that would survive the filter
-    const mockUsers = [
-      { id: 'user-1', email: 'a@example.com' },
-      { id: 'user-2', email: 'b@example.com' },
-      { id: 'user-3', email: 'c@example.com' },
-    ];
-    const mockAdminClient = createMockAdminClient(mockUsers);
+    const mockAdminClient = createMockAdminClient(THREE_USERS);
 
     await setupFilterMock({
       profileRows: [
@@ -1451,12 +1413,7 @@ describe('fetchRankStats — with country/rank filters', () => {
   });
 
   it('should pass rank filter and return rank stats for matching users only', async () => {
-    const mockUsers = [
-      { id: 'user-1', email: 'a@example.com' },
-      { id: 'user-2', email: 'b@example.com' },
-      { id: 'user-3', email: 'c@example.com' },
-    ];
-    const mockAdminClient = createMockAdminClient(mockUsers);
+    const mockAdminClient = createMockAdminClient(THREE_USERS);
 
     await setupFilterMock({
       profileRows: [
@@ -1853,11 +1810,7 @@ describe('fetchSignupMethodStats', () => {
     const mockAdminClient = createMockAdminClient(mockUsers);
 
     await setupFilterMock({
-      profileRows: [
-        { id: 'user-1', country: 'JP', bannedAt: null, deletedAt: null },
-        { id: 'user-2', country: 'US', bannedAt: null, deletedAt: null },
-        { id: 'user-3', country: 'JP', bannedAt: null, deletedAt: null },
-      ],
+      profileRows: JP_US_JP_PROFILES,
       rankRows: STANDARD_RANK_ROWS,
       userRankRows: [],
     });

@@ -2,13 +2,14 @@
 
 import { eq } from 'drizzle-orm';
 
+import type { ActionResult } from '@/lib/action-types';
 import { puzzleSolutions } from '@/lib/db';
 import { diffSolutionMoves } from '@/lib/db/diff-fields';
 import { updatePositionEntry } from '@/lib/positions/user-position-mutations';
 import { normalizePuzzleMoves, validatePuzzleMutationData } from '@/lib/positions/validation';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 
-export type UpdatePuzzleResult = { success: true } | { error: string };
+export type UpdatePuzzleResult = ActionResult;
 
 /**
  * Update a puzzle. All authoring fields (title, description, FEN, solution

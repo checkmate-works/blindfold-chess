@@ -1,10 +1,11 @@
 'use server';
 
+import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { deleteAccount } from '@/lib/users/delete-account';
 
-export type DeleteOwnAccountResult = { success: true } | { error: string };
+export type DeleteOwnAccountResult = ActionResult;
 
 /**
  * Delete the caller's own account (anonymizing retained UGC — see

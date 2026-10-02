@@ -4,13 +4,12 @@ import { revalidateAdCreatives } from '@/app/admin/ads/_lib/revalidate';
 import { AD_CREATIVES_BUCKET, storagePathFromPublicUrl } from '@/app/admin/ads/_lib/storage';
 import { AD_CREATIVE_LIMITS } from '@/app/admin/ads/_lib/validation';
 import { eq } from 'drizzle-orm';
-import sharp from 'sharp';
 
-import { buildAdminImageStoragePath, parseAdminImageUpload } from '@/lib/admin-images/validation';
+import { processAndUploadAdminImage } from '@/lib/admin-images/process-and-upload';
+import { parseAdminImageUpload } from '@/lib/admin-images/validation';
 import { DEFAULT_AD_ALT } from '@/lib/ads/thumbnail';
 import { guardAdminApiMutation } from '@/lib/api-mutation-guard';
 import { adCreatives, db } from '@/lib/db';
-import { SHARP_DECODE_OPTIONS } from '@/lib/images/sharp-options';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { persistWithUploadRollback } from '@/lib/supabase/persist-with-upload-rollback';
@@ -143,28 +142,17 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const refused = refuseTargetForKind(row, target);
   if (refused) return refused;
 
-  const maxEdge = MAX_LONG_EDGE[target];
-  let processed: Buffer;
-  try {
-    processed = await sharp(Buffer.from(buffer), SHARP_DECODE_OPTIONS)
-      .rotate()
-      .resize(maxEdge, maxEdge, { fit: 'inside', withoutEnlargement: true })
-      .toBuffer();
-  } catch {
-    return NextResponse.json({ error: 'invalid_file_type' }, { status: 400 });
-  }
-
-  const storagePath = buildAdminImageStoragePath(id, file.type);
-
   const supabase = createAdminClient();
-  const { error: uploadError } = await supabase.storage
-    .from(AD_CREATIVES_BUCKET)
-    .upload(storagePath, processed, { contentType: file.type, upsert: false });
-  if (uploadError) {
-    return NextResponse.json({ error: 'upload_failed' }, { status: 500 });
-  }
-
-  const { data: urlData } = supabase.storage.from(AD_CREATIVES_BUCKET).getPublicUrl(storagePath);
+  const uploaded = await processAndUploadAdminImage({
+    supabase,
+    bucket: AD_CREATIVES_BUCKET,
+    ownerId: id,
+    file,
+    buffer,
+    maxLongEdge: MAX_LONG_EDGE[target],
+  });
+  if (!uploaded.ok) return uploaded.response;
+  const { storagePath, publicUrl } = uploaded;
 
   // The previous image this upload replaces, for cleanup after the row flips.
   const previousPath = storagePathFromPublicUrl(currentImageUrl(row, target));
@@ -173,7 +161,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     persist: () =>
       db
         .update(adCreatives)
-        .set({ ...targetImageColumns(row, target, urlData.publicUrl, alt), updatedAt: new Date() })
+        .set({ ...targetImageColumns(row, target, publicUrl, alt), updatedAt: new Date() })
         .where(eq(adCreatives.id, id)),
     rollback: () => supabase.storage.from(AD_CREATIVES_BUCKET).remove([storagePath]),
   });
@@ -191,7 +179,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     }
   }
 
-  return NextResponse.json({ imagePath: urlData.publicUrl }, { status: 200 });
+  return NextResponse.json({ imagePath: publicUrl }, { status: 200 });
 }
 
 /**

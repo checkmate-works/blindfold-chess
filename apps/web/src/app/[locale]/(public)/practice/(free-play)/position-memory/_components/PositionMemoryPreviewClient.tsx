@@ -1,7 +1,5 @@
 'use client';
 
-import { useMemo } from 'react';
-
 import { BoardFrame } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
@@ -15,9 +13,9 @@ import {
   DraftPreviewSkeleton,
 } from '@/app/[locale]/(public)/practice/(free-play)/_components/DraftPreviewLayout';
 import { useDraftPreview } from '@/app/[locale]/(public)/practice/(free-play)/_hooks/use-draft-preview';
+import { useResolvedDraftTags } from '@/app/[locale]/(public)/practice/(free-play)/_hooks/use-resolved-draft-tags';
 import { stashGrantedRanks } from '@/app/[locale]/(public)/practice/_lib/granted-ranks-stash';
 
-import { resolveOptionsByIds } from '../../_lib/resolve-options';
 import { createPosition } from '../_actions/createPosition';
 import { clearDraft, readDraft } from '../_lib/draft-storage';
 import type { PositionMemoryDraftV1 } from '../_lib/draft-storage';
@@ -57,13 +55,10 @@ export function PositionMemoryPreviewClient({ availableThemes, availableChunks }
       submitErrorMessage: t('createError'),
     });
 
-  const selectedThemes = useMemo(
-    () => resolveOptionsByIds(draft?.themeIds ?? [], availableThemes),
-    [draft?.themeIds, availableThemes]
-  );
-  const selectedChunks = useMemo(
-    () => resolveOptionsByIds(draft?.chunkIds ?? [], availableChunks),
-    [draft?.chunkIds, availableChunks]
+  const { selectedThemes, selectedChunks } = useResolvedDraftTags(
+    draft,
+    availableThemes,
+    availableChunks
   );
 
   const stepIndicator = <PositionMemoryStepIndicator current="preview" />;

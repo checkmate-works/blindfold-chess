@@ -6,6 +6,7 @@ import { revalidatePath, revalidateTag } from 'next/cache';
 import { requireAdmin } from '@/app/admin/_lib/auth';
 import { and, eq } from 'drizzle-orm';
 
+import type { ActionResult } from '@/lib/action-types';
 import { parseBoardAnnotations } from '@/lib/board-annotations/parse';
 import { glossaryPositionsTag } from '@/lib/cache-tags';
 import { db, glossaryTermPositions } from '@/lib/db';
@@ -29,7 +30,7 @@ export async function updateTermPositionAnnotations(
   rowId: string,
   termSlug: string,
   annotations: unknown
-): Promise<{ success: true } | { error: string }> {
+): Promise<ActionResult> {
   const auth = await requireAdmin();
   if ('error' in auth) return auth;
 

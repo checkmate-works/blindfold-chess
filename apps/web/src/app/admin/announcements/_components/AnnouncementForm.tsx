@@ -12,6 +12,8 @@ import { UnsavedChangesDialog } from '@/app/_components/UnsavedChangesDialog';
 import { AdminFormTopBar } from '@/app/admin/_components/forms';
 import { useDraftPublishWorkflow } from '@/app/admin/_hooks/useDraftPublishWorkflow';
 
+import type { ActionResult } from '@/lib/action-types';
+
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 
 import { PublishedConfirmModal } from '../../_components/PublishedConfirmModal';
@@ -30,9 +32,7 @@ type AnnouncementFormProps = {
   isPublished?: boolean;
   lockSlug?: boolean;
   lockLocale?: boolean;
-  onSaveDraft: (
-    data: AnnouncementEditData
-  ) => Promise<{ success: true; id: string } | { error: string }>;
+  onSaveDraft: (data: AnnouncementEditData) => Promise<ActionResult<{ id: string }>>;
   labels: {
     formTitle: string;
     slug: string;

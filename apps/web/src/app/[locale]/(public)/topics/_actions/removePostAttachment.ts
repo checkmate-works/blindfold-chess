@@ -2,6 +2,7 @@
 
 import { and, eq } from 'drizzle-orm';
 
+import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
 import {
   db,
@@ -19,7 +20,7 @@ import { logActivityEvent } from '@/lib/users/activity-log';
 
 export type AttachmentKind = 'pgn' | 'fen' | 'image' | 'video' | 'embed';
 
-export type RemovePostAttachmentResult = { success: true } | { error: string };
+export type RemovePostAttachmentResult = ActionResult;
 
 /**
  * Drizzle table reference per attachment kind that follows the 1:0..1

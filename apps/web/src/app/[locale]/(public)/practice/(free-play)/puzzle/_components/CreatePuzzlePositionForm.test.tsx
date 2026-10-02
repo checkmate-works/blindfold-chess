@@ -9,22 +9,19 @@ import type { ThemeOption } from '@/lib/themes/types';
 import { DRAFT_STORAGE_KEY } from '../_lib/draft-storage';
 import type { PuzzleDraftV1 } from '../_lib/draft-storage';
 import { CreatePuzzlePositionForm } from './CreatePuzzlePositionForm';
+import { mockPush, mockReplace } from './__test-support__/stable-router';
 
-// Router spies — stable object so the `resumed` effect's `router` dep
-// doesn't reshoot the effect after every setState.
-const { mockPush, mockReplace, stableRouter } = vi.hoisted(() => {
-  const push = vi.fn();
-  const replace = vi.fn();
-  return { mockPush: push, mockReplace: replace, stableRouter: { push, replace } };
+vi.mock('@/i18n/routing', async () => {
+  const { stableRouter } = await import('./__test-support__/stable-router');
+  return {
+    useRouter: () => stableRouter,
+    Link: ({ href, children, ...rest }: { href: string; children: ReactNode }) => (
+      <a href={href} {...rest}>
+        {children}
+      </a>
+    ),
+  };
 });
-vi.mock('@/i18n/routing', () => ({
-  useRouter: () => stableRouter,
-  Link: ({ href, children, ...rest }: { href: string; children: ReactNode }) => (
-    <a href={href} {...rest}>
-      {children}
-    </a>
-  ),
-}));
 
 // `?resumed=1` detection. Individual tests override via mockSearchParamsGet.
 const { mockSearchParamsGet } = vi.hoisted(() => ({

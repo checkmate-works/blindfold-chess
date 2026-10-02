@@ -7,24 +7,14 @@ import type { ThemeOption } from '@/lib/themes/types';
 import { DRAFT_STORAGE_KEY } from '../_lib/draft-storage';
 import type { PuzzleDraftV1 } from '../_lib/draft-storage';
 import { PuzzlePreviewClient } from './PuzzlePreviewClient';
+import { mockPush, mockReplace } from './__test-support__/stable-router';
 
-// Router spies. `replace` is used when no draft exists; `push` is used by
-// both Back-to-edit and the successful Create branch. The returned object is
-// reused across renders — `PuzzlePreviewClient`'s hydration `useEffect`
-// depends on `router`, so a fresh-object-per-render would reshoot the effect
-// after every setState and loop forever.
-const { mockPush, mockReplace, stableRouter } = vi.hoisted(() => {
-  const push = vi.fn();
-  const replace = vi.fn();
+vi.mock('@/i18n/routing', async () => {
+  const { stableRouter } = await import('./__test-support__/stable-router');
   return {
-    mockPush: push,
-    mockReplace: replace,
-    stableRouter: { push, replace },
+    useRouter: () => stableRouter,
   };
 });
-vi.mock('@/i18n/routing', () => ({
-  useRouter: () => stableRouter,
-}));
 
 vi.mock('@/i18n/use-safe-translations', () => ({
   useSafeTranslations: () => (key: string, params?: Record<string, unknown>) =>

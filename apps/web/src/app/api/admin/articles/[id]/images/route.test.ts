@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import { checkRateLimit } from '@/lib/security/rate-limit';
 import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
 
+import { adminUserId, imageRouteCaller } from '../../../__test-support__/image-route-mocks';
 import { DELETE, POST } from './route';
 
 /**
@@ -31,32 +31,18 @@ vi.mock('@/lib/supabase/server');
 vi.mock('@/lib/security/rate-limit');
 
 vi.mock('@/lib/db', async () => {
-  const schema = await actualDbSchema();
-  return {
-    ...schema,
-    db: {
-      select: () => ({
-        from: (table: unknown) => ({
-          where: () => ({
-            limit: () => (table === schema.userRoles ? mockUserRoleRows() : mockArticleRows()),
-          }),
-        }),
-      }),
-    },
-  };
+  const { adminImageRouteDbMock } = await import('../../../__test-support__/image-route-mocks');
+
+  return adminImageRouteDbMock(() => ({
+    userRoleRows: mockUserRoleRows,
+    resourceRows: mockArticleRows,
+  }));
 });
 
-// Never reached by these tests — the requests are rejected, or stop at the
-// article lookup — but the route imports it at module load.
-vi.mock('sharp', () => ({
-  default: vi.fn(() => ({
-    rotate: vi.fn().mockReturnThis(),
-    resize: vi.fn().mockReturnThis(),
-    toBuffer: vi.fn(),
-  })),
-}));
+vi.mock('sharp', () =>
+  import('../../../__test-support__/image-route-mocks').then((m) => m.sharpMock())
+);
 
-const adminUserId = 'admin-00000000-0000-0000-0000-000000000001';
 const articleId = 'article-00000000-0000-0000-0000-000000000001';
 const params = Promise.resolve({ id: articleId });
 
@@ -67,22 +53,7 @@ function request(method: 'POST' | 'DELETE', body?: string): Request {
   });
 }
 
-type ImageRouteHandler = (
-  request: Request,
-  context: { params: Promise<{ id: string }> }
-) => Promise<Response | undefined>;
-
-/**
- * The handlers' inferred return type admits `undefined`, because the shared
- * upload parser's error slot is optional and one branch returns it directly.
- * No path actually produces it, so fail loudly here rather than spread
- * non-null assertions across every assertion below.
- */
-async function call(handler: ImageRouteHandler, request: Request): Promise<Response> {
-  const response = await handler(request, { params });
-  if (!response) throw new Error('handler returned no response');
-  return response;
-}
+const call = imageRouteCaller(params);
 
 beforeEach(() => {
   vi.clearAllMocks();
