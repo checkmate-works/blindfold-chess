@@ -146,3 +146,25 @@ For production use with custom recipient email addresses:
    ```
 
 **Note**: The contact form only sends emails to `CONTACT_TO_EMAIL` (where you receive inquiries). Users who submit the form do not receive a copy. The `REPLY-TO` header is set to the user's email address, so you can reply directly from your email client.
+
+### Awin Daily Slack Report (Optional)
+
+A Vercel Cron Job posts yesterday's Awin affiliate numbers to a Slack channel each morning. Without these variables the job fails loudly (500, captured to Sentry) rather than posting nothing; the rest of the app is unaffected. Setup steps, including how to find the publisher ID and region, are in [awin-daily-report-setup.md](awin-daily-report-setup.md).
+
+```bash
+# Awin Publisher API token (per user, reaches every account the user can open)
+# Get from: https://ui.awin.com/awin-api — "Show my API token"
+AWIN_API_TOKEN=your-awin-token
+
+# Publisher account ID and the region the report endpoints accept for it.
+# Find both once with `pnpm --filter web awin:check`; the cron never discovers them.
+AWIN_PUBLISHER_ID=2801536
+AWIN_REGION=US
+
+# Slack Incoming Webhook bound to the affiliate channel. Named for the report,
+# not generically: one webhook posts to one channel, so another notification
+# needs another URL. The URL is a secret — anyone holding it can post.
+AWIN_REPORT_SLACK_WEBHOOK_URL=https://hooks.slack.com/services/T.../B.../...
+```
+
+Locally, the same four variables in `.env.local` let `pnpm --filter web awin:check --slack` post the report by hand.

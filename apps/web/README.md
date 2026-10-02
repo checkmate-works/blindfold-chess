@@ -181,13 +181,19 @@ under `src/app/[locale]/_components/` (rendering).
 
 ## Cron Jobs
 
-Monthly leaderboard badges are granted automatically via a Vercel Cron Job.
+Scheduled jobs run as Vercel Cron Jobs, configured in `vercel.json` (`crons`
+field) and implemented as route handlers under `src/app/api/cron/`. Two have
+setup of their own:
 
-- **Schedule:** Every 1st of the month at UTC 01:00 (JST 10:00)
-- **Endpoint:** `/api/cron/grant-monthly-leaderboard-badges`
-- **Configuration:** `vercel.json` (`crons` field)
+- **Monthly leaderboard badges** — every 1st of the month at UTC 01:00 (JST
+  10:00), `/api/cron/grant-monthly-leaderboard-badges`. Needs only
+  `CRON_SECRET` below.
+- **Awin daily Slack report** — daily at UTC 02:00 (JST 11:00),
+  `/api/cron/awin-daily-report`. Posts yesterday's affiliate clicks and the
+  week's transactions to Slack. Needs an Awin API token and a Slack webhook;
+  see [docs/awin-daily-report-setup.md](docs/awin-daily-report-setup.md).
 
-The route handler authenticates incoming requests by comparing the `Authorization: Bearer <token>` header against `process.env.CRON_SECRET`. Vercel Cron Jobs automatically attach this header when a `CRON_SECRET` environment variable exists on the project, but **the value itself is not auto-generated — you must create and set it yourself**.
+Every route handler authenticates incoming requests by comparing the `Authorization: Bearer <token>` header against `process.env.CRON_SECRET`. Vercel Cron Jobs automatically attach this header when a `CRON_SECRET` environment variable exists on the project, but **the value itself is not auto-generated — you must create and set it yourself**.
 
 ### Setting up `CRON_SECRET`
 
