@@ -97,6 +97,14 @@ This repository uses [`anthropics/claude-code-action`](https://github.com/anthro
 
 **This automation is owner-only** (`github.actor == 'k0kishima'`). It does not run on fork PRs and does not run on comments from anyone other than the owner. External contributors should not rely on or attempt to invoke it.
 
+### Claude Code cloud sessions
+
+The owner also drives this repository from Claude Code **cloud sessions** (claude.ai/code, the Code tab of the Claude mobile app, `claude --cloud`, routines). A cloud session is a fresh clone on an Anthropic-managed VM with no `.env.local`, no database and none of the app's secrets, so the repository carries everything the session needs:
+
+- `.claude/settings.json` registers a `SessionStart` hook that runs `scripts/claude-cloud/session-start.sh`. The script exits immediately unless `CLAUDE_CODE_REMOTE=true` (only cloud VMs set it), so local sessions and GitHub Actions are unaffected. In the cloud it puts Node 24 and pnpm 10 on `PATH`, runs `pnpm install --frozen-lockfile` (skipped when `node_modules` already matches the lockfile), copies the Stockfish engine files, and prints a summary of what the session can and cannot do.
+- `scripts/claude-cloud/setup-environment.sh` is the environment **Setup script**. The cloud image ships Node 20/21/22 only; paste this file into the environment's Setup script field at claude.ai/code (Environments) once, and Node 24 + pnpm land in the cached environment snapshot instead of being installed on every new VM. The hook falls back to running it when the environment was not configured, at the cost of a slower first start.
+- Quality gates in the cloud are the same as everywhere else: `pnpm lint`, `pnpm typecheck`, `pnpm test`. They are pre-approved in `.claude/settings.json` so a session running from a phone does not stall on permission prompts. `pnpm build` needs a Postgres connection and does not work in a cloud session; pages that query the database fail under `pnpm dev` too. Changes that need a manual check should say so in the PR.
+
 ## Versioning Strategy
 
 This project follows [Semantic Versioning](https://semver.org/).
