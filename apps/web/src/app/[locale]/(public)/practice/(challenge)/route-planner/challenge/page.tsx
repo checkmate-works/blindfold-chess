@@ -1,5 +1,6 @@
 import { createPracticeChallengePage } from '@/app/[locale]/(public)/practice/_lib/createPracticeSessionPages';
 
+import { parsePieceSelectionSeed } from '../_lib/query-params';
 import { RoutePlannerChallengeSetup } from './_components/RoutePlannerChallengeSetup';
 
 const { generateMetadata, generateStaticParams, Page } = createPracticeChallengePage({
@@ -10,7 +11,12 @@ const { generateMetadata, generateStaticParams, Page } = createPracticeChallenge
     { labelKey: 'routePlanner.title', href: '/practice/route-planner' },
     { labelKey: 'modeTimed' },
   ],
-  renderContent: ({ locale }) => <RoutePlannerChallengeSetup locale={locale} />,
+  renderContent: ({ locale, searchParams }) => (
+    <RoutePlannerChallengeSetup
+      locale={locale}
+      initialPieceSelection={parsePieceSelectionSeed(searchParams.piece)}
+    />
+  ),
 });
 
 export { generateMetadata, generateStaticParams };

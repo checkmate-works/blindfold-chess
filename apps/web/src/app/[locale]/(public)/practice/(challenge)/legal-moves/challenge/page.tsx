@@ -1,5 +1,6 @@
 import { createPracticeChallengePage } from '@/app/[locale]/(public)/practice/_lib/createPracticeSessionPages';
 
+import { parsePieceSelectionSeed } from '../_lib/query-params';
 import { LegalMovesChallengeSetup } from './_components/LegalMovesChallengeSetup';
 
 const { generateMetadata, generateStaticParams, Page } = createPracticeChallengePage({
@@ -10,7 +11,12 @@ const { generateMetadata, generateStaticParams, Page } = createPracticeChallenge
     { labelKey: 'legalMoves.title', href: '/practice/legal-moves' },
     { labelKey: 'modeTimed' },
   ],
-  renderContent: ({ locale }) => <LegalMovesChallengeSetup locale={locale} />,
+  renderContent: ({ locale, searchParams }) => (
+    <LegalMovesChallengeSetup
+      locale={locale}
+      initialPieceSelection={parsePieceSelectionSeed(searchParams.piece)}
+    />
+  ),
 });
 
 export { generateMetadata, generateStaticParams };

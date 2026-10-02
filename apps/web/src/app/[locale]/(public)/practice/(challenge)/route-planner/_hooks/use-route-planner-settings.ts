@@ -26,6 +26,10 @@ const DEFAULTS: RoutePlannerSettings = {
  * used to seed its state from that missing parameter. Storage survives those
  * hops, so the setup screens read it and the query keeps the one job it can do
  * honestly — carrying the piece into a session that is already starting.
+ *
+ * A link can still choose the setting the challenge setup opens with — the
+ * leaderboard's challenge button does — through `useQuerySeededSettings`,
+ * which writes that choice into storage rather than reading it alongside.
  */
 export function useRoutePlannerSettings() {
   return useLocalStorageSettings(STORAGE_KEY, DEFAULTS);
