@@ -1,23 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
-
 const mockSelectFromWhere = vi.fn();
 const mockInsertValues = vi.fn().mockResolvedValue(undefined);
 
-vi.mock('@/lib/db', async () => ({
-  ...(await actualDbSchema()),
-  db: {
-    select: () => ({
-      from: () => ({
-        where: () => mockSelectFromWhere(),
-      }),
-    }),
-    insert: () => ({
-      values: mockInsertValues,
-    }),
-  },
-}));
+vi.mock('@/lib/db', async () => {
+  const { rateLimitDbMock } = await import('./__test-support__/rate-limit-db-mock');
+
+  return rateLimitDbMock(() => ({
+    selectFromWhere: mockSelectFromWhere,
+    insertValues: mockInsertValues,
+  }));
+});
 
 const {
   checkIpRateLimitGuard,
