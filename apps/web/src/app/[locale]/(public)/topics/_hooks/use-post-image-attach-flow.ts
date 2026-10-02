@@ -61,7 +61,7 @@ export function usePostImageAttachFlow({
       files: readonly File[]
     ): Promise<{ error?: string }> => {
       const created = await createAction(formData);
-      if (!created.ok) return { error: created.error };
+      if ('error' in created) return { error: created.error };
       const upload = await uploadPostImages(created.postId, files);
       if (!upload.ok) return { error: upload.error };
       // Clear dirty FIRST, then hand the navigation to the deferred-nav

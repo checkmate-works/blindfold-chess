@@ -11,4 +11,6 @@
  * action wrappers can `import type` it for their signatures without
  * tripping the Next.js "only async functions may be exported" rule.
  */
-export type ImageAttachResult = { ok: true; postId: string } | { ok: false; error: string };
+import type { ActionResult } from '@/lib/action-types';
+
+export type ImageAttachResult = ActionResult<{ postId: string }>;
