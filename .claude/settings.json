@@ -3,5 +3,27 @@
   "worktree": {
     "baseRef": "head",
     "symlinkDirectories": ["apps/web/engines"]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(pnpm lint)",
+      "Bash(pnpm typecheck)",
+      "Bash(pnpm test)",
+      "Bash(pnpm --filter web check:i18n)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/scripts/claude-cloud/session-start.sh",
+            "timeout": 900
+          }
+        ]
+      }
+    ]
   }
 }
