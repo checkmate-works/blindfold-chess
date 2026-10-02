@@ -68,6 +68,16 @@
     },
     "copy-stockfish": {
       "outputs": ["public/stockfish/**"]
+    },
+    "awin:check": {
+      "cache": false,
+      "env": [
+        "AWIN_API_TOKEN",
+        "AWIN_PUBLISHER_ID",
+        "AWIN_REGION",
+        "AWIN_TIMEZONE",
+        "AWIN_DATE"
+      ]
     }
   }
 }

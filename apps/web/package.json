@@ -10,6 +10,7 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "check:i18n": "tsx ./scripts/check-i18n-namespaces.ts && tsx ./scripts/check-i18n-scopes.ts",
+    "awin:check": "tsx scripts/awin-check.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
