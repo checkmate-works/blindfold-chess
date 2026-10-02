@@ -421,7 +421,9 @@ async function main(): Promise<void> {
     } else {
       log(`  region=${found.region} returned ${found.rows.length} advertiser row(s):`);
       printAdvertiserReport(found.rows);
-      log(`  -> Set AWIN_REGION=${found.region} to skip discovery next time.`);
+      if (!process.env.AWIN_REGION) {
+        log(`  -> Set AWIN_REGION=${found.region} to skip discovery next time.`);
+      }
     }
 
     // 3. Transactions for the trailing week, summed by clickRef
