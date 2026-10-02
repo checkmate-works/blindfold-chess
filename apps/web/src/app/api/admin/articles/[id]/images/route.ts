@@ -1,12 +1,11 @@
 import { NextResponse } from 'next/server';
 
 import { eq } from 'drizzle-orm';
-import sharp from 'sharp';
 
-import { buildAdminImageStoragePath, parseAdminImageUpload } from '@/lib/admin-images/validation';
+import { processAndUploadAdminImage } from '@/lib/admin-images/process-and-upload';
+import { parseAdminImageUpload } from '@/lib/admin-images/validation';
 import { guardAdminApiMutation, parseJsonBody } from '@/lib/api-mutation-guard';
 import { articleImages, articles, db } from '@/lib/db';
-import { SHARP_DECODE_OPTIONS } from '@/lib/images/sharp-options';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { persistWithUploadRollback } from '@/lib/supabase/persist-with-upload-rollback';
@@ -22,12 +21,6 @@ import { ARTICLE_IMAGES_BUCKET } from './image-validation';
  * Image Optimization Transformation cost story.
  */
 const ARTICLE_IMAGE_MAX_LONG_EDGE = 1600;
-
-/**
- * Decompression-bomb ceiling (input pixels) for the Sharp decode. Matches the
- * post-image policy (50 MP): rejects a highly compressible huge-dimension
- * image that sits under the 5 MB byte cap but would decode to ~GBs of memory.
- */
 
 async function verifyArticleExists(articleId: string): Promise<NextResponse | null> {
   const [article] = await db
@@ -66,44 +59,17 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
   const { file, buffer, altText } = fileResult;
 
-  // Every accepted image is a raster (jpeg/png/webp — SVG is rejected by the
-  // MIME allow-list and magic-byte check in parseAndValidateFile, so it never
-  // reaches here). Run it through Sharp: rotate (bake in EXIF orientation,
-  // strip metadata) → cap long edge to ARTICLE_IMAGE_MAX_LONG_EDGE →
-  // re-encode in the source format. `limitInputPixels` rejects a
-  // decompression bomb before the full decode.
-  let payload: Buffer | ArrayBuffer = buffer;
-  let payloadByteLength = file.size;
-  try {
-    const processed = await sharp(Buffer.from(buffer), SHARP_DECODE_OPTIONS)
-      .rotate()
-      .resize(ARTICLE_IMAGE_MAX_LONG_EDGE, ARTICLE_IMAGE_MAX_LONG_EDGE, {
-        fit: 'inside',
-        withoutEnlargement: true,
-      })
-      .toBuffer();
-    payload = processed;
-    payloadByteLength = processed.byteLength;
-  } catch {
-    return NextResponse.json({ error: 'invalid_file_type' }, { status: 400 });
-  }
-
-  const storagePath = buildAdminImageStoragePath(articleId, file.type);
-
   const supabase = createAdminClient();
-
-  const { error: uploadError } = await supabase.storage
-    .from(ARTICLE_IMAGES_BUCKET)
-    .upload(storagePath, payload, {
-      contentType: file.type,
-      upsert: false,
-    });
-
-  if (uploadError) {
-    return NextResponse.json({ error: 'upload_failed' }, { status: 500 });
-  }
-
-  const { data: urlData } = supabase.storage.from(ARTICLE_IMAGES_BUCKET).getPublicUrl(storagePath);
+  const uploaded = await processAndUploadAdminImage({
+    supabase,
+    bucket: ARTICLE_IMAGES_BUCKET,
+    ownerId: articleId,
+    file,
+    buffer,
+    maxLongEdge: ARTICLE_IMAGE_MAX_LONG_EDGE,
+  });
+  if (!uploaded.ok) return uploaded.response;
+  const { storagePath, publicUrl, byteLength } = uploaded;
 
   const persistence = await persistWithUploadRollback({
     persist: async () => {
@@ -112,12 +78,12 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         .values({
           articleId,
           storagePath,
-          publicUrl: urlData.publicUrl,
+          publicUrl,
           altText,
           contentType: file.type,
-          // Use the post-Sharp byte length so the row reflects what's
-          // actually in Storage; SVG falls through with its original size.
-          fileSize: payloadByteLength,
+          // The post-Sharp byte length, so the row reflects what is actually
+          // in Storage.
+          fileSize: byteLength,
         })
         .returning();
       return inserted;
