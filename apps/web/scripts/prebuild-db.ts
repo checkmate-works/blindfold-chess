@@ -8,7 +8,10 @@
  * connection because some pages (e.g. glossary/letter/[letter]) use
  * generateStaticParams to query the database at build time.
  * A full `pnpm build` therefore requires a running database.
- * This is by design — production builds always have DB access.
+ * This is by design — production builds always have DB access, and
+ * Preview builds get an isolated Supabase preview branch whose empty
+ * database this script bootstraps (see "Preview deployments get their
+ * database from Supabase Branching" in apps/web/CLAUDE.md).
  */
 import 'dotenv/config';
 import { execSync } from 'node:child_process';
