@@ -39,7 +39,11 @@
         "OPENAI_API_KEY",
         "OPENAI_MODEL",
         "CRON_SECRET",
-        "CSP_REPORT_SAMPLE_RATE"
+        "CSP_REPORT_SAMPLE_RATE",
+        "AWIN_API_TOKEN",
+        "AWIN_PUBLISHER_ID",
+        "AWIN_REGION",
+        "AWIN_REPORT_SLACK_WEBHOOK_URL"
       ]
     },
     "dev": {
