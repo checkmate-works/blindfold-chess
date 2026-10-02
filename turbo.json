@@ -76,7 +76,8 @@
         "AWIN_PUBLISHER_ID",
         "AWIN_REGION",
         "AWIN_TIMEZONE",
-        "AWIN_DATE"
+        "AWIN_DATE",
+        "AWIN_REPORT_SLACK_WEBHOOK_URL"
       ]
     }
   }

@@ -43,12 +43,24 @@
  *   against the dashboard with its report timezone set to the same value.
  * - `AWIN_DATE` — `yyyy-MM-dd` to report on; defaults to yesterday in
  *   `AWIN_TIMEZONE`.
+ * - `AWIN_REPORT_SLACK_WEBHOOK_URL` — only read with `--slack`. An Incoming
+ *   Webhook is bound to one channel at the moment it is issued, so the name
+ *   carries the purpose: a second notification needs a second URL and a
+ *   second variable, not a shared `SLACK_WEBHOOK_URL`. Redacted like the
+ *   token; the path of the URL is the credential.
  *
  * Rate limit is 20 calls per minute per user. Region discovery is the only
  * loop, and it is capped at the 20 documented regions, so a single run
  * stays within budget; a 429 is honoured via `Retry-After` regardless.
  *
  * Run from the repo root: `pnpm --filter web awin:check`
+ *
+ * With `--slack` the same summary is also posted to the webhook, in the
+ * shape the daily cron will use. That is the connectivity check worth
+ * doing before the cron exists: a `curl` of `{"text":"test"}` proves the
+ * URL, but not that the real message renders, and the first thing anyone
+ * will want to change after seeing it in the channel is the layout.
+ * `pnpm --filter web awin:check --slack`
  */
 import dotenv from 'dotenv';
 
@@ -86,6 +98,15 @@ if (!token) {
   process.exit(1);
 }
 
+const postToSlack = process.argv.includes('--slack');
+const slackWebhookUrl = process.env.AWIN_REPORT_SLACK_WEBHOOK_URL;
+if (postToSlack && !slackWebhookUrl) {
+  console.error(
+    'AWIN_REPORT_SLACK_WEBHOOK_URL is not set. Add it to apps/web/.env.local or drop --slack.'
+  );
+  process.exit(1);
+}
+
 /**
  * Replaces the token wherever it might appear in text that is about to be
  * printed. This is not a precaution: on a 401, Awin's error body is
@@ -95,7 +116,9 @@ if (!token) {
  * goes through here so a future `console.log` of a body cannot bypass it.
  */
 function redact(text: string): string {
-  return text.split(token as string).join('***');
+  let out = text.split(token as string).join('***');
+  if (slackWebhookUrl) out = out.split(slackWebhookUrl).join('<webhook url>');
+  return out;
 }
 
 function log(...parts: unknown[]): void {
@@ -254,6 +277,71 @@ function printTransactionsByClickRef(transactions: Row[]): void {
   );
 }
 
+interface PublisherSummary {
+  publisherId: string;
+  region: string | null;
+  advertiserRows: Row[];
+  transactions: Row[];
+  transactionsFrom: string;
+}
+
+/**
+ * The message the daily cron would post, as Slack mrkdwn. One block per
+ * publisher: the day's totals, a line per advertiser, then the trailing
+ * week's transactions summed by clickRef. Kept to plain `text` rather than
+ * Block Kit so the same string reads correctly in a notification preview
+ * and on mobile, where blocks collapse unpredictably.
+ */
+function buildSlackMessage(
+  reportDate: string,
+  timezone: string,
+  summaries: PublisherSummary[]
+): string {
+  const lines: string[] = [`*Awin daily report — ${reportDate} (${timezone})*`];
+  for (const s of summaries) {
+    lines.push('');
+    lines.push(`publisher ${s.publisherId}${s.region ? ` · region ${s.region}` : ''}`);
+    if (s.advertiserRows.length === 0) {
+      lines.push('• no advertiser rows for this day');
+    } else {
+      const clicks = s.advertiserRows.reduce((n, r) => n + num(r, 'clicks'), 0);
+      const impressions = s.advertiserRows.reduce((n, r) => n + num(r, 'impressions'), 0);
+      lines.push(`• clicks *${clicks}* · impressions ${impressions}`);
+      for (const r of s.advertiserRows) {
+        const comm = num(r, 'totalComm');
+        lines.push(
+          `    ${String(r.advertiserName ?? r.advertiserId ?? '?')}: ${num(r, 'clicks')} clicks, ` +
+            `${num(r, 'pendingNo')} pending / ${num(r, 'confirmedNo')} confirmed / ` +
+            `${num(r, 'declinedNo')} declined, ${comm} ${String(r.currency ?? '')}`
+        );
+      }
+    }
+    lines.push(`• transactions ${s.transactionsFrom}..${reportDate}: ${s.transactions.length}`);
+    const byRef = new Map<string, number>();
+    for (const t of s.transactions) {
+      const ref = clickRefOf(t);
+      byRef.set(ref, (byRef.get(ref) ?? 0) + 1);
+    }
+    for (const [ref, n] of byRef) lines.push(`    clickRef ${ref}: ${n}`);
+  }
+  return lines.join('\n');
+}
+
+async function sendToSlack(text: string): Promise<void> {
+  const res = await fetch(slackWebhookUrl as string, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text }),
+  });
+  const body = await res.text();
+  if (!res.ok) {
+    // Slack answers a bad webhook with a bare word: `invalid_payload`,
+    // `channel_not_found`, `no_service` (URL revoked). Surface it as is.
+    throw new Error(`Slack webhook -> HTTP ${res.status}: ${body.slice(0, 200)}`);
+  }
+  log(`  Slack webhook -> HTTP ${res.status} ${body}`);
+}
+
 async function main(): Promise<void> {
   const timezone = process.env.AWIN_TIMEZONE ?? 'UTC';
   const reportDate = process.env.AWIN_DATE ?? shiftDate(dateInZone(new Date(), timezone), -1);
@@ -287,6 +375,7 @@ async function main(): Promise<void> {
     );
   }
 
+  const summaries: PublisherSummary[] = [];
   for (const publisherId of publisherIds) {
     log(`\n=== publisher ${publisherId} ===`);
 
@@ -344,13 +433,29 @@ async function main(): Promise<void> {
       endDate: `${reportDate}T23:59:59`,
       timezone,
     });
+    let transactions: Row[] = [];
     if (tx.status !== 200) {
       log(`  ${describeFailure(txPath, tx)}`);
     } else {
-      const transactions = Array.isArray(tx.body) ? (tx.body as Row[]) : [];
+      transactions = Array.isArray(tx.body) ? (tx.body as Row[]) : [];
       log(`  ${transactions.length} transaction(s); by clickRef (= ad_creatives.id):`);
       printTransactionsByClickRef(transactions);
     }
+
+    summaries.push({
+      publisherId,
+      region: found?.region ?? null,
+      advertiserRows: found?.rows ?? [],
+      transactions,
+      transactionsFrom: txStart,
+    });
+  }
+
+  if (postToSlack) {
+    log('\n[slack] POST to AWIN_REPORT_SLACK_WEBHOOK_URL');
+    const text = buildSlackMessage(reportDate, timezone, summaries);
+    log(text.replace(/^/gm, '  | '));
+    await sendToSlack(text);
   }
 
   log('\nCompare the [2/3] clicks/impressions against the dashboard for the same day and');
