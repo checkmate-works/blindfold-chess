@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { parsePieceParam } from './query-params';
+import { parsePieceParam, parsePieceSelectionSeed } from './query-params';
 
 describe('parsePieceParam', () => {
   it('narrows the session to the named piece', () => {
@@ -21,6 +21,20 @@ describe('parsePieceParam', () => {
         selectedPiece: 'random',
         selectedPieces: ['k', 'q', 'r', 'b', 'n'],
       });
+    }
+  });
+});
+
+describe('parsePieceSelectionSeed', () => {
+  it('maps a piece name to its piece type, and keeps random', () => {
+    expect(parsePieceSelectionSeed('rook')).toBe('r');
+    expect(parsePieceSelectionSeed('knight')).toBe('n');
+    expect(parsePieceSelectionSeed('random')).toBe('random');
+  });
+
+  it('names no seed when the param is missing, repeated or unknown', () => {
+    for (const raw of [undefined, '', 'pawn', 'KNIGHT', 'constructor', ['rook']]) {
+      expect(parsePieceSelectionSeed(raw)).toBeUndefined();
     }
   });
 });

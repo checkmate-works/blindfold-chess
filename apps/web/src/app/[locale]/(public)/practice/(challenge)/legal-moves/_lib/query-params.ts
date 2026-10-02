@@ -47,3 +47,16 @@ export function parsePieceParam(raw: string | undefined): {
     selectedPiece === 'random' ? [...PIECE_TYPES] : [PIECE_NAME_TO_TYPE[selectedPiece]];
   return { selectedPiece, selectedPieces };
 }
+
+/**
+ * The selection a link to the challenge setup screen asks it to open with, or
+ * `undefined` when the `piece` parameter is missing or names no valid choice.
+ * Unlike `parsePieceParam` there is no fallback: an absent choice must leave
+ * the player's stored setting alone rather than reset it to `random`.
+ */
+export function parsePieceSelectionSeed(raw: unknown): PieceType | 'random' | undefined {
+  if (typeof raw !== 'string' || !(VALID_PIECE_NAMES as readonly string[]).includes(raw)) {
+    return undefined;
+  }
+  return raw === 'random' ? 'random' : PIECE_NAME_TO_TYPE[raw];
+}
