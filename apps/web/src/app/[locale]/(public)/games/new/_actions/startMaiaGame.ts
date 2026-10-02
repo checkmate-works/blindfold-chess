@@ -1,16 +1,15 @@
 'use server';
 
+import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndCheckBan } from '@/lib/auth';
 import { consumeMaiaGamePoint } from '@/lib/points';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/security/rate-limit';
 import { UUID_RE } from '@/lib/validations/uuid';
 
-type StartMaiaGameResult =
-  | { ok: true; charged: boolean }
-  | {
-      ok: false;
-      error: 'signInRequired' | 'banned' | 'rateLimited' | 'insufficient_balance' | 'invalid';
-    };
+type StartMaiaGameResult = ActionResult<
+  { charged: boolean },
+  'signInRequired' | 'banned' | 'rateLimited' | 'insufficient_balance' | 'invalid'
+>;
 
 /**
  * Charge for one Maia game at game-start (per-game billing — model B).
@@ -35,22 +34,22 @@ type StartMaiaGameResult =
 
 export async function startMaiaGame(clientGameId: string): Promise<StartMaiaGameResult> {
   if (typeof clientGameId !== 'string' || !UUID_RE.test(clientGameId)) {
-    return { ok: false, error: 'invalid' };
+    return { error: 'invalid' };
   }
 
   const auth = await authenticateAndCheckBan();
   if ('error' in auth) {
-    return { ok: false, error: auth.error === 'banned' ? 'banned' : 'signInRequired' };
+    return { error: auth.error === 'banned' ? 'banned' : 'signInRequired' };
   }
 
   const rateLimitResult = await checkRateLimit(auth.user.id, RATE_LIMITS.startMaiaGame);
   if ('error' in rateLimitResult) {
-    return { ok: false, error: 'rateLimited' };
+    return { error: 'rateLimited' };
   }
 
   const result = await consumeMaiaGamePoint(auth.user.id, clientGameId);
   if (!result.ok) {
-    return { ok: false, error: 'insufficient_balance' };
+    return { error: 'insufficient_balance' };
   }
 
   // Balance moved — refresh the points page so the user sees it on return.
@@ -59,5 +58,5 @@ export async function startMaiaGame(clientGameId: string): Promise<StartMaiaGame
   // force a server re-render of the page the player is leaving, right as the
   // game launches.
 
-  return { ok: true, charged: !result.alreadyCharged };
+  return { success: true, charged: !result.alreadyCharged };
 }

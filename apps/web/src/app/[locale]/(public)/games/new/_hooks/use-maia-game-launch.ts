@@ -47,7 +47,7 @@ export function useMaiaGameLaunch({ navigateToGame }: Params) {
       if (!gameIdRef.current) gameIdRef.current = crypto.randomUUID();
       const chargeId = gameIdRef.current;
       const result = await startMaiaGame(chargeId);
-      if (!result.ok) {
+      if ('error' in result) {
         setIsLoading(false);
         if (result.error === 'insufficient_balance') setPointInfoOpen(true);
         // signInRequired / banned / rateLimited: the Maia card is only
