@@ -64,6 +64,10 @@
  */
 import dotenv from 'dotenv';
 
+import type { AwinAdvertiserRow, AwinTransaction } from '../src/lib/ads/awin-report/awin-client';
+import { postSlackMessage } from '../src/lib/ads/awin-report/slack';
+import { buildDailySummary, formatSlackMessage } from '../src/lib/ads/awin-report/summary';
+
 dotenv.config({ path: ['.env.local', '.env'] });
 
 const BASE_URL = 'https://api.awin.com';
@@ -277,69 +281,41 @@ function printTransactionsByClickRef(transactions: Row[]): void {
   );
 }
 
+/**
+ * Builds the same message the cron posts, through the same code
+ * (`src/lib/ads/awin-report/summary.ts`), so what this run puts in the
+ * channel is exactly what the daily job will. Rows are passed through
+ * untyped from the probe's raw responses; the summary only reads the
+ * numeric fields and tolerates their absence.
+ */
+function slackMessageFor(
+  reportDate: string,
+  timezone: string,
+  summaries: PublisherSummary[]
+): string {
+  return summaries
+    .map((s) =>
+      formatSlackMessage(
+        buildDailySummary({
+          reportDate,
+          timezone,
+          publisherId: s.publisherId,
+          region: s.region ?? '?',
+          advertiserRows: s.advertiserRows as unknown as AwinAdvertiserRow[],
+          transactionsFrom: s.transactionsFrom,
+          transactions: s.transactions as unknown as AwinTransaction[],
+        })
+      )
+    )
+    .join('\n\n');
+}
+
 interface PublisherSummary {
   publisherId: string;
   region: string | null;
   advertiserRows: Row[];
   transactions: Row[];
   transactionsFrom: string;
-}
-
-/**
- * The message the daily cron would post, as Slack mrkdwn. One block per
- * publisher: the day's totals, a line per advertiser, then the trailing
- * week's transactions summed by clickRef. Kept to plain `text` rather than
- * Block Kit so the same string reads correctly in a notification preview
- * and on mobile, where blocks collapse unpredictably.
- */
-function buildSlackMessage(
-  reportDate: string,
-  timezone: string,
-  summaries: PublisherSummary[]
-): string {
-  const lines: string[] = [`*Awin daily report — ${reportDate} (${timezone})*`];
-  for (const s of summaries) {
-    lines.push('');
-    lines.push(`publisher ${s.publisherId}${s.region ? ` · region ${s.region}` : ''}`);
-    if (s.advertiserRows.length === 0) {
-      lines.push('• no advertiser rows for this day');
-    } else {
-      const clicks = s.advertiserRows.reduce((n, r) => n + num(r, 'clicks'), 0);
-      const impressions = s.advertiserRows.reduce((n, r) => n + num(r, 'impressions'), 0);
-      lines.push(`• clicks *${clicks}* · impressions ${impressions}`);
-      for (const r of s.advertiserRows) {
-        const comm = num(r, 'totalComm');
-        lines.push(
-          `    ${String(r.advertiserName ?? r.advertiserId ?? '?')}: ${num(r, 'clicks')} clicks, ` +
-            `${num(r, 'pendingNo')} pending / ${num(r, 'confirmedNo')} confirmed / ` +
-            `${num(r, 'declinedNo')} declined, ${comm} ${String(r.currency ?? '')}`
-        );
-      }
-    }
-    lines.push(`• transactions ${s.transactionsFrom}..${reportDate}: ${s.transactions.length}`);
-    const byRef = new Map<string, number>();
-    for (const t of s.transactions) {
-      const ref = clickRefOf(t);
-      byRef.set(ref, (byRef.get(ref) ?? 0) + 1);
-    }
-    for (const [ref, n] of byRef) lines.push(`    clickRef ${ref}: ${n}`);
-  }
-  return lines.join('\n');
-}
-
-async function sendToSlack(text: string): Promise<void> {
-  const res = await fetch(slackWebhookUrl as string, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text }),
-  });
-  const body = await res.text();
-  if (!res.ok) {
-    // Slack answers a bad webhook with a bare word: `invalid_payload`,
-    // `channel_not_found`, `no_service` (URL revoked). Surface it as is.
-    throw new Error(`Slack webhook -> HTTP ${res.status}: ${body.slice(0, 200)}`);
-  }
-  log(`  Slack webhook -> HTTP ${res.status} ${body}`);
 }
 
 async function main(): Promise<void> {
@@ -455,9 +431,10 @@ async function main(): Promise<void> {
 
   if (postToSlack) {
     log('\n[slack] POST to AWIN_REPORT_SLACK_WEBHOOK_URL');
-    const text = buildSlackMessage(reportDate, timezone, summaries);
+    const text = slackMessageFor(reportDate, timezone, summaries);
     log(text.replace(/^/gm, '  | '));
-    await sendToSlack(text);
+    await postSlackMessage(slackWebhookUrl as string, text);
+    log('  Slack webhook -> HTTP 200 ok');
   }
 
   log('\nCompare the [2/3] clicks/impressions against the dashboard for the same day and');
