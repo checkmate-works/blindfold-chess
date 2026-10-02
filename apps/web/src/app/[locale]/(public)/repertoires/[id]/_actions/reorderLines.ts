@@ -1,8 +1,8 @@
 'use server';
 
+import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
 import type { ArrangementItem } from '@/lib/repertoires/line-order';
-import type { SaveArrangementResult } from '@/lib/repertoires/mutations';
 import { saveRepertoireArrangement } from '@/lib/repertoires/mutations';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 
@@ -19,12 +19,14 @@ import { RATE_LIMITS } from '@/lib/security/rate-limit';
 export async function reorderLines(input: {
   repertoireId: string;
   items: ArrangementItem[];
-}): Promise<SaveArrangementResult | { ok: false; error: string }> {
+}): Promise<ActionResult> {
   const guard = await authenticateAndGuard(RATE_LIMITS.reorderRepertoireLines);
-  if ('error' in guard) return { ok: false, error: guard.error };
-  return saveRepertoireArrangement({
+  if ('error' in guard) return { error: guard.error };
+  const result = await saveRepertoireArrangement({
     repertoireId: input.repertoireId,
     items: input.items,
     viewerId: guard.user.id,
   });
+  if (!result.ok) return { error: result.error };
+  return { success: true };
 }

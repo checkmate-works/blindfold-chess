@@ -140,7 +140,7 @@ export function EditRepertoireForm({
       side,
       openingIds: canLinkOpenings ? openingIds : [],
     });
-    if (!result.ok) {
+    if ('error' in result) {
       setPending(false);
       submitError.report(
         repertoireErrorField(result.error, FIELDS),

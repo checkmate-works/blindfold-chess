@@ -206,7 +206,7 @@ export function LineForm({
           saveShapes({ repertoireId, positionKey, shapes: value })
         ),
       ]);
-      if (noteResults.some((r) => !r.ok)) {
+      if (noteResults.some((r) => 'error' in r)) {
         // Note / markup writes belong to no single control (they span every
         // annotated position), so this one stays form-level.
         return { ok: false, field: null, message: t('errors.generic') };

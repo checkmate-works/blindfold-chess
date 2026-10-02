@@ -2,9 +2,9 @@
 
 import type { Side } from '@blindfold-chess/types';
 
+import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
 import { updateRepertoireDetails } from '@/lib/repertoires/mutations';
-import type { UpdateRepertoireResult } from '@/lib/repertoires/mutations';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 
 /**
@@ -22,9 +22,9 @@ export async function updateRepertoire(input: {
   /** Course-level blurb; trimmed to null server-side when blank. */
   description: string | null;
   openingIds: string[];
-}): Promise<UpdateRepertoireResult | { ok: false; error: string }> {
+}): Promise<ActionResult<{ name: string }>> {
   const guard = await authenticateAndGuard(RATE_LIMITS.updateRepertoire);
-  if ('error' in guard) return { ok: false, error: guard.error };
+  if ('error' in guard) return { error: guard.error };
 
   const result = await updateRepertoireDetails({
     repertoireId: input.repertoireId,
@@ -34,5 +34,6 @@ export async function updateRepertoire(input: {
     description: input.description,
     openingIds: input.openingIds,
   });
-  return result;
+  if (!result.ok) return { error: result.error };
+  return { success: true, name: result.name };
 }

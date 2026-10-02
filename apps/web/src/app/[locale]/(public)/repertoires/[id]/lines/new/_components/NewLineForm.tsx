@@ -47,12 +47,12 @@ export function NewLineForm({ repertoireId, ...rest }: Props) {
       submitLabels={{ idle: tNew('submit'), saving: tNew('saving') }}
       saveLine={async ({ name, chapterId, pgn }) => {
         const result = await addLine({ repertoireId, name, chapterId, pgn });
-        return result.ok
-          ? {
+        return 'error' in result
+          ? { ok: false, error: result.error }
+          : {
               ok: true,
               nextHref: `/repertoires/${repertoireId}/lines/${result.lineNo}?toast=line_added`,
-            }
-          : { ok: false, error: result.error };
+            };
       }}
     />
   );

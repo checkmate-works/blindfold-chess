@@ -32,7 +32,7 @@ export function RepertoireLineActionsMenu({ repertoireId, lineNo, locale }: Prop
   function handleConfirm() {
     return run(
       () => deleteLine({ repertoireId, lineNo }),
-      (result) => (result.ok ? null : t('errors.generic')),
+      (result) => ('error' in result ? t('errors.generic') : null),
       () => router.push(`/repertoires/${repertoireId}`)
     );
   }

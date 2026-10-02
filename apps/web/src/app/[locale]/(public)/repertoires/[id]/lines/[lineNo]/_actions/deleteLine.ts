@@ -1,8 +1,8 @@
 'use server';
 
+import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
 import { deleteRepertoireLine } from '@/lib/repertoires/mutations';
-import type { DeleteLineResult } from '@/lib/repertoires/mutations';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 
 /**
@@ -14,13 +14,14 @@ import { RATE_LIMITS } from '@/lib/security/rate-limit';
 export async function deleteLine(input: {
   repertoireId: string;
   lineNo: number;
-}): Promise<DeleteLineResult | { ok: false; error: string }> {
+}): Promise<ActionResult> {
   const guard = await authenticateAndGuard(RATE_LIMITS.deleteRepertoireLine);
-  if ('error' in guard) return { ok: false, error: guard.error };
+  if ('error' in guard) return { error: guard.error };
   const result = await deleteRepertoireLine({
     repertoireId: input.repertoireId,
     lineNo: input.lineNo,
     viewerId: guard.user.id,
   });
-  return result;
+  if (!result.ok) return { error: result.error };
+  return { success: true };
 }

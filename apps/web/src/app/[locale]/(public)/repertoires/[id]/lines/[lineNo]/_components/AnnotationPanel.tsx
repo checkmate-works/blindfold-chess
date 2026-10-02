@@ -106,7 +106,7 @@ export function AnnotationPanel({
       ? await saveAnnotation({ repertoireId, positionKey, text: value })
       : await deleteAnnotation({ repertoireId, positionKey });
     setPending(false);
-    if (!result.ok) {
+    if ('error' in result) {
       setFailed(true);
       return;
     }
@@ -119,7 +119,7 @@ export function AnnotationPanel({
     setDeleteError(null);
     const result = await deleteAnnotation({ repertoireId, positionKey });
     setDeleting(false);
-    if (!result.ok) {
+    if ('error' in result) {
       setDeleteError(t('error'));
       return;
     }

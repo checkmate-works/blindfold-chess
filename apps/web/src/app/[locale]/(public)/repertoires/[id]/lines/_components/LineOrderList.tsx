@@ -175,7 +175,7 @@ export function LineOrderList({
     setError(null);
 
     const result = await reorderLines({ repertoireId, items: toArrangementItems(rows) });
-    if (!result.ok) {
+    if ('error' in result) {
       setPending(false);
       setError(labels.error);
       // The submitted set no longer matches the repertoire's live lines (a line
