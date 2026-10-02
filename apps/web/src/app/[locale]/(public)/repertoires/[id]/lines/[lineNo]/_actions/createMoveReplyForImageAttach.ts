@@ -16,6 +16,6 @@ export async function createMoveReplyForImageAttach(
   formData: FormData
 ): Promise<ImageAttachResult> {
   const config = await buildMoveReplyConfig({ locale, topicKey, postId, formData });
-  if ('error' in config) return { ok: false, error: config.error ?? 'Invalid move' };
+  if ('error' in config) return { error: config.error ?? 'Invalid move' };
   return createReplyForImageAttachBase(config);
 }

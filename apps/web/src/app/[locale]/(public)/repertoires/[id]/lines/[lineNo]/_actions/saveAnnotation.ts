@@ -1,8 +1,8 @@
 'use server';
 
+import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
 import { upsertAnnotation } from '@/lib/repertoires/annotation-mutations';
-import type { UpsertAnnotationResult } from '@/lib/repertoires/annotation-mutations';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 
 /**
@@ -18,14 +18,15 @@ export async function saveAnnotation(input: {
   repertoireId: string;
   positionKey: string;
   text: string;
-}): Promise<UpsertAnnotationResult | { ok: false; error: string }> {
+}): Promise<ActionResult<{ text: string; updatedAt: Date }>> {
   const guard = await authenticateAndGuard(RATE_LIMITS.saveRepertoireAnnotation);
-  if ('error' in guard) return { ok: false, error: guard.error };
+  if ('error' in guard) return { error: guard.error };
   const result = await upsertAnnotation({
     repertoireId: input.repertoireId,
     viewerId: guard.user.id,
     positionKey: input.positionKey,
     text: input.text,
   });
-  return result;
+  if (!result.ok) return { error: result.error };
+  return { success: true, text: result.text, updatedAt: result.updatedAt };
 }

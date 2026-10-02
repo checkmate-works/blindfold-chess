@@ -18,6 +18,6 @@ export async function createMovePostForImageAttach(
   formData: FormData
 ): Promise<ImageAttachResult> {
   const config = await buildMovePostConfig({ locale, topicKey, lineNo, ply, formData });
-  if ('error' in config) return { ok: false, error: config.error ?? 'Invalid move' };
+  if ('error' in config) return { error: config.error ?? 'Invalid move' };
   return createPostForImageAttachBase(config);
 }

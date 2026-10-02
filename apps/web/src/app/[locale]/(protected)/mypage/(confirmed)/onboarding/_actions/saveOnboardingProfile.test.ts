@@ -43,7 +43,7 @@ describe('saveOnboardingProfile', () => {
 
       const result = await saveOnboardingProfile({ country: 'JP', bio: '' });
 
-      expect(result).toEqual({ ok: false, error: 'signInRequired' });
+      expect(result).toEqual({ error: 'signInRequired' });
       expect(mockWhere).not.toHaveBeenCalled();
     });
 
@@ -52,7 +52,7 @@ describe('saveOnboardingProfile', () => {
 
       const result = await saveOnboardingProfile({ country: 'JP', bio: '' });
 
-      expect(result).toEqual({ ok: false, error: 'banned' });
+      expect(result).toEqual({ error: 'banned' });
       expect(mockWhere).not.toHaveBeenCalled();
     });
   });
@@ -61,7 +61,7 @@ describe('saveOnboardingProfile', () => {
     it('should reject a country code that is not two letters', async () => {
       const result = await saveOnboardingProfile({ country: 'USA', bio: '' });
 
-      expect(result).toEqual({ ok: false, error: 'invalidCountry' });
+      expect(result).toEqual({ error: 'invalidCountry' });
       expect(mockWhere).not.toHaveBeenCalled();
     });
 
@@ -73,21 +73,21 @@ describe('saveOnboardingProfile', () => {
     it('should reject a two-letter code that is not a real ISO 3166-1 country', async () => {
       const result = await saveOnboardingProfile({ country: 'ZZ', bio: '' });
 
-      expect(result).toEqual({ ok: false, error: 'invalidCountry' });
+      expect(result).toEqual({ error: 'invalidCountry' });
       expect(mockWhere).not.toHaveBeenCalled();
     });
 
     it('should accept a lowercase real code by uppercasing it before the check', async () => {
       const result = await saveOnboardingProfile({ country: 'jp', bio: '' });
 
-      expect(result).toEqual({ ok: true });
+      expect(result).toEqual({ success: true });
       expect(mockSet).toHaveBeenCalledWith(expect.objectContaining({ country: 'JP' }));
     });
 
     it('should store null for an empty country', async () => {
       const result = await saveOnboardingProfile({ country: '   ', bio: '' });
 
-      expect(result).toEqual({ ok: true });
+      expect(result).toEqual({ success: true });
       expect(mockSet).toHaveBeenCalledWith(expect.objectContaining({ country: null }));
     });
   });
@@ -96,7 +96,7 @@ describe('saveOnboardingProfile', () => {
     it('should reject a bio longer than 500 characters', async () => {
       const result = await saveOnboardingProfile({ country: '', bio: 'a'.repeat(501) });
 
-      expect(result).toEqual({ ok: false, error: 'bioTooLong' });
+      expect(result).toEqual({ error: 'bioTooLong' });
       expect(mockWhere).not.toHaveBeenCalled();
     });
   });
@@ -105,7 +105,7 @@ describe('saveOnboardingProfile', () => {
     it('should persist both columns and expire the public profile cache', async () => {
       const result = await saveOnboardingProfile({ country: 'JP', bio: 'I love chess' });
 
-      expect(result).toEqual({ ok: true });
+      expect(result).toEqual({ success: true });
       expect(mockSet).toHaveBeenCalledWith(
         expect.objectContaining({ country: 'JP', bio: 'I love chess' })
       );

@@ -20,10 +20,10 @@ vi.mock('@/app/[locale]/(public)/repertoires/[id]/lines/[lineNo]/_actions/saveAn
 }));
 vi.mock(
   '@/app/[locale]/(public)/repertoires/[id]/lines/[lineNo]/_actions/deleteAnnotation',
-  () => ({ deleteAnnotation: vi.fn().mockResolvedValue({ ok: true }) })
+  () => ({ deleteAnnotation: vi.fn().mockResolvedValue({ success: true }) })
 );
 vi.mock('@/app/[locale]/(public)/repertoires/[id]/lines/[lineNo]/_actions/saveShapes', () => ({
-  saveShapes: vi.fn().mockResolvedValue({ ok: true }),
+  saveShapes: vi.fn().mockResolvedValue({ success: true }),
 }));
 
 // The board builder is irrelevant here and expensive to mount. This stand-in
@@ -125,7 +125,7 @@ describe('LineForm', () => {
   });
 
   it('keeps a failed note write form-level and does not navigate', async () => {
-    mockSaveAnnotation.mockResolvedValue({ ok: false });
+    mockSaveAnnotation.mockResolvedValue({ error: 'unauthorized' });
     const { container } = renderForm(async () => ({ ok: true, nextHref: '/done' }));
     draftNote('Controls the centre.');
 

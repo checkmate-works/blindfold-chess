@@ -22,7 +22,7 @@ export async function importLichessGame(url: string): Promise<ImportLichessGameR
   const detected = detectAttachmentInput(url);
 
   if (detected.kind === 'lichess_unsupported') {
-    return { ok: false, error: 'lichess_unsupported' };
+    return { error: 'lichess_unsupported' };
   }
 
   const gameId =
@@ -32,12 +32,12 @@ export async function importLichessGame(url: string): Promise<ImportLichessGameR
         ? detected.embedId
         : null;
   if (gameId === null) {
-    return { ok: false, error: 'not_lichess_url' };
+    return { error: 'not_lichess_url' };
   }
 
   const result = await fetchLichessGamePgn(gameId);
   if (!result.ok) {
-    return { ok: false, error: result.error };
+    return { error: result.error };
   }
-  return { ok: true, pgn: result.pgn };
+  return { success: true, pgn: result.pgn };
 }

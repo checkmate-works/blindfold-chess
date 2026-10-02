@@ -195,8 +195,8 @@ export async function createReplyForImageAttachBase(
 ): Promise<ImageAttachResult> {
   const result = await insertReply(params);
   if ('error' in result) {
-    return { ok: false, error: result.error };
+    return { error: result.error };
   }
 
-  return { ok: true, postId: result.replyId };
+  return { success: true, postId: result.replyId };
 }

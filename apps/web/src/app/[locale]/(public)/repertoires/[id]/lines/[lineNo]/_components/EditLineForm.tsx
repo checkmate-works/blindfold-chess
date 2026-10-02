@@ -50,9 +50,9 @@ export function EditLineForm({ repertoireId, lineNo, ...rest }: Props) {
       submitLabels={{ idle: t('save'), saving: t('saving') }}
       saveLine={async ({ name, chapterId, pgn }) => {
         const result = await updateLine({ repertoireId, lineNo, name, chapterId, pgn });
-        return result.ok
-          ? { ok: true, nextHref: `${lineHref}?toast=line_updated` }
-          : { ok: false, error: result.error };
+        return 'error' in result
+          ? { ok: false, error: result.error }
+          : { ok: true, nextHref: `${lineHref}?toast=line_updated` };
       }}
     />
   );

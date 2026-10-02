@@ -97,7 +97,7 @@ export function RecallSetupForm() {
     setImportError(null);
     try {
       const result = await importLichessGame(lichessUrl.trim());
-      if (!result.ok) {
+      if ('error' in result) {
         setImportError(result.error);
         return;
       }

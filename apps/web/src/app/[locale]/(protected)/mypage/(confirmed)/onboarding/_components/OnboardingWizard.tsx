@@ -60,7 +60,7 @@ export function OnboardingWizard({
     setError(null);
     const result = await saveOnboardingProfile({ country, bio });
     setIsSaving(false);
-    if (!result.ok) {
+    if ('error' in result) {
       setError(t('saveError'));
       return false;
     }

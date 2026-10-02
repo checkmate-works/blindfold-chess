@@ -1,8 +1,8 @@
 'use server';
 
+import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
 import { deleteAnnotation as deleteAnnotationMutation } from '@/lib/repertoires/annotation-mutations';
-import type { DeleteAnnotationResult } from '@/lib/repertoires/annotation-mutations';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 
 /**
@@ -13,13 +13,14 @@ import { RATE_LIMITS } from '@/lib/security/rate-limit';
 export async function deleteAnnotation(input: {
   repertoireId: string;
   positionKey: string;
-}): Promise<DeleteAnnotationResult | { ok: false; error: string }> {
+}): Promise<ActionResult> {
   const guard = await authenticateAndGuard(RATE_LIMITS.deleteRepertoireAnnotation);
-  if ('error' in guard) return { ok: false, error: guard.error };
+  if ('error' in guard) return { error: guard.error };
   const result = await deleteAnnotationMutation({
     repertoireId: input.repertoireId,
     viewerId: guard.user.id,
     positionKey: input.positionKey,
   });
-  return result;
+  if (!result.ok) return { error: result.error };
+  return { success: true };
 }

@@ -220,7 +220,7 @@ export async function createPostForImageAttachBase(
 ): Promise<ImageAttachResult> {
   const result = await insertPost(params);
   if ('error' in result) {
-    return { ok: false, error: result.error };
+    return { error: result.error };
   }
-  return { ok: true, postId: result.postId };
+  return { success: true, postId: result.postId };
 }

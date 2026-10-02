@@ -1,3 +1,4 @@
+import type { ActionResult } from '@/lib/action-types';
 import { MODERATION_REASON_MAX_LENGTH } from '@/lib/moderation/validate-reason';
 
 import { MAX_GRANT_DURATION_DAYS } from '../grants/_lib/validation';
@@ -71,7 +72,7 @@ export type AdminErrorCode = keyof typeof ADMIN_ERROR_MESSAGES;
 export type AdminActionResult<
   E extends AdminErrorCode,
   T extends Record<string, unknown> = Record<never, never>,
-> = ({ success: true } & T) | { error: E };
+> = ActionResult<T, E>;
 
 const MESSAGES_BY_CODE: Record<string, string | undefined> = ADMIN_ERROR_MESSAGES;
 

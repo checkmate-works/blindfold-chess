@@ -2,6 +2,7 @@
 
 import { revalidateTag } from 'next/cache';
 
+import type { ActionResult } from '@/lib/action-types';
 import type { AdFreeRedemptionBlock } from '@/lib/ads/ad-free-redemption';
 import { getAdFreeRedemptionBlock } from '@/lib/ads/ad-free-redemption';
 import { writeAdsHiddenCookieForUser } from '@/lib/ads/ads-hidden-cookie-writer';
@@ -10,29 +11,26 @@ import { grantStatusTag } from '@/lib/cache-tags';
 import { redeemPointsForAdFree } from '@/lib/points';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/security/rate-limit';
 
-export type RedeemAdFreeResult =
-  | { ok: true; cost: number; durationDays: number; expiresAtIso: string }
-  | {
-      ok: false;
-      error:
-        | 'invalid_amount'
-        | 'insufficient_balance'
-        | 'signInRequired'
-        | 'banned'
-        | 'rateLimited'
-        | 'danAdFree'
-        | 'subscriptionAdFree';
-    };
+export type RedeemAdFreeError =
+  | 'invalid_amount'
+  | 'insufficient_balance'
+  | 'signInRequired'
+  | 'banned'
+  | 'rateLimited'
+  | 'danAdFree'
+  | 'subscriptionAdFree';
+
+export type RedeemAdFreeResult = ActionResult<
+  { cost: number; durationDays: number; expiresAtIso: string },
+  RedeemAdFreeError
+>;
 
 /**
  * The error code each redemption block surfaces to the client. Separate codes
  * (rather than one shared "already ad-free") because the messages differ in
  * kind: dan is permanent, a subscription is not.
  */
-const REDEMPTION_BLOCK_ERRORS: Record<
-  AdFreeRedemptionBlock,
-  Extract<RedeemAdFreeResult, { ok: false }>['error']
-> = {
+const REDEMPTION_BLOCK_ERRORS: Record<AdFreeRedemptionBlock, RedeemAdFreeError> = {
   dan_rank: 'danAdFree',
   subscription: 'subscriptionAdFree',
 };
@@ -65,9 +63,9 @@ export async function redeemAdFree(cost: number): Promise<RedeemAdFreeResult> {
   const auth = await authenticateAndCheckBan();
   if ('error' in auth) {
     if (auth.error === 'banned') {
-      return { ok: false, error: 'banned' };
+      return { error: 'banned' };
     }
-    return { ok: false, error: 'signInRequired' };
+    return { error: 'signInRequired' };
   }
 
   // A dan-tier belt or an active subscription already suppresses ads, so the
@@ -78,17 +76,17 @@ export async function redeemAdFree(cost: number): Promise<RedeemAdFreeResult> {
   // same redemption is available the moment the subscription lapses.
   const block = await getAdFreeRedemptionBlock(auth.user.id);
   if (block) {
-    return { ok: false, error: REDEMPTION_BLOCK_ERRORS[block] };
+    return { error: REDEMPTION_BLOCK_ERRORS[block] };
   }
 
   const rateLimitResult = await checkRateLimit(auth.user.id, RATE_LIMITS.redeemPoints);
   if ('error' in rateLimitResult) {
-    return { ok: false, error: 'rateLimited' };
+    return { error: 'rateLimited' };
   }
 
   const result = await redeemPointsForAdFree(auth.user.id, cost);
   if (!result.ok) {
-    return { ok: false, error: result.error };
+    return { error: result.error };
   }
 
   revalidateTag(grantStatusTag(auth.user.id), { expire: 60 });
@@ -99,7 +97,7 @@ export async function redeemAdFree(cost: number): Promise<RedeemAdFreeResult> {
   // `performEntityToggleLike` for why the extra revalidation is not free.
 
   return {
-    ok: true,
+    success: true,
     cost: result.cost,
     durationDays: result.durationDays,
     expiresAtIso: result.expiresAt.toISOString(),

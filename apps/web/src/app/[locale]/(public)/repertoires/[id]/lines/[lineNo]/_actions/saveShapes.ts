@@ -1,9 +1,9 @@
 'use server';
 
+import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
 import { parseBoardAnnotations } from '@/lib/board-annotations/parse';
 import { saveAnnotationShapes } from '@/lib/repertoires/annotation-mutations';
-import type { SaveShapesResult } from '@/lib/repertoires/annotation-mutations';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 
 /**
@@ -21,14 +21,16 @@ export async function saveShapes(input: {
   repertoireId: string;
   positionKey: string;
   shapes: unknown;
-}): Promise<SaveShapesResult | { ok: false; error: string }> {
+}): Promise<ActionResult> {
   const guard = await authenticateAndGuard(RATE_LIMITS.saveRepertoireShapes);
-  if ('error' in guard) return { ok: false, error: guard.error };
+  if ('error' in guard) return { error: guard.error };
 
-  return saveAnnotationShapes({
+  const result = await saveAnnotationShapes({
     repertoireId: input.repertoireId,
     viewerId: guard.user.id,
     positionKey: input.positionKey,
     shapes: parseBoardAnnotations(input.shapes),
   });
+  if (!result.ok) return { error: result.error };
+  return { success: true };
 }

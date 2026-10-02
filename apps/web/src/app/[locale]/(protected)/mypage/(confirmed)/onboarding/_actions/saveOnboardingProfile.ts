@@ -4,6 +4,7 @@ import { revalidateTag } from 'next/cache';
 
 import { eq } from 'drizzle-orm';
 
+import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndCheckBan } from '@/lib/auth';
 import { profileCacheTag } from '@/lib/cache-tags';
 import { isValidCountryCode } from '@/lib/countries';
@@ -15,9 +16,10 @@ export type SaveOnboardingProfileInput = {
   bio: string;
 };
 
-export type SaveOnboardingProfileResult =
-  | { ok: true }
-  | { ok: false; error: 'signInRequired' | 'banned' | 'invalidCountry' | 'bioTooLong' };
+export type SaveOnboardingProfileResult = ActionResult<
+  Record<never, never>,
+  'signInRequired' | 'banned' | 'invalidCountry' | 'bioTooLong'
+>;
 
 /**
  * Persist the optional profile fields collected on the post-registration
@@ -36,7 +38,7 @@ export async function saveOnboardingProfile(
 ): Promise<SaveOnboardingProfileResult> {
   const auth = await authenticateAndCheckBan();
   if ('error' in auth) {
-    return { ok: false, error: auth.error === 'banned' ? 'banned' : 'signInRequired' };
+    return { error: auth.error === 'banned' ? 'banned' : 'signInRequired' };
   }
 
   // Real ISO 3166-1 alpha-2 membership, not merely two letters. A bare
@@ -49,12 +51,12 @@ export async function saveOnboardingProfile(
   // which is case-sensitive for the same reason.
   const country = input.country.trim().toUpperCase() || null;
   if (country && !isValidCountryCode(country)) {
-    return { ok: false, error: 'invalidCountry' };
+    return { error: 'invalidCountry' };
   }
 
   const bio = input.bio.trim() || null;
   if (bio && bio.length > BIO_MAX_LENGTH) {
-    return { ok: false, error: 'bioTooLong' };
+    return { error: 'bioTooLong' };
   }
 
   const [updated] = await db
@@ -69,5 +71,5 @@ export async function saveOnboardingProfile(
     revalidateTag(profileCacheTag(updated.username), { expire: 0 });
   }
 
-  return { ok: true };
+  return { success: true };
 }

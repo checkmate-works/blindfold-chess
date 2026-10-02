@@ -333,7 +333,7 @@ describe('NewPostForm — paperclip + counter row layout', () => {
 
 describe('NewPostForm — Images tab 2-step upload routing', () => {
   it('creates the post then uploads each file to /api/posts/[id]/images and refreshes', async () => {
-    mockCreateChunkPostForImageAttach.mockResolvedValue({ ok: true, postId: 'post-123' });
+    mockCreateChunkPostForImageAttach.mockResolvedValue({ success: true, postId: 'post-123' });
     const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({}) });
     vi.stubGlobal('fetch', fetchMock);
 

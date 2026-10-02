@@ -1,8 +1,8 @@
 'use server';
 
+import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
 import { updateRepertoireLine } from '@/lib/repertoires/mutations';
-import type { UpdateLineResult } from '@/lib/repertoires/mutations';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 
 /**
@@ -16,9 +16,9 @@ export async function updateLine(input: {
   name: string | null;
   chapterId: string | null;
   pgn: string;
-}): Promise<UpdateLineResult | { ok: false; error: string }> {
+}): Promise<ActionResult> {
   const guard = await authenticateAndGuard(RATE_LIMITS.updateRepertoireLine);
-  if ('error' in guard) return { ok: false, error: guard.error };
+  if ('error' in guard) return { error: guard.error };
   const result = await updateRepertoireLine({
     repertoireId: input.repertoireId,
     lineNo: input.lineNo,
@@ -27,5 +27,6 @@ export async function updateLine(input: {
     chapterId: input.chapterId,
     pgn: input.pgn,
   });
-  return result;
+  if (!result.ok) return { error: result.error };
+  return { success: true };
 }
