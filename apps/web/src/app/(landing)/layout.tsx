@@ -9,6 +9,7 @@ import { AUTHOR_NAME, GA_MEASUREMENT_ID, SITE_URL } from '@/config';
 import { generateThemeCSS } from '@blindfold-chess/ui';
 import { EnvironmentRibbon } from 'env-ribbon';
 
+import { ConsentAttributeSync } from '@/lib/consent/ConsentAttributeSync';
 import { ConsentBootstrapScript } from '@/lib/consent/ConsentBootstrapScript';
 import { CONSENT_BANNER_HIDE_CSS } from '@/lib/consent/consent-bootstrap-script';
 import { getLocaleFromRequest } from '@/lib/locale';
@@ -102,6 +103,12 @@ export default async function LandingLayout({ children }: { children: React.Reac
           />
         )}
         <StorageAvailabilityProvider>
+          {/*
+            Re-asserts `data-consent` from the cookie after React strips it —
+            which it does whenever `<html>` remounts on the client. Must stay
+            ahead of `GoogleScripts`; see the component for why.
+          */}
+          <ConsentAttributeSync />
           <GoogleScripts gaMeasurementId={GA_MEASUREMENT_ID} />
           <Providers locale={locale} messages={messages}>
             {children}

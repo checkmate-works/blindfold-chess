@@ -75,11 +75,21 @@ export function ThemeProvider({ children, disableTransitionOnChange = false }: P
   const [theme, setThemeState] = useState<Theme>('system');
   const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(THEME_LIGHT_CLASS);
 
-  // Hydrate from localStorage + matchMedia after mount.
+  // Hydrate from localStorage + matchMedia after mount, and put the class
+  // back on <html>. On a first load ThemeScript already did that before
+  // paint, so the write is a no-op — but this provider also mounts fresh
+  // whenever React remounts <html> on the client (a `[locale]` change, or a
+  // hydration failure at the root), and React strips every attribute off a
+  // remounted <html> before applying its own props. `class` and `style`
+  // are not React props here, so without this the page snaps to the
+  // light theme with no way back short of a reload. Same mechanism as
+  // `data-consent`; see `syncConsentAttribute` in `@/lib/consent`.
   useEffect(() => {
     const stored = readStoredTheme();
+    const resolved = stored === 'system' ? getSystemTheme() : stored;
     setThemeState(stored);
-    setResolvedTheme(stored === 'system' ? getSystemTheme() : stored);
+    setResolvedTheme(resolved);
+    applyTheme(resolved);
   }, []);
 
   // React to OS-level theme changes when in 'system' mode.
