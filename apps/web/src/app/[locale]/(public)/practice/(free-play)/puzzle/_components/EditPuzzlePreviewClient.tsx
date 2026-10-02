@@ -13,8 +13,8 @@ import {
   DraftPreviewSkeleton,
 } from '@/app/[locale]/(public)/practice/(free-play)/_components/DraftPreviewLayout';
 import { useDraftPreview } from '@/app/[locale]/(public)/practice/(free-play)/_hooks/use-draft-preview';
+import { useResolvedDraftTags } from '@/app/[locale]/(public)/practice/(free-play)/_hooks/use-resolved-draft-tags';
 
-import { resolveOptionsByIds } from '../../_lib/resolve-options';
 import { updatePuzzle } from '../_actions/updatePuzzle';
 import { draftToSolutionMoves } from '../_lib/draft-to-solution-moves';
 import type { PuzzleEditDraftV1 } from '../_lib/edit-draft-storage';
@@ -56,13 +56,10 @@ export function EditPuzzlePreviewClient({ positionId, availableThemes, available
     [draft]
   );
 
-  const selectedThemes = useMemo(
-    () => resolveOptionsByIds(draft?.themeIds ?? [], availableThemes),
-    [draft?.themeIds, availableThemes]
-  );
-  const selectedChunks = useMemo(
-    () => resolveOptionsByIds(draft?.chunkIds ?? [], availableChunks),
-    [draft?.chunkIds, availableChunks]
+  const { selectedThemes, selectedChunks } = useResolvedDraftTags(
+    draft,
+    availableThemes,
+    availableChunks
   );
 
   const stepIndicator = <PuzzleStepIndicator flow="edit" current="preview" />;
