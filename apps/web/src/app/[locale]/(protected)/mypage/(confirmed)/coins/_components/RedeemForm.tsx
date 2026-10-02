@@ -98,7 +98,7 @@ export function RedeemForm({ balance, daysPerPoint, block = null }: Props) {
     setSuccess(null);
     startTransition(async () => {
       const result: RedeemAdFreeResult = await redeemAdFree(shownAmount);
-      if (!result.ok) {
+      if ('error' in result) {
         setError({ code: result.error, message: t(`redeem.errors.${result.error}`) });
         return;
       }
