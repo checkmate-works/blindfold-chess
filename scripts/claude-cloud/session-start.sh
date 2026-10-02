@@ -6,8 +6,10 @@
 # only place where CLAUDE_CODE_REMOTE is "true". There, the hook makes the
 # fresh clone workable without anyone at a keyboard:
 #
-#   1. Node 24 + pnpm 10 on PATH, falling back to the environment setup script
-#      when the cloud environment was not configured with it.
+#   1. Node 24 + pnpm 10 first on PATH, for this script and (via
+#      CLAUDE_ENV_FILE) for every later command of the session. Falls back to
+#      the environment setup script when the environment was not configured
+#      with it.
 #   2. `pnpm install --frozen-lockfile`, skipped when node_modules already
 #      matches the lockfile (the hook also runs on every resume).
 #   3. Stockfish engine files copied into apps/web/public, so the engine code
@@ -29,16 +31,37 @@ log() { printf '[claude-cloud session-start] %s\n' "$*"; }
 problems=()
 
 # --- 1. toolchain -----------------------------------------------------------
+# The cloud image keeps its default Node (/opt/node22/bin) ahead of
+# /usr/local/bin on PATH, so a Node 24 installed by setup-environment.sh is
+# invisible until its bin directory is put first. The hook does that for its
+# own commands here, and persists it for every later Bash command of the
+# session through CLAUDE_ENV_FILE (see "Persist environment variables" in the
+# hooks documentation).
 required_node="$(node -p "require('./package.json').volta.node" 2>/dev/null || echo 24.20.0)"
 required_pnpm="$(node -p "require('./package.json').packageManager.split('@')[1]" 2>/dev/null || echo 10.13.1)"
+node_prefix="/opt/node${required_node%%.*}"
 
+use_installed_node() {
+  if [ -x "${node_prefix}/bin/node" ]; then
+    export PATH="${node_prefix}/bin:${PATH}"
+    hash -r
+    if [ -n "${CLAUDE_ENV_FILE:-}" ]; then
+      printf 'export PATH="%s/bin:$PATH"\n' "$node_prefix" >> "$CLAUDE_ENV_FILE"
+    fi
+  fi
+}
+
+use_installed_node
 if [ "$(node -v 2>/dev/null)" != "v${required_node}" ] || [ "$(pnpm -v 2>/dev/null)" != "$required_pnpm" ]; then
   log "toolchain mismatch (node=$(node -v 2>/dev/null || echo none), pnpm=$(pnpm -v 2>/dev/null || echo none)); running setup-environment.sh"
   NODE_VERSION="$required_node" PNPM_VERSION="$required_pnpm" bash "$ROOT/scripts/claude-cloud/setup-environment.sh" || true
-  hash -r
+  use_installed_node
 fi
 if [ "$(node -v 2>/dev/null)" != "v${required_node}" ]; then
   problems+=("Node v${required_node} is not on PATH (found $(node -v 2>/dev/null || echo none)); add scripts/claude-cloud/setup-environment.sh as the environment's Setup script")
+fi
+if [ "$(pnpm -v 2>/dev/null)" != "$required_pnpm" ]; then
+  problems+=("pnpm ${required_pnpm} is not on PATH (found $(pnpm -v 2>/dev/null || echo none))")
 fi
 
 # --- 2. dependencies --------------------------------------------------------

@@ -51,12 +51,19 @@ install_node() {
   log "installed Node $("${NODE_PREFIX}/bin/node" -v) to ${NODE_PREFIX}"
 }
 
+# Links into /usr/local/bin are a best effort only: on the cloud image the
+# default Node's /opt/node22/bin precedes /usr/local/bin on PATH, so the
+# SessionStart hook (scripts/claude-cloud/session-start.sh) additionally puts
+# ${NODE_PREFIX}/bin at the front of PATH for every command Claude runs.
 link_node() {
   mkdir -p "$BIN_DIR"
   local name
   for name in node npm npx corepack; do
-    [ -e "${NODE_PREFIX}/bin/${name}" ] && ln -sfn "${NODE_PREFIX}/bin/${name}" "${BIN_DIR}/${name}"
+    if [ -e "${NODE_PREFIX}/bin/${name}" ]; then
+      ln -sfn "${NODE_PREFIX}/bin/${name}" "${BIN_DIR}/${name}"
+    fi
   done
+  return 0
 }
 
 install_pnpm() {
@@ -68,12 +75,15 @@ install_pnpm() {
   fi
   local name
   for name in pnpm pnpx; do
-    [ -e "${NODE_PREFIX}/bin/${name}" ] && ln -sfn "${NODE_PREFIX}/bin/${name}" "${BIN_DIR}/${name}"
+    if [ -e "${NODE_PREFIX}/bin/${name}" ]; then
+      ln -sfn "${NODE_PREFIX}/bin/${name}" "${BIN_DIR}/${name}"
+    fi
   done
+  return 0
 }
 
 install_node && link_node && install_pnpm || log "toolchain setup incomplete; the session can still start"
 
-log "node: $(command -v node) $(node -v 2>/dev/null)"
-log "pnpm: $(command -v pnpm) $(pnpm -v 2>/dev/null)"
+log "installed: ${NODE_PREFIX}/bin/node $("${NODE_PREFIX}/bin/node" -v 2>/dev/null), pnpm $("${NODE_PREFIX}/bin/pnpm" -v 2>/dev/null)"
+log "on PATH now: $(command -v node) $(node -v 2>/dev/null) (the session hook prepends ${NODE_PREFIX}/bin)"
 exit 0
