@@ -28,6 +28,10 @@
     {
       "path": "/api/cron/audit-subscription-periods",
       "schedule": "0 7 * * *"
+    },
+    {
+      "path": "/api/cron/awin-daily-report",
+      "schedule": "0 2 * * *"
     }
   ]
 }
