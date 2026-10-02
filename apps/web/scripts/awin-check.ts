@@ -34,8 +34,13 @@
  * - `AWIN_PUBLISHER_ID` — skip account discovery and probe this id only.
  * - `AWIN_REGION` — skip region discovery and use this value.
  * - `AWIN_TIMEZONE` — timezone for the report window; defaults to `UTC`.
- *   The dashboard's day boundary is whatever the account is set to, so set
- *   this to the same zone (e.g. `Asia/Tokyo`) when comparing numbers.
+ *   The report endpoints accept only a fixed list of zones and there is no
+ *   Asian one in it (`Asia/Tokyo` is rejected with HTTP 400
+ *   `invalid timezone name`; observed 2026-10-02): `UTC`, `Europe/London`,
+ *   `Europe/Dublin`, `Europe/Paris`, `Europe/Berlin`, `Europe/Helsinki`,
+ *   `America/Sao_Paulo`, `Australia/Sydney`, `Canada/{Eastern,Central,
+ *   Mountain,Pacific}`, `US/{Eastern,Central,Mountain,Pacific}`. Compare
+ *   against the dashboard with its report timezone set to the same value.
  * - `AWIN_DATE` — `yyyy-MM-dd` to report on; defaults to yesterday in
  *   `AWIN_TIMEZONE`.
  *
@@ -300,6 +305,14 @@ async function main(): Promise<void> {
       });
       if (result.status !== 200) {
         log(`  region=${region}: ${describeFailure(path, result)}`);
+        // A 400 that does not mention the region is about some other
+        // parameter (a timezone outside Awin's list, a malformed date) and
+        // every remaining region would fail the same way. Stop rather than
+        // spend the rest of the rate-limit budget on identical errors.
+        if (result.status === 400 && !/region/i.test(result.rawText)) {
+          log('  this error is not about the region; fix the parameter above and rerun.');
+          break;
+        }
         continue;
       }
       const rows = Array.isArray(result.body) ? (result.body as Row[]) : [];
