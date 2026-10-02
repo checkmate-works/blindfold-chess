@@ -2,6 +2,7 @@
 
 import { eq, sql } from 'drizzle-orm';
 
+import type { ActionResult } from '@/lib/action-types';
 import { copyToTranslationRows } from '@/lib/ads/copy';
 import { kindForSlot } from '@/lib/ads/registry';
 import type { AdSlot } from '@/lib/ads/registry';
@@ -14,7 +15,7 @@ import { revalidateAdCreatives } from '../_lib/revalidate';
 import type { CreateAdCreativeData } from '../_lib/validation';
 import { validateCreateAdCreative } from '../_lib/validation';
 
-type CreateResult = { success: true; id: string } | { error: string };
+type CreateResult = ActionResult<{ id: string }>;
 
 export async function createAdCreative(data: CreateAdCreativeData): Promise<CreateResult> {
   const guardError = await adminMutationGuard(data, validateCreateAdCreative);

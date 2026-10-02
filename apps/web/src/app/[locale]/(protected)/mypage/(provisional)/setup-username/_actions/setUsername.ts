@@ -4,6 +4,7 @@ import { revalidateTag } from 'next/cache';
 
 import { validateUsername } from '@blindfold-chess/features/username';
 
+import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard, userHasProfile } from '@/lib/auth';
 import { profileCacheTag } from '@/lib/cache-tags';
 import { isLameName } from '@/lib/content/lame-name';
@@ -18,7 +19,7 @@ export type SetUsernameInput = {
   displayName?: string;
 };
 
-export type SetUsernameResult = { success: true } | { error: string };
+export type SetUsernameResult = ActionResult;
 
 /**
  * Create the caller's `profiles` row with their chosen (immutable) username.

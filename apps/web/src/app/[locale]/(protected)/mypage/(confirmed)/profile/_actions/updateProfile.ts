@@ -4,6 +4,7 @@ import { revalidateTag } from 'next/cache';
 
 import { eq } from 'drizzle-orm';
 
+import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
 import { profileCacheTag } from '@/lib/cache-tags';
 import { isLameName } from '@/lib/content/lame-name';
@@ -17,7 +18,7 @@ import { PROFILE_WRITE_KEYS, validateProfileInput } from '../_lib/validate-profi
 
 export type UpdateProfileInput = ProfileInput;
 
-export type UpdateProfileResult = { success: true } | { error: string };
+export type UpdateProfileResult = ActionResult;
 
 /**
  * Full-overwrite update of the caller's own profile: every field it does not

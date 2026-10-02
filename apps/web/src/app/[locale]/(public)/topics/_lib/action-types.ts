@@ -33,19 +33,17 @@ export type EditPostAction = (
   postId: string,
   locale: string,
   formData: FormData
-) => Promise<
-  { success: true; content: string; isSpoiler: boolean; updatedAt: Date } | { error: string }
->;
+) => Promise<ActionResult<{ content: string; isSpoiler: boolean; updatedAt: Date }>>;
 
 export type RemoveAttachmentAction = (
   postId: string,
   attachmentId: string,
   kind: AttachmentKind,
   locale: string
-) => Promise<{ success: true } | { error: string }>;
+) => Promise<ActionResult>;
 
 export type AttachAction = (
   postId: string,
   locale: string,
   formData: FormData
-) => Promise<{ success: true; attachment: { id: string } } | { error: string }>;
+) => Promise<ActionResult<{ attachment: { id: string } }>>;
