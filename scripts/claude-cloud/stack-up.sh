@@ -113,6 +113,7 @@ cat <<EOF
 [stack-up] ready
 - App:      $APP_URL (next dev, hot reload; log: $WORK/next-dev.log)
 - Database: psql postgresql://postgres:postgres@127.0.0.1:54322/postgres
+            (no psql on the VM: docker exec supabase_db_blindfold-chess-web psql -U postgres -c '<sql>')
 - Sign-in:  dev-seed users, e.g. alice@example.local / dev-password (admin: admin@example.local)
 - Screens:  bash scripts/claude-cloud/screenshot.sh /ja/some/path
 EOF
