@@ -752,8 +752,15 @@ schema lives in `apps/web/drizzle/`, not `apps/web/supabase/migrations/`.
 The branch is deleted — and its metered compute billing stops — when
 the PR is merged or closed. Branch compute is billed per hour and is
 **not** covered by the Pro plan's compute credits, so do not leave PRs
-open for weeks. `claude/*` PRs create branches too, even though
-`vercel.json`'s `ignoreCommand` skips their Vercel build.
+open for weeks.
+
+`claude/*` PRs (the nightly issue pipeline and Claude Code cloud
+sessions) get a Preview build like any other branch. Supabase creates a
+branch for every PR regardless of its name — the GitHub integration has
+no branch filter — so skipping the Vercel build for these refs would
+keep paying for a database nothing uses, and would leave cloud sessions
+without the one place their changes can be checked against a real
+database.
 
 Dashboard settings this depends on (Supabase project → Settings →
 Integrations). Each one has a failure mode that looks unrelated:
