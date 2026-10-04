@@ -17,9 +17,16 @@
 # session can keep poking at it. Nothing here is needed outside the probe:
 # whatever proves to work gets folded into session-start.sh.
 #
-# Every host this script downloads from is on the cloud environment's default
-# "Trusted" allowlist: public.ecr.aws (Supabase images), registry.npmjs.org,
-# storage.googleapis.com (Chrome for Testing) and archive.ubuntu.com.
+# Findings from the first run, which shape the stages below:
+#   - The VM may not raise rlimits, so any container started with an explicit
+#     `--ulimit` fails in runc ("error setting rlimit type 7"). The Supabase
+#     CLI passes `--ulimit nofile=65536:65536` to edge-runtime only; this app
+#     has no Edge Functions, so that service is excluded.
+#   - Image layers on public.ecr.aws are served from *.cloudfront.net, which
+#     the default allowlist blocks; Docker Hub works, and the Supabase CLI
+#     pulls from it.
+#   - Chrome for Testing downloads (storage.googleapis.com) answer 403, but
+#     the image ships a Playwright headless Chromium under /opt/pw-browsers.
 set -u
 
 ROOT="${CLAUDE_PROJECT_DIR:-$(cd "$(dirname "$0")/../.." && pwd)}"
@@ -58,9 +65,11 @@ stage_env() {
   echo "CLAUDE_CODE_REMOTE=${CLAUDE_CODE_REMOTE:-unset} uid=$(id -u)"
   uname -a
   echo "cpus=$(nproc)"; free -h; df -h / /tmp
+  echo "nofile soft=$(ulimit -Sn) hard=$(ulimit -Hn)"
+  ls -d /opt/pw-browsers/* 2>/dev/null
   echo "node=$(node -v) pnpm=$(pnpm -v)"
   command -v sudo && sudo -n true && echo "sudo: passwordless"
-  note "uid=$(id -u) cpus=$(nproc) node=$(node -v)"
+  note "uid=$(id -u) cpus=$(nproc) node=$(node -v) nofile=$(ulimit -Sn)/$(ulimit -Hn)"
 }
 
 stage_docker() {
@@ -70,13 +79,16 @@ stage_docker() {
     for _ in $(seq 1 30); do docker info >/dev/null 2>&1 && break; sleep 1; done
   fi
   docker info --format 'server={{.ServerVersion}} driver={{.Driver}} cgroup={{.CgroupVersion}}' || return 1
-  docker run --rm public.ecr.aws/docker/library/hello-world || return 1
+  docker run --rm hello-world || return 1
   note "$(docker info --format 'docker {{.ServerVersion}}, {{.Driver}}')"
 }
 
 stage_supabase() {
   pnpm supabase --version || return 1
-  timeout 1500 pnpm supabase start || return 1
+  # edge-runtime: needs a raised nofile rlimit (see the header). The others
+  # are dashboards and log plumbing the app never calls; leaving them out
+  # saves pull time and memory.
+  timeout 1500 pnpm supabase start -x edge-runtime,studio,logflare,vector,imgproxy,postgres-meta || return 1
   docker system df
   note "$(docker ps --format '{{.Names}}' | grep -c supabase) supabase containers running"
 }
@@ -87,7 +99,7 @@ stage_supabase() {
 stage_envfile() {
   local env="apps/web/.env.local" status
   [ -f "$env" ] || cp apps/web/.env.example "$env"
-  status="$(pnpm -s supabase status -o json 2>/dev/null)" || return 1
+  status="$(pnpm -s supabase status -o json)" || return 1
   STATUS="$status" ENV_FILE="$env" node -e '
     const fs = require("fs");
     const s = JSON.parse(process.env.STATUS);
@@ -139,14 +151,17 @@ stage_app() {
   note "next dev answers 200 on /ja"
 }
 
-# Ubuntu 24.04's apt "chromium" is a snap shim that does not run in this VM,
-# so the browser comes from Chrome for Testing (storage.googleapis.com) and
-# its shared libraries and a Japanese font from archive.ubuntu.com.
+# Prefers the Playwright Chromium preinstalled in the image; falls back to a
+# Chrome for Testing download. Missing shared libraries and a Japanese font
+# come from archive.ubuntu.com.
 stage_browser() {
   local out bin missing
-  out="$(npx -y @puppeteer/browsers install chrome-headless-shell@stable --path "$PROBE_DIR/browsers")" || return 1
-  echo "$out"
-  bin="$(printf '%s\n' "$out" | tail -n 1 | awk '{print $NF}')"
+  bin="$(find /opt/pw-browsers -maxdepth 3 -type f \( -name headless_shell -o -name chrome-headless-shell -o -name chrome \) -perm -u+x 2>/dev/null | sort | head -1)"
+  if [ -z "$bin" ]; then
+    out="$(npx -y @puppeteer/browsers install chrome-headless-shell@stable --path "$PROBE_DIR/browsers")" || return 1
+    bin="$(printf '%s\n' "$out" | tail -n 1 | awk '{print $NF}')"
+  fi
+  echo "browser: $bin"
   [ -x "$bin" ] || return 1
   echo "$bin" > "$PROBE_DIR/chrome-path"
   missing="$(ldd "$bin" | awk '/not found/ {print $1}')"
@@ -211,5 +226,5 @@ cat <<EOF
 $(cat "$REPORT")
 
 Logs: $PROBE_DIR/logs/   Screenshots: $PROBE_DIR/shots/
-The Supabase stack and next dev are still running.
+Still running: $(docker ps --format '{{.Names}}' 2>/dev/null | grep -c supabase) supabase containers, next dev $(curl -s -o /dev/null -w '%{http_code}' "$APP_URL/ja" 2>/dev/null)
 EOF
