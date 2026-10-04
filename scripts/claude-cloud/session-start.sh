@@ -90,7 +90,10 @@ cat <<SUMMARY
 Cloud session setup for blindfold-chess
 - Node $(node -v 2>/dev/null || echo missing), pnpm $(pnpm -v 2>/dev/null || echo missing), dependencies installed from pnpm-lock.yaml.
 - Quality gates (run all three before finishing, fix until green): pnpm lint && pnpm typecheck && pnpm test
-- Not available here: a database and the app's secrets. 'pnpm build' needs a Postgres connection and will fail; 'pnpm dev' starts but pages that query the database will error. Verify behaviour with unit tests and typecheck instead, and say so in the PR when a change needs a manual check.
+- The full app can run here, but is not started by default. 'bash scripts/claude-cloud/stack-up.sh' starts local Supabase in Docker, applies migrations and seeds (including dev-seed users), and runs 'next dev' on localhost:3000. It is idempotent; the first run in a fresh VM pulls images and takes a few minutes, so run it in the background.
+- When a task changes UI, look at the result: 'bash scripts/claude-cloud/screenshot.sh /ja/<path> [--viewport desktop|mobile|both] [--login alice]', then open each printed PNG with the Read tool so the user sees it in chat. Check both viewports, and show screenshots when proposing or finishing a UI change.
+- With the stack up, the database is readable directly: psql postgresql://postgres:postgres@127.0.0.1:54322/postgres
+- Still not available: production secrets (OAuth, payments, email, analytics) and anything that calls those services.
 - The Maia model (apps/web/engines) is not downloaded; run 'pnpm --filter web download-maia' only if a task needs it.
 SUMMARY
 if [ ${#problems[@]} -gt 0 ]; then
