@@ -1,6 +1,7 @@
 // Screenshot pages of the local app from a Claude Code cloud session.
-// Invoked through screenshot.sh, which supplies the browser and playwright-core;
-// see that file for usage.
+// Invoked through screenshot.sh, which supplies the browser, playwright-core
+// and the repository values from config.sh as environment variables; see that
+// file for usage.
 import { mkdirSync } from "node:fs";
 import { createRequire } from "node:module";
 import { join } from "node:path";
@@ -16,6 +17,8 @@ const VIEWPORTS = {
   mobile: { width: 390, height: 844 },
 };
 
+const env = (name, fallback = "") => process.env[name] || fallback;
+
 const { values, positionals } = parseArgs({
   allowPositionals: true,
   options: {
@@ -29,12 +32,12 @@ const { values, positionals } = parseArgs({
 
 if (positionals.length === 0) {
   console.error(
-    "usage: screenshot.sh <path> [<path> ...] [--viewport desktop|mobile|both] [--login alice] [--full] [--show-consent]",
+    "usage: screenshot.sh <path> [<path> ...] [--viewport desktop|mobile|both] [--login <user>] [--full] [--show-consent]",
   );
   process.exit(2);
 }
 
-const base = process.env.APP_URL ?? "http://localhost:3000";
+const base = env("APP_URL", "http://localhost:3000");
 const viewports =
   values.viewport === "both" ? ["desktop", "mobile"] : [values.viewport];
 for (const v of viewports) {
@@ -48,13 +51,15 @@ const stamp = new Date().toISOString().slice(11, 19).replaceAll(":", "");
 for (const v of viewports) {
   const context = await browser.newContext({
     viewport: VIEWPORTS[v],
-    locale: "ja-JP",
+    locale: env("LOCALE", "ja-JP"),
   });
-  // A stored "denied" decision keeps the cookie banner from covering the
-  // bottom of every screenshot; --show-consent leaves it in place.
-  if (!values["show-consent"]) {
+  // A stored consent decision keeps the cookie banner from covering the
+  // bottom of every screenshot; --show-consent leaves it in place. Apps
+  // without a banner leave CONSENT_COOKIE_NAME empty.
+  const consentCookie = env("CONSENT_COOKIE_NAME");
+  if (consentCookie && !values["show-consent"]) {
     await context.addCookies([
-      { name: "bfc_consent", value: "1:denied", url: base },
+      { name: consentCookie, value: env("CONSENT_COOKIE_VALUE"), url: base },
     ]);
   }
   const page = await context.newPage();
@@ -62,15 +67,17 @@ for (const v of viewports) {
   if (values.login) {
     const email = values.login.includes("@")
       ? values.login
-      : `${values.login}@example.local`;
-    await page.goto(`${base}/ja/sign-in`, { waitUntil: "networkidle" });
-    await page.fill("#email", email);
-    await page.fill("#password", "dev-password");
+      : `${values.login}@${env("SEED_EMAIL_DOMAIN", "example.local")}`;
+    const loginPath = env("LOGIN_PATH", "/sign-in");
+    const done = env("LOGIN_DONE_EXCLUDES", loginPath);
+    await page.goto(`${base}${loginPath}`, { waitUntil: "networkidle" });
+    await page.fill(env("LOGIN_EMAIL_SELECTOR", "#email"), email);
+    await page.fill(env("LOGIN_PASSWORD_SELECTOR", "#password"), env("SEED_PASSWORD"));
     await Promise.all([
-      page.waitForURL((url) => !url.pathname.includes("/sign-in"), {
+      page.waitForURL((url) => !url.pathname.includes(done), {
         timeout: 30_000,
       }),
-      page.click('button[type="submit"]'),
+      page.click(env("LOGIN_SUBMIT_SELECTOR", 'form button[type="submit"]')),
     ]);
     console.log(`signed in as ${email}`);
   }

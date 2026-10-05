@@ -9,7 +9,9 @@
       "Bash(pnpm lint)",
       "Bash(pnpm typecheck)",
       "Bash(pnpm test)",
-      "Bash(pnpm --filter web check:i18n)"
+      "Bash(pnpm --filter web check:i18n)",
+      "Bash(bash scripts/claude-cloud/stack-up.sh:*)",
+      "Bash(bash scripts/claude-cloud/screenshot.sh:*)"
     ]
   },
   "hooks": {
