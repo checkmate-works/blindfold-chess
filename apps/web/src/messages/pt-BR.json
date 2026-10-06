@@ -4524,7 +4524,7 @@
       "usersByCountry": "Usuários por País",
       "usersByRank": "Usuários por Graduação",
       "usersByLevel": "Usuários por Nível",
-      "usersByLevelHelp": "O nível só é ganho ao concluir práticas, então esta é uma distribuição de uso. Usuários Lv0 salvaram um resultado mas ainda não alcançaram 100 Exp; o grupo sem Exp nunca salvou um.",
+      "usersByLevelHelp": "O nível só é ganho ao concluir práticas e partidas contra a IA, então esta é uma distribuição de uso. Usuários Lv0 salvaram um resultado mas ainda não alcançaram 100 Exp; o grupo sem Exp nunca salvou um.",
       "usersBySignupMethod": "Usuários por Método de Cadastro",
       "noData": "Sem dados disponíveis",
       "jumpTo": "Ir para",

@@ -4496,7 +4496,7 @@
       "usersByCountry": "国別ユーザー数",
       "usersByRank": "ランク別ユーザー数",
       "usersByLevel": "レベル別ユーザー数",
-      "usersByLevelHelp": "レベルは練習の完了でのみ上がるため、これは利用頻度の分布です。Lv0 は結果を保存したが 100 Exp 未満のユーザー、「Exp なし」は一度も結果を保存していないユーザーです。",
+      "usersByLevelHelp": "レベルは練習と AI 対局の完了で上がるため、これは利用頻度の分布です。Lv0 は結果を保存したが 100 Exp 未満のユーザー、「Exp なし」は一度も結果を保存していないユーザーです。",
       "usersBySignupMethod": "Users by Signup Method",
       "noData": "データがありません",
       "jumpTo": "移動",
