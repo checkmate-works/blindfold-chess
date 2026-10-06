@@ -134,7 +134,8 @@ export function PositionGameForm({ locale, maiaAccess }: Props) {
     router.push(`/${locale}/games/play?${params.toString()}`);
   };
 
-  const launch = useMaiaGameLaunch({ navigateToGame });
+  const maiaCardMode = deriveMaiaCardMode(maiaAccess, MAIA_GAME_POINT_COST);
+  const launch = useMaiaGameLaunch({ navigateToGame, maiaCardMode });
 
   const editableBoardLabels = useEditableBoardLabels('newGame.positionSettings');
 
@@ -216,7 +217,7 @@ export function PositionGameForm({ locale, maiaAccess }: Props) {
       <EngineSelector
         value={engine}
         onChange={setEngine}
-        maiaCardMode={deriveMaiaCardMode(maiaAccess, MAIA_GAME_POINT_COST)}
+        maiaCardMode={maiaCardMode}
         maiaCost={MAIA_GAME_POINT_COST}
         onMaiaLockedClick={launch.openPointInfo}
       />

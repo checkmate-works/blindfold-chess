@@ -32,9 +32,9 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 type Props = {
   locale: Locale;
   /**
-   * Server-side resolved Maia access (the viewer's spendable coin
-   * balance). Drives the engine selector's Maia card and the per-game
-   * coin charge.
+   * Server-side resolved Maia access (the viewer's level and spendable
+   * coin balance). Drives the engine selector's Maia card and whether a
+   * game start charges a coin.
    */
   maiaAccess: MaiaEngineAccess;
 };
@@ -82,7 +82,7 @@ export function StandardGameForm({ locale, maiaAccess }: Props) {
     router.push(`/${locale}/games/play?${params.toString()}`);
   };
 
-  const launch = useMaiaGameLaunch({ navigateToGame });
+  const launch = useMaiaGameLaunch({ navigateToGame, maiaCardMode });
 
   return (
     <div className="space-y-6">
