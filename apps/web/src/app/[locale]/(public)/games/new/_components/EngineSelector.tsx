@@ -6,6 +6,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { FaLock } from 'react-icons/fa';
 
 import { ENGINE_LOGO_SRC, type EngineKind } from '@/lib/engines';
+import { MAIA_FREE_LEVEL } from '@/lib/users/maia-free-level';
 
 import type { MaiaCardMode } from '@/app/[locale]/(public)/games/new/_lib/maia-launch';
 import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
@@ -62,7 +63,14 @@ const ENGINE_OPTIONS: ReadonlyArray<EngineOption> = [
  * page-level `?` help tour, so the cards stay compact on narrow viewports.
  *
  * The Maia card adapts to `maiaCardMode`:
- *   - `free`    — selectable, shows a "free" badge.
+ *   - `free`    — selectable, shows a "free" badge, and a note under the
+ *                 cards says why ("free from Lv5"). The badge stays one
+ *                 word because it overlays the card's top-right corner and
+ *                 collides with the logo at phone width; the reason lives
+ *                 in the note instead. The note depends only on the
+ *                 server-resolved mode, never on which card is selected, so
+ *                 it is present from the first paint and toggling the
+ *                 selection never shifts the controls below it.
  *   - `payable` — selectable, shows a per-game coin-cost badge.
  *   - `locked`  — greyed out with a lock badge; tapping it is not a no-op,
  *                 it calls `onMaiaLockedClick` so the parent can explain.
@@ -158,6 +166,12 @@ export function EngineSelector({
           );
         })}
       </div>
+
+      {maiaCardMode === 'free' && (
+        <p className="text-sm text-muted-foreground">
+          {t('engineMaiaFreeNote', { level: MAIA_FREE_LEVEL })}
+        </p>
+      )}
     </div>
   );
 }

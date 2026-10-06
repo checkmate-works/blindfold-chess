@@ -3114,6 +3114,7 @@
     "engineLockedHint": "Needs coins",
     "engineMaiaCostBadge": "{cost} coin",
     "engineMaiaFreeBadge": "Free",
+    "engineMaiaFreeNote": "Lv{level} perk: games against Maia are free.",
     "maiaPointModal": {
       "title": "Maia costs coins",
       "body": "Each game against Maia costs {cost} coin.",

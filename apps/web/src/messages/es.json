@@ -3114,6 +3114,7 @@
     "engineLockedHint": "Faltan monedas",
     "engineMaiaCostBadge": "{cost} moneda",
     "engineMaiaFreeBadge": "Gratis",
+    "engineMaiaFreeNote": "Ventaja de Lv{level}: las partidas contra Maia son gratis.",
     "maiaPointModal": {
       "title": "Maia cuesta monedas",
       "body": "Cada partida contra Maia cuesta {cost} moneda.",
