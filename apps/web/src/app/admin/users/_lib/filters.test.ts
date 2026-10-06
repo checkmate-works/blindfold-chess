@@ -7,6 +7,7 @@ function makeFilters(overrides: Partial<AdminUserFilters> = {}): AdminUserFilter
     statusFilter: '',
     countryFilter: '',
     rankFilter: '',
+    levelFilter: '',
     providerFilter: '',
     usernameFilter: '',
     ...overrides,
@@ -24,6 +25,7 @@ describe('buildAdminUsersHref', () => {
     expect(href).not.toContain('status=');
     expect(href).not.toContain('country=');
     expect(href).not.toContain('rank=');
+    expect(href).not.toContain('level=');
     expect(href).not.toContain('provider=');
     expect(href).not.toContain('username=');
   });
@@ -46,6 +48,11 @@ describe('buildAdminUsersHref', () => {
   it('includes non-empty rank filter', () => {
     const href = buildAdminUsersHref(makeFilters({ rankFilter: 'shodan' }), 1);
     expect(href).toBe('/admin/users?page=1&tab=list&rank=shodan');
+  });
+
+  it('includes non-empty level filter', () => {
+    const href = buildAdminUsersHref(makeFilters({ levelFilter: '5-9' }), 1);
+    expect(href).toBe('/admin/users?page=1&tab=list&level=5-9');
   });
 
   it('includes non-empty provider filter', () => {

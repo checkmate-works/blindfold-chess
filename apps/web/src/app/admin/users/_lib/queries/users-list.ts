@@ -8,7 +8,8 @@ import { DEFAULT_PAGE_SIZE, getPaginationParams } from '@/lib/pagination';
 
 import type { AdminUserFilters } from '../filters';
 import { type CountryStat, aggregateCountryStats } from './country-stats';
-import { getAllRanks, getFilteredPopulation } from './population';
+import { type LevelStat, aggregateLevelStats } from './level-stats';
+import { fetchTotalExpByUser, getAllRanks, getFilteredPopulation } from './population';
 import { type RankStat, aggregateRankStats } from './rank-stats';
 import { type SignupMethodStat, aggregateSignupMethodStats } from './signup-methods';
 
@@ -28,14 +29,16 @@ export async function fetchUsersPageData(
   page: number,
   filters: AdminUserFilters
 ): Promise<UsersPageData> {
-  const { statusFilter, countryFilter, rankFilter, providerFilter, usernameFilter } = filters;
+  const { statusFilter, countryFilter, rankFilter, levelFilter, providerFilter, usernameFilter } =
+    filters;
   let users: User[];
   let currentPage: number;
   let totalPages: number;
   let totalCount: number;
   let profileMap: Map<string, Profile>;
 
-  const hasFilter = statusFilter || countryFilter || rankFilter || providerFilter || usernameFilter;
+  const hasFilter =
+    statusFilter || countryFilter || rankFilter || levelFilter || providerFilter || usernameFilter;
 
   if (hasFilter) {
     const { filteredUsers, profileMap: allProfileMap } = await getFilteredPopulation(
@@ -197,4 +200,20 @@ export async function fetchSignupMethodStats(
 ): Promise<SignupMethodStat[]> {
   const { filteredUsers } = await getFilteredPopulation(adminClient, filters);
   return aggregateSignupMethodStats(filteredUsers);
+}
+
+/**
+ * Fetch user counts grouped by level band, plus the bucket of users with no
+ * Exp at all.
+ *
+ * Uses `getFilteredPopulation` (cache-wrapped) and delegates aggregation to
+ * the pure `aggregateLevelStats` helper.
+ */
+export async function fetchLevelStats(
+  adminClient: SupabaseClient,
+  filters: AdminUserFilters
+): Promise<LevelStat[]> {
+  const { filteredUsers } = await getFilteredPopulation(adminClient, filters);
+  const totalExpByUser = await fetchTotalExpByUser(filteredUsers.map((u) => u.id));
+  return aggregateLevelStats(filteredUsers, totalExpByUser);
 }

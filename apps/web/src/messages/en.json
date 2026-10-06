@@ -4496,6 +4496,8 @@
     "stats": {
       "usersByCountry": "Users by Country",
       "usersByRank": "Users by Rank",
+      "usersByLevel": "Users by Level",
+      "usersByLevelHelp": "Level is earned only by completing practice, so this is a usage distribution. Lv0 users have saved a result but not yet reached 100 Exp; the no-Exp bucket has never saved one.",
       "usersBySignupMethod": "Users by Signup Method",
       "noData": "No data available",
       "users": "users",
@@ -4508,12 +4510,22 @@
         "2kyu": "2nd Kyu",
         "1kyu": "1st Kyu",
         "1dan": "1st Dan"
+      },
+      "levelBuckets": {
+        "none": "No Exp",
+        "0": "Lv 0",
+        "1-4": "Lv 1–4",
+        "5-9": "Lv 5–9",
+        "10-19": "Lv 10–19",
+        "20-49": "Lv 20–49",
+        "50plus": "Lv 50+"
       }
     },
     "filters": {
       "clearAll": "Clear all",
       "country": "Country",
-      "rank": "Rank"
+      "rank": "Rank",
+      "level": "Level"
     },
     "subscriptions": "Subscriptions",
     "subscriptionsTable": {

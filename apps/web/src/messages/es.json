@@ -4496,6 +4496,8 @@
     "stats": {
       "usersByCountry": "Usuarios por País",
       "usersByRank": "Usuarios por rango",
+      "usersByLevel": "Usuarios por nivel",
+      "usersByLevelHelp": "El nivel solo se gana completando prácticas, así que esta es una distribución de uso. Los usuarios de Lv0 han guardado un resultado pero aún no alcanzan 100 Exp; el grupo sin Exp nunca ha guardado uno.",
       "usersBySignupMethod": "Usuarios por método de registro",
       "noData": "Sin datos disponibles",
       "users": "usuarios",
@@ -4508,12 +4510,22 @@
         "4kyu": "4 Kyu",
         "5kyu": "5 Kyu",
         "mukyu": "Sin rango"
+      },
+      "levelBuckets": {
+        "none": "Sin Exp",
+        "0": "Lv 0",
+        "1-4": "Lv 1–4",
+        "5-9": "Lv 5–9",
+        "10-19": "Lv 10–19",
+        "20-49": "Lv 20–49",
+        "50plus": "Lv 50+"
       }
     },
     "filters": {
       "clearAll": "Borrar todo",
       "country": "País",
-      "rank": "Rango"
+      "rank": "Rango",
+      "level": "Nivel"
     },
     "subscriptions": "Suscripciones",
     "subscriptionsTable": {

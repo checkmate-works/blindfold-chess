@@ -3,10 +3,17 @@ import type { ServerTranslator } from '@/i18n/translator';
 import type { createAdminClient } from '@/lib/supabase/admin';
 
 import type { AdminUserFilters } from '../_lib/filters';
-import { fetchCountryStats, fetchRankStats, fetchSignupMethodStats } from '../_lib/queries';
+import { buildLevelBucketNames } from '../_lib/level-names';
+import {
+  fetchCountryStats,
+  fetchLevelStats,
+  fetchRankStats,
+  fetchSignupMethodStats,
+} from '../_lib/queries';
 import { buildRankNames } from '../_lib/rank-names';
 import type { SIGNUP_METHOD_ORDER } from '../_lib/signup-method';
 import { CountryBarChart } from './CountryBarChart';
+import { LevelBarChart } from './LevelBarChart';
 import { RankBarChart } from './RankBarChart';
 import { SignupMethodChart } from './SignupMethodChart';
 import { StatsChartNav } from './StatsChartNav';
@@ -16,8 +23,8 @@ type AdminClient = ReturnType<typeof createAdminClient>;
 type ProviderNames = Record<(typeof SIGNUP_METHOD_ORDER)[number], string>;
 
 /**
- * Server-rendered "Statistics" tab. Owns the three parallel chart-data
- * fetches (country / rank / signup method) and renders each behind a
+ * Server-rendered "Statistics" tab. Owns the parallel chart-data
+ * fetches (country / rank / level / signup method) and renders each behind a
  * `StatsChartNav` so a bar click on any chart cross-filters into the
  * list tab. Extracted from the page so the page module only dispatches
  * between tab variants.
@@ -33,13 +40,15 @@ export async function StatsTab({
   providerNames: ProviderNames;
   t: Translator;
 }) {
-  const [countryStats, rankStats, signupMethodStats] = await Promise.all([
+  const [countryStats, rankStats, levelStats, signupMethodStats] = await Promise.all([
     fetchCountryStats(adminClient, filters),
     fetchRankStats(adminClient, filters),
+    fetchLevelStats(adminClient, filters),
     fetchSignupMethodStats(adminClient, filters),
   ]);
 
   const rankNames = buildRankNames(t);
+  const levelNames = buildLevelBucketNames(t);
 
   return (
     <div className="space-y-6">
@@ -67,6 +76,21 @@ export async function StatsTab({
               users: t('stats.users'),
             }}
             rankNames={rankNames}
+          />
+        </StatsChartNav>
+      </div>
+
+      <div className="bg-card border border-border rounded-lg p-6">
+        <h2 className="text-lg font-semibold mb-1">{t('stats.usersByLevel')}</h2>
+        <p className="text-sm text-muted-foreground mb-4">{t('stats.usersByLevelHelp')}</p>
+        <StatsChartNav type="level">
+          <LevelBarChart
+            data={levelStats}
+            labels={{
+              noData: t('stats.noData'),
+              users: t('stats.users'),
+            }}
+            bucketNames={levelNames}
           />
         </StatsChartNav>
       </div>

@@ -1,14 +1,16 @@
 /**
  * Admin users page filter types and URL-building helpers.
  *
- * All four filters are grouped into a single `AdminUserFilters` object so
- * they can be passed around as a unit instead of threading 4 separate
+ * All filters are grouped into a single `AdminUserFilters` object so
+ * they can be passed around as a unit instead of threading separate
  * props through every sub-component.
  */
 export type AdminUserFilters = {
   statusFilter: string;
   countryFilter: string;
   rankFilter: string;
+  /** A level bucket id (`LEVEL_BUCKET_ORDER`), or '' for no filter. */
+  levelFilter: string;
   providerFilter: string;
   usernameFilter: string;
 };
@@ -21,6 +23,7 @@ export const EMPTY_ADMIN_USER_FILTERS: AdminUserFilters = {
   statusFilter: '',
   countryFilter: '',
   rankFilter: '',
+  levelFilter: '',
   providerFilter: '',
   usernameFilter: '',
 };
@@ -37,6 +40,7 @@ export function buildAdminUsersHref(filters: AdminUserFilters, page: number): st
   if (filters.statusFilter) params.set('status', filters.statusFilter);
   if (filters.countryFilter) params.set('country', filters.countryFilter);
   if (filters.rankFilter) params.set('rank', filters.rankFilter);
+  if (filters.levelFilter) params.set('level', filters.levelFilter);
   if (filters.providerFilter) params.set('provider', filters.providerFilter);
   if (filters.usernameFilter) params.set('username', filters.usernameFilter);
   return `/admin/users?${params.toString()}`;

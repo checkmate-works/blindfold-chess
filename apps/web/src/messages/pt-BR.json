@@ -4524,6 +4524,8 @@
     "stats": {
       "usersByCountry": "Usuários por País",
       "usersByRank": "Usuários por Graduação",
+      "usersByLevel": "Usuários por Nível",
+      "usersByLevelHelp": "O nível só é ganho ao concluir práticas, então esta é uma distribuição de uso. Usuários Lv0 salvaram um resultado mas ainda não alcançaram 100 Exp; o grupo sem Exp nunca salvou um.",
       "usersBySignupMethod": "Usuários por Método de Cadastro",
       "noData": "Sem dados disponíveis",
       "users": "usuários",
@@ -4536,12 +4538,22 @@
         "2kyu": "2º Kyu",
         "1kyu": "1º Kyu",
         "1dan": "1º Dan"
+      },
+      "levelBuckets": {
+        "none": "Sem Exp",
+        "0": "Lv 0",
+        "1-4": "Lv 1–4",
+        "5-9": "Lv 5–9",
+        "10-19": "Lv 10–19",
+        "20-49": "Lv 20–49",
+        "50plus": "Lv 50+"
       }
     },
     "filters": {
       "clearAll": "Limpar tudo",
       "country": "País",
-      "rank": "Graduação"
+      "rank": "Graduação",
+      "level": "Nível"
     },
     "subscriptions": "Assinaturas",
     "subscriptionsTable": {

@@ -8,9 +8,11 @@ type Props = {
   statusFilter: string;
   countryFilter: string;
   rankFilter: string;
+  levelFilter: string;
   providerFilter: string;
   usernameFilter: string;
   rankNames: Record<string, string>;
+  levelNames: Record<string, string>;
   providerNames: Record<string, string>;
   labels: {
     clearAll: string;
@@ -19,6 +21,7 @@ type Props = {
     anonymous: string;
     deleted: string;
     usernameOrEmailLabel: string;
+    levelLabel: string;
   };
 };
 
@@ -33,9 +36,11 @@ export function ActiveFilters({
   statusFilter,
   countryFilter,
   rankFilter,
+  levelFilter,
   providerFilter,
   usernameFilter,
   rankNames,
+  levelNames,
   providerNames,
   labels,
 }: Props) {
@@ -43,22 +48,31 @@ export function ActiveFilters({
     status: parseAsString.withDefault(''),
     country: parseAsString.withDefault(''),
     rank: parseAsString.withDefault(''),
+    level: parseAsString.withDefault(''),
     provider: parseAsString.withDefault(''),
     username: parseAsString.withDefault(''),
     page: parseAsInteger.withDefault(1),
   });
 
   const hasAnyFilter =
-    statusFilter || countryFilter || rankFilter || providerFilter || usernameFilter;
+    statusFilter || countryFilter || rankFilter || levelFilter || providerFilter || usernameFilter;
   if (!hasAnyFilter) return null;
 
-  const clearOne = (key: 'status' | 'country' | 'rank' | 'provider' | 'username') => {
+  const clearOne = (key: 'status' | 'country' | 'rank' | 'level' | 'provider' | 'username') => {
     setParams({ [key]: null, page: null }, { history: 'push', shallow: false });
   };
 
   const clearAll = () => {
     setParams(
-      { status: null, country: null, rank: null, provider: null, username: null, page: null },
+      {
+        status: null,
+        country: null,
+        rank: null,
+        level: null,
+        provider: null,
+        username: null,
+        page: null,
+      },
       { history: 'push', shallow: false }
     );
   };
@@ -76,6 +90,13 @@ export function ActiveFilters({
         <FilterBadge
           label={rankNames[rankFilter] ?? rankFilter}
           onRemove={() => clearOne('rank')}
+        />
+      )}
+
+      {levelFilter && (
+        <FilterBadge
+          label={`${labels.levelLabel}: ${levelNames[levelFilter] ?? levelFilter}`}
+          onRemove={() => clearOne('level')}
         />
       )}
 

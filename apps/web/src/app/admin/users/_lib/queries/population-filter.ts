@@ -5,6 +5,7 @@ import type { Profile } from '@/lib/db/schema';
 
 import type { AdminUserFilters } from '../filters';
 import { UNKNOWN_COUNTRY } from './country-stats';
+import { resolveLevelBucket } from './level-stats';
 import { getSignupMethod } from './signup-methods';
 
 /**
@@ -30,19 +31,23 @@ export function groupRankSlugsByUser(
 /**
  * Build the predicate that decides whether one auth user belongs to the
  * admin users population for `filters`. `profile` is `undefined` for an
- * anonymous user; `heldSlugs` is only consulted when a rank filter is set.
+ * anonymous user; `heldSlugs` is only consulted when a rank filter is set,
+ * and `totalExp` (the user's `user_exp` row, `undefined` when they have
+ * none) only when a level filter is set.
  */
 export function createPopulationFilter(
   filters: AdminUserFilters
 ): (
   user: User,
   profile: Profile | undefined,
-  heldSlugs: ReadonlySet<string> | undefined
+  heldSlugs: ReadonlySet<string> | undefined,
+  totalExp?: number
 ) => boolean {
-  const { statusFilter, countryFilter, rankFilter, providerFilter, usernameFilter } = filters;
+  const { statusFilter, countryFilter, rankFilter, levelFilter, providerFilter, usernameFilter } =
+    filters;
   const normalizedSearchQuery = usernameFilter.trim().toLowerCase();
 
-  return (user, profile, held) => {
+  return (user, profile, held, totalExp) => {
     // Status filter
     switch (statusFilter) {
       case 'active':
@@ -79,6 +84,12 @@ export function createPopulationFilter(
       } else {
         if (!held || resolveHighestRankSlug(held) !== rankFilter) return false;
       }
+    }
+
+    // Level filter — bucket by the same rule as the "Users by Level" chart
+    // (`aggregateLevelStats`), so a bar click lands on exactly that many users.
+    if (levelFilter) {
+      if (resolveLevelBucket(totalExp) !== levelFilter) return false;
     }
 
     // Signup method (provider) filter

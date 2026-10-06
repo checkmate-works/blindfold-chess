@@ -3,7 +3,7 @@ import { cache } from 'react';
 import type { SupabaseClient, User } from '@supabase/supabase-js';
 import { inArray } from 'drizzle-orm';
 
-import { db, profiles, ranks, userRanks } from '@/lib/db';
+import { db, profiles, ranks, userExp, userRanks } from '@/lib/db';
 import type { Profile, Rank } from '@/lib/db/schema';
 import { listAllAuthUsers } from '@/lib/supabase/list-all-auth-users';
 
@@ -17,6 +17,22 @@ export type FilteredPopulation = {
   /** For each user id in the filtered population, the set of rank slugs they hold. */
   userSlugs: Map<string, Set<string>>;
 };
+
+/**
+ * Cumulative Exp per user, for the given ids. Users with no `user_exp` row
+ * are simply absent from the map — callers read that absence as "never
+ * saved a result" (see `resolveLevelBucket`).
+ */
+export async function fetchTotalExpByUser(
+  userIds: readonly string[]
+): Promise<Map<string, number>> {
+  if (userIds.length === 0) return new Map();
+  const rows = await db
+    .select({ userId: userExp.userId, totalExp: userExp.totalExp })
+    .from(userExp)
+    .where(inArray(userExp.userId, [...userIds]));
+  return new Map(rows.map((r) => [r.userId, r.totalExp]));
+}
 
 /**
  * Cached fetch of the full `ranks` master table. Shared across all callers
@@ -61,9 +77,15 @@ export const getFilteredPopulation = cache(
           )
         : new Map<string, Set<string>>();
 
+    // Likewise, cumulative Exp is only needed to apply a level filter;
+    // `fetchLevelStats` fetches it for the filtered population itself.
+    const totalExpByUser = filters.levelFilter
+      ? await fetchTotalExpByUser(allUserIds)
+      : new Map<string, number>();
+
     const matches = createPopulationFilter(filters);
     const filteredUsers = allUsers.filter((user) =>
-      matches(user, profileMap.get(user.id), userSlugs.get(user.id))
+      matches(user, profileMap.get(user.id), userSlugs.get(user.id), totalExpByUser.get(user.id))
     );
 
     return { filteredUsers, profileMap, userSlugs };

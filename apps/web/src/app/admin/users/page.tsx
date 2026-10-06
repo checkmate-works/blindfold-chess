@@ -60,6 +60,7 @@ const searchParamsCache = createSearchParamsCache({
   tab: parseAsString.withDefault('list'),
   country: parseAsString.withDefault(''),
   rank: parseAsString.withDefault(''),
+  level: parseAsString.withDefault(''),
   provider: parseAsStringLiteral(PROVIDER_FILTER_VALUES).withDefault(''),
   username: parseAsString.withDefault(''),
 });
@@ -75,6 +76,7 @@ export default async function AdminUsersPage({
     tab: rawTab,
     country: countryFilter,
     rank: rankFilter,
+    level: levelFilter,
     provider: providerFilter,
     username: usernameFilter,
   } = await searchParamsCache.parse(searchParams);
@@ -82,6 +84,7 @@ export default async function AdminUsersPage({
     statusFilter,
     countryFilter,
     rankFilter,
+    levelFilter,
     providerFilter,
     usernameFilter,
   };

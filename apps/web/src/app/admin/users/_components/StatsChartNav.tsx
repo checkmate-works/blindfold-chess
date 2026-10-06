@@ -6,7 +6,7 @@ import { Children, cloneElement, isValidElement } from 'react';
 import { parseAsInteger, parseAsString, useQueryStates } from 'nuqs';
 
 type Props = {
-  type: 'country' | 'rank' | 'provider';
+  type: 'country' | 'rank' | 'level' | 'provider';
   children: ReactElement;
 };
 
@@ -18,6 +18,7 @@ export function StatsChartNav({ type, children }: Props) {
   const [, setParams] = useQueryStates({
     country: parseAsString.withDefault(''),
     rank: parseAsString.withDefault(''),
+    level: parseAsString.withDefault(''),
     provider: parseAsString.withDefault(''),
     tab: parseAsString.withDefault('list'),
     page: parseAsInteger.withDefault(1),
@@ -32,6 +33,11 @@ export function StatsChartNav({ type, children }: Props) {
     } else if (type === 'rank') {
       setParams(
         { rank: value || null, tab: 'list', page: null },
+        { history: 'push', shallow: false }
+      );
+    } else if (type === 'level') {
+      setParams(
+        { level: value || null, tab: 'list', page: null },
         { history: 'push', shallow: false }
       );
     } else {
