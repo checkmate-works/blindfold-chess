@@ -59,7 +59,7 @@ describe('GET /api/engines/maia/[file]', () => {
     expect(mockLoadMaiaModel).not.toHaveBeenCalled();
   });
 
-  it('returns 403 for authenticated users without an active subscription / grant', async () => {
+  it('returns 403 for authenticated users the gate rejects (below the free level, no paid game)', async () => {
     mockGetOptionalUser.mockResolvedValue({ id: 'user-1' });
     mockCanUseMaia.mockResolvedValue(false);
 
