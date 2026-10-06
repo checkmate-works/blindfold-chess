@@ -5,3 +5,4 @@ export * from "./constants";
 export * from "./level";
 export * from "./types";
 export * from "./build-exp-info";
+export * from "./level-bands";
