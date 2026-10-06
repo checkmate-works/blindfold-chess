@@ -794,7 +794,7 @@
       "adFreeRate": "1 Coin = {days, plural, one {# ad-free day} other {# ad-free days}}",
       "maiaTitle": "Play against Maia",
       "maiaRate": "{cost, plural, one {# Coin} other {# Coins}} = 1 game",
-      "maiaNote": "Maia is a neural-network AI that plays human-like moves.",
+      "maiaNote": "Maia is a neural-network AI that plays human-like moves. Free to play from Lv{level}.",
       "aiReviewTitle": "Get an AI review",
       "aiReviewRate": "{cost, plural, one {# Coin} other {# Coins}} = 1 review",
       "aiReviewNote": "Subscribers generate reviews without spending Coins."
@@ -3113,10 +3113,13 @@
     "engineMaiaDescription": "A neural-network engine that plays like a human at the chosen Elo. The first move takes a few seconds while the model loads (~46 MB).",
     "engineLockedHint": "Needs coins",
     "engineMaiaCostBadge": "{cost} coin",
+    "engineMaiaFreeBadge": "Free",
+    "engineMaiaFreeNote": "Lv{level} reward: games against Maia are free.",
     "maiaPointModal": {
       "title": "Maia costs coins",
       "body": "Each game against Maia costs {cost} coin.",
       "balance": "You currently have {balance} coins.",
+      "unlockHint": "Maia games become free at Lv{level} (you are Lv{current}).",
       "earnLink": "How Coins work",
       "viewPoints": "View my coins",
       "close": "Close"
@@ -3994,7 +3997,7 @@
       "maia": {
         "title": "Play against Maia",
         "rate": "{cost, plural, one {# Coin} other {# Coins}} = 1 game",
-        "note": "Maia is a neural-network AI that plays human-like moves. Charged when the game starts.",
+        "note": "Maia is a neural-network AI that plays human-like moves. Charged when the game starts. Free from Lv{level}.",
         "cta": "Start a game"
       }
     },
@@ -4494,7 +4497,7 @@
       "usersByCountry": "Users by Country",
       "usersByRank": "Users by Rank",
       "usersByLevel": "Users by Level",
-      "usersByLevelHelp": "Level is earned only by completing practice, so this is a usage distribution. Lv0 users have saved a result but not yet reached 100 Exp; the no-Exp bucket has never saved one.",
+      "usersByLevelHelp": "Level is earned only by completing practice and AI games, so this is a usage distribution. Lv0 users have saved a result but not yet reached 100 Exp; the no-Exp bucket has never saved one.",
       "usersBySignupMethod": "Users by Signup Method",
       "noData": "No data available",
       "jumpTo": "Jump to",

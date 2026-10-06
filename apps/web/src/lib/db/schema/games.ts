@@ -161,8 +161,10 @@ export const games = pgTable(
      * and the game lives in localStorage until published — so without this
      * column the coin history could say "Maia game, -1" but never which
      * game. Written only at publish, only for Maia games, so it stays null
-     * for Stockfish games, for Maia games that were never published, and
-     * for rows published before this column. Self-reported like the rest
+     * for Stockfish games, for Maia games that were never published, for
+     * Maia games the player's level made free (nothing was charged, so
+     * there is no row to link), and for rows published before this
+     * column. Self-reported like the rest
      * of the snapshot: it is a display link, not a billing record — the
      * ledger row is the authority on what was charged.
      */

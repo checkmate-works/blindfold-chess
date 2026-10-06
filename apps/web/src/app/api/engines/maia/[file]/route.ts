@@ -11,7 +11,7 @@ import { loadMaiaModel } from './_lib/load-maia-model';
  * The model file lives outside `public/` (under `apps/web/engines/maia/`)
  * so the bytes are only reachable through this handler. Every request
  * is gated by {@link canUseMaia}; unauthenticated callers — and users
- * with neither an active subscription nor a paid Maia game — receive 403.
+ * below `MAIA_FREE_LEVEL` with no paid Maia game on record — receive 403.
  *
  * Threat model:
  *   - Anonymous attackers cannot trigger the 46 MB egress at all — the
@@ -29,7 +29,8 @@ import { loadMaiaModel } from './_lib/load-maia-model';
  * becomes a concern.
  *
  * Why `private` (not `public`) Cache-Control: the response is per-user
- * (a future revocation must not be served from a shared CDN copy). The
+ * (a future revocation must not be served from a shared CDN copy), and a
+ * shared-cache hit would skip the entitlement check above entirely. The
  * `immutable` directive still lets the browser skip revalidation.
  */
 

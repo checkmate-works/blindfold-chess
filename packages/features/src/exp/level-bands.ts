@@ -1,7 +1,8 @@
 /**
  * Coarse level tiers for reporting on how far players have progressed.
  *
- * Exp only accrues from completed practice challenges, so a player's level
+ * Exp accrues only from completed practice (challenge and free-play runs)
+ * and AI games — with a daily cap on the game share — so a player's level
  * is effectively a usage counter. Individual levels are too fine to read as
  * a distribution: the level curve (`requiredExp = 100 * level^1.5`) means a
  * handful of sessions clears Lv1–4, while every further tier takes several

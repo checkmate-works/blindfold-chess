@@ -1,6 +1,7 @@
 'use client';
 
 import { MAIA_GAME_POINT_COST } from '@/lib/points/constants';
+import type { MaiaEngineAccess } from '@/lib/users/can-use-maia';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -28,7 +29,8 @@ type Props = {
     consentDialog: ConfirmDialog;
     pointInfoModal: InfoModal;
   };
-  spendableBalance: number;
+  /** Server-resolved Maia access (level + spendable balance) for the modal copy. */
+  maiaAccess: MaiaEngineAccess;
   locale: Locale;
 };
 
@@ -38,7 +40,7 @@ type Props = {
  * consent dialog, and the point-info modal. Each form renders this once,
  * wired to its `useMaiaGameLaunch` controller.
  */
-export function GameLaunchModals({ launch, spendableBalance, locale }: Props) {
+export function GameLaunchModals({ launch, maiaAccess, locale }: Props) {
   return (
     <>
       <MaiaCoinConfirmModal
@@ -46,7 +48,7 @@ export function GameLaunchModals({ launch, spendableBalance, locale }: Props) {
         onConfirm={launch.coinConfirmDialog.onConfirm}
         onCancel={launch.coinConfirmDialog.onCancel}
         cost={MAIA_GAME_POINT_COST}
-        spendableBalance={spendableBalance}
+        spendableBalance={maiaAccess.spendableBalance}
       />
       <LargeDownloadConsentDialog
         isOpen={launch.consentDialog.isOpen}
@@ -58,7 +60,8 @@ export function GameLaunchModals({ launch, spendableBalance, locale }: Props) {
         isOpen={launch.pointInfoModal.isOpen}
         onClose={launch.pointInfoModal.onClose}
         cost={MAIA_GAME_POINT_COST}
-        spendableBalance={spendableBalance}
+        spendableBalance={maiaAccess.spendableBalance}
+        level={maiaAccess.level}
         locale={locale}
       />
     </>

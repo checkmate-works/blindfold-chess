@@ -794,7 +794,7 @@
       "adFreeRate": "1 Moeda = {days, plural, one {# dia sem anúncios} other {# dias sem anúncios}}",
       "maiaTitle": "Jogar contra a Maia",
       "maiaRate": "{cost, plural, one {# Moeda} other {# Moedas}} = 1 partida",
-      "maiaNote": "A Maia é uma IA de rede neural que joga com estilo humano.",
+      "maiaNote": "A Maia é uma IA de rede neural que joga com estilo humano. Grátis a partir do Lv{level}.",
       "aiReviewTitle": "Receba uma revisão IA",
       "aiReviewRate": "{cost, plural, one {# moeda} other {# moedas}} = 1 revisão",
       "aiReviewNote": "Assinantes geram revisões sem gastar moedas."
@@ -3113,10 +3113,13 @@
     "engineMaiaDescription": "Um motor baseado em redes neurais que joga como um humano no Elo selecionado. O primeiro movimento demora alguns segundos enquanto o modelo é carregado (~46 MB).",
     "engineLockedHint": "Moedas insuficientes",
     "engineMaiaCostBadge": "{cost} moeda",
+    "engineMaiaFreeBadge": "Grátis",
+    "engineMaiaFreeNote": "Recompensa por alcançar o Lv{level}: as partidas contra a Maia são grátis.",
     "maiaPointModal": {
       "title": "Maia custa moedas",
       "body": "Cada partida contra a Maia custa {cost} moeda.",
       "balance": "Você tem atualmente {balance} moedas.",
+      "unlockHint": "As partidas contra a Maia ficam grátis a partir do Lv{level} (você está no Lv{current}).",
       "earnLink": "Como as Moedas funcionam",
       "viewPoints": "Ver minhas moedas",
       "close": "Fechar"
@@ -3994,7 +3997,7 @@
       "maia": {
         "title": "Jogar contra a Maia",
         "rate": "{cost, plural, one {# Moeda} other {# Moedas}} = 1 partida",
-        "note": "A Maia é uma IA de rede neural que joga com estilo humano. Cobrado ao iniciar a partida.",
+        "note": "A Maia é uma IA de rede neural que joga com estilo humano. Cobrado ao iniciar a partida. Grátis a partir do Lv{level}.",
         "cta": "Começar uma partida"
       }
     },
@@ -4522,7 +4525,7 @@
       "usersByCountry": "Usuários por País",
       "usersByRank": "Usuários por Graduação",
       "usersByLevel": "Usuários por Nível",
-      "usersByLevelHelp": "O nível só é ganho ao concluir práticas, então esta é uma distribuição de uso. Usuários Lv0 salvaram um resultado mas ainda não alcançaram 100 Exp; o grupo sem Exp nunca salvou um.",
+      "usersByLevelHelp": "O nível só é ganho ao concluir práticas e partidas contra a IA, então esta é uma distribuição de uso. Usuários Lv0 salvaram um resultado mas ainda não alcançaram 100 Exp; o grupo sem Exp nunca salvou um.",
       "usersBySignupMethod": "Usuários por Método de Cadastro",
       "noData": "Sem dados disponíveis",
       "jumpTo": "Ir para",

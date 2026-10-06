@@ -143,7 +143,8 @@ export function PgnGameForm({ locale, maiaAccess }: Props) {
     router.push(`/${locale}/games/play?${params.toString()}`);
   };
 
-  const launch = useMaiaGameLaunch({ navigateToGame });
+  const maiaCardMode = deriveMaiaCardMode(maiaAccess, MAIA_GAME_POINT_COST);
+  const launch = useMaiaGameLaunch({ navigateToGame, maiaCardMode });
 
   const isStartDisabled = !pgn.trim() || !validatePgn(pgn);
   const showDerivedFromPgnHint = pgn.trim() !== '' && validatePgn(pgn) && !colorManuallySet;
@@ -161,7 +162,7 @@ export function PgnGameForm({ locale, maiaAccess }: Props) {
         onMaiaRatingChange={setMaiaRating}
         engine={engine}
         onEngineChange={setEngine}
-        maiaCardMode={deriveMaiaCardMode(maiaAccess, MAIA_GAME_POINT_COST)}
+        maiaCardMode={maiaCardMode}
         maiaCost={MAIA_GAME_POINT_COST}
         onMaiaLockedClick={launch.openPointInfo}
         localSettings={localSettings}
@@ -172,11 +173,7 @@ export function PgnGameForm({ locale, maiaAccess }: Props) {
         onStartGame={() => launch.start(engine)}
         previewSlot={<PgnPreview pgnMoves={pgnMoves} startingFen={startingFen} color={color} />}
       />
-      <GameLaunchModals
-        launch={launch}
-        spendableBalance={maiaAccess.spendableBalance}
-        locale={locale}
-      />
+      <GameLaunchModals launch={launch} maiaAccess={maiaAccess} locale={locale} />
     </>
   );
 }

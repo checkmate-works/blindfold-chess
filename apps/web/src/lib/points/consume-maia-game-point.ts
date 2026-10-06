@@ -12,7 +12,9 @@ export type ConsumeMaiaGamePointResult =
 /**
  * Charge `MAIA_GAME_POINT_COST` confirmed points for one Maia game
  * (per-game billing — model B). Called at game-creation time for every
- * viewer — there is no subscription exemption.
+ * viewer below `MAIA_FREE_LEVEL` — there is no subscription exemption. The
+ * caller (`startMaiaGame`) decides whether the viewer is exempt by level;
+ * this function always charges.
  *
  * @design `clientGameId` anchors idempotency
  *
@@ -86,8 +88,8 @@ export async function consumeMaiaGamePoint(
 /**
  * Whether the user has ever been charged a coin for a Maia game — i.e.
  * holds at least one `maia_game` ledger row. The Maia model-download
- * gate (`canUseMaia`) keys off this single fact; keeping the query here
- * keeps `point_events` access inside `@/lib/points`.
+ * gate (`canUseMaia`) accepts this fact for users below the free level;
+ * keeping the query here keeps `point_events` access inside `@/lib/points`.
  */
 export async function hasMaiaGameCharge(userId: string): Promise<boolean> {
   const rows = await db

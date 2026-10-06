@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
+import { MAIA_FREE_LEVEL } from '@/lib/users/maia-free-level';
+
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -16,6 +18,8 @@ type Props = {
   cost: number;
   /** The viewer's current spendable (confirmed) point balance. */
   spendableBalance: number;
+  /** The viewer's current level, shown against the level that makes Maia free. */
+  level: number;
   locale: Locale;
 };
 
@@ -25,11 +29,22 @@ type Props = {
  *   1. Tapping the locked Maia card in the engine selector.
  *   2. A start attempt that fails the balance check server-side.
  *
+ * Besides the coin route it names the other way in — reaching
+ * `MAIA_FREE_LEVEL` — so a player with no coins and no content to be
+ * liked still sees a path they can walk on their own.
+ *
  * Built on `ConfirmationModal` so its action row is the one every confirm
  * dialog shares — same order, same stacking on a phone, same 12px gap and
  * 44px targets. It used to hand-roll the same row with an 8px gap.
  */
-export function MaiaPointInfoModal({ isOpen, onClose, cost, spendableBalance, locale }: Props) {
+export function MaiaPointInfoModal({
+  isOpen,
+  onClose,
+  cost,
+  spendableBalance,
+  level,
+  locale,
+}: Props) {
   const t = useTranslations('newGame.maiaPointModal');
   const router = useRouter();
 
@@ -46,6 +61,9 @@ export function MaiaPointInfoModal({ isOpen, onClose, cost, spendableBalance, lo
     >
       <p className="mt-4 text-sm text-muted-foreground">
         {t('balance', { balance: spendableBalance })}
+      </p>
+      <p className="mt-2 text-sm text-muted-foreground">
+        {t('unlockHint', { level: MAIA_FREE_LEVEL, current: level })}
       </p>
       <Link
         href="/coin"

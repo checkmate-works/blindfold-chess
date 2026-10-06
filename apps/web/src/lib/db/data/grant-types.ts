@@ -22,7 +22,8 @@ export type GrantType = (typeof GRANT_TYPES)[number];
  *                    Scoped via `resourceType` + `resourceId` on the row.
  *
  * Maia engine access is intentionally NOT a benefit type: it is gated by a
- * per-game coin charge (see `canUseMaia`), not by a `user_grants` row.
+ * per-game coin charge below `MAIA_FREE_LEVEL` and by level above it (see
+ * `canUseMaia`), not by a `user_grants` row.
  *
  * This array IS the validation source — both the admin grant action and
  * the UI dropdown read it directly. To add a new benefit type, append a
