@@ -2,27 +2,24 @@
  * Admin Users Management
  *
  * @description
- * Admin page for viewing and managing user accounts. Provides both a paginated
- * user list with status filtering and a statistics view with country and rank
- * distribution charts. Supports filtering by status, country, and rank with
- * cross-tab chart-click navigation.
+ * Admin page for viewing and managing user accounts: a paginated user list
+ * with status, signup-method, country, rank, level and username filters.
+ * Distribution charts live on the sibling page `/admin/users/stats`, which
+ * links back here with a filter applied when a bar is clicked.
  *
  * @flow
- * 1. Admin navigates to /admin/users — sees the user list tab by default.
- * 2. Admin can filter by status (active/banned/anonymous/deleted) — applies to
- *    both list and stats tabs.
- * 3. Switching to the "Statistics" tab shows:
- *    - Users by Country — horizontal bar chart of user distribution by country.
- *    - Users by Rank — horizontal bar chart of user distribution by belt rank,
- *      including unranked (mukyu) users and Coming Soon ranks with 0 count.
- * 4. Clicking a bar in a chart sets the corresponding filter (country or rank)
- *    and navigates to the List tab with the filter applied.
- * 5. Active filters are displayed as dismissible badges above the user list.
+ * 1. Admin navigates to /admin/users — sees the paginated user list.
+ * 2. Admin can filter by status (active/banned/anonymous/deleted), signup
+ *    method, or search by username / email.
+ * 3. Country, rank and level filters are set by clicking a bar on the
+ *    statistics page (or a country flag in the list).
+ * 4. Active filters are displayed as dismissible badges above the user list.
  *    Each badge can be individually removed, or all filters cleared at once.
  */
 import { getTranslations } from 'next-intl/server';
+import Link from 'next/link';
+import { redirect } from 'next/navigation';
 
-import type { ServerTranslator } from '@/i18n/translator';
 import {
   createSearchParamsCache,
   parseAsInteger,
@@ -34,30 +31,18 @@ import { createAdminClient } from '@/lib/supabase/admin';
 
 import { AdminPageLayout } from '../_components/AdminPageLayout';
 import { ProviderFilter } from './_components/ProviderFilter';
-import { StatsTab } from './_components/StatsTab';
 import { StatusFilter } from './_components/StatusFilter';
 import { UsernameFilter } from './_components/UsernameFilter';
 import { UsersListTab } from './_components/UsersListTab';
-import { UsersTabNav } from './_components/UsersTabNav';
 import type { AdminUserFilters } from './_lib/filters';
-import { SIGNUP_METHOD_I18N_KEY, SIGNUP_METHOD_ORDER } from './_lib/signup-method';
-
-// Whitelist for the `provider` URL param. Includes '' (= no filter / default).
-// Anything outside this list falls back to '' (filter cleared).
-const PROVIDER_FILTER_VALUES = ['', ...SIGNUP_METHOD_ORDER] as const;
-
-function buildProviderNames(
-  t: ServerTranslator
-): Record<(typeof SIGNUP_METHOD_ORDER)[number], string> {
-  return Object.fromEntries(
-    SIGNUP_METHOD_ORDER.map((method) => [method, t(`usersTable.${SIGNUP_METHOD_I18N_KEY[method]}`)])
-  ) as Record<(typeof SIGNUP_METHOD_ORDER)[number], string>;
-}
+import { PROVIDER_FILTER_VALUES, buildProviderNames } from './_lib/provider-filter';
 
 const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
   status: parseAsString.withDefault(''),
-  tab: parseAsString.withDefault('list'),
+  // Legacy: the statistics used to be a tab on this page. Only read to
+  // redirect old links to the stats page.
+  tab: parseAsString.withDefault(''),
   country: parseAsString.withDefault(''),
   rank: parseAsString.withDefault(''),
   level: parseAsString.withDefault(''),
@@ -73,13 +58,22 @@ export default async function AdminUsersPage({
   const {
     page,
     status: statusFilter,
-    tab: rawTab,
+    tab,
     country: countryFilter,
     rank: rankFilter,
     level: levelFilter,
     provider: providerFilter,
     username: usernameFilter,
   } = await searchParamsCache.parse(searchParams);
+
+  if (tab === 'stats') {
+    const params = new URLSearchParams();
+    if (statusFilter) params.set('status', statusFilter);
+    if (providerFilter) params.set('provider', providerFilter);
+    const query = params.toString();
+    redirect(query ? `/admin/users/stats?${query}` : '/admin/users/stats');
+  }
+
   const filters: AdminUserFilters = {
     statusFilter,
     countryFilter,
@@ -92,16 +86,18 @@ export default async function AdminUsersPage({
   const t = await getTranslations({ locale: 'en', namespace: 'Admin' });
   const providerNames = buildProviderNames(t);
 
-  const validTabs = ['list', 'stats'] as const;
-  const tab = validTabs.includes(rawTab as (typeof validTabs)[number]) ? rawTab : 'list';
-
-  const tabs = [
-    { id: 'list', label: t('tabs.users') },
-    { id: 'stats', label: t('tabs.statistics') },
-  ];
-
   return (
-    <AdminPageLayout breadcrumbs={[{ label: t('users') }]}>
+    <AdminPageLayout
+      breadcrumbs={[{ label: t('users') }]}
+      actions={
+        <Link
+          href="/admin/users/stats"
+          className="inline-flex items-center rounded border border-border bg-card px-4 py-2 text-sm text-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+        >
+          {t('userStats')}
+        </Link>
+      }
+    >
       <UsernameFilter
         labels={{
           searchByUsernameOrEmail: t('usersTable.searchByUsernameOrEmail'),
@@ -129,21 +125,13 @@ export default async function AdminUsersPage({
         />
       </div>
 
-      <div className="mb-6">
-        <UsersTabNav tabs={tabs} />
-      </div>
-
-      {tab === 'list' ? (
-        <UsersListTab
-          adminClient={adminClient}
-          page={page}
-          filters={filters}
-          providerNames={providerNames}
-          t={t}
-        />
-      ) : (
-        <StatsTab adminClient={adminClient} filters={filters} providerNames={providerNames} t={t} />
-      )}
+      <UsersListTab
+        adminClient={adminClient}
+        page={page}
+        filters={filters}
+        providerNames={providerNames}
+        t={t}
+      />
     </AdminPageLayout>
   );
 }

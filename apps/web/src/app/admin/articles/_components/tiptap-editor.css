@@ -190,7 +190,9 @@
   background: transparent;
   color: var(--color-muted-foreground, #6b7280);
   cursor: pointer;
-  transition: background-color 0.15s, color 0.15s;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
 }
 
 .tiptap-image-toggle-btn:hover {

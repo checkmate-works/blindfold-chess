@@ -4337,6 +4337,7 @@
     "title": "Admin",
     "dashboard": "Panel",
     "users": "Usuarios",
+    "userStats": "Estadísticas de usuarios",
     "deletedUser": "(usuario eliminado)",
     "provisionalUser": "(registro incompleto)",
     "auditLog": "Registro de Auditoría",
@@ -4489,10 +4490,6 @@
         "viewAllCoins": "Ver todas las transacciones"
       }
     },
-    "tabs": {
-      "users": "Usuarios",
-      "statistics": "Estadísticas"
-    },
     "stats": {
       "usersByCountry": "Usuarios por País",
       "usersByRank": "Usuarios por rango",
@@ -4500,6 +4497,7 @@
       "usersByLevelHelp": "El nivel solo se gana completando prácticas, así que esta es una distribución de uso. Los usuarios de Lv0 han guardado un resultado pero aún no alcanzan 100 Exp; el grupo sin Exp nunca ha guardado uno.",
       "usersBySignupMethod": "Usuarios por método de registro",
       "noData": "Sin datos disponibles",
+      "jumpTo": "Ir a",
       "users": "usuarios",
       "unknownCountry": "Desconocido",
       "rankNames": {

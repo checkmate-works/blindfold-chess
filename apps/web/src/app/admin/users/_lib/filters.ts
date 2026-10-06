@@ -36,7 +36,6 @@ export const EMPTY_ADMIN_USER_FILTERS: AdminUserFilters = {
 export function buildAdminUsersHref(filters: AdminUserFilters, page: number): string {
   const params = new URLSearchParams();
   params.set('page', String(page));
-  params.set('tab', 'list');
   if (filters.statusFilter) params.set('status', filters.statusFilter);
   if (filters.countryFilter) params.set('country', filters.countryFilter);
   if (filters.rankFilter) params.set('rank', filters.rankFilter);

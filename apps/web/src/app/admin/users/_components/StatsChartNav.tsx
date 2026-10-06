@@ -3,49 +3,45 @@
 import type { ReactElement } from 'react';
 import { Children, cloneElement, isValidElement } from 'react';
 
-import { parseAsInteger, parseAsString, useQueryStates } from 'nuqs';
+import { useRouter, useSearchParams } from 'next/navigation';
+
+import { EMPTY_ADMIN_USER_FILTERS, buildAdminUsersHref } from '../_lib/filters';
+
+type ChartFilterKey = 'country' | 'rank' | 'level' | 'provider';
 
 type Props = {
-  type: 'country' | 'rank' | 'level' | 'provider';
+  type: ChartFilterKey;
   children: ReactElement;
+};
+
+const FILTER_FIELD: Record<
+  ChartFilterKey,
+  'countryFilter' | 'rankFilter' | 'levelFilter' | 'providerFilter'
+> = {
+  country: 'countryFilter',
+  rank: 'rankFilter',
+  level: 'levelFilter',
+  provider: 'providerFilter',
 };
 
 /**
  * Wrapper that injects an `onBarClick` handler into a chart component.
- * Clicking a bar sets the corresponding filter and navigates to the List tab.
+ * Clicking a bar opens the users list filtered to that bar's bucket. The
+ * stats page's own status / provider filters are carried along, so the list
+ * shows exactly the users the bar counted and not the unfiltered population.
  */
 export function StatsChartNav({ type, children }: Props) {
-  const [, setParams] = useQueryStates({
-    country: parseAsString.withDefault(''),
-    rank: parseAsString.withDefault(''),
-    level: parseAsString.withDefault(''),
-    provider: parseAsString.withDefault(''),
-    tab: parseAsString.withDefault('list'),
-    page: parseAsInteger.withDefault(1),
-  });
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   const handleBarClick = (value: string) => {
-    if (type === 'country') {
-      setParams(
-        { country: value || null, tab: 'list', page: null },
-        { history: 'push', shallow: false }
-      );
-    } else if (type === 'rank') {
-      setParams(
-        { rank: value || null, tab: 'list', page: null },
-        { history: 'push', shallow: false }
-      );
-    } else if (type === 'level') {
-      setParams(
-        { level: value || null, tab: 'list', page: null },
-        { history: 'push', shallow: false }
-      );
-    } else {
-      setParams(
-        { provider: value || null, tab: 'list', page: null },
-        { history: 'push', shallow: false }
-      );
-    }
+    const filters = {
+      ...EMPTY_ADMIN_USER_FILTERS,
+      statusFilter: searchParams.get('status') ?? '',
+      providerFilter: searchParams.get('provider') ?? '',
+    };
+    filters[FILTER_FIELD[type]] = value;
+    router.push(buildAdminUsersHref(filters, 1));
   };
 
   const child = Children.only(children);

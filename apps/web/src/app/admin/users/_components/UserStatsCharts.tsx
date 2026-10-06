@@ -22,14 +22,29 @@ type Translator = ServerTranslator;
 type AdminClient = ReturnType<typeof createAdminClient>;
 type ProviderNames = Record<(typeof SIGNUP_METHOD_ORDER)[number], string>;
 
+/** Anchor ids of the chart sections, in page order. Shared with the jump nav. */
+const SECTION_IDS = ['country', 'rank', 'level', 'signup-method'] as const;
+type SectionId = (typeof SECTION_IDS)[number];
+
+const SECTION_TITLE_KEY: Record<SectionId, string> = {
+  country: 'stats.usersByCountry',
+  rank: 'stats.usersByRank',
+  level: 'stats.usersByLevel',
+  'signup-method': 'stats.usersBySignupMethod',
+};
+
 /**
- * Server-rendered "Statistics" tab. Owns the parallel chart-data
- * fetches (country / rank / level / signup method) and renders each behind a
- * `StatsChartNav` so a bar click on any chart cross-filters into the
- * list tab. Extracted from the page so the page module only dispatches
- * between tab variants.
+ * The user statistics charts. Owns the parallel chart-data fetches
+ * (country / rank / level / signup method), all sliced from one cached
+ * population so the four charts agree with each other, and renders each
+ * behind a `StatsChartNav` so a bar click cross-filters into the users list.
+ *
+ * The charts stay on one page rather than one route per axis because they are
+ * four views of the same population: the admin reads them side by side, and a
+ * single `getFilteredPopulation` pass serves all of them. The jump nav at the
+ * top is for getting to one chart quickly, not for isolating it.
  */
-export async function StatsTab({
+export async function UserStatsCharts({
   adminClient,
   filters,
   providerNames,
@@ -49,11 +64,25 @@ export async function StatsTab({
 
   const rankNames = buildRankNames(t);
   const levelNames = buildLevelBucketNames(t);
+  const sectionTitle = (id: SectionId) => t(SECTION_TITLE_KEY[id]);
 
   return (
     <div className="space-y-6">
-      <div className="bg-card border border-border rounded-lg p-6">
-        <h2 className="text-lg font-semibold mb-4">{t('stats.usersByCountry')}</h2>
+      <nav aria-label={t('stats.jumpTo')} className="flex flex-wrap items-center gap-2 text-sm">
+        <span className="text-muted-foreground">{t('stats.jumpTo')}</span>
+        {SECTION_IDS.map((id) => (
+          <a
+            key={id}
+            href={`#${id}`}
+            className="rounded-full border border-border bg-muted px-3 py-1 text-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+          >
+            {sectionTitle(id)}
+          </a>
+        ))}
+      </nav>
+
+      <section id="country" className="bg-card border border-border rounded-lg p-6 scroll-mt-6">
+        <h2 className="text-lg font-semibold mb-4">{sectionTitle('country')}</h2>
         <StatsChartNav type="country">
           <CountryBarChart
             data={countryStats}
@@ -64,10 +93,10 @@ export async function StatsTab({
             }}
           />
         </StatsChartNav>
-      </div>
+      </section>
 
-      <div className="bg-card border border-border rounded-lg p-6">
-        <h2 className="text-lg font-semibold mb-4">{t('stats.usersByRank')}</h2>
+      <section id="rank" className="bg-card border border-border rounded-lg p-6 scroll-mt-6">
+        <h2 className="text-lg font-semibold mb-4">{sectionTitle('rank')}</h2>
         <StatsChartNav type="rank">
           <RankBarChart
             data={rankStats}
@@ -78,10 +107,10 @@ export async function StatsTab({
             rankNames={rankNames}
           />
         </StatsChartNav>
-      </div>
+      </section>
 
-      <div className="bg-card border border-border rounded-lg p-6">
-        <h2 className="text-lg font-semibold mb-1">{t('stats.usersByLevel')}</h2>
+      <section id="level" className="bg-card border border-border rounded-lg p-6 scroll-mt-6">
+        <h2 className="text-lg font-semibold mb-1">{sectionTitle('level')}</h2>
         <p className="text-sm text-muted-foreground mb-4">{t('stats.usersByLevelHelp')}</p>
         <StatsChartNav type="level">
           <LevelBarChart
@@ -93,10 +122,13 @@ export async function StatsTab({
             bucketNames={levelNames}
           />
         </StatsChartNav>
-      </div>
+      </section>
 
-      <div className="bg-card border border-border rounded-lg p-6">
-        <h2 className="text-lg font-semibold mb-4">{t('stats.usersBySignupMethod')}</h2>
+      <section
+        id="signup-method"
+        className="bg-card border border-border rounded-lg p-6 scroll-mt-6"
+      >
+        <h2 className="text-lg font-semibold mb-4">{sectionTitle('signup-method')}</h2>
         <StatsChartNav type="provider">
           <SignupMethodChart
             data={signupMethodStats}
@@ -107,7 +139,7 @@ export async function StatsTab({
             methodNames={providerNames}
           />
         </StatsChartNav>
-      </div>
+      </section>
     </div>
   );
 }

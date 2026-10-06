@@ -15,9 +15,9 @@ function makeFilters(overrides: Partial<AdminUserFilters> = {}): AdminUserFilter
 }
 
 describe('buildAdminUsersHref', () => {
-  it('always sets page and tab=list', () => {
+  it('always sets page', () => {
     const href = buildAdminUsersHref(makeFilters(), 1);
-    expect(href).toBe('/admin/users?page=1&tab=list');
+    expect(href).toBe('/admin/users?page=1');
   });
 
   it('omits empty filter values from the query string', () => {
@@ -32,32 +32,32 @@ describe('buildAdminUsersHref', () => {
 
   it('includes non-empty username filter', () => {
     const href = buildAdminUsersHref(makeFilters({ usernameFilter: 'alice' }), 1);
-    expect(href).toBe('/admin/users?page=1&tab=list&username=alice');
+    expect(href).toBe('/admin/users?page=1&username=alice');
   });
 
   it('includes non-empty status filter', () => {
     const href = buildAdminUsersHref(makeFilters({ statusFilter: 'banned' }), 2);
-    expect(href).toBe('/admin/users?page=2&tab=list&status=banned');
+    expect(href).toBe('/admin/users?page=2&status=banned');
   });
 
   it('includes non-empty country filter', () => {
     const href = buildAdminUsersHref(makeFilters({ countryFilter: 'JP' }), 1);
-    expect(href).toBe('/admin/users?page=1&tab=list&country=JP');
+    expect(href).toBe('/admin/users?page=1&country=JP');
   });
 
   it('includes non-empty rank filter', () => {
     const href = buildAdminUsersHref(makeFilters({ rankFilter: 'shodan' }), 1);
-    expect(href).toBe('/admin/users?page=1&tab=list&rank=shodan');
+    expect(href).toBe('/admin/users?page=1&rank=shodan');
   });
 
   it('includes non-empty level filter', () => {
     const href = buildAdminUsersHref(makeFilters({ levelFilter: '5-9' }), 1);
-    expect(href).toBe('/admin/users?page=1&tab=list&level=5-9');
+    expect(href).toBe('/admin/users?page=1&level=5-9');
   });
 
   it('includes non-empty provider filter', () => {
     const href = buildAdminUsersHref(makeFilters({ providerFilter: 'google' }), 1);
-    expect(href).toBe('/admin/users?page=1&tab=list&provider=google');
+    expect(href).toBe('/admin/users?page=1&provider=google');
   });
 
   it('combines all filters when present', () => {
@@ -71,7 +71,6 @@ describe('buildAdminUsersHref', () => {
       5
     );
     expect(href).toContain('page=5');
-    expect(href).toContain('tab=list');
     expect(href).toContain('status=active');
     expect(href).toContain('country=US');
     expect(href).toContain('rank=ikkyu');
@@ -83,6 +82,6 @@ describe('buildAdminUsersHref', () => {
       makeFilters({ statusFilter: 'banned', rankFilter: 'shodan' }),
       2
     );
-    expect(href).toBe('/admin/users?page=2&tab=list&status=banned&rank=shodan');
+    expect(href).toBe('/admin/users?page=2&status=banned&rank=shodan');
   });
 });

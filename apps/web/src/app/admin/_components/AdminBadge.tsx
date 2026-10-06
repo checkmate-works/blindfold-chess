@@ -1,13 +1,7 @@
 import type { ReactNode } from 'react';
 
 export type AdminBadgeVariant =
-  | 'success'
-  | 'warning'
-  | 'danger'
-  | 'caution'
-  | 'info'
-  | 'neutral'
-  | 'accent';
+  'success' | 'warning' | 'danger' | 'caution' | 'info' | 'neutral' | 'accent';
 
 const VARIANT_CLASSES: Record<AdminBadgeVariant, string> = {
   success: 'bg-success-soft text-success-soft-foreground',

@@ -4337,6 +4337,7 @@
     "title": "Admin",
     "dashboard": "Dashboard",
     "users": "Users",
+    "userStats": "User Stats",
     "deletedUser": "(deleted user)",
     "provisionalUser": "(registration incomplete)",
     "auditLog": "Audit Log",
@@ -4489,10 +4490,6 @@
         "viewAllCoins": "View all transactions"
       }
     },
-    "tabs": {
-      "users": "Users",
-      "statistics": "Statistics"
-    },
     "stats": {
       "usersByCountry": "Users by Country",
       "usersByRank": "Users by Rank",
@@ -4500,6 +4497,7 @@
       "usersByLevelHelp": "Level is earned only by completing practice, so this is a usage distribution. Lv0 users have saved a result but not yet reached 100 Exp; the no-Exp bucket has never saved one.",
       "usersBySignupMethod": "Users by Signup Method",
       "noData": "No data available",
+      "jumpTo": "Jump to",
       "users": "users",
       "unknownCountry": "Unknown",
       "rankNames": {

@@ -20,12 +20,23 @@ export function AdminSidebarNav({ groups }: { groups: AdminNavGroup[] }) {
   const pathname = usePathname();
 
   // A link is active on its own page and on any descendant (e.g. /admin/coins
-  // stays active on /admin/coins/grant). The dashboard root matches exactly so
-  // it isn't highlighted for every /admin/* route.
-  const isActive = (href: string) =>
+  // stays active on /admin/coins/grant). When a descendant has a link of its
+  // own (/admin/users/stats under /admin/users), only the most specific match
+  // lights up, so exactly one entry ever reads as "you are here". The
+  // dashboard root matches exactly so it isn't highlighted for every /admin/*
+  // route.
+  const covers = (href: string) =>
     href === '/admin'
       ? pathname === '/admin'
       : pathname === href || pathname.startsWith(`${href}/`);
+  const activeHref = groups
+    .flatMap((group) => group.links)
+    .filter((link) => covers(link.href))
+    .reduce<string | null>(
+      (best, link) => (best === null || link.href.length > best.length ? link.href : best),
+      null
+    );
+  const isActive = (href: string) => href === activeHref;
 
   return (
     <nav className="space-y-6">

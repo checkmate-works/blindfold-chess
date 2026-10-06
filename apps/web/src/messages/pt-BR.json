@@ -4365,6 +4365,7 @@
     },
     "dashboard": "Painel",
     "users": "Usuários",
+    "userStats": "Estatísticas de Usuários",
     "deletedUser": "(usuário excluído)",
     "provisionalUser": "(cadastro incompleto)",
     "auditLog": "Registro de Auditoria",
@@ -4517,10 +4518,6 @@
         "viewAllCoins": "Ver todas as transações"
       }
     },
-    "tabs": {
-      "users": "Usuários",
-      "statistics": "Estatísticas"
-    },
     "stats": {
       "usersByCountry": "Usuários por País",
       "usersByRank": "Usuários por Graduação",
@@ -4528,6 +4525,7 @@
       "usersByLevelHelp": "O nível só é ganho ao concluir práticas, então esta é uma distribuição de uso. Usuários Lv0 salvaram um resultado mas ainda não alcançaram 100 Exp; o grupo sem Exp nunca salvou um.",
       "usersBySignupMethod": "Usuários por Método de Cadastro",
       "noData": "Sem dados disponíveis",
+      "jumpTo": "Ir para",
       "users": "usuários",
       "unknownCountry": "Desconhecido",
       "rankNames": {
