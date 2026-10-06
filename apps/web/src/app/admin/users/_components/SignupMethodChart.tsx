@@ -5,6 +5,7 @@ import { HorizontalCountBarChart } from '@/app/admin/_components/HorizontalCount
 import { Tooltip, YAxis } from 'recharts';
 
 import type { SignupMethodStat } from '../_lib/queries';
+import { useStatsBarClick } from './StatsChartNav';
 
 type Props = {
   data: SignupMethodStat[];
@@ -13,10 +14,13 @@ type Props = {
     users: string;
   };
   methodNames: Record<string, string>;
-  onBarClick?: (method: string) => void;
+  /** Overrides the handler from the enclosing `StatsChartNav`, if any. */
+  onBarClick?: (value: string) => void;
 };
 
 export function SignupMethodChart({ data, labels, methodNames, onBarClick }: Props) {
+  const contextBarClick = useStatsBarClick();
+  const handleBarClick = onBarClick ?? contextBarClick;
   return (
     <HorizontalCountBarChart
       data={data}
@@ -40,7 +44,8 @@ export function SignupMethodChart({ data, labels, methodNames, onBarClick }: Pro
         />
       }
       onBarClick={
-        onBarClick && ((entry: SignupMethodStat) => entry.method && onBarClick(entry.method))
+        handleBarClick &&
+        ((entry: SignupMethodStat) => entry.method && handleBarClick(entry.method))
       }
     />
   );

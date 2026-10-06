@@ -5,6 +5,7 @@ import { HorizontalCountBarChart } from '@/app/admin/_components/HorizontalCount
 import { Tooltip, YAxis } from 'recharts';
 
 import type { LevelStat } from '../_lib/queries';
+import { useStatsBarClick } from './StatsChartNav';
 
 type Props = {
   data: LevelStat[];
@@ -14,7 +15,8 @@ type Props = {
   };
   /** Bucket id → display label (see `buildLevelBucketNames`). */
   bucketNames: Record<string, string>;
-  onBarClick?: (bucket: string) => void;
+  /** Overrides the handler from the enclosing `StatsChartNav`, if any. */
+  onBarClick?: (value: string) => void;
 };
 
 /**
@@ -23,6 +25,8 @@ type Props = {
  * empty, not that the rows are missing.
  */
 export function LevelBarChart({ data, labels, bucketNames, onBarClick }: Props) {
+  const contextBarClick = useStatsBarClick();
+  const handleBarClick = onBarClick ?? contextBarClick;
   return (
     <HorizontalCountBarChart
       data={data}
@@ -43,7 +47,9 @@ export function LevelBarChart({ data, labels, bucketNames, onBarClick }: Props) 
           contentStyle={CHART_TOOLTIP_STYLE}
         />
       }
-      onBarClick={onBarClick && ((entry: LevelStat) => entry.bucket && onBarClick(entry.bucket))}
+      onBarClick={
+        handleBarClick && ((entry: LevelStat) => entry.bucket && handleBarClick(entry.bucket))
+      }
     />
   );
 }
