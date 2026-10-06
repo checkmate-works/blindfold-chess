@@ -14,8 +14,9 @@ type Props = {
   value: EngineKind;
   onChange: (value: EngineKind) => void;
   /**
-   * How the Maia card renders. `payable` when the viewer can afford a
-   * per-game charge, `locked` when they cannot. Computed server-side via
+   * How the Maia card renders. `free` when the viewer's level exempts them
+   * from the charge, `payable` when they can afford a per-game charge,
+   * `locked` when they cannot. Computed server-side via
    * `getMaiaEngineAccess()` + `deriveMaiaCardMode()` and passed in — this
    * component is presentational.
    */
@@ -38,7 +39,7 @@ type EngineOption = {
 
 /**
  * Visual order is intentional: Stockfish first (free, default), Maia
- * second (paid / granted). New engines append to this list. Logos come
+ * second (paid, or free by level). New engines append to this list. Logos come
  * from the shared `ENGINE_LOGO_SRC` map so this picker and the game-list
  * `EngineConfigBadge` never drift apart.
  */
@@ -61,6 +62,7 @@ const ENGINE_OPTIONS: ReadonlyArray<EngineOption> = [
  * page-level `?` help tour, so the cards stay compact on narrow viewports.
  *
  * The Maia card adapts to `maiaCardMode`:
+ *   - `free`    — selectable, shows a "free" badge.
  *   - `payable` — selectable, shows a per-game coin-cost badge.
  *   - `locked`  — greyed out with a lock badge; tapping it is not a no-op,
  *                 it calls `onMaiaLockedClick` so the parent can explain.
@@ -96,13 +98,17 @@ export function EngineSelector({
           const isMaia = opt.kind === 'maia';
           const isLocked = isMaia && maiaCardMode === 'locked';
           const isPayable = isMaia && maiaCardMode === 'payable';
+          const isFree = isMaia && maiaCardMode === 'free';
           const isSelected = value === opt.kind;
           const costLabel = t('engineMaiaCostBadge', { cost: maiaCost });
+          const freeLabel = t('engineMaiaFreeBadge');
           const ariaLabel = isLocked
             ? `${t(opt.labelKey)} — ${t('engineLockedHint')}`
             : isPayable
               ? `${t(opt.labelKey)} — ${costLabel}`
-              : t(opt.labelKey);
+              : isFree
+                ? `${t(opt.labelKey)} — ${freeLabel}`
+                : t(opt.labelKey);
           return (
             <button
               key={opt.kind}
@@ -128,12 +134,12 @@ export function EngineSelector({
                   {t('engineLockedHint')}
                 </span>
               )}
-              {isPayable && (
+              {(isPayable || isFree) && (
                 <span
                   className="absolute top-2 right-2 inline-flex items-center rounded-full bg-foreground/10 px-2 py-0.5 text-xs font-medium text-foreground"
                   aria-hidden="true"
                 >
-                  {costLabel}
+                  {isFree ? freeLabel : costLabel}
                 </span>
               )}
               <div className="flex flex-col items-center text-center gap-2">

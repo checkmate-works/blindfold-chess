@@ -115,11 +115,7 @@ export function StandardGameForm({ locale, maiaAccess }: Props) {
         {t('startGame')}
       </Button>
 
-      <GameLaunchModals
-        launch={launch}
-        spendableBalance={maiaAccess.spendableBalance}
-        locale={locale}
-      />
+      <GameLaunchModals launch={launch} maiaAccess={maiaAccess} locale={locale} />
     </div>
   );
 }

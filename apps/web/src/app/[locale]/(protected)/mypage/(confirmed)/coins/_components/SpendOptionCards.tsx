@@ -8,6 +8,7 @@ import { Link } from '@/i18n/routing';
 import { FaRobot } from 'react-icons/fa';
 
 import { AI_REVIEW_POINT_COST, MAIA_GAME_POINT_COST } from '@/lib/points';
+import { MAIA_FREE_LEVEL } from '@/lib/users/maia-free-level';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -119,7 +120,7 @@ export async function SpendOptionCards({ locale, hasSubscription, username }: Pr
         }
         title={t('spendOptions.maia.title')}
         rate={t('spendOptions.maia.rate', { cost: MAIA_GAME_POINT_COST })}
-        note={t('spendOptions.maia.note')}
+        note={t('spendOptions.maia.note', { level: MAIA_FREE_LEVEL })}
         cta={t('spendOptions.maia.cta')}
         href="/games/new/standard?engine=maia"
         locale={locale}

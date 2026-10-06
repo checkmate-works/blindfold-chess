@@ -794,7 +794,7 @@
       "adFreeRate": "1 コイン = 広告のない {days} 日間",
       "maiaTitle": "Maia と対局する",
       "maiaRate": "{cost} コイン = 1 局",
-      "maiaNote": "Maia は人間らしい指し手のニューラルネット AI です。",
+      "maiaNote": "Maia は人間らしい指し手のニューラルネット AI です。Lv{level} 以上は無料で対局できます。",
       "aiReviewTitle": "AIレビューを受ける",
       "aiReviewRate": "{cost} コイン = レビュー1件",
       "aiReviewNote": "有料プランの方はコインを使わずに生成できます。"
@@ -3113,10 +3113,12 @@
     "engineMaiaDescription": "選択した Elo の人間プレイヤーのような指し方をするニューラルネットワーク型エンジン。初回はモデル（約46MB）の読み込みに数秒かかります。",
     "engineLockedHint": "コイン不足",
     "engineMaiaCostBadge": "{cost} コイン",
+    "engineMaiaFreeBadge": "無料",
     "maiaPointModal": {
       "title": "Maia の対局にはコインが必要",
       "body": "Maia との対局には1局あたり {cost} コイン必要です。",
       "balance": "現在の保有コイン: {balance} コイン",
+      "unlockHint": "Lv{level} に到達すると Maia との対局は無料になります（現在 Lv{current}）。",
       "earnLink": "コインの仕組みを見る",
       "viewPoints": "コインを確認",
       "close": "閉じる"
@@ -3994,7 +3996,7 @@
       "maia": {
         "title": "Maia と対局する",
         "rate": "{cost} コイン = 1 局",
-        "note": "Maia は人間らしい指し手のニューラルネット AI です。対局開始時に消費されます。",
+        "note": "Maia は人間らしい指し手のニューラルネット AI です。対局開始時に消費されます。Lv{level} 以上は無料です。",
         "cta": "対局をはじめる"
       }
     },

@@ -173,11 +173,7 @@ export function PgnGameForm({ locale, maiaAccess }: Props) {
         onStartGame={() => launch.start(engine)}
         previewSlot={<PgnPreview pgnMoves={pgnMoves} startingFen={startingFen} color={color} />}
       />
-      <GameLaunchModals
-        launch={launch}
-        spendableBalance={maiaAccess.spendableBalance}
-        locale={locale}
-      />
+      <GameLaunchModals launch={launch} maiaAccess={maiaAccess} locale={locale} />
     </>
   );
 }

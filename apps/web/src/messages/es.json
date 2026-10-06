@@ -794,7 +794,7 @@
       "adFreeRate": "1 Moneda = {days, plural, one {# día sin anuncios} other {# días sin anuncios}}",
       "maiaTitle": "Jugar contra Maia",
       "maiaRate": "{cost, plural, one {# Moneda} other {# Monedas}} = 1 partida",
-      "maiaNote": "Maia es una IA de red neuronal que juega con un estilo humano.",
+      "maiaNote": "Maia es una IA de red neuronal que juega con un estilo humano. Gratis a partir del Lv{level}.",
       "aiReviewTitle": "Recibe una revisión IA",
       "aiReviewRate": "{cost, plural, one {# moneda} other {# monedas}} = 1 revisión",
       "aiReviewNote": "Los suscriptores generan revisiones sin gastar monedas."
@@ -3113,10 +3113,12 @@
     "engineMaiaDescription": "Un motor basado en redes neuronales que juega como un humano del Elo seleccionado. El primer movimiento tarda unos segundos mientras se carga el modelo (~46 MB).",
     "engineLockedHint": "Faltan monedas",
     "engineMaiaCostBadge": "{cost} moneda",
+    "engineMaiaFreeBadge": "Gratis",
     "maiaPointModal": {
       "title": "Maia cuesta monedas",
       "body": "Cada partida contra Maia cuesta {cost} moneda.",
       "balance": "Actualmente tienes {balance} monedas.",
+      "unlockHint": "Las partidas contra Maia son gratis a partir del Lv{level} (tienes Lv{current}).",
       "earnLink": "Cómo funcionan las Monedas",
       "viewPoints": "Ver mis monedas",
       "close": "Cerrar"
@@ -3994,7 +3996,7 @@
       "maia": {
         "title": "Jugar contra Maia",
         "rate": "{cost, plural, one {# Moneda} other {# Monedas}} = 1 partida",
-        "note": "Maia es una IA de red neuronal que juega con un estilo humano. Se cobra al iniciar la partida.",
+        "note": "Maia es una IA de red neuronal que juega con un estilo humano. Se cobra al iniciar la partida. Gratis a partir del Lv{level}.",
         "cta": "Empezar una partida"
       }
     },

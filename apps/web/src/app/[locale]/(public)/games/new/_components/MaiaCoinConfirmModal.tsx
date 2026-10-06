@@ -16,8 +16,8 @@ type Props = {
 
 /**
  * Confirms the per-game coin charge before a viewer starts a Maia game.
- * Every Maia game costs coins, so this is shown on every Maia start;
- * non-Maia engines never reach it.
+ * Shown on every Maia start below `MAIA_FREE_LEVEL`; a free-tier start
+ * and the non-Maia engines never reach it.
  */
 export function MaiaCoinConfirmModal({
   isOpen,
