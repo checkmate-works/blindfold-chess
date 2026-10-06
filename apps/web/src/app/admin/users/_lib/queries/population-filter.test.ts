@@ -1,3 +1,4 @@
+import { getExpForLevel } from '@blindfold-chess/features/exp';
 import type { User } from '@supabase/supabase-js';
 import { describe, expect, it } from 'vitest';
 
@@ -5,6 +6,7 @@ import type { Profile } from '@/lib/db/schema';
 
 import { type AdminUserFilters, EMPTY_ADMIN_USER_FILTERS } from '../filters';
 import { UNKNOWN_COUNTRY } from './country-stats';
+import { NO_EXP_BUCKET } from './level-stats';
 import { createPopulationFilter, groupRankSlugsByUser } from './population-filter';
 
 function makeUser(overrides: Partial<User> = {}): User {
@@ -99,6 +101,28 @@ describe('createPopulationFilter', () => {
 
     it('rejects a user with no ranks for a non-mukyu filter', () => {
       expect(filterWith({ rankFilter: '1kyu' })(makeUser(), makeProfile(), undefined)).toBe(false);
+    });
+  });
+
+  describe('level', () => {
+    it('matches a user only in the band their cumulative Exp resolves to', () => {
+      const lv5 = getExpForLevel(5);
+      expect(filterWith({ levelFilter: '5-9' })(makeUser(), makeProfile(), undefined, lv5)).toBe(
+        true
+      );
+      expect(filterWith({ levelFilter: '1-4' })(makeUser(), makeProfile(), undefined, lv5)).toBe(
+        false
+      );
+    });
+
+    it('treats a missing user_exp row as the no-exp bucket, not Lv0', () => {
+      const none = filterWith({ levelFilter: NO_EXP_BUCKET });
+      expect(none(makeUser(), makeProfile(), undefined, undefined)).toBe(true);
+      expect(none(makeUser(), makeProfile(), undefined, 0)).toBe(false);
+
+      const lv0 = filterWith({ levelFilter: '0' });
+      expect(lv0(makeUser(), makeProfile(), undefined, 0)).toBe(true);
+      expect(lv0(makeUser(), makeProfile(), undefined, undefined)).toBe(false);
     });
   });
 

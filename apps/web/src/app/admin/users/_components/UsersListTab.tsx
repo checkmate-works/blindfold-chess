@@ -6,6 +6,7 @@ import type { createAdminClient } from '@/lib/supabase/admin';
 import { AdminDataTable } from '../../_components/AdminDataTable';
 import { AdminPaginationNav } from '../../_components/AdminPaginationNav';
 import { type AdminUserFilters, buildAdminUsersHref } from '../_lib/filters';
+import { buildLevelBucketNames } from '../_lib/level-names';
 import { fetchUsersPageData, getSignupMethod } from '../_lib/queries';
 import { buildRankNames } from '../_lib/rank-names';
 import type { SIGNUP_METHOD_ORDER } from '../_lib/signup-method';
@@ -35,7 +36,8 @@ export async function UsersListTab({
   providerNames: ProviderNames;
   t: Translator;
 }) {
-  const { statusFilter, countryFilter, rankFilter, providerFilter, usernameFilter } = filters;
+  const { statusFilter, countryFilter, rankFilter, levelFilter, providerFilter, usernameFilter } =
+    filters;
   const { users, currentPage, totalPages, totalCount, profileMap, subscriptionMap, banReasonMap } =
     await fetchUsersPageData(adminClient, page, filters);
 
@@ -43,6 +45,7 @@ export async function UsersListTab({
   const pageRange = getPageRange(currentPage, DEFAULT_PAGE_SIZE, users.length);
 
   const rankNames = buildRankNames(t);
+  const levelNames = buildLevelBucketNames(t);
 
   const rowLabels = {
     premium: t('usersTable.premium'),
@@ -66,9 +69,11 @@ export async function UsersListTab({
         statusFilter={statusFilter}
         countryFilter={countryFilter}
         rankFilter={rankFilter}
+        levelFilter={levelFilter}
         providerFilter={providerFilter}
         usernameFilter={usernameFilter}
         rankNames={rankNames}
+        levelNames={levelNames}
         providerNames={providerNames}
         labels={{
           clearAll: t('filters.clearAll'),
@@ -77,6 +82,7 @@ export async function UsersListTab({
           anonymous: t('usersTable.anonymous'),
           deleted: t('usersTable.deleted'),
           usernameOrEmailLabel: t('usersTable.usernameOrEmailLabel'),
+          levelLabel: t('filters.level'),
         }}
       />
 

@@ -4337,6 +4337,7 @@
     "title": "Admin",
     "dashboard": "Dashboard",
     "users": "Users",
+    "userStats": "ユーザー統計",
     "deletedUser": "(削除済みユーザー)",
     "provisionalUser": "(本登録未完了)",
     "auditLog": "Audit Log",
@@ -4489,15 +4490,14 @@
         "viewAllCoins": "すべてのトランザクションを表示"
       }
     },
-    "tabs": {
-      "users": "ユーザー",
-      "statistics": "統計"
-    },
     "stats": {
       "usersByCountry": "国別ユーザー数",
       "usersByRank": "ランク別ユーザー数",
+      "usersByLevel": "レベル別ユーザー数",
+      "usersByLevelHelp": "レベルは練習の完了でのみ上がるため、これは利用頻度の分布です。Lv0 は結果を保存したが 100 Exp 未満のユーザー、「Exp なし」は一度も結果を保存していないユーザーです。",
       "usersBySignupMethod": "Users by Signup Method",
       "noData": "データがありません",
+      "jumpTo": "移動",
       "users": "人",
       "unknownCountry": "不明",
       "rankNames": {
@@ -4508,12 +4508,22 @@
         "2kyu": "2級",
         "1kyu": "1級",
         "1dan": "初段"
+      },
+      "levelBuckets": {
+        "none": "Exp なし",
+        "0": "Lv 0",
+        "1-4": "Lv 1–4",
+        "5-9": "Lv 5–9",
+        "10-19": "Lv 10–19",
+        "20-49": "Lv 20–49",
+        "50plus": "Lv 50+"
       }
     },
     "filters": {
       "clearAll": "すべてクリア",
       "country": "国",
-      "rank": "ランク"
+      "rank": "ランク",
+      "level": "レベル"
     },
     "subscriptions": "Subscriptions",
     "subscriptionsTable": {

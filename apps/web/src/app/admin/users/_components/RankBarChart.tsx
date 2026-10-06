@@ -5,6 +5,7 @@ import { HorizontalCountBarChart } from '@/app/admin/_components/HorizontalCount
 import { Tooltip, YAxis } from 'recharts';
 
 import type { RankStat } from '../_lib/queries';
+import { useStatsBarClick } from './StatsChartNav';
 
 type Props = {
   data: RankStat[];
@@ -13,7 +14,8 @@ type Props = {
     users: string;
   };
   rankNames: Record<string, string>;
-  onBarClick?: (slug: string) => void;
+  /** Overrides the handler from the enclosing `StatsChartNav`, if any. */
+  onBarClick?: (value: string) => void;
 };
 
 /**
@@ -58,6 +60,8 @@ function RankTick({
 }
 
 export function RankBarChart({ data, labels, rankNames, onBarClick }: Props) {
+  const contextBarClick = useStatsBarClick();
+  const handleBarClick = onBarClick ?? contextBarClick;
   return (
     <HorizontalCountBarChart
       data={data}
@@ -86,7 +90,7 @@ export function RankBarChart({ data, labels, rankNames, onBarClick }: Props) {
           contentStyle={CHART_TOOLTIP_STYLE}
         />
       }
-      onBarClick={onBarClick && ((entry: RankStat) => entry.slug && onBarClick(entry.slug))}
+      onBarClick={handleBarClick && ((entry: RankStat) => entry.slug && handleBarClick(entry.slug))}
     />
   );
 }

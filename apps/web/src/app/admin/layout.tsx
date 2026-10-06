@@ -53,6 +53,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       heading: 'Users & Moderation',
       links: [
         { href: '/admin/users', label: t('users') },
+        { href: '/admin/users/stats', label: t('userStats') },
         { href: '/admin/audit-log', label: t('auditLog') },
         { href: '/admin/activity-log', label: t('activityLog') },
       ],

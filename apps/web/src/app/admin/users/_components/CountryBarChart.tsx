@@ -11,6 +11,7 @@ import type { CountryStat } from '../_lib/queries';
 // modules (admin Supabase client), which would be pulled into this client
 // component's bundle. `country-stats` itself is pure (type-only imports).
 import { UNKNOWN_COUNTRY } from '../_lib/queries/country-stats';
+import { useStatsBarClick } from './StatsChartNav';
 
 type ChartLabels = {
   noData: string;
@@ -22,7 +23,8 @@ type ChartLabels = {
 type Props = {
   data: CountryStat[];
   labels: ChartLabels;
-  onBarClick?: (country: string) => void;
+  /** Overrides the handler from the enclosing `StatsChartNav`, if any. */
+  onBarClick?: (value: string) => void;
 };
 
 // Flag + full country name for the hover card. The unknown bucket has no real
@@ -61,6 +63,8 @@ function CountryTooltip({
 }
 
 export function CountryBarChart({ data, labels, onBarClick }: Props) {
+  const contextBarClick = useStatsBarClick();
+  const handleBarClick = onBarClick ?? contextBarClick;
   // Compact axis label: flag + ISO code (e.g. "🇯🇵 JP"). The unknown bucket has
   // no real code, so render a globe + the localized label instead of feeding
   // the sentinel string to `countryCodeToFlag`. The full country name lives in
@@ -81,7 +85,7 @@ export function CountryBarChart({ data, labels, onBarClick }: Props) {
         />
       }
       onBarClick={
-        onBarClick && ((entry: CountryStat) => entry.country && onBarClick(entry.country))
+        handleBarClick && ((entry: CountryStat) => entry.country && handleBarClick(entry.country))
       }
     />
   );
