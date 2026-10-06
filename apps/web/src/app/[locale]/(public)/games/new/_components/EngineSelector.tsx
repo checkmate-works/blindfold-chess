@@ -70,7 +70,12 @@ const ENGINE_OPTIONS: ReadonlyArray<EngineOption> = [
  *                 in the note instead. The note depends only on the
  *                 server-resolved mode, never on which card is selected, so
  *                 it is present from the first paint and toggling the
- *                 selection never shifts the controls below it.
+ *                 selection never shifts the controls below it. Both
+ *                 the badge and the note use the soft success pair (dark
+ *                 green on pale green) rather than solid `bg-success`:
+ *                 white on that green is about 3.3:1 in light mode and
+ *                 2.3:1 in dark, below the 4.5:1 small text needs. The
+ *                 note is right-aligned to sit under the Maia card.
  *   - `payable` — selectable, shows a per-game coin-cost badge.
  *   - `locked`  — greyed out with a lock badge; tapping it is not a no-op,
  *                 it calls `onMaiaLockedClick` so the parent can explain.
@@ -142,12 +147,20 @@ export function EngineSelector({
                   {t('engineLockedHint')}
                 </span>
               )}
-              {(isPayable || isFree) && (
+              {isPayable && (
                 <span
                   className="absolute top-2 right-2 inline-flex items-center rounded-full bg-foreground/10 px-2 py-0.5 text-xs font-medium text-foreground"
                   aria-hidden="true"
                 >
-                  {isFree ? freeLabel : costLabel}
+                  {costLabel}
+                </span>
+              )}
+              {isFree && (
+                <span
+                  className="absolute top-2 right-2 inline-flex items-center rounded-full border border-success/30 bg-success-soft px-2 py-0.5 text-xs font-semibold text-success-soft-foreground"
+                  aria-hidden="true"
+                >
+                  {freeLabel}
                 </span>
               )}
               <div className="flex flex-col items-center text-center gap-2">
@@ -168,7 +181,7 @@ export function EngineSelector({
       </div>
 
       {maiaCardMode === 'free' && (
-        <p className="text-sm text-muted-foreground">
+        <p className="text-right text-sm font-medium text-success-soft-foreground">
           {t('engineMaiaFreeNote', { level: MAIA_FREE_LEVEL })}
         </p>
       )}

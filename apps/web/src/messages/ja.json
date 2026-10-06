@@ -3114,7 +3114,7 @@
     "engineLockedHint": "コイン不足",
     "engineMaiaCostBadge": "{cost} コイン",
     "engineMaiaFreeBadge": "無料",
-    "engineMaiaFreeNote": "Lv{level} 特典：Maia との対局は無料です。",
+    "engineMaiaFreeNote": "Lv{level} 到達特典：Maia との対局は無料です。",
     "maiaPointModal": {
       "title": "Maia の対局にはコインが必要",
       "body": "Maia との対局には1局あたり {cost} コイン必要です。",
