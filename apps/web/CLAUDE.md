@@ -674,6 +674,21 @@ selection.
   intentionally **outside `public/`** so it cannot be served as a
   static asset; the only access path is the auth-gated route handler
   below.
+- **Who may play**: a Maia game costs `MAIA_GAME_POINT_COST` (one coin)
+  below `MAIA_FREE_LEVEL` (Lv5, `src/lib/users/maia-free-level.ts`) and
+  is free from that level up. The level is the only exemption — a
+  subscription does not waive the coin. `startMaiaGame` re-reads the
+  level server-side before settling, and the model gate below accepts
+  either the level or a prior `maia_game` ledger row. Why a level and
+  not nothing: the charge's first five months showed it was not funding
+  anything (35 charges, 8 users, none in the last 30 days, every payer
+  still holding coins) while keeping the engine from the players most
+  likely to value it; the level keeps a cost on the 46 MB download that
+  a throwaway account cannot meet in one sitting. The TSDoc on
+  `MAIA_FREE_LEVEL` carries the full reasoning. Whether the unlock
+  changes anything is read from completed games — `exp_events` with
+  `source = 'ai_game_result'` and `menu_type = 'maia'` — not from the
+  coin ledger, which a free game never touches.
 - **Auth-gated delivery**: `/api/engines/maia/[file]` (see
   `src/app/api/engines/maia/[file]/route.ts`) is the sole egress
   path for the model. It calls `canUseMaia(userId)` and returns 403
@@ -689,9 +704,12 @@ selection.
   `ALLOWED_FILES` in the route handler, and adjust the constants
   in `src/lib/engines/maia/models.ts` and `scripts/download-maia.ts`.
   Otherwise returning users keep their stale cached copy forever.
-- **Why `private` (not `public`)**: the response is per-user. A
-  future loss of Maia access (a lapsed subscription) must not be
-  served from a shared CDN copy. `immutable` still tells the browser
+- **Why `private` (not `public`)**: the response is per-user, and a
+  shared-cache hit would skip the entitlement check entirely (a
+  future revocation must not be served from a CDN copy either).
+  Vercel's CDN would not cache a 46 MB function response anyway, so
+  `public` would buy nothing without moving the file to a store that
+  can authorise before serving. `immutable` still tells the browser
   to skip revalidation for honest clients.
 - **Large-download consent**: `LargeDownloadConsentDialog` intercepts
   Maia game starts on metered / slow links (driven by
