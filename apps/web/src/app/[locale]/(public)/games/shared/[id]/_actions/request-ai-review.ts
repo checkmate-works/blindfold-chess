@@ -16,6 +16,7 @@ import { authenticateAndCheckBan } from '@/lib/auth';
 import { getGameById } from '@/lib/db/games-read';
 import { EVAL_SCORE_LIMIT } from '@/lib/games/analysis/types';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/security/rate-limit';
+import { captureError } from '@/lib/sentry/capture-error';
 import { handleServerActionError } from '@/lib/server-action-error';
 import { UUID_RE } from '@/lib/validations/uuid';
 
@@ -104,8 +105,13 @@ export async function requestAiReviewAction(
     // The UI hides the tab when no key is configured, but a stale page (or a
     // direct POST) can still land here. Refuse BEFORE the rate limit so a
     // deployment-side misconfiguration cannot eat the caller's daily budget.
+    // Reported to Sentry, not just logged: a key that went missing in
+    // production silently turns every request into `llm_error`.
     if (!isLlmConfigured()) {
-      console.error('[requestAiReviewAction] OPENAI_API_KEY is not set');
+      captureError(
+        new Error('OPENAI_API_KEY is not set'),
+        '[requestAiReviewAction] refusing without an LLM key'
+      );
       return { success: false, error: 'llm_error' };
     }
 
