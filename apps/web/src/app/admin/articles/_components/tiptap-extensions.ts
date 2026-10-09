@@ -1,3 +1,4 @@
+import { nodePasteRule } from '@tiptap/core';
 import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
 import Youtube from '@tiptap/extension-youtube';
@@ -5,7 +6,7 @@ import { ReactNodeViewRenderer } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 
 import { IMAGE_CLASS } from '../_lib/constants';
-import { extractYouTubeVideoId } from '../_lib/youtube';
+import { extractYouTubeVideoId, normalizeYouTubeSrc } from '../_lib/youtube';
 import { ResizableImage } from './ResizableImage';
 import { XEmbed } from './XEmbed';
 import { XEmbedNodeView } from './XEmbedNodeView';
@@ -62,6 +63,34 @@ export function createTiptapExtensions({ placeholder }: CreateExtensionsOptions)
           width: { default: 640 },
           height: { default: 480 },
         };
+      },
+      // The stock command and paste rule accept anything matching tiptap's
+      // own loose regex (http, m.youtube.com, scheme-less URLs, …) and store
+      // the input verbatim. Both are replaced so a URL is saved only if the
+      // renderers will accept it, and in the canonical form they re-parse.
+      addCommands() {
+        return {
+          setYoutubeVideo:
+            (options) =>
+            ({ commands }) => {
+              const src = normalizeYouTubeSrc(options.src);
+              if (!src) return false;
+              return commands.insertContent({ type: this.name, attrs: { ...options, src } });
+            },
+        };
+      },
+      addPasteRules() {
+        return [
+          nodePasteRule({
+            find: /^https:\/\/\S+$/g,
+            type: this.type,
+            // Returning null skips the rule, leaving the paste as plain text.
+            getAttributes: (match) => {
+              const src = normalizeYouTubeSrc(match[0]);
+              return src ? { src } : null;
+            },
+          }),
+        ];
       },
       renderHTML({ HTMLAttributes }) {
         const src = HTMLAttributes.src as string | null;
