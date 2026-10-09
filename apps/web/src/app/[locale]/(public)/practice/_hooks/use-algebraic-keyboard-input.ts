@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 
 import { useLatestRef } from '@blindfold-chess/features/common/client';
+import { FILES, RANKS } from '@blindfold-chess/types';
 
 import { shouldIgnoreKeyEvent } from '@/lib/keyboard-guards';
 
@@ -48,8 +49,8 @@ type UseAlgebraicKeyboardInputOptions = {
   enabled: boolean;
 };
 
-const FILE_KEYS = new Set(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']);
-const RANK_KEYS = new Set(['1', '2', '3', '4', '5', '6', '7', '8']);
+const FILE_KEYS = new Set<string>(FILES);
+const RANK_KEYS = new Set<string>(RANKS);
 
 export function useAlgebraicKeyboardInput({
   onFile,

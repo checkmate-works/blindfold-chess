@@ -7,11 +7,6 @@ import {
   touchTarget,
 } from "../theme";
 
-/** The eight file keys, left to right as they sit on the board. */
-export const FILE_KEYS = ["a", "b", "c", "d", "e", "f", "g", "h"];
-/** The eight rank keys. */
-export const RANK_KEYS = ["1", "2", "3", "4", "5", "6", "7", "8"];
-
 type CoordinateKeyRowProps = {
   keys: readonly string[];
   /** When false the whole row dims to 0.3 and stops accepting taps. */
