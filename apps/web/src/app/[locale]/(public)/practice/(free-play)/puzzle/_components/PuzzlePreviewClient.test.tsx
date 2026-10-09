@@ -4,6 +4,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ChunkOption } from '@/lib/chunks/types';
 import type { ThemeOption } from '@/lib/themes/types';
 
+import { takeGrantedRanks } from '@/app/[locale]/(public)/practice/_lib/granted-ranks-stash';
+
 import { DRAFT_STORAGE_KEY } from '../_lib/draft-storage';
 import type { PuzzleDraftV1 } from '../_lib/draft-storage';
 import { PuzzlePreviewClient } from './PuzzlePreviewClient';
@@ -217,6 +219,38 @@ describe('PuzzlePreviewClient', () => {
 
       expect(sessionStorage.getItem(DRAFT_STORAGE_KEY)).toBeNull();
       expect(mockPush).toHaveBeenCalledWith('/practice/puzzle/abc-123?toast=position_created');
+    });
+
+    it('on success with grantedRanks: stashes them for the RankAchievementModal on the puzzle page', async () => {
+      // A puzzle counts toward `position_submission_count` (2kyu), so the
+      // first puzzle a user publishes can grant a rank. The modal on the
+      // destination page only sees it if the grant is stashed before push().
+      seedDraft();
+      const grantedRanks = [{ slug: '2kyu', level: 40, color: '#2563eb' }];
+      mockCreatePuzzle.mockResolvedValue({ success: true, id: 'abc-123', grantedRanks });
+
+      render(<PuzzlePreviewClient availableThemes={[]} availableChunks={[]} />);
+
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: 'createCta' }));
+      });
+
+      expect(mockPush).toHaveBeenCalledWith('/practice/puzzle/abc-123?toast=position_created');
+      expect(takeGrantedRanks()).toEqual(grantedRanks);
+    });
+
+    it('on success without grantedRanks: stashes nothing', async () => {
+      seedDraft();
+      mockCreatePuzzle.mockResolvedValue({ success: true, id: 'abc-123' });
+
+      render(<PuzzlePreviewClient availableThemes={[]} availableChunks={[]} />);
+
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: 'createCta' }));
+      });
+
+      expect(mockPush).toHaveBeenCalled();
+      expect(takeGrantedRanks()).toEqual([]);
     });
 
     it('passes description as null when the draft description is an empty string', async () => {

@@ -15,6 +15,7 @@ import {
 } from '@/app/[locale]/(public)/practice/(free-play)/_components/DraftPreviewLayout';
 import { useDraftPreview } from '@/app/[locale]/(public)/practice/(free-play)/_hooks/use-draft-preview';
 import { useResolvedDraftTags } from '@/app/[locale]/(public)/practice/(free-play)/_hooks/use-resolved-draft-tags';
+import { stashGrantedRanks } from '@/app/[locale]/(public)/practice/_lib/granted-ranks-stash';
 
 import { createPuzzle } from '../_actions/createPuzzle';
 import { clearDraft, readDraft } from '../_lib/draft-storage';
@@ -80,6 +81,9 @@ export function PuzzlePreviewClient({ availableThemes, availableChunks }: Props)
         return { error: localizeActionError(result.error, t, CREATE_ERROR_CODES) };
       }
 
+      // Stash any belt-rank grants triggered by this submission so the
+      // RankAchievementModal on the destination page can pick them up.
+      stashGrantedRanks(result.grantedRanks);
       clearDraft();
 
       // Land straight on the created puzzle so the author can verify it.
