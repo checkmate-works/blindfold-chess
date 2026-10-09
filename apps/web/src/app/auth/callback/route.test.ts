@@ -5,9 +5,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import { logActivityEvent } from '@/lib/users/activity-log';
 
-const mockSentryCaptureException = vi.fn();
-vi.mock('@sentry/nextjs', () => ({
-  captureException: (...args: unknown[]) => mockSentryCaptureException(...args),
+const mockCaptureError = vi.fn();
+vi.mock('@/lib/sentry/capture-error', () => ({
+  captureError: (...args: unknown[]) => mockCaptureError(...args),
 }));
 
 const mockComputeAdsHiddenValueForUser = vi.fn().mockResolvedValue(null);
@@ -526,8 +526,8 @@ describe('Auth callback route', () => {
       expect(cookie?.expires && new Date(cookie.expires).getTime()).toBe(0);
 
       // The regression must be observable in operations.
-      expect(mockSentryCaptureException).toHaveBeenCalledTimes(1);
-      expect(mockSentryCaptureException).toHaveBeenCalledWith(computeError);
+      expect(mockCaptureError).toHaveBeenCalledTimes(1);
+      expect(mockCaptureError).toHaveBeenCalledWith(computeError, expect.any(String));
     });
 
     it('logs activity and queries the profile even when ads-hidden compute rejects', async () => {
