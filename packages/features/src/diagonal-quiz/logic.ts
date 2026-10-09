@@ -123,7 +123,7 @@ export function normalizeDiagonal(answer: string): string {
   const trimmed = answer.trim().toLowerCase();
 
   // Single square
-  if (/^[a-h][1-8]$/.test(trimmed)) {
+  if (isValidSquare(trimmed)) {
     return trimmed;
   }
 

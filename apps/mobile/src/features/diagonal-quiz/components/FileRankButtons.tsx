@@ -1,12 +1,8 @@
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useTranslation } from "react-i18next";
 import { Delete } from "lucide-react-native";
-import {
-  CoordinateKeyRow,
-  FILE_KEYS,
-  RANK_KEYS,
-  coordinateKeypadStyles,
-} from "../../../components";
+import { CoordinateKeyRow, coordinateKeypadStyles } from "../../../components";
+import { FILES, RANKS } from "@blindfold-chess/types";
 import {
   useTheme,
   fontSize,
@@ -58,13 +54,13 @@ export function FileRankButtons({
       {/* No `activeKey`: an entered file goes straight into the answer string
           above, so there is nothing half-entered to highlight on the pad. */}
       <CoordinateKeyRow
-        keys={FILE_KEYS}
+        keys={FILES}
         enabled={!disabled && expectingFile}
         onPress={onFilePress}
       />
 
       <CoordinateKeyRow
-        keys={RANK_KEYS}
+        keys={RANKS}
         enabled={!disabled && expectingRank}
         onPress={onRankPress}
       />

@@ -1,11 +1,7 @@
 import { View, Text, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
-import {
-  CoordinateKeyRow,
-  FILE_KEYS,
-  RANK_KEYS,
-  coordinateKeypadStyles,
-} from "../../../components";
+import { CoordinateKeyRow, coordinateKeypadStyles } from "../../../components";
+import { FILES, RANKS } from "@blindfold-chess/types";
 import { useTheme, spacing } from "../../../theme";
 
 type SquareInputProps = {
@@ -41,14 +37,14 @@ export function SquareInput({
 
       {/* The chosen file stays highlighted while the rank is picked. */}
       <CoordinateKeyRow
-        keys={FILE_KEYS}
+        keys={FILES}
         enabled={!disabled}
         activeKey={selectedFile}
         onPress={onFilePress}
       />
 
       <CoordinateKeyRow
-        keys={RANK_KEYS}
+        keys={RANKS}
         enabled={!disabled && selectedFile !== null}
         onPress={onRankPress}
       />

@@ -1,11 +1,6 @@
 export { Button } from "./Button";
 export { Card } from "./Card";
-export {
-  CoordinateKeyRow,
-  FILE_KEYS,
-  RANK_KEYS,
-  coordinateKeypadStyles,
-} from "./CoordinateKeyRow";
+export { CoordinateKeyRow, coordinateKeypadStyles } from "./CoordinateKeyRow";
 export { CountdownOverlay } from "./CountdownOverlay";
 export { OptionsField } from "./OptionsField";
 export { PieceSelectionField } from "./PieceSelectionField";

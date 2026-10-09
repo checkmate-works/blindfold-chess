@@ -11,6 +11,7 @@ import {
   squareToFileIndex,
   squareToRankIndex,
 } from '@blindfold-chess/features/common';
+import { escapeHtml } from '@blindfold-chess/features/utils';
 import type { SvgElement } from '@blindfold-chess/icons/data';
 import { flagData, getPieceData, undoData } from '@blindfold-chess/icons/data';
 import type { PieceColor, Square } from '@blindfold-chess/types';
@@ -94,14 +95,10 @@ function squareToColRow(square: string, flipped: boolean) {
   return toPixelColRow(rankFromTop, fileIdx, flipped);
 }
 
-function escapeAttr(value: string): string {
-  return value.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
-}
-
 function attrs(pairs: Record<string, string | undefined>): string {
   return Object.entries(pairs)
     .filter((entry): entry is [string, string] => entry[1] !== undefined)
-    .map(([key, value]) => `${key}="${escapeAttr(value)}"`)
+    .map(([key, value]) => `${key}="${escapeHtml(value)}"`)
     .join(' ');
 }
 

@@ -1,5 +1,7 @@
 'use client';
 
+import { FILES, RANKS } from '@blindfold-chess/types';
+
 type Props = {
   selectedFiles?: Set<string>;
   selectedRanks?: Set<string>;
@@ -39,7 +41,7 @@ export function CoordinateInput({
       {/* File Selection Row */}
       {showFiles && (
         <div className="flex gap-1 justify-center w-full">
-          {['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'].map((file) => (
+          {FILES.map((file) => (
             <button
               key={file}
               type="button"
@@ -61,7 +63,7 @@ export function CoordinateInput({
       {showRanks && (
         <div className="flex flex-col gap-2 animate-in fade-in slide-in-from-top-2 duration-200">
           <div className="flex gap-1 justify-center w-full">
-            {['1', '2', '3', '4', '5', '6', '7', '8'].map((rank) => (
+            {RANKS.map((rank) => (
               <button
                 key={rank}
                 type="button"

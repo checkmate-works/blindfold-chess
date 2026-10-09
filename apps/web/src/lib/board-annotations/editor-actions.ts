@@ -1,4 +1,5 @@
 import { flipIndex } from '@blindfold-chess/features/common';
+import { FILES, RANKS } from '@blindfold-chess/types';
 import type { Square } from '@blindfold-chess/types';
 
 import type { AnnotationColor, BoardAnnotations } from './types';
@@ -104,8 +105,6 @@ export function pointerToSquare(
   const row = Math.min(7, Math.max(0, Math.floor((y / rect.height) * 8)));
   const fileIndex = flipIndex(col, flipped);
   const rankIndex = flipIndex(row, flipped);
-  const file = 'abcdefgh'[fileIndex] as 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h';
   // rankIndex 0 → rank 8, rankIndex 7 → rank 1
-  const rank = String(8 - rankIndex) as '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8';
-  return `${file}${rank}`;
+  return `${FILES[fileIndex]}${RANKS[7 - rankIndex]}`;
 }
