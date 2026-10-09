@@ -8,6 +8,7 @@ import {
   PAWN_HIDE_MODES,
   PIECE_COLOR_MODES as PIECE_COLORS,
   PIECE_SHAPE_MODES,
+  SIDES,
 } from '@blindfold-chess/types';
 
 import { engineApproxElo, isEngineConfig } from '@/lib/engines';
@@ -87,7 +88,6 @@ export type ValidatePublishResult =
   { ok: true; game: ValidatedGame } | { ok: false; error: string };
 
 const OUTCOMES: readonly FinalGameOutcome[] = ['win', 'loss', 'draw'];
-const COLORS: readonly Side[] = ['white', 'black'];
 
 /**
  * Normalize the self-reported play settings into the validated display subset,
@@ -150,7 +150,7 @@ export function validatePublishSnapshot(input: unknown): ValidatePublishResult {
     return { ok: false, error: 'invalid_moves' };
   }
 
-  if (!COLORS.includes(v.playerColor as Side)) {
+  if (!SIDES.includes(v.playerColor as Side)) {
     return { ok: false, error: 'invalid_player_color' };
   }
   if (!OUTCOMES.includes(v.result as FinalGameOutcome)) {
