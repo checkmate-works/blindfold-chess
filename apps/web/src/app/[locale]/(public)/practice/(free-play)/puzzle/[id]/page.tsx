@@ -16,6 +16,7 @@ import { resolveAuthorName } from '@/lib/users/display-name';
 import { PositionCommentSection } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionCommentSection';
 import { encodeFenToBase64Url } from '@/app/[locale]/(public)/practice/(free-play)/position-memory/_lib/share-url';
 import { PiecesInfo } from '@/app/[locale]/(public)/practice/_components/PiecesInfo';
+import { RankAchievementModal } from '@/app/[locale]/(public)/practice/_components/RankAchievementModal';
 import { MoveNotationText } from '@/app/[locale]/(public)/topics/_components/MoveNotationText';
 import { validateSort } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import { Divider, SectionTitle } from '@/app/[locale]/_components';
@@ -300,6 +301,7 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
         thread={puzzleCommentThread(locale, position.id)}
         newPostForm={<NewPostForm locale={locale} positionId={position.id} />}
       />
+      <RankAchievementModal locale={locale} />
     </PositionDetailLayout>
   );
 }
