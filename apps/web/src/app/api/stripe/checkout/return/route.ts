@@ -141,6 +141,6 @@ async function refreshCookieBestEffort(response: NextResponse, userId: string): 
   try {
     await refreshAdsHiddenCookieOnResponse(response, userId);
   } catch (error) {
-    Sentry.captureException(error);
+    captureError(error, '[stripe/checkout/return] failed to refresh the ads-hidden cookie');
   }
 }
