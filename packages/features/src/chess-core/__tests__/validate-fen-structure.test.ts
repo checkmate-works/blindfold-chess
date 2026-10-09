@@ -210,6 +210,12 @@ describe("validateFenStructure — rejected cases", () => {
     ["ee3", "too long"],
     ["e9", "out-of-range rank"],
     ["i3", "out-of-range file"],
+    ["e1", "rank a double push cannot skip"],
+    ["e2", "rank a double push cannot skip"],
+    ["e4", "rank a double push cannot skip"],
+    ["e5", "rank a double push cannot skip"],
+    ["e7", "rank a double push cannot skip"],
+    ["e8", "rank a double push cannot skip"],
   ])("rejects en passant square %s (%s)", (ep) => {
     const result = validateFenStructure(`8/8/8/8/8/8/8/8 w - ${ep} 0 1`);
     expect(result.ok).toBe(false);

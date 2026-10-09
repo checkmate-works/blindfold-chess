@@ -19,7 +19,10 @@ export type FenStructureResult = { ok: true } | { ok: false; error: string };
 
 const VALID_RANK_CHARS = /^[PNBRQKpnbrqk1-8]+$/;
 const CASTLING_RE = /^[KQkq]+$/;
-const EN_PASSANT_RE = /^[a-h][1-8]$/;
+// Ranks 3 and 6 only: a double-pushed pawn can only skip a square on one of
+// those, so any other rank cannot occur in a FEN. Matches chess.js's own
+// FEN check and the `post_fen_attachments` DB CHECK (`[a-h][36]`).
+const EN_PASSANT_RE = /^[a-h][36]$/;
 const NON_NEGATIVE_INT = /^\d+$/;
 
 /**
@@ -30,7 +33,9 @@ const NON_NEGATIVE_INT = /^\d+$/;
  *    containing only `PNBRQKpnbrqk` and digit run-length shorthands.
  * 2. Side to move: exactly `w` or `b`.
  * 3. Castling rights: `-` or a subset of `KQkq` (order not enforced).
- * 4. En passant square: `-` or an `a1`-`h8` square name.
+ * 4. En passant square: `-` or a rank-3 / rank-6 square name (`a3`-`h3`,
+ *    `a6`-`h6`). Whether the rank matches the side to move is a semantic
+ *    check left to `validateFenSemantic`.
  * 5. Halfmove clock: a non-negative integer.
  * 6. Fullmove number: a positive integer (>= 1).
  *
