@@ -322,7 +322,15 @@ export async function POST(request: Request): Promise<NextResponse> {
       });
     }
   } catch (error) {
-    // Never let the reporting endpoint throw — log and swallow.
+    // Never let the reporting endpoint throw — report and swallow.
+    //
+    // Deliberately not `captureError`: that helper also writes a
+    // `console.error` line, and this is an open endpoint anyone can POST to
+    // (see the TSDoc above). Every other path here stays silent in the logs
+    // for the same reason — a malformed body is acknowledged "without noise"
+    // — so a caller who can make this block throw on demand must not be able
+    // to fill the function logs with it either. Sentry alone is enough to
+    // notice a real bug here.
     Sentry.captureException(error);
   }
 
