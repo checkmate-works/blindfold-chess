@@ -147,7 +147,9 @@ export function PlusMenu({
       action: () => {
         const url = window.prompt('YouTube URLを入力してください');
         if (!url) return;
-        editor.commands.setYoutubeVideo({ src: url });
+        if (!editor.commands.setYoutubeVideo({ src: url })) {
+          window.alert('有効なYouTube URLを入力してください');
+        }
       },
     },
     {
