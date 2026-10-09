@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 
-import * as Sentry from '@sentry/nextjs';
 import { randomUUID } from 'crypto';
 import 'server-only';
 
@@ -22,6 +21,7 @@ import {
   isAllowedPostImageMimeType,
 } from '@/lib/post-images/validation';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
+import { captureError } from '@/lib/sentry/capture-error';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { persistWithUploadRollback } from '@/lib/supabase/persist-with-upload-rollback';
 import { loadAuthoredPost } from '@/lib/topic-posts';
@@ -129,7 +129,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     }
     // Sharp could not decode the uploaded bytes. Capture the real exception so
     // a client-converted image that the server can't read is diagnosable.
-    Sentry.captureException(err, {
+    captureError(err, '[post-images] image_probe_failed', {
       tags: { feature: 'post-image-upload', phase: 'probe' },
       extra: { postId, contentType: file.type, fileSize: file.size },
     });
@@ -149,13 +149,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       contentType: file.type,
     });
   } catch (err) {
-    console.error('[post-images] image_processing_failed', {
-      postId,
-      contentType: file.type,
-      fileSize: file.size,
-      error: err,
-    });
-    Sentry.captureException(err, {
+    captureError(err, '[post-images] image_processing_failed', {
       tags: { feature: 'post-image-upload', phase: 'process' },
       extra: { postId, contentType: file.type, fileSize: file.size },
     });
