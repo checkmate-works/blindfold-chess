@@ -1,10 +1,10 @@
 'use client';
 
-type BoardFenTab = 'board' | 'fen';
+import type { EditorTab } from '../_lib/board-editor-constants';
 
 type Props = {
-  activeTab: BoardFenTab;
-  onTabChange: (tab: BoardFenTab) => void;
+  activeTab: EditorTab;
+  onTabChange: (tab: EditorTab) => void;
   boardLabel: string;
   fenLabel: string;
 };
