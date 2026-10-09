@@ -1,3 +1,4 @@
+import { escapeHtml } from '@blindfold-chess/features/utils';
 import type { Side } from '@blindfold-chess/types';
 
 import type { BoardTheme } from '@/lib/games/board-themes';
@@ -136,19 +137,7 @@ export function buildEmbedSnippet({
 }): string {
   const url = buildEmbedUrl(siteUrl, gameId, options);
   const style = `border:0;width:100%;max-width:${DEFAULT_EMBED_MAX_WIDTH}px;aspect-ratio:${DEFAULT_EMBED_ASPECT_RATIO};height:auto`;
-  return `<iframe src="${escapeAttribute(url)}" title="${escapeAttribute(title)}" width="100%" height="${height}" style="${style}" loading="lazy"></iframe>`;
-}
-
-/**
- * Escape a value going into a double-quoted HTML attribute.
- *
- * The game title is user-supplied text landing in markup that someone else
- * will paste into their own site. `&` first, or the escapes escape each other.
- */
-function escapeAttribute(value: string): string {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/"/g, '&quot;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
+  // The game title is user-supplied text landing in markup that someone else
+  // will paste into their own site, so every attribute value is escaped.
+  return `<iframe src="${escapeHtml(url)}" title="${escapeHtml(title)}" width="100%" height="${height}" style="${style}" loading="lazy"></iframe>`;
 }
