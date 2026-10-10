@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { formDataOf } from '@/lib/__test-support__/form-data';
 import { lastQueuedRows } from '@/lib/db/__test-support__/query-chain';
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
@@ -104,13 +105,11 @@ const testSlug = 'rook-battery';
 const VALID_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
 function makeFormData(opts: { fen?: string | null; caption?: string | null }): FormData {
-  const fd = new FormData();
-  fd.set('content', 'a thoughtful reply with a FEN');
-  if (opts.fen !== undefined && opts.fen !== null) fd.set('attachmentFen', opts.fen);
-  if (opts.caption !== undefined && opts.caption !== null) {
-    fd.set('attachmentFenCaption', opts.caption);
-  }
-  return fd;
+  return formDataOf({
+    content: 'a thoughtful reply with a FEN',
+    attachmentFen: opts.fen,
+    attachmentFenCaption: opts.caption,
+  });
 }
 
 function setupHappyAuth() {

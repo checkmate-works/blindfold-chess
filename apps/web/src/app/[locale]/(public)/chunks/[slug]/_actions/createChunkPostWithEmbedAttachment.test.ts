@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { formDataOf } from '@/lib/__test-support__/form-data';
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
 import { checkRateLimit } from '@/lib/security/rate-limit';
@@ -119,19 +120,13 @@ function makeFormData(opts: {
   embedSourceUrl?: string | null;
   embedId?: string | null;
 }): FormData {
-  const fd = new FormData();
-  fd.set('content', opts.content ?? 'a chunk comment with embed');
-  fd.set('replyPermission', opts.replyPermission ?? 'everyone');
-  if (opts.embedProvider !== undefined && opts.embedProvider !== null) {
-    fd.set('embedProvider', opts.embedProvider);
-  }
-  if (opts.embedSourceUrl !== undefined && opts.embedSourceUrl !== null) {
-    fd.set('embedSourceUrl', opts.embedSourceUrl);
-  }
-  if (opts.embedId !== undefined && opts.embedId !== null) {
-    fd.set('embedId', opts.embedId);
-  }
-  return fd;
+  return formDataOf({
+    content: opts.content ?? 'a chunk comment with embed',
+    replyPermission: opts.replyPermission ?? 'everyone',
+    embedProvider: opts.embedProvider,
+    embedSourceUrl: opts.embedSourceUrl,
+    embedId: opts.embedId,
+  });
 }
 
 describe('createChunkPostWithEmbedAttachment', () => {

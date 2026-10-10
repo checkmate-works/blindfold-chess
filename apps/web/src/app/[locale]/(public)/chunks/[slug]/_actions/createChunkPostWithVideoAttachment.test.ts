@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { formDataOf } from '@/lib/__test-support__/form-data';
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
 import { checkRateLimit } from '@/lib/security/rate-limit';
@@ -87,11 +88,11 @@ function makeFormData(opts: {
   replyPermission?: string;
   url?: string | null;
 }): FormData {
-  const fd = new FormData();
-  fd.set('content', opts.content ?? 'a chunk comment with video');
-  fd.set('replyPermission', opts.replyPermission ?? 'everyone');
-  if (opts.url !== undefined && opts.url !== null) fd.set('attachmentVideoUrl', opts.url);
-  return fd;
+  return formDataOf({
+    content: opts.content ?? 'a chunk comment with video',
+    replyPermission: opts.replyPermission ?? 'everyone',
+    attachmentVideoUrl: opts.url,
+  });
 }
 
 describe('createChunkPostWithVideoAttachment', () => {

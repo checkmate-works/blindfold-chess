@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
+import { formDataOf } from '@/lib/__test-support__/form-data';
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
 import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
@@ -43,10 +44,7 @@ const otherUserId = 'user-00000000-0000-0000-0000-000000000002';
 const testPostId = 'post-00000000-0000-0000-0000-000000000001';
 
 function makeFormData(content: string, isSpoiler?: 'on' | undefined): FormData {
-  const fd = new FormData();
-  fd.set('content', content);
-  if (isSpoiler !== undefined) fd.set('isSpoiler', isSpoiler);
-  return fd;
+  return formDataOf({ content, isSpoiler });
 }
 
 describe('editPost', () => {

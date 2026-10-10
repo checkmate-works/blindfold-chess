@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { formDataOf } from '@/lib/__test-support__/form-data';
 import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
 import { checkRateLimit } from '@/lib/security/rate-limit';
 import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
@@ -51,12 +52,7 @@ const generatedReplyId = 'reply-00000000-0000-0000-0000-000000000020';
 const positionId = '00000000-0000-0000-0000-000000000088';
 
 function makeFormData(content: string, options: { isSpoiler?: string } = {}): FormData {
-  const fd = new FormData();
-  fd.set('content', content);
-  if (options.isSpoiler !== undefined) {
-    fd.set('isSpoiler', options.isSpoiler);
-  }
-  return fd;
+  return formDataOf({ content, isSpoiler: options.isSpoiler });
 }
 
 describe('puzzle parent-page createReply', () => {

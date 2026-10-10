@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { formDataOf } from '@/lib/__test-support__/form-data';
 import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
 import { createNotification } from '@/lib/notifications/notification';
 import { checkRateLimit } from '@/lib/security/rate-limit';
@@ -60,12 +61,7 @@ const baseParams = {
 };
 
 function makeFormData(content: string, replyToId?: string): FormData {
-  const fd = new FormData();
-  fd.set('content', content);
-  if (replyToId) {
-    fd.set('replyToId', replyToId);
-  }
-  return fd;
+  return formDataOf({ content, replyToId: replyToId || null });
 }
 
 function setupAuthenticatedUser() {

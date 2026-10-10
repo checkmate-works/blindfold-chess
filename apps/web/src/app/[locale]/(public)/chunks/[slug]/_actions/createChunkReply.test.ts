@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { formDataOf } from '@/lib/__test-support__/form-data';
 import { lastQueuedRows } from '@/lib/db/__test-support__/query-chain';
 import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
 import { checkRateLimit } from '@/lib/security/rate-limit';
@@ -100,9 +101,7 @@ const generatedReplyId = 'reply-00000000-0000-0000-0000-000000000001';
 const testSlug = 'rook-battery';
 
 function makeFormData(content: string): FormData {
-  const fd = new FormData();
-  fd.set('content', content);
-  return fd;
+  return formDataOf({ content });
 }
 
 describe('createChunkReply', () => {

@@ -2,6 +2,7 @@ import { revalidateTag as mockRevalidateTag } from 'next/cache';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { formDataOf } from '@/lib/__test-support__/form-data';
 import { grantStatusTag } from '@/lib/cache-tags';
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import { MODERATION_REASON_MAX_LENGTH } from '@/lib/moderation/validate-reason';
@@ -65,18 +66,10 @@ vi.mock('@/lib/security/client-ip', () => ({
 
 const { createGrant } = await import('./createGrant');
 
-function makeFormData(data: Record<string, string>): FormData {
-  const fd = new FormData();
-  for (const [key, value] of Object.entries(data)) {
-    fd.set(key, value);
-  }
-  return fd;
-}
-
 const validUserId = '00000000-0000-0000-0000-000000000001';
 
 const validFormData = () =>
-  makeFormData({
+  formDataOf({
     userId: validUserId,
     benefitType: 'ad_free',
     durationDays: '30',
@@ -99,7 +92,7 @@ describe('createGrant', () => {
   it('should return error when userId is empty', async () => {
     mockRequireAdmin.mockResolvedValue({ userId: 'admin-id' });
 
-    const fd = makeFormData({
+    const fd = formDataOf({
       userId: '',
       benefitType: 'ad_free',
       durationDays: '30',
@@ -111,7 +104,7 @@ describe('createGrant', () => {
   it('should return error when userId is not a valid UUID', async () => {
     mockRequireAdmin.mockResolvedValue({ userId: 'admin-id' });
 
-    const fd = makeFormData({
+    const fd = formDataOf({
       userId: 'not-a-uuid',
       benefitType: 'ad_free',
       durationDays: '30',
@@ -123,7 +116,7 @@ describe('createGrant', () => {
   it('should return error when benefitType is empty', async () => {
     mockRequireAdmin.mockResolvedValue({ userId: 'admin-id' });
 
-    const fd = makeFormData({
+    const fd = formDataOf({
       userId: validUserId,
       benefitType: '',
       durationDays: '30',
@@ -135,7 +128,7 @@ describe('createGrant', () => {
   it('should return error when benefitType is not in the allow-list', async () => {
     mockRequireAdmin.mockResolvedValue({ userId: 'admin-id' });
 
-    const fd = makeFormData({
+    const fd = formDataOf({
       userId: validUserId,
       // A plausible-looking but unregistered benefit type — form tampering
       // / API-direct-call simulation.
@@ -152,7 +145,7 @@ describe('createGrant', () => {
     // Maia engine access is no longer a `user_grants` benefit type — it is
     // gated by subscription / per-game point charge. The benefit-type guard
     // must reject it like any other unknown value.
-    const fd = makeFormData({
+    const fd = formDataOf({
       userId: validUserId,
       benefitType: 'maia_access',
       durationDays: '30',
@@ -164,7 +157,7 @@ describe('createGrant', () => {
   it('should return error when durationDays is 0', async () => {
     mockRequireAdmin.mockResolvedValue({ userId: 'admin-id' });
 
-    const fd = makeFormData({
+    const fd = formDataOf({
       userId: validUserId,
       benefitType: 'ad_free',
       durationDays: '0',
@@ -176,7 +169,7 @@ describe('createGrant', () => {
   it('should return error when durationDays is negative', async () => {
     mockRequireAdmin.mockResolvedValue({ userId: 'admin-id' });
 
-    const fd = makeFormData({
+    const fd = formDataOf({
       userId: validUserId,
       benefitType: 'ad_free',
       durationDays: '-5',
@@ -188,7 +181,7 @@ describe('createGrant', () => {
   it('should return error when durationDays exceeds 3650', async () => {
     mockRequireAdmin.mockResolvedValue({ userId: 'admin-id' });
 
-    const fd = makeFormData({
+    const fd = formDataOf({
       userId: validUserId,
       benefitType: 'ad_free',
       durationDays: '3651',
@@ -200,7 +193,7 @@ describe('createGrant', () => {
   it('should return error when reason exceeds the moderation reason limit', async () => {
     mockRequireAdmin.mockResolvedValue({ userId: 'admin-id' });
 
-    const fd = makeFormData({
+    const fd = formDataOf({
       userId: validUserId,
       benefitType: 'ad_free',
       durationDays: '30',
@@ -258,7 +251,7 @@ describe('createGrant', () => {
     mockCalcGrantStartsAt.mockResolvedValue(new Date());
 
     await createGrant(
-      makeFormData({
+      formDataOf({
         userId: validUserId,
         benefitType: 'ad_free',
         durationDays: '30',

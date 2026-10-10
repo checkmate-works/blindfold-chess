@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { formDataOf } from '@/lib/__test-support__/form-data';
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
 import { checkRateLimit } from '@/lib/security/rate-limit';
@@ -102,16 +103,12 @@ function makeFormData(opts: {
   attachment?: string | null;
   anonymize?: boolean;
 }): FormData {
-  const fd = new FormData();
-  fd.set('content', opts.content ?? 'a chunk comment');
-  fd.set('replyPermission', opts.replyPermission ?? 'everyone');
-  if (opts.attachment !== undefined && opts.attachment !== null) {
-    fd.set('attachment', opts.attachment);
-  }
-  if (opts.anonymize) {
-    fd.set('attachmentAnonymize', 'on');
-  }
-  return fd;
+  return formDataOf({
+    content: opts.content ?? 'a chunk comment',
+    replyPermission: opts.replyPermission ?? 'everyone',
+    attachment: opts.attachment,
+    attachmentAnonymize: opts.anonymize ? 'on' : null,
+  });
 }
 
 const SIMPLE_PGN = '1. e4 e5 2. Nf3 Nc6';

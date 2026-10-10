@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { formDataOf } from '@/lib/__test-support__/form-data';
 import { lastQueuedRows } from '@/lib/db/__test-support__/query-chain';
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
@@ -126,11 +127,11 @@ function makeFormData(opts: {
   attachment?: string;
   attachmentAnonymize?: boolean;
 }): FormData {
-  const fd = new FormData();
-  fd.set('content', opts.content ?? 'a thoughtful reply');
-  if (opts.attachment !== undefined) fd.set('attachment', opts.attachment);
-  if (opts.attachmentAnonymize) fd.set('attachmentAnonymize', 'on');
-  return fd;
+  return formDataOf({
+    content: opts.content ?? 'a thoughtful reply',
+    attachment: opts.attachment,
+    attachmentAnonymize: opts.attachmentAnonymize ? 'on' : null,
+  });
 }
 
 function setupHappyAuth() {
