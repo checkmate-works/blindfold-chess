@@ -2,8 +2,11 @@ import { revalidatePath as mockRevalidatePath } from 'next/cache';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mockUserHasProfile = vi.fn(async () => true);
-const mockAuthenticateAndGuard = vi.fn();
+import {
+  authenticateAndGuard as mockAuthenticateAndGuard,
+  userHasProfile as mockUserHasProfile,
+} from '@/lib/__mocks__/auth';
+
 const mockSelectLimit = vi.fn();
 const mockInsertReturning = vi.fn();
 const mockInsertValues = vi.fn();
@@ -22,18 +25,7 @@ const mockLogActivityEvent = vi.fn();
 const mockIsUniqueViolation = vi.fn();
 const mockLinkNewChunkToGameMove = vi.fn();
 
-vi.mock('@/lib/auth', () => ({
-  authenticateAndGuard: (...args: unknown[]) => mockAuthenticateAndGuard(...args),
-  // Composed rather than stubbed flat, exactly as the real helper composes it:
-  // the plain guard first, then the `profiles` lookup. That keeps every
-  // existing guard assertion (signInRequired, banned, rateLimited) exercising
-  // one path regardless of which of the two guards the call site picked.
-  authenticateGuardAndRequireProfile: async (...args: unknown[]) => {
-    const guardResult = await mockAuthenticateAndGuard(...args);
-    if ('error' in guardResult) return guardResult;
-    return (await mockUserHasProfile()) ? guardResult : { error: 'profileRequired' };
-  },
-}));
+vi.mock('@/lib/auth');
 
 vi.mock('@/lib/users/activity-log', () => ({
   logActivityEvent: (...args: unknown[]) => mockLogActivityEvent(...args),

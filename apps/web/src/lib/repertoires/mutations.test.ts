@@ -1,25 +1,19 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import {
+  authenticateAndGuard as mockAuthenticateAndGuard,
+  userHasProfile as mockUserHasProfile,
+} from '@/lib/__mocks__/auth';
+
 import type { RepertoireImportInput } from './validation';
 
-const mockAuthenticateAndGuard = vi.fn();
-const mockUserHasProfile = vi.fn(async () => true);
 const mockValidateRepertoireImport = vi.fn();
 const mockTxInsertReturning = vi.fn();
 const mockChargeRepertoireVisibility = vi.fn();
 /** Outcome of each `db.transaction` call, as drizzle would settle it. */
 const transactionOutcomes: Array<'committed' | 'rolledBack'> = [];
 
-vi.mock('@/lib/auth', () => ({
-  authenticateAndGuard: (...args: unknown[]) => mockAuthenticateAndGuard(...args),
-  // Composed rather than stubbed flat, exactly as the real helper composes it:
-  // the plain guard first, then the `profiles` lookup.
-  authenticateGuardAndRequireProfile: async (...args: unknown[]) => {
-    const guardResult = await mockAuthenticateAndGuard(...args);
-    if ('error' in guardResult) return guardResult;
-    return (await mockUserHasProfile()) ? guardResult : { error: 'profileRequired' };
-  },
-}));
+vi.mock('@/lib/auth');
 
 vi.mock('./validation', async (importOriginal) => {
   const actual = await importOriginal<typeof import('./validation')>();
