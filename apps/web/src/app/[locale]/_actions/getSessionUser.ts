@@ -1,12 +1,12 @@
 'use server';
 
-import * as Sentry from '@sentry/nextjs';
 import type { User } from '@supabase/supabase-js';
 import { eq } from 'drizzle-orm';
 
 import { writeAdsHiddenCookieForUser } from '@/lib/ads/ads-hidden-cookie-writer';
 import { getOptionalUser } from '@/lib/auth';
 import { db, profiles } from '@/lib/db';
+import { captureError } from '@/lib/sentry/capture-error';
 
 import { getUnreadCount as getUnreadNotificationCount } from '@/app/[locale]/(protected)/mypage/(confirmed)/notifications/_lib/queries';
 
@@ -80,7 +80,7 @@ export async function getSessionUser(): Promise<SessionUser> {
   try {
     user = await getOptionalUser();
   } catch (error) {
-    Sentry.captureException(error);
+    captureError(error, '[getSessionUser] failed to resolve the session user');
     return { user: null, hasProfile: false, profile: null, unreadNotificationCount: 0 };
   }
 
