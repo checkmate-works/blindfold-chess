@@ -1,18 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { authenticateAndCheckBan as mockAuthenticateAndCheckBan } from '@/lib/__mocks__/auth';
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 
-const { mockAuthenticateAndCheckBan, mockConsumeMaiaGamePoint, mockIsMaiaFreeForUser } = vi.hoisted(
-  () => ({
-    mockAuthenticateAndCheckBan: vi.fn(),
-    mockConsumeMaiaGamePoint: vi.fn(),
-    mockIsMaiaFreeForUser: vi.fn(),
-  })
-);
-
-vi.mock('@/lib/auth', () => ({
-  authenticateAndCheckBan: mockAuthenticateAndCheckBan,
+const { mockConsumeMaiaGamePoint, mockIsMaiaFreeForUser } = vi.hoisted(() => ({
+  mockConsumeMaiaGamePoint: vi.fn(),
+  mockIsMaiaFreeForUser: vi.fn(),
 }));
+
+vi.mock('@/lib/auth');
 
 vi.mock('@/lib/points', () => ({
   consumeMaiaGamePoint: mockConsumeMaiaGamePoint,

@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mockAuthenticateAndGuard = vi.fn();
+import { authenticateGuardAndRequireProfile as mockAuthenticateAndGuard } from '@/lib/__mocks__/auth';
+
 const mockGetLineForViewer = vi.fn();
 const mockGetForDelete = vi.fn();
 const mockDelete = vi.fn();
@@ -12,9 +13,7 @@ vi.mock('@/lib/notifications/repertoire-chunk-link-notification', () => ({
   notifyRepertoireOwnerOfChunkLink: (...args: unknown[]) => mockNotifyOwner(...args),
 }));
 
-vi.mock('@/lib/auth', () => ({
-  authenticateGuardAndRequireProfile: (...args: unknown[]) => mockAuthenticateAndGuard(...args),
-}));
+vi.mock('@/lib/auth');
 
 vi.mock('@/lib/repertoires/queries', () => ({
   getRepertoireLineForViewer: (...args: unknown[]) => mockGetLineForViewer(...args),

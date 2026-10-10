@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mockAuthenticateAndGuard = vi.fn();
+import { authenticateGuardAndRequireProfile as mockAuthenticateAndGuard } from '@/lib/__mocks__/auth';
+
 const mockGetForDelete = vi.fn();
 const mockDelete = vi.fn();
 const mockIsLinkable = vi.fn();
@@ -12,9 +13,7 @@ vi.mock('@/lib/notifications/game-chunk-link-notification', () => ({
   notifyGameOwnerOfChunkLink: (...args: unknown[]) => mockNotifyGameOwner(...args),
 }));
 
-vi.mock('@/lib/auth', () => ({
-  authenticateGuardAndRequireProfile: (...args: unknown[]) => mockAuthenticateAndGuard(...args),
-}));
+vi.mock('@/lib/auth');
 
 vi.mock('@/lib/db/game-chunks', () => ({
   getGameChunkForDelete: (...args: unknown[]) => mockGetForDelete(...args),

@@ -1,14 +1,13 @@
 import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { getOptionalUser as mockGetOptionalUser } from '@/lib/__mocks__/auth';
+
 import type { UserRankInfo } from '@/app/[locale]/(public)/leaderboard/_lib/types';
 
 // --- Mocks ---
 
-const mockGetOptionalUser = vi.fn();
-vi.mock('@/lib/auth', () => ({
-  getOptionalUser: () => mockGetOptionalUser(),
-}));
+vi.mock('@/lib/auth');
 
 const mockGetUserRanks = vi.fn();
 vi.mock('@/app/[locale]/(public)/leaderboard/_actions/getUserRanks', () => ({

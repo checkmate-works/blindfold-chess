@@ -14,13 +14,12 @@
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mockAuthenticateAndGuard = vi.fn();
+import { authenticateAndGuard as mockAuthenticateAndGuard } from '@/lib/__mocks__/auth';
+
 const mockSaveFreePlayResult = vi.fn();
 const mockHandleServerActionError = vi.fn();
 
-vi.mock('@/lib/auth', () => ({
-  authenticateAndGuard: (...args: unknown[]) => mockAuthenticateAndGuard(...args),
-}));
+vi.mock('@/lib/auth');
 
 vi.mock('@/lib/db/save-free-play-result', () => ({
   saveFreePlayResult: (...args: unknown[]) => mockSaveFreePlayResult(...args),

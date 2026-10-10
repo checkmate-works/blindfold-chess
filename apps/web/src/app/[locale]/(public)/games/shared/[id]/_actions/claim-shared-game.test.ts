@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mockGuard = vi.fn();
+import { authenticateGuardAndRequireProfile as mockGuard } from '@/lib/__mocks__/auth';
+
 const mockAuthorize = vi.fn();
 const mockClaim = vi.fn();
 const mockEvaluateRanks = vi.fn();
@@ -12,9 +13,7 @@ vi.mock('@/lib/users/activity-log', () => ({
   logActivityEvent: (...args: unknown[]) => mockLogActivityEvent(...args),
 }));
 
-vi.mock('@/lib/auth', () => ({
-  authenticateGuardAndRequireProfile: (...args: unknown[]) => mockGuard(...args),
-}));
+vi.mock('@/lib/auth');
 
 vi.mock('@/lib/db/games-auth', () => ({
   authorizeGameMutation: (...args: unknown[]) => mockAuthorize(...args),
