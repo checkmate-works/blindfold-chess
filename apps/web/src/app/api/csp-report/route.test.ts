@@ -251,6 +251,33 @@ describe('POST /api/csp-report', () => {
       expect(captureMessage).not.toHaveBeenCalled();
     });
 
+    it('acknowledges a body cut off mid-stream without reporting it', async () => {
+      const encoder = new TextEncoder();
+      let sent = false;
+      const body = new ReadableStream<Uint8Array>({
+        pull(controller) {
+          if (sent) {
+            controller.error(new TypeError('terminated'));
+            return;
+          }
+          sent = true;
+          controller.enqueue(encoder.encode(VALID_REPORT.slice(0, 20)));
+        },
+      });
+      const req = new Request('https://example.test/api/csp-report', {
+        method: 'POST',
+        headers: { 'content-type': 'application/csp-report', 'user-agent': 'vitest' },
+        body,
+        duplex: 'half',
+      } as RequestInit);
+
+      const res = await POST(req);
+
+      expect(res.status).toBe(204);
+      expect(captureException).not.toHaveBeenCalled();
+      expect(captureMessage).not.toHaveBeenCalled();
+    });
+
     it('collapses an unrecognised directive so tags and fingerprints stay bounded', async () => {
       const invented = `made-up-${'a'.repeat(500)}`;
 

@@ -245,7 +245,18 @@ export async function POST(request: Request): Promise<NextResponse> {
   }
 
   try {
-    const raw = await readBodyWithinLimit(request);
+    let raw: string | null;
+    try {
+      raw = await readBodyWithinLimit(request);
+    } catch {
+      // The body stream failed mid-read — in practice the client hung up
+      // before sending all of it (a beacon cut off by page unload, or a
+      // caller aborting on purpose). Nothing on our side is broken, and any
+      // caller can trigger this at will, so acknowledge it like a malformed
+      // body instead of letting it reach the Sentry call below: that call is
+      // the one thing the quota guards in this file do not bound.
+      return new NextResponse(null, { status: 204 });
+    }
 
     if (raw === null) {
       return new NextResponse(null, { status: 413 });
@@ -324,13 +335,14 @@ export async function POST(request: Request): Promise<NextResponse> {
   } catch (error) {
     // Never let the reporting endpoint throw — report and swallow.
     //
-    // Deliberately not `captureError`: that helper also writes a
-    // `console.error` line, and this is an open endpoint anyone can POST to
+    // Only a bug in this handler should land here — a failed body read is
+    // handled above. Deliberately not `captureError`: that helper also writes
+    // a `console.error` line, and this is an open endpoint anyone can POST to
     // (see the TSDoc above). Every other path here stays silent in the logs
     // for the same reason — a malformed body is acknowledged "without noise"
-    // — so a caller who can make this block throw on demand must not be able
-    // to fill the function logs with it either. Sentry alone is enough to
-    // notice a real bug here.
+    // — and a payload that happens to trip such a bug can be replayed at
+    // will, so it must not be able to fill the function logs either. Sentry
+    // alone is enough to notice it.
     Sentry.captureException(error);
   }
 
