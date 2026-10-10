@@ -1,14 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mockGetOptionalUser = vi.fn();
-const mockUserHasProfile = vi.fn();
+import {
+  getOptionalUser as mockGetOptionalUser,
+  userHasProfile as mockUserHasProfile,
+} from '@/lib/__mocks__/auth';
+
 const mockGetAllRanks = vi.fn();
 const mockGetUserAchievedRankIds = vi.fn();
 
-vi.mock('@/lib/auth', () => ({
-  getOptionalUser: (...args: unknown[]) => mockGetOptionalUser(...args),
-  userHasProfile: (...args: unknown[]) => mockUserHasProfile(...args),
-}));
+vi.mock('@/lib/auth');
 
 vi.mock('../_lib/queries', () => ({
   getAllRanks: (...args: unknown[]) => mockGetAllRanks(...args),

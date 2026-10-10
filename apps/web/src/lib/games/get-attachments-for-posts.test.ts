@@ -1,3 +1,4 @@
+import { captureMessage } from '@sentry/nextjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
@@ -5,11 +6,9 @@ import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import { getAttachmentsForPosts } from './get-attachments-for-posts';
 import type { PostAttachment } from './get-attachments-for-posts';
 
-const sentryWarn = vi.fn();
+const sentryWarn = vi.mocked(captureMessage);
 
-vi.mock('@sentry/nextjs', () => ({
-  captureMessage: (msg: string, ctx: unknown) => sentryWarn(msg, ctx),
-}));
+vi.mock('@sentry/nextjs');
 
 // Stable Supabase URL so buildPostImagePublicUrl produces a deterministic
 // string the tests can assert on.

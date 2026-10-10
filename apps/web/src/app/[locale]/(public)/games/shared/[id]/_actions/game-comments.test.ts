@@ -1,16 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { authenticateGuardAndRequireProfile as mockAuthenticateAndGuard } from '@/lib/__mocks__/auth';
 import { MAX_CONTENT_LENGTH } from '@/lib/validations/content';
 
-const mockAuthenticateAndGuard = vi.fn();
 const mockInsertGameComment = vi.fn();
 const mockGetGameCommentAuthorId = vi.fn();
 const mockEditGameComment = vi.fn();
 const mockGetLiveGameAuthorId = vi.fn();
 
-vi.mock('@/lib/auth', () => ({
-  authenticateGuardAndRequireProfile: (...args: unknown[]) => mockAuthenticateAndGuard(...args),
-}));
+vi.mock('@/lib/auth');
 
 vi.mock('@/lib/db/game-comments', () => ({
   GAME_COMMENT_LIKE_TARGET: 'game_comment',

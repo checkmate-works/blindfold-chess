@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { formDataOf } from '@/lib/__test-support__/form-data';
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
 import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
@@ -72,10 +73,7 @@ const testUserId = 'user-00000000-0000-0000-0000-000000000001';
 const testSlug = 'rook-battery';
 
 function makeFormData(content: string, replyPermission: string = 'everyone'): FormData {
-  const fd = new FormData();
-  fd.set('content', content);
-  fd.set('replyPermission', replyPermission);
-  return fd;
+  return formDataOf({ content, replyPermission });
 }
 
 describe('createChunkPost', () => {

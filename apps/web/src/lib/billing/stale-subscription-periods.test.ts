@@ -31,7 +31,7 @@ const state: { where: SQL | undefined; limit: number; rows: StaleRow[] } = {
 
 type StaleRow = { stripeSubscriptionId: string; status: string; currentPeriodEnd: Date };
 
-vi.mock('@sentry/nextjs', () => ({ captureMessage: vi.fn() }));
+vi.mock('@sentry/nextjs');
 
 vi.mock('@/lib/db', async () => ({
   ...(await actualDbSchema()),

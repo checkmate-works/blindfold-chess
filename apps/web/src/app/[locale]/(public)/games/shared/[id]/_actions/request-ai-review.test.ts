@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { authenticateAndCheckBan as mockAuth } from '@/lib/__mocks__/auth';
 import { checkRateLimit } from '@/lib/security/rate-limit';
 
-const mockAuth = vi.fn();
 const mockGetGameById = vi.fn();
 const mockStoreFind = vi.fn();
 const mockIsLlmConfigured = vi.fn();
@@ -21,9 +21,7 @@ vi.mock('next/server', () => ({
   after: (cb: () => unknown) => mockAfter(cb),
 }));
 
-vi.mock('@/lib/auth', () => ({
-  authenticateAndCheckBan: (...args: unknown[]) => mockAuth(...args),
-}));
+vi.mock('@/lib/auth');
 
 vi.mock('@/lib/db/games-read', () => ({
   getGameById: (...args: unknown[]) => mockGetGameById(...args),

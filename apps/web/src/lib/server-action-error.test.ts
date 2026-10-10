@@ -3,9 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { handleAdminActionError, handleServerActionError } from './server-action-error';
 
-vi.mock('@sentry/nextjs', () => ({
-  captureException: vi.fn(),
-}));
+vi.mock('@sentry/nextjs');
 
 describe('handleServerActionError', () => {
   beforeEach(() => {

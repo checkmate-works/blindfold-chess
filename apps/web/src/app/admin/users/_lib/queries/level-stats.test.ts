@@ -1,7 +1,7 @@
 import { getExpForLevel } from '@blindfold-chess/features/exp';
-import type { User } from '@supabase/supabase-js';
 import { describe, expect, it } from 'vitest';
 
+import { makeAuthUser } from '../__test-helpers__/admin-users-mocks';
 import {
   LEVEL_BUCKET_ORDER,
   NO_EXP_BUCKET,
@@ -9,10 +9,6 @@ import {
   isLevelBucket,
   resolveLevelBucket,
 } from './level-stats';
-
-function makeUser(id: string): User {
-  return { id, app_metadata: {}, user_metadata: {}, aud: '', created_at: '' } as User;
-}
 
 describe('resolveLevelBucket', () => {
   it('puts users without a user_exp row in the no-exp bucket', () => {
@@ -41,7 +37,12 @@ describe('aggregateLevelStats', () => {
   });
 
   it('counts each user once in their bucket', () => {
-    const users = [makeUser('a'), makeUser('b'), makeUser('c'), makeUser('d')];
+    const users = [
+      makeAuthUser({ id: 'a' }),
+      makeAuthUser({ id: 'b' }),
+      makeAuthUser({ id: 'c' }),
+      makeAuthUser({ id: 'd' }),
+    ];
     const exp = new Map<string, number>([
       ['a', 0],
       ['b', getExpForLevel(3)],

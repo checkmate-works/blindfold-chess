@@ -1,3 +1,4 @@
+import { captureMessage } from '@sentry/nextjs';
 import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -9,7 +10,7 @@ afterEach(() => {
 });
 
 const mockReplace = vi.fn();
-const mockCaptureMessage = vi.fn();
+const mockCaptureMessage = vi.mocked(captureMessage);
 
 // The URL the router "renders" — what usePathname/useSearchParams report.
 // Kept separate from window.location so a test can put the two out of sync,
@@ -24,9 +25,7 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ replace: mockReplace }),
 }));
 
-vi.mock('@sentry/nextjs', () => ({
-  captureMessage: (...args: unknown[]) => mockCaptureMessage(...args),
-}));
+vi.mock('@sentry/nextjs');
 
 function dispatchPopState(state: unknown) {
   act(() => {

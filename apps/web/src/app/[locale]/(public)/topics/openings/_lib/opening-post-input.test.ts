@@ -1,14 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
+import { formDataOf } from '@/lib/__test-support__/form-data';
 import { MAX_CONTENT_LENGTH } from '@/lib/validations/content';
 
 import { parseRating, validateOpeningPostContent } from './opening-post-input';
-
-function makeFormData(fields: Record<string, string>): FormData {
-  const fd = new FormData();
-  for (const [key, value] of Object.entries(fields)) fd.set(key, value);
-  return fd;
-}
 
 describe('parseRating', () => {
   it('returns the integer for a value in 1-5', () => {
@@ -28,27 +23,27 @@ describe('parseRating', () => {
 
 describe('validateOpeningPostContent', () => {
   it('returns the trimmed content', () => {
-    expect(
-      validateOpeningPostContent(makeFormData({ content: '  hello  ' }), 'attachment')
-    ).toEqual({ content: 'hello' });
+    expect(validateOpeningPostContent(formDataOf({ content: '  hello  ' }), 'attachment')).toEqual({
+      content: 'hello',
+    });
   });
 
   it('returns contentOrRatingRequired when there is no content, rating, or attachment', () => {
-    expect(validateOpeningPostContent(makeFormData({ content: '   ' }), 'attachment')).toEqual({
+    expect(validateOpeningPostContent(formDataOf({ content: '   ' }), 'attachment')).toEqual({
       error: 'contentOrRatingRequired',
     });
   });
 
   it('accepts an empty content when a rating is provided', () => {
     expect(
-      validateOpeningPostContent(makeFormData({ content: '', preferenceRating: '3' }), 'attachment')
+      validateOpeningPostContent(formDataOf({ content: '', preferenceRating: '3' }), 'attachment')
     ).toEqual({ content: '' });
   });
 
   it('accepts an empty content when the attachment field is provided', () => {
     expect(
       validateOpeningPostContent(
-        makeFormData({ attachmentFen: '8/8/8/8/8/8/8/8 w - - 0 1' }),
+        formDataOf({ attachmentFen: '8/8/8/8/8/8/8/8 w - - 0 1' }),
         'attachmentFen'
       )
     ).toEqual({ content: '' });
@@ -56,7 +51,7 @@ describe('validateOpeningPostContent', () => {
 
   it('accepts content at exactly MAX_CONTENT_LENGTH', () => {
     const body = 'a'.repeat(MAX_CONTENT_LENGTH);
-    expect(validateOpeningPostContent(makeFormData({ content: body }), 'attachment')).toEqual({
+    expect(validateOpeningPostContent(formDataOf({ content: body }), 'attachment')).toEqual({
       content: body,
     });
   });
@@ -66,14 +61,14 @@ describe('validateOpeningPostContent', () => {
   it('accepts 1998 characters followed by five spaces', () => {
     const body = 'a'.repeat(1998);
     expect(
-      validateOpeningPostContent(makeFormData({ content: `${body}     ` }), 'attachment')
+      validateOpeningPostContent(formDataOf({ content: `${body}     ` }), 'attachment')
     ).toEqual({ content: body });
   });
 
   it('returns contentTooLong when the trimmed content exceeds MAX_CONTENT_LENGTH', () => {
     expect(
       validateOpeningPostContent(
-        makeFormData({ content: 'a'.repeat(MAX_CONTENT_LENGTH + 1) }),
+        formDataOf({ content: 'a'.repeat(MAX_CONTENT_LENGTH + 1) }),
         'attachment'
       )
     ).toEqual({ error: 'contentTooLong' });
@@ -82,7 +77,7 @@ describe('validateOpeningPostContent', () => {
   it('returns contentTooLong even when a rating is also provided', () => {
     expect(
       validateOpeningPostContent(
-        makeFormData({ content: 'a'.repeat(MAX_CONTENT_LENGTH + 1), preferenceRating: '3' }),
+        formDataOf({ content: 'a'.repeat(MAX_CONTENT_LENGTH + 1), preferenceRating: '3' }),
         'attachment'
       )
     ).toEqual({ error: 'contentTooLong' });

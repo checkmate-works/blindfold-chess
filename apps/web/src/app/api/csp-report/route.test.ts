@@ -1,12 +1,7 @@
+import { captureException, captureMessage } from '@sentry/nextjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const captureMessage = vi.fn();
-const captureException = vi.fn();
-
-vi.mock('@sentry/nextjs', () => ({
-  captureMessage: (...args: unknown[]) => captureMessage(...args),
-  captureException: (...args: unknown[]) => captureException(...args),
-}));
+vi.mock('@sentry/nextjs');
 
 const { POST, parseCspReportSampleRate } = await import('./route');
 
@@ -28,8 +23,8 @@ const VALID_REPORT = JSON.stringify({
 
 describe('POST /api/csp-report', () => {
   beforeEach(() => {
-    captureMessage.mockClear();
-    captureException.mockClear();
+    vi.mocked(captureMessage).mockClear();
+    vi.mocked(captureException).mockClear();
   });
 
   it('acknowledges legacy `application/csp-report` payloads and forwards to Sentry', async () => {
@@ -46,7 +41,7 @@ describe('POST /api/csp-report', () => {
 
     expect(res.status).toBe(204);
     expect(captureMessage).toHaveBeenCalledTimes(1);
-    const [message, context] = captureMessage.mock.calls[0];
+    const [message, context] = vi.mocked(captureMessage).mock.calls[0];
     expect(message).toBe('CSP violation');
     expect(context).toMatchObject({
       level: 'warning',
@@ -106,7 +101,7 @@ describe('POST /api/csp-report', () => {
     await POST(makeRequest(body, 'application/csp-report'));
 
     expect(captureMessage).toHaveBeenCalledTimes(1);
-    const [, context] = captureMessage.mock.calls[0];
+    const [, context] = vi.mocked(captureMessage).mock.calls[0];
     expect(context).toMatchObject({
       tags: expect.objectContaining({
         csp_directive: 'font-src',
@@ -222,7 +217,7 @@ describe('POST /api/csp-report', () => {
       tags: Record<string, string | undefined>;
       extra: Record<string, unknown>;
     } {
-      return captureMessage.mock.calls.at(-1)?.[1];
+      return vi.mocked(captureMessage).mock.calls.at(-1)?.[1] as ReturnType<typeof lastContext>;
     }
 
     it('refuses an oversized body rather than buffering it', async () => {

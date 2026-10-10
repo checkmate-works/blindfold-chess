@@ -1,3 +1,4 @@
+import type { User } from '@supabase/supabase-js';
 import { vi } from 'vitest';
 
 /**
@@ -161,4 +162,23 @@ export async function mockProfilesSelect(profileRows: AdminProfileRow[]) {
       }),
     }),
   });
+}
+
+/**
+ * A Supabase Auth `User` carrying only what the stat aggregations read: an
+ * `id` and the metadata objects, with the remaining required fields blanked.
+ *
+ * Distinct from {@link makeUser} above, which builds the loose `listUsers`
+ * payload shape for the mocked admin client; this one is for the pure
+ * aggregation functions that take `User[]` directly.
+ */
+export function makeAuthUser(overrides: Partial<User> = {}): User {
+  return {
+    id: 'user-1',
+    app_metadata: {},
+    user_metadata: {},
+    aud: '',
+    created_at: '',
+    ...overrides,
+  } as User;
 }

@@ -2,11 +2,10 @@ import { redirect } from 'next/navigation';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { formDataOf } from '@/lib/__test-support__/form-data';
 import { lastQueuedRows } from '@/lib/db/__test-support__/query-chain';
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
-import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
-import { checkRateLimit } from '@/lib/security/rate-limit';
-import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
+import { mockSignedInUser } from '@/lib/supabase/__test-support__/signed-in-user';
 
 import { createChunkReplyWithFenAttachment } from './createChunkReplyWithFenAttachment';
 
@@ -104,19 +103,11 @@ const testSlug = 'rook-battery';
 const VALID_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
 function makeFormData(opts: { fen?: string | null; caption?: string | null }): FormData {
-  const fd = new FormData();
-  fd.set('content', 'a thoughtful reply with a FEN');
-  if (opts.fen !== undefined && opts.fen !== null) fd.set('attachmentFen', opts.fen);
-  if (opts.caption !== undefined && opts.caption !== null) {
-    fd.set('attachmentFenCaption', opts.caption);
-  }
-  return fd;
-}
-
-function setupHappyAuth() {
-  mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
-  mockIsUserBanned.mockResolvedValue(false);
-  vi.mocked(checkRateLimit).mockResolvedValue({ success: true });
+  return formDataOf({
+    content: 'a thoughtful reply with a FEN',
+    attachmentFen: opts.fen,
+    attachmentFenCaption: opts.caption,
+  });
 }
 
 function setupParentPost() {
@@ -133,7 +124,7 @@ describe('createChunkReplyWithFenAttachment', () => {
   });
 
   it('happy path inserts the FEN row keyed on the new reply id and redirects to the Comments tab anchor', async () => {
-    setupHappyAuth();
+    mockSignedInUser(testUserId);
     setupParentPost();
 
     await expect(
@@ -158,7 +149,7 @@ describe('createChunkReplyWithFenAttachment', () => {
   });
 
   it('trims whitespace before validating (Lessons §10)', async () => {
-    setupHappyAuth();
+    mockSignedInUser(testUserId);
     setupParentPost();
 
     const padded = `   ${VALID_FEN}\n\t  `;
@@ -176,7 +167,7 @@ describe('createChunkReplyWithFenAttachment', () => {
   });
 
   it('rejects empty FEN with fenRequired before any DB write', async () => {
-    setupHappyAuth();
+    mockSignedInUser(testUserId);
 
     const result = await createChunkReplyWithFenAttachment(
       'en',
@@ -192,7 +183,7 @@ describe('createChunkReplyWithFenAttachment', () => {
   });
 
   it('returns profileRequired when the signed-in user has no profiles row', async () => {
-    setupHappyAuth();
+    mockSignedInUser(testUserId);
     setupParentPost();
     mockSelectProfile.mockResolvedValue([]);
 
@@ -210,7 +201,7 @@ describe('createChunkReplyWithFenAttachment', () => {
   });
 
   it('rejects structurally invalid FEN with invalidFenStructure', async () => {
-    setupHappyAuth();
+    mockSignedInUser(testUserId);
 
     const result = await createChunkReplyWithFenAttachment(
       'en',
@@ -224,7 +215,7 @@ describe('createChunkReplyWithFenAttachment', () => {
   });
 
   it('maps PG 23505 (unique_violation) to alreadyAttached', async () => {
-    setupHappyAuth();
+    mockSignedInUser(testUserId);
     setupParentPost();
 
     const err = Object.assign(new Error('duplicate'), { code: '23505' });
@@ -244,7 +235,7 @@ describe('createChunkReplyWithFenAttachment', () => {
   });
 
   it('walks err.cause for PG SQLSTATE codes (canonical extractPgErrorCode contract)', async () => {
-    setupHappyAuth();
+    mockSignedInUser(testUserId);
     setupParentPost();
 
     const inner = Object.assign(new Error('duplicate'), { code: '23505' });

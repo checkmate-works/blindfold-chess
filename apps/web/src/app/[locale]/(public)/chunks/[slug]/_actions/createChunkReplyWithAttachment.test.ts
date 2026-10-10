@@ -3,11 +3,13 @@ import { redirect } from 'next/navigation';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { formDataOf } from '@/lib/__test-support__/form-data';
 import { lastQueuedRows } from '@/lib/db/__test-support__/query-chain';
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
 import { checkRateLimit } from '@/lib/security/rate-limit';
 import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
+import { mockSignedInUser } from '@/lib/supabase/__test-support__/signed-in-user';
 
 import { createChunkReplyWithAttachment } from './createChunkReplyWithAttachment';
 
@@ -126,17 +128,11 @@ function makeFormData(opts: {
   attachment?: string;
   attachmentAnonymize?: boolean;
 }): FormData {
-  const fd = new FormData();
-  fd.set('content', opts.content ?? 'a thoughtful reply');
-  if (opts.attachment !== undefined) fd.set('attachment', opts.attachment);
-  if (opts.attachmentAnonymize) fd.set('attachmentAnonymize', 'on');
-  return fd;
-}
-
-function setupHappyAuth() {
-  mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
-  mockIsUserBanned.mockResolvedValue(false);
-  vi.mocked(checkRateLimit).mockResolvedValue({ success: true });
+  return formDataOf({
+    content: opts.content ?? 'a thoughtful reply',
+    attachment: opts.attachment,
+    attachmentAnonymize: opts.attachmentAnonymize ? 'on' : null,
+  });
 }
 
 function setupParentPost(overrides: { userId?: string; replyPermission?: string } = {}) {
@@ -157,7 +153,7 @@ describe('createChunkReplyWithAttachment', () => {
   });
 
   it('fast-paths to plain reply when no attachment is provided (no per-attachment rate-limit charge)', async () => {
-    setupHappyAuth();
+    mockSignedInUser(testUserId);
     setupParentPost();
 
     await expect(
@@ -185,7 +181,7 @@ describe('createChunkReplyWithAttachment', () => {
   });
 
   it('inserts the PGN attachment row in the same transaction as the reply', async () => {
-    setupHappyAuth();
+    mockSignedInUser(testUserId);
     setupParentPost();
 
     await expect(
@@ -212,7 +208,7 @@ describe('createChunkReplyWithAttachment', () => {
   });
 
   it('routes Lichess URLs through the attachment resolver and persists the canonical URL', async () => {
-    setupHappyAuth();
+    mockSignedInUser(testUserId);
     setupParentPost();
     mockResolveLichess.mockResolvedValue({
       ok: true,
@@ -240,7 +236,7 @@ describe('createChunkReplyWithAttachment', () => {
   });
 
   it('surfaces the resolver error when Lichess fetch fails', async () => {
-    setupHappyAuth();
+    mockSignedInUser(testUserId);
     setupParentPost();
     mockResolveLichess.mockResolvedValue({ ok: false, error: 'fetch_failed' });
 
@@ -275,7 +271,7 @@ describe('createChunkReplyWithAttachment', () => {
   });
 
   it('returns profileRequired when the signed-in user has no profiles row', async () => {
-    setupHappyAuth();
+    mockSignedInUser(testUserId);
     setupParentPost();
     mockSelectProfile.mockResolvedValue([]);
 

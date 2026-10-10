@@ -4,8 +4,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { whereThenLimit } from '@/lib/db/__test-support__/query-chain';
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
-import { checkRateLimit } from '@/lib/security/rate-limit';
 import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
+import { mockSignedInUser } from '@/lib/supabase/__test-support__/signed-in-user';
 
 import { attachPostFen } from './attachPostFen';
 
@@ -45,9 +45,7 @@ const otherUserId = 'user-00000000-0000-0000-0000-000000000002';
 const postId = '00000000-0000-0000-0000-00000000aaaa';
 
 beforeEach(() => {
-  mockGetUser.mockResolvedValue({ data: { user: { id: userId } } });
-  mockIsUserBanned.mockResolvedValue(false);
-  vi.mocked(checkRateLimit).mockResolvedValue({ success: true });
+  mockSignedInUser(userId);
   mockSelectWhere.mockReturnValue([
     { id: postId, userId, topicType: 'opening', topicKey: 'sicilian', deletedAt: null },
   ]);

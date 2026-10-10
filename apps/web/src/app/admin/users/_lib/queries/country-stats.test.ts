@@ -1,19 +1,9 @@
-import type { User } from '@supabase/supabase-js';
 import { describe, expect, it } from 'vitest';
 
 import type { Profile } from '@/lib/db/schema';
 
+import { makeAuthUser } from '../__test-helpers__/admin-users-mocks';
 import { aggregateCountryStats } from './country-stats';
-
-function makeUser(id: string): User {
-  return {
-    id,
-    app_metadata: {},
-    user_metadata: {},
-    aud: '',
-    created_at: '',
-  } as User;
-}
 
 function makeProfile(id: string, country: string | null): Profile {
   return { id, country } as Profile;
@@ -25,7 +15,7 @@ describe('aggregateCountryStats', () => {
   });
 
   it('counts users per country', () => {
-    const users = [makeUser('a'), makeUser('b'), makeUser('c')];
+    const users = [makeAuthUser({ id: 'a' }), makeAuthUser({ id: 'b' }), makeAuthUser({ id: 'c' })];
     const profileMap = new Map<string, Profile>([
       ['a', makeProfile('a', 'JP')],
       ['b', makeProfile('b', 'JP')],
@@ -38,7 +28,7 @@ describe('aggregateCountryStats', () => {
   });
 
   it('buckets missing profiles and missing country as "Unknown"', () => {
-    const users = [makeUser('a'), makeUser('b'), makeUser('c')];
+    const users = [makeAuthUser({ id: 'a' }), makeAuthUser({ id: 'b' }), makeAuthUser({ id: 'c' })];
     const profileMap = new Map<string, Profile>([
       ['a', makeProfile('a', null)],
       ['b', makeProfile('b', 'JP')],
@@ -51,7 +41,7 @@ describe('aggregateCountryStats', () => {
   });
 
   it('sorts results by count descending', () => {
-    const users = Array.from({ length: 5 }, (_, i) => makeUser(String(i)));
+    const users = Array.from({ length: 5 }, (_, i) => makeAuthUser({ id: String(i) }));
     const profileMap = new Map<string, Profile>([
       ['0', makeProfile('0', 'A')],
       ['1', makeProfile('1', 'B')],

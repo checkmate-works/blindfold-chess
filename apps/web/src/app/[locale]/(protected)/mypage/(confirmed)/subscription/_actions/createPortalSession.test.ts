@@ -35,13 +35,7 @@ vi.mock('@/lib/billing/stripe-customer', () => ({
 
 vi.mock('@/lib/security/rate-limit');
 
-// `@/lib/db` tags the global scope with the pooler mode at import time and is
-// reachable from the action's module graph, so the double has to answer it or
-// the import throws.
-vi.mock('@sentry/nextjs', () => ({
-  captureException: vi.fn(),
-  getGlobalScope: () => ({ setTag: vi.fn() }),
-}));
+vi.mock('@sentry/nextjs');
 
 vi.mock('@/config', () => ({
   SITE_URL: 'https://test.example.com',

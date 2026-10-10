@@ -40,9 +40,7 @@ vi.mock('./[locale]/(public)/manual/_lib/utils', () => ({
   getAllManualArticles: () => Promise.resolve([]),
 }));
 
-vi.mock('@sentry/nextjs', () => ({
-  captureException: () => undefined,
-}));
+vi.mock('@sentry/nextjs');
 
 type SitemapEntry = Awaited<ReturnType<typeof sitemapFn>>[number];
 

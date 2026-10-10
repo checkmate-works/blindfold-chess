@@ -1,7 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mockAuthenticateAndGuard = vi.fn();
-const mockUserHasProfile = vi.fn(async () => true);
+import {
+  authenticateAndGuard as mockAuthenticateAndGuard,
+  userHasProfile as mockUserHasProfile,
+} from '@/lib/__mocks__/auth';
+
 const mockToggleByInsert = vi.fn();
 const mockCountRows = vi.fn();
 const mockAssertNotBlocked = vi.fn();
@@ -9,16 +12,7 @@ const mockCreateNotification = vi.fn();
 const mockLogActivityEvent = vi.fn();
 const mockFetchOwner = vi.fn();
 
-vi.mock('@/lib/auth', () => ({
-  authenticateAndGuard: (...args: unknown[]) => mockAuthenticateAndGuard(...args),
-  // Composed rather than stubbed flat, exactly as the real helper composes it:
-  // the plain guard first, then the `profiles` lookup.
-  authenticateGuardAndRequireProfile: async (...args: unknown[]) => {
-    const guardResult = await mockAuthenticateAndGuard(...args);
-    if ('error' in guardResult) return guardResult;
-    return (await mockUserHasProfile()) ? guardResult : { error: 'profileRequired' };
-  },
-}));
+vi.mock('@/lib/auth');
 
 vi.mock('./toggle-by-insert', () => ({
   toggleByInsert: (...args: unknown[]) => mockToggleByInsert(...args),

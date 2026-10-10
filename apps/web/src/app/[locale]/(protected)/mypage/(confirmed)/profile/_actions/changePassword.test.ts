@@ -1,17 +1,15 @@
 import { describe, expect, it, vi } from 'vitest';
 
+import { getAuthenticatedUser as mockGetAuthenticatedUser } from '@/lib/__mocks__/auth';
 import { checkRateLimit } from '@/lib/security/rate-limit';
 
 import { changePassword } from './changePassword';
 
-const mockGetAuthenticatedUser = vi.fn();
 const mockLogActivityEvent = vi.fn();
 const mockSignInWithPassword = vi.fn();
 const mockUpdateUserById = vi.fn();
 
-vi.mock('@/lib/auth', () => ({
-  getAuthenticatedUser: (...args: unknown[]) => mockGetAuthenticatedUser(...args),
-}));
+vi.mock('@/lib/auth');
 
 vi.mock('@/lib/users/activity-log', () => ({
   logActivityEvent: (...args: unknown[]) => mockLogActivityEvent(...args),

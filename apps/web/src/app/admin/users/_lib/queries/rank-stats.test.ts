@@ -1,20 +1,10 @@
-import type { User } from '@supabase/supabase-js';
 import { describe, expect, it } from 'vitest';
 
 import { ALL_RANK_SLUGS, MUKYU_SLUG } from '@/lib/db/data/ranks';
 import type { Rank } from '@/lib/db/schema';
 
+import { makeAuthUser } from '../__test-helpers__/admin-users-mocks';
 import { type RankStatsContext, aggregateRankStats } from './rank-stats';
-
-function makeUser(id: string): User {
-  return {
-    id,
-    app_metadata: {},
-    user_metadata: {},
-    aud: '',
-    created_at: '',
-  } as User;
-}
 
 describe('aggregateRankStats', () => {
   const emptyCtx: RankStatsContext = {
@@ -28,14 +18,14 @@ describe('aggregateRankStats', () => {
   });
 
   it('counts all users as mukyu when no ranks are held', () => {
-    const users = [makeUser('a'), makeUser('b'), makeUser('c')];
+    const users = [makeAuthUser({ id: 'a' }), makeAuthUser({ id: 'b' }), makeAuthUser({ id: 'c' })];
     const result = aggregateRankStats(users, emptyCtx);
     const mukyuRow = result.find((r) => r.slug === MUKYU_SLUG);
     expect(mukyuRow?.count).toBe(3);
   });
 
   it('subtracts ranked users from the mukyu count', () => {
-    const users = [makeUser('a'), makeUser('b'), makeUser('c')];
+    const users = [makeAuthUser({ id: 'a' }), makeAuthUser({ id: 'b' }), makeAuthUser({ id: 'c' })];
     const firstRealRank = ALL_RANK_SLUGS.find((s) => s !== MUKYU_SLUG)!;
     const ctx: RankStatsContext = {
       rankById: new Map<string, Rank>(),
@@ -51,7 +41,7 @@ describe('aggregateRankStats', () => {
     // reached the third rank holds rows for all ranks up to it.
     const realRanks = ALL_RANK_SLUGS.filter((s) => s !== MUKYU_SLUG);
     const [first, second, third] = realRanks;
-    const users = [makeUser('a')];
+    const users = [makeAuthUser({ id: 'a' })];
     const ctx: RankStatsContext = {
       rankById: new Map<string, Rank>(),
       userSlugs: new Map<string, Set<string>>([['a', new Set([first, second, third])]]),

@@ -1,3 +1,4 @@
+import { captureMessage } from '@sentry/nextjs';
 import type Stripe from 'stripe';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -53,10 +54,8 @@ vi.mock('@/lib/billing/stripe', () => ({
   getStripe: () => mockStripe,
 }));
 
-const mockCaptureMessage = vi.fn();
-vi.mock('@sentry/nextjs', () => ({
-  captureMessage: (...args: unknown[]) => mockCaptureMessage(...args),
-}));
+const mockCaptureMessage = vi.mocked(captureMessage);
+vi.mock('@sentry/nextjs');
 
 const {
   toSubscriptionFields,

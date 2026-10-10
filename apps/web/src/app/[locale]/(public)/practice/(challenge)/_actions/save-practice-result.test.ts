@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
 import { checkRateLimit } from '@/lib/security/rate-limit';
 import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
+import { mockSignedInUser } from '@/lib/supabase/__test-support__/signed-in-user';
 
 import type { SaveResultResponse } from '../_lib/save-result-response';
 import { savePracticeResult } from './save-practice-result';
@@ -48,9 +49,7 @@ const validChallengeFields = {
 
 describe('savePracticeResult', () => {
   beforeEach(() => {
-    mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
-    mockIsUserBanned.mockResolvedValue(false);
-    vi.mocked(checkRateLimit).mockResolvedValue({ success: true });
+    mockSignedInUser(testUserId);
     mockDeriveLeaderboardKey.mockReturnValue('white');
     mockSaveChallengeResult.mockResolvedValue({
       grantedRanks: [],

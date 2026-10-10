@@ -1,18 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import {
+  authenticateAndGuard as mockAuthenticateAndGuard,
+  userHasProfile as mockUserHasProfile,
+} from '@/lib/__mocks__/auth';
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import { DISPLAY_NAME_MAX_LENGTH } from '@/lib/users/profile-limits';
 
 import { setUsername } from './setUsername';
 
-const mockAuthenticateAndGuard = vi.fn();
-const mockUserHasProfile = vi.fn();
 const mockInsertValues = vi.fn();
 
-vi.mock('@/lib/auth', () => ({
-  authenticateAndGuard: (...args: unknown[]) => mockAuthenticateAndGuard(...args),
-  userHasProfile: (...args: unknown[]) => mockUserHasProfile(...args),
-}));
+vi.mock('@/lib/auth');
 
 vi.mock('@/lib/security/rate-limit');
 

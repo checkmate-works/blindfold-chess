@@ -1,14 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { mockGetOptionalUser, mockCanUseMaia, mockLoadMaiaModel } = vi.hoisted(() => ({
-  mockGetOptionalUser: vi.fn(),
+import { getOptionalUser as mockGetOptionalUser } from '@/lib/__mocks__/auth';
+
+const { mockCanUseMaia, mockLoadMaiaModel } = vi.hoisted(() => ({
   mockCanUseMaia: vi.fn(),
   mockLoadMaiaModel: vi.fn(),
 }));
 
-vi.mock('@/lib/auth', () => ({
-  getOptionalUser: mockGetOptionalUser,
-}));
+vi.mock('@/lib/auth');
 
 vi.mock('@/lib/users/can-use-maia', () => ({
   canUseMaia: mockCanUseMaia,

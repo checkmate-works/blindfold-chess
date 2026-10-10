@@ -55,13 +55,7 @@ vi.mock('@/lib/billing/stripe-customer', () => ({
 
 vi.mock('@/lib/security/rate-limit');
 
-// `getGlobalScope` is not what this suite asserts on, but `@/lib/db` tags the
-// global scope with the pooler mode at import time and is reachable from the
-// action's module graph, so the double has to answer it or the import throws.
-vi.mock('@sentry/nextjs', () => ({
-  captureException: vi.fn(),
-  getGlobalScope: () => ({ setTag: vi.fn() }),
-}));
+vi.mock('@sentry/nextjs');
 
 // `createCheckoutSession.ts` reads `SITE_URL` from `@/config` at the top of
 // the module. We pin it so the regression assertion below is deterministic

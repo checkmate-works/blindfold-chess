@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
+import { formDataOf } from '@/lib/__test-support__/form-data';
+
 import { MAX_CONTENT_LENGTH, validateContent, validateContentValue } from './content';
 
 describe('validateContentValue', () => {
@@ -46,9 +48,7 @@ describe('validateContentValue', () => {
 
 describe('validateContent', () => {
   function makeFormData(content?: string): FormData {
-    const fd = new FormData();
-    if (content !== undefined) fd.set('content', content);
-    return fd;
+    return formDataOf({ content });
   }
 
   it('returns contentRequired when the content field is missing', () => {

@@ -1,9 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { formDataOf } from '@/lib/__test-support__/form-data';
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
-import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
-import { checkRateLimit } from '@/lib/security/rate-limit';
-import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
+import { mockSignedInUser } from '@/lib/supabase/__test-support__/signed-in-user';
 
 import { createChunkPostWithFenAttachment } from './createChunkPostWithFenAttachment';
 
@@ -106,23 +105,19 @@ function makeFormData(opts: {
   fen?: string | null;
   caption?: string | null;
 }): FormData {
-  const fd = new FormData();
-  fd.set('content', opts.content ?? 'a chunk comment with FEN');
-  fd.set('replyPermission', opts.replyPermission ?? 'everyone');
-  if (opts.fen !== undefined && opts.fen !== null) fd.set('attachmentFen', opts.fen);
-  if (opts.caption !== undefined && opts.caption !== null) {
-    fd.set('attachmentFenCaption', opts.caption);
-  }
-  return fd;
+  return formDataOf({
+    content: opts.content ?? 'a chunk comment with FEN',
+    replyPermission: opts.replyPermission ?? 'everyone',
+    attachmentFen: opts.fen,
+    attachmentFenCaption: opts.caption,
+  });
 }
 
 describe('createChunkPostWithFenAttachment', () => {
   beforeEach(() => {
     mockGetChunkBySlug.mockResolvedValue({ id: 'chunk-1', slug: testSlug });
-    mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
-    mockIsUserBanned.mockResolvedValue(false);
+    mockSignedInUser(testUserId);
     mockInsertReturning.mockResolvedValue([{ id: generatedPostId }]);
-    vi.mocked(checkRateLimit).mockResolvedValue({ success: true });
     mockSelectProfile.mockResolvedValue([{ id: testUserId }]);
   });
 

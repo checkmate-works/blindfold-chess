@@ -1,9 +1,9 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { authenticateAndGuard as mockAuthenticateAndGuard } from '@/lib/__mocks__/auth';
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import { positionContentRevisions } from '@/lib/db/schema';
 
-const mockAuthenticateAndGuard = vi.fn();
 const mockSelectLimit = vi.fn();
 const mockTxUpdateSet = vi.fn();
 const mockTxUpdateWhere = vi.fn();
@@ -11,9 +11,7 @@ const mockTxDeleteWhere = vi.fn();
 const mockTxInsertValues = vi.fn();
 const mockTxRevisionInsertValues = vi.fn();
 
-vi.mock('@/lib/auth', () => ({
-  authenticateAndGuard: (...args: unknown[]) => mockAuthenticateAndGuard(...args),
-}));
+vi.mock('@/lib/auth');
 
 vi.mock('@/lib/users/activity-log');
 

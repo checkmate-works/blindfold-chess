@@ -3,10 +3,12 @@ import { redirect } from 'next/navigation';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { formDataOf } from '@/lib/__test-support__/form-data';
 import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
 import { createNotification } from '@/lib/notifications/notification';
 import { checkRateLimit } from '@/lib/security/rate-limit';
 import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
+import { mockSignedInUser } from '@/lib/supabase/__test-support__/signed-in-user';
 import { logActivityEvent } from '@/lib/users/activity-log';
 
 import { createReplyBase } from './createReply';
@@ -60,18 +62,7 @@ const baseParams = {
 };
 
 function makeFormData(content: string, replyToId?: string): FormData {
-  const fd = new FormData();
-  fd.set('content', content);
-  if (replyToId) {
-    fd.set('replyToId', replyToId);
-  }
-  return fd;
-}
-
-function setupAuthenticatedUser() {
-  mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
-  mockIsUserBanned.mockResolvedValue(false);
-  vi.mocked(checkRateLimit).mockResolvedValue({ success: true });
+  return formDataOf({ content, replyToId: replyToId || null });
 }
 
 function setupParentPostExists(overrides: { userId?: string; replyPermission?: string } = {}) {
@@ -101,7 +92,7 @@ describe('createReplyBase', () => {
     });
 
     it('should proceed for valid topic', async () => {
-      setupAuthenticatedUser();
+      mockSignedInUser(testUserId);
       setupParentPostExists();
 
       await expect(createReplyBase(baseParams)).rejects.toThrow('NEXT_REDIRECT');
@@ -135,14 +126,14 @@ describe('createReplyBase', () => {
     });
 
     it('should accept a valid lowercase UUID', async () => {
-      setupAuthenticatedUser();
+      mockSignedInUser(testUserId);
       setupParentPostExists();
 
       await expect(createReplyBase(baseParams)).rejects.toThrow('NEXT_REDIRECT');
     });
 
     it('should accept a valid uppercase UUID', async () => {
-      setupAuthenticatedUser();
+      mockSignedInUser(testUserId);
       setupParentPostExists();
 
       await expect(
@@ -173,9 +164,7 @@ describe('createReplyBase', () => {
     });
 
     it('should return profileRequired when user has no profile', async () => {
-      mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
-      mockIsUserBanned.mockResolvedValue(false);
-      vi.mocked(checkRateLimit).mockResolvedValue({ success: true });
+      mockSignedInUser(testUserId);
       mockSelectProfile.mockResolvedValue([]);
 
       const result = await createReplyBase(baseParams);
@@ -196,7 +185,7 @@ describe('createReplyBase', () => {
 
   describe('parent post existence check', () => {
     it('should return postNotFound when no matching post exists', async () => {
-      setupAuthenticatedUser();
+      mockSignedInUser(testUserId);
       mockSelectFromWhere.mockReturnValue([]);
 
       const result = await createReplyBase(baseParams);
@@ -204,7 +193,7 @@ describe('createReplyBase', () => {
     });
 
     it('should not insert a reply when parent post is not found', async () => {
-      setupAuthenticatedUser();
+      mockSignedInUser(testUserId);
       mockSelectFromWhere.mockReturnValue([]);
 
       await createReplyBase(baseParams);
@@ -212,7 +201,7 @@ describe('createReplyBase', () => {
     });
 
     it('should not call revalidatePath when parent post is not found', async () => {
-      setupAuthenticatedUser();
+      mockSignedInUser(testUserId);
       mockSelectFromWhere.mockReturnValue([]);
 
       await createReplyBase(baseParams);
@@ -222,7 +211,7 @@ describe('createReplyBase', () => {
 
   describe('content validation', () => {
     beforeEach(() => {
-      setupAuthenticatedUser();
+      mockSignedInUser(testUserId);
       setupParentPostExists();
     });
 
@@ -276,7 +265,7 @@ describe('createReplyBase', () => {
 
   describe('successful reply creation', () => {
     beforeEach(() => {
-      setupAuthenticatedUser();
+      mockSignedInUser(testUserId);
       setupParentPostExists();
     });
 
@@ -341,7 +330,7 @@ describe('createReplyBase', () => {
     });
 
     it('should check parent post existence before validating content', async () => {
-      setupAuthenticatedUser();
+      mockSignedInUser(testUserId);
       mockSelectFromWhere.mockReturnValue([]);
 
       const result = await createReplyBase({ ...baseParams, formData: makeFormData('') });
@@ -351,7 +340,7 @@ describe('createReplyBase', () => {
 
   describe('activity logging', () => {
     beforeEach(() => {
-      setupAuthenticatedUser();
+      mockSignedInUser(testUserId);
       setupParentPostExists();
     });
 
@@ -375,7 +364,7 @@ describe('createReplyBase', () => {
 
   describe('reply_permission enforcement', () => {
     beforeEach(() => {
-      setupAuthenticatedUser();
+      mockSignedInUser(testUserId);
     });
 
     it('should return repliesDisabled when reply_permission is nobody', async () => {
@@ -439,7 +428,7 @@ describe('createReplyBase', () => {
 
   describe('reply notification', () => {
     beforeEach(() => {
-      setupAuthenticatedUser();
+      mockSignedInUser(testUserId);
     });
 
     it('should notify the post author with new_comment_on_topic for a direct comment on an authored topic post', async () => {
@@ -540,7 +529,7 @@ describe('createReplyBase', () => {
 
   describe('reply to a reply (Case B)', () => {
     beforeEach(() => {
-      setupAuthenticatedUser();
+      mockSignedInUser(testUserId);
     });
 
     it('should insert reply with correct parentId and rootPostId when replying to a reply', async () => {
@@ -669,7 +658,7 @@ describe('createReplyBase', () => {
 
   describe('afterInsert hook', () => {
     beforeEach(() => {
-      setupAuthenticatedUser();
+      mockSignedInUser(testUserId);
       setupParentPostExists();
     });
 
