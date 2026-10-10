@@ -52,9 +52,7 @@ vi.mock('@/lib/billing/cancel-subscriptions', () => ({
   cancelAllActiveSubscriptions: vi.fn(),
 }));
 
-vi.mock('@sentry/nextjs', () => ({
-  captureException: vi.fn(),
-}));
+vi.mock('@sentry/nextjs');
 
 const adminUserId = 'admin-00000000-0000-0000-0000-000000000001';
 const targetUserId = 'target-00000000-0000-0000-0000-000000000001';

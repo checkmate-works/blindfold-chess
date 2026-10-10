@@ -15,7 +15,11 @@ import { vi } from 'vitest';
  * indirection those factories used exists only because an inline factory cannot
  * close over a `const` declared below it, which is not a constraint here.
  *
- * `withSentryConfig` is a build-time wrapper, not a capture function; the two
+ * `getGlobalScope` is here for import time rather than for assertions:
+ * `@/lib/db` tags the global scope with the pooler mode as it loads, so any
+ * subject whose module graph reaches the db would throw on import without it.
+ *
+ * `withSentryConfig` is a build-time wrapper, not a capture function; the
  * next.config tests that stub it keep their own factory.
  */
 export const captureException = vi.fn();
@@ -23,3 +27,4 @@ export const captureMessage = vi.fn();
 export const captureEvent = vi.fn();
 export const setContext = vi.fn();
 export const setTag = vi.fn();
+export const getGlobalScope = vi.fn(() => ({ setTag: vi.fn() }));

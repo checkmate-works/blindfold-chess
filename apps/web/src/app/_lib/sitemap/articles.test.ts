@@ -16,9 +16,7 @@ vi.mock('@/app/[locale]/(public)/articles/_lib/queries', () => ({
   getPublishedArticlesForSitemap: () => Promise.resolve(rows.current),
 }));
 
-vi.mock('@sentry/nextjs', () => ({
-  captureException: () => undefined,
-}));
+vi.mock('@sentry/nextjs');
 
 describe('buildArticleEntries — lastModified', () => {
   const now = new Date('2026-01-01T00:00:00Z');

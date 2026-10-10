@@ -1,3 +1,4 @@
+import { captureMessage } from '@sentry/nextjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
@@ -30,10 +31,8 @@ vi.mock('@/lib/billing/stripe', () => ({
   getStripe: () => ({ subscriptions: { cancel: mockCancel } }),
 }));
 
-const mockCaptureMessage = vi.fn();
-vi.mock('@sentry/nextjs', () => ({
-  captureMessage: (...args: unknown[]) => mockCaptureMessage(...args),
-}));
+const mockCaptureMessage = vi.mocked(captureMessage);
+vi.mock('@sentry/nextjs');
 
 const testUserId = 'user-id-00000000-0000-0000-0000-000000000001';
 

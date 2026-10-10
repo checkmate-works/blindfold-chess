@@ -1,3 +1,4 @@
+import { captureMessage } from '@sentry/nextjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { authenticateAndGuardApi as mockGuard } from '@/lib/__mocks__/auth';
@@ -8,7 +9,7 @@ const mockGetStripeCustomerId = vi.fn();
 const mockUpsert = vi.fn();
 const mockRefreshCookie = vi.fn();
 const mockCaptureError = vi.fn();
-const mockCaptureMessage = vi.fn();
+const mockCaptureMessage = vi.mocked(captureMessage);
 
 vi.mock('@/lib/auth');
 
@@ -44,10 +45,7 @@ vi.mock('@/lib/sentry/capture-error', () => ({
   captureError: (...args: unknown[]) => mockCaptureError(...args),
 }));
 
-vi.mock('@sentry/nextjs', () => ({
-  captureMessage: (...args: unknown[]) => mockCaptureMessage(...args),
-  captureException: vi.fn(),
-}));
+vi.mock('@sentry/nextjs');
 
 vi.mock('@/config', () => ({
   DEFAULT_LOCALE: 'en',

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('@sentry/nextjs', () => ({ captureMessage: vi.fn() }));
+vi.mock('@sentry/nextjs');
 
 const Sentry = await import('@sentry/nextjs');
 const { isValidOrigin, originMatches } = await import('./csrf');

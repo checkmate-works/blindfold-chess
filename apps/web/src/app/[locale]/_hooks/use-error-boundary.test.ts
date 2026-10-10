@@ -6,7 +6,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { localeFromPathname, useErrorBoundary } from './use-error-boundary';
 
-vi.mock('@sentry/nextjs', () => ({ captureException: vi.fn() }));
+vi.mock('@sentry/nextjs');
 
 const COPY_KEYS = ['title', 'description', 'tryAgain', 'goHome'] as const;
 

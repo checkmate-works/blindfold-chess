@@ -1,12 +1,7 @@
+import { captureException, captureMessage } from '@sentry/nextjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const captureMessage = vi.fn();
-const captureException = vi.fn();
-
-vi.mock('@sentry/nextjs', () => ({
-  captureMessage: (...args: unknown[]) => captureMessage(...args),
-  captureException: (...args: unknown[]) => captureException(...args),
-}));
+vi.mock('@sentry/nextjs');
 
 /**
  * The query the probe dispatches. `@/lib/db` is replaced wholesale — importing
