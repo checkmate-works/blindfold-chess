@@ -29,8 +29,8 @@ describe('GET /api/health', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     dispatchQuery.mockReset();
-    captureMessage.mockClear();
-    captureException.mockClear();
+    vi.mocked(captureMessage).mockClear();
+    vi.mocked(captureException).mockClear();
     vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
