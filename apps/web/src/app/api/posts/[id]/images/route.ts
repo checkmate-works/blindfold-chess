@@ -192,12 +192,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     });
 
   if (uploadError) {
-    console.error('[post-images] upload_failed', {
-      postId,
-      storagePath,
-      bucket: POST_IMAGES_BUCKET,
-      processedBytes: processedBuffer.byteLength,
-      error: uploadError,
+    captureError(uploadError, '[post-images] upload_failed', {
+      tags: { feature: 'post-image-upload', phase: 'upload' },
+      extra: {
+        postId,
+        storagePath,
+        bucket: POST_IMAGES_BUCKET,
+        processedBytes: processedBuffer.byteLength,
+      },
     });
     return NextResponse.json({ error: 'upload_failed' }, { status: 500 });
   }
@@ -228,10 +230,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     if (message.includes('post_image_count_exceeded')) {
       return NextResponse.json({ error: 'too_many_images' }, { status: 409 });
     }
-    console.error('[post-images] insert_failed', {
-      postId,
-      storagePath,
-      error: persistence.error,
+    captureError(persistence.error, '[post-images] insert_failed', {
+      tags: { feature: 'post-image-upload', phase: 'insert' },
+      extra: { postId, storagePath },
     });
     return NextResponse.json({ error: 'insert_failed' }, { status: 500 });
   }
