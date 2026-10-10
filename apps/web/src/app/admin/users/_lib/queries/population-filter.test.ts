@@ -1,24 +1,13 @@
 import { getExpForLevel } from '@blindfold-chess/features/exp';
-import type { User } from '@supabase/supabase-js';
 import { describe, expect, it } from 'vitest';
 
 import type { Profile } from '@/lib/db/schema';
 
+import { makeAuthUser } from '../__test-helpers__/admin-users-mocks';
 import { type AdminUserFilters, EMPTY_ADMIN_USER_FILTERS } from '../filters';
 import { UNKNOWN_COUNTRY } from './country-stats';
 import { NO_EXP_BUCKET } from './level-stats';
 import { createPopulationFilter, groupRankSlugsByUser } from './population-filter';
-
-function makeUser(overrides: Partial<User> = {}): User {
-  return {
-    id: 'user-1',
-    app_metadata: {},
-    user_metadata: {},
-    aud: '',
-    created_at: '',
-    ...overrides,
-  } as User;
-}
 
 function makeProfile(overrides: Partial<Profile> = {}): Profile {
   return {
@@ -56,8 +45,8 @@ describe('groupRankSlugsByUser', () => {
 describe('createPopulationFilter', () => {
   it('accepts everyone when no filter is set', () => {
     const matches = filterWith({});
-    expect(matches(makeUser(), undefined, undefined)).toBe(true);
-    expect(matches(makeUser(), makeProfile({ deletedAt: new Date() }), undefined)).toBe(true);
+    expect(matches(makeAuthUser(), undefined, undefined)).toBe(true);
+    expect(matches(makeAuthUser(), makeProfile({ deletedAt: new Date() }), undefined)).toBe(true);
   });
 
   describe('status', () => {
@@ -74,87 +63,93 @@ describe('createPopulationFilter', () => {
     ] as const)('%s', (statusFilter, expected) => {
       const matches = filterWith({ statusFilter });
       const profiles = [active, banned, deleted, deletedAndBanned, undefined];
-      expect(profiles.map((p) => matches(makeUser(), p, undefined))).toEqual(expected);
+      expect(profiles.map((p) => matches(makeAuthUser(), p, undefined))).toEqual(expected);
     });
   });
 
   it('buckets users without a country under UNKNOWN_COUNTRY', () => {
     const matches = filterWith({ countryFilter: UNKNOWN_COUNTRY });
-    expect(matches(makeUser(), makeProfile({ country: null }), undefined)).toBe(true);
-    expect(matches(makeUser(), undefined, undefined)).toBe(true);
-    expect(matches(makeUser(), makeProfile({ country: 'JP' }), undefined)).toBe(false);
+    expect(matches(makeAuthUser(), makeProfile({ country: null }), undefined)).toBe(true);
+    expect(matches(makeAuthUser(), undefined, undefined)).toBe(true);
+    expect(matches(makeAuthUser(), makeProfile({ country: 'JP' }), undefined)).toBe(false);
   });
 
   describe('rank', () => {
     it('matches a user only at their highest held rank', () => {
       const held = new Set(['1kyu', '1dan']);
-      expect(filterWith({ rankFilter: '1dan' })(makeUser(), makeProfile(), held)).toBe(true);
-      expect(filterWith({ rankFilter: '1kyu' })(makeUser(), makeProfile(), held)).toBe(false);
+      expect(filterWith({ rankFilter: '1dan' })(makeAuthUser(), makeProfile(), held)).toBe(true);
+      expect(filterWith({ rankFilter: '1kyu' })(makeAuthUser(), makeProfile(), held)).toBe(false);
     });
 
     it('treats mukyu as holding no rank at all', () => {
       const matches = filterWith({ rankFilter: 'mukyu' });
-      expect(matches(makeUser(), makeProfile(), undefined)).toBe(true);
-      expect(matches(makeUser(), makeProfile(), new Set())).toBe(true);
-      expect(matches(makeUser(), makeProfile(), new Set(['1kyu']))).toBe(false);
+      expect(matches(makeAuthUser(), makeProfile(), undefined)).toBe(true);
+      expect(matches(makeAuthUser(), makeProfile(), new Set())).toBe(true);
+      expect(matches(makeAuthUser(), makeProfile(), new Set(['1kyu']))).toBe(false);
     });
 
     it('rejects a user with no ranks for a non-mukyu filter', () => {
-      expect(filterWith({ rankFilter: '1kyu' })(makeUser(), makeProfile(), undefined)).toBe(false);
+      expect(filterWith({ rankFilter: '1kyu' })(makeAuthUser(), makeProfile(), undefined)).toBe(
+        false
+      );
     });
   });
 
   describe('level', () => {
     it('matches a user only in the band their cumulative Exp resolves to', () => {
       const lv5 = getExpForLevel(5);
-      expect(filterWith({ levelFilter: '5-9' })(makeUser(), makeProfile(), undefined, lv5)).toBe(
-        true
-      );
-      expect(filterWith({ levelFilter: '1-4' })(makeUser(), makeProfile(), undefined, lv5)).toBe(
-        false
-      );
+      expect(
+        filterWith({ levelFilter: '5-9' })(makeAuthUser(), makeProfile(), undefined, lv5)
+      ).toBe(true);
+      expect(
+        filterWith({ levelFilter: '1-4' })(makeAuthUser(), makeProfile(), undefined, lv5)
+      ).toBe(false);
     });
 
     it('treats a missing user_exp row as the no-exp bucket, not Lv0', () => {
       const none = filterWith({ levelFilter: NO_EXP_BUCKET });
-      expect(none(makeUser(), makeProfile(), undefined, undefined)).toBe(true);
-      expect(none(makeUser(), makeProfile(), undefined, 0)).toBe(false);
+      expect(none(makeAuthUser(), makeProfile(), undefined, undefined)).toBe(true);
+      expect(none(makeAuthUser(), makeProfile(), undefined, 0)).toBe(false);
 
       const lv0 = filterWith({ levelFilter: '0' });
-      expect(lv0(makeUser(), makeProfile(), undefined, 0)).toBe(true);
-      expect(lv0(makeUser(), makeProfile(), undefined, undefined)).toBe(false);
+      expect(lv0(makeAuthUser(), makeProfile(), undefined, 0)).toBe(true);
+      expect(lv0(makeAuthUser(), makeProfile(), undefined, undefined)).toBe(false);
     });
   });
 
   it('filters by signup provider', () => {
     const matches = filterWith({ providerFilter: 'google' });
-    expect(matches(makeUser({ app_metadata: { provider: 'google' } }), undefined, undefined)).toBe(
-      true
-    );
-    expect(matches(makeUser({ app_metadata: { provider: 'email' } }), undefined, undefined)).toBe(
-      false
-    );
+    expect(
+      matches(makeAuthUser({ app_metadata: { provider: 'google' } }), undefined, undefined)
+    ).toBe(true);
+    expect(
+      matches(makeAuthUser({ app_metadata: { provider: 'email' } }), undefined, undefined)
+    ).toBe(false);
   });
 
   describe('search', () => {
     it('matches username or email case-insensitively after trimming', () => {
       const matches = filterWith({ usernameFilter: '  ALI ' });
-      expect(matches(makeUser(), makeProfile({ username: 'Alice' }), undefined)).toBe(true);
+      expect(matches(makeAuthUser(), makeProfile({ username: 'Alice' }), undefined)).toBe(true);
       expect(
         matches(
-          makeUser({ email: 'ALIen@example.com' }),
+          makeAuthUser({ email: 'ALIen@example.com' }),
           makeProfile({ username: 'bob' }),
           undefined
         )
       ).toBe(true);
       expect(
-        matches(makeUser({ email: 'bob@example.com' }), makeProfile({ username: 'bob' }), undefined)
+        matches(
+          makeAuthUser({ email: 'bob@example.com' }),
+          makeProfile({ username: 'bob' }),
+          undefined
+        )
       ).toBe(false);
     });
 
     it('lets an anonymous user match by email', () => {
       const matches = filterWith({ usernameFilter: 'anon' });
-      expect(matches(makeUser({ email: 'anon@example.com' }), undefined, undefined)).toBe(true);
+      expect(matches(makeAuthUser({ email: 'anon@example.com' }), undefined, undefined)).toBe(true);
     });
   });
 });
