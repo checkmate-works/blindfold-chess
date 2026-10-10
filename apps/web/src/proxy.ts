@@ -2,7 +2,6 @@ import { type NextRequest, NextResponse } from 'next/server';
 
 import { needsLocalePrefix } from '@/i18n/locale-path';
 import { negotiateLocale } from '@/i18n/negotiate-locale';
-import * as Sentry from '@sentry/nextjs';
 
 import { refreshAdsHiddenCookieOnResponse } from '@/lib/ads/ads-hidden-cookie-writer';
 import { resolveReturnPath, returnTargetFor, withReturnPath } from '@/lib/auth-return-path';
@@ -16,6 +15,7 @@ import {
 } from '@/lib/security/csp';
 import { isFramablePath } from '@/lib/security/framing';
 import { isStaticContentPath } from '@/lib/security/static-content-paths';
+import { captureError } from '@/lib/sentry/capture-error';
 import { updateSession } from '@/lib/supabase/proxy';
 
 const BLOCKED_PATHS = [
@@ -254,7 +254,7 @@ export async function proxy(request: NextRequest) {
     try {
       await refreshAdsHiddenCookieOnResponse(response, userId);
     } catch (error) {
-      Sentry.captureException(error);
+      captureError(error, '[proxy] failed to refresh the ads-hidden cookie');
     }
   }
 
