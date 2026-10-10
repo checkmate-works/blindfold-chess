@@ -4,9 +4,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
 
-const mockSentryCaptureException = vi.fn();
-vi.mock('@sentry/nextjs', () => ({
-  captureException: (...args: unknown[]) => mockSentryCaptureException(...args),
+const mockCaptureError = vi.fn();
+vi.mock('@/lib/sentry/capture-error', () => ({
+  captureError: (...args: unknown[]) => mockCaptureError(...args),
 }));
 
 vi.mock('@/lib/supabase/server');
@@ -162,8 +162,8 @@ describe('getSessionUser', () => {
       // An auth-resolution failure means a real signed-in user may
       // silently appear as anonymous; that regression must be visible in
       // operations, so the error is reported to Sentry.
-      expect(mockSentryCaptureException).toHaveBeenCalledTimes(1);
-      expect(mockSentryCaptureException).toHaveBeenCalledWith(authError);
+      expect(mockCaptureError).toHaveBeenCalledTimes(1);
+      expect(mockCaptureError).toHaveBeenCalledWith(authError, expect.any(String));
     });
   });
 
@@ -188,7 +188,7 @@ describe('getSessionUser', () => {
       // Cookie-writer failures are cosmetic (entitlement queries already
       // log via `console.warn` at a lower layer); only auth-getUser
       // failures should wake up Sentry.
-      expect(mockSentryCaptureException).not.toHaveBeenCalled();
+      expect(mockCaptureError).not.toHaveBeenCalled();
     });
   });
 });

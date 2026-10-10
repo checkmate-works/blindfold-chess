@@ -11,12 +11,13 @@ const mocks = vi.hoisted(() => ({
   remove: vi.fn(),
   insert: vi.fn(),
   normalize: vi.fn(),
+  captureError: vi.fn(),
 }));
 
 vi.mock('@/lib/api-mutation-guard', () => ({ guardApiMutation: mocks.guard }));
 vi.mock('@/lib/topic-posts', () => ({ loadAuthoredPost: mocks.lookup }));
 vi.mock('@/lib/security/rate-limit', () => ({ RATE_LIMITS: { uploadPostImage: {} } }));
-vi.mock('@sentry/nextjs', () => ({ captureException: vi.fn() }));
+vi.mock('@/lib/sentry/capture-error', () => ({ captureError: mocks.captureError }));
 vi.mock('@/lib/supabase/server', () => ({
   createClient: () => {
     throw new Error('Session clients must not write images');
@@ -106,5 +107,35 @@ describe('privileged post-image storage', () => {
     mocks.insert.mockRejectedValue(new Error('post_image_count_exceeded'));
     expect((await POST(request(), params)).status).toBe(409);
     expect(mocks.remove).toHaveBeenCalledWith([mocks.upload.mock.calls[0][0]]);
+  });
+
+  it('reports a failed storage upload as a 500', async () => {
+    const uploadError = new Error('bucket unavailable');
+    mocks.upload.mockResolvedValue({ error: uploadError });
+    expect((await POST(request(), params)).status).toBe(500);
+    expect(mocks.captureError).toHaveBeenCalledWith(
+      uploadError,
+      '[post-images] upload_failed',
+      expect.anything()
+    );
+    expect(mocks.insert).not.toHaveBeenCalled();
+  });
+
+  it('reports an unexpected insert failure as a 500 and removes the upload', async () => {
+    const insertError = new Error('connection reset');
+    mocks.insert.mockRejectedValue(insertError);
+    expect((await POST(request(), params)).status).toBe(500);
+    expect(mocks.captureError).toHaveBeenCalledWith(
+      insertError,
+      '[post-images] insert_failed',
+      expect.anything()
+    );
+    expect(mocks.remove).toHaveBeenCalled();
+  });
+
+  it('does not report the per-post image cap as an error', async () => {
+    mocks.insert.mockRejectedValue(new Error('post_image_count_exceeded'));
+    expect((await POST(request(), params)).status).toBe(409);
+    expect(mocks.captureError).not.toHaveBeenCalled();
   });
 });

@@ -11,6 +11,11 @@ const mockFindLiveJob = vi.fn();
 const mockEnqueue = vi.fn();
 const mockProcess = vi.fn();
 const mockAfter = vi.fn();
+const mockCaptureError = vi.fn();
+
+vi.mock('@/lib/sentry/capture-error', () => ({
+  captureError: (...args: unknown[]) => mockCaptureError(...args),
+}));
 
 vi.mock('next/server', () => ({
   after: (cb: () => unknown) => mockAfter(cb),
@@ -227,7 +232,6 @@ describe('requestAiReviewAction', () => {
 
   it('refuses without an LLM key, before spending a rate-limit slot', async () => {
     mockIsLlmConfigured.mockReturnValue(false);
-    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     expect(await requestAiReviewAction(validInput())).toEqual({
       success: false,
@@ -235,7 +239,7 @@ describe('requestAiReviewAction', () => {
     });
     expect(vi.mocked(checkRateLimit)).not.toHaveBeenCalled();
     expect(mockEnqueue).not.toHaveBeenCalled();
-    errSpy.mockRestore();
+    expect(mockCaptureError).toHaveBeenCalledTimes(1);
   });
 
   it('maps a hit rate limit to rate_limited', async () => {

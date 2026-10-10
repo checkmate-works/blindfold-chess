@@ -223,6 +223,21 @@ describe('GET /api/stripe/checkout/return', () => {
     expect(mockRefreshCookie).toHaveBeenCalledWith(expect.anything(), 'user-1');
   });
 
+  it('still lands on the success page when the cookie recompute fails, and reports it', async () => {
+    mockSessionsRetrieve.mockResolvedValue(
+      completedSession({ subscription: { id: 'sub_1', status: 'incomplete' } })
+    );
+    const refreshError = new Error('cookie compute failed');
+    mockRefreshCookie.mockRejectedValue(refreshError);
+
+    const response = await get('?locale=en&session_id=cs_test_1');
+
+    expect(response.headers.get('location')).toBe(
+      'https://app.example.com/en/mypage/subscription?status=success'
+    );
+    expect(mockCaptureError).toHaveBeenCalledWith(refreshError, expect.any(String));
+  });
+
   it('falls back to the default locale for an unsupported locale parameter', async () => {
     const response = await get('?locale=..%2Fadmin&session_id=cs_test_1');
 

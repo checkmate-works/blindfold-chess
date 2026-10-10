@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 
-import * as Sentry from '@sentry/nextjs';
 import { eq } from 'drizzle-orm';
 
 import { ADS_HIDDEN_COOKIE_NAME, adsHiddenCookieOptions } from '@/lib/ads/ads-hidden-cookie';
@@ -8,6 +7,7 @@ import { computeAdsHiddenValueForUser } from '@/lib/ads/ads-hidden-cookie-comput
 import { resolveReturnPath } from '@/lib/auth-return-path';
 import { db, profiles } from '@/lib/db';
 import { getLocaleFromRequest } from '@/lib/locale';
+import { captureError } from '@/lib/sentry/capture-error';
 import { createClient } from '@/lib/supabase/server';
 import { logActivityEvent } from '@/lib/users/activity-log';
 
@@ -62,7 +62,7 @@ async function handleSuccessfulAuth(
     // call self-corrects the state. The error is reported to Sentry so the
     // regression is observable.
     computeAdsHiddenValueForUser(userId).catch((error) => {
-      Sentry.captureException(error);
+      captureError(error, '[auth/callback] failed to compute the ads-hidden cookie');
       return null;
     }),
   ]);

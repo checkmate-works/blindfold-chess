@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 
-import * as Sentry from '@sentry/nextjs';
 import { randomUUID } from 'crypto';
 import 'server-only';
 
@@ -22,6 +21,7 @@ import {
   isAllowedPostImageMimeType,
 } from '@/lib/post-images/validation';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
+import { captureError } from '@/lib/sentry/capture-error';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { persistWithUploadRollback } from '@/lib/supabase/persist-with-upload-rollback';
 import { loadAuthoredPost } from '@/lib/topic-posts';
@@ -129,7 +129,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     }
     // Sharp could not decode the uploaded bytes. Capture the real exception so
     // a client-converted image that the server can't read is diagnosable.
-    Sentry.captureException(err, {
+    captureError(err, '[post-images] image_probe_failed', {
       tags: { feature: 'post-image-upload', phase: 'probe' },
       extra: { postId, contentType: file.type, fileSize: file.size },
     });
@@ -149,13 +149,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       contentType: file.type,
     });
   } catch (err) {
-    console.error('[post-images] image_processing_failed', {
-      postId,
-      contentType: file.type,
-      fileSize: file.size,
-      error: err,
-    });
-    Sentry.captureException(err, {
+    captureError(err, '[post-images] image_processing_failed', {
       tags: { feature: 'post-image-upload', phase: 'process' },
       extra: { postId, contentType: file.type, fileSize: file.size },
     });
@@ -198,12 +192,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     });
 
   if (uploadError) {
-    console.error('[post-images] upload_failed', {
-      postId,
-      storagePath,
-      bucket: POST_IMAGES_BUCKET,
-      processedBytes: processedBuffer.byteLength,
-      error: uploadError,
+    captureError(uploadError, '[post-images] upload_failed', {
+      tags: { feature: 'post-image-upload', phase: 'upload' },
+      extra: {
+        postId,
+        storagePath,
+        bucket: POST_IMAGES_BUCKET,
+        processedBytes: processedBuffer.byteLength,
+      },
     });
     return NextResponse.json({ error: 'upload_failed' }, { status: 500 });
   }
@@ -234,10 +230,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     if (message.includes('post_image_count_exceeded')) {
       return NextResponse.json({ error: 'too_many_images' }, { status: 409 });
     }
-    console.error('[post-images] insert_failed', {
-      postId,
-      storagePath,
-      error: persistence.error,
+    captureError(persistence.error, '[post-images] insert_failed', {
+      tags: { feature: 'post-image-upload', phase: 'insert' },
+      extra: { postId, storagePath },
     });
     return NextResponse.json({ error: 'insert_failed' }, { status: 500 });
   }
