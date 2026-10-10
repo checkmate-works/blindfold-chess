@@ -9,6 +9,7 @@ import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
 import { checkRateLimit } from '@/lib/security/rate-limit';
 import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
+import { mockSignedInUser } from '@/lib/supabase/__test-support__/signed-in-user';
 
 import { createChunkReplyWithAttachment } from './createChunkReplyWithAttachment';
 
@@ -134,12 +135,6 @@ function makeFormData(opts: {
   });
 }
 
-function setupHappyAuth() {
-  mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
-  mockIsUserBanned.mockResolvedValue(false);
-  vi.mocked(checkRateLimit).mockResolvedValue({ success: true });
-}
-
 function setupParentPost(overrides: { userId?: string; replyPermission?: string } = {}) {
   mockSelectFromWhere.mockReturnValue([
     {
@@ -158,7 +153,7 @@ describe('createChunkReplyWithAttachment', () => {
   });
 
   it('fast-paths to plain reply when no attachment is provided (no per-attachment rate-limit charge)', async () => {
-    setupHappyAuth();
+    mockSignedInUser(testUserId);
     setupParentPost();
 
     await expect(
@@ -186,7 +181,7 @@ describe('createChunkReplyWithAttachment', () => {
   });
 
   it('inserts the PGN attachment row in the same transaction as the reply', async () => {
-    setupHappyAuth();
+    mockSignedInUser(testUserId);
     setupParentPost();
 
     await expect(
@@ -213,7 +208,7 @@ describe('createChunkReplyWithAttachment', () => {
   });
 
   it('routes Lichess URLs through the attachment resolver and persists the canonical URL', async () => {
-    setupHappyAuth();
+    mockSignedInUser(testUserId);
     setupParentPost();
     mockResolveLichess.mockResolvedValue({
       ok: true,
@@ -241,7 +236,7 @@ describe('createChunkReplyWithAttachment', () => {
   });
 
   it('surfaces the resolver error when Lichess fetch fails', async () => {
-    setupHappyAuth();
+    mockSignedInUser(testUserId);
     setupParentPost();
     mockResolveLichess.mockResolvedValue({ ok: false, error: 'fetch_failed' });
 
@@ -276,7 +271,7 @@ describe('createChunkReplyWithAttachment', () => {
   });
 
   it('returns profileRequired when the signed-in user has no profiles row', async () => {
-    setupHappyAuth();
+    mockSignedInUser(testUserId);
     setupParentPost();
     mockSelectProfile.mockResolvedValue([]);
 

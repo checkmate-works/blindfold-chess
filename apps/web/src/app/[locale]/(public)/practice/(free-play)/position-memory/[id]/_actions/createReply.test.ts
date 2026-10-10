@@ -4,9 +4,7 @@ import { redirect } from 'next/navigation';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { formDataOf } from '@/lib/__test-support__/form-data';
-import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
-import { checkRateLimit } from '@/lib/security/rate-limit';
-import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
+import { mockSignedInUser } from '@/lib/supabase/__test-support__/signed-in-user';
 
 import { createReply } from './createReply';
 
@@ -58,9 +56,7 @@ function makeFormData(content: string): FormData {
 describe('position-memory parent-page createReply', () => {
   beforeEach(() => {
     mockGetPositionById.mockResolvedValue({ id: positionId, type: 'memory' });
-    mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
-    mockIsUserBanned.mockResolvedValue(false);
-    vi.mocked(checkRateLimit).mockResolvedValue({ success: true });
+    mockSignedInUser(testUserId);
     mockSelectProfile.mockResolvedValue([{ id: testUserId }]);
     mockSelectFromWhere.mockReturnValue([
       { id: validPostId, userId: otherUserId, replyPermission: 'everyone' },

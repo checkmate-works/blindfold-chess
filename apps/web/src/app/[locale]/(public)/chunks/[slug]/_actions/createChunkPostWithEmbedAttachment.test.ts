@@ -2,9 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { formDataOf } from '@/lib/__test-support__/form-data';
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
-import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
-import { checkRateLimit } from '@/lib/security/rate-limit';
-import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
+import { mockSignedInUser } from '@/lib/supabase/__test-support__/signed-in-user';
 
 import { createChunkPostWithEmbedAttachment } from './createChunkPostWithEmbedAttachment';
 
@@ -132,10 +130,8 @@ function makeFormData(opts: {
 describe('createChunkPostWithEmbedAttachment', () => {
   beforeEach(() => {
     mockGetChunkBySlug.mockResolvedValue({ id: 'chunk-1', slug: testSlug });
-    mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
-    mockIsUserBanned.mockResolvedValue(false);
+    mockSignedInUser(testUserId);
     mockInsertReturning.mockResolvedValue([{ id: generatedPostId }]);
-    vi.mocked(checkRateLimit).mockResolvedValue({ success: true });
     mockPgnSelectWhereLimit.mockResolvedValue([]); // no pre-existing PGN
     mockSelectProfile.mockResolvedValue([{ id: testUserId }]);
   });
@@ -305,10 +301,8 @@ describe('createChunkPostWithEmbedAttachment', () => {
 describe('createChunkPostWithEmbedAttachment — lichess narrowing', () => {
   beforeEach(() => {
     mockGetChunkBySlug.mockResolvedValue({ id: 'chunk-1', slug: testSlug });
-    mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
-    mockIsUserBanned.mockResolvedValue(false);
+    mockSignedInUser(testUserId);
     mockInsertReturning.mockResolvedValue([{ id: generatedPostId }]);
-    vi.mocked(checkRateLimit).mockResolvedValue({ success: true });
     mockPgnSelectWhereLimit.mockResolvedValue([]);
     mockSelectProfile.mockResolvedValue([{ id: testUserId }]);
   });
@@ -347,10 +341,8 @@ describe('createChunkPostWithEmbedAttachment — lichess narrowing', () => {
 describe('createChunkPostWithEmbedAttachment — application-layer exclusivity', () => {
   beforeEach(() => {
     mockGetChunkBySlug.mockResolvedValue({ id: 'chunk-1', slug: testSlug });
-    mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
-    mockIsUserBanned.mockResolvedValue(false);
+    mockSignedInUser(testUserId);
     mockInsertReturning.mockResolvedValue([{ id: generatedPostId }]);
-    vi.mocked(checkRateLimit).mockResolvedValue({ success: true });
     mockSelectProfile.mockResolvedValue([{ id: testUserId }]);
   });
 
