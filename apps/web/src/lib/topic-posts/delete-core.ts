@@ -6,21 +6,10 @@ import { TOPIC_POST_COUNTS_CACHE_TAG, grantStatusTag } from '@/lib/cache-tags';
 import { db, postImageAttachments, topicPosts, userGrants } from '@/lib/db';
 import type { DbTx } from '@/lib/db/types';
 import { clawbackPointsForPost } from '@/lib/points';
-import { POST_IMAGES_BUCKET } from '@/lib/post-images/validation';
-
-/**
- * Minimal supabase-client surface this module needs. Captured as a
- * structural type so callers can pass either the user-scoped session
- * client or the admin (service-role) client without this file pulling in
- * either supabase factory directly.
- */
-type StorageBucketClient = {
-  storage: {
-    from: (bucket: string) => {
-      remove: (paths: string[]) => Promise<{ error: { message: string } | null }>;
-    };
-  };
-};
+import {
+  type StorageBucketClient,
+  removePostImagesBestEffort,
+} from '@/lib/post-images/remove-best-effort';
 
 /**
  * Best-effort cleanup of every Storage object backing a post's image
@@ -47,22 +36,12 @@ export async function purgePostImageAttachmentsFromStorage(
 
   if (imageRows.length === 0) return;
 
-  try {
-    const { error } = await storageClient.storage
-      .from(POST_IMAGES_BUCKET)
-      .remove(imageRows.map((r) => r.storagePath));
-    if (error) {
-      console.warn(`${logPrefix}: storage remove returned error`, {
-        postId,
-        message: error.message,
-      });
-    }
-  } catch (err) {
-    console.warn(`${logPrefix}: storage remove threw`, {
-      postId,
-      error: err instanceof Error ? err.message : String(err),
-    });
-  }
+  await removePostImagesBestEffort(
+    storageClient,
+    imageRows.map((r) => r.storagePath),
+    logPrefix,
+    { postId }
+  );
 }
 
 /**
