@@ -70,8 +70,16 @@ export function PricingCard(props: Props) {
         // portal for changes.
         router.push(`/${props.locale}/mypage/subscription`);
         return;
-      default:
+      case 'rateLimited':
+      case 'sessionCreationFailed':
         captureError(new Error(`Checkout session error: ${result.error}`), 'Checkout error');
+        return;
+      default: {
+        // Exhaustive over the action's error codes, so a new code is a
+        // compile error here instead of silently joining the branch above.
+        const _exhaustive: never = result.error;
+        void _exhaustive;
+      }
     }
   }
 
