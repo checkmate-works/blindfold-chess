@@ -3,17 +3,15 @@
 import { Field, Select } from '@/app/admin/_components/forms';
 import { parseAsInteger, parseAsStringLiteral, useQueryStates } from 'nuqs';
 
+import { PROVIDER_FILTER_VALUES, type ProviderNames } from '../_lib/provider-filter';
 import { SIGNUP_METHOD_ORDER } from '../_lib/signup-method';
-
-// Keep in sync with `PROVIDER_FILTER_VALUES` in page.tsx.
-const PROVIDER_FILTER_VALUES = ['', ...SIGNUP_METHOD_ORDER] as const;
 
 type ProviderFilterProps = {
   labels: {
     filterByProvider: string;
     allProviders: string;
   };
-  providerNames: Record<(typeof SIGNUP_METHOD_ORDER)[number], string>;
+  providerNames: ProviderNames;
 };
 
 export function ProviderFilter({ labels, providerNames }: ProviderFilterProps) {
