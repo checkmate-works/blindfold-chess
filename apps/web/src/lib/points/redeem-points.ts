@@ -3,6 +3,7 @@ import { and, eq, gt, isNull, sql } from 'drizzle-orm';
 import 'server-only';
 
 import { db, pointRedemptions, userGrants } from '@/lib/db';
+import { stackGrantStart } from '@/lib/users/grant-stacking';
 
 import { REDEMPTION_SOURCE } from './constants';
 import { debitSpendable } from './internal-ledger';
@@ -135,7 +136,7 @@ export async function redeemPointsForAdFree(userId: string, cost: number): Promi
         .limit(1)
         .for('update');
 
-      const startsAt = latest && latest.expiresAt > now ? latest.expiresAt : now;
+      const startsAt = stackGrantStart(latest?.expiresAt, now);
       const expiresAt = addDays(startsAt, durationDays);
 
       const [grantRow] = await tx

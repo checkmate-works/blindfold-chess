@@ -32,39 +32,24 @@ export function generateBreadcrumbListSchema(
   const baseUrl = SITE_URL;
   const localePrefix = `/${locale}`;
 
-  // Start with home
-  const listItems: ListItem[] = [
-    {
-      '@type': 'ListItem',
-      position: 1,
-      name: brandName,
-      item: `${baseUrl}${localePrefix}`,
-    },
-  ];
+  const home: ListItem = {
+    '@type': 'ListItem',
+    position: 1,
+    name: brandName,
+    item: `${baseUrl}${localePrefix}`,
+  };
 
-  // Add remaining items
-  items.forEach((item, index) => {
-    const position = index + 2;
-
-    if (item.href) {
-      listItems.push({
-        '@type': 'ListItem',
-        position,
-        name: item.label,
-        item: `${baseUrl}${localePrefix}${item.href}`,
-      });
-    } else {
-      listItems.push({
-        '@type': 'ListItem',
-        position,
-        name: item.label,
-      });
-    }
-  });
+  // The current page is listed without an `item`, so its entry omits the key.
+  const trail = items.map((item, index): ListItem => ({
+    '@type': 'ListItem',
+    position: index + 2,
+    name: item.label,
+    ...(item.href ? { item: `${baseUrl}${localePrefix}${item.href}` } : {}),
+  }));
 
   return {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
-    itemListElement: listItems,
+    itemListElement: [home, ...trail],
   };
 }

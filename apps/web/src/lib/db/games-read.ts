@@ -18,6 +18,7 @@ import { type DetectedOpening, detectGameOpening } from '@/lib/openings/detect-g
 import type { AuthorProfile } from '@/lib/users/author-profile';
 
 import { publiclyVisible } from './games-visibility';
+import { groupChunkLinkRowsByGame } from './group-chunk-link-rows';
 import { db } from './index';
 import { countRows } from './list-query';
 import { liveProfileJoinOn } from './profile-select';
@@ -278,31 +279,19 @@ export async function listGamesLinkingChunk(
 
   // 2. Group by game, preserving first-seen (newest-link) order; collect a
   //    sorted, de-duplicated move list per game.
-  const pliesByGame = new Map<string, Set<number>>();
-  const order: string[] = [];
-  for (const r of linkRows) {
-    let set = pliesByGame.get(r.gameId);
-    if (!set) {
-      set = new Set<number>();
-      pliesByGame.set(r.gameId, set);
-      order.push(r.gameId);
-    }
-    set.add(r.ply);
-  }
-  const gameIds = order.slice(0, limit);
-  if (gameIds.length === 0) return [];
+  const linked = groupChunkLinkRowsByGame(linkRows, limit);
+  if (linked.length === 0) return [];
 
   // 3. Hydrate the full card projection (incl. opening detection) for those
   //    games, then restore the newest-link order and attach the moves.
+  const gameIds = linked.map((l) => l.gameId);
   const rows = await gameListQuery().where(inArray(games.id, gameIds));
   const items = await mapGameRowsToListItems(rows);
   const byId = new Map(items.map((it) => [it.id, it]));
 
-  return gameIds.flatMap((id) => {
-    const item = byId.get(id);
-    if (!item) return [];
-    const plies = [...(pliesByGame.get(id) ?? [])].sort((a, b) => a - b);
-    return [{ ...item, plies }];
+  return linked.flatMap(({ gameId, plies }) => {
+    const item = byId.get(gameId);
+    return item ? [{ ...item, plies }] : [];
   });
 }
 
