@@ -24,8 +24,7 @@ import { createSearchParamsCache, parseAsString, parseAsStringLiteral } from 'nu
 import { createAdminClient } from '@/lib/supabase/admin';
 
 import { AdminPageLayout } from '../../_components/AdminPageLayout';
-import { ProviderFilter } from '../_components/ProviderFilter';
-import { StatusFilter } from '../_components/StatusFilter';
+import { UserFilterBar } from '../_components/UserFilterBar';
 import { UserStatsCharts } from '../_components/UserStatsCharts';
 import { type AdminUserFilters, EMPTY_ADMIN_USER_FILTERS } from '../_lib/filters';
 import { PROVIDER_FILTER_VALUES, buildProviderNames } from '../_lib/provider-filter';
@@ -55,25 +54,7 @@ export default async function AdminUserStatsPage({
     <AdminPageLayout
       breadcrumbs={[{ label: t('users'), href: '/admin/users' }, { label: t('userStats') }]}
     >
-      <div className="mb-6 flex flex-wrap gap-4">
-        <StatusFilter
-          labels={{
-            filterByStatus: t('usersTable.filterByStatus'),
-            allStatuses: t('usersTable.allStatuses'),
-            active: t('usersTable.active'),
-            banned: t('usersTable.banned'),
-            anonymous: t('usersTable.anonymous'),
-            deleted: t('usersTable.deleted'),
-          }}
-        />
-        <ProviderFilter
-          labels={{
-            filterByProvider: t('usersTable.filterByProvider'),
-            allProviders: t('usersTable.allProviders'),
-          }}
-          providerNames={providerNames}
-        />
-      </div>
+      <UserFilterBar t={t} providerNames={providerNames} />
 
       <UserStatsCharts
         adminClient={adminClient}
