@@ -12,7 +12,7 @@ import {
   postImageAttachments,
   postVideoAttachments,
 } from '@/lib/db';
-import { POST_IMAGES_BUCKET } from '@/lib/post-images/validation';
+import { removePostImagesBestEffort } from '@/lib/post-images/remove-best-effort';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { createClient as createSupabaseSessionClient } from '@/lib/supabase/server';
 import { loadAuthoredPost } from '@/lib/topic-posts';
@@ -121,23 +121,12 @@ export async function removePostAttachment(
   if (kind === 'image' && imageStoragePath) {
     // Best-effort: storage failure must not roll back the DB DELETE. The
     // daily reaper sweeps survivors within 7 days.
-    try {
-      const supabase = await createSupabaseSessionClient();
-      const { error } = await supabase.storage.from(POST_IMAGES_BUCKET).remove([imageStoragePath]);
-      if (error) {
-        console.warn('removePostAttachment: storage remove returned error', {
-          postId,
-          attachmentId,
-          message: error.message,
-        });
-      }
-    } catch (err) {
-      console.warn('removePostAttachment: storage remove threw', {
-        postId,
-        attachmentId,
-        error: err instanceof Error ? err.message : String(err),
-      });
-    }
+    await removePostImagesBestEffort(
+      createSupabaseSessionClient(),
+      [imageStoragePath],
+      'removePostAttachment',
+      { postId, attachmentId }
+    );
   }
 
   logActivityEvent({

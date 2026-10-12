@@ -5,9 +5,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { GameMoveContributions } from './GameMoveContributions';
 
-vi.mock('@/i18n/use-safe-translations', () => ({
-  useSafeTranslations: () => Object.assign((key: string) => key, { has: () => true }),
-}));
+vi.mock('@/i18n/use-safe-translations');
 
 /** Stands in for the toggle's collapse handler in the render-prop children. */
 const mockClose = vi.fn();

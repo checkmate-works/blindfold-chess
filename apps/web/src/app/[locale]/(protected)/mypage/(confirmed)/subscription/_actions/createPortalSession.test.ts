@@ -5,6 +5,7 @@ import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import { isUserBanned } from '@/lib/moderation/ban';
 import { checkRateLimit } from '@/lib/security/rate-limit';
 import { getUserMock } from '@/lib/supabase/__mocks__/server';
+import { mockSignedInUser } from '@/lib/supabase/__test-support__/signed-in-user';
 
 const mockGetStripeCustomerId = vi.fn();
 const mockPortalSessionsCreate = vi.fn();
@@ -46,9 +47,7 @@ const { createPortalSession } = await import('./createPortalSession');
 
 describe('createPortalSession', () => {
   beforeEach(() => {
-    getUserMock.mockResolvedValue({ data: { user: { id: 'user-123', email: 'u@example.com' } } });
-    vi.mocked(isUserBanned).mockResolvedValue(false);
-    vi.mocked(checkRateLimit).mockResolvedValue({ success: true });
+    mockSignedInUser('user-123');
     mockGetStripeCustomerId.mockResolvedValue('cus_test_123');
     mockPortalSessionsCreate.mockResolvedValue({
       url: 'https://billing.stripe.com/p/session/test_xyz',

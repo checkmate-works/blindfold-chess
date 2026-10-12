@@ -9,9 +9,7 @@ afterEach(() => {
   cleanup();
 });
 
-vi.mock('@/i18n/use-safe-translations', () => ({
-  useSafeTranslations: () => Object.assign((key: string) => key, { has: () => true }),
-}));
+vi.mock('@/i18n/use-safe-translations');
 
 vi.mock('@/i18n/routing');
 

@@ -1,8 +1,8 @@
 import {
+  PIECE_FULL_NAMES,
   PIECE_NAME_TO_SHORT,
   PIECE_SHORT_TO_NAME,
   PIECE_TYPES,
-  type PieceFullName,
 } from '@/lib/games/chess-pieces';
 
 import type { PieceType } from './types';
@@ -23,14 +23,7 @@ export const PIECE_NAME_TO_TYPE: Record<string, PieceType> = {
  * Valid `piece` query-parameter values accepted by legal-moves challenge/training
  * pages. `random` triggers a mixed-piece session.
  */
-export const VALID_PIECE_NAMES = [
-  'king',
-  'queen',
-  'rook',
-  'bishop',
-  'knight',
-  'random',
-] as const satisfies readonly PieceFullName[];
+export const VALID_PIECE_NAMES = PIECE_FULL_NAMES;
 
 /**
  * Resolve the `piece` query parameter the challenge and training pages both

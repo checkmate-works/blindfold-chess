@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 
 import { Button, FieldError, TextInput, fieldErrorProps } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { validateUsername } from '@blindfold-chess/features/username';
+import { USERNAME_MAX_LENGTH, validateUsername } from '@blindfold-chess/features/username';
 
 import { DISPLAY_NAME_MAX_LENGTH } from '@/lib/users/profile-limits';
 
@@ -122,7 +122,7 @@ export function UsernameForm({ locale }: Props) {
           value={username}
           onChange={(e) => handleUsernameChange(e.target.value)}
           placeholder={t('usernamePlaceholder')}
-          maxLength={20}
+          maxLength={USERNAME_MAX_LENGTH}
           autoFocus
           autoComplete="off"
           invalid={error !== null}

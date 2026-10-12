@@ -30,8 +30,13 @@ export const PIECE_SHORT_TO_NAME: Record<PieceShortCode, string> = {
   n: 'knight',
 };
 
-/** Piece full names used as leaderboard keys in DB. */
-export type PieceFullName = 'king' | 'queen' | 'rook' | 'bishop' | 'knight' | 'random';
+/**
+ * Piece full names used as leaderboard keys in DB, and as the legal-moves
+ * `piece` query parameter. `random` is the mixed-piece session.
+ */
+export const PIECE_FULL_NAMES = ['king', 'queen', 'rook', 'bishop', 'knight', 'random'] as const;
+
+export type PieceFullName = (typeof PIECE_FULL_NAMES)[number];
 
 /** Map from full piece name to short piece code (includes 'random' → 'random'). */
 export const PIECE_NAME_TO_SHORT: Record<PieceFullName, PieceShortCode | 'random'> = {

@@ -6,6 +6,7 @@ import {
   CHESS_USERNAME_PATTERN,
   FIDE_ID_PATTERN,
   INSTAGRAM_USERNAME_PATTERN,
+  OPTIONAL_FIELD_MAX_LENGTH,
   X_USERNAME_PATTERN,
   YOUTUBE_HANDLE_PATTERN,
 } from './profile-field-rules';
@@ -92,39 +93,39 @@ type OptionalFieldRule = {
 };
 
 const OPTIONAL_FIELD_RULES = {
-  flair: { maxLength: 50, tooLong: 'flair_too_long' },
+  flair: { maxLength: OPTIONAL_FIELD_MAX_LENGTH.flair, tooLong: 'flair_too_long' },
   fideId: {
-    maxLength: 50,
+    maxLength: OPTIONAL_FIELD_MAX_LENGTH.fideId,
     tooLong: 'fide_id_too_long',
     pattern: FIDE_ID_PATTERN,
     invalidFormat: 'fide_id_invalid_format',
   },
   chesscomUsername: {
-    maxLength: 255,
+    maxLength: OPTIONAL_FIELD_MAX_LENGTH.chesscomUsername,
     tooLong: 'chesscom_username_too_long',
     pattern: CHESS_USERNAME_PATTERN,
     invalidFormat: 'chesscom_username_invalid_format',
   },
   lichessUsername: {
-    maxLength: 255,
+    maxLength: OPTIONAL_FIELD_MAX_LENGTH.lichessUsername,
     tooLong: 'lichess_username_too_long',
     pattern: CHESS_USERNAME_PATTERN,
     invalidFormat: 'lichess_username_invalid_format',
   },
   xUsername: {
-    maxLength: 15,
+    maxLength: OPTIONAL_FIELD_MAX_LENGTH.xUsername,
     tooLong: 'x_username_too_long',
     pattern: X_USERNAME_PATTERN,
     invalidFormat: 'x_username_invalid_format',
   },
   instagramUsername: {
-    maxLength: 30,
+    maxLength: OPTIONAL_FIELD_MAX_LENGTH.instagramUsername,
     tooLong: 'instagram_username_too_long',
     pattern: INSTAGRAM_USERNAME_PATTERN,
     invalidFormat: 'instagram_username_invalid_format',
   },
   youtubeHandle: {
-    maxLength: 30,
+    maxLength: OPTIONAL_FIELD_MAX_LENGTH.youtubeHandle,
     tooLong: 'youtube_handle_too_long',
     pattern: YOUTUBE_HANDLE_PATTERN,
     invalidFormat: 'youtube_handle_invalid_format',

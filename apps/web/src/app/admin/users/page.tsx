@@ -30,8 +30,7 @@ import {
 import { createAdminClient } from '@/lib/supabase/admin';
 
 import { AdminPageLayout } from '../_components/AdminPageLayout';
-import { ProviderFilter } from './_components/ProviderFilter';
-import { StatusFilter } from './_components/StatusFilter';
+import { UserFilterBar } from './_components/UserFilterBar';
 import { UsernameFilter } from './_components/UsernameFilter';
 import { UsersListTab } from './_components/UsersListTab';
 import type { AdminUserFilters } from './_lib/filters';
@@ -105,25 +104,7 @@ export default async function AdminUsersPage({
         }}
       />
 
-      <div className="mb-6 flex flex-wrap gap-4">
-        <StatusFilter
-          labels={{
-            filterByStatus: t('usersTable.filterByStatus'),
-            allStatuses: t('usersTable.allStatuses'),
-            active: t('usersTable.active'),
-            banned: t('usersTable.banned'),
-            anonymous: t('usersTable.anonymous'),
-            deleted: t('usersTable.deleted'),
-          }}
-        />
-        <ProviderFilter
-          labels={{
-            filterByProvider: t('usersTable.filterByProvider'),
-            allProviders: t('usersTable.allProviders'),
-          }}
-          providerNames={providerNames}
-        />
-      </div>
+      <UserFilterBar t={t} providerNames={providerNames} />
 
       <UsersListTab
         adminClient={adminClient}

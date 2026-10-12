@@ -10,6 +10,7 @@ import type { AdminUserFilters } from '../filters';
 import { type CountryStat, aggregateCountryStats } from './country-stats';
 import { type LevelStat, aggregateLevelStats } from './level-stats';
 import { fetchTotalExpByUser, getAllRanks, getFilteredPopulation } from './population';
+import { groupRankSlugsByUser } from './population-filter';
 import { type RankStat, aggregateRankStats } from './rank-stats';
 import { type SignupMethodStat, aggregateSignupMethodStats } from './signup-methods';
 
@@ -174,15 +175,7 @@ export async function fetchRankStats(
       ? await db.select().from(userRanks).where(inArray(userRanks.userId, filteredUserIds))
       : [];
 
-  const userSlugs = new Map<string, Set<string>>();
-  for (const ur of userRankRows) {
-    const rank = rankById.get(ur.rankId);
-    if (rank) {
-      const slugs = userSlugs.get(ur.userId) ?? new Set<string>();
-      slugs.add(rank.slug);
-      userSlugs.set(ur.userId, slugs);
-    }
-  }
+  const userSlugs = groupRankSlugsByUser(userRankRows, rankById);
 
   return aggregateRankStats(filteredUsers, { rankById, userSlugs });
 }
