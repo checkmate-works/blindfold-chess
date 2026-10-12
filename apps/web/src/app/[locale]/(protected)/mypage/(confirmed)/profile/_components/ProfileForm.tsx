@@ -6,6 +6,7 @@ import { CountrySelect } from '@/app/_components/CountrySelect';
 import { BIO_MAX_LENGTH, DISPLAY_NAME_MAX_LENGTH } from '@/lib/users/profile-limits';
 
 import { useProfileForm } from '../_hooks/useProfileForm';
+import { OPTIONAL_FIELD_MAX_LENGTH } from '../_lib/profile-field-rules';
 import type { ProfileFormProps } from '../_lib/profile-form-types';
 import { AvatarUpload } from './AvatarUpload';
 import { FlairPicker } from './FlairPicker';
@@ -100,7 +101,7 @@ export function ProfileForm({ locale, profile }: ProfileFormProps) {
             value={fields.fideId}
             onChange={(e) => setField('fideId')(e.target.value)}
             placeholder={t('fideIdPlaceholder')}
-            maxLength={50}
+            maxLength={OPTIONAL_FIELD_MAX_LENGTH.fideId}
             autoComplete="off"
           />
         </FormField>
@@ -116,7 +117,7 @@ export function ProfileForm({ locale, profile }: ProfileFormProps) {
             value={fields.chesscomUsername}
             onChange={(e) => setField('chesscomUsername')(e.target.value)}
             placeholder={t('chesscomUsernamePlaceholder')}
-            maxLength={255}
+            maxLength={OPTIONAL_FIELD_MAX_LENGTH.chesscomUsername}
             autoComplete="off"
           />
         </FormField>
@@ -132,7 +133,7 @@ export function ProfileForm({ locale, profile }: ProfileFormProps) {
             value={fields.lichessUsername}
             onChange={(e) => setField('lichessUsername')(e.target.value)}
             placeholder={t('lichessUsernamePlaceholder')}
-            maxLength={255}
+            maxLength={OPTIONAL_FIELD_MAX_LENGTH.lichessUsername}
             autoComplete="off"
           />
         </FormField>
@@ -148,7 +149,7 @@ export function ProfileForm({ locale, profile }: ProfileFormProps) {
             value={fields.xUsername}
             onChange={(e) => setField('xUsername')(e.target.value)}
             placeholder={t('xUsernamePlaceholder')}
-            maxLength={15}
+            maxLength={OPTIONAL_FIELD_MAX_LENGTH.xUsername}
             autoComplete="off"
           />
         </FormField>
@@ -164,7 +165,7 @@ export function ProfileForm({ locale, profile }: ProfileFormProps) {
             value={fields.instagramUsername}
             onChange={(e) => setField('instagramUsername')(e.target.value)}
             placeholder={t('instagramUsernamePlaceholder')}
-            maxLength={30}
+            maxLength={OPTIONAL_FIELD_MAX_LENGTH.instagramUsername}
             autoComplete="off"
           />
         </FormField>
@@ -180,7 +181,7 @@ export function ProfileForm({ locale, profile }: ProfileFormProps) {
             value={fields.youtubeHandle}
             onChange={(e) => setField('youtubeHandle')(e.target.value)}
             placeholder={t('youtubeHandlePlaceholder')}
-            maxLength={30}
+            maxLength={OPTIONAL_FIELD_MAX_LENGTH.youtubeHandle}
             autoComplete="off"
           />
         </FormField>
