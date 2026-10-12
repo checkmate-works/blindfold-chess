@@ -1,12 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo } from 'react';
 
 import { ChessPiece } from '@/app/_components/chess/ChessPiece';
 import type { RoutePlannerProblemResult } from '@blindfold-chess/features/route-planner';
 import { FaArrowRight, FaChevronDown, FaChevronRight, FaRegClock } from 'react-icons/fa';
 
 import type { BoardTheme } from '@/lib/games/board-themes';
+
+import { useExpandedIndexSet } from '@/app/[locale]/(public)/practice/_hooks/use-expanded-index-set';
+import { useMistakeReveal } from '@/app/[locale]/(public)/practice/_hooks/use-mistake-reveal';
 
 import { RoutePlannerProblemFeedback } from './RoutePlannerProblemFeedback';
 
@@ -23,26 +26,23 @@ export function RoutePlannerResultList({ results, boardTheme, labels }: Props) {
   // Each row expands independently — opening one must not collapse the others
   // the user already opened, so track the open rows as a set rather than a
   // single index.
-  const [expandedIndices, setExpandedIndices] = useState<Set<number>>(new Set());
-
-  const toggleExpand = (index: number) => {
-    setExpandedIndices((prev) => {
-      const next = new Set(prev);
-      if (next.has(index)) {
-        next.delete(index);
-      } else {
-        next.add(index);
-      }
-      return next;
-    });
-  };
+  const { expanded: expandedIndices, toggle: toggleExpand, expand } = useExpandedIndexSet();
+  const missedIndexes = useMemo(
+    () => results.flatMap((result, index) => (result.success ? [] : [index])),
+    [results]
+  );
+  const rowId = useMistakeReveal(missedIndexes, expand);
 
   return (
     <div className="space-y-3">
       {results.map((result, index) => {
         const isExpanded = expandedIndices.has(index);
         return (
-          <div key={index} className="border border-border rounded-lg overflow-hidden">
+          <div
+            key={index}
+            id={rowId(index)}
+            className="border border-border rounded-lg overflow-hidden scroll-mt-20"
+          >
             <button
               onClick={() => toggleExpand(index)}
               className="w-full flex items-center justify-between p-3 bg-card hover:bg-muted/50 transition-colors"

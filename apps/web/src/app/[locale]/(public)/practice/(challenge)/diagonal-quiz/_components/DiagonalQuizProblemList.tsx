@@ -20,6 +20,7 @@ import {
 } from '@/lib/games/board-themes';
 
 import { useExpandedIndexSet } from '@/app/[locale]/(public)/practice/_hooks/use-expanded-index-set';
+import { useMistakeReveal } from '@/app/[locale]/(public)/practice/_hooks/use-mistake-reveal';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import { DiagonalAnswerComparison } from './DiagonalAnswerComparison';
@@ -127,7 +128,16 @@ export function DiagonalQuizProblemList({ results }: { results: QuestionResult[]
   const t = useTranslations('practice.diagonalQuiz');
   const tPractice = useTranslations('practice');
   const { preferences } = useGamePreferences();
-  const { expanded: expandedProblems, toggle: toggleProblem } = useExpandedIndexSet();
+  const {
+    expanded: expandedProblems,
+    toggle: toggleProblem,
+    expand: expandProblems,
+  } = useExpandedIndexSet();
+  const missedIndexes = useMemo(
+    () => results.flatMap((result, index) => (result.isCorrect ? [] : [index])),
+    [results]
+  );
+  const rowId = useMistakeReveal(missedIndexes, expandProblems);
 
   if (results.length === 0) return null;
 
@@ -140,7 +150,11 @@ export function DiagonalQuizProblemList({ results }: { results: QuestionResult[]
         {results.map((result, index) => {
           const isExpanded = expandedProblems.has(index);
           return (
-            <div key={index} className="border border-border rounded-lg overflow-hidden">
+            <div
+              key={index}
+              id={rowId(index)}
+              className="border border-border rounded-lg overflow-hidden scroll-mt-20"
+            >
               <button
                 onClick={() => toggleProblem(index)}
                 className="w-full flex items-center justify-between p-3 text-left hover:bg-muted/50 transition-colors"

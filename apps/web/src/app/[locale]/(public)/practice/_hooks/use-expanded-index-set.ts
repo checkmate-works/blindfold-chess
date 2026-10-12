@@ -7,7 +7,8 @@ import { useCallback, useState } from 'react';
  *
  * Both problem lists on a practice result screen let the reader open any
  * number of rows at once, and both kept that as a `Set<number>` in state
- * with the same add-or-delete toggle written out.
+ * with the same add-or-delete toggle written out. `expand` opens several
+ * rows at once and leaves already-open rows open (see `useMistakeReveal`).
  */
 export function useExpandedIndexSet() {
   const [expanded, setExpanded] = useState<Set<number>>(new Set());
@@ -24,5 +25,9 @@ export function useExpandedIndexSet() {
     });
   }, []);
 
-  return { expanded, toggle };
+  const expand = useCallback((indexes: readonly number[]) => {
+    setExpanded((prev) => new Set([...prev, ...indexes]));
+  }, []);
+
+  return { expanded, toggle, expand };
 }

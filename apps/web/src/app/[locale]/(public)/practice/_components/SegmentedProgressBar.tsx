@@ -1,8 +1,12 @@
+import type { ReactNode } from 'react';
+
 type ProgressBarSegment = {
   key: string;
   value: number;
   color: string; // Tailwind class like 'bg-success'
   label?: string; // Legend label
+  /** Replaces the default `label: value` legend text (e.g. to make it a link). */
+  legend?: ReactNode;
   textColor?: string; // Optional text color, defaults to 'text-white'
 };
 
@@ -53,9 +57,11 @@ export function SegmentedProgressBar({
             return (
               <div key={segment.key} className="flex items-center gap-1">
                 <div className={`w-3 h-3 rounded ${segment.color}`}></div>
-                <span>
-                  {segment.label}: {segment.value}
-                </span>
+                {segment.legend ?? (
+                  <span>
+                    {segment.label}: {segment.value}
+                  </span>
+                )}
               </div>
             );
           })}
