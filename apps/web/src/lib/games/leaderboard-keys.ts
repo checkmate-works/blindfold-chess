@@ -7,12 +7,13 @@
 import { BOARD_ORIENTATIONS } from '@blindfold-chess/types';
 
 import type { ChallengeMenuType } from '@/lib/db/practice-menu-types';
+import { PIECE_FULL_NAMES } from '@/lib/games/chess-pieces';
 
 export const LEADERBOARD_KEYS = {
   // One leaderboard per orientation the quiz can be played in, so the list is
   // the orientations themselves rather than a copy that could drift from them.
   coordinate_quiz: BOARD_ORIENTATIONS,
-  legal_moves: ['king', 'queen', 'rook', 'bishop', 'knight', 'random'],
+  legal_moves: PIECE_FULL_NAMES,
   square_colors: ['default'],
   diagonal_quiz: ['default'],
   board_symmetry: ['default'],
