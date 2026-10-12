@@ -8,9 +8,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { GameDiscussionFeed } from './GameDiscussionFeed';
 
-vi.mock('@/i18n/use-safe-translations', () => ({
-  useSafeTranslations: () => Object.assign((key: string) => key, { has: () => true }),
-}));
+vi.mock('@/i18n/use-safe-translations');
 
 // Read-only display children are covered elsewhere — stub them so this test
 // focuses on grouping, the move-label headers, and the jump affordance.

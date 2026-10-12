@@ -38,19 +38,13 @@ vi.mock('@/lib/client-images/prepare-image-for-upload', () => ({
   prepareImageForUpload: vi.fn((file: File) => Promise.resolve({ ok: true, value: file })),
 }));
 
-// Pass-through translator: returns the key verbatim. `has()` reports
-// every key as known so BasePostForm's error-message resolution
-// short-circuits to `t(state.error)` (which equals the original
-// error key) instead of falling back to the generic 'error' key.
-// Test expectations therefore match against the raw error key
-// (e.g. 'rate_limited', 'postFenAttachment.error.alreadyAttached').
-vi.mock('@/i18n/use-safe-translations', () => ({
-  useSafeTranslations: () => {
-    const t = (key: string) => key;
-    t.has = (_key: string) => true;
-    return t;
-  },
-}));
+// The automock's translator returns the key verbatim and its `has()`
+// reports every key as known, so BasePostForm's error-message resolution
+// short-circuits to `t(state.error)` (which equals the original error key)
+// instead of falling back to the generic 'error' key. Test expectations
+// therefore match against the raw error key (e.g. 'rate_limited',
+// 'postFenAttachment.error.alreadyAttached').
+vi.mock('@/i18n/use-safe-translations');
 
 vi.mock('next-navigation-guard');
 

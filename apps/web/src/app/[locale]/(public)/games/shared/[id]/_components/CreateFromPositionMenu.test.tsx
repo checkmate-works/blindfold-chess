@@ -6,9 +6,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { CreateFromPositionMenu } from './CreateFromPositionMenu';
 
 // Echo translation keys so menu items are addressable by key.
-vi.mock('@/i18n/use-safe-translations', () => ({
-  useSafeTranslations: () => Object.assign((key: string) => key, { has: () => true }),
-}));
+vi.mock('@/i18n/use-safe-translations');
 
 // A real mid-game FEN — has spaces and slashes that must be URL-encoded.
 const FEN = 'r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 2 2';

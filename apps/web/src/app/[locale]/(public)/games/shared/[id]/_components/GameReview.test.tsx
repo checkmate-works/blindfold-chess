@@ -60,9 +60,7 @@ vi.mock('@/app/[locale]/_contexts/GamePreferencesContext', () => ({
   useGamePreferences: () => ({ preferences: basePreferences }),
 }));
 
-vi.mock('@/i18n/use-safe-translations', () => ({
-  useSafeTranslations: () => Object.assign((key: string) => key, { has: () => true }),
-}));
+vi.mock('@/i18n/use-safe-translations');
 
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: pushSpy }) }));
 
