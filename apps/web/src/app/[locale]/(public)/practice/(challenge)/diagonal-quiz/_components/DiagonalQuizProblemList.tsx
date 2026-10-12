@@ -11,7 +11,7 @@ import {
 } from '@blindfold-chess/features/diagonal-quiz';
 import type { Square as SquareName } from '@blindfold-chess/types';
 import { DISPLAY_RANKS, FILES } from '@blindfold-chess/types';
-import { FaCheck, FaChevronDown, FaChevronRight, FaTimes } from 'react-icons/fa';
+import { FaCheck, FaChevronDown, FaChevronRight, FaRegClock, FaTimes } from 'react-icons/fa';
 
 import {
   type BoardTheme,
@@ -125,6 +125,7 @@ function DiagonalLabel({ type }: { type: 'diagonal' | 'antiDiagonal' }) {
 
 export function DiagonalQuizProblemList({ results }: { results: QuestionResult[] }) {
   const t = useTranslations('practice.diagonalQuiz');
+  const tPractice = useTranslations('practice');
   const { preferences } = useGamePreferences();
   const { expanded: expandedProblems, toggle: toggleProblem } = useExpandedIndexSet();
 
@@ -153,20 +154,29 @@ export function DiagonalQuizProblemList({ results }: { results: QuestionResult[]
                   <span className="font-medium whitespace-nowrap">No.{index + 1}</span>
                   <span className="text-sm text-muted-foreground">{result.square}</span>
                 </div>
-                <div className="flex items-center gap-1 flex-shrink-0 ml-2">
-                  {result.isCorrect ? (
-                    <FaCheck className="w-3 h-3 text-success" />
-                  ) : (
-                    <FaTimes className="w-3 h-3 text-destructive" />
-                  )}
-                  <span
-                    className={`text-sm font-medium ${
-                      result.isCorrect ? 'text-success' : 'text-destructive'
-                    }`}
-                  >
-                    {result.isCorrect ? t('correct') : t('incorrect')}
-                  </span>
-                </div>
+                {result.timedOut ? (
+                  // Not a verdict, so neutral: a ✗ here would read as one more
+                  // wrong answer than the score counts.
+                  <div className="flex items-center gap-1 flex-shrink-0 ml-2 text-muted-foreground">
+                    <FaRegClock className="w-3 h-3" />
+                    <span className="text-sm font-medium">{tPractice('timeUp')}</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1 flex-shrink-0 ml-2">
+                    {result.isCorrect ? (
+                      <FaCheck className="w-3 h-3 text-success" />
+                    ) : (
+                      <FaTimes className="w-3 h-3 text-destructive" />
+                    )}
+                    <span
+                      className={`text-sm font-medium ${
+                        result.isCorrect ? 'text-success' : 'text-destructive'
+                      }`}
+                    >
+                      {result.isCorrect ? t('correct') : t('incorrect')}
+                    </span>
+                  </div>
+                )}
               </button>
               {isExpanded && (
                 <div className="px-3 pb-3 pt-4 border-t border-border bg-muted/30">

@@ -76,6 +76,7 @@ export default function DiagonalQuizSession({ locale, initialTimeLimit }: Props)
         ca: r.correctAntiDiagonal,
         ud: r.userDiagonal,
         ua: r.userAntiDiagonal,
+        ...(r.timedOut ? { t: 1 } : {}),
       }))
     );
 

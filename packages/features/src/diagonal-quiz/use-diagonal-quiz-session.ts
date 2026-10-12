@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import type { Square } from "@blindfold-chess/types";
 
@@ -34,6 +34,10 @@ export type UseDiagonalQuizSessionReturn = TimedSessionFacade & {
     correctDiagonal: string;
     correctAntiDiagonal: string;
   } | null;
+  /**
+   * One entry per answered question, plus — once the time limit has ended the
+   * run — a trailing `timedOut` entry for the question left unanswered.
+   */
   questionResults: DiagonalQuestionResult[];
   handleAnswer: (diagonalAnswer: string, antiDiagonalAnswer: string) => void;
 };
@@ -124,11 +128,32 @@ export function useDiagonalQuizSession({
     [currentQuestion, sessionHandleAnswer],
   );
 
+  // Only the time limit leaves a question unanswered: the timer is paused
+  // during the feedback flash, and the other endings follow an answer (the
+  // mistake limit) or are the player's own choice (quit).
+  const { finishReason } = session;
+  const questionResultsWithTimeUp = useMemo(() => {
+    if (finishReason !== "timeUp" || !currentQuestion) return questionResults;
+    const { diagonal, antiDiagonal } = getDiagonals(currentQuestion);
+    return [
+      ...questionResults,
+      {
+        square: currentQuestion,
+        isCorrect: false,
+        isDiagonalCorrect: false,
+        isAntiDiagonalCorrect: false,
+        correctDiagonal: diagonal,
+        correctAntiDiagonal: antiDiagonal,
+        timedOut: true as const,
+      },
+    ];
+  }, [finishReason, currentQuestion, questionResults]);
+
   return {
     ...toTimedSessionFacade(session),
     currentSquare: currentQuestion,
     lastAnswer,
-    questionResults,
+    questionResults: questionResultsWithTimeUp,
     handleAnswer,
   };
 }

@@ -1036,6 +1036,7 @@
     "quit": "終了",
     "correct": "正解",
     "incorrect": "不正解",
+    "timeUp": "時間切れ",
     "accuracy": "正解率",
     "averageTime": "平均時間",
     "undo": "戻る",

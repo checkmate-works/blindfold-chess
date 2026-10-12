@@ -18,7 +18,8 @@ function DiagonalQuizChildren() {
     try {
       // Decode and parse minified JSON
       // Minified keys: s=square, c=isCorrect, dc=isDiagonalCorrect, ac=isAntiDiagonalCorrect
-      // cd=correctDiagonal, ca=correctAntiDiagonal, ud=userDiagonal, ua=userAntiDiagonal
+      // cd=correctDiagonal, ca=correctAntiDiagonal, ud=userDiagonal, ua=userAntiDiagonal,
+      // t=timedOut (present only on the question the time limit cut off)
       type SerializedResult = {
         s: string;
         c: number;
@@ -28,6 +29,7 @@ function DiagonalQuizChildren() {
         ca: string;
         ud?: string;
         ua?: string;
+        t?: number;
       };
       const parsed = JSON.parse(decodeURIComponent(dataParam));
       return parsed.map((item: SerializedResult) => ({
@@ -39,6 +41,7 @@ function DiagonalQuizChildren() {
         correctAntiDiagonal: item.ca,
         userDiagonal: item.ud,
         userAntiDiagonal: item.ua,
+        ...(item.t === 1 ? { timedOut: true } : {}),
       })) as QuestionResult[];
     } catch (e) {
       console.error('Failed to parse result data', e);
@@ -65,7 +68,8 @@ export const ResultClient = createPracticeResultClient({
     if (dataParam) {
       try {
         const parsed = JSON.parse(decodeURIComponent(dataParam));
-        count = Array.isArray(parsed) ? parsed.length : 0;
+        // The timed-out question took no answer, so it is not in the average.
+        count = Array.isArray(parsed) ? parsed.filter((item) => item?.t !== 1).length : 0;
       } catch {
         // ignore
       }
