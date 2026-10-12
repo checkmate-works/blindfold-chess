@@ -6,6 +6,8 @@ import { db, userGrants } from '@/lib/db';
 import { cachedExistenceCheck } from '@/lib/db/cached-existence-check';
 import type { DbTx } from '@/lib/db/types';
 
+import { stackGrantStart } from './grant-stacking';
+
 /**
  * Check if the user has an active (non-revoked, currently valid) grant
  * for the given benefit type.
@@ -42,14 +44,14 @@ export const hasActiveGrant = cachedExistenceCheck(
  *
  * @param executor - Optional Drizzle query executor (db or tx). Defaults to `db`.
  *   Pass a transaction client when calling within `db.transaction()`.
+ * @param now - The instant the grant is being created; injectable for tests.
  */
 export async function calcGrantStartsAt(
   userId: string,
   benefitType: string,
-  executor: DbTx | typeof db = db
+  executor: DbTx | typeof db = db,
+  now: Date = new Date()
 ): Promise<Date> {
-  const now = new Date();
-
   const [latest] = await executor
     .select({ maxExpires: max(userGrants.expiresAt) })
     .from(userGrants)
@@ -61,8 +63,7 @@ export async function calcGrantStartsAt(
       )
     );
 
-  const latestExpires = latest?.maxExpires;
-  return latestExpires && latestExpires > now ? latestExpires : now;
+  return stackGrantStart(latest?.maxExpires, now);
 }
 
 /** Where a grant's validity window sits relative to `now`. */
