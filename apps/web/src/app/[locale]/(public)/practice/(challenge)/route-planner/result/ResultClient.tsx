@@ -44,7 +44,7 @@ function RoutePlannerChildren() {
       <RoutePlannerResultList
         results={results}
         boardTheme={preferences.boardTheme}
-        labels={{ skipped: tPractice('skip') }}
+        labels={{ skipped: tPractice('skip'), timeUp: tPractice('timeUp') }}
       />
     </div>
   );
@@ -93,7 +93,10 @@ function parseDataScores(searchParams: URLSearchParams) {
   if (!dataParam) return { score: 0, total: 0 };
   try {
     const parsed = JSON.parse(decodeURIComponent(dataParam));
-    const results = Array.isArray(parsed) ? parsed : [];
+    // The problem the time limit cut off is listed but was never answered.
+    const results = (Array.isArray(parsed) ? parsed : []).filter(
+      (r: RoutePlannerProblemResult) => !r.timedOut
+    );
     const score = results.filter((r: RoutePlannerProblemResult) => r.success).length;
     return { score, total: results.length };
   } catch {

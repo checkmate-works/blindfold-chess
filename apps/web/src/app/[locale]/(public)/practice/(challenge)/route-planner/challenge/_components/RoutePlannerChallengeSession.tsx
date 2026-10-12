@@ -19,6 +19,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { RoutePlannerPlaySkeleton } from '../../_components/RoutePlannerPlaySkeleton';
 import { RoutePlannerResultSkeleton } from '../../_components/RoutePlannerResultSkeleton';
 import type { PieceType } from '../../_lib/pieces';
+import { findShortestPath } from '../../_lib/route-planner-api';
 import { ProblemBody } from './_parts/ProblemBody';
 import { SessionHeader } from './_parts/SessionHeader';
 
@@ -48,6 +49,7 @@ export default function RoutePlannerChallengeSession({
     incorrectCount,
     showFeedback,
     isFinished,
+    finishReason,
     countdown,
     isPaused,
     handleAnswer: hookHandleAnswer,
@@ -87,7 +89,28 @@ export default function RoutePlannerChallengeSession({
   const total = correctCount + incorrectCount;
 
   const resultUrl = useMemo(() => {
-    const dataStr = encodeURIComponent(JSON.stringify(problemResults));
+    // The time limit is the one ending that leaves a problem on screen
+    // unanswered (the timer is paused during the feedback flash). Keep it in
+    // the list so the result shows its answer; it carries no user path and
+    // the result page leaves it out of the score.
+    const results: RoutePlannerProblemResult[] =
+      finishReason === 'timeUp' && currentProblem
+        ? [
+            ...problemResults,
+            {
+              piece: currentProblem.piece,
+              start: currentProblem.start,
+              end: currentProblem.end,
+              success: false,
+              userPath: [],
+              shortestPath:
+                findShortestPath(currentProblem.piece, currentProblem.start, currentProblem.end) ??
+                [],
+              timedOut: true,
+            },
+          ]
+        : problemResults;
+    const dataStr = encodeURIComponent(JSON.stringify(results));
     const piecesStr = allowedPieces.join('');
 
     const params = new URLSearchParams();
@@ -102,7 +125,7 @@ export default function RoutePlannerChallengeSession({
     }
 
     return `/${locale}/practice/route-planner/result?${params.toString()}`;
-  }, [problemResults, allowedPieces, total, locale, timeElapsed]);
+  }, [finishReason, currentProblem, problemResults, allowedPieces, total, locale, timeElapsed]);
 
   const pieceName = useMemo(() => {
     if (allowedPieces.length === 1) {
