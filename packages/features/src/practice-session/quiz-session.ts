@@ -1,4 +1,7 @@
-import type { UseTimedSessionReturn } from "./use-timed-session";
+import type {
+  TimedSessionFinishReason,
+  UseTimedSessionReturn,
+} from "./use-timed-session";
 
 /**
  * Config fields shared by every timed quiz session hook. Individual hooks
@@ -25,6 +28,12 @@ export type TimedSessionFacade = {
   showFeedback: boolean;
   lastAnswerCorrect: boolean | null;
   isFinished: boolean;
+  /**
+   * Why the timed session ended; `null` while it runs. A hook that ends the
+   * run on its own terms (route planner's `problemCount`) overrides
+   * `isFinished` but leaves this `null`, since no timer reason applies.
+   */
+  finishReason: TimedSessionFinishReason | null;
   isPaused: boolean;
   togglePause: () => void;
   finishSession: () => void;
@@ -62,6 +71,7 @@ export function toTimedSessionFacade(
     showFeedback: session.showFeedback,
     lastAnswerCorrect: session.lastAnswerCorrect,
     isFinished: session.isFinished,
+    finishReason: session.finishReason,
     isPaused: session.isPaused,
     togglePause: session.togglePause,
     finishSession: session.finishSession,

@@ -348,6 +348,64 @@ describe("useTimedSession", () => {
     });
   });
 
+  describe("finishReason", () => {
+    const render = (mistakeAllowance?: number) =>
+      renderHook(() =>
+        useTimedSession({
+          timeLimit: 60,
+          generateQuestion,
+          feedbackDuration: 0,
+          mistakeAllowance,
+        }),
+      );
+
+    it("is null while the session is running", () => {
+      const { result } = render();
+      advancePastCountdown();
+
+      expect(result.current.finishReason).toBeNull();
+    });
+
+    it("is timeUp when the time limit is reached", () => {
+      const { result } = render();
+      advancePastCountdown();
+
+      act(() => {
+        vi.advanceTimersByTime(60 * 1000);
+      });
+
+      expect(result.current.finishReason).toBe("timeUp");
+    });
+
+    it("is mistakeLimit when the allowance runs out", () => {
+      const { result } = render(1);
+      advancePastCountdown();
+
+      act(() => {
+        result.current.handleAnswer(false);
+      });
+      act(() => {
+        vi.advanceTimersByTime(10);
+      });
+
+      expect(result.current.finishReason).toBe("mistakeLimit");
+    });
+
+    it("is quit when finishSession is called, and is not overwritten later", () => {
+      const { result } = render();
+      advancePastCountdown();
+
+      act(() => {
+        result.current.finishSession();
+      });
+      act(() => {
+        vi.advanceTimersByTime(60 * 1000);
+      });
+
+      expect(result.current.finishReason).toBe("quit");
+    });
+  });
+
   describe("onAnswerEffect", () => {
     it("calls onAnswerEffect with correct=true on correct answer", () => {
       const onAnswerEffect = vi.fn();

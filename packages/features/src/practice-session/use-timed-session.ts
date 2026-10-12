@@ -31,6 +31,15 @@ export type UseTimedSessionConfig<TQuestion> = {
   onAdvance?: (lastCorrect: boolean) => void;
 };
 
+/**
+ * Why a session ended. `timeUp` is the only one that leaves the question on
+ * screen unanswered — the timer runs only while a question awaits an answer,
+ * so the limit can never land mid-feedback. `mistakeLimit` ends right after
+ * the answer that used up the allowance, and `quit` is the player abandoning
+ * the run; neither leaves a question the player ran out of time on.
+ */
+export type TimedSessionFinishReason = "timeUp" | "mistakeLimit" | "quit";
+
 export type UseTimedSessionReturn<TQuestion> = {
   currentQuestion: TQuestion | null;
   isPlaying: boolean;
@@ -45,6 +54,8 @@ export type UseTimedSessionReturn<TQuestion> = {
   showFeedback: boolean;
   lastAnswerCorrect: boolean | null;
   isFinished: boolean;
+  /** Why the session ended; `null` while it is still running. */
+  finishReason: TimedSessionFinishReason | null;
   /**
    * Seconds spent on each completed question, in order. The currently shown
    * question has no entry yet. Quiz hooks pass this straight to
@@ -100,7 +111,9 @@ export function useTimedSession<TQuestion>(
   const [lastAnswerCorrect, setLastAnswerCorrect] = useState<boolean | null>(
     null,
   );
-  const [isFinished, setIsFinished] = useState(false);
+  const [finishReason, setFinishReason] =
+    useState<TimedSessionFinishReason | null>(null);
+  const isFinished = finishReason !== null;
   const [isPaused, setIsPaused] = useState(false);
 
   const hasStarted = useRef(false);
@@ -148,7 +161,7 @@ export function useTimedSession<TQuestion>(
     isActive: isPlaying,
     onTimeLimitReached: useCallback(() => {
       isFinishedRef.current = true;
-      setIsFinished(true);
+      setFinishReason("timeUp");
     }, []),
   });
 
@@ -170,7 +183,7 @@ export function useTimedSession<TQuestion>(
     if (isFinishedRef.current) return;
     if (feedbackTimeoutRef.current) clearTimeout(feedbackTimeoutRef.current);
     isFinishedRef.current = true;
-    setIsFinished(true);
+    setFinishReason("quit");
     setShowFeedback(false);
   }, []);
 
@@ -180,7 +193,7 @@ export function useTimedSession<TQuestion>(
   const scheduleFinish = useCallback((duration: number) => {
     feedbackTimeoutRef.current = setTimeout(() => {
       isFinishedRef.current = true;
-      setIsFinished(true);
+      setFinishReason("mistakeLimit");
       setShowFeedback(false);
     }, duration);
   }, []);
@@ -264,6 +277,7 @@ export function useTimedSession<TQuestion>(
     showFeedback,
     lastAnswerCorrect,
     isFinished,
+    finishReason,
     questionTimes,
     handleAnswer,
     togglePause,
