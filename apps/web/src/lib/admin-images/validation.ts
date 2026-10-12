@@ -26,10 +26,15 @@ export const MIME_TO_EXTENSION: Record<string, string> = IMAGE_MIME_TO_EXTENSION
  * Storage object path for an uploaded admin image: a folder per owning record
  * (the ad creative or the article) and an epoch-millisecond filename, so a
  * replacement upload never overwrites the object a published page may still
- * be serving.
+ * be serving. `nowMs` is the upload instant, injectable so the path is
+ * deterministic under test.
  */
-export function buildAdminImageStoragePath(ownerId: string, mimeType: string): string {
-  return `${ownerId}/${Date.now()}.${MIME_TO_EXTENSION[mimeType]}`;
+export function buildAdminImageStoragePath(
+  ownerId: string,
+  mimeType: string,
+  nowMs: number = Date.now()
+): string {
+  return `${ownerId}/${nowMs}.${MIME_TO_EXTENSION[mimeType]}`;
 }
 
 /**
