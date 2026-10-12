@@ -103,7 +103,7 @@ const getCachedAllTimeRanking = unstable_cache(
 // Period ranking (from exp_events)
 // ---------------------------------------------------------------------------
 
-function getCachedPeriodRanking(period: 'weekly' | 'monthly') {
+function getCachedPeriodRanking(period: Exclude<LeaderboardPeriod, 'all-time'>) {
   return unstable_cache(
     async (): Promise<ExpLeaderboardRow[]> => {
       const startDate = period === 'weekly' ? startOfCurrentWeek() : startOfCurrentMonth();
