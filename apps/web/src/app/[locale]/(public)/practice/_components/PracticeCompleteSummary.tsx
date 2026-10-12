@@ -2,6 +2,7 @@ import { SectionTitle } from '@/app/[locale]/_components';
 
 import type { PracticeCompleteLabels, ScoreStats } from '../_lib/practice-complete-types';
 import { isDetailedPieceStats } from '../_lib/practice-complete-types';
+import { RevealMistakesLink } from './RevealMistakesLink';
 import { SegmentedProgressBar } from './SegmentedProgressBar';
 
 type Props = {
@@ -91,6 +92,11 @@ export function PracticeCompleteSummary({
                   value: scoreStats.incorrect,
                   color: 'bg-destructive',
                   label: labels.incorrect,
+                  legend: (
+                    <RevealMistakesLink>
+                      {labels.incorrect}: {scoreStats.incorrect}
+                    </RevealMistakesLink>
+                  ),
                 },
               ]}
               total={scoreStats.total}

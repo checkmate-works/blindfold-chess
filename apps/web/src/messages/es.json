@@ -1036,6 +1036,7 @@
     "quit": "Salir",
     "correct": "Correcto",
     "incorrect": "Incorrecto",
+    "timeUp": "Tiempo agotado",
     "accuracy": "Precisión",
     "averageTime": "Tiempo Promedio",
     "undo": "Deshacer",

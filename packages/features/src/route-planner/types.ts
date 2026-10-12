@@ -42,6 +42,12 @@ export type RoutePlannerProblemResult = {
   userPath: Square[];
   shortestPath: Square[];
   skipped?: boolean;
+  /**
+   * The problem that was on screen when the time limit hit. It has no user
+   * path and is not part of the score — only its shortest path is there, so
+   * the result screen can show the answer.
+   */
+  timedOut?: true;
 };
 
 export type RoutePlannerResult = {

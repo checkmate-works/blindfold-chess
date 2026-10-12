@@ -11,6 +11,7 @@ export { useCountdown } from "./use-countdown";
 export { useGameTimer } from "./use-game-timer";
 export { useTimedSession } from "./use-timed-session";
 export type {
+  TimedSessionFinishReason,
   UseTimedSessionConfig,
   UseTimedSessionReturn,
 } from "./use-timed-session";

@@ -1036,6 +1036,7 @@
     "quit": "Quit",
     "correct": "Correct",
     "incorrect": "Incorrect",
+    "timeUp": "Time's up",
     "accuracy": "Accuracy",
     "averageTime": "Average Time",
     "undo": "Undo",

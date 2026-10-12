@@ -11,7 +11,7 @@ import {
 } from '@blindfold-chess/features/diagonal-quiz';
 import type { Square as SquareName } from '@blindfold-chess/types';
 import { DISPLAY_RANKS, FILES } from '@blindfold-chess/types';
-import { FaCheck, FaChevronDown, FaChevronRight, FaTimes } from 'react-icons/fa';
+import { FaCheck, FaChevronDown, FaChevronRight, FaRegClock, FaTimes } from 'react-icons/fa';
 
 import {
   type BoardTheme,
@@ -20,6 +20,7 @@ import {
 } from '@/lib/games/board-themes';
 
 import { useExpandedIndexSet } from '@/app/[locale]/(public)/practice/_hooks/use-expanded-index-set';
+import { useMistakeReveal } from '@/app/[locale]/(public)/practice/_hooks/use-mistake-reveal';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import { DiagonalAnswerComparison } from './DiagonalAnswerComparison';
@@ -125,8 +126,18 @@ function DiagonalLabel({ type }: { type: 'diagonal' | 'antiDiagonal' }) {
 
 export function DiagonalQuizProblemList({ results }: { results: QuestionResult[] }) {
   const t = useTranslations('practice.diagonalQuiz');
+  const tPractice = useTranslations('practice');
   const { preferences } = useGamePreferences();
-  const { expanded: expandedProblems, toggle: toggleProblem } = useExpandedIndexSet();
+  const {
+    expanded: expandedProblems,
+    toggle: toggleProblem,
+    expand: expandProblems,
+  } = useExpandedIndexSet();
+  const missedIndexes = useMemo(
+    () => results.flatMap((result, index) => (result.isCorrect ? [] : [index])),
+    [results]
+  );
+  const rowId = useMistakeReveal(missedIndexes, expandProblems);
 
   if (results.length === 0) return null;
 
@@ -139,7 +150,11 @@ export function DiagonalQuizProblemList({ results }: { results: QuestionResult[]
         {results.map((result, index) => {
           const isExpanded = expandedProblems.has(index);
           return (
-            <div key={index} className="border border-border rounded-lg overflow-hidden">
+            <div
+              key={index}
+              id={rowId(index)}
+              className="border border-border rounded-lg overflow-hidden scroll-mt-20"
+            >
               <button
                 onClick={() => toggleProblem(index)}
                 className="w-full flex items-center justify-between p-3 text-left hover:bg-muted/50 transition-colors"
@@ -153,20 +168,29 @@ export function DiagonalQuizProblemList({ results }: { results: QuestionResult[]
                   <span className="font-medium whitespace-nowrap">No.{index + 1}</span>
                   <span className="text-sm text-muted-foreground">{result.square}</span>
                 </div>
-                <div className="flex items-center gap-1 flex-shrink-0 ml-2">
-                  {result.isCorrect ? (
-                    <FaCheck className="w-3 h-3 text-success" />
-                  ) : (
-                    <FaTimes className="w-3 h-3 text-destructive" />
-                  )}
-                  <span
-                    className={`text-sm font-medium ${
-                      result.isCorrect ? 'text-success' : 'text-destructive'
-                    }`}
-                  >
-                    {result.isCorrect ? t('correct') : t('incorrect')}
-                  </span>
-                </div>
+                {result.timedOut ? (
+                  // Not a verdict, so neutral: a ✗ here would read as one more
+                  // wrong answer than the score counts.
+                  <div className="flex items-center gap-1 flex-shrink-0 ml-2 text-muted-foreground">
+                    <FaRegClock className="w-3 h-3" />
+                    <span className="text-sm font-medium">{tPractice('timeUp')}</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1 flex-shrink-0 ml-2">
+                    {result.isCorrect ? (
+                      <FaCheck className="w-3 h-3 text-success" />
+                    ) : (
+                      <FaTimes className="w-3 h-3 text-destructive" />
+                    )}
+                    <span
+                      className={`text-sm font-medium ${
+                        result.isCorrect ? 'text-success' : 'text-destructive'
+                      }`}
+                    >
+                      {result.isCorrect ? t('correct') : t('incorrect')}
+                    </span>
+                  </div>
+                )}
               </button>
               {isExpanded && (
                 <div className="px-3 pb-3 pt-4 border-t border-border bg-muted/30">

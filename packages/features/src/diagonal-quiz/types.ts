@@ -26,6 +26,14 @@ export type DiagonalQuestionResult = {
   correctAntiDiagonal: string;
   userDiagonal?: string;
   userAntiDiagonal?: string;
+  /**
+   * The question that was on screen when the time limit hit. It carries the
+   * correct diagonals so the result screen can show the answer, but no user
+   * answers, and it is not part of the score: `isCorrect` is false only
+   * because nothing was answered, and the session's incorrect count does not
+   * include it.
+   */
+  timedOut?: true;
 };
 
 export type DiagonalQuizResult = PracticeResultWithMistakes;

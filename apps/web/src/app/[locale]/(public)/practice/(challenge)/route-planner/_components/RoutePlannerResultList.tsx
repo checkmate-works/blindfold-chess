@@ -1,12 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo } from 'react';
 
 import { ChessPiece } from '@/app/_components/chess/ChessPiece';
 import type { RoutePlannerProblemResult } from '@blindfold-chess/features/route-planner';
-import { FaArrowRight, FaChevronDown, FaChevronRight } from 'react-icons/fa';
+import { FaArrowRight, FaChevronDown, FaChevronRight, FaRegClock } from 'react-icons/fa';
 
 import type { BoardTheme } from '@/lib/games/board-themes';
+
+import { useExpandedIndexSet } from '@/app/[locale]/(public)/practice/_hooks/use-expanded-index-set';
+import { useMistakeReveal } from '@/app/[locale]/(public)/practice/_hooks/use-mistake-reveal';
 
 import { RoutePlannerProblemFeedback } from './RoutePlannerProblemFeedback';
 
@@ -15,6 +18,7 @@ type Props = {
   boardTheme: BoardTheme;
   labels: {
     skipped: string;
+    timeUp: string;
   };
 };
 
@@ -22,26 +26,23 @@ export function RoutePlannerResultList({ results, boardTheme, labels }: Props) {
   // Each row expands independently — opening one must not collapse the others
   // the user already opened, so track the open rows as a set rather than a
   // single index.
-  const [expandedIndices, setExpandedIndices] = useState<Set<number>>(new Set());
-
-  const toggleExpand = (index: number) => {
-    setExpandedIndices((prev) => {
-      const next = new Set(prev);
-      if (next.has(index)) {
-        next.delete(index);
-      } else {
-        next.add(index);
-      }
-      return next;
-    });
-  };
+  const { expanded: expandedIndices, toggle: toggleExpand, expand } = useExpandedIndexSet();
+  const missedIndexes = useMemo(
+    () => results.flatMap((result, index) => (result.success ? [] : [index])),
+    [results]
+  );
+  const rowId = useMistakeReveal(missedIndexes, expand);
 
   return (
     <div className="space-y-3">
       {results.map((result, index) => {
         const isExpanded = expandedIndices.has(index);
         return (
-          <div key={index} className="border border-border rounded-lg overflow-hidden">
+          <div
+            key={index}
+            id={rowId(index)}
+            className="border border-border rounded-lg overflow-hidden scroll-mt-20"
+          >
             <button
               onClick={() => toggleExpand(index)}
               className="w-full flex items-center justify-between p-3 bg-card hover:bg-muted/50 transition-colors"
@@ -58,17 +59,26 @@ export function RoutePlannerResultList({ results, boardTheme, labels }: Props) {
                   <span>{result.end}</span>
                 </div>
               </div>
-              <div
-                className={`text-sm font-bold ${
-                  result.success
-                    ? 'text-success'
-                    : result.skipped
-                      ? 'text-muted-foreground'
-                      : 'text-destructive'
-                }`}
-              >
-                {result.success ? 'OK' : result.skipped ? labels.skipped : 'NG'}
-              </div>
+              {result.timedOut ? (
+                // Not a verdict, so neutral: an NG here would read as one more
+                // wrong answer than the score counts.
+                <div className="flex items-center gap-1 text-sm font-bold text-muted-foreground">
+                  <FaRegClock size={12} />
+                  {labels.timeUp}
+                </div>
+              ) : (
+                <div
+                  className={`text-sm font-bold ${
+                    result.success
+                      ? 'text-success'
+                      : result.skipped
+                        ? 'text-muted-foreground'
+                        : 'text-destructive'
+                  }`}
+                >
+                  {result.success ? 'OK' : result.skipped ? labels.skipped : 'NG'}
+                </div>
+              )}
             </button>
 
             {isExpanded && (
@@ -80,7 +90,9 @@ export function RoutePlannerResultList({ results, boardTheme, labels }: Props) {
                   moves={result.userPath}
                   shortestPath={result.shortestPath}
                   success={result.success}
-                  skipped={result.skipped}
+                  // A timed-out problem has no attempt either, so it shows
+                  // the shortest path the way a skipped one does.
+                  skipped={result.skipped || result.timedOut}
                   boardTheme={boardTheme}
                 />
               </div>
