@@ -59,7 +59,7 @@ export default function DiagonalQuizTrainingSession({ locale }: Props) {
     incorrectAutoAdvance: false,
   });
 
-  const { sessionElementId, handleEndTraining } = useTrainingSessionShell({
+  const { sessionElementId, realignSession, handleEndTraining } = useTrainingSessionShell({
     locale,
     slug: 'diagonal-quiz',
     scrollEnabled: hasQuestions,
@@ -75,6 +75,16 @@ export default function DiagonalQuizTrainingSession({ locale }: Props) {
   const onSkip = useCallback(() => {
     handleSkip();
   }, [handleSkip]);
+
+  const onNextAfterSkip = useCallback(() => {
+    handleNextAfterSkip();
+    realignSession();
+  }, [handleNextAfterSkip, realignSession]);
+
+  const onNextAfterIncorrect = useCallback(() => {
+    handleNextAfterIncorrect();
+    realignSession();
+  }, [handleNextAfterIncorrect, realignSession]);
 
   const lastAnswerForDisplay = useMemo(() => {
     if (!lastAnswer) return null;
@@ -104,8 +114,8 @@ export default function DiagonalQuizTrainingSession({ locale }: Props) {
         lastAnswer={lastAnswerForDisplay}
         onAnswer={onAnswer}
         onSkip={onSkip}
-        onNextAfterSkip={handleNextAfterSkip}
-        onNextAfterIncorrect={handleNextAfterIncorrect}
+        onNextAfterSkip={onNextAfterSkip}
+        onNextAfterIncorrect={onNextAfterIncorrect}
         correctCount={correctCount}
         incorrectCount={incorrectCount}
         onEndTraining={handleEndTraining}

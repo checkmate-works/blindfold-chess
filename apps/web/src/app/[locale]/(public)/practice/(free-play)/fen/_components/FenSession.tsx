@@ -11,7 +11,10 @@ import { aggregateResults } from '@/app/[locale]/(public)/practice/(free-play)/_
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';
 import { useQuitConfirmLabels } from '@/app/[locale]/(public)/practice/_hooks/use-quit-confirm-labels';
-import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
+import {
+  realignToElement,
+  useScrollToElement,
+} from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import type { PositionData } from '@/app/[locale]/(public)/practice/_lib/types';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -100,6 +103,7 @@ export function FenSession({
       setRecreatedPosition('8/8/8/8/8/8/8/8 w - - 0 1');
       setCurrentAccuracy(null);
       setPhase('recreate');
+      realignToElement('fen-session');
     } else {
       setPhase('result');
     }
@@ -111,6 +115,7 @@ export function FenSession({
     setRecreatedPosition('8/8/8/8/8/8/8/8 w - - 0 1');
     setCurrentAccuracy(null);
     setPhase('recreate');
+    realignToElement('fen-session');
   }, [currentProblemIndex]);
 
   const handlePlayAgain = useCallback(() => {

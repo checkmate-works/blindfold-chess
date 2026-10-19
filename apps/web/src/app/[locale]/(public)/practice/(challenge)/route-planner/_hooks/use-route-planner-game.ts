@@ -7,7 +7,10 @@ import { isValidSquare } from '@blindfold-chess/features/common';
 import type { RoutePlannerProblemResult } from '@blindfold-chess/features/route-planner';
 import type { Square } from '@blindfold-chess/types';
 
-import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
+import {
+  realignToElement,
+  useScrollToElement,
+} from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 
 import type { PieceType } from '../_lib/pieces';
@@ -15,6 +18,8 @@ import { findShortestPath, generateProblem, validateUserPath } from '../_lib/rou
 import type { StagedCoordinate } from './use-staged-coordinate';
 
 type GameState = 'playing' | 'result';
+
+const SESSION_ELEMENT_ID = 'route-planner-session';
 
 type ResultState = {
   success: boolean;
@@ -66,7 +71,7 @@ export function useRoutePlannerGame({ locale, allowedPieces, mode, stagedCoordin
     }
   }, [mode]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  useScrollToElement('route-planner-session', true);
+  useScrollToElement(SESSION_ELEMENT_ID, true);
 
   const addMove = useCallback(
     (square: string) => {
@@ -162,6 +167,7 @@ export function useRoutePlannerGame({ locale, allowedPieces, mode, stagedCoordin
     }
 
     startNewProblem();
+    realignToElement(SESSION_ELEMENT_ID);
   }, [result, startNewProblem, problem, moves, results]);
 
   const handleEndTraining = useCallback(() => {
