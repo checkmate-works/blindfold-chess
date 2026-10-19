@@ -16,6 +16,8 @@ import type { StagedCoordinate } from './use-staged-coordinate';
 
 type GameState = 'playing' | 'result';
 
+const SESSION_ELEMENT_ID = 'route-planner-session';
+
 type ResultState = {
   success: boolean;
   shortestPath: Square[];
@@ -66,7 +68,7 @@ export function useRoutePlannerGame({ locale, allowedPieces, mode, stagedCoordin
     }
   }, [mode]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  useScrollToElement('route-planner-session', true);
+  useScrollToElement(SESSION_ELEMENT_ID, true);
 
   const addMove = useCallback(
     (square: string) => {
@@ -162,6 +164,17 @@ export function useRoutePlannerGame({ locale, allowedPieces, mode, stagedCoordin
     }
 
     startNewProblem();
+
+    // The result view (solution board + Next button) is far taller than the
+    // input view, so swapping back shrinks the page and the browser clamps the
+    // scroll to wherever it lands, usually leaving the site header and
+    // breadcrumb on screen instead of the new problem. Re-align the session top
+    // as on mount, after the commit that shrinks the page.
+    requestAnimationFrame(() => {
+      document
+        .getElementById(SESSION_ELEMENT_ID)
+        ?.scrollIntoView({ behavior: 'instant', block: 'start' });
+    });
   }, [result, startNewProblem, problem, moves, results]);
 
   const handleEndTraining = useCallback(() => {
