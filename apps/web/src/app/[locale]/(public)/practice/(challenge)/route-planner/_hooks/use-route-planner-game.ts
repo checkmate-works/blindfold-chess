@@ -7,7 +7,10 @@ import { isValidSquare } from '@blindfold-chess/features/common';
 import type { RoutePlannerProblemResult } from '@blindfold-chess/features/route-planner';
 import type { Square } from '@blindfold-chess/types';
 
-import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
+import {
+  realignToElement,
+  useScrollToElement,
+} from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 
 import type { PieceType } from '../_lib/pieces';
@@ -164,17 +167,7 @@ export function useRoutePlannerGame({ locale, allowedPieces, mode, stagedCoordin
     }
 
     startNewProblem();
-
-    // The result view (solution board + Next button) is far taller than the
-    // input view, so swapping back shrinks the page and the browser clamps the
-    // scroll to wherever it lands, usually leaving the site header and
-    // breadcrumb on screen instead of the new problem. Re-align the session top
-    // as on mount, after the commit that shrinks the page.
-    requestAnimationFrame(() => {
-      document
-        .getElementById(SESSION_ELEMENT_ID)
-        ?.scrollIntoView({ behavior: 'instant', block: 'start' });
-    });
+    realignToElement(SESSION_ELEMENT_ID);
   }, [result, startNewProblem, problem, moves, results]);
 
   const handleEndTraining = useCallback(() => {

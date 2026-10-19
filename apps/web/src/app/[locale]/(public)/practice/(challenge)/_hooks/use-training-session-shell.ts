@@ -6,7 +6,10 @@ import { useRouter } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
-import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
+import {
+  realignToElement,
+  useScrollToElement,
+} from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -27,8 +30,10 @@ type UseTrainingSessionShellOptions = {
 
 /**
  * Shared shell logic for the per-module training session components: scrolls
- * the session into view once its content is ready, and provides the
- * "end training" handler (info toast + redirect back to the module top).
+ * the session into view once its content is ready, re-aligns it on demand
+ * (`realignSession`, for modules whose Next button leaves a taller result
+ * view), and provides the "end training" handler (info toast + redirect back
+ * to the module top).
  *
  * Per-feature question generation, answering, and rendering stay in each
  * component. Render the returned `sessionElementId` as the id of the
@@ -51,5 +56,7 @@ export function useTrainingSessionShell({
     router.push(`/${locale}/practice/${slug}`);
   }, [showToast, tp, router, locale, slug]);
 
-  return { sessionElementId, handleEndTraining };
+  const realignSession = useCallback(() => realignToElement(sessionElementId), [sessionElementId]);
+
+  return { sessionElementId, realignSession, handleEndTraining };
 }
