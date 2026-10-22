@@ -15,7 +15,7 @@ import { updateProfile } from '../_actions/updateProfile';
 import type { ProfileFormError } from '../_lib/profile-form-types';
 import {
   type ProfileFields,
-  SERVER_ERROR_MAP,
+  describeProfileError,
   validateProfileFields,
 } from '../_lib/profile-validation';
 
@@ -91,7 +91,7 @@ export function useProfileForm(profile: Profile) {
       });
 
       if ('error' in result) {
-        const mapped = SERVER_ERROR_MAP[result.error];
+        const mapped = describeProfileError(result.error);
         if (mapped) {
           setError({ message: t(mapped.messageKey), field: mapped.field });
         } else {
