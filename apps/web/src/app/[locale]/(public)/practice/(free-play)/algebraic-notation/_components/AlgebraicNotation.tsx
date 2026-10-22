@@ -5,7 +5,10 @@ import { useState } from 'react';
 import { BoardSkeleton } from '@/app/_components';
 
 import { ProgressBar } from '@/app/[locale]/(public)/practice/_components/ProgressBar';
-import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
+import {
+  realignToElement,
+  useScrollToElement,
+} from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -40,7 +43,7 @@ export default function AlgebraicNotation({ questions, locale }: Props) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       setSelectedAnswer('');
       setShowResult(false);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      realignToElement('algebraic-notation-session');
     } else {
       // Redirect to result page
       window.location.href = `/${locale}/practice/algebraic-notation/result?score=${score}&total=${questions.length}`;

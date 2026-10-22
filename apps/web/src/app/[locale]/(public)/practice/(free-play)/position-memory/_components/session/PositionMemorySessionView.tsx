@@ -7,7 +7,10 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { usePieceAccuracy } from '@/app/[locale]/(public)/practice/(free-play)/_hooks/use-piece-accuracy';
 import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';
 import { useQuitConfirmLabels } from '@/app/[locale]/(public)/practice/_hooks/use-quit-confirm-labels';
-import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
+import {
+  realignToElement,
+  useScrollToElement,
+} from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import { useCountdown } from '../../_hooks/use-countdown';
@@ -151,7 +154,15 @@ export function PositionMemorySessionView({
     send({ type: 'SUBMIT', accuracy });
   }, [originalPosition, recreatedPosition, pieceNames, accuracyDescriptions, send]);
 
-  const handleSkip = () => send({ type: skipBehavesAsQuit ? 'OPEN_QUIT_MODAL' : 'SKIP' });
+  // Each of these leaves the taller recreate or result view for the next
+  // memorize phase.
+  const sendAndRealign = (event: { type: 'SKIP' | 'VIEW_AGAIN' | 'NEXT_PROBLEM' }) => {
+    send(event);
+    realignToElement('position-memory-session');
+  };
+
+  const handleSkip = () =>
+    skipBehavesAsQuit ? send({ type: 'OPEN_QUIT_MODAL' }) : sendAndRealign({ type: 'SKIP' });
   const handleQuitClick = () => send({ type: 'OPEN_QUIT_MODAL' });
 
   // Wait for positions to be initialized and preferences to be loaded (avoid SSR/hydration mismatch)
@@ -190,8 +201,8 @@ export function PositionMemorySessionView({
         onQuit={handleQuitClick}
         onPositionChange={(fen) => send({ type: 'UPDATE_POSITION', fen })}
         onSubmit={handleSubmit}
-        onViewAgain={() => send({ type: 'VIEW_AGAIN' })}
-        onNextProblem={() => send({ type: 'NEXT_PROBLEM' })}
+        onViewAgain={() => sendAndRealign({ type: 'VIEW_AGAIN' })}
+        onNextProblem={() => sendAndRealign({ type: 'NEXT_PROBLEM' })}
         onViewResults={() => send({ type: 'VIEW_RESULTS' })}
         onFinishTutorial={onFinishTutorial}
         finishFallback={finishFallback}
