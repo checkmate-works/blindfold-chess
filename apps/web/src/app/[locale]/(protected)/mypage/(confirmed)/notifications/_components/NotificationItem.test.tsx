@@ -68,7 +68,12 @@ vi.mock('next/navigation', () => ({
   }),
 }));
 
-vi.mock('@/i18n/routing');
+// The shared `Link` anchor, plus the `useRouter` that `UserAvatar` (the
+// avatar's profile link) calls on render — the bare mock leaves it out.
+vi.mock('@/i18n/routing', async () => ({
+  ...(await vi.importActual<typeof import('@/i18n/__mocks__/routing')>('@/i18n/__mocks__/routing')),
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
+}));
 
 function createNotification(overrides: Partial<NotificationWithActor> = {}): NotificationWithActor {
   return {
@@ -114,7 +119,10 @@ describe('NotificationItem', () => {
 
       render(<NotificationItem notification={createNotification()} />);
 
-      expect(screen.queryByRole('link')).toBeNull();
+      // The message column degrades to a button; the only link left in the
+      // row is the avatar's own profile link, which is unrelated to the
+      // helper's verdict.
+      expect(screen.getByText('Alice followed you').closest('a')).toBeNull();
       expect(screen.getByRole('button')).toBeDefined();
     });
 
@@ -126,6 +134,61 @@ describe('NotificationItem', () => {
       expect(mockBuildNotificationLink).toHaveBeenCalledWith(notification, {
         currentUsername: 'bob',
       });
+    });
+  });
+
+  describe('avatar profile link', () => {
+    it('links the actor avatar to the actor profile, separately from the row link', () => {
+      mockBuildNotificationLink.mockReturnValue('/games/shared/g1');
+
+      render(<NotificationItem notification={createNotification()} />);
+
+      const avatarLink = screen.getByRole('link', { name: 'Alice' });
+      expect(avatarLink.getAttribute('href')).toBe('/u/alice');
+      // Sibling of the row link, not nested in it.
+      expect(avatarLink.closest('a[href="/games/shared/g1"]')).toBeNull();
+      expect(screen.getByText('Alice followed you').closest('a')!.getAttribute('href')).toBe(
+        '/games/shared/g1'
+      );
+    });
+
+    it('keeps the avatar link even when the row has no link of its own', () => {
+      mockBuildNotificationLink.mockReturnValue(null);
+
+      render(<NotificationItem notification={createNotification()} />);
+
+      expect(screen.getByRole('link', { name: 'Alice' }).getAttribute('href')).toBe('/u/alice');
+    });
+
+    it('does not mark the notification as read when the avatar is clicked', () => {
+      render(<NotificationItem notification={createNotification({ isRead: false })} />);
+
+      fireEvent.click(screen.getByRole('link', { name: 'Alice' }));
+
+      expect(mockMarkAsRead).not.toHaveBeenCalled();
+      expect(mockRefresh).not.toHaveBeenCalled();
+    });
+
+    it('renders an unlinked placeholder avatar when the actor is gone', () => {
+      render(<NotificationItem notification={createNotification({ actor: null })} />);
+
+      expect(screen.queryByRole('link', { name: 'Alice' })).toBeNull();
+      expect(screen.getByText('?')).toBeDefined();
+    });
+
+    it('renders no profile link for a system notification', () => {
+      const { container } = render(
+        <NotificationItem
+          notification={createNotification({
+            type: 'point_grant',
+            actor: null,
+            metadata: { amount: 10 },
+          })}
+          currentUsername="testuser"
+        />
+      );
+
+      expect(container.querySelector('a[href^="/u/"]')).toBeNull();
     });
   });
 

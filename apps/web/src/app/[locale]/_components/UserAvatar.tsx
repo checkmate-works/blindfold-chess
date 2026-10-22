@@ -106,7 +106,11 @@ export function UserAvatar({
   );
 
   // Avatar-only mode — no name, no flair / country, no children. Used by
-  // surfaces that own their own name rendering (mypage, ProfileHeader).
+  // surfaces that own their own name rendering (mypage, ProfileHeader) and
+  // by the notification row, where the name sits inside the row's own link.
+  // Without the name, the link's accessible name would be whatever the
+  // avatar says: the image alt when there is one, but a single initial
+  // letter for the fallback — so the name goes on the link itself.
   if (!showName) {
     if (!profileHref) {
       return avatarImage;
@@ -116,6 +120,7 @@ export function UserAvatar({
         <Link
           href={profileHref}
           locale={locale}
+          aria-label={displayName}
           className="hover:opacity-80 transition-opacity flex-shrink-0"
         >
           {avatarImage}
@@ -125,6 +130,7 @@ export function UserAvatar({
     return (
       <button
         type="button"
+        aria-label={displayName}
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();

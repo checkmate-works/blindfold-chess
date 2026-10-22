@@ -80,18 +80,19 @@ export function NotificationItem({ notification, currentUsername, isTypeMuted = 
   const message = buildNotificationMessage(notification, { actorName, t, tRoot });
   const timeAgo = formatLocalDate(notification.createdAt, locale);
 
-  // The avatar + message column is the only part wrapped in the clickable
-  // Link/button — the mute affordance below is a sibling, not a nested
-  // interactive element, since <button>-in-<button> and <button>-in-<a> are
-  // both invalid HTML (and break keyboard/screen-reader navigation).
+  // The message column is the only part wrapped in the clickable
+  // Link/button. The avatar before it and the mute affordance after it are
+  // siblings, not nested interactive elements: the avatar is its own link
+  // to the actor's profile, and <a>-in-<a>, <button>-in-<button> and
+  // <button>-in-<a> are all invalid HTML (and break keyboard/screen-reader
+  // navigation). Opening a profile is not "checking the notification", so
+  // the avatar link deliberately skips `handleClick` and leaves the row
+  // unread.
   const clickableInner = (
-    <>
-      <NotificationAvatar notification={notification} actorName={actorName} />
-      <div className="min-w-0 flex-1">
-        <p className="text-sm text-foreground">{message}</p>
-        <p className="text-xs text-muted-foreground mt-1">{timeAgo}</p>
-      </div>
-    </>
+    <div className="min-w-0 flex-1">
+      <p className="text-sm text-foreground">{message}</p>
+      <p className="text-xs text-muted-foreground mt-1">{timeAgo}</p>
+    </div>
   );
 
   return (
@@ -101,12 +102,13 @@ export function NotificationItem({ notification, currentUsername, isTypeMuted = 
           !notification.isRead ? 'bg-accent/30' : ''
         }`}
       >
+        <NotificationAvatar notification={notification} actorName={actorName} locale={locale} />
         {link ? (
           <Link
             href={link}
             locale={locale}
             onClick={handleClick}
-            className="flex min-w-0 flex-1 items-start gap-4"
+            className="flex min-w-0 flex-1 items-start"
           >
             {clickableInner}
           </Link>
@@ -114,7 +116,7 @@ export function NotificationItem({ notification, currentUsername, isTypeMuted = 
           <button
             type="button"
             onClick={handleClick}
-            className="flex min-w-0 flex-1 items-start gap-4 text-left"
+            className="flex min-w-0 flex-1 items-start text-left"
           >
             {clickableInner}
           </button>
