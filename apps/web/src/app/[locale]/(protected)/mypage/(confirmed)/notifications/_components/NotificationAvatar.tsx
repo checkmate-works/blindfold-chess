@@ -1,14 +1,17 @@
-import Image from 'next/image';
-
 import type { IconType } from 'react-icons';
 import { GiBlackBelt } from 'react-icons/gi';
 import { HiGift, HiMegaphone, HiSparkles, HiTrophy } from 'react-icons/hi2';
+
+import { buildProfileHref } from '@/lib/users/author-profile';
+
+import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 
 import type { NotificationWithActor } from '../_lib/queries';
 
 type Props = {
   notification: NotificationWithActor;
   actorName: string;
+  locale: string;
 };
 
 const ICON_WRAPPER_CLASS =
@@ -29,9 +32,17 @@ const SYSTEM_ICONS: Record<string, IconType> = {
 /**
  * Leading avatar / icon for a notification row. System notifications
  * (achievement / benefit / coin / announcement) render a fixed icon; actor
- * notifications render the actor's avatar or initials.
+ * notifications render the actor's avatar or initials, linked to the
+ * actor's profile like every other avatar on the site (feed cards, topic
+ * posts). The row's own link points at the notification's target, so the
+ * avatar is the one place the viewer can reach the person behind it.
+ *
+ * Rendered as a sibling of the row link, never inside it: an `<a>` cannot
+ * nest another `<a>`, and the row is one. A deleted actor has no profile
+ * to link to, so `buildProfileHref` returns `null` and the avatar renders
+ * unlinked with a `?` placeholder.
  */
-export function NotificationAvatar({ notification, actorName }: Props) {
+export function NotificationAvatar({ notification, actorName, locale }: Props) {
   const actor = notification.actor;
 
   const SystemIcon = SYSTEM_ICONS[notification.type];
@@ -43,25 +54,14 @@ export function NotificationAvatar({ notification, actorName }: Props) {
     );
   }
 
-  if (actor?.avatarUrl) {
-    return (
-      <Image
-        src={actor.avatarUrl}
-        alt={actorName}
-        width={40}
-        height={40}
-        className="rounded-full object-cover h-10 w-10 flex-shrink-0"
-        // Pre-resized 256×256 WebP at upload; bypass Vercel optimization.
-        unoptimized
-      />
-    );
-  }
-
   return (
-    <div className={ICON_WRAPPER_CLASS}>
-      <span className="text-sm font-medium">
-        {actorName ? actorName.charAt(0).toUpperCase() : '?'}
-      </span>
-    </div>
+    <UserAvatar
+      profileHref={buildProfileHref(actor)}
+      avatarUrl={actor?.avatarUrl}
+      displayName={actorName || '?'}
+      locale={locale}
+      size="md"
+      showName={false}
+    />
   );
 }
