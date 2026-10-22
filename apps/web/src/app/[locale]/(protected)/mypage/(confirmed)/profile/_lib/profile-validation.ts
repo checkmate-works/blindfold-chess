@@ -1,56 +1,50 @@
-import { isValidCountryCode } from '@/lib/countries';
-import { BIO_MAX_LENGTH } from '@/lib/users/profile-limits';
-
 import {
-  CHESS_USERNAME_PATTERN,
-  FIDE_ID_PATTERN,
-  INSTAGRAM_USERNAME_PATTERN,
-  X_USERNAME_PATTERN,
-  YOUTUBE_HANDLE_PATTERN,
-} from './profile-field-rules';
-import type { ProfileFieldKey } from './validate-profile-input';
+  type ProfileFieldKey,
+  type ProfileValidationError,
+  validateProfileInput,
+} from './validate-profile-input';
 
-const VALIDATION_RULES: { field: string; regex: RegExp; errorKey: string }[] = [
-  { field: 'fideId', regex: FIDE_ID_PATTERN, errorKey: 'fideIdInvalidFormat' },
-  {
-    field: 'chesscomUsername',
-    regex: CHESS_USERNAME_PATTERN,
-    errorKey: 'chesscomUsernameInvalidFormat',
-  },
-  {
-    field: 'lichessUsername',
-    regex: CHESS_USERNAME_PATTERN,
-    errorKey: 'lichessUsernameInvalidFormat',
-  },
-  { field: 'xUsername', regex: X_USERNAME_PATTERN, errorKey: 'xUsernameInvalidFormat' },
-  {
-    field: 'instagramUsername',
-    regex: INSTAGRAM_USERNAME_PATTERN,
-    errorKey: 'instagramUsernameInvalidFormat',
-  },
-  { field: 'youtubeHandle', regex: YOUTUBE_HANDLE_PATTERN, errorKey: 'youtubeHandleInvalidFormat' },
-];
-
-export const SERVER_ERROR_MAP: Record<string, { messageKey: string; field: string }> = {
+/**
+ * Where each server error code lands on the form: the i18n message key under
+ * `profile` and the field to highlight.
+ *
+ * Exhaustive over {@link ProfileValidationError}, so a rule added on the
+ * server is a compile error here until the form knows how to show it. The
+ * optional fields' `*_too_long` codes map to the generic message because each
+ * input's `maxLength` (set from `OPTIONAL_FIELD_MAX_LENGTH`) keeps a user from
+ * typing such a value in the first place.
+ */
+export const SERVER_ERROR_MAP: Record<
+  ProfileValidationError,
+  { messageKey: string; field: ProfileFieldKey }
+> = {
   display_name_required: { messageKey: 'displayNameRequired', field: 'displayName' },
+  display_name_too_long: { messageKey: 'displayNameMaxLength', field: 'displayName' },
   display_name_inappropriate: { messageKey: 'displayNameInappropriate', field: 'displayName' },
   display_name_impersonation: { messageKey: 'displayNameImpersonation', field: 'displayName' },
   bio_too_long: { messageKey: 'bioMaxLength', field: 'bio' },
   invalid_country: { messageKey: 'countryInvalid', field: 'country' },
+  flair_too_long: { messageKey: 'error', field: 'flair' },
+  fide_id_too_long: { messageKey: 'error', field: 'fideId' },
   fide_id_invalid_format: { messageKey: 'fideIdInvalidFormat', field: 'fideId' },
+  chesscom_username_too_long: { messageKey: 'error', field: 'chesscomUsername' },
   chesscom_username_invalid_format: {
     messageKey: 'chesscomUsernameInvalidFormat',
     field: 'chesscomUsername',
   },
+  lichess_username_too_long: { messageKey: 'error', field: 'lichessUsername' },
   lichess_username_invalid_format: {
     messageKey: 'lichessUsernameInvalidFormat',
     field: 'lichessUsername',
   },
+  x_username_too_long: { messageKey: 'error', field: 'xUsername' },
   x_username_invalid_format: { messageKey: 'xUsernameInvalidFormat', field: 'xUsername' },
+  instagram_username_too_long: { messageKey: 'error', field: 'instagramUsername' },
   instagram_username_invalid_format: {
     messageKey: 'instagramUsernameInvalidFormat',
     field: 'instagramUsername',
   },
+  youtube_handle_too_long: { messageKey: 'error', field: 'youtubeHandle' },
   youtube_handle_invalid_format: {
     messageKey: 'youtubeHandleInvalidFormat',
     field: 'youtubeHandle',
@@ -67,37 +61,30 @@ export type ProfileFields = Record<ProfileFieldKey, string>;
 export type ValidationError = { messageKey: string; field?: string };
 
 /**
- * Validate profile fields. Returns null if valid, or a ValidationError with an
- * i18n message key and optional field name.
+ * The form's rendering of an error code from `updateProfile`, or `null` for a
+ * code the form does not know (the guard's `signInRequired` and friends),
+ * which the caller shows as the generic message.
+ */
+export function describeProfileError(code: string): ValidationError | null {
+  return Object.hasOwn(SERVER_ERROR_MAP, code)
+    ? SERVER_ERROR_MAP[code as ProfileValidationError]
+    : null;
+}
+
+/**
+ * No profanity check on the client: `isLameName` is `server-only`, and the
+ * Server Action runs the full validator again before writing, so a lame name
+ * is still refused — just after a round trip. Every other rule (required,
+ * length, format, country, homoglyph) runs here exactly as the server runs
+ * it, which is what keeps the two from drifting.
+ */
+const CLIENT_DEPS = { isLameName: () => false };
+
+/**
+ * Validate the form's fields before submitting. Returns `null` when the
+ * server would accept them, or the error to show next to the offending field.
  */
 export function validateProfileFields(fields: ProfileFields): ValidationError | null {
-  if (!fields.displayName.trim()) {
-    return { messageKey: 'displayNameRequired', field: 'displayName' };
-  }
-  if (fields.bio.length > BIO_MAX_LENGTH) {
-    return { messageKey: 'bioMaxLength', field: 'bio' };
-  }
-  // Real ISO 3166-1 alpha-2 membership (not just two letters). Uppercased so a
-  // legacy lowercase value already in the DB doesn't block re-saving.
-  if (fields.country && !isValidCountryCode(fields.country.toUpperCase())) {
-    return { messageKey: 'countryInvalid', field: 'country' };
-  }
-
-  const fieldValues: Record<string, string> = {
-    fideId: fields.fideId,
-    chesscomUsername: fields.chesscomUsername,
-    lichessUsername: fields.lichessUsername,
-    xUsername: fields.xUsername,
-    instagramUsername: fields.instagramUsername,
-    youtubeHandle: fields.youtubeHandle,
-  };
-
-  for (const rule of VALIDATION_RULES) {
-    const value = fieldValues[rule.field].trim();
-    if (value && !rule.regex.test(value)) {
-      return { messageKey: rule.errorKey, field: rule.field };
-    }
-  }
-
-  return null;
+  const result = validateProfileInput(fields, CLIENT_DEPS);
+  return result.ok ? null : SERVER_ERROR_MAP[result.error];
 }

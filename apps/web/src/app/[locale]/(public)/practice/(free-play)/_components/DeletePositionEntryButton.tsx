@@ -1,7 +1,5 @@
 'use client';
 
-import { useState } from 'react';
-
 import { useRouter } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
@@ -11,6 +9,7 @@ import type { ActionResult } from '@/lib/action-types';
 
 import { ActionsMenuButton } from '@/app/[locale]/_components/ActionsMenu';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
+import { useConfirmAction } from '@/app/[locale]/_hooks/use-confirm-action';
 
 type Props = {
   /** i18n namespace holding this entry type's delete copy. */
@@ -31,36 +30,26 @@ type Props = {
  * text next to the trigger would be invisible inside the closed popup.
  */
 export function DeletePositionEntryButton({ namespace, onDelete, redirectPath }: Props) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isPending, setIsPending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const t = useTranslations(namespace);
   const router = useRouter();
+  const { isOpen, open, cancel, isPending, error, setError, run } = useConfirmAction();
 
-  async function handleDelete() {
-    setIsPending(true);
-    setError(null);
-
-    const result = await onDelete();
-
-    if ('error' in result) {
-      setError(result.error);
-      setIsPending(false);
-    } else {
-      setIsOpen(false);
-      setIsPending(false);
-      router.push(redirectPath);
-    }
+  function handleDelete() {
+    return run(
+      onDelete,
+      (result) => ('error' in result ? result.error : null),
+      () => router.push(redirectPath)
+    );
   }
 
   function handleCancel() {
-    setIsOpen(false);
+    cancel();
     setError(null);
   }
 
   return (
     <>
-      <ActionsMenuButton tone="danger" onClick={() => setIsOpen(true)} disabled={isPending}>
+      <ActionsMenuButton tone="danger" onClick={open} disabled={isPending}>
         <FiTrash2 className="h-4 w-4" aria-hidden />
         {t('button')}
       </ActionsMenuButton>

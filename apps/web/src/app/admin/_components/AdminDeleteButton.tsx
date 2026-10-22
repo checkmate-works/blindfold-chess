@@ -1,8 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
+import { useConfirmAction } from '@/app/[locale]/_hooks/use-confirm-action';
 
 type AdminDeleteButtonProps = {
   id: string;
@@ -19,27 +18,17 @@ type AdminDeleteButtonProps = {
 };
 
 export function AdminDeleteButton({ id, title, deleteAction, labels }: AdminDeleteButtonProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isPending, setIsPending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { isOpen, open, cancel, isPending, error, setError, run } = useConfirmAction();
 
-  async function handleDelete() {
-    setIsPending(true);
-    setError(null);
-
-    const result = await deleteAction(id);
-
-    if ('error' in result) {
-      setError(result.error);
-      setIsPending(false);
-    } else {
-      setIsOpen(false);
-      setIsPending(false);
-    }
+  function handleDelete() {
+    return run(
+      () => deleteAction(id),
+      (result) => ('error' in result ? result.error : null)
+    );
   }
 
   function handleCancel() {
-    setIsOpen(false);
+    cancel();
     setError(null);
   }
 
@@ -47,7 +36,7 @@ export function AdminDeleteButton({ id, title, deleteAction, labels }: AdminDele
     <>
       <button
         type="button"
-        onClick={() => setIsOpen(true)}
+        onClick={open}
         className="px-3 py-1 text-xs font-medium rounded bg-destructive text-destructive-foreground hover:opacity-80 transition-opacity"
       >
         {labels.deleteButton}

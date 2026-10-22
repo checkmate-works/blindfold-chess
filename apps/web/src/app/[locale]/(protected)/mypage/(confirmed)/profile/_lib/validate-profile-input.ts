@@ -179,9 +179,9 @@ export function validateProfileInput(
     return { ok: false, error: 'bio_too_long' };
   }
 
-  // Real ISO 3166-1 alpha-2 membership, matching the client-side rule in
-  // `./profile-validation`. A bare two-letter regex here used to accept
-  // codes like "ZZ" that the client form rejects.
+  // Real ISO 3166-1 alpha-2 membership. A bare two-letter regex here used to
+  // accept codes like "ZZ", back when the form ran its own copy of these
+  // rules and rejected them.
   const country = input.country?.trim().toUpperCase() || null;
   if (country && !isValidCountryCode(country)) {
     return { ok: false, error: 'invalid_country' };

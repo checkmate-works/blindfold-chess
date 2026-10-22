@@ -1,7 +1,5 @@
 'use client';
 
-import { useState } from 'react';
-
 import { useRouter } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
@@ -9,6 +7,7 @@ import { FiTrash2 } from 'react-icons/fi';
 
 import { ActionsMenuButton } from '@/app/[locale]/_components/ActionsMenu';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
+import { useConfirmAction } from '@/app/[locale]/_hooks/use-confirm-action';
 
 import type { DeletePostAction } from '../_lib/action-types';
 
@@ -52,58 +51,50 @@ export function DeletePostButton({
   stayOnPage = false,
   variant = 'inline',
 }: Props) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isPending, setIsPending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const t = useTranslations(i18nNamespace);
   const router = useRouter();
+  const { isOpen, open, cancel, isPending, error, setError, run } = useConfirmAction();
 
-  async function handleDelete() {
-    setIsPending(true);
-    setError(null);
-
-    const result = await deletePostAction(postId, locale);
-
-    if ('error' in result) {
-      setError(result.error);
-      setIsPending(false);
-    } else {
-      setIsOpen(false);
-      setIsPending(false);
-      if (stayOnPage) {
-        // Reply / comment delete: stay on the current page. `deletePost`
-        // already revalidated the path server-side; `router.refresh()`
-        // re-fetches so the deleted comment drops out while the rest of
-        // the thread stays put. No `router.push` — navigating to the
-        // listing here would make every other comment appear to vanish.
-        router.refresh();
-      } else {
-        // OP / root-post delete: the detail page is meaningless once the
-        // root is gone, so navigate to `redirectPath` (the listing), then
-        // refresh to bust the cache. `router.push` to the same URL does
-        // not re-fetch on its own, which is why the refresh follows.
-        router.push(redirectPath);
-        router.refresh();
+  function handleDelete() {
+    return run(
+      () => deletePostAction(postId, locale),
+      (result) => ('error' in result ? result.error : null),
+      () => {
+        if (stayOnPage) {
+          // Reply / comment delete: stay on the current page. `deletePost`
+          // already revalidated the path server-side; `router.refresh()`
+          // re-fetches so the deleted comment drops out while the rest of
+          // the thread stays put. No `router.push` — navigating to the
+          // listing here would make every other comment appear to vanish.
+          router.refresh();
+        } else {
+          // OP / root-post delete: the detail page is meaningless once the
+          // root is gone, so navigate to `redirectPath` (the listing), then
+          // refresh to bust the cache. `router.push` to the same URL does
+          // not re-fetch on its own, which is why the refresh follows.
+          router.push(redirectPath);
+          router.refresh();
+        }
       }
-    }
+    );
   }
 
   function handleCancel() {
-    setIsOpen(false);
+    cancel();
     setError(null);
   }
 
   return (
     <>
       {variant === 'menuItem' ? (
-        <ActionsMenuButton tone="danger" onClick={() => setIsOpen(true)} disabled={isPending}>
+        <ActionsMenuButton tone="danger" onClick={open} disabled={isPending}>
           <FiTrash2 className="h-4 w-4" aria-hidden />
           {t('button')}
         </ActionsMenuButton>
       ) : (
         <button
           type="button"
-          onClick={() => setIsOpen(true)}
+          onClick={open}
           className="text-xs text-muted-foreground hover:text-destructive transition-colors"
         >
           {t('button')}
