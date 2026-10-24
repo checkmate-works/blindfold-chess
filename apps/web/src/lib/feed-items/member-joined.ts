@@ -22,6 +22,13 @@
  *   daily reaper as rank-update cards. The step's copy promises this number,
  *   so the copy and the reaper must read it from here.
  *
+ * @design Likes earn no coins
+ * The daily like-coin batch pays out only for the UGC kinds listed in
+ * `LIKE_GRANT_TARGET_TYPES` (`@/lib/points/constants`), and this card is not
+ * one of them — deliberately. It is not content the member made, and a card
+ * that pays its owner per like would invite accounts created to be liked.
+ * Likes on it still count and still notify; they are just not currency.
+ *
  * @design Home feed only
  * The profile timeline excludes this type ({@link PROFILE_TIMELINE_EXCLUDED_ENTITY_TYPES}):
  * "joined" is news for other members, not part of the member's own activity
