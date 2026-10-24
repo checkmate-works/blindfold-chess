@@ -15,8 +15,8 @@
  * @design Opt-in, one-shot, removable, temporary
  * - Opt-in: nothing is posted unless the member presses "post" on the
  *   onboarding step, which previews the exact card first.
- * - One-shot: the answer is recorded on `profiles.join_announcement_decided_at`
- *   (see its TSDoc); a deleted or expired card is never offered again.
+ * - One-shot: the answer is recorded in `join_announcement_decisions` (see
+ *   its TSDoc); a deleted or expired card is never offered again.
  * - Removable: the owner deletes it from the card's "⋯" menu.
  * - Temporary: {@link MEMBER_JOINED_RETENTION_DAYS} days, enforced by the same
  *   daily reaper as rank-update cards. The step's copy promises this number,

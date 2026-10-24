@@ -31,7 +31,7 @@ type Props = {
  * card that would be posted, says how long it stays and how to delete it, and
  * leaves the choice to two buttons: there is no default.
  *
- * The answer is final (one-shot — see `profiles.join_announcement_decided_at`),
+ * The answer is final (one-shot — see `join_announcement_decisions`),
  * so going back to this step shows what was chosen rather than asking again.
  */
 export function JoinAnnouncementStep({ locale, member, answer, onAnswered, onNext }: Props) {

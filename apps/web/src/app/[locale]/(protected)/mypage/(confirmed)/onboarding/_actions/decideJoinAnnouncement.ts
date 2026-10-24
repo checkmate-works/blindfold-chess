@@ -1,13 +1,13 @@
 'use server';
 
 import type { ActionResult } from '@/lib/action-types';
-import { authenticateAndCheckBan } from '@/lib/auth';
+import { authenticateCheckBanAndRequireProfile } from '@/lib/auth';
 import { decideJoinAnnouncement as recordJoinAnnouncementDecision } from '@/lib/feed-items/member-joined-mutations';
 import { handleServerActionError } from '@/lib/server-action-error';
 
 export type DecideJoinAnnouncementResult = ActionResult<
   Record<never, never>,
-  'signInRequired' | 'banned' | 'alreadyDecided' | 'unexpected_error'
+  'signInRequired' | 'banned' | 'profileRequired' | 'alreadyDecided' | 'unexpected_error'
 >;
 
 /**
@@ -22,9 +22,16 @@ export async function decideJoinAnnouncement(input: {
   announce: boolean;
 }): Promise<DecideJoinAnnouncementResult> {
   try {
-    const auth = await authenticateAndCheckBan();
+    // The card renders from the member's profile, so a provisional user (no
+    // `profiles` row) must not be able to claim the one-shot answer yet.
+    const auth = await authenticateCheckBanAndRequireProfile();
     if ('error' in auth) {
-      return { error: auth.error === 'banned' ? 'banned' : 'signInRequired' };
+      return {
+        error:
+          auth.error === 'banned' || auth.error === 'profileRequired'
+            ? auth.error
+            : 'signInRequired',
+      };
     }
 
     const recorded = await recordJoinAnnouncementDecision(auth.user.id, input.announce === true);

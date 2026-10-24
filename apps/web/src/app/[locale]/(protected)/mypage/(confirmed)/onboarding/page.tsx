@@ -21,6 +21,7 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { getAuthenticatedUser } from '@/lib/auth';
+import { hasJoinAnnouncementDecision } from '@/lib/feed-items/member-joined-mutations';
 import { getViewerProfile } from '@/lib/users/viewer-profile';
 
 import { PageLayout } from '@/app/[locale]/_components';
@@ -48,7 +49,10 @@ export default async function OnboardingPage({ params }: Props) {
   const t = await getTranslations({ locale, namespace: 'onboardingWizard' });
 
   const user = await getAuthenticatedUser();
-  const profile = await getViewerProfile(user.id);
+  const [profile, hasDecided] = await Promise.all([
+    getViewerProfile(user.id),
+    hasJoinAnnouncementDecision(user.id),
+  ]);
 
   if (!profile) {
     notFound();
@@ -66,7 +70,7 @@ export default async function OnboardingPage({ params }: Props) {
           flair: profile.flair,
         }}
         currentBio={profile.bio}
-        canAnnounce={profile.joinAnnouncementDecidedAt === null}
+        canAnnounce={!hasDecided}
         beltSlide={<BeltRanksSlide locale={locale} />}
       />
     </PageLayout>

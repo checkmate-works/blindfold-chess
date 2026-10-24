@@ -9,7 +9,7 @@ vi.mock('@/lib/feed-items/member-joined-mutations', () => ({
 
 const mockAuth = vi.fn();
 vi.mock('@/lib/auth', () => ({
-  authenticateAndCheckBan: () => mockAuth(),
+  authenticateCheckBanAndRequireProfile: () => mockAuth(),
 }));
 
 vi.mock('@/lib/server-action-error', () => ({
@@ -42,9 +42,12 @@ describe('decideJoinAnnouncement', () => {
     expect(mockRecord).toHaveBeenCalledWith('member-1', false);
   });
 
-  it('maps a ban to banned and anything else to signInRequired', async () => {
+  it('maps a ban to banned, a missing profile to profileRequired, anything else to signInRequired', async () => {
     mockAuth.mockResolvedValueOnce({ error: 'banned' });
     expect(await decideJoinAnnouncement({ announce: true })).toEqual({ error: 'banned' });
+
+    mockAuth.mockResolvedValueOnce({ error: 'profileRequired' });
+    expect(await decideJoinAnnouncement({ announce: true })).toEqual({ error: 'profileRequired' });
 
     mockAuth.mockResolvedValueOnce({ error: 'unauthenticated' });
     expect(await decideJoinAnnouncement({ announce: true })).toEqual({ error: 'signInRequired' });

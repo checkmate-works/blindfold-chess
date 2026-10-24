@@ -20,7 +20,7 @@ type Props = {
   currentBio: string | null;
   /**
    * Whether the arrival-announcement step is still open for this member
-   * (`profiles.join_announcement_decided_at IS NULL`). When it is not — already
+   * (no `join_announcement_decisions` row). When it is not — already
    * answered, or a member who predates the feature — the step is left out.
    */
   canAnnounce: boolean;

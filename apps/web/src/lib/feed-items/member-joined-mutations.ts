@@ -1,7 +1,7 @@
-import { and, eq, isNull } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import 'server-only';
 
-import { db, feedItems, likes, profiles } from '@/lib/db';
+import { db, feedItems, joinAnnouncementDecisions, likes } from '@/lib/db';
 
 import { MEMBER_JOINED_ENTITY_TYPE, MEMBER_JOINED_LIKE_TARGET } from './member-joined';
 
@@ -9,12 +9,12 @@ import { MEMBER_JOINED_ENTITY_TYPE, MEMBER_JOINED_LIKE_TARGET } from './member-j
  * Record the member's answer to the onboarding arrival-announcement step and,
  * when the answer is yes, post the card.
  *
- * The conditional UPDATE is the claim: only the request that flips
- * `join_announcement_decided_at` from NULL inserts a row, so a double submit,
- * a second tab, or a return visit after deleting the card cannot post again.
- * It also returns nothing for a member who has no `profiles` row yet, or who
- * predates the feature (backfilled as decided), so both fall out as
- * `alreadyDecided` without a separate check.
+ * The `join_announcement_decisions` primary key is the claim: only the
+ * request whose INSERT lands posts the card, so a double submit, a second tab,
+ * or a return visit after deleting the card cannot post again. A member who
+ * predates the feature already has a `not_offered` row and falls out the same
+ * way. The caller must have checked that the member has a profile — the card
+ * renders from it.
  *
  * @returns `true` if this call recorded the answer, `false` if it was already
  *   recorded (nothing changed).
@@ -22,10 +22,10 @@ import { MEMBER_JOINED_ENTITY_TYPE, MEMBER_JOINED_LIKE_TARGET } from './member-j
 export async function decideJoinAnnouncement(userId: string, announce: boolean): Promise<boolean> {
   return db.transaction(async (tx) => {
     const claimed = await tx
-      .update(profiles)
-      .set({ joinAnnouncementDecidedAt: new Date() })
-      .where(and(eq(profiles.id, userId), isNull(profiles.joinAnnouncementDecidedAt)))
-      .returning({ id: profiles.id });
+      .insert(joinAnnouncementDecisions)
+      .values({ userId, outcome: announce ? 'announced' : 'declined' })
+      .onConflictDoNothing()
+      .returning({ userId: joinAnnouncementDecisions.userId });
 
     if (claimed.length === 0) return false;
 
@@ -72,6 +72,19 @@ export async function deleteOwnJoinAnnouncement(
       .where(and(eq(likes.targetType, MEMBER_JOINED_LIKE_TARGET), eq(likes.targetId, feedItemId)));
     return true;
   });
+}
+
+/**
+ * Whether the member has already answered the arrival-announcement step (or
+ * predates it). The onboarding page leaves the step out when this is true.
+ */
+export async function hasJoinAnnouncementDecision(userId: string): Promise<boolean> {
+  const [row] = await db
+    .select({ userId: joinAnnouncementDecisions.userId })
+    .from(joinAnnouncementDecisions)
+    .where(eq(joinAnnouncementDecisions.userId, userId))
+    .limit(1);
+  return row != null;
 }
 
 /**
