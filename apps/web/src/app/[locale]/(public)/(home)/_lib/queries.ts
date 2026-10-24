@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, lt } from 'drizzle-orm';
+import { and, desc, eq, inArray, lt, notInArray } from 'drizzle-orm';
 
 import { db, feedItems } from '@/lib/db';
 import { excludeBlockedAuthors } from '@/lib/moderation/block';
@@ -6,6 +6,7 @@ import { excludeBlockedAuthors } from '@/lib/moderation/block';
 import { liveFeedRow } from './feed-liveness';
 import { loadChunksForFeed } from './feed-queries/load-chunks';
 import { loadGamesForFeed } from './feed-queries/load-games';
+import { loadMemberJoinedForFeed } from './feed-queries/load-member-joined';
 import { loadPositionsForFeed } from './feed-queries/load-positions';
 import { loadRankUpdateActors } from './feed-queries/load-rank-update-actors';
 import { loadTopicPostsForFeed } from './feed-queries/load-topic-posts';
@@ -73,6 +74,7 @@ export async function getFeedData({
   limit,
   currentUserId,
   entityTypes,
+  excludeEntityTypes,
   actorId,
 }: {
   cursor?: string;
@@ -90,6 +92,13 @@ export async function getFeedData({
    */
   entityTypes?: readonly string[];
   /**
+   * Optional blacklist of `feed_items.entityType` values, applied in SQL like
+   * `entityTypes`. For a surface that wants "everything except" — the profile
+   * timeline drops arrival announcements — without having to restate the
+   * full list and fall behind the next new type.
+   */
+  excludeEntityTypes?: readonly string[];
+  /**
    * Optional author scope — restricts the feed to one member's own activity
    * (the public profile timeline). Backed by `idx_feed_items_actor_created`,
    * which covers this filter together with the cursor's ORDER BY.
@@ -103,6 +112,7 @@ export async function getFeedData({
       and(
         cursor ? lt(feedItems.createdAt, new Date(cursor)) : undefined,
         entityTypes ? inArray(feedItems.entityType, [...entityTypes]) : undefined,
+        excludeEntityTypes ? notInArray(feedItems.entityType, [...excludeEntityTypes]) : undefined,
         actorId ? eq(feedItems.actorId, actorId) : undefined,
         liveFeedRow(),
         await excludeBlockedAuthors(feedItems.actorId, currentUserId)
@@ -121,13 +131,17 @@ export async function getFeedData({
     ...new Set(rows.filter((r) => r.entityType === 'challenge_rank_update').map((r) => r.actorId)),
   ];
 
-  const [topicPostMap, positionMap, chunkMap, gameMap, rankUpdateActorMap] = await Promise.all([
-    loadTopicPostsForFeed(topicPostIds, currentUserId),
-    loadPositionsForFeed(positionIds, currentUserId),
-    loadChunksForFeed(chunkIds, currentUserId),
-    loadGamesForFeed(gameIds, currentUserId),
-    loadRankUpdateActors(rankUpdateActorIds),
-  ]);
+  const memberJoinedRows = rows.filter((r) => r.entityType === 'member_joined');
+
+  const [topicPostMap, positionMap, chunkMap, gameMap, rankUpdateActorMap, memberJoinedMap] =
+    await Promise.all([
+      loadTopicPostsForFeed(topicPostIds, currentUserId),
+      loadPositionsForFeed(positionIds, currentUserId),
+      loadChunksForFeed(chunkIds, currentUserId),
+      loadGamesForFeed(gameIds, currentUserId),
+      loadRankUpdateActors(rankUpdateActorIds),
+      loadMemberJoinedForFeed(memberJoinedRows, currentUserId),
+    ]);
 
   const items = assembleFeedItems(rows, {
     topicPostMap,
@@ -135,6 +149,7 @@ export async function getFeedData({
     chunkMap,
     gameMap,
     rankUpdateActorMap,
+    memberJoinedMap,
   });
 
   return { items, nextCursor };
@@ -180,6 +195,8 @@ export type FeedEntityMaps = {
   chunkMap: Awaited<ReturnType<typeof loadChunksForFeed>>;
   gameMap: Awaited<ReturnType<typeof loadGamesForFeed>>;
   rankUpdateActorMap: Awaited<ReturnType<typeof loadRankUpdateActors>>;
+  /** Keyed by feed row id, not entity id — see `loadMemberJoinedForFeed`. */
+  memberJoinedMap: Awaited<ReturnType<typeof loadMemberJoinedForFeed>>;
 };
 
 /**
@@ -239,6 +256,9 @@ export function assembleFeedItems(rows: readonly FeedRow[], maps: FeedEntityMaps
         };
         items.push({ ...base, entityType: 'challenge_rank_update', data });
       }
+    } else if (row.entityType === 'member_joined') {
+      const data = maps.memberJoinedMap.get(row.id);
+      if (data) items.push({ ...base, entityType: 'member_joined', data });
     }
   }
 

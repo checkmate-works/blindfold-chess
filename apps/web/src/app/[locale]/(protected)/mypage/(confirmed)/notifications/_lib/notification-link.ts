@@ -240,6 +240,13 @@ export function buildNotificationLink(
  * guards, so per-type behavior is unchanged.
  */
 function buildEngagementLink(notification: NotificationWithActor): string | null {
+  if (notification.type === 'like' && notification.targetType === 'member_joined') {
+    // A like on the recipient's own arrival announcement. The card itself is
+    // ephemeral (deleted by its owner or reaped after 30 days) and has no page
+    // of its own, so the useful destination is the person who said hello —
+    // a new member's first chance to look someone up and follow back.
+    return notification.actor ? `/u/${notification.actor.username}` : null;
+  }
   if (notification.type === 'like' && notification.targetType === 'position') {
     if (isPositionMetadata(notification.metadata)) {
       // Prefer the stored `positionType` so puzzle likes route to

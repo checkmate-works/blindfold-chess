@@ -147,6 +147,10 @@ export function FeedClient({
   // are separated by a `border-b` divider on their wrapper.
   const itemWrapperClass = variant === 'card' ? '' : 'border-b border-border last:border-b-0';
 
+  const removeItem = useCallback((itemId: string) => {
+    setItems((prev) => prev.filter((i) => i.id !== itemId));
+  }, []);
+
   const renderDisplayItem = useCallback(
     (index: number, displayItem: DisplayItem) => {
       if (displayItem.type === 'ad') {
@@ -175,11 +179,21 @@ export function FeedClient({
             justNowLabel={justNowLabel}
             variant={variant}
             actionSize={actionSize}
+            onRemove={removeItem}
           />
         </div>
       );
     },
-    [locale, showMoreLabel, justNowLabel, variant, actionSize, itemWrapperClass, adCreatives]
+    [
+      locale,
+      showMoreLabel,
+      justNowLabel,
+      variant,
+      actionSize,
+      itemWrapperClass,
+      adCreatives,
+      removeItem,
+    ]
   );
 
   const loadMore = useCallback(async () => {

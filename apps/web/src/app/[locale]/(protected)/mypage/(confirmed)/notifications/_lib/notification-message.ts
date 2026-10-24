@@ -39,6 +39,9 @@ export function buildNotificationMessage(
       if (notification.targetType === 'game') {
         return t('likeGameMessage', { actor: actorName });
       }
+      if (notification.targetType === 'member_joined') {
+        return t('likeJoinAnnouncementMessage', { actor: actorName });
+      }
       if (notification.targetType === 'game_comment' || notification.targetType === 'topic_post') {
         return t('likeCommentMessage', { actor: actorName });
       }

@@ -33,6 +33,37 @@ describe('buildNotificationLink — follow', () => {
   });
 });
 
+describe('buildNotificationLink — arrival announcements', () => {
+  it('links a like on the announcement to the liker profile', () => {
+    expect(
+      buildNotificationLink(
+        makeNotification({
+          type: 'like',
+          targetType: 'member_joined',
+          targetId: 'feed-1',
+          metadata: {},
+        }),
+        {}
+      )
+    ).toBe('/u/alice');
+  });
+
+  it('has no link once the liker is gone', () => {
+    expect(
+      buildNotificationLink(
+        makeNotification({
+          type: 'like',
+          targetType: 'member_joined',
+          targetId: 'feed-1',
+          metadata: {},
+          actor: null,
+        }),
+        {}
+      )
+    ).toBeNull();
+  });
+});
+
 describe('buildNotificationLink — topic posts (openings / squares)', () => {
   it('links a new_post to the opening post page', () => {
     expect(

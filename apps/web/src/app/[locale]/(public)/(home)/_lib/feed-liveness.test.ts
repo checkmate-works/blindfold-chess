@@ -66,6 +66,13 @@ describe('liveFeedRow', () => {
     expect(sql).toContain(`"feed_items"."metadata" -> 'rank' <= to_jsonb(10::int)`);
   });
 
+  it('admits an arrival announcement only while the member has not left', () => {
+    expect(sql).toContain(
+      `WHEN 'member_joined' THEN ( SELECT "profiles"."deleted_at" IS NULL FROM "profiles" ` +
+        `WHERE "profiles"."id" = "feed_items"."actor_id" )`
+    );
+  });
+
   it('rejects an entity type it has not been taught', () => {
     // Fail-closed. A new type is invisible until it is added here, alongside
     // its loader and its branch of the orchestrator switch in `queries.ts`.
@@ -73,7 +80,14 @@ describe('liveFeedRow', () => {
   });
 
   it('covers every entity type the feed can render', () => {
-    for (const type of ['topic_post', 'position', 'chunk', 'game', 'challenge_rank_update']) {
+    for (const type of [
+      'topic_post',
+      'position',
+      'chunk',
+      'game',
+      'challenge_rank_update',
+      'member_joined',
+    ]) {
       expect(sql).toContain(`WHEN '${type}' THEN`);
     }
   });
@@ -87,6 +101,6 @@ describe('liveFeedRow', () => {
     expect(sql).not.toContain('EXISTS');
     // One scalar subquery per branch. (Drizzle emits the outer `select`
     // lowercase, so only this predicate's own subqueries are counted.)
-    expect(sql.match(/SELECT/g)?.length).toBe(5);
+    expect(sql.match(/SELECT/g)?.length).toBe(6);
   });
 });
