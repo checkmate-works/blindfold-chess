@@ -5,6 +5,8 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { type HelpStep, HelpTourButton } from '@/app/[locale]/_components/HelpTourButton';
 import { PageTitle } from '@/app/[locale]/_components/PageTitle';
 
+import { StepHeading } from './StepHeading';
+
 /**
  * Step 2 — teaches the help-tour affordance. Instead of a static illustration,
  * this renders a live replica of a real page header (a `PageTitle` paired with
@@ -29,7 +31,7 @@ export function HelpTourStep() {
 
   return (
     <div className="space-y-6">
-      <p className="text-center font-medium text-foreground">{t('helpTour.title')}</p>
+      <StepHeading>{t('helpTour.title')}</StepHeading>
 
       <div className="rounded-lg border border-border bg-muted/30 p-4">
         <div data-tour-id={DEMO_TARGET_ID} className="flex items-center justify-center gap-2">

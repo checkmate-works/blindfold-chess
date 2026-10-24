@@ -6,6 +6,8 @@ import { Link } from '@/i18n/routing';
 import { RankCard } from '@/app/[locale]/(public)/dojo/ranks/_components/RankCard';
 import { buildRankTeaserCards } from '@/app/[locale]/(public)/dojo/ranks/_lib/requirement-items';
 
+import { StepHeading } from './StepHeading';
+
 type Props = {
   locale: string;
 };
@@ -13,7 +15,7 @@ type Props = {
 /**
  * Onboarding final step — reuses the getting-started "黒帯を目指して鍛錬しよう"
  * belt-ranks teaser (gettingStarted.ranks heading + RankCard teaser cards),
- * restyled to match the onboarding slide headings. Server-rendered and passed
+ * with the heading in the wizard's shared `StepHeading` style. Server-rendered and passed
  * into the client `OnboardingWizard` as the last slide. It carries its own exit
  * links — すべての段級位を見る → /ranks and AIと対局する → /games/new — so the
  * wizard's shared next/back nav is hidden here.
@@ -30,7 +32,7 @@ export async function BeltRanksSlide({ locale }: Props) {
   return (
     <section className="space-y-6">
       <div className="space-y-1 text-center">
-        <p className="font-medium text-foreground">{t('ranks.title')}</p>
+        <StepHeading>{t('ranks.title')}</StepHeading>
         <p className="text-sm text-muted-foreground">{tw('belt.description')}</p>
       </div>
 
