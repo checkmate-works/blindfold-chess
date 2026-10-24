@@ -30,11 +30,18 @@ beforeEach(() => {
 });
 
 describe('toggleJoinAnnouncementLikeAction', () => {
-  it('refuses a card that no longer exists instead of recording an orphan like', async () => {
+  it('asks the factory to refuse a card that no longer exists', async () => {
+    // The existence check lives in `fetchOwner`, behind the factory's guard,
+    // so a signed-out or rate-limited caller never costs a query. The
+    // factory's own test covers what `missingTarget: 'reject'` does with it.
     mockGetOwner.mockResolvedValue(null);
+    mockToggle.mockResolvedValue({ error: 'notFound' });
 
     expect(await toggleJoinAnnouncementLikeAction(FEED_ID, 'en')).toEqual({ error: 'notFound' });
-    expect(mockToggle).not.toHaveBeenCalled();
+    const params = mockToggle.mock.calls[0][0];
+    expect(params.missingTarget).toBe('reject');
+    expect(await params.fetchOwner(FEED_ID)).toBeNull();
+    expect(mockGetOwner).toHaveBeenCalledWith(FEED_ID);
   });
 
   it('likes the feed row and names the member who joined as the owner to notify', async () => {
@@ -50,7 +57,9 @@ describe('toggleJoinAnnouncementLikeAction', () => {
     expect(await params.fetchOwner(FEED_ID)).toEqual({ userId: 'member-1', extra: null });
   });
 
-  it('rejects a malformed id before touching the database', async () => {
+  it('does not query the database before handing over to the guarded factory', async () => {
+    mockToggle.mockResolvedValue({ error: 'invalidFeedItemId' });
+
     expect(await toggleJoinAnnouncementLikeAction('nope', 'en')).toEqual({
       error: 'invalidFeedItemId',
     });

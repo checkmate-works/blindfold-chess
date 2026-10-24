@@ -19,24 +19,26 @@ import { isValidUUID } from '@/lib/validations/uuid';
  * third `topicKey` argument the shared `LikeButton` passes is ignored.
  *
  * A card that is gone (deleted by its owner, or reaped after 30 days) is
- * refused up front rather than liked: the generic factory would still record
- * a like on a missing target, and nothing would ever clean that row up.
+ * refused rather than liked (`missingTarget: 'reject'`): a like on a missing
+ * row would never be cleaned up. The lookup runs inside the factory, after
+ * its auth / ban / rate-limit guard, so a caller the guard turns away costs
+ * no query.
  */
 export async function toggleJoinAnnouncementLikeAction(
   feedItemId: string,
   _locale: string
 ): Promise<ToggleLikeResult> {
   try {
-    if (!isValidUUID(feedItemId)) return { error: 'invalidFeedItemId' };
-    const ownerId = await getJoinAnnouncementOwnerId(feedItemId);
-    if (!ownerId) return { error: 'notFound' };
-
     return await performEntityToggleLike({
       id: feedItemId,
       fieldName: 'feedItemId',
       targetType: MEMBER_JOINED_LIKE_TARGET,
-      fetchOwner: async () => ({ userId: ownerId, extra: null }),
+      fetchOwner: async (id) => {
+        const ownerId = await getJoinAnnouncementOwnerId(id);
+        return ownerId ? { userId: ownerId, extra: null } : null;
+      },
       notificationMeta: () => ({}),
+      missingTarget: 'reject',
     });
   } catch (error) {
     return handleServerActionError(error, '[toggleJoinAnnouncementLikeAction]');
