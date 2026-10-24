@@ -3844,7 +3844,7 @@
     },
     "helpTour": {
       "title": "¿No sabes cómo usar una pantalla?",
-      "demoTitle": "Pantalla de ejemplo",
+      "demoTitle": "Actividad Reciente",
       "demoHint": "Pulsa el ? junto al título de la página, en la parte superior, para ver la ayuda de esa pantalla.",
       "label": "Ayuda",
       "demoTourTitle": "Recorrido de ayuda",

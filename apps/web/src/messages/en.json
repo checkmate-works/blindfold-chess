@@ -3844,7 +3844,7 @@
     },
     "helpTour": {
       "title": "Not sure how to use a screen?",
-      "demoTitle": "Sample screen",
+      "demoTitle": "Latest Activity",
       "demoHint": "Press the ? next to the page title at the top of the screen to view help for that screen.",
       "label": "Help",
       "demoTourTitle": "Help tour",
