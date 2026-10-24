@@ -3825,8 +3825,7 @@
     "announcementNotFound": "Anúncio Não Encontrado"
   },
   "onboardingProfile": {
-    "completed": "Cadastro concluído 🎉",
-    "prompt": "Em seguida, configure seu perfil (opcional).",
+    "prompt": "Configure seu perfil.",
     "avatarLabel": "Avatar",
     "countryLabel": "País"
   },
@@ -3837,7 +3836,7 @@
       "back": "Voltar",
       "next": "Avançar",
       "saveAndNext": "Salvar e continuar",
-      "skip": "Pular"
+      "skip": "Configurar depois"
     },
     "belt": {
       "description": "Um currículo feito para você vencer partidas às cegas contra a IA.",

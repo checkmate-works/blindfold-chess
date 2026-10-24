@@ -3825,8 +3825,7 @@
     "announcementNotFound": "Announcement Not Found"
   },
   "onboardingProfile": {
-    "completed": "Registration complete 🎉",
-    "prompt": "Next, set up your profile (optional).",
+    "prompt": "Set up your profile.",
     "avatarLabel": "Avatar",
     "countryLabel": "Country"
   },
@@ -3837,7 +3836,7 @@
       "back": "Back",
       "next": "Next",
       "saveAndNext": "Save and continue",
-      "skip": "Skip"
+      "skip": "Set up later"
     },
     "belt": {
       "description": "A curriculum designed to get you winning blindfold games against the AI.",

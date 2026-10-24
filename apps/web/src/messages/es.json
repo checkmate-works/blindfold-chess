@@ -3825,8 +3825,7 @@
     "announcementNotFound": "Anuncio No Encontrado"
   },
   "onboardingProfile": {
-    "completed": "Registro completado 🎉",
-    "prompt": "A continuación, configura tu perfil (opcional).",
+    "prompt": "Configura tu perfil.",
     "avatarLabel": "Avatar",
     "countryLabel": "País"
   },
@@ -3837,7 +3836,7 @@
       "back": "Atrás",
       "next": "Siguiente",
       "saveAndNext": "Guardar y continuar",
-      "skip": "Omitir"
+      "skip": "Configurar más tarde"
     },
     "belt": {
       "description": "Un plan de estudios diseñado para que ganes partidas a ciegas contra la IA.",

@@ -126,6 +126,7 @@ export function OnboardingWizard({ locale, member, currentBio, canAnnounce, belt
           onCountryChange={setCountry}
           bio={bio}
           onBioChange={setBio}
+          onSkip={handleSkipProfile}
         />
       )}
       {step === 'joinAnnouncement' && (

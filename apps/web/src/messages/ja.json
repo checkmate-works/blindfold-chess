@@ -3825,8 +3825,7 @@
     "announcementNotFound": "お知らせが見つかりません"
   },
   "onboardingProfile": {
-    "completed": "本登録が完了しました 🎉",
-    "prompt": "続いてプロフィールを設定しましょう（任意）",
+    "prompt": "プロフィールを設定しましょう",
     "avatarLabel": "アバター",
     "countryLabel": "国籍"
   },
@@ -3837,7 +3836,7 @@
       "back": "戻る",
       "next": "次へ",
       "saveAndNext": "保存して次へ",
-      "skip": "スキップ"
+      "skip": "あとで設定する"
     },
     "belt": {
       "description": "AIに目隠しチェスで勝てるようになるためのカリキュラムを用意しています。",
