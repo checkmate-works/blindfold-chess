@@ -3845,11 +3845,11 @@
     "helpTour": {
       "title": "¿No sabes cómo usar una pantalla?",
       "demoTitle": "Actividad Reciente",
-      "demoHint": "Pulsa el ? junto al título de la página, en la parte superior, para ver la ayuda de esa pantalla.",
+      "demoHint": "Pulsa ? para ver cómo funciona esa pantalla",
       "label": "Ayuda",
       "demoTourTitle": "Recorrido de ayuda",
-      "demoTourText": "Así te guiaremos por cada pantalla en el momento. Pulsa ? cuando tengas dudas.",
-      "note": "Nota: el icono ? no aparece en pantallas que aún no tienen recorrido, ni en las suficientemente simples como para no necesitarlo."
+      "demoTourText": "Así te guiamos por la pantalla en el momento",
+      "note": "Algunas pantallas no tienen ?"
     },
     "joinAnnouncement": {
       "title": "¿Avisamos a todos de que has llegado?",

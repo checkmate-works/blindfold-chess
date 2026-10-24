@@ -3845,11 +3845,11 @@
     "helpTour": {
       "title": "Não sabe como usar uma tela?",
       "demoTitle": "Atividade Recente",
-      "demoHint": "Toque no ? ao lado do título da página, no topo da tela, para ver a ajuda daquela tela.",
+      "demoHint": "Toque em ? para ver como aquela tela funciona",
       "label": "Ajuda",
       "demoTourTitle": "Tour de ajuda",
-      "demoTourText": "Assim guiamos você por cada tela na hora. Toque em ? sempre que tiver dúvida.",
-      "note": "Obs.: o ícone ? não aparece em telas que ainda não têm tour, nem nas simples o bastante para dispensá-lo."
+      "demoTourText": "Assim guiamos você pela tela na hora",
+      "note": "Algumas telas não têm ?"
     },
     "joinAnnouncement": {
       "title": "Avisar a todos que você chegou?",

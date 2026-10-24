@@ -62,8 +62,10 @@ export function HelpTourStep() {
         </div>
       </div>
 
-      <p className="text-sm text-foreground">{t('helpTour.demoHint')}</p>
-      <p className="text-xs text-muted-foreground">{t('helpTour.note')}</p>
+      <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+        <li>{t('helpTour.demoHint')}</li>
+        <li>{t('helpTour.note')}</li>
+      </ul>
     </div>
   );
 }

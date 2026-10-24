@@ -3845,11 +3845,11 @@
     "helpTour": {
       "title": "Not sure how to use a screen?",
       "demoTitle": "Latest Activity",
-      "demoHint": "Press the ? next to the page title at the top of the screen to view help for that screen.",
+      "demoHint": "Press ? to see how that screen works",
       "label": "Help",
       "demoTourTitle": "Help tour",
-      "demoTourText": "Like this, we'll walk you through each screen right where you are. Press ? whenever you're stuck.",
-      "note": "Note: the ? icon doesn't appear on screens without a tour yet, or on ones simple enough not to need one."
+      "demoTourText": "Like this, you get a walkthrough of the screen right where you are",
+      "note": "Some screens don't have a ?"
     },
     "joinAnnouncement": {
       "title": "Let everyone know you've arrived?",
