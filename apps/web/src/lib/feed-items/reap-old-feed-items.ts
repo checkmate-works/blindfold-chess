@@ -11,13 +11,15 @@ import {
 } from './member-joined';
 
 /**
- * Reaper for old `feed_items` rows of type `challenge_rank_update`.
+ * Reaper for `feed_items` rows the product promises are temporary.
  *
  * @description
- * The product tour tells users that leaderboard rank-change feed entries
- * are kept for one month. This reaper enforces that contract by deleting
- * `feed_items` rows where `entity_type = 'challenge_rank_update'` and
- * `created_at < NOW() - INTERVAL '30 days'`.
+ * Two entity types carry a retention promise. The product tour tells users
+ * that leaderboard rank-change entries (`challenge_rank_update`) are kept
+ * for one month, and the onboarding step that posts an arrival announcement
+ * (`member_joined`) says the same. Each has a reaper here that deletes its
+ * rows once `created_at < NOW() - retention`; both run the same batched
+ * loop (`reapFeedItemsOfType`) with their own entity-type guard.
  *
  * @design Why Vercel Cron (not pg_cron)
  *
@@ -33,8 +35,8 @@ import {
  * `topic_post` feed items are NOT eligible for reaping — they reference
  * user-generated posts whose retention is governed by the post itself,
  * not by the feed surface. The WHERE clause therefore always includes
- * BOTH `entity_type = 'challenge_rank_update'` AND the createdAt cutoff;
- * the unit tests assert that mis-typed rows are not removed.
+ * BOTH the reaper's own `entity_type` AND the createdAt cutoff; the unit
+ * tests assert that mis-typed rows are not removed.
  *
  * @design Batched DELETE with wall-clock budget
  *
@@ -57,15 +59,15 @@ import {
  * progress and so operators can see whether the previous run timed
  * out and a backlog remains.
  *
- * @design Arrival announcements share the loop
+ * @design Likes go with the rows, in one transaction
  *
- * `member_joined` cards (see `./member-joined`) are kept for
- * {@link MEMBER_JOINED_RETENTION_DAYS} days under the same kind of
- * promise — the onboarding step that posts one says so — so
- * {@link reapOldMemberJoinedFeedItems} runs this same batched loop with
- * its own entity-type guard. Unlike rank updates they take likes, which
- * have no FK to cascade through, so each batch also deletes the likes
- * that targeted the reaped rows.
+ * Arrival announcements take likes, and `likes` has no FK to cascade
+ * through (it is polymorphic — see its TSDoc). Each batch therefore deletes
+ * the likes that targeted the reaped ids, in the same transaction as the
+ * rows: were the two statements separate, a failure between them would
+ * leave likes pointing at ids no row has, and nothing would ever find them
+ * again. The owner's own delete (`deleteOwnJoinAnnouncement`) makes the same
+ * guarantee.
  */
 
 /**
@@ -91,7 +93,7 @@ const BATCH_SIZE = 5000;
  */
 const DEFAULT_BUDGET_MS = 45_000;
 
-export type RankUpdateReaperReport = {
+export type FeedItemReaperReport = {
   removed: number;
   batches: number;
   timedOut: boolean;
@@ -107,7 +109,7 @@ type ReaperOptions = {
 
 export function reapOldRankUpdateFeedItems(
   opts: ReaperOptions = {}
-): Promise<RankUpdateReaperReport> {
+): Promise<FeedItemReaperReport> {
   return reapFeedItemsOfType(
     { entityType: RANK_UPDATE_ENTITY_TYPE, retentionMs: RANK_UPDATE_RETENTION_MS },
     opts
@@ -120,7 +122,7 @@ export const MEMBER_JOINED_RETENTION_MS = MEMBER_JOINED_RETENTION_DAYS * 24 * 60
 /** Reaper for arrival announcements older than {@link MEMBER_JOINED_RETENTION_MS}. */
 export function reapOldMemberJoinedFeedItems(
   opts: ReaperOptions = {}
-): Promise<RankUpdateReaperReport> {
+): Promise<FeedItemReaperReport> {
   return reapFeedItemsOfType(
     {
       entityType: MEMBER_JOINED_ENTITY_TYPE,
@@ -139,7 +141,7 @@ async function reapFeedItemsOfType(
     likeTargetType?: string;
   },
   opts: ReaperOptions
-): Promise<RankUpdateReaperReport> {
+): Promise<FeedItemReaperReport> {
   const batchSize = opts.batchSize ?? BATCH_SIZE;
   const run = startRetentionRun({
     now: opts.now,
@@ -167,12 +169,14 @@ async function reapFeedItemsOfType(
     if (targets.length === 0) break;
 
     const ids = targets.map((t) => t.id);
-    await db.delete(feedItems).where(inArray(feedItems.id, ids));
-    if (target.likeTargetType) {
-      await db
-        .delete(likes)
-        .where(and(eq(likes.targetType, target.likeTargetType), inArray(likes.targetId, ids)));
-    }
+    await db.transaction(async (tx) => {
+      await tx.delete(feedItems).where(inArray(feedItems.id, ids));
+      if (target.likeTargetType) {
+        await tx
+          .delete(likes)
+          .where(and(eq(likes.targetType, target.likeTargetType), inArray(likes.targetId, ids)));
+      }
+    });
 
     removed += targets.length;
     batches += 1;

@@ -8,10 +8,10 @@ import {
   RANK_UPDATE_RETENTION_MS,
   reapOldMemberJoinedFeedItems,
   reapOldRankUpdateFeedItems,
-} from './reap-old-rank-updates';
+} from './reap-old-feed-items';
 
 /**
- * Pure-logic unit tests for the rank-update reaper.
+ * Pure-logic unit tests for the feed-item reapers.
  *
  * The DB layer is stubbed; we verify:
  *   - The SELECT predicate restricts to `entity_type =
@@ -44,11 +44,13 @@ const state: {
   deleteCalls: DeleteCall[];
   selectResults: Array<{ id: string }[]>;
   selectDelayMs: number;
+  transactionCalls: number;
 } = {
   selectCalls: [],
   deleteCalls: [],
   selectResults: [],
   selectDelayMs: 0,
+  transactionCalls: 0,
 };
 
 function resetState() {
@@ -56,11 +58,18 @@ function resetState() {
   state.deleteCalls = [];
   state.selectResults = [];
   state.selectDelayMs = 0;
+  state.transactionCalls = 0;
 }
 
-vi.mock('@/lib/db', async () => ({
-  ...(await actualDbSchema()),
-  db: {
+vi.mock('@/lib/db', async () => {
+  // `transaction` hands the callback the same double, so a DELETE issued
+  // inside it lands in `state.deleteCalls` like any other. Built inside the
+  // factory because `vi.mock` is hoisted above every top-level binding.
+  const db = {
+    transaction: (fn: (tx: unknown) => Promise<unknown>) => {
+      state.transactionCalls += 1;
+      return fn(db);
+    },
     select: () => ({
       from: () => ({
         where: (whereArg: unknown) => ({
@@ -86,8 +95,9 @@ vi.mock('@/lib/db', async () => ({
         return Promise.resolve();
       },
     }),
-  },
-}));
+  };
+  return { ...(await actualDbSchema()), db };
+});
 
 /**
  * Walk a Drizzle predicate object looking for any nested value that
@@ -271,13 +281,13 @@ describe('reapOldMemberJoinedFeedItems', () => {
     );
   });
 
-  it('deletes the likes on each reaped batch along with the rows', async () => {
+  it('deletes the likes on each reaped batch along with the rows, in one transaction', async () => {
     const now = new Date('2026-05-04T00:00:00.000Z');
     state.selectResults = [makeRows('mj', 2)];
-
     const report = await reapOldMemberJoinedFeedItems({ now, batchSize: 100 });
 
     expect(report.removed).toBe(2);
+    expect(state.transactionCalls).toBe(1);
     // One DELETE for the feed rows, one for their likes.
     expect(state.deleteCalls).toHaveLength(2);
     expect(predicateContains(state.deleteCalls[1].whereArg, 'member_joined')).toBe(true);
