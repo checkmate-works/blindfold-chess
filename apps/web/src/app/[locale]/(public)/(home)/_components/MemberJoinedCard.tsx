@@ -4,6 +4,7 @@ import { memo } from 'react';
 
 import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { AiOutlineHeart } from 'react-icons/ai';
 import { FiTrash2 } from 'react-icons/fi';
 
 import { buildProfileHref } from '@/lib/users/author-profile';
@@ -15,6 +16,10 @@ import { ActionsMenu, ActionsMenuButton } from '@/app/[locale]/_components/Actio
 import { ActivityCard } from '@/app/[locale]/_components/ActivityCard';
 import { CardAuthorAvatar } from '@/app/[locale]/_components/CardAuthorAvatar';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
+import {
+  EngagementCounter,
+  engagementIconClass,
+} from '@/app/[locale]/_components/EngagementCounter';
 import type { EngagementCounterSize } from '@/app/[locale]/_components/EngagementCounter';
 import { useConfirmAction } from '@/app/[locale]/_hooks/use-confirm-action';
 import { CARD_PERMALINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
@@ -127,10 +132,12 @@ export const MemberJoinedCard = memo(function MemberJoinedCard({
 
 /**
  * The card exactly as it will appear on the home feed, for the onboarding
- * step that asks whether to post it. Rendered `inert`: its avatar would
- * otherwise link away from the wizard mid-step, and its like button has no
- * feed row to act on yet. The like count shows 0 so the member can see the
- * card will take likes.
+ * step that asks whether to post it. Nothing in it is interactive: the avatar
+ * is unlinked (it would otherwise leave the wizard mid-step) and the heart
+ * is a static counter rather than the like button (there is no feed row to
+ * act on yet). Keeping it out of `inert` matters: `inert` also removes the
+ * content from the accessibility tree, and a screen-reader user would then
+ * be asked to post a card they cannot hear.
  */
 export function MemberJoinedCardPreview({
   member,
@@ -145,22 +152,24 @@ export function MemberJoinedCardPreview({
   const displayName = resolveAuthorName(member, { fallback: member.username });
 
   return (
-    <div inert className="rounded-md border border-border bg-card">
+    <div className="rounded-md border border-border bg-card">
       <ActivityCard
         thumbnail={<MemberJoinedThumbnail />}
         thumbnailClassName="flex items-center justify-center"
-        author={<CardAuthorAvatar author={member} displayName={displayName} locale={locale} />}
+        author={
+          <CardAuthorAvatar
+            author={member}
+            displayName={displayName}
+            locale={locale}
+            linkToProfile={false}
+          />
+        }
         permalink={<span>{justNowLabel}</span>}
         footer={
-          <div className="flex items-center gap-4 mt-3 pt-3 border-t border-border">
-            <LikeButton
-              postId=""
-              locale={locale}
-              topicKey=""
-              initialLikeCount={0}
-              initialLikedByMe={false}
-              toggleLikeAction={previewToggleLike}
-              i18nNamespace="memberJoinedCard"
+          <div className="flex items-center gap-4 mt-3 pt-3 border-t border-border text-muted-foreground">
+            <EngagementCounter
+              icon={<AiOutlineHeart className={engagementIconClass('md')} aria-hidden />}
+              count={0}
             />
           </div>
         }
@@ -169,11 +178,6 @@ export function MemberJoinedCardPreview({
       </ActivityCard>
     </div>
   );
-}
-
-/** Never called — the preview is `inert` — but `LikeButton` requires one. */
-async function previewToggleLike() {
-  return { liked: false, likeCount: 0 };
 }
 
 function MemberJoinedThumbnail() {
