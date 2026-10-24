@@ -6,6 +6,7 @@ import type {
   ChunkFeedItem,
   FeedItem,
   GameFeedItem,
+  MemberJoinedFeedItem,
   PositionFeedItem,
   TopicPostFeedItem,
 } from '../_lib/types';
@@ -38,6 +39,14 @@ vi.mock('./ChunkFeedCard', () => ({
 vi.mock('./GameFeedCard', () => ({
   GameFeedCard: ({ data }: { data: unknown }) => (
     <div data-testid="game-feed-card">{JSON.stringify(data)}</div>
+  ),
+}));
+
+vi.mock('./MemberJoinedCard', () => ({
+  MemberJoinedCard: ({ feedItemId, onRemoved }: { feedItemId: string; onRemoved?: () => void }) => (
+    <button type="button" data-testid="member-joined-card" onClick={onRemoved}>
+      {feedItemId}
+    </button>
   ),
 }));
 
@@ -289,6 +298,35 @@ describe('FeedCard', () => {
     expect(card).toBeInTheDocument();
     expect(card.textContent).toContain('game-1');
     expect(card.textContent).toContain('Stockfish Lv 5');
+  });
+
+  it('should render MemberJoinedCard keyed by the feed row and wire onRemove to it', () => {
+    const onRemove = vi.fn();
+    const item: MemberJoinedFeedItem = {
+      id: 'feed-mj',
+      entityType: 'member_joined',
+      entityId: 'user-1',
+      actorId: 'user-1',
+      createdAt: '2026-10-24T00:00:00.000Z',
+      data: {
+        member: {
+          username: 'alice',
+          displayName: 'Alice',
+          avatarUrl: null,
+          country: 'JP',
+          flair: null,
+        },
+        likeMeta: { likeCount: 0, likedByMe: false },
+        isMine: true,
+      },
+    };
+
+    render(<FeedCard item={item} {...defaultProps} onRemove={onRemove} />);
+
+    const card = screen.getByTestId('member-joined-card');
+    expect(card.textContent).toBe('feed-mj');
+    card.click();
+    expect(onRemove).toHaveBeenCalledWith('feed-mj');
   });
 
   it('should return null for unknown entityType', () => {

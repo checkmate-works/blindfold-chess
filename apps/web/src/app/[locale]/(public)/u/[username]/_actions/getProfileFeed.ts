@@ -1,6 +1,7 @@
 'use server';
 
 import { getOptionalUser } from '@/lib/auth';
+import { PROFILE_TIMELINE_EXCLUDED_ENTITY_TYPES } from '@/lib/feed-items/member-joined';
 import { isValidUUID } from '@/lib/validations/uuid';
 
 import { getFeedData } from '@/app/[locale]/(public)/(home)/_lib/queries';
@@ -43,6 +44,7 @@ export async function getProfileFeed(profileId: string, cursor?: string): Promis
 
   return getFeedData({
     actorId: profileId,
+    excludeEntityTypes: PROFILE_TIMELINE_EXCLUDED_ENTITY_TYPES,
     currentUserId: user?.id,
     limit: PROFILE_FEED_LIMIT,
     cursor,

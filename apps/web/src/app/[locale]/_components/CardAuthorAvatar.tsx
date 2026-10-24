@@ -9,6 +9,12 @@ type Props = {
   /** Already resolved by the caller, which owns the anonymous / deleted fallbacks. */
   displayName: string;
   locale: string;
+  /**
+   * `false` renders the author unlinked even though a profile exists — for a
+   * card shown as a static preview (the onboarding step's arrival
+   * announcement), where leaving the screen is not wanted. Default `true`.
+   */
+  linkToProfile?: boolean;
 };
 
 /**
@@ -24,10 +30,10 @@ type Props = {
  * `CatalogListCard` deliberately stays outside this: it renders the avatar
  * without flair or country.
  */
-export function CardAuthorAvatar({ author, displayName, locale }: Props) {
+export function CardAuthorAvatar({ author, displayName, locale, linkToProfile = true }: Props) {
   return (
     <UserAvatar
-      profileHref={buildProfileHref(author)}
+      profileHref={linkToProfile ? buildProfileHref(author) : null}
       avatarUrl={author?.avatarUrl}
       displayName={displayName}
       locale={locale}

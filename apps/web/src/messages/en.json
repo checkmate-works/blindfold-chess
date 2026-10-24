@@ -350,6 +350,20 @@
     "byAuthor": "by {author}",
     "unavailable": "This game is no longer available."
   },
+  "memberJoinedCard": {
+    "action": "Signed up",
+    "like": "Like",
+    "unlike": "Unlike",
+    "moreActions": "More actions",
+    "delete": {
+      "button": "Delete",
+      "title": "Delete this announcement?",
+      "message": "Your arrival announcement will be removed from the timeline. It can't be posted again.",
+      "confirm": "Delete",
+      "cancel": "Cancel",
+      "error": "Couldn't delete it. Please try again."
+    }
+  },
   "metadata": {
     "siteName": "Shingan Chess",
     "seoSiteName": "Blindfold Chess",
@@ -3811,8 +3825,7 @@
     "announcementNotFound": "Announcement Not Found"
   },
   "onboardingProfile": {
-    "completed": "Registration complete 🎉",
-    "prompt": "Next, set up your profile (optional).",
+    "prompt": "Set up your profile.",
     "avatarLabel": "Avatar",
     "countryLabel": "Country"
   },
@@ -3823,7 +3836,7 @@
       "back": "Back",
       "next": "Next",
       "saveAndNext": "Save and continue",
-      "skip": "Skip"
+      "skip": "Set up later"
     },
     "belt": {
       "description": "A curriculum designed to get you winning blindfold games against the AI.",
@@ -3831,12 +3844,24 @@
     },
     "helpTour": {
       "title": "Not sure how to use a screen?",
-      "demoTitle": "Sample screen",
-      "demoHint": "Press the ? next to the page title at the top of the screen to view help for that screen.",
+      "demoTitle": "Latest Activity",
+      "demoHint": "Press ? to see how that screen works",
       "label": "Help",
       "demoTourTitle": "Help tour",
-      "demoTourText": "Like this, we'll walk you through each screen right where you are. Press ? whenever you're stuck.",
-      "note": "Note: the ? icon doesn't appear on screens without a tour yet, or on ones simple enough not to need one."
+      "demoTourText": "Like this, you get a walkthrough of the screen right where you are",
+      "note": "Some screens don't have a ?"
+    },
+    "joinAnnouncement": {
+      "title": "Let everyone know you've arrived?",
+      "previewLabel": "Preview",
+      "retentionNote": "Stays on the timeline for {days} days, then disappears automatically",
+      "deleteNote": "You can delete it any time from the ⋯ menu on the card",
+      "post": "Post to the timeline",
+      "decline": "Don't post",
+      "postedMessage": "Posted to the timeline.",
+      "declinedMessage": "Not posted.",
+      "next": "Next",
+      "error": "Something went wrong. Please try again."
     }
   },
   "Mypage": {
@@ -4125,6 +4150,7 @@
     "likeMessage": "{actor} liked your post",
     "likeCommentMessage": "{actor} liked your comment",
     "likeGameMessage": "{actor} liked your game",
+    "likeJoinAnnouncementMessage": "{actor} liked your arrival announcement",
     "replyMessage": "{actor} replied to your comment",
     "unknownNotification": "You have a new notification",
     "announcementMessage": "New announcement: {title}",

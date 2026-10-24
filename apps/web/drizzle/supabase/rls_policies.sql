@@ -272,6 +272,12 @@ CREATE POLICY "feed_items_select" ON "feed_items"
 DROP POLICY IF EXISTS "feed_items_insert" ON "feed_items";
 
 -- =============================================================================
+-- join_announcement_decisions (server-side only; deny-by-default)
+-- =============================================================================
+ALTER TABLE "join_announcement_decisions" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "join_announcement_decisions" FORCE ROW LEVEL SECURITY;
+
+-- =============================================================================
 -- stripe_customers (server-side only; deny-by-default)
 -- =============================================================================
 ALTER TABLE "stripe_customers" ENABLE ROW LEVEL SECURITY;

@@ -350,6 +350,20 @@
     "byAuthor": "por {author}",
     "unavailable": "Esta partida ya no está disponible."
   },
+  "memberJoinedCard": {
+    "action": "Se registró",
+    "like": "Me gusta",
+    "unlike": "Quitar me gusta",
+    "moreActions": "Más acciones",
+    "delete": {
+      "button": "Eliminar",
+      "title": "¿Eliminar este anuncio?",
+      "message": "Tu anuncio de llegada se quitará de la línea de tiempo. No se podrá volver a publicar.",
+      "confirm": "Eliminar",
+      "cancel": "Cancelar",
+      "error": "No se pudo eliminar. Inténtalo de nuevo."
+    }
+  },
   "metadata": {
     "siteName": "Shingan Chess",
     "seoSiteName": "Ajedrez a Ciegas",
@@ -3811,8 +3825,7 @@
     "announcementNotFound": "Anuncio No Encontrado"
   },
   "onboardingProfile": {
-    "completed": "Registro completado 🎉",
-    "prompt": "A continuación, configura tu perfil (opcional).",
+    "prompt": "Configura tu perfil.",
     "avatarLabel": "Avatar",
     "countryLabel": "País"
   },
@@ -3823,7 +3836,7 @@
       "back": "Atrás",
       "next": "Siguiente",
       "saveAndNext": "Guardar y continuar",
-      "skip": "Omitir"
+      "skip": "Configurar más tarde"
     },
     "belt": {
       "description": "Un plan de estudios diseñado para que ganes partidas a ciegas contra la IA.",
@@ -3831,12 +3844,24 @@
     },
     "helpTour": {
       "title": "¿No sabes cómo usar una pantalla?",
-      "demoTitle": "Pantalla de ejemplo",
-      "demoHint": "Pulsa el ? junto al título de la página, en la parte superior, para ver la ayuda de esa pantalla.",
+      "demoTitle": "Actividad Reciente",
+      "demoHint": "Pulsa ? para ver cómo funciona esa pantalla",
       "label": "Ayuda",
       "demoTourTitle": "Recorrido de ayuda",
-      "demoTourText": "Así te guiaremos por cada pantalla en el momento. Pulsa ? cuando tengas dudas.",
-      "note": "Nota: el icono ? no aparece en pantallas que aún no tienen recorrido, ni en las suficientemente simples como para no necesitarlo."
+      "demoTourText": "Así te guiamos por la pantalla en el momento",
+      "note": "Algunas pantallas no tienen ?"
+    },
+    "joinAnnouncement": {
+      "title": "¿Avisamos a todos de que has llegado?",
+      "previewLabel": "Vista previa",
+      "retentionNote": "Se muestra en la línea de tiempo durante {days} días y luego desaparece automáticamente",
+      "deleteNote": "Puedes eliminarla cuando quieras desde el menú ⋯ de la tarjeta",
+      "post": "Publicar en la línea de tiempo",
+      "decline": "No publicar",
+      "postedMessage": "Publicado en la línea de tiempo.",
+      "declinedMessage": "No se ha publicado.",
+      "next": "Siguiente",
+      "error": "Algo salió mal. Inténtalo de nuevo."
     }
   },
   "Mypage": {
@@ -4125,6 +4150,7 @@
     "likeMessage": "{actor} le gustó tu publicación",
     "likeCommentMessage": "{actor} le gustó tu comentario",
     "likeGameMessage": "{actor} le gustó tu partida",
+    "likeJoinAnnouncementMessage": "A {actor} le gustó tu anuncio de llegada",
     "replyMessage": "{actor} respondió a tu comentario",
     "unknownNotification": "Tienes una nueva notificación",
     "announcementMessage": "Nuevo anuncio: {title}",

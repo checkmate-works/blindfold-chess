@@ -4,6 +4,7 @@ import type { FeedItem } from '../_lib/types';
 import { ChallengeRankUpdateCard } from './ChallengeRankUpdateCard';
 import { ChunkFeedCard } from './ChunkFeedCard';
 import { GameFeedCard } from './GameFeedCard';
+import { MemberJoinedCard } from './MemberJoinedCard';
 import { PositionFeedCard } from './PositionFeedCard';
 import { TopicPostCard } from './TopicPostCard';
 
@@ -21,6 +22,12 @@ type Props = {
   variant?: 'feed' | 'card';
   /** Size variant for the footer engagement actions (like + comment counter), forwarded to each card's `PostFooter`. */
   actionSize?: EngagementCounterSize;
+  /**
+   * Drop this item from the surrounding list. Called by cards whose owner can
+   * delete them in place (the arrival announcement); the list owns the items,
+   * so the card cannot remove itself.
+   */
+  onRemove?: (itemId: string) => void;
 };
 
 export function FeedCard({
@@ -30,6 +37,7 @@ export function FeedCard({
   justNowLabel,
   variant,
   actionSize,
+  onRemove,
 }: Props) {
   switch (item.entityType) {
     case 'topic_post':
@@ -79,6 +87,18 @@ export function FeedCard({
           createdAt={item.createdAt}
           locale={locale}
           justNowLabel={justNowLabel}
+        />
+      );
+    case 'member_joined':
+      return (
+        <MemberJoinedCard
+          feedItemId={item.id}
+          data={item.data}
+          createdAt={item.createdAt}
+          locale={locale}
+          justNowLabel={justNowLabel}
+          actionSize={actionSize}
+          onRemoved={onRemove ? () => onRemove(item.id) : undefined}
         />
       );
     default: {

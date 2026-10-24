@@ -350,6 +350,20 @@
     "byAuthor": "{author} さん",
     "unavailable": "この対局は公開されていません。"
   },
+  "memberJoinedCard": {
+    "action": "サインアップしました",
+    "like": "いいね",
+    "unlike": "いいねを取り消す",
+    "moreActions": "その他の操作",
+    "delete": {
+      "button": "削除",
+      "title": "参加のお知らせを削除しますか？",
+      "message": "タイムラインから削除されます。削除すると再投稿はできません。",
+      "confirm": "削除する",
+      "cancel": "キャンセル",
+      "error": "削除できませんでした。もう一度お試しください。"
+    }
+  },
   "metadata": {
     "siteName": "心眼チェス",
     "seoSiteName": "目隠しチェス",
@@ -3811,8 +3825,7 @@
     "announcementNotFound": "お知らせが見つかりません"
   },
   "onboardingProfile": {
-    "completed": "本登録が完了しました 🎉",
-    "prompt": "続いてプロフィールを設定しましょう（任意）",
+    "prompt": "プロフィールを設定しましょう",
     "avatarLabel": "アバター",
     "countryLabel": "国籍"
   },
@@ -3823,7 +3836,7 @@
       "back": "戻る",
       "next": "次へ",
       "saveAndNext": "保存して次へ",
-      "skip": "スキップ"
+      "skip": "あとで設定する"
     },
     "belt": {
       "description": "AIに目隠しチェスで勝てるようになるためのカリキュラムを用意しています。",
@@ -3831,12 +3844,24 @@
     },
     "helpTour": {
       "title": "使い方がわからないときは？",
-      "demoTitle": "サンプル画面",
-      "demoHint": "ページ上部のページタイトルの横にある ? を押すと、その画面のヘルプを表示できます。",
+      "demoTitle": "最新のアクティビティ",
+      "demoHint": "? を押すと、その画面の使い方が表示されます",
       "label": "ヘルプ",
       "demoTourTitle": "ヘルプツアー",
-      "demoTourText": "このように、各画面の使い方をその場でご案内します。操作に迷ったら ? を押してみてください。",
-      "note": "※ ツアーが用意されていない画面や、説明が不要なシンプルな画面では ? アイコンは表示されません。"
+      "demoTourText": "このように、その画面の使い方をその場で案内します",
+      "note": "? がない画面もあります"
+    },
+    "joinAnnouncement": {
+      "title": "参加をタイムラインでお知らせしますか？",
+      "previewLabel": "プレビュー",
+      "retentionNote": "タイムラインには{days}日間表示され、その後は自動で消えます",
+      "deleteNote": "投稿後はカードの「⋯」メニューからいつでも削除できます",
+      "post": "タイムラインに投稿する",
+      "decline": "投稿しない",
+      "postedMessage": "タイムラインに投稿しました。",
+      "declinedMessage": "投稿しませんでした。",
+      "next": "次へ",
+      "error": "エラーが発生しました。もう一度お試しください。"
     }
   },
   "Mypage": {
@@ -4125,6 +4150,7 @@
     "likeMessage": "{actor} があなたの投稿にいいねしました",
     "likeCommentMessage": "{actor} があなたのコメントにいいねしました",
     "likeGameMessage": "{actor} があなたの対局にいいねしました",
+    "likeJoinAnnouncementMessage": "{actor} があなたの参加のお知らせにいいねしました",
     "replyMessage": "{actor} があなたのコメントに返信しました",
     "unknownNotification": "新しい通知があります",
     "announcementMessage": "新しいお知らせ: {title}",

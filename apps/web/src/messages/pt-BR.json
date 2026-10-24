@@ -350,6 +350,20 @@
     "byAuthor": "por {author}",
     "unavailable": "Esta partida não está mais disponível."
   },
+  "memberJoinedCard": {
+    "action": "Se cadastrou",
+    "like": "Curtir",
+    "unlike": "Remover curtida",
+    "moreActions": "Mais ações",
+    "delete": {
+      "button": "Excluir",
+      "title": "Excluir este aviso?",
+      "message": "Seu aviso de chegada será removido da linha do tempo. Não será possível publicá-lo de novo.",
+      "confirm": "Excluir",
+      "cancel": "Cancelar",
+      "error": "Não foi possível excluir. Tente novamente."
+    }
+  },
   "metadata": {
     "siteName": "Shingan Chess",
     "seoSiteName": "Xadrez às Cegas",
@@ -3811,8 +3825,7 @@
     "announcementNotFound": "Anúncio Não Encontrado"
   },
   "onboardingProfile": {
-    "completed": "Cadastro concluído 🎉",
-    "prompt": "Em seguida, configure seu perfil (opcional).",
+    "prompt": "Configure seu perfil.",
     "avatarLabel": "Avatar",
     "countryLabel": "País"
   },
@@ -3823,7 +3836,7 @@
       "back": "Voltar",
       "next": "Avançar",
       "saveAndNext": "Salvar e continuar",
-      "skip": "Pular"
+      "skip": "Configurar depois"
     },
     "belt": {
       "description": "Um currículo feito para você vencer partidas às cegas contra a IA.",
@@ -3831,12 +3844,24 @@
     },
     "helpTour": {
       "title": "Não sabe como usar uma tela?",
-      "demoTitle": "Tela de exemplo",
-      "demoHint": "Toque no ? ao lado do título da página, no topo da tela, para ver a ajuda daquela tela.",
+      "demoTitle": "Atividade Recente",
+      "demoHint": "Toque em ? para ver como aquela tela funciona",
       "label": "Ajuda",
       "demoTourTitle": "Tour de ajuda",
-      "demoTourText": "Assim guiamos você por cada tela na hora. Toque em ? sempre que tiver dúvida.",
-      "note": "Obs.: o ícone ? não aparece em telas que ainda não têm tour, nem nas simples o bastante para dispensá-lo."
+      "demoTourText": "Assim guiamos você pela tela na hora",
+      "note": "Algumas telas não têm ?"
+    },
+    "joinAnnouncement": {
+      "title": "Avisar a todos que você chegou?",
+      "previewLabel": "Prévia",
+      "retentionNote": "Fica na linha do tempo por {days} dias e depois some automaticamente",
+      "deleteNote": "Você pode excluí-lo quando quiser pelo menu ⋯ do cartão",
+      "post": "Publicar na linha do tempo",
+      "decline": "Não publicar",
+      "postedMessage": "Publicado na linha do tempo.",
+      "declinedMessage": "Não publicado.",
+      "next": "Próximo",
+      "error": "Algo deu errado. Tente novamente."
     }
   },
   "Mypage": {
@@ -4125,6 +4150,7 @@
     "likeMessage": "{actor} curtiu sua publicação",
     "likeCommentMessage": "{actor} curtiu seu comentário",
     "likeGameMessage": "{actor} curtiu sua partida",
+    "likeJoinAnnouncementMessage": "{actor} curtiu seu aviso de chegada",
     "replyMessage": "{actor} respondeu ao seu comentário",
     "unknownNotification": "Você tem uma nova notificação",
     "announcementMessage": "Novo anúncio: {title}",

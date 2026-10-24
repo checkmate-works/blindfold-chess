@@ -84,6 +84,10 @@ export function liveFeedRow(): SQL {
         SELECT true FROM ${profiles} WHERE ${profiles.id} = ${feedItems.actorId}
       )
       AND ${feedItems.metadata} -> 'rank' <= to_jsonb(${FEED_RANK_THRESHOLD}::int)
+      WHEN 'member_joined' THEN (
+        SELECT ${profiles.deletedAt} IS NULL
+        FROM ${profiles} WHERE ${profiles.id} = ${feedItems.actorId}
+      )
       ELSE false
     END`;
 }

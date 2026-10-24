@@ -23,6 +23,7 @@ const emptyMaps = () => ({
   chunkMap: new Map(),
   gameMap: new Map(),
   rankUpdateActorMap: new Map(),
+  memberJoinedMap: new Map(),
 });
 
 describe('splitFeedPage', () => {
@@ -135,6 +136,25 @@ describe('assembleFeedItems', () => {
   it('drops a rank-update row whose actor is gone', () => {
     const items = assembleFeedItems(
       [row({ entityType: 'challenge_rank_update', entityId: 'r1', metadata: {} })],
+      maps()
+    );
+    expect(items).toEqual([]);
+  });
+
+  it('joins an arrival announcement by its feed row id, not its entity id', () => {
+    // The member is the entity (entity_id = actor_id), but likes and the map
+    // are keyed by the feed row, so two lookups by entity id would collide.
+    const items = assembleFeedItems(
+      [row({ id: 'feed-a', entityType: 'member_joined', entityId: 'actor-1' })],
+      maps({ memberJoinedMap: new Map([['feed-a', { member: { username: 'alice' } }]]) })
+    );
+    expect(items).toHaveLength(1);
+    expect(items[0]).toMatchObject({ id: 'feed-a', entityType: 'member_joined' });
+  });
+
+  it('drops an arrival announcement whose member is gone', () => {
+    const items = assembleFeedItems(
+      [row({ entityType: 'member_joined', entityId: 'actor-1' })],
       maps()
     );
     expect(items).toEqual([]);

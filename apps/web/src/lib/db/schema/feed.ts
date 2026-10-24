@@ -3,7 +3,7 @@
 //
 // The materialised home-feed `feed_items` queue — a timeline surface,
 // unrelated to the challenge-ranking tables it used to share a file with.
-import { index, jsonb, pgTable, uuid, varchar } from 'drizzle-orm/pg-core';
+import { index, jsonb, pgTable, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
 
 import { createdAtOnly } from './columns';
 
@@ -71,3 +71,49 @@ export const feedItems = pgTable(
 
 export type FeedItem = typeof feedItems.$inferSelect;
 export type NewFeedItem = typeof feedItems.$inferInsert;
+
+/**
+ * Join Announcement Decisions — each member's answer to the onboarding
+ * "announce your arrival on the home feed?" step (`member_joined` feed items,
+ * see `@/lib/feed-items/member-joined`).
+ *
+ * @description
+ * One row per member, written once. Its presence means the question is closed:
+ * the step is not offered again, even after the member deletes the card or
+ * the 30-day reaper removes it — which is exactly when the `feed_items` row
+ * can no longer say whether the member was ever asked.
+ *
+ * @design Its own table, not a column on `profiles`
+ * This is onboarding workflow state, not part of the member's public identity,
+ * and `profiles` is readable column-for-column by `anon` through PostgREST
+ * (its RLS only hides deleted rows). As a profile column, the answer — and,
+ * next to a missing card, the fact that someone declined — was public. This
+ * table has no client privileges at all; only the server reads it.
+ *
+ * @design The primary key is the claim
+ * `INSERT ... ON CONFLICT DO NOTHING RETURNING` succeeds for exactly one
+ * request per member, and only that request posts the card, so a double
+ * submit or a second tab cannot post twice.
+ *
+ * @design `outcome`, including members who were never asked
+ * `'announced'` / `'declined'` record the answer. `'not_offered'` marks every
+ * member who existed before the feature: the migration that created this table
+ * inserted one for each, so a long-standing member who opens
+ * `/mypage/onboarding` by URL is not offered a "just joined" card, and the
+ * table never claims they declined something they never saw. varchar rather
+ * than pgEnum, like `feed_items.entity_type`.
+ *
+ * @design FK in custom SQL
+ * `user_id` → `auth.users` ON DELETE CASCADE, defined in
+ * `drizzle/supabase/foreign_keys_and_grants.sql`: the answer means nothing
+ * once the account is purged.
+ */
+export const joinAnnouncementDecisions = pgTable('join_announcement_decisions', {
+  userId: uuid('user_id').primaryKey(), // references auth.users — FK defined in custom SQL
+  outcome: varchar('outcome', { length: 20 })
+    .$type<'announced' | 'declined' | 'not_offered'>()
+    .notNull(),
+  decidedAt: timestamp('decided_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+export type JoinAnnouncementDecision = typeof joinAnnouncementDecisions.$inferSelect;

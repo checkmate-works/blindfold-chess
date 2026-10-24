@@ -56,6 +56,7 @@ const baseParams = {
 
 describe('performEntityToggleLike', () => {
   beforeEach(() => {
+    vi.clearAllMocks();
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: TEST_USER_ID } });
     mockFetchOwner.mockResolvedValue({ userId: TARGET_OWNER_ID, extra: undefined });
     mockAssertNotBlocked.mockResolvedValue(null);
@@ -92,6 +93,39 @@ describe('performEntityToggleLike', () => {
 
     expect(result).toEqual({ error: 'invalidChunkId' });
     expect(mockAuthenticateAndGuard).not.toHaveBeenCalled();
+  });
+
+  it('still records a like when the owner lookup finds nothing, by default', async () => {
+    // Soft-deleted or anonymised content keeps its row, so the like stays
+    // findable; only the notification has nobody to go to.
+    mockFetchOwner.mockResolvedValue(null);
+
+    const { performEntityToggleLike } = await import('./like-actions');
+    const result = await performEntityToggleLike(baseParams);
+
+    expect(result).toEqual({ liked: true, likeCount: 1 });
+    expect(mockCreateNotification).not.toHaveBeenCalled();
+  });
+
+  it('refuses a missing target with notFound when asked to, after the guard', async () => {
+    mockFetchOwner.mockResolvedValue(null);
+
+    const { performEntityToggleLike } = await import('./like-actions');
+    const result = await performEntityToggleLike({ ...baseParams, missingTarget: 'reject' });
+
+    expect(result).toEqual({ error: 'notFound' });
+    expect(mockToggleByInsert).not.toHaveBeenCalled();
+    // The guard ran first: a signed-out caller must not reach the lookup.
+    expect(mockAuthenticateAndGuard).toHaveBeenCalled();
+  });
+
+  it('does not reach the owner lookup when the guard refuses', async () => {
+    mockAuthenticateAndGuard.mockResolvedValue({ error: 'rateLimited' });
+
+    const { performEntityToggleLike } = await import('./like-actions');
+    await performEntityToggleLike({ ...baseParams, missingTarget: 'reject' });
+
+    expect(mockFetchOwner).not.toHaveBeenCalled();
   });
 
   it('toggles the like and reports the new count for a registered member', async () => {

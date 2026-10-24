@@ -8,6 +8,7 @@ import { profileCacheTag } from '@/lib/cache-tags';
 import {
   chunks,
   db,
+  feedItems,
   gameComments,
   games,
   likes,
@@ -195,6 +196,9 @@ const LIKEABLE_OWNED_CONTENT = [
   { targetType: 'repertoire', table: repertoires, ownerColumn: repertoires.userId },
   { targetType: 'game', table: games, ownerColumn: games.authorId },
   { targetType: 'game_comment', table: gameComments, ownerColumn: gameComments.authorId },
+  // Arrival announcements are liked by their feed row id (see
+  // `MEMBER_JOINED_LIKE_TARGET`), so the owned rows are the member's feed rows.
+  { targetType: 'member_joined', table: feedItems, ownerColumn: feedItems.actorId },
 ] as const;
 
 /**

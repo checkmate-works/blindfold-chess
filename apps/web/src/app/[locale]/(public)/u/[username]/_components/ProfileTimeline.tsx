@@ -1,5 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 
+import { PROFILE_TIMELINE_EXCLUDED_ENTITY_TYPES } from '@/lib/feed-items/member-joined';
+
 import { FeedClient } from '@/app/[locale]/(public)/(home)/_components/FeedClient';
 import { getFeedData } from '@/app/[locale]/(public)/(home)/_lib/queries';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -31,6 +33,7 @@ export async function ProfileTimeline({ profileId, locale, currentUserId }: Prop
   const [feed, tTopics, tSquares, tPagination] = await Promise.all([
     getFeedData({
       actorId: profileId,
+      excludeEntityTypes: PROFILE_TIMELINE_EXCLUDED_ENTITY_TYPES,
       currentUserId,
       limit: INITIAL_FEED_SIZE,
     }),

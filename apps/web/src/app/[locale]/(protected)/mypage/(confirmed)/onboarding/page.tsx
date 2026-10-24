@@ -1,11 +1,13 @@
 /**
- * Onboarding Wizard (オンボーディング・4ステップ)
+ * Onboarding Wizard (オンボーディング)
  *
  * @description
  * Post-registration onboarding shown right after a user completes 本登録 on
- * setup-username. A single 4-step wizard: (1) profile (avatar/country/bio),
- * (2) help-tour explainer, (3) play a game, (4) the Dojo curriculum. Optional
- * throughout — the skip link and the final "done" both land on /mypage.
+ * setup-username. A single wizard: (1) profile (avatar/country/bio),
+ * (2) arrival announcement — whether to post a "〇〇 joined" card to the home
+ * feed, previewed first (new members only, answered once), (3) help-tour
+ * explainer, (4) belt ranks with links to the ranks page and an AI game.
+ * Optional throughout.
  *
  * @flow
  * setup-username (本登録 success) → router.push(mypage/onboarding) → /mypage
@@ -19,6 +21,7 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { getAuthenticatedUser } from '@/lib/auth';
+import { hasJoinAnnouncementDecision } from '@/lib/feed-items/member-joined-mutations';
 import { getViewerProfile } from '@/lib/users/viewer-profile';
 
 import { PageLayout } from '@/app/[locale]/_components';
@@ -46,7 +49,10 @@ export default async function OnboardingPage({ params }: Props) {
   const t = await getTranslations({ locale, namespace: 'onboardingWizard' });
 
   const user = await getAuthenticatedUser();
-  const profile = await getViewerProfile(user.id);
+  const [profile, hasDecided] = await Promise.all([
+    getViewerProfile(user.id),
+    hasJoinAnnouncementDecision(user.id),
+  ]);
 
   if (!profile) {
     notFound();
@@ -56,9 +62,15 @@ export default async function OnboardingPage({ params }: Props) {
     <PageLayout title={t('pageTitle')} locale={locale}>
       <OnboardingWizard
         locale={locale}
-        currentAvatarUrl={profile.avatarUrl}
-        currentCountry={profile.country}
+        member={{
+          username: profile.username,
+          displayName: profile.displayName,
+          avatarUrl: profile.avatarUrl,
+          country: profile.country,
+          flair: profile.flair,
+        }}
         currentBio={profile.bio}
+        canAnnounce={!hasDecided}
         beltSlide={<BeltRanksSlide locale={locale} />}
       />
     </PageLayout>

@@ -148,9 +148,31 @@ export type GameFeedItem = FeedItemBase & {
   data: GameFeedData;
 };
 
+/**
+ * A new member's arrival announcement (see `@/lib/feed-items/member-joined`).
+ * The member is both actor and subject, so the card renders `member` only.
+ * Likeable (target = the feed row id) but not repliable, hence no `replyMeta`.
+ */
+export type MemberJoinedFeedData = {
+  member: SocialAuthorProfile;
+  likeMeta: LikeMeta;
+  /** The viewer is the member who joined — gates the owner's delete menu. */
+  isMine: boolean;
+};
+
+export type MemberJoinedFeedItem = FeedItemBase & {
+  entityType: 'member_joined';
+  data: MemberJoinedFeedData;
+};
+
 // Discriminated union — extend with new entity types here
 export type FeedItem =
-  TopicPostFeedItem | ChallengeRankUpdateFeedItem | PositionFeedItem | ChunkFeedItem | GameFeedItem;
+  | TopicPostFeedItem
+  | ChallengeRankUpdateFeedItem
+  | PositionFeedItem
+  | ChunkFeedItem
+  | GameFeedItem
+  | MemberJoinedFeedItem;
 
 export type FeedResponse = {
   items: FeedItem[];

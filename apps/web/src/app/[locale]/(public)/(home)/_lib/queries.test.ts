@@ -10,6 +10,7 @@ const mockDbSelectResult = vi.fn();
 const mockDbSelectJoinResult = vi.fn();
 const mockAttachProfilePostMeta = vi.fn();
 const mockEq = vi.fn();
+const mockNotInArray = vi.fn();
 
 // The db mock swallows the WHERE clause, so the only way to assert that a
 // filter reaches SQL is to spy on the operator that builds it. `eq` is used
@@ -25,6 +26,12 @@ vi.mock('drizzle-orm', async (importOriginal) => {
     eq: (...args: Parameters<typeof actual.eq>) => {
       mockEq(...args);
       return actual.eq(...args);
+    },
+    // Same trick for the entity-type blacklist: `notInArray` is used exactly
+    // once in `queries.ts`, for `excludeEntityTypes`.
+    notInArray: (...args: Parameters<typeof actual.notInArray>) => {
+      mockNotInArray(...args);
+      return actual.notInArray(...args);
     },
   };
 });
@@ -280,6 +287,24 @@ describe('getFeedData', () => {
       await getFeedData({ limit: 10, actorId: 'actor-1' });
 
       expect(mockEq).toHaveBeenCalledWith(feedItems.actorId, 'actor-1');
+    });
+
+    it('should not apply an entity-type blacklist when excludeEntityTypes is omitted', async () => {
+      mockDbSelectResult.mockResolvedValue([createFeedRow({ entityType: 'some_future_type' })]);
+
+      await getFeedData({ limit: 10 });
+
+      expect(mockNotInArray).not.toHaveBeenCalled();
+    });
+
+    it('should apply excludeEntityTypes in SQL', async () => {
+      // In the WHERE, like `entityTypes`: a row dropped after the fetch would
+      // still spend one of the `limit + 1` slots and short the page.
+      mockDbSelectResult.mockResolvedValue([createFeedRow({ entityType: 'some_future_type' })]);
+
+      await getFeedData({ limit: 10, excludeEntityTypes: ['member_joined'] });
+
+      expect(mockNotInArray).toHaveBeenCalledWith(feedItems.entityType, ['member_joined']);
     });
 
     it('should pass currentUserId to attachProfilePostMeta', async () => {

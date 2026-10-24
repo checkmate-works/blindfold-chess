@@ -6,6 +6,7 @@ import { profileCacheTag } from '@/lib/cache-tags';
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import {
   chunks,
+  feedItems,
   gameComments,
   games,
   likes,
@@ -223,6 +224,7 @@ describe('deleteAccount', () => {
         'repertoire',
         'game',
         'game_comment',
+        'member_joined',
       ]);
     });
 
@@ -241,6 +243,7 @@ describe('deleteAccount', () => {
         [repertoires.userId, testUserId],
         [games.authorId, testUserId],
         [gameComments.authorId, testUserId],
+        [feedItems.actorId, testUserId],
       ]);
     });
 
@@ -249,7 +252,7 @@ describe('deleteAccount', () => {
 
       // Each delete targets `likes`, matching target_id ∈ the owned-content
       // subquery (the "given" likes — user_id-keyed — are left untouched).
-      expect(mockDelete).toHaveBeenCalledTimes(6);
+      expect(mockDelete).toHaveBeenCalledTimes(7);
       for (const call of mockDeleteWhere.mock.calls) {
         const cond = call[0] as { __and: { __inArray: [unknown, unknown] }[] };
         expect(cond.__and[1].__inArray).toEqual([likes.targetId, 'owned-content-subquery']);

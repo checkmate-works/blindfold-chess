@@ -102,15 +102,25 @@ export async function performEntityToggleLike<TExtra>(params: {
   targetType: string;
   /**
    * Look up the target row's owner plus any extra context the caller will
-   * need in `notificationMeta`. Returning `null` means the row has gone
-   * away between the toggle and the lookup — in that case the notification
-   * is skipped and the toggle still counts.
+   * need in `notificationMeta`. Returning `null` means the row is gone;
+   * what happens then is `missingTarget`'s call.
    */
   fetchOwner: (id: string) => Promise<{ userId: string | null; extra: TExtra } | null>;
   /** Build notification metadata. Only called on a fresh like to a non-self. */
   notificationMeta: (id: string, extra: TExtra) => Record<string, unknown>;
+  /**
+   * What to do when `fetchOwner` finds no row. `'skipNotification'` (the
+   * default) still records the like — right for content that is soft-deleted
+   * or anonymised, where the row persists and a later cleanup can find the
+   * like by it. `'reject'` answers `{ error: 'notFound' }` and writes
+   * nothing — for a target that is physically deleted (an arrival
+   * announcement, gone with its owner's "⋯ → delete" or the 30-day reaper),
+   * where a like on a missing id would never be cleaned up.
+   */
+  missingTarget?: 'skipNotification' | 'reject';
 }): Promise<ToggleLikeResult> {
   const { id, fieldName, targetType, fetchOwner, notificationMeta } = params;
+  const missingTarget = params.missingTarget ?? 'skipNotification';
 
   const uuidError = validateUUID(id, fieldName);
   if (uuidError) return uuidError;
@@ -130,6 +140,7 @@ export async function performEntityToggleLike<TExtra>(params: {
   // content. (The target row isn't deleted by liking, so fetching the owner
   // before vs after the toggle is equivalent.)
   const owner = await fetchOwner(id);
+  if (!owner && missingTarget === 'reject') return { error: 'notFound' };
 
   const blocked = await assertNotBlocked(user.id, owner?.userId);
   if (blocked) return blocked;
