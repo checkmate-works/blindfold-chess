@@ -399,6 +399,20 @@ GRANT SELECT ON TABLE public.feed_items TO anon;
 REVOKE INSERT ON TABLE public.feed_items FROM authenticated;
 
 -- =============================================================================
+-- join_announcement_decisions
+-- =============================================================================
+
+-- FK constraint: join_announcement_decisions.user_id → auth.users(id) ON DELETE CASCADE
+-- The onboarding answer means nothing once the account is purged.
+SELECT public.ensure_auth_users_fk('join_announcement_decisions', 'join_announcement_decisions_user_id_fkey', 'user_id', 'CASCADE');
+
+-- Server-side only. The answer (and, next to a missing feed card, whether a
+-- member declined) is not public information — the reason it is not a
+-- `profiles` column, which `anon` can read in full. Read and written by the
+-- onboarding page and its Server Action on the Drizzle connection.
+REVOKE ALL ON TABLE public.join_announcement_decisions FROM authenticated, anon;
+
+-- =============================================================================
 -- stripe_customers
 -- =============================================================================
 

@@ -1,5 +1,5 @@
 {
-  "id": "04cd22d9-d7b5-4b9f-b8d2-599095c46852",
+  "id": "ee55b9b1-e65d-454a-bfa4-4a07671e60ed",
   "prevId": "96441241-feaa-443d-b79a-34a81e79e1f2",
   "version": "7",
   "dialect": "postgresql",
@@ -1043,12 +1043,6 @@
           "primaryKey": false,
           "notNull": true,
           "default": false
-        },
-        "join_announcement_decided_at": {
-          "name": "join_announcement_decided_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
         },
         "banned_at": {
           "name": "banned_at",
@@ -3733,6 +3727,38 @@
           "with": {}
         }
       },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.join_announcement_decisions": {
+      "name": "join_announcement_decisions",
+      "schema": "",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "outcome": {
+          "name": "outcome",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "decided_at": {
+          "name": "decided_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},

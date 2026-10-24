@@ -572,8 +572,8 @@
     {
       "idx": 81,
       "version": "7",
-      "when": 1792801265486,
-      "tag": "20261024002105_add_join_announcement_decided_at_to_profiles",
+      "when": 1792811732543,
+      "tag": "20261024031532_create_join_announcement_decisions",
       "breakpoints": true
     }
   ]

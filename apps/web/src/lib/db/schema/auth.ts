@@ -84,26 +84,6 @@ export const profiles = pgTable(
      * on its own.
      */
     hiddenFromLeaderboard: boolean('hidden_from_leaderboard').notNull().default(false),
-    /**
-     * When the member answered the onboarding "announce your arrival on the
-     * home feed?" step — either way. NULL means the question is still open.
-     *
-     * @design A decision record, not "is there a feed item"
-     * The announcement is one-shot: once answered, the step never offers it
-     * again, even after the member deletes the card or the 30-day reaper
-     * removes it. The feed row cannot carry that on its own — it is gone in
-     * exactly those two cases — so the answer lives here, and the announce
-     * action claims it with a conditional UPDATE (`... WHERE
-     * join_announcement_decided_at IS NULL`) so a double submit or a second
-     * tab cannot post twice.
-     *
-     * @design Existing members were backfilled as already decided
-     * The announcement is for people joining from now on. The migration that
-     * added this column stamped every existing profile, so a long-standing
-     * member who opens `/mypage/onboarding` by URL is not offered a "just
-     * joined" card.
-     */
-    joinAnnouncementDecidedAt: timestamp('join_announcement_decided_at', { withTimezone: true }),
     bannedAt: timestamp('banned_at', { withTimezone: true }),
     ...softDeleteTimestamp,
     ...createdAtOnly,
