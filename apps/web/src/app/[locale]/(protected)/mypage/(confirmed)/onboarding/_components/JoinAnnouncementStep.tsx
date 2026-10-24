@@ -46,13 +46,13 @@ export function JoinAnnouncementStep({ locale, member, answer, onAnswered, onNex
     setError(null);
     const result = await decideJoinAnnouncement({ announce });
     setPending(null);
-    // `alreadyDecided` means another tab or an earlier visit answered first;
-    // there is nothing left to ask, so move on rather than show an error.
-    if ('error' in result && result.error !== 'alreadyDecided') {
+    if ('error' in result) {
       setError(t('error'));
       return;
     }
-    onAnswered(announce ? 'posted' : 'declined');
+    // Show what is on record, not the button that was pressed: a second tab
+    // or an earlier visit may have answered first, and the other way.
+    onAnswered(result.outcome === 'announced' ? 'posted' : 'declined');
     onNext();
   };
 

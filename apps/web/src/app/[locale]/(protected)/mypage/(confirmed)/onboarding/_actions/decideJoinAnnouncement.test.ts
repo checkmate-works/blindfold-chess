@@ -22,21 +22,29 @@ beforeEach(() => {
 });
 
 describe('decideJoinAnnouncement', () => {
-  it.each([true, false])('records announce=%s for the signed-in member', async (announce) => {
-    mockRecord.mockResolvedValue(true);
+  it.each([
+    [true, 'announced'],
+    [false, 'declined'],
+  ] as const)('records announce=%s for the signed-in member', async (announce, outcome) => {
+    mockRecord.mockResolvedValue({ recorded: true, outcome });
 
-    expect(await decideJoinAnnouncement({ announce })).toEqual({ success: true });
+    expect(await decideJoinAnnouncement({ announce })).toEqual({ success: true, outcome });
     expect(mockRecord).toHaveBeenCalledWith('member-1', announce);
   });
 
-  it('reports alreadyDecided when the answer was recorded before', async () => {
-    mockRecord.mockResolvedValue(false);
+  it('returns the outcome already on record when the answer was recorded before', async () => {
+    // The caller pressed "don't post", but another tab had already posted:
+    // the step must say "posted", so the recorded outcome wins.
+    mockRecord.mockResolvedValue({ recorded: false, outcome: 'announced' });
 
-    expect(await decideJoinAnnouncement({ announce: true })).toEqual({ error: 'alreadyDecided' });
+    expect(await decideJoinAnnouncement({ announce: false })).toEqual({
+      success: true,
+      outcome: 'announced',
+    });
   });
 
   it('treats anything but a literal true as declining', async () => {
-    mockRecord.mockResolvedValue(true);
+    mockRecord.mockResolvedValue({ recorded: true, outcome: 'declined' });
 
     await decideJoinAnnouncement({ announce: 'yes' as unknown as boolean });
     expect(mockRecord).toHaveBeenCalledWith('member-1', false);

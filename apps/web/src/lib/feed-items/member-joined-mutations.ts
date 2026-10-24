@@ -2,8 +2,12 @@ import { and, eq } from 'drizzle-orm';
 import 'server-only';
 
 import { db, feedItems, joinAnnouncementDecisions, likes } from '@/lib/db';
+import type { JoinAnnouncementDecision } from '@/lib/db';
 
 import { MEMBER_JOINED_ENTITY_TYPE, MEMBER_JOINED_LIKE_TARGET } from './member-joined';
+
+/** How a member answered the arrival-announcement step, or that they were never asked. */
+export type JoinAnnouncementOutcome = JoinAnnouncementDecision['outcome'];
 
 /**
  * Record the member's answer to the onboarding arrival-announcement step and,
@@ -16,18 +20,33 @@ import { MEMBER_JOINED_ENTITY_TYPE, MEMBER_JOINED_LIKE_TARGET } from './member-j
  * way. The caller must have checked that the member has a profile — the card
  * renders from it.
  *
- * @returns `true` if this call recorded the answer, `false` if it was already
- *   recorded (nothing changed).
+ * @returns `recorded: true` with the outcome just written, or `recorded:
+ *   false` with the outcome that was already on record. The stored outcome
+ *   comes back in both cases so the caller can show what actually happened —
+ *   a second tab that loses the race may have pressed the other button.
  */
-export async function decideJoinAnnouncement(userId: string, announce: boolean): Promise<boolean> {
+export async function decideJoinAnnouncement(
+  userId: string,
+  announce: boolean
+): Promise<{ recorded: boolean; outcome: JoinAnnouncementOutcome }> {
   return db.transaction(async (tx) => {
+    const outcome: JoinAnnouncementOutcome = announce ? 'announced' : 'declined';
     const claimed = await tx
       .insert(joinAnnouncementDecisions)
-      .values({ userId, outcome: announce ? 'announced' : 'declined' })
+      .values({ userId, outcome })
       .onConflictDoNothing()
       .returning({ userId: joinAnnouncementDecisions.userId });
 
-    if (claimed.length === 0) return false;
+    if (claimed.length === 0) {
+      const [existing] = await tx
+        .select({ outcome: joinAnnouncementDecisions.outcome })
+        .from(joinAnnouncementDecisions)
+        .where(eq(joinAnnouncementDecisions.userId, userId))
+        .limit(1);
+      // The INSERT lost to a row that must exist, so `existing` is always
+      // found; the fallback only keeps the type honest.
+      return { recorded: false, outcome: existing?.outcome ?? 'declined' };
+    }
 
     if (announce) {
       await tx.insert(feedItems).values({
@@ -36,7 +55,7 @@ export async function decideJoinAnnouncement(userId: string, announce: boolean):
         actorId: userId,
       });
     }
-    return true;
+    return { recorded: true, outcome };
   });
 }
 
