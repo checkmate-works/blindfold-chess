@@ -9,6 +9,8 @@ import { BIO_MAX_LENGTH } from '@/lib/users/profile-limits';
 import { AvatarUpload } from '@/app/[locale]/(protected)/mypage/(confirmed)/profile/_components/AvatarUpload';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
+import { StepHeading } from './StepHeading';
+
 type Props = {
   locale: string;
   currentAvatarUrl: string | null;
@@ -50,7 +52,7 @@ export function ProfileStep({
   return (
     <div className="space-y-6">
       <div className="space-y-1 text-center">
-        <p className="text-sm text-muted-foreground">{t('prompt')}</p>
+        <StepHeading>{t('prompt')}</StepHeading>
         <button type="button" onClick={onSkip} className={`text-sm ${TEXT_LINK_CLASSES}`}>
           {tWizard('nav.skip')}
         </button>

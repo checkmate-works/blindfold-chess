@@ -3853,11 +3853,9 @@
     },
     "joinAnnouncement": {
       "title": "Avisar a todos que você chegou?",
-      "description": "Podemos publicar um cartão na linha do tempo inicial para que outros membros encontrem você e digam olá.",
       "previewLabel": "Prévia",
-      "retentionNote": "Ele fica na linha do tempo por {days} dias e depois some automaticamente.",
-      "deleteNote": "Você pode excluí-lo quando quiser pelo menu ⋯ do cartão.",
-      "oneShotNote": "Você só pode escolher uma vez — isso não será oferecido de novo.",
+      "retentionNote": "Fica na linha do tempo por {days} dias e depois some automaticamente",
+      "deleteNote": "Você pode excluí-lo quando quiser pelo menu ⋯ do cartão",
       "post": "Publicar na linha do tempo",
       "decline": "Não publicar",
       "postedMessage": "Publicado na linha do tempo.",

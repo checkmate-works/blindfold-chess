@@ -3853,11 +3853,9 @@
     },
     "joinAnnouncement": {
       "title": "¿Avisamos a todos de que has llegado?",
-      "description": "Podemos publicar una tarjeta en la línea de tiempo de inicio para que otros miembros te encuentren y te saluden.",
       "previewLabel": "Vista previa",
-      "retentionNote": "Se muestra en la línea de tiempo durante {days} días y luego desaparece automáticamente.",
-      "deleteNote": "Puedes eliminarla cuando quieras desde el menú ⋯ de la tarjeta.",
-      "oneShotNote": "Solo puedes elegir una vez: no se volverá a ofrecer.",
+      "retentionNote": "Se muestra en la línea de tiempo durante {days} días y luego desaparece automáticamente",
+      "deleteNote": "Puedes eliminarla cuando quieras desde el menú ⋯ de la tarjeta",
       "post": "Publicar en la línea de tiempo",
       "decline": "No publicar",
       "postedMessage": "Publicado en la línea de tiempo.",

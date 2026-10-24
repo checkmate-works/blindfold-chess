@@ -3853,11 +3853,9 @@
     },
     "joinAnnouncement": {
       "title": "Let everyone know you've arrived?",
-      "description": "We can post a card to the home timeline so other members can find you and say hello.",
       "previewLabel": "Preview",
-      "retentionNote": "It stays on the timeline for {days} days, then disappears automatically.",
-      "deleteNote": "You can delete it any time from the ⋯ menu on the card.",
-      "oneShotNote": "You can only choose once — this won't be offered again.",
+      "retentionNote": "Stays on the timeline for {days} days, then disappears automatically",
+      "deleteNote": "You can delete it any time from the ⋯ menu on the card",
       "post": "Post to the timeline",
       "decline": "Don't post",
       "postedMessage": "Posted to the timeline.",

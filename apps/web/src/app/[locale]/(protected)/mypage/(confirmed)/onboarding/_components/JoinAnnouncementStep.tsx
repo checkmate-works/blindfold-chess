@@ -11,6 +11,7 @@ import type { SocialAuthorProfile } from '@/lib/users/author-profile';
 import { MemberJoinedCardPreview } from '@/app/[locale]/(public)/(home)/_components/MemberJoinedCard';
 
 import { decideJoinAnnouncement } from '../_actions/decideJoinAnnouncement';
+import { StepHeading } from './StepHeading';
 
 /** What the member answered on this step, once answered in this session. */
 export type JoinAnnouncementAnswer = 'posted' | 'declined';
@@ -59,10 +60,7 @@ export function JoinAnnouncementStep({ locale, member, answer, onAnswered, onNex
 
   return (
     <div className="space-y-6">
-      <div className="space-y-1 text-center">
-        <p className="font-medium text-foreground">{t('title')}</p>
-        <p className="text-sm text-muted-foreground">{t('description')}</p>
-      </div>
+      <StepHeading>{t('title')}</StepHeading>
 
       <div className="space-y-2">
         <p className="text-xs font-medium text-muted-foreground">{t('previewLabel')}</p>
@@ -76,7 +74,6 @@ export function JoinAnnouncementStep({ locale, member, answer, onAnswered, onNex
       <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
         <li>{t('retentionNote', { days: MEMBER_JOINED_RETENTION_DAYS })}</li>
         <li>{t('deleteNote')}</li>
-        <li>{t('oneShotNote')}</li>
       </ul>
 
       {error && <p className="text-sm text-destructive">{error}</p>}
