@@ -12,6 +12,14 @@ vi.mock('@sentry/nextjs');
 const mockReap = vi.fn();
 vi.mock('@/lib/feed-items/reap-old-rank-updates', () => ({
   reapOldRankUpdateFeedItems: () => mockReap(),
+  reapOldMemberJoinedFeedItems: () =>
+    Promise.resolve({
+      removed: 0,
+      batches: 0,
+      timedOut: false,
+      startedAt: '2026-05-04T00:00:00.000Z',
+      finishedAt: '2026-05-04T00:00:00.001Z',
+    }),
 }));
 
 const PATH = '/api/cron/reap-old-feed-items';

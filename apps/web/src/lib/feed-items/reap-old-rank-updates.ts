@@ -1,8 +1,14 @@
 import { and, asc, eq, inArray, lt } from 'drizzle-orm';
 import 'server-only';
 
-import { db, feedItems } from '@/lib/db';
+import { db, feedItems, likes } from '@/lib/db';
 import { startRetentionRun } from '@/lib/retention-run';
+
+import {
+  MEMBER_JOINED_ENTITY_TYPE,
+  MEMBER_JOINED_LIKE_TARGET,
+  MEMBER_JOINED_RETENTION_DAYS,
+} from './member-joined';
 
 /**
  * Reaper for old `feed_items` rows of type `challenge_rank_update`.
@@ -50,6 +56,16 @@ import { startRetentionRun } from '@/lib/retention-run';
  * The function returns a structured report so the route can log
  * progress and so operators can see whether the previous run timed
  * out and a backlog remains.
+ *
+ * @design Arrival announcements share the loop
+ *
+ * `member_joined` cards (see `./member-joined`) are kept for
+ * {@link MEMBER_JOINED_RETENTION_DAYS} days under the same kind of
+ * promise — the onboarding step that posts one says so — so
+ * {@link reapOldMemberJoinedFeedItems} runs this same batched loop with
+ * its own entity-type guard. Unlike rank updates they take likes, which
+ * have no FK to cascade through, so each batch also deletes the likes
+ * that targeted the reaped rows.
  */
 
 /**
@@ -83,17 +99,51 @@ export type RankUpdateReaperReport = {
   finishedAt: string;
 };
 
-export async function reapOldRankUpdateFeedItems(
-  opts: {
-    now?: Date;
-    budgetMs?: number;
-    batchSize?: number;
-  } = {}
+type ReaperOptions = {
+  now?: Date;
+  budgetMs?: number;
+  batchSize?: number;
+};
+
+export function reapOldRankUpdateFeedItems(
+  opts: ReaperOptions = {}
+): Promise<RankUpdateReaperReport> {
+  return reapFeedItemsOfType(
+    { entityType: RANK_UPDATE_ENTITY_TYPE, retentionMs: RANK_UPDATE_RETENTION_MS },
+    opts
+  );
+}
+
+/** Retention window for arrival announcements, in ms. */
+export const MEMBER_JOINED_RETENTION_MS = MEMBER_JOINED_RETENTION_DAYS * 24 * 60 * 60 * 1000;
+
+/** Reaper for arrival announcements older than {@link MEMBER_JOINED_RETENTION_MS}. */
+export function reapOldMemberJoinedFeedItems(
+  opts: ReaperOptions = {}
+): Promise<RankUpdateReaperReport> {
+  return reapFeedItemsOfType(
+    {
+      entityType: MEMBER_JOINED_ENTITY_TYPE,
+      retentionMs: MEMBER_JOINED_RETENTION_MS,
+      likeTargetType: MEMBER_JOINED_LIKE_TARGET,
+    },
+    opts
+  );
+}
+
+async function reapFeedItemsOfType(
+  target: {
+    entityType: string;
+    retentionMs: number;
+    /** `likes.target_type` whose rows point at the reaped feed ids, if the type is likeable. */
+    likeTargetType?: string;
+  },
+  opts: ReaperOptions
 ): Promise<RankUpdateReaperReport> {
   const batchSize = opts.batchSize ?? BATCH_SIZE;
   const run = startRetentionRun({
     now: opts.now,
-    retentionMs: RANK_UPDATE_RETENTION_MS,
+    retentionMs: target.retentionMs,
     budgetMs: opts.budgetMs ?? DEFAULT_BUDGET_MS,
   });
 
@@ -110,20 +160,19 @@ export async function reapOldRankUpdateFeedItems(
     const targets = await db
       .select({ id: feedItems.id })
       .from(feedItems)
-      .where(
-        and(eq(feedItems.entityType, RANK_UPDATE_ENTITY_TYPE), lt(feedItems.createdAt, run.cutoff))
-      )
+      .where(and(eq(feedItems.entityType, target.entityType), lt(feedItems.createdAt, run.cutoff)))
       .orderBy(asc(feedItems.createdAt))
       .limit(batchSize);
 
     if (targets.length === 0) break;
 
-    await db.delete(feedItems).where(
-      inArray(
-        feedItems.id,
-        targets.map((t) => t.id)
-      )
-    );
+    const ids = targets.map((t) => t.id);
+    await db.delete(feedItems).where(inArray(feedItems.id, ids));
+    if (target.likeTargetType) {
+      await db
+        .delete(likes)
+        .where(and(eq(likes.targetType, target.likeTargetType), inArray(likes.targetId, ids)));
+    }
 
     removed += targets.length;
     batches += 1;

@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server';
 
 import { requireCronAuth, runCronJob } from '@/lib/cron';
-import { reapOldRankUpdateFeedItems } from '@/lib/feed-items/reap-old-rank-updates';
+import {
+  reapOldMemberJoinedFeedItems,
+  reapOldRankUpdateFeedItems,
+} from '@/lib/feed-items/reap-old-rank-updates';
 
 /**
  * Vercel Cron entrypoint for the rank-update feed-item reaper.
@@ -35,10 +38,14 @@ export async function GET(request: Request): Promise<NextResponse> {
   if (authError) return authError;
 
   return runCronJob('Rank-update feed-item reaper', async () => {
-    const report = await reapOldRankUpdateFeedItems();
+    // Sequential, with budgets that sum under the 60s Hobby timeout. Arrival
+    // announcements are one per sign-up, so their share is small.
+    const report = await reapOldRankUpdateFeedItems({ budgetMs: 35_000 });
+    const memberJoined = await reapOldMemberJoinedFeedItems({ budgetMs: 10_000 });
     return NextResponse.json({
       message: 'Rank-update feed-item reaper completed',
       ...report,
+      memberJoined,
     });
   });
 }
