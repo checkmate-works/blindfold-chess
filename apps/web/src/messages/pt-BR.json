@@ -350,6 +350,20 @@
     "byAuthor": "por {author}",
     "unavailable": "Esta partida não está mais disponível."
   },
+  "memberJoinedCard": {
+    "action": "Acabou de entrar — diga olá! 👋",
+    "like": "Curtir",
+    "unlike": "Remover curtida",
+    "moreActions": "Mais ações",
+    "delete": {
+      "button": "Excluir",
+      "title": "Excluir este aviso?",
+      "message": "Seu aviso de chegada será removido da linha do tempo. Não será possível publicá-lo de novo.",
+      "confirm": "Excluir",
+      "cancel": "Cancelar",
+      "error": "Não foi possível excluir. Tente novamente."
+    }
+  },
   "metadata": {
     "siteName": "Shingan Chess",
     "seoSiteName": "Xadrez às Cegas",
@@ -2269,20 +2283,6 @@
         "action": {
           "created": "Publicou um rascunho de chunk",
           "published": "Publicou um chunk"
-        }
-      },
-      "memberJoined": {
-        "action": "Acabou de entrar — diga olá! 👋",
-        "like": "Curtir",
-        "unlike": "Remover curtida",
-        "moreActions": "Mais ações",
-        "delete": {
-          "button": "Excluir",
-          "title": "Excluir este aviso?",
-          "message": "Seu aviso de chegada será removido da linha do tempo. Não será possível publicá-lo de novo.",
-          "confirm": "Excluir",
-          "cancel": "Cancelar",
-          "error": "Não foi possível excluir. Tente novamente."
         }
       }
     },

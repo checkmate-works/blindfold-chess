@@ -350,6 +350,20 @@
     "byAuthor": "por {author}",
     "unavailable": "Esta partida ya no está disponible."
   },
+  "memberJoinedCard": {
+    "action": "Se acaba de unir. ¡Salúdale! 👋",
+    "like": "Me gusta",
+    "unlike": "Quitar me gusta",
+    "moreActions": "Más acciones",
+    "delete": {
+      "button": "Eliminar",
+      "title": "¿Eliminar este anuncio?",
+      "message": "Tu anuncio de llegada se quitará de la línea de tiempo. No se podrá volver a publicar.",
+      "confirm": "Eliminar",
+      "cancel": "Cancelar",
+      "error": "No se pudo eliminar. Inténtalo de nuevo."
+    }
+  },
   "metadata": {
     "siteName": "Shingan Chess",
     "seoSiteName": "Ajedrez a Ciegas",
@@ -2269,20 +2283,6 @@
         "action": {
           "created": "Publicó un borrador de chunk",
           "published": "Publicó un chunk"
-        }
-      },
-      "memberJoined": {
-        "action": "Se acaba de unir. ¡Salúdale! 👋",
-        "like": "Me gusta",
-        "unlike": "Quitar me gusta",
-        "moreActions": "Más acciones",
-        "delete": {
-          "button": "Eliminar",
-          "title": "¿Eliminar este anuncio?",
-          "message": "Tu anuncio de llegada se quitará de la línea de tiempo. No se podrá volver a publicar.",
-          "confirm": "Eliminar",
-          "cancel": "Cancelar",
-          "error": "No se pudo eliminar. Inténtalo de nuevo."
         }
       }
     },

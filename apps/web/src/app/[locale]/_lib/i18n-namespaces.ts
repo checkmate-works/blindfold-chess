@@ -123,6 +123,11 @@ export const NAMESPACE_CLASSIFICATION = {
   // CODE 'moderation.blocked' (`assertNotBlocked`); the topic forms resolve it
   // against the global translator in `resolvePostFormError`, so the namespace
   // must reach the client dictionary. ~50 bytes.
+  // memberJoinedCard: the arrival-announcement feed card. Its own namespace
+  // rather than under `home.feed` because the onboarding step (mypage scope)
+  // previews the same card, and shipping all of `home` there to reach it
+  // would be paid on every mypage view.
+  memberJoinedCard: 'client',
   moderation: 'client',
   navigation: 'client',
   newGame: 'client',

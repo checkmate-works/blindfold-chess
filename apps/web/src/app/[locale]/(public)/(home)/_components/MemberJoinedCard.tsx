@@ -50,7 +50,7 @@ export const MemberJoinedCard = memo(function MemberJoinedCard({
   actionSize,
   onRemoved,
 }: Props) {
-  const t = useTranslations('home.feed.memberJoined');
+  const t = useTranslations('memberJoinedCard');
   const displayName = resolveAuthorName(data.member, { fallback: data.member.username });
   const href = buildProfileHref(data.member);
   const { isOpen, open, cancel, isPending, error, run } = useConfirmAction();
@@ -89,7 +89,7 @@ export const MemberJoinedCard = memo(function MemberJoinedCard({
               initialLikeCount={data.likeMeta.likeCount}
               initialLikedByMe={data.likeMeta.likedByMe}
               toggleLikeAction={toggleJoinAnnouncementLikeAction}
-              i18nNamespace="home.feed.memberJoined"
+              i18nNamespace="memberJoinedCard"
               size={actionSize}
             />
             {data.isMine && (
@@ -141,7 +141,7 @@ export function MemberJoinedCardPreview({
   locale: string;
   justNowLabel: string;
 }) {
-  const t = useTranslations('home.feed.memberJoined');
+  const t = useTranslations('memberJoinedCard');
   const displayName = resolveAuthorName(member, { fallback: member.username });
 
   return (
@@ -160,7 +160,7 @@ export function MemberJoinedCardPreview({
               initialLikeCount={0}
               initialLikedByMe={false}
               toggleLikeAction={previewToggleLike}
-              i18nNamespace="home.feed.memberJoined"
+              i18nNamespace="memberJoinedCard"
             />
           </div>
         }

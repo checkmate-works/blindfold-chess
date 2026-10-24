@@ -350,6 +350,20 @@
     "byAuthor": "{author} さん",
     "unavailable": "この対局は公開されていません。"
   },
+  "memberJoinedCard": {
+    "action": "新しく参加しました。よろしくお願いします！👋",
+    "like": "いいね",
+    "unlike": "いいねを取り消す",
+    "moreActions": "その他の操作",
+    "delete": {
+      "button": "削除",
+      "title": "参加のお知らせを削除しますか？",
+      "message": "タイムラインから削除されます。削除すると再投稿はできません。",
+      "confirm": "削除する",
+      "cancel": "キャンセル",
+      "error": "削除できませんでした。もう一度お試しください。"
+    }
+  },
   "metadata": {
     "siteName": "心眼チェス",
     "seoSiteName": "目隠しチェス",
@@ -2269,20 +2283,6 @@
         "action": {
           "created": "チャンクの下書きを投稿しました",
           "published": "チャンクを公開しました"
-        }
-      },
-      "memberJoined": {
-        "action": "新しく参加しました。よろしくお願いします！👋",
-        "like": "いいね",
-        "unlike": "いいねを取り消す",
-        "moreActions": "その他の操作",
-        "delete": {
-          "button": "削除",
-          "title": "参加のお知らせを削除しますか？",
-          "message": "タイムラインから削除されます。削除すると再投稿はできません。",
-          "confirm": "削除する",
-          "cancel": "キャンセル",
-          "error": "削除できませんでした。もう一度お試しください。"
         }
       }
     },

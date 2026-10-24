@@ -350,6 +350,20 @@
     "byAuthor": "by {author}",
     "unavailable": "This game is no longer available."
   },
+  "memberJoinedCard": {
+    "action": "Just joined — say hello! 👋",
+    "like": "Like",
+    "unlike": "Unlike",
+    "moreActions": "More actions",
+    "delete": {
+      "button": "Delete",
+      "title": "Delete this announcement?",
+      "message": "Your arrival announcement will be removed from the timeline. It can't be posted again.",
+      "confirm": "Delete",
+      "cancel": "Cancel",
+      "error": "Couldn't delete it. Please try again."
+    }
+  },
   "metadata": {
     "siteName": "Shingan Chess",
     "seoSiteName": "Blindfold Chess",
@@ -2269,20 +2283,6 @@
         "action": {
           "created": "Posted a chunk draft",
           "published": "Published a chunk"
-        }
-      },
-      "memberJoined": {
-        "action": "Just joined — say hello! 👋",
-        "like": "Like",
-        "unlike": "Unlike",
-        "moreActions": "More actions",
-        "delete": {
-          "button": "Delete",
-          "title": "Delete this announcement?",
-          "message": "Your arrival announcement will be removed from the timeline. It can't be posted again.",
-          "confirm": "Delete",
-          "cancel": "Cancel",
-          "error": "Couldn't delete it. Please try again."
         }
       }
     },
