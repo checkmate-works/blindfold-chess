@@ -5,9 +5,11 @@
  * @description
  * One `feed_items` row per member, `entity_type = 'member_joined'`, with both
  * `entity_id` and `actor_id` set to the member's profile id: the member *is*
- * the subject, there is no separate entity table. The card shows the avatar,
- * display name and country chip and links to the profile, where the bio can be
- * read; it takes likes (owner notified) but no replies.
+ * the subject, there is no separate entity table. The card renders the member
+ * through the same author slot every feed card uses (`CardAuthorAvatar`, so
+ * what it shows follows that component) over a one-line "signed up", and
+ * links to the profile, where the bio can be read; it takes likes (owner
+ * notified) but no replies.
  *
  * Kept free of `server-only` and of DB imports so the client card and the
  * onboarding step can share these constants with the server side.
