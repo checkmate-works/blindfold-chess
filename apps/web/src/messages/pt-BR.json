@@ -2270,6 +2270,20 @@
           "created": "Publicou um rascunho de chunk",
           "published": "Publicou um chunk"
         }
+      },
+      "memberJoined": {
+        "action": "Acabou de entrar — diga olá! 👋",
+        "like": "Curtir",
+        "unlike": "Remover curtida",
+        "moreActions": "Mais ações",
+        "delete": {
+          "button": "Excluir",
+          "title": "Excluir este aviso?",
+          "message": "Seu aviso de chegada será removido da linha do tempo. Não será possível publicá-lo de novo.",
+          "confirm": "Excluir",
+          "cancel": "Cancelar",
+          "error": "Não foi possível excluir. Tente novamente."
+        }
       }
     },
     "vsAi": {
@@ -3837,6 +3851,20 @@
       "demoTourTitle": "Tour de ajuda",
       "demoTourText": "Assim guiamos você por cada tela na hora. Toque em ? sempre que tiver dúvida.",
       "note": "Obs.: o ícone ? não aparece em telas que ainda não têm tour, nem nas simples o bastante para dispensá-lo."
+    },
+    "joinAnnouncement": {
+      "title": "Avisar a todos que você chegou?",
+      "description": "Podemos publicar um cartão na linha do tempo inicial para que outros membros encontrem você e digam olá.",
+      "previewLabel": "Prévia",
+      "retentionNote": "Ele fica na linha do tempo por {days} dias e depois some automaticamente.",
+      "deleteNote": "Você pode excluí-lo quando quiser pelo menu ⋯ do cartão.",
+      "oneShotNote": "Você só pode escolher uma vez — isso não será oferecido de novo.",
+      "post": "Publicar na linha do tempo",
+      "decline": "Não publicar",
+      "postedMessage": "Publicado na linha do tempo.",
+      "declinedMessage": "Não publicado.",
+      "next": "Próximo",
+      "error": "Algo deu errado. Tente novamente."
     }
   },
   "Mypage": {
@@ -4125,6 +4153,7 @@
     "likeMessage": "{actor} curtiu sua publicação",
     "likeCommentMessage": "{actor} curtiu seu comentário",
     "likeGameMessage": "{actor} curtiu sua partida",
+    "likeJoinAnnouncementMessage": "{actor} curtiu seu aviso de chegada",
     "replyMessage": "{actor} respondeu ao seu comentário",
     "unknownNotification": "Você tem uma nova notificação",
     "announcementMessage": "Novo anúncio: {title}",

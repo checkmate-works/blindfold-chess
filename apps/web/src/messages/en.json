@@ -2270,6 +2270,20 @@
           "created": "Posted a chunk draft",
           "published": "Published a chunk"
         }
+      },
+      "memberJoined": {
+        "action": "Just joined — say hello! 👋",
+        "like": "Like",
+        "unlike": "Unlike",
+        "moreActions": "More actions",
+        "delete": {
+          "button": "Delete",
+          "title": "Delete this announcement?",
+          "message": "Your arrival announcement will be removed from the timeline. It can't be posted again.",
+          "confirm": "Delete",
+          "cancel": "Cancel",
+          "error": "Couldn't delete it. Please try again."
+        }
       }
     },
     "vsAi": {
@@ -3837,6 +3851,20 @@
       "demoTourTitle": "Help tour",
       "demoTourText": "Like this, we'll walk you through each screen right where you are. Press ? whenever you're stuck.",
       "note": "Note: the ? icon doesn't appear on screens without a tour yet, or on ones simple enough not to need one."
+    },
+    "joinAnnouncement": {
+      "title": "Let everyone know you've arrived?",
+      "description": "We can post a card to the home timeline so other members can find you and say hello.",
+      "previewLabel": "Preview",
+      "retentionNote": "It stays on the timeline for {days} days, then disappears automatically.",
+      "deleteNote": "You can delete it any time from the ⋯ menu on the card.",
+      "oneShotNote": "You can only choose once — this won't be offered again.",
+      "post": "Post to the timeline",
+      "decline": "Don't post",
+      "postedMessage": "Posted to the timeline.",
+      "declinedMessage": "Not posted.",
+      "next": "Next",
+      "error": "Something went wrong. Please try again."
     }
   },
   "Mypage": {
@@ -4125,6 +4153,7 @@
     "likeMessage": "{actor} liked your post",
     "likeCommentMessage": "{actor} liked your comment",
     "likeGameMessage": "{actor} liked your game",
+    "likeJoinAnnouncementMessage": "{actor} liked your arrival announcement",
     "replyMessage": "{actor} replied to your comment",
     "unknownNotification": "You have a new notification",
     "announcementMessage": "New announcement: {title}",

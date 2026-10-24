@@ -19,9 +19,16 @@ import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 
 type Props = {
   currentAvatarUrl: string | null;
+  /**
+   * Called with the stored URL after an upload succeeds, and with `null`
+   * after a removal. For a parent that renders the avatar elsewhere on the
+   * same screen (the onboarding wizard's feed-card preview); the save itself
+   * is done here either way.
+   */
+  onAvatarChange?: (avatarUrl: string | null) => void;
 };
 
-export function AvatarUpload({ currentAvatarUrl }: Props) {
+export function AvatarUpload({ currentAvatarUrl, onAvatarChange }: Props) {
   const t = useTranslations('profile');
   const { showToast } = useToast();
   // The header renders the avatar from the auth context, not from this page's
@@ -134,6 +141,7 @@ export function AvatarUpload({ currentAvatarUrl }: Props) {
 
       const { avatarUrl } = await res.json();
       setPreview(avatarUrl);
+      onAvatarChange?.(avatarUrl);
       void refreshUser();
       showToast(t('avatarUploaded'), 'success');
     } catch {
@@ -164,6 +172,7 @@ export function AvatarUpload({ currentAvatarUrl }: Props) {
 
       setPreview(null);
       setIsRemoveConfirmOpen(false);
+      onAvatarChange?.(null);
       void refreshUser();
       showToast(t('avatarRemoved'), 'success');
     } catch {

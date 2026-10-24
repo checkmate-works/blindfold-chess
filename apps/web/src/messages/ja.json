@@ -2270,6 +2270,20 @@
           "created": "チャンクの下書きを投稿しました",
           "published": "チャンクを公開しました"
         }
+      },
+      "memberJoined": {
+        "action": "新しく参加しました。よろしくお願いします！👋",
+        "like": "いいね",
+        "unlike": "いいねを取り消す",
+        "moreActions": "その他の操作",
+        "delete": {
+          "button": "削除",
+          "title": "参加のお知らせを削除しますか？",
+          "message": "タイムラインから削除されます。削除すると再投稿はできません。",
+          "confirm": "削除する",
+          "cancel": "キャンセル",
+          "error": "削除できませんでした。もう一度お試しください。"
+        }
       }
     },
     "vsAi": {
@@ -3837,6 +3851,20 @@
       "demoTourTitle": "ヘルプツアー",
       "demoTourText": "このように、各画面の使い方をその場でご案内します。操作に迷ったら ? を押してみてください。",
       "note": "※ ツアーが用意されていない画面や、説明が不要なシンプルな画面では ? アイコンは表示されません。"
+    },
+    "joinAnnouncement": {
+      "title": "参加をタイムラインでお知らせしますか？",
+      "description": "ホームのタイムラインにカードを投稿すると、他のメンバーがあなたを見つけて声をかけやすくなります。",
+      "previewLabel": "プレビュー",
+      "retentionNote": "タイムラインには{days}日間表示され、その後は自動で消えます。",
+      "deleteNote": "投稿後はカードの「⋯」メニューからいつでも削除できます。",
+      "oneShotNote": "選べるのは一度だけです。あとから投稿し直すことはできません。",
+      "post": "タイムラインに投稿する",
+      "decline": "投稿しない",
+      "postedMessage": "タイムラインに投稿しました。",
+      "declinedMessage": "投稿しませんでした。",
+      "next": "次へ",
+      "error": "エラーが発生しました。もう一度お試しください。"
     }
   },
   "Mypage": {
@@ -4125,6 +4153,7 @@
     "likeMessage": "{actor} があなたの投稿にいいねしました",
     "likeCommentMessage": "{actor} があなたのコメントにいいねしました",
     "likeGameMessage": "{actor} があなたの対局にいいねしました",
+    "likeJoinAnnouncementMessage": "{actor} があなたの参加のお知らせにいいねしました",
     "replyMessage": "{actor} があなたのコメントに返信しました",
     "unknownNotification": "新しい通知があります",
     "announcementMessage": "新しいお知らせ: {title}",

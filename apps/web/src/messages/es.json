@@ -2270,6 +2270,20 @@
           "created": "Publicó un borrador de chunk",
           "published": "Publicó un chunk"
         }
+      },
+      "memberJoined": {
+        "action": "Se acaba de unir. ¡Salúdale! 👋",
+        "like": "Me gusta",
+        "unlike": "Quitar me gusta",
+        "moreActions": "Más acciones",
+        "delete": {
+          "button": "Eliminar",
+          "title": "¿Eliminar este anuncio?",
+          "message": "Tu anuncio de llegada se quitará de la línea de tiempo. No se podrá volver a publicar.",
+          "confirm": "Eliminar",
+          "cancel": "Cancelar",
+          "error": "No se pudo eliminar. Inténtalo de nuevo."
+        }
       }
     },
     "vsAi": {
@@ -3837,6 +3851,20 @@
       "demoTourTitle": "Recorrido de ayuda",
       "demoTourText": "Así te guiaremos por cada pantalla en el momento. Pulsa ? cuando tengas dudas.",
       "note": "Nota: el icono ? no aparece en pantallas que aún no tienen recorrido, ni en las suficientemente simples como para no necesitarlo."
+    },
+    "joinAnnouncement": {
+      "title": "¿Avisamos a todos de que has llegado?",
+      "description": "Podemos publicar una tarjeta en la línea de tiempo de inicio para que otros miembros te encuentren y te saluden.",
+      "previewLabel": "Vista previa",
+      "retentionNote": "Se muestra en la línea de tiempo durante {days} días y luego desaparece automáticamente.",
+      "deleteNote": "Puedes eliminarla cuando quieras desde el menú ⋯ de la tarjeta.",
+      "oneShotNote": "Solo puedes elegir una vez: no se volverá a ofrecer.",
+      "post": "Publicar en la línea de tiempo",
+      "decline": "No publicar",
+      "postedMessage": "Publicado en la línea de tiempo.",
+      "declinedMessage": "No se ha publicado.",
+      "next": "Siguiente",
+      "error": "Algo salió mal. Inténtalo de nuevo."
     }
   },
   "Mypage": {
@@ -4125,6 +4153,7 @@
     "likeMessage": "{actor} le gustó tu publicación",
     "likeCommentMessage": "{actor} le gustó tu comentario",
     "likeGameMessage": "{actor} le gustó tu partida",
+    "likeJoinAnnouncementMessage": "A {actor} le gustó tu anuncio de llegada",
     "replyMessage": "{actor} respondió a tu comentario",
     "unknownNotification": "Tienes una nueva notificación",
     "announcementMessage": "Nuevo anuncio: {title}",

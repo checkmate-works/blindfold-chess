@@ -11,6 +11,7 @@ import { AvatarUpload } from '@/app/[locale]/(protected)/mypage/(confirmed)/prof
 type Props = {
   locale: string;
   currentAvatarUrl: string | null;
+  onAvatarChange: (avatarUrl: string | null) => void;
   country: string;
   onCountryChange: (code: string) => void;
   bio: string;
@@ -26,6 +27,7 @@ type Props = {
 export function ProfileStep({
   locale,
   currentAvatarUrl,
+  onAvatarChange,
   country,
   onCountryChange,
   bio,
@@ -43,7 +45,7 @@ export function ProfileStep({
 
       <div>
         <label className="mb-1 block text-sm font-medium text-foreground">{t('avatarLabel')}</label>
-        <AvatarUpload currentAvatarUrl={currentAvatarUrl} />
+        <AvatarUpload currentAvatarUrl={currentAvatarUrl} onAvatarChange={onAvatarChange} />
       </div>
 
       <div>
