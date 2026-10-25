@@ -96,9 +96,10 @@ ON CONFLICT (id) DO UPDATE SET
 -- bucket and enumerate every leaf UUID (including images of soft-deleted
 -- posts that have not yet been swept by the 7-day reaper). Joining
 -- storage.objects.name -> post_image_attachments.storage_path -> topic_posts
--- couples the public read to the same lifecycle as the DB row: a
--- soft-deleted post's images become un-fetchable immediately, and LIST
--- traversal returns zero rows because no row matches a directory prefix.
+-- restricts authenticated downloads and LIST to live attachment rows.
+-- Public object URLs bypass SELECT RLS: removing an attachment must delete
+-- its Storage object before reporting success. This policy cannot revoke
+-- a public URL while the object remains in the bucket.
 -- The lookup is O(log n) via the unique index on storage_path created
 -- in the post_image_attachments migration.
 DROP POLICY IF EXISTS "post_images_select_public" ON storage.objects;

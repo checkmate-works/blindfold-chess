@@ -12,9 +12,9 @@ import {
   postImageAttachments,
   postVideoAttachments,
 } from '@/lib/db';
-import { removePostImagesBestEffort } from '@/lib/post-images/remove-best-effort';
+import { POST_IMAGES_BUCKET } from '@/lib/post-images/validation';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
-import { createClient as createSupabaseSessionClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { loadAuthoredPost } from '@/lib/topic-posts';
 import { logActivityEvent } from '@/lib/users/activity-log';
 
@@ -30,8 +30,8 @@ export type RemovePostAttachmentResult = ActionResult;
  * — eliminating the per-kind switch arm.
  *
  * `image` is intentionally excluded: it is 1:N (up to 3 per post) AND
- * requires a pre-DELETE `storage_path` lookup plus a post-DELETE
- * Storage cleanup, neither of which the 1:0..1 kinds need. Its branch
+ * requires a `storage_path` lookup and successful Storage cleanup
+ * before deleting the database row, neither of which the 1:0..1 kinds need. Its branch
  * stays inline in the action body.
  */
 const TABLE_BY_1_TO_0_OR_1_KIND = {
@@ -52,12 +52,13 @@ const TABLE_BY_1_TO_0_OR_1_KIND = {
  *     of these tables means there is at most one row per post, but the
  *     action still constrains by `(id, post_id)` so a hand-crafted call
  *     with a wrong attachment id cannot delete the wrong row.
- *   - `image` — DELETE off `post_image_attachments` PLUS best-effort
- *     `storage.from('post-images').remove([storage_path])`. The Storage
- *     remove is best-effort because Postgres is the source of truth: the
- *     row is gone whether or not the Storage bytes vanish, and the daily
- *     reaper (`lib/post-images/reap-orphaned-images.ts`) sweeps survivors
- *     within 7 days. Mirrors `deletePost`'s storage-cleanup posture.
+ *   - `image` — remove the Storage object before deleting its database row.
+ *     On failure, retain the row and return an error so the author can retry.
+ *     The service-role client is used only after checking post ownership and
+ *     resolving the attachment path from that post's database row. This also
+ *     makes retries safe if Storage succeeded but the DB delete failed.
+ *     A session client can silently remove nothing once the SELECT policy's
+ *     attachment-row prerequisite disappears; public URLs bypass that policy.
  *
  * The image-count trigger on `post_image_attachments` keeps
  * `topic_posts.image_attachment_count` consistent automatically when the
@@ -84,12 +85,6 @@ export async function removePostAttachment(
   }
   const { post } = lookup;
 
-  // For images, fetch the storage_path BEFORE the DELETE so the Storage
-  // cleanup can target the right object. We do not chain the DELETE on
-  // the storage call succeeding — the row in Postgres is the source of
-  // truth and the reaper covers any survivors.
-  let imageStoragePath: string | null = null;
-
   if (kind === 'image') {
     const [row] = await db
       .select({ storagePath: postImageAttachments.storagePath })
@@ -99,7 +94,16 @@ export async function removePostAttachment(
       )
       .limit(1);
     if (!row) return { error: 'attachmentNotFound' };
-    imageStoragePath = row.storagePath;
+    // Keep the DB row until Storage confirms removal. It is both the
+    // retry handle and the source of the path; never accept a client path.
+    try {
+      const { error } = await createAdminClient()
+        .storage.from(POST_IMAGES_BUCKET)
+        .remove([row.storagePath]);
+      if (error) return { error: 'error' };
+    } catch {
+      return { error: 'error' };
+    }
 
     await db
       .delete(postImageAttachments)
@@ -116,17 +120,6 @@ export async function removePostAttachment(
       .where(and(eq(table.id, attachmentId), eq(table.postId, post.id)))
       .returning({ id: table.id });
     if (result.length === 0) return { error: 'attachmentNotFound' };
-  }
-
-  if (kind === 'image' && imageStoragePath) {
-    // Best-effort: storage failure must not roll back the DB DELETE. The
-    // daily reaper sweeps survivors within 7 days.
-    await removePostImagesBestEffort(
-      createSupabaseSessionClient(),
-      [imageStoragePath],
-      'removePostAttachment',
-      { postId, attachmentId }
-    );
   }
 
   logActivityEvent({
