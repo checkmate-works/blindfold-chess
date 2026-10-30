@@ -43,7 +43,7 @@ import type {
 import { uuidv7 } from '@/lib/uuidv7';
 
 import { chunks } from './chunks';
-import { createdAtOnly, softDeleteTimestamp, timestamps } from './columns';
+import { createdAtOnly, localeColumn, softDeleteTimestamp, timestamps } from './columns';
 
 /**
  * Games — server-persisted snapshot of a blindfold game shared by a user.
@@ -389,7 +389,7 @@ export const gameAiReviews = pgTable(
       .notNull()
       .references(() => games.id, { onDelete: 'cascade' }),
     /** BCP 47 tag from `SUPPORTED_LOCALES` — the language the prose is in. */
-    locale: varchar('locale', { length: 10 }).notNull(),
+    locale: localeColumn(),
     /** Validated LLM prose ({@link AiReviewContent}) — never engine numbers. */
     content: jsonb('content').$type<AiReviewContent>().notNull(),
     /** Server-derived critical moments ({@link ReviewMoment}) — engine facts. */
@@ -458,7 +458,7 @@ export const gameAiReviewJobs = pgTable(
       .notNull()
       .references(() => games.id, { onDelete: 'cascade' }),
     /** BCP 47 tag from `SUPPORTED_LOCALES` — the language to write the review in. */
-    locale: varchar('locale', { length: 10 }).notNull(),
+    locale: localeColumn(),
     // references auth.users — FK defined in custom SQL (ON DELETE CASCADE).
     requestedById: uuid('requested_by_id').notNull(),
     /** The client's engine sweep, one entry per position, consumed by the worker. */

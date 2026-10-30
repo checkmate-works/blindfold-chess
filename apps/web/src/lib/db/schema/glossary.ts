@@ -7,7 +7,7 @@ import { boolean, integer, jsonb, pgTable, text, unique, uuid, varchar } from 'd
 
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
 
-import { createdAtOnly, timestamps } from './columns';
+import { createdAtOnly, localeColumn, timestamps } from './columns';
 
 const EMPTY_BOARD_ANNOTATIONS_DEFAULT: BoardAnnotations = { arrows: [], circles: [] };
 /**
@@ -38,7 +38,7 @@ export const glossaryTermTranslations = pgTable(
     termId: uuid('term_id')
       .notNull()
       .references(() => glossaryTerms.id, { onDelete: 'cascade' }),
-    locale: varchar('locale', { length: 10 }).notNull(), // BCP 47
+    locale: localeColumn(), // BCP 47
     term: varchar('term', { length: 255 }).notNull(),
     definition: text('definition').notNull(),
     reading: varchar('reading', { length: 255 }),

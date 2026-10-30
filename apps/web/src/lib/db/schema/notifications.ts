@@ -17,7 +17,7 @@ import {
 
 import { DEFAULT_NATIVE_THUMBNAIL_FEN } from '@/lib/ads/thumbnail';
 
-import { createdAtOnly, timestamps } from './columns';
+import { createdAtOnly, localeColumn, timestamps } from './columns';
 
 /**
  * Self-served ad inventory ("creatives").
@@ -170,7 +170,7 @@ export const adCreativeTranslations = pgTable(
     creativeId: uuid('creative_id')
       .notNull()
       .references(() => adCreatives.id, { onDelete: 'cascade' }),
-    locale: varchar('locale', { length: 10 }).notNull(), // BCP 47
+    locale: localeColumn(), // BCP 47
     title: varchar('title', { length: 2000 }),
     description: varchar('description', { length: 2000 }),
     ...timestamps,
