@@ -4,22 +4,16 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useRouter, useSearchParams } from 'next/navigation';
 
-import { DEFAULT_MAIA_RATING, type MaiaRating } from '@blindfold-chess/features/ai-game/maia';
 import { getPgnHeaders, getPgnHistory } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
-import {
-  DEFAULT_ENGINE,
-  type EngineConfig,
-  type EngineKind,
-  engineConfigToUrlParams,
-} from '@/lib/engines';
+import { engineConfigToUrlParams } from '@/lib/engines';
 import { MAIA_CHARGE_PARAM } from '@/lib/games/maia-charge-param';
-import type { SkillLevel } from '@/lib/games/saved-game-types';
 import { MAIA_GAME_POINT_COST } from '@/lib/points/constants';
 import type { MaiaEngineAccess } from '@/lib/users/can-use-maia';
 
 import { GameLaunchModals } from '@/app/[locale]/(public)/games/new/_components/GameLaunchModals';
+import { useEngineSelection } from '@/app/[locale]/(public)/games/new/_hooks/use-engine-selection';
 import { useLocalGameSettings } from '@/app/[locale]/(public)/games/new/_hooks/use-local-game-settings';
 import { useMaiaGameLaunch } from '@/app/[locale]/(public)/games/new/_hooks/use-maia-game-launch';
 import { deriveMaiaCardMode } from '@/app/[locale]/(public)/games/new/_lib/maia-launch';
@@ -54,11 +48,12 @@ export function PgnGameForm({ locale, maiaAccess }: Props) {
   );
 
   const [color, setColor] = useState<Side>(initial.color ?? 'white');
-  const [skillLevel, setSkillLevel] = useState<SkillLevel>(initial.skillLevel ?? 5);
-  const [maiaRating, setMaiaRating] = useState<MaiaRating>(
-    initial.maiaRating ?? DEFAULT_MAIA_RATING
-  );
-  const [engine, setEngine] = useState<EngineKind>(initial.engine ?? DEFAULT_ENGINE);
+  const { engine, setEngine, skillLevel, setSkillLevel, maiaRating, setMaiaRating, engineConfig } =
+    useEngineSelection({
+      initialEngine: initial.engine ?? undefined,
+      initialSkillLevel: initial.skillLevel ?? undefined,
+      initialMaiaRating: initial.maiaRating ?? undefined,
+    });
   const [pgn, setPgn] = useState(initial.pgn);
   const [colorManuallySet, setColorManuallySet] = useState(initial.color !== null);
 
@@ -111,9 +106,6 @@ export function PgnGameForm({ locale, maiaAccess }: Props) {
     setColor(newColor);
     setColorManuallySet(true);
   }, []);
-
-  const engineConfig: EngineConfig =
-    engine === 'maia' ? { kind: 'maia', rating: maiaRating } : { kind: 'stockfish', skillLevel };
 
   const navigateToGame = (maiaChargeId: string | null) => {
     const parsed = parsePgnWithFen(pgn);

@@ -6,18 +6,11 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 import { Button, FlipBoardButton } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { DEFAULT_MAIA_RATING, type MaiaRating } from '@blindfold-chess/features/ai-game/maia';
 import type { Side } from '@blindfold-chess/types';
 import { FaChevronDown } from 'react-icons/fa';
 
-import {
-  DEFAULT_ENGINE,
-  type EngineConfig,
-  type EngineKind,
-  engineConfigToUrlParams,
-} from '@/lib/engines';
+import { engineConfigToUrlParams } from '@/lib/engines';
 import { MAIA_CHARGE_PARAM } from '@/lib/games/maia-charge-param';
-import type { SkillLevel } from '@/lib/games/saved-game-types';
 import { MAIA_GAME_POINT_COST } from '@/lib/points/constants';
 import type { MaiaEngineAccess } from '@/lib/users/can-use-maia';
 
@@ -26,6 +19,7 @@ import { EngineSelector } from '@/app/[locale]/(public)/games/new/_components/En
 import { GameLaunchModals } from '@/app/[locale]/(public)/games/new/_components/GameLaunchModals';
 import { PositionSettings } from '@/app/[locale]/(public)/games/new/_components/PositionSettings';
 import { SkillLevelSelector } from '@/app/[locale]/(public)/games/new/_components/SkillLevelSelector';
+import { useEngineSelection } from '@/app/[locale]/(public)/games/new/_hooks/use-engine-selection';
 import { useLocalGameSettings } from '@/app/[locale]/(public)/games/new/_hooks/use-local-game-settings';
 import { useMaiaGameLaunch } from '@/app/[locale]/(public)/games/new/_hooks/use-maia-game-launch';
 import { usePositionState } from '@/app/[locale]/(public)/games/new/_hooks/use-position-state';
@@ -50,9 +44,8 @@ export function PositionGameForm({ locale, maiaAccess }: Props) {
   const { preferences, isLoaded } = useGamePreferences();
   const { localSettings, handleSettingsChange } = useLocalGameSettings();
   const [color, setColor] = useState<Side>('white');
-  const [skillLevel, setSkillLevel] = useState<SkillLevel>(5);
-  const [maiaRating, setMaiaRating] = useState<MaiaRating>(DEFAULT_MAIA_RATING);
-  const [engine, setEngine] = useState<EngineKind>(DEFAULT_ENGINE);
+  const { engine, setEngine, skillLevel, setSkillLevel, maiaRating, setMaiaRating, engineConfig } =
+    useEngineSelection();
   const [flipped, setFlipped] = useState(false);
 
   const {
@@ -119,9 +112,6 @@ export function PositionGameForm({ locale, maiaAccess }: Props) {
     },
     [setPositionFen]
   );
-
-  const engineConfig: EngineConfig =
-    engine === 'maia' ? { kind: 'maia', rating: maiaRating } : { kind: 'stockfish', skillLevel };
 
   const navigateToGame = (maiaChargeId: string | null) => {
     const params = new URLSearchParams({
