@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
-import { Card } from "../../../components";
+import { Card, SquarePairBadge } from "../../../components";
 import { useTheme, fontSize, fontWeight, spacing } from "../../../theme";
 import type { RoutePlannerProblem } from "../lib/types";
 import { PIECE_DISPLAY_MAP } from "../lib/types";
@@ -41,25 +41,11 @@ export function ProblemCard({
         </Text>
 
         {/* Start -> End */}
-        <View style={styles.moveContainer}>
-          <View
-            style={[styles.squareBadge, { backgroundColor: colors.secondary }]}
-          >
-            <Text style={[styles.squareText, { color: colors.foreground }]}>
-              {problem.start}
-            </Text>
-          </View>
-          <Text style={[styles.arrow, { color: colors.mutedForeground }]}>
-            {"\u2192"}
-          </Text>
-          <View
-            style={[styles.squareBadge, { backgroundColor: colors.secondary }]}
-          >
-            <Text style={[styles.squareText, { color: colors.foreground }]}>
-              {problem.end}
-            </Text>
-          </View>
-        </View>
+        <SquarePairBadge
+          from={problem.start}
+          to={problem.end}
+          style={styles.squarePair}
+        />
 
         {/* Path display */}
         <View style={styles.pathContainer}>
@@ -122,24 +108,8 @@ const styles = StyleSheet.create({
     fontSize: fontSize.md,
     marginBottom: spacing.md,
   },
-  moveContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.md,
+  squarePair: {
     marginBottom: spacing.md,
-  },
-  squareBadge: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    borderRadius: 8,
-  },
-  squareText: {
-    fontSize: fontSize.xxl,
-    fontWeight: fontWeight.bold,
-  },
-  arrow: {
-    fontSize: fontSize.xxl,
-    fontWeight: fontWeight.bold,
   },
   pathContainer: {
     flexDirection: "row",
