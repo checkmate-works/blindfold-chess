@@ -1,16 +1,12 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
 import type { MoveSquares } from '@/lib/board/move-squares';
-import { foldBoardVisibility } from '@/lib/games/play-settings-log';
-import { hidesAnyPiece, revealPieces } from '@/lib/games/reveal-preferences';
 
-import { BoardRevealToggle } from '@/app/[locale]/(public)/games/play/_components/BoardRevealToggle';
 import { BoardSettingsButton } from '@/app/[locale]/(public)/games/play/_components/BoardSettingsButton';
 import { InlineBoardView } from '@/app/[locale]/(public)/games/play/_components/InlineBoardView';
+import { useFinishedBoardReveal } from '@/app/[locale]/(public)/games/play/_hooks/use-finished-board-reveal';
 import type { FormattedPgnMove } from '@/app/[locale]/(public)/games/play/_lib/pgn-parser';
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
@@ -137,25 +133,9 @@ export function useRecallBoardViews({
     />
   );
 
-  // Finished-review piece visibility, mirroring play's finishedBoardView:
-  // revealed by default, with an as-played toggle offered only when the
-  // session actually hid something.
-  const [finishedRevealed, setFinishedRevealed] = useState(true);
-  const canRevealFinished = hidesAnyPiece(preferences);
-  const finishedPreferences = useMemo(
-    () =>
-      finishedRevealed
-        ? revealPieces(preferences)
-        : // As played: the same fold every other "as played" surface uses, so a
-          // masked-board review reproduces as both sides hidden rather than as
-          // a fully sighted position.
-          { ...preferences, ...foldBoardVisibility(preferences) },
-    [finishedRevealed, preferences]
-  );
-  // In the as-played view the pieces the reviewer could not see are drawn as
-  // faint ghosts, which reads as "you were blind to this" rather than as an
-  // empty square (same choice as play's finished view).
-  const finishedHiddenPieceStyle = finishedRevealed ? ('absent' as const) : ('ghost' as const);
+  // Finished-review piece visibility, shared with play's finishedBoardView.
+  const { finishedPreferences, finishedHiddenPieceStyle, revealToggle } =
+    useFinishedBoardReveal(preferences);
 
   const finishedBoardView = (
     <InlineBoardView
@@ -168,14 +148,7 @@ export function useRecallBoardViews({
       navigation={sharedNavigation}
       // A completed review is browsed, not played: no mask, no peek.
       visibility={{ kind: 'always' }}
-      slots={{
-        topRightControl: canRevealFinished ? (
-          <BoardRevealToggle
-            revealed={finishedRevealed}
-            onToggle={() => setFinishedRevealed((prev) => !prev)}
-          />
-        ) : undefined,
-      }}
+      slots={{ topRightControl: revealToggle }}
     />
   );
 
