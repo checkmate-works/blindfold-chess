@@ -13,27 +13,11 @@
  * shim additionally 404s when it sees `period === 'score'` or `period === 'exp'`
  * (defense in depth in case precedence ever flips).
  */
-import { permanentRedirect } from 'next/navigation';
+import {
+  type PeriodIndexRedirectProps,
+  redirectToPeriodIndex,
+} from '../_lib/period-index-redirect';
 
-import type { Locale } from '@/app/[locale]/_lib/types';
-
-import { parsePeriod } from '../_lib/validators';
-
-type Props = {
-  params: Promise<{
-    locale: Locale;
-  }>;
-  // Next.js delivers repeated query keys as string[], so accept both forms and
-  // normalize below.
-  searchParams: Promise<{
-    period?: string | string[];
-  }>;
-};
-
-export default async function ExpLeaderboardIndexRedirect({ params, searchParams }: Props) {
-  const { locale } = await params;
-  const { period: periodParam } = await searchParams;
-  const raw = Array.isArray(periodParam) ? periodParam[0] : periodParam;
-  const period = parsePeriod(raw);
-  permanentRedirect(`/${locale}/leaderboard/exp/${period}`);
+export default async function ExpLeaderboardIndexRedirect(props: PeriodIndexRedirectProps) {
+  return redirectToPeriodIndex('exp', props);
 }
