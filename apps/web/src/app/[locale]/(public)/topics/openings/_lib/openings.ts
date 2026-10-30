@@ -7,7 +7,7 @@
  */
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 
-const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+import { SLUG_PATTERN } from '@/lib/validations/slug';
 
 /**
  * Check if a string has a valid opening slug format.

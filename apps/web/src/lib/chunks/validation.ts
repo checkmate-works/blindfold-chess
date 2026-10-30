@@ -1,6 +1,7 @@
 import { validateFenStructure } from '@blindfold-chess/features/chess-core';
 
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
+import { SLUG_PATTERN } from '@/lib/validations/slug';
 import { UUID_RE } from '@/lib/validations/uuid';
 
 /**
@@ -21,16 +22,6 @@ export const CHUNK_TITLE_MAX_LENGTH = 255;
  * applied only on new submissions via `validateChunkMutationData`.
  */
 export const CHUNK_SLUG_MAX_LENGTH = 50;
-
-/**
- * Valid slug pattern: lowercase alphanumeric segments separated by single
- * hyphens. No leading/trailing hyphens, no consecutive hyphens.
- *
- * Exported so the authoring form's submit gate can apply the identical
- * rule client-side — a rule the client cannot see is one the author only
- * learns about from the preview, in a language the server picked.
- */
-export const CHUNK_SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
 /**
  * Practical upper bound for `chunks.description`. The DB column is `text`
@@ -196,7 +187,7 @@ export function validateChunkMutationData(
     if (trimmedSlug.length > CHUNK_SLUG_MAX_LENGTH) {
       return `Slug must be ${CHUNK_SLUG_MAX_LENGTH} characters or fewer`;
     }
-    if (!CHUNK_SLUG_PATTERN.test(trimmedSlug)) {
+    if (!SLUG_PATTERN.test(trimmedSlug)) {
       return 'Slug must contain only lowercase letters, numbers, and hyphens (e.g. "rook-battery")';
     }
   }
