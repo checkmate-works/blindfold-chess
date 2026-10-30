@@ -22,10 +22,6 @@ vi.mock('@/lib/db', async () => ({
 }));
 
 // unstable_cache wraps a function; for unit tests we just run the inner fn.
-vi.mock('next/cache', () => ({
-  unstable_cache: <T>(fn: T) => fn,
-}));
-
 vi.mock('@/lib/billing/subscription');
 vi.mock('@/lib/users/user-grants');
 vi.mock('@/lib/users/dan-rank');
