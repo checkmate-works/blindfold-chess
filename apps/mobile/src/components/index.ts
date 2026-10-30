@@ -7,6 +7,7 @@ export { PieceSelectionField } from "./PieceSelectionField";
 export { QuizTimer } from "./QuizTimer";
 export { ScoreFooter } from "./ScoreFooter";
 export { Screen } from "./Screen";
+export { SquarePairBadge } from "./SquarePairBadge";
 export { SquarePrompt } from "./SquarePrompt";
 export { SelectableChip } from "./SelectableChip";
 export { PracticeResultCard } from "./PracticeResultCard";

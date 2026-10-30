@@ -17,7 +17,7 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core';
 
-import { createdAtOnly, timestamps } from './columns';
+import { createdAtOnly, localeColumn, timestamps } from './columns';
 
 // Article Categories
 export const articleCategories = pgTable('article_categories', {
@@ -38,7 +38,7 @@ export const articleCategoryTranslations = pgTable(
     categoryId: uuid('category_id')
       .notNull()
       .references(() => articleCategories.id, { onDelete: 'cascade' }),
-    locale: varchar('locale', { length: 10 }).notNull(), // BCP 47
+    locale: localeColumn(), // BCP 47
     name: varchar('name', { length: 100 }).notNull(),
     ...timestamps,
   },
@@ -60,7 +60,7 @@ export const articles = pgTable(
     content: text('content').notNull(),
     contentJson: jsonb('content_json'),
     contentFormat: varchar('content_format', { length: 20 }).notNull().default('markdown'),
-    locale: varchar('locale', { length: 10 }).notNull(), // BCP 47
+    locale: localeColumn(), // BCP 47
     status: varchar('status', { length: 20 }).default('draft'),
     categoryId: uuid('category_id').references(() => articleCategories.id),
     displayOrder: integer('display_order').notNull().default(0),
@@ -150,7 +150,7 @@ export const announcements = pgTable(
     slug: varchar('slug', { length: 255 }).notNull(),
     title: varchar('title', { length: 255 }).notNull(),
     content: text('content').notNull(),
-    locale: varchar('locale', { length: 10 }).notNull(), // BCP 47
+    locale: localeColumn(), // BCP 47
     status: varchar('status', { length: 20 }).default('draft'),
     visibility: varchar('visibility', { length: 20 }).default('public'),
     // Opt-in gate for the public top banner. When false the announcement is

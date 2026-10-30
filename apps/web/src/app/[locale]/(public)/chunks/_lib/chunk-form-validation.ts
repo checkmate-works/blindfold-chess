@@ -1,10 +1,10 @@
 import {
   CHUNK_DESCRIPTION_MAX_LENGTH,
   CHUNK_SLUG_MAX_LENGTH,
-  CHUNK_SLUG_PATTERN,
   CHUNK_TITLE_MAX_LENGTH,
   type ChunkStatus,
 } from '@/lib/chunks/validation';
+import { SLUG_PATTERN } from '@/lib/validations/slug';
 
 /**
  * Translation keys (under `chunks.form`) for the synchronous form
@@ -83,7 +83,7 @@ export function validateChunkForm(input: {
   if (slug.length > CHUNK_SLUG_MAX_LENGTH) {
     return { field: 'slug', key: 'errors.slugTooLong', values: { max: CHUNK_SLUG_MAX_LENGTH } };
   }
-  if (!CHUNK_SLUG_PATTERN.test(slug)) return { field: 'slug', key: 'errors.slugInvalid' };
+  if (!SLUG_PATTERN.test(slug)) return { field: 'slug', key: 'errors.slugInvalid' };
 
   if (input.status === 'published' && description === '') {
     return { field: 'description', key: 'errors.descriptionRequired' };

@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
-import { Card } from "../../../components";
+import { Card, SquarePairBadge } from "../../../components";
 import { useTheme, fontSize, fontWeight, spacing } from "../../../theme";
 import type { MoveQuestion } from "../lib/types";
 import { pieceDisplayMap } from "../lib/types";
@@ -26,25 +26,7 @@ export function QuestionCard({ question, feedback }: QuestionCardProps) {
         </Text>
 
         {/* Move squares */}
-        <View style={styles.moveContainer}>
-          <View
-            style={[styles.squareBadge, { backgroundColor: colors.secondary }]}
-          >
-            <Text style={[styles.squareText, { color: colors.foreground }]}>
-              {question.from}
-            </Text>
-          </View>
-          <Text style={[styles.arrow, { color: colors.mutedForeground }]}>
-            →
-          </Text>
-          <View
-            style={[styles.squareBadge, { backgroundColor: colors.secondary }]}
-          >
-            <Text style={[styles.squareText, { color: colors.foreground }]}>
-              {question.to}
-            </Text>
-          </View>
-        </View>
+        <SquarePairBadge from={question.from} to={question.to} />
 
         {/* Feedback */}
         {feedback && (
@@ -81,24 +63,6 @@ const styles = StyleSheet.create({
   pieceName: {
     fontSize: fontSize.md,
     marginBottom: spacing.lg,
-  },
-  moveContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.md,
-  },
-  squareBadge: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    borderRadius: 8,
-  },
-  squareText: {
-    fontSize: fontSize.xxl,
-    fontWeight: fontWeight.bold,
-  },
-  arrow: {
-    fontSize: fontSize.xxl,
-    fontWeight: fontWeight.bold,
   },
   feedback: {
     fontSize: fontSize.lg,

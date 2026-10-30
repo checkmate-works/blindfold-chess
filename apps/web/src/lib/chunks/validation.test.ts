@@ -42,7 +42,7 @@ describe('validateChunkMutationData — slug length boundary', () => {
 
   it('rejects an uppercase slug even at valid length', () => {
     // Non-ASCII / uppercase / unicode would also break the topic_posts.topic_key
-    // round-trip path: chunk slug must match CHUNK_SLUG_PATTERN.
+    // round-trip path: chunk slug must match SLUG_PATTERN.
     const result = validateChunkMutationData({ ...base(), slug: 'Rook-Battery' });
     expect(result).toMatch(/lowercase letters, numbers, and hyphens/);
   });

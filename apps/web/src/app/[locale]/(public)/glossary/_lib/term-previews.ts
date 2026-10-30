@@ -1,6 +1,7 @@
 import type { TermPreview } from '@/app/[locale]/_components/glossary-term/types';
 
 import { getGlossaryTerms } from './queries';
+import { termDisplayDefinition, termDisplayName } from './term-display';
 
 /**
  * Resolve the lightweight {@link TermPreview} data for a set of glossary
@@ -28,9 +29,9 @@ export async function resolveTermPreviews(
     if (!term.slug || !wanted.has(term.slug)) continue;
     previews[term.slug] = {
       slug: term.slug,
-      name: locale === 'ja' && term.termJa ? term.termJa : term.term,
+      name: termDisplayName(term, locale),
       reading: locale === 'ja' ? term.reading : undefined,
-      definition: locale === 'en' && term.definitionEn ? term.definitionEn : term.definition,
+      definition: termDisplayDefinition(term, locale),
       href: `/${locale}/glossary/${term.slug}`,
     };
   }

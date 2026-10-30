@@ -13,6 +13,7 @@ import { slugifyTerm } from '@/lib/glossary/slug';
 import { NativeAdCard } from '@/app/[locale]/_components/NativeAdCard';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { termDisplayDefinition } from '../_lib/term-display';
 import type { ChessTerm } from '../_lib/types';
 import { CATEGORY_COLORS } from '../_lib/types';
 
@@ -95,7 +96,7 @@ export async function GlossaryTermList({ terms, locale }: Props) {
               )}
             </div>
             <p className="text-muted-foreground leading-relaxed">
-              {locale === 'en' && term.definitionEn ? term.definitionEn : term.definition}
+              {termDisplayDefinition(term, locale)}
             </p>
             {term.positions && term.positions.length > 0 && (
               <GlossaryPositionBoard positions={term.positions} />

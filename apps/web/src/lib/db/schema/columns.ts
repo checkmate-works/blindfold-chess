@@ -1,4 +1,4 @@
-import { timestamp } from 'drizzle-orm/pg-core';
+import { timestamp, varchar } from 'drizzle-orm/pg-core';
 
 /**
  * The `created_at` / `updated_at` pair carried by most tables.
@@ -63,3 +63,9 @@ export const updatedAtOnly = {
 export const softDeleteTimestamp = {
   deletedAt: timestamp('deleted_at', { withTimezone: true }),
 };
+
+/**
+ * A BCP 47 locale tag (`SUPPORTED_LOCALES`), required. Ten characters fits a
+ * region-qualified tag such as `pt-BR` with room for a script subtag.
+ */
+export const localeColumn = () => varchar('locale', { length: 10 }).notNull();
