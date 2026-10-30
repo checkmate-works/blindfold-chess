@@ -23,7 +23,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { AlphabeticalIndex } from '../_components/AlphabeticalIndex';
 import { TermProblemList } from '../_components/TermProblemList';
 import { getGlossaryTermBySlug } from '../_lib/queries';
-import type { ChessTerm } from '../_lib/types';
+import { termDisplayDefinition, termDisplayName } from '../_lib/term-display';
 import { CATEGORY_COLORS } from '../_lib/types';
 
 const GlossaryPositionBoard = dynamic(() =>
@@ -55,14 +55,6 @@ export function generateStaticParams(): { locale: Locale; slug: string }[] {
   return SUPPORTED_LOCALES.flatMap((locale) => slugs.map((slug) => ({ locale, slug })));
 }
 
-function displayName(term: ChessTerm, locale: string): string {
-  return locale === 'ja' && term.termJa ? term.termJa : term.term;
-}
-
-function displayDefinition(term: ChessTerm, locale: string): string {
-  return locale === 'en' && term.definitionEn ? term.definitionEn : term.definition;
-}
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, slug } = await params;
   const term = await getGlossaryTermBySlug(slug, locale);
@@ -72,8 +64,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: resolveTitle(t('title'), locale) };
   }
 
-  const name = displayName(term, locale);
-  const description = toMetaDescription(displayDefinition(term, locale));
+  const name = termDisplayName(term, locale);
+  const description = toMetaDescription(termDisplayDefinition(term, locale));
 
   return {
     ...generateCanonicalMetadata({ locale, path: `glossary/${slug}`, title: name, description }),
@@ -97,8 +89,8 @@ export default async function GlossaryTermPage({ params, searchParams }: Props) 
   ]);
   if (!term) notFound();
 
-  const name = displayName(term, locale);
-  const description = displayDefinition(term, locale);
+  const name = termDisplayName(term, locale);
+  const description = termDisplayDefinition(term, locale);
   const termUrl = `${SITE_URL}/${locale}/glossary/${slug}`;
   const glossaryUrl = `${SITE_URL}/${locale}/glossary`;
 

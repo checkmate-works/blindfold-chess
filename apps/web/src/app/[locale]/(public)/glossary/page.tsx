@@ -17,6 +17,7 @@ import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
 import { AlphabeticalIndex } from './_components/AlphabeticalIndex';
 import { CategoryIndex } from './_components/CategoryIndex';
 import { getGlossaryTerms } from './_lib/queries';
+import { termDisplayName } from './_lib/term-display';
 
 export const generateStaticParams = generateLocaleStaticParams;
 
@@ -36,7 +37,7 @@ export default async function GlossaryIndexPage({ params }: Props) {
     getNativeAdCreatives(GLOSSARY_TERM_LIST_NATIVE_AD_SLOT, locale),
   ]);
   const definedTerms = allTerms.map((term) => ({
-    name: locale === 'ja' && term.termJa ? term.termJa : term.term,
+    name: termDisplayName(term, locale),
     description: term.definition,
     url: `${glossaryUrl}#${term.term.toLowerCase().replace(/\s+/g, '-')}`,
   }));
