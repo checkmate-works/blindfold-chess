@@ -23,6 +23,7 @@ export {
   boardFlatToFen,
   getTurnFromFen,
   isBlackToMoveFromFen,
+  withSideToMove,
   fullmoveNumberFromFen,
   toPositionKey,
   getFenAfterMoves,

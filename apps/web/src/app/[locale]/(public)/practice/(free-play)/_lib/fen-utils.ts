@@ -1,4 +1,4 @@
-import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
+import { isBlackToMoveFromFen, withSideToMove } from '@blindfold-chess/features/chess-core/fen';
 
 import type { SideToMove } from './board-editor-constants';
 
@@ -8,10 +8,7 @@ import type { SideToMove } from './board-editor-constants';
  * separated fields (placement + side) needed to perform the swap.
  */
 export function replaceSideToMove(fen: string, side: SideToMove): string {
-  const parts = fen.trim().split(/\s+/);
-  if (parts.length < 2) return fen;
-  parts[1] = side;
-  return parts.join(' ');
+  return withSideToMove(fen, side);
 }
 
 /**

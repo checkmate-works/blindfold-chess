@@ -2,7 +2,7 @@ import { cache } from 'react';
 
 import { unstable_cache } from 'next/cache';
 
-import { STARTING_FEN } from '@blindfold-chess/features/chess-core/fen';
+import { STARTING_FEN, withSideToMove } from '@blindfold-chess/features/chess-core/fen';
 import type { Side } from '@blindfold-chess/types';
 import { and, asc, count, desc, eq, inArray, isNull, ne } from 'drizzle-orm';
 
@@ -58,10 +58,7 @@ export type RepertoireWithProfile = {
  * black is to move), never the rendered pieces.
  */
 function orientFenForSide(fen: string, side: Side): string {
-  const parts = fen.split(' ');
-  if (parts.length < 2) return fen;
-  parts[1] = side === 'white' ? 'w' : 'b';
-  return parts.join(' ');
+  return withSideToMove(fen, side === 'white' ? 'w' : 'b');
 }
 
 /**
