@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
+import { validateFenFormat } from '@blindfold-chess/features/chess-core/fen';
+
 import { sanitizeNext } from '@/lib/safe-next';
 
 import { PracticeSessionPage } from '@/app/[locale]/(public)/practice/_components/PracticeSessionPage';
@@ -50,6 +52,10 @@ export default async function CustomPositionSessionPage({ params, searchParams }
   const skipMemorize = sp.skipMemorize === '1';
   const returnTo =
     sanitizeNext(typeof sp.returnTo === 'string' ? sp.returnTo : undefined) ?? undefined;
+  // The game's starting position, offered as a one-click start on the
+  // recreate board. Untrusted like every query param: a malformed or
+  // oversized value just drops the button rather than failing the page.
+  const startFen = parseStartFen(sp.start);
 
   return (
     <PracticeSessionPage
@@ -69,7 +75,16 @@ export default async function CustomPositionSessionPage({ params, searchParams }
         position={problem}
         skipMemorize={skipMemorize}
         returnTo={returnTo}
+        startFen={startFen}
       />
     </PracticeSessionPage>
   );
+}
+
+/** Same bound as the FEN token itself; any legal FEN is well under it. */
+const MAX_START_FEN_LENGTH = 128;
+
+function parseStartFen(value: string | string[] | undefined): string | undefined {
+  if (typeof value !== 'string' || value.length > MAX_START_FEN_LENGTH) return undefined;
+  return validateFenFormat(value) ? value : undefined;
 }

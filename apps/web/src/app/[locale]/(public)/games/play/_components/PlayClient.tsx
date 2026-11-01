@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { notFound, usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { fenToLichessUrl } from '@blindfold-chess/features/chess-core/fen';
+import { STARTING_FEN, fenToLichessUrl } from '@blindfold-chess/features/chess-core/fen';
 import type { ExpInfo } from '@blindfold-chess/features/exp';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { FaBrain, FaChessBoard } from 'react-icons/fa';
@@ -397,7 +397,14 @@ export function PlayClient({
       <button
         type="button"
         onClick={() =>
-          router.push(buildPositionCheckPath({ locale, fen: currentFen, returnTo: currentUrl }))
+          router.push(
+            buildPositionCheckPath({
+              locale,
+              fen: currentFen,
+              returnTo: currentUrl,
+              startFen: startingFen ?? STARTING_FEN,
+            })
+          )
         }
         disabled={isAiThinking || isLoading}
         className="inline-flex items-center gap-2 rounded-full border border-border bg-background/80 px-3 py-1.5 text-xs font-medium text-muted-foreground shadow-sm transition-colors hover:bg-background hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed"

@@ -34,6 +34,8 @@ type Props = {
   showViewAgain: boolean;
   /** See {@link PositionMemoryRecreate}'s prop of the same name. */
   exitAction?: ReactNode;
+  /** See {@link PositionMemoryRecreate}'s prop of the same name. */
+  startFen?: string;
   skipProblemResult: boolean;
   displayMode: DisplayMode;
   onMemorized: () => void;
@@ -78,6 +80,7 @@ export function PositionMemorySessionPhase({
   showSkipButton,
   showViewAgain,
   exitAction,
+  startFen,
   skipProblemResult,
   displayMode,
   onMemorized,
@@ -127,6 +130,7 @@ export function PositionMemorySessionPhase({
         showSkip={showSkipButton}
         showViewAgain={showViewAgain}
         exitAction={exitAction}
+        startFen={startFen}
         onPositionChange={onPositionChange}
         onSubmit={onSubmit}
         onViewAgain={onViewAgain}
