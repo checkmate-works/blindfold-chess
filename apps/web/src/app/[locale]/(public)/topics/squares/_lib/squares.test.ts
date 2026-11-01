@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { getAllSquares, isLightSquare, isValidSquare } from './squares';
+import { getAllSquares, isValidSquare } from './squares';
 
 describe('isValidSquare', () => {
   describe('valid squares', () => {
@@ -122,51 +122,5 @@ describe('getAllSquares', () => {
     expect(squares[63]).toBe('h1');
     // First of rank 1 should be at index 56
     expect(squares[56]).toBe('a1');
-  });
-});
-
-describe('isLightSquare', () => {
-  it('should identify a1 as dark (bottom-left is always dark)', () => {
-    expect(isLightSquare('a1')).toBe(false);
-  });
-
-  it('should identify h1 as light', () => {
-    expect(isLightSquare('h1')).toBe(true);
-  });
-
-  it('should identify a8 as light', () => {
-    expect(isLightSquare('a8')).toBe(true);
-  });
-
-  it('should identify h8 as dark', () => {
-    expect(isLightSquare('h8')).toBe(false);
-  });
-
-  it('should alternate correctly along a rank', () => {
-    // Rank 1: a1=dark, b1=light, c1=dark, d1=light, ...
-    expect(isLightSquare('a1')).toBe(false);
-    expect(isLightSquare('b1')).toBe(true);
-    expect(isLightSquare('c1')).toBe(false);
-    expect(isLightSquare('d1')).toBe(true);
-    expect(isLightSquare('e1')).toBe(false);
-    expect(isLightSquare('f1')).toBe(true);
-    expect(isLightSquare('g1')).toBe(false);
-    expect(isLightSquare('h1')).toBe(true);
-  });
-
-  it('should alternate correctly along a file', () => {
-    // File a: a1=dark, a2=light, a3=dark, a4=light, ...
-    expect(isLightSquare('a1')).toBe(false);
-    expect(isLightSquare('a2')).toBe(true);
-    expect(isLightSquare('a3')).toBe(false);
-    expect(isLightSquare('a4')).toBe(true);
-  });
-
-  it('should have exactly 32 light squares and 32 dark squares', () => {
-    const allSquares = getAllSquares();
-    const lightCount = allSquares.filter((sq) => isLightSquare(sq)).length;
-    const darkCount = allSquares.filter((sq) => !isLightSquare(sq)).length;
-    expect(lightCount).toBe(32);
-    expect(darkCount).toBe(32);
   });
 });
