@@ -1,4 +1,5 @@
 import { boardIndexToSquare, fenToBoardFlat } from '@blindfold-chess/features/chess-core/fen';
+import { sideToPieceColor } from '@blindfold-chess/types';
 import type { FinalGameOutcome, PieceColor, Side } from '@blindfold-chess/types';
 
 /** Why the losing side's king is marked. */
@@ -57,7 +58,7 @@ export function resolveLosingColor(
   playerSide: Side
 ): PieceColor | null {
   if (playerResult !== 'win' && playerResult !== 'loss') return null;
-  const playerColor = playerSide === 'white' ? 'w' : 'b';
+  const playerColor = sideToPieceColor(playerSide);
   const opponentColor = playerColor === 'w' ? 'b' : 'w';
   return playerResult === 'loss' ? playerColor : opponentColor;
 }

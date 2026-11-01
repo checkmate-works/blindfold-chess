@@ -80,6 +80,16 @@ export const SIDES: readonly Side[] = ["white", "black"];
  */
 export type PieceColor = "w" | "b";
 
+/** The {@link PieceColor} of the pieces a {@link Side} plays. */
+export function sideToPieceColor(side: Side): PieceColor {
+  return side === "white" ? "w" : "b";
+}
+
+/** The {@link Side} that plays pieces of the given {@link PieceColor}. */
+export function pieceColorToSide(color: PieceColor): Side {
+  return color === "w" ? "white" : "black";
+}
+
 export type UciMove =
   | `${File}${Rank}${File}${Rank}`
   | `${File}${Rank}${File}${Rank}${PromotionPiece}`;

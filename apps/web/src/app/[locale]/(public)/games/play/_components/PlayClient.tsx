@@ -7,6 +7,7 @@ import { notFound, usePathname, useRouter, useSearchParams } from 'next/navigati
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { STARTING_FEN, fenToLichessUrl } from '@blindfold-chess/features/chess-core/fen';
 import type { ExpInfo } from '@blindfold-chess/features/exp';
+import { sideToPieceColor } from '@blindfold-chess/types';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { FaBrain, FaChessBoard } from 'react-icons/fa';
 
@@ -502,7 +503,7 @@ export function PlayClient({
                 handleSubmitMove={handleSubmitMoveTracked}
                 moves={moves}
                 confirmationDialogs={confirmationDialogs}
-                playerColor={playerSide === 'black' ? 'b' : 'w'}
+                playerColor={sideToPieceColor(playerSide)}
                 onMoveCommitted={handleMoveCommitted}
                 onMovePeek={recordMovePeek}
                 // Route MoveInputPanel's mode toggle through the per-game
