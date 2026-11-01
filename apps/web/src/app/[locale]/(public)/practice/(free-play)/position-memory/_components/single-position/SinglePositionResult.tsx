@@ -91,12 +91,15 @@ export function SinglePositionResult({
   // session page validated it on write.
   const skipMemorize = searchParams.get('skipMemorize') === '1';
   const returnTo = sanitizeNext(searchParams.get('returnTo'));
+  // Passed through untouched: the session page validates it before use.
+  const startFen = searchParams.get('start');
 
   // "Try again" restarts the same kind of run, so the skip-memorize mode and
   // the return path both survive the retry.
   const tryAgainParams = new URLSearchParams({ timeLimit });
   if (skipMemorize) tryAgainParams.set('skipMemorize', '1');
   if (returnTo) tryAgainParams.set('returnTo', returnTo);
+  if (startFen) tryAgainParams.set('start', startFen);
 
   const resultItem = useMemo(() => {
     const parsed = parseResults(searchParams.get('data'));

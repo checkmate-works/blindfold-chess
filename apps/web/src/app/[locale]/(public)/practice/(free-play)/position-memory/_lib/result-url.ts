@@ -106,6 +106,8 @@ export type BuildCustomResultUrlArgs = {
    * position check sets it). The result page re-validates it before use.
    */
   returnTo?: string;
+  /** Game starting position offered on the recreate board; kept for "try again". */
+  startFen?: string;
 };
 
 /**
@@ -123,10 +125,12 @@ export function buildCustomResultUrl({
   stats,
   skipMemorize,
   returnTo,
+  startFen,
 }: BuildCustomResultUrlArgs): string {
   const params = singleRunParams({ results, stats, timeLimit });
   if (skipMemorize) params.set('skipMemorize', '1');
   if (returnTo) params.set('returnTo', returnTo);
+  if (startFen) params.set('start', startFen);
 
   return `/${locale}/practice/position-memory/custom/${token}/result?${params.toString()}`;
 }

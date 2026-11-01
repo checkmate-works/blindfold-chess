@@ -52,6 +52,8 @@ type Props = {
   skipMemorize?: boolean;
   /** See {@link PositionMemoryRecreate}'s prop of the same name. */
   exitAction?: ReactNode;
+  /** See {@link PositionMemoryRecreate}'s prop of the same name. */
+  startFen?: string;
   /** How to present the position during the memorize phase. Default: 'board'. */
   displayMode?: DisplayMode;
   behavior?: SessionBehavior;
@@ -81,6 +83,7 @@ export function PositionMemorySessionView({
   mode = 'custom',
   skipMemorize = false,
   exitAction,
+  startFen,
   displayMode = 'board',
   behavior,
   onSessionComplete,
@@ -193,6 +196,7 @@ export function PositionMemorySessionView({
         // flashes for a frame and nothing else happens. Hide it.
         showViewAgain={!skipMemorize}
         exitAction={exitAction}
+        startFen={startFen}
         skipProblemResult={skipProblemResult}
         displayMode={displayMode}
         onMemorized={() => send({ type: 'MEMORIZED' })}

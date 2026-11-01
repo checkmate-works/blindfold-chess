@@ -9,6 +9,12 @@ type BuildPositionCheckPathArgs = {
    * back to the game. Re-validated by the session page (`sanitizeNext`).
    */
   returnTo: string;
+  /**
+   * The position the game started from — the standard start, or the custom
+   * position for a game set up from one. The recreate board offers it as a
+   * one-click starting point.
+   */
+  startFen: string;
 };
 
 /**
@@ -27,10 +33,12 @@ export function buildPositionCheckPath({
   locale,
   fen,
   returnTo,
+  startFen,
 }: BuildPositionCheckPathArgs): string {
   const params = new URLSearchParams();
   params.set('skipMemorize', '1');
   params.set('returnTo', returnTo);
+  params.set('start', startFen);
 
   return `/${locale}/practice/position-memory/custom/${encodeFenToBase64Url(fen)}/session?${params.toString()}`;
 }

@@ -39,6 +39,12 @@ type Props = {
    * again"). Set together with `skipMemorize` by the in-game entry.
    */
   returnTo?: string;
+  /**
+   * The starting position of the game the in-game check came from, offered
+   * on the recreate board as a one-click starting point. Threaded into the
+   * result URL so "try again" keeps offering it.
+   */
+  startFen?: string;
 };
 
 /**
@@ -59,6 +65,7 @@ export function CustomPositionSession({
   position,
   skipMemorize = false,
   returnTo,
+  startFen,
 }: Props) {
   const router = useRouter();
   const savedRef = useRef(false);
@@ -71,10 +78,19 @@ export function CustomPositionSession({
       savedRef.current = true;
 
       router.push(
-        buildCustomResultUrl({ locale, token, timeLimit, results, stats, skipMemorize, returnTo })
+        buildCustomResultUrl({
+          locale,
+          token,
+          timeLimit,
+          results,
+          stats,
+          skipMemorize,
+          returnTo,
+          startFen,
+        })
       );
     },
-    [locale, token, timeLimit, skipMemorize, returnTo, router]
+    [locale, token, timeLimit, skipMemorize, returnTo, startFen, router]
   );
 
   return (
@@ -83,6 +99,7 @@ export function CustomPositionSession({
       shuffle={false}
       presetPositions={[position]}
       skipMemorize={skipMemorize}
+      startFen={startFen}
       displayMode={displayMode}
       behavior={{
         enablePause: true,
