@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { eq } from 'drizzle-orm';
 
-import { ADS_HIDDEN_COOKIE_NAME, adsHiddenCookieOptions } from '@/lib/ads/ads-hidden-cookie';
+import { applyAdsHiddenCookieValue } from '@/lib/ads/ads-hidden-cookie';
 import { computeAdsHiddenValueForUser } from '@/lib/ads/ads-hidden-cookie-compute';
 import { resolveReturnPath } from '@/lib/auth-return-path';
 import { db, profiles } from '@/lib/db';
@@ -76,23 +76,15 @@ async function handleSuccessfulAuth(
     // and the shared-game claim banner.
     const setupUrl = new URL(`/${locale}/mypage/setup-username`, origin);
     const response = NextResponse.redirect(setupUrl);
-    applyAdsHiddenCookie(response, adsHiddenValue);
+    applyAdsHiddenCookieValue(response.cookies, adsHiddenValue);
     return response;
   }
 
   const redirectUrl = new URL(safeNext, origin);
   redirectUrl.searchParams.set('toast', 'login_success');
   const response = NextResponse.redirect(redirectUrl);
-  applyAdsHiddenCookie(response, adsHiddenValue);
+  applyAdsHiddenCookieValue(response.cookies, adsHiddenValue);
   return response;
-}
-
-function applyAdsHiddenCookie(response: NextResponse, value: '1' | null): void {
-  if (value === '1') {
-    response.cookies.set(ADS_HIDDEN_COOKIE_NAME, '1', adsHiddenCookieOptions());
-  } else {
-    response.cookies.delete(ADS_HIDDEN_COOKIE_NAME);
-  }
 }
 
 export async function GET(request: Request) {
