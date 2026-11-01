@@ -1,4 +1,5 @@
 import type { BlindfoldDisplaySettings } from '@blindfold-chess/features/board-display';
+import { sideToPieceColor } from '@blindfold-chess/types';
 import type { Side } from '@blindfold-chess/types';
 
 import {
@@ -48,7 +49,7 @@ export function foldPlaySettingsToDisplay(
   playerColor: Side
 ): BlindfoldDisplaySettings {
   return {
-    ownColor: playerColor === 'white' ? 'w' : 'b',
+    ownColor: sideToPieceColor(playerColor),
     ...foldBoardVisibility(settings),
     hiddenPieceStyle: 'ghost',
   };

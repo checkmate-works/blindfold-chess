@@ -1,4 +1,3 @@
-import { computeSquareColor } from '@blindfold-chess/features/common';
 import type { Square } from '@blindfold-chess/types';
 import { FILES, RANKS } from '@blindfold-chess/types';
 
@@ -16,8 +15,4 @@ export function getAllSquares(): Square[] {
     }
   }
   return squares;
-}
-
-export function isLightSquare(square: Square): boolean {
-  return computeSquareColor(square) === 'light';
 }

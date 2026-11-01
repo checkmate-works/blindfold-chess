@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 import { Button, FlipBoardButton } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { pieceColorToSide } from '@blindfold-chess/types';
 import type { Side } from '@blindfold-chess/types';
 import { FaChevronDown } from 'react-icons/fa';
 
@@ -88,7 +89,7 @@ export function PositionGameForm({ locale, maiaAccess }: Props) {
 
     if (parts[1] === 'w' || parts[1] === 'b') {
       skipNextColorReset();
-      setColor(parts[1] === 'w' ? 'white' : 'black');
+      setColor(pieceColorToSide(parts[1]));
       setFlipped(parts[1] === 'b');
     }
 

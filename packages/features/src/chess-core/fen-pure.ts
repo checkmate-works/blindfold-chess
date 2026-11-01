@@ -189,6 +189,24 @@ export function isBlackToMoveFromFen(fen: string): boolean {
 }
 
 /**
+ * Return `fen` with its side-to-move field set to `side`. The writing
+ * counterpart of {@link isBlackToMoveFromFen}, and tolerant in the same way:
+ * a FEN with fewer than the two leading fields (placement + side) comes back
+ * unchanged rather than throwing.
+ *
+ * Whitespace is normalized first — leading/trailing space trimmed, runs of
+ * spaces collapsed — because some callers hand this user-typed FENs. Splitting
+ * an irregularly spaced FEN on single spaces would land `side` in the wrong
+ * field.
+ */
+export function withSideToMove(fen: string, side: PieceColor): string {
+  const parts = fen.trim().split(/\s+/);
+  if (parts.length < 2) return fen;
+  parts[1] = side;
+  return parts.join(" ");
+}
+
+/**
  * Fullmove-number field of a FEN. Like {@link isBlackToMoveFromFen} this is
  * the tolerant accessor: a missing or malformed field falls back to `1`, so
  * display code (move-number labels, replay indicators) can use it without a

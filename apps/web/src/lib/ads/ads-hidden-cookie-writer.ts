@@ -8,7 +8,11 @@ import { rankStatusTag } from '@/lib/cache-tags';
 import type { GrantedRank } from '@/lib/db/data/ranks';
 import { DAN_TIER_MIN_LEVEL } from '@/lib/db/data/ranks';
 
-import { ADS_HIDDEN_COOKIE_NAME, adsHiddenCookieOptions } from './ads-hidden-cookie';
+import {
+  ADS_HIDDEN_COOKIE_NAME,
+  adsHiddenCookieOptions,
+  applyAdsHiddenCookieValue,
+} from './ads-hidden-cookie';
 import { computeAdsHiddenValueForUser } from './ads-hidden-cookie-compute';
 
 /**
@@ -44,13 +48,7 @@ import { computeAdsHiddenValueForUser } from './ads-hidden-cookie-compute';
  */
 export async function writeAdsHiddenCookieForUser(user: User | null): Promise<void> {
   const value = await computeAdsHiddenValueForUser(user?.id ?? null);
-  const store = await cookies();
-
-  if (value === '1') {
-    store.set(ADS_HIDDEN_COOKIE_NAME, '1', adsHiddenCookieOptions());
-  } else {
-    store.delete(ADS_HIDDEN_COOKIE_NAME);
-  }
+  applyAdsHiddenCookieValue(await cookies(), value);
 }
 
 /**
@@ -74,13 +72,7 @@ export async function refreshAdsHiddenCookieOnResponse(
   response: NextResponse,
   userId: string | null
 ): Promise<void> {
-  const value = await computeAdsHiddenValueForUser(userId);
-
-  if (value === '1') {
-    response.cookies.set(ADS_HIDDEN_COOKIE_NAME, '1', adsHiddenCookieOptions());
-  } else {
-    response.cookies.delete(ADS_HIDDEN_COOKIE_NAME);
-  }
+  applyAdsHiddenCookieValue(response.cookies, await computeAdsHiddenValueForUser(userId));
 }
 
 /**

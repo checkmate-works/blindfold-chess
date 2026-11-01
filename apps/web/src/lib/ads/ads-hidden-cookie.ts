@@ -1,3 +1,5 @@
+import type { NextResponse } from 'next/server';
+
 import { IS_LOCAL_DEV } from '@/config';
 
 /**
@@ -23,8 +25,8 @@ import { IS_LOCAL_DEV } from '@/config';
  * The wrapper class is owned by the card component itself, so an ad cannot
  * reach the DOM outside the selector's reach.
  *
- * This file intentionally contains only cookie NAME / OPTIONS constants —
- * no DB-hitting helpers. That keeps it importable from route handlers
+ * This file intentionally contains only the cookie NAME / OPTIONS and the
+ * pure write of an already-decided value — no DB-hitting helpers. That keeps it importable from route handlers
  * without pulling `server-only` into jsdom-based tests. The async
  * entitlement check lives in `./ads-hidden-cookie-compute.ts` (server-only).
  */
@@ -62,4 +64,23 @@ export function adsHiddenCookieOptions(): AdsHiddenCookieOptions {
     secure: !IS_LOCAL_DEV,
     httpOnly: false,
   };
+}
+
+/**
+ * The cookie-jar surface {@link applyAdsHiddenCookieValue} writes through.
+ * Both a `NextResponse`'s `cookies` and the mutable `cookies()` store from
+ * `next/headers` (inside a Server Action or Route Handler) satisfy it.
+ */
+export type AdsHiddenCookieJar = Pick<NextResponse['cookies'], 'set' | 'delete'>;
+
+/**
+ * Write an already-computed `bfc_ads_hidden` value: `'1'` sets the cookie,
+ * `null` deletes it so a stale `'1'` cannot outlive the entitlement.
+ */
+export function applyAdsHiddenCookieValue(jar: AdsHiddenCookieJar, value: '1' | null): void {
+  if (value === '1') {
+    jar.set(ADS_HIDDEN_COOKIE_NAME, '1', adsHiddenCookieOptions());
+  } else {
+    jar.delete(ADS_HIDDEN_COOKIE_NAME);
+  }
 }

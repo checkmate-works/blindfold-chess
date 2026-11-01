@@ -7,6 +7,7 @@ import NextLink from 'next/link';
 import { Button, ProgressBar } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
+import { sideToPieceColor } from '@blindfold-chess/types';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 import { FaArrowRight, FaCheck, FaQuestionCircle, FaSpinner } from 'react-icons/fa';
 
@@ -297,7 +298,7 @@ export function RecallClient({
                           inputPlaceholder={t('inputMove')}
                           selectPlaceholder={t('selectMove')}
                           toggleTitle={t('switchInputMode')}
-                          playerColor={sideToMove === 'black' ? 'b' : 'w'}
+                          playerColor={sideToPieceColor(sideToMove)}
                           showInlineError={false}
                           success={feedback?.type === 'correct'}
                         />

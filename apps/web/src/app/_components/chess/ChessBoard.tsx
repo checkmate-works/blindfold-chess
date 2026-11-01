@@ -27,6 +27,7 @@ import {
   isBlackToMoveFromFen,
 } from '@blindfold-chess/features/chess-core';
 import { isValidSquare } from '@blindfold-chess/features/common';
+import { sideToPieceColor } from '@blindfold-chess/types';
 import type { Side, Square } from '@blindfold-chess/types';
 import { createPortal } from 'react-dom';
 
@@ -279,7 +280,7 @@ export const ChessBoard = memo(function ChessBoard({
   // *interactivity* gate: own color by default, or the side to move when the
   // caller opts into 'side-to-move' (recall). They are identical in the
   // default 'own' mode, so real games are entirely unaffected.
-  const ownColorChar: PieceColor = playerSide === 'black' ? 'b' : 'w';
+  const ownColorChar: PieceColor = sideToPieceColor(playerSide);
   const movableColorChar: PieceColor =
     movablePieces === 'side-to-move' ? (isBlackToMoveFromFen(fen) ? 'b' : 'w') : ownColorChar;
 

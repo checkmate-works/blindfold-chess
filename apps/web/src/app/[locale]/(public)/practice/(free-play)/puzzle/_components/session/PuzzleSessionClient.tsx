@@ -6,6 +6,7 @@ import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
+import { pieceColorToSide } from '@blindfold-chess/types';
 import type { AlgebraicNotation, PieceColor } from '@blindfold-chess/types';
 
 import type { PuzzleSolutionMove } from '@/lib/db/schema/positions';
@@ -267,7 +268,7 @@ export function PuzzleSessionClient({
             <InlineBoardView
               board={{
                 fen: boardView.fen,
-                playerSide: playerColor === 'b' ? 'black' : 'white',
+                playerSide: pieceColorToSide(playerColor),
                 flipped: playerColor === 'b',
                 lastMove: boardView.lastMove,
                 preferences: { ...preferences, showOwnPieces: true, showOpponentPieces: true },

@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useState } from 'react';
 
+import { sideToPieceColor } from '@blindfold-chess/types';
 import type { PieceColor, Side } from '@blindfold-chess/types';
 
 import type { CastlingRights } from '../_components/PositionSettings';
@@ -65,7 +66,7 @@ export function usePositionState({ color }: { color: Side }) {
   const [skipColorReset, setSkipColorReset] = useState(false);
 
   // Derive turn from color selection.
-  const positionTurn = useMemo<PieceColor>(() => (color === 'white' ? 'w' : 'b'), [color]);
+  const positionTurn = useMemo<PieceColor>(() => sideToPieceColor(color), [color]);
 
   // Auto-sync 1: reset en passant when color changes (unless the parent
   // explicitly suppressed this for a URL-init color set). Render-phase

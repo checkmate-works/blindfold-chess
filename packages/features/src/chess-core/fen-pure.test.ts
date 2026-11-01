@@ -4,6 +4,7 @@ import {
   STARTING_FEN,
   fullmoveNumberFromFen,
   isBlackToMoveFromFen,
+  withSideToMove,
 } from "./fen-pure";
 
 /**
@@ -34,6 +35,24 @@ describe("isBlackToMoveFromFen", () => {
 
   it("treats a FEN with no side-to-move field as white to move", () => {
     expect(isBlackToMoveFromFen("8/8/8/8/8/8/8/8")).toBe(false);
+  });
+});
+
+describe("withSideToMove", () => {
+  it("overwrites the side-to-move field and keeps the rest", () => {
+    expect(withSideToMove("8/8/8/8/8/8/8/8 w KQ - 3 12", "b")).toBe(
+      "8/8/8/8/8/8/8/8 b KQ - 3 12",
+    );
+  });
+
+  it("normalizes irregular whitespace before locating the field", () => {
+    expect(withSideToMove("  8/8/8/8/8/8/8/8   w  - - 0 1 ", "b")).toBe(
+      "8/8/8/8/8/8/8/8 b - - 0 1",
+    );
+  });
+
+  it("returns a placement-only FEN unchanged", () => {
+    expect(withSideToMove("8/8/8/8/8/8/8/8", "b")).toBe("8/8/8/8/8/8/8/8");
   });
 });
 

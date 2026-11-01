@@ -1,3 +1,4 @@
+import { sideToPieceColor } from '@blindfold-chess/types';
 import type { PieceColor, PieceColorMode, Side } from '@blindfold-chess/types';
 import { PIECE_SHAPE_MODES } from '@blindfold-chess/types';
 
@@ -156,7 +157,7 @@ export function getSideColorSamples(playerSide: Side): {
   oppColor: PieceColor;
   sideSamples: Record<PieceVisibilityMode, ReadonlyArray<PieceColor>>;
 } {
-  const ownColor: PieceColor = playerSide === 'white' ? 'w' : 'b';
+  const ownColor: PieceColor = sideToPieceColor(playerSide);
   const oppColor: PieceColor = ownColor === 'w' ? 'b' : 'w';
   return {
     ownColor,

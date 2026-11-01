@@ -6,6 +6,7 @@ import {
   uciToAlgebraic,
 } from '@blindfold-chess/features/chess-core';
 import { type Result, err, ok } from '@blindfold-chess/features/utils';
+import { pieceColorToSide } from '@blindfold-chess/types';
 import type { Side } from '@blindfold-chess/types';
 
 import { classifyMove } from './classify-move';
@@ -69,7 +70,7 @@ export function deriveMoveAnalyses(
 
   const analyses = moves.map((san, ply) => {
     const fenBefore = positions[ply].fen;
-    const color: Side = getTurnFromFen(fenBefore) === 'w' ? 'white' : 'black';
+    const color: Side = pieceColorToSide(getTurnFromFen(fenBefore));
     const evalBefore = clampScore(evaluations[ply].score);
     const evalAfter = clampScore(evaluations[ply + 1].score);
 

@@ -1,3 +1,4 @@
+import { pieceColorToSide } from "@blindfold-chess/types";
 import type { AlgebraicNotation, Side, Square } from "@blindfold-chess/types";
 
 import { ChessGameManager } from "../chess-core/game-manager";
@@ -74,7 +75,7 @@ export function computeGameState(
     isCheck: manager.isCheck(),
     isGameOver: manager.isGameOver(),
     legalMoves: manager.moves(),
-    currentTurn: currentTurn === "w" ? "white" : "black",
+    currentTurn: pieceColorToSide(currentTurn),
     lastMoveDetails,
   };
 }
