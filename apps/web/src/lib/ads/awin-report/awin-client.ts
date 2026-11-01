@@ -16,10 +16,35 @@
  * retried once after `Retry-After`, capped so a Vercel function does not sit
  * idle past its budget.
  */
+import { createFetchWithTimeout } from '@/lib/http/fetch-with-timeout';
 
 const BASE_URL = 'https://api.awin.com';
 
 const MAX_RETRY_AFTER_MS = 20_000;
+
+/**
+ * Deadline for one Awin request, covering the body read as well: the signal
+ * stays attached to the response, so a connection that stalls halfway
+ * through a report aborts on the same budget as one that never answers.
+ *
+ * Awin's report endpoints are sometimes slow to answer, and nobody is waiting
+ * on this call — a late report is still worth posting — so the budget is a
+ * minute rather than the few seconds an interactive caller would get. What it has to fit is
+ * the cron route, which declares no `maxDuration` and so runs under Fluid
+ * Compute's default of 300 seconds. The worst case is a 429 on the first
+ * attempt: one full deadline, the {@link MAX_RETRY_AFTER_MS} wait, then a
+ * second full deadline — 140 seconds. The two Awin calls run in parallel,
+ * so that is the whole Awin share, and the Slack post that follows (see
+ * `SLACK_FETCH_TIMEOUT_MS` in `./slack.ts`) still lands well inside the
+ * function's lifetime instead of being killed without a Sentry event.
+ *
+ * A timeout rejects with a `TimeoutError` and is not retried: the retry loop
+ * in {@link awinGet} only handles a 429, which is Awin answering, not Awin
+ * stalling.
+ */
+const AWIN_FETCH_TIMEOUT_MS = 60_000;
+
+const fetchWithTimeout = createFetchWithTimeout(AWIN_FETCH_TIMEOUT_MS);
 
 export interface AwinClientConfig {
   token: string;
@@ -134,7 +159,9 @@ async function awinGet<T>(
 
   let retried = false;
   for (;;) {
-    const res = await fetch(url, {
+    // Each attempt gets its own deadline; the Retry-After wait sits between
+    // them and is bounded separately by MAX_RETRY_AFTER_MS.
+    const res = await fetchWithTimeout(url, {
       headers: { Authorization: `Bearer ${config.token}`, Accept: 'application/json' },
     });
     if (res.status === 429 && !retried) {

@@ -1,3 +1,5 @@
+import { createFetchWithTimeout } from '@/lib/http/fetch-with-timeout';
+
 /**
  * Post one message to a Slack Incoming Webhook.
  *
@@ -18,8 +20,28 @@ export class SlackWebhookError extends Error {
   }
 }
 
+/**
+ * Deadline for one webhook post, covering the response body as well.
+ *
+ * An Incoming Webhook does no work the caller waits on — Slack accepts the
+ * message and answers `ok` — so a healthy post takes a fraction of a second,
+ * and ten seconds is already a generous margin on that. It is short for a
+ * second reason: the post runs after both Awin calls, which may together have
+ * used up to 140 seconds of the cron route's 300-second default `maxDuration`
+ * (see `AWIN_FETCH_TIMEOUT_MS` in `./awin-client.ts`), and it has to reject
+ * inside what is left so the failure reaches Sentry instead of dying with the
+ * function.
+ *
+ * A timeout is not proof the message was not posted: Slack may have accepted
+ * it and stalled on the answer. Re-running the cron by hand after a timeout
+ * can therefore post the day twice, which is the cheaper of the two mistakes.
+ */
+const SLACK_FETCH_TIMEOUT_MS = 10_000;
+
+const fetchWithTimeout = createFetchWithTimeout(SLACK_FETCH_TIMEOUT_MS);
+
 export async function postSlackMessage(webhookUrl: string, text: string): Promise<void> {
-  const res = await fetch(webhookUrl, {
+  const res = await fetchWithTimeout(webhookUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ text }),
