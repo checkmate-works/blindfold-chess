@@ -8,6 +8,28 @@ import {
   utcDate,
 } from './run-daily-report';
 
+/**
+ * Both modules bind their deadline at import time from real seconds, which a
+ * test cannot wait out (`AbortSignal.timeout` runs on a native timer that fake
+ * timers do not advance). The factory hands out a millisecond deadline
+ * instead, and records what each module asked for so the budget the route
+ * depends on can be checked against the real values.
+ */
+const { recordedDeadlinesMs, TEST_DEADLINE_MS } = vi.hoisted(() => ({
+  recordedDeadlinesMs: [] as number[],
+  TEST_DEADLINE_MS: 50,
+}));
+
+vi.mock('@/lib/http/fetch-with-timeout', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/http/fetch-with-timeout')>();
+  return {
+    createFetchWithTimeout: (timeoutMs: number) => {
+      recordedDeadlinesMs.push(timeoutMs);
+      return actual.createFetchWithTimeout(TEST_DEADLINE_MS);
+    },
+  };
+});
+
 const config: AwinDailyReportConfig = {
   token: 'tok-SECRET-123',
   publisherId: '2801536',
@@ -17,6 +39,16 @@ const config: AwinDailyReportConfig = {
 
 /** 2026-10-02 11:00 JST — the cron's slot, two hours into the next UTC day. */
 const NOW = new Date('2026-10-02T02:00:00Z');
+
+/** A peer that accepts the connection and then says nothing; only an abort ends it. */
+function stallingResponse(init?: RequestInit): Promise<Response> {
+  return new Promise((_resolve, reject) => {
+    const signal = init?.signal;
+    if (!signal) return;
+    if (signal.aborted) reject(signal.reason);
+    else signal.addEventListener('abort', () => reject(signal.reason));
+  });
+}
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -190,5 +222,46 @@ describe('runAwinDailyReport', () => {
       reason: 'no_service',
       message: expect.not.stringContaining('SECRET-PATH'),
     });
+  });
+
+  it('fails with a TimeoutError when Awin stalls, and does not post', async () => {
+    fetchMock.mockImplementation(async (input, init) => {
+      const url = new URL(String(input));
+      if (url.pathname.endsWith('/reports/advertiser')) return stallingResponse(init);
+      if (url.pathname.endsWith('/transactions/')) return jsonResponse([]);
+      return new Response('ok', { status: 200 });
+    });
+
+    // The route's runCronJob turns this rejection into captureError + 500.
+    await expect(runAwinDailyReport({ config, now: NOW })).rejects.toMatchObject({
+      name: 'TimeoutError',
+    });
+    expect(requestedUrls().some((u) => u.hostname === 'hooks.slack.com')).toBe(false);
+  });
+
+  it('fails with a TimeoutError when the Slack webhook stalls', async () => {
+    fetchMock.mockImplementation(async (input, init) => {
+      const url = new URL(String(input));
+      if (url.hostname === 'hooks.slack.com') return stallingResponse(init);
+      return jsonResponse([]);
+    });
+
+    await expect(runAwinDailyReport({ config, now: NOW })).rejects.toMatchObject({
+      name: 'TimeoutError',
+    });
+  });
+});
+
+describe('request deadlines', () => {
+  /** Fluid Compute's default; the cron route does not declare its own `maxDuration`. */
+  const CRON_ROUTE_MAX_DURATION_MS = 300_000;
+  /** `MAX_RETRY_AFTER_MS` in `./awin-client.ts`. */
+  const MAX_RETRY_AFTER_MS = 20_000;
+
+  it('fit the worst case inside the route: two full Awin attempts around a capped Retry-After, then the post', () => {
+    // run-daily-report imports awin-client before slack, so that is the order.
+    const [awinMs, slackMs] = recordedDeadlinesMs;
+    expect(recordedDeadlinesMs).toHaveLength(2);
+    expect(awinMs + MAX_RETRY_AFTER_MS + awinMs + slackMs).toBeLessThan(CRON_ROUTE_MAX_DURATION_MS);
   });
 });
