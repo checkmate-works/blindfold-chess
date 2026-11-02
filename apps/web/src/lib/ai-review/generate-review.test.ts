@@ -1,5 +1,5 @@
 import { err, ok } from '@blindfold-chess/features/utils';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { GameRecord } from '@/lib/db/schema';
 import type { PositionEvaluation } from '@/lib/games/analysis/types';
@@ -8,6 +8,11 @@ import { generateReview } from './generate-review';
 import type { LlmClient, LlmCompletionRequest, LlmError } from './llm-client';
 import type { AiReviewStore } from './queries';
 import type { AiReview, AiReviewContent } from './types';
+
+const mockCaptureError = vi.fn();
+vi.mock('@/lib/sentry/capture-error', () => ({
+  captureError: (...a: unknown[]) => mockCaptureError(...a),
+}));
 
 // 1. f3 e5 2. g4 Qh4# — short decisive game with a huge white blunder.
 const MOVES = ['f3', 'e5', 'g4', 'Qh4#'];
@@ -118,6 +123,12 @@ const baseParams = (store: AiReviewStore, llm: LlmClient) => ({
 });
 
 describe('generateReview', () => {
+  beforeEach(() => {
+    mockCaptureError.mockReset();
+    // The paths under test log on purpose; keep the run output readable.
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+  });
+
   it('derives moments server-side and persists the validated review', async () => {
     const store = memoryStore();
     // The blunder ply is 2 (g4, white = opponent of the black player).
@@ -279,5 +290,31 @@ describe('generateReview', () => {
 
     expect(result).toEqual({ ok: false, error: 'invalid_input' });
     expect(llm.calls).toBe(0);
+  });
+
+  it('keeps a wrong-length evaluation payload out of Sentry, since the client chose it', async () => {
+    const store = memoryStore();
+    const llm = llmReturning(JSON.stringify(validContent([2])));
+
+    await generateReview({ ...baseParams(store, llm), evaluations: EVALS.slice(0, 2) });
+
+    expect(mockCaptureError).not.toHaveBeenCalled();
+  });
+
+  it('reports a stored game that no longer replays to Sentry and answers invalid_input', async () => {
+    const store = memoryStore();
+    const llm = llmReturning(JSON.stringify(validContent([2])));
+    const game = fakeGame({ moves: ['f3', 'e5', 'g4', 'not-a-move'] });
+
+    const result = await generateReview({ ...baseParams(store, llm), game });
+
+    expect(result).toEqual({ ok: false, error: 'invalid_input' });
+    expect(llm.calls).toBe(0);
+    expect(mockCaptureError).toHaveBeenCalledTimes(1);
+    expect(mockCaptureError).toHaveBeenCalledWith(
+      { kind: 'replay-failed' },
+      '[ai-review] could not replay the stored game',
+      { tags: { gameId: game.id } }
+    );
   });
 });

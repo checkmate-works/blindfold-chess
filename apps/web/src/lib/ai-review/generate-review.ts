@@ -1,6 +1,7 @@
 import type { GameRecord } from '@/lib/db/schema';
 import { deriveMoveAnalyses } from '@/lib/games/analysis/derive-move-analyses';
 import type { PositionEvaluation } from '@/lib/games/analysis/types';
+import { captureError } from '@/lib/sentry/capture-error';
 
 import { buildBlindfoldContext } from './blindfold-context';
 import { buildReviewInput } from './input';
@@ -69,7 +70,20 @@ export async function generateReview({
     // contract — but they are different incidents: a length mismatch is a bad
     // (or tampered) request, while a replay failure means the stored game
     // record is corrupt and needs looking at.
-    console.error('[ai-review] could not derive move analyses', derived.error);
+    //
+    // So only the replay failure goes to Sentry. The evaluations come from
+    // the client, so a length mismatch is whatever a buggy or hostile caller
+    // chose to send: reporting it would let anyone fill the issue list with
+    // events that have nothing to fix on our side, and it stays a log line.
+    // The game record, by contrast, is ours — if it no longer replays,
+    // something wrote a corrupt move list and no client can work around it.
+    if (derived.error.kind === 'replay-failed') {
+      captureError(derived.error, '[ai-review] could not replay the stored game', {
+        tags: { gameId: game.id },
+      });
+    } else {
+      console.error('[ai-review] could not derive move analyses', derived.error);
+    }
     return { ok: false, error: 'invalid_input' };
   }
 
