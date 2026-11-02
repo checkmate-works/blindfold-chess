@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { getLiveGameAuthorId } from '../db/games-read';
+import { captureError } from '../sentry/capture-error';
 import { createNotification } from './notification';
 
 /**
@@ -15,6 +16,12 @@ import { createNotification } from './notification';
  * effect. `getLiveGameAuthorId` returns `null` for an account-less game and
  * `undefined` for a missing / deleted one — both mean "nobody to notify",
  * as does the owner linking a chunk to their own game.
+ *
+ * Failures are caught (never propagated to the linking action) and reported
+ * via `captureError`, the same policy as `createNotification`: this is the
+ * owner's only signal that the link happened, and the query that can fail
+ * here is the owner lookup, so a regression in it would silently drop every
+ * one of these notifications rather than just one.
  *
  * @design why the target is the game, not the link row
  * `targetId` is the game id so that `createNotification`'s 5-minute dedup
@@ -54,6 +61,6 @@ export function notifyGameOwnerOfChunkLink(params: {
       metadata: { gameId: params.gameId, ply: params.ply, chunkId: params.chunkId },
     });
   })().catch((error) => {
-    console.error('[notifyGameOwnerOfChunkLink] failed:', error);
+    captureError(error, '[notifyGameOwnerOfChunkLink] failed');
   });
 }

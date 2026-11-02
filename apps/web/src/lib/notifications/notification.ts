@@ -201,7 +201,23 @@ function buildSupersedeContext(params: {
  * Shared follower fan-out: load the actor's followers and emit one
  * notification per follower via {@link createNotification}. The
  * `notifyFollowersOf*` entry points differ only in the per-follower event
- * they build and how a fan-out failure is surfaced.
+ * they build and the `context` label a failure is reported under.
+ *
+ * Fire-and-forget like {@link createNotification}, and reported the same
+ * way: a failure here is caught (never propagated to the action that
+ * published) and sent to {@link captureError} under `context`. The only
+ * thing this wrapper can fail on is the follower-list SELECT — each
+ * per-follower insert already reports its own failure inside
+ * `createNotification` — and when that SELECT fails the whole fan-out
+ * vanishes, so the reason `createNotification` reports (a schema or
+ * constraint regression must be visible in Sentry, not drop every
+ * notification) applies here unchanged.
+ *
+ * `context` is required rather than an optional error callback on purpose:
+ * with a callback each caller had to remember to pass one, and the default
+ * no-op meant a caller that forgot (the new-post fan-out did) lost its
+ * failures without even a console line. A required label leaves no such
+ * path.
  *
  * @design What earns a fan-out: publishing, not participating
  *
@@ -230,7 +246,7 @@ function buildSupersedeContext(params: {
 function broadcastToFollowers(
   actorId: string,
   buildEvent: (followerId: string) => NotificationEvent,
-  onError: (error: unknown) => void = () => {}
+  context: string
 ): void {
   (async () => {
     const followers = await db
@@ -241,12 +257,15 @@ function broadcastToFollowers(
     for (const follower of followers) {
       createNotification(buildEvent(follower.followerId));
     }
-  })().catch(onError);
+  })().catch((error) => {
+    captureError(error, context);
+  });
 }
 
 /**
  * Notify all followers of a user about a new post.
- * Fire-and-forget — failures are silently caught.
+ * Fire-and-forget — failures never reach the caller and are reported via
+ * {@link captureError} (see {@link broadcastToFollowers}).
  */
 export function notifyFollowersOfNewPost(params: {
   actorId: string;
@@ -254,23 +273,28 @@ export function notifyFollowersOfNewPost(params: {
   topicType: string;
   topicKey: string;
 }): void {
-  broadcastToFollowers(params.actorId, (followerId) => ({
-    userId: followerId,
-    actorId: params.actorId,
-    type: 'new_post',
-    targetType: 'topic_post',
-    targetId: params.postId,
-    metadata: {
-      topicType: params.topicType,
-      topicKey: params.topicKey,
-      postId: params.postId,
-    },
-  }));
+  broadcastToFollowers(
+    params.actorId,
+    (followerId) => ({
+      userId: followerId,
+      actorId: params.actorId,
+      type: 'new_post',
+      targetType: 'topic_post',
+      targetId: params.postId,
+      metadata: {
+        topicType: params.topicType,
+        topicKey: params.topicKey,
+        postId: params.postId,
+      },
+    }),
+    '[notifyFollowersOfNewPost] failed'
+  );
 }
 
 /**
  * Notify all followers of a user about a new position (memory or puzzle).
- * Fire-and-forget — failures are logged but do not block the caller.
+ * Fire-and-forget — failures do not block the caller and are reported via
+ * {@link captureError} (see {@link broadcastToFollowers}).
  */
 export function notifyFollowersOfNewPosition(params: {
   actorId: string;
@@ -290,9 +314,7 @@ export function notifyFollowersOfNewPosition(params: {
         positionId: params.positionId,
       },
     }),
-    (error) => {
-      console.error('[notifyFollowersOfNewPosition] failed:', error);
-    }
+    '[notifyFollowersOfNewPosition] failed'
   );
 }
 
@@ -340,7 +362,8 @@ export function notifyPositionForked(params: {
  * two notifications — same chunk, different framing — mirroring the
  * two feed_items rows the same lifecycle produces.
  *
- * Fire-and-forget — failures are logged but do not block the caller.
+ * Fire-and-forget — failures do not block the caller and are reported via
+ * {@link captureError} (see {@link broadcastToFollowers}).
  */
 export function notifyFollowersOfNewChunk(params: {
   actorId: string;
@@ -364,16 +387,15 @@ export function notifyFollowersOfNewChunk(params: {
         kind: params.kind,
       },
     }),
-    (error) => {
-      console.error('[notifyFollowersOfNewChunk] failed:', error);
-    }
+    '[notifyFollowersOfNewChunk] failed'
   );
 }
 
 /**
  * Notify all followers of a user about a newly published blindfold game.
  * Only registered authors reach this path (account-less games have no actor /
- * followers). Fire-and-forget — failures are logged but do not block publish.
+ * followers). Fire-and-forget — failures do not block publish and are
+ * reported via {@link captureError} (see {@link broadcastToFollowers}).
  */
 export function notifyFollowersOfNewGame(params: { actorId: string; gameId: string }): void {
   broadcastToFollowers(
@@ -386,15 +408,14 @@ export function notifyFollowersOfNewGame(params: { actorId: string; gameId: stri
       targetId: params.gameId,
       metadata: { gameId: params.gameId },
     }),
-    (error) => {
-      console.error('[notifyFollowersOfNewGame] failed:', error);
-    }
+    '[notifyFollowersOfNewGame] failed'
   );
 }
 
 /**
  * Notify the author of a topic about a new comment.
- * Fire-and-forget — failures are silently caught.
+ * Fire-and-forget — failures never reach the caller and are reported via
+ * {@link captureError} inside {@link createNotification}.
  */
 export function notifyTopicAuthorOfNewComment(params: {
   authorId: string;
