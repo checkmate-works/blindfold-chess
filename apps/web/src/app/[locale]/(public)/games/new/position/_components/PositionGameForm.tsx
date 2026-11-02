@@ -25,6 +25,7 @@ import { useLocalGameSettings } from '@/app/[locale]/(public)/games/new/_hooks/u
 import { useMaiaGameLaunch } from '@/app/[locale]/(public)/games/new/_hooks/use-maia-game-launch';
 import { usePositionState } from '@/app/[locale]/(public)/games/new/_hooks/use-position-state';
 import { deriveMaiaCardMode } from '@/app/[locale]/(public)/games/new/_lib/maia-launch';
+import { parseFenFields } from '@/app/[locale]/(public)/games/new/_lib/parse-fen-fields';
 import { EditableBoardSkeleton } from '@/app/[locale]/(public)/practice/(free-play)/_components/EditableBoardSkeleton';
 import { EditableChessBoard } from '@/app/[locale]/(public)/practice/(free-play)/_components/EditableChessBoard';
 import { useEditableBoardLabels } from '@/app/[locale]/(public)/practice/(free-play)/_hooks/use-editable-board-labels';
@@ -82,28 +83,29 @@ export function PositionGameForm({ locale, maiaAccess }: Props) {
     const urlFen = searchParams.get('fen');
     if (!urlFen) return;
 
-    const parts = urlFen.split(' ');
-    if (parts.length < 1) return;
+    const fields = parseFenFields(urlFen);
+    if (!fields) return;
+    const { placement, sideToMove, castling, enPassant } = fields;
 
-    setPositionFen(parts[0]);
+    setPositionFen(placement);
 
-    if (parts[1] === 'w' || parts[1] === 'b') {
+    if (sideToMove) {
       skipNextColorReset();
-      setColor(pieceColorToSide(parts[1]));
-      setFlipped(parts[1] === 'b');
+      setColor(pieceColorToSide(sideToMove));
+      setFlipped(sideToMove === 'b');
     }
 
-    if (parts[2]) {
+    if (castling) {
       setPositionCastling({
-        K: parts[2].includes('K'),
-        Q: parts[2].includes('Q'),
-        k: parts[2].includes('k'),
-        q: parts[2].includes('q'),
+        K: castling.includes('K'),
+        Q: castling.includes('Q'),
+        k: castling.includes('k'),
+        q: castling.includes('q'),
       });
     }
 
-    if (parts[3]) {
-      setPositionEnPassant(parts[3]);
+    if (enPassant) {
+      setPositionEnPassant(enPassant);
     }
   }, [searchParams, setPositionFen, setPositionCastling, setPositionEnPassant, skipNextColorReset]);
 
