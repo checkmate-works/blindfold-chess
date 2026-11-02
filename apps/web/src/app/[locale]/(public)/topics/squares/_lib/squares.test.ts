@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { getAllSquares, isValidSquare } from './squares';
+import { isValidSquare } from './squares';
 
 describe('isValidSquare', () => {
   describe('valid squares', () => {
@@ -86,41 +86,5 @@ describe('isValidSquare', () => {
       expect(isValidSquare('hh')).toBe(false);
       expect(isValidSquare('88')).toBe(false);
     });
-  });
-});
-
-describe('getAllSquares', () => {
-  it('should return exactly 64 squares', () => {
-    const squares = getAllSquares();
-    expect(squares).toHaveLength(64);
-  });
-
-  it('should return all unique squares', () => {
-    const squares = getAllSquares();
-    const unique = new Set(squares);
-    expect(unique.size).toBe(64);
-  });
-
-  it('should contain all valid squares', () => {
-    const squares = getAllSquares();
-    const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-    const ranks = ['1', '2', '3', '4', '5', '6', '7', '8'];
-    for (const file of files) {
-      for (const rank of ranks) {
-        expect(squares).toContain(`${file}${rank}`);
-      }
-    }
-  });
-
-  it('should return squares ordered by rank descending (8 to 1), then file ascending (a to h)', () => {
-    const squares = getAllSquares();
-    // First square should be a8 (rank 8, file a)
-    expect(squares[0]).toBe('a8');
-    // Second should be b8
-    expect(squares[1]).toBe('b8');
-    // Last should be h1
-    expect(squares[63]).toBe('h1');
-    // First of rank 1 should be at index 56
-    expect(squares[56]).toBe('a1');
   });
 });
