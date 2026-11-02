@@ -14,6 +14,11 @@ vi.mock('./notification', () => ({
   createNotification: (...args: unknown[]) => mockCreateNotification(...args),
 }));
 
+const mockCaptureError = vi.fn();
+vi.mock('@/lib/sentry/capture-error', () => ({
+  captureError: (...args: unknown[]) => mockCaptureError(...args),
+}));
+
 const { notifyRepertoireOwnerOfChunkLink } = await import('./repertoire-chunk-link-notification');
 const { isMutableNotificationType } = await import('./mutable-types');
 
@@ -107,9 +112,11 @@ describe('notifyRepertoireOwnerOfChunkLink', () => {
     expect(mockCreateNotification).not.toHaveBeenCalled();
   });
 
-  it('does not throw when the owner lookup fails (fire-and-forget)', async () => {
-    mockGetRepertoireById.mockRejectedValue(new Error('db down'));
-    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+  // The owner lookup is the one query that can fail here, and a regression in
+  // it would drop every one of these notifications — so it must reach Sentry.
+  it('reports a failed owner lookup via captureError without throwing', async () => {
+    const failure = new Error('db down');
+    mockGetRepertoireById.mockRejectedValue(failure);
 
     expect(() =>
       notifyRepertoireOwnerOfChunkLink({
@@ -125,7 +132,10 @@ describe('notifyRepertoireOwnerOfChunkLink', () => {
     await new Promise((r) => setTimeout(r, 0));
 
     expect(mockCreateNotification).not.toHaveBeenCalled();
-    consoleError.mockRestore();
+    expect(mockCaptureError).toHaveBeenCalledWith(
+      failure,
+      '[notifyRepertoireOwnerOfChunkLink] failed'
+    );
   });
 
   // The owner is not the one who asked for the link, so the notice has to be

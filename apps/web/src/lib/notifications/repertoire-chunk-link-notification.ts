@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { getRepertoireById } from '../repertoires/queries';
+import { captureError } from '../sentry/capture-error';
 import { createNotification } from './notification';
 
 /**
@@ -14,6 +15,12 @@ import { createNotification } from './notification';
  * rows) rather than by the caller, so a deleted or account-less (owner
  * `NULL`) repertoire, or the owner linking a chunk to their own course, both
  * mean "nobody to notify".
+ *
+ * Failures are caught (never propagated to the linking action) and reported
+ * via `captureError`, the same policy as `createNotification`: this is the
+ * owner's only signal that the link happened, and the query that can fail
+ * here is the owner lookup, so a regression in it would silently drop every
+ * one of these notifications rather than just one.
  *
  * `lineNo` / `ply` / `positionKey` are a snapshot at link time, kept only to
  * build the deep link `/repertoires/{id}/lines/{lineNo}?move={ply}` — see
@@ -49,6 +56,6 @@ export function notifyRepertoireOwnerOfChunkLink(params: {
       },
     });
   })().catch((error) => {
-    console.error('[notifyRepertoireOwnerOfChunkLink] failed:', error);
+    captureError(error, '[notifyRepertoireOwnerOfChunkLink] failed');
   });
 }

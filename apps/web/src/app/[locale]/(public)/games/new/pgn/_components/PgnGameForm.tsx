@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 import { getPgnHeaders, getPgnHistory } from '@blindfold-chess/features/chess-core';
+import { pieceColorToSide } from '@blindfold-chess/types';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
 import { engineConfigToUrlParams } from '@/lib/engines';
@@ -17,6 +18,7 @@ import { useEngineSelection } from '@/app/[locale]/(public)/games/new/_hooks/use
 import { useLocalGameSettings } from '@/app/[locale]/(public)/games/new/_hooks/use-local-game-settings';
 import { useMaiaGameLaunch } from '@/app/[locale]/(public)/games/new/_hooks/use-maia-game-launch';
 import { deriveMaiaCardMode } from '@/app/[locale]/(public)/games/new/_lib/maia-launch';
+import { parseFenFields } from '@/app/[locale]/(public)/games/new/_lib/parse-fen-fields';
 import { parsePgnWithFen, validatePgn } from '@/app/[locale]/(public)/games/play/_lib/pgn-parser';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -83,13 +85,12 @@ export function PgnGameForm({ locale, maiaAccess }: Props) {
           setColor(derivedColor);
         } else {
           const headers = getPgnHeaders(pgn);
-          if (headers.FEN) {
-            const fenParts = headers.FEN.split(' ');
-            if (fenParts.length >= 2) {
-              const turnFromFen = fenParts[1];
-              const derivedColor: Side = turnFromFen === 'w' ? 'white' : 'black';
-              setColor(derivedColor);
-            }
+          const sideToMove = headers.FEN ? parseFenFields(headers.FEN)?.sideToMove : null;
+          // A missing or unrecognised side-to-move field keeps the current
+          // selection rather than guessing a colour, matching the
+          // parse-failure path below and the position form's URL handling.
+          if (sideToMove) {
+            setColor(pieceColorToSide(sideToMove));
           }
         }
       } catch {

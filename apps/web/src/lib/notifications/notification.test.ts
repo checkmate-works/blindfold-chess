@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 let mockFollowers: { followerId: string }[] = [];
+/** When set, the follower-list SELECT rejects with this value instead. */
+let mockFollowersRejection: unknown = null;
 let mockMutedRows: { id: string }[] = [];
 /**
  * Rows returned by successive `select().from(notifications)` calls, in order:
@@ -35,6 +37,9 @@ vi.mock('@/lib/db', () => ({
           where: (condition: unknown) => {
             // If this is a userFollows query (the first select), return followers
             if (table === 'userFollows_table') {
+              if (mockFollowersRejection !== null) {
+                return Promise.reject(mockFollowersRejection);
+              }
               return Promise.resolve(mockFollowers);
             }
             if (table === 'notificationMutes_table') {
@@ -108,8 +113,14 @@ function inArrayValues(condition: unknown): string[] {
   return [];
 }
 
-const { notifyFollowersOfNewPost, notifyPositionForked, createNotification } =
-  await import('./notification');
+const {
+  notifyFollowersOfNewPost,
+  notifyFollowersOfNewPosition,
+  notifyFollowersOfNewChunk,
+  notifyFollowersOfNewGame,
+  notifyPositionForked,
+  createNotification,
+} = await import('./notification');
 
 describe('notifyFollowersOfNewPost', () => {
   beforeEach(() => {
@@ -213,6 +224,64 @@ describe('notifyFollowersOfNewPost', () => {
         topicKey: 'test',
       })
     ).not.toThrow();
+  });
+});
+
+/**
+ * The follower-list SELECT is the one query a fan-out can fail on outside
+ * `createNotification`, and losing it drops the notification for every
+ * follower at once. Each entry point must report it, not just swallow it.
+ */
+describe('follower fan-out — a failed follower lookup', () => {
+  beforeEach(() => {
+    mockCaptureError.mockClear();
+    mockFollowersRejection = null;
+  });
+
+  it.each([
+    [
+      'notifyFollowersOfNewPost',
+      () =>
+        notifyFollowersOfNewPost({
+          actorId: 'author-1',
+          postId: 'post-1',
+          topicType: 'opening',
+          topicKey: 'sicilian-defense',
+        }),
+    ],
+    [
+      'notifyFollowersOfNewPosition',
+      () =>
+        notifyFollowersOfNewPosition({
+          actorId: 'author-1',
+          positionId: 'position-1',
+          positionType: 'puzzle',
+        }),
+    ],
+    [
+      'notifyFollowersOfNewChunk',
+      () =>
+        notifyFollowersOfNewChunk({
+          actorId: 'author-1',
+          chunkId: 'chunk-1',
+          slug: 'chunk-slug',
+          kind: 'published',
+        }),
+    ],
+    [
+      'notifyFollowersOfNewGame',
+      () => notifyFollowersOfNewGame({ actorId: 'author-1', gameId: 'game-1' }),
+    ],
+  ])('%s reports it via captureError without throwing', async (name, notify) => {
+    const failure = new Error('follower lookup failed');
+    mockFollowersRejection = failure;
+
+    expect(notify).not.toThrow();
+
+    await new Promise((r) => setTimeout(r, 0));
+
+    expect(mockCaptureError).toHaveBeenCalledWith(failure, `[${name}] failed`);
+    expect(mockDbInsertValues).not.toHaveBeenCalled();
   });
 });
 
