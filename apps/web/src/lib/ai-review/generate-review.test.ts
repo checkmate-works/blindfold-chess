@@ -1,5 +1,5 @@
 import { err, ok } from '@blindfold-chess/features/utils';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { GameRecord } from '@/lib/db/schema';
 import type { PositionEvaluation } from '@/lib/games/analysis/types';
@@ -8,6 +8,11 @@ import { generateReview } from './generate-review';
 import type { LlmClient, LlmCompletionRequest, LlmError } from './llm-client';
 import type { AiReviewStore } from './queries';
 import type { AiReview, AiReviewContent } from './types';
+
+const mockCaptureError = vi.fn();
+vi.mock('@/lib/sentry/capture-error', () => ({
+  captureError: (...a: unknown[]) => mockCaptureError(...a),
+}));
 
 // 1. f3 e5 2. g4 Qh4# — short decisive game with a huge white blunder.
 const MOVES = ['f3', 'e5', 'g4', 'Qh4#'];
@@ -107,6 +112,16 @@ function llmReturning(
   return client;
 }
 
+/** Asserts the single give-up report a failed generation sends to Sentry. */
+function expectGaveUpOnce(reason: string, attempts: number) {
+  expect(mockCaptureError).toHaveBeenCalledTimes(1);
+  expect(mockCaptureError).toHaveBeenCalledWith(
+    expect.objectContaining({ message: 'AI review generation gave up' }),
+    '[ai-review] LLM generation failed',
+    { tags: { reason, gameId: fakeGame().id }, extra: { attempts } }
+  );
+}
+
 const baseParams = (store: AiReviewStore, llm: LlmClient) => ({
   game: fakeGame(),
   locale: 'en',
@@ -118,6 +133,12 @@ const baseParams = (store: AiReviewStore, llm: LlmClient) => ({
 });
 
 describe('generateReview', () => {
+  beforeEach(() => {
+    mockCaptureError.mockReset();
+    // The paths under test log on purpose; keep the run output readable.
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+  });
+
   it('derives moments server-side and persists the validated review', async () => {
     const store = memoryStore();
     // The blunder ply is 2 (g4, white = opponent of the black player).
@@ -132,6 +153,7 @@ describe('generateReview', () => {
     const blunder = result.review.moments.find((m) => m.ply === 2);
     expect(blunder).toMatchObject({ san: 'g4', color: 'white', judgment: 'blunder' });
     expect(store.save).toHaveBeenCalledTimes(1);
+    expect(mockCaptureError).not.toHaveBeenCalled();
   });
 
   it('prompts without any blindfold context for a game whose conditions are unknown', async () => {
@@ -217,6 +239,7 @@ describe('generateReview', () => {
 
     expect(result.ok).toBe(true);
     expect(llm.calls).toBe(2);
+    expect(mockCaptureError).not.toHaveBeenCalled();
   });
 
   it('fails with llm_error after both attempts produce invalid output', async () => {
@@ -229,6 +252,18 @@ describe('generateReview', () => {
     expect(result).toEqual({ ok: false, error: 'llm_error' });
     expect(llm.calls).toBe(2);
     expect(store.save).not.toHaveBeenCalled();
+    // Tagged with the failure that ended it, not the first one.
+    expectGaveUpOnce('invalid_output', 2);
+  });
+
+  it('reports a give-up after two non-JSON answers as non_json_output', async () => {
+    const store = memoryStore();
+    const llm = llmReturning('garbage', 'still garbage');
+
+    const result = await generateReview(baseParams(store, llm));
+
+    expect(result).toEqual({ ok: false, error: 'llm_error' });
+    expectGaveUpOnce('non_json_output', 2);
   });
 
   it('fails with llm_error when the provider fails on both attempts', async () => {
@@ -239,6 +274,8 @@ describe('generateReview', () => {
 
     expect(result).toEqual({ ok: false, error: 'llm_error' });
     expect(llm.calls).toBe(2);
+    // Two failed attempts, one event: an outage stays one event per review.
+    expectGaveUpOnce('server', 2);
   });
 
   it('retries a retryable provider failure and succeeds on the second attempt', async () => {
@@ -252,6 +289,7 @@ describe('generateReview', () => {
 
     expect(result.ok).toBe(true);
     expect(llm.calls).toBe(2);
+    expect(mockCaptureError).not.toHaveBeenCalled();
   });
 
   it.each([
@@ -266,6 +304,9 @@ describe('generateReview', () => {
 
     expect(result).toEqual({ ok: false, error: 'llm_error' });
     expect(llm.calls).toBe(1);
+    // Reported even though it was never retried: a bad key fails the same
+    // way every time, and Sentry is the only place it would surface.
+    expectGaveUpOnce(error.kind, 1);
   });
 
   it('rejects an evaluation payload of the wrong length as invalid_input', async () => {
@@ -279,5 +320,31 @@ describe('generateReview', () => {
 
     expect(result).toEqual({ ok: false, error: 'invalid_input' });
     expect(llm.calls).toBe(0);
+  });
+
+  it('keeps a wrong-length evaluation payload out of Sentry, since the client chose it', async () => {
+    const store = memoryStore();
+    const llm = llmReturning(JSON.stringify(validContent([2])));
+
+    await generateReview({ ...baseParams(store, llm), evaluations: EVALS.slice(0, 2) });
+
+    expect(mockCaptureError).not.toHaveBeenCalled();
+  });
+
+  it('reports a stored game that no longer replays to Sentry and answers invalid_input', async () => {
+    const store = memoryStore();
+    const llm = llmReturning(JSON.stringify(validContent([2])));
+    const game = fakeGame({ moves: ['f3', 'e5', 'g4', 'not-a-move'] });
+
+    const result = await generateReview({ ...baseParams(store, llm), game });
+
+    expect(result).toEqual({ ok: false, error: 'invalid_input' });
+    expect(llm.calls).toBe(0);
+    expect(mockCaptureError).toHaveBeenCalledTimes(1);
+    expect(mockCaptureError).toHaveBeenCalledWith(
+      { kind: 'replay-failed' },
+      '[ai-review] could not replay the stored game',
+      { tags: { gameId: game.id } }
+    );
   });
 });
