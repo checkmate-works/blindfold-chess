@@ -49,8 +49,10 @@ To use the same branded templates in production:
 3. For each template:
    - Set the **Subject** to the value listed above
    - Replace the **Body** with the full HTML content from the local file
-   - Ensure template variables (e.g., `{{ .ConfirmationURL }}`, `{{ .NewEmail }}`) are preserved exactly as-is
+   - Ensure template variables (e.g., `{{ .SiteURL }}`, `{{ .TokenHash }}`, `{{ .NewEmail }}`) are preserved exactly as-is
 4. Click **Save** for each template
+
+All three links have the form `{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=...` rather than `{{ .ConfirmationURL }}`. `ConfirmationURL` comes back as a PKCE `?code=`, which only the browser that started the flow can exchange, so a link opened on another device (a phone's mail app) would fail. `token_hash` is verified by `/auth/callback` on any device.
 
 > **Important:** If you update the local template files in the future, remember to manually copy the changes to the Supabase Dashboard as well. There is no automatic synchronization.
 
@@ -60,9 +62,9 @@ After completing the setup:
 
 1. **Test signup confirmation**: Create a new account using email/password on your production site. Check that the confirmation email arrives with the correct branding and subject line.
 
-2. **Test password reset**: Use the "Forgot password" flow. Verify the reset email arrives and the `{{ .ConfirmationURL }}` link works correctly.
+2. **Test password reset**: Use the "Forgot password" flow. Verify the reset email arrives and its link (`/auth/callback?type=recovery`) lands on `/reset-password`. "Change password" on the signed-in account page (`/mypage/account`) sends the same email.
 
-3. **Test email change**: Change your email address in the profile settings. Verify the confirmation email is sent to the new address.
+3. **Test email change**: Change your email address on the account page (`/mypage/account`). Verify a confirmation email arrives at **both** the current and the new address, that the first link opened shows "open the other one too", and that the address changes once both have been opened.
 
 4. **Check email deliverability**:
    - Verify emails are not landing in spam folders
@@ -73,9 +75,9 @@ After completing the setup:
 
 ### Troubleshooting
 
-| Issue                           | Possible cause                                    | Solution                                                |
-| ------------------------------- | ------------------------------------------------- | ------------------------------------------------------- |
-| Emails not arriving             | Sender domain not verified in Resend              | Check domain verification status at resend.com/domains  |
-| Emails landing in spam          | Missing or incorrect DNS records (SPF/DKIM/DMARC) | Re-verify DNS records in Resend dashboard               |
-| "Invalid sender" error          | Sender email domain doesn't match verified domain | Update sender email to use verified domain              |
-| Template variables not rendered | Template variables modified or missing            | Ensure `{{ .ConfirmationURL }}` etc. are copied exactly |
+| Issue                           | Possible cause                                    | Solution                                               |
+| ------------------------------- | ------------------------------------------------- | ------------------------------------------------------ |
+| Emails not arriving             | Sender domain not verified in Resend              | Check domain verification status at resend.com/domains |
+| Emails landing in spam          | Missing or incorrect DNS records (SPF/DKIM/DMARC) | Re-verify DNS records in Resend dashboard              |
+| "Invalid sender" error          | Sender email domain doesn't match verified domain | Update sender email to use verified domain             |
+| Template variables not rendered | Template variables modified or missing            | Ensure `{{ .TokenHash }}` etc. are copied exactly      |
