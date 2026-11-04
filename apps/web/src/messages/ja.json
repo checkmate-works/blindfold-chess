@@ -419,6 +419,10 @@
       "title": "退会",
       "description": "Blindfold Chess のアカウントを削除します"
     },
+    "account": {
+      "title": "アカウント",
+      "description": "Blindfold Chess のメールアドレスとログイン方法を管理します"
+    },
     "mypageLikes": {
       "title": "いいねした投稿",
       "description": "いいねした投稿の一覧を表示します"
@@ -3895,6 +3899,7 @@
       "viewExpLeaderboard": "Exp ランキングを見る",
       "pointsTotal": "{total} コイン",
       "accountTitle": "アカウント",
+      "accountSettingsTitle": "アカウント設定",
       "subscriptionTitle": "サブスクリプション",
       "benefitsTitle": "特典",
       "practiceTitle": "練習",
@@ -4237,6 +4242,7 @@
     "gameSaved": "ゲームが保存されました",
     "gamesDeleted": "{count, plural, other {#個のゲームを削除しました}}",
     "accountDeleted": "退会が完了しました",
+    "passwordResetSuccess": "パスワードを変更しました",
     "practiceResultSaveFailed": "結果の保存に失敗しました。もう一度お試しください。",
     "positionCreated": "問題を作成しました",
     "positionDeleted": "問題を削除しました",
@@ -4355,6 +4361,7 @@
     "viewPublicProfile": "@{username} のプロフィール",
     "profileUpdated": "プロフィールを更新しました",
     "deleteAccountLink": "退会",
+    "accountLink": "メールアドレス・パスワード・ログイン方法はアカウント設定で変更できます",
     "changePassword": {
       "title": "パスワード変更",
       "currentPasswordLabel": "現在のパスワード",
@@ -6054,6 +6061,83 @@
     "accessUntil": "{date} まで広告なしでご利用いただけます",
     "nextBilling": "次回請求日",
     "manageSubscription": "サブスクリプションを管理"
+  },
+  "MypageAccount": {
+    "title": "アカウント",
+    "breadcrumbMypage": "マイページ",
+    "notices": {
+      "linkedGoogle": "Google アカウントを追加しました。",
+      "linkDuplicate": "この Google アカウントは、すでにこのアカウントか別のアカウントに連携されています。",
+      "linkFailed": "Google アカウントを追加できませんでした。もう一度お試しください。",
+      "emailChangePending": "確認を受け付けました。もう 1 通の確認メールのリンクも開くと、メールアドレスの変更が完了します。",
+      "emailChangeDone": "メールアドレスを変更しました。",
+      "emailChangeLinkInvalid": "メールアドレス変更のリンクが無効か、有効期限が切れています。もう一度変更を始めてください。"
+    },
+    "email": {
+      "title": "メールアドレス",
+      "change": "変更する",
+      "cancel": "キャンセル",
+      "newEmailLabel": "新しいメールアドレス",
+      "newEmailPlaceholder": "you@example.com",
+      "submit": "確認メールを送る",
+      "submitting": "送信中...",
+      "pending": "{email} への変更を確認しています。変更前と変更後の両方のアドレスに届いた確認メールのリンクを開くと、変更が完了します。",
+      "sentToast": "確認メールを送りました。変更前と変更後の両方のアドレスに届きます。",
+      "errors": {
+        "invalidEmail": "メールアドレスの形式が正しくありません。",
+        "sameEmail": "今のメールアドレスと同じです。",
+        "emailUnavailable": "このメールアドレスには変更できません。",
+        "sendFailed": "確認メールを送れませんでした。もう一度お試しください。",
+        "rateLimited": "リクエストが多すぎます。しばらくしてからもう一度お試しください。",
+        "signInRequired": "ログインの状態が切れました。もう一度ログインしてください。",
+        "banned": "この操作は行えません。"
+      }
+    },
+    "providers": {
+      "email": "メールアドレスとパスワード",
+      "google": "Google アカウント",
+      "apple": "Apple アカウント"
+    },
+    "methods": {
+      "title": "ログイン方法",
+      "password": {
+        "set": "設定済み",
+        "unset": "未設定",
+        "setup": "パスワードを設定",
+        "change": "パスワードを変更",
+        "sending": "送信中...",
+        "sentToast": "パスワード設定のメールを {email} に送りました。メールのリンクから新しいパスワードを決めてください。"
+      },
+      "google": {
+        "add": "Google アカウントを追加",
+        "adding": "Google へ移動中..."
+      },
+      "remove": "外す",
+      "removing": "外しています...",
+      "cannotRemove": {
+        "lastWebMethod": "外すと web でログインできる手段が無くなります。先にパスワードを設定するか、別の Google アカウントを追加してください。"
+      },
+      "confirmRemove": {
+        "title": "{provider}の連携を外しますか？",
+        "message": "{email} ではログインできなくなります。",
+        "ok": "外す",
+        "cancel": "キャンセル"
+      },
+      "removedToast": "連携を外しました。",
+      "errors": {
+        "removal:notLinked": "この連携は見つかりませんでした。画面を読み込み直してください。",
+        "removal:notRemovable": "この連携は外せません。",
+        "removal:lastWebMethod": "外すと web でログインできる手段が無くなります。先にパスワードを設定するか、別の Google アカウントを追加してください。",
+        "unlinkFailed": "連携を外せませんでした。もう一度お試しください。",
+        "noEmail": "メールアドレスが未設定のため送れません。",
+        "sendFailed": "メールを送れませんでした。もう一度お試しください。",
+        "rateLimited": "リクエストが多すぎます。しばらくしてからもう一度お試しください。",
+        "signInRequired": "ログインの状態が切れました。もう一度ログインしてください。",
+        "banned": "この操作は行えません。",
+        "generic": "通信できませんでした。もう一度お試しください。"
+      }
+    },
+    "deleteAccountLink": "退会"
   },
   "ranks": {
     "pageTitle": "段級位",

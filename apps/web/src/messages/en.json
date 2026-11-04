@@ -419,6 +419,10 @@
       "title": "Delete Account",
       "description": "Delete your Blindfold Chess account"
     },
+    "account": {
+      "title": "Account",
+      "description": "Manage your Blindfold Chess email address and login methods"
+    },
     "mypageLikes": {
       "title": "Liked Posts",
       "description": "View posts you have liked"
@@ -3895,6 +3899,7 @@
       "viewExpLeaderboard": "View Exp Leaderboard",
       "pointsTotal": "{total} coins",
       "accountTitle": "Account",
+      "accountSettingsTitle": "Account Settings",
       "subscriptionTitle": "Subscription",
       "benefitsTitle": "Benefits",
       "practiceTitle": "Practice",
@@ -4237,6 +4242,7 @@
     "gameSaved": "Game saved successfully",
     "gamesDeleted": "{count, plural, one {# game deleted successfully} other {# games deleted successfully}}",
     "accountDeleted": "Your account has been deleted",
+    "passwordResetSuccess": "Your password has been updated",
     "practiceResultSaveFailed": "Failed to save your result. Please try again.",
     "positionCreated": "Position created successfully",
     "positionDeleted": "Problem deleted",
@@ -4355,6 +4361,7 @@
     "viewPublicProfile": "@{username}'s profile",
     "profileUpdated": "Profile updated",
     "deleteAccountLink": "Delete Account",
+    "accountLink": "Change your email address, password or login methods in Account Settings",
     "changePassword": {
       "title": "Change Password",
       "currentPasswordLabel": "Current Password",
@@ -6054,6 +6061,83 @@
     "accessUntil": "Ad-free access until {date}",
     "nextBilling": "Next billing date",
     "manageSubscription": "Manage subscription"
+  },
+  "MypageAccount": {
+    "title": "Account",
+    "breadcrumbMypage": "My Page",
+    "notices": {
+      "linkedGoogle": "Google account added.",
+      "linkDuplicate": "That Google account is already linked to this account or to another one.",
+      "linkFailed": "The Google account could not be added. Please try again.",
+      "emailChangePending": "Confirmation received. Open the link in the other confirmation email as well to complete the email change.",
+      "emailChangeDone": "Your email address has been changed.",
+      "emailChangeLinkInvalid": "This email change link is invalid or has expired. Please start the change again."
+    },
+    "email": {
+      "title": "Email address",
+      "change": "Change",
+      "cancel": "Cancel",
+      "newEmailLabel": "New email address",
+      "newEmailPlaceholder": "you@example.com",
+      "submit": "Send confirmation emails",
+      "submitting": "Sending...",
+      "pending": "Confirming the change to {email}. Open the links in the confirmation emails sent to both your current and your new address to complete it.",
+      "sentToast": "Confirmation emails sent to both your current and your new address.",
+      "errors": {
+        "invalidEmail": "Please enter a valid email address.",
+        "sameEmail": "That is already your email address.",
+        "emailUnavailable": "This email address cannot be used.",
+        "sendFailed": "The confirmation emails could not be sent. Please try again.",
+        "rateLimited": "Too many requests. Please wait a moment and try again.",
+        "signInRequired": "Your session has expired. Please sign in again.",
+        "banned": "This action is not available."
+      }
+    },
+    "providers": {
+      "email": "Email and password",
+      "google": "Google account",
+      "apple": "Apple account"
+    },
+    "methods": {
+      "title": "Login methods",
+      "password": {
+        "set": "Set",
+        "unset": "Not set",
+        "setup": "Set a password",
+        "change": "Change password",
+        "sending": "Sending...",
+        "sentToast": "We sent a password email to {email}. Follow the link to choose a new password."
+      },
+      "google": {
+        "add": "Add a Google account",
+        "adding": "Redirecting to Google..."
+      },
+      "remove": "Remove",
+      "removing": "Removing...",
+      "cannotRemove": {
+        "lastWebMethod": "Removing this would leave no way to sign in on the web. Set a password or add another Google account first."
+      },
+      "confirmRemove": {
+        "title": "Remove this {provider}?",
+        "message": "You will no longer be able to sign in with {email}.",
+        "ok": "Remove",
+        "cancel": "Cancel"
+      },
+      "removedToast": "Login method removed.",
+      "errors": {
+        "removal:notLinked": "This login method was not found. Please reload the page.",
+        "removal:notRemovable": "This login method cannot be removed.",
+        "removal:lastWebMethod": "Removing this would leave no way to sign in on the web. Set a password or add another Google account first.",
+        "unlinkFailed": "The login method could not be removed. Please try again.",
+        "noEmail": "This account has no email address to send to.",
+        "sendFailed": "The email could not be sent. Please try again.",
+        "rateLimited": "Too many requests. Please wait a moment and try again.",
+        "signInRequired": "Your session has expired. Please sign in again.",
+        "banned": "This action is not available.",
+        "generic": "Something went wrong. Please try again."
+      }
+    },
+    "deleteAccountLink": "Delete Account"
   },
   "ranks": {
     "pageTitle": "Ranks",
