@@ -31,7 +31,7 @@ export function TerminationMarkBadge({ kind, label }: Props) {
       className="flex h-5 w-5 items-center justify-center rounded-full shadow-sm ring-1 ring-white/70 sm:h-6 sm:w-6"
       style={{ backgroundColor: fill }}
     >
-      {/* The flag is a thinner drawing than the hash (a pole plus two waves), so
+      {/* The flag is a thinner drawing than the hash (a pole plus a waving outline), so
           it carries a heavier stroke to stay legible at badge size. */}
       <svg
         viewBox="0 0 24 24"
