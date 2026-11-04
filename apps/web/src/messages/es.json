@@ -4360,23 +4360,7 @@
     "breadcrumbMypage": "Mi Página",
     "viewPublicProfile": "Perfil de @{username}",
     "profileUpdated": "Perfil actualizado",
-    "deleteAccountLink": "Eliminar Cuenta",
-    "accountLink": "Cambia tu dirección de correo, contraseña o métodos de inicio de sesión en Ajustes de la Cuenta",
-    "changePassword": {
-      "title": "Cambiar Contraseña",
-      "currentPasswordLabel": "Contraseña Actual",
-      "newPasswordLabel": "Nueva Contraseña",
-      "confirmPasswordLabel": "Confirmar Nueva Contraseña",
-      "submit": "Cambiar Contraseña",
-      "submitLoading": "Cambiando...",
-      "passwordMismatch": "Las nuevas contraseñas no coinciden.",
-      "passwordTooShort": "La contraseña debe tener al menos 8 caracteres.",
-      "passwordSameAsCurrent": "La nueva contraseña debe ser diferente de la actual.",
-      "currentPasswordIncorrect": "La contraseña actual es incorrecta.",
-      "rateLimited": "Demasiados intentos. Por favor, inténtalo más tarde.",
-      "error": "Ocurrió un error. Por favor, inténtalo de nuevo.",
-      "success": "Contraseña cambiada correctamente."
-    }
+    "accountLink": "Cambia tu dirección de correo, contraseña o métodos de inicio de sesión en Ajustes de la Cuenta"
   },
   "Admin": {
     "title": "Admin",

@@ -267,7 +267,6 @@ export const INTL_SCOPES = {
       'setupUsername',
       'topics',
       'unsavedChanges',
-      'validation',
     ],
   },
   preferences: {

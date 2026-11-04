@@ -4360,23 +4360,7 @@
     "breadcrumbMypage": "Minha Página",
     "viewPublicProfile": "Perfil de @{username}",
     "profileUpdated": "Perfil atualizado",
-    "deleteAccountLink": "Excluir Conta",
-    "accountLink": "Altere seu endereço de e-mail, senha ou métodos de login em Configurações da Conta",
-    "changePassword": {
-      "title": "Alterar Senha",
-      "currentPasswordLabel": "Senha Atual",
-      "newPasswordLabel": "Nova Senha",
-      "confirmPasswordLabel": "Confirmar Nova Senha",
-      "submit": "Alterar Senha",
-      "submitLoading": "Alterando...",
-      "passwordMismatch": "As novas senhas não coincidem.",
-      "passwordTooShort": "A senha deve ter pelo menos 8 caracteres.",
-      "passwordSameAsCurrent": "A nova senha deve ser diferente da atual.",
-      "currentPasswordIncorrect": "A senha atual está incorreta.",
-      "rateLimited": "Muitas tentativas. Por favor, tente mais tarde.",
-      "error": "Ocorreu um erro. Por favor, tente novamente.",
-      "success": "Senha alterada com sucesso."
-    }
+    "accountLink": "Altere seu endereço de e-mail, senha ou métodos de login em Configurações da Conta"
   },
   "Admin": {
     "title": "Admin",
