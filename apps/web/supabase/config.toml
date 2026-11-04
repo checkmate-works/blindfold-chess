@@ -143,7 +143,14 @@ enable_signup = true
 # Allow/disallow anonymous sign-ins to your project.
 enable_anonymous_sign_ins = false
 # Allow/disallow testing manual linking of accounts
-enable_manual_linking = false
+# Required by the account page (`/mypage/account`): "Add a Google account" and
+# "Remove" call `linkIdentity` / `unlinkIdentity`, and both fail while this is
+# off. Production does not read this file — turn on "Allow manual linking" in
+# Dashboard > Authentication > Sign In / Providers (the key-to-Dashboard table
+# is in docs/authentication-setup.md). Automatic linking of a Google sign-in
+# whose email matches an existing account is a separate mechanism that is
+# always on and has no setting.
+enable_manual_linking = true
 # Passwords shorter than this value will be rejected as weak. Minimum 6, recommended 8 or more.
 # Keep in sync with MIN_PASSWORD_LENGTH in src/config.ts
 # Production: also update in Supabase Dashboard > Authentication > Settings > Password
@@ -171,6 +178,10 @@ token_verifications = 30
 web3 = 30
 
 [auth.email]
+# Production does not read this file. Every key in this table has a Dashboard
+# counterpart under Authentication > Sign In / Providers > Email; the mapping
+# (and the other [auth] keys that must match) is kept in
+# docs/authentication-setup.md. Change a value here, change it there too.
 # Allow/disallow new user signups via email to your project.
 enable_signup = true
 # If enabled, a user will be required to confirm any email change on both the old, and new email
