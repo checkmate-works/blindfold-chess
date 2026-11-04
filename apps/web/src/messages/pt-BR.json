@@ -4227,7 +4227,8 @@
     "confirmCancel": "Cancelar",
     "deleting": "Excluindo conta...",
     "error": "Ocorreu um erro ao excluir sua conta. Por favor, tente novamente.",
-    "breadcrumbMypage": "Minha Página"
+    "breadcrumbMypage": "Minha Página",
+    "breadcrumbAccount": "Conta"
   },
   "toast": {
     "loginSuccess": "Login efetuado",

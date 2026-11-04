@@ -26,7 +26,11 @@ export default async function DeleteAccountPage({ params }: Props) {
     <PageLayout
       title={t('title')}
       locale={locale}
-      breadcrumb={[{ label: t('breadcrumbMypage'), href: '/mypage' }, { label: t('title') }]}
+      breadcrumb={[
+        { label: t('breadcrumbMypage'), href: '/mypage' },
+        { label: t('breadcrumbAccount'), href: '/mypage/account' },
+        { label: t('title') },
+      ]}
     >
       <div className="space-y-6">
         <SectionTitle>{t('sectionTitle')}</SectionTitle>

@@ -70,8 +70,9 @@ export function EmailCard({ email, pendingEmail }: Props) {
       }
       showToast(t('sentToast'), 'success');
       closeForm();
+      // Dynamic route: the replace refetches the page, which drops any
+      // `?notice=` and shows the pending line.
       router.replace(`/${locale}${ACCOUNT_PAGE_PATH}`);
-      router.refresh();
     } catch {
       setError(t('errors.sendFailed'));
     } finally {

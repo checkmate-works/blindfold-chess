@@ -4227,7 +4227,8 @@
     "confirmCancel": "Cancel",
     "deleting": "Deleting account...",
     "error": "An error occurred while deleting your account. Please try again.",
-    "breadcrumbMypage": "My Page"
+    "breadcrumbMypage": "My Page",
+    "breadcrumbAccount": "Account"
   },
   "toast": {
     "loginSuccess": "Logged in",

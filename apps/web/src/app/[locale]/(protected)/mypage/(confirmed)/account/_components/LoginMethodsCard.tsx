@@ -109,7 +109,6 @@ export function LoginMethodsCard({ identities, hasPassword, email }: Props) {
       }
       showToast(t('removedToast'), 'success');
       router.replace(accountPath);
-      router.refresh();
     } catch {
       showToast(t('errors.generic'), 'error');
     } finally {
@@ -220,7 +219,11 @@ export function LoginMethodsCard({ identities, hasPassword, email }: Props) {
         title={t('confirmRemove.title', {
           provider: removing ? tProviders(removing.provider) : '',
         })}
-        message={t('confirmRemove.message', { email: removing?.email ?? email ?? '' })}
+        message={
+          removing
+            ? t('confirmRemove.message', { email: removing.email ?? email ?? '' })
+            : undefined
+        }
         confirmText={t('confirmRemove.ok')}
         cancelText={t('confirmRemove.cancel')}
         confirmVariant="danger"

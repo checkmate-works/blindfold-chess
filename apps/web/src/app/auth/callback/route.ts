@@ -4,6 +4,7 @@ import { eq } from 'drizzle-orm';
 
 import { applyAdsHiddenCookieValue } from '@/lib/ads/ads-hidden-cookie';
 import { computeAdsHiddenValueForUser } from '@/lib/ads/ads-hidden-cookie-compute';
+import { getOptionalUser } from '@/lib/auth';
 import { resolveReturnPath, withReturnPath } from '@/lib/auth-return-path';
 import { db, profiles } from '@/lib/db';
 import { getLocaleFromRequest } from '@/lib/locale';
@@ -121,7 +122,7 @@ async function handleEmailChangeOtp(
     type: 'email_change',
   });
   if (error) {
-    if (await hasSession(supabase)) {
+    if (await getOptionalUser()) {
       return NextResponse.redirect(`${origin}${accountPageHref(locale, 'emailChangeLinkInvalid')}`);
     }
     return NextResponse.redirect(`${origin}/${locale}/sign-in?error=auth_callback_error`);
@@ -131,7 +132,7 @@ async function handleEmailChangeOtp(
     return NextResponse.redirect(`${origin}${accountPageHref(locale, 'emailChangeDone')}`);
   }
   const pending = accountPageHref(locale, 'emailChangePending');
-  if (await hasSession(supabase)) {
+  if (await getOptionalUser()) {
     return NextResponse.redirect(`${origin}${pending}`);
   }
   return NextResponse.redirect(`${origin}${withReturnPath(`/${locale}/sign-in`, pending)}`);
@@ -168,13 +169,6 @@ async function handleLinkReturn(
     metadata: { provider: LINK_RETURN_GOOGLE },
   });
   return NextResponse.redirect(`${origin}${accountPageHref(locale, 'linkedGoogle')}`);
-}
-
-async function hasSession(supabase: ServerSupabase): Promise<boolean> {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  return user !== null;
 }
 
 export async function GET(request: Request) {
