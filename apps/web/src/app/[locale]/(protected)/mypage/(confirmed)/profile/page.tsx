@@ -8,11 +8,11 @@ import { getAuthenticatedUser } from '@/lib/auth';
 import { getViewerProfile } from '@/lib/users/viewer-profile';
 
 import { Divider, PageLayout } from '@/app/[locale]/_components';
-import { TEXT_LINK_DESTRUCTIVE_CLASSES } from '@/app/[locale]/_lib/link-classes';
+import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps } from '@/app/[locale]/_lib/types';
 
-import { ChangePasswordForm, ProfileForm } from './_components';
+import { ProfileForm } from './_components';
 
 type Props = LocalePageProps;
 
@@ -55,21 +55,17 @@ export default async function ProfilePage({ params }: Props) {
 
       <ProfileForm locale={locale} profile={profile} />
 
-      {user.app_metadata.providers?.includes('email') && (
-        <>
-          <Divider />
-          <ChangePasswordForm />
-        </>
-      )}
-
       <Divider />
 
+      {/* Email, password, login methods and account deletion live on the
+          account page: this form is where a new member lands right after
+          sign-up, and "Delete account" is the wrong thing to show there. */}
       <Link
-        href="/mypage/delete-account"
+        href="/mypage/account"
         locale={locale}
-        className={`inline-block text-sm ${TEXT_LINK_DESTRUCTIVE_CLASSES}`}
+        className={`inline-block text-sm ${TEXT_LINK_MUTED_CLASSES}`}
       >
-        {t('deleteAccountLink')}
+        {t('accountLink')}
       </Link>
     </PageLayout>
   );

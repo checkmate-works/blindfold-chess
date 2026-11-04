@@ -73,7 +73,7 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ### Google OAuth Setup (for Google Sign-In)
 
-To test Google Sign-In locally, you need to configure OAuth credentials:
+To test Google Sign-In — and "Add a Google account" on `/mypage/account` — locally, you need to configure OAuth credentials:
 
 1. **Create OAuth credentials** in [Google Cloud Console](https://console.cloud.google.com/apis/credentials):
    - Go to **APIs & Services** > **Credentials** > **Create Credentials** > **OAuth client ID**
@@ -143,9 +143,9 @@ See [docs/environment-variables.md](docs/environment-variables.md) for details.
 
 ## Authentication
 
-User authentication via Supabase Auth with Google Sign-In (Apple Sign-In planned). Enables cross-platform account sharing between web, mobile, and desktop apps.
+User authentication via Supabase Auth. One account can have several login methods — email + password and Google (Apple Sign-In planned for the iOS app) — and the same account is shared across web and mobile. Users add and remove login methods and change their email address on `/mypage/account`.
 
-See [docs/authentication-setup.md](docs/authentication-setup.md) for setup instructions.
+Production Supabase does not read `supabase/config.toml`; the Dashboard has to be set to the same values by hand. See [docs/authentication-setup.md](docs/authentication-setup.md) for the key-to-Dashboard table ("Allow manual linking", "Secure email change", …), Google OAuth setup, and the email-change / password flows.
 
 ## Email (SMTP)
 

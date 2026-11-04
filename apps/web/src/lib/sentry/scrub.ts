@@ -5,7 +5,7 @@
  *
  * Sentry's Next.js integration automatically captures request URL / headers /
  * body on server- and edge-side exceptions. For password-related Server
- * Actions (e.g. `changePassword`, `resetPassword`) the exception payload can
+ * Actions (e.g. `resetPassword`) the exception payload can
  * therefore include plaintext passwords in `event.request.data`. The project
  * ships its own scrubbing pass in addition to Sentry's project-level "Scrub
  * Data" setting so credentials never leave the process.

@@ -419,6 +419,10 @@
       "title": "Excluir Conta",
       "description": "Exclua sua conta do Xadrez às Cegas"
     },
+    "account": {
+      "title": "Conta",
+      "description": "Gerencie seu endereço de e-mail e seus métodos de login do Xadrez às Cegas"
+    },
     "mypageLikes": {
       "title": "Publicações Curtidas",
       "description": "Consulte as publicações que você curtiu"
@@ -3895,6 +3899,7 @@
       "viewExpLeaderboard": "Ver Ranking de Exp",
       "pointsTotal": "{total} moedas",
       "accountTitle": "Conta",
+      "accountSettingsTitle": "Configurações da Conta",
       "subscriptionTitle": "Assinatura",
       "benefitsTitle": "Benefícios",
       "practiceTitle": "Prática",
@@ -4222,7 +4227,8 @@
     "confirmCancel": "Cancelar",
     "deleting": "Excluindo conta...",
     "error": "Ocorreu um erro ao excluir sua conta. Por favor, tente novamente.",
-    "breadcrumbMypage": "Minha Página"
+    "breadcrumbMypage": "Minha Página",
+    "breadcrumbAccount": "Conta"
   },
   "toast": {
     "loginSuccess": "Login efetuado",
@@ -4237,6 +4243,7 @@
     "gameSaved": "Partida salva com sucesso",
     "gamesDeleted": "{count, plural, one {# partida excluída com sucesso} other {# partidas excluídas com sucesso}}",
     "accountDeleted": "Sua conta foi excluída",
+    "passwordResetSuccess": "Sua senha foi atualizada",
     "practiceResultSaveFailed": "Erro ao salvar seu resultado. Por favor, tente novamente.",
     "positionCreated": "Posição criada com sucesso",
     "positionDeleted": "Problema excluído",
@@ -4354,22 +4361,7 @@
     "breadcrumbMypage": "Minha Página",
     "viewPublicProfile": "Perfil de @{username}",
     "profileUpdated": "Perfil atualizado",
-    "deleteAccountLink": "Excluir Conta",
-    "changePassword": {
-      "title": "Alterar Senha",
-      "currentPasswordLabel": "Senha Atual",
-      "newPasswordLabel": "Nova Senha",
-      "confirmPasswordLabel": "Confirmar Nova Senha",
-      "submit": "Alterar Senha",
-      "submitLoading": "Alterando...",
-      "passwordMismatch": "As novas senhas não coincidem.",
-      "passwordTooShort": "A senha deve ter pelo menos 8 caracteres.",
-      "passwordSameAsCurrent": "A nova senha deve ser diferente da atual.",
-      "currentPasswordIncorrect": "A senha atual está incorreta.",
-      "rateLimited": "Muitas tentativas. Por favor, tente mais tarde.",
-      "error": "Ocorreu um erro. Por favor, tente novamente.",
-      "success": "Senha alterada com sucesso."
-    }
+    "accountLink": "Altere seu endereço de e-mail, senha ou métodos de login em Configurações da Conta"
   },
   "Admin": {
     "title": "Admin",
@@ -6054,6 +6046,83 @@
     "accessUntil": "Acesso sem anúncios até {date}",
     "nextBilling": "Próxima data de cobrança",
     "manageSubscription": "Gerenciar assinatura"
+  },
+  "MypageAccount": {
+    "title": "Conta",
+    "breadcrumbMypage": "Minha Página",
+    "notices": {
+      "linkedGoogle": "Conta do Google adicionada.",
+      "linkDuplicate": "Essa conta do Google já está vinculada a esta conta ou a outra.",
+      "linkFailed": "Não foi possível adicionar a conta do Google. Tente novamente.",
+      "emailChangePending": "Confirmação recebida. Abra também o link do outro e-mail de confirmação para concluir a troca de e-mail.",
+      "emailChangeDone": "Seu endereço de e-mail foi alterado.",
+      "emailChangeLinkInvalid": "Este link de troca de e-mail é inválido ou expirou. Inicie a troca novamente."
+    },
+    "email": {
+      "title": "Endereço de e-mail",
+      "change": "Alterar",
+      "cancel": "Cancelar",
+      "newEmailLabel": "Novo endereço de e-mail",
+      "newEmailPlaceholder": "voce@exemplo.com",
+      "submit": "Enviar e-mails de confirmação",
+      "submitting": "Enviando...",
+      "pending": "Confirmando a troca para {email}. Abra os links dos e-mails de confirmação enviados para o seu endereço atual e para o novo para concluir.",
+      "sentToast": "E-mails de confirmação enviados para o seu endereço atual e para o novo.",
+      "errors": {
+        "invalidEmail": "Informe um endereço de e-mail válido.",
+        "sameEmail": "Esse já é o seu endereço de e-mail.",
+        "emailUnavailable": "Este endereço de e-mail não pode ser usado.",
+        "sendFailed": "Não foi possível enviar os e-mails de confirmação. Tente novamente.",
+        "rateLimited": "Muitas solicitações. Aguarde um momento e tente novamente.",
+        "signInRequired": "Sua sessão expirou. Entre novamente.",
+        "banned": "Esta ação não está disponível."
+      }
+    },
+    "providers": {
+      "email": "E-mail e senha",
+      "google": "Conta do Google",
+      "apple": "Conta da Apple"
+    },
+    "methods": {
+      "title": "Métodos de login",
+      "password": {
+        "set": "Definida",
+        "unset": "Não definida",
+        "setup": "Definir senha",
+        "change": "Alterar senha",
+        "sending": "Enviando...",
+        "sentToast": "Enviamos um e-mail de senha para {email}. Siga o link para escolher uma nova senha."
+      },
+      "google": {
+        "add": "Adicionar uma conta do Google",
+        "adding": "Redirecionando para o Google..."
+      },
+      "remove": "Remover",
+      "removing": "Removendo...",
+      "cannotRemove": {
+        "lastWebMethod": "Remover isto não deixaria nenhuma forma de entrar pela web. Defina uma senha ou adicione outra conta do Google primeiro."
+      },
+      "confirmRemove": {
+        "title": "Remover esta {provider}?",
+        "message": "Você não poderá mais entrar com {email}.",
+        "ok": "Remover",
+        "cancel": "Cancelar"
+      },
+      "removedToast": "Método de login removido.",
+      "errors": {
+        "removal:notLinked": "Este método de login não foi encontrado. Recarregue a página.",
+        "removal:notRemovable": "Este método de login não pode ser removido.",
+        "removal:lastWebMethod": "Remover isto não deixaria nenhuma forma de entrar pela web. Defina uma senha ou adicione outra conta do Google primeiro.",
+        "unlinkFailed": "Não foi possível remover o método de login. Tente novamente.",
+        "noEmail": "Esta conta não tem um endereço de e-mail para envio.",
+        "sendFailed": "Não foi possível enviar o e-mail. Tente novamente.",
+        "rateLimited": "Muitas solicitações. Aguarde um momento e tente novamente.",
+        "signInRequired": "Sua sessão expirou. Entre novamente.",
+        "banned": "Esta ação não está disponível.",
+        "generic": "Algo deu errado. Tente novamente."
+      }
+    },
+    "deleteAccountLink": "Excluir Conta"
   },
   "ranks": {
     "pageTitle": "Graduações",

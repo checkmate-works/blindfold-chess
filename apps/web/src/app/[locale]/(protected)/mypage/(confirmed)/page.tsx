@@ -11,6 +11,7 @@
  * - Interview banner (hidden when all questions answered)
  * - Challenge section: Belt System, My Records
  * - Social section: Posts, Likes
+ * - Account section: Account settings (email, login methods), Subscription, Benefits
  */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
@@ -261,6 +262,12 @@ export default async function MypagePage({ params }: Props) {
             title={t('dashboard.accountTitle')}
           />
           <div className="flex flex-wrap gap-3 mt-3">
+            <ChallengeCard
+              locale={locale}
+              href="/mypage/account"
+              label={t('dashboard.accountSettingsTitle')}
+              icon="🔐"
+            />
             <ChallengeCard
               locale={locale}
               href="/mypage/subscription"

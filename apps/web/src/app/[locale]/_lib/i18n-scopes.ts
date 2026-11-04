@@ -250,6 +250,7 @@ export const INTL_SCOPES = {
       'Achievements',
       'Common',
       'Mypage',
+      'MypageAccount',
       'MypageChallengeResults',
       'MypageFollowing',
       'MypageNotifications',
@@ -266,7 +267,6 @@ export const INTL_SCOPES = {
       'setupUsername',
       'topics',
       'unsavedChanges',
-      'validation',
     ],
   },
   preferences: {

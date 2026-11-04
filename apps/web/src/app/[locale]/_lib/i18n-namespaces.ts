@@ -94,6 +94,7 @@ export const NAMESPACE_CLASSIFICATION = {
   MypageNotifications: 'client',
   MypagePoints: 'client',
   MypageSubscription: 'client',
+  MypageAccount: 'client',
   Preferences: 'client',
   attachment: 'client',
   authPrompt: 'client',

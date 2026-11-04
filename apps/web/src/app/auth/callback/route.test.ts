@@ -19,6 +19,7 @@ const mockUserId = 'test-user-id-12345678';
 
 const mockExchangeCodeForSession = vi.fn();
 const mockVerifyOtp = vi.fn();
+const mockGetUser = vi.fn();
 
 vi.mock('@/lib/users/activity-log');
 
@@ -28,6 +29,7 @@ vi.mock('@/lib/supabase/server', () => ({
       auth: {
         exchangeCodeForSession: mockExchangeCodeForSession,
         verifyOtp: mockVerifyOtp,
+        getUser: mockGetUser,
       },
     }),
 }));
@@ -76,6 +78,8 @@ describe('Auth callback route', () => {
     mockGetLocaleFromRequest.mockResolvedValue('en');
     // Default: user has a profile
     mockDbSelect.mockResolvedValue([{ username: 'alice' }]);
+    // Default: no session on this device
+    mockGetUser.mockResolvedValue({ data: { user: null } });
   });
 
   describe('successful code exchange', () => {
@@ -600,66 +604,134 @@ describe('Auth callback route', () => {
   });
 
   describe('email change (token_hash + type=email_change)', () => {
-    it('should verify OTP and redirect to mypage on success', async () => {
-      mockVerifyOtp.mockResolvedValue({ error: null });
+    const url = 'http://localhost:3000/auth/callback?token_hash=change123&type=email_change';
 
-      const request = new Request(
-        'http://localhost:3000/auth/callback?token_hash=change123&type=email_change'
+    it('sends the first link (no session issued) to the account page with a pending notice when signed in', async () => {
+      mockVerifyOtp.mockResolvedValue({ error: null, data: { session: null } });
+      mockGetUser.mockResolvedValue({ data: { user: { id: mockUserId } } });
+
+      await GET(new Request(url));
+
+      expect(mockVerifyOtp).toHaveBeenCalledWith({ token_hash: 'change123', type: 'email_change' });
+      expect(mockRedirect).toHaveBeenCalledWith(
+        'http://localhost:3000/en/mypage/account?notice=emailChangePending'
       );
-      await GET(request);
-
-      expect(mockVerifyOtp).toHaveBeenCalledWith({
-        token_hash: 'change123',
-        type: 'email_change',
-      });
-      expect(mockRedirect).toHaveBeenCalledWith('http://localhost:3000/en/mypage');
+      expect(logActivityEvent).not.toHaveBeenCalled();
     });
 
-    it('should use locale for email change redirect', async () => {
+    it('sends the first link through sign-in with the account page as return path when signed out', async () => {
+      mockVerifyOtp.mockResolvedValue({ error: null, data: { session: null } });
+
+      await GET(new Request(url));
+
+      const target = mockRedirect.mock.calls[0][0] as string;
+      const redirectUrl = new URL(target);
+      expect(redirectUrl.pathname).toBe('/en/sign-in');
+      expect(redirectUrl.searchParams.get('next')).toBe(
+        '/en/mypage/account?notice=emailChangePending'
+      );
+    });
+
+    it('completes on the second link (session issued), records the change and lands with a done notice', async () => {
       mockGetLocaleFromRequest.mockResolvedValue('ja');
-      mockVerifyOtp.mockResolvedValue({ error: null });
+      mockVerifyOtp.mockResolvedValue({
+        error: null,
+        data: { session: { user: { id: mockUserId } } },
+      });
 
-      const request = new Request(
-        'http://localhost:3000/auth/callback?token_hash=change123&type=email_change'
+      await GET(new Request(url));
+
+      expect(mockRedirect).toHaveBeenCalledWith(
+        'http://localhost:3000/ja/mypage/account?notice=emailChangeDone'
       );
-      await GET(request);
-
-      expect(mockRedirect).toHaveBeenCalledWith('http://localhost:3000/ja/mypage');
+      expect(logActivityEvent).toHaveBeenCalledWith({ userId: mockUserId, action: 'change_email' });
     });
 
-    it('should redirect to sign-in with error when email change verification fails', async () => {
-      mockVerifyOtp.mockResolvedValue({ error: new Error('Invalid token') });
+    it('reports an invalid link on the account page when signed in', async () => {
+      mockVerifyOtp.mockResolvedValue({ error: new Error('Invalid token'), data: {} });
+      mockGetUser.mockResolvedValue({ data: { user: { id: mockUserId } } });
 
-      const request = new Request(
-        'http://localhost:3000/auth/callback?token_hash=invalid&type=email_change'
+      await GET(new Request(url));
+
+      expect(mockRedirect).toHaveBeenCalledWith(
+        'http://localhost:3000/en/mypage/account?notice=emailChangeLinkInvalid'
       );
-      await GET(request);
+    });
+
+    it('falls back to the sign-in error when the link is invalid and nobody is signed in', async () => {
+      mockVerifyOtp.mockResolvedValue({ error: new Error('Invalid token'), data: {} });
+
+      await GET(new Request(url));
 
       expect(mockRedirect).toHaveBeenCalledWith(
         'http://localhost:3000/en/sign-in?error=auth_callback_error'
       );
     });
 
-    it('should not call exchangeCodeForSession for email change flow', async () => {
-      mockVerifyOtp.mockResolvedValue({ error: null });
+    it('does not exchange a code for the email change flow', async () => {
+      mockVerifyOtp.mockResolvedValue({ error: null, data: { session: null } });
 
-      const request = new Request(
-        'http://localhost:3000/auth/callback?token_hash=change123&type=email_change'
-      );
-      await GET(request);
+      await GET(new Request(url));
 
       expect(mockExchangeCodeForSession).not.toHaveBeenCalled();
     });
+  });
 
-    it('should not log activity event for email change flow', async () => {
-      mockVerifyOtp.mockResolvedValue({ error: null });
+  describe('Google link return (link=google)', () => {
+    it('exchanges the code, records link_identity (not login) and lands with a linked notice', async () => {
+      mockExchangeCodeForSession.mockResolvedValue(mockSuccessfulExchange());
 
-      const request = new Request(
-        'http://localhost:3000/auth/callback?token_hash=change123&type=email_change'
+      await GET(new Request('http://localhost:3000/auth/callback?link=google&code=abc'));
+
+      expect(mockExchangeCodeForSession).toHaveBeenCalledWith('abc');
+      expect(mockRedirect).toHaveBeenCalledWith(
+        'http://localhost:3000/en/mypage/account?notice=linkedGoogle'
       );
-      await GET(request);
+      expect(logActivityEvent).toHaveBeenCalledWith({
+        userId: mockUserId,
+        action: 'link_identity',
+        metadata: { provider: 'google' },
+      });
+      expect(logActivityEvent).not.toHaveBeenCalledWith(
+        expect.objectContaining({ action: 'login' })
+      );
+      expect(mockDbSelect).not.toHaveBeenCalled();
+    });
 
-      expect(logActivityEvent).not.toHaveBeenCalled();
+    it('reports a duplicate when the auth server says identity_already_exists', async () => {
+      await GET(
+        new Request(
+          'http://localhost:3000/auth/callback?link=google&error=server_error&error_code=identity_already_exists'
+        )
+      );
+
+      expect(mockRedirect).toHaveBeenCalledWith(
+        'http://localhost:3000/en/mypage/account?notice=linkDuplicate'
+      );
+      expect(mockExchangeCodeForSession).not.toHaveBeenCalled();
+    });
+
+    it('reports a failure for any other error or a missing code', async () => {
+      await GET(new Request('http://localhost:3000/auth/callback?link=google&error=access_denied'));
+      expect(mockRedirect).toHaveBeenLastCalledWith(
+        'http://localhost:3000/en/mypage/account?notice=linkFailed'
+      );
+
+      await GET(new Request('http://localhost:3000/auth/callback?link=google'));
+      expect(mockRedirect).toHaveBeenLastCalledWith(
+        'http://localhost:3000/en/mypage/account?notice=linkFailed'
+      );
+    });
+
+    it('reports a failure when the code exchange fails', async () => {
+      mockGetLocaleFromRequest.mockResolvedValue('ja');
+      mockExchangeCodeForSession.mockResolvedValue({ error: new Error('bad code'), data: {} });
+
+      await GET(new Request('http://localhost:3000/auth/callback?link=google&code=abc'));
+
+      expect(mockRedirect).toHaveBeenCalledWith(
+        'http://localhost:3000/ja/mypage/account?notice=linkFailed'
+      );
     });
   });
 });

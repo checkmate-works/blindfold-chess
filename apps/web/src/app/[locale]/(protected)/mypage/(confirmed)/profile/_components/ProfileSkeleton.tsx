@@ -4,7 +4,7 @@ import { Skeleton } from '@/app/[locale]/_components/Skeleton';
 /**
  * Label + control pair, mirroring `FormField` / a bare `<label> + control`.
  * Heights are measured from the live page: profile inputs render at 50px
- * (`px-4 py-3`), the change-password inputs at 38px (`px-3 py-2`).
+ * (`px-4 py-3`).
  */
 function FieldSkeleton({
   labelW = 'w-24',
@@ -33,7 +33,7 @@ function HeadingSkeleton({ w }: { w: string }) {
  * Loading placeholder for `/mypage/profile`, matched to the live layout:
  * the "view public profile" pill, the centered avatar + upload caption, the
  * three titled form sections (identity / chess / social), the save button,
- * then the change-password section and the delete-account link below the form.
+ * then the link to the account page below the form.
  */
 export function ProfileSkeleton() {
   return (
@@ -82,19 +82,9 @@ export function ProfileSkeleton() {
         <Skeleton className="h-12 w-full rounded-lg" />
       </div>
 
-      {/* Change-password section (shown for email-provider accounts) */}
+      {/* Link to the account page */}
       <Divider />
-      <section className="space-y-4">
-        <HeadingSkeleton w="w-32" />
-        <FieldSkeleton labelW="w-32" control="h-[38px]" />
-        <FieldSkeleton labelW="w-32" control="h-[38px]" />
-        <FieldSkeleton labelW="w-40" control="h-[38px]" />
-        <Skeleton className="h-11 w-full rounded-lg" />
-      </section>
-
-      {/* Delete-account link */}
-      <Divider />
-      <Skeleton className="h-5 w-12 rounded-md" />
+      <Skeleton className="h-5 w-72 max-w-full rounded-md" />
     </>
   );
 }

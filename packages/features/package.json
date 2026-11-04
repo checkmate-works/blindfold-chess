@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "exports": {
+    "./account": "./src/account/index.ts",
     "./ai-game": "./src/ai-game/index.ts",
     "./ai-game/engine": "./src/ai-game/engine/index.ts",
     "./ai-game/maia": "./src/ai-game/maia/index.ts",

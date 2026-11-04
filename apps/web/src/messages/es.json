@@ -419,6 +419,10 @@
       "title": "Eliminar Cuenta",
       "description": "Elimina tu cuenta de Ajedrez a Ciegas"
     },
+    "account": {
+      "title": "Cuenta",
+      "description": "Gestiona tu dirección de correo y tus métodos de inicio de sesión de Ajedrez a Ciegas"
+    },
     "mypageLikes": {
       "title": "Publicaciones que te Gustan",
       "description": "Consulta las publicaciones que te han gustado"
@@ -3895,6 +3899,7 @@
       "viewExpLeaderboard": "Ver Clasificación de Exp",
       "pointsTotal": "{total} monedas",
       "accountTitle": "Cuenta",
+      "accountSettingsTitle": "Ajustes de la Cuenta",
       "subscriptionTitle": "Suscripción",
       "benefitsTitle": "Beneficios",
       "practiceTitle": "Práctica",
@@ -4222,7 +4227,8 @@
     "confirmCancel": "Cancelar",
     "deleting": "Eliminando cuenta...",
     "error": "Ocurrió un error al eliminar tu cuenta. Por favor, inténtalo de nuevo.",
-    "breadcrumbMypage": "Mi Página"
+    "breadcrumbMypage": "Mi Página",
+    "breadcrumbAccount": "Cuenta"
   },
   "toast": {
     "loginSuccess": "Sesión iniciada",
@@ -4237,6 +4243,7 @@
     "gameSaved": "Partida guardada correctamente",
     "gamesDeleted": "{count, plural, one {# partida eliminada correctamente} other {# partidas eliminadas correctamente}}",
     "accountDeleted": "Tu cuenta ha sido eliminada",
+    "passwordResetSuccess": "Tu contraseña ha sido actualizada",
     "practiceResultSaveFailed": "Error al guardar tu resultado. Por favor, inténtalo de nuevo.",
     "positionCreated": "Posición creada con éxito",
     "positionDeleted": "Problema eliminado",
@@ -4354,22 +4361,7 @@
     "breadcrumbMypage": "Mi Página",
     "viewPublicProfile": "Perfil de @{username}",
     "profileUpdated": "Perfil actualizado",
-    "deleteAccountLink": "Eliminar Cuenta",
-    "changePassword": {
-      "title": "Cambiar Contraseña",
-      "currentPasswordLabel": "Contraseña Actual",
-      "newPasswordLabel": "Nueva Contraseña",
-      "confirmPasswordLabel": "Confirmar Nueva Contraseña",
-      "submit": "Cambiar Contraseña",
-      "submitLoading": "Cambiando...",
-      "passwordMismatch": "Las nuevas contraseñas no coinciden.",
-      "passwordTooShort": "La contraseña debe tener al menos 8 caracteres.",
-      "passwordSameAsCurrent": "La nueva contraseña debe ser diferente de la actual.",
-      "currentPasswordIncorrect": "La contraseña actual es incorrecta.",
-      "rateLimited": "Demasiados intentos. Por favor, inténtalo más tarde.",
-      "error": "Ocurrió un error. Por favor, inténtalo de nuevo.",
-      "success": "Contraseña cambiada correctamente."
-    }
+    "accountLink": "Cambia tu dirección de correo, contraseña o métodos de inicio de sesión en Ajustes de la Cuenta"
   },
   "Admin": {
     "title": "Admin",
@@ -6054,6 +6046,83 @@
     "accessUntil": "Acceso sin anuncios hasta {date}",
     "nextBilling": "Próxima fecha de facturación",
     "manageSubscription": "Gestionar suscripción"
+  },
+  "MypageAccount": {
+    "title": "Cuenta",
+    "breadcrumbMypage": "Mi Página",
+    "notices": {
+      "linkedGoogle": "Cuenta de Google añadida.",
+      "linkDuplicate": "Esa cuenta de Google ya está vinculada a esta cuenta o a otra.",
+      "linkFailed": "No se pudo añadir la cuenta de Google. Inténtalo de nuevo.",
+      "emailChangePending": "Confirmación recibida. Abre también el enlace del otro correo de confirmación para completar el cambio de correo.",
+      "emailChangeDone": "Tu dirección de correo ha sido cambiada.",
+      "emailChangeLinkInvalid": "Este enlace de cambio de correo no es válido o ha caducado. Vuelve a iniciar el cambio."
+    },
+    "email": {
+      "title": "Dirección de correo",
+      "change": "Cambiar",
+      "cancel": "Cancelar",
+      "newEmailLabel": "Nueva dirección de correo",
+      "newEmailPlaceholder": "tu@ejemplo.com",
+      "submit": "Enviar correos de confirmación",
+      "submitting": "Enviando...",
+      "pending": "Confirmando el cambio a {email}. Abre los enlaces de los correos de confirmación enviados a tu dirección actual y a la nueva para completarlo.",
+      "sentToast": "Correos de confirmación enviados a tu dirección actual y a la nueva.",
+      "errors": {
+        "invalidEmail": "Introduce una dirección de correo válida.",
+        "sameEmail": "Esa ya es tu dirección de correo.",
+        "emailUnavailable": "Esta dirección de correo no se puede usar.",
+        "sendFailed": "No se pudieron enviar los correos de confirmación. Inténtalo de nuevo.",
+        "rateLimited": "Demasiadas solicitudes. Espera un momento e inténtalo de nuevo.",
+        "signInRequired": "Tu sesión ha caducado. Inicia sesión de nuevo.",
+        "banned": "Esta acción no está disponible."
+      }
+    },
+    "providers": {
+      "email": "Correo y contraseña",
+      "google": "Cuenta de Google",
+      "apple": "Cuenta de Apple"
+    },
+    "methods": {
+      "title": "Métodos de inicio de sesión",
+      "password": {
+        "set": "Configurada",
+        "unset": "Sin configurar",
+        "setup": "Crear contraseña",
+        "change": "Cambiar contraseña",
+        "sending": "Enviando...",
+        "sentToast": "Enviamos un correo de contraseña a {email}. Sigue el enlace para elegir una nueva contraseña."
+      },
+      "google": {
+        "add": "Añadir una cuenta de Google",
+        "adding": "Redirigiendo a Google..."
+      },
+      "remove": "Quitar",
+      "removing": "Quitando...",
+      "cannotRemove": {
+        "lastWebMethod": "Si lo quitas no quedará ninguna forma de iniciar sesión en la web. Crea una contraseña o añade otra cuenta de Google primero."
+      },
+      "confirmRemove": {
+        "title": "¿Quitar esta {provider}?",
+        "message": "Ya no podrás iniciar sesión con {email}.",
+        "ok": "Quitar",
+        "cancel": "Cancelar"
+      },
+      "removedToast": "Método de inicio de sesión quitado.",
+      "errors": {
+        "removal:notLinked": "No se encontró este método de inicio de sesión. Recarga la página.",
+        "removal:notRemovable": "Este método de inicio de sesión no se puede quitar.",
+        "removal:lastWebMethod": "Si lo quitas no quedará ninguna forma de iniciar sesión en la web. Crea una contraseña o añade otra cuenta de Google primero.",
+        "unlinkFailed": "No se pudo quitar el método de inicio de sesión. Inténtalo de nuevo.",
+        "noEmail": "Esta cuenta no tiene una dirección de correo a la que enviar.",
+        "sendFailed": "No se pudo enviar el correo. Inténtalo de nuevo.",
+        "rateLimited": "Demasiadas solicitudes. Espera un momento e inténtalo de nuevo.",
+        "signInRequired": "Tu sesión ha caducado. Inicia sesión de nuevo.",
+        "banned": "Esta acción no está disponible.",
+        "generic": "Algo salió mal. Inténtalo de nuevo."
+      }
+    },
+    "deleteAccountLink": "Eliminar Cuenta"
   },
   "ranks": {
     "pageTitle": "Rangos",
