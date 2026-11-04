@@ -114,7 +114,12 @@ export const RATE_LIMITS = {
    * that hit the URL validator. 10 / hour aligns with `createPost`.
    */
   attachPostVideo: { action: 'attach_post_video', maxAttempts: 10, windowMs: 3_600_000 },
-  changePassword: { action: 'change_password', maxAttempts: 5, windowMs: 3_600_000 },
+  // Account page (login methods). An unlink is one deliberate click, two or
+  // three when re-pointing a Google login. The two email senders also sit
+  // behind the auth server's own send interval (60s).
+  unlinkLoginIdentity: { action: 'unlink_login_identity', maxAttempts: 10, windowMs: 600_000 },
+  requestEmailChange: { action: 'request_email_change', maxAttempts: 5, windowMs: 600_000 },
+  requestPasswordSetup: { action: 'request_password_setup', maxAttempts: 3, windowMs: 300_000 },
   deleteAccount: { action: 'delete_account', maxAttempts: 3, windowMs: 3_600_000 },
   savePracticeResult: { action: 'save_practice_result', maxAttempts: 60, windowMs: 3_600_000 },
   /**
