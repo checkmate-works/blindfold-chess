@@ -184,9 +184,12 @@ export function LoginMethodsCard({ identities, hasPassword, email }: Props) {
                     : undefined
                 }
                 action={
+                  // A disabled `destructive` button paints muted text on the
+                  // red background, which is unreadable; the refused state
+                  // reads as plain outline instead.
                   <Button
                     type="button"
-                    variant="destructive"
+                    variant={decision.allowed ? 'destructive' : 'outline'}
                     size="sm"
                     onClick={() => setRemoving(identity)}
                     disabled={!decision.allowed || busy !== undefined}
