@@ -9,12 +9,19 @@ import type { Move } from "chess.js";
 /** Alias of the canonical {@link PieceColor}, kept for existing importers. */
 export type Color = PieceColor;
 
+/** One square of {@link fenToBoard}'s grid; `null` is an empty square. */
 export type BoardPiece = {
   square: Square;
   type: PieceType;
   color: Color;
 } | null;
 
+/**
+ * A played move, copied out of chess.js's `Move` so callers do not depend on
+ * chess.js. `before` / `after` are the full FENs around the move; `flags` is
+ * chess.js's flag string (`n` normal, `b` pawn double step, `e` en passant,
+ * `c` capture, `p` promotion, `k` / `q` castling — several can combine).
+ */
 export type MoveResult = {
   san: AlgebraicNotation;
   from: Square;

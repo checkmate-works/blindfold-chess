@@ -5,6 +5,15 @@ import { Chess } from "chess.js";
 import type { BoardPiece, MoveResult } from "./types";
 import { asEngineSan, toMoveResult } from "./types";
 
+/**
+ * A mutable game for code that plays moves one by one and needs undo; it
+ * wraps a single chess.js instance so callers stay off chess.js.
+ *
+ * Unlike the stateless helpers in `./moves`, {@link ChessGameManager.move}
+ * throws on an illegal move — chess.js 1.x throws instead of returning
+ * `null` — so callers validate (or catch) first. The constructor throws on
+ * an invalid FEN.
+ */
 export class ChessGameManager {
   private chess: Chess;
 

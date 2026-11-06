@@ -20,7 +20,18 @@ export type PositionValidation =
   | { valid: true; correctedColor?: Side }
   | { valid: false; errorKey: PositionErrorKey };
 
-// Ported from apps/web/src/app/[locale]/games/new/_lib/validate-position.ts
+/**
+ * Whether a set-up position can start a game against the engine, as an i18n
+ * error key on failure.
+ *
+ * `boardFen` is only checked for an empty board — the setup UI passes its
+ * placement-only FEN there — and every other check runs on `fullFen`.
+ *
+ * When the side NOT to move is in check, the position is impossible as
+ * given but legal with the other side to move; that case is valid with
+ * `correctedColor`, and the game-over checks (mate, stalemate, insufficient
+ * material) are run on the flipped position instead.
+ */
 export function validatePosition(
   boardFen: string,
   fullFen: string,

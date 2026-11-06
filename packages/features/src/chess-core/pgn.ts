@@ -37,6 +37,11 @@ export type ParsedMoveSequence = {
 
 // ── chess.js-dependent operations ────────────────────────────
 
+/**
+ * Whether chess.js can load `pgn` (blank input is `false`). Use
+ * {@link validatePgnWithDetails} when the caller needs the reason or the move
+ * count.
+ */
 export function validatePgn(pgn: string): boolean {
   if (!pgn.trim()) return false;
 
@@ -103,6 +108,14 @@ export function parsePgnWithFen(pgn: string): Result<
   }
 }
 
+/**
+ * Serialize SAN `moves` to PGN. With `startingFen`, the `SetUp`/`FEN` headers
+ * are written so the game replays from that position.
+ *
+ * Throws `Error("Invalid moves sequence")` on an invalid FEN or the first
+ * illegal move rather than emitting the PGN of a shortened game; the
+ * underlying chess.js error is not preserved.
+ */
 export function generatePgn(moves: string[], startingFen?: string): string {
   try {
     const chess = boardFrom(startingFen);
@@ -119,6 +132,11 @@ export function generatePgn(moves: string[], startingFen?: string): string {
   }
 }
 
+/**
+ * Validate `pgn` and report either its mainline ply count or chess.js's
+ * English error message. The message is for logs and developer-facing text,
+ * not for localized UI.
+ */
 export function validatePgnWithDetails(
   pgn: string,
 ): { valid: true; moveCount: number } | { valid: false; error: string } {
@@ -142,6 +160,10 @@ export function validatePgnWithDetails(
   }
 }
 
+/**
+ * The PGN's tag pairs (`Event`, `FEN`, …). An unparseable PGN yields `{}`,
+ * indistinguishable from a PGN with no headers.
+ */
 export function getPgnHeaders(pgn: string): Record<string, string> {
   try {
     const chess = new Chess();
@@ -152,6 +174,12 @@ export function getPgnHeaders(pgn: string): Record<string, string> {
   }
 }
 
+/**
+ * The PGN's mainline, as SAN or (with `verbose`) as {@link MoveResult}s.
+ * Variations and comments are dropped. An unparseable PGN yields `[]`, so
+ * "no moves" and "could not parse" look the same; use {@link parsePgn} when
+ * the caller must tell them apart.
+ */
 export function getPgnHistory(
   pgn: string,
   options?: { verbose?: boolean },

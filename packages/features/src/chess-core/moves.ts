@@ -44,6 +44,11 @@ export function validateMoveSequence(
   return { valid: true, validMoves: applied };
 }
 
+/**
+ * Play one move (SAN, or anything chess.js's `move()` accepts) from `fen`.
+ * `null` when the FEN is invalid or the move is illegal there; this never
+ * throws.
+ */
 export function executeMove(
   fen: string,
   move: string,
@@ -62,6 +67,10 @@ export function executeMove(
   }
 }
 
+/**
+ * Every legal move from `fen`, as SAN or (with `verbose`) as
+ * {@link MoveResult}s. Throws on an invalid FEN.
+ */
 export function getLegalMoves(fen: string): AlgebraicNotation[];
 export function getLegalMoves(
   fen: string,
@@ -82,6 +91,12 @@ export function getLegalMoves(
   return chess.moves().map(asEngineSan);
 }
 
+/**
+ * Convert SAN `moves` to UCI (`e2e4`, `e7e8q`), for engines.
+ *
+ * Stops silently at the first illegal move and returns the legal prefix, so
+ * the result can be shorter than the input. An invalid `startingFen` throws.
+ */
 export function movesToUci(moves: string[], startingFen?: string): string[] {
   return replaySan(
     boardFrom(startingFen),
@@ -142,6 +157,12 @@ export function uciToAlgebraic(
   }
 }
 
+/**
+ * The from/to squares of the final move, for last-move highlighting. `null`
+ * for an empty sequence and also when any move is illegal (the last legal
+ * move would belong to a different position). An invalid `startingFen`
+ * throws.
+ */
 export function getLastMoveDetails(
   moves: string[],
   startingFen?: string,
@@ -161,6 +182,12 @@ export function getLastMoveDetails(
   return applied.at(-1) ?? null;
 }
 
+/**
+ * Every position of the game, for stepping through it: index 0 is the
+ * starting position (no `lastMove`), index `i` is the position after ply `i`.
+ * The result has `moves.length + 1` entries when every move is legal; replay
+ * stops silently at the first illegal one. An invalid `startingFen` throws.
+ */
 export function replayMoves(
   moves: string[],
   startingFen?: string,
