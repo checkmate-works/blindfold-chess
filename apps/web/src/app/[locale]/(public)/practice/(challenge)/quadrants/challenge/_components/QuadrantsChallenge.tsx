@@ -1,19 +1,11 @@
 'use client';
 
-import { useCallback, useMemo, useRef } from 'react';
+import { useMemo, useRef } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-import { useTimedSession } from '@blindfold-chess/features/practice-session';
-import type {
-  BoardOrientation,
-  QuadrantId,
-  QuadrantQuestion,
-} from '@blindfold-chess/features/quadrants';
-import {
-  checkQuadrantAnswer,
-  generateQuadrantQuestionBatch,
-} from '@blindfold-chess/features/quadrants';
+import type { BoardOrientation } from '@blindfold-chess/features/quadrants';
+import { useQuadrantsSession } from '@blindfold-chess/features/quadrants/client';
 
 import { CHALLENGE_TIME_LIMIT, MISTAKE_LIMIT } from '@/lib/challenge/constants';
 
@@ -30,28 +22,8 @@ type Props = {
   orientation: BoardOrientation;
 };
 
-const BATCH_SIZE = 100;
-
 export default function QuadrantsChallenge({ locale, orientation }: Props) {
   const router = useRouter();
-
-  const questionsRef = useRef<QuadrantQuestion[]>([]);
-  const indexRef = useRef(0);
-
-  const generateQuestion = useCallback((): QuadrantQuestion => {
-    if (questionsRef.current.length === 0) {
-      questionsRef.current = generateQuadrantQuestionBatch(BATCH_SIZE, orientation);
-    }
-    if (indexRef.current >= questionsRef.current.length) {
-      questionsRef.current = [
-        ...questionsRef.current,
-        ...generateQuadrantQuestionBatch(BATCH_SIZE, orientation),
-      ];
-    }
-    const question = questionsRef.current[indexRef.current];
-    indexRef.current += 1;
-    return question;
-  }, [orientation]);
 
   const {
     currentQuestion,
@@ -66,11 +38,10 @@ export default function QuadrantsChallenge({ locale, orientation }: Props) {
     isPaused,
     handleAnswer,
     togglePause,
-  } = useTimedSession<QuadrantQuestion>({
+  } = useQuadrantsSession({
+    orientation,
     timeLimit: CHALLENGE_TIME_LIMIT,
-    generateQuestion,
     mistakeAllowance: MISTAKE_LIMIT,
-    feedbackDuration: (correct: boolean) => (correct ? 500 : 1500),
   });
 
   useScrollToElement('quadrants-challenge');
@@ -81,15 +52,6 @@ export default function QuadrantsChallenge({ locale, orientation }: Props) {
     isPaused,
     togglePause,
   });
-
-  const handleQuadrantAnswer = useCallback(
-    (selectedQuadrant: QuadrantId) => {
-      if (!currentQuestion) return;
-      const isCorrect = checkQuadrantAnswer(currentQuestion.square, selectedQuadrant);
-      handleAnswer(isCorrect);
-    },
-    [currentQuestion, handleAnswer]
-  );
 
   // Redirect on finish
   const total = correctCount + incorrectCount;
@@ -128,7 +90,7 @@ export default function QuadrantsChallenge({ locale, orientation }: Props) {
         timeLimit={CHALLENGE_TIME_LIMIT}
         showFeedback={showFeedback}
         lastAnswerCorrect={lastAnswerCorrect}
-        onAnswer={handleQuadrantAnswer}
+        onAnswer={handleAnswer}
         countdown={countdown}
         correctCount={correctCount}
         incorrectCount={incorrectCount}
