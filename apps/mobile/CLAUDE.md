@@ -19,8 +19,19 @@ the mobile-side presentation: icon, i18n namespace, a route directory when it
 differs from the slug (quadrants), and whether a `training` screen exists.
 The practice tab's list (`(tabs)/practice/index.tsx`) and the practice stack
 (`(tabs)/practice/_layout.tsx`, through `moduleStackScreens`) both read it,
-so a new module is one entry there plus its route directory. The challenge
-rules (`MISTAKE_LIMIT`, `CHALLENGE_TIME_LIMIT`) come from the same package.
+so a new module is one entry there plus its route directory;
+`src/navigation/__tests__/practice-modules.test.ts` checks each entry's
+route files exist. The challenge rules (`MISTAKE_LIMIT`,
+`CHALLENGE_TIME_LIMIT`) come from the same package.
+
+**Training mode** (legal-moves, square-colors, quadrants, diagonal-quiz) is
+the untimed `training.tsx` beside each module's timed `session.tsx`: it runs
+on `useBatchTrainingSession` from `@blindfold-chess/features/practice-session`
+with the module's pure question/answer functions, renders inside
+`PracticeTrainingScreen` (score, optional skip, End → back to setup), and is
+opened by the setup screen's second button (`onStartTraining` on
+`PracticeSetupScreen`). Its stack screen keeps the back gesture, unlike the
+timed session.
 
 ## i18n is a separate dictionary from the web app
 

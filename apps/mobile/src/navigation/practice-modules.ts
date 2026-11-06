@@ -41,17 +41,20 @@ export const MOBILE_PRACTICE_MODULES: readonly MobilePracticeModule[] = [
     slug: "legal-moves",
     i18nKey: "legalMoves",
     icon: "♞",
+    hasTraining: true,
   },
   { slug: "board-symmetry", i18nKey: "boardSymmetry", icon: "🦋" },
   {
     slug: "square-colors",
     i18nKey: "squareColors",
     icon: "🎨",
+    hasTraining: true,
   },
   {
     slug: "diagonal-quiz",
     i18nKey: "diagonalQuiz",
     icon: "↗",
+    hasTraining: true,
   },
   { slug: "route-planner", i18nKey: "routePlanner", icon: "♞" },
   {
@@ -61,6 +64,7 @@ export const MOBILE_PRACTICE_MODULES: readonly MobilePracticeModule[] = [
     route: "quadrants",
     i18nKey: "quadrants",
     icon: "⊞",
+    hasTraining: true,
   },
   { slug: "knight-tour", i18nKey: "knightTour", icon: "♘" },
   {
