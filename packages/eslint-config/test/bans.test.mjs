@@ -222,7 +222,9 @@ describe("the repo's own ban disables", () => {
     assert.ok(files.length > 0);
   });
 
-  const byPkg = Object.groupBy(files, (f) => f.split("/").slice(0, 2).join("/"));
+  const byPkg = Object.groupBy(files, (f) =>
+    f.split("/").slice(0, 2).join("/"),
+  );
   for (const [pkg, pkgFiles] of Object.entries(byPkg)) {
     for (const { label, cwd } of configsFor(pkg)) {
       it(`${pkg}: none is unused (${label})`, async () => {
@@ -232,9 +234,7 @@ describe("the repo's own ban disables", () => {
         const unused = results.flatMap((r) =>
           r.messages
             .filter((m) => UNUSED_DIRECTIVE.test(m.message))
-            .map(
-              (m) => `${path.relative(REPO_ROOT, r.filePath)}:${m.line}`,
-            ),
+            .map((m) => `${path.relative(REPO_ROOT, r.filePath)}:${m.line}`),
         );
         assert.deepEqual(unused, []);
       });
