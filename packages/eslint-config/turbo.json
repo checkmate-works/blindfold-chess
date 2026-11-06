@@ -1,0 +1,16 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "extends": ["//"],
+  "tasks": {
+    "test": {
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/eslint.config.mjs",
+        "$TURBO_ROOT$/apps/*/eslint.config.mjs",
+        "$TURBO_ROOT$/packages/*/eslint.config.mjs",
+        "$TURBO_ROOT$/apps/*/src/**",
+        "$TURBO_ROOT$/packages/*/src/**"
+      ]
+    }
+  }
+}
