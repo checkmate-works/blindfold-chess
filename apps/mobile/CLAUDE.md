@@ -9,6 +9,19 @@ and widgets in `src/components/` and `src/screens/`, the theme in
 `src/navigation/module-stack-screens.tsx`. Game logic comes from
 `@blindfold-chess/features`; the app holds UI, navigation and storage.
 
+## Practice modules: the shared registry plus a mobile table
+
+Which practice modules exist, and their slugs, come from the registry shared
+with the web app (`@blindfold-chess/features/practice-registry`).
+`src/navigation/practice-modules.ts` (`MOBILE_PRACTICE_MODULES`) lists the
+ones mobile implements, in display order, keyed by registry slug, with only
+the mobile-side presentation: icon, i18n namespace, a route directory when it
+differs from the slug (quadrants), and whether a `training` screen exists.
+The practice tab's list (`(tabs)/practice/index.tsx`) and the practice stack
+(`(tabs)/practice/_layout.tsx`, through `moduleStackScreens`) both read it,
+so a new module is one entry there plus its route directory. The challenge
+rules (`MISTAKE_LIMIT`, `CHALLENGE_TIME_LIMIT`) come from the same package.
+
 ## i18n is a separate dictionary from the web app
 
 Mobile uses i18next (`src/i18n/index.ts`) with its own resources in
