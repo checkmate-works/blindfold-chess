@@ -1,4 +1,7 @@
-// Module-specific Exp weights
+/**
+ * Exp per point of challenge score, keyed by practice `menuType` slug.
+ * Unlisted menu types get {@link DEFAULT_MODULE_WEIGHT}.
+ */
 export const MODULE_WEIGHT: Record<string, number> = {
   coordinate_quiz: 1,
   square_colors: 1,
@@ -45,8 +48,15 @@ export const MISS_BONUS: { misses: number; multiplier: number }[] = [
  */
 export const NO_ACCURACY_BONUS_MULTIPLIER = 1.0;
 
-// レベルカーブ: requiredExp(level) = floor(BASE * level^EXPONENT)
+/**
+ * Level curve: the cumulative Exp needed to reach `level` is
+ * `floor(base * level ^ exponent)` (Lv1 = 100, Lv10 ≈ 3,162).
+ */
 export const EXP_CURVE = { base: 100, exponent: 1.5 } as const;
 
-// チャレンジ完了の最低保証Exp
+/**
+ * Floor on a grant's Exp. A completed challenge always earns at least this,
+ * even with a score of 0; the free-play calculator applies it only when at
+ * least one answer was correct.
+ */
 export const MIN_COMPLETION_EXP = 1;

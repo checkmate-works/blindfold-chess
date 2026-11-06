@@ -26,6 +26,10 @@ export type SkillLevel =
   | 19
   | 20;
 
+/**
+ * `"draw"` is every drawn ending other than stalemate (threefold repetition,
+ * fifty-move rule, insufficient material). Resignation is not a status.
+ */
 export type GameStatus = "in_progress" | "checkmate" | "stalemate" | "draw";
 
 /**

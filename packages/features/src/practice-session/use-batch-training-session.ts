@@ -5,11 +5,25 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useLatestRef } from "../common/use-latest-ref";
 
 export type UseBatchTrainingSessionConfig<TQuestion, TAnswerData> = {
+  /** Questions per generated batch. Default 100. */
   batchSize?: number;
+  /**
+   * Called on mount, then again (appending, never replacing) whenever 10 or
+   * fewer questions remain.
+   */
   generateBatch: (size: number) => TQuestion[];
   checkAnswer: (question: TQuestion, answerParams: TAnswerData) => boolean;
+  /** How long the result shows before auto-advancing, in ms. Default 500. */
   feedbackDelayMs?: number | ((isCorrect: boolean) => number);
+  /**
+   * Default true. When false, a skip leaves the result on screen until
+   * `handleNextAfterSkip` is called.
+   */
   skipAutoAdvance?: boolean;
+  /**
+   * Default true. When false, a wrong answer leaves the result on screen until
+   * `handleNextAfterIncorrect` is called. Correct answers always auto-advance.
+   */
   incorrectAutoAdvance?: boolean;
 };
 
@@ -33,16 +47,29 @@ export type UseBatchTrainingSessionReturn<TQuestion, TAnswerData> = {
     | null;
   correctCount: number;
   incorrectCount: number;
+  /**
+   * Score the current question. No-op when `isBlocked` is true or a result is
+   * already showing. `onFeedbackStart` fires synchronously with the outcome.
+   */
   handleAnswer: (
     answerData: TAnswerData,
     isBlocked?: boolean,
     onFeedbackStart?: (isCorrect: boolean) => void,
   ) => void;
+  /** Record the current question as wrong (`skipped: true`); no-op while a result shows. */
   handleSkip: (onFeedbackStart?: (isCorrect: boolean) => void) => void;
+  /** Manual advance; a no-op unless `skipAutoAdvance` is false. */
   handleNextAfterSkip: () => void;
+  /** Manual advance; a no-op unless `incorrectAutoAdvance` is false. */
   handleNextAfterIncorrect: () => void;
 };
 
+/**
+ * Untimed, endless drill over a pre-generated question list. Unlike
+ * `useTimedSession` there is no countdown, clock or end condition: the
+ * caller decides when to stop. `currentQuestion` is `null` until the first
+ * batch has been generated in the mount effect.
+ */
 export function useBatchTrainingSession<TQuestion, TAnswerData>({
   batchSize = 100,
   generateBatch,

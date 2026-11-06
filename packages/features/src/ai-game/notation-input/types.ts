@@ -1,5 +1,9 @@
 import type { AlgebraicNotation } from "@blindfold-chess/types";
 
+/**
+ * Cap on the text-builder `input`, in characters. Keystrokes (and a castling
+ * token) that would exceed it are dropped. Structured actions are not capped.
+ */
 export const MAX_NOTATION_INPUT_LENGTH = 10;
 
 export type NotationChar =
@@ -35,11 +39,24 @@ import type { PromotionPiece } from "@blindfold-chess/types";
 
 export type { PromotionPiece };
 
+/**
+ * State shared by two independent input surfaces. The web keypad's
+ * text-builder actions edit `input` directly and never touch the other
+ * fields; the mobile structured actions edit the other fields and rewrite
+ * `input` from them (see `computePreviewText`). Either way `input` is the
+ * SAN that `submit` sends.
+ */
 export type NotationInputState = {
   input: string;
   selectedPiece: string | null;
+  /**
+   * At most one element (selections toggle). With a piece selected it is the
+   * destination file; for a pawn it is the pawn's own file.
+   */
   selectedFiles: Set<string>;
+  /** At most one element: the destination rank. */
   selectedRanks: Set<string>;
+  /** Destination file of a pawn capture; cleared outside pawn-capture mode. */
   targetFile: string | null;
   isCapture: boolean;
   isCheck: boolean;
@@ -86,6 +103,7 @@ export type UseNotationInputReturn = {
   // Full state — consumers pick the fields their UI renders.
   state: NotationInputState;
   // Preview / submittability (cheap, memoised).
+  /** Built from the structured fields only — empty while using the text-builder surface. */
   previewText: string;
   showPromotion: boolean;
   isPawnCaptureMode: boolean;
@@ -109,5 +127,6 @@ export type UseNotationInputReturn = {
   toggleAmbiguous: () => void;
   reset: () => void;
   // High-level submit.
+  /** Calls `onSubmit` with `state.input` (unvalidated); no-op when it is empty. */
   submit: () => void;
 };

@@ -24,6 +24,7 @@ export type { FeedbackSpeed };
 
 export type CoordinateQuestion = {
   targetSquare: Square;
+  /** The side the board is drawn from for this question (`"random"` already resolved). */
   orientation: ResolvedBoardOrientation;
 };
 

@@ -39,6 +39,11 @@ export type UseDiagonalQuizSessionReturn = TimedSessionFacade & {
    * run — a trailing `timedOut` entry for the question left unanswered.
    */
   questionResults: DiagonalQuestionResult[];
+  /**
+   * Score both answers for the current square. Each is accepted in either
+   * endpoint order and case (`"h7-B1"` matches `"b1-h7"`); the question is
+   * correct only if both are.
+   */
   handleAnswer: (diagonalAnswer: string, antiDiagonalAnswer: string) => void;
 };
 

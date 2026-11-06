@@ -42,6 +42,14 @@ export type UseRoutePlannerSessionReturn = TimedSessionFacade & {
   handleSkip: () => void;
 };
 
+/**
+ * Timed route-planner session. Ends on the timer, the mistake allowance, or
+ * — when `problemCount` is set — once that many problems are answered; the
+ * last case leaves `finishReason` `null`. A skip is recorded as an incorrect
+ * answer (`skipped: true`), so it counts toward both the mistake allowance
+ * and `problemCount`. The result's `problems` never include a `timedOut`
+ * entry; callers that want one append it themselves.
+ */
 export function useRoutePlannerSession({
   selectedPieces,
   timeLimit,

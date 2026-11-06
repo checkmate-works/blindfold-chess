@@ -14,7 +14,11 @@ import { BOARD_SIZE } from "../common/constants";
 
 import type { MoveQuestion, PieceType } from "./types";
 
-// Check if a move is legal for a given piece
+/**
+ * Whether `pieceType` can move `from` → `to` as a lone white piece on an
+ * otherwise empty board — the drill's notion of legality (no blockers, checks
+ * or captures).
+ */
 export function isLegalMove(
   from: Square,
   to: Square,
@@ -23,7 +27,15 @@ export function isLegalMove(
   return isLegalPieceMove(from, to, pieceType);
 }
 
-// Get a mix of legal and illegal moves for better distribution
+/**
+ * Generate up to `count` questions, `floor(count / 2)` of them legal and the
+ * rest illegal (per {@link isLegalMove}), shuffled. The piece for each question
+ * is drawn uniformly from `allowedPieces`.
+ *
+ * May return fewer than `count` questions: the loop gives up after
+ * `count * 4` attempts, which only happens when the generators keep failing
+ * (e.g. a degenerate `rng`).
+ */
 export function generateBalancedMoveQuestions(
   count: number,
   allowedPieces: readonly PieceType[] = ["b", "n", "r", "q", "k"],
@@ -154,8 +166,11 @@ function findMoveQuestion(
   return null;
 }
 
-// Generate a move question whose move IS legal for the piece type. Targets are
-// drawn from the piece's pure mobility so a legal candidate is found quickly.
+/**
+ * A random question whose move IS legal for `pieceType`. Targets are drawn
+ * from the piece's pure mobility so a legal candidate is found quickly.
+ * Returns `null` if 200 random origins all fail to produce one.
+ */
 export function generateLegalMoveQuestion(
   pieceType: PieceType,
   rng: RandomSource = Math.random,
@@ -169,8 +184,11 @@ export function generateLegalMoveQuestion(
   );
 }
 
-// Generate a move question whose move is NOT legal for the piece type. Targets
-// are drawn uniformly at random and kept only when they turn out illegal.
+/**
+ * A random question whose move is NOT legal for `pieceType`. Targets are drawn
+ * uniformly from the board and kept only when they turn out illegal. Returns
+ * `null` if 200 attempts all fail to produce one.
+ */
 export function generateIllegalMoveQuestion(
   pieceType: PieceType,
   rng: RandomSource = Math.random,

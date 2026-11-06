@@ -6,9 +6,16 @@ import {
   DEFAULT_BASE_PRACTICE_SETTINGS,
 } from "../common/types";
 
+/**
+ * The two diagonals through a square, each written as its two end squares
+ * joined by `-`, lower file first. A diagonal that is a single corner square
+ * (e.g. the a1-h8 diagonal through h1) is just that square, with no hyphen.
+ */
 export type DiagonalPair = {
-  diagonal: string; // SW-NE direction (a1-h8 direction), e.g., "b1-h7"
-  antiDiagonal: string; // SE-NW direction (h1-a8 direction), e.g., "b7-h1"
+  /** SW-NE direction (a1-h8 direction), e.g. `"b1-h7"`. */
+  diagonal: string;
+  /** SE-NW direction (h1-a8 direction), e.g. `"b7-h1"`. */
+  antiDiagonal: string;
 };
 
 export type DiagonalQuizSettings = BasePracticeSettings;

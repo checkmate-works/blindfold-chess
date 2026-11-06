@@ -3,12 +3,25 @@
 import { useEffect, useRef, useState } from "react";
 
 type UseGameTimerProps = {
+  /** Limit in seconds. */
   timeLimit: number;
+  /** Time accumulates only while true; toggling it pauses/resumes without loss. */
   isActive: boolean;
+  /**
+   * Fired once, from the polling interval, when accumulated active time
+   * reaches the limit — so up to `intervalMs` late.
+   */
   onTimeLimitReached?: () => void;
+  /** Polling period in ms. Default 100. */
   intervalMs?: number;
 };
 
+/**
+ * A pausable stopwatch. `timeElapsed` is whole seconds (floored) and updates
+ * on each poll while active. `totalTime` is the precise active time in
+ * seconds, but it is read from a ref at render time and is only current up to
+ * the last pause (or the limit being reached), not while running.
+ */
 export function useGameTimer({
   timeLimit,
   isActive,

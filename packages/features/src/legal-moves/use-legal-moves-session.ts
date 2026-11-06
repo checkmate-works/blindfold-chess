@@ -20,6 +20,10 @@ export type UseLegalMovesSessionConfig =
 
 export type UseLegalMovesSessionReturn = TimedSessionFacade & {
   currentQuestion: MoveQuestion | null;
+  /**
+   * `userAnswer` is the player's claim that the move is legal (`true`) or
+   * illegal (`false`); it is scored against {@link isLegalMove}.
+   */
   handleAnswer: (userAnswer: boolean) => void;
 };
 

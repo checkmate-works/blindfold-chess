@@ -29,6 +29,12 @@ export type UseCoordinateQuizSessionReturn = TimedSessionFacade & {
   handleAnswer: (square: Square) => void;
 };
 
+/**
+ * Timed coordinate quiz: tap the named square. Each question's target avoids
+ * the previous 8 targets, and an `orientation` of `"random"` is resolved
+ * afresh per question, so the board may flip between questions. The
+ * feedback flash length comes from `FEEDBACK_SPEED_MS[feedbackSpeed]`.
+ */
 export function useCoordinateQuizSession({
   timeLimit,
   orientation,
