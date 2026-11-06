@@ -1,6 +1,6 @@
 'use server';
 
-// eslint-disable-next-line no-restricted-imports -- TermPositionEditor has no router.refresh(); this revalidate is what re-renders the admin editor with the saved annotations
+// eslint-disable-next-line ban/revalidate-path -- TermPositionEditor has no router.refresh(); this revalidate is what re-renders the admin editor with the saved annotations
 import { revalidatePath, revalidateTag } from 'next/cache';
 
 import { requireAdmin } from '@/app/admin/_lib/auth';

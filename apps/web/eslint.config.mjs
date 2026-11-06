@@ -2,6 +2,7 @@ import { nextJsConfig } from '@blindfold-chess/eslint-config/next';
 import { hoverUnderlineBan } from '@blindfold-chess/eslint-config/hover-underline-ban';
 import { revalidatePathBan } from '@blindfold-chess/eslint-config/revalidate-path-ban';
 import { clientIntlHooksBan } from '@blindfold-chess/eslint-config/client-intl-hooks-ban';
+import { chessJsBan } from '@blindfold-chess/eslint-config/chess-js-ban';
 import globals from 'globals';
 
 /** @type {import("eslint").Linter.Config} */
@@ -33,4 +34,5 @@ export default [
   ...revalidatePathBan(),
   ...hoverUnderlineBan(),
   ...clientIntlHooksBan(),
+  ...chessJsBan(),
 ];

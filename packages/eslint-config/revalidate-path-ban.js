@@ -1,4 +1,4 @@
-import { CHESS_JS_RESTRICTED_PATH } from "./chess-js-ban.js";
+import { banPlugins } from "./ban-plugin.js";
 
 /**
  * Lint-ban on importing `revalidatePath` from `next/cache` in apps/web.
@@ -7,6 +7,10 @@ import { CHESS_JS_RESTRICTED_PATH } from "./chess-js-ban.js";
  * cache to purge — but inside a Server Action it still re-renders the current
  * page into the action response and wipes the client Router Cache. See
  * "revalidatePath Is Lint-Banned by Default" in apps/web/CLAUDE.md.
+ *
+ * The rule is `ban/revalidate-path` (see `ban-plugin.js` for why each ban has
+ * its own rule name); a deliberate use is lifted with
+ * `eslint-disable-next-line ban/revalidate-path -- <reason>`.
  *
  * Defined once here because the rule must be active in BOTH configs that lint
  * apps/web files: `apps/web/eslint.config.mjs` (editor / `pnpm lint`, cwd
@@ -19,14 +23,12 @@ import { CHESS_JS_RESTRICTED_PATH } from "./chess-js-ban.js";
  *   from a cwd above apps/web (pass `'apps/web/'` in the root config).
  */
 export function revalidatePathBan(prefix = "") {
-  // The chess.js ban shares this rule object: flat config replaces a rule's
-  // options wholesale, so a separate `chessJsBan()` entry over apps/web would
-  // overwrite the revalidatePath entry below (see chess-js-ban.js).
   return [
     {
       files: [`${prefix}src/**/*.{ts,tsx}`],
+      plugins: banPlugins,
       rules: {
-        "no-restricted-imports": [
+        "ban/revalidate-path": [
           "error",
           {
             paths: [
@@ -36,7 +38,6 @@ export function revalidatePathBan(prefix = "") {
                 message:
                   "revalidatePath purges nothing on this app's dynamic routes, and on its SSG/ISR routes under /[locale] the cache tags already reach the Full Route Cache entry, but it still re-renders the current page into the Server Action response. Before using it, check: (1) is the target page actually cached (SSG/ISR)? (2) does the calling component already router.refresh()/push() or own the state? See 'revalidatePath Is Lint-Banned by Default' in apps/web/CLAUDE.md; if genuinely needed, eslint-disable this line with a reason.",
               },
-              CHESS_JS_RESTRICTED_PATH,
             ],
           },
         ],
@@ -44,12 +45,14 @@ export function revalidatePathBan(prefix = "") {
     },
     {
       // Tests import the mocked revalidatePath to assert it is (not) called.
+      // This turns off only this ban: the chess.js ban stays on in tests.
       files: [
         `${prefix}src/**/*.test.{ts,tsx}`,
         `${prefix}src/**/__tests__/**`,
       ],
+      plugins: banPlugins,
       rules: {
-        "no-restricted-imports": "off",
+        "ban/revalidate-path": "off",
       },
     },
   ];

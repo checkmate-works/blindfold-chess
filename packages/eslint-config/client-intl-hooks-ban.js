@@ -1,3 +1,5 @@
+import { banPlugins } from "./ban-plugin.js";
+
 /**
  * Lint-ban on next-intl's client hooks in apps/web.
  *
@@ -25,13 +27,11 @@
  * `typeof useTranslations`, which erases at compile time and cannot throw at
  * runtime.
  *
- * That exemption is why this uses typescript-eslint's extension rule rather
- * than the core one — the core rule has no `allowTypeImports`. It also keeps
- * the rule name distinct from the core `no-restricted-imports` that
- * `revalidate-path-ban` owns: flat config replaces a rule's options wholesale
- * rather than merging them, so two config objects setting the SAME rule name
- * over the same files would silence whichever came first. The two rules
- * restrict disjoint modules, so nothing is reported twice.
+ * That exemption is why the rule, `ban/client-intl-hooks`, is
+ * typescript-eslint's `no-restricted-imports` extension rather than the core
+ * one — the core rule has no `allowTypeImports`. The `ban/` name (see
+ * `ban-plugin.js`) is what keeps it from colliding with the other import bans
+ * over the same files.
  *
  * Defined once here because, like `revalidate-path-ban`, the rule must be
  * active in BOTH configs that lint apps/web files: `apps/web/eslint.config.mjs`
@@ -47,8 +47,9 @@ export function clientIntlHooksBan(prefix = "") {
   return [
     {
       files: [`${prefix}src/**/*.{ts,tsx}`],
+      plugins: banPlugins,
       rules: {
-        "@typescript-eslint/no-restricted-imports": [
+        "ban/client-intl-hooks": [
           "error",
           {
             paths: [
@@ -71,8 +72,9 @@ export function clientIntlHooksBan(prefix = "") {
         `${prefix}src/i18n/use-safe-translations.ts`,
         `${prefix}src/i18n/use-safe-locale.ts`,
       ],
+      plugins: banPlugins,
       rules: {
-        "@typescript-eslint/no-restricted-imports": "off",
+        "ban/client-intl-hooks": "off",
       },
     },
   ];
