@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, Pressable } from "react-native";
+import { useEffect } from "react";
+import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { isValidSkillLevel } from "@blindfold-chess/features/ai-game";
@@ -7,7 +7,7 @@ import { SIDES, type Side } from "@blindfold-chess/types";
 
 import { StockfishWebView } from "../../../../features/ai-game/engine";
 import {
-  BoardViewModal,
+  BoardPeek,
   ButtonInput,
   MoveHistory,
   GameInfo,
@@ -20,13 +20,7 @@ import {
 import type { SkillLevel } from "../../../../features/ai-game/lib/types";
 import { parseEnumParam } from "../../../../lib/route-params";
 import { Screen } from "../../../../components";
-import {
-  useTheme,
-  fontSize,
-  fontWeight,
-  spacing,
-  borderRadius,
-} from "../../../../theme";
+import { useTheme, fontSize, fontWeight, spacing } from "../../../../theme";
 
 export default function AiGameSession() {
   const { t } = useTranslation();
@@ -36,8 +30,6 @@ export default function AiGameSession() {
     playerColor: string;
     skillLevel: string;
   }>();
-
-  const [isBoardVisible, setIsBoardVisible] = useState(false);
 
   const playerColor = parseEnumParam<Side>(params.playerColor, SIDES, "white");
   const parsedSkillLevel = Number(params.skillLevel);
@@ -107,20 +99,12 @@ export default function AiGameSession() {
           moveCount={game.moves.length}
         />
 
-        {/* Show Board Button */}
-        <Pressable
-          style={[
-            styles.showBoardButton,
-            { backgroundColor: colors.card, borderColor: colors.border },
-          ]}
-          onPress={() => setIsBoardVisible(true)}
-        >
-          <Text
-            style={[styles.showBoardButtonText, { color: colors.foreground }]}
-          >
-            {t("aiGame.session.showBoard")}
-          </Text>
-        </Pressable>
+        {/* Board, as the player's boardVisibility preference surfaces it */}
+        <BoardPeek
+          fen={game.currentFen}
+          moves={game.moves}
+          playerColor={playerColor}
+        />
 
         {/* Error message */}
         {game.error && (
@@ -167,13 +151,6 @@ export default function AiGameSession() {
           </View>
         )}
       </ScrollView>
-
-      <BoardViewModal
-        visible={isBoardVisible}
-        onClose={() => setIsBoardVisible(false)}
-        fen={game.currentFen}
-        playerColor={playerColor}
-      />
     </Screen>
   );
 }
@@ -207,18 +184,5 @@ const styles = StyleSheet.create({
   },
   aiThinkingText: {
     fontSize: fontSize.md,
-  },
-  showBoardButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: spacing.sm,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.md,
-    borderWidth: 1,
-  },
-  showBoardButtonText: {
-    fontSize: fontSize.md,
-    fontWeight: fontWeight.medium,
   },
 });
