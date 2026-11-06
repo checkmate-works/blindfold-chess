@@ -1,15 +1,18 @@
 'use client';
 
+import {
+  type AlgebraicNotationQuestion,
+  getQuestionDescription,
+} from '@blindfold-chess/features/algebraic-notation';
+
 import type { BoardTheme } from '@/lib/games/board-themes';
 import { DEFAULT_BOARD_THEME } from '@/lib/games/board-themes';
 
 import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import type { Question } from '../_lib/types';
-
 type Props = {
-  question: Question;
+  question: AlgebraicNotationQuestion;
   currentQuestionIndex: number;
   selectedAnswer: string;
   showResult: boolean;
@@ -30,9 +33,7 @@ export function AlgebraicNotationPlaying({
   return (
     <div className="flex flex-col gap-6">
       {/* Question Description (fall back to English when no translation for this locale) */}
-      <p className="text-lg text-muted-foreground">
-        {question.description[locale] ?? question.description.en}
-      </p>
+      <p className="text-lg text-muted-foreground">{getQuestionDescription(question, locale)}</p>
 
       {/* Chess Board */}
       <div className="flex justify-center">

@@ -1,8 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback } from 'react';
 
 import { BoardSkeleton } from '@/app/_components';
+import type {
+  AlgebraicNotationQuestion,
+  AlgebraicNotationResult as SessionResult,
+} from '@blindfold-chess/features/algebraic-notation';
+import { useAlgebraicNotationSession } from '@blindfold-chess/features/algebraic-notation/client';
 
 import { ProgressBar } from '@/app/[locale]/(public)/practice/_components/ProgressBar';
 import {
@@ -12,41 +17,38 @@ import {
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import type { Question } from '../_lib/types';
 import { AlgebraicNotationPlaying } from './AlgebraicNotationPlaying';
 import { AlgebraicNotationResult } from './AlgebraicNotationResult';
 
 type Props = {
-  questions: Question[];
+  questions: readonly AlgebraicNotationQuestion[];
   locale: Locale;
 };
 
 export default function AlgebraicNotation({ questions, locale }: Props) {
   const { preferences, isLoaded } = useGamePreferences();
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [selectedAnswer, setSelectedAnswer] = useState('');
-  const [showResult, setShowResult] = useState(false);
-  const [score, setScore] = useState(0);
 
-  const question = questions[currentQuestionIndex];
+  const handleComplete = useCallback(
+    ({ score, total }: SessionResult) => {
+      window.location.href = `/${locale}/practice/algebraic-notation/result?score=${score}&total=${total}`;
+    },
+    [locale]
+  );
 
-  const handleOptionSelect = (option: string) => {
-    setSelectedAnswer(option);
-    setShowResult(true);
-    if (option === question.correctAnswer) {
-      setScore(score + 1);
-    }
-  };
+  const {
+    question,
+    currentIndex: currentQuestionIndex,
+    selectedAnswer,
+    answered: showResult,
+    isLastQuestion,
+    selectOption: handleOptionSelect,
+    next,
+  } = useAlgebraicNotationSession({ questions, onComplete: handleComplete });
 
   const handleNext = () => {
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-      setSelectedAnswer('');
-      setShowResult(false);
+    next();
+    if (!isLastQuestion) {
       realignToElement('algebraic-notation-session');
-    } else {
-      // Redirect to result page
-      window.location.href = `/${locale}/practice/algebraic-notation/result?score=${score}&total=${questions.length}`;
     }
   };
 
