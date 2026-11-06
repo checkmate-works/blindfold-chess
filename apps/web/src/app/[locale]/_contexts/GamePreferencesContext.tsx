@@ -11,18 +11,14 @@ import React, {
 } from 'react';
 
 import { useLatestRef } from '@blindfold-chess/features/common/client';
+import {
+  DEFAULT_GAME_PREFERENCES,
+  type GamePreferences,
+} from '@blindfold-chess/features/game-preferences';
 import type { PawnHideMode, PieceColorMode, PieceShapeMode } from '@blindfold-chess/types';
 
 import type { AiReplyDuration } from '@/lib/games/ai-reply-duration';
-import { DEFAULT_AI_REPLY_DURATION } from '@/lib/games/ai-reply-duration';
-import type { BoardTheme } from '@/lib/games/board-themes';
-import { DEFAULT_BOARD_THEME } from '@/lib/games/board-themes';
 import type { BoardVisibility } from '@/lib/games/board-visibility';
-import { DEFAULT_BOARD_VISIBILITY } from '@/lib/games/board-visibility';
-import {
-  DEFAULT_ENABLED_MOVE_INPUT_MODES,
-  DEFAULT_MOVE_INPUT_MODE,
-} from '@/lib/games/move-input-cookie';
 import type { MoveInputMode } from '@/lib/games/move-input-modes';
 
 import {
@@ -85,54 +81,16 @@ export type PerGamePreferences = {
   aiReplyDuration: AiReplyDuration;
 };
 
-// Game preferences
-export type GamePreferences = {
-  // Board appearance
-  showCoordinates: boolean; // Show rank and file labels on the board
-  highlightLastMove: boolean; // Highlight the last move on the board
-  showPieceDestinations: boolean; // Show legal destination squares when a piece is selected
-  boardTheme: BoardTheme; // Board color theme
-  // Piece visibility
-  showOwnPieces: boolean; // Show player's own pieces
-  showOpponentPieces: boolean; // Show opponent's pieces
-  // Piece appearance
-  pieceShapeMode: PieceShapeMode; // Piece shape mode
-  pieceColors: PieceColorMode; // Piece color mode
-  pawnHideMode: PawnHideMode; // Hide pawns (none / both / own / opponent)
-  // Move input
-  moveInputMode: MoveInputMode; // Move input mode
-  enabledMoveInputModes: MoveInputMode[]; // Which move input modes are available
-  buttonInputPieceLabel: 'text' | 'icon'; // Button input label style
-  enableAutoComplete: boolean; // Enable auto-complete for text input
-  // Board visibility during gameplay — see BoardVisibility for semantics.
-  boardVisibility: BoardVisibility;
-  // How long the on-board AI-reply chip keeps the opponent's last move visible
-  // in blindfold modes (ms; 0 = keep until the next reply). See AiReplyDuration.
-  aiReplyDuration: AiReplyDuration;
-};
+/**
+ * The global preferences shape, its defaults and the stored-payload sanitiser
+ * are shared with the mobile app through
+ * `@blindfold-chess/features/game-preferences`; the type is re-exported here
+ * so web imports stay put. What stays web-side is the storage: localStorage
+ * as the source of truth, cross-tab sync, and the SSR cookie hints.
+ */
+export type { GamePreferences };
 
-// Default preferences. `moveInputMode` / `enabledMoveInputModes` are derived
-// from the shared `DEFAULT_MOVE_INPUT_*` constants in `@/lib/games/move-input-cookie`;
-// and `boardVisibility` from `DEFAULT_BOARD_VISIBILITY` in
-// `@/lib/games/board-visibility`, so the SSR cookie hint and the client-side
-// defaults can never drift apart.
-const defaultPreferences: GamePreferences = {
-  showCoordinates: true,
-  highlightLastMove: true,
-  showPieceDestinations: true,
-  boardTheme: DEFAULT_BOARD_THEME,
-  showOwnPieces: true,
-  showOpponentPieces: true,
-  pieceShapeMode: 'normal',
-  pieceColors: 'normal',
-  pawnHideMode: 'none',
-  moveInputMode: DEFAULT_MOVE_INPUT_MODE,
-  enabledMoveInputModes: [...DEFAULT_ENABLED_MOVE_INPUT_MODES],
-  buttonInputPieceLabel: 'icon',
-  enableAutoComplete: true,
-  boardVisibility: DEFAULT_BOARD_VISIBILITY,
-  aiReplyDuration: DEFAULT_AI_REPLY_DURATION,
-};
+const defaultPreferences: GamePreferences = DEFAULT_GAME_PREFERENCES;
 
 type GamePreferencesContextType = {
   preferences: GamePreferences;
