@@ -116,7 +116,7 @@ function runSequence(seed: number, opCount: number): SequenceResult {
 
 const SEEDS = Array.from({ length: 40 }, (_, i) => i + 1);
 
-describe('game-operation audit invariants (issue #95)', () => {
+describe('game-operation audit invariants: totals equal the exact operation counts under any undo/restart interleaving (issue #95)', () => {
   it.each(SEEDS)(
     'seed %i: totals equal the exact operation counts, whatever the undo/restart interleaving',
     (seed) => {

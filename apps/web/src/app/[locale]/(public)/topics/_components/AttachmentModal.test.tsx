@@ -265,7 +265,7 @@ describe('AttachmentModal — single-kind structural guarantee (D3)', () => {
   });
 });
 
-describe('AttachmentModal — Game tab radio split (#84: PGN + Lichess URL sub-modes)', () => {
+describe('AttachmentModal — Game tab is split into PGN and Lichess URL sub-modes by radio (issue #84)', () => {
   // The Game tab is split into PGN / Lichess URL radios. Each
   // sub-mode keeps its own buffer and runs its own client-side
   // whitelist. Both emit `mode = { kind: 'pgn', pgn: <raw value> }`

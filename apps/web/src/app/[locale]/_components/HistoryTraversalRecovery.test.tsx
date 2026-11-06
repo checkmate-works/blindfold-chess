@@ -46,7 +46,7 @@ describe('HistoryTraversalRecovery', () => {
     window.history.replaceState(null, '', '/en/leaderboard/score/all-time');
   });
 
-  describe('null-state popstate (BLINDFOLD-CHESS-2J variant)', () => {
+  describe('popstate carrying a null history state, as Mobile Safari fires it (Sentry BLINDFOLD-CHESS-2J)', () => {
     it('recovers immediately: replaces to the actual URL and reports to Sentry', () => {
       render(<HistoryTraversalRecovery />);
 

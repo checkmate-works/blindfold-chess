@@ -67,7 +67,7 @@ function getErrorBag(slug: LocaleSlug): ErrorBag {
   return errors as ErrorBag;
 }
 
-describe('postVideoAttachment.error.* — locale completeness (issue #75)', () => {
+describe('postVideoAttachment.error.* — every locale carries exactly the error keys the action emits, each with a non-empty value (issue #75)', () => {
   for (const slug of Object.keys(LOCALES) as LocaleSlug[]) {
     it(`${slug}.json carries every expected error key`, () => {
       const bag = getErrorBag(slug);
