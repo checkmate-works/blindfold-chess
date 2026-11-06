@@ -105,6 +105,17 @@ export type {
 } from "./pgn-attachment";
 export { validateAttachedPgn } from "./pgn-attachment";
 
+export type { CastlingRights, FenFields } from "./fen-fields";
+export {
+  NO_CASTLING_RIGHTS,
+  buildFenFromParts,
+  clampFenParts,
+  getCastlingAvailability,
+  getEnPassantAvailability,
+  parseCastlingField,
+  parseFenFields,
+} from "./fen-fields";
+
 export { validatePosition } from "./position";
 export type { PositionErrorKey, PositionValidation } from "./position";
 
