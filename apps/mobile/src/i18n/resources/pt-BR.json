@@ -310,10 +310,27 @@
   },
   "quadrants": {
     "setup": {
-      "title": "Âncoras de Quadrante Configuração"
+      "title": "Âncoras de Quadrante Configuração",
+      "startQuiz": "Começar prática",
+      "orientation": "Orientação do tabuleiro",
+      "orientationWhite": "Brancas",
+      "orientationBlack": "Pretas",
+      "orientationRandom": "Aleatória",
+      "rulesTitle": "Regras do Desafio",
+      "timeLimitRule": "Responda o máximo de perguntas que puder em {{seconds}} segundos.",
+      "mistakeLimitRule": "O jogo termina após {{count}} respostas incorretas."
+    },
+    "session": {
+      "question": "Em qual quadrante está {{square}}?",
+      "correct": "Correto!",
+      "incorrect": "Incorreto",
+      "whiteToMove": "Brancas jogam",
+      "blackToMove": "Pretas jogam"
     },
     "result": {
-      "title": "Prática concluída!"
+      "title": "Prática concluída!",
+      "playAgain": "Jogar novamente",
+      "backToMenu": "Voltar ao menu"
     }
   },
   "knightTour": {

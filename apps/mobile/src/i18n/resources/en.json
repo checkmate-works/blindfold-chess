@@ -310,10 +310,27 @@
   },
   "quadrants": {
     "setup": {
-      "title": "Quadrant Anchors Setup"
+      "title": "Quadrant Anchors Setup",
+      "startQuiz": "Start Practice",
+      "orientation": "Board Orientation",
+      "orientationWhite": "White",
+      "orientationBlack": "Black",
+      "orientationRandom": "Random",
+      "rulesTitle": "Challenge Rules",
+      "timeLimitRule": "Answer as many questions as you can within {{seconds}} seconds.",
+      "mistakeLimitRule": "The game ends after {{count}} incorrect answers."
+    },
+    "session": {
+      "question": "Which quadrant is {{square}} in?",
+      "correct": "Correct!",
+      "incorrect": "Incorrect",
+      "whiteToMove": "White to move",
+      "blackToMove": "Black to move"
     },
     "result": {
-      "title": "Practice Complete!"
+      "title": "Practice Complete!",
+      "playAgain": "Play Again",
+      "backToMenu": "Back to Menu"
     }
   },
   "knightTour": {

@@ -310,10 +310,27 @@
   },
   "quadrants": {
     "setup": {
-      "title": "4分割アンカーの設定"
+      "title": "4分割アンカーの設定",
+      "startQuiz": "練習を開始",
+      "orientation": "盤の向き",
+      "orientationWhite": "白番",
+      "orientationBlack": "黒番",
+      "orientationRandom": "ランダム",
+      "rulesTitle": "チャレンジルール",
+      "timeLimitRule": "制限時間{{seconds}}秒以内にできるだけ多くの問題に正解してください。",
+      "mistakeLimitRule": "{{count}}回ミスするとゲームオーバーです。"
+    },
+    "session": {
+      "question": "{{square}} はどのエリア？",
+      "correct": "正解！",
+      "incorrect": "不正解",
+      "whiteToMove": "白番",
+      "blackToMove": "黒番"
     },
     "result": {
-      "title": "練習完了！"
+      "title": "練習完了！",
+      "playAgain": "もう一度",
+      "backToMenu": "メニューに戻る"
     }
   },
   "knightTour": {
