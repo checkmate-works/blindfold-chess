@@ -1,8 +1,16 @@
 'use client';
 
+import { integerBetween, oneOf } from '@blindfold-chess/features/common';
+
 import { useLocalStorageSettings } from '@/lib/persistent-settings/use-local-storage-settings';
 
-import { DEFAULT_DISPLAY_MODE, DEFAULT_TIME_LIMIT, type DisplayMode } from '../_lib/session-config';
+import {
+  DEFAULT_DISPLAY_MODE,
+  DEFAULT_TIME_LIMIT,
+  type DisplayMode,
+  MAX_TIME_LIMIT,
+  MIN_TIME_LIMIT,
+} from '../_lib/session-config';
 
 export type PositionMemorySettings = {
   timeLimit: number;
@@ -16,6 +24,11 @@ const DEFAULTS: PositionMemorySettings = {
   displayMode: DEFAULT_DISPLAY_MODE,
 };
 
+const GUARDS = {
+  timeLimit: integerBetween(MIN_TIME_LIMIT, MAX_TIME_LIMIT),
+  displayMode: oneOf<DisplayMode>(['board', 'text']),
+};
+
 /**
  * How long the position is shown and how it is presented, remembered across
  * visits and shared by every position the player studies.
@@ -26,5 +39,5 @@ const DEFAULTS: PositionMemorySettings = {
  * on the same one after a session ends and drops them back on this form.
  */
 export function usePositionMemorySettings() {
-  return useLocalStorageSettings(STORAGE_KEY, DEFAULTS);
+  return useLocalStorageSettings(STORAGE_KEY, DEFAULTS, GUARDS);
 }

@@ -1,6 +1,8 @@
 'use client';
 
+import { oneOf } from '@blindfold-chess/features/common';
 import type { BoardOrientation } from '@blindfold-chess/features/quadrants';
+import { BOARD_ORIENTATIONS } from '@blindfold-chess/types';
 
 import { useLocalStorageSettings } from '@/lib/persistent-settings/use-local-storage-settings';
 
@@ -19,6 +21,10 @@ const DEFAULTS: QuadrantsSettings = {
   orientation: 'white',
 };
 
+const GUARDS = {
+  orientation: oneOf(BOARD_ORIENTATIONS),
+};
+
 /**
  * The board orientation the player answers from, for both modes.
  *
@@ -27,5 +33,5 @@ const DEFAULTS: QuadrantsSettings = {
  * screen takes it from the URL and a bare link means a white board.
  */
 export function useQuadrantsSettings() {
-  return useLocalStorageSettings(STORAGE_KEY, DEFAULTS);
+  return useLocalStorageSettings(STORAGE_KEY, DEFAULTS, GUARDS);
 }
