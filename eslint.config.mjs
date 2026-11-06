@@ -24,7 +24,6 @@ export default [
     ...revalidatePathBan("apps/web/"),
     ...hoverUnderlineBan("apps/web/"),
     ...clientIntlHooksBan("apps/web/"),
-    ...chessJsBan("apps/web/"),
     ...chessJsBan("apps/mobile/"),
     ...chessJsBan("packages/features/"),
     {
