@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 
+import { countPlayerMoves } from '@blindfold-chess/features/game-play';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
 import type { EngineConfig } from '@/lib/engines';
@@ -7,7 +8,6 @@ import type { EngineConfig } from '@/lib/engines';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { buildNewGameFromPositionUrl } from '../_lib/build-new-game-from-position-url';
-import { countPlayerMoves } from '../_lib/fen-utils';
 
 /**
  * The session's game-level action handlers: resign, undo, restart-from-

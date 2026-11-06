@@ -1,8 +1,7 @@
 import { useMemo } from 'react';
 
+import { findLastAiMoveNotation } from '@blindfold-chess/features/game-play';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
-
-import { findLastAiMoveNotation } from '../_lib/find-last-ai-move-label';
 
 type UseAiMoveAnnouncerOptions = {
   moves: AlgebraicNotation[];

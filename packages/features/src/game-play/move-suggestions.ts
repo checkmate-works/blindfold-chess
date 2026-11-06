@@ -1,7 +1,11 @@
-import type { AlgebraicNotation, File, Rank } from '@blindfold-chess/types';
-import { ALL_PIECE_SYMBOLS, FILES, NUMERIC_RANKS } from '@blindfold-chess/types';
+import type { AlgebraicNotation, File, Rank } from "@blindfold-chess/types";
+import {
+  ALL_PIECE_SYMBOLS,
+  FILES,
+  NUMERIC_RANKS,
+} from "@blindfold-chess/types";
 
-import { isCompleteMove } from './san-completeness';
+import { isCompleteMove } from "./san-completeness";
 
 /**
  * Generate move suggestions based on partial input
@@ -17,8 +21,8 @@ export function generateMoveSuggestions(input: string): AlgebraicNotation[] {
   if (isCompleteMove(trimmedInput)) return [];
 
   // Handle castling
-  if (trimmedInput === 'O' || trimmedInput === 'O-') {
-    return ['O-O', 'O-O-O'] as AlgebraicNotation[];
+  if (trimmedInput === "O" || trimmedInput === "O-") {
+    return ["O-O", "O-O-O"] as AlgebraicNotation[];
   }
 
   // Handle piece moves
@@ -42,7 +46,7 @@ function generatePieceMoveSuggestions(input: string): AlgebraicNotation[] {
   const rest = input.slice(1);
 
   // Handle captures: Bx, Bxb, Nfx, N1x, Nb1x, etc.
-  if (rest.includes('x')) {
+  if (rest.includes("x")) {
     return generatePieceCaptureSuggestions(input);
   }
 
@@ -50,7 +54,7 @@ function generatePieceMoveSuggestions(input: string): AlgebraicNotation[] {
   const suggestions: string[] = [];
 
   // If no disambiguation characters, suggest all squares
-  if (rest === '') {
+  if (rest === "") {
     FILES.forEach((file) => {
       NUMERIC_RANKS.forEach((rank) => {
         suggestions.push(`${piece}${file}${rank}`);
@@ -65,7 +69,10 @@ function generatePieceMoveSuggestions(input: string): AlgebraicNotation[] {
     });
   }
   // If partial disambiguation with rank (e.g., "N1", "R8")
-  else if (rest.length === 1 && NUMERIC_RANKS.includes(parseInt(rest) as Rank)) {
+  else if (
+    rest.length === 1 &&
+    NUMERIC_RANKS.includes(parseInt(rest) as Rank)
+  ) {
     const rank = rest;
     FILES.forEach((file) => {
       suggestions.push(`${piece}${rank}${file}${rank}`);
@@ -74,7 +81,10 @@ function generatePieceMoveSuggestions(input: string): AlgebraicNotation[] {
   // If disambiguation + partial destination (e.g., "Nfd", "N1e")
   else if (rest.length === 2) {
     const [disambig, partialDest] = rest;
-    if (FILES.includes(disambig as File) && FILES.includes(partialDest as File)) {
+    if (
+      FILES.includes(disambig as File) &&
+      FILES.includes(partialDest as File)
+    ) {
       // File disambiguation + destination file
       NUMERIC_RANKS.forEach((rank) => {
         suggestions.push(`${piece}${disambig}${partialDest}${rank}`);
@@ -102,7 +112,7 @@ function generatePieceCaptureSuggestions(input: string): AlgebraicNotation[] {
   const suggestions: string[] = [];
 
   // Handle cases where 'x' is not at the end (e.g., "Bxb", "Nfxe", "N1xd")
-  const xIndex = rest.indexOf('x');
+  const xIndex = rest.indexOf("x");
   if (xIndex !== -1 && xIndex < rest.length - 1) {
     const beforeX = rest.slice(0, xIndex);
     const afterX = rest.slice(xIndex + 1);
@@ -117,11 +127,11 @@ function generatePieceCaptureSuggestions(input: string): AlgebraicNotation[] {
       // Full destination specified: already complete, no suggestions
       return [];
     }
-  } else if (rest.endsWith('x')) {
+  } else if (rest.endsWith("x")) {
     // 'x' is at the end
     const beforeX = rest.slice(0, -1);
 
-    if (beforeX === '') {
+    if (beforeX === "") {
       // Simple captures: Bx -> Bxa1, Bxa2, ..., Bxh8
       FILES.forEach((file) => {
         NUMERIC_RANKS.forEach((rank) => {
@@ -162,10 +172,10 @@ function generatePieceCaptureSuggestions(input: string): AlgebraicNotation[] {
  */
 function generatePawnMoveSuggestions(input: string): AlgebraicNotation[] {
   const suggestions: string[] = [];
-  const promotionPieces = ['Q', 'R', 'B', 'N'] as const;
+  const promotionPieces = ["Q", "R", "B", "N"] as const;
 
   // Handle pawn captures: ax, bx, etc.
-  if (input.endsWith('x')) {
+  if (input.endsWith("x")) {
     const file = input[0];
     const fileIndex = FILES.indexOf(file as File);
 
@@ -181,7 +191,11 @@ function generatePawnMoveSuggestions(input: string): AlgebraicNotation[] {
     });
   }
   // Handle pawn captures with specific destination file: cxd, axe, etc.
-  else if (input.length === 3 && input[1] === 'x' && FILES.includes(input[2] as File)) {
+  else if (
+    input.length === 3 &&
+    input[1] === "x" &&
+    FILES.includes(input[2] as File)
+  ) {
     const sourceFile = input[0];
     const destFile = input[2];
 
@@ -208,7 +222,7 @@ function generatePawnMoveSuggestions(input: string): AlgebraicNotation[] {
     const rank = input[1];
 
     // Check if it's a promotion rank (8 for white, 1 for black)
-    if (rank === '8' || rank === '1') {
+    if (rank === "8" || rank === "1") {
       // Generate promotion suggestions
       promotionPieces.forEach((piece) => {
         suggestions.push(`${file}${rank}=${piece}`);
@@ -218,10 +232,10 @@ function generatePawnMoveSuggestions(input: string): AlgebraicNotation[] {
   // Handle promotion suggestions for captures to 8th/1st rank (e.g., "exd8")
   else if (
     input.length === 4 &&
-    input[1] === 'x' &&
+    input[1] === "x" &&
     FILES.includes(input[0] as File) &&
     FILES.includes(input[2] as File) &&
-    (input[3] === '8' || input[3] === '1')
+    (input[3] === "8" || input[3] === "1")
   ) {
     const sourceFile = input[0];
     const destFile = input[2];

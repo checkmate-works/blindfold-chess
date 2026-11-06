@@ -1,12 +1,12 @@
 'use client';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { formatChangeLogMoveLabel } from '@blindfold-chess/features/game-play';
 import { resolvePlaySettingsChanges } from '@blindfold-chess/features/game-record';
 
 import type { GamePlaySettings, PlaySettingsChangeEntry } from '@/lib/games/saved-game-types';
 
 import { useChangeLogFormat } from '@/app/[locale]/(public)/games/play/_hooks/use-change-log-format';
-import { formatChangeLogMoveLabel } from '@/app/[locale]/(public)/games/play/_lib/format-change-log-move-label';
 
 type Props = {
   /** Start-of-game blindfold settings snapshot — the baseline each `from` folds onto. */

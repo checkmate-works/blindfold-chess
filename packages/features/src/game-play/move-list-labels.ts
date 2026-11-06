@@ -1,10 +1,10 @@
 import {
   computeMoveNumber,
   formatMoveAnchor,
-} from '@blindfold-chess/features/chess-core/move-numbering';
-import type { AlgebraicNotation } from '@blindfold-chess/types';
+} from "../chess-core/move-numbering";
+import type { AlgebraicNotation } from "@blindfold-chess/types";
 
-import { parseFenMeta } from '@/app/[locale]/(public)/games/play/_lib/fen-utils';
+import { parseFenMeta } from "./fen-utils";
 
 export type LabeledMove = {
   move: AlgebraicNotation;
@@ -30,13 +30,20 @@ export type LabeledMove = {
  */
 export function labelMoveList(
   moves: readonly AlgebraicNotation[],
-  startingFen: string | null | undefined
+  startingFen: string | null | undefined,
 ): LabeledMove[] {
   const { startsAsBlack, startMoveNumber } = parseFenMeta(startingFen);
 
   return moves.map((move, idx) => {
-    const { moveNumber, isWhiteMove } = computeMoveNumber(idx, startsAsBlack, startMoveNumber);
-    const label = isWhiteMove || idx === 0 ? formatMoveAnchor(moveNumber, isWhiteMove) : null;
+    const { moveNumber, isWhiteMove } = computeMoveNumber(
+      idx,
+      startsAsBlack,
+      startMoveNumber,
+    );
+    const label =
+      isWhiteMove || idx === 0
+        ? formatMoveAnchor(moveNumber, isWhiteMove)
+        : null;
     return { move, label };
   });
 }
@@ -46,8 +53,15 @@ export function labelMoveList(
  * name the one move that failed validation, so it carries the same number the
  * valid-move list above it would have given it.
  */
-export function labelMoveAt(index: number, startingFen: string | null | undefined): string {
+export function labelMoveAt(
+  index: number,
+  startingFen: string | null | undefined,
+): string {
   const { startsAsBlack, startMoveNumber } = parseFenMeta(startingFen);
-  const { moveNumber, isWhiteMove } = computeMoveNumber(index, startsAsBlack, startMoveNumber);
+  const { moveNumber, isWhiteMove } = computeMoveNumber(
+    index,
+    startsAsBlack,
+    startMoveNumber,
+  );
   return formatMoveAnchor(moveNumber, isWhiteMove);
 }

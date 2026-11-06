@@ -26,6 +26,7 @@ const PURE_BARRELS = [
   "algebraic-notation/index.ts",
   "game-preferences/index.ts",
   "game-record/index.ts",
+  "game-play/index.ts",
 ];
 
 const REACT_IMPORT_RE = /\bfrom\s+["']react["']/;

@@ -1,7 +1,7 @@
 import { computeMoveNumber } from '@blindfold-chess/features/chess-core/move-numbering';
+import { parseFenMeta } from '@blindfold-chess/features/game-play';
 import type { Side } from '@blindfold-chess/types';
 
-import { parseFenMeta } from '@/app/[locale]/(public)/games/play/_lib/fen-utils';
 import { getPlayerMoveIndices } from '@/app/[locale]/(public)/games/play/_lib/move-ops-alignment';
 
 /**

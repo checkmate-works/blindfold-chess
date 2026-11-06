@@ -1,9 +1,9 @@
 import {
   computeMoveNumber,
   formatMoveAnchor,
-} from '@blindfold-chess/features/chess-core/move-numbering';
+} from "../chess-core/move-numbering";
 
-import { parseFenMeta } from './fen-utils';
+import { parseFenMeta } from "./fen-utils";
 
 /**
  * Format a settings change-log's `atMoveIndex` (half-moves already played
@@ -20,14 +20,14 @@ import { parseFenMeta } from './fen-utils';
  */
 export function formatChangeLogMoveLabel(
   atMoveIndex: number,
-  startingFen: string | null | undefined
+  startingFen: string | null | undefined,
 ): string | null {
   if (atMoveIndex <= 0) return null;
   const { startsAsBlack, startMoveNumber } = parseFenMeta(startingFen);
   const { moveNumber, isWhiteMove } = computeMoveNumber(
     atMoveIndex - 1,
     startsAsBlack,
-    startMoveNumber
+    startMoveNumber,
   );
   return formatMoveAnchor(moveNumber, isWhiteMove);
 }

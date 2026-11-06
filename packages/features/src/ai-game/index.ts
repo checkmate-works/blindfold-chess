@@ -8,6 +8,7 @@ export type {
 export { DEFAULT_AI_GAME_SETTINGS, PLAYER_RESULTS } from "./types";
 export type { GameState } from "./game-state-service";
 export { computeGameState, validateGameMove } from "./game-state-service";
+export { mapGameStatusToOutcome } from "./map-game-status-to-outcome";
 export {
   DEFAULT_TIME_LIMIT,
   getEloForSkillLevel,

@@ -15,12 +15,12 @@ const INCOMPLETE_PAWN_CAPTURE_PROMOTION = /^[a-h]x[a-h][18]$/;
 // across every pattern, so they are extracted once here. The `body` portion
 // encodes the structural shape of the move (pawn push, piece move, capture,
 // disambiguation, promotion, etc.) and is the only part that varies.
-const PIECE = '[KQRBN]';
-const FILE = '[a-h]';
-const RANK = '[1-8]';
-const PAWN_NON_PROMO_RANK = '[2-7]';
-const PROMO_PIECE = '[QRBN]';
-const CHECK_OR_MATE_SUFFIX = '(\\+|#)?';
+const PIECE = "[KQRBN]";
+const FILE = "[a-h]";
+const RANK = "[1-8]";
+const PAWN_NON_PROMO_RANK = "[2-7]";
+const PROMO_PIECE = "[QRBN]";
+const CHECK_OR_MATE_SUFFIX = "(\\+|#)?";
 
 /**
  * Build the fully anchored regex for a complete-move pattern body.
@@ -67,11 +67,14 @@ const COMPLETE_MOVE_PATTERNS: readonly RegExp[] =
  */
 export function isCompleteMove(input: string): boolean {
   // Castling
-  if (input === 'O-O' || input === 'O-O-O') return true;
+  if (input === "O-O" || input === "O-O-O") return true;
 
   // Special case: pawn moves to promotion rank without promotion piece
   // These are incomplete and need suggestions
-  if (INCOMPLETE_PAWN_PROMOTION.test(input) || INCOMPLETE_PAWN_CAPTURE_PROMOTION.test(input)) {
+  if (
+    INCOMPLETE_PAWN_PROMOTION.test(input) ||
+    INCOMPLETE_PAWN_CAPTURE_PROMOTION.test(input)
+  ) {
     return false;
   }
 

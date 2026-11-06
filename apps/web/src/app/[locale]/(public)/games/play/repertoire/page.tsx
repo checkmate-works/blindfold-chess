@@ -23,6 +23,7 @@ import Link from 'next/link';
 
 import { Button } from '@/app/_components';
 import { formatMovesToPgn, formatPgnToText } from '@blindfold-chess/features/chess-core';
+import { parseFenMeta } from '@blindfold-chess/features/game-play';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import { getOptionalUser } from '@/lib/auth';
@@ -32,7 +33,6 @@ import { getRepertoireCardMeta } from '@/lib/repertoires/card-meta';
 import { getRepertoireCheckReport } from '@/lib/repertoires/check-report';
 import { listRepertoiresForUser } from '@/lib/repertoires/queries';
 
-import { parseFenMeta } from '@/app/[locale]/(public)/games/play/_lib/fen-utils';
 import { RepertoireListCard } from '@/app/[locale]/(public)/repertoires/_components/RepertoireListCard';
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import type { HelpStep } from '@/app/[locale]/_components/HelpTourButton';

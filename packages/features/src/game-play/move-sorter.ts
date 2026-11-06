@@ -34,14 +34,14 @@ export function sortMoves<T extends string>(moves: readonly T[]): T[] {
  */
 function getPiecePriority(move: string): number {
   // Castling moves (special moves at the end)
-  if (move.startsWith('O-O')) return 6;
+  if (move.startsWith("O-O")) return 6;
 
   // Piece moves (identified by uppercase letter at start)
-  if (move[0] === 'N') return 1; // Knight
-  if (move[0] === 'B') return 2; // Bishop
-  if (move[0] === 'R') return 3; // Rook
-  if (move[0] === 'Q') return 4; // Queen
-  if (move[0] === 'K') return 5; // King
+  if (move[0] === "N") return 1; // Knight
+  if (move[0] === "B") return 2; // Bishop
+  if (move[0] === "R") return 3; // Rook
+  if (move[0] === "Q") return 4; // Queen
+  if (move[0] === "K") return 5; // King
 
   // Pawn moves (lowercase letter or no piece indicator)
   return 0;

@@ -1,8 +1,7 @@
 export { buildRepertoireCheckPath } from './build-repertoire-check-path';
 export { buildRecallPath } from './build-recall-path';
 export { buildPositionCheckPath } from './build-position-check-path';
-export { sortMoves } from './move-sorter';
-export { moveNavDisabledState } from './move-nav-disabled-state';
+export { moveNavDisabledState, sortMoves } from '@blindfold-chess/features/game-play';
 export { formatPgnToText } from './pgn-parser';
 export type { FormattedPgn, FormattedPgnMove } from './pgn-parser';
 export { deriveMoveInputSkeletonProps } from './preferences';
