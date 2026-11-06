@@ -326,10 +326,24 @@
   },
   "algebraicNotation": {
     "setup": {
-      "title": "Notação Algébrica Configuração"
+      "title": "Notação Algébrica Configuração",
+      "description": "Domine o sistema de notação enxadrística com exercícios interativos",
+      "questionCount": "{{total}} perguntas",
+      "start": "Iniciar"
     },
     "result": {
-      "title": "Prática concluída!"
+      "title": "Prática concluída!",
+      "playAgain": "Jogar novamente",
+      "backToMenu": "Voltar ao menu"
+    },
+    "session": {
+      "progress": "Pergunta {{current}} / {{total}}",
+      "correct": "Correto!",
+      "incorrect": "Incorreto",
+      "correctAnswerIs": "A resposta correta é",
+      "explanation": "Explicação",
+      "next": "Próximo",
+      "complete": "Concluído"
     }
   }
 }

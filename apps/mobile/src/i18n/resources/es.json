@@ -326,10 +326,24 @@
   },
   "algebraicNotation": {
     "setup": {
-      "title": "Notación Algebraica Configuración"
+      "title": "Notación Algebraica Configuración",
+      "description": "Domina el sistema de notación ajedrecística con ejercicios interactivos",
+      "questionCount": "{{total}} preguntas",
+      "start": "Iniciar"
     },
     "result": {
-      "title": "¡Práctica completada!"
+      "title": "¡Práctica completada!",
+      "playAgain": "Jugar de nuevo",
+      "backToMenu": "Volver al menú"
+    },
+    "session": {
+      "progress": "Pregunta {{current}} / {{total}}",
+      "correct": "¡Correcto!",
+      "incorrect": "Incorrecto",
+      "correctAnswerIs": "La respuesta correcta es",
+      "explanation": "Explicación",
+      "next": "Siguiente",
+      "complete": "Completado"
     }
   }
 }

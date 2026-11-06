@@ -326,10 +326,24 @@
   },
   "algebraicNotation": {
     "setup": {
-      "title": "Algebraic Notation Setup"
+      "title": "Algebraic Notation Setup",
+      "description": "Master chess notation system with interactive exercises",
+      "questionCount": "{{total}} questions",
+      "start": "Start"
     },
     "result": {
-      "title": "Practice Complete!"
+      "title": "Practice Complete!",
+      "playAgain": "Play Again",
+      "backToMenu": "Back to Menu"
+    },
+    "session": {
+      "progress": "Question {{current}} / {{total}}",
+      "correct": "Correct!",
+      "incorrect": "Incorrect",
+      "correctAnswerIs": "The correct answer is",
+      "explanation": "Explanation",
+      "next": "Next",
+      "complete": "Complete"
     }
   }
 }

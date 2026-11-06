@@ -326,10 +326,24 @@
   },
   "algebraicNotation": {
     "setup": {
-      "title": "代数式表記法の設定"
+      "title": "代数式表記法の設定",
+      "description": "インタラクティブな演習でチェス記法システムをマスターする",
+      "questionCount": "全{{total}}問",
+      "start": "開始"
     },
     "result": {
-      "title": "練習完了！"
+      "title": "練習完了！",
+      "playAgain": "もう一度",
+      "backToMenu": "メニューに戻る"
+    },
+    "session": {
+      "progress": "第{{current}}問 / {{total}}",
+      "correct": "正解！",
+      "incorrect": "不正解",
+      "correctAnswerIs": "正解は",
+      "explanation": "解説",
+      "next": "次へ",
+      "complete": "完了"
     }
   }
 }
