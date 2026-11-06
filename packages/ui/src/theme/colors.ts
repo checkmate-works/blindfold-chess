@@ -110,7 +110,10 @@ export const darkColors = {
 // Type for theme colors (widened to string so both light and dark satisfy it)
 export type ThemeColors = { [K in keyof typeof lightColors]: string };
 
-// Chess-specific colors (not affected by light/dark mode)
+/**
+ * Chess-specific colors (not affected by light/dark mode). JS-only — not
+ * emitted as CSS variables by `generateThemeCSS`; read directly by mobile.
+ */
 export const chessColors = {
   boardLight: "#f0d9b5",
   boardDark: "#b58863",
@@ -119,7 +122,10 @@ export const chessColors = {
   boardHighlightIncorrect: "#ef4444",
 } as const;
 
-// Semantic feedback colors (not affected by light/dark mode)
+/**
+ * Semantic feedback colors (not affected by light/dark mode). JS-only — not
+ * emitted as CSS variables by `generateThemeCSS`.
+ */
 export const feedbackColors = {
   success: "#22c55e",
   error: "#ef4444",

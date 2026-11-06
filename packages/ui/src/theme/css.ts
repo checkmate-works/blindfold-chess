@@ -27,6 +27,14 @@ function generateBoardThemeVars(): string {
     .join("\n");
 }
 
+/**
+ * The theme as a CSS string (no `<style>` wrapper) for inlining in a layout's
+ * `<style>` tag: `lightColors` and the board-theme variables on `:root`, and
+ * `darkColors` under a `.dark` class — dark mode is class-driven, not
+ * `prefers-color-scheme`. Each key becomes `--color-<kebab-case key>`
+ * (`cardForeground` → `--color-card-foreground`). `chessColors` and
+ * `feedbackColors` are not emitted; they are JS-only values.
+ */
 export function generateThemeCSS(): string {
   const lightVars = Object.entries(lightColors)
     .map(([key, value]) => `    --color-${camelToKebab(key)}: ${value};`)
