@@ -5,13 +5,12 @@ import { useState } from 'react';
 import { BoardFrame } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
+import { PRESET_POSITIONS, type PresetPosition } from '@blindfold-chess/features/fen-practice';
 
 import type { BoardTheme } from '@/lib/games/board-themes';
 
 import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';
 
-import type { PresetPosition } from '../_data/positions';
-import presetPositions from '../_data/presetPositions.json';
 import { ProblemCountAndShuffle } from './ProblemCountAndShuffle';
 
 type Props = {
@@ -42,7 +41,7 @@ export function PresetProblemSection({
           {t('presetDescription')}
         </label>
         <div className="space-y-2">
-          {(presetPositions as PresetPosition[]).map((preset) => (
+          {PRESET_POSITIONS.map((preset) => (
             <button
               key={preset.id}
               type="button"

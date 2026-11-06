@@ -1,8 +1,8 @@
 'use client';
 
-import { createPracticeResultClient } from '@/app/[locale]/(public)/practice/_lib/createPracticeResultClient';
+import { parseFenResultData } from '@blindfold-chess/features/fen-practice';
 
-import { parseFenResultData } from './fen-result-data';
+import { createPracticeResultClient } from '@/app/[locale]/(public)/practice/_lib/createPracticeResultClient';
 
 export const ResultClient = createPracticeResultClient({
   moduleSlug: 'fen',
