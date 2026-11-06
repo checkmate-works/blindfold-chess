@@ -207,6 +207,13 @@ function isRankRequirement(value: unknown): value is RankRequirement {
   );
 }
 
+/**
+ * Narrow a `ranks.requirements` JSONB value to known requirement shapes.
+ *
+ * Never throws: a non-array yields `[]`, and an element with an unknown
+ * `type` or a malformed field is silently dropped (see the module header for
+ * why that makes a rank read as "conditions not defined yet").
+ */
 export function parseRequirements(raw: unknown): RankRequirement[] {
   if (!Array.isArray(raw)) return [];
   return raw.filter(isRankRequirement);
@@ -248,14 +255,15 @@ export const BELT_COLOR_HEX: Record<string, string> = {
  *
  * @design No requirements, no evaluation
  *
- * Mukyu has no `challenge_score` requirements and is never processed by
+ * Mukyu has no requirements of any type and is never processed by
  * `checkAndGrantRanks`. Its presence in `ALL_RANK_SLUGS` is purely for
  * UI rendering on the ranks page and for generating static params / sitemap.
  *
  * @design Separate from "Coming Soon" ranks
  *
- * Other ranks with empty requirements (4kyū–1dan) are displayed as "Coming Soon"
- * because their conditions haven't been defined yet. Mukyu has no requirements
+ * A seeded rank whose requirements are empty is displayed as "Coming Soon"
+ * because its conditions haven't been defined yet (every rank in
+ * {@link ranksSeedData} currently has conditions). Mukyu has no requirements
  * by design — it is always accessible and clickable.
  */
 export const MUKYU_SLUG = 'mukyu' as const;

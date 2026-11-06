@@ -174,6 +174,7 @@ export const games = pgTable(
     engineKind: varchar('engine_kind', { length: 20 }).$type<EngineKind>().notNull(),
     /** Unified approximate Elo (cross-engine comparable). */
     engineElo: integer('engine_elo').notNull(),
+    /** Plies (half-moves, `moves.length`), not full moves. */
     moveCount: integer('move_count').notNull(),
     /** 0–100, blindfold "perf" (% of clean moves). Null when no logs. */
     cleanRate: integer('clean_rate'),

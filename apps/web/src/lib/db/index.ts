@@ -405,6 +405,14 @@ const clientFacade = new Proxy((() => {}) as unknown as Sql, {
   },
 });
 
+/**
+ * The app's server-side Drizzle client. It connects as a privileged role that
+ * bypasses RLS, so every read of user content must apply its own visibility
+ * filter (e.g. `publiclyVisible()` in `./games-visibility`). Every query runs
+ * under the {@link withQueryDeadline} deadline — a deadlined SELECT may be
+ * transparently retried, a write never is — and reaches whichever pool is
+ * current, since the pool behind this instance can be rebuilt at runtime.
+ */
 export const db = drizzle(clientFacade, { schema });
 
 /**

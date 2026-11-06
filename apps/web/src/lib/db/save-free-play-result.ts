@@ -22,6 +22,7 @@ export type FreePlayResultInput = {
 };
 
 export type FreePlayResultOutput = {
+  /** The grant's `exp_events.source_id` — despite the name, not `exp_events.id`. */
   expEventId: string;
   exp: ExpInfo;
 };
@@ -29,12 +30,15 @@ export type FreePlayResultOutput = {
 /**
  * Saves a free-play practice result by granting EXP.
  *
- * Returns the `exp_events.id` used as the grant's `source_id`, which the
+ * Returns the fresh UUID that `grantPracticeExp` stored as the grant's
+ * `exp_events.source_id` (not the row's own `exp_events.id`), which the
  * caller passes to the result page as `?grant=<id>` so the page can refetch
- * EXP info via {@link getExpInfoBySource}.
+ * EXP info via `getExpInfoBySource(userId, 'practice_result', id)`.
  *
  * Belt-rank evaluation (`checkAndGrantRanks`) is intentionally NOT invoked
- * here: the current rank requirements are all of type `challenge_score`, so
+ * here: no current rank requirement type (`challenge_score`,
+ * `position_submission_count`, `game_publish_win`,
+ * `game_publish_win_hidden_board`) reads anything a free-play run writes, so
  * free-play completions cannot unlock any rank. Re-adding this call is
  * straightforward once a free-play-eligible requirement type is introduced.
  */

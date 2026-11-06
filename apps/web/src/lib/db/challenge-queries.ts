@@ -144,6 +144,13 @@ function periodBestScoresSql(menuType: string, leaderboardKey: string, periodSta
 // All-time ranking (from challenge_best_scores)
 // ---------------------------------------------------------------------------
 
+/**
+ * One page of the all-time leaderboard, read from `challenge_best_scores`.
+ *
+ * `rank` is computed over the whole board before pagination and is shared by
+ * ties (`RANK()`, so it can repeat and skip). Users hidden from the
+ * leaderboard are excluded from both `rows` and `total`.
+ */
 export async function getAllTimeRanking(
   menuType: string,
   leaderboardKey: string,
@@ -255,6 +262,12 @@ async function getPeriodRanking(
   return { rows, total: countRow?.count ?? 0 };
 }
 
+/**
+ * One page of the current week's leaderboard: each user's best
+ * `challenge_results` row since Monday 00:00 UTC (the period is always the
+ * current one — there is no way to read a past week). Ranking, ties and the
+ * hidden-user filter behave as in {@link getAllTimeRanking}.
+ */
 export async function getWeeklyRanking(
   menuType: string,
   leaderboardKey: string,
@@ -264,6 +277,7 @@ export async function getWeeklyRanking(
   return getPeriodRanking(menuType, leaderboardKey, startOfCurrentWeek(), offset, limit);
 }
 
+/** {@link getWeeklyRanking} for the current month, from the 1st 00:00 UTC. */
 export async function getMonthlyRanking(
   menuType: string,
   leaderboardKey: string,
@@ -330,6 +344,11 @@ async function getUserPeriodRank(
   return lookupRank(periodBestScoresSql(menuType, leaderboardKey, periodStart), userId);
 }
 
+/**
+ * The user's rank in the current week's leaderboard (Monday 00:00 UTC
+ * onward), or null if they have no result this week or are hidden from the
+ * leaderboard. Same `RANK()` numbering as {@link getWeeklyRanking}.
+ */
 export async function getUserWeeklyRank(
   userId: string,
   menuType: string,
@@ -338,6 +357,7 @@ export async function getUserWeeklyRank(
   return getUserPeriodRank(userId, menuType, leaderboardKey, startOfCurrentWeek());
 }
 
+/** {@link getUserWeeklyRank} for the current month (from the 1st 00:00 UTC). */
 export async function getUserMonthlyRank(
   userId: string,
   menuType: string,
@@ -422,6 +442,10 @@ async function getUserPeriodRankedRow(
   return lookupRankedRow(periodBestScoresSql(menuType, leaderboardKey, periodStart), userId);
 }
 
+/**
+ * {@link getUserAllTimeRankedRow} for the current week (Monday 00:00 UTC
+ * onward); null when the user has no result this week or is hidden.
+ */
 export async function getUserWeeklyRankedRow(
   userId: string,
   menuType: string,
@@ -430,6 +454,7 @@ export async function getUserWeeklyRankedRow(
   return getUserPeriodRankedRow(userId, menuType, leaderboardKey, startOfCurrentWeek());
 }
 
+/** {@link getUserWeeklyRankedRow} for the current month (from the 1st 00:00 UTC). */
 export async function getUserMonthlyRankedRow(
   userId: string,
   menuType: string,

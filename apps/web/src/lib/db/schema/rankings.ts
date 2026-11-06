@@ -65,6 +65,7 @@ export const challengeResults = pgTable(
     leaderboardKey: varchar('leaderboard_key', { length: 20 }).notNull(),
     score: integer('score').notNull(),
     incorrectAnswers: integer('incorrect_answers').notNull().default(0),
+    /** Whole seconds (the client timer's value, rounded by the save action). */
     timeTaken: integer('time_taken').notNull(),
     ...createdAtOnly,
   },
@@ -122,6 +123,7 @@ export const challengeBestScores = pgTable(
     leaderboardKey: varchar('leaderboard_key', { length: 20 }).notNull(),
     score: integer('score').notNull(),
     incorrectAnswers: integer('incorrect_answers').notNull().default(0),
+    /** Whole seconds (the client timer's value, rounded by the save action). */
     timeTaken: integer('time_taken').notNull(),
     achievedAt: timestamp('achieved_at', { withTimezone: true }).defaultNow().notNull(),
     ...updatedAtOnly,

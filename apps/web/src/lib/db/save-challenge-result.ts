@@ -18,6 +18,7 @@ export type ChallengeResultInput = {
   leaderboardKey: string;
   score: number;
   incorrectAnswers: number;
+  /** Whole seconds; stored as-is in an integer column, so round before passing. */
   timeTaken: number;
 };
 
@@ -71,10 +72,16 @@ async function insertChallengeRankFeedItem(
 /**
  * Writes challenge result records after a challenge session completes.
  *
- * Performs three operations:
+ * In one transaction:
  * 1. INSERT into challenge_results (append-only log for weekly/monthly rankings)
  * 2. UPSERT into challenge_best_scores (all-time best per user/menu/key)
- * 3. INSERT into feed_items when a new best score is achieved
+ * 3. INSERT into feed_items when a new entry or improvement moves the rank
+ *    enough to warrant one (`decideChallengeRankFeedItem`)
+ * 4. Grant EXP keyed by the new `challenge_results.id`
+ *
+ * Then, after commit, evaluates belt ranks and — on a dan promotion — sets
+ * the ad-free cookie (`evaluateRanksAndRefreshEntitlements`). Both are
+ * best-effort: a failure there never undoes or fails the committed save.
  *
  * The UPSERT only updates the existing row when the new result is strictly
  * better, using tuple comparison: (score DESC, incorrect_answers ASC, time_taken ASC).
