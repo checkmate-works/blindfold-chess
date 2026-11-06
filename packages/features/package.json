@@ -27,6 +27,8 @@
     "./diagonal-quiz": "./src/diagonal-quiz/index.ts",
     "./diagonal-quiz/client": "./src/diagonal-quiz/client.ts",
     "./exp": "./src/exp/index.ts",
+    "./fen-practice": "./src/fen-practice/index.ts",
+    "./fen-practice/client": "./src/fen-practice/client.ts",
     "./game-preferences": "./src/game-preferences/index.ts",
     "./knight-tour": "./src/knight-tour/index.ts",
     "./knight-tour/client": "./src/knight-tour/client.ts",
