@@ -6,6 +6,10 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 import { Button, FlipBoardButton } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import {
+  parseCastlingField,
+  parseFenFields,
+} from '@blindfold-chess/features/chess-core/fen-fields';
 import { pieceColorToSide } from '@blindfold-chess/types';
 import type { Side } from '@blindfold-chess/types';
 import { FaChevronDown } from 'react-icons/fa';
@@ -25,7 +29,6 @@ import { useLocalGameSettings } from '@/app/[locale]/(public)/games/new/_hooks/u
 import { useMaiaGameLaunch } from '@/app/[locale]/(public)/games/new/_hooks/use-maia-game-launch';
 import { usePositionState } from '@/app/[locale]/(public)/games/new/_hooks/use-position-state';
 import { deriveMaiaCardMode } from '@/app/[locale]/(public)/games/new/_lib/maia-launch';
-import { parseFenFields } from '@/app/[locale]/(public)/games/new/_lib/parse-fen-fields';
 import { EditableBoardSkeleton } from '@/app/[locale]/(public)/practice/(free-play)/_components/EditableBoardSkeleton';
 import { EditableChessBoard } from '@/app/[locale]/(public)/practice/(free-play)/_components/EditableChessBoard';
 import { useEditableBoardLabels } from '@/app/[locale]/(public)/practice/(free-play)/_hooks/use-editable-board-labels';
@@ -96,12 +99,7 @@ export function PositionGameForm({ locale, maiaAccess }: Props) {
     }
 
     if (castling) {
-      setPositionCastling({
-        K: castling.includes('K'),
-        Q: castling.includes('Q'),
-        k: castling.includes('k'),
-        q: castling.includes('q'),
-      });
+      setPositionCastling(parseCastlingField(castling));
     }
 
     if (enPassant) {
