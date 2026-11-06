@@ -58,6 +58,10 @@
     "algebraicNotation": {
       "title": "代数式表記法",
       "description": "インタラクティブな演習でチェス記法システムをマスターする"
+    },
+    "fen": {
+      "title": "FEN再構築",
+      "description": "FEN記法を読んで盤面を再現する練習"
     }
   },
   "practiceResult": {
@@ -467,6 +471,14 @@
       "explanation": "解説",
       "next": "次へ",
       "complete": "完了"
+    }
+  },
+  "fen": {
+    "setup": {
+      "title": "FEN再構築の設定"
+    },
+    "result": {
+      "title": "練習完了！"
     }
   }
 }

@@ -58,6 +58,10 @@
     "algebraicNotation": {
       "title": "Notación Algebraica",
       "description": "Domina el sistema de notación ajedrecística con ejercicios interactivos"
+    },
+    "fen": {
+      "title": "Reconstrucción FEN",
+      "description": "Practica la lectura de notación FEN recreando posiciones"
     }
   },
   "practiceResult": {
@@ -467,6 +471,14 @@
       "explanation": "Explicación",
       "next": "Siguiente",
       "complete": "Completado"
+    }
+  },
+  "fen": {
+    "setup": {
+      "title": "Reconstrucción FEN Configuración"
+    },
+    "result": {
+      "title": "¡Práctica completada!"
     }
   }
 }

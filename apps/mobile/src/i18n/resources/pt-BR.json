@@ -58,6 +58,10 @@
     "algebraicNotation": {
       "title": "Notação Algébrica",
       "description": "Domine o sistema de notação enxadrística com exercícios interativos"
+    },
+    "fen": {
+      "title": "Reconstrução FEN",
+      "description": "Pratique a leitura de notação FEN recriando posições"
     }
   },
   "practiceResult": {
@@ -467,6 +471,14 @@
       "explanation": "Explicação",
       "next": "Próximo",
       "complete": "Concluído"
+    }
+  },
+  "fen": {
+    "setup": {
+      "title": "Reconstrução FEN Configuração"
+    },
+    "result": {
+      "title": "Prática concluída!"
     }
   }
 }

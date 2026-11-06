@@ -48,7 +48,7 @@ export function moduleStackScreens(
   t: Translate,
   modules: readonly ModuleRoute[],
 ) {
-  // `${i18nKey}.setup.title` / `${i18nKey}.result.title` (i18nKey from the stack layouts): coordinateQuiz.setup.title, legalMoves.setup.title, boardSymmetry.setup.title, squareColors.setup.title, diagonalQuiz.setup.title, routePlanner.setup.title, quadrants.setup.title, knightTour.setup.title, algebraicNotation.setup.title, aiGame.setup.title, and the same ten with .result.title
+  // `${i18nKey}.setup.title` / `${i18nKey}.result.title` (i18nKey from the stack layouts): coordinateQuiz.setup.title, legalMoves.setup.title, boardSymmetry.setup.title, squareColors.setup.title, diagonalQuiz.setup.title, routePlanner.setup.title, quadrants.setup.title, knightTour.setup.title, algebraicNotation.setup.title, fen.setup.title, aiGame.setup.title, and the same eleven with .result.title
   return modules.flatMap(({ route, i18nKey }) => [
     <Stack.Screen
       key={`${route}/setup`}

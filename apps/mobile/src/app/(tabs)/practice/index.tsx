@@ -95,6 +95,13 @@ export default function PracticeIndex() {
       icon: "\u270E",
       route: "/(tabs)/practice/algebraic-notation/setup",
     },
+    {
+      id: "fen",
+      titleKey: "practice.fen.title",
+      descriptionKey: "practice.fen.description",
+      icon: "\u265C",
+      route: "/(tabs)/practice/fen/setup",
+    },
   ];
 
   return (

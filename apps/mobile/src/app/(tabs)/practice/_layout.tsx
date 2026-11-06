@@ -18,6 +18,7 @@ const PRACTICE_MODULES: readonly ModuleRoute[] = [
   { route: "quadrants", i18nKey: "quadrants" },
   { route: "knight-tour", i18nKey: "knightTour" },
   { route: "algebraic-notation", i18nKey: "algebraicNotation" },
+  { route: "fen", i18nKey: "fen" },
 ];
 
 export default function PracticeLayout() {
