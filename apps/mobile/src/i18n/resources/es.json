@@ -46,6 +46,18 @@
     "routePlanner": {
       "title": "Planificador de rutas",
       "description": "Planea la ruta más corta para una pieza entre dos casillas"
+    },
+    "quadrants": {
+      "title": "Anclas de Cuadrante",
+      "description": "Practica identificando a qué cuadrante pertenece una casilla"
+    },
+    "knightTour": {
+      "title": "Recorrido del Caballo",
+      "description": "Visita las 64 casillas con un caballo, pasando por cada casilla exactamente una vez"
+    },
+    "algebraicNotation": {
+      "title": "Notación Algebraica",
+      "description": "Domina el sistema de notación ajedrecística con ejercicios interactivos"
     }
   },
   "practiceResult": {
@@ -294,6 +306,30 @@
     "settings": {
       "timeLimit": "Tiempo límite",
       "seconds": "{{seconds}}s"
+    }
+  },
+  "quadrants": {
+    "setup": {
+      "title": "Anclas de Cuadrante Configuración"
+    },
+    "result": {
+      "title": "¡Práctica completada!"
+    }
+  },
+  "knightTour": {
+    "setup": {
+      "title": "Recorrido del Caballo Configuración"
+    },
+    "result": {
+      "title": "¡Práctica completada!"
+    }
+  },
+  "algebraicNotation": {
+    "setup": {
+      "title": "Notación Algebraica Configuración"
+    },
+    "result": {
+      "title": "¡Práctica completada!"
     }
   }
 }

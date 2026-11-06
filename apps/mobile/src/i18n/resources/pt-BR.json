@@ -46,6 +46,18 @@
     "routePlanner": {
       "title": "Planejador de rotas",
       "description": "Planeje a rota mais curta para uma peça entre duas casas"
+    },
+    "quadrants": {
+      "title": "Âncoras de Quadrante",
+      "description": "Pratique identificando a qual quadrante uma casa pertence"
+    },
+    "knightTour": {
+      "title": "Percurso do Cavalo",
+      "description": "Visite as 64 casas com um cavalo, passando por cada casa exatamente uma vez"
+    },
+    "algebraicNotation": {
+      "title": "Notação Algébrica",
+      "description": "Domine o sistema de notação enxadrística com exercícios interativos"
     }
   },
   "practiceResult": {
@@ -294,6 +306,30 @@
     "settings": {
       "timeLimit": "Tempo limite",
       "seconds": "{{seconds}}s"
+    }
+  },
+  "quadrants": {
+    "setup": {
+      "title": "Âncoras de Quadrante Configuração"
+    },
+    "result": {
+      "title": "Prática concluída!"
+    }
+  },
+  "knightTour": {
+    "setup": {
+      "title": "Percurso do Cavalo Configuração"
+    },
+    "result": {
+      "title": "Prática concluída!"
+    }
+  },
+  "algebraicNotation": {
+    "setup": {
+      "title": "Notação Algébrica Configuração"
+    },
+    "result": {
+      "title": "Prática concluída!"
     }
   }
 }

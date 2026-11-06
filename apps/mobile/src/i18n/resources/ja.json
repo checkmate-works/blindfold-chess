@@ -46,6 +46,18 @@
     "routePlanner": {
       "title": "ルートプランナー",
       "description": "駒の最短経路を考えるトレーニング"
+    },
+    "quadrants": {
+      "title": "4分割アンカー",
+      "description": "マスがどの領域（4分割）のどこにあるかを瞬時に答えるトレーニング"
+    },
+    "knightTour": {
+      "title": "ナイトツアー",
+      "description": "ナイトを使って64マス全てを1回ずつ訪問する"
+    },
+    "algebraicNotation": {
+      "title": "代数式表記法",
+      "description": "インタラクティブな演習でチェス記法システムをマスターする"
     }
   },
   "practiceResult": {
@@ -294,6 +306,30 @@
     "settings": {
       "timeLimit": "制限時間",
       "seconds": "{{seconds}}秒"
+    }
+  },
+  "quadrants": {
+    "setup": {
+      "title": "4分割アンカーの設定"
+    },
+    "result": {
+      "title": "練習完了！"
+    }
+  },
+  "knightTour": {
+    "setup": {
+      "title": "ナイトツアーの設定"
+    },
+    "result": {
+      "title": "練習完了！"
+    }
+  },
+  "algebraicNotation": {
+    "setup": {
+      "title": "代数式表記法の設定"
+    },
+    "result": {
+      "title": "練習完了！"
     }
   }
 }

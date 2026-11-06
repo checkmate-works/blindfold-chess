@@ -46,6 +46,18 @@
     "routePlanner": {
       "title": "Route Planner",
       "description": "Plan the shortest route for a piece between two squares"
+    },
+    "quadrants": {
+      "title": "Quadrant Anchors",
+      "description": "Practice identifying which quadrant a square belongs to"
+    },
+    "knightTour": {
+      "title": "Knight's Tour",
+      "description": "Visit all 64 squares with a knight, moving each square exactly once"
+    },
+    "algebraicNotation": {
+      "title": "Algebraic Notation",
+      "description": "Master chess notation system with interactive exercises"
     }
   },
   "practiceResult": {
@@ -294,6 +306,30 @@
     "settings": {
       "timeLimit": "Time Limit",
       "seconds": "{{seconds}}s"
+    }
+  },
+  "quadrants": {
+    "setup": {
+      "title": "Quadrant Anchors Setup"
+    },
+    "result": {
+      "title": "Practice Complete!"
+    }
+  },
+  "knightTour": {
+    "setup": {
+      "title": "Knight's Tour Setup"
+    },
+    "result": {
+      "title": "Practice Complete!"
+    }
+  },
+  "algebraicNotation": {
+    "setup": {
+      "title": "Algebraic Notation Setup"
+    },
+    "result": {
+      "title": "Practice Complete!"
     }
   }
 }
