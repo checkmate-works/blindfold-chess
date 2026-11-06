@@ -18,7 +18,8 @@ is the model: web passes a localStorage adapter, mobile an AsyncStorage one).
 package and in the apps, uses the typed API that `chess-core` exports
 (`@blindfold-chess/features/chess-core` and its deep paths), so that upgrading
 or replacing the library is a change to one module. ESLint enforces it
-(`chessJsBan` in `packages/eslint-config`).
+(`ban/chess-js`, from `chessJsBan` in `packages/eslint-config`; it
+covers test files too — only `src/chess-core/` is exempt).
 
 ## Server / Client boundary: every barrel is single-kind
 
