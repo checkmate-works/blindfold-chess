@@ -18,8 +18,8 @@
  *   2. `app/[locale]/(public)/practice/_lib/practice-emojis.ts` —
  *      `PRACTICE_EMOJIS` (typed: `Record<PracticeMenuType, string>`).
  *   3. `app/[locale]/(public)/practice/_lib/practice-catalog.ts` —
- *      `PRACTICE_CATALOG` drives the /practice list; an entry missing here is
- *      silently absent from the page (not typed).
+ *      `PRACTICE_CATALOG` drives the /practice list (typed: a compile-time
+ *      check names any registered `menuType` that is missing).
  *   4. `app/[locale]/(public)/practice/_components/PracticeCardVisual.tsx` —
  *      the `switch (menuType)` that draws the card's picture (falls to
  *      `default`, not typed).
