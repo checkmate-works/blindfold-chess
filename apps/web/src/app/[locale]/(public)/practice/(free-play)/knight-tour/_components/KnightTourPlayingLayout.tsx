@@ -10,7 +10,7 @@ import { ProgressBar } from '@/app/[locale]/(public)/practice/_components/Progre
 
 type Props = {
   currentSquare: string;
-  visitedSquares: Map<string, number>;
+  visitedSquares: ReadonlyMap<string, number>;
   availableMoves: string[];
   moveCount: number;
   onUndo: () => void;
