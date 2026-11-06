@@ -7,6 +7,7 @@ import type { GameStatus, PlayerResult } from "./types";
 
 export interface GameState {
   status: GameStatus;
+  /** From the player's side; `null` while the game is in progress. */
   playerResult: PlayerResult | null;
   isPlayerTurn: boolean;
   currentFen: string;
@@ -19,6 +20,8 @@ export interface GameState {
 
 /**
  * Pure function to compute the derived game state from a sequence of moves.
+ * Replay stops silently at the first move that is illegal in its position,
+ * so the state describes the longest legal prefix rather than throwing.
  */
 export function computeGameState(
   moves: AlgebraicNotation[] = [],

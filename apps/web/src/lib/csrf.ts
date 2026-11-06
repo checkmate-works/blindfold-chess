@@ -2,15 +2,6 @@ import * as Sentry from '@sentry/nextjs';
 import 'server-only';
 
 /**
- * Validate that the request Origin header matches the expected origin.
- * Returns true if the origin is valid, false otherwise.
- *
- * @description
- * Next.js Server Actions include built-in CSRF protection via Origin header
- * validation, but API Routes (route.ts) do not. This utility provides the
- * same defense for API Routes as a defense-in-depth measure.
- */
-/**
  * Pure core of the check: do two origins refer to the same site?
  *
  * Split out so the normalization rule (a trailing slash on either side is
@@ -22,6 +13,18 @@ export function originMatches(origin: string, allowedOrigin: string): boolean {
   return origin.replace(/\/+$/, '') === allowedOrigin.replace(/\/+$/, '');
 }
 
+/**
+ * Validate that the request Origin header matches `NEXT_PUBLIC_SITE_URL`.
+ *
+ * Next.js Server Actions include built-in CSRF protection via Origin header
+ * validation, but API Routes (route.ts) do not. This utility provides the
+ * same defense for API Routes as a defense-in-depth measure.
+ *
+ * Fails closed: a request with no `Origin` header, or a deployment with
+ * `NEXT_PUBLIC_SITE_URL` unset, returns `false`. The unset variable and an
+ * origin mismatch are also reported to Sentry as warnings; a missing header
+ * is not.
+ */
 export function isValidOrigin(request: Request): boolean {
   const origin = request.headers.get('origin');
   if (!origin) {

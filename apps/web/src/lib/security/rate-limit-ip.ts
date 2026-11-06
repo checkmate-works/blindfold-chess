@@ -1,5 +1,7 @@
 /**
- * Key-based rate limiting — PostgreSQL fixed-window counter.
+ * Key-based rate limiting — PostgreSQL trailing-window event count (the same
+ * counting rule, and the same unlocked count-then-insert, as
+ * `@/lib/security/rate-limit`).
  *
  * @description
  * Provides a database-backed rate limiter for unauthenticated endpoints that

@@ -9,6 +9,11 @@ const URL_REGEX =
 
 const TRAILING_PUNCT = /[)}\].,;:!?]+$/;
 
+/**
+ * True when `href`'s host is exactly `siteDomain` or `www.` + `siteDomain`;
+ * other subdomains count as external. `siteDomain` must be a lowercase bare
+ * host (no scheme). Unparseable URLs are external.
+ */
 export function isInternalUrl(href: string, siteDomain: string): boolean {
   try {
     const url = new URL(href);
@@ -23,6 +28,12 @@ export function isDangerousUrl(href: string): boolean {
   return DANGEROUS_SCHEMES.test(href.trim());
 }
 
+/**
+ * Split plain text into text and link segments for rendering. Only `http(s)`
+ * URLs are linked. A URL ends at whitespace, quotes, angle brackets or the
+ * first CJK character, and trailing punctuation (`.,;:!?)]}`) is left in the
+ * following text segment. The segments concatenate back to the input.
+ */
 export function linkifyText(text: string, siteDomain: string): LinkSegment[] {
   const segments: LinkSegment[] = [];
   let lastIndex = 0;
@@ -66,6 +77,11 @@ export function linkifyText(text: string, siteDomain: string): LinkSegment[] {
   return segments;
 }
 
+/**
+ * Locale-prefixed path of the web app's `/redirect` interstitial, which warns
+ * before leaving the site. Use it as the `href` for external links instead of
+ * the raw URL.
+ */
 export function buildCushionPageUrl(
   externalUrl: string,
   locale: string,

@@ -1,3 +1,7 @@
+/**
+ * `value` is the number on screen (3, 2, 1), `0` while "START!" is shown, and
+ * `null` once the countdown has finished.
+ */
 export type CountdownState = {
   value: number | null;
 };

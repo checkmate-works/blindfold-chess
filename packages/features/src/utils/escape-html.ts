@@ -8,6 +8,12 @@ const ESCAPE_MAP: Record<string, string> = {
 
 const ESCAPE_REGEX = /[&<>"']/g;
 
+/**
+ * Escape the five HTML-significant characters, which makes the result safe
+ * inside element text and inside single- or double-quoted attribute values.
+ * It is not enough for unquoted attributes, URLs (`javascript:` passes
+ * through), or `<script>` / `<style>` contents.
+ */
 export function escapeHtml(str: string): string {
   // `?? char` instead of `!`: nothing enforces that ESCAPE_REGEX and
   // ESCAPE_MAP stay in sync, and a drift must not inject `undefined` into

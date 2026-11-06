@@ -246,6 +246,16 @@ async function sendGrantNotifications(
 // Main logic
 // ---------------------------------------------------------------------------
 
+/**
+ * Award every `monthly_leaderboard` achievement for the UTC calendar month
+ * before `now`, then send each newly badged user one notification.
+ *
+ * Safe to re-run for the same month: each grant and each notification is an
+ * advisory-locked check-then-insert, so a repeat reports the badges as
+ * `skipped` and inserts nothing. The flip side is that a re-run only notifies
+ * users it granted in that run — if a previous run inserted badges and then
+ * failed before notifying, those users are not notified by the retry.
+ */
 export async function grantMonthlyLeaderboardBadges(
   // Injectable so the month-boundary derivation is testable deterministically,
   // matching the `now` convention used across lib/ (uuidv7, utcDayKey, …).

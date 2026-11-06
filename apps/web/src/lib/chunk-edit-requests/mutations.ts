@@ -56,6 +56,14 @@ async function loadChunkForRequest(id: string) {
   return chunk ?? null;
 }
 
+/**
+ * Record a suggestion from the signed-in viewer against someone else's draft
+ * chunk. Requires a profile and spends one `submitChunkEditRequest`
+ * rate-limit slot before any check, so a refused submit still costs a slot.
+ * At most one pending request per (chunk, proposer): a second is
+ * `alreadyHasPending`, including when two submits race. On success the owner
+ * is notified fire-and-forget; nothing is revalidated.
+ */
 export async function submitEditRequestEntry(params: {
   chunkId: string;
   payload: SubmitEditRequestPayload;
@@ -275,14 +283,22 @@ async function resolveEditRequest(params: ResolveParams): Promise<ResolveEditReq
   return { success: true };
 }
 
+/**
+ * Owner-only, draft-only: mark the request `accepted` and apply its proposed
+ * fields to the chunk in one transaction, then notify the proposer
+ * (fire-and-forget). Shares one `resolveChunkEditRequest` rate limit with
+ * reject and withdraw.
+ */
 export function acceptEditRequestEntry(requestId: string): Promise<ResolveEditRequestResult> {
   return resolveEditRequest({ requestId, action: 'accept' });
 }
 
+/** Owner-only, draft-only: mark the request `rejected`. The proposer is not notified. */
 export function rejectEditRequestEntry(requestId: string): Promise<ResolveEditRequestResult> {
   return resolveEditRequest({ requestId, action: 'reject' });
 }
 
+/** Proposer-only: mark the request `withdrawn`. Allowed whatever the chunk's status; nobody is notified. */
 export function withdrawEditRequestEntry(requestId: string): Promise<ResolveEditRequestResult> {
   return resolveEditRequest({ requestId, action: 'withdraw' });
 }

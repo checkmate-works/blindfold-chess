@@ -1,9 +1,10 @@
-/**
- * Identifies which UCI response a message corresponds to.
- * Returns null for unrecognised messages.
- */
+/** Which UCI response a message corresponds to. */
 export type UciResponseType = "uciok" | "readyok" | "bestmove" | "info";
 
+/**
+ * A recognised engine output line, or `null` for anything else — including
+ * `info` lines without a `score` and a `bestmove` line with no move.
+ */
 export type ParsedUciResponse =
   | { type: "uciok"; raw: string }
   | { type: "readyok"; raw: string }
@@ -44,12 +45,17 @@ export function parseUciResponse(message: string): ParsedUciResponse {
 }
 
 /**
- * Extract a centipawn or mate score from a UCI "info" line.
+ * A UCI score as the engine reports it: from the side to move's point of
+ * view, in centipawns (`cp`) or as moves to mate (`mate`, negative when the
+ * side to move is the one being mated).
  */
 export type UciScore =
-  | { kind: "cp"; value: number }
-  | { kind: "mate"; value: number };
+  { kind: "cp"; value: number } | { kind: "mate"; value: number };
 
+/**
+ * Extract the score from a UCI `info` line, or `null` if it carries none.
+ * The value is not normalised to white's perspective.
+ */
 export function parseUciScore(infoLine: string): UciScore | null {
   const cpMatch = infoLine.match(/score cp (-?\d+)/);
   if (cpMatch) {

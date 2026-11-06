@@ -1,3 +1,10 @@
+/**
+ * Step vectors as `[fileDelta, rankDelta]` (file a→h and rank 1→8 are
+ * positive). The `*_DIRS` constants are directions for sliding pieces, to be
+ * repeated until the board edge; the `*_OFFSETS` constants are single steps.
+ * Pawns are intentionally absent: their moves depend on color and capture
+ * state.
+ */
 export const KNIGHT_OFFSETS = [
   [2, 1],
   [2, -1],

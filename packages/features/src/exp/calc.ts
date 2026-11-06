@@ -27,6 +27,12 @@ function getAccuracyMultiplier(incorrectAnswers: number): number {
   return NO_ACCURACY_BONUS_MULTIPLIER;
 }
 
+/**
+ * Exp for a completed challenge:
+ * `max(MIN_COMPLETION_EXP, floor(score * moduleWeight * accuracyMultiplier))`.
+ * Never 0 — unlike `calculatePracticeExp`, a challenge that scored nothing
+ * still earns the completion minimum.
+ */
 export function calculateExp(input: ExpInput): ExpResult {
   const { score, incorrectAnswers, menuType } = input;
 

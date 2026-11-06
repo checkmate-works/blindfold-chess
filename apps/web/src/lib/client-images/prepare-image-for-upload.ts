@@ -33,6 +33,11 @@ import { type Result, err, ok } from '@blindfold-chess/features/utils';
 
 import { IMAGE_MIME_TO_EXTENSION } from '@/lib/images/policy';
 
+/**
+ * Client-side long-edge cap, in image pixels. Only bounds the upload and the
+ * canvas; it is not the stored size — the server resizes again to its own
+ * per-surface cap (post images: `POST_IMAGE_MAX_LONG_EDGE`, 1600).
+ */
 export const MAX_LONG_EDGE = 2048;
 
 /** Server rejects > 2 MB; aim comfortably under so re-encode jitter never trips it. */

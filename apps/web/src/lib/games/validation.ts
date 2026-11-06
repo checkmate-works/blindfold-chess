@@ -15,9 +15,17 @@
  *       to canonical 8 chars — `lichess.ts` relies on this)
  *   - { kind: 'lichess_unsupported' } — Lichess URL, but a /study/ link
  *       (multi-chapter; v1 does not handle them)
- *   - { kind: 'chesscom_attribution', attribution } — chess.com URL.
- *       The PGN cannot be auto-fetched (TOS), so the caller must
- *       require a separately-pasted PGN body in addition to the URL.
+ *   - { kind: 'chesscom_attribution', attribution, sourceUrl, pgn? } —
+ *       a chess.com game URL on the first line, or a PGN whose `[Link]`
+ *       header is one. The PGN cannot be auto-fetched (TOS), so it must be
+ *       pasted below the URL; `pgn` is absent when only the URL was
+ *       pasted, and the caller turns that into a guidance error.
+ *   - { kind: 'chesscom_invalid_url' } / { kind: 'chesscom_invalid_pgn' } —
+ *       a chess.com-looking URL that fails the strict parser, or a valid
+ *       one followed by text that is not PGN
+ *   - { kind: 'chesscom_embed' | 'lichess_embed', embedId, sourceUrl } and
+ *       their `*_embed_invalid_url` counterparts — embed-player URLs,
+ *       checked before the game-URL shapes so they are never misread as one
  *   - { kind: 'pgn', text } — likely PGN text, hand to validateAttachedPgn
  *   - { kind: 'unknown' } — unparseable, surface a generic error
  *

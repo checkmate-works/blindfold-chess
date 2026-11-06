@@ -101,7 +101,7 @@ export type PurgeDeletedAccountsReport = {
   scanned: number;
   /** True if the run hit its wall-clock budget with accounts still unprocessed. */
   timedOut: boolean;
-  /** Accounts soft-deleted at or before this instant were eligible (ISO). */
+  /** Accounts soft-deleted strictly before this instant were eligible (ISO). */
   cutoff: string;
   startedAt: string;
   finishedAt: string;

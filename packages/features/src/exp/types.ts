@@ -12,9 +12,12 @@ export type ExpResult = {
 
 export type LevelProgress = {
   level: number;
-  currentLevelExp: number; // 現レベルの必要累計Exp
-  nextLevelExp: number; // 次レベルの必要累計Exp
-  progress: number; // 0.0 - 1.0（現レベル内の進捗率）
+  /** Cumulative Exp at which the current level was reached (a threshold, not Exp earned within it). */
+  currentLevelExp: number;
+  /** Cumulative Exp at which the next level is reached. */
+  nextLevelExp: number;
+  /** Fraction (0–1, not a percentage) of the way from `currentLevelExp` to `nextLevelExp`. */
+  progress: number;
 };
 
 /**

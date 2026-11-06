@@ -167,6 +167,16 @@ export function validateRepertoireLineEdit(input: RepertoireLineEditInput): Vali
   };
 }
 
+/**
+ * Validate a create-time import. Returns a {@link RepertoireValidationError}
+ * code rather than throwing. Unlike {@link validateRepertoireLineEdit}, which
+ * keeps only the main line, variations are kept: every root-to-leaf path of
+ * the PGN tree becomes its own {@link ImportedLine}, re-emitted as clean PGN,
+ * and a standard starting position is normalised to `startingFen: null`.
+ *
+ * `openingIds` is neither checked nor passed through; the create mutation
+ * reads it from the raw input and drops it unless `phase` is `'opening'`.
+ */
 export function validateRepertoireImport(input: RepertoireImportInput): ValidateRepertoireResult {
   const name = input.name?.trim() ?? '';
   if (!name) return { ok: false, error: 'nameRequired' };

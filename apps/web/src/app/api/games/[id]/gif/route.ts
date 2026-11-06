@@ -14,7 +14,8 @@ const GIFS_BUCKET = 'game-gifs';
 function gifStorageKey(id: string, variant: GameGifVariant): string {
   // 'played' output changes whenever PLAYED_GIF_RENDER_VERSION bumps, so its
   // Storage key carries the version — an old render never shadows a new one.
-  // 'plain' output never changes, so its key stays unversioned.
+  // 'plain' has no version, on the premise that its output does not change;
+  // see PLAYED_GIF_RENDER_VERSION's TSDoc for the one time that premise broke.
   return variant === 'played'
     ? `gifs/${id}/played-v${PLAYED_GIF_RENDER_VERSION}.gif`
     : `gifs/${id}/plain.gif`;

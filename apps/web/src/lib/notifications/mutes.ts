@@ -32,6 +32,11 @@ export async function getMutedNotificationTypes(
   return rows.map((row) => row.type as MutableNotificationType);
 }
 
+/**
+ * Idempotent in both directions (muting twice or unmuting an unmuted type is
+ * a no-op). Performs no authorization: callers pass the signed-in user's own
+ * id. Only gates future inserts — notifications already delivered stay.
+ */
 export async function setNotificationTypeMuted(
   userId: string,
   type: MutableNotificationType,

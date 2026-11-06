@@ -9,10 +9,12 @@ import {
 } from "../common";
 import { BOARD_LAST_INDEX } from "../common/constants";
 
+/** `[fileIndex, rankIndex]`, both 0-based from a1 (`"a1"` → `[0, 0]`). */
 export function squareToCoords(square: Square): [number, number] {
   return [squareToFileIndex(square), squareToRankIndex(square)];
 }
 
+/** Inverse of {@link squareToCoords}; returns `""` (not a throw) for off-board indices. */
 export function coordsToSquare(file: number, rank: number): string {
   if (
     file < 0 ||

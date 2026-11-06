@@ -427,6 +427,10 @@ const RESERVED_USERNAMES: ReadonlySet<string> = new Set([
   ...GENERIC_PLACEHOLDER_NAMES,
 ]);
 
+/**
+ * Exact, case-sensitive membership test. The list is lowercase, so pass a
+ * name that has already passed format validation (which requires lowercase).
+ */
 export function isReservedUsername(username: string): boolean {
   return RESERVED_USERNAMES.has(username);
 }

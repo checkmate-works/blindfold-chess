@@ -227,6 +227,11 @@ export function toPositionKey(fen: string): string {
   return fen.split(" ").slice(0, 4).join(" ");
 }
 
+/**
+ * Side to move from a FEN's second field, without chess.js. Throws when the
+ * FEN has fewer than six fields or the turn field is neither `w` nor `b`;
+ * the rest of the FEN is not validated.
+ */
 export function getTurnFromFen(fen: string): PieceColor {
   const parts = fen.split(" ");
   if (parts.length < 6) {

@@ -1,14 +1,10 @@
 import { createFetchWithTimeout } from '@/lib/http/fetch-with-timeout';
 
 /**
- * Post one message to a Slack Incoming Webhook.
- *
- * A webhook URL is bound to the channel chosen when it was issued, so the
- * channel is not a parameter here and cannot be overridden in the payload.
- * The URL's path is the credential — anyone holding it can post to that
- * channel — so the error thrown on failure names the status and Slack's
- * one-word reason (`no_service` for a revoked URL, `channel_not_found`,
- * `invalid_payload`) and never the URL.
+ * A non-2xx answer from a Slack Incoming Webhook. Carries the status and
+ * Slack's one-word reason (`no_service` for a revoked URL,
+ * `channel_not_found`, `invalid_payload`) and never the URL, because the
+ * URL's path is the credential — anyone holding it can post to that channel.
  */
 export class SlackWebhookError extends Error {
   constructor(
@@ -40,6 +36,15 @@ const SLACK_FETCH_TIMEOUT_MS = 10_000;
 
 const fetchWithTimeout = createFetchWithTimeout(SLACK_FETCH_TIMEOUT_MS);
 
+/**
+ * Post one message to a Slack Incoming Webhook.
+ *
+ * A webhook URL is bound to the channel chosen when it was issued, so the
+ * channel is not a parameter here and cannot be overridden in the payload.
+ * Throws {@link SlackWebhookError} on a non-2xx answer (the reason is
+ * truncated to 100 characters), and rejects with a `TimeoutError` once
+ * `SLACK_FETCH_TIMEOUT_MS` passes.
+ */
 export async function postSlackMessage(webhookUrl: string, text: string): Promise<void> {
   const res = await fetchWithTimeout(webhookUrl, {
     method: 'POST',

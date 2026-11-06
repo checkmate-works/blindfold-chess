@@ -63,12 +63,27 @@ function isFieldComplete(chars: string[], allowSingleSquare: boolean): boolean {
 export type ActiveField = "diagonal" | "antiDiagonal";
 
 type UseDiagonalInputProps = {
+  /**
+   * Fired synchronously from the keypress that completes the second field,
+   * with both answers in `"b1-h7"` form (or a bare square in single-square
+   * mode).
+   */
   onBothComplete: (diagonal: string, antiDiagonal: string) => void;
   disabled: boolean;
+  /** Treat the diagonal field as complete after one square (corner squares). */
   allowSingleSquareDiagonal?: boolean;
+  /** Treat the anti-diagonal field as complete after one square (corner squares). */
   allowSingleSquareAntiDiagonal?: boolean;
 };
 
+/**
+ * Keypad state for typing two diagonals as file/rank keystrokes
+ * (`b`,`1`,`h`,`7` → `"b1-h7"`). File presses are ignored while a rank is
+ * expected and vice versa. Focus moves to the anti-diagonal field as soon as
+ * the diagonal completes; Backspace undoes the last keystroke across both
+ * fields. The hook does not reset itself after `onBothComplete` — the caller
+ * calls `reset` when the question changes.
+ */
 export function useDiagonalInput({
   onBothComplete,
   disabled,

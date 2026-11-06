@@ -21,12 +21,17 @@ export function createInitialState(): NotationInputState {
   };
 }
 
+/** A pawn capture is being built: a file chosen, no piece, capture toggled on. */
 export function computeIsPawnCaptureMode(state: NotationInputState): boolean {
   return (
     !state.selectedPiece && state.selectedFiles.size === 1 && state.isCapture
   );
 }
 
+/**
+ * Offer the promotion picker: a pawn move (no piece, not castling) whose
+ * destination rank is 1 or 8. Side to move is not considered.
+ */
 export function computeShowPromotion(state: NotationInputState): boolean {
   if (state.selectedPiece || state.castling || state.selectedRanks.size === 0) {
     return false;
@@ -35,6 +40,7 @@ export function computeShowPromotion(state: NotationInputState): boolean {
   return rank === "1" || rank === "8";
 }
 
+/** The SAN implied by the structured fields; ignores the text-builder `input`. */
 export function computePreviewText(state: NotationInputState): string {
   if (state.castling) return state.castling;
 
@@ -158,6 +164,12 @@ function applyStructuredSideEffects(
   return { ...next, input: computePreviewText(next) };
 }
 
+/**
+ * Pure reducer for {@link NotationInputState}. Most structured selections
+ * toggle (selecting the current value clears it), and every structured
+ * action re-derives `input` and drops a stale `targetFile` /
+ * `promotionPiece`. `clear` and `reset` both return the initial state.
+ */
 export function notationInputReducer(
   state: NotationInputState,
   action: NotationInputAction,

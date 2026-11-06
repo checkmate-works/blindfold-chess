@@ -22,6 +22,12 @@ import type {
   UseNotationInputReturn,
 } from "./types";
 
+/**
+ * SAN move-entry state for the AI game, wrapping {@link notationInputReducer}.
+ * All state resets whenever `fen` changes — i.e. when the game accepts a
+ * move — so with `resetOnSubmit: false` a rejected move stays on screen for
+ * correction while an accepted one clears.
+ */
 export function useNotationInput({
   fen,
   onSubmit,

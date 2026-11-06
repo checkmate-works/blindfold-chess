@@ -1,3 +1,7 @@
+/**
+ * Shape check for the canonical 8-4-4-4-12 layout: any version nibble, either
+ * case. Says nothing about whether the row exists.
+ */
 export const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**

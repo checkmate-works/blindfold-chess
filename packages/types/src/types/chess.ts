@@ -6,6 +6,7 @@ export type Rank = (typeof NUMERIC_RANKS)[number];
 
 export const RANKS = ["1", "2", "3", "4", "5", "6", "7", "8"] as const;
 
+/** Ranks in top-to-bottom row order for a board drawn from white's side. */
 export const DISPLAY_RANKS = ["8", "7", "6", "5", "4", "3", "2", "1"] as const;
 
 export const ALL_PIECE_TYPES = ["p", "n", "b", "r", "q", "k"] as const;
@@ -90,6 +91,11 @@ export function pieceColorToSide(color: PieceColor): Side {
   return color === "w" ? "white" : "black";
 }
 
+/**
+ * A move in UCI long algebraic form: from-square, to-square, and for a
+ * promotion a lowercase piece letter (`e7e8q`). Castling is the king's
+ * two-square move (`e1g1`), not `O-O`.
+ */
 export type UciMove =
   | `${File}${Rank}${File}${Rank}`
   | `${File}${Rank}${File}${Rank}${PromotionPiece}`;

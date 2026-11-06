@@ -65,6 +65,12 @@ export function pgnRowToCard(row: PgnAttachmentRow): AttachedGameCardData {
   };
 }
 
+/**
+ * Copy exactly the card's fields out of a query row. Looks like an identity
+ * function, but callers pass wider rows (they carry `postId` for grouping),
+ * and a structural type would let those extra columns ride into the
+ * serialized props; the explicit copy keeps them out.
+ */
 export function embedRowToCard(row: AttachedEmbedCardData): AttachedEmbedCardData {
   return {
     id: row.id,
@@ -123,10 +129,12 @@ export function groupImageRows(
   return imagesByPost;
 }
 
+/** The FEN-card counterpart of {@link embedRowToCard}. */
 export function fenRowToCard(row: AttachedFenCardData): AttachedFenCardData {
   return { id: row.id, fen: row.fen, caption: row.caption };
 }
 
+/** The video-card counterpart of {@link embedRowToCard}. */
 export function videoRowToCard(row: AttachedVideoCardData): AttachedVideoCardData {
   return {
     id: row.id,

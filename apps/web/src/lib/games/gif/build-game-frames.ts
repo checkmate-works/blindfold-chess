@@ -284,27 +284,6 @@ function buildSlotAnnotations(
 }
 
 /**
- * Builds the ordered, timed frame sequence for a published game's replay —
- * the pure core of GIF generation, kept separate from rasterization so the
- * frame sequence itself (which position, which annotation, how long) can be
- * asserted directly in tests without going through sharp/libvips.
- *
- * `'plain'` is unannotated: real positions only, no display-settings fold, no
- * overlays — byte-for-byte the same sequence the pipeline has always
- * produced, since its Storage cache key carries no version. `'played'` folds
- * blindfold display settings per frame (`playSettingsDisplayAtHalfMove`) and
- * inserts annotation frames between the real position a player move was
- * decided from and the move itself, for every player-move slot that has a
- * matching {@link MoveOperationLog}.
- *
- * An annotatable slot is one where both `positions[m]` (before the move) and
- * `positions[m+1]` (after) survived {@link selectRealFrames} truncation *and*
- * remained adjacent in the output — i.e. nothing was skipped between them.
- * Annotations are inserted front-to-back; once the running total would
- * exceed {@link MAX_FRAMES}, every remaining slot's annotations are skipped
- * (real positions are never sacrificed to make room).
- */
-/**
  * Stamp the end-of-game mark onto the last frame — the loser's king marked with
  * `#` or a flag, exactly as the play board and the interactive replay mark it
  * (`resolveTerminationMark`).
@@ -328,6 +307,29 @@ function withTerminationMark(frames: GifFrame[], game: GameFrameSource): GifFram
   return [...frames.slice(0, -1), { ...last, terminationMark }];
 }
 
+/**
+ * Builds the ordered, timed frame sequence for a published game's replay —
+ * the pure core of GIF generation, kept separate from rasterization so the
+ * frame sequence itself (which position, which annotation, how long) can be
+ * asserted directly in tests without going through sharp/libvips.
+ *
+ * `'plain'` is unannotated: real positions only, no display-settings fold, no
+ * overlays. Both variants end with the end-of-game mark on the last frame
+ * (`withTerminationMark`). The plain GIF's Storage cache key carries no
+ * render version, so a change to this sequence is not picked up by a plain
+ * GIF that has already been generated and stored. `'played'` folds
+ * blindfold display settings per frame (`playSettingsDisplayAtHalfMove`) and
+ * inserts annotation frames between the real position a player move was
+ * decided from and the move itself, for every player-move slot that has a
+ * matching {@link MoveOperationLog}.
+ *
+ * An annotatable slot is one where both `positions[m]` (before the move) and
+ * `positions[m+1]` (after) survived {@link selectRealFrames} truncation *and*
+ * remained adjacent in the output — i.e. nothing was skipped between them.
+ * Annotations are inserted front-to-back; once the running total would
+ * exceed {@link MAX_FRAMES}, every remaining slot's annotations are skipped
+ * (real positions are never sacrificed to make room).
+ */
 export function buildGameFrames(game: GameFrameSource, variant: GameGifVariant): GifFrame[] {
   const allPositions = replayMoves(game.moves, game.startingFen ?? undefined);
   const realFrames = selectRealFrames(allPositions);

@@ -3,6 +3,12 @@ import { eq } from 'drizzle-orm';
 import { positionChunks, positionThemes } from '@/lib/db';
 import type { DbTxOrDb } from '@/lib/db/types';
 
+/**
+ * Insert-only counterpart of {@link replacePositionTags}: `undefined` and `[]`
+ * both mean "nothing to add", and existing links are never removed. Ids are
+ * not deduplicated or checked against the current links, so a duplicate or an
+ * already-linked id fails on the primary key — callers dedupe and filter first.
+ */
 export async function insertPositionTags(
   tx: DbTxOrDb,
   positionId: string,

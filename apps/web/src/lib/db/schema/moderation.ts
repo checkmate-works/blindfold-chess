@@ -67,7 +67,7 @@ export type ModerationAction = typeof moderationActions.$inferSelect;
 export type NewModerationAction = typeof moderationActions.$inferInsert;
 
 /**
- * Rate Limit Events — fixed-window counter for user action throttling.
+ * Rate Limit Events — event log for user action throttling, counted over a trailing window.
  *
  * @description
  * Records each rate-limited action performed by a user. The `checkRateLimit` function
@@ -100,7 +100,7 @@ export type RateLimitEvent = typeof rateLimitEvents.$inferSelect;
 export type NewRateLimitEvent = typeof rateLimitEvents.$inferInsert;
 
 /**
- * Rate Limit Key Events — fixed-window counter for non-user-keyed throttling.
+ * Rate Limit Key Events — event log for non-user-keyed throttling, counted over a trailing window.
  *
  * @description
  * Mirrors `rate_limit_events` but keyed by a string `subject_key` instead of a

@@ -21,6 +21,7 @@ export type UseBoardSymmetrySessionReturn = TimedSessionFacade & {
   currentProblem: BoardSymmetryProblem | null;
   selectedFile: string | null;
   selectedRank: string | null;
+  /** The correct square for the last answer; set on answer, cleared when the next question appears. */
   correctSolution: string | null;
   handleFileToggle: (file: string) => void;
   handleRankToggle: (rank: string) => void;

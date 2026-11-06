@@ -11,6 +11,12 @@ import { STARTING_FEN } from "./fen-pure";
 
 import type { BoardPiece } from "./types";
 
+/**
+ * Whether chess.js accepts `fen`. A boolean only, with no reason; for a
+ * diagnostic, or for the legality checks chess.js is lenient about (castling
+ * rights without a rook, impossible en-passant targets), use
+ * `validateFenSemantic`.
+ */
 export function validateFen(fen: string): boolean {
   if (!fen.trim()) return false;
 
@@ -22,11 +28,22 @@ export function validateFen(fen: string): boolean {
   }
 }
 
+/**
+ * The 8×8 board for `fen`, rank 8 first (`[0][0]` is a8, `[7][7]` is h1), with
+ * `null` for empty squares. Throws if chess.js rejects the FEN.
+ */
 export function fenToBoard(fen: string): BoardPiece[][] {
   const chess = new Chess(fen);
   return chess.board();
 }
 
+/**
+ * The position after applying `moves` (SAN) to `initialFen`.
+ *
+ * Throws on an invalid FEN or on the first illegal move, unlike the replay
+ * helpers in `./moves` that stop at the legal prefix: a caller asking for the
+ * position after a game must not be handed the position after a shorter one.
+ */
 export function getFenAfterMoves(initialFen: string, moves: string[]): string {
   const chess = new Chess(initialFen);
   for (const move of moves) {

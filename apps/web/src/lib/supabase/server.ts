@@ -4,6 +4,12 @@ import { createServerClient } from '@supabase/ssr';
 
 import { fetchWithTimeout } from './fetch-with-timeout';
 
+/**
+ * Per-request Supabase client bound to the request's auth cookies (anon key,
+ * RLS applies). Cookie writes are silently dropped when called from a Server
+ * Component, where Next.js forbids setting cookies; session refresh is left
+ * to `updateSession` in the request proxy.
+ */
 export async function createClient() {
   const cookieStore = await cookies();
 

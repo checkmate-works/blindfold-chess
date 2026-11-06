@@ -30,6 +30,12 @@ export type Replier = {
   displayName: string | null;
 };
 
+/**
+ * Comment-volume summary for one thread owner (topic or shared game).
+ * Soft-deleted comments are excluded from every field. `repliers` holds at
+ * most 3 distinct commenters, most recent first, while `uniqueReplierCount`
+ * counts all of them — so a "+N" overflow is `uniqueReplierCount - repliers.length`.
+ */
 export type ReplyMeta = {
   replyCount: number;
   latestReplyAt: Date | null;

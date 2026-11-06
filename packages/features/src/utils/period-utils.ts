@@ -5,6 +5,11 @@ export type PeriodRange = {
   end: Date;
 };
 
+/**
+ * Local midnight of the Monday that starts `date`'s week (weeks run Monday to
+ * Sunday, so a Sunday maps back six days). Local time, not UTC; `date` is not
+ * mutated.
+ */
 export function getMondayOfWeek(date: Date): Date {
   const d = new Date(date);
   const day = d.getDay();

@@ -38,6 +38,11 @@ export type BuilderNode = {
 /** Child-index path from the root; `[]` addresses the starting position. */
 export type BuilderPath = number[];
 
+/**
+ * The node `path` addresses, or `null` when any index is out of range. The
+ * empty path also yields `null`: the starting position is not a node, so use
+ * {@link fenAtPath} when the root needs a FEN.
+ */
 export function nodeAtPath(children: BuilderNode[], path: BuilderPath): BuilderNode | null {
   let node: BuilderNode | null = null;
   let level = children;
@@ -49,6 +54,7 @@ export function nodeAtPath(children: BuilderNode[], path: BuilderPath): BuilderN
   return node;
 }
 
+/** FEN at `path`; `rootFen` for the empty path and for a path that addresses no node. */
 export function fenAtPath(children: BuilderNode[], path: BuilderPath, rootFen: string): string {
   return nodeAtPath(children, path)?.fen ?? rootFen;
 }

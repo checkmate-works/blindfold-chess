@@ -252,6 +252,12 @@ export const COUNTRY_CODES = [
 
 export type CountryCode = (typeof COUNTRY_CODES)[number];
 
+/**
+ * The flag emoji for an ISO 3166-1 alpha-2 code, built from the two Unicode
+ * regional-indicator letters (case-insensitive). The input is not validated:
+ * anything other than two ASCII letters yields a meaningless string rather
+ * than throwing.
+ */
 export function countryCodeToFlag(code: string): string {
   return [...code.toUpperCase()]
     .map((c) => String.fromCodePoint(0x1f1e6 + c.charCodeAt(0) - 65))

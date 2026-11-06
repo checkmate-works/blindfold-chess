@@ -7,10 +7,19 @@ import { useCountdown } from "./use-countdown";
 import { useGameTimer } from "./use-game-timer";
 
 export type UseTimedSessionConfig<TQuestion> = {
+  /** Session length in seconds of active play (see {@link useTimedSession}). */
   timeLimit: number;
+  /** Called once on mount and once per advance; read through a latest-ref. */
   generateQuestion: () => TQuestion;
+  /** Feedback-flash length in ms, or a function of the answer's outcome. Default 500. */
   feedbackDuration?: number | ((correct: boolean) => number);
+  /**
+   * The session ends (after the feedback flash) on the answer that brings
+   * `incorrectCount` up to this value — so `3` ends the run on the third
+   * mistake. `undefined` means mistakes never end the run.
+   */
   mistakeAllowance?: number;
+  /** Fired synchronously inside `handleAnswer`, before any state update (e.g. sound/haptics). */
   onAnswerEffect?: (correct: boolean) => void;
   /**
    * Called inside the feedback-timeout callback right before the next question
@@ -57,11 +66,17 @@ export type UseTimedSessionReturn<TQuestion> = {
   /** Why the session ended; `null` while it is still running. */
   finishReason: TimedSessionFinishReason | null;
   /**
-   * Seconds spent on each completed question, in order. The currently shown
-   * question has no entry yet. Quiz hooks pass this straight to
+   * Wall-clock seconds between successive question generations, in order.
+   * An entry is pushed each time a question is generated, measuring the span
+   * since the previous one — so the first entry (pushed when the first
+   * question is generated on mount) is ~0, each later entry includes that
+   * question's feedback flash and any pause, and the entry for the first
+   * question also includes the countdown. A question cut off by the time
+   * limit or a quit gets no entry. Quiz hooks pass this straight to
    * `computePracticeResult` instead of each tracking timing themselves.
    */
   questionTimes: number[];
+  /** Ignored during the countdown, the feedback flash, a pause, or after finishing. */
   handleAnswer: (correct: boolean) => void;
   togglePause: () => void;
   /**
@@ -85,6 +100,14 @@ function resolveFeedbackDuration(
     : feedbackDuration;
 }
 
+/**
+ * The timer/scoring core shared by every timed quiz hook. The first question
+ * is generated on mount, then the {@link useCountdown} pre-roll runs. The
+ * clock advances only while a question awaits an answer — it is stopped
+ * during the countdown, the feedback flash after each answer, and while
+ * paused — so `timeLimit` measures thinking time, not wall time.
+ * `timeElapsed` / `timeRemaining` are whole seconds.
+ */
 export function useTimedSession<TQuestion>(
   config: UseTimedSessionConfig<TQuestion>,
 ): UseTimedSessionReturn<TQuestion> {
