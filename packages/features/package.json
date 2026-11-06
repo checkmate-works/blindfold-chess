@@ -10,6 +10,8 @@
     "./ai-game/notation-input": "./src/ai-game/notation-input/index.ts",
     "./ai-game/notation-input/client": "./src/ai-game/notation-input/client.ts",
     "./ai-game/opponent": "./src/ai-game/opponent/index.ts",
+    "./algebraic-notation": "./src/algebraic-notation/index.ts",
+    "./algebraic-notation/client": "./src/algebraic-notation/client.ts",
     "./board-display": "./src/board-display/index.ts",
     "./board-symmetry": "./src/board-symmetry/index.ts",
     "./board-symmetry/client": "./src/board-symmetry/client.ts",

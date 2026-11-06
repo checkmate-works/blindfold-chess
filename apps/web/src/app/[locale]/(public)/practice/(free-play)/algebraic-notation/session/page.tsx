@@ -8,12 +8,12 @@ import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import dynamic from 'next/dynamic';
 
+import { ALGEBRAIC_NOTATION_QUESTIONS } from '@blindfold-chess/features/algebraic-notation';
+
 import { PracticeSessionPage } from '@/app/[locale]/(public)/practice/_components/PracticeSessionPage';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { Locale } from '@/app/[locale]/_lib/types';
-
-import { questions } from '../_data/questions';
 
 const AlgebraicNotation = dynamic(() => import('../_components/AlgebraicNotation'));
 
@@ -60,7 +60,7 @@ export default async function AlgebraicNotationSessionPage({ params }: Props) {
         { label: t('practice.algebraicNotation.session') },
       ]}
     >
-      <AlgebraicNotation questions={questions} locale={locale} />
+      <AlgebraicNotation questions={ALGEBRAIC_NOTATION_QUESTIONS} locale={locale} />
     </PracticeSessionPage>
   );
 }

@@ -2,14 +2,17 @@
 
 import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import {
+  type AlgebraicNotationQuestion,
+  getQuestionExplanation,
+  isCorrectAnswer,
+} from '@blindfold-chess/features/algebraic-notation';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import type { Question } from '../_lib/types';
-
 type Props = {
   selectedAnswer: string;
-  question: Question;
+  question: AlgebraicNotationQuestion;
   currentQuestionIndex: number;
   totalQuestions: number;
   onNext: () => void;
@@ -25,7 +28,7 @@ export function AlgebraicNotationResult({
   locale,
 }: Props) {
   const t = useTranslations('practice.algebraicNotation');
-  const isCorrect = selectedAnswer === question.correctAnswer;
+  const isCorrect = isCorrectAnswer(question, selectedAnswer);
 
   return (
     <div className="flex flex-col gap-6">
@@ -42,7 +45,7 @@ export function AlgebraicNotationResult({
       <div className="bg-muted/50 dark:bg-secondary rounded-md p-4">
         <h4 className="text-sm font-medium text-foreground mb-3">{t('explanation')}</h4>
         <ul className="text-sm text-muted-foreground space-y-1">
-          {(question.explanation[locale] ?? question.explanation.en ?? []).map((point, index) => (
+          {getQuestionExplanation(question, locale).map((point, index) => (
             <li key={index} className="flex items-start">
               <span className="text-muted-foreground mr-2">•</span>
               <span>{point}</span>
