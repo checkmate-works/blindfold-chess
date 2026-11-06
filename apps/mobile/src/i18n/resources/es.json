@@ -251,10 +251,6 @@
     "result": {
       "title": "¡Quiz completado!",
       "totalQuestions": "Preguntas totales",
-      "correctAnswers": "Respuestas correctas",
-      "accuracy": "Precisión",
-      "timeTaken": "Tiempo empleado",
-      "averageTime": "Tiempo medio",
       "points": "Puntos",
       "playAgain": "Jugar de nuevo",
       "backToMenu": "Volver al menú"
