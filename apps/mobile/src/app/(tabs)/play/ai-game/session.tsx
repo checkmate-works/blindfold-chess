@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -114,6 +114,7 @@ export default function AiGameSession() {
         <BoardPeek
           fen={game.currentFen}
           moves={game.moves}
+          startingFen={start.startingFen}
           playerColor={playerColor}
         />
 
