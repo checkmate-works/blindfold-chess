@@ -318,10 +318,40 @@
   },
   "knightTour": {
     "setup": {
-      "title": "Recorrido del Caballo Configuración"
+      "title": "Recorrido del Caballo Configuración",
+      "startingSquare": "Casilla Inicial",
+      "randomSquare": "Aleatorio",
+      "pickOnBoard": "O toca una casilla del tablero",
+      "blindfoldMode": "Modo a Ciegas",
+      "blindfoldModeHint": "Practica usando solo coordenadas sin ver el tablero",
+      "setupHint": "El caballo debe visitar las 64 casillas exactamente una vez usando solo movimientos legales de caballo.",
+      "start": "Iniciar"
     },
     "result": {
-      "title": "¡Práctica completada!"
+      "title": "¡Práctica completada!",
+      "squaresVisited": "Casillas Visitadas",
+      "success": "¡Recorrido Completado!",
+      "closedTourMessage": "¡Increíble! Completaste un recorrido cerrado — ¡el caballo puede volver a su casilla inicial!",
+      "openTourMessage": "¡Felicitaciones! ¡Visitaste las 64 casillas!",
+      "playAgain": "Jugar de nuevo",
+      "backToMenu": "Volver al menú"
+    },
+    "session": {
+      "currentPosition": "Posición Actual",
+      "stuck": "¡No hay más movimientos disponibles!",
+      "stuckHint": "Usa Deshacer para volver atrás e intentar un camino diferente.",
+      "moveHistory": "Historial de Movimientos",
+      "undo": "Deshacer",
+      "quit": "Salir",
+      "quitConfirmTitle": "¿Abandonar la Práctica?",
+      "quitConfirmMessage": "Tu progreso se guardará y verás tus resultados hasta el momento.",
+      "quitConfirmYes": "Salir",
+      "quitConfirmNo": "Continuar",
+      "alreadyVisited": "Esta casilla ya ha sido visitada.",
+      "invalidMove": "Movimiento inválido",
+      "submitMove": "Enviar",
+      "selectFile": "Selecciona una columna (a-h)",
+      "selectRank": "Selecciona una fila (1-8)"
     }
   },
   "algebraicNotation": {
