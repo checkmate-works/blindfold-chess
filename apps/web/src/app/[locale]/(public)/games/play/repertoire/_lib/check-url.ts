@@ -8,8 +8,8 @@ import type { Side } from '@blindfold-chess/types';
  * so a param can't be renamed in one spot and missed in another.
  *
  * The route says `repertoire`, the page title says "Kata": the brand name
- * lives only in i18n message values, never in URLs or code identifiers —
- * see "Kata / Repertoire (型)" in apps/web/CLAUDE.md.
+ * lives only in i18n message values, never in URLs or code identifiers
+ * (the naming rule is in src/lib/repertoires/CLAUDE.md).
  */
 
 /** Locale-less route path; callers prepend `/${locale}` where needed. */

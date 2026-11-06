@@ -11,8 +11,8 @@ import { createPointGrant } from '../_actions/createPointGrant';
  * Admin form for issuing a confirmed coin grant. Mirrors GrantForm's
  * layout (UUID + amount + reason + submit) so admin muscle memory
  * transfers between the ad_free grants page and this one. "Coin" is the
- * facing name for the points ledger this writes to — see the
- * "Points / Coin Economy" note in apps/web/CLAUDE.md.
+ * facing name for the points ledger this writes to (naming rule in
+ * src/lib/points/CLAUDE.md).
  */
 export function PointGrantForm() {
   const router = useRouter();

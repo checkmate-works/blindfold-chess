@@ -327,9 +327,10 @@ export default async function RankDetailPage({ params }: Props) {
           page; this is the only section that varies by rank. Hardcoded to
           1dan rather than driven by rank data: today only 1dan carries a
           benefit, and `hasDanTierRank` is intentionally derived from
-          `user_ranks`, not materialized — see the User Grants System notes
-          in CLAUDE.md. Add a data-driven benefits list if a second rank
-          ever needs one. */}
+          `user_ranks`, not materialized (ranks are never revoked, so the
+          perk needs no grant row; `hasAdFreeEntitlement` in
+          src/lib/ads/ad-free-entitlement.ts ORs it with the other sources).
+          Add a data-driven benefits list if a second rank ever needs one. */}
       {rankSlug === '1dan' && (
         <div className="space-y-2">
           <SectionTitle>{t('detail.benefits')}</SectionTitle>

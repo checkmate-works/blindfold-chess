@@ -10,9 +10,9 @@
  * Issuing coins lives on its own focused page (/admin/coins/grant), reached
  * via the "Grant coins" button; this page is read-only over the ledger.
  *
- * "Coin" is the facing name for the points ledger — see the
- * "Points / Coin Economy" note in apps/web/CLAUDE.md. The ledger stays
- * "points" at the schema/service layer.
+ * "Coin" is the facing name for the points ledger (naming rule in
+ * src/lib/points/CLAUDE.md). The ledger stays "points" at the
+ * schema/service layer.
  *
  * @design Read surface, not a new log
  *

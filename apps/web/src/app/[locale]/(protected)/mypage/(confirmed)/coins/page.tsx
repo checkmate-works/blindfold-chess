@@ -3,8 +3,8 @@
  *
  * @description
  * End-user view of coin balance + history + ad_free redemption. "Coin" is
- * the facing name for the points ledger — see the "Points / Coin Economy"
- * note in apps/web/CLAUDE.md. The companion to /mypage/benefits: benefits
+ * the facing name for the points ledger — the naming rule is in
+ * src/lib/points/CLAUDE.md. The companion to /mypage/benefits: benefits
  * shows "what entitlements are active right now" (driven by `user_grants`),
  * while this shows "how many coins I have, where they came from, and how to
  * spend them" (driven by `point_events` / `user_point_balances`).

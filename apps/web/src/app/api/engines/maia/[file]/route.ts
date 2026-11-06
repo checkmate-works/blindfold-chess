@@ -34,6 +34,14 @@ import { loadMaiaModel } from './_lib/load-maia-model';
  * `immutable` directive still lets the browser skip revalidation.
  */
 
+/**
+ * The response below is cached as `immutable` for a year, so the filename is
+ * the cache key. A new model version MUST get a new filename (e.g.
+ * `maia3_simplified-v2.onnx`): add it here, change `DEFAULT_MAIA_MODEL_URL`
+ * in `src/lib/engines/maia/models.ts` and the download target in
+ * `scripts/download-maia.ts`. Overwriting the file under the same name
+ * leaves returning users on their stale cached copy forever.
+ */
 const ALLOWED_FILES = new Set(['maia3_simplified.onnx']);
 
 export async function GET(_req: Request, { params }: { params: Promise<{ file: string }> }) {

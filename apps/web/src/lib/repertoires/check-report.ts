@@ -1,7 +1,7 @@
 /**
  * Naming note: this feature is "Kata" (型) to users and "repertoire" in code —
  * identifiers, files, i18n keys, URLs, DB all speak repertoire; only i18n
- * message VALUES say Kata. See "Kata / Repertoire (型)" in apps/web/CLAUDE.md.
+ * message VALUES say Kata. The naming rule is in src/lib/repertoires/CLAUDE.md.
  */
 import type { GameForMatch, LineMatchResult, Side } from '@blindfold-chess/features/chess-core';
 

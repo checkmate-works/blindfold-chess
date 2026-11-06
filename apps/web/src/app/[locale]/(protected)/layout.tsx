@@ -41,14 +41,36 @@ type Props = {
  * redirects a profile-less user to `/mypage/setup-username`). Confirmed via
  * `next build && next start` that this is a real streaming-SSR/hydration race
  * between the redirect and this Suspense boundary, NOT a dev-mode/HMR
- * artifact. See `apps/web/CLAUDE.md` ("Known Issues") for the full
- * investigation. Moving the redirect decision up into `ProtectedGate` (this
- * function, still inside the same Suspense) was tried and does NOT fix it —
- * the race is about streaming under Suspense, not about which async component
- * throws the redirect or how deeply it's nested. The only reproduction that
- * eliminated it was removing this `<Suspense>` entirely, which reintroduces
- * the blank-page-on-slow-auth problem this boundary exists to prevent (see
- * above) — so a real fix needs a different approach, not a quick swap.
+ * artifact. What the 2026-07-04 investigation established:
+ *
+ * - Reproduced with `next build && next start`, not only `next dev`, which
+ *   rules out a Turbopack HMR artifact. Sometimes it only logs to the
+ *   console; sometimes it crashes to Next's "This page couldn't load" error
+ *   boundary and needs a manual reload.
+ * - Does NOT reproduce for a user who already has a profile, or for a direct
+ *   hit on the already-correct destination — only when the gate actually
+ *   redirects mid-stream.
+ * - Does NOT reproduce for this layout's OWN redirects (`!user` → `/sign-in`,
+ *   banned → `/banned`), although they are the same shape of conditional
+ *   `redirect()` in the same Suspense-wrapped function — so "any redirect in
+ *   this Suspense" is not the trigger on its own.
+ * - Moving the profile-based redirect decision up into `ProtectedGate` (still
+ *   inside the same `<Suspense>`, one level shallower than the nested
+ *   layouts) was tried and does NOT fix it — the race is tied to streaming
+ *   under this boundary, not to which component throws or how deep it is.
+ * - Removing the `<Suspense>` entirely does eliminate it, which confirms the
+ *   cause — but the boundary exists to prevent the blank page during the
+ *   auth round-trip (see above), so that trades one bug for the other.
+ *
+ * Do not re-attempt a fix by relocating the `redirect()` within the existing
+ * Suspense tree; that is the first thing to try and it is ruled out. A real
+ * fix needs a different approach, e.g. resolving the post-sign-in/sign-up
+ * destination server-side (in the `signIn` / registration Server Action) so
+ * the client's `window.location.href` hard-navigates straight to the correct
+ * URL and no redirect-during-streaming ever happens at `/mypage`; or
+ * restructuring the gate so this transition renders the setup-username
+ * content in place instead of changing the URL. Both are design changes —
+ * decide deliberately and test with `next build && next start`.
  */
 export default async function ProtectedLayout({ children, params }: Props) {
   const pathname = (await headers()).get('x-pathname') ?? '';

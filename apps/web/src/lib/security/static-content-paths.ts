@@ -35,7 +35,12 @@ import { SUPPORTED_LOCALES } from '@/config';
  *
  * Keep this list in sync with the build's route table: after `pnpm build`,
  * every route marked `○` (static) or with a `revalidate` interval should be
- * covered by a prefix below.
+ * covered by a prefix below. Since Next 16.3 the table prints the `○ ● ƒ`
+ * marker on each generated child path, not on the parent route line, so a
+ * script that scrapes `^[├└] ●` reports every SSG route as lost; collapse
+ * children into the parent's effective marker before comparing two builds
+ * (a naive diff across that version showed a 52-route SSG dropout that did
+ * not happen).
  */
 const STATIC_CONTENT_NAMESPACES = [
   'affiliate-disclosure',
