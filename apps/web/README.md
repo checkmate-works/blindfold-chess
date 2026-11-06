@@ -71,6 +71,10 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ## Local Development
 
+The Supabase local stack, the keys to copy into `.env.local`, and the database
+migration workflow (`pnpm db:run-migrate`, never `drizzle-kit push`) are in
+[docs/local-development.md](docs/local-development.md).
+
 ### Google OAuth Setup (for Google Sign-In)
 
 To test Google Sign-In — and "Add a Google account" on `/mypage/account` — locally, you need to configure OAuth credentials:

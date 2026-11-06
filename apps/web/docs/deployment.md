@@ -14,6 +14,11 @@ The project is structured as a monorepo using Turborepo. Vercel automatically de
 
 ## Database (Supabase)
 
+Preview deployments do not use this database: each pull request gets a
+Supabase preview branch, described in [preview-deployments.md](preview-deployments.md).
+The Vercel spending cap that protects the Maia model egress is described in
+[ai-engines.md](ai-engines.md).
+
 For production, we recommend using [Supabase](https://supabase.com/) as the PostgreSQL database provider.
 
 ### Setup: connect from the Supabase side
