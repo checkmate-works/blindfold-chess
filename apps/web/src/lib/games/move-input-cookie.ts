@@ -1,3 +1,8 @@
+import {
+  DEFAULT_ENABLED_MOVE_INPUT_MODES,
+  DEFAULT_MOVE_INPUT_MODE,
+} from '@blindfold-chess/features/game-preferences';
+
 import { MOVE_INPUT_MODES, type MoveInputMode } from './move-input-modes';
 import { writePreferenceCookieClient } from './preference-cookie';
 
@@ -58,13 +63,12 @@ export type MoveInputPreferenceHint = {
 };
 
 /**
- * Shared source of truth for the default move-input mode values. Both
- * `DEFAULT_MOVE_INPUT_HINT` (this module) and `defaultPreferences` in
- * `GamePreferencesContext.tsx` derive from these constants so SSR hints
- * and client-side state can never drift apart. Change here = change both.
+ * Shared source of truth for the default move-input mode values, defined in
+ * `@blindfold-chess/features/game-preferences`. Both `DEFAULT_MOVE_INPUT_HINT`
+ * (this module) and the shared `DEFAULT_GAME_PREFERENCES` derive from them so
+ * SSR hints and client-side state can never drift apart.
  */
-export const DEFAULT_MOVE_INPUT_MODE: MoveInputMode = 'button';
-export const DEFAULT_ENABLED_MOVE_INPUT_MODES: MoveInputMode[] = ['button'];
+export { DEFAULT_ENABLED_MOVE_INPUT_MODES, DEFAULT_MOVE_INPUT_MODE };
 
 export const DEFAULT_MOVE_INPUT_HINT: MoveInputPreferenceHint = {
   mode: DEFAULT_MOVE_INPUT_MODE,

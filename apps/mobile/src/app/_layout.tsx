@@ -3,6 +3,7 @@ import { View, ActivityIndicator } from "react-native";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { initI18n } from "../i18n";
+import { GamePreferencesProvider } from "../lib/game-preferences";
 import { ThemeProvider, useTheme } from "../theme";
 
 function RootLayoutContent() {
@@ -63,7 +64,9 @@ function RootLayoutContent() {
 export default function RootLayout() {
   return (
     <ThemeProvider>
-      <RootLayoutContent />
+      <GamePreferencesProvider>
+        <RootLayoutContent />
+      </GamePreferencesProvider>
     </ThemeProvider>
   );
 }

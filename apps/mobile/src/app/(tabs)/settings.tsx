@@ -1,4 +1,10 @@
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+} from "react-native";
 import { useTranslation } from "react-i18next";
 import { Screen } from "../../components";
 import {
@@ -9,6 +15,7 @@ import {
   borderRadius,
 } from "../../theme";
 import { changeLanguage, type Locale } from "../../i18n";
+import { BoardPreferencesSection } from "../../features/settings/BoardPreferencesSection";
 
 const LANGUAGE_LABELS: Record<Locale, string> = {
   ja: "settings.languageJapanese",
@@ -49,7 +56,7 @@ export default function SettingsTab() {
           {t("tabs.settings")}
         </Text>
       </View>
-      <View style={styles.content}>
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
             {t("settings.language")}
@@ -99,7 +106,8 @@ export default function SettingsTab() {
             })}
           </View>
         </View>
-      </View>
+        <BoardPreferencesSection />
+      </ScrollView>
     </Screen>
   );
 }
@@ -114,10 +122,13 @@ const styles = StyleSheet.create({
     fontSize: fontSize.xxl,
     fontWeight: fontWeight.bold,
   },
-  content: {
+  scroll: {
     flex: 1,
+  },
+  content: {
     paddingHorizontal: spacing.lg,
-    paddingTop: spacing.lg,
+    paddingVertical: spacing.lg,
+    gap: spacing.xl,
   },
   section: {
     gap: spacing.sm,

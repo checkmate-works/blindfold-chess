@@ -1,3 +1,4 @@
+export { BoardPeek } from "./BoardPeek";
 export { BoardViewModal } from "./BoardViewModal";
 export { ButtonInput } from "./ButtonInput";
 export { ChessBoard } from "./ChessBoard";

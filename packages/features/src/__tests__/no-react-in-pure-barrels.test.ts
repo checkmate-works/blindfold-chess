@@ -24,6 +24,7 @@ const PURE_BARRELS = [
   "ai-game/index.ts",
   "ai-game/notation-input/index.ts",
   "algebraic-notation/index.ts",
+  "game-preferences/index.ts",
 ];
 
 const REACT_IMPORT_RE = /\bfrom\s+["']react["']/;

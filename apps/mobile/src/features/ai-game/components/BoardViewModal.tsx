@@ -8,6 +8,7 @@ type BoardViewModalProps = {
   onClose: () => void;
   fen: string;
   playerColor: Side;
+  lastMove?: { from: string; to: string } | null;
 };
 
 export function BoardViewModal({
@@ -15,6 +16,7 @@ export function BoardViewModal({
   onClose,
   fen,
   playerColor,
+  lastMove = null,
 }: BoardViewModalProps) {
   return (
     <Modal
@@ -25,7 +27,12 @@ export function BoardViewModal({
     >
       <Pressable style={styles.backdrop} onPress={onClose}>
         <Pressable style={styles.content}>
-          <ChessBoard fen={fen} flipped={playerColor === "black"} />
+          <ChessBoard
+            fen={fen}
+            flipped={playerColor === "black"}
+            playerColor={playerColor}
+            lastMove={lastMove}
+          />
         </Pressable>
       </Pressable>
     </Modal>

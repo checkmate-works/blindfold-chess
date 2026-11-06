@@ -1,13 +1,8 @@
 /**
  * How a player enters a move: typed algebraic notation, a pair of square
- * dropdowns, or on-screen piece/square buttons.
- *
- * The `as const` array is the runtime source of truth for validating untyped
- * input — the preference cookie, localStorage records, per-game play settings —
- * and the type derives from it so the two cannot drift. Five modules used to
- * spell the three values out, two of them as bare unions no validator could
- * check against.
+ * dropdowns, or on-screen piece/square buttons. The value list and the type
+ * live in `@blindfold-chess/features/game-preferences` so the mobile app
+ * validates stored preferences against the same set; this module re-exports
+ * them so web imports stay put.
  */
-export const MOVE_INPUT_MODES = ['text', 'select', 'button'] as const;
-
-export type MoveInputMode = (typeof MOVE_INPUT_MODES)[number];
+export { MOVE_INPUT_MODES, type MoveInputMode } from '@blindfold-chess/features/game-preferences';

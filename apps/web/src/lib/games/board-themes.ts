@@ -2,7 +2,9 @@ import type { BoardTheme } from '@blindfold-chess/types';
 
 export type { BoardTheme };
 
-export const DEFAULT_BOARD_THEME: BoardTheme = 'lichess';
+// The default lives with the rest of the shared game-preference defaults so
+// web and mobile start new players on the same theme.
+export { DEFAULT_BOARD_THEME } from '@blindfold-chess/features/game-preferences';
 
 // Tailwind classes mapping for Web (Web-specific implementation)
 export type TailwindThemeClasses = {

@@ -86,7 +86,63 @@
     "languageJapanese": "日本語",
     "languageEnglish": "English",
     "languageSpanish": "Español",
-    "languagePortuguese": "Português"
+    "languagePortuguese": "Português",
+    "board": {
+      "title": "ボード設定",
+      "displayOptions": "表示オプション",
+      "showCoordinates": "座標を表示",
+      "highlightLastMove": "最終手をハイライト",
+      "on": "オン",
+      "off": "オフ",
+      "boardTheme": "ボードテーマ",
+      "boardThemes": {
+        "monotone": "モノトーン",
+        "lichess": "Lichess風",
+        "chesscom": "Chess.com風"
+      },
+      "boardVisibility": "目隠しの設定",
+      "boardVisibilities": {
+        "always": "常に表示",
+        "peek": "必要なときにピーク",
+        "never": "非表示"
+      },
+      "pieceVisibility": "駒の表示",
+      "pieceVisibilityModes": {
+        "all": "両方",
+        "own": "自分",
+        "opponent": "相手"
+      },
+      "showAsStones": "石で表示",
+      "pieceShapeModes": {
+        "normal": "オフ",
+        "circles-all": "両方",
+        "circles-own": "自分",
+        "circles-opponent": "相手"
+      },
+      "pieceColor": "駒の色",
+      "pieceColorModes": {
+        "normal": "通常",
+        "white-only": "すべて白",
+        "black-only": "すべて黒"
+      },
+      "hidePawns": "ポーンを非表示",
+      "pawnHideModes": {
+        "none": "オフ",
+        "all": "両方",
+        "own": "自分",
+        "opponent": "相手"
+      },
+      "moveInput": "手の入力方法",
+      "moveInputModes": {
+        "button": "ボタン"
+      },
+      "buttonLabelStyle": "ボタンの表示",
+      "buttonLabels": {
+        "text": "テキスト",
+        "icon": "アイコン"
+      },
+      "resetDefaults": "デフォルトに戻す"
+    }
   },
   "legalMoves": {
     "setup": {

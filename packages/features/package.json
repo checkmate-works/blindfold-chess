@@ -26,6 +26,7 @@
     "./diagonal-quiz": "./src/diagonal-quiz/index.ts",
     "./diagonal-quiz/client": "./src/diagonal-quiz/client.ts",
     "./exp": "./src/exp/index.ts",
+    "./game-preferences": "./src/game-preferences/index.ts",
     "./knight-tour": "./src/knight-tour/index.ts",
     "./knight-tour/client": "./src/knight-tour/client.ts",
     "./lame-name": "./src/lame-name/index.ts",
