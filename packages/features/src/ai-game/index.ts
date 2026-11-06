@@ -15,6 +15,14 @@ export {
 } from "./constants";
 export { buildSkillLevelCommands } from "./skill-level";
 export { isValidSkillLevel } from "./validators";
+export type { EngineConfig, EngineKind } from "./engine-config";
+export {
+  DEFAULT_ENGINE,
+  DEFAULT_ENGINE_CONFIG,
+  ENGINE_KINDS,
+  isEngineConfig,
+  isEngineKind,
+} from "./engine-config";
 export type {
   ParsedUciResponse,
   UciResponseType,

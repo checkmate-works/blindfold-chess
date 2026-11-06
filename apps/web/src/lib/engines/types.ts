@@ -1,20 +1,12 @@
 /**
- * The chess opponents the app ships, as the one list everything else derives
- * from — the union, the runtime guard, and the DB column's `$type`.
- *
- * New engines plug in by extending this array and adding a branch in
- * `useAiVersus`'s dispatch.
+ * The engine list, its union, default and guard live in
+ * `@blindfold-chess/features/ai-game` so the mobile app's saved games carry
+ * the same engine vocabulary; re-exported here so web imports (including the
+ * DB column's `$type`) stay put.
  */
-export const ENGINE_KINDS = ['stockfish', 'maia'] as const;
-
-/**
- * Discriminator over {@link ENGINE_KINDS}. Used to route UI selections and URL
- * parameters through to the right factory in `useAiVersus`.
- */
-export type EngineKind = (typeof ENGINE_KINDS)[number];
-
-export const DEFAULT_ENGINE: EngineKind = 'stockfish';
-
-export function isEngineKind(value: unknown): value is EngineKind {
-  return ENGINE_KINDS.includes(value as EngineKind);
-}
+export {
+  DEFAULT_ENGINE,
+  ENGINE_KINDS,
+  type EngineKind,
+  isEngineKind,
+} from '@blindfold-chess/features/ai-game';
