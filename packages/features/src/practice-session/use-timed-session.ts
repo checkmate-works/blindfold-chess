@@ -66,13 +66,14 @@ export type UseTimedSessionReturn<TQuestion> = {
   /** Why the session ended; `null` while it is still running. */
   finishReason: TimedSessionFinishReason | null;
   /**
-   * Wall-clock seconds between successive question generations, in order.
-   * An entry is pushed each time a question is generated, measuring the span
-   * since the previous one — so the first entry (pushed when the first
-   * question is generated on mount) is ~0, each later entry includes that
-   * question's feedback flash and any pause, and the entry for the first
-   * question also includes the countdown. A question cut off by the time
-   * limit or a quit gets no entry. Quiz hooks pass this straight to
+   * Seconds each answered question took, in answer order: exactly one entry
+   * per accepted `handleAnswer` call, so its length always equals
+   * `totalCount`. Each entry is wall-clock time from when the question became
+   * answerable (the countdown ending, for the first question; the previous
+   * feedback flash ending, for the rest) to the answer, so it excludes the
+   * countdown and feedback flashes but includes any pause taken while the
+   * question was shown. The question left on screen by the time limit or a
+   * quit gets no entry. Quiz hooks pass this straight to
    * `computePracticeResult` instead of each tracking timing themselves.
    */
   questionTimes: number[];
@@ -151,16 +152,15 @@ export function useTimedSession<TQuestion>(
   // array that mutates in place under a `number[]` type that promises a plain
   // snapshot (and reading a ref during render is itself disallowed).
   const [questionTimes, setQuestionTimes] = useState<number[]>([]);
+  // When the current question became answerable. An entry is pushed only from
+  // `handleAnswer`, so there is exactly one per answer whatever ends the
+  // session — recording on question generation instead would add a ~0 entry
+  // for the first question and drop the answer that hits the mistake limit.
   const questionStartRef = useRef<number>(Date.now());
 
-  // Records how long the previous question was shown, then generates the next.
+  // Starts the clock for a new question and generates it.
   const advanceQuestion = useCallback((): TQuestion => {
-    const now = Date.now();
-    setQuestionTimes((prev) => [
-      ...prev,
-      (now - questionStartRef.current) / 1000,
-    ]);
-    questionStartRef.current = now;
+    questionStartRef.current = Date.now();
     return generateQuestionRef.current();
   }, [generateQuestionRef]);
 
@@ -171,6 +171,13 @@ export function useTimedSession<TQuestion>(
     hasStarted.current = true;
     setCurrentQuestion(advanceQuestion());
   }, [advanceQuestion]);
+
+  // The first question is generated on mount but cannot be answered until the
+  // countdown ends; restart its clock then so the countdown is not counted as
+  // time spent on it.
+  useEffect(() => {
+    if (countdown === null) questionStartRef.current = Date.now();
+  }, [countdown]);
 
   const isPlaying =
     currentQuestion !== null &&
@@ -246,6 +253,11 @@ export function useTimedSession<TQuestion>(
   const handleAnswer = useCallback(
     (correct: boolean) => {
       if (isFinished || countdown !== null || showFeedback || isPaused) return;
+
+      // Computed here, not inside the updater: React may run the updater
+      // later, after `advanceQuestion` has already moved the start forward.
+      const seconds = (Date.now() - questionStartRef.current) / 1000;
+      setQuestionTimes((prev) => [...prev, seconds]);
 
       onAnswerEffectRef.current?.(correct);
       setLastAnswerCorrect(correct);

@@ -406,6 +406,84 @@ describe("useTimedSession", () => {
     });
   });
 
+  describe("questionTimes", () => {
+    const answerAfter = (
+      result: { current: { handleAnswer: (c: boolean) => void } },
+      thinkMs: number,
+      correct: boolean,
+      feedbackMs: number,
+    ) => {
+      act(() => vi.advanceTimersByTime(thinkMs));
+      act(() => result.current.handleAnswer(correct));
+      act(() => vi.advanceTimersByTime(feedbackMs));
+    };
+
+    it("records nothing before the first answer", () => {
+      const { result } = renderHook(() =>
+        useTimedSession({ timeLimit: 60, generateQuestion }),
+      );
+      expect(result.current.questionTimes).toEqual([]);
+
+      advancePastCountdown();
+      expect(result.current.questionTimes).toEqual([]);
+    });
+
+    it("records one entry per answer, excluding the countdown and feedback flash", () => {
+      const { result } = renderHook(() =>
+        useTimedSession({
+          timeLimit: 60,
+          generateQuestion,
+          feedbackDuration: 500,
+        }),
+      );
+      advancePastCountdown();
+
+      answerAfter(result, 2000, true, 500);
+      answerAfter(result, 1000, false, 500);
+      answerAfter(result, 3000, true, 500);
+
+      expect(result.current.questionTimes).toEqual([2, 1, 3]);
+      expect(result.current.questionTimes).toHaveLength(
+        result.current.totalCount,
+      );
+    });
+
+    it("records the answer that uses up the mistake allowance", () => {
+      const { result } = renderHook(() =>
+        useTimedSession({
+          timeLimit: 60,
+          generateQuestion,
+          feedbackDuration: 500,
+          mistakeAllowance: 2,
+        }),
+      );
+      advancePastCountdown();
+
+      answerAfter(result, 1000, false, 500);
+      answerAfter(result, 1500, false, 500);
+
+      expect(result.current.finishReason).toBe("mistakeLimit");
+      expect(result.current.questionTimes).toEqual([1, 1.5]);
+    });
+
+    it("gives the question cut off by the time limit no entry", () => {
+      const { result } = renderHook(() =>
+        useTimedSession({
+          timeLimit: 10,
+          generateQuestion,
+          feedbackDuration: 0,
+        }),
+      );
+      advancePastCountdown();
+
+      answerAfter(result, 4000, true, 0);
+      act(() => vi.advanceTimersByTime(10 * 1000));
+
+      expect(result.current.finishReason).toBe("timeUp");
+      expect(result.current.questionTimes).toEqual([4]);
+    });
+  });
+
   describe("onAnswerEffect", () => {
     it("calls onAnswerEffect with correct=true on correct answer", () => {
       const onAnswerEffect = vi.fn();
