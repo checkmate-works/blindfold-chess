@@ -18,6 +18,7 @@ export {
 } from "./PracticeSessionScreen";
 export { PracticeSetupScreen } from "./PracticeSetupScreen";
 export { PracticeStatsResultCard } from "./PracticeStatsResultCard";
+export { PracticeTrainingScreen } from "./PracticeTrainingScreen";
 export {
   TIME_LIMIT_OPTIONS,
   TimeLimitSettingsForm,

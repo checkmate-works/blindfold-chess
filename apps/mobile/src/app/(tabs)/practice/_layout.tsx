@@ -16,6 +16,7 @@ const PRACTICE_MODULE_ROUTES: readonly ModuleRoute[] =
   MOBILE_PRACTICE_MODULES.map((module) => ({
     route: practiceModuleRoute(module),
     i18nKey: module.i18nKey,
+    hasTraining: module.hasTraining,
   }));
 
 export default function PracticeLayout() {

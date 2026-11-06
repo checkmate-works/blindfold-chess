@@ -6,7 +6,12 @@
     "back": "戻る",
     "settings": "設定",
     "home": "ホーム",
-    "practice": "練習"
+    "practice": "練習",
+    "training": "トレーニング",
+    "startTraining": "トレーニング開始",
+    "trainingDescription": "問題が終了するまで出続けます。終了ボタンで終了できます。",
+    "endTraining": "終了",
+    "skip": "スキップ"
   },
   "tabs": {
     "home": "ホーム",
@@ -372,7 +377,10 @@
       "clear": "クリア",
       "correct": "正解！",
       "incorrect": "不正解",
-      "correctAnswer": "{{diagonal}}, {{antiDiagonal}}"
+      "correctAnswer": "{{diagonal}}, {{antiDiagonal}}",
+      "nextProblem": "次の問題",
+      "yourAnswer": "あなたの回答",
+      "correctAnswerLabel": "正解"
     },
     "result": {
       "title": "練習終了！",

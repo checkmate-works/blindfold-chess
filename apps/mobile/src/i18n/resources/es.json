@@ -6,7 +6,12 @@
     "back": "Atrás",
     "settings": "Ajustes",
     "home": "Inicio",
-    "practice": "Práctica"
+    "practice": "Práctica",
+    "training": "Entrenamiento",
+    "startTraining": "Iniciar Entrenamiento",
+    "trainingDescription": "Las preguntas seguirán apareciendo hasta que te detengas. Presiona el botón Finalizar para terminar.",
+    "endTraining": "Finalizar",
+    "skip": "Saltar"
   },
   "tabs": {
     "home": "Inicio",
@@ -372,7 +377,10 @@
       "clear": "Borrar",
       "correct": "¡Correcto!",
       "incorrect": "Incorrecto",
-      "correctAnswer": "{{diagonal}}, {{antiDiagonal}}"
+      "correctAnswer": "{{diagonal}}, {{antiDiagonal}}",
+      "nextProblem": "Siguiente Problema",
+      "yourAnswer": "Tu respuesta",
+      "correctAnswerLabel": "Respuesta correcta"
     },
     "result": {
       "title": "¡Práctica completada!",
