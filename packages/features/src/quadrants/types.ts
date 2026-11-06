@@ -4,6 +4,8 @@ import type {
   Square,
 } from "@blindfold-chess/types";
 
+import type { PracticeResultWithMistakes } from "../common/types";
+
 // Re-exported so existing importers of `@blindfold-chess/features/quadrants`
 // keep working; the canonical source is `@blindfold-chess/types`.
 export type { BoardOrientation };
@@ -21,3 +23,18 @@ export type QuadrantQuestion = {
   square: Square;
   orientation: ResolvedBoardOrientation;
 };
+
+/**
+ * The player's choices for a quadrants run. Only the board orientation is a
+ * setting: the timed run's length and mistake allowance are fixed rules of
+ * the mode, passed to the session hook by each app.
+ */
+export type QuadrantsSettings = {
+  orientation: BoardOrientation;
+};
+
+export const DEFAULT_QUADRANTS_SETTINGS: QuadrantsSettings = {
+  orientation: "white",
+};
+
+export type QuadrantsResult = PracticeResultWithMistakes;

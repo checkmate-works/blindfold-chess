@@ -6,8 +6,24 @@ import {
   generateQuadrantQuestionBatch,
   getCorrectQuadrant,
   getVisualQuadrant,
+  quadrantIdAtVisualPosition,
   visualQuadrantToId,
 } from "./logic";
+
+describe("quadrantIdAtVisualPosition", () => {
+  it.each([
+    ["top-left", "white", "q2"],
+    ["top-right", "white", "q1"],
+    ["bottom-left", "white", "q3"],
+    ["bottom-right", "white", "q4"],
+    ["top-left", "black", "q4"],
+    ["top-right", "black", "q3"],
+    ["bottom-left", "black", "q1"],
+    ["bottom-right", "black", "q2"],
+  ] as const)("%s from %s is %s", (position, orientation, expected) => {
+    expect(quadrantIdAtVisualPosition(position, orientation)).toBe(expected);
+  });
+});
 
 const FILES = ["a", "b", "c", "d", "e", "f", "g", "h"] as const;
 const RANKS = ["1", "2", "3", "4", "5", "6", "7", "8"] as const;

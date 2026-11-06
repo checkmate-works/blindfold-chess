@@ -1,4 +1,4 @@
-import type { Square } from "@blindfold-chess/types";
+import type { ResolvedBoardOrientation, Square } from "@blindfold-chess/types";
 
 import {
   type RandomSource,
@@ -35,6 +35,30 @@ export function getVisualQuadrant(
 
 export function visualQuadrantToId(quadrant: VisualQuadrant): QuadrantId {
   return QUADRANT_ID_BY_VISUAL_QUADRANT[quadrant];
+}
+
+const OPPOSITE_VISUAL_QUADRANT: Record<VisualQuadrant, VisualQuadrant> = {
+  "top-left": "bottom-right",
+  "top-right": "bottom-left",
+  "bottom-left": "top-right",
+  "bottom-right": "top-left",
+};
+
+/**
+ * The quadrant drawn at a screen position of a board viewed from
+ * `orientation`.
+ *
+ * {@link visualQuadrantToId} assumes white's view. Flipping the board for
+ * black rotates it 180°, so each screen corner then shows the quadrant that
+ * sits in the opposite corner from white's side (top-left shows `q4`, e1–h4).
+ */
+export function quadrantIdAtVisualPosition(
+  position: VisualQuadrant,
+  orientation: ResolvedBoardOrientation,
+): QuadrantId {
+  return visualQuadrantToId(
+    orientation === "white" ? position : OPPOSITE_VISUAL_QUADRANT[position],
+  );
 }
 
 /**
