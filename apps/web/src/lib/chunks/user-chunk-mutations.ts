@@ -266,6 +266,14 @@ export async function createChunkEntry(
   }
 }
 
+/**
+ * Owner-only edit of a draft chunk; a published chunk is
+ * `cannotEditPublished`. A slug rename also rewrites the `topic_key` of the
+ * chunk's discussion posts in the same transaction, so replies follow the
+ * new slug. Omitting `feedbackTopics` leaves the current topics untouched;
+ * passing it (even empty) replaces them. Changed fields go to the activity
+ * log after commit.
+ */
 export async function updateChunkEntry(
   id: string,
   data: ChunkMutationData
@@ -456,6 +464,12 @@ export async function publishChunkEntry(id: string): Promise<UpdateChunkResult> 
   return { success: true };
 }
 
+/**
+ * Owner-only soft delete, allowed in either status. In the same transaction
+ * it claws back any retired creation grant (capped at the live `earned`
+ * balance) and auto-rejects the chunk's pending edit requests, which would
+ * otherwise have no page left to be resolved from.
+ */
 export async function deleteChunkEntry(id: string): Promise<DeleteChunkResult> {
   const guardResult = await authenticateAndGuard(RATE_LIMITS.deleteChunk);
   if ('error' in guardResult) {

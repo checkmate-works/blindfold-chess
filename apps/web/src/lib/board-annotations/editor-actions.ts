@@ -39,6 +39,7 @@ export function toggleArrow(
   return { ...curr, arrows: next };
 }
 
+/** The circle counterpart of {@link toggleArrow}, slotted by `square`; same three-state rule. */
 export function toggleCircle(
   curr: BoardAnnotations,
   square: Square,

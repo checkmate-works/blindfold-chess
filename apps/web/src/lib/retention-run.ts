@@ -32,6 +32,12 @@ export type RetentionRun = {
   stamps: () => { startedAt: string; finishedAt: string };
 };
 
+/**
+ * Fix the cutoff and start the budget clock. The cutoff is derived from
+ * `now`, but the budget deadline and `finishedAt` always use the real clock,
+ * so overriding `now` in a test moves the eligibility window without making
+ * the run look instantly over (or under) budget.
+ */
 export function startRetentionRun(opts: RetentionRunOptions): RetentionRun {
   const now = opts.now ?? new Date();
   const startedAt = new Date(now);

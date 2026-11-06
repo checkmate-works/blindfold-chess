@@ -82,7 +82,8 @@ export const POST_IMAGE_STORAGE_PATH_REGEX = new RegExp(
 /**
  * Build a storage path under the post-images bucket.
  *
- * Throws if any of the inputs is not a valid UUID v4 (lower-cased) — a
+ * Throws if any of the inputs is not a lower-case UUID in the canonical
+ * 8-4-4-4-12 layout (any version; the version nibble is not checked) — a
  * defensive check so a caller cannot accidentally pass a spoofed userId
  * (e.g., from FormData) and produce a path that would later fail the
  * Storage RLS check or the DB CHECK.

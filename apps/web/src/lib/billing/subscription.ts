@@ -64,6 +64,15 @@ function selectActiveSubscription(userId: string) {
     .limit(1);
 }
 
+/**
+ * The user's subscription row for display on the /mypage screens — one in a
+ * {@link DISPLAYABLE_STATUSES} status, so `past_due` is included even though
+ * it grants no benefit; check `isSubscriptionActive` on the row for that.
+ *
+ * Uncached, and fails soft: `null` means "no displayable row" or "the query
+ * failed" (logged), so it must not gate a payment — that is what
+ * {@link hasActiveSubscriptionUncached} is for.
+ */
 export async function getUserSubscription(userId: string) {
   try {
     const [row] = await db

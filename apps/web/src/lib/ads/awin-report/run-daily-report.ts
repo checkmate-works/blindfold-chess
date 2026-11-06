@@ -92,6 +92,13 @@ export interface AwinDailyReportResult {
   transactionCount: number;
 }
 
+/**
+ * Fetch the report for the UTC day before `now` and post it to Slack. Not
+ * idempotent: every call posts a message, so a manual re-run after a partial
+ * failure can post the same day twice. Without `config` it reads the
+ * environment through {@link readAwinDailyReportConfig} and throws when any
+ * variable is missing; Awin and Slack failures propagate as rejections.
+ */
 export async function runAwinDailyReport(options: {
   config?: AwinDailyReportConfig;
   now?: Date;

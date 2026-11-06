@@ -1,5 +1,5 @@
 /**
- * PostgreSQL-based rate limiting — fixed-window counter.
+ * PostgreSQL-based rate limiting — trailing-window event count.
  *
  * @description
  * Provides a simple, database-backed rate limiter for user actions. Each action
@@ -14,10 +14,17 @@
  * to the expected traffic level. PostgreSQL with a composite index on
  * (user_id, action, created_at) handles the COUNT + INSERT pattern efficiently.
  *
- * @design Fixed window, not sliding window
+ * @design Trailing window over an event log
  *
- * The window is calculated as `NOW() - windowMs`. This is a fixed-window counter,
- * which is simpler and sufficient for the use cases in this application.
+ * Each call counts the events newer than `NOW() - windowMs`, so the window
+ * slides with the clock rather than resetting at aligned boundaries: there is
+ * no instant at which a whole budget refills at once, and a full bucket frees
+ * one slot each time its oldest event ages out.
+ *
+ * The count and the insert are separate statements with no lock, so callers
+ * racing on the same (userId, action) can overshoot `maxAttempts` by the
+ * number in flight. That is acceptable for an abuse backstop; nothing here is
+ * a hard quota.
  */
 import { and, eq, gt, sql } from 'drizzle-orm';
 import 'server-only';

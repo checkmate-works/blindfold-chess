@@ -107,6 +107,7 @@ type ReaperOptions = {
   batchSize?: number;
 };
 
+/** Reaper for rank-update items older than {@link RANK_UPDATE_RETENTION_MS}. Rank updates take no likes, so no likes are deleted. */
 export function reapOldRankUpdateFeedItems(
   opts: ReaperOptions = {}
 ): Promise<FeedItemReaperReport> {

@@ -22,6 +22,11 @@ export function isPasswordValidationErrorKey(key: string): key is PasswordValida
   return (PASSWORD_VALIDATION_ERROR_KEYS as readonly string[]).includes(key);
 }
 
+/**
+ * The first local-policy violation, or `null` when the password passes the
+ * local schema. `null` is not a guarantee the auth server will accept it:
+ * its own rejection is surfaced separately as `'weak'`.
+ */
 export function getPasswordValidationError(password: string): PasswordValidationErrorKey | null {
   const result = passwordSchema.safeParse(password);
   if (result.success) return null;

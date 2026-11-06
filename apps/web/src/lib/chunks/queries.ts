@@ -365,15 +365,6 @@ export const getAllAvailableChunkOptions = cache(async (): Promise<ChunkOption[]
 });
 
 /**
- * Picker catalog for the game-move chunk link: every published chunk,
- * **plus the viewer's own drafts**. See `linkableChunkPredicate` for why
- * the draft allowance exists and why it is keyed on the chunk's owner.
- *
- * Anonymous viewers get the published-only list — identical to
- * `getAllAvailableChunkOptions`, but reached through the same call site so
- * the page does not branch on auth just to pick a loader.
- */
-/**
  * How many live things currently assert this chunk: positions that tag it
  * (`position_chunks`), game moves it is linked to (`game_chunks`), and
  * repertoire positions it is linked to (`repertoire_chunks`).
@@ -423,6 +414,16 @@ export async function countChunkReferences(
   return { positions: positionCount, games: gameCount, repertoires: repertoireCount };
 }
 
+/**
+ * Picker catalog for the game-move and repertoire-position chunk links:
+ * every published chunk, **plus the viewer's own drafts**. See
+ * `linkableChunkPredicate` for why the draft allowance exists and why it is
+ * keyed on the chunk's owner.
+ *
+ * Anonymous viewers get the published-only list — identical to
+ * `getAllAvailableChunkOptions`, but reached through the same call site so
+ * the page does not branch on auth just to pick a loader.
+ */
 export const getLinkableChunkOptionsForViewer = cache(
   async (viewerId: string | null): Promise<ChunkOption[]> => {
     const rows = await db

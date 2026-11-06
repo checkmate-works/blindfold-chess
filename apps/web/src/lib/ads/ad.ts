@@ -146,6 +146,12 @@ const getActiveCreativesCached = unstable_cache(
   { tags: [AD_CREATIVES_CACHE_TAG], revalidate: 60 * 60 * 24 }
 );
 
+/**
+ * The cached pool for `slot` (see {@link ActiveCreative} for the caching
+ * policy). Fails soft: a DB error is logged and yields `[]`, so a broken ad
+ * query renders the page without ads instead of failing it — and that empty
+ * answer is cached like any other until the tag or the interval expires it.
+ */
 export function getActiveCreatives(slot: AdSlot): Promise<ActiveCreative[]> {
   return getActiveCreativesCached(slot);
 }

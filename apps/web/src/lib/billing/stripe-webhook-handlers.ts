@@ -101,6 +101,14 @@ export async function upsertSubscriptionMirror(
   revalidateTag(subscriptionStatusTag(userId), { expire: 60 });
 }
 
+/**
+ * Mirror the subscription a `checkout.session.completed` event created.
+ * Ignores non-subscription sessions. Like `handleSubscriptionUpdated`, it
+ * re-fetches the subscription from Stripe rather than trusting the payload.
+ * A session with no customer, or one whose customer is not in
+ * `stripe_customers`, is reported to Sentry and acknowledged rather than
+ * thrown, because no redelivery could make it succeed.
+ */
 export async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   if (session.mode !== 'subscription' || !session.subscription) return;
 
@@ -193,6 +201,13 @@ export async function handleSubscriptionUpdated(payload: Stripe.Subscription) {
   }
 }
 
+/**
+ * Mark the mirror row `canceled` after a `customer.subscription.deleted`
+ * event. Unlike the other handlers it writes from the event alone, without a
+ * Stripe fetch: deletion is terminal, so no later state can contradict it.
+ * An unknown subscription id is reported to Sentry and acknowledged; no row
+ * is created for it.
+ */
 export async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   const deleted = await db
     .update(subscriptions)

@@ -57,6 +57,13 @@ async function loadPositionForRequest(id: string) {
   return position ?? null;
 }
 
+/**
+ * Record a tag-link suggestion from the signed-in viewer against someone
+ * else's position. Requires a profile and spends one
+ * `submitPositionEditRequest` rate-limit slot before any check. At most one
+ * pending request per (position, proposer). On success the owner is notified
+ * fire-and-forget; nothing is revalidated.
+ */
 export async function submitPositionEditRequestEntry(params: {
   positionId: string;
   payload: SubmitPositionEditRequestPayload;
@@ -272,18 +279,27 @@ async function resolvePositionEditRequest(
   return { success: true };
 }
 
+/**
+ * Owner-only: mark the request `accepted`, snapshot the position's current
+ * theme / chunk links onto the row, and insert the proposed links that are
+ * still valid and not yet present (additive — nothing is unlinked), all in
+ * one transaction; then notify the proposer (fire-and-forget). Shares one
+ * `resolvePositionEditRequest` rate limit with reject and withdraw.
+ */
 export function acceptPositionEditRequestEntry(
   requestId: string
 ): Promise<ResolvePositionEditRequestResult> {
   return resolvePositionEditRequest({ requestId, action: 'accept' });
 }
 
+/** Owner-only: mark the request `rejected`, snapshotting the current links. The proposer is not notified. */
 export function rejectPositionEditRequestEntry(
   requestId: string
 ): Promise<ResolvePositionEditRequestResult> {
   return resolvePositionEditRequest({ requestId, action: 'reject' });
 }
 
+/** Proposer-only: mark the request `withdrawn`, snapshotting the current links. Nobody is notified. */
 export function withdrawPositionEditRequestEntry(
   requestId: string
 ): Promise<ResolvePositionEditRequestResult> {
