@@ -10,7 +10,8 @@
  *
  * @flow
  * 1. Fetch all ranks and the current user's achieved ranks.
- * 2. Resolve the current and next rank via `resolveNextRank`.
+ * 2. Resolve the current rank, the next rank, its CTA and the curriculum
+ *    cutoff via `resolveDojoNextStep` (`_lib/resolve-next-step.ts`).
  * 3. Render: belt strip (current), next rank RankCard + action links,
  *    curriculum TOC accordion.
  */
@@ -21,8 +22,6 @@ import Link from 'next/link';
 import { getNativeAdCreatives } from '@/lib/ads/ad';
 import { DOJO_NATIVE_AD_SLOT } from '@/lib/ads/registry';
 import { getOptionalUser } from '@/lib/auth';
-import { CURRICULUM } from '@/lib/db/data/curriculum';
-import { ALL_RANK_SLUGS } from '@/lib/db/data/ranks';
 import type { RankSlug } from '@/lib/db/data/ranks';
 import { buildGuideHrefBySlug } from '@/lib/guides/guideHrefBySlug';
 
@@ -35,12 +34,8 @@ import {
 import {
   resolveAchievedSlugs,
   resolveDisplayAchievedSlugs,
-  resolveNextRank,
 } from '@/app/[locale]/(public)/dojo/ranks/_lib/rank-progression';
-import {
-  buildRequirementItems,
-  isRankEarnedByPlaying,
-} from '@/app/[locale]/(public)/dojo/ranks/_lib/requirement-items';
+import { buildRequirementItems } from '@/app/[locale]/(public)/dojo/ranks/_lib/requirement-items';
 import { PublishNudgeBanner } from '@/app/[locale]/(public)/games/_components/PublishNudgeBanner';
 import {
   CurriculumToc,
@@ -56,6 +51,7 @@ import type { LocalePageProps } from '@/app/[locale]/_lib/types';
 
 import { BeltStrip } from './_components/BeltStrip';
 import { NextRankRequirements } from './_components/NextRankRequirements';
+import { resolveDojoNextStep } from './_lib/resolve-next-step';
 
 export const dynamic = 'force-dynamic';
 
@@ -85,32 +81,39 @@ export default async function DojoPage({ params }: LocalePageProps) {
   const achievedSlugs = resolveAchievedSlugs(dbRanks, achievedRankIds);
   // The curriculum TOC's checkmarks use the DISPLAY set (expanded + mukyu):
   // a 1dan holder with no kyū rows should still see every lower rank checked
-  // off, not just 1dan itself. `resolveNextRank` below stays on the literal
-  // set — it doesn't matter for its output (current/next are both about the
-  // highest level), but literal is the more honest default for anything
-  // beyond pure display.
+  // off, not just 1dan itself. `resolveDojoNextStep` below stays on the
+  // literal set — it doesn't matter for its output (current/next are both
+  // about the highest level), but literal is the more honest default for
+  // anything beyond pure display.
   const displayAchievedSlugs = resolveDisplayAchievedSlugs(achievedSlugs);
 
-  const { current, next } = resolveNextRank(dbRanks, achievedSlugs);
+  // The whole "what should I do next?" decision (next rank, card state, CTA
+  // destination, curriculum cutoff) is made in `resolveDojoNextStep`; this
+  // page only translates and renders what it returns.
+  const { current, next, nextCardState, cta, maxVisibleSlug, hasHiddenCurriculum } =
+    resolveDojoNextStep({ dbRanks, achievedSlugs, locale });
 
   // Belt strip: current rank view, defaulting to mukyu (white belt) for
   // unauthenticated users or users who have not yet earned any rank.
   const beltSlug: RankSlug = current?.slug ?? 'mukyu';
+  // ranks.rankNames.<slug> — mukyu, 5kyu, 4kyu, 3kyu, 2kyu, 1kyu, 1dan (ALL_RANK_SLUGS)
   const beltLabel = tRanks(`rankNames.${beltSlug}`);
 
   // RankCard props for the next rank (if any). Requirements are rendered as
   // standalone links beneath the card (not inside it), so no
   // requirementLabels are passed — RankCard simply omits the section.
-  const nextCardProps = next
-    ? {
-        slug: next.slug,
-        locale,
-        beltColor: getBeltColorHex(next.slug),
-        rankName: tRanks(`rankNames.${next.slug}`),
-        state: (next.requirements.length === 0 ? 'coming-soon' : 'next') as 'next' | 'coming-soon',
-        comingSoonLabel: tRanks('comingSoon'),
-      }
-    : null;
+  const nextCardProps =
+    next && nextCardState
+      ? {
+          slug: next.slug,
+          locale,
+          beltColor: getBeltColorHex(next.slug),
+          // ranks.rankNames.<slug> — 5kyu, 4kyu, 3kyu, 2kyu, 1kyu, 1dan (never mukyu: it is UI-only)
+          rankName: tRanks(`rankNames.${next.slug}`),
+          state: nextCardState,
+          comingSoonLabel: tRanks('comingSoon'),
+        }
+      : null;
 
   // Standalone requirement items for the next rank — each renders as a link
   // directly to the relevant practice page (piece parameters already handled
@@ -118,19 +121,8 @@ export default async function DojoPage({ params }: LocalePageProps) {
   const nextRequirementItems = next ? buildRequirementItems(next.requirements, locale, tRanks) : [];
   const nextBeltColor = next ? getBeltColorHex(next.slug) : getBeltColorHex('mukyu');
 
-  // Send the reader where the next rank is actually earned — the practice index
-  // is a dead end for a rank you earn at the board.
-  const nextIsEarnedByPlaying = next !== null && isRankEarnedByPlaying(next.requirements);
-
-  // Curriculum truncation cutoff, and whether it actually hides anything:
-  // the "view all guides" link below the TOC is redundant once every rank
-  // with curriculum content is already visible (the guides index would show
-  // the identical list).
-  const maxVisibleSlug = next?.slug ?? ALL_RANK_SLUGS[ALL_RANK_SLUGS.length - 1];
-  const maxVisibleIndex = ALL_RANK_SLUGS.indexOf(maxVisibleSlug);
-  const hasHiddenCurriculum = CURRICULUM.some(
-    ({ slug, sections }) => sections.length > 0 && ALL_RANK_SLUGS.indexOf(slug) > maxVisibleIndex
-  );
+  // dojo.<labelKey> — startAiGame | viewAllPractices
+  const ctaLabel = t(cta.labelKey);
 
   const helpSteps: HelpStep[] = [
     {
@@ -207,13 +199,11 @@ export default async function DojoPage({ params }: LocalePageProps) {
               )}
 
               {/* Centered CTA directly below the list — the practice index, or
-                  the game setup once the next rank is earned by playing. */}
+                  the game setup once the next rank is earned by playing
+                  (decided in `resolveDojoNextStep`). */}
               <div className="flex justify-center">
-                <Link
-                  href={nextIsEarnedByPlaying ? `/${locale}/games/new` : `/${locale}/practice`}
-                  className={`text-sm ${TEXT_LINK_CLASSES}`}
-                >
-                  {nextIsEarnedByPlaying ? t('startAiGame') : t('viewAllPractices')}
+                <Link href={cta.href} className={`text-sm ${TEXT_LINK_CLASSES}`}>
+                  {ctaLabel}
                 </Link>
               </div>
             </div>
@@ -244,7 +234,10 @@ export default async function DojoPage({ params }: LocalePageProps) {
           achievedSlugs={displayAchievedSlugs}
           nextSlug={next?.slug ?? null}
           maxVisibleSlug={maxVisibleSlug}
+          // ranks.rankNames.<slug> — mukyu, 5kyu, 4kyu, 3kyu, 2kyu, 1kyu, 1dan (ALL_RANK_SLUGS)
           rankName={(slug) => tRanks(`rankNames.${slug}`)}
+          // dojo.curriculum.sections.<titleKey> — algebraicNotation, anchorPoints,
+          // blindfoldLegalMoves, diagonals, chunking, memorisation (CURRICULUM)
           sectionTitle={(key) => t(`curriculum.sections.${key}`)}
           achievedLabel={t('curriculum.achieved')}
           guideHrefBySlug={guideHrefBySlug}
