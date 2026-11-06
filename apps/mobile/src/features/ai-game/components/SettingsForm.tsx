@@ -13,6 +13,8 @@ import type { SkillLevel } from "../lib/types";
 type SettingsFormProps = {
   playerColor: Side;
   skillLevel: SkillLevel;
+  /** A note under the colour choice, e.g. that it was picked from a PGN. */
+  playerColorHint?: string;
   onUpdatePlayerColor: (color: Side) => void;
   onUpdateSkillLevel: (level: SkillLevel) => void;
 };
@@ -25,6 +27,7 @@ const SKILL_LEVELS: SkillLevel[] = [
 export function SettingsForm({
   playerColor,
   skillLevel,
+  playerColorHint,
   onUpdatePlayerColor,
   onUpdateSkillLevel,
 }: SettingsFormProps) {
@@ -74,6 +77,11 @@ export function SettingsForm({
             </TouchableOpacity>
           ))}
         </View>
+        {playerColorHint && (
+          <Text style={[styles.sublabel, { color: colors.mutedForeground }]}>
+            {playerColorHint}
+          </Text>
+        )}
       </View>
 
       {/* Skill Level */}
