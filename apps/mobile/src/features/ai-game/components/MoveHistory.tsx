@@ -1,6 +1,10 @@
 import { useRef, useEffect } from "react";
 import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { useTranslation } from "react-i18next";
+import {
+  fullmoveNumberFromFen,
+  isBlackToMoveFromFen,
+} from "@blindfold-chess/features/chess-core/fen";
 import { formatMovesToPgn } from "@blindfold-chess/features/chess-core/pgn-format";
 import type { AlgebraicNotation } from "@blindfold-chess/types";
 import {
@@ -13,9 +17,11 @@ import {
 
 type MoveHistoryProps = {
   moves: AlgebraicNotation[];
+  /** The game's starting position; the standard position when absent. */
+  startingFen?: string;
 };
 
-export function MoveHistory({ moves }: MoveHistoryProps) {
+export function MoveHistory({ moves, startingFen }: MoveHistoryProps) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const scrollViewRef = useRef<ScrollView>(null);
@@ -42,15 +48,17 @@ export function MoveHistory({ moves }: MoveHistoryProps) {
     );
   }
 
-  // Group moves in pairs (1. e4 e5, 2. Nf3 Nc6, ...).
-  //
-  // The AI game always begins from the standard position — `useGameSession`
-  // holds no starting FEN and never hands one to the engine — hence White
-  // first at move 1. Those two facts are arguments here rather than arithmetic
-  // baked into the loop, so the day the session gains custom starts this call
-  // is the whole change; pairing by hand is how the web build ended up
-  // labelling a game resumed at move 24 as "1.".
-  const movePairs = formatMovesToPgn(moves, false, 1);
+  // Group moves in pairs (1. e4 e5, 2. Nf3 Nc6, ...), numbered from the
+  // starting position: a game set up with Black to move at move 24 opens with
+  // "24. ... <move>", not "1.". Numbering by hand from 1 is how the web build
+  // once labelled such a resumed game as "1.".
+  const movePairs = startingFen
+    ? formatMovesToPgn(
+        moves,
+        isBlackToMoveFromFen(startingFen),
+        fullmoveNumberFromFen(startingFen),
+      )
+    : formatMovesToPgn(moves, false, 1);
 
   const lastMoveIndex = moves.length - 1;
 
