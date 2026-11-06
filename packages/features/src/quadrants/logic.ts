@@ -116,3 +116,12 @@ export function checkQuadrantAnswer(
 ): boolean {
   return getCorrectQuadrant(square) === selectedQuadrant;
 }
+
+/**
+ * How long an answer's feedback stays up, in ms, in both the timed run and
+ * training. A right answer flashes briefly so a fluent player keeps their
+ * rhythm; a wrong one stays up three times as long, so the player can see
+ * where the square actually was before the next question replaces it.
+ */
+export const quadrantFeedbackDuration = (correct: boolean): number =>
+  correct ? 500 : 1500;

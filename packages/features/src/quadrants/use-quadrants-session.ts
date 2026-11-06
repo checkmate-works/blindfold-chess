@@ -14,6 +14,7 @@ import {
   checkQuadrantAnswer,
   generateQuadrantQuestionBatch,
   getCorrectQuadrant,
+  quadrantFeedbackDuration,
 } from "./logic";
 import type {
   BoardOrientation,
@@ -27,13 +28,6 @@ import type {
  * almost always covers it; the buffer appends another if it does not.
  */
 const BATCH_SIZE = 100;
-
-/**
- * A right answer flashes briefly so a fluent player keeps their rhythm; a
- * wrong one stays up three times as long, so the player can see where the
- * square actually was before the next question replaces it.
- */
-const feedbackDuration = (correct: boolean): number => (correct ? 500 : 1500);
 
 export type UseQuadrantsSessionConfig =
   TimedQuizSessionConfig<QuadrantsResult> & {
@@ -74,7 +68,7 @@ export function useQuadrantsSession({
     generateQuestion,
     mistakeAllowance,
     onAnswerEffect,
-    feedbackDuration,
+    feedbackDuration: quadrantFeedbackDuration,
   });
 
   useTimedPracticeCompletion(session, timeLimit, onComplete);

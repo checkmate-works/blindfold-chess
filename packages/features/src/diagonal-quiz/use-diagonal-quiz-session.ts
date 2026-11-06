@@ -17,8 +17,7 @@ import { useTimedSession } from "../practice-session/use-timed-session";
 import {
   EXCLUDED_QUIZ_SQUARES,
   getDiagonals,
-  isValidDiagonalAnswer,
-  normalizeDiagonal,
+  scoreDiagonalAnswer,
 } from "./logic";
 import type { DiagonalQuestionResult, DiagonalQuizResult } from "./types";
 
@@ -92,20 +91,17 @@ export function useDiagonalQuizSession({
     (diagonalAnswer: string, antiDiagonalAnswer: string) => {
       if (!currentQuestion) return;
 
-      const { diagonal, antiDiagonal } = getDiagonals(currentQuestion);
-
-      const diagonalValid = isValidDiagonalAnswer(diagonalAnswer);
-      const antiDiagonalValid = isValidDiagonalAnswer(antiDiagonalAnswer);
-
-      const diagonalCorrect =
-        diagonalValid &&
-        normalizeDiagonal(diagonalAnswer) === normalizeDiagonal(diagonal);
-      const antiDiagonalCorrect =
-        antiDiagonalValid &&
-        normalizeDiagonal(antiDiagonalAnswer) ===
-          normalizeDiagonal(antiDiagonal);
-
-      const isCorrect = diagonalCorrect && antiDiagonalCorrect;
+      const {
+        isCorrect,
+        isDiagonalCorrect: diagonalCorrect,
+        isAntiDiagonalCorrect: antiDiagonalCorrect,
+        correctDiagonal: diagonal,
+        correctAntiDiagonal: antiDiagonal,
+      } = scoreDiagonalAnswer(
+        currentQuestion,
+        diagonalAnswer,
+        antiDiagonalAnswer,
+      );
 
       setQuestionResults((prev) => [
         ...prev,
