@@ -2,18 +2,18 @@
 
 import { useCallback, useMemo, useState } from 'react';
 
+import { validatePosition } from '@blindfold-chess/features/chess-core';
+import {
+  type CastlingRights,
+  NO_CASTLING_RIGHTS,
+  buildFenFromParts,
+  getCastlingAvailability,
+  getEnPassantAvailability,
+} from '@blindfold-chess/features/chess-core/fen-fields';
 import { sideToPieceColor } from '@blindfold-chess/types';
 import type { PieceColor, Side } from '@blindfold-chess/types';
 
-import type { CastlingRights } from '../_components/PositionSettings';
-import { buildFenFromParts } from '../_lib/build-fen-from-parts';
-import { getCastlingAvailability } from '../_lib/get-castling-availability';
-import { getEnPassantAvailability } from '../_lib/get-en-passant-availability';
-import { validatePosition } from '../_lib/validate-position';
-
 const EMPTY_BOARD_FEN = '8/8/8/8/8/8/8/8 w - - 0 1';
-
-const EMPTY_CASTLING: CastlingRights = { K: false, Q: false, k: false, q: false };
 
 /**
  * Manages the FEN-by-parts state for the custom-position new-game form.
@@ -59,7 +59,7 @@ const EMPTY_CASTLING: CastlingRights = { K: false, Q: false, k: false, q: false 
  */
 export function usePositionState({ color }: { color: Side }) {
   const [positionFen, setPositionFen] = useState(EMPTY_BOARD_FEN);
-  const [positionCastling, setPositionCastling] = useState<CastlingRights>(EMPTY_CASTLING);
+  const [positionCastling, setPositionCastling] = useState<CastlingRights>(NO_CASTLING_RIGHTS);
   const [positionEnPassant, setPositionEnPassant] = useState('-');
   // State (not a ref) so that consuming the one-shot flag during render is
   // discarded together with the render if React throws the pass away.

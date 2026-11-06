@@ -7,3 +7,4 @@ export { MoveHistory } from "./MoveHistory";
 export { ResultCard } from "./ResultCard";
 export { SettingsForm } from "./SettingsForm";
 export { Spinner } from "./Spinner";
+export { StartPositionForm } from "./StartPositionForm";

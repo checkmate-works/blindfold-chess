@@ -44,3 +44,13 @@ export {
   createInitialState,
   notationInputReducer,
 } from "./notation-input";
+export type {
+  AiGameStart,
+  FenStartErrorKey,
+  PgnStartErrorKey,
+} from "./start-position";
+export {
+  deriveSideFromPgn,
+  resolveFenStart,
+  resolvePgnStart,
+} from "./start-position";

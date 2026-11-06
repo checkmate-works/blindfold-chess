@@ -18,6 +18,14 @@ type UseGameSessionProps = {
     startingFen?: string,
   ) => Promise<Result<AlgebraicNotation, EngineError>>;
   isAiLoading: boolean;
+  /** Position the game starts from; the standard position when absent. */
+  startingFen?: string;
+  /**
+   * Moves already played from `startingFen` (a pasted PGN's mainline). They
+   * are the first entries of `moves`, so the history shows them and the engine
+   * sees the whole game. Read once on mount, like any initial state.
+   */
+  initialMoves?: AlgebraicNotation[];
 };
 
 export function useGameSession({
@@ -25,16 +33,20 @@ export function useGameSession({
   skillLevel,
   getAiMove,
   isAiLoading,
+  startingFen,
+  initialMoves,
 }: UseGameSessionProps) {
-  const [moves, setMoves] = useState<AlgebraicNotation[]>([]);
+  const [moves, setMoves] = useState<AlgebraicNotation[]>(
+    () => initialMoves ?? [],
+  );
   const [error, setError] = useState<string | null>(null);
   const [isAiThinking, setIsAiThinking] = useState(false);
   const isAiMoveInProgressRef = useRef(false);
 
   // Derive game state synchronously whenever moves change
   const gameState = useMemo(
-    () => computeGameState(moves, playerColor),
-    [moves, playerColor],
+    () => computeGameState(moves, playerColor, startingFen),
+    [moves, playerColor, startingFen],
   );
 
   const {
@@ -44,7 +56,8 @@ export function useGameSession({
     currentFen,
   } = gameState;
 
-  // Trigger AI move when it's not the player's turn.
+  // Trigger AI move when it's not the player's turn. This is also what makes
+  // the engine move first when a custom start leaves it to move.
   // We compute isPlayerTurn synchronously from moves to avoid a race condition
   // where the state-based isPlayerTurn lags behind the latest moves array
   // (causing the AI to move repeatedly in an infinite loop).
@@ -62,7 +75,7 @@ export function useGameSession({
     isAiMoveInProgressRef.current = true;
     setIsAiThinking(true);
 
-    getAiMove(moves)
+    getAiMove(moves, startingFen)
       .then((result) => {
         if (result.ok) {
           setMoves((prev) => [...prev, result.value]);
@@ -85,7 +98,7 @@ export function useGameSession({
         isAiMoveInProgressRef.current = false;
         setIsAiThinking(false);
       });
-  }, [moves, playerColor, getAiMove, isPlayerTurn, gameStatus]);
+  }, [moves, playerColor, getAiMove, isPlayerTurn, gameStatus, startingFen]);
 
   const submitMove = useCallback(
     (move: AlgebraicNotation) => {
@@ -93,7 +106,7 @@ export function useGameSession({
         return false;
       }
 
-      if (!validateGameMove(moves, move)) {
+      if (!validateGameMove(moves, move, startingFen)) {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
         setError("Invalid move");
         return false;
@@ -104,7 +117,7 @@ export function useGameSession({
       setError(null);
       return true;
     },
-    [isPlayerTurn, gameStatus, isAiLoading, moves],
+    [isPlayerTurn, gameStatus, isAiLoading, moves, startingFen],
   );
 
   return {
@@ -118,5 +131,6 @@ export function useGameSession({
     submitMove,
     playerColor,
     skillLevel,
+    startingFen,
   };
 }

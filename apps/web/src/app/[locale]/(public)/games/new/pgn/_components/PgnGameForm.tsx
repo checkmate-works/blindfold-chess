@@ -4,8 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useRouter, useSearchParams } from 'next/navigation';
 
-import { getPgnHeaders, getPgnHistory } from '@blindfold-chess/features/chess-core';
-import { pieceColorToSide } from '@blindfold-chess/types';
+import { deriveSideFromPgn } from '@blindfold-chess/features/ai-game';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
 import { engineConfigToUrlParams } from '@/lib/engines';
@@ -18,7 +17,6 @@ import { useEngineSelection } from '@/app/[locale]/(public)/games/new/_hooks/use
 import { useLocalGameSettings } from '@/app/[locale]/(public)/games/new/_hooks/use-local-game-settings';
 import { useMaiaGameLaunch } from '@/app/[locale]/(public)/games/new/_hooks/use-maia-game-launch';
 import { deriveMaiaCardMode } from '@/app/[locale]/(public)/games/new/_lib/maia-launch';
-import { parseFenFields } from '@/app/[locale]/(public)/games/new/_lib/parse-fen-fields';
 import { parsePgnWithFen, validatePgn } from '@/app/[locale]/(public)/games/play/_lib/pgn-parser';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -75,27 +73,11 @@ export function PgnGameForm({ locale, maiaAccess }: Props) {
   useEffect(() => {
     if (colorManuallySet) return;
 
-    if (pgn.trim() && validatePgn(pgn)) {
-      try {
-        const history = getPgnHistory(pgn, { verbose: true }) as { color: string }[];
-
-        if (history.length > 0) {
-          const lastMoveEntry = history[history.length - 1];
-          const derivedColor: Side = lastMoveEntry.color === 'w' ? 'black' : 'white';
-          setColor(derivedColor);
-        } else {
-          const headers = getPgnHeaders(pgn);
-          const sideToMove = headers.FEN ? parseFenFields(headers.FEN)?.sideToMove : null;
-          // A missing or unrecognised side-to-move field keeps the current
-          // selection rather than guessing a colour, matching the
-          // parse-failure path below and the position form's URL handling.
-          if (sideToMove) {
-            setColor(pieceColorToSide(sideToMove));
-          }
-        }
-      } catch {
-        // If PGN parsing fails, keep current color selection
-      }
+    // An empty, unreadable or side-less PGN derives nothing, which keeps the
+    // current selection rather than guessing a colour.
+    const derivedColor = deriveSideFromPgn(pgn);
+    if (derivedColor) {
+      setColor(derivedColor);
     }
   }, [pgn, colorManuallySet]);
 

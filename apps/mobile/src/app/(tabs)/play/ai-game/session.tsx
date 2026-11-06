@@ -18,6 +18,7 @@ import {
   useGameSession,
 } from "../../../../features/ai-game/hooks";
 import type { SkillLevel } from "../../../../features/ai-game/lib/types";
+import { decodeStartParams } from "../../../../features/ai-game/lib/start-params";
 import { parseEnumParam } from "../../../../lib/route-params";
 import { Screen } from "../../../../components";
 import { useTheme, fontSize, fontWeight, spacing } from "../../../../theme";
@@ -29,6 +30,8 @@ export default function AiGameSession() {
   const params = useLocalSearchParams<{
     playerColor: string;
     skillLevel: string;
+    fen?: string;
+    moves?: string;
   }>();
 
   const playerColor = parseEnumParam<Side>(params.playerColor, SIDES, "white");
@@ -37,6 +40,12 @@ export default function AiGameSession() {
     ? parsedSkillLevel
     : 5;
 
+  // Decoded once: the session replays these as its initial state, and a
+  // re-decode on every render would hand useGameSession a new array each time.
+  const [start] = useState(() =>
+    decodeStartParams({ fen: params.fen, moves: params.moves }),
+  );
+
   const ai = useAiVersus(skillLevel);
 
   const game = useGameSession({
@@ -44,6 +53,8 @@ export default function AiGameSession() {
     skillLevel,
     getAiMove: ai.getAiMove,
     isAiLoading: ai.isLoading,
+    startingFen: start.startingFen,
+    initialMoves: start.moves,
   });
 
   // Navigate to result when game is over
@@ -114,7 +125,7 @@ export default function AiGameSession() {
         )}
 
         {/* Move History */}
-        <MoveHistory moves={game.moves} />
+        <MoveHistory moves={game.moves} startingFen={start.startingFen} />
 
         {/* Input area */}
         {game.gameStatus === "in_progress" &&

@@ -17,6 +17,7 @@
     "./board-symmetry/client": "./src/board-symmetry/client.ts",
     "./chess-core": "./src/chess-core/index.ts",
     "./chess-core/fen": "./src/chess-core/fen-pure.ts",
+    "./chess-core/fen-fields": "./src/chess-core/fen-fields.ts",
     "./chess-core/move-numbering": "./src/chess-core/move-numbering.ts",
     "./chess-core/pgn-format": "./src/chess-core/pgn-format.ts",
     "./common": "./src/common/index.ts",
