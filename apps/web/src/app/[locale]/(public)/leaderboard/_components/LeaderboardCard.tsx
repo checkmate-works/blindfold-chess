@@ -19,6 +19,7 @@ type Props = {
 export function LeaderboardCard({ locale, module, settingKey, period, rank }: Props) {
   const t = useTranslations('leaderboard');
 
+  // leaderboard.cardTitle.<LeaderboardModule>.<settingKey> (LEADERBOARD_KEYS): leaderboard.cardTitle.coordinate_quiz.white / .black / .random, leaderboard.cardTitle.legal_moves.king / .queen / .rook / .bishop / .knight / .random, leaderboard.cardTitle.route_planner.knight / .bishop, leaderboard.cardTitle.square_colors.default, leaderboard.cardTitle.diagonal_quiz.default, leaderboard.cardTitle.board_symmetry.default
   const title = t(`cardTitle.${module}.${settingKey}`);
   const detailPath = buildDetailPath(period, module, settingKey);
   const icon = getLeaderboardIcon(module, settingKey);

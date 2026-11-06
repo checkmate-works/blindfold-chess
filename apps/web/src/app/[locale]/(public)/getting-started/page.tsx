@@ -1,3 +1,9 @@
+/**
+ * Getting Started (目隠しチェスを始めよう, `/getting-started`)
+ *
+ * @description
+ * Onboarding landing page with three entry cards (try a simple position, train, join the community) and the rank overview.
+ */
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 

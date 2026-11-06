@@ -96,8 +96,8 @@ As of this writing, the project ships `pt-BR` only (not `pt-BR` + `pt-PT`): ~95%
 
 ### Test File Organization
 
-- **Unit Tests** - Co-located with source files using `.test.ts` or `.test.tsx` extension (e.g., `src/app/[locale]/play/_lib/move-sorter.test.ts`)
-- **E2E Tests** - Separate directory at `tests/e2e/` using `.spec.ts` extension
+- **Unit Tests** - Co-located with source files using `.test.ts` or `.test.tsx` extension (e.g., `src/app/[locale]/(public)/games/play/_lib/move-sorter.test.ts`), or in a `__tests__/` directory next to the module. There is no E2E suite; runtime checks are driven by hand with the `verify` skill (`.claude/skills/verify/SKILL.md`).
+- **Convention tests** - A few tests scan the source tree instead of calling code and fail with a message that says what to change: `src/lib/use-server-type-imports.test.ts`, `src/lib/isr-user-scope-guard.test.ts`, `src/app/_layouts/game-preferences-coverage.test.ts`, `src/messages/parity.test.ts`.
 
 ## Code Quality
 
@@ -255,622 +255,69 @@ A `specs/<feature>/` directory is a thinking aid for building something, not a r
 
 Delete the build steps, deliverable lists, acceptance checklists, progress checkboxes, and "where the existing parts live" tables outright: the code, its tests, and git history are the source of truth, and a table of file paths rots silently. Keep only the _why_, and keep it beside the code rather than in a file of its own — otherwise documentation grows linearly with every feature.
 
-## Local Development Setup
-
-### Supabase Local
-
-Local development uses [Supabase CLI](https://supabase.com/docs/guides/local-development) instead of standalone PostgreSQL. Supabase local provides PostgreSQL, Auth (GoTrue), Storage, Studio, and Mailpit (email testing) in Docker containers.
-
-The CLI is bundled as a devDependency of `apps/web` (`supabase/config.toml` is
-version-coupled to it), so always run it as `pnpm supabase ...` from `apps/web`
-— never a globally installed `supabase`.
-
-```bash
-cd apps/web
-
-# Start Supabase local (first run downloads Docker images)
-pnpm supabase start
-
-# Retrieve keys in JSON format and copy to .env.local:
-#   pnpm supabase status -o json
-#   NEXT_PUBLIC_SUPABASE_ANON_KEY=<PUBLISHABLE_KEY from JSON output>
-#   SUPABASE_SERVICE_ROLE_KEY=<SECRET_KEY from JSON output>
-
-# Run migrations
-pnpm db:run-migrate
-
-# Stop Supabase local
-pnpm supabase stop
-```
-
-> These keys are also visible in the human-readable `pnpm supabase start` output under "Authentication Keys" (Publishable / Secret).
-
-- **Supabase Studio**: http://127.0.0.1:54323
-- **Mailpit (email testing)**: http://127.0.0.1:54324
-- **PostgreSQL**: `postgresql://postgres:postgres@127.0.0.1:54322/postgres`
-- **API**: http://127.0.0.1:54321
-
-### Google OAuth (Optional)
-
-To test Google login locally, set up credentials in `supabase/.env`:
-
-1. Create OAuth credentials in [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
-2. Copy `supabase/.env.example` to `supabase/.env` and fill in the values
-
-## Database Migration
-
-- **Always use `pnpm db:run-migrate`** — This runs `scripts/migrate.ts`, which executes Drizzle migrations and then applies Supabase-specific SQL (RLS policies, auth hook, profiles setup, storage avatars) in Supabase environments (both local and production).
-- **Do NOT use `drizzle-kit push`** — `push` bypasses migration tracking (`drizzle.__drizzle_migrations`) and directly syncs the schema to the DB. This causes the migration journal and actual DB state to diverge, leading to errors on subsequent `migrate` runs.
-- **Schema changes workflow**: Edit `src/lib/db/schema.ts` → run `npx drizzle-kit generate --name=<migration_name>` → run `pnpm db:run-migrate`
-- **Always specify `--name` when generating migrations** — Running `drizzle-kit generate` without `--name` produces opaque sequential filenames. Always provide a descriptive name so the migration's purpose is clear from the filename alone.
-  - Use **snake_case** and keep the name concise (e.g., `create_games_table`, `add_visibility_to_announcements`)
-  - The prefix is configured as **timestamp format** (`20240627123900_create_games_table.sql`) in `drizzle.config.ts` to avoid conflicts between branches. Do not change this to sequential index format (`0001_`, `0002_`, ...).
-  ```bash
-  npx drizzle-kit generate --config drizzle.config.ts --name=create_games_table
-  ```
-- **Migration file structure**:
-  - `drizzle/*.sql` + `drizzle/meta/` — Drizzle-managed migrations (auto-generated, tracked by journal)
-  - `drizzle/supabase/` — Supabase-specific SQL (RLS, auth hooks, permissions, pg_cron scheduled jobs). Applied by `migrate.ts` in Supabase environments (detected by presence of `supabase_auth_admin` role). Each file must be idempotent — the whole set is re-applied on every migrate. Recurring DB maintenance (retention cleanups etc.) belongs in `scheduled_jobs.sql`: `cron.schedule()` upserts by job name, so editing a job there and re-running migrate updates it in place.
-
-## Moderation & Audit Architecture
-
-### Design Pattern: Event Log with Materialized State
-
-The moderation system uses a **dual-source pattern** adopted from Discourse, GitLab, Mastodon, and Lichess — NOT pure Event Sourcing.
-
-- **State flag** on `profiles` table (`bannedAt`) — enables O(1) status checks. Every Server Action calls `isUserBanned()` (`@/lib/ban`), so deriving state by replaying events would be prohibitively expensive.
-- **Event log** in `moderation_actions` table — immutable, append-only audit trail recording all admin operations with full context (who acted, on what, why, when). Corrections are recorded as new events (e.g., `unban` after `ban`), never as updates to existing records.
-
-### Key Design Decisions
-
-- **Polymorphic target** (`target_type` + `target_id`) — same pattern as `topicPosts.topicType + topicKey`. No schema changes when new moderation targets are added.
-- **`action` is varchar, not pgEnum** — avoids ALTER TYPE migrations for new action types.
-- **`metadata` (JSONB)** — stores action-specific context (deleted content, previous values). Replaces dedicated `previous_value`/`new_value` columns.
-- **No `updated_at`** — audit logs are immutable by design.
-- **`reason`** (text) — human-readable justification. For BAN, replaces the former `profiles.ban_reason` column.
-- **`ip_address`** — for forensic analysis of admin actions.
-- **FK** (`actor_id` → `auth.users`) — defined in Supabase-side SQL, following established pattern.
-- **A ban cancels the user's Stripe subscription immediately** — `banUser` calls `cancelAllActiveSubscriptions` after the ban has committed; a Stripe failure keeps the ban and reports `bannedButSubscriptionNotCanceled` to the operator instead of rolling back. Unban does not restore the plan. The ordering rationale is in the `banUser` TSDoc.
-
-### Usage Patterns
-
-| Operation               | State source                                         | Event log                                                               |
-| ----------------------- | ---------------------------------------------------- | ----------------------------------------------------------------------- |
-| Is user banned?         | `profiles.bannedAt IS NOT NULL` via `isUserBanned()` | —                                                                       |
-| Why was user banned?    | —                                                    | Latest `moderation_actions` where `action='ban'` AND `target_id=userId` |
-| Full moderation history | —                                                    | All `moderation_actions` for a `target_id`, ordered by `created_at`     |
-
-See `moderation_actions` table TSDoc in `src/lib/db/schema.ts` for detailed design rationale.
-
-## Belt Ranking System (段級位)
-
-A martial arts-inspired progression system (5級 → 初段). Users earn ranks by meeting challenge score thresholds.
-
-### Architecture Overview
-
-| Layer                 | File                                                                              | Responsibility                                                                                                                                                                                          |
-| --------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Schema**            | `src/lib/db/schema.ts` (`ranks`, `userRanks`)                                     | DB table definitions. `ranks` is admin-managed master data; `user_ranks` is immutable achievement history (INSERT-only, service role only)                                                              |
-| **Seed data**         | `src/lib/db/data/ranks.ts`                                                        | Code-is-source-of-truth rank definitions with `ALL_RANK_SLUGS`, `RANK_COLORS`, and `ranksSeedData`. Requirements are JSONB arrays (implicit AND). Empty `requirements: []` = conditions not yet defined |
-| **Evaluation**        | `src/lib/db/rank-evaluation.ts`                                                   | `checkAndGrantRanks(userId)` — called after every challenge completion. Evaluator pattern: one function per requirement `type` (currently `challenge_score`). Returns `GrantedRank[]`                   |
-| **Integration**       | `src/lib/db/save-challenge-result.ts`                                             | Calls `checkAndGrantRanks` in try-catch after the challenge transaction commits. Failure does not break the challenge save flow                                                                         |
-| **Server Action**     | `src/app/[locale]/(public)/practice/(challenge)/_actions/save-practice-result.ts` | `SaveResultResponse` includes `grantedRanks?` field, propagated from `saveChallengeResult`                                                                                                              |
-| **Achievement Modal** | `src/app/[locale]/(public)/practice/_components/RankAchievementModal.tsx`         | Client component. Reads `blindfold_chess_granted_ranks` from sessionStorage on mount, shows celebration modal with CTA to `/dojo/ranks`                                                                 |
-| **Ranks Page**        | `src/app/[locale]/(public)/dojo/ranks/page.tsx`                                   | Public SSR page showing all ranks with 4 states: achieved ✓, next (requirements visible), locked 🔒, coming soon                                                                                        |
-| **RLS**               | `drizzle/supabase/rls_policies.sql`                                               | Both tables: SELECT only for authenticated/anon. No INSERT/UPDATE/DELETE policies — writes via service role only                                                                                        |
-
-### Key Design Decisions
-
-- **Evaluator pattern (not per-rank strategy)**: Evaluators are keyed by requirement `type` (e.g., `challenge_score`), not by rank. Adding a new rank = seed data only. Adding a new requirement type (e.g., `post_count`) = one new evaluator function.
-- **JSONB requirements, not normalized table**: Heterogeneous condition schemas (scores, post counts, likes) make EAV or wide tables impractical. Validation is at the app layer (type guards), not DB level.
-- **No `profiles.currentRankId` cache (YAGNI)**: User's current rank is derived from `user_ranks` JOIN. With ≤15 rows per user, this is trivially fast. A cache column can be added if performance becomes an issue.
-- **Immutable `user_ranks`**: No `updatedAt`. `achievedAt` serves as creation timestamp. Records are never deleted or updated (grandfathering principle).
-- **`onDelete: 'restrict'`** on `user_ranks.rankId` → `ranks.id` — protects achievement history from master data deletion.
-- **Independent evaluation (skip-grants allowed)**: `checkAndGrantRanks` evaluates every unachieved rank on its own — an unmet lower rank never blocks a higher one, so a brand-new player who publishes a qualifying game jumps straight to 1kyu/1dan with no kyū ranks at all (deliberate UGC-first product choice, 2026-07-18; formerly linear stop-at-first-unmet). Sparse rank sets are a supported state everywhere downstream (`resolveNextRank`/`resolveRecommendedNextSlug` recommend the first unachieved slug ABOVE the highest achieved rank — never a rank below what the user already holds; admin stats count each user at their highest rank).
-- **Idempotent grants**: `onConflictDoNothing` on INSERT into `user_ranks`. Safe to call repeatedly.
-- **sessionStorage for modal**: Challenge components store `grantedRanks` in sessionStorage before redirecting to result page. `RankAchievementModal` reads and removes it on mount.
-
-### Adding a New Rank Requirement Type
-
-1. Define the type in `src/lib/db/data/ranks.ts` (add to `RankRequirement` union)
-2. Add an evaluator function in `src/lib/db/rank-evaluation.ts` (`evaluators` record)
-3. Add type guard logic in `parseRequirements` (`src/lib/db/data/ranks.ts` — this is the only place `parseRequirements` and its type guards live)
-4. Add i18n display logic in `ranks/page.tsx` if needed
-5. Update seed data with the new requirement
-
-### Adding a New Rank
-
-1. Add entry to `ranksSeedData` in `src/lib/db/data/ranks.ts` (with requirements or `[]` for placeholder)
-2. Add slug to `ALL_RANK_SLUGS` and color to `RANK_COLORS` in same file
-3. Add i18n entries in all locale message files (`src/messages/*.json`) under `ranks.rankNames` and `rankAchievement.rankNames`
-4. Run `pnpm db:seed`
-
-### Adding Leaderboard Support to a Practice Module
-
-When a practice module has challenge mode and should record scores on the leaderboard, follow these steps:
-
-1. **Register the module in `PRACTICE_MODULE_REGISTRY`** — Add (or update) an entry in `src/lib/practice/registry.ts` with `slugSnake`, `slugKebab`, and `hasChallenge: true`. The registry is the single source of truth: `PRACTICE_MENU_TYPES`, `CHALLENGE_MENU_TYPES`, `MODULE_TO_SLUG`, `SLUG_TO_MODULE`, and the leaderboard's `MODULES` / `VALID_MODULE_SLUGS` / `VALID_MODULE_FILTERS` are all derived from it. Also add the matching kebab/snake literals to the `PracticeMenuType`, `ChallengeMenuType`, `PracticeModuleSlugKebab`, and `LeaderboardModuleSlug` union types in the same file.
-2. **Add leaderboard key derivation** — Add a case in `deriveLeaderboardKey()` in `src/lib/db/leaderboard-key.ts`. Return `'default'` for modules with no settings-based segmentation, or derive from settings (e.g., `boardOrientation` for coordinate_quiz). Then add the keys to `LEADERBOARD_KEYS` in `src/lib/games/leaderboard-keys.ts`.
-3. **Wire up the build-challenge-path switch** — Add a case in `buildChallengePath()` in `src/app/[locale]/(public)/leaderboard/_lib/types.ts`. If the path carries the key as a query parameter, the module's challenge setup page must consume it: parse it in `page.tsx` from `searchParams` and pass it to `useQuerySeededSettings` in the setup component. The setup screens read their settings from storage, so a parameter nobody consumes is silently ignored and the button opens whatever the player last chose.
-4. **Add module emoji** — Add entry in `src/app/[locale]/(public)/practice/_lib/practice-emojis.ts` (`PRACTICE_EMOJIS`).
-5. **Create save-result action** — Create `src/app/[locale]/(public)/practice/{module}/_actions/save-result.ts` as a thin wrapper calling `savePracticeResult(menuType, settings, challengeFields)`.
-6. **Call save on challenge finish** — In the challenge session component, call the save action before redirecting to results. Use `savedRef` to prevent double saves. Handle `grantedRanks` (sessionStorage) and errors (toast flag).
-7. **Switch result page to leaderboard version** — Change from `createSimplePracticeResultPage(ResultClient)` to `createLeaderboardPracticeResultPage(ResultClient, { module, resolveKey })`. Update `ResultClient` to accept and render `leaderboardRows` and `leaderboardDetailPath` via `LeaderboardPreview`.
-8. **Update tests** — Update hardcoded entry counts in `leaderboard/_lib/__tests__/types.test.ts`, `leaderboard/_actions/__tests__/getUserRanks.test.ts`, and `src/lib/db/leaderboard-key.test.ts`.
-
-## Article Management (記事管理)
-
-Admin CRUD feature for managing articles published on the public `/articles` pages.
-
-### Architecture Overview
-
-| Layer                 | Path                                                               | Description                                                       |
-| --------------------- | ------------------------------------------------------------------ | ----------------------------------------------------------------- |
-| **DB schema**         | `src/lib/db/schema.ts` (`articles`, `articleImages`)               | Drizzle table definitions. `articles` stores body in dual format. |
-| **Types**             | `src/app/admin/articles/_lib/types.ts`                             | `ContentFormat`, Tiptap JSON types, form/mutation data shapes.    |
-| **Validation**        | `src/app/admin/articles/_lib/validation.ts`                        | `validateArticleData()` — shared by create & update actions.      |
-| **Server Actions**    | `src/app/admin/articles/_actions/{create,update,delete}Article.ts` | Mutation entry points (admin-guarded).                            |
-| **Editor form**       | `src/app/admin/articles/_components/ArticleForm.tsx`               | Full-height Tiptap editor layout with metadata side panel.        |
-| **Tiptap extensions** | `src/app/admin/articles/_components/tiptap-extensions.ts`          | StarterKit + Link, Image, YouTube, XEmbed.                        |
-| **Image upload**      | `src/app/admin/articles/_hooks/useImageUpload.ts`                  | Client-side upload hook (placeholder → replace pattern).          |
-| **Image API**         | `src/app/api/admin/articles/[id]/images/route.ts`                  | POST/DELETE for Supabase Storage + `article_images` tracking.     |
-| **Admin list page**   | `src/app/admin/articles/page.tsx`                                  | Table listing all articles with edit/delete actions.              |
-| **Publish form**      | `src/app/admin/articles/_components/ArticlePublishForm.tsx`        | Set `publishedAt`, `pinnedAt`, and publish.                       |
-| **Public list**       | `src/app/[locale]/(public)/articles/page.tsx`                      | Paginated, slug-deduplicated listing with locale fallback.        |
-| **Public detail**     | `src/app/[locale]/(public)/articles/[slug]/page.tsx`               | Renders article body based on `contentFormat`.                    |
-| **Tiptap renderer**   | `src/app/[locale]/_components/TiptapRenderer.tsx`                  | Server component — maps Tiptap JSON to React (no editor bundle).  |
-| **Markdown renderer** | `src/app/_components/MarkdownRenderer.tsx`                         | Client component — `react-markdown` with GFM, KaTeX, custom imgs. |
-
-### Content Format (content_format)
-
-The `articles` table has a `content_format` column (`varchar(20)`, default `'markdown'`) that determines how the article body is stored and rendered:
-
-| Format        | `content` column                     | `content_json` column | Admin editor support | Public renderer    |
-| ------------- | ------------------------------------ | --------------------- | -------------------- | ------------------ |
-| `markdown`    | Markdown source (primary body)       | `NULL`                | **Not supported**    | `MarkdownRenderer` |
-| `tiptap_json` | Plain-text fallback (for search/SEO) | Tiptap JSON document  | Supported            | `TiptapRenderer`   |
-
-**Key behaviors:**
-
-- The admin editor (`ArticleForm`) always sets `contentFormat: 'tiptap_json'` in `buildFormData()`. There is no UI toggle for format selection.
-- When a `markdown` article is loaded for editing, `contentJson` is `null`, so the Tiptap editor starts empty — the original Markdown content is **not** converted to Tiptap JSON.
-- The public article detail page (`articles/[slug]/page.tsx`) branches on `contentFormat`: `tiptap_json` articles use `TiptapRenderer`; all others fall back to `MarkdownRenderer`.
-
-### Rich Editor (Tiptap) Implementation
-
-The admin editor uses **Tiptap v2** (`@tiptap/react`) with these extensions (configured in `tiptap-extensions.ts`):
-
-| Extension      | Node/Mark name | Features                                                                 |
-| -------------- | -------------- | ------------------------------------------------------------------------ |
-| StarterKit     | (multiple)     | Paragraph, heading (h2/h3), bold, italic, strike, code, lists, etc.      |
-| Link           | `link`         | Inline hyperlinks. Click disabled in editor; opens in new tab on render. |
-| Placeholder    | —              | Ghost placeholder text when editor is empty.                             |
-| ResizableImage | `image`        | Extended Image with `size` (large/small) + `align` (left/center/right).  |
-| Youtube        | `youtube`      | YouTube embed with privacy-enhanced URLs (`youtube-nocookie.com`).       |
-| XEmbed         | `twitterEmbed` | X (formerly Twitter) embed. Name kept as `twitterEmbed` for compat.      |
-
-**Editor UI components:**
-
-- `BubbleToolbar` — floating toolbar on text selection (bold, italic, strike, link, code).
-- `PlusMenu` — floating "+" button on empty paragraphs for inserting blocks (headings, lists, blockquote, hr, image, YouTube, X embed).
-- `ImageNodeView` — custom NodeView for images with size/align toggle toolbar.
-- `YoutubeNodeView` / `XEmbedNodeView` — custom NodeViews for embed previews.
-
-**Image upload flow** (via `useImageUpload` hook):
-
-1. Image selected via PlusMenu, drag-and-drop, or paste.
-2. A 1x1 transparent GIF placeholder is inserted at cursor position.
-3. File is POSTed to `/api/admin/articles/[id]/images` (multipart/form-data).
-4. API validates (MIME type, binary signature, 5 MB limit), uploads to Supabase Storage (`article-images/{articleId}/{timestamp}.{ext}`), and records in `article_images` table.
-5. On success, placeholder is replaced with the public URL. On failure, placeholder is removed.
-6. Image upload is disabled until the article has been saved (requires `articleId`).
-
-### Considerations for Markdown Editing Support
-
-If adding the ability to edit `markdown` format articles in the admin UI:
-
-1. **Format-aware editor routing** — The edit page (`[id]/edit/page.tsx`) needs to check `article.contentFormat` and render either the Tiptap editor or a Markdown editor (e.g., textarea with preview, or a Markdown-specific WYSIWYG).
-2. **Preserve content_format** — When saving a markdown article, the action must keep `contentFormat: 'markdown'` (not override to `'tiptap_json'`). The current `ArticleForm.buildFormData()` hardcodes `'tiptap_json'`.
-3. **Migration path** — Consider whether to support one-way migration from Markdown to Tiptap JSON (convert on edit). This avoids maintaining two editor stacks long-term but requires a Markdown-to-Tiptap converter.
-4. **content vs. contentJson** — For `markdown` articles, `content` is the source of truth and `contentJson` should remain `null`. The validation logic already allows empty `content` only for `tiptap_json`.
-5. **Image handling** — Markdown articles use inline image URLs (e.g., `![alt](/path)`). The current `useImageUpload` hook is Tiptap-specific. A Markdown editor would need its own image insertion mechanism (e.g., insert `![](url)` at cursor).
-6. **Preview rendering** — The existing `MarkdownRenderer` component can be reused for live preview.
-
-## User Grants System (権限付与)
-
-A generic system for granting time-limited benefits to users. Supports ad-free access, paywall content access, and future benefit types.
-
-### Architecture Overview
-
-| Layer              | File                                  | Responsibility                                                                                                                                                                                                                              |
-| ------------------ | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Schema**         | `src/lib/db/schema.ts` (`userGrants`) | DB table. See TSDoc `@design` tags for full design rationale                                                                                                                                                                                |
-| **Core logic**     | `src/lib/users/user-grants.ts`        | `hasActiveGrant(userId, benefitType)` — cached lookup; `calcGrantStartsAt(userId, benefitType)` — additive stacking calculation                                                                                                             |
-| **Ad integration** | `src/lib/ads/ad-free-entitlement.ts`  | `hasAdFreeEntitlement()` — the single ad-free decision point (subscription OR ad_free grant OR dan-tier rank); both ad-gating layers (`shouldShowAdsForUser` in `src/lib/ads/ad.ts` and the `bfc_ads_hidden` cookie compute) delegate to it |
-| **Admin page**     | `src/app/admin/grants/page.tsx`       | Grant creation form, paginated list, revoke. See TSDoc for full description                                                                                                                                                                 |
-| **Server actions** | `src/app/admin/grants/_actions/`      | `createGrant` (with UUID + duration validation), `revokeGrant` (logical delete via `revokedAt`)                                                                                                                                             |
-
-### Key Design Decisions
-
-- **Single `user_grants` table** for all benefit types — `benefitType` discriminator ('ad_free', 'paywall_access', ...) avoids per-benefit tables. `grantType` tracks the source ('admin_manual', 'topic_post', 'campaign', ...). Both are varchar for extensibility.
-- **`resourceType` + `resourceId`** — NULL for global benefits (ad_free), populated for scoped benefits (e.g., paywall access to a specific article).
-- **Additive stacking** — New grants start from `max(expiresAt)` of existing non-revoked grants, so multiple grants extend the benefit period.
-- **No `grantedBy` column** — Admin audit trail is handled by the existing `moderation_actions` table.
-- **`revokedAt` logical deletion** — Grants are never physically deleted.
-- **Ad-free sources** — A user sees no ads if they have ANY of: an active Stripe subscription (`subscriptions` table), an active ad_free grant (`user_grants` table), or a dan-tier belt rank (`user_ranks` with `level >= DAN_TIER_MIN_LEVEL` — permanent, since ranks are never revoked; derived, NOT materialized as a grant, so admins will see no grant row for these users). All three are ORed in `hasAdFreeEntitlement()` (`src/lib/ads/ad-free-entitlement.ts`) — add future sources there, nowhere else. Dan holders are also blocked from redeeming coins for ad_free days (the redemption would be a no-op waste).
-
-### Adding a New Benefit Type
-
-1. Use the existing `user_grants` table with a new `benefitType` value (no schema change needed).
-2. Create a check function similar to `hasActiveGrant(userId, 'new_type')` or use the existing one.
-3. Integrate the check at the appropriate gate (e.g., content access middleware, component guard).
-4. For scoped benefits, also filter by `resourceType`/`resourceId`.
-
-### Adding a New Grant Trigger
-
-1. Call `calcGrantStartsAt(userId, benefitType)` to get the stacking start time.
-2. Insert into `user_grants` with the appropriate `grantType` (e.g., 'topic_post').
-3. For automated (high-frequency) triggers, wrap the read + insert in a `db.transaction()` to prevent race conditions. The current admin_manual flow intentionally omits the transaction as it is low-frequency.
-4. Call `revalidateTag('grant-status')` after insert.
-
-## Points / Coin Economy (コイン)
-
-The in-app currency has **two names for one thing**, by deliberate design:
-
-- **"Coin"** — the product/brand name. This is the ONLY term users and staff
-  ever see (web UI, admin UI, FAQ, notifications, i18n copy).
-- **"points"** — the internal ledger primitive. Used only in the DB schema and
-  the `@/lib/points` service layer. Never surfaced to a human.
-
-They are the same unit, 1:1. There is no conversion between them.
-
-### Why two names
-
-1. **Disambiguation from EXP (経験値).** The app already has experience points
-   (`exp_events` / `user_exp`), which a user could also call "points." Naming
-   the spendable currency "Coin" keeps the two economies verbally distinct.
-2. **Brand vs. implementation.** `point_events` is a generic signed-delta
-   ledger (mirrors `exp_events`); "Coin" is the concrete thing that ledger
-   happens to back. Keeping the ledger name generic costs nothing and avoids a
-   large, risky rename of schema / RLS / FKs.
-
-### Layer map
-
-| Layer         | Term       | Concrete names                                                                  |
-| ------------- | ---------- | ------------------------------------------------------------------------------- |
-| DB schema     | **points** | `point_events`, `user_point_balances`, `point_redemptions`, `point_purchases`   |
-| Service layer | **points** | `@/lib/points`, `grantAdminPoints`, `getPointBalanceSummary`, `getPointHistory` |
-| Admin UI      | **Coin**   | route `/admin/coins`, nav "Coins", i18n `Admin.coins`                           |
-| User UI       | **Coin**   | `/mypage/coins`, FAQ `/coin`, i18n `coin` / `MypagePoints` (title "Coins")      |
-
-### Rules when extending
-
-- A new **facing surface** (page, label, copy) is always "Coin." Do NOT add a
-  user- or admin-visible string that says "Points."
-- New **ledger / service** code stays "points" (`point_events`, `@/lib/points`).
-- The `point_events.source` / `category` string values (`'admin_grant'`,
-  `'like_grant'`, `'maia_game'`, `'redemption'`, `'earned'`, …) and the
-  `MypagePoints.history.kind` i18n keys are **stored data values** — never
-  rename them; a rename would orphan existing rows. Map them to display labels
-  at the read layer instead (see `classifyKind` in `get-history.ts`).
-- Admin transaction visibility is a **read surface over `point_events`**, not a
-  new log: see `listPointEvents` (`@/lib/points`) and the per-user Coins card on
-  `/admin/users/[id]`. Do not duplicate coin movements into
-  `moderation_actions` / `user_activity_log` (that splits the source of truth).
-
-## Kata / Repertoire (型)
-
-Like Coin/points above, this feature has **two names for one thing**, by
-deliberate design:
-
-- **"Kata" (型)** — the product/brand name, borrowed from the martial-arts
-  practice method (rehearsing a pre-arranged sequence). This is the ONLY
-  term users ever see: every i18n message VALUE says Kata (ja: 型), across
-  the /repertoires pages, the game-finish modal card, the post-game check,
-  and comment threads.
-- **"repertoire"** — the internal primitive. Used everywhere code speaks:
-  identifiers, file/component names, i18n KEYS (`play.repertoireCheck`,
-  `Repertoires`), URLs (`/repertoires`, `/games/play/repertoire`), DB tables
-  (`repertoires`, `repertoire_lines`), and DOM ids/testids. Never surfaced
-  to a human.
-
-### Why two names
-
-1. **Brand vs. implementation.** "Kata" is a coined analogy that could be
-   rebranded; "repertoire" is the standard chess term other engineers (and
-   the DB schema) already understand. Renaming copy is a message-file edit;
-   renaming routes/tables is a migration.
-2. **URL/SEO stability.** Routes and canonical URLs must not chase branding.
-
-### Rules when extending
-
-- A new **facing surface** (label, description, toast, help copy) says
-  "Kata" / 「型」. Do NOT ship a user-visible string that says "repertoire"
-  (レパートリー). One deliberate exception: the Terms' content enumeration
-  keeps a gloss — "kata (opening repertoires)" / 型（レパートリー） — since
-  legal text should not assume the reader knows the coinage.
-- New **code** stays "repertoire": identifiers, files, i18n keys, params,
-  routes, DB. Comments may say "kata" when explaining the brand/feature.
-- The `topicType` values `'repertoire'` / `'repertoire_move'` and the
-  `Repertoires` i18n namespace name are **stored/wired identifiers** —
-  never rename them; map to display labels at the read layer.
-
-## Game Operation Audit Record (公開ゲームの操作ログ・監査)
-
-AI games track player aid usage (peeks / undos / invalid move attempts) in a
-**three-record model**: `operationLogs` (per-move display record; undo deletes
-entries), `operationTotals` (monotonic count ledger — the audit & 1dan-promotion
-source of truth), and `undoneLogs` (archive of what rollbacks erased, incl.
-rejected SAN texts). A rollback moves information between records; it never
-destroys it.
-
-Do NOT rely on this summary for details — the design intentionally documents
-itself in code:
-
-- **Model & pipeline overview**: module TSDoc in `src/lib/games/saved-game-types.ts`
-- **Recording + restore-merge semantics**: TSDoc in `src/app/[locale]/(public)/games/play/_hooks/use-move-operation-tracker.ts`
-- **Executable invariants** (exact counts, SAN conservation, restore-only-grows): `use-move-operation-tracker.invariants.test.ts` next to the tracker
-- **Promotion policy** (incl. fail-closed handling of legacy rows): `src/lib/db/data/ranks.ts` + `src/lib/db/rank-evaluation.ts`
+## Where the rest is written down
+
+This file holds the conventions that apply to every change under `apps/web`.
+Feature designs and operational notes live next to what they describe, so a
+task loads only its own:
+
+| Topic                                                                         | Where                                                                                                                                                             |
+| ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Local Supabase stack, keys, database migrations                               | `docs/local-development.md` (never `drizzle-kit push`; schema lives in `src/lib/db/schema/*.ts`, one file per domain)                                             |
+| Deployment, Preview databases (Supabase Branching)                            | `docs/deployment.md`, `docs/preview-deployments.md`                                                                                                               |
+| AI engines, the Maia model file, the Vercel spending cap                      | `docs/ai-engines.md`; the cache-key rule for a new model version is on `ALLOWED_FILES` in `src/app/api/engines/maia/[file]/route.ts`                              |
+| Practice modules (練習の種類): the complete add-a-module checklist            | TSDoc of `src/lib/practice/registry.ts`                                                                                                                           |
+| Belt ranks (段級位): layer map, triggers, adding a rank or a requirement type | TSDoc of `src/lib/db/rank-evaluation.ts`; definitions in `src/lib/db/data/ranks.ts`                                                                               |
+| Moderation and audit log                                                      | `@design` TSDoc on `moderationActions` in `src/lib/db/schema/moderation.ts`                                                                                       |
+| User grants (権限付与), ad-free sources                                       | TSDoc of `src/lib/users/user-grants.ts` and on `userGrants` in `src/lib/db/schema/grants.ts`; `src/lib/ads/ad-free-entitlement.ts` is the single ad-free decision |
+| Coin / points naming                                                          | `src/lib/points/CLAUDE.md`                                                                                                                                        |
+| Kata / repertoire naming                                                      | `src/lib/repertoires/CLAUDE.md`                                                                                                                                   |
+| Articles and the Tiptap editor                                                | `src/app/admin/articles/CLAUDE.md`                                                                                                                                |
+| Game operation audit record (peeks / undos)                                   | module TSDoc of `src/lib/games/saved-game-types.ts`; invariants in `games/play/_hooks/use-move-operation-tracker.invariants.test.ts`                              |
+| The `redirect()`-under-Suspense hydration crash                               | `@knownIssue` TSDoc on `src/app/[locale]/(protected)/layout.tsx` (what was tried, what not to retry)                                                              |
+| CSP nonce regression on Next.js upgrades                                      | `src/lib/security/csp-loading-chunk-nonce.test.ts`; static-route list and the build route-table format in `src/lib/security/static-content-paths.ts`              |
+| Runtime verification (dev server, Playwright, seeding)                        | `.claude/skills/verify/SKILL.md`                                                                                                                                  |
+| Everything operational (auth, Stripe, SMTP, cron, erasure)                    | `README.md` → `docs/*.md`                                                                                                                                         |
 
 ## Glossary (Japanese ↔ English)
 
-The app was originally designed in Japanese, and the team still thinks about
-several features using their Japanese names. This table maps those Japanese
-domain terms to their English counterparts and points at the code that owns
-each concept, so that AI agents (and human readers) can locate the relevant
-files when a user refers to a concept in Japanese.
+The app was designed in Japanese and the team still names several features in
+Japanese. Search for the English identifier; the owning `page.tsx` or module
+TSDoc starts with `Feature Name (日本語名)` so the Japanese term is also
+greppable there. Terms that map one-to-one onto standard chess vocabulary
+(盤面 = board, マス = square, 駒 = piece, 手 = move) are omitted.
 
-| Japanese                      | English                                  | Where                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| ----------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 実績 / 実績バッジ             | achievement / achievement badge          | `src/lib/achievements/`, `src/lib/db/data/achievements.ts`, `src/app/admin/achievements/`, `src/messages/*.json` (`achievements`)                                                                                                                                                                                                                                                                                                          |
-| 感想戦                        | recall                                   | `src/app/[locale]/(public)/practice/(free-play)/recall/`                                                                                                                                                                                                                                                                                                                                                                                   |
-| 型 / Kata                     | repertoire (code) / Kata (UI brand)      | See "Kata / Repertoire (型)" above: `src/lib/repertoires/`, `src/app/[locale]/(public)/repertoires/`, `.../games/play/repertoire/`                                                                                                                                                                                                                                                                                                         |
-| 目隠しチェス / 心眼チェス     | blindfold chess / Shingan Chess (brand)  | See "Title Suffix Rule" in this file; strings in `src/messages/*.json`                                                                                                                                                                                                                                                                                                                                                                     |
-| 段級位                        | kyu/dan ranking (belt system)            | `src/lib/db/schema/tables.ts` (`ranks`, `userRanks`), `src/lib/db/data/ranks.ts`, `src/app/[locale]/(public)/dojo/ranks/`                                                                                                                                                                                                                                                                                                                  |
-| 教本                          | guide (code) / 教本 (ja UI, NOT ガイド)  | `src/app/[locale]/(public)/dojo/guides/`, `src/lib/guides/`. Code/keys stay "guide" (`buildGuidePath`, `guides.*` i18n keys); every ja-locale UI string for this feature says 教本, never ガイド (unified 2026-07-21 — those two words had drifted into a mix). Unrelated features that also happen to use the generic word "ガイド" (getting-started, articles, user manual, `/learn`) are NOT part of this and keep ガイド.              |
-| 無級                          | Mukyu — "no rank" (default)              | `MUKYU_SLUG` in `src/lib/db/data/ranks.ts`                                                                                                                                                                                                                                                                                                                                                                                                 |
-| 道場                          | Dojo — training hall                     | `src/app/[locale]/(public)/dojo/`                                                                                                                                                                                                                                                                                                                                                                                                          |
-| 約束組手                      | Yakusoku Kumite — move-sequence practice | `src/app/[locale]/(public)/practice/(free-play)/move-sequence/`                                                                                                                                                                                                                                                                                                                                                                            |
-| 合法手                        | legal move                               | `src/app/[locale]/(public)/practice/(challenge)/legal-moves/`                                                                                                                                                                                                                                                                                                                                                                              |
-| 正解手 / 代替正解             | solution move / alternative solution     | `puzzleSolutions` table in `src/lib/db/schema/tables.ts`; `src/app/[locale]/(public)/practice/(free-play)/puzzle/`                                                                                                                                                                                                                                                                                                                         |
-| パズル                        | puzzle                                   | `src/app/[locale]/(public)/practice/(free-play)/puzzle/`, `src/app/admin/positions/puzzle/`                                                                                                                                                                                                                                                                                                                                                |
-| ポジション記憶                | position memory                          | `src/app/[locale]/(public)/practice/(free-play)/position-memory/`                                                                                                                                                                                                                                                                                                                                                                          |
-| ルートプランナー              | route planner                            | `src/app/[locale]/(public)/practice/(challenge)/route-planner/`                                                                                                                                                                                                                                                                                                                                                                            |
-| ダイアゴナルクイズ            | diagonal quiz                            | `src/app/[locale]/(public)/practice/(challenge)/diagonal-quiz/`                                                                                                                                                                                                                                                                                                                                                                            |
-| 座標クイズ                    | coordinate quiz                          | `src/app/[locale]/(public)/practice/(challenge)/coordinate-quiz/`                                                                                                                                                                                                                                                                                                                                                                          |
-| マスの色                      | square colors                            | `src/app/[locale]/(public)/practice/(challenge)/square-colors/`                                                                                                                                                                                                                                                                                                                                                                            |
-| ナイトツアー                  | knight tour                              | `src/app/[locale]/(public)/practice/(free-play)/knight-tour/`                                                                                                                                                                                                                                                                                                                                                                              |
-| 経験値 / 経験値イベント       | experience points (Exp) / exp events     | `src/lib/db/save-exp.ts`, `src/lib/db/get-exp-info-by-source.ts`, `expEvents` / `userExp` tables in `src/lib/db/schema/tables.ts`                                                                                                                                                                                                                                                                                                          |
-| リーダーボード                | leaderboard                              | `src/app/[locale]/(public)/leaderboard/`, `src/lib/db/leaderboard-key.ts`                                                                                                                                                                                                                                                                                                                                                                  |
-| チャレンジモード / フリー対局 | challenge mode / free-play mode          | `src/app/[locale]/(public)/practice/(challenge)/`, `src/app/[locale]/(public)/practice/(free-play)/`                                                                                                                                                                                                                                                                                                                                       |
-| ミス上限 / 完走               | mistake limit / completion               | `MISTAKE_LIMIT` in `src/lib/challenge/constants.ts`                                                                                                                                                                                                                                                                                                                                                                                        |
-| 特典 / 権限付与               | benefit / user grant                     | `src/lib/users/user-grants.ts`, `src/app/admin/grants/`, `src/app/[locale]/(protected)/mypage/(confirmed)/benefits/`                                                                                                                                                                                                                                                                                                                       |
-| コイン / ポイント             | coin (facing) / points (ledger)          | See "Points / Coin Economy" above: `src/lib/points/`, `src/app/admin/coins/`, `src/app/[locale]/(public)/coin/`, `MypagePoints` i18n                                                                                                                                                                                                                                                                                                       |
-| モデレーション / 通報         | moderation / reporting                   | `moderationActions` table in `src/lib/db/schema/tables.ts`, `src/app/admin/`, `src/lib/ban.ts`                                                                                                                                                                                                                                                                                                                                             |
-| 記事                          | article                                  | `src/app/admin/articles/`, `src/app/[locale]/(public)/articles/`, `articles` / `articleImages` tables                                                                                                                                                                                                                                                                                                                                      |
-| トピック / 投稿               | topic / post                             | `src/app/[locale]/(public)/topics/`, `topicPosts` table in `src/lib/db/schema/tables.ts`                                                                                                                                                                                                                                                                                                                                                   |
-| チャンク                      | chunk (piece-coordination pattern)       | `src/app/[locale]/(public)/chunks/`, `src/lib/chunks/`, `chunks` table in `src/lib/db/schema/tables.ts`                                                                                                                                                                                                                                                                                                                                    |
-| 提案募集中 / 公開済み         | draft / published (chunk lifecycle)      | `chunks.status` column; `publishChunkEntry` in `src/lib/chunks/user-chunk-mutations.ts` (publish is one-way). Stored values stay `draft` / `published`; **no user-facing string says 下書き / "Draft" for a chunk** — see the `status` TSDoc on the `chunks` table for why. Within the chunk feature 下書き only ever means the unsaved sessionStorage authoring draft (`ChunkDraftV1`), a different thing that had been sharing the word. |
-| 下書き (型)                   | draft kata (`repertoires.status`)        | The unpublished kata state. Stored value stays **`building`** — only its label changed (2026-08): "In progress" / 作成中 → "Draft" / 下書き, now that the chunk lifecycle no longer uses that word and the two can't be confused. Publish is one-way and lives in two places, deliberately mirroring chunks: the detail page's "⋯" menu (`RepertoireLifecycleControls`) and the edit form's "keep as a draft" checkbox.                    |
-| 編集リクエスト                | chunk edit request (Qiita-style)         | `chunkEditRequests` table; `src/lib/chunk-edit-requests/`; `src/app/[locale]/(public)/chunks/[slug]/_components/EditRequest*.tsx`                                                                                                                                                                                                                                                                                                          |
-
-Terms that map one-to-one onto standard chess vocabulary (盤面 = board, マス =
-square, 駒 = piece, 手 = move, etc.) are intentionally omitted; they can be
-looked up in any chess reference.
-
-## AI Engines (Stockfish / Maia)
-
-AI opponents are wired through the `ChessOpponent` port from
-`@blindfold-chess/features/ai-game/opponent`. Each engine has its own
-factory in `apps/web/src/lib/engines/`; the consumer hook
-(`useAiVersus`) picks one based on the `EngineKind` URL param /
-selection.
-
-### Maia 3 operational notes
-
-- **Model file**: `apps/web/engines/maia/maia3_simplified.onnx`
-  (~46 MB). **Gitignored** — fetched by `scripts/download-maia.ts`
-  during `prebuild` and `pnpm download-maia` locally. The file is
-  intentionally **outside `public/`** so it cannot be served as a
-  static asset; the only access path is the auth-gated route handler
-  below.
-- **Who may play**: a Maia game costs `MAIA_GAME_POINT_COST` (one coin)
-  below `MAIA_FREE_LEVEL` (Lv5, `src/lib/users/maia-free-level.ts`) and
-  is free from that level up. The level is the only exemption — a
-  subscription does not waive the coin. `startMaiaGame` re-reads the
-  level server-side before settling, and the model gate below accepts
-  either the level or a prior `maia_game` ledger row. Why a level and
-  not nothing: the charge's first five months showed it was not funding
-  anything (35 charges, 8 users, none in the last 30 days, every payer
-  still holding coins) while keeping the engine from the players most
-  likely to value it; the level keeps a cost on the 46 MB download that
-  a throwaway account cannot meet in one sitting. The TSDoc on
-  `MAIA_FREE_LEVEL` carries the full reasoning. Whether the unlock
-  changes anything is read from completed games — `exp_events` with
-  `source = 'ai_game_result'` and `menu_type = 'maia'` — not from the
-  coin ledger, which a free game never touches.
-- **Auth-gated delivery**: `/api/engines/maia/[file]` (see
-  `src/app/api/engines/maia/[file]/route.ts`) is the sole egress
-  path for the model. It calls `canUseMaia(userId)` and returns 403
-  for anonymous / unentitled callers, so the 46 MB never leaves the
-  function on an unauthorised request. `outputFileTracingIncludes`
-  in `next.config.ts` bundles `engines/maia/**/*` into the function
-  artifact at deploy time.
-- **Long-cached as immutable**: the route handler sets
-  `Cache-Control: private, max-age=31536000, immutable`. The
-  filename therefore acts as the cache key — **if you ever update
-  the model, you MUST also rename the file** (e.g.
-  `maia3_simplified-v2.onnx`), add the new filename to
-  `ALLOWED_FILES` in the route handler, and adjust the constants
-  in `src/lib/engines/maia/models.ts` and `scripts/download-maia.ts`.
-  Otherwise returning users keep their stale cached copy forever.
-- **Why `private` (not `public`)**: the response is per-user, and a
-  shared-cache hit would skip the entitlement check entirely (a
-  future revocation must not be served from a CDN copy either).
-  Vercel's CDN would not cache a 46 MB function response anyway, so
-  `public` would buy nothing without moving the file to a store that
-  can authorise before serving. `immutable` still tells the browser
-  to skip revalidation for honest clients.
-- **Large-download consent**: `LargeDownloadConsentDialog` intercepts
-  Maia game starts on metered / slow links (driven by
-  `shouldWarnBeforeLargeDownload()` in `src/lib/network/connection.ts`).
-- **Licence**: Maia weights and the preprocessing code in
-  `packages/features/src/ai-game/maia/` are GPL-3.0 (derivative of
-  CSSLab/maia-chess and CSSLab/maia-platform-frontend). The
-  `/licenses` page lists the attribution; do **not** modify the model
-  file in-place — replace it with a fresh upstream download instead so
-  the "no local modifications" claim on the licences page remains
-  accurate.
-
-### Vercel spend management (MUST be configured)
-
-The Maia model is the largest asset shipped to browsers, so runaway
-egress costs would be a real risk if the auth gate were ever bypassed
-or misconfigured. **A Vercel spending cap remains the last-line
-defence against an open-ended bill** even with the gate in place.
-
-- Set via Vercel dashboard → Team Settings → Billing → **Spend
-  Management** (recently rebranded "Cost Controls" in some views).
-- Enable **Pause Project at Spend Limit** so the project is taken
-  offline (504s) before the bill explodes.
-- Set notifications at 50% / 75% / 90% of the cap.
-- The cap is account-wide, not per-project; pick a number that covers
-  every project under the team.
-
-The auth gate at `/api/engines/maia/[file]` closes the "anonymous
-attacker loops the model" hole; per-user / per-IP throttling against
-_authenticated_ abusers is intentionally NOT layered yet — add it
-only after observing such abuse.
-
-### Preview deployments get their database from Supabase Branching
-
-`next build` needs a reachable Postgres: some `generateStaticParams`
-implementations (`/[locale]/articles/[slug]`,
-`/[locale]/glossary/letter/[letter]`) query the database at build
-time, and `prebuild` runs
-`scripts/prebuild-db.ts` (Drizzle migrate + seed) whenever
-`POSTGRES_URL_NON_POOLING` / `POSTGRES_URL` / `DATABASE_URL` is set.
-Pointing Preview at the production database is therefore never an
-option — every feature-branch build would apply that branch's
-migrations and seeds to production.
-
-Instead, each pull request gets its own Supabase **preview branch** (an
-isolated Supabase instance with an empty database). When the PR is
-opened, Supabase creates the branch, writes the branch's credentials
-into the Vercel project as Preview environment variables scoped to
-that git branch (the same 16 keys the production integration manages:
-`POSTGRES_*`, `SUPABASE_*`, `NEXT_PUBLIC_SUPABASE_*`), and triggers a
-redeploy. The Vercel build then bootstraps the empty branch database
-through the normal `prebuild` path: `migrate.ts` detects the
-`supabase_auth_admin` role and applies the Drizzle migrations plus the
-`drizzle/supabase/*.sql` extras (auth hook, grants, RLS, storage, cron).
-Supabase's own migrate/seed steps have nothing to do here because
-schema lives in `apps/web/drizzle/`, not `apps/web/supabase/migrations/`.
-
-The branch is deleted — and its metered compute billing stops — when
-the PR is merged or closed. Branch compute is billed per hour and is
-**not** covered by the Pro plan's compute credits, so do not leave PRs
-open for weeks.
-
-`claude/*` PRs (the nightly issue pipeline and Claude Code cloud
-sessions) get a Preview build like any other branch. Supabase creates a
-branch for every PR regardless of its name — the GitHub integration has
-no branch filter — so skipping the Vercel build for these refs would
-keep paying for a database nothing uses, and would leave cloud sessions
-without the one place their changes can be checked against a real
-database.
-
-Dashboard settings this depends on (Supabase project → Settings →
-Integrations). Each one has a failure mode that looks unrelated:
-
-- **GitHub integration, "Supabase changes only": OFF.** With it on,
-  a PR that does not touch `apps/web/supabase/` is ignored (the bot
-  comments "no changes detected in `apps/web/supabase` directory"),
-  and since schema changes live in `apps/web/drizzle/`, no PR ever
-  qualifies. The symptom is the old build failure —
-  `connect ECONNREFUSED 127.0.0.1:54322`, the local-dev fallback in
-  `src/lib/db/index.ts` — because no credentials were ever written.
-- **Vercel integration, "Preview" sync toggle: OFF.** That toggle
-  copies the _production_ connection strings and service-role key
-  into the Preview environment for every branch; the confirmation
-  modal says so. It is not needed for branch-scoped sync, which
-  happens on PR open regardless of the toggle.
-- **Working directory: `apps/web`** (the parent of `supabase/`).
-  **Automatic branching: ON. Deploy to production: OFF** — production
-  schema is deployed by `prebuild` on the production build, not by
-  Supabase.
-
-To re-trigger branch creation for an existing PR (for example after
-fixing one of the settings above), close and reopen the PR.
-
-Known gaps in a preview branch: `supabase/config.toml` sets
-`site_url = "http://localhost:3000"`, so auth redirects on a Preview
-URL will not round-trip, and settings made only in the production
-dashboard (OAuth client secrets, hook enablement) are not mirrored.
-These do not affect the build.
+| Japanese                                                                                               | English identifier                                                                                       | Notes                                                                                                                                                                                                                                                                      |
+| ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 実績 / 実績バッジ                                                                                      | achievement / achievement badge                                                                          |                                                                                                                                                                                                                                                                            |
+| 感想戦                                                                                                 | recall (`/practice/recall`)                                                                              |                                                                                                                                                                                                                                                                            |
+| 型                                                                                                     | Kata (UI) / repertoire (code)                                                                            | UI copy says Kata, code and keys say repertoire — `src/lib/repertoires/CLAUDE.md`                                                                                                                                                                                          |
+| 目隠しチェス / 心眼チェス                                                                              | blindfold chess / Shingan Chess (brand)                                                                  | "Title Suffix Rule" above                                                                                                                                                                                                                                                  |
+| 段級位 / 昇級・昇段                                                                                    | rank (kyu/dan belt) / promotion                                                                          | `rank`, `userRanks`, `RankRequirement`, `rank-evaluation.ts`. A player is promoted to 1kyu/1dan by **publishing** a qualifying game, not by "claiming": `claim` in this codebase means attaching an anonymous game to an account (`play.claim.*`, `claim-shared-game`)     |
+| 次にやること（道場）                                                                                   | next rank / publish nudge                                                                                | `/dojo` computes it from `resolveNextRank` (`dojo/ranks/_lib/rank-progression.ts`) and `PublishNudgeBanner` (`games/_components`, i18n `home.gameList.publishNudge`)                                                                                                       |
+| 無級                                                                                                   | Mukyu — "no rank" default (`MUKYU_SLUG`)                                                                 |                                                                                                                                                                                                                                                                            |
+| 道場                                                                                                   | Dojo (`/dojo`)                                                                                           |                                                                                                                                                                                                                                                                            |
+| 教本                                                                                                   | guide (code) / 教本 (ja UI, NOT ガイド)                                                                  | `/dojo/guides`, `buildGuidePath`, `guides.*` keys; every ja string for this feature says 教本 (unified 2026-07-21). Unrelated features that use the generic ガイド (getting-started, articles, manual, `/learn`) keep it                                                   |
+| 約束組手                                                                                               | (retired)                                                                                                | The move-sequence practice no longer exists; no code reads `move_sequence`, only the `practiceMenuTypes` label in `messages/*.json` remains                                                                                                                                |
+| 合法手                                                                                                 | legal move (`legal-moves`)                                                                               |                                                                                                                                                                                                                                                                            |
+| 正解手 / 代替正解                                                                                      | solution move / alternative solution                                                                     | `puzzleSolutions` in `src/lib/db/schema/puzzles.ts`                                                                                                                                                                                                                        |
+| パズル / ポジション記憶 / ルートプランナー / ダイアゴナルクイズ / 座標クイズ / マスの色 / ナイトツアー | puzzle / position memory / route planner / diagonal quiz / coordinate quiz / square colors / knight tour | Practice modules; the registry lists their slugs                                                                                                                                                                                                                           |
+| 経験値                                                                                                 | experience points (Exp) / `expEvents`                                                                    | Not the coin economy                                                                                                                                                                                                                                                       |
+| コイン / ポイント                                                                                      | coin (facing) / points (ledger)                                                                          | `src/lib/points/CLAUDE.md`                                                                                                                                                                                                                                                 |
+| リーダーボード                                                                                         | leaderboard                                                                                              |                                                                                                                                                                                                                                                                            |
+| チャレンジモード / フリー対局                                                                          | challenge mode / free-play mode                                                                          | route groups `practice/(challenge)/` and `practice/(free-play)/`                                                                                                                                                                                                           |
+| ミス上限 / 完走                                                                                        | mistake limit / completion (`MISTAKE_LIMIT`)                                                             |                                                                                                                                                                                                                                                                            |
+| 特典 / 権限付与                                                                                        | benefit / user grant                                                                                     |                                                                                                                                                                                                                                                                            |
+| モデレーション / 通報                                                                                  | moderation / reporting                                                                                   | `moderationActions`, `src/lib/moderation/ban.ts`                                                                                                                                                                                                                           |
+| 記事                                                                                                   | article                                                                                                  |                                                                                                                                                                                                                                                                            |
+| トピック / 投稿                                                                                        | topic / post (`topicPosts`)                                                                              |                                                                                                                                                                                                                                                                            |
+| チャンク                                                                                               | chunk (piece-coordination pattern)                                                                       |                                                                                                                                                                                                                                                                            |
+| 提案募集中 / 公開済み                                                                                  | draft / published (chunk lifecycle)                                                                      | Stored values stay `draft` / `published`; no user-facing string says 下書き / "Draft" for a chunk — the `status` TSDoc on the `chunks` table says why. Within the chunk feature 下書き only means the unsaved sessionStorage authoring draft (`ChunkDraftV1`)              |
+| 下書き (型)                                                                                            | draft kata (`repertoires.status = 'building'`)                                                           | `src/lib/repertoires/CLAUDE.md`                                                                                                                                                                                                                                            |
+| 編集リクエスト                                                                                         | chunk edit request (`chunkEditRequests`)                                                                 |                                                                                                                                                                                                                                                                            |
+| 設定（盤面の見た目）                                                                                   | game preferences                                                                                         | `GamePreferencesContext` (web-only, localStorage + cookie hint); per-module practice settings use `useLocalStorageSettings`, the web adapter of `usePersistentSettings` from `@blindfold-chess/features/common/client`. Mobile has its own store — `apps/mobile/CLAUDE.md` |
 
 ## Known Issues
-
-### `redirect()` under the `(protected)` Suspense boundary can crash hydration
-
-**Symptom**: intermittently, right after a user finishes sign-up (or on any
-hard navigation into `/mypage` where a server-side `redirect()` fires —
-`(confirmed)` → `/mypage/setup-username` for a profile-less user, or
-`(provisional)` → `/mypage` once a profile exists), the client throws
-`Rendered more hooks than during the previous render` (React error #310).
-Sometimes this only logs to the console; sometimes it fully crashes the page
-to Next's "This page couldn't load" error boundary, requiring a manual
-reload.
-
-**Root cause**: `apps/web/src/app/[locale]/(protected)/layout.tsx` wraps its
-auth gate (`ProtectedGate`) in a `<Suspense>` so a hard navigation shows a
-skeleton instead of a blank page while `supabase.auth.getUser()` is in
-flight. A `redirect()` thrown from an async Server Component reached through
-that Suspense-wrapped subtree — here, the profile check in the nested
-`(confirmed)`/`(provisional)` layouts — races the client's hydration of the
-streamed Suspense fallback. This is a genuine Next.js App Router streaming
-SSR bug, not a bug in this app's routing logic:
-
-- Reproduced 2026-07-04 with `next build && next start` (not just `next
-dev` — rules out a dev-mode/Turbopack HMR artifact).
-- Does NOT reproduce for a user who already has a profile (no redirect
-  needed) or for a direct hit on the already-correct destination (no
-  redirect needed) — only when the gate actually redirects mid-stream.
-- Does NOT reproduce for the `(protected)/layout.tsx` gate's OWN redirects
-  (`!user` → `/sign-in`, banned → `/banned`) even though those are the same
-  shape of conditional `redirect()` in the same Suspense-wrapped function —
-  ruling out "any redirect in this Suspense" as the trigger on its own.
-- Moving the profile-based redirect decision up into `ProtectedGate` itself
-  (still inside the same `<Suspense>`, just one level shallower than the
-  nested layouts) was tried and did **not** fix it — the race is tied to
-  streaming under this Suspense boundary, not to which component throws the
-  redirect or how deeply nested it is.
-- Removing the `<Suspense>` boundary entirely does eliminate it, confirming
-  the cause — but that boundary exists specifically to prevent a blank page
-  during the ~1–2s auth round-trip on a hard navigation (see the TSDoc on
-  `ProtectedLayout`), so removing it trades one bug for the other.
-
-**Do not** re-attempt a fix by relocating the `redirect()` call within the
-existing Suspense tree — that's the first thing to try and it has already
-been ruled out. A real fix needs a different approach, e.g.: resolving the
-post-sign-in/sign-up destination server-side (in the `signIn`/registration
-Server Action) so the client's `window.location.href` hard-navigates
-directly to the correct URL and no redirect-during-streaming ever happens at
-`/mypage`; or restructuring the gate to avoid a `redirect()` for this
-specific transition (e.g. rendering the setup-username content in place
-instead of changing the URL). Both are real design changes, not a quick
-patch — worth a deliberate decision (and testing with `next build && next
-start`, not just `next dev`) rather than a speculative attempt.
-
-### Next.js boundary scripts must preserve CSP nonces
-
-Next.js 16.4.1 includes the nonce fix for loading/error/template boundary
-scripts in both readable sources and compiled production runtimes. The local
-Next.js pnpm patch was removed after verifying those copies. Keep
-`src/lib/security/csp-loading-chunk-nonce.test.ts` as an upgrade regression
-check. Node rendering uses `dist/compiled/next-server/app-page*.runtime.prod.js`,
-so checking only `dist/server/app-render/*` is insufficient. When upgrading,
-also check a production-rendered dynamic page for nonce-bearing script tags.
 
 ### `next dev` rewrites CLAUDE.md and reformats build output (16.3.0)
 
@@ -887,18 +334,16 @@ Two things 16.3.0 does that look like breakage but are not:
   everything from it down to the real block is deleted on the next `next dev`
   (reproduced 2026-08-07 — this bullet used to quote the opening marker and
   lost the two sections below it).
-- **The build's route table moved its `○ ● ƒ` markers from the parent route
-  line onto each generated child path.** Any script that scrapes markers with
-  `^[├└] ●` silently reports every SSG route as lost. When comparing route
-  tables across this version boundary, normalise both shapes first (collapse
-  children into the parent's effective marker) — the naive diff shows a
-  52-route SSG dropout that did not happen. This matters for keeping
-  `@/lib/security/static-content-paths.ts` in sync with the build's `●` routes.
+- **The build's route table prints its `○ ● ƒ` markers on each generated
+  child path, not on the parent route line.** A script that scrapes
+  `^[├└] ●` reports every SSG route as lost; how to normalise the two shapes
+  is in the TSDoc of `src/lib/security/static-content-paths.ts`, the list that
+  must stay in sync with the `●` routes.
 
 ## Important Notes
 
 - Prioritize performance and SEO in all decisions
-- **Database schema** is defined in `src/lib/db/schema.ts` (Drizzle ORM). See TSDoc `@design` tags on each table for design rationale.
+- **Database schema** is defined per domain under `src/lib/db/schema/` (`ranks.ts`, `posts.ts`, …; `src/lib/db/schema.ts` only re-exports). See TSDoc `@design` tags on each table for design rationale.
 
 <!-- BEGIN:nextjs-agent-rules -->
 

@@ -1,5 +1,5 @@
 /**
- * Rank Guide Deep Route
+ * Rank Guide Deep Route (段級位別教本の章ページ, `/dojo/guides/[rank]/[...rest]`)
  *
  * @description
  * Catch-all for paths following the rank root:
@@ -181,6 +181,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const guide: RankGuide | null = getRankGuide(guidesPages, rankSlug);
   if (!guide) return {};
 
+  // ranks.rankNames.<RankSlug>: ranks.rankNames.mukyu, ranks.rankNames.5kyu, ranks.rankNames.4kyu, ranks.rankNames.3kyu, ranks.rankNames.2kyu, ranks.rankNames.1kyu, ranks.rankNames.1dan (ALL_RANK_SLUGS; checked above)
   const rankName = tRanks(`rankNames.${rankSlug}`);
 
   if (parsed.kind === 'flat-page') {

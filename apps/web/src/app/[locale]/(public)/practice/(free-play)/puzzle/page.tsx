@@ -1,5 +1,5 @@
 /**
- * Puzzle — Problem List
+ * Puzzle — Problem List (パズル, `/practice/puzzle`)
  *
  * @description
  * Displays a paginated list of user-submitted puzzle positions.

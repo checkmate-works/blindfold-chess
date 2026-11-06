@@ -1,3 +1,9 @@
+/**
+ * New Game Menu (新規ゲーム, `/games/new`)
+ *
+ * @description
+ * Menu of the four ways to start an AI game (standard, custom position, opening, PGN import), behind the game-limit check.
+ */
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 

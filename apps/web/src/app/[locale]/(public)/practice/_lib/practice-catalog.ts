@@ -23,7 +23,7 @@ export type PracticeCatalogEntry = {
  * one they are about to play are the others in its band, the same set the
  * list's difficulty filter narrows to.
  */
-export const PRACTICE_CATALOG: readonly PracticeCatalogEntry[] = [
+const PRACTICE_CATALOG_ENTRIES = [
   {
     id: 'square-colors',
     menuType: 'square_colors',
@@ -87,7 +87,24 @@ export const PRACTICE_CATALOG: readonly PracticeCatalogEntry[] = [
     level: 'introduction',
     titleKey: 'practice.quadrantAnchors.title',
   },
-];
+] as const satisfies readonly PracticeCatalogEntry[];
+
+/**
+ * Compile-time check that every registered practice module has a catalog
+ * entry. A module missing here is simply absent from /practice, with no
+ * runtime error, so the omission is caught by the compiler instead: adding a
+ * module to `PRACTICE_MODULE_REGISTRY` without listing it here fails
+ * typecheck with the missing `menuType` named in the error.
+ */
+type MenuTypeMissingFromCatalog = Exclude<
+  PracticeMenuType,
+  (typeof PRACTICE_CATALOG_ENTRIES)[number]['menuType']
+>;
+const _everyModuleIsListed: [MenuTypeMissingFromCatalog] extends [never]
+  ? true
+  : MenuTypeMissingFromCatalog = true;
+
+export const PRACTICE_CATALOG: readonly PracticeCatalogEntry[] = PRACTICE_CATALOG_ENTRIES;
 
 /**
  * The other modules in the band `id` is listed under, in list order. Empty

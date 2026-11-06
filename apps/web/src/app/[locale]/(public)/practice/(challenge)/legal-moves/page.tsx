@@ -1,3 +1,9 @@
+/**
+ * Legal Moves (合法手, `/practice/legal-moves`)
+ *
+ * @description
+ * Top page of the legal-moves practice: the setup form, a help tour, the piece-movement articles and the leaderboard.
+ */
 import { createPracticeTopPage } from '@/app/[locale]/(public)/practice/_lib/createPracticeTopPage';
 import { buildPracticeHelpTour } from '@/app/[locale]/(public)/practice/_lib/practice-help-tour';
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';

@@ -56,6 +56,7 @@ export async function CoinTransactionFilters({ values }: CoinTransactionFiltersP
           <option value="">{t('filters.all')}</option>
           {POINT_CATEGORIES.map((category) => (
             <option key={category} value={category}>
+              {/* Admin.coins.categoryLabels.<PointCategory>: Admin.coins.categoryLabels.earned, Admin.coins.categoryLabels.purchased, Admin.coins.categoryLabels.promotional (POINT_CATEGORIES) */}
               {t(`categoryLabels.${category}`)}
             </option>
           ))}

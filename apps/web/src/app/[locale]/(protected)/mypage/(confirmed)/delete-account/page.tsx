@@ -1,3 +1,9 @@
+/**
+ * Delete Account (退会, `/mypage/delete-account`)
+ *
+ * @description
+ * Explains the consequences of deleting the account and offers the confirmation button that performs it.
+ */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 

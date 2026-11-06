@@ -1,3 +1,9 @@
+/**
+ * Recall Session (棋譜再現 練習中, `/practice/recall/session`)
+ *
+ * @description
+ * Runs the game-recall session over the moves passed in the query string, redirecting to the setup page when they are missing.
+ */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';

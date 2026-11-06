@@ -1,0 +1,9 @@
+# Read by ripgrep-based search (rg, Claude Code's Grep tool, VS Code search).
+# Generated or vendored data that swamps grep results: 83 Drizzle snapshots of
+# ~7,000 lines each repeat every table and column name, and the lockfile and
+# Maia move tables are not code anyone edits by hand. Plain `grep -r` ignores
+# this file; use `rg` or pass --exclude-dir to see the same results.
+apps/web/drizzle/meta/
+pnpm-lock.yaml
+packages/features/src/ai-game/maia/move-tables/
+apps/web/public/stockfish.js

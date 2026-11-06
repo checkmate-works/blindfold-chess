@@ -3,8 +3,8 @@
  *
  * @description
  * End-user view of coin balance + history + ad_free redemption. "Coin" is
- * the facing name for the points ledger — see the "Points / Coin Economy"
- * note in apps/web/CLAUDE.md. The companion to /mypage/benefits: benefits
+ * the facing name for the points ledger — the naming rule is in
+ * src/lib/points/CLAUDE.md. The companion to /mypage/benefits: benefits
  * shows "what entitlements are active right now" (driven by `user_grants`),
  * while this shows "how many coins I have, where they came from, and how to
  * spend them" (driven by `point_events` / `user_point_balances`).
@@ -155,6 +155,7 @@ export default async function CoinsPage({ params, searchParams }: Props) {
                           {dateFmt(row.createdAt)}
                         </td>
                         <td className="px-4 py-3">
+                          {/* MypagePoints.history.kind.<PointHistoryEntry["kind"]>: MypagePoints.history.kind.post_grant, MypagePoints.history.kind.post_clawback, MypagePoints.history.kind.redemption, MypagePoints.history.kind.purchase, MypagePoints.history.kind.admin_grant, MypagePoints.history.kind.maia_game, MypagePoints.history.kind.like_grant, MypagePoints.history.kind.ai_review, MypagePoints.history.kind.ai_review_refund, MypagePoints.history.kind.other (classifyKind in @/lib/points/get-history) */}
                           {row.href ? (
                             <Link
                               href={row.href}

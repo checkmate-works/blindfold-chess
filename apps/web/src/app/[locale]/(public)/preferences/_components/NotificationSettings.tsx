@@ -75,6 +75,7 @@ export function NotificationSettings() {
           {MUTABLE_NOTIFICATION_TYPES.map((type) => {
             const enabled = !mutedTypes.has(type);
             return (
+              // Preferences.notifications.types.<MutableNotificationType>: Preferences.notifications.types.new_position, Preferences.notifications.types.new_chunk_draft, Preferences.notifications.types.chunk_published, Preferences.notifications.types.new_game, Preferences.notifications.types.new_comment_on_topic, Preferences.notifications.types.game_chunk_linked, Preferences.notifications.types.repertoire_chunk_linked (MUTABLE_NOTIFICATION_TYPES)
               <li key={type} className="flex items-center justify-between gap-3 py-3">
                 <span className="text-sm text-foreground">{t(`notifications.types.${type}`)}</span>
                 <button

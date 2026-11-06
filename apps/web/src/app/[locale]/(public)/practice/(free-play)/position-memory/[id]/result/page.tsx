@@ -1,3 +1,9 @@
+/**
+ * Position Memory Result (ポジションの記憶 結果, `/practice/position-memory/[id]/result`)
+ *
+ * @description
+ * Result of one position-memory attempt with the Exp grant and the next problems to try.
+ */
 import { Suspense } from 'react';
 
 import type { Metadata } from 'next';

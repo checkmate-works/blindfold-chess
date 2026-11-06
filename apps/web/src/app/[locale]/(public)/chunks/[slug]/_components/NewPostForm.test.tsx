@@ -183,7 +183,7 @@ describe('NewPostForm — modal-driven attachment routing', () => {
   });
 });
 
-describe('NewPostForm — Game tab routing via the modal (#84: PGN-only)', () => {
+describe('NewPostForm — Game tab routes PGN-only attachments through the modal (issue #84)', () => {
   it('PGN-shaped attachment text routes to createChunkPostWithAttachment with synthesized attachment field', async () => {
     mockCreateChunkPostWithAttachment.mockResolvedValue({});
     const { container } = render(<NewPostForm locale="en" slug="rook-battery" />);

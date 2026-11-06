@@ -39,6 +39,7 @@ export function SharedGamesSort({ currentSort }: Props) {
       >
         {SHARED_GAMES_SORT_MODES.map((mode) => (
           <option key={mode} value={mode}>
+            {/* sharedGames.list.sort.<mode>: sharedGames.list.sort.new, sharedGames.list.sort.clean, sharedGames.list.sort.strong (SHARED_GAMES_SORT_MODES) */}
             {t(`list.sort.${mode}`)}
           </option>
         ))}

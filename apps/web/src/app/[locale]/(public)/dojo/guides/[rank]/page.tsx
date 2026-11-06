@@ -1,5 +1,5 @@
 /**
- * Rank Guide Root
+ * Rank Guide Root (段級位別教本, `/dojo/guides/[rank]`)
  *
  * @description
  * Entry point for a rank guide. For flat ranks, renders the first body page
@@ -49,6 +49,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const tRanks = await getTranslations({ locale, namespace: 'ranks' });
   const tMeta = await getTranslations({ locale, namespace: 'metadata.guides.rank' });
 
+  // ranks.rankNames.<RankSlug>: ranks.rankNames.mukyu, ranks.rankNames.5kyu, ranks.rankNames.4kyu, ranks.rankNames.3kyu, ranks.rankNames.2kyu, ranks.rankNames.1kyu, ranks.rankNames.1dan (ALL_RANK_SLUGS; checked above)
   const rankName = tRanks(`rankNames.${rankSlug}`);
   const title = tMeta('title', { rankName });
   const description = tMeta('description', { rankName });

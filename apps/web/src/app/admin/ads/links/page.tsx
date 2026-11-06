@@ -1,3 +1,9 @@
+/**
+ * Admin Ad Links (管理画面 タイトル別リンク, `/admin/ads/links`)
+ *
+ * @description
+ * Sets a book's affiliate link, and switches it on or off, once for every slot it runs in.
+ */
 import { getTranslations } from 'next-intl/server';
 
 import { getAdCreativeCopy, getAllAdCreatives } from '@/lib/ads/ad';

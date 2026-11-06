@@ -1,5 +1,5 @@
 /**
- * Quadrant Anchors Training
+ * Quadrant Anchors Training (4分割アンカー トレーニング, `/practice/quadrants/training`)
  *
  * @description
  * Untimed training mode for quadrant identification.

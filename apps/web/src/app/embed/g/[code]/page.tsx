@@ -151,6 +151,7 @@ export default async function EmbedGamePage({ params, searchParams }: Props) {
         reproduceByDefault={options.view === 'played' && canReproduce}
         canReproduce={canReproduce}
         terminationMark={terminationMark}
+        // Common.termination.<TerminationMarkKind>: Common.termination.checkmate, Common.termination.resignation (resolveTerminationMark)
         terminationMarkLabel={terminationMark ? tCommon(`termination.${terminationMark.kind}`) : ''}
         attribution={{
           title: game.title,

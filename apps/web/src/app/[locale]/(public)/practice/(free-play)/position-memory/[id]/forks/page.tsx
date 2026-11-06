@@ -1,5 +1,5 @@
 /**
- * Forks of a Position Memory entry (`/practice/position-memory/[id]/forks`)
+ * Forks of a Position Memory entry (ポジションの記憶問題のフォーク一覧, `/practice/position-memory/[id]/forks`)
  *
  * @description
  * Mirror of the puzzle /forks page for the position-memory route. Paginated

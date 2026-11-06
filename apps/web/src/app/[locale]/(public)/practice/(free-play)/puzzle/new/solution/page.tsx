@@ -1,3 +1,9 @@
+/**
+ * New Puzzle Solution (正解手, `/practice/puzzle/new/solution`)
+ *
+ * @description
+ * Second step of puzzle creation: solution-move entry, available to guests behind the create gate.
+ */
 import { getTranslations } from 'next-intl/server';
 
 import { getOptionalUser } from '@/lib/auth';

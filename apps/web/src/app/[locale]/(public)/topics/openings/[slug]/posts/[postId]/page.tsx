@@ -1,3 +1,9 @@
+/**
+ * Opening Post Detail (オープニング投稿の詳細, `/topics/openings/[slug]/posts/[postId]`)
+ *
+ * @description
+ * Permalink of one opening-topic post with its rating and replies.
+ */
 import { getTranslations } from 'next-intl/server';
 
 import { createTopicPostDetailPage } from '@/app/[locale]/(public)/topics/_lib/create-topic-post-detail-page';

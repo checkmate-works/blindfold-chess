@@ -41,6 +41,7 @@ export async function buildPracticeCards(
 
   return entries.map((practice) => {
     const rankSlug = getRankSlugForMenuType(practice.menuType);
+    // ranks.rankNames.<RankSlug>: ranks.rankNames.mukyu, ranks.rankNames.5kyu, ranks.rankNames.4kyu, ranks.rankNames.3kyu, ranks.rankNames.2kyu, ranks.rankNames.1kyu, ranks.rankNames.1dan (ALL_RANK_SLUGS)
     const rankLabel = rankSlug ? tRanks(`rankNames.${rankSlug}`) : null;
     return {
       key: practice.id,

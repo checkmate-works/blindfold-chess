@@ -1,3 +1,9 @@
+/**
+ * Sign In (サインイン, `/sign-in`)
+ *
+ * @description
+ * Sign-in page with Google OAuth and email + password, preserving the `?next=` return path.
+ */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 

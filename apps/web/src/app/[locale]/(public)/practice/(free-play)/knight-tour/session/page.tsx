@@ -1,3 +1,9 @@
+/**
+ * Knight Tour Session (ナイトツアー 練習中, `/practice/knight-tour/session`)
+ *
+ * @description
+ * Runs the knight tour from the starting square and mode chosen in the query string.
+ */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import dynamic from 'next/dynamic';

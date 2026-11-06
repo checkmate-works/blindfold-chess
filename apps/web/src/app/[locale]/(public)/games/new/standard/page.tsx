@@ -1,3 +1,9 @@
+/**
+ * New Standard Game (標準ゲーム, `/games/new/standard`)
+ *
+ * @description
+ * Starts an AI game from the initial position, with a help tour over the engine and skill-level selectors.
+ */
 import { createNewGamePage } from '../_lib/create-new-game-page';
 import { StandardGameForm } from './_components/StandardGameForm';
 

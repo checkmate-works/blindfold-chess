@@ -1,3 +1,9 @@
+/**
+ * Terms of Service (利用規約, `/terms`)
+ *
+ * @description
+ * Static terms of service.
+ */
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 

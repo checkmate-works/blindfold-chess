@@ -56,6 +56,7 @@ export async function ModuleFilter({ currentSlug, period, locale }: Props) {
             href={buildHref(m)}
             role="radio"
             aria-checked={active}
+            // leaderboard.moduleFilter.<ModuleFilterValue>: leaderboard.moduleFilter.all, leaderboard.moduleFilter.coordinate_quiz, leaderboard.moduleFilter.legal_moves, leaderboard.moduleFilter.square_colors, leaderboard.moduleFilter.diagonal_quiz, leaderboard.moduleFilter.board_symmetry, leaderboard.moduleFilter.route_planner (VALID_MODULE_FILTERS)
             title={t(`moduleFilter.${m}`)}
             className={`flex-1 rounded-md px-2 py-2 text-center text-sm font-medium leading-tight transition-colors md:flex md:flex-col md:items-center md:justify-center md:gap-0.5 md:px-4 ${
               active ? 'bg-card text-foreground' : 'text-muted-foreground hover:text-foreground'

@@ -158,6 +158,7 @@ export function AiReviewPanel({
         <p className="text-sm text-muted-foreground">{t('aiReview.notGenerated')}</p>
         {state.phase === 'error' && (
           <p className="text-sm text-destructive" role="alert">
+            {/* sharedGames.aiReview.errors.<AiReviewError>: sharedGames.aiReview.errors.not_authenticated, sharedGames.aiReview.errors.invalid_input, sharedGames.aiReview.errors.not_found, sharedGames.aiReview.errors.not_owner, sharedGames.aiReview.errors.game_not_eligible, sharedGames.aiReview.errors.insufficient_balance, sharedGames.aiReview.errors.rate_limited, sharedGames.aiReview.errors.llm_error, sharedGames.aiReview.errors.unexpected_error */}
             {t(`aiReview.errors.${state.error}`)}
           </p>
         )}
@@ -331,6 +332,7 @@ function ReviewBody({
               className="flex flex-wrap gap-2"
             >
               {gradeCounts.map(({ judgment, count }) => {
+                // sharedGames.aiReview.judgments.<MoveJudgment>: sharedGames.aiReview.judgments.best, sharedGames.aiReview.judgments.good, sharedGames.aiReview.judgments.inaccuracy, sharedGames.aiReview.judgments.mistake, sharedGames.aiReview.judgments.blunder (MOVE_JUDGMENTS)
                 const label = t(`aiReview.judgments.${judgment}`);
                 const active = !excluded.has(judgment);
                 return (

@@ -1,5 +1,5 @@
 /**
- * Guides Hub Top
+ * Guides Hub Top (教本, `/dojo/guides`)
  *
  * @description
  * Top page of the guides SEO content hub. Lists available guide sections;
@@ -58,6 +58,7 @@ export default async function GuidesTopPage({ params }: LocalePageProps) {
   );
 
   const itemListItems = rankRoots.map((route) => ({
+    // ranks.rankNames.<RankSlug>: ranks.rankNames.mukyu, ranks.rankNames.5kyu, ranks.rankNames.4kyu, ranks.rankNames.3kyu, ranks.rankNames.2kyu, ranks.rankNames.1kyu, ranks.rankNames.1dan (enumerateGuideRoutes walks ALL_RANK_SLUGS and keeps the ranks that have a guide)
     name: tRanks(`rankNames.${route.slug}`),
     url: `${SITE_URL}${buildGuidePath(locale, route.slug, { kind: 'root' })}`,
   }));

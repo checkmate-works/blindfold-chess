@@ -1,3 +1,9 @@
+/**
+ * Admin Ads (管理画面 広告管理, `/admin/ads`)
+ *
+ * @description
+ * Index of ad slots with their creative kind and creative counts.
+ */
 import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 

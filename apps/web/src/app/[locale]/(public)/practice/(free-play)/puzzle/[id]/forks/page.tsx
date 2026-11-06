@@ -1,5 +1,5 @@
 /**
- * Forks of a Puzzle (`/practice/puzzle/[id]/forks`)
+ * Forks of a Puzzle (パズルのフォーク一覧, `/practice/puzzle/[id]/forks`)
  *
  * @description
  * Paginated listing of every fork that descends from a single puzzle row.

@@ -1,5 +1,5 @@
 /**
- * Rank Detail Page
+ * Rank Detail Page (段級位の詳細, `/dojo/ranks/[slug]`)
  *
  * @description
  * Displays detailed information about a specific belt rank including
@@ -181,6 +181,7 @@ export default async function RankDetailPage({ params }: Props) {
   // -----------------------------------------------------------------------
   if (isMukyuSlug(slug)) {
     const beltColor = getBeltColorHex(slug);
+    // ranks.rankNames.<slug>: ranks.rankNames.mukyu (this branch is guarded by isMukyuSlug)
     const rankName = t(`rankNames.${slug}`);
     const mukyuRequirements = t.raw('detail.mukyuRequirements') as string[];
     const mukyuRelatedLinks = t.raw('detail.mukyuRelatedLinks') as {
@@ -210,6 +211,7 @@ export default async function RankDetailPage({ params }: Props) {
           {t('requirements')}
         </RankHeader>
 
+        {/* ranks.detail.criteriaDescriptions.<slug>: ranks.detail.criteriaDescriptions.mukyu (this branch is guarded by isMukyuSlug) */}
         <CriteriaSection description={t(`detail.criteriaDescriptions.${slug}`)} t={t} />
 
         {hasGuide && (
@@ -270,6 +272,7 @@ export default async function RankDetailPage({ params }: Props) {
   const { rankSlug, requirements } = result;
 
   const beltColor = getBeltColorHex(rankSlug);
+  // ranks.rankNames.<RankSlug>: ranks.rankNames.5kyu, ranks.rankNames.4kyu, ranks.rankNames.3kyu, ranks.rankNames.2kyu, ranks.rankNames.1kyu, ranks.rankNames.1dan (getValidatedRank checks ALL_RANK_SLUGS; mukyu returned above)
   const rankName = t(`rankNames.${rankSlug}`);
 
   // Check if a criteria description exists for this slug
@@ -297,6 +300,7 @@ export default async function RankDetailPage({ params }: Props) {
         {t('requirements')}
       </RankHeader>
 
+      {/* ranks.detail.criteriaDescriptions.<RankSlug>: ranks.detail.criteriaDescriptions.5kyu, ranks.detail.criteriaDescriptions.4kyu, ranks.detail.criteriaDescriptions.3kyu, ranks.detail.criteriaDescriptions.2kyu, ranks.detail.criteriaDescriptions.1kyu, ranks.detail.criteriaDescriptions.1dan (getValidatedRank checks ALL_RANK_SLUGS; mukyu returned above) */}
       {hasCriteriaDescription && (
         <CriteriaSection description={t(`detail.criteriaDescriptions.${rankSlug}`)} t={t} />
       )}
@@ -327,9 +331,10 @@ export default async function RankDetailPage({ params }: Props) {
           page; this is the only section that varies by rank. Hardcoded to
           1dan rather than driven by rank data: today only 1dan carries a
           benefit, and `hasDanTierRank` is intentionally derived from
-          `user_ranks`, not materialized — see the User Grants System notes
-          in CLAUDE.md. Add a data-driven benefits list if a second rank
-          ever needs one. */}
+          `user_ranks`, not materialized (ranks are never revoked, so the
+          perk needs no grant row; `hasAdFreeEntitlement` in
+          src/lib/ads/ad-free-entitlement.ts ORs it with the other sources).
+          Add a data-driven benefits list if a second rank ever needs one. */}
       {rankSlug === '1dan' && (
         <div className="space-y-2">
           <SectionTitle>{t('detail.benefits')}</SectionTitle>

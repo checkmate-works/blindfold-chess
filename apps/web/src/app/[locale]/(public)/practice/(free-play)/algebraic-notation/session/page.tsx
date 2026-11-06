@@ -1,3 +1,9 @@
+/**
+ * Algebraic Notation Session (代数式表記法 練習中, `/practice/algebraic-notation/session`)
+ *
+ * @description
+ * Runs the algebraic-notation exercise questions.
+ */
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import dynamic from 'next/dynamic';

@@ -1,3 +1,9 @@
+/**
+ * Algebraic Notation (代数式表記法, `/practice/algebraic-notation`)
+ *
+ * @description
+ * Top page of the algebraic-notation practice with its setup form.
+ */
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 

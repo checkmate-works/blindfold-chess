@@ -10,8 +10,8 @@
  * A full `pnpm build` therefore requires a running database.
  * This is by design — production builds always have DB access, and
  * Preview builds get an isolated Supabase preview branch whose empty
- * database this script bootstraps (see "Preview deployments get their
- * database from Supabase Branching" in apps/web/CLAUDE.md).
+ * database this script bootstraps (how the branch is created and which
+ * dashboard settings it depends on: docs/preview-deployments.md).
  */
 import 'dotenv/config';
 import { execSync } from 'node:child_process';

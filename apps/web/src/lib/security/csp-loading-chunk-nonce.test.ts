@@ -4,10 +4,16 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * Next.js 16.4.1 includes the loading/error boundary CSP nonce fix upstream.
- * Keep checking both readable sources and the compiled Node runtimes: Node
- * rendering loads the latter, so checking source files alone previously
- * missed an inert patch. No local Next.js patch is now required.
+ * Upgrade regression check: Next.js boundary scripts must preserve CSP nonces.
+ *
+ * Next.js 16.4.1 includes the nonce fix for loading/error/template boundary
+ * scripts in both its readable sources and its compiled production runtimes,
+ * and the local pnpm patch that used to supply it was removed after verifying
+ * both copies. Node rendering loads
+ * `dist/compiled/next-server/app-page*.runtime.prod.js`, so checking only
+ * `dist/server/app-render/*` is insufficient — that is how an inert patch
+ * once went unnoticed. When upgrading Next.js, also check a
+ * production-rendered dynamic page for nonce-bearing script tags.
  */
 describe('Next.js loading/error boundary chunks carry the CSP nonce', () => {
   const require = createRequire(import.meta.url);

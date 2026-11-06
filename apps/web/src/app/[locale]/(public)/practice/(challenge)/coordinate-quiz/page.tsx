@@ -1,3 +1,9 @@
+/**
+ * Coordinate Quiz (座標クイズ, `/practice/coordinate-quiz`)
+ *
+ * @description
+ * Top page of the coordinate quiz: the setup form, a help tour, related articles and the leaderboard.
+ */
 import { createPracticeTopPage } from '@/app/[locale]/(public)/practice/_lib/createPracticeTopPage';
 import { buildPracticeHelpTour } from '@/app/[locale]/(public)/practice/_lib/practice-help-tour';
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';

@@ -1,5 +1,5 @@
 /**
- * Board Symmetry Training
+ * Board Symmetry Training (ボードの対称性 トレーニング, `/practice/board-symmetry/training`)
  *
  * @description
  * Untimed training mode for board symmetry identification.

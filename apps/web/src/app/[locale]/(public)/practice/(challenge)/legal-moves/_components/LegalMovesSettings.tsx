@@ -21,6 +21,7 @@ export function LegalMovesSettings({ pieceSelection, onPieceSelect }: Props) {
         <PieceSelector
           selected={pieceSelection}
           onSelect={onPieceSelect}
+          // practice.legalMoves.pieces.<PieceType>: practice.legalMoves.pieces.b, practice.legalMoves.pieces.n, practice.legalMoves.pieces.r, practice.legalMoves.pieces.q, practice.legalMoves.pieces.k (PIECE_TYPES)
           getLabel={(s) => (s === 'random' ? t('pieces.random') : t(`pieces.${s}`))}
           showLabel
         />

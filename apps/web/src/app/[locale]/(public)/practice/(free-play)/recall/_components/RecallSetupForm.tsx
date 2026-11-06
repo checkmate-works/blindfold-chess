@@ -207,6 +207,7 @@ export function RecallSetupForm() {
                     : 'border-transparent text-muted-foreground hover:text-foreground'
                 }`}
               >
+                {/* recall.setup.inputMode.<InputMode>: recall.setup.inputMode.manual, recall.setup.inputMode.lichess, recall.setup.inputMode.myGames */}
                 {t(`setup.inputMode.${mode}`)}
               </button>
             );
@@ -255,6 +256,7 @@ export function RecallSetupForm() {
               </div>
               {importError && (
                 <p className="text-sm text-destructive">
+                  {/* recall.setup.lichessImport.errors.<ImportLichessGameResult error>: recall.setup.lichessImport.errors.not_lichess_url, recall.setup.lichessImport.errors.lichess_unsupported, recall.setup.lichessImport.errors.invalid_id, recall.setup.lichessImport.errors.not_found, recall.setup.lichessImport.errors.rate_limited, recall.setup.lichessImport.errors.too_large, recall.setup.lichessImport.errors.fetch_failed */}
                   {t(`setup.lichessImport.errors.${importError}`)}
                 </p>
               )}

@@ -39,6 +39,7 @@ export function LeaderboardTabs({ activeTab, locale, period }: Props) {
               isActive ? 'bg-card text-foreground' : 'text-muted-foreground hover:text-foreground'
             }`}
           >
+            {/* leaderboard.tabs.<TabValue>: leaderboard.tabs.score, leaderboard.tabs.exp (TABS) */}
             {t(`tabs.${tab.value}`)}
           </Link>
         );

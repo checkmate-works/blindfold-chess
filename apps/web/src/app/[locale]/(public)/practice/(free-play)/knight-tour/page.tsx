@@ -1,5 +1,5 @@
 /**
- * Knight Tour
+ * Knight Tour (ナイトツアー, `/practice/knight-tour`)
  *
  * @description
  * A blindfold chess training mode where users attempt to visit all 64 squares

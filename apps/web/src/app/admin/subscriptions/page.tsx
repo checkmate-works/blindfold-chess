@@ -1,3 +1,9 @@
+/**
+ * Admin Subscriptions (管理画面 サブスクリプション管理, `/admin/subscriptions`)
+ *
+ * @description
+ * Paginated table of Stripe subscriptions filterable by user and status.
+ */
 import { getTranslations } from 'next-intl/server';
 
 import { buildAdminListHref } from '@/app/admin/_lib/build-list-href';

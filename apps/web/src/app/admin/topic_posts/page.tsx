@@ -1,3 +1,9 @@
+/**
+ * Admin Topic Posts (管理画面 トピック投稿管理, `/admin/topic_posts`)
+ *
+ * @description
+ * Paginated table of topic posts filterable by user, topic type and status, with delete actions.
+ */
 import { getTranslations } from 'next-intl/server';
 
 import { Button, Field, Input, Select } from '@/app/admin/_components/forms';

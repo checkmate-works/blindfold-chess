@@ -36,6 +36,7 @@ export function BoardAppearanceContent({ settings, onSettingsChange }: Props) {
                     boardTheme: e.target.value as typeof theme,
                   })
                 }
+                // Preferences.game.boardThemes.<BoardTheme>: Preferences.game.boardThemes.lichess, Preferences.game.boardThemes.chesscom, Preferences.game.boardThemes.monotone
                 label={t(`game.boardThemes.${theme}`)}
               />
             )

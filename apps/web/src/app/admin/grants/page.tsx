@@ -1,5 +1,5 @@
 /**
- * Admin Grants Page
+ * Admin Grants Page (管理画面 特典付与, `/admin/grants`)
  *
  * @description
  * Manages time-limited benefit grants for users. Grants provide benefits

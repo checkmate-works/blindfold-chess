@@ -1,3 +1,9 @@
+/**
+ * Admin Audit Log (管理画面 監査ログ, `/admin/audit-log`)
+ *
+ * @description
+ * Paginated table of moderation actions (actor, action, target, reason) filterable by action and user.
+ */
 import { getTranslations } from 'next-intl/server';
 
 import { buildAdminListHref } from '@/app/admin/_lib/build-list-href';

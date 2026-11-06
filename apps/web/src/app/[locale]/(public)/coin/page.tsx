@@ -201,6 +201,7 @@ export default async function CoinPage({ params }: Props) {
                       locale={locale}
                       className="inline-flex items-center rounded-full border border-border bg-background px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:border-primary/40 hover:bg-foreground/5"
                     >
+                      {/* coin.earn.chips.<EARN_CHIPS[number]["key"]>: coin.earn.chips.puzzle, coin.earn.chips.positionMemory, coin.earn.chips.topic, coin.earn.chips.chunk, coin.earn.chips.repertoire, coin.earn.chips.game (EARN_CHIPS) */}
                       {t(`earn.chips.${chip.key}`)}
                     </Link>
                   </li>

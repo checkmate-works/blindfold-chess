@@ -1,3 +1,9 @@
+/**
+ * Admin Glossary Term (管理画面 用語集 用語詳細, `/admin/glossary/[slug]`)
+ *
+ * @description
+ * Editor for the example positions attached to one glossary term.
+ */
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 

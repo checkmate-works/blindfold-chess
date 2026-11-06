@@ -1,3 +1,9 @@
+/**
+ * Position Memory Detail (ポジション詳細, `/practice/position-memory/[id]`)
+ *
+ * @description
+ * Shows one position-memory problem's description, provenance and tabbed related content, with start, edit and fork actions.
+ */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';

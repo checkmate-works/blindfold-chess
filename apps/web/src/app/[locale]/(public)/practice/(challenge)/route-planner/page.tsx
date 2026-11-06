@@ -1,5 +1,5 @@
 /**
- * Route Planner (`/practice/route-planner`)
+ * Route Planner (ルートプランナー, `/practice/route-planner`)
  *
  * @description
  * Practice module in which the user finds a path from a starting square to a

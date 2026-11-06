@@ -1,3 +1,9 @@
+/**
+ * Admin Dashboard (管理画面 ダッシュボード, `/admin`)
+ *
+ * @description
+ * KPI dashboard with a date-range picker, daily trend chart and summary table.
+ */
 import { getTranslations } from 'next-intl/server';
 
 import { AdminPageLayout } from '@/app/admin/_components/AdminPageLayout';

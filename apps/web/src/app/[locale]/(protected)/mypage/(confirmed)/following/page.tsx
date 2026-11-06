@@ -1,3 +1,9 @@
+/**
+ * Following (フォロー中, `/mypage/following`)
+ *
+ * @description
+ * Paginated list of the users the signed-in user follows, with an unfollow action on each row.
+ */
 import { getTranslations } from 'next-intl/server';
 
 import { and, count, desc, eq } from 'drizzle-orm';

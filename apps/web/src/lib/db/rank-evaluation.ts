@@ -37,7 +37,48 @@
  * game-based evaluator actually runs) and both evaluators filter the shared
  * result in TS.
  *
- * @see {@link checkAndGrantRanks} — entry point, called from `saveChallengeResult`
+ * @design Where the belt system (段級位) lives
+ *
+ * - Tables: `ranks` (admin-managed master data) and `user_ranks` (INSERT-only
+ *   achievement history, service role only) in `./schema/ranks.ts`; RLS in
+ *   `drizzle/supabase/rls_policies.sql` (SELECT only for authenticated/anon).
+ * - Definitions: `./data/ranks.ts` — `ranksSeedData` (requirements are JSONB
+ *   arrays, implicit AND; `[]` means "conditions not yet defined"),
+ *   `ALL_RANK_SLUGS`, `RANK_COLORS`, the `RankRequirement` union and
+ *   `parseRequirements` with its type guards.
+ * - Evaluation: this module. `checkAndGrantRanks` runs every evaluator;
+ *   `evaluateRanksAfterCreate` wraps it for the triggers.
+ * - Triggers: every rank-relevant write calls
+ *   `evaluateRanksAndRefreshEntitlements` (`./rank-grant-flow.ts`, which also
+ *   refreshes the dan-tier ad-free cookie): `save-challenge-result.ts`,
+ *   `lib/positions/user-position-mutations.ts`, `games/shared/_actions/publish-game.ts`
+ *   and `games/shared/[id]/_actions/claim-shared-game.ts`.
+ * - Surfacing: `practice/_components/RankAchievementModal.tsx` reads the
+ *   granted ranks that `useChallengeResultSave` stashed in sessionStorage;
+ *   `/dojo/ranks` (`dojo/ranks/page.tsx`, ISR) lists every rank in the states
+ *   `achieved` / `next` / `unachieved` / `coming-soon` from
+ *   `dojo/ranks/_lib/requirement-items.ts`, which also renders requirement
+ *   labels; `/dojo` recommends the next rank via `resolveNextRank` /
+ *   `resolveRecommendedNextSlug` in `dojo/ranks/_lib/rank-progression.ts`.
+ * - No `profiles.currentRankId` cache: a user's rank is derived from
+ *   `user_ranks` (≤15 rows per user); `resolveHighestRankSlug` in
+ *   `./data/ranks.ts` is the one place that picks "the" rank of a user.
+ * - "Claim" means something else in this codebase: `play.claim.*` /
+ *   `claim-shared-game` attach an anonymous game to an account. A player
+ *   earns 1kyu/1dan by *publishing* a qualifying game (`PublishNudgeBanner`,
+ *   `getPublishPromotionTarget`), never by claiming a promotion.
+ *
+ * To add a rank: an entry in `ranksSeedData`, its slug in `ALL_RANK_SLUGS`
+ * and colour in `RANK_COLORS`, `ranks.rankNames.<slug>` and
+ * `rankAchievement.rankNames.<slug>` in every `messages/*.json`, then
+ * `pnpm db:seed`. To add a requirement type: a member of the
+ * `RankRequirement` union and a type-guard branch in `parseRequirements`
+ * (both in `./data/ranks.ts`), an evaluator in {@link evaluators} here, a
+ * label branch in `buildRequirementItems` (`dojo/ranks/_lib/requirement-items.ts`),
+ * and the seed entry that uses it — the guard and the seed ship together,
+ * because an unknown type is dropped, not failed.
+ *
+ * @see {@link checkAndGrantRanks} — entry point
  * @see {@link evaluators} — registry of requirement type evaluators
  */
 import { and, asc, count, eq, inArray } from 'drizzle-orm';

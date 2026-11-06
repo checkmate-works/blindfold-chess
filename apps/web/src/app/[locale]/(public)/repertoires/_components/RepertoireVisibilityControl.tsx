@@ -102,6 +102,7 @@ export function RepertoireVisibilityControl({
                   className="mt-1"
                 />
                 <span>
+                  {/* Repertoires.visibility.<key> / <key>Help (VISIBILITY_I18N_KEY): Repertoires.visibility.public, Repertoires.visibility.publicHelp, Repertoires.visibility.followersOnly, Repertoires.visibility.followersOnlyHelp, Repertoires.visibility.private, Repertoires.visibility.privateHelp */}
                   <span className="font-medium">{t(`visibility.${key}`)}</span>
                   <span className="ml-2 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
                     {inc === 0
@@ -118,6 +119,7 @@ export function RepertoireVisibilityControl({
         </div>
         {changed && (
           <p className="mt-3 text-sm text-muted-foreground">
+            {/* tier: Repertoires.visibility.public, Repertoires.visibility.followersOnly, Repertoires.visibility.private (VISIBILITY_I18N_KEY) */}
             {cost === 0
               ? t('visibility.changeBodyFree', {
                   tier: t(`visibility.${VISIBILITY_I18N_KEY[target]}`),

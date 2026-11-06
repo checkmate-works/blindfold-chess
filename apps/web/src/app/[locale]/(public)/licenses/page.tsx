@@ -1,3 +1,9 @@
+/**
+ * Open Source Licenses (オープンソースライセンス, `/licenses`)
+ *
+ * @description
+ * Static page listing the bundled open-source components (engines, libraries) and their licence terms.
+ */
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 

@@ -37,6 +37,7 @@ export function ProblemCard({
         {/* Piece icon */}
         <Text style={styles.pieceIcon}>{PIECE_DISPLAY_MAP[problem.piece]}</Text>
         <Text style={[styles.pieceName, { color: colors.mutedForeground }]}>
+          {/* routePlanner.pieces.<RoutePlannerPieceType>: routePlanner.pieces.n, routePlanner.pieces.b, routePlanner.pieces.r, routePlanner.pieces.q (ROUTE_PLANNER_PIECES) */}
           {t(`routePlanner.pieces.${problem.piece}`)}
         </Text>
 

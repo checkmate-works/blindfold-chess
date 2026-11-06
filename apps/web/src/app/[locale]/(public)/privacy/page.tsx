@@ -1,3 +1,9 @@
+/**
+ * Privacy Policy (プライバシーポリシー, `/privacy`)
+ *
+ * @description
+ * Static privacy policy.
+ */
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import Link from 'next/link';

@@ -1,3 +1,9 @@
+/**
+ * Glossary Letter Index (用語集 頭文字索引, `/glossary/letter/[letter]`)
+ *
+ * @description
+ * Lists the glossary terms whose English name starts with the given letter.
+ */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { setRequestLocale } from 'next-intl/server';

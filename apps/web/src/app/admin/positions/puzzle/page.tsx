@@ -1,3 +1,9 @@
+/**
+ * Admin Puzzles (管理画面 パズル管理, `/admin/positions/puzzle`)
+ *
+ * @description
+ * Paginated table of puzzles with a featured toggle per row.
+ */
 import { listFeaturedPuzzleIds } from '@/lib/positions/queries';
 
 import { PositionsListPage } from '../_components/PositionsListPage';

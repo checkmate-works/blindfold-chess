@@ -11,6 +11,28 @@ import { stackGrantStart } from './grant-stacking';
 /**
  * Check if the user has an active (non-revoked, currently valid) grant
  * for the given benefit type.
+ *
+ * This module is the core of the user grants system (権限付与): time-limited
+ * benefits such as ad-free access or paywall content access, stored in the
+ * single `user_grants` table (`@design` TSDoc on the table in
+ * `lib/db/schema/grants.ts`), issued and revoked from `/admin/grants`
+ * (`app/admin/grants/`), and shown to the user on `/mypage/benefits`.
+ *
+ * Adding a benefit type: append the value to `BENEFIT_TYPES` in
+ * `lib/db/data/grant-types.ts` (no schema change — `benefitType` is varchar),
+ * check it with `hasActiveGrant(userId, '<type>')` at the gate that needs it,
+ * and for a scoped benefit also filter by `resourceType` / `resourceId`.
+ *
+ * Adding a grant trigger: call {@link calcGrantStartsAt} for the stacking
+ * start, insert into `user_grants` with the trigger's `grantType`, wrap the
+ * read + insert in `db.transaction()` when the trigger is automated (the
+ * admin flow omits it on purpose, being low-frequency), and call
+ * `revalidateTag(grantStatusTag(userId))` afterwards.
+ *
+ * Ad-free is not only grants: `hasAdFreeEntitlement` in
+ * `lib/ads/ad-free-entitlement.ts` ORs an active grant with an active Stripe
+ * subscription and a dan-tier belt rank (derived from `user_ranks`, never
+ * materialised as a grant row). New ad-free sources go there, nowhere else.
  */
 export const hasActiveGrant = cachedExistenceCheck(
   {

@@ -11,6 +11,7 @@ import { LEVEL_BUCKET_ORDER } from './queries/level-stats';
  */
 export function buildLevelBucketNames(t: ServerTranslator): Record<string, string> {
   return Object.fromEntries(
+    // Admin.stats.levelBuckets.<bucket>: Admin.stats.levelBuckets.none, Admin.stats.levelBuckets.0, Admin.stats.levelBuckets.1-4, Admin.stats.levelBuckets.5-9, Admin.stats.levelBuckets.10-19, Admin.stats.levelBuckets.20-49, Admin.stats.levelBuckets.50plus (LEVEL_BUCKET_ORDER = NO_EXP_BUCKET + LEVEL_BANDS ids)
     LEVEL_BUCKET_ORDER.map((bucket) => [bucket, t(`stats.levelBuckets.${bucket}`)])
   );
 }

@@ -2,12 +2,46 @@
 // schema slice — moderation.
 //
 // Moderation event log, rate-limit event log, and the broader user activity
-// log. The moderation log is append-only (no `updated_at`) — see the table
-// TSDoc for the event-sourcing rationale.
+// log. The moderation log is append-only (no `updated_at`); the table TSDoc
+// below carries the design.
 import { index, jsonb, pgTable, text, uuid, varchar } from 'drizzle-orm/pg-core';
 
 import { createdAtOnly } from './columns';
 
+/**
+ * Moderation Actions — append-only audit log of admin operations.
+ *
+ * @design Event log with materialized state, not pure event sourcing
+ *
+ * The moderation system keeps two sources, the pattern used by Discourse,
+ * GitLab, Mastodon and Lichess: a state flag on `profiles` (`bannedAt`) for
+ * O(1) status checks — every Server Action calls `isUserBanned()`
+ * (`lib/moderation/ban.ts`), so replaying events for that would be
+ * prohibitively expensive — and this table as the immutable trail recording
+ * who acted, on what, why and when. Corrections are new events (`unban`
+ * after `ban`), never updates; hence no `updated_at`.
+ *
+ * @design Polymorphic target, varchar action, JSONB metadata
+ *
+ * `target_type` + `target_id` follow the `topicPosts.topicType + topicKey`
+ * pattern so new moderation targets need no schema change; `action` is
+ * varchar rather than a pgEnum to avoid ALTER TYPE migrations for new action
+ * types; `metadata` holds action-specific context (deleted content, previous
+ * values) instead of dedicated `previous_value` / `new_value` columns.
+ * `reason` is the human-readable justification (for a ban it replaced the
+ * former `profiles.ban_reason`); `ip_address` is kept for forensics. The
+ * `actor_id` → `auth.users` FK is defined in `drizzle/supabase/` SQL.
+ *
+ * Reading it: "is the user banned?" is `profiles.bannedAt IS NOT NULL`;
+ * "why?" is the latest row with `action = 'ban'` for the target; the full
+ * history is every row for the target ordered by `created_at`.
+ *
+ * A ban cancels the user's Stripe subscription immediately: `banUser` calls
+ * `cancelAllActiveSubscriptions` after the ban has committed, and a Stripe
+ * failure keeps the ban and reports `bannedButSubscriptionNotCanceled` to
+ * the operator instead of rolling back. Unban does not restore the plan. The
+ * ordering rationale is in the `banUser` TSDoc.
+ */
 export const moderationActions = pgTable(
   'moderation_actions',
   {

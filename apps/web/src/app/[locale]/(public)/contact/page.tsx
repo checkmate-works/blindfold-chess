@@ -1,3 +1,9 @@
+/**
+ * Contact (お問い合わせ, `/contact`)
+ *
+ * @description
+ * The contact form.
+ */
 import { Suspense } from 'react';
 
 import type { Metadata } from 'next';

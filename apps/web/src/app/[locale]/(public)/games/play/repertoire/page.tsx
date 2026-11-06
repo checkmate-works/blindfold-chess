@@ -175,6 +175,7 @@ export default async function RepertoireCheckPage({ params, searchParams }: Prop
       playerColor,
       startingFen,
     });
+    // play.repertoireCheck.side_<playerColor>: play.repertoireCheck.side_white, play.repertoireCheck.side_black (parseRepertoireCheckParams)
     const side = t(`repertoireCheck.side_${playerColor}`);
     // The game as move pairs — the replay view's move strip and the "turn
     // this game into a kata" CTA below share the same formatting.

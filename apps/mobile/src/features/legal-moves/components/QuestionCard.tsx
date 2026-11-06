@@ -22,6 +22,7 @@ export function QuestionCard({ question, feedback }: QuestionCardProps) {
 
         {/* Piece name */}
         <Text style={[styles.pieceName, { color: colors.mutedForeground }]}>
+          {/* legalMoves.pieces.<PieceType>: legalMoves.pieces.b, legalMoves.pieces.n, legalMoves.pieces.r, legalMoves.pieces.q, legalMoves.pieces.k (PIECE_TYPES) */}
           {t(`legalMoves.pieces.${question.piece}`)}
         </Text>
 

@@ -1,3 +1,9 @@
+/**
+ * Admin New Article (管理画面 記事作成, `/admin/articles/new`)
+ *
+ * @description
+ * Create form for an article.
+ */
 import { getTranslations } from 'next-intl/server';
 
 import { AdminBreadcrumb } from '@/app/admin/_components/AdminBreadcrumb';

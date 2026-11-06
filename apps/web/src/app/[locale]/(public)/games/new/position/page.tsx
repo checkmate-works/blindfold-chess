@@ -1,3 +1,9 @@
+/**
+ * New Game from Position (カスタムポジション, `/games/new/position`)
+ *
+ * @description
+ * Starts an AI game from a position set up in the editor, with a help tour over the editor, engine and skill-level selectors.
+ */
 import { createNewGamePage } from '../_lib/create-new-game-page';
 import { PositionGameForm } from './_components/PositionGameForm';
 

@@ -34,6 +34,7 @@ export function SettingsForm({ settings, onUpdateSetting }: SettingsFormProps) {
         value={settings.orientation}
         onChange={(orientation) => onUpdateSetting("orientation", orientation)}
         formatOption={(orientation) =>
+          // coordinateQuiz.setup.orientationWhite, coordinateQuiz.setup.orientationBlack, coordinateQuiz.setup.orientationRandom (BOARD_ORIENTATIONS)
           t(`coordinateQuiz.setup.orientation${capitalize(orientation)}`)
         }
       />
@@ -44,6 +45,7 @@ export function SettingsForm({ settings, onUpdateSetting }: SettingsFormProps) {
         value={settings.feedbackSpeed}
         onChange={(speed) => onUpdateSetting("feedbackSpeed", speed)}
         formatOption={(speed) =>
+          // coordinateQuiz.setup.feedbackFast, coordinateQuiz.setup.feedbackNormal, coordinateQuiz.setup.feedbackSlow (FEEDBACK_SPEEDS)
           t(`coordinateQuiz.setup.feedback${capitalize(speed)}`)
         }
       />

@@ -70,6 +70,7 @@ export function ResultCard({
             {t("aiGame.result.playerColor")}
           </Text>
           <Text style={[styles.statValue, { color: colors.foreground }]}>
+            {/* aiGame.setup.<Side>: aiGame.setup.white, aiGame.setup.black */}
             {t(`aiGame.setup.${playerColor}`)}
           </Text>
         </View>

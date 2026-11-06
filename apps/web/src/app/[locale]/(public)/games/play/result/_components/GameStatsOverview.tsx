@@ -219,6 +219,7 @@ export function GameStatsOverview({
             {playerColor && opening !== undefined && locale && (
               <GameColorOpeningRow
                 playerColor={playerColor}
+                // play.playerColor.<Side>: play.playerColor.white, play.playerColor.black
                 colorLabel={t(`playerColor.${playerColor}`)}
                 opening={opening}
                 openingDisplayName={

@@ -1,3 +1,9 @@
+/**
+ * Admin Edit Article (管理画面 記事編集, `/admin/articles/[id]/edit`)
+ *
+ * @description
+ * Edit form for one article.
+ */
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 

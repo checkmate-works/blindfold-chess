@@ -1,3 +1,9 @@
+/**
+ * Interview Question (インタビュー質問の詳細, `/interview/[questionKey]`)
+ *
+ * @description
+ * Shows one interview question with the user's current opening answer and the form to change it.
+ */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
@@ -44,6 +50,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const t = await getTranslations({ locale, namespace: 'metadata.interviewQuestion' });
   const tQuestions = await getTranslations({ locale, namespace: 'interview.questions' });
 
+  // interview.questions.<InterviewQuestionKey>.label: interview.questions.favorite_opening.label (INTERVIEW_QUESTION_KEYS; checked above)
   const label = tQuestions(`${questionKey}.label` as never);
 
   const title = t('title', { label });
@@ -114,6 +121,7 @@ export default async function InterviewQuestionDetailPage({ params }: Props) {
 
   return (
     <PageLayout
+      // interview.questions.<InterviewQuestionKey>.label: interview.questions.favorite_opening.label (INTERVIEW_QUESTION_KEYS; checked above)
       title={t(`questions.${typedKey}.label` as never)}
       locale={locale}
       breadcrumb={[
@@ -121,6 +129,7 @@ export default async function InterviewQuestionDetailPage({ params }: Props) {
         { label: t(`questions.${typedKey}.label` as never) },
       ]}
     >
+      {/* interview.questions.<InterviewQuestionKey>.description: interview.questions.favorite_opening.description (INTERVIEW_QUESTION_KEYS; checked above) */}
       <SectionTitle>{t(`questions.${typedKey}.description` as never)}</SectionTitle>
 
       {!user ? (

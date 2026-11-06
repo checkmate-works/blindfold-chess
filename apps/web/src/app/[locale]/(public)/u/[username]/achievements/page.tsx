@@ -1,3 +1,9 @@
+/**
+ * Profile Achievements (すべてのアチーブメント, `/u/[username]/achievements`)
+ *
+ * @description
+ * Every achievement a user holds, one card per badge definition.
+ */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';

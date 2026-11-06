@@ -1,3 +1,9 @@
+/**
+ * Edit Position Memory Problem (問題を編集, `/practice/position-memory/[id]/edit`)
+ *
+ * @description
+ * Owner-only form for editing a saved position-memory problem's FEN, title, description and tags.
+ */
 import { getPositionById } from '@/lib/positions/queries';
 
 import {

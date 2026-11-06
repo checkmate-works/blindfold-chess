@@ -473,7 +473,7 @@ describe('useMoveOperationTracker', () => {
     expect(result.current.logs[0].invalidAttempts?.[0]).toBe('m0');
   });
 
-  describe('totals (monotonic lifetime counters — issue #95)', () => {
+  describe('totals: lifetime operation counters that undo, restart and restore can never decrease (issue #95)', () => {
     it('starts at zero and counts every recorded operation', () => {
       const { result } = renderHook(() => useMoveOperationTracker());
 
@@ -600,7 +600,7 @@ describe('useMoveOperationTracker', () => {
     });
   });
 
-  describe('undoneLogs (archive of rollback discards — issue #95)', () => {
+  describe('undoneLogs: archive of the log entries that undo and restart discard (issue #95)', () => {
     it('archives the removed entry on undo, keeping its rejected SAN texts', () => {
       const { result } = renderHook(() => useMoveOperationTracker());
 

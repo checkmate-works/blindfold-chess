@@ -8,9 +8,9 @@ import { db, profiles } from '@/lib/db';
 /**
  * @knownIssue This redirect can intermittently crash the client with a
  * hooks-mismatch hydration error right after finishing sign-up. See the
- * `@knownIssue` note on `(protected)/layout.tsx` and "Known Issues" in
- * `apps/web/CLAUDE.md` before attempting a fix here — moving this redirect
- * around inside the Suspense tree was already tried and did not help.
+ * `@knownIssue` note on `(protected)/layout.tsx` before attempting a fix
+ * here: it lists what was tried, and moving this redirect around inside the
+ * Suspense tree is among the things that did not help.
  */
 export default async function ProvisionalLayout({
   children,

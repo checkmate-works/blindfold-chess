@@ -1,3 +1,9 @@
+/**
+ * Profile Followers (フォロワー, `/u/[username]/followers`)
+ *
+ * @description
+ * Paginated list of the users following this profile.
+ */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';

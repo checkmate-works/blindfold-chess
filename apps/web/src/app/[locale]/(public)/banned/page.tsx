@@ -1,3 +1,9 @@
+/**
+ * Banned Account (アカウント停止, `/banned`)
+ *
+ * @description
+ * Tells a banned user that the account is suspended, shows the latest moderation reason, and redirects anyone not banned.
+ */
 import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 

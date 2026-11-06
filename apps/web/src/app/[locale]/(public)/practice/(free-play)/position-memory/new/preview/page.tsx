@@ -1,3 +1,9 @@
+/**
+ * New Position Memory Preview (問題をプレビュー, `/practice/position-memory/new/preview`)
+ *
+ * @description
+ * Preview step of position-memory problem creation that reads the draft and saves it.
+ */
 import { getTranslations } from 'next-intl/server';
 
 import { getAuthenticatedUser } from '@/lib/auth';

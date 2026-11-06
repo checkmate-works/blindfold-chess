@@ -1,3 +1,9 @@
+/**
+ * Position Memory Session (ポジションの記憶 練習中, `/practice/position-memory/[id]/session`)
+ *
+ * @description
+ * Runs the memorisation session for one saved position-memory problem.
+ */
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';

@@ -72,6 +72,7 @@ export function PlaySettingsIndicator({ settings, playerColor, label }: Props) {
 
       <span
         className="inline-flex items-center gap-1.5"
+        // sharedGames.playSettings.visibility.<BoardVisibility>: sharedGames.playSettings.visibility.always, sharedGames.playSettings.visibility.peek, sharedGames.playSettings.visibility.never (BOARD_VISIBILITY_VALUES)
         title={t(`visibility.${settings.boardVisibility}`)}
       >
         <VisibilityIcon className="h-4 w-4" aria-hidden />

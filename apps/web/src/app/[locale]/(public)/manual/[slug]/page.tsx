@@ -1,3 +1,9 @@
+/**
+ * Manual Article (マニュアル記事, `/manual/[slug]`)
+ *
+ * @description
+ * Renders one markdown manual article.
+ */
 import { getTranslations } from 'next-intl/server';
 import { setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';

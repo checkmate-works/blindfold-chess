@@ -24,6 +24,7 @@ export function usePieceAccuracy(t: (key: string, params?: Record<string, string
   pieceNames: Record<string, string>;
   accuracyDescriptions: AccuracyDescriptions;
 } {
+  // <ns>.scoreDescriptions.correct / .wrongPiece / .missing / .extra and <ns>.pieceNames.K / .Q / .R / .B / .N / .P / .k / .q / .r / .b / .n / .p (PIECE_KEYS), where t is practice.fen (FenSession) or practice.positionMemory (PositionMemorySessionView): practice.fen.scoreDescriptions.correct, practice.fen.pieceNames.K, practice.positionMemory.scoreDescriptions.missing, practice.positionMemory.pieceNames.p, …
   const getScoreDescription = useCallback(
     (type: ScoreDescriptionType, params: Record<string, string>) => {
       return t(`scoreDescriptions.${type}`, params);

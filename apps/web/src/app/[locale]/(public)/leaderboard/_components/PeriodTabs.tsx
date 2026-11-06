@@ -48,6 +48,7 @@ export async function PeriodTabs({ currentPeriod, hrefs, locale }: Props) {
               isActive ? 'bg-card text-foreground' : 'text-muted-foreground hover:text-foreground'
             }`}
           >
+            {/* leaderboard.period.<LeaderboardPeriod>: leaderboard.period.all-time, leaderboard.period.weekly, leaderboard.period.monthly (VALID_PERIODS) */}
             {t(`period.${p}`)}
           </Link>
         );

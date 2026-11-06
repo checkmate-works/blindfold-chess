@@ -154,6 +154,7 @@ export function buildNotificationMessage(
           return notification.metadata.reason;
         }
         return t('rankGrantMessage.default', {
+          // ranks.rankNames.<RankSlug>: ranks.rankNames.mukyu, ranks.rankNames.5kyu, ranks.rankNames.4kyu, ranks.rankNames.3kyu, ranks.rankNames.2kyu, ranks.rankNames.1kyu, ranks.rankNames.1dan (ALL_RANK_SLUGS)
           rankName: tRoot(`ranks.rankNames.${notification.metadata.rankSlug}`),
         });
       }

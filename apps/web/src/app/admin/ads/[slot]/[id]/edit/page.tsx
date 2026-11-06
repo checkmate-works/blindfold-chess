@@ -1,3 +1,9 @@
+/**
+ * Admin Edit Ad Creative (管理画面 広告クリエイティブ編集, `/admin/ads/[slot]/[id]/edit`)
+ *
+ * @description
+ * Edit form for one ad creative, rendered per the slot's creative kind.
+ */
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 

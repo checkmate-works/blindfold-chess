@@ -1,3 +1,9 @@
+/**
+ * Chunks Catalog (チャンク, `/chunks`)
+ *
+ * @description
+ * Paginated catalog of chunks with a status filter (all / drafts seeking feedback / published) and a create button.
+ */
 import { Suspense } from 'react';
 
 import type { Metadata } from 'next';
@@ -256,6 +262,7 @@ async function ChunksListContent({ params, searchParams }: Props) {
                             key={topic}
                             className="inline-flex items-center rounded-full bg-amber-200 px-2 py-0.5 text-[10px] font-medium text-amber-900 dark:bg-amber-800 dark:text-amber-100"
                           >
+                            {/* chunks.list.feedbackChip.<ChunkFeedbackTopic>: chunks.list.feedbackChip.title, chunks.list.feedbackChip.description (CHUNK_FEEDBACK_TOPICS) */}
                             {t(`list.feedbackChip.${topic}` as 'list.feedbackChip.title')}
                           </span>
                         ))}

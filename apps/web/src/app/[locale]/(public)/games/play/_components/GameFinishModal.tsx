@@ -144,6 +144,7 @@ export function GameFinishModal({
           }
         : {
             title: t('finishModal.promotion.title', {
+              // ranks.rankNames.<RankSlug>: ranks.rankNames.mukyu, ranks.rankNames.5kyu, ranks.rankNames.4kyu, ranks.rankNames.3kyu, ranks.rankNames.2kyu, ranks.rankNames.1kyu, ranks.rankNames.1dan (ALL_RANK_SLUGS)
               rankName: tRanks(`rankNames.${promotionRankSlug}`),
             }),
             body: t('finishModal.promotion.description'),

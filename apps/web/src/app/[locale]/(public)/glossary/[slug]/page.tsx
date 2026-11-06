@@ -1,3 +1,9 @@
+/**
+ * Glossary Term (用語の詳細, `/glossary/[slug]`)
+ *
+ * @description
+ * Shows one glossary term's definition with tabbed related content and a native ad.
+ */
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import dynamic from 'next/dynamic';
@@ -165,6 +171,7 @@ export default async function GlossaryTermPage({ params, searchParams }: Props) 
                   CATEGORY_COLORS[term.category] || CATEGORY_COLORS.general
                 }`}
               >
+                {/* glossary.categories.<GlossaryCategory>: glossary.categories.tactics, glossary.categories.strategy, glossary.categories.endgame, glossary.categories.opening, glossary.categories.structure, glossary.categories.general, glossary.categories.principle (CATEGORY_STYLES keys) */}
                 {t(`categories.${term.category}`)}
               </Link>
             )}

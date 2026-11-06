@@ -40,8 +40,8 @@ export const POINT_EVENT_SOURCE_OPTIONS = [
  * Cross-user filters for the `/admin/coins` ledger view. Every field is
  * optional; omitting a field widens the result set. This is the admin-side
  * read surface over `point_events` (the coin ledger) — the counterpart to the
- * per-user `getPointHistory`. See the "Points / Coin Economy" note in
- * apps/web/CLAUDE.md for why the ledger stays "points" while the UI says
+ * per-user `getPointHistory`. See src/lib/points/CLAUDE.md for the Coin / points naming
+ * rule for why the ledger stays "points" while the UI says
  * "Coin".
  */
 export type PointEventFilters = {

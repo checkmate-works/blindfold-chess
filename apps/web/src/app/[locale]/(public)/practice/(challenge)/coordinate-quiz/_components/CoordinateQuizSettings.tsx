@@ -50,6 +50,7 @@ export function CoordinateQuizSettings({
                   : 'bg-secondary text-secondary-foreground hover:bg-muted'
               }`}
             >
+              {/* practice.coordinateQuiz.feedbackSpeeds.<FeedbackSpeed>: practice.coordinateQuiz.feedbackSpeeds.fast, practice.coordinateQuiz.feedbackSpeeds.normal, practice.coordinateQuiz.feedbackSpeeds.slow (FEEDBACK_SPEEDS) */}
               {t(`feedbackSpeeds.${speed}`)}
             </button>
           ))}

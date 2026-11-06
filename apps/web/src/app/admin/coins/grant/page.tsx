@@ -9,8 +9,8 @@
  * audit row, via the createPointGrant Server Action. On success the form sends
  * the admin back to /admin/coins where the new row appears at the top.
  *
- * "Coin" is the facing name for the points ledger — see the
- * "Points / Coin Economy" note in apps/web/CLAUDE.md.
+ * "Coin" is the facing name for the points ledger (naming rule in
+ * src/lib/points/CLAUDE.md).
  */
 import { getTranslations } from 'next-intl/server';
 

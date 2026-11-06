@@ -41,12 +41,18 @@ describe("packages/features pure barrels", () => {
 
     it(`${relativePath} has no direct \`from "react"\` import`, () => {
       const source = readFileSync(absolutePath, "utf8");
-      expect(source).not.toMatch(REACT_IMPORT_RE);
+      expect(
+        source,
+        `pure barrel ${relativePath} imports from "react". A pure barrel is loaded by React Server Components, so React code must not enter it: move the React-dependent module behind the feature's client.ts barrel (one that starts with "use client"), and keep only types, constants and pure functions here. The rule is explained in packages/features/CLAUDE.md`,
+      ).not.toMatch(REACT_IMPORT_RE);
     });
 
     it(`${relativePath} does not value-export a React hook (useXxx)`, () => {
       const source = readFileSync(absolutePath, "utf8");
-      expect(source).not.toMatch(HOOK_VALUE_RE);
+      expect(
+        source,
+        `pure barrel ${relativePath} re-exports a hook value (an identifier named use[A-Z]...). Re-export the hook from the feature's client.ts barrel instead, and expose it in package.json#exports as "./<feature>/client"; if only the hook's return type is needed here, use \`export type { ... }\`. The rule is explained in packages/features/CLAUDE.md`,
+      ).not.toMatch(HOOK_VALUE_RE);
     });
 
     it(`${relativePath} does not wildcard-re-export from a hook file`, () => {

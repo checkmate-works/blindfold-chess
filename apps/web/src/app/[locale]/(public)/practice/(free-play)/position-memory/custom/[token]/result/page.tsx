@@ -1,3 +1,9 @@
+/**
+ * Custom Position Result (カスタム問題の結果, `/practice/position-memory/custom/[token]/result`)
+ *
+ * @description
+ * Result of an instant (token-encoded) position-memory problem, with the next problems to try.
+ */
 import { Suspense } from 'react';
 
 import type { Metadata } from 'next';

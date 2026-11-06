@@ -9,7 +9,8 @@
     "./react": "./react.js",
     "./revalidate-path-ban": "./revalidate-path-ban.js",
     "./hover-underline-ban": "./hover-underline-ban.js",
-    "./client-intl-hooks-ban": "./client-intl-hooks-ban.js"
+    "./client-intl-hooks-ban": "./client-intl-hooks-ban.js",
+    "./chess-js-ban": "./chess-js-ban.js"
   },
   "dependencies": {
     "@eslint/js": "^9.39.4",

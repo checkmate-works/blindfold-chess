@@ -1,3 +1,9 @@
+/**
+ * Learn Article (学習記事, `/learn/[category]/[slug]`)
+ *
+ * @description
+ * Renders one markdown learning article with Article JSON-LD and the practice pages it relates to.
+ */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { setRequestLocale } from 'next-intl/server';
@@ -109,6 +115,7 @@ export default async function LearnArticlePage({ params }: Props) {
 
   const categoryInfos = availableCategories.map((cat) => ({
     category: cat,
+    // learn.categories.<ArticleCategory>: learn.categories.notation, learn.categories.coordinates, learn.categories.moves, learn.categories.memory, learn.categories.practice (ARTICLE_CATEGORIES via getAvailableCategories)
     label: t(`learn.categories.${cat}`),
     count: categoryCounts[cat],
     countLabel: t('learn.articleCount', { count: categoryCounts[cat] }),
@@ -131,6 +138,7 @@ export default async function LearnArticlePage({ params }: Props) {
         locale={locale}
         breadcrumb={[
           { label: t('navigation.learn'), href: '/learn' },
+          // learn.categories.<ArticleCategory>: learn.categories.notation, learn.categories.coordinates, learn.categories.moves, learn.categories.memory, learn.categories.practice (ARTICLE_CATEGORIES; the route param must equal article.metadata.category, checked above)
           { label: t(`learn.categories.${category}`), href: `/learn/${category}` },
           { label: article.metadata.title },
         ]}
@@ -155,6 +163,7 @@ export default async function LearnArticlePage({ params }: Props) {
                     key={moduleId}
                     href={`/practice/${moduleId}`}
                     icon={icon}
+                    // practice.<PRACTICE_MODULE_TRANSLATION_KEYS[moduleId]>.title / .description: practice.algebraicNotation.title, practice.boardSymmetry.title, practice.coordinateQuiz.title, practice.knightTour.title, practice.legalMoves.title, practice.positionMemory.title, practice.squareColors.title and the same seven with .description (the modules ARTICLE_PRACTICE_MAPPING names; the full map also has diagonalQuiz and fen)
                     title={t(`practice.${translationKey}.title`)}
                     description={t(`practice.${translationKey}.description`)}
                     locale={locale}

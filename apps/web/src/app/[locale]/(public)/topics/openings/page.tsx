@@ -1,3 +1,9 @@
+/**
+ * Openings Topic List (オープニング, `/topics/openings`)
+ *
+ * @description
+ * Paginated recent posts across opening topics with first-move and category filters.
+ */
 import { Suspense } from 'react';
 
 import type { Metadata } from 'next';

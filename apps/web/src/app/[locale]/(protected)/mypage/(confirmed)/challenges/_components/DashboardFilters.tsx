@@ -60,6 +60,7 @@ export function DashboardFilters({
       >
         {DATE_PERIODS.map((period) => (
           <option key={period} value={period}>
+            {/* Mypage.periods.<DatePeriod>: Mypage.periods.thisWeek, Mypage.periods.lastWeek, Mypage.periods.thisMonth, Mypage.periods.lastMonth (DATE_PERIODS) */}
             {t(`periods.${period}`)}
           </option>
         ))}
@@ -108,6 +109,7 @@ export function DashboardFilters({
           <PieceSelector
             selected={pieceFilter}
             onSelect={handlePieceSelect}
+            // Mypage.filters.pieces.<PieceSelection>: Mypage.filters.pieces.k, Mypage.filters.pieces.q, Mypage.filters.pieces.r, Mypage.filters.pieces.b, Mypage.filters.pieces.n, Mypage.filters.pieces.random
             getLabel={(s) => t(`filters.pieces.${s}`)}
           />
         </div>

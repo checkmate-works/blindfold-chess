@@ -1,3 +1,9 @@
+/**
+ * Subscription (サブスクリプション, `/mypage/subscription`)
+ *
+ * @description
+ * Shows the signed-in user's subscription status and management actions, with a success banner after checkout.
+ */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 

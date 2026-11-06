@@ -1,3 +1,9 @@
+/**
+ * New Game from Opening (オープニングから開始, `/games/new/opening`)
+ *
+ * @description
+ * Starts an AI game from a chosen opening, behind the game-limit check.
+ */
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 

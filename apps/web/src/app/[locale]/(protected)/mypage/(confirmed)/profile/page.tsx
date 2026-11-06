@@ -1,3 +1,9 @@
+/**
+ * Profile Edit (プロフィール編集, `/mypage/profile`)
+ *
+ * @description
+ * Form for editing the signed-in user's public profile (display name, bio, chess accounts), linked to the public profile and the account page.
+ */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';

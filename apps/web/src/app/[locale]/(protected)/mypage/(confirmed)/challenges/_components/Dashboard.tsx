@@ -96,6 +96,7 @@ export function Dashboard({ locale, initialMenu, relatedPracticeByMenu }: Props)
 
   const menuOptions = availableMenuTypes.map((type) => ({
     value: type,
+    // Mypage.menuTypes.<ChallengeMenuType>: Mypage.menuTypes.coordinate_quiz, Mypage.menuTypes.legal_moves, Mypage.menuTypes.square_colors, Mypage.menuTypes.diagonal_quiz, Mypage.menuTypes.board_symmetry, Mypage.menuTypes.route_planner (CHALLENGE_MENU_TYPES)
     label: t(`menuTypes.${type}`),
   }));
 
@@ -149,6 +150,7 @@ export function Dashboard({ locale, initialMenu, relatedPracticeByMenu }: Props)
                 data={chartData}
                 emptyMessage={t('noData')}
                 yAxisLabel={t('scoreUnit')}
+                // Mypage.periods.<DatePeriod | previous>: Mypage.periods.thisWeek, Mypage.periods.lastWeek, Mypage.periods.thisMonth, Mypage.periods.lastMonth, Mypage.periods.twoWeeksAgo, Mypage.periods.twoMonthsAgo (getPreviousPeriodLabel)
                 currentLabel={t(`periods.${selectedPeriod}`)}
                 previousLabel={t(`periods.${getPreviousPeriodLabel(selectedPeriod)}`)}
                 onPreviousLabelClick={

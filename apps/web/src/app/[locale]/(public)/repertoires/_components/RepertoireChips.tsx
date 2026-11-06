@@ -61,10 +61,12 @@ export async function RepertoireChips({ locale, side, phase, status }: Props) {
         href={`/repertoires?side=${side}`}
         locale={locale}
         className={SIDE_CHIP}
+        // Repertoires.form.side_<RepertoireSide>: Repertoires.form.side_white, Repertoires.form.side_black
         title={t('detail.filterBySide', { side: t(`form.side_${side}`) })}
       >
         {t(`form.side_${side}`)}
       </Link>
+      {/* Repertoires.form.phase_<RepertoirePhase>: Repertoires.form.phase_middlegame, Repertoires.form.phase_endgame (REPERTOIRE_PHASES minus opening) */}
       {phase && phase !== 'opening' && <span className={CHIP}>{t(`form.phase_${phase}`)}</span>}
     </span>
   );

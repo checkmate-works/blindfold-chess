@@ -164,7 +164,7 @@ afterAll(async () => {
   }
 });
 
-describe('post_game_embed_attachments — DB CHECK constraints (#35〜#38)', () => {
+describe('post_game_embed_attachments — CHECK constraints reject a malformed embed id, provider, source URL or attribution pair (issues #35–#38)', () => {
   // embed_id `/` rejected
   it('rejects an INSERT with embed_id containing `/` (chk_embed_id_format)', async (ctx) => {
     const db = requireDb(ctx);
@@ -269,7 +269,7 @@ describe('post_game_embed_attachments — DB CHECK constraints (#35〜#38)', () 
   });
 });
 
-describe('post_game_embed_attachments — RLS policies (#39〜#41)', () => {
+describe('post_game_embed_attachments — RLS hides rows under soft-deleted posts and blocks client-role writes (issues #39–#41)', () => {
   /**
    * Helper: run `body` inside a transaction whose role is set to
    * `authenticated` and whose `auth.uid()` resolves to `userId`. The

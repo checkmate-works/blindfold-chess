@@ -1,3 +1,9 @@
+/**
+ * Quadrant Anchors (4分割アンカー, `/practice/quadrants`)
+ *
+ * @description
+ * Top page of the quadrant-anchors practice: the setup form and the related article.
+ */
 import { createPracticeTopPage } from '@/app/[locale]/(public)/practice/_lib/createPracticeTopPage';
 import { PRACTICE_EMOJIS } from '@/app/[locale]/(public)/practice/_lib/practice-emojis';
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';

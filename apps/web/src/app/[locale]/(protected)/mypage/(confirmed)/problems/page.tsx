@@ -1,5 +1,5 @@
 /**
- * My Problems Index (`/mypage/problems`)
+ * My Problems Index (作成した問題, `/mypage/problems`)
  *
  * @description
  * Index page for user-created problems. Links to Position Memory and Puzzle

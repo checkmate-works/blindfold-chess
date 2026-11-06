@@ -1,3 +1,9 @@
+/**
+ * Profile Puzzles (作成したパズル, `/u/[username]/problems/puzzles`)
+ *
+ * @description
+ * Paginated list of the puzzles this user created.
+ */
 import type { Metadata } from 'next';
 
 import type { Locale } from '@/app/[locale]/_lib/types';

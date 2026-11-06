@@ -128,6 +128,7 @@ export function ButtonInput({
             type="button"
             onClick={() => handleAppendChar(char)}
             disabled={disabled}
+            // buttonInput.piece.king, buttonInput.piece.queen, buttonInput.piece.rook, buttonInput.piece.bishop, buttonInput.piece.knight (PIECE_BUTTONS)
             aria-label={t(`piece.${labelKey}`)}
             className={`${CELL_BUTTON_CLASS} flex-1 min-w-0 max-w-11 sm:flex-none sm:max-w-none`}
           >
@@ -173,6 +174,7 @@ export function ButtonInput({
               type="button"
               onClick={() => handleAppendChar(char)}
               disabled={disabled}
+              // buttonInput.symbol.check, buttonInput.symbol.promotion, buttonInput.symbol.checkmate (ANNOTATION_BUTTONS)
               aria-label={t(`symbol.${labelKey}`)}
               className={CELL_BUTTON_CLASS}
             >
@@ -187,6 +189,7 @@ export function ButtonInput({
               type="button"
               onClick={() => handleAppendCastling(move)}
               disabled={disabled}
+              // buttonInput.castling.kingside, buttonInput.castling.queenside (CASTLING_BUTTONS)
               aria-label={t(`castling.${labelKey}`)}
               className={CASTLING_BUTTON_CLASS}
             >

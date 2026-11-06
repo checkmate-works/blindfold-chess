@@ -1,3 +1,9 @@
+/**
+ * Contact Confirm (送信内容の確認, `/contact/confirm`)
+ *
+ * @description
+ * Confirmation step that shows the submitted contact form values before sending, redirecting to the form when they are missing.
+ */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';

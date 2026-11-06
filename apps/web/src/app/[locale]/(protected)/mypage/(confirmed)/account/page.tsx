@@ -90,6 +90,7 @@ export default async function AccountPage({ params, searchParams }: Props) {
           role="status"
           className="rounded-lg border border-primary/30 bg-primary/10 px-4 py-3 text-sm font-medium text-foreground"
         >
+          {/* MypageAccount.notices.<AccountPageNotice>: MypageAccount.notices.linkedGoogle, MypageAccount.notices.linkDuplicate, MypageAccount.notices.linkFailed, MypageAccount.notices.emailChangePending, MypageAccount.notices.emailChangeDone, MypageAccount.notices.emailChangeLinkInvalid (ACCOUNT_PAGE_NOTICES) */}
           {t(`notices.${notice}`)}
         </p>
       )}

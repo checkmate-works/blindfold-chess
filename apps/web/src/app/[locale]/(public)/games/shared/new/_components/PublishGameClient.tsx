@@ -58,6 +58,7 @@ export function PublishGameClient({ locale }: Props) {
       }
       setLoad({ status: 'loaded', game, gameId });
       // Suggest a title the author can keep or edit.
+      // sharedGames.result.<FinalGameOutcome>: sharedGames.result.win, sharedGames.result.loss, sharedGames.result.draw
       const suffix = game.status === 'in_progress' ? '' : ` — ${t(`result.${game.status}`)}`;
       setTitle(`${engineLabel(game)}${suffix}`);
     })();

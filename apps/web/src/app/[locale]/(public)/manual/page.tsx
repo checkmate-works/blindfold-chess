@@ -1,3 +1,9 @@
+/**
+ * Manual Index (マニュアル, `/manual`)
+ *
+ * @description
+ * Card list of the manual articles.
+ */
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 

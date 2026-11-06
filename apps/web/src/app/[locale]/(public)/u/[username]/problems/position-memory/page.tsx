@@ -1,3 +1,9 @@
+/**
+ * Profile Position Memory Problems (作成したポジションの記憶問題, `/u/[username]/problems/position-memory`)
+ *
+ * @description
+ * Paginated list of the position-memory problems this user created.
+ */
 import type { Metadata } from 'next';
 
 import type { Locale } from '@/app/[locale]/_lib/types';

@@ -1,3 +1,9 @@
+/**
+ * Article Detail (記事詳細, `/articles/[slug]`)
+ *
+ * @description
+ * Renders one published article (Tiptap JSON or markdown) with Article JSON-LD and a not-translated notice when the locale falls back.
+ */
 import type { Metadata } from 'next';
 import { hasLocale } from 'next-intl';
 import { getTranslations } from 'next-intl/server';

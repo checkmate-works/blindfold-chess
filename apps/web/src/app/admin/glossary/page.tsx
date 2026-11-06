@@ -1,3 +1,9 @@
+/**
+ * Admin Glossary (管理画面 用語集管理, `/admin/glossary`)
+ *
+ * @description
+ * Table of glossary terms linking to each term's admin page.
+ */
 import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 

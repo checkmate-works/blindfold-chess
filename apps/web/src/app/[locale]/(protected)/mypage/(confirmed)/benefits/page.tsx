@@ -1,5 +1,5 @@
 /**
- * Benefits Page
+ * Benefits Page (特典, `/mypage/benefits`)
  *
  * @description
  * End-user view of current benefit entitlements. Shows active ad_free status
@@ -98,6 +98,7 @@ export default async function BenefitsPage({ params }: Props) {
       ? t('adFree.activeUntil', { date: dateFmt(latestExpiresAt) })
       : null;
 
+  // MypageBenefits.grantTypeLabel.<EntitlementSourceLabelKey minus subscription>: MypageBenefits.grantTypeLabel.admin_manual, MypageBenefits.grantTypeLabel.topic_post, MypageBenefits.grantTypeLabel.position_creation
   const sourceLabel = (key: EntitlementSourceLabelKey): string =>
     key === 'subscription' ? t('adFree.sourceSubscription') : t(`grantTypeLabel.${key}`);
 

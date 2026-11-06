@@ -1,3 +1,9 @@
+/**
+ * Learn Index (チェスを学ぶ, `/learn`)
+ *
+ * @description
+ * Entry page of the learning articles, browsed by category with per-category article counts.
+ */
 import { Suspense } from 'react';
 
 import type { Metadata } from 'next';
@@ -48,6 +54,7 @@ async function LearnContent({ params }: Props) {
 
   const categoryInfos = availableCategories.map((cat) => ({
     category: cat,
+    // learn.categories.<ArticleCategory>: learn.categories.notation, learn.categories.coordinates, learn.categories.moves, learn.categories.memory, learn.categories.practice (ARTICLE_CATEGORIES via getAvailableCategories)
     label: t(`learn.categories.${cat}`),
     count: categoryCounts[cat],
     countLabel: t('learn.articleCount', { count: categoryCounts[cat] }),

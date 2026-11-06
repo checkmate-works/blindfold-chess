@@ -100,6 +100,7 @@ export function RedeemNoticeOverlay({ reason, children }: Props) {
       <div className="col-start-1 row-start-1 z-10 flex items-center justify-center rounded-xl bg-card/50 p-6 backdrop-blur-xs">
         <div className="flex flex-col items-center gap-2 text-center">
           <ReasonBadge reason={reason} />
+          {/* MypagePoints.redeem.notice.<AdFreeRedemptionBlock>.title / .body: MypagePoints.redeem.notice.dan_rank.title, MypagePoints.redeem.notice.dan_rank.body, MypagePoints.redeem.notice.subscription.title, MypagePoints.redeem.notice.subscription.body */}
           <p className="text-sm font-semibold text-foreground">
             {t(`redeem.notice.${reason}.title`)}
           </p>

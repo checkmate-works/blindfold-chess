@@ -1,5 +1,5 @@
 /**
- * Score Leaderboard Detail (`/leaderboard/score/[period]/[module-slug]/[key]`)
+ * Score Leaderboard Detail (ランキング詳細, `/leaderboard/score/[period]/[module-slug]/[key]`)
  *
  * @description
  * Canonical category-first detail view for a single module+setting. Shows a
@@ -93,7 +93,9 @@ export async function generateMetadata({ params }: Props) {
 
   const t = await getTranslations({ locale, namespace: 'leaderboard' });
 
+  // leaderboard.cardTitle.<LeaderboardModule>.<key>: leaderboard.cardTitle.coordinate_quiz.white, leaderboard.cardTitle.coordinate_quiz.black, leaderboard.cardTitle.coordinate_quiz.random, leaderboard.cardTitle.legal_moves.king, leaderboard.cardTitle.legal_moves.queen, leaderboard.cardTitle.legal_moves.rook, leaderboard.cardTitle.legal_moves.bishop, leaderboard.cardTitle.legal_moves.knight, leaderboard.cardTitle.legal_moves.random, leaderboard.cardTitle.square_colors.default, leaderboard.cardTitle.diagonal_quiz.default, leaderboard.cardTitle.board_symmetry.default, leaderboard.cardTitle.route_planner.knight, leaderboard.cardTitle.route_planner.bishop (LEADERBOARD_KEYS, enforced by validateParams)
   const title = t(`cardTitle.${validated.module}.${validated.key}`);
+  // leaderboard.period.<LeaderboardPeriod>: leaderboard.period.all-time, leaderboard.period.weekly, leaderboard.period.monthly (VALID_PERIODS)
   const periodLabel = t(`period.${validated.period}`);
 
   return {
@@ -147,12 +149,14 @@ export default async function ScoreLeaderboardDetailPage({ params, searchParams 
   const breadcrumbItems: { label: string; href?: string }[] = [
     { label: t('title'), href: `/leaderboard/score/${validated.period}` },
     {
+      // leaderboard.moduleFilter.<LeaderboardModule>: leaderboard.moduleFilter.coordinate_quiz, leaderboard.moduleFilter.legal_moves, leaderboard.moduleFilter.square_colors, leaderboard.moduleFilter.diagonal_quiz, leaderboard.moduleFilter.board_symmetry, leaderboard.moduleFilter.route_planner (validateParams; never leaderboard.moduleFilter.all here)
       label: t(`moduleFilter.${validated.module}`),
       href: `/leaderboard/score/${validated.period}/${validated.moduleSlug}`,
     },
   ];
   if (validated.key !== 'default') {
     breadcrumbItems.push({
+      // leaderboard.setting.<LeaderboardModule>.<key>: leaderboard.setting.coordinate_quiz.white, leaderboard.setting.coordinate_quiz.black, leaderboard.setting.coordinate_quiz.random, leaderboard.setting.legal_moves.king, leaderboard.setting.legal_moves.queen, leaderboard.setting.legal_moves.rook, leaderboard.setting.legal_moves.bishop, leaderboard.setting.legal_moves.knight, leaderboard.setting.legal_moves.random, leaderboard.setting.route_planner.knight, leaderboard.setting.route_planner.bishop (LEADERBOARD_KEYS minus the default keys skipped by the guard above)
       label: t(`setting.${validated.module}.${validated.key}`),
     });
   }

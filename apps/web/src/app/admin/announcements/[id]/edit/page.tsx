@@ -1,3 +1,9 @@
+/**
+ * Admin Edit Announcement (管理画面 お知らせ編集, `/admin/announcements/[id]/edit`)
+ *
+ * @description
+ * Edit form for one announcement.
+ */
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 

@@ -1,3 +1,9 @@
+/**
+ * Custom Position Session (カスタム問題 練習中, `/practice/position-memory/custom/[token]/session`)
+ *
+ * @description
+ * Runs the memorisation session for an instant position-memory problem encoded in the URL token.
+ */
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';

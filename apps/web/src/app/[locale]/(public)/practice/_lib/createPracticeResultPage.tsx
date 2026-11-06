@@ -130,6 +130,7 @@ export function createPracticeResultMetadata(config: MetadataConfig) {
     const t = await getTranslations({ locale, namespace: 'practice' });
     return {
       ...generateCanonicalMetadata({ locale, path: config.canonicalPath }),
+      // practice.<i18nKey>.title, i18nKey from each result page config: practice.coordinateQuiz.title, practice.legalMoves.title, practice.squareColors.title, practice.diagonalQuiz.title, practice.boardSymmetry.title, practice.routePlanner.title, practice.quadrantAnchors.title, practice.fen.title, practice.knightTour.title, practice.positionMemory.title, practice.algebraicNotation.title
       title: resolveTitle(`${t(`${config.i18nKey}.title`)} - ${t('result')}`, locale),
     };
   };

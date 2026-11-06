@@ -1,3 +1,9 @@
+/**
+ * Squares Topic List (マス目, `/topics/squares`)
+ *
+ * @description
+ * Paginated recent posts across square topics followed by the square index.
+ */
 import { Suspense } from 'react';
 
 import type { Metadata } from 'next';

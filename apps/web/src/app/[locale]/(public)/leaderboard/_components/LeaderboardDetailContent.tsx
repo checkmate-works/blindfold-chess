@@ -51,7 +51,9 @@ export function LeaderboardDetailContent({
   // from the client-side provider and feeds the presentational view.
   const tPagination = useTranslations('Common.pagination');
 
+  // leaderboard.cardTitle.<LeaderboardModule>.<settingKey> (LEADERBOARD_KEYS): leaderboard.cardTitle.coordinate_quiz.white / .black / .random, leaderboard.cardTitle.legal_moves.king / .queen / .rook / .bishop / .knight / .random, leaderboard.cardTitle.route_planner.knight / .bishop, leaderboard.cardTitle.square_colors.default, leaderboard.cardTitle.diagonal_quiz.default, leaderboard.cardTitle.board_symmetry.default
   const title = t(`cardTitle.${module}.${settingKey}`);
+  // leaderboard.period.<LeaderboardPeriod>: leaderboard.period.all-time, leaderboard.period.weekly, leaderboard.period.monthly (VALID_PERIODS)
   const periodLabel = t(`period.${period}`);
   const totalPages = Math.ceil(data.totalCount / PAGE_SIZE);
 

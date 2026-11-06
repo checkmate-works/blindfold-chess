@@ -84,6 +84,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
   const isPremium = subscriptions.some((s) => isSubscriptionActive(s));
   const signupMethod = getSignupMethod(authUser);
 
+  // Admin.stats.rankNames.<RankSlug>: Admin.stats.rankNames.mukyu, Admin.stats.rankNames.5kyu, Admin.stats.rankNames.4kyu, Admin.stats.rankNames.3kyu, Admin.stats.rankNames.2kyu, Admin.stats.rankNames.1kyu, Admin.stats.rankNames.1dan (ALL_RANK_SLUGS; callers pass achieved ranks and the non-mukyu remainder)
   const rankName = (slug: string) => t(`stats.rankNames.${slug}`);
   const achievedSlugs = new Set(ranks.map((r) => r.slug));
   const availableRanks = ALL_RANK_SLUGS.filter(
@@ -160,6 +161,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
               {role ?? t('usersTable.defaultRole')}
             </InfoRow>
             <InfoRow label={t('usersTable.signupMethod')}>
+              {/* Admin.usersTable.<SIGNUP_METHOD_I18N_KEY[SignupMethod]>: Admin.usersTable.providerGoogle, Admin.usersTable.providerEmail, Admin.usersTable.providerUnknown (SIGNUP_METHOD_ORDER) */}
               {t(`usersTable.${SIGNUP_METHOD_I18N_KEY[signupMethod]}`)}
             </InfoRow>
             <InfoRow label={t('usersTable.createdAt')}>{formatDate(authUser.created_at)}</InfoRow>

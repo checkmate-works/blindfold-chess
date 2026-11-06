@@ -1,5 +1,5 @@
 /**
- * Instant ("custom") position-memory problem — start page.
+ * Instant ("custom") position-memory problem start page (カスタム問題, `/practice/position-memory/custom/[token]`)
  *
  * @description
  * Mirrors the saved-position detail/start page (`[id]/page.tsx`) but for a

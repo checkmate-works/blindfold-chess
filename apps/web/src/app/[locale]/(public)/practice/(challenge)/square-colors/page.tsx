@@ -1,3 +1,9 @@
+/**
+ * Square Colors (マスの色, `/practice/square-colors`)
+ *
+ * @description
+ * Top page of the square-colors practice: the setup form, a help tour, the related article and the leaderboard.
+ */
 import { createPracticeTopPage } from '@/app/[locale]/(public)/practice/_lib/createPracticeTopPage';
 import { PRACTICE_EMOJIS } from '@/app/[locale]/(public)/practice/_lib/practice-emojis';
 import { buildPracticeHelpTour } from '@/app/[locale]/(public)/practice/_lib/practice-help-tour';

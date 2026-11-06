@@ -1,3 +1,9 @@
+/**
+ * Chunk Detail (チャンク詳細, `/chunks/[slug]`)
+ *
+ * @description
+ * Shows one chunk's description and tabbed related content (positions, games, repertoires, comments), with the edit-request callout while it is a draft.
+ */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
@@ -240,6 +246,7 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
           viewerState={calloutViewerState}
           requestedTopics={requestedFeedbackTopics.map((topic) => ({
             topic,
+            // chunks.editRequests.callout.topicLabels.<ChunkFeedbackTopic>: chunks.editRequests.callout.topicLabels.title, chunks.editRequests.callout.topicLabels.description (CHUNK_FEEDBACK_TOPICS)
             label: tEditRequests(`callout.topicLabels.${topic}` as 'callout.topicLabels.title'),
           }))}
           topicLeadIn={tEditRequests('callout.topicLeadIn')}
