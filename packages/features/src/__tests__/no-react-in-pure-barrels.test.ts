@@ -16,6 +16,7 @@ const PURE_BARRELS = [
   "board-symmetry/index.ts",
   "coordinate-quiz/index.ts",
   "diagonal-quiz/index.ts",
+  "knight-tour/index.ts",
   "legal-moves/index.ts",
   "route-planner/index.ts",
   "square-colors/index.ts",
