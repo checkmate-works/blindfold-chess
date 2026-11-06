@@ -46,9 +46,13 @@ export const BOARD_THEMES = ["monotone", "lichess", "chesscom"] as const;
 export type BoardTheme = (typeof BOARD_THEMES)[number];
 
 export type BoardThemeColors = {
+  /** Fill of the light squares. */
   light: string;
+  /** Fill of the dark squares. */
   dark: string;
+  /** Coordinate-label colour drawn on a light square. */
   lightText: string;
+  /** Coordinate-label colour drawn on a dark square. */
   darkText: string;
 };
 
