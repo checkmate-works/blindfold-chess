@@ -2,14 +2,15 @@ import { View, Text, StyleSheet } from "react-native";
 import Svg, { Circle } from "react-native-svg";
 import { useTheme, fontSize, fontWeight } from "../theme";
 import { formatTime } from "@blindfold-chess/features/coordinate-quiz";
+import { getQuizTimerUrgency } from "./quiz-timer-urgency";
 
 type QuizTimerProps = {
   /** Whole seconds left, rendered as `m:ss`. */
   timeRemaining: number;
   /**
-   * 0 to 1. Every caller passes the fraction of the limit still REMAINING
-   * (`timeRemaining / limit`, so 1 at the start), while the colour thresholds
-   * below treat a high value as nearly out of time.
+   * Fraction of the time limit still remaining, 0 to 1 (`timeRemaining /
+   * limit`, so 1 at the start). The colour turns to warning under 40% and to
+   * error under 20%; see `getQuizTimerUrgency`.
    */
   progress: number;
   /** Diameter in points. */
@@ -27,11 +28,15 @@ export function QuizTimer({
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference * (1 - (1 - progress));
 
-  // Color based on remaining time
   const getTimerColor = () => {
-    if (progress > 0.8) return feedbackColors.error;
-    if (progress > 0.6) return feedbackColors.warning;
-    return colors.primary;
+    switch (getQuizTimerUrgency(progress)) {
+      case "critical":
+        return feedbackColors.error;
+      case "warning":
+        return feedbackColors.warning;
+      case "normal":
+        return colors.primary;
+    }
   };
 
   return (
