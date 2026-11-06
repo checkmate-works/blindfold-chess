@@ -72,7 +72,10 @@ describe('GamePreferencesProvider coverage under (public)', () => {
       .filter((p) => !hasAncestorWithProvider(p))
       .map((p) => relative(PUBLIC_ROOT, p));
 
-    expect(missing).toEqual([]);
+    expect(
+      missing,
+      `These files call useGamePreferences but no layout.tsx between them and (public)/ mounts GamePreferencesProvider, so the hook throws at runtime. Mount the provider in the nearest layout.tsx (copy chunks/layout.tsx), or import it via ${RE_EXPORT_TOKEN}: ${JSON.stringify(missing)}`
+    ).toEqual([]);
   });
 
   it('every renderer of a board-preview component has an ancestor layout that mounts the provider', () => {
@@ -92,6 +95,9 @@ describe('GamePreferencesProvider coverage under (public)', () => {
       .filter((p) => !hasAncestorWithProvider(p))
       .map((p) => relative(PUBLIC_ROOT, p));
 
-    expect(missing).toEqual([]);
+    expect(
+      missing,
+      `These files render a component that reads useGamePreferences internally (${INDIRECT_CONSUMER_TOKENS.join(', ')}) but no layout.tsx between them and (public)/ mounts GamePreferencesProvider, so the component throws at runtime. Mount the provider in the nearest layout.tsx (copy chunks/layout.tsx): ${JSON.stringify(missing)}`
+    ).toEqual([]);
   });
 });
