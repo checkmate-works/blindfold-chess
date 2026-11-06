@@ -9,6 +9,15 @@ export type UsePersistentSettingsOptions<T extends Record<string, unknown>> = {
   storageKey: string;
   defaults: T;
   storage: PersistentStorage;
+  /**
+   * Turns the parsed stored JSON into the fields worth keeping. Anything it
+   * leaves out falls back to `defaults`, so a value written by an older build
+   * — a piece option since removed, a renamed enum member — loads as the
+   * default instead of reaching a component that cannot render it. Without
+   * it the parsed object is spread over the defaults as-is.
+   * `pickValidFields` builds one from per-field guards.
+   */
+  validate?: (parsed: unknown) => Partial<T>;
 };
 
 export type UsePersistentSettingsReturn<T extends Record<string, unknown>> = {
@@ -26,7 +35,8 @@ export type UsePersistentSettingsReturn<T extends Record<string, unknown>> = {
  * Semantics:
  * - Starts with `settings = defaults`, `isLoaded = false`.
  * - On mount, reads the stored JSON and merges into defaults:
- *   `{ ...defaults, ...parsed }`. This keeps unknown-to-the-store fields
+ *   `{ ...defaults, ...parsed }`, or `{ ...defaults, ...validate(parsed) }`
+ *   when `validate` is given. This keeps unknown-to-the-store fields
  *   (added after the user last saved) populated from the defaults.
  * - `updateSettings` optimistically updates state and writes the resulting
  *   object to storage. Storage-write failures are swallowed — the state
@@ -39,6 +49,7 @@ export function usePersistentSettings<T extends Record<string, unknown>>({
   storageKey,
   defaults,
   storage,
+  validate,
 }: UsePersistentSettingsOptions<T>): UsePersistentSettingsReturn<T> {
   const [settings, setSettings] = useState<T>(defaults);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -50,6 +61,7 @@ export function usePersistentSettings<T extends Record<string, unknown>>({
   const defaultsRef = useLatestRef(defaults);
 
   const storageRef = useLatestRef(storage);
+  const validateRef = useLatestRef(validate);
 
   // Event-time mirror of `settings`, written synchronously wherever state is
   // set. It exists so `updateSettings` can compute the merged object OUTSIDE
@@ -84,9 +96,12 @@ export function usePersistentSettings<T extends Record<string, unknown>>({
         if (cancelled) return;
         if (raw) {
           try {
-            const parsed = JSON.parse(raw) as Partial<T>;
+            const parsed: unknown = JSON.parse(raw);
+            const kept = validateRef.current
+              ? validateRef.current(parsed)
+              : (parsed as Partial<T>);
             applySettings(
-              { ...defaultsRef.current, ...parsed },
+              { ...defaultsRef.current, ...kept },
               { persist: false },
             );
           } catch {

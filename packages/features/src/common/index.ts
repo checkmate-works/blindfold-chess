@@ -74,6 +74,14 @@ export { FEEDBACK_SPEEDS, FEEDBACK_SPEED_MS } from "./feedback-speed";
 export { FEEDBACK_FLASH_MS, flashFeedbackDuration } from "./flash-policy";
 export { toggleSelection } from "./toggle-selection";
 export type { PersistentStorage } from "./persistent-storage";
+export type { FieldGuard } from "./pick-valid-fields";
+export {
+  integerBetween,
+  isBoolean,
+  isString,
+  oneOf,
+  pickValidFields,
+} from "./pick-valid-fields";
 export type {
   UsePersistentSettingsOptions,
   UsePersistentSettingsReturn,

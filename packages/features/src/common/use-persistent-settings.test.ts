@@ -378,3 +378,88 @@ describe("usePersistentSettings (re-keying)", () => {
     });
   });
 });
+
+describe("usePersistentSettings (validate)", () => {
+  const validate = (parsed: unknown): Partial<TestSettings> => {
+    const p = (parsed ?? {}) as Record<string, unknown>;
+    const kept: Partial<TestSettings> = {};
+    if (typeof p.timeLimit === "number") kept.timeLimit = p.timeLimit;
+    if (p.mode === "timed" || p.mode === "untimed") kept.mode = p.mode;
+    return kept;
+  };
+
+  it.each([
+    ["sync", createSyncAdapter],
+    ["async", createAsyncAdapter],
+  ] as const)(
+    "drops the fields the validator rejects and keeps the rest (%s adapter)",
+    async (_label, createAdapter) => {
+      const { adapter } = createAdapter({
+        [STORAGE_KEY]: JSON.stringify({ timeLimit: 30, mode: "removed-mode" }),
+      });
+      const { result } = renderHook(() =>
+        usePersistentSettings({
+          storageKey: STORAGE_KEY,
+          defaults: DEFAULTS,
+          storage: adapter,
+          validate,
+        }),
+      );
+
+      await waitFor(() => {
+        expect(result.current.isLoaded).toBe(true);
+      });
+      expect(result.current.settings).toEqual({ timeLimit: 30, mode: "timed" });
+    },
+  );
+
+  it("does not rewrite storage on load, so a rejected value is only replaced by the next change", async () => {
+    const stored = JSON.stringify({ timeLimit: 30, mode: "removed-mode" });
+    const { adapter, set, store } = createSyncAdapter({
+      [STORAGE_KEY]: stored,
+    });
+    const { result } = renderHook(() =>
+      usePersistentSettings({
+        storageKey: STORAGE_KEY,
+        defaults: DEFAULTS,
+        storage: adapter,
+        validate,
+      }),
+    );
+
+    await waitFor(() => {
+      expect(result.current.isLoaded).toBe(true);
+    });
+    expect(set).not.toHaveBeenCalled();
+    expect(store[STORAGE_KEY]).toBe(stored);
+
+    act(() => {
+      result.current.updateSettings({ timeLimit: 45 });
+    });
+    expect(JSON.parse(store[STORAGE_KEY])).toEqual({
+      timeLimit: 45,
+      mode: "timed",
+    });
+  });
+
+  it("spreads the parsed value unchecked when no validator is given", async () => {
+    const { adapter } = createSyncAdapter({
+      [STORAGE_KEY]: JSON.stringify({ timeLimit: 30, mode: "removed-mode" }),
+    });
+    const { result } = renderHook(() =>
+      usePersistentSettings({
+        storageKey: STORAGE_KEY,
+        defaults: DEFAULTS,
+        storage: adapter,
+      }),
+    );
+
+    await waitFor(() => {
+      expect(result.current.isLoaded).toBe(true);
+    });
+    expect(result.current.settings).toEqual({
+      timeLimit: 30,
+      mode: "removed-mode",
+    });
+  });
+});
