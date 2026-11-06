@@ -86,7 +86,63 @@
     "languageJapanese": "Japanese",
     "languageEnglish": "English",
     "languageSpanish": "Español",
-    "languagePortuguese": "Português"
+    "languagePortuguese": "Português",
+    "board": {
+      "title": "Board Settings",
+      "displayOptions": "Display Options",
+      "showCoordinates": "Show coordinates",
+      "highlightLastMove": "Highlight last move",
+      "on": "On",
+      "off": "Off",
+      "boardTheme": "Board Theme",
+      "boardThemes": {
+        "monotone": "Monotone",
+        "lichess": "Lichess-style",
+        "chesscom": "Chess.com-style"
+      },
+      "boardVisibility": "Blindfold",
+      "boardVisibilities": {
+        "always": "Always visible",
+        "peek": "Peek on demand",
+        "never": "Hidden"
+      },
+      "pieceVisibility": "Piece Visibility",
+      "pieceVisibilityModes": {
+        "all": "Both",
+        "own": "Own",
+        "opponent": "Opponent"
+      },
+      "showAsStones": "Show as stones",
+      "pieceShapeModes": {
+        "normal": "Off",
+        "circles-all": "Both",
+        "circles-own": "Own",
+        "circles-opponent": "Opponent"
+      },
+      "pieceColor": "Piece Color",
+      "pieceColorModes": {
+        "normal": "Normal",
+        "white-only": "All White",
+        "black-only": "All Black"
+      },
+      "hidePawns": "Hide pawns",
+      "pawnHideModes": {
+        "none": "Off",
+        "all": "Both",
+        "own": "Own",
+        "opponent": "Opponent"
+      },
+      "moveInput": "Move Input Method",
+      "moveInputModes": {
+        "button": "Button"
+      },
+      "buttonLabelStyle": "Button Label Style",
+      "buttonLabels": {
+        "text": "Text",
+        "icon": "Icon"
+      },
+      "resetDefaults": "Reset to defaults"
+    }
   },
   "legalMoves": {
     "setup": {

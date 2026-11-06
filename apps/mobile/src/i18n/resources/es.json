@@ -86,7 +86,63 @@
     "languageJapanese": "日本語",
     "languageEnglish": "English",
     "languageSpanish": "Español",
-    "languagePortuguese": "Português"
+    "languagePortuguese": "Português",
+    "board": {
+      "title": "Configuración del Tablero",
+      "displayOptions": "Opciones de Visualización",
+      "showCoordinates": "Mostrar coordenadas",
+      "highlightLastMove": "Resaltar último movimiento",
+      "on": "Sí",
+      "off": "No",
+      "boardTheme": "Tema del Tablero",
+      "boardThemes": {
+        "monotone": "Monocromático",
+        "lichess": "Estilo Lichess",
+        "chesscom": "Estilo Chess.com"
+      },
+      "boardVisibility": "Modo a ciegas",
+      "boardVisibilities": {
+        "always": "Siempre visible",
+        "peek": "Vistazo bajo demanda",
+        "never": "Oculto"
+      },
+      "pieceVisibility": "Visibilidad de Piezas",
+      "pieceVisibilityModes": {
+        "all": "Ambas",
+        "own": "Propias",
+        "opponent": "Rival"
+      },
+      "showAsStones": "Mostrar como piedras",
+      "pieceShapeModes": {
+        "normal": "No",
+        "circles-all": "Ambas",
+        "circles-own": "Propias",
+        "circles-opponent": "Rival"
+      },
+      "pieceColor": "Color de las Piezas",
+      "pieceColorModes": {
+        "normal": "Normal",
+        "white-only": "Todas blancas",
+        "black-only": "Todas negras"
+      },
+      "hidePawns": "Ocultar peones",
+      "pawnHideModes": {
+        "none": "No",
+        "all": "Ambas",
+        "own": "Propias",
+        "opponent": "Rival"
+      },
+      "moveInput": "Método de Entrada de Movimientos",
+      "moveInputModes": {
+        "button": "Botón"
+      },
+      "buttonLabelStyle": "Estilo de Etiqueta de Botones",
+      "buttonLabels": {
+        "text": "Texto",
+        "icon": "Icono"
+      },
+      "resetDefaults": "Restablecer valores predeterminados"
+    }
   },
   "legalMoves": {
     "setup": {
