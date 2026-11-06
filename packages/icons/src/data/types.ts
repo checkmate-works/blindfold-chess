@@ -54,6 +54,7 @@ export type StrokeIconSvgData = {
   paths: string[];
 };
 
+/** 1 = unhappiest face (frown and brows) … 5 = happiest (broad smile). */
 export type RatingFaceLevel = 1 | 2 | 3 | 4 | 5;
 
 export type RatingFaceSvgData = {

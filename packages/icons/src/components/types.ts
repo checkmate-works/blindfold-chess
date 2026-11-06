@@ -9,6 +9,7 @@ export type SpinnerIconProps = {
 export type ChessPieceIconProps = {
   type: PieceType;
   color: PieceColor;
+  /** Width and height. Defaults to 45 (the artwork's native size), not the 24 the other icons use. */
   size?: number;
 };
 
@@ -20,6 +21,7 @@ export type StrokeIconProps = {
 export type RatingFaceIconProps = {
   level: RatingFaceLevel;
   size?: number;
+  /** Replaces the head's fill only; the eyes, brows and mouth keep their fixed colour. */
   faceColor?: string;
 };
 
