@@ -1,10 +1,16 @@
 export type PracticeMode = "timed" | "training" | "rush";
 
+/** `timeLimit` is in seconds. */
 export type BasePracticeSettings = {
   timeLimit: number;
   mode: PracticeMode;
 };
 
+/**
+ * Outcome of one practice session. `accuracy` is a percentage (0–100, not
+ * 0–1); `timeTaken` and `averageTime` are seconds, and `timeTaken` is capped
+ * at the session's time limit.
+ */
 export type BasePracticeResult = {
   correctAnswers: number;
   totalQuestions: number;

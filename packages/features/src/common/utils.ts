@@ -58,6 +58,11 @@ export function computeSquareColor(square: Square): "light" | "dark" {
   return (file + rank) % 2 === 0 ? "dark" : "light";
 }
 
+/**
+ * Format a duration in seconds as `M:SS` (`75` → `"1:15"`). There is no hour
+ * field — minutes keep counting past 59 — and the input is expected to be
+ * whole seconds: a fractional value leaks into the seconds part.
+ */
 export function formatTime(seconds: number): string {
   const minutes = Math.floor(seconds / 60);
   const remainingSeconds = seconds % 60;
@@ -79,6 +84,14 @@ function pickFrom(pool: readonly Square[], rng: RandomSource): Square {
   return pool[Math.floor(rng() * pool.length)];
 }
 
+/**
+ * One uniformly random square, never one in `exclude`. Throws when `exclude`
+ * covers all 64 squares.
+ *
+ * Without `exclude` it draws `rng` twice (file, then rank); with one it draws
+ * once from the remaining squares. A stubbed `rng` therefore yields different
+ * squares in the two modes.
+ */
 export function generateRandomSquare(
   rng: RandomSource = Math.random,
   exclude?: ReadonlySet<Square>,
@@ -96,6 +109,14 @@ export function generateRandomSquare(
   return pickFrom(eligible, rng);
 }
 
+/**
+ * `count` random squares for a quiz, avoiding `exclude`.
+ *
+ * Squares do not repeat until half of the eligible pool has been used, then
+ * the history resets — so the sequence stays varied but `count` may exceed
+ * the pool size. Throws when `exclude` covers every square; `count <= 0`
+ * yields `[]`.
+ */
 export function generateSquareSequence(
   count: number,
   rng: RandomSource = Math.random,

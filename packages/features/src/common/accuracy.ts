@@ -9,6 +9,11 @@
 import { boardIndexToSquare, fenToBoardFlat } from "../chess-core/fen-pure";
 import { TOTAL_SQUARES } from "./constants";
 
+/**
+ * One classified square with its score weight (`1` correct, `-0.5` wrong
+ * piece or extra piece, `0` missing). `expected` / `actual` are FEN piece
+ * letters or `""` for empty.
+ */
 export type ScoreDetail = {
   square: string;
   expected: string;
@@ -17,6 +22,15 @@ export type ScoreDetail = {
   description: string;
 };
 
+/**
+ * Score of a recreated position against the original.
+ *
+ * `totalPieces` counts the original's pieces only (correct + incorrect +
+ * missing); extra pieces are not in it and only lower `netScore`, the sum of
+ * the per-square weights. `accuracy` is `netScore / totalPieces` as a
+ * percentage, floored at 0 — so it can never go negative, and it is `0` for
+ * an empty original.
+ */
 export type PositionAccuracy = {
   correctPieces: number;
   totalPieces: number;
@@ -33,6 +47,10 @@ export type PositionAccuracy = {
 
 export type SquareStatus = "correct" | "incorrect" | "missing";
 
+/**
+ * Overlay status of one square. Coarser than {@link SquareClassification}:
+ * a wrong piece and an extra piece both render as `"incorrect"`.
+ */
 export type SquareDiff = {
   square: string;
   status: SquareStatus;
