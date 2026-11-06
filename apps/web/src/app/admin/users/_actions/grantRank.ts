@@ -29,6 +29,15 @@ function isGrantableRankSlug(value: string): value is RankSlug {
  */
 class RankAlreadyGrantedError extends Error {}
 
+type GrantRankError =
+  | 'unauthorized'
+  | 'invalidRank'
+  | 'reasonRequired'
+  | 'reasonTooLong'
+  | 'rankNotFound'
+  | 'alreadyGranted'
+  | 'failedToGrantRank';
+
 /**
  * Manually grant a rank to a user, bypassing the normal requirement
  * evaluation in `checkAndGrantRanks`. This is a support-escalation tool:
@@ -41,15 +50,6 @@ class RankAlreadyGrantedError extends Error {}
  * audit row recording who granted it, to whom, and why — mirroring the
  * `insertAdminGrant` pattern used by `/admin/grants`.
  */
-type GrantRankError =
-  | 'unauthorized'
-  | 'invalidRank'
-  | 'reasonRequired'
-  | 'reasonTooLong'
-  | 'rankNotFound'
-  | 'alreadyGranted'
-  | 'failedToGrantRank';
-
 export async function grantRank(
   targetUserId: string,
   rankSlug: string,
