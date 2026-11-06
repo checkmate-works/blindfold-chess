@@ -26,6 +26,12 @@ export default function QuadrantsSetup() {
       isLoaded={isLoaded}
       startLabel={t("quadrants.setup.startQuiz")}
       onStart={handleStart}
+      onStartTraining={() =>
+        router.push({
+          pathname: "/(tabs)/practice/quadrants/training",
+          params: { orientation: settings.orientation },
+        })
+      }
     >
       <SettingsForm
         settings={settings}
