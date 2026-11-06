@@ -7,8 +7,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { buildOpeningIndex, detectOpening } from '@blindfold-chess/features/chess-core';
 import type { ExpInfo } from '@blindfold-chess/features/exp';
+import { computeGameStats } from '@blindfold-chess/features/game-record';
 
-import { computeGameStats } from '@/lib/games/compute-game-stats';
 import type { GifPreviewSource } from '@/lib/games/gif/preview-frames';
 import { hasPlayedGifVariant } from '@/lib/games/gif/preview-frames';
 import { toGameFrameSource } from '@/lib/games/gif/to-game-frame-source';

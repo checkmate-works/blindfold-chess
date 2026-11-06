@@ -1,6 +1,6 @@
-import type { Side } from '@blindfold-chess/types';
+import type { Side } from "@blindfold-chess/types";
 
-import type { MoveOperationLog } from './saved-game-types';
+import type { MoveOperationLog } from "./types";
 
 /**
  * Where a rejected move was aimed. Either square may be missing: some attempt
@@ -35,17 +35,20 @@ const TRAILING_SQUARE_RE = /([a-h][1-8])(?:=[QRBNqrbn])?$/;
  */
 export function parseAttemptSquares(
   attempt: string,
-  playerColor: Side
+  playerColor: Side,
 ): IllegalAttemptSquares | null {
-  const stripped = attempt.replace(/[+#]+$/, '');
+  const stripped = attempt.replace(/[+#]+$/, "");
 
   const coordinateLong = stripped.match(/^([a-h][1-8])-([a-h][1-8])$/);
   if (coordinateLong) return { from: coordinateLong[1], to: coordinateLong[2] };
 
   if (/^[O0]-[O0](-[O0])?$/i.test(stripped)) {
-    const homeRank = playerColor === 'white' ? '1' : '8';
-    const isLongCastle = stripped.split('-').length === 3;
-    return { from: `e${homeRank}`, to: `${isLongCastle ? 'c' : 'g'}${homeRank}` };
+    const homeRank = playerColor === "white" ? "1" : "8";
+    const isLongCastle = stripped.split("-").length === 3;
+    return {
+      from: `e${homeRank}`,
+      to: `${isLongCastle ? "c" : "g"}${homeRank}`,
+    };
   }
 
   const pawnCapture = stripped.match(/^([a-h])x([a-h][1-8])$/);
@@ -76,7 +79,7 @@ export function parseAttemptSquares(
 export function resolveIllegalAttemptSquares(
   log: MoveOperationLog,
   attemptIndex: number,
-  playerColor: Side
+  playerColor: Side,
 ): IllegalAttemptSquares | null {
   const recorded = log.invalidAttemptSquares?.[attemptIndex];
   if (recorded) return recorded;

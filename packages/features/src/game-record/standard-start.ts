@@ -1,7 +1,7 @@
-import { getStartingFen, toPositionKey } from '@blindfold-chess/features/chess-core';
+import { STARTING_FEN, toPositionKey } from "../chess-core/fen-pure";
 
 /** Position-identity key of the standard chess starting position. */
-const STANDARD_START_KEY = toPositionKey(getStartingFen());
+const STANDARD_START_KEY = toPositionKey(STARTING_FEN);
 
 /**
  * Whether a game was played from the standard starting position, start to
@@ -35,9 +35,10 @@ const STANDARD_START_KEY = toPositionKey(getStartingFen());
  */
 export function startedFromStandardPosition(
   startingFen: string | null | undefined,
-  setupPlies: number | null | undefined
+  setupPlies: number | null | undefined,
 ): boolean {
-  if (startingFen != null && toPositionKey(startingFen) !== STANDARD_START_KEY) return false;
+  if (startingFen != null && toPositionKey(startingFen) !== STANDARD_START_KEY)
+    return false;
   if (setupPlies != null && setupPlies > 0) return false;
   return true;
 }

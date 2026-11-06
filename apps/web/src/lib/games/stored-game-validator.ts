@@ -1,13 +1,12 @@
 import { isValidSkillLevel } from '@blindfold-chess/features/ai-game';
+import { isOperationTotals, isUndoneMoveLog } from '@blindfold-chess/features/game-record';
 import { PAWN_HIDE_MODES, PIECE_COLOR_MODES, PIECE_SHAPE_MODES } from '@blindfold-chess/types';
 
 import { isEngineConfig } from '@/lib/engines';
 import { isAiReplyDuration } from '@/lib/games/ai-reply-duration';
 import { isBoardVisibility } from '@/lib/games/board-visibility';
 import { isMoveOperationLog } from '@/lib/games/move-operation-log';
-import { isOperationTotals } from '@/lib/games/operation-totals';
 import type { PreferenceChangeLogEntry, StoredGame } from '@/lib/games/saved-game-types';
-import { isUndoneMoveLog } from '@/lib/games/undone-logs';
 
 /** Validates the `from`/`to` pair of one change-log entry for a given key. */
 type EntryValueCheck = (from: unknown, to: unknown) => boolean;

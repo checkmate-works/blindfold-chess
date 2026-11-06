@@ -1,4 +1,4 @@
-import type { MoveOperationLog } from '@/lib/games/saved-game-types';
+import type { MoveOperationLog } from "./types";
 
 /**
  * What stood out on a single player move, for the per-move effort strip.
@@ -6,7 +6,7 @@ import type { MoveOperationLog } from '@/lib/games/saved-game-types';
  * Each move surfaces only its most-severe marker so the strip reads at a
  * glance.
  */
-export type MoveMarker = 'illegal' | 'takeback' | 'peek' | 'hint' | 'clean';
+export type MoveMarker = "illegal" | "takeback" | "peek" | "hint" | "clean";
 
 export type GameStats = {
   /** One log per player move, so this is the player's move count. */
@@ -40,11 +40,11 @@ export type GameStats = {
 
 /** Highest-severity marker for one move's operation log. */
 export function markerForLog(log: MoveOperationLog): MoveMarker {
-  if ((log.invalidCount ?? 0) > 0) return 'illegal';
-  if (log.undoCount > 0) return 'takeback';
-  if (log.peekCount > 0) return 'peek';
-  if ((log.movePeekCount ?? 0) > 0) return 'hint';
-  return 'clean';
+  if ((log.invalidCount ?? 0) > 0) return "illegal";
+  if (log.undoCount > 0) return "takeback";
+  if (log.peekCount > 0) return "peek";
+  if ((log.movePeekCount ?? 0) > 0) return "hint";
+  return "clean";
 }
 
 /**
@@ -67,8 +67,12 @@ export function computeGameStats(logs: MoveOperationLog[]): GameStats {
     takebacks += log.undoCount;
     hints += log.movePeekCount ?? 0;
     const marker = markerForLog(log);
-    if (marker === 'clean') cleanMoves += 1;
-    if (log.peekCount > 0 || (log.movePeekCount ?? 0) > 0 || log.undoCount > 0) {
+    if (marker === "clean") cleanMoves += 1;
+    if (
+      log.peekCount > 0 ||
+      (log.movePeekCount ?? 0) > 0 ||
+      log.undoCount > 0
+    ) {
       aidedMoves += 1;
     }
     perMove.push(marker);

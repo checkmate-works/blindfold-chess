@@ -1,5 +1,5 @@
-import { isMoveOperationLog, isStringArray } from './move-operation-log';
-import type { UndoneMoveLog } from './saved-game-types';
+import { isMoveOperationLog, isStringArray } from "./move-operation-log";
+import type { UndoneMoveLog } from "./types";
 
 /**
  * Per-game cap on archived {@link UndoneMoveLog} records. Beyond it new
@@ -15,12 +15,17 @@ export const MAX_UNDONE_LOGS = 50;
  * one of `log` / `pendingInvalidAttempts` — an index alone records nothing.
  */
 export function isUndoneMoveLog(value: unknown): value is UndoneMoveLog {
-  if (typeof value !== 'object' || value === null) return false;
+  if (typeof value !== "object" || value === null) return false;
   const v = value as Record<string, unknown>;
-  if (typeof v.index !== 'number' || !Number.isInteger(v.index) || v.index < 0) return false;
-  if (v.log === undefined && v.pendingInvalidAttempts === undefined) return false;
+  if (typeof v.index !== "number" || !Number.isInteger(v.index) || v.index < 0)
+    return false;
+  if (v.log === undefined && v.pendingInvalidAttempts === undefined)
+    return false;
   if (v.log !== undefined && !isMoveOperationLog(v.log)) return false;
-  if (v.pendingInvalidAttempts !== undefined && !isStringArray(v.pendingInvalidAttempts)) {
+  if (
+    v.pendingInvalidAttempts !== undefined &&
+    !isStringArray(v.pendingInvalidAttempts)
+  ) {
     return false;
   }
   if (v.sans !== undefined && !isStringArray(v.sans)) return false;

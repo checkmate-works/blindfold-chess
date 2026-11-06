@@ -14,10 +14,10 @@
  * key), so assertions key off the stable value paths (`boardVisibilities.*`,
  * `pawnHideModes.*`).
  */
+import type { GameStats } from '@blindfold-chess/features/game-record';
 import { render } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
-import type { GameStats } from '@/lib/games/compute-game-stats';
 import type { GamePlaySettings, PlaySettingsChangeEntry } from '@/lib/games/saved-game-types';
 
 import { GameStatsOverview } from './GameStatsOverview';

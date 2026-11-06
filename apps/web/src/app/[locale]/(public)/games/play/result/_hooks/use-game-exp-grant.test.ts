@@ -1,7 +1,7 @@
+import type { GameStats } from '@blindfold-chess/features/game-record';
 import { renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { GameStats } from '@/lib/games/compute-game-stats';
 import type { Game } from '@/lib/games/saved-game-types';
 
 import { useGameExpGrant } from './use-game-exp-grant';

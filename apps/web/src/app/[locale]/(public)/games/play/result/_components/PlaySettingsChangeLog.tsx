@@ -1,8 +1,8 @@
 'use client';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { resolvePlaySettingsChanges } from '@blindfold-chess/features/game-record';
 
-import { resolvePlaySettingsChanges } from '@/lib/games/play-settings-log';
 import type { GamePlaySettings, PlaySettingsChangeEntry } from '@/lib/games/saved-game-types';
 
 import { useChangeLogFormat } from '@/app/[locale]/(public)/games/play/_hooks/use-change-log-format';

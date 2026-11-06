@@ -5,12 +5,12 @@ import type { ReactNode } from 'react';
 import Image from 'next/image';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import type { GameStats } from '@blindfold-chess/features/game-record';
 import type { Side } from '@blindfold-chess/types';
 import { FaClipboardList } from 'react-icons/fa';
 
 import type { EngineConfig } from '@/lib/engines';
 import { ENGINE_LOGO_SRC } from '@/lib/engines';
-import type { GameStats } from '@/lib/games/compute-game-stats';
 import type {
   GamePlaySettings,
   MoveOperationLog,

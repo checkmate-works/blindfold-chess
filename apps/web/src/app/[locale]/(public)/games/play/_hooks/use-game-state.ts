@@ -5,10 +5,10 @@ import { computeGameState } from '@blindfold-chess/features/ai-game';
 import type { GameStatus } from '@blindfold-chess/features/ai-game';
 import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
+import { sumOperationLogs } from '@blindfold-chess/features/game-record';
 import type { AlgebraicNotation, FinalGameOutcome, Side } from '@blindfold-chess/types';
 
 import type { MoveSquares } from '@/lib/board/move-squares';
-import { sumOperationLogs } from '@/lib/games/operation-totals';
 import type {
   MoveOperationLog,
   OperationTotals,

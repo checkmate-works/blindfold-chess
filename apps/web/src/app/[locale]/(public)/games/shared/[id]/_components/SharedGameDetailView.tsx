@@ -2,6 +2,7 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { getStartingFen } from '@blindfold-chess/features/chess-core';
+import { gameUsedNotablePlaySettings } from '@blindfold-chess/features/game-record';
 import type { Side } from '@blindfold-chess/types';
 
 import { resolveAiReviewGenerationState } from '@/lib/ai-review/entitlement';
@@ -16,7 +17,6 @@ import { getCommentUserProfile, listGameComments } from '@/lib/db/game-comments'
 import { getGameById } from '@/lib/db/games-read';
 import { GAME_LIKE_TARGET, getLikeMeta } from '@/lib/db/like-queries';
 import { hasPlayedGifVariant } from '@/lib/games/gif/preview-frames';
-import { gameUsedNotablePlaySettings } from '@/lib/games/play-settings-log';
 import { detectGameOpening } from '@/lib/openings/detect-game-opening';
 import { resolveNullableAuthorName } from '@/lib/users/display-name';
 import { UUID_RE } from '@/lib/validations/uuid';

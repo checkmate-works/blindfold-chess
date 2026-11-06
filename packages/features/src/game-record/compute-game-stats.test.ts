@@ -1,12 +1,12 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from "vitest";
 
-import type { MoveOperationLog } from '@/lib/games/saved-game-types';
+import type { MoveOperationLog } from "./types";
 
-import { computeGameStats, markerForLog } from './compute-game-stats';
+import { computeGameStats, markerForLog } from "./compute-game-stats";
 
 function log(overrides: Partial<MoveOperationLog> = {}): MoveOperationLog {
   return {
-    inputMethod: 'text',
+    inputMethod: "text",
     peekCount: 0,
     undoCount: 0,
     movePeekCount: 0,
@@ -15,42 +15,46 @@ function log(overrides: Partial<MoveOperationLog> = {}): MoveOperationLog {
   };
 }
 
-describe('markerForLog — severity precedence', () => {
-  it('clean when every counter is zero', () => {
-    expect(markerForLog(log())).toBe('clean');
+describe("markerForLog — severity precedence", () => {
+  it("clean when every counter is zero", () => {
+    expect(markerForLog(log())).toBe("clean");
   });
 
-  it('illegal outranks everything else', () => {
+  it("illegal outranks everything else", () => {
     expect(
-      markerForLog(log({ invalidCount: 1, undoCount: 1, peekCount: 1, movePeekCount: 1 }))
-    ).toBe('illegal');
+      markerForLog(
+        log({ invalidCount: 1, undoCount: 1, peekCount: 1, movePeekCount: 1 }),
+      ),
+    ).toBe("illegal");
   });
 
-  it('takeback outranks peek and hint', () => {
-    expect(markerForLog(log({ undoCount: 1, peekCount: 1, movePeekCount: 1 }))).toBe('takeback');
+  it("takeback outranks peek and hint", () => {
+    expect(
+      markerForLog(log({ undoCount: 1, peekCount: 1, movePeekCount: 1 })),
+    ).toBe("takeback");
   });
 
-  it('peek outranks hint', () => {
-    expect(markerForLog(log({ peekCount: 1, movePeekCount: 1 }))).toBe('peek');
+  it("peek outranks hint", () => {
+    expect(markerForLog(log({ peekCount: 1, movePeekCount: 1 }))).toBe("peek");
   });
 
-  it('hint when only a legal-move hint was used', () => {
-    expect(markerForLog(log({ movePeekCount: 2 }))).toBe('hint');
+  it("hint when only a legal-move hint was used", () => {
+    expect(markerForLog(log({ movePeekCount: 2 }))).toBe("hint");
   });
 
-  it('treats a missing invalidCount (legacy log) as zero', () => {
+  it("treats a missing invalidCount (legacy log) as zero", () => {
     const legacy = {
-      inputMethod: 'text',
+      inputMethod: "text",
       peekCount: 0,
       undoCount: 0,
       movePeekCount: 0,
     } as MoveOperationLog;
-    expect(markerForLog(legacy)).toBe('clean');
+    expect(markerForLog(legacy)).toBe("clean");
   });
 });
 
-describe('computeGameStats', () => {
-  it('returns zeroed stats for no moves', () => {
+describe("computeGameStats", () => {
+  it("returns zeroed stats for no moves", () => {
     expect(computeGameStats([])).toEqual({
       totalMoves: 0,
       peeks: 0,
@@ -63,7 +67,7 @@ describe('computeGameStats', () => {
     });
   });
 
-  it('sums each counter and counts clean moves', () => {
+  it("sums each counter and counts clean moves", () => {
     const stats = computeGameStats([
       log(), // clean
       log({ peekCount: 2 }),
@@ -79,10 +83,17 @@ describe('computeGameStats', () => {
     expect(stats.takebacks).toBe(1);
     expect(stats.hints).toBe(1);
     expect(stats.cleanMoves).toBe(2);
-    expect(stats.perMove).toEqual(['clean', 'peek', 'illegal', 'takeback', 'hint', 'clean']);
+    expect(stats.perMove).toEqual([
+      "clean",
+      "peek",
+      "illegal",
+      "takeback",
+      "hint",
+      "clean",
+    ]);
   });
 
-  it('counts aided moves (peek/hint/takeback) but not illegal-only moves', () => {
+  it("counts aided moves (peek/hint/takeback) but not illegal-only moves", () => {
     const stats = computeGameStats([
       log(), // clean — not aided
       log({ peekCount: 2 }), // aided (peek)

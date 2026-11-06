@@ -1,4 +1,4 @@
-import type { MoveOperationLog, OperationTotals } from './saved-game-types';
+import type { MoveOperationLog, OperationTotals } from "./types";
 
 /** The all-zero totals a brand-new game starts from. Spread, never mutate. */
 export const EMPTY_OPERATION_TOTALS: OperationTotals = {
@@ -15,10 +15,13 @@ export const EMPTY_OPERATION_TOTALS: OperationTotals = {
  * rejects NaN/Infinity, so a malformed blob never passes.
  */
 export function isOperationTotals(value: unknown): value is OperationTotals {
-  if (typeof value !== 'object' || value === null) return false;
+  if (typeof value !== "object" || value === null) return false;
   const v = value as Record<string, unknown>;
-  return (['peeks', 'movePeeks', 'undos', 'invalidMoves'] as const).every(
-    (key) => typeof v[key] === 'number' && Number.isInteger(v[key]) && (v[key] as number) >= 0
+  return (["peeks", "movePeeks", "undos", "invalidMoves"] as const).every(
+    (key) =>
+      typeof v[key] === "number" &&
+      Number.isInteger(v[key]) &&
+      (v[key] as number) >= 0,
   );
 }
 
@@ -32,10 +35,12 @@ export function isOperationTotals(value: unknown): value is OperationTotals {
 export function sumOperationLogs(logs: MoveOperationLog[]): OperationTotals {
   const totals = { ...EMPTY_OPERATION_TOTALS };
   for (const log of logs) {
-    totals.peeks += typeof log?.peekCount === 'number' ? log.peekCount : 0;
-    totals.movePeeks += typeof log?.movePeekCount === 'number' ? log.movePeekCount : 0;
-    totals.undos += typeof log?.undoCount === 'number' ? log.undoCount : 0;
-    totals.invalidMoves += typeof log?.invalidCount === 'number' ? log.invalidCount : 0;
+    totals.peeks += typeof log?.peekCount === "number" ? log.peekCount : 0;
+    totals.movePeeks +=
+      typeof log?.movePeekCount === "number" ? log.movePeekCount : 0;
+    totals.undos += typeof log?.undoCount === "number" ? log.undoCount : 0;
+    totals.invalidMoves +=
+      typeof log?.invalidCount === "number" ? log.invalidCount : 0;
   }
   return totals;
 }
