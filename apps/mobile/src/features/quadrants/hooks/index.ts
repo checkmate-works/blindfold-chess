@@ -1,0 +1,1 @@
+export { useQuadrantsSettings } from "./useQuadrantsSettings";
