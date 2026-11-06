@@ -1,4 +1,4 @@
-// eslint-disable-next-line no-restricted-imports -- /[locale]/articles/[slug] is the app's only prerendered page, making this the one place revalidatePath does real cache work; see this module's TSDoc
+// eslint-disable-next-line ban/revalidate-path -- /[locale]/articles/[slug] is the app's only prerendered page, making this the one place revalidatePath does real cache work; see this module's TSDoc
 import { revalidatePath, revalidateTag } from 'next/cache';
 
 import { SUPPORTED_LOCALES } from '@/config';

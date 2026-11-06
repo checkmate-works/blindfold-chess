@@ -17,13 +17,17 @@ export default [
         ...config,
         files: ["apps/mobile/**/*.{js,jsx,ts,tsx}"],
     })),
-    // Must also live in this root config: lint-staged runs eslint from the
-    // repo root, and ESLint 9 resolves the config from the cwd — without the
-    // rule here, `eslint --fix` on commit strips the reason-annotated
-    // eslint-disable comments in apps/web as unused directives.
+    // Every ban a package config applies must also live in this root config:
+    // lint-staged runs eslint from the repo root, and ESLint 9 resolves the
+    // config from the cwd — without the rule here, `eslint --fix` on commit
+    // strips the reason-annotated eslint-disable comments as unused
+    // directives. Each ban owns its own `ban/*` rule name, so their order
+    // does not matter (see packages/eslint-config/ban-plugin.js);
+    // packages/eslint-config/test/bans.test.mjs checks both cwds.
     ...revalidatePathBan("apps/web/"),
     ...hoverUnderlineBan("apps/web/"),
     ...clientIntlHooksBan("apps/web/"),
+    ...chessJsBan("apps/web/"),
     ...chessJsBan("apps/mobile/"),
     ...chessJsBan("packages/features/"),
     {

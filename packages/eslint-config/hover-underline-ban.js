@@ -1,3 +1,5 @@
+import { banPlugins } from "./ban-plugin.js";
+
 /**
  * Lint-ban on a bare `hover:underline` in class strings under apps/web/src/app.
  *
@@ -8,13 +10,15 @@
  * adds a focus ring; its TSDoc also says where an underline is NOT wanted
  * (a label inside a clickable card, a navigation list). Sites that sit in
  * one of those exceptions and still want a pointer-only underline keep it
- * behind an `eslint-disable` that names the exception — the disable is the
- * record of the decision.
+ * behind an `eslint-disable-next-line ban/hover-underline` that names the
+ * exception — the disable is the record of the decision.
  *
  * The admin tree is exempt: it is driven from a desktop, so hover is real
  * there and the rule would only generate disables.
  *
- * Only string and template literals are inspected (`Literal`,
+ * The rule is core `no-restricted-syntax` registered as `ban/hover-underline`
+ * (see `ban-plugin.js` for why each ban has its own rule name). Only string
+ * and template literals are inspected (`Literal`,
  * `TemplateElement`), so a class assembled from the shared constants never
  * trips it — the constants live in `link-classes.ts`, which is excluded
  * because `CARD_PERMALINK_CLASSES` is the one deliberate hover-only case.
@@ -40,8 +44,9 @@ export function hoverUnderlineBan(prefix = "") {
         `${prefix}src/app/admin/**`,
         `${prefix}src/app/**/link-classes.ts`,
       ],
+      plugins: banPlugins,
       rules: {
-        "no-restricted-syntax": [
+        "ban/hover-underline": [
           "error",
           {
             selector: "Literal[value=/hover:underline/]",
