@@ -1,3 +1,9 @@
+/**
+ * Edit Chunk Preview (チャンク編集のプレビュー, `/chunks/[slug]/edit/preview`)
+ *
+ * @description
+ * Owner-only preview step of the chunk edit flow that diffs the sessionStorage draft against the saved row and saves it.
+ */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';

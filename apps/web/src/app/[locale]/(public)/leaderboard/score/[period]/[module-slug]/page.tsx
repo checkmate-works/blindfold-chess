@@ -1,5 +1,5 @@
 /**
- * Score Leaderboard Middle Hub (`/leaderboard/score/[period]/[module-slug]`)
+ * Score Leaderboard Middle Hub (モジュール別ランキング, `/leaderboard/score/[period]/[module-slug]`)
  *
  * @description
  * Canonical per-module filtered view of the score leaderboard. Replaces the

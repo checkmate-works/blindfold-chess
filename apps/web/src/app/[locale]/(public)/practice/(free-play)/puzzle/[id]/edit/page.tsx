@@ -1,3 +1,9 @@
+/**
+ * Edit Puzzle (パズルを編集, `/practice/puzzle/[id]/edit`)
+ *
+ * @description
+ * Owner-only first step of puzzle editing: the position, title, description and tags form.
+ */
 import {
   PUZZLE_ROUTE,
   createPositionEditPage,

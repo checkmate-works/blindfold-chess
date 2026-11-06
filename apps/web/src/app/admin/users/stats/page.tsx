@@ -1,5 +1,5 @@
 /**
- * Admin User Statistics
+ * Admin User Statistics (管理画面 ユーザー統計, `/admin/users/stats`)
  *
  * @description
  * Distribution charts over the user population: by country, by belt rank, by

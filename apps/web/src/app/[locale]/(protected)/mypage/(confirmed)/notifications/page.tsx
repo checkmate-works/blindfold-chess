@@ -1,3 +1,9 @@
+/**
+ * Notifications (通知, `/mypage/notifications`)
+ *
+ * @description
+ * Paginated list of the signed-in user's notifications with a mark-all-read action and a link to notification settings.
+ */
 import { getTranslations } from 'next-intl/server';
 
 import { Link } from '@/i18n/routing';

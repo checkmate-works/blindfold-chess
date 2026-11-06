@@ -1,3 +1,9 @@
+/**
+ * New Position Memory Problem (問題を作成, `/practice/position-memory/new`)
+ *
+ * @description
+ * Form for creating a position-memory problem, optionally seeded from a fork or a `?fen=` query.
+ */
 import { loadPositionForkSeed } from '@/lib/positions/fork';
 
 import {

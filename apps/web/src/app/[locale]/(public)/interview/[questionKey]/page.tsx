@@ -1,3 +1,9 @@
+/**
+ * Interview Question (インタビュー質問の詳細, `/interview/[questionKey]`)
+ *
+ * @description
+ * Shows one interview question with the user's current opening answer and the form to change it.
+ */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';

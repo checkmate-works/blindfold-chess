@@ -1,3 +1,9 @@
+/**
+ * Glossary Category (用語集カテゴリー, `/glossary/category/[category]`)
+ *
+ * @description
+ * Lists the glossary terms of one category followed by the category index.
+ */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { setRequestLocale } from 'next-intl/server';

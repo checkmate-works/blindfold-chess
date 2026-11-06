@@ -1,5 +1,5 @@
 /**
- * Practice List (`/practice`)
+ * Practice List (練習, `/practice`)
  *
  * @description
  * Lists every practice module as a card carrying the module's emoji, the rank

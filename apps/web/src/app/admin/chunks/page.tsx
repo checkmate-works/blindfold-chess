@@ -1,3 +1,9 @@
+/**
+ * Admin Chunks (管理画面 チャンク管理, `/admin/chunks`)
+ *
+ * @description
+ * Paginated table of chunks with board thumbnails and a delete action.
+ */
 import { AdminDataTable } from '@/app/admin/_components/AdminDataTable';
 import { AdminExternalLink } from '@/app/admin/_components/AdminExternalLink';
 import { AdminListSummary } from '@/app/admin/_components/AdminListSummary';

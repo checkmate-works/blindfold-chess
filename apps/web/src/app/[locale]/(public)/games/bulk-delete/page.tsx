@@ -1,3 +1,9 @@
+/**
+ * Bulk Delete Games (ゲームの一括削除, `/games/bulk-delete`)
+ *
+ * @description
+ * Lets the user select several of their games and delete them at once.
+ */
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 

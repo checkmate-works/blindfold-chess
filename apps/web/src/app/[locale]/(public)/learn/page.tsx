@@ -1,3 +1,9 @@
+/**
+ * Learn Index (チェスを学ぶ, `/learn`)
+ *
+ * @description
+ * Entry page of the learning articles, browsed by category with per-category article counts.
+ */
 import { Suspense } from 'react';
 
 import type { Metadata } from 'next';

@@ -1,3 +1,9 @@
+/**
+ * Company Info (運営者情報, `/company`)
+ *
+ * @description
+ * Static page listing the operator's name, location and business.
+ */
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 

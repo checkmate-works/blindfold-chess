@@ -1,3 +1,9 @@
+/**
+ * Learn Article (学習記事, `/learn/[category]/[slug]`)
+ *
+ * @description
+ * Renders one markdown learning article with Article JSON-LD and the practice pages it relates to.
+ */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { setRequestLocale } from 'next-intl/server';

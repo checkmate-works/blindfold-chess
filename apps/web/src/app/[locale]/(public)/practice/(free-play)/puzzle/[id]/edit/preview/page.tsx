@@ -1,3 +1,9 @@
+/**
+ * Edit Puzzle Preview (パズル編集のプレビュー, `/practice/puzzle/[id]/edit/preview`)
+ *
+ * @description
+ * Owner-only final step of puzzle editing: a read-only replay of the edit draft ending in Save.
+ */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound, redirect } from 'next/navigation';

@@ -1,3 +1,9 @@
+/**
+ * Edit Puzzle Solution (パズル編集の正解手, `/practice/puzzle/[id]/edit/solution`)
+ *
+ * @description
+ * Owner-only second step of puzzle editing: solution-move entry on a read-only board.
+ */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound, redirect } from 'next/navigation';

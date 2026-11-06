@@ -1,3 +1,9 @@
+/**
+ * Challenges Dashboard (チャレンジ記録, `/mypage/challenges`)
+ *
+ * @description
+ * Per-menu dashboard of the signed-in user's challenge scores — filters, stats, trend chart and recent history — plus the practice pages related to the selected menu.
+ */
 import type { ReactNode } from 'react';
 
 import { getTranslations } from 'next-intl/server';

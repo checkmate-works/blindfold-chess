@@ -1,3 +1,9 @@
+/**
+ * Learn Category (学習カテゴリー, `/learn/[category]`)
+ *
+ * @description
+ * Lists the learning articles of one category.
+ */
 import { Suspense } from 'react';
 
 import type { Metadata } from 'next';

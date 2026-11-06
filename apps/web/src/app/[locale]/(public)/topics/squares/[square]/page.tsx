@@ -1,3 +1,9 @@
+/**
+ * Square Topic Detail (マス目の詳細, `/topics/squares/[square]`)
+ *
+ * @description
+ * Shows one square with the openings that use it and its community posts, plus the new-post form.
+ */
 import { Suspense } from 'react';
 
 import type { Metadata } from 'next';

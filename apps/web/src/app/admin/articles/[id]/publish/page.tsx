@@ -1,3 +1,9 @@
+/**
+ * Admin Publish Article (管理画面 記事公開, `/admin/articles/[id]/publish`)
+ *
+ * @description
+ * Publish step for one article.
+ */
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 

@@ -1,3 +1,9 @@
+/**
+ * Articles List (記事, `/articles`)
+ *
+ * @description
+ * Paginated list of published articles with an ItemList JSON-LD and a native ad card.
+ */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';

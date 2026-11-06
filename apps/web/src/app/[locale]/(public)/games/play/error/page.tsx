@@ -1,3 +1,9 @@
+/**
+ * Play Error Recovery (ゲームの復旧, `/games/play/error`)
+ *
+ * @description
+ * Recovery screen shown when a game cannot be resumed.
+ */
 import { Suspense } from 'react';
 
 import type { Metadata } from 'next';

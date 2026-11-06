@@ -1,3 +1,9 @@
+/**
+ * Reset Password (パスワードのリセット, `/reset-password`)
+ *
+ * @description
+ * Form that sets a new password from a reset link.
+ */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 

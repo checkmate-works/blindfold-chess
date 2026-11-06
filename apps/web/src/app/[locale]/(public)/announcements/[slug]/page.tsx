@@ -1,3 +1,9 @@
+/**
+ * Announcement Detail (お知らせ詳細, `/announcements/[slug]`)
+ *
+ * @description
+ * Renders one published announcement's markdown body, gating members-only announcements behind sign-in.
+ */
 import type { Metadata } from 'next';
 import { hasLocale } from 'next-intl';
 import { getTranslations } from 'next-intl/server';

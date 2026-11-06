@@ -1,3 +1,9 @@
+/**
+ * FEN Reconstruction Session (FEN再構築 練習中, `/practice/fen/session`)
+ *
+ * @description
+ * Runs the FEN reconstruction exercise over the Base64-encoded FEN list passed in the query string.
+ */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import dynamic from 'next/dynamic';

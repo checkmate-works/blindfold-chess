@@ -1,3 +1,9 @@
+/**
+ * Glossary Term (用語の詳細, `/glossary/[slug]`)
+ *
+ * @description
+ * Shows one glossary term's definition with tabbed related content and a native ad.
+ */
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import dynamic from 'next/dynamic';

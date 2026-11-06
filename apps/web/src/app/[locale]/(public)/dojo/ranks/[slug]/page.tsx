@@ -1,5 +1,5 @@
 /**
- * Rank Detail Page
+ * Rank Detail Page (段級位の詳細, `/dojo/ranks/[slug]`)
  *
  * @description
  * Displays detailed information about a specific belt rank including

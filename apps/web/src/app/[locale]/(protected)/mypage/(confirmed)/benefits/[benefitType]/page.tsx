@@ -1,5 +1,5 @@
 /**
- * Benefit Grant History Page
+ * Benefit Grant History Page (特典履歴, `/mypage/benefits/[benefitType]`)
  *
  * @description
  * Paginated history of a user's benefit grants filtered by benefitType.

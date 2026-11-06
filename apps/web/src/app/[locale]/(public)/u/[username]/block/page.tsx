@@ -1,3 +1,9 @@
+/**
+ * Block User (ユーザーをブロック, `/u/[username]/block`)
+ *
+ * @description
+ * Confirmation page for blocking or unblocking another user.
+ */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';

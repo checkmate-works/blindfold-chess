@@ -1,3 +1,9 @@
+/**
+ * Chunks Catalog (チャンク, `/chunks`)
+ *
+ * @description
+ * Paginated catalog of chunks with a status filter (all / drafts seeking feedback / published) and a create button.
+ */
 import { Suspense } from 'react';
 
 import type { Metadata } from 'next';

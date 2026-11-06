@@ -1,3 +1,9 @@
+/**
+ * Puzzle Session (パズル 挑戦, `/practice/puzzle/[id]/session`)
+ *
+ * @description
+ * Runs the solving session for one puzzle.
+ */
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';

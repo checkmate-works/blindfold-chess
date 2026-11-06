@@ -1,5 +1,5 @@
 /**
- * FEN Reconstruction Practice
+ * FEN Reconstruction Practice (FEN再構築, `/practice/fen`)
  *
  * @description
  * Train reading and understanding FEN notation by reconstructing board positions.

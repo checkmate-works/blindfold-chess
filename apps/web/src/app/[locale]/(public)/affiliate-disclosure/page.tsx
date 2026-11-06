@@ -1,3 +1,9 @@
+/**
+ * Affiliate Disclosure (アフィリエイト・ポリシー, `/affiliate-disclosure`)
+ *
+ * @description
+ * Static policy page disclosing the affiliate networks the site participates in.
+ */
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 

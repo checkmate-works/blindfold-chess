@@ -1,3 +1,9 @@
+/**
+ * Opening Topic Detail (オープニング詳細, `/topics/openings/[slug]`)
+ *
+ * @description
+ * Shows one opening with its community posts (default tab) and related repertoires, plus the new-post form.
+ */
 import { Suspense } from 'react';
 
 import type { Metadata } from 'next';

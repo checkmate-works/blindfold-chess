@@ -1,3 +1,9 @@
+/**
+ * Forgot Password (パスワードをお忘れの方, `/forgot-password`)
+ *
+ * @description
+ * Form that requests a password-reset email.
+ */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 

@@ -1,5 +1,5 @@
 /**
- * Rank Guide Deep Route
+ * Rank Guide Deep Route (段級位別教本の章ページ, `/dojo/guides/[rank]/[...rest]`)
  *
  * @description
  * Catch-all for paths following the rank root:

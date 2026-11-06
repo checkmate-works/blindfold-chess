@@ -19,7 +19,7 @@ import { VsAiCard } from './_components/VsAiCard';
 import { getFeedData } from './_lib/queries';
 
 /**
- * Home Page (`/[locale]`)
+ * Home Page (ホーム, `/[locale]`)
  *
  * @description
  * The locale-prefixed home page (e.g. `/en`, `/ja`). Distinct from the root

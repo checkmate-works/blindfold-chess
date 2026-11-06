@@ -1,3 +1,9 @@
+/**
+ * FAQ (よくある質問, `/faq`)
+ *
+ * @description
+ * Accordion of frequently asked questions with FAQPage JSON-LD, including the Exp module-weight and accuracy-bonus tables derived from the scoring constants.
+ */
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 

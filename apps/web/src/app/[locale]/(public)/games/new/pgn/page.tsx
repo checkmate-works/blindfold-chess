@@ -1,3 +1,9 @@
+/**
+ * New Game from PGN (PGNからインポート, `/games/new/pgn`)
+ *
+ * @description
+ * Starts an AI game from a pasted PGN, with a help tour over the PGN input, engine and skill-level selectors.
+ */
 import { createNewGamePage } from '../_lib/create-new-game-page';
 import { PgnGameForm } from './_components/PgnGameForm';
 

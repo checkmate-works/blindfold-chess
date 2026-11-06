@@ -1,3 +1,9 @@
+/**
+ * Interview (インタビュー, `/interview`)
+ *
+ * @description
+ * Grid of the interview questions the user can answer with an opening.
+ */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 

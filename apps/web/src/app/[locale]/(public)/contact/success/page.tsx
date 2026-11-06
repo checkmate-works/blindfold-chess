@@ -1,3 +1,9 @@
+/**
+ * Contact Success (送信完了, `/contact/success`)
+ *
+ * @description
+ * Thank-you page shown after a contact message is sent, with a link back home.
+ */
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import Link from 'next/link';

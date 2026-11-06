@@ -1,5 +1,5 @@
 /**
- * Diagonal Quiz (`/practice/diagonal-quiz`)
+ * Diagonal Quiz (ダイアゴナルクイズ, `/practice/diagonal-quiz`)
  *
  * @description
  * Practice module in which the user names the diagonals that a given square

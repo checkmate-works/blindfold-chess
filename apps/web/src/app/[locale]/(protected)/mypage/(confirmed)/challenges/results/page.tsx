@@ -1,3 +1,9 @@
+/**
+ * Challenge Results List (チャレンジ記録の結果一覧, `/mypage/challenges/results`)
+ *
+ * @description
+ * Paginated table of the signed-in user's past challenge sessions, filterable by menu and setting key.
+ */
 import { getTranslations } from 'next-intl/server';
 
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';

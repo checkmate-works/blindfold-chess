@@ -1,3 +1,9 @@
+/**
+ * Preferences (設定, `/preferences`)
+ *
+ * @description
+ * Tabbed user preferences (privacy, game, appearance, controls, notifications).
+ */
 import { Suspense } from 'react';
 
 import type { Metadata } from 'next';

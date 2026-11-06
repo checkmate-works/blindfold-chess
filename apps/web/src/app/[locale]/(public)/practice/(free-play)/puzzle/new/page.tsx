@@ -1,3 +1,9 @@
+/**
+ * New Puzzle (パズルを作成, `/practice/puzzle/new`)
+ *
+ * @description
+ * First step of puzzle creation: the position form, optionally seeded from a fork, a `?fen=` query and a `?solution=` continuation.
+ */
 import { executeMove } from '@blindfold-chess/features/chess-core';
 
 import { loadPuzzleForkSeed } from '@/lib/positions/fork';

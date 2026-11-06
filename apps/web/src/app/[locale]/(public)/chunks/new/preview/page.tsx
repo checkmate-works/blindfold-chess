@@ -1,3 +1,9 @@
+/**
+ * New Chunk Preview (チャンクのプレビュー, `/chunks/new/preview`)
+ *
+ * @description
+ * Auth-guarded preview step of the chunk authoring flow that reads the sessionStorage draft and creates the chunk.
+ */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 

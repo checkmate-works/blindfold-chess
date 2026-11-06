@@ -1,3 +1,9 @@
+/**
+ * Square Post Detail (マス目投稿の詳細, `/topics/squares/[square]/posts/[postId]`)
+ *
+ * @description
+ * Permalink of one square-topic post with its replies.
+ */
 import { getTranslations } from 'next-intl/server';
 
 import { createTopicPostDetailPage } from '@/app/[locale]/(public)/topics/_lib/create-topic-post-detail-page';

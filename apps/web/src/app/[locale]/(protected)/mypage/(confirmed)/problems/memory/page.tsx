@@ -1,5 +1,5 @@
 /**
- * My Position Memory Problems (`/mypage/problems/memory`)
+ * My Position Memory Problems (作成したポジションの記憶問題, `/mypage/problems/memory`)
  *
  * @description
  * Lists position memory problems created by the authenticated user.

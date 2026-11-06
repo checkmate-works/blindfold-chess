@@ -1,3 +1,9 @@
+/**
+ * Glossary Index (チェス用語集, `/glossary`)
+ *
+ * @description
+ * Entry page of the glossary with the alphabetical and category indexes and a DefinedTermSet JSON-LD.
+ */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { setRequestLocale } from 'next-intl/server';

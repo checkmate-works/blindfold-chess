@@ -1,5 +1,5 @@
 /**
- * Ranks Page
+ * Ranks Page (段級位制度, `/dojo/ranks`)
  *
  * @description
  * Displays all belt ranks and their requirements in the blindfold chess

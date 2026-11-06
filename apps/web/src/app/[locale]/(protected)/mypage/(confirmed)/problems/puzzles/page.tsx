@@ -1,5 +1,5 @@
 /**
- * My Puzzles (`/mypage/problems/puzzles`)
+ * My Puzzles (作成したパズル, `/mypage/problems/puzzles`)
  *
  * @description
  * Lists puzzle problems created by the authenticated user.

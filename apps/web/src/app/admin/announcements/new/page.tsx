@@ -1,3 +1,9 @@
+/**
+ * Admin New Announcement (管理画面 お知らせ作成, `/admin/announcements/new`)
+ *
+ * @description
+ * Create form for an announcement.
+ */
 import { getTranslations } from 'next-intl/server';
 
 import { AdminBreadcrumb } from '@/app/admin/_components/AdminBreadcrumb';

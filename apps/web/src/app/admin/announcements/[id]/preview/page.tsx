@@ -1,3 +1,9 @@
+/**
+ * Admin Announcement Preview (管理画面 お知らせプレビュー, `/admin/announcements/[id]/preview`)
+ *
+ * @description
+ * Rendered preview of one announcement with the publish controls.
+ */
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 

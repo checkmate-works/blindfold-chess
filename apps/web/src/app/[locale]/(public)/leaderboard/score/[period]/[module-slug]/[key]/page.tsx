@@ -1,5 +1,5 @@
 /**
- * Score Leaderboard Detail (`/leaderboard/score/[period]/[module-slug]/[key]`)
+ * Score Leaderboard Detail (ランキング詳細, `/leaderboard/score/[period]/[module-slug]/[key]`)
  *
  * @description
  * Canonical category-first detail view for a single module+setting. Shows a

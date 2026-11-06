@@ -1,3 +1,9 @@
+/**
+ * Pricing (料金プラン, `/pricing`)
+ *
+ * @description
+ * Shows the free and ad-free plans with subscribe / manage actions.
+ */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 

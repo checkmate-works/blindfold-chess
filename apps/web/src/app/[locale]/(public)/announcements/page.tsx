@@ -1,3 +1,9 @@
+/**
+ * Announcements List (お知らせ, `/announcements`)
+ *
+ * @description
+ * Paginated list of published announcements.
+ */
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 

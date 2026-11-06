@@ -1,3 +1,9 @@
+/**
+ * Position Memory Multi-Problem Session (ポジションの記憶 練習中, `/practice/position-memory/session`)
+ *
+ * @description
+ * Runs a multi-problem position-memory session built from the settings in the query string.
+ */
 import { getTranslations } from 'next-intl/server';
 import dynamic from 'next/dynamic';
 

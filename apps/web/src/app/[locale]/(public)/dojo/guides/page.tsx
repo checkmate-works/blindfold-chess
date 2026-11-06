@@ -1,5 +1,5 @@
 /**
- * Guides Hub Top
+ * Guides Hub Top (教本, `/dojo/guides`)
  *
  * @description
  * Top page of the guides SEO content hub. Lists available guide sections;

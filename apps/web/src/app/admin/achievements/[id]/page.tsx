@@ -1,5 +1,5 @@
 /**
- * Admin Achievement Detail Page
+ * Admin Achievement Detail Page (管理画面 実績詳細, `/admin/achievements/[id]`)
  *
  * @description
  * Read-only admin surface showing a single achievement definition together

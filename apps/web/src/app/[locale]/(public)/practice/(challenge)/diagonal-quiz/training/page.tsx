@@ -1,5 +1,5 @@
 /**
- * Diagonal Quiz Training
+ * Diagonal Quiz Training (ダイアゴナルクイズ トレーニング, `/practice/diagonal-quiz/training`)
  *
  * @description
  * Untimed training mode for diagonal identification.

@@ -1,3 +1,9 @@
+/**
+ * Game Result (振り返り, `/games/play/result`)
+ *
+ * @description
+ * Post-game review of a finished AI game identified by its id in the query string.
+ */
 import { Suspense } from 'react';
 
 import type { Metadata } from 'next';

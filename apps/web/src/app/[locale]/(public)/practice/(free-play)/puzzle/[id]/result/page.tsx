@@ -1,3 +1,9 @@
+/**
+ * Puzzle Result (パズル結果, `/practice/puzzle/[id]/result`)
+ *
+ * @description
+ * Result of one puzzle attempt with the solution replay, attempt history and the next puzzles to try.
+ */
 import { Suspense } from 'react';
 
 import type { Metadata } from 'next';

@@ -1,3 +1,9 @@
+/**
+ * Verify Email (メールをご確認ください, `/sign-up/verify-email`)
+ *
+ * @description
+ * Post-sign-up screen that asks the user to confirm the verification email and offers to resend it.
+ */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 

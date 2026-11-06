@@ -1,3 +1,9 @@
+/**
+ * New Puzzle Preview (パズルをプレビュー, `/practice/puzzle/new/preview`)
+ *
+ * @description
+ * Final step of puzzle creation that replays the draft and creates the puzzle.
+ */
 import { getTranslations } from 'next-intl/server';
 
 import { getAuthenticatedUser } from '@/lib/auth';

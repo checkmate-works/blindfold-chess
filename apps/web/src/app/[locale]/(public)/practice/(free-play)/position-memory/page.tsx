@@ -1,5 +1,5 @@
 /**
- * Position Memory — Problem List
+ * Position Memory — Problem List (ポジションの記憶, `/practice/position-memory`)
  *
  * @description
  * Displays a paginated list of user-submitted positions for the

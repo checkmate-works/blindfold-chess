@@ -1,3 +1,9 @@
+/**
+ * Admin New Ad Creative (管理画面 広告クリエイティブ作成, `/admin/ads/[slot]/new`)
+ *
+ * @description
+ * Create form for an ad creative in the given slot.
+ */
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 

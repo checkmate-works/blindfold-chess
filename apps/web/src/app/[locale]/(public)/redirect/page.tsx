@@ -1,3 +1,9 @@
+/**
+ * External Link Redirect (外部リンク, `/redirect`)
+ *
+ * @description
+ * Interstitial that warns before leaving the site for the external URL in the query string.
+ */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 

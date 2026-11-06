@@ -1,5 +1,5 @@
 /**
- * Rank Guide Root
+ * Rank Guide Root (段級位別教本, `/dojo/guides/[rank]`)
  *
  * @description
  * Entry point for a rank guide. For flat ranks, renders the first body page

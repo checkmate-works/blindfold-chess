@@ -1,3 +1,9 @@
+/**
+ * Admin Activity Log (管理画面 アクティビティログ, `/admin/activity-log`)
+ *
+ * @description
+ * Paginated user activity log filterable by action and user.
+ */
 import { getTranslations } from 'next-intl/server';
 
 import { buildAdminListHref } from '@/app/admin/_lib/build-list-href';

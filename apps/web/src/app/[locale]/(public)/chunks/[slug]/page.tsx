@@ -1,3 +1,9 @@
+/**
+ * Chunk Detail (チャンク詳細, `/chunks/[slug]`)
+ *
+ * @description
+ * Shows one chunk's description and tabbed related content (positions, games, repertoires, comments), with the edit-request callout while it is a draft.
+ */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 

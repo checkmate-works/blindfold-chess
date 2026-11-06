@@ -1,3 +1,9 @@
+/**
+ * Username Setup (アカウント登録 — ユーザー名の設定, `/mypage/setup-username`)
+ *
+ * @description
+ * Final sign-up step for a provisional account: the form that chooses the username and display name.
+ */
 import { getTranslations } from 'next-intl/server';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';

@@ -1,3 +1,9 @@
+/**
+ * Puzzle Detail (パズル詳細, `/practice/puzzle/[id]`)
+ *
+ * @description
+ * Shows one puzzle's description, provenance and tabbed related content, with solve, edit and fork actions.
+ */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';

@@ -1,3 +1,9 @@
+/**
+ * Admin Slot Creatives (管理画面 スロット別クリエイティブ一覧, `/admin/ads/[slot]`)
+ *
+ * @description
+ * Lists the creatives of one ad slot with their status and a link to add one.
+ */
 import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
