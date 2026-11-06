@@ -1,0 +1,1 @@
+export { useKnightTourSettings } from "./useKnightTourSettings";

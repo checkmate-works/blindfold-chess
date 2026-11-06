@@ -10,7 +10,7 @@ import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/games/board-them
 
 type Props = {
   currentSquare: string;
-  visitedSquares: Map<string, number>; // square -> move number
+  visitedSquares: ReadonlyMap<string, number>; // square -> move number
   availableMoves: string[];
   onSquareClick?: (square: string) => void;
   showCoordinates?: boolean;

@@ -318,10 +318,40 @@
   },
   "knightTour": {
     "setup": {
-      "title": "Percurso do Cavalo Configuração"
+      "title": "Percurso do Cavalo Configuração",
+      "startingSquare": "Casa Inicial",
+      "randomSquare": "Aleatório",
+      "pickOnBoard": "Ou toque em uma casa do tabuleiro",
+      "blindfoldMode": "Modo às Cegas",
+      "blindfoldModeHint": "Pratique usando apenas coordenadas sem ver o tabuleiro",
+      "setupHint": "O cavalo deve visitar as 64 casas exatamente uma vez usando apenas movimentos legais de cavalo.",
+      "start": "Iniciar"
     },
     "result": {
-      "title": "Prática concluída!"
+      "title": "Prática concluída!",
+      "squaresVisited": "Casas Visitadas",
+      "success": "Percurso Concluído!",
+      "closedTourMessage": "Incrível! Você completou um percurso fechado — o cavalo pode voltar à sua casa inicial!",
+      "openTourMessage": "Parabéns! Você visitou as 64 casas!",
+      "playAgain": "Jogar novamente",
+      "backToMenu": "Voltar ao menu"
+    },
+    "session": {
+      "currentPosition": "Posição Atual",
+      "stuck": "Não há mais movimentos disponíveis!",
+      "stuckHint": "Use Desfazer para voltar e tentar um caminho diferente.",
+      "moveHistory": "Histórico de Movimentos",
+      "undo": "Desfazer",
+      "quit": "Sair",
+      "quitConfirmTitle": "Abandonar a Prática?",
+      "quitConfirmMessage": "Seu progresso será salvo e você verá seus resultados até o momento.",
+      "quitConfirmYes": "Sair",
+      "quitConfirmNo": "Continuar",
+      "alreadyVisited": "Esta casa já foi visitada.",
+      "invalidMove": "Movimento inválido",
+      "submitMove": "Enviar",
+      "selectFile": "Selecione uma coluna (a-h)",
+      "selectRank": "Selecione uma linha (1-8)"
     }
   },
   "algebraicNotation": {

@@ -318,10 +318,40 @@
   },
   "knightTour": {
     "setup": {
-      "title": "ナイトツアーの設定"
+      "title": "ナイトツアーの設定",
+      "startingSquare": "開始マス",
+      "randomSquare": "ランダム",
+      "pickOnBoard": "盤面のマスをタップして選ぶこともできます",
+      "blindfoldMode": "ブラインドモード",
+      "blindfoldModeHint": "盤面を見ずに座標だけで練習します",
+      "setupHint": "ナイトの合法手のみを使って、全64マスをちょうど1回ずつ訪問します。",
+      "start": "開始"
     },
     "result": {
-      "title": "練習完了！"
+      "title": "練習完了！",
+      "squaresVisited": "訪問マス数",
+      "success": "ツアー完了！",
+      "closedTourMessage": "素晴らしい！閉じたツアーを達成しました - ナイトが開始マスに戻ることができます！",
+      "openTourMessage": "おめでとうございます！64マス全てを訪問しました！",
+      "playAgain": "もう一度",
+      "backToMenu": "メニューに戻る"
+    },
+    "session": {
+      "currentPosition": "現在位置",
+      "stuck": "移動できるマスがありません！",
+      "stuckHint": "「戻る」で別のルートを試してください。",
+      "moveHistory": "移動履歴",
+      "undo": "戻る",
+      "quit": "終了",
+      "quitConfirmTitle": "練習を終了しますか？",
+      "quitConfirmMessage": "現在までの結果を表示して練習を終了します。",
+      "quitConfirmYes": "終了する",
+      "quitConfirmNo": "続ける",
+      "alreadyVisited": "このマスはすでに訪問済みです。",
+      "invalidMove": "無効な手です",
+      "submitMove": "決定",
+      "selectFile": "ファイルを選択 (a-h)",
+      "selectRank": "ランクを選択 (1-8)"
     }
   },
   "algebraicNotation": {

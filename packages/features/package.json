@@ -27,6 +27,7 @@
     "./diagonal-quiz/client": "./src/diagonal-quiz/client.ts",
     "./exp": "./src/exp/index.ts",
     "./knight-tour": "./src/knight-tour/index.ts",
+    "./knight-tour/client": "./src/knight-tour/client.ts",
     "./lame-name": "./src/lame-name/index.ts",
     "./legal-moves": "./src/legal-moves/index.ts",
     "./legal-moves/client": "./src/legal-moves/client.ts",

@@ -318,10 +318,40 @@
   },
   "knightTour": {
     "setup": {
-      "title": "Knight's Tour Setup"
+      "title": "Knight's Tour Setup",
+      "startingSquare": "Starting Square",
+      "randomSquare": "Random",
+      "pickOnBoard": "Or tap a square on the board",
+      "blindfoldMode": "Blindfold Mode",
+      "blindfoldModeHint": "Practice using only coordinates without seeing the board",
+      "setupHint": "The knight must visit all 64 squares exactly once using only legal knight moves.",
+      "start": "Start"
     },
     "result": {
-      "title": "Practice Complete!"
+      "title": "Practice Complete!",
+      "squaresVisited": "Squares Visited",
+      "success": "Tour Complete!",
+      "closedTourMessage": "Amazing! You completed a closed tour - the knight can return to its starting square!",
+      "openTourMessage": "Congratulations! You visited all 64 squares!",
+      "playAgain": "Play Again",
+      "backToMenu": "Back to Menu"
+    },
+    "session": {
+      "currentPosition": "Current Position",
+      "stuck": "No more moves available!",
+      "stuckHint": "Use Undo to go back and try a different path.",
+      "moveHistory": "Move History",
+      "undo": "Undo",
+      "quit": "Quit",
+      "quitConfirmTitle": "Quit Practice?",
+      "quitConfirmMessage": "Your progress will be saved and you'll see your results so far.",
+      "quitConfirmYes": "Quit",
+      "quitConfirmNo": "Continue",
+      "alreadyVisited": "This square has already been visited.",
+      "invalidMove": "Invalid move",
+      "submitMove": "Submit",
+      "selectFile": "Select a file (a-h)",
+      "selectRank": "Select a rank (1-8)"
     }
   },
   "algebraicNotation": {
