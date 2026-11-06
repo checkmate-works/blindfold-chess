@@ -99,6 +99,7 @@ export function RedeemForm({ balance, daysPerPoint, block = null }: Props) {
     startTransition(async () => {
       const result: RedeemAdFreeResult = await redeemAdFree(shownAmount);
       if ('error' in result) {
+        // MypagePoints.redeem.errors.<RedeemAdFreeError>: MypagePoints.redeem.errors.invalid_amount, MypagePoints.redeem.errors.insufficient_balance, MypagePoints.redeem.errors.signInRequired, MypagePoints.redeem.errors.banned, MypagePoints.redeem.errors.rateLimited, MypagePoints.redeem.errors.danAdFree, MypagePoints.redeem.errors.subscriptionAdFree
         setError({ code: result.error, message: t(`redeem.errors.${result.error}`) });
         return;
       }

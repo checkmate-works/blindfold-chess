@@ -89,6 +89,7 @@ export function ChunkReferenceWarning({ references, changed }: Props) {
       <FiAlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0" aria-hidden />
       <div className="space-y-1">
         <p>
+          {/* chunks.preview.referenceWarning.fields.<ChangedIdentityField>: chunks.preview.referenceWarning.fields.title, chunks.preview.referenceWarning.fields.slug, chunks.preview.referenceWarning.fields.fen */}
           {t('body', { scope, fields: changed.map((f) => t(`fields.${f}`)).join(t('separator')) })}
         </p>
         <p className="text-xs opacity-90">{t('hint')}</p>

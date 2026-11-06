@@ -32,6 +32,7 @@ export function AiReplyDurationPicker({ value, onChange }: Props) {
   const { key, params } = aiReplyDurationLabel(value);
   // Full localized label for assistive tech (e.g. "Keep visible" / "5s"); the
   // visible readout stays compact (∞ / "5s") so it never crowds the slider.
+  // Preferences.game.aiReplyDurationModes.keep, Preferences.game.aiReplyDurationModes.seconds (aiReplyDurationLabel)
   const fullLabel = t(`game.${key}`, params);
   const readout =
     value === AI_REPLY_DURATION_KEEP

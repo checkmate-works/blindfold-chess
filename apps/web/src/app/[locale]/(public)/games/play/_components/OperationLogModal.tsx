@@ -143,6 +143,7 @@ export function OperationLogModal({
                     {t('operationLog.initialSettings.labelBoardVisibility')}
                   </dt>
                   <dd className="text-right">
+                    {/* Preferences.game.boardVisibilities.<BoardVisibility>: Preferences.game.boardVisibilities.always, Preferences.game.boardVisibilities.peek, Preferences.game.boardVisibilities.never (BOARD_VISIBILITY_VALUES) */}
                     {tPrefs(`boardVisibilities.${gamePreferences.boardVisibility}`)}
                   </dd>
                 </div>
@@ -179,6 +180,7 @@ export function OperationLogModal({
                     {t('operationLog.initialSettings.labelPieceShape')}
                   </dt>
                   <dd className="text-right">
+                    {/* Preferences.game.pieceShapes.<PieceShapeMode>: Preferences.game.pieceShapes.normal, Preferences.game.pieceShapes.circles-all, Preferences.game.pieceShapes.circles-own, Preferences.game.pieceShapes.circles-opponent (PIECE_SHAPE_MODES) */}
                     {tPrefs(`pieceShapes.${gamePreferences.pieceShapeMode}`)}
                   </dd>
                 </div>
@@ -187,6 +189,7 @@ export function OperationLogModal({
                     {t('operationLog.initialSettings.labelPieceColor')}
                   </dt>
                   <dd className="text-right">
+                    {/* Preferences.game.pieceColors.<PieceColorMode>: Preferences.game.pieceColors.normal, Preferences.game.pieceColors.white-only, Preferences.game.pieceColors.black-only (PIECE_COLOR_MODES) */}
                     {tPrefs(`pieceColors.${gamePreferences.pieceColors}`)}
                   </dd>
                 </div>
@@ -198,6 +201,7 @@ export function OperationLogModal({
                     {/* moveInputMode also entered PerGamePreferences late —
                         older snapshots default to em-dash for the same
                         recorded-vs-not reason. */}
+                    {/* Preferences.controls.moveInputModes.<MoveInputMode>: Preferences.controls.moveInputModes.text, Preferences.controls.moveInputModes.select, Preferences.controls.moveInputModes.button (MOVE_INPUT_MODES) */}
                     {gamePreferences.moveInputMode
                       ? tPrefsControls(`moveInputModes.${gamePreferences.moveInputMode}`)
                       : '—'}

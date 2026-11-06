@@ -91,6 +91,7 @@ export async function GlossaryTermList({ terms, locale }: Props) {
                     CATEGORY_COLORS[term.category] || CATEGORY_COLORS.general
                   }`}
                 >
+                  {/* glossary.categories.<GlossaryCategory>: glossary.categories.tactics, glossary.categories.strategy, glossary.categories.endgame, glossary.categories.opening, glossary.categories.structure, glossary.categories.general, glossary.categories.principle (CATEGORY_STYLES keys) */}
                   {t(`categories.${term.category}`)}
                 </Link>
               )}

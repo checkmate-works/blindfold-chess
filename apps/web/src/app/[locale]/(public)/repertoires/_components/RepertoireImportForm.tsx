@@ -250,6 +250,7 @@ export function RepertoireImportForm({
                 checked={side === value}
                 onChange={() => setSide(value)}
               />
+              {/* Repertoires.form.side_white, Repertoires.form.side_black */}
               {t(`form.side_${value}`)}
             </label>
           ))}
@@ -278,6 +279,7 @@ export function RepertoireImportForm({
                   disabled={locked}
                   onChange={() => changePhase(value)}
                 />
+                {/* Repertoires.form.phase_<RepertoirePhase>: Repertoires.form.phase_opening, Repertoires.form.phase_middlegame, Repertoires.form.phase_endgame (REPERTOIRE_PHASES) */}
                 {t(`form.phase_${value}`)}
                 {locked && (
                   <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
@@ -389,6 +391,7 @@ export function RepertoireImportForm({
                   className="mt-1"
                 />
                 <span>
+                  {/* Repertoires.visibility.<key> / <key>Help (VISIBILITY_I18N_KEY): Repertoires.visibility.public, Repertoires.visibility.publicHelp, Repertoires.visibility.followersOnly, Repertoires.visibility.followersOnlyHelp, Repertoires.visibility.private, Repertoires.visibility.privateHelp */}
                   <span className="font-medium">{t(`visibility.${key}`)}</span>
                   <span className="ml-2 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
                     {cost === 0 ? t('visibility.costFree') : t('visibility.costCoins', { cost })}
@@ -415,6 +418,7 @@ export function RepertoireImportForm({
         isOpen={lifecycle.confirmOpen}
         title={t('visibility.confirmTitle')}
         message={
+          // tier: Repertoires.visibility.public, Repertoires.visibility.followersOnly, Repertoires.visibility.private (VISIBILITY_I18N_KEY)
           spendableBalance >= visibilityCost
             ? t('visibility.confirmBody', {
                 tier: t(`visibility.${VISIBILITY_I18N_KEY[visibility]}`),

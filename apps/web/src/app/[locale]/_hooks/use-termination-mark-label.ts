@@ -23,6 +23,7 @@ export function useTerminationMarkLabel(): (mark: TerminationMark | null) => str
   const t = useTranslations('Common');
 
   return useCallback(
+    // Common.termination.<TerminationMarkKind>: Common.termination.checkmate, Common.termination.resignation
     (mark: TerminationMark | null) => (mark ? t(`termination.${mark.kind}`) : ''),
     [t]
   );

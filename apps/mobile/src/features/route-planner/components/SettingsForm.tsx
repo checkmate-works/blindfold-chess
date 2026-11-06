@@ -37,6 +37,7 @@ export function SettingsForm({
         pieces={ROUTE_PLANNER_PIECES}
         displayMap={PIECE_DISPLAY_MAP}
         selected={selectedPieces}
+        // routePlanner.pieces.<RoutePlannerPieceType>: routePlanner.pieces.n, routePlanner.pieces.b, routePlanner.pieces.r, routePlanner.pieces.q (ROUTE_PLANNER_PIECES)
         labelFor={(piece) => t(`routePlanner.pieces.${piece}`)}
         onToggle={onTogglePiece}
       />

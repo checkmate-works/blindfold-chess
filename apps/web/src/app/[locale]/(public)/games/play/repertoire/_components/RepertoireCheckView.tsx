@@ -86,6 +86,7 @@ export async function RepertoireCheckView({
           </Link>
           <StatusBadge
             status={verdict.status}
+            // play.repertoireCheck.status.inBook, play.repertoireCheck.status.deviation, play.repertoireCheck.status.gap (MATCH_STATUS_KEY)
             label={t(`repertoireCheck.status.${MATCH_STATUS_KEY[verdict.status]}`)}
           />
         </div>

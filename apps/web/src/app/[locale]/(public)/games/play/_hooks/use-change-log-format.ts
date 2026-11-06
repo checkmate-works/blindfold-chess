@@ -58,6 +58,7 @@ export function useChangeLogFormat() {
   // recorded") — render that as an em-dash instead of leaking the raw i18n key.
   const settingValue = (entry: PreferenceChangeLogEntry, which: 'from' | 'to'): string => {
     const value = entry[which];
+    // Preferences.game.boardVisibilities.always / .peek / .never (BOARD_VISIBILITY_VALUES); Preferences.game.pieceShapes.normal / .circles-all / .circles-own / .circles-opponent (PIECE_SHAPE_MODES); Preferences.game.pieceColors.normal / .white-only / .black-only (PIECE_COLOR_MODES); Preferences.game.pawnHideModes.none / .all / .own / .opponent (PAWN_HIDE_MODES); Preferences.controls.moveInputModes.text / .select / .button (MOVE_INPUT_MODES)
     switch (entry.key) {
       case 'boardVisibility':
         return tPrefs(`boardVisibilities.${value as PerGamePreferences['boardVisibility']}`);

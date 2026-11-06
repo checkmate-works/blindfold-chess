@@ -357,6 +357,7 @@ export function ChunkFormFields({
                     }}
                   />
                   <span>
+                    {/* chunks.form.feedbackTopics.options.<ChunkFeedbackTopic>: chunks.form.feedbackTopics.options.title, chunks.form.feedbackTopics.options.description (CHUNK_FEEDBACK_TOPICS) */}
                     {t(`feedbackTopics.options.${topic}` as 'feedbackTopics.options.title')}
                   </span>
                 </label>

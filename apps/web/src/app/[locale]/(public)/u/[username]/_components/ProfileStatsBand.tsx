@@ -58,6 +58,7 @@ export async function ProfileStatsBand({ username, locale, rankSlug, achievement
       {rankSlug && (
         <BeltRankBadge
           slug={rankSlug}
+          // ranks.rankNames.<RankSlug>: ranks.rankNames.mukyu, ranks.rankNames.5kyu, ranks.rankNames.4kyu, ranks.rankNames.3kyu, ranks.rankNames.2kyu, ranks.rankNames.1kyu, ranks.rankNames.1dan (ALL_RANK_SLUGS)
           label={tRanks(`rankNames.${rankSlug}` as 'rankNames.1dan')}
           locale={locale}
           meaning="held"

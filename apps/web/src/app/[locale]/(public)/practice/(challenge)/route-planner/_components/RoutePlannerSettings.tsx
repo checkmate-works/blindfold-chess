@@ -31,6 +31,7 @@ export function RoutePlannerSettings({ pieceSelection, onPieceSelect }: Props) {
                     ? 'bg-primary text-primary-foreground border-primary'
                     : 'bg-background hover:bg-muted border-border'
                 }`}
+                // practice.routePlanner.pieces.<RoutePlannerPieceType>: practice.routePlanner.pieces.n, practice.routePlanner.pieces.b (PIECES)
                 aria-label={t(`pieces.${option}`)}
                 title={t(`pieces.${option}`)}
               >
@@ -39,6 +40,7 @@ export function RoutePlannerSettings({ pieceSelection, onPieceSelect }: Props) {
             ))}
           </div>
           <div className="mt-2 text-xs text-muted-foreground animate-in fade-in duration-300">
+            {/* practice.routePlanner.pieces.n, practice.routePlanner.pieces.b (PIECES) */}
             {t(`pieces.${pieceSelection}`)}
           </div>
         </div>

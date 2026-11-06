@@ -121,6 +121,7 @@ export function EditRequestItem(props: Props) {
         labels={{
           deletedProposer: t('deletedProposer'),
           justNow: t('justNow'),
+          // chunks.editRequests.status.<EditRequestStatus>: chunks.editRequests.status.pending, chunks.editRequests.status.accepted, chunks.editRequests.status.rejected, chunks.editRequests.status.withdrawn (EDIT_REQUEST_STATUSES)
           status: t(`status.${props.status}` as 'status.pending'),
         }}
       />

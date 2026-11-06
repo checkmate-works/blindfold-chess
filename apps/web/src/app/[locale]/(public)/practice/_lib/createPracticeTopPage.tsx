@@ -46,6 +46,7 @@ export function createPracticeTopPage(config: PracticeTopPageConfig) {
     const t = await getTranslations({ locale });
     return {
       ...generateCanonicalMetadata({ locale, path: config.canonicalPath }),
+      // practice.<i18nKey>.title / .description, i18nKey from each module's page.tsx: practice.knightTour.title, practice.boardSymmetry.title, practice.coordinateQuiz.title, practice.diagonalQuiz.title, practice.quadrantAnchors.title, practice.legalMoves.title, practice.squareColors.title, practice.routePlanner.title and the same with .description
       title: resolveTitle(t(`practice.${config.i18nKey}.title`), locale),
       description: t(`practice.${config.i18nKey}.description`),
     };
@@ -60,6 +61,7 @@ export function createPracticeTopPage(config: PracticeTopPageConfig) {
 
     return (
       <PageLayout
+        // practice.<i18nKey>.title: practice.knightTour.title, practice.boardSymmetry.title, practice.coordinateQuiz.title, practice.diagonalQuiz.title, practice.quadrantAnchors.title, practice.legalMoves.title, practice.squareColors.title, practice.routePlanner.title
         title={t(`practice.${config.i18nKey}.title`)}
         titleAction={titleAction}
         locale={locale}

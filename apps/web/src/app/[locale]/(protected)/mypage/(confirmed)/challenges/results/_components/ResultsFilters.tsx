@@ -75,6 +75,7 @@ export function ResultsFilters({ locale, availableMenuTypes, currentMenu, curren
         <option value="">{tResults('allMenuTypes')}</option>
         {availableMenuTypes.map((type) => (
           <option key={type} value={type}>
+            {/* Mypage.menuTypes.<ChallengeMenuType>: Mypage.menuTypes.coordinate_quiz, Mypage.menuTypes.legal_moves, Mypage.menuTypes.square_colors, Mypage.menuTypes.diagonal_quiz, Mypage.menuTypes.board_symmetry, Mypage.menuTypes.route_planner (CHALLENGE_MENU_TYPES) */}
             {t(`menuTypes.${type}`)}
           </option>
         ))}
@@ -109,6 +110,7 @@ export function ResultsFilters({ locale, availableMenuTypes, currentMenu, curren
           <PieceSelector
             selected={currentPieceSelection}
             onSelect={handlePieceSelect}
+            // Mypage.filters.pieces.<PieceSelection>: Mypage.filters.pieces.k, Mypage.filters.pieces.q, Mypage.filters.pieces.r, Mypage.filters.pieces.b, Mypage.filters.pieces.n, Mypage.filters.pieces.random
             getLabel={(s) => t(`filters.pieces.${s}`)}
           />
         </div>

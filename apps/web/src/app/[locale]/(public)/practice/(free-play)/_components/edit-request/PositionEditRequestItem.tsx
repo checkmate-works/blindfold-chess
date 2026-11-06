@@ -91,6 +91,7 @@ export function PositionEditRequestItem(props: Props) {
         labels={{
           deletedProposer: t('deletedProposer'),
           justNow: t('justNow'),
+          // practice.positionEditRequests.status.<EditRequestStatus>: practice.positionEditRequests.status.pending, practice.positionEditRequests.status.accepted, practice.positionEditRequests.status.rejected, practice.positionEditRequests.status.withdrawn (EDIT_REQUEST_STATUSES)
           status: t(`status.${props.status}` as 'status.pending'),
         }}
       />

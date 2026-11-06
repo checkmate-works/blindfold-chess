@@ -42,6 +42,7 @@ export function SymmetryQuestion({
   return (
     <View style={styles.container}>
       <Text style={[styles.typeLabel, { color: colors.primary }]}>
+        {/* boardSymmetry.session.types.<SymmetryType>: boardSymmetry.session.types.horizontal, boardSymmetry.session.types.vertical, boardSymmetry.session.types.point (SYMMETRY_TYPES) */}
         {t(`boardSymmetry.session.types.${problem.type}`)}
       </Text>
 

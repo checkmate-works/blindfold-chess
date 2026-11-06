@@ -225,6 +225,7 @@ export function EditRepertoireForm({
                 checked={side === value}
                 onChange={() => setSide(value)}
               />
+              {/* Repertoires.form.side_white, Repertoires.form.side_black */}
               {tForm(`side_${value}`)}
             </label>
           ))}

@@ -224,6 +224,7 @@ export function ExpActivityHeatmap({ data, legendLess, legendMore }: Props) {
                 .sort(([, a], [, b]) => b - a)
                 .map(([moduleKey, exp]) => (
                   <li key={moduleKey} className="flex justify-between text-muted-foreground">
+                    {/* Mypage.menuTypes.<exp_events.menuType | 'unknown'>: Mypage.menuTypes.coordinate_quiz, Mypage.menuTypes.legal_moves, Mypage.menuTypes.square_colors, … (PRACTICE_MENU_TYPES slugSnake), Mypage.menuTypes.unknown */}
                     <span>{t(`menuTypes.${moduleKey}` as Parameters<typeof t>[0])}</span>
                     <span>{exp} Exp</span>
                   </li>

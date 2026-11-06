@@ -41,6 +41,7 @@ export function SettingsForm({
         pieces={PIECE_TYPES}
         displayMap={pieceDisplayMap}
         selected={selectedPieces}
+        // legalMoves.pieces.<PieceType>: legalMoves.pieces.b, legalMoves.pieces.n, legalMoves.pieces.r, legalMoves.pieces.q, legalMoves.pieces.k (PIECE_TYPES)
         labelFor={(piece) => t(`legalMoves.pieces.${piece}`)}
         onToggle={onTogglePiece}
       />

@@ -30,6 +30,7 @@ export function buildPracticeHelpTour(
   slug: string,
   stepNames: string[]
 ) {
+  // practice.<i18nKey>.help.<step>.title / .description and practice.<i18nKey>.help.label, i18nKey and stepNames from each module's page.tsx: practice.coordinateQuiz.help.feedbackSpeed.title, practice.coordinateQuiz.help.challenge.description, practice.legalMoves.help.training.title, practice.squareColors.help.challenge.title, practice.boardSymmetry.help.tutorial.title, practice.diagonalQuiz.help.tutorial.description, practice.routePlanner.help.label, … (i18nKey: coordinateQuiz, legalMoves, squareColors, boardSymmetry, diagonalQuiz, routePlanner; step: feedbackSpeed, tutorial, challenge, training)
   const steps: HelpStep[] = stepNames.map((name) => ({
     targetId: `${slug}-${toKebab(name)}`,
     title: t(`practice.${i18nKey}.help.${name}.title`),
@@ -60,6 +61,7 @@ export function buildPracticeIntroHelpTour(
   slug: string,
   locale: Locale
 ) {
+  // practice.<i18nKey>.help.overview.title / .description, practice.<i18nKey>.viewTutorial, practice.<i18nKey>.help.label, i18nKey from the free-play page.tsx callers: practice.fen.help.overview.title, practice.fen.help.overview.description, practice.fen.viewTutorial, practice.fen.help.label, practice.knightTour.help.overview.title, practice.knightTour.help.overview.description, practice.knightTour.viewTutorial, practice.knightTour.help.label
   const tutorialHref = `/${locale}/practice/${slug}/tutorial`;
   const description =
     `${nl2br(t(`practice.${i18nKey}.help.overview.description`))}` +

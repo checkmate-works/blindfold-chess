@@ -72,6 +72,7 @@ export function createTimeLimitSettingsForm(i18nNamespace: string) {
     const { t } = useTranslation();
 
     return (
+      // `${i18nNamespace}.settings.timeLimit` / `.seconds`: squareColors.settings.timeLimit, boardSymmetry.settings.timeLimit, diagonalQuiz.settings.timeLimit, squareColors.settings.seconds, boardSymmetry.settings.seconds, diagonalQuiz.settings.seconds
       <TimeLimitSettingsForm
         timeLimit={timeLimit}
         onUpdateTimeLimit={onUpdateTimeLimit}

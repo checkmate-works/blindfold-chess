@@ -56,6 +56,7 @@ export function InterviewQuestionGrid({ locale }: Props) {
         <InterviewQuestionCard
           key={key}
           questionKey={key}
+          // interview.questions.<InterviewQuestionKey>.label / .description: interview.questions.favorite_opening.label, interview.questions.favorite_opening.description (INTERVIEW_QUESTION_KEYS)
           label={t(`questions.${key}.label` as never)}
           description={t(`questions.${key}.description` as never)}
           isAuthenticated={!!user}

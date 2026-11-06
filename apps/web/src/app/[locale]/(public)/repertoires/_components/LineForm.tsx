@@ -187,6 +187,7 @@ export function LineForm({
           field: known
             ? repertoireErrorField(result.error, chapters.length > 0 ? FIELDS_WITH_CHAPTER : FIELDS)
             : null,
+          // Repertoires.line.edit.errors.<error> (KNOWN_LINE_FORM_ERRORS): Repertoires.line.edit.errors.unauthorized, Repertoires.line.edit.errors.notFound, Repertoires.line.edit.errors.invalidChapter, Repertoires.line.edit.errors.nameTooLong, Repertoires.line.edit.errors.pgnRequired, Repertoires.line.edit.errors.pgnTooLarge, Repertoires.line.edit.errors.invalidPgn, Repertoires.line.edit.errors.noMoves
           message: known ? t(`errors.${result.error}`) : t('errors.generic'),
         };
       }

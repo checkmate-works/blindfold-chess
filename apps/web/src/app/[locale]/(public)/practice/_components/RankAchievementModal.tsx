@@ -72,6 +72,7 @@ export function RankAchievementModal({ locale }: Props) {
             achieved IS the description, so no separate "you earned a new
             rank" line is needed. */}
         <p id={descId} className="mt-3 text-2xl font-bold text-foreground">
+          {/* rankAchievement.rankNames.<RankSlug>: rankAchievement.rankNames.mukyu, rankAchievement.rankNames.5kyu, rankAchievement.rankNames.4kyu, rankAchievement.rankNames.3kyu, rankAchievement.rankNames.2kyu, rankAchievement.rankNames.1kyu, rankAchievement.rankNames.1dan (ALL_RANK_SLUGS) */}
           {t(`rankNames.${rank.slug}`)}
         </p>
 

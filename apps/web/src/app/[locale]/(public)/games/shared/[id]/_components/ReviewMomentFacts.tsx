@@ -37,6 +37,7 @@ export function ReviewMomentFacts({ moment }: { moment: ReviewMoment }) {
           / tooltip. */}
       <MoveJudgmentBadge
         judgment={moment.judgment}
+        // sharedGames.aiReview.judgments.<MoveJudgment>: sharedGames.aiReview.judgments.best, sharedGames.aiReview.judgments.good, sharedGames.aiReview.judgments.inaccuracy, sharedGames.aiReview.judgments.mistake, sharedGames.aiReview.judgments.blunder (MOVE_JUDGMENTS)
         label={t(`aiReview.judgments.${moment.judgment}`)}
       />
       <span className="font-mono text-xs text-muted-foreground">

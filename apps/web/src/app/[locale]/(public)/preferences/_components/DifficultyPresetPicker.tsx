@@ -39,6 +39,7 @@ export function DifficultyPresetPicker({ value, onSelect }: Props) {
           checked={value === level}
           onChange={() => onSelect(level)}
           label={t('game.difficulty.level', { level })}
+          // Preferences.game.difficulty.levels.level1, Preferences.game.difficulty.levels.level2, Preferences.game.difficulty.levels.level3, Preferences.game.difficulty.levels.level4, Preferences.game.difficulty.levels.level5 (DIFFICULTY_LEVELS)
           description={t(`game.difficulty.levels.level${level}`)}
           descriptionPosition="bottom"
         />

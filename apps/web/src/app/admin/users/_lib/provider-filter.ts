@@ -14,6 +14,7 @@ export type ProviderNames = Record<(typeof SIGNUP_METHOD_ORDER)[number], string>
 /** Signup method → display label, for filters, badges and the chart axis. */
 export function buildProviderNames(t: ServerTranslator): ProviderNames {
   return Object.fromEntries(
+    // Admin.usersTable.providerGoogle, Admin.usersTable.providerEmail, Admin.usersTable.providerUnknown (SIGNUP_METHOD_I18N_KEY)
     SIGNUP_METHOD_ORDER.map((method) => [method, t(`usersTable.${SIGNUP_METHOD_I18N_KEY[method]}`)])
   ) as ProviderNames;
 }

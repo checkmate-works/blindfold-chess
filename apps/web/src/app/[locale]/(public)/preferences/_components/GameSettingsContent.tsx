@@ -184,6 +184,7 @@ export function GameSettingsContent({
                           className="h-4 w-4 text-primary focus:ring-primary border-border"
                         />
                         <PieceGlyphs colors={sideSamples[mode]} />
+                        {/* Preferences.game.pieceVisibilityModes.<PieceVisibilityMode>: Preferences.game.pieceVisibilityModes.all, Preferences.game.pieceVisibilityModes.own, Preferences.game.pieceVisibilityModes.opponent (PIECE_VISIBILITY_MODES) */}
                         <span>{t(`game.pieceVisibilityModes.${mode}`)}</span>
                       </label>
                     ))}
@@ -232,6 +233,7 @@ export function GameSettingsContent({
                             className="h-4 w-4 text-primary focus:ring-primary border-border"
                           />
                           <PieceGlyphs colors={sideSamples[side]} disc />
+                          {/* Preferences.game.pieceVisibilityModes.<StoneSideMode>: Preferences.game.pieceVisibilityModes.all, Preferences.game.pieceVisibilityModes.own, Preferences.game.pieceVisibilityModes.opponent (STONE_SIDE_MODES) */}
                           <span>{t(`game.pieceVisibilityModes.${side}`)}</span>
                         </label>
                       ))}
@@ -262,6 +264,7 @@ export function GameSettingsContent({
                           className="h-4 w-4 text-primary focus:ring-primary border-border"
                         />
                         <PieceGlyphs colors={PIECE_COLOR_SAMPLES[colors]} />
+                        {/* Preferences.game.pieceColorModes.<PieceColorMode>: Preferences.game.pieceColorModes.normal, Preferences.game.pieceColorModes.white-only, Preferences.game.pieceColorModes.black-only (PIECE_COLOR_MODES) */}
                         <span>{t(`game.pieceColorModes.${colors}`)}</span>
                       </label>
                     ))}
@@ -306,6 +309,7 @@ export function GameSettingsContent({
                             className="h-4 w-4 text-primary focus:ring-primary border-border"
                           />
                           <PieceGlyphs colors={sideSamples[side]} />
+                          {/* Preferences.game.pieceVisibilityModes.<PawnHideSideMode>: Preferences.game.pieceVisibilityModes.all, Preferences.game.pieceVisibilityModes.own, Preferences.game.pieceVisibilityModes.opponent (PAWN_HIDE_SIDE_MODES) */}
                           <span>{t(`game.pieceVisibilityModes.${side}`)}</span>
                         </label>
                       ))}

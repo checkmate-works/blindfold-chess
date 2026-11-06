@@ -336,6 +336,7 @@ export function GameReview({
     [evaluationMarkAt, quickPeek.nav.currentPosition]
   );
   /** The grade's localized name, for the badge's accessible name / tooltip. */
+  // sharedGames.aiReview.judgments.<MoveJudgment>: sharedGames.aiReview.judgments.best, sharedGames.aiReview.judgments.good, sharedGames.aiReview.judgments.inaccuracy, sharedGames.aiReview.judgments.mistake, sharedGames.aiReview.judgments.blunder (MOVE_JUDGMENTS)
   const judgmentLabel = (mark: EvaluationMark | null) =>
     mark ? t(`aiReview.judgments.${mark.judgment}`) : undefined;
 

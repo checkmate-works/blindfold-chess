@@ -46,6 +46,7 @@ export function NotificationItem({ notification, currentUsername, isTypeMuted = 
   const actor = notification.actor;
   const actorName = resolveAuthorName(actor, { fallback: '' });
   const isMutable = isMutableNotificationType(notification.type);
+  // Preferences.notifications.types.<MutableNotificationType>: Preferences.notifications.types.new_position, Preferences.notifications.types.new_chunk_draft, Preferences.notifications.types.chunk_published, Preferences.notifications.types.new_game, Preferences.notifications.types.new_comment_on_topic, Preferences.notifications.types.game_chunk_linked, Preferences.notifications.types.repertoire_chunk_linked (MUTABLE_NOTIFICATION_TYPES)
   const typeLabel = isMutable ? tRoot(`Preferences.notifications.types.${notification.type}`) : '';
 
   function handleClick() {

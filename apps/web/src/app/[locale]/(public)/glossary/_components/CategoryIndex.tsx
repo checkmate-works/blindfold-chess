@@ -25,6 +25,7 @@ export async function CategoryIndex({ currentCategory, locale }: Props) {
             href={`/${locale}/glossary/category/${category}`}
             active={currentCategory === category}
             icon={<span className="text-2xl leading-none">{icon}</span>}
+            // glossary.categories.<GlossaryCategory>: glossary.categories.tactics, glossary.categories.strategy, glossary.categories.endgame, glossary.categories.opening, glossary.categories.structure, glossary.categories.general, glossary.categories.principle (CATEGORY_STYLES keys)
             title={t(`categories.${category}`)}
             subtitle={
               <p className="text-sm text-muted-foreground">

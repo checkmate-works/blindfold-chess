@@ -38,6 +38,7 @@ function createPracticeSessionMetadata(config: MetadataConfig) {
 
     return {
       ...generateCanonicalMetadata({ locale, path: config.canonicalPath }),
+      // practice.<i18nKey>.title / .description (i18nKey from each module's page config: boardSymmetry, coordinateQuiz, diagonalQuiz, legalMoves, quadrantAnchors, routePlanner, squareColors): practice.coordinateQuiz.title, practice.coordinateQuiz.description, practice.legalMoves.title, …; practice.<modeLabelKey>: practice.modeTimed, practice.modeTraining
       title: resolveTitle(
         `${t(`practice.${config.i18nKey}.title`)} - ${t(`practice.${config.modeLabelKey}`)}`,
         locale
@@ -64,6 +65,7 @@ type BreadcrumbSegment = {
 function resolveBreadcrumbs(segments: BreadcrumbSegment[], t: ServerTranslator) {
   return segments.map((seg) => {
     const ns = seg.namespace ?? 'practice';
+    // navigation.practice; practice.<labelKey> from breadcrumbSegments: practice.modeTimed, practice.modeTraining, practice.<i18nKey>.title (practice.coordinateQuiz.title, practice.fen.title, …), practice.<i18nKey>.session (practice.boardSymmetry.session, …), practice.<i18nKey>.tutorial.title (practice.routePlanner.tutorial.title, …)
     const label =
       ns === 'navigation' ? t(`navigation.${seg.labelKey}`) : t(`practice.${seg.labelKey}`);
     return seg.href ? { label, href: seg.href } : { label };
@@ -102,6 +104,7 @@ async function renderSessionPage(props: LocaleSearchPageProps, config: SessionPa
   return (
     <PracticeSessionPage
       locale={locale}
+      // practice.<i18nKey>.title: practice.coordinateQuiz.title, practice.legalMoves.title, practice.squareColors.title, practice.diagonalQuiz.title, practice.boardSymmetry.title, practice.routePlanner.title, practice.quadrantAnchors.title
       title={t(`practice.${config.i18nKey}.title`)}
       breadcrumbItems={breadcrumbItems}
       {...(config.showDivider !== undefined ? { showDivider: config.showDivider } : {})}
@@ -225,6 +228,7 @@ export function createPracticeChallengeSessionPage(config: ChallengeSessionPageC
 
     return {
       ...generateCanonicalMetadata({ locale, path: config.canonicalPath }),
+      // practice.<i18nKey>.title / .description / .<sessionLabelKey> (sessionLabelKey is 'session' in every config): practice.boardSymmetry.title, practice.boardSymmetry.description, practice.boardSymmetry.session, practice.coordinateQuiz.session, practice.legalMoves.session, practice.routePlanner.session, practice.squareColors.session, practice.diagonalQuiz.session, practice.quadrantAnchors.session
       title: resolveTitle(
         `${t(`practice.${config.i18nKey}.title`)} - ${t(`practice.${config.i18nKey}.${config.sessionLabelKey}`)}`,
         locale
@@ -273,6 +277,7 @@ export function createPracticeTutorialPage(config: TutorialPageConfig) {
     setRequestLocale(locale);
     const t = await getTranslations({ locale });
 
+    // practice.<i18nKey>.title, practice.<i18nKey>.tutorial.title, practice.<i18nKey>.<descriptionKey> (default 'description'); i18nKey from the tutorial page configs: practice.boardSymmetry.tutorial.title, practice.diagonalQuiz.tutorial.title, practice.routePlanner.tutorial.title, practice.fen.tutorial.title, practice.knightTour.tutorial.title, practice.positionMemory.tutorial.title, practice.fen.description, …
     const title = `${t(`practice.${config.i18nKey}.title`)} - ${t(`practice.${config.i18nKey}.tutorial.title`)}`;
     const description = t(`practice.${config.i18nKey}.${descriptionKey}`);
 
@@ -298,6 +303,7 @@ export function createPracticeTutorialPage(config: TutorialPageConfig) {
 
     const sectionTitle = config.renderSectionTitle ? config.renderSectionTitle(t) : null;
 
+    // practice.<i18nKey>.title and practice.<i18nKey>.tutorial.title, same set as the metadata above (practice.boardSymmetry.title, practice.boardSymmetry.tutorial.title, practice.fen.tutorial.title, …)
     if (usePagePanel) {
       return (
         <PageLayout

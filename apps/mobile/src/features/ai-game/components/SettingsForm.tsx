@@ -68,6 +68,7 @@ export function SettingsForm({
                   },
                 ]}
               >
+                {/* aiGame.setup.<Side>: aiGame.setup.white, aiGame.setup.black */}
                 {t(`aiGame.setup.${color}`)}
               </Text>
             </TouchableOpacity>

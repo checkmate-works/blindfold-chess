@@ -97,6 +97,7 @@ export function SteppedTutorial<TStep extends string>({
         ))}
       </div>
 
+      {/* <namespace>.steps.<step>.title / .description: practice.boardSymmetry.tutorial.steps.intro / .horizontal / .vertical / .point / .start, practice.diagonalQuiz.tutorial.steps.diagonal / .antiDiagonal / .trial, practice.routePlanner.tutorial.steps.intro / .visualization / .start (each tutorial's STEPS), e.g. practice.boardSymmetry.tutorial.steps.intro.title, practice.diagonalQuiz.tutorial.steps.trial.description */}
       <h3 className="text-xl font-bold text-center mb-4">{t(`steps.${step}.title`)}</h3>
       <p className={`text-muted-foreground mb-6 min-h-[4.5rem] ${descriptionClassName}`}>
         {t(`steps.${step}.description`)}

@@ -60,8 +60,10 @@ export const ChallengeRankUpdateCard = memo(function ChallengeRankUpdateCard({
   const displayName = resolveAuthorName(data.actor, { fallback: data.actor.username });
   const moduleSlug = moduleToSlug(data.menuType as LeaderboardModule);
   const href = `/leaderboard/score/all-time/${moduleSlug}/${data.leaderboardKey}`;
+  // leaderboard.module.<ChallengeMenuType>: leaderboard.module.coordinate_quiz, leaderboard.module.legal_moves, leaderboard.module.square_colors, leaderboard.module.diagonal_quiz, leaderboard.module.board_symmetry, leaderboard.module.route_planner (CHALLENGE_MENU_TYPES)
   const moduleName = tLeaderboard(`module.${data.menuType}` as Parameters<typeof tLeaderboard>[0]);
 
+  // leaderboard.setting.<ChallengeMenuType>.<leaderboardKey> (LEADERBOARD_KEYS): leaderboard.setting.coordinate_quiz.white / .black / .random, leaderboard.setting.legal_moves.king / .queen / .rook / .bishop / .knight / .random, leaderboard.setting.route_planner.knight / .bishop, leaderboard.setting.square_colors.default, leaderboard.setting.board_symmetry.default
   const label =
     data.leaderboardKey === 'default'
       ? moduleName

@@ -81,6 +81,7 @@ export function BoardSymmetryQuestionPanel({
     <>
       <SectionTitle className="mb-4">
         {t('question', {
+          // practice.boardSymmetry.types.<SymmetryType>: practice.boardSymmetry.types.horizontal, practice.boardSymmetry.types.vertical, practice.boardSymmetry.types.point (SYMMETRY_TYPES)
           type: t(`types.${problem.type}`),
           square: problem.square,
         })}
