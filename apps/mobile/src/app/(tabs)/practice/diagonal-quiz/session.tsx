@@ -16,6 +16,7 @@ import {
 import type { ActiveField } from "../../../../features/diagonal-quiz/hooks";
 import { spacing } from "../../../../theme";
 import type { DiagonalQuizResult } from "@blindfold-chess/features/diagonal-quiz";
+import { DEFAULT_DIAGONAL_QUIZ_SETTINGS } from "../../../../features/diagonal-quiz/lib/types";
 import { parseIntParam } from "../../../../lib/route-params";
 import { serializePracticeStatsParams } from "../../../../lib/practice-result-params";
 
@@ -25,7 +26,10 @@ export default function DiagonalQuizSession() {
     timeLimit: string;
   }>();
 
-  const duration = parseIntParam(params.timeLimit, { min: 1, fallback: 60 });
+  const duration = parseIntParam(params.timeLimit, {
+    min: 1,
+    fallback: DEFAULT_DIAGONAL_QUIZ_SETTINGS.timeLimit,
+  });
 
   const handleComplete = useCallback(
     (result: DiagonalQuizResult) => {

@@ -14,6 +14,7 @@ import {
   SquareQuestion,
   ColorButtons,
 } from "../../../../features/square-colors/components";
+import { DEFAULT_SQUARE_COLORS_SETTINGS } from "../../../../features/square-colors/lib/types";
 import { parseIntParam } from "../../../../lib/route-params";
 import { serializePracticeStatsParams } from "../../../../lib/practice-result-params";
 
@@ -23,7 +24,10 @@ export default function SquareColorsSession() {
     timeLimit: string;
   }>();
 
-  const duration = parseIntParam(params.timeLimit, { min: 1, fallback: 60 });
+  const duration = parseIntParam(params.timeLimit, {
+    min: 1,
+    fallback: DEFAULT_SQUARE_COLORS_SETTINGS.timeLimit,
+  });
 
   const handleComplete = useCallback(
     (result: SquareColorsResult) => {

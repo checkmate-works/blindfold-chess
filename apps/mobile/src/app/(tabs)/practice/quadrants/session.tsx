@@ -16,9 +16,9 @@ import {
   QuadrantQuestion,
 } from "../../../../features/quadrants/components";
 import {
-  QUADRANTS_MISTAKE_LIMIT,
-  QUADRANTS_TIME_LIMIT,
-} from "../../../../features/quadrants/lib/constants";
+  MISTAKE_LIMIT,
+  CHALLENGE_TIME_LIMIT,
+} from "@blindfold-chess/features/practice-registry";
 import { serializePracticeStatsParams } from "../../../../lib/practice-result-params";
 
 export default function QuadrantsSession() {
@@ -59,8 +59,8 @@ export default function QuadrantsSession() {
     handleAnswer,
   } = useQuadrantsSession({
     orientation,
-    timeLimit: QUADRANTS_TIME_LIMIT,
-    mistakeAllowance: QUADRANTS_MISTAKE_LIMIT,
+    timeLimit: CHALLENGE_TIME_LIMIT,
+    mistakeAllowance: MISTAKE_LIMIT,
     onComplete: handleComplete,
     onAnswerEffect: handleAnswerEffect,
   });
@@ -69,7 +69,7 @@ export default function QuadrantsSession() {
     <PracticeSessionScreen
       countdown={countdown}
       timeRemaining={timeRemaining}
-      progress={timeRemaining / QUADRANTS_TIME_LIMIT}
+      progress={timeRemaining / CHALLENGE_TIME_LIMIT}
       correctCount={correctCount}
       incorrectCount={incorrectCount}
     >
@@ -79,8 +79,8 @@ export default function QuadrantsSession() {
             <QuadrantQuestion
               question={currentQuestion}
               isCorrect={showFeedback ? lastAnswerCorrect : null}
-              remainingLives={QUADRANTS_MISTAKE_LIMIT - incorrectCount}
-              maxLives={QUADRANTS_MISTAKE_LIMIT}
+              remainingLives={MISTAKE_LIMIT - incorrectCount}
+              maxLives={MISTAKE_LIMIT}
             />
           </View>
 
