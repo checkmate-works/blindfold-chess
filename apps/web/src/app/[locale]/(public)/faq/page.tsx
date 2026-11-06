@@ -162,6 +162,7 @@ export default async function FAQPage({ params }: Props) {
             <tbody>
               {WEIGHT_DISPLAY_ORDER.map((key) => (
                 <tr key={key} className="border-b border-border">
+                  {/* faq.items.expSystem.modules.<WEIGHT_DISPLAY_ORDER[number]>: faq.items.expSystem.modules.coordinate_quiz, faq.items.expSystem.modules.square_colors, faq.items.expSystem.modules.legal_moves, faq.items.expSystem.modules.board_symmetry, faq.items.expSystem.modules.position_memory, faq.items.expSystem.modules.diagonal_quiz, faq.items.expSystem.modules.route_planner (WEIGHT_DISPLAY_ORDER) */}
                   <td className="py-1.5 px-2">{t(`items.expSystem.modules.${key}`)}</td>
                   <td className="py-1.5 px-2">{getModuleWeight(key).toString()}</td>
                 </tr>

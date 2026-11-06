@@ -62,6 +62,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return {};
   }
 
+  // learn.categories.<ArticleCategory>: learn.categories.notation, learn.categories.coordinates, learn.categories.moves, learn.categories.memory, learn.categories.practice (ARTICLE_CATEGORIES; the validCategories guard above rejects anything else)
   const categoryLabel = t(`learn.categories.${category}`);
 
   const title = t('learn.categoryTitle', { category: categoryLabel });
@@ -88,6 +89,7 @@ async function LearnCategoryContent({ params }: Props) {
     getNativeAdCreatives(LEARN_NATIVE_AD_SLOT, locale),
   ]);
 
+  // learn.categories.<ArticleCategory>: learn.categories.notation, learn.categories.coordinates, learn.categories.moves, learn.categories.memory, learn.categories.practice (ARTICLE_CATEGORIES; the validCategories guard above rejects anything else)
   const categoryLabel = t(`learn.categories.${category}`);
 
   return (

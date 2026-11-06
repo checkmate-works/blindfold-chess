@@ -155,6 +155,7 @@ export default async function CoinsPage({ params, searchParams }: Props) {
                           {dateFmt(row.createdAt)}
                         </td>
                         <td className="px-4 py-3">
+                          {/* MypagePoints.history.kind.<PointHistoryEntry["kind"]>: MypagePoints.history.kind.post_grant, MypagePoints.history.kind.post_clawback, MypagePoints.history.kind.redemption, MypagePoints.history.kind.purchase, MypagePoints.history.kind.admin_grant, MypagePoints.history.kind.maia_game, MypagePoints.history.kind.like_grant, MypagePoints.history.kind.ai_review, MypagePoints.history.kind.ai_review_refund, MypagePoints.history.kind.other (classifyKind in @/lib/points/get-history) */}
                           {row.href ? (
                             <Link
                               href={row.href}

@@ -53,6 +53,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!underscoreModule) return {};
 
   const t = await getTranslations({ locale, namespace: 'leaderboard' });
+  // leaderboard.moduleFilter.<LeaderboardModule>: leaderboard.moduleFilter.coordinate_quiz, leaderboard.moduleFilter.legal_moves, leaderboard.moduleFilter.square_colors, leaderboard.moduleFilter.diagonal_quiz, leaderboard.moduleFilter.board_symmetry, leaderboard.moduleFilter.route_planner (slugToModule over CHALLENGE_MENU_TYPES; never leaderboard.moduleFilter.all here)
   const moduleName = t(`moduleFilter.${underscoreModule}`);
   const leaderboardTitle = t('title');
 
@@ -96,6 +97,7 @@ export default async function ScoreLeaderboardModuleHubPage({ params }: Props) {
         periodHrefSuffix={`/${moduleSlug}`}
         breadcrumbItems={[
           { label: t('title'), href: `/leaderboard/score/${period}` },
+          // leaderboard.moduleFilter.<LeaderboardModule>: leaderboard.moduleFilter.coordinate_quiz, leaderboard.moduleFilter.legal_moves, leaderboard.moduleFilter.square_colors, leaderboard.moduleFilter.diagonal_quiz, leaderboard.moduleFilter.board_symmetry, leaderboard.moduleFilter.route_planner (slugToModule over CHALLENGE_MENU_TYPES; never leaderboard.moduleFilter.all here)
           { label: t(`moduleFilter.${underscoreModule}`) },
         ]}
       />

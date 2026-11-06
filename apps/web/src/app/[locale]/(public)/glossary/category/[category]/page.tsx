@@ -76,6 +76,7 @@ export default async function GlossaryCategoryPage({ params }: Props) {
     <div className="space-y-8">
       <PageTitle className="flex justify-center items-center gap-3">
         <span className="text-4xl text-muted-foreground">{categoryStyle.icon}</span>
+        {/* glossary.categories.<GlossaryCategory>: glossary.categories.tactics, glossary.categories.strategy, glossary.categories.endgame, glossary.categories.opening, glossary.categories.structure, glossary.categories.general, glossary.categories.principle (VALID_CATEGORIES = CATEGORY_STYLES keys; checked above) */}
         <span>{t(`categories.${category}`)}</span>
       </PageTitle>
 
@@ -97,6 +98,7 @@ export default async function GlossaryCategoryPage({ params }: Props) {
           <Breadcrumb
             items={[
               { label: t('title'), href: '/glossary' },
+              // glossary.categories.<GlossaryCategory>: glossary.categories.tactics, glossary.categories.strategy, glossary.categories.endgame, glossary.categories.opening, glossary.categories.structure, glossary.categories.general, glossary.categories.principle (VALID_CATEGORIES = CATEGORY_STYLES keys; checked above)
               { label: t(`categories.${category}`) },
             ]}
             locale={locale}

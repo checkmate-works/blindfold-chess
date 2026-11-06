@@ -168,6 +168,7 @@ export default async function BenefitHistoryPage({ params, searchParams }: Props
                 </thead>
                 <tbody className="divide-y divide-border">
                   {rows.map((row) => {
+                    // MypageBenefits.grantTypeLabel.<GrantSourceMeta["labelKey"]>: MypageBenefits.grantTypeLabel.admin_manual, MypageBenefits.grantTypeLabel.topic_post, MypageBenefits.grantTypeLabel.position_creation (resolveGrantSourceMeta)
                     const sourceLabel = tBenefits(`grantTypeLabel.${row.sourceLabelKey}`);
                     return (
                       <tr key={row.id}>

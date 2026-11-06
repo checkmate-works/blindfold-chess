@@ -246,6 +246,7 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
           viewerState={calloutViewerState}
           requestedTopics={requestedFeedbackTopics.map((topic) => ({
             topic,
+            // chunks.editRequests.callout.topicLabels.<ChunkFeedbackTopic>: chunks.editRequests.callout.topicLabels.title, chunks.editRequests.callout.topicLabels.description (CHUNK_FEEDBACK_TOPICS)
             label: tEditRequests(`callout.topicLabels.${topic}` as 'callout.topicLabels.title'),
           }))}
           topicLeadIn={tEditRequests('callout.topicLeadIn')}

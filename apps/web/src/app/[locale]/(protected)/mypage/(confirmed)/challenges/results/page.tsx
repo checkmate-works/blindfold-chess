@@ -124,6 +124,7 @@ export default async function ChallengeResultsPage({ params, searchParams }: Pro
                     {formatDate(item.createdAt, locale)}
                   </td>
                   <td className="py-2 px-2 sm:px-3 text-foreground">
+                    {/* Mypage.menuTypes.<ChallengeMenuType>: Mypage.menuTypes.coordinate_quiz, Mypage.menuTypes.legal_moves, Mypage.menuTypes.square_colors, Mypage.menuTypes.diagonal_quiz, Mypage.menuTypes.board_symmetry, Mypage.menuTypes.route_planner (CHALLENGE_MENU_TYPES; challenge_results.menu_type is only written with these) */}
                     {tMypage(`menuTypes.${item.menuType}`)}
                   </td>
                   <td className="py-2 px-2 sm:px-3 text-right text-foreground">{item.score}</td>

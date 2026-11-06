@@ -54,6 +54,7 @@ async function LearnContent({ params }: Props) {
 
   const categoryInfos = availableCategories.map((cat) => ({
     category: cat,
+    // learn.categories.<ArticleCategory>: learn.categories.notation, learn.categories.coordinates, learn.categories.moves, learn.categories.memory, learn.categories.practice (ARTICLE_CATEGORIES via getAvailableCategories)
     label: t(`learn.categories.${cat}`),
     count: categoryCounts[cat],
     countLabel: t('learn.articleCount', { count: categoryCounts[cat] }),
