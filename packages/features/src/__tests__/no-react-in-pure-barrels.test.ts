@@ -18,6 +18,7 @@ const PURE_BARRELS = [
   "diagonal-quiz/index.ts",
   "knight-tour/index.ts",
   "legal-moves/index.ts",
+  "quadrants/index.ts",
   "route-planner/index.ts",
   "square-colors/index.ts",
   "ai-game/index.ts",

@@ -35,6 +35,7 @@
     "./locale": "./src/locale/index.ts",
     "./practice-session": "./src/practice-session/index.ts",
     "./quadrants": "./src/quadrants/index.ts",
+    "./quadrants/client": "./src/quadrants/client.ts",
     "./route-planner": "./src/route-planner/index.ts",
     "./route-planner/client": "./src/route-planner/client.ts",
     "./square-colors": "./src/square-colors/index.ts",

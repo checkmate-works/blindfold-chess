@@ -310,10 +310,27 @@
   },
   "quadrants": {
     "setup": {
-      "title": "Anclas de Cuadrante Configuración"
+      "title": "Anclas de Cuadrante Configuración",
+      "startQuiz": "Empezar práctica",
+      "orientation": "Orientación del tablero",
+      "orientationWhite": "Blancas",
+      "orientationBlack": "Negras",
+      "orientationRandom": "Aleatorio",
+      "rulesTitle": "Reglas del Desafío",
+      "timeLimitRule": "Responde tantas preguntas como puedas en {{seconds}} segundos.",
+      "mistakeLimitRule": "El juego termina después de {{count}} respuestas incorrectas."
+    },
+    "session": {
+      "question": "¿En qué cuadrante está {{square}}?",
+      "correct": "¡Correcto!",
+      "incorrect": "Incorrecto",
+      "whiteToMove": "Mueven las blancas",
+      "blackToMove": "Mueven las negras"
     },
     "result": {
-      "title": "¡Práctica completada!"
+      "title": "¡Práctica completada!",
+      "playAgain": "Jugar de nuevo",
+      "backToMenu": "Volver al menú"
     }
   },
   "knightTour": {
