@@ -13,35 +13,28 @@ This project is a pnpm + Turborepo monorepo.
 
 ### Packages
 
-| Package                            | Path                     | Description                                                                                                                |
-| ---------------------------------- | ------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
-| **@blindfold-chess/types**         | `packages/types`         | Shared TypeScript type definitions (chess pieces, board, etc.)                                                             |
-| **@blindfold-chess/features**      | `packages/features`      | Platform-independent game logic and algorithms (coordinate quiz, diagonal quiz, legal moves, route planner, AI game, etc.) |
-| **@blindfold-chess/ui**            | `packages/ui`            | Shared UI theme — color definitions for light/dark mode, CSS generation via `generateThemeCSS()`                           |
-| **@blindfold-chess/icons**         | `packages/icons`         | Cross-platform SVG icon components. See `packages/icons/CLAUDE.md` for architecture and how to add icons.                  |
-| **@blindfold-chess/eslint-config** | `packages/eslint-config` | Shared ESLint configuration                                                                                                |
+| Package                            | Path                     | Description                                                                                                                                                                         |
+| ---------------------------------- | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **@blindfold-chess/types**         | `packages/types`         | Shared TypeScript type definitions (chess pieces, board, etc.)                                                                                                                      |
+| **@blindfold-chess/features**      | `packages/features`      | Platform-independent game logic and algorithms (coordinate quiz, diagonal quiz, legal moves, route planner, AI game, etc.). See `packages/features/CLAUDE.md` for the barrel rules. |
+| **@blindfold-chess/ui**            | `packages/ui`            | Shared UI theme — color definitions for light/dark mode, CSS generation via `generateThemeCSS()`                                                                                    |
+| **@blindfold-chess/icons**         | `packages/icons`         | Cross-platform SVG icon components. See `packages/icons/CLAUDE.md` for architecture and how to add icons.                                                                           |
+| **@blindfold-chess/eslint-config** | `packages/eslint-config` | Shared ESLint configuration                                                                                                                                                         |
 
 ### Key Design Principles
 
 - **Platform independence in packages**: Packages under `packages/` should not depend on platform-specific APIs. Platform adaptation is handled at the app level or via conditional exports (e.g., `@blindfold-chess/icons` uses the `exports` field in package.json to switch between web and native renderers).
 - **Theme unification**: Theme colors are defined once in `@blindfold-chess/ui` and shared across web and mobile. Web injects them as CSS custom properties via `generateThemeCSS()`; mobile uses them directly as JavaScript values.
-- **chess.js isolation**: The external library `chess.js` must only be imported within `packages/features/src/chess-core/`. Apps (`apps/web`, `apps/mobile`) must use `@blindfold-chess/features/chess-core` instead of importing `chess.js` directly. This keeps the dependency isolated behind a stable, typed API and makes it possible to replace or upgrade `chess.js` with changes confined to one module.
+- **chess.js isolation**: The external library `chess.js` is imported only within `packages/features/src/chess-core/`. Apps and other feature modules use `@blindfold-chess/features/chess-core` instead, so that replacing or upgrading `chess.js` stays confined to one module. ESLint enforces it (`chessJsBan` in `packages/eslint-config`).
 
 ### Server / Client Boundary Rule for `packages/features`
 
-`packages/features` is consumed by both `apps/web` (Next.js App Router with React Server Components) and `apps/mobile` (Expo / Metro). To avoid pulling React-hook code into Server Components and to keep bundle size honest, the package follows a **pure / client split** at every barrel:
-
-1. **Every React hook source file MUST start with `"use client";`** on line 1, before any imports. This applies to any file that imports from `react` and uses `useState`/`useEffect`/`useRef`/`useCallback`/`useMemo`/`useReducer`/etc.
-2. **Barrel files (`index.ts`) MUST be single-kind.** A barrel either re-exports only pure modules (no React, no DOM, no platform globals) OR only client modules — never both.
-3. **For features that have hooks, ship two barrels per directory:**
-   - `<feature>/index.ts` — pure barrel, no `"use client"`. Re-exports types, constants, validators, pure logic. Type-only re-exports of hook return shapes (`export type { UseXxxReturn }`) are allowed here because types erase at compile time.
-   - `<feature>/client.ts` — client barrel, starts with `"use client";`. Re-exports the React hooks (and any client-only utilities).
-   - **Exception:** if a feature directory contains only hooks, the single `index.ts` may carry `"use client";` directly without a separate `client.ts` (the directory's only barrel becomes the client barrel). Example: `practice-session/`.
-4. **Expose both via `package.json#exports`** as `"./<feature>"` and `"./<feature>/client"`. Apps import the path that matches the consumer's environment.
-5. **Inside `packages/features`, intra-package imports SHOULD prefer deep paths** (`./use-foo`, `../common/flash-policy`) over barrel imports, to keep the boundary explicit and to avoid re-introducing the same coupling.
-6. **Mobile compatibility:** Metro treats `"use client"` as a no-op directive prologue, so this rule is invisible to the React Native target — no special handling needed there.
-
-Why: a single mixed barrel forces every Server Component that touches one helper to load the entire module graph of every other re-export. The directive on the leaf hook file is necessary but not sufficient — the boundary check fires on the unmarked barrel that statically imports the hook. The two-barrel split is the smallest structural change that makes the boundary unambiguous and enforceable in review. Reproduced 2026-04-25 as `useEffect into a React Server Component module` from the landing page Footer chain (`Footer → @/app/_components → BoardLayout → @blindfold-chess/features/common → use-persistent-settings.ts`).
+Every barrel in `packages/features` is single-kind: a feature with hooks ships
+a pure `index.ts` and a `"use client"` `client.ts`, both listed in
+`package.json#exports`, and every hook file starts with `"use client";`. The
+full rule, the reason, and the checklist for a new feature directory are in
+`packages/features/CLAUDE.md`; `src/__tests__/no-react-in-pure-barrels.test.ts`
+enforces it.
 
 ## Comments explain; external references only cite
 
@@ -92,23 +85,12 @@ instead.
 Three different compilers are installed on purpose. Before changing any of
 them, know which constraint you are about to break.
 
-| Where                                            | Version                          | Why                                                                      |
-| ------------------------------------------------ | -------------------------------- | ------------------------------------------------------------------------ |
-| `apps/web`, `packages/{features,icons,types,ui}` | `^7.0.2`                         | The default. TypeScript 7, the Go compiler.                              |
-| `packages/eslint-config`                         | `npm:@typescript/typescript6@^6` | typescript-eslint hard-errors under TS7. See the TSDoc in its `base.js`. |
-| `apps/mobile`                                    | `~5.9.3`                         | Expo needs the TypeScript **JS API**, which TS7 does not ship.           |
+| Where                                            | Version                          | Why                                                                                                |
+| ------------------------------------------------ | -------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `apps/web`, `packages/{features,icons,types,ui}` | `^7.0.2`                         | The default. TypeScript 7, the Go compiler.                                                        |
+| `packages/eslint-config`                         | `npm:@typescript/typescript6@^6` | typescript-eslint hard-errors under TS7. See the TSDoc in its `base.js`.                           |
+| `apps/mobile`                                    | `~5.9.3`                         | Expo loads the TypeScript JS API in-process, which TS7 does not ship. See `apps/mobile/CLAUDE.md`. |
 
-The mobile pin is the one that is easy to "fix" by mistake. TypeScript 7's npm
-package exports exactly two things — `version` and `versionMajorMinor` — and no
-compiler API. `@expo/cli` resolves the project's `typescript` and calls
-`ts.sys` / `readConfigFile` / `parseJsonConfigFileContent` to read `paths` out
-of `tsconfig.json` for Metro (`utils/tsconfig/evaluateTsConfig`). Under TS7
-that is `TypeError: Cannot read properties of undefined (reading
-'getCurrentDirectory')` and **`expo start` never reaches Metro** — `tsc
---noEmit` on `apps/mobile` passes clean, so typecheck alone will not catch it.
-Revisit when Expo stops loading the compiler in-process, or when TS7 ships the
-API (verified against expo ~54.0.33 / expo-router ~6.0.23 / RN 0.81.5).
-
-`apps/web` is unaffected because Next 16.3 defaults
-`experimental.useTypeScriptCli` to true and shells out to `typescript/bin/tsc`
-rather than loading the API.
+The mobile pin is the one that is easy to "fix" by mistake: `tsc --noEmit`
+passes under TS7 and only `expo start` fails. The failure mode and the
+versions it was verified against are in `apps/mobile/CLAUDE.md`.
