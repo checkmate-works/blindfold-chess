@@ -15,6 +15,12 @@ import type { WebViewMessageEvent } from "react-native-webview";
 import { buildStockfishHtml } from "./build-stockfish-html";
 
 export type StockfishWebViewHandle = {
+  /**
+   * Send one raw UCI line to the engine. Fire-and-forget: replies arrive via
+   * `onMessage`. Wait for `onReady` first — before the assets have loaded the
+   * call is a silent no-op, and after load but before the engine is ready
+   * it is dropped and reported through `onError` as `'Error: Engine not ready'`.
+   */
   sendCommand: (command: string) => void;
 };
 

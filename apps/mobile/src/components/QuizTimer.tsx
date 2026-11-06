@@ -4,8 +4,15 @@ import { useTheme, fontSize, fontWeight } from "../theme";
 import { formatTime } from "@blindfold-chess/features/coordinate-quiz";
 
 type QuizTimerProps = {
+  /** Whole seconds left, rendered as `m:ss`. */
   timeRemaining: number;
-  progress: number; // 0 to 1
+  /**
+   * 0 to 1. Every caller passes the fraction of the limit still REMAINING
+   * (`timeRemaining / limit`, so 1 at the start), while the colour thresholds
+   * below treat a high value as nearly out of time.
+   */
+  progress: number;
+  /** Diameter in points. */
   size?: number;
 };
 

@@ -36,6 +36,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
+/**
+ * Current theme values. Light/dark follows the OS appearance
+ * (`useColorScheme`) — mobile has no in-app theme override. Throws when
+ * called outside {@link ThemeProvider}.
+ */
 export function useTheme(): ThemeContextValue {
   const context = useContext(ThemeContext);
   if (!context) {
