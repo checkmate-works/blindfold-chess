@@ -27,6 +27,30 @@ import { localStorageAdapter } from './local-storage-adapter';
  * `app/[locale]/_contexts/`, which hand-rolls localStorage plus a cookie
  * hint for SSR and cross-tab sync — and nothing syncs either store between
  * devices or with mobile, whose modules use their own keys.
+ *
+ * @design Two stores on purpose, and mobile keys left apart on purpose
+ *
+ * A new setting belongs in `GamePreferencesContext` when many screens read
+ * it at once or the server has to know it before hydration (the cookie hint
+ * that shapes the `/games/play` skeleton); it belongs here when one practice
+ * screen owns it. Folding either into the other was weighed and rejected:
+ * this hook is per-instance state shared with mobile, so carrying the
+ * provider's cookie writes, `storage`-event sync and hydration-time defaults
+ * would push web-only behaviour into `packages/features`, while moving
+ * per-module settings into the provider would re-render every board consumer
+ * on a practice change and move six keys for no gain. The two already share
+ * the layer below (`readJson` / `writeJson` over the same adapter).
+ *
+ * Mobile's keys (`COORDINATE_QUIZ_SETTINGS`, …) are not renamed to match. A
+ * key in a browser and a key in AsyncStorage never meet — nothing syncs them
+ * — and the schemas behind matching module names differ in meaning (web's
+ * legal-moves drills one piece or `random`; mobile's keeps a list of pieces
+ * plus a time limit), so a shared name would claim a compatibility that does
+ * not exist. If settings ever sync through an account, that work defines one
+ * versioned schema per module and migrates both platforms' keys into it:
+ * read the new key, else read and convert the old one and write the new one,
+ * and delete the old key only a release or two later, since an older build
+ * still open in another tab, or a rolled-back deploy, reads the old key.
  */
 export function useLocalStorageSettings<T extends Record<string, unknown>>(
   storageKey: string,
