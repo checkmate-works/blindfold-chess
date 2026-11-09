@@ -23,19 +23,36 @@ variable (for example `TimeLimitSettingsForm.tsx`), and those sites list the
 concrete keys they produce in a comment so that a grep for the full key still
 finds them.
 
-## Settings are device-local, per module
+## Settings are device-local: one global board store, then per module
 
-There is no global preferences store. Each practice module keeps its own
+**Global board preferences.** `GamePreferencesProvider` /
+`useGamePreferences` (`src/lib/game-preferences/`, mounted in
+`src/app/_layout.tsx`) hold the mobile counterpart of the web's
+`GamePreferencesContext`: show coordinates, last-move highlight, piece
+visibility and obfuscation, pawn hiding, board theme, board visibility, move
+input. The type, defaults and the sanitiser for a stored payload come from
+`@blindfold-chess/features/game-preferences`, so both platforms read a stored
+object with the same rules; the whole object sits under one AsyncStorage key
+(`"GAME_PREFERENCES"`), written by `usePersistentSettings` through a storage
+wrapper that sanitises on read. The settings tab edits it, and the AI-game
+board components (`ChessBoard`, `BoardPeek`, `ButtonInput`) read it themselves
+rather than taking it as props. Fields mobile has no UI for yet
+(`showPieceDestinations`, `enableAutoComplete`, `aiReplyDuration`, the
+non-button input modes) are kept in the object so it stays one type, but
+nothing reads them.
+
+**Per-module practice settings.** Each practice module keeps its own
 settings through `useAsyncStorageSettings` (`src/lib/persistent-settings/`,
 the AsyncStorage adapter for `usePersistentSettings` from
 `@blindfold-chess/features/common/client`), under its own storage key
 (`"COORDINATE_QUIZ_SETTINGS"` etc.). The language choice and the onboarding
 flag bypass the hook and use AsyncStorage directly (`src/i18n/index.ts`,
 `src/hooks/useOnboardingStatus.ts`). The web app's counterpart for per-module
-settings is `useLocalStorageSettings`; its global board preferences
-(`GamePreferencesContext`) have no mobile equivalent, and the storage keys
-differ per platform, so "shared" means the same engine and, where the module
-imports them from `@blindfold-chess/features`, the same defaults, not synced
+settings is `useLocalStorageSettings`.
+
+Storage keys differ per platform and nothing syncs, so "shared" means the
+same engine and, where the module imports them from
+`@blindfold-chess/features`, the same defaults and validation, not synced
 values.
 
 ## TypeScript stays on 5.9 here

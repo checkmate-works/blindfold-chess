@@ -6,11 +6,11 @@ import { useRouter } from 'next/navigation';
 
 import { useSafeLocale as useLocale } from '@/i18n/use-safe-locale';
 import {
-  getAvailableKnightMoves,
-  isClosedTourPossible,
+  DEFAULT_KNIGHT_TOUR_SETTINGS,
   isTourComplete,
-  isValidKnightMove,
+  summarizeKnightTour,
 } from '@blindfold-chess/features/knight-tour';
+import { useKnightTour } from '@blindfold-chess/features/knight-tour/client';
 
 import { readJson, writeJson } from '@/lib/persistent-settings/local-storage-adapter';
 
@@ -48,11 +48,15 @@ export default function KnightTour({
 
   // Settings
   const [startingSquareOption, setStartingSquareOption] = useState(
-    () => readJson<StoredSetup>(STORAGE_KEY, {}).startingSquare || 'random'
+    () =>
+      readJson<StoredSetup>(STORAGE_KEY, {}).startingSquare ||
+      DEFAULT_KNIGHT_TOUR_SETTINGS.startingSquare
   );
 
   const [blindfoldMode, setBlindfoldMode] = useState(
-    () => readJson<StoredSetup>(STORAGE_KEY, {}).blindfoldMode || false
+    () =>
+      readJson<StoredSetup>(STORAGE_KEY, {}).blindfoldMode ||
+      DEFAULT_KNIGHT_TOUR_SETTINGS.blindfoldMode
   );
 
   // Track if blindfold mode is active for current game
@@ -60,10 +64,8 @@ export default function KnightTour({
 
   // Game state
   const [gameState, setGameState] = useState<GameState>('setup');
-  const [startingSquare, setStartingSquare] = useState('');
-  const [currentSquare, setCurrentSquare] = useState('');
-  const [visitedSquares, setVisitedSquares] = useState<Map<string, number>>(new Map());
-  const [moveHistory, setMoveHistory] = useState<string[]>([]);
+  const tour = useKnightTour();
+  const { startingSquare, currentSquare, visitedSquares, moveHistory, start, move, undo } = tour;
   const [showQuitModal, setShowQuitModal] = useState(false);
 
   const router = useRouter();
@@ -71,11 +73,17 @@ export default function KnightTour({
   // Handle Finish/Result Redirection
   useEffect(() => {
     if (gameState === 'finished') {
+      const summary = summarizeKnightTour({
+        startingSquare,
+        currentSquare,
+        visitedSquares,
+        moveHistory,
+      });
       const results = {
-        visitedSquares: Array.from(visitedSquares.entries()),
-        lastSquare: currentSquare,
-        success: isTourComplete(visitedSquares), // Recalculate or use state if available
-        isClosedTour: isClosedTourPossible(currentSquare, startingSquare, visitedSquares),
+        visitedSquares: Array.from(summary.visitedSquares.entries()),
+        lastSquare: summary.lastSquare,
+        success: summary.success,
+        isClosedTour: summary.isClosedTour,
       };
 
       const settings = {
@@ -97,6 +105,7 @@ export default function KnightTour({
     visitedSquares,
     currentSquare,
     startingSquare,
+    moveHistory,
     isBlindfolded,
     isTutorial,
     locale,
@@ -117,50 +126,21 @@ export default function KnightTour({
     if (autoStart && gameState === 'setup') {
       const square = initialStartingSquare || 'a1';
       const blindfolded = initialBlindfoldMode ?? false;
-      setStartingSquare(square);
-      setCurrentSquare(square);
-      setVisitedSquares(new Map([[square, 1]]));
-      setMoveHistory([square]);
+      start(square);
       setIsBlindfolded(blindfolded);
       setGameState('playing');
     }
-  }, [autoStart, initialStartingSquare, initialBlindfoldMode, gameState]);
+  }, [autoStart, initialStartingSquare, initialBlindfoldMode, gameState, start]);
 
   const handleSquareClick = useCallback(
     (targetSquare: string) => {
-      if (!isValidKnightMove(currentSquare, targetSquare)) return;
-      if (visitedSquares.has(targetSquare)) return;
-
-      const newMoveNumber = visitedSquares.size + 1;
-      const newVisitedSquares = new Map(visitedSquares);
-      newVisitedSquares.set(targetSquare, newMoveNumber);
-
-      setVisitedSquares(newVisitedSquares);
-      setCurrentSquare(targetSquare);
-      setMoveHistory((prev) => [...prev, targetSquare]);
-
-      // Check if tour is complete
-      if (isTourComplete(newVisitedSquares)) {
+      const next = move(targetSquare);
+      if (next && isTourComplete(next.visitedSquares)) {
         setGameState('finished');
       }
     },
-    [currentSquare, visitedSquares]
+    [move]
   );
-
-  const handleUndo = useCallback(() => {
-    if (moveHistory.length <= 1) return;
-
-    const newHistory = [...moveHistory];
-    newHistory.pop();
-    const previousSquare = newHistory[newHistory.length - 1];
-
-    const newVisitedSquares = new Map(visitedSquares);
-    newVisitedSquares.delete(currentSquare);
-
-    setMoveHistory(newHistory);
-    setCurrentSquare(previousSquare);
-    setVisitedSquares(newVisitedSquares);
-  }, [moveHistory, currentSquare, visitedSquares]);
 
   const handleQuit = useCallback(() => {
     setShowQuitModal(true);
@@ -175,9 +155,7 @@ export default function KnightTour({
     setShowQuitModal(false);
   }, []);
 
-  // Compute available moves
-  const availableMoves =
-    gameState === 'playing' ? getAvailableKnightMoves(currentSquare, visitedSquares) : [];
+  const availableMoves = gameState === 'playing' ? tour.availableMoves : [];
 
   if (gameState === 'setup') {
     return (
@@ -201,9 +179,9 @@ export default function KnightTour({
           availableMoves={availableMoves}
           moveCount={visitedSquares.size}
           onSquareClick={handleSquareClick}
-          onUndo={handleUndo}
+          onUndo={undo}
           onQuit={handleQuit}
-          canUndo={moveHistory.length > 1}
+          canUndo={tour.canUndo}
         />
       </div>
       <QuitConfirmModal

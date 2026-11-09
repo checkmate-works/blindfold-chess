@@ -1,15 +1,9 @@
 'use client';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import type { CastlingRights } from '@blindfold-chess/features/chess-core/fen-fields';
 import { FILES } from '@blindfold-chess/types';
 import type { PieceColor } from '@blindfold-chess/types';
-
-export type CastlingRights = {
-  K: boolean;
-  Q: boolean;
-  k: boolean;
-  q: boolean;
-};
 
 type Props = {
   turn: PieceColor;

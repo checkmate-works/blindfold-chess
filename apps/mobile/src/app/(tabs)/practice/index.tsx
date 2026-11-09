@@ -74,6 +74,34 @@ export default function PracticeIndex() {
       icon: "\u265E",
       route: "/(tabs)/practice/route-planner/setup",
     },
+    {
+      id: "quadrants",
+      titleKey: "practice.quadrants.title",
+      descriptionKey: "practice.quadrants.description",
+      icon: "\u229E",
+      route: "/(tabs)/practice/quadrants/setup",
+    },
+    {
+      id: "knight-tour",
+      titleKey: "practice.knightTour.title",
+      descriptionKey: "practice.knightTour.description",
+      icon: "\u2658",
+      route: "/(tabs)/practice/knight-tour/setup",
+    },
+    {
+      id: "algebraic-notation",
+      titleKey: "practice.algebraicNotation.title",
+      descriptionKey: "practice.algebraicNotation.description",
+      icon: "\u270E",
+      route: "/(tabs)/practice/algebraic-notation/setup",
+    },
+    {
+      id: "fen",
+      titleKey: "practice.fen.title",
+      descriptionKey: "practice.fen.description",
+      icon: "\u265C",
+      route: "/(tabs)/practice/fen/setup",
+    },
   ];
 
   return (

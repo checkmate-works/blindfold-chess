@@ -15,6 +15,10 @@ const PRACTICE_MODULES: readonly ModuleRoute[] = [
   { route: "square-colors", i18nKey: "squareColors" },
   { route: "diagonal-quiz", i18nKey: "diagonalQuiz" },
   { route: "route-planner", i18nKey: "routePlanner" },
+  { route: "quadrants", i18nKey: "quadrants" },
+  { route: "knight-tour", i18nKey: "knightTour" },
+  { route: "algebraic-notation", i18nKey: "algebraicNotation" },
+  { route: "fen", i18nKey: "fen" },
 ];
 
 export default function PracticeLayout() {

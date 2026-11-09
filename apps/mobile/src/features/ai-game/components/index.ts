@@ -1,3 +1,4 @@
+export { BoardPeek } from "./BoardPeek";
 export { BoardViewModal } from "./BoardViewModal";
 export { ButtonInput } from "./ButtonInput";
 export { ChessBoard } from "./ChessBoard";
@@ -6,3 +7,4 @@ export { MoveHistory } from "./MoveHistory";
 export { ResultCard } from "./ResultCard";
 export { SettingsForm } from "./SettingsForm";
 export { Spinner } from "./Spinner";
+export { StartPositionForm } from "./StartPositionForm";

@@ -34,7 +34,7 @@ export function getKnightMoves(square: string): Square[] {
  */
 export function getAvailableKnightMoves(
   square: string,
-  visitedSquares: Set<string> | Map<string, number>,
+  visitedSquares: ReadonlySet<string> | ReadonlyMap<string, number>,
 ): string[] {
   return getKnightMoves(square).filter((move) => !visitedSquares.has(move));
 }
@@ -53,7 +53,7 @@ export function isValidKnightMove(from: string, to: string): boolean {
  */
 export function sortByWarnsdorff(
   moves: readonly string[],
-  visitedSquares: Set<string> | Map<string, number>,
+  visitedSquares: ReadonlySet<string> | ReadonlyMap<string, number>,
 ): string[] {
   return [...moves].sort((a, b) => {
     const aNeighbors = getAvailableKnightMoves(a, visitedSquares).length;
@@ -66,7 +66,7 @@ export function sortByWarnsdorff(
  * Check if the tour is complete (all 64 squares visited)
  */
 export function isTourComplete(
-  visitedSquares: Set<string> | Map<string, number>,
+  visitedSquares: ReadonlySet<string> | ReadonlyMap<string, number>,
 ): boolean {
   return visitedSquares.size === 64;
 }
@@ -76,7 +76,7 @@ export function isTourComplete(
  */
 export function isTourStuck(
   currentSquare: string,
-  visitedSquares: Set<string> | Map<string, number>,
+  visitedSquares: ReadonlySet<string> | ReadonlyMap<string, number>,
 ): boolean {
   return getAvailableKnightMoves(currentSquare, visitedSquares).length === 0;
 }
@@ -87,7 +87,7 @@ export function isTourStuck(
 export function isClosedTourPossible(
   currentSquare: string,
   startingSquare: string,
-  visitedSquares: Set<string> | Map<string, number>,
+  visitedSquares: ReadonlySet<string> | ReadonlyMap<string, number>,
 ): boolean {
   if (visitedSquares.size !== 64) return false;
   return isValidKnightMove(currentSquare, startingSquare);

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, Pressable } from "react-native";
+import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { isValidSkillLevel } from "@blindfold-chess/features/ai-game";
@@ -7,7 +7,7 @@ import { SIDES, type Side } from "@blindfold-chess/types";
 
 import { StockfishWebView } from "../../../../features/ai-game/engine";
 import {
-  BoardViewModal,
+  BoardPeek,
   ButtonInput,
   MoveHistory,
   GameInfo,
@@ -18,15 +18,10 @@ import {
   useGameSession,
 } from "../../../../features/ai-game/hooks";
 import type { SkillLevel } from "../../../../features/ai-game/lib/types";
+import { decodeStartParams } from "../../../../features/ai-game/lib/start-params";
 import { parseEnumParam } from "../../../../lib/route-params";
 import { Screen } from "../../../../components";
-import {
-  useTheme,
-  fontSize,
-  fontWeight,
-  spacing,
-  borderRadius,
-} from "../../../../theme";
+import { useTheme, fontSize, fontWeight, spacing } from "../../../../theme";
 
 export default function AiGameSession() {
   const { t } = useTranslation();
@@ -35,15 +30,21 @@ export default function AiGameSession() {
   const params = useLocalSearchParams<{
     playerColor: string;
     skillLevel: string;
+    fen?: string;
+    moves?: string;
   }>();
-
-  const [isBoardVisible, setIsBoardVisible] = useState(false);
 
   const playerColor = parseEnumParam<Side>(params.playerColor, SIDES, "white");
   const parsedSkillLevel = Number(params.skillLevel);
   const skillLevel: SkillLevel = isValidSkillLevel(parsedSkillLevel)
     ? parsedSkillLevel
     : 5;
+
+  // Decoded once: the session replays these as its initial state, and a
+  // re-decode on every render would hand useGameSession a new array each time.
+  const [start] = useState(() =>
+    decodeStartParams({ fen: params.fen, moves: params.moves }),
+  );
 
   const ai = useAiVersus(skillLevel);
 
@@ -52,6 +53,8 @@ export default function AiGameSession() {
     skillLevel,
     getAiMove: ai.getAiMove,
     isAiLoading: ai.isLoading,
+    startingFen: start.startingFen,
+    initialMoves: start.moves,
   });
 
   // Navigate to result when game is over
@@ -107,20 +110,13 @@ export default function AiGameSession() {
           moveCount={game.moves.length}
         />
 
-        {/* Show Board Button */}
-        <Pressable
-          style={[
-            styles.showBoardButton,
-            { backgroundColor: colors.card, borderColor: colors.border },
-          ]}
-          onPress={() => setIsBoardVisible(true)}
-        >
-          <Text
-            style={[styles.showBoardButtonText, { color: colors.foreground }]}
-          >
-            {t("aiGame.session.showBoard")}
-          </Text>
-        </Pressable>
+        {/* Board, as the player's boardVisibility preference surfaces it */}
+        <BoardPeek
+          fen={game.currentFen}
+          moves={game.moves}
+          startingFen={start.startingFen}
+          playerColor={playerColor}
+        />
 
         {/* Error message */}
         {game.error && (
@@ -130,7 +126,7 @@ export default function AiGameSession() {
         )}
 
         {/* Move History */}
-        <MoveHistory moves={game.moves} />
+        <MoveHistory moves={game.moves} startingFen={start.startingFen} />
 
         {/* Input area */}
         {game.gameStatus === "in_progress" &&
@@ -167,13 +163,6 @@ export default function AiGameSession() {
           </View>
         )}
       </ScrollView>
-
-      <BoardViewModal
-        visible={isBoardVisible}
-        onClose={() => setIsBoardVisible(false)}
-        fen={game.currentFen}
-        playerColor={playerColor}
-      />
     </Screen>
   );
 }
@@ -207,18 +196,5 @@ const styles = StyleSheet.create({
   },
   aiThinkingText: {
     fontSize: fontSize.md,
-  },
-  showBoardButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: spacing.sm,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.md,
-    borderWidth: 1,
-  },
-  showBoardButtonText: {
-    fontSize: fontSize.md,
-    fontWeight: fontWeight.medium,
   },
 });

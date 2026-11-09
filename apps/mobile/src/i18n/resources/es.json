@@ -46,6 +46,22 @@
     "routePlanner": {
       "title": "Planificador de rutas",
       "description": "Planea la ruta más corta para una pieza entre dos casillas"
+    },
+    "quadrants": {
+      "title": "Anclas de Cuadrante",
+      "description": "Practica identificando a qué cuadrante pertenece una casilla"
+    },
+    "knightTour": {
+      "title": "Recorrido del Caballo",
+      "description": "Visita las 64 casillas con un caballo, pasando por cada casilla exactamente una vez"
+    },
+    "algebraicNotation": {
+      "title": "Notación Algebraica",
+      "description": "Domina el sistema de notación ajedrecística con ejercicios interactivos"
+    },
+    "fen": {
+      "title": "Reconstrucción FEN",
+      "description": "Practica la lectura de notación FEN recreando posiciones"
     }
   },
   "practiceResult": {
@@ -74,7 +90,63 @@
     "languageJapanese": "日本語",
     "languageEnglish": "English",
     "languageSpanish": "Español",
-    "languagePortuguese": "Português"
+    "languagePortuguese": "Português",
+    "board": {
+      "title": "Configuración del Tablero",
+      "displayOptions": "Opciones de Visualización",
+      "showCoordinates": "Mostrar coordenadas",
+      "highlightLastMove": "Resaltar último movimiento",
+      "on": "Sí",
+      "off": "No",
+      "boardTheme": "Tema del Tablero",
+      "boardThemes": {
+        "monotone": "Monocromático",
+        "lichess": "Estilo Lichess",
+        "chesscom": "Estilo Chess.com"
+      },
+      "boardVisibility": "Modo a ciegas",
+      "boardVisibilities": {
+        "always": "Siempre visible",
+        "peek": "Vistazo bajo demanda",
+        "never": "Oculto"
+      },
+      "pieceVisibility": "Visibilidad de Piezas",
+      "pieceVisibilityModes": {
+        "all": "Ambas",
+        "own": "Propias",
+        "opponent": "Rival"
+      },
+      "showAsStones": "Mostrar como piedras",
+      "pieceShapeModes": {
+        "normal": "No",
+        "circles-all": "Ambas",
+        "circles-own": "Propias",
+        "circles-opponent": "Rival"
+      },
+      "pieceColor": "Color de las Piezas",
+      "pieceColorModes": {
+        "normal": "Normal",
+        "white-only": "Todas blancas",
+        "black-only": "Todas negras"
+      },
+      "hidePawns": "Ocultar peones",
+      "pawnHideModes": {
+        "none": "No",
+        "all": "Ambas",
+        "own": "Propias",
+        "opponent": "Rival"
+      },
+      "moveInput": "Método de Entrada de Movimientos",
+      "moveInputModes": {
+        "button": "Botón"
+      },
+      "buttonLabelStyle": "Estilo de Etiqueta de Botones",
+      "buttonLabels": {
+        "text": "Texto",
+        "icon": "Icono"
+      },
+      "resetDefaults": "Restablecer valores predeterminados"
+    }
   },
   "legalMoves": {
     "setup": {
@@ -235,7 +307,27 @@
       "black": "Negras",
       "skillLevel": "Nivel de habilidad",
       "skillLevelDescription": "1 (principiante) - 20 (más fuerte)",
-      "startGame": "Empezar partida"
+      "startGame": "Empezar partida",
+      "startMode": "¿Cómo te gustaría empezar?",
+      "startModeStandard": "Estándar",
+      "startModePosition": "Posición Personalizada",
+      "startModePgn": "Importar PGN",
+      "fenLabel": "FEN",
+      "fenPlaceholder": "Introduce notación FEN...",
+      "sideToMove": "Turno",
+      "pgnLabel": "Importar PGN",
+      "pgnPlaceholder": "Pega tu notación PGN aquí...\n\nEjemplo:\n1. e4 e5 2. Nf3 Nc6 3. Bb5 a6",
+      "pgnEmpty": "Pega un PGN para continuar",
+      "invalidPgn": "Formato PGN inválido",
+      "pgnValidMoves": "PGN válido con {{moves}} movimientos",
+      "derivedFromPgn": "Color seleccionado automáticamente según el PGN",
+      "positionEmpty": "Coloca al menos una pieza en el tablero",
+      "positionInvalid": "Posición inválida (ej., cada bando debe tener exactamente un rey)",
+      "positionAlreadyCheckmate": "Esta posición ya es jaque mate — la partida terminaría inmediatamente",
+      "positionAlreadyStalemate": "Esta posición ya es ahogado — la partida terminaría inmediatamente",
+      "positionInsufficientMaterial": "Material insuficiente para continuar — la partida sería tablas inmediatamente",
+      "positionCheckCorrected": "El bando en jaque debe mover primero — por favor cambia el turno",
+      "positionValid": "Posición válida"
     },
     "session": {
       "yourTurn": "Tu turno",
@@ -294,6 +386,99 @@
     "settings": {
       "timeLimit": "Tiempo límite",
       "seconds": "{{seconds}}s"
+    }
+  },
+  "quadrants": {
+    "setup": {
+      "title": "Anclas de Cuadrante Configuración",
+      "startQuiz": "Empezar práctica",
+      "orientation": "Orientación del tablero",
+      "orientationWhite": "Blancas",
+      "orientationBlack": "Negras",
+      "orientationRandom": "Aleatorio",
+      "rulesTitle": "Reglas del Desafío",
+      "timeLimitRule": "Responde tantas preguntas como puedas en {{seconds}} segundos.",
+      "mistakeLimitRule": "El juego termina después de {{count}} respuestas incorrectas."
+    },
+    "session": {
+      "question": "¿En qué cuadrante está {{square}}?",
+      "correct": "¡Correcto!",
+      "incorrect": "Incorrecto",
+      "whiteToMove": "Mueven las blancas",
+      "blackToMove": "Mueven las negras"
+    },
+    "result": {
+      "title": "¡Práctica completada!",
+      "playAgain": "Jugar de nuevo",
+      "backToMenu": "Volver al menú"
+    }
+  },
+  "knightTour": {
+    "setup": {
+      "title": "Recorrido del Caballo Configuración",
+      "startingSquare": "Casilla Inicial",
+      "randomSquare": "Aleatorio",
+      "pickOnBoard": "O toca una casilla del tablero",
+      "blindfoldMode": "Modo a Ciegas",
+      "blindfoldModeHint": "Practica usando solo coordenadas sin ver el tablero",
+      "setupHint": "El caballo debe visitar las 64 casillas exactamente una vez usando solo movimientos legales de caballo.",
+      "start": "Iniciar"
+    },
+    "result": {
+      "title": "¡Práctica completada!",
+      "squaresVisited": "Casillas Visitadas",
+      "success": "¡Recorrido Completado!",
+      "closedTourMessage": "¡Increíble! Completaste un recorrido cerrado — ¡el caballo puede volver a su casilla inicial!",
+      "openTourMessage": "¡Felicitaciones! ¡Visitaste las 64 casillas!",
+      "playAgain": "Jugar de nuevo",
+      "backToMenu": "Volver al menú"
+    },
+    "session": {
+      "currentPosition": "Posición Actual",
+      "stuck": "¡No hay más movimientos disponibles!",
+      "stuckHint": "Usa Deshacer para volver atrás e intentar un camino diferente.",
+      "moveHistory": "Historial de Movimientos",
+      "undo": "Deshacer",
+      "quit": "Salir",
+      "quitConfirmTitle": "¿Abandonar la Práctica?",
+      "quitConfirmMessage": "Tu progreso se guardará y verás tus resultados hasta el momento.",
+      "quitConfirmYes": "Salir",
+      "quitConfirmNo": "Continuar",
+      "alreadyVisited": "Esta casilla ya ha sido visitada.",
+      "invalidMove": "Movimiento inválido",
+      "submitMove": "Enviar",
+      "selectFile": "Selecciona una columna (a-h)",
+      "selectRank": "Selecciona una fila (1-8)"
+    }
+  },
+  "algebraicNotation": {
+    "setup": {
+      "title": "Notación Algebraica Configuración",
+      "description": "Domina el sistema de notación ajedrecística con ejercicios interactivos",
+      "questionCount": "{{total}} preguntas",
+      "start": "Iniciar"
+    },
+    "result": {
+      "title": "¡Práctica completada!",
+      "playAgain": "Jugar de nuevo",
+      "backToMenu": "Volver al menú"
+    },
+    "session": {
+      "progress": "Pregunta {{current}} / {{total}}",
+      "correct": "¡Correcto!",
+      "incorrect": "Incorrecto",
+      "correctAnswerIs": "La respuesta correcta es",
+      "explanation": "Explicación",
+      "next": "Siguiente",
+      "complete": "Completado"
+    }
+  },
+  "fen": {
+    "setup": {
+      "title": "Reconstrucción FEN Configuración"
+    },
+    "result": {
+      "title": "¡Práctica completada!"
     }
   }
 }

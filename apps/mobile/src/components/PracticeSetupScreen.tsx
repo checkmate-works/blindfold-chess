@@ -11,6 +11,8 @@ type PracticeSetupScreenProps = {
   startLabel: string;
   /** Navigates to the feature's session screen with its own params. */
   onStart: () => void;
+  /** Disables the start button while the form holds input that cannot start. */
+  startDisabled?: boolean;
   /** The feature's settings form. */
   children: ReactNode;
 };
@@ -24,6 +26,7 @@ export function PracticeSetupScreen({
   isLoaded,
   startLabel,
   onStart,
+  startDisabled = false,
   children,
 }: PracticeSetupScreenProps) {
   const { colors } = useTheme();
@@ -60,7 +63,13 @@ export function PracticeSetupScreen({
           },
         ]}
       >
-        <Button title={startLabel} onPress={onStart} size="lg" fullWidth />
+        <Button
+          title={startLabel}
+          onPress={onStart}
+          disabled={startDisabled}
+          size="lg"
+          fullWidth
+        />
       </View>
     </Screen>
   );

@@ -46,6 +46,22 @@
     "routePlanner": {
       "title": "ルートプランナー",
       "description": "駒の最短経路を考えるトレーニング"
+    },
+    "quadrants": {
+      "title": "4分割アンカー",
+      "description": "マスがどの領域（4分割）のどこにあるかを瞬時に答えるトレーニング"
+    },
+    "knightTour": {
+      "title": "ナイトツアー",
+      "description": "ナイトを使って64マス全てを1回ずつ訪問する"
+    },
+    "algebraicNotation": {
+      "title": "代数式表記法",
+      "description": "インタラクティブな演習でチェス記法システムをマスターする"
+    },
+    "fen": {
+      "title": "FEN再構築",
+      "description": "FEN記法を読んで盤面を再現する練習"
     }
   },
   "practiceResult": {
@@ -74,7 +90,63 @@
     "languageJapanese": "日本語",
     "languageEnglish": "English",
     "languageSpanish": "Español",
-    "languagePortuguese": "Português"
+    "languagePortuguese": "Português",
+    "board": {
+      "title": "ボード設定",
+      "displayOptions": "表示オプション",
+      "showCoordinates": "座標を表示",
+      "highlightLastMove": "最終手をハイライト",
+      "on": "オン",
+      "off": "オフ",
+      "boardTheme": "ボードテーマ",
+      "boardThemes": {
+        "monotone": "モノトーン",
+        "lichess": "Lichess風",
+        "chesscom": "Chess.com風"
+      },
+      "boardVisibility": "目隠しの設定",
+      "boardVisibilities": {
+        "always": "常に表示",
+        "peek": "必要なときにピーク",
+        "never": "非表示"
+      },
+      "pieceVisibility": "駒の表示",
+      "pieceVisibilityModes": {
+        "all": "両方",
+        "own": "自分",
+        "opponent": "相手"
+      },
+      "showAsStones": "石で表示",
+      "pieceShapeModes": {
+        "normal": "オフ",
+        "circles-all": "両方",
+        "circles-own": "自分",
+        "circles-opponent": "相手"
+      },
+      "pieceColor": "駒の色",
+      "pieceColorModes": {
+        "normal": "通常",
+        "white-only": "すべて白",
+        "black-only": "すべて黒"
+      },
+      "hidePawns": "ポーンを非表示",
+      "pawnHideModes": {
+        "none": "オフ",
+        "all": "両方",
+        "own": "自分",
+        "opponent": "相手"
+      },
+      "moveInput": "手の入力方法",
+      "moveInputModes": {
+        "button": "ボタン"
+      },
+      "buttonLabelStyle": "ボタンの表示",
+      "buttonLabels": {
+        "text": "テキスト",
+        "icon": "アイコン"
+      },
+      "resetDefaults": "デフォルトに戻す"
+    }
   },
   "legalMoves": {
     "setup": {
@@ -235,7 +307,27 @@
       "black": "黒",
       "skillLevel": "スキルレベル",
       "skillLevelDescription": "1（初心者）- 20（最強）",
-      "startGame": "ゲーム開始"
+      "startGame": "ゲーム開始",
+      "startMode": "開始方法を選択",
+      "startModeStandard": "標準",
+      "startModePosition": "カスタムポジション",
+      "startModePgn": "PGNからインポート",
+      "fenLabel": "FEN",
+      "fenPlaceholder": "FEN記法を入力...",
+      "sideToMove": "手番",
+      "pgnLabel": "PGNをインポート",
+      "pgnPlaceholder": "PGN記法を貼り付けてください...\n\n例:\n1. e4 e5 2. Nf3 Nc6 3. Bb5 a6",
+      "pgnEmpty": "PGNを貼り付けてください",
+      "invalidPgn": "無効なPGN形式",
+      "pgnValidMoves": "有効なPGN（{{moves}}手）",
+      "derivedFromPgn": "PGNに基づいて色が自動選択されました",
+      "positionEmpty": "駒を1つ以上配置してください",
+      "positionInvalid": "無効なポジションです（例：各サイドにキングが1つずつ必要です）",
+      "positionAlreadyCheckmate": "この局面は既にチェックメイトです — ゲームは即座に終了します",
+      "positionAlreadyStalemate": "この局面は既にステイルメイトです — ゲームは即座に終了します",
+      "positionInsufficientMaterial": "駒が不十分です — ゲームは即座に引き分けになります",
+      "positionCheckCorrected": "チェックされている側が先に動く必要があります — 手番を変更してください",
+      "positionValid": "有効なポジション"
     },
     "session": {
       "yourTurn": "あなたの番",
@@ -294,6 +386,99 @@
     "settings": {
       "timeLimit": "制限時間",
       "seconds": "{{seconds}}秒"
+    }
+  },
+  "quadrants": {
+    "setup": {
+      "title": "4分割アンカーの設定",
+      "startQuiz": "練習を開始",
+      "orientation": "盤の向き",
+      "orientationWhite": "白番",
+      "orientationBlack": "黒番",
+      "orientationRandom": "ランダム",
+      "rulesTitle": "チャレンジルール",
+      "timeLimitRule": "制限時間{{seconds}}秒以内にできるだけ多くの問題に正解してください。",
+      "mistakeLimitRule": "{{count}}回ミスするとゲームオーバーです。"
+    },
+    "session": {
+      "question": "{{square}} はどのエリア？",
+      "correct": "正解！",
+      "incorrect": "不正解",
+      "whiteToMove": "白番",
+      "blackToMove": "黒番"
+    },
+    "result": {
+      "title": "練習完了！",
+      "playAgain": "もう一度",
+      "backToMenu": "メニューに戻る"
+    }
+  },
+  "knightTour": {
+    "setup": {
+      "title": "ナイトツアーの設定",
+      "startingSquare": "開始マス",
+      "randomSquare": "ランダム",
+      "pickOnBoard": "盤面のマスをタップして選ぶこともできます",
+      "blindfoldMode": "ブラインドモード",
+      "blindfoldModeHint": "盤面を見ずに座標だけで練習します",
+      "setupHint": "ナイトの合法手のみを使って、全64マスをちょうど1回ずつ訪問します。",
+      "start": "開始"
+    },
+    "result": {
+      "title": "練習完了！",
+      "squaresVisited": "訪問マス数",
+      "success": "ツアー完了！",
+      "closedTourMessage": "素晴らしい！閉じたツアーを達成しました - ナイトが開始マスに戻ることができます！",
+      "openTourMessage": "おめでとうございます！64マス全てを訪問しました！",
+      "playAgain": "もう一度",
+      "backToMenu": "メニューに戻る"
+    },
+    "session": {
+      "currentPosition": "現在位置",
+      "stuck": "移動できるマスがありません！",
+      "stuckHint": "「戻る」で別のルートを試してください。",
+      "moveHistory": "移動履歴",
+      "undo": "戻る",
+      "quit": "終了",
+      "quitConfirmTitle": "練習を終了しますか？",
+      "quitConfirmMessage": "現在までの結果を表示して練習を終了します。",
+      "quitConfirmYes": "終了する",
+      "quitConfirmNo": "続ける",
+      "alreadyVisited": "このマスはすでに訪問済みです。",
+      "invalidMove": "無効な手です",
+      "submitMove": "決定",
+      "selectFile": "ファイルを選択 (a-h)",
+      "selectRank": "ランクを選択 (1-8)"
+    }
+  },
+  "algebraicNotation": {
+    "setup": {
+      "title": "代数式表記法の設定",
+      "description": "インタラクティブな演習でチェス記法システムをマスターする",
+      "questionCount": "全{{total}}問",
+      "start": "開始"
+    },
+    "result": {
+      "title": "練習完了！",
+      "playAgain": "もう一度",
+      "backToMenu": "メニューに戻る"
+    },
+    "session": {
+      "progress": "第{{current}}問 / {{total}}",
+      "correct": "正解！",
+      "incorrect": "不正解",
+      "correctAnswerIs": "正解は",
+      "explanation": "解説",
+      "next": "次へ",
+      "complete": "完了"
+    }
+  },
+  "fen": {
+    "setup": {
+      "title": "FEN再構築の設定"
+    },
+    "result": {
+      "title": "練習完了！"
     }
   }
 }

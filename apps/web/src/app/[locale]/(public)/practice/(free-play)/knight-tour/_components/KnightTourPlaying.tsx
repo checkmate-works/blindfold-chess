@@ -9,7 +9,7 @@ import { KnightTourPlayingLayout } from './KnightTourPlayingLayout';
 
 type Props = {
   currentSquare: string;
-  visitedSquares: Map<string, number>;
+  visitedSquares: ReadonlyMap<string, number>;
   availableMoves: string[];
   moveCount: number;
   onSquareClick: (square: string) => void;

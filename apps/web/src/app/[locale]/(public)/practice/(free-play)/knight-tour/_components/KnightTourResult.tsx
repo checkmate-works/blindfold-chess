@@ -17,7 +17,7 @@ import { KnightTourBoard } from './KnightTourBoard';
 type Props = {
   success: boolean;
   moveCount: number;
-  visitedSquares: Map<string, number>;
+  visitedSquares: ReadonlyMap<string, number>;
   lastSquare: string;
   startingSquare: string;
   isClosedTour: boolean;

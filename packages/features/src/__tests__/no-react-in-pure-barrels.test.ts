@@ -16,11 +16,15 @@ const PURE_BARRELS = [
   "board-symmetry/index.ts",
   "coordinate-quiz/index.ts",
   "diagonal-quiz/index.ts",
+  "knight-tour/index.ts",
   "legal-moves/index.ts",
+  "quadrants/index.ts",
   "route-planner/index.ts",
   "square-colors/index.ts",
   "ai-game/index.ts",
   "ai-game/notation-input/index.ts",
+  "algebraic-notation/index.ts",
+  "game-preferences/index.ts",
 ];
 
 const REACT_IMPORT_RE = /\bfrom\s+["']react["']/;

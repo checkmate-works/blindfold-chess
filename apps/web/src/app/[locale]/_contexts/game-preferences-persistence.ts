@@ -1,9 +1,13 @@
+import {
+  resolveStoredGamePreferences,
+  validateGamePreferences,
+} from '@blindfold-chess/features/game-preferences';
+
 import { writeBoardVisibilityCookieClient } from '@/lib/games/board-visibility-cookie';
 import { writeMoveInputCookieClient } from '@/lib/games/move-input-cookie';
 import { readJson, writeJson } from '@/lib/persistent-settings/local-storage-adapter';
 
 import type { GamePreferences } from './GamePreferencesContext';
-import { validatePreferences } from './game-preferences-validation';
 
 /**
  * Persistence plumbing for the game-preferences provider: the localStorage
@@ -29,14 +33,7 @@ export function loadStoredPreferences(defaults: GamePreferences): GamePreference
   const stored = readJson<unknown>(PREFERENCES_STORAGE_KEY, null);
   if (stored === null) return null;
   try {
-    const validated = validatePreferences(stored);
-    const merged = { ...defaults, ...validated };
-    // If current moveInputMode is not in enabledMoveInputModes, switch to
-    // the first enabled mode.
-    if (!merged.enabledMoveInputModes.includes(merged.moveInputMode)) {
-      merged.moveInputMode = merged.enabledMoveInputModes[0];
-    }
-    return merged;
+    return resolveStoredGamePreferences(stored, defaults);
   } catch (error) {
     console.warn('Failed to load game preferences from localStorage:', error);
     return null;
@@ -55,7 +52,7 @@ export function persistPreferences(preferences: GamePreferences): void {
 export function parsePreferencesStorageEvent(e: StorageEvent): Partial<GamePreferences> | null {
   if (e.key !== PREFERENCES_STORAGE_KEY || !e.newValue) return null;
   try {
-    return validatePreferences(JSON.parse(e.newValue));
+    return validateGamePreferences(JSON.parse(e.newValue));
   } catch {
     return null; // Ignore malformed data
   }

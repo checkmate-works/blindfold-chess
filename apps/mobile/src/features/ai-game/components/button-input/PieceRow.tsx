@@ -1,6 +1,10 @@
-import { View, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+
+import { useGamePreferences } from "../../../../lib/game-preferences";
 
 import {
+  fontSize,
+  fontWeight,
   spacing,
   borderRadius,
   touchTarget,
@@ -9,7 +13,11 @@ import {
 import { ChessPiece } from "../ChessPiece";
 import { PIECES, PIECE_TYPE_MAP, PIECE_ICON_SIZE } from "./constants";
 
-/** The K/Q/R/B/N piece selector row of the button input. */
+/**
+ * The K/Q/R/B/N piece selector row of the button input. Each button shows
+ * the piece icon or its SAN letter, following the player's
+ * `buttonInputPieceLabel` preference.
+ */
 export function PieceRow({
   selectedPiece,
   onSelect,
@@ -21,6 +29,8 @@ export function PieceRow({
   disabled?: boolean;
   colors: ThemeColors;
 }) {
+  const { preferences } = useGamePreferences();
+  const asText = preferences.buttonInputPieceLabel === "text";
   return (
     <View style={styles.row}>
       {PIECES.map((piece) => (
@@ -39,11 +49,27 @@ export function PieceRow({
             },
           ]}
         >
-          <ChessPiece
-            type={PIECE_TYPE_MAP[piece]}
-            color="w"
-            size={PIECE_ICON_SIZE}
-          />
+          {asText ? (
+            <Text
+              style={[
+                styles.letter,
+                {
+                  color:
+                    selectedPiece === piece
+                      ? colors.primaryForeground
+                      : colors.foreground,
+                },
+              ]}
+            >
+              {piece}
+            </Text>
+          ) : (
+            <ChessPiece
+              type={PIECE_TYPE_MAP[piece]}
+              color="w"
+              size={PIECE_ICON_SIZE}
+            />
+          )}
         </TouchableOpacity>
       ))}
     </View>
@@ -66,5 +92,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
+  },
+  letter: {
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.semibold,
   },
 });

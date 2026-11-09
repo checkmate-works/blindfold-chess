@@ -1,0 +1,1 @@
+export { useQuestionLocale } from "./useQuestionLocale";
