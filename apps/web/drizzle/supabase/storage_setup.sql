@@ -197,3 +197,20 @@ DROP POLICY IF EXISTS "game_gifs_select_public" ON storage.objects;
 CREATE POLICY "game_gifs_select_public" ON storage.objects
   FOR SELECT
   USING (bucket_id = 'game-gifs');
+
+-- Private bucket mirroring the Maia 3 ONNX model that scripts/download-maia.ts
+-- fetches at build time. The upstream host (maiachess.com) answers scripted
+-- requests with a bot-protection challenge (HTTP 429), so builds pull the file
+-- from here instead, through a long-lived signed URL stored in the Vercel env
+-- var MAIA_MODEL_URL. The bucket is private, with no storage.objects policy for
+-- `anon`/`authenticated`, for the same reason /api/engines/maia/[file] is
+-- auth-gated: an anonymous caller must not be able to trigger 46 MB of egress.
+-- Uploads and signing use the service-role key, which bypasses RLS.
+-- file_size_limit: 50MB (the model is ~46 MB). The upload and re-signing
+-- procedure is in apps/web/docs/maia-model-mirror-runbook.md.
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES ('engine-models', 'engine-models', false, 52428800, ARRAY['application/octet-stream'])
+ON CONFLICT (id) DO UPDATE SET
+  public = EXCLUDED.public,
+  file_size_limit = EXCLUDED.file_size_limit,
+  allowed_mime_types = EXCLUDED.allowed_mime_types;

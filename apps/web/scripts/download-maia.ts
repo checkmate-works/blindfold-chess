@@ -14,9 +14,12 @@ import { join } from 'path';
  * Upstream: CSSLab/maia-platform-frontend hosts the file on their own
  * Vercel deployment at maiachess.com. This is the canonical distribution
  * point — there is no `maia-chess` GitHub release for the simplified
- * Maia 3 model as of this writing. If maiachess.com becomes unreliable,
- * mirror the file to our own Cloudflare R2 / B2 bucket and switch the
- * URL here.
+ * Maia 3 model as of this writing. maiachess.com now answers scripted
+ * requests with a bot-protection challenge (HTTP 429), so Production and
+ * Preview builds set `MAIA_MODEL_URL` to a signed URL for our private
+ * Supabase Storage mirror instead; the upstream URL below is only the
+ * fallback for local use. Re-creating the mirror is described in
+ * docs/maia-model-mirror-runbook.md.
  *
  * The model is GPL-3.0 licensed (a derivative work of the Maia Chess
  * project's training pipeline). Attribution and source-code pointers
