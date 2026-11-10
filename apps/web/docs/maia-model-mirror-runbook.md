@@ -55,24 +55,32 @@ SHA-256 differs from the one pinned in it.
    ```bash
    REF=<project-ref>
    NEXT_PUBLIC_SUPABASE_URL="https://$REF.supabase.co" \
-   SUPABASE_SERVICE_ROLE_KEY="$(npx supabase projects api-keys --project-ref "$REF" -o json | jq -r '.[] | select(.name == "service_role") | .api_key')" \
+   SUPABASE_SERVICE_ROLE_KEY="$(npx supabase projects api-keys --project-ref "$REF" -o json 2>/dev/null | jq -r '.[] | select(.name == "service_role") | .api_key' 2>/dev/null)" \
    pnpm exec tsx scripts/mirror-maia-model.ts > /tmp/maia-url
    ```
 
    The script prints the URL on stdout (captured in the file) and progress on
    stderr. It fails without writing a URL if the upload, the signing, or the
-   test fetch fails.
+   test fetch fails. Both `2>/dev/null` are deliberate: the CLI appends
+   non-JSON text after the key list, so `jq` reports a parse error after it
+   has already printed the key, and neither message is useful here.
 
-3. Store the URL in Vercel as a sensitive variable for Production and Preview
-   (`vercel env add` asks whether the value is sensitive — answer yes), then
-   delete the local copy:
+3. Store the URL in Vercel as a sensitive variable for Production and Preview,
+   then delete the local copy. `--project` / `--scope` work without
+   `vercel link`; `--force` overwrites the previous value. `tr` strips the
+   trailing newline so it does not become part of the URL:
 
    ```bash
-   vercel env rm MAIA_MODEL_URL production --yes; vercel env rm MAIA_MODEL_URL preview --yes
-   vercel env add MAIA_MODEL_URL production < /tmp/maia-url
-   vercel env add MAIA_MODEL_URL preview < /tmp/maia-url
+   for e in production preview; do
+     tr -d '\n' < /tmp/maia-url | vercel env add MAIA_MODEL_URL -e "$e" --sensitive --force --yes \
+       --project blindfold-chess --scope k0kishimas-projects
+   done
    rm /tmp/maia-url
    ```
+
+   `vercel env ls --project blindfold-chess --scope k0kishimas-projects`
+   should then list `MAIA_MODEL_URL` as `Secret` once for Production and once
+   for Preview.
 
 4. Redeploy production (env var changes apply only to new builds), and check
    that the build log shows
