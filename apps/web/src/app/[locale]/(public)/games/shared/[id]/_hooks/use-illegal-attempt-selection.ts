@@ -2,9 +2,9 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
+import { resolveIllegalAttemptSquares } from '@blindfold-chess/features/game-record';
 import type { Side } from '@blindfold-chess/types';
 
-import { resolveIllegalAttemptSquares } from '@/lib/games/illegal-attempts';
 import type { MoveOperationLog } from '@/lib/games/saved-game-types';
 
 type Options = {

@@ -4,6 +4,7 @@ import { type ReactNode, useState } from 'react';
 
 import { ChessBoard } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { moveNavDisabledState } from '@blindfold-chess/features/game-play';
 import type { Side } from '@blindfold-chess/types';
 import { FaChevronDown, FaEye, FaEyeSlash, FaSpinner } from 'react-icons/fa';
 
@@ -16,7 +17,6 @@ import type { FormattedPgnMove } from '@/app/[locale]/(public)/games/play/_lib/p
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { resolveBoardDisplay } from '@/app/[locale]/_hooks/use-board-display';
 
-import { moveNavDisabledState } from '../_lib/move-nav-disabled-state';
 import {
   INLINE_BOARD_CARD_CHROME,
   INLINE_BOARD_HEADER_CHROME,

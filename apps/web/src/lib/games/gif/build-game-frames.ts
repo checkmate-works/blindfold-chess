@@ -1,12 +1,14 @@
 import type { BlindfoldDisplaySettings } from '@blindfold-chess/features/board-display';
 import { executeMove, isCheckmateFen, replayMoves } from '@blindfold-chess/features/chess-core';
+import {
+  type IllegalAttemptSquares,
+  playSettingsAtHalfMove,
+  resolveIllegalAttemptSquares,
+} from '@blindfold-chess/features/game-record';
 
 import type { MoveSquares } from '@/lib/board/move-squares';
 import type { GameRecord } from '@/lib/db/schema';
 import type { GameGifVariant } from '@/lib/games/gif/constants';
-import type { IllegalAttemptSquares } from '@/lib/games/illegal-attempts';
-import { resolveIllegalAttemptSquares } from '@/lib/games/illegal-attempts';
-import { playSettingsAtHalfMove } from '@/lib/games/play-settings-log';
 import {
   foldPlaySettingsToDisplay,
   playSettingsDisplayAtHalfMove,

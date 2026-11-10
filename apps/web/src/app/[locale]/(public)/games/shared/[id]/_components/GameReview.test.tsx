@@ -64,15 +64,14 @@ vi.mock('@/i18n/use-safe-translations');
 
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: pushSpy }) }));
 
-vi.mock('@/lib/games/compute-game-stats', () => ({ computeGameStats: () => mockStats }));
-
-// Only the two position-resolving reads are stubbed; `foldBoardVisibility`
-// stays real so this exercises the actual hidden-board rule rather than a
-// re-statement of it.
-vi.mock('@/lib/games/play-settings-log', async (orig) => {
+// `computeGameStats` and the two position-resolving reads are stubbed;
+// `foldBoardVisibility` stays real so this exercises the actual hidden-board
+// rule rather than a re-statement of it.
+vi.mock('@blindfold-chess/features/game-record', async (orig) => {
   const actual = await (orig as () => Promise<Record<string, unknown>>)();
   return {
     ...actual,
+    computeGameStats: () => mockStats,
     gameUsedNotablePlaySettings: () => mockNotable,
     playSettingsAtHalfMove: () => mockEffectiveSettings,
   };

@@ -6,9 +6,8 @@ import {
   getFenAfterMoves,
 } from '@blindfold-chess/features/chess-core';
 import { formatMovesToPgn, formatPgnToText } from '@blindfold-chess/features/chess-core/pgn-format';
+import { parseFenMeta } from '@blindfold-chess/features/game-play';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
-
-import { parseFenMeta } from '../_lib/fen-utils';
 
 type UseNotationOptions = {
   initialMoves?: AlgebraicNotation[];

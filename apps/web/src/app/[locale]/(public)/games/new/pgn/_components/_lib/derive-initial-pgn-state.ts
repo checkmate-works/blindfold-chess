@@ -1,11 +1,10 @@
 import { type MaiaRating, isMaiaRating } from '@blindfold-chess/features/ai-game/maia';
 import { formatMovesToPgn, formatPgnToText } from '@blindfold-chess/features/chess-core/pgn-format';
+import { parseFenMeta } from '@blindfold-chess/features/game-play';
 import type { Side } from '@blindfold-chess/types';
 
 import { type EngineKind, isEngineKind } from '@/lib/engines';
 import type { SkillLevel } from '@/lib/games/saved-game-types';
-
-import { parseFenMeta } from '@/app/[locale]/(public)/games/play/_lib/fen-utils';
 
 export type InitialPgnState = {
   pgn: string;

@@ -6,20 +6,18 @@ import {
   moduleStackScreenOptions,
   moduleStackScreens,
 } from "../../../navigation/module-stack-screens";
+import {
+  MOBILE_PRACTICE_MODULES,
+  practiceModuleRoute,
+} from "../../../navigation/practice-modules";
 import { useTheme } from "../../../theme";
 
-const PRACTICE_MODULES: readonly ModuleRoute[] = [
-  { route: "coordinate-quiz", i18nKey: "coordinateQuiz" },
-  { route: "legal-moves", i18nKey: "legalMoves" },
-  { route: "board-symmetry", i18nKey: "boardSymmetry" },
-  { route: "square-colors", i18nKey: "squareColors" },
-  { route: "diagonal-quiz", i18nKey: "diagonalQuiz" },
-  { route: "route-planner", i18nKey: "routePlanner" },
-  { route: "quadrants", i18nKey: "quadrants" },
-  { route: "knight-tour", i18nKey: "knightTour" },
-  { route: "algebraic-notation", i18nKey: "algebraicNotation" },
-  { route: "fen", i18nKey: "fen" },
-];
+const PRACTICE_MODULE_ROUTES: readonly ModuleRoute[] =
+  MOBILE_PRACTICE_MODULES.map((module) => ({
+    route: practiceModuleRoute(module),
+    i18nKey: module.i18nKey,
+    hasTraining: module.hasTraining,
+  }));
 
 export default function PracticeLayout() {
   const { t } = useTranslation();
@@ -28,7 +26,7 @@ export default function PracticeLayout() {
   return (
     <Stack screenOptions={moduleStackScreenOptions(colors, t)}>
       <Stack.Screen name="index" options={{ headerShown: false }} />
-      {moduleStackScreens(t, PRACTICE_MODULES)}
+      {moduleStackScreens(t, PRACTICE_MODULE_ROUTES)}
     </Stack>
   );
 }

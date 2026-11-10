@@ -6,12 +6,12 @@ import { useRouter } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { fenToLichessUrl, replayMoves } from '@blindfold-chess/features/chess-core';
+import { computeGameStats } from '@blindfold-chess/features/game-record';
 import type { AlgebraicNotation, FinalGameOutcome, Side } from '@blindfold-chess/types';
 import { FaArrowRight } from 'react-icons/fa';
 
 import type { AiReview, AiReviewGenerationOffer, PendingAiReviewJob } from '@/lib/ai-review/types';
 import type { EngineConfig } from '@/lib/engines';
-import { computeGameStats } from '@/lib/games/compute-game-stats';
 import type { EvaluationMark } from '@/lib/games/evaluation';
 import type {
   GamePlaySettings,

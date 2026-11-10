@@ -1,13 +1,18 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { calculateAccuracy } from '@blindfold-chess/features/common';
-import type { PositionAccuracy } from '@blindfold-chess/features/common';
+import {
+  type FenPosition,
+  selectInitialPositions,
+  summarizeFenSession,
+} from '@blindfold-chess/features/fen-practice';
+import {
+  useFenPracticeSession,
+  usePieceAccuracy,
+} from '@blindfold-chess/features/fen-practice/client';
 
-import { usePieceAccuracy } from '@/app/[locale]/(public)/practice/(free-play)/_hooks/use-piece-accuracy';
-import { aggregateResults } from '@/app/[locale]/(public)/practice/(free-play)/_lib/aggregate-results';
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';
 import { useQuitConfirmLabels } from '@/app/[locale]/(public)/practice/_hooks/use-quit-confirm-labels';
@@ -15,15 +20,11 @@ import {
   realignToElement,
   useScrollToElement,
 } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
-import type { PositionData } from '@/app/[locale]/(public)/practice/_lib/types';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { selectInitialPositions } from '../_lib/select-initial-positions';
 import { FenProblemResult } from './FenProblemResult';
 import { FenRecreate } from './FenRecreate';
-
-type GamePhase = 'recreate' | 'problem-result' | 'result';
 
 type Props = {
   locale: Locale;
@@ -55,68 +56,42 @@ export function FenSession({
   // Positions are derived once on first render from props — no effect-based
   // initialization and no `hasMounted` flag required. `FenSession` is loaded
   // via `next/dynamic`, so it never renders on the server.
-  const [positions] = useState<PositionData[]>(() =>
+  const [initialPositions] = useState<FenPosition[]>(() =>
     selectInitialPositions(customFen, fens, problemCount, shuffle)
   );
 
   useScrollToElement('fen-session');
 
-  // Game state
-  const [phase, setPhase] = useState<GamePhase>('recreate');
-  const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
-  const [recreatedPosition, setRecreatedPosition] = useState('8/8/8/8/8/8/8/8 w - - 0 1');
-  const [currentAccuracy, setCurrentAccuracy] = useState<PositionAccuracy | null>(null);
-  const [problemResults, setProblemResults] = useState<Map<number, PositionAccuracy>>(new Map());
-  const [recreatedPositions, setRecreatedPositions] = useState<Map<number, string>>(new Map());
-  const [skippedProblems, setSkippedProblems] = useState<Set<number>>(new Set());
+  const {
+    positions,
+    phase,
+    currentProblemIndex,
+    originalPosition,
+    recreatedPosition,
+    setRecreatedPosition,
+    currentAccuracy,
+    problemResults,
+    recreatedPositions,
+    skippedProblems,
+    submit: handleSubmit,
+    skip,
+    nextProblem,
+    finish,
+  } = useFenPracticeSession({
+    positions: initialPositions,
+    pieceNames,
+    accuracyDescriptions,
+  });
   const [showQuitModal, setShowQuitModal] = useState(false);
 
-  // Derive originalPosition from positions and currentProblemIndex
-  const originalPosition = useMemo<PositionData | null>(() => {
-    return positions[currentProblemIndex] || null;
-  }, [positions, currentProblemIndex]);
-
-  const handleSubmit = useCallback(() => {
-    if (!originalPosition) return;
-
-    const accuracy = calculateAccuracy(
-      originalPosition.fen,
-      recreatedPosition,
-      pieceNames,
-      accuracyDescriptions
-    );
-
-    setCurrentAccuracy(accuracy);
-    setProblemResults((prev) => new Map(prev).set(currentProblemIndex, accuracy));
-    setRecreatedPositions((prev) => new Map(prev).set(currentProblemIndex, recreatedPosition));
-
-    setPhase('problem-result');
-  }, [originalPosition, recreatedPosition, currentProblemIndex, pieceNames, accuracyDescriptions]);
-
   const handleSkip = useCallback(() => {
-    setSkippedProblems((prev) => new Set(prev).add(currentProblemIndex));
-
-    const nextIndex = currentProblemIndex + 1;
-
-    if (nextIndex < positions.length) {
-      setCurrentProblemIndex(nextIndex);
-      setRecreatedPosition('8/8/8/8/8/8/8/8 w - - 0 1');
-      setCurrentAccuracy(null);
-      setPhase('recreate');
-      realignToElement('fen-session');
-    } else {
-      setPhase('result');
-    }
-  }, [currentProblemIndex, positions]);
+    if (skip()) realignToElement('fen-session');
+  }, [skip]);
 
   const handleNextProblem = useCallback(() => {
-    const nextIndex = currentProblemIndex + 1;
-    setCurrentProblemIndex(nextIndex);
-    setRecreatedPosition('8/8/8/8/8/8/8/8 w - - 0 1');
-    setCurrentAccuracy(null);
-    setPhase('recreate');
+    nextProblem();
     realignToElement('fen-session');
-  }, [currentProblemIndex]);
+  }, [nextProblem]);
 
   const handlePlayAgain = useCallback(() => {
     window.location.href = `/${locale}/practice/fen`;
@@ -128,8 +103,8 @@ export function FenSession({
 
   const handleQuitConfirm = useCallback(() => {
     setShowQuitModal(false);
-    setPhase('result');
-  }, []);
+    finish();
+  }, [finish]);
 
   const handleQuitCancel = useCallback(() => {
     setShowQuitModal(false);
@@ -182,7 +157,7 @@ export function FenSession({
         showCoordinates={preferences.showCoordinates}
         isTutorial={isTutorial}
         onNextProblem={handleNextProblem}
-        onViewResults={() => setPhase('result')}
+        onViewResults={finish}
         onFinishTutorial={handlePlayAgain}
       />
     );
@@ -190,9 +165,14 @@ export function FenSession({
 
   // Final result phase
   if (phase === 'result') {
-    const resultsArray = Array.from(problemResults.values());
+    const summary = summarizeFenSession({
+      positions,
+      problemResults,
+      recreatedPositions,
+      skippedProblems,
+    });
 
-    if (resultsArray.length === 0 && skippedProblems.size === 0) {
+    if (summary.empty) {
       const data = JSON.stringify({
         score: 0,
         total: 100,
@@ -204,41 +184,13 @@ export function FenSession({
       return <PracticeResultSkeleton />;
     }
 
-    const { totalAccuracy, totalCorrect, totalPieces, totalIncorrect, totalMissing, totalExtra } =
-      aggregateResults(resultsArray);
-
-    const individualResults = positions.map((position, index) => {
-      const result = problemResults.get(index);
-      const isSkipped = skippedProblems.has(index) || !result;
-
-      return {
-        fen: position.fen,
-        recreatedFen: recreatedPositions.get(index) || '',
-        isBlackToMove: position.isBlackToMove,
-        accuracy: result?.accuracy ?? 0,
-        correctPieces: result?.correctPieces ?? 0,
-        totalPieces: result?.totalPieces ?? 0,
-        incorrectPieces: result?.incorrectPieces ?? 0,
-        missingPieces: result?.missingPieces ?? 0,
-        extraPieces: result?.extraPieces ?? 0,
-        originalIndex: index,
-        skipped: isSkipped,
-      };
-    });
-
-    const detailedStats = {
-      correctPieces: totalCorrect,
-      totalPieces,
-      incorrectPieces: totalIncorrect,
-      missingPieces: totalMissing,
-      extraPieces: totalExtra,
-    };
+    const { totalAccuracy, totalCorrect, totalPieces } = summary.aggregated;
 
     const data = JSON.stringify({
-      score: Math.round(totalAccuracy),
+      score: summary.score,
       total: 100,
-      results: individualResults,
-      detailedStats,
+      results: summary.results,
+      detailedStats: summary.detailedStats,
     });
 
     const scoreText = `${t('accuracy')}: ${totalAccuracy.toFixed(1)}% (${totalCorrect}/${totalPieces})`;

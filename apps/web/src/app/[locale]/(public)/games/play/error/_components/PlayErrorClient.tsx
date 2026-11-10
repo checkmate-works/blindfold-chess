@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { labelMoveAt, labelMoveList } from '@blindfold-chess/features/game-play';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { FaExclamationTriangle, FaTrash, FaWrench } from 'react-icons/fa';
 
@@ -13,8 +14,6 @@ import { LocalStorageGameRepository } from '@/lib/games/local-storage-repository
 
 import { PageTitle } from '@/app/[locale]/_components/PageTitle';
 import type { Locale } from '@/app/[locale]/_lib/types';
-
-import { labelMoveAt, labelMoveList } from '../_lib/error-move-labels';
 
 type Props = {
   locale: Locale;

@@ -9,6 +9,7 @@ import {
   getDiagonalSquares,
   isValidDiagonalAnswer,
   normalizeDiagonal,
+  scoreDiagonalAnswer,
 } from "./logic";
 
 // ============================================================
@@ -635,5 +636,30 @@ describe("EXCLUDED_QUIZ_SQUARES (generalized exclusion rule)", () => {
     for (const square of ["d4", "e5", "a2", "h4"]) {
       expect(squares.has(square)).toBe(true);
     }
+  });
+});
+
+describe("scoreDiagonalAnswer", () => {
+  it("accepts both answers in either endpoint order and case", () => {
+    expect(scoreDiagonalAnswer("d4", "H8-a1", "g1-A7")).toEqual({
+      isCorrect: true,
+      isDiagonalCorrect: true,
+      isAntiDiagonalCorrect: true,
+      correctDiagonal: getDiagonals("d4").diagonal,
+      correctAntiDiagonal: getDiagonals("d4").antiDiagonal,
+    });
+  });
+
+  it("is wrong overall when only one diagonal is right", () => {
+    const score = scoreDiagonalAnswer("d4", "a1-h8", "a1-h8");
+    expect(score.isDiagonalCorrect).toBe(true);
+    expect(score.isAntiDiagonalCorrect).toBe(false);
+    expect(score.isCorrect).toBe(false);
+  });
+
+  it("treats a malformed answer as wrong", () => {
+    expect(scoreDiagonalAnswer("d4", "a1h8", "a7-g1").isDiagonalCorrect).toBe(
+      false,
+    );
   });
 });

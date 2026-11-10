@@ -58,3 +58,45 @@ export type GamePreferences = {
    */
   aiReplyDuration: AiReplyDuration;
 };
+
+/**
+ * The subset of {@link GamePreferences} snapshotted onto each game at start and
+ * tracked per game afterwards: mid-game edits of these fields accumulate in the
+ * game's preference change log instead of mutating the player's global
+ * preferences.
+ *
+ * Why each field is per-game rather than global-only:
+ * - `boardVisibility` — a "Controls"-tier global setting, but how the board
+ *   surfaces is often chosen per session.
+ * - `highlightLastMove`, `showPieceDestinations` — display assists players
+ *   dial per session; turning destinations off makes the visible board a
+ *   harder, hint-free surface.
+ * - `showOwnPieces`, `showOpponentPieces`, `pieceShapeMode`, `pieceColors`,
+ *   `pawnHideMode` — the blindfold intensity. `pawnHideMode` is orthogonal to
+ *   the side-visibility axis: a fully hidden side already hides its pawns, so
+ *   it only narrows hiding to pawns on a side that is otherwise shown.
+ * - `moveInputMode` — mid-game switches (text → button → select) are logged
+ *   rather than changing the global default. The orthogonal
+ *   `enabledMoveInputModes` (which modes the switcher offers) stays global: it
+ *   governs UI availability, not per-game intent.
+ * - `aiReplyDuration` — how long the AI's last move should linger depends on
+ *   the blindfold intensity chosen for that session. Only meaningful while the
+ *   board is hidden (`boardVisibility !== 'always'`).
+ *
+ * Records saved before a field existed in this shape lack it; consumers fall
+ * back (`??`) to the global value and the stored-game validators migrate on
+ * read.
+ */
+export type PerGamePreferences = Pick<
+  GamePreferences,
+  | "boardVisibility"
+  | "highlightLastMove"
+  | "showPieceDestinations"
+  | "showOwnPieces"
+  | "showOpponentPieces"
+  | "pieceShapeMode"
+  | "pieceColors"
+  | "pawnHideMode"
+  | "moveInputMode"
+  | "aiReplyDuration"
+>;

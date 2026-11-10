@@ -2,10 +2,10 @@
 
 import { useEffect, useRef } from 'react';
 
+import { computeGameStats } from '@blindfold-chess/features/game-record';
 import type { FinalGameOutcome } from '@blindfold-chess/types';
 
 import type { EngineConfig } from '@/lib/engines';
-import { computeGameStats } from '@/lib/games/compute-game-stats';
 import type { MoveOperationLog } from '@/lib/games/saved-game-types';
 import { captureError } from '@/lib/sentry/capture-error';
 

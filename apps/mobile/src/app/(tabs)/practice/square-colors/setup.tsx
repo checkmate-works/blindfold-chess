@@ -24,6 +24,9 @@ export default function SquareColorsSetup() {
       isLoaded={isLoaded}
       startLabel={t("squareColors.setup.startQuiz")}
       onStart={handleStart}
+      onStartTraining={() =>
+        router.push("/(tabs)/practice/square-colors/training")
+      }
     >
       <SettingsForm
         timeLimit={settings.timeLimit}

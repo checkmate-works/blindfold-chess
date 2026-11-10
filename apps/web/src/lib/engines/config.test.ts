@@ -7,7 +7,6 @@ import {
   type EngineConfig,
   engineConfigFromUrlParams,
   engineConfigToUrlParams,
-  isEngineConfig,
 } from './config';
 
 describe('engineConfigToUrlParams', () => {
@@ -71,34 +70,5 @@ describe('round-trip', () => {
   it.each(cases)('serialises and parses back to the same config: %j', (config) => {
     const params = new URLSearchParams(engineConfigToUrlParams(config));
     expect(engineConfigFromUrlParams(params)).toEqual(config);
-  });
-});
-
-describe('isEngineConfig', () => {
-  it('accepts a well-formed Stockfish config', () => {
-    expect(isEngineConfig({ kind: 'stockfish', skillLevel: 5 })).toBe(true);
-  });
-
-  it('accepts a well-formed Maia config', () => {
-    expect(isEngineConfig({ kind: 'maia', rating: 1600 })).toBe(true);
-  });
-
-  it('rejects Stockfish with an out-of-range skillLevel', () => {
-    expect(isEngineConfig({ kind: 'stockfish', skillLevel: 99 })).toBe(false);
-  });
-
-  it('rejects Maia with an off-catalog rating', () => {
-    expect(isEngineConfig({ kind: 'maia', rating: 1234 })).toBe(false);
-  });
-
-  it('rejects unknown discriminators', () => {
-    expect(isEngineConfig({ kind: 'lc0', someValue: 1 })).toBe(false);
-  });
-
-  it('rejects non-objects', () => {
-    expect(isEngineConfig(null)).toBe(false);
-    expect(isEngineConfig(undefined)).toBe(false);
-    expect(isEngineConfig('stockfish')).toBe(false);
-    expect(isEngineConfig(5)).toBe(false);
   });
 });

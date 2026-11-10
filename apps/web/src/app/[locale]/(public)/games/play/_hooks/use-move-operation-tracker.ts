@@ -1,14 +1,14 @@
 import { useCallback, useRef, useState } from 'react';
 
+import { EMPTY_OPERATION_TOTALS, MAX_UNDONE_LOGS } from '@blindfold-chess/features/game-record';
+
 import type { MoveSquares } from '@/lib/board/move-squares';
-import { EMPTY_OPERATION_TOTALS } from '@/lib/games/operation-totals';
 import type {
   MoveInputMethod,
   MoveOperationLog,
   OperationTotals,
   UndoneMoveLog,
 } from '@/lib/games/saved-game-types';
-import { MAX_UNDONE_LOGS } from '@/lib/games/undone-logs';
 
 type UseMoveOperationTrackerOptions = {
   initialLogs?: MoveOperationLog[];

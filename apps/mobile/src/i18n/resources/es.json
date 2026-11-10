@@ -6,7 +6,12 @@
     "back": "Atrás",
     "settings": "Ajustes",
     "home": "Inicio",
-    "practice": "Práctica"
+    "practice": "Práctica",
+    "training": "Entrenamiento",
+    "startTraining": "Iniciar Entrenamiento",
+    "trainingDescription": "Las preguntas seguirán apareciendo hasta que te detengas. Presiona el botón Finalizar para terminar.",
+    "endTraining": "Finalizar",
+    "skip": "Saltar"
   },
   "tabs": {
     "home": "Inicio",
@@ -251,10 +256,6 @@
     "result": {
       "title": "¡Quiz completado!",
       "totalQuestions": "Preguntas totales",
-      "correctAnswers": "Respuestas correctas",
-      "accuracy": "Precisión",
-      "timeTaken": "Tiempo empleado",
-      "averageTime": "Tiempo medio",
       "points": "Puntos",
       "playAgain": "Jugar de nuevo",
       "backToMenu": "Volver al menú"
@@ -376,7 +377,10 @@
       "clear": "Borrar",
       "correct": "¡Correcto!",
       "incorrect": "Incorrecto",
-      "correctAnswer": "{{diagonal}}, {{antiDiagonal}}"
+      "correctAnswer": "{{diagonal}}, {{antiDiagonal}}",
+      "nextProblem": "Siguiente Problema",
+      "yourAnswer": "Tu respuesta",
+      "correctAnswerLabel": "Respuesta correcta"
     },
     "result": {
       "title": "¡Práctica completada!",
@@ -475,10 +479,80 @@
   },
   "fen": {
     "setup": {
-      "title": "Reconstrucción FEN Configuración"
+      "title": "Reconstrucción FEN Configuración",
+      "problemSource": "Origen del Problema",
+      "presetProblems": "Problemas Predefinidos",
+      "enterFen": "Introducir FEN",
+      "presetDescription": "Selecciona un problema para previsualizar",
+      "customFenDescription": "Introduce cadenas FEN, una por línea (máx. 10)",
+      "customFenPlaceholder": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "tooManyFens": "Máximo {{max}} posiciones FEN permitidas",
+      "invalidFenOnLine": "FEN inválido en la línea {{lines}}",
+      "invalidFenOnLines": "FEN inválido en las líneas {{lines}}",
+      "problemCount": "Número de Problemas",
+      "shuffle": "Mezclar Problemas",
+      "start": "Iniciar"
     },
     "result": {
-      "title": "¡Práctica completada!"
+      "title": "¡Práctica completada!",
+      "accuracy": "Precisión",
+      "correct": "Correcto",
+      "incorrect": "Incorrecto",
+      "missing": "Faltante",
+      "extra": "Extra",
+      "problemDetails": "Detalles del Problema",
+      "skipped": "Saltado",
+      "playAgain": "Jugar de nuevo",
+      "backToMenu": "Volver al menú"
+    },
+    "session": {
+      "recreateFromFen": "Recrea la Posición desde el FEN",
+      "flipBoard": "Voltear Tablero",
+      "submit": "Enviar",
+      "skip": "Saltar Este Problema",
+      "quit": "Abandonar Práctica",
+      "quitConfirmTitle": "¿Abandonar la Práctica?",
+      "quitConfirmMessage": "Tu progreso se guardará y verás tus resultados hasta el momento.",
+      "quitConfirmYes": "Abandonar",
+      "quitConfirmNo": "Continuar",
+      "whitePieces": "Piezas Blancas",
+      "blackPieces": "Piezas Negras",
+      "problem": "Problema",
+      "eraser": "Borrador",
+      "clearBoard": "Limpiar tablero",
+      "selectPiece": "Elige una pieza y toca casillas para colocarla. Tócala de nuevo para quitarla.",
+      "problemOf": "{{current}} / {{total}}"
+    },
+    "problemResult": {
+      "accuracy": "Precisión",
+      "correct": "Correcto",
+      "incorrect": "Incorrecto",
+      "missing": "Faltante",
+      "extra": "Extra",
+      "original": "Original",
+      "yourRecreation": "Tu Recreación",
+      "nextProblem": "Siguiente Problema",
+      "viewResults": "Ver Resultados"
+    },
+    "pieceNames": {
+      "K": "Rey Blanco",
+      "Q": "Dama Blanca",
+      "R": "Torre Blanca",
+      "B": "Alfil Blanco",
+      "N": "Caballo Blanco",
+      "P": "Peón Blanco",
+      "k": "Rey Negro",
+      "q": "Dama Negra",
+      "r": "Torre Negra",
+      "b": "Alfil Negro",
+      "n": "Caballo Negro",
+      "p": "Peón Negro"
+    },
+    "scoreDescriptions": {
+      "correct": "{{piece}} en {{square}} es correcto",
+      "wrongPiece": "{{square}} tiene {{actual}} en lugar de {{expected}}",
+      "missing": "{{piece}} falta en {{square}}",
+      "extra": "{{piece}} extra en {{square}}"
     }
   }
 }

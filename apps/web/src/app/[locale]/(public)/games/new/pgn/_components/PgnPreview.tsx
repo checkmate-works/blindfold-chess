@@ -5,13 +5,13 @@ import { useMemo, useState } from 'react';
 import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { formatMovesToPgn, getLastMoveDetails } from '@blindfold-chess/features/chess-core';
+import { parseFenMeta } from '@blindfold-chess/features/game-play';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 import { FaEye } from 'react-icons/fa';
 
 import { BoardViewModal } from '@/app/[locale]/(public)/games/play/_components/BoardViewModal';
 import { useBoardFlip } from '@/app/[locale]/(public)/games/play/_hooks/use-board-flip';
 import { useMoveNavigation } from '@/app/[locale]/(public)/games/play/_hooks/use-move-navigation';
-import { parseFenMeta } from '@/app/[locale]/(public)/games/play/_lib/fen-utils';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 type Props = {

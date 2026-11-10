@@ -6,6 +6,7 @@ import { BoardFrame, BoardSkeleton, Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { validateFenFormat as validateFEN } from '@blindfold-chess/features/chess-core/fen';
+import { PRESET_POSITIONS } from '@blindfold-chess/features/fen-practice';
 import { FaPlay } from 'react-icons/fa';
 
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
@@ -13,8 +14,6 @@ import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCont
 import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import type { PresetPosition } from '../_data/positions';
-import presetPositions from '../_data/presetPositions.json';
 import { useFenSettings } from '../_hooks/use-fen-settings';
 import { CustomFenSection } from './CustomFenSection';
 import { PresetProblemSection } from './PresetProblemSection';
@@ -62,7 +61,7 @@ export function FenSetup({ locale }: Props) {
       params.set('count', effectiveCount.toString());
       params.set('source', 'custom');
     } else {
-      const presetFens = (presetPositions as PresetPosition[]).map((p) => p.fen);
+      const presetFens = PRESET_POSITIONS.map((p) => p.fen);
       const encoded = btoa(presetFens.join('\n'));
       params.set('problems', encoded);
       const effectiveCount = Math.min(problemCount, presetFens.length);

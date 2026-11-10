@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
+import { generateMoveSuggestions } from '@blindfold-chess/features/game-play';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
-
-import { generateMoveSuggestions } from '../_lib/move-suggestions';
 
 type UseMoveSuggestionsOptions = {
   /**

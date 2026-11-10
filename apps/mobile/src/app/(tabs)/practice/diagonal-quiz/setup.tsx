@@ -24,6 +24,9 @@ export default function DiagonalQuizSetup() {
       isLoaded={isLoaded}
       startLabel={t("diagonalQuiz.setup.startQuiz")}
       onStart={handleStart}
+      onStartTraining={() =>
+        router.push("/(tabs)/practice/diagonal-quiz/training")
+      }
     >
       <SettingsForm
         timeLimit={settings.timeLimit}

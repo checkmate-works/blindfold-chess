@@ -1,7 +1,8 @@
+import { gameUsedNotablePlaySettings } from '@blindfold-chess/features/game-record';
+
 import type { GameFrameSource, GifFrame } from '@/lib/games/gif/build-game-frames';
 import { buildGameFrames, hasAnnotatableOps } from '@/lib/games/gif/build-game-frames';
 import type { GameGifVariant } from '@/lib/games/gif/constants';
-import { gameUsedNotablePlaySettings } from '@/lib/games/play-settings-log';
 
 /**
  * Frames a pre-publish preview plays before looping — roughly the game's first

@@ -5,14 +5,14 @@ import {
   fullmoveNumberFromFen,
   replayMoves,
 } from '@blindfold-chess/features/chess-core';
+// Relative on purpose (against the usual 2-levels-up @ alias rule): vitest's
+// vite-node fails to apply the `@` alias to specifiers containing `[locale]` /
+// `(public)`, and this module is under unit test.
+import { parseFenMeta } from '@blindfold-chess/features/game-play';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import type { MoveSquares } from '@/lib/board/move-squares';
 
-// Relative on purpose (against the usual 2-levels-up @ alias rule): vitest's
-// vite-node fails to apply the `@` alias to specifiers containing `[locale]` /
-// `(public)`, and this module is under unit test.
-import { parseFenMeta } from '../../_lib/fen-utils';
 import type { MatchStatus } from './match-status';
 
 /** What the playback arrives at: the verdict against the chosen kata. */

@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 
 import { ChessBoard } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { moveNavDisabledState } from '@blindfold-chess/features/game-play';
 import type { Side } from '@blindfold-chess/types';
 
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
@@ -11,7 +12,6 @@ import type { MoveSquares } from '@/lib/board/move-squares';
 import type { EvaluationMark } from '@/lib/games/evaluation';
 import type { TerminationMark } from '@/lib/games/termination-mark';
 
-import { moveNavDisabledState } from '@/app/[locale]/(public)/games/play/_lib/move-nav-disabled-state';
 import type { FormattedPgnMove } from '@/app/[locale]/(public)/games/play/_lib/pgn-parser';
 import { BoardModal } from '@/app/[locale]/_components/BoardModal';
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';

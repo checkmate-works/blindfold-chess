@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { mapGameStatusToOutcome } from '@blindfold-chess/features/ai-game';
 import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
 import { useLatestRef } from '@blindfold-chess/features/common/client';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
@@ -13,7 +14,6 @@ import type { EngineConfig } from '@/lib/engines';
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { mapGameStatusToOutcome } from '../_lib/map-game-status-to-outcome';
 import { useAiMoveAnnouncer } from './use-ai-move-announcer';
 import { useAiMoveOrchestration } from './use-ai-move-orchestration';
 import { useAiMoveRetry } from './use-ai-move-retry';

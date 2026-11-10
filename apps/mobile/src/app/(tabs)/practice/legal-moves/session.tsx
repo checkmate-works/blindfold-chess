@@ -13,7 +13,10 @@ import {
   LegalIllegalButtons,
 } from "../../../../features/legal-moves/components";
 import { useLegalMovesSession } from "@blindfold-chess/features/legal-moves/client";
-import { PIECE_TYPES } from "../../../../features/legal-moves/lib/types";
+import {
+  DEFAULT_LEGAL_MOVES_SETTINGS,
+  PIECE_TYPES,
+} from "../../../../features/legal-moves/lib/types";
 import type { PieceType } from "../../../../features/legal-moves/lib/types";
 import {
   parseEnumListParam,
@@ -28,7 +31,10 @@ export default function LegalMovesSession() {
     pieces: string;
   }>();
 
-  const duration = parseIntParam(params.duration, { min: 1, fallback: 60 });
+  const duration = parseIntParam(params.duration, {
+    min: 1,
+    fallback: DEFAULT_LEGAL_MOVES_SETTINGS.timeLimit,
+  });
   const selectedPieces: PieceType[] = parseEnumListParam(
     params.pieces,
     PIECE_TYPES,

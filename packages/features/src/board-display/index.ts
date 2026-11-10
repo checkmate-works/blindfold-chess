@@ -4,6 +4,7 @@ export type {
   BlindfoldDisplaySettings,
   DisplayablePiece,
   HiddenPieceStyle,
+  MoveSquares,
   PawnHideMode,
   PieceColor,
   PieceColorMode,

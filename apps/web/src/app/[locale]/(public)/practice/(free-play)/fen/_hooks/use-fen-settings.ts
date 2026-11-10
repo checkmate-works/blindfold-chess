@@ -3,32 +3,19 @@
 import { useEffect, useState } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { validateFenFormat as validateFEN } from '@blindfold-chess/features/chess-core/fen';
 import { integerBetween, isBoolean, isString } from '@blindfold-chess/features/common';
+import {
+  DEFAULT_FEN_SETTINGS,
+  type FenSettings,
+  PRESET_POSITION_COUNT,
+  validateCustomFenInput,
+} from '@blindfold-chess/features/fen-practice';
 
 import { useLocalStorageSettings } from '@/lib/persistent-settings/use-local-storage-settings';
 
-import type { PresetPosition } from '../_data/positions';
-import presetPositions from '../_data/presetPositions.json';
-
-const MAX_FEN_COUNT = 10;
 const STORAGE_KEY = 'fenPracticeSettings';
 
-const presetCount = (presetPositions as PresetPosition[]).length;
-
-type FenSettings = {
-  problemCount: number;
-  shuffleProblems: boolean;
-  useCustomFen: boolean;
-  customFenInput: string;
-};
-
-const DEFAULT_SETTINGS: FenSettings = {
-  problemCount: presetCount,
-  shuffleProblems: true,
-  useCustomFen: false,
-  customFenInput: '',
-};
+const presetCount = PRESET_POSITION_COUNT;
 
 // `problemCount` has no upper bound here: the setup screens clamp it to the
 // positions actually available, which differs between presets and custom FENs.
@@ -44,7 +31,7 @@ export function useFenSettings() {
 
   const { settings, updateSettings } = useLocalStorageSettings<FenSettings>(
     STORAGE_KEY,
-    DEFAULT_SETTINGS,
+    DEFAULT_FEN_SETTINGS,
     GUARDS
   );
 
@@ -52,36 +39,19 @@ export function useFenSettings() {
 
   // Validate custom FEN when input changes
   useEffect(() => {
-    if (settings.useCustomFen && settings.customFenInput.trim()) {
-      const lines = settings.customFenInput
-        .trim()
-        .split('\n')
-        .filter((line: string) => line.trim());
+    const error = settings.useCustomFen ? validateCustomFenInput(settings.customFenInput) : null;
 
-      if (lines.length > MAX_FEN_COUNT) {
-        setCustomFenError(t('tooManyFens', { max: MAX_FEN_COUNT }));
-        return;
-      }
-
-      const invalidLines: number[] = [];
-
-      lines.forEach((line: string, index: number) => {
-        if (!validateFEN(line.trim())) {
-          invalidLines.push(index + 1);
-        }
-      });
-
-      if (invalidLines.length > 0) {
-        const lineStr =
-          invalidLines.length > 1
-            ? t('invalidFenOnLines', { lines: invalidLines.join(', ') })
-            : t('invalidFenOnLine', { lines: invalidLines.join(', ') });
-        setCustomFenError(lineStr);
-      } else {
-        setCustomFenError(null);
-      }
-    } else {
+    if (!error) {
       setCustomFenError(null);
+    } else if (error.kind === 'tooMany') {
+      setCustomFenError(t('tooManyFens', { max: error.max }));
+    } else {
+      const lines = error.lines.join(', ');
+      setCustomFenError(
+        error.lines.length > 1
+          ? t('invalidFenOnLines', { lines })
+          : t('invalidFenOnLine', { lines })
+      );
     }
   }, [settings.customFenInput, settings.useCustomFen, t]);
 

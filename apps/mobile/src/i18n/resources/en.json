@@ -6,7 +6,12 @@
     "back": "Back",
     "settings": "Settings",
     "home": "Home",
-    "practice": "Practice"
+    "practice": "Practice",
+    "training": "Training",
+    "startTraining": "Start Training",
+    "trainingDescription": "Questions will keep appearing until you stop. Press the End button to finish.",
+    "endTraining": "End",
+    "skip": "Skip"
   },
   "tabs": {
     "home": "Home",
@@ -251,10 +256,6 @@
     "result": {
       "title": "Quiz Complete!",
       "totalQuestions": "Total Questions",
-      "correctAnswers": "Correct Answers",
-      "accuracy": "Accuracy",
-      "timeTaken": "Time Taken",
-      "averageTime": "Avg. Time",
       "points": "Points",
       "playAgain": "Play Again",
       "backToMenu": "Back to Menu"
@@ -376,7 +377,10 @@
       "clear": "Clear",
       "correct": "Correct!",
       "incorrect": "Incorrect",
-      "correctAnswer": "{{diagonal}}, {{antiDiagonal}}"
+      "correctAnswer": "{{diagonal}}, {{antiDiagonal}}",
+      "nextProblem": "Next Problem",
+      "yourAnswer": "Your answer",
+      "correctAnswerLabel": "Correct answer"
     },
     "result": {
       "title": "Practice Complete!",
@@ -475,10 +479,80 @@
   },
   "fen": {
     "setup": {
-      "title": "FEN Reconstruction Setup"
+      "title": "FEN Reconstruction Setup",
+      "problemSource": "Problem Source",
+      "presetProblems": "Preset Problems",
+      "enterFen": "Enter FEN",
+      "presetDescription": "Select a problem to preview",
+      "customFenDescription": "Enter FEN strings, one per line (max 10)",
+      "customFenPlaceholder": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "tooManyFens": "Maximum {{max}} FEN positions allowed",
+      "invalidFenOnLine": "Invalid FEN on line {{lines}}",
+      "invalidFenOnLines": "Invalid FEN on lines {{lines}}",
+      "problemCount": "Number of Problems",
+      "shuffle": "Shuffle Problems",
+      "start": "Start"
     },
     "result": {
-      "title": "Practice Complete!"
+      "title": "Practice Complete!",
+      "accuracy": "Accuracy",
+      "correct": "Correct",
+      "incorrect": "Incorrect",
+      "missing": "Missing",
+      "extra": "Extra",
+      "problemDetails": "Problem Details",
+      "skipped": "Skipped",
+      "playAgain": "Play Again",
+      "backToMenu": "Back to Menu"
+    },
+    "session": {
+      "recreateFromFen": "Recreate the Position from FEN",
+      "flipBoard": "Flip Board",
+      "submit": "Submit",
+      "skip": "Skip This Problem",
+      "quit": "Quit Practice",
+      "quitConfirmTitle": "Quit Practice?",
+      "quitConfirmMessage": "Your progress will be saved and you'll see your results so far.",
+      "quitConfirmYes": "Quit",
+      "quitConfirmNo": "Continue",
+      "whitePieces": "White Pieces",
+      "blackPieces": "Black Pieces",
+      "problem": "Problem",
+      "eraser": "Eraser",
+      "clearBoard": "Clear Board",
+      "selectPiece": "Pick a piece, then tap squares to place it. Tap again to remove it.",
+      "problemOf": "{{current}} / {{total}}"
+    },
+    "problemResult": {
+      "accuracy": "Accuracy",
+      "correct": "Correct",
+      "incorrect": "Incorrect",
+      "missing": "Missing",
+      "extra": "Extra",
+      "original": "Original",
+      "yourRecreation": "Your Recreation",
+      "nextProblem": "Next Problem",
+      "viewResults": "View Results"
+    },
+    "pieceNames": {
+      "K": "White King",
+      "Q": "White Queen",
+      "R": "White Rook",
+      "B": "White Bishop",
+      "N": "White Knight",
+      "P": "White Pawn",
+      "k": "Black King",
+      "q": "Black Queen",
+      "r": "Black Rook",
+      "b": "Black Bishop",
+      "n": "Black Knight",
+      "p": "Black Pawn"
+    },
+    "scoreDescriptions": {
+      "correct": "{{piece}} on {{square}} is correct",
+      "wrongPiece": "{{square}} has {{actual}} instead of {{expected}}",
+      "missing": "{{piece}} is missing from {{square}}",
+      "extra": "Extra {{piece}} on {{square}}"
     }
   }
 }

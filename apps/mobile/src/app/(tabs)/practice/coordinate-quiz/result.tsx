@@ -1,30 +1,20 @@
 import { useTranslation } from "react-i18next";
 import { useLocalSearchParams } from "expo-router";
 
-import { PracticeResultScreen } from "../../../../components";
-import { ResultCard } from "../../../../features/coordinate-quiz/components";
-import type { QuizResult } from "../../../../features/coordinate-quiz/lib/types";
+import {
+  PracticeResultScreen,
+  PracticeStatsResultCard,
+} from "../../../../components";
+import { parsePracticeStatsParams } from "../../../../lib/practice-result-params";
+import type { PracticeStatsParams } from "../../../../lib/practice-result-params";
 
 export default function CoordinateQuizResult() {
   const { t } = useTranslation();
-  const params = useLocalSearchParams<{
-    totalQuestions: string;
-    correctAnswers: string;
-    accuracy: string;
-    averageTime: string;
-    points: string;
-    timeTaken: string;
-  }>();
-
-  // Parse result from URL params
-  const result: QuizResult = {
-    totalQuestions: parseInt(params.totalQuestions || "0", 10),
-    correctAnswers: parseInt(params.correctAnswers || "0", 10),
-    accuracy: parseFloat(params.accuracy || "0"),
-    averageTime: parseFloat(params.averageTime || "0"),
-    points: parseInt(params.points || "0", 10),
-    timeTaken: parseInt(params.timeTaken || "0", 10),
-  };
+  const params = useLocalSearchParams<
+    PracticeStatsParams & { points?: string }
+  >();
+  const result = parsePracticeStatsParams(params);
+  const points = parseInt(params.points || "0", 10);
 
   return (
     <PracticeResultScreen
@@ -33,7 +23,15 @@ export default function CoordinateQuizResult() {
       backToMenuLabel={t("coordinateQuiz.result.backToMenu")}
       setupHref="/(tabs)/practice/coordinate-quiz/setup"
     >
-      <ResultCard result={result} />
+      {/* The one module scored on points rather than correct-out-of-total,
+          so only the headline differs from the other result screens. */}
+      <PracticeStatsResultCard
+        result={result}
+        score={{
+          label: t("coordinateQuiz.result.points"),
+          value: String(points),
+        }}
+      />
     </PracticeResultScreen>
   );
 }

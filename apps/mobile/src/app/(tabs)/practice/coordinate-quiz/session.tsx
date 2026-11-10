@@ -18,6 +18,7 @@ import {
 import { useTheme, fontSize, fontWeight, spacing } from "../../../../theme";
 import {
   BOARD_ORIENTATIONS,
+  DEFAULT_QUIZ_SETTINGS,
   FEEDBACK_SPEEDS,
 } from "../../../../features/coordinate-quiz/lib/types";
 import type {
@@ -37,7 +38,10 @@ export default function CoordinateQuizSession() {
     feedbackSpeed: string;
   }>();
 
-  const timeLimit = parseIntParam(params.duration, { min: 1, fallback: 60 });
+  const timeLimit = parseIntParam(params.duration, {
+    min: 1,
+    fallback: DEFAULT_QUIZ_SETTINGS.timeLimit,
+  });
   const orientation = parseEnumParam<BoardOrientation>(
     params.orientation,
     BOARD_ORIENTATIONS,

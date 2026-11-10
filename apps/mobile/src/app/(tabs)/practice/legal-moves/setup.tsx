@@ -21,11 +21,19 @@ export default function LegalMovesSetup() {
     });
   };
 
+  const handleStartTraining = () => {
+    router.push({
+      pathname: "/(tabs)/practice/legal-moves/training",
+      params: { pieces: settings.selectedPieces.join(",") },
+    });
+  };
+
   return (
     <PracticeSetupScreen
       isLoaded={isLoaded}
       startLabel={t("legalMoves.setup.start")}
       onStart={handleStart}
+      onStartTraining={handleStartTraining}
     >
       <SettingsForm
         timeLimit={settings.timeLimit}

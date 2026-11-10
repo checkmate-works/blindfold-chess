@@ -31,10 +31,10 @@
  * evaluator rely on. The model overview lives in
  * `@/lib/games/saved-game-types.ts`.
  */
+import { sumOperationLogs } from '@blindfold-chess/features/game-record';
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import { sumOperationLogs } from '@/lib/games/operation-totals';
 import type { OperationTotals } from '@/lib/games/saved-game-types';
 
 import { useMoveOperationTracker } from './use-move-operation-tracker';

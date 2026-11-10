@@ -3,6 +3,11 @@ import {
   validateFen,
   validateMoveSequence,
 } from '@blindfold-chess/features/chess-core';
+import {
+  computeGameStats,
+  isOperationTotals,
+  normalizePlaySettingsLog,
+} from '@blindfold-chess/features/game-record';
 import type { FinalGameOutcome, Side } from '@blindfold-chess/types';
 import {
   PAWN_HIDE_MODES,
@@ -16,9 +21,6 @@ import type { EngineConfig, EngineKind } from '@/lib/engines';
 import { isValidUUID } from '@/lib/validations/uuid';
 
 import { isBoardVisibility } from './board-visibility';
-import { computeGameStats } from './compute-game-stats';
-import { isOperationTotals } from './operation-totals';
-import { normalizePlaySettingsLog } from './play-settings-log';
 import { MAX_DESCRIPTION_LENGTH, MAX_MOVES, isValidGameTitle } from './publish-constants';
 import { sanitizeOperationLogs, sanitizeUndoneLogs } from './sanitize-published-logs';
 import type {
