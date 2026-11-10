@@ -6,6 +6,7 @@ import type { NativeAdView } from '@/lib/ads/ad';
 
 import type { EngagementCounterSize } from '@/app/[locale]/_components/EngagementCounter';
 import { NativeAdCard } from '@/app/[locale]/_components/NativeAdCard';
+import { FOCUS_RING_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 import { getFeed } from '../_actions/getFeed';
 import type { FeedScope } from '../_actions/getFeed';
@@ -36,8 +37,9 @@ type Props = {
   locale: string;
   showMoreLabel: string;
   /**
-   * Label for the manual "load the next page" button, shown only after
-   * auto-loading has paused itself — see {@link EMPTY_PAGE_LIMIT}. Distinct
+   * Label for the manual "load the next page" button, shown once auto-loading
+   * has stopped — after too many empty pages ({@link EMPTY_PAGE_LIMIT}) or once
+   * the list is full enough ({@link AUTO_LOAD_ITEM_LIMIT}). Distinct
    * from `showMoreLabel`, which expands a truncated post body inside a card.
    */
   loadMoreLabel: string;
@@ -109,6 +111,52 @@ type PaginationSource =
  */
 const EMPTY_PAGE_LIMIT = 2;
 
+/**
+ * How many items the list may hold before infinite scroll hands over to the
+ * manual button for good.
+ *
+ * @design Why auto-loading has a ceiling at all
+ * Every surface that renders this list sits above the site footer, and the
+ * footer is the only place that links the contact form, the terms, the privacy
+ * policy and the affiliate disclosure. Unbounded infinite scroll keeps
+ * appending as the reader nears the bottom, so the footer recedes every time
+ * it comes into reach and is never actually reachable — readers reported
+ * exactly that. Social timelines that scroll forever get away with it because
+ * they put no footer under the list (their legal links live in a sidebar);
+ * this layout does, so the list has to stop on its own at some point.
+ *
+ * @design Why a ceiling on items rather than removing infinite scroll
+ * Most readers never scroll past the first few pages, and for them automatic
+ * loading is strictly better than a button. Stopping after a fixed amount
+ * keeps that for the common case and only asks a reader who is deliberately
+ * digging further to press a button — after which the footer sits directly
+ * below it. The ceiling counts rendered items, not requests: page size is set
+ * by each surface (and by the loader's clamping), and an empty page — see
+ * {@link EMPTY_PAGE_LIMIT} — should not use up the reader's allowance.
+ *
+ * @design Why the button stays once the ceiling is reached
+ * Past the ceiling, every press loads one page and shows the button again
+ * instead of resuming automatic loading. Resuming would put the reader back
+ * into the state the ceiling exists to end: the footer receding on every
+ * scroll.
+ *
+ * @design Why 40
+ * Forty is four pages of the home feed's ten items. It follows Google Search's
+ * continuous scrolling, which loaded four pages of results automatically on
+ * mobile and then showed a "More results" button (six pages on desktop). Feed
+ * cards are much taller than a search-result row and ads are interleaved, so
+ * the mobile figure fits better than the desktop one. Google withdrew
+ * continuous scrolling altogether in June 2024 and went back to numbered
+ * pages, citing no significant gain in user satisfaction rather than any
+ * problem with the button, so the figure is a starting point to tune by use,
+ * not a standard.
+ *
+ * Source for the Google figures: Search Engine Land, "Google rolling out
+ * continuous scroll on mobile" (October 2021) and "Google brings continuous
+ * scroll to desktop search results" (December 2022).
+ */
+const AUTO_LOAD_ITEM_LIMIT = 40;
+
 export function FeedClient({
   initialItems,
   initialCursor,
@@ -132,6 +180,7 @@ export function FeedClient({
   /** Consecutive pages that rendered nothing; reset by any page that does. */
   const emptyStreakRef = useRef(0);
   const [autoLoadPaused, setAutoLoadPaused] = useState(false);
+  const autoLoadEnabled = !autoLoadPaused && items.length < AUTO_LOAD_ITEM_LIMIT;
 
   const adCreatives = useMemo(
     () => (showAds ? (nativeAdCreatives ?? []) : []),
@@ -208,7 +257,8 @@ export function FeedClient({
       // Stop auto-loading once enough pages in a row have rendered nothing —
       // see `EMPTY_PAGE_LIMIT`. A page that renders something clears the
       // streak and resumes scrolling, so a reader who presses the button back
-      // into live rows never sees it again.
+      // into live rows does not see it again — unless the list has already
+      // reached `AUTO_LOAD_ITEM_LIMIT`, which keeps the button on its own.
       if (result.items.length === 0) {
         emptyStreakRef.current += 1;
         if (emptyStreakRef.current >= EMPTY_PAGE_LIMIT) {
@@ -226,7 +276,7 @@ export function FeedClient({
 
   useEffect(() => {
     const el = sentinelRef.current;
-    if (!el || !cursor || autoLoadPaused) return;
+    if (!el || !cursor || !autoLoadEnabled) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -239,23 +289,28 @@ export function FeedClient({
 
     observer.observe(el);
     return () => observer.disconnect();
-  }, [cursor, loadMore, autoLoadPaused]);
+  }, [cursor, loadMore, autoLoadEnabled]);
 
   return (
     <div className={variant === 'card' ? 'space-y-3' : undefined} {...rest}>
       {displayItems.map((displayItem, index) => renderDisplayItem(index, displayItem))}
       {isLoading && <FeedSkeleton />}
-      {cursor && !isLoading && !autoLoadPaused && <div ref={sentinelRef} />}
-      {cursor && !isLoading && autoLoadPaused && (
-        <div className="flex justify-center py-4">
-          <button
-            type="button"
-            onClick={loadMore}
-            className="rounded-md border border-border px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:border-foreground/20 hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
+      {cursor && !isLoading && autoLoadEnabled && <div ref={sentinelRef} />}
+      {cursor && !isLoading && !autoLoadEnabled && (
+        // Looks like a text link, but stays a <button>: it appends to this list
+        // in place and has no URL to go to, and an <a> without an href is
+        // neither focusable nor announced as a link. The whole row is the
+        // tap target (at least 48px tall); the underline sits on the label
+        // only, so it reads as one link rather than a bar.
+        <button
+          type="button"
+          onClick={loadMore}
+          className={`group flex min-h-12 w-full items-center justify-center py-3 text-sm ${FOCUS_RING_CLASSES}`}
+        >
+          <span className="text-link-primary underline decoration-1 underline-offset-2 transition-colors group-hover:text-link-primary/80 group-hover:decoration-2">
             {loadMoreLabel}
-          </button>
-        </div>
+          </span>
+        </button>
       )}
     </div>
   );
