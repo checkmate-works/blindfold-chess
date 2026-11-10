@@ -40,21 +40,16 @@ describe("MOBILE_PRACTICE_MODULES", () => {
     }
   });
 
-  // The FEN entry was registered before its screens exist (they are built on
-  // a parallel branch). Remove this exclusion once `practice/fen/` lands.
-  const withScreens = MOBILE_PRACTICE_MODULES.filter((m) => m.slug !== "fen");
-
-  it.each(withScreens.map((m) => [practiceModuleRoute(m), m] as const))(
-    "%s has setup, session and result screens",
-    (route) => {
-      for (const screen of ["setup", "session", "result"]) {
-        expect(
-          existsSync(join(PRACTICE_ROUTES_DIR, route, `${screen}.tsx`)),
-          `${route}/${screen}.tsx`,
-        ).toBe(true);
-      }
-    },
-  );
+  it.each(
+    MOBILE_PRACTICE_MODULES.map((m) => [practiceModuleRoute(m), m] as const),
+  )("%s has setup, session and result screens", (route) => {
+    for (const screen of ["setup", "session", "result"]) {
+      expect(
+        existsSync(join(PRACTICE_ROUTES_DIR, route, `${screen}.tsx`)),
+        `${route}/${screen}.tsx`,
+      ).toBe(true);
+    }
+  });
 
   it.each(
     MOBILE_PRACTICE_MODULES.map((m) => [practiceModuleRoute(m), m] as const),
