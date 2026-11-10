@@ -83,9 +83,11 @@ SHA-256 differs from the one pinned in it.
    for Preview.
 
 4. Redeploy production (env var changes apply only to new builds), and check
-   that the build log shows
-   `Downloading Maia 3 model from https://<project-ref>.supabase.co/storage/...`
-   followed by `Downloaded Maia model to engines/maia/maia3_simplified.onnx (45.7 MB).`
+   that the build log shows `Downloading Maia 3 model from [REDACTED] ...`
+   followed by `Downloaded Maia model to engines/maia/maia3_simplified.onnx (43.6 MB).`
+   Vercel masks sensitive values in build logs, so `[REDACTED]` in place of
+   the URL is the sign that the mirror was used; the maiachess.com fallback
+   would be printed in full. The size is in MiB (45,683,686 bytes).
 
 ## Revoking a leaked URL
 
