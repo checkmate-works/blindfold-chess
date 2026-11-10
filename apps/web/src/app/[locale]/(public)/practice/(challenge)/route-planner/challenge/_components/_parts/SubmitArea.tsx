@@ -57,7 +57,7 @@ export function SubmitArea({
           </Button>
         </div>
       </PieceCoordinateInput>
-      <AlgebraicKeyboardHint disabled={isDisabled} />
+      <AlgebraicKeyboardHint disabled={isDisabled} withSubmit />
     </div>
   );
 }

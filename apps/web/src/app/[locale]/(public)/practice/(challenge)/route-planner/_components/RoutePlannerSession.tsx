@@ -1,5 +1,7 @@
 'use client';
 
+import { useCallback, useRef } from 'react';
+
 import { Button } from '@/app/_components';
 import { ChessPiece } from '@/app/_components/chess/ChessPiece';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
@@ -55,11 +57,21 @@ export function RoutePlannerSession({
   });
 
   const isInputActive = gameState === 'playing';
+  const canSubmit = moves.length > 0;
+  const sessionRef = useRef<HTMLDivElement>(null);
+
+  // Mirrors the submit button's `disabled`: Enter must not submit what the
+  // button would refuse.
+  const handleEnter = useCallback(() => {
+    if (canSubmit) handleSubmitAnswer();
+  }, [canSubmit, handleSubmitAnswer]);
 
   useAlgebraicKeyboardInput({
     onFile: handleFilePress,
     onRank: handleRankPress,
     onBackspace: handleBackspace,
+    onEnter: handleEnter,
+    containerRef: sessionRef,
     enabled: isInputActive,
   });
 
@@ -67,7 +79,11 @@ export function RoutePlannerSession({
 
   return (
     <div className="min-h-screen max-w-md mx-auto">
-      <div id="route-planner-session" className="text-center relative overflow-hidden">
+      <div
+        id="route-planner-session"
+        ref={sessionRef}
+        className="text-center relative overflow-hidden"
+      >
         {/* Problem Header */}
         <div className="flex justify-center items-center gap-6 pb-4 mb-4">
           <div className="bg-primary/10 p-2 rounded-lg text-primary w-14 h-14 flex items-center justify-center border border-primary/20">
@@ -134,7 +150,7 @@ export function RoutePlannerSession({
                 <div className="flex pt-4 mt-2 -mx-4 sm:mx-0">
                   <Button
                     onClick={handleSubmitAnswer}
-                    disabled={moves.length === 0}
+                    disabled={!canSubmit}
                     variant="primary"
                     size="lg"
                     className="w-full"
@@ -144,7 +160,7 @@ export function RoutePlannerSession({
                   </Button>
                 </div>
               </PieceCoordinateInput>
-              <AlgebraicKeyboardHint disabled={!isInputActive} />
+              <AlgebraicKeyboardHint disabled={!isInputActive} withSubmit />
             </>
           )}
         </div>
