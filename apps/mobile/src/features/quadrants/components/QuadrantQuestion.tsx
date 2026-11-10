@@ -15,13 +15,18 @@ type QuadrantQuestionProps = {
   question: Question;
   /** `null` while the question awaits an answer. */
   isCorrect: boolean | null;
-  remainingLives: number;
-  maxLives: number;
+  /**
+   * Lives left before the mistake limit ends the run. Omitted in training,
+   * which has no mistake limit, and then no hearts are drawn.
+   */
+  remainingLives?: number;
+  maxLives?: number;
 };
 
 /**
  * The side the board is seen from, the square to place, the verdict on the
- * last answer, and the lives left before the mistake limit ends the run.
+ * last answer, and (in the timed run) the lives left before the mistake
+ * limit ends it.
  */
 export function QuadrantQuestion({
   question,
@@ -44,12 +49,14 @@ export function QuadrantQuestion({
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.lives, { color: feedbackColors.error }]}>
-        {"♥".repeat(Math.max(remainingLives, 0))}
-        <Text style={{ color: colors.muted }}>
-          {"♥".repeat(Math.max(maxLives - remainingLives, 0))}
+      {remainingLives !== undefined && maxLives !== undefined && (
+        <Text style={[styles.lives, { color: feedbackColors.error }]}>
+          {"♥".repeat(Math.max(remainingLives, 0))}
+          <Text style={{ color: colors.muted }}>
+            {"♥".repeat(Math.max(maxLives - remainingLives, 0))}
+          </Text>
         </Text>
-      </Text>
+      )}
 
       <View style={styles.orientationRow}>
         <View

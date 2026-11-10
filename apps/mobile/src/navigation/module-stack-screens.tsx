@@ -10,10 +10,12 @@ type Translate = ReturnType<typeof useTranslation>["t"];
  *
  * @property route - Path segment under the layout's directory.
  * @property i18nKey - Namespace holding `setup.title` and `result.title`.
+ * @property hasTraining - The module also has an untimed `training` screen.
  */
 export type ModuleRoute = {
   route: string;
   i18nKey: string;
+  hasTraining?: boolean;
 };
 
 /**
@@ -33,7 +35,10 @@ export function moduleStackScreenOptions(colors: ThemeColors, t: Translate) {
  * the options that make the flow behave: the session hides its header and
  * disables the back gesture so a swipe cannot abandon a timed run mid-way,
  * and the result screen keeps the gesture disabled and drops the back button
- * so the finished session is not re-entered.
+ * so the finished session is not re-entered. A module with `hasTraining`
+ * also gets a `training` screen, which keeps its header, back button and
+ * swipe-back gesture: training is untimed and has no result, so leaving it
+ * mid-way loses nothing.
  *
  * Seven modules declared this same twenty-line triple, differing only in the
  * slug and the i18n namespace — which meant a new module could silently ship
@@ -49,7 +54,7 @@ export function moduleStackScreens(
   modules: readonly ModuleRoute[],
 ) {
   // `${i18nKey}.setup.title` / `${i18nKey}.result.title` (i18nKey from the stack layouts): coordinateQuiz.setup.title, legalMoves.setup.title, boardSymmetry.setup.title, squareColors.setup.title, diagonalQuiz.setup.title, routePlanner.setup.title, quadrants.setup.title, knightTour.setup.title, algebraicNotation.setup.title, fen.setup.title, aiGame.setup.title, and the same eleven with .result.title
-  return modules.flatMap(({ route, i18nKey }) => [
+  return modules.flatMap(({ route, i18nKey, hasTraining }) => [
     <Stack.Screen
       key={`${route}/setup`}
       name={`${route}/setup`}
@@ -69,5 +74,14 @@ export function moduleStackScreens(
         gestureEnabled: false,
       }}
     />,
+    ...(hasTraining
+      ? [
+          <Stack.Screen
+            key={`${route}/training`}
+            name={`${route}/training`}
+            options={{ title: t("common.training") }}
+          />,
+        ]
+      : []),
   ]);
 }

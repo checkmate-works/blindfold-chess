@@ -17,92 +17,15 @@ import {
   borderRadius,
   shadows,
 } from "../../../theme";
-
-type PracticeItem = {
-  id: string;
-  titleKey: string;
-  descriptionKey: string;
-  icon: string;
-  route: string;
-};
+import {
+  MOBILE_PRACTICE_MODULES,
+  practiceModuleRoute,
+} from "../../../navigation/practice-modules";
 
 export default function PracticeIndex() {
   const { t } = useTranslation();
   const router = useRouter();
   const { colors } = useTheme();
-
-  const practiceItems: PracticeItem[] = [
-    {
-      id: "coordinate-quiz",
-      titleKey: "practice.coordinateQuiz.title",
-      descriptionKey: "practice.coordinateQuiz.description",
-      icon: "♟",
-      route: "/(tabs)/practice/coordinate-quiz/setup",
-    },
-    {
-      id: "legal-moves",
-      titleKey: "practice.legalMoves.title",
-      descriptionKey: "practice.legalMoves.description",
-      icon: "♞",
-      route: "/(tabs)/practice/legal-moves/setup",
-    },
-    {
-      id: "board-symmetry",
-      titleKey: "practice.boardSymmetry.title",
-      descriptionKey: "practice.boardSymmetry.description",
-      icon: "🦋",
-      route: "/(tabs)/practice/board-symmetry/setup",
-    },
-    {
-      id: "square-colors",
-      titleKey: "practice.squareColors.title",
-      descriptionKey: "practice.squareColors.description",
-      icon: "🎨",
-      route: "/(tabs)/practice/square-colors/setup",
-    },
-    {
-      id: "diagonal-quiz",
-      titleKey: "practice.diagonalQuiz.title",
-      descriptionKey: "practice.diagonalQuiz.description",
-      icon: "\u2197",
-      route: "/(tabs)/practice/diagonal-quiz/setup",
-    },
-    {
-      id: "route-planner",
-      titleKey: "practice.routePlanner.title",
-      descriptionKey: "practice.routePlanner.description",
-      icon: "\u265E",
-      route: "/(tabs)/practice/route-planner/setup",
-    },
-    {
-      id: "quadrants",
-      titleKey: "practice.quadrants.title",
-      descriptionKey: "practice.quadrants.description",
-      icon: "\u229E",
-      route: "/(tabs)/practice/quadrants/setup",
-    },
-    {
-      id: "knight-tour",
-      titleKey: "practice.knightTour.title",
-      descriptionKey: "practice.knightTour.description",
-      icon: "\u2658",
-      route: "/(tabs)/practice/knight-tour/setup",
-    },
-    {
-      id: "algebraic-notation",
-      titleKey: "practice.algebraicNotation.title",
-      descriptionKey: "practice.algebraicNotation.description",
-      icon: "\u270E",
-      route: "/(tabs)/practice/algebraic-notation/setup",
-    },
-    {
-      id: "fen",
-      titleKey: "practice.fen.title",
-      descriptionKey: "practice.fen.description",
-      icon: "\u265C",
-      route: "/(tabs)/practice/fen/setup",
-    },
-  ];
 
   return (
     <Screen edges={["top"]}>
@@ -122,10 +45,15 @@ export default function PracticeIndex() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {practiceItems.map((item) => (
+        {/* `practice.${i18nKey}.title` / `.description` (i18nKey from MOBILE_PRACTICE_MODULES): practice.coordinateQuiz.title, practice.legalMoves.title, practice.boardSymmetry.title, practice.squareColors.title, practice.diagonalQuiz.title, practice.routePlanner.title, practice.quadrants.title, practice.knightTour.title, practice.algebraicNotation.title, practice.fen.title, and the same ten with .description */}
+        {MOBILE_PRACTICE_MODULES.map((item) => (
           <TouchableOpacity
-            key={item.id}
-            onPress={() => router.push(item.route as never)}
+            key={item.slug}
+            onPress={() =>
+              router.push(
+                `/(tabs)/practice/${practiceModuleRoute(item)}/setup` as never,
+              )
+            }
             activeOpacity={0.7}
           >
             <Card style={styles.card}>
@@ -142,7 +70,7 @@ export default function PracticeIndex() {
                   <Text
                     style={[styles.cardTitle, { color: colors.foreground }]}
                   >
-                    {t(item.titleKey)}
+                    {t(`practice.${item.i18nKey}.title`)}
                   </Text>
                   <Text
                     style={[
@@ -150,7 +78,7 @@ export default function PracticeIndex() {
                       { color: colors.mutedForeground },
                     ]}
                   >
-                    {t(item.descriptionKey)}
+                    {t(`practice.${item.i18nKey}.description`)}
                   </Text>
                 </View>
                 <Text

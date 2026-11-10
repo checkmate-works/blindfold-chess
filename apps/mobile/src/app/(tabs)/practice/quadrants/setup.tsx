@@ -5,9 +5,9 @@ import { PracticeSetupScreen } from "../../../../components";
 import { SettingsForm } from "../../../../features/quadrants/components";
 import { useQuadrantsSettings } from "../../../../features/quadrants/hooks";
 import {
-  QUADRANTS_MISTAKE_LIMIT,
-  QUADRANTS_TIME_LIMIT,
-} from "../../../../features/quadrants/lib/constants";
+  MISTAKE_LIMIT,
+  CHALLENGE_TIME_LIMIT,
+} from "@blindfold-chess/features/practice-registry";
 
 export default function QuadrantsSetup() {
   const { t } = useTranslation();
@@ -26,12 +26,22 @@ export default function QuadrantsSetup() {
       isLoaded={isLoaded}
       startLabel={t("quadrants.setup.startQuiz")}
       onStart={handleStart}
+      onStartTraining={() =>
+        router.push({
+          pathname: "/(tabs)/practice/quadrants/training",
+          params: { orientation: settings.orientation },
+        })
+      }
     >
       <SettingsForm
         settings={settings}
         onUpdateSettings={updateSettings}
-        timeLimit={QUADRANTS_TIME_LIMIT}
-        mistakeLimit={QUADRANTS_MISTAKE_LIMIT}
+        // The quadrant run plays by the web challenge's fixed rules — a
+        // 60-second clock, over on the third mistake — so the form shows them
+        // rather than offering them as settings, and the session reads the
+        // same constants instead of taking them from route params.
+        timeLimit={CHALLENGE_TIME_LIMIT}
+        mistakeLimit={MISTAKE_LIMIT}
       />
     </PracticeSetupScreen>
   );

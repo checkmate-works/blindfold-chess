@@ -154,6 +154,44 @@ export function isValidDiagonalAnswer(answer: string): boolean {
   return /^[a-h][1-8](-[a-h][1-8])?$/.test(trimmed);
 }
 
+/** How one diagonal-quiz answer scored, with the expected answers. */
+export type DiagonalAnswerScore = {
+  /** Both diagonals right. */
+  isCorrect: boolean;
+  isDiagonalCorrect: boolean;
+  isAntiDiagonalCorrect: boolean;
+  correctDiagonal: string;
+  correctAntiDiagonal: string;
+};
+
+/**
+ * Score the two answers for `square`. Each is accepted in either endpoint
+ * order and case (`"h7-B1"` matches `"b1-h7"`), and a malformed answer is
+ * wrong; the question is correct only if both are right. The timed session
+ * and the training screens score with this, so the two modes cannot disagree
+ * on what counts as right.
+ */
+export function scoreDiagonalAnswer(
+  square: Square,
+  diagonalAnswer: string,
+  antiDiagonalAnswer: string,
+): DiagonalAnswerScore {
+  const { diagonal, antiDiagonal } = getDiagonals(square);
+  const isDiagonalCorrect =
+    isValidDiagonalAnswer(diagonalAnswer) &&
+    normalizeDiagonal(diagonalAnswer) === normalizeDiagonal(diagonal);
+  const isAntiDiagonalCorrect =
+    isValidDiagonalAnswer(antiDiagonalAnswer) &&
+    normalizeDiagonal(antiDiagonalAnswer) === normalizeDiagonal(antiDiagonal);
+  return {
+    isCorrect: isDiagonalCorrect && isAntiDiagonalCorrect,
+    isDiagonalCorrect,
+    isAntiDiagonalCorrect,
+    correctDiagonal: diagonal,
+    correctAntiDiagonal: antiDiagonal,
+  };
+}
+
 /**
  * Get all squares on both diagonals passing through a given square.
  * Diagonal: a1-h8 direction (file - rank = constant)

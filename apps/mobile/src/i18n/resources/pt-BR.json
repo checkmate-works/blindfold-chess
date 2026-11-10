@@ -6,7 +6,12 @@
     "back": "Voltar",
     "settings": "Configurações",
     "home": "Início",
-    "practice": "Prática"
+    "practice": "Prática",
+    "training": "Treinamento",
+    "startTraining": "Iniciar Treinamento",
+    "trainingDescription": "As perguntas continuarão aparecendo até que você pare. Pressione o botão Finalizar para terminar.",
+    "endTraining": "Finalizar",
+    "skip": "Pular"
   },
   "tabs": {
     "home": "Início",
@@ -251,10 +256,6 @@
     "result": {
       "title": "Quiz concluído!",
       "totalQuestions": "Perguntas totais",
-      "correctAnswers": "Respostas corretas",
-      "accuracy": "Precisão",
-      "timeTaken": "Tempo gasto",
-      "averageTime": "Tempo médio",
       "points": "Pontos",
       "playAgain": "Jogar novamente",
       "backToMenu": "Voltar ao menu"
@@ -376,7 +377,10 @@
       "clear": "Limpar",
       "correct": "Correto!",
       "incorrect": "Incorreto",
-      "correctAnswer": "{{diagonal}}, {{antiDiagonal}}"
+      "correctAnswer": "{{diagonal}}, {{antiDiagonal}}",
+      "nextProblem": "Próximo Problema",
+      "yourAnswer": "Sua resposta",
+      "correctAnswerLabel": "Resposta correta"
     },
     "result": {
       "title": "Prática concluída!",

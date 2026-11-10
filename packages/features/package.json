@@ -40,6 +40,7 @@
     "./linkify": "./src/linkify/index.ts",
     "./locale": "./src/locale/index.ts",
     "./practice-session": "./src/practice-session/index.ts",
+    "./practice-registry": "./src/practice-registry/index.ts",
     "./quadrants": "./src/quadrants/index.ts",
     "./quadrants/client": "./src/quadrants/client.ts",
     "./route-planner": "./src/route-planner/index.ts",

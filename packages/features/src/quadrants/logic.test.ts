@@ -6,6 +6,7 @@ import {
   generateQuadrantQuestionBatch,
   getCorrectQuadrant,
   getVisualQuadrant,
+  quadrantFeedbackDuration,
   quadrantIdAtVisualPosition,
   visualQuadrantToId,
 } from "./logic";
@@ -249,5 +250,12 @@ describe("generateQuadrantQuestionBatch", () => {
     // With 100 questions, both orientations should appear
     expect(orientations.has("white")).toBe(true);
     expect(orientations.has("black")).toBe(true);
+  });
+});
+
+describe("quadrantFeedbackDuration", () => {
+  it("keeps a wrong answer up longer than a right one", () => {
+    expect(quadrantFeedbackDuration(true)).toBe(500);
+    expect(quadrantFeedbackDuration(false)).toBe(1500);
   });
 });

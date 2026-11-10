@@ -1,5 +1,7 @@
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useTranslation } from "react-i18next";
+import type { BoardTheme } from "@blindfold-chess/types";
+import { boardThemeColors } from "@blindfold-chess/ui";
 import {
   chessColors,
   useTheme,
@@ -13,11 +15,29 @@ import type { SquareColor } from "../lib/types";
 type ColorButtonsProps = {
   onAnswer: (color: SquareColor) => void;
   disabled: boolean;
+  /**
+   * Paints the two buttons in the player's board theme (the settings tab's
+   * board preference), as the web training screen does. Without it they keep
+   * the fixed board colours.
+   */
+  boardTheme?: BoardTheme;
 };
 
-export function ColorButtons({ onAnswer, disabled }: ColorButtonsProps) {
+const FIXED_COLORS = {
+  light: chessColors.boardLight,
+  dark: chessColors.boardDark,
+  lightText: "#3d3d3d",
+  darkText: "#ffffff",
+};
+
+export function ColorButtons({
+  onAnswer,
+  disabled,
+  boardTheme,
+}: ColorButtonsProps) {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const palette = boardTheme ? boardThemeColors[boardTheme] : FIXED_COLORS;
 
   return (
     <View style={styles.container}>
@@ -28,13 +48,13 @@ export function ColorButtons({ onAnswer, disabled }: ColorButtonsProps) {
         style={[
           styles.button,
           {
-            backgroundColor: chessColors.boardLight,
+            backgroundColor: palette.light,
             borderColor: colors.border,
             opacity: disabled ? 0.5 : 1,
           },
         ]}
       >
-        <Text style={[styles.buttonText, { color: "#3d3d3d" }]}>
+        <Text style={[styles.buttonText, { color: palette.lightText }]}>
           {t("squareColors.session.light")}
         </Text>
       </TouchableOpacity>
@@ -46,13 +66,13 @@ export function ColorButtons({ onAnswer, disabled }: ColorButtonsProps) {
         style={[
           styles.button,
           {
-            backgroundColor: chessColors.boardDark,
+            backgroundColor: palette.dark,
             borderColor: colors.border,
             opacity: disabled ? 0.5 : 1,
           },
         ]}
       >
-        <Text style={[styles.buttonText, { color: "#ffffff" }]}>
+        <Text style={[styles.buttonText, { color: palette.darkText }]}>
           {t("squareColors.session.dark")}
         </Text>
       </TouchableOpacity>

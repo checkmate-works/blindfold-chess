@@ -9,6 +9,30 @@ and widgets in `src/components/` and `src/screens/`, the theme in
 `src/navigation/module-stack-screens.tsx`. Game logic comes from
 `@blindfold-chess/features`; the app holds UI, navigation and storage.
 
+## Practice modules: the shared registry plus a mobile table
+
+Which practice modules exist, and their slugs, come from the registry shared
+with the web app (`@blindfold-chess/features/practice-registry`).
+`src/navigation/practice-modules.ts` (`MOBILE_PRACTICE_MODULES`) lists the
+ones mobile implements, in display order, keyed by registry slug, with only
+the mobile-side presentation: icon, i18n namespace, a route directory when it
+differs from the slug (quadrants), and whether a `training` screen exists.
+The practice tab's list (`(tabs)/practice/index.tsx`) and the practice stack
+(`(tabs)/practice/_layout.tsx`, through `moduleStackScreens`) both read it,
+so a new module is one entry there plus its route directory;
+`src/navigation/__tests__/practice-modules.test.ts` checks each entry's
+route files exist. The challenge rules (`MISTAKE_LIMIT`,
+`CHALLENGE_TIME_LIMIT`) come from the same package.
+
+**Training mode** (legal-moves, square-colors, quadrants, diagonal-quiz) is
+the untimed `training.tsx` beside each module's timed `session.tsx`: it runs
+on `useBatchTrainingSession` from `@blindfold-chess/features/practice-session`
+with the module's pure question/answer functions, renders inside
+`PracticeTrainingScreen` (score, optional skip, End → back to setup), and is
+opened by the setup screen's second button (`onStartTraining` on
+`PracticeSetupScreen`). Its stack screen keeps the back gesture, unlike the
+timed session.
+
 ## i18n is a separate dictionary from the web app
 
 Mobile uses i18next (`src/i18n/index.ts`) with its own resources in

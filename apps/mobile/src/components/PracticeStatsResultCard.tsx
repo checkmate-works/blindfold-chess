@@ -10,11 +10,18 @@ type PracticeStatsResultCardProps = {
    * diverges from the shared `practiceResult.timeTaken` string.
    */
   timeTakenLabel?: string;
+  /**
+   * Replaces the headline (correct out of total by default) for a module
+   * scored on something else — the coordinate quiz, scored on points. The
+   * stat grid below it stays the shared one.
+   */
+  score?: { label: string; value: string };
 };
 
 export function PracticeStatsResultCard({
   result,
   timeTakenLabel,
+  score,
 }: PracticeStatsResultCardProps) {
   const { t } = useTranslation();
 
@@ -27,8 +34,8 @@ export function PracticeStatsResultCard({
 
   return (
     <PracticeResultCard
-      scoreLabel={t("practiceResult.correctAnswers")}
-      scoreValue={scoreValue}
+      scoreLabel={score?.label ?? t("practiceResult.correctAnswers")}
+      scoreValue={score?.value ?? scoreValue}
       statItems={stats}
     />
   );
