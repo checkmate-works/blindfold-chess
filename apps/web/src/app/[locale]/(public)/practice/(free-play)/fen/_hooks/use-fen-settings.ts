@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { validateFenFormat as validateFEN } from '@blindfold-chess/features/chess-core/fen';
+import { integerBetween, isBoolean, isString } from '@blindfold-chess/features/common';
 
 import { useLocalStorageSettings } from '@/lib/persistent-settings/use-local-storage-settings';
 
@@ -29,12 +30,22 @@ const DEFAULT_SETTINGS: FenSettings = {
   customFenInput: '',
 };
 
+// `problemCount` has no upper bound here: the setup screens clamp it to the
+// positions actually available, which differs between presets and custom FENs.
+const GUARDS = {
+  problemCount: integerBetween(1, Number.MAX_SAFE_INTEGER),
+  shuffleProblems: isBoolean,
+  useCustomFen: isBoolean,
+  customFenInput: isString,
+};
+
 export function useFenSettings() {
   const t = useTranslations('practice.fen');
 
   const { settings, updateSettings } = useLocalStorageSettings<FenSettings>(
     STORAGE_KEY,
-    DEFAULT_SETTINGS
+    DEFAULT_SETTINGS,
+    GUARDS
   );
 
   const [customFenError, setCustomFenError] = useState<string | null>(null);

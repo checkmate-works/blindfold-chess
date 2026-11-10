@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { isString } from '@blindfold-chess/features/common';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
@@ -10,9 +11,12 @@ type Settings = { piece: string; speed: string };
 
 const STORAGE_KEY = 'querySeededSettingsTest';
 const DEFAULTS: Settings = { piece: 'n', speed: 'normal' };
+const GUARDS = { piece: isString, speed: isString };
 
 function useSeeded(seed: Partial<Settings> | undefined) {
-  return useQuerySeededSettings(useLocalStorageSettings(STORAGE_KEY, DEFAULTS), seed, ['piece']);
+  return useQuerySeededSettings(useLocalStorageSettings(STORAGE_KEY, DEFAULTS, GUARDS), seed, [
+    'piece',
+  ]);
 }
 
 function stored(): Settings | null {
@@ -23,7 +27,11 @@ function stored(): Settings | null {
 describe('useQuerySeededSettings', () => {
   beforeEach(() => {
     window.localStorage.clear();
-    window.history.replaceState(null, '', '/ja/practice/route-planner/challenge?piece=bishop&x=1#s');
+    window.history.replaceState(
+      null,
+      '',
+      '/ja/practice/route-planner/challenge?piece=bishop&x=1#s'
+    );
   });
 
   afterEach(() => {

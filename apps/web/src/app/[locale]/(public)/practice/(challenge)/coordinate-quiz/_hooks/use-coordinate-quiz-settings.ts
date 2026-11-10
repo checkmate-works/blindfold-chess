@@ -1,8 +1,15 @@
 'use client';
 
+import { oneOf } from '@blindfold-chess/features/common';
+
 import { useLocalStorageSettings } from '@/lib/persistent-settings/use-local-storage-settings';
 
-import type { BoardOrientation, FeedbackSpeed } from '../_lib/types';
+import {
+  BOARD_ORIENTATIONS,
+  type BoardOrientation,
+  FEEDBACK_SPEEDS,
+  type FeedbackSpeed,
+} from '../_lib/types';
 
 export type CoordinateQuizSettings = {
   boardOrientation: BoardOrientation;
@@ -14,6 +21,11 @@ const STORAGE_KEY = 'coordinateQuiz_settings';
 const DEFAULTS: CoordinateQuizSettings = {
   boardOrientation: 'white',
   feedbackSpeed: 'normal',
+};
+
+const GUARDS = {
+  boardOrientation: oneOf(BOARD_ORIENTATIONS),
+  feedbackSpeed: oneOf(FEEDBACK_SPEEDS),
 };
 
 /**
@@ -34,5 +46,5 @@ const DEFAULTS: CoordinateQuizSettings = {
  * which writes that choice into storage rather than reading it alongside.
  */
 export function useCoordinateQuizSettings() {
-  return useLocalStorageSettings(STORAGE_KEY, DEFAULTS);
+  return useLocalStorageSettings(STORAGE_KEY, DEFAULTS, GUARDS);
 }

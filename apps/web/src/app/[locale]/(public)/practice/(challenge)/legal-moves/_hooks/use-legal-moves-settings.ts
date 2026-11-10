@@ -1,7 +1,9 @@
 'use client';
 
 import type { PieceSelection } from '@/app/_components/practice/PieceSelector';
+import { oneOf } from '@blindfold-chess/features/common';
 
+import { PIECE_TYPES } from '@/lib/games/chess-pieces';
 import { useLocalStorageSettings } from '@/lib/persistent-settings/use-local-storage-settings';
 
 export type LegalMovesSettings = {
@@ -12,6 +14,10 @@ const STORAGE_KEY = 'legalMoves_settings';
 
 const DEFAULTS: LegalMovesSettings = {
   pieceSelection: 'random',
+};
+
+const GUARDS = {
+  pieceSelection: oneOf<PieceSelection>([...PIECE_TYPES, 'random']),
 };
 
 /**
@@ -32,5 +38,5 @@ const DEFAULTS: LegalMovesSettings = {
  * which writes that choice into storage rather than reading it alongside.
  */
 export function useLegalMovesSettings() {
-  return useLocalStorageSettings(STORAGE_KEY, DEFAULTS);
+  return useLocalStorageSettings(STORAGE_KEY, DEFAULTS, GUARDS);
 }

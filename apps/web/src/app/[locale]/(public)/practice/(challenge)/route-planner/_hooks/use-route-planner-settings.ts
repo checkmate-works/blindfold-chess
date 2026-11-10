@@ -1,8 +1,10 @@
 'use client';
 
+import { oneOf } from '@blindfold-chess/features/common';
+
 import { useLocalStorageSettings } from '@/lib/persistent-settings/use-local-storage-settings';
 
-import type { RoutePlannerPieceSelection } from '../_lib/pieces';
+import { PIECES, type RoutePlannerPieceSelection } from '../_lib/pieces';
 
 export type RoutePlannerSettings = {
   pieceSelection: RoutePlannerPieceSelection;
@@ -12,6 +14,10 @@ const STORAGE_KEY = 'routePlannerSettings';
 
 const DEFAULTS: RoutePlannerSettings = {
   pieceSelection: 'n',
+};
+
+const GUARDS = {
+  pieceSelection: oneOf<RoutePlannerPieceSelection>(PIECES),
 };
 
 /**
@@ -32,5 +38,5 @@ const DEFAULTS: RoutePlannerSettings = {
  * which writes that choice into storage rather than reading it alongside.
  */
 export function useRoutePlannerSettings() {
-  return useLocalStorageSettings(STORAGE_KEY, DEFAULTS);
+  return useLocalStorageSettings(STORAGE_KEY, DEFAULTS, GUARDS);
 }

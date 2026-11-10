@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { useSafeLocale as useLocale } from '@/i18n/use-safe-locale';
+import { type FieldGuard, isBoolean, isValidSquare } from '@blindfold-chess/features/common';
 import {
   DEFAULT_KNIGHT_TOUR_SETTINGS,
   isTourComplete,
@@ -12,7 +13,7 @@ import {
 } from '@blindfold-chess/features/knight-tour';
 import { useKnightTour } from '@blindfold-chess/features/knight-tour/client';
 
-import { readJson, writeJson } from '@/lib/persistent-settings/local-storage-adapter';
+import { useLocalStorageSettings } from '@/lib/persistent-settings/use-local-storage-settings';
 
 import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';
 import { useQuitConfirmLabels } from '@/app/[locale]/(public)/practice/_hooks/use-quit-confirm-labels';
@@ -32,10 +33,28 @@ type Props = {
   isTutorial?: boolean;
 };
 
-/** What this screen persists between visits. */
-type StoredSetup = { startingSquare?: string; blindfoldMode?: boolean };
-
+/**
+ * What this screen persists between visits: the starting square the setup
+ * offers (`'random'` or a square) and whether the tour is played blindfolded.
+ *
+ * Read through `useLocalStorageSettings`, like every other practice module,
+ * rather than straight from storage in a `useState` initializer. The setup is
+ * server-rendered, where storage does not exist, so an initializer renders
+ * `'random'` / unchecked on the server and the stored choice in the hydrating
+ * client. That only went unnoticed because the two differing values are a
+ * controlled `<select>` and checkbox, which React quietly corrects during
+ * hydration; the same read feeding text or an attribute would have kept the
+ * server's markup. The hook renders the defaults on both sides, applies the
+ * stored value after mount, and checks it with `GUARDS`. The key and the JSON
+ * shape are the ones the initializer read, so a choice saved before the change
+ * is picked up.
+ */
 const STORAGE_KEY = 'knightTour_settings';
+
+const isStartingSquareOption: FieldGuard<string> = (value): value is string =>
+  value === 'random' || (typeof value === 'string' && isValidSquare(value));
+
+const GUARDS = { startingSquare: isStartingSquareOption, blindfoldMode: isBoolean };
 
 export default function KnightTour({
   autoStart = false,
@@ -46,18 +65,14 @@ export default function KnightTour({
   const locale = useLocale();
   const quitConfirmLabels = useQuitConfirmLabels();
 
-  // Settings
-  const [startingSquareOption, setStartingSquareOption] = useState(
-    () =>
-      readJson<StoredSetup>(STORAGE_KEY, {}).startingSquare ||
-      DEFAULT_KNIGHT_TOUR_SETTINGS.startingSquare
+  // Settings. Only the setup screen changes them, so the auto-started
+  // session and tutorial (which take theirs from props) never write here.
+  const { settings, updateSettings } = useLocalStorageSettings(
+    STORAGE_KEY,
+    DEFAULT_KNIGHT_TOUR_SETTINGS,
+    GUARDS
   );
-
-  const [blindfoldMode, setBlindfoldMode] = useState(
-    () =>
-      readJson<StoredSetup>(STORAGE_KEY, {}).blindfoldMode ||
-      DEFAULT_KNIGHT_TOUR_SETTINGS.blindfoldMode
-  );
+  const { startingSquare: startingSquareOption, blindfoldMode } = settings;
 
   // Track if blindfold mode is active for current game
   const [isBlindfolded, setIsBlindfolded] = useState(false);
@@ -114,13 +129,6 @@ export default function KnightTour({
 
   useScrollToElement('knight-tour-session', gameState === 'playing');
 
-  // Save settings when they change (only if not autoStart mode)
-  useEffect(() => {
-    if (!autoStart) {
-      writeJson(STORAGE_KEY, { startingSquare: startingSquareOption, blindfoldMode });
-    }
-  }, [startingSquareOption, blindfoldMode, autoStart]);
-
   // Auto-start game when autoStart is true (for tutorial mode)
   useEffect(() => {
     if (autoStart && gameState === 'setup') {
@@ -161,9 +169,9 @@ export default function KnightTour({
     return (
       <KnightTourSetup
         startingSquare={startingSquareOption}
-        onStartingSquareChange={setStartingSquareOption}
+        onStartingSquareChange={(startingSquare) => updateSettings({ startingSquare })}
         blindfoldMode={blindfoldMode}
-        onBlindfoldModeChange={setBlindfoldMode}
+        onBlindfoldModeChange={(value) => updateSettings({ blindfoldMode: value })}
       />
     );
   }
