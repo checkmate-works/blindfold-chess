@@ -11,7 +11,11 @@ ONNX model that needs the operational setup below.
 
 - **Model file**: `apps/web/engines/maia/maia3_simplified.onnx`
   (~46 MB). **Gitignored** — fetched by `scripts/download-maia.ts`
-  during `prebuild` and `pnpm download-maia` locally. The file is
+  during `prebuild` and `pnpm download-maia` locally. Production and
+  Preview builds fetch it from our private Supabase Storage mirror
+  through the `MAIA_MODEL_URL` env var, because maiachess.com rejects
+  scripted downloads; setting the mirror up again is in
+  `docs/maia-model-mirror-runbook.md`. The file is
   intentionally **outside `public/`** so it cannot be served as a
   static asset; the only access path is the auth-gated route handler
   `/api/engines/maia/[file]` (`src/app/api/engines/maia/[file]/route.ts`),
