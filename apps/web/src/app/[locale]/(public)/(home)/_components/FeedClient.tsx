@@ -6,6 +6,7 @@ import type { NativeAdView } from '@/lib/ads/ad';
 
 import type { EngagementCounterSize } from '@/app/[locale]/_components/EngagementCounter';
 import { NativeAdCard } from '@/app/[locale]/_components/NativeAdCard';
+import { FOCUS_RING_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 import { getFeed } from '../_actions/getFeed';
 import type { FeedScope } from '../_actions/getFeed';
@@ -296,15 +297,20 @@ export function FeedClient({
       {isLoading && <FeedSkeleton />}
       {cursor && !isLoading && autoLoadEnabled && <div ref={sentinelRef} />}
       {cursor && !isLoading && !autoLoadEnabled && (
-        <div className="flex justify-center py-4">
-          <button
-            type="button"
-            onClick={loadMore}
-            className="rounded-md border border-border px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:border-foreground/20 hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
+        // Looks like a text link, but stays a <button>: it appends to this list
+        // in place and has no URL to go to, and an <a> without an href is
+        // neither focusable nor announced as a link. The whole row is the
+        // tap target (at least 48px tall); the underline sits on the label
+        // only, so it reads as one link rather than a bar.
+        <button
+          type="button"
+          onClick={loadMore}
+          className={`group flex min-h-12 w-full items-center justify-center py-3 text-sm ${FOCUS_RING_CLASSES}`}
+        >
+          <span className="text-link-primary underline decoration-1 underline-offset-2 transition-colors group-hover:text-link-primary/80 group-hover:decoration-2">
             {loadMoreLabel}
-          </button>
-        </div>
+          </span>
+        </button>
       )}
     </div>
   );
