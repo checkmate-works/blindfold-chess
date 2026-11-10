@@ -96,6 +96,29 @@ function makeTopicPostItem(id: string): FeedItem {
   } as FeedItem;
 }
 
+/**
+ * The sentinel is the bare `<div>` the observer watches — the only
+ * attribute-less, empty child of the feed root (item wrappers and ad slots
+ * all carry a className). Its presence is what proves auto-loading is on
+ * or off, and the check has to scan every child rather than just the
+ * trailing one: the manual button renders after the sentinel, so a version
+ * that wrongly kept both would still show the button last.
+ *
+ * Asserting on the DOM rather than on call counts is deliberate.
+ * `triggerIntersection()` invokes a captured callback directly, so it
+ * keeps firing after the real observer has been disconnected and can never
+ * demonstrate that the loop stopped.
+ */
+function feedSentinel(container: HTMLElement): Element | null {
+  const root = container.firstElementChild;
+  if (!root) return null;
+  return (
+    Array.from(root.children).find(
+      (el) => el.tagName === 'DIV' && el.attributes.length === 0 && !el.firstChild
+    ) ?? null
+  );
+}
+
 // --- Tests ---
 
 describe('FeedClient', () => {
@@ -464,29 +487,6 @@ describe('FeedClient', () => {
     // loop that never renders anything.
     const emptyPage = { items: [] as FeedItem[], nextCursor: '2025-01-15T08:00:00.000Z' };
 
-    /**
-     * The sentinel is the bare `<div>` the observer watches — the only
-     * attribute-less, empty child of the feed root (item wrappers and ad slots
-     * all carry a className). Its presence is what proves auto-loading is on
-     * or off, and the check has to scan every child rather than just the
-     * trailing one: the manual button renders after the sentinel, so a version
-     * that wrongly kept both would still show the button last.
-     *
-     * Asserting on the DOM rather than on call counts is deliberate.
-     * `triggerIntersection()` invokes a captured callback directly, so it
-     * keeps firing after the real observer has been disconnected and can never
-     * demonstrate that the loop stopped.
-     */
-    function feedSentinel(container: HTMLElement): Element | null {
-      const root = container.firstElementChild;
-      if (!root) return null;
-      return (
-        Array.from(root.children).find(
-          (el) => el.tagName === 'DIV' && el.attributes.length === 0 && !el.firstChild
-        ) ?? null
-      );
-    }
-
     it('keeps auto-loading after a single empty page', async () => {
       vi.mocked(getFeed).mockResolvedValue(emptyPage);
 
@@ -563,6 +563,85 @@ describe('FeedClient', () => {
       // scrolling picks up where it left off.
       expect(screen.queryByRole('button', { name: 'Load more' })).toBeNull();
       expect(feedSentinel(container)).toBeTruthy();
+    });
+  });
+
+  describe('auto-load ceiling', () => {
+    // Infinite scroll stops at AUTO_LOAD_ITEM_LIMIT items so the site footer
+    // (contact, terms, privacy) below the list becomes reachable.
+    const makeItems = (prefix: string, count: number) =>
+      Array.from({ length: count }, (_, i) => makeTopicPostItem(`${prefix}-${i}`));
+
+    it('keeps auto-loading below the ceiling', () => {
+      const { container } = render(
+        <FeedClient
+          {...defaultProps}
+          initialItems={makeItems('ssr', 30)}
+          initialCursor="2025-01-15T09:00:00.000Z"
+        />
+      );
+
+      expect(feedSentinel(container)).toBeTruthy();
+      expect(screen.queryByRole('button', { name: 'Load more' })).toBeNull();
+    });
+
+    it('hands over to the button once an auto-loaded page reaches the ceiling', async () => {
+      vi.mocked(getFeed).mockResolvedValueOnce({
+        items: makeItems('page', 10),
+        nextCursor: '2025-01-15T08:00:00.000Z',
+      });
+
+      const { container } = render(
+        <FeedClient
+          {...defaultProps}
+          initialItems={makeItems('ssr', 30)}
+          initialCursor="2025-01-15T09:00:00.000Z"
+        />
+      );
+
+      await act(async () => {
+        triggerIntersection();
+      });
+
+      await screen.findByRole('button', { name: 'Load more' });
+      expect(feedSentinel(container)).toBeNull();
+    });
+
+    it('keeps showing the button after a manual page, instead of resuming auto-loading', async () => {
+      vi.mocked(getFeed).mockResolvedValueOnce({
+        items: makeItems('page', 10),
+        nextCursor: '2025-01-15T08:00:00.000Z',
+      });
+
+      const { container } = render(
+        <FeedClient
+          {...defaultProps}
+          initialItems={makeItems('ssr', 40)}
+          initialCursor="2025-01-15T09:00:00.000Z"
+        />
+      );
+
+      const button = screen.getByRole('button', { name: 'Load more' });
+      expect(feedSentinel(container)).toBeNull();
+
+      await act(async () => {
+        button.click();
+      });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('feed-card-page-9')).toBeInTheDocument();
+      });
+      expect(screen.getByRole('button', { name: 'Load more' })).toBeInTheDocument();
+      expect(feedSentinel(container)).toBeNull();
+    });
+
+    it('shows neither the button nor the sentinel once the feed is exhausted', () => {
+      const { container } = render(
+        <FeedClient {...defaultProps} initialItems={makeItems('ssr', 40)} initialCursor={null} />
+      );
+
+      expect(screen.queryByRole('button', { name: 'Load more' })).toBeNull();
+      expect(feedSentinel(container)).toBeNull();
     });
   });
 });
