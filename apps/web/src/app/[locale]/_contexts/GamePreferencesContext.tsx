@@ -14,12 +14,8 @@ import { useLatestRef } from '@blindfold-chess/features/common/client';
 import {
   DEFAULT_GAME_PREFERENCES,
   type GamePreferences,
+  type PerGamePreferences,
 } from '@blindfold-chess/features/game-preferences';
-import type { PawnHideMode, PieceColorMode, PieceShapeMode } from '@blindfold-chess/types';
-
-import type { AiReplyDuration } from '@/lib/games/ai-reply-duration';
-import type { BoardVisibility } from '@/lib/games/board-visibility';
-import type { MoveInputMode } from '@/lib/games/move-input-modes';
 
 import {
   loadStoredPreferences,
@@ -29,57 +25,13 @@ import {
   syncPreferenceCookies,
 } from './game-preferences-persistence';
 
-// Per-game preferences (subset of GamePreferences saved with each game).
-// `boardVisibility` is a "Controls"-tier setting in the global Preferences
-// page but is included here too: how the board surfaces during
-// gameplay often changes per-game depending on how the player wants to
-// experience that specific session. Legacy records (saved before either
-// field existed in this shape) are tolerated via `??` fallbacks at every
-// consumer site and on-read migration in the validators.
-export type PerGamePreferences = {
-  boardVisibility: BoardVisibility;
-  highlightLastMove: boolean;
-  /**
-   * Whether selecting / tapping a piece reveals its legal destination squares
-   * (the lichess-style move dots). Off makes the visible board a harder,
-   * hint-free surface. Per-game (mirroring `highlightLastMove`) because it is a
-   * display assist players often dial per session.
-   */
-  showPieceDestinations: boolean;
-  showOwnPieces: boolean;
-  showOpponentPieces: boolean;
-  pieceShapeMode: PieceShapeMode;
-  pieceColors: PieceColorMode;
-  /**
-   * Which pawns are hidden during play — a partial-blindfold mode orthogonal to
-   * the all/own/opponent piece-visibility axis above. `'none'` (default) hides
-   * no pawns; `'all'` hides both sides' pawns; `'own'` / `'opponent'` hide only
-   * that side's pawns. Composes with the other obfuscation axes: a fully hidden
-   * side already hides its pawns, so this only narrows hiding to pawns on a side
-   * that is otherwise shown. Per-game (mirroring `pieceShapeMode`) because the
-   * blindfold intensity is dialled per session.
-   */
-  pawnHideMode: PawnHideMode;
-  /**
-   * Active move-input mode for this game. Per-game so mid-game switches
-   * (text → button → select) accumulate in the preference change log
-   * rather than mutating the user's global default. The user's per-game
-   * value falls back to the global `moveInputMode` when the per-game field
-   * is absent (legacy records). The orthogonal `enabledMoveInputModes`
-   * (which modes are even available to switch between) remains a global
-   * setting — it controls UI affordance availability, not per-game intent.
-   */
-  moveInputMode: MoveInputMode;
-  /**
-   * How long the on-board AI-reply chip keeps the opponent's last move visible
-   * (ms; `0` = keep until the next reply). Per-game because how long a player
-   * wants the move to linger depends on the blindfold intensity they chose for
-   * that specific session. Only meaningful when the board is hidden
-   * (`boardVisibility !== 'always'`). Falls back to the global value for legacy
-   * records that predate this field.
-   */
-  aiReplyDuration: AiReplyDuration;
-};
+/**
+ * The per-game subset of the preferences (snapshotted onto each game, edited
+ * mid-game through the change log) is defined next to {@link GamePreferences}
+ * in `@blindfold-chess/features/game-preferences`, which documents why each
+ * field is per-game; re-exported here so web imports stay put.
+ */
+export type { PerGamePreferences };
 
 /**
  * The global preferences shape, its defaults and the stored-payload sanitiser

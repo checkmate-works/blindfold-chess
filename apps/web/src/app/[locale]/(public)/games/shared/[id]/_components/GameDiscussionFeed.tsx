@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { parseFenMeta } from '@blindfold-chess/features/game-play';
 import type { Side } from '@blindfold-chess/types';
 import { FiChevronRight } from 'react-icons/fi';
 
@@ -10,7 +11,6 @@ import { groupChunkLinksBySuggester } from '@/lib/chunks/group-chunk-links';
 import type { GameChunkItem } from '@/lib/db/game-chunks';
 import type { GameCommentItem } from '@/lib/db/game-comments';
 
-import { parseFenMeta } from '@/app/[locale]/(public)/games/play/_lib/fen-utils';
 import { ChunkLinkCard } from '@/app/[locale]/_components/chunk-links/ChunkLinkCard';
 import { buildChunkLinkCardLabels } from '@/app/[locale]/_components/chunk-links/chunk-link-card-labels';
 import type { Locale } from '@/app/[locale]/_lib/types';

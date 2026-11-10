@@ -1,13 +1,13 @@
 import type { BlindfoldDisplaySettings } from '@blindfold-chess/features/board-display';
-import { sideToPieceColor } from '@blindfold-chess/types';
-import type { Side } from '@blindfold-chess/types';
-
 import {
   foldBoardVisibility,
   gameUsedNotablePlaySettings,
   playSettingsAreNotable,
   playSettingsAtHalfMove,
-} from './play-settings-log';
+} from '@blindfold-chess/features/game-record';
+import { sideToPieceColor } from '@blindfold-chess/types';
+import type { Side } from '@blindfold-chess/types';
+
 import type { GamePlaySettings, PlaySettingsChangeEntry } from './saved-game-types';
 
 /**

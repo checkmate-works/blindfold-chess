@@ -6,7 +6,8 @@ import {
   foldBoardVisibility,
   gameUsedNotablePlaySettings,
   playSettingsAtHalfMove,
-} from '@/lib/games/play-settings-log';
+} from '@blindfold-chess/features/game-record';
+
 import { revealPieces } from '@/lib/games/reveal-preferences';
 import type { GamePlaySettings, PlaySettingsChangeEntry } from '@/lib/games/saved-game-types';
 

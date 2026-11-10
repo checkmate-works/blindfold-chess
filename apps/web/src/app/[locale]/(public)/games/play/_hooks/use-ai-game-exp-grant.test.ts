@@ -16,7 +16,8 @@ vi.mock('@/lib/sentry/capture-error', () => ({
   captureError: (...args: unknown[]) => mockCaptureError(...args),
 }));
 
-vi.mock('@/lib/games/compute-game-stats', () => ({
+vi.mock('@blindfold-chess/features/game-record', async (orig) => ({
+  ...(await (orig as () => Promise<Record<string, unknown>>)()),
   computeGameStats: () => ({ totalMoves: 20, aidedMoves: 0 }),
 }));
 

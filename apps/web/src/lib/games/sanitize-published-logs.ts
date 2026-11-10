@@ -1,9 +1,9 @@
 import { isValidSquare } from '@blindfold-chess/features/common';
+import { MAX_UNDONE_LOGS, isUndoneMoveLog } from '@blindfold-chess/features/game-record';
 
 import type { MoveSquares } from '@/lib/board/move-squares';
 
 import type { MoveOperationLog, UndoneMoveLog } from './saved-game-types';
-import { MAX_UNDONE_LOGS, isUndoneMoveLog } from './undone-logs';
 
 /**
  * Bounding of the self-reported aid-usage records on the publish path, before

@@ -1,6 +1,6 @@
-import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+import { foldBoardVisibility } from '@blindfold-chess/features/game-record';
 
-import { foldBoardVisibility } from './play-settings-log';
+import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 /** The display axes that decide whether a piece is drawn, and how. */
 export type RevealableAxes = Pick<

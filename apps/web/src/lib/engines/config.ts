@@ -1,37 +1,24 @@
-import { isValidSkillLevel } from '@blindfold-chess/features/ai-game';
 import {
-  DEFAULT_MAIA_RATING,
-  type MaiaRating,
-  isMaiaRating,
-} from '@blindfold-chess/features/ai-game/maia';
-
-import type { SkillLevel } from '@/lib/games/saved-game-types';
-
-import { DEFAULT_ENGINE, type EngineKind } from './types';
+  DEFAULT_ENGINE,
+  DEFAULT_ENGINE_CONFIG,
+  type EngineConfig,
+  type EngineKind,
+  isValidSkillLevel,
+} from '@blindfold-chess/features/ai-game';
+import { DEFAULT_MAIA_RATING, isMaiaRating } from '@blindfold-chess/features/ai-game/maia';
 
 /**
- * Engine + difficulty as a single discriminated union.
- *
- * The two engines we ship today (Stockfish and Maia) take fundamentally
- * different difficulty knobs — Stockfish reads a 1..20 skill level the
- * UCI engine consumes directly, while Maia reads an Elo from its
- * official 600..2600 catalog. Modelling them as one nominal
- * `{ skillLevel, maiaRating, engine }` triple invites "engine='maia'
- * but maiaRating is undefined" inconsistencies; the union below makes
- * those states unrepresentable.
- *
- * Adding a new engine means appending one variant here and one factory
- * branch in `useAiVersus`. Consumers that already pattern-match on
- * `kind` get an exhaustiveness check for free.
+ * The engine + difficulty union, its default and its persisted-record guard
+ * live in `@blindfold-chess/features/ai-game`, where the union is documented,
+ * so saved games read the same on web and mobile. Re-exported here so web
+ * imports stay put; the URL-param codec below is a web share-link concern and
+ * stays in this module.
  */
-export type EngineConfig =
-  | { kind: 'stockfish'; skillLevel: SkillLevel }
-  | { kind: 'maia'; rating: MaiaRating };
-
-export const DEFAULT_ENGINE_CONFIG: EngineConfig = {
-  kind: 'stockfish',
-  skillLevel: 5 as SkillLevel,
-};
+export {
+  DEFAULT_ENGINE_CONFIG,
+  type EngineConfig,
+  isEngineConfig,
+} from '@blindfold-chess/features/ai-game';
 
 /**
  * Serialise an {@link EngineConfig} into a flat URL-params bag. Stockfish
@@ -70,22 +57,4 @@ export function engineConfigFromUrlParams(params: URLSearchParams): EngineConfig
     return { kind: 'stockfish', skillLevel: parsedLevel };
   }
   return DEFAULT_ENGINE_CONFIG;
-}
-
-/**
- * Runtime narrowing used by the localStorage repository when validating
- * persisted records — `unknown` in, `EngineConfig` out. Keeps the
- * validator a single comprehensible expression instead of duplicating
- * the discriminator logic everywhere.
- */
-export function isEngineConfig(value: unknown): value is EngineConfig {
-  if (typeof value !== 'object' || value === null) return false;
-  const v = value as Record<string, unknown>;
-  if (v.kind === 'stockfish') {
-    return typeof v.skillLevel === 'number' && isValidSkillLevel(v.skillLevel);
-  }
-  if (v.kind === 'maia') {
-    return typeof v.rating === 'number' && isMaiaRating(v.rating);
-  }
-  return false;
 }

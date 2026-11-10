@@ -4,6 +4,7 @@ import type {
   PieceColorMode,
   PieceShapeMode,
   PieceType,
+  Square,
 } from "@blindfold-chess/types";
 
 // Re-exported so existing importers of `@blindfold-chess/features/board-display`
@@ -61,3 +62,21 @@ export type PieceDisplay =
   /** `faint` = the same stone, drawn as hidden. See {@link HiddenPieceStyle}. */
   | { kind: "circle"; color: PieceColor; faint?: boolean }
   | { kind: "piece"; type: PieceType; color: PieceColor };
+
+/**
+ * The pair of squares a move went between — what a board needs in order to
+ * highlight the last move, and what an illegal-move handler is told about the
+ * attempt.
+ *
+ * One named type for what used to be inlined, several times under a local
+ * alias (`LastMove`, `MoveSquares`, `ProblemResult['reply']`), so that a board
+ * prop, the hook feeding it and the persistence record describing it are the
+ * same type rather than three unrelated ones that happen to match.
+ *
+ * `Square` costs the producers nothing: nearly every value comes from
+ * `getLastMoveDetails` or a `MoveResult`, which are typed that way already.
+ * The exception is an interactive board whose squares arrive as strings (the
+ * web board reads them from `dataset.square`); it must run each read through
+ * `isValidSquare` at the read itself, so nothing downstream needs a cast.
+ */
+export type MoveSquares = { from: Square; to: Square };

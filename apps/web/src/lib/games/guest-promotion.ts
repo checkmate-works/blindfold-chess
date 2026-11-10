@@ -1,11 +1,13 @@
+import {
+  isConstrainedPlaySettings,
+  normalizePlaySettingsLog,
+  qualifiesAsHiddenBoardWin,
+} from '@blindfold-chess/features/game-record';
 import type { FinalGameOutcome } from '@blindfold-chess/types';
 
 import type { RankSlug } from '@/lib/db/data/ranks';
 import { isGamePublishWinHiddenBoardRequirement, ranksSeedData } from '@/lib/db/data/ranks';
 
-import { qualifiesAsHiddenBoardWin } from './hidden-board-win';
-import { isConstrainedPlaySettings } from './play-settings-constraint';
-import { normalizePlaySettingsLog } from './play-settings-log';
 import type {
   GamePlaySettings,
   MoveOperationLog,

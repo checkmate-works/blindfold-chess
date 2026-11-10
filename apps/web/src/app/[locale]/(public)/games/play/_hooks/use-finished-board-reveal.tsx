@@ -1,6 +1,7 @@
 import { type ReactNode, useMemo, useState } from 'react';
 
-import { foldBoardVisibility } from '@/lib/games/play-settings-log';
+import { foldBoardVisibility } from '@blindfold-chess/features/game-record';
+
 import { hidesAnyPiece, revealPieces } from '@/lib/games/reveal-preferences';
 
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';

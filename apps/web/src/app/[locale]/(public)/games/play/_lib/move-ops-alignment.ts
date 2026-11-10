@@ -1,8 +1,7 @@
+import { getMovingSide } from '@blindfold-chess/features/game-play';
 import type { Side } from '@blindfold-chess/types';
 
 import type { MoveOperationLog } from '@/lib/games/saved-game-types';
-
-import { getMovingSide } from './fen-utils';
 
 /**
  * Operation-log ↔ move-index alignment.

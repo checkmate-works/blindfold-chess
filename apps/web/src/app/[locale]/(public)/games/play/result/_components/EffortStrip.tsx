@@ -1,8 +1,8 @@
 'use client';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import type { GameStats, MoveMarker } from '@blindfold-chess/features/game-record';
 
-import type { GameStats, MoveMarker } from '@/lib/games/compute-game-stats';
 import type { MoveOperationLog } from '@/lib/games/saved-game-types';
 
 type Props = {

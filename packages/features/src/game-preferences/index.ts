@@ -1,7 +1,7 @@
 // Pure barrel — the global board / game preferences shared by web and mobile:
 // the type, its value sets, the defaults and the stored-payload sanitiser.
 // Storage (localStorage, AsyncStorage, cookies) stays in the apps.
-export type { GamePreferences } from "./types";
+export type { GamePreferences, PerGamePreferences } from "./types";
 export type {
   AiReplyDuration,
   BoardVisibility,

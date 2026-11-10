@@ -5,6 +5,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { formatChangeLogMoveLabel } from '@blindfold-chess/features/game-play';
 import { FaChevronDown } from 'react-icons/fa';
 
 import type { EngineConfig } from '@/lib/engines';
@@ -16,7 +17,6 @@ import { Modal } from '@/app/[locale]/_components/Modal';
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import { useChangeLogFormat } from '../_hooks/use-change-log-format';
-import { formatChangeLogMoveLabel } from '../_lib/format-change-log-move-label';
 
 type Props = {
   isOpen: boolean;

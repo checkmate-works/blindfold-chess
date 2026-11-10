@@ -3,8 +3,8 @@
 import { useEffect, useRef, useState } from 'react';
 
 import type { ExpInfo } from '@blindfold-chess/features/exp';
+import type { GameStats } from '@blindfold-chess/features/game-record';
 
-import type { GameStats } from '@/lib/games/compute-game-stats';
 import type { Game } from '@/lib/games/saved-game-types';
 import { captureError } from '@/lib/sentry/capture-error';
 
