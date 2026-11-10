@@ -12,13 +12,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { AiReplyChip, useAiReplyChip } from './AiReplyChip';
 
-vi.mock('@/i18n/use-safe-translations', () => {
-  // Minimal t with the `.rich` subset AiReplyChip uses. `.rich` renders the
-  // move through the caller's `b` chunk fn (the <strong> wrapper), so tests can
-  // assert the notation is bolded.
-  const t = (key: string) => key;
-  t.rich = (_key: string, values: { move: string; b: (chunks: string) => unknown }) =>
-    values.b(values.move);
+vi.mock('@/i18n/use-safe-translations', async () => {
+  const { createTranslator } = await import('next-intl');
+  const { default: messages } = await import('@/messages/en.json');
+  // Keep the real text + <strong> siblings: returning only the bold move
+  // hides the text-node deletion that browser translation can break.
+  const t = createTranslator({ locale: 'en', messages: messages.play });
   return { useSafeTranslations: () => t };
 });
 
@@ -131,7 +130,7 @@ describe('useAiReplyChip', () => {
 describe('AiReplyChip (presentational)', () => {
   it('shows the thinking label at full opacity when active + thinking', () => {
     const { container } = render(<AiReplyChip active thinking aiMoveNotation={null} />);
-    expect(screen.getByText('aiThinking')).toBeInTheDocument();
+    expect(screen.getByText('AI is thinking...')).toBeInTheDocument();
     expect((container.firstChild as HTMLElement).className).toContain('opacity-100');
   });
 
@@ -147,5 +146,52 @@ describe('AiReplyChip (presentational)', () => {
       <AiReplyChip active={false} thinking={false} aiMoveNotation="1. e5" />
     );
     expect((container.firstChild as HTMLElement).className).toContain('opacity-0');
+  });
+
+  it('survives the next AI turn after browser translation replaces eligible text nodes', () => {
+    const view = (thinking: boolean, notation: string) => (
+      <>
+        <p>Outside the chip</p>
+        <AiReplyChip active thinking={thinking} aiMoveNotation={notation} />
+      </>
+    );
+    const { container, rerender } = render(view(false, '1... e5'));
+
+    // Model text replacement, not merely changing textContent: React retains
+    // the detached original node. Respect inherited translation exclusions.
+    const translate = () => {
+      const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
+      const nodes: Text[] = [];
+      while (walker.nextNode()) {
+        const node = walker.currentNode as Text;
+        const parent = node.parentElement;
+        if (
+          node.data.trim() &&
+          parent &&
+          !parent.closest('font') &&
+          parent.closest('[translate]')?.getAttribute('translate') !== 'no'
+        ) {
+          nodes.push(node);
+        }
+      }
+      for (const node of nodes) {
+        const outer = document.createElement('font');
+        const inner = document.createElement('font');
+        inner.textContent = node.data;
+        outer.appendChild(inner);
+        node.replaceWith(outer);
+      }
+    };
+
+    translate();
+    expect(container.querySelector('p > font > font')).toHaveTextContent('Outside the chip');
+    rerender(view(true, '1... e5'));
+    expect(screen.getByText('AI is thinking...')).toBeInTheDocument();
+    translate();
+    rerender(view(false, '2... Nc6'));
+    expect(screen.getByText('2... Nc6').tagName).toBe('STRONG');
+    translate();
+    rerender(view(true, '2... Nc6'));
+    expect(screen.getByText('AI is thinking...')).toBeInTheDocument();
   });
 });

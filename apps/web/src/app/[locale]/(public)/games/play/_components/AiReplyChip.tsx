@@ -88,6 +88,9 @@ export function AiReplyChip({ active, thinking, aiMoveNotation }: Props) {
 
   return (
     <div
+      // Translation can replace the rich-text node beside <strong>. Switching
+      // back to thinking then tries to remove that detached node (Sentry 6Z).
+      translate="no"
       aria-live="polite"
       className={`${STATUS_PILL_CLASSES} max-w-full truncate border border-border bg-background/90 text-foreground shadow-md backdrop-blur-sm transition-opacity duration-300 ${
         active ? 'opacity-100' : 'opacity-0'
