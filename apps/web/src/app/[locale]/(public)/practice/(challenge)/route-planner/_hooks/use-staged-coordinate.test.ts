@@ -344,4 +344,45 @@ describe('useStagedCoordinate', () => {
       expect(result.current.selectedFile).toBe('a');
     });
   });
+
+  describe('reopenSquare', () => {
+    it('stages the square with its rank removed, so the next clearStage clears the file', () => {
+      const { result } = renderHook(() => useStagedCoordinate());
+
+      act(() => {
+        result.current.reopenSquare('c3');
+      });
+      expect(result.current.selectedFile).toBe('c');
+      expect(result.current.selectedRank).toBeNull();
+
+      let cleared!: boolean;
+      act(() => {
+        cleared = result.current.clearStage();
+      });
+      expect(cleared).toBe(true);
+      expect(result.current.hasStage()).toBe(false);
+    });
+
+    it('lets the next rank press complete the square again', () => {
+      const { result } = renderHook(() => useStagedCoordinate());
+
+      act(() => {
+        result.current.reopenSquare('c3');
+      });
+      let returned!: ReturnType<typeof result.current.pressRank>;
+      act(() => {
+        returned = result.current.pressRank('4');
+      });
+      expect(returned).toEqual({ selectedFile: 'c', selectedRank: '4' });
+    });
+
+    it('is a no-op when disabled', () => {
+      const { result } = renderHook(() => useStagedCoordinate({ disabled: true }));
+
+      act(() => {
+        result.current.reopenSquare('c3');
+      });
+      expect(result.current.hasStage()).toBe(false);
+    });
+  });
 });

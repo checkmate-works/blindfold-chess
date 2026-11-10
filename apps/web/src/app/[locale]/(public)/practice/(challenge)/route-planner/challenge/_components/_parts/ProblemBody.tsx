@@ -77,10 +77,15 @@ export function ProblemBody({
     [staged, addMove]
   );
 
+  // One character per press, as typed: `c3` → `c` → (gone). The undo
+  // button still drops the whole square.
   const handleBackspace = useCallback(() => {
     if (staged.clearStage()) return;
-    if (moves.length > 0) handleUndo();
-  }, [staged, moves.length, handleUndo]);
+    const last = moves.at(-1);
+    if (last === undefined) return;
+    setMoves(moves.slice(0, -1));
+    staged.reopenSquare(last);
+  }, [staged, moves]);
 
   const handleSubmitAnswer = useCallback(() => {
     if (showFeedback || isPaused || countdown !== null) return;

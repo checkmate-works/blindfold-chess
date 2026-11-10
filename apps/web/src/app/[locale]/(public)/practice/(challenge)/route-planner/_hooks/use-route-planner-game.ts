@@ -110,10 +110,15 @@ export function useRoutePlannerGame({ locale, allowedPieces, mode, stagedCoordin
     [stagedCoordinate, addMove]
   );
 
+  // One character per press, as typed: `c3` → `c` → (gone). The undo
+  // button still drops the whole square.
   const handleBackspace = useCallback(() => {
     if (stagedCoordinate.clearStage()) return;
-    if (moves.length > 0) handleUndo();
-  }, [stagedCoordinate, moves.length, handleUndo]);
+    const last = moves.at(-1);
+    if (last === undefined || !problem) return;
+    setMoves(moves.slice(0, -1));
+    stagedCoordinate.reopenSquare(last);
+  }, [stagedCoordinate, moves, problem]);
 
   const handleSubmitAnswer = useCallback(() => {
     if (!problem) return;

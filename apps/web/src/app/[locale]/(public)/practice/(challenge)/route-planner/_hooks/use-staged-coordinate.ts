@@ -32,6 +32,14 @@ export type StagedCoordinate = StagedCoordinateState & {
   hasStage: () => boolean;
   /** Clears both to null unconditionally (ignores `disabled`). */
   resetStage: () => void;
+  /**
+   * Puts a committed square back into the stage with its rank removed —
+   * `c3` becomes file `c` with no rank. This is the step of backspacing
+   * through a path one character at a time that crosses a square boundary:
+   * the caller pops the square from its moves and hands it here, so the next
+   * backspace clears the file. No-op when `disabled` is true.
+   */
+  reopenSquare: (square: string) => void;
 };
 
 /**
@@ -105,6 +113,17 @@ export function useStagedCoordinate(options: UseStagedCoordinateOptions = {}): S
     setSelectedRank(null);
   }, [stateRef]);
 
+  const reopenSquare = useCallback(
+    (square: string) => {
+      if (disabled) return;
+      const next: StagedCoordinateState = { selectedFile: square.charAt(0), selectedRank: null };
+      stateRef.current = next;
+      setSelectedFile(next.selectedFile);
+      setSelectedRank(null);
+    },
+    [disabled, stateRef]
+  );
+
   return {
     selectedFile,
     selectedRank,
@@ -113,5 +132,6 @@ export function useStagedCoordinate(options: UseStagedCoordinateOptions = {}): S
     clearStage,
     hasStage,
     resetStage,
+    reopenSquare,
   };
 }
