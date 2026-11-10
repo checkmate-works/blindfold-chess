@@ -1011,7 +1011,8 @@
   },
   "practice": {
     "keyboard": {
-      "algebraicKeyboardHint": "ファイル（a〜h）とランク（1〜8）を入力。Backspace で削除。"
+      "algebraicKeyboardHint": "ファイル（a〜h）とランク（1〜8）を入力。Backspace で削除。",
+      "algebraicKeyboardHintWithSubmit": "ファイル（a〜h）とランク（1〜8）を入力。Backspace で削除、Enter で回答。"
     },
     "title": "練習",
     "filter": {

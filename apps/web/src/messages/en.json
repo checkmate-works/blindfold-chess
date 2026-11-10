@@ -1011,7 +1011,8 @@
   },
   "practice": {
     "keyboard": {
-      "algebraicKeyboardHint": "Type a letter (a–h) then a number (1–8). Backspace: delete."
+      "algebraicKeyboardHint": "Type a letter (a–h) then a number (1–8). Backspace: delete.",
+      "algebraicKeyboardHintWithSubmit": "Type a letter (a–h) then a number (1–8). Backspace: delete. Enter: submit."
     },
     "title": "Practice",
     "filter": {

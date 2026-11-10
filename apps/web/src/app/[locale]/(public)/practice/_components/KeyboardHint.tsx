@@ -76,6 +76,8 @@ export function KeyboardHintText({ text, disabled = false }: TextProps) {
 type AlgebraicKeyboardHintProps = {
   /** When true, the hint is dimmed to match the inactive state of its target UI. */
   disabled?: boolean;
+  /** Also mention that Enter submits — for screens that pass `onEnter`. */
+  withSubmit?: boolean;
 };
 
 /**
@@ -84,7 +86,11 @@ type AlgebraicKeyboardHintProps = {
  * `practice.keyboard.algebraicKeyboardHint` i18n key so call sites don't
  * repeat the `useTranslations` lookup.
  */
-export function AlgebraicKeyboardHint({ disabled = false }: AlgebraicKeyboardHintProps) {
+export function AlgebraicKeyboardHint({
+  disabled = false,
+  withSubmit = false,
+}: AlgebraicKeyboardHintProps) {
   const t = useTranslations('practice.keyboard');
-  return <KeyboardHintText text={t('algebraicKeyboardHint')} disabled={disabled} />;
+  const key = withSubmit ? 'algebraicKeyboardHintWithSubmit' : 'algebraicKeyboardHint';
+  return <KeyboardHintText text={t(key)} disabled={disabled} />;
 }

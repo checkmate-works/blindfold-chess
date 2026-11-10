@@ -1011,7 +1011,8 @@
   },
   "practice": {
     "keyboard": {
-      "algebraicKeyboardHint": "Digite uma letra (a–h) e depois um número (1–8). Backspace: apagar."
+      "algebraicKeyboardHint": "Digite uma letra (a–h) e depois um número (1–8). Backspace: apagar.",
+      "algebraicKeyboardHintWithSubmit": "Digite uma letra (a–h) e depois um número (1–8). Backspace: apagar. Enter: enviar."
     },
     "title": "Prática",
     "filter": {

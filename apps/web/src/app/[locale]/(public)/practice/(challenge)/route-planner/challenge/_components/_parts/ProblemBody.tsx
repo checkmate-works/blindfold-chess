@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 import { isValidSquare } from '@blindfold-chess/features/common';
 import type { RoutePlannerProblemResult } from '@blindfold-chess/features/route-planner';
@@ -77,17 +77,15 @@ export function ProblemBody({
     [staged, addMove]
   );
 
+  // One character per press, as typed: `c3` → `c` → (gone). The undo
+  // button still drops the whole square.
   const handleBackspace = useCallback(() => {
     if (staged.clearStage()) return;
-    if (moves.length > 0) handleUndo();
-  }, [staged, moves.length, handleUndo]);
-
-  useAlgebraicKeyboardInput({
-    onFile: handleFilePress,
-    onRank: handleRankPress,
-    onBackspace: handleBackspace,
-    enabled: !isDisabled,
-  });
+    const last = moves.at(-1);
+    if (last === undefined) return;
+    setMoves(moves.slice(0, -1));
+    staged.reopenSquare(last);
+  }, [staged, moves]);
 
   const handleSubmitAnswer = useCallback(() => {
     if (showFeedback || isPaused || countdown !== null) return;
@@ -125,11 +123,28 @@ export function ProblemBody({
     onAnswer(success);
   }, [currentProblem, moves, showFeedback, isPaused, countdown, onAnswer, onRecordResult]);
 
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Mirrors the submit button's `disabled` (`isDisabled` already detaches
+  // the listener): Enter must not submit an empty path the button refuses.
+  const handleEnter = useCallback(() => {
+    if (moves.length > 0) handleSubmitAnswer();
+  }, [moves.length, handleSubmitAnswer]);
+
+  useAlgebraicKeyboardInput({
+    onFile: handleFilePress,
+    onRank: handleRankPress,
+    onBackspace: handleBackspace,
+    onEnter: handleEnter,
+    containerRef,
+    enabled: !isDisabled,
+  });
+
   // While the hook is not in feedback mode, suppress the stale marker.
   const effectiveLastAnswer = showFeedback ? lastAnswerCorrect : null;
 
   return (
-    <div className="space-y-4">
+    <div ref={containerRef} className="space-y-4">
       <MovesHistory
         start={currentProblem.start}
         end={currentProblem.end}

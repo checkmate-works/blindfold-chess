@@ -361,4 +361,106 @@ describe('useAlgebraicKeyboardInput', () => {
     press('a');
     expect(onFile).toHaveBeenCalledTimes(1);
   });
+
+  describe('Enter', () => {
+    type EnterHostProps = {
+      onEnter?: () => void;
+      enabled?: boolean;
+      /** Render a button inside the container and another outside it. */
+      withButtons?: boolean;
+    };
+
+    function EnterHost({ onEnter, enabled = true, withButtons = false }: EnterHostProps) {
+      const containerRef = useRef<HTMLDivElement>(null);
+      useAlgebraicKeyboardInput({
+        onFile: () => {},
+        onRank: () => {},
+        onBackspace: () => {},
+        onEnter,
+        containerRef,
+        enabled,
+      });
+      return createElement(
+        'div',
+        null,
+        createElement(
+          'div',
+          { ref: containerRef },
+          withButtons ? createElement('button', { 'data-testid': 'inside' }, 'c') : null
+        ),
+        withButtons ? createElement('button', { 'data-testid': 'outside' }, 'skip') : null
+      );
+    }
+
+    function enterEvent(init: KeyboardEventInit = {}) {
+      return new KeyboardEvent('keydown', {
+        key: 'Enter',
+        bubbles: true,
+        cancelable: true,
+        ...init,
+      });
+    }
+
+    it('calls onEnter when nothing is focused', () => {
+      const onEnter = vi.fn();
+      render(createElement(EnterHost, { onEnter }));
+
+      const event = enterEvent();
+      document.body.dispatchEvent(event);
+      expect(onEnter).toHaveBeenCalledTimes(1);
+      expect(event.defaultPrevented).toBe(true);
+    });
+
+    it('calls onEnter and suppresses the native click when focus is inside the container', () => {
+      const onEnter = vi.fn();
+      const { getByTestId } = render(createElement(EnterHost, { onEnter, withButtons: true }));
+
+      const inside = getByTestId('inside');
+      inside.focus();
+      const event = enterEvent();
+      inside.dispatchEvent(event);
+      expect(onEnter).toHaveBeenCalledTimes(1);
+      expect(event.defaultPrevented).toBe(true);
+    });
+
+    it('leaves Enter to a focused button outside the container', () => {
+      const onEnter = vi.fn();
+      const { getByTestId } = render(createElement(EnterHost, { onEnter, withButtons: true }));
+
+      const outside = getByTestId('outside');
+      outside.focus();
+      const event = enterEvent();
+      outside.dispatchEvent(event);
+      expect(onEnter).not.toHaveBeenCalled();
+      expect(event.defaultPrevented).toBe(false);
+    });
+
+    it('does not handle Enter at all when onEnter is omitted', () => {
+      render(createElement(EnterHost, {}));
+
+      const event = enterEvent();
+      document.body.dispatchEvent(event);
+      expect(event.defaultPrevented).toBe(false);
+    });
+
+    it('honours the shared guards (modifier, repeat, editable target, disabled)', () => {
+      const onEnter = vi.fn();
+      const { rerender } = render(createElement(EnterHost, { onEnter }));
+
+      document.body.dispatchEvent(enterEvent({ shiftKey: true }));
+      document.body.dispatchEvent(enterEvent({ metaKey: true }));
+      document.body.dispatchEvent(enterEvent({ repeat: true }));
+
+      const input = document.createElement('input');
+      document.body.appendChild(input);
+      input.focus();
+      input.dispatchEvent(enterEvent());
+      input.remove();
+
+      rerender(createElement(EnterHost, { onEnter, enabled: false }));
+      document.body.dispatchEvent(enterEvent());
+
+      expect(onEnter).not.toHaveBeenCalled();
+    });
+  });
 });

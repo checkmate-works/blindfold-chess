@@ -1011,7 +1011,8 @@
   },
   "practice": {
     "keyboard": {
-      "algebraicKeyboardHint": "Escribe una letra (a–h) y luego un número (1–8). Retroceso: borrar."
+      "algebraicKeyboardHint": "Escribe una letra (a–h) y luego un número (1–8). Retroceso: borrar.",
+      "algebraicKeyboardHintWithSubmit": "Escribe una letra (a–h) y luego un número (1–8). Retroceso: borrar. Intro: enviar."
     },
     "title": "Práctica",
     "filter": {
