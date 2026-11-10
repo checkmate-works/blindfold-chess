@@ -27,6 +27,7 @@ const PURE_BARRELS = [
   "game-preferences/index.ts",
   "game-record/index.ts",
   "game-play/index.ts",
+  "fen-practice/index.ts",
 ];
 
 const REACT_IMPORT_RE = /\bfrom\s+["']react["']/;

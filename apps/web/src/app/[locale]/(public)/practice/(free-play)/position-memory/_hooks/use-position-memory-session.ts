@@ -2,9 +2,8 @@
 
 import { useEffect, useState } from 'react';
 
+import { aggregateResults } from '@blindfold-chess/features/fen-practice';
 import { useMachine } from '@xstate/react';
-
-import { aggregateResults } from '@/app/[locale]/(public)/practice/(free-play)/_lib/aggregate-results';
 
 import { positionMemoryMachine } from '../_lib/machines/positionMemoryMachine';
 import type { SessionMode } from '../_lib/machines/types';

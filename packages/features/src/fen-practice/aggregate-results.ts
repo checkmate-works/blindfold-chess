@@ -1,4 +1,4 @@
-import type { PositionAccuracy } from '@blindfold-chess/features/common';
+import type { PositionAccuracy } from "../common/accuracy";
 
 export type AggregatedStats = {
   totalAccuracy: number;
@@ -13,15 +13,27 @@ export type AggregatedStats = {
  * Aggregate accuracy stats from an array of PositionAccuracy results.
  * totalAccuracy is the average accuracy percentage across all results.
  */
-export function aggregateResults(resultsArray: PositionAccuracy[]): AggregatedStats {
+export function aggregateResults(
+  resultsArray: readonly PositionAccuracy[],
+): AggregatedStats {
   const totalAccuracy =
     resultsArray.length > 0
-      ? resultsArray.reduce((sum, r) => sum + r.accuracy, 0) / resultsArray.length
+      ? resultsArray.reduce((sum, r) => sum + r.accuracy, 0) /
+        resultsArray.length
       : 0;
-  const totalCorrect = resultsArray.reduce((sum, r) => sum + r.correctPieces, 0);
+  const totalCorrect = resultsArray.reduce(
+    (sum, r) => sum + r.correctPieces,
+    0,
+  );
   const totalPieces = resultsArray.reduce((sum, r) => sum + r.totalPieces, 0);
-  const totalIncorrect = resultsArray.reduce((sum, r) => sum + r.incorrectPieces, 0);
-  const totalMissing = resultsArray.reduce((sum, r) => sum + r.missingPieces, 0);
+  const totalIncorrect = resultsArray.reduce(
+    (sum, r) => sum + r.incorrectPieces,
+    0,
+  );
+  const totalMissing = resultsArray.reduce(
+    (sum, r) => sum + r.missingPieces,
+    0,
+  );
   const totalExtra = resultsArray.reduce((sum, r) => sum + r.extraPieces, 0);
 
   return {
