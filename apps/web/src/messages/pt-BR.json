@@ -2438,10 +2438,11 @@
     "copied": "Copiado!",
     "analyzeOnLichess": "Analisar no Lichess",
     "lichessAnalysis": {
-      "position": "Posição",
-      "game": "Partida",
-      "positionHint": "Abrir apenas esta posição no Lichess",
-      "gameHint": "Abrir os lances no Lichess, a partir deste lance"
+      "includeMoves": "Incluir lances",
+      "truncatedChip": "Parcial",
+      "truncatedTitle": "Só parte da partida é enviada",
+      "truncatedBody": "O Lichess lê apenas parte do link, então a partida é enviada até {lastMove} ({included} de {total} meios-lances). Para analisar a partida inteira, copie o PGN e cole na página de importação do Lichess.",
+      "openImport": "Abrir a importação do Lichess"
     },
     "aiPlayed": "A IA jogou <b>{move}</b>",
     "restartFromHere": "Reiniciar a partir daqui",

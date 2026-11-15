@@ -16,9 +16,18 @@ type Props = {
    * adornments keeps the plain single-element cell.
    */
   adornment?: (moveIndex: number) => ReactNode;
-  /** Per-surface extras on the scrolling body — `max-h-[70vh]`, padding. */
+  /** Per-surface extras on the list — {@link PANEL_MOVE_LIST_SCROLL_CLASSES}, padding. */
   className?: string;
 };
+
+/**
+ * The moves panels (games/play, game review, recall) scroll only this list,
+ * not the whole panel body: the navigation and Lichess / copy actions below
+ * it stay in reach without scrolling, and the panel keeps its bottom padding
+ * instead of being clipped mid-button at the scroll edge. Sized so a long
+ * game still leaves those controls on screen at a laptop viewport.
+ */
+export const PANEL_MOVE_LIST_SCROLL_CLASSES = 'max-h-[40vh] overflow-y-auto';
 
 /**
  * The numbered two-column move list that sits in a panel: one row per move

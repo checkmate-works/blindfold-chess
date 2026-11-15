@@ -7,9 +7,12 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import type { FormattedPgnMove } from '@blindfold-chess/features/chess-core';
 import { FaCheck, FaCopy } from 'react-icons/fa';
 
-import { LichessAnalysisButtons } from '@/app/[locale]/(public)/games/play/_components/LichessAnalysisButtons';
+import { LichessAnalysisControl } from '@/app/[locale]/(public)/games/play/_components/LichessAnalysisControl';
 import { MoveNavigationControls } from '@/app/[locale]/(public)/games/play/_components/MoveNavigationControls';
-import { VerticalMoveList } from '@/app/[locale]/(public)/games/play/_components/VerticalMoveList';
+import {
+  PANEL_MOVE_LIST_SCROLL_CLASSES,
+  VerticalMoveList,
+} from '@/app/[locale]/(public)/games/play/_components/VerticalMoveList';
 import { buildLichessAnalysisUrls } from '@/app/[locale]/(public)/games/play/_lib/lichess-analysis-urls';
 import { moveNavDisabledState } from '@/app/[locale]/(public)/games/play/_lib/move-nav-disabled-state';
 import { formatPgnToText } from '@/app/[locale]/(public)/games/play/_lib/pgn-parser';
@@ -61,13 +64,14 @@ export function RecallMovesPanel({
         </div>
 
         {/* Moves Content */}
-        <div className="p-4 max-h-[70vh] overflow-y-auto font-mono">
+        <div className="p-4 font-mono">
           {formattedPgn.length > 0 ? (
             <>
               <VerticalMoveList
                 formattedPgn={formattedPgn}
                 currentPosition={currentPosition}
                 onNavigateToPosition={onNavigateToPosition}
+                className={PANEL_MOVE_LIST_SCROLL_CLASSES}
               />
 
               {/* Navigation Controls */}
@@ -83,7 +87,7 @@ export function RecallMovesPanel({
 
               {/* Action Buttons */}
               <div className="mt-4 flex flex-col gap-4">
-                <LichessAnalysisButtons
+                <LichessAnalysisControl
                   urls={buildLichessAnalysisUrls({
                     moves,
                     startingFen,
@@ -91,6 +95,7 @@ export function RecallMovesPanel({
                     latestFen: currentFen,
                     displayFen,
                   })}
+                  pgnText={formatPgnToText(formattedPgn, startingFen)}
                 />
 
                 {/* Copy PGN Button */}

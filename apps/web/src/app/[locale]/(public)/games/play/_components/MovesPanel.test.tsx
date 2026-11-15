@@ -24,6 +24,17 @@ vi.mock('next-intl');
 
 const MOVES = ['e4', 'e5', 'Nf3', 'Nc6'];
 
+const LICHESS_URLS = {
+  position: 'https://lichess.org/analysis',
+  game: {
+    url: 'https://lichess.org/analysis/pgn/',
+    includedMoves: 4,
+    truncated: false,
+    totalMoves: 4,
+    lastIncludedMove: null,
+  },
+};
+
 const cleanLog = (): MoveOperationLog => ({
   inputMethod: 'text',
   peekCount: 0,
@@ -62,10 +73,7 @@ function renderPanel(logs: MoveOperationLog[]) {
       }}
       actions={{
         gameInProgress: false,
-        lichessAnalysisUrls: {
-          position: 'https://lichess.org/analysis',
-          game: 'https://lichess.org/analysis/pgn/',
-        },
+        lichessAnalysisUrls: LICHESS_URLS,
         onRestartFromPosition: vi.fn(),
         onNewGameFromPosition: vi.fn(),
       }}
@@ -137,10 +145,7 @@ describe('MovesPanel operation-log adornment', () => {
         }}
         actions={{
           gameInProgress: false,
-          lichessAnalysisUrls: {
-            position: 'https://lichess.org/analysis',
-            game: 'https://lichess.org/analysis/pgn/',
-          },
+          lichessAnalysisUrls: LICHESS_URLS,
           onRestartFromPosition: vi.fn(),
           onNewGameFromPosition: vi.fn(),
         }}

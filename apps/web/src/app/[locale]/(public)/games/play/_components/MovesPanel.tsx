@@ -20,10 +20,10 @@ import {
   hasOps,
   logForMovesIndex as logForMovesIndexAligned,
 } from '../_lib/move-ops-alignment';
-import { LichessAnalysisButtons } from './LichessAnalysisButtons';
+import { LichessAnalysisControl } from './LichessAnalysisControl';
 import { MoveNavigationControls } from './MoveNavigationControls';
 import { OpsPopover } from './OpsPopover';
-import { VerticalMoveList } from './VerticalMoveList';
+import { PANEL_MOVE_LIST_SCROLL_CLASSES, VerticalMoveList } from './VerticalMoveList';
 
 /** Everything needed to render and click-to-navigate the move list. */
 type MovesPanelMoveListProps = {
@@ -231,13 +231,14 @@ export function MovesPanel({
       <div
         className={`transition-all duration-300 ${isMovesVisible ? 'block' : 'hidden'} rounded-b-lg`}
       >
-        <div className="p-4 max-h-[70vh] overflow-y-auto font-mono">
+        <div className="p-4 font-mono">
           {formattedPgn.length > 0 ? (
             <VerticalMoveList
               formattedPgn={formattedPgn}
               currentPosition={currentPosition}
               onNavigateToPosition={onNavigateToPosition}
               adornment={operations ? renderOpsAdornment : undefined}
+              className={PANEL_MOVE_LIST_SCROLL_CLASSES}
             />
           ) : (
             <p className="text-muted-foreground text-sm">No moves yet</p>
@@ -282,7 +283,10 @@ export function MovesPanel({
                 </>
               )}
 
-              <LichessAnalysisButtons urls={lichessAnalysisUrls} />
+              <LichessAnalysisControl
+                urls={lichessAnalysisUrls}
+                pgnText={formatPgnToText(formattedPgn, startingFen)}
+              />
 
               {/* Copy PGN Button */}
               <Button

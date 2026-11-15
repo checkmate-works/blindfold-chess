@@ -2438,10 +2438,11 @@
     "copied": "Copied!",
     "analyzeOnLichess": "Analyze on Lichess",
     "lichessAnalysis": {
-      "position": "Position",
-      "game": "Game",
-      "positionHint": "Open just this position on Lichess",
-      "gameHint": "Open the moves on Lichess, starting at this move"
+      "includeMoves": "Include moves",
+      "truncatedChip": "Partial",
+      "truncatedTitle": "Only part of the game is sent",
+      "truncatedBody": "Lichess reads only so much of a link, so the game is sent up to {lastMove} ({included} of {total} half-moves). To analyze the whole game, copy the PGN and paste it into Lichess's import page.",
+      "openImport": "Open Lichess import"
     },
     "aiPlayed": "AI played <b>{move}</b>",
     "restartFromHere": "Restart from here",

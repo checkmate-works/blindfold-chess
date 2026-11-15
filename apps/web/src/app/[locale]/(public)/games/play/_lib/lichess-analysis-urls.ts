@@ -1,11 +1,28 @@
-import { fenToLichessUrl, movesToLichessUrl } from '@blindfold-chess/features/chess-core/fen';
+import {
+  fenToLichessUrl,
+  fullmoveNumberFromFen,
+  isBlackToMoveFromFen,
+  movesToLichessUrl,
+} from '@blindfold-chess/features/chess-core/fen';
+import type { LichessGameUrl } from '@blindfold-chess/features/chess-core/fen';
+import {
+  computeMoveNumber,
+  formatMoveAnchor,
+} from '@blindfold-chess/features/chess-core/move-numbering';
 
 /** The two ways a moves panel can hand the game to Lichess's analysis board. */
 export type LichessAnalysisUrls = {
   /** Just the shown position, with no history — for analysing it in isolation. */
   position: string;
   /** The moves so far, opened at the shown position — for stepping through the game. */
-  game: string;
+  game: LichessGameUrl & {
+    totalMoves: number;
+    /**
+     * The last move the game URL carries, as "42. Kf2" / "42...Kf7" — set
+     * only when the game was too long and got cut, to tell the viewer where.
+     */
+    lastIncludedMove: string | null;
+  };
 };
 
 /**
@@ -36,9 +53,22 @@ export function buildLichessAnalysisUrls({
   const plies =
     currentPosition >= 0 ? currentPosition + 1 : currentPosition === -2 ? 0 : moves.length;
   const shownFen = currentPosition === -1 || displayFen === null ? latestFen : displayFen;
+  const game = movesToLichessUrl(moves, { startingFen, plies });
+
+  let lastIncludedMove: string | null = null;
+  if (game.truncated && game.includedMoves > 0) {
+    const index = game.includedMoves - 1;
+    const { moveNumber, isWhiteMove } = computeMoveNumber(
+      index,
+      startingFen ? isBlackToMoveFromFen(startingFen) : false,
+      startingFen ? fullmoveNumberFromFen(startingFen) : 1
+    );
+    const anchor = formatMoveAnchor(moveNumber, isWhiteMove);
+    lastIncludedMove = `${anchor}${isWhiteMove ? ' ' : ''}${moves[index]}`;
+  }
 
   return {
     position: fenToLichessUrl(shownFen),
-    game: movesToLichessUrl(moves, { startingFen, plies }),
+    game: { ...game, totalMoves: moves.length, lastIncludedMove },
   };
 }

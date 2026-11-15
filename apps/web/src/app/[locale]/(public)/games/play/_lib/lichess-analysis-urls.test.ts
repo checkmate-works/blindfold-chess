@@ -10,22 +10,64 @@ const START = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 const build = (currentPosition: number, displayFen: string | null) =>
   buildLichessAnalysisUrls({ moves: MOVES, currentPosition, latestFen: LATEST, displayFen });
 
+const fenUrl = (fen: string) => `https://lichess.org/analysis/${fen.replaceAll(' ', '_')}`;
+
 describe('buildLichessAnalysisUrls', () => {
   it('uses the latest position and opens the game at its last move at -1', () => {
     const urls = build(-1, null);
-    expect(urls.position).toBe(`https://lichess.org/analysis/${LATEST.replaceAll(' ', '_')}`);
-    expect(urls.game).toBe('https://lichess.org/analysis/pgn/e4_e5_Nf3#3');
+    expect(urls.position).toBe(fenUrl(LATEST));
+    expect(urls.game).toEqual({
+      url: 'https://lichess.org/analysis/pgn/e4_e5_Nf3#3',
+      includedMoves: 3,
+      truncated: false,
+      totalMoves: 3,
+      lastIncludedMove: null,
+    });
   });
 
   it('uses the browsed position and opens the game after that move', () => {
     const urls = build(0, AFTER_E4);
-    expect(urls.position).toBe(`https://lichess.org/analysis/${AFTER_E4.replaceAll(' ', '_')}`);
-    expect(urls.game).toBe('https://lichess.org/analysis/pgn/e4_e5_Nf3#1');
+    expect(urls.position).toBe(fenUrl(AFTER_E4));
+    expect(urls.game.url).toBe('https://lichess.org/analysis/pgn/e4_e5_Nf3#1');
   });
 
   it('opens the game before its first move at -2', () => {
     const urls = build(-2, START);
-    expect(urls.position).toBe(`https://lichess.org/analysis/${START.replaceAll(' ', '_')}`);
-    expect(urls.game).toBe('https://lichess.org/analysis/pgn/e4_e5_Nf3#0');
+    expect(urls.position).toBe(fenUrl(START));
+    expect(urls.game.url).toBe('https://lichess.org/analysis/pgn/e4_e5_Nf3#0');
+  });
+
+  describe('a game too long for Lichess', () => {
+    // 1250 three-letter moves fill the 5000-character path exactly.
+    const long = Array.from({ length: 1300 }, (_, i) => ['Nf3', 'Nf6', 'Ng1', 'Ng8'][i % 4]);
+
+    it('names the last move the URL carries', () => {
+      const { game } = buildLichessAnalysisUrls({
+        moves: long,
+        currentPosition: -1,
+        latestFen: LATEST,
+        displayFen: null,
+      });
+
+      expect(game.truncated).toBe(true);
+      expect(game.includedMoves).toBe(1250);
+      expect(game.totalMoves).toBe(1300);
+      // Ply 1250 (index 1249) is Black's 625th move.
+      expect(game.lastIncludedMove).toBe('625...Nf6');
+    });
+
+    it('numbers the last move from a custom start', () => {
+      const { game } = buildLichessAnalysisUrls({
+        moves: long,
+        startingFen: 'rnbqkbnr/pppppppp/8/8/8/5N2/PPPPPPPP/RNBQKB1R b KQkq - 1 10',
+        currentPosition: -1,
+        latestFen: LATEST,
+        displayFen: null,
+      });
+
+      // The FEN header uses up room, so fewer moves fit than from the start.
+      expect(game.includedMoves).toBeLessThan(1250);
+      expect(game.lastIncludedMove).toMatch(/^\d+\.(\.\.)?/);
+    });
   });
 });
