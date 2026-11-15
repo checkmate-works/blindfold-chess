@@ -76,20 +76,20 @@ export function RecallMovesPanel({
 
               {/* Action Buttons */}
               <div className="mt-4 flex flex-col gap-4">
-                {/* Analyze on Lichess Button - only show when navigating */}
-                {currentPosition !== -1 && currentPosition !== -2 && (
-                  <Button
-                    variant="secondary"
-                    icon={<FaExternalLinkAlt className="w-3 h-3" />}
-                    onClick={() => {
-                      const fenToAnalyze = displayFen || currentFen;
-                      const lichessUrl = fenToLichessUrl(fenToAnalyze);
-                      window.open(lichessUrl, '_blank');
-                    }}
-                  >
-                    {t('analyzeOnLichess')}
-                  </Button>
-                )}
+                {/* Analyze on Lichess — always available, like the play
+                    screen's MovesPanel. `displayFen` is null at the live
+                    position (-1), so this opens the latest position there and
+                    the browsed position (including the start, -2) otherwise. */}
+                <Button
+                  variant="secondary"
+                  icon={<FaExternalLinkAlt className="w-3 h-3" />}
+                  onClick={() => {
+                    const fenToAnalyze = displayFen || currentFen;
+                    window.open(fenToLichessUrl(fenToAnalyze), '_blank');
+                  }}
+                >
+                  {t('analyzeOnLichess')}
+                </Button>
 
                 {/* Copy PGN Button */}
                 <Button
