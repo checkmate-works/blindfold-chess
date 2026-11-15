@@ -7,8 +7,10 @@ import { formatDate } from '@/app/admin/_lib/format';
 import type { User } from '@supabase/supabase-js';
 
 import type { AdminUserFilters } from '../_lib/filters';
+import type { SignupMethod } from '../_lib/signup-method';
 import { CopyUserIdButton } from './CopyUserIdButton';
 import { CountryFilterFlag } from './CountryFilterFlag';
+import { SignupMethodIcon } from './SignupMethodIcon';
 import { StatusBadge } from './StatusBadge';
 
 type Profile = {
@@ -26,7 +28,7 @@ type UserRowProps = {
   filters: AdminUserFilters;
   hasSubscription: boolean;
   banReason: string | null;
-  signupMethod: 'google' | 'email' | 'unknown';
+  signupMethod: SignupMethod;
   labels: {
     premium: string;
     free: string;
@@ -108,7 +110,7 @@ export function UserRow({
         />
       </td>
       <td className="px-4 py-3">
-        <AdminBadge variant="neutral">{labels[signupMethod]}</AdminBadge>
+        <SignupMethodIcon method={signupMethod} label={labels[signupMethod]} />
       </td>
       <td className="px-4 py-3 text-muted-foreground">{formatDate(user.created_at)}</td>
       <td className="px-4 py-3">
