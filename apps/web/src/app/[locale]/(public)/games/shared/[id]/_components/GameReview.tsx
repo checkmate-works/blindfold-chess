@@ -5,7 +5,7 @@ import { type ReactNode, useCallback, useEffect, useMemo, useState } from 'react
 import { useRouter } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { fenToLichessUrl, replayMoves } from '@blindfold-chess/features/chess-core';
+import { replayMoves } from '@blindfold-chess/features/chess-core';
 import { computeGameStats } from '@blindfold-chess/features/game-record';
 import type { AlgebraicNotation, FinalGameOutcome, Side } from '@blindfold-chess/types';
 import { FaArrowRight } from 'react-icons/fa';
@@ -31,6 +31,7 @@ import {
 } from '@/app/[locale]/(public)/games/play/_hooks';
 import { useQuickPeekModal } from '@/app/[locale]/(public)/games/play/_hooks/use-quick-peek-modal';
 import { buildNewGameFromPositionUrl } from '@/app/[locale]/(public)/games/play/_lib/build-new-game-from-position-url';
+import { buildLichessAnalysisUrls } from '@/app/[locale]/(public)/games/play/_lib/lichess-analysis-urls';
 import { logForMovesIndex } from '@/app/[locale]/(public)/games/play/_lib/move-ops-alignment';
 import { GameStatsOverview } from '@/app/[locale]/(public)/games/play/result/_components/GameStatsOverview';
 import { StatsAuthGate } from '@/app/[locale]/(public)/games/play/result/_components/StatsAuthGate';
@@ -313,9 +314,13 @@ export function GameReview({
     [preferencesAt, quickPeek.nav.currentPosition]
   );
 
-  const lichessAnalysisUrl = fenToLichessUrl(
-    currentPosition === -1 || displayFen === null ? latestFen : displayFen
-  );
+  const lichessAnalysisUrls = buildLichessAnalysisUrls({
+    moves: notationMoves,
+    startingFen: startingFen ?? undefined,
+    currentPosition,
+    latestFen,
+    displayFen,
+  });
 
   const terminationMark = useMemo(
     () => terminationMarkAt(currentPosition),
@@ -800,7 +805,7 @@ export function GameReview({
               // "restart from here" is hidden; "new game from here" lets a viewer
               // play the position themselves.
               gameInProgress: false,
-              lichessAnalysisUrl,
+              lichessAnalysisUrls,
               onRestartFromPosition: () => {},
               onNewGameFromPosition: (position) =>
                 router.push(

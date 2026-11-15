@@ -256,6 +256,62 @@ export function fenToLichessUrl(fen: string): string {
 }
 
 /**
+ * A Lichess analysis URL that loads a whole move sequence, opened at a chosen
+ * point in it — the "step through the game" counterpart of
+ * {@link fenToLichessUrl}, which loads one position with no history.
+ *
+ * Lichess's `/analysis/pgn/<pgn>` route URI-decodes the path, turns `_` and
+ * `+` into spaces, keeps the first 5000 characters, and imports the result as
+ * PGN; the import reads the starting position from a `[FEN "…"]` header when
+ * one is present. The page then opens at the ply named by the URL hash
+ * (`#N`), counted the way its move tree counts plies: from the start of a
+ * standard game, so a game set up at "move 12, black to move" begins at ply
+ * 23, not 0.
+ *
+ * Check and mate markers are dropped from the SAN: Lichess would turn `+`
+ * into a space anyway, and a literal `#` would end the path and start the
+ * hash. The import does not need them to resolve a move.
+ *
+ * Every move costs about six characters, so the 5000-character cap only
+ * truncates games of several hundred moves.
+ *
+ * @param moves - SAN moves, played from `startingFen` (or the standard start).
+ * @param options.startingFen - The position the moves start from; omitted or
+ *   the standard start means no `[FEN]` header.
+ * @param options.plies - How many of `moves` have been played at the position
+ *   to open at: `0` is the starting position, `moves.length` the last one.
+ *   Defaults to `moves.length`.
+ */
+export function movesToLichessUrl(
+  moves: readonly string[],
+  options: { startingFen?: string; plies?: number } = {},
+): string {
+  const { startingFen } = options;
+  const plies = Math.min(
+    Math.max(options.plies ?? moves.length, 0),
+    moves.length,
+  );
+  const customStart = startingFen !== undefined && startingFen !== STARTING_FEN;
+
+  const sans = moves.map((san) => san.replace(/[+#]/g, ""));
+  const pgn = customStart
+    ? [`[FEN "${startingFen}"]`, ...sans].join(" ")
+    : sans.join(" ");
+  // `encodeURIComponent` also escapes `/`, but FEN's rank separators read
+  // better unescaped and the route captures the whole remaining path anyway.
+  const encodedPgn = encodeURIComponent(pgn)
+    .replace(/%20/g, "_")
+    .replace(/%2F/g, "/");
+
+  const startPly = customStart
+    ? (fullmoveNumberFromFen(startingFen) - 1) * 2 +
+      (isBlackToMoveFromFen(startingFen) ? 1 : 0)
+    : 0;
+
+  return `https://lichess.org/analysis/pgn/${encodedPgn}#${startPly + plies}`;
+}
+
+/**
  * Convert a FEN string to a human-readable piece list.
  *
  * @example

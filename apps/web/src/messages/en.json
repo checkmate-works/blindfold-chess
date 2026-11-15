@@ -2437,6 +2437,12 @@
     "copyFen": "Copy FEN",
     "copied": "Copied!",
     "analyzeOnLichess": "Analyze on Lichess",
+    "lichessAnalysis": {
+      "position": "Position",
+      "game": "Game",
+      "positionHint": "Open just this position on Lichess",
+      "gameHint": "Open the moves on Lichess, starting at this move"
+    },
     "aiPlayed": "AI played <b>{move}</b>",
     "restartFromHere": "Restart from here",
     "confirmRestartTitle": "Restart from this position?",
@@ -3024,7 +3030,6 @@
     "copyPgn": "Copy PGN",
     "copyFen": "Copy FEN",
     "copied": "Copied!",
-    "analyzeOnLichess": "Analyze on Lichess",
     "openPosition": "Open this position",
     "moveLog": "Move Log",
     "cancel": "Cancel",

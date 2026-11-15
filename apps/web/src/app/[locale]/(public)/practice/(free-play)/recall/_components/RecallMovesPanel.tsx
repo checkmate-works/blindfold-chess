@@ -5,17 +5,23 @@ import { useState } from 'react';
 import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { FormattedPgnMove } from '@blindfold-chess/features/chess-core';
-import { fenToLichessUrl } from '@blindfold-chess/features/chess-core/fen';
-import { FaCheck, FaCopy, FaExternalLinkAlt } from 'react-icons/fa';
+import { FaCheck, FaCopy } from 'react-icons/fa';
 
+import { LichessAnalysisButtons } from '@/app/[locale]/(public)/games/play/_components/LichessAnalysisButtons';
 import { MoveNavigationControls } from '@/app/[locale]/(public)/games/play/_components/MoveNavigationControls';
 import { VerticalMoveList } from '@/app/[locale]/(public)/games/play/_components/VerticalMoveList';
+import { buildLichessAnalysisUrls } from '@/app/[locale]/(public)/games/play/_lib/lichess-analysis-urls';
 import { moveNavDisabledState } from '@/app/[locale]/(public)/games/play/_lib/move-nav-disabled-state';
 import { formatPgnToText } from '@/app/[locale]/(public)/games/play/_lib/pgn-parser';
 import { UI_TIMEOUTS } from '@/app/[locale]/_constants/ui-timeouts';
 
 type Props = {
   formattedPgn: FormattedPgnMove[];
+  /**
+   * The moves entered so far (what `formattedPgn` shows) — never the full game
+   * being recalled, since the Lichess game link carries every move it is given.
+   */
+  moves: readonly string[];
   currentPosition: number;
   originalMovesLength: number;
   currentFen: string;
@@ -30,6 +36,7 @@ type Props = {
 
 export function RecallMovesPanel({
   formattedPgn,
+  moves,
   currentPosition,
   originalMovesLength,
   currentFen,
@@ -76,20 +83,15 @@ export function RecallMovesPanel({
 
               {/* Action Buttons */}
               <div className="mt-4 flex flex-col gap-4">
-                {/* Analyze on Lichess — always available, like the play
-                    screen's MovesPanel. `displayFen` is null at the live
-                    position (-1), so this opens the latest position there and
-                    the browsed position (including the start, -2) otherwise. */}
-                <Button
-                  variant="secondary"
-                  icon={<FaExternalLinkAlt className="w-3 h-3" />}
-                  onClick={() => {
-                    const fenToAnalyze = displayFen || currentFen;
-                    window.open(fenToLichessUrl(fenToAnalyze), '_blank');
-                  }}
-                >
-                  {t('analyzeOnLichess')}
-                </Button>
+                <LichessAnalysisButtons
+                  urls={buildLichessAnalysisUrls({
+                    moves,
+                    startingFen,
+                    currentPosition,
+                    latestFen: currentFen,
+                    displayFen,
+                  })}
+                />
 
                 {/* Copy PGN Button */}
                 <Button

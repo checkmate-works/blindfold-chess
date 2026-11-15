@@ -1,15 +1,16 @@
 // @vitest-environment jsdom
 /**
- * The "Analyze on Lichess" button must be reachable at the live position, not
- * only while browsing history — the live position is where the panel sits for
- * almost the whole review and the whole completion screen. These tests pin
- * that it renders there and opens the right FEN for each position kind.
+ * The Lichess links must be reachable at the live position, not only while
+ * browsing history — the live position is where the panel sits for almost
+ * the whole review and the whole completion screen. And the game link may
+ * carry only the moves entered so far: the panel is shown mid-recall, so a
+ * link holding the rest of the game would give the answers away.
  *
  * Translations resolve through the mocked safe-translations fallback (echoes
- * the key), so assertions use the stable `analyzeOnLichess` key.
+ * the key), so assertions use the stable keys.
  */
-import { fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 import { RecallMovesPanel } from './RecallMovesPanel';
 
@@ -26,8 +27,9 @@ function renderPanel(currentPosition: number, displayFen: string | null) {
       formattedPgn={[
         { moveNumber: 1, whiteMove: 'e4', whiteMoveIndex: 0, blackMove: 'e5', blackMoveIndex: 1 },
       ]}
+      moves={['e4', 'e5']}
       currentPosition={currentPosition}
-      originalMovesLength={2}
+      originalMovesLength={6}
       currentFen={LATEST_FEN}
       displayFen={displayFen}
       onNavigateToPosition={vi.fn()}
@@ -39,32 +41,21 @@ function renderPanel(currentPosition: number, displayFen: string | null) {
   );
 }
 
-const lichessUrl = (fen: string) => `https://lichess.org/analysis/${fen.replaceAll(' ', '_')}`;
+const href = (name: RegExp) => screen.getByRole('link', { name }).getAttribute('href');
+const fenUrl = (fen: string) => `https://lichess.org/analysis/${fen.replaceAll(' ', '_')}`;
 
-function clickAnalyze() {
-  fireEvent.click(screen.getByRole('button', { name: /analyzeOnLichess/ }));
-}
-
-afterEach(() => {
-  vi.restoreAllMocks();
-});
-
-describe('RecallMovesPanel — Analyze on Lichess', () => {
-  it('opens the latest position at the live position', () => {
-    const open = vi.spyOn(window, 'open').mockImplementation(() => null);
+describe('RecallMovesPanel — Lichess links', () => {
+  it('links the latest position and the entered moves at the live position', () => {
     renderPanel(-1, null);
 
-    clickAnalyze();
-
-    expect(open).toHaveBeenCalledWith(lichessUrl(LATEST_FEN), '_blank');
+    expect(href(/lichessAnalysis\.position$/)).toBe(fenUrl(LATEST_FEN));
+    expect(href(/lichessAnalysis\.game$/)).toBe('https://lichess.org/analysis/pgn/e4_e5#2');
   });
 
-  it('opens the browsed position while navigating history', () => {
-    const open = vi.spyOn(window, 'open').mockImplementation(() => null);
+  it('links the browsed position, and opens the moves at it, while navigating', () => {
     renderPanel(0, BROWSED_FEN);
 
-    clickAnalyze();
-
-    expect(open).toHaveBeenCalledWith(lichessUrl(BROWSED_FEN), '_blank');
+    expect(href(/lichessAnalysis\.position$/)).toBe(fenUrl(BROWSED_FEN));
+    expect(href(/lichessAnalysis\.game$/)).toBe('https://lichess.org/analysis/pgn/e4_e5#1');
   });
 });

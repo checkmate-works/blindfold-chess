@@ -33,13 +33,6 @@ vi.mock('next/navigation', () => ({
   notFound: () => notFoundSpy(),
 }));
 
-// Partial: the termination mark reads the real `fenToBoardFlat` to find the
-// losing king, so only the Lichess URL builder is stubbed.
-vi.mock('@blindfold-chess/features/chess-core/fen', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@blindfold-chess/features/chess-core/fen')>()),
-  fenToLichessUrl: () => 'https://lichess.org/analysis',
-}));
-
 vi.mock('@/app/[locale]/_hooks/use-auth-guard', () => ({
   useAuthGuard: () => ({
     guardAction,

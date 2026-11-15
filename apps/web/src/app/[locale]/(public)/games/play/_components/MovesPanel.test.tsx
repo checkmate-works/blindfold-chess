@@ -62,7 +62,10 @@ function renderPanel(logs: MoveOperationLog[]) {
       }}
       actions={{
         gameInProgress: false,
-        lichessAnalysisUrl: 'https://lichess.org/analysis',
+        lichessAnalysisUrls: {
+          position: 'https://lichess.org/analysis',
+          game: 'https://lichess.org/analysis/pgn/',
+        },
         onRestartFromPosition: vi.fn(),
         onNewGameFromPosition: vi.fn(),
       }}
@@ -134,7 +137,10 @@ describe('MovesPanel operation-log adornment', () => {
         }}
         actions={{
           gameInProgress: false,
-          lichessAnalysisUrl: 'https://lichess.org/analysis',
+          lichessAnalysisUrls: {
+            position: 'https://lichess.org/analysis',
+            game: 'https://lichess.org/analysis/pgn/',
+          },
           onRestartFromPosition: vi.fn(),
           onNewGameFromPosition: vi.fn(),
         }}

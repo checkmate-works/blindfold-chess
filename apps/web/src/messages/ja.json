@@ -2437,6 +2437,12 @@
     "copyFen": "FENをコピー",
     "copied": "コピー済み！",
     "analyzeOnLichess": "Lichessで解析",
+    "lichessAnalysis": {
+      "position": "局面",
+      "game": "棋譜",
+      "positionHint": "この局面だけをLichessで開きます",
+      "gameHint": "手順付きでLichessで開きます（今の手から）"
+    },
     "aiPlayed": "AIが<b>{move}</b>を指しました",
     "restartFromHere": "ここからやり直す",
     "confirmRestartTitle": "ここからやり直しますか？",
@@ -3024,7 +3030,6 @@
     "copyPgn": "PGNをコピー",
     "copyFen": "FENをコピー",
     "copied": "コピー済み！",
-    "analyzeOnLichess": "Lichessで解析",
     "openPosition": "この局面を開く",
     "moveLog": "手のログ",
     "cancel": "キャンセル",

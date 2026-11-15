@@ -29,6 +29,7 @@ export {
   getFenAfterMoves,
   getStartingFen,
   fenToLichessUrl,
+  movesToLichessUrl,
   fenToPieceList,
 } from "./fen";
 

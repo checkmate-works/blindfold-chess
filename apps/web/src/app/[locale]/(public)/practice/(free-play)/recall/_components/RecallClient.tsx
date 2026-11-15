@@ -382,6 +382,7 @@ export function RecallClient({
         <div className="lg:col-span-1 flex flex-col gap-8">
           <RecallMovesPanel
             formattedPgn={formattedPgn}
+            moves={gameProgress.userMoves}
             currentPosition={navigation.currentPosition}
             originalMovesLength={originalMoves.length}
             currentFen={currentFen}

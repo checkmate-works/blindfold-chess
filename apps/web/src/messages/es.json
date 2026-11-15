@@ -2437,6 +2437,12 @@
     "copyFen": "Copiar FEN",
     "copied": "¡Copiado!",
     "analyzeOnLichess": "Analizar en Lichess",
+    "lichessAnalysis": {
+      "position": "Posición",
+      "game": "Partida",
+      "positionHint": "Abrir solo esta posición en Lichess",
+      "gameHint": "Abrir las jugadas en Lichess, desde esta jugada"
+    },
     "aiPlayed": "La IA jugó <b>{move}</b>",
     "restartFromHere": "Reiniciar desde aquí",
     "confirmRestartTitle": "¿Reiniciar desde esta posición?",
@@ -3024,7 +3030,6 @@
     "copyPgn": "Copiar PGN",
     "copyFen": "Copiar FEN",
     "copied": "¡Copiado!",
-    "analyzeOnLichess": "Analizar en Lichess",
     "openPosition": "Abrir esta posición",
     "moveLog": "Registro de Movimientos",
     "cancel": "Cancelar",

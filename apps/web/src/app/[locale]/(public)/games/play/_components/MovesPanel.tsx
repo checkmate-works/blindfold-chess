@@ -6,15 +6,7 @@ import { useCopyToClipboard } from '@/_hooks/useCopyToClipboard';
 import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { Side } from '@blindfold-chess/types';
-import {
-  FaCheck,
-  FaChevronDown,
-  FaCopy,
-  FaExternalLinkAlt,
-  FaInfoCircle,
-  FaPlay,
-  FaPlusCircle,
-} from 'react-icons/fa';
+import { FaCheck, FaChevronDown, FaCopy, FaInfoCircle, FaPlay, FaPlusCircle } from 'react-icons/fa';
 
 import type { MoveOperationLog } from '@/lib/games/saved-game-types';
 
@@ -22,11 +14,13 @@ import { UI_TIMEOUTS } from '@/app/[locale]/_constants/ui-timeouts';
 
 import { formatPgnToText, moveNavDisabledState } from '../_lib';
 import type { FormattedPgn } from '../_lib';
+import type { LichessAnalysisUrls } from '../_lib/lichess-analysis-urls';
 import {
   getPlayerMoveIndices,
   hasOps,
   logForMovesIndex as logForMovesIndexAligned,
 } from '../_lib/move-ops-alignment';
+import { LichessAnalysisButtons } from './LichessAnalysisButtons';
 import { MoveNavigationControls } from './MoveNavigationControls';
 import { OpsPopover } from './OpsPopover';
 import { VerticalMoveList } from './VerticalMoveList';
@@ -52,12 +46,12 @@ type MovesPanelNavigationProps = {
 
 /**
  * Action callbacks and pre-computed URLs for the button cluster below the
- * move list. `lichessAnalysisUrl` is pre-computed by the parent — this panel
- * does not own the FEN→URL concern.
+ * move list. `lichessAnalysisUrls` is pre-computed by the parent (see
+ * `buildLichessAnalysisUrls`) — this panel does not own the moves→URL concern.
  */
 type MovesPanelActionsProps = {
   gameInProgress: boolean;
-  lichessAnalysisUrl: string;
+  lichessAnalysisUrls: LichessAnalysisUrls;
   onRestartFromPosition: (position: number) => void;
   onNewGameFromPosition: (position: number) => void;
 };
@@ -125,7 +119,7 @@ export function MovesPanel({
     onNavigateNext,
     onNavigateToEnd,
   } = navigation;
-  const { gameInProgress, lichessAnalysisUrl, onRestartFromPosition, onNewGameFromPosition } =
+  const { gameInProgress, lichessAnalysisUrls, onRestartFromPosition, onNewGameFromPosition } =
     actions;
 
   const t = useTranslations('play');
@@ -202,10 +196,6 @@ export function MovesPanel({
     // displayed historical position when navigating back.
     const fenToCopy = currentPosition === -1 ? currentFen : displayFen || currentFen;
     fenCopy.copy(fenToCopy);
-  };
-
-  const handleAnalyzeOnLichess = () => {
-    window.open(lichessAnalysisUrl, '_blank');
   };
 
   return (
@@ -292,14 +282,7 @@ export function MovesPanel({
                 </>
               )}
 
-              {/* Analyze on Lichess Button */}
-              <Button
-                variant="secondary"
-                icon={<FaExternalLinkAlt className="w-3 h-3" />}
-                onClick={handleAnalyzeOnLichess}
-              >
-                {t('analyzeOnLichess')}
-              </Button>
+              <LichessAnalysisButtons urls={lichessAnalysisUrls} />
 
               {/* Copy PGN Button */}
               <Button

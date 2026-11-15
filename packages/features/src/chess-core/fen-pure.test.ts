@@ -4,6 +4,7 @@ import {
   STARTING_FEN,
   fullmoveNumberFromFen,
   isBlackToMoveFromFen,
+  movesToLichessUrl,
   withSideToMove,
 } from "./fen-pure";
 
@@ -62,5 +63,56 @@ describe("STARTING_FEN", () => {
     // without the library; this is what keeps that copy honest.
     const { DEFAULT_POSITION } = await import("chess.js");
     expect(STARTING_FEN).toBe(DEFAULT_POSITION);
+  });
+});
+
+describe("movesToLichessUrl", () => {
+  it("joins the SAN with underscores and opens at the last move by default", () => {
+    expect(movesToLichessUrl(["e4", "e5", "Nf3"])).toBe(
+      "https://lichess.org/analysis/pgn/e4_e5_Nf3#3",
+    );
+  });
+
+  it("opens at the requested ply, clamped to the move list", () => {
+    expect(movesToLichessUrl(["e4", "e5", "Nf3"], { plies: 1 })).toMatch(/#1$/);
+    expect(movesToLichessUrl(["e4", "e5", "Nf3"], { plies: 0 })).toMatch(/#0$/);
+    expect(movesToLichessUrl(["e4", "e5", "Nf3"], { plies: 9 })).toMatch(/#3$/);
+  });
+
+  // `+` would become a space on Lichess and `#` would start the URL hash.
+  it("drops check and mate markers", () => {
+    expect(movesToLichessUrl(["f3", "e5", "g4", "Qh4#"])).toBe(
+      "https://lichess.org/analysis/pgn/f3_e5_g4_Qh4#4",
+    );
+    expect(movesToLichessUrl(["e4", "f5", "Qh5+"])).toBe(
+      "https://lichess.org/analysis/pgn/e4_f5_Qh5#3",
+    );
+  });
+
+  it("omits the FEN header for the standard start", () => {
+    expect(movesToLichessUrl(["d4"], { startingFen: STARTING_FEN })).toBe(
+      "https://lichess.org/analysis/pgn/d4#1",
+    );
+  });
+
+  // Lichess numbers plies from the start of a standard game, so a position
+  // at "move 12, black to move" is ply 23 before any move is played.
+  it("sends a custom start as a FEN header and counts plies from it", () => {
+    const fen =
+      "r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 3 12";
+    const url = movesToLichessUrl(["Nf6", "Bc4"], {
+      startingFen: fen,
+      plies: 1,
+    });
+
+    expect(url).toBe(
+      "https://lichess.org/analysis/pgn/" +
+        "%5BFEN_%22r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R_b_KQkq_-_3_12%22%5D_Nf6_Bc4" +
+        "#24",
+    );
+  });
+
+  it("opens an empty game at its starting position", () => {
+    expect(movesToLichessUrl([])).toBe("https://lichess.org/analysis/pgn/#0");
   });
 });

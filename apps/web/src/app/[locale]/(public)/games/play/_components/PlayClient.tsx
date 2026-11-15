@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { notFound, usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { STARTING_FEN, fenToLichessUrl } from '@blindfold-chess/features/chess-core/fen';
+import { STARTING_FEN } from '@blindfold-chess/features/chess-core/fen';
 import type { ExpInfo } from '@blindfold-chess/features/exp';
 import { sideToPieceColor } from '@blindfold-chess/types';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
@@ -35,6 +35,7 @@ import { usePlayBoardViews } from '../_hooks/use-play-board-views';
 import { usePlayClientPreferences } from '../_hooks/use-play-client-preferences';
 import { usePublishPromotion } from '../_hooks/use-publish-promotion';
 import { buildPositionCheckPath } from '../_lib';
+import { buildLichessAnalysisUrls } from '../_lib/lichess-analysis-urls';
 import { useAiReplyChip } from './AiReplyChip';
 import { GameFinishModal } from './GameFinishModal';
 import { GameInProgressPanel } from './GameInProgressPanel';
@@ -556,13 +557,16 @@ export function PlayClient({
               }}
               actions={{
                 gameInProgress: gameStatus === 'in_progress',
-                // FEN → Lichess URL derivation is a navigation concern, so it
+                // Moves → Lichess URL derivation is a navigation concern, so it
                 // lives here (the parent that owns routing) rather than in
-                // MovesPanel. Mirrors the original inline behavior: latest
-                // position uses currentFen, historical positions use displayFen.
-                lichessAnalysisUrl: fenToLichessUrl(
-                  currentPosition === -1 || displayFen === null ? currentFen : displayFen
-                ),
+                // MovesPanel.
+                lichessAnalysisUrls: buildLichessAnalysisUrls({
+                  moves,
+                  startingFen,
+                  currentPosition,
+                  latestFen: currentFen,
+                  displayFen,
+                }),
                 onRestartFromPosition: confirmationDialogs.restart.openWithPosition,
                 onNewGameFromPosition: handleNewGameFromPosition,
               }}
