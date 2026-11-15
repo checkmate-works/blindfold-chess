@@ -35,7 +35,8 @@ type Props = {
  * The moves panels' "Analyze on Lichess" control: one link, plus an
  * "Include moves" switch choosing what it sends — the moves so far, opened
  * at the shown position, to step through the game (on); or only the shown
- * position, to analyse it in isolation (off). The switch is remembered per
+ * position, to analyse it in isolation (off). A line under the switch states
+ * which of the two the link opens right now. The switch is remembered per
  * browser (see `lichess-include-moves-store`).
  *
  * When the game is too long for a Lichess link, a chip next to the switch
@@ -48,6 +49,7 @@ type Props = {
 export function LichessAnalysisControl({ urls, pgnText }: Props) {
   const t = useTranslations('play');
   const switchId = useId();
+  const hintId = useId();
   const [isTruncatedInfoOpen, setIsTruncatedInfoOpen] = useState(false);
   const pgnCopy = useCopyToClipboard(UI_TIMEOUTS.PGN_COPY_DURATION);
 
@@ -66,44 +68,56 @@ export function LichessAnalysisControl({ urls, pgnText }: Props) {
         target="_blank"
         rel="noopener noreferrer"
         className="w-full"
+        aria-describedby={hintId}
       >
         <Button asChild variant="secondary" icon={<FaExternalLinkAlt className="w-3 h-3" />}>
           {t('analyzeOnLichess')}
         </Button>
       </a>
 
-      <div className="flex items-center justify-between gap-2">
-        {/* The chip drops under the label when the row is too narrow for both —
+      {/* The label names the switch; the line under it says, for the current
+          state, what the link will open — so the effect of switching it off
+          (the position alone, no moves) is visible rather than implied. */}
+      <div className="flex flex-col gap-1">
+        <div className="flex items-center justify-between gap-2">
+          {/* The chip drops under the label when the row is too narrow for both —
             the desktop sidebar column, or a longer translation of the label. */}
-        <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-          <label
-            htmlFor={switchId}
-            className="cursor-pointer whitespace-nowrap text-xs text-muted-foreground"
-          >
-            {t('lichessAnalysis.includeMoves')}
-          </label>
-          {showTruncated && (
-            <button
-              type="button"
-              onClick={() => setIsTruncatedInfoOpen(true)}
-              aria-haspopup="dialog"
-              className="inline-flex shrink-0 items-center gap-1 rounded-full bg-warning-soft px-2 py-0.5 text-xs text-warning-soft-foreground hover:brightness-95"
+          <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+            <label
+              htmlFor={switchId}
+              className="cursor-pointer whitespace-nowrap text-xs text-foreground"
             >
-              <FaExclamationTriangle className="w-3 h-3" aria-hidden />
-              {t('lichessAnalysis.truncatedChip')}
-            </button>
-          )}
+              {t('lichessAnalysis.includeMoves')}
+            </label>
+            {showTruncated && (
+              <button
+                type="button"
+                onClick={() => setIsTruncatedInfoOpen(true)}
+                aria-haspopup="dialog"
+                className="inline-flex shrink-0 items-center gap-1 rounded-full bg-warning-soft px-2 py-0.5 text-xs text-warning-soft-foreground hover:brightness-95"
+              >
+                <FaExclamationTriangle className="w-3 h-3" aria-hidden />
+                {t('lichessAnalysis.truncatedChip')}
+              </button>
+            )}
+          </div>
+          <button
+            id={switchId}
+            type="button"
+            role="switch"
+            aria-checked={includeMoves}
+            aria-describedby={hintId}
+            onClick={() => writeIncludeMoves(!includeMoves)}
+            className={`shrink-0 ${toggleTrackClass('control', includeMoves)}`}
+          >
+            <span className={toggleKnobClass('control', includeMoves)} />
+          </button>
         </div>
-        <button
-          id={switchId}
-          type="button"
-          role="switch"
-          aria-checked={includeMoves}
-          onClick={() => writeIncludeMoves(!includeMoves)}
-          className={`shrink-0 ${toggleTrackClass('control', includeMoves)}`}
-        >
-          <span className={toggleKnobClass('control', includeMoves)} />
-        </button>
+        <p id={hintId} className="text-xs text-muted-foreground">
+          {includeMoves
+            ? t('lichessAnalysis.includeMovesOnHint')
+            : t('lichessAnalysis.includeMovesOffHint')}
+        </p>
       </div>
 
       <InfoModal

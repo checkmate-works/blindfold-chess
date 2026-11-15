@@ -2439,6 +2439,8 @@
     "analyzeOnLichess": "Analisar no Lichess",
     "lichessAnalysis": {
       "includeMoves": "Incluir lances",
+      "includeMovesOnHint": "Abre com os lances, nesta posição: dá para avançar e voltar a partir daqui.",
+      "includeMovesOffHint": "Abre só esta posição, sem os lances.",
       "truncatedChip": "Parcial",
       "truncatedTitle": "Só parte da partida é enviada",
       "truncatedBody": "O Lichess lê apenas parte do link, então a partida é enviada até {lastMove} ({included} de {total} meios-lances). Para analisar a partida inteira, copie o PGN e cole na página de importação do Lichess.",

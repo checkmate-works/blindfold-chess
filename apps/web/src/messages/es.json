@@ -2439,6 +2439,8 @@
     "analyzeOnLichess": "Analizar en Lichess",
     "lichessAnalysis": {
       "includeMoves": "Incluir jugadas",
+      "includeMovesOnHint": "Se abre con las jugadas, en esta posición: puedes avanzar y retroceder desde aquí.",
+      "includeMovesOffHint": "Se abre solo esta posición, sin las jugadas.",
       "truncatedChip": "Parcial",
       "truncatedTitle": "Solo se envía parte de la partida",
       "truncatedBody": "Lichess solo lee una parte del enlace, así que la partida se envía hasta {lastMove} ({included} de {total} medias jugadas). Para analizar la partida completa, copia el PGN y pégalo en la página de importación de Lichess.",

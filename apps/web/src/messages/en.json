@@ -2439,6 +2439,8 @@
     "analyzeOnLichess": "Analyze on Lichess",
     "lichessAnalysis": {
       "includeMoves": "Include moves",
+      "includeMovesOnHint": "Opens with the moves, at this position — step back and forth from here.",
+      "includeMovesOffHint": "Opens just this position, without the moves.",
       "truncatedChip": "Partial",
       "truncatedTitle": "Only part of the game is sent",
       "truncatedBody": "Lichess reads only so much of a link, so the game is sent up to {lastMove} ({included} of {total} half-moves). To analyze the whole game, copy the PGN and paste it into Lichess's import page.",

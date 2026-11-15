@@ -50,6 +50,19 @@ describe('LichessAnalysisControl', () => {
     expect(link().getAttribute('rel')).toContain('noopener');
   });
 
+  // The label alone does not say that "off" means the position with no
+  // moves, so a line under it spells out what the link opens in each state.
+  it('describes what the link opens, for the current state', () => {
+    render(<LichessAnalysisControl urls={urls()} pgnText="1. e4 e5" />);
+
+    const describedBy = () => document.getElementById(toggle().getAttribute('aria-describedby')!);
+    expect(describedBy()?.textContent).toBe('lichessAnalysis.includeMovesOnHint');
+    expect(link().getAttribute('aria-describedby')).toBe(toggle().getAttribute('aria-describedby'));
+
+    fireEvent.click(toggle());
+    expect(describedBy()?.textContent).toBe('lichessAnalysis.includeMovesOffHint');
+  });
+
   it('sends only the position when switched off, and remembers it', () => {
     const { unmount } = render(<LichessAnalysisControl urls={urls()} pgnText="1. e4 e5" />);
     fireEvent.click(toggle());
