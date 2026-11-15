@@ -82,7 +82,6 @@ vi.mock('@blindfold-chess/features/chess-core', async (orig) => {
   return {
     ...actual,
     getLastMoveDetails: () => mockLastMove,
-    fenToLichessUrl: () => 'https://lichess.org/analysis',
   };
 });
 

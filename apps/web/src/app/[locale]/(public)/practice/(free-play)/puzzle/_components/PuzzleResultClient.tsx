@@ -5,9 +5,10 @@ import { type ReactNode, useEffect, useMemo, useState } from 'react';
 import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { fenToLichessUrl } from '@blindfold-chess/features/chess-core/fen';
+import { formatMovesToPgn, formatPgnToText } from '@blindfold-chess/features/chess-core/pgn-format';
 import type { ExpInfo } from '@blindfold-chess/features/exp';
-import { FaExternalLinkAlt, FaEye } from 'react-icons/fa';
+import { parseFenMeta } from '@blindfold-chess/features/game-play';
+import { FaEye } from 'react-icons/fa';
 
 import type { PuzzleSolutionMove } from '@/lib/db/schema/positions';
 import { readSessionItem } from '@/lib/storage/session-storage';
@@ -17,7 +18,9 @@ import { toggleLike } from '@/app/[locale]/(public)/practice/(free-play)/_action
 import { ExpGainDisplay } from '@/app/[locale]/(public)/practice/_components/ExpGainDisplay';
 import { SignUpBanner } from '@/app/[locale]/(public)/practice/_components/SignUpBanner';
 import { SectionTitle } from '@/app/[locale]/_components';
+import { LichessAnalysisControl } from '@/app/[locale]/_components/LichessAnalysisControl';
 import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
+import { lichessAnalysisUrlsAt } from '@/app/[locale]/_lib/lichess-analysis-urls';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { ResultLikeCta } from '../../_components/ResultLikeCta';
@@ -122,6 +125,19 @@ export function PuzzleResultClient({
   }, [solutionLine, solutionMoveLists]);
 
   const lockedSans = useMemo(() => lockedMoves.map((m) => m.san), [lockedMoves]);
+
+  // The solution line, sent from the puzzle's own start and opened there:
+  // the result screen has no move cursor (the replay above only animates),
+  // and the start is where a puzzle is analysed from. Off, the switch sends
+  // the puzzle position alone, as the old button did.
+  const lichessAnalysisUrls = useMemo(
+    () => lichessAnalysisUrlsAt({ moves: lockedSans, startingFen: fen, plies: 0, shownFen: fen }),
+    [lockedSans, fen]
+  );
+  const getPgnText = () => {
+    const { startsAsBlack, startMoveNumber } = parseFenMeta(fen);
+    return formatPgnToText(formatMovesToPgn(lockedSans, startsAsBlack, startMoveNumber), fen);
+  };
   const attemptStatus = useMemo(
     () => computeAttemptStatus(attempts, lockedSans),
     [attempts, lockedSans]
@@ -227,15 +243,7 @@ export function PuzzleResultClient({
             {t('backToList')}
           </Button>
         </Link>
-        <Button
-          onClick={() => window.open(fenToLichessUrl(fen), '_blank')}
-          variant="secondary"
-          size="lg"
-          fullWidth
-          icon={<FaExternalLinkAlt className="w-4 h-4" />}
-        >
-          {t('analyzeOnLichess')}
-        </Button>
+        <LichessAnalysisControl urls={lichessAnalysisUrls} getPgnText={getPgnText} size="lg" />
       </div>
     </div>
   );

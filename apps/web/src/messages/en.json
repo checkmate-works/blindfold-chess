@@ -1766,7 +1766,6 @@
         "attemptIncorrect": "Incorrect",
         "backToList": "Back to Puzzles",
         "tryAgain": "Try Again",
-        "analyzeOnLichess": "Analyze on Lichess",
         "viewResult": "View Result",
         "peekCount": "Board Peeks: {count}",
         "nextPuzzles": "Next puzzles",
@@ -1870,7 +1869,6 @@
       "extraDescription": "Extra pieces placed in empty squares",
       "nextProblem": "Next Problem",
       "viewResults": "View Results",
-      "analyzeOnLichess": "Analyze on Lichess",
       "original": "Original",
       "yourRecreation": "Your Recreation",
       "problemDetails": "Problem Details",
@@ -2362,6 +2360,18 @@
     "deletedToast": "{count, plural, one {# game deleted successfully} other {# games deleted successfully}}",
     "deleteFailedToast": "Failed to delete games"
   },
+  "lichessAnalysis": {
+    "analyzeOnLichess": "Analyze on Lichess",
+    "includeMoves": "Include moves",
+    "includeMovesOnHint": "Opens with the moves, at this position — step back and forth from here.",
+    "includeMovesOffHint": "Opens just this position, without the moves.",
+    "truncatedChip": "Partial",
+    "truncatedTitle": "Only part of the game is sent",
+    "truncatedBody": "Lichess reads only so much of a link, so the game is sent up to {lastIncludedMove} (it continues to {lastMove}). To analyze the whole game, copy the PGN and paste it into Lichess's import page.",
+    "openImport": "Open Lichess import",
+    "copyPgn": "Copy PGN",
+    "copied": "Copied!"
+  },
   "play": {
     "title": "Game",
     "help": {
@@ -2436,7 +2446,6 @@
     "copyPgn": "Copy PGN",
     "copyFen": "Copy FEN",
     "copied": "Copied!",
-    "analyzeOnLichess": "Analyze on Lichess",
     "aiPlayed": "AI played <b>{move}</b>",
     "restartFromHere": "Restart from here",
     "confirmRestartTitle": "Restart from this position?",
@@ -3024,7 +3033,6 @@
     "copyPgn": "Copy PGN",
     "copyFen": "Copy FEN",
     "copied": "Copied!",
-    "analyzeOnLichess": "Analyze on Lichess",
     "openPosition": "Open this position",
     "moveLog": "Move Log",
     "cancel": "Cancel",

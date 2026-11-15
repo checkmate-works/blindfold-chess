@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { notFound, usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { STARTING_FEN, fenToLichessUrl } from '@blindfold-chess/features/chess-core/fen';
+import { STARTING_FEN } from '@blindfold-chess/features/chess-core/fen';
 import type { ExpInfo } from '@blindfold-chess/features/exp';
 import { sideToPieceColor } from '@blindfold-chess/types';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
@@ -22,6 +22,7 @@ import {
 
 import { ExpGainDisplay } from '@/app/[locale]/(public)/practice/_components/ExpGainDisplay';
 import { useTerminationMarkLabel } from '@/app/[locale]/_hooks/use-termination-mark-label';
+import { buildLichessAnalysisUrls } from '@/app/[locale]/_lib/lichess-analysis-urls';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { useBoardFlip, useConfirmationDialogs, useMoveNavigation } from '../_hooks';
@@ -449,6 +450,22 @@ export function PlayClient({
     terminationMarkLabel: terminationMarkLabel(terminationMark),
   });
 
+  // Moves → Lichess URL derivation is a navigation concern, so it lives here
+  // (the parent that owns routing) rather than in MovesPanel. Memoized: it
+  // walks and encodes the whole move list, and PlayClient re-renders far more
+  // often than the moves or the cursor change.
+  const lichessAnalysisUrls = useMemo(
+    () =>
+      buildLichessAnalysisUrls({
+        moves,
+        startingFen,
+        currentPosition,
+        latestFen: currentFen,
+        displayFen,
+      }),
+    [moves, startingFen, currentPosition, currentFen, displayFen]
+  );
+
   if (gameNotFound) {
     notFound();
   }
@@ -556,13 +573,7 @@ export function PlayClient({
               }}
               actions={{
                 gameInProgress: gameStatus === 'in_progress',
-                // FEN → Lichess URL derivation is a navigation concern, so it
-                // lives here (the parent that owns routing) rather than in
-                // MovesPanel. Mirrors the original inline behavior: latest
-                // position uses currentFen, historical positions use displayFen.
-                lichessAnalysisUrl: fenToLichessUrl(
-                  currentPosition === -1 || displayFen === null ? currentFen : displayFen
-                ),
+                lichessAnalysisUrls,
                 onRestartFromPosition: confirmationDialogs.restart.openWithPosition,
                 onNewGameFromPosition: handleNewGameFromPosition,
               }}

@@ -5,7 +5,7 @@ import { type ReactNode, useCallback, useEffect, useMemo, useState } from 'react
 import { useRouter } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { fenToLichessUrl, replayMoves } from '@blindfold-chess/features/chess-core';
+import { replayMoves } from '@blindfold-chess/features/chess-core';
 import { computeGameStats } from '@blindfold-chess/features/game-record';
 import type { AlgebraicNotation, FinalGameOutcome, Side } from '@blindfold-chess/types';
 import { FaArrowRight } from 'react-icons/fa';
@@ -36,6 +36,7 @@ import { GameStatsOverview } from '@/app/[locale]/(public)/games/play/result/_co
 import { StatsAuthGate } from '@/app/[locale]/(public)/games/play/result/_components/StatsAuthGate';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { useTerminationMarkLabel } from '@/app/[locale]/_hooks/use-termination-mark-label';
+import { buildLichessAnalysisUrls } from '@/app/[locale]/_lib/lichess-analysis-urls';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -313,8 +314,17 @@ export function GameReview({
     [preferencesAt, quickPeek.nav.currentPosition]
   );
 
-  const lichessAnalysisUrl = fenToLichessUrl(
-    currentPosition === -1 || displayFen === null ? latestFen : displayFen
+  // Memoized: building the game URL walks and encodes every move.
+  const lichessAnalysisUrls = useMemo(
+    () =>
+      buildLichessAnalysisUrls({
+        moves: notationMoves,
+        startingFen: startingFen ?? undefined,
+        currentPosition,
+        latestFen,
+        displayFen,
+      }),
+    [notationMoves, startingFen, currentPosition, latestFen, displayFen]
   );
 
   const terminationMark = useMemo(
@@ -800,7 +810,7 @@ export function GameReview({
               // "restart from here" is hidden; "new game from here" lets a viewer
               // play the position themselves.
               gameInProgress: false,
-              lichessAnalysisUrl,
+              lichessAnalysisUrls,
               onRestartFromPosition: () => {},
               onNewGameFromPosition: (position) =>
                 router.push(

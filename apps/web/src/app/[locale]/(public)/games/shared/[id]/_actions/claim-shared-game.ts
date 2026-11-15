@@ -12,8 +12,7 @@ import { logActivityEvent } from '@/lib/users/activity-log';
 import { UUID_RE } from '@/lib/validations/uuid';
 
 export type ClaimSharedGameResponse =
-  | { success: true; grantedRanks?: GrantedRank[] }
-  | { success: false; error: string };
+  { success: true; grantedRanks?: GrantedRank[] } | { success: false; error: string };
 
 /**
  * Claim an anonymously published game for the signed-in user: proves

@@ -6,19 +6,13 @@ import { useCopyToClipboard } from '@/_hooks/useCopyToClipboard';
 import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { Side } from '@blindfold-chess/types';
-import {
-  FaCheck,
-  FaChevronDown,
-  FaCopy,
-  FaExternalLinkAlt,
-  FaInfoCircle,
-  FaPlay,
-  FaPlusCircle,
-} from 'react-icons/fa';
+import { FaCheck, FaChevronDown, FaCopy, FaInfoCircle, FaPlay, FaPlusCircle } from 'react-icons/fa';
 
 import type { MoveOperationLog } from '@/lib/games/saved-game-types';
 
+import { LichessAnalysisControl } from '@/app/[locale]/_components/LichessAnalysisControl';
 import { UI_TIMEOUTS } from '@/app/[locale]/_constants/ui-timeouts';
+import type { LichessAnalysisUrls } from '@/app/[locale]/_lib/lichess-analysis-urls';
 
 import { formatPgnToText, moveNavDisabledState } from '../_lib';
 import type { FormattedPgn } from '../_lib';
@@ -29,7 +23,7 @@ import {
 } from '../_lib/move-ops-alignment';
 import { MoveNavigationControls } from './MoveNavigationControls';
 import { OpsPopover } from './OpsPopover';
-import { VerticalMoveList } from './VerticalMoveList';
+import { PANEL_MOVE_LIST_SCROLL_CLASSES, VerticalMoveList } from './VerticalMoveList';
 
 /** Everything needed to render and click-to-navigate the move list. */
 type MovesPanelMoveListProps = {
@@ -52,12 +46,12 @@ type MovesPanelNavigationProps = {
 
 /**
  * Action callbacks and pre-computed URLs for the button cluster below the
- * move list. `lichessAnalysisUrl` is pre-computed by the parent — this panel
- * does not own the FEN→URL concern.
+ * move list. `lichessAnalysisUrls` is pre-computed by the parent (see
+ * `buildLichessAnalysisUrls`) — this panel does not own the moves→URL concern.
  */
 type MovesPanelActionsProps = {
   gameInProgress: boolean;
-  lichessAnalysisUrl: string;
+  lichessAnalysisUrls: LichessAnalysisUrls;
   onRestartFromPosition: (position: number) => void;
   onNewGameFromPosition: (position: number) => void;
 };
@@ -125,7 +119,7 @@ export function MovesPanel({
     onNavigateNext,
     onNavigateToEnd,
   } = navigation;
-  const { gameInProgress, lichessAnalysisUrl, onRestartFromPosition, onNewGameFromPosition } =
+  const { gameInProgress, lichessAnalysisUrls, onRestartFromPosition, onNewGameFromPosition } =
     actions;
 
   const t = useTranslations('play');
@@ -193,19 +187,17 @@ export function MovesPanel({
     );
   };
 
+  const getPgnText = () => formatPgnToText(formattedPgn, startingFen);
+
   const handleCopyPgn = () => {
-    pgnCopy.copy(formatPgnToText(formattedPgn, startingFen));
+    pgnCopy.copy(getPgnText());
   };
 
   const handleCopyFen = () => {
-    // Use the same FEN that is sent to Lichess: the current position, or the
-    // displayed historical position when navigating back.
+    // The shown position: the latest one, or the displayed historical
+    // position when navigating back.
     const fenToCopy = currentPosition === -1 ? currentFen : displayFen || currentFen;
     fenCopy.copy(fenToCopy);
-  };
-
-  const handleAnalyzeOnLichess = () => {
-    window.open(lichessAnalysisUrl, '_blank');
   };
 
   return (
@@ -241,13 +233,14 @@ export function MovesPanel({
       <div
         className={`transition-all duration-300 ${isMovesVisible ? 'block' : 'hidden'} rounded-b-lg`}
       >
-        <div className="p-4 max-h-[70vh] overflow-y-auto font-mono">
+        <div className="p-4 font-mono">
           {formattedPgn.length > 0 ? (
             <VerticalMoveList
               formattedPgn={formattedPgn}
               currentPosition={currentPosition}
               onNavigateToPosition={onNavigateToPosition}
               adornment={operations ? renderOpsAdornment : undefined}
+              className={PANEL_MOVE_LIST_SCROLL_CLASSES}
             />
           ) : (
             <p className="text-muted-foreground text-sm">No moves yet</p>
@@ -292,14 +285,7 @@ export function MovesPanel({
                 </>
               )}
 
-              {/* Analyze on Lichess Button */}
-              <Button
-                variant="secondary"
-                icon={<FaExternalLinkAlt className="w-3 h-3" />}
-                onClick={handleAnalyzeOnLichess}
-              >
-                {t('analyzeOnLichess')}
-              </Button>
+              <LichessAnalysisControl urls={lichessAnalysisUrls} getPgnText={getPgnText} />
 
               {/* Copy PGN Button */}
               <Button

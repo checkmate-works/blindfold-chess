@@ -83,13 +83,20 @@ export async function PuzzleResultContentSkeleton() {
         </div>
       </div>
 
-      {/* Action buttons (Try Again / Back to Puzzles / Analyze on Lichess) —
-          three full-width buttons, matching the real `flex flex-col gap-3 pt-4`
-          block. */}
+      {/* Action buttons (Try Again / Back to Puzzles) and the Lichess
+          control (button, "include moves" switch row, one-line description),
+          matching the real `flex flex-col gap-3 pt-4` block. */}
       <div className="flex flex-col gap-3 pt-4">
         <Skeleton className="h-12 w-full rounded-lg" />
         <Skeleton className="h-12 w-full rounded-lg" />
-        <Skeleton className="h-12 w-full rounded-lg" />
+        <div className="flex flex-col gap-2">
+          <Skeleton className="h-12 w-full rounded-lg" />
+          <div className="flex items-center justify-between gap-2">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-6 w-11 rounded-full" />
+          </div>
+          <Skeleton className="h-4 w-56" />
+        </div>
       </div>
     </div>
   );

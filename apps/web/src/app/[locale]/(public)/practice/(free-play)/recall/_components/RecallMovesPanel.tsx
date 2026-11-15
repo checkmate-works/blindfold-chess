@@ -1,21 +1,30 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { FormattedPgnMove } from '@blindfold-chess/features/chess-core';
-import { fenToLichessUrl } from '@blindfold-chess/features/chess-core/fen';
-import { FaCheck, FaCopy, FaExternalLinkAlt } from 'react-icons/fa';
+import { FaCheck, FaCopy } from 'react-icons/fa';
 
 import { MoveNavigationControls } from '@/app/[locale]/(public)/games/play/_components/MoveNavigationControls';
-import { VerticalMoveList } from '@/app/[locale]/(public)/games/play/_components/VerticalMoveList';
+import {
+  PANEL_MOVE_LIST_SCROLL_CLASSES,
+  VerticalMoveList,
+} from '@/app/[locale]/(public)/games/play/_components/VerticalMoveList';
 import { moveNavDisabledState } from '@/app/[locale]/(public)/games/play/_lib/move-nav-disabled-state';
 import { formatPgnToText } from '@/app/[locale]/(public)/games/play/_lib/pgn-parser';
+import { LichessAnalysisControl } from '@/app/[locale]/_components/LichessAnalysisControl';
 import { UI_TIMEOUTS } from '@/app/[locale]/_constants/ui-timeouts';
+import { buildLichessAnalysisUrls } from '@/app/[locale]/_lib/lichess-analysis-urls';
 
 type Props = {
   formattedPgn: FormattedPgnMove[];
+  /**
+   * The moves entered so far (what `formattedPgn` shows) — never the full game
+   * being recalled, since the Lichess game link carries every move it is given.
+   */
+  moves: readonly string[];
   currentPosition: number;
   originalMovesLength: number;
   currentFen: string;
@@ -30,6 +39,7 @@ type Props = {
 
 export function RecallMovesPanel({
   formattedPgn,
+  moves,
   currentPosition,
   originalMovesLength,
   currentFen,
@@ -44,6 +54,19 @@ export function RecallMovesPanel({
   const t = useTranslations('recall');
   const [isCopied, setIsCopied] = useState(false);
   const [isFenCopied, setIsFenCopied] = useState(false);
+  // Memoized: building the game URL walks and encodes every entered move.
+  const lichessAnalysisUrls = useMemo(
+    () =>
+      buildLichessAnalysisUrls({
+        moves,
+        startingFen,
+        currentPosition,
+        latestFen: currentFen,
+        displayFen,
+      }),
+    [moves, startingFen, currentPosition, currentFen, displayFen]
+  );
+  const getPgnText = () => formatPgnToText(formattedPgn, startingFen);
 
   return (
     <div data-tour-id="recall-moves">
@@ -54,13 +77,14 @@ export function RecallMovesPanel({
         </div>
 
         {/* Moves Content */}
-        <div className="p-4 max-h-[70vh] overflow-y-auto font-mono">
+        <div className="p-4 font-mono">
           {formattedPgn.length > 0 ? (
             <>
               <VerticalMoveList
                 formattedPgn={formattedPgn}
                 currentPosition={currentPosition}
                 onNavigateToPosition={onNavigateToPosition}
+                className={PANEL_MOVE_LIST_SCROLL_CLASSES}
               />
 
               {/* Navigation Controls */}
@@ -76,20 +100,7 @@ export function RecallMovesPanel({
 
               {/* Action Buttons */}
               <div className="mt-4 flex flex-col gap-4">
-                {/* Analyze on Lichess Button - only show when navigating */}
-                {currentPosition !== -1 && currentPosition !== -2 && (
-                  <Button
-                    variant="secondary"
-                    icon={<FaExternalLinkAlt className="w-3 h-3" />}
-                    onClick={() => {
-                      const fenToAnalyze = displayFen || currentFen;
-                      const lichessUrl = fenToLichessUrl(fenToAnalyze);
-                      window.open(lichessUrl, '_blank');
-                    }}
-                  >
-                    {t('analyzeOnLichess')}
-                  </Button>
-                )}
+                <LichessAnalysisControl urls={lichessAnalysisUrls} getPgnText={getPgnText} />
 
                 {/* Copy PGN Button */}
                 <Button
@@ -102,7 +113,7 @@ export function RecallMovesPanel({
                     )
                   }
                   onClick={() => {
-                    const pgnText = formatPgnToText(formattedPgn, startingFen);
+                    const pgnText = getPgnText();
 
                     navigator.clipboard.writeText(pgnText).then(() => {
                       setIsCopied(true);
