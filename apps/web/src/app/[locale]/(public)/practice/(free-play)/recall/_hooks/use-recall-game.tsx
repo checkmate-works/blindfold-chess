@@ -3,6 +3,7 @@ import { useCallback, useMemo, useState } from 'react';
 import type { replayMoves } from '@blindfold-chess/features/chess-core';
 import type { FormattedPgnMove } from '@blindfold-chess/features/chess-core';
 import { formatMovesToPgn } from '@blindfold-chess/features/chess-core';
+import { appliedPliesAt } from '@blindfold-chess/features/game-play';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
 import type { MoveSquares } from '@/lib/board/move-squares';
@@ -177,9 +178,8 @@ export function useRecallGame({
 
   // Calculate last move for highlighting based on current position
   const currentLastMove = useMemo(() => {
-    if (currentPosition === -2) return null;
-
-    const posIndex = currentPosition === -1 ? userMoves.length : currentPosition + 1;
+    // The start (-2) maps to index 0, which has no last move.
+    const posIndex = appliedPliesAt(currentPosition, userMoves.length);
 
     if (posIndex <= 0 || posIndex >= gamePositions.length) return null;
 

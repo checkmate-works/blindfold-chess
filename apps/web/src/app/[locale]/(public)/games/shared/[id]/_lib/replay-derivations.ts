@@ -1,5 +1,5 @@
 import { computeMoveNumber } from '@blindfold-chess/features/chess-core/move-numbering';
-import { parseFenMeta } from '@blindfold-chess/features/game-play';
+import { appliedPliesAt, parseFenMeta } from '@blindfold-chess/features/game-play';
 import type { Side } from '@blindfold-chess/types';
 
 import { getPlayerMoveIndices } from '@/app/[locale]/(public)/games/play/_lib/move-ops-alignment';
@@ -45,8 +45,7 @@ export function computeContinuation(
   currentPosition: number,
   moves: readonly string[]
 ): { appliedPlies: number; continuationSan: string | undefined } {
-  const appliedPlies =
-    currentPosition >= 0 ? currentPosition + 1 : currentPosition === -2 ? 0 : moves.length;
+  const appliedPlies = appliedPliesAt(currentPosition, moves.length);
   return {
     appliedPlies,
     continuationSan: appliedPlies < moves.length ? moves[appliedPlies] : undefined,

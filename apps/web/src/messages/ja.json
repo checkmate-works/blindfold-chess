@@ -2443,7 +2443,7 @@
       "includeMovesOffHint": "この局面だけを開きます（手順は送りません）",
       "truncatedChip": "一部のみ",
       "truncatedTitle": "棋譜の一部だけを送ります",
-      "truncatedBody": "LichessがURLから読み込める長さには上限があるため、{lastMove} まで（全{total}手のうち{included}手）を送ります。棋譜全体を解析するには、PGNをコピーしてLichessのインポート画面に貼り付けてください。",
+      "truncatedBody": "LichessがURLから読み込める長さには上限があるため、{lastIncludedMove} までを送ります（棋譜は {lastMove} まで続きます）。棋譜全体を解析するには、PGNをコピーしてLichessのインポート画面に貼り付けてください。",
       "openImport": "Lichessのインポート画面を開く"
     },
     "aiPlayed": "AIが<b>{move}</b>を指しました",

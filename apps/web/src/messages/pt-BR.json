@@ -2443,7 +2443,7 @@
       "includeMovesOffHint": "Abre só esta posição, sem os lances.",
       "truncatedChip": "Parcial",
       "truncatedTitle": "Só parte da partida é enviada",
-      "truncatedBody": "O Lichess lê apenas parte do link, então a partida é enviada até {lastMove} ({included} de {total} meios-lances). Para analisar a partida inteira, copie o PGN e cole na página de importação do Lichess.",
+      "truncatedBody": "O Lichess lê apenas parte do link, então a partida é enviada até {lastIncludedMove} (ela continua até {lastMove}). Para analisar a partida inteira, copie o PGN e cole na página de importação do Lichess.",
       "openImport": "Abrir a importação do Lichess"
     },
     "aiPlayed": "A IA jogou <b>{move}</b>",

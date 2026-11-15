@@ -187,13 +187,15 @@ export function MovesPanel({
     );
   };
 
+  const getPgnText = () => formatPgnToText(formattedPgn, startingFen);
+
   const handleCopyPgn = () => {
-    pgnCopy.copy(formatPgnToText(formattedPgn, startingFen));
+    pgnCopy.copy(getPgnText());
   };
 
   const handleCopyFen = () => {
-    // Use the same FEN that is sent to Lichess: the current position, or the
-    // displayed historical position when navigating back.
+    // The shown position: the latest one, or the displayed historical
+    // position when navigating back.
     const fenToCopy = currentPosition === -1 ? currentFen : displayFen || currentFen;
     fenCopy.copy(fenToCopy);
   };
@@ -283,10 +285,7 @@ export function MovesPanel({
                 </>
               )}
 
-              <LichessAnalysisControl
-                urls={lichessAnalysisUrls}
-                pgnText={formatPgnToText(formattedPgn, startingFen)}
-              />
+              <LichessAnalysisControl urls={lichessAnalysisUrls} getPgnText={getPgnText} />
 
               {/* Copy PGN Button */}
               <Button

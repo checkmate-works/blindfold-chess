@@ -450,6 +450,22 @@ export function PlayClient({
     terminationMarkLabel: terminationMarkLabel(terminationMark),
   });
 
+  // Moves → Lichess URL derivation is a navigation concern, so it lives here
+  // (the parent that owns routing) rather than in MovesPanel. Memoized: it
+  // walks and encodes the whole move list, and PlayClient re-renders far more
+  // often than the moves or the cursor change.
+  const lichessAnalysisUrls = useMemo(
+    () =>
+      buildLichessAnalysisUrls({
+        moves,
+        startingFen,
+        currentPosition,
+        latestFen: currentFen,
+        displayFen,
+      }),
+    [moves, startingFen, currentPosition, currentFen, displayFen]
+  );
+
   if (gameNotFound) {
     notFound();
   }
@@ -557,16 +573,7 @@ export function PlayClient({
               }}
               actions={{
                 gameInProgress: gameStatus === 'in_progress',
-                // Moves → Lichess URL derivation is a navigation concern, so it
-                // lives here (the parent that owns routing) rather than in
-                // MovesPanel.
-                lichessAnalysisUrls: buildLichessAnalysisUrls({
-                  moves,
-                  startingFen,
-                  currentPosition,
-                  latestFen: currentFen,
-                  displayFen,
-                }),
+                lichessAnalysisUrls,
                 onRestartFromPosition: confirmationDialogs.restart.openWithPosition,
                 onNewGameFromPosition: handleNewGameFromPosition,
               }}

@@ -5,7 +5,7 @@
  *
  * A per-viewer convenience, so browser storage is enough — and it may be
  * missing: a private window or blocked site data makes `localStorage` throw
- * or forget. Every access is guarded, and an in-memory copy keeps the switch
+ * or forget. Every access is guarded, and the in-memory copy keeps the switch
  * working for the rest of the tab when a write does not stick.
  *
  * Read through `useSyncExternalStore` (see `useLichessIncludeMoves`) with a
@@ -19,32 +19,42 @@ const STORAGE_KEY = 'blindfold-chess-lichess-include-moves';
 export const DEFAULT_INCLUDE_MOVES = true;
 
 const listeners = new Set<() => void>();
-let memory: boolean | null = null;
+
+/**
+ * The current value, read from storage once and then kept in memory, so the
+ * `useSyncExternalStore` snapshot — read on every render of every control —
+ * is a variable read rather than a storage access. A write updates it even
+ * when storage refuses the write; another tab's write clears it so the next
+ * read picks the stored value up.
+ */
+let cached: boolean | null = null;
 
 export function readIncludeMoves(): boolean {
-  if (memory !== null) return memory;
-  try {
-    const stored = window.localStorage.getItem(STORAGE_KEY);
-    return stored === null ? DEFAULT_INCLUDE_MOVES : stored === '1';
-  } catch {
-    return DEFAULT_INCLUDE_MOVES;
+  if (cached === null) {
+    try {
+      const stored = window.localStorage.getItem(STORAGE_KEY);
+      cached = stored === null ? DEFAULT_INCLUDE_MOVES : stored === '1';
+    } catch {
+      cached = DEFAULT_INCLUDE_MOVES;
+    }
   }
+  return cached;
 }
 
 export function writeIncludeMoves(value: boolean): void {
-  memory = value;
+  cached = value;
   try {
     window.localStorage.setItem(STORAGE_KEY, value ? '1' : '0');
   } catch {
-    // Storage unavailable: the in-memory copy above still holds the choice.
+    // Storage unavailable: the cached value still holds the choice for this tab.
   }
   listeners.forEach((listener) => listener());
 }
 
-/** Another tab changed the stored value: drop the in-memory copy and re-read. */
+/** Another tab changed the stored value: drop the cached copy and re-read. */
 function handleStorage(event: StorageEvent) {
   if (event.key !== STORAGE_KEY) return;
-  memory = null;
+  cached = null;
   listeners.forEach((listener) => listener());
 }
 
@@ -57,7 +67,7 @@ export function subscribeIncludeMoves(listener: () => void): () => void {
   };
 }
 
-/** Test-only: forget the in-memory copy between cases. */
+/** Test-only: forget the cached value between cases. */
 export function resetIncludeMovesForTests(): void {
-  memory = null;
+  cached = null;
 }

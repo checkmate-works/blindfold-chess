@@ -20,8 +20,7 @@ describe('buildLichessAnalysisUrls', () => {
       url: 'https://lichess.org/analysis/pgn/e4_e5_Nf3#3',
       includedMoves: 3,
       truncated: false,
-      totalMoves: 3,
-      lastIncludedMove: null,
+      cut: null,
     });
   });
 
@@ -41,7 +40,7 @@ describe('buildLichessAnalysisUrls', () => {
     // 1250 three-letter moves fill the 5000-character path exactly.
     const long = Array.from({ length: 1300 }, (_, i) => ['Nf3', 'Nf6', 'Ng1', 'Ng8'][i % 4]);
 
-    it('names the last move the URL carries', () => {
+    it("names the last move the URL carries and the game's final move", () => {
       const { game } = buildLichessAnalysisUrls({
         moves: long,
         currentPosition: -1,
@@ -51,9 +50,8 @@ describe('buildLichessAnalysisUrls', () => {
 
       expect(game.truncated).toBe(true);
       expect(game.includedMoves).toBe(1250);
-      expect(game.totalMoves).toBe(1300);
-      // Ply 1250 (index 1249) is Black's 625th move.
-      expect(game.lastIncludedMove).toBe('625...Nf6');
+      // Ply 1250 (index 1249) is Black's 625th move; ply 1300 is Black's 650th.
+      expect(game.cut).toEqual({ lastIncludedMove: '625...Nf6', lastMove: '650...Ng8' });
     });
 
     it('numbers the last move from a custom start', () => {
@@ -67,7 +65,12 @@ describe('buildLichessAnalysisUrls', () => {
 
       // The FEN header uses up room, so fewer moves fit than from the start.
       expect(game.includedMoves).toBeLessThan(1250);
-      expect(game.lastIncludedMove).toMatch(/^\d+\.(\.\.)?/);
+      // Black to move at move 10: index 0 is 10...Nf6, so index i is move 10 + ceil(i / 2).
+      const i = game.includedMoves - 1;
+      const number = 10 + Math.ceil(i / 2);
+      expect(game.cut?.lastIncludedMove).toBe(
+        i % 2 === 0 ? `${number}...${long[i]}` : `${number}. ${long[i]}`
+      );
     });
   });
 });

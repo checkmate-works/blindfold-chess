@@ -25,8 +25,7 @@ function urls(truncated = false): LichessAnalysisUrls {
       url: GAME_URL,
       includedMoves: truncated ? 1 : 2,
       truncated,
-      totalMoves: 2,
-      lastIncludedMove: truncated ? '1. e4' : null,
+      cut: truncated ? { lastIncludedMove: '1. e4', lastMove: '1...e5' } : null,
     },
   };
 }
@@ -42,7 +41,7 @@ beforeEach(() => {
 
 describe('LichessAnalysisControl', () => {
   it('sends the moves by default, in a new tab', () => {
-    render(<LichessAnalysisControl urls={urls()} pgnText="1. e4 e5" />);
+    render(<LichessAnalysisControl urls={urls()} getPgnText={() => '1. e4 e5'} />);
 
     expect(toggle().getAttribute('aria-checked')).toBe('true');
     expect(link().getAttribute('href')).toBe(GAME_URL);
@@ -53,7 +52,7 @@ describe('LichessAnalysisControl', () => {
   // The label alone does not say that "off" means the position with no
   // moves, so a line under it spells out what the link opens in each state.
   it('describes what the link opens, for the current state', () => {
-    render(<LichessAnalysisControl urls={urls()} pgnText="1. e4 e5" />);
+    render(<LichessAnalysisControl urls={urls()} getPgnText={() => '1. e4 e5'} />);
 
     const describedBy = () => document.getElementById(toggle().getAttribute('aria-describedby')!);
     expect(describedBy()?.textContent).toBe('lichessAnalysis.includeMovesOnHint');
@@ -64,7 +63,9 @@ describe('LichessAnalysisControl', () => {
   });
 
   it('sends only the position when switched off, and remembers it', () => {
-    const { unmount } = render(<LichessAnalysisControl urls={urls()} pgnText="1. e4 e5" />);
+    const { unmount } = render(
+      <LichessAnalysisControl urls={urls()} getPgnText={() => '1. e4 e5'} />
+    );
     fireEvent.click(toggle());
 
     expect(toggle().getAttribute('aria-checked')).toBe('false');
@@ -72,17 +73,17 @@ describe('LichessAnalysisControl', () => {
 
     unmount();
     resetIncludeMovesForTests();
-    render(<LichessAnalysisControl urls={urls()} pgnText="1. e4 e5" />);
+    render(<LichessAnalysisControl urls={urls()} getPgnText={() => '1. e4 e5'} />);
     expect(link().getAttribute('href')).toBe(POSITION_URL);
   });
 
   it('shows no chip for a game that fits', () => {
-    render(<LichessAnalysisControl urls={urls()} pgnText="1. e4 e5" />);
+    render(<LichessAnalysisControl urls={urls()} getPgnText={() => '1. e4 e5'} />);
     expect(chip()).toBeNull();
   });
 
   it('flags a cut-off game with a chip that opens the explanation', () => {
-    render(<LichessAnalysisControl urls={urls(true)} pgnText="1. e4 e5" />);
+    render(<LichessAnalysisControl urls={urls(true)} getPgnText={() => '1. e4 e5'} />);
 
     fireEvent.click(chip()!);
 
@@ -93,9 +94,24 @@ describe('LichessAnalysisControl', () => {
     ).toBe('https://lichess.org/paste');
   });
 
+  // The PGN of a long game is only built when someone copies it.
+  it('builds the PGN only when it is copied', () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+    const getPgnText = vi.fn(() => '1. e4 e5');
+    render(<LichessAnalysisControl urls={urls(true)} getPgnText={getPgnText} />);
+
+    fireEvent.click(chip()!);
+    expect(getPgnText).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: /copyPgn/ }));
+    expect(getPgnText).toHaveBeenCalledTimes(1);
+    expect(writeText).toHaveBeenCalledWith('1. e4 e5');
+  });
+
   // The cut only affects the game link, so the chip goes with it.
   it('hides the chip when only the position is sent', () => {
-    render(<LichessAnalysisControl urls={urls(true)} pgnText="1. e4 e5" />);
+    render(<LichessAnalysisControl urls={urls(true)} getPgnText={() => '1. e4 e5'} />);
     fireEvent.click(toggle());
     expect(chip()).toBeNull();
   });

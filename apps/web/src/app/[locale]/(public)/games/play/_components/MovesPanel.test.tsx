@@ -30,8 +30,7 @@ const LICHESS_URLS = {
     url: 'https://lichess.org/analysis/pgn/',
     includedMoves: 4,
     truncated: false,
-    totalMoves: 4,
-    lastIncludedMove: null,
+    cut: null,
   },
 };
 

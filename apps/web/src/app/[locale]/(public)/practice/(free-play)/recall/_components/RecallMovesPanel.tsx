@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
@@ -54,6 +54,19 @@ export function RecallMovesPanel({
   const t = useTranslations('recall');
   const [isCopied, setIsCopied] = useState(false);
   const [isFenCopied, setIsFenCopied] = useState(false);
+  // Memoized: building the game URL walks and encodes every entered move.
+  const lichessAnalysisUrls = useMemo(
+    () =>
+      buildLichessAnalysisUrls({
+        moves,
+        startingFen,
+        currentPosition,
+        latestFen: currentFen,
+        displayFen,
+      }),
+    [moves, startingFen, currentPosition, currentFen, displayFen]
+  );
+  const getPgnText = () => formatPgnToText(formattedPgn, startingFen);
 
   return (
     <div data-tour-id="recall-moves">
@@ -87,16 +100,7 @@ export function RecallMovesPanel({
 
               {/* Action Buttons */}
               <div className="mt-4 flex flex-col gap-4">
-                <LichessAnalysisControl
-                  urls={buildLichessAnalysisUrls({
-                    moves,
-                    startingFen,
-                    currentPosition,
-                    latestFen: currentFen,
-                    displayFen,
-                  })}
-                  pgnText={formatPgnToText(formattedPgn, startingFen)}
-                />
+                <LichessAnalysisControl urls={lichessAnalysisUrls} getPgnText={getPgnText} />
 
                 {/* Copy PGN Button */}
                 <Button
@@ -109,7 +113,7 @@ export function RecallMovesPanel({
                     )
                   }
                   onClick={() => {
-                    const pgnText = formatPgnToText(formattedPgn, startingFen);
+                    const pgnText = getPgnText();
 
                     navigator.clipboard.writeText(pgnText).then(() => {
                       setIsCopied(true);

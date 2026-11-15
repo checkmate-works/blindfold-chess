@@ -314,13 +314,18 @@ export function GameReview({
     [preferencesAt, quickPeek.nav.currentPosition]
   );
 
-  const lichessAnalysisUrls = buildLichessAnalysisUrls({
-    moves: notationMoves,
-    startingFen: startingFen ?? undefined,
-    currentPosition,
-    latestFen,
-    displayFen,
-  });
+  // Memoized: building the game URL walks and encodes every move.
+  const lichessAnalysisUrls = useMemo(
+    () =>
+      buildLichessAnalysisUrls({
+        moves: notationMoves,
+        startingFen: startingFen ?? undefined,
+        currentPosition,
+        latestFen,
+        displayFen,
+      }),
+    [notationMoves, startingFen, currentPosition, latestFen, displayFen]
+  );
 
   const terminationMark = useMemo(
     () => terminationMarkAt(currentPosition),

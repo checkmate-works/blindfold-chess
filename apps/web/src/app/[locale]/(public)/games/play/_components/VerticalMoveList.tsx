@@ -1,12 +1,15 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { type ReactNode, useEffect, useRef } from 'react';
 
 import type { FormattedPgnMove } from '@/app/[locale]/(public)/games/play/_lib/pgn-parser';
 
 type Props = {
   formattedPgn: FormattedPgnMove[];
-  /** -1 = before any move; 0..n-1 = the ply that square is showing. */
+  /**
+   * The move-navigation cursor: -1 = latest position, -2 = start (neither
+   * highlights a move), 0..n-1 = the move whose resulting position is shown.
+   */
   currentPosition: number;
   onNavigateToPosition: (position: number) => void;
   /**
@@ -44,8 +47,15 @@ export const PANEL_MOVE_LIST_SCROLL_CLASSES = 'max-h-[40vh] overflow-y-auto';
  * everywhere" true by construction rather than by review.
  *
  * `font-mono` is deliberately NOT set here: it belongs to the panel body the
- * caller owns (every current caller sets it on the scroll container), and a
- * caller that wants proportional digits should not have to undo it.
+ * caller owns (every current caller sets it on the element wrapping the
+ * list), and a caller that wants proportional digits should not have to undo
+ * it.
+ *
+ * When the caller makes the list scroll (`PANEL_MOVE_LIST_SCROLL_CLASSES`),
+ * it keeps the shown move in view: the highlighted move as the cursor moves,
+ * the last move at the latest position — where a game in progress or a
+ * recall in progress is — and the top at the start. It scrolls only the
+ * list itself, never the page.
  */
 export function VerticalMoveList({
   formattedPgn,
@@ -54,10 +64,31 @@ export function VerticalMoveList({
   adornment,
   className = '',
 }: Props) {
+  const listRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const list = listRef.current;
+    if (!list || list.scrollHeight <= list.clientHeight) return;
+    if (currentPosition === -1) {
+      list.scrollTop = list.scrollHeight;
+      return;
+    }
+    if (currentPosition === -2) {
+      list.scrollTop = 0;
+      return;
+    }
+    const current = list.querySelector<HTMLElement>('[aria-current="true"]');
+    if (!current) return;
+    const row = current.getBoundingClientRect();
+    const box = list.getBoundingClientRect();
+    if (row.top < box.top) list.scrollTop -= box.top - row.top;
+    else if (row.bottom > box.bottom) list.scrollTop += row.bottom - box.bottom;
+  }, [currentPosition, formattedPgn.length]);
+
   if (formattedPgn.length === 0) return null;
 
   return (
-    <div className={`space-y-0.5 ${className}`}>
+    <div ref={listRef} className={`space-y-0.5 ${className}`}>
       {formattedPgn.map((move) => {
         const whiteIndex = move.whiteMoveIndex;
         const blackIndex = move.blackMoveIndex;
@@ -120,14 +151,15 @@ function MoveCell({
         isHighlighted ? 'bg-foreground/15 font-semibold dark:bg-foreground/10' : 'hover:bg-muted/40'
       }`}
       onClick={onClick}
+      aria-current={isHighlighted ? 'true' : undefined}
     >
       {san}
     </button>
   );
 
-  // `relative` anchors the adornment's popover to the cell.
+  // The adornment's popover places itself next to this cell (its parent).
   return adornment ? (
-    <span className="flex-1 flex items-center relative">
+    <span className="flex-1 flex items-center">
       {move}
       {adornment}
     </span>

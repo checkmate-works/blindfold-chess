@@ -27,8 +27,11 @@ const LICHESS_IMPORT_URL = 'https://lichess.org/paste';
 
 type Props = {
   urls: LichessAnalysisUrls;
-  /** The game as PGN text, for the "too long" explanation's copy button. */
-  pgnText: string;
+  /**
+   * The game as PGN text, for the "too long" explanation's copy button —
+   * a getter, so the full PGN is only built when someone actually copies it.
+   */
+  getPgnText: () => string;
 };
 
 /**
@@ -46,7 +49,7 @@ type Props = {
  * A real link rather than a `window.open` button, so it can be middle-clicked,
  * long-pressed, or have its URL copied.
  */
-export function LichessAnalysisControl({ urls, pgnText }: Props) {
+export function LichessAnalysisControl({ urls, getPgnText }: Props) {
   const t = useTranslations('play');
   const switchId = useId();
   const hintId = useId();
@@ -128,9 +131,8 @@ export function LichessAnalysisControl({ urls, pgnText }: Props) {
         <div className="flex flex-col gap-4">
           <p className="text-sm">
             {t('lichessAnalysis.truncatedBody', {
-              lastMove: game.lastIncludedMove ?? '',
-              included: game.includedMoves,
-              total: game.totalMoves,
+              lastIncludedMove: game.cut?.lastIncludedMove ?? '',
+              lastMove: game.cut?.lastMove ?? '',
             })}
           </p>
           <div className="flex flex-col gap-2">
@@ -143,7 +145,7 @@ export function LichessAnalysisControl({ urls, pgnText }: Props) {
                   <FaCopy className="w-3 h-3" />
                 )
               }
-              onClick={() => pgnCopy.copy(pgnText)}
+              onClick={() => pgnCopy.copy(getPgnText())}
             >
               {pgnCopy.copied ? t('copied') : t('copyPgn')}
             </Button>
