@@ -128,6 +128,10 @@ export const NAMESPACE_CLASSIFICATION = {
   // rather than under `home.feed` because the onboarding step (mypage scope)
   // previews the same card, and shipping all of `home` there to reach it
   // would be paid on every mypage view.
+  // The moves panels' / puzzle result's "Analyze on Lichess" control
+  // (LichessAnalysisControl). Its own namespace rather than `play`, so the
+  // practice scopes that render it do not ship the whole play dictionary.
+  lichessAnalysis: 'client',
   memberJoinedCard: 'client',
   moderation: 'client',
   navigation: 'client',

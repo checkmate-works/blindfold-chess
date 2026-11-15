@@ -12,7 +12,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { resetIncludeMovesForTests } from '@/app/[locale]/(public)/games/play/_lib/lichess-include-moves-store';
+import { resetIncludeMovesForTests } from '@/app/[locale]/_lib/lichess-include-moves-store';
 
 import { RecallMovesPanel } from './RecallMovesPanel';
 

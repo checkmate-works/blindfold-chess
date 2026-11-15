@@ -19,6 +19,42 @@ export type LichessAnalysisUrls = {
 };
 
 /**
+ * Both Lichess analysis URLs for a move sequence opened `plies` moves in,
+ * where `shownFen` is the position after those moves — for surfaces with no
+ * move-navigation cursor (the puzzle result opens its solution at the
+ * puzzle's start). The moves panels go through
+ * {@link buildLichessAnalysisUrls}, which derives both from their cursor.
+ *
+ * `moves` must be only the moves the viewer may see, because the game URL
+ * carries every one of them.
+ */
+export function lichessAnalysisUrlsAt({
+  moves,
+  startingFen,
+  plies,
+  shownFen,
+}: {
+  moves: readonly string[];
+  startingFen?: string;
+  plies: number;
+  shownFen: string;
+}): LichessAnalysisUrls {
+  const game = movesToLichessUrl(moves, { startingFen, plies });
+
+  const label = (index: number) => {
+    const anchor = labelMoveAt(index, startingFen);
+    // "42. Kf2" but "42...Kf7": the dots already separate a Black move's SAN.
+    return `${anchor}${anchor.endsWith('...') ? '' : ' '}${moves[index]}`;
+  };
+  const cut =
+    game.truncated && game.includedMoves > 0
+      ? { lastIncludedMove: label(game.includedMoves - 1), lastMove: label(moves.length - 1) }
+      : null;
+
+  return { position: fenToLichessUrl(shownFen), game: { ...game, cut } };
+}
+
+/**
  * Both Lichess analysis URLs for the position a moves panel is showing.
  *
  * `currentPosition` is the move-navigation cursor shared by the play, review
@@ -42,21 +78,10 @@ export function buildLichessAnalysisUrls({
   latestFen: string;
   displayFen: string | null;
 }): LichessAnalysisUrls {
-  const shownFen = currentPosition === -1 || displayFen === null ? latestFen : displayFen;
-  const game = movesToLichessUrl(moves, {
+  return lichessAnalysisUrlsAt({
+    moves,
     startingFen,
     plies: appliedPliesAt(currentPosition, moves.length),
+    shownFen: currentPosition === -1 || displayFen === null ? latestFen : displayFen,
   });
-
-  const label = (index: number) => {
-    const anchor = labelMoveAt(index, startingFen);
-    // "42. Kf2" but "42...Kf7": the dots already separate a Black move's SAN.
-    return `${anchor}${anchor.endsWith('...') ? '' : ' '}${moves[index]}`;
-  };
-  const cut =
-    game.truncated && game.includedMoves > 0
-      ? { lastIncludedMove: label(game.includedMoves - 1), lastMove: label(moves.length - 1) }
-      : null;
-
-  return { position: fenToLichessUrl(shownFen), game: { ...game, cut } };
 }

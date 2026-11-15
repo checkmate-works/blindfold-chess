@@ -1756,7 +1756,6 @@
         "attemptIncorrect": "Incorrecto",
         "backToList": "Volver a Puzzles",
         "tryAgain": "Intentar de Nuevo",
-        "analyzeOnLichess": "Analizar en Lichess",
         "viewResult": "Ver Resultado",
         "peekCount": "Vistas del Tablero: {count}",
         "nextPuzzles": "Siguientes puzzles",
@@ -2362,6 +2361,18 @@
     "deletedToast": "{count, plural, one {# partida eliminada correctamente} other {# partidas eliminadas correctamente}}",
     "deleteFailedToast": "Error al eliminar las partidas"
   },
+  "lichessAnalysis": {
+    "analyzeOnLichess": "Analizar en Lichess",
+    "includeMoves": "Incluir jugadas",
+    "includeMovesOnHint": "Se abre con las jugadas, en esta posición: puedes avanzar y retroceder desde aquí.",
+    "includeMovesOffHint": "Se abre solo esta posición, sin las jugadas.",
+    "truncatedChip": "Parcial",
+    "truncatedTitle": "Solo se envía parte de la partida",
+    "truncatedBody": "Lichess solo lee una parte del enlace, así que la partida se envía hasta {lastIncludedMove} (continúa hasta {lastMove}). Para analizar la partida completa, copia el PGN y pégalo en la página de importación de Lichess.",
+    "openImport": "Abrir la importación de Lichess",
+    "copyPgn": "Copiar PGN",
+    "copied": "¡Copiado!"
+  },
   "play": {
     "title": "Partida",
     "help": {
@@ -2436,16 +2447,6 @@
     "copyPgn": "Copiar PGN",
     "copyFen": "Copiar FEN",
     "copied": "¡Copiado!",
-    "analyzeOnLichess": "Analizar en Lichess",
-    "lichessAnalysis": {
-      "includeMoves": "Incluir jugadas",
-      "includeMovesOnHint": "Se abre con las jugadas, en esta posición: puedes avanzar y retroceder desde aquí.",
-      "includeMovesOffHint": "Se abre solo esta posición, sin las jugadas.",
-      "truncatedChip": "Parcial",
-      "truncatedTitle": "Solo se envía parte de la partida",
-      "truncatedBody": "Lichess solo lee una parte del enlace, así que la partida se envía hasta {lastIncludedMove} (continúa hasta {lastMove}). Para analizar la partida completa, copia el PGN y pégalo en la página de importación de Lichess.",
-      "openImport": "Abrir la importación de Lichess"
-    },
     "aiPlayed": "La IA jugó <b>{move}</b>",
     "restartFromHere": "Reiniciar desde aquí",
     "confirmRestartTitle": "¿Reiniciar desde esta posición?",

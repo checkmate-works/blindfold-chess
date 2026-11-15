@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildLichessAnalysisUrls } from './lichess-analysis-urls';
+import { buildLichessAnalysisUrls, lichessAnalysisUrlsAt } from './lichess-analysis-urls';
 
 const MOVES = ['e4', 'e5', 'Nf3'];
 const LATEST = 'rnbqkbnr/pppp1ppp/8/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2';
@@ -72,5 +72,25 @@ describe('buildLichessAnalysisUrls', () => {
         i % 2 === 0 ? `${number}...${long[i]}` : `${number}. ${long[i]}`
       );
     });
+  });
+});
+
+describe('lichessAnalysisUrlsAt', () => {
+  // The puzzle result: the solution sent from the puzzle's own start, opened there.
+  it('opens a line from a custom start at its first position', () => {
+    const fen = 'r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3';
+    const urls = lichessAnalysisUrlsAt({
+      moves: ['Bb5', 'a6'],
+      startingFen: fen,
+      plies: 0,
+      shownFen: fen,
+    });
+
+    expect(urls.position).toBe(fenUrl(fen));
+    expect(urls.game.url).toBe(
+      'https://lichess.org/analysis/pgn/' +
+        '%5BFEN_%22r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R_w_KQkq_-_2_3%22%5D_Bb5_a6' +
+        '#4'
+    );
   });
 });

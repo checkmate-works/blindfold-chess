@@ -55,11 +55,11 @@ describe('LichessAnalysisControl', () => {
     render(<LichessAnalysisControl urls={urls()} getPgnText={() => '1. e4 e5'} />);
 
     const describedBy = () => document.getElementById(toggle().getAttribute('aria-describedby')!);
-    expect(describedBy()?.textContent).toBe('lichessAnalysis.includeMovesOnHint');
+    expect(describedBy()?.textContent).toBe('includeMovesOnHint');
     expect(link().getAttribute('aria-describedby')).toBe(toggle().getAttribute('aria-describedby'));
 
     fireEvent.click(toggle());
-    expect(describedBy()?.textContent).toBe('lichessAnalysis.includeMovesOffHint');
+    expect(describedBy()?.textContent).toBe('includeMovesOffHint');
   });
 
   it('sends only the position when switched off, and remembers it', () => {
@@ -88,9 +88,9 @@ describe('LichessAnalysisControl', () => {
     fireEvent.click(chip()!);
 
     expect(screen.getByRole('dialog')).toBeTruthy();
-    expect(screen.getByText(/lichessAnalysis\.truncatedBody/)).toBeTruthy();
+    expect(screen.getByText(/truncatedBody/)).toBeTruthy();
     expect(
-      screen.getByRole('link', { name: /lichessAnalysis\.openImport/ }).getAttribute('href')
+      screen.getByRole('link', { name: /openImport/ }).getAttribute('href')
     ).toBe('https://lichess.org/paste');
   });
 

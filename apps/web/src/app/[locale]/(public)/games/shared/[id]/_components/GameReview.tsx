@@ -31,12 +31,12 @@ import {
 } from '@/app/[locale]/(public)/games/play/_hooks';
 import { useQuickPeekModal } from '@/app/[locale]/(public)/games/play/_hooks/use-quick-peek-modal';
 import { buildNewGameFromPositionUrl } from '@/app/[locale]/(public)/games/play/_lib/build-new-game-from-position-url';
-import { buildLichessAnalysisUrls } from '@/app/[locale]/(public)/games/play/_lib/lichess-analysis-urls';
 import { logForMovesIndex } from '@/app/[locale]/(public)/games/play/_lib/move-ops-alignment';
 import { GameStatsOverview } from '@/app/[locale]/(public)/games/play/result/_components/GameStatsOverview';
 import { StatsAuthGate } from '@/app/[locale]/(public)/games/play/result/_components/StatsAuthGate';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { useTerminationMarkLabel } from '@/app/[locale]/_hooks/use-termination-mark-label';
+import { buildLichessAnalysisUrls } from '@/app/[locale]/_lib/lichess-analysis-urls';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 

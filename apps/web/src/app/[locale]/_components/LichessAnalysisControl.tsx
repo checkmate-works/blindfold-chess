@@ -8,10 +8,6 @@ import { InfoModal } from '@/app/_components/InfoModal';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaCheck, FaCopy, FaExclamationTriangle, FaExternalLinkAlt } from 'react-icons/fa';
 
-import {
-  toggleKnobClass,
-  toggleTrackClass,
-} from '@/app/[locale]/_components/toggle-switch-classes';
 import { UI_TIMEOUTS } from '@/app/[locale]/_constants/ui-timeouts';
 
 import type { LichessAnalysisUrls } from '../_lib/lichess-analysis-urls';
@@ -21,6 +17,7 @@ import {
   subscribeIncludeMoves,
   writeIncludeMoves,
 } from '../_lib/lichess-include-moves-store';
+import { toggleKnobClass, toggleTrackClass } from './toggle-switch-classes';
 
 /** Lichess's own PGN import page — the way to analyse a game too long for a link. */
 const LICHESS_IMPORT_URL = 'https://lichess.org/paste';
@@ -32,10 +29,16 @@ type Props = {
    * a getter, so the full PGN is only built when someone actually copies it.
    */
   getPgnText: () => string;
+  /**
+   * The link's button size: `sm` in the moves panels' button stack, `lg`
+   * where it sits among large full-width actions (the puzzle result).
+   */
+  size?: 'sm' | 'lg';
 };
 
 /**
- * The moves panels' "Analyze on Lichess" control: one link, plus an
+ * The "Analyze on Lichess" control of the moves panels and the puzzle
+ * result: one link, plus an
  * "Include moves" switch choosing what it sends — the moves so far, opened
  * at the shown position, to step through the game (on); or only the shown
  * position, to analyse it in isolation (off). A line under the switch states
@@ -49,8 +52,8 @@ type Props = {
  * A real link rather than a `window.open` button, so it can be middle-clicked,
  * long-pressed, or have its URL copied.
  */
-export function LichessAnalysisControl({ urls, getPgnText }: Props) {
-  const t = useTranslations('play');
+export function LichessAnalysisControl({ urls, getPgnText, size = 'sm' }: Props) {
+  const t = useTranslations('lichessAnalysis');
   const switchId = useId();
   const hintId = useId();
   const [isTruncatedInfoOpen, setIsTruncatedInfoOpen] = useState(false);
@@ -73,7 +76,13 @@ export function LichessAnalysisControl({ urls, getPgnText }: Props) {
         className="w-full"
         aria-describedby={hintId}
       >
-        <Button asChild variant="secondary" icon={<FaExternalLinkAlt className="w-3 h-3" />}>
+        <Button
+          asChild
+          variant="secondary"
+          size={size}
+          fullWidth
+          icon={<FaExternalLinkAlt className={size === 'lg' ? 'w-4 h-4' : 'w-3 h-3'} />}
+        >
           {t('analyzeOnLichess')}
         </Button>
       </a>
@@ -90,7 +99,7 @@ export function LichessAnalysisControl({ urls, getPgnText }: Props) {
               htmlFor={switchId}
               className="cursor-pointer whitespace-nowrap text-xs text-foreground"
             >
-              {t('lichessAnalysis.includeMoves')}
+              {t('includeMoves')}
             </label>
             {showTruncated && (
               <button
@@ -100,7 +109,7 @@ export function LichessAnalysisControl({ urls, getPgnText }: Props) {
                 className="inline-flex shrink-0 items-center gap-1 rounded-full bg-warning-soft px-2 py-0.5 text-xs text-warning-soft-foreground hover:brightness-95"
               >
                 <FaExclamationTriangle className="w-3 h-3" aria-hidden />
-                {t('lichessAnalysis.truncatedChip')}
+                {t('truncatedChip')}
               </button>
             )}
           </div>
@@ -117,20 +126,18 @@ export function LichessAnalysisControl({ urls, getPgnText }: Props) {
           </button>
         </div>
         <p id={hintId} className="text-xs text-muted-foreground">
-          {includeMoves
-            ? t('lichessAnalysis.includeMovesOnHint')
-            : t('lichessAnalysis.includeMovesOffHint')}
+          {includeMoves ? t('includeMovesOnHint') : t('includeMovesOffHint')}
         </p>
       </div>
 
       <InfoModal
         isOpen={isTruncatedInfoOpen}
         onClose={() => setIsTruncatedInfoOpen(false)}
-        title={t('lichessAnalysis.truncatedTitle')}
+        title={t('truncatedTitle')}
       >
         <div className="flex flex-col gap-4">
           <p className="text-sm">
-            {t('lichessAnalysis.truncatedBody', {
+            {t('truncatedBody', {
               lastIncludedMove: game.cut?.lastIncludedMove ?? '',
               lastMove: game.cut?.lastMove ?? '',
             })}
@@ -151,7 +158,7 @@ export function LichessAnalysisControl({ urls, getPgnText }: Props) {
             </Button>
             <a href={LICHESS_IMPORT_URL} target="_blank" rel="noopener noreferrer">
               <Button asChild variant="secondary" icon={<FaExternalLinkAlt className="w-3 h-3" />}>
-                {t('lichessAnalysis.openImport')}
+                {t('openImport')}
               </Button>
             </a>
           </div>

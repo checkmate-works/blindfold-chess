@@ -7,16 +7,16 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import type { FormattedPgnMove } from '@blindfold-chess/features/chess-core';
 import { FaCheck, FaCopy } from 'react-icons/fa';
 
-import { LichessAnalysisControl } from '@/app/[locale]/(public)/games/play/_components/LichessAnalysisControl';
 import { MoveNavigationControls } from '@/app/[locale]/(public)/games/play/_components/MoveNavigationControls';
 import {
   PANEL_MOVE_LIST_SCROLL_CLASSES,
   VerticalMoveList,
 } from '@/app/[locale]/(public)/games/play/_components/VerticalMoveList';
-import { buildLichessAnalysisUrls } from '@/app/[locale]/(public)/games/play/_lib/lichess-analysis-urls';
 import { moveNavDisabledState } from '@/app/[locale]/(public)/games/play/_lib/move-nav-disabled-state';
 import { formatPgnToText } from '@/app/[locale]/(public)/games/play/_lib/pgn-parser';
+import { LichessAnalysisControl } from '@/app/[locale]/_components/LichessAnalysisControl';
 import { UI_TIMEOUTS } from '@/app/[locale]/_constants/ui-timeouts';
+import { buildLichessAnalysisUrls } from '@/app/[locale]/_lib/lichess-analysis-urls';
 
 type Props = {
   formattedPgn: FormattedPgnMove[];

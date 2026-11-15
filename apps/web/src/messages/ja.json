@@ -1766,7 +1766,6 @@
         "attemptIncorrect": "不正解",
         "backToList": "パズル一覧に戻る",
         "tryAgain": "もう一度",
-        "analyzeOnLichess": "Lichessで解析",
         "viewResult": "結果を見る",
         "peekCount": "盤面確認: {count}回",
         "nextPuzzles": "次のパズル",
@@ -2362,6 +2361,18 @@
     "deletedToast": "{count, plural, other {#個のゲームを削除しました}}",
     "deleteFailedToast": "ゲームの削除に失敗しました"
   },
+  "lichessAnalysis": {
+    "analyzeOnLichess": "Lichessで解析",
+    "includeMoves": "手順も含める",
+    "includeMovesOnHint": "手順付きで開き、この局面から前後に進めます",
+    "includeMovesOffHint": "この局面だけを開きます（手順は送りません）",
+    "truncatedChip": "一部のみ",
+    "truncatedTitle": "棋譜の一部だけを送ります",
+    "truncatedBody": "LichessがURLから読み込める長さには上限があるため、{lastIncludedMove} までを送ります（棋譜は {lastMove} まで続きます）。棋譜全体を解析するには、PGNをコピーしてLichessのインポート画面に貼り付けてください。",
+    "openImport": "Lichessのインポート画面を開く",
+    "copyPgn": "PGNをコピー",
+    "copied": "コピー済み！"
+  },
   "play": {
     "title": "対局",
     "help": {
@@ -2436,16 +2447,6 @@
     "copyPgn": "PGNをコピー",
     "copyFen": "FENをコピー",
     "copied": "コピー済み！",
-    "analyzeOnLichess": "Lichessで解析",
-    "lichessAnalysis": {
-      "includeMoves": "手順も含める",
-      "includeMovesOnHint": "手順付きで開き、この局面から前後に進めます",
-      "includeMovesOffHint": "この局面だけを開きます（手順は送りません）",
-      "truncatedChip": "一部のみ",
-      "truncatedTitle": "棋譜の一部だけを送ります",
-      "truncatedBody": "LichessがURLから読み込める長さには上限があるため、{lastIncludedMove} までを送ります（棋譜は {lastMove} まで続きます）。棋譜全体を解析するには、PGNをコピーしてLichessのインポート画面に貼り付けてください。",
-      "openImport": "Lichessのインポート画面を開く"
-    },
     "aiPlayed": "AIが<b>{move}</b>を指しました",
     "restartFromHere": "ここからやり直す",
     "confirmRestartTitle": "ここからやり直しますか？",

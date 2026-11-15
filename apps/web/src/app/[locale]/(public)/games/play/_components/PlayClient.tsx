@@ -22,6 +22,7 @@ import {
 
 import { ExpGainDisplay } from '@/app/[locale]/(public)/practice/_components/ExpGainDisplay';
 import { useTerminationMarkLabel } from '@/app/[locale]/_hooks/use-termination-mark-label';
+import { buildLichessAnalysisUrls } from '@/app/[locale]/_lib/lichess-analysis-urls';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { useBoardFlip, useConfirmationDialogs, useMoveNavigation } from '../_hooks';
@@ -35,7 +36,6 @@ import { usePlayBoardViews } from '../_hooks/use-play-board-views';
 import { usePlayClientPreferences } from '../_hooks/use-play-client-preferences';
 import { usePublishPromotion } from '../_hooks/use-publish-promotion';
 import { buildPositionCheckPath } from '../_lib';
-import { buildLichessAnalysisUrls } from '../_lib/lichess-analysis-urls';
 import { useAiReplyChip } from './AiReplyChip';
 import { GameFinishModal } from './GameFinishModal';
 import { GameInProgressPanel } from './GameInProgressPanel';

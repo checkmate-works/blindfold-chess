@@ -10,17 +10,17 @@ import { FaCheck, FaChevronDown, FaCopy, FaInfoCircle, FaPlay, FaPlusCircle } fr
 
 import type { MoveOperationLog } from '@/lib/games/saved-game-types';
 
+import { LichessAnalysisControl } from '@/app/[locale]/_components/LichessAnalysisControl';
 import { UI_TIMEOUTS } from '@/app/[locale]/_constants/ui-timeouts';
+import type { LichessAnalysisUrls } from '@/app/[locale]/_lib/lichess-analysis-urls';
 
 import { formatPgnToText, moveNavDisabledState } from '../_lib';
 import type { FormattedPgn } from '../_lib';
-import type { LichessAnalysisUrls } from '../_lib/lichess-analysis-urls';
 import {
   getPlayerMoveIndices,
   hasOps,
   logForMovesIndex as logForMovesIndexAligned,
 } from '../_lib/move-ops-alignment';
-import { LichessAnalysisControl } from './LichessAnalysisControl';
 import { MoveNavigationControls } from './MoveNavigationControls';
 import { OpsPopover } from './OpsPopover';
 import { PANEL_MOVE_LIST_SCROLL_CLASSES, VerticalMoveList } from './VerticalMoveList';
