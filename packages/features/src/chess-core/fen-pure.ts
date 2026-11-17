@@ -256,6 +256,91 @@ export function fenToLichessUrl(fen: string): string {
 }
 
 /**
+ * How many characters of the `/analysis/pgn/<pgn>` path Lichess reads; the
+ * rest is silently dropped. Counted on the path as sent (percent-encoded),
+ * which is the longer of the two forms, so staying under it is safe whether
+ * Lichess measures before or after decoding.
+ */
+export const LICHESS_PGN_PATH_LIMIT = 5000;
+
+/** A Lichess game-analysis URL and how much of the game it carries. */
+export type LichessGameUrl = {
+  url: string;
+  /** How many of the given moves fit in the URL — all of them unless `truncated`. */
+  includedMoves: number;
+  /** True when the game was too long and only its first `includedMoves` were sent. */
+  truncated: boolean;
+};
+
+/**
+ * A Lichess analysis URL that loads a whole move sequence, opened at a chosen
+ * point in it — the "step through the game" counterpart of
+ * {@link fenToLichessUrl}, which loads one position with no history.
+ *
+ * Lichess's `/analysis/pgn/<pgn>` route URI-decodes the path, turns `_` and
+ * `+` into spaces, keeps the first {@link LICHESS_PGN_PATH_LIMIT} characters,
+ * and imports the result as PGN; the import reads the starting position from
+ * a `[FEN "…"]` header when one is present. The page then opens at the ply
+ * named by the URL hash (`#N`), counted the way its move tree counts plies:
+ * from the start of a standard game, so a game set up at "move 12, black to
+ * move" begins at ply 23, not 0.
+ *
+ * Check and mate markers are dropped from the SAN: Lichess would turn `+`
+ * into a space anyway, and a literal `#` would end the path and start the
+ * hash. The import does not need them to resolve a move.
+ *
+ * A game too long for the limit is cut at a move boundary rather than left
+ * for Lichess to cut mid-SAN, and `plies` is clamped to what was sent, so the
+ * page opens at the last move that made it into the URL.
+ *
+ * @param moves - SAN moves, played from `startingFen` (or the standard start).
+ * @param options.startingFen - The position the moves start from; omitted or
+ *   the standard start means no `[FEN]` header.
+ * @param options.plies - How many of `moves` have been played at the position
+ *   to open at: `0` is the starting position, `moves.length` the last one.
+ *   Defaults to `moves.length`.
+ */
+export function movesToLichessUrl(
+  moves: readonly string[],
+  options: { startingFen?: string; plies?: number } = {},
+): LichessGameUrl {
+  const { startingFen } = options;
+  const customStart = startingFen !== undefined && startingFen !== STARTING_FEN;
+
+  // `encodeURIComponent` also escapes `/`, but FEN's rank separators read
+  // better unescaped and the route captures the whole remaining path anyway.
+  const encode = (text: string) =>
+    encodeURIComponent(text).replace(/%20/g, "_").replace(/%2F/g, "/");
+
+  const tokens = customStart ? [encode(`[FEN "${startingFen}"]`)] : [];
+  let length = tokens.length > 0 ? tokens[0].length : 0;
+  let includedMoves = 0;
+  for (const san of moves) {
+    const token = encode(san.replace(/[+#]/g, ""));
+    const added = (tokens.length > 0 ? 1 : 0) + token.length;
+    if (length + added > LICHESS_PGN_PATH_LIMIT) break;
+    tokens.push(token);
+    length += added;
+    includedMoves++;
+  }
+
+  const plies = Math.min(
+    Math.max(options.plies ?? moves.length, 0),
+    includedMoves,
+  );
+  const startPly = customStart
+    ? (fullmoveNumberFromFen(startingFen) - 1) * 2 +
+      (isBlackToMoveFromFen(startingFen) ? 1 : 0)
+    : 0;
+
+  return {
+    url: `https://lichess.org/analysis/pgn/${tokens.join("_")}#${startPly + plies}`,
+    includedMoves,
+    truncated: includedMoves < moves.length,
+  };
+}
+
+/**
  * Convert a FEN string to a human-readable piece list.
  *
  * @example

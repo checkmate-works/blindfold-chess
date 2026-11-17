@@ -1756,7 +1756,6 @@
         "attemptIncorrect": "Incorreto",
         "backToList": "Voltar para Puzzles",
         "tryAgain": "Tentar Novamente",
-        "analyzeOnLichess": "Analisar no Lichess",
         "viewResult": "Ver Resultado",
         "peekCount": "Visualizações do Tabuleiro: {count}",
         "nextPuzzles": "Próximos puzzles",
@@ -1870,7 +1869,6 @@
       "extraDescription": "Peças extras colocadas em casas vazias",
       "nextProblem": "Próximo Problema",
       "viewResults": "Ver Resultados",
-      "analyzeOnLichess": "Analisar no Lichess",
       "original": "Original",
       "yourRecreation": "Sua Recriação",
       "problemDetails": "Detalhes do Problema",
@@ -2362,6 +2360,18 @@
     "deletedToast": "{count, plural, one {# partida excluída com sucesso} other {# partidas excluídas com sucesso}}",
     "deleteFailedToast": "Erro ao excluir as partidas"
   },
+  "lichessAnalysis": {
+    "analyzeOnLichess": "Analisar no Lichess",
+    "includeMoves": "Incluir lances",
+    "includeMovesOnHint": "Abre com os lances, nesta posição: dá para avançar e voltar a partir daqui.",
+    "includeMovesOffHint": "Abre só esta posição, sem os lances.",
+    "truncatedChip": "Parcial",
+    "truncatedTitle": "Só parte da partida é enviada",
+    "truncatedBody": "O Lichess lê apenas parte do link, então a partida é enviada até {lastIncludedMove} (ela continua até {lastMove}). Para analisar a partida inteira, copie o PGN e cole na página de importação do Lichess.",
+    "openImport": "Abrir a importação do Lichess",
+    "copyPgn": "Copiar PGN",
+    "copied": "Copiado!"
+  },
   "play": {
     "title": "Partida",
     "help": {
@@ -2436,7 +2446,6 @@
     "copyPgn": "Copiar PGN",
     "copyFen": "Copiar FEN",
     "copied": "Copiado!",
-    "analyzeOnLichess": "Analisar no Lichess",
     "aiPlayed": "A IA jogou <b>{move}</b>",
     "restartFromHere": "Reiniciar a partir daqui",
     "confirmRestartTitle": "Reiniciar a partir desta posição?",
@@ -3026,7 +3035,6 @@
     "copyPgn": "Copiar PGN",
     "copyFen": "Copiar FEN",
     "copied": "Copiado!",
-    "analyzeOnLichess": "Analisar no Lichess",
     "openPosition": "Abrir esta posição",
     "moveLog": "Registro de Movimentos",
     "cancel": "Cancelar",

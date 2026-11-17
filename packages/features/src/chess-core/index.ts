@@ -12,6 +12,7 @@
 export type { BoardPiece, Color, MoveResult } from "./types";
 
 export type { UciConversionFailure } from "./moves";
+export type { LichessGameUrl } from "./fen";
 
 export { toMoveResult } from "./types";
 
@@ -29,6 +30,8 @@ export {
   getFenAfterMoves,
   getStartingFen,
   fenToLichessUrl,
+  movesToLichessUrl,
+  LICHESS_PGN_PATH_LIMIT,
   fenToPieceList,
 } from "./fen";
 

@@ -7,6 +7,7 @@ import NextLink from 'next/link';
 import { Button, ProgressBar } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
+import { appliedPliesAt } from '@blindfold-chess/features/game-play';
 import { sideToPieceColor } from '@blindfold-chess/types';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 import { FaArrowRight, FaCheck, FaQuestionCircle, FaSpinner } from 'react-icons/fa';
@@ -161,7 +162,7 @@ export function RecallClient({
   // behind the modal footer's "Open this position".
   const lastMoveAt = useCallback(
     (position: number) =>
-      gamePositions[position === -1 ? originalMoves.length : position + 1]?.lastMove ?? null,
+      gamePositions[appliedPliesAt(position, originalMoves.length)]?.lastMove ?? null,
     [gamePositions, originalMoves.length]
   );
   const quickPeek = useQuickPeekModal({
@@ -422,6 +423,7 @@ export function RecallClient({
         <div className="lg:col-span-1 flex flex-col gap-8">
           <RecallMovesPanel
             formattedPgn={formattedPgn}
+            moves={gameProgress.userMoves}
             currentPosition={navigation.currentPosition}
             originalMovesLength={originalMoves.length}
             currentFen={currentFen}
