@@ -43,6 +43,14 @@ const nextConfig: NextConfig = {
   // Increase timeout for SSG pages with heavy DB queries (e.g., glossary category pages)
   staticPageGenerationTimeout: 120,
 
+  experimental: {
+    // Nudge coding agents to upgrade Next.js when the installed version is
+    // affected by a published security advisory. 'security' limits the nudge
+    // to advisory-driven upgrades: 'latest' would also chase every stable
+    // release and 'experimental-future' would adopt Future Defaults.
+    agentUpgrade: 'security',
+  },
+
   // Optimize images from external sources (Supabase Storage avatars, etc.).
   //
   // `formats`, `deviceSizes`, and `imageSizes` are the three knobs that
