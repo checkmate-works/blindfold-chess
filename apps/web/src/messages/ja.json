@@ -3009,6 +3009,8 @@
     "selectMove": "手を選択",
     "switchInputMode": "入力モードを切り替え",
     "dontKnow": "わからない",
+    "dontKnowPrompt": "この手の正解を確認しますか？",
+    "revealAnswer": "正解を見る",
     "autoFillAll": "全て自動入力",
     "confirmAutoFillAllTitle": "全て自動入力しますか？",
     "confirmAutoFillAllMessage": "残りの全ての手を自動入力します。",

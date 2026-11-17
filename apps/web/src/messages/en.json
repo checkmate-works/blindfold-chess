@@ -3009,6 +3009,8 @@
     "selectMove": "Select a move",
     "switchInputMode": "Switch input mode",
     "dontKnow": "I don't know",
+    "dontKnowPrompt": "Want to see the answer for this move?",
+    "revealAnswer": "Show answer",
     "autoFillAll": "Auto-fill All",
     "confirmAutoFillAllTitle": "Auto-fill all moves?",
     "confirmAutoFillAllMessage": "This will auto-fill all remaining moves.",
