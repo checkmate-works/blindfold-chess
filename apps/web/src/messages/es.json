@@ -3009,6 +3009,8 @@
     "selectMove": "Selecciona un movimiento",
     "switchInputMode": "Cambiar modo de entrada",
     "dontKnow": "No lo sé",
+    "dontKnowPrompt": "¿Quieres ver la respuesta de esta jugada?",
+    "revealAnswer": "Ver respuesta",
     "autoFillAll": "Auto-rellenar Todo",
     "confirmAutoFillAllTitle": "¿Auto-rellenar todos los movimientos?",
     "confirmAutoFillAllMessage": "Esto auto-rellenará todos los movimientos restantes.",

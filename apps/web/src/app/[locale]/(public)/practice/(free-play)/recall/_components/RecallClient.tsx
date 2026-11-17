@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import NextLink from 'next/link';
 
@@ -26,7 +26,12 @@ import { useRecallBoardViews } from '../_hooks/use-recall-board-views';
 import { useRecallParentReporting } from '../_hooks/use-recall-parent-reporting';
 import { useRecallPreferences } from '../_hooks/use-recall-preferences';
 import type { MoveLogEntry } from '../_lib';
-import { computeRecallStats, resolveModalPosition } from '../_lib';
+import {
+  DONT_KNOW_PROMPT_THRESHOLD,
+  computeRecallStats,
+  countCurrentMoveMistakes,
+  resolveModalPosition,
+} from '../_lib';
 import { formatRecallFeedbackMessage, toRecallFeedbackTitleText } from '../_lib/recall-feedback';
 import { RecallMovesPanel } from './RecallMovesPanel';
 import { RecallSummary } from './RecallSummary';
@@ -135,6 +140,19 @@ export function RecallClient({
   const { isCompleted, totalMoves, progress, originalMoves } = gameProgress;
 
   const recallStats = computeRecallStats(moveLog.entries);
+  // After repeated wrong attempts on the same move, offer the answer next to
+  // the input (see DONT_KNOW_PROMPT_THRESHOLD for why this is not a modal).
+  const offerAnswer = countCurrentMoveMistakes(moveLog.entries) >= DONT_KNOW_PROMPT_THRESHOLD;
+  // On a phone the board plus the on-screen move keypad fill the viewport, so
+  // the action row can sit just below the fold even though it follows the
+  // input directly (measured at 375x812: keypad ends at 967px, the row at
+  // 1055px). Bring the offer into view when it appears; `nearest` scrolls
+  // only as far as needed and not at all when it is already visible. This
+  // fires right after a submit, never while a move is being keyed in.
+  const actionRowRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (offerAnswer) actionRowRef.current?.scrollIntoView({ block: 'nearest' });
+  }, [offerAnswer]);
 
   // Revisit a stumbled move from the completion summary: open a quick-peek
   // modal previewing that position, matching games/play/result's "By Move"
@@ -304,6 +322,53 @@ export function RecallClient({
                         />
                       </div>
 
+                      {/* Action Buttons — directly under the input, above the
+                          auto-opponent toggle, so the way out of a move the
+                          reviewer cannot recall is in the same view as the
+                          input rather than a scroll below it. */}
+                      {/* scroll-mb clears the fixed mobile bottom nav when the
+                          offer is scrolled into view. */}
+                      <div
+                        ref={actionRowRef}
+                        className="flex flex-col items-center gap-2 scroll-mb-20"
+                      >
+                        {/* Always mounted so the live region exists before
+                            its text does; screen readers only announce
+                            changes inside a region they already know. */}
+                        <p role="status" className="text-sm text-muted-foreground empty:hidden">
+                          {offerAnswer ? t('dontKnowPrompt') : null}
+                        </p>
+                        <div className={ACTION_ROW_CONTAINER_CLASSES}>
+                          <span data-tour-id="recall-dont-know" className="inline-flex">
+                            <Button
+                              variant={offerAnswer ? 'primary' : 'secondary'}
+                              onClick={actions.handleDontKnow}
+                              icon={<FaQuestionCircle className="w-4 h-4" />}
+                              className="px-4 py-2"
+                            >
+                              <span
+                                className={
+                                  settings.dontKnowCount >= 2 && !offerAnswer
+                                    ? 'hidden md:inline'
+                                    : ''
+                                }
+                              >
+                                {offerAnswer ? t('revealAnswer') : t('dontKnow')}
+                              </span>
+                            </Button>
+                          </span>
+                          {settings.dontKnowCount >= 2 && (
+                            <button
+                              onClick={() => setShowAnalyzeAllConfirm(true)}
+                              className="px-4 py-2 border border-border rounded-md hover:bg-muted flex items-center gap-2"
+                            >
+                              <FaCheck className="w-4 h-4" />
+                              {t('autoFillAll')}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
                       {/* Auto-opponent toggle (recall-specific) */}
                       <div className="flex flex-col gap-2">
                         <label className="inline-flex items-center gap-2 cursor-pointer">
@@ -317,31 +382,6 @@ export function RecallClient({
                             {t('autoOpponentMoves')}
                           </span>
                         </label>
-                      </div>
-
-                      {/* Action Buttons */}
-                      <div className={ACTION_ROW_CONTAINER_CLASSES}>
-                        <span data-tour-id="recall-dont-know" className="inline-flex">
-                          <Button
-                            variant="secondary"
-                            onClick={actions.handleDontKnow}
-                            icon={<FaQuestionCircle className="w-4 h-4" />}
-                            className="px-4 py-2"
-                          >
-                            <span className={settings.dontKnowCount >= 2 ? 'hidden md:inline' : ''}>
-                              {t('dontKnow')}
-                            </span>
-                          </Button>
-                        </span>
-                        {settings.dontKnowCount >= 2 && (
-                          <button
-                            onClick={() => setShowAnalyzeAllConfirm(true)}
-                            className="px-4 py-2 border border-border rounded-md hover:bg-muted flex items-center gap-2"
-                          >
-                            <FaCheck className="w-4 h-4" />
-                            {t('autoFillAll')}
-                          </button>
-                        )}
                       </div>
                     </>
                   )}
