@@ -167,6 +167,8 @@ export type InlineBoardSlots = {
   /**
    * Control pinned to the board's top-right corner, above the mask (so it stays
    * operable while blindfolded) and within the no-piece move-list strip zone.
+   * When there is no move list to show, an empty strip of the same height is
+   * rendered in its place, so the control never overlaps a board square.
    * Used for the per-game settings gear. Unlike `boardBadge`, this IS interactive.
    */
   topRightControl?: ReactNode;
@@ -321,13 +323,28 @@ export function InlineBoardView({
           <div className="relative">
             {/* Horizontal Move List. Reserve right padding for the top-right
                 control (settings gear) so the latest moves don't slide under it. */}
-            {onNavigateToPosition && (
+            {onNavigateToPosition && formattedPgn.length > 0 ? (
               <HorizontalMoveList
                 className={`${topRightControl ? 'pr-10' : ''} ${alwaysOpen ? '' : 'border-t border-border'}`}
                 formattedPgn={formattedPgn}
                 currentPosition={currentPosition}
                 onNavigateToPosition={onNavigateToPosition}
               />
+            ) : (
+              // No move list to show (no moves yet, or a surface that never
+              // lists them). The top-right control is absolutely positioned
+              // at this block's corner, so without a strip it would sit on
+              // the board's corner square — a rook's starting square — and
+              // swallow the press that starts a drag from it. Keep an empty
+              // strip of the move list's height (h-9 = its py-1.5 + one
+              // text-sm row) so the control always has a piece-free zone, and
+              // the board does not shift down when the first move appears.
+              topRightControl && (
+                <div
+                  data-testid="board-control-strip"
+                  className={`h-9 ${alwaysOpen ? '' : 'border-t border-border'}`}
+                />
+              )
             )}
             <ChessBoard
               fen={fen}

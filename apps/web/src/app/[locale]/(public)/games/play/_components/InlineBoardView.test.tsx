@@ -173,3 +173,56 @@ describe("InlineBoardView — visibility { kind: 'always' }", () => {
     expect(screen.getByTestId('chess-board')).toBeInTheDocument();
   });
 });
+
+describe('InlineBoardView — strip for the top-right control', () => {
+  const GEAR = <button type="button">gear</button>;
+  const ONE_MOVE = [{ moveNumber: 1, whiteMove: 'e4', whiteMoveIndex: 0 }];
+
+  it('reserves an empty strip when there are no moves to list, keeping the control off the board', () => {
+    render(
+      <InlineBoardView
+        {...BASE_PROPS}
+        navigation={{ onNavigateToPosition: vi.fn() }}
+        visibility={{ kind: 'always' }}
+        slots={{ topRightControl: GEAR }}
+      />
+    );
+
+    expect(screen.getByTestId('board-control-strip')).toBeInTheDocument();
+    expect(screen.queryByTestId('horizontal-move-list')).not.toBeInTheDocument();
+  });
+
+  it('reserves the strip on a surface that never lists moves', () => {
+    render(
+      <InlineBoardView
+        {...BASE_PROPS}
+        moveList={{ movesLength: 1, currentPosition: -1, formattedPgn: ONE_MOVE }}
+        visibility={{ kind: 'always' }}
+        slots={{ topRightControl: GEAR }}
+      />
+    );
+
+    expect(screen.getByTestId('board-control-strip')).toBeInTheDocument();
+  });
+
+  it('lets the move list be the strip once there is a move to show', () => {
+    render(
+      <InlineBoardView
+        {...BASE_PROPS}
+        moveList={{ movesLength: 1, currentPosition: -1, formattedPgn: ONE_MOVE }}
+        navigation={{ onNavigateToPosition: vi.fn() }}
+        visibility={{ kind: 'always' }}
+        slots={{ topRightControl: GEAR }}
+      />
+    );
+
+    expect(screen.getByTestId('horizontal-move-list')).toBeInTheDocument();
+    expect(screen.queryByTestId('board-control-strip')).not.toBeInTheDocument();
+  });
+
+  it('adds no strip when there is no control to host', () => {
+    renderView({ kind: 'always' });
+
+    expect(screen.queryByTestId('board-control-strip')).not.toBeInTheDocument();
+  });
+});
