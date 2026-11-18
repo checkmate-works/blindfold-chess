@@ -7,6 +7,10 @@
     "reason": "FILES.includes(x) already implies x is a single character, so the length check beside it never changes the result.",
     "where": "src/game-play/move-suggestions.ts:212:12 input.length === 1 && FILES.includes(input as File) -> (input.length === 1 || FILES.includes(input as File))"
   },
+  "1pydylkdzlv": {
+    "reason": "Labels compared here share a piece type, so they share the leading letter; comparing 'Na1' with 'Nh8' orders them as 'a1' and 'h8' do.",
+    "where": "src/chess-core/fen-pure.ts:401:49 label.slice(1) -> label"
+  },
   "1qtpbgf943y": {
     "reason": "Empty or blank input already falls through every branch below to []; the early return only short-circuits.",
     "where": "src/game-play/move-suggestions.ts:18:7 !trimmedInput -> false"

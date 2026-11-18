@@ -43,12 +43,12 @@ export function fenToBoardFlat(fen: string): string[] {
   const board: string[] = new Array(64).fill("");
   let squareIndex = 0;
 
+  // The rank separators carry no information: eight ranks of eight squares
+  // each already put every square at the right index, so `/` is just skipped.
   for (const char of piecePlacement) {
-    if (char === "/") {
-      continue;
-    } else if (/\d/.test(char)) {
+    if (/\d/.test(char)) {
       squareIndex += parseInt(char);
-    } else {
+    } else if (char !== "/") {
       board[squareIndex] = char;
       squareIndex++;
     }
@@ -393,17 +393,20 @@ export function fenToPieceList(fen: string): {
     }
   }
 
+  // A label is a bare square for a pawn ("e4") and letter + square otherwise
+  // ("Nf3"); the labels above are only ever built in those two shapes.
+  const parseLabel = (label: string) =>
+    label.length === 2
+      ? { order: PIECE_ORDER.P, square: label }
+      : { order: PIECE_ORDER[label[0]], square: label.slice(1) };
+
   const sortPieces = (pieces: readonly string[]): string[] => {
     return [...pieces].sort((a, b) => {
-      const pieceA = a.length === 2 ? "P" : a[0];
-      const pieceB = b.length === 2 ? "P" : b[0];
-      const orderA = PIECE_ORDER[pieceA] ?? 99;
-      const orderB = PIECE_ORDER[pieceB] ?? 99;
-      if (orderA !== orderB) return orderA - orderB;
+      const pieceA = parseLabel(a);
+      const pieceB = parseLabel(b);
+      if (pieceA.order !== pieceB.order) return pieceA.order - pieceB.order;
       // Within same piece type, sort alphabetically by square
-      const squareA = a.length === 2 ? a : a.slice(1);
-      const squareB = b.length === 2 ? b : b.slice(1);
-      return squareA.localeCompare(squareB);
+      return pieceA.square.localeCompare(pieceB.square);
     });
   };
 
@@ -419,10 +422,9 @@ export function fenToPieceList(fen: string): {
  * but does not verify position legality.
  */
 export function validateFenFormat(fen: string): boolean {
+  // FEN must have at least 2 parts (board and turn). A FEN with only the
+  // board has no `parts[1]`, so the turn check at the end rejects it.
   const parts = fen.trim().split(" ");
-
-  // FEN must have at least 2 parts (board and turn)
-  if (parts.length < 2) return false;
 
   // Validate board part (8 ranks separated by /)
   const board = parts[0];
