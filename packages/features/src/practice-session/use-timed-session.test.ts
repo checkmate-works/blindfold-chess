@@ -644,6 +644,44 @@ describe("useTimedSession", () => {
       expect(result.current.awaitingServer).toBe(false);
     });
 
+    it.each([120_000, -120_000])(
+      "ignores a wall-clock correction of %i ms while playing",
+      (correction) => {
+        const { port } = createPort();
+        const { result } = renderRemote(port);
+        advancePastCountdown();
+        act(() => vi.advanceTimersByTime(2000));
+        act(() => {
+          vi.setSystemTime(Date.now() + correction);
+          vi.advanceTimersByTime(1000);
+        });
+        expect(result.current.isFinished).toBe(false);
+        expect(result.current.timeElapsed).toBe(3);
+        act(() => result.current.handleAnswer(true, "a"));
+        expect(result.current.questionTimes).toEqual([3]);
+      },
+    );
+
+    it("ignores wall-clock corrections while awaiting the response", async () => {
+      const { port, calls } = createPort();
+      const { result } = renderRemote(port);
+      advancePastCountdown();
+      act(() => vi.advanceTimersByTime(1000));
+      act(() => result.current.handleAnswer(true, "a"));
+      act(() => {
+        vi.setSystemTime(Date.now() + 120_000);
+        vi.advanceTimersByTime(500);
+      });
+      await settle(() =>
+        calls[0]!.resolve(
+          accepted(true, 1000, { sequence: 1, question: "q1" }),
+        ),
+      );
+      act(() => vi.advanceTimersByTime(100));
+      expect(result.current.isFinished).toBe(false);
+      expect(result.current.timeElapsed).toBe(1);
+    });
+
     it("sends the raw answer with the question's sequence and counts it optimistically", () => {
       const { port, submitAnswer } = createPort();
       const { result } = renderRemote(port);

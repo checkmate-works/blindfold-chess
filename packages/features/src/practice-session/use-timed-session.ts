@@ -272,11 +272,11 @@ export function useTimedSession<TQuestion>(
   // `handleAnswer`, so there is exactly one per answer whatever ends the
   // session — recording on question generation instead would add a ~0 entry
   // for the first question and drop the answer that hits the mistake limit.
-  const questionStartRef = useRef<number>(Date.now());
+  const questionStartRef = useRef<number>(performance.now());
 
   // Starts the clock for a new question and generates it.
   const advanceQuestion = useCallback((): TQuestion => {
-    questionStartRef.current = Date.now();
+    questionStartRef.current = performance.now();
     return generateQuestionRef.current();
   }, [generateQuestionRef]);
 
@@ -287,7 +287,7 @@ export function useTimedSession<TQuestion>(
     hasStarted.current = true;
     if (remoteFirst !== undefined) {
       sequenceRef.current = remoteFirst.sequence;
-      questionStartRef.current = Date.now();
+      questionStartRef.current = performance.now();
       setCurrentQuestion(remoteFirst.question);
       return;
     }
@@ -298,7 +298,7 @@ export function useTimedSession<TQuestion>(
   // countdown ends; restart its clock then so the countdown is not counted as
   // time spent on it.
   useEffect(() => {
-    if (countdown === null) questionStartRef.current = Date.now();
+    if (countdown === null) questionStartRef.current = performance.now();
   }, [countdown]);
 
   // The clock runs whenever a question is (or is about to be) answerable;
@@ -418,7 +418,7 @@ export function useTimedSession<TQuestion>(
       }
       sequenceRef.current = outcome.next.sequence;
       notifyAdvance(outcome.correct);
-      questionStartRef.current = Date.now();
+      questionStartRef.current = performance.now();
       setCurrentQuestion(outcome.next.question);
       setShowFeedback(false);
       setLastAnswerCorrect(null);
@@ -483,7 +483,7 @@ export function useTimedSession<TQuestion>(
       }
       const pastFeedbackMs = Math.max(
         0,
-        Date.now() -
+        performance.now() -
           pending.answeredAt -
           pending.feedbackMs -
           (response.feedbackExtensionMs ?? 0),
@@ -514,7 +514,7 @@ export function useTimedSession<TQuestion>(
 
       // Computed here, not inside the updater: React may run the updater
       // later, after `advanceQuestion` has already moved the start forward.
-      const seconds = (Date.now() - questionStartRef.current) / 1000;
+      const seconds = (performance.now() - questionStartRef.current) / 1000;
       setQuestionTimes((prev) => [...prev, seconds]);
 
       onAnswerEffectRef.current?.(correct);
@@ -537,7 +537,7 @@ export function useTimedSession<TQuestion>(
       if (isRemote) {
         const pending: PendingRemoteAnswer<TQuestion> = {
           correct,
-          answeredAt: Date.now(),
+          answeredAt: performance.now(),
           feedbackMs: duration,
           feedbackDone: false,
         };
