@@ -3,6 +3,7 @@
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { Square } from '@blindfold-chess/types';
 
+import { AwaitingServerVeil } from '@/app/[locale]/(public)/practice/(challenge)/_components/ChallengeAttemptGate';
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
 import { ChallengeQuitControl } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengeQuitControl';
 import { ChallengeSessionVeil } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengeSessionVeil';
@@ -15,6 +16,11 @@ import { useKeypadInput } from '../_hooks/use-keypad-input';
 
 type Props = {
   currentSquare: Square;
+  /**
+   * The next square has not arrived from the server yet: the answered one is
+   * veiled and input is off. Only a server-run challenge sets it.
+   */
+  awaitingServer?: boolean;
   timeRemaining: number;
   timeLimit: number;
   showResult: boolean;
@@ -42,6 +48,7 @@ type Props = {
 
 export function DiagonalQuizPlaying({
   currentSquare,
+  awaitingServer = false,
   timeRemaining,
   timeLimit,
   showResult,
@@ -62,7 +69,7 @@ export function DiagonalQuizPlaying({
 }: Props) {
   const t = useTranslations('practice.diagonalQuiz');
   const tPractice = useTranslations('practice');
-  const isDisabled = showResult || countdown !== null || isPaused;
+  const isDisabled = showResult || countdown !== null || isPaused || awaitingServer;
 
   // Correct/incorrect is signaled by tinting the answer fields rather than a
   // text flash, so the layout never shifts when a result appears. Each
@@ -95,7 +102,9 @@ export function DiagonalQuizPlaying({
         onTogglePause={onTogglePause}
         className="pt-2 text-center"
       >
-        <SectionTitle className="mb-4">{t('question', { square: currentSquare })}</SectionTitle>
+        <AwaitingServerVeil active={awaitingServer}>
+          <SectionTitle className="mb-4">{t('question', { square: currentSquare })}</SectionTitle>
+        </AwaitingServerVeil>
 
         <ChallengeStatusHeader
           className="flex justify-between items-center mb-4 min-h-[40px]"

@@ -1,6 +1,7 @@
 import dynamic from 'next/dynamic';
 
-import { parsePieceParam } from '@/app/[locale]/(public)/practice/(challenge)/legal-moves/_lib/query-params';
+import { legalMovesChallengeDefinition } from '@blindfold-chess/features/legal-moves';
+
 import { createPracticeChallengeSessionPage } from '@/app/[locale]/(public)/practice/_lib/createPracticeSessionPages';
 
 const LegalMovesSession = dynamic(() => import('../_components/LegalMovesSession'));
@@ -15,17 +16,14 @@ const { generateMetadata, generateStaticParams, Page } = createPracticeChallenge
     { labelKey: 'legalMoves.session' },
   ],
   renderContent: ({ locale, searchParams }) => {
-    const { selectedPiece, selectedPieces } = parsePieceParam(
-      searchParams.piece as string | undefined
-    );
+    // Resolved through the module's own settings parser, the one the server
+    // starts the attempt with, so a link with an unknown piece plays (and is
+    // ranked as) `random` on both sides rather than failing to start.
+    const { selectedPiece } = legalMovesChallengeDefinition.parseSettings({
+      selectedPiece: searchParams.piece,
+    }) ?? { selectedPiece: 'random' as const };
 
-    return (
-      <LegalMovesSession
-        locale={locale}
-        selectedPieces={selectedPieces}
-        selectedPiece={selectedPiece}
-      />
-    );
+    return <LegalMovesSession locale={locale} selectedPiece={selectedPiece} />;
   },
 });
 
