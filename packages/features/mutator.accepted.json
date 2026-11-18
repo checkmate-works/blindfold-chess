@@ -43,6 +43,10 @@
     "reason": "Both generators make an attempt fail only by returning null, so one extra failing attempt past the bound returns the same batch; the bound only stops the loop.",
     "where": "src/legal-moves/logic.ts:54:33 attempts < maxAttempts -> attempts <= maxAttempts"
   },
+  "24yxlf0jv2u": {
+    "reason": "Only the truthiness of the black move matters here; capturing one character instead of the whole SAN changes the result only when a move number is glued onto that SAN (e.g. 'e52.'), which PGN text never contains.",
+    "where": "src/chess-core/pgn-format.ts:130:23 /(\\d+)\\.\\s*(\\S+)(?:\\s+(\\S+))?/g -> /(\\d+)\\.\\s*(\\S+)(?:\\s+(\\S))?/g"
+  },
   "264oovslmk9": {
     "reason": "At i = 0 the only pick is j = 0, so the extra iteration swaps the first element with itself.",
     "where": "src/common/utils.ts:163:35 i > 0 -> i >= 0"
@@ -87,9 +91,17 @@
     "reason": "chess.js 1.4.0's validateFen checks a subset of validateFenStructure plus the pre-checks above, so no FEN reaches this throw today; the guard is for a stricter chess.js.",
     "where": "src/chess-core/validate-fen-semantic.ts:304:14 e instanceof Error -> false"
   },
+  "jelv5ee0sa": {
+    "reason": "This branch runs only when the token starts with '.', so the first run of dots is the leading one.",
+    "where": "src/chess-core/pgn-format.ts:166:34 /^\\.+/ -> /\\.+/"
+  },
   "k7wn22c83i": {
     "reason": "chess.js 1.4.0's validateFen checks a subset of validateFenStructure plus the pre-checks above, so no FEN reaches this throw today; the guard is for a stricter chess.js.",
     "where": "src/chess-core/validate-fen-semantic.ts:303:15 \"illegal_position\" -> \"\""
+  },
+  "kthbs5s6ky": {
+    "reason": "Any text containing digits followed by '.' also contains a single digit followed by '.', so the search finds a move number either way.",
+    "where": "src/chess-core/pgn-format.ts:125:18 /\\d+\\./ -> /\\d\\./"
   },
   "p3c6h9jakp": {
     "reason": "chess.js 1.4.0's validateFen checks a subset of validateFenStructure plus the pre-checks above, so no FEN reaches this throw today; the guard is for a stricter chess.js.",
