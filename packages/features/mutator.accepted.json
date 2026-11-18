@@ -1,0 +1,42 @@
+{
+  "12s2rg7f841": {
+    "reason": "Every complete SAN falls through the generators to [] on its own; the isCompleteMove guard only short-circuits.",
+    "where": "src/game-play/move-suggestions.ts:21:7 isCompleteMove(trimmedInput) -> false"
+  },
+  "1dddi7sr704": {
+    "reason": "FILES.includes(x) already implies x is a single character, so the length check beside it never changes the result.",
+    "where": "src/game-play/move-suggestions.ts:212:12 input.length === 1 && FILES.includes(input as File) -> (input.length === 1 || FILES.includes(input as File))"
+  },
+  "1qtpbgf943y": {
+    "reason": "Empty or blank input already falls through every branch below to []; the early return only short-circuits.",
+    "where": "src/game-play/move-suggestions.ts:18:7 !trimmedInput -> false"
+  },
+  "1v1ji7bvlnt": {
+    "reason": "This branch is reached only when the first 'x' is the last character, so rest.endsWith('x') is always true here.",
+    "where": "src/game-play/move-suggestions.ts:129:14 rest.endsWith(\"x\") -> true"
+  },
+  "29kb3dmzhc6": {
+    "reason": "Empty or blank input already falls through every branch below to []; the early return only short-circuits.",
+    "where": "src/game-play/move-suggestions.ts:15:7 !input -> false"
+  },
+  "2fq8as0dpif": {
+    "reason": "This branch is reached only when the first 'x' is the last character, so rest.endsWith('x') is always true here.",
+    "where": "src/game-play/move-suggestions.ts:129:28 \"x\" -> \"\""
+  },
+  "9znyq3sgoz": {
+    "reason": "FILES.includes(x) already implies x is a single character, so the length check beside it never changes the result.",
+    "where": "src/game-play/move-suggestions.ts:123:9 afterX.length === 1 -> true"
+  },
+  "bbfxvgu0qh": {
+    "reason": "generatePieceCaptureSuggestions is only called when rest contains 'x', so indexOf never returns -1 here.",
+    "where": "src/game-play/move-suggestions.ts:116:7 xIndex !== -1 -> true"
+  },
+  "t0uon35eth": {
+    "reason": "FILES.includes(x) already implies x is a single character, so the length check beside it never changes the result.",
+    "where": "src/game-play/move-suggestions.ts:65:12 rest.length === 1 -> true"
+  },
+  "unbr0ko2md": {
+    "reason": "FILES.includes(x) already implies x is a single character, so the length check beside it never changes the result.",
+    "where": "src/game-play/move-suggestions.ts:212:12 input.length === 1 -> true"
+  }
+}
