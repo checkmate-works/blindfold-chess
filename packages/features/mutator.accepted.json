@@ -7,6 +7,10 @@
     "reason": "Every complete SAN falls through the generators to [] on its own; the isCompleteMove guard only short-circuits.",
     "where": "src/game-play/move-suggestions.ts:21:7 isCompleteMove(trimmedInput) -> false"
   },
+  "189uuvaixni": {
+    "reason": "Equal ranks on the same file mean both endpoints are the same square, so either order prints the same pair.",
+    "where": "src/diagonal-quiz/logic.ts:135:7 sq1[1] < sq2[1] -> sq1[1] <= sq2[1]"
+  },
   "1dddi7sr704": {
     "reason": "FILES.includes(x) already implies x is a single character, so the length check beside it never changes the result.",
     "where": "src/game-play/move-suggestions.ts:212:12 input.length === 1 && FILES.includes(input as File) -> (input.length === 1 || FILES.includes(input as File))"
