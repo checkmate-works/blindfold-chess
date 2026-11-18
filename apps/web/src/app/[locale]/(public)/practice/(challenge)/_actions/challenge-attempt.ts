@@ -96,7 +96,10 @@ export async function answerChallengeAttempt(
     });
   } catch (error) {
     handleServerActionError(error, '[answerChallengeAttempt]');
-    return { status: 'rejected' };
+    // A transient DB/auth failure is not a rejected answer. Let the port's
+    // bounded retry resend the same sequence; the row lock and replay branch
+    // also make this safe when the first transaction committed before failing.
+    throw new Error('Challenge answer temporarily unavailable');
   }
 }
 

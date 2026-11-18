@@ -125,12 +125,12 @@ describe('answerChallengeAttempt', () => {
     expect(revalidateTag).not.toHaveBeenCalled();
   });
 
-  it('rejects instead of throwing when grading fails unexpectedly', async () => {
+  it('throws a generic retryable failure when grading fails unexpectedly', async () => {
     mockAnswer.mockRejectedValue(new Error('db down'));
 
-    await expect(answerChallengeAttempt(ATTEMPT_ID, 0, 'light')).resolves.toEqual({
-      status: 'rejected',
-    });
+    await expect(answerChallengeAttempt(ATTEMPT_ID, 0, 'light')).rejects.toThrow(
+      'Challenge answer temporarily unavailable'
+    );
   });
 });
 
