@@ -16,6 +16,11 @@ type Args = {
    */
   moduleSlug: string;
   isPaused: boolean;
+  /**
+   * Pauses / resumes the session around the modal. A session started with
+   * `disablePause` makes this a no-op, and the modal still opens: see
+   * {@link useQuitConfirm}.
+   */
   togglePause: () => void;
   /**
    * Optional override for what happens when the user confirms the quit.
@@ -39,13 +44,19 @@ type Return = {
  * Shared quit-confirmation state and handlers for challenge sessions.
  *
  * Behavior:
- * - `handleQuitRequest`: pauses the session (if not already paused) and opens
- *   the modal.
+ * - `handleQuitRequest`: asks the session to pause (if not already paused) and
+ *   opens the modal.
  * - `handleQuitConfirm`: runs `onConfirm` if supplied, otherwise navigates to
  *   the module's challenge setup page. The modal stays mounted; the consumer
  *   unmounts naturally on navigation (or when the session finishes).
  * - `handleQuitCancel`: closes the modal and resumes the session if it was
- *   paused by the gate.
+ *   paused.
+ *
+ * In a challenge run the pause request is a no-op (`disablePause`) and the
+ * modal opens over a running clock. That is deliberate: time spent paused is
+ * not counted as thinking time, so a modal that stopped the clock would be a
+ * pause by another name — open it, think with the question still known, close
+ * it. The modal never depends on the pause having taken effect.
  *
  * The actual `<QuitConfirmModal>` rendering remains the consumer's
  * responsibility — this hook only owns the boolean and the callback wiring.
