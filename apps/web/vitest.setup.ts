@@ -1,5 +1,27 @@
 import '@testing-library/jest-dom';
+import type { TestingLibraryMatchers } from '@testing-library/jest-dom/matchers';
 import { vi } from 'vitest';
+
+// The import above registers the jest-dom matchers at runtime, but their
+// types only reach the global `jest.Matchers` interface, and Vitest 5 stopped
+// reading custom matchers from there. jest-dom's own `/vitest` entry does not
+// help either: it augments `Assertion<T>`, while Vitest 5's `Assertion` takes
+// `<R, T>` (R is `void` for a plain assertion, `Promise<void>` behind
+// `.resolves` / `.rejects`). Augmenting `Matchers<R, T>` is what Vitest 5
+// documents for custom matchers; it reaches `expect(...)`, asymmetric
+// matchers, and `expect.extend` at once. The type parameters must repeat
+// Vitest's declaration exactly or the interfaces do not merge. Delete this
+// block once jest-dom ships Vitest 5 typings.
+declare module 'vitest' {
+  /* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-object-type --
+     an augmentation adds members through `extends`, so the body is empty, and
+     T is unused but must be declared for the merge with Vitest's Matchers<R, T> */
+  interface Matchers<
+    R extends void | Promise<void> = void | Promise<void>,
+    T = unknown,
+  > extends TestingLibraryMatchers<unknown, R> {}
+  /* eslint-enable @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-object-type */
+}
 
 // `next/cache` has no runtime outside a Next server, so every test that
 // touches a module using it needs the same three stubs. Declaring them here
