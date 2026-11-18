@@ -43,7 +43,6 @@ export function generateBalancedMoveQuestions(
 ): MoveQuestion[] {
   const questions: MoveQuestion[] = [];
   const targetLegalCount = Math.floor(count * 0.5); // Aim for 50% legal moves
-  let legalCount = 0;
 
   // Both generators are themselves bounded (200 attempts each) and return
   // null only when a piece/rng combination cannot produce a question. The
@@ -56,19 +55,16 @@ export function generateBalancedMoveQuestions(
     attempts++
   ) {
     const piece = allowedPieces[Math.floor(rng() * allowedPieces.length)];
-    const wantLegal = legalCount < targetLegalCount;
+    // The legal questions are made first and only shuffled at the end, so
+    // until the target is reached every question so far is a legal one. The
+    // generators' `accept` predicates guarantee each question's legality, so
+    // nothing here needs to re-check it.
+    const wantLegal = questions.length < targetLegalCount;
     const question = wantLegal
       ? generateLegalMoveQuestion(piece, rng)
       : generateIllegalMoveQuestion(piece, rng);
 
-    if (question) {
-      questions.push(question);
-      // The generator's `accept` predicate already guarantees the legality of
-      // what it returns — re-deriving it here (as this loop once did via a
-      // second chess.js legality check) could only ever disagree with the
-      // branch that produced the question.
-      if (wantLegal) legalCount++;
-    }
+    if (question) questions.push(question);
   }
 
   return shuffleArray(questions, rng);
@@ -82,17 +78,21 @@ interface PieceMoveStrategy {
     fromFile: number,
     fromRank: number,
     rng: RandomSource,
-  ): { toFile: number; toRank: number } | null;
+  ): { toFile: number; toRank: number };
 }
 
+/**
+ * Every piece this drill uses has at least one move from every square of an
+ * empty board (a cornered knight still has two), so `candidates` is never
+ * empty and there is always something to pick.
+ */
 function pickFromMobility(
   piece: PieceType,
   fromFile: number,
   fromRank: number,
   rng: RandomSource,
-): { toFile: number; toRank: number } | null {
+): { toFile: number; toRank: number } {
   const candidates = getMovesForPiece(piece, fromFile, fromRank);
-  if (candidates.length === 0) return null;
   const pick = candidates[Math.floor(rng() * candidates.length)];
   return {
     toFile: squareToFileIndex(pick),
@@ -120,8 +120,12 @@ const PieceStrategies: Record<PieceType, PieceMoveStrategy> = {
 
 /**
  * Bounded retry loop shared by both move-question generators: on each attempt
- * pick a random origin square, hand it to `pickTarget`, reject off-board /
- * self moves, and return the first move whose legality `accept`s.
+ * pick a random origin square, hand it to `pickTarget`, reject a move to the
+ * origin itself, and return the first move whose legality `accept`s.
+ *
+ * Both `pickTarget`s only ever produce on-board coordinates — mobility is
+ * boundary-aware and the uniform pick is drawn from `0..BOARD_SIZE-1` — so
+ * there is no off-board target to reject.
  */
 function findMoveQuestion(
   pieceType: PieceType,
@@ -131,7 +135,7 @@ function findMoveQuestion(
     fromFile: number,
     fromRank: number,
     rng: RandomSource,
-  ) => { toFile: number; toRank: number } | null,
+  ) => { toFile: number; toRank: number },
   accept: (isLegal: boolean) => boolean,
 ): MoveQuestion | null {
   const strategy = PieceStrategies[pieceType];
@@ -141,20 +145,7 @@ function findMoveQuestion(
     const fromRank = Math.floor(rng() * BOARD_SIZE);
     const fromSquare = fileRankToSquare(fromFile, fromRank);
 
-    const target = pickTarget(strategy, fromFile, fromRank, rng);
-    // No target produced from this origin (e.g. a knight cornered with the RNG
-    // hitting empty offsets). Re-roll the origin.
-    if (!target) continue;
-    const { toFile, toRank } = target;
-
-    if (
-      toFile < 0 ||
-      toFile >= BOARD_SIZE ||
-      toRank < 0 ||
-      toRank >= BOARD_SIZE
-    )
-      continue;
-
+    const { toFile, toRank } = pickTarget(strategy, fromFile, fromRank, rng);
     const toSquare = fileRankToSquare(toFile, toRank);
     if (toSquare === fromSquare) continue;
 

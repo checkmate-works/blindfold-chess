@@ -31,9 +31,17 @@
     "reason": "This branch is reached only when the first 'x' is the last character, so rest.endsWith('x') is always true here.",
     "where": "src/game-play/move-suggestions.ts:129:14 rest.endsWith(\"x\") -> true"
   },
+  "1zvbcz4lidw": {
+    "reason": "Both generators make an attempt fail only by returning null, so one extra failing attempt past the bound returns the same batch; the bound only stops the loop.",
+    "where": "src/legal-moves/logic.ts:54:33 attempts < maxAttempts -> attempts <= maxAttempts"
+  },
   "268zlm7km37": {
     "reason": "Swapping which side a piece is tallied to is unobservable: both sides are held to the same 16-piece cap with the same message.",
     "where": "src/chess-core/validate-fen-semantic.ts:121:9 piece === piece.toUpperCase() -> piece !== piece.toUpperCase()"
+  },
+  "293pa3assdw": {
+    "reason": "Both generators make an attempt fail only by returning null, so one extra failing attempt past the bound returns the same batch; the bound only stops the loop.",
+    "where": "src/legal-moves/logic.ts:143:26 attempts < 200 -> attempts <= 200"
   },
   "29kb3dmzhc6": {
     "reason": "Empty or blank input already falls through every branch below to []; the early return only short-circuits.",
