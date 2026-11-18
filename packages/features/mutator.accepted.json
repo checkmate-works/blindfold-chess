@@ -1,4 +1,8 @@
 {
+  "10oiya727vb": {
+    "reason": "chess.js 1.4.0's validateFen checks a subset of validateFenStructure plus the pre-checks above, so no FEN reaches this throw today; the guard is for a stricter chess.js.",
+    "where": "src/chess-core/validate-fen-semantic.ts:304:14 e instanceof Error -> true"
+  },
   "12s2rg7f841": {
     "reason": "Every complete SAN falls through the generators to [] on its own; the isCompleteMove guard only short-circuits.",
     "where": "src/game-play/move-suggestions.ts:21:7 isCompleteMove(trimmedInput) -> false"
@@ -6,6 +10,14 @@
   "1dddi7sr704": {
     "reason": "FILES.includes(x) already implies x is a single character, so the length check beside it never changes the result.",
     "where": "src/game-play/move-suggestions.ts:212:12 input.length === 1 && FILES.includes(input as File) -> (input.length === 1 || FILES.includes(input as File))"
+  },
+  "1kgm4a1v227": {
+    "reason": "chess.js 1.4.0's validateFen checks a subset of validateFenStructure plus the pre-checks above, so no FEN reaches this throw today; the guard is for a stricter chess.js.",
+    "where": "src/chess-core/validate-fen-semantic.ts:300:15 { return { ok: false, reason: \"illegal_position\", error: e … -> {}"
+  },
+  "1m812h320un": {
+    "reason": "chess.js 1.4.0's validateFen checks a subset of validateFenStructure plus the pre-checks above, so no FEN reaches this throw today; the guard is for a stricter chess.js.",
+    "where": "src/chess-core/validate-fen-semantic.ts:304:47 \"Illegal position\" -> \"\""
   },
   "1pydylkdzlv": {
     "reason": "Labels compared here share a piece type, so they share the leading letter; comparing 'Na1' with 'Nh8' orders them as 'a1' and 'h8' do.",
@@ -19,6 +31,10 @@
     "reason": "This branch is reached only when the first 'x' is the last character, so rest.endsWith('x') is always true here.",
     "where": "src/game-play/move-suggestions.ts:129:14 rest.endsWith(\"x\") -> true"
   },
+  "268zlm7km37": {
+    "reason": "Swapping which side a piece is tallied to is unobservable: both sides are held to the same 16-piece cap with the same message.",
+    "where": "src/chess-core/validate-fen-semantic.ts:121:9 piece === piece.toUpperCase() -> piece !== piece.toUpperCase()"
+  },
   "29kb3dmzhc6": {
     "reason": "Empty or blank input already falls through every branch below to []; the early return only short-circuits.",
     "where": "src/game-play/move-suggestions.ts:15:7 !input -> false"
@@ -26,6 +42,10 @@
   "2fq8as0dpif": {
     "reason": "This branch is reached only when the first 'x' is the last character, so rest.endsWith('x') is always true here.",
     "where": "src/game-play/move-suggestions.ts:129:28 \"x\" -> \"\""
+  },
+  "8gh4io5egd": {
+    "reason": "chess.js 1.4.0's validateFen checks a subset of validateFenStructure plus the pre-checks above, so no FEN reaches this throw today; the guard is for a stricter chess.js.",
+    "where": "src/chess-core/validate-fen-semantic.ts:302:11 false -> true"
   },
   "9znyq3sgoz": {
     "reason": "FILES.includes(x) already implies x is a single character, so the length check beside it never changes the result.",
@@ -35,6 +55,22 @@
     "reason": "generatePieceCaptureSuggestions is only called when rest contains 'x', so indexOf never returns -1 here.",
     "where": "src/game-play/move-suggestions.ts:116:7 xIndex !== -1 -> true"
   },
+  "jcmjn1su2t": {
+    "reason": "chess.js 1.4.0's validateFen checks a subset of validateFenStructure plus the pre-checks above, so no FEN reaches this throw today; the guard is for a stricter chess.js.",
+    "where": "src/chess-core/validate-fen-semantic.ts:304:14 e instanceof Error -> false"
+  },
+  "k7wn22c83i": {
+    "reason": "chess.js 1.4.0's validateFen checks a subset of validateFenStructure plus the pre-checks above, so no FEN reaches this throw today; the guard is for a stricter chess.js.",
+    "where": "src/chess-core/validate-fen-semantic.ts:303:15 \"illegal_position\" -> \"\""
+  },
+  "p3c6h9jakp": {
+    "reason": "chess.js 1.4.0's validateFen checks a subset of validateFenStructure plus the pre-checks above, so no FEN reaches this throw today; the guard is for a stricter chess.js.",
+    "where": "src/chess-core/validate-fen-semantic.ts:301:12 { ok: false, reason: \"illegal_position\", error: e instanceo… -> {}"
+  },
+  "rbbrro7e19": {
+    "reason": "chess.js 1.4.0's validateFen checks a subset of validateFenStructure plus the pre-checks above, so no FEN reaches this throw today; the guard is for a stricter chess.js.",
+    "where": "src/chess-core/validate-fen-semantic.ts:298:7 { new Chess(trimmed); } -> {}"
+  },
   "t0uon35eth": {
     "reason": "FILES.includes(x) already implies x is a single character, so the length check beside it never changes the result.",
     "where": "src/game-play/move-suggestions.ts:65:12 rest.length === 1 -> true"
@@ -42,5 +78,9 @@
   "unbr0ko2md": {
     "reason": "FILES.includes(x) already implies x is a single character, so the length check beside it never changes the result.",
     "where": "src/game-play/move-suggestions.ts:212:12 input.length === 1 -> true"
+  },
+  "wb87lwro73": {
+    "reason": "Swapping which side a piece is tallied to is unobservable: both sides are held to the same 16-piece cap with the same message.",
+    "where": "src/chess-core/validate-fen-semantic.ts:121:25 toUpperCase -> toLowerCase"
   }
 }
