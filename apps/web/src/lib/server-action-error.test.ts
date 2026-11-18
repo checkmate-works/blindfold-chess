@@ -13,7 +13,7 @@ describe('handleServerActionError', () => {
   it('reports the error to Sentry and returns the given error code', () => {
     const error = new Error('boom');
 
-    const result = handleServerActionError(error, '[savePracticeResult]', 'save_failed');
+    const result = handleServerActionError(error, '[finishChallengeAttempt]', 'save_failed');
 
     expect(Sentry.captureException).toHaveBeenCalledWith(error);
     expect(result).toEqual({ success: false, error: 'save_failed' });

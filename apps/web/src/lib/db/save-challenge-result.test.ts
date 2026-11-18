@@ -455,7 +455,7 @@ describe('saveChallengeResult', () => {
   // Leaderboard cache invalidation
   //
   // Cache invalidation is the caller's responsibility (see
-  // `save-practice-result.ts`, which strict-invalidates both 'leaderboard' and
+  // `finishChallengeAttempt`, which strict-invalidates both 'leaderboard' and
   // 'exp-leaderboard' tags after this function returns). `saveChallengeResult`
   // itself must never touch `revalidateTag` — these assertions guard against
   // accidental re-introduction of an inner invalidation call.

@@ -16,7 +16,7 @@ import { resolveLeaderboardWithFallback } from '../_lib/resolveLeaderboardWithFa
  * 60 s cache behind the ranking used to pin all six landing pages to a
  * one-minute ISR interval — the build's route table showed `1m` against them
  * while the rest of the tree sat at a day. Worse, the ranking is tagged, and
- * `save-practice-result` expires that tag on every completed challenge, so the
+ * `finishChallengeAttempt` expires that tag on every recorded challenge, so the
  * pages were invalidated by ordinary gameplay no matter how long the interval
  * was. Neither pressure exists once the render stops touching the data.
  *
