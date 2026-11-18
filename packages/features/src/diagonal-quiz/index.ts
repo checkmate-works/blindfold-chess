@@ -5,3 +5,4 @@ export type {
   UseDiagonalQuizSessionConfig,
   UseDiagonalQuizSessionReturn,
 } from "./use-diagonal-quiz-session";
+export * from "./challenge";

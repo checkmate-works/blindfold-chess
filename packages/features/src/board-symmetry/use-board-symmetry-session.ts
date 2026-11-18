@@ -11,11 +11,14 @@ import {
   toTimedSessionFacade,
 } from "../practice-session/quiz-session";
 import { useTimedSession } from "../practice-session/use-timed-session";
+import type { BoardSymmetryChallengeAnswer } from "./challenge";
 import { checkSymmetryAnswer, generateProblem } from "./logic";
 import type { BoardSymmetryProblem, BoardSymmetryResult } from "./types";
 
-export type UseBoardSymmetrySessionConfig =
-  TimedQuizSessionConfig<BoardSymmetryResult>;
+export type UseBoardSymmetrySessionConfig = TimedQuizSessionConfig<
+  BoardSymmetryResult,
+  BoardSymmetryProblem
+>;
 
 export type UseBoardSymmetrySessionReturn = TimedSessionFacade & {
   currentProblem: BoardSymmetryProblem | null;
@@ -34,6 +37,8 @@ export function useBoardSymmetrySession({
   onComplete,
   onAnswerEffect,
   mistakeAllowance,
+  remote,
+  disablePause,
 }: UseBoardSymmetrySessionConfig): UseBoardSymmetrySessionReturn {
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [selectedRank, setSelectedRank] = useState<string | null>(null);
@@ -61,6 +66,8 @@ export function useBoardSymmetrySession({
     mistakeAllowance,
     feedbackDuration: flashFeedbackDuration,
     onAdvance: handleAdvance,
+    remote,
+    disablePause,
   });
 
   useTimedPracticeCompletion(session, timeLimit, onComplete);
@@ -103,7 +110,8 @@ export function useBoardSymmetrySession({
       );
 
       setCorrectSolution(correctSquare);
-      sessionHandleAnswer(correct);
+      const answer: BoardSymmetryChallengeAnswer = { file, rank };
+      sessionHandleAnswer(correct, answer);
     },
     [currentQuestion, isBlocked, sessionHandleAnswer],
   );
