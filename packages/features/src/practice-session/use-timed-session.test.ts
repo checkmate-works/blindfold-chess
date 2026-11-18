@@ -621,7 +621,11 @@ describe("useTimedSession", () => {
 
     function renderRemote(
       port: RemoteChallengePort<string>,
-      extra: { mistakeAllowance?: number; onAdvance?: () => void } = {},
+      extra: {
+        mistakeAllowance?: number;
+        onAdvance?: () => void;
+        feedbackDuration?: number | ((correct: boolean) => number);
+      } = {},
     ) {
       return renderHook(() =>
         useTimedSession({
@@ -821,6 +825,29 @@ describe("useTimedSession", () => {
       expect(result.current.isFinished).toBe(false);
       act(() => vi.advanceTimersByTime(100));
       expect(result.current.finishReason).toBe("timeUp");
+    });
+
+    it("re-syncs with the flash length of the server's verdict when it differs from the local one", async () => {
+      const { port, calls } = createPort();
+      const { result } = renderRemote(port, {
+        feedbackDuration: (correct) => (correct ? 500 : 1500),
+      });
+      advancePastCountdown();
+
+      act(() => vi.advanceTimersByTime(3000));
+      act(() => result.current.handleAnswer(true, "a"));
+      act(() => vi.advanceTimersByTime(3000));
+
+      // The server judged the answer wrong, so its clock restarted 1500ms
+      // after the answer, not 500ms: 3000ms counted before the answer plus
+      // the 1500ms since the restart.
+      await settle(() =>
+        calls[0]!.resolve(
+          accepted(false, 3000, { sequence: 1, question: "q1" }),
+        ),
+      );
+
+      expect(result.current.timeElapsed).toBe(4);
     });
 
     it("ends with mistakeLimit after the flash when the server sends no next question", async () => {

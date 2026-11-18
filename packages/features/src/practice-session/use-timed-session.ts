@@ -39,8 +39,10 @@ export type UseTimedSessionConfig<TQuestion> = {
    *   clock stops only for `feedbackDuration` after an answer and then runs
    *   again even while the response is outstanding. When an `accepted`
    *   response arrives, the clock is re-synced to its `elapsedMs` plus however
-   *   long the wait has already run past the feedback flash, excluding the
-   *   server's reported processing extension. Counting time any
+   *   long the wait has already run past the feedback flash for the server's
+   *   verdict (which is what the server waited out, even when the flash on
+   *   screen was for a different local verdict), excluding the server's
+   *   reported processing extension. Counting time any
    *   other way would let an answer that looks in time on screen arrive after
    *   the server's limit.
    * - The server's grading wins: if its verdict differs from the local one
@@ -180,7 +182,6 @@ type PendingRemoteAnswer<TQuestion> = {
   /** The local verdict, already added to the counts. */
   correct: boolean;
   answeredAt: number;
-  feedbackMs: number;
   feedbackDone: boolean;
   outcome?: {
     correct: boolean;
@@ -481,11 +482,18 @@ export function useTimedSession<TQuestion>(
         setCorrectCount((prev) => prev + delta);
         setIncorrectCount((prev) => prev - delta);
       }
+      // The server restarted its clock after the flash for ITS verdict, so
+      // when the verdicts differ the flash shown on screen is the wrong length
+      // to subtract.
+      const serverFeedbackMs = resolveFeedbackDuration(
+        feedbackDurationRef.current,
+        response.correct,
+      );
       const pastFeedbackMs = Math.max(
         0,
         performance.now() -
           pending.answeredAt -
-          pending.feedbackMs -
+          serverFeedbackMs -
           (response.feedbackExtensionMs ?? 0),
       );
       setElapsedMs(response.elapsedMs + pastFeedbackMs);
@@ -497,7 +505,14 @@ export function useTimedSession<TQuestion>(
       current.outcome = { correct: response.correct, next: response.next };
       if (current.feedbackDone) completeRemoteAnswer(current);
     },
-    [remoteRef, revertAnswer, endSession, setElapsedMs, completeRemoteAnswer],
+    [
+      remoteRef,
+      feedbackDurationRef,
+      revertAnswer,
+      endSession,
+      setElapsedMs,
+      completeRemoteAnswer,
+    ],
   );
 
   const handleAnswer = useCallback(
@@ -538,7 +553,6 @@ export function useTimedSession<TQuestion>(
         const pending: PendingRemoteAnswer<TQuestion> = {
           correct,
           answeredAt: performance.now(),
-          feedbackMs: duration,
           feedbackDone: false,
         };
         pendingRef.current = pending;
