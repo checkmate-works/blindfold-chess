@@ -1081,6 +1081,10 @@
     "trainingModeActive": "Practicing in training mode",
     "readyForChallenge": "Are you ready?",
     "goToChallenge": "Take the Challenge",
+    "challengeAttempt": {
+      "startFailed": "The challenge could not be started. Check your connection and try again.",
+      "retry": "Try again"
+    },
     "quitConfirmModal": {
       "title": "Quit Practice?",
       "message": "Your progress will be lost. Are you sure you want to quit?",
