@@ -2,6 +2,13 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { Square } from "@blindfold-chess/types";
+
+import type {
+  ChallengeAnswerResponse,
+  RemoteChallengePort,
+} from "../challenge-attempt/types";
+import { FEEDBACK_FLASH_MS } from "../common/flash-policy";
 import { getDiagonals } from "./logic";
 import { useDiagonalQuizSession } from "./use-diagonal-quiz-session";
 
@@ -79,5 +86,56 @@ describe("useDiagonalQuizSession questionResults", () => {
 
     expect(result.current.isFinished).toBe(true);
     expect(result.current.questionResults).toEqual([]);
+  });
+});
+
+describe("useDiagonalQuizSession remote challenge", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("shows the server's first square, sends both typed diagonals, and moves to the server's next square", async () => {
+    const submitAnswer = vi.fn(
+      async (): Promise<ChallengeAnswerResponse<Square>> => ({
+        status: "accepted",
+        correct: false,
+        elapsedMs: 2000,
+        next: { sequence: 1, question: "e5" },
+      }),
+    );
+    const port: RemoteChallengePort<Square> = {
+      first: { sequence: 0, question: "d4" },
+      submitAnswer,
+    };
+    const { result } = renderHook(() =>
+      useDiagonalQuizSession({
+        timeLimit: 60,
+        remote: port,
+        disablePause: true,
+      }),
+    );
+
+    expect(result.current.currentSquare).toBe("d4");
+    advancePastCountdown();
+
+    await act(async () => {
+      result.current.handleAnswer("a1-h8", "nonsense");
+    });
+
+    expect(submitAnswer).toHaveBeenCalledWith(0, {
+      diagonal: "a1-h8",
+      antiDiagonal: "nonsense",
+    });
+    expect(result.current.incorrectCount).toBe(1);
+
+    act(() => vi.advanceTimersByTime(FEEDBACK_FLASH_MS.incorrect));
+    expect(result.current.currentSquare).toBe("e5");
+
+    act(() => result.current.togglePause());
+    expect(result.current.isPaused).toBe(false);
   });
 });
