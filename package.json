@@ -12,6 +12,7 @@
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
+    "mutation": "pnpm --filter @blindfold-chess/features run mutation",
     "format": "prettier --write \"**/*.{ts,tsx,md,json}\"",
     "supabase": "pnpm --filter web exec supabase",
     "prepare": "husky"
