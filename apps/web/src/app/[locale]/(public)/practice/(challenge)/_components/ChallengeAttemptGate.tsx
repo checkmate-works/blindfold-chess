@@ -76,3 +76,28 @@ export function ChallengeAttemptGate<TQuestion>({
     </ChallengeAttemptContext.Provider>
   );
 }
+
+/**
+ * Veils the question area while a server-run session waits for its next
+ * question (`awaitingServer`). The previous question is still mounted then,
+ * already answered and no longer accepting input, while the clock runs; the
+ * veil keeps the player from reading it as the live question. Same strength
+ * as the countdown and pause veil (`ChallengeSessionVeil`), without a curtain:
+ * the wait usually ends within a few frames.
+ */
+export function AwaitingServerVeil({
+  active,
+  className = '',
+  children,
+}: {
+  active: boolean;
+  className?: string;
+  children: ReactNode;
+}) {
+  const veil = active ? 'blur-md grayscale opacity-50 pointer-events-none' : '';
+  return (
+    <div aria-busy={active || undefined} className={`${veil} ${className}`.trim()}>
+      {children}
+    </div>
+  );
+}
