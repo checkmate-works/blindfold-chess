@@ -52,8 +52,9 @@ export type UseTimedSessionConfig<TQuestion> = {
    * - `rejected`, or `submitAnswer` failing three times in a row (each retry
    *   resends the same `sequence` and `answer`), takes the answer back out,
    *   ends the run with reason `quit`, and sets `remoteFailed`.
-   * - The local clock reaching `timeLimit` still ends the run with `timeUp`;
-   *   a response arriving after the run has ended is ignored.
+   * - At the local time limit, an outstanding answer is settled before the
+   *   run can finish. Otherwise an expired answer would remain counted and
+   *   finishing could race its still-pending server transaction.
    */
   remote?: RemoteChallengePort<TQuestion>;
   /**
@@ -245,6 +246,7 @@ export function useTimedSession<TQuestion>(
   const [isPaused, setIsPaused] = useState(false);
   const [awaitingServer, setAwaitingServer] = useState(false);
   const [remoteFailed, setRemoteFailed] = useState(false);
+  const [waitingAtTimeLimit, setWaitingAtTimeLimit] = useState(false);
 
   const hasStarted = useRef(false);
   const isFinishedRef = useRef(false);
@@ -303,6 +305,7 @@ export function useTimedSession<TQuestion>(
   const clockRunning =
     currentQuestion !== null &&
     !isFinished &&
+    !waitingAtTimeLimit &&
     countdown === null &&
     !showFeedback &&
     !isPaused;
@@ -312,6 +315,13 @@ export function useTimedSession<TQuestion>(
     timeLimit,
     isActive: clockRunning,
     onTimeLimitReached: useCallback(() => {
+      if (pendingRef.current !== null) {
+        // Keep the answer live until its verdict arrives. Pausing this local
+        // timer also lets setElapsedMs restart it from the server's verdict
+        // if processing time made our estimate reach zero too early.
+        setWaitingAtTimeLimit(true);
+        return;
+      }
       isFinishedRef.current = true;
       pendingRef.current = null;
       setAwaitingServer(false);
@@ -479,6 +489,7 @@ export function useTimedSession<TQuestion>(
       // `pending`) so the feedback timeout sees it if it fires later.
       const current = pendingRef.current;
       if (current === null) return;
+      setWaitingAtTimeLimit(false);
       current.outcome = { correct: response.correct, next: response.next };
       if (current.feedbackDone) completeRemoteAnswer(current);
     },

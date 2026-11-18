@@ -895,7 +895,7 @@ describe("useTimedSession", () => {
       expect(result.current.correctCount).toBe(0);
     });
 
-    it("ends with timeUp on the local clock while awaiting, and ignores the late response", async () => {
+    it("settles an in-flight answer before finishing on the local clock", async () => {
       const { port, calls } = createPort();
       const onAdvance = vi.fn();
       const { result } = renderRemote(port, { onAdvance });
@@ -906,8 +906,8 @@ describe("useTimedSession", () => {
       act(() => vi.advanceTimersByTime(500));
       act(() => vi.advanceTimersByTime(1100));
 
-      expect(result.current.finishReason).toBe("timeUp");
-      expect(result.current.awaitingServer).toBe(false);
+      expect(result.current.isFinished).toBe(false);
+      expect(result.current.awaitingServer).toBe(true);
 
       await settle(() =>
         calls[0]!.resolve(
@@ -915,9 +915,41 @@ describe("useTimedSession", () => {
         ),
       );
 
+      act(() => vi.advanceTimersByTime(100));
       expect(result.current.finishReason).toBe("timeUp");
-      expect(result.current.currentQuestion).toBe("q0");
-      expect(onAdvance).not.toHaveBeenCalled();
+      expect(result.current.currentQuestion).toBe("q1");
+      expect(onAdvance).toHaveBeenCalledOnce();
+    });
+
+    it("removes an expired in-flight answer even when the local clock has already reached zero", async () => {
+      const { port, calls } = createPort();
+      const { result } = renderRemote(port);
+      advancePastCountdown();
+      act(() => vi.advanceTimersByTime(59_000));
+      act(() => result.current.handleAnswer(true, "a"));
+      act(() => vi.advanceTimersByTime(500));
+      act(() => vi.advanceTimersByTime(1100));
+
+      await settle(() => calls[0]!.resolve({ status: "expired" }));
+
+      expect(result.current.finishReason).toBe("timeUp");
+      expect(result.current.correctCount).toBe(0);
+      expect(result.current.questionTimes).toEqual([]);
+    });
+
+    it("still reports a failed in-flight answer after the local clock reaches zero", async () => {
+      const { port, calls } = createPort();
+      const { result } = renderRemote(port);
+      advancePastCountdown();
+      act(() => vi.advanceTimersByTime(59_000));
+      act(() => result.current.handleAnswer(true, "a"));
+      act(() => vi.advanceTimersByTime(500));
+      act(() => vi.advanceTimersByTime(1100));
+
+      await settle(() => calls[0]!.resolve({ status: "rejected" }));
+
+      expect(result.current.remoteFailed).toBe(true);
+      expect(result.current.correctCount).toBe(0);
     });
 
     it("ignores a response that arrives after unmount", async () => {
