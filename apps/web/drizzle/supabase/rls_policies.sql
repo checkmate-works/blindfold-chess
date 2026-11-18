@@ -243,6 +243,18 @@ DROP POLICY IF EXISTS "challenge_best_scores_insert" ON "challenge_best_scores";
 DROP POLICY IF EXISTS "challenge_best_scores_update" ON "challenge_best_scores";
 
 -- =============================================================================
+-- challenge_attempts (server-side only; deny-by-default)
+-- =============================================================================
+ALTER TABLE "challenge_attempts" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "challenge_attempts" FORCE ROW LEVEL SECURITY;
+
+-- No policies. A row holds every question of a running challenge, including
+-- the ones not yet shown to the player; a client that could read it would know
+-- every answer in advance, and one that could write it would set its own
+-- score. Only the server's Drizzle connection reads and writes it (the grants
+-- are revoked in foreign_keys_and_grants.sql too).
+
+-- =============================================================================
 -- article_images (admin-only write, public read)
 -- =============================================================================
 ALTER TABLE "article_images" ENABLE ROW LEVEL SECURITY;

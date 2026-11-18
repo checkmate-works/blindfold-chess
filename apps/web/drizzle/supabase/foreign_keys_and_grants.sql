@@ -373,6 +373,21 @@ GRANT SELECT ON TABLE public.challenge_best_scores TO anon;
 REVOKE INSERT, UPDATE ON TABLE public.challenge_best_scores FROM authenticated;
 
 -- =============================================================================
+-- challenge_attempts
+-- =============================================================================
+
+-- FK constraint: challenge_attempts.user_id → auth.users(id) ON DELETE CASCADE
+-- An attempt is the player's own play record; it means nothing once the
+-- account is purged.
+SELECT public.ensure_auth_users_fk('challenge_attempts', 'challenge_attempts_user_id_fkey', 'user_id', 'CASCADE');
+
+-- Server-side only. A row carries the whole question list of a running
+-- challenge (reading it reveals the answers ahead of time) and the state the
+-- score is recorded from (writing it forges a result). Started, answered and
+-- finished by the challenge Server Actions on the Drizzle connection.
+REVOKE ALL ON TABLE public.challenge_attempts FROM authenticated, anon;
+
+-- =============================================================================
 -- feed_items
 -- =============================================================================
 

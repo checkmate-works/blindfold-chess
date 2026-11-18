@@ -55,3 +55,41 @@ SELECT cron.schedule(
       AND NOT EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = u.id)
   $$
 );
+
+-- Challenge attempts retention.
+--
+-- An attempt that was never finished is abandoned well before a day is out
+-- (the server stops accepting answers or a finish 10 minutes after the start),
+-- so it is deleted a day after it started. A finished attempt keeps its row —
+-- it is what a recorded result was decided from — but 90 days after it was
+-- consumed its question list and per-answer log are emptied: they are only
+-- needed for reviewing a recent suspicious result, and they are the bulk of
+-- the row. The `jsonb_array_length` guard keeps the job from rewriting rows it
+-- has already emptied.
+--
+-- Two jobs, one statement each, so each runs and reports on its own.
+SELECT cron.schedule(
+  'cleanup-abandoned-challenge-attempts',
+  '20 5 * * *',
+  $$
+    DELETE FROM public.challenge_attempts
+    WHERE consumed_at IS NULL
+      AND started_at < now() - interval '1 day'
+  $$
+);
+
+SELECT cron.schedule(
+  'trim-old-challenge-attempts',
+  '25 5 * * *',
+  $$
+    UPDATE public.challenge_attempts
+    SET questions = '[]'::jsonb,
+        state = jsonb_set(state, '{answers}', '[]'::jsonb)
+    WHERE consumed_at IS NOT NULL
+      AND consumed_at < now() - interval '90 days'
+      AND (
+        jsonb_array_length(questions) > 0
+        OR jsonb_array_length(COALESCE(state -> 'answers', '[]'::jsonb)) > 0
+      )
+  $$
+);

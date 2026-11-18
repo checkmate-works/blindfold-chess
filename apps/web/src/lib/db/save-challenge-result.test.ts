@@ -2,8 +2,14 @@ import { revalidateTag as mockRevalidateTag } from 'next/cache';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { db } from './index';
 import type { ChallengeResultInput } from './save-challenge-result';
-import { saveChallengeResult } from './save-challenge-result';
+import {
+  evaluateRanksAfterChallenge,
+  saveChallengeResult,
+  writeChallengeResult,
+} from './save-challenge-result';
+import type { DbTx } from './types';
 
 // ---------------------------------------------------------------------------
 // Mock setup
@@ -625,5 +631,40 @@ describe('saveChallengeResult', () => {
     await saveChallengeResult(validInput); // input has incorrectAnswers: 3 (worse than 2)
 
     expect(mockInsertValues).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('writeChallengeResult', () => {
+  beforeEach(() => {
+    mockSelectResult.mockReturnValue([]);
+    mockGetUserAllTimeRank.mockResolvedValue({ rank: 5 });
+  });
+
+  it('writes the result through the caller transaction and returns its id and exp', async () => {
+    const result = await db.transaction((tx) =>
+      writeChallengeResult(tx as unknown as DbTx, validInput)
+    );
+
+    expect(mockTransaction).toHaveBeenCalledTimes(1);
+    expect(mockInsertValues).toHaveBeenCalledWith(
+      expect.objectContaining({ userId: validInput.userId, score: 25 })
+    );
+    expect(result.challengeResultId).toBe('result-00000000-0000-0000-0000-000000000001');
+    expect(result.exp).toEqual(expect.objectContaining({ earnedExp: 10 }));
+  });
+
+  it('leaves belt rank evaluation to the caller, after its commit', async () => {
+    await db.transaction((tx) => writeChallengeResult(tx as unknown as DbTx, validInput));
+
+    expect(mockEvaluateRanksAfterCreate).not.toHaveBeenCalled();
+  });
+});
+
+describe('evaluateRanksAfterChallenge', () => {
+  it('returns the ranks granted by the post-commit evaluation', async () => {
+    const mockRanks = [{ slug: '5kyu', level: 10, color: 'orange' }];
+    mockEvaluateRanksAfterCreate.mockResolvedValueOnce(mockRanks);
+
+    await expect(evaluateRanksAfterChallenge(validInput.userId)).resolves.toEqual(mockRanks);
   });
 });

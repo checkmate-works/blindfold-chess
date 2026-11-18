@@ -130,6 +130,29 @@ export const RATE_LIMITS = {
   deleteAccount: { action: 'delete_account', maxAttempts: 3, windowMs: 3_600_000 },
   savePracticeResult: { action: 'save_practice_result', maxAttempts: 60, windowMs: 3_600_000 },
   /**
+   * Starting a server-run challenge inserts an attempt row with its whole
+   * question list. One challenge lasts a minute or more, so 60 per hour is
+   * more than a player can use; the cap stops a script from filling the table.
+   */
+  beginChallengeAttempt: {
+    action: 'begin_challenge_attempt',
+    maxAttempts: 60,
+    windowMs: 3_600_000,
+  },
+  /**
+   * Finishing a challenge. Four times the start budget because a finish sent
+   * before the attempt is over answers `pending` and the client asks again
+   * when the clock runs out, so one challenge can take a few finish calls.
+   * Answering is deliberately not rate limited: the attempt row already
+   * bounds how often and how many times a player can answer, and a database
+   * round trip per answer would be charged to the player's thinking time.
+   */
+  finishChallengeAttempt: {
+    action: 'finish_challenge_attempt',
+    maxAttempts: 240,
+    windowMs: 3_600_000,
+  },
+  /**
    * Per-user limit for granting Exp on a completed AI game. Generous (60/hour)
    * — a normal player finishes far fewer games than this; the cap is a backstop
    * against scripted loops hammering the grant transaction. The real
