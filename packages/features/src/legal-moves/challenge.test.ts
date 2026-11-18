@@ -22,8 +22,11 @@ function seededRng(seed: number): RandomSource {
 
 describe("legalMovesPiecesForSelection", () => {
   it("drills only the named piece", () => {
-    expect(legalMovesPiecesForSelection("knight")).toEqual(["n"]);
+    expect(legalMovesPiecesForSelection("king")).toEqual(["k"]);
     expect(legalMovesPiecesForSelection("queen")).toEqual(["q"]);
+    expect(legalMovesPiecesForSelection("rook")).toEqual(["r"]);
+    expect(legalMovesPiecesForSelection("bishop")).toEqual(["b"]);
+    expect(legalMovesPiecesForSelection("knight")).toEqual(["n"]);
   });
 
   it("drills all five pieces for random", () => {
@@ -45,6 +48,17 @@ describe("legalMovesPiecesForSelection", () => {
 
 describe("legalMovesChallengeDefinition", () => {
   describe("parseSettings", () => {
+    it("offers the five pieces and random, which are the leaderboard keys", () => {
+      expect(LEGAL_MOVES_PIECE_SELECTIONS).toEqual([
+        "king",
+        "queen",
+        "rook",
+        "bishop",
+        "knight",
+        "random",
+      ]);
+    });
+
     it("accepts every piece selection", () => {
       for (const selectedPiece of LEGAL_MOVES_PIECE_SELECTIONS) {
         expect(definition.parseSettings({ selectedPiece })).toEqual({
@@ -61,6 +75,7 @@ describe("legalMovesChallengeDefinition", () => {
 
     it("rejects non-objects", () => {
       expect(definition.parseSettings(null)).toBeNull();
+      expect(definition.parseSettings(undefined)).toBeNull();
       expect(definition.parseSettings("king")).toBeNull();
     });
   });

@@ -23,6 +23,7 @@ describe("diagonalQuizChallengeDefinition", () => {
     expect(settings).toEqual({});
     expect(definition.leaderboardKey(settings!)).toBe("default");
     expect(definition.parseSettings(undefined)).toBeNull();
+    expect(definition.parseSettings(null)).toBeNull();
     expect(definition.parseSettings([])).toBeNull();
   });
 
@@ -62,6 +63,7 @@ describe("diagonalQuizChallengeDefinition", () => {
 
   it.each([
     ["a non-object", "a1-h8"],
+    ["null", null],
     ["a missing anti-diagonal", { diagonal: "a1-h8" }],
     ["a non-string diagonal", { diagonal: 18, antiDiagonal: "a7-g1" }],
   ])("rejects %s as a broken answer", (_label, raw) => {

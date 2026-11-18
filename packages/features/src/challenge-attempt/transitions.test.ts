@@ -306,6 +306,32 @@ describe("decideAnswer", () => {
     });
   });
 
+  it("still accepts an answer on an attempt that is exactly the maximum age old", () => {
+    const receivedAt = START + ATTEMPT_MAX_AGE_MS;
+    const ctx = makeContext({
+      state: { ...startedAttemptState(START), resumedAt: receivedAt - 200 },
+    });
+    expect(decideAnswer(ctx, 0, 0, receivedAt, receivedAt).kind).toBe(
+      "accepted",
+    );
+  });
+
+  it("reports an answer as expired once the banked thinking time equals the time limit", () => {
+    const resumedAt = FIRST_RESUME + 5000;
+    const ctx = makeContext({
+      state: {
+        ...startedAttemptState(START),
+        elapsedMs: LIMIT_MS,
+        resumedAt,
+      },
+    });
+    // Arrives during the feedback grace, so no further time has accrued.
+    const receivedAt = resumedAt - EARLY_ANSWER_TOLERANCE_MS;
+    expect(decideAnswer(ctx, 0, 0, receivedAt, receivedAt)).toEqual({
+      kind: "expired",
+    });
+  });
+
   it("ends the attempt with no next question when the mistake limit is reached", () => {
     let ctx = makeContext();
     ctx = answer(ctx, 400, false);
@@ -414,6 +440,82 @@ describe("decideAnswer", () => {
           elapsedMs: 1200,
           next: null,
         },
+      });
+    });
+
+    it("rejects a resend when no question has been answered yet", () => {
+      const ctx = makeContext();
+      const receivedAt = FIRST_RESUME + 500;
+      expect(decideAnswer(ctx, -1, 0, receivedAt, receivedAt)).toEqual({
+        kind: "rejected",
+      });
+    });
+
+    describe("with an answer made of nested arrays and objects", () => {
+      type Nested = unknown;
+      const nestedDefinition: ChallengeModuleDefinition<
+        Record<string, never>,
+        number,
+        Nested
+      > = {
+        ...fakeDefinition,
+        parseAnswer: (raw) =>
+          typeof raw === "object" && raw !== null ? raw : null,
+        grade: () => true,
+      };
+      const original = { path: ["a1", "b2", "c3"], note: null, meta: { n: 1 } };
+
+      function answeredOnce() {
+        const ctx: ChallengeAttemptContext<
+          Record<string, never>,
+          number,
+          Nested
+        > = {
+          definition: nestedDefinition,
+          settings: {},
+          questions: [0, 1, 2],
+          state: startedAttemptState(START),
+          consumed: false,
+          startedAt: START,
+          timeLimitMs: LIMIT_MS,
+          mistakeLimit: MISTAKE_LIMIT,
+        };
+        const receivedAt = FIRST_RESUME + 700;
+        const first = decideAnswer(ctx, 0, original, receivedAt, receivedAt);
+        if (first.kind !== "accepted") throw new Error("not accepted");
+        return { ctx: { ...ctx, state: first.state }, first, at: receivedAt };
+      }
+
+      it("replays the same nested answer, with keys in another order", () => {
+        const { ctx, first, at } = answeredOnce();
+        const resent = {
+          meta: { n: 1 },
+          note: null,
+          path: ["a1", "b2", "c3"],
+        };
+        expect(decideAnswer(ctx, 0, resent, at + 900, at + 900)).toEqual({
+          kind: "replay",
+          response: first.response,
+        });
+      });
+
+      it.each([
+        ["a reordered array", { ...original, path: ["b2", "a1", "c3"] }],
+        ["a shorter array", { ...original, path: ["a1", "b2"] }],
+        ["a longer array", { ...original, path: ["a1", "b2", "c3", "d4"] }],
+        [
+          "an object with the array's indices as keys",
+          { ...original, path: { 0: "a1", 1: "b2", 2: "c3" } },
+        ],
+        ["a changed nested value", { ...original, meta: { n: 2 } }],
+        ["an extra key", { ...original, extra: 1 }],
+        ["a missing key", { path: original.path, note: null }],
+        ["a null replaced by a value", { ...original, note: 0 }],
+      ])("rejects a resend with %s", (_label, resent) => {
+        const { ctx, at } = answeredOnce();
+        expect(decideAnswer(ctx, 0, resent, at + 900, at + 900)).toEqual({
+          kind: "rejected",
+        });
       });
     });
 
@@ -572,6 +674,11 @@ describe("decideFinish", () => {
     expect(decideFinish(ctx, START + ATTEMPT_MAX_AGE_MS + 1)).toEqual({
       kind: "rejected",
     });
+  });
+
+  it("still finishes an attempt that is exactly the maximum age old", () => {
+    const { ctx } = timedOut(10, 1000);
+    expect(decideFinish(ctx, START + ATTEMPT_MAX_AGE_MS).kind).toBe("recorded");
   });
 
   it("does not decide a finished attempt a second time", () => {

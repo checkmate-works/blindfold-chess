@@ -273,43 +273,19 @@ function acceptedResponse<TSettings, TQuestion, TAnswer>(
  * Equality of two values as they would be stored in a JSON column.
  *
  * The stored answer has been through jsonb, which drops `undefined` keys and
- * does not keep object key order, so both sides are normalised to JSON and
- * objects are compared key by key regardless of order.
+ * does not keep object key order, so both sides are serialised to JSON with
+ * every object's keys sorted and the two strings are compared.
  */
 function jsonEqual(a: unknown, b: unknown): boolean {
-  return deepEqualJson(toJsonValue(a), toJsonValue(b));
+  return canonicalJson(a) === canonicalJson(b);
 }
 
-function toJsonValue(value: unknown): unknown {
-  const text = JSON.stringify(value);
-  return text === undefined ? undefined : JSON.parse(text);
-}
-
-function deepEqualJson(a: unknown, b: unknown): boolean {
-  if (a === b) return true;
-  if (Array.isArray(a)) {
-    return (
-      Array.isArray(b) &&
-      a.length === b.length &&
-      a.every((item, i) => deepEqualJson(item, b[i]))
-    );
-  }
-  if (
-    a === null ||
-    b === null ||
-    typeof a !== "object" ||
-    typeof b !== "object" ||
-    Array.isArray(b)
-  ) {
-    return false;
-  }
-  const aRecord = a as Record<string, unknown>;
-  const bRecord = b as Record<string, unknown>;
-  const aKeys = Object.keys(aRecord);
-  if (aKeys.length !== Object.keys(bRecord).length) return false;
-  return aKeys.every(
-    (key) =>
-      Object.prototype.hasOwnProperty.call(bRecord, key) &&
-      deepEqualJson(aRecord[key], bRecord[key]),
+function canonicalJson(value: unknown): string | undefined {
+  return JSON.stringify(value, (_key, nested: unknown) =>
+    typeof nested === "object" && nested !== null && !Array.isArray(nested)
+      ? Object.fromEntries(
+          Object.entries(nested).sort(([a], [b]) => (a < b ? -1 : 1)),
+        )
+      : nested,
   );
 }

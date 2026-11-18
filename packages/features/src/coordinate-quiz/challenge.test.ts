@@ -54,6 +54,7 @@ describe("coordinateQuizChallengeDefinition", () => {
 
     it("rejects non-objects", () => {
       expect(definition.parseSettings(null)).toBeNull();
+      expect(definition.parseSettings(undefined)).toBeNull();
       expect(definition.parseSettings("white")).toBeNull();
       expect(definition.parseSettings(["white", "fast"])).toBeNull();
     });

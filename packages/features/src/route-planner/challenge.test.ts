@@ -43,6 +43,8 @@ describe("routePlannerChallengeDefinition", () => {
     ["an inherited property name", { selectedPiece: "toString" }],
     ["a missing piece", {}],
     ["a non-object", "knight"],
+    ["null", null],
+    ["an array", [{ selectedPiece: "knight" }]],
   ])("rejects settings with %s", (_label, raw) => {
     expect(definition.parseSettings(raw)).toBeNull();
   });
@@ -83,7 +85,14 @@ describe("routePlannerChallengeDefinition", () => {
 
   it.each([
     ["a non-object", ["c3"]],
+    ["null", null],
+    ["a bare square name", "c3"],
+    ["a number", 3],
     ["a non-array path", { path: "c3" }],
+    ["a path entry that is a number", { path: ["c3", 42] }],
+    ["a path entry that is null", { path: ["c3", null] }],
+    // An array holding one square name stringifies to that name.
+    ["a path entry that is an array", { path: ["c3", ["d5"]] }],
     ["a path entry that is not a square", { path: ["c3", "z9"] }],
     ["a skip flag that is not true", { skipped: false }],
     ["both a path and a skip", { path: ["c3"], skipped: true }],
