@@ -1,6 +1,7 @@
 export * from "./types";
 export * from "./squares";
 export * from "./logic";
+export * from "./challenge";
 export type {
   UseCoordinateQuizSessionConfig,
   UseCoordinateQuizSessionReturn,
