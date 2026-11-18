@@ -388,10 +388,18 @@ describe("parsePgnTree ∘ generatePgnFromTree", () => {
     expect(reparsed).toEqual(tree);
   });
 
-  it("round-trips randomly generated trees exactly", () => {
-    const blackToMove =
-      "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1";
-    for (let seed = 1; seed <= 60; seed += 1) {
+  // One test per seed rather than one test looping over all sixty: the loop
+  // takes about a second alone but shared a single 5 s timeout, and it timed
+  // out whenever the whole workspace's suites ran concurrently (`pnpm test`
+  // at the repo root). Per seed, each tree gets its own budget and a failure
+  // names the seed that broke.
+  const seeds = Array.from({ length: 60 }, (_, index) => index + 1);
+
+  it.each(seeds)(
+    "round-trips the randomly generated tree for seed %i exactly",
+    (seed) => {
+      const blackToMove =
+        "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1";
       const random = seededRandom(seed);
       const root = seed % 3 === 0 ? blackToMove : DEFAULT_POSITION;
       const tree = randomTree(random, root, 7, 3);
@@ -401,6 +409,6 @@ describe("parsePgnTree ∘ generatePgnFromTree", () => {
         ok: true,
         value: tree,
       });
-    }
-  });
+    },
+  );
 });
