@@ -508,6 +508,20 @@ describe('finishChallengeAttempt', () => {
     expect(mockEvaluateRanksAfterChallenge).toHaveBeenCalledTimes(1);
   });
 
+  it('answers a resent finish as rejected once the recorded result has been deleted', async () => {
+    const attemptId = await beginSquareColors();
+    await playToMistakeLimit(attemptId);
+    await finish(USER_ID, attemptId);
+    // What the ON DELETE SET NULL foreign key leaves behind when the result row goes.
+    h.rows.set(attemptId, { ...h.rows.get(attemptId)!, challengeResultId: null });
+
+    now += 5000;
+    const resent = await finish(USER_ID, attemptId);
+
+    expect(resent).toEqual({ status: 'rejected' });
+    expect(mockWriteChallengeResult).toHaveBeenCalledTimes(1);
+  });
+
   it('still answers a resent answer on a consumed row with its original response', async () => {
     const attemptId = await beginSquareColors();
     await playToMistakeLimit(attemptId);
