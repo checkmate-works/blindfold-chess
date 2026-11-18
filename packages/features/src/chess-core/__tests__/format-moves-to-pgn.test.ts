@@ -205,3 +205,19 @@ describe("formatMovesToPgn", () => {
     });
   });
 });
+
+describe("formatMovesToPgn move numbers", () => {
+  test("count up from a white-first start that is not move 1", () => {
+    expect(
+      formatMovesToPgn(["e4", "e5", "Nf3"], false, 7).map((m) => m.moveNumber),
+    ).toEqual([7, 8]);
+  });
+
+  test("count up from a black-first start", () => {
+    expect(
+      formatMovesToPgn(["e5", "Nf3", "Nc6", "Bb5"], true, 7).map(
+        (m) => m.moveNumber,
+      ),
+    ).toEqual([7, 8, 9]);
+  });
+});

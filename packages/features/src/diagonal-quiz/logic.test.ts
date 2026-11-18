@@ -199,6 +199,7 @@ describe("normalizeDiagonal", () => {
   describe("same file endpoints", () => {
     it("sorts by rank when files are the same", () => {
       expect(normalizeDiagonal("a5-a1")).toBe("a1-a5");
+      expect(normalizeDiagonal("a1-a5")).toBe("a1-a5");
     });
   });
 
@@ -206,6 +207,9 @@ describe("normalizeDiagonal", () => {
     it("returns the trimmed lowercase input for unrecognized formats", () => {
       expect(normalizeDiagonal("invalid")).toBe("invalid");
       expect(normalizeDiagonal("a1-")).toBe("a1-");
+      // Only the whole answer counts as a pair of squares.
+      expect(normalizeDiagonal("xh8-a1")).toBe("xh8-a1");
+      expect(normalizeDiagonal("h8-a1x")).toBe("h8-a1x");
     });
   });
 });
@@ -655,6 +659,12 @@ describe("scoreDiagonalAnswer", () => {
     expect(score.isDiagonalCorrect).toBe(true);
     expect(score.isAntiDiagonalCorrect).toBe(false);
     expect(score.isCorrect).toBe(false);
+  });
+
+  it("treats a well-formed answer naming another diagonal as wrong", () => {
+    const score = scoreDiagonalAnswer("d4", "a1-h1", "a1-a8");
+    expect(score.isDiagonalCorrect).toBe(false);
+    expect(score.isAntiDiagonalCorrect).toBe(false);
   });
 
   it("treats a malformed answer as wrong", () => {

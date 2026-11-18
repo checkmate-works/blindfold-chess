@@ -3,9 +3,18 @@ import { describe, expect, it } from "vitest";
 import {
   LICHESS_PGN_PATH_LIMIT,
   STARTING_FEN,
+  boardIndexToSquare,
+  fenCharToPiece,
+  fenToLichessUrl,
+  fenToPieceList,
+  fenToPlacements,
   fullmoveNumberFromFen,
+  getTurnFromFen,
   isBlackToMoveFromFen,
   movesToLichessUrl,
+  squareToBoardIndex,
+  toPositionKey,
+  validateFenFormat,
   withSideToMove,
 } from "./fen-pure";
 
@@ -50,6 +59,12 @@ describe("withSideToMove", () => {
   it("normalizes irregular whitespace before locating the field", () => {
     expect(withSideToMove("  8/8/8/8/8/8/8/8   w  - - 0 1 ", "b")).toBe(
       "8/8/8/8/8/8/8/8 b - - 0 1",
+    );
+  });
+
+  it("sets the side on a FEN that has only placement and side", () => {
+    expect(withSideToMove("8/8/8/8/8/8/8/K6k b", "w")).toBe(
+      "8/8/8/8/8/8/8/K6k w",
     );
   });
 
@@ -114,6 +129,11 @@ describe("movesToLichessUrl", () => {
     );
   });
 
+  it("counts plies from a custom start with white to move", () => {
+    const fen = "8/8/8/8/8/8/8/K6k w - - 0 5";
+    expect(url(["Kb1"], { startingFen: fen, plies: 0 })).toMatch(/#8$/);
+  });
+
   it("opens an empty game at its starting position", () => {
     expect(url([])).toBe("https://lichess.org/analysis/pgn/#0");
   });
@@ -144,6 +164,21 @@ describe("movesToLichessUrl", () => {
       expect(url(longGame, { plies: 10 })).toMatch(/#10$/);
     });
 
+    // 999 four-character SANs, one five-character SAN and 999 separators.
+    const exactlyAtLimit = [...Array<string>(999).fill("Nxf3"), "Nbxd2"];
+
+    it("keeps a game whose path is exactly the limit whole", () => {
+      const result = movesToLichessUrl(exactlyAtLimit);
+      expect(result.includedMoves).toBe(1000);
+      expect(result.truncated).toBe(false);
+    });
+
+    it("drops the last move when it would pass the limit by one", () => {
+      const result = movesToLichessUrl([...exactlyAtLimit.slice(1), "Nbxd2"]);
+      expect(result.includedMoves).toBe(999);
+      expect(result.truncated).toBe(true);
+    });
+
     it("counts the FEN header against the limit", () => {
       const fen = "8/8/8/8/8/8/8/K6k w - - 0 1";
       const kings = Array.from(
@@ -158,5 +193,145 @@ describe("movesToLichessUrl", () => {
       expect(path.length).toBeLessThanOrEqual(LICHESS_PGN_PATH_LIMIT);
       expect(result.includedMoves).toBeLessThan(1250);
     });
+  });
+});
+
+describe("fenCharToPiece", () => {
+  it("reads upper case as white and lower case as black", () => {
+    expect(fenCharToPiece("N")).toEqual({ type: "n", color: "w" });
+    expect(fenCharToPiece("q")).toEqual({ type: "q", color: "b" });
+    for (const ch of "kqrbnp") {
+      expect(fenCharToPiece(ch)).toEqual({ type: ch, color: "b" });
+      expect(fenCharToPiece(ch.toUpperCase())).toEqual({
+        type: ch,
+        color: "w",
+      });
+    }
+  });
+
+  it("returns null for anything that is not a single piece letter", () => {
+    for (const ch of ["", "3", "/", "x", "X", "kk", "Kq", "nK"]) {
+      expect(fenCharToPiece(ch)).toBeNull();
+    }
+  });
+});
+
+describe("fenToPlacements", () => {
+  it("lists every piece with its square, rank 8 first", () => {
+    expect(fenToPlacements("4k3/8/8/8/8/8/3P4/R3K3 w Q - 0 1")).toEqual([
+      { square: "e8", type: "k", color: "b" },
+      { square: "d2", type: "p", color: "w" },
+      { square: "a1", type: "r", color: "w" },
+      { square: "e1", type: "k", color: "w" },
+    ]);
+  });
+
+  it("returns nothing for an empty board", () => {
+    expect(fenToPlacements("8/8/8/8/8/8/8/8 w - - 0 1")).toEqual([]);
+  });
+});
+
+describe("boardIndexToSquare and squareToBoardIndex", () => {
+  it("count from a8 rank by rank down to h1", () => {
+    expect(boardIndexToSquare(0)).toBe("a8");
+    expect(boardIndexToSquare(7)).toBe("h8");
+    expect(boardIndexToSquare(8)).toBe("a7");
+    expect(boardIndexToSquare(63)).toBe("h1");
+    expect(squareToBoardIndex("a8")).toBe(0);
+    expect(squareToBoardIndex("h8")).toBe(7);
+    expect(squareToBoardIndex("a7")).toBe(8);
+    expect(squareToBoardIndex("h1")).toBe(63);
+  });
+
+  it("are inverses over the whole board", () => {
+    for (let index = 0; index < 64; index++) {
+      expect(squareToBoardIndex(boardIndexToSquare(index))).toBe(index);
+    }
+  });
+
+  it("returns null for a string that is not a square", () => {
+    for (const square of ["", "e", "e44", "i4", "E4", "ex", "e0", "e9"]) {
+      expect(squareToBoardIndex(square)).toBeNull();
+    }
+  });
+});
+
+describe("toPositionKey", () => {
+  it("keeps the first four fields and drops the clocks", () => {
+    expect(toPositionKey(STARTING_FEN)).toBe(
+      "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -",
+    );
+  });
+});
+
+describe("getTurnFromFen", () => {
+  it("reads the side to move", () => {
+    expect(getTurnFromFen(STARTING_FEN)).toBe("w");
+    expect(getTurnFromFen("8/8/8/8/8/8/8/K6k b - - 0 1")).toBe("b");
+  });
+
+  it("throws on a FEN with fewer than six fields", () => {
+    expect(() => getTurnFromFen("8/8/8/8/8/8/8/K6k w - - 0")).toThrow(
+      "Invalid FEN: incomplete FEN string",
+    );
+  });
+
+  it("throws on a turn field that is neither w nor b", () => {
+    expect(() => getTurnFromFen("8/8/8/8/8/8/8/K6k x - - 0 1")).toThrow(
+      "Invalid FEN: invalid turn field",
+    );
+  });
+});
+
+describe("fenToLichessUrl", () => {
+  it("puts the FEN in the analysis path with spaces as underscores", () => {
+    expect(fenToLichessUrl(STARTING_FEN)).toBe(
+      "https://lichess.org/analysis/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1",
+    );
+  });
+});
+
+describe("fenToPieceList ordering", () => {
+  it("sorts pieces of one type by square, not by where the FEN lists them", () => {
+    // The FEN lists h8 before a1 and a7 before e2.
+    const result = fenToPieceList("7N/p7/8/8/8/8/4p3/N3K2k w - - 0 1");
+    expect(result.white).toEqual(["Ke1", "Na1", "Nh8"]);
+    expect(result.black).toEqual(["Kh1", "a7", "e2"]);
+  });
+});
+
+describe("validateFenFormat", () => {
+  const BOARD = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
+
+  it("accepts a board and turn with or without the remaining fields", () => {
+    expect(validateFenFormat(STARTING_FEN)).toBe(true);
+    expect(validateFenFormat(`${BOARD} w`)).toBe(true);
+    expect(validateFenFormat(`${BOARD} b`)).toBe(true);
+  });
+
+  it("ignores surrounding whitespace", () => {
+    expect(validateFenFormat(`  ${STARTING_FEN}  `)).toBe(true);
+  });
+
+  it("rejects a FEN without a valid turn", () => {
+    expect(validateFenFormat(BOARD)).toBe(false);
+    expect(validateFenFormat(`${BOARD} x`)).toBe(false);
+  });
+
+  it("rejects a board that does not have eight ranks", () => {
+    expect(validateFenFormat("8/8/8/8/8/8/8 w")).toBe(false);
+    expect(validateFenFormat("8/8/8/8/8/8/8/8/8 w")).toBe(false);
+  });
+
+  it("rejects a rank that does not add up to eight squares", () => {
+    expect(validateFenFormat("8/8/8/8/8/8/8/7 w")).toBe(false);
+    expect(validateFenFormat("8/8/8/8/8/8/8/K6 w")).toBe(false);
+    expect(validateFenFormat("8/8/8/8/8/8/8/9 w")).toBe(false);
+  });
+
+  it("rejects a character that is neither a digit nor a piece", () => {
+    expect(validateFenFormat("8/8/8/8/8/8/8/X7 w")).toBe(false);
+    // Eight squares without the stray character.
+    expect(validateFenFormat("8/8/8/8/8/8/8/K7X w")).toBe(false);
   });
 });

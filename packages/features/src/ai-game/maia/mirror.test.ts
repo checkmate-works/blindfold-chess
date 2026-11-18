@@ -65,6 +65,28 @@ describe("mirrorFen", () => {
     expect(mirrored.split(" ")[3]).toBe("-");
   });
 
+  it("hands each side's castling rights to the other, in KQkq order", () => {
+    const castlingOf = (castling: string) =>
+      mirrorFen(`r3k2r/8/8/8/8/8/8/R3K2R w ${castling} - 0 1`).split(" ")[2];
+    expect(castlingOf("K")).toBe("k");
+    expect(castlingOf("Q")).toBe("q");
+    expect(castlingOf("k")).toBe("K");
+    expect(castlingOf("q")).toBe("Q");
+    expect(castlingOf("Kq")).toBe("Qk");
+    expect(castlingOf("Qk")).toBe("Kq");
+  });
+
+  it("swaps every piece colour and leaves empty-square runs alone", () => {
+    const fen = "4k3/1q6/8/2N5/8/8/6r1/4K3 w - - 3 40";
+    expect(mirrorFen(fen)).toBe("4k3/6R1/8/8/2n5/8/1Q6/4K3 b - - 3 40");
+  });
+
+  it("throws when a field is missing", () => {
+    expect(() => mirrorFen("8/8/8/4k3/4K3/8/8/8 w - - 10")).toThrow(
+      "mirrorFen: FEN must have 6 space-separated fields, got: 8/8/8/4k3/4K3/8/8/8 w - - 10",
+    );
+  });
+
   it("throws on a malformed FEN", () => {
     expect(() => mirrorFen("not-a-fen")).toThrow();
   });

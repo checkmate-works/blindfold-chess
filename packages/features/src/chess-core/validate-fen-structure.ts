@@ -68,13 +68,17 @@ export function validateFenStructure(fen: string): FenStructureResult {
 
   for (let i = 0; i < 8; i++) {
     const rank = ranks[i];
-    if (rank.length === 0 || !VALID_RANK_CHARS.test(rank)) {
+    // VALID_RANK_CHARS needs at least one character, so an empty rank ("//")
+    // fails here too.
+    if (!VALID_RANK_CHARS.test(rank)) {
       return { ok: false, error: `Rank ${8 - i} contains invalid characters` };
     }
     let sum = 0;
     let previousWasDigit = false;
     for (const ch of rank) {
-      if (ch >= "1" && ch <= "8") {
+      // The rank is now only digits 1-8 and piece letters, and every letter
+      // sorts after "8".
+      if (ch <= "8") {
         if (previousWasDigit) {
           // Consecutive digits like "17" would otherwise pass the sum check
           // for some combinations; reject them explicitly to match canonical

@@ -256,3 +256,64 @@ describe("validateFenStructure — rejected cases", () => {
     expect(result.ok).toBe(false);
   });
 });
+
+// ============================================================
+// Exact messages and pattern edges
+// ============================================================
+describe("validateFenStructure — what the caller is told", () => {
+  const error = (fen: unknown) => {
+    const result = validateFenStructure(fen as string);
+    return result.ok ? null : result.error;
+  };
+
+  it("reports an empty or non-string FEN as empty", () => {
+    expect(error("")).toBe("FEN is empty");
+    expect(error(null)).toBe("FEN is empty");
+    expect(error(42)).toBe("FEN is empty");
+  });
+
+  it("names the rank, counted from 8, that breaks a placement rule", () => {
+    expect(error("8/8/8/8/8/8/8/7X w - - 0 1")).toBe(
+      "Rank 1 contains invalid characters",
+    );
+    expect(error("8/8//8/8/8/8/8 w - - 0 1")).toBe(
+      "Rank 6 contains invalid characters",
+    );
+    expect(error("8/8/8/8/8/8/8/17 w - - 0 1")).toBe(
+      "Rank 1 has consecutive empty-square digits",
+    );
+    expect(error("8/7/8/8/8/8/8/8 w - - 0 1")).toBe(
+      "Rank 7 does not sum to 8 squares",
+    );
+  });
+
+  it("rejects a bad side to move with its own message", () => {
+    expect(error("8/8/8/8/8/8/8/8 x - - 0 1")).toBe(
+      "Side to move must be w or b",
+    );
+  });
+
+  it("checks each field as a whole, not just a matching part of it", () => {
+    expect(error("8/8/8/8/8/8/8/X7 w - - 0 1")).toBe(
+      "Rank 1 contains invalid characters",
+    );
+    expect(error("8/8/8/8/8/8/8/8 w XKQ - 0 1")).toBe(
+      "Castling rights are malformed",
+    );
+    expect(error("8/8/8/8/8/8/8/8 w - e3x 0 1")).toBe(
+      "En passant square is malformed",
+    );
+    expect(error("8/8/8/8/8/8/8/8 w - - 0x 1")).toBe(
+      "Halfmove clock must be a non-negative integer",
+    );
+    expect(error("8/8/8/8/8/8/8/8 w - - 0 1x")).toBe(
+      "Fullmove number must be a positive integer",
+    );
+  });
+
+  it("accepts runs of whitespace between fields", () => {
+    expect(validateFenStructure("8/8/8/8/8/8/8/8  w  -  -  0  1")).toEqual({
+      ok: true,
+    });
+  });
+});

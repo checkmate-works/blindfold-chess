@@ -558,3 +558,93 @@ describe("computeIsSubmittable", () => {
     expect(computeIsSubmittable(s)).toBe(true);
   });
 });
+
+// ============================================================
+// Structured input sequences, as the mobile button UI drives them
+// ============================================================
+function run(
+  ...actions: Parameters<typeof notationInputReducer>[1][]
+): ReturnType<typeof createInitialState> {
+  return actions.reduce(notationInputReducer, createInitialState());
+}
+
+describe("notationInputReducer — structured sequences", () => {
+  it("removes only the last character on backspace", () => {
+    const next = notationInputReducer(
+      { ...createInitialState(), input: "Nf3" },
+      { type: "backspace" },
+    );
+    expect(next.input).toBe("Nf");
+  });
+
+  it("keeps the chosen file when switching to another piece", () => {
+    const s = run(
+      { type: "selectPiece", piece: "N" },
+      { type: "selectFile", file: "f" },
+      { type: "selectPiece", piece: "B" },
+    );
+    expect(s.input).toBe("Bf");
+  });
+
+  it("writes the source rank between the piece and the destination", () => {
+    const s = run(
+      { type: "selectPiece", piece: "R" },
+      { type: "selectSourceRank", rank: "1" },
+      { type: "selectFile", file: "a" },
+      { type: "selectRank", rank: "3" },
+    );
+    expect(s.input).toBe("R1a3");
+  });
+
+  it("clears the source rank when the same rank is tapped twice", () => {
+    const s = run(
+      { type: "selectPiece", piece: "R" },
+      { type: "selectSourceRank", rank: "1" },
+      { type: "selectSourceRank", rank: "1" },
+    );
+    expect(s.sourceRank).toBeNull();
+    expect(s.input).toBe("R");
+  });
+
+  it("shows only the pawn's file while a capture waits for its target", () => {
+    const s = run({ type: "selectFile", file: "e" }, { type: "toggleCapture" });
+    expect(s.input).toBe("e");
+  });
+
+  it("offers promotion for a pawn reaching rank 1 too", () => {
+    const s = run(
+      { type: "selectFile", file: "e" },
+      { type: "selectRank", rank: "1" },
+    );
+    expect(computeShowPromotion(s)).toBe(true);
+  });
+
+  it("drops the promotion piece when the rank moves off the last rank", () => {
+    const s = run(
+      { type: "selectFile", file: "e" },
+      { type: "selectRank", rank: "8" },
+      { type: "selectPromotion", piece: "q" },
+      { type: "selectRank", rank: "7" },
+    );
+    expect(s.promotionPiece).toBeNull();
+    expect(s.input).toBe("e7");
+  });
+
+  it("leaves no capture behind after castling is picked and dropped", () => {
+    const s = run(
+      { type: "toggleCapture" },
+      { type: "selectCastling", move: "O-O" },
+      { type: "selectCastling", move: "O-O" },
+    );
+    expect(s.isCapture).toBe(false);
+    expect(s.input).toBe("");
+  });
+});
+
+describe("computeIsPawnCaptureMode — needs a file", () => {
+  it("is false when capture is toggled before any file is chosen", () => {
+    expect(
+      computeIsPawnCaptureMode({ ...createInitialState(), isCapture: true }),
+    ).toBe(false);
+  });
+});
