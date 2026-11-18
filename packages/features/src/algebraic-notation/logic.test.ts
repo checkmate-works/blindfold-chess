@@ -71,6 +71,12 @@ describe("getScorePercentage", () => {
 });
 
 describe("ALGEBRAIC_NOTATION_QUESTIONS", () => {
+  // The per-question checks below pass vacuously on an empty list, which
+  // would start a session with nothing to answer.
+  it("ships at least one question", () => {
+    expect(ALGEBRAIC_NOTATION_QUESTIONS.length).toBeGreaterThan(0);
+  });
+
   it.each(ALGEBRAIC_NOTATION_QUESTIONS.map((q) => [q.id, q] as const))(
     "question %i is self-consistent",
     (_id, q) => {
@@ -84,6 +90,34 @@ describe("ALGEBRAIC_NOTATION_QUESTIONS", () => {
       const played = executeMove(q.fenBefore, q.move);
       expect(played).not.toBeNull();
       expect(played?.fen.split(" ")[0]).toBe(q.fenAfter.split(" ")[0]);
+    },
+  );
+
+  it.each(ALGEBRAIC_NOTATION_QUESTIONS.map((q) => [q.id, q] as const))(
+    "question %i offers no blank answer option",
+    (_id, q) => {
+      for (const option of q.options) {
+        expect(option.trim()).not.toBe("");
+      }
+    },
+  );
+
+  // A locale may be missing while its translation is pending (the getters
+  // fall back to English), but a locale that is present is shown as-is, so
+  // a blank line or a shorter explanation list would reach the player.
+  it.each(ALGEBRAIC_NOTATION_QUESTIONS.map((q) => [q.id, q] as const))(
+    "question %i has complete text in every locale it ships",
+    (_id, q) => {
+      for (const description of Object.values(q.description)) {
+        expect(description?.trim()).not.toBe("");
+      }
+      const englishLines = q.explanation.en?.length;
+      for (const lines of Object.values(q.explanation)) {
+        expect(lines?.length).toBe(englishLines);
+        for (const line of lines ?? []) {
+          expect(line.trim()).not.toBe("");
+        }
+      }
     },
   );
 });
