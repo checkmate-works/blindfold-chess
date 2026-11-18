@@ -12,6 +12,12 @@ import type { CoordinateQuestion } from '../../_lib/types';
 
 type Props = {
   currentQuestion: CoordinateQuestion | null;
+  /**
+   * The next question has not arrived from the server yet. The board is
+   * blurred (which also hides the answered target), so the player does not keep
+   * looking at a question that is already answered while the clock runs.
+   */
+  awaitingServer?: boolean;
   timeRemaining: number;
   timeLimit: number;
   timeElapsed: number;
@@ -34,6 +40,7 @@ type Props = {
 
 export function CoordinateQuizChallengePlaying({
   currentQuestion,
+  awaitingServer = false,
   timeRemaining,
   timeLimit,
   timeElapsed,
@@ -77,7 +84,7 @@ export function CoordinateQuizChallengePlaying({
               showFeedback={showFeedback}
               isCorrect={isCorrect}
               countdown={countdown}
-              isObscured={isPaused}
+              isObscured={isPaused || awaitingServer}
               boardOverlay={
                 /* Pause overlay — rendered inside the board-scoped container so
                    it covers only the board, not the orientation indicator. */

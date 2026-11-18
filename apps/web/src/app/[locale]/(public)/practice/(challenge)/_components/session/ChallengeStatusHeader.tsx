@@ -6,6 +6,8 @@ import { LuPause, LuPlay } from 'react-icons/lu';
 
 import { QuizTimer } from '@/app/[locale]/(public)/practice/_components/QuizTimer';
 
+import { useIsInChallengeAttempt } from '../ChallengeAttemptGate';
+
 type Props = {
   /**
    * Lives remaining / total. Both omitted → the lives slot renders empty but
@@ -15,7 +17,10 @@ type Props = {
   remainingLives?: number;
   maxLives?: number;
   isPaused: boolean;
-  /** Omitted → no pause button (a session that cannot be paused). */
+  /**
+   * Omitted → no pause button (a session that cannot be paused). Ignored
+   * inside a `ChallengeAttemptGate`, where a run is never paused.
+   */
   onTogglePause?: () => void;
   /**
    * Whether the pause button is inert. Each module computes this from its own
@@ -66,6 +71,13 @@ export function ChallengeStatusHeader({
 }: Props) {
   const tPractice = useTranslations('practice');
   const elapsed = timeElapsed ?? timeLimit - timeRemaining;
+  // A challenge run has no pause: time spent paused is not counted as
+  // thinking time, so a pause would let the player stop the clock and think
+  // with the question still on screen. The quit prompt therefore leaves the
+  // clock running too. Read from the gate's context rather than a prop so the
+  // views shared with training need no change.
+  const inChallengeAttempt = useIsInChallengeAttempt();
+  const showPauseButton = onTogglePause !== undefined && !inChallengeAttempt;
 
   return (
     <div className={className}>
@@ -85,7 +97,7 @@ export function ChallengeStatusHeader({
       </div>
       {/* Timer and pause — right side */}
       <div className="flex items-center gap-2">
-        {onTogglePause && (
+        {showPauseButton && (
           <button
             onClick={onTogglePause}
             disabled={pauseDisabled}

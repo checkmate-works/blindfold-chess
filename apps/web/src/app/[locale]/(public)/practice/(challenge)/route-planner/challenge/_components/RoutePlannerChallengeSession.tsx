@@ -2,17 +2,26 @@
 
 import { useCallback, useMemo, useState } from 'react';
 
-import type { RoutePlannerProblemResult } from '@blindfold-chess/features/route-planner';
+import type { RemoteChallengePort } from '@blindfold-chess/features/challenge-attempt';
+import {
+  ROUTE_PLANNER_CHALLENGE_PIECES,
+  type RoutePlannerChallengePiece,
+  type RoutePlannerProblem,
+  type RoutePlannerProblemResult,
+} from '@blindfold-chess/features/route-planner';
 import { useRoutePlannerSession } from '@blindfold-chess/features/route-planner/client';
 
 import { MISTAKE_LIMIT } from '@/lib/challenge/constants';
 
+import {
+  AwaitingServerVeil,
+  ChallengeAttemptGate,
+} from '@/app/[locale]/(public)/practice/(challenge)/_components/ChallengeAttemptGate';
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
 import { ChallengeQuitControl } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengeQuitControl';
 import { ChallengeSessionVeil } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengeSessionVeil';
 import { useChallengeResultSave } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-challenge-result-save';
 import { useQuitConfirm } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-quit-confirm';
-import { saveRoutePlannerResult } from '@/app/[locale]/(public)/practice/(challenge)/route-planner/_actions/save-result';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -26,19 +35,56 @@ import { SessionHeader } from './_parts/SessionHeader';
 type Props = {
   locale: Locale;
   initialTimeLimit: number;
-  allowedPieces: PieceType[];
+  selectedPiece: RoutePlannerChallengePiece;
 };
 
 export default function RoutePlannerChallengeSession({
   locale,
   initialTimeLimit,
-  allowedPieces,
+  selectedPiece,
 }: Props) {
+  const settings = useMemo(() => ({ selectedPiece }), [selectedPiece]);
+
+  return (
+    <ChallengeAttemptGate<RoutePlannerProblem>
+      menuType="route_planner"
+      settings={settings}
+      fallback={<RoutePlannerPlaySkeleton showHeader />}
+    >
+      {(attempt) => (
+        <RoutePlannerChallengeRun
+          locale={locale}
+          initialTimeLimit={initialTimeLimit}
+          selectedPiece={selectedPiece}
+          attemptId={attempt.attemptId}
+          remote={attempt.remote}
+        />
+      )}
+    </ChallengeAttemptGate>
+  );
+}
+
+type RunProps = {
+  locale: Locale;
+  initialTimeLimit: number;
+  selectedPiece: RoutePlannerChallengePiece;
+  attemptId: string | null;
+  remote: RemoteChallengePort<RoutePlannerProblem> | undefined;
+};
+
+function RoutePlannerChallengeRun({
+  locale,
+  initialTimeLimit,
+  selectedPiece,
+  attemptId,
+  remote,
+}: RunProps) {
   const [problemResults, setProblemResults] = useState<RoutePlannerProblemResult[]>([]);
 
-  const piecesForGeneration = useMemo(
-    () => (allowedPieces.length > 0 ? allowedPieces : (['n', 'b'] as PieceType[])),
-    [allowedPieces]
+  // The same piece the server generates the attempt's problems for.
+  const allowedPieces = useMemo<PieceType[]>(
+    () => [ROUTE_PLANNER_CHALLENGE_PIECES[selectedPiece]],
+    [selectedPiece]
   );
 
   const {
@@ -52,18 +98,22 @@ export default function RoutePlannerChallengeSession({
     finishReason,
     countdown,
     isPaused,
+    remoteFailed,
+    awaitingServer,
     handleAnswer: hookHandleAnswer,
     togglePause,
     finishSession,
   } = useRoutePlannerSession({
-    selectedPieces: piecesForGeneration,
+    selectedPieces: allowedPieces,
     timeLimit: initialTimeLimit,
     mistakeAllowance: MISTAKE_LIMIT,
+    remote,
+    disablePause: true,
   });
 
   useScrollToElement('route-planner-challenge-session');
 
-  const isDisabled = showFeedback || isPaused || countdown !== null;
+  const isDisabled = showFeedback || isPaused || countdown !== null || awaitingServer;
 
   const recordProblemResult = useCallback((result: RoutePlannerProblemResult) => {
     setProblemResults((prev) => [...prev, result]);
@@ -127,29 +177,12 @@ export default function RoutePlannerChallengeSession({
     return `/${locale}/practice/route-planner/result?${params.toString()}`;
   }, [finishReason, currentProblem, problemResults, allowedPieces, total, locale, timeElapsed]);
 
-  const pieceName = useMemo(() => {
-    if (allowedPieces.length === 1) {
-      return allowedPieces[0] === 'n' ? 'knight' : 'bishop';
-    }
-    return 'knight';
-  }, [allowedPieces]);
-
-  const saveResult = useCallback(
-    () =>
-      saveRoutePlannerResult({
-        correctAnswers: correctCount,
-        incorrectAnswers: incorrectCount,
-        timeTaken: timeElapsed,
-        piece: pieceName,
-      }),
-    [correctCount, incorrectCount, timeElapsed, pieceName]
-  );
-
   useChallengeResultSave({
     isFinished,
     totalAnswers: total,
     resultUrl,
-    saveResult,
+    attemptId,
+    remoteFailed,
     moduleName: 'route_planner',
     skipSave: isAborted,
   });
@@ -181,18 +214,21 @@ export default function RoutePlannerChallengeSession({
           showFeedback={showFeedback}
           countdown={countdown}
           onTogglePause={togglePause}
+          awaitingServer={awaitingServer}
         />
 
-        <ProblemBody
-          key={problemKey}
-          currentProblem={currentProblem}
-          isDisabled={isDisabled}
-          showFeedback={showFeedback}
-          isPaused={isPaused}
-          countdown={countdown}
-          onAnswer={hookHandleAnswer}
-          onRecordResult={recordProblemResult}
-        />
+        <AwaitingServerVeil active={awaitingServer}>
+          <ProblemBody
+            key={problemKey}
+            currentProblem={currentProblem}
+            isDisabled={isDisabled}
+            showFeedback={showFeedback}
+            isPaused={isPaused}
+            countdown={countdown}
+            onAnswer={hookHandleAnswer}
+            onRecordResult={recordProblemResult}
+          />
+        </AwaitingServerVeil>
 
         <ScoreCounter correct={correctCount} incorrect={incorrectCount} className="mt-8" />
       </ChallengeSessionVeil>

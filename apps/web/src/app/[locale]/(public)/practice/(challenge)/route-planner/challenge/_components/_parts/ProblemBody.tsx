@@ -20,7 +20,13 @@ type Props = {
   showFeedback: boolean;
   isPaused: boolean;
   countdown: number | null;
-  onAnswer: (success: boolean) => void;
+  /**
+   * `userPath` is the path as submitted (goal square appended). A server-run
+   * challenge grades that path, not `success`, so it must always be passed:
+   * without it the session would send an empty path and the answer would be
+   * marked wrong on the server.
+   */
+  onAnswer: (success: boolean, userPath: readonly Square[]) => void;
   onRecordResult: (result: RoutePlannerProblemResult) => void;
 };
 
@@ -88,7 +94,7 @@ export function ProblemBody({
   }, [staged, moves]);
 
   const handleSubmitAnswer = useCallback(() => {
-    if (showFeedback || isPaused || countdown !== null) return;
+    if (isDisabled || showFeedback || isPaused || countdown !== null) return;
 
     const finalMoves = [...moves];
     if (finalMoves.length > 0 && finalMoves[finalMoves.length - 1] !== currentProblem.end) {
@@ -120,8 +126,17 @@ export function ProblemBody({
       shortestPath,
     });
 
-    onAnswer(success);
-  }, [currentProblem, moves, showFeedback, isPaused, countdown, onAnswer, onRecordResult]);
+    onAnswer(success, finalMoves);
+  }, [
+    currentProblem,
+    moves,
+    isDisabled,
+    showFeedback,
+    isPaused,
+    countdown,
+    onAnswer,
+    onRecordResult,
+  ]);
 
   const containerRef = useRef<HTMLDivElement>(null);
 

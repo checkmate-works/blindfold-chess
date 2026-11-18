@@ -1081,6 +1081,10 @@
     "trainingModeActive": "Praticando em modo treinamento",
     "readyForChallenge": "Você está pronto?",
     "goToChallenge": "Aceitar o Desafio",
+    "challengeAttempt": {
+      "startFailed": "Não foi possível iniciar o desafio. Verifique sua conexão e tente novamente.",
+      "retry": "Tentar novamente"
+    },
     "quitConfirmModal": {
       "title": "Abandonar a Prática?",
       "message": "Seu progresso será perdido. Tem certeza de que deseja sair?",

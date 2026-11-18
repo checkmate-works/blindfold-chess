@@ -2,20 +2,23 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
+import type { RemoteChallengePort } from '@blindfold-chess/features/challenge-attempt';
+import { coordinateQuizChallengeDefinition } from '@blindfold-chess/features/coordinate-quiz';
+import type { CoordinateQuizChallengeSettings } from '@blindfold-chess/features/coordinate-quiz';
 import { useCoordinateQuizSession } from '@blindfold-chess/features/coordinate-quiz/client';
 import type { Square } from '@blindfold-chess/types';
 
 import { CHALLENGE_TIME_LIMIT, MISTAKE_LIMIT } from '@/lib/challenge/constants';
 
+import { ChallengeAttemptGate } from '@/app/[locale]/(public)/practice/(challenge)/_components/ChallengeAttemptGate';
 import { useChallengeResultSave } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-challenge-result-save';
 import { useQuitConfirm } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-quit-confirm';
-import { saveCoordinateQuizResult } from '@/app/[locale]/(public)/practice/(challenge)/coordinate-quiz/_actions/save-result';
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { CoordinateQuizPlaySkeleton } from '../../_components/CoordinateQuizPlaySkeleton';
-import type { BoardOrientation, FeedbackSpeed } from '../../_lib/types';
+import type { CoordinateQuestion } from '../../_lib/types';
 import { CoordinateQuizChallengePlaying } from './CoordinateQuizChallengePlaying';
 
 type Props = {
@@ -24,13 +27,55 @@ type Props = {
   initialFeedbackSpeed: string;
 };
 
+/** What the setup screen links with when the query carries no valid choice. */
+const DEFAULT_SETTINGS: CoordinateQuizChallengeSettings = {
+  boardOrientation: 'white',
+  feedbackSpeed: 'normal',
+};
+
 export default function CoordinateQuizChallenge({
   locale,
   initialBoardOrientation,
   initialFeedbackSpeed,
 }: Props) {
-  const boardOrientation = initialBoardOrientation as BoardOrientation;
-  const feedbackSpeed = initialFeedbackSpeed as FeedbackSpeed;
+  // The server starts the attempt only with settings its `parseSettings`
+  // accepts, and the device plays with the same values so both run one game.
+  const settings = useMemo(
+    () =>
+      coordinateQuizChallengeDefinition.parseSettings({
+        boardOrientation: initialBoardOrientation,
+        feedbackSpeed: initialFeedbackSpeed,
+      }) ?? DEFAULT_SETTINGS,
+    [initialBoardOrientation, initialFeedbackSpeed]
+  );
+
+  return (
+    <ChallengeAttemptGate<CoordinateQuestion>
+      menuType="coordinate_quiz"
+      settings={settings}
+      fallback={<CoordinateQuizPlaySkeleton showHeader />}
+    >
+      {(attempt) => (
+        <CoordinateQuizChallengeSession
+          locale={locale}
+          settings={settings}
+          attemptId={attempt.attemptId}
+          remote={attempt.remote}
+        />
+      )}
+    </ChallengeAttemptGate>
+  );
+}
+
+type SessionProps = {
+  locale: Locale;
+  settings: CoordinateQuizChallengeSettings;
+  attemptId: string | null;
+  remote: RemoteChallengePort<CoordinateQuestion> | undefined;
+};
+
+function CoordinateQuizChallengeSession({ locale, settings, attemptId, remote }: SessionProps) {
+  const { boardOrientation, feedbackSpeed } = settings;
 
   const [lastClickedSquare, setLastClickedSquare] = useState<Square | null>(null);
 
@@ -45,6 +90,8 @@ export default function CoordinateQuizChallenge({
     isFinished,
     countdown,
     isPaused,
+    remoteFailed,
+    awaitingServer,
     handleAnswer,
     togglePause,
   } = useCoordinateQuizSession({
@@ -52,6 +99,8 @@ export default function CoordinateQuizChallenge({
     orientation: boardOrientation,
     feedbackSpeed,
     mistakeAllowance: MISTAKE_LIMIT,
+    remote,
+    disablePause: true,
   });
 
   useScrollToElement('quiz-session', !!currentQuestion);
@@ -89,22 +138,12 @@ export default function CoordinateQuizChallenge({
     return `/${locale}/practice/coordinate-quiz/result?${params.toString()}`;
   }, [correctCount, incorrectCount, timeElapsed, boardOrientation, feedbackSpeed, locale]);
 
-  const saveResult = useCallback(
-    () =>
-      saveCoordinateQuizResult({
-        correctAnswers: correctCount,
-        incorrectAnswers: incorrectCount,
-        timeTaken: timeElapsed,
-        boardOrientation,
-      }),
-    [correctCount, incorrectCount, timeElapsed, boardOrientation]
-  );
-
   useChallengeResultSave({
     isFinished,
     totalAnswers: correctCount + incorrectCount,
     resultUrl,
-    saveResult,
+    attemptId,
+    remoteFailed,
     moduleName: 'coordinate_quiz',
   });
 
@@ -120,6 +159,7 @@ export default function CoordinateQuizChallenge({
     <div id="coordinate-quiz-challenge" className="min-h-screen">
       <CoordinateQuizChallengePlaying
         currentQuestion={currentQuestion}
+        awaitingServer={awaitingServer}
         timeRemaining={timeRemaining}
         timeLimit={CHALLENGE_TIME_LIMIT}
         timeElapsed={timeElapsed}

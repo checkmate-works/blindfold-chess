@@ -13,12 +13,7 @@ const { generateMetadata, generateStaticParams, Page } = createPracticeChallenge
     { labelKey: 'modeTimed', href: '/practice/diagonal-quiz/challenge' },
     { labelKey: 'diagonalQuiz.session' },
   ],
-  renderContent: ({ locale, searchParams }) => {
-    const timeLimitValue = searchParams.timeLimit
-      ? parseInt(searchParams.timeLimit as string, 10)
-      : 60;
-    return <DiagonalQuizSession locale={locale} initialTimeLimit={timeLimitValue} />;
-  },
+  renderContent: ({ locale }) => <DiagonalQuizSession locale={locale} />,
 });
 
 export { generateMetadata, generateStaticParams };

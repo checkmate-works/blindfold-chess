@@ -1081,6 +1081,10 @@
     "trainingModeActive": "トレーニングモードで練習中",
     "readyForChallenge": "準備はできましたか？",
     "goToChallenge": "チャレンジに挑戦",
+    "challengeAttempt": {
+      "startFailed": "チャレンジを開始できませんでした。通信状態を確認して、もう一度お試しください。",
+      "retry": "もう一度試す"
+    },
     "quitConfirmModal": {
       "title": "練習を終了しますか？",
       "message": "進捗は失われます。本当に終了しますか？",
