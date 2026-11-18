@@ -1,10 +1,21 @@
 // Auto-split from schema/tables.ts on 2026-05-27. Per-domain
 // schema slice — challenge rankings.
 //
-// Score-based ranking surfaces: per-attempt `challenge_results` and the
-// materialised per-module `challenge_best_scores`. (`chess_openings` and
+// Score-based ranking surfaces: per-attempt `challenge_results`, the
+// materialised per-module `challenge_best_scores`, and the server-run
+// `challenge_attempts` that a recorded result comes from. (`chess_openings` and
 // `feed_items` moved to `./openings` and `./feed` on 2026-07-04.)
-import { index, integer, pgTable, primaryKey, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
+import type { ChallengeAttemptState } from '@blindfold-chess/features/challenge-attempt';
+import {
+  index,
+  integer,
+  jsonb,
+  pgTable,
+  primaryKey,
+  timestamp,
+  uuid,
+  varchar,
+} from 'drizzle-orm/pg-core';
 
 import { createdAtOnly, updatedAtOnly } from './columns';
 
@@ -142,3 +153,81 @@ export const challengeBestScores = pgTable(
 
 export type ChallengeBestScore = typeof challengeBestScores.$inferSelect;
 export type NewChallengeBestScore = typeof challengeBestScores.$inferInsert;
+
+/**
+ * Challenge Attempts — one server-run challenge, from start to finish.
+ *
+ * @description
+ * A signed-in player's challenge is played against a row here. Starting a
+ * challenge inserts the row with every question generated up front; each
+ * answer is graded on the server against the stored question and updates
+ * `state`; finishing reads the row and, if the run passes the checks, inserts
+ * the `challenge_results` row it links to through `challenge_result_id`.
+ *
+ * Only the server's direct database connection reads or writes this table.
+ * RLS is on with no policy and `anon` / `authenticated` have no grants, so
+ * the questions not yet shown to the player never reach a client.
+ *
+ * @design The server runs the attempt; the client only answers
+ *
+ * The questions are generated and stored when the attempt starts, every
+ * answer is graded as it arrives against server timestamps, and finishing
+ * takes nothing but the attempt id. Score, mistakes and time are therefore
+ * never taken from the client's word. The rejected alternative — the client
+ * sending its whole answer log with a seed at the end — leaves the timings as
+ * the client's claim (a log rebuilt after the fact cannot be told apart from a
+ * manipulated clock), and handing out the seed lets the client read every
+ * question in advance.
+ *
+ * @design One consumption, decided under a row lock
+ *
+ * Answering and finishing both read the row with `SELECT … FOR UPDATE` and
+ * decide inside that transaction. Concurrent or resent requests are therefore
+ * serialised: a resend of the previous answer gets the same response again,
+ * a different answer for an already-answered question is rejected (no swapping
+ * an answer after seeing the result), and once `consumed_at` is set every
+ * further finish request gets the outcome stored on the row (`outcome`,
+ * `challenge_result_id`) instead of being decided — or recorded — a second
+ * time. A response lost in transit can always be retried safely.
+ *
+ * @design `rules_version` — which rules a row was played under
+ *
+ * Question generation, the clock rules and the tolerances may change. Each
+ * row keeps the version it was played under (`CHALLENGE_RULES_VERSION` at
+ * start), so a stored state, thinking time or refusal can be read under the
+ * rules that produced it rather than reinterpreted under later ones.
+ *
+ * @design Retention
+ *
+ * A daily job (`drizzle/supabase/scheduled_jobs.sql`) deletes rows never
+ * finished a day after they started, and 90 days after a row was consumed it
+ * empties `questions` and the per-answer log in `state` while keeping the row
+ * (and the link to its result).
+ *
+ * `user_id` references `auth.users` with ON DELETE CASCADE — FK defined in
+ * custom SQL.
+ */
+export const challengeAttempts = pgTable(
+  'challenge_attempts',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id').notNull(), // references auth.users — FK defined in custom SQL
+    menuType: varchar('menu_type', { length: 30 }).notNull(),
+    leaderboardKey: varchar('leaderboard_key', { length: 20 }).notNull(),
+    rulesVersion: integer('rules_version').notNull(),
+    /** The settings as returned by the module's `parseSettings`. */
+    settings: jsonb('settings').notNull(),
+    /** Every question of the attempt, generated at start and never changed. */
+    questions: jsonb('questions').$type<unknown[]>().notNull(),
+    state: jsonb('state').$type<ChallengeAttemptState>().notNull(),
+    startedAt: timestamp('started_at', { withTimezone: true }).notNull(),
+    consumedAt: timestamp('consumed_at', { withTimezone: true }),
+    /** `recorded` | `unrecorded` | `implausible_speed`; null until consumed. */
+    outcome: varchar('outcome', { length: 30 }),
+    challengeResultId: uuid('challenge_result_id'),
+  },
+  (table) => [index('idx_ca_user_started').on(table.userId, table.startedAt)]
+);
+
+export type ChallengeAttempt = typeof challengeAttempts.$inferSelect;
+export type NewChallengeAttempt = typeof challengeAttempts.$inferInsert;
