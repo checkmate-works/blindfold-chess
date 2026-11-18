@@ -53,6 +53,30 @@ describe("useRoutePlannerSession remote challenge", () => {
     return { port, submitAnswer };
   }
 
+  it("omits an expired optimistic path from the completion result", async () => {
+    const onComplete = vi.fn();
+    const { result } = renderHook(() =>
+      useRoutePlannerSession({
+        selectedPieces: ["n"],
+        timeLimit: 60,
+        onComplete,
+        remote: {
+          first: { sequence: 0, question: first },
+          submitAnswer: async () => ({ status: "expired" }),
+        },
+      }),
+    );
+    advancePastCountdown();
+    await act(async () => result.current.handleAnswer(true, ["c3", "d5"]));
+    expect(onComplete).toHaveBeenCalledWith(
+      expect.objectContaining({
+        problems: [],
+        totalProblems: 0,
+        correctCount: 0,
+      }),
+    );
+  });
+
   it("shows the server's first problem and sends the entered path, then a skip, as raw answers", async () => {
     const { port, submitAnswer } = createPort();
     const { result } = renderHook(() =>

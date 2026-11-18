@@ -96,7 +96,8 @@ export function useRoutePlannerSession({
     (): RoutePlannerResult => {
       const total = correctCount + incorrectCount;
       return {
-        problems: problemResultsRef.current,
+        // The core rolls back a remote answer rejected at the deadline.
+        problems: problemResultsRef.current.slice(0, total),
         totalProblems: total,
         correctCount,
         accuracy: calculateAnswerAccuracy(correctCount, total),

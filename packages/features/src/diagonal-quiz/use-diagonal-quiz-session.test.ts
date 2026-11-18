@@ -98,6 +98,30 @@ describe("useDiagonalQuizSession remote challenge", () => {
     vi.useRealTimers();
   });
 
+  it("replaces an expired optimistic answer with a single unanswered detail", async () => {
+    const { result } = renderHook(() =>
+      useDiagonalQuizSession({
+        timeLimit: 60,
+        remote: {
+          first: { sequence: 0, question: "d4" },
+          submitAnswer: async () => ({ status: "expired" }),
+        },
+      }),
+    );
+    advancePastCountdown();
+    const correct = getDiagonals("d4");
+    await act(async () =>
+      result.current.handleAnswer(correct.diagonal, correct.antiDiagonal),
+    );
+    expect(result.current.correctCount).toBe(0);
+    expect(result.current.questionResults).toHaveLength(1);
+    expect(result.current.questionResults[0]).toMatchObject({
+      square: "d4",
+      timedOut: true,
+      isCorrect: false,
+    });
+  });
+
   it("shows the server's first square, sends both typed diagonals, and moves to the server's next square", async () => {
     const submitAnswer = vi.fn(
       async (): Promise<ChallengeAnswerResponse<Square>> => ({

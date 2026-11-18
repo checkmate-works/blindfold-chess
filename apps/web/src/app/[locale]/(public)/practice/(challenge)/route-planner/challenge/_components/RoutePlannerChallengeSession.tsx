@@ -139,6 +139,8 @@ function RoutePlannerChallengeRun({
   const total = correctCount + incorrectCount;
 
   const resultUrl = useMemo(() => {
+    // Drop an optimistic detail if the server did not count its answer.
+    const countedResults = problemResults.slice(0, total);
     // The time limit is the one ending that leaves a problem on screen
     // unanswered (the timer is paused during the feedback flash). Keep it in
     // the list so the result shows its answer; it carries no user path and
@@ -146,7 +148,7 @@ function RoutePlannerChallengeRun({
     const results: RoutePlannerProblemResult[] =
       finishReason === 'timeUp' && currentProblem
         ? [
-            ...problemResults,
+            ...countedResults,
             {
               piece: currentProblem.piece,
               start: currentProblem.start,
@@ -159,7 +161,7 @@ function RoutePlannerChallengeRun({
               timedOut: true,
             },
           ]
-        : problemResults;
+        : countedResults;
     const dataStr = encodeURIComponent(JSON.stringify(results));
     const piecesStr = allowedPieces.join('');
 
