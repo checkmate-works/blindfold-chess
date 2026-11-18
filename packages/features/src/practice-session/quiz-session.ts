@@ -1,3 +1,4 @@
+import type { RemoteChallengePort } from "../challenge-attempt/types";
 import type {
   TimedSessionFinishReason,
   UseTimedSessionReturn,
@@ -6,12 +7,18 @@ import type {
 /**
  * Config fields shared by every timed quiz session hook. Individual hooks
  * intersect this with their own extras (selected pieces, orientation, etc.).
+ * `TQuestion` types the optional `remote` port; hooks that never run remote
+ * can leave it at its default.
  */
-export type TimedQuizSessionConfig<TResult> = {
+export type TimedQuizSessionConfig<TResult, TQuestion = unknown> = {
   timeLimit: number;
   mistakeAllowance?: number;
   onAnswerEffect?: (correct: boolean) => void;
   onComplete?: (result: TResult) => void;
+  /** Passed through to `useTimedSession`; see its `remote` config. */
+  remote?: RemoteChallengePort<TQuestion>;
+  /** Passed through to `useTimedSession`; see its `disablePause` config. */
+  disablePause?: boolean;
 };
 
 /**
@@ -35,26 +42,32 @@ export type TimedSessionFacade = {
    */
   finishReason: TimedSessionFinishReason | null;
   isPaused: boolean;
+  /** See `UseTimedSessionReturn.remoteFailed`. */
+  remoteFailed: boolean;
+  /** See `UseTimedSessionReturn.awaitingServer`. */
+  awaitingServer: boolean;
   togglePause: () => void;
   finishSession: () => void;
 };
 
 /**
  * True while answer input must be ignored: during the pre-session countdown,
- * while paused, during the feedback flash, or once the session has finished.
- * Accepts any facade-shaped object (a `useTimedSession` return value works).
+ * while paused, during the feedback flash, while a remote session waits for
+ * the server's next question, or once the session has finished. Accepts any
+ * facade-shaped object (a `useTimedSession` return value works).
  */
 export function isInputBlocked(
   state: Pick<
     TimedSessionFacade,
-    "isFinished" | "countdown" | "isPaused" | "showFeedback"
+    "isFinished" | "countdown" | "isPaused" | "showFeedback" | "awaitingServer"
   >,
 ): boolean {
   return (
     state.isFinished ||
     state.countdown !== null ||
     state.isPaused ||
-    state.showFeedback
+    state.showFeedback ||
+    state.awaitingServer
   );
 }
 
@@ -73,6 +86,8 @@ export function toTimedSessionFacade(
     isFinished: session.isFinished,
     finishReason: session.finishReason,
     isPaused: session.isPaused,
+    remoteFailed: session.remoteFailed,
+    awaitingServer: session.awaitingServer,
     togglePause: session.togglePause,
     finishSession: session.finishSession,
   };
