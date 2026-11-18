@@ -197,6 +197,15 @@ describe("decideAnswer", () => {
     expect(decision.kind).toBe("accepted");
     if (decision.kind !== "accepted") return;
     expect(decision.state.resumedAt).toBe(respondedAt);
+    expect(decision.response).toMatchObject({ feedbackExtensionMs: 250 });
+    const replay = decideAnswer(
+      { ...ctx, state: decision.state },
+      0,
+      0,
+      respondedAt + 1000,
+      respondedAt + 1010,
+    );
+    expect(replay).toEqual({ kind: "replay", response: decision.response });
   });
 
   it("charges no thinking time for an answer that arrives slightly before the clock resumes", () => {

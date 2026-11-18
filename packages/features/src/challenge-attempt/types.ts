@@ -57,6 +57,8 @@ export type ChallengeAnswerResponse<TQuestion> =
       correct: boolean;
       /** Accumulated thinking time at this answer; the client clock syncs to it. */
       elapsedMs: number;
+      /** Server processing beyond the feedback flash, excluded from thinking time. Omitted when zero. */
+      feedbackExtensionMs?: number;
       /** Null when the attempt is over (mistake limit or no questions left). */
       next: { sequence: number; question: TQuestion } | null;
     }

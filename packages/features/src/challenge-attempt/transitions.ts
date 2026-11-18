@@ -246,10 +246,17 @@ function acceptedResponse<TSettings, TQuestion, TAnswer>(
   const over =
     state.incorrectAnswers >= ctx.mistakeLimit ||
     state.sequence >= ctx.questions.length;
+  const feedbackExtensionMs = Math.max(
+    0,
+    state.resumedAt -
+      record.receivedAt -
+      ctx.definition.feedbackMs(ctx.settings, record.correct),
+  );
   return {
     status: "accepted",
     correct: record.correct,
     elapsedMs: record.elapsedMs,
+    ...(feedbackExtensionMs > 0 ? { feedbackExtensionMs } : {}),
     next: over
       ? null
       : { sequence: state.sequence, question: ctx.questions[state.sequence] },

@@ -35,11 +35,12 @@ export type UseTimedSessionConfig<TQuestion> = {
    *   true and input is ignored.
    * - The clock follows the server's rule for thinking time: the server stops
    *   the clock when it receives an answer and restarts it `feedbackMs` later,
-   *   whether or not the client has the next question yet. So the on-screen
+   *   or after server processing if it takes longer. So the on-screen
    *   clock stops only for `feedbackDuration` after an answer and then runs
    *   again even while the response is outstanding. When an `accepted`
    *   response arrives, the clock is re-synced to its `elapsedMs` plus however
-   *   long the wait has already run past the feedback flash. Counting time any
+   *   long the wait has already run past the feedback flash, excluding the
+   *   server's reported processing extension. Counting time any
    *   other way would let an answer that looks in time on screen arrive after
    *   the server's limit.
    * - The server's grading wins: if its verdict differs from the local one
@@ -482,7 +483,10 @@ export function useTimedSession<TQuestion>(
       }
       const pastFeedbackMs = Math.max(
         0,
-        Date.now() - pending.answeredAt - pending.feedbackMs,
+        Date.now() -
+          pending.answeredAt -
+          pending.feedbackMs -
+          (response.feedbackExtensionMs ?? 0),
       );
       setElapsedMs(response.elapsedMs + pastFeedbackMs);
       // Recorded on the shared pending entry (isCurrent() guarantees it is

@@ -757,6 +757,34 @@ describe("useTimedSession", () => {
       expect(result.current.timeElapsed).toBe(1);
     });
 
+    it("restores playable time when server processing outlasted the flash and the local clock", async () => {
+      const { port, calls } = createPort();
+      const { result } = renderRemote(port);
+      advancePastCountdown();
+      act(() => vi.advanceTimersByTime(59_000));
+      act(() => result.current.handleAnswer(true, "a"));
+      act(() => vi.advanceTimersByTime(500));
+      act(() => vi.advanceTimersByTime(3000));
+
+      await settle(() =>
+        calls[0]!.resolve({
+          status: "accepted",
+          correct: true,
+          elapsedMs: 59_000,
+          feedbackExtensionMs: 3000,
+          next: { sequence: 1, question: "q1" },
+        }),
+      );
+
+      expect(result.current.timeElapsed).toBe(59);
+      expect(result.current.isFinished).toBe(false);
+      expect(result.current.isPlaying).toBe(true);
+      act(() => vi.advanceTimersByTime(900));
+      expect(result.current.isFinished).toBe(false);
+      act(() => vi.advanceTimersByTime(100));
+      expect(result.current.finishReason).toBe("timeUp");
+    });
+
     it("ends with mistakeLimit after the flash when the server sends no next question", async () => {
       const { port, calls } = createPort();
       const { result } = renderRemote(port);
