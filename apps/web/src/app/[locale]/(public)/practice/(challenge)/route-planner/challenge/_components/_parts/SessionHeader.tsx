@@ -6,6 +6,7 @@ import { FaArrowRight } from 'react-icons/fa';
 
 import { MISTAKE_LIMIT } from '@/lib/challenge/constants';
 
+import { AwaitingServerVeil } from '@/app/[locale]/(public)/practice/(challenge)/_components/ChallengeAttemptGate';
 import { ChallengeStatusHeader } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengeStatusHeader';
 
 import type { PieceType } from '../../../_lib/pieces';
@@ -20,6 +21,8 @@ type Props = {
   showFeedback: boolean;
   countdown: number | null;
   onTogglePause: () => void;
+  /** The next problem has not arrived from the server yet; the answered one is veiled. */
+  awaitingServer?: boolean;
 };
 
 /**
@@ -38,6 +41,7 @@ export function SessionHeader({
   showFeedback,
   countdown,
   onTogglePause,
+  awaitingServer = false,
 }: Props) {
   const t = useTranslations('practice.routePlanner');
 
@@ -56,7 +60,10 @@ export function SessionHeader({
       />
 
       {/* Problem Header */}
-      <div className="flex justify-between items-center pb-4 mb-4">
+      <AwaitingServerVeil
+        active={awaitingServer}
+        className="flex justify-between items-center pb-4 mb-4"
+      >
         <div className="flex items-center gap-6">
           <div className="bg-primary/10 p-2 rounded-lg text-primary w-14 h-14 flex items-center justify-center border border-primary/20">
             <ChessPiece type={currentProblem.piece} color="w" size={32} />
@@ -75,7 +82,7 @@ export function SessionHeader({
             </div>
           </div>
         </div>
-      </div>
+      </AwaitingServerVeil>
     </>
   );
 }
