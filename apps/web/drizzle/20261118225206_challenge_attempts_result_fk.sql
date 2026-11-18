@@ -1,0 +1,1 @@
+ALTER TABLE "challenge_attempts" ADD CONSTRAINT "challenge_attempts_challenge_result_id_challenge_results_id_fk" FOREIGN KEY ("challenge_result_id") REFERENCES "public"."challenge_results"("id") ON DELETE set null ON UPDATE no action;

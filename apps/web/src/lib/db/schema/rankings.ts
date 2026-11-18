@@ -224,7 +224,15 @@ export const challengeAttempts = pgTable(
     consumedAt: timestamp('consumed_at', { withTimezone: true }),
     /** `recorded` | `unrecorded` | `implausible_speed`; null until consumed. */
     outcome: varchar('outcome', { length: 30 }),
-    challengeResultId: uuid('challenge_result_id'),
+    /**
+     * The result this attempt recorded. SET NULL when that result is deleted
+     * (a record removed by moderation, say), so a resent finish never hands
+     * out the id of a result that no longer exists: a `recorded` row with no
+     * result id answers `rejected` instead.
+     */
+    challengeResultId: uuid('challenge_result_id').references(() => challengeResults.id, {
+      onDelete: 'set null',
+    }),
   },
   (table) => [index('idx_ca_user_started').on(table.userId, table.startedAt)]
 );
