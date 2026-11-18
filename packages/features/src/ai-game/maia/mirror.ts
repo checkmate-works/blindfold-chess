@@ -27,27 +27,22 @@ export function mirrorSquare(square: string): string {
  * axis. Promotion piece letter is preserved verbatim.
  */
 export function mirrorUciMove(uciMove: string): string {
-  const isPromotion = uciMove.length > 4;
   const start = uciMove.substring(0, 2);
   const end = uciMove.substring(2, 4);
-  const promotion = isPromotion ? uciMove.substring(4) : "";
+  // Empty for a plain four-character move.
+  const promotion = uciMove.substring(4);
   return mirrorSquare(start) + mirrorSquare(end) + promotion;
 }
 
 /**
- * Swap piece colours within a single FEN rank — uppercase ↔ lowercase,
- * digits (empty-square runs) unchanged.
+ * Swap piece colours within a single FEN rank — uppercase ↔ lowercase.
+ * Digits (empty-square runs) have no case, so either conversion leaves them
+ * unchanged.
  */
 function swapColoursInRank(rank: string): string {
   let out = "";
   for (const ch of rank) {
-    if (/[A-Z]/.test(ch)) {
-      out += ch.toLowerCase();
-    } else if (/[a-z]/.test(ch)) {
-      out += ch.toUpperCase();
-    } else {
-      out += ch;
-    }
+    out += ch === ch.toUpperCase() ? ch.toLowerCase() : ch.toUpperCase();
   }
   return out;
 }
@@ -55,11 +50,10 @@ function swapColoursInRank(rank: string): string {
 /**
  * Swap castling-rights letters so that the resulting FEN is consistent
  * with the colour-swapped board. K↔k, Q↔q. Output is emitted in canonical
- * order (KQkq), and `-` round-trips to `-`.
+ * order (KQkq), and `-` round-trips to `-`: it holds none of the four
+ * letters, so nothing is emitted and the empty result falls back to `-`.
  */
 function swapCastlingRights(castling: string): string {
-  if (castling === "-") return "-";
-
   const rights = new Set(castling.split(""));
   const swapped = new Set<string>();
   if (rights.has("K")) swapped.add("k");
@@ -92,7 +86,6 @@ export function mirrorFen(fen: string): string {
 
   const mirroredPosition = position
     .split("/")
-    .slice()
     .reverse()
     .map(swapColoursInRank)
     .join("/");

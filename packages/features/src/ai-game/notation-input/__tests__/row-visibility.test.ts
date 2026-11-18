@@ -27,6 +27,11 @@ describe("computeHasSelections", () => {
     expect(computeHasSelections(state({ isCapture: true }))).toBe(true);
     expect(computeHasSelections(state({ castling: "O-O" }))).toBe(true);
     expect(computeHasSelections(state({ sourceRank: "1" }))).toBe(true);
+    expect(computeHasSelections(state({ selectedRanks: new Set(["4"]) }))).toBe(
+      true,
+    );
+    expect(computeHasSelections(state({ isCheck: true }))).toBe(true);
+    expect(computeHasSelections(state({ sourceFile: "b" }))).toBe(true);
   });
 });
 
@@ -55,6 +60,16 @@ describe("row visibility", () => {
     expect(computeShowCastlingRow(state({ selectedPiece: "N" }))).toBe(false);
     expect(
       computeShowCastlingRow(state({ selectedFiles: new Set(["e"]) })),
+    ).toBe(false);
+  });
+
+  it("hides the rank row and check toggle until there is a destination", () => {
+    const s = createInitialState();
+    expect(computeShowRankRow(s)).toBe(false);
+    expect(computeShowCheckToggle(s)).toBe(false);
+    // A file alone is not a destination yet.
+    expect(
+      computeShowCheckToggle(state({ selectedFiles: new Set(["e"]) })),
     ).toBe(false);
   });
 

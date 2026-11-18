@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 
+import { type RandomSource, getMovesForPiece } from "../common";
+
 import { pieceDisplayMap } from "./constants";
 import {
   generateBalancedMoveQuestions,
@@ -288,6 +290,88 @@ describe("move question generators", () => {
         expect(q.from).not.toBe(q.to);
       }
     }
+  });
+});
+
+/** An rng that returns `values` in order, then keeps returning the last. */
+function sequence(...values: number[]): RandomSource {
+  let i = 0;
+  return () => values[Math.min(i++, values.length - 1)];
+}
+
+/** A small deterministic rng (LCG) for tests that need many varied draws. */
+function seeded(seed: number): RandomSource {
+  let state = seed;
+  return () => {
+    state = (state * 1664525 + 1013904223) % 2 ** 32;
+    return state / 2 ** 32;
+  };
+}
+
+describe("generateBalancedMoveQuestions with a controlled rng", () => {
+  it("makes exactly half the questions legal, rounding down", () => {
+    for (const count of [7, 10]) {
+      const questions = generateBalancedMoveQuestions(
+        count,
+        undefined,
+        seeded(count),
+      );
+      const legal = questions.filter((q) => isLegalMove(q.from, q.to, q.piece));
+      expect(questions).toHaveLength(count);
+      expect(legal).toHaveLength(Math.floor(count / 2));
+    }
+  });
+
+  it("draws the piece from the whole allowed list", () => {
+    const pieces = new Set(
+      generateBalancedMoveQuestions(20, ["n", "r"], seeded(1)).map(
+        (q) => q.piece,
+      ),
+    );
+    expect(pieces).toEqual(new Set(["n", "r"]));
+  });
+
+  // With the rng stuck at 0 every illegal attempt is a1 → a1, so no illegal
+  // question can ever be made.
+  it("returns a short batch instead of spinning when questions cannot be made", () => {
+    const questions = generateBalancedMoveQuestions(4, ["r"], () => 0);
+    expect(questions).toHaveLength(2);
+    for (const q of questions) {
+      expect(isLegalMove(q.from, q.to, q.piece)).toBe(true);
+    }
+  });
+});
+
+describe("move question generators with a controlled rng", () => {
+  it("draws the origin square from the whole board", () => {
+    // Origin file, origin rank, then the pick among the king's moves.
+    expect(generateLegalMoveQuestion("k", sequence(0.99, 0.99, 0))?.from).toBe(
+      "h8",
+    );
+  });
+
+  it("draws a legal target from all of the piece's moves", () => {
+    const moves = getMovesForPiece("r", 0, 0);
+    expect(generateLegalMoveQuestion("r", sequence(0, 0, 0.99))).toEqual({
+      from: "a1",
+      to: moves[moves.length - 1],
+      piece: "r",
+    });
+  });
+
+  it("skips a target on the origin and a legal target when asked for an illegal move", () => {
+    // Attempt 1: a1 → a1. Attempt 2: a1 → a8, legal for a rook.
+    // Attempt 3: a1 → h8.
+    const rng = sequence(0, 0, 0, 0, 0, 0, 0, 0.99, 0, 0, 0.99, 0.99);
+    expect(generateIllegalMoveQuestion("r", rng)).toEqual({
+      from: "a1",
+      to: "h8",
+      piece: "r",
+    });
+  });
+
+  it("gives up with null when every attempt fails", () => {
+    expect(generateIllegalMoveQuestion("r", () => 0)).toBeNull();
   });
 });
 

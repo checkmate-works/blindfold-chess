@@ -41,17 +41,16 @@ const SINGLE_DIAGONAL_SQUARES: ReadonlySet<Square> = new Set(
  */
 function computeDiagonalParams(f: number, r: number) {
   const diag = f - r;
-  const diagStartF = diag >= 0 ? diag : 0;
-  const diagStartR = diag >= 0 ? 0 : -diag;
+  const diagStartF = Math.max(diag, 0);
+  const diagStartR = Math.max(-diag, 0);
   const diagLength = Math.min(
     BOARD_LAST_INDEX - diagStartF,
     BOARD_LAST_INDEX - diagStartR,
   );
 
   const antiDiag = f + r;
-  const antiStartF = antiDiag <= BOARD_LAST_INDEX ? antiDiag : BOARD_LAST_INDEX;
-  const antiStartR =
-    antiDiag <= BOARD_LAST_INDEX ? 0 : antiDiag - BOARD_LAST_INDEX;
+  const antiStartF = Math.min(antiDiag, BOARD_LAST_INDEX);
+  const antiStartR = Math.max(antiDiag - BOARD_LAST_INDEX, 0);
   const antiLength = Math.min(antiStartF, BOARD_LAST_INDEX - antiStartR);
 
   return {
@@ -96,10 +95,7 @@ export function getDiagonals(square: string): DiagonalPair {
 
   const diagStart = fileRankToSquare(diagStartF, diagStartR);
   const diagEnd = fileRankToSquare(diagEndF, diagEndR);
-  const diagonal =
-    diagStartF === diagEndF && diagStartR === diagEndR
-      ? diagStart
-      : `${diagStart}-${diagEnd}`;
+  const diagonal = diagLength === 0 ? diagStart : `${diagStart}-${diagEnd}`;
 
   const antiEndF = antiStartF - antiLength;
   const antiEndR = antiStartR + antiLength;
@@ -107,10 +103,7 @@ export function getDiagonals(square: string): DiagonalPair {
   // For anti-diagonal, left-to-right means lower file first
   const antiLeft = fileRankToSquare(antiEndF, antiEndR);
   const antiRight = fileRankToSquare(antiStartF, antiStartR);
-  const antiDiagonal =
-    antiEndF === antiStartF && antiEndR === antiStartR
-      ? antiLeft
-      : `${antiLeft}-${antiRight}`;
+  const antiDiagonal = antiLength === 0 ? antiLeft : `${antiLeft}-${antiRight}`;
 
   return { diagonal, antiDiagonal };
 }
@@ -120,12 +113,9 @@ export function getDiagonals(square: string): DiagonalPair {
  * Accepts formats like "b1-h7", "h7-b1", or single squares like "a1".
  */
 export function normalizeDiagonal(answer: string): string {
+  // A single square, like any other input that is not two hyphenated
+  // squares, comes back as it was apart from case and surrounding space.
   const trimmed = answer.trim().toLowerCase();
-
-  // Single square
-  if (isValidSquare(trimmed)) {
-    return trimmed;
-  }
 
   // Two squares separated by hyphen
   const match = trimmed.match(/^([a-h][1-8])-([a-h][1-8])$/);

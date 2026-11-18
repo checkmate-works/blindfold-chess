@@ -13,13 +13,13 @@ This project is a pnpm + Turborepo monorepo.
 
 ### Packages
 
-| Package                            | Path                     | Description                                                                                                                                                                         |
-| ---------------------------------- | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **@blindfold-chess/types**         | `packages/types`         | Shared TypeScript type definitions (chess pieces, board, etc.)                                                                                                                      |
-| **@blindfold-chess/features**      | `packages/features`      | Platform-independent game logic and algorithms (coordinate quiz, diagonal quiz, legal moves, route planner, AI game, etc.). See `packages/features/CLAUDE.md` for the barrel rules. |
-| **@blindfold-chess/ui**            | `packages/ui`            | Shared UI theme — color definitions for light/dark mode, CSS generation via `generateThemeCSS()`                                                                                    |
-| **@blindfold-chess/icons**         | `packages/icons`         | Cross-platform SVG icon components. See `packages/icons/CLAUDE.md` for architecture and how to add icons.                                                                           |
-| **@blindfold-chess/eslint-config** | `packages/eslint-config` | Shared ESLint configuration                                                                                                                                                         |
+| Package                            | Path                     | Description                                                                                                                                                                                              |
+| ---------------------------------- | ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **@blindfold-chess/types**         | `packages/types`         | Shared TypeScript type definitions (chess pieces, board, etc.)                                                                                                                                           |
+| **@blindfold-chess/features**      | `packages/features`      | Platform-independent game logic and algorithms (coordinate quiz, diagonal quiz, legal moves, route planner, AI game, etc.). See `packages/features/CLAUDE.md` for the barrel rules and mutation testing. |
+| **@blindfold-chess/ui**            | `packages/ui`            | Shared UI theme — color definitions for light/dark mode, CSS generation via `generateThemeCSS()`                                                                                                         |
+| **@blindfold-chess/icons**         | `packages/icons`         | Cross-platform SVG icon components. See `packages/icons/CLAUDE.md` for architecture and how to add icons.                                                                                                |
+| **@blindfold-chess/eslint-config** | `packages/eslint-config` | Shared ESLint configuration                                                                                                                                                                              |
 
 ### Key Design Principles
 
@@ -79,7 +79,15 @@ instead.
 - **Package manager**: pnpm (v10)
 - **Build orchestration**: Turborepo
 - **Node.js**: >=24.0.0 <25
-- **Scripts**: `pnpm build`, `pnpm dev`, `pnpm lint`, `pnpm typecheck`, `pnpm test`
+- **Scripts**: `pnpm build`, `pnpm dev`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm mutation`
+
+### Mutation testing
+
+`pnpm mutation` measures how well the tests of the pure logic in
+`packages/features` catch deliberately broken code (`@mizchi/mutator`). It is
+a local refactoring signal, not a gate: it is not a turbo task, not part of
+`pnpm test`, and surviving mutants never fail it. The rules, the reasons,
+and how to read the report are in `packages/features/CLAUDE.md`.
 
 ### TypeScript versions are not uniform across the workspace
 

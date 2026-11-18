@@ -12,7 +12,6 @@
  * If you add a formatter that needs chess.js, put it in `pgn.ts` — do NOT
  * import `chess.js` into this file.
  */
-import { computeMoveNumber } from "./move-numbering";
 
 /**
  * A single move pair in structured PGN representation.
@@ -64,34 +63,25 @@ export function formatMovesToPgn(
   if (userMoves.length === 0) return [];
 
   const formatted: FormattedPgnMove[] = [];
+  // Every entry after a black-first opener is a full move, so the number
+  // simply counts up from the start.
+  let moveNumber = startMoveNumber;
+  let i = 0;
 
   if (startsAsBlack) {
+    formatted.push({ moveNumber, blackMove: userMoves[0], blackMoveIndex: 0 });
+    moveNumber++;
+    i = 1;
+  }
+  for (; i < userMoves.length; i += 2) {
     formatted.push({
-      moveNumber: startMoveNumber,
-      blackMove: userMoves[0],
-      blackMoveIndex: 0,
+      moveNumber,
+      whiteMove: userMoves[i],
+      whiteMoveIndex: i,
+      blackMove: userMoves[i + 1],
+      blackMoveIndex: userMoves[i + 1] !== undefined ? i + 1 : undefined,
     });
-    for (let i = 1; i < userMoves.length; i += 2) {
-      const { moveNumber } = computeMoveNumber(i, true, startMoveNumber);
-      formatted.push({
-        moveNumber,
-        whiteMove: userMoves[i],
-        whiteMoveIndex: i,
-        blackMove: userMoves[i + 1],
-        blackMoveIndex: userMoves[i + 1] !== undefined ? i + 1 : undefined,
-      });
-    }
-  } else {
-    for (let i = 0; i < userMoves.length; i += 2) {
-      const { moveNumber } = computeMoveNumber(i, false, startMoveNumber);
-      formatted.push({
-        moveNumber,
-        whiteMove: userMoves[i],
-        whiteMoveIndex: i,
-        blackMove: userMoves[i + 1],
-        blackMoveIndex: userMoves[i + 1] !== undefined ? i + 1 : undefined,
-      });
-    }
+    moveNumber++;
   }
 
   return formatted;
@@ -131,17 +121,14 @@ export function formatPgnToText(
  * Uses pattern matching instead of parsing, so it works with any starting position.
  */
 export function getPgnSuggestion(pgn: string): string | null {
-  if (!pgn) return "1. ";
-
-  const trimmed = pgn.trimEnd();
-  if (!trimmed) return "1. ";
-
-  if (!trimmed.match(/\d+\./)) {
+  // Empty or blank input has no move number either, so it lands here too.
+  if (!pgn.match(/\d+\./)) {
     return "1. ";
   }
 
+  // Trailing whitespace needs no trimming: no group below can match it.
   const movePattern = /(\d+)\.\s*(\S+)(?:\s+(\S+))?/g;
-  const last = [...trimmed.matchAll(movePattern)].at(-1);
+  const last = [...pgn.matchAll(movePattern)].at(-1);
 
   if (last) {
     const lastMoveNumber = parseInt(last[1], 10);
@@ -161,12 +148,13 @@ export function getPgnSuggestion(pgn: string): string | null {
 export function parsePgnMoves(pgn: string): ParsedPgnMove[] {
   const moves: ParsedPgnMove[] = [];
 
-  const normalized = pgn.trim().replace(/\s+/g, " ");
-
+  // `\s` matches newlines and tabs as well as spaces, and the pattern finds
+  // the next move number wherever it starts, so the text needs no trimming or
+  // whitespace normalising first.
   const movePattern = /(\d+)\.\s*(\S+)?(?:\s+(\S+))?/g;
 
   let match;
-  while ((match = movePattern.exec(normalized)) !== null) {
+  while ((match = movePattern.exec(pgn)) !== null) {
     const moveNumber = parseInt(match[1], 10);
     const firstMove = match[2] || null;
     const secondMove = match[3] || null;

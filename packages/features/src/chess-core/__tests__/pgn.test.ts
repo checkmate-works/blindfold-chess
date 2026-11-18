@@ -313,12 +313,39 @@ describe("getPgnSuggestion", () => {
   it("returns next move number after multiple complete pairs", () => {
     expect(getPgnSuggestion("1. e4 e5 2. Nf3 Nc6")).toBe(" 3. ");
   });
+
+  it("reads the last pair, not the last complete one", () => {
+    expect(getPgnSuggestion("1. e4 e5 2. Nf3")).toBeNull();
+  });
+
+  it("tolerates a missing space after the number and runs of spaces", () => {
+    expect(getPgnSuggestion("1.e4 e5")).toBe(" 2. ");
+    expect(getPgnSuggestion("1. e4  e5  ")).toBe(" 2. ");
+  });
+
+  it("suggests nothing after a move numbered 0", () => {
+    expect(getPgnSuggestion("0. e4 e5")).toBeNull();
+  });
 });
 
 // ============================================================
 // parsePgnMoves
 // ============================================================
 describe("parsePgnMoves", () => {
+  it("reads moves across line breaks and runs of spaces", () => {
+    expect(parsePgnMoves("  1. e4  e5\n2.\tNf3 Nc6 ")).toEqual([
+      { moveNumber: 1, white: "e4", black: "e5" },
+      { moveNumber: 2, white: "Nf3", black: "Nc6" },
+    ]);
+  });
+
+  it("keeps a trailing move number with no move yet", () => {
+    expect(parsePgnMoves("1. e4 e5 2.")).toEqual([
+      { moveNumber: 1, white: "e4", black: "e5" },
+      { moveNumber: 2, white: null, black: null },
+    ]);
+  });
+
   it("parses standard PGN moves", () => {
     const result = parsePgnMoves("1. e4 e5 2. Nf3 Nc6");
     expect(result).toEqual([

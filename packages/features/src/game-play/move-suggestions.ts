@@ -117,15 +117,14 @@ function generatePieceCaptureSuggestions(input: string): AlgebraicNotation[] {
     const beforeX = rest.slice(0, xIndex);
     const afterX = rest.slice(xIndex + 1);
 
-    // If there's content after 'x', generate suggestions based on that
+    // Only a lone destination file can be extended. A full destination
+    // ("Bxe5") is a complete move, which generateMoveSuggestions has already
+    // turned away, and anything else is malformed: both get no suggestions.
     if (afterX.length === 1 && FILES.includes(afterX as File)) {
       // Partial destination file specified: Bxb -> Bxb1, Bxb2, ..., Bxb8
       NUMERIC_RANKS.forEach((rank) => {
         suggestions.push(`${piece}${beforeX}x${afterX}${rank}`);
       });
-    } else if (afterX.length === 2) {
-      // Full destination specified: already complete, no suggestions
-      return [];
     }
   } else if (rest.endsWith("x")) {
     // 'x' is at the end

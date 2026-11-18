@@ -326,3 +326,124 @@ describe("validateFenSemantic — hostile inputs", () => {
     expect(validateFenSemantic(broken).ok).toBe(false);
   });
 });
+
+// ============================================================
+// What the caller is told
+// ============================================================
+describe("validateFenSemantic — failure messages", () => {
+  it.each<[string, string, FenSemanticReason, string]>([
+    [
+      "a missing king",
+      "4k3/8/8/8/8/8/8/8 w - - 0 1",
+      "kings",
+      "Each side must have exactly one king",
+    ],
+    [
+      "a pawn on rank 8",
+      "P3k3/8/8/8/8/8/8/4K3 w - - 0 1",
+      "pawn_placement",
+      "Pawns may not be on rank 8",
+    ],
+    [
+      "a pawn on rank 1",
+      "4k3/8/8/8/8/8/8/p3K3 w - - 0 1",
+      "pawn_placement",
+      "Pawns may not be on rank 1",
+    ],
+    [
+      "nine pawns",
+      "4k3/8/8/8/8/P7/PPPPPPPP/4K3 w - - 0 1",
+      "piece_count",
+      "A side may not have more than 8 pawns",
+    ],
+    [
+      "seventeen white pieces",
+      "4k3/8/QQQQQQQQ/8/8/8/PPPPPPPP/4K3 w - - 0 1",
+      "piece_count",
+      "A side may not have more than 16 pieces",
+    ],
+    [
+      "seventeen black pieces",
+      "4k3/pppppppp/8/8/8/qqqqqqqq/8/4K3 w - - 0 1",
+      "piece_count",
+      "A side may not have more than 16 pieces",
+    ],
+    [
+      "an unbacked K",
+      "4k3/8/8/8/8/8/8/4K3 w K - 0 1",
+      "castling_rights",
+      "White kingside castling right requires K on e1 and R on h1",
+    ],
+    [
+      "an unbacked Q",
+      "4k3/8/8/8/8/8/8/4K3 w Q - 0 1",
+      "castling_rights",
+      "White queenside castling right requires K on e1 and R on a1",
+    ],
+    [
+      "an unbacked k",
+      "4k3/8/8/8/8/8/8/4K3 w k - 0 1",
+      "castling_rights",
+      "Black kingside castling right requires k on e8 and r on h8",
+    ],
+    [
+      "an unbacked q",
+      "4k3/8/8/8/8/8/8/4K3 w q - 0 1",
+      "castling_rights",
+      "Black queenside castling right requires k on e8 and r on a8",
+    ],
+    // A black pawn does stand on e5 and e3 is empty, so only the rank
+    // check catches this one.
+    [
+      "an en passant target on the wrong rank",
+      "4k3/8/8/4p3/8/8/8/4K3 w - e3 0 1",
+      "en_passant",
+      "En passant target rank must be 6 when side to move is w",
+    ],
+    [
+      "an en passant target with no pawn behind it",
+      "4k3/8/8/8/8/8/8/4K3 w - e6 0 1",
+      "en_passant",
+      "En passant target has no pawn behind it",
+    ],
+    [
+      "an occupied en passant target",
+      "4k3/8/4n3/4p3/8/8/8/4K3 w - e6 0 1",
+      "en_passant",
+      "En passant target square must be empty",
+    ],
+  ])("names %s", (_label, fen, reason, error) => {
+    expect(validateFenSemantic(fen)).toEqual({ ok: false, reason, error });
+  });
+
+  it("passes the structural validator's message through", () => {
+    expect(validateFenSemantic("8/8/8/8/8/8/8 w - - 0 1")).toEqual({
+      ok: false,
+      reason: "structure",
+      error: "Board must have exactly 8 ranks",
+    });
+  });
+});
+
+describe("validateFenSemantic — rules it applies narrowly", () => {
+  it("checks only the castling rights the FEN declares", () => {
+    // Black's rooks are gone, but only white's rights are claimed.
+    expect(validateFenSemantic("4k3/8/8/8/8/8/8/R3K2R w KQ - 0 1")).toEqual({
+      ok: true,
+    });
+  });
+
+  it("accepts fields separated by runs of whitespace", () => {
+    expect(validateFenSemantic("4k3/8/8/8/8/8/8/R3K2R  w   KQ -  0 1")).toEqual(
+      { ok: true },
+    );
+  });
+
+  // Legality is limited to the rules above and chess.js's own FEN check,
+  // neither of which looks at checks.
+  it("does not reject a position whose side not to move is in check", () => {
+    expect(validateFenSemantic("4k3/8/8/8/8/8/8/4R1K1 w - - 0 1")).toEqual({
+      ok: true,
+    });
+  });
+});

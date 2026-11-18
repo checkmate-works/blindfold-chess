@@ -6,10 +6,6 @@
  * independently useful for input validation.
  */
 
-// Pre-compiled patterns for complete move detection
-const INCOMPLETE_PAWN_PROMOTION = /^[a-h][18]$/;
-const INCOMPLETE_PAWN_CAPTURE_PROMOTION = /^[a-h]x[a-h][18]$/;
-
 // Shared building blocks. Each `COMPLETE_MOVE_PATTERNS` entry is of the form
 // `^<body>(\+|#)?$` — the anchors and optional check/mate suffix are identical
 // across every pattern, so they are extracted once here. The `body` portion
@@ -69,14 +65,9 @@ export function isCompleteMove(input: string): boolean {
   // Castling
   if (input === "O-O" || input === "O-O-O") return true;
 
-  // Special case: pawn moves to promotion rank without promotion piece
-  // These are incomplete and need suggestions
-  if (
-    INCOMPLETE_PAWN_PROMOTION.test(input) ||
-    INCOMPLETE_PAWN_CAPTURE_PROMOTION.test(input)
-  ) {
-    return false;
-  }
-
+  // A pawn reaching the first or last rank ("e8", "exd8") is not complete
+  // until a promotion piece follows. No separate check is needed: the
+  // non-promotion pawn patterns stop at PAWN_NON_PROMO_RANK, and the
+  // promotion patterns require "=<piece>".
   return COMPLETE_MOVE_PATTERNS.some((pattern) => pattern.test(input));
 }

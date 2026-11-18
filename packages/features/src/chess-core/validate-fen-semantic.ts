@@ -204,8 +204,8 @@ function checkCastlingRights(
   board: Board,
   castling: string,
 ): FenSemanticFailure | null {
-  if (castling === "-") return null;
-  // We already know castling matches /^[KQkq]+$/ from validateFenStructure.
+  // validateFenStructure guarantees `castling` is "-" or matches /^[KQkq]+$/.
+  // "-" contains none of the four letters, so it passes the loop untouched.
   for (const right of CASTLING_RIGHTS) {
     if (!castling.includes(right)) continue;
     if (!castlingRightSatisfied(board, right)) {
@@ -247,14 +247,9 @@ function checkEnPassant(
   // Locate the pawn that just double-pushed.
   const pawnRank = sideToMove === "w" ? "5" : "4";
   const pawnSquare = enPassant[0] + pawnRank;
-  const pawnIdx = squareToBoardIndex(pawnSquare);
-  if (pawnIdx === null) {
-    return {
-      ok: false,
-      reason: "en_passant",
-      error: "En passant square is malformed",
-    };
-  }
+  // validateFenStructure only lets "-" or /^[a-h][36]$/ through, so both the
+  // target square and the square behind it are always real squares here.
+  const pawnIdx = squareToBoardIndex(pawnSquare)!;
   const expectedPawn = sideToMove === "w" ? "p" : "P";
   if (board[pawnIdx] !== expectedPawn) {
     return {
@@ -264,8 +259,7 @@ function checkEnPassant(
     };
   }
   // The ep target square itself must be empty.
-  const targetIdx = squareToBoardIndex(enPassant);
-  if (targetIdx === null || board[targetIdx] !== "") {
+  if (board[squareToBoardIndex(enPassant)!] !== "") {
     return {
       ok: false,
       reason: "en_passant",
@@ -278,14 +272,7 @@ function checkEnPassant(
 export function validateFenSemantic(fen: string): FenSemanticResult {
   const structural = validateFenStructure(fen);
   if (!structural.ok) {
-    // `FenStructureResult.error` is typed optional, but every `ok: false`
-    // branch in `validateFenStructure` populates it. Coalesce defensively
-    // to satisfy the discriminated-union contract here.
-    return {
-      ok: false,
-      reason: "structure",
-      error: structural.error ?? "FEN structure is invalid",
-    };
+    return { ok: false, reason: "structure", error: structural.error };
   }
 
   const trimmed = fen.trim();
@@ -303,10 +290,11 @@ export function validateFenSemantic(fen: string): FenSemanticResult {
     checkEnPassant(board, sideToMove, enPassant);
   if (failure) return failure;
 
-  // Final catch-all: positions that pass everything above but that chess.js
-  // still rejects (e.g. side-not-to-move is in check, two-king-in-check,
-  // certain bishop / promotion impossibilities). chess.js is permissive in
-  // a few corners of FEN, but it does reject the well-known illegal cases.
+  // Final catch-all: whatever chess.js still refuses to load. Every check in
+  // chess.js 1.4.0's own `validateFen` is already covered above, so nothing
+  // reaches the throw today — chess.js accepts, for instance, a position whose
+  // side not to move is in check. The guard stays so that a stricter chess.js
+  // cannot let a FEN be stored that the board later fails to load.
   try {
     new Chess(trimmed);
   } catch (e) {

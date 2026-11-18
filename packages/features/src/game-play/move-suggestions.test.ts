@@ -17,6 +17,29 @@ describe("generateMoveSuggestions", () => {
       expect(generateMoveSuggestions("xyz")).toEqual([]);
       expect(generateMoveSuggestions("123")).toEqual([]);
     });
+
+    // Each input starts like a move the generator understands, then breaks
+    // the pattern one character later. A suggestion here would offer a move
+    // the player never started typing.
+    it.each([
+      ["a capture from a non-file character", "zx"],
+      ["a piece move to a non-file destination", "Nfz"],
+      ["a rank-disambiguated piece move to a non-file", "N1z"],
+      ["a piece move disambiguated by an off-board rank", "N9f"],
+      ["a piece move with too many partial characters", "Nabc"],
+      ["a piece capture onto a non-file", "Bxz"],
+      ["a piece capture disambiguated by an off-board rank", "N9x"],
+      ["a piece capture disambiguated by a non-square character", "Nzx"],
+      ["a piece capture with a three-character disambiguation", "Nb1cx"],
+      ["a pawn input whose middle character is not x", "ebd"],
+      ["a pawn move to an off-board rank", "e9"],
+      ["a pawn capture whose middle character is not x", "ebd8"],
+      ["a pawn capture to an off-board rank", "exd9"],
+      ["a pawn capture onto a non-adjacent file at the last rank", "axc8"],
+      ["a pawn capture with characters after the rank", "exd81"],
+    ])("should suggest nothing for %s (%s)", (_label, input) => {
+      expect(generateMoveSuggestions(input)).toEqual([]);
+    });
   });
 
   describe("complete moves", () => {
@@ -155,6 +178,13 @@ describe("generateMoveSuggestions", () => {
       expect(suggestions).toContain("N1xe4");
     });
 
+    it("should suggest every capture square for a fully disambiguated piece + x", () => {
+      const suggestions = generateMoveSuggestions("Nb1x");
+      expect(suggestions).toHaveLength(64);
+      expect(suggestions).toContain("Nb1xa1");
+      expect(suggestions).toContain("Nb1xh8");
+    });
+
     it("should suggest all ranks for disambiguated capture + destination file", () => {
       const suggestions = generateMoveSuggestions("Nfxe");
       expect(suggestions).toHaveLength(8);
@@ -200,6 +230,13 @@ describe("generateMoveSuggestions", () => {
       const hasD = suggestions.some((s) => s.includes("xd"));
       const hasF = suggestions.some((s) => s.includes("xf"));
       expect(hasD || hasF).toBe(true);
+    });
+
+    it("should suggest captures to both neighbouring files from a middle file", () => {
+      const suggestions = generateMoveSuggestions("dx");
+      expect(suggestions).toHaveLength(16);
+      expect(suggestions).toContain("dxc1");
+      expect(suggestions).toContain("dxe8");
     });
 
     it("should suggest all ranks for specific capture file", () => {
