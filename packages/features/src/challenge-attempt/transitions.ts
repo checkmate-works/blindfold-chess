@@ -145,7 +145,13 @@ export function decideAnswer<TSettings, TQuestion, TAnswer>(
     return { kind: "rejected" };
   }
 
-  if (attemptElapsed(state, receivedAt) >= ctx.timeLimitMs + END_TOLERANCE_MS) {
+  // The arrival grace belongs to the last in-time answer, not to every
+  // subsequent question. Otherwise early answers during each feedback grace
+  // add zero thinking time and can keep scoring after the budget is spent.
+  if (
+    state.elapsedMs >= ctx.timeLimitMs ||
+    attemptElapsed(state, receivedAt) >= ctx.timeLimitMs + END_TOLERANCE_MS
+  ) {
     return { kind: "expired" };
   }
 

@@ -13,7 +13,7 @@ import {
  * rules produced a given score, thinking time or refusal instead of
  * re-interpreting history under rules that did not exist when it was played.
  */
-export const CHALLENGE_RULES_VERSION = 1;
+export const CHALLENGE_RULES_VERSION = 2;
 
 /**
  * How long the client's pre-start countdown runs (3, 2, 1, "START!").

@@ -243,6 +243,24 @@ describe("decideAnswer", () => {
     );
   });
 
+  it("does not reuse the end tolerance for more answers once the time budget is exhausted", () => {
+    const ctx = makeContext();
+    const receivedAt = FIRST_RESUME + LIMIT_MS + END_TOLERANCE_MS - 1;
+    const last = decideAnswer(ctx, 0, 0, receivedAt, receivedAt);
+    expect(last.kind).toBe("accepted");
+    if (last.kind !== "accepted") return;
+    const nextContext = { ...ctx, state: last.state };
+    const nextArrival = last.state.resumedAt - EARLY_ANSWER_TOLERANCE_MS;
+    expect(decideAnswer(nextContext, 1, 1, nextArrival, nextArrival)).toEqual({
+      kind: "expired",
+    });
+    // A lost response to the final accepted answer remains replayable.
+    expect(decideAnswer(nextContext, 0, 0, nextArrival, nextArrival)).toEqual({
+      kind: "replay",
+      response: last.response,
+    });
+  });
+
   it("does not accept an answer for a question other than the current one", () => {
     const ctx = makeContext();
     const receivedAt = FIRST_RESUME + 500;
