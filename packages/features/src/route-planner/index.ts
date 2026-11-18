@@ -14,3 +14,4 @@ export type {
   UseRoutePlannerInputConfig,
   UseRoutePlannerInputReturn,
 } from "./use-route-planner-input";
+export * from "./challenge";
