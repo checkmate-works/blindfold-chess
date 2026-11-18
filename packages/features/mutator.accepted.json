@@ -94,5 +94,9 @@
   "wb87lwro73": {
     "reason": "Swapping which side a piece is tallied to is unobservable: both sides are held to the same 16-piece cap with the same message.",
     "where": "src/chess-core/validate-fen-semantic.ts:121:25 toUpperCase -> toLowerCase"
+  },
+  "wg176jgpf5": {
+    "reason": "mirrorSquare reads only the first two characters, so passing the whole move instead of its first two is the same square.",
+    "where": "src/ai-game/maia/mirror.ts:30:17 uciMove.substring(0, 2) -> uciMove"
   }
 }
