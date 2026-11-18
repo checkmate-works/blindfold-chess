@@ -23,6 +23,10 @@
     "reason": "chess.js 1.4.0's validateFen checks a subset of validateFenStructure plus the pre-checks above, so no FEN reaches this throw today; the guard is for a stricter chess.js.",
     "where": "src/chess-core/validate-fen-semantic.ts:304:47 \"Illegal position\" -> \"\""
   },
+  "1n9p54wzb4": {
+    "reason": "a + b and a - b always have the same parity, and a negative odd remainder is -1, not 0, so the light/dark test reads the same.",
+    "where": "src/common/utils.ts:58:11 file + rank -> file - rank"
+  },
   "1pydylkdzlv": {
     "reason": "Labels compared here share a piece type, so they share the leading letter; comparing 'Na1' with 'Nh8' orders them as 'a1' and 'h8' do.",
     "where": "src/chess-core/fen-pure.ts:401:49 label.slice(1) -> label"
@@ -39,6 +43,10 @@
     "reason": "Both generators make an attempt fail only by returning null, so one extra failing attempt past the bound returns the same batch; the bound only stops the loop.",
     "where": "src/legal-moves/logic.ts:54:33 attempts < maxAttempts -> attempts <= maxAttempts"
   },
+  "264oovslmk9": {
+    "reason": "At i = 0 the only pick is j = 0, so the extra iteration swaps the first element with itself.",
+    "where": "src/common/utils.ts:163:35 i > 0 -> i >= 0"
+  },
   "268zlm7km37": {
     "reason": "Swapping which side a piece is tallied to is unobservable: both sides are held to the same 16-piece cap with the same message.",
     "where": "src/chess-core/validate-fen-semantic.ts:121:9 piece === piece.toUpperCase() -> piece !== piece.toUpperCase()"
@@ -54,6 +62,10 @@
   "2fq8as0dpif": {
     "reason": "This branch is reached only when the first 'x' is the last character, so rest.endsWith('x') is always true here.",
     "where": "src/game-play/move-suggestions.ts:129:28 \"x\" -> \"\""
+  },
+  "62ysk6cc7g": {
+    "reason": "a + b and a - b always have the same parity, and a negative odd remainder is -1, not 0, so the light/dark test reads the same.",
+    "where": "src/common/utils.ts:48:11 fileIndex + rowFromTop -> fileIndex - rowFromTop"
   },
   "8gh4io5egd": {
     "reason": "chess.js 1.4.0's validateFen checks a subset of validateFenStructure plus the pre-checks above, so no FEN reaches this throw today; the guard is for a stricter chess.js.",

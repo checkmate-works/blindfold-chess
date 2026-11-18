@@ -1,10 +1,16 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  type RandomSource,
   isLightSquare,
+  isValidSquare,
   computeSquareColor,
+  formatTime,
   generateRandomSquare,
   generateSquareSequence,
+  resolveOrientation,
+  shuffleArray,
+  ALL_SQUARES,
 } from "./utils";
 import { DISPLAY_RANKS } from "./constants";
 import { RANKS } from "@blindfold-chess/types";
@@ -186,5 +192,96 @@ describe("DISPLAY_RANKS", () => {
 
   it("has exactly 8 elements", () => {
     expect(DISPLAY_RANKS).toHaveLength(8);
+  });
+});
+
+/** An rng that returns `values` in order, then keeps returning the last. */
+function sequence(...values: number[]): RandomSource {
+  let i = 0;
+  return () => values[Math.min(i++, values.length - 1)];
+}
+
+describe("resolveOrientation", () => {
+  it("keeps a fixed side", () => {
+    expect(resolveOrientation("white", () => 0.99)).toBe("white");
+    expect(resolveOrientation("black", () => 0)).toBe("black");
+  });
+
+  it("splits a random side at one half", () => {
+    expect(resolveOrientation("random", () => 0)).toBe("white");
+    expect(resolveOrientation("random", () => 0.49)).toBe("white");
+    expect(resolveOrientation("random", () => 0.5)).toBe("black");
+  });
+});
+
+describe("isValidSquare", () => {
+  it("accepts exactly a file letter and a rank digit", () => {
+    expect(isValidSquare("e4")).toBe(true);
+    expect(isValidSquare("xe4")).toBe(false);
+    expect(isValidSquare("e44")).toBe(false);
+    expect(isValidSquare("i4")).toBe(false);
+  });
+});
+
+describe("formatTime", () => {
+  it("formats seconds as M:SS with minutes past 59", () => {
+    expect(formatTime(0)).toBe("0:00");
+    expect(formatTime(5)).toBe("0:05");
+    expect(formatTime(75)).toBe("1:15");
+    expect(formatTime(3600)).toBe("60:00");
+  });
+});
+
+describe("generateRandomSquare with a controlled rng", () => {
+  it("draws file then rank over the whole board", () => {
+    expect(generateRandomSquare(sequence(0.99, 0))).toBe("h1");
+    expect(generateRandomSquare(sequence(0, 0.99))).toBe("a8");
+  });
+
+  it("treats an empty exclude set as no exclude", () => {
+    expect(generateRandomSquare(sequence(0.99, 0), new Set())).toBe("h1");
+  });
+});
+
+describe("generateSquareSequence edges", () => {
+  const allSquares = new Set(ALL_SQUARES);
+
+  it("returns no squares for a count of 0 or less, even with nothing eligible", () => {
+    expect(generateSquareSequence(0, Math.random, allSquares)).toEqual([]);
+    expect(generateSquareSequence(-1, Math.random, allSquares)).toEqual([]);
+  });
+
+  it("throws when every square is excluded", () => {
+    expect(() => generateSquareSequence(1, Math.random, allSquares)).toThrow(
+      "Cannot generate a random square: all squares are excluded",
+    );
+  });
+
+  // Four eligible squares: reuse is allowed again after two of them.
+  it("allows reuse as soon as half the pool has been used", () => {
+    const fourLeft = new Set(
+      ALL_SQUARES.filter((sq) => !["a1", "a2", "a3", "a4"].includes(sq)),
+    );
+    expect(generateSquareSequence(4, () => 0, fourLeft)).toEqual([
+      "a1",
+      "a2",
+      "a1",
+      "a2",
+    ]);
+  });
+});
+
+describe("shuffleArray", () => {
+  it("swaps each position with one the rng picks at or below it", () => {
+    // rng 0: every j is 0. rng 0.5: j = floor(0.5 * (i + 1)).
+    expect(shuffleArray([1, 2, 3, 4], () => 0)).toEqual([2, 3, 4, 1]);
+    expect(shuffleArray([1, 2, 3, 4], () => 0.5)).toEqual([1, 4, 2, 3]);
+  });
+
+  it("returns a new array and leaves the input alone", () => {
+    const input = [1, 2, 3];
+    const result = shuffleArray(input, () => 0);
+    expect(result).not.toBe(input);
+    expect(input).toEqual([1, 2, 3]);
   });
 });
