@@ -71,3 +71,66 @@ list when you create one.
    The convention tests are the only place that may touch Node APIs; see the
    comment at the top of the barrel test for why they `/// <reference>` the
    types per file instead of in `tsconfig.json`.
+
+## Mutation testing
+
+`pnpm mutation` runs `@mizchi/mutator` (configured in `mutator.config.ts`): it
+rewrites the source by rule, one mutant at a time, and checks whether a test
+fails (Killed) or everything still passes (Survived).
+
+Why measure it:
+
+- **Coverage only counts what ran.** It cannot tell whether breaking that line
+  would make any test fail; a mutation score measures exactly that.
+- **Whoever wrote the tests — an agent included — picks the breakage when they
+  "break it on purpose to check".** Self-review is no substitute; the
+  rewrites have to come from an outside tool.
+- **A high score does not prove the tests are enough.** Mutants come from
+  substitution rules (operators, comparisons, booleans, strings, …), so
+  reordered statements or swapped variables are never tried.
+
+Scope and placement:
+
+- **Only the pure modules here are mutated.** Their tests are IO-free and run
+  in milliseconds under node, which is what re-running them per mutant needs.
+  Hooks (`src/**/use-*.ts`) and the client barrels (`src/**/client.ts`) are
+  excluded: hook tests start jsdom and `renderHook` per file, and only about
+  half the hooks have tests, so the rest would show up as NoCoverage and
+  muddy the number for the pure logic. `apps/web` is left out because its
+  tests are mock-heavy under jsdom — killing a mutant against a mock says
+  little about quality — and `packages/ui` because its single test file would
+  leave mostly string mutants of colour constants.
+- **Not a turbo task, not in `test`, not in any workflow, and no threshold**
+  (`failOnSurvived: false`, no `thresholds.break`). Equivalent mutants
+  (rewrites that change no observable behaviour) always remain, so 100% is
+  not a goal; read the score like cyclomatic complexity, as a pointer to where
+  tests would pay off. Agent pipelines run `pnpm test` as their quality gate;
+  wired in there, every nightly job would run this and read each survivor as
+  a failure.
+
+Commands and reports:
+
+- Everything: `pnpm mutation` (from the root). Only what changed:
+  `pnpm --filter @blindfold-chess/features mutation --since main` (flags go
+  straight to mutator).
+- Reports: `packages/features/.mutator/report/index.html` and `mutation.json`
+  (`.mutator/` is regenerated, so it is gitignored). A `--since` run
+  overwrites `mutation.json` with the diff-only result; re-run the full suite
+  when you need the overall numbers.
+
+Reading survivors:
+
+- A survivor is one of: a missing test, unnecessary code, or an equivalent
+  mutant. Add a test, or consider deleting the code.
+- Only a mutant judged equivalent is accepted: run
+  `pnpm exec mutator accept <key> --reason <text>` with `packages/features` as
+  the working directory (mutator treats the cwd as the project root) and
+  commit the resulting `mutator.accepted.json` — it is the decision history.
+  When in doubt, do not accept.
+- A new test asserts behaviour a caller can observe, and its name describes
+  that behaviour, not the mutant it kills ("fails when `>=` becomes `>`").
+- mutator ships agent skills (`pnpm exec mutator init-skill` writes them to
+  `.claude/skills/`). They are not installed here; `.claude/skills/` is
+  tracked, so read their contents before committing them.
+
+Method: https://zenn.dev/mizchi/articles/mutation-test-quality
