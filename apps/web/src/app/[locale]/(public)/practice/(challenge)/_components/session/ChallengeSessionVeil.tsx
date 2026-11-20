@@ -58,10 +58,11 @@ type Props = {
  * change in the same frame. Keep it that way: re-adding `transition-all`
  * reintroduces the exact symptom.
  *
- * @design **The quit control belongs OUTSIDE this veil.** `useQuitConfirm`
- * pauses the session and opens its modal, so quitting is reachable *from* the
- * paused state — a user who paused first and then decided to stop needs that
- * link legible and clickable. `pointer-events-none` on the pause veil would
+ * @design **The quit control belongs OUTSIDE this veil.** In a session that
+ * can be paused (training; a challenge run cannot), `useQuitConfirm` pauses
+ * it and opens its modal, so quitting is reachable *from* the paused state —
+ * a user who paused first and then decided to stop needs that link legible
+ * and clickable. `pointer-events-none` on the pause veil would
  * strand them behind the curtain with only "resume" available. The score
  * counter has no such constraint and belongs inside, where it matches the
  * curtain's extent.

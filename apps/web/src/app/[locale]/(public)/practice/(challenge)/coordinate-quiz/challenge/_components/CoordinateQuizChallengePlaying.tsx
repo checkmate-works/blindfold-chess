@@ -14,8 +14,9 @@ type Props = {
   currentQuestion: CoordinateQuestion | null;
   /**
    * The next question has not arrived from the server yet. The board is
-   * blurred (which also hides the answered target), so the player does not keep
-   * looking at a question that is already answered while the clock runs.
+   * blurred and the answered target coordinate is kept off it, so the player
+   * does not keep looking at a question that is already answered while the
+   * clock runs.
    */
   awaitingServer?: boolean;
   timeRemaining: number;
@@ -85,6 +86,7 @@ export function CoordinateQuizChallengePlaying({
               isCorrect={isCorrect}
               countdown={countdown}
               isObscured={isPaused || awaitingServer}
+              hideTarget={awaitingServer}
               boardOverlay={
                 /* Pause overlay — rendered inside the board-scoped container so
                    it covers only the board, not the orientation indicator. */
