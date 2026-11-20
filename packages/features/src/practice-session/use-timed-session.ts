@@ -6,6 +6,7 @@ import type {
   ChallengeAnswerResponse,
   RemoteChallengePort,
 } from "../challenge-attempt/types";
+import { DEFAULT_FEEDBACK_MS } from "../common/flash-policy";
 import { useLatestRef } from "../common/use-latest-ref";
 import { useCountdown } from "./use-countdown";
 import { useGameTimer } from "./use-game-timer";
@@ -166,8 +167,6 @@ export type UseTimedSessionReturn<TQuestion> = {
   finishSession: () => void;
 };
 
-const DEFAULT_FEEDBACK_DURATION = 500;
-
 /** Attempts per answer before a remote session gives up (`remoteFailed`). */
 const REMOTE_SUBMIT_ATTEMPTS = 3;
 /** Wait between failed attempts, so a brief network blip does not end the run. */
@@ -217,7 +216,7 @@ export function useTimedSession<TQuestion>(
   const {
     timeLimit,
     generateQuestion,
-    feedbackDuration = DEFAULT_FEEDBACK_DURATION,
+    feedbackDuration = DEFAULT_FEEDBACK_MS,
     mistakeAllowance,
     onAnswerEffect,
     onAdvance,

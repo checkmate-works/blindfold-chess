@@ -11,6 +11,7 @@
 import type { Square } from "@blindfold-chess/types";
 
 import type { ChallengeModuleDefinition } from "../challenge-attempt/types";
+import { DEFAULT_FEEDBACK_MS } from "../common/flash-policy";
 import { type RandomSource, generateSquareSequence } from "../common/utils";
 import { CHALLENGE_TIME_LIMIT } from "../practice-registry/challenge-rules";
 import { getSquareColor } from "./logic";
@@ -23,9 +24,6 @@ import type { SquareColor } from "./types";
 export type SquareColorsChallengeSettings = Record<string, never>;
 
 const SQUARE_COLORS: readonly SquareColor[] = ["light", "dark"];
-
-/** Feedback flash after every answer, matching `useTimedSession`'s default. */
-const FEEDBACK_MS = 500;
 
 /**
  * Mean thinking time per answer below which a run is not recorded.
@@ -68,7 +66,7 @@ export const squareColorsChallengeDefinition: ChallengeModuleDefinition<
 
   grade: (question, answer) => getSquareColor(question) === answer,
 
-  feedbackMs: () => FEEDBACK_MS,
+  feedbackMs: () => DEFAULT_FEEDBACK_MS,
 
   minMeanThinkMs: MIN_MEAN_THINK_MS,
 

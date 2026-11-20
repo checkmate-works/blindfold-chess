@@ -9,6 +9,7 @@
  * barrel so server code can import it.
  */
 import type { ChallengeModuleDefinition } from "../challenge-attempt/types";
+import { DEFAULT_FEEDBACK_MS } from "../common/flash-policy";
 import type { RandomSource } from "../common/utils";
 import { CHALLENGE_TIME_LIMIT } from "../practice-registry/challenge-rules";
 import { generateBalancedMoveQuestions, isLegalMove } from "./logic";
@@ -59,9 +60,6 @@ export function legalMovesPiecesForSelection(
 ): PieceType[] {
   return [...PIECES_BY_SELECTION[selection]];
 }
-
-/** Feedback flash after every answer, matching `useTimedSession`'s default. */
-const FEEDBACK_MS = 500;
 
 /**
  * Mean thinking time per answer below which a run is not recorded.
@@ -123,7 +121,7 @@ export const legalMovesChallengeDefinition: ChallengeModuleDefinition<
   grade: (question, answer) =>
     answer === isLegalMove(question.from, question.to, question.piece),
 
-  feedbackMs: () => FEEDBACK_MS,
+  feedbackMs: () => DEFAULT_FEEDBACK_MS,
 
   minMeanThinkMs: MIN_MEAN_THINK_MS,
 

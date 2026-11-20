@@ -1,4 +1,17 @@
 /**
+ * Feedback flash of a timed session that does not choose its own: the same
+ * 500ms after a correct and an incorrect answer.
+ *
+ * `useTimedSession` falls back to it when no `feedbackDuration` is given, and
+ * the server-side challenge definitions of the modules that rely on that
+ * fallback return it from `feedbackMs`. Both read this one constant because
+ * the server restarts its clock this long after an answer: if the two values
+ * drifted apart, the on-screen clock and the server's would disagree by the
+ * difference on every answer.
+ */
+export const DEFAULT_FEEDBACK_MS = 500;
+
+/**
  * Correct/incorrect flash-policy timing used by quiz-style practice modules
  * that dwell on an incorrect answer longer than a correct one (so the user
  * has a moment to read the correct solution before advancing).
