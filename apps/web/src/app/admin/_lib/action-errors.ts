@@ -52,6 +52,10 @@ const ADMIN_ERROR_MESSAGES = {
   alreadyGranted: 'This user already holds that rank.',
   failedToGrantRank: 'Failed to grant rank.',
   postNotFound: 'That post no longer exists.',
+
+  // Challenge results (/admin/challenge-results).
+  invalidChallengeResultId: 'Result ID must be a UUID.',
+  challengeResultNotFound: 'That result does not exist or has already been removed.',
 } as const satisfies Record<string, string>;
 
 /** Every failure an admin action is allowed to report. */

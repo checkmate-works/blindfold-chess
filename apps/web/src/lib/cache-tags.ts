@@ -22,10 +22,12 @@
  * - {@link LEADERBOARD_CACHE_TAG} — module-specific ranking caches
  *   (`getLeaderboard`, `getUserRanks`). Invalidated by
  *   `finishChallengeAttempt` when a challenge is recorded, so the user sees
- *   fresh ranks immediately.
+ *   fresh ranks immediately, and by the admin `deleteChallengeResult` when
+ *   moderation removes one, so the removed score leaves the rankings at once.
  * - {@link EXP_LEADERBOARD_CACHE_TAG} — global EXP ranking cache
  *   (`getExpLeaderboard`). Also invalidated by `finishChallengeAttempt`
- *   since every recorded challenge grants EXP.
+ *   since every recorded challenge grants EXP, and by `deleteChallengeResult`
+ *   since a removal takes that EXP back.
  * - {@link DAILY_PUZZLE_CACHE_TAG} — the day's puzzle pick (`getDailyPuzzle`).
  *   Invalidated by the admin feature/unfeature toggle (`setPuzzleFeatured`)
  *   and by the admin puzzle soft-delete (`deletePuzzle`) so pool changes and
