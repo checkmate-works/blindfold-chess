@@ -14,6 +14,7 @@ const columns = vi.hoisted(() => ({
   incorrectAnswers: 'challenge_results.incorrect_answers',
   timeTaken: 'challenge_results.time_taken',
   createdAt: 'challenge_results.created_at',
+  deletedAt: 'challenge_results.deleted_at',
 }));
 
 vi.mock('@/lib/db', () => ({ db: { select: vi.fn() } }));
@@ -30,6 +31,7 @@ vi.mock('drizzle-orm', () => {
     asc: op('asc'),
     desc: op('desc'),
     eq: op('eq'),
+    isNull: op('isNull'),
     lte: op('lte'),
     ne: op('ne'),
   };
@@ -76,10 +78,16 @@ describe('getScoreComparison', () => {
     const currentWhere = (currentChain.where as ReturnType<typeof vi.fn>).mock.calls[0][0] as {
       args: { op: string; args: unknown[] }[];
     };
-    expect(currentWhere.args.map((c) => c.args)).toEqual([
-      [columns.id, 'run-3'],
-      [columns.userId, 'user-1'],
-      [columns.menuType, 'coordinate_quiz'],
+    expect(currentWhere.args.map((c) => `${c.op}:${String(c.args[0])}`)).toEqual([
+      `eq:${columns.id}`,
+      `eq:${columns.userId}`,
+      `eq:${columns.menuType}`,
+      `isNull:${columns.deletedAt}`,
+    ]);
+    expect(currentWhere.args.slice(0, 3).map((c) => c.args[1])).toEqual([
+      'run-3',
+      'user-1',
+      'coordinate_quiz',
     ]);
 
     for (const chain of [bestChain, lastChain]) {
@@ -87,6 +95,7 @@ describe('getScoreComparison', () => {
         `eq:${columns.userId}`,
         `eq:${columns.menuType}`,
         `eq:${columns.leaderboardKey}`,
+        `isNull:${columns.deletedAt}`,
         `ne:${columns.id}`,
         `lte:${columns.createdAt}`,
       ]);
@@ -137,6 +146,7 @@ describe('getScoreComparison', () => {
       `eq:${columns.userId}`,
       `eq:${columns.menuType}`,
       `eq:${columns.leaderboardKey}`,
+      `isNull:${columns.deletedAt}`,
     ]);
   });
 
@@ -153,5 +163,31 @@ describe('getScoreComparison', () => {
       previousBest: undefined,
       previousLast: undefined,
     });
+  });
+
+  it('shows the direct-visit comparison, over live runs only, when the current run was removed by moderation', async () => {
+    // The removed run's id no longer resolves because the lookup composes the
+    // live-result predicate, so the database returns no current row.
+    const currentChain = mockChain([]);
+    const bestChain = mockChain([bestRow]);
+    const lastChain = mockChain([lastRow]);
+    mockDb.select
+      .mockReturnValueOnce(currentChain as never)
+      .mockReturnValueOnce(bestChain as never)
+      .mockReturnValueOnce(lastChain as never);
+
+    const result = await getScoreComparison('user-1', 'coordinate_quiz', 'white', 'removed-run');
+
+    expect(result).toEqual({ current: undefined, previousBest: bestRow, previousLast: lastRow });
+    expect(whereOps(currentChain)).toContain(`isNull:${columns.deletedAt}`);
+    for (const chain of [bestChain, lastChain]) {
+      // Same scope as a visit with no id: the URL's key, no id or time cut.
+      expect(whereOps(chain)).toEqual([
+        `eq:${columns.userId}`,
+        `eq:${columns.menuType}`,
+        `eq:${columns.leaderboardKey}`,
+        `isNull:${columns.deletedAt}`,
+      ]);
+    }
   });
 });
