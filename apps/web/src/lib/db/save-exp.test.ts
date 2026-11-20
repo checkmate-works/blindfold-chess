@@ -338,3 +338,141 @@ describe('grantChallengeExp idempotency', () => {
     expect(tx.userExpUpsert).not.toHaveBeenCalled();
   });
 });
+
+// ---------------------------------------------------------------------------
+// reverseChallengeExp
+// ---------------------------------------------------------------------------
+
+type ReversalTxOptions = {
+  /** The `challenge_result` grant the first SELECT finds; absent = never granted. */
+  grant?: { amount: number; menuType: string | null; createdAt: Date };
+  /** False simulates the reversal row already existing (ON CONFLICT DO NOTHING). */
+  reversalInserted?: boolean;
+};
+
+/**
+ * A `tx` double for the reversal path: one `select().from().where().limit()`
+ * for the grant, one `insert().values().onConflictDoNothing().returning()` for
+ * the reversal row, and one `update().set().where()` for `user_exp`.
+ */
+function createReversalTx(opts: ReversalTxOptions) {
+  const insertedValues: Array<Record<string, unknown>> = [];
+  const onConflictConfigs: unknown[] = [];
+  const userExpSet = vi.fn();
+
+  return {
+    select: vi.fn().mockImplementation(() => ({
+      from: () => ({
+        where: () => ({
+          limit: vi.fn().mockResolvedValue(opts.grant ? [opts.grant] : []),
+        }),
+      }),
+    })),
+    insert: vi.fn().mockImplementation(() => ({
+      values: (value: Record<string, unknown>) => {
+        insertedValues.push(value);
+        return {
+          onConflictDoNothing: (config: unknown) => {
+            onConflictConfigs.push(config);
+            return {
+              returning: vi
+                .fn()
+                .mockResolvedValue(opts.reversalInserted === false ? [] : [{ id: 'reversal-001' }]),
+            };
+          },
+        };
+      },
+    })),
+    update: vi.fn().mockImplementation(() => ({
+      set: (value: unknown) => {
+        userExpSet(value);
+        return { where: vi.fn().mockResolvedValue(undefined) };
+      },
+    })),
+    insertedValues,
+    onConflictConfigs,
+    userExpSet,
+  };
+}
+
+const grantedAt = new Date('2026-10-03T12:34:56.789Z');
+const reversalParams = { userId: 'user-001', challengeResultId: 'result-001' };
+
+describe('reverseChallengeExp', () => {
+  it('returns 0 and writes nothing when the result never received a grant', async () => {
+    const tx = createReversalTx({});
+    const { reverseChallengeExp } = await import('./save-exp');
+
+    const reversed = await reverseChallengeExp(tx as never, reversalParams);
+
+    expect(reversed).toBe(0);
+    expect(tx.insert).not.toHaveBeenCalled();
+    expect(tx.update).not.toHaveBeenCalled();
+  });
+
+  it('appends a negated reversal row stamped with the created_at and menu of the grant', async () => {
+    const tx = createReversalTx({
+      grant: { amount: 48, menuType: 'coordinate_quiz', createdAt: grantedAt },
+    });
+    const { reverseChallengeExp } = await import('./save-exp');
+
+    const reversed = await reverseChallengeExp(tx as never, reversalParams);
+
+    expect(reversed).toBe(48);
+    expect(tx.insertedValues).toHaveLength(1);
+    expect(tx.insertedValues[0]).toMatchObject({
+      userId: 'user-001',
+      source: 'challenge_result_reversal',
+      sourceId: 'result-001',
+      menuType: 'coordinate_quiz',
+      amount: -48,
+    });
+    // The same instant, not merely the same day: the period windows compare
+    // created_at at full precision.
+    expect((tx.insertedValues[0].createdAt as Date).getTime()).toBe(grantedAt.getTime());
+    const metadata = tx.insertedValues[0].metadata as { reversedAt: string };
+    expect(new Date(metadata.reversedAt).toISOString()).toBe(metadata.reversedAt);
+  });
+
+  it('goes through the (source, source_id) partial unique index like a grant', async () => {
+    const tx = createReversalTx({
+      grant: { amount: 48, menuType: 'coordinate_quiz', createdAt: grantedAt },
+    });
+    const { reverseChallengeExp } = await import('./save-exp');
+
+    await reverseChallengeExp(tx as never, reversalParams);
+
+    const config = tx.onConflictConfigs[0] as { target: unknown[]; where?: unknown };
+    expect(config.target).toEqual(['source', 'source_id']);
+    expect(String(config.where)).toContain('source_id IS NOT NULL');
+  });
+
+  it('returns 0 and leaves user_exp alone when the grant was already reversed', async () => {
+    const tx = createReversalTx({
+      grant: { amount: 48, menuType: 'coordinate_quiz', createdAt: grantedAt },
+      reversalInserted: false,
+    });
+    const { reverseChallengeExp } = await import('./save-exp');
+
+    const reversed = await reverseChallengeExp(tx as never, reversalParams);
+
+    expect(reversed).toBe(0);
+    expect(tx.update).not.toHaveBeenCalled();
+  });
+
+  it('lowers user_exp.total_exp with a floor of zero', async () => {
+    const tx = createReversalTx({
+      grant: { amount: 48, menuType: 'coordinate_quiz', createdAt: grantedAt },
+    });
+    const { reverseChallengeExp } = await import('./save-exp');
+
+    await reverseChallengeExp(tx as never, reversalParams);
+
+    expect(tx.userExpSet).toHaveBeenCalledTimes(1);
+    const set = tx.userExpSet.mock.calls[0][0] as { totalExp: unknown; updatedAt: unknown };
+    // The mocked `sql` tag joins only the template's literal parts, so the
+    // column and the amount drop out and the shape of the expression remains.
+    expect(String(set.totalExp)).toBe('GREATEST( - , 0)');
+    expect(String(set.updatedAt)).toBe('now()');
+  });
+});
