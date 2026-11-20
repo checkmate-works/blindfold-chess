@@ -111,6 +111,62 @@ describe('useChallengeResultSave', () => {
     expect(mocks.writeSessionItem).toHaveBeenCalledWith(expect.any(String), 'true');
   });
 
+  it('sends a finish that threw again and saves when the resend is answered', async () => {
+    vi.useFakeTimers();
+    mocks.finishChallengeAttempt
+      .mockRejectedValueOnce(new Error('network'))
+      .mockResolvedValueOnce({ status: 'done', success: true, challengeResultId: 'r1' });
+
+    render({});
+
+    await vi.advanceTimersByTimeAsync(499);
+    expect(mocks.finishChallengeAttempt).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(1);
+    expect(mocks.finishChallengeAttempt).toHaveBeenCalledTimes(2);
+    expect(mocks.push).toHaveBeenCalledWith(`${RESULT_URL}&grant=r1`);
+    expect(mocks.writeSessionItem).not.toHaveBeenCalled();
+  });
+
+  it('sends a finish the action failed on again', async () => {
+    vi.useFakeTimers();
+    mocks.finishChallengeAttempt
+      .mockResolvedValueOnce({ status: 'done', success: false, error: 'unexpected_error' })
+      .mockResolvedValueOnce({ status: 'done', success: true, challengeResultId: 'r1' });
+
+    render({});
+
+    await vi.advanceTimersByTimeAsync(500);
+    expect(mocks.finishChallengeAttempt).toHaveBeenCalledTimes(2);
+    expect(mocks.push).toHaveBeenCalledWith(`${RESULT_URL}&grant=r1`);
+    expect(mocks.writeSessionItem).not.toHaveBeenCalled();
+  });
+
+  it('gives up after two resends of a finish that keeps throwing and shows the save error', async () => {
+    vi.useFakeTimers();
+    mocks.finishChallengeAttempt.mockRejectedValue(new Error('network'));
+
+    render({});
+
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(mocks.finishChallengeAttempt).toHaveBeenCalledTimes(3);
+    expect(mocks.writeSessionItem).toHaveBeenCalledWith(expect.any(String), 'true');
+    expect(mocks.push).toHaveBeenCalledWith(RESULT_URL);
+  });
+
+  it('does not resend a finish the server decided not to record', async () => {
+    vi.useFakeTimers();
+    mocks.finishChallengeAttempt.mockResolvedValue({
+      status: 'done',
+      success: false,
+      error: 'not_recorded',
+    });
+
+    render({});
+
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(mocks.finishChallengeAttempt).toHaveBeenCalledTimes(1);
+  });
+
   it('does not finish a guest run and redirects without an error', async () => {
     render({ attemptId: null });
 
