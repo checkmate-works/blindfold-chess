@@ -28,6 +28,18 @@
  * that tells such a player apart from a fast human. The per-answer thinking
  * times stored on the row (server-measured) are what operators can review
  * when a result looks suspicious.
+ *
+ * Nor is the feedback flash enforced as time spent not looking at the next
+ * question. The response to an answer carries the next question, and the
+ * clock for it resumes only `feedbackMs` later, so a modified client can show
+ * that question at once and think for the length of the flash (less the round
+ * trip) with the clock stopped: up to 2 seconds after a wrong answer in the
+ * modules that dwell on the solution, and whatever feedback speed the player
+ * picked in the coordinate quiz. The unmodified client shows the flash
+ * instead. Closing the gap would take a second request for each question,
+ * sent when the flash ends, and its round trip would then be charged to every
+ * honest player's thinking time. The mean-thinking-time floor still applies
+ * to such a run, because the thinking it hides is measured as zero.
  */
 import type {
   ChallengeAnswerDecision,

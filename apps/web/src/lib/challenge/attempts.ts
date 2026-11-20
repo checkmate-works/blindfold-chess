@@ -66,10 +66,17 @@ type Clock = () => number;
  * The largest answer, as JSON, that is graded at all.
  *
  * Every module's answer is a few bytes (a square, a colour, a boolean) except
- * the route planner's path, which has no length limit of its own. An honest
- * path on an 8×8 board is a few hundred bytes; anything far beyond that is
- * rejected before the row is locked, so an oversized payload neither costs a
- * grading pass nor lands in the stored answer log.
+ * two that have no length limit of their own: the route planner's path, and
+ * the diagonal quiz's two diagonals, which are free text the player types. An
+ * honest path on an 8×8 board is a few hundred bytes and an honest diagonal a
+ * few characters; anything far beyond that is rejected before the row is
+ * locked, so an oversized payload neither costs a grading pass nor lands in
+ * the stored answer log.
+ *
+ * The limit is deliberately loose rather than fitted to the longest honest
+ * answer. A rejected answer ends the player's run unrecorded, and neither
+ * screen limits how long a path or a typed diagonal may get, so a tight limit
+ * would turn an odd but honest input into a lost run.
  */
 const MAX_ANSWER_JSON_LENGTH = 4096;
 
