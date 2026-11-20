@@ -17,7 +17,7 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core';
 
-import { createdAtOnly, updatedAtOnly } from './columns';
+import { createdAtOnly, softDeleteTimestamp, updatedAtOnly } from './columns';
 
 /**
  * Challenge Results — stores all challenge results for period-based rankings.
@@ -34,9 +34,10 @@ import { createdAtOnly, updatedAtOnly } from './columns';
  * @design Two-table architecture (Monkeytype-inspired)
  *
  * Challenge data is split into two tables with different responsibilities:
- * - `challenge_results`: append-only log of all challenge results (INSERT only).
- *   Used for weekly/monthly rankings via `created_at` filtering, and also
- *   serves as the source for per-user history (mypage dashboard).
+ * - `challenge_results`: log of all challenge results, appended to and never
+ *   edited except for moderation setting `deleted_at`. Used for weekly/monthly
+ *   rankings via `created_at` filtering, and also serves as the source for
+ *   per-user history (mypage dashboard).
  * - `challenge_best_scores`: materialized all-time best per user/menu/key,
  *   maintained via UPSERT on each new best score.
  *
@@ -60,6 +61,17 @@ import { createdAtOnly, updatedAtOnly } from './columns';
  * on further tie, faster time wins. The UPSERT comparison in
  * `challenge_best_scores` uses the same ordering via tuple comparison.
  *
+ * @design Moderation removes a result by setting `deleted_at`
+ *
+ * A removed row stays in the table but appears in no read: every path that
+ * reads `challenge_results` composes `liveChallengeResult()` (or spells
+ * `deleted_at IS NULL` in raw SQL), and the RLS select policy hides it from
+ * `anon` / `authenticated`. Who removed it and why is not stored on the row;
+ * that lives in `moderation_actions`, following the repository's pattern of a
+ * state flag plus an append-only event log. `deleted_by` / `reason` columns
+ * would keep a second copy of the audit log to drift from it, and a physical
+ * DELETE would destroy the evidence and any chance of restoring the result.
+ *
  * @design Index sort order — manual DESC/ASC in migration SQL
  *
  * Drizzle ORM's `index().on()` does not support DESC/ASC modifiers, so the
@@ -79,6 +91,7 @@ export const challengeResults = pgTable(
     /** Whole seconds (the client timer's value, rounded by the save action). */
     timeTaken: integer('time_taken').notNull(),
     ...createdAtOnly,
+    ...softDeleteTimestamp,
   },
   (table) => [
     index('idx_cr_period_ranking').on(
@@ -125,6 +138,12 @@ export type NewChallengeResult = typeof challengeResults.$inferInsert;
  * This table is a materialized cache. If data correction is needed (e.g.,
  * cheater removal), the best score can be recalculated from `challenge_results`
  * using `DISTINCT ON (user_id, menu_type, leaderboard_key)`.
+ *
+ * Moderation does exactly that: removing a result rebuilds the affected
+ * (user, menu, key) row from the results still live, in the same transaction
+ * that sets `deleted_at`. A best left pointing at a removed result would keep
+ * it on the all-time ranking, which reads this table rather than
+ * `challenge_results`.
  */
 export const challengeBestScores = pgTable(
   'challenge_best_scores',
@@ -225,16 +244,29 @@ export const challengeAttempts = pgTable(
     /** `recorded` | `unrecorded` | `implausible_speed`; null until consumed. */
     outcome: varchar('outcome', { length: 30 }),
     /**
-     * The result this attempt recorded. SET NULL when that result is deleted
-     * (a record removed by moderation, say), so a resent finish never hands
-     * out the id of a result that no longer exists: a `recorded` row with no
-     * result id answers `rejected` instead.
+     * The result this attempt recorded.
+     *
+     * A physical delete of the result (an account deletion cascading, say)
+     * sets this to NULL, so a resent finish never hands out the id of a row
+     * that no longer exists: a `recorded` row with no result id answers
+     * `rejected` instead.
+     *
+     * Moderation's soft delete leaves the link in place. This row holds the
+     * answer log, the only evidence of how the result was played, and the
+     * moderation list reads its signals (thinking time) through this link. A
+     * resent finish may therefore return the id of a removed result; the
+     * result page applies `liveChallengeResult()` and treats it as missing.
      */
     challengeResultId: uuid('challenge_result_id').references(() => challengeResults.id, {
       onDelete: 'set null',
     }),
   },
-  (table) => [index('idx_ca_user_started').on(table.userId, table.startedAt)]
+  (table) => [
+    index('idx_ca_user_started').on(table.userId, table.startedAt),
+    // The moderation list looks attempts up by result id; without this the
+    // lookup scans the table, since the only other index leads with user_id.
+    index('idx_ca_result').on(table.challengeResultId),
+  ]
 );
 
 export type ChallengeAttempt = typeof challengeAttempts.$inferSelect;
