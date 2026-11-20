@@ -132,6 +132,26 @@ describe('useChallengeAttempt', () => {
     expect(result.current).toMatchObject({ status: 'ready', attemptId: 'a2' });
   });
 
+  it('tells a start refused by the rate limit apart from any other failed start', async () => {
+    mocks.auth = { user: { id: 'u1' }, isLoading: false };
+    mocks.beginChallengeAttempt.mockResolvedValue({ success: false, error: 'rateLimited' });
+
+    const { result } = renderHook(() => useChallengeAttempt('route_planner', SETTINGS));
+
+    await waitFor(() => expect(result.current.status).toBe('error'));
+    expect(result.current).toMatchObject({ reason: 'rateLimited' });
+  });
+
+  it('reports any other refused start as a plain failure', async () => {
+    mocks.auth = { user: { id: 'u1' }, isLoading: false };
+    mocks.beginChallengeAttempt.mockResolvedValue({ success: false, error: 'invalid_settings' });
+
+    const { result } = renderHook(() => useChallengeAttempt('route_planner', SETTINGS));
+
+    await waitFor(() => expect(result.current.status).toBe('error'));
+    expect(result.current).toMatchObject({ reason: 'failed' });
+  });
+
   it('reports a start that throws (network failure) as an error', async () => {
     mocks.auth = { user: { id: 'u1' }, isLoading: false };
     mocks.beginChallengeAttempt.mockRejectedValue(new Error('offline'));

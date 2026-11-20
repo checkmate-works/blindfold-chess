@@ -23,13 +23,22 @@ export type ChallengeAttemptReady<TQuestion> =
   | { attemptId: string; remote: RemoteChallengePort<TQuestion> }
   | { attemptId: null; remote: undefined };
 
+/**
+ * Why a start failed, as far as the player can act on it. `rateLimited` is
+ * told apart because trying again at once cannot work and the connection is
+ * not at fault; everything else (no answer, an outage, a refused request) is
+ * `failed`.
+ */
+export type ChallengeStartFailure = 'rateLimited' | 'failed';
+
 export type ChallengeAttemptState<TQuestion> =
   | { status: 'loading' }
   | ({ status: 'ready' } & ChallengeAttemptReady<TQuestion>)
-  | { status: 'error'; retry: () => void };
+  | { status: 'error'; reason: ChallengeStartFailure; retry: () => void };
 
 type BeginOutcome<TQuestion> =
-  ({ status: 'ready' } & ChallengeAttemptReady<TQuestion>) | { status: 'error' };
+  | ({ status: 'ready' } & ChallengeAttemptReady<TQuestion>)
+  | { status: 'error'; reason: ChallengeStartFailure };
 
 const GUEST: { status: 'ready'; attemptId: null; remote: undefined } = {
   status: 'ready',
@@ -114,7 +123,7 @@ export function useChallengeAttempt<TQuestion>(
         settledRef.current = true;
         setState(outcome);
       } else {
-        setState({ status: 'error', retry });
+        setState({ status: 'error', reason: outcome.reason, retry });
       }
     });
     return () => {
@@ -133,7 +142,7 @@ async function startAttempt<TQuestion>(
     const result = await beginChallengeAttempt(menuType, settings);
     if (!result.success) {
       console.error(`Failed to begin ${menuType} challenge:`, result.error);
-      return { status: 'error' };
+      return { status: 'error', reason: result.error === 'rateLimited' ? 'rateLimited' : 'failed' };
     }
     const { attemptId } = result;
     const remote: RemoteChallengePort<TQuestion> = {
@@ -149,6 +158,6 @@ async function startAttempt<TQuestion>(
     return { status: 'ready', attemptId, remote };
   } catch (error) {
     captureError(error, `Failed to begin ${menuType} challenge`);
-    return { status: 'error' };
+    return { status: 'error', reason: 'failed' };
   }
 }

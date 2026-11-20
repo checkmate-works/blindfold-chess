@@ -1083,6 +1083,7 @@
     "goToChallenge": "Aceptar el Desafío",
     "challengeAttempt": {
       "startFailed": "No se pudo iniciar el desafío. Comprueba tu conexión e inténtalo de nuevo.",
+      "startRateLimited": "Has iniciado demasiados desafíos en poco tiempo. Espera un momento e inténtalo de nuevo.",
       "retry": "Intentar de nuevo"
     },
     "quitConfirmModal": {

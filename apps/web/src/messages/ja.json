@@ -1083,6 +1083,7 @@
     "goToChallenge": "チャレンジに挑戦",
     "challengeAttempt": {
       "startFailed": "チャレンジを開始できませんでした。通信状態を確認して、もう一度お試しください。",
+      "startRateLimited": "短時間にチャレンジを開始しすぎました。しばらく待ってから、もう一度お試しください。",
       "retry": "もう一度試す"
     },
     "quitConfirmModal": {

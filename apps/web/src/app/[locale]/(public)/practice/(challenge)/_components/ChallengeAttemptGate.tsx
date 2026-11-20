@@ -42,6 +42,9 @@ type Props<TQuestion> = {
  * device-generated question on screen that the server never issued. A start
  * that fails shows an error with a retry instead of the session — a signed-in
  * player is told now that the run could not be recorded, not after playing it.
+ * A start refused by the rate limit gets its own message: the connection is
+ * fine and an immediate retry cannot succeed, so the generic "check your
+ * connection" would send the player looking for a fault that is not there.
  */
 export function ChallengeAttemptGate<TQuestion>({
   menuType,
@@ -57,7 +60,9 @@ export function ChallengeAttemptGate<TQuestion>({
   if (attempt.status === 'error') {
     return (
       <div role="alert" className="flex flex-col items-center gap-4 px-4 py-16 text-center">
-        <p className="text-foreground">{t('startFailed')}</p>
+        <p className="text-foreground">
+          {t(attempt.reason === 'rateLimited' ? 'startRateLimited' : 'startFailed')}
+        </p>
         <Button variant="primary" onClick={attempt.retry}>
           {t('retry')}
         </Button>

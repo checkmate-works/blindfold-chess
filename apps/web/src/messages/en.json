@@ -1083,6 +1083,7 @@
     "goToChallenge": "Take the Challenge",
     "challengeAttempt": {
       "startFailed": "The challenge could not be started. Check your connection and try again.",
+      "startRateLimited": "You have started too many challenges in a short time. Please wait a while and try again.",
       "retry": "Try again"
     },
     "quitConfirmModal": {
