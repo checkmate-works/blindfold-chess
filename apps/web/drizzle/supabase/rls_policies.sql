@@ -217,9 +217,14 @@ CREATE POLICY "chess_openings_select" ON "chess_openings"
 -- =============================================================================
 ALTER TABLE "challenge_results" ENABLE ROW LEVEL SECURITY;
 
+-- A result removed by moderation (deleted_at set) is unreadable to `anon` and
+-- `authenticated`: both hold a SELECT grant, so without this condition the
+-- removed score would still be served through PostgREST after every ranking
+-- query in the app stopped showing it. The admin pages are unaffected because
+-- the server reads over its direct database connection, which bypasses RLS.
 DROP POLICY IF EXISTS "challenge_results_select" ON "challenge_results";
 CREATE POLICY "challenge_results_select" ON "challenge_results"
-  FOR SELECT USING (true);
+  FOR SELECT USING (deleted_at IS NULL);
 
 -- No INSERT policy: scores are written by the service role only. A client
 -- INSERT is a self-reported achievement that RLS cannot validate — it can prove
