@@ -42,6 +42,8 @@ type Props<TQuestion> = {
  * device-generated question on screen that the server never issued. A start
  * that fails shows an error with a retry instead of the session — a signed-in
  * player is told now that the run could not be recorded, not after playing it.
+ * (A start refused because of the account — no server session, a ban — does
+ * not reach this error: the hook settles it as a device-only run.)
  * A start refused by the rate limit gets its own message: the connection is
  * fine and an immediate retry cannot succeed, so the generic "check your
  * connection" would send the player looking for a fault that is not there.

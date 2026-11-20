@@ -142,6 +142,20 @@ describe('useChallengeAttempt', () => {
     expect(result.current).toMatchObject({ reason: 'rateLimited' });
   });
 
+  it.each(['signInRequired', 'banned'])(
+    'lets a player the server refuses with %s play on the device, unrecorded',
+    async (error) => {
+      vi.spyOn(console, 'warn').mockImplementation(() => {});
+      mocks.auth = { user: { id: 'u1' }, isLoading: false };
+      mocks.beginChallengeAttempt.mockResolvedValue({ success: false, error });
+
+      const { result } = renderHook(() => useChallengeAttempt('route_planner', SETTINGS));
+
+      await waitFor(() => expect(result.current.status).toBe('ready'));
+      expect(result.current).toEqual({ status: 'ready', attemptId: null, remote: undefined });
+    }
+  );
+
   it('reports any other refused start as a plain failure', async () => {
     mocks.auth = { user: { id: 'u1' }, isLoading: false };
     mocks.beginChallengeAttempt.mockResolvedValue({ success: false, error: 'invalid_settings' });

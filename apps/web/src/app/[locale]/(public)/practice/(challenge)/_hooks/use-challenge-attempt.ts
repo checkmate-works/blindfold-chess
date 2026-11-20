@@ -47,6 +47,15 @@ const GUEST: { status: 'ready'; attemptId: null; remote: undefined } = {
 };
 
 /**
+ * Start refusals that are about the account, not about this request: the
+ * server sees no session (it expired while the page still showed the player
+ * as signed in), or the account is banned. Trying again cannot change either,
+ * so the player is not held at an error screen; they play on the device,
+ * unrecorded, exactly like a guest.
+ */
+const PLAYS_UNRECORDED: ReadonlySet<string> = new Set(['signInRequired', 'banned']);
+
+/**
  * Starts the server-run attempt a challenge session plays against.
  *
  * A signed-in player's challenge is run by the server: `beginChallengeAttempt`
@@ -61,6 +70,10 @@ const GUEST: { status: 'ready'; attemptId: null; remote: undefined } = {
  * exactly once per mount (and once per `retry`). If the start fails the state
  * is `error` and the session must not be mounted at all: the player is told
  * now, with a retry, instead of after a minute of play that cannot be saved.
+ * The exception is a start the server refuses because of the account itself
+ * (no session on the server, or a ban): a retry cannot succeed, so that
+ * player gets the guest's device-only, unrecorded session instead of an error
+ * they could never get past.
  * (Once play has started, the session hook itself ends the run unrecorded
  * when three answer submissions in a row fail — see `remoteFailed`.)
  *
@@ -141,6 +154,10 @@ async function startAttempt<TQuestion>(
   try {
     const result = await beginChallengeAttempt(menuType, settings);
     if (!result.success) {
+      if (PLAYS_UNRECORDED.has(result.error)) {
+        console.warn(`${menuType} challenge runs unrecorded: ${result.error}`);
+        return GUEST;
+      }
       console.error(`Failed to begin ${menuType} challenge:`, result.error);
       return { status: 'error', reason: result.error === 'rateLimited' ? 'rateLimited' : 'failed' };
     }
