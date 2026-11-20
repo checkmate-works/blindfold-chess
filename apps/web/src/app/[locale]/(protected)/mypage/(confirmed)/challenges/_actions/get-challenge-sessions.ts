@@ -4,6 +4,7 @@ import { and, desc, eq, gte, lt } from 'drizzle-orm';
 
 import { getOptionalUser } from '@/lib/auth';
 import { db } from '@/lib/db';
+import { liveChallengeResult } from '@/lib/db/challenge-results-visibility';
 import type { ChallengeMenuType } from '@/lib/db/practice-menu-types';
 import { CHALLENGE_MENU_TYPES } from '@/lib/db/practice-menu-types';
 import { challengeResults } from '@/lib/db/schema';
@@ -32,12 +33,17 @@ async function getSessionUserId(): Promise<string | null> {
   return user?.id ?? null;
 }
 
+/**
+ * The player's results in `range`, newest first. Results removed by
+ * moderation are left out, so the dashboard's session list and its
+ * period-over-period comparison only ever count live runs.
+ */
 function querySessionsByRange(
   userId: string,
   menuType: string | null,
   range: { start: Date; end: Date }
 ) {
-  const conditions = [eq(challengeResults.userId, userId)];
+  const conditions = [eq(challengeResults.userId, userId), liveChallengeResult()];
   if (menuType) {
     conditions.push(eq(challengeResults.menuType, menuType));
   }
@@ -151,11 +157,15 @@ export async function getChallengeDashboardData(
   }
 }
 
+/**
+ * The menus the player has live results for. A menu whose only results were
+ * removed by moderation is not offered, since selecting it would show nothing.
+ */
 async function listAvailableMenuTypes(
   userId: string,
   range?: { start: Date; end: Date }
 ): Promise<ChallengeMenuType[]> {
-  const conditions = [eq(challengeResults.userId, userId)];
+  const conditions = [eq(challengeResults.userId, userId), liveChallengeResult()];
   if (range) {
     conditions.push(gte(challengeResults.createdAt, range.start));
     conditions.push(lt(challengeResults.createdAt, range.end));
