@@ -141,14 +141,35 @@ describe('useChallengeResultSave', () => {
     expect(mocks.writeSessionItem).not.toHaveBeenCalled();
   });
 
-  it('gives up after two resends of a finish that keeps throwing and shows the save error', async () => {
+  it('keeps resending a finish through an outage of several seconds', async () => {
+    vi.useFakeTimers();
+    mocks.finishChallengeAttempt
+      .mockRejectedValueOnce(new Error('network'))
+      .mockRejectedValueOnce(new Error('network'))
+      .mockRejectedValueOnce(new Error('network'))
+      .mockResolvedValueOnce({ status: 'done', success: true, challengeResultId: 'r1' });
+
+    render({});
+
+    // Resends after 500, 1000 and 2000 ms: the third lands 3.5 s in.
+    await vi.advanceTimersByTimeAsync(3499);
+    expect(mocks.finishChallengeAttempt).toHaveBeenCalledTimes(3);
+    await vi.advanceTimersByTimeAsync(1);
+    expect(mocks.finishChallengeAttempt).toHaveBeenCalledTimes(4);
+    expect(mocks.push).toHaveBeenCalledWith(`${RESULT_URL}&grant=r1`);
+    expect(mocks.writeSessionItem).not.toHaveBeenCalled();
+  });
+
+  it('gives up after five resends of a finish that keeps throwing and shows the save error', async () => {
     vi.useFakeTimers();
     mocks.finishChallengeAttempt.mockRejectedValue(new Error('network'));
 
     render({});
 
-    await vi.advanceTimersByTimeAsync(5000);
-    expect(mocks.finishChallengeAttempt).toHaveBeenCalledTimes(3);
+    await vi.advanceTimersByTimeAsync(15_499);
+    expect(mocks.push).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(1);
+    expect(mocks.finishChallengeAttempt).toHaveBeenCalledTimes(6);
     expect(mocks.writeSessionItem).toHaveBeenCalledWith(expect.any(String), 'true');
     expect(mocks.push).toHaveBeenCalledWith(RESULT_URL);
   });

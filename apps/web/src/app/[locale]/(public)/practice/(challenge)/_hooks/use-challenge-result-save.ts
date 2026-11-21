@@ -25,21 +25,23 @@ const MAX_PENDING_RESENDS = 5;
 const PENDING_RESEND_MARGIN_MS = 100;
 
 /**
- * How many times a finish that failed in transit, or inside the action, is
- * sent again before the save is given up as failed. Such a failure says
- * nothing about the run itself, which the server has already scored answer by
- * answer; giving up after one lost request would throw away a minute of play
- * over a network blip.
+ * Waits before each resend of a finish that failed in transit, or inside the
+ * action; one resend per entry, then the save is given up as failed.
+ *
+ * Such a failure says nothing about the run itself, which the server has
+ * already scored answer by answer, and the attempt stays finishable for ten
+ * minutes after its start. The waits double so the resends span about fifteen
+ * seconds: long enough for a connection that dropped while changing networks
+ * to come back, where the two resends half a second apart that this replaced
+ * gave up after one second and lost a fully played run.
  */
-const MAX_FAILURE_RESENDS = 2;
-
-/** Wait before resending a failed finish, so a brief outage has a chance to pass. */
-const FAILURE_RESEND_DELAY_MS = 500;
+const FAILURE_RESEND_DELAYS_MS = [500, 1000, 2000, 4000, 8000];
 
 /**
  * The code `finishChallengeAttempt` answers with when it caught an exception
- * of its own (a database or auth outage), as opposed to a decision about the
- * run such as `not_recorded` or a rate limit. Only this one is worth resending.
+ * of its own (a database outage, or an Auth server it could not reach), as
+ * opposed to a decision about the run such as `not_recorded` or a rate limit.
+ * Only this one is worth resending.
  */
 const UNEXPECTED_ERROR = 'unexpected_error';
 
@@ -108,9 +110,8 @@ async function finishWithResends(attemptId: string): Promise<SaveResultResponse>
     try {
       response = await finishChallengeAttempt(attemptId);
     } catch (error) {
-      if (failureResends >= MAX_FAILURE_RESENDS) throw error;
-      failureResends++;
-      await wait(FAILURE_RESEND_DELAY_MS);
+      if (failureResends >= FAILURE_RESEND_DELAYS_MS.length) throw error;
+      await wait(FAILURE_RESEND_DELAYS_MS[failureResends++]);
       continue;
     }
 
@@ -128,9 +129,8 @@ async function finishWithResends(attemptId: string): Promise<SaveResultResponse>
         challengeResultId: response.challengeResultId,
       };
     }
-    if (response.error === UNEXPECTED_ERROR && failureResends < MAX_FAILURE_RESENDS) {
-      failureResends++;
-      await wait(FAILURE_RESEND_DELAY_MS);
+    if (response.error === UNEXPECTED_ERROR && failureResends < FAILURE_RESEND_DELAYS_MS.length) {
+      await wait(FAILURE_RESEND_DELAYS_MS[failureResends++]);
       continue;
     }
     return { success: false, error: response.error };
