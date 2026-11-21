@@ -6,7 +6,6 @@ import type { GrantedRank } from '@/lib/db/data/ranks';
 import { detectScoreImprovement } from './challenge-best-score';
 import { getUserAllTimeRank } from './challenge-queries';
 import { decideChallengeRankFeedItem } from './challenge-rank-feed';
-import { db } from './index';
 import { evaluateRanksAndRefreshEntitlements } from './rank-grant-flow';
 import { grantChallengeExp } from './save-exp';
 import { challengeBestScores, challengeResults, feedItems } from './schema';
@@ -70,159 +69,147 @@ async function insertChallengeRankFeedItem(
 }
 
 /**
- * Writes challenge result records after a challenge session completes.
- *
- * In one transaction:
+ * Writes the records of one completed challenge inside the caller's
+ * transaction:
  * 1. INSERT into challenge_results (append-only log for weekly/monthly rankings)
  * 2. UPSERT into challenge_best_scores (all-time best per user/menu/key)
  * 3. INSERT into feed_items when a new entry or improvement moves the rank
  *    enough to warrant one (`decideChallengeRankFeedItem`)
  * 4. Grant EXP keyed by the new `challenge_results.id`
  *
- * Then, after commit, evaluates belt ranks and — on a dan promotion — sets
- * the ad-free cookie (`evaluateRanksAndRefreshEntitlements`). Both are
- * best-effort: a failure there never undoes or fails the committed save.
+ * Takes the transaction instead of opening one so a caller can make the
+ * result part of a larger atomic change: finishing a server-run attempt marks
+ * the attempt row consumed in the same transaction that holds its row lock,
+ * so a result is written exactly once per attempt. Belt ranks are not
+ * evaluated here — call {@link evaluateRanksAfterChallenge} after the commit.
  *
  * The UPSERT only updates the existing row when the new result is strictly
  * better, using tuple comparison: (score DESC, incorrect_answers ASC, time_taken ASC).
  */
-export async function saveChallengeResult(
+export async function writeChallengeResult(
+  tx: DbTx,
   input: ChallengeResultInput
-): Promise<{ grantedRanks: GrantedRank[]; exp: ExpInfo; challengeResultId: string }> {
+): Promise<{ exp: ExpInfo; challengeResultId: string }> {
   const { userId, menuType, leaderboardKey, score, incorrectAnswers, timeTaken } = input;
   const now = new Date();
 
-  // Captured inside the transaction so the caller can return it (used by
-  // result pages to refetch EXP via ?grant=<id>).
-  let challengeResultId = '';
-
-  // Exp info populated inside the transaction
-  let expInfo: ExpInfo = {
-    earnedExp: 0,
-    totalExp: 0,
-    level: 0,
-    levelUp: false,
-    progressPercent: 0,
-  };
-
-  await db.transaction(async (tx) => {
-    // 1. Append to challenge_results (all results, for period-based rankings)
-    const [challengeResult] = await tx
-      .insert(challengeResults)
-      .values({
-        userId,
-        menuType,
-        leaderboardKey,
-        score,
-        incorrectAnswers,
-        timeTaken,
-      })
-      .returning({ id: challengeResults.id });
-
-    challengeResultId = challengeResult.id;
-
-    // 2. Check the current best score before the UPSERT
-    const [currentBest] = await tx
-      .select({
-        score: challengeBestScores.score,
-        incorrectAnswers: challengeBestScores.incorrectAnswers,
-        timeTaken: challengeBestScores.timeTaken,
-      })
-      .from(challengeBestScores)
-      .where(
-        and(
-          eq(challengeBestScores.userId, userId),
-          eq(challengeBestScores.menuType, menuType),
-          eq(challengeBestScores.leaderboardKey, leaderboardKey)
-        )
-      );
-
-    const { isNewEntry, isImprovement } = detectScoreImprovement(
-      { score, incorrectAnswers, timeTaken },
-      currentBest
-    );
-
-    // 2.5. For improvements, capture the old rank BEFORE the UPSERT
-    let oldRank: number | null = null;
-    if (isImprovement) {
-      const oldRankResult = await getUserAllTimeRank(userId, menuType, leaderboardKey, tx);
-      oldRank = oldRankResult?.rank ?? null;
-    }
-
-    // 3. UPSERT into challenge_best_scores (all-time best per user/menu/key)
-    //    Only updates when the new result is strictly better:
-    //    (higher score, then fewer incorrect answers, then faster time)
-    await tx
-      .insert(challengeBestScores)
-      .values({
-        userId,
-        menuType,
-        leaderboardKey,
-        score,
-        incorrectAnswers,
-        timeTaken,
-        achievedAt: now,
-      })
-      .onConflictDoUpdate({
-        target: [
-          challengeBestScores.userId,
-          challengeBestScores.menuType,
-          challengeBestScores.leaderboardKey,
-        ],
-        set: {
-          score: sql`EXCLUDED.score`,
-          incorrectAnswers: sql`EXCLUDED.incorrect_answers`,
-          timeTaken: sql`EXCLUDED.time_taken`,
-          achievedAt: sql`EXCLUDED.achieved_at`,
-          updatedAt: sql`now()`,
-        },
-        setWhere: sql`(
-          EXCLUDED.score,
-          -EXCLUDED.incorrect_answers,
-          -EXCLUDED.time_taken
-        ) > (
-          ${challengeBestScores.score},
-          -${challengeBestScores.incorrectAnswers},
-          -${challengeBestScores.timeTaken}
-        )`,
-      });
-
-    // 4. Insert a rank-update feed item when the new rank warrants one.
-    if (isNewEntry || isImprovement) {
-      await insertChallengeRankFeedItem(tx, {
-        userId,
-        menuType,
-        leaderboardKey,
-        score,
-        incorrectAnswers,
-        timeTaken,
-        challengeResultId: challengeResult.id,
-        isNewEntry,
-        oldRank,
-      });
-    }
-
-    // 5. Exp grant — calculate and persist Exp for this challenge completion
-    expInfo = await grantChallengeExp(tx, {
+  // 1. Append to challenge_results (all results, for period-based rankings)
+  const [challengeResult] = await tx
+    .insert(challengeResults)
+    .values({
       userId,
-      challengeResultId: challengeResult.id,
       menuType,
+      leaderboardKey,
       score,
       incorrectAnswers,
       timeTaken,
-      leaderboardKey,
-    });
-  });
+    })
+    .returning({ id: challengeResults.id });
 
-  // 6. Check and grant any newly achievable belt ranks, then refresh the
-  // ad-free cookie if a dan promotion just happened. Called outside the
-  // transaction so challenge_best_scores reflects the latest data.
-  // Best-effort — rank evaluation must not break a challenge result flow
-  // that has already committed successfully.
-  const grantedRanks: GrantedRank[] = await evaluateRanksAndRefreshEntitlements(
-    userId,
-    'challenge completion'
+  // 2. Check the current best score before the UPSERT
+  const [currentBest] = await tx
+    .select({
+      score: challengeBestScores.score,
+      incorrectAnswers: challengeBestScores.incorrectAnswers,
+      timeTaken: challengeBestScores.timeTaken,
+    })
+    .from(challengeBestScores)
+    .where(
+      and(
+        eq(challengeBestScores.userId, userId),
+        eq(challengeBestScores.menuType, menuType),
+        eq(challengeBestScores.leaderboardKey, leaderboardKey)
+      )
+    );
+
+  const { isNewEntry, isImprovement } = detectScoreImprovement(
+    { score, incorrectAnswers, timeTaken },
+    currentBest
   );
 
-  return { grantedRanks, exp: expInfo, challengeResultId };
+  // 2.5. For improvements, capture the old rank BEFORE the UPSERT
+  let oldRank: number | null = null;
+  if (isImprovement) {
+    const oldRankResult = await getUserAllTimeRank(userId, menuType, leaderboardKey, tx);
+    oldRank = oldRankResult?.rank ?? null;
+  }
+
+  // 3. UPSERT into challenge_best_scores (all-time best per user/menu/key)
+  //    Only updates when the new result is strictly better:
+  //    (higher score, then fewer incorrect answers, then faster time)
+  await tx
+    .insert(challengeBestScores)
+    .values({
+      userId,
+      menuType,
+      leaderboardKey,
+      score,
+      incorrectAnswers,
+      timeTaken,
+      achievedAt: now,
+    })
+    .onConflictDoUpdate({
+      target: [
+        challengeBestScores.userId,
+        challengeBestScores.menuType,
+        challengeBestScores.leaderboardKey,
+      ],
+      set: {
+        score: sql`EXCLUDED.score`,
+        incorrectAnswers: sql`EXCLUDED.incorrect_answers`,
+        timeTaken: sql`EXCLUDED.time_taken`,
+        achievedAt: sql`EXCLUDED.achieved_at`,
+        updatedAt: sql`now()`,
+      },
+      setWhere: sql`(
+        EXCLUDED.score,
+        -EXCLUDED.incorrect_answers,
+        -EXCLUDED.time_taken
+      ) > (
+        ${challengeBestScores.score},
+        -${challengeBestScores.incorrectAnswers},
+        -${challengeBestScores.timeTaken}
+      )`,
+    });
+
+  // 4. Insert a rank-update feed item when the new rank warrants one.
+  if (isNewEntry || isImprovement) {
+    await insertChallengeRankFeedItem(tx, {
+      userId,
+      menuType,
+      leaderboardKey,
+      score,
+      incorrectAnswers,
+      timeTaken,
+      challengeResultId: challengeResult.id,
+      isNewEntry,
+      oldRank,
+    });
+  }
+
+  // 5. Exp grant — calculate and persist Exp for this challenge completion
+  const exp = await grantChallengeExp(tx, {
+    userId,
+    challengeResultId: challengeResult.id,
+    menuType,
+    score,
+    incorrectAnswers,
+    timeTaken,
+    leaderboardKey,
+  });
+
+  return { exp, challengeResultId: challengeResult.id };
+}
+
+/**
+ * Checks and grants any newly achievable belt ranks after a challenge result
+ * was committed, then refreshes the ad-free cookie if a dan promotion just
+ * happened.
+ *
+ * Must run after the transaction that wrote the result has committed, so the
+ * evaluation reads the updated `challenge_best_scores`. Best-effort — a
+ * failure here never undoes or fails the committed save.
+ */
+export async function evaluateRanksAfterChallenge(userId: string): Promise<GrantedRank[]> {
+  return evaluateRanksAndRefreshEntitlements(userId, 'challenge completion');
 }

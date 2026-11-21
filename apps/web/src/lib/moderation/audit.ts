@@ -23,10 +23,23 @@ export type ModerationActionType =
   | 'unfeature_puzzle'
   | 'create_grant'
   | 'revoke_grant'
-  | 'create_point_grant';
+  | 'create_point_grant'
+  /**
+   * A challenge result removed from every ranking. The removed row survives
+   * with `deleted_at` set, but the all-time best and the player's EXP total it
+   * fed are rebuilt in the same transaction, so this row's metadata is the
+   * only record of what they were at removal time. Always carries a reason.
+   */
+  | 'delete_challenge_result';
 
 /** What the action was performed on. Pairs with `targetId`. */
-export type ModerationTargetType = 'user' | 'topic_post' | 'chunk' | 'position';
+export type ModerationTargetType =
+  | 'user'
+  | 'topic_post'
+  | 'chunk'
+  | 'position'
+  /** A `challenge_results` row; `targetId` is the result id, not the player's. */
+  | 'challenge_result';
 
 type LogInput = {
   /** The admin performing the action (`requireAdmin()`'s `userId`). */

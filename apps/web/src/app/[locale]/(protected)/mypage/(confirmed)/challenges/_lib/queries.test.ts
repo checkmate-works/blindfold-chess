@@ -1,3 +1,5 @@
+import type { SQL } from 'drizzle-orm';
+import { PgDialect } from 'drizzle-orm/pg-core';
 import { describe, expect, it, vi } from 'vitest';
 
 import { db } from '@/lib/db';
@@ -20,6 +22,7 @@ vi.mock('@/lib/db', () => {
       incorrectAnswers: 'challenge_results.incorrect_answers',
       timeTaken: 'challenge_results.time_taken',
       createdAt: 'challenge_results.created_at',
+      deletedAt: 'challenge_results.deleted_at',
     },
   };
 });
@@ -34,10 +37,24 @@ vi.mock('@/lib/db/schema', () => ({
     incorrectAnswers: 'challenge_results.incorrect_answers',
     timeTaken: 'challenge_results.time_taken',
     createdAt: 'challenge_results.created_at',
+    deletedAt: 'challenge_results.deleted_at',
   },
 }));
 
 const mockDb = vi.mocked(db);
+
+/**
+ * Whether a recorded `where(...)` argument contains the live-result predicate.
+ * The schema mock maps columns to plain strings, so drizzle binds the column
+ * as a parameter: `deleted_at IS NULL` renders as `$n is null` with the
+ * mocked column name at `params[n - 1]`.
+ */
+function hasLivePredicate(chain: Record<string, unknown>): boolean {
+  const where = chain.where as ReturnType<typeof vi.fn>;
+  const { sql, params } = new PgDialect().sqlToQuery(where.mock.calls[0][0] as SQL);
+  const index = params.indexOf('challenge_results.deleted_at');
+  return index >= 0 && sql.includes(`$${index + 1} is null`);
+}
 
 const makeRow = (overrides: Record<string, unknown> = {}) => ({
   id: 'row-1',
@@ -293,6 +310,30 @@ describe('getChallengeResultsPaginated', () => {
 
     const offsetFn = (itemsChain as Record<string, ReturnType<typeof vi.fn>>).offset;
     expect(offsetFn).toHaveBeenCalledWith(0); // clamped to page 1 (totalPages=1)
+  });
+});
+
+describe('results removed by moderation', () => {
+  it('excludes them from both the page count and the page rows', async () => {
+    const countChain = mockChain([{ count: 1 }]);
+    const itemsChain = mockChain([makeRow()]);
+    mockDb.select
+      .mockReturnValueOnce(countChain as unknown as ReturnType<typeof mockDb.select>)
+      .mockReturnValueOnce(itemsChain as unknown as ReturnType<typeof mockDb.select>);
+
+    await getChallengeResultsPaginated('user-1', 1, 'coordinate_quiz', 'white');
+
+    expect(hasLivePredicate(countChain)).toBe(true);
+    expect(hasLivePredicate(itemsChain)).toBe(true);
+  });
+
+  it('does not let them pick the default leaderboard key', async () => {
+    const chain = mockChain([{ leaderboardKey: 'knight' }]);
+    mockDb.select.mockReturnValueOnce(chain as unknown as ReturnType<typeof mockDb.select>);
+
+    await getLatestLeaderboardKey('user-1', 'legal_moves');
+
+    expect(hasLivePredicate(chain)).toBe(true);
   });
 });
 

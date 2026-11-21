@@ -37,6 +37,7 @@ const FILTERABLE_ACTIONS = [
   'unban',
   'delete_post',
   'delete_position',
+  'delete_challenge_result',
   'feature_puzzle',
   'unfeature_puzzle',
   'create_grant',
@@ -61,6 +62,7 @@ function actionBadgeVariant(action: string): AdminBadgeVariant {
       return 'success';
     case 'delete_post':
     case 'delete_position':
+    case 'delete_challenge_result':
     case 'revoke_grant':
     case 'unfeature_puzzle':
       return 'caution';

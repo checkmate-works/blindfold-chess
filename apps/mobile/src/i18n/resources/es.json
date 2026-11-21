@@ -238,10 +238,6 @@
       "orientationWhite": "Blancas",
       "orientationBlack": "Negras",
       "orientationRandom": "Aleatorio",
-      "feedbackSpeed": "Velocidad de retroalimentación",
-      "feedbackFast": "Rápida",
-      "feedbackNormal": "Normal",
-      "feedbackSlow": "Lenta",
       "startQuiz": "Empezar quiz"
     },
     "session": {

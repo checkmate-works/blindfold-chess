@@ -15,6 +15,8 @@ const hoisted = vi.hoisted(() => {
   const userExpTable = { __table: 'user_exp' };
   const state = {
     expEventRows: [] as Array<{ amount: number }>,
+    // Rows for the lookup of the event that cancels a grant.
+    reversalRows: [] as Array<{ amount: number }>,
     userExpRows: [] as Array<{ totalExp: number }>,
     // Captured WHERE-clause args per table on each `.where(...)` call.
     capturedWhere: {
@@ -36,7 +38,9 @@ vi.mock('./index', () => {
         where: (whereExpr: unknown) => {
           const tableName = (table as { __table?: string })?.__table;
           if (tableName === 'exp_events') {
-            hoisted.state.capturedWhere.exp_events = whereExpr;
+            // The grant lookup only: the reversal lookup that follows it must
+            // not replace what the WHERE-clause tests inspect.
+            hoisted.state.capturedWhere.exp_events ??= whereExpr;
           } else if (tableName === 'user_exp') {
             hoisted.state.capturedWhere.user_exp = whereExpr;
           }
@@ -45,7 +49,12 @@ vi.mock('./index', () => {
               if (hoisted.state.rowProvider && tableName) {
                 return hoisted.state.rowProvider(tableName, whereExpr);
               }
-              if (tableName === 'exp_events') return hoisted.state.expEventRows;
+              if (tableName === 'exp_events') {
+                const sourceValue = findEq(whereExpr, 'exp_events', 'source')?.__eq.value;
+                return sourceValue === 'challenge_result_reversal'
+                  ? hoisted.state.reversalRows
+                  : hoisted.state.expEventRows;
+              }
               if (tableName === 'user_exp') return hoisted.state.userExpRows;
               return [];
             },
@@ -108,6 +117,7 @@ function findEq(expr: unknown, table: string, column: string): EqNode | undefine
 
 beforeEach(() => {
   hoisted.state.expEventRows = [];
+  hoisted.state.reversalRows = [];
   hoisted.state.userExpRows = [];
   hoisted.state.capturedWhere.exp_events = null;
   hoisted.state.capturedWhere.user_exp = null;
@@ -130,6 +140,26 @@ describe('getExpInfoBySource', () => {
     const result = await getExpInfoBySource(userId, source, sourceId);
 
     expect(result).toBeNull();
+  });
+
+  it('returns null for a grant that moderation took back', async () => {
+    hoisted.state.expEventRows = [{ amount: 25 }];
+    hoisted.state.reversalRows = [{ amount: -25 }];
+    hoisted.state.userExpRows = [{ totalExp: 75 }];
+
+    const result = await getExpInfoBySource(userId, source, sourceId);
+
+    expect(result).toBeNull();
+  });
+
+  it('does not look for a reversal of a source that is never taken back', async () => {
+    hoisted.state.expEventRows = [{ amount: 25 }];
+    hoisted.state.reversalRows = [{ amount: -25 }];
+    hoisted.state.userExpRows = [{ totalExp: 100 }];
+
+    const result = await getExpInfoBySource(userId, 'practice_result', sourceId);
+
+    expect(result?.earnedExp).toBe(25);
   });
 
   it('returns ExpInfo with earnedExp and totalExp when event is found', async () => {

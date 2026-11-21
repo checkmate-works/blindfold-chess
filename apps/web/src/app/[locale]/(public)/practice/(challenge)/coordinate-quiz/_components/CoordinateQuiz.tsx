@@ -16,9 +16,7 @@ export default function CoordinateQuiz({ locale }: Props) {
     <CoordinateQuizSetup
       locale={locale}
       boardOrientation={settings.boardOrientation}
-      feedbackSpeed={settings.feedbackSpeed}
       onBoardOrientationChange={(boardOrientation) => updateSettings({ boardOrientation })}
-      onFeedbackSpeedChange={(feedbackSpeed) => updateSettings({ feedbackSpeed })}
     />
   );
 }

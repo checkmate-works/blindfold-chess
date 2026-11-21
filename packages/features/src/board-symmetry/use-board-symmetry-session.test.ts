@@ -2,6 +2,10 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import type {
+  ChallengeAnswerResponse,
+  RemoteChallengePort,
+} from "../challenge-attempt/types";
 import { FEEDBACK_FLASH_MS } from "../common";
 import { useTimedSession } from "../practice-session/use-timed-session";
 import { calculateSymmetricSquare } from "./logic";
@@ -417,5 +421,70 @@ describe("useTimedSession - onAdvance callback", () => {
     );
 
     consoleErrorSpy.mockRestore();
+  });
+});
+
+describe("useBoardSymmetrySession - remote challenge", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  const first: BoardSymmetryProblem = { square: "b3", type: "point" };
+  const next: BoardSymmetryProblem = { square: "c2", type: "horizontal" };
+
+  function createPort() {
+    const submitAnswer = vi.fn(
+      async (): Promise<ChallengeAnswerResponse<BoardSymmetryProblem>> => ({
+        status: "accepted",
+        correct: true,
+        elapsedMs: 1000,
+        next: { sequence: 1, question: next },
+      }),
+    );
+    const port: RemoteChallengePort<BoardSymmetryProblem> = {
+      first: { sequence: 0, question: first },
+      submitAnswer,
+    };
+    return { port, submitAnswer };
+  }
+
+  it("shows the server's first problem, sends the picked square, and moves to the server's next problem", async () => {
+    const { port, submitAnswer } = createPort();
+    const { result } = renderHook(() =>
+      useBoardSymmetrySession({ timeLimit: 60, remote: port }),
+    );
+
+    expect(result.current.currentProblem).toEqual(first);
+    advancePastCountdown();
+
+    await act(async () => {
+      result.current.handleAnswer("g", "6");
+    });
+
+    expect(submitAnswer).toHaveBeenCalledWith(0, { file: "g", rank: "6" });
+    expect(result.current.correctCount).toBe(1);
+
+    advancePastFeedback(true);
+    expect(result.current.currentProblem).toEqual(next);
+  });
+
+  it("ignores pause requests when disablePause is set", () => {
+    const { port } = createPort();
+    const { result } = renderHook(() =>
+      useBoardSymmetrySession({
+        timeLimit: 60,
+        remote: port,
+        disablePause: true,
+      }),
+    );
+    advancePastCountdown();
+
+    act(() => result.current.togglePause());
+
+    expect(result.current.isPaused).toBe(false);
   });
 });

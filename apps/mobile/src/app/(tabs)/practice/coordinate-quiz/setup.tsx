@@ -17,7 +17,6 @@ export default function CoordinateQuizSetup() {
       params: {
         duration: settings.timeLimit.toString(),
         orientation: settings.orientation,
-        feedbackSpeed: settings.feedbackSpeed,
       },
     });
   };

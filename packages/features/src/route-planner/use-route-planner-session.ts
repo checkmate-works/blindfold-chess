@@ -15,6 +15,7 @@ import {
   toTimedSessionFacade,
 } from "../practice-session/quiz-session";
 import { useTimedSession } from "../practice-session/use-timed-session";
+import type { RoutePlannerChallengeAnswer } from "./challenge";
 import { findShortestPath, generateProblem } from "./logic";
 import type {
   RoutePlannerPieceType,
@@ -23,20 +24,24 @@ import type {
   RoutePlannerResult,
 } from "./types";
 
-export type UseRoutePlannerSessionConfig =
-  TimedQuizSessionConfig<RoutePlannerResult> & {
-    selectedPieces: RoutePlannerPieceType[];
-    /** If set, session also ends when total answers reach this count. */
-    problemCount?: number;
-    onSkipEffect?: () => void;
-  };
+export type UseRoutePlannerSessionConfig = TimedQuizSessionConfig<
+  RoutePlannerResult,
+  RoutePlannerProblem
+> & {
+  selectedPieces: RoutePlannerPieceType[];
+  /** If set, session also ends when total answers reach this count. */
+  problemCount?: number;
+  onSkipEffect?: () => void;
+};
 
 export type UseRoutePlannerSessionReturn = TimedSessionFacade & {
   currentProblem: RoutePlannerProblem | null;
   /**
    * Record an answer. `userPath` is the square sequence the user entered;
    * when omitted (callers that track their own per-problem results) the
-   * recorded entry carries an empty path.
+   * recorded entry carries an empty path. In a remote session the path is
+   * also what the server grades, so a remote caller must pass it: an omitted
+   * path is sent as an empty one, i.e. a direct start-to-goal move.
    */
   handleAnswer: (success: boolean, userPath?: readonly Square[]) => void;
   handleSkip: () => void;
@@ -58,6 +63,8 @@ export function useRoutePlannerSession({
   onComplete,
   onAnswerEffect,
   onSkipEffect,
+  remote,
+  disablePause,
 }: UseRoutePlannerSessionConfig): UseRoutePlannerSessionReturn {
   const problemResultsRef = useRef<RoutePlannerProblemResult[]>([]);
   const onSkipEffectRef = useLatestRef(onSkipEffect);
@@ -73,6 +80,8 @@ export function useRoutePlannerSession({
     feedbackDuration: flashFeedbackDuration,
     mistakeAllowance,
     onAnswerEffect,
+    remote,
+    disablePause,
   });
 
   const { correctCount, incorrectCount, isFinished: timerFinished } = session;
@@ -87,7 +96,8 @@ export function useRoutePlannerSession({
     (): RoutePlannerResult => {
       const total = correctCount + incorrectCount;
       return {
-        problems: problemResultsRef.current,
+        // The core rolls back a remote answer rejected at the deadline.
+        problems: problemResultsRef.current.slice(0, total),
         totalProblems: total,
         correctCount,
         accuracy: calculateAnswerAccuracy(correctCount, total),
@@ -136,7 +146,8 @@ export function useRoutePlannerSession({
       if (isBlocked || !currentQuestion) return;
 
       recordProblem(currentQuestion, success, userPath);
-      sessionHandleAnswer(success);
+      const answer: RoutePlannerChallengeAnswer = { path: [...userPath] };
+      sessionHandleAnswer(success, answer);
     },
     [isBlocked, currentQuestion, recordProblem, sessionHandleAnswer],
   );
@@ -146,7 +157,8 @@ export function useRoutePlannerSession({
 
     onSkipEffectRef.current?.();
     recordProblem(currentQuestion, false, [], true);
-    sessionHandleAnswer(false);
+    const answer: RoutePlannerChallengeAnswer = { skipped: true };
+    sessionHandleAnswer(false, answer);
   }, [isBlocked, currentQuestion, recordProblem, sessionHandleAnswer]);
 
   return {

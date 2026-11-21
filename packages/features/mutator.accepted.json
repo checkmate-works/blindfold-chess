@@ -7,13 +7,29 @@
     "reason": "Every complete SAN falls through the generators to [] on its own; the isCompleteMove guard only short-circuits.",
     "where": "src/game-play/move-suggestions.ts:21:7 isCompleteMove(trimmedInput) -> false"
   },
+  "17z2w8zmywa": {
+    "reason": "A stored answer is never null (parseAnswer's null is rejected before anything is stored), so an unparseable resend compares unequal to it and is rejected either way.",
+    "where": "src/challenge-attempt/transitions.ts:125:9 answer === null -> false"
+  },
   "189uuvaixni": {
     "reason": "Equal ranks on the same file mean both endpoints are the same square, so either order prints the same pair.",
     "where": "src/diagonal-quiz/logic.ts:135:7 sq1[1] < sq2[1] -> sq1[1] <= sq2[1]"
   },
+  "18ziykwpw04": {
+    "reason": "Keys within one object are distinct, so <= orders them like <, and >= is the reverse order applied to both sides; any consistent key order gives the same equality result.",
+    "where": "src/challenge-attempt/transitions.ts:287:54 a < b -> a >= b"
+  },
+  "1dc302743bd": {
+    "reason": "The strict comparisons that follow (sequence === state.sequence - 1, sequence !== state.sequence) already reject every non-number and non-integer, so the type guard only narrows the type for the compiler.",
+    "where": "src/challenge-attempt/transitions.ts:117:7 typeof sequence !== \"number\" || !Number.isInteger(sequence) -> (typeof sequence !== \"number\" && !Number.isInteger(sequence…"
+  },
   "1dddi7sr704": {
     "reason": "FILES.includes(x) already implies x is a single character, so the length check beside it never changes the result.",
     "where": "src/game-play/move-suggestions.ts:212:12 input.length === 1 && FILES.includes(input as File) -> (input.length === 1 || FILES.includes(input as File))"
+  },
+  "1f0aknpat6g": {
+    "reason": "The strict comparisons that follow (sequence === state.sequence - 1, sequence !== state.sequence) already reject every non-number and non-integer, so the type guard only narrows the type for the compiler.",
+    "where": "src/challenge-attempt/transitions.ts:117:7 typeof sequence !== \"number\" || !Number.isInteger(sequence) -> false"
   },
   "1kgm4a1v227": {
     "reason": "chess.js 1.4.0's validateFen checks a subset of validateFenStructure plus the pre-checks above, so no FEN reaches this throw today; the guard is for a stricter chess.js.",
@@ -39,6 +55,10 @@
     "reason": "This branch is reached only when the first 'x' is the last character, so rest.endsWith('x') is always true here.",
     "where": "src/game-play/move-suggestions.ts:129:14 rest.endsWith(\"x\") -> true"
   },
+  "1x6zipqn1pu": {
+    "reason": "The strict comparisons that follow (sequence === state.sequence - 1, sequence !== state.sequence) already reject every non-number and non-integer, so the type guard only narrows the type for the compiler.",
+    "where": "src/challenge-attempt/transitions.ts:117:7 typeof sequence !== \"number\" -> false"
+  },
   "1zvbcz4lidw": {
     "reason": "Both generators make an attempt fail only by returning null, so one extra failing attempt past the bound returns the same batch; the bound only stops the loop.",
     "where": "src/legal-moves/logic.ts:54:33 attempts < maxAttempts -> attempts <= maxAttempts"
@@ -46,6 +66,10 @@
   "24yxlf0jv2u": {
     "reason": "Only the truthiness of the black move matters here; capturing one character instead of the whole SAN changes the result only when a move number is glued onto that SAN (e.g. 'e52.'), which PGN text never contains.",
     "where": "src/chess-core/pgn-format.ts:130:23 /(\\d+)\\.\\s*(\\S+)(?:\\s+(\\S+))?/g -> /(\\d+)\\.\\s*(\\S+)(?:\\s+(\\S))?/g"
+  },
+  "25r8wdjzj1l": {
+    "reason": "Keys within one object are distinct, so <= orders them like <, and >= is the reverse order applied to both sides; any consistent key order gives the same equality result.",
+    "where": "src/challenge-attempt/transitions.ts:287:54 a < b -> a <= b"
   },
   "264oovslmk9": {
     "reason": "At i = 0 the only pick is j = 0, so the extra iteration swaps the first element with itself.",
@@ -62,6 +86,10 @@
   "29kb3dmzhc6": {
     "reason": "Empty or blank input already falls through every branch below to []; the early return only short-circuits.",
     "where": "src/game-play/move-suggestions.ts:15:7 !input -> false"
+  },
+  "2batpfdel2": {
+    "reason": "FILES.includes and RANKS.includes on the next lines are false for every non-string, so the answer is rejected with or without the typeof check.",
+    "where": "src/board-symmetry/challenge.ts:59:9 !(FILES as readonly string[]).includes(file) -> false"
   },
   "2fq8as0dpif": {
     "reason": "This branch is reached only when the first 'x' is the last character, so rest.endsWith('x') is always true here.",
@@ -106,6 +134,10 @@
   "p3c6h9jakp": {
     "reason": "chess.js 1.4.0's validateFen checks a subset of validateFenStructure plus the pre-checks above, so no FEN reaches this throw today; the guard is for a stricter chess.js.",
     "where": "src/chess-core/validate-fen-semantic.ts:301:12 { ok: false, reason: \"illegal_position\", error: e instanceo… -> {}"
+  },
+  "qj70vfxsl3": {
+    "reason": "The strict comparisons that follow (sequence === state.sequence - 1, sequence !== state.sequence) already reject every non-number and non-integer, so the type guard only narrows the type for the compiler.",
+    "where": "src/challenge-attempt/transitions.ts:117:68 { return { kind: \"rejected\" }; } -> {}"
   },
   "rbbrro7e19": {
     "reason": "chess.js 1.4.0's validateFen checks a subset of validateFenStructure plus the pre-checks above, so no FEN reaches this throw today; the guard is for a stricter chess.js.",

@@ -575,6 +575,27 @@
       "when": 1792811732543,
       "tag": "20261024031532_create_join_announcement_decisions",
       "breakpoints": true
+    },
+    {
+      "idx": 82,
+      "version": "7",
+      "when": 1795005092798,
+      "tag": "20261118123132_create_challenge_attempts",
+      "breakpoints": true
+    },
+    {
+      "idx": 83,
+      "version": "7",
+      "when": 1795042326072,
+      "tag": "20261118225206_challenge_attempts_result_fk",
+      "breakpoints": true
+    },
+    {
+      "idx": 84,
+      "version": "7",
+      "when": 1795210262229,
+      "tag": "20261120213102_add_challenge_results_deleted_at",
+      "breakpoints": true
     }
   ]
 }

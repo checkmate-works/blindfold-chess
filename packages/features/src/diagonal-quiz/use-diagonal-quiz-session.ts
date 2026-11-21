@@ -14,6 +14,7 @@ import {
   toTimedSessionFacade,
 } from "../practice-session/quiz-session";
 import { useTimedSession } from "../practice-session/use-timed-session";
+import type { DiagonalQuizChallengeAnswer } from "./challenge";
 import {
   EXCLUDED_QUIZ_SQUARES,
   getDiagonals,
@@ -21,8 +22,10 @@ import {
 } from "./logic";
 import type { DiagonalQuestionResult, DiagonalQuizResult } from "./types";
 
-export type UseDiagonalQuizSessionConfig =
-  TimedQuizSessionConfig<DiagonalQuizResult>;
+export type UseDiagonalQuizSessionConfig = TimedQuizSessionConfig<
+  DiagonalQuizResult,
+  Square
+>;
 
 export type UseDiagonalQuizSessionReturn = TimedSessionFacade & {
   currentSquare: Square | null;
@@ -51,6 +54,8 @@ export function useDiagonalQuizSession({
   onComplete,
   onAnswerEffect,
   mistakeAllowance,
+  remote,
+  disablePause,
 }: UseDiagonalQuizSessionConfig): UseDiagonalQuizSessionReturn {
   const generateQuestion = useBufferedQuestions((count) =>
     generateSquareSequence(count, Math.random, EXCLUDED_QUIZ_SQUARES),
@@ -73,6 +78,8 @@ export function useDiagonalQuizSession({
     onAnswerEffect,
     mistakeAllowance,
     feedbackDuration: flashFeedbackDuration,
+    remote,
+    disablePause,
   });
 
   const { showFeedback } = session;
@@ -124,7 +131,11 @@ export function useDiagonalQuizSession({
         correctAntiDiagonal: antiDiagonal,
       });
 
-      sessionHandleAnswer(isCorrect);
+      const answer: DiagonalQuizChallengeAnswer = {
+        diagonal: diagonalAnswer,
+        antiDiagonal: antiDiagonalAnswer,
+      };
+      sessionHandleAnswer(isCorrect, answer);
     },
     [currentQuestion, sessionHandleAnswer],
   );
@@ -132,12 +143,15 @@ export function useDiagonalQuizSession({
   // Only the time limit leaves a question unanswered: the timer is paused
   // during the feedback flash, and the other endings follow an answer (the
   // mistake limit) or are the player's own choice (quit).
-  const { finishReason } = session;
+  const { finishReason, totalCount } = session;
   const questionResultsWithTimeUp = useMemo(() => {
-    if (finishReason !== "timeUp" || !currentQuestion) return questionResults;
+    // An expired/rejected remote answer is rolled back by the session core.
+    // Its optimistic detail must not survive in the result page either.
+    const countedResults = questionResults.slice(0, totalCount);
+    if (finishReason !== "timeUp" || !currentQuestion) return countedResults;
     const { diagonal, antiDiagonal } = getDiagonals(currentQuestion);
     return [
-      ...questionResults,
+      ...countedResults,
       {
         square: currentQuestion,
         isCorrect: false,
@@ -148,7 +162,7 @@ export function useDiagonalQuizSession({
         timedOut: true as const,
       },
     ];
-  }, [finishReason, currentQuestion, questionResults]);
+  }, [finishReason, currentQuestion, questionResults, totalCount]);
 
   return {
     ...toTimedSessionFacade(session),

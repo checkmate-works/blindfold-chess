@@ -3,29 +3,66 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import type { RemoteChallengePort } from '@blindfold-chess/features/challenge-attempt';
+import {
+  type LegalMovesPieceSelection,
+  legalMovesPiecesForSelection,
+} from '@blindfold-chess/features/legal-moves';
 import { useLegalMovesSession } from '@blindfold-chess/features/legal-moves/client';
 
 import { CHALLENGE_TIME_LIMIT, MISTAKE_LIMIT } from '@/lib/challenge/constants';
 
+import { ChallengeAttemptGate } from '@/app/[locale]/(public)/practice/(challenge)/_components/ChallengeAttemptGate';
 import { useChallengeResultSave } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-challenge-result-save';
 import { useQuitConfirm } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-quit-confirm';
-import { saveLegalMovesResult } from '@/app/[locale]/(public)/practice/(challenge)/legal-moves/_actions/save-result';
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
-import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { LegalMovesPlaySkeleton } from '../../_components/LegalMovesPlaySkeleton';
 import { isLegalMove } from '../../_lib/legal-moves-api';
-import type { PieceType } from '../../_lib/types';
+import type { MoveQuestion } from '../../_lib/types';
 import { LegalMovesPlaying } from './LegalMovesPlaying';
 
 type Props = {
   locale: Locale;
-  selectedPieces: PieceType[];
-  selectedPiece: string;
+  selectedPiece: LegalMovesPieceSelection;
 };
 
-export default function LegalMovesSession({ locale, selectedPieces, selectedPiece }: Props) {
+export default function LegalMovesSession({ locale, selectedPiece }: Props) {
+  const settings = useMemo(() => ({ selectedPiece }), [selectedPiece]);
+
+  return (
+    <ChallengeAttemptGate<MoveQuestion>
+      menuType="legal_moves"
+      scrollTargetId="legal-moves-session"
+      settings={settings}
+      fallback={<LegalMovesPlaySkeleton showHeader />}
+    >
+      {(attempt) => (
+        <LegalMovesChallengeSession
+          locale={locale}
+          selectedPiece={selectedPiece}
+          attemptId={attempt.attemptId}
+          remote={attempt.remote}
+        />
+      )}
+    </ChallengeAttemptGate>
+  );
+}
+
+type SessionProps = {
+  locale: Locale;
+  selectedPiece: LegalMovesPieceSelection;
+  attemptId: string | null;
+  remote: RemoteChallengePort<MoveQuestion> | undefined;
+};
+
+function LegalMovesChallengeSession({ locale, selectedPiece, attemptId, remote }: SessionProps) {
+  // The same piece list the server generates the attempt's questions from.
+  const selectedPieces = useMemo(
+    () => legalMovesPiecesForSelection(selectedPiece),
+    [selectedPiece]
+  );
   const t = useTranslations('practice.legalMoves');
 
   const getQuestion = (from: string, to: string) => t('questionFormat', { from, to });
@@ -47,15 +84,17 @@ export default function LegalMovesSession({ locale, selectedPieces, selectedPiec
     isFinished,
     countdown,
     isPaused,
+    remoteFailed,
+    awaitingServer,
     handleAnswer: hookHandleAnswer,
     togglePause,
   } = useLegalMovesSession({
     timeLimit: CHALLENGE_TIME_LIMIT,
     selectedPieces,
     mistakeAllowance: MISTAKE_LIMIT,
+    remote,
+    disablePause: true,
   });
-
-  useScrollToElement('legal-moves-session');
 
   const { showQuitModal, handleQuitRequest, handleQuitConfirm, handleQuitCancel } = useQuitConfirm({
     locale,
@@ -94,22 +133,12 @@ export default function LegalMovesSession({ locale, selectedPieces, selectedPiec
     return `/${locale}/practice/legal-moves/result?${params.toString()}`;
   }, [correctCount, incorrectCount, timeElapsed, selectedPiece, locale]);
 
-  const saveResult = useCallback(
-    () =>
-      saveLegalMovesResult({
-        correctAnswers: correctCount,
-        incorrectAnswers: incorrectCount,
-        timeTaken: timeElapsed,
-        selectedPiece,
-      }),
-    [correctCount, incorrectCount, timeElapsed, selectedPiece]
-  );
-
   useChallengeResultSave({
     isFinished,
     totalAnswers: correctCount + incorrectCount,
     resultUrl,
-    saveResult,
+    attemptId,
+    remoteFailed,
     moduleName: 'legal_moves',
   });
 
@@ -122,9 +151,10 @@ export default function LegalMovesSession({ locale, selectedPieces, selectedPiec
   }
 
   return (
-    <div id="legal-moves-session" className="min-h-screen">
+    <div className="min-h-screen">
       <LegalMovesPlaying
         currentQuestion={currentQuestion}
+        awaitingServer={awaitingServer}
         timeRemaining={timeRemaining}
         timeLimit={CHALLENGE_TIME_LIMIT}
         timeElapsed={timeElapsed}

@@ -79,7 +79,11 @@ export default function QuadrantsChallenge({ locale, orientation }: Props) {
   }
 
   if (!currentQuestion) {
-    return <QuadrantsPlaySkeleton showHeader />;
+    return (
+      <div id="quadrants-challenge" className="min-h-screen">
+        <QuadrantsPlaySkeleton showHeader />
+      </div>
+    );
   }
 
   return (

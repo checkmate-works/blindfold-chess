@@ -4,6 +4,7 @@ import { getLocale } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 import { NextResponse } from 'next/server';
 
+import { isAuthRetryableFetchError } from '@supabase/supabase-js';
 import type { User } from '@supabase/supabase-js';
 import { eq } from 'drizzle-orm';
 
@@ -43,6 +44,11 @@ export const getOptionalUser = cache(async () => (await readAuthUser()).user);
  * accepting the token until it expires — so the browser carries a cookie the
  * proxy reads as "signed in" and every page reads as anonymous. See
  * {@link discardSessionOfMissingUser}.
+ *
+ * `unavailable` is the opposite case: the Auth server could not be asked at
+ * all (the request failed in transit, or was answered 502/503/504 — what
+ * auth-js reports as a retryable fetch error). `user` is `null` then too, but
+ * it says nothing about the visitor. See {@link isAuthUnavailable}.
  */
 const readAuthUser = cache(async () => {
   const supabase = await createClient();
@@ -50,8 +56,29 @@ const readAuthUser = cache(async () => {
     data: { user },
     error,
   } = await supabase.auth.getUser();
-  return { user, userIsGone: error?.code === 'user_not_found' };
+  return {
+    user,
+    userIsGone: error?.code === 'user_not_found',
+    unavailable: isAuthRetryableFetchError(error),
+  };
 });
+
+/**
+ * Whether this request's `null` user means "the Auth server could not be
+ * reached" rather than "nobody is signed in".
+ *
+ * `getOptionalUser` and the guards built on it answer `null` /
+ * `signInRequired` for both, which is the safe reading for access control.
+ * It is the wrong one for a caller that would throw away the player's work on
+ * `signInRequired`: a server-run challenge asks once per answer, sixty to a
+ * hundred times a run, and treating one failed lookup as "signed out" ends
+ * the run unrecorded. Such a caller asks this after a `signInRequired` and
+ * treats `true` as a failure worth retrying. Shares the request's `getUser()`
+ * round-trip, so it costs nothing extra.
+ */
+export async function isAuthUnavailable(): Promise<boolean> {
+  return (await readAuthUser()).unavailable;
+}
 
 /**
  * Remove this browser's session cookie when it names a user that no longer

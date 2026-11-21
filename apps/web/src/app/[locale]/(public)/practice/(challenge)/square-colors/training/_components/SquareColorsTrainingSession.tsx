@@ -40,7 +40,6 @@ export default function SquareColorsTrainingSession({ locale }: Props) {
   const { sessionElementId, handleEndTraining } = useTrainingSessionShell({
     locale,
     slug: 'square-colors',
-    scrollEnabled: hasQuestions,
   });
 
   const onAnswer = useCallback(
@@ -52,7 +51,11 @@ export default function SquareColorsTrainingSession({ locale }: Props) {
 
   // Show loading state while squares are being generated
   if (!hasQuestions || !currentSquare || !isLoaded) {
-    return <SquareColorsPlaySkeleton />;
+    return (
+      <div id={sessionElementId} className="min-h-screen">
+        <SquareColorsPlaySkeleton />
+      </div>
+    );
   }
 
   return (

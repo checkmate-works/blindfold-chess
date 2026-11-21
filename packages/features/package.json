@@ -15,6 +15,8 @@
     "./board-display": "./src/board-display/index.ts",
     "./board-symmetry": "./src/board-symmetry/index.ts",
     "./board-symmetry/client": "./src/board-symmetry/client.ts",
+    "./challenge-attempt": "./src/challenge-attempt/index.ts",
+    "./challenge-attempt/modules": "./src/challenge-attempt/modules.ts",
     "./chess-core": "./src/chess-core/index.ts",
     "./chess-core/fen": "./src/chess-core/fen-pure.ts",
     "./chess-core/fen-fields": "./src/chess-core/fen-fields.ts",

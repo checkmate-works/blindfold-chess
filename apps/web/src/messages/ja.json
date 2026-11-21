@@ -1081,6 +1081,12 @@
     "trainingModeActive": "トレーニングモードで練習中",
     "readyForChallenge": "準備はできましたか？",
     "goToChallenge": "チャレンジに挑戦",
+    "challengeAttempt": {
+      "startFailed": "チャレンジを開始できませんでした。通信状態を確認して、もう一度お試しください。",
+      "startRateLimited": "短時間にチャレンジを開始しすぎました。しばらく待ってから、もう一度お試しください。",
+      "startSessionExpired": "ログインの有効期限が切れているため、このチャレンジは記録されません。もう一度ログインしてから開始してください。",
+      "retry": "もう一度試す"
+    },
     "quitConfirmModal": {
       "title": "練習を終了しますか？",
       "message": "進捗は失われます。本当に終了しますか？",
@@ -1312,12 +1318,6 @@
       "white": "白番",
       "black": "黒番",
       "random": "ランダム",
-      "feedbackSpeed": "フィードバック速度",
-      "feedbackSpeeds": {
-        "fast": "早い",
-        "normal": "普通",
-        "slow": "遅い"
-      },
       "start": "開始",
       "clickSquare": "このマスをクリック",
       "whiteToMove": "白番",
@@ -1346,10 +1346,6 @@
       },
       "help": {
         "label": "ヘルプ",
-        "feedbackSpeed": {
-          "title": "フィードバック速度の設定",
-          "description": "正解・不正解時のエフェクトの再生速度を切り替えられます。この設定はタイム計測には影響せず、フィードバックエフェクトの実行中に制限時間が減ることはありません。"
-        },
         "challenge": {
           "title": "チャレンジモード",
           "description": "制限時間内にどれほど多く正答できるかを競うモードです。スコアが記録され、リーダーボードに掲載されます。"
@@ -4611,6 +4607,68 @@
       "deleteModalDeleting": "削除中...",
       "deleteModalReasonRequired": "理由は必須です",
       "userNotFound": "ユーザーが見つかりません"
+    },
+    "challengeResults": {
+      "navLabel": "Challenge Results",
+      "title": "Challenge Results",
+      "itemLabel": "results",
+      "noResultsFound": "No challenge results found",
+      "columns": {
+        "player": "Player",
+        "menu": "Menu / Key",
+        "score": "Score",
+        "mistakes": "Mistakes",
+        "time": "Time (s)",
+        "recordedAt": "Recorded at",
+        "source": "Source",
+        "pace": "Pace (s/answer)",
+        "meanThink": "Mean think (ms)",
+        "refusals": "Refusals",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "filters": {
+        "menu": "Menu",
+        "allMenus": "All menus",
+        "key": "Leaderboard key",
+        "allKeys": "All keys",
+        "signal": "Signal",
+        "allSignals": "Any signal",
+        "signalLegacy": "Legacy (no attempt)",
+        "signalRefused": "Player has speed refusals",
+        "status": "Status",
+        "statusLive": "Live",
+        "statusRemoved": "Removed",
+        "statusAll": "All",
+        "sort": "Sort",
+        "sortRecent": "Most recent",
+        "sortScore": "Highest score",
+        "sortPace": "Fastest pace",
+        "sortHint": "Score and pace order are only comparable within one menu and key.",
+        "maxPace": "Max pace (s/answer)",
+        "maxPacePlaceholder": "e.g. 0.8",
+        "user": "Player",
+        "userPlaceholder": "username, email or user ID",
+        "apply": "Filter"
+      },
+      "badges": {
+        "serverRun": "Server-run",
+        "legacy": "Legacy (client-reported)",
+        "live": "Live",
+        "removed": "Removed"
+      },
+      "rulesVersion": "Rules version {version}",
+      "deleteModal": {
+        "button": "Remove",
+        "title": "Remove challenge result",
+        "target": "{player} · {menu} / {key} · score {score}",
+        "description": "The score leaves the rankings and the best scores, and the EXP it earned is taken back. The row stays, marked removed, and the removal is recorded in the audit log.",
+        "reasonLabel": "Reason (required)",
+        "reasonPlaceholder": "Why is this result being removed?",
+        "cancel": "Cancel",
+        "confirm": "Remove",
+        "reasonRequired": "Reason is required."
+      }
     },
     "auditLogTable": {
       "action": "Action",

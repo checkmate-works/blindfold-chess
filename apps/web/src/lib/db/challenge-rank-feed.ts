@@ -37,7 +37,7 @@ type DecideChallengeRankFeedArgs = {
  * `FEED_RANK_THRESHOLD`, and — for an improvement to an existing best score —
  * only when the rank strictly improved.
  *
- * Pure: extracted from `saveChallengeResult`, where the new-entry and
+ * Pure: extracted from `writeChallengeResult`, where the new-entry and
  * improvement branches each repeated the threshold check and an almost
  * identical `feedItems` payload.
  */

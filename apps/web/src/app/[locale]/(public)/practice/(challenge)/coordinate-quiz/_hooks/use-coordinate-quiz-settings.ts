@@ -4,42 +4,38 @@ import { oneOf } from '@blindfold-chess/features/common';
 
 import { useLocalStorageSettings } from '@/lib/persistent-settings/use-local-storage-settings';
 
-import {
-  BOARD_ORIENTATIONS,
-  type BoardOrientation,
-  FEEDBACK_SPEEDS,
-  type FeedbackSpeed,
-} from '../_lib/types';
+import { BOARD_ORIENTATIONS, type BoardOrientation } from '../_lib/types';
 
 export type CoordinateQuizSettings = {
   boardOrientation: BoardOrientation;
-  feedbackSpeed: FeedbackSpeed;
 };
 
 const STORAGE_KEY = 'coordinateQuiz_settings';
 
 const DEFAULTS: CoordinateQuizSettings = {
   boardOrientation: 'white',
-  feedbackSpeed: 'normal',
 };
 
 const GUARDS = {
   boardOrientation: oneOf(BOARD_ORIENTATIONS),
-  feedbackSpeed: oneOf(FEEDBACK_SPEEDS),
 };
 
 /**
- * The board orientation and feedback speed, shared by every screen that can
- * change them — the module top and the challenge setup.
+ * The board orientation, shared by every screen that can change it — the
+ * module top and the challenge setup.
+ *
+ * Values stored before the feedback speed was removed still carry a
+ * `feedbackSpeed`. It has no guard here, so it is skipped on load and dropped
+ * from storage with the player's next change.
  *
  * The settings deliberately do not live in the URL. A query parameter is
  * written only by the screen that starts a session, so every navigation that
- * does not rebuild it reverts the player to a white board at normal speed
+ * does not rebuild it reverts the player to a white board
  * without saying so: quitting a session lands back on
  * `coordinate-quiz/challenge` with a bare URL, and the setup screen there used
  * to seed its state from those missing parameters. Storage survives those
  * hops, so the setup screens read it and the query keeps the one job it can do
- * honestly — carrying the choices into a session that is already starting.
+ * honestly — carrying the choice into a session that is already starting.
  *
  * A link can still choose the setting the challenge setup opens with — the
  * leaderboard's challenge button does — through `useQuerySeededSettings`,

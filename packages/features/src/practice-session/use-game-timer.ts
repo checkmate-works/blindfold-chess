@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 type UseGameTimerProps = {
   /** Limit in seconds. */
@@ -21,6 +21,11 @@ type UseGameTimerProps = {
  * on each poll while active. `totalTime` is the precise active time in
  * seconds, but it is read from a ref at render time and is only current up to
  * the last pause (or the limit being reached), not while running.
+ *
+ * `setElapsedMs` overwrites the accumulated time, for a caller whose clock is
+ * owned elsewhere (a server-run challenge re-syncs to the server's count).
+ * Durations use the monotonic clock: correcting the device's calendar clock
+ * must not end a run early or give it extra time.
  */
 export function useGameTimer({
   timeLimit,
@@ -42,11 +47,11 @@ export function useGameTimer({
     }
 
     if (startTimeRef.current === null) {
-      startTimeRef.current = Date.now();
+      startTimeRef.current = performance.now();
     }
 
     timerRef.current = setInterval(() => {
-      const now = Date.now();
+      const now = performance.now();
       const elapsedSinceStart = now - (startTimeRef.current ?? now);
       const totalElapsedMs = accumulatedTimeRef.current + elapsedSinceStart;
 
@@ -73,12 +78,23 @@ export function useGameTimer({
       }
 
       if (startTimeRef.current !== null) {
-        const now = Date.now();
+        const now = performance.now();
         accumulatedTimeRef.current += now - startTimeRef.current;
         startTimeRef.current = null;
       }
     };
   }, [isActive, timeLimit, intervalMs, onTimeLimitReached]);
+
+  /**
+   * Replace the accumulated active time with `ms`. A running stopwatch keeps
+   * running from the new value. The limit is checked on the next poll, so a
+   * value at or past the limit ends the run only once the stopwatch is active.
+   */
+  const setElapsedMs = useCallback((ms: number) => {
+    accumulatedTimeRef.current = ms;
+    if (startTimeRef.current !== null) startTimeRef.current = performance.now();
+    setTimeElapsed(Math.floor(ms / 1000));
+  }, []);
 
   const reset = () => {
     setTimeElapsed(0);
@@ -93,5 +109,6 @@ export function useGameTimer({
     timeElapsed,
     totalTime: accumulatedTimeRef.current / 1000,
     reset,
+    setElapsedMs,
   };
 }

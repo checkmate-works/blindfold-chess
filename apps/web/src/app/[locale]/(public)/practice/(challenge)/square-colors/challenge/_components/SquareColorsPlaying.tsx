@@ -3,6 +3,7 @@
 import type { BoardTheme } from '@/lib/games/board-themes';
 import { DEFAULT_BOARD_THEME } from '@/lib/games/board-themes';
 
+import { AwaitingServerInputLock } from '@/app/[locale]/(public)/practice/(challenge)/_components/ChallengeAttemptGate';
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
 import { ChallengeQuitControl } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengeQuitControl';
 import { ChallengeSessionVeil } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengeSessionVeil';
@@ -11,6 +12,8 @@ import { SquareColorsQuestionPanel } from '@/app/[locale]/(public)/practice/(cha
 
 type Props = {
   currentSquare: string;
+  /** The next square has not arrived from the server yet; input is off and the answered one keeps its feedback. */
+  awaitingServer?: boolean;
   timeRemaining: number;
   timeLimit: number;
   showResult: boolean;
@@ -32,6 +35,7 @@ type Props = {
 
 export function SquareColorsPlaying({
   currentSquare,
+  awaitingServer = false,
   timeRemaining,
   timeLimit,
   showResult,
@@ -50,7 +54,7 @@ export function SquareColorsPlaying({
   onQuitConfirm,
   onQuitCancel,
 }: Props) {
-  const inputDisabled = showResult || countdown !== null || isPaused;
+  const inputDisabled = showResult || countdown !== null || isPaused || awaitingServer;
 
   return (
     <div className="max-w-md mx-auto">
@@ -73,13 +77,15 @@ export function SquareColorsPlaying({
           />
         </div>
 
-        <SquareColorsQuestionPanel
-          currentSquare={currentSquare}
-          lastAnswer={lastAnswer}
-          onAnswer={onAnswer}
-          boardTheme={boardTheme}
-          disabled={inputDisabled}
-        />
+        <AwaitingServerInputLock active={awaitingServer}>
+          <SquareColorsQuestionPanel
+            currentSquare={currentSquare}
+            lastAnswer={lastAnswer}
+            onAnswer={onAnswer}
+            boardTheme={boardTheme}
+            disabled={inputDisabled}
+          />
+        </AwaitingServerInputLock>
 
         <ScoreCounter correct={correctCount} incorrect={incorrectCount} className="mt-8" />
       </ChallengeSessionVeil>

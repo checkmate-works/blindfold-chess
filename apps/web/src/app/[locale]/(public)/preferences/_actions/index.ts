@@ -58,8 +58,8 @@ export async function setLeaderboardVisibility(hidden: boolean): Promise<void> {
 
   // Both ranking caches are tagged (60s TTL); purge them so opting out takes
   // effect on the next leaderboard view instead of up to a minute later.
-  // Same expire profile as save-practice-result.ts, which purges these tags
-  // on every challenge completion.
+  // Same expire profile as `finishChallengeAttempt`, which purges these tags
+  // on every recorded challenge.
   revalidateTag(LEADERBOARD_CACHE_TAG, { expire: 0 });
   revalidateTag(EXP_LEADERBOARD_CACHE_TAG, { expire: 0 });
 }

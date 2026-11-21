@@ -10,7 +10,7 @@ export type ChallengeScore = {
  *
  * Ranking is a tuple comparison: higher score wins, then fewer incorrect
  * answers, then faster time. Pure (no DB) so the "is this better?" rule can
- * be reasoned about and tested in isolation from `saveChallengeResult`.
+ * be reasoned about and tested in isolation from `writeChallengeResult`.
  *
  * @returns `isNewEntry` when there is no existing best, and `isImprovement`
  *   when an existing best is strictly beaten.

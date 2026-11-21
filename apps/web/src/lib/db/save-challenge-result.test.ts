@@ -2,8 +2,10 @@ import { revalidateTag as mockRevalidateTag } from 'next/cache';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { db } from './index';
 import type { ChallengeResultInput } from './save-challenge-result';
-import { saveChallengeResult } from './save-challenge-result';
+import { evaluateRanksAfterChallenge, writeChallengeResult } from './save-challenge-result';
+import type { DbTx } from './types';
 
 // ---------------------------------------------------------------------------
 // Mock setup
@@ -118,41 +120,19 @@ const validInput: ChallengeResultInput = {
   timeTaken: 45,
 };
 
+/** Writes one result the way a caller does: inside a transaction of its own. */
+function recordResult(input: ChallengeResultInput) {
+  return db.transaction((tx) => writeChallengeResult(tx as unknown as DbTx, input));
+}
+
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
 
-describe('saveChallengeResult', () => {
+describe('writeChallengeResult', () => {
   beforeEach(() => {
     mockSelectResult.mockReturnValue([]);
     mockGetUserAllTimeRank.mockResolvedValue({ rank: 5 });
-  });
-
-  // -------------------------------------------------------------------------
-  // Transaction behavior
-  // -------------------------------------------------------------------------
-
-  it('should use db.transaction to wrap all writes atomically', async () => {
-    await saveChallengeResult(validInput);
-
-    expect(mockTransaction).toHaveBeenCalledTimes(1);
-  });
-
-  it('should return grantedRanks from evaluateRanksAfterCreate', async () => {
-    const mockRanks = [{ slug: '5kyu', level: 10, color: 'orange' }];
-    mockEvaluateRanksAfterCreate.mockResolvedValueOnce(mockRanks);
-
-    const result = await saveChallengeResult(validInput);
-
-    expect(result.grantedRanks).toEqual(mockRanks);
-  });
-
-  it('should return empty grantedRanks when no ranks are granted', async () => {
-    mockEvaluateRanksAfterCreate.mockResolvedValueOnce([]);
-
-    const result = await saveChallengeResult(validInput);
-
-    expect(result.grantedRanks).toEqual([]);
   });
 
   // -------------------------------------------------------------------------
@@ -160,7 +140,7 @@ describe('saveChallengeResult', () => {
   // -------------------------------------------------------------------------
 
   it('should insert into challenge_results with correct values', async () => {
-    await saveChallengeResult(validInput);
+    await recordResult(validInput);
 
     expect(mockInsertValues).toHaveBeenNthCalledWith(1, {
       userId: validInput.userId,
@@ -177,7 +157,7 @@ describe('saveChallengeResult', () => {
   // -------------------------------------------------------------------------
 
   it('should upsert into challenge_best_scores with correct values', async () => {
-    await saveChallengeResult(validInput);
+    await recordResult(validInput);
 
     // Second call to mockInsertValues is the best scores insert
     expect(mockInsertValues).toHaveBeenNthCalledWith(
@@ -194,13 +174,13 @@ describe('saveChallengeResult', () => {
   });
 
   it('should call onConflictDoUpdate for the best scores upsert', async () => {
-    await saveChallengeResult(validInput);
+    await recordResult(validInput);
 
     expect(mockOnConflictDoUpdate).toHaveBeenCalledTimes(1);
   });
 
   it('should configure onConflictDoUpdate with the correct composite target', async () => {
-    await saveChallengeResult(validInput);
+    await recordResult(validInput);
 
     expect(mockOnConflictDoUpdate).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -221,7 +201,7 @@ describe('saveChallengeResult', () => {
     mockSelectResult.mockReturnValue([]);
     mockGetUserAllTimeRank.mockResolvedValue({ rank: 5 });
 
-    await saveChallengeResult(validInput);
+    await recordResult(validInput);
 
     // 3 inserts: challenge_results, challenge_best_scores, feed_items
     expect(mockInsertValues).toHaveBeenCalledTimes(3);
@@ -245,7 +225,7 @@ describe('saveChallengeResult', () => {
     mockSelectResult.mockReturnValue([]);
     mockGetUserAllTimeRank.mockResolvedValue({ rank: 3 });
 
-    await saveChallengeResult(validInput);
+    await recordResult(validInput);
 
     expect(mockInsertValues).toHaveBeenCalledTimes(3);
     const feedInsertArg = mockInsertValues.mock.calls[2][0];
@@ -256,7 +236,7 @@ describe('saveChallengeResult', () => {
     mockSelectResult.mockReturnValue([]);
     mockGetUserAllTimeRank.mockResolvedValue({ rank: 11 });
 
-    await saveChallengeResult(validInput);
+    await recordResult(validInput);
 
     // Only 2 inserts: challenge_results, challenge_best_scores (no feed_items)
     expect(mockInsertValues).toHaveBeenCalledTimes(2);
@@ -272,7 +252,7 @@ describe('saveChallengeResult', () => {
     // Second call (new rank, after UPSERT): rank 5
     mockGetUserAllTimeRank.mockResolvedValueOnce({ rank: 8 }).mockResolvedValueOnce({ rank: 5 });
 
-    await saveChallengeResult(validInput);
+    await recordResult(validInput);
 
     expect(mockInsertValues).toHaveBeenCalledTimes(3);
     expect(mockInsertValues).toHaveBeenNthCalledWith(
@@ -294,7 +274,7 @@ describe('saveChallengeResult', () => {
     // Old rank = 5, new rank = 5 (no change)
     mockGetUserAllTimeRank.mockResolvedValueOnce({ rank: 5 }).mockResolvedValueOnce({ rank: 5 });
 
-    await saveChallengeResult(validInput);
+    await recordResult(validInput);
 
     // Only 2 inserts: challenge_results, challenge_best_scores (no feed_items)
     expect(mockInsertValues).toHaveBeenCalledTimes(2);
@@ -305,7 +285,7 @@ describe('saveChallengeResult', () => {
     // Old rank = 5, new rank = 7 (rank decreased — others overtook)
     mockGetUserAllTimeRank.mockResolvedValueOnce({ rank: 5 }).mockResolvedValueOnce({ rank: 7 });
 
-    await saveChallengeResult(validInput);
+    await recordResult(validInput);
 
     // Only 2 inserts: challenge_results, challenge_best_scores (no feed_items)
     expect(mockInsertValues).toHaveBeenCalledTimes(2);
@@ -314,7 +294,7 @@ describe('saveChallengeResult', () => {
   it('should NOT insert feed_item when score does not improve', async () => {
     mockSelectResult.mockReturnValue([{ score: 30, incorrectAnswers: 1, timeTaken: 30 }]);
 
-    await saveChallengeResult(validInput);
+    await recordResult(validInput);
 
     // Only 2 inserts: challenge_results, challenge_best_scores (no feed_items)
     expect(mockInsertValues).toHaveBeenCalledTimes(2);
@@ -324,7 +304,7 @@ describe('saveChallengeResult', () => {
     mockSelectResult.mockReturnValue([{ score: 25, incorrectAnswers: 5, timeTaken: 45 }]);
     mockGetUserAllTimeRank.mockResolvedValueOnce({ rank: 7 }).mockResolvedValueOnce({ rank: 5 });
 
-    await saveChallengeResult(validInput);
+    await recordResult(validInput);
 
     expect(mockInsertValues).toHaveBeenCalledTimes(3);
   });
@@ -333,7 +313,7 @@ describe('saveChallengeResult', () => {
     mockSelectResult.mockReturnValue([{ score: 25, incorrectAnswers: 3, timeTaken: 60 }]);
     mockGetUserAllTimeRank.mockResolvedValueOnce({ rank: 6 }).mockResolvedValueOnce({ rank: 4 });
 
-    await saveChallengeResult(validInput);
+    await recordResult(validInput);
 
     expect(mockInsertValues).toHaveBeenCalledTimes(3);
   });
@@ -341,7 +321,7 @@ describe('saveChallengeResult', () => {
   it('should NOT insert feed_item when all values are equal (no improvement)', async () => {
     mockSelectResult.mockReturnValue([{ score: 25, incorrectAnswers: 3, timeTaken: 45 }]);
 
-    await saveChallengeResult(validInput);
+    await recordResult(validInput);
 
     expect(mockInsertValues).toHaveBeenCalledTimes(2);
   });
@@ -353,7 +333,7 @@ describe('saveChallengeResult', () => {
   it('should call getUserAllTimeRank with tx for new entry', async () => {
     mockSelectResult.mockReturnValue([]);
 
-    await saveChallengeResult(validInput);
+    await recordResult(validInput);
 
     expect(mockGetUserAllTimeRank).toHaveBeenCalledWith(
       validInput.userId,
@@ -367,7 +347,7 @@ describe('saveChallengeResult', () => {
     mockSelectResult.mockReturnValue([{ score: 20, incorrectAnswers: 5, timeTaken: 60 }]);
     mockGetUserAllTimeRank.mockResolvedValueOnce({ rank: 8 }).mockResolvedValueOnce({ rank: 5 });
 
-    await saveChallengeResult(validInput);
+    await recordResult(validInput);
 
     // Called twice: once before UPSERT (old rank), once after UPSERT (new rank)
     expect(mockGetUserAllTimeRank).toHaveBeenCalledTimes(2);
@@ -390,7 +370,7 @@ describe('saveChallengeResult', () => {
   it('should NOT call getUserAllTimeRank when no improvement', async () => {
     mockSelectResult.mockReturnValue([{ score: 30, incorrectAnswers: 1, timeTaken: 30 }]);
 
-    await saveChallengeResult(validInput);
+    await recordResult(validInput);
 
     expect(mockGetUserAllTimeRank).not.toHaveBeenCalled();
   });
@@ -403,7 +383,7 @@ describe('saveChallengeResult', () => {
     mockSelectResult.mockReturnValue([]);
     mockGetUserAllTimeRank.mockResolvedValue(null);
 
-    await saveChallengeResult(validInput);
+    await recordResult(validInput);
 
     // Only 2 inserts: challenge_results, challenge_best_scores (no feed_items)
     expect(mockInsertValues).toHaveBeenCalledTimes(2);
@@ -414,7 +394,7 @@ describe('saveChallengeResult', () => {
     // Old rank is null, new rank is valid
     mockGetUserAllTimeRank.mockResolvedValueOnce(null).mockResolvedValueOnce({ rank: 3 });
 
-    await saveChallengeResult(validInput);
+    await recordResult(validInput);
 
     // Only 2 inserts: no feed_items because oldRank is null
     expect(mockInsertValues).toHaveBeenCalledTimes(2);
@@ -425,7 +405,7 @@ describe('saveChallengeResult', () => {
     // Old rank is valid, new rank is null
     mockGetUserAllTimeRank.mockResolvedValueOnce({ rank: 8 }).mockResolvedValueOnce(null);
 
-    await saveChallengeResult(validInput);
+    await recordResult(validInput);
 
     // Only 2 inserts: no feed_items because newRank is null
     expect(mockInsertValues).toHaveBeenCalledTimes(2);
@@ -439,7 +419,7 @@ describe('saveChallengeResult', () => {
     mockSelectResult.mockReturnValue([{ score: 20, incorrectAnswers: 5, timeTaken: 60 }]);
     mockGetUserAllTimeRank.mockResolvedValueOnce({ rank: 15 }).mockResolvedValueOnce({ rank: 12 });
 
-    await saveChallengeResult(validInput);
+    await recordResult(validInput);
 
     // Only 2 inserts: no feed_items because rank > 10
     expect(mockInsertValues).toHaveBeenCalledTimes(2);
@@ -449,8 +429,8 @@ describe('saveChallengeResult', () => {
   // Leaderboard cache invalidation
   //
   // Cache invalidation is the caller's responsibility (see
-  // `save-practice-result.ts`, which strict-invalidates both 'leaderboard' and
-  // 'exp-leaderboard' tags after this function returns). `saveChallengeResult`
+  // `finishChallengeAttempt`, which strict-invalidates both 'leaderboard' and
+  // 'exp-leaderboard' tags after this function returns). `writeChallengeResult`
   // itself must never touch `revalidateTag` — these assertions guard against
   // accidental re-introduction of an inner invalidation call.
   // -------------------------------------------------------------------------
@@ -459,7 +439,7 @@ describe('saveChallengeResult', () => {
     mockSelectResult.mockReturnValue([]);
     mockGetUserAllTimeRank.mockResolvedValue({ rank: 5 });
 
-    await saveChallengeResult(validInput);
+    await recordResult(validInput);
 
     expect(mockRevalidateTag).not.toHaveBeenCalled();
   });
@@ -468,7 +448,7 @@ describe('saveChallengeResult', () => {
     mockSelectResult.mockReturnValue([{ score: 20, incorrectAnswers: 5, timeTaken: 60 }]);
     mockGetUserAllTimeRank.mockResolvedValueOnce({ rank: 8 }).mockResolvedValueOnce({ rank: 5 });
 
-    await saveChallengeResult(validInput);
+    await recordResult(validInput);
 
     expect(mockRevalidateTag).not.toHaveBeenCalled();
   });
@@ -476,23 +456,9 @@ describe('saveChallengeResult', () => {
   it('should NOT call revalidateTag when no improvement', async () => {
     mockSelectResult.mockReturnValue([{ score: 30, incorrectAnswers: 1, timeTaken: 30 }]);
 
-    await saveChallengeResult(validInput);
+    await recordResult(validInput);
 
     expect(mockRevalidateTag).not.toHaveBeenCalled();
-  });
-
-  // -------------------------------------------------------------------------
-  // Error propagation
-  // -------------------------------------------------------------------------
-
-  it('should propagate errors from the transaction', async () => {
-    const { db } = await import('./index');
-    const originalTransaction = db.transaction;
-    db.transaction = vi.fn().mockRejectedValueOnce(new Error('DB connection lost'));
-
-    await expect(saveChallengeResult(validInput)).rejects.toThrow('DB connection lost');
-
-    db.transaction = originalTransaction;
   });
 
   // -------------------------------------------------------------------------
@@ -507,7 +473,7 @@ describe('saveChallengeResult', () => {
       timeTaken: 1,
     };
 
-    await saveChallengeResult(zeroInput);
+    await recordResult(zeroInput);
 
     expect(mockTransaction).toHaveBeenCalledTimes(1);
     expect(mockInsertValues).toHaveBeenNthCalledWith(1, expect.objectContaining({ score: 0 }));
@@ -520,7 +486,7 @@ describe('saveChallengeResult', () => {
       timeTaken: 3600,
     };
 
-    await saveChallengeResult(largeInput);
+    await recordResult(largeInput);
 
     expect(mockTransaction).toHaveBeenCalledTimes(1);
     expect(mockInsertValues).toHaveBeenNthCalledWith(1, expect.objectContaining({ score: 999999 }));
@@ -533,7 +499,7 @@ describe('saveChallengeResult', () => {
       leaderboardKey: 'knight',
     };
 
-    await saveChallengeResult(legalMovesInput);
+    await recordResult(legalMovesInput);
 
     expect(mockInsertValues).toHaveBeenNthCalledWith(
       1,
@@ -553,7 +519,7 @@ describe('saveChallengeResult', () => {
     // oldRank=12, newRank=10 (enters top 10 boundary)
     mockGetUserAllTimeRank.mockResolvedValueOnce({ rank: 12 }).mockResolvedValueOnce({ rank: 10 });
 
-    await saveChallengeResult(validInput);
+    await recordResult(validInput);
 
     expect(mockInsertValues).toHaveBeenCalledTimes(3);
     expect(mockInsertValues).toHaveBeenNthCalledWith(
@@ -572,7 +538,7 @@ describe('saveChallengeResult', () => {
     mockSelectResult.mockReturnValue([{ score: 20, incorrectAnswers: 5, timeTaken: 60 }]);
     mockGetUserAllTimeRank.mockResolvedValueOnce(null).mockResolvedValueOnce(null);
 
-    await saveChallengeResult(validInput);
+    await recordResult(validInput);
 
     expect(mockInsertValues).toHaveBeenCalledTimes(2);
   });
@@ -581,7 +547,7 @@ describe('saveChallengeResult', () => {
     mockSelectResult.mockReturnValue([]);
     mockGetUserAllTimeRank.mockResolvedValue({ rank: 0 });
 
-    await saveChallengeResult(validInput);
+    await recordResult(validInput);
 
     // rank 0 <= 10, so feed_item is inserted
     expect(mockInsertValues).toHaveBeenCalledTimes(3);
@@ -598,7 +564,7 @@ describe('saveChallengeResult', () => {
     // oldRank=5 (top 10), newRank=12 (fell out of top 10)
     mockGetUserAllTimeRank.mockResolvedValueOnce({ rank: 5 }).mockResolvedValueOnce({ rank: 12 });
 
-    await saveChallengeResult(validInput);
+    await recordResult(validInput);
 
     expect(mockInsertValues).toHaveBeenCalledTimes(2);
   });
@@ -607,7 +573,7 @@ describe('saveChallengeResult', () => {
     mockSelectResult.mockReturnValue([]);
     mockGetUserAllTimeRank.mockResolvedValue({ rank: 3 });
 
-    await saveChallengeResult(validInput);
+    await recordResult(validInput);
 
     expect(mockInsertValues).toHaveBeenCalledTimes(3);
     expect(mockInsertValues).toHaveBeenNthCalledWith(
@@ -622,8 +588,43 @@ describe('saveChallengeResult', () => {
     // Same score, but incorrectAnswers increased (worsened): not an improvement
     mockSelectResult.mockReturnValue([{ score: 25, incorrectAnswers: 2, timeTaken: 45 }]);
 
-    await saveChallengeResult(validInput); // input has incorrectAnswers: 3 (worse than 2)
+    await recordResult(validInput); // input has incorrectAnswers: 3 (worse than 2)
 
     expect(mockInsertValues).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('writeChallengeResult in the caller transaction', () => {
+  beforeEach(() => {
+    mockSelectResult.mockReturnValue([]);
+    mockGetUserAllTimeRank.mockResolvedValue({ rank: 5 });
+  });
+
+  it('writes the result through the caller transaction and returns its id and exp', async () => {
+    const result = await db.transaction((tx) =>
+      writeChallengeResult(tx as unknown as DbTx, validInput)
+    );
+
+    expect(mockTransaction).toHaveBeenCalledTimes(1);
+    expect(mockInsertValues).toHaveBeenCalledWith(
+      expect.objectContaining({ userId: validInput.userId, score: 25 })
+    );
+    expect(result.challengeResultId).toBe('result-00000000-0000-0000-0000-000000000001');
+    expect(result.exp).toEqual(expect.objectContaining({ earnedExp: 10 }));
+  });
+
+  it('leaves belt rank evaluation to the caller, after its commit', async () => {
+    await db.transaction((tx) => writeChallengeResult(tx as unknown as DbTx, validInput));
+
+    expect(mockEvaluateRanksAfterCreate).not.toHaveBeenCalled();
+  });
+});
+
+describe('evaluateRanksAfterChallenge', () => {
+  it('returns the ranks granted by the post-commit evaluation', async () => {
+    const mockRanks = [{ slug: '5kyu', level: 10, color: 'orange' }];
+    mockEvaluateRanksAfterCreate.mockResolvedValueOnce(mockRanks);
+
+    await expect(evaluateRanksAfterChallenge(validInput.userId)).resolves.toEqual(mockRanks);
   });
 });

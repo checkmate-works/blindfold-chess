@@ -97,7 +97,9 @@ export function CoordinateQuizGameBoard({
             }
           />
 
-          {/* Target Square Overlay */}
+          {/* Target Square Overlay. Kept off during feedback, which in a
+              server-run challenge also covers the wait for the next question,
+              so an answered coordinate never reappears as a new prompt. */}
           {currentQuestion && !showFeedback && countdown === null && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <span className="text-6xl font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)] dark:drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] animate-in fade-in zoom-in duration-300">

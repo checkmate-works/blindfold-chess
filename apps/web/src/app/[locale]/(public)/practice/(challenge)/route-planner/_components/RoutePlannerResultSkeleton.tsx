@@ -2,6 +2,7 @@
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
+import { useScrollToPageTop } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { useAuth } from '@/app/[locale]/_contexts/AuthContext';
 
 import { RoutePlannerResultPanelSkeleton } from '../result/RoutePlannerResultPanelSkeleton';
@@ -19,6 +20,7 @@ import { RoutePlannerResultPanelSkeleton } from '../result/RoutePlannerResultPan
  */
 export function RoutePlannerResultSkeleton() {
   const tPractice = useTranslations('practice');
+  useScrollToPageTop();
   const { user, isLoading } = useAuth();
 
   // Authenticated runs land on the EXP card and the record section; anonymous

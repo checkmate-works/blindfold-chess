@@ -15,11 +15,7 @@ const { generateMetadata, Page } = createPracticeTopPage({
   canonicalPath: 'practice/coordinate-quiz',
   renderSetup: (locale) => <CoordinateQuiz locale={locale} />,
   renderTitleAction: (t) =>
-    buildPracticeHelpTour(t, 'coordinateQuiz', 'coordinate-quiz', [
-      'feedbackSpeed',
-      'challenge',
-      'training',
-    ]),
+    buildPracticeHelpTour(t, 'coordinateQuiz', 'coordinate-quiz', ['challenge', 'training']),
   renderArticles: (t, locale) => (
     <div className="mt-8 space-y-4">
       <SectionTitle>{t('practice.coordinateQuiz.relatedArticles')}</SectionTitle>

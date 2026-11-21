@@ -1,6 +1,7 @@
 import type { SQL } from 'drizzle-orm';
 import { and, asc, desc, eq, gte, sql } from 'drizzle-orm';
 
+import { liveChallengeResult } from '@/lib/db/challenge-results-visibility';
 import { notHiddenFromLeaderboard } from '@/lib/db/leaderboard-visibility';
 
 import { db } from './index';
@@ -126,6 +127,12 @@ function allTimeBestScoresSql(menuType: string, leaderboardKey: string): SQL {
  * hidden-from-leaderboard opt-out — see {@link allTimeBestScoresSql} — does
  * not affect that semantics). Raw-SQL twin of the `bestPerUser` Drizzle
  * subquery in `getPeriodRanking`.
+ *
+ * Results removed by moderation (`deleted_at` set) are dropped in the WHERE,
+ * before DISTINCT ON picks the best row, so a removed score neither ranks nor
+ * shadows the user's next-best live result in the period. The table is read
+ * under the alias `r`, which the unaliased `liveChallengeResult()` predicate
+ * cannot target, so the condition is spelled out here.
  */
 function periodBestScoresSql(menuType: string, leaderboardKey: string, periodStart: Date): SQL {
   return sql`(
@@ -136,6 +143,7 @@ function periodBestScoresSql(menuType: string, leaderboardKey: string, periodSta
       WHERE r.menu_type = ${menuType}
         AND r.leaderboard_key = ${leaderboardKey}
         AND r.created_at >= ${periodStart.toISOString()}
+        AND r.deleted_at IS NULL
       ORDER BY r.user_id, ${BEST_SCORE_ORDER_SQL}
     ) period_best`;
 }
@@ -219,6 +227,8 @@ async function getPeriodRanking(
   // Best = highest score, then fewest incorrect answers, then fastest time.
   // The profiles join applies the hidden-from-leaderboard opt-out HERE (not in
   // the outer display query) so the count(*) below inherits the same filter.
+  // Removed results are excluded in the same WHERE, before DISTINCT ON, for
+  // the same reason: the user's best live result takes the removed one's place.
   const bestPerUser = db
     .selectDistinctOn([challengeResults.userId], {
       userId: challengeResults.userId,
@@ -233,7 +243,8 @@ async function getPeriodRanking(
         eq(challengeResults.menuType, menuType),
         eq(challengeResults.leaderboardKey, leaderboardKey),
         gte(challengeResults.createdAt, periodStart),
-        notHiddenFromLeaderboard()
+        notHiddenFromLeaderboard(),
+        liveChallengeResult()
       )
     )
     .orderBy(challengeResults.userId, ...byBestScore(challengeResults))

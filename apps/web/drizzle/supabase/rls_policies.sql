@@ -217,9 +217,14 @@ CREATE POLICY "chess_openings_select" ON "chess_openings"
 -- =============================================================================
 ALTER TABLE "challenge_results" ENABLE ROW LEVEL SECURITY;
 
+-- A result removed by moderation (deleted_at set) is unreadable to `anon` and
+-- `authenticated`: both hold a SELECT grant, so without this condition the
+-- removed score would still be served through PostgREST after every ranking
+-- query in the app stopped showing it. The admin pages are unaffected because
+-- the server reads over its direct database connection, which bypasses RLS.
 DROP POLICY IF EXISTS "challenge_results_select" ON "challenge_results";
 CREATE POLICY "challenge_results_select" ON "challenge_results"
-  FOR SELECT USING (true);
+  FOR SELECT USING (deleted_at IS NULL);
 
 -- No INSERT policy: scores are written by the service role only. A client
 -- INSERT is a self-reported achievement that RLS cannot validate — it can prove
@@ -241,6 +246,18 @@ CREATE POLICY "challenge_best_scores_select" ON "challenge_best_scores"
 -- writable score is a client-writable belt rank.
 DROP POLICY IF EXISTS "challenge_best_scores_insert" ON "challenge_best_scores";
 DROP POLICY IF EXISTS "challenge_best_scores_update" ON "challenge_best_scores";
+
+-- =============================================================================
+-- challenge_attempts (server-side only; deny-by-default)
+-- =============================================================================
+ALTER TABLE "challenge_attempts" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "challenge_attempts" FORCE ROW LEVEL SECURITY;
+
+-- No policies. A row holds every question of a running challenge, including
+-- the ones not yet shown to the player; a client that could read it would know
+-- every answer in advance, and one that could write it would set its own
+-- score. Only the server's Drizzle connection reads and writes it (the grants
+-- are revoked in foreign_keys_and_grants.sql too).
 
 -- =============================================================================
 -- article_images (admin-only write, public read)

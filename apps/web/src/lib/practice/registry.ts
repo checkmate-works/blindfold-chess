@@ -49,10 +49,17 @@
  *      `learn/_lib/types.ts` (`ARTICLE_PRACTICE_MAPPING`).
  *
  * Challenge modules (`hasChallenge: true`) additionally:
- *   10. `lib/db/leaderboard-key.ts` — a resolver in `CHALLENGE_KEY_RESOLVERS`
- *       (typed). Return `'default'` for modules with no settings-based
- *       segmentation, or derive the key from settings (`boardOrientation`
- *       for coordinate_quiz).
+ *   10. `packages/features/src/<slug>/challenge.ts` — the module's
+ *       `ChallengeModuleDefinition`: settings validation, the leaderboard
+ *       key (`'default'` for modules with no settings-based segmentation,
+ *       or derived from settings — `boardOrientation` for coordinate_quiz),
+ *       question generation, grading, feedback length and the speed floor.
+ *       Register it in `CHALLENGE_MODULES` in
+ *       `packages/features/src/challenge-attempt/modules.ts` (typed: a
+ *       challenge module without a definition is a compile error). The
+ *       server runs signed-in challenges from this definition, so the
+ *       session hook must also pass `remote` / `disablePause` through to
+ *       `useTimedSession` and hand it the raw answer.
  *   11. `lib/games/leaderboard-keys.ts` — the key list in `LEADERBOARD_KEYS`
  *       (typed).
  *   12. `app/[locale]/(public)/leaderboard/_lib/types.ts` — a case in
@@ -62,14 +69,18 @@
  *       `useQuerySeededSettings` in the setup component. The setup screens read
  *       their settings from storage, so a parameter nobody consumes is silently
  *       ignored and the button opens whatever the player last chose.
- *   13. `.../practice/(challenge)/<slug>/_actions/save-result.ts` — a
- *       `'use server'` file that wraps `createSaveResultAction(<menuType>)`
- *       from `(challenge)/_lib/create-save-result-action.ts` (copy
- *       `diagonal-quiz/_actions/save-result.ts`).
+ *   13. The challenge screen wraps its session in `ChallengeAttemptGate`
+ *       from `(challenge)/_components/ChallengeAttemptGate.tsx` (copy
+ *       `square-colors/challenge/_components/SquareColorsChallenge.tsx`).
+ *       The gate starts the server-run attempt for a signed-in player and
+ *       hands the session its `attemptId` and `remote` port; a guest gets
+ *       neither and plays on the device, unrecorded. No per-module Server
+ *       Action is needed — the three in
+ *       `(challenge)/_actions/challenge-attempt.ts` serve every module.
  *   14. The session component calls `useChallengeResultSave` from
- *       `(challenge)/_hooks/use-challenge-result-save.ts` with that action;
- *       the hook handles the single save, the granted-ranks stash and the
- *       redirect.
+ *       `(challenge)/_hooks/use-challenge-result-save.ts` with that
+ *       `attemptId`; the hook confirms the attempt on the server, stashes
+ *       the granted ranks and redirects.
  *   15. `result/page.tsx` uses `createLeaderboardPracticeResultPage(ResultClient,
  *       { practiceId, module, resolveKey, loadingFallback })` instead of
  *       `createSimplePracticeResultPage` (copy `diagonal-quiz/result/page.tsx`).
@@ -80,7 +91,7 @@
  *       module is added).
  *   18. Tests with hard-coded counts: `leaderboard/_lib/__tests__/types.test.ts`,
  *       `leaderboard/_actions/__tests__/getUserRanks.test.ts`,
- *       `lib/db/leaderboard-key.test.ts`, `practice/_lib/practice-catalog.test.ts`.
+ *       `practice/_lib/practice-catalog.test.ts`.
  *
  * If a belt rank (段級位) should require a score in the module:
  *   19. `lib/db/data/ranks.ts` — a `challenge_score` entry in `ranksSeedData`

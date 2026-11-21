@@ -4,3 +4,4 @@ export type {
   UseBoardSymmetrySessionConfig,
   UseBoardSymmetrySessionReturn,
 } from "./use-board-symmetry-session";
+export * from "./challenge";

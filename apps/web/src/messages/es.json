@@ -1081,6 +1081,12 @@
     "trainingModeActive": "Practicando en modo entrenamiento",
     "readyForChallenge": "¿Estás listo?",
     "goToChallenge": "Aceptar el Desafío",
+    "challengeAttempt": {
+      "startFailed": "No se pudo iniciar el desafío. Comprueba tu conexión e inténtalo de nuevo.",
+      "startRateLimited": "Has iniciado demasiados desafíos en poco tiempo. Espera un momento e inténtalo de nuevo.",
+      "startSessionExpired": "Tu sesión ha caducado, así que este desafío no se registraría. Vuelve a iniciar sesión y empieza el desafío de nuevo.",
+      "retry": "Intentar de nuevo"
+    },
     "quitConfirmModal": {
       "title": "¿Abandonar la Práctica?",
       "message": "Tu progreso se perderá. ¿Estás seguro de que quieres salir?",
@@ -1312,12 +1318,6 @@
       "white": "Blancas",
       "black": "Negras",
       "random": "Aleatorio",
-      "feedbackSpeed": "Velocidad de Respuesta",
-      "feedbackSpeeds": {
-        "fast": "Rápida",
-        "normal": "Normal",
-        "slow": "Lenta"
-      },
       "start": "Iniciar",
       "clickSquare": "Haz clic en esta casilla",
       "whiteToMove": "Mueven las blancas",
@@ -1346,10 +1346,6 @@
       },
       "help": {
         "label": "Ayuda",
-        "feedbackSpeed": {
-          "title": "Velocidad de Respuesta",
-          "description": "Ajusta la rapidez con la que se reproduce el efecto de acierto/error. Este ajuste no afecta al cronómetro: el tiempo no avanza mientras se muestra el efecto de respuesta."
-        },
         "challenge": {
           "title": "Modo Desafío",
           "description": "Compite para ver cuántas respuestas correctas puedes dar dentro del límite de tiempo. Tu puntuación se registra y aparece en la tabla de clasificación."
@@ -4611,6 +4607,68 @@
       "deleteModalDeleting": "Eliminando...",
       "deleteModalReasonRequired": "El motivo es obligatorio",
       "userNotFound": "Usuario no encontrado"
+    },
+    "challengeResults": {
+      "navLabel": "Challenge Results",
+      "title": "Challenge Results",
+      "itemLabel": "results",
+      "noResultsFound": "No challenge results found",
+      "columns": {
+        "player": "Player",
+        "menu": "Menu / Key",
+        "score": "Score",
+        "mistakes": "Mistakes",
+        "time": "Time (s)",
+        "recordedAt": "Recorded at",
+        "source": "Source",
+        "pace": "Pace (s/answer)",
+        "meanThink": "Mean think (ms)",
+        "refusals": "Refusals",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "filters": {
+        "menu": "Menu",
+        "allMenus": "All menus",
+        "key": "Leaderboard key",
+        "allKeys": "All keys",
+        "signal": "Signal",
+        "allSignals": "Any signal",
+        "signalLegacy": "Legacy (no attempt)",
+        "signalRefused": "Player has speed refusals",
+        "status": "Status",
+        "statusLive": "Live",
+        "statusRemoved": "Removed",
+        "statusAll": "All",
+        "sort": "Sort",
+        "sortRecent": "Most recent",
+        "sortScore": "Highest score",
+        "sortPace": "Fastest pace",
+        "sortHint": "Score and pace order are only comparable within one menu and key.",
+        "maxPace": "Max pace (s/answer)",
+        "maxPacePlaceholder": "e.g. 0.8",
+        "user": "Player",
+        "userPlaceholder": "username, email or user ID",
+        "apply": "Filter"
+      },
+      "badges": {
+        "serverRun": "Server-run",
+        "legacy": "Legacy (client-reported)",
+        "live": "Live",
+        "removed": "Removed"
+      },
+      "rulesVersion": "Rules version {version}",
+      "deleteModal": {
+        "button": "Remove",
+        "title": "Remove challenge result",
+        "target": "{player} · {menu} / {key} · score {score}",
+        "description": "The score leaves the rankings and the best scores, and the EXP it earned is taken back. The row stays, marked removed, and the removal is recorded in the audit log.",
+        "reasonLabel": "Reason (required)",
+        "reasonPlaceholder": "Why is this result being removed?",
+        "cancel": "Cancel",
+        "confirm": "Remove",
+        "reasonRequired": "Reason is required."
+      }
     },
     "auditLogTable": {
       "action": "Acción",

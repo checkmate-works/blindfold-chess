@@ -4,6 +4,8 @@
  * @description
  * Database operations for granting Exp from challenge completions.
  * Orchestrates the full flow: calculation → persistence → level check.
+ * Also takes a challenge result's grant back when moderation removes the
+ * result ({@link reverseChallengeExp}).
  *
  * @see {@link @blindfold-chess/features/exp} for calculation logic (calculateExp, getLevel)
  * @see {@link ./save-challenge-result.ts} for the caller that invokes grantChallengeExp
@@ -20,6 +22,7 @@ import type { ExpInfo, GameExpEngine, GameExpOutcome } from '@blindfold-chess/fe
 import { and, eq, gte, sql } from 'drizzle-orm';
 import { randomUUID } from 'node:crypto';
 
+import { CHALLENGE_RESULT_REVERSAL_SOURCE, CHALLENGE_RESULT_SOURCE } from './exp-sources';
 import { startOfUtcDay } from './period-range';
 import { expEvents, userExp } from './schema';
 import type { DbTx } from './types';
@@ -139,7 +142,7 @@ async function grantExp(
  * Calculates and grants Exp for a completed challenge within a transaction.
  *
  * Orchestrates: calculateExp → grantExp → level determination.
- * Extracted from saveChallengeResult to keep that function focused on challenge record persistence.
+ * Extracted from writeChallengeResult to keep that function focused on challenge record persistence.
  *
  * Idempotent: if the same `challengeResultId` has already received an Exp grant,
  * the previously-granted amount is returned and `levelUp` is forced to `false`
@@ -175,7 +178,7 @@ export async function grantChallengeExp(
 
   const grantResult = await grantExp(tx, {
     userId,
-    source: 'challenge_result',
+    source: CHALLENGE_RESULT_SOURCE,
     sourceId: challengeResultId,
     menuType,
     amount: expResult.totalExp,
@@ -190,6 +193,97 @@ export async function grantChallengeExp(
   });
 
   return buildExpInfo(grantResult, expResult.totalExp);
+}
+
+/**
+ * Takes back the Exp granted for a challenge result that moderation removed,
+ * inside the caller's transaction.
+ *
+ * The grant is cancelled, not deleted: `exp_events` is append-only, so this
+ * appends a `challenge_result_reversal` row with the same `source_id`, the
+ * negated `amount` and the grant's `menu_type`, and lowers `user_exp.total_exp`
+ * by the same amount. Exp has no ceiling (`score × weight`), so a fabricated
+ * score inflates the EXP ranking too, and leaving the grant would keep it
+ * there after the result is gone.
+ *
+ * The reversal row is stamped with the grant's own `created_at`, not the
+ * current time. Every reader of `exp_events` sums `amount` over a
+ * `created_at` window (the period EXP ranking, the activity heatmap, both
+ * per `menu_type`), and a row sharing the grant's timestamp and menu falls
+ * inside exactly the windows the grant does, so each window nets to zero with
+ * no reader changed. A reversal stamped now would instead push the current
+ * period's total below zero and leave the original period inflated. The
+ * removal time is kept in `metadata.reversedAt`.
+ *
+ * Idempotent: the reversal insert goes through the same partial unique index
+ * as {@link grantExp}, so a second call finds the reversal already there,
+ * inserts nothing and returns 0 without touching `user_exp`. Also 0 when the
+ * result never received a grant (recorded before Exp existed). The total is
+ * floored at 0 so a total that was already corrected by hand cannot go
+ * negative.
+ *
+ * The level is derived from `total_exp` on read, so it falls with the total.
+ * Nothing handed out because a level was reached is taken back here: this
+ * reverses the Exp ledger only, and anything a future feature attaches to a
+ * level crossing would need its own decision about removal.
+ *
+ * @returns The amount taken back: the grant's amount, or 0 when there was no
+ *   grant or it had already been reversed.
+ */
+export async function reverseChallengeExp(
+  tx: DbTx,
+  params: { userId: string; challengeResultId: string }
+): Promise<number> {
+  const { userId, challengeResultId } = params;
+
+  const [grant] = await tx
+    .select({
+      amount: expEvents.amount,
+      menuType: expEvents.menuType,
+      createdAt: expEvents.createdAt,
+    })
+    .from(expEvents)
+    .where(
+      and(
+        eq(expEvents.userId, userId),
+        eq(expEvents.source, CHALLENGE_RESULT_SOURCE),
+        eq(expEvents.sourceId, challengeResultId)
+      )
+    )
+    .limit(1);
+
+  if (!grant) return 0;
+
+  // Same conflict target and partial predicate as grantExp — see there for
+  // why Postgres needs the predicate repeated to infer the partial index.
+  const inserted = await tx
+    .insert(expEvents)
+    .values({
+      userId,
+      source: CHALLENGE_RESULT_REVERSAL_SOURCE,
+      sourceId: challengeResultId,
+      menuType: grant.menuType,
+      amount: -grant.amount,
+      metadata: { reversedAt: new Date().toISOString() },
+      createdAt: grant.createdAt,
+    })
+    .onConflictDoNothing({
+      target: [expEvents.source, expEvents.sourceId],
+      where: sql`source_id IS NOT NULL`,
+    })
+    .returning({ id: expEvents.id });
+
+  if (inserted.length === 0) return 0;
+
+  await tx
+    .update(userExp)
+    .set({
+      totalExp: sql`GREATEST(${userExp.totalExp} - ${grant.amount}, 0)`,
+      updatedAt: sql`now()`,
+    })
+    .where(eq(userExp.userId, userId));
+
+  return grant.amount;
 }
 
 /**

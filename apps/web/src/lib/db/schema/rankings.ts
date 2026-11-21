@@ -1,12 +1,23 @@
 // Auto-split from schema/tables.ts on 2026-05-27. Per-domain
 // schema slice — challenge rankings.
 //
-// Score-based ranking surfaces: per-attempt `challenge_results` and the
-// materialised per-module `challenge_best_scores`. (`chess_openings` and
+// Score-based ranking surfaces: per-attempt `challenge_results`, the
+// materialised per-module `challenge_best_scores`, and the server-run
+// `challenge_attempts` that a recorded result comes from. (`chess_openings` and
 // `feed_items` moved to `./openings` and `./feed` on 2026-07-04.)
-import { index, integer, pgTable, primaryKey, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
+import type { ChallengeAttemptState } from '@blindfold-chess/features/challenge-attempt';
+import {
+  index,
+  integer,
+  jsonb,
+  pgTable,
+  primaryKey,
+  timestamp,
+  uuid,
+  varchar,
+} from 'drizzle-orm/pg-core';
 
-import { createdAtOnly, updatedAtOnly } from './columns';
+import { createdAtOnly, softDeleteTimestamp, updatedAtOnly } from './columns';
 
 /**
  * Challenge Results — stores all challenge results for period-based rankings.
@@ -23,9 +34,10 @@ import { createdAtOnly, updatedAtOnly } from './columns';
  * @design Two-table architecture (Monkeytype-inspired)
  *
  * Challenge data is split into two tables with different responsibilities:
- * - `challenge_results`: append-only log of all challenge results (INSERT only).
- *   Used for weekly/monthly rankings via `created_at` filtering, and also
- *   serves as the source for per-user history (mypage dashboard).
+ * - `challenge_results`: log of all challenge results, appended to and never
+ *   edited except for moderation setting `deleted_at`. Used for weekly/monthly
+ *   rankings via `created_at` filtering, and also serves as the source for
+ *   per-user history (mypage dashboard).
  * - `challenge_best_scores`: materialized all-time best per user/menu/key,
  *   maintained via UPSERT on each new best score.
  *
@@ -49,6 +61,17 @@ import { createdAtOnly, updatedAtOnly } from './columns';
  * on further tie, faster time wins. The UPSERT comparison in
  * `challenge_best_scores` uses the same ordering via tuple comparison.
  *
+ * @design Moderation removes a result by setting `deleted_at`
+ *
+ * A removed row stays in the table but appears in no read: every path that
+ * reads `challenge_results` composes `liveChallengeResult()` (or spells
+ * `deleted_at IS NULL` in raw SQL), and the RLS select policy hides it from
+ * `anon` / `authenticated`. Who removed it and why is not stored on the row;
+ * that lives in `moderation_actions`, following the repository's pattern of a
+ * state flag plus an append-only event log. `deleted_by` / `reason` columns
+ * would keep a second copy of the audit log to drift from it, and a physical
+ * DELETE would destroy the evidence and any chance of restoring the result.
+ *
  * @design Index sort order — manual DESC/ASC in migration SQL
  *
  * Drizzle ORM's `index().on()` does not support DESC/ASC modifiers, so the
@@ -68,6 +91,7 @@ export const challengeResults = pgTable(
     /** Whole seconds (the client timer's value, rounded by the save action). */
     timeTaken: integer('time_taken').notNull(),
     ...createdAtOnly,
+    ...softDeleteTimestamp,
   },
   (table) => [
     index('idx_cr_period_ranking').on(
@@ -114,6 +138,12 @@ export type NewChallengeResult = typeof challengeResults.$inferInsert;
  * This table is a materialized cache. If data correction is needed (e.g.,
  * cheater removal), the best score can be recalculated from `challenge_results`
  * using `DISTINCT ON (user_id, menu_type, leaderboard_key)`.
+ *
+ * Moderation does exactly that: removing a result rebuilds the affected
+ * (user, menu, key) row from the results still live, in the same transaction
+ * that sets `deleted_at`. A best left pointing at a removed result would keep
+ * it on the all-time ranking, which reads this table rather than
+ * `challenge_results`.
  */
 export const challengeBestScores = pgTable(
   'challenge_best_scores',
@@ -142,3 +172,102 @@ export const challengeBestScores = pgTable(
 
 export type ChallengeBestScore = typeof challengeBestScores.$inferSelect;
 export type NewChallengeBestScore = typeof challengeBestScores.$inferInsert;
+
+/**
+ * Challenge Attempts — one server-run challenge, from start to finish.
+ *
+ * @description
+ * A signed-in player's challenge is played against a row here. Starting a
+ * challenge inserts the row with every question generated up front; each
+ * answer is graded on the server against the stored question and updates
+ * `state`; finishing reads the row and, if the run passes the checks, inserts
+ * the `challenge_results` row it links to through `challenge_result_id`.
+ *
+ * Only the server's direct database connection reads or writes this table.
+ * RLS is on with no policy and `anon` / `authenticated` have no grants, so
+ * the questions not yet shown to the player never reach a client.
+ *
+ * @design The server runs the attempt; the client only answers
+ *
+ * The questions are generated and stored when the attempt starts, every
+ * answer is graded as it arrives against server timestamps, and finishing
+ * takes nothing but the attempt id. Score, mistakes and time are therefore
+ * never taken from the client's word. The rejected alternative — the client
+ * sending its whole answer log with a seed at the end — leaves the timings as
+ * the client's claim (a log rebuilt after the fact cannot be told apart from a
+ * manipulated clock), and handing out the seed lets the client read every
+ * question in advance.
+ *
+ * @design One consumption, decided under a row lock
+ *
+ * Answering and finishing both read the row with `SELECT … FOR UPDATE` and
+ * decide inside that transaction. Concurrent or resent requests are therefore
+ * serialised: a resend of the previous answer gets the same response again,
+ * a different answer for an already-answered question is rejected (no swapping
+ * an answer after seeing the result), and once `consumed_at` is set every
+ * further finish request gets the outcome stored on the row (`outcome`,
+ * `challenge_result_id`) instead of being decided — or recorded — a second
+ * time. A response lost in transit can always be retried safely.
+ *
+ * @design `rules_version` — which rules a row was played under
+ *
+ * Question generation, the clock rules and the tolerances may change. Each
+ * row keeps the version it was played under (`CHALLENGE_RULES_VERSION` at
+ * start), so a stored state, thinking time or refusal can be read under the
+ * rules that produced it rather than reinterpreted under later ones.
+ *
+ * @design Retention
+ *
+ * A daily job (`drizzle/supabase/scheduled_jobs.sql`) deletes rows never
+ * finished a day after they started, and 90 days after a row was consumed it
+ * empties `questions` and the per-answer log in `state` while keeping the row
+ * (and the link to its result).
+ *
+ * `user_id` references `auth.users` with ON DELETE CASCADE — FK defined in
+ * custom SQL.
+ */
+export const challengeAttempts = pgTable(
+  'challenge_attempts',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id').notNull(), // references auth.users — FK defined in custom SQL
+    menuType: varchar('menu_type', { length: 30 }).notNull(),
+    leaderboardKey: varchar('leaderboard_key', { length: 20 }).notNull(),
+    rulesVersion: integer('rules_version').notNull(),
+    /** The settings as returned by the module's `parseSettings`. */
+    settings: jsonb('settings').notNull(),
+    /** Every question of the attempt, generated at start and never changed. */
+    questions: jsonb('questions').$type<unknown[]>().notNull(),
+    state: jsonb('state').$type<ChallengeAttemptState>().notNull(),
+    startedAt: timestamp('started_at', { withTimezone: true }).notNull(),
+    consumedAt: timestamp('consumed_at', { withTimezone: true }),
+    /** `recorded` | `unrecorded` | `implausible_speed`; null until consumed. */
+    outcome: varchar('outcome', { length: 30 }),
+    /**
+     * The result this attempt recorded.
+     *
+     * A physical delete of the result (an account deletion cascading, say)
+     * sets this to NULL, so a resent finish never hands out the id of a row
+     * that no longer exists: a `recorded` row with no result id answers
+     * `rejected` instead.
+     *
+     * Moderation's soft delete leaves the link in place. This row holds the
+     * answer log, the only evidence of how the result was played, and the
+     * moderation list reads its signals (thinking time) through this link. A
+     * resent finish may therefore return the id of a removed result; the
+     * result page applies `liveChallengeResult()` and treats it as missing.
+     */
+    challengeResultId: uuid('challenge_result_id').references(() => challengeResults.id, {
+      onDelete: 'set null',
+    }),
+  },
+  (table) => [
+    index('idx_ca_user_started').on(table.userId, table.startedAt),
+    // The moderation list looks attempts up by result id; without this the
+    // lookup scans the table, since the only other index leads with user_id.
+    index('idx_ca_result').on(table.challengeResultId),
+  ]
+);
+
+export type ChallengeAttempt = typeof challengeAttempts.$inferSelect;
+export type NewChallengeAttempt = typeof challengeAttempts.$inferInsert;

@@ -16,7 +16,7 @@ const TIME_WINDOW_DAYS = 30;
  * weekly→all-time fallback added to the practice top page.
  *
  * EXP / belt-rank grants and feed_items are intentionally NOT populated here.
- * Reusing saveChallengeResult() would handle them but ignores createdAt, so
+ * Reusing writeChallengeResult() would handle them but ignores createdAt, so
  * the time distribution this script exists for would be lost.
  */
 export async function reseedChallenges(db: PostgresJsDatabase, userIds: string[]): Promise<number> {

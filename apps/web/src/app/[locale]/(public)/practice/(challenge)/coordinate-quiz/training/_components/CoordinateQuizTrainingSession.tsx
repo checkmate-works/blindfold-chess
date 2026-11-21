@@ -2,31 +2,27 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { COORDINATE_QUIZ_FEEDBACK_MS } from '@blindfold-chess/features/coordinate-quiz';
 import type { Square } from '@blindfold-chess/types';
 
 import { useTrainingSessionShell } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-training-session-shell';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { CoordinateQuizPlaySkeleton } from '../../_components/CoordinateQuizPlaySkeleton';
-import type { BoardOrientation, CoordinateQuestion, FeedbackSpeed } from '../../_lib/types';
-import { FEEDBACK_SPEED_MS } from '../../_lib/types';
+import type { BoardOrientation, CoordinateQuestion } from '../../_lib/types';
 import { checkAnswer, generateSingleQuestion } from '../../_lib/utils';
 import { CoordinateQuizTrainingPlaying } from './CoordinateQuizTrainingPlaying';
 
 type Props = {
   locale: Locale;
   boardOrientation: string;
-  feedbackSpeed: string;
 };
 
 export default function CoordinateQuizTrainingSession({
   locale,
   boardOrientation: initialBoardOrientation,
-  feedbackSpeed: initialFeedbackSpeed,
 }: Props) {
   const boardOrientation = initialBoardOrientation as BoardOrientation;
-  const feedbackSpeed = initialFeedbackSpeed as FeedbackSpeed;
-  const feedbackDuration = FEEDBACK_SPEED_MS[feedbackSpeed];
 
   const [currentQuestion, setCurrentQuestion] = useState<CoordinateQuestion | null>(null);
   const [recentSquares, setRecentSquares] = useState<Square[]>([]);
@@ -51,7 +47,6 @@ export default function CoordinateQuizTrainingSession({
   const { sessionElementId, handleEndTraining } = useTrainingSessionShell({
     locale,
     slug: 'coordinate-quiz',
-    scrollEnabled: !!currentQuestion,
   });
 
   const handleSquareClick = useCallback(
@@ -78,14 +73,18 @@ export default function CoordinateQuizTrainingSession({
         setCurrentQuestion(nextQuestion);
         setShowFeedback(false);
         setLastClickedSquare(null);
-      }, feedbackDuration);
+      }, COORDINATE_QUIZ_FEEDBACK_MS);
     },
-    [currentQuestion, showFeedback, boardOrientation, recentSquares, feedbackDuration]
+    [currentQuestion, showFeedback, boardOrientation, recentSquares]
   );
 
   // Show loading state while question is being generated
   if (!currentQuestion) {
-    return <CoordinateQuizPlaySkeleton />;
+    return (
+      <div id={sessionElementId} className="min-h-screen">
+        <CoordinateQuizPlaySkeleton />
+      </div>
+    );
   }
 
   return (
@@ -93,7 +92,6 @@ export default function CoordinateQuizTrainingSession({
       <CoordinateQuizTrainingPlaying
         locale={locale}
         boardOrientation={boardOrientation}
-        feedbackSpeed={feedbackSpeed}
         currentQuestion={currentQuestion}
         correctAnswers={correctAnswers}
         wrongAnswers={wrongAnswers}

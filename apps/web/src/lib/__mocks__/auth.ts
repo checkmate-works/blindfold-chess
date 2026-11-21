@@ -24,6 +24,7 @@ import { vi } from 'vitest';
  */
 export const getOptionalUser = vi.fn();
 export const getAuthenticatedUser = vi.fn();
+export const isAuthUnavailable = vi.fn(async () => false);
 export const authenticateAndCheckBan = vi.fn();
 export const authenticateAndGuard = vi.fn();
 export const authenticateAndGuardApi = vi.fn();

@@ -2,15 +2,16 @@
 
 import { useCallback, useMemo, useState } from 'react';
 
+import type { RemoteChallengePort } from '@blindfold-chess/features/challenge-attempt';
 import { useDiagonalQuizSession } from '@blindfold-chess/features/diagonal-quiz/client';
+import type { Square } from '@blindfold-chess/types';
 
-import { MISTAKE_LIMIT } from '@/lib/challenge/constants';
+import { CHALLENGE_TIME_LIMIT, MISTAKE_LIMIT } from '@/lib/challenge/constants';
 
+import { ChallengeAttemptGate } from '@/app/[locale]/(public)/practice/(challenge)/_components/ChallengeAttemptGate';
 import { useChallengeResultSave } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-challenge-result-save';
 import { useQuitConfirm } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-quit-confirm';
-import { saveDiagonalQuizResult } from '@/app/[locale]/(public)/practice/(challenge)/diagonal-quiz/_actions/save-result';
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
-import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { DiagonalQuizPlaySkeleton } from '../../_components/DiagonalQuizPlaySkeleton';
@@ -18,10 +19,44 @@ import { DiagonalQuizPlaying } from './DiagonalQuizPlaying';
 
 type Props = {
   locale: Locale;
-  initialTimeLimit: number;
 };
 
-export default function DiagonalQuizSession({ locale, initialTimeLimit }: Props) {
+/** Diagonal quiz has no settings; the server's `parseSettings` takes an empty object. */
+const SETTINGS = {};
+
+/**
+ * Every challenge runs for {@link CHALLENGE_TIME_LIMIT}. The setup screen used
+ * to pass it in the URL; a hand-edited value would now only make the device's
+ * clock disagree with the server's, which keeps its own limit.
+ */
+const TIME_LIMIT = CHALLENGE_TIME_LIMIT;
+
+export default function DiagonalQuizSession({ locale }: Props) {
+  return (
+    <ChallengeAttemptGate<Square>
+      menuType="diagonal_quiz"
+      scrollTargetId="diagonal-quiz-session"
+      settings={SETTINGS}
+      fallback={<DiagonalQuizPlaySkeleton showHeader />}
+    >
+      {(attempt) => (
+        <DiagonalQuizChallengeSession
+          locale={locale}
+          attemptId={attempt.attemptId}
+          remote={attempt.remote}
+        />
+      )}
+    </ChallengeAttemptGate>
+  );
+}
+
+type SessionProps = {
+  locale: Locale;
+  attemptId: string | null;
+  remote: RemoteChallengePort<Square> | undefined;
+};
+
+function DiagonalQuizChallengeSession({ locale, attemptId, remote }: SessionProps) {
   const {
     currentSquare,
     timeRemaining,
@@ -33,16 +68,18 @@ export default function DiagonalQuizSession({ locale, initialTimeLimit }: Props)
     isFinished,
     countdown,
     isPaused,
+    remoteFailed,
+    awaitingServer,
     handleAnswer,
     togglePause,
     finishSession,
     questionResults,
   } = useDiagonalQuizSession({
-    timeLimit: initialTimeLimit,
+    timeLimit: TIME_LIMIT,
     mistakeAllowance: MISTAKE_LIMIT,
+    remote,
+    disablePause: true,
   });
-
-  useScrollToElement('diagonal-quiz-session');
 
   // Set when the user quits mid-run. The run still lands on the result/feedback
   // screen, but `skipSave` below suppresses leaderboard recording, EXP, and rank
@@ -84,27 +121,18 @@ export default function DiagonalQuizSession({ locale, initialTimeLimit }: Props)
     params.set('score', correctCount.toString());
     params.set('total', (correctCount + incorrectCount).toString());
     params.set('time', timeElapsed.toString());
-    params.set('timeLimit', initialTimeLimit.toString());
+    params.set('timeLimit', TIME_LIMIT.toString());
     params.set('data', encodeURIComponent(serializedData));
 
     return `/${locale}/practice/diagonal-quiz/result?${params.toString()}`;
-  }, [correctCount, incorrectCount, timeElapsed, initialTimeLimit, questionResults, locale]);
-
-  const saveResult = useCallback(
-    () =>
-      saveDiagonalQuizResult({
-        correctAnswers: correctCount,
-        incorrectAnswers: incorrectCount,
-        timeTaken: timeElapsed,
-      }),
-    [correctCount, incorrectCount, timeElapsed]
-  );
+  }, [correctCount, incorrectCount, timeElapsed, questionResults, locale]);
 
   useChallengeResultSave({
     isFinished,
     totalAnswers: correctCount + incorrectCount,
     resultUrl,
-    saveResult,
+    attemptId,
+    remoteFailed,
     moduleName: 'diagonal_quiz',
     skipSave: isAborted,
   });
@@ -121,11 +149,12 @@ export default function DiagonalQuizSession({ locale, initialTimeLimit }: Props)
   }
 
   return (
-    <div id="diagonal-quiz-session" className="min-h-screen">
+    <div className="min-h-screen">
       <DiagonalQuizPlaying
         currentSquare={currentSquare}
+        awaitingServer={awaitingServer}
         timeRemaining={timeRemaining}
-        timeLimit={initialTimeLimit}
+        timeLimit={TIME_LIMIT}
         showResult={showFeedback}
         lastAnswer={lastAnswer}
         onAnswer={handleAnswer}

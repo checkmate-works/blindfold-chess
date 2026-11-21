@@ -93,7 +93,11 @@ export default function BoardSymmetryTrainingSession({ locale }: Props) {
   }, [selectedFile, selectedRank, checkAnswer, isProcessing, isCorrect]);
 
   if (!problem) {
-    return <BoardSymmetryPlaySkeleton />;
+    return (
+      <div id={sessionElementId} className="min-h-screen">
+        <BoardSymmetryPlaySkeleton />
+      </div>
+    );
   }
 
   return (

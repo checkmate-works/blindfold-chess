@@ -2,6 +2,11 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import type {
+  ChallengeAnswerResponse,
+  RemoteChallengePort,
+} from "../challenge-attempt/types";
+import { DEFAULT_FEEDBACK_MS } from "../common/flash-policy";
 import { useLatestRef } from "../common/use-latest-ref";
 import { useCountdown } from "./use-countdown";
 import { useGameTimer } from "./use-game-timer";
@@ -9,8 +14,65 @@ import { useGameTimer } from "./use-game-timer";
 export type UseTimedSessionConfig<TQuestion> = {
   /** Session length in seconds of active play (see {@link useTimedSession}). */
   timeLimit: number;
-  /** Called once on mount and once per advance; read through a latest-ref. */
+  /**
+   * Called once on mount and once per advance; read through a latest-ref.
+   * Never called in remote mode, where the server supplies every question.
+   */
   generateQuestion: () => TQuestion;
+  /**
+   * Hand question delivery and grading to a server ("remote mode"). Read on
+   * mount only: a session is remote or local for its whole life, so passing
+   * or dropping this later has no effect. The port's `submitAnswer` is read
+   * through a latest-ref, so its identity may change between renders.
+   *
+   * In remote mode:
+   *
+   * - The first question is `remote.first.question`; `generateQuestion` is
+   *   not called.
+   * - An answer flashes feedback and updates the counts at once
+   *   (optimistically) while `submitAnswer(sequence, answer)` is sent. The
+   *   next question appears only once the feedback flash is over AND the
+   *   server's response has arrived; between the two, `awaitingServer` is
+   *   true, `showFeedback` stays true, and input is ignored. Keeping the
+   *   feedback up is what tells the player the question on screen is already
+   *   answered, and the screen changes once, straight from this answer's
+   *   feedback to the next question, however long the response takes.
+   * - The clock follows the server's rule for thinking time: the server stops
+   *   the clock when it receives an answer and restarts it `feedbackMs` later,
+   *   or after server processing if it takes longer. So the on-screen
+   *   clock stops only for `feedbackDuration` after an answer and then runs
+   *   again even while the response is outstanding. When an `accepted`
+   *   response arrives, the clock is re-synced to its `elapsedMs` plus however
+   *   long the wait has already run past the feedback flash for the server's
+   *   verdict (which is what the server waited out, even when the flash on
+   *   screen was for a different local verdict), excluding the server's
+   *   reported processing extension. Counting time any
+   *   other way would let an answer that looks in time on screen arrive after
+   *   the server's limit.
+   * - The server's grading wins: if its verdict differs from the local one
+   *   the counts are corrected, and the run continues as long as the response
+   *   carries a `next` question even if the local mistake count says
+   *   otherwise. `mistakeAllowance` is not consulted; `next: null` ends the
+   *   run after the feedback flash with reason `mistakeLimit`.
+   * - `expired` takes the answer back out of the counts and ends the run at
+   *   once with reason `timeUp`.
+   * - `rejected`, or `submitAnswer` failing three times in a row (each retry
+   *   resends the same `sequence` and `answer`; an attempt unanswered for
+   *   eight seconds counts as failed), takes the answer back out,
+   *   ends the run with reason `quit`, and sets `remoteFailed`.
+   * - At the local time limit, an outstanding answer is settled before the
+   *   run can finish. Otherwise an expired answer would remain counted and
+   *   finishing could race its still-pending server transaction.
+   */
+  remote?: RemoteChallengePort<TQuestion>;
+  /**
+   * Make `togglePause` a no-op. Challenges set it: time spent paused is not
+   * thinking time, so a pause would let a player stop the clock and think
+   * with the question still on screen — and a 60-second contest has no need
+   * for one. A "really quit?" prompt opened from such a session must leave
+   * the clock running.
+   */
+  disablePause?: boolean;
   /** Feedback-flash length in ms, or a function of the answer's outcome. Default 500. */
   feedbackDuration?: number | ((correct: boolean) => number);
   /**
@@ -60,6 +122,11 @@ export type UseTimedSessionReturn<TQuestion> = {
   correctCount: number;
   incorrectCount: number;
   totalCount: number;
+  /**
+   * True from an answer until the next question is shown: the feedback flash
+   * and, in remote mode, any wait for the server's response after it (see
+   * `awaitingServer`). Screens render the answer's feedback while it is true.
+   */
   showFeedback: boolean;
   lastAnswerCorrect: boolean | null;
   isFinished: boolean;
@@ -77,8 +144,36 @@ export type UseTimedSessionReturn<TQuestion> = {
    * `computePracticeResult` instead of each tracking timing themselves.
    */
   questionTimes: number[];
-  /** Ignored during the countdown, the feedback flash, a pause, or after finishing. */
-  handleAnswer: (correct: boolean) => void;
+  /**
+   * True once a remote session has ended because the server refused an
+   * answer (`rejected`) or could not be reached for three attempts in a row.
+   * Such a run is not recorded: its score could only come from the client's
+   * own grading, which is exactly what a server-run challenge must not trust,
+   * so the caller ends it and says so rather than keeping a result it cannot
+   * stand behind. Always false in local mode.
+   */
+  remoteFailed: boolean;
+  /**
+   * Remote mode only: the feedback flash is over but the server's response
+   * (and so the next question) has not arrived yet. The clock runs, input is
+   * ignored, `isPlaying` is false, and `showFeedback` stays true, so the
+   * answered question keeps showing its feedback until the next one replaces
+   * it. Always false in local mode.
+   *
+   * The hook holds `showFeedback` rather than leaving each screen to show
+   * feedback on `showFeedback || awaitingServer`: every screen and quiz hook
+   * already keys its feedback (and clearing of per-answer state) on
+   * `showFeedback`, so one rule here covers all of them, and a screen that
+   * forgot the second flag would drop its feedback mid-wait and flicker.
+   */
+  awaitingServer: boolean;
+  /**
+   * Ignored during the countdown, the feedback flash, a pause, while awaiting
+   * the server, or after finishing. `answer` is the raw answer sent to the
+   * server in remote mode; local mode ignores it.
+   */
+  handleAnswer: (correct: boolean, answer?: unknown) => void;
+  /** No-op when `disablePause` is set. */
   togglePause: () => void;
   /**
    * Ends the session immediately at its current score, exactly as if the time
@@ -89,7 +184,66 @@ export type UseTimedSessionReturn<TQuestion> = {
   finishSession: () => void;
 };
 
-const DEFAULT_FEEDBACK_DURATION = 500;
+/** Attempts per answer before a remote session gives up (`remoteFailed`). */
+const REMOTE_SUBMIT_ATTEMPTS = 3;
+/** Wait between failed attempts, so a brief network blip does not end the run. */
+const REMOTE_RETRY_DELAY_MS = 500;
+/**
+ * How long one attempt may stay unanswered before it counts as failed.
+ *
+ * A request can stall without ever failing (a mobile connection changing
+ * networks leaves it open until the browser gives up, which can take
+ * minutes). The session blocks input while it waits, and at the time limit it
+ * also stops the clock and holds the finish until the outstanding answer is
+ * settled, so without a limit of its own a stalled request left the run
+ * frozen at zero with nothing the player could do but quit. A healthy round
+ * trip takes a fraction of a second; eight seconds is far outside that while
+ * still short next to a 60-second run.
+ *
+ * A timed-out attempt is retried like a failed one. The abandoned request may
+ * still reach the server; that is safe, because the server answers a repeat
+ * of the same `sequence` and `answer` with the response it already gave.
+ */
+const REMOTE_SUBMIT_TIMEOUT_MS = 8000;
+
+/**
+ * `promise`, or a rejection if it has not settled within `ms`. The promise
+ * itself is left running; only the wait for it ends.
+ */
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(
+      () => reject(new Error("remote answer timed out")),
+      ms,
+    );
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (error: unknown) => {
+        clearTimeout(timer);
+        reject(error);
+      },
+    );
+  });
+}
+
+/**
+ * One answer in flight in remote mode. The next question is shown only when
+ * both halves are in: the feedback flash has run out (`feedbackDone`) and
+ * the server has accepted the answer (`outcome`).
+ */
+type PendingRemoteAnswer<TQuestion> = {
+  /** The local verdict, already added to the counts. */
+  correct: boolean;
+  answeredAt: number;
+  feedbackDone: boolean;
+  outcome?: {
+    correct: boolean;
+    next: { sequence: number; question: TQuestion } | null;
+  };
+};
 
 /** Resolve the feedback-duration config (a constant or an outcome-keyed fn). */
 function resolveFeedbackDuration(
@@ -108,6 +262,10 @@ function resolveFeedbackDuration(
  * during the countdown, the feedback flash after each answer, and while
  * paused — so `timeLimit` measures thinking time, not wall time.
  * `timeElapsed` / `timeRemaining` are whole seconds.
+ *
+ * With `remote` set, the server supplies the questions and grades the
+ * answers, and the clock also runs while the next question is on its way;
+ * see {@link UseTimedSessionConfig.remote}.
  */
 export function useTimedSession<TQuestion>(
   config: UseTimedSessionConfig<TQuestion>,
@@ -115,16 +273,21 @@ export function useTimedSession<TQuestion>(
   const {
     timeLimit,
     generateQuestion,
-    feedbackDuration = DEFAULT_FEEDBACK_DURATION,
+    feedbackDuration = DEFAULT_FEEDBACK_MS,
     mistakeAllowance,
     onAnswerEffect,
     onAdvance,
+    disablePause = false,
   } = config;
 
   const generateQuestionRef = useLatestRef(generateQuestion);
   const feedbackDurationRef = useLatestRef(feedbackDuration);
   const onAnswerEffectRef = useLatestRef(onAnswerEffect);
   const onAdvanceRef = useLatestRef(onAdvance);
+  const remoteRef = useLatestRef(config.remote);
+  // Captured once: a session does not switch between local and remote.
+  const [remoteFirst] = useState(() => config.remote?.first);
+  const isRemote = remoteFirst !== undefined;
 
   const [currentQuestion, setCurrentQuestion] = useState<TQuestion | null>(
     null,
@@ -139,12 +302,22 @@ export function useTimedSession<TQuestion>(
     useState<TimedSessionFinishReason | null>(null);
   const isFinished = finishReason !== null;
   const [isPaused, setIsPaused] = useState(false);
+  const [awaitingServer, setAwaitingServer] = useState(false);
+  const [remoteFailed, setRemoteFailed] = useState(false);
+  const [waitingAtTimeLimit, setWaitingAtTimeLimit] = useState(false);
 
   const hasStarted = useRef(false);
   const isFinishedRef = useRef(false);
   const feedbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined,
   );
+  // Remote mode: the sequence number of the question on screen, and the
+  // answer whose response is outstanding. A response is applied only while
+  // its answer is still `pendingRef.current` and the hook is mounted, so a
+  // late response cannot touch a finished or unmounted session.
+  const sequenceRef = useRef(0);
+  const pendingRef = useRef<PendingRemoteAnswer<TQuestion> | null>(null);
+  const mountedRef = useRef(false);
 
   // Per-question timing lives here so quiz hooks don't each reimplement it.
   // State rather than a ref: the array is part of the return value, so pushing
@@ -156,11 +329,11 @@ export function useTimedSession<TQuestion>(
   // `handleAnswer`, so there is exactly one per answer whatever ends the
   // session — recording on question generation instead would add a ~0 entry
   // for the first question and drop the answer that hits the mistake limit.
-  const questionStartRef = useRef<number>(Date.now());
+  const questionStartRef = useRef<number>(performance.now());
 
   // Starts the clock for a new question and generates it.
   const advanceQuestion = useCallback((): TQuestion => {
-    questionStartRef.current = Date.now();
+    questionStartRef.current = performance.now();
     return generateQuestionRef.current();
   }, [generateQuestionRef]);
 
@@ -169,53 +342,83 @@ export function useTimedSession<TQuestion>(
   useEffect(() => {
     if (hasStarted.current) return;
     hasStarted.current = true;
+    if (remoteFirst !== undefined) {
+      sequenceRef.current = remoteFirst.sequence;
+      questionStartRef.current = performance.now();
+      setCurrentQuestion(remoteFirst.question);
+      return;
+    }
     setCurrentQuestion(advanceQuestion());
-  }, [advanceQuestion]);
+  }, [advanceQuestion, remoteFirst]);
 
   // The first question is generated on mount but cannot be answered until the
   // countdown ends; restart its clock then so the countdown is not counted as
   // time spent on it.
   useEffect(() => {
-    if (countdown === null) questionStartRef.current = Date.now();
+    if (countdown === null) questionStartRef.current = performance.now();
   }, [countdown]);
 
-  const isPlaying =
+  // The clock runs whenever a question is (or is about to be) answerable;
+  // `awaitingServer` keeps it running while input is still blocked, even
+  // though `showFeedback` is still up then.
+  const clockRunning =
     currentQuestion !== null &&
     !isFinished &&
+    !waitingAtTimeLimit &&
     countdown === null &&
-    !showFeedback &&
+    (!showFeedback || awaitingServer) &&
     !isPaused;
+  const isPlaying = clockRunning && !awaitingServer;
 
-  const { timeElapsed, totalTime } = useGameTimer({
+  const { timeElapsed, totalTime, setElapsedMs } = useGameTimer({
     timeLimit,
-    isActive: isPlaying,
+    isActive: clockRunning,
     onTimeLimitReached: useCallback(() => {
+      if (pendingRef.current !== null) {
+        // Keep the answer live until its verdict arrives. Pausing this local
+        // timer also lets setElapsedMs restart it from the server's verdict
+        // if processing time made our estimate reach zero too early.
+        setWaitingAtTimeLimit(true);
+        return;
+      }
       isFinishedRef.current = true;
+      pendingRef.current = null;
+      setAwaitingServer(false);
       setFinishReason("timeUp");
     }, []),
   });
 
   useEffect(() => {
+    mountedRef.current = true;
     return () => {
+      mountedRef.current = false;
       if (feedbackTimeoutRef.current) clearTimeout(feedbackTimeoutRef.current);
     };
   }, []);
 
   const togglePause = useCallback(() => {
-    if (isFinished || countdown !== null) return;
+    if (disablePause || isFinished || countdown !== null) return;
     setIsPaused((prev) => !prev);
-  }, [isFinished, countdown]);
+  }, [disablePause, isFinished, countdown]);
+
+  // Ends the run now: no pending flash or server response can act on it after
+  // this.
+  const endSession = useCallback((reason: TimedSessionFinishReason) => {
+    if (feedbackTimeoutRef.current) clearTimeout(feedbackTimeoutRef.current);
+    isFinishedRef.current = true;
+    pendingRef.current = null;
+    setFinishReason(reason);
+    setShowFeedback(false);
+    setAwaitingServer(false);
+  }, []);
 
   // End the session on demand (e.g. the user quits mid-run). Clears any pending
   // feedback/advance timeout so a flash in flight can't resurrect the run after
   // it has been marked finished.
   const finishSession = useCallback(() => {
     if (isFinishedRef.current) return;
-    if (feedbackTimeoutRef.current) clearTimeout(feedbackTimeoutRef.current);
-    isFinishedRef.current = true;
-    setFinishReason("quit");
-    setShowFeedback(false);
-  }, []);
+    endSession("quit");
+  }, [endSession]);
 
   // End the session after the feedback flash for the answer that hit the
   // mistake limit. `onAdvance` is intentionally NOT called — there is no next
@@ -228,35 +431,165 @@ export function useTimedSession<TQuestion>(
     }, duration);
   }, []);
 
+  // see UseTimedSessionConfig.onAdvance for the batching contract
+  const notifyAdvance = useCallback(
+    (lastCorrect: boolean) => {
+      try {
+        onAdvanceRef.current?.(lastCorrect);
+      } catch (error) {
+        console.error(
+          "useTimedSession: onAdvance threw, continuing advance:",
+          error,
+        );
+      }
+    },
+    [onAdvanceRef],
+  );
+
   // Advance to the next question after the feedback flash.
   const scheduleAdvance = useCallback(
     (duration: number, correct: boolean) => {
       feedbackTimeoutRef.current = setTimeout(() => {
         if (isFinishedRef.current) return;
-        // see UseTimedSessionConfig.onAdvance for batching contract
-        try {
-          onAdvanceRef.current?.(correct);
-        } catch (error) {
-          console.error(
-            "useTimedSession: onAdvance threw, continuing advance:",
-            error,
-          );
-        }
+        notifyAdvance(correct);
         setCurrentQuestion(advanceQuestion());
         setShowFeedback(false);
         setLastAnswerCorrect(null);
       }, duration);
     },
-    [advanceQuestion],
+    [advanceQuestion, notifyAdvance],
+  );
+
+  // Remote mode: both the flash and the accepted response are in, so show
+  // the server's next question, or end the run when there is none.
+  const completeRemoteAnswer = useCallback(
+    (pending: PendingRemoteAnswer<TQuestion>) => {
+      const { outcome } = pending;
+      if (outcome === undefined) return;
+      pendingRef.current = null;
+      setAwaitingServer(false);
+      if (outcome.next === null) {
+        isFinishedRef.current = true;
+        setFinishReason("mistakeLimit");
+        setShowFeedback(false);
+        return;
+      }
+      sequenceRef.current = outcome.next.sequence;
+      notifyAdvance(outcome.correct);
+      questionStartRef.current = performance.now();
+      setCurrentQuestion(outcome.next.question);
+      setShowFeedback(false);
+      setLastAnswerCorrect(null);
+    },
+    [notifyAdvance],
+  );
+
+  // Take an optimistically counted answer back out (the server did not count it).
+  const revertAnswer = useCallback((correct: boolean) => {
+    if (correct) {
+      setCorrectCount((prev) => prev - 1);
+    } else {
+      setIncorrectCount((prev) => prev - 1);
+    }
+    setQuestionTimes((prev) => prev.slice(0, -1));
+  }, []);
+
+  const submitRemoteAnswer = useCallback(
+    async (
+      pending: PendingRemoteAnswer<TQuestion>,
+      sequence: number,
+      answer: unknown,
+    ) => {
+      const isCurrent = () =>
+        mountedRef.current &&
+        !isFinishedRef.current &&
+        pendingRef.current === pending;
+
+      let response: ChallengeAnswerResponse<TQuestion> | null = null;
+      for (let attempt = 1; attempt <= REMOTE_SUBMIT_ATTEMPTS; attempt++) {
+        const port = remoteRef.current;
+        if (port === undefined) break;
+        try {
+          response = await withTimeout(
+            port.submitAnswer(sequence, answer),
+            REMOTE_SUBMIT_TIMEOUT_MS,
+          );
+          break;
+        } catch {
+          if (attempt === REMOTE_SUBMIT_ATTEMPTS) break;
+          await new Promise((resolve) =>
+            setTimeout(resolve, REMOTE_RETRY_DELAY_MS),
+          );
+          if (!isCurrent()) return;
+        }
+      }
+      if (!isCurrent()) return;
+
+      if (response === null || response.status === "rejected") {
+        revertAnswer(pending.correct);
+        setRemoteFailed(true);
+        endSession("quit");
+        return;
+      }
+      if (response.status === "expired") {
+        revertAnswer(pending.correct);
+        endSession("timeUp");
+        return;
+      }
+
+      if (response.correct !== pending.correct) {
+        const delta = response.correct ? 1 : -1;
+        setCorrectCount((prev) => prev + delta);
+        setIncorrectCount((prev) => prev - delta);
+      }
+      // The server restarted its clock after the flash for ITS verdict, so
+      // when the verdicts differ the flash shown on screen is the wrong length
+      // to subtract.
+      const serverFeedbackMs = resolveFeedbackDuration(
+        feedbackDurationRef.current,
+        response.correct,
+      );
+      const pastFeedbackMs = Math.max(
+        0,
+        performance.now() -
+          pending.answeredAt -
+          serverFeedbackMs -
+          (response.feedbackExtensionMs ?? 0),
+      );
+      setElapsedMs(response.elapsedMs + pastFeedbackMs);
+      // Recorded on the shared pending entry (isCurrent() guarantees it is
+      // `pending`) so the feedback timeout sees it if it fires later.
+      const current = pendingRef.current;
+      if (current === null) return;
+      setWaitingAtTimeLimit(false);
+      current.outcome = { correct: response.correct, next: response.next };
+      if (current.feedbackDone) completeRemoteAnswer(current);
+    },
+    [
+      remoteRef,
+      feedbackDurationRef,
+      revertAnswer,
+      endSession,
+      setElapsedMs,
+      completeRemoteAnswer,
+    ],
   );
 
   const handleAnswer = useCallback(
-    (correct: boolean) => {
-      if (isFinished || countdown !== null || showFeedback || isPaused) return;
+    (correct: boolean, answer?: unknown) => {
+      if (
+        isFinished ||
+        countdown !== null ||
+        showFeedback ||
+        isPaused ||
+        awaitingServer
+      ) {
+        return;
+      }
 
       // Computed here, not inside the updater: React may run the updater
       // later, after `advanceQuestion` has already moved the start forward.
-      const seconds = (Date.now() - questionStartRef.current) / 1000;
+      const seconds = (performance.now() - questionStartRef.current) / 1000;
       setQuestionTimes((prev) => [...prev, seconds]);
 
       onAnswerEffectRef.current?.(correct);
@@ -275,6 +608,28 @@ export function useTimedSession<TQuestion>(
         feedbackDurationRef.current,
         correct,
       );
+
+      if (isRemote) {
+        const pending: PendingRemoteAnswer<TQuestion> = {
+          correct,
+          answeredAt: performance.now(),
+          feedbackDone: false,
+        };
+        pendingRef.current = pending;
+        feedbackTimeoutRef.current = setTimeout(() => {
+          if (isFinishedRef.current || pendingRef.current !== pending) return;
+          pending.feedbackDone = true;
+          if (pending.outcome !== undefined) {
+            completeRemoteAnswer(pending);
+          } else {
+            // The feedback stays up until the response replaces it.
+            setAwaitingServer(true);
+          }
+        }, duration);
+        void submitRemoteAnswer(pending, sequenceRef.current, answer);
+        return;
+      }
+
       const mistakeLimitReached =
         mistakeAllowance !== undefined && newIncorrectCount >= mistakeAllowance;
 
@@ -289,8 +644,14 @@ export function useTimedSession<TQuestion>(
       countdown,
       showFeedback,
       isPaused,
+      awaitingServer,
       incorrectCount,
       mistakeAllowance,
+      isRemote,
+      onAnswerEffectRef,
+      feedbackDurationRef,
+      completeRemoteAnswer,
+      submitRemoteAnswer,
       scheduleFinish,
       scheduleAdvance,
     ],
@@ -314,6 +675,8 @@ export function useTimedSession<TQuestion>(
     isFinished,
     finishReason,
     questionTimes,
+    remoteFailed,
+    awaitingServer,
     handleAnswer,
     togglePause,
     finishSession,

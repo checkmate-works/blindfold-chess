@@ -15,6 +15,13 @@ import { createdAtOnly, updatedAtOnly } from './columns';
  * Records every Exp grant event. This table is the source of truth for
  * Exp history and audit. Append-only: rows are never updated or deleted.
  *
+ * Not every row is a grant. When moderation removes a challenge result, its
+ * grant is cancelled by a second row with `source = 'challenge_result_reversal'`,
+ * the same `source_id`, a negative `amount` and the grant's own `created_at`,
+ * so `SUM(amount)` over any `created_at` window nets the pair to zero. Readers
+ * that sum are correct as they are; a reader that counts rows or assumes
+ * `amount > 0` has to account for these.
+ *
  * @design Two-table architecture (event log + cache)
  *
  * Exp data is split into two tables with different responsibilities:
