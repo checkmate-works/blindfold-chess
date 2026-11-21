@@ -3,7 +3,8 @@
 import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
-import { type CreateProfileInput, createProfileForUser } from '@/lib/users/create-profile';
+import type { CreateProfileInput } from '@/lib/users/create-profile';
+import { createProfileForUser } from '@/lib/users/create-profile';
 
 export type SetUsernameInput = CreateProfileInput;
 
