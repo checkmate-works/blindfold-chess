@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -19,6 +19,7 @@ import {
 } from "../../../../features/ai-game/hooks";
 import type { SkillLevel } from "../../../../features/ai-game/lib/types";
 import { decodeStartParams } from "../../../../features/ai-game/lib/start-params";
+import { saveGame } from "../../../../features/game-history/game-history";
 import { parseEnumParam } from "../../../../lib/route-params";
 import { Screen } from "../../../../components";
 import { SessionTopBar } from "../../../../navigation/SessionTopBar";
@@ -58,12 +59,28 @@ export default function AiGameSession() {
     initialMoves: start.moves,
   });
 
+  // Keep the finished game in the device's history (the Play tab lists it,
+  // and it can be replayed in recall). Once per session.
+  const saved = useRef(false);
+
   // Navigate to result when game is over
   useEffect(() => {
     if (game.gameStatus !== "in_progress" && game.playerResult) {
       // Capture the narrowed value: the `!` it replaces was real — narrowing
       // is lost across the property access inside the setTimeout closure.
       const playerResult = game.playerResult;
+      if (!saved.current) {
+        saved.current = true;
+        void saveGame({
+          id: String(Date.now()),
+          finishedAt: new Date().toISOString(),
+          playerColor: game.playerColor,
+          skillLevel: game.skillLevel,
+          result: playerResult,
+          moves: [...game.moves],
+          startingFen: start.startingFen,
+        });
+      }
       const timer = setTimeout(() => {
         router.replace({
           pathname: "/play/ai-game/result",
@@ -82,7 +99,9 @@ export default function AiGameSession() {
     game.playerResult,
     game.playerColor,
     game.skillLevel,
+    game.moves,
     game.moves.length,
+    start.startingFen,
     router,
   ]);
 

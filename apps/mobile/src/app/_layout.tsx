@@ -73,6 +73,15 @@ function RootStack({ isDark }: { isDark: boolean }) {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         {moduleSetupScreens(t, ALL_MODULE_ROUTES)}
         <Stack.Screen
+          name="play/games/index"
+          options={{ title: t("gameHistory.title") }}
+        />
+        <Stack.Screen
+          name="play/games/[id]"
+          options={{ title: t("gameHistory.detailTitle") }}
+        />
+        <Stack.Screen name="learn/[slug]" options={{ title: "" }} />
+        <Stack.Screen
           name="(session)"
           options={{ headerShown: false, presentation: "fullScreenModal" }}
         />

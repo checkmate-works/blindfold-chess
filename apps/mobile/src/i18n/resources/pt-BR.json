@@ -846,5 +846,32 @@
       "memory": "Memória",
       "practice": "Prática"
     }
+  },
+  "gameHistory": {
+    "title": "Suas partidas",
+    "detailTitle": "Partida",
+    "empty": "As partidas concluídas aparecerão aqui.",
+    "note": "As partidas ficam salvas só neste dispositivo (até 50).",
+    "seeAll": "Ver todas ({{count}})",
+    "rowDetail": "Nível {{level}} · {{moves}} lances · {{date}}",
+    "result": {
+      "win": "Vitória",
+      "loss": "Derrota",
+      "draw": "Empate"
+    },
+    "side": {
+      "white": "Brancas",
+      "black": "Pretas"
+    },
+    "resultLabel": "Resultado",
+    "sideLabel": "Você jogou de",
+    "levelLabel": "Nível da IA",
+    "dateLabel": "Data",
+    "recall": "Reproduzir de memória",
+    "share": "Compartilhar PGN",
+    "delete": "Excluir",
+    "deleteConfirm": "Excluir esta partida?",
+    "you": "Você",
+    "engine": "Stockfish (nível {{level}})"
   }
 }

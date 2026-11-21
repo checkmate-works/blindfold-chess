@@ -846,5 +846,32 @@
       "memory": "Memory",
       "practice": "Practice"
     }
+  },
+  "gameHistory": {
+    "title": "Your games",
+    "detailTitle": "Game",
+    "empty": "Finished games will appear here.",
+    "note": "Games are kept on this device only (up to 50).",
+    "seeAll": "See all ({{count}})",
+    "rowDetail": "Level {{level}} · {{moves}} moves · {{date}}",
+    "result": {
+      "win": "Win",
+      "loss": "Loss",
+      "draw": "Draw"
+    },
+    "side": {
+      "white": "White",
+      "black": "Black"
+    },
+    "resultLabel": "Result",
+    "sideLabel": "You played",
+    "levelLabel": "AI level",
+    "dateLabel": "Played",
+    "recall": "Replay from memory (recall)",
+    "share": "Share PGN",
+    "delete": "Delete",
+    "deleteConfirm": "Delete this game?",
+    "you": "You",
+    "engine": "Stockfish (level {{level}})"
   }
 }
