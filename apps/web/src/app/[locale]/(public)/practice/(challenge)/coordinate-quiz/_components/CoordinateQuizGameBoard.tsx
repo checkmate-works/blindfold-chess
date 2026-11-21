@@ -18,14 +18,6 @@ type Props = {
   countdown: number | null;
   isObscured?: boolean;
   /**
-   * Leave the target coordinate off the board even though no feedback flash
-   * or countdown is running. A server-run challenge sets it while the next
-   * question is on its way: the question still held is the one just answered,
-   * and its coordinate, hidden during the flash, would otherwise fade back in
-   * for the length of the wait as if it were a new prompt.
-   */
-  hideTarget?: boolean;
-  /**
    * Optional overlay (e.g. the challenge pause screen) rendered inside the
    * board-scoped container so it aligns to the board rectangle only — not the
    * orientation indicator above it. Should self-position (typically a
@@ -47,7 +39,6 @@ export function CoordinateQuizGameBoard({
   isCorrect,
   countdown,
   isObscured = false,
-  hideTarget = false,
   boardOverlay,
 }: Props) {
   const t = useTranslations('practice.coordinateQuiz');
@@ -106,8 +97,10 @@ export function CoordinateQuizGameBoard({
             }
           />
 
-          {/* Target Square Overlay */}
-          {currentQuestion && !showFeedback && countdown === null && !hideTarget && (
+          {/* Target Square Overlay. Kept off during feedback, which in a
+              server-run challenge also covers the wait for the next question,
+              so an answered coordinate never reappears as a new prompt. */}
+          {currentQuestion && !showFeedback && countdown === null && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <span className="text-6xl font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)] dark:drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] animate-in fade-in zoom-in duration-300">
                 {currentQuestion.targetSquare}

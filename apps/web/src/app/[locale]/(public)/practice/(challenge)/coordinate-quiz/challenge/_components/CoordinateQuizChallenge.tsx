@@ -84,7 +84,6 @@ function CoordinateQuizChallengeSession({ locale, settings, attemptId, remote }:
     countdown,
     isPaused,
     remoteFailed,
-    awaitingServer,
     handleAnswer,
     togglePause,
   } = useCoordinateQuizSession({
@@ -113,10 +112,14 @@ function CoordinateQuizChallengeSession({ locale, settings, attemptId, remote }:
 
   const handleSquareClick = useCallback(
     (square: Square) => {
+      // The answer's highlight stays on the square it was given on until the
+      // next question, including any wait for the server; a click meanwhile is
+      // ignored by the session and must not move it.
+      if (showFeedback) return;
       setLastClickedSquare(square);
       handleAnswer(square);
     },
-    [handleAnswer]
+    [handleAnswer, showFeedback]
   );
 
   const resultUrl = useMemo(() => {
@@ -150,7 +153,6 @@ function CoordinateQuizChallengeSession({ locale, settings, attemptId, remote }:
     <div id="coordinate-quiz-challenge" className="min-h-screen">
       <CoordinateQuizChallengePlaying
         currentQuestion={currentQuestion}
-        awaitingServer={awaitingServer}
         timeRemaining={timeRemaining}
         timeLimit={CHALLENGE_TIME_LIMIT}
         timeElapsed={timeElapsed}

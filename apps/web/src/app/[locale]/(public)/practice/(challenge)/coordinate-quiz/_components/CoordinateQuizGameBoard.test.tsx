@@ -33,11 +33,11 @@ describe('CoordinateQuizGameBoard target coordinate', () => {
     expect(screen.queryByText('e4')).not.toBeNull();
   });
 
-  // Between the feedback flash and the server's next question the question
-  // held is the one just answered; its coordinate must not come back as if it
-  // were a new prompt.
-  it('keeps the answered target off the board while hideTarget is set', () => {
-    renderBoard({ hideTarget: true, isObscured: true });
+  // A server-run challenge keeps showFeedback up until the next question
+  // arrives, so this also covers that wait: the answered coordinate must not
+  // come back as if it were a new prompt.
+  it('keeps the answered target off the board during feedback', () => {
+    renderBoard({ showFeedback: true, lastClickedSquare: 'd4' });
 
     expect(screen.queryByText('e4')).toBeNull();
   });
