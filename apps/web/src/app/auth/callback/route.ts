@@ -1,12 +1,9 @@
 import { NextResponse } from 'next/server';
 
-import { eq } from 'drizzle-orm';
-
 import { applyAdsHiddenCookieValue } from '@/lib/ads/ads-hidden-cookie';
 import { computeAdsHiddenValueForUser } from '@/lib/ads/ads-hidden-cookie-compute';
 import { getOptionalUser } from '@/lib/auth';
-import { resolveReturnPath, withReturnPath } from '@/lib/auth-return-path';
-import { db, profiles } from '@/lib/db';
+import { postSignInPath, withReturnPath } from '@/lib/auth-return-path';
 import { getLocaleFromRequest } from '@/lib/locale';
 import { captureError } from '@/lib/sentry/capture-error';
 import { createClient } from '@/lib/supabase/server';
@@ -16,6 +13,7 @@ import {
   accountPageHref,
 } from '@/lib/users/account-page-notice';
 import { logActivityEvent } from '@/lib/users/activity-log';
+import { getViewerProfile } from '@/lib/users/viewer-profile';
 
 /**
  * Auth callback handler.
@@ -46,7 +44,7 @@ async function handleSuccessfulAuth(
   userId: string,
   locale: string,
   origin: string,
-  safeNext: string
+  next: string | null
 ): Promise<NextResponse> {
   logActivityEvent({
     userId,
@@ -54,12 +52,7 @@ async function handleSuccessfulAuth(
   });
 
   const [profile, adsHiddenValue] = await Promise.all([
-    db
-      .select({ username: profiles.username })
-      .from(profiles)
-      .where(eq(profiles.id, userId))
-      .limit(1)
-      .then((rows) => rows[0]),
+    getViewerProfile(userId),
     // Initialize the `bfc_ads_hidden` cookie based on the freshly-signed-in
     // user's entitlement state. Subsequent visits refresh this cookie via
     // `getSessionUser()` (called by `AuthProvider` on every mount) and via
@@ -78,22 +71,8 @@ async function handleSuccessfulAuth(
     }),
   ]);
 
-  if (!profile) {
-    // A new user always goes through username setup and onboarding; any
-    // `next` on the callback URL is deliberately dropped. Threading it
-    // through was tried and abandoned: the email-confirmation hop makes it
-    // unreliable, so funnel tails (e.g. "sign up and publish this game")
-    // are picked up by in-app surfaces instead — the /games publish nudge
-    // and the shared-game claim banner.
-    const setupUrl = new URL(`/${locale}/mypage/setup-username`, origin);
-    const response = NextResponse.redirect(setupUrl);
-    applyAdsHiddenCookieValue(response.cookies, adsHiddenValue);
-    return response;
-  }
-
-  const redirectUrl = new URL(safeNext, origin);
-  redirectUrl.searchParams.set('toast', 'login_success');
-  const response = NextResponse.redirect(redirectUrl);
+  const destination = postSignInPath({ locale, next, hasProfile: profile !== null });
+  const response = NextResponse.redirect(new URL(destination, origin));
   applyAdsHiddenCookieValue(response.cookies, adsHiddenValue);
   return response;
 }
@@ -177,8 +156,7 @@ export async function GET(request: Request) {
   const tokenHash = searchParams.get('token_hash');
   const type = searchParams.get('type');
   const locale = await getLocaleFromRequest();
-  const defaultNext = `/${locale}/mypage`;
-  const safeNext = resolveReturnPath(searchParams.get('next')) ?? defaultNext;
+  const next = searchParams.get('next');
 
   const supabase = await createClient();
 
@@ -194,7 +172,7 @@ export async function GET(request: Request) {
     });
 
     if (!error && data.session) {
-      return handleSuccessfulAuth(data.session.user.id, locale, origin, safeNext);
+      return handleSuccessfulAuth(data.session.user.id, locale, origin, next);
     }
 
     return NextResponse.redirect(`${origin}/${locale}/sign-in?error=auth_callback_error`);
@@ -228,7 +206,7 @@ export async function GET(request: Request) {
         return NextResponse.redirect(`${origin}/${locale}/reset-password`);
       }
 
-      return handleSuccessfulAuth(data.session.user.id, locale, origin, safeNext);
+      return handleSuccessfulAuth(data.session.user.id, locale, origin, next);
     }
   }
 

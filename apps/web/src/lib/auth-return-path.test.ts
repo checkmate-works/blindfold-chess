@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { resolveReturnPath, withReturnPath } from './auth-return-path';
+import { postSignInPath, resolveReturnPath, withReturnPath } from './auth-return-path';
 
 describe('resolveReturnPath', () => {
   it('accepts ordinary in-app paths, query and hash included', () => {
@@ -67,5 +67,43 @@ describe('withReturnPath', () => {
     expect(withReturnPath('/sign-in', '//evil.com')).toBe('/sign-in');
     expect(withReturnPath('/sign-in', '/ja/sign-in')).toBe('/sign-in');
     expect(withReturnPath('/sign-in', undefined)).toBe('/sign-in');
+  });
+});
+
+describe('postSignInPath', () => {
+  it('sends a user without a profile to username setup, dropping next', () => {
+    expect(postSignInPath({ locale: 'ja', next: '/ja/games', hasProfile: false })).toBe(
+      '/ja/mypage/setup-username'
+    );
+    expect(postSignInPath({ locale: 'en', next: null, hasProfile: false })).toBe(
+      '/en/mypage/setup-username'
+    );
+  });
+
+  it('lands a registered user on mypage with the login toast when next is absent', () => {
+    expect(postSignInPath({ locale: 'pt-BR', next: undefined, hasProfile: true })).toBe(
+      '/pt-BR/mypage?toast=login_success'
+    );
+  });
+
+  it('returns a registered user to next, keeping its query and hash', () => {
+    expect(postSignInPath({ locale: 'en', next: '/en/games', hasProfile: true })).toBe(
+      '/en/games?toast=login_success'
+    );
+    expect(
+      postSignInPath({ locale: 'en', next: '/en/leaderboard/score/all?page=3', hasProfile: true })
+    ).toBe('/en/leaderboard/score/all?page=3&toast=login_success');
+    expect(
+      postSignInPath({ locale: 'ja', next: '/ja/chunks/foo#comments', hasProfile: true })
+    ).toBe('/ja/chunks/foo?toast=login_success#comments');
+  });
+
+  it('falls back to mypage when next is not a usable return target', () => {
+    expect(postSignInPath({ locale: 'en', next: '//evil.com', hasProfile: true })).toBe(
+      '/en/mypage?toast=login_success'
+    );
+    expect(postSignInPath({ locale: 'ja', next: '/ja/sign-in', hasProfile: true })).toBe(
+      '/ja/mypage?toast=login_success'
+    );
   });
 });

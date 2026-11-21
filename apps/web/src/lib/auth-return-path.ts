@@ -84,3 +84,42 @@ export function withReturnPath(base: string, next: string | null | undefined): s
   const separator = base.includes('?') ? '&' : '?';
   return `${base}${separator}next=${encodeURIComponent(safe)}`;
 }
+
+/**
+ * Where a user lands right after signing in, for every sign-in route
+ * (password, OAuth, email confirmation).
+ *
+ * A user without a `profiles` row (provisional: signed up, or created from
+ * the Supabase dashboard, but never picked a username) always goes to
+ * username setup, and `next` is dropped. Onboarding comes before whatever
+ * the user was about to do; carrying `next` through it was tried and
+ * abandoned because the email-confirmation hop makes it unreliable, so funnel
+ * tails (e.g. "sign up and publish this game") are picked up by in-app
+ * surfaces instead — the /games publish nudge and the shared-game claim
+ * banner.
+ *
+ * Deciding this before navigating, rather than letting the `(confirmed)`
+ * layout redirect a provisional user away from `/mypage`, also keeps the
+ * landing clear of the redirect-during-streaming hydration race documented
+ * on the `(protected)` layout.
+ *
+ * Everyone else returns to `next` when it is a usable return target, else to
+ * `/<locale>/mypage`, with `toast=login_success` added. `next` is re-validated
+ * here, so callers may pass it straight from the request.
+ */
+export function postSignInPath({
+  locale,
+  next,
+  hasProfile,
+}: {
+  locale: string;
+  next: string | null | undefined;
+  hasProfile: boolean;
+}): string {
+  if (!hasProfile) return `/${locale}/mypage/setup-username`;
+  // Parsed against a placeholder origin so the toast lands in the query even
+  // when `next` carries one already or ends in a hash.
+  const url = new URL(resolveReturnPath(next) ?? `/${locale}/mypage`, 'http://placeholder');
+  url.searchParams.set('toast', 'login_success');
+  return `${url.pathname}${url.search}${url.hash}`;
+}
