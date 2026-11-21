@@ -10,8 +10,8 @@ import { sanitizeNext } from './safe-next';
  * them on a notice that no longer applies. The header's sign-in link is the
  * case that forces this list to exist: it renders on every page *including*
  * `/sign-in` itself, so without the filter it would build
- * `?next=/ja/sign-in` and turn the proxy's authenticated-visitor redirect
- * into a loop.
+ * `?next=/ja/sign-in` and turn the sign-in page's redirect of an
+ * already-signed-in visitor (`resolveAuthPageEntry`) into a loop.
  *
  * Compared after the `/[locale]` prefix is stripped, so both the localized
  * (`/ja/sign-in`) and bare (`/sign-in`) forms are caught.
