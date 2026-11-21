@@ -2,6 +2,7 @@
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
+import { useScrollToPageTop } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { useAuth } from '@/app/[locale]/_contexts/AuthContext';
 
 import { SinglePositionResultPanelSkeleton } from './SinglePositionResultPanelSkeleton';
@@ -24,6 +25,7 @@ type Props = {
  */
 export function SinglePositionResultSkeleton({ grantsExp = false }: Props) {
   const t = useTranslations('practice.positionMemory');
+  useScrollToPageTop();
   const { user, isLoading } = useAuth();
   const authed = !isLoading && !!user;
   const anon = !isLoading && !user;

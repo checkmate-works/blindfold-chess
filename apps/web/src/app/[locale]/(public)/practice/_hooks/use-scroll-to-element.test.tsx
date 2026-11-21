@@ -3,7 +3,7 @@ import { type ReactNode, useLayoutEffect } from 'react';
 import { render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { useScrollToElement } from './use-scroll-to-element';
+import { useScrollToElement, useScrollToPageTop } from './use-scroll-to-element';
 
 const ID = 'session';
 
@@ -97,5 +97,34 @@ describe('useScrollToElement', () => {
     await Promise.resolve();
     vi.runAllTimers();
     expect(events).toEqual([]);
+  });
+});
+
+function ResultSkeleton() {
+  useScrollToPageTop();
+  return <div>result skeleton</div>;
+}
+
+describe('useScrollToPageTop', () => {
+  it('scrolls the document to the top within the commit that mounts the caller', () => {
+    const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
+
+    render(<ResultSkeleton />);
+
+    // Nothing has been advanced: the reset happened before the browser could
+    // paint the skeleton.
+    expect(scrollTo).toHaveBeenCalledTimes(1);
+    expect(scrollTo).toHaveBeenCalledWith({ top: 0, behavior: 'instant' });
+    scrollTo.mockRestore();
+  });
+
+  it('does not scroll again when the caller re-renders', () => {
+    const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
+
+    const { rerender } = render(<ResultSkeleton />);
+    rerender(<ResultSkeleton />);
+
+    expect(scrollTo).toHaveBeenCalledTimes(1);
+    scrollTo.mockRestore();
   });
 });

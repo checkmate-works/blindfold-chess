@@ -1,5 +1,6 @@
 'use client';
 
+import { useScrollToPageTop } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { useAuth } from '@/app/[locale]/_contexts/AuthContext';
 
 import { PracticeResultPanelSkeleton } from './PracticeResultPanelSkeleton';
@@ -53,6 +54,7 @@ export function PracticeResultSkeleton({
   showsSignUpBanner = false,
   showsRecordSection = false,
 }: Props = {}) {
+  useScrollToPageTop();
   const { user, isLoading } = useAuth();
   // While auth is still resolving, reserve neither — the window is brief and
   // guessing wrong would itself shift.

@@ -68,3 +68,29 @@ export function useScrollToElement(elementId: string, enabled: boolean = true) {
 export function realignToElement(elementId: string) {
   requestAnimationFrame(() => alignElementTop(elementId));
 }
+
+/**
+ * Puts the document back at its top before the caller's first paint. For the
+ * inline result skeleton a finished session shows while the result is saved
+ * and the result route loads.
+ *
+ * A session plays scrolled down to its own element (`useScrollToElement`),
+ * but the result route opens at the top of the page: Next.js's layout router
+ * scrolls a newly navigated page to the top when the page's top is above the
+ * viewport. Without this, the skeleton was painted at the session's offset
+ * and the page jumped to the top when the result route replaced it — the same
+ * shift the skeleton is meant to spare. With the document already at the top,
+ * the router finds the result page's top on screen and leaves it there, so
+ * the skeleton, the route's loading state and the result all appear at one
+ * position.
+ *
+ * Runs in a layout effect on mount, after the skeleton is in the DOM and
+ * before the browser paints it. No navigation is committing at that moment —
+ * the skeleton replaces the session in place — so nothing resets it later in
+ * the same commit.
+ */
+export function useScrollToPageTop() {
+  useLayoutEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, []);
+}
