@@ -71,6 +71,8 @@ export type ChallengeRankUpdateData = {
   /** Previous rank before the improvement. Only present when isNewEntry is false. */
   previousRank?: number;
   actor: SocialAuthorProfile;
+  /** Likes on the card, keyed by its feed row id (`RANK_UPDATE_LIKE_TARGET`). */
+  likeMeta: LikeMeta;
 };
 
 export type ChallengeRankUpdateFeedItem = FeedItemBase & {

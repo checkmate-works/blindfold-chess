@@ -145,6 +145,7 @@ describe('FeedCard', () => {
           country: null,
           flair: null,
         },
+        likeMeta: { likeCount: 0, likedByMe: false },
       },
     };
 

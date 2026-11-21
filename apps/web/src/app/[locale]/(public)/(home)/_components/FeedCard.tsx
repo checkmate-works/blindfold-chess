@@ -83,10 +83,12 @@ export function FeedCard({
     case 'challenge_rank_update':
       return (
         <ChallengeRankUpdateCard
+          feedItemId={item.id}
           data={item.data}
           createdAt={item.createdAt}
           locale={locale}
           justNowLabel={justNowLabel}
+          actionSize={actionSize}
         />
       );
     case 'member_joined':

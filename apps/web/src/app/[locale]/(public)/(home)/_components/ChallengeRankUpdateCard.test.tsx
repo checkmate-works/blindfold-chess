@@ -39,6 +39,26 @@ vi.mock('@/app/[locale]/_components/UserAvatar', () => ({
   ),
 }));
 
+vi.mock('../_actions/rankUpdateLike', () => ({
+  toggleRankUpdateLikeAction: vi.fn(),
+}));
+
+vi.mock('@/app/[locale]/(public)/topics/_components/LikeButton', () => ({
+  LikeButton: ({
+    postId,
+    initialLikeCount,
+    i18nNamespace,
+  }: {
+    postId: string;
+    initialLikeCount: number;
+    i18nNamespace: string;
+  }) => (
+    <button type="button" data-testid="like-button" data-namespace={i18nNamespace}>
+      like:{postId}:{initialLikeCount}
+    </button>
+  ),
+}));
+
 vi.mock('@/app/[locale]/(public)/topics/_lib/relative-time', () => ({
   formatRelativeTime: () => '2 hours ago',
 }));
@@ -73,17 +93,32 @@ function createData(overrides: Partial<ChallengeRankUpdateData> = {}): Challenge
       country: null,
       flair: null,
     },
+    likeMeta: { likeCount: 0, likedByMe: false },
     ...overrides,
   };
 }
 
 const defaultProps = {
+  feedItemId: 'feed-1',
   createdAt: '2025-01-15T10:00:00.000Z',
   locale: 'en',
   justNowLabel: 'Just now',
 };
 
 describe('ChallengeRankUpdateCard', () => {
+  it('likes the feed row, starting from the loaded like count', () => {
+    render(
+      <ChallengeRankUpdateCard
+        data={createData({ likeMeta: { likeCount: 3, likedByMe: true } })}
+        {...defaultProps}
+      />
+    );
+
+    const button = screen.getByTestId('like-button');
+    expect(button.textContent).toBe('like:feed-1:3');
+    expect(button.dataset.namespace).toBe('home.feed.rankUpdate');
+  });
+
   it('should render the user avatar with display name', () => {
     render(<ChallengeRankUpdateCard data={createData()} {...defaultProps} />);
 

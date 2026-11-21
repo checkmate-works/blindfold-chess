@@ -23,6 +23,7 @@ const emptyMaps = () => ({
   chunkMap: new Map(),
   gameMap: new Map(),
   rankUpdateActorMap: new Map(),
+  rankUpdateLikeMetaMap: new Map(),
   memberJoinedMap: new Map(),
 });
 
@@ -131,6 +132,23 @@ describe('assembleFeedItems', () => {
       maps({ rankUpdateActorMap: new Map([['actor-1', { username: 'alice' }]]) })
     );
     expect(items[0].data).toMatchObject({ menuType: 'coordinate_quiz', rank: 3, isNewEntry: true });
+  });
+
+  it("attaches a rank update's likes by its feed row id, defaulting to none", () => {
+    const rankRow = (id: string) =>
+      row({ id, entityType: 'challenge_rank_update', entityId: `result-${id}`, metadata: {} });
+    const items = assembleFeedItems(
+      [rankRow('feed-liked'), rankRow('feed-unliked')],
+      maps({
+        rankUpdateActorMap: new Map([['actor-1', { username: 'alice' }]]),
+        // Keyed by the feed row, so an entity-id key would not match.
+        rankUpdateLikeMetaMap: new Map([['feed-liked', { likeCount: 2, likedByMe: true }]]),
+      })
+    );
+    expect(items.map((i) => (i.data as { likeMeta: unknown }).likeMeta)).toEqual([
+      { likeCount: 2, likedByMe: true },
+      { likeCount: 0, likedByMe: false },
+    ]);
   });
 
   it('drops a rank-update row whose actor is gone', () => {
