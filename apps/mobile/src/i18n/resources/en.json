@@ -927,7 +927,7 @@
       "emailLabel": "Email",
       "emailPlaceholder": "you@example.com",
       "passwordLabel": "Password",
-      "passwordPlaceholder": "At least 8 characters",
+      "passwordPlaceholder": "At least {{minLength}} characters",
       "confirmPasswordLabel": "Confirm password",
       "confirmPasswordPlaceholder": "Re-enter your password",
       "emailSignUp": "Register with email",

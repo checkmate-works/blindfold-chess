@@ -927,7 +927,7 @@
       "emailLabel": "メールアドレス",
       "emailPlaceholder": "you@example.com",
       "passwordLabel": "パスワード",
-      "passwordPlaceholder": "8文字以上",
+      "passwordPlaceholder": "{{minLength}}文字以上",
       "confirmPasswordLabel": "パスワード（確認）",
       "confirmPasswordPlaceholder": "パスワードを再入力",
       "emailSignUp": "メールで登録",
