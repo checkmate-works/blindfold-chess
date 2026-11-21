@@ -30,6 +30,9 @@ function blindfoldCheckbox(): HTMLInputElement {
 describe('KnightTour setup settings', () => {
   beforeEach(() => {
     localStorage.clear();
+    // An auto-started session scrolls itself into view on its first commit;
+    // jsdom implements no scrolling.
+    Element.prototype.scrollIntoView = vi.fn();
   });
   afterEach(() => {
     localStorage.clear();
