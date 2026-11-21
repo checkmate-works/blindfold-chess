@@ -2,7 +2,10 @@ import type { User } from '@supabase/supabase-js';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
-import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
+import {
+  getUserMock as mockGetUser,
+  signOutMock as mockSignOut,
+} from '@/lib/supabase/__mocks__/server';
 
 const mockCaptureError = vi.fn();
 vi.mock('@/lib/sentry/capture-error', () => ({
@@ -117,6 +120,56 @@ describe('getSessionUser', () => {
         profile: null,
         unreadNotificationCount: 3,
       });
+    });
+  });
+
+  describe('session cookie of a user that no longer exists', () => {
+    // The JWT still verifies, so the proxy keeps reading the visitor as
+    // signed in; only removing the cookie brings it back in line with the
+    // pages, which already treat them as anonymous.
+    it('removes the local session and resolves as anonymous', async () => {
+      mockGetUser.mockResolvedValue({
+        data: { user: null },
+        error: { code: 'user_not_found', status: 403 },
+      });
+
+      const result = await getSessionUser();
+
+      expect(result.user).toBeNull();
+      expect(mockSignOut).toHaveBeenCalledTimes(1);
+      expect(mockSignOut).toHaveBeenCalledWith({ scope: 'local' });
+    });
+
+    it('still resolves as anonymous when removing the session fails', async () => {
+      mockGetUser.mockResolvedValue({
+        data: { user: null },
+        error: { code: 'user_not_found', status: 403 },
+      });
+      mockSignOut.mockRejectedValueOnce(new Error('cookie store unavailable'));
+
+      const result = await getSessionUser();
+
+      expect(result.user).toBeNull();
+      expect(mockCaptureError).toHaveBeenCalledTimes(1);
+    });
+
+    it.each([
+      ['no session cookie at all', { name: 'AuthSessionMissingError', status: 400 }],
+      ['a transient Auth failure', { code: 'unexpected_failure', status: 500 }],
+    ])('keeps the session on %s', async (_label, error) => {
+      mockGetUser.mockResolvedValue({ data: { user: null }, error });
+
+      await getSessionUser();
+
+      expect(mockSignOut).not.toHaveBeenCalled();
+    });
+
+    it('keeps the session of a signed-in user', async () => {
+      mockGetUser.mockResolvedValue({ data: { user: mockUser }, error: null });
+
+      await getSessionUser();
+
+      expect(mockSignOut).not.toHaveBeenCalled();
     });
   });
 

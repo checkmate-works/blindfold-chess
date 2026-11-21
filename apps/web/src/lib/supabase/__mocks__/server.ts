@@ -1,7 +1,7 @@
 import { vi } from 'vitest';
 
 /**
- * A Supabase server client whose only wired method is `auth.getUser`.
+ * A Supabase server client with `auth.getUser` (and `auth.signOut`) wired.
  *
  * Opt in with a bare `vi.mock('@/lib/supabase/server')` and drive it through
  * {@link getUserMock}, which every test aliased as `mockGetUser`:
@@ -22,6 +22,13 @@ import { vi } from 'vitest';
  */
 export const getUserMock = vi.fn();
 
+/**
+ * `auth.signOut`, wired for the one caller that reaches it through this mock:
+ * `discardSessionOfMissingUser`, which only runs when `getUserMock` resolves
+ * with a `user_not_found` error.
+ */
+export const signOutMock = vi.fn(async () => ({ error: null }));
+
 export const createClient = vi.fn(async () => ({
-  auth: { getUser: getUserMock },
+  auth: { getUser: getUserMock, signOut: signOutMock },
 }));

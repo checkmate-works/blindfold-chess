@@ -28,13 +28,51 @@ import { createClient } from '@/lib/supabase/server';
  * second independently-wrapped fetcher would NOT dedupe — always route new
  * callers through this function.
  */
-export const getOptionalUser = cache(async () => {
+export const getOptionalUser = cache(async () => (await readAuthUser()).user);
+
+/**
+ * The Auth server's answer for this request's session cookie, including the
+ * one failure the app has to act on.
+ *
+ * `userIsGone` is the Auth server's `user_not_found`: the cookie's JWT is
+ * correctly signed and unexpired, but the user it names no longer exists
+ * (the account was physically removed while this browser stayed signed in).
+ * Nothing clears such a cookie on its own. auth-js drops the session by
+ * itself for the neighbouring failure, `session_not_found` (signed out
+ * elsewhere), but not for this one, and the proxy's `getClaims()` keeps
+ * accepting the token until it expires — so the browser carries a cookie the
+ * proxy reads as "signed in" and every page reads as anonymous. See
+ * {@link discardSessionOfMissingUser}.
+ */
+const readAuthUser = cache(async () => {
   const supabase = await createClient();
   const {
     data: { user },
+    error,
   } = await supabase.auth.getUser();
-  return user;
+  return { user, userIsGone: error?.code === 'user_not_found' };
 });
+
+/**
+ * Remove this browser's session cookie when it names a user that no longer
+ * exists; a no-op for every other visitor (anonymous, signed in, or a
+ * transient Auth failure — a session must never be thrown away on a blip).
+ *
+ * Call it only where cookies can be written (a Server Action or Route
+ * Handler): from a Server Component the removal is silently dropped. It
+ * shares the request's `getUser()` round-trip with `getOptionalUser`, so it
+ * costs nothing unless there is a cookie to remove.
+ *
+ * `scope: 'local'` because there is nothing to revoke on the Auth server —
+ * the user is gone — and auth-js clears the local session even though that
+ * call is answered with an error.
+ */
+export async function discardSessionOfMissingUser(): Promise<void> {
+  const { userIsGone } = await readAuthUser();
+  if (!userIsGone) return;
+  const supabase = await createClient();
+  await supabase.auth.signOut({ scope: 'local' });
+}
 
 /**
  * Returns the authenticated user or redirects to sign-in.
