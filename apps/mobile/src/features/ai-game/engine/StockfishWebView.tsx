@@ -42,11 +42,22 @@ type WebViewSource = {
   baseUrl: string;
 };
 
+/**
+ * `WebView` with its extra-props parameter set explicitly. react-native-webview
+ * 14.0.1 (the version Expo SDK 58 pins) declares
+ * `class WebView<P = undefined> extends Component<WebViewProps & P>`, and
+ * `WebViewProps & undefined` is `never`, so a bare `<WebView …>` rejects every
+ * prop. 13.x and 17.x default `P` to `{}`; an empty record gives the same
+ * props, and the type argument can go once the pinned version does.
+ */
+type NoExtraProps = Record<never, never>;
+type PlainWebView = WebView<NoExtraProps>;
+
 export const StockfishWebView = forwardRef<
   StockfishWebViewHandle,
   StockfishWebViewProps
 >(function StockfishWebView({ onMessage, onReady, onError }, ref) {
-  const webViewRef = useRef<WebView>(null);
+  const webViewRef = useRef<PlainWebView>(null);
   const [webViewSource, setWebViewSource] = useState<WebViewSource | null>(
     null,
   );
@@ -123,7 +134,7 @@ export const StockfishWebView = forwardRef<
   }
 
   return (
-    <WebView
+    <WebView<NoExtraProps>
       ref={webViewRef}
       source={webViewSource}
       originWhitelist={["*"]}

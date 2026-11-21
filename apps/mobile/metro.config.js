@@ -36,13 +36,4 @@ config.resolver.blockList = [
   /\/\.claude\/worktrees\/.*/,
 ];
 
-// 6. Inject polyfill before all modules (runs before any module initialization)
-const defaultGetPolyfills = config.serializer.getPolyfills;
-config.serializer.getPolyfills = (options) => {
-  return [
-    path.resolve(projectRoot, "polyfill.js"),
-    ...defaultGetPolyfills(options),
-  ];
-};
-
 module.exports = config;
