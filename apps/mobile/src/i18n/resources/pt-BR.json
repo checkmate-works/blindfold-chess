@@ -85,6 +85,10 @@
     "positionMemory": {
       "title": "Memória de posições",
       "description": "Memorize uma posição e recrie-a em um tabuleiro vazio"
+    },
+    "recall": {
+      "title": "Recordar partida",
+      "description": "Reproduza de memória os lances de uma partida"
     }
   },
   "practiceResult": {
@@ -725,6 +729,20 @@
         "title": "Tutorial",
         "body": "Memorize uma posição dentro do limite de tempo, depois recrie-a em um tabuleiro vazio.\nVamos tentar com a seguinte posição."
       }
+    },
+    "recall": {
+      "input": {
+        "title": "Insira um movimento",
+        "body": "Lembre os movimentos da sua partida finalizada e insira-os em ordem. Um movimento correto avança para o próximo."
+      },
+      "dontKnow": {
+        "title": "Quando não conseguir lembrar",
+        "body": "Pressione \"Não sei\" para revelar o movimento correto e avançar automaticamente para o próximo."
+      },
+      "color": {
+        "title": "Escolha seu lado",
+        "body": "Escolha de qual lado você vai recordar os movimentos. Os movimentos do outro lado também podem ser inseridos, ou preenchidos automaticamente."
+      }
     }
   },
   "positionMemory": {
@@ -742,6 +760,72 @@
     "result": {
       "title": "Resultados",
       "playAgain": "Jogar novamente"
+    }
+  },
+  "recall": {
+    "title": "De memória",
+    "description": "Cole qualquer PGN e reproduza-o lance a lance de memória — sem precisar de conta ou partida salva.",
+    "setup": {
+      "pgnLabel": "PGN",
+      "startButton": "Começar de memória",
+      "title": "Recordar partida",
+      "useSample": "Usar uma partida de exemplo",
+      "invalidPgn": "Não foi possível ler este PGN. Verifique os lances e tente novamente.",
+      "playAs": "Lado a recordar",
+      "sides": {
+        "white": "Brancas",
+        "black": "Pretas"
+      }
+    },
+    "autoOpponentMoves": "Preencher automaticamente movimentos do adversário",
+    "dontKnow": "Não sei",
+    "correctMove": "Correto!",
+    "incorrectMove": "Movimento incorreto. Tente novamente.",
+    "progress": "Progresso: {{current}} / {{total}} movimentos",
+    "showBoard": "Mostrar Tabuleiro",
+    "completed": "Revisão da Partida Concluída!",
+    "moves": "Movimentos",
+    "noMovesYet": "Ainda não há movimentos",
+    "summary": {
+      "title": "Resumo",
+      "rateLabel": "Taxa de lembrança",
+      "nailed": "De primeira",
+      "struggled": "Com dúvidas",
+      "missed": "Não lembrou",
+      "restart": "Jogar de novo",
+      "startNew": "Começar com outro PGN"
+    },
+    "help": {
+      "input": {
+        "title": "Insira um movimento",
+        "description": "Lembre os movimentos da sua partida finalizada e insira-os em ordem. Um movimento correto avança para o próximo."
+      },
+      "dontKnow": {
+        "title": "Quando não conseguir lembrar",
+        "description": "Pressione \"Não sei\" para revelar o movimento correto e avançar automaticamente para o próximo."
+      },
+      "setup": {
+        "pgn": {
+          "title": "Cole qualquer PGN",
+          "description": "Cole o PGN de qualquer partida finalizada — sua, de outra pessoa, ou uma linha de abertura — e reproduza os movimentos de memória. Mude para \"URL do Lichess\" para importar um automaticamente."
+        },
+        "color": {
+          "title": "Escolha seu lado",
+          "description": "Escolha de qual lado você vai recordar os movimentos. Os movimentos do outro lado também podem ser inseridos, ou preenchidos automaticamente."
+        }
+      }
+    },
+    "session": {
+      "toMove": {
+        "white": "Brancas jogam",
+        "black": "Pretas jogam"
+      },
+      "wrong": "Não é {{move}}. Tente novamente."
+    },
+    "result": {
+      "title": "Resumo",
+      "backToMenu": "Voltar às práticas",
+      "mistakes": "Tentativas erradas"
     }
   }
 }

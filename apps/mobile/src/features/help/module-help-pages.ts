@@ -33,4 +33,5 @@ export const MODULE_HELP_PAGES: Readonly<Record<string, readonly string[]>> = {
   algebraicNotation: ["about"],
   fen: ["overview", "tutorial"],
   positionMemory: ["overview", "tutorial"],
+  recall: ["input", "dontKnow", "color"],
 };

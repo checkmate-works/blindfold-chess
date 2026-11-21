@@ -85,6 +85,10 @@
     "positionMemory": {
       "title": "Position Memory",
       "description": "Memorize a position, then recreate it on an empty board"
+    },
+    "recall": {
+      "title": "Recall",
+      "description": "Replay a game's moves from memory"
     }
   },
   "practiceResult": {
@@ -725,6 +729,20 @@
         "title": "Tutorial",
         "body": "Memorize a position within the time limit, then recreate it on an empty board.\nLet's try with the following position."
       }
+    },
+    "recall": {
+      "input": {
+        "title": "Enter a move",
+        "body": "Recall the moves from your finished game and enter them in order. A correct move advances to the next one."
+      },
+      "dontKnow": {
+        "title": "When you can't recall",
+        "body": "Press \"I don't know\" to reveal the correct move and automatically advance to the next one."
+      },
+      "color": {
+        "title": "Choose your side",
+        "body": "Pick which side you'll recall the moves for. The other side's moves can be entered too, or auto-filled for you."
+      }
     }
   },
   "positionMemory": {
@@ -742,6 +760,72 @@
     "result": {
       "title": "Results",
       "playAgain": "Play again"
+    }
+  },
+  "recall": {
+    "title": "Recall",
+    "description": "Paste any PGN and replay it move by move from memory — no account or saved game required.",
+    "setup": {
+      "pgnLabel": "PGN",
+      "startButton": "Start Recall",
+      "title": "Recall",
+      "useSample": "Use a sample game",
+      "invalidPgn": "This PGN could not be read. Check the moves and try again.",
+      "playAs": "Side to recall",
+      "sides": {
+        "white": "White",
+        "black": "Black"
+      }
+    },
+    "autoOpponentMoves": "Auto-fill opponent's moves",
+    "dontKnow": "I don't know",
+    "correctMove": "Correct!",
+    "incorrectMove": "Incorrect move. Try again.",
+    "progress": "Progress: {{current}} / {{total}} moves",
+    "showBoard": "Show Board",
+    "completed": "Game Review Completed!",
+    "moves": "Moves",
+    "noMovesYet": "Moves will appear here as you enter them",
+    "summary": {
+      "title": "Summary",
+      "rateLabel": "Recall rate",
+      "nailed": "First try",
+      "struggled": "Stumbled",
+      "missed": "Couldn't recall",
+      "restart": "Play again",
+      "startNew": "Start with another PGN"
+    },
+    "help": {
+      "input": {
+        "title": "Enter a move",
+        "description": "Recall the moves from your finished game and enter them in order. A correct move advances to the next one."
+      },
+      "dontKnow": {
+        "title": "When you can't recall",
+        "description": "Press \"I don't know\" to reveal the correct move and automatically advance to the next one."
+      },
+      "setup": {
+        "pgn": {
+          "title": "Paste any PGN",
+          "description": "Paste the PGN of any completed game — yours, someone else's, or an opening line — then replay its moves from memory. Switch to \"Lichess URL\" to import one automatically instead."
+        },
+        "color": {
+          "title": "Choose your side",
+          "description": "Pick which side you'll recall the moves for. The other side's moves can be entered too, or auto-filled for you."
+        }
+      }
+    },
+    "session": {
+      "toMove": {
+        "white": "White to move",
+        "black": "Black to move"
+      },
+      "wrong": "Not {{move}}. Try again."
+    },
+    "result": {
+      "title": "Summary",
+      "backToMenu": "Back to practice",
+      "mistakes": "Wrong tries"
     }
   }
 }

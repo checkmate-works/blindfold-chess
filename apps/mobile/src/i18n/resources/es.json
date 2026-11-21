@@ -85,6 +85,10 @@
     "positionMemory": {
       "title": "Memoria de posiciones",
       "description": "Memoriza una posición y recréala en un tablero vacío"
+    },
+    "recall": {
+      "title": "Recordar partida",
+      "description": "Reproduce de memoria las jugadas de una partida"
     }
   },
   "practiceResult": {
@@ -725,6 +729,20 @@
         "title": "Tutorial",
         "body": "Memoriza una posición dentro del límite de tiempo, luego recréala en un tablero vacío.\nProbemos con la siguiente posición."
       }
+    },
+    "recall": {
+      "input": {
+        "title": "Introduce un movimiento",
+        "body": "Recuerda los movimientos de tu partida terminada e introdúcelos en orden. Un movimiento correcto avanza al siguiente."
+      },
+      "dontKnow": {
+        "title": "Cuando no lo recuerdas",
+        "body": "Pulsa \"No lo sé\" para revelar el movimiento correcto y avanzar automáticamente al siguiente."
+      },
+      "color": {
+        "title": "Elige tu bando",
+        "body": "Elige de qué bando recordarás los movimientos. Los movimientos del otro bando también se pueden introducir, o rellenar automáticamente."
+      }
     }
   },
   "positionMemory": {
@@ -742,6 +760,72 @@
     "result": {
       "title": "Resultados",
       "playAgain": "Jugar de nuevo"
+    }
+  },
+  "recall": {
+    "title": "De memoria",
+    "description": "Pega cualquier PGN y reprodúcelo jugada a jugada de memoria — sin necesidad de cuenta ni partida guardada.",
+    "setup": {
+      "pgnLabel": "PGN",
+      "startButton": "Empezar de memoria",
+      "title": "Recordar partida",
+      "useSample": "Usar una partida de ejemplo",
+      "invalidPgn": "No se pudo leer este PGN. Revisa las jugadas e inténtalo de nuevo.",
+      "playAs": "Bando a recordar",
+      "sides": {
+        "white": "Blancas",
+        "black": "Negras"
+      }
+    },
+    "autoOpponentMoves": "Auto-rellenar movimientos del rival",
+    "dontKnow": "No lo sé",
+    "correctMove": "¡Correcto!",
+    "incorrectMove": "Movimiento incorrecto. Inténtalo de nuevo.",
+    "progress": "Progreso: {{current}} / {{total}} movimientos",
+    "showBoard": "Mostrar Tablero",
+    "completed": "¡Revisión de Partida Completada!",
+    "moves": "Movimientos",
+    "noMovesYet": "Aún no hay movimientos",
+    "summary": {
+      "title": "Resumen",
+      "rateLabel": "Tasa de recuerdo",
+      "nailed": "A la primera",
+      "struggled": "Con dudas",
+      "missed": "No recordado",
+      "restart": "Jugar de nuevo",
+      "startNew": "Empezar con otro PGN"
+    },
+    "help": {
+      "input": {
+        "title": "Introduce un movimiento",
+        "description": "Recuerda los movimientos de tu partida terminada e introdúcelos en orden. Un movimiento correcto avanza al siguiente."
+      },
+      "dontKnow": {
+        "title": "Cuando no lo recuerdas",
+        "description": "Pulsa \"No lo sé\" para revelar el movimiento correcto y avanzar automáticamente al siguiente."
+      },
+      "setup": {
+        "pgn": {
+          "title": "Pega cualquier PGN",
+          "description": "Pega el PGN de cualquier partida terminada — la tuya, la de otra persona, o una línea de apertura — y luego reproduce sus movimientos de memoria. Cambia a \"URL de Lichess\" para importar uno automáticamente."
+        },
+        "color": {
+          "title": "Elige tu bando",
+          "description": "Elige de qué bando recordarás los movimientos. Los movimientos del otro bando también se pueden introducir, o rellenar automáticamente."
+        }
+      }
+    },
+    "session": {
+      "toMove": {
+        "white": "Juegan blancas",
+        "black": "Juegan negras"
+      },
+      "wrong": "No es {{move}}. Inténtalo de nuevo."
+    },
+    "result": {
+      "title": "Resumen",
+      "backToMenu": "Volver a prácticas",
+      "mistakes": "Intentos fallidos"
     }
   }
 }
