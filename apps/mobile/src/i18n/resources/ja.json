@@ -875,5 +875,22 @@
     "deleteConfirm": "この対局を削除しますか？",
     "you": "あなた",
     "engine": "Stockfish（レベル{{level}}）"
+  },
+  "glossary": {
+    "title": "チェス用語集",
+    "categories": {
+      "tactics": "タクティクス",
+      "strategy": "戦略",
+      "endgame": "エンドゲーム",
+      "opening": "オープニング",
+      "structure": "ポーン構造",
+      "general": "一般",
+      "principle": "原則"
+    },
+    "aliases": "別名",
+    "relatedTerms": "関連用語",
+    "subtitle": "チェス用語とその意味",
+    "search": "用語を検索",
+    "noResults": "該当する用語はありません"
   }
 }

@@ -875,5 +875,22 @@
     "deleteConfirm": "¿Eliminar esta partida?",
     "you": "Tú",
     "engine": "Stockfish (nivel {{level}})"
+  },
+  "glossary": {
+    "title": "Glosario de Ajedrez",
+    "categories": {
+      "tactics": "Táctica",
+      "strategy": "Estrategia",
+      "endgame": "Final",
+      "opening": "Apertura",
+      "structure": "Estructura de Peones",
+      "general": "General",
+      "principle": "Principios"
+    },
+    "aliases": "También conocido como",
+    "relatedTerms": "Términos relacionados",
+    "subtitle": "Términos de ajedrez y su significado",
+    "search": "Buscar términos",
+    "noResults": "No hay términos que coincidan"
   }
 }

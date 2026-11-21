@@ -30,6 +30,14 @@ export default function LearnTab() {
 
   return (
     <TabScrollView>
+      <ListSection>
+        <ListRow
+          leading={<ListIcon ionicon="library-outline" />}
+          title={t("glossary.title")}
+          subtitle={t("glossary.subtitle")}
+          onPress={() => router.push("/learn/glossary")}
+        />
+      </ListSection>
       {/* learn.categories.{moves,coordinates,notation,memory,practice} */}
       {LEARN_CATEGORIES.map((category) => {
         const articles = LEARN_ARTICLES.filter((a) => a.category === category);

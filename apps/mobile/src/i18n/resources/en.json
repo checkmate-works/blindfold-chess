@@ -875,5 +875,22 @@
     "deleteConfirm": "Delete this game?",
     "you": "You",
     "engine": "Stockfish (level {{level}})"
+  },
+  "glossary": {
+    "title": "Chess Glossary",
+    "categories": {
+      "tactics": "Tactics",
+      "strategy": "Strategy",
+      "endgame": "Endgame",
+      "opening": "Opening",
+      "structure": "Pawn Structure",
+      "general": "General",
+      "principle": "Principles"
+    },
+    "aliases": "Also known as",
+    "relatedTerms": "Related terms",
+    "subtitle": "Chess terms and their meanings",
+    "search": "Search terms",
+    "noResults": "No matching terms"
   }
 }

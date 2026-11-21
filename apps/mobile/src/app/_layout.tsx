@@ -9,7 +9,10 @@ import { initI18n } from "../i18n";
 import { GamePreferencesProvider } from "../lib/game-preferences";
 import { ALL_MODULE_ROUTES } from "../navigation/module-routes";
 import { moduleSetupScreens } from "../navigation/module-stack-screens";
-import { useStackScreenOptions } from "../navigation/stack-options";
+import {
+  SHEET_SCREEN_OPTIONS,
+  useStackScreenOptions,
+} from "../navigation/stack-options";
 import { ThemeProvider, useTheme } from "../theme";
 
 function RootLayoutContent() {
@@ -58,9 +61,9 @@ function RootLayoutContent() {
  *   full-screen modal. It has no swipe to dismiss, so a timed run cannot be
  *   abandoned by an accidental edge swipe; its screens close it with
  *   `useCloseSession`.
- * - `sheet/*` — half-height sheets (`formSheet` with a grabber, expandable to
- *   full height) for content read and dismissed without losing one's place:
- *   help, tutorials, glossary terms.
+ * - `glossary/[slug]` — a half-height sheet (`formSheet` with a grabber,
+ *   expandable to full height): a term is read and dismissed without losing
+ *   one's place, and can be opened from anywhere.
  */
 function RootStack({ isDark }: { isDark: boolean }) {
   const { t } = useTranslation();
@@ -81,6 +84,11 @@ function RootStack({ isDark }: { isDark: boolean }) {
           options={{ title: t("gameHistory.detailTitle") }}
         />
         <Stack.Screen name="learn/[slug]" options={{ title: "" }} />
+        <Stack.Screen
+          name="learn/glossary/index"
+          options={{ title: t("glossary.title") }}
+        />
+        <Stack.Screen name="glossary/[slug]" options={SHEET_SCREEN_OPTIONS} />
         <Stack.Screen
           name="(session)"
           options={{ headerShown: false, presentation: "fullScreenModal" }}

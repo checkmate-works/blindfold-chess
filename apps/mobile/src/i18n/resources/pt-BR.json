@@ -875,5 +875,22 @@
     "deleteConfirm": "Excluir esta partida?",
     "you": "Você",
     "engine": "Stockfish (nível {{level}})"
+  },
+  "glossary": {
+    "title": "Glossário de Xadrez",
+    "categories": {
+      "tactics": "Tática",
+      "strategy": "Estratégia",
+      "endgame": "Final",
+      "opening": "Abertura",
+      "structure": "Estrutura de Peões",
+      "general": "Geral",
+      "principle": "Princípios"
+    },
+    "aliases": "Também conhecido como",
+    "relatedTerms": "Termos relacionados",
+    "subtitle": "Termos de xadrez e seus significados",
+    "search": "Buscar termos",
+    "noResults": "Nenhum termo encontrado"
   }
 }

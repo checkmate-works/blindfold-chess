@@ -13,7 +13,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "copy-stockfish": "tsx scripts/copy-stockfish.ts",
-    "bundle-learn-content": "tsx scripts/bundle-learn-content.ts"
+    "bundle-learn-content": "tsx scripts/bundle-learn-content.ts",
+    "bundle-glossary": "tsx scripts/bundle-glossary.ts"
   },
   "dependencies": {
     "@blindfold-chess/features": "workspace:^",
