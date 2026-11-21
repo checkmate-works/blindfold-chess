@@ -112,8 +112,6 @@
       "displayOptions": "Opções de Exibição",
       "showCoordinates": "Mostrar coordenadas",
       "highlightLastMove": "Destacar último movimento",
-      "on": "Sim",
-      "off": "Não",
       "boardTheme": "Tema do Tabuleiro",
       "boardThemes": {
         "monotone": "Monocromático",

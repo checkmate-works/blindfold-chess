@@ -112,8 +112,6 @@
       "displayOptions": "Display Options",
       "showCoordinates": "Show coordinates",
       "highlightLastMove": "Highlight last move",
-      "on": "On",
-      "off": "Off",
       "boardTheme": "Board Theme",
       "boardThemes": {
         "monotone": "Monotone",

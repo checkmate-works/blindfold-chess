@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
 import {
   BOARD_THEMES,
@@ -13,18 +13,10 @@ import {
   type MoveInputMode,
 } from "@blindfold-chess/features/game-preferences";
 
-import { OptionsField } from "../../components";
+import { ListRow, ListSection, SelectRow, SwitchRow } from "../../components";
 import { useGamePreferences } from "../../lib/game-preferences";
-import {
-  useTheme,
-  fontSize,
-  fontWeight,
-  spacing,
-  borderRadius,
-} from "../../theme";
+import { useTheme, fontSize, fontWeight, spacing } from "../../theme";
 import { MOBILE_MOVE_INPUT_MODES } from "./mobile-move-input-modes";
-
-const ON_OFF = [true, false] as const;
 
 /**
  * The web's piece-visibility picker: one choice of which side's pieces are
@@ -65,46 +57,35 @@ export function BoardPreferencesSection() {
   const { colors } = useTheme();
   const { preferences, updatePreferences, resetPreferences } =
     useGamePreferences();
-  const onOff = (value: boolean) =>
-    value ? t("settings.board.on") : t("settings.board.off");
 
   return (
     <View style={styles.section}>
-      <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
+      <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>
         {t("settings.board.title")}
       </Text>
-      <View
-        style={[
-          styles.card,
-          { backgroundColor: colors.card, borderColor: colors.border },
-        ]}
-      >
+      <ListSection>
         {/* settings.board.boardVisibilities.{always,peek,never} */}
-        <OptionsField
+        <SelectRow
           label={t("settings.board.boardVisibility")}
           options={BOARD_VISIBILITY_VALUES}
           value={preferences.boardVisibility}
           onChange={(boardVisibility) => updatePreferences({ boardVisibility })}
           formatOption={(v) => t(`settings.board.boardVisibilities.${v}`)}
         />
-        <OptionsField
+        <SwitchRow
           label={t("settings.board.showCoordinates")}
-          options={ON_OFF}
           value={preferences.showCoordinates}
           onChange={(showCoordinates) => updatePreferences({ showCoordinates })}
-          formatOption={onOff}
         />
-        <OptionsField
+        <SwitchRow
           label={t("settings.board.highlightLastMove")}
-          options={ON_OFF}
           value={preferences.highlightLastMove}
           onChange={(highlightLastMove) =>
             updatePreferences({ highlightLastMove })
           }
-          formatOption={onOff}
         />
         {/* settings.board.boardThemes.{monotone,lichess,chesscom} */}
-        <OptionsField
+        <SelectRow
           label={t("settings.board.boardTheme")}
           options={BOARD_THEMES}
           value={preferences.boardTheme}
@@ -112,17 +93,15 @@ export function BoardPreferencesSection() {
           formatOption={(v) => t(`settings.board.boardThemes.${v}`)}
         />
         {/* settings.board.pieceVisibilityModes.{all,own,opponent} */}
-        <OptionsField<PieceVisibilityMode | null>
+        <SelectRow<PieceVisibilityMode>
           label={t("settings.board.pieceVisibility")}
           options={PIECE_VISIBILITY_MODES}
           value={pieceVisibilityMode(preferences)}
-          onChange={(mode) => {
-            if (mode) updatePreferences(pieceVisibilityUpdate(mode));
-          }}
+          onChange={(mode) => updatePreferences(pieceVisibilityUpdate(mode))}
           formatOption={(v) => t(`settings.board.pieceVisibilityModes.${v}`)}
         />
         {/* settings.board.pieceShapeModes.{normal,circles-all,circles-own,circles-opponent} */}
-        <OptionsField
+        <SelectRow
           label={t("settings.board.showAsStones")}
           options={PIECE_SHAPE_MODES}
           value={preferences.pieceShapeMode}
@@ -130,7 +109,7 @@ export function BoardPreferencesSection() {
           formatOption={(v) => t(`settings.board.pieceShapeModes.${v}`)}
         />
         {/* settings.board.pieceColorModes.{normal,white-only,black-only} */}
-        <OptionsField
+        <SelectRow
           label={t("settings.board.pieceColor")}
           options={PIECE_COLOR_MODES}
           value={preferences.pieceColors}
@@ -138,7 +117,7 @@ export function BoardPreferencesSection() {
           formatOption={(v) => t(`settings.board.pieceColorModes.${v}`)}
         />
         {/* settings.board.pawnHideModes.{none,all,own,opponent} */}
-        <OptionsField
+        <SelectRow
           label={t("settings.board.hidePawns")}
           options={PAWN_HIDE_MODES}
           value={preferences.pawnHideMode}
@@ -146,7 +125,7 @@ export function BoardPreferencesSection() {
           formatOption={(v) => t(`settings.board.pawnHideModes.${v}`)}
         />
         {/* settings.board.moveInputModes.button */}
-        <OptionsField<MoveInputMode>
+        <SelectRow<MoveInputMode>
           label={t("settings.board.moveInput")}
           options={MOBILE_MOVE_INPUT_MODES}
           value={preferences.moveInputMode}
@@ -154,7 +133,7 @@ export function BoardPreferencesSection() {
           formatOption={(v) => t(`settings.board.moveInputModes.${v}`)}
         />
         {/* settings.board.buttonLabels.{text,icon} */}
-        <OptionsField
+        <SelectRow
           label={t("settings.board.buttonLabelStyle")}
           options={BUTTON_INPUT_PIECE_LABELS}
           value={preferences.buttonInputPieceLabel}
@@ -163,42 +142,25 @@ export function BoardPreferencesSection() {
           }
           formatOption={(v) => t(`settings.board.buttonLabels.${v}`)}
         />
-        <TouchableOpacity
+      </ListSection>
+      <ListSection>
+        <ListRow
+          title={t("settings.board.resetDefaults")}
+          accessory="none"
           onPress={resetPreferences}
-          style={[styles.resetButton, { borderColor: colors.border }]}
-        >
-          <Text style={[styles.resetLabel, { color: colors.mutedForeground }]}>
-            {t("settings.board.resetDefaults")}
-          </Text>
-        </TouchableOpacity>
-      </View>
+        />
+      </ListSection>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   section: {
-    gap: spacing.sm,
+    gap: spacing.xs + 2,
   },
   sectionTitle: {
-    fontSize: fontSize.md,
-    fontWeight: fontWeight.medium,
-    paddingHorizontal: spacing.xs,
-  },
-  card: {
-    borderRadius: borderRadius.lg,
-    borderWidth: 1,
-    padding: spacing.md,
-    gap: spacing.lg,
-  },
-  resetButton: {
-    alignSelf: "flex-start",
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.md,
-    borderWidth: 1,
-  },
-  resetLabel: {
     fontSize: fontSize.sm,
+    fontWeight: fontWeight.medium,
+    paddingHorizontal: spacing.md,
   },
 });

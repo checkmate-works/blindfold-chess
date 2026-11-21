@@ -112,8 +112,6 @@
       "displayOptions": "表示オプション",
       "showCoordinates": "座標を表示",
       "highlightLastMove": "最終手をハイライト",
-      "on": "オン",
-      "off": "オフ",
       "boardTheme": "ボードテーマ",
       "boardThemes": {
         "monotone": "モノトーン",
