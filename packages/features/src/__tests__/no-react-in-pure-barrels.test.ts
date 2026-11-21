@@ -30,6 +30,7 @@ const PURE_BARRELS = [
   "fen-practice/index.ts",
   "practice-registry/index.ts",
   "challenge-attempt/index.ts",
+  "openings/index.ts",
 ];
 
 const REACT_IMPORT_RE = /\bfrom\s+["']react["']/;

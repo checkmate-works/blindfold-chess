@@ -353,7 +353,9 @@
       "positionAlreadyStalemate": "This position is already stalemate — the game would end immediately",
       "positionInsufficientMaterial": "Insufficient material to continue — the game would be an immediate draw",
       "positionCheckCorrected": "The checked side must move first — please select the other side to move",
-      "positionValid": "Valid position"
+      "positionValid": "Valid position",
+      "chooseOpening": "Choose an opening",
+      "searchOpening": "Search by name, ECO or moves"
     },
     "session": {
       "yourTurn": "Your Turn",

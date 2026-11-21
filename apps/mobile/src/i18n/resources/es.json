@@ -353,7 +353,9 @@
       "positionAlreadyStalemate": "Esta posición ya es ahogado — la partida terminaría inmediatamente",
       "positionInsufficientMaterial": "Material insuficiente para continuar — la partida sería tablas inmediatamente",
       "positionCheckCorrected": "El bando en jaque debe mover primero — por favor cambia el turno",
-      "positionValid": "Posición válida"
+      "positionValid": "Posición válida",
+      "chooseOpening": "Elegir una apertura",
+      "searchOpening": "Buscar por nombre, ECO o jugadas"
     },
     "session": {
       "yourTurn": "Tu turno",

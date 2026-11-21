@@ -353,7 +353,9 @@
       "positionAlreadyStalemate": "Esta posição já é afogamento — a partida terminaria imediatamente",
       "positionInsufficientMaterial": "Material insuficiente para continuar — a partida seria empate imediatamente",
       "positionCheckCorrected": "O lado em xeque deve mover primeiro — por favor altere a vez de jogar",
-      "positionValid": "Posição válida"
+      "positionValid": "Posição válida",
+      "chooseOpening": "Escolher uma abertura",
+      "searchOpening": "Buscar por nome, ECO ou lances"
     },
     "session": {
       "yourTurn": "Sua vez",

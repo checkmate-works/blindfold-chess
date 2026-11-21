@@ -20,6 +20,7 @@ import {
   type AiGameStartMode,
   type StartResolution,
 } from "../hooks/useStartPositionInput";
+import { OpeningPicker } from "./OpeningPicker";
 
 type StartPositionFormProps = {
   mode: AiGameStartMode;
@@ -131,9 +132,12 @@ export function StartPositionForm({
 
       {mode === "pgn" && (
         <View style={styles.section}>
-          <Text style={[styles.label, { color: colors.foreground }]}>
-            {t("aiGame.setup.pgnLabel")}
-          </Text>
+          <View style={styles.pgnLabelRow}>
+            <Text style={[styles.label, { color: colors.foreground }]}>
+              {t("aiGame.setup.pgnLabel")}
+            </Text>
+            <OpeningPicker onPick={(opening) => onChangePgnText(opening.pgn)} />
+          </View>
           <TextInput
             value={pgnText}
             onChangeText={onChangePgnText}
@@ -223,6 +227,11 @@ function ValidationMessage({ resolution }: { resolution: StartResolution }) {
 }
 
 const styles = StyleSheet.create({
+  pgnLabelRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
   container: {
     gap: spacing.lg,
   },
