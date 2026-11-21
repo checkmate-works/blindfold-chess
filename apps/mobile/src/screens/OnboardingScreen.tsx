@@ -3,6 +3,7 @@ import {
   StyleSheet,
   View,
   ScrollView,
+  type ScrollViewInstance,
   TouchableOpacity,
   Text,
 } from "react-native";
@@ -21,7 +22,7 @@ interface OnboardingScreenProps {
 export const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
   const { messages, currentStep, isThinking, handleNext, handleChoice } =
     useOnboardingChat(onComplete);
-  const scrollViewRef = useRef<ScrollView>(null);
+  const scrollViewRef = useRef<ScrollViewInstance>(null);
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
   const { t } = useTranslation();

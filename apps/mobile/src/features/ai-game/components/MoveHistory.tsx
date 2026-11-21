@@ -1,5 +1,11 @@
 import { useRef, useEffect } from "react";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  type ScrollViewInstance,
+} from "react-native";
 import { useTranslation } from "react-i18next";
 import {
   fullmoveNumberFromFen,
@@ -24,7 +30,7 @@ type MoveHistoryProps = {
 export function MoveHistory({ moves, startingFen }: MoveHistoryProps) {
   const { t } = useTranslation();
   const { colors } = useTheme();
-  const scrollViewRef = useRef<ScrollView>(null);
+  const scrollViewRef = useRef<ScrollViewInstance>(null);
 
   useEffect(() => {
     // Auto-scroll to bottom on new move
