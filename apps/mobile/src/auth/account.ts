@@ -6,6 +6,11 @@ export type MobileAccount = {
   email: string | null;
   username: string | null;
   banned: boolean;
+  /** Absent from servers older than the app (the fields were added later). */
+  totalExp?: number;
+  level?: number;
+  /** Highest dojo rank achieved (`5kyu` … `1dan`), or null for none. */
+  highestRank?: string | null;
 };
 
 function isAccount(value: unknown): value is MobileAccount {

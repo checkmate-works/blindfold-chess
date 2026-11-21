@@ -68,7 +68,7 @@ export async function beginChallenge<Q>(
 }
 
 export type FinishResult =
-  | { kind: "recorded"; grantedRanks: unknown[] }
+  | { kind: "recorded"; grantedRanks: { slug: string }[] }
   | { kind: "notRecorded" }
   | { kind: "failed" };
 
@@ -102,7 +102,7 @@ export async function finishChallenge(
     }
     const body = (await response.json()) as
       | { status: "pending"; remainingMs: number }
-      | { status: "done"; success: true; grantedRanks: unknown[] }
+      | { status: "done"; success: true; grantedRanks: { slug: string }[] }
       | { status: "done"; success: false; error: string };
     if (body.status === "pending") {
       if (pending >= MAX_PENDING_RESENDS) return { kind: "failed" };

@@ -4,8 +4,9 @@ import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "../../components";
-import { useAuth } from "../../auth/use-auth";
 import { useTheme, borderRadius, fontSize, spacing } from "../../theme";
+import { refreshAccount, useAuth as useAuthState } from "../../auth/use-auth";
+import { rankLabel } from "../records/rank-label";
 import { finishChallenge } from "./challenge-api";
 
 type Status = "saving" | "recorded" | "notRecorded" | "failed";
@@ -24,14 +25,21 @@ export function ChallengeRecordStatus({
   const { t } = useTranslation();
   const router = useRouter();
   const { colors, feedbackColors } = useTheme();
-  const auth = useAuth();
+  const auth = useAuthState();
   const [status, setStatus] = useState<Status>("saving");
+  const [promoted, setPromoted] = useState<string[]>([]);
 
   useEffect(() => {
     if (!attemptId) return;
     let cancelled = false;
     void finishChallenge(attemptId).then((result) => {
-      if (!cancelled) setStatus(result.kind);
+      if (cancelled) return;
+      setStatus(result.kind);
+      if (result.kind === "recorded") {
+        setPromoted(result.grantedRanks.map((rank) => rank.slug));
+        // The EXP and any new rank show on the home tab's progress card.
+        void refreshAccount();
+      }
     });
     return () => {
       cancelled = true;
@@ -64,13 +72,25 @@ export function ChallengeRecordStatus({
         : feedbackColors.error;
   return (
     <View
-      style={[styles.box, styles.row, { backgroundColor: colors.card }]}
+      style={[
+        styles.box,
+        promoted.length === 0 && styles.row,
+        { backgroundColor: colors.card },
+      ]}
       accessibilityLiveRegion="polite"
     >
       {status === "saving" && <ActivityIndicator color={colors.primary} />}
       <Text style={[styles.text, { color }]}>
         {t(`challenge.record.${status}`)}
       </Text>
+      {promoted.map((slug) => (
+        <Text
+          key={slug}
+          style={[styles.promoted, { color: colors.foreground }]}
+        >
+          {t("challenge.promoted", { rank: rankLabel(slug, t) })}
+        </Text>
+      ))}
     </View>
   );
 }
@@ -89,6 +109,11 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: fontSize.sm,
+    textAlign: "center",
+  },
+  promoted: {
+    fontSize: fontSize.md,
+    fontWeight: "700",
     textAlign: "center",
   },
 });

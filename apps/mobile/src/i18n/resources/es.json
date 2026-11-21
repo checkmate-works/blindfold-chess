@@ -1006,6 +1006,17 @@
       "failed": "No se pudo registrar tu puntuación. Revisa tu conexión."
     },
     "rules": "60 segundos · termina tras 3 errores",
-    "willRecord": "Tu puntuación se registrará en la clasificación."
+    "willRecord": "Tu puntuación se registrará en la clasificación.",
+    "promoted": "¡Has ascendido a {{rank}}!"
+  },
+  "progress": {
+    "rank": "Rango",
+    "noRank": "Sin rango",
+    "level": "Nivel"
+  },
+  "ranks": {
+    "kyu": "{{n}}.º Kyu",
+    "dan": "{{n}}.º Dan",
+    "firstDan": "1.er Dan"
   }
 }

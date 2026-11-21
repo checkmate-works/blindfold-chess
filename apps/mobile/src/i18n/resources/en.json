@@ -1006,6 +1006,17 @@
       "failed": "Could not record your score. Check your connection."
     },
     "rules": "60 seconds · ends after 3 mistakes",
-    "willRecord": "Your score will be recorded on the leaderboard."
+    "willRecord": "Your score will be recorded on the leaderboard.",
+    "promoted": "Promoted to {{rank}}!"
+  },
+  "progress": {
+    "rank": "Dojo rank",
+    "noRank": "None yet",
+    "level": "Level"
+  },
+  "ranks": {
+    "kyu": "{{n}} Kyu",
+    "dan": "{{n}} Dan",
+    "firstDan": "1 Dan"
   }
 }

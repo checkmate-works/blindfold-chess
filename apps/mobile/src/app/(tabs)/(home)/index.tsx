@@ -9,6 +9,7 @@ import {
   TabScrollView,
 } from "../../../components";
 import { AiGameCard } from "../../../features/ai-game/components/AiGameCard";
+import { ProgressCard } from "../../../features/records/ProgressCard";
 import { useOnboardingStatus } from "../../../hooks/useOnboardingStatus";
 import { MOBILE_PRACTICE_MODULES } from "../../../navigation/practice-modules";
 
@@ -31,6 +32,7 @@ export default function HomeTab() {
 
   return (
     <TabScrollView>
+      <ProgressCard />
       <AiGameCard
         buttonTitle={t("home.playAi")}
         onPress={() => router.push("/play/ai-game")}
