@@ -89,6 +89,10 @@
     "recall": {
       "title": "Recall",
       "description": "Replay a game's moves from memory"
+    },
+    "puzzle": {
+      "title": "Puzzles",
+      "description": "Find the best move in curated positions"
     }
   },
   "practiceResult": {
@@ -1018,5 +1022,47 @@
     "kyu": "{{n}} Kyu",
     "dan": "{{n}} Dan",
     "firstDan": "1 Dan"
+  },
+  "puzzle": {
+    "session": {
+      "correct": "Correct! 🎉",
+      "correctMove": "Correct",
+      "incorrect": "Incorrect. Try again.",
+      "showAnswer": "Show answer",
+      "showBoard": "Show Board",
+      "whitePlayed": "White plays {{move}}",
+      "blackPlayed": "Black plays {{move}}"
+    },
+    "result": {
+      "title": "Puzzle Result",
+      "replaySection": "Solution Replay",
+      "historySection": "Attempt History",
+      "solution": "Solution: {{move}}",
+      "note": "— {{note}}",
+      "attemptCorrect": "Correct",
+      "attemptIncorrect": "Incorrect",
+      "backToList": "Back to Puzzles",
+      "tryAgain": "Try Again",
+      "peekCount": "Board Peeks: {{count}}",
+      "statusSolved": "Solved",
+      "statusRevealed": "Revealed"
+    },
+    "list": {
+      "title": "Puzzle",
+      "empty": "No puzzles available yet"
+    },
+    "title": "Puzzle",
+    "description": "Find the best move in the position",
+    "setup": {
+      "title": "Puzzles"
+    },
+    "daily": "Daily Puzzle",
+    "featured": "Featured puzzles",
+    "moreOnWeb": "Everyone's puzzles, and creating your own, are on the website.",
+    "loadFailed": "Could not load puzzles. Pull to retry.",
+    "whiteToMove": "White to move",
+    "blackToMove": "Black to move",
+    "findMove": "Find the best move",
+    "recorded": "Your result was recorded."
   }
 }

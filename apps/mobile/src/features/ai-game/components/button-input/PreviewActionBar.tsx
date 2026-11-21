@@ -82,6 +82,9 @@ export function PreviewActionBar({
         ]}
         onPress={onSubmit}
         disabled={!canSubmit}
+        accessibilityRole="button"
+        accessibilityState={{ disabled: !canSubmit }}
+        testID="move-submit"
       >
         <Text
           style={[

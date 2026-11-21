@@ -50,6 +50,12 @@ export default function HomeTab() {
           />
         ))}
         <ListRow
+          leading={<ListIcon glyph="🧩" />}
+          title={t("puzzle.daily")}
+          subtitle={t("practice.puzzle.description")}
+          onPress={() => router.push("/practice/puzzle")}
+        />
+        <ListRow
           leading={<ListIcon ionicon="grid-outline" />}
           title={t("home.allPractice")}
           onPress={() => router.navigate("/practice")}

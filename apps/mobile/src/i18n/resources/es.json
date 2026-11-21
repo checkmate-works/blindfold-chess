@@ -89,6 +89,10 @@
     "recall": {
       "title": "Recordar partida",
       "description": "Reproduce de memoria las jugadas de una partida"
+    },
+    "puzzle": {
+      "title": "Problemas",
+      "description": "Encuentra la mejor jugada en posiciones seleccionadas"
     }
   },
   "practiceResult": {
@@ -1018,5 +1022,47 @@
     "kyu": "{{n}}.º Kyu",
     "dan": "{{n}}.º Dan",
     "firstDan": "1.er Dan"
+  },
+  "puzzle": {
+    "session": {
+      "correct": "¡Correcto! 🎉",
+      "correctMove": "Correcto",
+      "incorrect": "Incorrecto. Inténtalo de nuevo.",
+      "showAnswer": "Ver respuesta",
+      "showBoard": "Mostrar Tablero",
+      "whitePlayed": "Blancas juegan {{move}}",
+      "blackPlayed": "Negras juegan {{move}}"
+    },
+    "result": {
+      "title": "Resultado del Puzzle",
+      "replaySection": "Repetición de la Solución",
+      "historySection": "Historial de Intentos",
+      "solution": "Solución: {{move}}",
+      "note": "— {{note}}",
+      "attemptCorrect": "Correcto",
+      "attemptIncorrect": "Incorrecto",
+      "backToList": "Volver a Puzzles",
+      "tryAgain": "Intentar de Nuevo",
+      "peekCount": "Vistas del Tablero: {{count}}",
+      "statusSolved": "Resuelto",
+      "statusRevealed": "Solución revelada"
+    },
+    "list": {
+      "title": "Puzzle",
+      "empty": "Aun no hay puzzles disponibles"
+    },
+    "title": "Puzzle",
+    "description": "Encuentra la mejor jugada en la posición",
+    "setup": {
+      "title": "Problemas"
+    },
+    "daily": "Problema del día",
+    "featured": "Problemas destacados",
+    "moreOnWeb": "Los problemas de todos y la creación de los tuyos están en el sitio web.",
+    "loadFailed": "No se pudieron cargar los problemas. Desliza para reintentar.",
+    "whiteToMove": "Juegan blancas",
+    "blackToMove": "Juegan negras",
+    "findMove": "Encuentra la mejor jugada",
+    "recorded": "Tu resultado se registró."
   }
 }

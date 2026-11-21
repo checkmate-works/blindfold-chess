@@ -89,6 +89,10 @@
     "recall": {
       "title": "棋譜再現",
       "description": "棋譜を記憶を頼りに一手ずつ再現する練習"
+    },
+    "puzzle": {
+      "title": "パズル",
+      "description": "厳選された局面で最善手を見つける練習"
     }
   },
   "practiceResult": {
@@ -1018,5 +1022,47 @@
     "kyu": "{{n}}級",
     "dan": "{{n}}段",
     "firstDan": "初段"
+  },
+  "puzzle": {
+    "session": {
+      "correct": "正解！🎉",
+      "correctMove": "正解",
+      "incorrect": "不正解です。もう一度挑戦してください。",
+      "showAnswer": "答えを見る",
+      "showBoard": "ボードを表示",
+      "whitePlayed": "白が {{move}} を指しました",
+      "blackPlayed": "黒が {{move}} を指しました"
+    },
+    "result": {
+      "title": "パズル結果",
+      "replaySection": "正解のリプレイ",
+      "historySection": "回答履歴",
+      "solution": "正解: {{move}}",
+      "note": "— {{note}}",
+      "attemptCorrect": "正解",
+      "attemptIncorrect": "不正解",
+      "backToList": "パズル一覧に戻る",
+      "tryAgain": "もう一度",
+      "peekCount": "盤面確認: {{count}}回",
+      "statusSolved": "全問正解",
+      "statusRevealed": "解答表示"
+    },
+    "list": {
+      "title": "パズル",
+      "empty": "パズルはまだありません"
+    },
+    "title": "パズル",
+    "description": "ポジションで最善手を見つけよう",
+    "setup": {
+      "title": "パズル"
+    },
+    "daily": "今日のパズル",
+    "featured": "おすすめのパズル",
+    "moreOnWeb": "みんなが作ったパズルの一覧とパズルの作成はWebサイトで利用できます。",
+    "loadFailed": "パズルを読み込めませんでした。引っ張って再読み込みしてください。",
+    "whiteToMove": "白番",
+    "blackToMove": "黒番",
+    "findMove": "最善手を見つけよう",
+    "recorded": "結果を記録しました。"
   }
 }

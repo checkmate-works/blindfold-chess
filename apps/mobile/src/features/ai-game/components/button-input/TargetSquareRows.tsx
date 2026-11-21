@@ -42,6 +42,7 @@ export function TargetSquareRows({
             <ToggleButton
               key={file}
               label={file}
+              testID={`move-file-${file}`}
               isSelected={
                 input.isPawnCaptureMode
                   ? input.targetFile === file
@@ -97,6 +98,7 @@ export function TargetSquareRows({
                 label={rank}
                 isSelected={input.selectedRank === rank}
                 onPress={() => input.handleRankSelect(rank)}
+                testID={`move-rank-${rank}`}
                 disabled={disabled}
                 colors={colors}
               />

@@ -38,6 +38,10 @@ export function PieceRow({
           key={piece}
           onPress={() => onSelect(piece)}
           disabled={disabled}
+          accessibilityRole="button"
+          accessibilityLabel={piece}
+          accessibilityState={{ selected: selectedPiece === piece, disabled }}
+          testID={`move-piece-${piece}`}
           style={[
             styles.toggleButton,
             {

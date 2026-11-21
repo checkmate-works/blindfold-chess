@@ -89,6 +89,10 @@
     "recall": {
       "title": "Recordar partida",
       "description": "Reproduza de memória os lances de uma partida"
+    },
+    "puzzle": {
+      "title": "Problemas",
+      "description": "Encontre o melhor lance em posições selecionadas"
     }
   },
   "practiceResult": {
@@ -1018,5 +1022,47 @@
     "kyu": "{{n}}º Kyu",
     "dan": "{{n}}º Dan",
     "firstDan": "1º Dan"
+  },
+  "puzzle": {
+    "session": {
+      "correct": "Correto! 🎉",
+      "correctMove": "Correto",
+      "incorrect": "Incorreto. Tente novamente.",
+      "showAnswer": "Ver resposta",
+      "showBoard": "Mostrar Tabuleiro",
+      "whitePlayed": "Brancas jogam {{move}}",
+      "blackPlayed": "Pretas jogam {{move}}"
+    },
+    "result": {
+      "title": "Resultado do Puzzle",
+      "replaySection": "Replay da Solução",
+      "historySection": "Histórico de Tentativas",
+      "solution": "Solução: {{move}}",
+      "note": "— {{note}}",
+      "attemptCorrect": "Correto",
+      "attemptIncorrect": "Incorreto",
+      "backToList": "Voltar para Puzzles",
+      "tryAgain": "Tentar Novamente",
+      "peekCount": "Visualizações do Tabuleiro: {{count}}",
+      "statusSolved": "Resolvido",
+      "statusRevealed": "Solução revelada"
+    },
+    "list": {
+      "title": "Puzzle",
+      "empty": "Nenhum puzzle disponível ainda"
+    },
+    "title": "Puzzle",
+    "description": "Encontre o melhor lance na posição",
+    "setup": {
+      "title": "Problemas"
+    },
+    "daily": "Problema do dia",
+    "featured": "Problemas em destaque",
+    "moreOnWeb": "Os problemas de todos e a criação dos seus estão no site.",
+    "loadFailed": "Não foi possível carregar os problemas. Puxe para tentar de novo.",
+    "whiteToMove": "Brancas jogam",
+    "blackToMove": "Pretas jogam",
+    "findMove": "Encontre o melhor lance",
+    "recorded": "Seu resultado foi registrado."
   }
 }

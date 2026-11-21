@@ -72,7 +72,7 @@ Generated, not edited by hand; re-run the script after the web changes:
 - `scripts/port-help-texts.py` — the practice modules' how-to-play,
   tutorial and mode texts (`moduleHelp.*` in the four dictionaries and
   `features/help/module-help-pages.ts`), recall's strings (`recall.*`) and
-  the account screens' (`account.*`).
+  the account screens' (`account.*`) and the puzzle screens' (`puzzle.*`).
 - `pnpm bundle-glossary` (`scripts/bundle-glossary.ts`) — the web's glossary
   seed into `features/glossary/generated/`.
 - `pnpm bundle-learn-content` (`scripts/bundle-learn-content.ts`) — the web's
@@ -118,9 +118,17 @@ database. Sign-in calls Supabase Auth directly; sign-up goes through
   the app needs none of the reporting and blocking an app showing
   user-generated content must have.
 
-Still web-only: EXP and dojo rank display, puzzles and community positions,
-repertoires, topics and articles, the home feed, Maia, password reset (the
-app opens the web page). Finished AI games are kept on the device
+- **Puzzles** (`practice/puzzle`): the app lists the Daily Puzzle and the
+  featured set only (`GET /puzzles`; `GET /puzzles/[id]` answers 404 for any
+  other puzzle), solves them with the web's rules from
+  `@blindfold-chess/features/puzzle`, and records a solved one for a
+  signed-in player (`POST /puzzles/results`, free-play EXP). Authors, likes,
+  comments and the user-submitted pool stay on the web, under the rule
+  above.
+
+Still web-only: creating puzzles and community positions, repertoires,
+topics and articles, the home feed, Maia, password reset (the app opens the
+web page). Finished AI games are kept on the device
 (`features/game-history/`, AsyncStorage `"AI_GAME_HISTORY"`, newest first, at
 most 50), like the web keeps them in localStorage.
 

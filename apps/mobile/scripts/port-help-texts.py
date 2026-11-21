@@ -173,3 +173,27 @@ for locale in LOCALES:
                 value = icu_to_i18next(value)
             account.setdefault(ns, {})[key] = value
     path.write_text(json.dumps(mobile, ensure_ascii=False, indent=2) + "\n")
+
+
+# --- Puzzles: the web's `practice.puzzle` session / result / list texts, under
+# `puzzle.*`.
+PUZZLE_KEYS = {
+    "session": ["correct", "correctMove", "incorrect", "showAnswer",
+                "showBoard", "whitePlayed", "blackPlayed"],
+    "result": ["title", "replaySection", "historySection", "solution", "note",
+               "attemptCorrect", "attemptIncorrect", "backToList", "tryAgain",
+               "peekCount", "statusSolved", "statusRevealed"],
+    "list": ["title", "empty"],
+}
+
+for locale in LOCALES:
+    web = json.loads((WEB / f"{locale}.json").read_text())["practice"]["puzzle"]
+    path = MOBILE / f"{locale}.json"
+    mobile = json.loads(path.read_text())
+    puzzle = mobile.setdefault("puzzle", {})
+    for section, keys in PUZZLE_KEYS.items():
+        for key in keys:
+            puzzle.setdefault(section, {})[key] = icu_to_i18next(web[section][key])
+    puzzle["title"] = web["title"]
+    puzzle["description"] = web["description"]
+    path.write_text(json.dumps(mobile, ensure_ascii=False, indent=2) + "\n")
