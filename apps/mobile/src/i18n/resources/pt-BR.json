@@ -193,7 +193,9 @@
       "username": "Nome de usuário",
       "setUsername": "Definir",
       "signOut": "Sair",
-      "signOutConfirm": "Sair da conta?"
+      "signOutConfirm": "Sair da conta?",
+      "loading": "Carregando…",
+      "retry": "Toque para tentar de novo"
     }
   },
   "legalMoves": {

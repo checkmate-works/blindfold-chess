@@ -193,7 +193,9 @@
       "username": "Username",
       "setUsername": "Set",
       "signOut": "Sign out",
-      "signOutConfirm": "Sign out?"
+      "signOutConfirm": "Sign out?",
+      "loading": "Loading…",
+      "retry": "Tap to retry"
     }
   },
   "legalMoves": {

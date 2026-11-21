@@ -193,7 +193,9 @@
       "username": "Nombre de usuario",
       "setUsername": "Configurar",
       "signOut": "Cerrar sesión",
-      "signOutConfirm": "¿Cerrar sesión?"
+      "signOutConfirm": "¿Cerrar sesión?",
+      "loading": "Cargando…",
+      "retry": "Toca para reintentar"
     }
   },
   "legalMoves": {

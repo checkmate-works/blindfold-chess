@@ -1,20 +1,41 @@
+import { useCallback } from "react";
 import { Alert } from "react-native";
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 
 import { ListIcon, ListRow, ListSection } from "../../components";
-import { signOut, useAuth } from "../../auth/use-auth";
+import { refreshAccount, signOut, useAuth } from "../../auth/use-auth";
 
 /**
  * The account block of the settings tab. Signing in is optional: every
  * practice works signed out; an account records challenge results on the
  * server (the web's leaderboard and EXP) and shows the user's own ranks.
  * Hidden in a build with no backend.
+ *
+ * It is also where a failed account load (`/me`, offline or 503 at launch)
+ * recovers. Nothing else asks for the account again until the user changes,
+ * so without a retry here the progress card and the way to set a username
+ * stay out of reach until the next cold start. While the account is
+ * missing, every focus of the tab retries, and the username row reads
+ * "loading" — or "tap to retry" after a failure — instead of a blank value.
  */
 export function AccountSection() {
   const { t } = useTranslation();
   const router = useRouter();
   const auth = useAuth();
+
+  const accountMissing =
+    auth.status === "signedIn" && auth.account === undefined;
+  useFocusEffect(
+    useCallback(() => {
+      if (!accountMissing) return;
+      // Deferred like the auth listener's own refresh, so the request never
+      // starts while supabase-js holds its auth lock. Concurrent calls share
+      // one request, so overlapping with that refresh costs nothing.
+      const timer = setTimeout(() => void refreshAccount(), 0);
+      return () => clearTimeout(timer);
+    }, [accountMissing]),
+  );
 
   if (auth.status === "unavailable" || auth.status === "loading") return null;
 
@@ -38,7 +59,17 @@ export function AccountSection() {
   return (
     <ListSection title={t("settings.account.title")}>
       <ListRow title={t("settings.account.email")} value={auth.email} />
-      {username === null ? (
+      {auth.account === undefined ? (
+        <ListRow
+          title={t("settings.account.username")}
+          value={
+            auth.accountError
+              ? t("settings.account.retry")
+              : t("settings.account.loading")
+          }
+          onPress={() => void refreshAccount()}
+        />
+      ) : username === null ? (
         <ListRow
           title={t("settings.account.username")}
           value={t("settings.account.setUsername")}

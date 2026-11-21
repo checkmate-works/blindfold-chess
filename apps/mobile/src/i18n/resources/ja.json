@@ -193,7 +193,9 @@
       "username": "ユーザー名",
       "setUsername": "設定する",
       "signOut": "ログアウト",
-      "signOutConfirm": "ログアウトしますか？"
+      "signOutConfirm": "ログアウトしますか？",
+      "loading": "読み込み中…",
+      "retry": "タップして再試行"
     }
   },
   "legalMoves": {
