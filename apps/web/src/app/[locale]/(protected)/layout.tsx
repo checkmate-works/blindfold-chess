@@ -63,14 +63,19 @@ type Props = {
  *   auth round-trip (see above), so that trades one bug for the other.
  *
  * Do not re-attempt a fix by relocating the `redirect()` within the existing
- * Suspense tree; that is the first thing to try and it is ruled out. A real
- * fix needs a different approach, e.g. resolving the post-sign-in/sign-up
- * destination server-side (in the `signIn` / registration Server Action) so
- * the client's `window.location.href` hard-navigates straight to the correct
- * URL and no redirect-during-streaming ever happens at `/mypage`; or
- * restructuring the gate so this transition renders the setup-username
- * content in place instead of changing the URL. Both are design changes —
- * decide deliberately and test with `next build && next start`.
+ * Suspense tree; that is the first thing to try and it is ruled out.
+ *
+ * Sign-in avoids it by deciding the destination before navigating:
+ * `postSignInPath` sends a user without a profile straight to
+ * `/mypage/setup-username`, both from the auth callback (OAuth, email
+ * confirmation) and from the `signIn` Server Action (email and password), so
+ * the hard navigation lands on the correct URL and no redirect happens
+ * mid-stream. The race is still reachable whenever a provisional user opens
+ * a `(confirmed)` page afterwards — e.g. `/mypage` from the header, or a
+ * bookmarked mypage URL. Closing that needs the gate restructured so the
+ * transition renders the setup-username content in place instead of
+ * changing the URL — a design change; decide deliberately and test with
+ * `next build && next start`.
  */
 export default async function ProtectedLayout({ children, params }: Props) {
   const pathname = (await headers()).get('x-pathname') ?? '';
