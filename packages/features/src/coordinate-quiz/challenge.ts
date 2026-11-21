@@ -12,25 +12,40 @@ import type { BoardOrientation, Square } from "@blindfold-chess/types";
 import { BOARD_ORIENTATIONS } from "@blindfold-chess/types";
 
 import type { ChallengeModuleDefinition } from "../challenge-attempt/types";
-import {
-  FEEDBACK_SPEED_MS,
-  FEEDBACK_SPEEDS,
-  type FeedbackSpeed,
-} from "../common/feedback-speed";
 import { type RandomSource, isValidSquare } from "../common/utils";
 import { CHALLENGE_TIME_LIMIT } from "../practice-registry/challenge-rules";
 import { checkAnswer, generateSingleQuestion } from "./logic";
 import type { CoordinateQuestion } from "./types";
 
 /**
- * Settings a coordinate-quiz challenge is started with. Both fields are
- * validated as enum members by `parseSettings`; nothing else is read.
+ * Settings a coordinate-quiz challenge is started with. The orientation is
+ * validated as an enum member by `parseSettings`; nothing else is read.
  */
 export type CoordinateQuizChallengeSettings = {
   /** Also the leaderboard key, so it must stay one of `BOARD_ORIENTATIONS`. */
   boardOrientation: BoardOrientation;
-  feedbackSpeed: FeedbackSpeed;
 };
+
+/**
+ * How long the coordinate quiz shows its verdict after an answer, the same
+ * after a right and a wrong one, in the challenge and in free play.
+ *
+ * It used to be the player's choice (300 / 600 / 900 ms). The challenge runs
+ * on the server, which stops the clock for `feedbackMs` after receiving an
+ * answer, and the next question appears once both the flash has ended and
+ * the server's response has arrived. When the round trip is longer than the
+ * flash, the difference is taken out of the time limit, so the shortest
+ * setting could not absorb network delay and longer settings scored better.
+ * The leaderboard is keyed by orientation only, so players on different
+ * speeds were also ranked against each other. One fixed value puts everyone
+ * on the same conditions.
+ *
+ * This is not an anti-cheat measure: a modified client can still read the
+ * next question during the flash (see the module comment of
+ * `challenge-attempt/transitions.ts`); the mean-thinking-time floor is what
+ * guards against that.
+ */
+export const COORDINATE_QUIZ_FEEDBACK_MS = 600;
 
 /**
  * How many of the most recent targets a new question avoids, so the same
@@ -78,16 +93,17 @@ export const coordinateQuizChallengeDefinition: ChallengeModuleDefinition<
   Square
 > = {
   /**
-   * Both fields must be enum members. Settings arrive from the client and the
-   * orientation becomes the leaderboard key, so an unchecked string would let
-   * anyone open a leaderboard of their own naming.
+   * The orientation must be an enum member. Settings arrive from the client
+   * and the orientation becomes the leaderboard key, so an unchecked string
+   * would let anyone open a leaderboard of their own naming. Other fields are
+   * ignored rather than refused: an older client, or settings saved before
+   * the feedback speed was removed, still send a `feedbackSpeed`.
    */
   parseSettings: (raw) => {
     if (!isRecord(raw)) return null;
-    const { boardOrientation, feedbackSpeed } = raw;
+    const { boardOrientation } = raw;
     if (!isOneOf(BOARD_ORIENTATIONS, boardOrientation)) return null;
-    if (!isOneOf(FEEDBACK_SPEEDS, feedbackSpeed)) return null;
-    return { boardOrientation, feedbackSpeed };
+    return { boardOrientation };
   },
 
   /** The orientation string, the key existing coordinate-quiz rankings use. */
@@ -123,8 +139,8 @@ export const coordinateQuizChallengeDefinition: ChallengeModuleDefinition<
 
   grade: (question, answer) => checkAnswer(answer, question.targetSquare),
 
-  /** The player's chosen flash speed, the same for right and wrong answers. */
-  feedbackMs: (settings) => FEEDBACK_SPEED_MS[settings.feedbackSpeed],
+  /** Fixed, the same for right and wrong answers. */
+  feedbackMs: () => COORDINATE_QUIZ_FEEDBACK_MS,
 
   minMeanThinkMs: MIN_MEAN_THINK_MS,
 

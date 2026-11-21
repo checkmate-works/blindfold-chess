@@ -42,7 +42,6 @@ describe("useCoordinateQuizSession", () => {
       useCoordinateQuizSession({
         timeLimit: 60,
         orientation: "white",
-        feedbackSpeed: "normal",
         remote,
         disablePause: true,
       }),
@@ -62,7 +61,6 @@ describe("useCoordinateQuizSession", () => {
       useCoordinateQuizSession({
         timeLimit: 60,
         orientation: "white",
-        feedbackSpeed: "normal",
       }),
     );
     advancePastCountdown();
@@ -79,7 +77,6 @@ describe("useCoordinateQuizSession", () => {
       useCoordinateQuizSession({
         timeLimit: 60,
         orientation: "white",
-        feedbackSpeed: "normal",
         disablePause: true,
       }),
     );

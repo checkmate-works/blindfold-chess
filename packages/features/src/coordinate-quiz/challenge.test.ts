@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import type { RandomSource } from "../common/utils";
 import {
+  COORDINATE_QUIZ_FEEDBACK_MS,
   COORDINATE_RECENT_SQUARE_WINDOW,
   coordinateQuizChallengeDefinition as definition,
 } from "./challenge";
@@ -22,34 +23,26 @@ function seededRng(seed: number): RandomSource {
 
 describe("coordinateQuizChallengeDefinition", () => {
   describe("parseSettings", () => {
-    it("accepts enum members for orientation and feedback speed", () => {
+    it("accepts an orientation from the enum", () => {
+      expect(definition.parseSettings({ boardOrientation: "random" })).toEqual({
+        boardOrientation: "random",
+      });
+    });
+
+    it("accepts and drops a feedbackSpeed sent by an older client or saved settings", () => {
       expect(
         definition.parseSettings({
-          boardOrientation: "random",
-          feedbackSpeed: "fast",
+          boardOrientation: "black",
+          feedbackSpeed: "slow",
         }),
-      ).toEqual({ boardOrientation: "random", feedbackSpeed: "fast" });
+      ).toEqual({ boardOrientation: "black" });
     });
 
     it("rejects an orientation outside the enum, so no arbitrary leaderboard key can be made", () => {
       expect(
-        definition.parseSettings({
-          boardOrientation: "sideways",
-          feedbackSpeed: "fast",
-        }),
+        definition.parseSettings({ boardOrientation: "sideways" }),
       ).toBeNull();
-    });
-
-    it("rejects a missing or unknown feedback speed", () => {
-      expect(
-        definition.parseSettings({ boardOrientation: "white" }),
-      ).toBeNull();
-      expect(
-        definition.parseSettings({
-          boardOrientation: "white",
-          feedbackSpeed: "instant",
-        }),
-      ).toBeNull();
+      expect(definition.parseSettings({})).toBeNull();
     });
 
     it("rejects non-objects", () => {
@@ -61,19 +54,13 @@ describe("coordinateQuizChallengeDefinition", () => {
   });
 
   it("keys the leaderboard by orientation, as existing rankings are keyed", () => {
-    expect(
-      definition.leaderboardKey({
-        boardOrientation: "black",
-        feedbackSpeed: "slow",
-      }),
-    ).toBe("black");
+    expect(definition.leaderboardKey({ boardOrientation: "black" })).toBe(
+      "black",
+    );
   });
 
   describe("generateQuestions", () => {
-    const settings = {
-      boardOrientation: "random",
-      feedbackSpeed: "normal",
-    } as const;
+    const settings = { boardOrientation: "random" } as const;
 
     it("returns count questions", () => {
       expect(
@@ -133,13 +120,13 @@ describe("coordinateQuizChallengeDefinition", () => {
     });
   });
 
-  it("uses the chosen feedback speed for the flash", () => {
-    expect(
-      definition.feedbackMs(
-        { boardOrientation: "white", feedbackSpeed: "slow" },
-        false,
-      ),
-    ).toBe(900);
+  it("flashes for a fixed 600 ms after right and wrong answers alike", () => {
+    expect(COORDINATE_QUIZ_FEEDBACK_MS).toBe(600);
+    for (const correct of [true, false]) {
+      expect(
+        definition.feedbackMs({ boardOrientation: "white" }, correct),
+      ).toBe(COORDINATE_QUIZ_FEEDBACK_MS);
+    }
   });
 
   it("allows 450 ms mean thinking time and 144 questions", () => {
