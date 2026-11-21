@@ -33,7 +33,10 @@ export type UseTimedSessionConfig<TQuestion> = {
    *   (optimistically) while `submitAnswer(sequence, answer)` is sent. The
    *   next question appears only once the feedback flash is over AND the
    *   server's response has arrived; between the two, `awaitingServer` is
-   *   true and input is ignored.
+   *   true, `showFeedback` stays true, and input is ignored. Keeping the
+   *   feedback up is what tells the player the question on screen is already
+   *   answered, and the screen changes once, straight from this answer's
+   *   feedback to the next question, however long the response takes.
    * - The clock follows the server's rule for thinking time: the server stops
    *   the clock when it receives an answer and restarts it `feedbackMs` later,
    *   or after server processing if it takes longer. So the on-screen
@@ -118,6 +121,11 @@ export type UseTimedSessionReturn<TQuestion> = {
   correctCount: number;
   incorrectCount: number;
   totalCount: number;
+  /**
+   * True from an answer until the next question is shown: the feedback flash
+   * and, in remote mode, any wait for the server's response after it (see
+   * `awaitingServer`). Screens render the answer's feedback while it is true.
+   */
   showFeedback: boolean;
   lastAnswerCorrect: boolean | null;
   isFinished: boolean;
@@ -147,7 +155,15 @@ export type UseTimedSessionReturn<TQuestion> = {
   /**
    * Remote mode only: the feedback flash is over but the server's response
    * (and so the next question) has not arrived yet. The clock runs, input is
-   * ignored, and `isPlaying` is false. Always false in local mode.
+   * ignored, `isPlaying` is false, and `showFeedback` stays true, so the
+   * answered question keeps showing its feedback until the next one replaces
+   * it. Always false in local mode.
+   *
+   * The hook holds `showFeedback` rather than leaving each screen to show
+   * feedback on `showFeedback || awaitingServer`: every screen and quiz hook
+   * already keys its feedback (and clearing of per-answer state) on
+   * `showFeedback`, so one rule here covers all of them, and a screen that
+   * forgot the second flag would drop its feedback mid-wait and flicker.
    */
   awaitingServer: boolean;
   /**
@@ -302,13 +318,14 @@ export function useTimedSession<TQuestion>(
   }, [countdown]);
 
   // The clock runs whenever a question is (or is about to be) answerable;
-  // `awaitingServer` keeps it running while input is still blocked.
+  // `awaitingServer` keeps it running while input is still blocked, even
+  // though `showFeedback` is still up then.
   const clockRunning =
     currentQuestion !== null &&
     !isFinished &&
     !waitingAtTimeLimit &&
     countdown === null &&
-    !showFeedback &&
+    (!showFeedback || awaitingServer) &&
     !isPaused;
   const isPlaying = clockRunning && !awaitingServer;
 
@@ -561,7 +578,7 @@ export function useTimedSession<TQuestion>(
           if (pending.outcome !== undefined) {
             completeRemoteAnswer(pending);
           } else {
-            setShowFeedback(false);
+            // The feedback stays up until the response replaces it.
             setAwaitingServer(true);
           }
         }, duration);

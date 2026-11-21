@@ -726,15 +726,17 @@ describe("useTimedSession", () => {
       expect(submitAnswer).toHaveBeenLastCalledWith(1, "b");
     });
 
-    it("waits for a slow response with input blocked, then advances as soon as it arrives", async () => {
+    it("keeps the answer's feedback up with input blocked while a slow response is outstanding, then advances as soon as it arrives", async () => {
       const { port, calls } = createPort();
       const { result } = renderRemote(port);
       advancePastCountdown();
 
-      act(() => result.current.handleAnswer(true, "a"));
+      act(() => result.current.handleAnswer(false, "a"));
       act(() => vi.advanceTimersByTime(500));
 
-      expect(result.current.showFeedback).toBe(false);
+      expect(result.current.showFeedback).toBe(true);
+      expect(result.current.lastAnswerCorrect).toBe(false);
+      expect(result.current.currentQuestion).toBe("q0");
       expect(result.current.awaitingServer).toBe(true);
       expect(result.current.isPlaying).toBe(false);
       expect(isInputBlocked(result.current)).toBe(true);
@@ -742,13 +744,21 @@ describe("useTimedSession", () => {
       act(() => result.current.handleAnswer(true, "again"));
       expect(calls).toHaveLength(1);
 
+      // Still the same answer's feedback much later: the screen does not
+      // drop it while the response is outstanding.
+      act(() => vi.advanceTimersByTime(300));
+      expect(result.current.showFeedback).toBe(true);
+      expect(result.current.lastAnswerCorrect).toBe(false);
+
       await settle(() =>
         calls[0]!.resolve(
-          accepted(true, 1000, { sequence: 1, question: "q1" }),
+          accepted(false, 1000, { sequence: 1, question: "q1" }),
         ),
       );
 
       expect(result.current.currentQuestion).toBe("q1");
+      expect(result.current.showFeedback).toBe(false);
+      expect(result.current.lastAnswerCorrect).toBe(null);
       expect(result.current.awaitingServer).toBe(false);
       expect(result.current.isPlaying).toBe(true);
     });
