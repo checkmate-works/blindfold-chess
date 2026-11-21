@@ -1,6 +1,8 @@
 import { and, desc, eq, inArray, lt, notInArray } from 'drizzle-orm';
 
 import { db, feedItems } from '@/lib/db';
+import { EMPTY_LIKE_META, getLikeMetaMap } from '@/lib/db/like-queries';
+import { RANK_UPDATE_LIKE_TARGET } from '@/lib/feed-items/rank-update';
 import { excludeBlockedAuthors } from '@/lib/moderation/block';
 
 import { liveFeedRow } from './feed-liveness';
@@ -127,21 +129,32 @@ export async function getFeedData({
   const positionIds = rows.filter((r) => r.entityType === 'position').map((r) => r.entityId);
   const chunkIds = rows.filter((r) => r.entityType === 'chunk').map((r) => r.entityId);
   const gameIds = rows.filter((r) => r.entityType === 'game').map((r) => r.entityId);
-  const rankUpdateActorIds = [
-    ...new Set(rows.filter((r) => r.entityType === 'challenge_rank_update').map((r) => r.actorId)),
-  ];
+  const rankUpdateRows = rows.filter((r) => r.entityType === 'challenge_rank_update');
+  const rankUpdateActorIds = [...new Set(rankUpdateRows.map((r) => r.actorId))];
 
   const memberJoinedRows = rows.filter((r) => r.entityType === 'member_joined');
 
-  const [topicPostMap, positionMap, chunkMap, gameMap, rankUpdateActorMap, memberJoinedMap] =
-    await Promise.all([
-      loadTopicPostsForFeed(topicPostIds, currentUserId),
-      loadPositionsForFeed(positionIds, currentUserId),
-      loadChunksForFeed(chunkIds, currentUserId),
-      loadGamesForFeed(gameIds, currentUserId),
-      loadRankUpdateActors(rankUpdateActorIds),
-      loadMemberJoinedForFeed(memberJoinedRows, currentUserId),
-    ]);
+  const [
+    topicPostMap,
+    positionMap,
+    chunkMap,
+    gameMap,
+    rankUpdateActorMap,
+    rankUpdateLikeMetaMap,
+    memberJoinedMap,
+  ] = await Promise.all([
+    loadTopicPostsForFeed(topicPostIds, currentUserId),
+    loadPositionsForFeed(positionIds, currentUserId),
+    loadChunksForFeed(chunkIds, currentUserId),
+    loadGamesForFeed(gameIds, currentUserId),
+    loadRankUpdateActors(rankUpdateActorIds),
+    getLikeMetaMap(
+      RANK_UPDATE_LIKE_TARGET,
+      rankUpdateRows.map((r) => r.id),
+      currentUserId
+    ),
+    loadMemberJoinedForFeed(memberJoinedRows, currentUserId),
+  ]);
 
   const items = assembleFeedItems(rows, {
     topicPostMap,
@@ -149,6 +162,7 @@ export async function getFeedData({
     chunkMap,
     gameMap,
     rankUpdateActorMap,
+    rankUpdateLikeMetaMap,
     memberJoinedMap,
   });
 
@@ -195,6 +209,8 @@ export type FeedEntityMaps = {
   chunkMap: Awaited<ReturnType<typeof loadChunksForFeed>>;
   gameMap: Awaited<ReturnType<typeof loadGamesForFeed>>;
   rankUpdateActorMap: Awaited<ReturnType<typeof loadRankUpdateActors>>;
+  /** Keyed by feed row id, not entity id — the like targets the row (`RANK_UPDATE_LIKE_TARGET`). */
+  rankUpdateLikeMetaMap: Awaited<ReturnType<typeof getLikeMetaMap>>;
   /** Keyed by feed row id, not entity id — see `loadMemberJoinedForFeed`. */
   memberJoinedMap: Awaited<ReturnType<typeof loadMemberJoinedForFeed>>;
 };
@@ -253,6 +269,7 @@ export function assembleFeedItems(rows: readonly FeedRow[], maps: FeedEntityMaps
           rank: metadata.rank as number,
           isNewEntry: metadata.isNewEntry as boolean,
           actor,
+          likeMeta: maps.rankUpdateLikeMetaMap.get(row.id) ?? EMPTY_LIKE_META,
         };
         items.push({ ...base, entityType: 'challenge_rank_update', data });
       }

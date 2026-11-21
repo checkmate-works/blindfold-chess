@@ -247,6 +247,22 @@ export function isRankGrantMetadata(m: unknown): m is RankGrantMetadata {
 }
 
 /**
+ * Metadata persisted with a like on a leaderboard rank-update card
+ * (`toggleRankUpdateLikeAction`): which leaderboard the card announced, so
+ * the notification can open it.
+ */
+export type RankUpdateLikeMetadata = {
+  menuType: string;
+  leaderboardKey: string;
+};
+
+export function isRankUpdateLikeMetadata(m: unknown): m is RankUpdateLikeMetadata {
+  if (typeof m !== 'object' || m === null) return false;
+  const r = m as Record<string, unknown>;
+  return typeof r.menuType === 'string' && typeof r.leaderboardKey === 'string';
+}
+
+/**
  * Metadata persisted with a `like_coin_grant` notification — emitted by the
  * daily like-coin batch (`grantLikeCoins`). `count` is the number of coins
  * minted for the recipient in that single batch run (direct grants and

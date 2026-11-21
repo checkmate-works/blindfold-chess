@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   frame: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     borderWidth: 2,
   },
 });

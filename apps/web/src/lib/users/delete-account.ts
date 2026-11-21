@@ -199,6 +199,8 @@ const LIKEABLE_OWNED_CONTENT = [
   // Arrival announcements are liked by their feed row id (see
   // `MEMBER_JOINED_LIKE_TARGET`), so the owned rows are the member's feed rows.
   { targetType: 'member_joined', table: feedItems, ownerColumn: feedItems.actorId },
+  // Rank-update cards are liked by their feed row id too (`RANK_UPDATE_LIKE_TARGET`).
+  { targetType: 'challenge_rank_update', table: feedItems, ownerColumn: feedItems.actorId },
 ] as const;
 
 /**

@@ -13,11 +13,14 @@ import {
   type LeaderboardModule,
   moduleToSlug,
 } from '@/app/[locale]/(public)/leaderboard/_lib/types';
+import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';
 import { ActivityCard } from '@/app/[locale]/_components/ActivityCard';
 import { CardAuthorAvatar } from '@/app/[locale]/_components/CardAuthorAvatar';
+import type { EngagementCounterSize } from '@/app/[locale]/_components/EngagementCounter';
 import { CARD_PERMALINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
+import { toggleRankUpdateLikeAction } from '../_actions/rankUpdateLike';
 import type { ChallengeRankUpdateData } from '../_lib/types';
 
 // ---------------------------------------------------------------------------
@@ -43,17 +46,22 @@ function getRankEmoji(rank: number): string | null {
 // ---------------------------------------------------------------------------
 
 type Props = {
+  /** The feed row's id — what a like on the card targets. */
+  feedItemId: string;
   data: ChallengeRankUpdateData;
   createdAt: string;
   locale: string;
   justNowLabel: string;
+  actionSize?: EngagementCounterSize;
 };
 
 export const ChallengeRankUpdateCard = memo(function ChallengeRankUpdateCard({
+  feedItemId,
   data,
   createdAt,
   locale,
   justNowLabel,
+  actionSize,
 }: Props) {
   const tFeed = useTranslations('home.feed.rankUpdate');
   const tLeaderboard = useTranslations('leaderboard');
@@ -95,6 +103,20 @@ export const ChallengeRankUpdateCard = memo(function ChallengeRankUpdateCard({
             {formatRelativeTime(new Date(createdAt), locale, justNowLabel)}
           </time>
         </Link>
+      }
+      footer={
+        <div className="flex items-center gap-4 mt-3 pt-3 border-t border-border">
+          <LikeButton
+            postId={feedItemId}
+            locale={locale}
+            topicKey=""
+            initialLikeCount={data.likeMeta.likeCount}
+            initialLikedByMe={data.likeMeta.likedByMe}
+            toggleLikeAction={toggleRankUpdateLikeAction}
+            i18nNamespace="home.feed.rankUpdate"
+            size={actionSize}
+          />
+        </div>
       }
     >
       <span className="inline-flex items-center self-start px-1.5 py-0.5 rounded text-xs font-semibold bg-muted text-muted-foreground">

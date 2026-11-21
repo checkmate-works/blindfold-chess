@@ -2,9 +2,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 
+import { RANK_UPDATE_ENTITY_TYPE, RANK_UPDATE_LIKE_TARGET } from './rank-update';
 import {
   MEMBER_JOINED_RETENTION_MS,
-  RANK_UPDATE_ENTITY_TYPE,
   RANK_UPDATE_RETENTION_MS,
   reapOldMemberJoinedFeedItems,
   reapOldRankUpdateFeedItems,
@@ -196,8 +196,8 @@ describe('reapOldRankUpdateFeedItems', () => {
     const report = await reapOldRankUpdateFeedItems({ now, batchSize: 5000 });
 
     // Single batch was full neither (3 < 5000) so the loop exits after
-    // one SELECT + DELETE without a follow-up probe.
-    expect(state.deleteCalls).toHaveLength(1);
+    // one SELECT + delete transaction without a follow-up probe.
+    expect(state.transactionCalls).toBe(1);
     expect(report.removed).toBe(3);
     expect(report.batches).toBe(1);
     expect(report.timedOut).toBe(false);
@@ -212,7 +212,7 @@ describe('reapOldRankUpdateFeedItems', () => {
     const report = await reapOldRankUpdateFeedItems({ now, batchSize: 100 });
 
     expect(state.selectCalls).toHaveLength(3);
-    expect(state.deleteCalls).toHaveLength(3);
+    expect(state.transactionCalls).toBe(3);
     expect(report.removed).toBe(240);
     expect(report.batches).toBe(3);
     expect(report.timedOut).toBe(false);
@@ -228,7 +228,7 @@ describe('reapOldRankUpdateFeedItems', () => {
     const report = await reapOldRankUpdateFeedItems({ now, batchSize: 100 });
 
     expect(state.selectCalls).toHaveLength(3);
-    expect(state.deleteCalls).toHaveLength(2);
+    expect(state.transactionCalls).toBe(2);
     expect(report.removed).toBe(200);
     expect(report.batches).toBe(2);
     expect(report.timedOut).toBe(false);
@@ -257,6 +257,19 @@ describe('reapOldRankUpdateFeedItems', () => {
     expect(report.batches).toBeGreaterThanOrEqual(1);
     expect(report.batches).toBeLessThan(4);
     expect(report.removed).toBe(report.batches * 100);
+  });
+
+  it('deletes the likes on each reaped batch along with the rows, in one transaction', async () => {
+    const now = new Date('2026-05-04T00:00:00.000Z');
+    state.selectResults = [makeRows('ru', 2)];
+    const report = await reapOldRankUpdateFeedItems({ now, batchSize: 100 });
+
+    expect(report.removed).toBe(2);
+    expect(state.transactionCalls).toBe(1);
+    // One DELETE for the feed rows, one for their likes.
+    expect(state.deleteCalls).toHaveLength(2);
+    expect(predicateContains(state.deleteCalls[1].whereArg, RANK_UPDATE_LIKE_TARGET)).toBe(true);
+    expect(predicateContains(state.deleteCalls[1].whereArg, 'ru-0')).toBe(true);
   });
 });
 

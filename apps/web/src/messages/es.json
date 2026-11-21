@@ -2277,6 +2277,8 @@
       "rankUpdate": {
         "newEntry": "Entró en la clasificación",
         "improved": "¡Mejoró su posición!",
+        "like": "Me gusta",
+        "unlike": "Quitar me gusta",
         "rank": "Posición",
         "score": "Puntuación"
       },
@@ -4171,6 +4173,7 @@
     "likeCommentMessage": "{actor} le gustó tu comentario",
     "likeGameMessage": "{actor} le gustó tu partida",
     "likeJoinAnnouncementMessage": "A {actor} le gustó tu anuncio de llegada",
+    "likeRankUpdateMessage": "A {actor} le gustó tu entrada en la clasificación",
     "replyMessage": "{actor} respondió a tu comentario",
     "unknownNotification": "Tienes una nueva notificación",
     "announcementMessage": "Nuevo anuncio: {title}",
