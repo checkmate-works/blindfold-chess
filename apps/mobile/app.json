@@ -8,9 +8,14 @@
     "userInterfaceStyle": "light",
     "scheme": "blindfold-chess",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": false,
+      "bundleIdentifier": "online.blindfoldchess.app",
+      "config": {
+        "usesNonExemptEncryption": false
+      }
     },
     "android": {
+      "package": "online.blindfoldchess.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -40,6 +45,12 @@
         }
       ],
       "expo-font"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "99b433b6-2ea1-4525-be14-8b22c49a0553"
+      }
+    },
+    "owner": "k0kishima"
   }
 }
