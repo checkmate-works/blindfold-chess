@@ -26,10 +26,10 @@ export type ChallengeAttemptReady<TQuestion> =
 /**
  * Why a start failed, as far as the player can act on it. `rateLimited` is
  * told apart because trying again at once cannot work and the connection is
- * not at fault; everything else (no answer, an outage, a refused request) is
- * `failed`.
+ * not at fault; `sessionExpired` because the fix is to sign in again;
+ * everything else (no answer, an outage, a refused request) is `failed`.
  */
-export type ChallengeStartFailure = 'rateLimited' | 'failed';
+export type ChallengeStartFailure = 'rateLimited' | 'sessionExpired' | 'failed';
 
 export type ChallengeAttemptState<TQuestion> =
   | { status: 'loading' }
@@ -47,13 +47,26 @@ const GUEST: { status: 'ready'; attemptId: null; remote: undefined } = {
 };
 
 /**
- * Start refusals that are about the account, not about this request: the
- * server sees no session (it expired while the page still showed the player
- * as signed in), or the account is banned. Trying again cannot change either,
- * so the player is not held at an error screen; they play on the device,
- * unrecorded, exactly like a guest.
+ * The start refusal that settles as a device-only, unrecorded run: the account
+ * is banned. Trying again cannot change that, so the player is not held at an
+ * error screen; they play exactly like a guest.
+ *
+ * `signInRequired` is deliberately not here. This hook only starts an attempt
+ * for a player the page shows as signed in, so that answer means the server
+ * no longer has their session. Letting them play on as a guest would cost
+ * them a run they believe is being recorded, with nothing on screen saying
+ * otherwise (the guest path raises no save error); they are told to sign in
+ * again instead ({@link ChallengeStartFailure} `sessionExpired`). An Auth
+ * server that could not be reached never arrives as `signInRequired`: the
+ * action reports it as an ordinary failure, with the retry.
  */
-const PLAYS_UNRECORDED: ReadonlySet<string> = new Set(['signInRequired', 'banned']);
+const PLAYS_UNRECORDED: ReadonlySet<string> = new Set(['banned']);
+
+function startFailure(error: string): ChallengeStartFailure {
+  if (error === 'rateLimited') return 'rateLimited';
+  if (error === 'signInRequired') return 'sessionExpired';
+  return 'failed';
+}
 
 /**
  * Starts the server-run attempt a challenge session plays against.
@@ -70,10 +83,9 @@ const PLAYS_UNRECORDED: ReadonlySet<string> = new Set(['signInRequired', 'banned
  * exactly once per mount (and once per `retry`). If the start fails the state
  * is `error` and the session must not be mounted at all: the player is told
  * now, with a retry, instead of after a minute of play that cannot be saved.
- * The exception is a start the server refuses because of the account itself
- * (no session on the server, or a ban): a retry cannot succeed, so that
- * player gets the guest's device-only, unrecorded session instead of an error
- * they could never get past.
+ * The exception is a start the server refuses because the account is banned:
+ * a retry cannot succeed, so that player gets the guest's device-only,
+ * unrecorded session instead of an error they could never get past.
  * (Once play has started, the session hook itself ends the run unrecorded
  * when three answer submissions in a row fail — see `remoteFailed`.)
  *
@@ -159,7 +171,7 @@ async function startAttempt<TQuestion>(
         return GUEST;
       }
       console.error(`Failed to begin ${menuType} challenge:`, result.error);
-      return { status: 'error', reason: result.error === 'rateLimited' ? 'rateLimited' : 'failed' };
+      return { status: 'error', reason: startFailure(result.error) };
     }
     const { attemptId } = result;
     const remote: RemoteChallengePort<TQuestion> = {

@@ -1084,6 +1084,7 @@
     "challengeAttempt": {
       "startFailed": "Não foi possível iniciar o desafio. Verifique sua conexão e tente novamente.",
       "startRateLimited": "Você iniciou desafios demais em pouco tempo. Aguarde um pouco e tente novamente.",
+      "startSessionExpired": "Sua sessão expirou, então este desafio não seria registrado. Entre novamente e inicie o desafio.",
       "retry": "Tentar novamente"
     },
     "quitConfirmModal": {

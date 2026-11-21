@@ -8,7 +8,11 @@ import type { ChallengeMenuType } from '@blindfold-chess/features/practice-regis
 
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 
-import { type ChallengeAttemptReady, useChallengeAttempt } from '../_hooks/use-challenge-attempt';
+import {
+  type ChallengeAttemptReady,
+  type ChallengeStartFailure,
+  useChallengeAttempt,
+} from '../_hooks/use-challenge-attempt';
 
 /**
  * True below a {@link ChallengeAttemptGate}: the subtree is a challenge run,
@@ -17,6 +21,12 @@ import { type ChallengeAttemptReady, useChallengeAttempt } from '../_hooks/use-c
  * taking a prop, so the views in between do not have to thread one through.
  */
 const ChallengeAttemptContext = createContext(false);
+
+const START_FAILURE_MESSAGE_KEYS = {
+  rateLimited: 'startRateLimited',
+  sessionExpired: 'startSessionExpired',
+  failed: 'startFailed',
+} as const satisfies Record<ChallengeStartFailure, string>;
 
 /** Whether the caller renders inside a challenge run (see {@link ChallengeAttemptGate}). */
 export function useIsInChallengeAttempt(): boolean {
@@ -50,11 +60,12 @@ type Props<TQuestion> = {
  * device-generated question on screen that the server never issued. A start
  * that fails shows an error with a retry instead of the session — a signed-in
  * player is told now that the run could not be recorded, not after playing it.
- * (A start refused because of the account — no server session, a ban — does
- * not reach this error: the hook settles it as a device-only run.)
- * A start refused by the rate limit gets its own message: the connection is
- * fine and an immediate retry cannot succeed, so the generic "check your
- * connection" would send the player looking for a fault that is not there.
+ * (A start refused because the account is banned does not reach this error:
+ * the hook settles it as a device-only run.)
+ * A start refused by the rate limit, or because the server no longer has the
+ * player's session, gets its own message: the connection is fine, so the
+ * generic "check your connection" would send the player looking for a fault
+ * that is not there.
  *
  * The gate also owns the session's scroll position. The session body mounts
  * only once the start has answered, which can be a few hundred milliseconds
@@ -98,9 +109,7 @@ function ChallengeAttemptGateBody<TQuestion>({
   if (attempt.status === 'error') {
     return (
       <div role="alert" className="flex flex-col items-center gap-4 px-4 py-16 text-center">
-        <p className="text-foreground">
-          {t(attempt.reason === 'rateLimited' ? 'startRateLimited' : 'startFailed')}
-        </p>
+        <p className="text-foreground">{t(START_FAILURE_MESSAGE_KEYS[attempt.reason])}</p>
         <Button variant="primary" onClick={attempt.retry}>
           {t('retry')}
         </Button>

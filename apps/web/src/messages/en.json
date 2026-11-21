@@ -1084,6 +1084,7 @@
     "challengeAttempt": {
       "startFailed": "The challenge could not be started. Check your connection and try again.",
       "startRateLimited": "You have started too many challenges in a short time. Please wait a while and try again.",
+      "startSessionExpired": "Your session has expired, so this challenge would not be recorded. Sign in again, then start the challenge.",
       "retry": "Try again"
     },
     "quitConfirmModal": {
