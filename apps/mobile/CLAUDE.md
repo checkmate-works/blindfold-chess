@@ -1,13 +1,96 @@
 # apps/mobile (Expo / React Native)
 
-Expo Router app. Routes live in `src/app/` (`(tabs)/`, `onboarding.tsx`), the
-per-module screens and hooks in `src/features/<module>/`
-(`coordinate-quiz`, `diagonal-quiz`, `legal-moves`, `route-planner`,
-`square-colors`, `board-symmetry`, `ai-game`, `onboarding`), shared screens
-and widgets in `src/components/` and `src/screens/`, the theme in
-`src/theme/`, and the stack-screen registrations in
-`src/navigation/module-stack-screens.tsx`. Game logic comes from
-`@blindfold-chess/features`; the app holds UI, navigation and storage.
+Expo Router app. Game logic comes from `@blindfold-chess/features`; the app
+holds UI, navigation and storage. The per-module screens and hooks live in
+`src/features/<module>/`, shared widgets in `src/components/`, navigation
+helpers in `src/navigation/`, the theme in `src/theme/`.
+
+The app follows the web's features but not its look: what reads as a web
+page on a phone (a header band, a centred modal, grey underlined links) is
+replaced by the platform's own parts or their common app equivalents.
+
+## Navigation: tabs, a root stack, a session modal
+
+`src/app/_layout.tsx` is the root native stack:
+
+- `(tabs)` — the bottom tabs (`(tabs)/_layout.tsx`): Home, Practice, Play,
+  Learn, Settings, drawn by the OS through expo-router's `NativeTabs`
+  (`expo-router/unstable-native-tabs`; on iOS 26 the floating Liquid Glass
+  bar that shrinks on scroll, Material 3 on Android). Icons are SF Symbols on
+  iOS and Material Community Icons (via `VectorIcon`) on Android. Each tab is
+  a stack with only its entry screen (`TabStack` in
+  `navigation/stack-options.tsx`, left-aligned 22pt title). The tabs layout
+  is also the onboarding gate: `/` is the home tab, and a first launch is
+  redirected to `/onboarding`. `NativeTabs` is unstable API: re-check its
+  props whenever the Expo SDK changes.
+- Detail screens are pushed on the root stack, above the tabs, so the tab
+  bar hides on them: each module's setup at `practice/<route>/index.tsx`
+  (URL `/practice/<route>`), the AI-game setup at `play/ai-game`, the saved
+  games at `play/games`, learn articles at `learn/[slug]`.
+- `(session)` — timed sessions, results and training runs
+  (`(session)/practice/<route>/{session,result,training}.tsx`,
+  `(session)/play/ai-game/*`), presented as one `fullScreenModal`. A full
+  screen modal has no swipe-to-dismiss, so a timed run cannot be abandoned by
+  an edge swipe; every screen in it closes it with `useCloseSession`
+  (`navigation/use-close-session.ts`, which pops the modal off the root stack
+  and falls back to an href when nothing is underneath). Session → result is
+  a `router.replace` inside the modal. Header-less sessions show the ×
+  through `PracticeSessionScreen` (built in) or `SessionTopBar`; timed ones
+  ask before leaving.
+
+Screen titles and options are registered in the layouts, not in the
+screens: `moduleSetupScreens` / `moduleSessionScreens`
+(`navigation/module-stack-screens.tsx`) generate them for every module in
+`navigation/module-routes.ts`, and `useStackScreenOptions` holds the shared
+header style (page-coloured, no hairline, chevron-only back).
+
+## UI parts
+
+- **Lists and settings** use `ListSection` / `ListRow` / `ListIcon`
+  (`components/List.tsx`, the inset-grouped list), `SelectRow` (shows the
+  value; picks a new one in a bottom sheet) and `SwitchRow` (platform switch)
+  from `components/SettingRows.tsx`. Tab entry screens scroll in
+  `TabScrollView` (automatic content insets, so the floating tab bar does not
+  cover the last row).
+- **Half modals:** `BottomSheet` (`components/BottomSheet.tsx`) for option
+  lists, help and pickers inside a screen — it works inside the session
+  modal and sizes to its content. Closes on backdrop tap, Android back, or a
+  drag on its top row. Only the dimmed backdrop lifts it (no border/shadow).
+- **Help:** every practice setup screen's header has a ? that opens
+  `HelpSheet` (`features/help/`), paged: how to play, the web tutorial's
+  explanation steps, the challenge/training modes. `PracticeSetupScreen`
+  finds the module from the route, so a setup screen needs nothing for it.
+- **Header buttons** are `HeaderIconButton`; the session close button is
+  `SessionCloseButton`.
+- Web pages (terms, privacy, FAQ, contact, licenses) open in the browser via
+  `lib/web-pages.ts`, never in a WebView.
+
+## Content copied from the web
+
+Generated, not edited by hand; re-run the script after the web changes:
+
+- `scripts/port-help-texts.py` — the practice modules' how-to-play,
+  tutorial and mode texts (`moduleHelp.*` in the four dictionaries and
+  `features/help/module-help-pages.ts`) and recall's strings (`recall.*`).
+- `pnpm bundle-learn-content` (`scripts/bundle-learn-content.ts`) — the web's
+  learn articles and SVG figures into `features/learn/generated/`. They
+  render through `features/learn/markdown.ts` + `MarkdownView` (the markdown
+  subset the articles use; LaTeX becomes plain text). Articles have no pt-BR
+  text yet and fall back to English.
+
+Shared data lives in `@blindfold-chess/features` instead where both apps
+read it: the position-memory presets (`fen-practice`'s
+`POSITION_MEMORY_FENS`) and the opening families (`openings`).
+
+## What the app does not have
+
+There is no mobile API on the web side, and the app makes no network calls
+(Stockfish runs on the device). Everything that needs the server stays
+web-only: sign-in and accounts, saved challenge results, EXP and the
+leaderboard, the dojo ranks, puzzles and community positions, repertoires,
+topics and articles, the home feed, Maia. Finished AI games are kept on the
+device (`features/game-history/`, AsyncStorage `"AI_GAME_HISTORY"`, newest
+first, at most 50), like the web keeps them in localStorage.
 
 ## Practice modules: the shared registry plus a mobile table
 
@@ -17,21 +100,24 @@ with the web app (`@blindfold-chess/features/practice-registry`).
 ones mobile implements, in display order, keyed by registry slug, with only
 the mobile-side presentation: icon, i18n namespace, a route directory when it
 differs from the slug (quadrants), and whether a `training` screen exists.
-The practice tab's list (`(tabs)/practice/index.tsx`) and the practice stack
-(`(tabs)/practice/_layout.tsx`, through `moduleStackScreens`) both read it,
-so a new module is one entry there plus its route directory;
+The practice tab's list (`(tabs)/practice/index.tsx`, split into challenges
+and free play by the registry's `hasChallenge`) and the screen registrations
+(`navigation/module-routes.ts`) both read it, so a new module is one entry
+there plus its route files (`practice/<route>/index.tsx` and
+`(session)/practice/<route>/{session,result}.tsx`);
 `src/navigation/__tests__/practice-modules.test.ts` checks each entry's
 route files exist. The challenge rules (`MISTAKE_LIMIT`,
 `CHALLENGE_TIME_LIMIT`) come from the same package.
 
-**Training mode** (legal-moves, square-colors, quadrants, diagonal-quiz) is
+**Training mode** (every challenge module, plus quadrants) is
 the untimed `training.tsx` beside each module's timed `session.tsx`: it runs
 on `useBatchTrainingSession` from `@blindfold-chess/features/practice-session`
 with the module's pure question/answer functions, renders inside
 `PracticeTrainingScreen` (score, optional skip, End → back to setup), and is
 opened by the setup screen's second button (`onStartTraining` on
-`PracticeSetupScreen`). Its stack screen keeps the back gesture, unlike the
-timed session.
+`PracticeSetupScreen`). It has a header with a × and closes without asking,
+unlike the timed session. Route planner's training runs its own loop over
+`generateProblem` (its problems are not a question batch).
 
 ## i18n is a separate dictionary from the web app
 
@@ -99,3 +185,9 @@ ships the API (verified against expo ~54.0.33 / expo-router ~6.0.23 / RN
 
 `pnpm --filter mobile dev` (Expo), `lint`, `typecheck`, `test` (Vitest). The
 Stockfish wasm is copied in by `copy-stockfish` (`scripts/copy-stockfish.ts`).
+
+To look at screens without a simulator, `npx expo export --platform web`
+(react-native-web is a dev dependency) and open the export in Chromium at a
+phone viewport. It shows layout and flows; native-only parts differ there —
+`NativeTabs` renders as a web tab strip at the top, and sheets and headers
+are the web fallbacks — so check those on a device or simulator.
