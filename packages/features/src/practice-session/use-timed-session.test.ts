@@ -998,6 +998,50 @@ describe("useTimedSession", () => {
       expect(result.current.correctCount).toBe(0);
     });
 
+    it("resends an answer that got no response within eight seconds", async () => {
+      const { port, calls, submitAnswer } = createPort();
+      const { result } = renderRemote(port);
+      advancePastCountdown();
+
+      act(() => result.current.handleAnswer(true, "a"));
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(7999);
+      });
+      expect(submitAnswer).toHaveBeenCalledTimes(1);
+      // The timeout, then the usual wait between attempts.
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1 + 500);
+      });
+      expect(submitAnswer).toHaveBeenCalledTimes(2);
+      expect([calls[1]!.sequence, calls[1]!.answer]).toEqual([0, "a"]);
+
+      await settle(() =>
+        calls[1]!.resolve(
+          accepted(true, 1000, { sequence: 1, question: "q1" }),
+        ),
+      );
+      expect(result.current.currentQuestion).toBe("q1");
+      expect(result.current.remoteFailed).toBe(false);
+    });
+
+    it("ends the run instead of freezing at the time limit when the answer never gets a response", async () => {
+      const { port, submitAnswer } = createPort();
+      const { result } = renderRemote(port);
+      advancePastCountdown();
+      act(() => vi.advanceTimersByTime(59_000));
+
+      act(() => result.current.handleAnswer(true, "a"));
+      // Three attempts of eight seconds each, with the waits between them.
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(3 * 8000 + 2 * 500);
+      });
+
+      expect(submitAnswer).toHaveBeenCalledTimes(3);
+      expect(result.current.isFinished).toBe(true);
+      expect(result.current.remoteFailed).toBe(true);
+      expect(result.current.correctCount).toBe(0);
+    });
+
     it("settles an in-flight answer before finishing on the local clock", async () => {
       const { port, calls } = createPort();
       const onAdvance = vi.fn();

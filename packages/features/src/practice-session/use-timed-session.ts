@@ -57,7 +57,8 @@ export type UseTimedSessionConfig<TQuestion> = {
    * - `expired` takes the answer back out of the counts and ends the run at
    *   once with reason `timeUp`.
    * - `rejected`, or `submitAnswer` failing three times in a row (each retry
-   *   resends the same `sequence` and `answer`), takes the answer back out,
+   *   resends the same `sequence` and `answer`; an attempt unanswered for
+   *   eight seconds counts as failed), takes the answer back out,
    *   ends the run with reason `quit`, and sets `remoteFailed`.
    * - At the local time limit, an outstanding answer is settled before the
    *   run can finish. Otherwise an expired answer would remain counted and
@@ -187,6 +188,46 @@ export type UseTimedSessionReturn<TQuestion> = {
 const REMOTE_SUBMIT_ATTEMPTS = 3;
 /** Wait between failed attempts, so a brief network blip does not end the run. */
 const REMOTE_RETRY_DELAY_MS = 500;
+/**
+ * How long one attempt may stay unanswered before it counts as failed.
+ *
+ * A request can stall without ever failing (a mobile connection changing
+ * networks leaves it open until the browser gives up, which can take
+ * minutes). The session blocks input while it waits, and at the time limit it
+ * also stops the clock and holds the finish until the outstanding answer is
+ * settled, so without a limit of its own a stalled request left the run
+ * frozen at zero with nothing the player could do but quit. A healthy round
+ * trip takes a fraction of a second; eight seconds is far outside that while
+ * still short next to a 60-second run.
+ *
+ * A timed-out attempt is retried like a failed one. The abandoned request may
+ * still reach the server; that is safe, because the server answers a repeat
+ * of the same `sequence` and `answer` with the response it already gave.
+ */
+const REMOTE_SUBMIT_TIMEOUT_MS = 8000;
+
+/**
+ * `promise`, or a rejection if it has not settled within `ms`. The promise
+ * itself is left running; only the wait for it ends.
+ */
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(
+      () => reject(new Error("remote answer timed out")),
+      ms,
+    );
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (error: unknown) => {
+        clearTimeout(timer);
+        reject(error);
+      },
+    );
+  });
+}
 
 /**
  * One answer in flight in remote mode. The next question is shown only when
@@ -469,7 +510,10 @@ export function useTimedSession<TQuestion>(
         const port = remoteRef.current;
         if (port === undefined) break;
         try {
-          response = await port.submitAnswer(sequence, answer);
+          response = await withTimeout(
+            port.submitAnswer(sequence, answer),
+            REMOTE_SUBMIT_TIMEOUT_MS,
+          );
           break;
         } catch {
           if (attempt === REMOTE_SUBMIT_ATTEMPTS) break;
