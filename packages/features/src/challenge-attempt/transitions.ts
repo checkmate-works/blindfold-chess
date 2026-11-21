@@ -34,11 +34,12 @@
  * clock for it resumes only `feedbackMs` later, so a modified client can show
  * that question at once and think for the length of the flash (less the round
  * trip) with the clock stopped: up to 2 seconds after a wrong answer in the
- * modules that dwell on the solution, and the coordinate quiz's fixed 600 ms. The unmodified client shows the flash
- * instead. Closing the gap would take a second request for each question,
- * sent when the flash ends, and its round trip would then be charged to every
- * honest player's thinking time. The mean-thinking-time floor still applies
- * to such a run, because the thinking it hides is measured as zero.
+ * modules that dwell on the solution, and the coordinate quiz's fixed 600 ms.
+ * The unmodified client shows the flash instead. Closing the gap would take
+ * a second request for each question, sent when the flash ends, and its round
+ * trip would then be charged to every honest player's thinking time. The
+ * mean-thinking-time floor still applies to such a run, because the thinking
+ * it hides is measured as zero.
  */
 import type {
   ChallengeAnswerDecision,
