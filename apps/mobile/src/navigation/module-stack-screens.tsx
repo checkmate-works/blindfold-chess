@@ -1,14 +1,16 @@
 import { Stack } from "expo-router";
 import type { useTranslation } from "react-i18next";
 
-import type { ThemeColors } from "../theme";
+import { SessionCloseButton } from "./SessionCloseButton";
 
 type Translate = ReturnType<typeof useTranslation>["t"];
 
 /**
  * A module that owns the standard setup → session → result flow.
  *
- * @property route - Path segment under the layout's directory.
+ * @property route - Path of the module's directory, e.g. `practice/fen` or
+ *   `play/ai-game`. The setup screen is `<route>/index` on the root stack;
+ *   session, result and training are `<route>/<screen>` in `(session)`.
  * @property i18nKey - Namespace holding `setup.title` and `result.title`.
  * @property hasTraining - The module also has an untimed `training` screen.
  */
@@ -19,47 +21,46 @@ export type ModuleRoute = {
 };
 
 /**
- * Header options shared by the practice and play stacks.
- */
-export function moduleStackScreenOptions(colors: ThemeColors, t: Translate) {
-  return {
-    headerStyle: { backgroundColor: colors.card },
-    headerTintColor: colors.primary,
-    headerTitleStyle: { fontWeight: "bold" } as const,
-    headerBackTitle: t("common.back"),
-  };
-}
-
-/**
- * The three screens every setup → session → result module registers, with
- * the options that make the flow behave: the session hides its header and
- * disables the back gesture so a swipe cannot abandon a timed run mid-way,
- * and the result screen keeps the gesture disabled and drops the back button
- * so the finished session is not re-entered. A module with `hasTraining`
- * also gets a `training` screen, which keeps its header, back button and
- * swipe-back gesture: training is untimed and has no result, so leaving it
- * mid-way loses nothing.
- *
- * Seven modules declared this same twenty-line triple, differing only in the
- * slug and the i18n namespace — which meant a new module could silently ship
- * a swipeable session, and the practice and play stacks could drift apart on
- * what "session" means.
+ * The setup (description) screens, registered on the root stack so they are
+ * pushed above the tab bar.
  *
  * Returns an array rather than a fragment: expo-router collects `Screen`
  * children with `React.Children.forEach`, which flattens arrays but treats a
  * fragment as one opaque element.
  */
-export function moduleStackScreens(
+export function moduleSetupScreens(
   t: Translate,
   modules: readonly ModuleRoute[],
 ) {
-  // `${i18nKey}.setup.title` / `${i18nKey}.result.title` (i18nKey from the stack layouts): coordinateQuiz.setup.title, legalMoves.setup.title, boardSymmetry.setup.title, squareColors.setup.title, diagonalQuiz.setup.title, routePlanner.setup.title, quadrants.setup.title, knightTour.setup.title, algebraicNotation.setup.title, fen.setup.title, aiGame.setup.title, and the same eleven with .result.title
-  return modules.flatMap(({ route, i18nKey, hasTraining }) => [
+  // `${i18nKey}.setup.title` (i18nKey from MOBILE_PRACTICE_MODULES and PLAY_MODULES): coordinateQuiz.setup.title, legalMoves.setup.title, boardSymmetry.setup.title, squareColors.setup.title, diagonalQuiz.setup.title, routePlanner.setup.title, quadrants.setup.title, knightTour.setup.title, algebraicNotation.setup.title, fen.setup.title, aiGame.setup.title
+  return modules.map(({ route, i18nKey }) => (
     <Stack.Screen
-      key={`${route}/setup`}
-      name={`${route}/setup`}
+      key={`${route}/index`}
+      name={`${route}/index`}
       options={{ title: t(`${i18nKey}.setup.title`) }}
-    />,
+    />
+  ));
+}
+
+/**
+ * The screens a module shows inside the full-screen `(session)` modal.
+ *
+ * @description
+ * - `session` has no header: the timed body needs the whole screen and draws
+ *   its own close button next to the clock. A full-screen modal has no swipe
+ *   to dismiss, so the only way out is that button, which asks first.
+ * - `result` has a header whose close button dismisses the modal back to
+ *   the setup screen underneath. There is no back button: the session it
+ *   replaced must not be re-entered.
+ * - `training` (when `hasTraining`) has a header with the same close button;
+ *   nothing is lost by leaving an untimed run, so it does not ask.
+ */
+export function moduleSessionScreens(
+  t: Translate,
+  modules: readonly ModuleRoute[],
+) {
+  // `${i18nKey}.result.title`: the same eleven namespaces as moduleSetupScreens, with .result.title
+  return modules.flatMap(({ route, i18nKey, hasTraining }) => [
     <Stack.Screen
       key={`${route}/session`}
       name={`${route}/session`}
@@ -72,6 +73,7 @@ export function moduleStackScreens(
         title: t(`${i18nKey}.result.title`),
         headerBackVisible: false,
         gestureEnabled: false,
+        headerLeft: () => <SessionCloseButton />,
       }}
     />,
     ...(hasTraining
@@ -79,7 +81,11 @@ export function moduleStackScreens(
           <Stack.Screen
             key={`${route}/training`}
             name={`${route}/training`}
-            options={{ title: t("common.training") }}
+            options={{
+              title: t("common.training"),
+              headerBackVisible: false,
+              headerLeft: () => <SessionCloseButton />,
+            }}
           />,
         ]
       : []),

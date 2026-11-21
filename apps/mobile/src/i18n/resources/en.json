@@ -11,20 +11,28 @@
     "startTraining": "Start Training",
     "trainingDescription": "Questions will keep appearing until you stop. Press the End button to finish.",
     "endTraining": "End",
-    "skip": "Skip"
+    "skip": "Skip",
+    "close": "Close",
+    "quit": "Quit",
+    "quitConfirmTitle": "Quit this session?",
+    "quitConfirmMessage": "Your progress in this session will be lost."
   },
   "tabs": {
     "home": "Home",
     "play": "Play",
     "practice": "Practice",
-    "settings": "Settings"
+    "settings": "Settings",
+    "learn": "Learn"
   },
   "home": {
     "title": "Blindfold Chess",
     "welcome": "Welcome back!",
     "startPractice": "Start Practice",
     "playAi": "Play vs AI",
-    "replayOnboarding": "Replay Tutorial"
+    "replayOnboarding": "Replay Tutorial",
+    "allPractice": "All practice modules",
+    "gettingStarted": "Getting started",
+    "learnBasics": "Learn the basics"
   },
   "practice": {
     "title": "Practice",
@@ -67,7 +75,10 @@
     "fen": {
       "title": "FEN Reconstruction",
       "description": "Practice reading FEN notation by recreating positions"
-    }
+    },
+    "challengeSection": "Challenges",
+    "challengeSectionNote": "60 seconds, up to 3 mistakes. Each also has an untimed training mode.",
+    "freePlaySection": "Free play"
   },
   "practiceResult": {
     "correctAnswers": "Correct Answers",

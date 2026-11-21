@@ -1,148 +1,67 @@
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-} from "react-native";
-import { useTranslation } from "react-i18next";
+import { PRACTICE_MODULE_REGISTRY } from "@blindfold-chess/features/practice-registry";
 import { useRouter } from "expo-router";
+import type { Href } from "expo-router";
+import { useTranslation } from "react-i18next";
 
-import { Card, Screen } from "../../../components";
 import {
-  useTheme,
-  fontSize,
-  fontWeight,
-  spacing,
-  borderRadius,
-  shadows,
-} from "../../../theme";
+  ListIcon,
+  ListRow,
+  ListSection,
+  TabScrollView,
+} from "../../../components";
 import {
   MOBILE_PRACTICE_MODULES,
   practiceModuleRoute,
 } from "../../../navigation/practice-modules";
+import type { MobilePracticeModule } from "../../../navigation/practice-modules";
 
+const CHALLENGE_SLUGS = new Set<string>(
+  PRACTICE_MODULE_REGISTRY.filter((m) => m.hasChallenge).map(
+    (m) => m.slugKebab,
+  ),
+);
+
+/**
+ * The practice tab: every module mobile implements, split like the web's
+ * practice page into the timed challenges (scored against the clock and the
+ * mistake limit) and the free-play drills.
+ */
 export default function PracticeIndex() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { colors } = useTheme();
+
+  const challenges = MOBILE_PRACTICE_MODULES.filter((m) =>
+    CHALLENGE_SLUGS.has(m.slug),
+  );
+  const freePlay = MOBILE_PRACTICE_MODULES.filter(
+    (m) => !CHALLENGE_SLUGS.has(m.slug),
+  );
+
+  // `practice.${i18nKey}.title` / `.description` (i18nKey from MOBILE_PRACTICE_MODULES): practice.coordinateQuiz.title, practice.legalMoves.title, practice.boardSymmetry.title, practice.squareColors.title, practice.diagonalQuiz.title, practice.routePlanner.title, practice.quadrants.title, practice.knightTour.title, practice.algebraicNotation.title, practice.fen.title, and the same with .description
+  const renderRow = (item: MobilePracticeModule) => (
+    <ListRow
+      key={item.slug}
+      testID={`practice-${item.slug}`}
+      leading={<ListIcon glyph={item.icon} />}
+      title={t(`practice.${item.i18nKey}.title`)}
+      subtitle={t(`practice.${item.i18nKey}.description`)}
+      onPress={() =>
+        router.push(`/practice/${practiceModuleRoute(item)}` as Href)
+      }
+    />
+  );
 
   return (
-    <Screen edges={["top"]}>
-      <View
-        style={[
-          styles.header,
-          { backgroundColor: colors.card, borderBottomColor: colors.border },
-        ]}
+    <TabScrollView>
+      <ListSection
+        title={t("practice.challengeSection")}
+        footer={t("practice.challengeSectionNote")}
       >
-        <Text style={[styles.title, { color: colors.foreground }]}>
-          {t("practice.title")}
-        </Text>
-      </View>
-
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* `practice.${i18nKey}.title` / `.description` (i18nKey from MOBILE_PRACTICE_MODULES): practice.coordinateQuiz.title, practice.legalMoves.title, practice.boardSymmetry.title, practice.squareColors.title, practice.diagonalQuiz.title, practice.routePlanner.title, practice.quadrants.title, practice.knightTour.title, practice.algebraicNotation.title, practice.fen.title, and the same ten with .description */}
-        {MOBILE_PRACTICE_MODULES.map((item) => (
-          <TouchableOpacity
-            key={item.slug}
-            onPress={() =>
-              router.push(
-                `/(tabs)/practice/${practiceModuleRoute(item)}/setup` as never,
-              )
-            }
-            activeOpacity={0.7}
-          >
-            <Card style={styles.card}>
-              <View style={styles.cardContent}>
-                <View
-                  style={[
-                    styles.iconContainer,
-                    { backgroundColor: colors.secondary },
-                  ]}
-                >
-                  <Text style={styles.icon}>{item.icon}</Text>
-                </View>
-                <View style={styles.textContainer}>
-                  <Text
-                    style={[styles.cardTitle, { color: colors.foreground }]}
-                  >
-                    {t(`practice.${item.i18nKey}.title`)}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.cardDescription,
-                      { color: colors.mutedForeground },
-                    ]}
-                  >
-                    {t(`practice.${item.i18nKey}.description`)}
-                  </Text>
-                </View>
-                <Text
-                  style={[styles.chevron, { color: colors.mutedForeground }]}
-                >
-                  ›
-                </Text>
-              </View>
-            </Card>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-    </Screen>
+        {challenges.map(renderRow)}
+      </ListSection>
+      <ListSection title={t("practice.freePlaySection")}>
+        {freePlay.map(renderRow)}
+      </ListSection>
+    </TabScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  header: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    borderBottomWidth: 1,
-  },
-  title: {
-    fontSize: fontSize.xxl,
-    fontWeight: fontWeight.bold,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    padding: spacing.lg,
-    gap: spacing.md,
-  },
-  card: {
-    ...shadows.sm,
-  },
-  cardContent: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  iconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: borderRadius.md,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: spacing.md,
-  },
-  icon: {
-    fontSize: 24,
-  },
-  textContainer: {
-    flex: 1,
-  },
-  cardTitle: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.semibold,
-    marginBottom: spacing.xs,
-  },
-  cardDescription: {
-    fontSize: fontSize.sm,
-  },
-  chevron: {
-    fontSize: 24,
-    marginLeft: spacing.sm,
-  },
-});

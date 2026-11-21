@@ -11,20 +11,28 @@
     "startTraining": "Iniciar Entrenamiento",
     "trainingDescription": "Las preguntas seguirán apareciendo hasta que te detengas. Presiona el botón Finalizar para terminar.",
     "endTraining": "Finalizar",
-    "skip": "Saltar"
+    "skip": "Saltar",
+    "close": "Cerrar",
+    "quit": "Abandonar",
+    "quitConfirmTitle": "¿Abandonar la sesión?",
+    "quitConfirmMessage": "Se perderá el progreso de esta sesión."
   },
   "tabs": {
     "home": "Inicio",
     "play": "Jugar",
     "practice": "Práctica",
-    "settings": "Ajustes"
+    "settings": "Ajustes",
+    "learn": "Aprender"
   },
   "home": {
     "title": "Ajedrez a Ciegas",
     "welcome": "¡Bienvenido de nuevo!",
     "startPractice": "Empezar práctica",
     "playAi": "Jugar contra la IA",
-    "replayOnboarding": "Repetir tutorial"
+    "replayOnboarding": "Repetir tutorial",
+    "allPractice": "Todas las prácticas",
+    "gettingStarted": "Primeros pasos",
+    "learnBasics": "Aprende lo básico"
   },
   "practice": {
     "title": "Práctica",
@@ -67,7 +75,10 @@
     "fen": {
       "title": "Reconstrucción FEN",
       "description": "Practica la lectura de notación FEN recreando posiciones"
-    }
+    },
+    "challengeSection": "Desafíos",
+    "challengeSectionNote": "60 segundos, hasta 3 errores. Cada uno tiene también un modo de entrenamiento sin tiempo.",
+    "freePlaySection": "Práctica libre"
   },
   "practiceResult": {
     "correctAnswers": "Respuestas correctas",

@@ -36,11 +36,11 @@ export type MobilePracticeModule = {
  * its card and its screens together.
  */
 export const MOBILE_PRACTICE_MODULES: readonly MobilePracticeModule[] = [
-  { slug: "coordinate-quiz", i18nKey: "coordinateQuiz", icon: "♟" },
+  { slug: "coordinate-quiz", i18nKey: "coordinateQuiz", icon: "🎯" },
   {
     slug: "legal-moves",
     i18nKey: "legalMoves",
-    icon: "♞",
+    icon: "⚖️",
     hasTraining: true,
   },
   { slug: "board-symmetry", i18nKey: "boardSymmetry", icon: "🦋" },
@@ -53,26 +53,26 @@ export const MOBILE_PRACTICE_MODULES: readonly MobilePracticeModule[] = [
   {
     slug: "diagonal-quiz",
     i18nKey: "diagonalQuiz",
-    icon: "↗",
+    icon: "↗️",
     hasTraining: true,
   },
-  { slug: "route-planner", i18nKey: "routePlanner", icon: "♞" },
+  { slug: "route-planner", i18nKey: "routePlanner", icon: "📍" },
   {
     // Registered as `quadrant_anchors`, but routed as `quadrants` on both
     // platforms (the web page is /practice/quadrants too).
     slug: "quadrant-anchors",
     route: "quadrants",
     i18nKey: "quadrants",
-    icon: "⊞",
+    icon: "🧭",
     hasTraining: true,
   },
-  { slug: "knight-tour", i18nKey: "knightTour", icon: "♘" },
+  { slug: "knight-tour", i18nKey: "knightTour", icon: "🐎" },
   {
     slug: "algebraic-notation",
     i18nKey: "algebraicNotation",
-    icon: "✎",
+    icon: "🔤",
   },
-  { slug: "fen", i18nKey: "fen", icon: "♜" },
+  { slug: "fen", i18nKey: "fen", icon: "📝" },
 ];
 
 /** The route directory of a module under `(tabs)/practice/`. */

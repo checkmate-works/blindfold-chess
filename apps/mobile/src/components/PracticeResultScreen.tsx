@@ -1,56 +1,49 @@
 import { Screen } from "./Screen";
 import type { ReactNode } from "react";
-import { View, Text, StyleSheet } from "react-native";
-import { useRouter } from "expo-router";
+import { View, StyleSheet, ScrollView } from "react-native";
 import type { Href } from "expo-router";
 
 import { Button } from "./Button";
-import { useTheme, fontSize, fontWeight, spacing } from "../theme";
+import { useCloseSession } from "../navigation/use-close-session";
+import { spacing } from "../theme";
 
 type PracticeResultScreenProps = {
-  title: string;
   playAgainLabel: string;
   backToMenuLabel: string;
-  /** The feature's setup screen; "play again" replaces the route with it. */
+  /**
+   * The feature's setup screen. "Play again" closes the session modal, which
+   * normally reveals this screen underneath; the href is the fallback when
+   * the modal was opened without it (deep link, restored process).
+   */
   setupHref: Href;
   /** The result card rendered under the title. */
   children: ReactNode;
 };
 
 /**
- * Shared layout for every practice result screen: centered title + result
- * card, with "play again" / "back to menu" actions pinned to the bottom.
+ * Shared layout for every practice result screen: the result card, with
+ * "play again" / "back to menu" actions pinned to the bottom. The title is
+ * the header's (registered in `moduleSessionScreens`).
  */
 export function PracticeResultScreen({
-  title,
   playAgainLabel,
   backToMenuLabel,
   setupHref,
   children,
 }: PracticeResultScreenProps) {
-  const router = useRouter();
-  const { colors } = useTheme();
+  const { close, closeToMenu } = useCloseSession(setupHref);
 
   return (
     <Screen edges={["bottom"]}>
-      <View style={styles.content}>
-        <Text style={[styles.title, { color: colors.foreground }]}>
-          {title}
-        </Text>
-
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
         {children}
-      </View>
+      </ScrollView>
 
       <View style={styles.footer}>
-        <Button
-          title={playAgainLabel}
-          onPress={() => router.replace(setupHref)}
-          size="lg"
-          fullWidth
-        />
+        <Button title={playAgainLabel} onPress={close} size="lg" fullWidth />
         <Button
           title={backToMenuLabel}
-          onPress={() => router.replace("/(tabs)/practice")}
+          onPress={closeToMenu}
           variant="ghost"
           size="md"
           fullWidth
@@ -61,16 +54,13 @@ export function PracticeResultScreen({
 }
 
 const styles = StyleSheet.create({
-  content: {
+  scroll: {
     flex: 1,
+  },
+  content: {
+    flexGrow: 1,
     padding: spacing.lg,
     justifyContent: "center",
-  },
-  title: {
-    fontSize: fontSize.xxl,
-    fontWeight: fontWeight.bold,
-    textAlign: "center",
-    marginBottom: spacing.xl,
   },
   footer: {
     padding: spacing.lg,

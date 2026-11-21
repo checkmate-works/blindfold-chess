@@ -2,8 +2,14 @@ import { useEffect, useState } from "react";
 import { View, ActivityIndicator } from "react-native";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { useTranslation } from "react-i18next";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+
 import { initI18n } from "../i18n";
 import { GamePreferencesProvider } from "../lib/game-preferences";
+import { ALL_MODULE_ROUTES } from "../navigation/module-routes";
+import { moduleSetupScreens } from "../navigation/module-stack-screens";
+import { useStackScreenOptions } from "../navigation/stack-options";
 import { ThemeProvider, useTheme } from "../theme";
 
 function RootLayoutContent() {
@@ -36,25 +42,40 @@ function RootLayoutContent() {
     );
   }
 
+  return <RootStack isDark={isDark} />;
+}
+
+/**
+ * The root native stack.
+ *
+ * @description
+ * - `(tabs)` — the bottom tabs, each a stack holding only its entry screen.
+ * - Detail screens (each module's setup at `practice/<slug>`, the AI-game
+ *   setup at `play/ai-game`, articles under `learn/`) are pushed here, above
+ *   the tabs, so the tab bar hides on them and one detail can be opened from
+ *   any tab.
+ * - `(session)` — timed sessions, results and training runs, presented as a
+ *   full-screen modal. It has no swipe to dismiss, so a timed run cannot be
+ *   abandoned by an accidental edge swipe; its screens close it with
+ *   `useCloseSession`.
+ * - `sheet/*` — half-height sheets (`formSheet` with a grabber, expandable to
+ *   full height) for content read and dismissed without losing one's place:
+ *   help, tutorials, glossary terms.
+ */
+function RootStack({ isDark }: { isDark: boolean }) {
+  const { t } = useTranslation();
+  const screenOptions = useStackScreenOptions();
+
   return (
     <>
-      <Stack
-        screenOptions={{
-          headerStyle: {
-            backgroundColor: colors.card,
-          },
-          headerTintColor: colors.primary,
-          headerTitleStyle: {
-            fontWeight: "bold",
-          },
-          contentStyle: {
-            backgroundColor: colors.background,
-          },
-        }}
-      >
-        <Stack.Screen name="index" options={{ headerShown: false }} />
+      <Stack screenOptions={screenOptions}>
         <Stack.Screen name="onboarding" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        {moduleSetupScreens(t, ALL_MODULE_ROUTES)}
+        <Stack.Screen
+          name="(session)"
+          options={{ headerShown: false, presentation: "fullScreenModal" }}
+        />
       </Stack>
       <StatusBar style={isDark ? "light" : "dark"} />
     </>
@@ -63,10 +84,12 @@ function RootLayoutContent() {
 
 export default function RootLayout() {
   return (
-    <ThemeProvider>
-      <GamePreferencesProvider>
-        <RootLayoutContent />
-      </GamePreferencesProvider>
-    </ThemeProvider>
+    <SafeAreaProvider>
+      <ThemeProvider>
+        <GamePreferencesProvider>
+          <RootLayoutContent />
+        </GamePreferencesProvider>
+      </ThemeProvider>
+    </SafeAreaProvider>
   );
 }

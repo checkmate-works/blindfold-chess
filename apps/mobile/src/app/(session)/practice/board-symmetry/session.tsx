@@ -1,0 +1,106 @@
+import { useCallback, useEffect } from "react";
+import { View } from "react-native";
+import { useRouter, useLocalSearchParams } from "expo-router";
+import * as Haptics from "expo-haptics";
+import { useBoardSymmetrySession } from "@blindfold-chess/features/board-symmetry/client";
+
+import {
+  PracticeSessionScreen,
+  practiceSessionStyles,
+} from "../../../../components";
+import {
+  SymmetryQuestion,
+  CoordinateSelector,
+} from "../../../../features/board-symmetry/components";
+import type { BoardSymmetryResult } from "@blindfold-chess/features/board-symmetry";
+import { DEFAULT_BOARD_SYMMETRY_SETTINGS } from "../../../../features/board-symmetry/lib/types";
+import { parseIntParam } from "../../../../lib/route-params";
+import { serializePracticeStatsParams } from "../../../../lib/practice-result-params";
+
+export default function BoardSymmetrySession() {
+  const router = useRouter();
+  const params = useLocalSearchParams<{
+    timeLimit: string;
+  }>();
+
+  const duration = parseIntParam(params.timeLimit, {
+    min: 1,
+    fallback: DEFAULT_BOARD_SYMMETRY_SETTINGS.timeLimit,
+  });
+
+  const handleComplete = useCallback(
+    (result: BoardSymmetryResult) => {
+      router.replace({
+        pathname: "/practice/board-symmetry/result",
+        params: serializePracticeStatsParams(result),
+      });
+    },
+    [router],
+  );
+
+  const {
+    currentProblem,
+    countdown,
+    timeRemaining,
+    correctCount,
+    incorrectCount,
+    showFeedback,
+    lastAnswerCorrect,
+    selectedFile,
+    selectedRank,
+    correctSolution,
+    handleFileToggle,
+    handleRankToggle,
+    handleAnswer,
+  } = useBoardSymmetrySession({
+    timeLimit: duration,
+    onComplete: handleComplete,
+    onAnswerEffect: (correct) =>
+      Haptics.notificationAsync(
+        correct
+          ? Haptics.NotificationFeedbackType.Success
+          : Haptics.NotificationFeedbackType.Error,
+      ),
+  });
+
+  const isCorrect = showFeedback ? lastAnswerCorrect : null;
+
+  // Auto-submit when both file and rank are selected
+  useEffect(() => {
+    if (selectedFile && selectedRank && !showFeedback && countdown === null) {
+      handleAnswer(selectedFile, selectedRank);
+    }
+  }, [selectedFile, selectedRank, showFeedback, countdown, handleAnswer]);
+
+  return (
+    <PracticeSessionScreen
+      countdown={countdown}
+      timeRemaining={timeRemaining}
+      progress={timeRemaining / duration}
+      correctCount={correctCount}
+      incorrectCount={incorrectCount}
+    >
+      <View style={practiceSessionStyles.questionContainer}>
+        {currentProblem && (
+          <SymmetryQuestion
+            problem={currentProblem}
+            selectedFile={selectedFile}
+            selectedRank={selectedRank}
+            isCorrect={isCorrect}
+            correctSolution={correctSolution}
+          />
+        )}
+      </View>
+
+      <View style={practiceSessionStyles.bottomSection}>
+        <CoordinateSelector
+          selectedFile={selectedFile}
+          selectedRank={selectedRank}
+          onFileToggle={handleFileToggle}
+          onRankToggle={handleRankToggle}
+          disabled={showFeedback}
+        />
+      </View>
+    </PracticeSessionScreen>
+  );
+}

@@ -11,20 +11,28 @@
     "startTraining": "トレーニング開始",
     "trainingDescription": "問題が終了するまで出続けます。終了ボタンで終了できます。",
     "endTraining": "終了",
-    "skip": "スキップ"
+    "skip": "スキップ",
+    "close": "閉じる",
+    "quit": "中止する",
+    "quitConfirmTitle": "中止しますか？",
+    "quitConfirmMessage": "このセッションの成績は記録されません。"
   },
   "tabs": {
     "home": "ホーム",
     "play": "対戦",
     "practice": "練習",
-    "settings": "設定"
+    "settings": "設定",
+    "learn": "学ぶ"
   },
   "home": {
     "title": "ブラインドチェス",
     "welcome": "おかえりなさい！",
     "startPractice": "練習を始める",
     "playAi": "AIと対戦する",
-    "replayOnboarding": "チュートリアルをもう一度"
+    "replayOnboarding": "チュートリアルをもう一度",
+    "allPractice": "すべての練習",
+    "gettingStarted": "はじめての方へ",
+    "learnBasics": "目隠しチェスの基礎を学ぶ"
   },
   "practice": {
     "title": "練習",
@@ -67,7 +75,10 @@
     "fen": {
       "title": "FEN再構築",
       "description": "FEN記法を読んで盤面を再現する練習"
-    }
+    },
+    "challengeSection": "チャレンジ",
+    "challengeSectionNote": "制限時間60秒・ミスは3回まで。時間制限のないトレーニングもあります。",
+    "freePlaySection": "フリープレイ"
   },
   "practiceResult": {
     "correctAnswers": "正解数",

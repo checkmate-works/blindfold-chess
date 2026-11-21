@@ -6,6 +6,7 @@ import type { StyleProp, ViewStyle } from "react-native";
 import { CountdownOverlay } from "./CountdownOverlay";
 import { QuizTimer } from "./QuizTimer";
 import { ScoreFooter } from "./ScoreFooter";
+import { SessionCloseButton } from "../navigation/SessionCloseButton";
 import { spacing } from "../theme";
 
 type PracticeSessionScreenProps = {
@@ -23,7 +24,7 @@ type PracticeSessionScreenProps = {
 
 /**
  * The frame every timed practice session renders inside: the countdown
- * overlay, the clock in the top-right, the body, and the running score.
+ * overlay, the close button and the clock in the top row, the body, and the running score.
  *
  * @description
  * Sibling of `PracticeSetupScreen` and `PracticeResultScreen` — the third
@@ -54,6 +55,7 @@ export function PracticeSessionScreen({
       {countdown === null && (
         <>
           <View style={styles.timerRow}>
+            <SessionCloseButton confirm />
             <View style={styles.spacer} />
             <QuizTimer
               timeRemaining={timeRemaining}
@@ -97,7 +99,7 @@ export const practiceSessionStyles = StyleSheet.create({
 const styles = StyleSheet.create({
   timerRow: {
     flexDirection: "row",
-    justifyContent: "flex-end",
+    alignItems: "center",
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
   },

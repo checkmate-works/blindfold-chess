@@ -11,20 +11,28 @@
     "startTraining": "Iniciar Treinamento",
     "trainingDescription": "As perguntas continuarão aparecendo até que você pare. Pressione o botão Finalizar para terminar.",
     "endTraining": "Finalizar",
-    "skip": "Pular"
+    "skip": "Pular",
+    "close": "Fechar",
+    "quit": "Sair",
+    "quitConfirmTitle": "Sair desta sessão?",
+    "quitConfirmMessage": "O progresso desta sessão será perdido."
   },
   "tabs": {
     "home": "Início",
     "play": "Jogar",
     "practice": "Prática",
-    "settings": "Configurações"
+    "settings": "Configurações",
+    "learn": "Aprender"
   },
   "home": {
     "title": "Xadrez às Cegas",
     "welcome": "Bem-vindo de volta!",
     "startPractice": "Começar prática",
     "playAi": "Jogar contra a IA",
-    "replayOnboarding": "Refazer tutorial"
+    "replayOnboarding": "Refazer tutorial",
+    "allPractice": "Todas as práticas",
+    "gettingStarted": "Primeiros passos",
+    "learnBasics": "Aprenda o básico"
   },
   "practice": {
     "title": "Prática",
@@ -67,7 +75,10 @@
     "fen": {
       "title": "Reconstrução FEN",
       "description": "Pratique a leitura de notação FEN recriando posições"
-    }
+    },
+    "challengeSection": "Desafios",
+    "challengeSectionNote": "60 segundos, até 3 erros. Cada um também tem um modo de treino sem tempo.",
+    "freePlaySection": "Prática livre"
   },
   "practiceResult": {
     "correctAnswers": "Respostas corretas",
