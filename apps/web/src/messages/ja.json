@@ -2277,6 +2277,8 @@
       "rankUpdate": {
         "newEntry": "リーダーボードにランクイン",
         "improved": "ランクアップ！",
+        "like": "いいね",
+        "unlike": "いいねを取り消す",
         "rank": "順位",
         "score": "スコア"
       },
@@ -4171,6 +4173,7 @@
     "likeCommentMessage": "{actor} があなたのコメントにいいねしました",
     "likeGameMessage": "{actor} があなたの対局にいいねしました",
     "likeJoinAnnouncementMessage": "{actor} があなたの参加のお知らせにいいねしました",
+    "likeRankUpdateMessage": "{actor} があなたのランクインにいいねしました",
     "replyMessage": "{actor} があなたのコメントに返信しました",
     "unknownNotification": "新しい通知があります",
     "announcementMessage": "新しいお知らせ: {title}",

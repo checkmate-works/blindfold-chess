@@ -2277,6 +2277,8 @@
       "rankUpdate": {
         "newEntry": "Entered the leaderboard",
         "improved": "Improved rank!",
+        "like": "Like",
+        "unlike": "Unlike",
         "rank": "Rank",
         "score": "Score"
       },
@@ -4171,6 +4173,7 @@
     "likeCommentMessage": "{actor} liked your comment",
     "likeGameMessage": "{actor} liked your game",
     "likeJoinAnnouncementMessage": "{actor} liked your arrival announcement",
+    "likeRankUpdateMessage": "{actor} liked your leaderboard entry",
     "replyMessage": "{actor} replied to your comment",
     "unknownNotification": "You have a new notification",
     "announcementMessage": "New announcement: {title}",
