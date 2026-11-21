@@ -69,7 +69,7 @@ describe('AuthStatusDisplay', () => {
 
     it('does not offer to return to an auth screen', () => {
       // The header renders on `/sign-in` too; `?next=/en/sign-in` would make
-      // the proxy's authenticated-visitor redirect bounce in a loop.
+      // the sign-in page's redirect of a signed-in visitor bounce in a loop.
       mockPathname = '/en/sign-in';
       render(<AuthStatusDisplay isAuthenticated={false} />);
       expect(screen.getByText('signIn').closest('a')).toHaveAttribute('href', '/en/sign-in');

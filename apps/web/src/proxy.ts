@@ -4,7 +4,7 @@ import { needsLocalePrefix } from '@/i18n/locale-path';
 import { negotiateLocale } from '@/i18n/negotiate-locale';
 
 import { refreshAdsHiddenCookieOnResponse } from '@/lib/ads/ads-hidden-cookie-writer';
-import { resolveReturnPath, returnTargetFor, withReturnPath } from '@/lib/auth-return-path';
+import { returnTargetFor, withReturnPath } from '@/lib/auth-return-path';
 import { embedLangNeedsCollapse, isCdnCacheableEmbedRequest } from '@/lib/games/embed-cdn-cache';
 import {
   type ScriptPolicy,
@@ -33,7 +33,6 @@ const BLOCKED_PATHS = [
 ];
 
 const AUTH_REQUIRED_PATHS = ['/mypage'];
-const SIGN_IN_PATH = '/sign-in';
 const ADMIN_PATH = '/admin';
 // Path (after the locale segment) for which the proxy refreshes the
 // `bfc_ads_hidden` cookie on the outgoing response. Kept narrow on purpose:
@@ -63,11 +62,6 @@ function isAuthRequiredPath(pathname: string): boolean {
 function isAdminPath(pathname: string): boolean {
   const lower = pathname.toLowerCase();
   return lower === ADMIN_PATH || lower.startsWith(ADMIN_PATH + '/');
-}
-
-function isSignInPath(pathname: string): boolean {
-  const pattern = new RegExp(`^/[^/]+${SIGN_IN_PATH}(/.*)?$`);
-  return pattern.test(pathname);
 }
 
 function isAdsCookieRefreshPath(pathname: string): boolean {
@@ -225,18 +219,20 @@ export async function proxy(request: NextRequest) {
     return applyCspHeaders(NextResponse.redirect(signInUrl), scriptPolicy, pathname);
   }
 
-  // Redirect authenticated users away from the sign-in page — to their return
-  // target when they carry one (a second tab signed in while this one sat on
-  // `/sign-in?next=…`), otherwise to mypage. Without the `next` branch this
-  // redirect would swallow the return target before the page ever renders,
-  // which is what made `sign-in/page.tsx`'s own `next` handling unreachable.
-  if (isSignInPath(pathname) && authenticated) {
-    const locale = pathname.split('/')[1] || 'en';
-    // `resolveReturnPath` rejects `/sign-in` itself, so this cannot loop.
-    const next = resolveReturnPath(request.nextUrl.searchParams.get('next'));
-    const destination = new URL(next ?? `/${locale}/mypage?toast=already_logged_in`, request.url);
-    return applyCspHeaders(NextResponse.redirect(destination), scriptPolicy, pathname);
-  }
+  // There is deliberately no "already signed in, leave `/sign-in`" redirect
+  // here; `resolveAuthPageEntry` does it in the page instead.
+  //
+  // `authenticated` comes from `getClaims()`, which only checks the JWT's
+  // signature and expiry. It cannot see that the session behind the token was
+  // ended on the Auth server — signed out on another device, account deleted —
+  // so for up to one token lifetime it still says "signed in" for a visitor
+  // every page treats as anonymous (pages ask the Auth server via `getUser()`).
+  // Concluding "not signed in" from a missing or invalid JWT is always safe,
+  // which is why the guards above stay. Concluding "signed in" is not: with
+  // this redirect in place such a visitor could never reach the sign-in form
+  // (the header link bounced straight back to `?next=`), and `/mypage` looped
+  // forever between the layout's redirect to `/sign-in?next=/mypage` and this
+  // one sending it back.
 
   // Refresh the `bfc_ads_hidden` cookie on the response when the user is
   // navigating to `/mypage/subscription` (including the Billing Portal's

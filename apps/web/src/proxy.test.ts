@@ -215,34 +215,23 @@ describe('proxy', () => {
       expect(location.searchParams.get('next')).toBe('/en/mypage');
     });
 
-    it('honours the return target when an already-authenticated visitor lands on sign-in', async () => {
-      mockAuthenticated = true;
+    // The proxy's `authenticated` is a JWT signature check, so it stays true
+    // for a visitor whose session was ended on the Auth server until the
+    // token expires. The sign-in page decides for itself (with the Auth
+    // server's answer) whether to send a signed-in visitor on; a redirect
+    // here would keep such a visitor from ever reaching the form, and loop
+    // `/mypage` against the protected layout's redirect to `/sign-in`.
+    it.each(['/en/sign-in', '/en/sign-in?next=%2Fen%2Fmypage', '/en/sign-up'])(
+      'lets %s render even when the session cookie still verifies',
+      async (path) => {
+        mockAuthenticated = true;
 
-      const location = locationOf(
-        await proxy(makeRequest('/en/sign-in?next=%2Fen%2Fgames%2Fplay%2Fresult%3FgameId%3Dabc'))
-      );
+        const response = await proxy(makeRequest(path));
 
-      expect(location.pathname).toBe('/en/games/play/result');
-      expect(location.searchParams.get('gameId')).toBe('abc');
-    });
-
-    it('falls back to mypage rather than looping when the return target is sign-in itself', async () => {
-      mockAuthenticated = true;
-
-      const location = locationOf(await proxy(makeRequest('/en/sign-in?next=%2Fen%2Fsign-in')));
-
-      expect(location.pathname).toBe('/en/mypage');
-      expect(location.searchParams.get('toast')).toBe('already_logged_in');
-    });
-
-    it('refuses an off-origin return target', async () => {
-      mockAuthenticated = true;
-
-      const location = locationOf(await proxy(makeRequest('/en/sign-in?next=%2F%2Fevil.com')));
-
-      expect(location.host).toBe('example.test');
-      expect(location.pathname).toBe('/en/mypage');
-    });
+        expect(response.status).toBe(200);
+        expect(response.headers.get('location')).toBeNull();
+      }
+    );
   });
 });
 
