@@ -9,6 +9,7 @@ import {
   MEMBER_JOINED_LIKE_TARGET,
   MEMBER_JOINED_RETENTION_DAYS,
 } from './member-joined';
+import { RANK_UPDATE_ENTITY_TYPE, RANK_UPDATE_LIKE_TARGET } from './rank-update';
 
 /**
  * Reaper for `feed_items` rows the product promises are temporary.
@@ -61,13 +62,13 @@ import {
  *
  * @design Likes go with the rows, in one transaction
  *
- * Arrival announcements take likes, and `likes` has no FK to cascade
- * through (it is polymorphic — see its TSDoc). Each batch therefore deletes
+ * Both types take likes, and `likes` has no FK to cascade through (it is
+ * polymorphic — see its TSDoc). Each batch therefore deletes
  * the likes that targeted the reaped ids, in the same transaction as the
  * rows: were the two statements separate, a failure between them would
  * leave likes pointing at ids no row has, and nothing would ever find them
- * again. The owner's own delete (`deleteOwnJoinAnnouncement`) makes the same
- * guarantee.
+ * again. The owner's own delete of an arrival announcement
+ * (`deleteOwnJoinAnnouncement`) makes the same guarantee.
  */
 
 /**
@@ -75,9 +76,6 @@ import {
  * the product tour copy ("kept for one month").
  */
 export const RANK_UPDATE_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
-
-/** Entity type this reaper targets. Other entity types are never deleted. */
-export const RANK_UPDATE_ENTITY_TYPE = 'challenge_rank_update';
 
 /**
  * Number of rows deleted per round-trip. Chosen to balance per-batch
@@ -107,12 +105,16 @@ type ReaperOptions = {
   batchSize?: number;
 };
 
-/** Reaper for rank-update items older than {@link RANK_UPDATE_RETENTION_MS}. Rank updates take no likes, so no likes are deleted. */
+/** Reaper for rank-update items older than {@link RANK_UPDATE_RETENTION_MS}, together with the likes they received. */
 export function reapOldRankUpdateFeedItems(
   opts: ReaperOptions = {}
 ): Promise<FeedItemReaperReport> {
   return reapFeedItemsOfType(
-    { entityType: RANK_UPDATE_ENTITY_TYPE, retentionMs: RANK_UPDATE_RETENTION_MS },
+    {
+      entityType: RANK_UPDATE_ENTITY_TYPE,
+      retentionMs: RANK_UPDATE_RETENTION_MS,
+      likeTargetType: RANK_UPDATE_LIKE_TARGET,
+    },
     opts
   );
 }
