@@ -15,11 +15,20 @@
  * "granted minutes ago" (intervening EXP events can shift the comparison),
  * but it preserves the level-before-vs-after comparison for the most recent
  * grant well enough for UI display.
+ *
+ * A grant that was taken back yields `null`, the same as no grant. Moderation
+ * removing a challenge result cancels its EXP with a second event under the
+ * grant's reversal source ({@link reversalSourceOf}); the grant row itself
+ * stays, so without this check the removed run's result page kept showing
+ * "EXP gained" for EXP the player no longer has, next to a score comparison
+ * that already treats the run as gone. The reversal is looked up only for a
+ * source that can have one, and only once a grant was found.
  */
 import { getLevel, getLevelProgress } from '@blindfold-chess/features/exp';
 import type { ExpInfo } from '@blindfold-chess/features/exp';
 import { and, eq } from 'drizzle-orm';
 
+import { reversalSourceOf } from './exp-sources';
 import { db } from './index';
 import { expEvents, userExp } from './schema';
 
@@ -41,6 +50,22 @@ export async function getExpInfoBySource(
     .limit(1);
 
   if (!event) return null;
+
+  const reversalSource = reversalSourceOf(source);
+  if (reversalSource !== null) {
+    const [reversal] = await db
+      .select({ amount: expEvents.amount })
+      .from(expEvents)
+      .where(
+        and(
+          eq(expEvents.userId, userId),
+          eq(expEvents.source, reversalSource),
+          eq(expEvents.sourceId, sourceId)
+        )
+      )
+      .limit(1);
+    if (reversal) return null;
+  }
 
   const [userExpRow] = await db
     .select({ totalExp: userExp.totalExp })

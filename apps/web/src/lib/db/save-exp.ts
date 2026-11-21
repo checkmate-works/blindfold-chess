@@ -22,6 +22,7 @@ import type { ExpInfo, GameExpEngine, GameExpOutcome } from '@blindfold-chess/fe
 import { and, eq, gte, sql } from 'drizzle-orm';
 import { randomUUID } from 'node:crypto';
 
+import { CHALLENGE_RESULT_REVERSAL_SOURCE, CHALLENGE_RESULT_SOURCE } from './exp-sources';
 import { startOfUtcDay } from './period-range';
 import { expEvents, userExp } from './schema';
 import type { DbTx } from './types';
@@ -32,17 +33,6 @@ import type { DbTx } from './types';
  * which gives one-grant-per-game idempotency via `uq_exp_events_source_pair`.
  */
 export const AI_GAME_RESULT_SOURCE = 'ai_game_result';
-
-/** `exp_events.source` of the grant for a recorded challenge result. */
-const CHALLENGE_RESULT_SOURCE = 'challenge_result';
-
-/**
- * `exp_events.source` of the row that cancels a {@link CHALLENGE_RESULT_SOURCE}
- * grant. A source of its own (rather than a second `challenge_result` row) is
- * what lets the `(source, source_id)` unique index hold one grant and one
- * reversal per result.
- */
-const CHALLENGE_RESULT_REVERSAL_SOURCE = 'challenge_result_reversal';
 
 /**
  * Result of a {@link grantExp} call.
@@ -152,7 +142,7 @@ async function grantExp(
  * Calculates and grants Exp for a completed challenge within a transaction.
  *
  * Orchestrates: calculateExp → grantExp → level determination.
- * Extracted from saveChallengeResult to keep that function focused on challenge record persistence.
+ * Extracted from writeChallengeResult to keep that function focused on challenge record persistence.
  *
  * Idempotent: if the same `challengeResultId` has already received an Exp grant,
  * the previously-granted amount is returned and `levelUp` is forced to `false`
