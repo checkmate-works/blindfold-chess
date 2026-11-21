@@ -1,6 +1,15 @@
 import { type SQL, sql } from 'drizzle-orm';
 
-import { chunks, feedItems, games, positions, profiles, topicPosts } from '@/lib/db';
+import {
+  challengeResults,
+  chunks,
+  feedItems,
+  games,
+  positions,
+  profiles,
+  topicPosts,
+} from '@/lib/db';
+import { liveChallengeResult } from '@/lib/db/challenge-results-visibility';
 import { publiclyVisible } from '@/lib/db/games-visibility';
 
 /**
@@ -60,6 +69,20 @@ const FEED_RANK_THRESHOLD = 10;
  * means an entity type nobody has taught this function about is invisible
  * rather than broken — fail-closed, and the same list the loaders and the
  * orchestrator switch in `queries.ts` have to agree on.
+ *
+ * @design A rank update dies with the result it announces
+ * A `challenge_rank_update` row names, as its `entity_id`, the
+ * `challenge_results` row whose save moved the actor up the leaderboard. When
+ * moderation removes that result, the row drops out here — like every other
+ * branch, the row itself is kept and the decision is made per read. The
+ * branch requires the result to be live (`liveChallengeResult()`) on top of
+ * the live actor and the rank threshold; a result row that no longer exists
+ * makes the subquery `NULL`, which is not `true` either, so it is hidden too.
+ *
+ * Only the removed result's own row is affected. Rank updates that *other*
+ * players' saves wrote while the removed score was on the board still name
+ * their own, live results, and they stay: they recorded a real change at the
+ * time, and rewriting them would mean recomputing past leaderboards.
  */
 export function liveFeedRow(): SQL {
   return sql`
@@ -84,6 +107,10 @@ export function liveFeedRow(): SQL {
         SELECT true FROM ${profiles} WHERE ${profiles.id} = ${feedItems.actorId}
       )
       AND ${feedItems.metadata} -> 'rank' <= to_jsonb(${FEED_RANK_THRESHOLD}::int)
+      AND (
+        SELECT ${liveChallengeResult()}
+        FROM ${challengeResults} WHERE ${challengeResults.id} = ${feedItems.entityId}
+      )
       WHEN 'member_joined' THEN (
         SELECT ${profiles.deletedAt} IS NULL
         FROM ${profiles} WHERE ${profiles.id} = ${feedItems.actorId}

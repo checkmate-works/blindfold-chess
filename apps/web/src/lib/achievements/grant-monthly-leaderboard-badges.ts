@@ -110,6 +110,18 @@ async function processAchievementDef(
   // ranking, not by skipping the grant afterwards: skipping after ranking
   // would let a hidden user absorb a placement, so the user shown at that
   // placement on the public leaderboard would get no badge.
+  //
+  // Results removed by moderation (`deleted_at` set) are excluded inside the
+  // DISTINCT ON, before ranking, for the same reason: dropping them after
+  // ranking would let a removed score absorb a placement, and picking each
+  // user's best before dropping them would hide that user's best live result
+  // behind the removed one. The condition is spelled out because this is raw
+  // SQL, which cannot compose the drizzle `liveChallengeResult()` predicate.
+  //
+  // A removal only affects rankings computed after it. Badges already granted
+  // are not revoked, by the same rule that keeps a promoted belt rank: taking
+  // back something awarded is a separate moderation decision, and a player
+  // who cheats has the account ban for that.
   const rankedRows = await db.execute<RankedRow>(sql`
     SELECT user_id, score, incorrect_answers, time_taken, rank::int
     FROM (
@@ -126,6 +138,7 @@ async function processAchievementDef(
           AND leaderboard_key = ${leaderboardKey}
           AND created_at >= ${range.start.toISOString()}
           AND created_at < ${range.end.toISOString()}
+          AND deleted_at IS NULL
         ORDER BY user_id, score DESC, incorrect_answers ASC, time_taken ASC
       ) best
       JOIN profiles p ON p.id = best.user_id AND NOT p.hidden_from_leaderboard

@@ -1,6 +1,7 @@
 import { and, asc, desc, eq, lte, ne } from 'drizzle-orm';
 
 import type { ChallengeScore } from './challenge-best-score';
+import { liveChallengeResult } from './challenge-results-visibility';
 import { db } from './index';
 import type { ChallengeMenuType } from './practice-menu-types';
 import { challengeResults } from './schema';
@@ -17,6 +18,8 @@ export type ScoreComparison = {
    * `menuType`. `undefined` when no id was given (direct access, a quit run
    * that was never saved) or when the id does not resolve for this user — a
    * tampered `?grant=` param yields no comparison rather than someone else's.
+   * A result removed by moderation also does not resolve, so reopening its
+   * result page falls back to the direct-visit view.
    */
   current: ChallengeScore | undefined;
   /** Best run before the current one, by the leaderboard's tuple ordering. */
@@ -47,6 +50,11 @@ const scoreColumns = {
  * When `currentResultId` is absent the two history queries run unrestricted,
  * so the section can still show the player's standing on a direct visit.
  *
+ * Every query reads live results only (`liveChallengeResult()`): a run removed
+ * by moderation is neither "previous best" nor "last time", and its own id no
+ * longer resolves as the current run — so opening the result page of a
+ * removed run shows the same direct-visit comparison as having no id at all.
+ *
  * Scoped to `(userId, menuType, leaderboardKey)` — the same triple that keys
  * `challenge_best_scores` — because a white-orientation coordinate run is
  * not comparable with a black-orientation one. When the current row resolves,
@@ -66,6 +74,7 @@ export async function getScoreComparison(
     eq(challengeResults.userId, userId),
     eq(challengeResults.menuType, menuType),
     eq(challengeResults.leaderboardKey, current?.leaderboardKey ?? leaderboardKey),
+    liveChallengeResult(),
     ...(current
       ? [ne(challengeResults.id, current.id), lte(challengeResults.createdAt, current.createdAt)]
       : []),
@@ -116,7 +125,8 @@ async function fetchCurrentResult(userId: string, menuType: ChallengeMenuType, i
       and(
         eq(challengeResults.id, id),
         eq(challengeResults.userId, userId),
-        eq(challengeResults.menuType, menuType)
+        eq(challengeResults.menuType, menuType),
+        liveChallengeResult()
       )
     )
     .limit(1);
