@@ -1,7 +1,7 @@
 'use server';
 
 import { authenticateAndGuard } from '@/lib/auth';
-import { saveFreePlayResult } from '@/lib/db/save-free-play-result';
+import { savePuzzleResultForUser } from '@/lib/positions/puzzle-result';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { handleServerActionError } from '@/lib/server-action-error';
 
@@ -41,11 +41,7 @@ export async function savePuzzleResult(
   input: SavePuzzleResultInput
 ): Promise<SavePuzzleResultResponse> {
   try {
-    const playerMoveCount = Math.max(0, Math.round(input.playerMoveCount));
-    const incorrectAttempts = Math.max(0, Math.round(input.incorrectAttempts));
-    const peekCount = Math.max(0, Math.round(input.peekCount));
-
-    if (playerMoveCount === 0) {
+    if (Math.round(input.playerMoveCount) <= 0) {
       return { success: true };
     }
 
@@ -53,14 +49,8 @@ export async function savePuzzleResult(
     if ('error' in guardResult) {
       return { success: false, error: guardResult.error };
     }
-    const { user } = guardResult;
 
-    const { expEventId } = await saveFreePlayResult({
-      userId: user.id,
-      menuType: 'puzzle',
-      correctCount: playerMoveCount,
-      mistakes: incorrectAttempts + peekCount,
-    });
+    const { expEventId } = await savePuzzleResultForUser(guardResult.user.id, input);
 
     return { success: true, expEventId };
   } catch (error) {

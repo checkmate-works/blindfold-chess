@@ -6,6 +6,8 @@ import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
+import type { SessionState } from '@blindfold-chess/features/puzzle';
+import { evaluatePuzzleSubmit, parseSolutionLines } from '@blindfold-chess/features/puzzle';
 import { pieceColorToSide } from '@blindfold-chess/types';
 import type { AlgebraicNotation, PieceColor } from '@blindfold-chess/types';
 
@@ -22,8 +24,6 @@ import { usePuzzleBoardFeedback } from '../../_hooks/use-puzzle-board-feedback';
 import type { PuzzleFeedbackSource } from '../../_hooks/use-puzzle-board-feedback';
 import { usePuzzleCompletion } from '../../_hooks/use-puzzle-completion';
 import { usePuzzleScroll } from '../../_hooks/use-puzzle-scroll';
-import type { SessionState } from '../../_lib/puzzle-match';
-import { evaluatePuzzleSubmit, parseSolutionLines } from '../../_lib/puzzle-match';
 import { writePuzzleResult } from '../../_lib/puzzle-result-storage';
 import { CircleMarker } from '../CircleMarker';
 import { FeedbackChip } from '../FeedbackChip';

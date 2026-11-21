@@ -1,8 +1,8 @@
-import { executeMove } from '@blindfold-chess/features/chess-core';
-import type { AlgebraicNotation } from '@blindfold-chess/types';
+import { executeMove } from "../chess-core";
+import type { AlgebraicNotation } from "@blindfold-chess/types";
 
-import type { MoveSquares } from '@/lib/board/move-squares';
-import type { PuzzleSolutionMove } from '@/lib/db/schema/positions';
+import type { MoveSquares } from "../board-display";
+import type { PuzzleSolutionMove } from "./types";
 
 export type Attempt = { move: string; isCorrect: boolean };
 
@@ -35,7 +35,9 @@ export type ParsedSolution = {
  * player's moves sit at indices 0, 2, 4, … and the opponent's replies at
  * 1, 3, 5, … — regardless of which side the puzzle is set up for.
  */
-export function parseSolutionLines(solutions: PuzzleSolutionMove[][]): ParsedSolution[] {
+export function parseSolutionLines(
+  solutions: PuzzleSolutionMove[][],
+): ParsedSolution[] {
   return solutions.map((line) => {
     const moves = line.map((m) => m.san) as AlgebraicNotation[];
     const playerSlots = moves.filter((_, i) => i % 2 === 0);
@@ -58,10 +60,10 @@ export type { MoveSquares };
 
 export type PuzzleSubmitOutcome =
   /** The move was illegal or did not match any solution line. */
-  | { kind: 'rejected'; nextSession: SessionState }
+  | { kind: "rejected"; nextSession: SessionState }
   /** The move matched; `solve` is non-null only on the puzzle's final move. */
   | {
-      kind: 'accepted';
+      kind: "accepted";
       nextSession: SessionState;
       solve: SolveContext | null;
       /** Squares of the player's just-accepted move (for the board highlight). */
@@ -98,7 +100,7 @@ export function evaluatePuzzleSubmit(
   session: SessionState,
   input: string,
   parsedSolutions: ParsedSolution[],
-  solutions: PuzzleSolutionMove[][]
+  solutions: PuzzleSolutionMove[][],
 ): PuzzleSubmitOutcome {
   const trimmed = input.trim();
   const nextPlayerIndex = session.playerMoves.length;
@@ -109,7 +111,7 @@ export function evaluatePuzzleSubmit(
   if (!afterPlayer) {
     const attempt: Attempt = { move: trimmed, isCorrect: false };
     return {
-      kind: 'rejected',
+      kind: "rejected",
       nextSession: { ...session, attempts: [...session.attempts, attempt] },
     };
   }
@@ -127,14 +129,19 @@ export function evaluatePuzzleSubmit(
     const expected = parsedSolutions[i]!.playerSlots[nextPlayerIndex];
     if (expected === undefined) return false;
     const expectedExec = executeMove(session.currentFen, expected);
-    return expectedExec !== null && expectedExec.moveResult.san === canonicalSan;
+    return (
+      expectedExec !== null && expectedExec.moveResult.san === canonicalSan
+    );
   });
 
   const attempt: Attempt = { move: trimmed, isCorrect: matchIdx !== undefined };
   const updatedAttempts = [...session.attempts, attempt];
 
   if (matchIdx === undefined) {
-    return { kind: 'rejected', nextSession: { ...session, attempts: updatedAttempts } };
+    return {
+      kind: "rejected",
+      nextSession: { ...session, attempts: updatedAttempts },
+    };
   }
 
   const locked = matchIdx;
@@ -173,16 +180,19 @@ export function evaluatePuzzleSubmit(
   };
 
   return {
-    kind: 'accepted',
+    kind: "accepted",
     nextSession,
     solve: solved
       ? {
-          solutionLine: solutions[locked]!.map((m) => m.san).join(' '),
+          solutionLine: solutions[locked]!.map((m) => m.san).join(" "),
           attempts: updatedAttempts,
           playerMoveCount: solution.playerSlots.length,
         }
       : null,
-    playerMove: { from: afterPlayer.moveResult.from, to: afterPlayer.moveResult.to },
+    playerMove: {
+      from: afterPlayer.moveResult.from,
+      to: afterPlayer.moveResult.to,
+    },
     fenAfterPlayer: afterPlayer.fen,
     opponentReply,
   };

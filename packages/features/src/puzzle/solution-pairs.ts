@@ -1,6 +1,6 @@
-import type { PieceColor } from '@blindfold-chess/types';
+import type { PieceColor } from "@blindfold-chess/types";
 
-import type { PuzzleSolutionMove } from '@/lib/db/schema/positions';
+import type { PuzzleSolutionMove } from "./types";
 
 export type SolutionPair = {
   moveNumber: number;
@@ -18,20 +18,24 @@ export type SolutionPair = {
 export function buildSolutionPairs(
   moves: PuzzleSolutionMove[],
   firstTurn: PieceColor,
-  startFullmove: number
+  startFullmove: number,
 ): SolutionPair[] {
   const pairs: SolutionPair[] = [];
   let idx = 0;
   let moveNumber = startFullmove;
 
-  if (firstTurn === 'b' && moves.length > 0) {
+  if (firstTurn === "b" && moves.length > 0) {
     pairs.push({ moveNumber, white: null, black: moves[0]! });
     idx = 1;
     moveNumber += 1;
   }
 
   while (idx < moves.length) {
-    pairs.push({ moveNumber, white: moves[idx]!, black: moves[idx + 1] ?? null });
+    pairs.push({
+      moveNumber,
+      white: moves[idx]!,
+      black: moves[idx + 1] ?? null,
+    });
     idx += 2;
     moveNumber += 1;
   }
