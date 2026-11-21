@@ -65,7 +65,7 @@ importers:
         specifier: 2.2.0
         version: 2.2.0(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.2.17)(react@19.2.8))
       '@react-navigation/native-stack':
-        specifier: 7.14.10
+        specifier: ^7.14.10
         version: 7.14.10(@react-navigation/native@7.2.2(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.2.17)(react@19.2.8))(react@19.2.8))(react-native-safe-area-context@5.6.2(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.2.17)(react@19.2.8))(react@19.2.8))(react-native-screens@4.16.0(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.2.17)(react@19.2.8))(react@19.2.8))(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.2.17)(react@19.2.8))(react@19.2.8)
       expo:
         specifier: ~54.0.33
