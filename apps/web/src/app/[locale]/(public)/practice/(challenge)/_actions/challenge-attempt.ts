@@ -4,7 +4,7 @@ import { revalidateTag } from 'next/cache';
 
 import type { ChallengeAnswerResponse } from '@blindfold-chess/features/challenge-attempt';
 
-import { authenticateAndCheckBan, authenticateAndGuard } from '@/lib/auth';
+import { authenticateAndCheckBan, authenticateAndGuard, isAuthUnavailable } from '@/lib/auth';
 import { EXP_LEADERBOARD_CACHE_TAG, LEADERBOARD_CACHE_TAG } from '@/lib/cache-tags';
 import {
   answerChallengeAttempt as answerAttempt,
@@ -25,6 +25,24 @@ import type { SaveResultResponse } from '../_lib/save-result-response';
 const NOT_RECORDED = 'not_recorded';
 
 /**
+ * Throws when a guard answered `signInRequired` only because the Auth server
+ * could not be reached; returns otherwise.
+ *
+ * The guards cannot tell that case from a visitor who is signed out, and here
+ * the difference decides whether a run survives: a start would silently fall
+ * back to an unrecorded device-only run, an answer would be `rejected` (which
+ * ends the run), and a finish would report the save as failed. Thrown, the
+ * failure reaches each action's `catch` and comes out as the retryable kind:
+ * the start shows its retry, the answer is resent by the session, and the
+ * finish is resent by the save hook.
+ */
+async function throwIfAuthUnavailable(guardError: string): Promise<void> {
+  if (guardError === 'signInRequired' && (await isAuthUnavailable())) {
+    throw new Error('Auth server unavailable');
+  }
+}
+
+/**
  * Starts a server-run challenge for the signed-in player.
  *
  * The settings are validated against the module's allowed values on the
@@ -41,7 +59,10 @@ export async function beginChallengeAttempt(
 > {
   try {
     const guardResult = await authenticateAndGuard(RATE_LIMITS.beginChallengeAttempt);
-    if ('error' in guardResult) return { success: false, error: guardResult.error };
+    if ('error' in guardResult) {
+      await throwIfAuthUnavailable(guardResult.error);
+      return { success: false, error: guardResult.error };
+    }
 
     const result = await beginAttempt({
       userId: guardResult.user.id,
@@ -85,7 +106,10 @@ export async function answerChallengeAttempt(
   const receivedAt = Date.now();
   try {
     const authResult = await authenticateAndCheckBan();
-    if ('error' in authResult) return { status: 'rejected' };
+    if ('error' in authResult) {
+      await throwIfAuthUnavailable(authResult.error);
+      return { status: 'rejected' };
+    }
 
     return await answerAttempt({
       userId: authResult.user.id,
@@ -117,6 +141,7 @@ export async function finishChallengeAttempt(
   try {
     const guardResult = await authenticateAndGuard(RATE_LIMITS.finishChallengeAttempt);
     if ('error' in guardResult) {
+      await throwIfAuthUnavailable(guardResult.error);
       return { status: 'done', success: false, error: guardResult.error };
     }
 

@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   authenticateAndCheckBan as mockAuthenticateAndCheckBan,
   authenticateAndGuard as mockAuthenticateAndGuard,
+  isAuthUnavailable as mockIsAuthUnavailable,
 } from '@/lib/__mocks__/auth';
 import { EXP_LEADERBOARD_CACHE_TAG, LEADERBOARD_CACHE_TAG } from '@/lib/cache-tags';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
@@ -37,7 +38,15 @@ const RESULT_ID = '33333333-3333-4333-8333-333333333333';
 beforeEach(() => {
   mockAuthenticateAndGuard.mockResolvedValue({ user: USER });
   mockAuthenticateAndCheckBan.mockResolvedValue({ user: USER });
+  mockIsAuthUnavailable.mockResolvedValue(false);
 });
+
+/** The guards answer `signInRequired` when the Auth server could not be reached. */
+function authServerUnreachable() {
+  mockAuthenticateAndGuard.mockResolvedValue({ error: 'signInRequired' });
+  mockAuthenticateAndCheckBan.mockResolvedValue({ error: 'signInRequired' });
+  mockIsAuthUnavailable.mockResolvedValue(true);
+}
 
 describe('beginChallengeAttempt', () => {
   it('starts the attempt for the signed-in player under the start rate limit', async () => {
@@ -81,6 +90,18 @@ describe('beginChallengeAttempt', () => {
   });
 });
 
+describe('beginChallengeAttempt when the Auth server cannot be reached', () => {
+  it('fails the start instead of answering signInRequired', async () => {
+    authServerUnreachable();
+
+    await expect(beginChallengeAttempt('square_colors', {})).resolves.toEqual({
+      success: false,
+      error: 'unexpected_error',
+    });
+    expect(mockBegin).not.toHaveBeenCalled();
+  });
+});
+
 describe('answerChallengeAttempt', () => {
   it('takes the arrival time before authenticating and does not rate limit', async () => {
     vi.useFakeTimers({ now: 1_800_000_000_000 });
@@ -114,6 +135,15 @@ describe('answerChallengeAttempt', () => {
     await expect(answerChallengeAttempt(ATTEMPT_ID, 0, 'light')).resolves.toEqual({
       status: 'rejected',
     });
+    expect(mockAnswer).not.toHaveBeenCalled();
+  });
+
+  it('throws the retryable failure, not a rejection, when the Auth server cannot be reached', async () => {
+    authServerUnreachable();
+
+    await expect(answerChallengeAttempt(ATTEMPT_ID, 0, 'light')).rejects.toThrow(
+      'Challenge answer temporarily unavailable'
+    );
     expect(mockAnswer).not.toHaveBeenCalled();
   });
 
@@ -186,6 +216,17 @@ describe('finishChallengeAttempt', () => {
       status: 'done',
       success: false,
       error: 'signInRequired',
+    });
+    expect(mockFinish).not.toHaveBeenCalled();
+  });
+
+  it('answers an unreachable Auth server as the failure the save hook resends', async () => {
+    authServerUnreachable();
+
+    await expect(finishChallengeAttempt(ATTEMPT_ID)).resolves.toMatchObject({
+      status: 'done',
+      success: false,
+      error: 'unexpected_error',
     });
     expect(mockFinish).not.toHaveBeenCalled();
   });
