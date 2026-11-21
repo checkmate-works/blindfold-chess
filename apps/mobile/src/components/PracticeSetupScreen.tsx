@@ -1,4 +1,5 @@
 import { Screen } from "./Screen";
+import { useLayoutEffect, useState } from "react";
 import type { ReactNode } from "react";
 import {
   View,
@@ -7,9 +8,16 @@ import {
   ScrollView,
   ActivityIndicator,
 } from "react-native";
+import { useNavigation, usePathname } from "expo-router";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "./Button";
+import { HelpSheet } from "../features/help/HelpSheet";
+import { HeaderIconButton } from "../navigation/HeaderIconButton";
+import {
+  MOBILE_PRACTICE_MODULES,
+  practiceModuleRoute,
+} from "../navigation/practice-modules";
 import { useTheme, spacing, fontSize } from "../theme";
 
 type PracticeSetupScreenProps = {
@@ -31,10 +39,26 @@ type PracticeSetupScreenProps = {
 };
 
 /**
+ * The i18n key of the practice module whose setup screen is at `pathname`
+ * (`/practice/<route>`), or null off the practice routes.
+ */
+function moduleKeyForPath(pathname: string): string | null {
+  const route = pathname.split("/")[2];
+  const module = MOBILE_PRACTICE_MODULES.find(
+    (m) => practiceModuleRoute(m) === route,
+  );
+  return module?.i18nKey ?? null;
+}
+
+/**
  * Shared layout for every practice setup screen: a loading gate while the
  * persisted settings hydrate, the scrollable settings form, and a start
  * button pinned to a bordered footer. Modules with a training mode also get
  * a second start button for it there.
+ *
+ * The header's trailing "?" opens the module's `HelpSheet` (how to play,
+ * the tutorial's explanations, the modes). The module is found from the
+ * route, so a setup screen needs nothing extra for it.
  */
 export function PracticeSetupScreen({
   isLoaded,
@@ -46,6 +70,23 @@ export function PracticeSetupScreen({
 }: PracticeSetupScreenProps) {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const navigation = useNavigation();
+  const moduleKey = moduleKeyForPath(usePathname());
+  const [helpOpen, setHelpOpen] = useState(false);
+
+  useLayoutEffect(() => {
+    if (!moduleKey) return;
+    navigation.setOptions({
+      headerRight: () => (
+        <HeaderIconButton
+          icon="help-circle-outline"
+          accessibilityLabel={t("common.help")}
+          onPress={() => setHelpOpen(true)}
+          testID="header-help"
+        />
+      ),
+    });
+  }, [navigation, moduleKey, t]);
 
   if (!isLoaded) {
     return (
@@ -108,6 +149,13 @@ export function PracticeSetupScreen({
           </>
         )}
       </View>
+      {moduleKey && (
+        <HelpSheet
+          moduleKey={moduleKey}
+          visible={helpOpen}
+          onClose={() => setHelpOpen(false)}
+        />
+      )}
     </Screen>
   );
 }

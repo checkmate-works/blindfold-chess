@@ -15,7 +15,10 @@
     "close": "Cerrar",
     "quit": "Abandonar",
     "quitConfirmTitle": "¿Abandonar la sesión?",
-    "quitConfirmMessage": "Se perderá el progreso de esta sesión."
+    "quitConfirmMessage": "Se perderá el progreso de esta sesión.",
+    "help": "Ayuda",
+    "next": "Siguiente",
+    "previous": "Atrás"
   },
   "tabs": {
     "home": "Inicio",
@@ -558,6 +561,166 @@
       "wrongPiece": "{{square}} tiene {{actual}} en lugar de {{expected}}",
       "missing": "{{piece}} falta en {{square}}",
       "extra": "{{piece}} extra en {{square}}"
+    }
+  },
+  "moduleHelp": {
+    "coordinateQuiz": {
+      "howToPlay": {
+        "title": "Cómo Jugar",
+        "body": "Se muestra el nombre de una casilla en el tablero. Haz clic en la casilla correcta lo más rápido posible."
+      },
+      "challenge": {
+        "title": "Modo Desafío",
+        "body": "Compite para ver cuántas respuestas correctas puedes dar dentro del límite de tiempo. Tu puntuación se registra y aparece en la tabla de clasificación."
+      },
+      "training": {
+        "title": "Modo Entrenamiento",
+        "body": "Practica a tu propio ritmo sin límite de tiempo. Las puntuaciones no se registran."
+      }
+    },
+    "legalMoves": {
+      "howToPlay": {
+        "title": "Cómo Jugar",
+        "body": "Se muestran una pieza y dos casillas. Determina si el movimiento es legal o no."
+      },
+      "challenge": {
+        "title": "Modo Desafío",
+        "body": "Compite para ver cuántas respuestas correctas puedes dar dentro del límite de tiempo. Tu puntuación se registra y aparece en la tabla de clasificación."
+      },
+      "training": {
+        "title": "Modo Entrenamiento",
+        "body": "Practica a tu propio ritmo sin límite de tiempo. Las puntuaciones no se registran."
+      }
+    },
+    "boardSymmetry": {
+      "howToPlay": {
+        "title": "Cómo Jugar",
+        "body": "Encuentra la casilla simétrica en el tablero para el tipo de simetría indicado."
+      },
+      "step_intro": {
+        "title": "¿Qué es la Simetría del Tablero?",
+        "body": "Entrenar la simetría del tablero te ayuda a encontrar instantáneamente casillas correspondientes. Hay tres tipos principales de simetría en el tablero de ajedrez."
+      },
+      "step_horizontal": {
+        "title": "Simetría Vertical (Columna)",
+        "body": "Casillas simétricas respecto a la línea vertical central (entre las columnas d y e). Ejemplo: a1 ↔ h1, c3 ↔ f3."
+      },
+      "step_vertical": {
+        "title": "Simetría Horizontal (Fila)",
+        "body": "Casillas simétricas respecto a la línea horizontal central (entre las filas 4 y 5). Ejemplo: a1 ↔ a8, h2 ↔ h7."
+      },
+      "step_point": {
+        "title": "Simetría Central (Punto)",
+        "body": "Casillas simétricas respecto al centro del tablero (rotadas 180 grados). Ejemplo: a1 ↔ h8, c3 ↔ f6."
+      },
+      "challenge": {
+        "title": "Modo Desafío",
+        "body": "Compite para ver cuántas respuestas correctas puedes dar dentro del límite de tiempo. Tu puntuación se registra y aparece en la tabla de clasificación."
+      },
+      "training": {
+        "title": "Modo Entrenamiento",
+        "body": "Practica a tu propio ritmo sin límite de tiempo. Las puntuaciones no se registran."
+      }
+    },
+    "squareColors": {
+      "howToPlay": {
+        "title": "Cómo Jugar",
+        "body": "Se harán preguntas como la siguiente repetidamente. Identifica si la casilla dada es clara u oscura."
+      },
+      "challenge": {
+        "title": "Modo Desafío",
+        "body": "Compite para ver cuántas respuestas correctas puedes dar dentro del límite de tiempo. Tu puntuación se registra y aparece en la tabla de clasificación."
+      },
+      "training": {
+        "title": "Modo Entrenamiento",
+        "body": "Practica a tu propio ritmo sin límite de tiempo. Las puntuaciones no se registran."
+      }
+    },
+    "diagonalQuiz": {
+      "howToPlay": {
+        "title": "Cómo Jugar",
+        "body": "Identifica las dos diagonales que pasan por la casilla dada."
+      },
+      "step_diagonal": {
+        "title": "¿Qué es una Diagonal?",
+        "body": "Una diagonal va en la dirección a1-h8.\nTodas las casillas donde (columna - fila) es constante pertenecen a la misma diagonal.\nLas casillas verdes muestran la diagonal que pasa por d4."
+      },
+      "step_antiDiagonal": {
+        "title": "¿Qué es una Anti-diagonal?",
+        "body": "Una anti-diagonal va en la dirección h1-a8.\nTodas las casillas donde (columna + fila) es constante pertenecen a la misma anti-diagonal.\nLas casillas azules muestran la anti-diagonal que pasa por d4."
+      },
+      "challenge": {
+        "title": "Modo Desafío",
+        "body": "Compite para ver cuántas respuestas correctas puedes dar dentro del límite de tiempo. Tu puntuación se registra y aparece en la tabla de clasificación."
+      },
+      "training": {
+        "title": "Modo Entrenamiento",
+        "body": "Practica a tu propio ritmo sin límite de tiempo. Las puntuaciones no se registran."
+      }
+    },
+    "routePlanner": {
+      "howToPlay": {
+        "title": "Cómo Jugar",
+        "body": "Calcula el camino más corto para que una pieza alcance una casilla objetivo."
+      },
+      "step_intro": {
+        "title": "El Objetivo",
+        "body": "Encuentra el camino más corto para que el Caballo se mueva de Inicio (e4) a Objetivo (h5)."
+      },
+      "step_visualization": {
+        "title": "Visualiza la Ruta",
+        "body": "No hay vista previa del tablero durante la práctica. Visualiza el camino en tu mente e introduce las coordenadas.\nEjemplo: e4 -> f6 -> h5"
+      },
+      "challenge": {
+        "title": "Modo Desafío",
+        "body": "Compite para ver cuántas respuestas correctas puedes dar dentro del límite de tiempo. Tu puntuación se registra y aparece en la tabla de clasificación."
+      },
+      "training": {
+        "title": "Modo Entrenamiento",
+        "body": "Practica a tu propio ritmo sin límite de tiempo. Las puntuaciones no se registran."
+      }
+    },
+    "quadrants": {
+      "howToPlay": {
+        "title": "Cómo Jugar",
+        "body": "Se mostrará el nombre de una casilla. Identifica a qué cuadrante pertenece tocando el área correcta en el tablero."
+      }
+    },
+    "knightTour": {
+      "overview": {
+        "title": "¿Qué es el Recorrido del Caballo?",
+        "body": "Un ejercicio de entrenamiento en el que mueves un caballo para visitar las 64 casillas exactamente una vez.\nEntrena tu sentido del movimiento del caballo y la geometría del tablero, por lo que practicar con constancia mejora tus habilidades de visualización."
+      },
+      "tutorial": {
+        "title": "Tutorial",
+        "body": "El Recorrido del Caballo es un rompecabezas clásico de ajedrez.\n\nUsando un caballo, intenta visitar las 64 casillas del tablero exactamente una vez."
+      }
+    },
+    "algebraicNotation": {
+      "about": {
+        "title": "Notación Algebraica",
+        "body": "Domina el sistema de notación ajedrecística con ejercicios interactivos"
+      }
+    },
+    "fen": {
+      "overview": {
+        "title": "¿Qué es la Reconstrucción FEN?",
+        "body": "Un ejercicio de entrenamiento en el que lees una notación FEN y recreas la posición en el tablero.\nEntrena tu capacidad de convertir la notación en una imagen mental del tablero, por lo que practicar con constancia mejora tus habilidades de visualización."
+      },
+      "tutorial": {
+        "title": "Tutorial",
+        "body": "Practica la lectura de notación FEN y la recreación de posiciones en el tablero."
+      }
+    },
+    "positionMemory": {
+      "overview": {
+        "title": "¿Qué es la Memoria de Posiciones?",
+        "body": "Un ejercicio de entrenamiento en el que recreas una posición en el tablero.\nEntrena tu capacidad de reconocimiento de patrones y tu memoria de trabajo, por lo que practicar con constancia mejora tus habilidades de visualización."
+      },
+      "tutorial": {
+        "title": "Tutorial",
+        "body": "Memoriza una posición dentro del límite de tiempo, luego recréala en un tablero vacío.\nProbemos con la siguiente posición."
+      }
     }
   }
 }

@@ -15,7 +15,10 @@
     "close": "Close",
     "quit": "Quit",
     "quitConfirmTitle": "Quit this session?",
-    "quitConfirmMessage": "Your progress in this session will be lost."
+    "quitConfirmMessage": "Your progress in this session will be lost.",
+    "help": "Help",
+    "next": "Next",
+    "previous": "Back"
   },
   "tabs": {
     "home": "Home",
@@ -558,6 +561,166 @@
       "wrongPiece": "{{square}} has {{actual}} instead of {{expected}}",
       "missing": "{{piece}} is missing from {{square}}",
       "extra": "Extra {{piece}} on {{square}}"
+    }
+  },
+  "moduleHelp": {
+    "coordinateQuiz": {
+      "howToPlay": {
+        "title": "How to Play",
+        "body": "A square name is shown on the board. Click the correct square as quickly as you can."
+      },
+      "challenge": {
+        "title": "Challenge Mode",
+        "body": "Compete to see how many you can answer correctly within the time limit. Your score is recorded and listed on the leaderboard."
+      },
+      "training": {
+        "title": "Training Mode",
+        "body": "Practice at your own pace with no time limit. Scores are not recorded."
+      }
+    },
+    "legalMoves": {
+      "howToPlay": {
+        "title": "How to Play",
+        "body": "A piece and two squares are shown. Determine whether the move is legal or not."
+      },
+      "challenge": {
+        "title": "Challenge Mode",
+        "body": "Compete to see how many you can answer correctly within the time limit. Your score is recorded and listed on the leaderboard."
+      },
+      "training": {
+        "title": "Training Mode",
+        "body": "Practice at your own pace with no time limit. Scores are not recorded."
+      }
+    },
+    "boardSymmetry": {
+      "howToPlay": {
+        "title": "How to Play",
+        "body": "Find the symmetrical square on the board for the given symmetry type."
+      },
+      "step_intro": {
+        "title": "What is Board Symmetry?",
+        "body": "Training board symmetry helps you instantly find corresponding squares. There are three main types of symmetry on the chessboard."
+      },
+      "step_horizontal": {
+        "title": "Vertical Symmetry (File)",
+        "body": "Squares symmetric with respect to the central vertical line (between d and e files). Example: a1 ↔ h1, c3 ↔ f3."
+      },
+      "step_vertical": {
+        "title": "Horizontal Symmetry (Rank)",
+        "body": "Squares symmetric with respect to the central horizontal line (between 4th and 5th ranks). Example: a1 ↔ a8, h2 ↔ h7."
+      },
+      "step_point": {
+        "title": "Point Symmetry (Center)",
+        "body": "Squares symmetric with respect to the center of the board (rotated 180 degrees). Example: a1 ↔ h8, c3 ↔ f6."
+      },
+      "challenge": {
+        "title": "Challenge Mode",
+        "body": "Compete to see how many you can answer correctly within the time limit. Your score is recorded and listed on the leaderboard."
+      },
+      "training": {
+        "title": "Training Mode",
+        "body": "Practice at your own pace with no time limit. Scores are not recorded."
+      }
+    },
+    "squareColors": {
+      "howToPlay": {
+        "title": "How to Play",
+        "body": "Questions like the following will be asked repeatedly. Identify whether the given square is light or dark."
+      },
+      "challenge": {
+        "title": "Challenge Mode",
+        "body": "Compete to see how many you can answer correctly within the time limit. Your score is recorded and listed on the leaderboard."
+      },
+      "training": {
+        "title": "Training Mode",
+        "body": "Practice at your own pace with no time limit. Scores are not recorded."
+      }
+    },
+    "diagonalQuiz": {
+      "howToPlay": {
+        "title": "How to Play",
+        "body": "Identify the two diagonals that pass through the given square."
+      },
+      "step_diagonal": {
+        "title": "What is a Diagonal?",
+        "body": "A diagonal runs in the a1-h8 direction.\nAll squares where (file - rank) is constant belong to the same diagonal.\nThe green squares show the diagonal passing through d4."
+      },
+      "step_antiDiagonal": {
+        "title": "What is an Anti-diagonal?",
+        "body": "An anti-diagonal runs in the h1-a8 direction.\nAll squares where (file + rank) is constant belong to the same anti-diagonal.\nThe blue squares show the anti-diagonal passing through d4."
+      },
+      "challenge": {
+        "title": "Challenge Mode",
+        "body": "Compete to see how many you can answer correctly within the time limit. Your score is recorded and listed on the leaderboard."
+      },
+      "training": {
+        "title": "Training Mode",
+        "body": "Practice at your own pace with no time limit. Scores are not recorded."
+      }
+    },
+    "routePlanner": {
+      "howToPlay": {
+        "title": "How to Play",
+        "body": "Calculate the shortest path for a piece to reach a target square."
+      },
+      "step_intro": {
+        "title": "The Objective",
+        "body": "Find the shortest path for the Knight to move from Start (e4) to Target (h5)."
+      },
+      "step_visualization": {
+        "title": "Visualize the Route",
+        "body": "There is no board preview during practice. Visualize the path in your head and input the coordinates.\nExample: e4 -> f6 -> h5"
+      },
+      "challenge": {
+        "title": "Challenge Mode",
+        "body": "Compete to see how many you can answer correctly within the time limit. Your score is recorded and listed on the leaderboard."
+      },
+      "training": {
+        "title": "Training Mode",
+        "body": "Practice at your own pace with no time limit. Scores are not recorded."
+      }
+    },
+    "quadrants": {
+      "howToPlay": {
+        "title": "How to Play",
+        "body": "A square name will be shown. Identify which quadrant it belongs to by tapping the correct area on the board."
+      }
+    },
+    "knightTour": {
+      "overview": {
+        "title": "What is the Knight's Tour?",
+        "body": "A training exercise where you move a knight to visit all 64 squares exactly once.\nIt trains your sense of knight movement and board geometry, so keeping at it improves your visualization skills."
+      },
+      "tutorial": {
+        "title": "Tutorial",
+        "body": "The Knight's Tour is a classic chess puzzle.\n\nUsing a knight, try to visit all 64 squares of the board exactly once."
+      }
+    },
+    "algebraicNotation": {
+      "about": {
+        "title": "Algebraic Notation",
+        "body": "Master chess notation system with interactive exercises"
+      }
+    },
+    "fen": {
+      "overview": {
+        "title": "What is FEN Reconstruction?",
+        "body": "A training exercise where you read a FEN string and recreate the position on the board.\nIt trains your ability to turn notation into a mental image of the board, so keeping at it improves your visualization skills."
+      },
+      "tutorial": {
+        "title": "Tutorial",
+        "body": "Practice reading FEN notation and recreating board positions."
+      }
+    },
+    "positionMemory": {
+      "overview": {
+        "title": "What is Position Memory?",
+        "body": "A training exercise where you recreate a position on the board.\nIt trains your pattern-recognition ability and working memory, so keeping at it improves your visualization skills."
+      },
+      "tutorial": {
+        "title": "Tutorial",
+        "body": "Memorize a position within the time limit, then recreate it on an empty board.\nLet's try with the following position."
+      }
     }
   }
 }

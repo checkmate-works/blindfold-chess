@@ -15,7 +15,10 @@
     "close": "Fechar",
     "quit": "Sair",
     "quitConfirmTitle": "Sair desta sessão?",
-    "quitConfirmMessage": "O progresso desta sessão será perdido."
+    "quitConfirmMessage": "O progresso desta sessão será perdido.",
+    "help": "Ajuda",
+    "next": "Próximo",
+    "previous": "Voltar"
   },
   "tabs": {
     "home": "Início",
@@ -558,6 +561,166 @@
       "wrongPiece": "{{square}} tem {{actual}} em vez de {{expected}}",
       "missing": "{{piece}} falta em {{square}}",
       "extra": "{{piece}} extra em {{square}}"
+    }
+  },
+  "moduleHelp": {
+    "coordinateQuiz": {
+      "howToPlay": {
+        "title": "Como Jogar",
+        "body": "É mostrado o nome de uma casa no tabuleiro. Clique na casa correta o mais rápido possível."
+      },
+      "challenge": {
+        "title": "Modo Desafio",
+        "body": "Compita para ver quantas respostas corretas você consegue dar dentro do limite de tempo. Sua pontuação é registrada e aparece na tabela de classificação."
+      },
+      "training": {
+        "title": "Modo Treino",
+        "body": "Pratique no seu ritmo, sem limite de tempo. As pontuações não são registradas."
+      }
+    },
+    "legalMoves": {
+      "howToPlay": {
+        "title": "Como Jogar",
+        "body": "São mostradas uma peça e duas casas. Determine se o movimento é legal ou não."
+      },
+      "challenge": {
+        "title": "Modo Desafio",
+        "body": "Compita para ver quantas respostas corretas você consegue dar dentro do limite de tempo. Sua pontuação é registrada e aparece na tabela de classificação."
+      },
+      "training": {
+        "title": "Modo Treino",
+        "body": "Pratique no seu ritmo, sem limite de tempo. As pontuações não são registradas."
+      }
+    },
+    "boardSymmetry": {
+      "howToPlay": {
+        "title": "Como Jogar",
+        "body": "Encontre a casa simétrica no tabuleiro para o tipo de simetria indicado."
+      },
+      "step_intro": {
+        "title": "O que é a Simetria do Tabuleiro?",
+        "body": "Treinar a simetria do tabuleiro ajuda você a encontrar instantaneamente casas correspondentes. Existem três tipos principais de simetria no tabuleiro de xadrez."
+      },
+      "step_horizontal": {
+        "title": "Simetria Vertical (Coluna)",
+        "body": "Casas simétricas em relação à linha vertical central (entre as colunas d e e). Exemplo: a1 ↔ h1, c3 ↔ f3."
+      },
+      "step_vertical": {
+        "title": "Simetria Horizontal (Fila)",
+        "body": "Casas simétricas em relação à linha horizontal central (entre as filas 4 e 5). Exemplo: a1 ↔ a8, h2 ↔ h7."
+      },
+      "step_point": {
+        "title": "Simetria Central (Ponto)",
+        "body": "Casas simétricas em relação ao centro do tabuleiro (rotacionadas 180 graus). Exemplo: a1 ↔ h8, c3 ↔ f6."
+      },
+      "challenge": {
+        "title": "Modo Desafio",
+        "body": "Compita para ver quantas respostas corretas você consegue dar dentro do limite de tempo. Sua pontuação é registrada e aparece na tabela de classificação."
+      },
+      "training": {
+        "title": "Modo Treino",
+        "body": "Pratique no seu ritmo, sem limite de tempo. As pontuações não são registradas."
+      }
+    },
+    "squareColors": {
+      "howToPlay": {
+        "title": "Como Jogar",
+        "body": "Serão feitas perguntas como a seguinte repetidamente. Identifique se a casa dada é clara ou escura."
+      },
+      "challenge": {
+        "title": "Modo Desafio",
+        "body": "Compita para ver quantas respostas corretas você consegue dar dentro do limite de tempo. Sua pontuação é registrada e aparece na tabela de classificação."
+      },
+      "training": {
+        "title": "Modo Treino",
+        "body": "Pratique no seu ritmo, sem limite de tempo. As pontuações não são registradas."
+      }
+    },
+    "diagonalQuiz": {
+      "howToPlay": {
+        "title": "Como Jogar",
+        "body": "Identifique as duas diagonais que passam pela casa dada."
+      },
+      "step_diagonal": {
+        "title": "O que é uma Diagonal?",
+        "body": "Uma diagonal vai na direção a1-h8.\nTodas as casas onde (coluna - fila) é constante pertencem à mesma diagonal.\nAs casas verdes mostram a diagonal que passa por d4."
+      },
+      "step_antiDiagonal": {
+        "title": "O que é uma Anti-diagonal?",
+        "body": "Uma anti-diagonal vai na direção h1-a8.\nTodas as casas onde (coluna + fila) é constante pertencem à mesma anti-diagonal.\nAs casas azuis mostram a anti-diagonal que passa por d4."
+      },
+      "challenge": {
+        "title": "Modo Desafio",
+        "body": "Compita para ver quantas respostas corretas você consegue dar dentro do limite de tempo. Sua pontuação é registrada e aparece na tabela de classificação."
+      },
+      "training": {
+        "title": "Modo Treino",
+        "body": "Pratique no seu ritmo, sem limite de tempo. As pontuações não são registradas."
+      }
+    },
+    "routePlanner": {
+      "howToPlay": {
+        "title": "Como Jogar",
+        "body": "Calcule o caminho mais curto para que uma peça alcance uma casa objetivo."
+      },
+      "step_intro": {
+        "title": "O Objetivo",
+        "body": "Encontre o caminho mais curto para que o Cavalo se mova de Início (e4) a Objetivo (h5)."
+      },
+      "step_visualization": {
+        "title": "Visualize a Rota",
+        "body": "Não há pré-visualização do tabuleiro durante a prática. Visualize o caminho em sua mente e insira as coordenadas.\nExemplo: e4 -> f6 -> h5"
+      },
+      "challenge": {
+        "title": "Modo Desafio",
+        "body": "Compita para ver quantas respostas corretas você consegue dar dentro do limite de tempo. Sua pontuação é registrada e aparece na tabela de classificação."
+      },
+      "training": {
+        "title": "Modo Treino",
+        "body": "Pratique no seu ritmo, sem limite de tempo. As pontuações não são registradas."
+      }
+    },
+    "quadrants": {
+      "howToPlay": {
+        "title": "Como Jogar",
+        "body": "O nome de uma casa será exibido. Identifique a qual quadrante ela pertence tocando na área correta do tabuleiro."
+      }
+    },
+    "knightTour": {
+      "overview": {
+        "title": "O que é o Percurso do Cavalo?",
+        "body": "Um exercício de treino no qual você move um cavalo para visitar as 64 casas exatamente uma vez.\nEle treina sua noção do movimento do cavalo e da geometria do tabuleiro, então praticar com regularidade melhora suas habilidades de visualização."
+      },
+      "tutorial": {
+        "title": "Tutorial",
+        "body": "O Percurso do Cavalo é um quebra-cabeça clássico de xadrez.\n\nUsando um cavalo, tente visitar as 64 casas do tabuleiro exatamente uma vez."
+      }
+    },
+    "algebraicNotation": {
+      "about": {
+        "title": "Notação Algébrica",
+        "body": "Domine o sistema de notação enxadrística com exercícios interativos"
+      }
+    },
+    "fen": {
+      "overview": {
+        "title": "O que é a Reconstrução FEN?",
+        "body": "Um exercício de treino no qual você lê uma notação FEN e recria a posição no tabuleiro.\nEle treina sua capacidade de transformar a notação em uma imagem mental do tabuleiro, então praticar com regularidade melhora suas habilidades de visualização."
+      },
+      "tutorial": {
+        "title": "Tutorial",
+        "body": "Pratique a leitura de notação FEN e a recriação de posições no tabuleiro."
+      }
+    },
+    "positionMemory": {
+      "overview": {
+        "title": "O que é Memória de Posições?",
+        "body": "Um exercício de treino no qual você recria uma posição no tabuleiro.\nEle treina sua capacidade de reconhecimento de padrões e sua memória de trabalho, então praticar com regularidade melhora suas habilidades de visualização."
+      },
+      "tutorial": {
+        "title": "Tutorial",
+        "body": "Memorize uma posição dentro do limite de tempo, depois recrie-a em um tabuleiro vazio.\nVamos tentar com a seguinte posição."
+      }
     }
   }
 }
