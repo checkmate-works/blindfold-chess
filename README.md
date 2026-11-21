@@ -67,7 +67,7 @@ To start the development server for all apps:
 pnpm dev
 ```
 
-This runs `turbo run dev`, which starts the `web` app at [http://localhost:3000](http://localhost:3000).
+This runs `turbo run dev`, which starts the `web` app at [http://localhost:3000](http://localhost:3000) and Metro for the `mobile` app.
 
 ### Scripts
 
@@ -90,6 +90,10 @@ pnpm --filter web run copy-stockfish
 ```
 
 For more details on the web application, see [apps/web/README.md](apps/web/README.md).
+
+### Mobile App
+
+To run the mobile app in the iOS Simulator or on a device with Expo Go, and to connect it to the local backend, see [apps/mobile/README.md](apps/mobile/README.md).
 
 ## Automation (Owner-only)
 
