@@ -81,7 +81,11 @@
     },
     "challengeSection": "チャレンジ",
     "challengeSectionNote": "制限時間60秒・ミスは3回まで。時間制限のないトレーニングもあります。",
-    "freePlaySection": "フリープレイ"
+    "freePlaySection": "フリープレイ",
+    "positionMemory": {
+      "title": "ポジションの記憶",
+      "description": "局面を記憶して、空の盤面に再現する練習"
+    }
   },
   "practiceResult": {
     "correctAnswers": "正解数",
@@ -721,6 +725,23 @@
         "title": "チュートリアル",
         "body": "あるポジションを制限時間内に記憶して、空の盤面に再現してみましょう。\nまずは以下のポジションでやってみましょう。"
       }
+    }
+  },
+  "positionMemory": {
+    "setup": {
+      "title": "ポジションの記憶",
+      "start": "開始",
+      "memorizeTime": "記憶時間",
+      "seconds": "{{count}}秒"
+    },
+    "session": {
+      "memorize": "位置を記憶してください",
+      "memorized": "覚えた",
+      "recreate": "盤面を再現"
+    },
+    "result": {
+      "title": "結果",
+      "playAgain": "もう一度"
     }
   }
 }

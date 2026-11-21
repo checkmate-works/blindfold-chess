@@ -81,7 +81,11 @@
     },
     "challengeSection": "Challenges",
     "challengeSectionNote": "60 seconds, up to 3 mistakes. Each also has an untimed training mode.",
-    "freePlaySection": "Free play"
+    "freePlaySection": "Free play",
+    "positionMemory": {
+      "title": "Position Memory",
+      "description": "Memorize a position, then recreate it on an empty board"
+    }
   },
   "practiceResult": {
     "correctAnswers": "Correct Answers",
@@ -721,6 +725,23 @@
         "title": "Tutorial",
         "body": "Memorize a position within the time limit, then recreate it on an empty board.\nLet's try with the following position."
       }
+    }
+  },
+  "positionMemory": {
+    "setup": {
+      "title": "Position Memory",
+      "start": "Start",
+      "memorizeTime": "Memorizing time",
+      "seconds": "{{count}}s"
+    },
+    "session": {
+      "memorize": "Memorize the position",
+      "memorized": "Memorized",
+      "recreate": "Recreate the position"
+    },
+    "result": {
+      "title": "Results",
+      "playAgain": "Play again"
     }
   }
 }

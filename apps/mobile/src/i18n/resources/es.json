@@ -81,7 +81,11 @@
     },
     "challengeSection": "Desafíos",
     "challengeSectionNote": "60 segundos, hasta 3 errores. Cada uno tiene también un modo de entrenamiento sin tiempo.",
-    "freePlaySection": "Práctica libre"
+    "freePlaySection": "Práctica libre",
+    "positionMemory": {
+      "title": "Memoria de posiciones",
+      "description": "Memoriza una posición y recréala en un tablero vacío"
+    }
   },
   "practiceResult": {
     "correctAnswers": "Respuestas correctas",
@@ -721,6 +725,23 @@
         "title": "Tutorial",
         "body": "Memoriza una posición dentro del límite de tiempo, luego recréala en un tablero vacío.\nProbemos con la siguiente posición."
       }
+    }
+  },
+  "positionMemory": {
+    "setup": {
+      "title": "Memoria de posiciones",
+      "start": "Comenzar",
+      "memorizeTime": "Tiempo para memorizar",
+      "seconds": "{{count}} s"
+    },
+    "session": {
+      "memorize": "Memoriza la posición",
+      "memorized": "Memorizada",
+      "recreate": "Recrea la posición"
+    },
+    "result": {
+      "title": "Resultados",
+      "playAgain": "Jugar de nuevo"
     }
   }
 }

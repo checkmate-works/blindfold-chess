@@ -88,6 +88,7 @@ export const MOBILE_PRACTICE_MODULES: readonly MobilePracticeModule[] = [
     icon: "🔤",
   },
   { slug: "fen", i18nKey: "fen", icon: "📝" },
+  { slug: "position-memory", i18nKey: "positionMemory", icon: "🧠" },
 ];
 
 /** The route directory of a module under `(tabs)/practice/`. */

@@ -171,6 +171,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: spacing.lg,
+    gap: spacing.lg,
   },
   footer: {
     padding: spacing.lg,

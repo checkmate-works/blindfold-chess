@@ -33,6 +33,12 @@ type FenSettingsFormProps = {
   /** How many FENs the chosen source offers; bounds the problem count. */
   availableCount: number;
   customFenError: CustomFenError | null;
+  /**
+   * Leave out the previewable list of built-in problems. Position memory
+   * sets it: previewing a position there would be memorising it early, and
+   * its built-in set is not the FEN drill's.
+   */
+  hidePresetList?: boolean;
 };
 
 /**
@@ -45,6 +51,7 @@ export function FenSettingsForm({
   onUpdate,
   availableCount,
   customFenError,
+  hidePresetList = false,
 }: FenSettingsFormProps) {
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
@@ -97,7 +104,7 @@ export function FenSettingsForm({
             </Text>
           )}
         </View>
-      ) : (
+      ) : hidePresetList ? null : (
         <View style={styles.section}>
           <Text style={[styles.hint, { color: colors.mutedForeground }]}>
             {t("fen.setup.presetDescription")}

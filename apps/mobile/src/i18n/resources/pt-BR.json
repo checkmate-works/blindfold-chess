@@ -81,7 +81,11 @@
     },
     "challengeSection": "Desafios",
     "challengeSectionNote": "60 segundos, até 3 erros. Cada um também tem um modo de treino sem tempo.",
-    "freePlaySection": "Prática livre"
+    "freePlaySection": "Prática livre",
+    "positionMemory": {
+      "title": "Memória de posições",
+      "description": "Memorize uma posição e recrie-a em um tabuleiro vazio"
+    }
   },
   "practiceResult": {
     "correctAnswers": "Respostas corretas",
@@ -721,6 +725,23 @@
         "title": "Tutorial",
         "body": "Memorize uma posição dentro do limite de tempo, depois recrie-a em um tabuleiro vazio.\nVamos tentar com a seguinte posição."
       }
+    }
+  },
+  "positionMemory": {
+    "setup": {
+      "title": "Memória de posições",
+      "start": "Começar",
+      "memorizeTime": "Tempo para memorizar",
+      "seconds": "{{count}} s"
+    },
+    "session": {
+      "memorize": "Memorize a posição",
+      "memorized": "Memorizei",
+      "recreate": "Recrie a posição"
+    },
+    "result": {
+      "title": "Resultados",
+      "playAgain": "Jogar novamente"
     }
   }
 }
