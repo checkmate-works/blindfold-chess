@@ -131,12 +131,19 @@ export const RATE_LIMITS = {
   savePracticeResult: { action: 'save_practice_result', maxAttempts: 60, windowMs: 3_600_000 },
   /**
    * Starting a server-run challenge inserts an attempt row with its whole
-   * question list. One challenge lasts a minute or more, so 60 per hour is
-   * more than a player can use; the cap stops a script from filling the table.
+   * question list; the cap stops a script from filling the table.
+   *
+   * 240 per hour, one start every 15 seconds. Every start counts, not only
+   * the runs that end up recorded: a run abandoned or reloaded, and a run
+   * that ends on its third mistake a few seconds in, each used one. A
+   * beginner retrying after quick failures starts a run every 15 to 20
+   * seconds, and a player at the cap cannot play at all, so the cap has to
+   * sit above that pace. (It was 60 at first, sized for full-minute runs,
+   * which such a player would reach in about 20 minutes.)
    */
   beginChallengeAttempt: {
     action: 'begin_challenge_attempt',
-    maxAttempts: 60,
+    maxAttempts: 240,
     windowMs: 3_600_000,
   },
   /**
@@ -149,7 +156,7 @@ export const RATE_LIMITS = {
    */
   finishChallengeAttempt: {
     action: 'finish_challenge_attempt',
-    maxAttempts: 240,
+    maxAttempts: 960,
     windowMs: 3_600_000,
   },
   /**
