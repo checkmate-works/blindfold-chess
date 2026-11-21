@@ -128,20 +128,77 @@ Run from `apps/mobile`, or from the root with `pnpm --filter mobile <script>`:
 
 - `pnpm dev` / `pnpm start`: Start Metro (Expo)
 - `pnpm ios` / `pnpm android`: Start Metro and open the iOS Simulator / Android emulator
+- `pnpm testflight`, `pnpm testflight:status`: Build for iOS on EAS and submit to TestFlight (see [Shipping to TestFlight](#shipping-to-testflight))
 - `pnpm copy-stockfish`: Copy the Stockfish engine into `assets/stockfish/` (required before the first run)
 - `pnpm lint`, `pnpm typecheck`, `pnpm test`: Quality gates (Vitest for tests)
 - `pnpm bundle-learn-content`, `pnpm bundle-glossary`: Regenerate the content copied from the web app. Re-run them after the web's articles or glossary change
 
 ## Environment Variables
 
-All are optional in development and baked in at build time (`EXPO_PUBLIC_*`).
-A release build without them has no accounts and runs signed out only.
+All three are optional in development and baked into the bundle at build time
+(`EXPO_PUBLIC_*`). A release build needs **all three**: if any is missing it
+has no accounts and runs signed out only.
 
-| Variable                               | Development default         |
-| -------------------------------------- | --------------------------- |
-| `EXPO_PUBLIC_SUPABASE_URL`             | `http://<Metro host>:54321` |
-| `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Supabase CLI's local key    |
-| `EXPO_PUBLIC_API_ORIGIN`               | `http://<Metro host>:3000`  |
+| Variable                               | Development default         | Release builds                        |
+| -------------------------------------- | --------------------------- | ------------------------------------- |
+| `EXPO_PUBLIC_SUPABASE_URL`             | `http://<Metro host>:54321` | `https://<ref>.supabase.co`           |
+| `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Supabase CLI's local key    | The production `sb_publishable_…` key |
+| `EXPO_PUBLIC_API_ORIGIN`               | `http://<Metro host>:3000`  | `https://www.blindfold-chess.online`  |
+
+The Supabase URL and publishable key are in the Supabase Dashboard under
+Project Settings > API. Everything in `EXPO_PUBLIC_*` ships inside the app, so
+never put a secret in one.
+
+### Release builds
+
+Release builds read these from the EAS `production` environment (the
+`production` profile in `eas.json` names it). Set them once from `apps/mobile`:
+
+```bash
+npx eas-cli env:create --environment production --visibility plaintext \
+  --name EXPO_PUBLIC_SUPABASE_URL --value https://<ref>.supabase.co
+npx eas-cli env:create --environment production --visibility plaintext \
+  --name EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY --value sb_publishable_…
+npx eas-cli env:create --environment production --visibility plaintext \
+  --name EXPO_PUBLIC_API_ORIGIN --value https://www.blindfold-chess.online
+```
+
+`npx eas-cli env:list --environment production` shows what is set.
+
+## Shipping to TestFlight
+
+The EAS project is `@k0kishima/blindfold-chess` (`extra.eas.projectId` in
+`app.json`); the bundle identifier is `online.blindfoldchess.app`. EAS keeps
+the build number and raises it on every build (`appVersionSource: remote` +
+`autoIncrement`); the user-facing version is `version` in `app.json`. The app
+uses no encryption beyond HTTPS, so `usesNonExemptEncryption: false` answers
+App Store Connect's export-compliance question once for every build.
+
+```bash
+pnpm --filter mobile testflight                     # check, queue, print the build ID
+pnpm --filter mobile testflight:status <ID> --watch # follow the build and the submission
+```
+
+`testflight` checks that HEAD is a pushed commit on main, that dependencies
+are installed, that you are logged in to EAS, and that the three variables
+above exist in the `production` environment, then runs
+`eas build --platform ios --profile production --auto-submit` without waiting.
+Pass `-- --any-branch` to build from another branch.
+
+- **The first build is interactive.** Run
+  `npx eas-cli build --platform ios --profile production --auto-submit` once
+  in a terminal: it asks for your Apple ID and lets EAS create and keep the
+  distribution certificate and provisioning profile (answer Yes to each), and
+  the first submission creates the app record in App Store Connect. Later
+  builds run non-interactively through `testflight`.
+- After App Store Connect finishes processing (10-30 minutes), add yourself to
+  an internal testing group in TestFlight to install it. Internal testing
+  needs no review.
+- The build talks to the production Supabase and web app, so accounts made
+  while testing are real production accounts.
+- EAS's free plan allows a limited number of iOS builds per month
+  (`npx eas-cli account:usage`). Check changes in the simulator before
+  spending a build on them.
 
 ## Tech Stack
 

@@ -8,6 +8,8 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
+    "testflight": "scripts/testflight.sh",
+    "testflight:status": "scripts/testflight-status.sh",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
