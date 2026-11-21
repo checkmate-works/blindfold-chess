@@ -38,7 +38,7 @@ const scoreColumns = {
  * Read the player's previous best and previous last run for a menu, to show
  * beside the run they just finished.
  *
- * The result page renders after `saveChallengeResult` has already committed
+ * The result page renders after `writeChallengeResult` has already committed
  * the current run, so "previous" cannot mean "everything in the table": the
  * current row is excluded by id, and the history is further cut at the
  * current row's `created_at`. The time cut matters when an old result URL is

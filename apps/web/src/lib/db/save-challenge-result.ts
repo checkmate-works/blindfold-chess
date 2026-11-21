@@ -6,7 +6,6 @@ import type { GrantedRank } from '@/lib/db/data/ranks';
 import { detectScoreImprovement } from './challenge-best-score';
 import { getUserAllTimeRank } from './challenge-queries';
 import { decideChallengeRankFeedItem } from './challenge-rank-feed';
-import { db } from './index';
 import { evaluateRanksAndRefreshEntitlements } from './rank-grant-flow';
 import { grantChallengeExp } from './save-exp';
 import { challengeBestScores, challengeResults, feedItems } from './schema';
@@ -213,19 +212,4 @@ export async function writeChallengeResult(
  */
 export async function evaluateRanksAfterChallenge(userId: string): Promise<GrantedRank[]> {
   return evaluateRanksAndRefreshEntitlements(userId, 'challenge completion');
-}
-
-/**
- * Writes challenge result records after a challenge session completes, in a
- * transaction of its own ({@link writeChallengeResult}), then evaluates belt
- * ranks after the commit ({@link evaluateRanksAfterChallenge}).
- */
-export async function saveChallengeResult(
-  input: ChallengeResultInput
-): Promise<{ grantedRanks: GrantedRank[]; exp: ExpInfo; challengeResultId: string }> {
-  const { exp, challengeResultId } = await db.transaction((tx) => writeChallengeResult(tx, input));
-
-  const grantedRanks = await evaluateRanksAfterChallenge(input.userId);
-
-  return { grantedRanks, exp, challengeResultId };
 }

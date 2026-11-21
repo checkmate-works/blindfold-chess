@@ -19,7 +19,7 @@
  *
  * @design Called outside the challenge transaction
  *
- * `checkAndGrantRanks` must run AFTER `saveChallengeResult`'s transaction
+ * `checkAndGrantRanks` must run AFTER `writeChallengeResult`'s transaction
  * commits, so that `challenge_best_scores` reflects the latest data. It is
  * wrapped in try-catch at the call site — rank evaluation failure must never
  * break the challenge result save flow.
