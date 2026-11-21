@@ -3,9 +3,11 @@ import { ScrollView, StyleSheet, View } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useLocalSearchParams } from "expo-router";
 import {
+  ROUTE_PLANNER_CHALLENGE_PIECES,
   evaluateAttempt,
   generateProblem,
   getShortestPathOrEmpty,
+  type RoutePlannerChallengePiece,
 } from "@blindfold-chess/features/route-planner";
 import { useRoutePlannerInput } from "@blindfold-chess/features/route-planner/client";
 import type { Square } from "@blindfold-chess/types";
@@ -16,9 +18,8 @@ import {
   ProblemResultCard,
   SquareInput,
 } from "../../../../features/route-planner/components";
-import { ROUTE_PLANNER_PIECES } from "../../../../features/route-planner/lib/types";
-import type { RoutePlannerPieceType } from "../../../../features/route-planner/lib/types";
 import { answerHaptics } from "../../../../lib/answer-haptics";
+import { parseEnumParam } from "../../../../lib/route-params";
 import { useCloseSession } from "../../../../navigation/use-close-session";
 import { spacing } from "../../../../theme";
 
@@ -36,16 +37,16 @@ type Outcome = {
 export default function RoutePlannerTraining() {
   const { t } = useTranslation();
   const { close } = useCloseSession("/practice/route-planner");
-  const params = useLocalSearchParams<{ pieces: string }>();
-  const piecesParam = params.pieces ?? "";
-  const pieces = useMemo(() => {
-    const selected = piecesParam
-      .split("")
-      .filter((p): p is RoutePlannerPieceType =>
-        ROUTE_PLANNER_PIECES.includes(p as RoutePlannerPieceType),
-      );
-    return selected.length > 0 ? selected : [...ROUTE_PLANNER_PIECES];
-  }, [piecesParam]);
+  const params = useLocalSearchParams<{ piece: string }>();
+  const piece = parseEnumParam<RoutePlannerChallengePiece>(
+    params.piece,
+    Object.keys(ROUTE_PLANNER_CHALLENGE_PIECES) as RoutePlannerChallengePiece[],
+    "knight",
+  );
+  const pieces = useMemo(
+    () => [ROUTE_PLANNER_CHALLENGE_PIECES[piece]],
+    [piece],
+  );
 
   const [problem, setProblem] = useState(() => generateProblem(pieces));
   const [outcome, setOutcome] = useState<Outcome | null>(null);

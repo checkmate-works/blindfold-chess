@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import { useLocalSearchParams } from "expo-router";
 
 import { PracticeResultScreen } from "../../../../components";
+import { ChallengeRecordStatus } from "../../../../features/challenge/ChallengeRecordStatus";
 import { ResultCard } from "../../../../features/route-planner/components";
 import type { RoutePlannerResult } from "../../../../features/route-planner/hooks";
 
@@ -11,6 +12,7 @@ export default function RoutePlannerResultScreen() {
     correctCount: string;
     totalProblems: string;
     accuracy: string;
+    attemptId?: string;
   }>();
 
   const result: RoutePlannerResult = {
@@ -27,6 +29,7 @@ export default function RoutePlannerResultScreen() {
       setupHref="/practice/route-planner"
     >
       <ResultCard result={result} />
+      <ChallengeRecordStatus attemptId={params.attemptId} />
     </PracticeResultScreen>
   );
 }

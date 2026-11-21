@@ -1,26 +1,20 @@
-import { useCallback } from "react";
-import { toggleSelection } from "@blindfold-chess/features/common";
-import { useAsyncStorageSettings } from "../../../lib/persistent-settings/useAsyncStorageSettings";
-import type { RoutePlannerPieceType, RoutePlannerSettings } from "../lib/types";
-import { DEFAULT_ROUTE_PLANNER_SETTINGS } from "../lib/types";
+import type { RoutePlannerChallengePiece } from "@blindfold-chess/features/route-planner";
 
-const STORAGE_KEY = "ROUTE_PLANNER_SETTINGS";
+import { useAsyncStorageSettings } from "../../../lib/persistent-settings/useAsyncStorageSettings";
+
+/**
+ * The route-planner setup: the piece the challenge and training use —
+ * knight or bishop, the web's challenge pieces and leaderboard keys. Stored
+ * under a new key: the former problem count and multi-piece selection have
+ * no counterpart in the 60-second challenge.
+ */
+export type RoutePlannerSetup = { selectedPiece: RoutePlannerChallengePiece };
+
+const DEFAULTS: RoutePlannerSetup = { selectedPiece: "knight" };
 
 export function useRoutePlannerSettings() {
-  const persisted = useAsyncStorageSettings<RoutePlannerSettings>(
-    STORAGE_KEY,
-    DEFAULT_ROUTE_PLANNER_SETTINGS,
+  return useAsyncStorageSettings<RoutePlannerSetup>(
+    "ROUTE_PLANNER_CHALLENGE_SETTINGS",
+    DEFAULTS,
   );
-  const { settings, updateSettings } = persisted;
-
-  const togglePiece = useCallback(
-    (piece: RoutePlannerPieceType) => {
-      const newPieces = toggleSelection(settings.selectedPieces, piece);
-      if (newPieces === settings.selectedPieces) return;
-      updateSettings({ selectedPieces: newPieces });
-    },
-    [settings.selectedPieces, updateSettings],
-  );
-
-  return { ...persisted, togglePiece };
 }

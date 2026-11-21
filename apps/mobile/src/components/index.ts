@@ -3,7 +3,6 @@ export { Card } from "./Card";
 export { CoordinateKeyRow, coordinateKeypadStyles } from "./CoordinateKeyRow";
 export { CountdownOverlay } from "./CountdownOverlay";
 export { OptionsField } from "./OptionsField";
-export { PieceSelectionField } from "./PieceSelectionField";
 export { QuizTimer } from "./QuizTimer";
 export { ScoreFooter } from "./ScoreFooter";
 export { Screen } from "./Screen";
