@@ -39,13 +39,13 @@ function isSolutionMove(v: unknown): v is PuzzleSolutionMove {
 
 function isPuzzle(v: unknown): v is Puzzle {
   return (
-    isSummary(v) &&
     isRecord(v) &&
     (v.description === null || typeof v.description === "string") &&
     Array.isArray(v.solutions) &&
     v.solutions.every(
       (line: unknown) => Array.isArray(line) && line.every(isSolutionMove),
-    )
+    ) &&
+    isSummary(v)
   );
 }
 
