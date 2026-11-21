@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { meanThinkMs } from './signals';
+import { meanThinkMs, parseMaxPace, secondsPerAnswer } from './signals';
 
 describe('meanThinkMs', () => {
   it('divides the thinking time by every answer, points and mistakes alike', () => {
@@ -24,5 +24,29 @@ describe('meanThinkMs', () => {
 
   it('returns null rather than dividing by zero when time ran without an answer', () => {
     expect(meanThinkMs({ elapsedMs: 5_000, score: 0, incorrectAnswers: 0 })).toBeNull();
+  });
+});
+
+describe('secondsPerAnswer', () => {
+  it('divides the recorded time by points and mistakes together', () => {
+    expect(secondsPerAnswer({ timeTaken: 30, score: 20, incorrectAnswers: 4 })).toBe(1.25);
+  });
+
+  it('returns null for a result with no answers', () => {
+    expect(secondsPerAnswer({ timeTaken: 30, score: 0, incorrectAnswers: 0 })).toBeNull();
+  });
+
+  it('reads a zero-second result as a pace of zero, the fastest there is', () => {
+    expect(secondsPerAnswer({ timeTaken: 0, score: 50, incorrectAnswers: 0 })).toBe(0);
+  });
+});
+
+describe('parseMaxPace', () => {
+  it('keeps a positive bound', () => {
+    expect(parseMaxPace(0.8)).toBe(0.8);
+  });
+
+  it.each([null, 0, -1, Number.NaN, Number.POSITIVE_INFINITY])('drops %s', (value) => {
+    expect(parseMaxPace(value)).toBeNull();
   });
 });

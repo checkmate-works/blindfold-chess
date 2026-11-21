@@ -35,7 +35,7 @@ import { getPaginationParams } from '@/lib/pagination';
  */
 export type ChallengeResultSignal = 'legacy' | 'refused';
 export type ChallengeResultStatus = 'live' | 'removed' | 'all';
-export type ChallengeResultSort = 'recent' | 'score';
+export type ChallengeResultSort = 'recent' | 'score' | 'pace';
 
 export type ChallengeResultListFilters = {
   menuType: string | null;
@@ -44,6 +44,11 @@ export type ChallengeResultListFilters = {
   /** `null` = no player filter; an empty array = the filter matched no one. */
   userIds: string[] | null;
   signal: ChallengeResultSignal | null;
+  /**
+   * Upper bound on seconds per answer (`time_taken / (score + mistakes)`);
+   * `null` = no bound. A result with no answers has no pace and never matches.
+   */
+  maxPaceSeconds: number | null;
   status: ChallengeResultStatus;
   sort: ChallengeResultSort;
 };
@@ -81,6 +86,9 @@ export type ChallengeResultListPage = {
 
 const IMPLAUSIBLE_SPEED = 'implausible_speed';
 
+/** Answers a result took: every one is either a point or a mistake. */
+const answered = sql`(${challengeResults.score} + ${challengeResults.incorrectAnswers})`;
+
 function buildWhere(filters: ChallengeResultListFilters): SQL | undefined {
   const conditions: SQL[] = [];
 
@@ -107,12 +115,22 @@ function buildWhere(filters: ChallengeResultListFilters): SQL | undefined {
     );
   }
 
+  if (filters.maxPaceSeconds != null) {
+    // Multiplied out rather than divided, so a result with no answers needs no
+    // special case beyond the `> 0` guard.
+    conditions.push(
+      sql`${answered} > 0 AND ${challengeResults.timeTaken} <= ${filters.maxPaceSeconds}::float8 * ${answered}`
+    );
+  }
+
   return conditions.length > 0 ? and(...conditions) : undefined;
 }
 
 /**
  * `score` follows the leaderboard's own order (more points, then fewer
- * mistakes, then less time). Both orders end on the id so that rows with equal
+ * mistakes, then less time). `pace` puts the fewest seconds per answer first,
+ * which is where an implausibly fast result sits, and results with no answers
+ * last. Every order ends on the id so that rows with equal
  * keys keep their place between pages.
  */
 function buildOrderBy(sort: ChallengeResultSort): SQL[] {
@@ -121,6 +139,13 @@ function buildOrderBy(sort: ChallengeResultSort): SQL[] {
       desc(challengeResults.score),
       asc(challengeResults.incorrectAnswers),
       asc(challengeResults.timeTaken),
+      desc(challengeResults.id),
+    ];
+  }
+  if (sort === 'pace') {
+    return [
+      sql`${challengeResults.timeTaken}::float8 / NULLIF(${answered}, 0) ASC NULLS LAST`,
+      desc(challengeResults.score),
       desc(challengeResults.id),
     ];
   }

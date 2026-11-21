@@ -15,6 +15,8 @@ type Props = {
     key: string;
     user: string;
     signal: string;
+    /** The pace bound as text; empty when there is none. */
+    pace: string;
     status: string;
     sort: string;
   };
@@ -36,6 +38,8 @@ type Props = {
     status: string;
     sort: string;
     sortHint: string;
+    maxPace: string;
+    maxPacePlaceholder: string;
     user: string;
     userPlaceholder: string;
     apply: string;
@@ -47,7 +51,9 @@ type Props = {
  *
  * Each select writes its value to the URL on change and resets `?page=`, so
  * the list restarts from its first page (as `StatusQueryFilter` does); the
- * player box commits on submit, so typing does not reload the list per key.
+ * player box and the pace bound commit together on submit, so typing does not
+ * reload the list per key. A pace that is not a positive number is dropped
+ * rather than sent, as the server would ignore it anyway.
  * Changing the menu also clears `?key=`, because a key belongs to one menu and
  * the key options are re-read for the new one on the server.
  */
@@ -66,6 +72,7 @@ export function ChallengeResultFilters({
     key: parseAsString,
     user: parseAsString,
     signal: parseAsString,
+    pace: parseAsString,
     status: parseAsString,
     sort: parseAsString,
     page: parseAsInteger,
@@ -79,7 +86,11 @@ export function ChallengeResultFilters({
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const trimmed = (formData.get('user') as string | null)?.trim() ?? '';
-    update({ user: trimmed || null });
+    const pace = Number((formData.get('pace') as string | null)?.trim() ?? '');
+    update({
+      user: trimmed || null,
+      pace: Number.isFinite(pace) && pace > 0 ? String(pace) : null,
+    });
   }
 
   return (
@@ -181,6 +192,21 @@ export function ChallengeResultFilters({
             type="search"
             defaultValue={current.user}
             placeholder={labels.userPlaceholder}
+          />
+        </Field>
+        <Field label={labels.maxPace} htmlFor="challenge-result-pace-filter">
+          <Input
+            surface="card"
+            fullWidth={false}
+            key={current.pace}
+            id="challenge-result-pace-filter"
+            name="pace"
+            type="number"
+            min="0"
+            step="any"
+            inputMode="decimal"
+            defaultValue={current.pace}
+            placeholder={labels.maxPacePlaceholder}
           />
         </Field>
         <Button type="submit" variant="primary">

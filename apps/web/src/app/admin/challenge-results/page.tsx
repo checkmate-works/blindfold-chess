@@ -5,7 +5,10 @@
  * Every recorded challenge score, with the evidence an admin needs to decide
  * whether it was played honestly, and a way to remove one that was not.
  *
- * Each row carries three signals:
+ * Each row carries four signals:
+ * - **Pace** — the result's time divided by its answers, in seconds. Every row
+ *   has it, including a legacy one, so it is the signal to sort and filter by
+ *   (`sort=pace`, `pace=<max seconds per answer>`) when the list is large.
  * - **Source** — whether a server-run attempt recorded the score, or the
  *   client reported it before scores were recorded from server-run attempts
  *   (no attempt is linked: "legacy").
@@ -27,7 +30,8 @@
  * badges already earned. A removed row stays listed under `status=removed`,
  * with the reason on its status cell.
  *
- * Known trade-off, not measured: no index serves `sort=score` across all rows.
+ * Known trade-off, not measured: no index serves `sort=score` or `sort=pace`
+ * across all rows, nor the pace bound.
  * The list is admin-only and small, so none was added.
  */
 import { getTranslations } from 'next-intl/server';
@@ -37,6 +41,7 @@ import { formatDateTime } from '@/app/admin/_lib/format';
 import { resolveUserFilter } from '@/app/admin/_lib/resolve-user-filter';
 import {
   createSearchParamsCache,
+  parseAsFloat,
   parseAsInteger,
   parseAsString,
   parseAsStringLiteral,
@@ -61,11 +66,11 @@ import {
   getChallengeResultListPage,
   listChallengeLeaderboardKeys,
 } from './_lib/queries';
-import { meanThinkMs } from './_lib/signals';
+import { meanThinkMs, parseMaxPace, secondsPerAnswer } from './_lib/signals';
 
 const SIGNALS = ['legacy', 'refused'] as const satisfies readonly ChallengeResultSignal[];
 const STATUSES = ['live', 'removed', 'all'] as const satisfies readonly ChallengeResultStatus[];
-const SORTS = ['recent', 'score'] as const satisfies readonly ChallengeResultSort[];
+const SORTS = ['recent', 'score', 'pace'] as const satisfies readonly ChallengeResultSort[];
 
 const DEFAULT_STATUS: ChallengeResultStatus = 'live';
 const DEFAULT_SORT: ChallengeResultSort = 'recent';
@@ -76,6 +81,7 @@ const searchParamsCache = createSearchParamsCache({
   key: parseAsString.withDefault(''),
   user: parseAsString.withDefault(''),
   signal: parseAsStringLiteral(SIGNALS),
+  pace: parseAsFloat,
   status: parseAsStringLiteral(STATUSES).withDefault(DEFAULT_STATUS),
   sort: parseAsStringLiteral(SORTS).withDefault(DEFAULT_SORT),
 });
@@ -103,12 +109,14 @@ export default async function AdminChallengeResultsPage({
     key: rawKey,
     user: rawUser,
     signal,
+    pace: rawPace,
     status,
     sort,
   } = await searchParamsCache.parse(searchParams);
   const t = await getTranslations({ locale: 'en', namespace: 'Admin' });
 
   const userFilter = rawUser.trim();
+  const maxPace = parseMaxPace(rawPace);
   const keyOptions = menu ? await listChallengeLeaderboardKeys(menu) : [];
   // A key is only meaningful within its menu, and one that menu never
   // recorded would select an option the filter does not offer.
@@ -120,6 +128,7 @@ export default async function AdminChallengeResultsPage({
       leaderboardKey: key || null,
       userIds: await resolvePlayerIds(userFilter),
       signal,
+      maxPaceSeconds: maxPace,
       status,
       sort,
     },
@@ -131,6 +140,7 @@ export default async function AdminChallengeResultsPage({
     key,
     user: userFilter,
     signal,
+    pace: maxPace == null ? null : String(maxPace),
     status: status === DEFAULT_STATUS ? null : status,
     sort: sort === DEFAULT_SORT ? null : sort,
   });
@@ -143,6 +153,7 @@ export default async function AdminChallengeResultsPage({
           key,
           user: userFilter,
           signal: signal ?? '',
+          pace: maxPace == null ? '' : String(maxPace),
           status,
           sort,
         }}
@@ -160,6 +171,7 @@ export default async function AdminChallengeResultsPage({
         sortOptions={[
           { value: 'recent', label: t('challengeResults.filters.sortRecent') },
           { value: 'score', label: t('challengeResults.filters.sortScore') },
+          { value: 'pace', label: t('challengeResults.filters.sortPace') },
         ]}
         defaults={{ status: DEFAULT_STATUS, sort: DEFAULT_SORT }}
         labels={{
@@ -172,6 +184,8 @@ export default async function AdminChallengeResultsPage({
           status: t('challengeResults.filters.status'),
           sort: t('challengeResults.filters.sort'),
           sortHint: t('challengeResults.filters.sortHint'),
+          maxPace: t('challengeResults.filters.maxPace'),
+          maxPacePlaceholder: t('challengeResults.filters.maxPacePlaceholder'),
           user: t('challengeResults.filters.user'),
           userPlaceholder: t('challengeResults.filters.userPlaceholder'),
           apply: t('challengeResults.filters.apply'),
@@ -194,6 +208,7 @@ export default async function AdminChallengeResultsPage({
           t('challengeResults.columns.mistakes'),
           t('challengeResults.columns.time'),
           t('challengeResults.columns.recordedAt'),
+          t('challengeResults.columns.pace'),
           t('challengeResults.columns.source'),
           t('challengeResults.columns.meanThink'),
           t('challengeResults.columns.refusals'),
@@ -205,6 +220,7 @@ export default async function AdminChallengeResultsPage({
         renderRow={(row) => {
           const isRemoved = row.deletedAt != null;
           const mean = row.attempt ? meanThinkMs(row.attempt.state) : null;
+          const pace = secondsPerAnswer(row);
           return (
             <tr key={row.id} className="border-t border-border">
               <td className="px-4 py-3">
@@ -223,6 +239,9 @@ export default async function AdminChallengeResultsPage({
               <td className="px-4 py-3">{row.incorrectAnswers}</td>
               <td className="px-4 py-3">{row.timeTaken}</td>
               <td className="px-4 py-3 text-muted-foreground">{formatDateTime(row.createdAt)}</td>
+              <td className="px-4 py-3">
+                {pace != null ? pace.toFixed(2) : <span className="text-muted-foreground">-</span>}
+              </td>
               <td className="px-4 py-3">
                 {row.attempt ? (
                   <span
