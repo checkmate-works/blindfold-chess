@@ -48,7 +48,10 @@ describe('EmailPasswordForm', () => {
   });
 
   it('should call signIn Server Action and navigate on success', async () => {
-    mockSignIn.mockResolvedValue({ success: true, locale: 'en' });
+    mockSignIn.mockResolvedValue({
+      success: true,
+      destination: '/en/mypage?toast=login_success',
+    });
 
     render(<EmailPasswordForm />);
 
@@ -62,7 +65,7 @@ describe('EmailPasswordForm', () => {
     fireEvent.submit(screen.getByRole('button', { name: 'emailSignIn' }));
 
     await waitFor(() => {
-      expect(mockSignIn).toHaveBeenCalledWith('test@example.com', 'password123');
+      expect(mockSignIn).toHaveBeenCalledWith('test@example.com', 'password123', undefined);
     });
 
     await waitFor(() => {
@@ -163,7 +166,10 @@ describe('EmailPasswordForm', () => {
   });
 
   it('should not show error message when signIn succeeds', async () => {
-    mockSignIn.mockResolvedValue({ success: true, locale: 'en' });
+    mockSignIn.mockResolvedValue({
+      success: true,
+      destination: '/en/mypage?toast=login_success',
+    });
 
     render(<EmailPasswordForm />);
 
@@ -177,7 +183,7 @@ describe('EmailPasswordForm', () => {
     fireEvent.submit(screen.getByRole('button', { name: 'emailSignIn' }));
 
     await waitFor(() => {
-      expect(mockSignIn).toHaveBeenCalledWith('test@example.com', 'password123');
+      expect(mockSignIn).toHaveBeenCalledWith('test@example.com', 'password123', undefined);
     });
 
     await waitFor(() => {
@@ -188,10 +194,11 @@ describe('EmailPasswordForm', () => {
     expect(screen.queryByText('rateLimited')).not.toBeInTheDocument();
   });
 
-  it('should navigate with locale from server response', async () => {
-    mockSignIn.mockResolvedValue({ success: true, locale: 'ja' });
+  it('passes next to signIn and navigates to the destination it returns', async () => {
+    // A provisional user: the server drops next and picks username setup.
+    mockSignIn.mockResolvedValue({ success: true, destination: '/ja/mypage/setup-username' });
 
-    render(<EmailPasswordForm />);
+    render(<EmailPasswordForm next="/ja/games" />);
 
     fireEvent.change(screen.getByLabelText('emailLabel'), {
       target: { value: 'test@example.com' },
@@ -203,7 +210,10 @@ describe('EmailPasswordForm', () => {
     fireEvent.submit(screen.getByRole('button', { name: 'emailSignIn' }));
 
     await waitFor(() => {
-      expect(window.location.href).toBe('/ja/mypage?toast=login_success');
+      expect(mockSignIn).toHaveBeenCalledWith('test@example.com', 'password123', '/ja/games');
+    });
+    await waitFor(() => {
+      expect(window.location.href).toBe('/ja/mypage/setup-username');
     });
   });
 

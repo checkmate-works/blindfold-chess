@@ -15,8 +15,9 @@ import { signIn } from '../_actions/signIn';
 
 type Props = {
   /**
-   * Internal path to return to after signing in (validated upstream by
-   * `resolveReturnPath`). Omitted → the default mypage landing.
+   * Internal path to return to after signing in. Passed to the `signIn`
+   * Server Action, which decides the actual destination (and ignores this for
+   * a user who has not finished registration).
    */
   next?: string;
 };
@@ -27,8 +28,8 @@ export function EmailPasswordForm({ next }: Props) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const { error, isLoading, handleSubmit } = useAuthSubmit<{ locale: string }>({
-    action: () => signIn(email, password),
+  const { error, isLoading, handleSubmit } = useAuthSubmit<{ destination: string }>({
+    action: () => signIn(email, password, next),
     resolveError: (e) => (e === 'rateLimited' ? t('rateLimited') : t('emailSignInError')),
     onSuccess: (result) => {
       // Use hard navigation to ensure the server-side auth state is fully
@@ -36,9 +37,7 @@ export function EmailPasswordForm({ next }: Props) {
       // destination's Server Components before the browser has committed the
       // session cookies set by the signIn Server Action, resulting in an
       // unauthenticated request and blank page content.
-      const base = next ?? `/${result.locale}/mypage`;
-      const separator = base.includes('?') ? '&' : '?';
-      window.location.href = `${base}${separator}toast=login_success`;
+      window.location.href = result.destination;
     },
   });
 
