@@ -9,16 +9,15 @@ import 'server-only';
  * token, never cookies, so allowing any origin exposes nothing a cookie
  * session would.
  */
+const MOBILE_HEADERS = {
+  'Cache-Control': 'private, no-store',
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'Authorization, Content-Type',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+} as const;
+
 export function mobileJson(body: unknown, init: { status?: number } = {}): NextResponse {
-  return NextResponse.json(body, {
-    status: init.status ?? 200,
-    headers: {
-      'Cache-Control': 'private, no-store',
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Headers': 'Authorization, Content-Type',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    },
-  });
+  return NextResponse.json(body, { status: init.status ?? 200, headers: MOBILE_HEADERS });
 }
 
 export function mobileError(error: string, status: number): NextResponse {
@@ -27,7 +26,8 @@ export function mobileError(error: string, status: number): NextResponse {
 
 /** The CORS preflight answer every mobile route exports as `OPTIONS`. */
 export function mobilePreflight(): NextResponse {
-  return mobileJson(null, { status: 204 });
+  // A 204 may not carry a body, so this is not `mobileJson(null)`.
+  return new NextResponse(null, { status: 204, headers: MOBILE_HEADERS });
 }
 
 /** The request's JSON body, or undefined when it is not JSON. */

@@ -180,6 +180,16 @@
       "privacy": "Política de privacidade",
       "licenses": "Licenças",
       "version": "Versão {{version}}"
+    },
+    "account": {
+      "title": "Conta",
+      "signIn": "Entrar / Criar conta",
+      "signedOutNote": "Tudo funciona sem conta. Ao entrar, seus resultados nos desafios são registrados no ranking e você ganha EXP.",
+      "email": "E-mail",
+      "username": "Nome de usuário",
+      "setUsername": "Definir",
+      "signOut": "Sair",
+      "signOutConfirm": "Sair da conta?"
     }
   },
   "legalMoves": {
@@ -892,5 +902,96 @@
     "subtitle": "Termos de xadrez e seus significados",
     "search": "Buscar termos",
     "noResults": "Nenhum termo encontrado"
+  },
+  "account": {
+    "signIn": {
+      "title": "Entrar",
+      "emailLabel": "E-mail",
+      "emailPlaceholder": "voce@exemplo.com",
+      "passwordLabel": "Senha",
+      "passwordPlaceholder": "Insira sua senha",
+      "emailSignIn": "Entrar com e-mail",
+      "emailSignInError": "E-mail ou senha inválidos. Por favor, tente novamente.",
+      "forgotPassword": "Esqueceu sua senha?",
+      "noAccount": "Não tem uma conta?",
+      "signUp": "Cadastrar-se",
+      "rateLimited": "Muitas tentativas de login. Por favor, tente mais tarde."
+    },
+    "signUp": {
+      "title": "Cadastrar-se",
+      "description": "Cadastre-se no Xadrez às Cegas",
+      "emailLabel": "E-mail",
+      "emailPlaceholder": "voce@exemplo.com",
+      "passwordLabel": "Senha",
+      "passwordPlaceholder": "Pelo menos 8 caracteres",
+      "confirmPasswordLabel": "Confirmar senha",
+      "confirmPasswordPlaceholder": "Insira sua senha novamente",
+      "emailSignUp": "Cadastrar-se com e-mail",
+      "emailSignUpError": "Erro de cadastro. Por favor, tente novamente.",
+      "passwordMismatch": "As senhas não coincidem.",
+      "alreadyHaveAccount": "Já tem uma conta?",
+      "signIn": "Entrar",
+      "rateLimited": "Muitas tentativas de cadastro. Por favor, tente mais tarde."
+    },
+    "verifyEmail": {
+      "title": "Verifique seu E-mail",
+      "description": "Enviamos um link de confirmação para seu endereço de e-mail.",
+      "checkInbox": "Verifique sua caixa de entrada e clique no link para verificar sua conta.",
+      "checkSpam": "Se não encontrar o e-mail, verifique sua pasta de spam ou lixo eletrônico."
+    },
+    "setupUsername": {
+      "title": "Crie sua Conta",
+      "description": "Escolha um nome de usuário para sua conta.",
+      "usernameLabel": "Nome de usuário",
+      "usernamePlaceholder": "ex., jogador_xadrez1",
+      "usernameHint": "2-20 caracteres. Apenas letras minúsculas, números e underscores. Deve começar com uma letra.",
+      "cannotChange": "Seu nome de usuário não pode ser alterado uma vez definido.",
+      "submit": "Cadastrar-se",
+      "validation": {
+        "tooShort": "O nome de usuário deve ter pelo menos 2 caracteres.",
+        "tooLong": "O nome de usuário deve ter no máximo 20 caracteres.",
+        "invalidFormat": "O nome de usuário deve começar com uma letra minúscula, terminar com uma letra ou número, e conter apenas letras minúsculas, números e underscores não consecutivos.",
+        "taken": "Este nome de usuário não está disponível.",
+        "alreadySet": "O nome de usuário já foi definido.",
+        "error": "Ocorreu um erro. Por favor, tente novamente.",
+        "usernameInappropriate": "Este nome de usuário não é permitido.",
+        "displayNameInappropriate": "Este nome de exibição não é permitido.",
+        "displayNameImpersonation": "Este nome de exibição se parece com um nome reservado ou oficial. Escolha outro.",
+        "reserved": "Este nome de usuário não está disponível."
+      }
+    },
+    "validation": {
+      "password": {
+        "tooShort": "A senha deve ter pelo menos {{minLength}} caracteres.",
+        "missingLetter": "A senha deve conter pelo menos uma letra.",
+        "missingDigit": "A senha deve conter pelo menos um dígito.",
+        "weak": "A senha é muito fraca. Por favor, escolha uma senha mais segura."
+      }
+    }
+  },
+  "records": {
+    "title": "Meus recordes",
+    "period": "Período",
+    "periods": {
+      "all-time": "Todo o período",
+      "weekly": "Esta semana",
+      "monthly": "Este mês"
+    },
+    "rank": "#{{rank}}",
+    "empty": "Ainda não há desafios registrados.",
+    "loading": "Carregando…",
+    "loadFailed": "Não foi possível carregar seus recordes. Puxe para tentar de novo.",
+    "note": "Sua posição em cada ranking de desafios. Os rankings completos estão no site.",
+    "keys": {
+      "white": "Brancas",
+      "black": "Pretas",
+      "random": "Aleatório",
+      "king": "Rei",
+      "queen": "Dama",
+      "rook": "Torre",
+      "bishop": "Bispo",
+      "knight": "Cavalo",
+      "pawn": "Peão"
+    }
   }
 }

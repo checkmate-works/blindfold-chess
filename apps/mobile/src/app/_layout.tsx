@@ -61,6 +61,8 @@ function RootLayoutContent() {
  *   full-screen modal. It has no swipe to dismiss, so a timed run cannot be
  *   abandoned by an accidental edge swipe; its screens close it with
  *   `useCloseSession`.
+ * - `(account)` — sign-in, sign-up, username setup and the user's records:
+ *   a stack inside one card-style modal, closed from its header.
  * - `glossary/[slug]` — a half-height sheet (`formSheet` with a grabber,
  *   expandable to full height): a term is read and dismissed without losing
  *   one's place, and can be opened from anywhere.
@@ -89,6 +91,10 @@ function RootStack({ isDark }: { isDark: boolean }) {
           options={{ title: t("glossary.title") }}
         />
         <Stack.Screen name="glossary/[slug]" options={SHEET_SCREEN_OPTIONS} />
+        <Stack.Screen
+          name="(account)"
+          options={{ headerShown: false, presentation: "modal" }}
+        />
         <Stack.Screen
           name="(session)"
           options={{ headerShown: false, presentation: "fullScreenModal" }}

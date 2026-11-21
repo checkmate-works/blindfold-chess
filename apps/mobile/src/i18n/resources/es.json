@@ -180,6 +180,16 @@
       "privacy": "Política de privacidad",
       "licenses": "Licencias",
       "version": "Versión {{version}}"
+    },
+    "account": {
+      "title": "Cuenta",
+      "signIn": "Iniciar sesión / Crear cuenta",
+      "signedOutNote": "Todo funciona sin cuenta. Al iniciar sesión, tus resultados de desafíos se registran en la clasificación y ganas EXP.",
+      "email": "Correo",
+      "username": "Nombre de usuario",
+      "setUsername": "Configurar",
+      "signOut": "Cerrar sesión",
+      "signOutConfirm": "¿Cerrar sesión?"
     }
   },
   "legalMoves": {
@@ -892,5 +902,96 @@
     "subtitle": "Términos de ajedrez y su significado",
     "search": "Buscar términos",
     "noResults": "No hay términos que coincidan"
+  },
+  "account": {
+    "signIn": {
+      "title": "Iniciar Sesión",
+      "emailLabel": "Correo electrónico",
+      "emailPlaceholder": "tu@ejemplo.com",
+      "passwordLabel": "Contraseña",
+      "passwordPlaceholder": "Introduce tu contraseña",
+      "emailSignIn": "Iniciar sesión con correo electrónico",
+      "emailSignInError": "Correo electrónico o contraseña inválidos. Por favor, inténtalo de nuevo.",
+      "forgotPassword": "¿Olvidaste tu contraseña?",
+      "noAccount": "¿No tienes una cuenta?",
+      "signUp": "Registrarse",
+      "rateLimited": "Demasiados intentos de inicio de sesión. Por favor, inténtalo más tarde."
+    },
+    "signUp": {
+      "title": "Registrarse",
+      "description": "Regístrate en Ajedrez a Ciegas",
+      "emailLabel": "Correo electrónico",
+      "emailPlaceholder": "tu@ejemplo.com",
+      "passwordLabel": "Contraseña",
+      "passwordPlaceholder": "Al menos 8 caracteres",
+      "confirmPasswordLabel": "Confirmar contraseña",
+      "confirmPasswordPlaceholder": "Vuelve a introducir tu contraseña",
+      "emailSignUp": "Registrarse con correo electrónico",
+      "emailSignUpError": "Error de registro. Por favor, inténtalo de nuevo.",
+      "passwordMismatch": "Las contraseñas no coinciden.",
+      "alreadyHaveAccount": "¿Ya tienes una cuenta?",
+      "signIn": "Iniciar sesión",
+      "rateLimited": "Demasiados intentos de registro. Por favor, inténtalo más tarde."
+    },
+    "verifyEmail": {
+      "title": "Revisa tu Correo Electrónico",
+      "description": "Hemos enviado un enlace de confirmación a tu dirección de correo electrónico.",
+      "checkInbox": "Revisa tu bandeja de entrada y haz clic en el enlace para verificar tu cuenta.",
+      "checkSpam": "Si no encuentras el correo, revisa tu carpeta de spam o correo no deseado."
+    },
+    "setupUsername": {
+      "title": "Crea tu Cuenta",
+      "description": "Elige un nombre de usuario para tu cuenta.",
+      "usernameLabel": "Nombre de usuario",
+      "usernamePlaceholder": "ej., jugador_ajedrez1",
+      "usernameHint": "2-20 caracteres. Solo letras minúsculas, números y guiones bajos. Debe empezar con una letra.",
+      "cannotChange": "Tu nombre de usuario no se puede cambiar una vez establecido.",
+      "submit": "Registrarse",
+      "validation": {
+        "tooShort": "El nombre de usuario debe tener al menos 2 caracteres.",
+        "tooLong": "El nombre de usuario debe tener como máximo 20 caracteres.",
+        "invalidFormat": "El nombre de usuario debe empezar con una letra minúscula, terminar con una letra o número, y contener solo letras minúsculas, números y guiones bajos no consecutivos.",
+        "taken": "Este nombre de usuario no está disponible.",
+        "alreadySet": "El nombre de usuario ya ha sido establecido.",
+        "error": "Ocurrió un error. Por favor, inténtalo de nuevo.",
+        "usernameInappropriate": "Este nombre de usuario no está permitido.",
+        "displayNameInappropriate": "Este nombre para mostrar no está permitido.",
+        "displayNameImpersonation": "Este nombre para mostrar se parece a un nombre reservado u oficial. Elige otro.",
+        "reserved": "Este nombre de usuario no está disponible."
+      }
+    },
+    "validation": {
+      "password": {
+        "tooShort": "La contraseña debe tener al menos {{minLength}} caracteres.",
+        "missingLetter": "La contraseña debe contener al menos una letra.",
+        "missingDigit": "La contraseña debe contener al menos un dígito.",
+        "weak": "La contraseña es demasiado débil. Por favor, elige una contraseña más segura."
+      }
+    }
+  },
+  "records": {
+    "title": "Mis récords",
+    "period": "Periodo",
+    "periods": {
+      "all-time": "Histórico",
+      "weekly": "Esta semana",
+      "monthly": "Este mes"
+    },
+    "rank": "#{{rank}}",
+    "empty": "Aún no hay desafíos registrados.",
+    "loading": "Cargando…",
+    "loadFailed": "No se pudieron cargar tus récords. Desliza para reintentar.",
+    "note": "Tu posición en cada clasificación de desafíos. Las clasificaciones completas están en el sitio web.",
+    "keys": {
+      "white": "Blancas",
+      "black": "Negras",
+      "random": "Aleatorio",
+      "king": "Rey",
+      "queen": "Dama",
+      "rook": "Torre",
+      "bishop": "Alfil",
+      "knight": "Caballo",
+      "pawn": "Peón"
+    }
   }
 }

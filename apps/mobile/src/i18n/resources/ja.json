@@ -180,6 +180,16 @@
       "privacy": "プライバシーポリシー",
       "licenses": "ライセンス",
       "version": "バージョン {{version}}"
+    },
+    "account": {
+      "title": "アカウント",
+      "signIn": "ログイン / 新規登録",
+      "signedOutNote": "アカウントがなくてもすべての練習を利用できます。ログインするとチャレンジの結果がランキングに記録され、経験値も獲得できます。",
+      "email": "メールアドレス",
+      "username": "ユーザー名",
+      "setUsername": "設定する",
+      "signOut": "ログアウト",
+      "signOutConfirm": "ログアウトしますか？"
     }
   },
   "legalMoves": {
@@ -892,5 +902,96 @@
     "subtitle": "チェス用語とその意味",
     "search": "用語を検索",
     "noResults": "該当する用語はありません"
+  },
+  "account": {
+    "signIn": {
+      "title": "サインイン",
+      "emailLabel": "メールアドレス",
+      "emailPlaceholder": "you@example.com",
+      "passwordLabel": "パスワード",
+      "passwordPlaceholder": "パスワードを入力",
+      "emailSignIn": "メールでサインイン",
+      "emailSignInError": "メールアドレスまたはパスワードが正しくありません。",
+      "forgotPassword": "パスワードをお忘れですか？",
+      "noAccount": "アカウントをお持ちでないですか？",
+      "signUp": "登録はこちら",
+      "rateLimited": "サインイン試行回数が多すぎます。しばらくしてからお試しください。"
+    },
+    "signUp": {
+      "title": "アカウント登録",
+      "description": "Blindfold Chess のアカウントを作成",
+      "emailLabel": "メールアドレス",
+      "emailPlaceholder": "you@example.com",
+      "passwordLabel": "パスワード",
+      "passwordPlaceholder": "8文字以上",
+      "confirmPasswordLabel": "パスワード（確認）",
+      "confirmPasswordPlaceholder": "パスワードを再入力",
+      "emailSignUp": "メールで登録",
+      "emailSignUpError": "登録に失敗しました。もう一度お試しください。",
+      "passwordMismatch": "パスワードが一致しません。",
+      "alreadyHaveAccount": "既にアカウントをお持ちですか？",
+      "signIn": "ログイン",
+      "rateLimited": "サインアップ試行回数が多すぎます。しばらくしてからお試しください。"
+    },
+    "verifyEmail": {
+      "title": "メールをご確認ください",
+      "description": "確認リンクをメールアドレスに送信しました。",
+      "checkInbox": "受信トレイを確認し、リンクをクリックしてアカウントを認証してください。",
+      "checkSpam": "メールが見当たらない場合は、迷惑メールフォルダーもご確認ください。"
+    },
+    "setupUsername": {
+      "title": "アカウント登録",
+      "description": "アカウント名を決めてください。",
+      "usernameLabel": "ユーザー名",
+      "usernamePlaceholder": "例: chess_player1",
+      "usernameHint": "2〜20文字。英小文字、数字、アンダースコアのみ使用できます。先頭は英小文字にしてください。",
+      "cannotChange": "ユーザー名は一度確定するとあとで変更できません。",
+      "submit": "登録",
+      "validation": {
+        "tooShort": "ユーザー名は2文字以上で入力してください。",
+        "tooLong": "ユーザー名は20文字以下で入力してください。",
+        "invalidFormat": "ユーザー名は英小文字で始まり、英小文字または数字で終わる必要があります。使用できるのは英小文字、数字、連続しないアンダースコアのみです。",
+        "taken": "このユーザー名は使用できません。",
+        "alreadySet": "ユーザー名は既に設定済みです。",
+        "error": "エラーが発生しました。もう一度お試しください。",
+        "usernameInappropriate": "このユーザー名は使用できません。",
+        "displayNameInappropriate": "この表示名は使用できません。",
+        "displayNameImpersonation": "この表示名は予約済みの名前や公式の名前と紛らわしいため使用できません。別の名前を選んでください。",
+        "reserved": "このユーザー名は使用できません。"
+      }
+    },
+    "validation": {
+      "password": {
+        "tooShort": "パスワードは{{minLength}}文字以上で入力してください。",
+        "missingLetter": "パスワードには英字を1文字以上含めてください。",
+        "missingDigit": "パスワードには数字を1文字以上含めてください。",
+        "weak": "パスワードが脆弱です。より強力なパスワードを選択してください。"
+      }
+    }
+  },
+  "records": {
+    "title": "マイレコード",
+    "period": "期間",
+    "periods": {
+      "all-time": "全期間",
+      "weekly": "今週",
+      "monthly": "今月"
+    },
+    "rank": "{{rank}}位",
+    "empty": "まだ記録されたチャレンジはありません。",
+    "loading": "読み込み中…",
+    "loadFailed": "記録を読み込めませんでした。引っ張って再読み込みしてください。",
+    "note": "各チャレンジのランキングでのあなたの順位です。ランキング全体はWebサイトで見られます。",
+    "keys": {
+      "white": "白",
+      "black": "黒",
+      "random": "ランダム",
+      "king": "キング",
+      "queen": "クイーン",
+      "rook": "ルーク",
+      "bishop": "ビショップ",
+      "knight": "ナイト",
+      "pawn": "ポーン"
+    }
   }
 }

@@ -180,6 +180,16 @@
       "privacy": "Privacy Policy",
       "licenses": "Licenses",
       "version": "Version {{version}}"
+    },
+    "account": {
+      "title": "Account",
+      "signIn": "Sign in / Create account",
+      "signedOutNote": "Everything works without an account. Signing in records your challenge results on the leaderboard and earns EXP.",
+      "email": "Email",
+      "username": "Username",
+      "setUsername": "Set",
+      "signOut": "Sign out",
+      "signOutConfirm": "Sign out?"
     }
   },
   "legalMoves": {
@@ -892,5 +902,96 @@
     "subtitle": "Chess terms and their meanings",
     "search": "Search terms",
     "noResults": "No matching terms"
+  },
+  "account": {
+    "signIn": {
+      "title": "Sign In",
+      "emailLabel": "Email",
+      "emailPlaceholder": "you@example.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "emailSignIn": "Sign in with email",
+      "emailSignInError": "Invalid email or password. Please try again.",
+      "forgotPassword": "Forgot your password?",
+      "noAccount": "Don't have an account?",
+      "signUp": "Register",
+      "rateLimited": "Too many sign-in attempts. Please try again later."
+    },
+    "signUp": {
+      "title": "Register",
+      "description": "Register for Blindfold Chess",
+      "emailLabel": "Email",
+      "emailPlaceholder": "you@example.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "At least 8 characters",
+      "confirmPasswordLabel": "Confirm password",
+      "confirmPasswordPlaceholder": "Re-enter your password",
+      "emailSignUp": "Register with email",
+      "emailSignUpError": "Registration failed. Please try again.",
+      "passwordMismatch": "Passwords do not match.",
+      "alreadyHaveAccount": "Already have an account?",
+      "signIn": "Sign in",
+      "rateLimited": "Too many sign-up attempts. Please try again later."
+    },
+    "verifyEmail": {
+      "title": "Check Your Email",
+      "description": "We've sent a confirmation link to your email address.",
+      "checkInbox": "Please check your inbox and click the link to verify your account.",
+      "checkSpam": "If you can’t find the email, please check your spam or junk folder."
+    },
+    "setupUsername": {
+      "title": "Create Your Account",
+      "description": "Choose a username for your account.",
+      "usernameLabel": "Username",
+      "usernamePlaceholder": "e.g., chess_player1",
+      "usernameHint": "2-20 characters. Lowercase letters, numbers, and underscores only. Must start with a letter.",
+      "cannotChange": "Your username cannot be changed once set.",
+      "submit": "Register",
+      "validation": {
+        "tooShort": "Username must be at least 2 characters.",
+        "tooLong": "Username must be at most 20 characters.",
+        "invalidFormat": "Username must start with a lowercase letter, end with a letter or number, and contain only lowercase letters, numbers, and non-consecutive underscores.",
+        "taken": "This username is not available.",
+        "alreadySet": "Username has already been set.",
+        "error": "An error occurred. Please try again.",
+        "usernameInappropriate": "This username is not allowed.",
+        "displayNameInappropriate": "This display name is not allowed.",
+        "displayNameImpersonation": "This display name looks like a reserved or official name. Please choose a different one.",
+        "reserved": "This username is not available."
+      }
+    },
+    "validation": {
+      "password": {
+        "tooShort": "Password must be at least {{minLength}} characters.",
+        "missingLetter": "Password must contain at least one letter.",
+        "missingDigit": "Password must contain at least one digit.",
+        "weak": "Password is too weak. Please choose a stronger password."
+      }
+    }
+  },
+  "records": {
+    "title": "My records",
+    "period": "Period",
+    "periods": {
+      "all-time": "All time",
+      "weekly": "This week",
+      "monthly": "This month"
+    },
+    "rank": "#{{rank}}",
+    "empty": "No recorded challenges yet.",
+    "loading": "Loading…",
+    "loadFailed": "Could not load your records. Pull to retry.",
+    "note": "Your rank on each challenge leaderboard. The full leaderboards are on the website.",
+    "keys": {
+      "white": "White",
+      "black": "Black",
+      "random": "Random",
+      "king": "King",
+      "queen": "Queen",
+      "rook": "Rook",
+      "bishop": "Bishop",
+      "knight": "Knight",
+      "pawn": "Pawn"
+    }
   }
 }

@@ -2,6 +2,7 @@ import Constants from "expo-constants";
 import { useTranslation } from "react-i18next";
 import { ListRow, ListSection, TabScrollView } from "../../../components";
 import { changeLanguage, type Locale } from "../../../i18n";
+import { AccountSection } from "../../../features/settings/AccountSection";
 import { BoardPreferencesSection } from "../../../features/settings/BoardPreferencesSection";
 import { openWebPage } from "../../../lib/web-pages";
 
@@ -42,6 +43,7 @@ export default function SettingsTab() {
 
   return (
     <TabScrollView>
+      <AccountSection />
       <ListSection title={t("settings.language")}>
         {LANGUAGE_ORDER.map((language) => (
           <ListRow

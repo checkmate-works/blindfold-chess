@@ -140,3 +140,36 @@ out_ts = Path("src/features/help/module-help-pages.ts")
 out_ts.parent.mkdir(parents=True, exist_ok=True)
 out_ts.write_text("\n".join(lines))
 print({k: len(v) for k, v in order.items()})
+
+
+# --- Accounts: the sign-in, sign-up, verify-email and username texts, under
+# `account.<web namespace>.*`, so the app says what the web says.
+ACCOUNT_KEYS = {
+    "signIn": ["title", "emailLabel", "emailPlaceholder", "passwordLabel",
+               "passwordPlaceholder", "emailSignIn", "emailSignInError",
+               "forgotPassword", "noAccount", "signUp", "rateLimited"],
+    "signUp": ["title", "description", "emailLabel", "emailPlaceholder",
+               "passwordLabel", "passwordPlaceholder", "confirmPasswordLabel",
+               "confirmPasswordPlaceholder", "emailSignUp", "emailSignUpError",
+               "passwordMismatch", "alreadyHaveAccount", "signIn", "rateLimited"],
+    "verifyEmail": ["title", "description", "checkInbox", "checkSpam"],
+    "setupUsername": ["title", "description", "usernameLabel",
+                      "usernamePlaceholder", "usernameHint", "cannotChange",
+                      "submit", "validation"],
+    "validation": ["password"],
+}
+
+for locale in LOCALES:
+    web = json.loads((WEB / f"{locale}.json").read_text())
+    path = MOBILE / f"{locale}.json"
+    mobile = json.loads(path.read_text())
+    account = mobile.setdefault("account", {})
+    for ns, keys in ACCOUNT_KEYS.items():
+        for key in keys:
+            value = web[ns][key]
+            if isinstance(value, dict):
+                value = {k: icu_to_i18next(v) for k, v in value.items()}
+            else:
+                value = icu_to_i18next(value)
+            account.setdefault(ns, {})[key] = value
+    path.write_text(json.dumps(mobile, ensure_ascii=False, indent=2) + "\n")
