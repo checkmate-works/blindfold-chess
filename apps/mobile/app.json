@@ -27,6 +27,15 @@
       "favicon": "./assets/favicon.png",
       "bundler": "metro"
     },
-    "plugins": ["expo-router", "expo-localization"]
+    "plugins": [
+      "expo-router",
+      "expo-localization",
+      [
+        "expo-secure-store",
+        {
+          "faceIDPermission": false
+        }
+      ]
+    ]
   }
 }
