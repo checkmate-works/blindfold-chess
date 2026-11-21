@@ -1,5 +1,10 @@
 import { getPositionDetailPath } from '@/lib/positions/routes';
 
+import {
+  type LeaderboardModule,
+  MODULES,
+  buildDetailPath,
+} from '@/app/[locale]/(public)/leaderboard/_lib/types';
 import { buildTopicPostHref } from '@/app/[locale]/(public)/topics/_lib/topic-paths';
 
 import type { NotificationWithActor } from './queries';
@@ -15,6 +20,7 @@ import {
   isPositionMetadata,
   isPostMetadata,
   isRankGrantMetadata,
+  isRankUpdateLikeMetadata,
   isRepertoireChunkLinkMetadata,
   isReplyMetadata,
 } from './type-guards';
@@ -246,6 +252,16 @@ function buildEngagementLink(notification: NotificationWithActor): string | null
     // of its own, so the useful destination is the person who said hello —
     // a new member's first chance to look someone up and follow back.
     return notification.actor ? `/u/${notification.actor.username}` : null;
+  }
+  if (notification.type === 'like' && notification.targetType === 'challenge_rank_update') {
+    // A like on the recipient's leaderboard rank-update card. The card is
+    // reaped after 30 days and has no page of its own; the leaderboard it
+    // announced is what the card itself links to, and it outlives the card.
+    const m = notification.metadata;
+    if (isRankUpdateLikeMetadata(m) && MODULES.includes(m.menuType as LeaderboardModule)) {
+      return buildDetailPath('all-time', m.menuType as LeaderboardModule, m.leaderboardKey);
+    }
+    return null;
   }
   if (notification.type === 'like' && notification.targetType === 'position') {
     if (isPositionMetadata(notification.metadata)) {

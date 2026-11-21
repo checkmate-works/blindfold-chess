@@ -64,6 +64,30 @@ describe('buildNotificationLink — arrival announcements', () => {
   });
 });
 
+describe('buildNotificationLink — like on a rank-update card', () => {
+  const like = (metadata: Record<string, unknown>) =>
+    buildNotificationLink(
+      makeNotification({
+        type: 'like',
+        targetType: 'challenge_rank_update',
+        targetId: 'feed-1',
+        metadata,
+      }),
+      {}
+    );
+
+  it('opens the all-time leaderboard the card announced', () => {
+    expect(like({ menuType: 'legal_moves', leaderboardKey: 'rook' })).toBe(
+      '/leaderboard/score/all-time/legal-moves/rook'
+    );
+  });
+
+  it('has no link when the metadata names no known leaderboard', () => {
+    expect(like({})).toBeNull();
+    expect(like({ menuType: 'retired_module', leaderboardKey: 'x' })).toBeNull();
+  });
+});
+
 describe('buildNotificationLink — topic posts (openings / squares)', () => {
   it('links a new_post to the opening post page', () => {
     expect(

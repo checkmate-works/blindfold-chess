@@ -2277,6 +2277,8 @@
       "rankUpdate": {
         "newEntry": "Entrou no ranking",
         "improved": "Melhorou sua posição!",
+        "like": "Curtir",
+        "unlike": "Descurtir",
         "rank": "Posição",
         "score": "Pontuação"
       },
@@ -4171,6 +4173,7 @@
     "likeCommentMessage": "{actor} curtiu seu comentário",
     "likeGameMessage": "{actor} curtiu sua partida",
     "likeJoinAnnouncementMessage": "{actor} curtiu seu aviso de chegada",
+    "likeRankUpdateMessage": "{actor} curtiu sua entrada no ranking",
     "replyMessage": "{actor} respondeu ao seu comentário",
     "unknownNotification": "Você tem uma nova notificação",
     "announcementMessage": "Novo anúncio: {title}",

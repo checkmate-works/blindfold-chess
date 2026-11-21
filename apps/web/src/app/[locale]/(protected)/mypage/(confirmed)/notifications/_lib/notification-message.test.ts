@@ -42,6 +42,12 @@ describe('buildNotificationMessage — like', () => {
     );
   });
 
+  it('reads "liked your leaderboard entry" for a like on a rank-update card', () => {
+    expect(message({ type: 'like', targetType: 'challenge_rank_update', targetId: 'feed-1' })).toBe(
+      'likeRankUpdateMessage:{"actor":"Alice"}'
+    );
+  });
+
   it('still reads "liked your game" for a shared game', () => {
     expect(message({ type: 'like', targetType: 'game', targetId: 'g1' })).toBe(
       'likeGameMessage:{"actor":"Alice"}'

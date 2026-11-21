@@ -225,6 +225,7 @@ describe('deleteAccount', () => {
         'game',
         'game_comment',
         'member_joined',
+        'challenge_rank_update',
       ]);
     });
 
@@ -244,6 +245,7 @@ describe('deleteAccount', () => {
         [games.authorId, testUserId],
         [gameComments.authorId, testUserId],
         [feedItems.actorId, testUserId],
+        [feedItems.actorId, testUserId],
       ]);
     });
 
@@ -252,7 +254,7 @@ describe('deleteAccount', () => {
 
       // Each delete targets `likes`, matching target_id ∈ the owned-content
       // subquery (the "given" likes — user_id-keyed — are left untouched).
-      expect(mockDelete).toHaveBeenCalledTimes(7);
+      expect(mockDelete).toHaveBeenCalledTimes(8);
       for (const call of mockDeleteWhere.mock.calls) {
         const cond = call[0] as { __and: { __inArray: [unknown, unknown] }[] };
         expect(cond.__and[1].__inArray).toEqual([likes.targetId, 'owned-content-subquery']);
