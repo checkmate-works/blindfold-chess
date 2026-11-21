@@ -71,7 +71,10 @@ Generated, not edited by hand; re-run the script after the web changes:
 
 - `scripts/port-help-texts.py` — the practice modules' how-to-play,
   tutorial and mode texts (`moduleHelp.*` in the four dictionaries and
-  `features/help/module-help-pages.ts`) and recall's strings (`recall.*`).
+  `features/help/module-help-pages.ts`), recall's strings (`recall.*`) and
+  the account screens' (`account.*`).
+- `pnpm bundle-glossary` (`scripts/bundle-glossary.ts`) — the web's glossary
+  seed into `features/glossary/generated/`.
 - `pnpm bundle-learn-content` (`scripts/bundle-learn-content.ts`) — the web's
   learn articles and SVG figures into `features/learn/generated/`. They
   render through `features/learn/markdown.ts` + `MarkdownView` (the markdown
@@ -82,15 +85,44 @@ Shared data lives in `@blindfold-chess/features` instead where both apps
 read it: the position-memory presets (`fen-practice`'s
 `POSITION_MEMORY_FENS`) and the opening families (`openings`).
 
-## What the app does not have
+## Accounts and recorded challenges
 
-There is no mobile API on the web side, and the app makes no network calls
-(Stockfish runs on the device). Everything that needs the server stays
-web-only: sign-in and accounts, saved challenge results, EXP and the
-leaderboard, the dojo ranks, puzzles and community positions, repertoires,
-topics and articles, the home feed, Maia. Finished AI games are kept on the
-device (`features/game-history/`, AsyncStorage `"AI_GAME_HISTORY"`, newest
-first, at most 50), like the web keeps them in localStorage.
+Signing in is optional; every practice works signed out. The app talks to
+the server only through the web app's mobile API, `/api/mobile/v1/*`
+(`apps/web/src/app/api/mobile/v1/`, guard `@/lib/mobile-api/auth`): the
+Supabase access token goes in `Authorization: Bearer`, the routes reuse the
+web's cores (`createProfileForUser`, `lib/challenge/attempts`,
+`finishAttemptForUser`, `getUserRanks`) and the app never touches the
+database. Sign-in calls Supabase Auth directly; sign-up goes through
+`POST /sign-up` so the web's rate limit and password rules apply.
+
+- `src/auth/` — backend config (build variables `EXPO_PUBLIC_SUPABASE_URL`,
+  `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `EXPO_PUBLIC_API_ORIGIN`; a
+  development build without them uses the local stack on the Metro host; a
+  release build without them has no accounts), the Supabase client (session
+  in SecureStore), `callMobileApi` (retries a 401 once after a refresh) and
+  the `useAuth` store.
+- `(account)` screens: sign-in, sign-up, setup-username, records (the
+  user's own ranks). Settings has the Account section.
+- **Challenges follow the web's rules** (60 s, `MISTAKE_LIMIT`): the six
+  challenge sessions mount inside `ChallengeAttemptGate`
+  (`features/challenge/`), which starts a server attempt when signed in and
+  runs the shared session hook in remote mode (the server supplies and
+  grades every question); signed out, the run is local. The result screen's
+  `ChallengeRecordStatus` finishes the attempt (the web's resend rules) and
+  says whether it was recorded. Each challenge's setup takes only what the
+  web's challenge takes (orientation, or the piece for legal moves / route
+  planner, which are the leaderboard keys).
+- **The app shows no other user.** Only the user's own ranks; full
+  leaderboards, profiles and anything other users wrote stay on the web, so
+  the app needs none of the reporting and blocking an app showing
+  user-generated content must have.
+
+Still web-only: EXP and dojo rank display, puzzles and community positions,
+repertoires, topics and articles, the home feed, Maia, password reset (the
+app opens the web page). Finished AI games are kept on the device
+(`features/game-history/`, AsyncStorage `"AI_GAME_HISTORY"`, newest first, at
+most 50), like the web keeps them in localStorage.
 
 ## Practice modules: the shared registry plus a mobile table
 
@@ -129,7 +161,7 @@ therefore edited twice, in two different key schemas, and a feature that
 exists only on the web (Daily Puzzle, dojo, articles, …) has no mobile key at
 all. `src/i18n/__tests__/parity.test.ts` keeps the four files' key sets equal.
 Keys are read with `t("...")`; some call sites build the key from a namespace
-variable (for example `TimeLimitSettingsForm.tsx`), and those sites list the
+variable (for example `features/help/HelpSheet.tsx`), and those sites list the
 concrete keys they produce in a comment so that a grep for the full key still
 finds them.
 
