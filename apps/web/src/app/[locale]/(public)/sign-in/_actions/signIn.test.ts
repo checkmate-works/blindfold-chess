@@ -6,6 +6,7 @@ const mockSignInWithPassword = vi.fn();
 const mockLogActivityEvent = vi.fn();
 const mockGetClientIp = vi.fn();
 const mockGetLocaleFromRequest = vi.fn();
+const mockGetViewerProfile = vi.fn();
 
 vi.mock('@/lib/supabase/server', () => ({
   createClient: () =>
@@ -28,6 +29,10 @@ vi.mock('@/lib/locale', () => ({
   getLocaleFromRequest: (...args: unknown[]) => mockGetLocaleFromRequest(...args),
 }));
 
+vi.mock('@/lib/users/viewer-profile', () => ({
+  getViewerProfile: (...args: unknown[]) => mockGetViewerProfile(...args),
+}));
+
 vi.mock('@/lib/security/rate-limit-ip', () => ({
   guardByIpRateLimit: vi.fn().mockResolvedValue(null),
 }));
@@ -38,9 +43,10 @@ describe('signIn', () => {
   beforeEach(() => {
     mockGetClientIp.mockResolvedValue('127.0.0.1');
     mockGetLocaleFromRequest.mockResolvedValue('en');
+    mockGetViewerProfile.mockResolvedValue({ id: testUserId, username: 'tester' });
   });
 
-  it('should return success with locale on successful sign-in', async () => {
+  it('returns the mypage landing with the login toast for a registered user', async () => {
     mockSignInWithPassword.mockResolvedValue({
       error: null,
       data: { user: { id: testUserId } },
@@ -48,7 +54,7 @@ describe('signIn', () => {
 
     const result = await signIn('test@example.com', 'password123');
 
-    expect(result).toEqual({ success: true, locale: 'en' });
+    expect(result).toEqual({ success: true, destination: '/en/mypage?toast=login_success' });
   });
 
   it('should call logActivityEvent with userId and action login on successful sign-in', async () => {
@@ -88,7 +94,7 @@ describe('signIn', () => {
     expect(mockLogActivityEvent).not.toHaveBeenCalled();
   });
 
-  it('should return locale from getLocaleFromRequest on success', async () => {
+  it('builds the default landing from the request locale', async () => {
     mockGetLocaleFromRequest.mockResolvedValue('ja');
     mockSignInWithPassword.mockResolvedValue({
       error: null,
@@ -97,6 +103,44 @@ describe('signIn', () => {
 
     const result = await signIn('test@example.com', 'password123');
 
-    expect(result).toEqual({ success: true, locale: 'ja' });
+    expect(result).toEqual({ success: true, destination: '/ja/mypage?toast=login_success' });
+  });
+
+  it('returns a registered user to next', async () => {
+    mockSignInWithPassword.mockResolvedValue({
+      error: null,
+      data: { user: { id: testUserId } },
+    });
+
+    const result = await signIn('test@example.com', 'password123', '/en/games?tab=mine');
+
+    expect(result).toEqual({
+      success: true,
+      destination: '/en/games?tab=mine&toast=login_success',
+    });
+  });
+
+  it('ignores a next that would leave the origin', async () => {
+    mockSignInWithPassword.mockResolvedValue({
+      error: null,
+      data: { user: { id: testUserId } },
+    });
+
+    const result = await signIn('test@example.com', 'password123', '//evil.com');
+
+    expect(result).toEqual({ success: true, destination: '/en/mypage?toast=login_success' });
+  });
+
+  it('sends a user without a profile to username setup and drops next', async () => {
+    mockGetViewerProfile.mockResolvedValue(null);
+    mockSignInWithPassword.mockResolvedValue({
+      error: null,
+      data: { user: { id: testUserId } },
+    });
+
+    const result = await signIn('test@example.com', 'password123', '/en/games');
+
+    expect(mockGetViewerProfile).toHaveBeenCalledWith(testUserId);
+    expect(result).toEqual({ success: true, destination: '/en/mypage/setup-username' });
   });
 });
