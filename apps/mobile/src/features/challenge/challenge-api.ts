@@ -128,11 +128,43 @@ const FAILURE_RESEND_DELAYS_MS = [500, 1000, 2000, 4000, 8000];
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+type FinishBody =
+  | { status: "pending"; remainingMs: number }
+  | { status: "done"; success: true; grantedRanks: { slug: string }[] }
+  | { status: "done"; success: false };
+
+/** The finish body, or undefined when it is not one this client can act on. */
+function readFinishBody(v: unknown): FinishBody | undefined {
+  if (!isRecord(v)) return undefined;
+  if (v.status === "pending") {
+    return typeof v.remainingMs === "number"
+      ? { status: "pending", remainingMs: v.remainingMs }
+      : undefined;
+  }
+  if (v.status !== "done") return undefined;
+  if (v.success === false) return { status: "done", success: false };
+  if (v.success !== true || !Array.isArray(v.grantedRanks)) return undefined;
+  return {
+    status: "done",
+    success: true,
+    // A rank entry without a slug cannot be shown; drop it, keep the rest.
+    grantedRanks: v.grantedRanks.filter(
+      (r: unknown): r is { slug: string } =>
+        isRecord(r) && typeof r.slug === "string",
+    ),
+  };
+}
+
 /**
  * Finishes a recorded challenge, as the web's `useChallengeResultSave`
  * does: resend while the server says `pending` (its clock has not run out
  * yet), and on a failed request with backoff. Finish is idempotent, so
  * resending is safe.
+ *
+ * Never rejects. A 2xx whose body is not JSON or not a `pending` / `done`
+ * body counts as a failed request — resent with the same backoff, then
+ * `{ kind: "failed" }` — since a captive portal or proxy page can be gone
+ * by a later try, and resending finish is safe.
  */
 export async function finishChallenge(
   attemptId: string,
@@ -143,17 +175,17 @@ export async function finishChallenge(
     const response = await callMobileApi(`/challenges/${attemptId}/finish`, {
       method: "POST",
     });
-    if (typeof response === "string" || !response.ok) {
-      if (response === "signedOut") return { kind: "failed" };
+    if (response === "signedOut") return { kind: "failed" };
+    const body =
+      typeof response === "string" || !response.ok
+        ? undefined
+        : readFinishBody(await response.json().catch(() => undefined));
+    if (body === undefined) {
       if (failures >= FAILURE_RESEND_DELAYS_MS.length)
         return { kind: "failed" };
       await wait(FAILURE_RESEND_DELAYS_MS[failures++]);
       continue;
     }
-    const body = (await response.json()) as
-      | { status: "pending"; remainingMs: number }
-      | { status: "done"; success: true; grantedRanks: { slug: string }[] }
-      | { status: "done"; success: false; error: string };
     if (body.status === "pending") {
       if (pending >= MAX_PENDING_RESENDS) return { kind: "failed" };
       pending += 1;

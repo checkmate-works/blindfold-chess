@@ -1,5 +1,5 @@
 import type { RemoteChallengePort } from "@blindfold-chess/features/challenge-attempt";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // The real module pulls in the Supabase client and React Native, which do
 // not load under vitest; these tests only reach the 2xx paths, so
@@ -10,7 +10,7 @@ vi.mock("../../auth/api-client", () => ({
 }));
 
 import { callMobileApi } from "../../auth/api-client";
-import { beginChallenge } from "./challenge-api";
+import { beginChallenge, finishChallenge } from "./challenge-api";
 
 const api = vi.mocked(callMobileApi);
 
@@ -101,5 +101,61 @@ describe("submitAnswer of a recorded attempt", () => {
     const remote = await port();
     api.mockResolvedValueOnce(json({ status: "accepted", correct: "yes" }));
     await expect(remote.submitAnswer(0, "white")).rejects.toThrow();
+  });
+});
+
+describe("finishChallenge", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  /** Runs finish to completion, skipping the resend waits. */
+  async function finish() {
+    const result = finishChallenge("a1");
+    await vi.runAllTimersAsync();
+    return result;
+  }
+
+  it("returns the granted ranks of a recorded result", async () => {
+    api.mockResolvedValue(
+      json({ status: "done", success: true, grantedRanks: [{ slug: "pawn" }] }),
+    );
+    await expect(finish()).resolves.toEqual({
+      kind: "recorded",
+      grantedRanks: [{ slug: "pawn" }],
+    });
+  });
+
+  it("returns notRecorded when the server declined the result", async () => {
+    api.mockResolvedValue(
+      json({ status: "done", success: false, error: "implausible_speed" }),
+    );
+    await expect(finish()).resolves.toEqual({ kind: "notRecorded" });
+  });
+
+  it("resends after a non-JSON 2xx and returns the result of the next try", async () => {
+    api
+      .mockResolvedValueOnce(portalPage())
+      .mockResolvedValue(
+        json({ status: "done", success: true, grantedRanks: [] }),
+      );
+    await expect(finish()).resolves.toEqual({
+      kind: "recorded",
+      grantedRanks: [],
+    });
+    expect(api).toHaveBeenCalledTimes(2);
+  });
+
+  it("resolves to failed, not a rejection, when every 2xx body is not JSON", async () => {
+    api.mockImplementation(async () => portalPage());
+    await expect(finish()).resolves.toEqual({ kind: "failed" });
+  });
+
+  it("resolves to failed when every 2xx body has an unknown shape", async () => {
+    api.mockImplementation(async () => json({ status: "pending" }));
+    await expect(finish()).resolves.toEqual({ kind: "failed" });
   });
 });
