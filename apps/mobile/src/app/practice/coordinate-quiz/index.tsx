@@ -26,6 +26,12 @@ export default function CoordinateQuizSetup() {
       isLoaded={isLoaded}
       startLabel={t("coordinateQuiz.setup.startQuiz")}
       onStart={handleStartQuiz}
+      onStartTraining={() =>
+        router.push({
+          pathname: "/practice/coordinate-quiz/training",
+          params: { orientation: settings.orientation },
+        })
+      }
     >
       <SettingsForm
         settings={settings}

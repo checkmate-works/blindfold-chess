@@ -1,6 +1,5 @@
 import { useCallback } from "react";
-import { View, Text, StyleSheet } from "react-native";
-import { useTranslation } from "react-i18next";
+import { View, StyleSheet } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { useCoordinateQuizSession } from "@blindfold-chess/features/coordinate-quiz/client";
@@ -12,11 +11,11 @@ import {
   Screen,
 } from "../../../../components";
 import {
-  ChessBoard,
-  FeedbackOverlay,
+  QuizBoard,
+  TurnIndicator,
 } from "../../../../features/coordinate-quiz/components";
 import { SessionCloseButton } from "../../../../navigation/SessionCloseButton";
-import { useTheme, fontSize, fontWeight, spacing } from "../../../../theme";
+import { spacing } from "../../../../theme";
 import {
   BOARD_ORIENTATIONS,
   DEFAULT_QUIZ_SETTINGS,
@@ -28,9 +27,7 @@ import type {
 import { parseEnumParam, parseIntParam } from "../../../../lib/route-params";
 
 export default function CoordinateQuizSession() {
-  const { t } = useTranslation();
   const router = useRouter();
-  const { colors } = useTheme();
   const params = useLocalSearchParams<{
     duration: string;
     orientation: string;
@@ -104,27 +101,7 @@ export default function CoordinateQuizSession() {
               <View style={styles.closeContainer}>
                 <SessionCloseButton confirm />
               </View>
-              <View style={styles.turnIndicator}>
-                <View
-                  style={[
-                    styles.turnDot,
-                    {
-                      backgroundColor:
-                        currentQuestion?.orientation === "white"
-                          ? colors.card
-                          : colors.foreground,
-                      borderColor: colors.foreground,
-                    },
-                  ]}
-                />
-                <Text
-                  style={[styles.turnText, { color: colors.mutedForeground }]}
-                >
-                  {currentQuestion?.orientation === "white"
-                    ? t("coordinateQuiz.session.whiteToMove")
-                    : t("coordinateQuiz.session.blackToMove")}
-                </Text>
-              </View>
+              <TurnIndicator question={currentQuestion} />
 
               <View style={styles.timerContainer}>
                 <QuizTimer
@@ -135,33 +112,11 @@ export default function CoordinateQuizSession() {
               </View>
             </View>
 
-            {/* Board Wrapper */}
-            <View style={styles.boardWrapper}>
-              <ChessBoard
-                orientation={currentQuestion?.orientation ?? "white"}
-                targetSquare={currentQuestion?.targetSquare ?? null}
-                feedback={feedbackValue}
-                onSquarePress={handleAnswer}
-                disabled={!currentQuestion}
-              />
-
-              {/* Target Overlay */}
-              {currentQuestion && !showFeedback && (
-                <View style={styles.overlayContainer} pointerEvents="none">
-                  <Text
-                    style={[
-                      styles.overlayText,
-                      { color: colors.primaryForeground },
-                    ]}
-                  >
-                    {currentQuestion.targetSquare}
-                  </Text>
-                </View>
-              )}
-
-              {/* Feedback Overlay */}
-              <FeedbackOverlay feedback={feedbackValue} />
-            </View>
+            <QuizBoard
+              question={currentQuestion}
+              feedback={feedbackValue}
+              onSquarePress={handleAnswer}
+            />
           </View>
 
           <ScoreFooter
@@ -188,21 +143,6 @@ const styles = StyleSheet.create({
     minHeight: 50,
     position: "relative",
   },
-  turnIndicator: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.xs,
-  },
-  turnDot: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 2,
-  },
-  turnText: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
-  },
   closeContainer: {
     position: "absolute",
     left: 0,
@@ -216,24 +156,5 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     justifyContent: "center",
-  },
-  boardWrapper: {
-    position: "relative",
-    aspectRatio: 1,
-    width: "100%",
-  },
-  overlayContainer: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 10,
-  },
-  overlayText: {
-    fontSize: 64,
-    fontWeight: "900",
-    textShadowColor: "rgba(0, 0, 0, 0.5)",
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
-    elevation: 5,
   },
 });

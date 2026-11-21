@@ -24,6 +24,7 @@ export default function BoardSymmetrySetup() {
       isLoaded={isLoaded}
       startLabel={t("boardSymmetry.setup.startQuiz")}
       onStart={handleStart}
+      onStartTraining={() => router.push("/practice/board-symmetry/training")}
     >
       <SettingsForm
         timeLimit={settings.timeLimit}

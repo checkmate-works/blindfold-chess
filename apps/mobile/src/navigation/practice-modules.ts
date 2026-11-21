@@ -36,14 +36,24 @@ export type MobilePracticeModule = {
  * its card and its screens together.
  */
 export const MOBILE_PRACTICE_MODULES: readonly MobilePracticeModule[] = [
-  { slug: "coordinate-quiz", i18nKey: "coordinateQuiz", icon: "🎯" },
+  {
+    slug: "coordinate-quiz",
+    i18nKey: "coordinateQuiz",
+    icon: "🎯",
+    hasTraining: true,
+  },
   {
     slug: "legal-moves",
     i18nKey: "legalMoves",
     icon: "⚖️",
     hasTraining: true,
   },
-  { slug: "board-symmetry", i18nKey: "boardSymmetry", icon: "🦋" },
+  {
+    slug: "board-symmetry",
+    i18nKey: "boardSymmetry",
+    icon: "🦋",
+    hasTraining: true,
+  },
   {
     slug: "square-colors",
     i18nKey: "squareColors",
@@ -56,7 +66,12 @@ export const MOBILE_PRACTICE_MODULES: readonly MobilePracticeModule[] = [
     icon: "↗️",
     hasTraining: true,
   },
-  { slug: "route-planner", i18nKey: "routePlanner", icon: "📍" },
+  {
+    slug: "route-planner",
+    i18nKey: "routePlanner",
+    icon: "📍",
+    hasTraining: true,
+  },
   {
     // Registered as `quadrant_anchors`, but routed as `quadrants` on both
     // platforms (the web page is /practice/quadrants too).

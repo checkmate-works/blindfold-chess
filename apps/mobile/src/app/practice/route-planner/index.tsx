@@ -26,6 +26,12 @@ export default function RoutePlannerSetup() {
       isLoaded={isLoaded}
       startLabel={t("routePlanner.setup.start")}
       onStart={handleStart}
+      onStartTraining={() =>
+        router.push({
+          pathname: "/practice/route-planner/training",
+          params: { pieces: settings.selectedPieces.join("") },
+        })
+      }
     >
       <SettingsForm
         problemCount={settings.problemCount}
