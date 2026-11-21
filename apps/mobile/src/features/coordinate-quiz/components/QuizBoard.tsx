@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   overlayContainer: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     justifyContent: "center",
     alignItems: "center",
     zIndex: 10,

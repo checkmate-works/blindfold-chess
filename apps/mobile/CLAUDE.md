@@ -15,7 +15,7 @@ replaced by the platform's own parts or their common app equivalents.
 
 - `(tabs)` — the bottom tabs (`(tabs)/_layout.tsx`): Home, Practice, Play,
   Learn, Settings, drawn by the OS through expo-router's `NativeTabs`
-  (`expo-router/unstable-native-tabs`; on iOS 26 the floating Liquid Glass
+  (`expo-router/native-tabs`; on iOS 26 the floating Liquid Glass
   bar that shrinks on scroll, Material 3 on Android). Icons are SF Symbols on
   iOS and Material Community Icons (via `VectorIcon`) on Android. Each tab is
   a stack with only its entry screen (`TabStack` in

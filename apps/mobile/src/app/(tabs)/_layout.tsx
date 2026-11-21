@@ -1,10 +1,5 @@
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import {
-  Icon,
-  Label,
-  NativeTabs,
-  VectorIcon,
-} from "expo-router/unstable-native-tabs";
+import { NativeTabs } from "expo-router/native-tabs";
 import { Redirect } from "expo-router";
 import { useTranslation } from "react-i18next";
 
@@ -25,7 +20,7 @@ import { useTheme } from "../../theme";
  *
  * Icons: iOS uses SF Symbols (filled when selected); Android has no symbol
  * set in the OS, so it gets Material Community Icons rendered to an image by
- * `VectorIcon`.
+ * `VectorIcon`, passed as `src` (on iOS `sf` takes priority over `src`).
  *
  * Each tab is a stack holding only its entry screen, so that the entry
  * screen gets the native-stack header. Detail screens (a practice module's
@@ -34,8 +29,9 @@ import { useTheme } from "../../theme";
  * same detail can be opened from several tabs without being duplicated in
  * each tab's stack.
  *
- * `NativeTabs` is an unstable expo-router API (`unstable-native-tabs`);
- * re-check these props whenever the Expo SDK is upgraded.
+ * `NativeTabs` (`expo-router/native-tabs`, `unstable-native-tabs` before
+ * SDK 58) has changed shape between SDKs; re-check these props whenever the
+ * Expo SDK is upgraded.
  *
  * The tabs are the app's entry (`/` is the home tab), so this layout is
  * also where a first launch is sent to the onboarding chat. Nothing renders
@@ -60,38 +56,49 @@ export default function TabsLayout() {
       indicatorColor={colors.secondary}
     >
       <NativeTabs.Trigger name="(home)">
-        <Label>{t("tabs.home")}</Label>
-        <Icon
+        <NativeTabs.Trigger.Label>{t("tabs.home")}</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
           sf={{ default: "house", selected: "house.fill" }}
-          androidSrc={
-            <VectorIcon family={MaterialCommunityIcons} name="home-variant" />
+          src={
+            <NativeTabs.Trigger.VectorIcon
+              family={MaterialCommunityIcons}
+              name="home-variant"
+            />
           }
         />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="practice">
-        <Label>{t("tabs.practice")}</Label>
-        <Icon
+        <NativeTabs.Trigger.Label>
+          {t("tabs.practice")}
+        </NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
           sf={{ default: "dumbbell", selected: "dumbbell.fill" }}
-          androidSrc={
-            <VectorIcon family={MaterialCommunityIcons} name="dumbbell" />
+          src={
+            <NativeTabs.Trigger.VectorIcon
+              family={MaterialCommunityIcons}
+              name="dumbbell"
+            />
           }
         />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="play">
-        <Label>{t("tabs.play")}</Label>
-        <Icon
+        <NativeTabs.Trigger.Label>{t("tabs.play")}</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
           sf={{ default: "flag.2.crossed", selected: "flag.2.crossed.fill" }}
-          androidSrc={
-            <VectorIcon family={MaterialCommunityIcons} name="chess-knight" />
+          src={
+            <NativeTabs.Trigger.VectorIcon
+              family={MaterialCommunityIcons}
+              name="chess-knight"
+            />
           }
         />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="learn">
-        <Label>{t("tabs.learn")}</Label>
-        <Icon
+        <NativeTabs.Trigger.Label>{t("tabs.learn")}</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
           sf={{ default: "book", selected: "book.fill" }}
-          androidSrc={
-            <VectorIcon
+          src={
+            <NativeTabs.Trigger.VectorIcon
               family={MaterialCommunityIcons}
               name="book-open-variant"
             />
@@ -99,10 +106,17 @@ export default function TabsLayout() {
         />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="settings">
-        <Label>{t("tabs.settings")}</Label>
-        <Icon
+        <NativeTabs.Trigger.Label>
+          {t("tabs.settings")}
+        </NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
           sf={{ default: "gearshape", selected: "gearshape.fill" }}
-          androidSrc={<VectorIcon family={MaterialCommunityIcons} name="cog" />}
+          src={
+            <NativeTabs.Trigger.VectorIcon
+              family={MaterialCommunityIcons}
+              name="cog"
+            />
+          }
         />
       </NativeTabs.Trigger>
     </NativeTabs>
