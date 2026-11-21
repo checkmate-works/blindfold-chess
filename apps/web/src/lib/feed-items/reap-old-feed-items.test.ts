@@ -2,13 +2,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 
+import { RANK_UPDATE_ENTITY_TYPE, RANK_UPDATE_LIKE_TARGET } from './rank-update';
 import {
   MEMBER_JOINED_RETENTION_MS,
   RANK_UPDATE_RETENTION_MS,
   reapOldMemberJoinedFeedItems,
   reapOldRankUpdateFeedItems,
 } from './reap-old-feed-items';
-import { RANK_UPDATE_ENTITY_TYPE, RANK_UPDATE_LIKE_TARGET } from './rank-update';
 
 /**
  * Pure-logic unit tests for the feed-item reapers.
