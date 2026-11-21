@@ -2,34 +2,21 @@ import { useTranslation } from "react-i18next";
 import { useRouter } from "expo-router";
 
 import { PracticeSetupScreen } from "../../../components";
-import { SettingsForm } from "../../../features/square-colors/components";
-import { useSquareColorsSettings } from "../../../features/square-colors/hooks";
+import { ChallengeRulesNote } from "../../../features/challenge/ChallengeRulesNote";
 
+/** Square colours: the challenge (fixed rules) or untimed training. */
 export default function SquareColorsSetup() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { settings, isLoaded, updateSettings } = useSquareColorsSettings();
-
-  const handleStart = () => {
-    router.push({
-      pathname: "/practice/square-colors/session",
-      params: {
-        timeLimit: settings.timeLimit.toString(),
-      },
-    });
-  };
 
   return (
     <PracticeSetupScreen
-      isLoaded={isLoaded}
+      isLoaded
       startLabel={t("squareColors.setup.startQuiz")}
-      onStart={handleStart}
+      onStart={() => router.push("/practice/square-colors/session")}
       onStartTraining={() => router.push("/practice/square-colors/training")}
     >
-      <SettingsForm
-        timeLimit={settings.timeLimit}
-        onUpdateTimeLimit={(timeLimit) => updateSettings({ timeLimit })}
-      />
+      <ChallengeRulesNote />
     </PracticeSetupScreen>
   );
 }

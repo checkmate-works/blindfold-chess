@@ -993,5 +993,19 @@
       "knight": "Knight",
       "pawn": "Pawn"
     }
+  },
+  "challenge": {
+    "startFailed": "Could not start a recorded challenge. Check your connection and try again.",
+    "startRateLimited": "Too many challenges started. Please wait a little and try again.",
+    "retry": "Try again",
+    "signInToRecord": "Sign in to record your score on the leaderboard.",
+    "record": {
+      "saving": "Recording your score…",
+      "recorded": "Your score was recorded.",
+      "notRecorded": "This run was not recorded.",
+      "failed": "Could not record your score. Check your connection."
+    },
+    "rules": "60 seconds · ends after 3 mistakes",
+    "willRecord": "Your score will be recorded on the leaderboard."
   }
 }

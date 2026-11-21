@@ -993,5 +993,19 @@
       "knight": "Cavalo",
       "pawn": "Peão"
     }
+  },
+  "challenge": {
+    "startFailed": "Não foi possível iniciar um desafio registrado. Verifique sua conexão e tente novamente.",
+    "startRateLimited": "Muitos desafios iniciados. Aguarde um pouco e tente novamente.",
+    "retry": "Tentar novamente",
+    "signInToRecord": "Entre para registrar sua pontuação no ranking.",
+    "record": {
+      "saving": "Registrando sua pontuação…",
+      "recorded": "Sua pontuação foi registrada.",
+      "notRecorded": "Esta rodada não foi registrada.",
+      "failed": "Não foi possível registrar sua pontuação. Verifique sua conexão."
+    },
+    "rules": "60 segundos · termina após 3 erros",
+    "willRecord": "Sua pontuação será registrada no ranking."
   }
 }

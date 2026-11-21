@@ -993,5 +993,19 @@
       "knight": "Caballo",
       "pawn": "Peón"
     }
+  },
+  "challenge": {
+    "startFailed": "No se pudo iniciar un desafío registrado. Revisa tu conexión e inténtalo de nuevo.",
+    "startRateLimited": "Demasiados desafíos iniciados. Espera un poco e inténtalo de nuevo.",
+    "retry": "Reintentar",
+    "signInToRecord": "Inicia sesión para registrar tu puntuación en la clasificación.",
+    "record": {
+      "saving": "Registrando tu puntuación…",
+      "recorded": "Tu puntuación se registró.",
+      "notRecorded": "Esta partida no se registró.",
+      "failed": "No se pudo registrar tu puntuación. Revisa tu conexión."
+    },
+    "rules": "60 segundos · termina tras 3 errores",
+    "willRecord": "Tu puntuación se registrará en la clasificación."
   }
 }
