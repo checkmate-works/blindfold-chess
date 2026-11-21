@@ -32,55 +32,28 @@ describe('proxy', () => {
   });
 
   describe('authenticated user accessing sign-in page', () => {
-    it('should redirect to /en/mypage with toast param when accessing /en/sign-in', async () => {
-      const mockResponse = NextResponse.next();
+    // `authenticated` here is a JWT signature check; it stays true for a
+    // visitor whose session was ended on the Auth server until the token
+    // expires. Sending a signed-in visitor on is the sign-in page's job
+    // (`resolveAuthPageEntry`, which asks the Auth server). A redirect in the
+    // proxy would keep such a visitor from ever reaching the form and loop
+    // `/mypage` against the protected layout's redirect to `/sign-in`.
+    it.each([
+      '/en/sign-in',
+      '/ja/sign-in',
+      '/en/sign-in/',
+      '/en/sign-in?error=auth_callback_error',
+    ])('should not redirect when accessing %s', async (path) => {
       mockUpdateSession.mockResolvedValue({
-        response: mockResponse,
+        response: NextResponse.next(),
         authenticated: true,
         userId: 'user-123',
       });
 
-      const request = createRequest('/en/sign-in');
-      const result = await proxy(request);
+      const result = await proxy(createRequest(path));
 
-      expect(result.status).toBe(307);
-      const location = new URL(result.headers.get('location')!);
-      expect(location.pathname).toBe('/en/mypage');
-      expect(location.searchParams.get('toast')).toBe('already_logged_in');
-    });
-
-    it('should redirect to /ja/mypage with toast param when accessing /ja/sign-in', async () => {
-      const mockResponse = NextResponse.next();
-      mockUpdateSession.mockResolvedValue({
-        response: mockResponse,
-        authenticated: true,
-        userId: 'user-123',
-      });
-
-      const request = createRequest('/ja/sign-in');
-      const result = await proxy(request);
-
-      expect(result.status).toBe(307);
-      const location = new URL(result.headers.get('location')!);
-      expect(location.pathname).toBe('/ja/mypage');
-      expect(location.searchParams.get('toast')).toBe('already_logged_in');
-    });
-
-    it('should redirect when accessing /en/sign-in/ (trailing slash)', async () => {
-      const mockResponse = NextResponse.next();
-      mockUpdateSession.mockResolvedValue({
-        response: mockResponse,
-        authenticated: true,
-        userId: 'user-123',
-      });
-
-      const request = createRequest('/en/sign-in/');
-      const result = await proxy(request);
-
-      expect(result.status).toBe(307);
-      const location = new URL(result.headers.get('location')!);
-      expect(location.pathname).toBe('/en/mypage');
-      expect(location.searchParams.get('toast')).toBe('already_logged_in');
+      expect(result.status).toBe(200);
+      expect(result.headers.get('location')).toBeNull();
     });
 
     it('should not redirect when accessing other pages like /en/games/play', async () => {
@@ -413,41 +386,6 @@ describe('proxy', () => {
       expect(passedRequest).toBe(request);
       expect(options?.requestHeaders?.get('x-pathname')).toBe('/en/games/play');
       expect(options?.requestHeaders?.get('x-nonce')).toBeNull();
-    });
-  });
-
-  describe('toast parameter on authenticated sign-in redirect', () => {
-    it('should only include toast param and no other unexpected query params', async () => {
-      const mockResponse = NextResponse.next();
-      mockUpdateSession.mockResolvedValue({
-        response: mockResponse,
-        authenticated: true,
-        userId: 'user-123',
-      });
-
-      const request = createRequest('/en/sign-in');
-      const result = await proxy(request);
-
-      const location = new URL(result.headers.get('location')!);
-      const paramKeys = Array.from(location.searchParams.keys());
-      expect(paramKeys).toEqual(['toast']);
-    });
-
-    it('should redirect from /en/sign-in with query params and still add toast', async () => {
-      const mockResponse = NextResponse.next();
-      mockUpdateSession.mockResolvedValue({
-        response: mockResponse,
-        authenticated: true,
-        userId: 'user-123',
-      });
-
-      const request = createRequest('/en/sign-in?error=auth_callback_error');
-      const result = await proxy(request);
-
-      expect(result.status).toBe(307);
-      const location = new URL(result.headers.get('location')!);
-      expect(location.pathname).toBe('/en/mypage');
-      expect(location.searchParams.get('toast')).toBe('already_logged_in');
     });
   });
 
