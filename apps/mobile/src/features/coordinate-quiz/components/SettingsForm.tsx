@@ -1,6 +1,6 @@
 import { View, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
-import { OptionsField, TIME_LIMIT_OPTIONS } from "../../../components";
+import { OptionsField } from "../../../components";
 import { spacing } from "../../../theme";
 import type { QuizSettings } from "../lib/types";
 import { BOARD_ORIENTATIONS } from "../lib/types";
@@ -18,16 +18,6 @@ export function SettingsForm({ settings, onUpdateSetting }: SettingsFormProps) {
 
   return (
     <View style={styles.container}>
-      <OptionsField
-        label={t("coordinateQuiz.setup.duration")}
-        options={TIME_LIMIT_OPTIONS}
-        value={settings.timeLimit}
-        onChange={(duration) => onUpdateSetting("timeLimit", duration)}
-        formatOption={(duration) =>
-          t("coordinateQuiz.setup.durationSeconds", { seconds: duration })
-        }
-      />
-
       <OptionsField
         label={t("coordinateQuiz.setup.orientation")}
         options={BOARD_ORIENTATIONS}

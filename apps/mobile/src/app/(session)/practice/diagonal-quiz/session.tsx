@@ -1,6 +1,12 @@
 import { useCallback } from "react";
 import { View, StyleSheet, ScrollView } from "react-native";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useRouter } from "expo-router";
+import type { RemoteChallengePort } from "@blindfold-chess/features/challenge-attempt";
+import {
+  CHALLENGE_TIME_LIMIT,
+  MISTAKE_LIMIT,
+} from "@blindfold-chess/features/practice-registry";
+import type { Square } from "@blindfold-chess/types";
 import * as Haptics from "expo-haptics";
 import { useDiagonalQuiz } from "@blindfold-chess/features/diagonal-quiz/client";
 
@@ -16,29 +22,49 @@ import {
 import type { ActiveField } from "../../../../features/diagonal-quiz/hooks";
 import { spacing } from "../../../../theme";
 import type { DiagonalQuizResult } from "@blindfold-chess/features/diagonal-quiz";
-import { DEFAULT_DIAGONAL_QUIZ_SETTINGS } from "../../../../features/diagonal-quiz/lib/types";
-import { parseIntParam } from "../../../../lib/route-params";
+import { ChallengeAttemptGate } from "../../../../features/challenge/ChallengeAttemptGate";
 import { serializePracticeStatsParams } from "../../../../lib/practice-result-params";
 
-export default function DiagonalQuizSession() {
-  const router = useRouter();
-  const params = useLocalSearchParams<{
-    timeLimit: string;
-  }>();
+const SETTINGS = {};
 
-  const duration = parseIntParam(params.timeLimit, {
-    min: 1,
-    fallback: DEFAULT_DIAGONAL_QUIZ_SETTINGS.timeLimit,
-  });
+/**
+ * The diagonal-quiz challenge (the web's `/diagonal-quiz/challenge`):
+ * 60 seconds, ends at the mistake limit; recorded when signed in.
+ */
+export default function DiagonalQuizChallenge() {
+  return (
+    <ChallengeAttemptGate<Square> menuType="diagonal_quiz" settings={SETTINGS}>
+      {(attempt) => (
+        <DiagonalQuizSession
+          attemptId={attempt.attemptId}
+          remote={attempt.remote}
+        />
+      )}
+    </ChallengeAttemptGate>
+  );
+}
+
+function DiagonalQuizSession({
+  attemptId,
+  remote,
+}: {
+  attemptId: string | null;
+  remote: RemoteChallengePort<Square> | undefined;
+}) {
+  const router = useRouter();
+  const duration = CHALLENGE_TIME_LIMIT;
 
   const handleComplete = useCallback(
     (result: DiagonalQuizResult) => {
       router.replace({
         pathname: "/practice/diagonal-quiz/result",
-        params: serializePracticeStatsParams(result),
+        params: {
+          ...serializePracticeStatsParams(result),
+          ...(attemptId ? { attemptId } : {}),
+        },
       });
     },
-    [router],
+    [router, attemptId],
   );
 
   // Session + input + corner-info + reset-on-advance are composed by the
@@ -46,6 +72,9 @@ export default function DiagonalQuizSession() {
   const { session, input, isDisabled, singleDiagonal, singleAntiDiagonal } =
     useDiagonalQuiz({
       timeLimit: duration,
+      mistakeAllowance: MISTAKE_LIMIT,
+      remote,
+      disablePause: true,
       onComplete: handleComplete,
       onAnswerEffect: (correct) =>
         Haptics.notificationAsync(

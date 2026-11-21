@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import { useRouter } from "expo-router";
 
 import { PracticeSetupScreen } from "../../../components";
+import { ChallengeRulesNote } from "../../../features/challenge/ChallengeRulesNote";
 import { SettingsForm } from "../../../features/coordinate-quiz/components";
 import { useQuizSettings } from "../../../features/coordinate-quiz/hooks";
 import type { QuizSettings } from "../../../features/coordinate-quiz/lib/types";
@@ -14,10 +15,7 @@ export default function CoordinateQuizSetup() {
   const handleStartQuiz = () => {
     router.push({
       pathname: "/practice/coordinate-quiz/session",
-      params: {
-        duration: settings.timeLimit.toString(),
-        orientation: settings.orientation,
-      },
+      params: { orientation: settings.orientation },
     });
   };
 
@@ -39,6 +37,7 @@ export default function CoordinateQuizSetup() {
           updateSettings({ [key]: value } as Partial<QuizSettings>)
         }
       />
+      <ChallengeRulesNote />
     </PracticeSetupScreen>
   );
 }

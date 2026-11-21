@@ -1,6 +1,12 @@
 import { useCallback, useEffect } from "react";
 import { View } from "react-native";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useRouter } from "expo-router";
+import type { RemoteChallengePort } from "@blindfold-chess/features/challenge-attempt";
+import {
+  CHALLENGE_TIME_LIMIT,
+  MISTAKE_LIMIT,
+} from "@blindfold-chess/features/practice-registry";
+import type { BoardSymmetryProblem } from "@blindfold-chess/features/board-symmetry";
 import * as Haptics from "expo-haptics";
 import { useBoardSymmetrySession } from "@blindfold-chess/features/board-symmetry/client";
 
@@ -13,29 +19,52 @@ import {
   CoordinateSelector,
 } from "../../../../features/board-symmetry/components";
 import type { BoardSymmetryResult } from "@blindfold-chess/features/board-symmetry";
-import { DEFAULT_BOARD_SYMMETRY_SETTINGS } from "../../../../features/board-symmetry/lib/types";
-import { parseIntParam } from "../../../../lib/route-params";
+import { ChallengeAttemptGate } from "../../../../features/challenge/ChallengeAttemptGate";
 import { serializePracticeStatsParams } from "../../../../lib/practice-result-params";
 
-export default function BoardSymmetrySession() {
-  const router = useRouter();
-  const params = useLocalSearchParams<{
-    timeLimit: string;
-  }>();
+const SETTINGS = {};
 
-  const duration = parseIntParam(params.timeLimit, {
-    min: 1,
-    fallback: DEFAULT_BOARD_SYMMETRY_SETTINGS.timeLimit,
-  });
+/**
+ * The board-symmetry challenge (the web's `/board-symmetry/challenge`):
+ * 60 seconds, ends at the mistake limit; recorded when signed in.
+ */
+export default function BoardSymmetryChallenge() {
+  return (
+    <ChallengeAttemptGate<BoardSymmetryProblem>
+      menuType="board_symmetry"
+      settings={SETTINGS}
+    >
+      {(attempt) => (
+        <BoardSymmetrySession
+          attemptId={attempt.attemptId}
+          remote={attempt.remote}
+        />
+      )}
+    </ChallengeAttemptGate>
+  );
+}
+
+function BoardSymmetrySession({
+  attemptId,
+  remote,
+}: {
+  attemptId: string | null;
+  remote: RemoteChallengePort<BoardSymmetryProblem> | undefined;
+}) {
+  const router = useRouter();
+  const duration = CHALLENGE_TIME_LIMIT;
 
   const handleComplete = useCallback(
     (result: BoardSymmetryResult) => {
       router.replace({
         pathname: "/practice/board-symmetry/result",
-        params: serializePracticeStatsParams(result),
+        params: {
+          ...serializePracticeStatsParams(result),
+          ...(attemptId ? { attemptId } : {}),
+        },
       });
     },
-    [router],
+    [router, attemptId],
   );
 
   const {
@@ -45,6 +74,7 @@ export default function BoardSymmetrySession() {
     correctCount,
     incorrectCount,
     showFeedback,
+    awaitingServer,
     lastAnswerCorrect,
     selectedFile,
     selectedRank,
@@ -54,6 +84,9 @@ export default function BoardSymmetrySession() {
     handleAnswer,
   } = useBoardSymmetrySession({
     timeLimit: duration,
+    mistakeAllowance: MISTAKE_LIMIT,
+    remote,
+    disablePause: true,
     onComplete: handleComplete,
     onAnswerEffect: (correct) =>
       Haptics.notificationAsync(
@@ -67,10 +100,23 @@ export default function BoardSymmetrySession() {
 
   // Auto-submit when both file and rank are selected
   useEffect(() => {
-    if (selectedFile && selectedRank && !showFeedback && countdown === null) {
+    if (
+      selectedFile &&
+      selectedRank &&
+      !showFeedback &&
+      !awaitingServer &&
+      countdown === null
+    ) {
       handleAnswer(selectedFile, selectedRank);
     }
-  }, [selectedFile, selectedRank, showFeedback, countdown, handleAnswer]);
+  }, [
+    selectedFile,
+    selectedRank,
+    showFeedback,
+    awaitingServer,
+    countdown,
+    handleAnswer,
+  ]);
 
   return (
     <PracticeSessionScreen
@@ -98,7 +144,7 @@ export default function BoardSymmetrySession() {
           selectedRank={selectedRank}
           onFileToggle={handleFileToggle}
           onRankToggle={handleRankToggle}
-          disabled={showFeedback}
+          disabled={showFeedback || awaitingServer}
         />
       </View>
     </PracticeSessionScreen>

@@ -2,34 +2,21 @@ import { useTranslation } from "react-i18next";
 import { useRouter } from "expo-router";
 
 import { PracticeSetupScreen } from "../../../components";
-import { SettingsForm } from "../../../features/board-symmetry/components";
-import { useBoardSymmetrySettings } from "../../../features/board-symmetry/hooks";
+import { ChallengeRulesNote } from "../../../features/challenge/ChallengeRulesNote";
 
+/** The challenge (fixed rules) or untimed training. */
 export default function BoardSymmetrySetup() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { settings, isLoaded, updateSettings } = useBoardSymmetrySettings();
-
-  const handleStart = () => {
-    router.push({
-      pathname: "/practice/board-symmetry/session",
-      params: {
-        timeLimit: settings.timeLimit.toString(),
-      },
-    });
-  };
 
   return (
     <PracticeSetupScreen
-      isLoaded={isLoaded}
+      isLoaded
       startLabel={t("boardSymmetry.setup.startQuiz")}
-      onStart={handleStart}
+      onStart={() => router.push("/practice/board-symmetry/session")}
       onStartTraining={() => router.push("/practice/board-symmetry/training")}
     >
-      <SettingsForm
-        timeLimit={settings.timeLimit}
-        onUpdateTimeLimit={(timeLimit) => updateSettings({ timeLimit })}
-      />
+      <ChallengeRulesNote />
     </PracticeSetupScreen>
   );
 }

@@ -3,8 +3,11 @@ import { View } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 
 import {
+  LEGAL_MOVES_PIECE_SELECTIONS,
   generateBalancedMoveQuestions,
   isLegalMove,
+  legalMovesPiecesForSelection,
+  type LegalMovesPieceSelection,
 } from "@blindfold-chess/features/legal-moves";
 import { useBatchTrainingSession } from "@blindfold-chess/features/practice-session";
 
@@ -17,13 +20,12 @@ import {
   LegalIllegalButtons,
   QuestionCard,
 } from "../../../../features/legal-moves/components";
-import { PIECE_TYPES } from "../../../../features/legal-moves/lib/types";
 import type {
   MoveQuestion,
   PieceType,
 } from "../../../../features/legal-moves/lib/types";
 import { answerHaptics } from "../../../../lib/answer-haptics";
-import { parseEnumListParam } from "../../../../lib/route-params";
+import { parseEnumParam } from "../../../../lib/route-params";
 
 const BATCH_SIZE = 100;
 
@@ -33,11 +35,13 @@ const BATCH_SIZE = 100;
  */
 export default function LegalMovesTraining() {
   const { close } = useCloseSession();
-  const params = useLocalSearchParams<{ pieces: string }>();
-  const selectedPieces: PieceType[] = parseEnumListParam(
-    params.pieces,
-    PIECE_TYPES,
-    PIECE_TYPES,
+  const params = useLocalSearchParams<{ piece: string }>();
+  const selectedPieces: PieceType[] = legalMovesPiecesForSelection(
+    parseEnumParam<LegalMovesPieceSelection>(
+      params.piece,
+      LEGAL_MOVES_PIECE_SELECTIONS,
+      "random",
+    ),
   );
 
   const {

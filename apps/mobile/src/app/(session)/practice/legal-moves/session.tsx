@@ -1,54 +1,88 @@
-import { serializePracticeStatsParams } from "../../../../lib/practice-result-params";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { View } from "react-native";
-import { useRouter, useLocalSearchParams } from "expo-router";
-import * as Haptics from "expo-haptics";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import type { RemoteChallengePort } from "@blindfold-chess/features/challenge-attempt";
+import {
+  LEGAL_MOVES_PIECE_SELECTIONS,
+  legalMovesPiecesForSelection,
+  type LegalMovesPieceSelection,
+  type LegalMovesResult,
+  type MoveQuestion,
+} from "@blindfold-chess/features/legal-moves";
+import { useLegalMovesSession } from "@blindfold-chess/features/legal-moves/client";
+import {
+  CHALLENGE_TIME_LIMIT,
+  MISTAKE_LIMIT,
+} from "@blindfold-chess/features/practice-registry";
 
 import {
   PracticeSessionScreen,
   practiceSessionStyles,
 } from "../../../../components";
+import { ChallengeAttemptGate } from "../../../../features/challenge/ChallengeAttemptGate";
 import {
-  QuestionCard,
   LegalIllegalButtons,
+  QuestionCard,
 } from "../../../../features/legal-moves/components";
-import { useLegalMovesSession } from "@blindfold-chess/features/legal-moves/client";
-import {
-  DEFAULT_LEGAL_MOVES_SETTINGS,
-  PIECE_TYPES,
-} from "../../../../features/legal-moves/lib/types";
-import type { PieceType } from "../../../../features/legal-moves/lib/types";
-import {
-  parseEnumListParam,
-  parseIntParam,
-} from "../../../../lib/route-params";
-import type { LegalMovesResult } from "../../../../features/legal-moves/hooks";
+import { answerHaptics } from "../../../../lib/answer-haptics";
+import { serializePracticeStatsParams } from "../../../../lib/practice-result-params";
+import { parseEnumParam } from "../../../../lib/route-params";
 
-export default function LegalMovesSession() {
+/**
+ * The legal-moves challenge (the web's `/legal-moves/challenge`) for one
+ * piece selection; recorded when signed in.
+ */
+export default function LegalMovesChallenge() {
+  const params = useLocalSearchParams<{ piece: string }>();
+  const selectedPiece = parseEnumParam<LegalMovesPieceSelection>(
+    params.piece,
+    LEGAL_MOVES_PIECE_SELECTIONS,
+    "random",
+  );
+  const settings = useMemo(() => ({ selectedPiece }), [selectedPiece]);
+  return (
+    <ChallengeAttemptGate<MoveQuestion>
+      menuType="legal_moves"
+      settings={settings}
+    >
+      {(attempt) => (
+        <LegalMovesChallengeSession
+          selectedPiece={selectedPiece}
+          attemptId={attempt.attemptId}
+          remote={attempt.remote}
+        />
+      )}
+    </ChallengeAttemptGate>
+  );
+}
+
+function LegalMovesChallengeSession({
+  selectedPiece,
+  attemptId,
+  remote,
+}: {
+  selectedPiece: LegalMovesPieceSelection;
+  attemptId: string | null;
+  remote: RemoteChallengePort<MoveQuestion> | undefined;
+}) {
   const router = useRouter();
-  const params = useLocalSearchParams<{
-    duration: string;
-    pieces: string;
-  }>();
-
-  const duration = parseIntParam(params.duration, {
-    min: 1,
-    fallback: DEFAULT_LEGAL_MOVES_SETTINGS.timeLimit,
-  });
-  const selectedPieces: PieceType[] = parseEnumListParam(
-    params.pieces,
-    PIECE_TYPES,
-    PIECE_TYPES,
+  // The same pieces the server generates the attempt's questions from.
+  const selectedPieces = useMemo(
+    () => legalMovesPiecesForSelection(selectedPiece),
+    [selectedPiece],
   );
 
   const handleComplete = useCallback(
     (result: LegalMovesResult) => {
       router.replace({
         pathname: "/practice/legal-moves/result",
-        params: serializePracticeStatsParams(result),
+        params: {
+          ...serializePracticeStatsParams(result),
+          ...(attemptId ? { attemptId } : {}),
+        },
       });
     },
-    [router],
+    [router, attemptId],
   );
 
   const {
@@ -58,22 +92,19 @@ export default function LegalMovesSession() {
     correctCount,
     incorrectCount,
     showFeedback,
+    awaitingServer,
     lastAnswerCorrect,
     handleAnswer,
   } = useLegalMovesSession({
-    timeLimit: duration,
+    timeLimit: CHALLENGE_TIME_LIMIT,
     selectedPieces,
+    mistakeAllowance: MISTAKE_LIMIT,
+    remote,
+    disablePause: true,
     onComplete: handleComplete,
-    onAnswerEffect: (correct) => {
-      Haptics.notificationAsync(
-        correct
-          ? Haptics.NotificationFeedbackType.Success
-          : Haptics.NotificationFeedbackType.Error,
-      );
-    },
+    onAnswerEffect: answerHaptics,
   });
 
-  const progress = timeRemaining / duration;
   const feedback: "correct" | "incorrect" | null = showFeedback
     ? lastAnswerCorrect
       ? "correct"
@@ -84,7 +115,7 @@ export default function LegalMovesSession() {
     <PracticeSessionScreen
       countdown={countdown}
       timeRemaining={timeRemaining}
-      progress={progress}
+      progress={timeRemaining / CHALLENGE_TIME_LIMIT}
       correctCount={correctCount}
       incorrectCount={incorrectCount}
     >
@@ -97,7 +128,7 @@ export default function LegalMovesSession() {
       <View style={practiceSessionStyles.bottomSection}>
         <LegalIllegalButtons
           onAnswer={handleAnswer}
-          disabled={showFeedback || !currentQuestion}
+          disabled={showFeedback || awaitingServer || !currentQuestion}
         />
       </View>
     </PracticeSessionScreen>

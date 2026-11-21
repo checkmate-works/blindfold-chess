@@ -1,8 +1,13 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { View, StyleSheet } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import * as Haptics from "expo-haptics";
+import type { RemoteChallengePort } from "@blindfold-chess/features/challenge-attempt";
 import { useCoordinateQuizSession } from "@blindfold-chess/features/coordinate-quiz/client";
+import {
+  CHALLENGE_TIME_LIMIT,
+  MISTAKE_LIMIT,
+} from "@blindfold-chess/features/practice-registry";
 
 import {
   CountdownOverlay,
@@ -16,32 +21,58 @@ import {
 } from "../../../../features/coordinate-quiz/components";
 import { SessionCloseButton } from "../../../../navigation/SessionCloseButton";
 import { spacing } from "../../../../theme";
-import {
-  BOARD_ORIENTATIONS,
-  DEFAULT_QUIZ_SETTINGS,
-} from "../../../../features/coordinate-quiz/lib/types";
+import { ChallengeAttemptGate } from "../../../../features/challenge/ChallengeAttemptGate";
+import { BOARD_ORIENTATIONS } from "../../../../features/coordinate-quiz/lib/types";
 import type {
-  QuizResult,
   BoardOrientation,
+  CoordinateQuestion,
+  QuizResult,
 } from "../../../../features/coordinate-quiz/lib/types";
-import { parseEnumParam, parseIntParam } from "../../../../lib/route-params";
+import { parseEnumParam } from "../../../../lib/route-params";
 
-export default function CoordinateQuizSession() {
-  const router = useRouter();
-  const params = useLocalSearchParams<{
-    duration: string;
-    orientation: string;
-  }>();
-
-  const timeLimit = parseIntParam(params.duration, {
-    min: 1,
-    fallback: DEFAULT_QUIZ_SETTINGS.timeLimit,
-  });
+/**
+ * The coordinate-quiz challenge (the web's `/coordinate-quiz/challenge`) for
+ * one board orientation, which is also the leaderboard key; recorded when
+ * signed in.
+ */
+export default function CoordinateQuizChallenge() {
+  const params = useLocalSearchParams<{ orientation: string }>();
   const orientation = parseEnumParam<BoardOrientation>(
     params.orientation,
     BOARD_ORIENTATIONS,
     "white",
   );
+  const settings = useMemo(
+    () => ({ boardOrientation: orientation }),
+    [orientation],
+  );
+  return (
+    <ChallengeAttemptGate<CoordinateQuestion>
+      menuType="coordinate_quiz"
+      settings={settings}
+    >
+      {(attempt) => (
+        <CoordinateQuizSession
+          orientation={orientation}
+          attemptId={attempt.attemptId}
+          remote={attempt.remote}
+        />
+      )}
+    </ChallengeAttemptGate>
+  );
+}
+
+function CoordinateQuizSession({
+  orientation,
+  attemptId,
+  remote,
+}: {
+  orientation: BoardOrientation;
+  attemptId: string | null;
+  remote: RemoteChallengePort<CoordinateQuestion> | undefined;
+}) {
+  const router = useRouter();
+  const timeLimit = CHALLENGE_TIME_LIMIT;
 
   const handleComplete = useCallback(
     (result: QuizResult) => {
@@ -54,10 +85,11 @@ export default function CoordinateQuizSession() {
           averageTime: result.averageTime.toString(),
           points: result.points.toString(),
           timeTaken: result.timeTaken.toString(),
+          ...(attemptId ? { attemptId } : {}),
         },
       });
     },
-    [router],
+    [router, attemptId],
   );
 
   const {
@@ -67,11 +99,15 @@ export default function CoordinateQuizSession() {
     correctCount,
     incorrectCount,
     showFeedback,
+    awaitingServer,
     lastAnswerCorrect,
     handleAnswer,
   } = useCoordinateQuizSession({
     timeLimit,
     orientation,
+    mistakeAllowance: MISTAKE_LIMIT,
+    remote,
+    disablePause: true,
     onComplete: handleComplete,
     onAnswerEffect: (correct) =>
       Haptics.notificationAsync(
@@ -115,7 +151,9 @@ export default function CoordinateQuizSession() {
             <QuizBoard
               question={currentQuestion}
               feedback={feedbackValue}
-              onSquarePress={handleAnswer}
+              onSquarePress={(square) => {
+                if (!awaitingServer) handleAnswer(square);
+              }}
             />
           </View>
 

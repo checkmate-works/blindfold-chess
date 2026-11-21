@@ -5,13 +5,14 @@ import {
   PracticeResultScreen,
   PracticeStatsResultCard,
 } from "../../../../components";
+import { ChallengeRecordStatus } from "../../../../features/challenge/ChallengeRecordStatus";
 import { parsePracticeStatsParams } from "../../../../lib/practice-result-params";
 import type { PracticeStatsParams } from "../../../../lib/practice-result-params";
 
 export default function CoordinateQuizResult() {
   const { t } = useTranslation();
   const params = useLocalSearchParams<
-    PracticeStatsParams & { points?: string }
+    PracticeStatsParams & { points?: string; attemptId?: string }
   >();
   const result = parsePracticeStatsParams(params);
   const points = parseInt(params.points || "0", 10);
@@ -31,6 +32,7 @@ export default function CoordinateQuizResult() {
           value: String(points),
         }}
       />
+      <ChallengeRecordStatus attemptId={params.attemptId} />
     </PracticeResultScreen>
   );
 }

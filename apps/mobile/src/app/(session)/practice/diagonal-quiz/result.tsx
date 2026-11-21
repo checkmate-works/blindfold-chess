@@ -5,12 +5,15 @@ import {
   PracticeResultScreen,
   PracticeStatsResultCard,
 } from "../../../../components";
+import { ChallengeRecordStatus } from "../../../../features/challenge/ChallengeRecordStatus";
 import { parsePracticeStatsParams } from "../../../../lib/practice-result-params";
 import type { PracticeStatsParams } from "../../../../lib/practice-result-params";
 
 export default function DiagonalQuizResult() {
   const { t } = useTranslation();
-  const params = useLocalSearchParams<PracticeStatsParams>();
+  const params = useLocalSearchParams<
+    PracticeStatsParams & { attemptId?: string }
+  >();
   const result = parsePracticeStatsParams(params);
 
   return (
@@ -20,6 +23,7 @@ export default function DiagonalQuizResult() {
       setupHref="/practice/diagonal-quiz"
     >
       <PracticeStatsResultCard result={result} />
+      <ChallengeRecordStatus attemptId={params.attemptId} />
     </PracticeResultScreen>
   );
 }

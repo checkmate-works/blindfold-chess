@@ -1,56 +1,27 @@
-import { View, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
 import {
-  OptionsField,
-  PieceSelectionField,
-  TIME_LIMIT_OPTIONS,
-} from "../../../components";
-import { spacing } from "../../../theme";
-import type { PieceType } from "../lib/types";
-import { PIECE_TYPES, pieceDisplayMap } from "../lib/types";
+  LEGAL_MOVES_PIECE_SELECTIONS,
+  type LegalMovesPieceSelection,
+} from "@blindfold-chess/features/legal-moves";
+
+import { OptionsField } from "../../../components";
 
 type SettingsFormProps = {
-  timeLimit: number;
-  selectedPieces: PieceType[];
-  onUpdateTimeLimit: (timeLimit: number) => void;
-  onTogglePiece: (piece: PieceType) => void;
+  selectedPiece: LegalMovesPieceSelection;
+  onChange: (selectedPiece: LegalMovesPieceSelection) => void;
 };
 
-export function SettingsForm({
-  timeLimit,
-  selectedPieces,
-  onUpdateTimeLimit,
-  onTogglePiece,
-}: SettingsFormProps) {
+/** The piece to drill: one of five, or all mixed. */
+export function SettingsForm({ selectedPiece, onChange }: SettingsFormProps) {
   const { t } = useTranslation();
-
+  // records.keys.{king,queen,rook,bishop,knight,random}
   return (
-    <View style={styles.container}>
-      <OptionsField
-        label={t("legalMoves.setup.timeLimit")}
-        options={TIME_LIMIT_OPTIONS}
-        value={timeLimit}
-        onChange={onUpdateTimeLimit}
-        formatOption={(seconds) =>
-          t("legalMoves.setup.durationSeconds", { seconds })
-        }
-      />
-
-      <PieceSelectionField
-        label={t("legalMoves.setup.pieceSelection")}
-        pieces={PIECE_TYPES}
-        displayMap={pieceDisplayMap}
-        selected={selectedPieces}
-        // legalMoves.pieces.<PieceType>: legalMoves.pieces.b, legalMoves.pieces.n, legalMoves.pieces.r, legalMoves.pieces.q, legalMoves.pieces.k (PIECE_TYPES)
-        labelFor={(piece) => t(`legalMoves.pieces.${piece}`)}
-        onToggle={onTogglePiece}
-      />
-    </View>
+    <OptionsField
+      label={t("legalMoves.setup.pieceSelection")}
+      options={LEGAL_MOVES_PIECE_SELECTIONS}
+      value={selectedPiece}
+      onChange={onChange}
+      formatOption={(piece) => t(`records.keys.${piece}`)}
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    gap: spacing.lg,
-  },
-});
