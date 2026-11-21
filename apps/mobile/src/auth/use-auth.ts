@@ -31,23 +31,58 @@ function setState(patch: Partial<AuthState>) {
   for (const listener of listeners) listener();
 }
 
-/** Re-reads the account from the server (after sign-in or a username change). */
-export async function refreshAccount(): Promise<MobileAccount | undefined> {
-  if (state.status !== "signedIn") return undefined;
-  const result = await fetchAccount();
-  if ("error" in result) {
-    setState({ accountError: true });
-    return undefined;
-  }
-  setState({ account: result, accountError: false });
-  return result;
+let lastUserId: string | undefined;
+
+/** The `/me` request in progress, and the user it was made for. */
+let inFlight:
+  | { userId: string | undefined; promise: Promise<MobileAccount | undefined> }
+  | undefined;
+
+/**
+ * Re-reads the account from the server: after sign-in, a username change or
+ * a recorded challenge, and again from the settings tab while the account is
+ * still missing. That last caller is the recovery path for a launch that was
+ * offline or got a 503 — without it `account` would stay undefined until the
+ * next cold start, hiding the progress card and the way to set a username.
+ *
+ * Calls made while a request for the same user is in progress share it
+ * instead of sending another (sign-in and the auth listener both ask at
+ * once; the settings tab asks on every focus). The shared answer can predate
+ * a change made after it was sent; every caller that changes the account
+ * calls this again afterwards, and the overlap only happens while a retry is
+ * pending. A request made for a user who has since signed out or been
+ * replaced is not shared and its answer is dropped, so one account never
+ * shows under another.
+ *
+ * Must not be called from inside the Supabase auth listener: the request
+ * reads the session, which waits on the lock supabase-js holds while the
+ * listener runs.
+ */
+export function refreshAccount(): Promise<MobileAccount | undefined> {
+  if (state.status !== "signedIn") return Promise.resolve(undefined);
+  const userId = lastUserId;
+  if (inFlight && inFlight.userId === userId) return inFlight.promise;
+  const promise = fetchAccount()
+    .then((result) => {
+      if (lastUserId !== userId) return undefined;
+      if ("error" in result) {
+        setState({ accountError: true });
+        return undefined;
+      }
+      setState({ account: result, accountError: false });
+      return result;
+    })
+    .finally(() => {
+      if (inFlight?.promise === promise) inFlight = undefined;
+    });
+  inFlight = { userId, promise };
+  return promise;
 }
 
 export async function signOut(): Promise<void> {
   await supabase?.auth.signOut({ scope: "local" });
 }
 
-let lastUserId: string | undefined;
 supabase?.auth.onAuthStateChange((_event, session) => {
   const user = session?.user;
   if (!user) {
