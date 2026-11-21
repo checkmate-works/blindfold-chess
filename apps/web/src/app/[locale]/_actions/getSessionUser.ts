@@ -4,7 +4,7 @@ import type { User } from '@supabase/supabase-js';
 import { eq } from 'drizzle-orm';
 
 import { writeAdsHiddenCookieForUser } from '@/lib/ads/ads-hidden-cookie-writer';
-import { getOptionalUser } from '@/lib/auth';
+import { discardSessionOfMissingUser, getOptionalUser } from '@/lib/auth';
 import { db, profiles } from '@/lib/db';
 import { captureError } from '@/lib/sentry/capture-error';
 
@@ -61,6 +61,9 @@ export type SessionUser = {
  * are reported to Sentry before the null is returned, so a real
  * authenticated user silently appearing as anonymous is observable in
  * operations instead of going unnoticed.
+ *
+ * @sideEffect Removes the session cookie when it names a user that no longer
+ * exists (see `discardSessionOfMissingUser` in `@/lib/auth`).
  *
  * @sideEffect Also refreshes the `bfc_ads_hidden` cookie from the user's
  * current ad-free entitlement. This is how cancelled subscriptions stop
@@ -120,6 +123,20 @@ export async function getSessionUser(): Promise<SessionUser> {
       ? { avatarUrl: row.avatarUrl ?? null, displayName: row.displayName ?? null }
       : null;
     unreadNotificationCount = unreadResult.status === 'fulfilled' ? unreadResult.value : 0;
+  }
+
+  if (!user) {
+    // This action runs on every page mount and may write cookies, which makes
+    // it the place a dead session cookie gets cleaned up — see
+    // `discardSessionOfMissingUser`. Without it the proxy would keep treating
+    // the visitor as signed in until the token expires. Best-effort: the
+    // visitor is already resolved as anonymous, and a failure here only
+    // postpones the cleanup to the next page load.
+    try {
+      await discardSessionOfMissingUser();
+    } catch (error) {
+      captureError(error, '[getSessionUser] failed to discard the session of a missing user');
+    }
   }
 
   try {
