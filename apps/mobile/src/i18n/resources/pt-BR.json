@@ -171,6 +171,15 @@
         "icon": "Ícone"
       },
       "resetDefaults": "Redefinir valores padrão"
+    },
+    "about": {
+      "title": "Sobre",
+      "faq": "Perguntas frequentes",
+      "contact": "Contato",
+      "terms": "Termos de serviço",
+      "privacy": "Política de privacidade",
+      "licenses": "Licenças",
+      "version": "Versão {{version}}"
     }
   },
   "legalMoves": {

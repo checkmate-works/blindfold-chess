@@ -171,6 +171,15 @@
         "icon": "アイコン"
       },
       "resetDefaults": "デフォルトに戻す"
+    },
+    "about": {
+      "title": "このアプリについて",
+      "faq": "よくある質問",
+      "contact": "お問い合わせ",
+      "terms": "利用規約",
+      "privacy": "プライバシーポリシー",
+      "licenses": "ライセンス",
+      "version": "バージョン {{version}}"
     }
   },
   "legalMoves": {

@@ -1,7 +1,18 @@
+import Constants from "expo-constants";
 import { useTranslation } from "react-i18next";
 import { ListRow, ListSection, TabScrollView } from "../../../components";
 import { changeLanguage, type Locale } from "../../../i18n";
 import { BoardPreferencesSection } from "../../../features/settings/BoardPreferencesSection";
+import { openWebPage } from "../../../lib/web-pages";
+
+/** The web pages the About section links to, in display order. */
+const ABOUT_PAGES = [
+  { key: "faq", path: "/faq" },
+  { key: "contact", path: "/contact" },
+  { key: "terms", path: "/terms" },
+  { key: "privacy", path: "/privacy" },
+  { key: "licenses", path: "/licenses" },
+] as const;
 
 const LANGUAGE_LABELS: Record<Locale, string> = {
   ja: "settings.languageJapanese",
@@ -42,6 +53,22 @@ export default function SettingsTab() {
         ))}
       </ListSection>
       <BoardPreferencesSection />
+      {/* settings.about.{faq,contact,terms,privacy,licenses} */}
+      <ListSection
+        title={t("settings.about.title")}
+        footer={t("settings.about.version", {
+          version: Constants.expoConfig?.version ?? "",
+        })}
+      >
+        {ABOUT_PAGES.map(({ key, path }) => (
+          <ListRow
+            key={key}
+            title={t(`settings.about.${key}`)}
+            accessory="external"
+            onPress={() => openWebPage(path, currentLanguage)}
+          />
+        ))}
+      </ListSection>
     </TabScrollView>
   );
 }
