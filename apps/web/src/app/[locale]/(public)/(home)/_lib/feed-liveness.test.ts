@@ -66,6 +66,16 @@ describe('liveFeedRow', () => {
     expect(sql).toContain(`"feed_items"."metadata" -> 'rank' <= to_jsonb(10::int)`);
   });
 
+  it('admits a rank update only while the result it announces has not been removed', () => {
+    // The row's `entity_id` is the challenge result whose save moved the actor
+    // up. Moderation removing that result hides the row; a missing result row
+    // yields NULL and hides it too.
+    expect(sql).toContain(
+      `to_jsonb(10::int) AND ( SELECT "challenge_results"."deleted_at" is null ` +
+        `FROM "challenge_results" WHERE "challenge_results"."id" = "feed_items"."entity_id" )`
+    );
+  });
+
   it('admits an arrival announcement only while the member has not left', () => {
     expect(sql).toContain(
       `WHEN 'member_joined' THEN ( SELECT "profiles"."deleted_at" IS NULL FROM "profiles" ` +
@@ -99,8 +109,10 @@ describe('liveFeedRow', () => {
     // against 0.8ms for this spelling. `CASE` alone does not prevent it; only
     // dropping `EXISTS` does.
     expect(sql).not.toContain('EXISTS');
-    // One scalar subquery per branch. (Drizzle emits the outer `select`
-    // lowercase, so only this predicate's own subqueries are counted.)
-    expect(sql.match(/SELECT/g)?.length).toBe(6);
+    // One scalar subquery per branch, plus a second one in the rank-update
+    // branch for the result it announces: seven in all. (Drizzle emits the
+    // outer `select` lowercase, so only this predicate's own subqueries are
+    // counted.)
+    expect(sql.match(/SELECT/g)?.length).toBe(7);
   });
 });
