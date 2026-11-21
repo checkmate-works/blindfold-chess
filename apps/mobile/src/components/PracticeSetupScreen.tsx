@@ -1,5 +1,11 @@
 import { Screen } from "./Screen";
-import { useLayoutEffect, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import type { ReactNode } from "react";
 import {
   View,
@@ -8,7 +14,7 @@ import {
   ScrollView,
   ActivityIndicator,
 } from "react-native";
-import { useNavigation, usePathname } from "expo-router";
+import { useFocusEffect, useNavigation, usePathname } from "expo-router";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "./Button";
@@ -51,6 +57,66 @@ function moduleKeyForPath(pathname: string): string | null {
 }
 
 /**
+ * How long a start tap holds the start buttons locked when the screen keeps
+ * its focus. Long enough to outlast expo-router's queued push (it is
+ * dispatched on the next render, well under a frame or two), short enough
+ * that a retry after a validation error does not feel ignored.
+ */
+const START_RELEASE_MS = 1000;
+
+/**
+ * Wraps the start handlers so that, while the setup screen has focus, only
+ * the first tap goes through.
+ *
+ * @description
+ * `router.push` does not navigate synchronously: expo-router queues the
+ * action and dispatches it on the next render, and the session modal then
+ * animates in. A second tap in that window would push a second session on
+ * top of the first. The lock is released when the screen regains focus
+ * (the user came back from the session), so the next start works.
+ *
+ * Some handlers validate first and return without navigating (recall's
+ * PGN check shows an error instead). The screen then never blurs, so the
+ * focus release would never come; a timer releases the lock as long as the
+ * screen still has focus, which a real push would have taken away by then.
+ */
+function useStartOnce() {
+  const navigation = useNavigation();
+  const lockedRef = useRef(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearTimer = useCallback(() => {
+    if (timerRef.current !== null) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      lockedRef.current = false;
+      clearTimer();
+    }, [clearTimer]),
+  );
+
+  useEffect(() => clearTimer, [clearTimer]);
+
+  return useCallback(
+    (handler: () => void) => () => {
+      if (lockedRef.current) return;
+      lockedRef.current = true;
+      clearTimer();
+      timerRef.current = setTimeout(() => {
+        timerRef.current = null;
+        if (navigation.isFocused()) lockedRef.current = false;
+      }, START_RELEASE_MS);
+      handler();
+    },
+    [navigation, clearTimer],
+  );
+}
+
+/**
  * Shared layout for every practice setup screen: a loading gate while the
  * persisted settings hydrate, the scrollable settings form, and a start
  * button pinned to a bordered footer. Modules with a training mode also get
@@ -73,6 +139,7 @@ export function PracticeSetupScreen({
   const navigation = useNavigation();
   const moduleKey = moduleKeyForPath(usePathname());
   const [helpOpen, setHelpOpen] = useState(false);
+  const startOnce = useStartOnce();
 
   useLayoutEffect(() => {
     if (!moduleKey) return;
@@ -122,7 +189,7 @@ export function PracticeSetupScreen({
       >
         <Button
           title={startLabel}
-          onPress={onStart}
+          onPress={startOnce(onStart)}
           disabled={startDisabled}
           size="lg"
           fullWidth
@@ -131,7 +198,7 @@ export function PracticeSetupScreen({
           <>
             <Button
               title={t("common.startTraining")}
-              onPress={onStartTraining}
+              onPress={startOnce(onStartTraining)}
               disabled={startDisabled}
               variant="outline"
               size="lg"
