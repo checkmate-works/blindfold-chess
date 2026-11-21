@@ -85,14 +85,19 @@ export function ChallengeAttemptGate<TQuestion>({
 }
 
 /**
- * Veils the question area while a server-run session waits for its next
- * question (`awaitingServer`). The previous question is still mounted then,
- * already answered and no longer accepting input, while the clock runs; the
- * veil keeps the player from reading it as the live question. Same strength
- * as the countdown and pause veil (`ChallengeSessionVeil`), without a curtain:
- * the wait usually ends within a few frames.
+ * Locks the question area while a server-run session waits for its next
+ * question (`awaitingServer`): pointer input is off and the area is marked
+ * `aria-busy`. Nothing about its look changes. The answered question is still
+ * mounted then while the clock runs, and what keeps the player from reading
+ * it as the live question is its feedback, which `useTimedSession` keeps up
+ * (`showFeedback`) until the next question replaces it.
+ *
+ * It used to blur and grey the area out as well. The wait lasts from a few
+ * frames to a few hundred milliseconds on every answer, so the question
+ * blinked out and back after each one; changing the screen once, from the
+ * feedback straight to the next question, does not.
  */
-export function AwaitingServerVeil({
+export function AwaitingServerInputLock({
   active,
   className = '',
   children,
@@ -101,9 +106,9 @@ export function AwaitingServerVeil({
   className?: string;
   children: ReactNode;
 }) {
-  const veil = active ? 'blur-md grayscale opacity-50 pointer-events-none' : '';
+  const lock = active ? 'pointer-events-none' : '';
   return (
-    <div aria-busy={active || undefined} className={`${veil} ${className}`.trim()}>
+    <div aria-busy={active || undefined} className={`${lock} ${className}`.trim()}>
       {children}
     </div>
   );

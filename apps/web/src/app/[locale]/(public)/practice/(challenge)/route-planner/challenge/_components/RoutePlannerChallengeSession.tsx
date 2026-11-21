@@ -14,7 +14,7 @@ import { useRoutePlannerSession } from '@blindfold-chess/features/route-planner/
 import { MISTAKE_LIMIT } from '@/lib/challenge/constants';
 
 import {
-  AwaitingServerVeil,
+  AwaitingServerInputLock,
   ChallengeAttemptGate,
 } from '@/app/[locale]/(public)/practice/(challenge)/_components/ChallengeAttemptGate';
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
@@ -219,7 +219,7 @@ function RoutePlannerChallengeRun({
           awaitingServer={awaitingServer}
         />
 
-        <AwaitingServerVeil active={awaitingServer}>
+        <AwaitingServerInputLock active={awaitingServer}>
           <ProblemBody
             key={problemKey}
             currentProblem={currentProblem}
@@ -230,7 +230,7 @@ function RoutePlannerChallengeRun({
             onAnswer={hookHandleAnswer}
             onRecordResult={recordProblemResult}
           />
-        </AwaitingServerVeil>
+        </AwaitingServerInputLock>
 
         <ScoreCounter correct={correctCount} incorrect={incorrectCount} className="mt-8" />
       </ChallengeSessionVeil>

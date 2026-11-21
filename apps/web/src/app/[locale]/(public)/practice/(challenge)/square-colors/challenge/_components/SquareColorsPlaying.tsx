@@ -3,7 +3,7 @@
 import type { BoardTheme } from '@/lib/games/board-themes';
 import { DEFAULT_BOARD_THEME } from '@/lib/games/board-themes';
 
-import { AwaitingServerVeil } from '@/app/[locale]/(public)/practice/(challenge)/_components/ChallengeAttemptGate';
+import { AwaitingServerInputLock } from '@/app/[locale]/(public)/practice/(challenge)/_components/ChallengeAttemptGate';
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
 import { ChallengeQuitControl } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengeQuitControl';
 import { ChallengeSessionVeil } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengeSessionVeil';
@@ -12,7 +12,7 @@ import { SquareColorsQuestionPanel } from '@/app/[locale]/(public)/practice/(cha
 
 type Props = {
   currentSquare: string;
-  /** The next square has not arrived from the server yet; the answered one is veiled. */
+  /** The next square has not arrived from the server yet; input is off and the answered one keeps its feedback. */
   awaitingServer?: boolean;
   timeRemaining: number;
   timeLimit: number;
@@ -77,7 +77,7 @@ export function SquareColorsPlaying({
           />
         </div>
 
-        <AwaitingServerVeil active={awaitingServer}>
+        <AwaitingServerInputLock active={awaitingServer}>
           <SquareColorsQuestionPanel
             currentSquare={currentSquare}
             lastAnswer={lastAnswer}
@@ -85,7 +85,7 @@ export function SquareColorsPlaying({
             boardTheme={boardTheme}
             disabled={inputDisabled}
           />
-        </AwaitingServerVeil>
+        </AwaitingServerInputLock>
 
         <ScoreCounter correct={correctCount} incorrect={incorrectCount} className="mt-8" />
       </ChallengeSessionVeil>

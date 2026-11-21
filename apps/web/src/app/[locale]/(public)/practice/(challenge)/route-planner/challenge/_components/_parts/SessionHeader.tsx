@@ -6,7 +6,7 @@ import { FaArrowRight } from 'react-icons/fa';
 
 import { MISTAKE_LIMIT } from '@/lib/challenge/constants';
 
-import { AwaitingServerVeil } from '@/app/[locale]/(public)/practice/(challenge)/_components/ChallengeAttemptGate';
+import { AwaitingServerInputLock } from '@/app/[locale]/(public)/practice/(challenge)/_components/ChallengeAttemptGate';
 import { ChallengeStatusHeader } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengeStatusHeader';
 
 import type { PieceType } from '../../../_lib/pieces';
@@ -21,7 +21,7 @@ type Props = {
   showFeedback: boolean;
   countdown: number | null;
   onTogglePause: () => void;
-  /** The next problem has not arrived from the server yet; the answered one is veiled. */
+  /** The next problem has not arrived from the server yet; input is off and the answered one keeps its feedback. */
   awaitingServer?: boolean;
 };
 
@@ -60,7 +60,7 @@ export function SessionHeader({
       />
 
       {/* Problem Header */}
-      <AwaitingServerVeil
+      <AwaitingServerInputLock
         active={awaitingServer}
         className="flex justify-between items-center pb-4 mb-4"
       >
@@ -82,7 +82,7 @@ export function SessionHeader({
             </div>
           </div>
         </div>
-      </AwaitingServerVeil>
+      </AwaitingServerInputLock>
     </>
   );
 }

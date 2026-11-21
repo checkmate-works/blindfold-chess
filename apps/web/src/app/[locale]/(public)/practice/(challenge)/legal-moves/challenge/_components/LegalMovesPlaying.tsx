@@ -1,6 +1,6 @@
 'use client';
 
-import { AwaitingServerVeil } from '@/app/[locale]/(public)/practice/(challenge)/_components/ChallengeAttemptGate';
+import { AwaitingServerInputLock } from '@/app/[locale]/(public)/practice/(challenge)/_components/ChallengeAttemptGate';
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
 import { ChallengeQuitControl } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengeQuitControl';
 import { ChallengeSessionVeil } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengeSessionVeil';
@@ -11,7 +11,7 @@ import type { MoveQuestion } from '../../_lib/types';
 
 type Props = {
   currentQuestion: MoveQuestion;
-  /** The next question has not arrived from the server yet; the answered one is veiled. */
+  /** The next question has not arrived from the server yet; input is off and the answered one keeps its feedback. */
   awaitingServer?: boolean;
   timeRemaining: number;
   timeLimit: number;
@@ -81,7 +81,7 @@ export function LegalMovesPlaying({
           timeElapsed={timeElapsed}
         />
 
-        <AwaitingServerVeil active={awaitingServer}>
+        <AwaitingServerInputLock active={awaitingServer}>
           <LegalMovesQuestionPanel
             currentQuestion={currentQuestion}
             lastAnswer={lastAnswer}
@@ -89,7 +89,7 @@ export function LegalMovesPlaying({
             getQuestion={getQuestion}
             disabled={inputDisabled}
           />
-        </AwaitingServerVeil>
+        </AwaitingServerInputLock>
 
         <ScoreCounter correct={correctCount} incorrect={incorrectCount} className="mt-8" />
       </ChallengeSessionVeil>

@@ -9,7 +9,7 @@ import type { RemoteChallengePort } from '@blindfold-chess/features/challenge-at
 import { CHALLENGE_TIME_LIMIT, MISTAKE_LIMIT } from '@/lib/challenge/constants';
 
 import {
-  AwaitingServerVeil,
+  AwaitingServerInputLock,
   ChallengeAttemptGate,
 } from '@/app/[locale]/(public)/practice/(challenge)/_components/ChallengeAttemptGate';
 import { useChallengeResultSave } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-challenge-result-save';
@@ -144,9 +144,9 @@ function BoardSymmetryChallengeSession({ locale, attemptId, remote }: SessionPro
 
   return (
     <div id="board-symmetry-challenge" className="min-h-screen">
-      {/* The question view is shared and takes no waiting state, so the whole
-          view is veiled while the next problem is on its way. */}
-      <AwaitingServerVeil active={awaitingServer}>
+      {/* The question view is shared and takes no waiting state, so input to
+          the whole view is locked while the next problem is on its way. */}
+      <AwaitingServerInputLock active={awaitingServer}>
         <BoardSymmetryPlaying
           problem={problem}
           selectedFile={selectedFile}
@@ -170,7 +170,7 @@ function BoardSymmetryChallengeSession({ locale, attemptId, remote }: SessionPro
           onQuitConfirm={handleQuitConfirm}
           onQuitCancel={handleQuitCancel}
         />
-      </AwaitingServerVeil>
+      </AwaitingServerInputLock>
     </div>
   );
 }

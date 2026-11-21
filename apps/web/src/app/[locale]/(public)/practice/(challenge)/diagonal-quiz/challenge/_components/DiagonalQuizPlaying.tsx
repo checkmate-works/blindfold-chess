@@ -3,7 +3,7 @@
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { Square } from '@blindfold-chess/types';
 
-import { AwaitingServerVeil } from '@/app/[locale]/(public)/practice/(challenge)/_components/ChallengeAttemptGate';
+import { AwaitingServerInputLock } from '@/app/[locale]/(public)/practice/(challenge)/_components/ChallengeAttemptGate';
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
 import { ChallengeQuitControl } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengeQuitControl';
 import { ChallengeSessionVeil } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengeSessionVeil';
@@ -17,8 +17,8 @@ import { useKeypadInput } from '../_hooks/use-keypad-input';
 type Props = {
   currentSquare: Square;
   /**
-   * The next square has not arrived from the server yet: the answered one is
-   * veiled and input is off. Only a server-run challenge sets it.
+   * The next square has not arrived from the server yet: input is off and
+   * the answered one keeps its feedback. Only a server-run challenge sets it.
    */
   awaitingServer?: boolean;
   timeRemaining: number;
@@ -102,9 +102,9 @@ export function DiagonalQuizPlaying({
         onTogglePause={onTogglePause}
         className="pt-2 text-center"
       >
-        <AwaitingServerVeil active={awaitingServer}>
+        <AwaitingServerInputLock active={awaitingServer}>
           <SectionTitle className="mb-4">{t('question', { square: currentSquare })}</SectionTitle>
-        </AwaitingServerVeil>
+        </AwaitingServerInputLock>
 
         <ChallengeStatusHeader
           className="flex justify-between items-center mb-4 min-h-[40px]"
