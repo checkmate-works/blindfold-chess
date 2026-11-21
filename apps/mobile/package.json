@@ -12,7 +12,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "copy-stockfish": "tsx scripts/copy-stockfish.ts"
+    "copy-stockfish": "tsx scripts/copy-stockfish.ts",
+    "bundle-learn-content": "tsx scripts/bundle-learn-content.ts"
   },
   "dependencies": {
     "@blindfold-chess/features": "workspace:^",

@@ -827,5 +827,15 @@
       "backToMenu": "Back to practice",
       "mistakes": "Wrong tries"
     }
+  },
+  "learn": {
+    "description": "Educational articles and guides to improve your chess understanding",
+    "categories": {
+      "moves": "Piece Movement",
+      "coordinates": "Coordinates",
+      "notation": "Notation",
+      "memory": "Memory",
+      "practice": "Practice"
+    }
   }
 }

@@ -827,5 +827,15 @@
       "backToMenu": "練習一覧へ",
       "mistakes": "誤入力"
     }
+  },
+  "learn": {
+    "description": "チェスの理解を深めるための教育記事とガイド",
+    "categories": {
+      "moves": "駒の動き",
+      "coordinates": "座標",
+      "notation": "記法",
+      "memory": "記憶",
+      "practice": "練習"
+    }
   }
 }

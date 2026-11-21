@@ -827,5 +827,15 @@
       "backToMenu": "Volver a prácticas",
       "mistakes": "Intentos fallidos"
     }
+  },
+  "learn": {
+    "description": "Artículos educativos y guías para mejorar tu comprensión del ajedrez",
+    "categories": {
+      "moves": "Movimiento de Piezas",
+      "coordinates": "Coordenadas",
+      "notation": "Notación",
+      "memory": "Memoria",
+      "practice": "Práctica"
+    }
   }
 }

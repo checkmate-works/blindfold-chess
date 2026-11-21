@@ -827,5 +827,15 @@
       "backToMenu": "Voltar às práticas",
       "mistakes": "Tentativas erradas"
     }
+  },
+  "learn": {
+    "description": "Artigos educativos e guias para melhorar sua compreensão do xadrez",
+    "categories": {
+      "moves": "Movimento de Peças",
+      "coordinates": "Coordenadas",
+      "notation": "Notação",
+      "memory": "Memória",
+      "practice": "Prática"
+    }
   }
 }

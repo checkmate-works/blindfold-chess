@@ -1,5 +1,54 @@
-import { TabScrollView } from "../../../components";
+import { useRouter } from "expo-router";
+import type { Href } from "expo-router";
+import { useTranslation } from "react-i18next";
 
+import {
+  ListIcon,
+  ListRow,
+  ListSection,
+  TabScrollView,
+} from "../../../components";
+import { LEARN_ARTICLES } from "../../../features/learn/generated/articles";
+import { LEARN_CATEGORIES, localized } from "../../../features/learn/types";
+
+const CATEGORY_ICONS: Record<string, string> = {
+  moves: "♟️",
+  coordinates: "🎯",
+  notation: "📝",
+  memory: "🧠",
+  practice: "🏋️",
+};
+
+/**
+ * The learn tab: the web's learn articles, grouped by category in the
+ * web's order. The articles ship with the app (see
+ * `scripts/bundle-learn-content.ts`), so the tab works offline.
+ */
 export default function LearnTab() {
-  return <TabScrollView>{null}</TabScrollView>;
+  const { t, i18n } = useTranslation();
+  const router = useRouter();
+
+  return (
+    <TabScrollView>
+      {/* learn.categories.{moves,coordinates,notation,memory,practice} */}
+      {LEARN_CATEGORIES.map((category) => {
+        const articles = LEARN_ARTICLES.filter((a) => a.category === category);
+        if (articles.length === 0) return null;
+        return (
+          <ListSection key={category} title={t(`learn.categories.${category}`)}>
+            {articles.map((article) => (
+              <ListRow
+                key={article.slug}
+                testID={`learn-${article.slug}`}
+                leading={<ListIcon glyph={CATEGORY_ICONS[category]} />}
+                title={localized(article.title, i18n.language)}
+                subtitle={localized(article.excerpt, i18n.language)}
+                onPress={() => router.push(`/learn/${article.slug}` as Href)}
+              />
+            ))}
+          </ListSection>
+        );
+      })}
+    </TabScrollView>
+  );
 }
