@@ -23,7 +23,7 @@ type SelectableChipProps = {
  *
  * @description
  * Every settings screen picks from a small fixed set — durations, problem
- * counts, board orientation, feedback speed, pieces — and each had written
+ * counts, board orientation, pieces — and each had written
  * the same `TouchableOpacity` by hand: border and background swapping to
  * `primary` when selected, label swapping to `primaryForeground`. Seven
  * copies, one of which had already been pulled into a local

@@ -19,7 +19,7 @@ type OptionsFieldProps<T> = {
  * The layout every practice settings form repeats: a medium-weight label with
  * a wrapping chip row under it. `TimeLimitSettingsForm` is now this component
  * with the durations filled in, and the modules that need more than a time
- * limit (problem count, board orientation, feedback speed) compose additional
+ * limit (problem count, board orientation) compose additional
  * instances instead of re-declaring the same `StyleSheet`.
  */
 export function OptionsField<T>({

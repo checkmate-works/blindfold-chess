@@ -238,10 +238,6 @@
       "orientationWhite": "白側",
       "orientationBlack": "黒側",
       "orientationRandom": "ランダム",
-      "feedbackSpeed": "フィードバック速度",
-      "feedbackFast": "速い",
-      "feedbackNormal": "普通",
-      "feedbackSlow": "遅い",
       "startQuiz": "クイズを開始"
     },
     "session": {

@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { OptionsField, TIME_LIMIT_OPTIONS } from "../../../components";
 import { spacing } from "../../../theme";
 import type { QuizSettings } from "../lib/types";
-import { BOARD_ORIENTATIONS, FEEDBACK_SPEEDS } from "../lib/types";
+import { BOARD_ORIENTATIONS } from "../lib/types";
 
 type SettingsFormProps = {
   settings: QuizSettings;
@@ -36,17 +36,6 @@ export function SettingsForm({ settings, onUpdateSetting }: SettingsFormProps) {
         formatOption={(orientation) =>
           // coordinateQuiz.setup.orientationWhite, coordinateQuiz.setup.orientationBlack, coordinateQuiz.setup.orientationRandom (BOARD_ORIENTATIONS)
           t(`coordinateQuiz.setup.orientation${capitalize(orientation)}`)
-        }
-      />
-
-      <OptionsField
-        label={t("coordinateQuiz.setup.feedbackSpeed")}
-        options={FEEDBACK_SPEEDS}
-        value={settings.feedbackSpeed}
-        onChange={(speed) => onUpdateSetting("feedbackSpeed", speed)}
-        formatOption={(speed) =>
-          // coordinateQuiz.setup.feedbackFast, coordinateQuiz.setup.feedbackNormal, coordinateQuiz.setup.feedbackSlow (FEEDBACK_SPEEDS)
-          t(`coordinateQuiz.setup.feedback${capitalize(speed)}`)
         }
       />
     </View>

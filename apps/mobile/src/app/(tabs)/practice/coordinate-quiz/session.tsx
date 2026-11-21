@@ -19,12 +19,10 @@ import { useTheme, fontSize, fontWeight, spacing } from "../../../../theme";
 import {
   BOARD_ORIENTATIONS,
   DEFAULT_QUIZ_SETTINGS,
-  FEEDBACK_SPEEDS,
 } from "../../../../features/coordinate-quiz/lib/types";
 import type {
   QuizResult,
   BoardOrientation,
-  FeedbackSpeed,
 } from "../../../../features/coordinate-quiz/lib/types";
 import { parseEnumParam, parseIntParam } from "../../../../lib/route-params";
 
@@ -35,7 +33,6 @@ export default function CoordinateQuizSession() {
   const params = useLocalSearchParams<{
     duration: string;
     orientation: string;
-    feedbackSpeed: string;
   }>();
 
   const timeLimit = parseIntParam(params.duration, {
@@ -46,11 +43,6 @@ export default function CoordinateQuizSession() {
     params.orientation,
     BOARD_ORIENTATIONS,
     "white",
-  );
-  const feedbackSpeed = parseEnumParam<FeedbackSpeed>(
-    params.feedbackSpeed,
-    FEEDBACK_SPEEDS,
-    "normal",
   );
 
   const handleComplete = useCallback(
@@ -82,7 +74,6 @@ export default function CoordinateQuizSession() {
   } = useCoordinateQuizSession({
     timeLimit,
     orientation,
-    feedbackSpeed,
     onComplete: handleComplete,
     onAnswerEffect: (correct) =>
       Haptics.notificationAsync(
