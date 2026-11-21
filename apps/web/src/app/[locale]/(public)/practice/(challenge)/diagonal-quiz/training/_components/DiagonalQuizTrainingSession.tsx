@@ -62,7 +62,6 @@ export default function DiagonalQuizTrainingSession({ locale }: Props) {
   const { sessionElementId, realignSession, handleEndTraining } = useTrainingSessionShell({
     locale,
     slug: 'diagonal-quiz',
-    scrollEnabled: hasQuestions,
   });
 
   const onAnswer = useCallback(
@@ -102,7 +101,11 @@ export default function DiagonalQuizTrainingSession({ locale }: Props) {
 
   // Show loading state while squares are being generated
   if (!hasQuestions || !currentSquare) {
-    return <DiagonalQuizPlaySkeleton />;
+    return (
+      <div id={sessionElementId} className="min-h-screen">
+        <DiagonalQuizPlaySkeleton />
+      </div>
+    );
   }
 
   return (

@@ -46,7 +46,6 @@ export default function QuadrantsTrainingSession({ locale, orientation }: Props)
   const { sessionElementId, handleEndTraining } = useTrainingSessionShell({
     locale,
     slug: 'quadrants',
-    scrollEnabled: hasQuestions,
   });
 
   const onAnswer = useCallback(
@@ -57,7 +56,11 @@ export default function QuadrantsTrainingSession({ locale, orientation }: Props)
   );
 
   if (!hasQuestions || !currentQuestion) {
-    return <QuadrantsPlaySkeleton />;
+    return (
+      <div id={sessionElementId} className="min-h-screen">
+        <QuadrantsPlaySkeleton />
+      </div>
+    );
   }
 
   return (

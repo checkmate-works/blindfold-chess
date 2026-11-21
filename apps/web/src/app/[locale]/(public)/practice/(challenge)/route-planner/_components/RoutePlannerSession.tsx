@@ -75,15 +75,17 @@ export function RoutePlannerSession({
     enabled: isInputActive,
   });
 
-  if (!problem) return <RoutePlannerPlaySkeleton />;
+  if (!problem) {
+    return (
+      <div id="route-planner-session" className="min-h-screen max-w-md mx-auto">
+        <RoutePlannerPlaySkeleton />
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen max-w-md mx-auto">
-      <div
-        id="route-planner-session"
-        ref={sessionRef}
-        className="text-center relative overflow-hidden"
-      >
+    <div id="route-planner-session" className="min-h-screen max-w-md mx-auto">
+      <div ref={sessionRef} className="text-center relative overflow-hidden">
         {/* Problem Header */}
         <div className="flex justify-center items-center gap-6 pb-4 mb-4">
           <div className="bg-primary/10 p-2 rounded-lg text-primary w-14 h-14 flex items-center justify-center border border-primary/20">

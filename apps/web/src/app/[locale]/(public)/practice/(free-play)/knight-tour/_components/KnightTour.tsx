@@ -127,7 +127,7 @@ export default function KnightTour({
     router,
   ]);
 
-  useScrollToElement('knight-tour-session', gameState === 'playing');
+  useScrollToElement('knight-tour-session');
 
   // Auto-start game when autoStart is true (for tutorial mode)
   useEffect(() => {
@@ -166,6 +166,10 @@ export default function KnightTour({
   const availableMoves = gameState === 'playing' ? tour.availableMoves : [];
 
   if (gameState === 'setup') {
+    // An auto-started tour leaves setup in its first effect. Rendering the
+    // setup form until then painted it for a frame at the previous page's
+    // offset; the empty session element is drawn where play will be instead.
+    if (autoStart) return <div id="knight-tour-session" className="min-h-screen" />;
     return (
       <KnightTourSetup
         startingSquare={startingSquareOption}

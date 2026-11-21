@@ -47,7 +47,6 @@ export default function CoordinateQuizTrainingSession({
   const { sessionElementId, handleEndTraining } = useTrainingSessionShell({
     locale,
     slug: 'coordinate-quiz',
-    scrollEnabled: !!currentQuestion,
   });
 
   const handleSquareClick = useCallback(
@@ -81,7 +80,11 @@ export default function CoordinateQuizTrainingSession({
 
   // Show loading state while question is being generated
   if (!currentQuestion) {
-    return <CoordinateQuizPlaySkeleton />;
+    return (
+      <div id={sessionElementId} className="min-h-screen">
+        <CoordinateQuizPlaySkeleton />
+      </div>
+    );
   }
 
   return (

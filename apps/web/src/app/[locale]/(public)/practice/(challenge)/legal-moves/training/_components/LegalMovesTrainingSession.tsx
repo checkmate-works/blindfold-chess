@@ -49,7 +49,6 @@ export default function LegalMovesTrainingSession({
   const { sessionElementId, handleEndTraining } = useTrainingSessionShell({
     locale,
     slug: 'legal-moves',
-    scrollEnabled: hasQuestions,
   });
 
   const onAnswer = useCallback(
@@ -63,7 +62,11 @@ export default function LegalMovesTrainingSession({
 
   // Show loading state while questions are being generated
   if (!hasQuestions || !currentQuestion) {
-    return <LegalMovesPlaySkeleton />;
+    return (
+      <div id={sessionElementId} className="min-h-screen">
+        <LegalMovesPlaySkeleton />
+      </div>
+    );
   }
 
   return (
