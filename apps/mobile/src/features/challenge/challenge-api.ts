@@ -6,6 +6,44 @@ import type { ChallengeMenuType } from "@blindfold-chess/features/practice-regis
 
 import { callMobileApi, errorCodeOf } from "../../auth/api-client";
 
+// A 2xx is not proof of a JSON body from our API: a captive portal or a
+// proxy can answer with an HTML page and a 200. Every body below is read
+// with `response.json().catch(() => undefined)` and checked for the fields
+// this module uses before it is trusted; a body that fails the check is
+// handled like a failed request. Letting `json()` reject instead would leave
+// the caller's promise unhandled — the challenge gate has no `.catch`, so it
+// would sit on its loading state for good.
+
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null;
+}
+
+/** `{ sequence, question }`; the question's own shape is the menu's business. */
+function isQuestionSlot(v: unknown): boolean {
+  return isRecord(v) && typeof v.sequence === "number" && "question" in v;
+}
+
+function isBeginBody<Q>(
+  v: unknown,
+): v is { attemptId: string; first: { sequence: number; question: Q } } {
+  return (
+    isRecord(v) && typeof v.attemptId === "string" && isQuestionSlot(v.first)
+  );
+}
+
+function isAnswerResponse<Q>(v: unknown): v is ChallengeAnswerResponse<Q> {
+  if (!isRecord(v)) return false;
+  if (v.status === "expired" || v.status === "rejected") return true;
+  return (
+    v.status === "accepted" &&
+    typeof v.correct === "boolean" &&
+    typeof v.elapsedMs === "number" &&
+    (v.feedbackExtensionMs === undefined ||
+      typeof v.feedbackExtensionMs === "number") &&
+    (v.next === null || isQuestionSlot(v.next))
+  );
+}
+
 export type BeginResult<Q> =
   | { kind: "recorded"; attemptId: string; remote: RemoteChallengePort<Q> }
   /** Plays locally, unrecorded: signed out, no backend, or banned. */
@@ -17,6 +55,16 @@ export type BeginResult<Q> =
  * counterpart of the web's `useChallengeAttempt` start. The returned port
  * plugs into the shared session hooks' remote mode: the server supplies and
  * grades every question.
+ *
+ * Never rejects. A 2xx whose body is not JSON, or lacks a string
+ * `attemptId` and a `first` question with a numeric `sequence`, resolves to
+ * `{ kind: "error", reason: "failed" }`, the same as an unreachable server.
+ *
+ * The port's `submitAnswer` is the one exception, on purpose: it throws on a
+ * failed request and on a 2xx it cannot read (not JSON, or not one of the
+ * `accepted` / `expired` / `rejected` shapes), because the shared session
+ * hook retries a thrown answer and ends the run as `remoteFailed` after the
+ * last attempt. Returning a value there would skip the retries.
  */
 export async function beginChallenge<Q>(
   menuType: ChallengeMenuType,
@@ -38,19 +86,17 @@ export async function beginChallenge<Q>(
       reason: code === "rateLimited" ? "rateLimited" : "failed",
     };
   }
-  const body = (await response.json()) as {
-    attemptId: string;
-    first: { sequence: number; question: Q };
-  };
+  const body: unknown = await response.json().catch(() => undefined);
+  if (!isBeginBody<Q>(body)) return { kind: "error", reason: "failed" };
   const { attemptId } = body;
   return {
     kind: "recorded",
     attemptId,
     remote: {
       first: body.first,
-      // Throws on a failed request: the session hook retries a thrown
-      // answer a few times (the server replays a resent answer), then ends
-      // the run as `remoteFailed`.
+      // Throws on a failed request or an unreadable 2xx: the session hook
+      // retries a thrown answer a few times (the server replays a resent
+      // answer), then ends the run as `remoteFailed`.
       submitAnswer: async (sequence, answer) => {
         const result = await callMobileApi(`/challenges/${attemptId}/answers`, {
           method: "POST",
@@ -61,7 +107,11 @@ export async function beginChallenge<Q>(
             `answer not delivered (${typeof result === "string" ? result : result.status})`,
           );
         }
-        return (await result.json()) as ChallengeAnswerResponse<Q>;
+        const answerBody: unknown = await result.json().catch(() => undefined);
+        if (!isAnswerResponse<Q>(answerBody)) {
+          throw new Error(`answer response unreadable (${result.status})`);
+        }
+        return answerBody;
       },
     },
   };
