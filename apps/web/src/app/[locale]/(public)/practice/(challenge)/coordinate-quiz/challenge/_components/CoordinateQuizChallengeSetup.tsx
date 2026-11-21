@@ -5,9 +5,9 @@ import { useRouter } from 'next/navigation';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { ChallengeSetupShell } from '@/app/[locale]/(public)/practice/(challenge)/_components/ChallengeSetupShell';
-import { useQuerySeededSettings } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-query-seeded-settings';
 import { StandardChallengeRules } from '@/app/[locale]/(public)/practice/(challenge)/_components/StandardChallengeRules';
 import { trainingHrefFor } from '@/app/[locale]/(public)/practice/(challenge)/_components/TrainingModeButton';
+import { useQuerySeededSettings } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-query-seeded-settings';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { CoordinateQuizSettings } from '../../_components/CoordinateQuizSettings';
@@ -29,12 +29,9 @@ export function CoordinateQuizChallengeSetup({ locale, initialBoardOrientation }
     initialBoardOrientation ? { boardOrientation: initialBoardOrientation } : undefined,
     ['orientation']
   );
-  const { boardOrientation, feedbackSpeed } = settings;
+  const { boardOrientation } = settings;
 
-  const settingsQuery = new URLSearchParams({
-    orientation: boardOrientation,
-    feedbackSpeed,
-  }).toString();
+  const settingsQuery = new URLSearchParams({ orientation: boardOrientation }).toString();
 
   const handleStart = () => {
     router.push(`/${locale}/practice/coordinate-quiz/challenge/session?${settingsQuery}`);
@@ -48,9 +45,7 @@ export function CoordinateQuizChallengeSetup({ locale, initialBoardOrientation }
     >
       <CoordinateQuizSettings
         boardOrientation={boardOrientation}
-        feedbackSpeed={feedbackSpeed}
         onBoardOrientationChange={(next) => updateSettings({ boardOrientation: next })}
-        onFeedbackSpeedChange={(next) => updateSettings({ feedbackSpeed: next })}
       />
     </ChallengeSetupShell>
   );

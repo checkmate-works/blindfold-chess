@@ -35,7 +35,7 @@ type ChallengeSetupProps = {
  *
  * Only modules whose setup is pure config (rules list + optional fixed query
  * params) use this factory. Modules with real per-module settings UI (piece
- * pickers, orientation selectors, feedback speed, ...) keep hand-written
+ * pickers, orientation selectors, ...) keep hand-written
  * setup components that render their settings widget as the shell's children.
  */
 export function createChallengeSetup({

@@ -17,7 +17,6 @@ const { generateMetadata, generateStaticParams, Page } = createPracticeChallenge
     <CoordinateQuizChallenge
       locale={locale}
       initialBoardOrientation={(searchParams.orientation as string) || 'white'}
-      initialFeedbackSpeed={(searchParams.feedbackSpeed as string) || 'normal'}
     />
   ),
 });

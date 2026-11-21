@@ -242,7 +242,7 @@ describe('beginChallengeAttempt', () => {
     const result = await beginChallengeAttempt({
       userId: USER_ID,
       menuType: 'coordinate_quiz',
-      rawSettings: { boardOrientation: 'black', feedbackSpeed: 'fast' },
+      rawSettings: { boardOrientation: 'black' },
       clock,
     });
 
@@ -254,7 +254,7 @@ describe('beginChallengeAttempt', () => {
     const result = await beginChallengeAttempt({
       userId: USER_ID,
       menuType: 'coordinate_quiz',
-      rawSettings: { boardOrientation: 'my-own-board', feedbackSpeed: 'fast' },
+      rawSettings: { boardOrientation: 'my-own-board' },
       clock,
     });
 

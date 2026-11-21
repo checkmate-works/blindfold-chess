@@ -1317,12 +1317,6 @@
       "white": "Brancas",
       "black": "Pretas",
       "random": "Aleatório",
-      "feedbackSpeed": "Velocidade de Resposta",
-      "feedbackSpeeds": {
-        "fast": "Rápida",
-        "normal": "Normal",
-        "slow": "Lenta"
-      },
       "start": "Iniciar",
       "clickSquare": "Clique nesta casa",
       "whiteToMove": "Brancas jogam",
@@ -1351,10 +1345,6 @@
       },
       "help": {
         "label": "Ajuda",
-        "feedbackSpeed": {
-          "title": "Velocidade de Resposta",
-          "description": "Ajusta a velocidade com que o efeito de acerto/erro é reproduzido. Esta configuração não afeta o cronômetro: o tempo não avança enquanto o efeito de resposta é exibido."
-        },
         "challenge": {
           "title": "Modo Desafio",
           "description": "Compita para ver quantas respostas corretas você consegue dar dentro do limite de tempo. Sua pontuação é registrada e aparece na tabela de classificação."

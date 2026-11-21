@@ -7,7 +7,7 @@ import { PracticeSetupActions } from '@/app/[locale]/(public)/practice/(challeng
 import { SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import type { BoardOrientation, FeedbackSpeed } from '../_lib/types';
+import type { BoardOrientation } from '../_lib/types';
 import { CoordinateQuizBoard } from './CoordinateQuizBoard';
 import { CoordinateQuizSettings } from './CoordinateQuizSettings';
 
@@ -16,21 +16,13 @@ const noop = () => {};
 type Props = {
   locale: Locale;
   boardOrientation: BoardOrientation;
-  feedbackSpeed: FeedbackSpeed;
   onBoardOrientationChange: (value: BoardOrientation) => void;
-  onFeedbackSpeedChange: (value: FeedbackSpeed) => void;
 };
 
-export function CoordinateQuizSetup({
-  locale,
-  boardOrientation,
-  feedbackSpeed,
-  onBoardOrientationChange,
-  onFeedbackSpeedChange,
-}: Props) {
+export function CoordinateQuizSetup({ locale, boardOrientation, onBoardOrientationChange }: Props) {
   const t = useTranslations('practice.coordinateQuiz');
 
-  const settingsQuery = `orientation=${boardOrientation}&feedbackSpeed=${feedbackSpeed}`;
+  const settingsQuery = `orientation=${boardOrientation}`;
 
   return (
     <div>
@@ -49,9 +41,7 @@ export function CoordinateQuizSetup({
 
       <CoordinateQuizSettings
         boardOrientation={boardOrientation}
-        feedbackSpeed={feedbackSpeed}
         onBoardOrientationChange={onBoardOrientationChange}
-        onFeedbackSpeedChange={onFeedbackSpeedChange}
       />
 
       <PracticeSetupActions

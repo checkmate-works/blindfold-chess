@@ -24,29 +24,22 @@ import { CoordinateQuizChallengePlaying } from './CoordinateQuizChallengePlaying
 type Props = {
   locale: Locale;
   initialBoardOrientation: string;
-  initialFeedbackSpeed: string;
 };
 
 /** What the setup screen links with when the query carries no valid choice. */
 const DEFAULT_SETTINGS: CoordinateQuizChallengeSettings = {
   boardOrientation: 'white',
-  feedbackSpeed: 'normal',
 };
 
-export default function CoordinateQuizChallenge({
-  locale,
-  initialBoardOrientation,
-  initialFeedbackSpeed,
-}: Props) {
+export default function CoordinateQuizChallenge({ locale, initialBoardOrientation }: Props) {
   // The server starts the attempt only with settings its `parseSettings`
   // accepts, and the device plays with the same values so both run one game.
   const settings = useMemo(
     () =>
       coordinateQuizChallengeDefinition.parseSettings({
         boardOrientation: initialBoardOrientation,
-        feedbackSpeed: initialFeedbackSpeed,
       }) ?? DEFAULT_SETTINGS,
-    [initialBoardOrientation, initialFeedbackSpeed]
+    [initialBoardOrientation]
   );
 
   return (
@@ -75,7 +68,7 @@ type SessionProps = {
 };
 
 function CoordinateQuizChallengeSession({ locale, settings, attemptId, remote }: SessionProps) {
-  const { boardOrientation, feedbackSpeed } = settings;
+  const { boardOrientation } = settings;
 
   const [lastClickedSquare, setLastClickedSquare] = useState<Square | null>(null);
 
@@ -97,7 +90,6 @@ function CoordinateQuizChallengeSession({ locale, settings, attemptId, remote }:
   } = useCoordinateQuizSession({
     timeLimit: CHALLENGE_TIME_LIMIT,
     orientation: boardOrientation,
-    feedbackSpeed,
     mistakeAllowance: MISTAKE_LIMIT,
     remote,
     disablePause: true,
@@ -133,10 +125,9 @@ function CoordinateQuizChallengeSession({ locale, settings, attemptId, remote }:
       total: (correctCount + incorrectCount).toString(),
       time: timeElapsed.toString(),
       orientation: boardOrientation,
-      speed: feedbackSpeed,
     });
     return `/${locale}/practice/coordinate-quiz/result?${params.toString()}`;
-  }, [correctCount, incorrectCount, timeElapsed, boardOrientation, feedbackSpeed, locale]);
+  }, [correctCount, incorrectCount, timeElapsed, boardOrientation, locale]);
 
   useChallengeResultSave({
     isFinished,

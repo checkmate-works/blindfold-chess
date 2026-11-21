@@ -1317,12 +1317,6 @@
       "white": "Blancas",
       "black": "Negras",
       "random": "Aleatorio",
-      "feedbackSpeed": "Velocidad de Respuesta",
-      "feedbackSpeeds": {
-        "fast": "Rápida",
-        "normal": "Normal",
-        "slow": "Lenta"
-      },
       "start": "Iniciar",
       "clickSquare": "Haz clic en esta casilla",
       "whiteToMove": "Mueven las blancas",
@@ -1351,10 +1345,6 @@
       },
       "help": {
         "label": "Ayuda",
-        "feedbackSpeed": {
-          "title": "Velocidad de Respuesta",
-          "description": "Ajusta la rapidez con la que se reproduce el efecto de acierto/error. Este ajuste no afecta al cronómetro: el tiempo no avanza mientras se muestra el efecto de respuesta."
-        },
         "challenge": {
           "title": "Modo Desafío",
           "description": "Compite para ver cuántas respuestas correctas puedes dar dentro del límite de tiempo. Tu puntuación se registra y aparece en la tabla de clasificación."

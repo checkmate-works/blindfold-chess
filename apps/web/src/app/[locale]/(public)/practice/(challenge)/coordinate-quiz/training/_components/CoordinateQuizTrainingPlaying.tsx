@@ -6,13 +6,12 @@ import { TrainingFooter } from '@/app/[locale]/(public)/practice/(challenge)/_co
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { CoordinateQuizGameBoard } from '../../_components/CoordinateQuizGameBoard';
-import type { BoardOrientation, CoordinateQuestion, FeedbackSpeed } from '../../_lib/types';
+import type { BoardOrientation, CoordinateQuestion } from '../../_lib/types';
 
 type Props = {
   locale: Locale;
-  /** The settings this session runs on, carried into the challenge CTA. */
+  /** The orientation this session runs on, carried into the challenge CTA. */
   boardOrientation: BoardOrientation;
-  feedbackSpeed: FeedbackSpeed;
   currentQuestion: CoordinateQuestion | null;
   correctAnswers: number;
   wrongAnswers: number;
@@ -26,7 +25,6 @@ type Props = {
 export function CoordinateQuizTrainingPlaying({
   locale,
   boardOrientation,
-  feedbackSpeed,
   currentQuestion,
   correctAnswers,
   wrongAnswers,
@@ -57,10 +55,9 @@ export function CoordinateQuizTrainingPlaying({
         correct={correctAnswers}
         incorrect={wrongAnswers}
         onEndTraining={onEndTraining}
-        // Carries the settings across: the CTA drops the player straight into
-        // a session, so a bare URL would silently start a white-board run at
-        // normal speed.
-        challengeHref={`/${locale}/practice/coordinate-quiz/challenge/session?orientation=${boardOrientation}&feedbackSpeed=${feedbackSpeed}`}
+        // Carries the orientation across: the CTA drops the player straight
+        // into a session, so a bare URL would silently start a white-board run.
+        challengeHref={`/${locale}/practice/coordinate-quiz/challenge/session?orientation=${boardOrientation}`}
         scoreClassName="mt-4"
       />
     </div>

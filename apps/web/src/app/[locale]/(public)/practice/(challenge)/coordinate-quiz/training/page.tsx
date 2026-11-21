@@ -29,7 +29,6 @@ const { generateMetadata, Page } = createPracticeTrainingPage({
     <CoordinateQuizTrainingSession
       locale={locale}
       boardOrientation={(searchParams.orientation as string) || 'white'}
-      feedbackSpeed={(searchParams.feedbackSpeed as string) || 'normal'}
     />
   ),
 });

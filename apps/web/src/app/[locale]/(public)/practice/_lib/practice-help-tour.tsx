@@ -16,13 +16,14 @@ const nl2br = (text: string) => text.replace(/\n/g, '<br />');
  * `{ targetId: '<slug>-<step>', title/description from
  * `practice.<i18nKey>.help.<step>.{title,description}`, side: 'top',
  * align: 'center' }` wrapped in `<HelpTourButton>`. This collapses that to a
- * single call. Step names are camelCase i18n keys (e.g. `feedbackSpeed`); the
- * matching `targetId` uses their kebab-case form (`feedback-speed`).
+ * single call. Step names are camelCase i18n keys; the matching `targetId`
+ * uses their kebab-case form (a `boardSize` step would target
+ * `<slug>-board-size`).
  *
  * @param t - the page's translator (global namespace)
  * @param i18nKey - module key under `practice.` (e.g. `coordinateQuiz`)
  * @param slug - URL slug used for `targetId` prefixes (e.g. `coordinate-quiz`)
- * @param stepNames - ordered help steps (e.g. `['feedbackSpeed', 'challenge', 'training']`)
+ * @param stepNames - ordered help steps (e.g. `['tutorial', 'challenge', 'training']`)
  */
 export function buildPracticeHelpTour(
   t: TranslateFn,
@@ -30,7 +31,7 @@ export function buildPracticeHelpTour(
   slug: string,
   stepNames: string[]
 ) {
-  // practice.<i18nKey>.help.<step>.title / .description and practice.<i18nKey>.help.label, i18nKey and stepNames from each module's page.tsx: practice.coordinateQuiz.help.feedbackSpeed.title, practice.coordinateQuiz.help.challenge.description, practice.legalMoves.help.training.title, practice.squareColors.help.challenge.title, practice.boardSymmetry.help.tutorial.title, practice.diagonalQuiz.help.tutorial.description, practice.routePlanner.help.label, … (i18nKey: coordinateQuiz, legalMoves, squareColors, boardSymmetry, diagonalQuiz, routePlanner; step: feedbackSpeed, tutorial, challenge, training)
+  // practice.<i18nKey>.help.<step>.title / .description and practice.<i18nKey>.help.label, i18nKey and stepNames from each module's page.tsx: practice.coordinateQuiz.help.challenge.title, practice.coordinateQuiz.help.challenge.description, practice.legalMoves.help.training.title, practice.squareColors.help.challenge.title, practice.boardSymmetry.help.tutorial.title, practice.diagonalQuiz.help.tutorial.description, practice.routePlanner.help.label, … (i18nKey: coordinateQuiz, legalMoves, squareColors, boardSymmetry, diagonalQuiz, routePlanner; step: tutorial, challenge, training)
   const steps: HelpStep[] = stepNames.map((name) => ({
     targetId: `${slug}-${toKebab(name)}`,
     title: t(`practice.${i18nKey}.help.${name}.title`),
