@@ -79,21 +79,29 @@ same engine and, where the module imports them from
 `@blindfold-chess/features`, the same defaults and validation, not synced
 values.
 
-## TypeScript stays on 5.9 here
+## TypeScript 7 works only because Expo no longer loads the compiler
 
-`apps/mobile` pins `typescript` to `~5.9.3` while every other workspace is on
-TypeScript 7 (the Go compiler). Expo needs the TypeScript **JS API**:
-`@expo/cli` resolves the project's `typescript` and calls `ts.sys` /
-`readConfigFile` / `parseJsonConfigFileContent` to read `paths` out of
-`tsconfig.json` for Metro (`utils/tsconfig/evaluateTsConfig`). TypeScript 7's
-npm package exports only `version` and `versionMajorMinor`, so under TS7 that
-is `TypeError: Cannot read properties of undefined (reading
-'getCurrentDirectory')` and `expo start` never reaches Metro. `tsc --noEmit`
-passes clean under either compiler, so typecheck alone will not catch the
-mistake. Revisit when Expo stops loading the compiler in-process, or when TS7
-ships the API (verified against expo ~54.0.33 / expo-router ~6.0.23 / RN
-0.81.5). `apps/web` is unaffected because Next 16.3 defaults
-`experimental.useTypeScriptCli` to true and shells out to `typescript/bin/tsc`.
+`apps/mobile` is on TypeScript 7 like the rest of the workspace, and that
+holds only as long as Expo's CLI never calls the TypeScript **JS API**.
+TypeScript 7's npm package exports only `version` and `versionMajorMinor`.
+Up to SDK 54, `@expo/cli` resolved the project's `typescript` and called
+`ts.sys` / `readConfigFile` / `parseJsonConfigFileContent` to read `paths`
+out of `tsconfig.json` for Metro, so under TS7 `expo start` died with
+`TypeError: Cannot read properties of undefined (reading
+'getCurrentDirectory')` before Metro started, and the app was pinned to 5.9.
+From SDK 58 (verified against expo ~58.0.26 / @expo/cli 58 / RN 0.88.1),
+`createTypescriptResolver` parses the tsconfig `extends` chain itself and
+never loads the compiler.
+
+`tsc --noEmit` passes under either compiler, so typecheck does not catch a
+regression. After an SDK upgrade, run `expo start` and request a bundle, or
+run `expo export --platform ios --platform android`; if it fails in tsconfig
+handling, suspect TypeScript first. `typescript`, `react` and `react-dom` are
+listed in `expo.install.exclude` so that `expo install --fix` and expo-doctor
+leave them on the workspace versions instead of the SDK's recommended pins.
+React must also match the version in `packages/features`, or Metro bundles
+two copies; when React Native raises its React peer, raise React across the
+workspace.
 
 ## Commands
 

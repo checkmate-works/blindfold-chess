@@ -91,15 +91,15 @@ and how to read the report are in `packages/features/CLAUDE.md`.
 
 ### TypeScript versions are not uniform across the workspace
 
-Three different compilers are installed on purpose. Before changing any of
-them, know which constraint you are about to break.
+Two different compilers are installed on purpose. Before changing either,
+know which constraint you are about to break.
 
-| Where                                            | Version                          | Why                                                                                                |
-| ------------------------------------------------ | -------------------------------- | -------------------------------------------------------------------------------------------------- |
-| `apps/web`, `packages/{features,icons,types,ui}` | `^7.0.2`                         | The default. TypeScript 7, the Go compiler.                                                        |
-| `packages/eslint-config`                         | `npm:@typescript/typescript6@^6` | typescript-eslint hard-errors under TS7. See the TSDoc in its `base.js`.                           |
-| `apps/mobile`                                    | `~5.9.3`                         | Expo loads the TypeScript JS API in-process, which TS7 does not ship. See `apps/mobile/CLAUDE.md`. |
+| Where                                                     | Version                          | Why                                                                      |
+| --------------------------------------------------------- | -------------------------------- | ------------------------------------------------------------------------ |
+| `apps/{web,mobile}`, `packages/{features,icons,types,ui}` | `^7.0.2`                         | The default. TypeScript 7, the Go compiler.                              |
+| `packages/eslint-config`                                  | `npm:@typescript/typescript6@^6` | typescript-eslint hard-errors under TS7. See the TSDoc in its `base.js`. |
 
-The mobile pin is the one that is easy to "fix" by mistake: `tsc --noEmit`
-passes under TS7 and only `expo start` fails. The failure mode and the
-versions it was verified against are in `apps/mobile/CLAUDE.md`.
+`apps/mobile` can only stay on TS7 while Expo's CLI keeps away from the
+TypeScript JS API, which TS7's npm package does not ship. `tsc --noEmit`
+cannot tell you when that changes; `expo start` can. The details are in
+`apps/mobile/CLAUDE.md`.
