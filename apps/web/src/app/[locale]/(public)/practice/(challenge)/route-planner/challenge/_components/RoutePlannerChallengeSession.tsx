@@ -22,7 +22,6 @@ import { ChallengeQuitControl } from '@/app/[locale]/(public)/practice/(challeng
 import { ChallengeSessionVeil } from '@/app/[locale]/(public)/practice/(challenge)/_components/session/ChallengeSessionVeil';
 import { useChallengeResultSave } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-challenge-result-save';
 import { useQuitConfirm } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-quit-confirm';
-import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { RoutePlannerPlaySkeleton } from '../../_components/RoutePlannerPlaySkeleton';
@@ -48,6 +47,7 @@ export default function RoutePlannerChallengeSession({
   return (
     <ChallengeAttemptGate<RoutePlannerProblem>
       menuType="route_planner"
+      scrollTargetId="route-planner-challenge-session"
       settings={settings}
       fallback={<RoutePlannerPlaySkeleton showHeader />}
     >
@@ -110,8 +110,6 @@ function RoutePlannerChallengeRun({
     remote,
     disablePause: true,
   });
-
-  useScrollToElement('route-planner-challenge-session');
 
   const isDisabled = showFeedback || isPaused || countdown !== null || awaitingServer;
 
@@ -199,7 +197,7 @@ function RoutePlannerChallengeRun({
   const problemKey = `${currentProblem.piece}:${currentProblem.start}:${currentProblem.end}`;
 
   return (
-    <div id="route-planner-challenge-session" className="min-h-screen max-w-2xl mx-auto">
+    <div className="min-h-screen max-w-2xl mx-auto">
       <ChallengeSessionVeil
         countdown={countdown}
         isPaused={isPaused}

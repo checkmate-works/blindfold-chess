@@ -12,7 +12,6 @@ import { ChallengeAttemptGate } from '@/app/[locale]/(public)/practice/(challeng
 import { useChallengeResultSave } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-challenge-result-save';
 import { useQuitConfirm } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-quit-confirm';
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
-import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -30,6 +29,7 @@ export default function SquareColorsChallenge({ locale }: Props) {
   return (
     <ChallengeAttemptGate<Square>
       menuType="square_colors"
+      scrollTargetId="square-colors-challenge"
       settings={SETTINGS}
       fallback={<SquareColorsPlaySkeleton showHeader />}
     >
@@ -75,8 +75,6 @@ function SquareColorsChallengeSession({ locale, attemptId, remote }: SessionProp
     disablePause: true,
   });
 
-  useScrollToElement('square-colors-challenge');
-
   const { showQuitModal, handleQuitRequest, handleQuitConfirm, handleQuitCancel } = useQuitConfirm({
     locale,
     moduleSlug: 'square-colors',
@@ -113,7 +111,7 @@ function SquareColorsChallengeSession({ locale, attemptId, remote }: SessionProp
   }
 
   return (
-    <div id="square-colors-challenge" className="min-h-screen">
+    <div className="min-h-screen">
       <SquareColorsPlaying
         currentSquare={currentSquare}
         awaitingServer={awaitingServer}

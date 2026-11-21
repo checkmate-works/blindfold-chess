@@ -14,7 +14,6 @@ import { ChallengeAttemptGate } from '@/app/[locale]/(public)/practice/(challeng
 import { useChallengeResultSave } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-challenge-result-save';
 import { useQuitConfirm } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-quit-confirm';
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
-import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { CoordinateQuizPlaySkeleton } from '../../_components/CoordinateQuizPlaySkeleton';
@@ -45,6 +44,7 @@ export default function CoordinateQuizChallenge({ locale, initialBoardOrientatio
   return (
     <ChallengeAttemptGate<CoordinateQuestion>
       menuType="coordinate_quiz"
+      scrollTargetId="coordinate-quiz-challenge"
       settings={settings}
       fallback={<CoordinateQuizPlaySkeleton showHeader />}
     >
@@ -93,8 +93,6 @@ function CoordinateQuizChallengeSession({ locale, settings, attemptId, remote }:
     remote,
     disablePause: true,
   });
-
-  useScrollToElement('quiz-session', !!currentQuestion);
 
   const { showQuitModal, handleQuitRequest, handleQuitConfirm, handleQuitCancel } = useQuitConfirm({
     locale,
@@ -150,7 +148,7 @@ function CoordinateQuizChallengeSession({ locale, settings, attemptId, remote }:
   }
 
   return (
-    <div id="coordinate-quiz-challenge" className="min-h-screen">
+    <div className="min-h-screen">
       <CoordinateQuizChallengePlaying
         currentQuestion={currentQuestion}
         timeRemaining={timeRemaining}

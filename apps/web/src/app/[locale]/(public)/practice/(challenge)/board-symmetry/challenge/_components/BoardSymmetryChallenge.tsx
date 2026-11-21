@@ -15,7 +15,6 @@ import {
 import { useChallengeResultSave } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-challenge-result-save';
 import { useQuitConfirm } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-quit-confirm';
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
-import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { BoardSymmetryPlaySkeleton } from '../../_components/BoardSymmetryPlaySkeleton';
@@ -32,6 +31,7 @@ export default function BoardSymmetryChallenge({ locale }: Props) {
   return (
     <ChallengeAttemptGate<BoardSymmetryProblem>
       menuType="board_symmetry"
+      scrollTargetId="board-symmetry-challenge"
       settings={SETTINGS}
       fallback={<BoardSymmetryPlaySkeleton showHeader />}
     >
@@ -81,8 +81,6 @@ function BoardSymmetryChallengeSession({ locale, attemptId, remote }: SessionPro
   });
 
   const isCorrect = isProcessing ? lastAnswerCorrect : null;
-
-  useScrollToElement('board-symmetry-challenge');
 
   const { showQuitModal, handleQuitRequest, handleQuitConfirm, handleQuitCancel } = useQuitConfirm({
     locale,
@@ -143,7 +141,7 @@ function BoardSymmetryChallengeSession({ locale, attemptId, remote }: SessionPro
   }
 
   return (
-    <div id="board-symmetry-challenge" className="min-h-screen">
+    <div className="min-h-screen">
       {/* The question view is shared and takes no waiting state, so input to
           the whole view is locked while the next problem is on its way. */}
       <AwaitingServerInputLock active={awaitingServer}>

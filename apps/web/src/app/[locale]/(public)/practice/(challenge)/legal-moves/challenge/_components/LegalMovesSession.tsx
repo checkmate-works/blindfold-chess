@@ -16,7 +16,6 @@ import { ChallengeAttemptGate } from '@/app/[locale]/(public)/practice/(challeng
 import { useChallengeResultSave } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-challenge-result-save';
 import { useQuitConfirm } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-quit-confirm';
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
-import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { LegalMovesPlaySkeleton } from '../../_components/LegalMovesPlaySkeleton';
@@ -35,6 +34,7 @@ export default function LegalMovesSession({ locale, selectedPiece }: Props) {
   return (
     <ChallengeAttemptGate<MoveQuestion>
       menuType="legal_moves"
+      scrollTargetId="legal-moves-session"
       settings={settings}
       fallback={<LegalMovesPlaySkeleton showHeader />}
     >
@@ -96,8 +96,6 @@ function LegalMovesChallengeSession({ locale, selectedPiece, attemptId, remote }
     disablePause: true,
   });
 
-  useScrollToElement('legal-moves-session');
-
   const { showQuitModal, handleQuitRequest, handleQuitConfirm, handleQuitCancel } = useQuitConfirm({
     locale,
     moduleSlug: 'legal-moves',
@@ -153,7 +151,7 @@ function LegalMovesChallengeSession({ locale, selectedPiece, attemptId, remote }
   }
 
   return (
-    <div id="legal-moves-session" className="min-h-screen">
+    <div className="min-h-screen">
       <LegalMovesPlaying
         currentQuestion={currentQuestion}
         awaitingServer={awaitingServer}

@@ -54,7 +54,7 @@ export function CoordinateQuizChallengePlaying({
   onQuitCancel,
 }: Props) {
   return (
-    <div id="quiz-session">
+    <div>
       <div className="-mx-4 p-8 text-center overflow-hidden sm:mx-0">
         <div className="max-w-md mx-auto mb-8 relative">
           <ChallengeStatusHeader

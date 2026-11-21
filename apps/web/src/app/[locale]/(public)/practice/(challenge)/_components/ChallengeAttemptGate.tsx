@@ -6,6 +6,8 @@ import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { ChallengeMenuType } from '@blindfold-chess/features/practice-registry';
 
+import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
+
 import { type ChallengeAttemptReady, useChallengeAttempt } from '../_hooks/use-challenge-attempt';
 
 /**
@@ -28,6 +30,12 @@ type Props<TQuestion> = {
   /** The screen's own play skeleton, shown while the attempt is being started. */
   fallback: ReactNode;
   /**
+   * Id of the element the gate wraps around everything it renders — the
+   * fallback, the start error and the session — and scrolls to the top of
+   * the viewport when the fallback first appears.
+   */
+  scrollTargetId: string;
+  /**
    * The session body. Rendered only once the attempt is settled, so the
    * session hook inside mounts with its `remote` port already in hand.
    */
@@ -47,13 +55,41 @@ type Props<TQuestion> = {
  * A start refused by the rate limit gets its own message: the connection is
  * fine and an immediate retry cannot succeed, so the generic "check your
  * connection" would send the player looking for a fault that is not there.
+ *
+ * The gate also owns the session's scroll position. The session body mounts
+ * only once the start has answered, which can be a few hundred milliseconds
+ * after the fallback is on screen; if the body aligned the page itself, the
+ * skeleton would be drawn at the setup page's offset and the page would jump
+ * when the session replaced it — the layout shift the skeleton exists to
+ * prevent. So the gate renders every state inside one element carrying
+ * `scrollTargetId` and aligns it before the fallback's first paint; the body
+ * renders inside it at the same top and does not scroll again. The
+ * countdown still starts when the body mounts.
  */
 export function ChallengeAttemptGate<TQuestion>({
   menuType,
   settings,
   fallback,
+  scrollTargetId,
   children,
 }: Props<TQuestion>) {
+  useScrollToElement(scrollTargetId);
+
+  return (
+    <div id={scrollTargetId} className="min-h-screen">
+      <ChallengeAttemptGateBody menuType={menuType} settings={settings} fallback={fallback}>
+        {children}
+      </ChallengeAttemptGateBody>
+    </div>
+  );
+}
+
+function ChallengeAttemptGateBody<TQuestion>({
+  menuType,
+  settings,
+  fallback,
+  children,
+}: Omit<Props<TQuestion>, 'scrollTargetId'>) {
   const attempt = useChallengeAttempt<TQuestion>(menuType, settings);
   const t = useTranslations('practice.challengeAttempt');
 

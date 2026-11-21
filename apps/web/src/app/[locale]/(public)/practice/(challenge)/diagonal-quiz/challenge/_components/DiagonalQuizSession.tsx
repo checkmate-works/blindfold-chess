@@ -12,7 +12,6 @@ import { ChallengeAttemptGate } from '@/app/[locale]/(public)/practice/(challeng
 import { useChallengeResultSave } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-challenge-result-save';
 import { useQuitConfirm } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-quit-confirm';
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
-import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { DiagonalQuizPlaySkeleton } from '../../_components/DiagonalQuizPlaySkeleton';
@@ -36,6 +35,7 @@ export default function DiagonalQuizSession({ locale }: Props) {
   return (
     <ChallengeAttemptGate<Square>
       menuType="diagonal_quiz"
+      scrollTargetId="diagonal-quiz-session"
       settings={SETTINGS}
       fallback={<DiagonalQuizPlaySkeleton showHeader />}
     >
@@ -80,8 +80,6 @@ function DiagonalQuizChallengeSession({ locale, attemptId, remote }: SessionProp
     remote,
     disablePause: true,
   });
-
-  useScrollToElement('diagonal-quiz-session');
 
   // Set when the user quits mid-run. The run still lands on the result/feedback
   // screen, but `skipSave` below suppresses leaderboard recording, EXP, and rank
@@ -151,7 +149,7 @@ function DiagonalQuizChallengeSession({ locale, attemptId, remote }: SessionProp
   }
 
   return (
-    <div id="diagonal-quiz-session" className="min-h-screen">
+    <div className="min-h-screen">
       <DiagonalQuizPlaying
         currentSquare={currentSquare}
         awaitingServer={awaitingServer}
