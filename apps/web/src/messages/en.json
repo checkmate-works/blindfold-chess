@@ -3128,25 +3128,13 @@
     "engineStockfishDescription": "A strong open source engine with adjustable skill level — the classic AI opponent.",
     "engineMaiaLabel": "Maia",
     "engineMaiaDescription": "A neural-network engine that plays like a human at the chosen Elo. The first move takes a few seconds while the model loads (~46 MB).",
-    "engineLockedHint": "Needs coins",
-    "engineMaiaCostBadge": "{cost} coin",
-    "engineMaiaFreeBadge": "Free",
-    "engineMaiaFreeNote": "Lv{level} reward: games against Maia are free.",
-    "maiaPointModal": {
-      "title": "Maia costs coins",
-      "body": "Each game against Maia costs {cost} coin.",
-      "balance": "You currently have {balance} coins.",
-      "unlockHint": "Maia games become free at Lv{level} (you are Lv{current}).",
-      "earnLink": "How Coins work",
-      "viewPoints": "View my coins",
+    "engineLockedHint": "Unlocks at Lv{level}",
+    "engineMaiaUnlockedNote": "Unlocked at Lv{level}: you can play against Maia.",
+    "maiaLockedModal": {
+      "title": "Maia unlocks at Lv{level}",
+      "body": "You can play against Maia once you reach Lv{level} (you are Lv{current}). You earn Exp by completing practice sessions and games.",
+      "practice": "Go to practice",
       "close": "Close"
-    },
-    "maiaCoinConfirmModal": {
-      "title": "Start a game against Maia?",
-      "body": "Starting this game spends {cost} coin.",
-      "balance": "You currently have {balance} coins.",
-      "confirm": "Spend coin & start",
-      "cancel": "Cancel"
     },
     "helpLabel": "Show help",
     "helpEngineDescription": "Stockfish: an open-source chess engine with adjustable strength. Maia: a neural network trained on millions of human games — it plays at the chosen level like a real player would, not like a computer.",

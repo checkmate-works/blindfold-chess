@@ -3128,25 +3128,13 @@
     "engineStockfishDescription": "Um motor de código aberto poderoso com nível de habilidade ajustável — o oponente de IA clássico.",
     "engineMaiaLabel": "Maia",
     "engineMaiaDescription": "Um motor baseado em redes neurais que joga como um humano no Elo selecionado. O primeiro movimento demora alguns segundos enquanto o modelo é carregado (~46 MB).",
-    "engineLockedHint": "Moedas insuficientes",
-    "engineMaiaCostBadge": "{cost} moeda",
-    "engineMaiaFreeBadge": "Grátis",
-    "engineMaiaFreeNote": "Recompensa por alcançar o Lv{level}: as partidas contra a Maia são grátis.",
-    "maiaPointModal": {
-      "title": "Maia custa moedas",
-      "body": "Cada partida contra a Maia custa {cost} moeda.",
-      "balance": "Você tem atualmente {balance} moedas.",
-      "unlockHint": "As partidas contra a Maia ficam grátis a partir do Lv{level} (você está no Lv{current}).",
-      "earnLink": "Como as Moedas funcionam",
-      "viewPoints": "Ver minhas moedas",
+    "engineLockedHint": "Desbloqueia no Nv{level}",
+    "engineMaiaUnlockedNote": "Desbloqueado no Nv{level}: você pode jogar contra o Maia.",
+    "maiaLockedModal": {
+      "title": "O Maia é desbloqueado no Nv{level}",
+      "body": "Você poderá jogar contra o Maia ao alcançar o Nv{level} (você está no Nv{current}). Você ganha Exp ao concluir sessões de prática e partidas.",
+      "practice": "Ir para a prática",
       "close": "Fechar"
-    },
-    "maiaCoinConfirmModal": {
-      "title": "Iniciar uma partida contra a Maia?",
-      "body": "Iniciar esta partida custa {cost} moeda.",
-      "balance": "Você tem atualmente {balance} moedas.",
-      "confirm": "Gastar moeda e iniciar",
-      "cancel": "Cancelar"
     },
     "helpLabel": "Mostrar ajuda",
     "helpEngineDescription": "Stockfish: um motor de xadrez de código aberto com força ajustável. Maia: uma rede neural treinada com milhões de partidas humanas — joga no nível selecionado como um jogador real, não como um computador.",

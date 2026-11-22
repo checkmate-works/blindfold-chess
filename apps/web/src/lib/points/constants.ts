@@ -116,8 +116,8 @@ export const SPENDABLE_CONSUME_ORDER: readonly PointCategory[] = [
 
 /**
  * Point cost to start one game against the Maia engine. Charged per game
- * at game-creation time (model B) for every viewer below `MAIA_FREE_LEVEL`
- * (`@/lib/users/maia-free-level`) — there is no subscription exemption,
+ * at game-creation time (model B) for every viewer below `MAIA_UNLOCK_LEVEL`
+ * (`@/lib/users/maia-unlock-level`) — there is no subscription exemption,
  * only the level one, and that lives outside this module because it is a
  * condition on who pays rather than on how much.
  *

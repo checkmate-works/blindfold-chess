@@ -4,7 +4,6 @@ export {
   LIKE_COIN_AMOUNT,
   LIKE_GRANT_SOURCE,
   MAIA_GAME_POINT_COST,
-  MAIA_GAME_SOURCE,
   POINT_CATEGORIES,
   POINT_SOURCES,
   PURCHASE_SOURCE,
@@ -14,8 +13,6 @@ export {
   entityTypeForSource,
   sourceForEntity,
 } from './constants';
-export { consumeMaiaGamePoint, hasMaiaGameCharge } from './consume-maia-game-point';
-export type { ConsumeMaiaGamePointResult } from './consume-maia-game-point';
 export type {
   PointCategory,
   PointLifecycleStage,

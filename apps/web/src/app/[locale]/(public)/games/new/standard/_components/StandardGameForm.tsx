@@ -9,8 +9,6 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import type { Side } from '@blindfold-chess/types';
 
 import { engineConfigToUrlParams } from '@/lib/engines';
-import { MAIA_CHARGE_PARAM } from '@/lib/games/maia-charge-param';
-import { MAIA_GAME_POINT_COST } from '@/lib/points/constants';
 import type { MaiaEngineAccess } from '@/lib/users/can-use-maia';
 
 import { ColorSelector } from '@/app/[locale]/(public)/games/new/_components/ColorSelector';
@@ -31,9 +29,8 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 type Props = {
   locale: Locale;
   /**
-   * Server-side resolved Maia access (the viewer's level and spendable
-   * coin balance). Drives the engine selector's Maia card and whether a
-   * game start charges a coin.
+   * Server-side resolved Maia access (the viewer's level). Drives the engine
+   * selector's Maia card.
    */
   maiaAccess: MaiaEngineAccess;
 };
@@ -44,8 +41,8 @@ export function StandardGameForm({ locale, maiaAccess }: Props) {
   const [color, setColor] = useState<Side>('white');
 
   const searchParams = useSearchParams();
-  const maiaCardMode = deriveMaiaCardMode(maiaAccess, MAIA_GAME_POINT_COST);
-  // `?engine=maia` (e.g. the Maia spend card on /mypage/coins) preselects
+  const maiaCardMode = deriveMaiaCardMode(maiaAccess);
+  // `?engine=maia` preselects
   // Maia — read once as the initial value, not synced: after the first
   // render the selection belongs to the user. See `initialEngineKind` for
   // why a locked card overrides the param.
@@ -65,20 +62,19 @@ export function StandardGameForm({ locale, maiaAccess }: Props) {
 
   /**
    * Push the user into the play route with the selected settings. Passed
-   * to `useMaiaGameLaunch`, which calls it only after the large-download
-   * consent and the per-game Maia point charge have both succeeded.
+   * to `useMaiaGameLaunch`, which calls it once any large-download consent
+   * has been given.
    */
-  const navigateToGame = (maiaChargeId: string | null) => {
+  const navigateToGame = () => {
     const params = new URLSearchParams({
       color,
       gamePrefs: JSON.stringify(localSettings),
       ...engineConfigToUrlParams(engineConfig),
     });
-    if (maiaChargeId) params.set(MAIA_CHARGE_PARAM, maiaChargeId);
     router.push(`/${locale}/games/play?${params.toString()}`);
   };
 
-  const launch = useMaiaGameLaunch({ navigateToGame, maiaCardMode });
+  const launch = useMaiaGameLaunch({ navigateToGame });
 
   return (
     <div className="space-y-6">
@@ -87,8 +83,7 @@ export function StandardGameForm({ locale, maiaAccess }: Props) {
         value={engineKind}
         onChange={setEngineKind}
         maiaCardMode={maiaCardMode}
-        maiaCost={MAIA_GAME_POINT_COST}
-        onMaiaLockedClick={launch.openPointInfo}
+        onMaiaLockedClick={launch.openLockedInfo}
       />
       <SkillLevelSelector
         engine={engineKind}

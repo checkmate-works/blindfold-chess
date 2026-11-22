@@ -23,12 +23,12 @@ ONNX model that needs the operational setup below.
   that **a new model version must get a new filename** (the response is
   cached as immutable for a year, so the filename is the cache key).
 - **Who may play**: a Maia game costs `MAIA_GAME_POINT_COST` (one coin)
-  below `MAIA_FREE_LEVEL` (Lv5, `src/lib/users/maia-free-level.ts`) and
+  below `MAIA_UNLOCK_LEVEL` (Lv5, `src/lib/users/maia-unlock-level.ts`) and
   is free from that level up. The level is the only exemption — a
   subscription does not waive the coin. `startMaiaGame` re-reads the
   level server-side before settling, and the model gate accepts either
   the level or a prior `maia_game` ledger row. The TSDoc on
-  `MAIA_FREE_LEVEL` carries the reasoning (the charge was not funding
+  `MAIA_UNLOCK_LEVEL` carries the reasoning (the charge was not funding
   anything, the level keeps a cost on the download that a throwaway
   account cannot meet in one sitting). Whether the unlock changes
   anything is read from completed games — `exp_events` with

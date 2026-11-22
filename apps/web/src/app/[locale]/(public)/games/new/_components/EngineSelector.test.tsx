@@ -13,49 +13,53 @@ vi.mock('next/image', () => ({
   default: () => null,
 }));
 
-const NOTE_KEY = 'engineMaiaFreeNote';
+const NOTE_KEY = 'engineMaiaUnlockedNote';
 
 function renderSelector(
-  maiaCardMode: 'free' | 'payable' | 'locked',
+  maiaCardMode: 'unlocked' | 'locked',
   value: 'stockfish' | 'maia' = 'stockfish'
 ) {
   const onChange = vi.fn();
+  const onMaiaLockedClick = vi.fn();
   render(
     <EngineSelector
       value={value}
       onChange={onChange}
       maiaCardMode={maiaCardMode}
-      maiaCost={1}
-      onMaiaLockedClick={vi.fn()}
+      onMaiaLockedClick={onMaiaLockedClick}
     />
   );
-  return { onChange };
+  return { onChange, onMaiaLockedClick };
 }
 
-describe('EngineSelector free-perk note', () => {
+describe('EngineSelector Maia card', () => {
   afterEach(cleanup);
 
-  it('explains why Maia is free when the card is free, before anything is selected', () => {
-    renderSelector('free');
+  it('says what unlocked Maia, before anything is selected', () => {
+    renderSelector('unlocked');
     expect(screen.getByText(NOTE_KEY)).toBeInTheDocument();
   });
 
   it('keeps the note regardless of which engine is selected', () => {
-    renderSelector('free', 'maia');
+    renderSelector('unlocked', 'maia');
     expect(screen.getByText(NOTE_KEY)).toBeInTheDocument();
   });
 
-  it('does not render the note for payable or locked cards', () => {
-    renderSelector('payable');
-    expect(screen.queryByText(NOTE_KEY)).not.toBeInTheDocument();
-    cleanup();
+  it('does not render the note for a locked card', () => {
     renderSelector('locked');
     expect(screen.queryByText(NOTE_KEY)).not.toBeInTheDocument();
   });
 
-  it('lets a free Maia card be selected', () => {
-    const { onChange } = renderSelector('free');
+  it('lets an unlocked Maia card be selected', () => {
+    const { onChange } = renderSelector('unlocked');
     fireEvent.click(screen.getByRole('button', { name: /engineMaiaLabel/ }));
     expect(onChange).toHaveBeenCalledWith('maia');
+  });
+
+  it('explains a locked Maia card instead of selecting it', () => {
+    const { onChange, onMaiaLockedClick } = renderSelector('locked');
+    fireEvent.click(screen.getByRole('button', { name: /engineMaiaLabel/ }));
+    expect(onChange).not.toHaveBeenCalled();
+    expect(onMaiaLockedClick).toHaveBeenCalledTimes(1);
   });
 });

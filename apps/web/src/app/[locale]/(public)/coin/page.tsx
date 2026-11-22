@@ -25,7 +25,7 @@ import {
   LIKE_COIN_AMOUNT,
   MAIA_GAME_POINT_COST,
 } from '@/lib/points';
-import { MAIA_FREE_LEVEL } from '@/lib/users/maia-free-level';
+import { MAIA_UNLOCK_LEVEL } from '@/lib/users/maia-unlock-level';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -233,7 +233,7 @@ export default async function CoinPage({ params }: Props) {
               }
               title={t('spend.maiaTitle')}
               rate={t('spend.maiaRate', { cost: MAIA_GAME_POINT_COST })}
-              note={t('spend.maiaNote', { level: MAIA_FREE_LEVEL })}
+              note={t('spend.maiaNote', { level: MAIA_UNLOCK_LEVEL })}
             />
             <SpendCard
               icon={<FaRobot className="h-6 w-6" />}

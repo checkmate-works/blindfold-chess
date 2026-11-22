@@ -6,7 +6,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { FaLock } from 'react-icons/fa';
 
 import { ENGINE_LOGO_SRC, type EngineKind } from '@/lib/engines';
-import { MAIA_FREE_LEVEL } from '@/lib/users/maia-free-level';
+import { MAIA_UNLOCK_LEVEL } from '@/lib/users/maia-unlock-level';
 
 import type { MaiaCardMode } from '@/app/[locale]/(public)/games/new/_lib/maia-launch';
 import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
@@ -15,18 +15,15 @@ type Props = {
   value: EngineKind;
   onChange: (value: EngineKind) => void;
   /**
-   * How the Maia card renders. `free` when the viewer's level exempts them
-   * from the charge, `payable` when they can afford a per-game charge,
-   * `locked` when they cannot. Computed server-side via
+   * How the Maia card renders: `unlocked` when the viewer's level allows
+   * Maia, `locked` when it does not. Computed server-side via
    * `getMaiaEngineAccess()` + `deriveMaiaCardMode()` and passed in — this
    * component is presentational.
    */
   maiaCardMode: MaiaCardMode;
-  /** Per-game Maia point cost; surfaced as a badge when the card is payable. */
-  maiaCost: number;
   /**
    * Invoked when a `locked` Maia card is tapped. The parent opens the
-   * point-info modal explaining the cost and how to get points.
+   * modal naming the level that unlocks Maia.
    */
   onMaiaLockedClick: () => void;
   disabled?: boolean;
@@ -39,8 +36,8 @@ type EngineOption = {
 };
 
 /**
- * Visual order is intentional: Stockfish first (free, default), Maia
- * second (paid, or free by level). New engines append to this list. Logos come
+ * Visual order is intentional: Stockfish first (the default), Maia
+ * second (unlocked by level). New engines append to this list. Logos come
  * from the shared `ENGINE_LOGO_SRC` map so this picker and the game-list
  * `EngineConfigBadge` never drift apart.
  */
@@ -63,28 +60,24 @@ const ENGINE_OPTIONS: ReadonlyArray<EngineOption> = [
  * page-level `?` help tour, so the cards stay compact on narrow viewports.
  *
  * The Maia card adapts to `maiaCardMode`:
- *   - `free`    — selectable, shows a "free" badge, and a note under the
- *                 cards says why ("free from Lv5"). The badge stays one
- *                 word because it overlays the card's top-right corner and
- *                 collides with the logo at phone width; the reason lives
- *                 in the note instead. The note depends only on the
- *                 server-resolved mode, never on which card is selected, so
- *                 it is present from the first paint and toggling the
- *                 selection never shifts the controls below it. Both
- *                 the badge and the note use the soft success pair (dark
- *                 green on pale green) rather than solid `bg-success`:
- *                 white on that green is about 3.3:1 in light mode and
- *                 2.3:1 in dark, below the 4.5:1 small text needs. The
- *                 note is right-aligned to sit under the Maia card.
- *   - `payable` — selectable, shows a per-game coin-cost badge.
- *   - `locked`  — greyed out with a lock badge; tapping it is not a no-op,
- *                 it calls `onMaiaLockedClick` so the parent can explain.
+ *   - `unlocked` — selectable, and a note under the cards says what earned
+ *                  it ("unlocked at Lv5"). The note depends only on the
+ *                  server-resolved mode, never on which card is selected,
+ *                  so it is present from the first paint and toggling the
+ *                  selection never shifts the controls below it. It uses
+ *                  the soft success foreground (dark green) rather than
+ *                  solid `bg-success`: white on that green is about 3.3:1
+ *                  in light mode and 2.3:1 in dark, below the 4.5:1 small
+ *                  text needs. The note is right-aligned to sit under the
+ *                  Maia card.
+ *   - `locked`   — greyed out with a lock badge naming the unlock level;
+ *                  tapping it is not a no-op, it calls `onMaiaLockedClick`
+ *                  so the parent can explain.
  */
 export function EngineSelector({
   value,
   onChange,
   maiaCardMode,
-  maiaCost,
   onMaiaLockedClick,
   disabled = false,
 }: Props) {
@@ -110,18 +103,9 @@ export function EngineSelector({
         {ENGINE_OPTIONS.map((opt) => {
           const isMaia = opt.kind === 'maia';
           const isLocked = isMaia && maiaCardMode === 'locked';
-          const isPayable = isMaia && maiaCardMode === 'payable';
-          const isFree = isMaia && maiaCardMode === 'free';
           const isSelected = value === opt.kind;
-          const costLabel = t('engineMaiaCostBadge', { cost: maiaCost });
-          const freeLabel = t('engineMaiaFreeBadge');
-          const ariaLabel = isLocked
-            ? `${t(opt.labelKey)} — ${t('engineLockedHint')}`
-            : isPayable
-              ? `${t(opt.labelKey)} — ${costLabel}`
-              : isFree
-                ? `${t(opt.labelKey)} — ${freeLabel}`
-                : t(opt.labelKey);
+          const lockedLabel = t('engineLockedHint', { level: MAIA_UNLOCK_LEVEL });
+          const ariaLabel = isLocked ? `${t(opt.labelKey)} — ${lockedLabel}` : t(opt.labelKey);
           return (
             <button
               key={opt.kind}
@@ -144,23 +128,7 @@ export function EngineSelector({
                   aria-hidden="true"
                 >
                   <FaLock className="h-3 w-3" />
-                  {t('engineLockedHint')}
-                </span>
-              )}
-              {isPayable && (
-                <span
-                  className="absolute top-2 right-2 inline-flex items-center rounded-full bg-foreground/10 px-2 py-0.5 text-xs font-medium text-foreground"
-                  aria-hidden="true"
-                >
-                  {costLabel}
-                </span>
-              )}
-              {isFree && (
-                <span
-                  className="absolute top-2 right-2 inline-flex items-center rounded-full border border-success/30 bg-success-soft px-2 py-0.5 text-xs font-semibold text-success-soft-foreground"
-                  aria-hidden="true"
-                >
-                  {freeLabel}
+                  {lockedLabel}
                 </span>
               )}
               <div className="flex flex-col items-center text-center gap-2">
@@ -180,9 +148,9 @@ export function EngineSelector({
         })}
       </div>
 
-      {maiaCardMode === 'free' && (
+      {maiaCardMode === 'unlocked' && (
         <p className="text-right text-sm font-medium text-success-soft-foreground">
-          {t('engineMaiaFreeNote', { level: MAIA_FREE_LEVEL })}
+          {t('engineMaiaUnlockedNote', { level: MAIA_UNLOCK_LEVEL })}
         </p>
       )}
     </div>
