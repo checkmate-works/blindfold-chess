@@ -6,7 +6,7 @@ import {
   ActivityIndicator,
   View,
 } from "react-native";
-import type { ViewStyle, TextStyle } from "react-native";
+import type { StyleProp, ViewStyle, TextStyle } from "react-native";
 import {
   useTheme,
   spacing,
@@ -27,7 +27,7 @@ type ButtonProps = {
   disabled?: boolean;
   loading?: boolean;
   fullWidth?: boolean;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   textStyle?: TextStyle;
   /** A glyph before the title, drawn in the title's colour. */
   icon?: keyof typeof Ionicons.glyphMap;

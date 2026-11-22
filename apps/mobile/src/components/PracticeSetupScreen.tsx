@@ -30,11 +30,13 @@ type PracticeSetupScreenProps = {
   /** From the feature's settings hook; false renders the loading gate. */
   isLoaded: boolean;
   /**
-   * The start button's label for a module without a training mode. Modules
-   * with one label their two buttons by mode ("Challenge" / "Training")
-   * instead, so the label is the same on every such setup screen.
+   * The single start button's label. Practice modules leave it out and get
+   * the shared "Start", so every module reads the same; only a screen that
+   * starts something other than a practice run (the AI game) names it.
+   * Ignored when `onStartTraining` is given: the two mode buttons are
+   * labelled "Challenge" / "Training".
    */
-  startLabel: string;
+  startLabel?: string;
   /** Navigates to the feature's (timed) session screen with its own params. */
   onStart: () => void;
   /** Disables the start buttons while the form holds input that cannot start. */
@@ -141,8 +143,12 @@ function useStartOnce() {
  * its description stacked under it. The footer grew three rows tall, and
  * the stack read as one action plus an afterthought rather than two modes.
  *
- * A module without a training mode keeps one full-width button with its own
- * `startLabel`.
+ * A module without a training mode has one full-width "Start" button.
+ *
+ * The buttons are the medium size with 14pt top and bottom padding (about
+ * 50pt tall with a 16pt label), the same as the mahjong-scoring app's start
+ * footer this layout follows; the large size (about 70pt) made the footer
+ * the heaviest thing on the screen.
  *
  * The header's trailing "?" opens the module's `HelpSheet` (how to play,
  * the tutorial's explanations, the modes). The module is found from the
@@ -221,9 +227,8 @@ export function PracticeSetupScreen({
                 onPress={startOnce(onStartTraining)}
                 disabled={startDisabled}
                 variant="outline"
-                size="lg"
-                style={styles.half}
-                textStyle={styles.halfText}
+                size="md"
+                style={[styles.footerButton, styles.half]}
                 testID="start-training"
               />
               <Button
@@ -231,20 +236,21 @@ export function PracticeSetupScreen({
                 icon="play"
                 onPress={startOnce(onStart)}
                 disabled={startDisabled}
-                size="lg"
-                style={styles.half}
-                textStyle={styles.halfText}
+                size="md"
+                style={[styles.footerButton, styles.half]}
                 testID="start-challenge"
               />
             </View>
           </>
         ) : (
           <Button
-            title={startLabel}
+            title={startLabel ?? t("common.start")}
+            icon="play"
             onPress={startOnce(onStart)}
             disabled={startDisabled}
-            size="lg"
+            size="md"
             fullWidth
+            style={styles.footerButton}
             testID="start"
           />
         )}
@@ -287,15 +293,16 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: spacing.sm,
   },
+  // 14pt, not the medium size's 16: the reference footer's height.
+  footerButton: {
+    paddingVertical: 14,
+  },
   // The two buttons split the row evenly, whatever their labels' widths.
-  // Half a phone's width is too narrow for the large size's 18pt text and
-  // side padding: "トレーニング" broke onto a second line.
+  // Narrower side padding than the medium size's own, so a long label
+  // ("Entrenamiento") stays on one line in half a phone's width.
   half: {
     flex: 1,
     flexBasis: 0,
     paddingHorizontal: spacing.sm,
-  },
-  halfText: {
-    fontSize: fontSize.md,
   },
 });

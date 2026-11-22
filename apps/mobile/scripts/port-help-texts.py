@@ -83,7 +83,7 @@ for locale in LOCALES:
 
 # --- Recall (感想戦): the strings the mobile screens use, under `recall.*`.
 RECALL_KEYS = [
-    "title", "description", "setup.pgnLabel", "setup.startButton",
+    "title", "description", "setup.pgnLabel",
     "autoOpponentMoves", "dontKnow", "correctMove", "incorrectMove",
     "progress", "showBoard", "completed", "moves", "noMovesYet",
     "summary.title", "summary.rateLabel", "summary.nailed", "summary.struggled",

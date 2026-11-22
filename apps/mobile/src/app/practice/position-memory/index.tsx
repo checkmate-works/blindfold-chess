@@ -51,7 +51,6 @@ export default function PositionMemorySetup() {
   return (
     <PracticeSetupScreen
       isLoaded={isLoaded}
-      startLabel={t("positionMemory.setup.start")}
       onStart={handleStart}
       startDisabled={cannotStart}
     >

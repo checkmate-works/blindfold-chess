@@ -205,8 +205,7 @@
       "timeLimit": "Tiempo límite",
       "durationSeconds": "{{seconds}}s",
       "pieceSelection": "Selecciona una pieza",
-      "selectAtLeastOne": "Selecciona al menos una pieza",
-      "start": "Iniciar"
+      "selectAtLeastOne": "Selecciona al menos una pieza"
     },
     "session": {
       "legal": "Legal",
@@ -229,8 +228,7 @@
   },
   "boardSymmetry": {
     "setup": {
-      "title": "Ajustes de simetría del tablero",
-      "startQuiz": "Empezar práctica"
+      "title": "Ajustes de simetría del tablero"
     },
     "session": {
       "question": "Encuentra la casilla simétrica {{type}} de {{square}}",
@@ -255,8 +253,7 @@
   },
   "squareColors": {
     "setup": {
-      "title": "Ajustes de color de casillas",
-      "startQuiz": "Empezar práctica"
+      "title": "Ajustes de color de casillas"
     },
     "session": {
       "question": "¿De qué color es {{square}}?",
@@ -283,8 +280,7 @@
       "orientation": "Orientación del tablero",
       "orientationWhite": "Blancas",
       "orientationBlack": "Negras",
-      "orientationRandom": "Aleatorio",
-      "startQuiz": "Empezar quiz"
+      "orientationRandom": "Aleatorio"
     },
     "session": {
       "findSquare": "Encuentra",
@@ -308,8 +304,7 @@
       "title": "Ajustes del planificador de rutas",
       "problemCount": "Número de problemas",
       "problemUnit": "{{count}} problemas",
-      "pieceSelection": "Selecciona piezas",
-      "start": "Iniciar"
+      "pieceSelection": "Selecciona piezas"
     },
     "session": {
       "progress": "{{current}} / {{total}}",
@@ -406,8 +401,7 @@
   },
   "diagonalQuiz": {
     "setup": {
-      "title": "Ajustes del quiz de diagonales",
-      "startQuiz": "Empezar práctica"
+      "title": "Ajustes del quiz de diagonales"
     },
     "session": {
       "question": "¿Cuáles son las diagonales de {{square}}?",
@@ -439,14 +433,10 @@
   "quadrants": {
     "setup": {
       "title": "Anclas de Cuadrante Configuración",
-      "startQuiz": "Empezar práctica",
       "orientation": "Orientación del tablero",
       "orientationWhite": "Blancas",
       "orientationBlack": "Negras",
-      "orientationRandom": "Aleatorio",
-      "rulesTitle": "Reglas del Desafío",
-      "timeLimitRule": "Responde tantas preguntas como puedas en {{seconds}} segundos.",
-      "mistakeLimitRule": "El juego termina después de {{count}} respuestas incorrectas."
+      "orientationRandom": "Aleatorio"
     },
     "session": {
       "question": "¿En qué cuadrante está {{square}}?",
@@ -469,8 +459,7 @@
       "pickOnBoard": "O toca una casilla del tablero",
       "blindfoldMode": "Modo a Ciegas",
       "blindfoldModeHint": "Practica usando solo coordenadas sin ver el tablero",
-      "setupHint": "El caballo debe visitar las 64 casillas exactamente una vez usando solo movimientos legales de caballo.",
-      "start": "Iniciar"
+      "setupHint": "El caballo debe visitar las 64 casillas exactamente una vez usando solo movimientos legales de caballo."
     },
     "result": {
       "title": "¡Práctica completada!",
@@ -503,8 +492,7 @@
     "setup": {
       "title": "Notación Algebraica Configuración",
       "description": "Domina el sistema de notación ajedrecística con ejercicios interactivos",
-      "questionCount": "{{total}} preguntas",
-      "start": "Iniciar"
+      "questionCount": "{{total}} preguntas"
     },
     "result": {
       "title": "¡Práctica completada!",
@@ -534,8 +522,7 @@
       "invalidFenOnLine": "FEN inválido en la línea {{lines}}",
       "invalidFenOnLines": "FEN inválido en las líneas {{lines}}",
       "problemCount": "Número de Problemas",
-      "shuffle": "Mezclar Problemas",
-      "start": "Iniciar"
+      "shuffle": "Mezclar Problemas"
     },
     "result": {
       "title": "¡Práctica completada!",
@@ -776,7 +763,6 @@
   "positionMemory": {
     "setup": {
       "title": "Memoria de posiciones",
-      "start": "Comenzar",
       "memorizeTime": "Tiempo para memorizar",
       "seconds": "{{count}} s"
     },
@@ -795,7 +781,6 @@
     "description": "Pega cualquier PGN y reprodúcelo jugada a jugada de memoria — sin necesidad de cuenta ni partida guardada.",
     "setup": {
       "pgnLabel": "PGN",
-      "startButton": "Empezar de memoria",
       "title": "Recordar partida",
       "useSample": "Usar una partida de ejemplo",
       "invalidPgn": "No se pudo leer este PGN. Revisa las jugadas e inténtalo de nuevo.",

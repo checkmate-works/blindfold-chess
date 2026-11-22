@@ -56,7 +56,6 @@ export default function RecallSetup() {
   return (
     <PracticeSetupScreen
       isLoaded={isLoaded}
-      startLabel={t("recall.setup.startButton")}
       onStart={handleStart}
       startDisabled={settings.pgn.trim() === ""}
     >

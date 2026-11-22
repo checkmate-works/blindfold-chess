@@ -21,11 +21,7 @@ export default function AlgebraicNotationSetup() {
   };
 
   return (
-    <PracticeSetupScreen
-      isLoaded
-      startLabel={t("algebraicNotation.setup.start")}
-      onStart={handleStart}
-    >
+    <PracticeSetupScreen isLoaded onStart={handleStart}>
       <Text style={[styles.description, { color: colors.foreground }]}>
         {t("algebraicNotation.setup.description")}
       </Text>

@@ -1,4 +1,3 @@
-import { useTranslation } from "react-i18next";
 import { useRouter } from "expo-router";
 import { resolveStartingSquare } from "@blindfold-chess/features/knight-tour";
 
@@ -7,7 +6,6 @@ import { SettingsForm } from "../../../features/knight-tour/components";
 import { useKnightTourSettings } from "../../../features/knight-tour/hooks";
 
 export default function KnightTourSetup() {
-  const { t } = useTranslation();
   const router = useRouter();
   const { settings, isLoaded, updateSettings } = useKnightTourSettings();
 
@@ -22,11 +20,7 @@ export default function KnightTourSetup() {
   };
 
   return (
-    <PracticeSetupScreen
-      isLoaded={isLoaded}
-      startLabel={t("knightTour.setup.start")}
-      onStart={handleStart}
-    >
+    <PracticeSetupScreen isLoaded={isLoaded} onStart={handleStart}>
       <SettingsForm settings={settings} onUpdate={updateSettings} />
     </PracticeSetupScreen>
   );
