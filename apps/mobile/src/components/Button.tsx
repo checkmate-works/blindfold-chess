@@ -1,8 +1,10 @@
+import Ionicons from "@expo/vector-icons/Ionicons";
 import {
   TouchableOpacity,
   Text,
   StyleSheet,
   ActivityIndicator,
+  View,
 } from "react-native";
 import type { ViewStyle, TextStyle } from "react-native";
 import {
@@ -27,7 +29,12 @@ type ButtonProps = {
   fullWidth?: boolean;
   style?: ViewStyle;
   textStyle?: TextStyle;
+  /** A glyph before the title, drawn in the title's colour. */
+  icon?: keyof typeof Ionicons.glyphMap;
+  testID?: string;
 };
+
+const ICON_SIZE: Record<ButtonSize, number> = { sm: 14, md: 16, lg: 18 };
 
 export function Button({
   title,
@@ -39,6 +46,8 @@ export function Button({
   fullWidth = false,
   style,
   textStyle,
+  icon,
+  testID,
 }: ButtonProps) {
   const { colors } = useTheme();
   const isDisabled = disabled || loading;
@@ -66,6 +75,9 @@ export function Button({
       onPress={onPress}
       disabled={isDisabled}
       activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityState={{ disabled: isDisabled }}
+      testID={testID}
       style={[
         styles.base,
         variantStyles[variant],
@@ -83,17 +95,29 @@ export function Button({
           size="small"
         />
       ) : (
-        <Text
-          style={[
-            styles.text,
-            textVariantStyles[variant],
-            styles[`text_size_${size}`],
-            isDisabled && styles.textDisabled,
-            textStyle,
-          ]}
-        >
-          {title}
-        </Text>
+        <View style={styles.content}>
+          {icon && (
+            <Ionicons
+              name={icon}
+              size={ICON_SIZE[size]}
+              style={[
+                textVariantStyles[variant],
+                isDisabled && styles.textDisabled,
+              ]}
+            />
+          )}
+          <Text
+            style={[
+              styles.text,
+              textVariantStyles[variant],
+              styles[`text_size_${size}`],
+              isDisabled && styles.textDisabled,
+              textStyle,
+            ]}
+          >
+            {title}
+          </Text>
+        </View>
       )}
     </TouchableOpacity>
   );
@@ -108,6 +132,11 @@ const styles = StyleSheet.create({
   },
   fullWidth: {
     width: "100%",
+  },
+  content: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
   },
   disabled: {
     opacity: 0.5,
