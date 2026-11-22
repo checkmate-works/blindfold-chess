@@ -20,6 +20,7 @@ import {
   realignToElement,
   useScrollToElement,
 } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
+import { PAGE_PANEL_SCROLL_MARGIN } from '@/app/[locale]/_components/PagePanel';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -119,7 +120,7 @@ export function FenSession({
   if (phase === 'recreate' && originalPosition) {
     return (
       <>
-        <div id="fen-session" className="min-h-screen">
+        <div id="fen-session" className={`min-h-screen ${PAGE_PANEL_SCROLL_MARGIN}`}>
           <FenRecreate
             originalPosition={originalPosition}
             recreatedPosition={recreatedPosition}
