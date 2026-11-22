@@ -193,7 +193,11 @@
       "username": "Username",
       "setUsername": "Set",
       "signOut": "Sign out",
-      "signOutConfirm": "Sign out?"
+      "signOutConfirm": "Sign out?",
+      "loading": "Loading…",
+      "retry": "Tap to retry",
+      "deleteAccount": "Delete account",
+      "deleteAccountNote": "Account deletion opens the website: sign in there to delete your account. If you haven't set a username yet, you'll be asked to set one first."
     }
   },
   "legalMoves": {
@@ -927,7 +931,7 @@
       "emailLabel": "Email",
       "emailPlaceholder": "you@example.com",
       "passwordLabel": "Password",
-      "passwordPlaceholder": "At least 8 characters",
+      "passwordPlaceholder": "At least {{minLength}} characters",
       "confirmPasswordLabel": "Confirm password",
       "confirmPasswordPlaceholder": "Re-enter your password",
       "emailSignUp": "Register with email",

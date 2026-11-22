@@ -26,20 +26,37 @@ export default function RecordsScreen() {
   const [failed, setFailed] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
-  const load = useCallback(async (p: RankPeriod) => {
-    const result = await fetchOwnRanks(p);
-    if ("error" in result) {
-      setFailed(true);
-      setRanks(null);
-    } else {
-      setFailed(false);
-      setRanks(result);
-    }
-  }, []);
+  /**
+   * Loads the ranks of `p`. `isCurrent` is asked once the response is in;
+   * when it says no, the response is dropped so it cannot overwrite the
+   * ranks of a period chosen after the request went out.
+   */
+  const load = useCallback(
+    async (p: RankPeriod, isCurrent: () => boolean = () => true) => {
+      const result = await fetchOwnRanks(p);
+      if (!isCurrent()) return;
+      if ("error" in result) {
+        setFailed(true);
+        setRanks(null);
+      } else {
+        setFailed(false);
+        setRanks(result);
+      }
+    },
+    [],
+  );
 
+  // Switching the period re-runs this effect while the previous period's
+  // request may still be in flight; a slow "all-time" answer arriving after
+  // "weekly" would otherwise show all-time ranks under the weekly label. The
+  // cleanup marks that earlier request stale (also on blur).
   useFocusEffect(
     useCallback(() => {
-      void load(period);
+      let active = true;
+      void load(period, () => active);
+      return () => {
+        active = false;
+      };
     }, [load, period]),
   );
 

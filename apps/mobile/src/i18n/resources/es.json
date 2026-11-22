@@ -193,7 +193,11 @@
       "username": "Nombre de usuario",
       "setUsername": "Configurar",
       "signOut": "Cerrar sesión",
-      "signOutConfirm": "¿Cerrar sesión?"
+      "signOutConfirm": "¿Cerrar sesión?",
+      "loading": "Cargando…",
+      "retry": "Toca para reintentar",
+      "deleteAccount": "Eliminar cuenta",
+      "deleteAccountNote": "La cuenta se elimina en el sitio web: inicia sesión allí para eliminarla. Si aún no has configurado un nombre de usuario, primero se te pedirá que lo hagas."
     }
   },
   "legalMoves": {
@@ -927,7 +931,7 @@
       "emailLabel": "Correo electrónico",
       "emailPlaceholder": "tu@ejemplo.com",
       "passwordLabel": "Contraseña",
-      "passwordPlaceholder": "Al menos 8 caracteres",
+      "passwordPlaceholder": "Al menos {{minLength}} caracteres",
       "confirmPasswordLabel": "Confirmar contraseña",
       "confirmPasswordPlaceholder": "Vuelve a introducir tu contraseña",
       "emailSignUp": "Registrarse con correo electrónico",

@@ -193,7 +193,11 @@
       "username": "Nome de usuário",
       "setUsername": "Definir",
       "signOut": "Sair",
-      "signOutConfirm": "Sair da conta?"
+      "signOutConfirm": "Sair da conta?",
+      "loading": "Carregando…",
+      "retry": "Toque para tentar de novo",
+      "deleteAccount": "Excluir conta",
+      "deleteAccountNote": "A exclusão da conta é feita no site: entre lá para excluir sua conta. Se você ainda não definiu um nome de usuário, será solicitado que defina um primeiro."
     }
   },
   "legalMoves": {
@@ -927,7 +931,7 @@
       "emailLabel": "E-mail",
       "emailPlaceholder": "voce@exemplo.com",
       "passwordLabel": "Senha",
-      "passwordPlaceholder": "Pelo menos 8 caracteres",
+      "passwordPlaceholder": "Pelo menos {{minLength}} caracteres",
       "confirmPasswordLabel": "Confirmar senha",
       "confirmPasswordPlaceholder": "Insira sua senha novamente",
       "emailSignUp": "Cadastrar-se com e-mail",
