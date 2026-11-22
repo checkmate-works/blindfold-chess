@@ -11,6 +11,7 @@ import { TrainingFooter } from '@/app/[locale]/(public)/practice/(challenge)/_co
 import { AlgebraicKeyboardHint } from '@/app/[locale]/(public)/practice/_components/KeyboardHint';
 import { PieceCoordinateInput } from '@/app/[locale]/(public)/practice/_components/PieceCoordinateInput';
 import { useAlgebraicKeyboardInput } from '@/app/[locale]/(public)/practice/_hooks/use-algebraic-keyboard-input';
+import { PAGE_PANEL_SCROLL_MARGIN } from '@/app/[locale]/_components/PagePanel';
 
 import { useRoutePlannerGame } from '../_hooks/use-route-planner-game';
 import { useStagedCoordinate } from '../_hooks/use-staged-coordinate';
@@ -19,18 +20,7 @@ import type { PieceType } from '../_lib/pieces';
 import { RoutePlannerPlaySkeleton } from './RoutePlannerPlaySkeleton';
 import { RoutePlannerResultView } from './RoutePlannerResultView';
 
-/**
- * The session wrapper, which `useScrollToElement` aligns to the viewport top.
- *
- * Unlike the other training sessions, this one has no spacing of its own
- * above its first row: the piece box is the very first thing inside it, so
- * aligning the wrapper's top put the box flush against the viewport edge.
- * The space that belongs above it is the PagePanel padding the wrapper sits
- * in (`p-4 sm:p-6 md:p-8`), so the scroll margin repeats those values and
- * the alignment keeps that padding on screen. Change both together.
- */
-const SESSION_WRAPPER_CLASS =
-  'min-h-screen max-w-md mx-auto scroll-mt-4 sm:scroll-mt-6 md:scroll-mt-8';
+const SESSION_WRAPPER_CLASS = `min-h-screen max-w-md mx-auto ${PAGE_PANEL_SCROLL_MARGIN}`;
 
 type Props = {
   locale: string;
