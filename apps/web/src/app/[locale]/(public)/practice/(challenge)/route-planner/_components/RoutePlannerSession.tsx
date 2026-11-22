@@ -19,6 +19,19 @@ import type { PieceType } from '../_lib/pieces';
 import { RoutePlannerPlaySkeleton } from './RoutePlannerPlaySkeleton';
 import { RoutePlannerResultView } from './RoutePlannerResultView';
 
+/**
+ * The session wrapper, which `useScrollToElement` aligns to the viewport top.
+ *
+ * Unlike the other training sessions, this one has no spacing of its own
+ * above its first row: the piece box is the very first thing inside it, so
+ * aligning the wrapper's top put the box flush against the viewport edge.
+ * The space that belongs above it is the PagePanel padding the wrapper sits
+ * in (`p-4 sm:p-6 md:p-8`), so the scroll margin repeats those values and
+ * the alignment keeps that padding on screen. Change both together.
+ */
+const SESSION_WRAPPER_CLASS =
+  'min-h-screen max-w-md mx-auto scroll-mt-4 sm:scroll-mt-6 md:scroll-mt-8';
+
 type Props = {
   locale: string;
   allowedPieces?: PieceType[];
@@ -77,14 +90,14 @@ export function RoutePlannerSession({
 
   if (!problem) {
     return (
-      <div id="route-planner-session" className="min-h-screen max-w-md mx-auto">
+      <div id="route-planner-session" className={SESSION_WRAPPER_CLASS}>
         <RoutePlannerPlaySkeleton />
       </div>
     );
   }
 
   return (
-    <div id="route-planner-session" className="min-h-screen max-w-md mx-auto">
+    <div id="route-planner-session" className={SESSION_WRAPPER_CLASS}>
       <div ref={sessionRef} className="text-center relative overflow-hidden">
         {/* Problem Header */}
         <div className="flex justify-center items-center gap-6 pb-4 mb-4">
