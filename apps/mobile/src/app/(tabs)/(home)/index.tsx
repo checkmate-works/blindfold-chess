@@ -10,6 +10,7 @@ import {
 } from "../../../components";
 import { AiGameCard } from "../../../features/ai-game/components/AiGameCard";
 import { ProgressCard } from "../../../features/records/ProgressCard";
+import { useSignUpOffer } from "../../../features/onboarding/hooks/useSignUpOffer";
 import { useOnboardingStatus } from "../../../hooks/useOnboardingStatus";
 import {
   MOBILE_PRACTICE_MODULES,
@@ -22,12 +23,14 @@ const QUICK_START_SLUGS = ["coordinate-quiz", "square-colors", "legal-moves"];
 /**
  * The home tab: the AI game first (the web home leads with the same card),
  * then a quick start into the entry-level practice modules and the way back
- * into the introduction.
+ * into the introduction. It is also where the account offer that ends
+ * onboarding opens (`useSignUpOffer`).
  */
 export default function HomeTab() {
   const { t } = useTranslation();
   const router = useRouter();
   const { clearStatus } = useOnboardingStatus();
+  useSignUpOffer();
 
   const quickStart = QUICK_START_SLUGS.flatMap(
     (slug) => MOBILE_PRACTICE_MODULES.find((m) => m.slug === slug) ?? [],

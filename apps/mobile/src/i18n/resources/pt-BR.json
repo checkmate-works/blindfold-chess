@@ -103,17 +103,20 @@
   },
   "onboarding": {
     "skip": "Pular",
-    "tapToContinue": "Toque para continuar",
-    "start": "Iniciar",
+    "startAiGame": "Começar uma partida",
+    "startPractice": "Começar a praticar",
     "script": {
-      "greeting": "Olá",
-      "introduction": "Sou um mestre do xadrez às cegas",
-      "experienceCheck": "Você já jogou xadrez às cegas?",
-      "choiceYes": "Sim",
-      "choiceNo": "Não",
-      "experienced": "Ora... isso é reconfortante.\nVamos colocar suas habilidades à prova, que tal?",
-      "beginner": "Entendo, então é a sua primeira vez.\nNão se preocupe. Vou lhe ensinar passo a passo.",
-      "ready": "Quando estiver pronto, aperte o botão."
+      "greeting": "Bem-vindo.",
+      "introduction": "Eu ensino xadrez às cegas aqui.\nXadrez às cegas é jogar sem olhar o tabuleiro — só com o tabuleiro na sua cabeça.",
+      "confidenceCheck": "Primeiro, me conte: como você joga hoje?",
+      "choiceBlindfold": "Consigo jogar às cegas",
+      "choiceWithBoard": "Consigo jogar com tabuleiro",
+      "choiceNew": "Sou novo no xadrez",
+      "confident": "Oh… impressionante.\nEntão vamos jogar uma partida agora mesmo.",
+      "chessPlayer": "Se você conhece xadrez, vai ser rápido.\nO primeiro passo do xadrez às cegas é saber o nome de cada casa.",
+      "beginner": "Não se preocupe — todo mundo começa como iniciante.\nVamos começar aprendendo os nomes das casas.",
+      "readyAiGame": "Vou deixar a IA no nível mais fraco. Se você se perder, pode espiar o tabuleiro.",
+      "readyPractice": "Você verá um nome como \"e4\" — toque nessa casa. Não há limite de tempo."
     }
   },
   "settings": {
@@ -923,7 +926,10 @@
       "forgotPassword": "Esqueceu sua senha?",
       "noAccount": "Não tem uma conta?",
       "signUp": "Cadastrar-se",
-      "rateLimited": "Muitas tentativas de login. Por favor, tente mais tarde."
+      "rateLimited": "Muitas tentativas de login. Por favor, tente mais tarde.",
+      "googleOAuth": "Entrar com Google",
+      "orDivider": "ou",
+      "authError": "Erro de login. Por favor, tente novamente."
     },
     "signUp": {
       "title": "Cadastrar-se",
@@ -939,7 +945,10 @@
       "passwordMismatch": "As senhas não coincidem.",
       "alreadyHaveAccount": "Já tem uma conta?",
       "signIn": "Entrar",
-      "rateLimited": "Muitas tentativas de cadastro. Por favor, tente mais tarde."
+      "rateLimited": "Muitas tentativas de cadastro. Por favor, tente mais tarde.",
+      "googleOAuth": "Cadastrar-se com Google",
+      "orDivider": "ou",
+      "authError": "Erro de cadastro. Por favor, tente novamente."
     },
     "verifyEmail": {
       "title": "Verifique seu E-mail",
@@ -975,6 +984,14 @@
         "missingDigit": "A senha deve conter pelo menos um dígito.",
         "weak": "A senha é muito fraca. Por favor, escolha uma senha mais segura."
       }
+    },
+    "welcome": {
+      "title": "Conta",
+      "heading": "Muito bem!",
+      "body": "Com uma conta, seus resultados nos desafios são registrados e seu rank e nível sobem. Você pode continuar na web com a mesma conta.",
+      "signUpWithEmail": "Cadastrar com e-mail",
+      "signIn": "Já tem conta? Entrar",
+      "later": "Depois"
     }
   },
   "records": {

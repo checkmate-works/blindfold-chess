@@ -5,7 +5,8 @@ import { HeaderTextButton } from "../../navigation/HeaderTextButton";
 import { useStackScreenOptions } from "../../navigation/stack-options";
 
 /**
- * Sign-in, sign-up, username setup and the user's records: a stack inside
+ * The account offer after onboarding (`welcome`), sign-in, sign-up,
+ * username setup and the user's records: a stack inside
  * one modal (the root stack presents `(account)` as `modal`, the iOS card
  * sheet). Each screen's header has a Close button that dismisses the whole
  * modal; moving between sign-in and sign-up stays inside it.
@@ -16,6 +17,10 @@ export default function AccountLayout() {
   const close = { headerLeft: () => <HeaderTextButton dismiss /> };
   return (
     <Stack screenOptions={screenOptions}>
+      <Stack.Screen
+        name="welcome"
+        options={{ title: t("account.welcome.title"), ...close }}
+      />
       <Stack.Screen
         name="sign-in"
         options={{ title: t("account.signIn.title"), ...close }}

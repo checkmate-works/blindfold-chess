@@ -103,17 +103,20 @@
   },
   "onboarding": {
     "skip": "Skip",
-    "tapToContinue": "Tap to continue",
-    "start": "Start",
+    "startAiGame": "Start a game",
+    "startPractice": "Start practicing",
     "script": {
-      "greeting": "Hello",
-      "introduction": "I am a master of blindfold chess",
-      "experienceCheck": "Have you ever played blindfold chess?",
-      "choiceYes": "Yes",
-      "choiceNo": "No",
-      "experienced": "Oh... that's reassuring.\nLet's put your skills to the test, shall we?",
-      "beginner": "I see, so this is your first time.\nDon't worry. I'll teach you step by step.",
-      "ready": "When you're ready, press the button."
+      "greeting": "Welcome.",
+      "introduction": "I teach blindfold chess here.\nBlindfold chess is chess played without looking at the board — only the board in your head.",
+      "confidenceCheck": "First, tell me: how well do you play right now?",
+      "choiceBlindfold": "I can play blindfold",
+      "choiceWithBoard": "I can play with a board",
+      "choiceNew": "I'm new to chess",
+      "confident": "Oh… impressive.\nThen let's play a game right away.",
+      "chessPlayer": "If you know chess, this will be quick.\nThe first step in blindfold chess is knowing every square by name.",
+      "beginner": "Don't worry — everyone starts as a beginner.\nLet's begin by learning the names of the squares.",
+      "readyAiGame": "I'll set the AI to its weakest level. If you get lost, you can peek at the board.",
+      "readyPractice": "You'll see a name like \"e4\" — tap that square. There's no time limit."
     }
   },
   "settings": {
@@ -923,7 +926,10 @@
       "forgotPassword": "Forgot your password?",
       "noAccount": "Don't have an account?",
       "signUp": "Register",
-      "rateLimited": "Too many sign-in attempts. Please try again later."
+      "rateLimited": "Too many sign-in attempts. Please try again later.",
+      "googleOAuth": "Sign in with Google",
+      "orDivider": "or",
+      "authError": "Sign-in failed. Please try again."
     },
     "signUp": {
       "title": "Register",
@@ -939,7 +945,10 @@
       "passwordMismatch": "Passwords do not match.",
       "alreadyHaveAccount": "Already have an account?",
       "signIn": "Sign in",
-      "rateLimited": "Too many sign-up attempts. Please try again later."
+      "rateLimited": "Too many sign-up attempts. Please try again later.",
+      "googleOAuth": "Register with Google",
+      "orDivider": "or",
+      "authError": "Registration failed. Please try again."
     },
     "verifyEmail": {
       "title": "Check Your Email",
@@ -975,6 +984,14 @@
         "missingDigit": "Password must contain at least one digit.",
         "weak": "Password is too weak. Please choose a stronger password."
       }
+    },
+    "welcome": {
+      "title": "Account",
+      "heading": "Nicely done!",
+      "body": "With an account, your challenge results are recorded and your rank and level go up. You can pick up where you left off on the web with the same account.",
+      "signUpWithEmail": "Sign up with email",
+      "signIn": "Already have an account? Sign in",
+      "later": "Later"
     }
   },
   "records": {

@@ -13,15 +13,22 @@ import { useOnboardingChat } from "../features/onboarding/hooks/useOnboardingCha
 import { ChatBubble } from "../features/onboarding/components/ChatBubble";
 import { ChoiceList } from "../features/onboarding/components/ChoiceList";
 import { TypingIndicator } from "../features/onboarding/components/TypingIndicator";
+import type { OnboardingDestination } from "../features/onboarding/data/script";
 import { useTheme } from "../theme";
 
 interface OnboardingScreenProps {
-  onComplete: () => void;
+  /** `null` when the player skipped; otherwise where the chat sends them. */
+  onComplete: (destination: OnboardingDestination | null) => void;
 }
 
+/**
+ * The first-launch chat with the mentor: a short introduction, one question
+ * about how confident the player is, then a button into the first game or
+ * practice it picked. Skippable from the top right.
+ */
 export const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
-  const { messages, currentStep, isThinking, handleNext, handleChoice } =
-    useOnboardingChat(onComplete);
+  const { messages, isThinking, waitingFor, handleChoice } =
+    useOnboardingChat();
   const scrollViewRef = useRef<ScrollViewInstance>(null);
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
@@ -33,8 +40,6 @@ export const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
       scrollViewRef.current?.scrollToEnd({ animated: true });
     }, 100);
   }, [messages, isThinking]);
-
-  const isEndStep = currentStep?.id === "end";
 
   return (
     <View
@@ -50,7 +55,10 @@ export const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
       ]}
     >
       <View style={styles.headerRow}>
-        <TouchableOpacity onPress={onComplete} style={styles.skipButton}>
+        <TouchableOpacity
+          onPress={() => onComplete(null)}
+          style={styles.skipButton}
+        >
           <Text style={[styles.skipText, { color: colors.mutedForeground }]}>
             {t("onboarding.skip")}
           </Text>
@@ -69,28 +77,26 @@ export const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
           {isThinking && <TypingIndicator />}
         </ScrollView>
 
-        {!isThinking &&
-          currentStep?.type === "question" &&
-          currentStep.choices && (
-            <View
-              style={[
-                styles.inputArea,
-                {
-                  backgroundColor: colors.card,
-                  borderTopColor: colors.border,
-                },
-              ]}
-            >
-              <ChoiceList
-                choices={currentStep.choices.map((c) => ({
-                  label: t(c.labelKey),
-                  onSelect: () => handleChoice(c.nextId, t(c.labelKey)),
-                }))}
-              />
-            </View>
-          )}
+        {waitingFor?.type === "question" && (
+          <View
+            style={[
+              styles.inputArea,
+              {
+                backgroundColor: colors.card,
+                borderTopColor: colors.border,
+              },
+            ]}
+          >
+            <ChoiceList
+              choices={waitingFor.choices.map((c) => ({
+                label: t(c.labelKey),
+                onSelect: () => handleChoice(c.nextId, t(c.labelKey)),
+              }))}
+            />
+          </View>
+        )}
 
-        {!isThinking && currentStep?.type === "statement" && isEndStep && (
+        {waitingFor?.type === "finish" && (
           <View
             style={[
               styles.inputArea,
@@ -102,7 +108,7 @@ export const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
           >
             <TouchableOpacity
               style={[styles.ctaButton, { backgroundColor: colors.primary }]}
-              onPress={handleNext}
+              onPress={() => onComplete(waitingFor.destination)}
             >
               <Text
                 style={[
@@ -110,30 +116,10 @@ export const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
                   { color: colors.primaryForeground },
                 ]}
               >
-                {t("onboarding.start")}
+                {t(waitingFor.ctaKey)}
               </Text>
             </TouchableOpacity>
           </View>
-        )}
-
-        {!isThinking && currentStep?.type === "statement" && !isEndStep && (
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={handleNext}
-            style={[
-              styles.inputArea,
-              {
-                backgroundColor: colors.card,
-                borderTopColor: colors.border,
-              },
-            ]}
-          >
-            <Text
-              style={[styles.nextButtonText, { color: colors.mutedForeground }]}
-            >
-              {t("onboarding.tapToContinue")}
-            </Text>
-          </TouchableOpacity>
         )}
       </View>
     </View>
@@ -172,9 +158,6 @@ const styles = StyleSheet.create({
     minHeight: 100,
     justifyContent: "center",
     alignItems: "center",
-  },
-  nextButtonText: {
-    fontSize: 14,
   },
   ctaButton: {
     width: "100%",

@@ -12,7 +12,8 @@
       "bundleIdentifier": "online.blindfoldchess.app",
       "config": {
         "usesNonExemptEncryption": false
-      }
+      },
+      "usesAppleSignIn": true
     },
     "android": {
       "package": "online.blindfoldchess.app",
@@ -44,7 +45,9 @@
           "faceIDPermission": false
         }
       ],
-      "expo-font"
+      "expo-font",
+      "expo-apple-authentication",
+      "expo-web-browser"
     ],
     "extra": {
       "eas": {
