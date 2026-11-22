@@ -11,20 +11,31 @@
     "startTraining": "Start Training",
     "trainingDescription": "Questions will keep appearing until you stop. Press the End button to finish.",
     "endTraining": "End",
-    "skip": "Skip"
+    "skip": "Skip",
+    "close": "Close",
+    "quit": "Quit",
+    "quitConfirmTitle": "Quit this session?",
+    "quitConfirmMessage": "Your progress in this session will be lost.",
+    "help": "Help",
+    "next": "Next",
+    "previous": "Back"
   },
   "tabs": {
     "home": "Home",
     "play": "Play",
     "practice": "Practice",
-    "settings": "Settings"
+    "settings": "Settings",
+    "learn": "Learn"
   },
   "home": {
     "title": "Blindfold Chess",
     "welcome": "Welcome back!",
     "startPractice": "Start Practice",
     "playAi": "Play vs AI",
-    "replayOnboarding": "Replay Tutorial"
+    "replayOnboarding": "Replay Tutorial",
+    "allPractice": "All practice modules",
+    "gettingStarted": "Getting started",
+    "learnBasics": "Learn the basics"
   },
   "practice": {
     "title": "Practice",
@@ -67,6 +78,21 @@
     "fen": {
       "title": "FEN Reconstruction",
       "description": "Practice reading FEN notation by recreating positions"
+    },
+    "challengeSection": "Challenges",
+    "challengeSectionNote": "60 seconds, up to 3 mistakes. Each also has an untimed training mode.",
+    "freePlaySection": "Free play",
+    "positionMemory": {
+      "title": "Position Memory",
+      "description": "Memorize a position, then recreate it on an empty board"
+    },
+    "recall": {
+      "title": "Recall",
+      "description": "Replay a game's moves from memory"
+    },
+    "puzzle": {
+      "title": "Puzzles",
+      "description": "Find the best move in curated positions"
     }
   },
   "practiceResult": {
@@ -101,8 +127,6 @@
       "displayOptions": "Display Options",
       "showCoordinates": "Show coordinates",
       "highlightLastMove": "Highlight last move",
-      "on": "On",
-      "off": "Off",
       "boardTheme": "Board Theme",
       "boardThemes": {
         "monotone": "Monotone",
@@ -151,6 +175,29 @@
         "icon": "Icon"
       },
       "resetDefaults": "Reset to defaults"
+    },
+    "about": {
+      "title": "About",
+      "faq": "FAQ",
+      "contact": "Contact",
+      "terms": "Terms of Service",
+      "privacy": "Privacy Policy",
+      "licenses": "Licenses",
+      "version": "Version {{version}}"
+    },
+    "account": {
+      "title": "Account",
+      "signIn": "Sign in / Create account",
+      "signedOutNote": "Everything works without an account. Signing in records your challenge results on the leaderboard and earns EXP.",
+      "email": "Email",
+      "username": "Username",
+      "setUsername": "Set",
+      "signOut": "Sign out",
+      "signOutConfirm": "Sign out?",
+      "loading": "Loading…",
+      "retry": "Tap to retry",
+      "deleteAccount": "Delete account",
+      "deleteAccountNote": "Account deletion opens the website: sign in there to delete your account. If you haven't set a username yet, you'll be asked to set one first."
     }
   },
   "legalMoves": {
@@ -324,7 +371,9 @@
       "positionAlreadyStalemate": "This position is already stalemate — the game would end immediately",
       "positionInsufficientMaterial": "Insufficient material to continue — the game would be an immediate draw",
       "positionCheckCorrected": "The checked side must move first — please select the other side to move",
-      "positionValid": "Valid position"
+      "positionValid": "Valid position",
+      "chooseOpening": "Choose an opening",
+      "searchOpening": "Search by name, ECO or moves"
     },
     "session": {
       "yourTurn": "Your Turn",
@@ -550,5 +599,474 @@
       "missing": "{{piece}} is missing from {{square}}",
       "extra": "Extra {{piece}} on {{square}}"
     }
+  },
+  "moduleHelp": {
+    "coordinateQuiz": {
+      "howToPlay": {
+        "title": "How to Play",
+        "body": "A square name is shown on the board. Click the correct square as quickly as you can."
+      },
+      "challenge": {
+        "title": "Challenge Mode",
+        "body": "Compete to see how many you can answer correctly within the time limit. Your score is recorded and listed on the leaderboard."
+      },
+      "training": {
+        "title": "Training Mode",
+        "body": "Practice at your own pace with no time limit. Scores are not recorded."
+      }
+    },
+    "legalMoves": {
+      "howToPlay": {
+        "title": "How to Play",
+        "body": "A piece and two squares are shown. Determine whether the move is legal or not."
+      },
+      "challenge": {
+        "title": "Challenge Mode",
+        "body": "Compete to see how many you can answer correctly within the time limit. Your score is recorded and listed on the leaderboard."
+      },
+      "training": {
+        "title": "Training Mode",
+        "body": "Practice at your own pace with no time limit. Scores are not recorded."
+      }
+    },
+    "boardSymmetry": {
+      "howToPlay": {
+        "title": "How to Play",
+        "body": "Find the symmetrical square on the board for the given symmetry type."
+      },
+      "step_intro": {
+        "title": "What is Board Symmetry?",
+        "body": "Training board symmetry helps you instantly find corresponding squares. There are three main types of symmetry on the chessboard."
+      },
+      "step_horizontal": {
+        "title": "Vertical Symmetry (File)",
+        "body": "Squares symmetric with respect to the central vertical line (between d and e files). Example: a1 ↔ h1, c3 ↔ f3."
+      },
+      "step_vertical": {
+        "title": "Horizontal Symmetry (Rank)",
+        "body": "Squares symmetric with respect to the central horizontal line (between 4th and 5th ranks). Example: a1 ↔ a8, h2 ↔ h7."
+      },
+      "step_point": {
+        "title": "Point Symmetry (Center)",
+        "body": "Squares symmetric with respect to the center of the board (rotated 180 degrees). Example: a1 ↔ h8, c3 ↔ f6."
+      },
+      "challenge": {
+        "title": "Challenge Mode",
+        "body": "Compete to see how many you can answer correctly within the time limit. Your score is recorded and listed on the leaderboard."
+      },
+      "training": {
+        "title": "Training Mode",
+        "body": "Practice at your own pace with no time limit. Scores are not recorded."
+      }
+    },
+    "squareColors": {
+      "howToPlay": {
+        "title": "How to Play",
+        "body": "Questions like the following will be asked repeatedly. Identify whether the given square is light or dark."
+      },
+      "challenge": {
+        "title": "Challenge Mode",
+        "body": "Compete to see how many you can answer correctly within the time limit. Your score is recorded and listed on the leaderboard."
+      },
+      "training": {
+        "title": "Training Mode",
+        "body": "Practice at your own pace with no time limit. Scores are not recorded."
+      }
+    },
+    "diagonalQuiz": {
+      "howToPlay": {
+        "title": "How to Play",
+        "body": "Identify the two diagonals that pass through the given square."
+      },
+      "step_diagonal": {
+        "title": "What is a Diagonal?",
+        "body": "A diagonal runs in the a1-h8 direction.\nAll squares where (file - rank) is constant belong to the same diagonal.\nThe green squares show the diagonal passing through d4."
+      },
+      "step_antiDiagonal": {
+        "title": "What is an Anti-diagonal?",
+        "body": "An anti-diagonal runs in the h1-a8 direction.\nAll squares where (file + rank) is constant belong to the same anti-diagonal.\nThe blue squares show the anti-diagonal passing through d4."
+      },
+      "challenge": {
+        "title": "Challenge Mode",
+        "body": "Compete to see how many you can answer correctly within the time limit. Your score is recorded and listed on the leaderboard."
+      },
+      "training": {
+        "title": "Training Mode",
+        "body": "Practice at your own pace with no time limit. Scores are not recorded."
+      }
+    },
+    "routePlanner": {
+      "howToPlay": {
+        "title": "How to Play",
+        "body": "Calculate the shortest path for a piece to reach a target square."
+      },
+      "step_intro": {
+        "title": "The Objective",
+        "body": "Find the shortest path for the Knight to move from Start (e4) to Target (h5)."
+      },
+      "step_visualization": {
+        "title": "Visualize the Route",
+        "body": "There is no board preview during practice. Visualize the path in your head and input the coordinates.\nExample: e4 -> f6 -> h5"
+      },
+      "challenge": {
+        "title": "Challenge Mode",
+        "body": "Compete to see how many you can answer correctly within the time limit. Your score is recorded and listed on the leaderboard."
+      },
+      "training": {
+        "title": "Training Mode",
+        "body": "Practice at your own pace with no time limit. Scores are not recorded."
+      }
+    },
+    "quadrants": {
+      "howToPlay": {
+        "title": "How to Play",
+        "body": "A square name will be shown. Identify which quadrant it belongs to by tapping the correct area on the board."
+      }
+    },
+    "knightTour": {
+      "overview": {
+        "title": "What is the Knight's Tour?",
+        "body": "A training exercise where you move a knight to visit all 64 squares exactly once.\nIt trains your sense of knight movement and board geometry, so keeping at it improves your visualization skills."
+      },
+      "tutorial": {
+        "title": "Tutorial",
+        "body": "The Knight's Tour is a classic chess puzzle.\n\nUsing a knight, try to visit all 64 squares of the board exactly once."
+      }
+    },
+    "algebraicNotation": {
+      "about": {
+        "title": "Algebraic Notation",
+        "body": "Master chess notation system with interactive exercises"
+      }
+    },
+    "fen": {
+      "overview": {
+        "title": "What is FEN Reconstruction?",
+        "body": "A training exercise where you read a FEN string and recreate the position on the board.\nIt trains your ability to turn notation into a mental image of the board, so keeping at it improves your visualization skills."
+      },
+      "tutorial": {
+        "title": "Tutorial",
+        "body": "Practice reading FEN notation and recreating board positions."
+      }
+    },
+    "positionMemory": {
+      "overview": {
+        "title": "What is Position Memory?",
+        "body": "A training exercise where you recreate a position on the board.\nIt trains your pattern-recognition ability and working memory, so keeping at it improves your visualization skills."
+      },
+      "tutorial": {
+        "title": "Tutorial",
+        "body": "Memorize a position within the time limit, then recreate it on an empty board.\nLet's try with the following position."
+      }
+    },
+    "recall": {
+      "input": {
+        "title": "Enter a move",
+        "body": "Recall the moves from your finished game and enter them in order. A correct move advances to the next one."
+      },
+      "dontKnow": {
+        "title": "When you can't recall",
+        "body": "Press \"I don't know\" to reveal the correct move and automatically advance to the next one."
+      },
+      "color": {
+        "title": "Choose your side",
+        "body": "Pick which side you'll recall the moves for. The other side's moves can be entered too, or auto-filled for you."
+      }
+    }
+  },
+  "positionMemory": {
+    "setup": {
+      "title": "Position Memory",
+      "start": "Start",
+      "memorizeTime": "Memorizing time",
+      "seconds": "{{count}}s"
+    },
+    "session": {
+      "memorize": "Memorize the position",
+      "memorized": "Memorized",
+      "recreate": "Recreate the position"
+    },
+    "result": {
+      "title": "Results",
+      "playAgain": "Play again"
+    }
+  },
+  "recall": {
+    "title": "Recall",
+    "description": "Paste any PGN and replay it move by move from memory — no account or saved game required.",
+    "setup": {
+      "pgnLabel": "PGN",
+      "startButton": "Start Recall",
+      "title": "Recall",
+      "useSample": "Use a sample game",
+      "invalidPgn": "This PGN could not be read. Check the moves and try again.",
+      "playAs": "Side to recall",
+      "sides": {
+        "white": "White",
+        "black": "Black"
+      }
+    },
+    "autoOpponentMoves": "Auto-fill opponent's moves",
+    "dontKnow": "I don't know",
+    "correctMove": "Correct!",
+    "incorrectMove": "Incorrect move. Try again.",
+    "progress": "Progress: {{current}} / {{total}} moves",
+    "showBoard": "Show Board",
+    "completed": "Game Review Completed!",
+    "moves": "Moves",
+    "noMovesYet": "Moves will appear here as you enter them",
+    "summary": {
+      "title": "Summary",
+      "rateLabel": "Recall rate",
+      "nailed": "First try",
+      "struggled": "Stumbled",
+      "missed": "Couldn't recall",
+      "restart": "Play again",
+      "startNew": "Start with another PGN"
+    },
+    "help": {
+      "input": {
+        "title": "Enter a move",
+        "description": "Recall the moves from your finished game and enter them in order. A correct move advances to the next one."
+      },
+      "dontKnow": {
+        "title": "When you can't recall",
+        "description": "Press \"I don't know\" to reveal the correct move and automatically advance to the next one."
+      },
+      "setup": {
+        "pgn": {
+          "title": "Paste any PGN",
+          "description": "Paste the PGN of any completed game — yours, someone else's, or an opening line — then replay its moves from memory. Switch to \"Lichess URL\" to import one automatically instead."
+        },
+        "color": {
+          "title": "Choose your side",
+          "description": "Pick which side you'll recall the moves for. The other side's moves can be entered too, or auto-filled for you."
+        }
+      }
+    },
+    "session": {
+      "toMove": {
+        "white": "White to move",
+        "black": "Black to move"
+      },
+      "wrong": "Not {{move}}. Try again."
+    },
+    "result": {
+      "title": "Summary",
+      "backToMenu": "Back to practice",
+      "mistakes": "Wrong tries"
+    }
+  },
+  "learn": {
+    "description": "Educational articles and guides to improve your chess understanding",
+    "categories": {
+      "moves": "Piece Movement",
+      "coordinates": "Coordinates",
+      "notation": "Notation",
+      "memory": "Memory",
+      "practice": "Practice"
+    }
+  },
+  "gameHistory": {
+    "title": "Your games",
+    "detailTitle": "Game",
+    "empty": "Finished games will appear here.",
+    "note": "Games are kept on this device only (up to 50).",
+    "seeAll": "See all ({{count}})",
+    "rowDetail": "Level {{level}} · {{moves}} moves · {{date}}",
+    "result": {
+      "win": "Win",
+      "loss": "Loss",
+      "draw": "Draw"
+    },
+    "side": {
+      "white": "White",
+      "black": "Black"
+    },
+    "resultLabel": "Result",
+    "sideLabel": "You played",
+    "levelLabel": "AI level",
+    "dateLabel": "Played",
+    "recall": "Replay from memory (recall)",
+    "share": "Share PGN",
+    "delete": "Delete",
+    "deleteConfirm": "Delete this game?",
+    "you": "You",
+    "engine": "Stockfish (level {{level}})"
+  },
+  "glossary": {
+    "title": "Chess Glossary",
+    "categories": {
+      "tactics": "Tactics",
+      "strategy": "Strategy",
+      "endgame": "Endgame",
+      "opening": "Opening",
+      "structure": "Pawn Structure",
+      "general": "General",
+      "principle": "Principles"
+    },
+    "aliases": "Also known as",
+    "relatedTerms": "Related terms",
+    "subtitle": "Chess terms and their meanings",
+    "search": "Search terms",
+    "noResults": "No matching terms"
+  },
+  "account": {
+    "signIn": {
+      "title": "Sign In",
+      "emailLabel": "Email",
+      "emailPlaceholder": "you@example.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "emailSignIn": "Sign in with email",
+      "emailSignInError": "Invalid email or password. Please try again.",
+      "forgotPassword": "Forgot your password?",
+      "noAccount": "Don't have an account?",
+      "signUp": "Register",
+      "rateLimited": "Too many sign-in attempts. Please try again later."
+    },
+    "signUp": {
+      "title": "Register",
+      "description": "Register for Blindfold Chess",
+      "emailLabel": "Email",
+      "emailPlaceholder": "you@example.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "At least {{minLength}} characters",
+      "confirmPasswordLabel": "Confirm password",
+      "confirmPasswordPlaceholder": "Re-enter your password",
+      "emailSignUp": "Register with email",
+      "emailSignUpError": "Registration failed. Please try again.",
+      "passwordMismatch": "Passwords do not match.",
+      "alreadyHaveAccount": "Already have an account?",
+      "signIn": "Sign in",
+      "rateLimited": "Too many sign-up attempts. Please try again later."
+    },
+    "verifyEmail": {
+      "title": "Check Your Email",
+      "description": "We've sent a confirmation link to your email address.",
+      "checkInbox": "Please check your inbox and click the link to verify your account.",
+      "checkSpam": "If you can’t find the email, please check your spam or junk folder."
+    },
+    "setupUsername": {
+      "title": "Create Your Account",
+      "description": "Choose a username for your account.",
+      "usernameLabel": "Username",
+      "usernamePlaceholder": "e.g., chess_player1",
+      "usernameHint": "2-20 characters. Lowercase letters, numbers, and underscores only. Must start with a letter.",
+      "cannotChange": "Your username cannot be changed once set.",
+      "submit": "Register",
+      "validation": {
+        "tooShort": "Username must be at least 2 characters.",
+        "tooLong": "Username must be at most 20 characters.",
+        "invalidFormat": "Username must start with a lowercase letter, end with a letter or number, and contain only lowercase letters, numbers, and non-consecutive underscores.",
+        "taken": "This username is not available.",
+        "alreadySet": "Username has already been set.",
+        "error": "An error occurred. Please try again.",
+        "usernameInappropriate": "This username is not allowed.",
+        "displayNameInappropriate": "This display name is not allowed.",
+        "displayNameImpersonation": "This display name looks like a reserved or official name. Please choose a different one.",
+        "reserved": "This username is not available."
+      }
+    },
+    "validation": {
+      "password": {
+        "tooShort": "Password must be at least {{minLength}} characters.",
+        "missingLetter": "Password must contain at least one letter.",
+        "missingDigit": "Password must contain at least one digit.",
+        "weak": "Password is too weak. Please choose a stronger password."
+      }
+    }
+  },
+  "records": {
+    "title": "My records",
+    "period": "Period",
+    "periods": {
+      "all-time": "All time",
+      "weekly": "This week",
+      "monthly": "This month"
+    },
+    "rank": "#{{rank}}",
+    "empty": "No recorded challenges yet.",
+    "loading": "Loading…",
+    "loadFailed": "Could not load your records. Pull to retry.",
+    "note": "Your rank on each challenge leaderboard. The full leaderboards are on the website.",
+    "keys": {
+      "white": "White",
+      "black": "Black",
+      "random": "Random",
+      "king": "King",
+      "queen": "Queen",
+      "rook": "Rook",
+      "bishop": "Bishop",
+      "knight": "Knight",
+      "pawn": "Pawn"
+    }
+  },
+  "challenge": {
+    "startFailed": "Could not start a recorded challenge. Check your connection and try again.",
+    "startRateLimited": "Too many challenges started. Please wait a little and try again.",
+    "retry": "Try again",
+    "signInToRecord": "Sign in to record your score on the leaderboard.",
+    "record": {
+      "saving": "Recording your score…",
+      "recorded": "Your score was recorded.",
+      "notRecorded": "This run was not recorded.",
+      "failed": "Could not record your score. Check your connection."
+    },
+    "rules": "60 seconds · ends after 3 mistakes",
+    "willRecord": "Your score will be recorded on the leaderboard.",
+    "promoted": "Promoted to {{rank}}!"
+  },
+  "progress": {
+    "rank": "Dojo rank",
+    "noRank": "None yet",
+    "level": "Level"
+  },
+  "ranks": {
+    "kyu": "{{n}} Kyu",
+    "dan": "{{n}} Dan",
+    "firstDan": "1 Dan"
+  },
+  "puzzle": {
+    "session": {
+      "correct": "Correct! 🎉",
+      "correctMove": "Correct",
+      "incorrect": "Incorrect. Try again.",
+      "showAnswer": "Show answer",
+      "showBoard": "Show Board",
+      "whitePlayed": "White plays {{move}}",
+      "blackPlayed": "Black plays {{move}}"
+    },
+    "result": {
+      "title": "Puzzle Result",
+      "replaySection": "Solution Replay",
+      "historySection": "Attempt History",
+      "solution": "Solution: {{move}}",
+      "note": "— {{note}}",
+      "attemptCorrect": "Correct",
+      "attemptIncorrect": "Incorrect",
+      "backToList": "Back to Puzzles",
+      "tryAgain": "Try Again",
+      "peekCount": "Board Peeks: {{count}}",
+      "statusSolved": "Solved",
+      "statusRevealed": "Revealed"
+    },
+    "list": {
+      "title": "Puzzle",
+      "empty": "No puzzles available yet"
+    },
+    "title": "Puzzle",
+    "description": "Find the best move in the position",
+    "setup": {
+      "title": "Puzzles"
+    },
+    "daily": "Daily Puzzle",
+    "featured": "Featured puzzles",
+    "moreOnWeb": "Everyone's puzzles, and creating your own, are on the website.",
+    "loadFailed": "Could not load puzzles. Pull to retry.",
+    "whiteToMove": "White to move",
+    "blackToMove": "Black to move",
+    "findMove": "Find the best move",
+    "recorded": "Your result was recorded."
   }
 }

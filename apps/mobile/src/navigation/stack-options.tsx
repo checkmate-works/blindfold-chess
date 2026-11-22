@@ -1,0 +1,106 @@
+import type { NativeStackNavigationOptions } from "expo-router/native-stack";
+import { Stack } from "expo-router";
+import { useMemo } from "react";
+import { Platform, StyleSheet, Text } from "react-native";
+import { useTranslation } from "react-i18next";
+
+import { useTheme } from "../theme";
+
+/**
+ * Header options every native stack in the app shares.
+ *
+ * @description
+ * The header is the native-stack header (a `UINavigationBar` on iOS, a
+ * Material top app bar on Android), painted in the page background with no
+ * hairline under it so it reads as part of the page — the flat look the web
+ * app uses — rather than a coloured band. Back buttons show only the chevron
+ * (`headerBackButtonDisplayMode: "minimal"`): the previous screen's title
+ * next to it is long in most languages and truncates unevenly.
+ */
+export function useStackScreenOptions(): NativeStackNavigationOptions {
+  const { colors } = useTheme();
+  return useMemo(
+    () => ({
+      headerStyle: { backgroundColor: colors.background },
+      headerShadowVisible: false,
+      headerTintColor: colors.primary,
+      headerTitleStyle: {
+        color: colors.foreground,
+        fontWeight: "600",
+        fontSize: 17,
+      },
+      headerBackButtonDisplayMode: "minimal",
+      contentStyle: { backgroundColor: colors.background },
+    }),
+    [colors],
+  );
+}
+
+type TabStackProps = {
+  /** i18n key of the tab's title, shown at the left of its header. */
+  titleKey: string;
+};
+
+/**
+ * The stack inside one bottom tab: only its entry screen (`index`), with the
+ * tab's title as a larger, left-aligned heading in the header row.
+ *
+ * @description
+ * A tab's entry gets the heading at the left (22pt) and every pushed detail
+ * gets the platform's small centred title, which is how most tab-based apps
+ * tell "where am I" (tab) from "what am I looking at" (detail). iOS's large
+ * title is not used: it collapses on scroll into the small centred title,
+ * and with the floating tab bar also reacting to scroll the screen top and
+ * bottom both move at once.
+ */
+export function TabStack({ titleKey }: TabStackProps) {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  const screenOptions = useStackScreenOptions();
+  const title = t(titleKey);
+
+  return (
+    <Stack screenOptions={screenOptions}>
+      <Stack.Screen
+        name="index"
+        options={{
+          title,
+          headerTitle: "",
+          headerLeft: () => (
+            <Text
+              accessibilityRole="header"
+              style={[styles.tabTitle, { color: colors.foreground }]}
+            >
+              {title}
+            </Text>
+          ),
+        }}
+      />
+    </Stack>
+  );
+}
+
+const styles = StyleSheet.create({
+  tabTitle: {
+    fontSize: 22,
+    fontWeight: "700",
+    // The Android app bar puts headerLeft flush with the screen edge minus its
+    // own inset; iOS already insets it by the layout margin.
+    paddingLeft: Platform.OS === "android" ? 4 : 0,
+  },
+});
+
+/**
+ * How the root stack presents the `sheet` group: a half-height sheet with a
+ * grabber that can be dragged up to full height or down to dismiss — the
+ * system sheet on iOS (`UISheetPresentationController`) and a Material
+ * bottom sheet on Android. The sheet draws its own title row and ×
+ * (`SheetScreen`), since a form sheet has no navigation bar on Android.
+ */
+export const SHEET_SCREEN_OPTIONS: NativeStackNavigationOptions = {
+  presentation: "formSheet",
+  sheetAllowedDetents: [0.55, 1],
+  sheetGrabberVisible: true,
+  sheetCornerRadius: 20,
+  headerShown: false,
+};

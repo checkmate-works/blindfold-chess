@@ -8,6 +8,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { formatMovesToPgn, formatPgnToText } from '@blindfold-chess/features/chess-core/pgn-format';
 import type { ExpInfo } from '@blindfold-chess/features/exp';
 import { parseFenMeta } from '@blindfold-chess/features/game-play';
+import type { Attempt } from '@blindfold-chess/features/puzzle';
 import { FaEye } from 'react-icons/fa';
 
 import type { PuzzleSolutionMove } from '@/lib/db/schema/positions';
@@ -24,7 +25,6 @@ import { lichessAnalysisUrlsAt } from '@/app/[locale]/_lib/lichess-analysis-urls
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { ResultLikeCta } from '../../_components/ResultLikeCta';
-import type { Attempt } from '../_lib/puzzle-match';
 import { puzzleResultStorageKey } from '../_lib/puzzle-result-storage';
 import {
   AttemptHistoryPanel,

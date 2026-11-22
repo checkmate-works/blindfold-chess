@@ -7,21 +7,12 @@
  *
  * Sources: ECO classification, lichess-org/chess-openings
  *
- * This module is the single public entry point for opening seed data.
- * The actual entries are split across `./openings/*.ts` files and
- * concatenated here in the exact same order as before the split.
+ * The entries live in `@blindfold-chess/features/openings` so the mobile app
+ * can read the same list; this module stays the web's entry point for them.
  */
-import type { ChessOpeningSeed } from './openings/_types';
-import { openingsAdditionalD4 } from './openings/additional-d4';
-import { openingsAdditionalE4 } from './openings/additional-e4';
-import { openingsD4 } from './openings/d4';
-import { openingsE4 } from './openings/e4';
-import { openingsFlank } from './openings/flank';
+import { CHESS_OPENINGS } from '@blindfold-chess/features/openings';
+import type { ChessOpeningSeed } from '@blindfold-chess/features/openings';
 
-export const chessOpenings: ChessOpeningSeed[] = [
-  ...openingsE4,
-  ...openingsD4,
-  ...openingsFlank,
-  ...openingsAdditionalE4,
-  ...openingsAdditionalD4,
-];
+export type { ChessOpeningSeed };
+
+export const chessOpenings: ChessOpeningSeed[] = [...CHESS_OPENINGS];

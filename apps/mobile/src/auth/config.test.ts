@@ -1,0 +1,38 @@
+import { describe, expect, it } from "vitest";
+
+import { resolveBackendConfig } from "./config";
+
+describe("resolveBackendConfig", () => {
+  it("uses the build's variables when all are set", () => {
+    expect(
+      resolveBackendConfig({
+        env: {
+          supabaseUrl: "https://x.supabase.co",
+          supabaseKey: "k",
+          apiOrigin: "https://example.com/",
+        },
+        isDev: false,
+        devHost: undefined,
+      }),
+    ).toEqual({
+      supabaseUrl: "https://x.supabase.co",
+      supabaseKey: "k",
+      apiOrigin: "https://example.com",
+    });
+  });
+
+  it("has no backend in a release build without them", () => {
+    expect(
+      resolveBackendConfig({ env: {}, isDev: false, devHost: "10.0.0.2" }),
+    ).toBeUndefined();
+  });
+
+  it("points a development build at the Metro host's local stack", () => {
+    expect(
+      resolveBackendConfig({ env: {}, isDev: true, devHost: "10.0.0.2" }),
+    ).toMatchObject({
+      supabaseUrl: "http://10.0.0.2:54321",
+      apiOrigin: "http://10.0.0.2:3000",
+    });
+  });
+});

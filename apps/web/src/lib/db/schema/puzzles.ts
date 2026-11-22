@@ -3,6 +3,7 @@
 //
 // Puzzle solution moves — sibling table to `positions` that stores per-puzzle
 // solution lines.
+import type { PuzzleSolutionMove } from '@blindfold-chess/features/puzzle';
 import { index, jsonb, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 
 import { createdAtOnly } from './columns';
@@ -61,10 +62,7 @@ import { positions } from './positions';
  *     { san: 'Qh8#', note: null }
  *   ] }
  */
-export type PuzzleSolutionMove = {
-  san: string;
-  note: string | null;
-};
+export type { PuzzleSolutionMove };
 
 export const puzzleSolutions = pgTable(
   'puzzle_solutions',

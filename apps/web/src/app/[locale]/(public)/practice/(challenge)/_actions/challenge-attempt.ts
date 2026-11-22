@@ -1,16 +1,13 @@
 'use server';
 
-import { revalidateTag } from 'next/cache';
-
 import type { ChallengeAnswerResponse } from '@blindfold-chess/features/challenge-attempt';
 
 import { authenticateAndCheckBan, authenticateAndGuard, isAuthUnavailable } from '@/lib/auth';
-import { EXP_LEADERBOARD_CACHE_TAG, LEADERBOARD_CACHE_TAG } from '@/lib/cache-tags';
 import {
   answerChallengeAttempt as answerAttempt,
   beginChallengeAttempt as beginAttempt,
-  finishChallengeAttempt as finishAttempt,
 } from '@/lib/challenge/attempts';
+import { finishAttemptForUser } from '@/lib/challenge/finish-response';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { handleServerActionError } from '@/lib/server-action-error';
 
@@ -22,8 +19,6 @@ import type { SaveResultResponse } from '../_lib/save-result-response';
  * the client: a script probing the speed check would otherwise learn exactly
  * where its floor is.
  */
-const NOT_RECORDED = 'not_recorded';
-
 /**
  * Throws when a guard answered `signInRequired` only because the Auth server
  * could not be reached; returns otherwise.
@@ -145,37 +140,7 @@ export async function finishChallengeAttempt(
       return { status: 'done', success: false, error: guardResult.error };
     }
 
-    const result = await finishAttempt({ userId: guardResult.user.id, attemptId });
-    switch (result.status) {
-      case 'pending':
-        return { status: 'pending', remainingMs: result.remainingMs };
-      case 'recorded':
-        // Both leaderboard caches are read by the result page the player is
-        // about to see, so they are invalidated strictly (`expire: 0`) for
-        // read-your-own-writes: 'leaderboard' for the module rankings (the
-        // weekly period shifts on every recorded run, not only on a new
-        // all-time best) and 'exp-leaderboard' because every recorded run
-        // grants EXP. A resent finish invalidates again, which is harmless.
-        revalidateTag(LEADERBOARD_CACHE_TAG, { expire: 0 });
-        revalidateTag(EXP_LEADERBOARD_CACHE_TAG, { expire: 0 });
-        return {
-          status: 'done',
-          success: true,
-          grantedRanks: result.grantedRanks,
-          challengeResultId: result.challengeResultId,
-        };
-      case 'refused':
-        // Server log only: operators can find refused runs, the client cannot.
-        console.warn(`[finishChallengeAttempt] ${attemptId}: refused (${result.reason})`);
-        return { status: 'done', success: false, error: NOT_RECORDED };
-      case 'unrecorded':
-      case 'rejected':
-        return { status: 'done', success: false, error: NOT_RECORDED };
-      default: {
-        const exhaustive: never = result;
-        return exhaustive;
-      }
-    }
+    return await finishAttemptForUser(guardResult.user.id, attemptId);
   } catch (error) {
     return { status: 'done', ...handleServerActionError(error, '[finishChallengeAttempt]') };
   }

@@ -16,14 +16,11 @@ import {
  * without `training.tsx` registers a screen that does not exist (or the
  * reverse leaves a training screen unreachable), so check the two agree.
  */
-const PRACTICE_ROUTES_DIR = join(
-  __dirname,
-  "..",
-  "..",
-  "app",
-  "(tabs)",
-  "practice",
-);
+const APP_DIR = join(__dirname, "..", "..", "app");
+/** The setup screen, pushed on the root stack: `practice/<route>/index.tsx`. */
+const SETUP_ROUTES_DIR = join(APP_DIR, "practice");
+/** Session, result and training, inside the full-screen session modal. */
+const SESSION_ROUTES_DIR = join(APP_DIR, "(session)", "practice");
 
 describe("MOBILE_PRACTICE_MODULES", () => {
   it("lists each registry slug at most once", () => {
@@ -43,9 +40,13 @@ describe("MOBILE_PRACTICE_MODULES", () => {
   it.each(
     MOBILE_PRACTICE_MODULES.map((m) => [practiceModuleRoute(m), m] as const),
   )("%s has setup, session and result screens", (route) => {
-    for (const screen of ["setup", "session", "result"]) {
+    expect(
+      existsSync(join(SETUP_ROUTES_DIR, route, "index.tsx")),
+      `${route}/index.tsx`,
+    ).toBe(true);
+    for (const screen of ["session", "result"]) {
       expect(
-        existsSync(join(PRACTICE_ROUTES_DIR, route, `${screen}.tsx`)),
+        existsSync(join(SESSION_ROUTES_DIR, route, `${screen}.tsx`)),
         `${route}/${screen}.tsx`,
       ).toBe(true);
     }
@@ -54,7 +55,7 @@ describe("MOBILE_PRACTICE_MODULES", () => {
   it.each(
     MOBILE_PRACTICE_MODULES.map((m) => [practiceModuleRoute(m), m] as const),
   )("%s has a training screen exactly when flagged hasTraining", (route, m) => {
-    expect(existsSync(join(PRACTICE_ROUTES_DIR, route, "training.tsx"))).toBe(
+    expect(existsSync(join(SESSION_ROUTES_DIR, route, "training.tsx"))).toBe(
       m.hasTraining === true,
     );
   });

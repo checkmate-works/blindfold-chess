@@ -3,11 +3,11 @@
 import { useCallback, useRef, useState } from 'react';
 
 import { useRouter } from '@/i18n/routing';
+import type { Attempt } from '@blindfold-chess/features/puzzle';
 
 import { captureError } from '@/lib/sentry/capture-error';
 
 import { savePuzzleResult } from '../_actions/savePuzzleResult';
-import type { Attempt } from '../_lib/puzzle-match';
 import { writePuzzleResult } from '../_lib/puzzle-result-storage';
 
 const AUTO_NAVIGATE_DELAY_MS = 1000;

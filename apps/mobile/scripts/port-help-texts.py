@@ -1,0 +1,199 @@
+"""Copy the practice modules' how-to-play, tutorial and mode texts from the
+web dictionary (apps/web/src/messages) into the mobile one, as
+`moduleHelp.<mobileKey>.<page>.{title,body}`, and write the page order to
+src/features/help/module-help-pages.ts.
+
+Run from apps/mobile: `python3 scripts/port-help-texts.py`. Re-run after the
+web texts change; the mobile keys are generated, not edited by hand.
+"""
+import json
+import re
+from pathlib import Path
+
+WEB = Path("../web/src/messages")
+MOBILE = Path("src/i18n/resources")
+LOCALES = ["en", "ja", "es", "pt-BR"]
+
+# mobile i18nKey -> web practice namespace
+MODULES = {
+    "coordinateQuiz": "coordinateQuiz",
+    "legalMoves": "legalMoves",
+    "boardSymmetry": "boardSymmetry",
+    "squareColors": "squareColors",
+    "diagonalQuiz": "diagonalQuiz",
+    "routePlanner": "routePlanner",
+    "quadrants": "quadrantAnchors",
+    "knightTour": "knightTour",
+    "algebraicNotation": "algebraicNotation",
+    "fen": "fen",
+    "positionMemory": "positionMemory",
+}
+
+# Tutorial steps that only make sense on the web page (they hand over to an
+# interactive trial there).
+SKIP_STEPS = {"start", "trial"}
+
+
+def icu_to_i18next(text: str) -> str:
+    return re.sub(r"\{(\w+)\}", r"{{\1}}", text)
+
+
+def pages_for(ns: dict) -> list[tuple[str, str, str]]:
+    pages = []
+    if "howToPlayTitle" in ns:
+        pages.append(("howToPlay", ns["howToPlayTitle"], ns["howToPlayDescription"]))
+    help_ = ns.get("help", {})
+    if "overview" in help_:
+        pages.append(("overview", help_["overview"]["title"], help_["overview"]["description"]))
+    tutorial = ns.get("tutorial", {})
+    for step, value in tutorial.get("steps", {}).items():
+        if step in SKIP_STEPS:
+            continue
+        pages.append((f"step_{step}", value["title"], value["description"]))
+    if not tutorial.get("steps") and isinstance(tutorial.get("description"), str):
+        overview = help_.get("overview", {}).get("description")
+        if tutorial["description"] != overview:
+            pages.append(("tutorial", tutorial["title"], tutorial["description"]))
+    if not pages:
+        pages.append(("about", ns["title"], ns["description"]))
+    for mode in ("challenge", "training"):
+        if mode in help_:
+            pages.append((mode, help_[mode]["title"], help_[mode]["description"]))
+    return pages
+
+
+order: dict[str, list[str]] = {}
+for locale in LOCALES:
+    web = json.loads((WEB / f"{locale}.json").read_text())["practice"]
+    path = MOBILE / f"{locale}.json"
+    mobile = json.loads(path.read_text())
+    out = {}
+    for key, web_key in MODULES.items():
+        pages = pages_for(web[web_key])
+        out[key] = {name: {"title": icu_to_i18next(t), "body": icu_to_i18next(b)} for name, t, b in pages}
+        if locale == "en":
+            order[key] = [name for name, _, _ in pages]
+        else:
+            assert [n for n, _, _ in pages] == order[key], (locale, key)
+    mobile["moduleHelp"] = out
+    path.write_text(json.dumps(mobile, ensure_ascii=False, indent=2) + "\n")
+
+
+
+
+# --- Recall (感想戦): the strings the mobile screens use, under `recall.*`.
+RECALL_KEYS = [
+    "title", "description", "setup.pgnLabel", "setup.startButton",
+    "autoOpponentMoves", "dontKnow", "correctMove", "incorrectMove",
+    "progress", "showBoard", "completed", "moves", "noMovesYet",
+    "summary.title", "summary.rateLabel", "summary.nailed", "summary.struggled",
+    "summary.missed", "summary.restart", "summary.startNew",
+    "help.input.title", "help.input.description",
+    "help.dontKnow.title", "help.dontKnow.description",
+    "help.setup.color.title", "help.setup.color.description",
+]
+
+
+def dig(d, path):
+    for part in path.split("."):
+        d = d[part]
+    return d
+
+
+def plant(d, path, value):
+    parts = path.split(".")
+    for part in parts[:-1]:
+        d = d.setdefault(part, {})
+    d[parts[-1]] = value
+
+
+for locale in LOCALES:
+    web = json.loads((WEB / f"{locale}.json").read_text())["recall"]
+    path = MOBILE / f"{locale}.json"
+    mobile = json.loads(path.read_text())
+    recall = mobile.setdefault("recall", {})
+    for key in RECALL_KEYS:
+        text = re.sub(r"</?b>", "", dig(web, key))
+        plant(recall, key, icu_to_i18next(text))
+    # The help sheet's pages for recall (the setup's PGN help mentions the
+    # web-only Lichess import, so it is left out).
+    mobile["moduleHelp"]["recall"] = {
+        name: {
+            "title": icu_to_i18next(web["help"][a]["title"] if b is None else web["help"][a][b]["title"]),
+            "body": icu_to_i18next(web["help"][a]["description"] if b is None else web["help"][a][b]["description"]),
+        }
+        for name, a, b in [("input", "input", None), ("dontKnow", "dontKnow", None), ("color", "setup", "color")]
+    }
+    path.write_text(json.dumps(mobile, ensure_ascii=False, indent=2) + "\n")
+
+order["recall"] = ["input", "dontKnow", "color"]
+lines = [
+    "// Generated by scripts/port-help-texts.py from the web dictionary. Do not edit.",
+    "",
+    "/** The help pages of each module, in the order the help sheet shows them. */",
+    "export const MODULE_HELP_PAGES: Readonly<Record<string, readonly string[]>> = {",
+]
+for key, names in order.items():
+    lines.append(f"  {key}: {json.dumps(names)},")
+lines += ["};", ""]
+out_ts = Path("src/features/help/module-help-pages.ts")
+out_ts.parent.mkdir(parents=True, exist_ok=True)
+out_ts.write_text("\n".join(lines))
+print({k: len(v) for k, v in order.items()})
+
+
+# --- Accounts: the sign-in, sign-up, verify-email and username texts, under
+# `account.<web namespace>.*`, so the app says what the web says.
+ACCOUNT_KEYS = {
+    "signIn": ["title", "emailLabel", "emailPlaceholder", "passwordLabel",
+               "passwordPlaceholder", "emailSignIn", "emailSignInError",
+               "forgotPassword", "noAccount", "signUp", "rateLimited"],
+    "signUp": ["title", "description", "emailLabel", "emailPlaceholder",
+               "passwordLabel", "passwordPlaceholder", "confirmPasswordLabel",
+               "confirmPasswordPlaceholder", "emailSignUp", "emailSignUpError",
+               "passwordMismatch", "alreadyHaveAccount", "signIn", "rateLimited"],
+    "verifyEmail": ["title", "description", "checkInbox", "checkSpam"],
+    "setupUsername": ["title", "description", "usernameLabel",
+                      "usernamePlaceholder", "usernameHint", "cannotChange",
+                      "submit", "validation"],
+    "validation": ["password"],
+}
+
+for locale in LOCALES:
+    web = json.loads((WEB / f"{locale}.json").read_text())
+    path = MOBILE / f"{locale}.json"
+    mobile = json.loads(path.read_text())
+    account = mobile.setdefault("account", {})
+    for ns, keys in ACCOUNT_KEYS.items():
+        for key in keys:
+            value = web[ns][key]
+            if isinstance(value, dict):
+                value = {k: icu_to_i18next(v) for k, v in value.items()}
+            else:
+                value = icu_to_i18next(value)
+            account.setdefault(ns, {})[key] = value
+    path.write_text(json.dumps(mobile, ensure_ascii=False, indent=2) + "\n")
+
+
+# --- Puzzles: the web's `practice.puzzle` session / result / list texts, under
+# `puzzle.*`.
+PUZZLE_KEYS = {
+    "session": ["correct", "correctMove", "incorrect", "showAnswer",
+                "showBoard", "whitePlayed", "blackPlayed"],
+    "result": ["title", "replaySection", "historySection", "solution", "note",
+               "attemptCorrect", "attemptIncorrect", "backToList", "tryAgain",
+               "peekCount", "statusSolved", "statusRevealed"],
+    "list": ["title", "empty"],
+}
+
+for locale in LOCALES:
+    web = json.loads((WEB / f"{locale}.json").read_text())["practice"]["puzzle"]
+    path = MOBILE / f"{locale}.json"
+    mobile = json.loads(path.read_text())
+    puzzle = mobile.setdefault("puzzle", {})
+    for section, keys in PUZZLE_KEYS.items():
+        for key in keys:
+            puzzle.setdefault(section, {})[key] = icu_to_i18next(web[section][key])
+    puzzle["title"] = web["title"]
+    puzzle["description"] = web["description"]
+    path.write_text(json.dumps(mobile, ensure_ascii=False, indent=2) + "\n")

@@ -7,6 +7,7 @@ import type { ClientTranslator } from '@/i18n/translator';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 import { fullmoveNumberFromFen } from '@blindfold-chess/features/chess-core/fen';
+import { buildSolutionPairs } from '@blindfold-chess/features/puzzle';
 import type { PieceColor } from '@blindfold-chess/types';
 import { FaPlay, FaRedo } from 'react-icons/fa';
 
@@ -16,7 +17,6 @@ import { useMovePlayback } from '@/app/[locale]/(public)/practice/_hooks/use-mov
 import { SectionTitle } from '@/app/[locale]/_components';
 import { useBoardDisplay } from '@/app/[locale]/_hooks/use-board-display';
 
-import { buildSolutionPairs } from '../_lib/solution-pairs';
 import { CircleMarker } from './CircleMarker';
 
 /**

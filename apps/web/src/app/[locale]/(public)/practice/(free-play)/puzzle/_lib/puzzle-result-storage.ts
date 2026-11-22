@@ -1,6 +1,6 @@
-import { writeSessionItem } from '@/lib/storage/session-storage';
+import type { Attempt } from '@blindfold-chess/features/puzzle';
 
-import type { Attempt } from './puzzle-match';
+import { writeSessionItem } from '@/lib/storage/session-storage';
 
 export type PuzzleResultPayload = {
   /** Full attempt history (correct and incorrect submits). */

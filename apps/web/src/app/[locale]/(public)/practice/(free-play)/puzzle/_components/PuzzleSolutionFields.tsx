@@ -2,6 +2,7 @@
 
 import { BoardFrame, Button, ChessBoard, FlipBoardButton } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { MAX_SOLUTION_MOVES } from '@blindfold-chess/features/puzzle';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import { PUZZLE_NOTE_MAX_LENGTH } from '@/lib/positions/validation';
@@ -13,7 +14,6 @@ import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCont
 import { useBoardDisplay } from '@/app/[locale]/_hooks/use-board-display';
 
 import type { usePuzzleSolutionMoves } from '../_hooks/use-puzzle-solution-moves';
-import { MAX_SOLUTION_MOVES } from '../_hooks/use-puzzle-solution-moves';
 import { SideToMoveIndicator } from './SideToMoveIndicator';
 import { SolutionMoveList } from './SolutionMoveList';
 

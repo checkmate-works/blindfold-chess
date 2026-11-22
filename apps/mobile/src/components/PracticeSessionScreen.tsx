@@ -6,6 +6,7 @@ import type { StyleProp, ViewStyle } from "react-native";
 import { CountdownOverlay } from "./CountdownOverlay";
 import { QuizTimer } from "./QuizTimer";
 import { ScoreFooter } from "./ScoreFooter";
+import { SessionCloseButton } from "../navigation/SessionCloseButton";
 import { spacing } from "../theme";
 
 type PracticeSessionScreenProps = {
@@ -23,20 +24,19 @@ type PracticeSessionScreenProps = {
 
 /**
  * The frame every timed practice session renders inside: the countdown
- * overlay, the clock in the top-right, the body, and the running score.
+ * overlay, the close button and the clock in the top row, the body, and the running score.
  *
  * @description
  * Sibling of `PracticeSetupScreen` and `PracticeResultScreen` — the third
- * screen in each module's flow, and the only one that had no shared frame.
- * The four modules that use it had each written the same `SafeAreaView`, the
- * same `{countdown === null && ...}` gate, the same right-aligned timer row,
- * and the same `container` / `timerRow` / `spacer` StyleSheet entries.
+ * screen in each timed module's flow. It holds what every timed session
+ * would otherwise repeat: the safe area, the `{countdown === null && ...}`
+ * gate, the right-aligned timer row and the score footer.
  *
- * `coordinate-quiz` and `route-planner` deliberately do NOT use this. The
- * first threads its timer into a turn-indicator row rather than a row of its
- * own; the second has no clock at all and swaps its whole body for a result
- * card between problems. Bending either into this frame would take flags for
- * chrome they simply do not have.
+ * `coordinate-quiz` deliberately does NOT use this: it threads its timer
+ * into a turn-indicator row rather than a row of its own, and bending it
+ * into this frame would take a flag for chrome it does not have. The
+ * untimed sessions (fen, knight-tour, position-memory, recall, puzzle) have
+ * no countdown or clock, so there is nothing here for them.
  */
 export function PracticeSessionScreen({
   countdown,
@@ -54,6 +54,7 @@ export function PracticeSessionScreen({
       {countdown === null && (
         <>
           <View style={styles.timerRow}>
+            <SessionCloseButton confirm />
             <View style={styles.spacer} />
             <QuizTimer
               timeRemaining={timeRemaining}
@@ -97,7 +98,7 @@ export const practiceSessionStyles = StyleSheet.create({
 const styles = StyleSheet.create({
   timerRow: {
     flexDirection: "row",
-    justifyContent: "flex-end",
+    alignItems: "center",
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
   },

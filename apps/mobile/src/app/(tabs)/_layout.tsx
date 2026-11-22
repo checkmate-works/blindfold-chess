@@ -1,70 +1,124 @@
-import { Tabs } from "expo-router";
-import { Text } from "react-native";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import { NativeTabs } from "expo-router/native-tabs";
+import { Redirect } from "expo-router";
 import { useTranslation } from "react-i18next";
+
+import { useOnboardingStatus } from "../../hooks/useOnboardingStatus";
+
 import { useTheme } from "../../theme";
 
-function TabIcon({ name, focused }: { name: string; focused: boolean }) {
-  const icons: Record<string, string> = {
-    home: focused ? "🏠" : "🏡",
-    play: focused ? "⚔️" : "⚔",
-    practice: focused ? "♟️" : "♙",
-    settings: focused ? "⚙️" : "⚙",
-  };
-  return <Text style={{ fontSize: 20 }}>{icons[name] || "📱"}</Text>;
-}
-
+/**
+ * The bottom tabs: Home, Practice, Play, Learn, Settings.
+ *
+ * @description
+ * The tab bar is the OS's own (`NativeTabs`, a `UITabBarController` on iOS
+ * and a Material 3 bottom navigation on Android) rather than a JS-drawn bar.
+ * On iOS 26 that is the floating Liquid Glass bar, which shrinks as the
+ * content scrolls down (`minimizeBehavior`); on older iOS it is the standard
+ * translucent bar. The colors set here reach Android only partly and iOS
+ * hardly at all — the OS paints the bar's background and separator itself.
+ *
+ * Icons: iOS uses SF Symbols (filled when selected); Android has no symbol
+ * set in the OS, so it gets Material Community Icons rendered to an image by
+ * `VectorIcon`, passed as `src` (on iOS `sf` takes priority over `src`).
+ *
+ * Each tab is a stack holding only its entry screen, so that the entry
+ * screen gets the native-stack header. Detail screens (a practice module's
+ * setup, the AI-game setup, an article) are pushed on the root stack in
+ * `app/_layout.tsx`, above the tabs, so the tab bar hides on them and the
+ * same detail can be opened from several tabs without being duplicated in
+ * each tab's stack.
+ *
+ * `NativeTabs` (`expo-router/native-tabs`, `unstable-native-tabs` before
+ * SDK 58) has changed shape between SDKs; re-check these props whenever the
+ * Expo SDK is upgraded.
+ *
+ * The tabs are the app's entry (`/` is the home tab), so this layout is
+ * also where a first launch is sent to the onboarding chat. Nothing renders
+ * while the flag loads, which takes one AsyncStorage read.
+ */
 export default function TabsLayout() {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const { isLoading, hasCompleted } = useOnboardingStatus();
+
+  if (isLoading) return null;
+  if (!hasCompleted) return <Redirect href="/onboarding" />;
 
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.mutedForeground,
-        tabBarStyle: {
-          backgroundColor: colors.card,
-          borderTopColor: colors.border,
-        },
-      }}
+    <NativeTabs
+      tintColor={colors.primary}
+      minimizeBehavior="onScrollDown"
+      labelStyle={{ fontSize: 11, fontWeight: "600" }}
+      // Android only from here on.
+      backgroundColor={colors.card}
+      labelVisibilityMode="labeled"
+      indicatorColor={colors.secondary}
     >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: t("tabs.home"),
-          tabBarIcon: ({ focused }) => (
-            <TabIcon name="home" focused={focused} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="play"
-        options={{
-          title: t("tabs.play"),
-          tabBarIcon: ({ focused }) => (
-            <TabIcon name="play" focused={focused} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="practice"
-        options={{
-          title: t("tabs.practice"),
-          tabBarIcon: ({ focused }) => (
-            <TabIcon name="practice" focused={focused} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="settings"
-        options={{
-          title: t("tabs.settings"),
-          tabBarIcon: ({ focused }) => (
-            <TabIcon name="settings" focused={focused} />
-          ),
-        }}
-      />
-    </Tabs>
+      <NativeTabs.Trigger name="(home)">
+        <NativeTabs.Trigger.Label>{t("tabs.home")}</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
+          sf={{ default: "house", selected: "house.fill" }}
+          src={
+            <NativeTabs.Trigger.VectorIcon
+              family={MaterialCommunityIcons}
+              name="home-variant"
+            />
+          }
+        />
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="practice">
+        <NativeTabs.Trigger.Label>
+          {t("tabs.practice")}
+        </NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
+          sf={{ default: "dumbbell", selected: "dumbbell.fill" }}
+          src={
+            <NativeTabs.Trigger.VectorIcon
+              family={MaterialCommunityIcons}
+              name="dumbbell"
+            />
+          }
+        />
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="play">
+        <NativeTabs.Trigger.Label>{t("tabs.play")}</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
+          sf={{ default: "flag.2.crossed", selected: "flag.2.crossed.fill" }}
+          src={
+            <NativeTabs.Trigger.VectorIcon
+              family={MaterialCommunityIcons}
+              name="chess-knight"
+            />
+          }
+        />
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="learn">
+        <NativeTabs.Trigger.Label>{t("tabs.learn")}</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
+          sf={{ default: "book", selected: "book.fill" }}
+          src={
+            <NativeTabs.Trigger.VectorIcon
+              family={MaterialCommunityIcons}
+              name="book-open-variant"
+            />
+          }
+        />
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="settings">
+        <NativeTabs.Trigger.Label>
+          {t("tabs.settings")}
+        </NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
+          sf={{ default: "gearshape", selected: "gearshape.fill" }}
+          src={
+            <NativeTabs.Trigger.VectorIcon
+              family={MaterialCommunityIcons}
+              name="cog"
+            />
+          }
+        />
+      </NativeTabs.Trigger>
+    </NativeTabs>
   );
 }

@@ -1,13 +1,7 @@
 import { Text, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
 import { Button, Card } from "../../../components";
-import {
-  useTheme,
-  fontSize,
-  fontWeight,
-  spacing,
-  shadows,
-} from "../../../theme";
+import { useTheme, fontSize, fontWeight, spacing } from "../../../theme";
 
 type AiGameCardProps = {
   /** The call to action; the Home and Play tabs word it differently. */
@@ -28,7 +22,7 @@ export function AiGameCard({ buttonTitle, onPress }: AiGameCardProps) {
   const { colors } = useTheme();
 
   return (
-    <Card style={styles.card} padding="lg">
+    <Card style={styles.card} padding="lg" shadow="none">
       <Text style={[styles.title, { color: colors.foreground }]}>
         {t("aiGame.title")}
       </Text>
@@ -41,10 +35,7 @@ export function AiGameCard({ buttonTitle, onPress }: AiGameCardProps) {
 }
 
 const styles = StyleSheet.create({
-  card: {
-    marginBottom: spacing.lg,
-    ...shadows.md,
-  },
+  card: {},
   title: {
     fontSize: fontSize.xl,
     fontWeight: fontWeight.semibold,

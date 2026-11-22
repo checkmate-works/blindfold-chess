@@ -10,6 +10,8 @@ type ProblemCardProps = {
   moves: string[];
   currentIndex: number;
   totalCount: number;
+  /** Tints the card's frame after an answer (the challenge's flash). */
+  feedback?: "correct" | "incorrect" | null;
 };
 
 export function ProblemCard({
@@ -17,12 +19,26 @@ export function ProblemCard({
   moves,
   currentIndex,
   totalCount,
+  feedback = null,
 }: ProblemCardProps) {
   const { t } = useTranslation();
-  const { colors } = useTheme();
+  const { colors, feedbackColors } = useTheme();
 
   return (
-    <Card padding="lg">
+    <Card
+      padding="lg"
+      style={
+        feedback
+          ? {
+              borderWidth: 2,
+              borderColor:
+                feedback === "correct"
+                  ? feedbackColors.success
+                  : feedbackColors.error,
+            }
+          : undefined
+      }
+    >
       <View style={styles.container}>
         {/* Progress */}
         {totalCount > 1 && (

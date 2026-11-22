@@ -6,9 +6,11 @@ export default function Onboarding() {
   const router = useRouter();
   const { setCompleted } = useOnboardingStatus();
 
-  const handleComplete = () => {
-    setCompleted();
-    router.replace("/(tabs)");
+  // Await the flag: the tabs layout reads it on mount and would otherwise
+  // send the player straight back here.
+  const handleComplete = async () => {
+    await setCompleted();
+    router.replace("/");
   };
 
   return <OnboardingScreen onComplete={handleComplete} />;

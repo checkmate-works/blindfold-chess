@@ -36,3 +36,4 @@ export type {
   UseFenPracticeSessionConfig,
   UseFenPracticeSessionReturn,
 } from "./use-fen-practice-session";
+export { POSITION_MEMORY_FENS } from "./position-memory-presets";

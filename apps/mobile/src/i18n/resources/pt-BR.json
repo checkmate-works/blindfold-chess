@@ -11,20 +11,31 @@
     "startTraining": "Iniciar Treinamento",
     "trainingDescription": "As perguntas continuarão aparecendo até que você pare. Pressione o botão Finalizar para terminar.",
     "endTraining": "Finalizar",
-    "skip": "Pular"
+    "skip": "Pular",
+    "close": "Fechar",
+    "quit": "Sair",
+    "quitConfirmTitle": "Sair desta sessão?",
+    "quitConfirmMessage": "O progresso desta sessão será perdido.",
+    "help": "Ajuda",
+    "next": "Próximo",
+    "previous": "Voltar"
   },
   "tabs": {
     "home": "Início",
     "play": "Jogar",
     "practice": "Prática",
-    "settings": "Configurações"
+    "settings": "Configurações",
+    "learn": "Aprender"
   },
   "home": {
     "title": "Xadrez às Cegas",
     "welcome": "Bem-vindo de volta!",
     "startPractice": "Começar prática",
     "playAi": "Jogar contra a IA",
-    "replayOnboarding": "Refazer tutorial"
+    "replayOnboarding": "Refazer tutorial",
+    "allPractice": "Todas as práticas",
+    "gettingStarted": "Primeiros passos",
+    "learnBasics": "Aprenda o básico"
   },
   "practice": {
     "title": "Prática",
@@ -67,6 +78,21 @@
     "fen": {
       "title": "Reconstrução FEN",
       "description": "Pratique a leitura de notação FEN recriando posições"
+    },
+    "challengeSection": "Desafios",
+    "challengeSectionNote": "60 segundos, até 3 erros. Cada um também tem um modo de treino sem tempo.",
+    "freePlaySection": "Prática livre",
+    "positionMemory": {
+      "title": "Memória de posições",
+      "description": "Memorize uma posição e recrie-a em um tabuleiro vazio"
+    },
+    "recall": {
+      "title": "Recordar partida",
+      "description": "Reproduza de memória os lances de uma partida"
+    },
+    "puzzle": {
+      "title": "Problemas",
+      "description": "Encontre o melhor lance em posições selecionadas"
     }
   },
   "practiceResult": {
@@ -101,8 +127,6 @@
       "displayOptions": "Opções de Exibição",
       "showCoordinates": "Mostrar coordenadas",
       "highlightLastMove": "Destacar último movimento",
-      "on": "Sim",
-      "off": "Não",
       "boardTheme": "Tema do Tabuleiro",
       "boardThemes": {
         "monotone": "Monocromático",
@@ -151,6 +175,29 @@
         "icon": "Ícone"
       },
       "resetDefaults": "Redefinir valores padrão"
+    },
+    "about": {
+      "title": "Sobre",
+      "faq": "Perguntas frequentes",
+      "contact": "Contato",
+      "terms": "Termos de serviço",
+      "privacy": "Política de privacidade",
+      "licenses": "Licenças",
+      "version": "Versão {{version}}"
+    },
+    "account": {
+      "title": "Conta",
+      "signIn": "Entrar / Criar conta",
+      "signedOutNote": "Tudo funciona sem conta. Ao entrar, seus resultados nos desafios são registrados no ranking e você ganha EXP.",
+      "email": "E-mail",
+      "username": "Nome de usuário",
+      "setUsername": "Definir",
+      "signOut": "Sair",
+      "signOutConfirm": "Sair da conta?",
+      "loading": "Carregando…",
+      "retry": "Toque para tentar de novo",
+      "deleteAccount": "Excluir conta",
+      "deleteAccountNote": "A exclusão da conta é feita no site: entre lá para excluir sua conta. Se você ainda não definiu um nome de usuário, será solicitado que defina um primeiro."
     }
   },
   "legalMoves": {
@@ -324,7 +371,9 @@
       "positionAlreadyStalemate": "Esta posição já é afogamento — a partida terminaria imediatamente",
       "positionInsufficientMaterial": "Material insuficiente para continuar — a partida seria empate imediatamente",
       "positionCheckCorrected": "O lado em xeque deve mover primeiro — por favor altere a vez de jogar",
-      "positionValid": "Posição válida"
+      "positionValid": "Posição válida",
+      "chooseOpening": "Escolher uma abertura",
+      "searchOpening": "Buscar por nome, ECO ou lances"
     },
     "session": {
       "yourTurn": "Sua vez",
@@ -550,5 +599,474 @@
       "missing": "{{piece}} falta em {{square}}",
       "extra": "{{piece}} extra em {{square}}"
     }
+  },
+  "moduleHelp": {
+    "coordinateQuiz": {
+      "howToPlay": {
+        "title": "Como Jogar",
+        "body": "É mostrado o nome de uma casa no tabuleiro. Clique na casa correta o mais rápido possível."
+      },
+      "challenge": {
+        "title": "Modo Desafio",
+        "body": "Compita para ver quantas respostas corretas você consegue dar dentro do limite de tempo. Sua pontuação é registrada e aparece na tabela de classificação."
+      },
+      "training": {
+        "title": "Modo Treino",
+        "body": "Pratique no seu ritmo, sem limite de tempo. As pontuações não são registradas."
+      }
+    },
+    "legalMoves": {
+      "howToPlay": {
+        "title": "Como Jogar",
+        "body": "São mostradas uma peça e duas casas. Determine se o movimento é legal ou não."
+      },
+      "challenge": {
+        "title": "Modo Desafio",
+        "body": "Compita para ver quantas respostas corretas você consegue dar dentro do limite de tempo. Sua pontuação é registrada e aparece na tabela de classificação."
+      },
+      "training": {
+        "title": "Modo Treino",
+        "body": "Pratique no seu ritmo, sem limite de tempo. As pontuações não são registradas."
+      }
+    },
+    "boardSymmetry": {
+      "howToPlay": {
+        "title": "Como Jogar",
+        "body": "Encontre a casa simétrica no tabuleiro para o tipo de simetria indicado."
+      },
+      "step_intro": {
+        "title": "O que é a Simetria do Tabuleiro?",
+        "body": "Treinar a simetria do tabuleiro ajuda você a encontrar instantaneamente casas correspondentes. Existem três tipos principais de simetria no tabuleiro de xadrez."
+      },
+      "step_horizontal": {
+        "title": "Simetria Vertical (Coluna)",
+        "body": "Casas simétricas em relação à linha vertical central (entre as colunas d e e). Exemplo: a1 ↔ h1, c3 ↔ f3."
+      },
+      "step_vertical": {
+        "title": "Simetria Horizontal (Fila)",
+        "body": "Casas simétricas em relação à linha horizontal central (entre as filas 4 e 5). Exemplo: a1 ↔ a8, h2 ↔ h7."
+      },
+      "step_point": {
+        "title": "Simetria Central (Ponto)",
+        "body": "Casas simétricas em relação ao centro do tabuleiro (rotacionadas 180 graus). Exemplo: a1 ↔ h8, c3 ↔ f6."
+      },
+      "challenge": {
+        "title": "Modo Desafio",
+        "body": "Compita para ver quantas respostas corretas você consegue dar dentro do limite de tempo. Sua pontuação é registrada e aparece na tabela de classificação."
+      },
+      "training": {
+        "title": "Modo Treino",
+        "body": "Pratique no seu ritmo, sem limite de tempo. As pontuações não são registradas."
+      }
+    },
+    "squareColors": {
+      "howToPlay": {
+        "title": "Como Jogar",
+        "body": "Serão feitas perguntas como a seguinte repetidamente. Identifique se a casa dada é clara ou escura."
+      },
+      "challenge": {
+        "title": "Modo Desafio",
+        "body": "Compita para ver quantas respostas corretas você consegue dar dentro do limite de tempo. Sua pontuação é registrada e aparece na tabela de classificação."
+      },
+      "training": {
+        "title": "Modo Treino",
+        "body": "Pratique no seu ritmo, sem limite de tempo. As pontuações não são registradas."
+      }
+    },
+    "diagonalQuiz": {
+      "howToPlay": {
+        "title": "Como Jogar",
+        "body": "Identifique as duas diagonais que passam pela casa dada."
+      },
+      "step_diagonal": {
+        "title": "O que é uma Diagonal?",
+        "body": "Uma diagonal vai na direção a1-h8.\nTodas as casas onde (coluna - fila) é constante pertencem à mesma diagonal.\nAs casas verdes mostram a diagonal que passa por d4."
+      },
+      "step_antiDiagonal": {
+        "title": "O que é uma Anti-diagonal?",
+        "body": "Uma anti-diagonal vai na direção h1-a8.\nTodas as casas onde (coluna + fila) é constante pertencem à mesma anti-diagonal.\nAs casas azuis mostram a anti-diagonal que passa por d4."
+      },
+      "challenge": {
+        "title": "Modo Desafio",
+        "body": "Compita para ver quantas respostas corretas você consegue dar dentro do limite de tempo. Sua pontuação é registrada e aparece na tabela de classificação."
+      },
+      "training": {
+        "title": "Modo Treino",
+        "body": "Pratique no seu ritmo, sem limite de tempo. As pontuações não são registradas."
+      }
+    },
+    "routePlanner": {
+      "howToPlay": {
+        "title": "Como Jogar",
+        "body": "Calcule o caminho mais curto para que uma peça alcance uma casa objetivo."
+      },
+      "step_intro": {
+        "title": "O Objetivo",
+        "body": "Encontre o caminho mais curto para que o Cavalo se mova de Início (e4) a Objetivo (h5)."
+      },
+      "step_visualization": {
+        "title": "Visualize a Rota",
+        "body": "Não há pré-visualização do tabuleiro durante a prática. Visualize o caminho em sua mente e insira as coordenadas.\nExemplo: e4 -> f6 -> h5"
+      },
+      "challenge": {
+        "title": "Modo Desafio",
+        "body": "Compita para ver quantas respostas corretas você consegue dar dentro do limite de tempo. Sua pontuação é registrada e aparece na tabela de classificação."
+      },
+      "training": {
+        "title": "Modo Treino",
+        "body": "Pratique no seu ritmo, sem limite de tempo. As pontuações não são registradas."
+      }
+    },
+    "quadrants": {
+      "howToPlay": {
+        "title": "Como Jogar",
+        "body": "O nome de uma casa será exibido. Identifique a qual quadrante ela pertence tocando na área correta do tabuleiro."
+      }
+    },
+    "knightTour": {
+      "overview": {
+        "title": "O que é o Percurso do Cavalo?",
+        "body": "Um exercício de treino no qual você move um cavalo para visitar as 64 casas exatamente uma vez.\nEle treina sua noção do movimento do cavalo e da geometria do tabuleiro, então praticar com regularidade melhora suas habilidades de visualização."
+      },
+      "tutorial": {
+        "title": "Tutorial",
+        "body": "O Percurso do Cavalo é um quebra-cabeça clássico de xadrez.\n\nUsando um cavalo, tente visitar as 64 casas do tabuleiro exatamente uma vez."
+      }
+    },
+    "algebraicNotation": {
+      "about": {
+        "title": "Notação Algébrica",
+        "body": "Domine o sistema de notação enxadrística com exercícios interativos"
+      }
+    },
+    "fen": {
+      "overview": {
+        "title": "O que é a Reconstrução FEN?",
+        "body": "Um exercício de treino no qual você lê uma notação FEN e recria a posição no tabuleiro.\nEle treina sua capacidade de transformar a notação em uma imagem mental do tabuleiro, então praticar com regularidade melhora suas habilidades de visualização."
+      },
+      "tutorial": {
+        "title": "Tutorial",
+        "body": "Pratique a leitura de notação FEN e a recriação de posições no tabuleiro."
+      }
+    },
+    "positionMemory": {
+      "overview": {
+        "title": "O que é Memória de Posições?",
+        "body": "Um exercício de treino no qual você recria uma posição no tabuleiro.\nEle treina sua capacidade de reconhecimento de padrões e sua memória de trabalho, então praticar com regularidade melhora suas habilidades de visualização."
+      },
+      "tutorial": {
+        "title": "Tutorial",
+        "body": "Memorize uma posição dentro do limite de tempo, depois recrie-a em um tabuleiro vazio.\nVamos tentar com a seguinte posição."
+      }
+    },
+    "recall": {
+      "input": {
+        "title": "Insira um movimento",
+        "body": "Lembre os movimentos da sua partida finalizada e insira-os em ordem. Um movimento correto avança para o próximo."
+      },
+      "dontKnow": {
+        "title": "Quando não conseguir lembrar",
+        "body": "Pressione \"Não sei\" para revelar o movimento correto e avançar automaticamente para o próximo."
+      },
+      "color": {
+        "title": "Escolha seu lado",
+        "body": "Escolha de qual lado você vai recordar os movimentos. Os movimentos do outro lado também podem ser inseridos, ou preenchidos automaticamente."
+      }
+    }
+  },
+  "positionMemory": {
+    "setup": {
+      "title": "Memória de posições",
+      "start": "Começar",
+      "memorizeTime": "Tempo para memorizar",
+      "seconds": "{{count}} s"
+    },
+    "session": {
+      "memorize": "Memorize a posição",
+      "memorized": "Memorizei",
+      "recreate": "Recrie a posição"
+    },
+    "result": {
+      "title": "Resultados",
+      "playAgain": "Jogar novamente"
+    }
+  },
+  "recall": {
+    "title": "De memória",
+    "description": "Cole qualquer PGN e reproduza-o lance a lance de memória — sem precisar de conta ou partida salva.",
+    "setup": {
+      "pgnLabel": "PGN",
+      "startButton": "Começar de memória",
+      "title": "Recordar partida",
+      "useSample": "Usar uma partida de exemplo",
+      "invalidPgn": "Não foi possível ler este PGN. Verifique os lances e tente novamente.",
+      "playAs": "Lado a recordar",
+      "sides": {
+        "white": "Brancas",
+        "black": "Pretas"
+      }
+    },
+    "autoOpponentMoves": "Preencher automaticamente movimentos do adversário",
+    "dontKnow": "Não sei",
+    "correctMove": "Correto!",
+    "incorrectMove": "Movimento incorreto. Tente novamente.",
+    "progress": "Progresso: {{current}} / {{total}} movimentos",
+    "showBoard": "Mostrar Tabuleiro",
+    "completed": "Revisão da Partida Concluída!",
+    "moves": "Movimentos",
+    "noMovesYet": "Ainda não há movimentos",
+    "summary": {
+      "title": "Resumo",
+      "rateLabel": "Taxa de lembrança",
+      "nailed": "De primeira",
+      "struggled": "Com dúvidas",
+      "missed": "Não lembrou",
+      "restart": "Jogar de novo",
+      "startNew": "Começar com outro PGN"
+    },
+    "help": {
+      "input": {
+        "title": "Insira um movimento",
+        "description": "Lembre os movimentos da sua partida finalizada e insira-os em ordem. Um movimento correto avança para o próximo."
+      },
+      "dontKnow": {
+        "title": "Quando não conseguir lembrar",
+        "description": "Pressione \"Não sei\" para revelar o movimento correto e avançar automaticamente para o próximo."
+      },
+      "setup": {
+        "pgn": {
+          "title": "Cole qualquer PGN",
+          "description": "Cole o PGN de qualquer partida finalizada — sua, de outra pessoa, ou uma linha de abertura — e reproduza os movimentos de memória. Mude para \"URL do Lichess\" para importar um automaticamente."
+        },
+        "color": {
+          "title": "Escolha seu lado",
+          "description": "Escolha de qual lado você vai recordar os movimentos. Os movimentos do outro lado também podem ser inseridos, ou preenchidos automaticamente."
+        }
+      }
+    },
+    "session": {
+      "toMove": {
+        "white": "Brancas jogam",
+        "black": "Pretas jogam"
+      },
+      "wrong": "Não é {{move}}. Tente novamente."
+    },
+    "result": {
+      "title": "Resumo",
+      "backToMenu": "Voltar às práticas",
+      "mistakes": "Tentativas erradas"
+    }
+  },
+  "learn": {
+    "description": "Artigos educativos e guias para melhorar sua compreensão do xadrez",
+    "categories": {
+      "moves": "Movimento de Peças",
+      "coordinates": "Coordenadas",
+      "notation": "Notação",
+      "memory": "Memória",
+      "practice": "Prática"
+    }
+  },
+  "gameHistory": {
+    "title": "Suas partidas",
+    "detailTitle": "Partida",
+    "empty": "As partidas concluídas aparecerão aqui.",
+    "note": "As partidas ficam salvas só neste dispositivo (até 50).",
+    "seeAll": "Ver todas ({{count}})",
+    "rowDetail": "Nível {{level}} · {{moves}} lances · {{date}}",
+    "result": {
+      "win": "Vitória",
+      "loss": "Derrota",
+      "draw": "Empate"
+    },
+    "side": {
+      "white": "Brancas",
+      "black": "Pretas"
+    },
+    "resultLabel": "Resultado",
+    "sideLabel": "Você jogou de",
+    "levelLabel": "Nível da IA",
+    "dateLabel": "Data",
+    "recall": "Reproduzir de memória",
+    "share": "Compartilhar PGN",
+    "delete": "Excluir",
+    "deleteConfirm": "Excluir esta partida?",
+    "you": "Você",
+    "engine": "Stockfish (nível {{level}})"
+  },
+  "glossary": {
+    "title": "Glossário de Xadrez",
+    "categories": {
+      "tactics": "Tática",
+      "strategy": "Estratégia",
+      "endgame": "Final",
+      "opening": "Abertura",
+      "structure": "Estrutura de Peões",
+      "general": "Geral",
+      "principle": "Princípios"
+    },
+    "aliases": "Também conhecido como",
+    "relatedTerms": "Termos relacionados",
+    "subtitle": "Termos de xadrez e seus significados",
+    "search": "Buscar termos",
+    "noResults": "Nenhum termo encontrado"
+  },
+  "account": {
+    "signIn": {
+      "title": "Entrar",
+      "emailLabel": "E-mail",
+      "emailPlaceholder": "voce@exemplo.com",
+      "passwordLabel": "Senha",
+      "passwordPlaceholder": "Insira sua senha",
+      "emailSignIn": "Entrar com e-mail",
+      "emailSignInError": "E-mail ou senha inválidos. Por favor, tente novamente.",
+      "forgotPassword": "Esqueceu sua senha?",
+      "noAccount": "Não tem uma conta?",
+      "signUp": "Cadastrar-se",
+      "rateLimited": "Muitas tentativas de login. Por favor, tente mais tarde."
+    },
+    "signUp": {
+      "title": "Cadastrar-se",
+      "description": "Cadastre-se no Xadrez às Cegas",
+      "emailLabel": "E-mail",
+      "emailPlaceholder": "voce@exemplo.com",
+      "passwordLabel": "Senha",
+      "passwordPlaceholder": "Pelo menos {{minLength}} caracteres",
+      "confirmPasswordLabel": "Confirmar senha",
+      "confirmPasswordPlaceholder": "Insira sua senha novamente",
+      "emailSignUp": "Cadastrar-se com e-mail",
+      "emailSignUpError": "Erro de cadastro. Por favor, tente novamente.",
+      "passwordMismatch": "As senhas não coincidem.",
+      "alreadyHaveAccount": "Já tem uma conta?",
+      "signIn": "Entrar",
+      "rateLimited": "Muitas tentativas de cadastro. Por favor, tente mais tarde."
+    },
+    "verifyEmail": {
+      "title": "Verifique seu E-mail",
+      "description": "Enviamos um link de confirmação para seu endereço de e-mail.",
+      "checkInbox": "Verifique sua caixa de entrada e clique no link para verificar sua conta.",
+      "checkSpam": "Se não encontrar o e-mail, verifique sua pasta de spam ou lixo eletrônico."
+    },
+    "setupUsername": {
+      "title": "Crie sua Conta",
+      "description": "Escolha um nome de usuário para sua conta.",
+      "usernameLabel": "Nome de usuário",
+      "usernamePlaceholder": "ex., jogador_xadrez1",
+      "usernameHint": "2-20 caracteres. Apenas letras minúsculas, números e underscores. Deve começar com uma letra.",
+      "cannotChange": "Seu nome de usuário não pode ser alterado uma vez definido.",
+      "submit": "Cadastrar-se",
+      "validation": {
+        "tooShort": "O nome de usuário deve ter pelo menos 2 caracteres.",
+        "tooLong": "O nome de usuário deve ter no máximo 20 caracteres.",
+        "invalidFormat": "O nome de usuário deve começar com uma letra minúscula, terminar com uma letra ou número, e conter apenas letras minúsculas, números e underscores não consecutivos.",
+        "taken": "Este nome de usuário não está disponível.",
+        "alreadySet": "O nome de usuário já foi definido.",
+        "error": "Ocorreu um erro. Por favor, tente novamente.",
+        "usernameInappropriate": "Este nome de usuário não é permitido.",
+        "displayNameInappropriate": "Este nome de exibição não é permitido.",
+        "displayNameImpersonation": "Este nome de exibição se parece com um nome reservado ou oficial. Escolha outro.",
+        "reserved": "Este nome de usuário não está disponível."
+      }
+    },
+    "validation": {
+      "password": {
+        "tooShort": "A senha deve ter pelo menos {{minLength}} caracteres.",
+        "missingLetter": "A senha deve conter pelo menos uma letra.",
+        "missingDigit": "A senha deve conter pelo menos um dígito.",
+        "weak": "A senha é muito fraca. Por favor, escolha uma senha mais segura."
+      }
+    }
+  },
+  "records": {
+    "title": "Meus recordes",
+    "period": "Período",
+    "periods": {
+      "all-time": "Todo o período",
+      "weekly": "Esta semana",
+      "monthly": "Este mês"
+    },
+    "rank": "#{{rank}}",
+    "empty": "Ainda não há desafios registrados.",
+    "loading": "Carregando…",
+    "loadFailed": "Não foi possível carregar seus recordes. Puxe para tentar de novo.",
+    "note": "Sua posição em cada ranking de desafios. Os rankings completos estão no site.",
+    "keys": {
+      "white": "Brancas",
+      "black": "Pretas",
+      "random": "Aleatório",
+      "king": "Rei",
+      "queen": "Dama",
+      "rook": "Torre",
+      "bishop": "Bispo",
+      "knight": "Cavalo",
+      "pawn": "Peão"
+    }
+  },
+  "challenge": {
+    "startFailed": "Não foi possível iniciar um desafio registrado. Verifique sua conexão e tente novamente.",
+    "startRateLimited": "Muitos desafios iniciados. Aguarde um pouco e tente novamente.",
+    "retry": "Tentar novamente",
+    "signInToRecord": "Entre para registrar sua pontuação no ranking.",
+    "record": {
+      "saving": "Registrando sua pontuação…",
+      "recorded": "Sua pontuação foi registrada.",
+      "notRecorded": "Esta rodada não foi registrada.",
+      "failed": "Não foi possível registrar sua pontuação. Verifique sua conexão."
+    },
+    "rules": "60 segundos · termina após 3 erros",
+    "willRecord": "Sua pontuação será registrada no ranking.",
+    "promoted": "Você foi promovido a {{rank}}!"
+  },
+  "progress": {
+    "rank": "Graduação",
+    "noRank": "Nenhuma",
+    "level": "Nível"
+  },
+  "ranks": {
+    "kyu": "{{n}}º Kyu",
+    "dan": "{{n}}º Dan",
+    "firstDan": "1º Dan"
+  },
+  "puzzle": {
+    "session": {
+      "correct": "Correto! 🎉",
+      "correctMove": "Correto",
+      "incorrect": "Incorreto. Tente novamente.",
+      "showAnswer": "Ver resposta",
+      "showBoard": "Mostrar Tabuleiro",
+      "whitePlayed": "Brancas jogam {{move}}",
+      "blackPlayed": "Pretas jogam {{move}}"
+    },
+    "result": {
+      "title": "Resultado do Puzzle",
+      "replaySection": "Replay da Solução",
+      "historySection": "Histórico de Tentativas",
+      "solution": "Solução: {{move}}",
+      "note": "— {{note}}",
+      "attemptCorrect": "Correto",
+      "attemptIncorrect": "Incorreto",
+      "backToList": "Voltar para Puzzles",
+      "tryAgain": "Tentar Novamente",
+      "peekCount": "Visualizações do Tabuleiro: {{count}}",
+      "statusSolved": "Resolvido",
+      "statusRevealed": "Solução revelada"
+    },
+    "list": {
+      "title": "Puzzle",
+      "empty": "Nenhum puzzle disponível ainda"
+    },
+    "title": "Puzzle",
+    "description": "Encontre o melhor lance na posição",
+    "setup": {
+      "title": "Problemas"
+    },
+    "daily": "Problema do dia",
+    "featured": "Problemas em destaque",
+    "moreOnWeb": "Os problemas de todos e a criação dos seus estão no site.",
+    "loadFailed": "Não foi possível carregar os problemas. Puxe para tentar de novo.",
+    "whiteToMove": "Brancas jogam",
+    "blackToMove": "Pretas jogam",
+    "findMove": "Encontre o melhor lance",
+    "recorded": "Seu resultado foi registrado."
   }
 }

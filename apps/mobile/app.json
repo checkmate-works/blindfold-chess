@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "blindfold-chess",
+    "name": "Shingan Chess",
     "slug": "blindfold-chess",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -8,9 +8,14 @@
     "userInterfaceStyle": "light",
     "scheme": "blindfold-chess",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": false,
+      "bundleIdentifier": "online.blindfoldchess.app",
+      "config": {
+        "usesNonExemptEncryption": false
+      }
     },
     "android": {
+      "package": "online.blindfoldchess.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -32,7 +37,20 @@
           "backgroundColor": "#ffffff"
         }
       ],
-      "expo-localization"
-    ]
+      "expo-localization",
+      [
+        "expo-secure-store",
+        {
+          "faceIDPermission": false
+        }
+      ],
+      "expo-font"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "99b433b6-2ea1-4525-be14-8b22c49a0553"
+      }
+    },
+    "owner": "k0kishima"
   }
 }

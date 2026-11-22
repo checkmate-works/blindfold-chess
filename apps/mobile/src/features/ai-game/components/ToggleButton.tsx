@@ -16,6 +16,7 @@ export type ToggleButtonProps = {
   colors: ReturnType<typeof useTheme>["colors"];
   wide?: boolean;
   small?: boolean;
+  testID?: string;
 };
 
 export function ToggleButton({
@@ -26,11 +27,15 @@ export function ToggleButton({
   colors,
   wide,
   small,
+  testID,
 }: ToggleButtonProps) {
   return (
     <TouchableOpacity
       onPress={onPress}
       disabled={disabled}
+      accessibilityRole="button"
+      accessibilityState={{ selected: isSelected, disabled }}
+      testID={testID}
       style={[
         styles.toggleButton,
         small && styles.toggleButtonSmall,

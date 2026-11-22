@@ -11,20 +11,31 @@
     "startTraining": "トレーニング開始",
     "trainingDescription": "問題が終了するまで出続けます。終了ボタンで終了できます。",
     "endTraining": "終了",
-    "skip": "スキップ"
+    "skip": "スキップ",
+    "close": "閉じる",
+    "quit": "中止する",
+    "quitConfirmTitle": "中止しますか？",
+    "quitConfirmMessage": "このセッションの成績は記録されません。",
+    "help": "ヘルプ",
+    "next": "次へ",
+    "previous": "戻る"
   },
   "tabs": {
     "home": "ホーム",
     "play": "対戦",
     "practice": "練習",
-    "settings": "設定"
+    "settings": "設定",
+    "learn": "学ぶ"
   },
   "home": {
     "title": "ブラインドチェス",
     "welcome": "おかえりなさい！",
     "startPractice": "練習を始める",
     "playAi": "AIと対戦する",
-    "replayOnboarding": "チュートリアルをもう一度"
+    "replayOnboarding": "チュートリアルをもう一度",
+    "allPractice": "すべての練習",
+    "gettingStarted": "はじめての方へ",
+    "learnBasics": "目隠しチェスの基礎を学ぶ"
   },
   "practice": {
     "title": "練習",
@@ -67,6 +78,21 @@
     "fen": {
       "title": "FEN再構築",
       "description": "FEN記法を読んで盤面を再現する練習"
+    },
+    "challengeSection": "チャレンジ",
+    "challengeSectionNote": "制限時間60秒・ミスは3回まで。時間制限のないトレーニングもあります。",
+    "freePlaySection": "フリープレイ",
+    "positionMemory": {
+      "title": "ポジションの記憶",
+      "description": "局面を記憶して、空の盤面に再現する練習"
+    },
+    "recall": {
+      "title": "棋譜再現",
+      "description": "棋譜を記憶を頼りに一手ずつ再現する練習"
+    },
+    "puzzle": {
+      "title": "パズル",
+      "description": "厳選された局面で最善手を見つける練習"
     }
   },
   "practiceResult": {
@@ -101,8 +127,6 @@
       "displayOptions": "表示オプション",
       "showCoordinates": "座標を表示",
       "highlightLastMove": "最終手をハイライト",
-      "on": "オン",
-      "off": "オフ",
       "boardTheme": "ボードテーマ",
       "boardThemes": {
         "monotone": "モノトーン",
@@ -151,6 +175,29 @@
         "icon": "アイコン"
       },
       "resetDefaults": "デフォルトに戻す"
+    },
+    "about": {
+      "title": "このアプリについて",
+      "faq": "よくある質問",
+      "contact": "お問い合わせ",
+      "terms": "利用規約",
+      "privacy": "プライバシーポリシー",
+      "licenses": "ライセンス",
+      "version": "バージョン {{version}}"
+    },
+    "account": {
+      "title": "アカウント",
+      "signIn": "ログイン / 新規登録",
+      "signedOutNote": "アカウントがなくてもすべての練習を利用できます。ログインするとチャレンジの結果がランキングに記録され、経験値も獲得できます。",
+      "email": "メールアドレス",
+      "username": "ユーザー名",
+      "setUsername": "設定する",
+      "signOut": "ログアウト",
+      "signOutConfirm": "ログアウトしますか？",
+      "loading": "読み込み中…",
+      "retry": "タップして再試行",
+      "deleteAccount": "アカウントを削除",
+      "deleteAccountNote": "アカウントの削除は Web サイトで行います。Web でログインしてから削除してください。ユーザー名を未設定の場合は、先に設定を求められます。"
     }
   },
   "legalMoves": {
@@ -324,7 +371,9 @@
       "positionAlreadyStalemate": "この局面は既にステイルメイトです — ゲームは即座に終了します",
       "positionInsufficientMaterial": "駒が不十分です — ゲームは即座に引き分けになります",
       "positionCheckCorrected": "チェックされている側が先に動く必要があります — 手番を変更してください",
-      "positionValid": "有効なポジション"
+      "positionValid": "有効なポジション",
+      "chooseOpening": "定跡から選ぶ",
+      "searchOpening": "名前・ECO・手順で検索"
     },
     "session": {
       "yourTurn": "あなたの番",
@@ -550,5 +599,474 @@
       "missing": "{{square}}の{{piece}}が不足",
       "extra": "{{square}}に余分な{{piece}}"
     }
+  },
+  "moduleHelp": {
+    "coordinateQuiz": {
+      "howToPlay": {
+        "title": "問題方式",
+        "body": "ボード上にマス名が表示されます。該当するマスをできるだけ素早くクリックしましょう。"
+      },
+      "challenge": {
+        "title": "チャレンジモード",
+        "body": "制限時間内にどれほど多く正答できるかを競うモードです。スコアが記録され、リーダーボードに掲載されます。"
+      },
+      "training": {
+        "title": "トレーニングモード",
+        "body": "時間制限なしで、自分のペースで取り組めるモードです。スコアは記録されません。"
+      }
+    },
+    "legalMoves": {
+      "howToPlay": {
+        "title": "問題方式",
+        "body": "駒と2つのマスが表示されます。その動きが合法かどうかを判断しましょう。"
+      },
+      "challenge": {
+        "title": "チャレンジモード",
+        "body": "制限時間内にどれほど多く正答できるかを競うモードです。スコアが記録され、リーダーボードに掲載されます。"
+      },
+      "training": {
+        "title": "トレーニングモード",
+        "body": "時間制限なしで、自分のペースで取り組めるモードです。スコアは記録されません。"
+      }
+    },
+    "boardSymmetry": {
+      "howToPlay": {
+        "title": "問題方式",
+        "body": "指定された対称タイプに基づき、ボード上の対称なマスを答えましょう。"
+      },
+      "step_intro": {
+        "title": "ボードの対称性とは",
+        "body": "対称性をトレーニングすることで、瞬時に対応するマスを見つけられるようになります。チェス盤には主に3つの対称性があります。"
+      },
+      "step_horizontal": {
+        "title": "左右対称 (ファイル)",
+        "body": "中央の垂直線（d列とe列の間）に対する対称性です。\n例: a1 ↔ h1, c3 ↔ f3"
+      },
+      "step_vertical": {
+        "title": "上下対称 (ランク)",
+        "body": "中央の水平線（第4ランクと第5ランクの間）に対する対称性です。\n例: a1 ↔ a8, h2 ↔ h7"
+      },
+      "step_point": {
+        "title": "点対称 (中心)",
+        "body": "ボードの中心に対する対称性（180度回転）です。\n例: a1 ↔ h8, c3 ↔ f6"
+      },
+      "challenge": {
+        "title": "チャレンジモード",
+        "body": "制限時間内にどれほど多く正答できるかを競うモードです。スコアが記録され、リーダーボードに掲載されます。"
+      },
+      "training": {
+        "title": "トレーニングモード",
+        "body": "時間制限なしで、自分のペースで取り組めるモードです。スコアは記録されません。"
+      }
+    },
+    "squareColors": {
+      "howToPlay": {
+        "title": "問題方式",
+        "body": "以下のような問題が繰り返し出題されます。表示されたマスが白か黒かを答えましょう。"
+      },
+      "challenge": {
+        "title": "チャレンジモード",
+        "body": "制限時間内にどれほど多く正答できるかを競うモードです。スコアが記録され、リーダーボードに掲載されます。"
+      },
+      "training": {
+        "title": "トレーニングモード",
+        "body": "時間制限なしで、自分のペースで取り組めるモードです。スコアは記録されません。"
+      }
+    },
+    "diagonalQuiz": {
+      "howToPlay": {
+        "title": "問題方式",
+        "body": "表示されたマスを通る2つの斜めライン（ダイアゴナル）を答えましょう。"
+      },
+      "step_diagonal": {
+        "title": "対角線とは？",
+        "body": "対角線はa1-h8方向に走る線です。\n(ファイル - ランク)が一定のマスが同じ対角線上にあります。\n緑色のマスがd4を通る対角線です。"
+      },
+      "step_antiDiagonal": {
+        "title": "逆対角線とは？",
+        "body": "逆対角線はh1-a8方向に走る線です。\n(ファイル + ランク)が一定のマスが同じ逆対角線上にあります。\n青色のマスがd4を通る逆対角線です。"
+      },
+      "challenge": {
+        "title": "チャレンジモード",
+        "body": "制限時間内にどれほど多く正答できるかを競うモードです。スコアが記録され、リーダーボードに掲載されます。"
+      },
+      "training": {
+        "title": "トレーニングモード",
+        "body": "時間制限なしで、自分のペースで取り組めるモードです。スコアは記録されません。"
+      }
+    },
+    "routePlanner": {
+      "howToPlay": {
+        "title": "問題方式",
+        "body": "駒がターゲットのマスに到達するための最短経路を考えましょう。"
+      },
+      "step_intro": {
+        "title": "ゴールの確認",
+        "body": "スタート（e4）からゴール（h5）まで、ナイトを移動させる最短ルートを考えます。"
+      },
+      "step_visualization": {
+        "title": "ルートのイメージ",
+        "body": "練習中は盤面のプレビューはありません。頭の中でルートをイメージして、通過するマスの座標を入力してください。\n例: e4 → f6 → h5"
+      },
+      "challenge": {
+        "title": "チャレンジモード",
+        "body": "制限時間内にどれほど多く正答できるかを競うモードです。スコアが記録され、リーダーボードに掲載されます。"
+      },
+      "training": {
+        "title": "トレーニングモード",
+        "body": "時間制限なしで、自分のペースで取り組めるモードです。スコアは記録されません。"
+      }
+    },
+    "quadrants": {
+      "howToPlay": {
+        "title": "遊び方",
+        "body": "マス名が表示されるので、そのマスが属する象限（4分割エリア）をボード上でタップして答えてください。"
+      }
+    },
+    "knightTour": {
+      "overview": {
+        "title": "ナイトツアーとは",
+        "body": "ナイトを動かして64マス全てを1回ずつ訪問するトレーニングです。\nナイトの動きや盤面の幾何感覚を鍛えることができるため、継続するとビジュアライゼーションスキルの向上が図れます。"
+      },
+      "tutorial": {
+        "title": "チュートリアル",
+        "body": "ナイトツアーはチェスの古典的なパズルです。\n\nナイトを使って、盤上の64マス全てをちょうど1回ずつ訪問することを目指します。"
+      }
+    },
+    "algebraicNotation": {
+      "about": {
+        "title": "代数式表記法",
+        "body": "インタラクティブな演習でチェス記法システムをマスターする"
+      }
+    },
+    "fen": {
+      "overview": {
+        "title": "FEN再構築とは",
+        "body": "FEN記法を読んでポジションを盤上に再現するトレーニングです。\n記法を盤面のイメージへ変換する力を鍛えることができるため、継続するとビジュアライゼーションスキルの向上が図れます。"
+      },
+      "tutorial": {
+        "title": "チュートリアル",
+        "body": "FEN記法を読んで盤面を再現するトレーニングです。"
+      }
+    },
+    "positionMemory": {
+      "overview": {
+        "title": "ポジション記憶とは",
+        "body": "ポジションを盤上に再現するトレーニングです。\nトレーニングを通じてパターン認識能力やワーキングメモリを鍛えることができるため、継続するとビジュアライゼーションスキルの向上が図れます。"
+      },
+      "tutorial": {
+        "title": "チュートリアル",
+        "body": "あるポジションを制限時間内に記憶して、空の盤面に再現してみましょう。\nまずは以下のポジションでやってみましょう。"
+      }
+    },
+    "recall": {
+      "input": {
+        "title": "手を入力",
+        "body": "終了した対局の手を、記憶を頼りに順番に入力してください。正解するとひとつ先の手へ進みます。"
+      },
+      "dontKnow": {
+        "title": "思い出せないとき",
+        "body": "「わからない」を押すと正解の手が表示され、自動で次の手へ進みます。"
+      },
+      "color": {
+        "title": "手番を選ぶ",
+        "body": "どちらの手を記憶で再現するか選べます。もう一方の手は自分で入力することも、自動入力に任せることもできます。"
+      }
+    }
+  },
+  "positionMemory": {
+    "setup": {
+      "title": "ポジションの記憶",
+      "start": "開始",
+      "memorizeTime": "記憶時間",
+      "seconds": "{{count}}秒"
+    },
+    "session": {
+      "memorize": "位置を記憶してください",
+      "memorized": "覚えた",
+      "recreate": "盤面を再現"
+    },
+    "result": {
+      "title": "結果",
+      "playAgain": "もう一度"
+    }
+  },
+  "recall": {
+    "title": "棋譜再現",
+    "description": "棋譜を貼り付けて、記憶を頼りに一手ずつ再現しましょう。アカウントや保存された対局は不要です。",
+    "setup": {
+      "pgnLabel": "棋譜（PGN）",
+      "startButton": "棋譜再現を始める",
+      "title": "棋譜再現",
+      "useSample": "サンプルを使う",
+      "invalidPgn": "棋譜を読み取れませんでした。内容を確認してもう一度お試しください。",
+      "playAs": "再現する手番",
+      "sides": {
+        "white": "白",
+        "black": "黒"
+      }
+    },
+    "autoOpponentMoves": "相手の手を自動入力",
+    "dontKnow": "わからない",
+    "correctMove": "正解！",
+    "incorrectMove": "違う手です。もう一度試してください。",
+    "progress": "進捗: {{current}} / {{total}} 手",
+    "showBoard": "ボードを表示",
+    "completed": "感想戦完了！",
+    "moves": "棋譜",
+    "noMovesYet": "手を入力すると、ここに棋譜が表示されます",
+    "summary": {
+      "title": "サマリー",
+      "rateLabel": "再現率",
+      "nailed": "一発正解",
+      "struggled": "つまずき",
+      "missed": "思い出せず",
+      "restart": "もう一度",
+      "startNew": "別の棋譜で始める"
+    },
+    "help": {
+      "input": {
+        "title": "手を入力",
+        "description": "終了した対局の手を、記憶を頼りに順番に入力してください。正解するとひとつ先の手へ進みます。"
+      },
+      "dontKnow": {
+        "title": "思い出せないとき",
+        "description": "「わからない」を押すと正解の手が表示され、自動で次の手へ進みます。"
+      },
+      "setup": {
+        "pgn": {
+          "title": "棋譜を貼り付ける",
+          "description": "終了した対局の棋譜を貼り付けてください。自分の対局でも、他の人の対局でも、定跡でもかまいません。貼り付けた棋譜を記憶を頼りに再現します。「Lichess URL」に切り替えると、棋譜を自動でインポートすることもできます。"
+        },
+        "color": {
+          "title": "手番を選ぶ",
+          "description": "どちらの手を記憶で再現するか選べます。もう一方の手は自分で入力することも、自動入力に任せることもできます。"
+        }
+      }
+    },
+    "session": {
+      "toMove": {
+        "white": "白の手",
+        "black": "黒の手"
+      },
+      "wrong": "{{move}} ではありません。もう一度。"
+    },
+    "result": {
+      "title": "サマリー",
+      "backToMenu": "練習一覧へ",
+      "mistakes": "誤入力"
+    }
+  },
+  "learn": {
+    "description": "チェスの理解を深めるための教育記事とガイド",
+    "categories": {
+      "moves": "駒の動き",
+      "coordinates": "座標",
+      "notation": "記法",
+      "memory": "記憶",
+      "practice": "練習"
+    }
+  },
+  "gameHistory": {
+    "title": "対局履歴",
+    "detailTitle": "対局",
+    "empty": "対局を終えると、ここに表示されます。",
+    "note": "対局はこの端末にのみ保存されます（最大50局）。",
+    "seeAll": "すべて表示（{{count}}局）",
+    "rowDetail": "レベル{{level}} · {{moves}}手 · {{date}}",
+    "result": {
+      "win": "勝ち",
+      "loss": "負け",
+      "draw": "引き分け"
+    },
+    "side": {
+      "white": "白番",
+      "black": "黒番"
+    },
+    "resultLabel": "結果",
+    "sideLabel": "あなたの手番",
+    "levelLabel": "AIレベル",
+    "dateLabel": "対局日時",
+    "recall": "感想戦をする（棋譜再現）",
+    "share": "PGNを共有",
+    "delete": "削除",
+    "deleteConfirm": "この対局を削除しますか？",
+    "you": "あなた",
+    "engine": "Stockfish（レベル{{level}}）"
+  },
+  "glossary": {
+    "title": "チェス用語集",
+    "categories": {
+      "tactics": "タクティクス",
+      "strategy": "戦略",
+      "endgame": "エンドゲーム",
+      "opening": "オープニング",
+      "structure": "ポーン構造",
+      "general": "一般",
+      "principle": "原則"
+    },
+    "aliases": "別名",
+    "relatedTerms": "関連用語",
+    "subtitle": "チェス用語とその意味",
+    "search": "用語を検索",
+    "noResults": "該当する用語はありません"
+  },
+  "account": {
+    "signIn": {
+      "title": "サインイン",
+      "emailLabel": "メールアドレス",
+      "emailPlaceholder": "you@example.com",
+      "passwordLabel": "パスワード",
+      "passwordPlaceholder": "パスワードを入力",
+      "emailSignIn": "メールでサインイン",
+      "emailSignInError": "メールアドレスまたはパスワードが正しくありません。",
+      "forgotPassword": "パスワードをお忘れですか？",
+      "noAccount": "アカウントをお持ちでないですか？",
+      "signUp": "登録はこちら",
+      "rateLimited": "サインイン試行回数が多すぎます。しばらくしてからお試しください。"
+    },
+    "signUp": {
+      "title": "アカウント登録",
+      "description": "Blindfold Chess のアカウントを作成",
+      "emailLabel": "メールアドレス",
+      "emailPlaceholder": "you@example.com",
+      "passwordLabel": "パスワード",
+      "passwordPlaceholder": "{{minLength}}文字以上",
+      "confirmPasswordLabel": "パスワード（確認）",
+      "confirmPasswordPlaceholder": "パスワードを再入力",
+      "emailSignUp": "メールで登録",
+      "emailSignUpError": "登録に失敗しました。もう一度お試しください。",
+      "passwordMismatch": "パスワードが一致しません。",
+      "alreadyHaveAccount": "既にアカウントをお持ちですか？",
+      "signIn": "ログイン",
+      "rateLimited": "サインアップ試行回数が多すぎます。しばらくしてからお試しください。"
+    },
+    "verifyEmail": {
+      "title": "メールをご確認ください",
+      "description": "確認リンクをメールアドレスに送信しました。",
+      "checkInbox": "受信トレイを確認し、リンクをクリックしてアカウントを認証してください。",
+      "checkSpam": "メールが見当たらない場合は、迷惑メールフォルダーもご確認ください。"
+    },
+    "setupUsername": {
+      "title": "アカウント登録",
+      "description": "アカウント名を決めてください。",
+      "usernameLabel": "ユーザー名",
+      "usernamePlaceholder": "例: chess_player1",
+      "usernameHint": "2〜20文字。英小文字、数字、アンダースコアのみ使用できます。先頭は英小文字にしてください。",
+      "cannotChange": "ユーザー名は一度確定するとあとで変更できません。",
+      "submit": "登録",
+      "validation": {
+        "tooShort": "ユーザー名は2文字以上で入力してください。",
+        "tooLong": "ユーザー名は20文字以下で入力してください。",
+        "invalidFormat": "ユーザー名は英小文字で始まり、英小文字または数字で終わる必要があります。使用できるのは英小文字、数字、連続しないアンダースコアのみです。",
+        "taken": "このユーザー名は使用できません。",
+        "alreadySet": "ユーザー名は既に設定済みです。",
+        "error": "エラーが発生しました。もう一度お試しください。",
+        "usernameInappropriate": "このユーザー名は使用できません。",
+        "displayNameInappropriate": "この表示名は使用できません。",
+        "displayNameImpersonation": "この表示名は予約済みの名前や公式の名前と紛らわしいため使用できません。別の名前を選んでください。",
+        "reserved": "このユーザー名は使用できません。"
+      }
+    },
+    "validation": {
+      "password": {
+        "tooShort": "パスワードは{{minLength}}文字以上で入力してください。",
+        "missingLetter": "パスワードには英字を1文字以上含めてください。",
+        "missingDigit": "パスワードには数字を1文字以上含めてください。",
+        "weak": "パスワードが脆弱です。より強力なパスワードを選択してください。"
+      }
+    }
+  },
+  "records": {
+    "title": "マイレコード",
+    "period": "期間",
+    "periods": {
+      "all-time": "全期間",
+      "weekly": "今週",
+      "monthly": "今月"
+    },
+    "rank": "{{rank}}位",
+    "empty": "まだ記録されたチャレンジはありません。",
+    "loading": "読み込み中…",
+    "loadFailed": "記録を読み込めませんでした。引っ張って再読み込みしてください。",
+    "note": "各チャレンジのランキングでのあなたの順位です。ランキング全体はWebサイトで見られます。",
+    "keys": {
+      "white": "白",
+      "black": "黒",
+      "random": "ランダム",
+      "king": "キング",
+      "queen": "クイーン",
+      "rook": "ルーク",
+      "bishop": "ビショップ",
+      "knight": "ナイト",
+      "pawn": "ポーン"
+    }
+  },
+  "challenge": {
+    "startFailed": "記録付きのチャレンジを開始できませんでした。通信状況を確認してもう一度お試しください。",
+    "startRateLimited": "短時間に開始したチャレンジが多すぎます。少し待ってからお試しください。",
+    "retry": "もう一度試す",
+    "signInToRecord": "ログインするとスコアがランキングに記録されます。",
+    "record": {
+      "saving": "スコアを記録しています…",
+      "recorded": "スコアを記録しました。",
+      "notRecorded": "今回の結果は記録されませんでした。",
+      "failed": "スコアを記録できませんでした。通信状況を確認してください。"
+    },
+    "rules": "制限時間60秒・ミス3回で終了",
+    "willRecord": "スコアはランキングに記録されます。",
+    "promoted": "{{rank}}に昇級しました！"
+  },
+  "progress": {
+    "rank": "段級位",
+    "noRank": "無級",
+    "level": "レベル"
+  },
+  "ranks": {
+    "kyu": "{{n}}級",
+    "dan": "{{n}}段",
+    "firstDan": "初段"
+  },
+  "puzzle": {
+    "session": {
+      "correct": "正解！🎉",
+      "correctMove": "正解",
+      "incorrect": "不正解です。もう一度挑戦してください。",
+      "showAnswer": "答えを見る",
+      "showBoard": "ボードを表示",
+      "whitePlayed": "白が {{move}} を指しました",
+      "blackPlayed": "黒が {{move}} を指しました"
+    },
+    "result": {
+      "title": "パズル結果",
+      "replaySection": "正解のリプレイ",
+      "historySection": "回答履歴",
+      "solution": "正解: {{move}}",
+      "note": "— {{note}}",
+      "attemptCorrect": "正解",
+      "attemptIncorrect": "不正解",
+      "backToList": "パズル一覧に戻る",
+      "tryAgain": "もう一度",
+      "peekCount": "盤面確認: {{count}}回",
+      "statusSolved": "全問正解",
+      "statusRevealed": "解答表示"
+    },
+    "list": {
+      "title": "パズル",
+      "empty": "パズルはまだありません"
+    },
+    "title": "パズル",
+    "description": "ポジションで最善手を見つけよう",
+    "setup": {
+      "title": "パズル"
+    },
+    "daily": "今日のパズル",
+    "featured": "おすすめのパズル",
+    "moreOnWeb": "みんなが作ったパズルの一覧とパズルの作成はWebサイトで利用できます。",
+    "loadFailed": "パズルを読み込めませんでした。引っ張って再読み込みしてください。",
+    "whiteToMove": "白番",
+    "blackToMove": "黒番",
+    "findMove": "最善手を見つけよう",
+    "recorded": "結果を記録しました。"
   }
 }
