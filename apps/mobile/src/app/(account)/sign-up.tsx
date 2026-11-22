@@ -7,8 +7,14 @@ import { Button, TextField } from "../../components";
 import { callMobileApi, errorCodeOf } from "../../auth/api-client";
 import { useTheme, fontSize, fontWeight, spacing } from "../../theme";
 
-/** Mirrors the web's `MIN_PASSWORD_LENGTH`; the server checks it again. */
-const MIN_PASSWORD_LENGTH = 8;
+/**
+ * The shortest password the server accepts: the web's `MIN_PASSWORD_LENGTH`
+ * and Supabase's "Minimum password length" setting, both 6. The app does not
+ * check it itself — the server rejects a short password with
+ * `password:tooShort` — so this only fills `{{minLength}}` in the placeholder
+ * and that error, and must change together with the web and Supabase.
+ */
+const MIN_PASSWORD_LENGTH = 6;
 
 /**
  * Email sign-up (the web's `/sign-up`), through the mobile API so the web's
@@ -107,7 +113,9 @@ export default function SignUpScreen() {
         label={t("account.signUp.passwordLabel")}
         value={password}
         onChangeText={setPassword}
-        placeholder={t("account.signUp.passwordPlaceholder")}
+        placeholder={t("account.signUp.passwordPlaceholder", {
+          minLength: MIN_PASSWORD_LENGTH,
+        })}
         secureTextEntry
         autoComplete="new-password"
         textContentType="newPassword"

@@ -29,9 +29,11 @@ type PracticeTrainingScreenProps = {
  * The counterpart of `PracticeSessionScreen` for training mode. There is no
  * countdown, clock or result screen — training never ends on its own — so
  * the player ends it, which goes back to the setup screen the training was
- * started from (the web goes back to the module page the same way). The
- * stack also keeps the header's back button and the swipe-back gesture on
- * this screen, since nothing is lost by leaving.
+ * started from (the web goes back to the module page the same way).
+ * Training runs inside the full-screen session modal, which has no swipe to
+ * dismiss; the stack hides the header's back button and puts the session
+ * close button there instead, and that button leaves without asking, since
+ * nothing is lost by leaving.
  */
 export function PracticeTrainingScreen({
   isReady,

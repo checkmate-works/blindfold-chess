@@ -11,7 +11,10 @@ import {
 import { AiGameCard } from "../../../features/ai-game/components/AiGameCard";
 import { ProgressCard } from "../../../features/records/ProgressCard";
 import { useOnboardingStatus } from "../../../hooks/useOnboardingStatus";
-import { MOBILE_PRACTICE_MODULES } from "../../../navigation/practice-modules";
+import {
+  MOBILE_PRACTICE_MODULES,
+  practiceModuleRoute,
+} from "../../../navigation/practice-modules";
 
 /** The modules the home tab offers as a quick start, in this order. */
 const QUICK_START_SLUGS = ["coordinate-quiz", "square-colors", "legal-moves"];
@@ -46,7 +49,9 @@ export default function HomeTab() {
             leading={<ListIcon glyph={item.icon} />}
             title={t(`practice.${item.i18nKey}.title`)}
             subtitle={t(`practice.${item.i18nKey}.description`)}
-            onPress={() => router.push(`/practice/${item.slug}` as Href)}
+            onPress={() =>
+              router.push(`/practice/${practiceModuleRoute(item)}` as Href)
+            }
           />
         ))}
         <ListRow

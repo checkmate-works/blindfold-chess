@@ -193,7 +193,11 @@
       "username": "ユーザー名",
       "setUsername": "設定する",
       "signOut": "ログアウト",
-      "signOutConfirm": "ログアウトしますか？"
+      "signOutConfirm": "ログアウトしますか？",
+      "loading": "読み込み中…",
+      "retry": "タップして再試行",
+      "deleteAccount": "アカウントを削除",
+      "deleteAccountNote": "アカウントの削除は Web サイトで行います。Web でログインしてから削除してください。ユーザー名を未設定の場合は、先に設定を求められます。"
     }
   },
   "legalMoves": {
@@ -927,7 +931,7 @@
       "emailLabel": "メールアドレス",
       "emailPlaceholder": "you@example.com",
       "passwordLabel": "パスワード",
-      "passwordPlaceholder": "8文字以上",
+      "passwordPlaceholder": "{{minLength}}文字以上",
       "confirmPasswordLabel": "パスワード（確認）",
       "confirmPasswordPlaceholder": "パスワードを再入力",
       "emailSignUp": "メールで登録",

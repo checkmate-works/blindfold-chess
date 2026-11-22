@@ -10,3 +10,4 @@ export type {
 export { evaluatePuzzleSubmit, parseSolutionLines } from "./puzzle-match";
 export type { SolutionPair } from "./solution-pairs";
 export { buildSolutionPairs } from "./solution-pairs";
+export { MAX_SOLUTION_MOVES } from "./limits";

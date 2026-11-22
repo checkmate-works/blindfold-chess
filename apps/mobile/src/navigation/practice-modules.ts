@@ -7,8 +7,10 @@ import type { PracticeModuleSlug } from "@blindfold-chess/features/practice-regi
  *   (`@blindfold-chess/features/practice-registry`). Typed against the
  *   registry, so a typo or a module that was removed there fails to compile
  *   here.
- * @property route - The route directory under `(tabs)/practice/`, when it
- *   differs from `slug`.
+ * @property route - The module's route directory, when it differs from
+ *   `slug`: the setup screen is `app/practice/<route>/index.tsx` on the root
+ *   stack, and the session, result and training screens are
+ *   `app/(session)/practice/<route>/`.
  * @property i18nKey - Namespace holding the module's strings: the list card
  *   reads `practice.<i18nKey>.title` / `.description`, the stack headers read
  *   `<i18nKey>.setup.title` / `.result.title`.
@@ -28,12 +30,13 @@ export type MobilePracticeModule = {
  * The practice modules the mobile app implements, in the order the practice
  * tab lists them. The shared registry decides which modules exist and what
  * they are called in URLs and the database; this table only adds what is
- * mobile-specific (icon, i18n namespace, which screens exist) and leaves out
- * the modules mobile has not built yet (position memory, puzzle, recall, …).
+ * mobile-specific (icon, i18n namespace, which screens exist). A registry
+ * module mobile has not built is simply absent from it.
  *
- * The practice list (`(tabs)/practice/index.tsx`) and the practice stack
- * (`(tabs)/practice/_layout.tsx`) both read it, so a module added here gets
- * its card and its screens together.
+ * The practice list (`(tabs)/practice/index.tsx`) reads it for the cards,
+ * and `module-routes.ts` turns it into the stack screens that the root
+ * stack (setup) and the `(session)` stack (session, result, training)
+ * register, so a module added here gets its card and its screens together.
  */
 export const MOBILE_PRACTICE_MODULES: readonly MobilePracticeModule[] = [
   {
@@ -93,7 +96,11 @@ export const MOBILE_PRACTICE_MODULES: readonly MobilePracticeModule[] = [
   { slug: "puzzle", i18nKey: "puzzle", icon: "🧩" },
 ];
 
-/** The route directory of a module under `(tabs)/practice/`. */
+/**
+ * The route directory of a module, under `practice/` (the URL path
+ * `/practice/<route>`). Build every navigation to a module with this rather
+ * than with `slug`: the two differ for some modules.
+ */
 export function practiceModuleRoute(module: MobilePracticeModule): string {
   return module.route ?? module.slug;
 }
