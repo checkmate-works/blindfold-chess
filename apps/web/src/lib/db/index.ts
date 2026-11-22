@@ -7,7 +7,7 @@ import type { Sql } from 'postgres';
 import postgres from 'postgres';
 
 import { type ProbeOutcome, probeDatabase } from './health-probe';
-import { derivePoolerMode, parseConnectionPort, resolvePoolMax } from './pooler-mode';
+import { derivePoolerMode, resolvePoolMax, usesSupavisorUser } from './pooler-mode';
 import {
   type DeadlineRetry,
   WEDGE_SETTLE_WINDOW_MS,
@@ -133,7 +133,7 @@ function createPooledClient(): ReturnType<typeof postgres> {
     max: resolvePoolMax(
       poolerMode,
       process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD,
-      parseConnectionPort(connectionString)
+      usesSupavisorUser(connectionString)
     ),
     idle_timeout: IDLE_TIMEOUT_SECONDS, // release idle connections back to the pooler
     max_lifetime: 60 * 30, // seconds — recycle long-lived connections

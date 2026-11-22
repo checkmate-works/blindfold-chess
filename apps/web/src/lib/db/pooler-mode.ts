@@ -33,13 +33,22 @@ export function derivePoolerMode(connectionString: string): PoolerMode {
 }
 
 /**
- * Port of the local Supavisor session pooler, from `[db.pooler] port` in
- * `apps/web/supabase/config.toml`. Not derivable from `PoolerMode` alone:
- * `derivePoolerMode` tags any loopback host `'local'` before looking at the
- * port, so `'local'` covers both the pooler (54329) and the direct
- * `[db]` connection (54322, `port` in the same file).
+ * Whether a connection string authenticates through Supavisor, which wants
+ * the user name qualified with its tenant (`postgres.<tenant>`: the local
+ * stack's is `postgres.pooler-dev`, production's is `postgres.<project ref>`).
+ * Postgres itself is reached as plain `postgres`. `derivePoolerMode` tags any
+ * loopback host `'local'` before looking further, so this is what tells the
+ * local pooler from the local direct connection. It is read from the user
+ * name rather than the port so that moving the local stack's ports in
+ * `apps/web/supabase/config.toml` cannot change the answer.
  */
-const LOCAL_SUPAVISOR_POOLER_PORT = '54329';
+export function usesSupavisorUser(connectionString: string): boolean {
+  try {
+    return decodeURIComponent(new URL(connectionString).username).includes('.');
+  } catch {
+    return false;
+  }
+}
 
 /**
  * Per-process connection cap for the postgres.js pool.
@@ -53,12 +62,12 @@ const LOCAL_SUPAVISOR_POOLER_PORT = '54329';
  * requests → more warm instances × max each) and is a capacity-planning
  * problem, not a code one.
  *
- * `'local'` gets the same 5 when the connection's port is the local
- * Supavisor pooler's (54329, see `LOCAL_SUPAVISOR_POOLER_PORT`): since
+ * `'local'` gets the same 5 when the connection goes through the local
+ * Supavisor pooler (`throughSupavisor`, see `usesSupavisorUser`): since
  * 2026-08-08 local development runs through that pooler in session mode too,
  * and sizing it like production lets local reproduce production's budget
  * arithmetic instead of silently running twice the per-instance connection
- * pressure. A `'local'` connection on the direct port (54322) still gets 10 —
+ * pressure. A `'local'` connection straight to Postgres still gets 10 —
  * no pooler is in the path there, so nothing to mirror. `derivePoolerMode`'s
  * return value and the `db.pooler_mode` Sentry tag are unaffected; this is a
  * sizing-only distinction.
@@ -93,24 +102,10 @@ const LOCAL_SUPAVISOR_POOLER_PORT = '54329';
 export function resolvePoolMax(
   poolerMode: PoolerMode,
   isBuildPhase: boolean,
-  port?: string
+  throughSupavisor = false
 ): number {
   if (isBuildPhase) return 2;
   if (poolerMode === 'session') return 5;
-  if (poolerMode === 'local' && port === LOCAL_SUPAVISOR_POOLER_PORT) return 5;
+  if (poolerMode === 'local' && throughSupavisor) return 5;
   return 10;
-}
-
-/**
- * Extracts the port from a connection string for `resolvePoolMax`'s local/
- * pooler-port check. Returns `undefined` on an unparseable string, matching
- * `derivePoolerMode`'s own fallback — the caller already has `poolerMode`
- * from that function to decide whether the port matters.
- */
-export function parseConnectionPort(connectionString: string): string | undefined {
-  try {
-    return new URL(connectionString).port || undefined;
-  } catch {
-    return undefined;
-  }
 }
