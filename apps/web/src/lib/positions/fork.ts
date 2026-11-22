@@ -13,21 +13,20 @@
  *
  * Self-forking (the source is owned by the current user) is intentionally
  * allowed: it is the natural way to spin up a derived variation of one's own
- * puzzle/position. The like-coin batch independently withholds fork-propagation
- * coins when parent owner == fork owner, so no coin farming is opened up here.
+ * puzzle/position.
  *
  * @design Cross-type sourcing: memory → puzzle only
  * `PUZZLE_FORK_SOURCE_TYPES` accepts both `puzzle` and `memory` sources — a
  * position-memory entry can seed a new puzzle ("Create puzzle from here" on
  * the position-memory detail page), reusing the same lineage column
- * (`forkedFromId`) and the same like-coin propagation as a same-type fork.
+ * (`forkedFromId`) as a same-type fork.
  * `POSITION_FORK_SOURCE_TYPES` stays `memory`-only: there is no reverse path
  * (a puzzle "downgrading" into a position-memory entry would need to discard
  * its solution, which the existing FEN-only seed at `/practice/position-memory/
- * new?fen=<...>` already covers without any lineage/coin semantics attached).
+ * new?fen=<...>` already covers without any lineage attached).
  * The UI deliberately does not call the cross-type action a "fork" — see the
  * `createPuzzleFromHere` button copy — but internally it is one: same column,
- * same validation, same coin propagation, just a different allowed source type.
+ * same validation, just a different allowed source type.
  *
  * `loadPuzzleForkSeed` / `loadPositionForkSeed` apply the same rules at SSR
  * time on the `/new?from=<id>` pages, plus fetch the full set of fields the

@@ -4,14 +4,14 @@
  * what makes grants of the same benefit extend one another instead of
  * overlapping.
  *
- * Shared by the admin grant path (`calcGrantStartsAt`) and the coin
- * redemption, which read the latest expiry with different queries (the
- * redemption locks the row inside its transaction) but must agree on the
- * rule — otherwise a coin purchase and an admin grant would start the same
- * user's next window at different times.
+ * Used by the admin grant path (`calcGrantStartsAt`). The one-off conversion
+ * of leftover coin balances into ad-free days
+ * (`scripts/retire-coins/convert-balances.sql`) restates the same rule in
+ * SQL; the two must agree, or they would start the same user's next window
+ * at different times.
  *
- * Kept in a module with no imports so the redemption can use it without
- * loading `user-grants`, whose module body builds a cached DB query.
+ * Kept in a module with no imports so it can be used without loading
+ * `user-grants`, whose module body builds a cached DB query.
  */
 export function stackGrantStart(latestExpiresAt: Date | null | undefined, now: Date): Date {
   return latestExpiresAt && latestExpiresAt > now ? latestExpiresAt : now;

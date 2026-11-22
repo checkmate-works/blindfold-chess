@@ -13,9 +13,9 @@ import type { TopicType } from './constants';
  * never reach this. `opening` is the one type whose plural is not the type
  * name plus `s`.
  *
- * Three callers spelled this rule out: the notification deep-link builder, the
- * grant-history link builder, and the coin-history link builder. The second
- * one's comment even said it mirrored the first.
+ * Several callers used to spell this rule out by hand — the notification
+ * deep-link builder and the grant-history link builder among them, the
+ * second with a comment saying it mirrored the first.
  */
 export function topicSegment(topicType: TopicType | string): string {
   return topicType === 'opening' ? 'openings' : `${topicType}s`;

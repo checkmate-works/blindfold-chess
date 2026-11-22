@@ -954,7 +954,7 @@ REVOKE ALL ON TABLE public.game_ai_review_jobs FROM authenticated, anon;
 -- serves `public` to anyone holding the anon key shipped in the browser bundle,
 -- so a write privilege here is a second door to the same rows — one with none
 -- of the checks the Server Actions make: username format and reserved names,
--- content filters, rate limits, bans, blocks, coin charges. RLS cannot stand in
+-- content filters, rate limits, bans, blocks. RLS cannot stand in
 -- for them; it can only say whose row it is.
 --
 -- This is re-applied after the GRANTs above on every deploy, so it also

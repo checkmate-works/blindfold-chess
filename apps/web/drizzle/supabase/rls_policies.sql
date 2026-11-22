@@ -23,7 +23,7 @@
 -- database that has them (production) converges on the next deploy. They were
 -- removed because a policy can only answer "is this row yours?", while what
 -- the Server Actions enforce is everything else: format and reserved-name
--- checks, content filters, rate limits, bans, blocks, coin charges. Any table a
+-- checks, content filters, rate limits, bans, blocks. Any table a
 -- client could write through PostgREST was a way around all of it — a user
 -- without a profile yet could, for example, INSERT one with a reserved or
 -- malformed username directly.

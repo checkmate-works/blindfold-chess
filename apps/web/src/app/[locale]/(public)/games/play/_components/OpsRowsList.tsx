@@ -18,8 +18,8 @@ const CHIP_CLASSES =
  * shown the numeric count is dropped — the chips already convey it; the count
  * is kept only for a chip-less row (a legacy / SAN-less board count).
  *
- * Row padding (`px-4 py-3`) matches the app's other rounded-border divide-y
- * list, the coin-history table.
+ * Row padding (`px-4 py-3`) is the app's convention for a rounded-border
+ * divide-y list.
  */
 export function OpsRowsList({
   rows,

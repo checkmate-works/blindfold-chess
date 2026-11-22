@@ -370,12 +370,11 @@ export type NewGameChunk = typeof gameChunks.$inferInsert;
  * @design Immutable, no regeneration
  * Like the parent `games` row, a review never changes once written (no
  * `updated_at`). The `(game_id, locale)` UNIQUE is simultaneously the cache
- * key, the concurrent-generation guard (losers of the race read the winner's
- * row), and the natural idempotency anchor for a future coin charge
- * (`ai_review:<userId>:<gameId>:<locale>`, mirroring `maia_game:*`).
+ * key and the concurrent-generation guard (losers of the race read the
+ * winner's row).
  *
  * @design generated_by_id
- * Who triggered (and, once coin-charged, paid for) the generation — audit
+ * Who triggered the generation — audit
  * only, never authorization: reading is public like the game itself. FK to
  * auth.users is defined Supabase-side with ON DELETE SET NULL so the shared
  * cache survives its generator's account deletion.
@@ -435,19 +434,11 @@ export type NewGameAiReviewRecord = typeof gameAiReviews.$inferInsert;
  * @design One live job per (game, locale)
  * The partial unique index over `status IN ('pending', 'processing')` is the
  * double-submit guard: a second click while a job is live hits the index
- * before any coin moves. Finished rows (`done` / `failed`) leave the index, so
- * a failed job can be retried under a fresh charge.
- *
- * @design Charge at accept, refund on failure
- * The coin is debited in the transaction that inserts this row (ledger key
- * `ai_review:<job id>`): "accepted" is a promise the balance must already
- * back, and a job that waits to charge until the review is stored can find
- * the coin spent elsewhere in the meantime. A job that ends `failed` returns
- * that exact debit (`ai_review_refund:<job id>`), so the author never pays
- * for a review they did not get. See `chargeAiReview` / `refundAiReviewCharge`.
+ * instead of queueing a second generation. Finished rows (`done` / `failed`)
+ * leave the index, so a failed job can be retried.
  *
  * `requested_by_id` references auth.users with ON DELETE CASCADE in custom
- * SQL: a purged requester has no review to receive and no wallet to refund.
+ * SQL: a purged requester has no review to receive.
  */
 export const gameAiReviewJobs = pgTable(
   'game_ai_review_jobs',

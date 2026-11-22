@@ -3,8 +3,8 @@ import { type Column, type SQL, and, inArray, isNull } from 'drizzle-orm';
 /**
  * Batch-load rows by id, restricted to the ones that are still live.
  *
- * Every surface that turns a stored id back into a link — the coin history,
- * the benefits pages — needs the same two things per source table, and each
+ * Every surface that turns a stored id back into a link — the benefits
+ * pages, for one — needs the same two things per source table, and each
  * query used to hand-roll both: the predicate `id IN (…) AND deleted_at IS
  * NULL`, and a short-circuit that skips the round trip when the id list is
  * empty (an `IN ()` over no ids can only match nothing).
@@ -14,8 +14,7 @@ import { type Column, type SQL, and, inArray, isNull } from 'drizzle-orm';
  * it matches, lands in the caller's map, and is rendered as a link — one that
  * 404s, or for a deleted post under a live thread, points at a thread the post
  * is no longer in. Both grant-source lookups behind `/mypage/benefits` shipped
- * that way until 2026-08 while the sibling coin-history lookups filtered
- * correctly.
+ * that way until 2026-08.
  *
  * `select` receives the composed predicate and runs the query, so each caller
  * keeps its own projection, joins and table. Its parameter is typed `SQL |

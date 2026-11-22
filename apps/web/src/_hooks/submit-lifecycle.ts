@@ -4,7 +4,7 @@
  * - `editing` — the author is filling the form in (the initial state, and
  *   where a rejected submit returns to).
  * - `confirming` — a confirmation dialog stands between the submit button
- *   and the write (e.g. a paid visibility tier asking to charge coins).
+ *   and the write.
  * - `submitting` — the write is in flight.
  * - `succeeded` — the write landed and the form is navigating away. Terminal:
  *   the form unmounts on arrival, so nothing leads out of it.

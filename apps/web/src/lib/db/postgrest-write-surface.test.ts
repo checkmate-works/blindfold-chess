@@ -13,7 +13,7 @@
  *
  * That makes any write grant to `authenticated` a second, unguarded entry point
  * to the same rows the Server Actions guard — one with no validation, no rate
- * limiting, no coin ledger, and no ban, block or moderation checks. RLS cannot
+ * limiting, and no ban, block or moderation checks. RLS cannot
  * close it: a policy can express "your own row", not "a row the Server Action
  * would have accepted". An owner-scoped UPDATE let an author clear `deleted_at`
  * and restore content a moderator had removed; an owner-scoped INSERT on
