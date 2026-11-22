@@ -1,4 +1,3 @@
-import { useTranslation } from "react-i18next";
 import { useRouter } from "expo-router";
 
 import { PracticeSetupScreen } from "../../../components";
@@ -8,14 +7,12 @@ import { useRoutePlannerSettings } from "../../../features/route-planner/hooks";
 
 /** Route planner: pick the piece, then the challenge or untimed training. */
 export default function RoutePlannerSetup() {
-  const { t } = useTranslation();
   const router = useRouter();
   const { settings, isLoaded, updateSettings } = useRoutePlannerSettings();
 
   return (
     <PracticeSetupScreen
       isLoaded={isLoaded}
-      startLabel={t("routePlanner.setup.start")}
       onStart={() =>
         router.push({
           pathname: "/practice/route-planner/session",

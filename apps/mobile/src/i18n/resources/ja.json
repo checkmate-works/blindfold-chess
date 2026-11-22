@@ -7,9 +7,8 @@
     "settings": "設定",
     "home": "ホーム",
     "practice": "練習",
+    "challenge": "チャレンジ",
     "training": "トレーニング",
-    "startTraining": "トレーニング開始",
-    "trainingDescription": "問題が終了するまで出続けます。終了ボタンで終了できます。",
     "endTraining": "終了",
     "skip": "スキップ",
     "close": "閉じる",
@@ -206,8 +205,7 @@
       "timeLimit": "制限時間",
       "durationSeconds": "{{seconds}}秒",
       "pieceSelection": "駒を選択",
-      "selectAtLeastOne": "少なくとも1つの駒を選択してください",
-      "start": "開始"
+      "selectAtLeastOne": "少なくとも1つの駒を選択してください"
     },
     "session": {
       "legal": "合法",
@@ -230,8 +228,7 @@
   },
   "boardSymmetry": {
     "setup": {
-      "title": "盤面対称 設定",
-      "startQuiz": "練習を開始"
+      "title": "盤面対称 設定"
     },
     "session": {
       "question": "{{square}}の{{type}}対称マスを見つけて",
@@ -256,8 +253,7 @@
   },
   "squareColors": {
     "setup": {
-      "title": "マスの色 設定",
-      "startQuiz": "練習を開始"
+      "title": "マスの色 設定"
     },
     "session": {
       "question": "{{square}} の色は？",
@@ -284,8 +280,7 @@
       "orientation": "盤面の向き",
       "orientationWhite": "白側",
       "orientationBlack": "黒側",
-      "orientationRandom": "ランダム",
-      "startQuiz": "クイズを開始"
+      "orientationRandom": "ランダム"
     },
     "session": {
       "findSquare": "見つけて",
@@ -309,8 +304,7 @@
       "title": "ルートプランナー 設定",
       "problemCount": "問題数",
       "problemUnit": "{{count}}問",
-      "pieceSelection": "駒の選択",
-      "start": "開始"
+      "pieceSelection": "駒の選択"
     },
     "session": {
       "progress": "{{current}} / {{total}}",
@@ -407,8 +401,7 @@
   },
   "diagonalQuiz": {
     "setup": {
-      "title": "ダイアゴナルクイズ 設定",
-      "startQuiz": "練習を開始"
+      "title": "ダイアゴナルクイズ 設定"
     },
     "session": {
       "question": "{{square}}の対角線は？",
@@ -440,14 +433,10 @@
   "quadrants": {
     "setup": {
       "title": "4分割アンカーの設定",
-      "startQuiz": "練習を開始",
       "orientation": "盤の向き",
       "orientationWhite": "白番",
       "orientationBlack": "黒番",
-      "orientationRandom": "ランダム",
-      "rulesTitle": "チャレンジルール",
-      "timeLimitRule": "制限時間{{seconds}}秒以内にできるだけ多くの問題に正解してください。",
-      "mistakeLimitRule": "{{count}}回ミスするとゲームオーバーです。"
+      "orientationRandom": "ランダム"
     },
     "session": {
       "question": "{{square}} はどのエリア？",
@@ -470,8 +459,7 @@
       "pickOnBoard": "盤面のマスをタップして選ぶこともできます",
       "blindfoldMode": "ブラインドモード",
       "blindfoldModeHint": "盤面を見ずに座標だけで練習します",
-      "setupHint": "ナイトの合法手のみを使って、全64マスをちょうど1回ずつ訪問します。",
-      "start": "開始"
+      "setupHint": "ナイトの合法手のみを使って、全64マスをちょうど1回ずつ訪問します。"
     },
     "result": {
       "title": "練習完了！",
@@ -504,8 +492,7 @@
     "setup": {
       "title": "代数式表記法の設定",
       "description": "インタラクティブな演習でチェス記法システムをマスターする",
-      "questionCount": "全{{total}}問",
-      "start": "開始"
+      "questionCount": "全{{total}}問"
     },
     "result": {
       "title": "練習完了！",
@@ -535,8 +522,7 @@
       "invalidFenOnLine": "{{lines}}行目のFENが無効です",
       "invalidFenOnLines": "{{lines}}行目のFENが無効です",
       "problemCount": "問題数",
-      "shuffle": "シャッフル",
-      "start": "開始"
+      "shuffle": "シャッフル"
     },
     "result": {
       "title": "練習完了！",
@@ -777,7 +763,6 @@
   "positionMemory": {
     "setup": {
       "title": "ポジションの記憶",
-      "start": "開始",
       "memorizeTime": "記憶時間",
       "seconds": "{{count}}秒"
     },
@@ -796,7 +781,6 @@
     "description": "棋譜を貼り付けて、記憶を頼りに一手ずつ再現しましょう。アカウントや保存された対局は不要です。",
     "setup": {
       "pgnLabel": "棋譜（PGN）",
-      "startButton": "棋譜再現を始める",
       "title": "棋譜再現",
       "useSample": "サンプルを使う",
       "invalidPgn": "棋譜を読み取れませんでした。内容を確認してもう一度お試しください。",

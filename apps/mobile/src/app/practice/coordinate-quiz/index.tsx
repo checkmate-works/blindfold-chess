@@ -1,4 +1,3 @@
-import { useTranslation } from "react-i18next";
 import { useRouter } from "expo-router";
 
 import { PracticeSetupScreen } from "../../../components";
@@ -8,7 +7,6 @@ import { useQuizSettings } from "../../../features/coordinate-quiz/hooks";
 import type { QuizSettings } from "../../../features/coordinate-quiz/lib/types";
 
 export default function CoordinateQuizSetup() {
-  const { t } = useTranslation();
   const router = useRouter();
   const { settings, isLoaded, updateSettings } = useQuizSettings();
 
@@ -22,7 +20,6 @@ export default function CoordinateQuizSetup() {
   return (
     <PracticeSetupScreen
       isLoaded={isLoaded}
-      startLabel={t("coordinateQuiz.setup.startQuiz")}
       onStart={handleStartQuiz}
       onStartTraining={() =>
         router.push({

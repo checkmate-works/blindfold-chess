@@ -7,9 +7,8 @@
     "settings": "Configurações",
     "home": "Início",
     "practice": "Prática",
+    "challenge": "Desafio",
     "training": "Treinamento",
-    "startTraining": "Iniciar Treinamento",
-    "trainingDescription": "As perguntas continuarão aparecendo até que você pare. Pressione o botão Finalizar para terminar.",
     "endTraining": "Finalizar",
     "skip": "Pular",
     "close": "Fechar",
@@ -206,8 +205,7 @@
       "timeLimit": "Tempo limite",
       "durationSeconds": "{{seconds}}s",
       "pieceSelection": "Selecione uma peça",
-      "selectAtLeastOne": "Selecione pelo menos uma peça",
-      "start": "Iniciar"
+      "selectAtLeastOne": "Selecione pelo menos uma peça"
     },
     "session": {
       "legal": "Legal",
@@ -230,8 +228,7 @@
   },
   "boardSymmetry": {
     "setup": {
-      "title": "Configurações de simetria do tabuleiro",
-      "startQuiz": "Começar prática"
+      "title": "Configurações de simetria do tabuleiro"
     },
     "session": {
       "question": "Encontre a casa simétrica {{type}} de {{square}}",
@@ -256,8 +253,7 @@
   },
   "squareColors": {
     "setup": {
-      "title": "Configurações de cor das casas",
-      "startQuiz": "Começar prática"
+      "title": "Configurações de cor das casas"
     },
     "session": {
       "question": "Qual é a cor de {{square}}?",
@@ -284,8 +280,7 @@
       "orientation": "Orientação do tabuleiro",
       "orientationWhite": "Brancas",
       "orientationBlack": "Pretas",
-      "orientationRandom": "Aleatória",
-      "startQuiz": "Começar quiz"
+      "orientationRandom": "Aleatória"
     },
     "session": {
       "findSquare": "Encontre",
@@ -309,8 +304,7 @@
       "title": "Configurações do planejador de rotas",
       "problemCount": "Número de problemas",
       "problemUnit": "{{count}} problemas",
-      "pieceSelection": "Selecione as peças",
-      "start": "Iniciar"
+      "pieceSelection": "Selecione as peças"
     },
     "session": {
       "progress": "{{current}} / {{total}}",
@@ -407,8 +401,7 @@
   },
   "diagonalQuiz": {
     "setup": {
-      "title": "Configurações do quiz de diagonais",
-      "startQuiz": "Começar prática"
+      "title": "Configurações do quiz de diagonais"
     },
     "session": {
       "question": "Quais são as diagonais de {{square}}?",
@@ -440,14 +433,10 @@
   "quadrants": {
     "setup": {
       "title": "Âncoras de Quadrante Configuração",
-      "startQuiz": "Começar prática",
       "orientation": "Orientação do tabuleiro",
       "orientationWhite": "Brancas",
       "orientationBlack": "Pretas",
-      "orientationRandom": "Aleatória",
-      "rulesTitle": "Regras do Desafio",
-      "timeLimitRule": "Responda o máximo de perguntas que puder em {{seconds}} segundos.",
-      "mistakeLimitRule": "O jogo termina após {{count}} respostas incorretas."
+      "orientationRandom": "Aleatória"
     },
     "session": {
       "question": "Em qual quadrante está {{square}}?",
@@ -470,8 +459,7 @@
       "pickOnBoard": "Ou toque em uma casa do tabuleiro",
       "blindfoldMode": "Modo às Cegas",
       "blindfoldModeHint": "Pratique usando apenas coordenadas sem ver o tabuleiro",
-      "setupHint": "O cavalo deve visitar as 64 casas exatamente uma vez usando apenas movimentos legais de cavalo.",
-      "start": "Iniciar"
+      "setupHint": "O cavalo deve visitar as 64 casas exatamente uma vez usando apenas movimentos legais de cavalo."
     },
     "result": {
       "title": "Prática concluída!",
@@ -504,8 +492,7 @@
     "setup": {
       "title": "Notação Algébrica Configuração",
       "description": "Domine o sistema de notação enxadrística com exercícios interativos",
-      "questionCount": "{{total}} perguntas",
-      "start": "Iniciar"
+      "questionCount": "{{total}} perguntas"
     },
     "result": {
       "title": "Prática concluída!",
@@ -535,8 +522,7 @@
       "invalidFenOnLine": "FEN inválido na linha {{lines}}",
       "invalidFenOnLines": "FEN inválido nas linhas {{lines}}",
       "problemCount": "Número de Problemas",
-      "shuffle": "Embaralhar Problemas",
-      "start": "Iniciar"
+      "shuffle": "Embaralhar Problemas"
     },
     "result": {
       "title": "Prática concluída!",
@@ -777,7 +763,6 @@
   "positionMemory": {
     "setup": {
       "title": "Memória de posições",
-      "start": "Começar",
       "memorizeTime": "Tempo para memorizar",
       "seconds": "{{count}} s"
     },
@@ -796,7 +781,6 @@
     "description": "Cole qualquer PGN e reproduza-o lance a lance de memória — sem precisar de conta ou partida salva.",
     "setup": {
       "pgnLabel": "PGN",
-      "startButton": "Começar de memória",
       "title": "Recordar partida",
       "useSample": "Usar uma partida de exemplo",
       "invalidPgn": "Não foi possível ler este PGN. Verifique os lances e tente novamente.",

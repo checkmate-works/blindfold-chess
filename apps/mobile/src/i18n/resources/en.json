@@ -7,9 +7,8 @@
     "settings": "Settings",
     "home": "Home",
     "practice": "Practice",
+    "challenge": "Challenge",
     "training": "Training",
-    "startTraining": "Start Training",
-    "trainingDescription": "Questions will keep appearing until you stop. Press the End button to finish.",
     "endTraining": "End",
     "skip": "Skip",
     "close": "Close",
@@ -206,8 +205,7 @@
       "timeLimit": "Time Limit",
       "durationSeconds": "{{seconds}}s",
       "pieceSelection": "Select a Piece",
-      "selectAtLeastOne": "Please select at least one piece",
-      "start": "Start"
+      "selectAtLeastOne": "Please select at least one piece"
     },
     "session": {
       "legal": "Legal",
@@ -230,8 +228,7 @@
   },
   "boardSymmetry": {
     "setup": {
-      "title": "Board Symmetry Setup",
-      "startQuiz": "Start Practice"
+      "title": "Board Symmetry Setup"
     },
     "session": {
       "question": "Find the {{type}} symmetric square of {{square}}",
@@ -256,8 +253,7 @@
   },
   "squareColors": {
     "setup": {
-      "title": "Square Colors Setup",
-      "startQuiz": "Start Practice"
+      "title": "Square Colors Setup"
     },
     "session": {
       "question": "What color is {{square}}?",
@@ -284,8 +280,7 @@
       "orientation": "Board Orientation",
       "orientationWhite": "White",
       "orientationBlack": "Black",
-      "orientationRandom": "Random",
-      "startQuiz": "Start Quiz"
+      "orientationRandom": "Random"
     },
     "session": {
       "findSquare": "Find",
@@ -309,8 +304,7 @@
       "title": "Route Planner Settings",
       "problemCount": "Number of Problems",
       "problemUnit": "{{count}} problems",
-      "pieceSelection": "Select Pieces",
-      "start": "Start"
+      "pieceSelection": "Select Pieces"
     },
     "session": {
       "progress": "{{current}} / {{total}}",
@@ -407,8 +401,7 @@
   },
   "diagonalQuiz": {
     "setup": {
-      "title": "Diagonal Quiz Settings",
-      "startQuiz": "Start Practice"
+      "title": "Diagonal Quiz Settings"
     },
     "session": {
       "question": "What are the diagonals of {{square}}?",
@@ -440,14 +433,10 @@
   "quadrants": {
     "setup": {
       "title": "Quadrant Anchors Setup",
-      "startQuiz": "Start Practice",
       "orientation": "Board Orientation",
       "orientationWhite": "White",
       "orientationBlack": "Black",
-      "orientationRandom": "Random",
-      "rulesTitle": "Challenge Rules",
-      "timeLimitRule": "Answer as many questions as you can within {{seconds}} seconds.",
-      "mistakeLimitRule": "The game ends after {{count}} incorrect answers."
+      "orientationRandom": "Random"
     },
     "session": {
       "question": "Which quadrant is {{square}} in?",
@@ -470,8 +459,7 @@
       "pickOnBoard": "Or tap a square on the board",
       "blindfoldMode": "Blindfold Mode",
       "blindfoldModeHint": "Practice using only coordinates without seeing the board",
-      "setupHint": "The knight must visit all 64 squares exactly once using only legal knight moves.",
-      "start": "Start"
+      "setupHint": "The knight must visit all 64 squares exactly once using only legal knight moves."
     },
     "result": {
       "title": "Practice Complete!",
@@ -504,8 +492,7 @@
     "setup": {
       "title": "Algebraic Notation Setup",
       "description": "Master chess notation system with interactive exercises",
-      "questionCount": "{{total}} questions",
-      "start": "Start"
+      "questionCount": "{{total}} questions"
     },
     "result": {
       "title": "Practice Complete!",
@@ -535,8 +522,7 @@
       "invalidFenOnLine": "Invalid FEN on line {{lines}}",
       "invalidFenOnLines": "Invalid FEN on lines {{lines}}",
       "problemCount": "Number of Problems",
-      "shuffle": "Shuffle Problems",
-      "start": "Start"
+      "shuffle": "Shuffle Problems"
     },
     "result": {
       "title": "Practice Complete!",
@@ -777,7 +763,6 @@
   "positionMemory": {
     "setup": {
       "title": "Position Memory",
-      "start": "Start",
       "memorizeTime": "Memorizing time",
       "seconds": "{{count}}s"
     },
@@ -796,7 +781,6 @@
     "description": "Paste any PGN and replay it move by move from memory — no account or saved game required.",
     "setup": {
       "pgnLabel": "PGN",
-      "startButton": "Start Recall",
       "title": "Recall",
       "useSample": "Use a sample game",
       "invalidPgn": "This PGN could not be read. Check the moves and try again.",

@@ -6,14 +6,14 @@ import {
   useTheme,
   borderRadius,
   fontSize,
-  fontWeight,
   spacing,
 } from "../../theme";
 
 /**
- * The challenge rules on a setup screen (the web's `StandardChallengeRules`):
- * the fixed time limit and mistake limit shared by every challenge, and
- * whether this run will be recorded.
+ * Whether a challenge on this setup screen will be recorded (part of the
+ * web's `StandardChallengeRules`). The rules themselves — the time limit and
+ * mistake limit shared by every challenge — sit in the setup footer's hint,
+ * right above the Challenge button, so they are not repeated here.
  */
 export function ChallengeRulesNote() {
   const { t } = useTranslation();
@@ -26,9 +26,6 @@ export function ChallengeRulesNote() {
         { backgroundColor: colors.card, borderColor: colors.border },
       ]}
     >
-      <Text style={[styles.title, { color: colors.foreground }]}>
-        {t("challenge.rules")}
-      </Text>
       <Text style={[styles.note, { color: colors.mutedForeground }]}>
         {auth.status === "signedIn"
           ? t("challenge.willRecord")
@@ -43,11 +40,6 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     borderRadius: borderRadius.lg,
     padding: spacing.md,
-    gap: spacing.xs,
-  },
-  title: {
-    fontSize: fontSize.md,
-    fontWeight: fontWeight.semibold,
   },
   note: {
     fontSize: fontSize.sm,

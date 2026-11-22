@@ -1,4 +1,3 @@
-import { useTranslation } from "react-i18next";
 import { useRouter } from "expo-router";
 import {
   PRESET_POSITIONS,
@@ -12,7 +11,6 @@ import { useFenSettings } from "../../../features/fen/hooks";
 import { serializeFenSessionParams } from "../../../features/fen/lib/route-params";
 
 export default function FenSetup() {
-  const { t } = useTranslation();
   const router = useRouter();
   const { settings, isLoaded, updateSettings } = useFenSettings();
 
@@ -41,7 +39,6 @@ export default function FenSetup() {
   return (
     <PracticeSetupScreen
       isLoaded={isLoaded}
-      startLabel={t("fen.setup.start")}
       onStart={handleStart}
       startDisabled={cannotStart}
     >
