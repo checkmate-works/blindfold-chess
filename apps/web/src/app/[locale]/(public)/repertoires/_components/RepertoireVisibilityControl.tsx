@@ -6,9 +6,8 @@ import { useRouter } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { localizeActionErrorOrGeneric } from '@/lib/i18n/localize-action-error';
-// Pure catalog leaf (not the '@/lib/points' barrel) — client-safe, no server-only.
-import type { RepertoireVisibility } from '@/lib/points/spend-catalog';
-import { REPERTOIRE_VISIBILITIES, repertoireVisibilityCharge } from '@/lib/points/spend-catalog';
+import type { RepertoireVisibility } from '@/lib/repertoires/visibility';
+import { REPERTOIRE_VISIBILITIES } from '@/lib/repertoires/visibility';
 
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import { useConfirmAction } from '@/app/[locale]/_hooks/use-confirm-action';
@@ -21,33 +20,19 @@ type Props = {
   locale: string;
   /** The repertoire's current visibility tier. */
   current: RepertoireVisibility;
-  /** Coins already spent on this repertoire's visibility (its highest tier reached). */
-  visibilityPaid: number;
-  /** The owner's spendable coin balance. */
-  spendableBalance: number;
 };
 
 /**
  * Owner-only control to change a Kata's visibility tier. Opens a modal listing
- * the three tiers, each labelled with its INCREMENTAL coin cost given what the
- * owner has already paid on this course (`repertoireVisibilityCharge`), so a
- * tier already unlocked reads "Free". Confirming calls the `changeVisibility`
- * action; the server is the source of truth for the charge (this only previews
- * it). On success the page refreshes so the status chip updates.
+ * the three tiers; confirming calls the `changeVisibility` action. On success
+ * the page refreshes so the status chip updates.
  */
-export function RepertoireVisibilityControl({
-  id,
-  locale,
-  current,
-  visibilityPaid,
-  spendableBalance,
-}: Props) {
+export function RepertoireVisibilityControl({ id, locale, current }: Props) {
   const t = useTranslations('Repertoires');
   const router = useRouter();
   const [target, setTarget] = useState<RepertoireVisibility>(current);
   const { isOpen, open, cancel, isPending, error, setError, run } = useConfirmAction();
 
-  const cost = repertoireVisibilityCharge(target, visibilityPaid);
   const changed = target !== current;
 
   function openModal() {
@@ -89,7 +74,6 @@ export function RepertoireVisibilityControl({
       >
         <div className="mt-2 space-y-2">
           {REPERTOIRE_VISIBILITIES.map((value) => {
-            const inc = repertoireVisibilityCharge(value, visibilityPaid);
             const key = VISIBILITY_I18N_KEY[value];
             return (
               <label key={value} className="flex items-start gap-2 text-sm text-foreground">
@@ -104,11 +88,6 @@ export function RepertoireVisibilityControl({
                 <span>
                   {/* Repertoires.visibility.<key> / <key>Help (VISIBILITY_I18N_KEY): Repertoires.visibility.public, Repertoires.visibility.publicHelp, Repertoires.visibility.followersOnly, Repertoires.visibility.followersOnlyHelp, Repertoires.visibility.private, Repertoires.visibility.privateHelp */}
                   <span className="font-medium">{t(`visibility.${key}`)}</span>
-                  <span className="ml-2 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-                    {inc === 0
-                      ? t('visibility.costFree')
-                      : t('visibility.costCoins', { cost: inc })}
-                  </span>
                   <span className="mt-0.5 block text-xs text-muted-foreground">
                     {t(`visibility.${key}Help`)}
                   </span>
@@ -120,19 +99,11 @@ export function RepertoireVisibilityControl({
         {changed && (
           <p className="mt-3 text-sm text-muted-foreground">
             {/* tier: Repertoires.visibility.public, Repertoires.visibility.followersOnly, Repertoires.visibility.private (VISIBILITY_I18N_KEY) */}
-            {cost === 0
-              ? t('visibility.changeBodyFree', {
-                  tier: t(`visibility.${VISIBILITY_I18N_KEY[target]}`),
-                })
-              : t('visibility.changeBody', {
-                  tier: t(`visibility.${VISIBILITY_I18N_KEY[target]}`),
-                  cost,
-                })}
+            {t('visibility.changeBody', {
+              tier: t(`visibility.${VISIBILITY_I18N_KEY[target]}`),
+            })}
           </p>
         )}
-        <p className="mt-1 text-xs text-muted-foreground">
-          {t('visibility.balance', { balance: spendableBalance })}
-        </p>
       </ConfirmationModal>
     </>
   );

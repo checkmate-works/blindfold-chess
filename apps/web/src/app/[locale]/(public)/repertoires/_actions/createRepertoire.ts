@@ -2,10 +2,10 @@
 
 import type { Side } from '@blindfold-chess/types';
 
-import type { RepertoireVisibility } from '@/lib/points/spend-catalog';
 import type { CreateRepertoireResult } from '@/lib/repertoires/mutations';
 import { createRepertoireEntry } from '@/lib/repertoires/mutations';
 import type { RepertoirePhase } from '@/lib/repertoires/validation';
+import type { RepertoireVisibility } from '@/lib/repertoires/visibility';
 
 /**
  * Create a repertoire (型) for the current user from a pasted PGN.
@@ -21,7 +21,7 @@ export async function createRepertoire(input: {
   phase: RepertoirePhase;
   description?: string | null;
   pgn: string;
-  /** Visibility to create-and-publish at (coin-gated). Absent → public (free). */
+  /** Visibility to create-and-publish at. Absent → public. */
   visibility?: RepertoireVisibility;
   openingIds?: string[];
   /** Position-keyed "why this move" notes authored in board mode. */

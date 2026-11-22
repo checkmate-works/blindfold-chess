@@ -5,11 +5,9 @@ import type { Side } from '@blindfold-chess/types';
 import { parseBoardAnnotations } from '@/lib/board-annotations/parse';
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
 import { isEmptyBoardAnnotations } from '@/lib/board-annotations/types';
-// Deep import (not the '@/lib/points' barrel): spend-catalog is pure, whereas
-// the barrel pulls in `server-only` consume/redeem modules that must not reach
-// this validator's client-reachable bundle.
-import type { RepertoireVisibility } from '@/lib/points/spend-catalog';
-import { isRepertoireVisibility } from '@/lib/points/spend-catalog';
+
+import type { RepertoireVisibility } from './visibility';
+import { isRepertoireVisibility } from './visibility';
 
 /**
  * Validation + decomposition for an imported repertoire (型 / course).
@@ -47,9 +45,7 @@ export type RepertoireImportInput = {
   description?: string | null;
   pgn: string;
   /**
-   * The visibility to create-and-publish at (coin-gated). Absent → `public`
-   * (free, the default). `followers_only` / `private` charge coins in the
-   * create transaction.
+   * The visibility to create-and-publish at. Absent → `public` (the default).
    */
   visibility?: RepertoireVisibility;
   /** Opening ids to link (only honoured when phase === 'opening'). */

@@ -11,24 +11,11 @@ export {
   POINT_SOURCES,
   PURCHASE_SOURCE,
   REDEMPTION_SOURCE,
-  REPERTOIRE_VISIBILITY_SOURCE,
   SPENDABLE_CONSUME_ORDER,
   buildIdempotencyKey,
   entityTypeForSource,
   sourceForEntity,
 } from './constants';
-export {
-  REPERTOIRE_VISIBILITIES,
-  REPERTOIRE_VISIBILITY_COST,
-  isRepertoireVisibility,
-  repertoireVisibilityCharge,
-} from './spend-catalog';
-export type { RepertoireVisibility } from './spend-catalog';
-export {
-  chargeRepertoireVisibility,
-  getRepertoireVisibilityPaid,
-} from './charge-repertoire-visibility';
-export type { ChargeRepertoireVisibilityResult } from './charge-repertoire-visibility';
 export { chargeAiReview, refundAiReviewCharge } from './charge-ai-review';
 export type { ChargeAiReviewResult } from './charge-ai-review';
 export { consumeMaiaGamePoint, hasMaiaGameCharge } from './consume-maia-game-point';

@@ -20,9 +20,6 @@ import { FaPlus } from 'react-icons/fa';
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
 import { isEmptyBoardAnnotations } from '@/lib/board-annotations/types';
 import { localizeActionErrorOrGeneric } from '@/lib/i18n/localize-action-error';
-// Pure catalog leaf (not the '@/lib/points' barrel) — client-safe, no server-only.
-import type { RepertoireVisibility } from '@/lib/points/spend-catalog';
-import { REPERTOIRE_VISIBILITIES, REPERTOIRE_VISIBILITY_COST } from '@/lib/points/spend-catalog';
 import { detectOpeningIdsFromPgn } from '@/lib/repertoires/detect-openings';
 import type { RepertoireFormField } from '@/lib/repertoires/form-error-fields';
 import { repertoireErrorField } from '@/lib/repertoires/form-error-fields';
@@ -33,9 +30,10 @@ import {
   REPERTOIRE_NAME_MAX,
   REPERTOIRE_PHASES,
 } from '@/lib/repertoires/validation';
+import type { RepertoireVisibility } from '@/lib/repertoires/visibility';
+import { REPERTOIRE_VISIBILITIES } from '@/lib/repertoires/visibility';
 
 import { BoardFenTabs } from '@/app/[locale]/(public)/practice/(free-play)/_components/BoardFenTabs';
-import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import { PgnDiagnosisHint } from '@/app/[locale]/_components/PgnDiagnosisHint';
 
 import { createRepertoire } from '../_actions/createRepertoire';
@@ -61,8 +59,6 @@ const FIELDS: readonly RepertoireFormField[] = ['name', 'moves'];
 
 type Props = {
   openings: OpeningOption[];
-  /** The author's spendable coin balance — shown next to the paid tiers. */
-  spendableBalance: number;
   /** Prefills the PGN textarea — e.g. a finished game handed in by another feature. */
   initialPgn?: string;
   /** Prefills the side radio to match {@link initialPgn}'s player colour. */
@@ -82,20 +78,13 @@ type Props = {
  * server-side into one line per variation; validation (move legality across all
  * variations) also happens in `createRepertoire`.
  */
-export function RepertoireImportForm({
-  openings,
-  spendableBalance,
-  initialPgn,
-  initialSide,
-  initialName,
-}: Props) {
+export function RepertoireImportForm({ openings, initialPgn, initialSide, initialName }: Props) {
   const t = useTranslations('Repertoires');
   const [name, setName] = useState(initialName ?? '');
   const [description, setDescription] = useState('');
   const [side, setSide] = useState<Side>(initialSide ?? 'white');
   const [phase, setPhase] = useState<RepertoirePhase>('opening');
-  // Visibility to create-and-publish at. `public` is free; the paid tiers open
-  // a coin-confirm modal before submitting.
+  // Visibility to create-and-publish at.
   const [visibility, setVisibility] = useState<RepertoireVisibility>('public');
   // Linked openings, auto-detected from the PGN until the author picks by
   // hand — auto-detection is a starting point, not a correction.
@@ -113,7 +102,7 @@ export function RepertoireImportForm({
   // board for whichever move the cursor rests on; created with the kata.
   const [annotations, setAnnotations] = useState<Record<string, string>>({});
   const [shapes, setShapes] = useState<Record<string, BoardAnnotations>>({});
-  // Submit protocol: editing → (coin confirm →) submitting → succeeded, then
+  // Submit protocol: editing → submitting → succeeded, then
   // the redirect to the new kata. A rejected submit is reported against the
   // control at fault (see `repertoireErrorField`) and focuses it — this form
   // is several screens tall, so a message rendered only next to the button
@@ -162,8 +151,6 @@ export function RepertoireImportForm({
     dispatchOpeningLinks({ type: 'picked', ids });
   }
 
-  const visibilityCost = REPERTOIRE_VISIBILITY_COST[visibility];
-
   function submit() {
     return lifecycle.run(async () => {
       const result = await createRepertoire({
@@ -193,11 +180,6 @@ export function RepertoireImportForm({
 
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
-    // A paid tier confirms the coin charge first; public publishes straight away.
-    if (visibilityCost > 0) {
-      lifecycle.requestConfirm();
-      return;
-    }
     void submit();
   }
 
@@ -378,7 +360,6 @@ export function RepertoireImportForm({
         </legend>
         <div className="mt-2 space-y-2">
           {REPERTOIRE_VISIBILITIES.map((value) => {
-            const cost = REPERTOIRE_VISIBILITY_COST[value];
             const key = VISIBILITY_I18N_KEY[value];
             return (
               <label key={value} className="flex items-start gap-2 text-sm text-foreground">
@@ -393,9 +374,6 @@ export function RepertoireImportForm({
                 <span>
                   {/* Repertoires.visibility.<key> / <key>Help (VISIBILITY_I18N_KEY): Repertoires.visibility.public, Repertoires.visibility.publicHelp, Repertoires.visibility.followersOnly, Repertoires.visibility.followersOnlyHelp, Repertoires.visibility.private, Repertoires.visibility.privateHelp */}
                   <span className="font-medium">{t(`visibility.${key}`)}</span>
-                  <span className="ml-2 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-                    {cost === 0 ? t('visibility.costFree') : t('visibility.costCoins', { cost })}
-                  </span>
                   <span className="mt-0.5 block text-xs text-muted-foreground">
                     {t(`visibility.${key}Help`)}
                   </span>
@@ -404,37 +382,12 @@ export function RepertoireImportForm({
             );
           })}
         </div>
-        <p className="mt-2 text-xs text-muted-foreground">
-          {t('visibility.balance', { balance: spendableBalance })}
-        </p>
       </fieldset>
 
       {/* Form-wide errors only — anything attributable to a control is
           rendered against that control instead, so the same sentence never
           appears twice. */}
       <FormErrorBanner ref={lifecycle.summaryRef} message={lifecycle.formMessage} />
-
-      <ConfirmationModal
-        isOpen={lifecycle.confirmOpen}
-        title={t('visibility.confirmTitle')}
-        message={
-          // tier: Repertoires.visibility.public, Repertoires.visibility.followersOnly, Repertoires.visibility.private (VISIBILITY_I18N_KEY)
-          spendableBalance >= visibilityCost
-            ? t('visibility.confirmBody', {
-                tier: t(`visibility.${VISIBILITY_I18N_KEY[visibility]}`),
-                cost: visibilityCost,
-              })
-            : t('visibility.confirmInsufficient', {
-                cost: visibilityCost,
-                balance: spendableBalance,
-              })
-        }
-        confirmText={t('visibility.confirm')}
-        cancelText={t('visibility.cancel')}
-        isLoading={lifecycle.busy}
-        onConfirm={() => void submit()}
-        onCancel={lifecycle.cancelConfirm}
-      />
 
       <LocalizedUnsavedChangesDialog open={isBlocking} onConfirm={confirm} onCancel={cancel} />
 

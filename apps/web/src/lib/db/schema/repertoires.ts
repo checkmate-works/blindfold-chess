@@ -78,8 +78,8 @@ export const repertoires = pgTable(
     startingFen: varchar('starting_fen', { length: 100 }),
     /**
      * Lifecycle + visibility, one value at a time. `building` is a lifecycle
-     * state; the other three are the coin-gated visibility tiers (the
-     * `RepertoireVisibility` union in `@/lib/points`):
+     * state; the other three are the visibility tiers (the
+     * `RepertoireVisibility` union in `@/lib/repertoires/visibility`):
      *
      * - `building` — the owner's workshop. Default on the row insert, but the
      *   /new create-and-publish flow overwrites it to the chosen visibility in
@@ -87,17 +87,15 @@ export const repertoires = pgTable(
      *   creates it empty. Never listed, never matched by the kata check (a
      *   course too thin to check would manufacture false deviations); owner-only
      *   at the read path.
-     * - `public` — free (the default choice). Catalogue content, surfaced on
+     * - `public` — the default choice. Catalogue content, surfaced on
      *   the opening topic pages it is linked to and viewable by anyone.
-     * - `followers_only` — coin-gated. Listed nowhere public; at the read path
+     * - `followers_only` — listed nowhere public; at the read path
      *   viewable only by the owner and users who follow them (`user_follows`).
-     * - `private` — coin-gated. Owner-only everywhere, including the direct URL.
+     * - `private` — owner-only everywhere, including the direct URL.
      *
      * Unlike `building`, visibility is NOT one-way: the owner can move a course
      * among public / followers_only / private freely (see
-     * `changeRepertoireVisibility`). Coins are charged only the first time a
-     * paid tier is unlocked (increment above the highest tier ever paid), so
-     * flipping back and forth is free once unlocked. `publishedAt` is stamped
+     * `changeRepertoireVisibility`). `publishedAt` is stamped
      * on the first move out of `building` and left as-is thereafter.
      *
      * NOTE the read path enforces these tiers as a HARD gate (private/followers
