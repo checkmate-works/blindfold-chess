@@ -6,6 +6,8 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import type { Sql } from 'postgres';
 import postgres from 'postgres';
 
+import { LOCAL_DATABASE_URL } from '@/lib/local-supabase';
+
 import { type ProbeOutcome, probeDatabase } from './health-probe';
 import { derivePoolerMode, resolvePoolMax, usesSupavisorUser } from './pooler-mode';
 import {
@@ -67,7 +69,7 @@ const connectionString =
   (USE_SESSION_POOLER ? process.env.POSTGRES_URL_NON_POOLING : undefined) ||
   process.env.POSTGRES_URL ||
   process.env.DATABASE_URL ||
-  'postgresql://postgres:postgres@127.0.0.1:54322/postgres';
+  LOCAL_DATABASE_URL;
 
 /**
  * Stamped on every server-side Sentry event, so a connection-level failure

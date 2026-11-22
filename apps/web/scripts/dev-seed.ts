@@ -18,7 +18,7 @@
  * `chess_openings`.
  *
  * Required env in apps/web/.env.local:
- *   - NEXT_PUBLIC_SUPABASE_URL  (defaults to http://127.0.0.1:54321 if unset)
+ *   - NEXT_PUBLIC_SUPABASE_URL  (defaults to the local Supabase API if unset)
  *   - SUPABASE_SERVICE_ROLE_KEY (from `pnpm supabase status -o json`)
  *   - DATABASE_URL / POSTGRES_URL (defaults to local Supabase Postgres)
  */
@@ -28,6 +28,7 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 
 import { ARTICLES_CACHE_TAG, DAILY_PUZZLE_CACHE_TAG } from '../src/lib/cache-tags';
+import { LOCAL_DATABASE_URL, LOCAL_SUPABASE_URL } from '../src/lib/local-supabase';
 import { reseedArticles } from './dev-seed/articles';
 import { reseedChallenges } from './dev-seed/challenges';
 import { reseedChunks } from './dev-seed/chunks';
@@ -46,9 +47,9 @@ const dbUrl =
   process.env.POSTGRES_URL_NON_POOLING ||
   process.env.POSTGRES_URL ||
   process.env.DATABASE_URL ||
-  'postgresql://postgres:postgres@127.0.0.1:54322/postgres';
+  LOCAL_DATABASE_URL;
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'http://127.0.0.1:54321';
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? LOCAL_SUPABASE_URL;
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!serviceKey) {

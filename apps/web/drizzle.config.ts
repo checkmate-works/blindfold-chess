@@ -1,6 +1,8 @@
 import dotenv from 'dotenv';
 import { defineConfig } from 'drizzle-kit';
 
+import { LOCAL_DATABASE_URL } from './src/lib/local-supabase';
+
 dotenv.config({ path: ['.env.local', '.env'] });
 
 // POSTGRES_URL_NON_POOLING: Supavisor session pooler (preferred for schema
@@ -13,7 +15,7 @@ const databaseUrl =
   process.env.POSTGRES_URL_NON_POOLING ||
   process.env.POSTGRES_URL ||
   process.env.DATABASE_URL ||
-  'postgresql://postgres:postgres@127.0.0.1:54322/postgres';
+  LOCAL_DATABASE_URL;
 
 export default defineConfig({
   schema: './src/lib/db/schema.ts',
