@@ -24,11 +24,8 @@ export { getPointBalanceSummary } from './get-balance';
 export type { PointBalanceSummary } from './get-balance';
 export { classifyKind, countPointHistory, getPointHistory } from './get-history';
 export type { PointHistoryEntry } from './get-history';
-export { grantAdminPoints } from './grant-admin';
-export type { AdminGrantResult } from './grant-admin';
 export { countPointEvents, listPointEvents, POINT_EVENT_SOURCE_OPTIONS } from './list-events';
 export type { PointEventFilters, PointEventRow } from './list-events';
-export { clawbackPointsForPost } from './grant-points';
 export {
   AD_FREE_DAYS_PER_POINT,
   AD_FREE_PRODUCT_CODE,

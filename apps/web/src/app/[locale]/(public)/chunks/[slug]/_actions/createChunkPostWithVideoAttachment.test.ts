@@ -67,10 +67,6 @@ vi.mock('@/lib/security/rate-limit');
 
 vi.mock('next/navigation');
 
-vi.mock('@/lib/points', () => ({
-  clawbackPointsForPost: vi.fn().mockResolvedValue(undefined),
-}));
-
 vi.mock('@/lib/chunks/queries', () => ({
   getChunkBySlug: (slug: string) => mockGetChunkBySlug(slug),
 }));

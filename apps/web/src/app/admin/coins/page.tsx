@@ -7,8 +7,9 @@
  * is the "who was granted / who spent what" view — batch grants (like_grant),
  * redemptions, and Maia spends all surface here, not just admin grants.
  *
- * Issuing coins lives on its own focused page (/admin/coins/grant), reached
- * via the "Grant coins" button; this page is read-only over the ledger.
+ * The coin economy was retired in 2026-11: nothing mints or spends coins any
+ * more, so this page is a read-only view of a ledger that no longer grows. It
+ * stays until the `point_*` tables themselves are dropped.
  *
  * "Coin" is the facing name for the points ledger (naming rule in
  * src/lib/points/CLAUDE.md). The ledger stays "points" at the
@@ -19,16 +20,13 @@
  * `point_events` is already the immutable, idempotent source of truth for
  * every coin movement. This page only reads it; coin movements are NOT
  * duplicated into `moderation_actions` / `user_activity_log` (which would
- * split the source of truth). Admin grant provenance still lands in
- * `moderation_actions` via createPointGrant for the audit log.
+ * split the source of truth).
  *
  * @flow
  * 1. Admin opens /admin/coins → sees recent ledger rows.
  * 2. Pick filters → the table reloads with matching rows, newest first.
- * 3. "Grant coins" → /admin/coins/grant; on success the new row appears here.
  */
 import { getTranslations } from 'next-intl/server';
-import Link from 'next/link';
 
 import { buildAdminListHref } from '@/app/admin/_lib/build-list-href';
 import { formatDateTime } from '@/app/admin/_lib/format';
@@ -130,17 +128,7 @@ export default async function AdminCoinsPage({
   });
 
   return (
-    <AdminPageLayout
-      breadcrumbs={[{ label: t('coins.title') }]}
-      actions={
-        <Link
-          href="/admin/coins/grant"
-          className="px-4 py-2 rounded bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity"
-        >
-          {t('coins.grant')}
-        </Link>
-      }
-    >
+    <AdminPageLayout breadcrumbs={[{ label: t('coins.title') }]}>
       <div className="mb-4">
         <CoinTransactionFilters
           values={{

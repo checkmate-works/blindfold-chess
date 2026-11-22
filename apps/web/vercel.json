@@ -9,10 +9,6 @@
       "schedule": "30 3 * * *"
     },
     {
-      "path": "/api/cron/like-coin-grants",
-      "schedule": "0 4 * * *"
-    },
-    {
       "path": "/api/cron/ai-review-jobs",
       "schedule": "*/10 * * * *"
     },

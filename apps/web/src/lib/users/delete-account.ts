@@ -62,8 +62,7 @@ import { removeAllAvatarFiles } from './avatar-storage';
  * physical purge. The *received* half has no FK to ride — `likes` is
  * polymorphic over `(target_type, target_id)` with no constraint on the target —
  * so it is deleted explicitly here, synchronously at deletion time, by
- * {@link deleteReceivedLikes}. (Coins already paid for those likes are NOT
- * clawed back; the `point_events` ledger is append-only — see grant-like-coins.)
+ * {@link deleteReceivedLikes}.
  *
  * ### Why `username` is kept (NOT nulled)
  * Retained deliberately to prevent re-registration under the same handle and

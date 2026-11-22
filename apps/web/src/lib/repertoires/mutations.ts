@@ -18,7 +18,6 @@ import {
 } from '@/lib/db';
 import { countRows } from '@/lib/db/list-query';
 import type { DbTx } from '@/lib/db/types';
-import { clawbackPointsForPost } from '@/lib/points';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { isValidUUID } from '@/lib/validations/uuid';
 
@@ -719,23 +718,13 @@ export async function deleteRepertoireEntry(id: string): Promise<DeleteRepertoir
   if ('error' in guard) return { error: guard.error };
   const { user } = guard;
 
-  const deleted = await db.transaction(async (tx) => {
-    const rows = await tx
-      .update(repertoires)
-      .set({ deletedAt: new Date() })
-      .where(
-        and(eq(repertoires.id, id), eq(repertoires.userId, user.id), isNull(repertoires.deletedAt))
-      )
-      .returning({ id: repertoires.id });
-
-    if (rows.length === 0) return rows;
-
-    // Reverse the publish reward when the course is removed — a no-op for a
-    // never-published (`building`) repertoire, since no grant row exists, and
-    // capped at the author's live `earned` balance (already-spent coins stay).
-    await clawbackPointsForPost(tx, user.id, { type: 'repertoire', id });
-    return rows;
-  });
+  const deleted = await db
+    .update(repertoires)
+    .set({ deletedAt: new Date() })
+    .where(
+      and(eq(repertoires.id, id), eq(repertoires.userId, user.id), isNull(repertoires.deletedAt))
+    )
+    .returning({ id: repertoires.id });
 
   if (deleted.length === 0) return { error: 'notFound' };
   revalidateRepertoireCatalog();

@@ -28,7 +28,6 @@ const mockValidateForkSource = vi.fn();
 const mockValidateAndDedupeTagIds = vi.fn();
 const mockInsertPositionTags = vi.fn();
 const mockReplacePositionTags = vi.fn();
-const mockClawbackPointsForPost = vi.fn();
 const mockNotifyFollowersOfNewPosition = vi.fn();
 const mockNotifyPositionForked = vi.fn();
 const mockEvaluateRanksAfterCreate = vi.fn();
@@ -50,10 +49,6 @@ vi.mock('@/lib/db/rank-evaluation', () => ({
 vi.mock('@/lib/notifications/notification', () => ({
   notifyFollowersOfNewPosition: (...args: unknown[]) => mockNotifyFollowersOfNewPosition(...args),
   notifyPositionForked: (...args: unknown[]) => mockNotifyPositionForked(...args),
-}));
-
-vi.mock('@/lib/points', () => ({
-  clawbackPointsForPost: (...args: unknown[]) => mockClawbackPointsForPost(...args),
 }));
 
 vi.mock('@/lib/positions/fork', () => ({
@@ -83,6 +78,13 @@ vi.mock('@/lib/db', async () => ({
         where: () => ({
           limit: () => mockSelectLimit(),
         }),
+      }),
+    }),
+    // The delete path is a single statement, so it writes on `db` directly;
+    // it shares the update spy with the transactional paths.
+    update: () => ({
+      set: (values: unknown) => ({
+        where: (...args: unknown[]) => mockTxUpdateWhere({ values, where: args }),
       }),
     }),
     transaction: async (fn: (tx: unknown) => Promise<unknown>) => {
@@ -700,7 +702,7 @@ describe('deletePositionEntry', () => {
     expect(mockTxUpdateWhere).not.toHaveBeenCalled();
   });
 
-  it('soft-deletes the row and claws back points, revalidating nothing', async () => {
+  it('soft-deletes the row, revalidating nothing', async () => {
     const { deletePositionEntry } = await import('./user-position-mutations');
     const result = await deletePositionEntry(baseDeleteParams);
 
@@ -708,10 +710,6 @@ describe('deletePositionEntry', () => {
     expect(mockTxUpdateWhere).toHaveBeenCalledTimes(1);
     const updateCall = mockTxUpdateWhere.mock.calls[0][0] as { values: Record<string, unknown> };
     expect(updateCall.values.deletedAt).toBeInstanceOf(Date);
-    expect(mockClawbackPointsForPost).toHaveBeenCalledWith(expect.anything(), TEST_USER_ID, {
-      type: 'position_memory',
-      id: TEST_POSITION_ID,
-    });
     // Soft-delete leaves the row as the durable record — no activity log.
     expect(mockLogActivityEvent).not.toHaveBeenCalled();
     expect(mockRevalidatePath).not.toHaveBeenCalled();

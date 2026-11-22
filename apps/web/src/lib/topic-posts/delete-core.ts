@@ -5,7 +5,6 @@ import { and, eq, isNull } from 'drizzle-orm';
 import { TOPIC_POST_COUNTS_CACHE_TAG, grantStatusTag } from '@/lib/cache-tags';
 import { db, postImageAttachments, topicPosts, userGrants } from '@/lib/db';
 import type { DbTx } from '@/lib/db/types';
-import { clawbackPointsForPost } from '@/lib/points';
 import {
   type StorageBucketClient,
   removePostImagesBestEffort,
@@ -46,11 +45,8 @@ export async function purgePostImageAttachmentsFromStorage(
 
 /**
  * The transactional core shared by user-initiated and admin-initiated
- * post deletion. Soft-deletes the `topic_posts` row, revokes any legacy
- * `user_grants` rows the post triggered, and claws back the post's point
- * grant from the post author (capped at the author's current balance, so
- * already-spent coins are not pursued and the balance never goes
- * negative).
+ * post deletion. Soft-deletes the `topic_posts` row and revokes any legacy
+ * `user_grants` rows the post triggered.
  *
  * Caller responsibilities (NOT done here, because they diverge between
  * user and admin paths):
@@ -65,20 +61,18 @@ export async function purgePostImageAttachmentsFromStorage(
  *     path revalidates the admin tables)
  *
  * @param postId The post being deleted. Used as both the soft-delete
- *   target and the source for `userGrants` revocation and the points
- *   clawback ledger entry.
- * @param authorUserId The user whose points balance the clawback is
- *   debited from. On the user path this is `user.id`; on the admin path
- *   it is the post's own `userId`, NOT the admin actor. `null` when the
- *   author was anonymised (account purged) — the clawback is skipped, since
- *   their ledger was already cascade-removed and there is no balance to debit.
+ *   target and the source for `userGrants` revocation.
+ * @param authorUserId The post's author, whose cached grant status is
+ *   invalidated. On the user path this is `user.id`; on the admin path it is
+ *   the post's own `userId`, NOT the admin actor. `null` when the author was
+ *   anonymised (account purged) — there is no grant status left to refresh.
  * @param options.requireNotDeleted When `true`, the soft-delete is
  *   gated on `deletedAt IS NULL`, so a re-delete is a no-op. The user
  *   path sets this to preserve idempotency; the admin path leaves it
  *   off because moderators may re-delete to update audit context (the
  *   `moderation_actions` insert is what changes on a re-run).
  * @param options.insideTransaction Optional callback run inside the
- *   same DB transaction as the soft-delete / grants revoke / clawback.
+ *   same DB transaction as the soft-delete / grants revoke.
  *   The admin path uses this to write its `moderation_actions` audit
  *   row atomically with the deletion — preserving the original
  *   single-transaction semantics this function was extracted from.
@@ -113,14 +107,6 @@ export async function deletePostCore(
           isNull(userGrants.revokedAt)
         )
       );
-
-    // Reverse the creation point grant for the removed post. Capped at
-    // the author's current `earned` balance, so coins already spent are
-    // not pursued — the balance never goes negative and self-deletion
-    // never lands a user in debt. A no-op for posts that never earned
-    // points (non point-eligible topic types), and for an anonymised author
-    // (null id — clawbackPointsForPost no-ops, balance already cascade-removed).
-    await clawbackPointsForPost(tx, authorUserId, { type: 'topic_post', id: postId });
 
     if (options.insideTransaction) {
       await options.insideTransaction(tx);

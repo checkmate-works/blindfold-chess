@@ -7,20 +7,7 @@ import { and, eq, isNull } from 'drizzle-orm';
 
 import { db, positions } from '@/lib/db';
 import { logModerationAction } from '@/lib/moderation/audit';
-import { type PointPostEntityType, clawbackPointsForPost } from '@/lib/points';
 import { getClientIp } from '@/lib/security/client-ip';
-
-/**
- * Map a `positions.type` row value to the point-system entity type used
- * by the ledger. `chunk` and any unrecognized type returns `null` —
- * those rows did not earn points on creation so there is nothing to
- * clawback.
- */
-function pointEntityTypeFor(positionType: string): PointPostEntityType | null {
-  if (positionType === 'puzzle') return 'puzzle';
-  if (positionType === 'memory') return 'position_memory';
-  return null;
-}
 
 type SoftDeletePositionConfig = {
   /** Paths to revalidate after a successful delete. */
@@ -74,22 +61,8 @@ export async function softDeletePosition(
 
   const ipAddress = await getClientIp();
 
-  const pointEntityType = pointEntityTypeFor(position.type);
-
   await db.transaction(async (tx) => {
     await tx.update(positions).set({ deletedAt: new Date() }).where(eq(positions.id, id));
-
-    // Moderator removal claws back the position author's point grant (NOT
-    // the admin actor's), capped at the author's current balance. No-op for
-    // position types that never earned points (e.g., `chunk`), and for an
-    // anonymised author (null id — clawbackPointsForPost no-ops, balance
-    // already cascade-removed).
-    if (pointEntityType) {
-      await clawbackPointsForPost(tx, position.userId, {
-        type: pointEntityType,
-        id,
-      });
-    }
 
     await logModerationAction(tx, {
       actorId: auth.userId,

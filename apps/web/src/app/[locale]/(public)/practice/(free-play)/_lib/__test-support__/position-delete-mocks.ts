@@ -59,10 +59,6 @@ export const positionDeleteMocks = {
     };
   },
 
-  points: () => ({
-    clawbackPointsForPost: vi.fn().mockResolvedValue(undefined),
-  }),
-
   /**
    * Cuts the request-layer cookie chain (next/headers, billing, grants) that
    * the shared position-mutation lib pulls in via its dan-promotion cookie

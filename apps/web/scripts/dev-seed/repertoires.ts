@@ -62,11 +62,8 @@ const SEED_REPERTOIRES: SeedRepertoire[] = [
  * Mirrors `createRepertoireEntry`'s write shape — a `repertoires` row published
  * straight to `public`, one `repertoire_lines` row per line, and detected
  * `repertoire_openings` links — but goes through the DB directly, because that
- * mutation authenticates off a session. Two deliberate omissions:
+ * mutation authenticates off a session. One deliberate difference:
  *
- * - The publish coin reward (`grantPointsForPost`). It lives behind the
- *   `server-only` points barrel, and a seeded wallet balance is not what this
- *   script exists to produce.
  * - Line names. The real import flow leaves them NULL (the user names lines
  *   afterwards); naming them here is what makes the seeded course readable in
  *   the line list, which is the whole point of having one locally.

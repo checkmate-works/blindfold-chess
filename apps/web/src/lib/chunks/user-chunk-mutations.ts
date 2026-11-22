@@ -8,7 +8,6 @@ import { diffFields } from '@/lib/db/diff-fields';
 import { isUniqueViolation } from '@/lib/db/extract-pg-error-code';
 import { linkNewChunkToGameMove } from '@/lib/db/game-chunks';
 import { notifyGameOwnerOfChunkLink } from '@/lib/notifications/game-chunk-link-notification';
-import { clawbackPointsForPost } from '@/lib/points';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 
 import { dispatchChunkEvent } from './chunk-event-handlers';
@@ -62,7 +61,7 @@ async function isSlugTaken(slug: string): Promise<boolean> {
  * Shared core for the user-facing `chunks` CRUD Server Actions. Mirrors the
  * shape of `lib/positions/user-position-mutations.ts` — same auth + ban +
  * rate-limit guard, ownership / soft-delete checks, in-transaction writes,
- * point grant / clawback, activity log, and revalidation — minus the
+ * activity log, and revalidation — minus the
  * positions-specific concerns (no fork lineage, no type discriminator,
  * no follower notifications since chunks are a catalog and not a feed
  * entity). Each public Server Action under `/chunks/_actions/` is a thin
@@ -494,11 +493,6 @@ export async function deleteChunkEntry(id: string): Promise<DeleteChunkResult> {
       .update(chunks)
       .set({ deletedAt })
       .where(and(eq(chunks.id, id), eq(chunks.userId, user.id), isNull(chunks.deletedAt)));
-
-    // Reverse the creation point grant. Capped at the live `earned`
-    // balance, so coins already spent are not pursued and the balance
-    // never goes negative.
-    await clawbackPointsForPost(tx, user.id, { type: 'chunk', id });
 
     // Auto-reject any still-pending edit requests for the same
     // reason publish does it: the /chunks/[slug]/edit-requests page

@@ -20,7 +20,6 @@ const mockTxFeedInsertValues = vi.fn();
 const mockNotifyFollowersOfNewChunk = vi.fn();
 const mockNotifyGameOwnerOfChunkLink = vi.fn();
 const mockFindChunkBySlug = vi.fn();
-const mockClawbackPointsForPost = vi.fn();
 const mockLogActivityEvent = vi.fn();
 const mockIsUniqueViolation = vi.fn();
 const mockLinkNewChunkToGameMove = vi.fn();
@@ -37,10 +36,6 @@ vi.mock('@/lib/notifications/notification', () => ({
 
 vi.mock('@/lib/notifications/game-chunk-link-notification', () => ({
   notifyGameOwnerOfChunkLink: (...args: unknown[]) => mockNotifyGameOwnerOfChunkLink(...args),
-}));
-
-vi.mock('@/lib/points', () => ({
-  clawbackPointsForPost: (...args: unknown[]) => mockClawbackPointsForPost(...args),
 }));
 
 vi.mock('@/lib/db/game-chunks', () => ({
@@ -879,7 +874,7 @@ describe('deleteChunkEntry', () => {
     expect(mockTxUpdateWhere).not.toHaveBeenCalled();
   });
 
-  it('soft-deletes the chunk and runs point clawback inside the transaction', async () => {
+  it('soft-deletes the chunk inside the transaction', async () => {
     mockSelectLimit.mockResolvedValue([
       {
         id: TEST_CHUNK_ID,
@@ -896,10 +891,6 @@ describe('deleteChunkEntry', () => {
     expect(mockTxUpdateWhere).toHaveBeenCalledTimes(1);
     const updateCall = mockTxUpdateWhere.mock.calls[0][0] as { values: Record<string, unknown> };
     expect(updateCall.values).toHaveProperty('deletedAt');
-    expect(mockClawbackPointsForPost).toHaveBeenCalledWith(expect.anything(), TEST_USER_ID, {
-      type: 'chunk',
-      id: TEST_CHUNK_ID,
-    });
   });
 
   it('does not write an activity-log row on delete (soft-delete row is the record)', async () => {

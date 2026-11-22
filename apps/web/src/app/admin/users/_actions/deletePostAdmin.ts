@@ -61,8 +61,7 @@ export async function deletePostAdmin(
   // already-soft-deleted post to record a new `moderation_actions` entry
   // (e.g., updating the reason). The soft-delete update itself becomes a
   // no-op write in that case; the audit log written inside the same
-  // transaction is what changes. Clawback is debited from the POST
-  // AUTHOR, not the admin actor.
+  // transaction is what changes.
   await deletePostCore(postId, post.userId, {
     requireNotDeleted: false,
     insideTransaction: async (tx) => {

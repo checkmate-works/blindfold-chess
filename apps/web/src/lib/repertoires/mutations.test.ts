@@ -26,10 +26,6 @@ vi.mock('./queries', () => ({
   assertRepertoireOwner: vi.fn(),
 }));
 
-vi.mock('@/lib/points', () => ({
-  clawbackPointsForPost: vi.fn(),
-}));
-
 vi.mock('@/lib/db/list-query', () => ({
   countRows: vi.fn(),
 }));
