@@ -191,6 +191,10 @@ Pass `-- --any-branch` to build from another branch.
   distribution certificate and provisioning profile (answer Yes to each), and
   the first submission creates the app record in App Store Connect. Later
   builds run non-interactively through `testflight`.
+- EAS uploads only files Git tracks, so the Stockfish engine (gitignored,
+  copied from `node_modules`) is missing on the build machine. The
+  `eas-build-post-install` script in `package.json` runs `copy-stockfish`
+  there after dependencies are installed; keep it when renaming scripts.
 - After App Store Connect finishes processing (10-30 minutes), add yourself to
   an internal testing group in TestFlight to install it. Internal testing
   needs no review.
