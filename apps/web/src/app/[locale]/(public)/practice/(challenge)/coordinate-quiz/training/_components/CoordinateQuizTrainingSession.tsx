@@ -6,6 +6,7 @@ import { COORDINATE_QUIZ_FEEDBACK_MS } from '@blindfold-chess/features/coordinat
 import type { Square } from '@blindfold-chess/types';
 
 import { useTrainingSessionShell } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-training-session-shell';
+import { PAGE_PANEL_SCROLL_MARGIN } from '@/app/[locale]/_components/PagePanel';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { CoordinateQuizPlaySkeleton } from '../../_components/CoordinateQuizPlaySkeleton';
@@ -81,14 +82,14 @@ export default function CoordinateQuizTrainingSession({
   // Show loading state while question is being generated
   if (!currentQuestion) {
     return (
-      <div id={sessionElementId} className="min-h-screen">
+      <div id={sessionElementId} className={`min-h-screen ${PAGE_PANEL_SCROLL_MARGIN}`}>
         <CoordinateQuizPlaySkeleton />
       </div>
     );
   }
 
   return (
-    <div id={sessionElementId} className="min-h-screen">
+    <div id={sessionElementId} className={`min-h-screen ${PAGE_PANEL_SCROLL_MARGIN}`}>
       <CoordinateQuizTrainingPlaying
         locale={locale}
         boardOrientation={boardOrientation}

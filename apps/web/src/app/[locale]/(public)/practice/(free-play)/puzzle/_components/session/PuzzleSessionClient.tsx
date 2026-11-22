@@ -245,7 +245,10 @@ export function PuzzleSessionClient({
 
   return (
     <div className="space-y-8">
-      <div ref={titleAnchorRef} data-testid="title-anchor">
+      {/* `scroll-mt-8` repeats the `pt-8` the locale layout puts above the
+          title, so scrolling to the title keeps that gap on screen instead
+          of pressing the title against the viewport edge. */}
+      <div ref={titleAnchorRef} data-testid="title-anchor" className="scroll-mt-8">
         <PageTitle>{titleContent}</PageTitle>
       </div>
 

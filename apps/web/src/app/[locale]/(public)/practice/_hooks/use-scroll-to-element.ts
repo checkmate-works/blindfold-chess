@@ -16,6 +16,11 @@ function alignElementTop(elementId: string) {
  * loading view that renders no element would therefore paint unscrolled, which
  * is why each caller renders its skeleton inside the element carrying the id.
  *
+ * The element is aligned through `scrollIntoView`, which honours its
+ * `scroll-margin-top`. Give it `PAGE_PANEL_SCROLL_MARGIN` when it sits at the
+ * top of a PagePanel, as every session does, so the alignment stops at the
+ * panel's edge with its padding on screen rather than at the element itself.
+ *
  * The alignment is applied a second time in a microtask. On a client-side
  * navigation, Next.js's layout router runs its own scroll handling in a layout
  * effect of an ancestor, which runs after this one in the same commit: it

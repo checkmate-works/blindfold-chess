@@ -78,7 +78,10 @@ export function usePuzzleScroll({
         }
       }
       try {
-        const y = anchor.getBoundingClientRect().top + window.scrollY;
+        // `scrollIntoView` stops `scroll-margin-top` short of the anchor;
+        // this path must stop at the same place or it undoes the margin.
+        const margin = parseFloat(getComputedStyle(anchor).scrollMarginTop) || 0;
+        const y = anchor.getBoundingClientRect().top + window.scrollY - margin;
         if (Math.abs(y - window.scrollY) > 1) {
           window.scrollTo({ top: y, behavior: 'smooth' });
         }

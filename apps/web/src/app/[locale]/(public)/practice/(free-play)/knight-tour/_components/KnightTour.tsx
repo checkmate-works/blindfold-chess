@@ -18,6 +18,7 @@ import { useLocalStorageSettings } from '@/lib/persistent-settings/use-local-sto
 import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';
 import { useQuitConfirmLabels } from '@/app/[locale]/(public)/practice/_hooks/use-quit-confirm-labels';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
+import { PAGE_PANEL_SCROLL_MARGIN } from '@/app/[locale]/_components/PagePanel';
 
 import { KnightTourBlindPlaying } from './KnightTourBlindPlaying';
 import { KnightTourPlaying } from './KnightTourPlaying';
@@ -169,7 +170,10 @@ export default function KnightTour({
     // An auto-started tour leaves setup in its first effect. Rendering the
     // setup form until then painted it for a frame at the previous page's
     // offset; the empty session element is drawn where play will be instead.
-    if (autoStart) return <div id="knight-tour-session" className="min-h-screen" />;
+    if (autoStart)
+      return (
+        <div id="knight-tour-session" className={`min-h-screen ${PAGE_PANEL_SCROLL_MARGIN}`} />
+      );
     return (
       <KnightTourSetup
         startingSquare={startingSquareOption}
@@ -184,7 +188,7 @@ export default function KnightTour({
 
   return (
     <>
-      <div id="knight-tour-session" className="min-h-screen">
+      <div id="knight-tour-session" className={`min-h-screen ${PAGE_PANEL_SCROLL_MARGIN}`}>
         <PlayingComponent
           currentSquare={currentSquare}
           visitedSquares={visitedSquares}

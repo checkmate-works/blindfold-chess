@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 import type { BoardTheme } from '@/lib/games/board-themes';
 
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
+import { PAGE_PANEL_SCROLL_MARGIN } from '@/app/[locale]/_components/PagePanel';
 
 import type { DisplayMode } from '../../_lib/session-config';
 import type { PositionAccuracy, PositionData } from '../../_lib/types';
@@ -97,7 +98,7 @@ export function PositionMemorySessionPhase({
 }: Props) {
   if (phase === 'memorize' && originalPosition) {
     return (
-      <div id="position-memory-session">
+      <div id="position-memory-session" className={PAGE_PANEL_SCROLL_MARGIN}>
         <PositionMemoryMemorize
           position={originalPosition}
           memorizeTimeLeft={memorizeTimeLeft}

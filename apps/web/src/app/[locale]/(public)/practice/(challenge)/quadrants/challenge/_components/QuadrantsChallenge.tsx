@@ -12,6 +12,7 @@ import { CHALLENGE_TIME_LIMIT, MISTAKE_LIMIT } from '@/lib/challenge/constants';
 import { useQuitConfirm } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-quit-confirm';
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
+import { PAGE_PANEL_SCROLL_MARGIN } from '@/app/[locale]/_components/PagePanel';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { QuadrantsPlaySkeleton } from '../../_components/QuadrantsPlaySkeleton';
@@ -80,14 +81,14 @@ export default function QuadrantsChallenge({ locale, orientation }: Props) {
 
   if (!currentQuestion) {
     return (
-      <div id="quadrants-challenge" className="min-h-screen">
+      <div id="quadrants-challenge" className={`min-h-screen ${PAGE_PANEL_SCROLL_MARGIN}`}>
         <QuadrantsPlaySkeleton showHeader />
       </div>
     );
   }
 
   return (
-    <div id="quadrants-challenge" className="min-h-screen">
+    <div id="quadrants-challenge" className={`min-h-screen ${PAGE_PANEL_SCROLL_MARGIN}`}>
       <QuadrantsPlaying
         currentQuestion={currentQuestion}
         timeRemaining={timeRemaining}

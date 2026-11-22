@@ -14,6 +14,7 @@ import {
 } from '@blindfold-chess/features/quadrants';
 
 import { useTrainingSessionShell } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-training-session-shell';
+import { PAGE_PANEL_SCROLL_MARGIN } from '@/app/[locale]/_components/PagePanel';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { QuadrantsPlaySkeleton } from '../../_components/QuadrantsPlaySkeleton';
@@ -57,14 +58,14 @@ export default function QuadrantsTrainingSession({ locale, orientation }: Props)
 
   if (!hasQuestions || !currentQuestion) {
     return (
-      <div id={sessionElementId} className="min-h-screen">
+      <div id={sessionElementId} className={`min-h-screen ${PAGE_PANEL_SCROLL_MARGIN}`}>
         <QuadrantsPlaySkeleton />
       </div>
     );
   }
 
   return (
-    <div id={sessionElementId} className="min-h-screen">
+    <div id={sessionElementId} className={`min-h-screen ${PAGE_PANEL_SCROLL_MARGIN}`}>
       <QuadrantsTrainingPlaying
         currentQuestion={currentQuestion}
         showResult={showResult}

@@ -14,6 +14,7 @@ import {
   realignToElement,
   useScrollToElement,
 } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
+import { PAGE_PANEL_SCROLL_MARGIN } from '@/app/[locale]/_components/PagePanel';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -55,7 +56,10 @@ export default function AlgebraicNotation({ questions, locale }: Props) {
   useScrollToElement('algebraic-notation-session');
 
   return (
-    <div id="algebraic-notation-session" className="min-h-screen space-y-4">
+    <div
+      id="algebraic-notation-session"
+      className={`min-h-screen space-y-4 ${PAGE_PANEL_SCROLL_MARGIN}`}
+    >
       <div className="bg-card rounded-md border border-border p-4">
         <div className="flex flex-col gap-6">
           {/* Progress bar */}

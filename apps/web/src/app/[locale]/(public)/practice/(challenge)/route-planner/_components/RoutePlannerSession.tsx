@@ -11,6 +11,7 @@ import { TrainingFooter } from '@/app/[locale]/(public)/practice/(challenge)/_co
 import { AlgebraicKeyboardHint } from '@/app/[locale]/(public)/practice/_components/KeyboardHint';
 import { PieceCoordinateInput } from '@/app/[locale]/(public)/practice/_components/PieceCoordinateInput';
 import { useAlgebraicKeyboardInput } from '@/app/[locale]/(public)/practice/_hooks/use-algebraic-keyboard-input';
+import { PAGE_PANEL_SCROLL_MARGIN } from '@/app/[locale]/_components/PagePanel';
 
 import { useRoutePlannerGame } from '../_hooks/use-route-planner-game';
 import { useStagedCoordinate } from '../_hooks/use-staged-coordinate';
@@ -18,6 +19,8 @@ import { PIECES } from '../_lib/pieces';
 import type { PieceType } from '../_lib/pieces';
 import { RoutePlannerPlaySkeleton } from './RoutePlannerPlaySkeleton';
 import { RoutePlannerResultView } from './RoutePlannerResultView';
+
+const SESSION_WRAPPER_CLASS = `min-h-screen max-w-md mx-auto ${PAGE_PANEL_SCROLL_MARGIN}`;
 
 type Props = {
   locale: string;
@@ -77,14 +80,14 @@ export function RoutePlannerSession({
 
   if (!problem) {
     return (
-      <div id="route-planner-session" className="min-h-screen max-w-md mx-auto">
+      <div id="route-planner-session" className={SESSION_WRAPPER_CLASS}>
         <RoutePlannerPlaySkeleton />
       </div>
     );
   }
 
   return (
-    <div id="route-planner-session" className="min-h-screen max-w-md mx-auto">
+    <div id="route-planner-session" className={SESSION_WRAPPER_CLASS}>
       <div ref={sessionRef} className="text-center relative overflow-hidden">
         {/* Problem Header */}
         <div className="flex justify-center items-center gap-6 pb-4 mb-4">
