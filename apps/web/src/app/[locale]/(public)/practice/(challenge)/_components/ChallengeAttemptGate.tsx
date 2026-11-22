@@ -7,6 +7,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import type { ChallengeMenuType } from '@blindfold-chess/features/practice-registry';
 
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
+import { PAGE_PANEL_SCROLL_MARGIN } from '@/app/[locale]/_components/PagePanel';
 
 import {
   type ChallengeAttemptReady,
@@ -87,7 +88,7 @@ export function ChallengeAttemptGate<TQuestion>({
   useScrollToElement(scrollTargetId);
 
   return (
-    <div id={scrollTargetId} className="min-h-screen">
+    <div id={scrollTargetId} className={`min-h-screen ${PAGE_PANEL_SCROLL_MARGIN}`}>
       <ChallengeAttemptGateBody menuType={menuType} settings={settings} fallback={fallback}>
         {children}
       </ChallengeAttemptGateBody>

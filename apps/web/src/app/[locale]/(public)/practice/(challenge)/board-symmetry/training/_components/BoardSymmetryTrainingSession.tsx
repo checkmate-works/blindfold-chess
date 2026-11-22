@@ -7,6 +7,7 @@ import type { BoardSymmetryProblem } from '@blindfold-chess/features/board-symme
 import { FEEDBACK_FLASH_MS, applyCoordinateBackspace } from '@blindfold-chess/features/common';
 
 import { useTrainingSessionShell } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-training-session-shell';
+import { PAGE_PANEL_SCROLL_MARGIN } from '@/app/[locale]/_components/PagePanel';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { BoardSymmetryPlaySkeleton } from '../../_components/BoardSymmetryPlaySkeleton';
@@ -94,14 +95,14 @@ export default function BoardSymmetryTrainingSession({ locale }: Props) {
 
   if (!problem) {
     return (
-      <div id={sessionElementId} className="min-h-screen">
+      <div id={sessionElementId} className={`min-h-screen ${PAGE_PANEL_SCROLL_MARGIN}`}>
         <BoardSymmetryPlaySkeleton />
       </div>
     );
   }
 
   return (
-    <div id={sessionElementId} className="min-h-screen">
+    <div id={sessionElementId} className={`min-h-screen ${PAGE_PANEL_SCROLL_MARGIN}`}>
       <BoardSymmetryTrainingPlaying
         problem={problem}
         selectedFile={selectedFile}

@@ -7,6 +7,7 @@ import { useBatchTrainingSession } from '@blindfold-chess/features/practice-sess
 import { getSquareColor } from '@blindfold-chess/features/square-colors';
 
 import { useTrainingSessionShell } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-training-session-shell';
+import { PAGE_PANEL_SCROLL_MARGIN } from '@/app/[locale]/_components/PagePanel';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -52,14 +53,14 @@ export default function SquareColorsTrainingSession({ locale }: Props) {
   // Show loading state while squares are being generated
   if (!hasQuestions || !currentSquare || !isLoaded) {
     return (
-      <div id={sessionElementId} className="min-h-screen">
+      <div id={sessionElementId} className={`min-h-screen ${PAGE_PANEL_SCROLL_MARGIN}`}>
         <SquareColorsPlaySkeleton />
       </div>
     );
   }
 
   return (
-    <div id={sessionElementId} className="min-h-screen">
+    <div id={sessionElementId} className={`min-h-screen ${PAGE_PANEL_SCROLL_MARGIN}`}>
       <SquareColorsTrainingPlaying
         currentSquare={currentSquare}
         showResult={showResult}

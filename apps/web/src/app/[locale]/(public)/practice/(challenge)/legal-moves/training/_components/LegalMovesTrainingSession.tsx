@@ -6,6 +6,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { useBatchTrainingSession } from '@blindfold-chess/features/practice-session';
 
 import { useTrainingSessionShell } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-training-session-shell';
+import { PAGE_PANEL_SCROLL_MARGIN } from '@/app/[locale]/_components/PagePanel';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { LegalMovesPlaySkeleton } from '../../_components/LegalMovesPlaySkeleton';
@@ -63,14 +64,14 @@ export default function LegalMovesTrainingSession({
   // Show loading state while questions are being generated
   if (!hasQuestions || !currentQuestion) {
     return (
-      <div id={sessionElementId} className="min-h-screen">
+      <div id={sessionElementId} className={`min-h-screen ${PAGE_PANEL_SCROLL_MARGIN}`}>
         <LegalMovesPlaySkeleton />
       </div>
     );
   }
 
   return (
-    <div id={sessionElementId} className="min-h-screen">
+    <div id={sessionElementId} className={`min-h-screen ${PAGE_PANEL_SCROLL_MARGIN}`}>
       <LegalMovesTrainingPlaying
         locale={locale}
         selectedPiece={selectedPiece}
