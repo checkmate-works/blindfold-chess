@@ -195,7 +195,9 @@
       "signOut": "Sair",
       "signOutConfirm": "Sair da conta?",
       "loading": "Carregando…",
-      "retry": "Toque para tentar de novo"
+      "retry": "Toque para tentar de novo",
+      "deleteAccount": "Excluir conta",
+      "deleteAccountNote": "A exclusão da conta é feita no site: entre lá para excluir sua conta. Se você ainda não definiu um nome de usuário, será solicitado que defina um primeiro."
     }
   },
   "legalMoves": {

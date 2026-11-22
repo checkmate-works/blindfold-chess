@@ -195,7 +195,9 @@
       "signOut": "Cerrar sesión",
       "signOutConfirm": "¿Cerrar sesión?",
       "loading": "Cargando…",
-      "retry": "Toca para reintentar"
+      "retry": "Toca para reintentar",
+      "deleteAccount": "Eliminar cuenta",
+      "deleteAccountNote": "La cuenta se elimina en el sitio web: inicia sesión allí para eliminarla. Si aún no has configurado un nombre de usuario, primero se te pedirá que lo hagas."
     }
   },
   "legalMoves": {

@@ -195,7 +195,9 @@
       "signOut": "Sign out",
       "signOutConfirm": "Sign out?",
       "loading": "Loading…",
-      "retry": "Tap to retry"
+      "retry": "Tap to retry",
+      "deleteAccount": "Delete account",
+      "deleteAccountNote": "Account deletion opens the website: sign in there to delete your account. If you haven't set a username yet, you'll be asked to set one first."
     }
   },
   "legalMoves": {
