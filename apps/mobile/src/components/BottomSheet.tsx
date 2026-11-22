@@ -100,7 +100,12 @@ export function BottomSheet({
           duration: 220,
           useNativeDriver: true,
         }),
-      ]).start(() => setMounted(false));
+      ]).start(({ finished }) => {
+        // Reopening mid-close starts the open animation on the same values,
+        // which stops this one and calls back with `finished: false`;
+        // unmounting then would drop the Modal while it is visible.
+        if (finished) setMounted(false);
+      });
     }
     // `mounted` is read only to skip the close animation on first render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
