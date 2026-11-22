@@ -19,8 +19,8 @@ export type AdminNavGroup = { heading?: string; links: AdminNavLink[] };
 export function AdminSidebarNav({ groups }: { groups: AdminNavGroup[] }) {
   const pathname = usePathname();
 
-  // A link is active on its own page and on any descendant (e.g. /admin/coins
-  // stays active on /admin/coins/grant). When a descendant has a link of its
+  // A link is active on its own page and on any descendant (e.g. /admin/users
+  // stays active on /admin/users/[id]). When a descendant has a link of its
   // own (/admin/users/stats under /admin/users), only the most specific match
   // lights up, so exactly one entry ever reads as "you are here". The
   // dashboard root matches exactly so it isn't highlighted for every /admin/*

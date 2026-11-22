@@ -58,8 +58,8 @@ describe('withReturnPath', () => {
   });
 
   it('preserves a query the base already carries', () => {
-    expect(withReturnPath('/ja/sign-in?toast=sign_in_required', '/ja/mypage/coins')).toBe(
-      '/ja/sign-in?toast=sign_in_required&next=%2Fja%2Fmypage%2Fcoins'
+    expect(withReturnPath('/ja/sign-in?toast=sign_in_required', '/ja/mypage/challenges')).toBe(
+      '/ja/sign-in?toast=sign_in_required&next=%2Fja%2Fmypage%2Fchallenges'
     );
   });
 

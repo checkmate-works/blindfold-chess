@@ -198,15 +198,27 @@ const nextConfig: NextConfig = {
         destination: '/:locale/dojo/ranks/:path*',
         permanent: true,
       },
-      // Coin page URL migration (added 2026-05-30).
-      // The in-app currency is "Coin" everywhere user-facing, so the personal
-      // wallet route moved from /mypage/points to /mypage/coins to match. The
-      // page is auth-gated (low external-link risk), but keep this redirect so
-      // bookmarks and previously-sent notification links still resolve.
+      // Coin economy retirement (added 2026-11-23).
+      // The in-app currency was removed for lack of use, and its pages with
+      // it: the public explainer (/coin, linked from the footer and the mobile
+      // tab bar, and indexed) and the personal wallet (/mypage/coins, and
+      // /mypage/points before it). The explainer lands on the FAQ, the wallet
+      // on the dashboard it hung off, so bookmarks, search results and
+      // previously-sent notification links still resolve.
       // Safe to remove after 6 months if Search Console shows no traffic.
       {
+        source: '/:locale/coin',
+        destination: '/:locale/faq',
+        permanent: true,
+      },
+      {
+        source: '/:locale/mypage/coins',
+        destination: '/:locale/mypage',
+        permanent: true,
+      },
+      {
         source: '/:locale/mypage/points',
-        destination: '/:locale/mypage/coins',
+        destination: '/:locale/mypage',
         permanent: true,
       },
       // Puzzle / position-memory suggestions URL migration (added 2026-07-20).

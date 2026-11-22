@@ -97,10 +97,6 @@ export default async function FAQPage({ params }: Props) {
       question: t('items.expSystem.question'),
       answer: stripTags(t.raw('items.expSystem.answer')),
     },
-    {
-      question: t('items.adFreeBenefits.question'),
-      answer: stripTags(t.raw('items.adFreeBenefits.answer')),
-    },
   ];
 
   const faqItems: FAQItem[] = [
@@ -201,16 +197,6 @@ export default async function FAQPage({ params }: Props) {
               })}
             </tbody>
           </table>
-        </div>
-      ),
-    },
-    {
-      id: 'ad-free-benefits',
-      question: t('items.adFreeBenefits.question'),
-      answer: (
-        <div className="space-y-3">
-          <p>{t('items.adFreeBenefits.answer')}</p>
-          <p className="text-sm text-muted-foreground">{t('items.adFreeBenefits.earnSummary')}</p>
         </div>
       ),
     },

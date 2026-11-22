@@ -771,54 +771,6 @@
     "selectOpening": "Select an opening",
     "searchPlaceholder": "Search openings..."
   },
-  "coin": {
-    "title": "Coins",
-    "hero": {
-      "tagline": "Every like on the content you publish earns you a Coin."
-    },
-    "loop": {
-      "step1Title": "Publish",
-      "step1Body": "Share a game, a problem, a Kata",
-      "step2Title": "Get liked",
-      "step2Body": "Each like adds a Coin",
-      "step3Title": "Spend on perks",
-      "step3Body": "Ad-free time, games, AI reviews"
-    },
-    "earn": {
-      "heading": "How to earn Coins",
-      "chips": {
-        "puzzle": "Puzzle",
-        "positionMemory": "Position memory",
-        "topic": "Topic",
-        "chunk": "Chunk",
-        "repertoire": "Kata",
-        "game": "Game"
-      },
-      "perLike": "per like · granted once a day in a batch",
-      "note": "Content you have published keeps earning with every new like. Likes on your own content do not count."
-    },
-    "spend": {
-      "heading": "What Coins are for",
-      "adFreeTitle": "Hide ads",
-      "adFreeRate": "1 Coin = {days, plural, one {# ad-free day} other {# ad-free days}}",
-      "maiaTitle": "Play against Maia",
-      "maiaRate": "{cost, plural, one {# Coin} other {# Coins}} = 1 game",
-      "maiaNote": "Maia is a neural-network AI that plays human-like moves. Free to play from Lv{level}.",
-      "aiReviewTitle": "Get an AI review",
-      "aiReviewRate": "{cost, plural, one {# Coin} other {# Coins}} = 1 review",
-      "aiReviewNote": "Subscribers generate reviews without spending Coins."
-    },
-    "facts": {
-      "batch": "Coins from likes are not instant — they are granted once a day in a batch.",
-      "instant": "Once granted, Coins are usable right away — no waiting.",
-      "selfLike": "Liking your own content earns nothing.",
-      "balance": "Your balance and history are always available on My Page."
-    },
-    "cta": {
-      "viewBalance": "View my Coin balance",
-      "contribute": "Browse topics"
-    }
-  },
   "faq": {
     "title": "Frequently Asked Questions",
     "description": "Find answers to common questions about Blindfold Chess",
@@ -863,11 +815,6 @@
         "streak3": "3–4",
         "streak2": "2",
         "streak1": "1"
-      },
-      "adFreeBenefits": {
-        "question": "How do I earn coins, and how do they become ad-free time?",
-        "answer": "Each like on a game, problem, Kata, chunk or topic post you have published earns 1 Coin (granted once a day in a batch). 1 Coin redeems 1 day of ad-free browsing, and Coins also pay for Maia games and AI reviews.",
-        "earnSummary": "Likes on your own content do not count. Subscribers generate AI reviews without spending Coins."
       }
     }
   },
@@ -3875,7 +3822,6 @@
       "expProgress": "{current} / {next} Exp",
       "expRemaining": "{remaining} Exp to next level",
       "viewExpLeaderboard": "View Exp Leaderboard",
-      "pointsTotal": "{total} coins",
       "accountTitle": "Account",
       "accountSettingsTitle": "Account Settings",
       "subscriptionTitle": "Subscription",
@@ -3967,64 +3913,7 @@
     }
   },
   "MypagePoints": {
-    "title": "Coins",
-    "sectionTitle": "Your coins",
-    "breadcrumbMypage": "My Page",
-    "balance": {
-      "unit": "coins",
-      "aboutLink": "How Coins work"
-    },
-    "redeem": {
-      "title": "Redeem coins for ad-free time",
-      "description": "Each coin converts to one day of ad-free browsing. Days stack on top of any ad-free time you already have.",
-      "amountLabel": "Coins to redeem",
-      "pointSuffix": "coins",
-      "daysReceived": "{days, plural, one {# day} other {# days}} of ad-free",
-      "submit": "Redeem {amount} coins",
-      "submitting": "Redeeming…",
-      "successMessage": "Done — {days, plural, one {# day} other {# days}} of ad-free time has been added.",
-      "notice": {
-        "dan_rank": {
-          "title": "No coins needed",
-          "body": "Dan-rank holders always browse ad-free."
-        },
-        "subscription": {
-          "title": "No coins needed",
-          "body": "Your subscription hides ads while it is active. Coins never expire, so you can redeem them once it ends."
-        }
-      },
-      "errors": {
-        "invalid_amount": "Please enter a positive whole number.",
-        "insufficient_balance": "You do not have enough confirmed coins.",
-        "signInRequired": "Please sign in to redeem.",
-        "banned": "Your account is restricted.",
-        "rateLimited": "Too many redemptions in a short period — try again later.",
-        "danAdFree": "As a dan-rank holder, you already browse ad-free.",
-        "subscriptionAdFree": "Your subscription already hides ads."
-      }
-    },
-    "spendOptions": {
-      "aiReview": {
-        "title": "Get an AI review",
-        "rate": "{cost, plural, one {# Coin} other {# Coins}} = 1 review",
-        "note": "Request one from the page of a game you have shared.",
-        "noteSubscriber": "Your subscription covers AI reviews — no Coins spent.",
-        "cta": "Browse your games"
-      },
-      "maia": {
-        "title": "Play against Maia",
-        "rate": "{cost, plural, one {# Coin} other {# Coins}} = 1 game",
-        "note": "Maia is a neural-network AI that plays human-like moves. Charged when the game starts. Free from Lv{level}.",
-        "cta": "Start a game"
-      }
-    },
     "history": {
-      "title": "History",
-      "empty": "No coin activity yet.",
-      "learnHowToEarn": "See how to earn coins.",
-      "headerDate": "Date",
-      "headerEvent": "Event",
-      "headerDelta": "Amount",
       "kind": {
         "post_grant": "Earned from a post",
         "post_clawback": "Reversed for deleted post",
@@ -4955,8 +4844,6 @@
     "coins": {
       "title": "Coins",
       "navLabel": "Coins",
-      "grant": "Grant coins",
-      "backToTransactions": "Back to Coins",
       "showing": "Showing {from}–{to} of {total} transactions",
       "empty": "No transactions match the current filters.",
       "columns": {
@@ -6283,8 +6170,7 @@
   "MobileTabBar": {
     "games": "Games",
     "practice": "Practice",
-    "topics": "Topics",
-    "coin": "Coins"
+    "topics": "Topics"
   },
   "dojo": {
     "pageTitle": "Dojo",

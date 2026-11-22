@@ -5,7 +5,7 @@ const SECTION_CHIPS = [1, 2, 2, 2];
 
 /**
  * Loading placeholder for the `/mypage` dashboard, measured against the live
- * page: profile card (avatar + name + action pills), level bar, coin chip,
+ * page: profile card (avatar + name + action pills), level bar,
  * divider, interview banner, activity-heatmap card, and the four dashboard
  * sections (header + card chips). Reuses `DashboardCard` / `DashboardSection`
  * so the sections' container, padding and dividers match exactly.
@@ -38,9 +38,6 @@ export function MypageDashboardSkeleton() {
           <Skeleton className="h-3 w-28 rounded-md" />
         </div>
       </div>
-
-      {/* Coin balance chip */}
-      <Skeleton className="mt-3 h-[46px] w-full rounded-lg" />
 
       <Divider />
 

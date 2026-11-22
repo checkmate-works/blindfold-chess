@@ -4,7 +4,6 @@ import type { KeyboardEvent } from 'react';
 import { useEffect } from 'react';
 
 import { useRouter } from '@/i18n/routing';
-import { CoinIcon } from '@blindfold-chess/icons';
 
 import type { Toast } from '@/app/[locale]/_contexts/ToastContext';
 
@@ -77,11 +76,7 @@ export function ToastItem({ toast, onClose, duration }: Props) {
         : {})}
     >
       <div className="flex items-center gap-3">
-        {toast.icon === 'coin' ? (
-          <CoinIcon size={20} aria-hidden="true" />
-        ) : (
-          <span className="text-lg">{getIcon()}</span>
-        )}
+        <span className="text-lg">{getIcon()}</span>
         <p className="flex-1 text-sm font-medium">{toast.message}</p>
         {isLink && (
           <span className="text-lg shrink-0" aria-hidden="true">

@@ -21,7 +21,6 @@ export async function Footer({ locale, hideLanguageSwitcher }: Props) {
     tGlossary,
     tAnnouncements,
     tFaq,
-    tCoin,
     tContact,
     tPrivacy,
     tTerms,
@@ -35,7 +34,6 @@ export async function Footer({ locale, hideLanguageSwitcher }: Props) {
     getTranslations({ locale, namespace: 'glossary' }),
     getTranslations({ locale, namespace: 'announcements' }),
     getTranslations({ locale, namespace: 'faq' }),
-    getTranslations({ locale, namespace: 'coin' }),
     getTranslations({ locale, namespace: 'contact' }),
     getTranslations({ locale, namespace: 'privacy' }),
     getTranslations({ locale, namespace: 'terms' }),
@@ -103,15 +101,6 @@ export async function Footer({ locale, hideLanguageSwitcher }: Props) {
                   className="hover:text-foreground transition-colors"
                 >
                   {tFaq('title')}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href={`/${locale}/coin`}
-                  prefetch={false}
-                  className="hover:text-foreground transition-colors"
-                >
-                  {tCoin('title')}
                 </Link>
               </li>
               {isContactFormEnabled && (
