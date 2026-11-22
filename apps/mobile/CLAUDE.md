@@ -102,8 +102,21 @@ database. Sign-in calls Supabase Auth directly; sign-up goes through
   release build without them has no accounts), the Supabase client (session
   in SecureStore), `callMobileApi` (retries a 401 once after a refresh) and
   the `useAuth` store.
-- `(account)` screens: sign-in, sign-up, setup-username, records (the
-  user's own ranks). Settings has the Account section.
+- `(account)` screens: welcome (the account offer that ends onboarding),
+  sign-in, sign-up, setup-username, records (the user's own ranks).
+  Settings has the Account section.
+- **One-tap sign-in** (`auth/oauth.ts`, `features/account/OAuthButtons.tsx`):
+  Sign in with Apple through the native sheet and `signInWithIdToken` (iOS
+  only), Google through Supabase's hosted page in an in-app browser session
+  with PKCE, returning to `blindfold-chess://auth-callback`. The build
+  variable `EXPO_PUBLIC_OAUTH_PROVIDERS` (`apple,google`) turns the buttons
+  on; unset shows none. On iOS, Google is shown only together with Apple
+  (App Store Review Guideline 4.8). Before turning a provider on, enable it
+  in the Supabase dashboard (Apple: the bundle ID as a client ID) and add
+  `blindfold-chess://auth-callback` to the Redirect URLs. Either provider's
+  first sign-in creates the user without a username, and
+  `useFinishSignIn` sends it on to setup-username, as email sign-in does.
+
 - **Challenges follow the web's rules** (60 s, `MISTAKE_LIMIT`): the six
   challenge sessions mount inside `ChallengeAttemptGate`
   (`features/challenge/`), which starts a server attempt when signed in and
@@ -131,6 +144,19 @@ topics and articles, the home feed, Maia, password reset (the app opens the
 web page). Finished AI games are kept on the device
 (`features/game-history/`, AsyncStorage `"AI_GAME_HISTORY"`, newest first, at
 most 50), like the web keeps them in localStorage.
+
+## Onboarding
+
+A first launch opens `/onboarding`: the mentor's chat
+(`features/onboarding/`, script in `data/script.ts`). Statements play on their
+own; the player answers one question about how well they play, and the
+finish button opens the first session over the home tab — blindfold-confident
+→ an AI game at skill level 1, otherwise coordinate-quiz training. It also
+arms a one-time flag (`sign-up-offer.ts`); when that session closes, the home
+tab (`useSignUpOffer`) opens `/welcome` for a signed-out player. Skip goes
+straight home without either. The offer never promises to keep the run just
+played: AI games stay on the device either way, and a signed-out challenge or
+training run is graded on the device, so the server has nothing to record.
 
 ## Practice modules: the shared registry plus a mobile table
 

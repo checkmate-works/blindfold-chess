@@ -130,7 +130,10 @@ enabled = true
 # OAuth 後の Cookie が正しく読み込めずセッションが維持されない。
 site_url = "http://localhost:3000"
 # A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
-additional_redirect_urls = ["http://localhost:3000"]
+# `blindfold-chess://auth-callback` is the mobile app's Google sign-in return
+# (`OAUTH_REDIRECT_URL` in apps/mobile/src/auth/oauth.ts); production needs the
+# same entry under Authentication → URL Configuration.
+additional_redirect_urls = ["http://localhost:3000", "blindfold-chess://auth-callback"]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
 jwt_expiry = 3600
 # If disabled, the refresh token will never expire.

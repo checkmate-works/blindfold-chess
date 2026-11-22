@@ -75,6 +75,10 @@ function RootStack({ isDark }: { isDark: boolean }) {
     <>
       <Stack screenOptions={screenOptions}>
         <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="auth-callback"
+          options={{ headerShown: false, animation: "none" }}
+        />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         {moduleSetupScreens(t, ALL_MODULE_ROUTES)}
         <Stack.Screen

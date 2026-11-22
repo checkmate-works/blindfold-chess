@@ -5,6 +5,10 @@ import { useTranslation } from "react-i18next";
 
 import { Button, TextField } from "../../components";
 import { callMobileApi, errorCodeOf } from "../../auth/api-client";
+import {
+  OAuthButtons,
+  OAuthDivider,
+} from "../../features/account/OAuthButtons";
 import { useTheme, fontSize, fontWeight, spacing } from "../../theme";
 
 /**
@@ -17,6 +21,9 @@ import { useTheme, fontSize, fontWeight, spacing } from "../../theme";
 const MIN_PASSWORD_LENGTH = 6;
 
 /**
+ * Sign-up. The one-tap providers come first: they finish inside the app,
+ * where email sign-up sends the user to their mailbox and back.
+ *
  * Email sign-up (the web's `/sign-up`), through the mobile API so the web's
  * rate limit, password rules and confirmation link apply. Afterwards the
  * screen shows the web's "check your email" text; the user confirms in the
@@ -96,6 +103,8 @@ export default function SignUpScreen() {
       contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"
     >
+      <OAuthButtons mode="signUp" />
+      <OAuthDivider />
       <Text style={[styles.body, { color: colors.mutedForeground }]}>
         {t("account.signUp.description")}
       </Text>

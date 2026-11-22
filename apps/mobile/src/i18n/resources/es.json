@@ -101,18 +101,21 @@
     "averageTime": "Tiempo medio"
   },
   "onboarding": {
-    "skip": "Saltar",
-    "tapToContinue": "Toca para continuar",
-    "start": "Iniciar",
+    "skip": "Omitir",
+    "startAiGame": "Empezar una partida",
+    "startPractice": "Empezar a practicar",
     "script": {
-      "greeting": "Hola",
-      "introduction": "Soy un maestro del ajedrez a ciegas",
-      "experienceCheck": "¿Has jugado alguna vez al ajedrez a ciegas?",
-      "choiceYes": "Sí",
-      "choiceNo": "No",
-      "experienced": "Vaya... eso es tranquilizador.\nPongamos a prueba tus habilidades, ¿de acuerdo?",
-      "beginner": "Ya veo, así que es tu primera vez.\nNo te preocupes. Te enseñaré paso a paso.",
-      "ready": "Cuando estés listo, pulsa el botón."
+      "greeting": "Bienvenido.",
+      "introduction": "Aquí enseño ajedrez a ciegas.\nEl ajedrez a ciegas se juega sin mirar el tablero: solo con el tablero que tienes en la cabeza.",
+      "confidenceCheck": "Primero, cuéntame: ¿qué tal juegas ahora mismo?",
+      "choiceBlindfold": "Puedo jugar a ciegas",
+      "choiceWithBoard": "Puedo jugar con tablero",
+      "choiceNew": "Soy nuevo en el ajedrez",
+      "confident": "Vaya… impresionante.\nEntonces juguemos una partida ahora mismo.",
+      "chessPlayer": "Si conoces el ajedrez, esto irá rápido.\nEl primer paso del ajedrez a ciegas es conocer cada casilla por su nombre.",
+      "beginner": "No te preocupes: todos empezamos como principiantes.\nEmpecemos aprendiendo los nombres de las casillas.",
+      "readyAiGame": "Pondré la IA en su nivel más débil. Si te pierdes, puedes echar un vistazo al tablero.",
+      "readyPractice": "Verás un nombre como \"e4\": toca esa casilla. No hay límite de tiempo."
     }
   },
   "settings": {
@@ -907,7 +910,10 @@
       "forgotPassword": "¿Olvidaste tu contraseña?",
       "noAccount": "¿No tienes una cuenta?",
       "signUp": "Registrarse",
-      "rateLimited": "Demasiados intentos de inicio de sesión. Por favor, inténtalo más tarde."
+      "rateLimited": "Demasiados intentos de inicio de sesión. Por favor, inténtalo más tarde.",
+      "googleOAuth": "Iniciar sesión con Google",
+      "orDivider": "o",
+      "authError": "Error de inicio de sesión. Por favor, inténtalo de nuevo."
     },
     "signUp": {
       "title": "Registrarse",
@@ -923,7 +929,10 @@
       "passwordMismatch": "Las contraseñas no coinciden.",
       "alreadyHaveAccount": "¿Ya tienes una cuenta?",
       "signIn": "Iniciar sesión",
-      "rateLimited": "Demasiados intentos de registro. Por favor, inténtalo más tarde."
+      "rateLimited": "Demasiados intentos de registro. Por favor, inténtalo más tarde.",
+      "googleOAuth": "Registrarse con Google",
+      "orDivider": "o",
+      "authError": "Error de registro. Por favor, inténtalo de nuevo."
     },
     "verifyEmail": {
       "title": "Revisa tu Correo Electrónico",
@@ -959,6 +968,14 @@
         "missingDigit": "La contraseña debe contener al menos un dígito.",
         "weak": "La contraseña es demasiado débil. Por favor, elige una contraseña más segura."
       }
+    },
+    "welcome": {
+      "title": "Cuenta",
+      "heading": "¡Bien hecho!",
+      "body": "Con una cuenta, se registran tus resultados en los desafíos y subes de rango y de nivel. Puedes continuar en la web con la misma cuenta.",
+      "signUpWithEmail": "Registrarse con correo",
+      "signIn": "¿Ya tienes cuenta? Inicia sesión",
+      "later": "Más tarde"
     }
   },
   "records": {

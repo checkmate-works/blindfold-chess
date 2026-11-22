@@ -1,6 +1,10 @@
 import { useState, useCallback, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { ONBOARDING_SCRIPT } from "../data/script";
+import {
+  ONBOARDING_SCRIPT,
+  ONBOARDING_START_ID,
+  type ScriptStep,
+} from "../data/script";
 
 export type ChatMessage = {
   id: string;
@@ -8,15 +12,27 @@ export type ChatMessage = {
   isSystem: boolean;
 };
 
-export const useOnboardingChat = (onComplete: () => void) => {
+/**
+ * How long the typing indicator shows before each of the mentor's lines.
+ * Long enough to read as someone typing, short enough that the opening
+ * lines, which play on their own, do not keep the player waiting.
+ */
+export const MENTOR_TYPING_MS = 700;
+
+/**
+ * Plays the onboarding script as a chat. Statements follow each other on
+ * their own; the player acts only on a question (a choice) and on the
+ * finish step (its button, through the screen). `waitingFor` says which of
+ * the two the screen should offer, and is `null` while the mentor is typing.
+ */
+export const useOnboardingChat = () => {
   const { t } = useTranslation();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [currentStepId, setCurrentStepId] = useState<string>("start");
-  const [isThinking, setIsThinking] = useState(false);
+  const [currentStepId, setCurrentStepId] = useState(ONBOARDING_START_ID);
+  const [isThinking, setIsThinking] = useState(true);
 
-  const currentStep = ONBOARDING_SCRIPT[currentStepId];
+  const currentStep: ScriptStep | undefined = ONBOARDING_SCRIPT[currentStepId];
 
-  // Add the current step's message to the chat
   useEffect(() => {
     if (!currentStep) return;
 
@@ -33,40 +49,28 @@ export const useOnboardingChat = (onComplete: () => void) => {
           isSystem: true,
         },
       ]);
-      setIsThinking(false);
-    }, 600); // Simulated delay
+      if (currentStep.type === "statement") {
+        setCurrentStepId(currentStep.nextId);
+      } else {
+        setIsThinking(false);
+      }
+    }, MENTOR_TYPING_MS);
 
     return () => clearTimeout(timer);
-  }, [currentStepId, currentStep, t]);
-
-  const handleNext = useCallback(() => {
-    if (!currentStep) return;
-
-    if (currentStep.type === "statement") {
-      if (currentStep.id === "end") {
-        onComplete();
-      } else if (currentStep.nextId) {
-        setCurrentStepId(currentStep.nextId);
-      }
-    }
-  }, [currentStep, onComplete]);
+  }, [currentStep, t]);
 
   const handleChoice = useCallback((nextId: string, label: string) => {
-    // Add user response bubble
     setMessages((prev) => [
       ...prev,
       { id: `msg-${prev.length}`, text: label, isSystem: false },
     ]);
-
-    // Move to next step
     setCurrentStepId(nextId);
   }, []);
 
-  return {
-    messages,
-    currentStep,
-    isThinking,
-    handleNext,
-    handleChoice,
-  };
+  const waitingFor =
+    isThinking || !currentStep || currentStep.type === "statement"
+      ? null
+      : currentStep;
+
+  return { messages, isThinking, waitingFor, handleChoice };
 };

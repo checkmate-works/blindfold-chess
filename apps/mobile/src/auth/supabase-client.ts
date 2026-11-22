@@ -21,6 +21,9 @@ export const backendConfig = resolveBackendConfig({
  * write of data goes through the web app's mobile API, which applies the
  * same checks as the web.
  *
+ * The PKCE code verifier for a Google sign-in is kept in the same storage
+ * as the session until the code is exchanged.
+ *
  * Token refresh runs only while the app is in the foreground, as
  * supabase-js recommends for React Native.
  */
@@ -31,6 +34,10 @@ export const supabase: SupabaseClient | undefined = backendConfig
         autoRefreshToken: true,
         persistSession: true,
         detectSessionInUrl: false,
+        // Google sign-in returns through a custom-scheme redirect, where
+        // only PKCE's one-time `code` can be read back (see `auth/oauth.ts`).
+        // Password sign-in and Apple's ID-token sign-in are unaffected.
+        flowType: "pkce",
       },
     })
   : undefined;
