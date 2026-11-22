@@ -9,6 +9,7 @@ import {
   isCheckmateFen,
 } from '@blindfold-chess/features/chess-core';
 import type { FormattedPgnMove } from '@blindfold-chess/features/chess-core';
+import { MAX_SOLUTION_MOVES } from '@blindfold-chess/features/puzzle';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import type { MoveSquares } from '@/lib/board/move-squares';
@@ -17,9 +18,6 @@ import { parseFenMeta } from '@/app/[locale]/(public)/games/play/_lib/fen-utils'
 
 import type { SideToMove } from '../../_lib/board-editor-constants';
 import type { MoveSubmitLabels } from './use-move-submit-labels';
-
-/** Per-puzzle solution-move ceiling (UI hard limit). */
-export const MAX_SOLUTION_MOVES = 20;
 
 export type PuzzleSolutionMovesOptions = {
   /** Validated starting FEN. Empty string while the board is invalid. */
