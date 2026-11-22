@@ -35,6 +35,32 @@ pnpm supabase stop
 
 `psql` is not necessarily on PATH; `docker exec -it <container> psql -U postgres` against the Supabase database container (find its name with `docker ps`) works without it.
 
+### Changing the local ports
+
+The ports above are the Supabase CLI defaults, which every other project on
+the machine that uses Supabase also starts on, so only one of them can run at
+a time. They are set in `supabase/config.toml` (`[api]`, `[db]`, `[db.pooler]`,
+`[studio]`, `[local_smtp]`, `[analytics]`, plus `shadow_port` and the edge
+runtime's `inspector_port`), and the CLI binds whatever that file says. To move
+this project to other ports:
+
+1. Change them in `supabase/config.toml`.
+2. Run `pnpm test` from `apps/web`. `src/lib/local-supabase.test.ts` fails for
+   each code copy of `[api] port` / `[db] port` that no longer matches:
+   `src/lib/local-supabase.ts` (the web app's fallbacks) and
+   `LOCAL_SUPABASE_API_PORT` in `apps/mobile/src/auth/config.ts` (the mobile
+   app's development default). Update those.
+3. Update the connection variables in your `.env.local` and in `.env.example`.
+4. Register the new Auth callback (`http://127.0.0.1:<api port>/auth/v1/callback`)
+   in Google Cloud Console if you use Google sign-in locally.
+5. Restart: `pnpm supabase stop && pnpm supabase start`.
+
+The local pool size does not depend on the ports: `resolvePoolMax` in
+`src/lib/db/pooler-mode.ts` tells the local pooler from a direct connection by
+the pooler's tenant-qualified user name. The concrete ports in the rest of
+these docs are the current values, kept for copy-paste; update them in the
+same change.
+
 ### Google OAuth (optional)
 
 To test Google login locally, set up credentials in `supabase/.env`:

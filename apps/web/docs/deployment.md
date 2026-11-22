@@ -48,11 +48,11 @@ leaves the synced variables untouched.
 
 ### Which connection the app uses
 
-| Context                            | Variable                                                 | Endpoint                      |
-| ---------------------------------- | -------------------------------------------------------- | ----------------------------- |
-| Runtime queries (server rendering) | `POSTGRES_URL_NON_POOLING`                               | Session pooler, port 5432     |
-| Build-time queries and migrations  | `POSTGRES_URL`                                           | Transaction pooler, port 6543 |
-| Local development                  | none set — the loopback default in `src/lib/db/index.ts` | Local Supabase, port 54322    |
+| Context                            | Variable                                                       | Endpoint                      |
+| ---------------------------------- | -------------------------------------------------------------- | ----------------------------- |
+| Runtime queries (server rendering) | `POSTGRES_URL_NON_POOLING`                                     | Session pooler, port 5432     |
+| Build-time queries and migrations  | `POSTGRES_URL`                                                 | Transaction pooler, port 6543 |
+| Local development                  | none set — `LOCAL_DATABASE_URL` in `src/lib/local-supabase.ts` | Local Supabase, port 54322    |
 
 Runtime deliberately uses the **session** pooler: under the transaction pooler
 this app hit queries that vanished on established connections — no answer, no
