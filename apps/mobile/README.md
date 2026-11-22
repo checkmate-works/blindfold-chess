@@ -55,6 +55,31 @@ logic is in [`src/auth/config.ts`](src/auth/config.ts).
 To sign in, seed the local test users with `pnpm db:seed:dev` from `apps/web` (see
 [Local Test Data](../web/README.md#local-test-data)).
 
+#### Google sign-in against the local stack
+
+Google sign-in works in Expo Go as well as in a development build. Expo Go
+returns to `exp://<LAN IP>:8081/--/auth-callback` instead of
+`blindfold-chess://auth-callback`, and the local `config.toml` allows both.
+Three things have to be in place:
+
+- Google credentials for the local Supabase in `apps/web/supabase/.env`, as
+  in the web app's
+  [authentication setup](../web/docs/authentication-setup.md). Restart
+  Supabase (`pnpm supabase stop && pnpm supabase start`) after changing them
+  or `config.toml`.
+- The buttons turned on when starting Metro. On iOS the Google button is
+  shown only together with Apple's (App Store Review Guideline 4.8), so list
+  both:
+
+  ```bash
+  EXPO_PUBLIC_OAUTH_PROVIDERS=apple,google pnpm --filter mobile dev
+  ```
+
+  The Apple button then shows too, but Apple is disabled in the local
+  Supabase, so only Google can complete.
+
+- Phone and computer on the same network, as for the rest of the backend.
+
 ### Running on the iOS Simulator
 
 ```bash
