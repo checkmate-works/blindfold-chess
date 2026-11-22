@@ -2872,9 +2872,6 @@
       "analyzing": "Analizando con Stockfish… ({done}/{total} posiciones)",
       "cancel": "Cancelar",
       "retry": "Intentar de nuevo",
-      "generateButtonPaid": "Generar revisión IA ({cost, plural, one {# moneda} other {# monedas}})",
-      "retryPaid": "Intentar de nuevo ({cost, plural, one {# moneda} other {# monedas}})",
-      "balance": "Saldo: {balance, plural, one {# moneda} other {# monedas}}",
       "bestMoveLabel": "Mejor jugada",
       "sections": {
         "summary": "Resumen de la partida",
@@ -2904,7 +2901,7 @@
         "llm_error": "El entrenador IA no pudo generar la revisión. Inténtalo más tarde.",
         "unexpected_error": "Algo salió mal. Inténtalo más tarde.",
         "analysis_failed": "El análisis del motor falló. Recarga la página e inténtalo de nuevo.",
-        "insufficient_balance": "No tienes monedas suficientes."
+        "subscription_required": "Generar una revisión IA requiere una suscripción."
       },
       "languageNote": "Esta revisión está escrita en {language}.",
       "confirm": {
@@ -2913,14 +2910,7 @@
         "languageLabel": "Idioma de la revisión",
         "languageHelp": "Cada partida tiene una sola revisión. Se mostrará a todos los visitantes en el idioma que elijas aquí.",
         "submit": "Generar",
-        "cancel": "Cancelar",
-        "cost": "Cuesta {cost, plural, one {# moneda} other {# monedas}} (saldo: {balance})"
-      },
-      "upsell": {
-        "title": "Una revisión IA cuesta {cost, plural, one {# moneda} other {# monedas}}",
-        "description": "El entrenador IA analiza tu partida a partir del análisis de Stockfish y explica los momentos decisivos, además de qué trabajar a continuación.",
-        "coinCta": "Cómo ganar monedas",
-        "cta": "Ver planes"
+        "cancel": "Cancelar"
       },
       "principleLabel": "Principio",
       "submitting": "Enviando tu solicitud…",
@@ -4210,7 +4200,7 @@
     "muteConfirmButton": "Silenciar",
     "cancel": "Cancelar",
     "aiReviewReadyMessage": "Tu revisión IA está lista",
-    "aiReviewFailedMessage": "No se pudo generar la revisión IA. La moneda gastada ha sido devuelta."
+    "aiReviewFailedMessage": "No se pudo generar la revisión IA."
   },
   "deleteAccount": {
     "title": "Eliminar Cuenta",

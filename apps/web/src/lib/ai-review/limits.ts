@@ -4,9 +4,9 @@
  */
 
 /**
- * How many AI reviews one user may generate per day, whatever pays for them:
- * the cap sits behind the entitlement check, so a subscriber is bounded by it
- * exactly like a coin payer (see `requestAiReviewAction`).
+ * How many AI reviews one user may generate per day: the cap sits behind the
+ * entitlement check, so it bounds a subscriber too (see
+ * `requestAiReviewAction`).
  *
  * Named rather than inlined into `RATE_LIMITS` because this is the one number
  * that decides how much money the app spends: nothing counts LLM calls

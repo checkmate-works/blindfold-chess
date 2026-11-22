@@ -2872,9 +2872,6 @@
       "analyzing": "Stockfishで解析中… ({done}/{total} 局面)",
       "cancel": "キャンセル",
       "retry": "もう一度試す",
-      "generateButtonPaid": "AIレビューを生成（{cost} コイン）",
-      "retryPaid": "もう一度試す（{cost} コイン）",
-      "balance": "残高: {balance} コイン",
       "bestMoveLabel": "最善手",
       "sections": {
         "summary": "ゲーム総評",
@@ -2904,7 +2901,7 @@
         "llm_error": "AIコーチがレビューを生成できませんでした。時間をおいてお試しください。",
         "unexpected_error": "エラーが発生しました。時間をおいてお試しください。",
         "analysis_failed": "エンジン解析に失敗しました。ページを再読み込みしてお試しください。",
-        "insufficient_balance": "コインが不足しています。"
+        "subscription_required": "AIレビューの生成にはサブスクリプションが必要です。"
       },
       "languageNote": "このレビューは{language}で書かれています。",
       "confirm": {
@@ -2913,14 +2910,7 @@
         "languageLabel": "レビューの言語",
         "languageHelp": "1つのゲームにつきレビューは1件です。ここで選んだ言語で、どの言語の閲覧者にも表示されます。",
         "submit": "生成する",
-        "cancel": "キャンセル",
-        "cost": "{cost} コインを消費します（残高: {balance} コイン）"
-      },
-      "upsell": {
-        "title": "AIレビューの生成には {cost} コインが必要です",
-        "description": "AIコーチがStockfishの解析をもとにゲームを読み解き、勝敗を分けた局面の解説と次のゲームへのアドバイスをお届けします。",
-        "coinCta": "コインの貯め方を見る",
-        "cta": "プランを見る"
+        "cancel": "キャンセル"
       },
       "principleLabel": "原則",
       "submitting": "レビューを受け付けています…",
@@ -4210,7 +4200,7 @@
     "muteConfirmButton": "ミュートする",
     "cancel": "キャンセル",
     "aiReviewReadyMessage": "AIレビューが完成しました",
-    "aiReviewFailedMessage": "AIレビューを生成できませんでした。消費したコインは返却しました。"
+    "aiReviewFailedMessage": "AIレビューを生成できませんでした。"
   },
   "deleteAccount": {
     "title": "退会",

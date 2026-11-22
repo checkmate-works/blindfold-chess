@@ -2872,9 +2872,6 @@
       "analyzing": "Analisando com o Stockfish… ({done}/{total} posições)",
       "cancel": "Cancelar",
       "retry": "Tentar novamente",
-      "generateButtonPaid": "Gerar revisão IA ({cost, plural, one {# moeda} other {# moedas}})",
-      "retryPaid": "Tentar novamente ({cost, plural, one {# moeda} other {# moedas}})",
-      "balance": "Saldo: {balance, plural, one {# moeda} other {# moedas}}",
       "bestMoveLabel": "Melhor lance",
       "sections": {
         "summary": "Resumo da partida",
@@ -2904,7 +2901,7 @@
         "llm_error": "O treinador IA não conseguiu gerar a revisão. Tente mais tarde.",
         "unexpected_error": "Algo deu errado. Tente mais tarde.",
         "analysis_failed": "A análise do motor falhou. Recarregue a página e tente novamente.",
-        "insufficient_balance": "Você não tem moedas suficientes."
+        "subscription_required": "Gerar uma revisão IA requer uma assinatura."
       },
       "languageNote": "Esta revisão está escrita em {language}.",
       "confirm": {
@@ -2913,14 +2910,7 @@
         "languageLabel": "Idioma da revisão",
         "languageHelp": "Cada partida tem uma única revisão. Ela será exibida a todos os visitantes no idioma que você escolher aqui.",
         "submit": "Gerar",
-        "cancel": "Cancelar",
-        "cost": "Custa {cost, plural, one {# moeda} other {# moedas}} (saldo: {balance})"
-      },
-      "upsell": {
-        "title": "Uma revisão IA custa {cost, plural, one {# moeda} other {# moedas}}",
-        "description": "O treinador IA lê sua partida a partir da análise do Stockfish e explica os momentos decisivos, além do que praticar em seguida.",
-        "coinCta": "Como ganhar moedas",
-        "cta": "Ver planos"
+        "cancel": "Cancelar"
       },
       "principleLabel": "Princípio",
       "submitting": "Enviando sua solicitação…",
@@ -4210,7 +4200,7 @@
     "muteConfirmButton": "Silenciar",
     "cancel": "Cancelar",
     "aiReviewReadyMessage": "Sua revisão IA está pronta",
-    "aiReviewFailedMessage": "Não foi possível gerar a revisão IA. A moeda gasta foi devolvida."
+    "aiReviewFailedMessage": "Não foi possível gerar a revisão IA."
   },
   "deleteAccount": {
     "title": "Excluir Conta",

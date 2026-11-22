@@ -2872,9 +2872,6 @@
       "analyzing": "Analyzing with Stockfish… ({done}/{total} positions)",
       "cancel": "Cancel",
       "retry": "Try again",
-      "generateButtonPaid": "Generate AI review ({cost, plural, one {# Coin} other {# Coins}})",
-      "retryPaid": "Try again ({cost, plural, one {# Coin} other {# Coins}})",
-      "balance": "Balance: {balance, plural, one {# Coin} other {# Coins}}",
       "bestMoveLabel": "Best move",
       "sections": {
         "summary": "Game summary",
@@ -2904,7 +2901,7 @@
         "llm_error": "The AI coach couldn't produce a review. Please try again later.",
         "unexpected_error": "Something went wrong. Please try again later.",
         "analysis_failed": "The engine analysis failed. Please reload the page and try again.",
-        "insufficient_balance": "Not enough Coins."
+        "subscription_required": "Generating an AI review requires a subscription."
       },
       "languageNote": "This review is written in {language}.",
       "confirm": {
@@ -2913,14 +2910,7 @@
         "languageLabel": "Review language",
         "languageHelp": "A game has one review. It is shown to every visitor in the language you pick here.",
         "submit": "Generate",
-        "cancel": "Cancel",
-        "cost": "This costs {cost, plural, one {# Coin} other {# Coins}} (balance: {balance})"
-      },
-      "upsell": {
-        "title": "An AI review costs {cost, plural, one {# Coin} other {# Coins}}",
-        "description": "The AI coach reads your game through the Stockfish analysis and writes up the moments that decided it, along with what to work on next.",
-        "coinCta": "How to earn Coins",
-        "cta": "See plans"
+        "cancel": "Cancel"
       },
       "principleLabel": "Principle",
       "submitting": "Submitting your request…",
@@ -4210,7 +4200,7 @@
     "muteConfirmButton": "Mute",
     "cancel": "Cancel",
     "aiReviewReadyMessage": "Your AI review is ready",
-    "aiReviewFailedMessage": "The AI review could not be generated. Any Coin spent has been returned."
+    "aiReviewFailedMessage": "The AI review could not be generated."
   },
   "deleteAccount": {
     "title": "Delete Account",

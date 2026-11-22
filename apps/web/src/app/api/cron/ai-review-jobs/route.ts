@@ -4,7 +4,7 @@ import { sweepAiReviewJobs } from '@/lib/ai-review/jobs';
 import { requireCronAuth, runCronJob } from '@/lib/cron';
 
 /**
- * Every few minutes — re-runs or refunds AI review jobs that `after()` left
+ * Every few minutes — re-runs or fails AI review jobs that `after()` left
  * behind (see `@/lib/ai-review/jobs`). Scheduled in `vercel.json`;
  * authenticated via the `CRON_SECRET` bearer token like the other cron routes.
  *

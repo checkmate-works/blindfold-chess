@@ -101,26 +101,22 @@ export type AiReview = {
 
 /**
  * Whether a given viewer may generate this game's review, and on what terms —
- * the one value both the page (which renders the generate button, the coin
- * price, or the "earn coins" notice) and the Server Action (which refuses or
- * charges) branch on.
+ * the one value both the page (which renders the generate button or no AI
+ * Review offer at all) and the Server Action (which accepts or refuses)
+ * branch on.
  *
- * The union deliberately separates three different answers:
- *
- * - `blocked` is about the (game, viewer) pair and never changes by paying —
- *   a third party cannot buy the right to publish an assessment of someone
- *   else's game, and a 3-ply game has nothing to coach. Resolved by the pure
- *   `canGenerateAiReview`.
- * - `allowed` / `payable` are the two ways the right person can pay for the
- *   LLM call: a subscription (no charge) or `cost` coins from `balance`.
- * - `insufficient_balance` is the right person with nothing that pays. The
- *   coin figures ride along so the notice can say how far off they are.
+ * - `allowed` is the game's author holding a subscription, which is what pays
+ *   for the LLM call.
+ * - `blocked` carries why not. `not_owner` / `game_not_eligible` are about
+ *   the (game, viewer) pair and never change by paying — a third party cannot
+ *   buy the right to publish an assessment of someone else's game, and a
+ *   3-ply game has nothing to coach; both are resolved by the pure
+ *   `canGenerateAiReview`. `subscription_required` is the right person on the
+ *   right game with no subscription.
  */
 export type AiReviewGenerationState =
   | { kind: 'allowed' }
-  | { kind: 'payable'; cost: number; balance: number }
-  | { kind: 'insufficient_balance'; cost: number; balance: number }
-  | { kind: 'blocked'; reason: 'not_owner' | 'game_not_eligible' };
+  | { kind: 'blocked'; reason: 'not_owner' | 'game_not_eligible' | 'subscription_required' };
 
 /**
  * The generation states worth rendering something for. A blocked viewer is
@@ -131,9 +127,9 @@ export type AiReviewGenerationState =
 export type AiReviewGenerationOffer = Exclude<AiReviewGenerationState, { kind: 'blocked' }>;
 
 /**
- * Lifecycle of a `game_ai_review_jobs` row. `pending` is accepted and
- * charged but not yet picked up; `processing` is claimed by a worker;
- * `done` / `failed` are terminal (a failed job has been refunded).
+ * Lifecycle of a `game_ai_review_jobs` row. `pending` is accepted but not
+ * yet picked up; `processing` is claimed by a worker; `done` / `failed` are
+ * terminal.
  */
 export const AI_REVIEW_JOB_STATUSES = ['pending', 'processing', 'done', 'failed'] as const;
 export type AiReviewJobStatus = (typeof AI_REVIEW_JOB_STATUSES)[number];
@@ -156,7 +152,7 @@ export type AiReviewError =
   | 'not_found'
   | 'not_owner'
   | 'game_not_eligible'
-  | 'insufficient_balance'
+  | 'subscription_required'
   | 'rate_limited'
   | 'llm_error'
   | 'unexpected_error';
@@ -164,8 +160,7 @@ export type AiReviewError =
 /**
  * What `requestAiReviewAction` answers. `ready` is the cache hit — the review
  * already exists and is returned in full; `queued` is the accepted request
- * (charged, if the viewer pays in coins) whose result arrives by notification
- * and by polling `getAiReviewJobStatusAction`.
+ * whose result arrives by notification and by polling `getAiReviewJobStatusAction`.
  */
 export type RequestAiReviewResponse =
   | { success: true; status: 'ready'; review: AiReview }

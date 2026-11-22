@@ -43,9 +43,9 @@ export type RequestAiReviewInput = z.infer<typeof inputSchema>;
 
 /**
  * Request the AI coach review for a shared game: return it when it is already
- * cached, otherwise accept the request — charging the author's coin unless a
- * subscription covers it — and hand the generation to a background job whose
- * result arrives by notification. Restricted to the game's author (see
+ * cached, otherwise accept the request and hand the generation to a
+ * background job whose result arrives by notification. Restricted to the
+ * game's author, and to a subscriber for a new generation (see
  * `resolveAiReviewGenerationState`) and rate-limited on top. See
  * `@/lib/ai-review/jobs` for the job lifecycle and `@/lib/ai-review` for the
  * pipeline and the engine/LLM authorship split.
@@ -72,7 +72,10 @@ export async function requestAiReviewAction(
     const { game } = detail;
 
     const access = await resolveAiReviewGenerationState(game, auth.user.id);
-    if (access.kind === 'blocked') {
+    // A missing subscription is refused further down, after the cache check:
+    // the other two reasons mean this viewer has no business with the review
+    // at all.
+    if (access.kind === 'blocked' && access.reason !== 'subscription_required') {
       return { success: false, error: access.reason };
     }
     if (evaluations.length !== game.moves.length + 1) {
@@ -81,25 +84,23 @@ export async function requestAiReviewAction(
 
     // Cache check BEFORE the entitlement refusal and the rate limit: fetching
     // an existing review is free, must not consume (or be blocked by) the
-    // generation budget, and must not stop working for an author who can no
-    // longer pay — the review is already published.
+    // generation budget, and must not stop working for an author whose
+    // subscription has lapsed — the review is already published.
     const cached = await dbAiReviewStore.find(game.id, locale);
     if (cached) {
       return { success: true, status: 'ready', review: cached };
     }
 
     // Likewise a job already in flight (a double click, a second tab): report
-    // it as accepted rather than charging again or refusing.
+    // it as accepted rather than queueing a second one or refusing.
     const live = await findLiveAiReviewJob(game.id);
     if (live) {
       return { success: true, status: 'queued', job: live };
     }
 
-    // Everything below spends. Only `allowed` (subscription) and `payable`
-    // (enough coins) may proceed; the advisory balance check here is
-    // re-asserted under a row lock by the charge itself.
-    if (access.kind === 'insufficient_balance') {
-      return { success: false, error: 'insufficient_balance' };
+    // Everything below spends on the LLM, so only a subscriber may proceed.
+    if (access.kind === 'blocked') {
+      return { success: false, error: access.reason };
     }
 
     // The UI hides the tab when no key is configured, but a stale page (or a
@@ -125,11 +126,7 @@ export async function requestAiReviewAction(
       locale,
       userId: auth.user.id,
       evaluations,
-      charge: access.kind === 'payable',
     });
-    if (!enqueued.ok) {
-      return { success: false, error: enqueued.error };
-    }
 
     // The work itself runs once this response is out (see the jobs module for
     // why `after()` is enough here and what the cron sweeper covers). A job

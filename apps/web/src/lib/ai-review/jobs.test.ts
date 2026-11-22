@@ -16,7 +16,6 @@ vi.mock('./queries', () => ({
 }));
 vi.mock('./generate-review', () => ({ generateReview: vi.fn() }));
 vi.mock('./openai', () => ({ createOpenAiClient: vi.fn() }));
-vi.mock('@/lib/points', () => ({ chargeAiReview: vi.fn(), refundAiReviewCharge: vi.fn() }));
 vi.mock('@/lib/notifications/notification', () => ({ createNotification: vi.fn() }));
 vi.mock('@/lib/openings/detect-game-opening', () => ({ detectGameOpening: vi.fn() }));
 vi.mock('@/lib/db/games-read', () => ({ getGameById: vi.fn() }));
