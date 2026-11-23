@@ -113,7 +113,9 @@ database. Sign-in calls Supabase Auth directly; sign-up goes through
   on; unset shows none. On iOS, Google is shown only together with Apple
   (App Store Review Guideline 4.8). Before turning a provider on, enable it
   in the Supabase dashboard (Apple: the bundle ID as a client ID) and add
-  `blindfold-chess://auth-callback` to the Redirect URLs. Either provider's
+  `blindfold-chess://auth-callback` to the Redirect URLs (the local
+  `config.toml` also allows Expo Go's `exp://**/--/auth-callback`; production
+  must not). Either provider's
   first sign-in creates the user without a username, and
   `useFinishSignIn` sends it on to setup-username, as email sign-in does.
 
