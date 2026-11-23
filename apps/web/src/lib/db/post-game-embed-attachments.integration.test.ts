@@ -1,6 +1,8 @@
 import postgres from 'postgres';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
+import { LOCAL_DATABASE_URL } from '@/lib/local-supabase';
+
 /**
  * DB CHECK + RLS pins for `post_game_embed_attachments`.
  * (PGN/embed exclusivity is enforced in the Server Action, not by a
@@ -36,7 +38,7 @@ const connectionString =
   process.env.POSTGRES_URL_NON_POOLING ??
   process.env.POSTGRES_URL ??
   process.env.DATABASE_URL ??
-  'postgresql://postgres:postgres@127.0.0.1:54322/postgres';
+  LOCAL_DATABASE_URL;
 
 type Sql = ReturnType<typeof postgres>;
 type TxSql = postgres.TransactionSql;

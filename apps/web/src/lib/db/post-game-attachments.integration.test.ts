@@ -1,6 +1,8 @@
 import postgres from 'postgres';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
+import { LOCAL_DATABASE_URL } from '@/lib/local-supabase';
+
 /**
  * Integration tests for the DB-level guarantees on `post_game_pgn_attachments`.
  *
@@ -32,7 +34,7 @@ const connectionString =
   // Default matches `apps/web/src/lib/db/index.ts` and the local
   // Supabase setup in CLAUDE.md. If the host is unreachable the
   // beforeAll() probe fails closed and the whole suite is skipped.
-  'postgresql://postgres:postgres@127.0.0.1:54322/postgres';
+  LOCAL_DATABASE_URL;
 
 type Sql = ReturnType<typeof postgres>;
 

@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { type PoolerMode, derivePoolerMode, resolvePoolMax } from './pooler-mode';
+import {
+  type PoolerMode,
+  derivePoolerMode,
+  resolvePoolMax,
+  usesSupavisorUser,
+} from './pooler-mode';
 
 describe('derivePoolerMode', () => {
   it('classifies the Supavisor transaction pooler by its port', () => {
@@ -39,6 +44,32 @@ describe('derivePoolerMode', () => {
   });
 });
 
+describe('usesSupavisorUser', () => {
+  it('recognises the tenant-qualified user name Supavisor requires', () => {
+    expect(
+      usesSupavisorUser('postgresql://postgres.pooler-dev:postgres@127.0.0.1:54329/postgres')
+    ).toBe(true);
+    expect(
+      usesSupavisorUser(
+        'postgresql://postgres.ref:pw@aws-0-us-east-1.pooler.supabase.com:5432/postgres'
+      )
+    ).toBe(true);
+  });
+
+  it('treats the plain Postgres user as a direct connection, whatever the port', () => {
+    expect(usesSupavisorUser('postgresql://postgres:postgres@127.0.0.1:54329/postgres')).toBe(
+      false
+    );
+    expect(usesSupavisorUser('postgresql://postgres:postgres@127.0.0.1:55322/postgres')).toBe(
+      false
+    );
+  });
+
+  it('returns false for an unparseable string', () => {
+    expect(usesSupavisorUser('not a url')).toBe(false);
+  });
+});
+
 describe('resolvePoolMax', () => {
   it('halves the runtime cap under the session pooler (shared Pool Size)', () => {
     expect(resolvePoolMax('session', false)).toBe(5);
@@ -51,12 +82,12 @@ describe('resolvePoolMax', () => {
     }
   );
 
-  it('halves the runtime cap for local on the local Supavisor pooler port (54329)', () => {
-    expect(resolvePoolMax('local', false, '54329')).toBe(5);
+  it('halves the runtime cap for local through the local Supavisor pooler', () => {
+    expect(resolvePoolMax('local', false, true)).toBe(5);
   });
 
-  it('gives local the full runtime cap of 10 on the direct Postgres port (54322)', () => {
-    expect(resolvePoolMax('local', false, '54322')).toBe(10);
+  it('gives local the full runtime cap of 10 straight to Postgres', () => {
+    expect(resolvePoolMax('local', false, false)).toBe(10);
   });
 
   it.each<PoolerMode>(['session', 'transaction', 'direct', 'local', 'unknown'])(

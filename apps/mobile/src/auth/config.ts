@@ -3,16 +3,25 @@
  *
  * Production builds take both from `EXPO_PUBLIC_*` variables baked in at
  * build time. A development build without them talks to the local stack the
- * web app's `supabase start` + `next dev` run (Supabase on :54321, the web on
- * :3000) on the machine serving Metro, so sign-in works against the dev seed
- * users with no configuration. A release build without them has no
- * accounts: `resolveBackendConfig` returns undefined and the app runs
- * signed-out only.
+ * web app's `supabase start` + `next dev` run (Supabase on
+ * `LOCAL_SUPABASE_API_PORT`, the web on :3000) on the machine serving Metro,
+ * so sign-in works against the dev seed users with no configuration. A
+ * release build without them has no accounts: `resolveBackendConfig`
+ * returns undefined and the app runs signed-out only.
  */
 
 /** The Supabase CLI's fixed local publishable key (`supabase status`). */
 const LOCAL_SUPABASE_PUBLISHABLE_KEY =
   "sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH";
+
+/**
+ * `[api] port` in `apps/web/supabase/config.toml`, which decides where the
+ * local Supabase listens. The mobile app cannot import the web app's copy
+ * (`apps/web/src/lib/local-supabase.ts`), so it keeps its own, and
+ * `apps/web/src/lib/local-supabase.test.ts` fails when this one drifts from
+ * `config.toml`.
+ */
+export const LOCAL_SUPABASE_API_PORT = 54321;
 
 export type BackendConfig = {
   readonly supabaseUrl: string;
@@ -45,7 +54,7 @@ export function resolveBackendConfig({
   if (!isDev) return undefined;
   const host = devHost || "localhost";
   return {
-    supabaseUrl: env.supabaseUrl || `http://${host}:54321`,
+    supabaseUrl: env.supabaseUrl || `http://${host}:${LOCAL_SUPABASE_API_PORT}`,
     supabaseKey: env.supabaseKey || LOCAL_SUPABASE_PUBLISHABLE_KEY,
     apiOrigin: (env.apiOrigin || `http://${host}:3000`).replace(/\/$/, ""),
   };
