@@ -37,29 +37,76 @@ pnpm supabase stop
 
 ### Changing the local ports
 
-The ports above are the Supabase CLI defaults, which every other project on
-the machine that uses Supabase also starts on, so only one of them can run at
-a time. They are set in `supabase/config.toml` (`[api]`, `[db]`, `[db.pooler]`,
-`[studio]`, `[local_smtp]`, `[analytics]`, plus `shadow_port` and the edge
-runtime's `inspector_port`), and the CLI binds whatever that file says. To move
-this project to other ports:
+The ports above are the Supabase CLI defaults. Every other project on the
+machine that uses Supabase starts on them too, so only one such project can
+run at a time. Give each project its own block and keep the last two digits
+of the defaults, so the role of a port stays readable (`…21` is always the
+API, `…22` always Postgres):
 
-1. Change them in `supabase/config.toml`.
-2. Run `pnpm test` from `apps/web`. `src/lib/local-supabase.test.ts` fails for
-   each code copy of `[api] port` / `[db] port` that no longer matches:
-   `src/lib/local-supabase.ts` (the web app's fallbacks) and
-   `LOCAL_SUPABASE_API_PORT` in `apps/mobile/src/auth/config.ts` (the mobile
-   app's development default). Update those.
-3. Update the connection variables in your `.env.local` and in `.env.example`.
-4. Register the new Auth callback (`http://127.0.0.1:<api port>/auth/v1/callback`)
-   in Google Cloud Console if you use Google sign-in locally.
-5. Restart: `pnpm supabase stop && pnpm supabase start`.
+| Port                  | `config.toml`                   | Default | Example block (`553xx`) |
+| --------------------- | ------------------------------- | ------- | ----------------------- |
+| API (auth, REST)      | `[api] port`                    | 54321   | 55321                   |
+| Postgres (direct)     | `[db] port`                     | 54322   | 55322                   |
+| Shadow database       | `[db] shadow_port`              | 54320   | 55320                   |
+| Supavisor pooler      | `[db.pooler] port`              | 54329   | 55329                   |
+| Studio                | `[studio] port`                 | 54323   | 55323                   |
+| Mailpit               | `[local_smtp] port`             | 54324   | 55324                   |
+| Analytics             | `[analytics] port`              | 54327   | 55327                   |
+| Edge runtime debugger | `[edge_runtime] inspector_port` | 8083    | 8183                    |
+
+Move all eight. One left on its default still collides with the other
+project and makes `supabase start` fail on that port.
+
+`config.toml` decides where the stack listens; `.env.local` only tells the
+app where to connect. Changing one without the other leaves the app knocking
+on a port nothing listens on. Steps, from `apps/web`:
+
+1. **Stop the stack first**, while `config.toml` still has the old ports:
+   `pnpm supabase stop`.
+2. **`supabase/config.toml`:** change the eight ports in the table.
+3. **Code copies:** run `pnpm test`. `src/lib/local-supabase.test.ts` fails
+   for each copy of `[api] port` / `[db] port` that no longer matches. Update
+   `LOCAL_SUPABASE_API_PORT` / `LOCAL_SUPABASE_DB_PORT` in
+   `src/lib/local-supabase.ts` and `LOCAL_SUPABASE_API_PORT` in
+   `apps/mobile/src/auth/config.ts`, then rerun until it passes.
+4. **`.env.local` and `.env.example`:** change the port in each of these
+   (no other variable carries a local port):
+
+   | Variable                   | Port               |
+   | -------------------------- | ------------------ |
+   | `NEXT_PUBLIC_SUPABASE_URL` | `[api] port`       |
+   | `DATABASE_URL`             | `[db] port`        |
+   | `POSTGRES_URL_NON_POOLING` | `[db.pooler] port` |
+
+5. **Google Cloud Console** (only if you use Google sign-in locally): add
+   `http://127.0.0.1:<api port>/auth/v1/callback` to the OAuth client's
+   Authorized redirect URIs. Keep the old one until nobody uses the old port.
+6. **Start and check:** `pnpm supabase start`, then `pnpm supabase status`
+   lists the ports actually bound; they should match the table.
+7. **Recreate the data if it is gone:** the new stack may come up with an
+   empty database. Run `pnpm db:run-migrate`, `pnpm db:seed` and
+   `pnpm db:seed:dev`.
+8. **Restart `next dev`** so it rereads `.env.local`. Studio and Mailpit are
+   now on their new ports (`http://127.0.0.1:<studio port>`,
+   `http://127.0.0.1:<mailpit port>`).
+
+The mobile app needs nothing more: in development it builds its Supabase URL
+from the constant updated in step 3. Only a Metro started with
+`EXPO_PUBLIC_SUPABASE_URL` set by hand (the `--tunnel` case in
+`apps/mobile/README.md`) needs the new port in that variable.
 
 The local pool size does not depend on the ports: `resolvePoolMax` in
 `src/lib/db/pooler-mode.ts` tells the local pooler from a direct connection by
-the pooler's tenant-qualified user name. The concrete ports in the rest of
-these docs are the current values, kept for copy-paste; update them in the
-same change.
+the pooler's tenant-qualified user name.
+
+When the change is committed rather than made on one machine, also update the
+ports written out for copy-paste in: `apps/web/README.md`,
+`apps/web/docs/{local-development,authentication-setup,environment-variables,admin-panel-setup,resend-smtp-setup,preview-deployments,deployment}.md`,
+`apps/mobile/README.md`, `apps/web/.claude/skills/verify/SKILL.md`,
+`.claude/skills/parallel-worktree/SKILL.md` and the summaries printed by
+`scripts/claude-cloud/{session-start,stack-up}.sh`. `git grep -nE "5432[0-9]"`
+finds them; the `54322` in `resolvePoolMax`'s TSDoc records a past
+measurement and stays.
 
 ### Google OAuth (optional)
 

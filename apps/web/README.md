@@ -127,6 +127,10 @@ This is intentionally separate from `pnpm db:seed`, which seeds master data (ran
 - **Mailpit (email testing)**: http://127.0.0.1:54324
 - **PostgreSQL**: `postgresql://postgres:postgres@127.0.0.1:54322/postgres`
 
+These are the Supabase CLI's default ports, shared with every other local
+Supabase project. To run this one next to another, move it to its own ports
+as described in [Changing the local ports](docs/local-development.md#changing-the-local-ports).
+
 To stop Supabase:
 
 ```bash
