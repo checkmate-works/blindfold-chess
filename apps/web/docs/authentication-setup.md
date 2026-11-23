@@ -92,7 +92,7 @@ Corresponds to `[auth.rate_limit]` locally. The email send budget (`email_sent`)
 | Field                         | Value                                                                                                           |
 | ----------------------------- | --------------------------------------------------------------------------------------------------------------- |
 | Authorized JavaScript origins | `http://localhost:3000` (dev), `https://your-domain.com` (prod)                                                 |
-| Authorized redirect URIs      | `http://127.0.0.1:54321/auth/v1/callback` (local), `https://<reference-id>.supabase.co/auth/v1/callback` (prod) |
+| Authorized redirect URIs      | `http://127.0.0.1:55321/auth/v1/callback` (local), `https://<reference-id>.supabase.co/auth/v1/callback` (prod) |
 
 > **Tip:** `<reference-id>` is the short alphanumeric string shown as **Project ID** ("Reference used in APIs and URLs.") in Supabase Dashboard > **Project Settings** > **General**. It is the subdomain of your Supabase URL (e.g., `abcdefghijkl.supabase.co`), not a UUID.
 
@@ -153,15 +153,15 @@ When running Supabase locally via `pnpm supabase start`, configuration works dif
 
 - **Auth settings** come from `supabase/config.toml` (not the Dashboard) — the `config.toml` column in the tables above. After changing it, run `pnpm supabase stop && pnpm supabase start` (the database is kept).
 - **Google credentials** are loaded from `supabase/.env`. `config.toml` references them via `env()` (e.g. `client_id = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID)"`). Without them Google rejects the `client_id`, so both sign-in and "Add a Google account" stop at Google's error page.
-- **Emails** land in [Mailpit](http://127.0.0.1:54324), including both email-change confirmations. Their links point at the `site_url` (`localhost:3000`).
+- **Emails** land in [Mailpit](http://127.0.0.1:55324), including both email-change confirmations. Their links point at the `site_url` (`localhost:3000`).
 
 ### Setting Up Google Sign-In Locally
 
 1. **Create OAuth credentials** in [Google Cloud Console](https://console.cloud.google.com/apis/credentials) if you haven't already (see [Step 1 above](#1-create-oauth-credentials-in-google-cloud-console))
 
 2. **Register the local redirect URI** in Google Cloud Console:
-   - Add `http://127.0.0.1:54321/auth/v1/callback` to **Authorized redirect URIs**
-   - This points to the local Supabase Auth endpoint (port 54321), not the Next.js dev server
+   - Add `http://127.0.0.1:55321/auth/v1/callback` to **Authorized redirect URIs**
+   - This points to the local Supabase Auth endpoint (port 55321), not the Next.js dev server
 
 3. **Configure Supabase environment**:
 
@@ -185,7 +185,7 @@ When running Supabase locally via `pnpm supabase start`, configuration works dif
 
 The `site_url` in `config.toml` is set to `http://localhost:3000` (not `http://127.0.0.1:3000`). This is intentional — browsers treat `localhost` and `127.0.0.1` as different origins. Since the Next.js dev server runs on `localhost:3000`, the `site_url` must match so that cookies set after OAuth authentication are readable by the app.
 
-The Supabase API URL (`http://127.0.0.1:54321`) uses `127.0.0.1` because that is the address Supabase CLI binds to. The redirect URI in Google Cloud Console must also use `127.0.0.1` to match.
+The Supabase API URL (`http://127.0.0.1:55321`) uses `127.0.0.1` because that is the address Supabase CLI binds to. The redirect URI in Google Cloud Console must also use `127.0.0.1` to match.
 
 ## Apple Sign-In (Planned)
 

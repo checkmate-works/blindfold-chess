@@ -46,7 +46,7 @@ that looks unrelated:
   comments "no changes detected in `apps/web/supabase` directory"),
   and since schema changes live in `apps/web/drizzle/`, no PR ever
   qualifies. The symptom is the old build failure —
-  `connect ECONNREFUSED 127.0.0.1:54322`, the local-dev fallback in
+  `connect ECONNREFUSED 127.0.0.1:55322`, the local-dev fallback in
   `src/lib/db/index.ts` — because no credentials were ever written.
 - **Vercel integration, "Preview" sync toggle: OFF.** That toggle
   copies the _production_ connection strings and service-role key

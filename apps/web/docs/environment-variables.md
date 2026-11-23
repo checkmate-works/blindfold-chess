@@ -19,14 +19,14 @@ NEXT_PUBLIC_SITE_URL=https://your-domain.com
 
 ```bash
 # PostgreSQL connection string
-# Local development only: Supabase local runs PostgreSQL on port 54322
+# Local development only: Supabase local runs PostgreSQL on port 55322
 # (this is the default in .env.example, so normally you set nothing).
 #
 # In production these are NOT set by hand: the Supabase-Vercel integration
 # syncs POSTGRES_URL (transaction pooler) and POSTGRES_URL_NON_POOLING
 # (session pooler), and the app prefers the session pooler at runtime.
 # See docs/deployment.md for the setup flow and why the modes differ.
-DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres
+DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:55322/postgres
 ```
 
 ### Authentication (Required for Sign-In Feature)
@@ -38,7 +38,7 @@ Used by Supabase Auth for Google Sign-In. Without these variables, the authentic
 # Local development: Run `pnpm supabase start`, then `pnpm supabase status -o json` to retrieve API_URL and PUBLISHABLE_KEY
 # Vercel/Production: synced by the Supabase-Vercel integration — do not enter
 #                    them by hand, or they stop tracking key rotation
-NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
+NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:55321
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 
 # Supabase service role key (server-side only)

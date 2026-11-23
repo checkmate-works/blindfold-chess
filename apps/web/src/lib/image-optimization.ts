@@ -3,7 +3,7 @@
  *
  * Background: Next.js Image Optimization rejects private IPs (e.g.
  * `127.0.0.1`, `localhost`) as image sources to prevent SSRF. During local
- * development the Supabase API runs on `http://127.0.0.1:54321` and serves
+ * development the Supabase API runs on `http://127.0.0.1:55321` and serves
  * Storage public objects from the same host, so all such `<Image>` would
  * fail to load if optimization were left on.
  *
