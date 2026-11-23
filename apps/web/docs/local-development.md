@@ -110,6 +110,86 @@ The local pool size does not depend on the ports: `resolvePoolMax` in
 `src/lib/db/pooler-mode.ts` tells the local pooler from a direct connection by
 the pooler's tenant-qualified user name.
 
+### Dev server (Next): chess.localhost:3100
+
+`pnpm dev` does not listen on Next's default 3000. It listens on **3100**,
+and the browser opens **http://chess.localhost:3100**. The port follows the same rule as the
+Supabase block: keep the default's last two digits and let the higher digits
+name the project, so another project on the machine takes 3200.
+
+The host is separate too, not only the port, because of cookies:
+
+- Cookies are scoped by host and not by port. `localhost:3100` and
+  `localhost:3200` share one cookie jar.
+- supabase-js names its login cookie after the first label of the Supabase
+  URL's host. Every local stack is at `127.0.0.1`, so the cookie is
+  `sb-127-auth-token` in every project, and signing in to one project on
+  plain `localhost` overwrites the other's session.
+- Browsers resolve every `*.localhost` name to loopback themselves, so
+  `chess.localhost` needs no `/etc/hosts` entry and no external DNS name such
+  as `lvh.me`.
+- Next 16's dev server allows dev resources (HMR, `/_next/*`) from
+  `**.localhost` by default (`blockCrossSiteDEV` in
+  `next/dist/server/lib/router-utils/block-cross-site-dev.js`, checked on
+  16.4.6), so `allowedDevOrigins` needs no entry for it.
+- A host name alone would not be enough: only one process can listen on a
+  port, so the ports differ as well.
+
+| Where                                                | Value                                                 |
+| ---------------------------------------------------- | ----------------------------------------------------- |
+| `dev` script in `apps/web/package.json`              | `next dev --turbopack -p 3100` (decides the port)     |
+| `[auth] site_url` in `supabase/config.toml`          | `http://chess.localhost:3100` (decides the origin)    |
+| `[auth] additional_redirect_urls`                    | includes `site_url`                                   |
+| `NEXT_PUBLIC_SITE_URL` in `.env.local`               | `http://chess.localhost:3100`                         |
+| `LOCAL_WEB_PORT` in `apps/mobile/src/auth/config.ts` | `3100`; the host stays the Metro host, or `localhost` |
+| `web` in `.claude/launch.json`                       | `port: 3100`, `url: http://chess.localhost:3100`      |
+| `APP_URL` in `scripts/claude-cloud/config.sh`        | `http://localhost:3100`                               |
+
+The mobile app and the cloud VM keep a plain host on purpose. The app sends
+no cookies, and a phone cannot resolve `chess.localhost` to the development
+machine; it reaches the server at the machine's LAN address
+(`192.168.x.x:3100`). That is also why the `dev` script has no `-H`: the
+server has to listen on every interface. The cloud VM runs only this project,
+and `curl` / Node on Linux do not reliably resolve `*.localhost`. For the same
+reason anything that sends no cookies, such as `stripe listen --forward-to`
+or a `curl` against a cron route, can use `localhost:3100`.
+
+Code that asks "is this site URL local?" must accept `*.localhost`:
+`isLoopbackHostname` in `src/lib/loopback-host.ts` is the one place that
+decides it (`IS_LOCAL_DEV` uses it for the cookies' `Secure` attribute).
+
+#### Moving an existing checkout to chess.localhost:3100
+
+A `.env.local` written before the move still says `localhost:3000`. Once,
+from `apps/web`:
+
+1. In `.env.local`, set `NEXT_PUBLIC_SITE_URL=http://chess.localhost:3100`.
+2. If you use Google sign-in locally, add `http://chess.localhost:3100` to the OAuth
+   client's Authorized JavaScript origins in Google Cloud Console. If the
+   console refuses the value, leave it out: the redirect-based sign-in does
+   not depend on it (see [authentication-setup.md](authentication-setup.md)).
+3. `pnpm supabase stop`, then `pnpm supabase start`, so Auth rereads
+   `site_url` and `additional_redirect_urls` (the database is kept).
+4. Restart `next dev` and open http://chess.localhost:3100.
+5. Sign in again. The session cookie of the old origin (`localhost:3000`)
+   does not carry over to the new host.
+
+#### Changing the port or the host again
+
+1. Change the two deciding values: the `-p` in the `dev` script and
+   `site_url` in `supabase/config.toml`.
+2. Run `pnpm test`. `src/lib/local-web-server.test.ts` fails for each copy
+   that no longer matches (the remaining rows of the table, except
+   `.env.local`, which is gitignored). Update them until it passes.
+3. Update what is written out for copy-paste; `git grep -nE
+"chess\.localhost|:3100"` finds it (`README.md`, `apps/web/README.md`,
+   `apps/web/docs/`, `apps/mobile/README.md`,
+   `apps/web/.claude/skills/verify/SKILL.md`,
+   `.claude/skills/parallel-worktree/SKILL.md`). The `localhost:3000` in test
+   inputs (`auth/callback/route.test.ts`, the proxy tests) is an arbitrary
+   example and can stay.
+4. Then follow "Moving an existing checkout" above.
+
 ### Google OAuth (optional)
 
 To test Google login locally, set up credentials in `supabase/.env`:

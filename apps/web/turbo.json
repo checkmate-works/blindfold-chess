@@ -3,7 +3,12 @@
   "extends": ["//"],
   "tasks": {
     "test": {
-      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/apps/mobile/src/auth/config.ts"]
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/apps/mobile/src/auth/config.ts",
+        "$TURBO_ROOT$/.claude/launch.json",
+        "$TURBO_ROOT$/scripts/claude-cloud/config.sh"
+      ]
     }
   }
 }

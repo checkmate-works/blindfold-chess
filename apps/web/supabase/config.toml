@@ -124,11 +124,15 @@ max_indexes = 5
 enabled = true
 # The base URL of your website. Used as an allow-list for redirects and for constructing URLs used
 # in emails.
-# NOTE: localhost を使用すること（127.0.0.1 ではない）。
-# ブラウザは localhost と 127.0.0.1 を別オリジンとして扱うため、
-# Next.js の開発サーバー（localhost:3000）と一致させないと
-# OAuth 後の Cookie が正しく読み込めずセッションが維持されない。
-site_url = "http://localhost:3000"
+# NOTE: ブラウザで開くオリジン（http://chess.localhost:3100）と一字一句そろえること。
+# ブラウザは chess.localhost / localhost / 127.0.0.1 を別オリジンとして扱うため、
+# 食い違うと OAuth 後の Cookie が読めずセッションが維持されない。
+# ポートは apps/web/package.json の dev（next dev -p 3100）が正で、
+# src/lib/local-web-server.test.ts が両者と写しの食い違いを落とす。
+# ホスト名を localhost にしないのは、Cookie がポートでは分かれないため。
+# localhost のままだと、同じ Mac で動く別プロダクトの dev サーバーと
+# ログイン Cookie（sb-127-auth-token）を上書きし合う。
+site_url = "http://chess.localhost:3100"
 # URLs that auth providers are permitted to redirect to post authentication.
 # Entries are globs: `*` stops at `.` and `/`, `**` does not.
 # `blindfold-chess://auth-callback` is the mobile app's Google sign-in return
@@ -139,7 +143,7 @@ site_url = "http://localhost:3000"
 # changes with the network and has to be a wildcard. It is for local
 # development only and must not be added to production.
 additional_redirect_urls = [
-  "http://localhost:3000",
+  "http://chess.localhost:3100",
   "blindfold-chess://auth-callback",
   "exp://**/--/auth-callback",
 ]

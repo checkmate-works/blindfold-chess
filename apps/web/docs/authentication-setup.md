@@ -55,10 +55,10 @@ The `config.toml` key next to each item is what local development reads. Dashboa
 
 ### Authentication > URL Configuration
 
-| Dashboard item | Value                                                               | `config.toml`                     |
-| -------------- | ------------------------------------------------------------------- | --------------------------------- |
-| Site URL       | The production URL (`https://your-domain.com`)                      | `[auth] site_url`                 |
-| Redirect URLs  | `https://your-domain.com/**`, plus `http://localhost:3000/**` (dev) | `[auth] additional_redirect_urls` |
+| Dashboard item | Value                                                                     | `config.toml`                     |
+| -------------- | ------------------------------------------------------------------------- | --------------------------------- |
+| Site URL       | The production URL (`https://your-domain.com`)                            | `[auth] site_url`                 |
+| Redirect URLs  | `https://your-domain.com/**`, plus `http://chess.localhost:3100/**` (dev) | `[auth] additional_redirect_urls` |
 
 Every authentication email links to `{{ .SiteURL }}/auth/callback?...`, so a wrong Site URL sends the links to the wrong site.
 
@@ -91,7 +91,7 @@ Corresponds to `[auth.rate_limit]` locally. The email send budget (`email_sent`)
 
 | Field                         | Value                                                                                                           |
 | ----------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| Authorized JavaScript origins | `http://localhost:3000` (dev), `https://your-domain.com` (prod)                                                 |
+| Authorized JavaScript origins | `http://chess.localhost:3100` (dev), `https://your-domain.com` (prod)                                           |
 | Authorized redirect URIs      | `http://127.0.0.1:55321/auth/v1/callback` (local), `https://<reference-id>.supabase.co/auth/v1/callback` (prod) |
 
 > **Tip:** `<reference-id>` is the short alphanumeric string shown as **Project ID** ("Reference used in APIs and URLs.") in Supabase Dashboard > **Project Settings** > **General**. It is the subdomain of your Supabase URL (e.g., `abcdefghijkl.supabase.co`), not a UUID.
@@ -130,7 +130,7 @@ No additional environment variables are needed for Google Sign-In — the provid
 1. Start the development server: `pnpm dev`
 2. Navigate to the sign-in page
 3. Click "Sign in with Google"
-4. You should be redirected to Google's consent screen and back to `localhost:3000` after authentication
+4. You should be redirected to Google's consent screen and back to `chess.localhost:3100` after authentication
 
 ### 6. Verify Linking
 
@@ -153,7 +153,7 @@ When running Supabase locally via `pnpm supabase start`, configuration works dif
 
 - **Auth settings** come from `supabase/config.toml` (not the Dashboard) — the `config.toml` column in the tables above. After changing it, run `pnpm supabase stop && pnpm supabase start` (the database is kept).
 - **Google credentials** are loaded from `supabase/.env`. `config.toml` references them via `env()` (e.g. `client_id = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID)"`). Without them Google rejects the `client_id`, so both sign-in and "Add a Google account" stop at Google's error page.
-- **Emails** land in [Mailpit](http://127.0.0.1:55324), including both email-change confirmations. Their links point at the `site_url` (`localhost:3000`).
+- **Emails** land in [Mailpit](http://127.0.0.1:55324), including both email-change confirmations. Their links point at the `site_url` (`chess.localhost:3100`), so open them in the browser you run the dev server in.
 
 ### Setting Up Google Sign-In Locally
 
@@ -181,9 +181,11 @@ When running Supabase locally via `pnpm supabase start`, configuration works dif
    pnpm supabase stop && pnpm supabase start
    ```
 
-### localhost vs 127.0.0.1
+### chess.localhost vs localhost vs 127.0.0.1
 
-The `site_url` in `config.toml` is set to `http://localhost:3000` (not `http://127.0.0.1:3000`). This is intentional — browsers treat `localhost` and `127.0.0.1` as different origins. Since the Next.js dev server runs on `localhost:3000`, the `site_url` must match so that cookies set after OAuth authentication are readable by the app.
+The `site_url` in `config.toml` is set to `http://chess.localhost:3100` (not `http://localhost:3100` or `http://127.0.0.1:3100`). Browsers treat the three hosts as different origins, each with its own cookies, so the `site_url` must be the exact origin you open the dev server at; otherwise the cookies set after OAuth authentication are not readable by the app. Why that origin is `chess.localhost` rather than `localhost` is explained under "Dev server (Next)" in [local-development.md](local-development.md).
+
+If Google Cloud Console refuses `http://chess.localhost:3100` as an Authorized JavaScript origin, leave the dev origin out. Sign-in here is a full-page redirect through Supabase Auth, which checks only the Authorized redirect URI; JavaScript origins matter to Google's in-page (popup / One Tap) flows, which this app does not use.
 
 The Supabase API URL (`http://127.0.0.1:55321`) uses `127.0.0.1` because that is the address Supabase CLI binds to. The redirect URI in Google Cloud Console must also use `127.0.0.1` to match.
 

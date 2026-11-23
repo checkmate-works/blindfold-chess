@@ -54,8 +54,8 @@ so set the production `STRIPE_PRICE_ID` in Vercel environment variables.
 # Log in to Stripe CLI
 stripe login
 
-# Forward webhooks to localhost
-stripe listen --forward-to localhost:3000/api/stripe/webhook
+# Forward webhooks to the dev server (plain localhost is fine: no cookies involved)
+stripe listen --forward-to localhost:3100/api/stripe/webhook
 
 # Copy the webhook signing secret (whsec_...) from the output
 # → STRIPE_WEBHOOK_SECRET in .env.local

@@ -26,7 +26,7 @@
 # Next.js dev/build reads the full env set from here. The database is SHARED
 # with the main checkout (see above), so the connection strings stay as they
 # are. The one value to adjust per worktree is NEXT_PUBLIC_SITE_URL, when the
-# dev server runs on a port other than 3000.
+# dev server runs on a port other than 3100.
 /apps/web/.env.local
 
 # Engine binaries copied out of node_modules by `pnpm copy-stockfish` (the

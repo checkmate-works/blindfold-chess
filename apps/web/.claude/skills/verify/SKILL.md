@@ -7,8 +7,8 @@ description: Build/launch/drive recipe for runtime-verifying apps/web changes en
 
 ## Launch
 
-- `pnpm dev` from `apps/web` serves http://localhost:3000. The developer
-  usually already has it running — probe `curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/en`
+- `pnpm dev` from `apps/web` serves http://chess.localhost:3100. The developer
+  usually already has it running — probe `curl -s -o /dev/null -w "%{http_code}" http://localhost:3100/en`
   first; a port clash just means reuse the running instance (it hot-reloads
   the working tree, so your uncommitted changes are live).
 - DB-backed pages need Supabase local (`pnpm supabase start` + `pnpm db:run-migrate`).

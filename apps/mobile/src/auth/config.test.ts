@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { LOCAL_SUPABASE_API_PORT, resolveBackendConfig } from "./config";
+import {
+  LOCAL_SUPABASE_API_PORT,
+  LOCAL_WEB_PORT,
+  resolveBackendConfig,
+} from "./config";
 
 describe("resolveBackendConfig", () => {
   it("uses the build's variables when all are set", () => {
@@ -32,7 +36,7 @@ describe("resolveBackendConfig", () => {
       resolveBackendConfig({ env: {}, isDev: true, devHost: "10.0.0.2" }),
     ).toMatchObject({
       supabaseUrl: `http://10.0.0.2:${LOCAL_SUPABASE_API_PORT}`,
-      apiOrigin: "http://10.0.0.2:3000",
+      apiOrigin: `http://10.0.0.2:${LOCAL_WEB_PORT}`,
     });
   });
 });

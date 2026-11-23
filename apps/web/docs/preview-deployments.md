@@ -63,7 +63,7 @@ fixing one of the settings above), close and reopen the PR.
 
 ## Known gaps in a preview branch
 
-`supabase/config.toml` sets `site_url = "http://localhost:3000"`, so
+`supabase/config.toml` sets `site_url = "http://chess.localhost:3100"`, so
 auth redirects on a Preview URL will not round-trip, and settings made
 only in the production dashboard (OAuth client secrets, hook
 enablement) are not mirrored. These do not affect the build.
