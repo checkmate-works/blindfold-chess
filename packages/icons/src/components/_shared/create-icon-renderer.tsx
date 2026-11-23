@@ -1,7 +1,6 @@
 import type { ElementType, ReactNode } from "react";
 
 import { getPieceData } from "../../data/chess-pieces";
-import { coinData } from "../../data/coin";
 import { flagData } from "../../data/flag";
 import { getRatingFaceData } from "../../data/rating-faces";
 import { spinnerData } from "../../data/spinner";
@@ -9,7 +8,6 @@ import type { SvgElement, StrokeIconSvgData } from "../../data/types";
 import { undoData } from "../../data/undo";
 import type {
   ChessPieceIconProps,
-  CoinIconProps,
   RatingFaceIconProps,
   SpinnerIconProps,
   StrokeIconProps,
@@ -160,20 +158,6 @@ export function createIconRenderer(primitives: IconPrimitives) {
     );
   }
 
-  function CoinIcon({ size = 24, ...extras }: CoinIconProps & ContainerExtras) {
-    return (
-      <Svg
-        {...xmlnsProps}
-        viewBox={coinData.viewBox}
-        width={size}
-        height={size}
-        {...extras}
-      >
-        {coinData.elements.map((el, i) => renderElement(el, i))}
-      </Svg>
-    );
-  }
-
   const UndoIcon = createStrokeIcon(undoData, "UndoIcon");
   const FlagIcon = createStrokeIcon(flagData, "FlagIcon");
 
@@ -181,7 +165,6 @@ export function createIconRenderer(primitives: IconPrimitives) {
     SpinnerIcon,
     ChessPieceIcon,
     RatingFaceIcon,
-    CoinIcon,
     UndoIcon,
     FlagIcon,
     createStrokeIcon,

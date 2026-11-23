@@ -61,8 +61,3 @@ export type RatingFaceSvgData = {
   viewBox: string;
   elements: SvgElement[];
 };
-
-export type CoinSvgData = {
-  viewBox: string;
-  elements: SvgElement[];
-};
