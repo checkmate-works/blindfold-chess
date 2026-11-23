@@ -29,6 +29,11 @@ type AdminSlugGroupListPageConfig = {
   basePath: string;
   newButtonTranslationKey: string;
   emptyMessageKey: string;
+  /**
+   * When set, a "likes" column (translation key `likes`) shows each slug's
+   * total from this loader. Slugs missing from the map render 0.
+   */
+  loadLikeCounts?: (slugs: string[]) => Promise<Map<string, number>>;
 };
 
 export function createAdminSlugGroupListPage(config: AdminSlugGroupListPageConfig) {
@@ -68,6 +73,10 @@ export function createAdminSlugGroupListPage(config: AdminSlugGroupListPageConfi
       representativeTitle: row.representative_title,
     }));
 
+    const likeCounts = config.loadLikeCounts
+      ? await config.loadLikeCounts(groups.map((g) => g.slug))
+      : null;
+
     const buildHref = (p: number) => `${config.basePath}?page=${p}`;
 
     return (
@@ -81,13 +90,16 @@ export function createAdminSlugGroupListPage(config: AdminSlugGroupListPageConfi
         }
       >
         <AdminDataTable
-          headers={[t('titleColumn'), t('slug'), t('actions')]}
+          headers={[t('titleColumn'), t('slug'), ...(likeCounts ? [t('likes')] : []), t('actions')]}
           items={groups}
           emptyMessage={t(config.emptyMessageKey)}
           renderRow={(group) => (
             <tr key={group.slug} className="border-t border-border">
               <td className="px-4 py-3 font-medium">{group.representativeTitle}</td>
               <td className="px-4 py-3 text-muted-foreground">{group.slug}</td>
+              {likeCounts && (
+                <td className="px-4 py-3 tabular-nums">{likeCounts.get(group.slug) ?? 0}</td>
+              )}
               <td className="px-4 py-3">
                 <Link
                   href={`${config.basePath}/slug/${group.slug}`}

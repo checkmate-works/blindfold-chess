@@ -52,6 +52,12 @@ type DeleteConfig = {
    * failed, retry the side effect" rather than "delete failed".
    */
   postDeleteHook?: (id: string) => Promise<void>;
+  /**
+   * Optional step run after the admin check and before the row is deleted —
+   * for work that needs the row still present (e.g. reading its slug to
+   * re-home data that points at it). A throw aborts the delete.
+   */
+  preDeleteHook?: (id: string) => Promise<void>;
 };
 
 /**
@@ -59,7 +65,7 @@ type DeleteConfig = {
  *
  * Returns an async function that:
  * 1. Verifies admin auth
- * 2. Deletes the row by `id`
+ * 2. Runs `preDeleteHook` if provided, then deletes the row by `id`
  * 3. Revalidates the given path
  * 4. Runs `postDeleteHook` if provided
  */
@@ -68,6 +74,10 @@ export function createAdminDeleteAction(config: DeleteConfig) {
     const auth = await requireAdmin();
     if ('error' in auth) {
       return auth;
+    }
+
+    if (config.preDeleteHook) {
+      await config.preDeleteHook(id);
     }
 
     await db.delete(config.table).where(eq(config.table.id, id));

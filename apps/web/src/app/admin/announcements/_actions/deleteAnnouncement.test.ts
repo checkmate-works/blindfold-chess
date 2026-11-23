@@ -13,8 +13,13 @@ import { deleteAnnouncement } from './deleteAnnouncement';
 
 const mockSelectFromWhere = vi.fn();
 const mockDeleteWhere = vi.fn();
+const mockMoveLikes = vi.fn();
 
 vi.mock('@/lib/supabase/server');
+
+vi.mock('@/lib/db/announcement-likes', () => ({
+  moveLikesOffVariantBeingDeleted: (...args: unknown[]) => mockMoveLikes(...args),
+}));
 
 vi.mock('@/lib/db', async () => ({
   ...(await actualDbSchema()),
@@ -64,6 +69,27 @@ describe('deleteAnnouncement', () => {
     const result = await deleteAnnouncement(announcementId);
     expect(result).toEqual({ success: true });
     expect(mockDeleteWhere).toHaveBeenCalled();
+  });
+
+  it('re-homes the variant likes before the row is deleted', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+    mockMoveLikes.mockClear();
+    mockDeleteWhere.mockClear();
+
+    await deleteAnnouncement(announcementId);
+    expect(mockMoveLikes).toHaveBeenCalledWith(announcementId);
+    expect(mockMoveLikes.mock.invocationCallOrder[0]).toBeLessThan(
+      mockDeleteWhere.mock.invocationCallOrder[0]
+    );
+  });
+
+  it('does not touch likes when unauthorized', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: null } });
+    mockMoveLikes.mockClear();
+
+    await deleteAnnouncement(announcementId);
+    expect(mockMoveLikes).not.toHaveBeenCalled();
   });
 
   it('should call revalidatePath after successful deletion', async () => {
