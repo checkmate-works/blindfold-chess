@@ -29,8 +29,10 @@ type Props = {
  * Inline practice-result fallback used by client-side session components
  * (e.g. `CoordinateQuizChallenge`, `LegalMovesSession`, `FenSession`) while a
  * finished run is being saved and the redirect to the result route is in
- * flight. For an authenticated run this window spans the whole `saveResult()`
- * round-trip, so the placeholder is on screen long enough to be noticed.
+ * flight. For an authenticated run this window spans the whole
+ * `finishChallengeAttempt` round-trip — the server grades the attempt and
+ * writes the record before answering — so the placeholder is on screen long
+ * enough to be noticed.
  *
  * It renders the SAME inner content as the result route's server `loading.tsx`
  * (both share `PracticeResultPanelSkeleton`), minus the chrome: the session
