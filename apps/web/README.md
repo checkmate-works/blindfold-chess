@@ -40,16 +40,16 @@ cp .env.example .env.local
 | ------------------------------- | ------------------------------- | --------------------------------------------- |
 | `PUBLISHABLE_KEY`               | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public key used by the browser client         |
 | `SECRET_KEY`                    | `SUPABASE_SERVICE_ROLE_KEY`     | Secret key for server-side operations         |
-| `API_URL`                       | `NEXT_PUBLIC_SUPABASE_URL`      | Already defaulted to `http://127.0.0.1:54321` |
+| `API_URL`                       | `NEXT_PUBLIC_SUPABASE_URL`      | Already defaulted to `http://127.0.0.1:55321` |
 
 > **Tip:** These values are also visible in the `supabase start` output under "Authentication Keys" (Publishable / Secret) and "APIs" (Project URL).
 
 The database connection strings need no editing — copying `.env.example` is
 enough. Note what they set up, though: the app's **runtime** queries go through
-the local Supavisor **session** pooler on port 54329
+the local Supavisor **session** pooler on port 55329
 (`POSTGRES_URL_NON_POOLING`), which is the same pooler and the same mode
 production runs on, while migrations and `drizzle-kit` talk to Postgres
-directly on 54322. Keeping local on the same pooler mode is deliberate — its
+directly on 55322. Keeping local on the same pooler mode is deliberate — its
 behaviour differs from a direct connection (prepared statements are disabled,
 connections pin a backend, and exhausting the pool fails rather than queues),
 and those differences should surface here rather than on deploy. `supabase
@@ -88,7 +88,7 @@ To test Google Sign-In — and "Add a Google account" on `/mypage/account` — l
    | Field                         | Value                                     |
    | ----------------------------- | ----------------------------------------- |
    | Authorized JavaScript origins | `http://localhost:3000`                   |
-   | Authorized redirect URIs      | `http://127.0.0.1:54321/auth/v1/callback` |
+   | Authorized redirect URIs      | `http://127.0.0.1:55321/auth/v1/callback` |
 
    > **Note:** The redirect URI points to the local Supabase Auth endpoint, not your Next.js app. For production, the redirect URI is `https://<reference-id>.supabase.co/auth/v1/callback` (see [authentication-setup.md](docs/authentication-setup.md)).
 
@@ -123,13 +123,13 @@ This is intentionally separate from `pnpm db:seed`, which seeds master data (ran
 
 ### Local Services
 
-- **Supabase Studio**: http://127.0.0.1:54323
-- **Mailpit (email testing)**: http://127.0.0.1:54324
-- **PostgreSQL**: `postgresql://postgres:postgres@127.0.0.1:54322/postgres`
+- **Supabase Studio**: http://127.0.0.1:55323
+- **Mailpit (email testing)**: http://127.0.0.1:55324
+- **PostgreSQL**: `postgresql://postgres:postgres@127.0.0.1:55322/postgres`
 
-These are the Supabase CLI's default ports, shared with every other local
-Supabase project. To run this one next to another, move it to its own ports
-as described in [Changing the local ports](docs/local-development.md#changing-the-local-ports).
+These are this project's own `553xx` ports, not the Supabase CLI defaults, so
+it can run next to another local Supabase project. A `.env.local` written
+before the move needs updating; see [Local ports](docs/local-development.md#local-ports).
 
 To stop Supabase:
 

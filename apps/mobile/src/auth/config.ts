@@ -21,7 +21,7 @@ const LOCAL_SUPABASE_PUBLISHABLE_KEY =
  * `apps/web/src/lib/local-supabase.test.ts` fails when this one drifts from
  * `config.toml`.
  */
-export const LOCAL_SUPABASE_API_PORT = 54321;
+export const LOCAL_SUPABASE_API_PORT = 55321;
 
 export type BackendConfig = {
   readonly supabaseUrl: string;

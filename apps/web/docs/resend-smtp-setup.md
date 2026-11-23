@@ -2,7 +2,7 @@
 
 This guide covers configuring [Resend](https://resend.com/) as the custom SMTP provider for Supabase Auth in production. Once configured, all authentication emails (signup confirmation, password reset, email change) are sent through Resend instead of Supabase's built-in email service.
 
-> **Note:** This guide is for **production** (Supabase Dashboard) configuration only. For local development, Supabase uses [Inbucket](http://127.0.0.1:54324) to capture emails — no SMTP setup is needed.
+> **Note:** This guide is for **production** (Supabase Dashboard) configuration only. For local development, Supabase uses [Inbucket](http://127.0.0.1:55324) to capture emails — no SMTP setup is needed.
 
 ## Prerequisites
 

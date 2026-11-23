@@ -69,7 +69,7 @@ Include, verbatim in substance:
 - Tests: run only file-scoped tests for the code you touched
   (`pnpm --filter <pkg> exec vitest run <paths>`). NEVER run the full
   `apps/web` suite: its integration tests fall back to connecting to
-  `127.0.0.1:54322` even without env vars and insert/delete fixed
+  `127.0.0.1:55322` even without env vars and insert/delete fixed
   fixture ids in the shared DB — two concurrent runs collide.
   Full-suite verification is the coordinator's job (Step 3).
 - Commit incrementally on the worktree's branch; report the branch

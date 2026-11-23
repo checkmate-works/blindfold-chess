@@ -171,7 +171,7 @@ export function buildCspHeader(
   const siteUrl = options.siteUrl ?? process.env.NEXT_PUBLIC_SITE_URL;
 
   // Derive the Supabase origin from `NEXT_PUBLIC_SUPABASE_URL` so local dev
-  // (which uses `http://127.0.0.1:54321` and is NOT covered by the
+  // (which uses `http://127.0.0.1:55321` and is NOT covered by the
   // `*.supabase.co` wildcard) and any future regional / custom-domain
   // Supabase deployments (`db.<region>.supabase.co`, custom domains) keep
   // working without ad-hoc allow-list edits. The wildcard is intentionally

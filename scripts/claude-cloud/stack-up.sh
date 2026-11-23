@@ -120,7 +120,7 @@ first_user="${SEED_USERS%% *}"
 cat <<EOF
 [stack-up] ready
 - App:      $APP_URL (next dev, hot reload; log: $WORK/next-dev.log)
-- Database: psql postgresql://postgres:postgres@127.0.0.1:54322/postgres
+- Database: psql postgresql://postgres:postgres@127.0.0.1:55322/postgres
             (no psql on the VM: docker exec supabase_db_${project_id} psql -U postgres -c '<sql>')
 - Sign-in:  dev-seed users ${SEED_USERS// /, } @${SEED_EMAIL_DOMAIN}, password ${SEED_PASSWORD} (e.g. ${first_user}@${SEED_EMAIL_DOMAIN})
 - Screens:  bash $HERE/screenshot.sh ${HEALTH_PATH}

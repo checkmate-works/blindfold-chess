@@ -12,7 +12,7 @@ import { LOCAL_DATABASE_URL } from '@/lib/local-supabase';
  * presence of `DATABASE_URL` / `POSTGRES_URL` / `POSTGRES_URL_NON_POOLING`
  * (the same env-var priority `migrate.ts` uses). On a workstation with
  * `supabase start` running this is the local Supabase Postgres at
- * `127.0.0.1:54322`. In CI without a Postgres, the suite is skipped.
+ * `127.0.0.1:55322`. In CI without a Postgres, the suite is skipped.
  *
  * The fixture row is inserted via service-role-equivalent (direct
  * Postgres client, bypassing RLS) and cleaned up in `afterAll`. Each

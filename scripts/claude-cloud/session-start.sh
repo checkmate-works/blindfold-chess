@@ -121,7 +121,7 @@ Cloud session setup for ${CLOUD_PROJECT_NAME}
 - Quality gates (run before finishing, fix until green): ${QUALITY_GATES}
 - The full app can run here, but is not started by default. 'bash $HERE/stack-up.sh' starts local Supabase in Docker, applies migrations and seeds (including dev-seed users), and runs 'next dev' on ${APP_URL}. It is idempotent; the first run in a fresh VM pulls images and takes a few minutes, so run it in the background.
 - When a task changes UI, look at the result: 'bash $HERE/screenshot.sh <path> [--viewport desktop|mobile|both] [--login ${first_user}]', then open each printed PNG with the Read tool so the user sees it in chat. Check both viewports, and show screenshots when proposing or finishing a UI change.
-- With the stack up, the database is readable directly: psql postgresql://postgres:postgres@127.0.0.1:54322/postgres (or, without psql on the VM, docker exec supabase_db_${project_id} psql -U postgres -c '<sql>').
+- With the stack up, the database is readable directly: psql postgresql://postgres:postgres@127.0.0.1:55322/postgres (or, without psql on the VM, docker exec supabase_db_${project_id} psql -U postgres -c '<sql>').
 - Still not available: production secrets (OAuth, payments, email, analytics) and anything that calls those services.
 SUMMARY
 if declare -F cloud_extra_summary >/dev/null; then

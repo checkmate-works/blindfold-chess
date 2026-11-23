@@ -18,10 +18,10 @@
  */
 
 /** `[api] port` in `config.toml`: Supabase's HTTP API (auth, storage, REST). */
-export const LOCAL_SUPABASE_API_PORT = 54321;
+export const LOCAL_SUPABASE_API_PORT = 55321;
 
 /** `[db] port` in `config.toml`: Postgres, without the pooler in the path. */
-export const LOCAL_SUPABASE_DB_PORT = 54322;
+export const LOCAL_SUPABASE_DB_PORT = 55322;
 
 /** The local Supabase API origin. */
 export const LOCAL_SUPABASE_URL = `http://127.0.0.1:${LOCAL_SUPABASE_API_PORT}`;
