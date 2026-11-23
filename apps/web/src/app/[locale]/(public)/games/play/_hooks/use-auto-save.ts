@@ -45,7 +45,6 @@ export type GameDataRefs = {
   operationLogs: React.RefObject<MoveOperationLog[] | undefined>;
   operationTotals: React.RefObject<OperationTotals | undefined>;
   undoneLogs: React.RefObject<UndoneMoveLog[] | undefined>;
-  maiaChargeId: React.RefObject<string | undefined>;
 };
 
 /** Options accepted by the {@link useAutoSave} save function. */
@@ -84,8 +83,6 @@ type UseAutoSaveOptions = {
   operationLogs?: MoveOperationLog[];
   operationTotals?: OperationTotals;
   undoneLogs?: UndoneMoveLog[];
-  /** See {@link Game.maiaChargeId}. Set for a fresh Maia game, never for a resumed one. */
-  maiaChargeId?: string;
   enabled?: boolean;
   saveOnInit?: boolean;
   /**
@@ -119,7 +116,6 @@ export function useAutoSave({
   operationLogs,
   operationTotals,
   undoneLogs,
-  maiaChargeId,
   enabled = true,
   saveOnInit = false,
   repository,
@@ -145,7 +141,6 @@ export function useAutoSave({
     operationLogs,
     operationTotals,
     undoneLogs,
-    maiaChargeId,
   });
 
   // Mirror the save-gating props so async callbacks read the latest values.
@@ -227,7 +222,6 @@ export function useAutoSave({
           operationLogs: gameDataRefs.operationLogs.current,
           operationTotals: gameDataRefs.operationTotals.current,
           undoneLogs: gameDataRefs.undoneLogs.current,
-          maiaChargeId: gameDataRefs.maiaChargeId.current,
         };
 
         const gameIdFromRef = currentGameIdRef.current;

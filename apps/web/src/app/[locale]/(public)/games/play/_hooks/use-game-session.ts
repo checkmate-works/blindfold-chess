@@ -46,7 +46,6 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
     initialStartingFen,
     initialMovesFromUrl,
     initialGamePrefs,
-    initialMaiaChargeId,
     shouldRedirectToError,
     errorDetails,
   } = useGameInitialization(urlParams);
@@ -189,9 +188,6 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
     operationLogs,
     operationTotals,
     undoneLogs,
-    // Only a fresh game's URL carries the charge; a resumed game's saved
-    // record keeps it (see `persistGameSnapshot`).
-    maiaChargeId: initialGameId ? undefined : initialMaiaChargeId,
     enabled: !isRestoringGameData && !shouldRedirectToError && !gameNotFound,
     saveOnInit: !initialGameId && !shouldRedirectToError,
   });

@@ -45,11 +45,6 @@ export type PublishGameActionInput = {
    * each position, not just at game start.
    */
   playSettingsLog?: PreferenceChangeLogEntry[] | null;
-  /**
-   * The Maia coin charge the game was started on ({@link Game.maiaChargeId});
-   * kept only for Maia games, validated as a UUID on the server.
-   */
-  maiaChargeId?: string | null;
 };
 
 export type PublishGameResponse =

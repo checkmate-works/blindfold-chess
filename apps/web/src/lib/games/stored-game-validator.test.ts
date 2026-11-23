@@ -23,6 +23,17 @@ function log(overrides: Record<string, unknown> = {}) {
   };
 }
 
+describe('isValidStoredGame — fields the app no longer reads', () => {
+  it('accepts a record that still carries a maiaChargeId', () => {
+    // Written by Maia games started while they cost a coin. The field is gone
+    // from `Game`, but the records are still in players' browsers; rejecting
+    // an unknown key would silently drop those saved games.
+    expect(
+      isValidStoredGame(baseGame({ maiaChargeId: '019a1b2c-3d4e-7f80-9a1b-2c3d4e5f6071' }))
+    ).toBe(true);
+  });
+});
+
 describe('isValidStoredGame — operationLogs.invalidAttemptSquares', () => {
   it('accepts a well-formed stored game with no operationLogs at all', () => {
     expect(isValidStoredGame(baseGame())).toBe(true);

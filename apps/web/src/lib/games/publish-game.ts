@@ -18,7 +18,6 @@ import {
 
 import { engineApproxElo, isEngineConfig } from '@/lib/engines';
 import type { EngineConfig, EngineKind } from '@/lib/engines';
-import { isValidUUID } from '@/lib/validations/uuid';
 
 import { isBoardVisibility } from './board-visibility';
 import { MAX_DESCRIPTION_LENGTH, MAX_MOVES, isValidGameTitle } from './publish-constants';
@@ -71,11 +70,6 @@ export type ValidatedGame = {
   playSettings: GamePlaySettings | null;
   /** Display-relevant mid-game settings edits, enabling per-position display. */
   playSettingsLog: PlaySettingsChangeEntry[] | null;
-  /**
-   * The `maia_game` coin charge the game was started on (see the `games`
-   * column). Null for non-Maia games and when absent or malformed.
-   */
-  maiaChargeId: string | null;
 };
 
 /** Denormalized columns derived from a validated snapshot. */
@@ -204,17 +198,6 @@ export function validatePublishSnapshot(input: unknown): ValidatePublishResult {
       }
     : null;
 
-  // The charge the game was started on. Display-only metadata (it lets the
-  // coin history link the charge to this game), so a malformed value or one
-  // on a non-Maia game — which never had a charge — is dropped to null rather
-  // than rejecting the publish.
-  const maiaChargeId =
-    v.engineConfig.kind === 'maia' &&
-    typeof v.maiaChargeId === 'string' &&
-    isValidUUID(v.maiaChargeId)
-      ? v.maiaChargeId.toLowerCase()
-      : null;
-
   return {
     ok: true,
     game: {
@@ -237,7 +220,6 @@ export function validatePublishSnapshot(input: unknown): ValidatePublishResult {
       // subset and anchored within [0, moves.length]. Folded over playSettings
       // per position by the replay indicator. Dropped to null when absent.
       playSettingsLog: normalizePlaySettingsLog(v.playSettingsLog, moves.length),
-      maiaChargeId,
     },
   };
 }
@@ -283,7 +265,6 @@ export function toGameInsertValues(game: ValidatedGame, columns: GameColumns) {
     undoneLogs: game.undoneLogs,
     playSettings: game.playSettings,
     playSettingsLog: game.playSettingsLog,
-    maiaChargeId: game.maiaChargeId,
     result: game.result,
     engineKind: columns.engineKind,
     engineElo: columns.engineElo,
