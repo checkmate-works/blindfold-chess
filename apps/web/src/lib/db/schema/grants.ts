@@ -1,9 +1,8 @@
 // Split from schema/gamification.ts on 2026-07-04. Per-domain
 // schema slice — user grants.
 //
-// Legacy `user_grants` (the pre-point-system benefit grants kept for the
-// migration window). Point redemptions bridge into this table by issuing a
-// grant row — see `pointRedemptions` in `./points`.
+// `user_grants`: time-limited benefit grants, issued by admins and by
+// automated triggers.
 import { index, pgTable, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
 
 import { createdAtOnly } from './columns';

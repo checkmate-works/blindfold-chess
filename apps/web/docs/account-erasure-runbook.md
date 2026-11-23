@@ -120,8 +120,7 @@ gone.
 
 ## What is intentionally NOT erased
 
-- **Append-only ledgers** (`point_events`, `exp_events`) are private data removed
-  by FK CASCADE at purge; they are never surfaced publicly and are not separately
-  pursued.
+- **The append-only Exp ledger** (`exp_events`) is private data removed by FK
+  CASCADE at purge; it is never surfaced publicly and is not separately pursued.
 - **Moderation audit** (`moderation_actions`) — retained per the moderation
   policy; out of scope for a content-erasure request.

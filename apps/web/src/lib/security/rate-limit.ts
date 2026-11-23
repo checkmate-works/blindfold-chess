@@ -309,14 +309,6 @@ export const RATE_LIMITS = {
     windowMs: 3_600_000,
   },
   /**
-   * Per-user limit for point redemptions. Tight cap (10/hour) because each
-   * redemption mutates `user_point_balances` + writes a `user_grants` row
-   * + writes two ledger rows. A reasonable user never needs to redeem
-   * faster than this; the limit is mostly defense against runaway client
-   * loops or scripted abuse, not a UX budget.
-   */
-  redeemPoints: { action: 'redeem_points', maxAttempts: 10, windowMs: 3_600_000 },
-  /**
    * Per-user limit for claiming an anonymously published game. A user can
    * hold at most a handful of unclaimed games in localStorage, so 10/hour
    * covers any honest batch; the cap bounds token-guessing loops (the

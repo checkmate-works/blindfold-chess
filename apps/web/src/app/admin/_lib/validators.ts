@@ -6,7 +6,7 @@ import { UUID_RE } from '@/lib/validations/uuid';
  * Each function returns an error message string when the field is invalid,
  * or `null` when valid — matching the convention used by the per-feature
  * `validate*Data` functions. Feature-level validators (articles,
- * announcements, grants, coins) compose these so the slug/title/locale/
+ * announcements, grants) compose these so the slug/title/locale/
  * status/published-date/user-id rules live in exactly one place.
  */
 

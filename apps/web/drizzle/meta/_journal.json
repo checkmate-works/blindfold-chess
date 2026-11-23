@@ -596,6 +596,13 @@
       "when": 1795210262229,
       "tag": "20261120213102_add_challenge_results_deleted_at",
       "breakpoints": true
+    },
+    {
+      "idx": 85,
+      "version": "7",
+      "when": 1795427006057,
+      "tag": "20261123094326_drop_coin_ledger",
+      "breakpoints": true
     }
   ]
 }

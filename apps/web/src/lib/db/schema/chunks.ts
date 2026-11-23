@@ -180,8 +180,8 @@ export const chunks = pgTable(
      *   it is that the author is still soliciting a better name, which
      *   is what the `chunk_edit_requests` workflow and
      *   `chunk_feedback_topics` exist to serve. Renamed at the read
-     *   layer only, following the same rule as `point_events.source`
-     *   and `topic_posts.topic_type`: stored discriminators are never
+     *   layer only, following the same rule as
+     *   `topic_posts.topic_type`: stored discriminators are never
      *   renamed, display labels are mapped on the way out.
      * - `published` — canonical state. The author has settled the title /
      *   description; the row is locked against owner edits at the

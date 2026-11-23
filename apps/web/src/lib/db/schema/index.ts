@@ -33,7 +33,6 @@ export * from './ranks';
 export * from './achievements';
 export * from './exp';
 export * from './grants';
-export * from './points';
 export * from './chunks';
 export * from './positions';
 export * from './puzzles';
