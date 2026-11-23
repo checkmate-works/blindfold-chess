@@ -3759,7 +3759,9 @@
     "membersOnly": "This announcement is available to members only.",
     "membersOnlyBadge": "Members only",
     "signInToView": "Sign in to view",
-    "announcementNotFound": "Announcement Not Found",
+    "announcementNotFound": "Announcement Not Found"
+  },
+  "announcementLike": {
     "like": "Like",
     "unlike": "Unlike"
   },

@@ -3759,7 +3759,9 @@
     "membersOnly": "Este anúncio está disponível apenas para membros.",
     "membersOnlyBadge": "Apenas membros",
     "signInToView": "Faça login para ver",
-    "announcementNotFound": "Anúncio Não Encontrado",
+    "announcementNotFound": "Anúncio Não Encontrado"
+  },
+  "announcementLike": {
     "like": "Curtir",
     "unlike": "Descurtir"
   },

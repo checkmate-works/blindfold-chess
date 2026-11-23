@@ -67,6 +67,9 @@ export const NAMESPACE_CLASSIFICATION = {
   // the viewer) and became a Server Component, so nothing renders these
   // strings outside `getTranslations` any more.
   announcements: 'server',
+  // announcementLike: the heart under an announcement body. Split from the
+  // server-only `announcements` so only its two strings reach the client.
+  announcementLike: 'client',
   articles: 'server',
   banned: 'server',
   gamesPage: 'server',

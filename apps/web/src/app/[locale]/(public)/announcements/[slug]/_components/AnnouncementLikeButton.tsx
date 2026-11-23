@@ -23,7 +23,7 @@ export function AnnouncementLikeButton({
       initialLikeCount={initialLikeCount}
       initialLikedByMe={initialLikedByMe}
       onToggle={() => toggleAnnouncementLikeAction(slug, locale)}
-      i18nNamespace="announcements"
+      i18nNamespace="announcementLike"
     />
   );
 }

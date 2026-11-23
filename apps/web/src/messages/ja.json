@@ -3759,7 +3759,9 @@
     "membersOnly": "このお知らせはメンバー限定です。",
     "membersOnlyBadge": "メンバー限定",
     "signInToView": "ログインして閲覧",
-    "announcementNotFound": "お知らせが見つかりません",
+    "announcementNotFound": "お知らせが見つかりません"
+  },
+  "announcementLike": {
     "like": "いいね",
     "unlike": "いいね解除"
   },
