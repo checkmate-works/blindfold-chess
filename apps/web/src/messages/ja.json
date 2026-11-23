@@ -3759,7 +3759,9 @@
     "membersOnly": "このお知らせはメンバー限定です。",
     "membersOnlyBadge": "メンバー限定",
     "signInToView": "ログインして閲覧",
-    "announcementNotFound": "お知らせが見つかりません"
+    "announcementNotFound": "お知らせが見つかりません",
+    "like": "いいね",
+    "unlike": "いいね解除"
   },
   "onboardingProfile": {
     "prompt": "プロフィールを設定しましょう",
@@ -4654,7 +4656,8 @@
         "publishedConfirmMessage": "このお知らせは公開状態です。修正が即座に反映されますがよろしいですか？",
         "publishedConfirmConfirm": "保存する",
         "publishedConfirmCancel": "キャンセル"
-      }
+      },
+      "likes": "Likes"
     },
     "articles": "Articles",
     "articlesTable": {

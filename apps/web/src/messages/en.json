@@ -3759,7 +3759,9 @@
     "membersOnly": "This announcement is available to members only.",
     "membersOnlyBadge": "Members only",
     "signInToView": "Sign in to view",
-    "announcementNotFound": "Announcement Not Found"
+    "announcementNotFound": "Announcement Not Found",
+    "like": "Like",
+    "unlike": "Unlike"
   },
   "onboardingProfile": {
     "prompt": "Set up your profile.",
@@ -4654,7 +4656,8 @@
         "publishedConfirmMessage": "This announcement is published. Your changes will be reflected immediately. Are you sure?",
         "publishedConfirmConfirm": "Save",
         "publishedConfirmCancel": "Cancel"
-      }
+      },
+      "likes": "Likes"
     },
     "articles": "Articles",
     "articlesTable": {

@@ -3759,7 +3759,9 @@
     "membersOnly": "Este anuncio está disponible solo para miembros.",
     "membersOnlyBadge": "Solo miembros",
     "signInToView": "Inicia sesión para ver",
-    "announcementNotFound": "Anuncio No Encontrado"
+    "announcementNotFound": "Anuncio No Encontrado",
+    "like": "Me gusta",
+    "unlike": "Ya no me gusta"
   },
   "onboardingProfile": {
     "prompt": "Configura tu perfil.",
@@ -4654,7 +4656,8 @@
         "publishedConfirmMessage": "Este anuncio está publicado. Tus cambios se reflejarán inmediatamente. ¿Estás seguro?",
         "publishedConfirmConfirm": "Guardar",
         "publishedConfirmCancel": "Cancelar"
-      }
+      },
+      "likes": "Likes"
     },
     "articles": "Artículos",
     "articlesTable": {

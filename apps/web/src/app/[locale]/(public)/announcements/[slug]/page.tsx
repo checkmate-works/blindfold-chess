@@ -3,6 +3,8 @@
  *
  * @description
  * Renders one published announcement's markdown body, gating members-only announcements behind sign-in.
+ * Signed-in readers can like it; the per-slug total is how the operators compare
+ * how announcements were received (shown in the admin listing).
  */
 import type { Metadata } from 'next';
 import { hasLocale } from 'next-intl';
@@ -15,6 +17,7 @@ import { Link, routing } from '@/i18n/routing';
 import { getOptionalUser } from '@/lib/auth';
 import { withReturnPath } from '@/lib/auth-return-path';
 import { getCurrentReturnTarget } from '@/lib/current-return-target';
+import { getAnnouncementLikeMeta } from '@/lib/db/announcement-likes';
 import { formatLocalDate } from '@/lib/i18n/format-date';
 import { toMetaDescription } from '@/lib/seo/meta-description';
 
@@ -25,6 +28,7 @@ import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/met
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { getPublishedAnnouncement } from '../_lib/queries';
+import { AnnouncementLikeButton } from './_components/AnnouncementLikeButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -89,10 +93,9 @@ export default async function AnnouncementPage({ params }: Props) {
   }
 
   const { announcement } = result;
+  const user = await getOptionalUser();
 
   if (announcement.visibility === 'members_only') {
-    const user = await getOptionalUser();
-
     if (!user) {
       return (
         <PageLayout
@@ -118,6 +121,8 @@ export default async function AnnouncementPage({ params }: Props) {
     }
   }
 
+  const likeMeta = await getAnnouncementLikeMeta(announcement.slug, user?.id);
+
   const publishedDate = announcement.publishedAt
     ? formatLocalDate(new Date(announcement.publishedAt), locale, 'long')
     : undefined;
@@ -135,7 +140,15 @@ export default async function AnnouncementPage({ params }: Props) {
         <LazyMarkdownRenderer content={announcement.content} skipFirstH1={true} />
       </ProseArticle>
 
-      {publishedDate && <p className="text-sm text-muted-foreground text-right">{publishedDate}</p>}
+      <div className="flex items-center justify-between gap-4">
+        <AnnouncementLikeButton
+          slug={announcement.slug}
+          locale={locale}
+          initialLikeCount={likeMeta.likeCount}
+          initialLikedByMe={likeMeta.likedByMe}
+        />
+        {publishedDate && <p className="text-sm text-muted-foreground">{publishedDate}</p>}
+      </div>
     </PageLayout>
   );
 }
