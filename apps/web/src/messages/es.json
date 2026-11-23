@@ -3761,6 +3761,10 @@
     "signInToView": "Inicia sesión para ver",
     "announcementNotFound": "Anuncio No Encontrado"
   },
+  "announcementLike": {
+    "like": "Me gusta",
+    "unlike": "Ya no me gusta"
+  },
   "onboardingProfile": {
     "prompt": "Configura tu perfil.",
     "avatarLabel": "Avatar",
@@ -4654,6 +4658,17 @@
         "publishedConfirmMessage": "Este anuncio está publicado. Tus cambios se reflejarán inmediatamente. ¿Estás seguro?",
         "publishedConfirmConfirm": "Guardar",
         "publishedConfirmCancel": "Cancelar"
+      },
+      "likes": "Me gusta acumulados",
+      "firstPublished": "Primera publicación (UTC)",
+      "likesHelp": "Los Me gusta son reacciones positivas acumuladas de lectores con sesión iniciada, no una tasa de satisfacción. Compare avisos con públicos y períodos de exposición similares: no se miden las visitas, los invitados no pueden reaccionar y los avisos antiguos llevan más tiempo acumulando reacciones. La fecha es la más antigua de las traducciones restantes y puede cambiar al editarlas o eliminarlas.",
+      "likers": {
+        "title": "Liked by ({count})",
+        "user": "User",
+        "locale": "Locale liked",
+        "likedAt": "Liked at",
+        "empty": "No likes yet.",
+        "truncated": "Showing the {shown} most recent."
       }
     },
     "articles": "Artículos",

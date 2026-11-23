@@ -13,8 +13,13 @@ import { deleteAnnouncement } from './deleteAnnouncement';
 
 const mockSelectFromWhere = vi.fn();
 const mockDeleteWhere = vi.fn();
+const mockDeleteWithLikes = vi.fn();
 
 vi.mock('@/lib/supabase/server');
+
+vi.mock('@/lib/db/announcement-likes', () => ({
+  deleteAnnouncementWithLikes: (...args: unknown[]) => mockDeleteWithLikes(...args),
+}));
 
 vi.mock('@/lib/db', async () => ({
   ...(await actualDbSchema()),
@@ -63,7 +68,23 @@ describe('deleteAnnouncement', () => {
 
     const result = await deleteAnnouncement(announcementId);
     expect(result).toEqual({ success: true });
-    expect(mockDeleteWhere).toHaveBeenCalled();
+    expect(mockDeleteWithLikes).toHaveBeenCalled();
+  });
+
+  it('delegates the whole deletion to the transactional helper', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+    await deleteAnnouncement(announcementId);
+    expect(mockDeleteWithLikes).toHaveBeenCalledWith(announcementId);
+    expect(mockDeleteWhere).not.toHaveBeenCalled();
+  });
+
+  it('does not touch likes when unauthorized', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: null } });
+    mockDeleteWithLikes.mockClear();
+
+    await deleteAnnouncement(announcementId);
+    expect(mockDeleteWithLikes).not.toHaveBeenCalled();
   });
 
   it('should call revalidatePath after successful deletion', async () => {
@@ -102,6 +123,14 @@ describe('deleteAnnouncement', () => {
 
     const result = await deleteAnnouncement('nonexistent-id');
     expect(result).toEqual({ success: true });
-    expect(mockDeleteWhere).toHaveBeenCalled();
+    expect(mockDeleteWithLikes).toHaveBeenCalled();
+  });
+  it('does not invalidate caches when transactional deletion fails', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+    mockDeleteWithLikes.mockRejectedValueOnce(new Error('delete failed'));
+    await expect(deleteAnnouncement(announcementId)).rejects.toThrow('delete failed');
+    expect(mockRevalidatePath).not.toHaveBeenCalled();
+    expect(mockRevalidateTag).not.toHaveBeenCalled();
   });
 });

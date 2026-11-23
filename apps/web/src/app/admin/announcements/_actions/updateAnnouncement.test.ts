@@ -34,6 +34,15 @@ vi.mock('@/lib/db', async () => ({
   },
 }));
 
+vi.mock('@/lib/db/announcement-likes', () => ({
+  updateAnnouncementPreservingLikes: async () => {
+    const rows = await mockSelectFromWhere();
+    if (!rows.length) return { error: 'not found' };
+    await mockUpdateSetWhere();
+    return null;
+  },
+}));
+
 vi.mock('@/lib/notifications/announcement-notification', () => ({
   notifyAllUsersOfAnnouncement: (...args: unknown[]) => mockNotifyAllUsersOfAnnouncement(...args),
   hasAnnouncementNotification: (...args: unknown[]) => mockHasAnnouncementNotification(...args),

@@ -281,6 +281,10 @@ export const INTL_SCOPES = {
     dir: '(landing)',
     namespaces: ['Common', 'toast', 'unsavedChanges'],
   },
+  announcementDetail: {
+    dir: '[locale]/(public)/announcements/[slug]',
+    namespaces: ['Common', 'announcementLike', 'authPrompt', 'unsavedChanges'],
+  },
   learn: {
     dir: '[locale]/(public)/learn',
     namespaces: ['Common', 'learn', 'nativeAd', 'navigation', 'unsavedChanges'],

@@ -52,6 +52,8 @@ type DeleteConfig = {
    * failed, retry the side effect" rather than "delete failed".
    */
   postDeleteHook?: (id: string) => Promise<void>;
+  /** Override the deletion when dependent rows must change in the same transaction. */
+  deleteRow?: (id: string) => Promise<void>;
 };
 
 /**
@@ -59,7 +61,7 @@ type DeleteConfig = {
  *
  * Returns an async function that:
  * 1. Verifies admin auth
- * 2. Deletes the row by `id`
+ * 2. Deletes the row by `id` (or delegates to the transactional override)
  * 3. Revalidates the given path
  * 4. Runs `postDeleteHook` if provided
  */
@@ -70,7 +72,11 @@ export function createAdminDeleteAction(config: DeleteConfig) {
       return auth;
     }
 
-    await db.delete(config.table).where(eq(config.table.id, id));
+    if (config.deleteRow) {
+      await config.deleteRow(id);
+    } else {
+      await db.delete(config.table).where(eq(config.table.id, id));
+    }
 
     revalidatePath(config.revalidationPath);
 

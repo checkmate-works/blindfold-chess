@@ -1,11 +1,8 @@
 'use server';
 
-import { eq } from 'drizzle-orm';
-
-import { announcements, db } from '@/lib/db';
+import { updateAnnouncementPreservingLikes } from '@/lib/db/announcement-likes';
 
 import {
-  adminFindOrFail,
   adminMutationGuard,
   mapAdminUniqueViolation,
   mutationSuccess,
@@ -25,20 +22,15 @@ export async function updateAnnouncement(
     return guard;
   }
 
-  const notFound = await adminFindOrFail(announcements, id);
-  if (notFound) return notFound;
-
   try {
-    await db
-      .update(announcements)
-      .set({
-        ...buildAnnouncementMutationValues(data),
-        status: data.status,
-        visibility: data.visibility,
-        showAsBanner: data.showAsBanner,
-        updatedAt: new Date(),
-      })
-      .where(eq(announcements.id, id));
+    const result = await updateAnnouncementPreservingLikes(id, {
+      ...buildAnnouncementMutationValues(data),
+      status: data.status,
+      visibility: data.visibility,
+      showAsBanner: data.showAsBanner,
+      updatedAt: new Date(),
+    });
+    if (result) return result;
   } catch (err: unknown) {
     return mapAdminUniqueViolation(err, 'An announcement with this slug and locale already exists');
   }
