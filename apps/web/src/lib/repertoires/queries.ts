@@ -398,16 +398,16 @@ async function canViewRepertoire(
  * A single repertoire with its lines + author profile, for the public-facing
  * detail / line pages.
  *
- * @design Visibility is a HARD gate (coin-gated privacy)
+ * @design Visibility is a HARD gate
  *
- * `public` is viewable by anyone; the coin-gated tiers are enforced here, not
+ * `public` is viewable by anyone; the restricted tiers are enforced here, not
  * merely hidden from listings:
  *   - `followers_only` → owner, or a viewer who follows the author
  *   - `private` / `building` → owner only
  * A viewer who fails the gate gets `null` (→ 404), same as a missing/deleted
  * repertoire — the content and its lines never leave the server. This is a
  * deliberate departure from the repertoire's original soft-privacy model: once
- * a user pays coins to make a course followers-only or private, URL knowledge
+ * a user makes a course followers-only or private, URL knowledge
  * alone must not defeat it. The `isOwner` flag still gates owner-only
  * affordances (delete, annotate, publish, change visibility).
  *

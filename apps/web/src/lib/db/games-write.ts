@@ -17,7 +17,6 @@ import 'server-only';
 import { generateManageToken } from '@/lib/games/manage-token';
 import type { GameColumns, ValidatedGame } from '@/lib/games/publish-game';
 import { toGameInsertValues } from '@/lib/games/publish-game';
-import { clawbackPointsForPost } from '@/lib/points';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 import { db } from './index';
@@ -101,19 +100,7 @@ async function cleanupGameGifs(gameId: string): Promise<void> {
  * lifecycle axes stay orthogonal. RLS / reads filter on `deleted_at IS NULL`.
  */
 export async function softDeleteSharedGame(gameId: string): Promise<void> {
-  await db.transaction(async (tx) => {
-    const [row] = await tx
-      .update(games)
-      .set({ deletedAt: new Date() })
-      .where(eq(games.id, gameId))
-      .returning({ authorId: games.authorId });
-
-    // Reverse the publish reward on removal. `author_id` is null for an
-    // account-less game (or a missing row) — clawbackPointsForPost no-ops on a
-    // null user — and only a registered author's publish ever earned a grant.
-    // Idempotent (`post_clawback:game:<id>`), so a re-delete is a safe no-op.
-    if (row) await clawbackPointsForPost(tx, row.authorId, { type: 'game', id: gameId });
-  });
+  await db.update(games).set({ deletedAt: new Date() }).where(eq(games.id, gameId));
 
   await cleanupGameGifs(gameId);
 }

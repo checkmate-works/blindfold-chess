@@ -4,9 +4,7 @@ import { useId, useMemo, useState } from 'react';
 
 import { SUPPORTED_LOCALES } from '@/config';
 import { LOCALE_LABELS } from '@/i18n/locale-labels';
-import type { ClientTranslator } from '@/i18n/translator';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { CoinIcon } from '@blindfold-chess/icons';
 import { FaRobot } from 'react-icons/fa';
 
 import type { AiReview, AiReviewGenerationOffer } from '@/lib/ai-review/types';
@@ -19,7 +17,6 @@ import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import type { AiReviewGenerationState } from '../_hooks/use-ai-review-generation';
-import { AiReviewUpsell } from './AiReviewUpsell';
 import { ReviewMomentCard } from './ReviewMomentCard';
 
 type Props = {
@@ -109,12 +106,6 @@ export function AiReviewPanel({
     );
   }
 
-  // Ahead of the in-flight phases below: with nothing that pays, generation
-  // never starts, so there is no state for those phases to be in.
-  if (generation.kind === 'insufficient_balance') {
-    return <AiReviewUpsell locale={locale} cost={generation.cost} />;
-  }
-
   if (state.phase === 'analyzing') {
     const percent = Math.round((state.done / state.total) * 100);
     return (
@@ -158,32 +149,21 @@ export function AiReviewPanel({
         <p className="text-sm text-muted-foreground">{t('aiReview.notGenerated')}</p>
         {state.phase === 'error' && (
           <p className="text-sm text-destructive" role="alert">
-            {/* sharedGames.aiReview.errors.<AiReviewError>: sharedGames.aiReview.errors.not_authenticated, sharedGames.aiReview.errors.invalid_input, sharedGames.aiReview.errors.not_found, sharedGames.aiReview.errors.not_owner, sharedGames.aiReview.errors.game_not_eligible, sharedGames.aiReview.errors.insufficient_balance, sharedGames.aiReview.errors.rate_limited, sharedGames.aiReview.errors.llm_error, sharedGames.aiReview.errors.unexpected_error */}
+            {/* sharedGames.aiReview.errors.<AiReviewError>: sharedGames.aiReview.errors.not_authenticated, sharedGames.aiReview.errors.invalid_input, sharedGames.aiReview.errors.not_found, sharedGames.aiReview.errors.not_owner, sharedGames.aiReview.errors.game_not_eligible, sharedGames.aiReview.errors.subscription_required, sharedGames.aiReview.errors.rate_limited, sharedGames.aiReview.errors.llm_error, sharedGames.aiReview.errors.unexpected_error */}
             {t(`aiReview.errors.${state.error}`)}
           </p>
         )}
-        {/* A coin payer reads the price on the button itself, before anything
-            opens — a CTA that looks free until a modal says otherwise is the
-            wrong order. The retry carries it too: the failed run was refunded,
-            so trying again spends the coin afresh. A subscriber's button stays
-            unpriced; the modal restates the figures for both. */}
         <button
           type="button"
           onClick={() => setConfirming(true)}
           className="rounded-md bg-primary px-4 py-2 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
         >
-          {generateButtonLabel(t, state.phase === 'error', generation)}
+          {state.phase === 'error' ? t('aiReview.retry') : t('aiReview.generateButton')}
         </button>
-        {generation.kind === 'payable' && (
-          <p className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
-            <CoinIcon size={12} aria-hidden="true" />
-            {t('aiReview.balance', { balance: generation.balance })}
-          </p>
-        )}
       </div>
 
       {/* Generation publishes something the author cannot take back, spends a
-          coin (or a slot of their daily budget), and fixes the review's
+          slot of their daily budget, and fixes the review's
           language — all from one click, so it asks first. */}
       <ConfirmationModal
         isOpen={confirming}
@@ -197,12 +177,6 @@ export function AiReviewPanel({
           onStart(targetLocale);
         }}
       >
-        {generation.kind === 'payable' && (
-          <p className="mt-4 flex items-center gap-1.5 text-sm font-medium text-foreground">
-            <CoinIcon size={16} aria-hidden="true" />
-            {t('aiReview.confirm.cost', { cost: generation.cost, balance: generation.balance })}
-          </p>
-        )}
         <div className="mt-4 space-y-1">
           <label htmlFor={languageSelectId} className="block text-sm font-medium text-foreground">
             {t('aiReview.confirm.languageLabel')}
@@ -224,22 +198,6 @@ export function AiReviewPanel({
       </ConfirmationModal>
     </>
   );
-}
-
-/**
- * The generate / retry label, priced for a coin payer (`aiReview.*Paid`
- * carries `{cost}`) and plain for a subscriber.
- */
-function generateButtonLabel(
-  t: ClientTranslator,
-  retrying: boolean,
-  generation: Exclude<AiReviewGenerationOffer, { kind: 'insufficient_balance' }>
-): string {
-  if (generation.kind === 'payable') {
-    const args = { cost: generation.cost };
-    return retrying ? t('aiReview.retryPaid', args) : t('aiReview.generateButtonPaid', args);
-  }
-  return retrying ? t('aiReview.retry') : t('aiReview.generateButton');
 }
 
 function ReviewBody({

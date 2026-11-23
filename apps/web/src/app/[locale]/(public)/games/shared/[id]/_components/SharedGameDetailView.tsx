@@ -123,15 +123,13 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
   const hasPlayedVariant = hasPlayedGifVariant(game);
 
   // The AI Review tab exists only when the viewer has something to read or
-  // something to do: a review already generated for this locale, or an offer —
-  // generate it, or subscribe so they can. Both offers are the author's alone
-  // (see resolveAiReviewGenerationState), and neither exists where no LLM key
-  // is configured. Every other viewer would get a tab whose entire content is
-  // an explanation of why it is empty, so they get no tab instead.
-  //
-  // The upsell counts as "something to do" on purpose: an author who cannot
-  // generate today is exactly who the subscription is for, and hiding the tab
-  // from them would hide the feature from the only people it can convert.
+  // something to do: a review already generated for this locale, or the offer
+  // to generate one. The offer is a subscribed author's alone (see
+  // resolveAiReviewGenerationState), and does not exist where no LLM key is
+  // configured. Every other viewer — an author without a subscription
+  // included — would get a tab whose entire content is an explanation of why
+  // it is empty, so they get no tab instead; the pricing page is where the
+  // feature is advertised.
   const generationOffer =
     isLlmConfigured() && aiReviewAccess.kind !== 'blocked' ? aiReviewAccess : null;
   const showAiReview = aiReview != null || generationOffer != null;

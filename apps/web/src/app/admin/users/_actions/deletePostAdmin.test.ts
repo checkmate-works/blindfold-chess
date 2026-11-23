@@ -95,11 +95,6 @@ vi.mock('@/lib/db', async () => {
   };
 });
 
-vi.mock('@/lib/points', () => ({
-  // Stub point clawback to a no-op; this test does not exercise the ledger.
-  clawbackPointsForPost: vi.fn().mockResolvedValue(undefined),
-}));
-
 vi.mock('@/lib/security/client-ip');
 
 const adminUserId = 'admin-00000000-0000-0000-0000-000000000001';

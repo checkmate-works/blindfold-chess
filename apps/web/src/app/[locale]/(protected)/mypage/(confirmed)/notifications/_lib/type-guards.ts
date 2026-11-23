@@ -204,9 +204,9 @@ export function isBenefitGrantMetadata(m: unknown): m is BenefitGrantMetadata {
 }
 
 /**
- * Metadata persisted with a `point_grant` notification. Issued today only
- * from the admin /admin/coins → createPointGrant flow; future system
- * grants (campaigns, etc.) can reuse this shape by widening `category`.
+ * Metadata persisted with a `point_grant` notification — an admin coin grant.
+ * Nothing emits these since the coin economy was retired (2026-11); the
+ * guard stays for the rows already in users' notification lists.
  */
 export type PointGrantMetadata = {
   amount: number;
@@ -263,10 +263,11 @@ export function isRankUpdateLikeMetadata(m: unknown): m is RankUpdateLikeMetadat
 }
 
 /**
- * Metadata persisted with a `like_coin_grant` notification — emitted by the
- * daily like-coin batch (`grantLikeCoins`). `count` is the number of coins
- * minted for the recipient in that single batch run (direct grants and
- * fork-propagation grants combined).
+ * Metadata persisted with a `like_coin_grant` notification — emitted, until
+ * the coin economy was retired (2026-11), by a daily batch that paid a coin
+ * per like received. `count` is the number of coins minted for the recipient
+ * in that single batch run. The guard stays for the rows already in users'
+ * notification lists.
  */
 export type LikeCoinGrantMetadata = {
   count: number;
@@ -303,14 +304,14 @@ export function isPositionForkedMetadata(m: unknown): m is PositionForkedMetadat
  * Metadata persisted with the `ai_review_ready` / `ai_review_failed` pair —
  * emitted by the review job worker (`processAiReviewJob`). `locale` is the
  * language the review was (to be) written in. A failed job additionally
- * records the `AiReviewError` code and how many coins the refund returned;
- * the message does not surface either (the refund is unconditional, and the
- * code is for the admin eye), so the guard checks only the shared field.
+ * records the `AiReviewError` code; the message does not surface it (it is
+ * for the admin eye), so the guard checks only the shared field. Rows written
+ * before 2026-11 may also carry `refunded`, the coins a since-retired charge
+ * returned.
  */
 export type AiReviewJobMetadata = {
   locale: string;
   error?: string;
-  refunded?: number;
 };
 
 export function isAiReviewJobMetadata(m: unknown): m is AiReviewJobMetadata {

@@ -44,8 +44,8 @@ export function handleServerActionError(
  * `message` is required and is passed through untouched. What the admin
  * surface does with it is the caller's business and varies: the grants and
  * user-moderation actions return an error code that `adminErrorMessage` turns
- * into a sentence at the UI boundary, while the ads, articles, announcements
- * and coins actions still return prose their component renders as-is.
+ * into a sentence at the UI boundary, while the ads, articles and announcements
+ * actions still return prose their component renders as-is.
  * Defaulting this argument would invite a call site to silently change what
  * the admin sees.
  *

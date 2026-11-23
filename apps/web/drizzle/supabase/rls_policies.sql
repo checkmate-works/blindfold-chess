@@ -23,7 +23,7 @@
 -- database that has them (production) converges on the next deploy. They were
 -- removed because a policy can only answer "is this row yours?", while what
 -- the Server Actions enforce is everything else: format and reserved-name
--- checks, content filters, rate limits, bans, blocks, coin charges. Any table a
+-- checks, content filters, rate limits, bans, blocks. Any table a
 -- client could write through PostgREST was a way around all of it — a user
 -- without a profile yet could, for example, INSERT one with a reserved or
 -- malformed username directly.
@@ -145,8 +145,8 @@ CREATE POLICY "topic_posts_select" ON "topic_posts"
 DROP POLICY IF EXISTS "topic_posts_insert" ON "topic_posts";
 
 -- No DELETE policy: user-initiated deletion is a soft-delete plus grant revoke
--- plus coin clawback in one transaction (`@/lib/topic-posts/delete-core`), none
--- of which a row-level DELETE performs. Physical deletion belongs to the
+-- in one transaction (`@/lib/topic-posts/delete-core`), neither of which a
+-- row-level DELETE performs. Physical deletion belongs to the
 -- account-purge cron on the service role.
 DROP POLICY IF EXISTS "topic_posts_delete" ON "topic_posts";
 

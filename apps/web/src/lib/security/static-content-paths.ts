@@ -46,7 +46,6 @@ const STATIC_CONTENT_NAMESPACES = [
   'affiliate-disclosure',
   'announcements',
   'articles',
-  'coin',
   'company',
   'contact',
   'dojo',

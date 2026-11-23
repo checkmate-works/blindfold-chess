@@ -256,7 +256,6 @@ export const INTL_SCOPES = {
       'MypageChallengeResults',
       'MypageFollowing',
       'MypageNotifications',
-      'MypagePoints',
       'MypageSubscription',
       'Preferences',
       'authPrompt',

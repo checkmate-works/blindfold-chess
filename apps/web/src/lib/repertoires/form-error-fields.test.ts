@@ -18,7 +18,7 @@ describe('repertoireErrorField', () => {
   });
 
   it('leaves errors no control owns to the form banner', () => {
-    for (const error of ['unauthorized', 'notFound', 'rateLimited', 'insufficient_balance']) {
+    for (const error of ['unauthorized', 'notFound', 'rateLimited']) {
       expect(repertoireErrorField(error, LINE_FORM)).toBeNull();
     }
   });

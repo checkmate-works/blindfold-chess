@@ -68,7 +68,4 @@ export type ChunkDeletedEvent = {
 };
 
 export type ChunkEvent =
-  | ChunkCreatedEvent
-  | ChunkUpdatedEvent
-  | ChunkPublishedEvent
-  | ChunkDeletedEvent;
+  ChunkCreatedEvent | ChunkUpdatedEvent | ChunkPublishedEvent | ChunkDeletedEvent;

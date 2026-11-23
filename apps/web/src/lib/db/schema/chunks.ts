@@ -286,12 +286,6 @@ export type NewChunk = typeof chunks.$inferInsert;
  * requests are tied 1:N to a specific chunk and have no value
  * without it. If a chunk is physically deleted (service-role only),
  * the requests go with it.
- *
- * @design no point grant on accept
- * Deliberately omitted in v1. The proposer is doing the chunk
- * owner a favor and a coin grant would be natural, but tying that
- * into the daily creation cap + clawback path is its own slice;
- * defer until the social value of the feature is observed.
  */
 export const chunkEditRequests = pgTable(
   'chunk_edit_requests',

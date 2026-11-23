@@ -2,7 +2,6 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
-import { clawbackPointsForPost } from '@/lib/points';
 import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
 import { storageClientMock } from '@/lib/supabase/__test-support__/storage-client-mock';
 import { logActivityEvent } from '@/lib/users/activity-log';
@@ -59,12 +58,6 @@ vi.mock('@/lib/db', async () => ({
 
 vi.mock('@/lib/moderation/ban');
 
-vi.mock('@/lib/points', () => ({
-  // Stub the clawback to a no-op: the deletePost flow calls it inside the
-  // db.transaction(), but this test does not exercise the ledger writes.
-  clawbackPointsForPost: vi.fn().mockResolvedValue(undefined),
-}));
-
 vi.mock('@/lib/security/rate-limit');
 
 const testUserId = 'user-00000000-0000-0000-0000-000000000001';
@@ -95,7 +88,6 @@ describe('deletePost', () => {
 
     const result = await deletePost(testPostId, 'en');
     expect(result).toEqual({ error: 'notFound' });
-    expect(vi.mocked(clawbackPointsForPost)).not.toHaveBeenCalled();
   });
 
   it('should return unauthorized when user is not the post owner', async () => {
@@ -149,12 +141,6 @@ describe('deletePost', () => {
     const result = await deletePost(testPostId, 'en');
     expect(result).toEqual({ success: true });
     expect(mockTxUpdateSetWhere).toHaveBeenCalled();
-    // Self-deletion claws back the creation grant (capped at balance;
-    // a no-op for non point-eligible topic types).
-    expect(vi.mocked(clawbackPointsForPost)).toHaveBeenCalledWith(expect.anything(), testUserId, {
-      type: 'topic_post',
-      id: testPostId,
-    });
   });
 
   it('should not log an activity event on successful deletion (soft-delete row is the record)', async () => {

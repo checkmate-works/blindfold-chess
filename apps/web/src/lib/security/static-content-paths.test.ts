@@ -25,7 +25,6 @@ describe('isStaticContentPath', () => {
     '/ja/licenses',
     '/en/interview',
     '/ja/getting-started',
-    '/en/coin',
     '/ja/contact',
     '/en/affiliate-disclosure',
     '/ja/company',

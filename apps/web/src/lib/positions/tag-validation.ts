@@ -11,8 +11,7 @@ export type DedupedTagIds = {
 };
 
 export type TagValidationResult =
-  | { ok: true; deduped: DedupedTagIds }
-  | { ok: false; error: TagValidationError };
+  { ok: true; deduped: DedupedTagIds } | { ok: false; error: TagValidationError };
 
 /**
  * Dedupe and re-assert user-supplied theme/chunk IDs against the

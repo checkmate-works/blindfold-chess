@@ -32,7 +32,7 @@ export type ChunkLinkedRepertoire = RepertoireWithProfile & {
  * positions resolved to (lineNo, ply) deep links. The repertoires counterpart
  * of `listGamesLinkingChunk`, with two twists a game doesn't have:
  *
- * - **Visibility**: only `public` courses. Repertoires have coin-gated
+ * - **Visibility**: only `public` courses. Repertoires have restricted
  *   `private` / `followers_only` tiers (and a `building` state) that a public
  *   listing must never reveal — filtering to `public` keeps this list
  *   viewer-independent, so there is nothing to leak. See the

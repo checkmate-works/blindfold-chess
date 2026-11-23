@@ -12,7 +12,6 @@ import { eq } from 'drizzle-orm';
 
 import { getAuthenticatedUser } from '@/lib/auth';
 import { db, profiles } from '@/lib/db';
-import { getPointBalanceSummary } from '@/lib/points';
 import { getOpeningOptions } from '@/lib/repertoires/opening-queries';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
@@ -43,14 +42,11 @@ export default async function NewLinePage({ params, searchParams }: Props) {
   // Prefill the required name so a quick import never stalls on it. A
   // provisional user (no profile row yet) gets no prefill — there is no
   // username to build it from.
-  const [balance, [profile]] = await Promise.all([
-    getPointBalanceSummary(user.id),
-    db
-      .select({ username: profiles.username })
-      .from(profiles)
-      .where(eq(profiles.id, user.id))
-      .limit(1),
-  ]);
+  const [profile] = await db
+    .select({ username: profiles.username })
+    .from(profiles)
+    .where(eq(profiles.id, user.id))
+    .limit(1);
   const initialName = profile ? t('form.defaultName', { username: profile.username }) : undefined;
 
   // Optional prefill from another feature handing the player a game to turn
@@ -69,7 +65,6 @@ export default async function NewLinePage({ params, searchParams }: Props) {
       <SectionTitle>{t('new.sectionTitle')}</SectionTitle>
       <RepertoireImportForm
         openings={openings}
-        spendableBalance={balance.total}
         initialPgn={initialPgn}
         initialSide={initialSide}
         initialName={initialName}

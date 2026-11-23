@@ -62,7 +62,7 @@ export function getPositionKindDetailPath(kind: PositionKind, id: string): strin
  * A single post inside a position's inline comment tree. Positions have no
  * per-post detail page: the detail page renders the whole tree, where every
  * node carries `id="post-{id}"`, so a deep link is the detail path plus that
- * anchor. Three surfaces — notifications, benefit sources, coin history —
+ * anchor. Several surfaces — notifications and benefit sources among them —
  * each spelled the two `/practice/...#post-...` paths out by hand.
  */
 export function getPositionPostAnchorPath(

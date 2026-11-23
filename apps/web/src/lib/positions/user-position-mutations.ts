@@ -13,7 +13,6 @@ import {
   notifyPositionForked,
 } from '@/lib/notifications/notification';
 import { guardOwnership } from '@/lib/ownership-guard';
-import { clawbackPointsForPost } from '@/lib/points';
 import {
   POSITION_FORK_SOURCE_TYPES,
   PUZZLE_FORK_SOURCE_TYPES,
@@ -30,7 +29,7 @@ import type { PositionKind } from './kind';
  * Shared core for the user-facing `positions` CRUD Server Actions. The
  * position-memory and puzzle entry points are structurally identical —
  * same auth guard, ownership / soft-delete checks, transaction shape,
- * point grant / clawback, activity log and revalidation — differing only
+ * activity log and revalidation — differing only
  * in the `positions.type` discriminator and a few derived labels. These
  * base functions own that shared body; each route's `_actions/` file is a
  * thin async wrapper supplying its `kind`, rate limit, validation and any
@@ -45,8 +44,6 @@ export type { PositionKind } from './kind';
 type PositionKindConfig = {
   /** The `positions.type` discriminator value. */
   type: PositionKind;
-  /** The point-event entity type for grant / clawback. */
-  pointType: 'position_memory' | 'puzzle';
   /** URL segment under `/practice` used for revalidation. */
   urlSegment: 'position-memory' | 'puzzle';
   /**
@@ -68,7 +65,6 @@ type PositionKindConfig = {
 const POSITION_KINDS: Record<PositionKind, PositionKindConfig> = {
   memory: {
     type: 'memory',
-    pointType: 'position_memory',
     urlSegment: 'position-memory',
     allowedForkSourceTypes: POSITION_FORK_SOURCE_TYPES,
     activityActions: {
@@ -77,7 +73,6 @@ const POSITION_KINDS: Record<PositionKind, PositionKindConfig> = {
   },
   puzzle: {
     type: 'puzzle',
-    pointType: 'puzzle',
     urlSegment: 'puzzle',
     allowedForkSourceTypes: PUZZLE_FORK_SOURCE_TYPES,
     activityActions: {
@@ -152,7 +147,7 @@ async function loadOwnedPosition(
  * Create a `positions` row of the given kind: validate, resolve an
  * optional fork source, validate tags, then in one transaction insert the
  * position, run `applyExtraWrites` (puzzles insert `puzzle_solutions`),
- * attach tags, emit a feed item and grant creation points.
+ * attach tags and emit a feed item.
  */
 export async function createPositionEntry(params: {
   kind: PositionKind;
@@ -395,8 +390,7 @@ export async function updatePositionEntry(params: {
 /**
  * Soft-delete a `positions` row of the given kind: assert existence (the
  * `type` guard rejects an id of the wrong kind) + ownership + not already
- * deleted, then in one transaction stamp `deletedAt` and reverse the
- * creation point grant.
+ * deleted, then stamp `deletedAt`.
  */
 export async function deletePositionEntry(params: {
   positionId: string;
@@ -417,27 +411,12 @@ export async function deletePositionEntry(params: {
     return loaded;
   }
 
-  await db.transaction(async (tx) => {
-    await tx
-      .update(positions)
-      .set({ deletedAt: new Date() })
-      .where(
-        and(
-          eq(positions.id, positionId),
-          eq(positions.userId, user.id),
-          isNull(positions.deletedAt)
-        )
-      );
-
-    // Reverse the creation point grant for the removed entry. Capped at
-    // the author's current `earned` balance (see `clawbackPointsForPost`),
-    // so coins already spent are not pursued — the balance never goes
-    // negative and self-deletion never lands a user in debt.
-    await clawbackPointsForPost(tx, user.id, {
-      type: config.pointType,
-      id: positionId,
-    });
-  });
+  await db
+    .update(positions)
+    .set({ deletedAt: new Date() })
+    .where(
+      and(eq(positions.id, positionId), eq(positions.userId, user.id), isNull(positions.deletedAt))
+    );
 
   // No activity-log row: deletion is a soft-delete, so the positions row
   // (with `deletedAt`) survives as the durable record.

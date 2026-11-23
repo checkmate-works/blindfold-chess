@@ -134,7 +134,7 @@ export function LineForm({
   const [shapes, setShapes] = useState<Record<string, BoardAnnotations>>(initialShapes);
 
   // Submit protocol: editing → submitting → succeeded, then the redirect the
-  // save action names (no confirmation step — nothing here costs coins). A
+  // save action names (no confirmation step). A
   // rejected save is reported against the control at fault and focuses it —
   // same rule as the import / chunk forms, and it matters just as much here:
   // the board editor alone is taller than a phone screen, so a message beside

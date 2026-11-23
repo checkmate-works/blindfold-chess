@@ -12,7 +12,6 @@ import { notFound } from 'next/navigation';
 import { formatMovesToPgn, getStartingFen } from '@blindfold-chess/features/chess-core';
 
 import { getOptionalUser } from '@/lib/auth';
-import { getPointBalanceSummary, getRepertoireVisibilityPaid } from '@/lib/points';
 import { getRepertoireLikeMetaMap } from '@/lib/repertoires/like-queries';
 import { getLinkedOpenings } from '@/lib/repertoires/opening-queries';
 import { getRepertoireForViewer } from '@/lib/repertoires/queries';
@@ -101,27 +100,14 @@ export default async function RepertoireDetailPage({ params, searchParams }: Pro
   if (!data) notFound();
   const { repertoire, lines, profile, isOwner } = data;
 
-  // Owner-only visibility control needs the coins already paid on this course
-  // (to preview each tier's incremental cost) and the owner's balance. Only for
-  // a published tier — a `building` draft publishes from the "⋯" menu (or the
-  // edit form's draft toggle) instead. The linked openings (n:n; empty for a
-  // non-opening phase, rendered as compact tag links out to each opening's
-  // topic page) and the like meta are independent of it, so all of these
-  // resolve in one round.
-  const [visibilityPair, linkedOpenings, tOpeningNames, likeMetaMap] = await Promise.all([
-    isOwner && currentUser && repertoire.status !== 'building'
-      ? Promise.all([
-          getRepertoireVisibilityPaid(currentUser.id, repertoire.id),
-          getPointBalanceSummary(currentUser.id),
-        ])
-      : null,
+  // The linked openings (n:n; empty for a non-opening phase, rendered as
+  // compact tag links out to each opening's topic page) and the like meta are
+  // independent of each other, so they resolve in one round.
+  const [linkedOpenings, tOpeningNames, likeMetaMap] = await Promise.all([
     getLinkedOpenings(repertoire.id),
     getTranslations({ locale, namespace: 'topics.openings.names' }),
     getRepertoireLikeMetaMap([repertoire.id], currentUser?.id),
   ]);
-  const visibilityInfo = visibilityPair
-    ? { paid: visibilityPair[0], balance: visibilityPair[1].total }
-    : null;
 
   const likeMeta = likeMetaMap.get(repertoire.id) ?? {
     likeCount: 0,
@@ -205,13 +191,13 @@ export default async function RepertoireDetailPage({ params, searchParams }: Pro
             // The draft badge is rendered next to the page title instead.
             status={repertoire.status === 'building' ? undefined : repertoire.status}
           />
-          {visibilityInfo && repertoire.status !== 'building' && (
+          {/* Owner-only, and only for a published tier — a `building` draft
+              publishes from the "⋯" menu (or the edit form's draft toggle). */}
+          {isOwner && repertoire.status !== 'building' && (
             <RepertoireVisibilityControl
               id={repertoire.id}
               locale={locale}
               current={repertoire.status}
-              visibilityPaid={visibilityInfo.paid}
-              spendableBalance={visibilityInfo.balance}
             />
           )}
         </div>

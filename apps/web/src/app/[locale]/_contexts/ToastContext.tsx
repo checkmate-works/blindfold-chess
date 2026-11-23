@@ -13,20 +13,11 @@ import React, {
 
 export type ToastType = 'success' | 'error' | 'info' | 'warning';
 
-/**
- * Optional decorative icon overriding the type-based glyph. Currently only
- * `'coin'`, used by the UGC-reward toast to render the brand `CoinIcon`
- * instead of the generic success checkmark. Kept as a serializable string
- * enum (not a `ReactNode`) so the toast object stays plain data.
- */
-export type ToastIcon = 'coin';
-
 export type ToastOptions = {
-  icon?: ToastIcon;
   /**
    * Locale-relative path. When set, the toast becomes tappable and navigates
-   * here on click (then dismisses) — used by the coin-reward toast to send the
-   * author to `/mypage/coins`. A one-time discovery nudge, not a durable nav.
+   * here on click (then dismisses). A one-time discovery nudge, not a durable
+   * nav.
    */
   href?: string;
 };
@@ -35,7 +26,6 @@ export type Toast = {
   id: string;
   message: string;
   type: ToastType;
-  icon?: ToastIcon;
   href?: string;
 };
 
@@ -85,7 +75,6 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         id,
         message,
         type,
-        icon: options?.icon,
         href: options?.href,
       };
 

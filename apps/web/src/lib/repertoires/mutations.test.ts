@@ -9,7 +9,6 @@ import type { RepertoireImportInput } from './validation';
 
 const mockValidateRepertoireImport = vi.fn();
 const mockTxInsertReturning = vi.fn();
-const mockChargeRepertoireVisibility = vi.fn();
 /** Outcome of each `db.transaction` call, as drizzle would settle it. */
 const transactionOutcomes: Array<'committed' | 'rolledBack'> = [];
 
@@ -25,11 +24,6 @@ vi.mock('./validation', async (importOriginal) => {
 
 vi.mock('./queries', () => ({
   assertRepertoireOwner: vi.fn(),
-}));
-
-vi.mock('@/lib/points', () => ({
-  chargeRepertoireVisibility: (...args: unknown[]) => mockChargeRepertoireVisibility(...args),
-  clawbackPointsForPost: vi.fn(),
 }));
 
 vi.mock('@/lib/db/list-query', () => ({
@@ -122,25 +116,7 @@ describe('createRepertoireEntry', () => {
       });
     });
 
-    it('rolls the course back when the wallet cannot cover a paid tier', async () => {
-      mockChargeRepertoireVisibility.mockResolvedValue({
-        ok: false,
-        error: 'insufficient_balance',
-      });
-
-      const { createRepertoireEntry } = await import('./mutations');
-      const result = await createRepertoireEntry({ ...baseInput, visibility: 'followers_only' });
-
-      // The course row and its lines are written before the charge, so a
-      // refused charge has to undo them: committing would hand the author a
-      // paid-tier course for free while telling them it failed.
-      expect(result).toEqual({ error: 'insufficient_balance' });
-      expect(transactionOutcomes).toEqual(['rolledBack']);
-    });
-
-    it('commits the course once the paid tier is charged', async () => {
-      mockChargeRepertoireVisibility.mockResolvedValue({ ok: true, charged: 1 });
-
+    it('commits a restricted-visibility course without any charge', async () => {
       const { createRepertoireEntry } = await import('./mutations');
       const result = await createRepertoireEntry({ ...baseInput, visibility: 'followers_only' });
 

@@ -17,7 +17,7 @@ type RepertoireFormError =
 
 /**
  * Which control is at fault for each rejection. Anything absent here — an
- * auth guard, a rate limit, an insufficient balance, a `notFound` — belongs to
+ * auth guard, a rate limit, a `notFound` — belongs to
  * no control and stays in the form-level banner (see `FormErrorBanner`).
  *
  * `invalidSide` / `invalidPhase` / `invalidVisibility` are deliberately absent

@@ -5,7 +5,7 @@ import { guardOwnership } from '@/lib/ownership-guard';
 import type { OwnershipError } from '@/lib/ownership-guard';
 
 // `delete-core` is intentionally NOT re-exported from this barrel. It
-// pulls in `server-only` modules (`@/lib/points`, `next/cache`), and
+// pulls in `server-only` modules (`next/cache`), and
 // every caller of `loadAuthoredPost` would otherwise be forced to load
 // that graph — which crashes Vitest test files that only mock the
 // reads. Import `@/lib/topic-posts/delete-core` directly instead.

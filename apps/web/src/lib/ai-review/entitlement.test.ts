@@ -5,12 +5,6 @@ import type { GameRecord } from '@/lib/db/schema';
 
 vi.mock('@/lib/billing/subscription');
 
-const mockGetPointBalanceSummary = vi.fn();
-vi.mock('@/lib/points', () => ({
-  AI_REVIEW_POINT_COST: 1,
-  getPointBalanceSummary: (...args: unknown[]) => mockGetPointBalanceSummary(...args),
-}));
-
 const mockHasActiveSubscription = vi.mocked(hasActiveSubscription);
 
 const { resolveAiReviewGenerationState } = await import('./entitlement');
@@ -29,41 +23,27 @@ function gameOf(overrides: Partial<GameRecord> = {}): GameRecord {
 describe('resolveAiReviewGenerationState', () => {
   beforeEach(() => {
     mockHasActiveSubscription.mockResolvedValue(false);
-    mockGetPointBalanceSummary.mockResolvedValue({ total: 0 });
   });
 
-  it('allows the author when they hold an active subscription, without reading the balance', async () => {
+  it('allows the author when they hold an active subscription', async () => {
     mockHasActiveSubscription.mockResolvedValue(true);
 
     await expect(resolveAiReviewGenerationState(gameOf(), AUTHOR_ID)).resolves.toEqual({
       kind: 'allowed',
     });
     expect(mockHasActiveSubscription).toHaveBeenCalledWith(AUTHOR_ID);
-    expect(mockGetPointBalanceSummary).not.toHaveBeenCalled();
   });
 
-  it('offers the coin price to an unsubscribed author whose balance covers it', async () => {
-    mockGetPointBalanceSummary.mockResolvedValue({ total: 3 });
-
+  it('blocks an author without a subscription, naming the subscription as the reason', async () => {
     await expect(resolveAiReviewGenerationState(gameOf(), AUTHOR_ID)).resolves.toEqual({
-      kind: 'payable',
-      cost: 1,
-      balance: 3,
-    });
-    expect(mockGetPointBalanceSummary).toHaveBeenCalledWith(AUTHOR_ID);
-  });
-
-  it('reports the shortfall to an unsubscribed author who cannot pay', async () => {
-    await expect(resolveAiReviewGenerationState(gameOf(), AUTHOR_ID)).resolves.toEqual({
-      kind: 'insufficient_balance',
-      cost: 1,
-      balance: 0,
+      kind: 'blocked',
+      reason: 'subscription_required',
     });
   });
 
   // Paying cannot buy the right to publish an assessment of someone else's
   // game, so the ownership test must fail before the billing lookup — and must
-  // not report the upsell to a viewer who could never generate anyway.
+  // not name the subscription to a viewer who could never generate anyway.
   it.each([
     ['a signed-out viewer', null],
     ['a third party', 'someone-else'],
@@ -75,7 +55,6 @@ describe('resolveAiReviewGenerationState', () => {
       reason: 'not_owner',
     });
     expect(mockHasActiveSubscription).not.toHaveBeenCalled();
-    expect(mockGetPointBalanceSummary).not.toHaveBeenCalled();
   });
 
   it('blocks an ineligible game before consulting billing', async () => {

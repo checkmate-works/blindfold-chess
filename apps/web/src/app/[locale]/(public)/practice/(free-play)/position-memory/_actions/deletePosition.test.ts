@@ -13,8 +13,6 @@ vi.mock('@/lib/users/activity-log');
 
 vi.mock('@/lib/db', () => positionDeleteMocks.db());
 
-vi.mock('@/lib/points', () => positionDeleteMocks.points());
-
 vi.mock('@/lib/security/rate-limit');
 
 vi.mock('@/lib/ads/ads-hidden-cookie-writer', () => positionDeleteMocks.adsHiddenCookieWriter());
@@ -30,7 +28,6 @@ const TEST_POSITION_ID = 'cccccccc-cccc-cccc-cccc-cccccccccccc';
 // symptom is one flaky test rather than a slow file. The `vi.mock` calls
 // above are hoisted over this statement, so the load needs no per-test setup.
 const { deletePosition } = await import('./deletePosition');
-const { clawbackPointsForPost } = await import('@/lib/points');
 
 describe('deletePosition', () => {
   beforeEach(() => {
@@ -85,7 +82,6 @@ describe('deletePosition', () => {
 
     expect(result).toEqual({ error: 'unauthorized' });
     expect(mockUpdateWhere).not.toHaveBeenCalled();
-    expect(vi.mocked(clawbackPointsForPost)).not.toHaveBeenCalled();
   });
 
   it('returns alreadyDeleted when position is soft-deleted', async () => {
@@ -118,10 +114,5 @@ describe('deletePosition', () => {
 
     expect(result).toEqual({ success: true });
     expect(mockUpdateWhere).toHaveBeenCalledTimes(1);
-    // Self-deletion claws back the creation grant (capped at balance).
-    expect(vi.mocked(clawbackPointsForPost)).toHaveBeenCalledWith(expect.anything(), TEST_USER_ID, {
-      type: 'position_memory',
-      id: TEST_POSITION_ID,
-    });
   });
 });

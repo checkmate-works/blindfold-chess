@@ -343,8 +343,7 @@ export async function grantPracticeExp(
 /**
  * Net Exp the user has already earned from AI games since 00:00 UTC today.
  * Read just before granting (inside the same transaction), so the row this
- * call is about to insert is not yet counted. Mirrors the UTC-day convention
- * used by the Coin creation cap (`creationEarnedToday`).
+ * call is about to insert is not yet counted.
  */
 async function gameExpEarnedToday(tx: DbTx, userId: string): Promise<number> {
   const [row] = await tx

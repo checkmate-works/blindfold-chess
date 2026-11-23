@@ -201,10 +201,10 @@ describe('proxy', () => {
     const locationOf = (response: Response) => new URL(response.headers.get('location') as string);
 
     it('remembers the blocked destination when sending a guest to sign-in', async () => {
-      const location = locationOf(await proxy(makeRequest('/en/mypage/coins?page=2')));
+      const location = locationOf(await proxy(makeRequest('/en/mypage/challenges?page=2')));
 
       expect(location.pathname).toBe('/en/sign-in');
-      expect(location.searchParams.get('next')).toBe('/en/mypage/coins?page=2');
+      expect(location.searchParams.get('next')).toBe('/en/mypage/challenges?page=2');
     });
 
     it('drops the RSC payload parameter from the return target', async () => {

@@ -292,29 +292,20 @@
       "banned": "Your account is restricted.",
       "rateLimited": "Too many attempts. Please try again later.",
       "generic": "Something went wrong. Please try again.",
-      "insufficient_balance": "You don't have enough coins.",
       "profileRequired": "Please set up your username to create a Kata"
     },
     "visibility": {
       "legend": "Who can see this Kata",
       "public": "Public",
-      "publicHelp": "Anyone can find and view it. Free.",
+      "publicHelp": "Anyone can find and view it.",
       "followersOnly": "Followers only",
       "followersOnlyHelp": "Only people who follow you can view it.",
       "private": "Private",
       "privateHelp": "Only you can view it.",
-      "costFree": "Free",
-      "costCoins": "{cost, plural, one {# coin} other {# coins}}",
-      "balance": "Balance: {balance, plural, one {# coin} other {# coins}}",
-      "confirmTitle": "Spend coins?",
-      "confirmBody": "Publishing this Kata as “{tier}” will spend {cost, plural, one {# coin} other {# coins}}.",
-      "confirmInsufficient": "This needs {cost, plural, one {# coin} other {# coins}}, but your balance is {balance}.",
-      "confirm": "Spend & publish",
       "cancel": "Cancel",
       "change": "Change who can see this",
       "changeTitle": "Change visibility",
-      "changeBody": "Change this Kata to “{tier}”? This will spend {cost, plural, one {# coin} other {# coins}}.",
-      "changeBodyFree": "Change this Kata to “{tier}”? You’ve already unlocked this tier — no coins needed.",
+      "changeBody": "Change this Kata to “{tier}”?",
       "changeConfirm": "Change",
       "current": "Currently: {tier}"
     },
@@ -780,54 +771,6 @@
     "selectOpening": "Select an opening",
     "searchPlaceholder": "Search openings..."
   },
-  "coin": {
-    "title": "Coins",
-    "hero": {
-      "tagline": "Every like on the content you publish earns you a Coin."
-    },
-    "loop": {
-      "step1Title": "Publish",
-      "step1Body": "Share a game, a problem, a Kata",
-      "step2Title": "Get liked",
-      "step2Body": "Each like adds a Coin",
-      "step3Title": "Spend on perks",
-      "step3Body": "Ad-free time, games, AI reviews"
-    },
-    "earn": {
-      "heading": "How to earn Coins",
-      "chips": {
-        "puzzle": "Puzzle",
-        "positionMemory": "Position memory",
-        "topic": "Topic",
-        "chunk": "Chunk",
-        "repertoire": "Kata",
-        "game": "Game"
-      },
-      "perLike": "per like · granted once a day in a batch",
-      "note": "Content you have published keeps earning with every new like. Likes on your own content do not count."
-    },
-    "spend": {
-      "heading": "What Coins are for",
-      "adFreeTitle": "Hide ads",
-      "adFreeRate": "1 Coin = {days, plural, one {# ad-free day} other {# ad-free days}}",
-      "maiaTitle": "Play against Maia",
-      "maiaRate": "{cost, plural, one {# Coin} other {# Coins}} = 1 game",
-      "maiaNote": "Maia is a neural-network AI that plays human-like moves. Free to play from Lv{level}.",
-      "aiReviewTitle": "Get an AI review",
-      "aiReviewRate": "{cost, plural, one {# Coin} other {# Coins}} = 1 review",
-      "aiReviewNote": "Subscribers generate reviews without spending Coins."
-    },
-    "facts": {
-      "batch": "Coins from likes are not instant — they are granted once a day in a batch.",
-      "instant": "Once granted, Coins are usable right away — no waiting.",
-      "selfLike": "Liking your own content earns nothing.",
-      "balance": "Your balance and history are always available on My Page."
-    },
-    "cta": {
-      "viewBalance": "View my Coin balance",
-      "contribute": "Browse topics"
-    }
-  },
   "faq": {
     "title": "Frequently Asked Questions",
     "description": "Find answers to common questions about Blindfold Chess",
@@ -872,11 +815,6 @@
         "streak3": "3–4",
         "streak2": "2",
         "streak1": "1"
-      },
-      "adFreeBenefits": {
-        "question": "How do I earn coins, and how do they become ad-free time?",
-        "answer": "Each like on a game, problem, Kata, chunk or topic post you have published earns 1 Coin (granted once a day in a batch). 1 Coin redeems 1 day of ad-free browsing, and Coins also pay for Maia games and AI reviews.",
-        "earnSummary": "Likes on your own content do not count. Subscribers generate AI reviews without spending Coins."
       }
     }
   },
@@ -2881,9 +2819,6 @@
       "analyzing": "Analyzing with Stockfish… ({done}/{total} positions)",
       "cancel": "Cancel",
       "retry": "Try again",
-      "generateButtonPaid": "Generate AI review ({cost, plural, one {# Coin} other {# Coins}})",
-      "retryPaid": "Try again ({cost, plural, one {# Coin} other {# Coins}})",
-      "balance": "Balance: {balance, plural, one {# Coin} other {# Coins}}",
       "bestMoveLabel": "Best move",
       "sections": {
         "summary": "Game summary",
@@ -2913,7 +2848,7 @@
         "llm_error": "The AI coach couldn't produce a review. Please try again later.",
         "unexpected_error": "Something went wrong. Please try again later.",
         "analysis_failed": "The engine analysis failed. Please reload the page and try again.",
-        "insufficient_balance": "Not enough Coins."
+        "subscription_required": "Generating an AI review requires a subscription."
       },
       "languageNote": "This review is written in {language}.",
       "confirm": {
@@ -2922,14 +2857,7 @@
         "languageLabel": "Review language",
         "languageHelp": "A game has one review. It is shown to every visitor in the language you pick here.",
         "submit": "Generate",
-        "cancel": "Cancel",
-        "cost": "This costs {cost, plural, one {# Coin} other {# Coins}} (balance: {balance})"
-      },
-      "upsell": {
-        "title": "An AI review costs {cost, plural, one {# Coin} other {# Coins}}",
-        "description": "The AI coach reads your game through the Stockfish analysis and writes up the moments that decided it, along with what to work on next.",
-        "coinCta": "How to earn Coins",
-        "cta": "See plans"
+        "cancel": "Cancel"
       },
       "principleLabel": "Principle",
       "submitting": "Submitting your request…",
@@ -3147,25 +3075,13 @@
     "engineStockfishDescription": "A strong open source engine with adjustable skill level — the classic AI opponent.",
     "engineMaiaLabel": "Maia",
     "engineMaiaDescription": "A neural-network engine that plays like a human at the chosen Elo. The first move takes a few seconds while the model loads (~46 MB).",
-    "engineLockedHint": "Needs coins",
-    "engineMaiaCostBadge": "{cost} coin",
-    "engineMaiaFreeBadge": "Free",
-    "engineMaiaFreeNote": "Lv{level} reward: games against Maia are free.",
-    "maiaPointModal": {
-      "title": "Maia costs coins",
-      "body": "Each game against Maia costs {cost} coin.",
-      "balance": "You currently have {balance} coins.",
-      "unlockHint": "Maia games become free at Lv{level} (you are Lv{current}).",
-      "earnLink": "How Coins work",
-      "viewPoints": "View my coins",
+    "engineLockedHint": "Unlocks at Lv{level}",
+    "engineMaiaUnlockedNote": "Unlocked at Lv{level}: you can play against Maia.",
+    "maiaLockedModal": {
+      "title": "Maia unlocks at Lv{level}",
+      "body": "You can play against Maia once you reach Lv{level} (you are Lv{current}). You earn Exp by completing practice sessions and games.",
+      "practice": "Go to practice",
       "close": "Close"
-    },
-    "maiaCoinConfirmModal": {
-      "title": "Start a game against Maia?",
-      "body": "Starting this game spends {cost} coin.",
-      "balance": "You currently have {balance} coins.",
-      "confirm": "Spend coin & start",
-      "cancel": "Cancel"
     },
     "helpLabel": "Show help",
     "helpEngineDescription": "Stockfish: an open-source chess engine with adjustable strength. Maia: a neural network trained on millions of human games — it plays at the chosen level like a real player would, not like a computer.",
@@ -3906,7 +3822,6 @@
       "expProgress": "{current} / {next} Exp",
       "expRemaining": "{remaining} Exp to next level",
       "viewExpLeaderboard": "View Exp Leaderboard",
-      "pointsTotal": "{total} coins",
       "accountTitle": "Account",
       "accountSettingsTitle": "Account Settings",
       "subscriptionTitle": "Subscription",
@@ -3998,64 +3913,7 @@
     }
   },
   "MypagePoints": {
-    "title": "Coins",
-    "sectionTitle": "Your coins",
-    "breadcrumbMypage": "My Page",
-    "balance": {
-      "unit": "coins",
-      "aboutLink": "How Coins work"
-    },
-    "redeem": {
-      "title": "Redeem coins for ad-free time",
-      "description": "Each coin converts to one day of ad-free browsing. Days stack on top of any ad-free time you already have.",
-      "amountLabel": "Coins to redeem",
-      "pointSuffix": "coins",
-      "daysReceived": "{days, plural, one {# day} other {# days}} of ad-free",
-      "submit": "Redeem {amount} coins",
-      "submitting": "Redeeming…",
-      "successMessage": "Done — {days, plural, one {# day} other {# days}} of ad-free time has been added.",
-      "notice": {
-        "dan_rank": {
-          "title": "No coins needed",
-          "body": "Dan-rank holders always browse ad-free."
-        },
-        "subscription": {
-          "title": "No coins needed",
-          "body": "Your subscription hides ads while it is active. Coins never expire, so you can redeem them once it ends."
-        }
-      },
-      "errors": {
-        "invalid_amount": "Please enter a positive whole number.",
-        "insufficient_balance": "You do not have enough confirmed coins.",
-        "signInRequired": "Please sign in to redeem.",
-        "banned": "Your account is restricted.",
-        "rateLimited": "Too many redemptions in a short period — try again later.",
-        "danAdFree": "As a dan-rank holder, you already browse ad-free.",
-        "subscriptionAdFree": "Your subscription already hides ads."
-      }
-    },
-    "spendOptions": {
-      "aiReview": {
-        "title": "Get an AI review",
-        "rate": "{cost, plural, one {# Coin} other {# Coins}} = 1 review",
-        "note": "Request one from the page of a game you have shared.",
-        "noteSubscriber": "Your subscription covers AI reviews — no Coins spent.",
-        "cta": "Browse your games"
-      },
-      "maia": {
-        "title": "Play against Maia",
-        "rate": "{cost, plural, one {# Coin} other {# Coins}} = 1 game",
-        "note": "Maia is a neural-network AI that plays human-like moves. Charged when the game starts. Free from Lv{level}.",
-        "cta": "Start a game"
-      }
-    },
     "history": {
-      "title": "History",
-      "empty": "No coin activity yet.",
-      "learnHowToEarn": "See how to earn coins.",
-      "headerDate": "Date",
-      "headerEvent": "Event",
-      "headerDelta": "Amount",
       "kind": {
         "post_grant": "Earned from a post",
         "post_clawback": "Reversed for deleted post",
@@ -4219,7 +4077,7 @@
     "muteConfirmButton": "Mute",
     "cancel": "Cancel",
     "aiReviewReadyMessage": "Your AI review is ready",
-    "aiReviewFailedMessage": "The AI review could not be generated. Any Coin spent has been returned."
+    "aiReviewFailedMessage": "The AI review could not be generated."
   },
   "deleteAccount": {
     "title": "Delete Account",
@@ -4986,8 +4844,6 @@
     "coins": {
       "title": "Coins",
       "navLabel": "Coins",
-      "grant": "Grant coins",
-      "backToTransactions": "Back to Coins",
       "showing": "Showing {from}–{to} of {total} transactions",
       "empty": "No transactions match the current filters.",
       "columns": {
@@ -6314,8 +6170,7 @@
   "MobileTabBar": {
     "games": "Games",
     "practice": "Practice",
-    "topics": "Topics",
-    "coin": "Coins"
+    "topics": "Topics"
   },
   "dojo": {
     "pageTitle": "Dojo",

@@ -1,44 +1,38 @@
-# Points / Coin Economy (コイン)
+# Points / Coin ledger (コイン) — retired
 
-The in-app currency has **two names for one thing**, by deliberate design:
+The coin economy was retired in 2026-11 because nobody used it: 143 of 1,432
+users held a balance, the median was 2 coins, and three users spent anything in
+its last 90 days. Likes were meant to be the incentive to earn; the community
+did not pick that up.
 
-- **"Coin"** — the product/brand name. This is the ONLY term users and staff
-  ever see (web UI, admin UI, FAQ, notifications, i18n copy).
-- **"points"** — the internal ledger primitive. Used only in the DB schema and
-  this `@/lib/points` service layer. Never surfaced to a human.
+**Nothing mints or spends coins any more.** Do not add a feature that does.
 
-They are the same unit, 1:1. There is no conversion between them.
+## What is left, and why
 
-## Why two names
+| Piece                                                                                                                                   | Why it still exists                                                                                                                       |
+| --------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `point_events`, `user_point_balances`, `point_redemptions`, `point_purchases`, `point_batch_watermarks` (`src/lib/db/schema/points.ts`) | The ledger rows are the record of what users held. Dropped in a follow-up migration once the balance conversion has run and been checked. |
+| `/admin/coins`, the Coins card on `/admin/users/[id]`, `list-events.ts`, `get-history.ts`, `get-balance.ts`                             | Read-only views of the frozen ledger, for checking the conversion.                                                                        |
+| `games.maia_charge_id` and the `maiaChargeId` plumbing on saved / published games                                                       | Linked a Maia game to the coin that paid for it. Inert now; removed together with the column.                                             |
+| `point_grant` / `like_coin_grant` notification types                                                                                    | Rows already in users' notification lists still render their text; they link nowhere.                                                     |
 
-1. **Disambiguation from EXP (経験値).** The app already has experience points
-   (`exp_events` / `user_exp`), which a user could also call "points." Naming
-   the spendable currency "Coin" keeps the two economies verbally distinct.
-2. **Brand vs. implementation.** `point_events` is a generic signed-delta
-   ledger (mirrors `exp_events`); "Coin" is the concrete thing that ledger
-   happens to back. Keeping the ledger name generic costs nothing and avoids a
-   large, risky rename of schema / RLS / FKs.
+All of it goes when the tables are dropped. Until then, treat this directory
+as read-only.
 
-## Layer map
+## What replaced each spend
 
-| Layer         | Term       | Concrete names                                                                                                |
-| ------------- | ---------- | ------------------------------------------------------------------------------------------------------------- |
-| DB schema     | **points** | `point_events`, `user_point_balances`, `point_redemptions`, `point_purchases` (`src/lib/db/schema/points.ts`) |
-| Service layer | **points** | `@/lib/points`, `grantAdminPoints`, `getPointBalanceSummary`, `getPointHistory`                               |
-| Admin UI      | **Coin**   | route `/admin/coins`, nav "Coins", i18n `Admin.coins`                                                         |
-| User UI       | **Coin**   | `/mypage/coins`, FAQ `/coin`, i18n `coin` / `MypagePoints` (title "Coins")                                    |
+- **AI review** — subscribers only (`resolveAiReviewGenerationState`).
+- **Maia** — Lv5 and up (`MAIA_UNLOCK_LEVEL`). The players who had paid a coin
+  for Maia were raised to Lv5 with a one-off Exp grant
+  (`scripts/retire-coins/grant-maia-carryover-exp.sql`).
+- **Kata visibility tiers** — free for everyone.
+- **Ad-free redemption** — removed; leftover balances are converted once, at
+  the old rate of 1 coin = 1 day, by
+  `scripts/retire-coins/convert-balances.sql`.
 
-## Rules when extending
+## Naming, for reading the leftovers
 
-- A new **facing surface** (page, label, copy) is always "Coin." Do NOT add a
-  user- or admin-visible string that says "Points."
-- New **ledger / service** code stays "points" (`point_events`, `@/lib/points`).
-- The `point_events.source` / `category` string values (`'admin_grant'`,
-  `'like_grant'`, `'maia_game'`, `'redemption'`, `'earned'`, …) and the
-  `MypagePoints.history.kind` i18n keys are **stored data values** — never
-  rename them; a rename would orphan existing rows. Map them to display labels
-  at the read layer instead (see `classifyKind` in `get-history.ts`).
-- Admin transaction visibility is a **read surface over `point_events`**, not a
-  new log: see `listPointEvents` (`list-events.ts`) and the per-user Coins card
-  on `/admin/users/[id]`. Do not duplicate coin movements into
-  `moderation_actions` / `user_activity_log` (that splits the source of truth).
+"Coin" was the user- and staff-facing name; "points" is the ledger primitive
+in the schema and this service layer. Same unit, 1:1. The
+`point_events.source` / `category` strings are stored data values — the
+read views map them to labels (`classifyKind` in `get-history.ts`).

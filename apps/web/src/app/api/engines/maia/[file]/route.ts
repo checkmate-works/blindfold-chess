@@ -11,7 +11,7 @@ import { loadMaiaModel } from './_lib/load-maia-model';
  * The model file lives outside `public/` (under `apps/web/engines/maia/`)
  * so the bytes are only reachable through this handler. Every request
  * is gated by {@link canUseMaia}; unauthenticated callers — and users
- * below `MAIA_FREE_LEVEL` with no paid Maia game on record — receive 403.
+ * below `MAIA_UNLOCK_LEVEL` — receive 403.
  *
  * Threat model:
  *   - Anonymous attackers cannot trigger the 46 MB egress at all — the

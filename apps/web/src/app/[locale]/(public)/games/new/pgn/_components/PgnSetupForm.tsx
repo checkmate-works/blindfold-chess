@@ -31,7 +31,6 @@ type Props = {
   engine: EngineKind;
   onEngineChange: (engine: EngineKind) => void;
   maiaCardMode: MaiaCardMode;
-  maiaCost: number;
   onMaiaLockedClick: () => void;
   localSettings: LocalSettings;
   onSettingsChange: ReturnType<typeof useLocalGameSettings>['handleSettingsChange'];
@@ -59,7 +58,6 @@ export function PgnSetupForm({
   engine,
   onEngineChange,
   maiaCardMode,
-  maiaCost,
   onMaiaLockedClick,
   localSettings,
   onSettingsChange,
@@ -91,7 +89,6 @@ export function PgnSetupForm({
         value={engine}
         onChange={onEngineChange}
         maiaCardMode={maiaCardMode}
-        maiaCost={maiaCost}
         onMaiaLockedClick={onMaiaLockedClick}
       />
       <SkillLevelSelector

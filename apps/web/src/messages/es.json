@@ -292,29 +292,20 @@
       "banned": "Tu cuenta está restringida.",
       "rateLimited": "Demasiados intentos. Inténtalo más tarde.",
       "generic": "Algo salió mal. Inténtalo de nuevo.",
-      "insufficient_balance": "No tienes monedas suficientes.",
       "profileRequired": "Configura tu nombre de usuario para crear un Kata"
     },
     "visibility": {
       "legend": "Quién puede ver este Kata",
       "public": "Público",
-      "publicHelp": "Cualquiera puede encontrarlo y verlo. Gratis.",
+      "publicHelp": "Cualquiera puede encontrarlo y verlo.",
       "followersOnly": "Solo seguidores",
       "followersOnlyHelp": "Solo quienes te siguen pueden verlo.",
       "private": "Privado",
       "privateHelp": "Solo tú puedes verlo.",
-      "costFree": "Gratis",
-      "costCoins": "{cost, plural, one {# moneda} other {# monedas}}",
-      "balance": "Saldo: {balance, plural, one {# moneda} other {# monedas}}",
-      "confirmTitle": "¿Gastar monedas?",
-      "confirmBody": "Publicar este Kata como «{tier}» gastará {cost, plural, one {# moneda} other {# monedas}}.",
-      "confirmInsufficient": "Esto necesita {cost, plural, one {# moneda} other {# monedas}}, pero tu saldo es {balance}.",
-      "confirm": "Gastar y publicar",
       "cancel": "Cancelar",
       "change": "Cambiar quién puede verlo",
       "changeTitle": "Cambiar visibilidad",
-      "changeBody": "¿Cambiar este Kata a «{tier}»? Esto gastará {cost, plural, one {# moneda} other {# monedas}}.",
-      "changeBodyFree": "¿Cambiar este Kata a «{tier}»? Ya has desbloqueado este nivel: no se necesitan monedas.",
+      "changeBody": "¿Cambiar este Kata a «{tier}»?",
       "changeConfirm": "Cambiar",
       "current": "Actual: {tier}"
     },
@@ -780,54 +771,6 @@
     "selectOpening": "Selecciona una apertura",
     "searchPlaceholder": "Buscar aperturas..."
   },
-  "coin": {
-    "title": "Monedas",
-    "hero": {
-      "tagline": "Cada «me gusta» en el contenido que publicas te da una moneda."
-    },
-    "loop": {
-      "step1Title": "Publica",
-      "step1Body": "Comparte una partida, un problema, un Kata",
-      "step2Title": "Recibe «me gusta»",
-      "step2Body": "Cada uno suma una moneda",
-      "step3Title": "Gástalas en ventajas",
-      "step3Body": "Sin anuncios, partidas, revisiones IA"
-    },
-    "earn": {
-      "heading": "Cómo ganar Monedas",
-      "chips": {
-        "puzzle": "Puzzle",
-        "positionMemory": "Memoria de posición",
-        "topic": "Tema",
-        "chunk": "Chunk",
-        "repertoire": "Kata",
-        "game": "Partida"
-      },
-      "perLike": "por «me gusta» · se acreditan una vez al día",
-      "note": "El contenido que ya publicaste sigue ganando con cada nuevo «me gusta». Los «me gusta» a tu propio contenido no cuentan."
-    },
-    "spend": {
-      "heading": "Para qué sirven las Monedas",
-      "adFreeTitle": "Ocultar los anuncios",
-      "adFreeRate": "1 Moneda = {days, plural, one {# día sin anuncios} other {# días sin anuncios}}",
-      "maiaTitle": "Jugar contra Maia",
-      "maiaRate": "{cost, plural, one {# Moneda} other {# Monedas}} = 1 partida",
-      "maiaNote": "Maia es una IA de red neuronal que juega con un estilo humano. Gratis a partir del Lv{level}.",
-      "aiReviewTitle": "Recibe una revisión IA",
-      "aiReviewRate": "{cost, plural, one {# moneda} other {# monedas}} = 1 revisión",
-      "aiReviewNote": "Los suscriptores generan revisiones sin gastar monedas."
-    },
-    "facts": {
-      "batch": "Las monedas por «me gusta» no son inmediatas: se acreditan una vez al día.",
-      "instant": "Una vez acreditadas, las monedas se pueden usar al instante.",
-      "selfLike": "Dar «me gusta» a tu propio contenido no da monedas.",
-      "balance": "Tu saldo e historial están siempre disponibles en Mi página."
-    },
-    "cta": {
-      "viewBalance": "Ver mi saldo de Monedas",
-      "contribute": "Explorar temas"
-    }
-  },
   "faq": {
     "title": "Preguntas Frecuentes",
     "description": "Encuentra respuestas a las preguntas más comunes sobre Ajedrez a Ciegas",
@@ -872,11 +815,6 @@
         "streak3": "3–4",
         "streak2": "2",
         "streak1": "1"
-      },
-      "adFreeBenefits": {
-        "question": "¿Cómo se obtienen las monedas y cómo se convierten en tiempo sin anuncios?",
-        "answer": "Cada «me gusta» en una partida, problema, Kata, chunk o publicación que hayas publicado da 1 moneda (se acreditan una vez al día). 1 moneda equivale a 1 día sin anuncios, y las monedas también pagan partidas contra Maia y revisiones IA.",
-        "earnSummary": "Los «me gusta» a tu propio contenido no cuentan. Los suscriptores generan revisiones IA sin gastar monedas."
       }
     }
   },
@@ -2881,9 +2819,6 @@
       "analyzing": "Analizando con Stockfish… ({done}/{total} posiciones)",
       "cancel": "Cancelar",
       "retry": "Intentar de nuevo",
-      "generateButtonPaid": "Generar revisión IA ({cost, plural, one {# moneda} other {# monedas}})",
-      "retryPaid": "Intentar de nuevo ({cost, plural, one {# moneda} other {# monedas}})",
-      "balance": "Saldo: {balance, plural, one {# moneda} other {# monedas}}",
       "bestMoveLabel": "Mejor jugada",
       "sections": {
         "summary": "Resumen de la partida",
@@ -2913,7 +2848,7 @@
         "llm_error": "El entrenador IA no pudo generar la revisión. Inténtalo más tarde.",
         "unexpected_error": "Algo salió mal. Inténtalo más tarde.",
         "analysis_failed": "El análisis del motor falló. Recarga la página e inténtalo de nuevo.",
-        "insufficient_balance": "No tienes monedas suficientes."
+        "subscription_required": "Generar una revisión IA requiere una suscripción."
       },
       "languageNote": "Esta revisión está escrita en {language}.",
       "confirm": {
@@ -2922,14 +2857,7 @@
         "languageLabel": "Idioma de la revisión",
         "languageHelp": "Cada partida tiene una sola revisión. Se mostrará a todos los visitantes en el idioma que elijas aquí.",
         "submit": "Generar",
-        "cancel": "Cancelar",
-        "cost": "Cuesta {cost, plural, one {# moneda} other {# monedas}} (saldo: {balance})"
-      },
-      "upsell": {
-        "title": "Una revisión IA cuesta {cost, plural, one {# moneda} other {# monedas}}",
-        "description": "El entrenador IA analiza tu partida a partir del análisis de Stockfish y explica los momentos decisivos, además de qué trabajar a continuación.",
-        "coinCta": "Cómo ganar monedas",
-        "cta": "Ver planes"
+        "cancel": "Cancelar"
       },
       "principleLabel": "Principio",
       "submitting": "Enviando tu solicitud…",
@@ -3147,25 +3075,13 @@
     "engineStockfishDescription": "Un motor de código abierto potente con nivel de habilidad ajustable — el oponente de IA clásico.",
     "engineMaiaLabel": "Maia",
     "engineMaiaDescription": "Un motor basado en redes neuronales que juega como un humano del Elo seleccionado. El primer movimiento tarda unos segundos mientras se carga el modelo (~46 MB).",
-    "engineLockedHint": "Faltan monedas",
-    "engineMaiaCostBadge": "{cost} moneda",
-    "engineMaiaFreeBadge": "Gratis",
-    "engineMaiaFreeNote": "Recompensa por alcanzar el Lv{level}: las partidas contra Maia son gratis.",
-    "maiaPointModal": {
-      "title": "Maia cuesta monedas",
-      "body": "Cada partida contra Maia cuesta {cost} moneda.",
-      "balance": "Actualmente tienes {balance} monedas.",
-      "unlockHint": "Las partidas contra Maia son gratis a partir del Lv{level} (tienes Lv{current}).",
-      "earnLink": "Cómo funcionan las Monedas",
-      "viewPoints": "Ver mis monedas",
+    "engineLockedHint": "Se desbloquea en Nv{level}",
+    "engineMaiaUnlockedNote": "Desbloqueado en Nv{level}: puedes jugar contra Maia.",
+    "maiaLockedModal": {
+      "title": "Maia se desbloquea en Nv{level}",
+      "body": "Podrás jugar contra Maia al alcanzar Nv{level} (eres Nv{current}). Ganas Exp al completar sesiones de práctica y partidas.",
+      "practice": "Ir a practicar",
       "close": "Cerrar"
-    },
-    "maiaCoinConfirmModal": {
-      "title": "¿Iniciar una partida contra Maia?",
-      "body": "Iniciar esta partida cuesta {cost} moneda.",
-      "balance": "Actualmente tienes {balance} monedas.",
-      "confirm": "Gastar moneda e iniciar",
-      "cancel": "Cancelar"
     },
     "helpLabel": "Mostrar ayuda",
     "helpEngineDescription": "Stockfish: un motor de ajedrez de código abierto con fuerza ajustable. Maia: una red neuronal entrenada con millones de partidas humanas, juega al nivel elegido como un humano real, no como una computadora.",
@@ -3906,7 +3822,6 @@
       "expProgress": "{current} / {next} Exp",
       "expRemaining": "{remaining} Exp para el siguiente nivel",
       "viewExpLeaderboard": "Ver Clasificación de Exp",
-      "pointsTotal": "{total} monedas",
       "accountTitle": "Cuenta",
       "accountSettingsTitle": "Ajustes de la Cuenta",
       "subscriptionTitle": "Suscripción",
@@ -3998,64 +3913,7 @@
     }
   },
   "MypagePoints": {
-    "title": "Monedas",
-    "sectionTitle": "Tus monedas",
-    "breadcrumbMypage": "Mi Página",
-    "balance": {
-      "unit": "monedas",
-      "aboutLink": "Cómo funcionan las Monedas"
-    },
-    "redeem": {
-      "title": "Canjear monedas por tiempo sin anuncios",
-      "description": "Cada moneda se convierte en un día sin anuncios. Los días se suman al tiempo sin anuncios que ya tengas.",
-      "amountLabel": "Monedas a canjear",
-      "pointSuffix": "monedas",
-      "daysReceived": "{days, plural, one {# día} other {# días}} sin anuncios",
-      "submit": "Canjear {amount} monedas",
-      "submitting": "Canjeando…",
-      "successMessage": "Listo — se han añadido {days, plural, one {# día} other {# días}} sin anuncios.",
-      "notice": {
-        "dan_rank": {
-          "title": "No hace falta gastar monedas",
-          "body": "Quienes tienen un rango dan siempre navegan sin anuncios."
-        },
-        "subscription": {
-          "title": "No hace falta gastar monedas",
-          "body": "Tu suscripción oculta los anuncios mientras está activa. Las monedas no caducan: podrás canjearlas cuando termine."
-        }
-      },
-      "errors": {
-        "invalid_amount": "Introduce un número entero positivo.",
-        "insufficient_balance": "No tienes suficientes monedas disponibles.",
-        "signInRequired": "Inicia sesión para canjear.",
-        "banned": "Tu cuenta está restringida.",
-        "rateLimited": "Demasiados canjes en poco tiempo — inténtalo más tarde.",
-        "danAdFree": "Como poseedor de un rango dan, ya navegas sin anuncios.",
-        "subscriptionAdFree": "Tu suscripción ya oculta los anuncios."
-      }
-    },
-    "spendOptions": {
-      "aiReview": {
-        "title": "Recibe una revisión IA",
-        "rate": "{cost, plural, one {# Moneda} other {# Monedas}} = 1 revisión",
-        "note": "Solicítala desde la página de una partida que hayas compartido.",
-        "noteSubscriber": "Tu suscripción cubre las revisiones IA — no gastas monedas.",
-        "cta": "Ver tus partidas"
-      },
-      "maia": {
-        "title": "Jugar contra Maia",
-        "rate": "{cost, plural, one {# Moneda} other {# Monedas}} = 1 partida",
-        "note": "Maia es una IA de red neuronal que juega con un estilo humano. Se cobra al iniciar la partida. Gratis a partir del Lv{level}.",
-        "cta": "Empezar una partida"
-      }
-    },
     "history": {
-      "title": "Historial",
-      "empty": "Todavía no tienes actividad de monedas.",
-      "learnHowToEarn": "Ver cómo se obtienen monedas.",
-      "headerDate": "Fecha",
-      "headerEvent": "Evento",
-      "headerDelta": "Cantidad",
       "kind": {
         "post_grant": "Ganadas por una publicación",
         "post_clawback": "Revertidas por publicación eliminada",
@@ -4219,7 +4077,7 @@
     "muteConfirmButton": "Silenciar",
     "cancel": "Cancelar",
     "aiReviewReadyMessage": "Tu revisión IA está lista",
-    "aiReviewFailedMessage": "No se pudo generar la revisión IA. La moneda gastada ha sido devuelta."
+    "aiReviewFailedMessage": "No se pudo generar la revisión IA."
   },
   "deleteAccount": {
     "title": "Eliminar Cuenta",
@@ -4986,8 +4844,6 @@
     "coins": {
       "title": "Monedas",
       "navLabel": "Monedas",
-      "grant": "Conceder monedas",
-      "backToTransactions": "Volver a Monedas",
       "showing": "Mostrando {from}–{to} de {total} transacciones",
       "empty": "Ninguna transacción coincide con los filtros actuales.",
       "columns": {
@@ -6314,8 +6170,7 @@
   "MobileTabBar": {
     "games": "Partidas",
     "practice": "Práctica",
-    "topics": "Temas",
-    "coin": "Monedas"
+    "topics": "Temas"
   },
   "dojo": {
     "pageTitle": "Dojo",

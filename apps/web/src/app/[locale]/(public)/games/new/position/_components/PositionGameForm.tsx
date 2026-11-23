@@ -15,8 +15,6 @@ import type { Side } from '@blindfold-chess/types';
 import { FaChevronDown } from 'react-icons/fa';
 
 import { engineConfigToUrlParams } from '@/lib/engines';
-import { MAIA_CHARGE_PARAM } from '@/lib/games/maia-charge-param';
-import { MAIA_GAME_POINT_COST } from '@/lib/points/constants';
 import type { MaiaEngineAccess } from '@/lib/users/can-use-maia';
 
 import { ColorSelector } from '@/app/[locale]/(public)/games/new/_components/ColorSelector';
@@ -114,19 +112,18 @@ export function PositionGameForm({ locale, maiaAccess }: Props) {
     [setPositionFen]
   );
 
-  const navigateToGame = (maiaChargeId: string | null) => {
+  const navigateToGame = () => {
     const params = new URLSearchParams({
       color,
       fen: fullPositionFen,
       gamePrefs: JSON.stringify(localSettings),
       ...engineConfigToUrlParams(engineConfig),
     });
-    if (maiaChargeId) params.set(MAIA_CHARGE_PARAM, maiaChargeId);
     router.push(`/${locale}/games/play?${params.toString()}`);
   };
 
-  const maiaCardMode = deriveMaiaCardMode(maiaAccess, MAIA_GAME_POINT_COST);
-  const launch = useMaiaGameLaunch({ navigateToGame, maiaCardMode });
+  const maiaCardMode = deriveMaiaCardMode(maiaAccess);
+  const launch = useMaiaGameLaunch({ navigateToGame });
 
   const editableBoardLabels = useEditableBoardLabels('newGame.positionSettings');
 
@@ -209,8 +206,7 @@ export function PositionGameForm({ locale, maiaAccess }: Props) {
         value={engine}
         onChange={setEngine}
         maiaCardMode={maiaCardMode}
-        maiaCost={MAIA_GAME_POINT_COST}
-        onMaiaLockedClick={launch.openPointInfo}
+        onMaiaLockedClick={launch.openLockedInfo}
       />
       <SkillLevelSelector
         engine={engine}

@@ -108,9 +108,6 @@ export type AiReviewStore = {
 export const dbAiReviewStore: AiReviewStore = {
   find: getAiReview,
   async save(row) {
-    // No charge here: the coin is debited when the job is accepted
-    // (`enqueueAiReviewJob`) and refunded if the job fails, so the save
-    // stays a plain insert. See the `game_ai_review_jobs` table TSDoc.
     const [inserted] = await db.insert(gameAiReviews).values(row).onConflictDoNothing().returning();
     if (inserted) return toAiReview(inserted);
     const existing = await fetchAiReview(row.gameId, row.locale);

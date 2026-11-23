@@ -19,7 +19,6 @@ import { getTranslations } from 'next-intl/server';
 import { ChallengeCard } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 import { getLevelProgress } from '@blindfold-chess/features/exp';
-import { CoinIcon } from '@blindfold-chess/icons';
 
 import { getAuthenticatedUser } from '@/lib/auth';
 import { resolveAuthorName } from '@/lib/users/display-name';
@@ -141,23 +140,6 @@ export default async function MypagePage({ params }: Props) {
           </Link>
         </p>
       </div>
-
-      {/* Point balance chip — links to the detailed history + redemption page */}
-      <Link
-        href="/mypage/coins"
-        locale={locale}
-        className="mt-3 flex items-center justify-between gap-3 rounded-lg border border-border bg-card p-3 transition-all hover:border-primary/30"
-      >
-        <div className="flex items-center gap-2">
-          <CoinIcon size={20} aria-hidden="true" />
-          <div className="flex flex-col">
-            <span className="text-sm font-semibold text-foreground">
-              {t('dashboard.pointsTotal', { total: data.pointBalance.total })}
-            </span>
-          </div>
-        </div>
-        <span className="text-sm text-muted-foreground">›</span>
-      </Link>
 
       <Divider />
 

@@ -148,106 +148,31 @@ describe('AiReviewPanel', () => {
     expect(onJumpToPly).toHaveBeenCalledWith(4);
   });
 
-  it('explains the coin price, with both ways to pay, when the balance cannot cover it', () => {
-    renderPanel(
-      <AiReviewPanel
-        {...baseProps}
-        generationState={mockState}
-        generation={{ kind: 'insufficient_balance', cost: 1, balance: 0 }}
-      />
-    );
-
-    expect(screen.getByText('aiReview.upsell.title')).toBeInTheDocument();
-    // Asserted loosely: the locale prefix is next-intl's to add, and it does
-    // not do so outside a request context.
-    expect(screen.getByText('aiReview.upsell.coinCta').closest('a')).toHaveAttribute(
-      'href',
-      expect.stringContaining('/coin')
-    );
-    expect(screen.getByText('aiReview.upsell.cta').closest('a')).toHaveAttribute(
-      'href',
-      expect.stringContaining('/pricing')
-    );
-    expect(screen.queryByText('aiReview.generateButton')).not.toBeInTheDocument();
-  });
-
-  it('prices the generate button and shows the balance for a coin payer, and not for a subscriber', () => {
-    const { unmount } = renderPanel(
-      <AiReviewPanel
-        {...baseProps}
-        generationState={mockState}
-        generation={{ kind: 'payable', cost: 1, balance: 2 }}
-      />
-    );
-    // The price is on the CTA itself, before anything opens.
-    expect(screen.getByRole('button', { name: 'aiReview.generateButtonPaid' })).toBeInTheDocument();
-    expect(screen.getByText('aiReview.balance')).toBeInTheDocument();
-    expect(screen.queryByText('aiReview.generateButton')).not.toBeInTheDocument();
-    unmount();
-
-    renderPanel(<AiReviewPanel {...baseProps} generationState={mockState} />);
+  it('offers the generate button to a subscriber, and the retry after a failure', () => {
+    const { unmount } = renderPanel(<AiReviewPanel {...baseProps} generationState={mockState} />);
     expect(screen.getByRole('button', { name: 'aiReview.generateButton' })).toBeInTheDocument();
-    expect(screen.queryByText('aiReview.balance')).not.toBeInTheDocument();
-  });
-
-  it('prices the retry too — the refunded run is paid for again', () => {
-    mockState = { phase: 'error', error: 'llm_error' };
-    renderPanel(
-      <AiReviewPanel
-        {...baseProps}
-        generationState={mockState}
-        generation={{ kind: 'payable', cost: 1, balance: 2 }}
-      />
-    );
-    expect(screen.getByRole('button', { name: 'aiReview.retryPaid' })).toBeInTheDocument();
-    expect(screen.queryByText('aiReview.retry')).not.toBeInTheDocument();
-  });
-
-  it('states the coin price in the confirmation for a coin payer, and not for a subscriber', () => {
-    const { unmount } = renderPanel(
-      <AiReviewPanel
-        {...baseProps}
-        generationState={mockState}
-        generation={{ kind: 'payable', cost: 1, balance: 2 }}
-      />
-    );
-    fireEvent.click(screen.getByText('aiReview.generateButtonPaid'));
-    expect(screen.getByText('aiReview.confirm.cost')).toBeInTheDocument();
     unmount();
 
+    mockState = { phase: 'error', error: 'llm_error' };
     renderPanel(<AiReviewPanel {...baseProps} generationState={mockState} />);
-    fireEvent.click(screen.getByText('aiReview.generateButton'));
-    expect(screen.queryByText('aiReview.confirm.cost')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'aiReview.retry' })).toBeInTheDocument();
   });
 
-  it('shows the accepted notice for a queued job, whatever the offer', () => {
+  it('shows the accepted notice for a queued job', () => {
     mockState = { phase: 'queued', job: { id: 'job-1', locale: 'en' } };
-    renderPanel(
-      <AiReviewPanel
-        {...baseProps}
-        generationState={mockState}
-        generation={{ kind: 'insufficient_balance', cost: 1, balance: 0 }}
-      />
-    );
+    renderPanel(<AiReviewPanel {...baseProps} generationState={mockState} />);
 
     expect(screen.getByRole('status')).toHaveTextContent('aiReview.queued.title');
     expect(screen.queryByText('aiReview.generateButton')).not.toBeInTheDocument();
-    expect(screen.queryByText('aiReview.upsell.title')).not.toBeInTheDocument();
   });
 
   // The review is public once published; only spending on a new one is gated.
-  it('shows a cached review to an unentitled viewer, with no upsell over it', () => {
+  it('shows a cached review to a viewer with no generation offer', () => {
     render(
-      <AiReviewPanel
-        {...baseProps}
-        generationState={mockState}
-        review={REVIEW}
-        generation={{ kind: 'insufficient_balance', cost: 1, balance: 0 }}
-      />
+      <AiReviewPanel {...baseProps} generationState={mockState} review={REVIEW} generation={null} />
     );
 
     expect(screen.getByText('A hard-fought game with one decisive slip.')).toBeInTheDocument();
-    expect(screen.queryByText('aiReview.upsell.title')).not.toBeInTheDocument();
   });
 
   it('offers nothing at all to a viewer with no generation offer', () => {
@@ -255,7 +180,6 @@ describe('AiReviewPanel', () => {
 
     expect(screen.getByText('aiReview.notGenerated')).toBeInTheDocument();
     expect(screen.queryByText('aiReview.generateButton')).not.toBeInTheDocument();
-    expect(screen.queryByText('aiReview.upsell.title')).not.toBeInTheDocument();
   });
 
   it('confirms before generating, and writes the review in the page language', () => {

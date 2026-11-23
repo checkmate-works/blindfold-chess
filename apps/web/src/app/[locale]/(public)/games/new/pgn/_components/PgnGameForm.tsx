@@ -8,8 +8,6 @@ import { deriveSideFromPgn } from '@blindfold-chess/features/ai-game';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
 import { engineConfigToUrlParams } from '@/lib/engines';
-import { MAIA_CHARGE_PARAM } from '@/lib/games/maia-charge-param';
-import { MAIA_GAME_POINT_COST } from '@/lib/points/constants';
 import type { MaiaEngineAccess } from '@/lib/users/can-use-maia';
 
 import { GameLaunchModals } from '@/app/[locale]/(public)/games/new/_components/GameLaunchModals';
@@ -90,7 +88,7 @@ export function PgnGameForm({ locale, maiaAccess }: Props) {
     setColorManuallySet(true);
   }, []);
 
-  const navigateToGame = (maiaChargeId: string | null) => {
+  const navigateToGame = () => {
     const parsed = parsePgnWithFen(pgn);
     if (!parsed.ok) {
       // The Start button is gated on validatePgn; reaching here means the two
@@ -113,13 +111,12 @@ export function PgnGameForm({ locale, maiaAccess }: Props) {
     if (fenToPass) {
       params.set('fen', fenToPass);
     }
-    if (maiaChargeId) params.set(MAIA_CHARGE_PARAM, maiaChargeId);
 
     router.push(`/${locale}/games/play?${params.toString()}`);
   };
 
-  const maiaCardMode = deriveMaiaCardMode(maiaAccess, MAIA_GAME_POINT_COST);
-  const launch = useMaiaGameLaunch({ navigateToGame, maiaCardMode });
+  const maiaCardMode = deriveMaiaCardMode(maiaAccess);
+  const launch = useMaiaGameLaunch({ navigateToGame });
 
   const isStartDisabled = !pgn.trim() || !validatePgn(pgn);
   const showDerivedFromPgnHint = pgn.trim() !== '' && validatePgn(pgn) && !colorManuallySet;
@@ -138,8 +135,7 @@ export function PgnGameForm({ locale, maiaAccess }: Props) {
         engine={engine}
         onEngineChange={setEngine}
         maiaCardMode={maiaCardMode}
-        maiaCost={MAIA_GAME_POINT_COST}
-        onMaiaLockedClick={launch.openPointInfo}
+        onMaiaLockedClick={launch.openLockedInfo}
         localSettings={localSettings}
         onSettingsChange={handleSettingsChange}
         showDerivedFromPgnHint={showDerivedFromPgnHint}

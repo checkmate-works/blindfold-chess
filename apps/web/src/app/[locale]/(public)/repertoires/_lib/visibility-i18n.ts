@@ -1,4 +1,4 @@
-import type { RepertoireVisibility } from '@/lib/points/spend-catalog';
+import type { RepertoireVisibility } from '@/lib/repertoires/visibility';
 
 /**
  * RepertoireVisibility (snake) → its `Repertoires.visibility.*` i18n key

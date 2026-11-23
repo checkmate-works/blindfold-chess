@@ -151,11 +151,11 @@ $$;
 -- dropping the grant costs the app nothing. Same posture as games / repertoires.
 --
 -- No DELETE either. Deleting a post is not just removing a row: `deletePostCore`
--- soft-deletes, revokes the grants the post earned, and claws back the coins it
--- was paid for — all in one transaction, all in application code, with no DB
--- trigger behind it. A physical `DELETE /rest/v1/topic_posts?id=eq.<own>`
--- therefore let an author keep the coins for content they had removed. Physical
--- deletion is service-role only (the account-purge cron).
+-- soft-deletes and revokes the grants the post earned — in one transaction, in
+-- application code, with no DB trigger behind it. A physical
+-- `DELETE /rest/v1/topic_posts?id=eq.<own>` would therefore let an author keep
+-- a grant for content they had removed. Physical deletion is service-role only
+-- (the account-purge cron).
 GRANT SELECT ON TABLE public.topic_posts TO authenticated;
 GRANT SELECT ON TABLE public.topic_posts TO anon;
 -- GRANT is additive and this file is re-applied on every deploy, so narrowing
@@ -728,7 +728,7 @@ GRANT SELECT ON TABLE public.point_purchases TO authenticated;
 SELECT public.ensure_auth_users_fk('games', 'games_author_id_fkey', 'author_id', 'SET NULL');
 
 -- Public catalog read. All writes go through service-role server actions
--- (publish verifies move legality + grants coins; mutations check token /
+-- (publish verifies move legality; mutations check token /
 -- author ownership), so no INSERT/UPDATE grant to non-service roles.
 GRANT SELECT ON TABLE public.games TO authenticated;
 GRANT SELECT ON TABLE public.games TO anon;
@@ -954,7 +954,7 @@ REVOKE ALL ON TABLE public.game_ai_review_jobs FROM authenticated, anon;
 -- serves `public` to anyone holding the anon key shipped in the browser bundle,
 -- so a write privilege here is a second door to the same rows — one with none
 -- of the checks the Server Actions make: username format and reserved names,
--- content filters, rate limits, bans, blocks, coin charges. RLS cannot stand in
+-- content filters, rate limits, bans, blocks. RLS cannot stand in
 -- for them; it can only say whose row it is.
 --
 -- This is re-applied after the GRANTs above on every deploy, so it also

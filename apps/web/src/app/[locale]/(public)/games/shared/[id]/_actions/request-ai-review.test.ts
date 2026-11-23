@@ -95,17 +95,17 @@ describe('requestAiReviewAction', () => {
     });
     mockStoreFind.mockResolvedValue(null);
     mockFindLiveJob.mockResolvedValue(null);
-    // The coin payer — the viewer most cases below are about.
-    mockResolveState.mockResolvedValue({ kind: 'payable', cost: 1, balance: 2 });
+    // The subscribed author — the viewer most cases below are about.
+    mockResolveState.mockResolvedValue({ kind: 'allowed' });
     mockIsLlmConfigured.mockReturnValue(true);
     vi.mocked(checkRateLimit).mockResolvedValue({ success: true });
-    mockEnqueue.mockResolvedValue({ ok: true, job: JOB, alreadyQueued: false });
+    mockEnqueue.mockResolvedValue({ job: JOB, alreadyQueued: false });
     mockProcess.mockResolvedValue(undefined);
     // Run the after() callback inline so the hand-off is observable.
     mockAfter.mockImplementation((cb: () => unknown) => void cb());
   });
 
-  it('accepts a valid request: charges, enqueues, and kicks the worker after the response', async () => {
+  it('accepts a valid request: enqueues, and kicks the worker after the response', async () => {
     const result = await requestAiReviewAction(validInput());
 
     expect(result).toEqual({ success: true, status: 'queued', job: JOB });
@@ -114,18 +114,9 @@ describe('requestAiReviewAction', () => {
       locale: 'en',
       userId: USER_ID,
       evaluations: EVALS,
-      charge: true,
     });
     expect(mockAfter).toHaveBeenCalledTimes(1);
     expect(mockProcess).toHaveBeenCalledWith(JOB.id);
-  });
-
-  it('does not charge a subscriber', async () => {
-    mockResolveState.mockResolvedValue({ kind: 'allowed' });
-
-    await requestAiReviewAction(validInput());
-
-    expect(mockEnqueue).toHaveBeenCalledWith(expect.objectContaining({ charge: false }));
   });
 
   it('rejects unauthenticated callers before touching the game', async () => {
@@ -193,7 +184,7 @@ describe('requestAiReviewAction', () => {
     expect(mockEnqueue).not.toHaveBeenCalled();
   });
 
-  it('reports a job already in flight instead of charging again', async () => {
+  it('reports a job already in flight instead of queueing another', async () => {
     mockFindLiveJob.mockResolvedValue(JOB);
 
     const result = await requestAiReviewAction(validInput());
@@ -203,22 +194,22 @@ describe('requestAiReviewAction', () => {
     expect(mockEnqueue).not.toHaveBeenCalled();
   });
 
-  it('refuses the author who cannot pay, before spending a rate-limit slot', async () => {
-    mockResolveState.mockResolvedValue({ kind: 'insufficient_balance', cost: 1, balance: 0 });
+  it('refuses the author without a subscription, before spending a rate-limit slot', async () => {
+    mockResolveState.mockResolvedValue({ kind: 'blocked', reason: 'subscription_required' });
 
     expect(await requestAiReviewAction(validInput())).toEqual({
       success: false,
-      error: 'insufficient_balance',
+      error: 'subscription_required',
     });
     expect(vi.mocked(checkRateLimit)).not.toHaveBeenCalled();
     expect(mockEnqueue).not.toHaveBeenCalled();
   });
 
-  // A review already published stays readable to its author for good: an
-  // emptied wallet must not retract what the app has been serving to every
-  // visitor of the shared game.
-  it('still serves a cached review to an author who can no longer pay', async () => {
-    mockResolveState.mockResolvedValue({ kind: 'insufficient_balance', cost: 1, balance: 0 });
+  // A review already published stays readable to its author for good: a
+  // lapsed subscription must not retract what the app has been serving to
+  // every visitor of the shared game.
+  it('still serves a cached review to an author whose subscription lapsed', async () => {
+    mockResolveState.mockResolvedValue({ kind: 'blocked', reason: 'subscription_required' });
     mockStoreFind.mockResolvedValue(FAKE_REVIEW);
 
     expect(await requestAiReviewAction(validInput())).toEqual({
@@ -249,18 +240,8 @@ describe('requestAiReviewAction', () => {
     expect(mockEnqueue).not.toHaveBeenCalled();
   });
 
-  // The page's balance is advisory; the charge re-checks under a lock.
-  it('surfaces a balance that emptied between page load and click', async () => {
-    mockEnqueue.mockResolvedValue({ ok: false, error: 'insufficient_balance' });
-    expect(await requestAiReviewAction(validInput())).toEqual({
-      success: false,
-      error: 'insufficient_balance',
-    });
-    expect(mockAfter).not.toHaveBeenCalled();
-  });
-
   it('does not start a second worker for a job the enqueue found already live', async () => {
-    mockEnqueue.mockResolvedValue({ ok: true, job: JOB, alreadyQueued: true });
+    mockEnqueue.mockResolvedValue({ job: JOB, alreadyQueued: true });
 
     expect(await requestAiReviewAction(validInput())).toEqual({
       success: true,

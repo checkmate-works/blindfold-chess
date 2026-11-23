@@ -18,8 +18,6 @@ import {
 } from '@/lib/db';
 import { countRows } from '@/lib/db/list-query';
 import type { DbTx } from '@/lib/db/types';
-import type { RepertoireVisibility } from '@/lib/points';
-import { chargeRepertoireVisibility, clawbackPointsForPost } from '@/lib/points';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { isValidUUID } from '@/lib/validations/uuid';
 
@@ -34,6 +32,7 @@ import {
   validateRepertoireImport,
   validateRepertoireLineEdit,
 } from './validation';
+import type { RepertoireVisibility } from './visibility';
 
 /**
  * Expire the cached catalog COUNTs (`countPublicRepertoires`,
@@ -625,27 +624,18 @@ export async function updateRepertoireDetails(params: {
   return { ok: true, name };
 }
 
-/** Thrown inside the create transaction to roll the course insert back. */
-class InsufficientBalanceError extends Error {}
-
 /**
  * Create a repertoire (型) for the authenticated user, decomposing the imported
  * PGN into one `repertoire_lines` row per line, and publish it at the chosen
  * visibility in the same transaction — the /new flow is create-and-publish, not
  * the old two-step draft-then-publish. `userId` comes from the session.
  *
- * @design Visibility + coins on create
+ * @design Visibility on create
  *
  * The row is inserted directly at `input.visibility` (default `public`), not
  * `building`: a fresh import already has ≥1 line, so there is nothing to draft.
- *   - `public` (free): stamp `publishedAt`, grant the UGC coin (idempotent,
- *     daily-capped) — identical to the old `publishRepertoireEntry` reward.
- *   - `followers_only` / `private`: charge the tier price via
- *     `chargeRepertoireVisibility` (first unlock, so the full price). If the
- *     wallet can't cover it the whole transaction rolls back — no orphaned
- *     course, no partial charge — and the action returns `insufficient_balance`.
- *     No publish reward: a non-public course is not a public contribution, and
- *     `publishedAt` stays null until it ever becomes public.
+ * `publishedAt` is stamped only for `public`; a `followers_only` / `private`
+ * course keeps it null until it first becomes public.
  */
 export async function createRepertoireEntry(
   input: RepertoireImportInput
@@ -666,71 +656,53 @@ export async function createRepertoireEntry(
   const { name, side, phase, description, visibility, startingFen, lines, annotations } =
     validated.data;
 
-  let id: string;
-  try {
-    id = await db.transaction(async (tx) => {
-      const [repertoire] = await tx
-        .insert(repertoires)
-        .values({
-          userId: user.id,
-          name,
-          side,
-          phase,
-          description,
-          startingFen,
-          status: visibility,
-          publishedAt: visibility === 'public' ? new Date() : null,
-        })
-        .returning({ id: repertoires.id });
+  const id = await db.transaction(async (tx) => {
+    const [repertoire] = await tx
+      .insert(repertoires)
+      .values({
+        userId: user.id,
+        name,
+        side,
+        phase,
+        description,
+        startingFen,
+        status: visibility,
+        publishedAt: visibility === 'public' ? new Date() : null,
+      })
+      .returning({ id: repertoires.id });
 
-      await tx.insert(repertoireLines).values(
-        lines.map((line, index) => ({
+    await tx.insert(repertoireLines).values(
+      lines.map((line, index) => ({
+        repertoireId: repertoire.id,
+        pgn: line.pgn,
+        startingFen: line.startingFen,
+        lineNo: index + 1,
+        seq: index,
+      }))
+    );
+
+    // Board-authored "why this move" notes and arrow/circle markup land with
+    // the kata, under the same position keys the detail page writes to later.
+    // An absent half keeps its column default (empty note / no markup).
+    if (annotations.length > 0) {
+      await tx.insert(repertoireAnnotations).values(
+        annotations.map(({ positionKey, text, shapes }) => ({
           repertoireId: repertoire.id,
-          pgn: line.pgn,
-          startingFen: line.startingFen,
-          lineNo: index + 1,
-          seq: index,
+          positionKey,
+          ...(text !== undefined ? { text } : {}),
+          ...(shapes !== undefined ? { shapes } : {}),
         }))
       );
+    }
 
-      // Board-authored "why this move" notes and arrow/circle markup land with
-      // the kata, under the same position keys the detail page writes to later.
-      // An absent half keeps its column default (empty note / no markup).
-      if (annotations.length > 0) {
-        await tx.insert(repertoireAnnotations).values(
-          annotations.map(({ positionKey, text, shapes }) => ({
-            repertoireId: repertoire.id,
-            positionKey,
-            ...(text !== undefined ? { text } : {}),
-            ...(shapes !== undefined ? { shapes } : {}),
-          }))
-        );
-      }
-
-      await insertOpeningLinks(tx, {
-        repertoireId: repertoire.id,
-        phase,
-        openingIds: input.openingIds ?? [],
-      });
-
-      if (visibility !== 'public') {
-        const charge = await chargeRepertoireVisibility(tx, {
-          userId: user.id,
-          repertoireId: repertoire.id,
-          target: visibility,
-        });
-        // Thrown, not returned: drizzle commits whatever the callback resolves
-        // with, so a plain `return` here would keep the course, its lines and
-        // its notes — a paid tier the author never paid for.
-        if (!charge.ok) throw new InsufficientBalanceError();
-      }
-
-      return repertoire.id;
+    await insertOpeningLinks(tx, {
+      repertoireId: repertoire.id,
+      phase,
+      openingIds: input.openingIds ?? [],
     });
-  } catch (error) {
-    if (error instanceof InsufficientBalanceError) return { error: 'insufficient_balance' };
-    throw error;
-  }
+
+    return repertoire.id;
+  });
 
   revalidateRepertoireCatalog();
   return { success: true, id };
@@ -746,23 +718,13 @@ export async function deleteRepertoireEntry(id: string): Promise<DeleteRepertoir
   if ('error' in guard) return { error: guard.error };
   const { user } = guard;
 
-  const deleted = await db.transaction(async (tx) => {
-    const rows = await tx
-      .update(repertoires)
-      .set({ deletedAt: new Date() })
-      .where(
-        and(eq(repertoires.id, id), eq(repertoires.userId, user.id), isNull(repertoires.deletedAt))
-      )
-      .returning({ id: repertoires.id });
-
-    if (rows.length === 0) return rows;
-
-    // Reverse the publish reward when the course is removed — a no-op for a
-    // never-published (`building`) repertoire, since no grant row exists, and
-    // capped at the author's live `earned` balance (already-spent coins stay).
-    await clawbackPointsForPost(tx, user.id, { type: 'repertoire', id });
-    return rows;
-  });
+  const deleted = await db
+    .update(repertoires)
+    .set({ deletedAt: new Date() })
+    .where(
+      and(eq(repertoires.id, id), eq(repertoires.userId, user.id), isNull(repertoires.deletedAt))
+    )
+    .returning({ id: repertoires.id });
 
   if (deleted.length === 0) return { error: 'notFound' };
   revalidateRepertoireCatalog();
@@ -809,31 +771,17 @@ export async function publishRepertoireEntry(id: string): Promise<PublishReperto
 
 export type ChangeRepertoireVisibilityResult = ActionResult<{
   status: RepertoireVisibility;
-  /** Coins actually charged for this change (0 when the tier was already paid). */
-  charged: number;
 }>;
 
 /**
- * Owner-only: move a repertoire among the coin-gated visibility tiers
- * (`public` / `followers_only` / `private`). Unlike publishing, this is NOT
- * one-way — the owner can flip freely. Coins are charged only for the
- * INCREMENT above the highest tier ever paid for this repertoire (see
- * `chargeRepertoireVisibility`), so unlocking `private` once then toggling
- * `public ↔ private` later is free.
- *
- * @design Points reward: granted once, on becoming public; never clawed back
- *
- * `public` is the only tier that is a public contribution, so only it earns
- * the UGC coin (idempotent per source/id → at most once per repertoire ever).
- * Moving OUT of public to a paid tier does not reverse the grant: the
- * contribution was made, re-toggling can't re-earn (idempotent), and the paid
- * tier already cost more coins than the 1-coin reward — so there is nothing to
- * farm and a clawback would only be punitive.
+ * Owner-only: move a repertoire among the visibility tiers (`public` /
+ * `followers_only` / `private`). Unlike publishing, this is NOT one-way — the
+ * owner can flip freely, at no cost.
  *
  * `publishedAt` is stamped on the first move to `public` (for the catalog's
  * "newest" sort) and left untouched afterwards. Requires ≥1 live line, same
- * bar as `publishRepertoireEntry` — a paid tier gates viewing a finished
- * course, and an empty shell has nothing to gate.
+ * bar as `publishRepertoireEntry` — a tier gates viewing a finished course,
+ * and an empty shell has nothing to gate.
  */
 export async function changeRepertoireVisibility(params: {
   repertoireId: string;
@@ -853,38 +801,24 @@ export async function changeRepertoireVisibility(params: {
     .limit(1);
   if (!repertoire) return { error: 'notFound' };
 
-  // Re-selecting the current tier is a free no-op — no charge, no write.
+  // Re-selecting the current tier is a no-op — no write.
   if (repertoire.status === params.target) {
-    return { success: true, status: params.target, charged: 0 };
+    return { success: true, status: params.target };
   }
 
   const lineCount = await countRows(repertoireLines, liveLinesOf(params.repertoireId));
   if (lineCount < 1) return { error: 'noLines' };
 
-  const outcome = await db.transaction(
-    async (tx): Promise<{ ok: false } | { ok: true; charged: number }> => {
-      const charge = await chargeRepertoireVisibility(tx, {
-        userId: user.id,
-        repertoireId: params.repertoireId,
-        target: params.target,
-      });
-      if (!charge.ok) return { ok: false };
+  const publishedAt =
+    params.target === 'public' && repertoire.publishedAt == null
+      ? new Date()
+      : repertoire.publishedAt;
 
-      const publishedAt =
-        params.target === 'public' && repertoire.publishedAt == null
-          ? new Date()
-          : repertoire.publishedAt;
+  await db
+    .update(repertoires)
+    .set({ status: params.target, publishedAt })
+    .where(eq(repertoires.id, params.repertoireId));
 
-      await tx
-        .update(repertoires)
-        .set({ status: params.target, publishedAt })
-        .where(eq(repertoires.id, params.repertoireId));
-
-      return { ok: true, charged: charge.charged };
-    }
-  );
-
-  if (!outcome.ok) return { error: 'insufficient_balance' };
   revalidateRepertoireCatalog();
-  return { success: true, status: params.target, charged: outcome.charged };
+  return { success: true, status: params.target };
 }

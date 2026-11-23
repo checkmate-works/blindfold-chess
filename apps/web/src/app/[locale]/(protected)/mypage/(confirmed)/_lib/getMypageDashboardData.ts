@@ -1,7 +1,6 @@
 import { and, count, eq, inArray, isNull } from 'drizzle-orm';
 
 import { db, likes, topicPosts, userExp, userInterviewAnswers } from '@/lib/db';
-import { type PointBalanceSummary, getPointBalanceSummary } from '@/lib/points';
 import { getViewerProfile } from '@/lib/users/viewer-profile';
 
 import { INTERVIEW_QUESTION_KEYS } from '@/app/[locale]/_lib/interview';
@@ -13,11 +12,10 @@ export type MypageDashboardData = {
   likesCount: number;
   unansweredInterviewCount: number;
   totalExp: number;
-  pointBalance: PointBalanceSummary;
 };
 
 export async function getMypageDashboardData(userId: string): Promise<MypageDashboardData> {
-  const [profile, likesResult, answeredResult, expResult, pointBalance] = await Promise.all([
+  const [profile, likesResult, answeredResult, expResult] = await Promise.all([
     getViewerProfile(userId),
     db
       .select({ value: count() })
@@ -45,7 +43,6 @@ export async function getMypageDashboardData(userId: string): Promise<MypageDash
       .from(userExp)
       .where(eq(userExp.userId, userId))
       .limit(1),
-    getPointBalanceSummary(userId),
   ]);
 
   const username = profile?.username;
@@ -63,6 +60,5 @@ export async function getMypageDashboardData(userId: string): Promise<MypageDash
     likesCount,
     unansweredInterviewCount,
     totalExp,
-    pointBalance,
   };
 }

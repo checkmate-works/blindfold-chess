@@ -168,19 +168,16 @@ export const RATE_LIMITS = {
   saveGameResult: { action: 'save_game_result', maxAttempts: 60, windowMs: 3_600_000 },
   /**
    * Per-user limit for AI review requests — the abuse backstop behind the
-   * coin price. Results are cached per (game, locale), so repeat views are
-   * free; this counts accepted generation requests only. No system-wide
-   * counter backs it up: the daily ceiling on LLM spend is (members who can
-   * pay × this number), so it stays small even though coins are the primary
-   * economic control.
+   * subscription requirement. Results are cached per (game, locale), so
+   * repeat views are free; this counts accepted generation requests only. No
+   * system-wide counter backs it up: the daily ceiling on LLM spend is
+   * (subscribers × this number), so it stays small.
    *
-   * {@link AI_REVIEW_GENERATIONS_PER_DAY} is set so an author who has earned
-   * a few coins can review more than one game in a sitting, while a scripted
-   * account minting coins through collusive likes cannot turn them into an
-   * unbounded stream of LLM calls. A slot is consumed just before the job is
-   * accepted, so a refused request (cache hit, missing key, unpaid) costs
-   * nothing; a job that fails after acceptance does consume its slot, but
-   * its coin is refunded.
+   * {@link AI_REVIEW_GENERATIONS_PER_DAY} lets a subscriber review more than
+   * one game in a sitting without one account becoming an unbounded stream
+   * of LLM calls. A slot is consumed just before the job is accepted, so a
+   * refused request (cache hit, missing key, no subscription) costs nothing;
+   * a job that fails after acceptance does consume its slot.
    */
   generateAiReview: {
     action: 'generate_ai_review',
@@ -327,13 +324,6 @@ export const RATE_LIMITS = {
    * defense, not the security boundary).
    */
   claimSharedGame: { action: 'claim_shared_game', maxAttempts: 10, windowMs: 3_600_000 },
-  /**
-   * Per-user limit for starting a Maia game (the per-game point charge).
-   * Generous (30/hour) — a normal user starts far fewer games than this;
-   * the cap is purely a backstop against scripted loops hammering the
-   * `consumeMaiaGamePoint` transaction.
-   */
-  startMaiaGame: { action: 'start_maia_game', maxAttempts: 30, windowMs: 3_600_000 },
 } as const;
 
 /**

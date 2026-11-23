@@ -89,9 +89,9 @@ describe('LichessAnalysisControl', () => {
 
     expect(screen.getByRole('dialog')).toBeTruthy();
     expect(screen.getByText(/truncatedBody/)).toBeTruthy();
-    expect(
-      screen.getByRole('link', { name: /openImport/ }).getAttribute('href')
-    ).toBe('https://lichess.org/paste');
+    expect(screen.getByRole('link', { name: /openImport/ }).getAttribute('href')).toBe(
+      'https://lichess.org/paste'
+    );
   });
 
   // The PGN of a long game is only built when someone copies it.
