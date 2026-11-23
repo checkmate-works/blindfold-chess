@@ -34,6 +34,7 @@ export async function AnnouncementLikersSection({ slug }: { slug: string }) {
         ]}
         items={likers}
         emptyMessage={t('announcementsTable.likers.empty')}
+        scrollable
         renderRow={(liker, i) => (
           <tr key={`${liker.userId ?? 'purged'}-${i}`} className="border-t border-border">
             <td className="px-4 py-3">
