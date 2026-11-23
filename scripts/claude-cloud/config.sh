@@ -16,7 +16,12 @@ CLOUD_PROJECT_NAME="blindfold-chess"
 APP_DIR="apps/web"
 PKG_FILTER="web"
 
-APP_URL="http://localhost:3000"
+# The port is the `-p` of the `dev` script in apps/web/package.json
+# (apps/web/src/lib/local-web-server.test.ts fails when they differ). A
+# developer's browser opens http://chess.localhost:3100 instead, to keep
+# cookies apart from other products on the same machine; the VM runs only this
+# product, and curl / Node on Linux do not reliably resolve *.localhost.
+APP_URL="http://localhost:3100"
 # Path that must answer 200 once `next dev` is up (also the screenshot.sh
 # readiness probe).
 HEALTH_PATH="/ja"

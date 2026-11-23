@@ -4,7 +4,7 @@
  * Production builds take both from `EXPO_PUBLIC_*` variables baked in at
  * build time. A development build without them talks to the local stack the
  * web app's `supabase start` + `next dev` run (Supabase on
- * `LOCAL_SUPABASE_API_PORT`, the web on :3000) on the machine serving Metro,
+ * `LOCAL_SUPABASE_API_PORT`, the web on `LOCAL_WEB_PORT`) on the machine serving Metro,
  * so sign-in works against the dev seed users with no configuration. A
  * release build without them has no accounts: `resolveBackendConfig`
  * returns undefined and the app runs signed-out only.
@@ -22,6 +22,19 @@ const LOCAL_SUPABASE_PUBLISHABLE_KEY =
  * `config.toml`.
  */
 export const LOCAL_SUPABASE_API_PORT = 55321;
+
+/**
+ * The port of the web app's dev server: the `-p` in the `dev` script of
+ * `apps/web/package.json`. `apps/web/src/lib/local-web-server.test.ts` fails
+ * when this copy drifts from it.
+ *
+ * Only the port is shared. A browser opens the dev server as
+ * `chess.localhost` to keep its cookies apart from other products' dev
+ * servers, but the app sends no cookies and a device cannot resolve that name
+ * to the development machine, so the host stays the Metro host (or
+ * `localhost` in a simulator).
+ */
+export const LOCAL_WEB_PORT = 3100;
 
 export type BackendConfig = {
   readonly supabaseUrl: string;
@@ -56,6 +69,9 @@ export function resolveBackendConfig({
   return {
     supabaseUrl: env.supabaseUrl || `http://${host}:${LOCAL_SUPABASE_API_PORT}`,
     supabaseKey: env.supabaseKey || LOCAL_SUPABASE_PUBLISHABLE_KEY,
-    apiOrigin: (env.apiOrigin || `http://${host}:3000`).replace(/\/$/, ""),
+    apiOrigin: (env.apiOrigin || `http://${host}:${LOCAL_WEB_PORT}`).replace(
+      /\/$/,
+      "",
+    ),
   };
 }

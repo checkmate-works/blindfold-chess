@@ -4,7 +4,7 @@ import { defineConfig } from 'vitest/config';
 
 // Tests must not see the environment of the shell that launched them. A shell
 // prepared for `next dev` exports `NODE_ENV=development` and the local
-// `NEXT_PUBLIC_*` values (site URL `http://localhost:3000`, the local Supabase
+// `NEXT_PUBLIC_*` values (site URL `http://chess.localhost:3100`, the local Supabase
 // URL), and modules such as `src/config.ts` read those at import time — so the
 // suite asserted production URLs against localhost and failed in 11 files
 // while passing in a clean shell or CI. Vitest only defaults `NODE_ENV` to

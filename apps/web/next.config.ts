@@ -6,7 +6,7 @@ import os from 'node:os';
 
 // In development only, allow HMR / dev-resource requests from this machine's
 // LAN IPv4 addresses so the dev server can be opened from other devices on the
-// same network (e.g. a phone at http://192.168.x.x:3000). Computed at startup
+// same network (e.g. a phone at http://192.168.x.x:3100). Computed at startup
 // from `os.networkInterfaces()` rather than hardcoded, so a DHCP-reassigned IP
 // produces no git diff and needs no config edit — just restart `next dev`.
 // Returns [] outside development, so it is a no-op (and adds no overhead) in

@@ -1,0 +1,19 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "web",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "web", "dev"],
+      "port": 3100,
+      "url": "http://chess.localhost:3100"
+    },
+    {
+      "name": "web-3101",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "web", "dev", "-p", "3101"],
+      "port": 3101,
+      "url": "http://chess.localhost:3101"
+    }
+  ]
+}
