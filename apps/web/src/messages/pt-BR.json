@@ -4659,7 +4659,9 @@
         "publishedConfirmConfirm": "Salvar",
         "publishedConfirmCancel": "Cancelar"
       },
-      "likes": "Likes"
+      "likes": "Curtidas acumuladas",
+      "firstPublished": "Primeira publicação (UTC)",
+      "likesHelp": "As curtidas são reações positivas acumuladas de leitores conectados, não uma taxa de satisfação. Compare avisos com públicos e períodos de exposição semelhantes: as visualizações não são medidas, visitantes não podem reagir e avisos antigos tiveram mais tempo para acumular curtidas. A data é a mais antiga entre as traduções restantes e pode mudar com edições ou exclusões."
     },
     "articles": "Artigos",
     "articlesTable": {

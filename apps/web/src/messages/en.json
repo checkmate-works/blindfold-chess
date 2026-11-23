@@ -4659,7 +4659,9 @@
         "publishedConfirmConfirm": "Save",
         "publishedConfirmCancel": "Cancel"
       },
-      "likes": "Likes"
+      "likes": "Cumulative likes",
+      "firstPublished": "First publication (UTC)",
+      "likesHelp": "Likes are cumulative positive reactions from signed-in readers, not a satisfaction rate. Compare notices with similar audiences and exposure periods: views are not measured, guests cannot react, and older notices have had longer to collect likes. Dates use the earliest publication date among the remaining translations; edits and deleted translations can change this date."
     },
     "articles": "Articles",
     "articlesTable": {

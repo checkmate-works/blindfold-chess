@@ -3,8 +3,11 @@
  *
  * @description
  * Renders one published announcement's markdown body, gating members-only announcements behind sign-in.
- * Signed-in readers can like it; the per-slug total is how the operators compare
- * how announcements were received (shown in the admin listing).
+ * Signed-in readers can like it; admin compares cumulative positive reactions
+ * per slug. This is not a satisfaction rate: guest reactions and exposure are
+ * not measured, and publication periods and audiences differ. We do not add
+ * page-view counting here because historical exposure cannot be reconstructed;
+ * mixing old likes with newly collected views would produce a misleading rate.
  */
 import type { Metadata } from 'next';
 import { hasLocale } from 'next-intl';

@@ -20,6 +20,7 @@ const searchParamsCache = createSearchParamsCache({
 type SlugGroup = {
   slug: string;
   representativeTitle: string;
+  firstPublishedAt: string | null;
 };
 
 type AdminSlugGroupListPageConfig = {
@@ -55,12 +56,14 @@ export function createAdminSlugGroupListPage(config: AdminSlugGroupListPageConfi
     const rows = await db.execute<{
       slug: string;
       representative_title: string;
+      first_published_at: string | null;
     }>(sql`
       SELECT
         ${config.table.slug} AS slug,
         (array_agg(${config.table.title} ORDER BY
           CASE ${config.table.locale} WHEN 'en' THEN 0 ELSE 1 END
-        ))[1] AS representative_title
+        ))[1] AS representative_title,
+        ${config.loadLikeCounts ? sql`MIN(${config.table.publishedAt})` : sql`NULL`} AS first_published_at
       FROM ${config.table}
       GROUP BY ${config.table.slug}
       ORDER BY MAX(${config.table.createdAt}) DESC
@@ -71,6 +74,7 @@ export function createAdminSlugGroupListPage(config: AdminSlugGroupListPageConfi
     const groups: SlugGroup[] = rows.map((row) => ({
       slug: row.slug,
       representativeTitle: row.representative_title,
+      firstPublishedAt: row.first_published_at,
     }));
 
     const likeCounts = config.loadLikeCounts
@@ -89,8 +93,14 @@ export function createAdminSlugGroupListPage(config: AdminSlugGroupListPageConfi
           />
         }
       >
+        {likeCounts && <p className="mb-4 text-sm text-muted-foreground">{t('likesHelp')}</p>}
         <AdminDataTable
-          headers={[t('titleColumn'), t('slug'), ...(likeCounts ? [t('likes')] : []), t('actions')]}
+          headers={[
+            t('titleColumn'),
+            t('slug'),
+            ...(likeCounts ? [t('firstPublished'), t('likes')] : []),
+            t('actions'),
+          ]}
           items={groups}
           emptyMessage={t(config.emptyMessageKey)}
           renderRow={(group) => (
@@ -98,7 +108,14 @@ export function createAdminSlugGroupListPage(config: AdminSlugGroupListPageConfi
               <td className="px-4 py-3 font-medium">{group.representativeTitle}</td>
               <td className="px-4 py-3 text-muted-foreground">{group.slug}</td>
               {likeCounts && (
-                <td className="px-4 py-3 tabular-nums">{likeCounts.get(group.slug) ?? 0}</td>
+                <>
+                  <td className="px-4 py-3 text-muted-foreground">
+                    {group.firstPublishedAt
+                      ? new Date(group.firstPublishedAt).toISOString().slice(0, 10)
+                      : '—'}
+                  </td>
+                  <td className="px-4 py-3 tabular-nums">{likeCounts.get(group.slug) ?? 0}</td>
+                </>
               )}
               <td className="px-4 py-3">
                 <Link
