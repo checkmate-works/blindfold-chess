@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { authenticateAndGuard as mockAuthenticateAndGuard } from '@/lib/__mocks__/auth';
+import {
+  authenticateAndGuard as mockAuthenticateAndGuard,
+  userHasProfile,
+} from '@/lib/__mocks__/auth';
 
 import { toggleAnnouncementLikeAction } from './toggleAnnouncementLike';
 
@@ -10,7 +13,7 @@ const mockLogActivity = vi.fn();
 
 vi.mock('@/lib/auth');
 
-vi.mock('../../_lib/queries', () => ({
+vi.mock('@/app/[locale]/(public)/announcements/_lib/queries', () => ({
   getPublishedAnnouncement: (...args: unknown[]) => mockGetPublished(...args),
 }));
 
@@ -40,7 +43,7 @@ describe('toggleAnnouncementLikeAction', () => {
   it('likes the variant the reader was shown and returns the slug-wide count', async () => {
     const result = await toggleAnnouncementLikeAction('coin-retirement', 'ja');
 
-    expect(result).toEqual({ liked: true, likeCount: 4 });
+    expect(result).toEqual({ success: true, liked: true, likeCount: 4 });
     expect(mockGetPublished).toHaveBeenCalledWith('coin-retirement', 'ja');
     expect(mockToggle).toHaveBeenCalledWith({
       userId: USER_ID,
@@ -68,5 +71,47 @@ describe('toggleAnnouncementLikeAction', () => {
 
     expect(result).toEqual({ error: 'notFound' });
     expect(mockToggle).not.toHaveBeenCalled();
+  });
+  it.each(['banned', 'rateLimited'])('rejects %s before reading the notice', async (error) => {
+    mockAuthenticateAndGuard.mockResolvedValue({ error });
+    expect(await toggleAnnouncementLikeAction('notice', 'en')).toEqual({ error });
+    expect(mockGetPublished).not.toHaveBeenCalled();
+    expect(mockToggle).not.toHaveBeenCalled();
+  });
+
+  it('requires a completed profile', async () => {
+    userHasProfile.mockResolvedValueOnce(false);
+    expect(await toggleAnnouncementLikeAction('notice', 'en')).toEqual({
+      error: 'profileRequired',
+    });
+    expect(mockToggle).not.toHaveBeenCalled();
+  });
+
+  it('does not log a like when the variant disappeared after the public lookup', async () => {
+    mockToggle.mockResolvedValue({ error: 'notFound' });
+    expect(await toggleAnnouncementLikeAction('notice', 'en')).toEqual({ error: 'notFound' });
+    expect(mockLogActivity).not.toHaveBeenCalled();
+  });
+
+  it.each(['', 'a'.repeat(256)])('rejects an invalid slug without querying', async (slug) => {
+    expect(await toggleAnnouncementLikeAction(slug, 'en')).toEqual({ error: 'notFound' });
+    expect(mockGetPublished).not.toHaveBeenCalled();
+  });
+
+  it('rejects unsupported locales before authenticating', async () => {
+    expect(await toggleAnnouncementLikeAction('notice', 'invalid')).toHaveProperty('error');
+    expect(mockAuthenticateAndGuard).not.toHaveBeenCalled();
+    expect(mockToggle).not.toHaveBeenCalled();
+  });
+
+  it('allows a registered reader to react to a members-only notice', async () => {
+    mockGetPublished.mockResolvedValue({
+      announcement: { id: JA_VARIANT_ID, visibility: 'members_only' },
+    });
+    expect(await toggleAnnouncementLikeAction('notice', 'ja')).toEqual({
+      success: true,
+      liked: true,
+      likeCount: 4,
+    });
   });
 });

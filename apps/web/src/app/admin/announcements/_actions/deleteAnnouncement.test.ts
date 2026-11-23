@@ -13,12 +13,12 @@ import { deleteAnnouncement } from './deleteAnnouncement';
 
 const mockSelectFromWhere = vi.fn();
 const mockDeleteWhere = vi.fn();
-const mockMoveLikes = vi.fn();
+const mockDeleteWithLikes = vi.fn();
 
 vi.mock('@/lib/supabase/server');
 
 vi.mock('@/lib/db/announcement-likes', () => ({
-  moveLikesOffVariantBeingDeleted: (...args: unknown[]) => mockMoveLikes(...args),
+  deleteAnnouncementWithLikes: (...args: unknown[]) => mockDeleteWithLikes(...args),
 }));
 
 vi.mock('@/lib/db', async () => ({
@@ -68,28 +68,23 @@ describe('deleteAnnouncement', () => {
 
     const result = await deleteAnnouncement(announcementId);
     expect(result).toEqual({ success: true });
-    expect(mockDeleteWhere).toHaveBeenCalled();
+    expect(mockDeleteWithLikes).toHaveBeenCalled();
   });
 
-  it('re-homes the variant likes before the row is deleted', async () => {
+  it('delegates the whole deletion to the transactional helper', async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
     mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
-    mockMoveLikes.mockClear();
-    mockDeleteWhere.mockClear();
-
     await deleteAnnouncement(announcementId);
-    expect(mockMoveLikes).toHaveBeenCalledWith(announcementId);
-    expect(mockMoveLikes.mock.invocationCallOrder[0]).toBeLessThan(
-      mockDeleteWhere.mock.invocationCallOrder[0]
-    );
+    expect(mockDeleteWithLikes).toHaveBeenCalledWith(announcementId);
+    expect(mockDeleteWhere).not.toHaveBeenCalled();
   });
 
   it('does not touch likes when unauthorized', async () => {
     mockGetUser.mockResolvedValue({ data: { user: null } });
-    mockMoveLikes.mockClear();
+    mockDeleteWithLikes.mockClear();
 
     await deleteAnnouncement(announcementId);
-    expect(mockMoveLikes).not.toHaveBeenCalled();
+    expect(mockDeleteWithLikes).not.toHaveBeenCalled();
   });
 
   it('should call revalidatePath after successful deletion', async () => {
@@ -128,6 +123,14 @@ describe('deleteAnnouncement', () => {
 
     const result = await deleteAnnouncement('nonexistent-id');
     expect(result).toEqual({ success: true });
-    expect(mockDeleteWhere).toHaveBeenCalled();
+    expect(mockDeleteWithLikes).toHaveBeenCalled();
+  });
+  it('does not invalidate caches when transactional deletion fails', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+    mockDeleteWithLikes.mockRejectedValueOnce(new Error('delete failed'));
+    await expect(deleteAnnouncement(announcementId)).rejects.toThrow('delete failed');
+    expect(mockRevalidatePath).not.toHaveBeenCalled();
+    expect(mockRevalidateTag).not.toHaveBeenCalled();
   });
 });

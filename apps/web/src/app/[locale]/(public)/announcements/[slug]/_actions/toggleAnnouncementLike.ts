@@ -2,14 +2,14 @@
 
 import { assertSupportedLocale } from '@/i18n/assertSupportedLocale';
 
+import type { ActionResult } from '@/lib/action-types';
 import { authenticateGuardAndRequireProfile } from '@/lib/auth';
 import { ANNOUNCEMENT_LIKE_TARGET, toggleAnnouncementLike } from '@/lib/db/announcement-likes';
-import type { ToggleLikeResult } from '@/lib/db/like-actions';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { handleServerActionError } from '@/lib/server-action-error';
 import { logActivityEvent } from '@/lib/users/activity-log';
 
-import { getPublishedAnnouncement } from '../../_lib/queries';
+import { getPublishedAnnouncement } from '@/app/[locale]/(public)/announcements/_lib/queries';
 
 /**
  * Like / unlike a published announcement. The like counts toward the slug
@@ -22,24 +22,30 @@ import { getPublishedAnnouncement } from '../../_lib/queries';
 export async function toggleAnnouncementLikeAction(
   slug: string,
   locale: string
-): Promise<ToggleLikeResult> {
+): Promise<ActionResult<{ liked: boolean; likeCount: number }>> {
   try {
     assertSupportedLocale(locale);
 
     const guardResult = await authenticateGuardAndRequireProfile(RATE_LIMITS.toggleLike);
     if ('error' in guardResult) return { error: guardResult.error };
     const { user } = guardResult;
+    if (typeof slug !== 'string' || slug.length === 0 || slug.length > 255) {
+      return { error: 'notFound' };
+    }
 
     // Only a published announcement can be liked; drafts and unknown slugs
     // would otherwise collect likes nobody can see.
     const published = await getPublishedAnnouncement(slug, locale);
     if (!published) return { error: 'notFound' };
 
-    const { liked, likeCount } = await toggleAnnouncementLike({
+    const result = await toggleAnnouncementLike({
       userId: user.id,
       slug,
       displayedVariantId: published.announcement.id,
     });
+
+    if ('error' in result) return result;
+    const { liked, likeCount } = result;
 
     logActivityEvent({
       userId: user.id,
@@ -48,7 +54,7 @@ export async function toggleAnnouncementLikeAction(
       targetId: published.announcement.id,
     });
 
-    return { liked, likeCount };
+    return { success: true, liked, likeCount };
   } catch (error) {
     return handleServerActionError(error, '[toggleAnnouncementLikeAction]');
   }
