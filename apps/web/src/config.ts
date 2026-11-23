@@ -1,3 +1,5 @@
+import { isLoopbackUrl } from '@/lib/loopback-host';
+
 export const SITE_URL = (
   process.env.NEXT_PUBLIC_SITE_URL || 'https://www.blindfold-chess.online'
 ).replace(/\/$/, '');
@@ -10,8 +12,15 @@ export const SITE_DOMAIN = (() => {
 })();
 export const AUTHOR_NAME = 'CheckmateWorks';
 export const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+/**
+ * True under `next dev`, and for a production build served from this machine
+ * (`next build && next start` with a loopback `NEXT_PUBLIC_SITE_URL`). Decides
+ * the `Secure` attribute of first-party cookies, which a plain-http origin
+ * would otherwise refuse to store. The site URL is judged by its parsed host,
+ * not by whether the string contains "localhost": see `isLoopbackHostname`.
+ */
 export const IS_LOCAL_DEV =
-  process.env.NODE_ENV === 'development' || process.env.NEXT_PUBLIC_SITE_URL?.includes('localhost');
+  process.env.NODE_ENV === 'development' || isLoopbackUrl(process.env.NEXT_PUBLIC_SITE_URL);
 
 /**
  * Re-exported so the ~85 call sites that read the locale list from `@/config`
