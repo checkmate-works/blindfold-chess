@@ -25,9 +25,6 @@ export const NAMESPACE_CLASSIFICATION = {
   metadata: 'server',
   Header: 'server',
   faq: 'server',
-  // What is left of the retired coin wallet's copy: the ledger entry-kind
-  // labels, which the admin ledger view still reads server-side.
-  MypagePoints: 'server',
   glossary: 'server',
   manual: 'server',
   gettingStarted: 'server',

@@ -216,13 +216,6 @@ export function buildNotificationLink(
         ? `/dojo/ranks/${notification.metadata.rankSlug}`
         : null;
 
-    // Coin grants: the wallet page they pointed at went with the coin
-    // economy (2026-11), so the rows that remain are history with nowhere
-    // to lead.
-    case 'point_grant':
-    case 'like_coin_grant':
-      return null;
-
     // Both land on the AI Review tab: the finished review to read, or the
     // generate button to try again after a failure.
     case 'ai_review_ready':

@@ -3912,22 +3912,6 @@
       "position_creation": "Concedido por envio de posição"
     }
   },
-  "MypagePoints": {
-    "history": {
-      "kind": {
-        "post_grant": "Ganhas por uma publicação",
-        "post_clawback": "Revertidas por publicação removida",
-        "redemption": "Resgatadas por tempo sem anúncios",
-        "purchase": "Compradas",
-        "admin_grant": "Concedidas pela equipe",
-        "maia_game": "Partida contra a Maia",
-        "like_grant": "Ganhas por curtidas",
-        "other": "Ajuste",
-        "ai_review": "Revisão IA",
-        "ai_review_refund": "Reembolso de revisão IA"
-      }
-    }
-  },
   "MypageBenefitHistory": {
     "title": "Histórico de Benefícios",
     "sectionTitle": "Seus benefícios concedidos",
@@ -4058,14 +4042,8 @@
         "default": "Você recebeu {days} dias de benefício sem anúncios"
       }
     },
-    "pointGrantMessage": {
-      "default": "Você recebeu {amount, plural, one {# moeda} other {# moedas}}"
-    },
     "rankGrantMessage": {
       "default": "Você recebeu o rank {rankName}"
-    },
-    "likeCoinGrantMessage": {
-      "default": "Seu conteúdo foi curtido — você ganhou {count, plural, one {# moeda} other {# moedas}}"
     },
     "positionEditRequestSubmittedMessage": "{actor} sugeriu padrões para o seu problema",
     "positionEditRequestAcceptedMessage": "{actor} aceitou a sua sugestão de padrões",
@@ -4400,20 +4378,7 @@
         "modReason": "Motivo",
         "modActor": "Autor",
         "modDate": "Data",
-        "adminActions": "Ações de administrador",
-        "coinSection": "Moedas",
-        "coinBalanceLabel": "Saldo",
-        "coinUnit": "moedas",
-        "coinCatEarned": "Ganhas",
-        "coinCatPromotional": "Promocional",
-        "coinCatPurchased": "Compradas",
-        "coinHistoryTitle": "Transações recentes",
-        "coinEvent": "Evento",
-        "coinAmount": "Quantidade",
-        "coinCategory": "Categoria",
-        "coinDate": "Data",
-        "noCoinActivity": "Ainda não há atividade de moedas.",
-        "viewAllCoins": "Ver todas as transações"
+        "adminActions": "Ações de administrador"
       }
     },
     "stats": {
@@ -4436,8 +4401,8 @@
         "1dan": "1º Dan"
       },
       "levelBuckets": {
-        "none": "Sem Exp",
         "0": "Lv 0",
+        "none": "Sem Exp",
         "1-4": "Lv 1–4",
         "5-9": "Lv 5–9",
         "10-19": "Lv 10–19",
@@ -4840,38 +4805,6 @@
       "linksActivate": "Ativar os {count}",
       "linksDeactivate": "Desativar os {count}",
       "linksActivateBlocked": "Defina o link primeiro: alguns destes criativos ainda apontam para a URL de espaço reservado."
-    },
-    "coins": {
-      "title": "Moedas",
-      "navLabel": "Moedas",
-      "showing": "Exibindo {from}–{to} de {total} transações",
-      "empty": "Nenhuma transação corresponde aos filtros atuais.",
-      "columns": {
-        "user": "Usuário",
-        "event": "Evento",
-        "amount": "Quantidade",
-        "category": "Categoria",
-        "source": "Origem",
-        "reason": "Motivo",
-        "date": "Data"
-      },
-      "categoryLabels": {
-        "earned": "Ganhas",
-        "promotional": "Promocional",
-        "purchased": "Compradas"
-      },
-      "filters": {
-        "source": "Origem",
-        "category": "Categoria",
-        "direction": "Tipo",
-        "user": "ID do usuário",
-        "userPlaceholder": "Filtrar por UUID do usuário",
-        "all": "Todos",
-        "grantsOnly": "Concessões (+)",
-        "spendsOnly": "Gastos (−)",
-        "apply": "Aplicar",
-        "clear": "Limpar"
-      }
     },
     "grants": {
       "title": "Concessões",
