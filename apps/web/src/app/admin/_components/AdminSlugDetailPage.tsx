@@ -41,6 +41,12 @@ type AdminSlugDetailPageConfig<T extends AdminSlugDetailRow> = {
    * (e.g. articles carry over the existing variants' contentFormat).
    */
   extraCreateParams?: (items: T[]) => Record<string, string>;
+  /**
+   * Rendered under the variant table, once per slug — for data that belongs
+   * to the slug as a whole rather than to one locale (e.g. who liked an
+   * announcement). May be an async Server Component.
+   */
+  SlugSection?: ComponentType<{ slug: string }>;
 };
 
 /**
@@ -64,7 +70,7 @@ export function createAdminSlugDetailPage<T extends AdminSlugDetailRow>(
     const extraCreateQuery = Object.entries(config.extraCreateParams?.(items) ?? {})
       .map(([key, value]) => `&${key}=${value}`)
       .join('');
-    const { DeleteButton } = config;
+    const { DeleteButton, SlugSection } = config;
 
     return (
       <AdminPageLayout
@@ -150,6 +156,8 @@ export function createAdminSlugDetailPage<T extends AdminSlugDetailRow>(
             </div>
           </div>
         )}
+
+        {SlugSection && <SlugSection slug={slug} />}
       </AdminPageLayout>
     );
   };

@@ -1,6 +1,6 @@
-import { and, eq, inArray, ne, sql } from 'drizzle-orm';
+import { and, desc, eq, inArray, ne, sql } from 'drizzle-orm';
 
-import { announcements, db, likes } from '@/lib/db';
+import { announcements, db, likes, profiles } from '@/lib/db';
 import type { Announcement } from '@/lib/db';
 
 import type { LikeMeta } from './like-queries';
@@ -150,6 +150,53 @@ export async function getAnnouncementLikeCountsBySlug(
     .groupBy(announcements.slug);
 
   return new Map(rows.map((r) => [r.slug, Number(r.n)]));
+}
+
+/** One reader in the admin "who liked this" list. */
+export type AnnouncementLiker = {
+  /** Null once the account was purged (likes.user_id is ON DELETE SET NULL). */
+  userId: string | null;
+  username: string | null;
+  /** Locale of the variant the reader liked. */
+  locale: string;
+  likedAt: Date;
+};
+
+/** Upper bound on the admin list; the total is reported separately. */
+export const ANNOUNCEMENT_LIKERS_LIMIT = 500;
+
+/**
+ * Who liked the announcement `slug`, newest first, for the admin detail page.
+ *
+ * Deduplicated the same way as the counts (`uniqueReaders`): one row per
+ * registered reader — their earliest like, should a legacy duplicate sit on a
+ * second locale — and one row per anonymised like. So the list length matches
+ * the Likes total shown in the admin listing, up to `ANNOUNCEMENT_LIKERS_LIMIT`.
+ */
+export async function getAnnouncementLikers(
+  slug: string
+): Promise<{ likers: AnnouncementLiker[]; total: number }> {
+  const readerKey = sql`coalesce(${likes.userId}, ${likes.id})`;
+  const firstLikes = db
+    .selectDistinctOn([readerKey], {
+      userId: likes.userId,
+      username: profiles.username,
+      locale: announcements.locale,
+      likedAt: likes.createdAt,
+    })
+    .from(likes)
+    .innerJoin(announcements, eq(likes.targetId, announcements.id))
+    .leftJoin(profiles, eq(profiles.id, likes.userId))
+    .where(and(eq(likes.targetType, ANNOUNCEMENT_LIKE_TARGET), eq(announcements.slug, slug)))
+    .orderBy(readerKey, likes.createdAt)
+    .as('first_likes');
+
+  const [rows, [countRow]] = await Promise.all([
+    db.select().from(firstLikes).orderBy(desc(firstLikes.likedAt)).limit(ANNOUNCEMENT_LIKERS_LIMIT),
+    db.select({ n: sql<number>`count(*)` }).from(firstLikes),
+  ]);
+
+  return { likers: rows, total: Number(countRow?.n ?? 0) };
 }
 
 /**

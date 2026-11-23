@@ -4661,7 +4661,15 @@
       },
       "likes": "累計いいね数",
       "firstPublished": "初回公開日（UTC）",
-      "likesHelp": "いいねはログイン済み読者の肯定的な反応の累計であり、好感度率ではありません。閲覧数は未計測で、ゲストは反応できず、古いお知らせほど集計期間が長いため、対象読者と露出期間が近いお知らせ同士で比較してください。公開日は残存する翻訳の最も早い公開日で、編集や翻訳の削除により変わります。"
+      "likesHelp": "いいねはログイン済み読者の肯定的な反応の累計であり、好感度率ではありません。閲覧数は未計測で、ゲストは反応できず、古いお知らせほど集計期間が長いため、対象読者と露出期間が近いお知らせ同士で比較してください。公開日は残存する翻訳の最も早い公開日で、編集や翻訳の削除により変わります。",
+      "likers": {
+        "title": "Liked by ({count})",
+        "user": "User",
+        "locale": "Locale liked",
+        "likedAt": "Liked at",
+        "empty": "No likes yet.",
+        "truncated": "Showing the {shown} most recent."
+      }
     },
     "articles": "Articles",
     "articlesTable": {

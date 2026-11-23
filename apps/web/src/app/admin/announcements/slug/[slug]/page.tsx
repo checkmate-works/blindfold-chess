@@ -3,6 +3,7 @@ import { eq } from 'drizzle-orm';
 
 import { type Announcement, announcements, db } from '@/lib/db';
 
+import { AnnouncementLikersSection } from '../../_components/AnnouncementLikersSection';
 import { DeleteAnnouncementButton } from '../../_components/DeleteAnnouncementButton';
 
 async function getAnnouncementsBySlug(slug: string): Promise<Announcement[]> {
@@ -20,4 +21,5 @@ export default createAdminSlugDetailPage({
   publicPathSegment: 'announcements',
   emptyMessageKey: 'slugDetail.noAnnouncementsFound',
   DeleteButton: DeleteAnnouncementButton,
+  SlugSection: AnnouncementLikersSection,
 });
