@@ -67,7 +67,7 @@ pnpm db:seed
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://chess.localhost:3100](http://chess.localhost:3100) with your browser to see the result. The dev server uses that host and port instead of `localhost:3000` so it can run next to other projects on the same machine; see "Dev server (Next)" in [docs/local-development.md](docs/local-development.md).
 
 ## Local Development
 
@@ -87,7 +87,7 @@ To test Google Sign-In — and "Add a Google account" on `/mypage/account` — l
 
    | Field                         | Value                                     |
    | ----------------------------- | ----------------------------------------- |
-   | Authorized JavaScript origins | `http://localhost:3000`                   |
+   | Authorized JavaScript origins | `http://chess.localhost:3100`             |
    | Authorized redirect URIs      | `http://127.0.0.1:55321/auth/v1/callback` |
 
    > **Note:** The redirect URI points to the local Supabase Auth endpoint, not your Next.js app. For production, the redirect URI is `https://<reference-id>.supabase.co/auth/v1/callback` (see [authentication-setup.md](docs/authentication-setup.md)).

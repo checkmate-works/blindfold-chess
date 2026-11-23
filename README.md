@@ -67,7 +67,7 @@ To start the development server for all apps:
 pnpm dev
 ```
 
-This runs `turbo run dev`, which starts the `web` app at [http://localhost:3000](http://localhost:3000) and Metro for the `mobile` app.
+This runs `turbo run dev`, which starts the `web` app at [http://chess.localhost:3100](http://chess.localhost:3100) and Metro for the `mobile` app.
 
 ### Scripts
 

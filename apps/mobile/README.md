@@ -36,7 +36,7 @@ running:
 
 ```bash
 pnpm supabase start          # from apps/web; Supabase on :55321
-pnpm --filter web dev        # the web app and its mobile API on :3000
+pnpm --filter web dev        # the web app and its mobile API on :3100
 ```
 
 A development build needs no configuration to reach them. With no
@@ -47,7 +47,7 @@ computer:
 | Service             | Address               |
 | ------------------- | --------------------- |
 | Supabase            | `http://<host>:55321` |
-| Web app, mobile API | `http://<host>:3000`  |
+| Web app, mobile API | `http://<host>:3100`  |
 
 The Supabase key is the Supabase CLI's fixed local publishable key. The
 logic is in [`src/auth/config.ts`](src/auth/config.ts).
@@ -100,7 +100,7 @@ Scan the QR code with the Camera app (iOS) or Expo Go (Android).
 
 - **Same network, LAN mode.** The phone and the computer must be on the same
   Wi-Fi. If the macOS firewall is on, allow incoming connections for Node (Metro
-  on 8081, the web app on 3000) and Docker (Supabase on 55321).
+  on 8081, the web app on 3100) and Docker (Supabase on 55321).
 - **Allow Local Network access.** On first launch iOS asks whether Expo Go
   may find devices on the local network. Choose Allow; if you deny it, the app
   cannot reach Metro, Supabase or the web app. To change it later, go to
@@ -116,7 +116,7 @@ IP:
 ```bash
 EXPO_PUBLIC_SUPABASE_URL=http://<LAN IP>:55321 \
 EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<Publishable key from `pnpm supabase status`> \
-EXPO_PUBLIC_API_ORIGIN=http://<LAN IP>:3000 \
+EXPO_PUBLIC_API_ORIGIN=http://<LAN IP>:3100 \
 pnpm --filter mobile dev --tunnel
 ```
 
@@ -168,7 +168,7 @@ has no accounts and runs signed out only.
 | -------------------------------------- | --------------------------- | ------------------------------------- |
 | `EXPO_PUBLIC_SUPABASE_URL`             | `http://<Metro host>:55321` | `https://<ref>.supabase.co`           |
 | `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Supabase CLI's local key    | The production `sb_publishable_…` key |
-| `EXPO_PUBLIC_API_ORIGIN`               | `http://<Metro host>:3000`  | `https://www.blindfold-chess.online`  |
+| `EXPO_PUBLIC_API_ORIGIN`               | `http://<Metro host>:3100`  | `https://www.blindfold-chess.online`  |
 
 The Supabase URL and publishable key are in the Supabase Dashboard under
 Project Settings > API. Everything in `EXPO_PUBLIC_*` ships inside the app, so

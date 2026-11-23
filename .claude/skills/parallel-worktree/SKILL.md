@@ -93,12 +93,15 @@ build` can eat nearly the whole ~97-slot local pooler budget by
 
 ## Known limits (accepted, don't fight them)
 
-- **Google OAuth only works on port 3000**: `additional_redirect_urls`
+- **Google OAuth only works on port 3100**: `additional_redirect_urls`
   is fixed in the tracked `config.toml`. In a worktree, verify flows
-  with email/password login. Dev-server ports: web `PORT=3001`
-  (then 3002, …; update `NEXT_PUBLIC_SITE_URL` in the copied
-  `.env.local` to match), Expo `--port 8082` (then 8083, …).
-- **Auth cookies are shared across localhost ports**
+  with email/password login. Dev-server ports: web
+  `pnpm --filter web dev -p 3101` (then 3102, …; the `dev` script
+  already passes `-p 3100`, the later `-p` wins, and `PORT=` is
+  ignored once `-p` is given; update `NEXT_PUBLIC_SITE_URL` in the
+  copied `.env.local` to `http://chess.localhost:3101` to match), Expo
+  `--port 8082` (then 8083, …).
+- **Auth cookies are shared across ports of one host**
   (`sb-*-auth-token`): simultaneous logins to two worktrees in one
   browser overwrite each other. Use separate browser profiles.
 - If `apps/web/engines/` is missing in a worktree (the symlink
