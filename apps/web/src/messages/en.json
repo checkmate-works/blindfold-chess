@@ -3912,22 +3912,6 @@
       "position_creation": "Granted for position submission"
     }
   },
-  "MypagePoints": {
-    "history": {
-      "kind": {
-        "post_grant": "Earned from a post",
-        "post_clawback": "Reversed for deleted post",
-        "redemption": "Redeemed for ad-free",
-        "purchase": "Purchased",
-        "admin_grant": "Granted by staff",
-        "maia_game": "Maia game",
-        "like_grant": "Earned from likes",
-        "other": "Adjustment",
-        "ai_review": "AI review",
-        "ai_review_refund": "AI review refund"
-      }
-    }
-  },
   "MypageBenefitHistory": {
     "title": "Benefit History",
     "sectionTitle": "Your benefit grants",
@@ -4058,14 +4042,8 @@
         "default": "You received {days} days of ad-free benefit"
       }
     },
-    "pointGrantMessage": {
-      "default": "You received {amount, plural, one {# coin} other {# coins}}"
-    },
     "rankGrantMessage": {
       "default": "You were granted the {rankName} rank"
-    },
-    "likeCoinGrantMessage": {
-      "default": "Your content was liked — you earned {count, plural, one {# coin} other {# coins}}"
     },
     "positionEditRequestSubmittedMessage": "{actor} suggested patterns for your problem",
     "positionEditRequestAcceptedMessage": "{actor} accepted your pattern suggestion",
@@ -4372,20 +4350,7 @@
         "modReason": "Reason",
         "modActor": "Actor",
         "modDate": "Date",
-        "adminActions": "Admin Actions",
-        "coinSection": "Coins",
-        "coinBalanceLabel": "Balance",
-        "coinUnit": "coins",
-        "coinCatEarned": "Earned",
-        "coinCatPromotional": "Promotional",
-        "coinCatPurchased": "Purchased",
-        "coinHistoryTitle": "Recent transactions",
-        "coinEvent": "Event",
-        "coinAmount": "Amount",
-        "coinCategory": "Category",
-        "coinDate": "Date",
-        "noCoinActivity": "No coin activity yet.",
-        "viewAllCoins": "View all transactions"
+        "adminActions": "Admin Actions"
       }
     },
     "stats": {
@@ -4408,8 +4373,8 @@
         "1dan": "1st Dan"
       },
       "levelBuckets": {
-        "none": "No Exp",
         "0": "Lv 0",
+        "none": "No Exp",
         "1-4": "Lv 1–4",
         "5-9": "Lv 5–9",
         "10-19": "Lv 10–19",
@@ -4840,38 +4805,6 @@
       "linksActivate": "Activate all {count}",
       "linksDeactivate": "Deactivate all {count}",
       "linksActivateBlocked": "Set the link first: some of these creatives still point at the placeholder URL."
-    },
-    "coins": {
-      "title": "Coins",
-      "navLabel": "Coins",
-      "showing": "Showing {from}–{to} of {total} transactions",
-      "empty": "No transactions match the current filters.",
-      "columns": {
-        "user": "User",
-        "event": "Event",
-        "amount": "Amount",
-        "category": "Category",
-        "source": "Source",
-        "reason": "Reason",
-        "date": "Date"
-      },
-      "categoryLabels": {
-        "earned": "Earned",
-        "promotional": "Promotional",
-        "purchased": "Purchased"
-      },
-      "filters": {
-        "source": "Source",
-        "category": "Category",
-        "direction": "Direction",
-        "user": "User ID",
-        "userPlaceholder": "Filter by user UUID",
-        "all": "All",
-        "grantsOnly": "Grants (+)",
-        "spendsOnly": "Spends (−)",
-        "apply": "Apply",
-        "clear": "Clear"
-      }
     },
     "grants": {
       "title": "Grants",

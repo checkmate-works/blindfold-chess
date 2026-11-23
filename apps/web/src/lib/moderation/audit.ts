@@ -23,6 +23,11 @@ export type ModerationActionType =
   | 'unfeature_puzzle'
   | 'create_grant'
   | 'revoke_grant'
+  /**
+   * An admin coin grant. Nothing writes this since the coin economy was
+   * retired (2026-11); it stays in the union because the audit log still
+   * holds the rows and has to label them.
+   */
   | 'create_point_grant'
   /**
    * A challenge result removed from every ranking. The removed row survives

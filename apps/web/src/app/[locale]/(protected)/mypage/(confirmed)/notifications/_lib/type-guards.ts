@@ -204,27 +204,6 @@ export function isBenefitGrantMetadata(m: unknown): m is BenefitGrantMetadata {
 }
 
 /**
- * Metadata persisted with a `point_grant` notification — an admin coin grant.
- * Nothing emits these since the coin economy was retired (2026-11); the
- * guard stays for the rows already in users' notification lists.
- */
-export type PointGrantMetadata = {
-  amount: number;
-  category: string;
-  reason: string | null;
-};
-
-export function isPointGrantMetadata(m: unknown): m is PointGrantMetadata {
-  if (typeof m !== 'object' || m === null) return false;
-  const r = m as Record<string, unknown>;
-  return (
-    typeof r.amount === 'number' &&
-    typeof r.category === 'string' &&
-    (r.reason === null || typeof r.reason === 'string')
-  );
-}
-
-/**
  * Metadata persisted with a `rank_grant` notification — emitted only from
  * the admin /admin/users/[id] → grantRank flow (manual rank remediation;
  * `checkAndGrantRanks` does not itself notify, see `RankAchievementModal`
@@ -263,23 +242,6 @@ export function isRankUpdateLikeMetadata(m: unknown): m is RankUpdateLikeMetadat
 }
 
 /**
- * Metadata persisted with a `like_coin_grant` notification — emitted, until
- * the coin economy was retired (2026-11), by a daily batch that paid a coin
- * per like received. `count` is the number of coins minted for the recipient
- * in that single batch run. The guard stays for the rows already in users'
- * notification lists.
- */
-export type LikeCoinGrantMetadata = {
-  count: number;
-};
-
-export function isLikeCoinGrantMetadata(m: unknown): m is LikeCoinGrantMetadata {
-  if (typeof m !== 'object' || m === null) return false;
-  const r = m as Record<string, unknown>;
-  return typeof r.count === 'number';
-}
-
-/**
  * Metadata persisted with a `puzzle_forked` / `memory_forked` notification —
  * sent to a position's owner when another user forks it into a new entry.
  * `puzzle_forked` covers both a same-type puzzle fork (`sourceType:
@@ -305,9 +267,7 @@ export function isPositionForkedMetadata(m: unknown): m is PositionForkedMetadat
  * emitted by the review job worker (`processAiReviewJob`). `locale` is the
  * language the review was (to be) written in. A failed job additionally
  * records the `AiReviewError` code; the message does not surface it (it is
- * for the admin eye), so the guard checks only the shared field. Rows written
- * before 2026-11 may also carry `refunded`, the coins a since-retired charge
- * returned.
+ * for the admin eye), so the guard checks only the shared field.
  */
 export type AiReviewJobMetadata = {
   locale: string;

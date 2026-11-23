@@ -85,7 +85,7 @@ const MESSAGES_BY_CODE: Record<string, string | undefined> = ADMIN_ERROR_MESSAGE
  *
  * Unknown input is handed back unchanged, which is what lets the admin hooks
  * apply this unconditionally: the actions still returning prose (ads,
- * articles, announcements, coins) pass through untouched, and converting one
+ * articles, announcements) pass through untouched, and converting one
  * of them is a matter of adding its codes above with no change at the call
  * site. Applying it in the hooks rather than per button is deliberate — the
  * per-component mapping it replaces was missing from three of the five

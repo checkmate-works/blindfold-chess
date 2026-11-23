@@ -1,14 +1,17 @@
 /**
- * Legacy `user_grants.grant_type` enum.
+ * The `user_grants.grant_type` values the app can label.
  *
- * Originally this file also held `GRANT_TYPE_DEFAULTS` (the duration policy
- * for automated grants) and `TOPIC_POST_GRANT_TOPIC_TYPES` (the gate for
- * which topic surfaces auto-issued an ad_free grant). Both were removed
- * when the point economy replaced automated `user_grants` issuance for UGC
- * — see `@/lib/points` for the new flow. The remaining enum / guard pair
- * is preserved for legacy grant-history display surfaces (mypage benefits
- * page, benefit_grant notifications) that still need to interpret
- * pre-migration rows.
+ * Only `admin_manual` is still issued. `topic_post` rows date from when
+ * posting to a topic earned ad-free time automatically; the enum / guard pair
+ * stays so the grant-history surfaces (mypage benefits page, benefit_grant
+ * notifications) can still interpret them.
+ *
+ * The table also holds `point_redemption` rows, which are deliberately not
+ * listed: they are ad-free days bought with coins, including the one-off
+ * conversion of every leftover balance (1 coin = 1 day) when the coin economy
+ * was retired in 2026-11. The tables they pointed at through `source_id` are
+ * gone, so there is nothing to link to; `isGrantType` rejects the value and
+ * the benefits page shows such a grant under the `admin_manual` label.
  */
 
 export const GRANT_TYPES = ['admin_manual', 'topic_post'] as const;

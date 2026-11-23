@@ -81,7 +81,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     {
       heading: 'Economy',
       links: [
-        { href: '/admin/coins', label: t('coins.navLabel') },
         { href: '/admin/grants', label: t('grants.navLabel') },
         { href: '/admin/subscriptions', label: t('subscriptions') },
         { href: '/admin/ads', label: t('ads') },

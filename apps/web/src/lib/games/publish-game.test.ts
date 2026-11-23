@@ -395,29 +395,17 @@ describe('validatePublishSnapshot', () => {
   });
 });
 
-describe('validatePublishSnapshot maia charge', () => {
-  const CHARGE = '019A1B2C-3D4E-7F80-9A1B-2C3D4E5F6071';
-
-  it('keeps the charge id on a Maia game, in canonical lower case', () => {
-    const res = validatePublishSnapshot(validInput({ maiaChargeId: CHARGE }));
-    if (!res.ok) throw new Error('expected valid');
-    expect(res.game.maiaChargeId).toBe(CHARGE.toLowerCase());
-  });
-
-  it('drops the charge id on a non-Maia game — there was no charge', () => {
+describe('validatePublishSnapshot — fields the snapshot no longer has', () => {
+  it('does not carry a stale maiaChargeId from an old client into the stored game', () => {
+    // Games saved in localStorage while Maia cost a coin still hold the charge
+    // id, and a tab opened before the field was removed still sends it. The
+    // `games` row has no such column any more, so the key must not survive
+    // validation — an unknown key reaching the insert would throw.
     const res = validatePublishSnapshot(
-      validInput({ engineConfig: { kind: 'stockfish', skillLevel: 5 }, maiaChargeId: CHARGE })
+      validInput({ maiaChargeId: '019a1b2c-3d4e-7f80-9a1b-2c3d4e5f6071' })
     );
     if (!res.ok) throw new Error('expected valid');
-    expect(res.game.maiaChargeId).toBeNull();
-  });
-
-  it('drops an absent or malformed charge id to null without rejecting the publish', () => {
-    for (const maiaChargeId of [undefined, null, '', 'not-a-uuid', 42]) {
-      const res = validatePublishSnapshot(validInput({ maiaChargeId }));
-      if (!res.ok) throw new Error('expected valid');
-      expect(res.game.maiaChargeId).toBeNull();
-    }
+    expect(res.game).not.toHaveProperty('maiaChargeId');
   });
 });
 

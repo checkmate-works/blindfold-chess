@@ -5,7 +5,7 @@ import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
  *
  * Many admin index pages (achievements, grants, chunks, positions/*) each
  * redefined an identical `{ page: parseAsInteger.withDefault(1) }` cache.
- * Pages that also filter (coins, users, subscriptions, activity-log, …)
+ * Pages that also filter (users, subscriptions, activity-log, …)
  * keep their own cache with the extra params.
  */
 export const adminPageSearchParamsCache = createSearchParamsCache({

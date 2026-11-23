@@ -24,11 +24,3 @@ export type RatingFaceIconProps = {
   /** Replaces the head's fill only; the eyes, brows and mouth keep their fixed colour. */
   faceColor?: string;
 };
-
-/**
- * The coin icon's golden palette is intrinsic to the artwork (it depicts a
- * coin), so unlike the stroke icons it takes no `color` prop — only `size`.
- */
-export type CoinIconProps = {
-  size?: number;
-};

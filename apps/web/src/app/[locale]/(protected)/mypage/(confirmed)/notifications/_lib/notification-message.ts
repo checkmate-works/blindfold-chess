@@ -9,8 +9,6 @@ import {
   isAchievementGrantedMetadata,
   isAnnouncementMetadata,
   isBenefitGrantMetadata,
-  isLikeCoinGrantMetadata,
-  isPointGrantMetadata,
   isPositionForkedMetadata,
   isPositionMetadata,
   isRankGrantMetadata,
@@ -160,23 +158,6 @@ export function buildNotificationMessage(
           // ranks.rankNames.<RankSlug>: ranks.rankNames.mukyu, ranks.rankNames.5kyu, ranks.rankNames.4kyu, ranks.rankNames.3kyu, ranks.rankNames.2kyu, ranks.rankNames.1kyu, ranks.rankNames.1dan (ALL_RANK_SLUGS)
           rankName: tRoot(`ranks.rankNames.${notification.metadata.rankSlug}`),
         });
-      }
-      return t('unknownNotification');
-    case 'point_grant':
-      if (isPointGrantMetadata(notification.metadata)) {
-        // Surface the admin's free-form memo verbatim when it exists —
-        // it is almost always more informative than the generic
-        // "you received N points" fallback (e.g., "Compensation for
-        // outage 2026-05-12").
-        if (notification.metadata.reason) {
-          return notification.metadata.reason;
-        }
-        return t('pointGrantMessage.default', { amount: notification.metadata.amount });
-      }
-      return t('unknownNotification');
-    case 'like_coin_grant':
-      if (isLikeCoinGrantMetadata(notification.metadata)) {
-        return t('likeCoinGrantMessage.default', { count: notification.metadata.count });
       }
       return t('unknownNotification');
     case 'ai_review_ready':

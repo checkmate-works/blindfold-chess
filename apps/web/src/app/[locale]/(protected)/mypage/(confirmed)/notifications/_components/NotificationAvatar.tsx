@@ -21,8 +21,6 @@ const ICON_WRAPPER_CLASS =
 const SYSTEM_ICONS: Record<string, IconType> = {
   achievement_granted: HiTrophy,
   benefit_grant: HiGift,
-  point_grant: HiGift,
-  like_coin_grant: HiGift,
   rank_grant: GiBlackBelt,
   announcement: HiMegaphone,
   ai_review_ready: HiSparkles,
@@ -31,7 +29,7 @@ const SYSTEM_ICONS: Record<string, IconType> = {
 
 /**
  * Leading avatar / icon for a notification row. System notifications
- * (achievement / benefit / coin / announcement) render a fixed icon; actor
+ * (achievement / benefit / announcement) render a fixed icon; actor
  * notifications render the actor's avatar or initials, linked to the
  * actor's profile like every other avatar on the site (feed cards, topic
  * posts). The row's own link points at the notification's target, so the

@@ -8,8 +8,8 @@ import { adminErrorMessage } from '@/app/admin/_lib/action-errors';
 import type { ActionResult } from '@/lib/action-types';
 
 /**
- * Submit boilerplate shared by the simple admin grant forms (GrantForm,
- * PointGrantForm): a pending flag, FormMessage state, and the
+ * Submit boilerplate shared by the simple admin grant forms (GrantForm):
+ * a pending flag, FormMessage state, and the
  * preventDefault → FormData → call action → surface `{ error }` flow.
  *
  * The success branch (reset / navigate / success message) differs per form,

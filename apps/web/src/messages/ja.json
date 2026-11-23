@@ -3912,22 +3912,6 @@
       "position_creation": "問題投稿による付与"
     }
   },
-  "MypagePoints": {
-    "history": {
-      "kind": {
-        "post_grant": "投稿によるコイン獲得",
-        "post_clawback": "投稿削除によるコイン取消",
-        "redemption": "広告非表示との交換",
-        "purchase": "コイン購入",
-        "admin_grant": "運営からの付与",
-        "maia_game": "Maia との対局",
-        "like_grant": "いいねによるコイン獲得",
-        "other": "調整",
-        "ai_review": "AIレビューの生成",
-        "ai_review_refund": "AIレビュー失敗による返金"
-      }
-    }
-  },
   "MypageBenefitHistory": {
     "title": "特典履歴",
     "sectionTitle": "付与された特典",
@@ -4058,14 +4042,8 @@
         "default": "{days}日間の広告非表示特典が付与されました"
       }
     },
-    "pointGrantMessage": {
-      "default": "{amount} コインが付与されました"
-    },
     "rankGrantMessage": {
       "default": "{rankName}が付与されました"
-    },
-    "likeCoinGrantMessage": {
-      "default": "コンテンツが評価され、{count} コインを獲得しました"
     },
     "positionEditRequestSubmittedMessage": "{actor}さんがあなたの問題にパターンを提案しました",
     "positionEditRequestAcceptedMessage": "{actor}さんがあなたのパターン提案を承認しました",
@@ -4372,20 +4350,7 @@
         "modReason": "理由",
         "modActor": "実行者",
         "modDate": "日時",
-        "adminActions": "管理操作",
-        "coinSection": "コイン",
-        "coinBalanceLabel": "残高",
-        "coinUnit": "コイン",
-        "coinCatEarned": "獲得",
-        "coinCatPromotional": "プロモーション",
-        "coinCatPurchased": "購入",
-        "coinHistoryTitle": "最近のトランザクション",
-        "coinEvent": "イベント",
-        "coinAmount": "増減",
-        "coinCategory": "カテゴリ",
-        "coinDate": "日時",
-        "noCoinActivity": "コインの履歴はまだありません。",
-        "viewAllCoins": "すべてのトランザクションを表示"
+        "adminActions": "管理操作"
       }
     },
     "stats": {
@@ -4408,8 +4373,8 @@
         "1dan": "初段"
       },
       "levelBuckets": {
-        "none": "Exp なし",
         "0": "Lv 0",
+        "none": "Exp なし",
         "1-4": "Lv 1–4",
         "5-9": "Lv 5–9",
         "10-19": "Lv 10–19",
@@ -4840,38 +4805,6 @@
       "linksActivate": "{count} 件をまとめて有効化",
       "linksDeactivate": "{count} 件をまとめて無効化",
       "linksActivateBlocked": "先にリンクを設定してください。プレースホルダ URL のままのクリエイティブがあります。"
-    },
-    "coins": {
-      "title": "コイン",
-      "navLabel": "コイン",
-      "showing": "全 {total} 件中 {from}–{to} 件を表示",
-      "empty": "条件に一致するトランザクションはありません。",
-      "columns": {
-        "user": "ユーザー",
-        "event": "イベント",
-        "amount": "増減",
-        "category": "カテゴリ",
-        "source": "ソース",
-        "reason": "理由",
-        "date": "日時"
-      },
-      "categoryLabels": {
-        "earned": "獲得",
-        "promotional": "プロモーション",
-        "purchased": "購入"
-      },
-      "filters": {
-        "source": "ソース",
-        "category": "カテゴリ",
-        "direction": "種別",
-        "user": "ユーザーID",
-        "userPlaceholder": "ユーザーUUIDで絞り込み",
-        "all": "すべて",
-        "grantsOnly": "付与 (+)",
-        "spendsOnly": "消費 (−)",
-        "apply": "適用",
-        "clear": "クリア"
-      }
     },
     "grants": {
       "title": "特典付与",

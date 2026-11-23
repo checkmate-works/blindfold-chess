@@ -180,9 +180,9 @@ describe('NotificationItem', () => {
       const { container } = render(
         <NotificationItem
           notification={createNotification({
-            type: 'point_grant',
+            type: 'benefit_grant',
             actor: null,
-            metadata: { amount: 10 },
+            metadata: null,
           })}
           currentUsername="testuser"
         />

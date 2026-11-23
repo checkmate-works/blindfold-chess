@@ -3,21 +3,8 @@ import { and, desc, eq, inArray } from 'drizzle-orm';
 
 import { db, moderationActions, profiles, subscriptions, userRanks, userRoles } from '@/lib/db';
 import type { ModerationAction, Profile, Subscription } from '@/lib/db/schema';
-import {
-  type PointBalanceSummary,
-  type PointHistoryEntry,
-  getPointBalanceSummary,
-  getPointHistory,
-} from '@/lib/points';
 
 import { getAllRanks } from '../../_lib/queries/population';
-
-/**
- * How many recent coin (points-ledger) transactions the user-detail Coins
- * card shows inline. A deeper, filterable view lives on /admin/coins
- * (`?user=<id>`); this card is only a recent-activity snapshot.
- */
-export const COIN_HISTORY_LIMIT = 10;
 
 export type UserRankEntry = {
   slug: string;
@@ -39,10 +26,6 @@ export type UserDetail = {
   currentRank: UserRankEntry | null;
   /** Latest ban reason, surfaced for the status badge. */
   banReason: string | null;
-  /** Current spendable coin balance, rolled up by category. */
-  coinBalance: PointBalanceSummary;
-  /** Most-recent coin ledger entries (capped at `COIN_HISTORY_LIMIT`). */
-  coinHistory: PointHistoryEntry[];
 };
 
 /**
@@ -92,9 +75,6 @@ export async function fetchUserDetail(
 
   const banReason = moderationEntries.find((a) => a.action === 'ban')?.reason ?? null;
 
-  const coinBalance = await getPointBalanceSummary(id);
-  const coinHistory = await getPointHistory(id, COIN_HISTORY_LIMIT);
-
   const rankById = await getAllRanks();
   const userRankRows = await db.select().from(userRanks).where(eq(userRanks.userId, id));
   const ranks: UserRankEntry[] = userRankRows
@@ -120,7 +100,5 @@ export async function fetchUserDetail(
     ranks,
     currentRank: ranks[0] ?? null,
     banReason,
-    coinBalance,
-    coinHistory,
   };
 }

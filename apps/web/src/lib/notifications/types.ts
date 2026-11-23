@@ -39,8 +39,6 @@ export const NOTIFICATION_TYPES = [
   'announcement',
   'benefit_grant',
   'rank_grant',
-  'point_grant',
-  'like_coin_grant',
   'achievement_granted',
   'ai_review_ready',
   'ai_review_failed',
