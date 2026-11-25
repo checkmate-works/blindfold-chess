@@ -1,12 +1,11 @@
 import { StyleSheet, View } from "react-native";
-import { useTranslation } from "react-i18next";
 import { useLocalSearchParams } from "expo-router";
 
 import {
   PracticeResultScreen,
   PracticeStatsResultCard,
 } from "../../../../components";
-import { RequiredKnowledgeSection } from "../../../../features/learn/RequiredKnowledgeSection";
+import { RelatedArticlesSection } from "../../../../features/learn/RequiredKnowledgeSection";
 import { RELATED_ARTICLES } from "../../../../features/quadrants/components";
 import { parsePracticeStatsParams } from "../../../../lib/practice-result-params";
 import type { PracticeStatsParams } from "../../../../lib/practice-result-params";
@@ -18,7 +17,6 @@ import { spacing } from "../../../../theme";
  * behind the drill. Nothing is recorded, so there is no record status.
  */
 export default function QuadrantsResult() {
-  const { t } = useTranslation();
   const params = useLocalSearchParams<PracticeStatsParams>();
   const result = parsePracticeStatsParams(params);
 
@@ -26,10 +24,7 @@ export default function QuadrantsResult() {
     <PracticeResultScreen setupHref="/practice/quadrants">
       <View style={styles.stack}>
         <PracticeStatsResultCard result={result} hideAverageTime />
-        <RequiredKnowledgeSection
-          slugs={RELATED_ARTICLES}
-          title={t("practice.relatedArticles")}
-        />
+        <RelatedArticlesSection slugs={RELATED_ARTICLES} />
       </View>
     </PracticeResultScreen>
   );

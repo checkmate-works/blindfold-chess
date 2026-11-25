@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import { HowToPlaySection, PracticeSetupScreen } from "../../../components";
 import { ChallengeRulesNote } from "../../../features/challenge/ChallengeRulesNote";
-import { RequiredKnowledgeSection } from "../../../features/learn/RequiredKnowledgeSection";
+import { RelatedArticlesSection } from "../../../features/learn/RequiredKnowledgeSection";
 import {
   HowToPlayDemo,
   RELATED_ARTICLE_PIECES,
@@ -43,10 +43,9 @@ export default function RoutePlannerSetup() {
         selectedPiece={settings.selectedPiece}
         onChange={(selectedPiece) => updateSettings({ selectedPiece })}
       />
-      <RequiredKnowledgeSection
+      <RelatedArticlesSection
         slugs={RELATED_ARTICLES}
         pieces={RELATED_ARTICLE_PIECES}
-        title={t("practice.relatedArticles")}
       />
       <ChallengeRulesNote />
     </PracticeSetupScreen>

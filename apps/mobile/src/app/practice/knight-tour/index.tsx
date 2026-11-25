@@ -1,9 +1,8 @@
 import { useRouter } from "expo-router";
-import { useTranslation } from "react-i18next";
 import { resolveStartingSquare } from "@blindfold-chess/features/knight-tour";
 
 import { PracticeSetupScreen } from "../../../components";
-import { RequiredKnowledgeSection } from "../../../features/learn/RequiredKnowledgeSection";
+import { RelatedArticlesSection } from "../../../features/learn/RequiredKnowledgeSection";
 import {
   RELATED_ARTICLE_PIECES,
   RELATED_ARTICLES,
@@ -20,7 +19,6 @@ import { useKnightTourSettings } from "../../../features/knight-tour/hooks";
  */
 export default function KnightTourSetup() {
   const router = useRouter();
-  const { t } = useTranslation();
   const { settings, isLoaded, updateSettings } = useKnightTourSettings();
 
   const handleStart = () => {
@@ -36,10 +34,9 @@ export default function KnightTourSetup() {
   return (
     <PracticeSetupScreen isLoaded={isLoaded} onStart={handleStart}>
       <SettingsForm settings={settings} onUpdate={updateSettings} />
-      <RequiredKnowledgeSection
+      <RelatedArticlesSection
         slugs={RELATED_ARTICLES}
         pieces={RELATED_ARTICLE_PIECES}
-        title={t("practice.relatedArticles")}
       />
     </PracticeSetupScreen>
   );

@@ -8,7 +8,7 @@ import {
   PracticeResultCard,
   PracticeResultScreen,
 } from "../../../../components";
-import { RequiredKnowledgeSection } from "../../../../features/learn/RequiredKnowledgeSection";
+import { RelatedArticlesSection } from "../../../../features/learn/RequiredKnowledgeSection";
 import { parseIntParam } from "../../../../lib/route-params";
 import { spacing } from "../../../../theme";
 
@@ -38,10 +38,7 @@ export default function AlgebraicNotationResult() {
             },
           ]}
         />
-        <RequiredKnowledgeSection
-          slugs={["algebraic-notation"]}
-          title={t("practice.relatedArticles")}
-        />
+        <RelatedArticlesSection slugs={["algebraic-notation"]} />
       </View>
     </PracticeResultScreen>
   );

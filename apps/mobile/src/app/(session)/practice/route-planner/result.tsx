@@ -1,5 +1,4 @@
 import { StyleSheet, View } from "react-native";
-import { useTranslation } from "react-i18next";
 import { useLocalSearchParams } from "expo-router";
 
 import {
@@ -7,7 +6,7 @@ import {
   PracticeStatsResultCard,
 } from "../../../../components";
 import { ChallengeRecordStatus } from "../../../../features/challenge/ChallengeRecordStatus";
-import { RequiredKnowledgeSection } from "../../../../features/learn/RequiredKnowledgeSection";
+import { RelatedArticlesSection } from "../../../../features/learn/RequiredKnowledgeSection";
 import {
   ProblemList,
   RELATED_ARTICLE_PIECES,
@@ -26,7 +25,6 @@ import { spacing } from "../../../../theme";
  * movement articles behind the drill.
  */
 export default function RoutePlannerResult() {
-  const { t } = useTranslation();
   const params = useLocalSearchParams<
     Partial<RoutePlannerResultParams> & { attemptId?: string }
   >();
@@ -41,10 +39,9 @@ export default function RoutePlannerResult() {
           <ChallengeRecordStatus attemptId={params.attemptId} />
         </View>
         <ProblemList problems={problems} />
-        <RequiredKnowledgeSection
+        <RelatedArticlesSection
           slugs={RELATED_ARTICLES}
           pieces={RELATED_ARTICLE_PIECES}
-          title={t("practice.relatedArticles")}
         />
       </View>
     </PracticeResultScreen>

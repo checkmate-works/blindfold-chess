@@ -1,10 +1,9 @@
 import { StyleSheet, View } from "react-native";
-import { useTranslation } from "react-i18next";
 import { useLocalSearchParams } from "expo-router";
 
 import { PracticeResultScreen } from "../../../../components";
 import { SessionResult } from "../../../../features/fen/components";
-import { RequiredKnowledgeSection } from "../../../../features/learn/RequiredKnowledgeSection";
+import { RelatedArticlesSection } from "../../../../features/learn/RequiredKnowledgeSection";
 import { FEN_ARTICLES } from "../../../../features/fen/lib/related-articles";
 import {
   parseFenResultParams,
@@ -18,7 +17,6 @@ import { spacing } from "../../../../theme";
  * offers under "Related Learning".
  */
 export default function FenResult() {
-  const { t } = useTranslation();
   const params = useLocalSearchParams<FenResultParams>();
   const result = parseFenResultParams(params);
 
@@ -26,10 +24,7 @@ export default function FenResult() {
     <PracticeResultScreen setupHref="/practice/fen">
       <View style={styles.stack}>
         <SessionResult result={result} />
-        <RequiredKnowledgeSection
-          slugs={FEN_ARTICLES}
-          title={t("practice.relatedArticles")}
-        />
+        <RelatedArticlesSection slugs={FEN_ARTICLES} />
       </View>
     </PracticeResultScreen>
   );

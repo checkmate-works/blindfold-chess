@@ -2,7 +2,7 @@ import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 
 import { HowToPlaySection, PracticeSetupScreen } from "../../../components";
-import { RequiredKnowledgeSection } from "../../../features/learn/RequiredKnowledgeSection";
+import { RelatedArticlesSection } from "../../../features/learn/RequiredKnowledgeSection";
 import {
   HowToPlayDemo,
   NoRecordNote,
@@ -44,10 +44,7 @@ export default function QuadrantsSetup() {
         <HowToPlayDemo />
       </HowToPlaySection>
       <SettingsForm settings={settings} onUpdateSettings={updateSettings} />
-      <RequiredKnowledgeSection
-        slugs={RELATED_ARTICLES}
-        title={t("practice.relatedArticles")}
-      />
+      <RelatedArticlesSection slugs={RELATED_ARTICLES} />
       <NoRecordNote />
     </PracticeSetupScreen>
   );

@@ -8,7 +8,7 @@ import {
 } from "@blindfold-chess/features/knight-tour";
 
 import { PracticeResultScreen } from "../../../../components";
-import { RequiredKnowledgeSection } from "../../../../features/learn/RequiredKnowledgeSection";
+import { RelatedArticlesSection } from "../../../../features/learn/RequiredKnowledgeSection";
 import {
   KnightTourBoard,
   RELATED_ARTICLE_PIECES,
@@ -74,10 +74,9 @@ export default function KnightTourResult() {
           />
         </View>
 
-        <RequiredKnowledgeSection
+        <RelatedArticlesSection
           slugs={RELATED_ARTICLES}
           pieces={RELATED_ARTICLE_PIECES}
-          title={t("practice.relatedArticles")}
         />
       </View>
     </PracticeResultScreen>

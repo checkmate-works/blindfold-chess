@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import { HowToPlaySection, PracticeSetupScreen } from "../../../components";
 import { ChallengeRulesNote } from "../../../features/challenge/ChallengeRulesNote";
-import { RequiredKnowledgeSection } from "../../../features/learn/RequiredKnowledgeSection";
+import { RelatedArticlesSection } from "../../../features/learn/RequiredKnowledgeSection";
 import {
   HowToPlayDemo,
   SettingsForm,
@@ -56,10 +56,9 @@ export default function LegalMovesSetup() {
         selectedPiece={settings.selectedPiece}
         onChange={(selectedPiece) => updateSettings({ selectedPiece })}
       />
-      <RequiredKnowledgeSection
+      <RelatedArticlesSection
         slugs={RELATED_ARTICLES}
         pieces={ARTICLE_PIECES}
-        title={t("practice.relatedArticles")}
       />
       <ChallengeRulesNote />
     </PracticeSetupScreen>
