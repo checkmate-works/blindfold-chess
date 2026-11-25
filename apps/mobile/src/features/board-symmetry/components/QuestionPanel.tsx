@@ -1,8 +1,8 @@
 import { StyleSheet, View } from "react-native";
 
+import { CoordinateInput } from "../../../components";
 import { spacing } from "../../../theme";
 import type { BoardSymmetryProblem } from "../lib/types";
-import { CoordinateSelector } from "./CoordinateSelector";
 import { SymmetryQuestion } from "./SymmetryQuestion";
 
 type QuestionPanelProps = {
@@ -15,7 +15,10 @@ type QuestionPanelProps = {
   correctSolution: string | null;
   onFileToggle: (file: string) => void;
   onRankToggle: (rank: string) => void;
-  /** Locks and dims the pad. */
+  /**
+   * Locks the pad and fades it to half while the verdict is shown, keeping
+   * the picked file and rank filled so the answer stays readable.
+   */
   disabled: boolean;
   /** The challenge's countdown, shown where `square → answer` will appear. */
   countdown?: number | null;
@@ -48,23 +51,30 @@ export function QuestionPanel({
         correctSolution={correctSolution}
         countdown={countdown}
       />
-      <CoordinateSelector
+      <CoordinateInput
         selectedFile={selectedFile}
         selectedRank={selectedRank}
-        onFileToggle={onFileToggle}
-        onRankToggle={onRankToggle}
+        onFilePress={onFileToggle}
+        onRankPress={onRankToggle}
         disabled={disabled}
+        style={styles.pad}
       />
     </View>
   );
 }
 
-/**
- * 16 at the sides rather than the 24 of the other panels: eight keys and
- * their gaps then leave each key at least 44 wide on a 390pt phone.
- */
 const styles = StyleSheet.create({
+  /**
+   * 16 at the sides rather than the 24 of the other panels: eight keys and
+   * their gaps then leave each key at least 44 wide on a 390pt phone.
+   */
   panel: {
     paddingHorizontal: spacing.md,
+  },
+  // The web panel's `max-w-md` around the pad.
+  pad: {
+    width: "100%",
+    maxWidth: 448,
+    alignSelf: "center",
   },
 });
