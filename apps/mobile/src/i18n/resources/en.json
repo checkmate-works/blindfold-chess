@@ -415,11 +415,12 @@
   },
   "quadrants": {
     "setup": {
-      "title": "Quadrant Anchors Setup",
+      "title": "Quadrant Anchors",
       "orientation": "Board Orientation",
       "orientationWhite": "White",
       "orientationBlack": "Black",
-      "orientationRandom": "Random"
+      "orientationRandom": "Random",
+      "notRecorded": "Scores from this exercise will not be recorded in your practice history or leaderboard."
     },
     "session": {
       "question": "Which quadrant is {{square}} in?",

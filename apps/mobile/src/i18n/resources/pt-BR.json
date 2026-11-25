@@ -415,11 +415,12 @@
   },
   "quadrants": {
     "setup": {
-      "title": "Âncoras de Quadrante Configuração",
+      "title": "Âncoras de Quadrante",
       "orientation": "Orientação do tabuleiro",
       "orientationWhite": "Brancas",
       "orientationBlack": "Pretas",
-      "orientationRandom": "Aleatória"
+      "orientationRandom": "Aleatória",
+      "notRecorded": "As pontuações deste exercício não serão registradas no seu histórico de prática nem no ranking."
     },
     "session": {
       "question": "Em qual quadrante está {{square}}?",

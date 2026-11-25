@@ -1,10 +1,9 @@
-import { View, StyleSheet } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
 import type { QuadrantsSettings } from "@blindfold-chess/features/quadrants";
-import { BOARD_ORIENTATIONS } from "@blindfold-chess/types";
 
-import { OptionsField } from "../../../components";
+import { BoardOrientationSelector, ListSection } from "../../../components";
 import { spacing } from "../../../theme";
 
 type SettingsFormProps = {
@@ -12,6 +11,11 @@ type SettingsFormProps = {
   onUpdateSettings: (patch: Partial<QuadrantsSettings>) => void;
 };
 
+/**
+ * The setup screen's "Game Settings" panel: the board orientation, the one
+ * setting of the web's challenge setup. Training reads the same choice, as
+ * the web's training link carries it.
+ */
 export function SettingsForm({
   settings,
   onUpdateSettings,
@@ -19,18 +23,19 @@ export function SettingsForm({
   const { t } = useTranslation();
 
   return (
-    <View style={styles.container}>
-      <OptionsField
-        label={t("quadrants.setup.orientation")}
-        options={BOARD_ORIENTATIONS}
-        value={settings.orientation}
-        onChange={(orientation) => onUpdateSettings({ orientation })}
-        formatOption={(orientation) =>
-          // quadrants.setup.orientationWhite, quadrants.setup.orientationBlack, quadrants.setup.orientationRandom (BOARD_ORIENTATIONS)
-          t(`quadrants.setup.orientation${capitalize(orientation)}`)
-        }
-      />
-    </View>
+    <ListSection title={t("common.gameSettings")}>
+      <View style={styles.body}>
+        <BoardOrientationSelector
+          label={t("quadrants.setup.orientation")}
+          value={settings.orientation}
+          onChange={(orientation) => onUpdateSettings({ orientation })}
+          formatOption={(orientation) =>
+            // quadrants.setup.orientationWhite, quadrants.setup.orientationBlack, quadrants.setup.orientationRandom (BOARD_ORIENTATIONS)
+            t(`quadrants.setup.orientation${capitalize(orientation)}`)
+          }
+        />
+      </View>
+    </ListSection>
   );
 }
 
@@ -39,7 +44,7 @@ function capitalize(str: string): string {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    gap: spacing.lg,
+  body: {
+    padding: spacing.md,
   },
 });
