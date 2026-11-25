@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import { useTheme, fontSize, spacing } from "../theme";
-import { SectionTitle } from "./SectionTitle";
+import { ListSection } from "./List";
 
 type HowToPlaySectionProps = {
   title: string;
@@ -13,11 +13,10 @@ type HowToPlaySectionProps = {
 };
 
 /**
- * The "How to Play" section at the top of a setup screen, as the web's
- * `PracticeHowToPlaySection` lays it out: the heading, a centred muted
- * description, and the module's demo under it. The section is unframed on
- * purpose — the web dropped its card because the frame drew the eye to
- * itself and boxed in demos that are already visually distinct.
+ * The "How to Play" section at the top of a setup screen: what the web's
+ * `PracticeHowToPlaySection` holds — a centred muted description over the
+ * module's demo — on one grouped panel under a caption, like the rest of the
+ * app's settings, instead of the web's underlined page heading.
  */
 export function HowToPlaySection({
   title,
@@ -26,27 +25,26 @@ export function HowToPlaySection({
 }: HowToPlaySectionProps) {
   const { colors } = useTheme();
   return (
-    <View>
-      <SectionTitle>{title}</SectionTitle>
+    <ListSection title={title}>
       <View style={styles.body}>
         <Text style={[styles.description, { color: colors.mutedForeground }]}>
           {description}
         </Text>
         {children}
       </View>
-    </View>
+    </ListSection>
   );
 }
 
 const styles = StyleSheet.create({
   body: {
     alignItems: "center",
-    paddingVertical: spacing.sm,
+    padding: spacing.md,
+    gap: spacing.md,
   },
   description: {
     fontSize: fontSize.sm,
     lineHeight: 20,
     textAlign: "center",
-    marginBottom: spacing.md,
   },
 });

@@ -96,7 +96,7 @@ export function BoardOrientationSelector({
                       styles.badge,
                       {
                         backgroundColor: colors.primary,
-                        borderColor: colors.background,
+                        borderColor: colors.card,
                       },
                     ]}
                   >
