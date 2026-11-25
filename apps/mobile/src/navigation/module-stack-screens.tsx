@@ -67,7 +67,9 @@ export function moduleSessionScreens(
 ) {
   // `${i18nKey}.result.title`: the same eleven namespaces as moduleSetupScreens, with .result.title
   // `practice.${i18nKey}.title` (modules with sessionHeader): practice.coordinateQuiz.title, practice.legalMoves.title,
-  // practice.boardSymmetry.title, practice.squareColors.title, practice.diagonalQuiz.title, practice.routePlanner.title
+  // practice.boardSymmetry.title, practice.squareColors.title, practice.diagonalQuiz.title, practice.routePlanner.title,
+  // practice.quadrants.title, practice.knightTour.title, practice.algebraicNotation.title, practice.fen.title,
+  // practice.positionMemory.title, practice.recall.title, practice.puzzle.title
   return modules.flatMap(({ route, i18nKey, hasTraining, sessionHeader }) => [
     <Stack.Screen
       key={`${route}/session`}

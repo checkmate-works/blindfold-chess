@@ -35,14 +35,18 @@ replaced by the platform's own parts or their common app equivalents.
   (`navigation/use-close-session.ts`, which pops the modal off the root stack
   and falls back to an href when nothing is underneath). Session → result is
   a `router.replace` inside the modal. A module with `sessionHeader`
-  (`navigation/practice-modules.ts`; coordinate quiz, legal moves, board symmetry, square colors, diagonal quiz and route planner so far, the target for the
-  others) gives its session a stack header like its result and training screens: the module's name and the ×, with the hearts
-  and the clock in a row of their own below and a Quit link under the score
-  (`PracticeSessionScreen` with `headerShown`). With `countdownInBody` the
-  countdown stands inside the body (over the board, or where the square
-  will appear) instead of covering the screen.
-  Header-less sessions show the × through `PracticeSessionScreen` (built in)
-  or `SessionTopBar`; timed ones ask before leaving.
+  (`navigation/practice-modules.ts`; every practice module now) gives its
+  session a stack header like its result and training screens: the
+  module's name and the ×. A timed challenge renders `PracticeSessionScreen`
+  with `headerShown`: the hearts and the clock in a row of their own below,
+  and a Quit link under the score. With `countdownInBody` the countdown
+  stands inside the body (over the board, or where the square will appear)
+  instead of covering the screen. The free-play modules (knight tour,
+  algebraic notation, FEN, position memory, recall, puzzle) have no clock or
+  hearts, so they take the header from the flag alone and stack their own
+  `ScrollView` and `BottomBar` under it. Timed sessions ask before leaving.
+  Screens without a stack header (the AI game, the challenge gate) draw the
+  × with `SessionTopBar`.
 
 Screen titles and options are registered in the layouts, not in the
 screens: `moduleSetupScreens` / `moduleSessionScreens`
@@ -74,8 +78,17 @@ header style (page-coloured, no hairline, chevron-only back).
   sign-in row (`ChallengeRulesNote`). The demo is the web's picture, but it
   plays the answer on a loop (`useDemoAnswerLoop`, one beat for every
   module). The header names the module, as the web page's title does.
-  Coordinate quiz, legal moves, board symmetry, square colors, diagonal quiz
-  and route planner so far, the target for the others.
+  That is the challenge modules' shape (coordinate quiz, legal moves, board
+  symmetry, square colors, diagonal quiz, route planner, quadrants).
+  Quadrants is a challenge that is never recorded, so in place of the
+  sign-in row it says so. A free-play module (no challenge, no training)
+  has the web's shorter setup: its description or settings
+  (`ListSection`), the related articles (`RequiredKnowledgeSection`), and a
+  single Start in the `BottomBar` — no demo and no sign-in row. Recall
+  starts from its PGN box and colour picker; puzzles from the list, then a
+  detail page `practice/puzzle/[id]` on the root stack (title set by the
+  screen's own `<Stack.Screen options>`). A puzzle result's Try Again closes
+  back to that detail page and Back to List `dismissTo`s the list.
 - **Two-way answers** (square colors' light / dark, legal moves' legal /
   illegal) are `AnswerPair` (`components/AnswerPair.tsx`): the module paints
   the two buttons and sizes them; the pair owns the press shrink, the verdict
@@ -106,6 +119,10 @@ header style (page-coloured, no hairline, chevron-only back).
   first frame. A board the player taps (coordinate quiz, FEN recreation,
   knight's tour) is not one. The AI-game `ChessBoard` and `FenBoard` are
   still separate: they differ in corner radius, label size and flipping.
+  `FenBoard` takes `horizontalInset`, `squareTint` and `showCoordinates` for
+  the FEN and position-memory answers. A board inside a padded panel must
+  be capped (`ChessBoard`'s `maxSize`, `BoardPeek`'s `boardMaxSize`,
+  `ButtonInput`'s `fitWidth`), or it runs past the panel's edge.
 - **Problem Details** under a challenge result (diagonal quiz, route
   planner) is `ProblemDetailsList` (`components/ProblemDetailsList.tsx`):
   a `ListSection` titled `practiceResult.problemDetails` with one row per
@@ -113,7 +130,10 @@ header style (page-coloured, no hairline, chevron-only back).
   or time-up in a neutral colour with a clock, never as one more wrong
   answer). Rows open independently, and the ones not answered right start
   open. The module supplies only `verdictOf` (fold its flags with
-  `problemVerdict`), `renderSubtitle` and `renderDetails`; a board sized
+  `problemVerdict`), `renderSubtitle` and `renderDetails`; a module scored
+  by points rather than right or wrong (FEN, position memory) draws its own
+  badge with `renderVerdict` and opens no row at first
+  (`initiallyOpen="none"`); a board sized
   from the window width subtracts `PROBLEM_DETAILS_INSET`. The session
   hands each problem's result to the result screen in a route param
   (`lib/result-params.ts` in each module), since `onComplete` carries only
@@ -124,8 +144,11 @@ header style (page-coloured, no hairline, chevron-only back).
   (the setup screen already says all of it). A module with
   `howToPlayOnSetup` leaves its how-to-play page out (`helpPagesFor`), and
   one with no page left gets no ? at all (coordinate quiz, legal moves,
-  square colors). Board symmetry, diagonal quiz and route planner keep the ?
-  for the web tutorial's explanation steps.
+  square colors, quadrants, algebraic notation). For a module the web gives
+  no help at all, the generated "about" page is the module's own
+  description, which the setup screen already opens with, so it goes too.
+  Board symmetry, diagonal quiz and route planner keep the ? for the web
+  tutorial's explanation steps.
   `PracticeSetupScreen` finds the module from the route, so a setup screen
   needs nothing for it.
 - **Header buttons** are `HeaderIconButton`; the session close button is
@@ -145,7 +168,8 @@ Generated, not edited by hand; re-run the script after the web changes:
 - `scripts/port-help-texts.py` — the practice modules' how-to-play and
   tutorial texts (`moduleHelp.*` in the four dictionaries and
   `features/help/module-help-pages.ts`), recall's strings (`recall.*`) and
-  the account screens' (`account.*`) and the puzzle screens' (`puzzle.*`).
+  the account screens' (`account.*`) and the puzzle screens' (`puzzle.*`,
+  which also take `practice.common`'s white / black / play / replay).
 - `pnpm bundle-glossary` (`scripts/bundle-glossary.ts`) — the web's glossary
   seed into `features/glossary/generated/`.
 - `pnpm bundle-learn-content` (`scripts/bundle-learn-content.ts`) — the web's
