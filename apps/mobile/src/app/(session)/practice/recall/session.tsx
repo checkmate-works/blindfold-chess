@@ -6,6 +6,7 @@ import {
   Switch,
   Text,
   View,
+  useWindowDimensions,
 } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
@@ -106,6 +107,7 @@ function RecallRun({
   const router = useRouter();
   const navigation = useNavigation();
   const { colors, feedbackColors } = useTheme();
+  const { width } = useWindowDimensions();
   const playerColor = parseEnumParam<Side>(params.color, SIDES, "white");
   const positions = useMemo(
     () => replayMoves(moves, fullStartingFen),
@@ -198,9 +200,10 @@ function RecallRun({
             moves={played}
             startingFen={startingFen}
             playerColor={playerColor}
+            boardMaxSize={width - PANEL_INSET}
           />
 
-          <ButtonInput fen={position.fen} onSubmit={handleSubmit} />
+          <ButtonInput fen={position.fen} onSubmit={handleSubmit} fitWidth />
 
           <View style={styles.actions}>
             {offerAnswer && (
@@ -256,6 +259,9 @@ function RecallRun({
     </Screen>
   );
 }
+
+/** The page's and the panel's padding on both sides, and the panel's border. */
+const PANEL_INSET = spacing.md * 4 + 2;
 
 const styles = StyleSheet.create({
   content: {

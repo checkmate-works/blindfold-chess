@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { View, Text, StyleSheet, ScrollView } from "react-native";
 
 import {
@@ -28,36 +29,38 @@ export function TargetSquareRows({
   input,
   disabled,
   colors,
+  fitWidth,
 }: {
   input: MoveInput;
   disabled?: boolean;
   colors: ThemeColors;
+  /** See `ButtonInput`'s `fitWidth`. */
+  fitWidth?: boolean;
 }) {
   return (
     <>
       {/* File Row */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        <View style={styles.row}>
-          {FILES.map((file) => (
-            <ToggleButton
-              key={file}
-              label={file}
-              testID={`move-file-${file}`}
-              isSelected={
-                input.isPawnCaptureMode
-                  ? input.targetFile === file
-                  : input.selectedFile === file
-              }
-              onPress={() => input.handleFileSelect(file)}
-              disabled={
-                disabled ||
-                (input.isPawnCaptureMode && input.selectedFile === file)
-              }
-              colors={colors}
-            />
-          ))}
-        </View>
-      </ScrollView>
+      <KeyRow fit={fitWidth}>
+        {FILES.map((file) => (
+          <ToggleButton
+            key={file}
+            label={file}
+            testID={`move-file-${file}`}
+            isSelected={
+              input.isPawnCaptureMode
+                ? input.targetFile === file
+                : input.selectedFile === file
+            }
+            onPress={() => input.handleFileSelect(file)}
+            disabled={
+              disabled ||
+              (input.isPawnCaptureMode && input.selectedFile === file)
+            }
+            colors={colors}
+            fill={fitWidth}
+          />
+        ))}
+      </KeyRow>
 
       {/* Capture Toggle (Pawn Mode) - shown when no piece selected and file selected */}
       {!input.selectedPiece && input.selectedFile !== null && (
@@ -72,39 +75,37 @@ export function TargetSquareRows({
 
       {/* Target File Row (Pawn Capture Mode) */}
       {input.isPawnCaptureMode && (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <View style={styles.row}>
-            {FILES.map((file) => (
-              <ToggleButton
-                key={`target-${file}`}
-                label={file}
-                isSelected={input.targetFile === file}
-                onPress={() => input.handleFileSelect(file)}
-                disabled={disabled || input.selectedFile === file}
-                colors={colors}
-              />
-            ))}
-          </View>
-        </ScrollView>
+        <KeyRow fit={fitWidth}>
+          {FILES.map((file) => (
+            <ToggleButton
+              key={`target-${file}`}
+              label={file}
+              isSelected={input.targetFile === file}
+              onPress={() => input.handleFileSelect(file)}
+              disabled={disabled || input.selectedFile === file}
+              colors={colors}
+              fill={fitWidth}
+            />
+          ))}
+        </KeyRow>
       )}
 
       {/* Rank Row */}
       {input.showRankRow && (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <View style={styles.row}>
-            {RANKS.map((rank) => (
-              <ToggleButton
-                key={rank}
-                label={rank}
-                isSelected={input.selectedRank === rank}
-                onPress={() => input.handleRankSelect(rank)}
-                testID={`move-rank-${rank}`}
-                disabled={disabled}
-                colors={colors}
-              />
-            ))}
-          </View>
-        </ScrollView>
+        <KeyRow fit={fitWidth}>
+          {RANKS.map((rank) => (
+            <ToggleButton
+              key={rank}
+              label={rank}
+              isSelected={input.selectedRank === rank}
+              onPress={() => input.handleRankSelect(rank)}
+              testID={`move-rank-${rank}`}
+              disabled={disabled}
+              colors={colors}
+              fill={fitWidth}
+            />
+          ))}
+        </KeyRow>
       )}
 
       {/* Promotion Row - show when promotion is available */}
@@ -144,7 +145,22 @@ export function TargetSquareRows({
   );
 }
 
+/** A row of eight file or rank keys: scrolled sideways, or with `fit` stretched to the width. */
+function KeyRow({ fit, children }: { fit?: boolean; children: ReactNode }) {
+  return fit ? (
+    <View style={styles.fitRow}>{children}</View>
+  ) : (
+    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+      <View style={styles.row}>{children}</View>
+    </ScrollView>
+  );
+}
+
 const styles = StyleSheet.create({
+  fitRow: {
+    flexDirection: "row",
+    gap: spacing.xs,
+  },
   row: {
     flexDirection: "row",
     flexWrap: "wrap",
