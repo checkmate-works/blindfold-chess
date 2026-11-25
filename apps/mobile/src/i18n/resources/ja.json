@@ -498,14 +498,7 @@
       "shuffle": "シャッフル"
     },
     "result": {
-      "title": "練習完了！",
-      "accuracy": "正解率",
-      "correct": "正解",
-      "incorrect": "誤答",
-      "missing": "漏れ",
-      "extra": "余分",
-      "problemDetails": "問題ごとの結果",
-      "skipped": "スキップ"
+      "title": "練習完了！"
     },
     "session": {
       "recreateFromFen": "FENから盤面を再現してください",
@@ -703,7 +696,7 @@
       "analyzeOnLichess": "Lichessで解析"
     },
     "result": {
-      "title": "結果"
+      "title": "練習完了！"
     }
   },
   "recall": {

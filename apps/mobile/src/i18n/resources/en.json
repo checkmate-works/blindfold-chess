@@ -498,14 +498,7 @@
       "shuffle": "Shuffle Problems"
     },
     "result": {
-      "title": "Practice Complete!",
-      "accuracy": "Accuracy",
-      "correct": "Correct",
-      "incorrect": "Incorrect",
-      "missing": "Missing",
-      "extra": "Extra",
-      "problemDetails": "Problem Details",
-      "skipped": "Skipped"
+      "title": "Practice Complete!"
     },
     "session": {
       "recreateFromFen": "Recreate the Position from FEN",
@@ -703,7 +696,7 @@
       "analyzeOnLichess": "Analyze on Lichess"
     },
     "result": {
-      "title": "Results"
+      "title": "Practice Complete!"
     }
   },
   "recall": {

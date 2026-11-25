@@ -1,15 +1,22 @@
+import { StyleSheet, View } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useLocalSearchParams } from "expo-router";
 
-import {
-  PracticeResultCard,
-  PracticeResultScreen,
-} from "../../../../components";
+import { PracticeResultScreen } from "../../../../components";
+import { SessionResult } from "../../../../features/fen/components";
+import { RequiredKnowledgeSection } from "../../../../features/learn/RequiredKnowledgeSection";
+import { FEN_ARTICLES } from "../../../../features/fen/lib/related-articles";
 import {
   parseFenResultParams,
   type FenResultParams,
 } from "../../../../features/fen/lib/route-params";
+import { spacing } from "../../../../theme";
 
+/**
+ * The FEN drill's result, as the web's: the run's accuracy and recreation
+ * progress, every problem with both boards, then the FEN article the web
+ * offers under "Related Learning".
+ */
 export default function FenResult() {
   const { t } = useTranslation();
   const params = useLocalSearchParams<FenResultParams>();
@@ -17,31 +24,19 @@ export default function FenResult() {
 
   return (
     <PracticeResultScreen setupHref="/practice/fen">
-      <PracticeResultCard
-        scoreLabel={t("fen.result.accuracy")}
-        scoreValue={`${result.accuracy.toFixed(1)}%`}
-        statItems={[
-          {
-            label: t("fen.result.correct"),
-            value: `${result.correct} / ${result.totalPieces}`,
-            highlight: true,
-          },
-          {
-            label: t("fen.result.incorrect"),
-            value: String(result.incorrect),
-          },
-          { label: t("fen.result.missing"), value: String(result.missing) },
-          { label: t("fen.result.extra"), value: String(result.extra) },
-          {
-            label: t("fen.result.problemDetails"),
-            value: `${result.solved} / ${result.problems}`,
-          },
-          {
-            label: t("fen.result.skipped"),
-            value: String(result.problems - result.solved),
-          },
-        ]}
-      />
+      <View style={styles.stack}>
+        <SessionResult result={result} />
+        <RequiredKnowledgeSection
+          slugs={FEN_ARTICLES}
+          title={t("practice.relatedArticles")}
+        />
+      </View>
     </PracticeResultScreen>
   );
 }
+
+const styles = StyleSheet.create({
+  stack: {
+    gap: spacing.lg,
+  },
+});

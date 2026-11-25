@@ -15,3 +15,5 @@ export {
   SessionLinks,
   confirmQuit,
 } from "./SessionParts";
+export { ProblemResultList } from "./ProblemResultList";
+export { SessionResult } from "./SessionResult";

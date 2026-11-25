@@ -498,14 +498,7 @@
       "shuffle": "Mezclar Problemas"
     },
     "result": {
-      "title": "¡Práctica completada!",
-      "accuracy": "Precisión",
-      "correct": "Correcto",
-      "incorrect": "Incorrecto",
-      "missing": "Faltante",
-      "extra": "Extra",
-      "problemDetails": "Detalles del Problema",
-      "skipped": "Saltado"
+      "title": "¡Práctica completada!"
     },
     "session": {
       "recreateFromFen": "Recrea la Posición desde el FEN",
@@ -703,7 +696,7 @@
       "analyzeOnLichess": "Analizar en Lichess"
     },
     "result": {
-      "title": "Resultados"
+      "title": "¡Práctica completada!"
     }
   },
   "recall": {

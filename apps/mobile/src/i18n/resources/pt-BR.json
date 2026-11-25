@@ -498,14 +498,7 @@
       "shuffle": "Embaralhar Problemas"
     },
     "result": {
-      "title": "Prática concluída!",
-      "accuracy": "Precisão",
-      "correct": "Correto",
-      "incorrect": "Incorreto",
-      "missing": "Ausente",
-      "extra": "Extra",
-      "problemDetails": "Detalhes do Problema",
-      "skipped": "Pulado"
+      "title": "Prática concluída!"
     },
     "session": {
       "recreateFromFen": "Recrie a Posição a partir do FEN",
@@ -703,7 +696,7 @@
       "analyzeOnLichess": "Analisar no Lichess"
     },
     "result": {
-      "title": "Resultados"
+      "title": "Prática concluída!"
     }
   },
   "recall": {

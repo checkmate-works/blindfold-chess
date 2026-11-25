@@ -1,47 +1,23 @@
-import { useTranslation } from "react-i18next";
 import { useLocalSearchParams } from "expo-router";
 
-import {
-  PracticeResultCard,
-  PracticeResultScreen,
-} from "../../../../components";
+import { PracticeResultScreen } from "../../../../components";
+import { SessionResult } from "../../../../features/fen/components";
 import {
   parseFenResultParams,
   type FenResultParams,
 } from "../../../../features/fen/lib/route-params";
 
+/**
+ * Position memory's result, as the web's: the run's accuracy and recreation
+ * progress, then every problem with both boards and a Lichess link.
+ */
 export default function PositionMemoryResult() {
-  const { t } = useTranslation();
   const params = useLocalSearchParams<FenResultParams>();
   const result = parseFenResultParams(params);
 
   return (
     <PracticeResultScreen setupHref="/practice/position-memory">
-      <PracticeResultCard
-        scoreLabel={t("fen.result.accuracy")}
-        scoreValue={`${result.accuracy.toFixed(1)}%`}
-        statItems={[
-          {
-            label: t("fen.result.correct"),
-            value: `${result.correct} / ${result.totalPieces}`,
-            highlight: true,
-          },
-          {
-            label: t("fen.result.incorrect"),
-            value: String(result.incorrect),
-          },
-          { label: t("fen.result.missing"), value: String(result.missing) },
-          { label: t("fen.result.extra"), value: String(result.extra) },
-          {
-            label: t("fen.result.problemDetails"),
-            value: `${result.solved} / ${result.problems}`,
-          },
-          {
-            label: t("fen.result.skipped"),
-            value: String(result.problems - result.solved),
-          },
-        ]}
-      />
+      <SessionResult result={result} showLichess />
     </PracticeResultScreen>
   );
 }

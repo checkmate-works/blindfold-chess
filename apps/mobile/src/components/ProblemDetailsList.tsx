@@ -34,6 +34,18 @@ type ProblemDetailsListProps<Problem> = {
   renderDetails: (problem: Problem, index: number) => ReactNode;
   /** Prefix for each row's `testID`, which ends in the row's index. */
   rowTestIDPrefix?: string;
+  /**
+   * The row's trailing mark in place of the OK / NG verdict, for a module
+   * whose problems are scored rather than right or wrong (the FEN drills
+   * show the accuracy). `verdictOf` still decides which rows start open.
+   */
+  renderVerdict?: (problem: Problem, index: number) => ReactNode;
+  /**
+   * Which rows start open: the ones not answered right (the default), or
+   * none, for a module where every row would qualify and an all-open list
+   * is a wall of boards (the FEN drills, closed as on the web).
+   */
+  initiallyOpen?: "unanswered" | "none";
 };
 
 /**
@@ -56,10 +68,14 @@ export function ProblemDetailsList<Problem>({
   renderSubtitle,
   renderDetails,
   rowTestIDPrefix,
+  renderVerdict,
+  initiallyOpen = "unanswered",
 }: ProblemDetailsListProps<Problem>) {
   const { t } = useTranslation();
   const { open, toggle } = useOpenRowSet(() =>
-    initiallyOpenRows(problems.map(verdictOf)),
+    initiallyOpen === "none"
+      ? new Set<number>()
+      : initiallyOpenRows(problems.map(verdictOf)),
   );
   if (problems.length === 0) return null;
 
@@ -69,7 +85,13 @@ export function ProblemDetailsList<Problem>({
         <ProblemRow
           key={index}
           index={index}
-          verdict={verdictOf(problem)}
+          verdict={
+            renderVerdict ? (
+              renderVerdict(problem, index)
+            ) : (
+              <VerdictBadge verdict={verdictOf(problem)} />
+            )
+          }
           subtitle={renderSubtitle(problem, index)}
           expanded={open.has(index)}
           onToggle={toggle}
@@ -113,7 +135,7 @@ function ProblemRow({
   children,
 }: {
   index: number;
-  verdict: ProblemVerdict;
+  verdict: ReactNode;
   subtitle: ReactNode;
   expanded: boolean;
   onToggle: (index: number) => void;
@@ -145,7 +167,7 @@ function ProblemRow({
           </Text>
           {subtitle}
         </View>
-        <VerdictBadge verdict={verdict} />
+        <View style={styles.verdict}>{verdict}</View>
       </Pressable>
       {expanded && (
         <View
@@ -176,12 +198,12 @@ function VerdictBadge({ verdict }: { verdict: ProblemVerdict }) {
   const color = toneColors[tone];
 
   return (
-    <View style={styles.verdict}>
+    <>
       {clock && <Ionicons name="time-outline" size={12} color={color} />}
       <Text style={[styles.verdictText, { color }]}>
         {"text" in label ? label.text : t(label.key)}
       </Text>
-    </View>
+    </>
   );
 }
 
