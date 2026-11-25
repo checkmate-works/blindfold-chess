@@ -12,7 +12,13 @@ import {
   type PuzzleSolutionMove,
 } from "@blindfold-chess/features/puzzle";
 
-import { Button, ListRow, ListSection, Screen } from "../../../../components";
+import {
+  BottomBar,
+  Button,
+  ListRow,
+  ListSection,
+  Screen,
+} from "../../../../components";
 import { useAuth } from "../../../../auth/use-auth";
 import { savePuzzleResult } from "../../../../features/puzzle/puzzles-api";
 import { useCloseSession } from "../../../../navigation/use-close-session";
@@ -83,7 +89,7 @@ export default function PuzzleResult() {
     : [];
 
   return (
-    <Screen edges={["bottom"]}>
+    <Screen edges={[]}>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={[styles.summary, { backgroundColor: colors.card }]}>
           <Text style={[styles.title, { color: colors.foreground }]}>
@@ -142,7 +148,7 @@ export default function PuzzleResult() {
           </ListSection>
         )}
       </ScrollView>
-      <View style={styles.footer}>
+      <BottomBar style={styles.footer}>
         <Button
           title={t("puzzle.result.tryAgain")}
           size="lg"
@@ -160,7 +166,7 @@ export default function PuzzleResult() {
           fullWidth
           onPress={close}
         />
-      </View>
+      </BottomBar>
     </Screen>
   );
 }
@@ -186,7 +192,6 @@ const styles = StyleSheet.create({
     fontWeight: fontWeight.bold,
   },
   footer: {
-    padding: spacing.lg,
     gap: spacing.sm,
   },
 });

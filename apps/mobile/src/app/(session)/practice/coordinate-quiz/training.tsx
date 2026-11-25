@@ -78,12 +78,8 @@ export default function CoordinateQuizTraining() {
     [handleAnswer],
   );
 
-  const feedback =
-    showResult && lastAnswer
-      ? lastAnswer.correct
-        ? ("correct" as const)
-        : ("incorrect" as const)
-      : null;
+  const answered =
+    showResult && lastAnswer?.skipped === false ? lastAnswer : null;
 
   return (
     <PracticeTrainingScreen
@@ -98,7 +94,8 @@ export default function CoordinateQuizTraining() {
         </View>
         <QuizBoard
           question={currentQuestion}
-          feedback={feedback}
+          answeredSquare={answered?.userAnswerData ?? null}
+          answerCorrect={answered?.correct ?? false}
           onSquarePress={onSquarePress}
         />
       </View>
@@ -110,7 +107,6 @@ const styles = StyleSheet.create({
   body: {
     flex: 1,
     justifyContent: "center",
-    paddingHorizontal: spacing.lg,
   },
   turnRow: {
     alignItems: "center",

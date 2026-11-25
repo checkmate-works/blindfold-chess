@@ -17,6 +17,12 @@ import type { PracticeModuleSlug } from "@blindfold-chess/features/practice-regi
  * @property icon - The glyph on the practice list card.
  * @property hasTraining - The module also has an untimed `training` screen
  *   next to its timed session.
+ * @property sessionHeader - The timed session sits under a stack header with
+ *   the module's name and the ×; see `ModuleRoute`. Modules move to it one at
+ *   a time, coordinate quiz first.
+ * @property howToPlayOnSetup - The setup screen shows the how-to-play text
+ *   itself (`HowToPlaySection`), so the help sheet leaves that page out; see
+ *   `helpPagesFor`.
  */
 export type MobilePracticeModule = {
   slug: PracticeModuleSlug;
@@ -24,6 +30,8 @@ export type MobilePracticeModule = {
   i18nKey: string;
   icon: string;
   hasTraining?: boolean;
+  sessionHeader?: boolean;
+  howToPlayOnSetup?: boolean;
 };
 
 /**
@@ -44,6 +52,8 @@ export const MOBILE_PRACTICE_MODULES: readonly MobilePracticeModule[] = [
     i18nKey: "coordinateQuiz",
     icon: "🎯",
     hasTraining: true,
+    sessionHeader: true,
+    howToPlayOnSetup: true,
   },
   {
     slug: "legal-moves",
@@ -62,6 +72,8 @@ export const MOBILE_PRACTICE_MODULES: readonly MobilePracticeModule[] = [
     i18nKey: "squareColors",
     icon: "🎨",
     hasTraining: true,
+    sessionHeader: true,
+    howToPlayOnSetup: true,
   },
   {
     slug: "diagonal-quiz",

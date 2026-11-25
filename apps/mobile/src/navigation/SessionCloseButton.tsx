@@ -1,9 +1,9 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { Alert, Pressable, StyleSheet } from "react-native";
+import { Pressable, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
 
 import { useTheme } from "../theme";
-import { useCloseSession } from "./use-close-session";
+import { useQuitSession } from "./use-quit-session";
 
 type Props = {
   /**
@@ -26,19 +26,7 @@ type Props = {
 export function SessionCloseButton({ confirm = false, onClose }: Props) {
   const { t } = useTranslation();
   const { colors } = useTheme();
-  const { close } = useCloseSession();
-  const leave = onClose ?? close;
-
-  const handlePress = () => {
-    if (!confirm) {
-      leave();
-      return;
-    }
-    Alert.alert(t("common.quitConfirmTitle"), t("common.quitConfirmMessage"), [
-      { text: t("common.cancel"), style: "cancel" },
-      { text: t("common.quit"), style: "destructive", onPress: leave },
-    ]);
-  };
+  const handlePress = useQuitSession({ confirm, onClose });
 
   return (
     <Pressable

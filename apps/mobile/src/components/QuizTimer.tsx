@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet } from "react-native";
 import Svg, { Circle } from "react-native-svg";
-import { useTheme, fontSize, fontWeight } from "../theme";
+import { useTheme, fontWeight } from "../theme";
 import { formatTime } from "@blindfold-chess/features/coordinate-quiz";
 import { getQuizTimerUrgency } from "./quiz-timer-urgency";
 
@@ -16,6 +16,13 @@ type QuizTimerProps = {
   /** Diameter in points. */
   size?: number;
 };
+
+/**
+ * The time's font size as a share of the ring's diameter. "0:59" then leaves
+ * a margin inside the ring (14pt in the 50pt ring of a session); the web's
+ * timer, 12px in a 40px ring, is about the same.
+ */
+const TEXT_RATIO = 0.28;
 
 export function QuizTimer({
   timeRemaining,
@@ -66,7 +73,12 @@ export function QuizTimer({
         />
       </Svg>
       <View style={styles.timeContainer}>
-        <Text style={[styles.time, { color: getTimerColor() }]}>
+        <Text
+          style={[
+            styles.time,
+            { color: getTimerColor(), fontSize: Math.round(size * TEXT_RATIO) },
+          ]}
+        >
           {formatTime(timeRemaining)}
         </Text>
       </View>
@@ -87,7 +99,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   time: {
-    fontSize: fontSize.lg,
     fontWeight: fontWeight.bold,
   },
 });

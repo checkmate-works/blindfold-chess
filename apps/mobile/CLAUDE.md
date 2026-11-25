@@ -34,9 +34,16 @@ replaced by the platform's own parts or their common app equivalents.
   an edge swipe; every screen in it closes it with `useCloseSession`
   (`navigation/use-close-session.ts`, which pops the modal off the root stack
   and falls back to an href when nothing is underneath). Session → result is
-  a `router.replace` inside the modal. Header-less sessions show the ×
-  through `PracticeSessionScreen` (built in) or `SessionTopBar`; timed ones
-  ask before leaving.
+  a `router.replace` inside the modal. A module with `sessionHeader`
+  (`navigation/practice-modules.ts`; coordinate quiz and square colors so
+  far, the target for the others) gives its session a stack header like its
+  result and training screens: the module's name and the ×, with the hearts
+  and the clock in a row of their own below and a Quit link under the score
+  (`PracticeSessionScreen` with `headerShown`). With `countdownInBody` the
+  countdown stands inside the body (over the board, or where the square
+  will appear) instead of covering the screen.
+  Header-less sessions show the × through `PracticeSessionScreen` (built in)
+  or `SessionTopBar`; timed ones ask before leaving.
 
 Screen titles and options are registered in the layouts, not in the
 screens: `moduleSetupScreens` / `moduleSessionScreens`
@@ -56,12 +63,32 @@ header style (page-coloured, no hairline, chevron-only back).
   lists, help and pickers inside a screen — it works inside the session
   modal and sizes to its content. Closes on backdrop tap, Android back, or a
   drag on its top row. Only the dimmed backdrop lifts it (no border/shadow).
-- **Help:** every practice setup screen's header has a ? that opens
-  `HelpSheet` (`features/help/`), paged: how to play, the web tutorial's
-  explanation steps, the challenge/training modes. `PracticeSetupScreen`
-  finds the module from the route, so a setup screen needs nothing for it.
+- **Setup screens** take the web's sections, above the app's own
+  two-button footer, as grouped panels (`ListSection`) rather than the web's
+  underlined headings: `HowToPlaySection` (the `moduleHelp` how-to-play text
+  over the module's demo), then "Game Settings" when the challenge has any
+  (board orientation as the web's swatches, `BoardOrientationSelector`),
+  then the web's "Required Knowledge" article as a row into the learn screen
+  (`RequiredKnowledgeSection`, from the article's slug alone), then the
+  sign-in row (`ChallengeRulesNote`). The demo is the web's picture, but it
+  plays the answer on a loop (`useDemoAnswerLoop`, one beat for every
+  module). The header names the module, as the web page's title does.
+  Coordinate quiz and square colors so far, the target for the others.
+- **Help:** a practice setup screen's header has a ? that opens
+  `HelpSheet` (`features/help/`), paged: how to play and the web tutorial's
+  explanation steps. The web's challenge/training mode pages are not ported
+  (the setup screen already says all of it). A module with
+  `howToPlayOnSetup` leaves its how-to-play page out (`helpPagesFor`), and
+  one with no page left gets no ? at all (coordinate quiz, square colors).
+  `PracticeSetupScreen` finds the module from the route, so a setup screen
+  needs nothing for it.
 - **Header buttons** are `HeaderIconButton`; the session close button is
   `SessionCloseButton`.
+- **Buttons pinned under scrolling content** (setup, session, result and
+  onboarding footers) go in `BottomBar`, which pads the home indicator's
+  inset itself so the bar runs to the bottom edge. Its screen leaves
+  `"bottom"` out of `Screen`'s `edges`; padded there too, the inset shows as
+  a grey strip under the bar.
 - Web pages (terms, privacy, FAQ, contact, licenses) open in the browser via
   `lib/web-pages.ts`, never in a WebView.
 
@@ -69,8 +96,8 @@ header style (page-coloured, no hairline, chevron-only back).
 
 Generated, not edited by hand; re-run the script after the web changes:
 
-- `scripts/port-help-texts.py` — the practice modules' how-to-play,
-  tutorial and mode texts (`moduleHelp.*` in the four dictionaries and
+- `scripts/port-help-texts.py` — the practice modules' how-to-play and
+  tutorial texts (`moduleHelp.*` in the four dictionaries and
   `features/help/module-help-pages.ts`), recall's strings (`recall.*`) and
   the account screens' (`account.*`) and the puzzle screens' (`puzzle.*`).
 - `pnpm bundle-glossary` (`scripts/bundle-glossary.ts`) — the web's glossary

@@ -8,6 +8,8 @@ import {
   Text,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+import { BottomBar } from "../components";
 import { useTranslation } from "react-i18next";
 import { useOnboardingChat } from "../features/onboarding/hooks/useOnboardingChat";
 import { ChatBubble } from "../features/onboarding/components/ChatBubble";
@@ -34,6 +36,9 @@ export const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
   const { colors } = useTheme();
   const { t } = useTranslation();
 
+  const hasBar =
+    waitingFor?.type === "question" || waitingFor?.type === "finish";
+
   // Auto-scroll to bottom of chat
   useEffect(() => {
     setTimeout(() => {
@@ -48,7 +53,9 @@ export const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
         {
           backgroundColor: colors.background,
           paddingTop: insets.top,
-          paddingBottom: insets.bottom,
+          // The answer bar pads the home indicator itself (BottomBar);
+          // while the mentor is still talking there is no bar to do it.
+          paddingBottom: hasBar ? 0 : insets.bottom,
           paddingLeft: insets.left,
           paddingRight: insets.right,
         },
@@ -78,34 +85,18 @@ export const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
         </ScrollView>
 
         {waitingFor?.type === "question" && (
-          <View
-            style={[
-              styles.inputArea,
-              {
-                backgroundColor: colors.card,
-                borderTopColor: colors.border,
-              },
-            ]}
-          >
+          <BottomBar style={styles.inputArea}>
             <ChoiceList
               choices={waitingFor.choices.map((c) => ({
                 label: t(c.labelKey),
                 onSelect: () => handleChoice(c.nextId, t(c.labelKey)),
               }))}
             />
-          </View>
+          </BottomBar>
         )}
 
         {waitingFor?.type === "finish" && (
-          <View
-            style={[
-              styles.inputArea,
-              {
-                backgroundColor: colors.card,
-                borderTopColor: colors.border,
-              },
-            ]}
-          >
+          <BottomBar style={styles.inputArea}>
             <TouchableOpacity
               style={[styles.ctaButton, { backgroundColor: colors.primary }]}
               onPress={() => onComplete(waitingFor.destination)}
@@ -119,7 +110,7 @@ export const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
                 {t(waitingFor.ctaKey)}
               </Text>
             </TouchableOpacity>
-          </View>
+          </BottomBar>
         )}
       </View>
     </View>
@@ -153,8 +144,6 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   inputArea: {
-    padding: 16,
-    borderTopWidth: 1,
     minHeight: 100,
     justifyContent: "center",
     alignItems: "center",

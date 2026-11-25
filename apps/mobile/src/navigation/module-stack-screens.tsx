@@ -13,11 +13,16 @@ type Translate = ReturnType<typeof useTranslation>["t"];
  *   session, result and training are `<route>/<screen>` in `(session)`.
  * @property i18nKey - Namespace holding `setup.title` and `result.title`.
  * @property hasTraining - The module also has an untimed `training` screen.
+ * @property sessionHeader - The timed session sits under a stack header (the
+ *   module's name, and the × that asks before leaving), like its result and
+ *   training screens, instead of drawing the × in its own top row. Its
+ *   session renders `PracticeSessionScreen` with `headerShown`.
  */
 export type ModuleRoute = {
   route: string;
   i18nKey: string;
   hasTraining?: boolean;
+  sessionHeader?: boolean;
 };
 
 /**
@@ -46,9 +51,10 @@ export function moduleSetupScreens(
  * The screens a module shows inside the full-screen `(session)` modal.
  *
  * @description
- * - `session` has no header: the timed body needs the whole screen and draws
- *   its own close button next to the clock. A full-screen modal has no swipe
- *   to dismiss, so the only way out is that button, which asks first.
+ * - `session` has a header when the module sets `sessionHeader`: the
+ *   module's name, and a close button that asks first. Otherwise it has none
+ *   and draws that close button next to the clock. A full-screen modal has no
+ *   swipe to dismiss, so the only way out is that button.
  * - `result` has a header whose close button dismisses the modal back to
  *   the setup screen underneath. There is no back button: the session it
  *   replaced must not be re-entered.
@@ -60,11 +66,21 @@ export function moduleSessionScreens(
   modules: readonly ModuleRoute[],
 ) {
   // `${i18nKey}.result.title`: the same eleven namespaces as moduleSetupScreens, with .result.title
-  return modules.flatMap(({ route, i18nKey, hasTraining }) => [
+  // `practice.${i18nKey}.title` (modules with sessionHeader): practice.coordinateQuiz.title, practice.squareColors.title
+  return modules.flatMap(({ route, i18nKey, hasTraining, sessionHeader }) => [
     <Stack.Screen
       key={`${route}/session`}
       name={`${route}/session`}
-      options={{ headerShown: false, gestureEnabled: false }}
+      options={
+        sessionHeader
+          ? {
+              title: t(`practice.${i18nKey}.title`),
+              headerBackVisible: false,
+              gestureEnabled: false,
+              headerLeft: () => <SessionCloseButton confirm />,
+            }
+          : { headerShown: false, gestureEnabled: false }
+      }
     />,
     <Stack.Screen
       key={`${route}/result`}

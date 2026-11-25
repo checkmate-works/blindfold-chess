@@ -1,7 +1,10 @@
+export { BoardOrientationSelector } from "./BoardOrientationSelector";
+export { BottomBar } from "./BottomBar";
 export { Button } from "./Button";
 export { Card } from "./Card";
 export { CoordinateKeyRow, coordinateKeypadStyles } from "./CoordinateKeyRow";
 export { CountdownOverlay } from "./CountdownOverlay";
+export { HowToPlaySection } from "./HowToPlaySection";
 export { OptionsField } from "./OptionsField";
 export { QuizTimer } from "./QuizTimer";
 export { ScoreFooter } from "./ScoreFooter";
@@ -18,6 +21,7 @@ export {
 export { PracticeSetupScreen } from "./PracticeSetupScreen";
 export { PracticeStatsResultCard } from "./PracticeStatsResultCard";
 export { PracticeTrainingScreen } from "./PracticeTrainingScreen";
+export { LivesIndicator } from "./LivesIndicator";
 export { ListIcon, ListRow, ListSection } from "./List";
 export { TabScrollView } from "./TabScrollView";
 export { BottomSheet } from "./BottomSheet";

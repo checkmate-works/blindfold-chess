@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import * as Haptics from "expo-haptics";
@@ -9,17 +9,11 @@ import {
   MISTAKE_LIMIT,
 } from "@blindfold-chess/features/practice-registry";
 
-import {
-  CountdownOverlay,
-  QuizTimer,
-  ScoreFooter,
-  Screen,
-} from "../../../../components";
+import { PracticeSessionScreen } from "../../../../components";
 import {
   QuizBoard,
   TurnIndicator,
 } from "../../../../features/coordinate-quiz/components";
-import { SessionCloseButton } from "../../../../navigation/SessionCloseButton";
 import { spacing } from "../../../../theme";
 import { ChallengeAttemptGate } from "../../../../features/challenge/ChallengeAttemptGate";
 import { BOARD_ORIENTATIONS } from "../../../../features/coordinate-quiz/lib/types";
@@ -27,6 +21,7 @@ import type {
   BoardOrientation,
   CoordinateQuestion,
   QuizResult,
+  Square,
 } from "../../../../features/coordinate-quiz/lib/types";
 import { parseEnumParam } from "../../../../lib/route-params";
 
@@ -117,82 +112,65 @@ function CoordinateQuizSession({
       ),
   });
 
-  const feedbackValue = showFeedback
-    ? lastAnswerCorrect
-      ? ("correct" as const)
-      : ("incorrect" as const)
-    : null;
+  // The pressed square keeps its colour until the next question, including
+  // any wait for the server; a press meanwhile is ignored by the session and
+  // must not move it. Only read while `showFeedback`, so it needs no reset.
+  const [answeredSquare, setAnsweredSquare] = useState<Square | null>(null);
+
+  const onSquarePress = useCallback(
+    (square: Square) => {
+      if (countdown !== null || showFeedback || awaitingServer) return;
+      setAnsweredSquare(square);
+      handleAnswer(square);
+    },
+    [handleAnswer, countdown, showFeedback, awaitingServer],
+  );
 
   return (
-    <Screen>
-      <CountdownOverlay countdown={countdown} />
-
-      {/* Main content */}
-      {countdown === null && (
-        <>
-          {/* Board Container with Overlay */}
-          <View style={styles.boardContainer}>
-            {/* Turn Indicator Row with Timer */}
-            <View style={styles.turnRow}>
-              <View style={styles.closeContainer}>
-                <SessionCloseButton confirm />
-              </View>
-              <TurnIndicator question={currentQuestion} />
-
-              <View style={styles.timerContainer}>
-                <QuizTimer
-                  timeRemaining={timeRemaining}
-                  progress={timeRemaining / timeLimit}
-                  size={50}
-                />
-              </View>
-            </View>
-
-            <QuizBoard
-              question={currentQuestion}
-              feedback={feedbackValue}
-              onSquarePress={(square) => {
-                if (!awaitingServer) handleAnswer(square);
-              }}
-            />
-          </View>
-
-          <ScoreFooter
-            correctCount={correctCount}
-            incorrectCount={incorrectCount}
+    <PracticeSessionScreen
+      countdown={countdown}
+      timeRemaining={timeRemaining}
+      progress={timeRemaining / timeLimit}
+      correctCount={correctCount}
+      incorrectCount={incorrectCount}
+      lives={{
+        remaining: Math.max(MISTAKE_LIMIT - incorrectCount, 0),
+        max: MISTAKE_LIMIT,
+      }}
+      headerShown
+      countdownInBody
+    >
+      <View style={styles.body}>
+        <View style={styles.turnRow}>
+          <TurnIndicator
+            question={currentQuestion}
+            hidden={countdown !== null}
           />
-        </>
-      )}
-    </Screen>
+        </View>
+        <QuizBoard
+          question={currentQuestion}
+          answeredSquare={showFeedback ? answeredSquare : null}
+          answerCorrect={lastAnswerCorrect ?? false}
+          onSquarePress={onSquarePress}
+          countdown={countdown}
+        />
+      </View>
+    </PracticeSessionScreen>
   );
 }
 
+/**
+ * Stacked from the top with the score right under the board, as the web's
+ * session lays it out. Centring the body would open a gap between the clock
+ * row and the board on a tall phone.
+ */
 const styles = StyleSheet.create({
-  boardContainer: {
-    flex: 1,
-    justifyContent: "center",
-    paddingHorizontal: spacing.lg,
+  body: {
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.lg,
   },
   turnRow: {
-    flexDirection: "row",
-    justifyContent: "center",
     alignItems: "center",
     marginBottom: spacing.md,
-    minHeight: 50,
-    position: "relative",
-  },
-  closeContainer: {
-    position: "absolute",
-    left: 0,
-    top: 0,
-    bottom: 0,
-    justifyContent: "center",
-  },
-  timerContainer: {
-    position: "absolute",
-    right: 0,
-    top: 0,
-    bottom: 0,
-    justifyContent: "center",
   },
 });

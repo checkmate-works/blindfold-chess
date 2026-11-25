@@ -10,6 +10,7 @@ export const PRACTICE_MODULE_ROUTES: readonly ModuleRoute[] =
     route: `practice/${practiceModuleRoute(module)}`,
     i18nKey: module.i18nKey,
     hasTraining: module.hasTraining,
+    sessionHeader: module.sessionHeader,
   }));
 
 /** The play flows (games against the engine), rooted at `play/<route>`. */

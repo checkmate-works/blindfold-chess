@@ -1,8 +1,9 @@
 import { Screen } from "./Screen";
 import type { ReactNode } from "react";
-import { View, StyleSheet, ScrollView } from "react-native";
+import { StyleSheet, ScrollView } from "react-native";
 import type { Href } from "expo-router";
 
+import { BottomBar } from "./BottomBar";
 import { Button } from "./Button";
 import { useCloseSession } from "../navigation/use-close-session";
 import { spacing } from "../theme";
@@ -34,12 +35,12 @@ export function PracticeResultScreen({
   const { close, closeToMenu } = useCloseSession(setupHref);
 
   return (
-    <Screen edges={["bottom"]}>
+    <Screen edges={[]}>
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
         {children}
       </ScrollView>
 
-      <View style={styles.footer}>
+      <BottomBar style={styles.footer}>
         <Button title={playAgainLabel} onPress={close} size="lg" fullWidth />
         <Button
           title={backToMenuLabel}
@@ -48,7 +49,7 @@ export function PracticeResultScreen({
           size="md"
           fullWidth
         />
-      </View>
+      </BottomBar>
     </Screen>
   );
 }
@@ -63,7 +64,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   footer: {
-    padding: spacing.lg,
     gap: spacing.sm,
   },
 });

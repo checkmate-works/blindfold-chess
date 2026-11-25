@@ -1,100 +1,110 @@
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import type { StyleProp, ViewStyle } from "react-native";
 import { useTranslation } from "react-i18next";
 import type { BoardTheme } from "@blindfold-chess/types";
 import { boardThemeColors } from "@blindfold-chess/ui";
-import {
-  chessColors,
-  useTheme,
-  fontSize,
-  fontWeight,
-  spacing,
-  borderRadius,
-} from "../../../theme";
+
+import { fontSize, fontWeight, spacing, useTheme } from "../../../theme";
 import type { SquareColor } from "../lib/types";
 
 type ColorButtonsProps = {
-  onAnswer: (color: SquareColor) => void;
-  disabled: boolean;
+  /** Omitted → a picture of the buttons (the setup demo): nothing to press. */
+  onAnswer?: (color: SquareColor) => void;
+  disabled?: boolean;
+  /** Paints the pair in the player's board theme, as the web does. */
+  boardTheme: BoardTheme;
   /**
-   * Paints the two buttons in the player's board theme (the settings tab's
-   * board preference), as the web training screen does. Without it they keep
-   * the fixed board colours.
+   * The button just pressed and its verdict: it keeps a green or red ring
+   * and full strength while the others dim, the way the coordinate quiz's
+   * pressed square keeps its colour until the next question.
    */
-  boardTheme?: BoardTheme;
+  selected?: { color: SquareColor; correct: boolean } | null;
+  style?: StyleProp<ViewStyle>;
 };
 
-const FIXED_COLORS = {
-  light: chessColors.boardLight,
-  dark: chessColors.boardDark,
-  lightText: "#3d3d3d",
-  darkText: "#ffffff",
-};
+const COLORS: readonly SquareColor[] = ["light", "dark"];
 
+/**
+ * The light / dark answer pair: two squares in the board theme's colours
+ * with the colour written on each (the web's `SquareColorAnswerButtons`).
+ */
 export function ColorButtons({
   onAnswer,
-  disabled,
+  disabled = false,
   boardTheme,
+  selected = null,
+  style,
 }: ColorButtonsProps) {
   const { t } = useTranslation();
-  const { colors } = useTheme();
-  const palette = boardTheme ? boardThemeColors[boardTheme] : FIXED_COLORS;
+  const { colors, feedbackColors } = useTheme();
+  const palette = boardThemeColors[boardTheme];
 
   return (
-    <View style={styles.container}>
-      <TouchableOpacity
-        onPress={() => onAnswer("light")}
-        disabled={disabled}
-        activeOpacity={0.7}
-        style={[
-          styles.button,
-          {
-            backgroundColor: palette.light,
-            borderColor: colors.border,
-            opacity: disabled ? 0.5 : 1,
-          },
-        ]}
-      >
-        <Text style={[styles.buttonText, { color: palette.lightText }]}>
-          {t("squareColors.session.light")}
-        </Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        onPress={() => onAnswer("dark")}
-        disabled={disabled}
-        activeOpacity={0.7}
-        style={[
-          styles.button,
-          {
-            backgroundColor: palette.dark,
-            borderColor: colors.border,
-            opacity: disabled ? 0.5 : 1,
-          },
-        ]}
-      >
-        <Text style={[styles.buttonText, { color: palette.darkText }]}>
-          {t("squareColors.session.dark")}
-        </Text>
-      </TouchableOpacity>
+    <View style={[styles.container, style]}>
+      {COLORS.map((color) => {
+        const isSelected = selected?.color === color;
+        const ring = isSelected
+          ? selected.correct
+            ? feedbackColors.success
+            : feedbackColors.error
+          : colors.border;
+        return (
+          <Pressable
+            key={color}
+            onPress={onAnswer ? () => onAnswer(color) : undefined}
+            disabled={disabled || !onAnswer}
+            accessibilityRole={onAnswer ? "button" : undefined}
+            style={({ pressed }) => [
+              styles.button,
+              {
+                backgroundColor: palette[color],
+                borderColor: ring,
+                borderWidth: isSelected ? 3 : 1,
+                opacity: disabled && !isSelected ? 0.5 : 1,
+              },
+              pressed && styles.pressed,
+            ]}
+          >
+            {/* squareColors.session.light, squareColors.session.dark */}
+            <Text
+              style={[styles.buttonText, { color: palette[`${color}Text`] }]}
+            >
+              {t(`squareColors.session.${color}`)}
+            </Text>
+          </Pressable>
+        );
+      })}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  /**
+   * The web's `max-w-xs`: on a phone the pair would otherwise fill the
+   * width and push the square up against the clock row.
+   */
   container: {
     flexDirection: "row",
     gap: spacing.md,
+    width: "100%",
+    maxWidth: 320,
+    alignSelf: "center",
   },
   button: {
     flex: 1,
     aspectRatio: 1,
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: borderRadius.lg,
-    borderWidth: 1,
+    // The web's `rounded-md`.
+    borderRadius: 6,
   },
+  /** The web's `active:scale-95`. */
+  pressed: {
+    transform: [{ scale: 0.95 }],
+  },
+  // The web's `text-lg font-bold`.
   buttonText: {
-    fontSize: fontSize.xl,
+    fontSize: fontSize.lg,
     fontWeight: fontWeight.bold,
   },
 });

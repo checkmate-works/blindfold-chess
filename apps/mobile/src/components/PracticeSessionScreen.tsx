@@ -2,11 +2,14 @@ import { Screen } from "./Screen";
 import type { ReactNode } from "react";
 import { View, StyleSheet } from "react-native";
 import type { StyleProp, ViewStyle } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { CountdownOverlay } from "./CountdownOverlay";
+import { LivesIndicator } from "./LivesIndicator";
 import { QuizTimer } from "./QuizTimer";
 import { ScoreFooter } from "./ScoreFooter";
 import { SessionCloseButton } from "../navigation/SessionCloseButton";
+import { SessionQuitLink } from "../navigation/SessionQuitLink";
 import { spacing } from "../theme";
 
 type PracticeSessionScreenProps = {
@@ -17,6 +20,28 @@ type PracticeSessionScreenProps = {
   progress: number;
   correctCount: number;
   incorrectCount: number;
+  /**
+   * Hearts for a session with a mistake limit, shown beside the close
+   * button — the left end of the top row, where the web's
+   * `ChallengeStatusHeader` puts them. Omitted → no hearts.
+   */
+  lives?: { readonly remaining: number; readonly max: number };
+  /**
+   * The stack draws this session's header (the module's `sessionHeader`):
+   * the × is there, so the top row holds only the hearts on the left and the
+   * clock on the right, as the web's `ChallengeStatusHeader` does, and the
+   * header clears the status bar. A "Quit" link also sits under the score,
+   * the web's `ChallengeQuitControl`. Omitted → no header: the × leads the
+   * top row and the frame clears the status bar itself.
+   */
+  headerShown?: boolean;
+  /**
+   * The body draws the countdown itself — over its board, as the web does —
+   * so the frame keeps the rows and the body on screen during it instead of
+   * covering the screen with its own countdown. The body must then also keep
+   * its input shut and its question hidden until `countdown` is null.
+   */
+  countdownInBody?: boolean;
   /** Tightens the score footer's spacing where the body already pads itself. */
   footerStyle?: StyleProp<ViewStyle>;
   children: ReactNode;
@@ -24,7 +49,9 @@ type PracticeSessionScreenProps = {
 
 /**
  * The frame every timed practice session renders inside: the countdown
- * overlay, the close button and the clock in the top row, the body, and the running score.
+ * overlay, the top row (hearts on the left — after the close button when the
+ * session has no stack header — and the clock on the right), the body, and
+ * the running score.
  *
  * @description
  * Sibling of `PracticeSetupScreen` and `PracticeResultScreen` — the third
@@ -32,10 +59,7 @@ type PracticeSessionScreenProps = {
  * would otherwise repeat: the safe area, the `{countdown === null && ...}`
  * gate, the right-aligned timer row and the score footer.
  *
- * `coordinate-quiz` deliberately does NOT use this: it threads its timer
- * into a turn-indicator row rather than a row of its own, and bending it
- * into this frame would take a flag for chrome it does not have. The
- * untimed sessions (fen, knight-tour, position-memory, recall, puzzle) have
+ * The untimed sessions (fen, knight-tour, position-memory, recall, puzzle) have
  * no countdown or clock, so there is nothing here for them.
  */
 export function PracticeSessionScreen({
@@ -44,17 +68,34 @@ export function PracticeSessionScreen({
   progress,
   correctCount,
   incorrectCount,
+  lives,
+  headerShown = false,
+  countdownInBody = false,
   footerStyle,
   children,
 }: PracticeSessionScreenProps) {
+  // The top inset is padded from the provider's value rather than left to
+  // `Screen`'s `SafeAreaView`: in this header-less screen of the
+  // full-screen session modal the view's own top inset came out as 0 on iOS
+  // (Expo SDK 58, iPhone 17 simulator), so the close button, hearts and clock
+  // sat under the status bar. Under a stack header the header clears it.
+  const insets = useSafeAreaInsets();
   return (
-    <Screen>
-      <CountdownOverlay countdown={countdown} />
+    <Screen
+      edges={["bottom", "left", "right"]}
+      style={{ paddingTop: headerShown ? 0 : insets.top }}
+    >
+      {!countdownInBody && <CountdownOverlay countdown={countdown} />}
 
-      {countdown === null && (
+      {(countdown === null || countdownInBody) && (
         <>
           <View style={styles.timerRow}>
-            <SessionCloseButton confirm />
+            <View style={styles.leading}>
+              {!headerShown && <SessionCloseButton confirm />}
+              {lives && (
+                <LivesIndicator remaining={lives.remaining} max={lives.max} />
+              )}
+            </View>
             <View style={styles.spacer} />
             <QuizTimer
               timeRemaining={timeRemaining}
@@ -68,8 +109,13 @@ export function PracticeSessionScreen({
           <ScoreFooter
             correctCount={correctCount}
             incorrectCount={incorrectCount}
-            style={footerStyle}
+            style={[headerShown && styles.footerAboveQuit, footerStyle]}
           />
+          {headerShown && (
+            <View style={styles.quit}>
+              <SessionQuitLink />
+            </View>
+          )}
         </>
       )}
     </Screen>
@@ -101,6 +147,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
+  },
+  /** The score's own bottom padding gives way to the quit link's gap. */
+  footerAboveQuit: {
+    paddingBottom: 0,
+  },
+  /** 24pt under the score, as the web's `mt-6`. */
+  quit: {
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.lg,
+  },
+  leading: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.md,
   },
   spacer: {
     flex: 1,
