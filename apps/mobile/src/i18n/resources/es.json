@@ -94,7 +94,8 @@
       "title": "Problemas",
       "description": "Encuentra la mejor jugada en posiciones seleccionadas"
     },
-    "requiredKnowledge": "Conocimiento Necesario"
+    "requiredKnowledge": "Conocimiento Necesario",
+    "relatedArticles": "Artículos Relacionados"
   },
   "practiceResult": {
     "correctAnswers": "Respuestas correctas",
@@ -208,17 +209,13 @@
   },
   "legalMoves": {
     "setup": {
-      "title": "Ajustes de movimientos legales",
-      "timeLimit": "Tiempo límite",
-      "durationSeconds": "{{seconds}}s",
-      "pieceSelection": "Selecciona una pieza",
-      "selectAtLeastOne": "Selecciona al menos una pieza"
+      "title": "Movimientos legales",
+      "pieceSelection": "Selecciona una pieza"
     },
     "session": {
-      "legal": "Legal",
-      "illegal": "Ilegal",
-      "correct": "¡Correcto!",
-      "incorrect": "Incorrecto"
+      "question": "¿Puede la pieza moverse de {{from}} a {{to}}?",
+      "legal": "Sí",
+      "illegal": "No"
     },
     "result": {
       "title": "¡Práctica completada!"

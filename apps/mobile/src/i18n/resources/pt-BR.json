@@ -94,7 +94,8 @@
       "title": "Problemas",
       "description": "Encontre o melhor lance em posições selecionadas"
     },
-    "requiredKnowledge": "Conhecimento Necessário"
+    "requiredKnowledge": "Conhecimento Necessário",
+    "relatedArticles": "Artigos Relacionados"
   },
   "practiceResult": {
     "correctAnswers": "Respostas corretas",
@@ -208,17 +209,13 @@
   },
   "legalMoves": {
     "setup": {
-      "title": "Configurações de movimentos legais",
-      "timeLimit": "Tempo limite",
-      "durationSeconds": "{{seconds}}s",
-      "pieceSelection": "Selecione uma peça",
-      "selectAtLeastOne": "Selecione pelo menos uma peça"
+      "title": "Movimentos legais",
+      "pieceSelection": "Selecione uma peça"
     },
     "session": {
-      "legal": "Legal",
-      "illegal": "Ilegal",
-      "correct": "Correto!",
-      "incorrect": "Incorreto"
+      "question": "A peça pode se mover de {{from}} para {{to}}?",
+      "legal": "Sim",
+      "illegal": "Não"
     },
     "result": {
       "title": "Prática concluída!"

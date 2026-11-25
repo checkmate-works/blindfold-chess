@@ -1,3 +1,3 @@
-export { SettingsForm } from "./SettingsForm";
-export { QuestionCard } from "./QuestionCard";
 export { LegalIllegalButtons } from "./LegalIllegalButtons";
+export { QuestionPanel } from "./QuestionPanel";
+export { SettingsForm } from "./SettingsForm";

@@ -60,6 +60,7 @@ export const MOBILE_PRACTICE_MODULES: readonly MobilePracticeModule[] = [
     i18nKey: "legalMoves",
     icon: "⚖️",
     hasTraining: true,
+    sessionHeader: true,
   },
   {
     slug: "board-symmetry",
