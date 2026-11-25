@@ -466,9 +466,8 @@
   },
   "algebraicNotation": {
     "setup": {
-      "title": "代数式表記法の設定",
-      "description": "インタラクティブな演習でチェス記法システムをマスターする",
-      "questionCount": "全{{total}}問"
+      "title": "代数式表記法",
+      "description": "インタラクティブな演習でチェス記法システムをマスターする"
     },
     "result": {
       "title": "練習完了！"

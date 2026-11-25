@@ -466,9 +466,8 @@
   },
   "algebraicNotation": {
     "setup": {
-      "title": "Notação Algébrica Configuração",
-      "description": "Domine o sistema de notação enxadrística com exercícios interativos",
-      "questionCount": "{{total}} perguntas"
+      "title": "Notação Algébrica",
+      "description": "Domine o sistema de notação enxadrística com exercícios interativos"
     },
     "result": {
       "title": "Prática concluída!"

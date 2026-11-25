@@ -118,6 +118,7 @@ export const MOBILE_PRACTICE_MODULES: readonly MobilePracticeModule[] = [
     slug: "algebraic-notation",
     i18nKey: "algebraicNotation",
     icon: "🔤",
+    howToPlayOnSetup: true,
   },
   { slug: "fen", i18nKey: "fen", icon: "📝" },
   { slug: "position-memory", i18nKey: "positionMemory", icon: "🧠" },
