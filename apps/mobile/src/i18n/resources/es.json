@@ -592,7 +592,7 @@
     "coordinateQuiz": {
       "howToPlay": {
         "title": "Cómo Jugar",
-        "body": "Se muestra el nombre de una casilla en el tablero. Haz clic en la casilla correcta lo más rápido posible."
+        "body": "Se muestra el nombre de una casilla en el tablero. Toca la casilla correcta lo más rápido posible."
       },
       "challenge": {
         "title": "Modo Desafío",

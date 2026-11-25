@@ -38,6 +38,23 @@ def icu_to_i18next(text: str) -> str:
     return re.sub(r"\{(\w+)\}", r"{{\1}}", text)
 
 
+# The web's how-to-play texts say "click"; the app has only a touch screen.
+# (pattern, replacement) per locale, applied to every moduleHelp title and
+# body. The Spanish "Pulsa" is already a touch word and stays.
+TOUCH_WORDING = {
+    "en": [(r"\bClick\b", "Tap"), (r"\bclick\b", "tap")],
+    "ja": [(r"クリック", "タップ")],
+    "es": [(r"\bHaz clic en\b", "Toca"), (r"\bhaz clic en\b", "toca")],
+    "pt-BR": [(r"\bClique\b", "Toque"), (r"\bclique\b", "toque")],
+}
+
+
+def for_touch(text: str, locale: str) -> str:
+    for pattern, replacement in TOUCH_WORDING[locale]:
+        text = re.sub(pattern, replacement, text)
+    return text
+
+
 def pages_for(ns: dict) -> list[tuple[str, str, str]]:
     pages = []
     if "howToPlayTitle" in ns:
@@ -70,7 +87,13 @@ for locale in LOCALES:
     out = {}
     for key, web_key in MODULES.items():
         pages = pages_for(web[web_key])
-        out[key] = {name: {"title": icu_to_i18next(t), "body": icu_to_i18next(b)} for name, t, b in pages}
+        out[key] = {
+            name: {
+                "title": for_touch(icu_to_i18next(t), locale),
+                "body": for_touch(icu_to_i18next(b), locale),
+            }
+            for name, t, b in pages
+        }
         if locale == "en":
             order[key] = [name for name, _, _ in pages]
         else:
