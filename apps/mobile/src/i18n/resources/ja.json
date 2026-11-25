@@ -261,8 +261,8 @@
       "title": "マスの色"
     },
     "session": {
-      "light": "明",
-      "dark": "暗"
+      "light": "白",
+      "dark": "黒"
     },
     "result": {
       "title": "練習終了！",
