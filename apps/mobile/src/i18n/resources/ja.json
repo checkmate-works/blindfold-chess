@@ -410,6 +410,12 @@
       "yourAnswer": "あなたの回答",
       "correctAnswerLabel": "正解"
     },
+    "board": {
+      "diagonal": "対角線",
+      "antiDiagonal": "逆対角線",
+      "diagonalDirection": "(a1-h8方向)",
+      "antiDiagonalDirection": "(h1-a8方向)"
+    },
     "result": {
       "title": "練習終了！"
     },

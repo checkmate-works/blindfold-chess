@@ -410,6 +410,12 @@
       "yourAnswer": "Sua resposta",
       "correctAnswerLabel": "Resposta correta"
     },
+    "board": {
+      "diagonal": "Diagonal",
+      "antiDiagonal": "Antidiagonal",
+      "diagonalDirection": "(direção a1-h8)",
+      "antiDiagonalDirection": "(direção h1-a8)"
+    },
     "result": {
       "title": "Prática concluída!"
     },

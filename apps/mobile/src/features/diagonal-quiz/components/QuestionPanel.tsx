@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
   // The web's `text-6xl font-bold mb-4` in a block with `mb-6`.
   square: {
     fontSize: SQUARE_SIZE,
-    lineHeight: SQUARE_SIZE + 6,
+    lineHeight: SQUARE_SIZE,
     fontWeight: fontWeight.bold,
     fontVariant: ["tabular-nums"],
     textAlign: "center",

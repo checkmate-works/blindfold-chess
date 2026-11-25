@@ -131,6 +131,7 @@ export default function DiagonalQuizTraining() {
       >
         {reviewed && correctDiagonals ? (
           <TrainingAnswerReview
+            square={reviewed.question}
             correctDiagonal={correctDiagonals.diagonal}
             correctAntiDiagonal={correctDiagonals.antiDiagonal}
             userAnswer={
@@ -164,16 +165,18 @@ export default function DiagonalQuizTraining() {
 }
 
 /**
- * Stacked from the top with the score and End right under the keypad, as
- * the web's training page. The body only scrolls on a screen too short for
- * it.
+ * Stacked from the top with the score, Skip and End right under the keypad,
+ * as the web's training page. Those three take more height than the
+ * challenge's hearts and Quit, so the panel starts right under the header
+ * and leaves 16 above the score rather than the web's 32: with the web's
+ * spacing an iPhone 17 had to scroll to reach Clear. The body still
+ * scrolls on a screen too short for it.
  */
 const styles = StyleSheet.create({
   scroll: {
     flexGrow: 0,
   },
   body: {
-    paddingTop: spacing.md,
-    paddingBottom: spacing.xl,
+    paddingBottom: spacing.md,
   },
 });
