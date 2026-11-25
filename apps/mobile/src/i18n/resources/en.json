@@ -230,25 +230,19 @@
   },
   "boardSymmetry": {
     "setup": {
-      "title": "Board Symmetry Setup"
+      "title": "Board Symmetry"
     },
     "session": {
-      "question": "Find the {{type}} symmetric square of {{square}}",
+      "question": "{{type}} of {{square}}?",
       "types": {
-        "horizontal": "Horizontal",
-        "vertical": "Vertical",
-        "point": "Point"
+        "horizontal": "File symmetry",
+        "vertical": "Rank symmetry",
+        "point": "Point symmetry"
       },
-      "correct": "Correct!",
-      "incorrectWithSolution": "Incorrect. Answer: {{solution}}"
+      "incorrectWithSolution": "{{solution}} is correct"
     },
     "result": {
-      "title": "Results",
-      "timeTaken": "Time"
-    },
-    "settings": {
-      "timeLimit": "Time Limit",
-      "seconds": "{{seconds}}s"
+      "title": "Practice Complete!"
     }
   },
   "squareColors": {

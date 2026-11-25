@@ -230,25 +230,19 @@
   },
   "boardSymmetry": {
     "setup": {
-      "title": "盤面対称 設定"
+      "title": "盤面対称"
     },
     "session": {
-      "question": "{{square}}の{{type}}対称マスを見つけて",
+      "question": "{{square}}の{{type}}は？",
       "types": {
-        "horizontal": "水平",
-        "vertical": "垂直",
-        "point": "点"
+        "horizontal": "左右対称",
+        "vertical": "上下対称",
+        "point": "点対称"
       },
-      "correct": "正解！",
-      "incorrectWithSolution": "不正解。答え: {{solution}}"
+      "incorrectWithSolution": "正解は{{solution}}"
     },
     "result": {
-      "title": "結果",
-      "timeTaken": "経過時間"
-    },
-    "settings": {
-      "timeLimit": "制限時間",
-      "seconds": "{{seconds}}秒"
+      "title": "練習終了！"
     }
   },
   "squareColors": {

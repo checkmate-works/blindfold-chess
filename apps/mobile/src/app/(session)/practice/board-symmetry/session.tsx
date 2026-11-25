@@ -1,5 +1,5 @@
 import { useCallback, useEffect } from "react";
-import { View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { useRouter } from "expo-router";
 import type { RemoteChallengePort } from "@blindfold-chess/features/challenge-attempt";
 import {
@@ -7,20 +7,16 @@ import {
   MISTAKE_LIMIT,
 } from "@blindfold-chess/features/practice-registry";
 import type { BoardSymmetryProblem } from "@blindfold-chess/features/board-symmetry";
-import * as Haptics from "expo-haptics";
 import { useBoardSymmetrySession } from "@blindfold-chess/features/board-symmetry/client";
 
-import {
-  PracticeSessionScreen,
-  practiceSessionStyles,
-} from "../../../../components";
-import {
-  SymmetryQuestion,
-  CoordinateSelector,
-} from "../../../../features/board-symmetry/components";
 import type { BoardSymmetryResult } from "@blindfold-chess/features/board-symmetry";
+
+import { PracticeSessionScreen } from "../../../../components";
+import { QuestionPanel } from "../../../../features/board-symmetry/components";
 import { ChallengeAttemptGate } from "../../../../features/challenge/ChallengeAttemptGate";
+import { answerHaptics } from "../../../../lib/answer-haptics";
 import { serializePracticeStatsParams } from "../../../../lib/practice-result-params";
+import { spacing } from "../../../../theme";
 
 const SETTINGS = {};
 
@@ -88,12 +84,7 @@ function BoardSymmetrySession({
     remote,
     disablePause: true,
     onComplete: handleComplete,
-    onAnswerEffect: (correct) =>
-      Haptics.notificationAsync(
-        correct
-          ? Haptics.NotificationFeedbackType.Success
-          : Haptics.NotificationFeedbackType.Error,
-      ),
+    onAnswerEffect: answerHaptics,
   });
 
   const isCorrect = showFeedback ? lastAnswerCorrect : null;
@@ -125,28 +116,43 @@ function BoardSymmetrySession({
       progress={timeRemaining / duration}
       correctCount={correctCount}
       incorrectCount={incorrectCount}
+      lives={{
+        remaining: Math.max(MISTAKE_LIMIT - incorrectCount, 0),
+        max: MISTAKE_LIMIT,
+      }}
+      headerShown
+      countdownInBody
     >
-      <View style={practiceSessionStyles.questionContainer}>
-        {currentProblem && (
-          <SymmetryQuestion
-            problem={currentProblem}
-            selectedFile={selectedFile}
-            selectedRank={selectedRank}
-            isCorrect={isCorrect}
-            correctSolution={correctSolution}
-          />
-        )}
-      </View>
-
-      <View style={practiceSessionStyles.bottomSection}>
-        <CoordinateSelector
+      <View style={styles.body}>
+        <QuestionPanel
+          problem={currentProblem}
           selectedFile={selectedFile}
           selectedRank={selectedRank}
+          verdict={isCorrect}
+          correctSolution={correctSolution}
           onFileToggle={handleFileToggle}
           onRankToggle={handleRankToggle}
-          disabled={showFeedback || awaitingServer}
+          disabled={
+            countdown !== null ||
+            showFeedback ||
+            awaitingServer ||
+            !currentProblem
+          }
+          countdown={countdown}
         />
       </View>
     </PracticeSessionScreen>
   );
 }
+
+/**
+ * Stacked from the top as the web's session is: 16 under the hearts and
+ * clock (the web's mb-4 under its status header), 32 above the score (its
+ * mt-8). Centring the question would leave the pad far below it.
+ */
+const styles = StyleSheet.create({
+  body: {
+    paddingTop: spacing.md,
+    paddingBottom: spacing.xl,
+  },
+});

@@ -230,25 +230,19 @@
   },
   "boardSymmetry": {
     "setup": {
-      "title": "Configurações de simetria do tabuleiro"
+      "title": "Simetria do tabuleiro"
     },
     "session": {
-      "question": "Encontre a casa simétrica {{type}} de {{square}}",
+      "question": "{{type}} de {{square}}?",
       "types": {
-        "horizontal": "Horizontal",
-        "vertical": "Vertical",
-        "point": "Pontual"
+        "horizontal": "Simetria de coluna",
+        "vertical": "Simetria de fila",
+        "point": "Simetria central"
       },
-      "correct": "Correto!",
-      "incorrectWithSolution": "Incorreto. Resposta: {{solution}}"
+      "incorrectWithSolution": "{{solution}} é a resposta correta"
     },
     "result": {
-      "title": "Resultados",
-      "timeTaken": "Tempo"
-    },
-    "settings": {
-      "timeLimit": "Tempo limite",
-      "seconds": "{{seconds}}s"
+      "title": "Prática concluída!"
     }
   },
   "squareColors": {
