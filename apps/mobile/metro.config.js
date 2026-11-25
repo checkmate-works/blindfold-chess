@@ -31,9 +31,15 @@ config.resolver.assetExts = [...config.resolver.assetExts, "wasm", "bin"];
 // Code creates under .claude/worktrees/ — full checkouts of other branches.
 // Without this block Metro watches those trees and can resolve modules from
 // them, mixing another branch's in-progress code into this dev server.
+// The pattern is anchored at this workspace root: a dev server started inside
+// one of those worktrees has its own files under .claude/worktrees/ too, and
+// a bare /\.claude\/worktrees\// would block every one of them.
+const escapeRegExp = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 config.resolver.blockList = [
   ...[config.resolver.blockList].flat().filter(Boolean),
-  /\/\.claude\/worktrees\/.*/,
+  new RegExp(
+    `^${escapeRegExp(path.join(workspaceRoot, ".claude", "worktrees"))}/.*`,
+  ),
 ];
 
 module.exports = config;
