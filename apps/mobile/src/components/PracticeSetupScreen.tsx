@@ -15,6 +15,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useFocusEffect, useNavigation, usePathname } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "./Button";
@@ -68,6 +69,14 @@ function moduleForPath(pathname: string) {
  * that a retry after a validation error does not feel ignored.
  */
 const START_RELEASE_MS = 1000;
+
+/**
+ * The footer's padding above the buttons, and below them on a device
+ * without a home indicator. With one, the indicator's inset alone is the
+ * bottom padding, painted in the footer's colour: the footer reaches the
+ * screen's bottom edge instead of stopping above a strip of page grey.
+ */
+const FOOTER_PADDING = spacing.md;
 
 /**
  * Wraps the start handlers so that, while the setup screen has focus, only
@@ -165,6 +174,7 @@ export function PracticeSetupScreen({
   const { t } = useTranslation();
   const { colors } = useTheme();
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
   const module = moduleForPath(usePathname());
   const moduleKey = module?.i18nKey ?? null;
   const helpPages = module
@@ -202,7 +212,7 @@ export function PracticeSetupScreen({
   }
 
   return (
-    <Screen edges={["bottom"]}>
+    <Screen edges={[]}>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
@@ -217,6 +227,7 @@ export function PracticeSetupScreen({
           {
             borderTopColor: colors.border,
             backgroundColor: colors.card,
+            paddingBottom: Math.max(insets.bottom, FOOTER_PADDING),
           },
         ]}
       >
@@ -286,8 +297,8 @@ const styles = StyleSheet.create({
     gap: spacing.lg,
   },
   footer: {
-    padding: spacing.lg,
-    paddingTop: spacing.md,
+    paddingHorizontal: spacing.lg,
+    paddingTop: FOOTER_PADDING,
     borderTopWidth: 1,
   },
   hint: {
