@@ -306,10 +306,7 @@
       "targetSquare": "Casilla objetivo"
     },
     "result": {
-      "title": "¡Práctica completada!",
-      "problemDetails": "Detalles del problema",
-      "skipped": "Omitido",
-      "timeUp": "Tiempo agotado"
+      "title": "¡Práctica completada!"
     },
     "pieces": {
       "n": "Caballo",

@@ -306,10 +306,7 @@
       "targetSquare": "Target Square"
     },
     "result": {
-      "title": "Practice Complete!",
-      "problemDetails": "Problem Details",
-      "skipped": "Skipped",
-      "timeUp": "Time's up"
+      "title": "Practice Complete!"
     },
     "pieces": {
       "n": "Knight",

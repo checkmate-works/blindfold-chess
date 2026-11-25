@@ -306,10 +306,7 @@
       "targetSquare": "目標マス"
     },
     "result": {
-      "title": "練習終了！",
-      "problemDetails": "問題ごとの詳細",
-      "skipped": "スキップ",
-      "timeUp": "時間切れ"
+      "title": "練習終了！"
     },
     "pieces": {
       "n": "ナイト",

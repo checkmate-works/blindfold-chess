@@ -306,10 +306,7 @@
       "targetSquare": "Casa objetivo"
     },
     "result": {
-      "title": "Prática concluída!",
-      "problemDetails": "Detalhes do problema",
-      "skipped": "Pulado",
-      "timeUp": "Tempo esgotado"
+      "title": "Prática concluída!"
     },
     "pieces": {
       "n": "Cavalo",
