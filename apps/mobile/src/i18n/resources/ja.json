@@ -5,6 +5,7 @@
     "continue": "続ける",
     "back": "戻る",
     "settings": "設定",
+    "gameSettings": "ゲーム設定",
     "home": "ホーム",
     "practice": "練習",
     "challenge": "チャレンジ",
@@ -277,7 +278,7 @@
   },
   "coordinateQuiz": {
     "setup": {
-      "title": "クイズ設定",
+      "title": "座標クイズ",
       "duration": "制限時間",
       "durationSeconds": "{{seconds}}秒",
       "orientation": "盤面の向き",

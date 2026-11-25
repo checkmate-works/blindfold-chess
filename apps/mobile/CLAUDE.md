@@ -60,6 +60,12 @@ header style (page-coloured, no hairline, chevron-only back).
   lists, help and pickers inside a screen — it works inside the session
   modal and sizes to its content. Closes on backdrop tap, Android back, or a
   drag on its top row. Only the dimmed backdrop lifts it (no border/shadow).
+- **Setup screens** take the web's sections and their look, above the
+  app's own two-button footer: `HowToPlaySection` (the `moduleHelp`
+  how-to-play text over the module's demo), then a "Game Settings"
+  `SectionTitle` over the settings, with board orientation as the web's
+  swatches (`BoardOrientationSelector`). The header names the module, as the
+  web page's title does. Coordinate quiz so far, the target for the others.
 - **Help:** every practice setup screen's header has a ? that opens
   `HelpSheet` (`features/help/`), paged: how to play, the web tutorial's
   explanation steps, the challenge/training modes. `PracticeSetupScreen`

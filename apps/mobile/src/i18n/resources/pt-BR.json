@@ -5,6 +5,7 @@
     "continue": "Continuar",
     "back": "Voltar",
     "settings": "Configurações",
+    "gameSettings": "Configuração do jogo",
     "home": "Início",
     "practice": "Prática",
     "challenge": "Desafio",
@@ -277,7 +278,7 @@
   },
   "coordinateQuiz": {
     "setup": {
-      "title": "Configurações do quiz",
+      "title": "Quiz de coordenadas",
       "duration": "Duração",
       "durationSeconds": "{{seconds}} segundos",
       "orientation": "Orientação do tabuleiro",

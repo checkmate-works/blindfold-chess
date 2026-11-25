@@ -1,9 +1,7 @@
-import { View, StyleSheet } from "react-native";
+import { View } from "react-native";
 import { useTranslation } from "react-i18next";
-import { OptionsField } from "../../../components";
-import { spacing } from "../../../theme";
+import { BoardOrientationSelector, SectionTitle } from "../../../components";
 import type { QuizSettings } from "../lib/types";
-import { BOARD_ORIENTATIONS } from "../lib/types";
 
 type SettingsFormProps = {
   settings: QuizSettings;
@@ -13,14 +11,15 @@ type SettingsFormProps = {
   ) => void;
 };
 
+/** The setup screen's "Game Settings" section: the board orientation. */
 export function SettingsForm({ settings, onUpdateSetting }: SettingsFormProps) {
   const { t } = useTranslation();
 
   return (
-    <View style={styles.container}>
-      <OptionsField
+    <View>
+      <SectionTitle>{t("common.gameSettings")}</SectionTitle>
+      <BoardOrientationSelector
         label={t("coordinateQuiz.setup.orientation")}
-        options={BOARD_ORIENTATIONS}
         value={settings.orientation}
         onChange={(orientation) => onUpdateSetting("orientation", orientation)}
         formatOption={(orientation) =>
@@ -35,9 +34,3 @@ export function SettingsForm({ settings, onUpdateSetting }: SettingsFormProps) {
 function capitalize(str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
-
-const styles = StyleSheet.create({
-  container: {
-    gap: spacing.lg,
-  },
-});
