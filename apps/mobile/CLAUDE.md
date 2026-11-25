@@ -35,9 +35,8 @@ replaced by the platform's own parts or their common app equivalents.
   (`navigation/use-close-session.ts`, which pops the modal off the root stack
   and falls back to an href when nothing is underneath). Session → result is
   a `router.replace` inside the modal. A module with `sessionHeader`
-  (`navigation/practice-modules.ts`; coordinate quiz, legal moves and square
-  colors so far, the target for the others) gives its session a stack header like its
-  result and training screens: the module's name and the ×, with the hearts
+  (`navigation/practice-modules.ts`; coordinate quiz, legal moves, board symmetry, square colors, diagonal quiz and route planner so far, the target for the
+  others) gives its session a stack header like its result and training screens: the module's name and the ×, with the hearts
   and the clock in a row of their own below and a Quit link under the score
   (`PracticeSessionScreen` with `headerShown`). With `countdownInBody` the
   countdown stands inside the body (over the board, or where the square
@@ -75,8 +74,8 @@ header style (page-coloured, no hairline, chevron-only back).
   sign-in row (`ChallengeRulesNote`). The demo is the web's picture, but it
   plays the answer on a loop (`useDemoAnswerLoop`, one beat for every
   module). The header names the module, as the web page's title does.
-  Coordinate quiz, legal moves and square colors so far, the target for the
-  others.
+  Coordinate quiz, legal moves, board symmetry, square colors, diagonal quiz
+  and route planner so far, the target for the others.
 - **Two-way answers** (square colors' light / dark, legal moves' legal /
   illegal) are `AnswerPair` (`components/AnswerPair.tsx`): the module paints
   the two buttons and sizes them; the pair owns the press shrink, the verdict
@@ -88,7 +87,8 @@ header style (page-coloured, no hairline, chevron-only back).
   (the setup screen already says all of it). A module with
   `howToPlayOnSetup` leaves its how-to-play page out (`helpPagesFor`), and
   one with no page left gets no ? at all (coordinate quiz, legal moves,
-  square colors).
+  square colors). Board symmetry, diagonal quiz and route planner keep the ?
+  for the web tutorial's explanation steps.
   `PracticeSetupScreen` finds the module from the route, so a setup screen
   needs nothing for it.
 - **Header buttons** are `HeaderIconButton`; the session close button is

@@ -20,7 +20,8 @@ import type { PracticeModuleSlug } from "@blindfold-chess/features/practice-regi
  * @property sessionHeader - The timed session sits under a stack header with
  *   the module's name and the ×; see `ModuleRoute`. Modules move to it one at
  *   a time, along with their setup screen's port to the web's layout
- *   (coordinate quiz, legal moves and square colors so far).
+ *   (coordinate quiz, legal moves, board symmetry, square colors, diagonal
+ *   quiz and route planner so far).
  * @property howToPlayOnSetup - The setup screen shows the how-to-play text
  *   itself (`HowToPlaySection`), so the help sheet leaves that page out; see
  *   `helpPagesFor`.
