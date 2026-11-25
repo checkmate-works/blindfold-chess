@@ -34,9 +34,13 @@ replaced by the platform's own parts or their common app equivalents.
   an edge swipe; every screen in it closes it with `useCloseSession`
   (`navigation/use-close-session.ts`, which pops the modal off the root stack
   and falls back to an href when nothing is underneath). Session → result is
-  a `router.replace` inside the modal. Header-less sessions show the ×
-  through `PracticeSessionScreen` (built in) or `SessionTopBar`; timed ones
-  ask before leaving.
+  a `router.replace` inside the modal. A module with `sessionHeader`
+  (`navigation/practice-modules.ts`; coordinate quiz so far, the target for
+  the others) gives its session a stack header like its result and training
+  screens: the module's name and the ×, with the hearts and the clock in a
+  row of their own below (`PracticeSessionScreen` with `headerShown`).
+  Header-less sessions show the × through `PracticeSessionScreen` (built in)
+  or `SessionTopBar`; timed ones ask before leaving.
 
 Screen titles and options are registered in the layouts, not in the
 screens: `moduleSetupScreens` / `moduleSessionScreens`

@@ -25,6 +25,14 @@ type PracticeSessionScreenProps = {
    * `ChallengeStatusHeader` puts them. Omitted → no hearts.
    */
   lives?: { readonly remaining: number; readonly max: number };
+  /**
+   * The stack draws this session's header (the module's `sessionHeader`):
+   * the × is there, so the top row holds only the hearts on the left and the
+   * clock on the right, as the web's `ChallengeStatusHeader` does, and the
+   * header clears the status bar. Omitted → no header: the × leads the top
+   * row and the frame clears the status bar itself.
+   */
+  headerShown?: boolean;
   /** Tightens the score footer's spacing where the body already pads itself. */
   footerStyle?: StyleProp<ViewStyle>;
   children: ReactNode;
@@ -32,8 +40,9 @@ type PracticeSessionScreenProps = {
 
 /**
  * The frame every timed practice session renders inside: the countdown
- * overlay, the top row (close button and hearts on the left, the clock on the
- * right), the body, and the running score.
+ * overlay, the top row (hearts on the left — after the close button when the
+ * session has no stack header — and the clock on the right), the body, and
+ * the running score.
  *
  * @description
  * Sibling of `PracticeSetupScreen` and `PracticeResultScreen` — the third
@@ -51,6 +60,7 @@ export function PracticeSessionScreen({
   correctCount,
   incorrectCount,
   lives,
+  headerShown = false,
   footerStyle,
   children,
 }: PracticeSessionScreenProps) {
@@ -58,12 +68,12 @@ export function PracticeSessionScreen({
   // `Screen`'s `SafeAreaView`: in this header-less screen of the
   // full-screen session modal the view's own top inset came out as 0 on iOS
   // (Expo SDK 58, iPhone 17 simulator), so the close button, hearts and clock
-  // sat under the status bar.
+  // sat under the status bar. Under a stack header the header clears it.
   const insets = useSafeAreaInsets();
   return (
     <Screen
       edges={["bottom", "left", "right"]}
-      style={{ paddingTop: insets.top }}
+      style={{ paddingTop: headerShown ? 0 : insets.top }}
     >
       <CountdownOverlay countdown={countdown} />
 
@@ -71,7 +81,7 @@ export function PracticeSessionScreen({
         <>
           <View style={styles.timerRow}>
             <View style={styles.leading}>
-              <SessionCloseButton confirm />
+              {!headerShown && <SessionCloseButton confirm />}
               {lives && (
                 <LivesIndicator remaining={lives.remaining} max={lives.max} />
               )}

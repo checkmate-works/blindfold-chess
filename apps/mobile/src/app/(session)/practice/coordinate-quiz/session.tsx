@@ -137,6 +137,7 @@ function CoordinateQuizSession({
         remaining: Math.max(MISTAKE_LIMIT - incorrectCount, 0),
         max: MISTAKE_LIMIT,
       }}
+      headerShown
     >
       <View style={styles.body}>
         <View style={styles.turnRow}>
@@ -153,10 +154,15 @@ function CoordinateQuizSession({
   );
 }
 
+/**
+ * Stacked from the top with the score right under the board, as the web's
+ * session lays it out. Centring the body would open a gap between the clock
+ * row and the board on a tall phone.
+ */
 const styles = StyleSheet.create({
   body: {
-    flex: 1,
-    justifyContent: "center",
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.lg,
   },
   turnRow: {
     alignItems: "center",
