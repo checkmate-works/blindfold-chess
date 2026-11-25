@@ -8,9 +8,13 @@ import {
 } from "@blindfold-chess/features/route-planner";
 import type { Square } from "@blindfold-chess/types";
 
-import { fontSize, fontWeight, useTheme } from "../../../theme";
-import { MONO_FONT } from "../lib/fonts";
-import { withAlpha } from "../lib/with-alpha";
+import {
+  fontSize,
+  fontWeight,
+  useTheme,
+  monoFont,
+  withAlpha,
+} from "../../../theme";
 import { RouteBoard } from "./RouteBoard";
 
 /** Which strip drives the board, and the square picked in it. */
@@ -251,12 +255,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   endpoint: {
-    fontFamily: MONO_FONT,
+    fontFamily: monoFont,
     fontSize: fontSize.sm,
     fontWeight: fontWeight.bold,
   },
   step: {
-    fontFamily: MONO_FONT,
+    fontFamily: monoFont,
     fontSize: fontSize.xs,
   },
 });

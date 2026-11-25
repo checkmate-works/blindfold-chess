@@ -81,6 +81,43 @@ header style (page-coloured, no hairline, chevron-only back).
   the two buttons and sizes them; the pair owns the press shrink, the verdict
   ring (laid over the border, so it never moves the layout) and the dimmed
   other button. Without `onAnswer` it is a still picture for a setup demo.
+- **Square entry** (board symmetry, diagonal quiz, route planner) is
+  `CoordinateInput` (`components/CoordinateInput.tsx`), the web's
+  `CoordinateInput`: the file row and the rank row, built from
+  `CoordinateKeyRow` (which owns the keys' size, radius and colours; knight
+  tour uses the row directly). It has two kinds of "off": `disabled` locks
+  the whole pad at half opacity and keeps the staged keys filled (a
+  verdict, a countdown), while `disabledFile` / `disabledRank` turn single
+  keys off (diagonal quiz's file-then-rank steps). `showFiles` /
+  `showRanks` draw one row, for a module that spaces the rows itself. What
+  a press means stays in the module: the route planner's either-order
+  reducer and piece row, the diagonal quiz's step hint, backspace and
+  Clear. A module whose lock covers more than the keys (route planner)
+  fades its own container and leaves `disabled` off, or the two opacities
+  multiply.
+- **Picture boards** — a board that explains an answer and takes no tap
+  (diagonal quiz's `DiagonalBoard`, route planner's `RouteBoard`) — are
+  `StaticBoard` (`components/StaticBoard.tsx`): the module gives each
+  square a tint (`squareTint`) and content (`renderSquare`); the board owns
+  the themed squares, the coordinate letters (always shown, whatever
+  `showCoordinates` says, since they are part of the explanation), the
+  rounded corners and the size — up to `maxSize`, filling its container, or
+  the screen less `horizontalInset` when the size must be known on the
+  first frame. A board the player taps (coordinate quiz, FEN recreation,
+  knight's tour) is not one. The AI-game `ChessBoard` and `FenBoard` are
+  still separate: they differ in corner radius, label size and flipping.
+- **Problem Details** under a challenge result (diagonal quiz, route
+  planner) is `ProblemDetailsList` (`components/ProblemDetailsList.tsx`):
+  a `ListSection` titled `practiceResult.problemDetails` with one row per
+  problem — "No.N", the module's subtitle, the verdict (OK / NG / skipped,
+  or time-up in a neutral colour with a clock, never as one more wrong
+  answer). Rows open independently, and the ones not answered right start
+  open. The module supplies only `verdictOf` (fold its flags with
+  `problemVerdict`), `renderSubtitle` and `renderDetails`; a board sized
+  from the window width subtracts `PROBLEM_DETAILS_INSET`. The session
+  hands each problem's result to the result screen in a route param
+  (`lib/result-params.ts` in each module), since `onComplete` carries only
+  the totals.
 - **Help:** a practice setup screen's header has a ? that opens
   `HelpSheet` (`features/help/`), paged: how to play and the web tutorial's
   explanation steps. The web's challenge/training mode pages are not ported

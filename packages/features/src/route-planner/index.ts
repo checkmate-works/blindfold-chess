@@ -10,8 +10,4 @@ export type {
   UseRoutePlannerSessionConfig,
   UseRoutePlannerSessionReturn,
 } from "./use-route-planner-session";
-export type {
-  UseRoutePlannerInputConfig,
-  UseRoutePlannerInputReturn,
-} from "./use-route-planner-input";
 export * from "./challenge";

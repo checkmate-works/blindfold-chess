@@ -1,21 +1,20 @@
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import {
-  useTheme,
-  fontSize,
-  fontWeight,
-  borderRadius,
-  touchTarget,
-} from "../theme";
+import { useTheme, fontSize, fontWeight, touchTarget } from "../theme";
 
 type CoordinateKeyRowProps = {
   keys: readonly string[];
-  /** When false the whole row dims to 0.3 and stops accepting taps. */
+  /** When false every key in the row takes the disabled look below. */
   enabled: boolean;
   /**
+   * Disables single keys, with the same look as `enabled={false}`: the key
+   * fades to 0.3, its label turns muted and it stops accepting taps.
+   */
+  isKeyDisabled?: (key: string) => boolean;
+  /**
    * The key currently held as part of a half-entered coordinate, drawn in the
-   * primary colour. Route-planner shows the chosen file this way while the
-   * player picks a rank; the modules that consume a coordinate immediately
-   * pass nothing.
+   * primary colour. A keypad that stages a file and a rank before committing
+   * them shows the staged keys this way; one that consumes each key
+   * immediately passes nothing.
    */
   activeKey?: string | null;
   onPress: (key: string) => void;
@@ -25,17 +24,22 @@ type CoordinateKeyRowProps = {
  * One row of eight algebraic keys.
  *
  * @description
- * The file/rank keypad is how three modules take a square from the player,
- * and each had its own copy of the row: the same `flex: 1` keys at
- * `touchTarget.minSize`, the same `opacity: 0.3` disabled treatment, the same
- * tabular-figure label. Keeping the touch target here matters more than the
- * line count — it is an accessibility floor, and a floor enforced in three
- * places is a floor that eventually differs in one.
+ * The file/rank keypad is how the practice modules take a square from the
+ * player, and each used to have its own copy of the row: the same `flex: 1`
+ * keys at `touchTarget.minSize`, the same `opacity: 0.3` disabled treatment,
+ * the same tabular-figure label. Keeping the touch target here matters more
+ * than the line count — it is an accessibility floor, and a floor enforced
+ * in several places is a floor that eventually differs in one.
+ *
+ * A module that wants the whole file-and-rank pad uses `CoordinateInput`,
+ * which is built from two of these rows; a module that only needs the rows
+ * themselves (knight tour) uses this directly.
  */
 export function CoordinateKeyRow({
   keys,
   enabled,
   activeKey = null,
+  isKeyDisabled,
   onPress,
 }: CoordinateKeyRowProps) {
   const { colors } = useTheme();
@@ -44,18 +48,19 @@ export function CoordinateKeyRow({
     <View style={styles.row}>
       {keys.map((key) => {
         const isActive = activeKey === key;
+        const isEnabled = enabled && !isKeyDisabled?.(key);
         return (
           <TouchableOpacity
             key={key}
             onPress={() => onPress(key)}
-            disabled={!enabled}
+            disabled={!isEnabled}
             activeOpacity={0.7}
             style={[
               styles.key,
               {
                 borderColor: isActive ? colors.primary : colors.border,
                 backgroundColor: isActive ? colors.primary : colors.background,
-                opacity: enabled ? 1 : 0.3,
+                opacity: isEnabled ? 1 : 0.3,
               },
             ]}
           >
@@ -65,7 +70,7 @@ export function CoordinateKeyRow({
                 {
                   color: isActive
                     ? colors.primaryForeground
-                    : enabled
+                    : isEnabled
                       ? colors.foreground
                       : colors.mutedForeground,
                 },
@@ -102,7 +107,8 @@ const styles = StyleSheet.create({
   key: {
     flex: 1,
     minHeight: touchTarget.minSize,
-    borderRadius: borderRadius.md,
+    // The web keypad's `rounded-md`, not the theme's 8.
+    borderRadius: 6,
     borderWidth: 1,
     justifyContent: "center",
     alignItems: "center",

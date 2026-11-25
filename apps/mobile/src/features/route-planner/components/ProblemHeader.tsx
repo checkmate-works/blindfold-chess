@@ -4,9 +4,13 @@ import { useTranslation } from "react-i18next";
 import { ChessPieceIcon } from "@blindfold-chess/icons";
 import type { RoutePlannerProblem } from "@blindfold-chess/features/route-planner";
 
-import { fontSize, fontWeight, useTheme } from "../../../theme";
-import { MONO_FONT } from "../lib/fonts";
-import { withAlpha } from "../lib/with-alpha";
+import {
+  fontSize,
+  fontWeight,
+  useTheme,
+  monoFont,
+  withAlpha,
+} from "../../../theme";
 
 /** The web's `w-14 h-14` piece box and its 32px piece. */
 const BOX_SIZE = 56;
@@ -113,7 +117,7 @@ const styles = StyleSheet.create({
     fontSize: fontSize.sm,
   },
   square: {
-    fontFamily: MONO_FONT,
+    fontFamily: monoFont,
     fontSize: fontSize.xl,
     fontWeight: fontWeight.bold,
   },

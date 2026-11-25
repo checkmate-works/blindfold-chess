@@ -103,7 +103,10 @@
     "timeTaken": "Tiempo empleado",
     "averageTime": "Tiempo medio",
     "playAgain": "Jugar de nuevo",
-    "backToMenu": "Volver al menú"
+    "backToMenu": "Volver al menú",
+    "problemDetails": "Detalles del problema",
+    "skipped": "Omitido",
+    "timeUp": "Tiempo agotado"
   },
   "onboarding": {
     "skip": "Omitir",
@@ -303,10 +306,7 @@
       "targetSquare": "Casilla objetivo"
     },
     "result": {
-      "title": "¡Práctica completada!",
-      "problemDetails": "Detalles del problema",
-      "skipped": "Omitido",
-      "timeUp": "Tiempo agotado"
+      "title": "¡Práctica completada!"
     },
     "pieces": {
       "n": "Caballo",
@@ -394,8 +394,6 @@
       "selectRank": "Selecciona una fila (1-8)",
       "backspace": "Retroceso",
       "clear": "Borrar",
-      "correct": "¡Correcto!",
-      "incorrect": "Incorrecto",
       "correctAnswer": "{{diagonal}}, {{antiDiagonal}}",
       "nextProblem": "Siguiente Problema",
       "yourAnswer": "Tu respuesta",
@@ -408,9 +406,7 @@
       "antiDiagonalDirection": "(dirección h1-a8)"
     },
     "result": {
-      "title": "¡Práctica completada!",
-      "problemDetails": "Detalles del problema",
-      "timeUp": "Tiempo agotado"
+      "title": "¡Práctica completada!"
     },
     "settings": {
       "timeLimit": "Tiempo límite",

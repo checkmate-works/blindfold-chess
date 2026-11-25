@@ -1,8 +1,7 @@
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useTranslation } from "react-i18next";
 import { Delete } from "lucide-react-native";
-import { CoordinateKeyRow, coordinateKeypadStyles } from "../../../components";
-import { FILES, RANKS } from "@blindfold-chess/types";
+import { CoordinateInput, coordinateKeypadStyles } from "../../../components";
 import {
   useTheme,
   fontSize,
@@ -23,9 +22,15 @@ type FileRankButtonsProps = {
 };
 
 /**
- * The step hint over the web's `ChessCoordinateKeypad`: the file row, the
- * rank row, then backspace and Clear. The hint keeps its line while it is
+ * The step hint over the web's `ChessCoordinateKeypad`: the shared file and
+ * rank pad, then backspace and Clear. The hint keeps its line while it is
  * blank (during a verdict or the countdown), so the keys never move.
+ *
+ * The pad is switched off key by key (`disabledFile` / `disabledRank`), not
+ * with its whole-pad lock: the answer is typed a file, then a rank, so the
+ * row that is not wanted yet has to look off while the other stays at full
+ * strength, and while the whole surface is locked every key takes the same
+ * faded look as the backspace and Clear buttons beside them.
  */
 export function FileRankButtons({
   expectingFile,
@@ -60,18 +65,14 @@ export function FileRankButtons({
       </Text>
 
       <View style={styles.keypad}>
-        {/* No `activeKey`: an entered file goes straight into the answer
-            string above, so there is nothing half-entered to highlight. */}
-        <CoordinateKeyRow
-          keys={FILES}
-          enabled={!disabled && expectingFile}
-          onPress={onFilePress}
-        />
-
-        <CoordinateKeyRow
-          keys={RANKS}
-          enabled={!disabled && expectingRank}
-          onPress={onRankPress}
+        {/* No `selectedFile` / `selectedRank`: an entered file goes straight
+            into the answer string above, so there is nothing half-entered
+            to highlight. */}
+        <CoordinateInput
+          onFilePress={onFilePress}
+          onRankPress={onRankPress}
+          disabledFile={() => disabled || !expectingFile}
+          disabledRank={() => disabled || !expectingRank}
         />
 
         <View style={styles.actionRow}>
