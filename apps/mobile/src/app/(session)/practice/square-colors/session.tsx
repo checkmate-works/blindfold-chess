@@ -20,6 +20,7 @@ import {
   SquareQuestion,
 } from "../../../../features/square-colors/components";
 import { answerHaptics } from "../../../../lib/answer-haptics";
+import { useGamePreferences } from "../../../../lib/game-preferences";
 import { serializePracticeStatsParams } from "../../../../lib/practice-result-params";
 
 const SETTINGS = {};
@@ -50,6 +51,7 @@ function SquareColorsChallengeSession({
   remote: RemoteChallengePort<Square> | undefined;
 }) {
   const router = useRouter();
+  const { preferences } = useGamePreferences();
 
   const handleComplete = useCallback(
     (result: SquareColorsResult) => {
@@ -104,6 +106,7 @@ function SquareColorsChallengeSession({
         <ColorButtons
           onAnswer={handleAnswer}
           disabled={showFeedback || awaitingServer}
+          boardTheme={preferences.boardTheme}
         />
       </View>
     </PracticeSessionScreen>
