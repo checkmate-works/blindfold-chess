@@ -519,18 +519,23 @@
       "quitConfirmNo": "Continuar",
       "whitePieces": "Piezas Blancas",
       "blackPieces": "Piezas Negras",
-      "problem": "Problema",
-      "eraser": "Borrador",
-      "clearBoard": "Limpiar tablero",
-      "selectPiece": "Elige una pieza y toca casillas para colocarla. Tócala de nuevo para quitarla.",
-      "problemOf": "{{current}} / {{total}}"
+      "removePiece": "Quitar pieza",
+      "removePieceMode": "Modo de eliminar pieza - Toca una casilla para eliminar la pieza",
+      "placingPiece": "Colocando",
+      "clearBoard": "Vaciar",
+      "clearBoardConfirmTitle": "¿Vaciar el tablero?",
+      "clearBoardConfirmMessage": "Se quitarán todas las piezas que has colocado.",
+      "clearBoardConfirmYes": "Vaciar",
+      "clearBoardConfirmNo": "Cancelar"
     },
     "problemResult": {
       "accuracy": "Precisión",
+      "recreationProgress": "Progreso de recreación",
       "correct": "Correcto",
       "incorrect": "Incorrecto",
       "missing": "Faltante",
       "extra": "Extra",
+      "extraDescription": "Piezas extra colocadas en casillas vacías",
       "original": "Original",
       "yourRecreation": "Tu Recreación",
       "nextProblem": "Siguiente Problema",
@@ -692,8 +697,10 @@
     },
     "session": {
       "memorize": "Memoriza la posición",
-      "memorized": "Memorizada",
-      "recreate": "Recrea la posición"
+      "memorized": "Ya la memoricé",
+      "recreate": "Recrear",
+      "viewAgain": "Ver de nuevo",
+      "analyzeOnLichess": "Analizar en Lichess"
     },
     "result": {
       "title": "Resultados"

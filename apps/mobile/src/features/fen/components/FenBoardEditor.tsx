@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import type { ReactNode } from "react";
+import { View, Text, StyleSheet, Pressable } from "react-native";
 import { useTranslation } from "react-i18next";
 import {
-  EMPTY_BOARD_FEN,
   PALETTE_PIECES,
   applyBoardTap,
   type PalettePiece,
@@ -10,32 +10,32 @@ import {
 import { ChessPieceIcon } from "@blindfold-chess/icons";
 import type { PieceColor, PieceType } from "@blindfold-chess/icons";
 
-import { Button } from "../../../components";
-import {
-  useTheme,
-  spacing,
-  borderRadius,
-  fontSize,
-  touchTarget,
-} from "../../../theme";
+import { useTheme, spacing, fontSize, withAlpha } from "../../../theme";
 import { FenBoard } from "./FenBoard";
 
 type FenBoardEditorProps = {
   fen: string;
   onFenChange: (fen: string) => void;
-  /** Initial orientation; the player can flip it afterwards. */
-  initialFlipped?: boolean;
+  /** Orientation; the screen's flip button owns it. */
+  flipped: boolean;
 };
 
 const WHITE_PIECES = PALETTE_PIECES.filter((p) => p === p.toUpperCase());
 const BLACK_PIECES = PALETTE_PIECES.filter((p) => p === p.toLowerCase());
 
+/** The web palette's `w-10 h-10` keys, with a 32pt piece in each. */
+const KEY_SIZE = 40;
+
 /**
- * The FEN drill's recreation board on a phone. The web editor drags pieces
- * from a palette; dragging onto 40-point squares is error-prone on a touch
- * screen, so here the player picks a piece (or the eraser) once and taps
- * squares to place it. Tapping a square that already holds the selected
- * piece removes it, and "clear" empties the board.
+ * The recreation board as the web's `EditableChessBoard` lays it out: the
+ * far side's palette above the board, the near side's below (swapped when
+ * the board is flipped), each with a × that removes pieces, and a line
+ * between the board and the lower palette saying what a tap does.
+ *
+ * The web also drags pieces from the palette; dragging onto 40-point
+ * squares is error-prone on a touch screen, so here a piece (or the ×) is
+ * picked once and every tapped square takes it. Tapping a square that
+ * already holds the picked piece removes it.
  *
  * Only piece placement is edited: the side to move, castling and the other
  * FEN fields are kept from `fen`, because the drill scores placement alone.
@@ -43,60 +43,41 @@ const BLACK_PIECES = PALETTE_PIECES.filter((p) => p === p.toLowerCase());
 export function FenBoardEditor({
   fen,
   onFenChange,
-  initialFlipped = false,
+  flipped,
 }: FenBoardEditorProps) {
   const { t } = useTranslation();
+  const { colors } = useTheme();
   const [selected, setSelected] = useState<PalettePiece | null>("K");
-  const [flipped, setFlipped] = useState(initialFlipped);
+
+  const white = { pieces: WHITE_PIECES, label: t("fen.session.whitePieces") };
+  const black = { pieces: BLACK_PIECES, label: t("fen.session.blackPieces") };
+  const [top, bottom] = flipped ? [white, black] : [black, white];
 
   return (
     <View style={styles.container}>
+      <Palette {...top} selected={selected} onSelect={setSelected} />
       <FenBoard
         fen={fen}
         flipped={flipped}
         onSquarePress={(square) =>
           onFenChange(applyBoardTap(fen, square, selected))
         }
+        maxSize={448}
       />
-
-      <PaletteRow
-        label={t("fen.session.whitePieces")}
-        pieces={WHITE_PIECES}
-        selected={selected}
-        onSelect={setSelected}
-      />
-      <PaletteRow
-        label={t("fen.session.blackPieces")}
-        pieces={BLACK_PIECES}
-        selected={selected}
-        onSelect={setSelected}
-      />
-
-      <View style={styles.actions}>
-        <Button
-          title={t("fen.session.eraser")}
-          onPress={() => setSelected(null)}
-          variant={selected === null ? "primary" : "outline"}
-          size="sm"
-        />
-        <Button
-          title={t("fen.session.clearBoard")}
-          onPress={() => onFenChange(EMPTY_BOARD_FEN)}
-          variant="outline"
-          size="sm"
-        />
-        <Button
-          title={t("fen.session.flipBoard")}
-          onPress={() => setFlipped((prev) => !prev)}
-          variant="outline"
-          size="sm"
-        />
-      </View>
+      <Text
+        style={[styles.mode, { color: colors.mutedForeground }]}
+        accessibilityLiveRegion="polite"
+      >
+        {selected === null
+          ? t("fen.session.removePieceMode")
+          : `${t("fen.session.placingPiece")} ${t(`fen.pieceNames.${selected}`)}`}
+      </Text>
+      <Palette {...bottom} selected={selected} onSelect={setSelected} />
     </View>
   );
 }
 
-function PaletteRow({
+function Palette({
   label,
   pieces,
   selected,
@@ -105,40 +86,39 @@ function PaletteRow({
   label: string;
   pieces: readonly PalettePiece[];
   selected: PalettePiece | null;
-  onSelect: (piece: PalettePiece) => void;
+  onSelect: (piece: PalettePiece | null) => void;
 }) {
+  const { t } = useTranslation();
   const { colors } = useTheme();
 
   return (
-    <View style={styles.paletteSection}>
+    <View style={styles.palette}>
       <Text style={[styles.paletteLabel, { color: colors.mutedForeground }]}>
         {label}
       </Text>
-      <View style={styles.paletteRow}>
+      <View style={[styles.paletteRow, { borderColor: colors.border }]}>
+        <PaletteKey
+          selected={selected === null}
+          onPress={() => onSelect(null)}
+          accessibilityLabel={t("fen.session.removePiece")}
+        >
+          <Text style={[styles.remove, { color: colors.foreground }]}>×</Text>
+        </PaletteKey>
         {pieces.map((piece) => {
-          const isSelected = piece === selected;
           const lower = piece.toLowerCase();
           return (
-            <TouchableOpacity
+            <PaletteKey
               key={piece}
+              selected={piece === selected}
               onPress={() => onSelect(piece)}
-              accessibilityRole="button"
-              accessibilityState={{ selected: isSelected }}
-              accessibilityLabel={piece}
-              style={[
-                styles.paletteItem,
-                {
-                  borderColor: isSelected ? colors.primary : colors.border,
-                  backgroundColor: isSelected ? colors.secondary : colors.card,
-                },
-              ]}
+              accessibilityLabel={t(`fen.pieceNames.${piece}`)}
             >
               <ChessPieceIcon
                 type={lower as PieceType}
                 color={(piece === lower ? "b" : "w") as PieceColor}
-                size={touchTarget.minSize * 0.75}
+                size={32}
               />
-            </TouchableOpacity>
+            </PaletteKey>
           );
         })}
       </View>
@@ -146,32 +126,82 @@ function PaletteRow({
   );
 }
 
+/** One palette key: the web's `rounded border-2`, `border-foreground bg-foreground/10` when picked. */
+function PaletteKey({
+  selected,
+  onPress,
+  accessibilityLabel,
+  children,
+}: {
+  selected: boolean;
+  onPress: () => void;
+  accessibilityLabel: string;
+  children: ReactNode;
+}) {
+  const { colors } = useTheme();
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityState={{ selected }}
+      accessibilityLabel={accessibilityLabel}
+      style={({ pressed }) => [
+        styles.key,
+        {
+          borderColor: selected ? colors.foreground : colors.border,
+          backgroundColor: selected
+            ? withAlpha(colors.foreground, 0.1)
+            : pressed
+              ? colors.muted
+              : "transparent",
+        },
+        selected && styles.keySelected,
+      ]}
+    >
+      {children}
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
+  // The web's `gap-4` column.
   container: {
+    alignItems: "center",
     gap: spacing.md,
   },
-  paletteSection: {
-    gap: spacing.xs,
+  palette: {
+    alignItems: "center",
+    gap: spacing.sm,
   },
   paletteLabel: {
-    fontSize: fontSize.sm,
+    fontSize: fontSize.xs,
+    fontWeight: "500",
   },
+  // `flex gap-1 p-2 border rounded-lg`.
   paletteRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    gap: spacing.xs,
+    padding: spacing.sm,
+    borderWidth: 1,
+    borderRadius: 8,
   },
-  paletteItem: {
-    width: touchTarget.minSize + spacing.sm,
-    height: touchTarget.minSize + spacing.sm,
+  key: {
+    width: KEY_SIZE,
+    height: KEY_SIZE,
     borderWidth: 2,
-    borderRadius: borderRadius.md,
+    borderRadius: 4,
     alignItems: "center",
     justifyContent: "center",
   },
-  actions: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: spacing.sm,
-    justifyContent: "center",
+  // `scale-105`.
+  keySelected: {
+    transform: [{ scale: 1.05 }],
+  },
+  remove: {
+    fontSize: fontSize.md,
+  },
+  mode: {
+    fontSize: fontSize.sm,
+    textAlign: "center",
   },
 });

@@ -519,18 +519,23 @@
       "quitConfirmNo": "Continue",
       "whitePieces": "White Pieces",
       "blackPieces": "Black Pieces",
-      "problem": "Problem",
-      "eraser": "Eraser",
-      "clearBoard": "Clear Board",
-      "selectPiece": "Pick a piece, then tap squares to place it. Tap again to remove it.",
-      "problemOf": "{{current}} / {{total}}"
+      "removePiece": "Remove piece",
+      "removePieceMode": "Remove piece mode - Tap a square to remove a piece",
+      "placingPiece": "Placing",
+      "clearBoard": "Clear",
+      "clearBoardConfirmTitle": "Clear the board?",
+      "clearBoardConfirmMessage": "All pieces you have placed will be removed.",
+      "clearBoardConfirmYes": "Clear",
+      "clearBoardConfirmNo": "Cancel"
     },
     "problemResult": {
       "accuracy": "Accuracy",
+      "recreationProgress": "Recreation Progress",
       "correct": "Correct",
       "incorrect": "Incorrect",
       "missing": "Missing",
       "extra": "Extra",
+      "extraDescription": "Extra pieces placed in empty squares",
       "original": "Original",
       "yourRecreation": "Your Recreation",
       "nextProblem": "Next Problem",
@@ -691,9 +696,11 @@
       "seconds": "{{count}}s"
     },
     "session": {
-      "memorize": "Memorize the position",
-      "memorized": "Memorized",
-      "recreate": "Recreate the position"
+      "memorize": "Memorize the Position",
+      "memorized": "I've Memorized",
+      "recreate": "Recreate",
+      "viewAgain": "View Again",
+      "analyzeOnLichess": "Analyze on Lichess"
     },
     "result": {
       "title": "Results"

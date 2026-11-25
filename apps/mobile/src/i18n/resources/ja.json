@@ -519,18 +519,23 @@
       "quitConfirmNo": "続ける",
       "whitePieces": "白の駒",
       "blackPieces": "黒の駒",
-      "problem": "問題",
-      "eraser": "消しゴム",
-      "clearBoard": "ボードをクリア",
-      "selectPiece": "駒を選んでからマスをタップして配置します。もう一度タップすると取り除きます。",
-      "problemOf": "{{current}} / {{total}}"
+      "removePiece": "駒を取り除く",
+      "removePieceMode": "駒を削除 - マスをタップして駒を削除",
+      "placingPiece": "配置中:",
+      "clearBoard": "クリア",
+      "clearBoardConfirmTitle": "盤面をクリアしますか？",
+      "clearBoardConfirmMessage": "配置したすべての駒が取り除かれます。",
+      "clearBoardConfirmYes": "クリア",
+      "clearBoardConfirmNo": "キャンセル"
     },
     "problemResult": {
       "accuracy": "正解率",
+      "recreationProgress": "再現度",
       "correct": "正解",
       "incorrect": "誤答",
       "missing": "漏れ",
       "extra": "余分",
+      "extraDescription": "空白のマスに配置された余分な駒",
       "original": "正解",
       "yourRecreation": "あなたの再現",
       "nextProblem": "次の問題",
@@ -691,9 +696,11 @@
       "seconds": "{{count}}秒"
     },
     "session": {
-      "memorize": "位置を記憶してください",
+      "memorize": "局面を覚えてください",
       "memorized": "覚えた",
-      "recreate": "盤面を再現"
+      "recreate": "盤面を再現",
+      "viewAgain": "もう一度見る",
+      "analyzeOnLichess": "Lichessで解析"
     },
     "result": {
       "title": "結果"

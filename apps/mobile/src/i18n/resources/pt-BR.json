@@ -519,18 +519,23 @@
       "quitConfirmNo": "Continuar",
       "whitePieces": "Peças Brancas",
       "blackPieces": "Peças Pretas",
-      "problem": "Problema",
-      "eraser": "Borracha",
-      "clearBoard": "Limpar tabuleiro",
-      "selectPiece": "Escolha uma peça e toque nas casas para colocá-la. Toque de novo para removê-la.",
-      "problemOf": "{{current}} / {{total}}"
+      "removePiece": "Remover peça",
+      "removePieceMode": "Modo de remover peça - Toque em uma casa para remover a peça",
+      "placingPiece": "Colocando",
+      "clearBoard": "Limpar",
+      "clearBoardConfirmTitle": "Limpar o tabuleiro?",
+      "clearBoardConfirmMessage": "Todas as peças que você colocou serão removidas.",
+      "clearBoardConfirmYes": "Limpar",
+      "clearBoardConfirmNo": "Cancelar"
     },
     "problemResult": {
       "accuracy": "Precisão",
+      "recreationProgress": "Progresso de recriação",
       "correct": "Correto",
       "incorrect": "Incorreto",
       "missing": "Ausente",
       "extra": "Extra",
+      "extraDescription": "Peças extras colocadas em casas vazias",
       "original": "Original",
       "yourRecreation": "Sua Recriação",
       "nextProblem": "Próximo Problema",
@@ -692,8 +697,10 @@
     },
     "session": {
       "memorize": "Memorize a posição",
-      "memorized": "Memorizei",
-      "recreate": "Recrie a posição"
+      "memorized": "Já memorizei",
+      "recreate": "Recriar",
+      "viewAgain": "Ver novamente",
+      "analyzeOnLichess": "Analisar no Lichess"
     },
     "result": {
       "title": "Resultados"

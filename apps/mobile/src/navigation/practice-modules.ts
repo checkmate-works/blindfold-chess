@@ -121,8 +121,13 @@ export const MOBILE_PRACTICE_MODULES: readonly MobilePracticeModule[] = [
     sessionHeader: true,
     howToPlayOnSetup: true,
   },
-  { slug: "fen", i18nKey: "fen", icon: "📝" },
-  { slug: "position-memory", i18nKey: "positionMemory", icon: "🧠" },
+  { slug: "fen", i18nKey: "fen", icon: "📝", sessionHeader: true },
+  {
+    slug: "position-memory",
+    i18nKey: "positionMemory",
+    icon: "🧠",
+    sessionHeader: true,
+  },
   { slug: "recall", i18nKey: "recall", icon: "🔁" },
   { slug: "puzzle", i18nKey: "puzzle", icon: "🧩" },
 ];
