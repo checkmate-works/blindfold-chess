@@ -1,4 +1,3 @@
-import { useTranslation } from "react-i18next";
 import { useLocalSearchParams } from "expo-router";
 
 import {
@@ -9,16 +8,11 @@ import { parsePracticeStatsParams } from "../../../../lib/practice-result-params
 import type { PracticeStatsParams } from "../../../../lib/practice-result-params";
 
 export default function QuadrantsResult() {
-  const { t } = useTranslation();
   const params = useLocalSearchParams<PracticeStatsParams>();
   const result = parsePracticeStatsParams(params);
 
   return (
-    <PracticeResultScreen
-      playAgainLabel={t("quadrants.result.playAgain")}
-      backToMenuLabel={t("quadrants.result.backToMenu")}
-      setupHref="/practice/quadrants"
-    >
+    <PracticeResultScreen setupHref="/practice/quadrants">
       <PracticeStatsResultCard result={result} />
     </PracticeResultScreen>
   );

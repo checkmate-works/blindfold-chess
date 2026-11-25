@@ -100,7 +100,9 @@
     "correctAnswers": "Respuestas correctas",
     "accuracy": "Precisión",
     "timeTaken": "Tiempo empleado",
-    "averageTime": "Tiempo medio"
+    "averageTime": "Tiempo medio",
+    "playAgain": "Jugar de nuevo",
+    "backToMenu": "Volver al menú"
   },
   "onboarding": {
     "skip": "Omitir",
@@ -219,9 +221,7 @@
       "incorrect": "Incorrecto"
     },
     "result": {
-      "title": "¡Práctica completada!",
-      "playAgain": "Jugar de nuevo",
-      "backToMenu": "Volver al menú"
+      "title": "¡Práctica completada!"
     },
     "pieces": {
       "b": "Alfil",
@@ -247,8 +247,6 @@
     },
     "result": {
       "title": "Resultados",
-      "playAgain": "Jugar de nuevo",
-      "backToMenu": "Volver a la práctica",
       "timeTaken": "Tiempo"
     },
     "settings": {
@@ -265,9 +263,7 @@
       "dark": "Oscura"
     },
     "result": {
-      "title": "¡Práctica completada!",
-      "playAgain": "Jugar de nuevo",
-      "backToMenu": "Volver al menú"
+      "title": "¡Práctica completada!"
     },
     "settings": {
       "timeLimit": "Tiempo límite",
@@ -294,9 +290,7 @@
     "result": {
       "title": "¡Quiz completado!",
       "totalQuestions": "Preguntas totales",
-      "points": "Puntos",
-      "playAgain": "Jugar de nuevo",
-      "backToMenu": "Volver al menú"
+      "points": "Puntos"
     }
   },
   "routePlanner": {
@@ -324,9 +318,7 @@
       "title": "¡Práctica completada!",
       "score": "Puntuación",
       "correct": "Correctas",
-      "accuracy": "Precisión",
-      "playAgain": "Jugar de nuevo",
-      "backToMenu": "Volver al menú"
+      "accuracy": "Precisión"
     },
     "pieces": {
       "n": "Caballo",
@@ -421,9 +413,7 @@
       "correctAnswerLabel": "Respuesta correcta"
     },
     "result": {
-      "title": "¡Práctica completada!",
-      "playAgain": "Jugar de nuevo",
-      "backToMenu": "Volver al menú"
+      "title": "¡Práctica completada!"
     },
     "settings": {
       "timeLimit": "Tiempo límite",
@@ -446,9 +436,7 @@
       "blackToMove": "Mueven las negras"
     },
     "result": {
-      "title": "¡Práctica completada!",
-      "playAgain": "Jugar de nuevo",
-      "backToMenu": "Volver al menú"
+      "title": "¡Práctica completada!"
     }
   },
   "knightTour": {
@@ -466,9 +454,7 @@
       "squaresVisited": "Casillas Visitadas",
       "success": "¡Recorrido Completado!",
       "closedTourMessage": "¡Increíble! Completaste un recorrido cerrado — ¡el caballo puede volver a su casilla inicial!",
-      "openTourMessage": "¡Felicitaciones! ¡Visitaste las 64 casillas!",
-      "playAgain": "Jugar de nuevo",
-      "backToMenu": "Volver al menú"
+      "openTourMessage": "¡Felicitaciones! ¡Visitaste las 64 casillas!"
     },
     "session": {
       "currentPosition": "Posición Actual",
@@ -495,9 +481,7 @@
       "questionCount": "{{total}} preguntas"
     },
     "result": {
-      "title": "¡Práctica completada!",
-      "playAgain": "Jugar de nuevo",
-      "backToMenu": "Volver al menú"
+      "title": "¡Práctica completada!"
     },
     "session": {
       "progress": "Pregunta {{current}} / {{total}}",
@@ -532,9 +516,7 @@
       "missing": "Faltante",
       "extra": "Extra",
       "problemDetails": "Detalles del Problema",
-      "skipped": "Saltado",
-      "playAgain": "Jugar de nuevo",
-      "backToMenu": "Volver al menú"
+      "skipped": "Saltado"
     },
     "session": {
       "recreateFromFen": "Recrea la Posición desde el FEN",
@@ -724,8 +706,7 @@
       "recreate": "Recrea la posición"
     },
     "result": {
-      "title": "Resultados",
-      "playAgain": "Jugar de nuevo"
+      "title": "Resultados"
     }
   },
   "recall": {
@@ -789,7 +770,6 @@
     },
     "result": {
       "title": "Resumen",
-      "backToMenu": "Volver a prácticas",
       "mistakes": "Intentos fallidos"
     }
   },
@@ -956,7 +936,6 @@
     "startFailed": "No se pudo iniciar un desafío registrado. Revisa tu conexión e inténtalo de nuevo.",
     "startRateLimited": "Demasiados desafíos iniciados. Espera un poco e inténtalo de nuevo.",
     "retry": "Reintentar",
-    "signInToRecord": "Inicia sesión para registrar tu puntuación en la clasificación.",
     "signInBenefit": "Registra tus puntuaciones en la clasificación.",
     "record": {
       "saving": "Registrando tu puntuación…",

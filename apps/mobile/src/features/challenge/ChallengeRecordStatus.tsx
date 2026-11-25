@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
-import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 
-import { Button } from "../../components";
 import { useTheme, borderRadius, fontSize, spacing } from "../../theme";
 import { refreshAccount, useAuth as useAuthState } from "../../auth/use-auth";
 import { rankLabel } from "../records/rank-label";
 import { finishChallenge } from "./challenge-api";
+import { ChallengeSignInRow } from "./ChallengeSignInRow";
 
 type Status = "saving" | "recorded" | "notRecorded" | "failed";
 
@@ -15,7 +14,9 @@ type Status = "saving" | "recorded" | "notRecorded" | "failed";
  * The result screen's line about the leaderboard: for a recorded run it
  * finishes the attempt on the server (once) and says whether the score was
  * recorded; for an unrecorded run by a signed-out player it invites them to
- * sign in, as the web's result page does.
+ * sign in, as the web's result page does, with the setup screen's sign-in
+ * row (`ChallengeSignInRow`) so the invitation looks the same before and
+ * after a run.
  */
 export function ChallengeRecordStatus({
   attemptId,
@@ -23,7 +24,6 @@ export function ChallengeRecordStatus({
   attemptId: string | undefined;
 }) {
   const { t } = useTranslation();
-  const router = useRouter();
   const { colors, feedbackColors } = useTheme();
   const auth = useAuthState();
   const [status, setStatus] = useState<Status>("saving");
@@ -49,16 +49,8 @@ export function ChallengeRecordStatus({
   if (!attemptId) {
     if (auth.status !== "signedOut") return null;
     return (
-      <View style={[styles.box, { backgroundColor: colors.card }]}>
-        <Text style={[styles.text, { color: colors.foreground }]}>
-          {t("challenge.signInToRecord")}
-        </Text>
-        <Button
-          title={t("settings.account.signIn")}
-          variant="outline"
-          size="sm"
-          onPress={() => router.push("/sign-in")}
-        />
+      <View style={styles.signInRow}>
+        <ChallengeSignInRow />
       </View>
     );
   }
@@ -101,6 +93,9 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     gap: spacing.sm,
     alignItems: "center",
+    marginTop: spacing.md,
+  },
+  signInRow: {
     marginTop: spacing.md,
   },
   row: {

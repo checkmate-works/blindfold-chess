@@ -100,7 +100,9 @@
     "correctAnswers": "Correct Answers",
     "accuracy": "Accuracy",
     "timeTaken": "Time Taken",
-    "averageTime": "Avg. Time"
+    "averageTime": "Avg. Time",
+    "playAgain": "Play Again",
+    "backToMenu": "Back to Menu"
   },
   "onboarding": {
     "skip": "Skip",
@@ -219,9 +221,7 @@
       "incorrect": "Incorrect"
     },
     "result": {
-      "title": "Practice Complete!",
-      "playAgain": "Play Again",
-      "backToMenu": "Back to Menu"
+      "title": "Practice Complete!"
     },
     "pieces": {
       "b": "Bishop",
@@ -247,8 +247,6 @@
     },
     "result": {
       "title": "Results",
-      "playAgain": "Play Again",
-      "backToMenu": "Back to Practice",
       "timeTaken": "Time"
     },
     "settings": {
@@ -265,9 +263,7 @@
       "dark": "Dark"
     },
     "result": {
-      "title": "Practice Complete!",
-      "playAgain": "Play Again",
-      "backToMenu": "Back to Menu"
+      "title": "Practice Complete!"
     },
     "settings": {
       "timeLimit": "Time Limit",
@@ -294,9 +290,7 @@
     "result": {
       "title": "Quiz Complete!",
       "totalQuestions": "Total Questions",
-      "points": "Points",
-      "playAgain": "Play Again",
-      "backToMenu": "Back to Menu"
+      "points": "Points"
     }
   },
   "routePlanner": {
@@ -324,9 +318,7 @@
       "title": "Practice Complete!",
       "score": "Score",
       "correct": "Correct",
-      "accuracy": "Accuracy",
-      "playAgain": "Play Again",
-      "backToMenu": "Back to Menu"
+      "accuracy": "Accuracy"
     },
     "pieces": {
       "n": "Knight",
@@ -421,9 +413,7 @@
       "correctAnswerLabel": "Correct answer"
     },
     "result": {
-      "title": "Practice Complete!",
-      "playAgain": "Play Again",
-      "backToMenu": "Back to Menu"
+      "title": "Practice Complete!"
     },
     "settings": {
       "timeLimit": "Time Limit",
@@ -446,9 +436,7 @@
       "blackToMove": "Black to move"
     },
     "result": {
-      "title": "Practice Complete!",
-      "playAgain": "Play Again",
-      "backToMenu": "Back to Menu"
+      "title": "Practice Complete!"
     }
   },
   "knightTour": {
@@ -466,9 +454,7 @@
       "squaresVisited": "Squares Visited",
       "success": "Tour Complete!",
       "closedTourMessage": "Amazing! You completed a closed tour - the knight can return to its starting square!",
-      "openTourMessage": "Congratulations! You visited all 64 squares!",
-      "playAgain": "Play Again",
-      "backToMenu": "Back to Menu"
+      "openTourMessage": "Congratulations! You visited all 64 squares!"
     },
     "session": {
       "currentPosition": "Current Position",
@@ -495,9 +481,7 @@
       "questionCount": "{{total}} questions"
     },
     "result": {
-      "title": "Practice Complete!",
-      "playAgain": "Play Again",
-      "backToMenu": "Back to Menu"
+      "title": "Practice Complete!"
     },
     "session": {
       "progress": "Question {{current}} / {{total}}",
@@ -532,9 +516,7 @@
       "missing": "Missing",
       "extra": "Extra",
       "problemDetails": "Problem Details",
-      "skipped": "Skipped",
-      "playAgain": "Play Again",
-      "backToMenu": "Back to Menu"
+      "skipped": "Skipped"
     },
     "session": {
       "recreateFromFen": "Recreate the Position from FEN",
@@ -724,8 +706,7 @@
       "recreate": "Recreate the position"
     },
     "result": {
-      "title": "Results",
-      "playAgain": "Play again"
+      "title": "Results"
     }
   },
   "recall": {
@@ -789,7 +770,6 @@
     },
     "result": {
       "title": "Summary",
-      "backToMenu": "Back to practice",
       "mistakes": "Wrong tries"
     }
   },
@@ -956,7 +936,6 @@
     "startFailed": "Could not start a recorded challenge. Check your connection and try again.",
     "startRateLimited": "Too many challenges started. Please wait a little and try again.",
     "retry": "Try again",
-    "signInToRecord": "Sign in to record your score on the leaderboard.",
     "signInBenefit": "Record your scores on the leaderboard.",
     "record": {
       "saving": "Recording your score…",

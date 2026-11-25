@@ -29,11 +29,7 @@ export default function KnightTourResult() {
   );
 
   return (
-    <PracticeResultScreen
-      playAgainLabel={t("knightTour.result.playAgain")}
-      backToMenuLabel={t("knightTour.result.backToMenu")}
-      setupHref="/practice/knight-tour"
-    >
+    <PracticeResultScreen setupHref="/practice/knight-tour">
       {/* No Card around the board: the board sizes itself to the screen
           width minus the screen padding, and a card's extra padding would
           push it past the edge. */}

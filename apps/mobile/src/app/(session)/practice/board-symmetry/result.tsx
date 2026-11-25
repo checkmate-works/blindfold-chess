@@ -17,11 +17,7 @@ export default function BoardSymmetryResult() {
   const result = parsePracticeStatsParams(params);
 
   return (
-    <PracticeResultScreen
-      playAgainLabel={t("boardSymmetry.result.playAgain")}
-      backToMenuLabel={t("boardSymmetry.result.backToMenu")}
-      setupHref="/practice/board-symmetry"
-    >
+    <PracticeResultScreen setupHref="/practice/board-symmetry">
       <PracticeStatsResultCard
         result={result}
         timeTakenLabel={t("boardSymmetry.result.timeTaken")}

@@ -1,4 +1,3 @@
-import { useTranslation } from "react-i18next";
 import { useLocalSearchParams } from "expo-router";
 
 import { PracticeResultScreen } from "../../../../components";
@@ -7,7 +6,6 @@ import { ResultCard } from "../../../../features/route-planner/components";
 import type { RoutePlannerResult } from "../../../../features/route-planner/hooks";
 
 export default function RoutePlannerResultScreen() {
-  const { t } = useTranslation();
   const params = useLocalSearchParams<{
     correctCount: string;
     totalProblems: string;
@@ -23,11 +21,7 @@ export default function RoutePlannerResultScreen() {
   };
 
   return (
-    <PracticeResultScreen
-      playAgainLabel={t("routePlanner.result.playAgain")}
-      backToMenuLabel={t("routePlanner.result.backToMenu")}
-      setupHref="/practice/route-planner"
-    >
+    <PracticeResultScreen setupHref="/practice/route-planner">
       <ResultCard result={result} />
       <ChallengeRecordStatus attemptId={params.attemptId} />
     </PracticeResultScreen>

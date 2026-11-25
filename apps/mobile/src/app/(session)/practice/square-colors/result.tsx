@@ -1,4 +1,3 @@
-import { useTranslation } from "react-i18next";
 import { useLocalSearchParams } from "expo-router";
 
 import {
@@ -10,18 +9,13 @@ import { parsePracticeStatsParams } from "../../../../lib/practice-result-params
 import type { PracticeStatsParams } from "../../../../lib/practice-result-params";
 
 export default function SquareColorsResult() {
-  const { t } = useTranslation();
   const params = useLocalSearchParams<
     PracticeStatsParams & { attemptId?: string }
   >();
   const result = parsePracticeStatsParams(params);
 
   return (
-    <PracticeResultScreen
-      playAgainLabel={t("squareColors.result.playAgain")}
-      backToMenuLabel={t("squareColors.result.backToMenu")}
-      setupHref="/practice/square-colors"
-    >
+    <PracticeResultScreen setupHref="/practice/square-colors">
       <PracticeStatsResultCard result={result} />
       <ChallengeRecordStatus attemptId={params.attemptId} />
     </PracticeResultScreen>

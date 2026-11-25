@@ -22,11 +22,7 @@ export default function RecallResult() {
     parseIntParam(value, { fallback: 0 });
 
   return (
-    <PracticeResultScreen
-      playAgainLabel={t("recall.summary.restart")}
-      backToMenuLabel={t("recall.result.backToMenu")}
-      setupHref="/practice/recall"
-    >
+    <PracticeResultScreen setupHref="/practice/recall">
       <PracticeResultCard
         scoreLabel={t("recall.summary.rateLabel")}
         scoreValue={`${n(params.rate)}%`}

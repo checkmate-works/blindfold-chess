@@ -20,11 +20,7 @@ export default function AlgebraicNotationResult() {
   const score = Math.min(parseIntParam(params.score, { fallback: 0 }), total);
 
   return (
-    <PracticeResultScreen
-      playAgainLabel={t("algebraicNotation.result.playAgain")}
-      backToMenuLabel={t("algebraicNotation.result.backToMenu")}
-      setupHref="/practice/algebraic-notation"
-    >
+    <PracticeResultScreen setupHref="/practice/algebraic-notation">
       <PracticeResultCard
         scoreLabel={t("practiceResult.correctAnswers")}
         scoreValue={`${score} / ${total}`}

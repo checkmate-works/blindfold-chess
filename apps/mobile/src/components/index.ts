@@ -23,6 +23,7 @@ export { PracticeStatsResultCard } from "./PracticeStatsResultCard";
 export { PracticeTrainingScreen } from "./PracticeTrainingScreen";
 export { LivesIndicator } from "./LivesIndicator";
 export { ListIcon, ListRow, ListSection } from "./List";
+export { ModeButtonRow } from "./ModeButtonRow";
 export { TabScrollView } from "./TabScrollView";
 export { BottomSheet } from "./BottomSheet";
 export { SelectRow, SwitchRow } from "./SettingRows";
