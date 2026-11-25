@@ -233,14 +233,13 @@
       "title": "Ajustes de simetría del tablero"
     },
     "session": {
-      "question": "Encuentra la casilla simétrica {{type}} de {{square}}",
+      "question": "¿{{type}} de {{square}}?",
       "types": {
-        "horizontal": "Horizontal",
-        "vertical": "Vertical",
-        "point": "Puntual"
+        "horizontal": "Simetría de columna",
+        "vertical": "Simetría de fila",
+        "point": "Simetría central"
       },
-      "correct": "¡Correcto!",
-      "incorrectWithSolution": "Incorrecto. Respuesta: {{solution}}"
+      "incorrectWithSolution": "{{solution}} es la respuesta correcta"
     },
     "result": {
       "title": "Resultados",

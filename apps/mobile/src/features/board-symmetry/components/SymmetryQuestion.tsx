@@ -1,72 +1,107 @@
-import { View, Text, StyleSheet } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import { useTranslation } from "react-i18next";
+
 import {
-  useFeedbackColor,
-  useTheme,
   fontSize,
   fontWeight,
   spacing,
+  useFeedbackColor,
+  useTheme,
 } from "../../../theme";
 import type { BoardSymmetryProblem } from "../lib/types";
 
+/** The web's `text-6xl`: 60px, line height 1. */
+const SQUARE_SIZE = 60;
+
 type SymmetryQuestionProps = {
-  problem: BoardSymmetryProblem;
+  /** Null while the first question is on its way: the rows keep their height. */
+  problem: BoardSymmetryProblem | null;
   selectedFile: string | null;
   selectedRank: string | null;
+  /** The verdict on the last answer while it is shown, else null. */
   isCorrect: boolean | null;
+  /** The right square, shown under a wrong answer. */
   correctSolution: string | null;
+  /**
+   * Seconds left before the challenge starts: the count stands in the
+   * `square → answer` row and the question line stays empty, so nothing
+   * around it moves when the first question appears.
+   */
+  countdown?: number | null;
 };
 
+/**
+ * The question as the web's `BoardSymmetryQuestionPanel` shows it: the
+ * sentence ("File symmetry of e4?"), then `e4 → ?` at display size, the
+ * answer turning green or red with the verdict.
+ *
+ * Unlike the web, a wrong answer also names the right square on a small
+ * line under the row, for the two seconds the verdict stays up; the line's
+ * height is always kept, so the pad below never moves.
+ */
 export function SymmetryQuestion({
   problem,
   selectedFile,
   selectedRank,
   isCorrect,
   correctSolution,
+  countdown = null,
 }: SymmetryQuestionProps) {
   const { t } = useTranslation();
   const { colors } = useTheme();
-  const answerColor = useFeedbackColor(isCorrect);
-
-  const getFeedbackText = () => {
-    if (isCorrect === true) return t("boardSymmetry.session.correct");
-    if (isCorrect === false)
-      return t("boardSymmetry.session.incorrectWithSolution", {
-        solution: correctSolution || "?",
-      });
-    return null;
-  };
-
-  const feedbackText = getFeedbackText();
+  const verdictColor = useFeedbackColor(isCorrect);
+  const shown = countdown === null ? problem : null;
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.typeLabel, { color: colors.primary }]}>
-        {/* boardSymmetry.session.types.<SymmetryType>: boardSymmetry.session.types.horizontal, boardSymmetry.session.types.vertical, boardSymmetry.session.types.point (SYMMETRY_TYPES) */}
-        {t(`boardSymmetry.session.types.${problem.type}`)}
+      <Text style={[styles.sentence, { color: colors.foreground }]}>
+        {shown
+          ? t("boardSymmetry.session.question", {
+              // boardSymmetry.session.types.<SymmetryType>: boardSymmetry.session.types.horizontal, boardSymmetry.session.types.vertical, boardSymmetry.session.types.point (SYMMETRY_TYPES)
+              type: t(`boardSymmetry.session.types.${shown.type}`),
+              square: shown.square,
+            })
+          : " "}
       </Text>
 
       <View style={styles.squareRow}>
-        <Text style={[styles.squareText, { color: colors.foreground }]}>
-          {problem.square}
-        </Text>
-        <Text style={[styles.arrow, { color: colors.mutedForeground }]}>
-          {"\u2192"}
-        </Text>
-        <Text style={[styles.squareText, { color: answerColor }]}>
-          {selectedFile && selectedRank
-            ? `${selectedFile}${selectedRank}`
-            : "?"}
-        </Text>
+        {countdown !== null ? (
+          <Text style={[styles.square, { color: colors.primary }]}>
+            {countdown > 0 ? String(countdown) : "START!"}
+          </Text>
+        ) : shown ? (
+          <>
+            <Text style={[styles.square, { color: colors.foreground }]}>
+              {shown.square}
+            </Text>
+            <Text style={[styles.square, { color: colors.mutedForeground }]}>
+              {"→"}
+            </Text>
+            <Text
+              style={[
+                styles.square,
+                styles.answer,
+                {
+                  color:
+                    isCorrect === null ? colors.mutedForeground : verdictColor,
+                },
+              ]}
+            >
+              {selectedFile && selectedRank
+                ? `${selectedFile}${selectedRank}`
+                : "?"}
+            </Text>
+          </>
+        ) : null}
       </View>
 
-      <View style={styles.feedbackContainer}>
-        {feedbackText && (
-          <Text style={[styles.feedbackText, { color: answerColor }]}>
-            {feedbackText}
-          </Text>
-        )}
-      </View>
+      <Text style={[styles.solution, { color: verdictColor }]}>
+        {isCorrect === false && correctSolution
+          ? t("boardSymmetry.session.incorrectWithSolution", {
+              solution: correctSolution,
+            })
+          : " "}
+      </Text>
     </View>
   );
 }
@@ -74,32 +109,42 @@ export function SymmetryQuestion({
 const styles = StyleSheet.create({
   container: {
     alignItems: "center",
-    gap: spacing.md,
   },
-  typeLabel: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.semibold,
+  // The web's `SectionTitle` (text-base font-medium) and its mb-4.
+  sentence: {
+    fontSize: fontSize.md,
+    lineHeight: 24,
+    fontWeight: fontWeight.medium,
+    textAlign: "center",
+    marginBottom: spacing.md,
   },
+  // The web's `gap-4` row, set solid as its `text-6xl` is.
   squareRow: {
+    height: SQUARE_SIZE,
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
     gap: spacing.md,
   },
-  squareText: {
-    fontSize: 48,
+  square: {
+    fontSize: SQUARE_SIZE,
+    lineHeight: SQUARE_SIZE * 1.15,
     fontWeight: fontWeight.bold,
     fontVariant: ["tabular-nums"],
-    minWidth: 80,
+  },
+  // The web's `min-w-[2ch]`, so "?" and "d4" take the same room.
+  answer: {
+    minWidth: SQUARE_SIZE * 1.2,
     textAlign: "center",
   },
-  arrow: {
-    fontSize: 32,
-  },
-  feedbackContainer: {
-    minHeight: 24,
-  },
-  feedbackText: {
-    fontSize: fontSize.md,
+  // Sits in the web's 40 between the row and the pad (mb-4 + mb-6): 4 above,
+  // 20 for the line, 16 below.
+  solution: {
+    marginTop: spacing.xs,
+    marginBottom: spacing.md,
+    height: 20,
+    fontSize: fontSize.sm,
+    lineHeight: 20,
     fontWeight: fontWeight.medium,
   },
 });

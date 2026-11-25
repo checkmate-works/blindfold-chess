@@ -233,14 +233,13 @@
       "title": "Board Symmetry Setup"
     },
     "session": {
-      "question": "Find the {{type}} symmetric square of {{square}}",
+      "question": "{{type}} of {{square}}?",
       "types": {
-        "horizontal": "Horizontal",
-        "vertical": "Vertical",
-        "point": "Point"
+        "horizontal": "File symmetry",
+        "vertical": "Rank symmetry",
+        "point": "Point symmetry"
       },
-      "correct": "Correct!",
-      "incorrectWithSolution": "Incorrect. Answer: {{solution}}"
+      "incorrectWithSolution": "{{solution}} is correct"
     },
     "result": {
       "title": "Results",

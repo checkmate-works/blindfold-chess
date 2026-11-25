@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import {
   checkSymmetryAnswer,
   generateProblem,
@@ -8,27 +8,22 @@ import type { BoardSymmetryProblem } from "@blindfold-chess/features/board-symme
 import { FEEDBACK_FLASH_MS } from "@blindfold-chess/features/common";
 import { useBatchTrainingSession } from "@blindfold-chess/features/practice-session";
 
-import {
-  PracticeTrainingScreen,
-  practiceSessionStyles,
-} from "../../../../components";
-import {
-  CoordinateSelector,
-  SymmetryQuestion,
-} from "../../../../features/board-symmetry/components";
+import { PracticeTrainingScreen } from "../../../../components";
+import { QuestionPanel } from "../../../../features/board-symmetry/components";
 import {
   pickSymmetryCoordinate,
   type SymmetryAnswer,
   type SymmetryPick,
 } from "../../../../features/board-symmetry/lib/selection";
 import { answerHaptics } from "../../../../lib/answer-haptics";
+import { spacing } from "../../../../theme";
 import { useCloseSession } from "../../../../navigation/use-close-session";
 
 const BATCH_SIZE = 100;
 
 /**
  * Untimed board-symmetry drill (the web's `/board-symmetry/training`): the
- * session's question and file/rank pickers with no clock. The answer goes
+ * session's question and file/rank pad with no clock. The answer goes
  * in as soon as both a file and a rank are picked, as in the session, and
  * a wrong answer shows the correct square until the next question.
  *
@@ -94,21 +89,13 @@ export default function BoardSymmetryTraining() {
       incorrectCount={incorrectCount}
       onEnd={close}
     >
-      <View style={practiceSessionStyles.questionContainer}>
-        {currentQuestion && (
-          <SymmetryQuestion
-            problem={currentQuestion}
-            selectedFile={selectedFile}
-            selectedRank={selectedRank}
-            isCorrect={showResult && lastAnswer ? lastAnswer.correct : null}
-            correctSolution={correctSolution}
-          />
-        )}
-      </View>
-      <View style={practiceSessionStyles.bottomSection}>
-        <CoordinateSelector
+      <View style={styles.body}>
+        <QuestionPanel
+          problem={currentQuestion}
           selectedFile={selectedFile}
           selectedRank={selectedRank}
+          verdict={showResult && lastAnswer ? lastAnswer.correct : null}
+          correctSolution={correctSolution}
           onFileToggle={(value) => handlePick({ kind: "file", value })}
           onRankToggle={(value) => handlePick({ kind: "rank", value })}
           disabled={showResult}
@@ -117,3 +104,14 @@ export default function BoardSymmetryTraining() {
     </PracticeTrainingScreen>
   );
 }
+
+/**
+ * Stacked from the top with the score and End right under the pad, as the
+ * web's training page.
+ */
+const styles = StyleSheet.create({
+  body: {
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.xl,
+  },
+});
