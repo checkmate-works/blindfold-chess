@@ -73,7 +73,7 @@
     },
     "algebraicNotation": {
       "title": "Algebraic Notation",
-      "description": "Master chess notation system with interactive exercises"
+      "description": "Master the chess notation system with interactive exercises"
     },
     "fen": {
       "title": "FEN Reconstruction",
@@ -467,7 +467,7 @@
   "algebraicNotation": {
     "setup": {
       "title": "Algebraic Notation",
-      "description": "Master chess notation system with interactive exercises"
+      "description": "Master the chess notation system with interactive exercises"
     },
     "result": {
       "title": "Practice Complete!"

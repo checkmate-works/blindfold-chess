@@ -73,7 +73,7 @@
     },
     "algebraicNotation": {
       "title": "代数式表記法",
-      "description": "インタラクティブな演習でチェス記法システムをマスターする"
+      "description": "問題を解きながら、チェスの棋譜の書き方を身につけます"
     },
     "fen": {
       "title": "FEN再構築",
@@ -467,7 +467,7 @@
   "algebraicNotation": {
     "setup": {
       "title": "代数式表記法",
-      "description": "インタラクティブな演習でチェス記法システムをマスターする"
+      "description": "問題を解きながら、チェスの棋譜の書き方を身につけます"
     },
     "result": {
       "title": "練習完了！"
