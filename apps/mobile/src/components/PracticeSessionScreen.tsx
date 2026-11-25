@@ -5,6 +5,7 @@ import type { StyleProp, ViewStyle } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { CountdownOverlay } from "./CountdownOverlay";
+import { LivesIndicator } from "./LivesIndicator";
 import { QuizTimer } from "./QuizTimer";
 import { ScoreFooter } from "./ScoreFooter";
 import { SessionCloseButton } from "../navigation/SessionCloseButton";
@@ -18,6 +19,12 @@ type PracticeSessionScreenProps = {
   progress: number;
   correctCount: number;
   incorrectCount: number;
+  /**
+   * Hearts for a session with a mistake limit, shown beside the close
+   * button — the left end of the top row, where the web's
+   * `ChallengeStatusHeader` puts them. Omitted → no hearts.
+   */
+  lives?: { readonly remaining: number; readonly max: number };
   /** Tightens the score footer's spacing where the body already pads itself. */
   footerStyle?: StyleProp<ViewStyle>;
   children: ReactNode;
@@ -25,7 +32,8 @@ type PracticeSessionScreenProps = {
 
 /**
  * The frame every timed practice session renders inside: the countdown
- * overlay, the close button and the clock in the top row, the body, and the running score.
+ * overlay, the top row (close button and hearts on the left, the clock on the
+ * right), the body, and the running score.
  *
  * @description
  * Sibling of `PracticeSetupScreen` and `PracticeResultScreen` — the third
@@ -33,10 +41,7 @@ type PracticeSessionScreenProps = {
  * would otherwise repeat: the safe area, the `{countdown === null && ...}`
  * gate, the right-aligned timer row and the score footer.
  *
- * `coordinate-quiz` deliberately does NOT use this: it threads its timer
- * into a turn-indicator row rather than a row of its own, and bending it
- * into this frame would take a flag for chrome it does not have. The
- * untimed sessions (fen, knight-tour, position-memory, recall, puzzle) have
+ * The untimed sessions (fen, knight-tour, position-memory, recall, puzzle) have
  * no countdown or clock, so there is nothing here for them.
  */
 export function PracticeSessionScreen({
@@ -45,13 +50,14 @@ export function PracticeSessionScreen({
   progress,
   correctCount,
   incorrectCount,
+  lives,
   footerStyle,
   children,
 }: PracticeSessionScreenProps) {
   // The top inset is padded from the provider's value rather than left to
   // `Screen`'s `SafeAreaView`: in this header-less screen of the
   // full-screen session modal the view's own top inset came out as 0 on iOS
-  // (Expo SDK 58, iPhone 17 simulator), so the close button and the clock
+  // (Expo SDK 58, iPhone 17 simulator), so the close button, hearts and clock
   // sat under the status bar.
   const insets = useSafeAreaInsets();
   return (
@@ -64,7 +70,12 @@ export function PracticeSessionScreen({
       {countdown === null && (
         <>
           <View style={styles.timerRow}>
-            <SessionCloseButton confirm />
+            <View style={styles.leading}>
+              <SessionCloseButton confirm />
+              {lives && (
+                <LivesIndicator remaining={lives.remaining} max={lives.max} />
+              )}
+            </View>
             <View style={styles.spacer} />
             <QuizTimer
               timeRemaining={timeRemaining}
@@ -111,6 +122,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
+  },
+  leading: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.md,
   },
   spacer: {
     flex: 1,
