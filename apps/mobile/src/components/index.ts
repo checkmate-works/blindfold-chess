@@ -12,6 +12,7 @@ export { QuizTimer } from "./QuizTimer";
 export { ScoreFooter } from "./ScoreFooter";
 export { Screen } from "./Screen";
 export { SquarePrompt } from "./SquarePrompt";
+export { StaticBoard } from "./StaticBoard";
 export { SelectableChip } from "./SelectableChip";
 export { PieceSelector } from "./PieceSelector";
 export { PracticeResultCard } from "./PracticeResultCard";
