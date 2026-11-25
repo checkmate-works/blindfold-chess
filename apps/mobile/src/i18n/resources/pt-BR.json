@@ -473,7 +473,6 @@
       "title": "Prática concluída!"
     },
     "session": {
-      "progress": "Pergunta {{current}} / {{total}}",
       "correct": "Correto!",
       "incorrect": "Incorreto",
       "correctAnswerIs": "A resposta correta é",

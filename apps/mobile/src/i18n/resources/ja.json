@@ -473,7 +473,6 @@
       "title": "練習完了！"
     },
     "session": {
-      "progress": "第{{current}}問 / {{total}}",
       "correct": "正解！",
       "incorrect": "不正解",
       "correctAnswerIs": "正解は",

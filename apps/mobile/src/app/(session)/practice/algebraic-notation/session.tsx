@@ -1,5 +1,11 @@
-import { useCallback } from "react";
-import { View, Text, ScrollView, StyleSheet } from "react-native";
+import { useCallback, useRef } from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  type ScrollViewInstance,
+} from "react-native";
 import { useTranslation } from "react-i18next";
 import { useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
@@ -13,25 +19,32 @@ import {
 import { useAlgebraicNotationSession } from "@blindfold-chess/features/algebraic-notation/client";
 
 import { Button, Screen } from "../../../../components";
-import { SessionTopBar } from "../../../../navigation/SessionTopBar";
 import {
   AnswerFeedback,
   AnswerOptions,
   MoveBoard,
+  QuestionProgress,
 } from "../../../../features/algebraic-notation/components";
 import { useQuestionLocale } from "../../../../features/algebraic-notation/hooks";
 import { useTheme, fontSize, spacing } from "../../../../theme";
 
 /**
+ * The web's free-play session, stacked from the top under the module's
+ * header (the × asks before leaving): the progress bar, the question, the
+ * board, the choices, and once answered the verdict, the explanation and
+ * Next where the web puts them, under the choices.
+ *
  * Untimed, so it does not use `PracticeSessionScreen` (whose frame is the
- * countdown overlay, the clock and the running score). The body scrolls
- * because the explanation under the board can be longer than the screen.
+ * countdown, the clock and the running score). The body scrolls, since
+ * the explanation under the board is taller than the screen, and returns
+ * to the top for each new question, as the web realigns its panel.
  */
 export default function AlgebraicNotationSession() {
   const { t } = useTranslation();
   const router = useRouter();
   const { colors } = useTheme();
   const locale = useQuestionLocale();
+  const scrollRef = useRef<ScrollViewInstance>(null);
 
   const handleComplete = useCallback(
     ({ score, total }: AlgebraicNotationResult) => {
@@ -67,18 +80,19 @@ export default function AlgebraicNotationSession() {
     selectOption(option);
   };
 
-  return (
-    <Screen>
-      <SessionTopBar />
-      <ScrollView contentContainerStyle={styles.content}>
-        <Text style={[styles.progress, { color: colors.mutedForeground }]}>
-          {t("algebraicNotation.session.progress", {
-            current: currentIndex + 1,
-            total,
-          })}
-        </Text>
+  const handleNext = () => {
+    next();
+    if (!isLastQuestion) {
+      scrollRef.current?.scrollTo({ y: 0, animated: false });
+    }
+  };
 
-        <Text style={[styles.description, { color: colors.foreground }]}>
+  return (
+    <Screen edges={["bottom"]}>
+      <ScrollView ref={scrollRef} contentContainerStyle={styles.content}>
+        <QuestionProgress current={currentIndex + 1} total={total} />
+
+        <Text style={[styles.description, { color: colors.mutedForeground }]}>
           {getQuestionDescription(question, locale)}
         </Text>
 
@@ -96,7 +110,7 @@ export default function AlgebraicNotationSession() {
         />
 
         {answered && (
-          <View style={styles.feedback}>
+          <View style={styles.answered}>
             <AnswerFeedback
               question={question}
               selectedAnswer={selectedAnswer}
@@ -107,9 +121,10 @@ export default function AlgebraicNotationSession() {
                   ? t("algebraicNotation.session.complete")
                   : t("algebraicNotation.session.next")
               }
-              onPress={next}
+              onPress={handleNext}
               size="lg"
               fullWidth
+              testID="algebraic-notation-next"
             />
           </View>
         )}
@@ -119,18 +134,17 @@ export default function AlgebraicNotationSession() {
 }
 
 const styles = StyleSheet.create({
+  // The web's `gap-6` between every block.
   content: {
     padding: spacing.lg,
-    gap: spacing.md,
+    gap: spacing.lg,
   },
-  progress: {
-    fontSize: fontSize.sm,
-    textAlign: "center",
-  },
+  // `text-lg text-muted-foreground`.
   description: {
-    fontSize: fontSize.md,
+    fontSize: fontSize.lg,
+    lineHeight: 26,
   },
-  feedback: {
-    gap: spacing.md,
+  answered: {
+    gap: spacing.lg,
   },
 });
