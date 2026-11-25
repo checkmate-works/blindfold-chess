@@ -2,6 +2,7 @@ import { Screen } from "./Screen";
 import type { ReactNode } from "react";
 import { View, StyleSheet } from "react-native";
 import type { StyleProp, ViewStyle } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { CountdownOverlay } from "./CountdownOverlay";
 import { QuizTimer } from "./QuizTimer";
@@ -47,8 +48,17 @@ export function PracticeSessionScreen({
   footerStyle,
   children,
 }: PracticeSessionScreenProps) {
+  // The top inset is padded from the provider's value rather than left to
+  // `Screen`'s `SafeAreaView`: in this header-less screen of the
+  // full-screen session modal the view's own top inset came out as 0 on iOS
+  // (Expo SDK 58, iPhone 17 simulator), so the close button and the clock
+  // sat under the status bar.
+  const insets = useSafeAreaInsets();
   return (
-    <Screen>
+    <Screen
+      edges={["bottom", "left", "right"]}
+      style={{ paddingTop: insets.top }}
+    >
       <CountdownOverlay countdown={countdown} />
 
       {countdown === null && (
