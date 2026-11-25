@@ -4,6 +4,7 @@ export { BoardOrientationSelector } from "./BoardOrientationSelector";
 export { BottomBar } from "./BottomBar";
 export { Button } from "./Button";
 export { Card } from "./Card";
+export { CoordinateInput } from "./CoordinateInput";
 export { CoordinateKeyRow, coordinateKeypadStyles } from "./CoordinateKeyRow";
 export { CountdownOverlay } from "./CountdownOverlay";
 export { HowToPlaySection } from "./HowToPlaySection";
