@@ -60,11 +60,10 @@ export function AnswerPair<T>({
     <View style={[styles.row, style]}>
       {options.map((option) => {
         const isSelected = selected !== null && selected.value === option.value;
-        const ring = isSelected
-          ? selected.correct
+        const ring =
+          selected?.correct === true
             ? feedbackColors.success
-            : feedbackColors.error
-          : option.borderColor;
+            : feedbackColors.error;
         return (
           <Pressable
             key={String(option.value)}
@@ -78,13 +77,18 @@ export function AnswerPair<T>({
               buttonStyle,
               {
                 backgroundColor: option.backgroundColor,
-                borderColor: ring,
-                borderWidth: isSelected ? 3 : 1,
+                borderColor: option.borderColor,
                 opacity: disabled && !isSelected ? 0.5 : 1,
               },
               pressed && styles.pressed,
             ]}
           >
+            {isSelected && (
+              <View
+                pointerEvents="none"
+                style={[styles.ring, { borderColor: ring }]}
+              />
+            )}
             {option.mark !== undefined && (
               <Text
                 style={[styles.mark, { color: option.textColor }, markStyle]}
@@ -119,6 +123,21 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     // The web's `rounded-md`.
     borderRadius: 6,
+    borderWidth: 1,
+  },
+  /**
+   * The verdict ring, laid over the button's own 1pt border rather than
+   * thickening it: a thicker border would grow a padded button and push
+   * everything under the pair down for as long as the verdict shows.
+   */
+  ring: {
+    position: "absolute",
+    top: -1,
+    left: -1,
+    right: -1,
+    bottom: -1,
+    borderRadius: 6,
+    borderWidth: 3,
   },
   pressed: {
     transform: [{ scale: 0.95 }],
