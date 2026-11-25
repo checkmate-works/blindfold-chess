@@ -1,3 +1,5 @@
+export { AnswerPair } from "./AnswerPair";
+export type { AnswerPairOption } from "./AnswerPair";
 export { BoardOrientationSelector } from "./BoardOrientationSelector";
 export { BottomBar } from "./BottomBar";
 export { Button } from "./Button";
