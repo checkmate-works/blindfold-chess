@@ -980,7 +980,8 @@
       "tryAgain": "Try Again",
       "peekCount": "Board Peeks: {{count}}",
       "statusSolved": "Solved",
-      "statusRevealed": "Revealed"
+      "statusRevealed": "Revealed",
+      "statusPartial": "{{correct}}/{{total}} solved"
     },
     "list": {
       "title": "Puzzle",
@@ -998,6 +999,17 @@
     "whiteToMove": "White to move",
     "blackToMove": "Black to move",
     "findMove": "Find the best move",
-    "recorded": "Your result was recorded."
+    "recorded": "Your result was recorded.",
+    "detail": {
+      "descriptionSection": "About This Puzzle",
+      "startSolving": "Start solving",
+      "whitePiecesLabel": "White Pieces",
+      "blackPiecesLabel": "Black Pieces",
+      "noPieces": "None"
+    },
+    "white": "White",
+    "black": "Black",
+    "play": "Play",
+    "replay": "Replay"
   }
 }

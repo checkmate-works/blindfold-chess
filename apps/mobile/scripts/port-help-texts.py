@@ -234,9 +234,13 @@ PUZZLE_KEYS = {
                 "showBoard", "whitePlayed", "blackPlayed"],
     "result": ["title", "replaySection", "historySection", "solution", "note",
                "attemptCorrect", "attemptIncorrect", "backToList", "tryAgain",
-               "peekCount", "statusSolved", "statusRevealed"],
+               "peekCount", "statusSolved", "statusPartial", "statusRevealed"],
     "list": ["title", "empty"],
+    "detail": ["descriptionSection", "startSolving", "whitePiecesLabel",
+               "blackPiecesLabel", "noPieces"],
 }
+# The web's shared practice words the puzzle screens use, flat under puzzle.*.
+PUZZLE_COMMON_KEYS = ["white", "black", "play", "replay"]
 
 for locale in LOCALES:
     web = json.loads((WEB / f"{locale}.json").read_text())["practice"]["puzzle"]
@@ -246,6 +250,9 @@ for locale in LOCALES:
     for section, keys in PUZZLE_KEYS.items():
         for key in keys:
             puzzle.setdefault(section, {})[key] = icu_to_i18next(web[section][key])
+    common = json.loads((WEB / f"{locale}.json").read_text())["practice"]["common"]
+    for key in PUZZLE_COMMON_KEYS:
+        puzzle[key] = icu_to_i18next(common[key])
     puzzle["title"] = web["title"]
     puzzle["description"] = web["description"]
     path.write_text(json.dumps(mobile, ensure_ascii=False, indent=2) + "\n")

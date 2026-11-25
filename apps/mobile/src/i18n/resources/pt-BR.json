@@ -980,7 +980,8 @@
       "tryAgain": "Tentar Novamente",
       "peekCount": "Visualizações do Tabuleiro: {{count}}",
       "statusSolved": "Resolvido",
-      "statusRevealed": "Solução revelada"
+      "statusRevealed": "Solução revelada",
+      "statusPartial": "{{correct}}/{{total}} resolvidos"
     },
     "list": {
       "title": "Puzzle",
@@ -998,6 +999,17 @@
     "whiteToMove": "Brancas jogam",
     "blackToMove": "Pretas jogam",
     "findMove": "Encontre o melhor lance",
-    "recorded": "Seu resultado foi registrado."
+    "recorded": "Seu resultado foi registrado.",
+    "detail": {
+      "descriptionSection": "Sobre Este Puzzle",
+      "startSolving": "Começar a resolver",
+      "whitePiecesLabel": "Peças Brancas",
+      "blackPiecesLabel": "Peças Pretas",
+      "noPieces": "Nenhuma"
+    },
+    "white": "Brancas",
+    "black": "Pretas",
+    "play": "Reproduzir",
+    "replay": "Repetir"
   }
 }

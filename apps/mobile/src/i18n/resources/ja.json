@@ -980,7 +980,8 @@
       "tryAgain": "もう一度",
       "peekCount": "盤面確認: {{count}}回",
       "statusSolved": "全問正解",
-      "statusRevealed": "解答表示"
+      "statusRevealed": "解答表示",
+      "statusPartial": "{{correct}}/{{total}} 正解"
     },
     "list": {
       "title": "パズル",
@@ -998,6 +999,17 @@
     "whiteToMove": "白番",
     "blackToMove": "黒番",
     "findMove": "最善手を見つけよう",
-    "recorded": "結果を記録しました。"
+    "recorded": "結果を記録しました。",
+    "detail": {
+      "descriptionSection": "このパズルについて",
+      "startSolving": "挑戦する",
+      "whitePiecesLabel": "白の駒",
+      "blackPiecesLabel": "黒の駒",
+      "noPieces": "なし"
+    },
+    "white": "白",
+    "black": "黒",
+    "play": "再生",
+    "replay": "再生"
   }
 }
