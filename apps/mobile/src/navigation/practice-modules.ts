@@ -83,6 +83,7 @@ export const MOBILE_PRACTICE_MODULES: readonly MobilePracticeModule[] = [
     i18nKey: "diagonalQuiz",
     icon: "↗️",
     hasTraining: true,
+    sessionHeader: true,
     howToPlayOnSetup: true,
   },
   {

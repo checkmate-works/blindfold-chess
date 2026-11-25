@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { ScrollView, StyleSheet } from "react-native";
 
 import {
   FEEDBACK_FLASH_MS,
@@ -15,18 +15,12 @@ import { useDiagonalInput } from "@blindfold-chess/features/diagonal-quiz/client
 import { useBatchTrainingSession } from "@blindfold-chess/features/practice-session";
 import type { Square } from "@blindfold-chess/types";
 
-import {
-  PracticeTrainingScreen,
-  practiceSessionStyles,
-} from "../../../../components";
+import { PracticeTrainingScreen } from "../../../../components";
 import { useCloseSession } from "../../../../navigation/use-close-session";
 import {
-  DiagonalInputFields,
-  FileRankButtons,
-  QuestionCard,
+  QuestionPanel,
   TrainingAnswerReview,
 } from "../../../../features/diagonal-quiz/components";
-import type { ActiveField } from "../../../../features/diagonal-quiz/hooks";
 import { answerHaptics } from "../../../../lib/answer-haptics";
 import { spacing } from "../../../../theme";
 
@@ -89,7 +83,7 @@ export default function DiagonalQuizTraining() {
     allowSingleSquareDiagonal: singleDiagonal,
     allowSingleSquareAntiDiagonal: singleAntiDiagonal,
   });
-  const { reset: resetInput, setActiveField } = input;
+  const { reset: resetInput } = input;
 
   // Clear the fields for every new question: when the square changes, and
   // when a result is dismissed (the next square can repeat the last one).
@@ -106,13 +100,9 @@ export default function DiagonalQuizTraining() {
     prevShowResultRef.current = showResult;
   }, [showResult, resetInput]);
 
-  const handleFieldPress = (field: ActiveField) => {
-    if (isDisabled) return;
-    setActiveField(field);
-  };
-
-  // The answer on screen, while its result shows. A wrong or skipped one is
-  // reviewed in place of the input until Next; a right one only flashes.
+  // The answer on screen, while its result shows. A right one tints both
+  // fields green and moves on; a wrong or skipped one is reviewed in place
+  // of the panel until Next.
   const shown = showResult ? lastAnswer : null;
   const reviewed = shown && !shown.correct ? shown : null;
   const correctDiagonals = reviewed ? getDiagonals(reviewed.question) : null;
@@ -124,6 +114,7 @@ export default function DiagonalQuizTraining() {
           reviewed.userAnswerData.antiDiagonalAnswer,
         )
       : null;
+  const fieldResult = shown?.correct ? "correct" : null;
 
   return (
     <PracticeTrainingScreen
@@ -134,21 +125,10 @@ export default function DiagonalQuizTraining() {
       onEnd={close}
     >
       <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={practiceSessionStyles.bottomSection}
+        style={styles.scroll}
+        contentContainerStyle={styles.body}
         showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
       >
-        {currentSquare && (
-          // The review card below carries the correct answer, so the
-          // card's own "correct answer" line is not passed (`lastAnswer`).
-          <QuestionCard
-            square={currentSquare}
-            isCorrect={shown ? shown.correct : null}
-            lastAnswer={null}
-          />
-        )}
-
         {reviewed && correctDiagonals ? (
           <TrainingAnswerReview
             correctDiagonal={correctDiagonals.diagonal}
@@ -168,51 +148,32 @@ export default function DiagonalQuizTraining() {
             }
           />
         ) : (
-          <>
-            <View style={styles.inputSection}>
-              <DiagonalInputFields
-                diagonalStartText={input.diagonalStartText}
-                diagonalEndText={input.diagonalEndText}
-                antiDiagonalStartText={input.antiDiagonalStartText}
-                antiDiagonalEndText={input.antiDiagonalEndText}
-                activeField={input.activeField}
-                isDiagonalComplete={input.isDiagonalComplete}
-                isAntiDiagonalComplete={input.isAntiDiagonalComplete}
-                isInputtingStart={input.isInputtingStart}
-                isInputtingEnd={input.isInputtingEnd}
-                singleDiagonal={singleDiagonal}
-                singleAntiDiagonal={singleAntiDiagonal}
-                disabled={isDisabled}
-                onFieldPress={handleFieldPress}
-              />
-            </View>
-
-            <View style={styles.buttonsSection}>
-              <FileRankButtons
-                expectingFile={input.expectingFile}
-                expectingRank={input.expectingRank}
-                disabled={isDisabled}
-                onFilePress={input.handleFilePress}
-                onRankPress={input.handleRankPress}
-                onBackspace={input.handleBackspace}
-                onClear={input.handleClear}
-              />
-            </View>
-          </>
+          <QuestionPanel
+            square={currentSquare}
+            input={input}
+            singleDiagonal={singleDiagonal}
+            singleAntiDiagonal={singleAntiDiagonal}
+            disabled={isDisabled}
+            diagonalResult={fieldResult}
+            antiDiagonalResult={fieldResult}
+          />
         )}
       </ScrollView>
     </PracticeTrainingScreen>
   );
 }
 
+/**
+ * Stacked from the top with the score and End right under the keypad, as
+ * the web's training page. The body only scrolls on a screen too short for
+ * it.
+ */
 const styles = StyleSheet.create({
-  scrollView: {
-    flex: 1,
+  scroll: {
+    flexGrow: 0,
   },
-  inputSection: {
-    marginTop: spacing.lg,
-  },
-  buttonsSection: {
-    marginTop: spacing.lg,
+  body: {
+    paddingTop: spacing.md,
+    paddingBottom: spacing.xl,
   },
 });

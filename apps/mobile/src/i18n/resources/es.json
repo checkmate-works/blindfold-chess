@@ -401,6 +401,7 @@
       "singleSquare": "casilla única",
       "selectFile": "Selecciona una columna (a-h)",
       "selectRank": "Selecciona una fila (1-8)",
+      "backspace": "Retroceso",
       "clear": "Borrar",
       "correct": "¡Correcto!",
       "incorrect": "Incorrecto",
