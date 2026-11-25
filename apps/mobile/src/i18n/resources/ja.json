@@ -961,7 +961,6 @@
   "puzzle": {
     "session": {
       "correct": "正解！🎉",
-      "correctMove": "正解",
       "incorrect": "不正解です。もう一度挑戦してください。",
       "showAnswer": "答えを見る",
       "showBoard": "ボードを表示",
@@ -974,8 +973,6 @@
       "historySection": "回答履歴",
       "solution": "正解: {{move}}",
       "note": "— {{note}}",
-      "attemptCorrect": "正解",
-      "attemptIncorrect": "不正解",
       "backToList": "パズル一覧に戻る",
       "tryAgain": "もう一度",
       "peekCount": "盤面確認: {{count}}回",
@@ -998,7 +995,6 @@
     "loadFailed": "パズルを読み込めませんでした。引っ張って再読み込みしてください。",
     "whiteToMove": "白番",
     "blackToMove": "黒番",
-    "findMove": "最善手を見つけよう",
     "recorded": "結果を記録しました。",
     "detail": {
       "descriptionSection": "このパズルについて",

@@ -961,7 +961,6 @@
   "puzzle": {
     "session": {
       "correct": "Correct! 🎉",
-      "correctMove": "Correct",
       "incorrect": "Incorrect. Try again.",
       "showAnswer": "Show answer",
       "showBoard": "Show Board",
@@ -974,8 +973,6 @@
       "historySection": "Attempt History",
       "solution": "Solution: {{move}}",
       "note": "— {{note}}",
-      "attemptCorrect": "Correct",
-      "attemptIncorrect": "Incorrect",
       "backToList": "Back to Puzzles",
       "tryAgain": "Try Again",
       "peekCount": "Board Peeks: {{count}}",
@@ -998,7 +995,6 @@
     "loadFailed": "Could not load puzzles. Pull to retry.",
     "whiteToMove": "White to move",
     "blackToMove": "Black to move",
-    "findMove": "Find the best move",
     "recorded": "Your result was recorded.",
     "detail": {
       "descriptionSection": "About This Puzzle",

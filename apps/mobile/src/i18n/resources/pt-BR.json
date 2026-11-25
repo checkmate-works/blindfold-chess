@@ -961,7 +961,6 @@
   "puzzle": {
     "session": {
       "correct": "Correto! 🎉",
-      "correctMove": "Correto",
       "incorrect": "Incorreto. Tente novamente.",
       "showAnswer": "Ver resposta",
       "showBoard": "Mostrar Tabuleiro",
@@ -974,8 +973,6 @@
       "historySection": "Histórico de Tentativas",
       "solution": "Solução: {{move}}",
       "note": "— {{note}}",
-      "attemptCorrect": "Correto",
-      "attemptIncorrect": "Incorreto",
       "backToList": "Voltar para Puzzles",
       "tryAgain": "Tentar Novamente",
       "peekCount": "Visualizações do Tabuleiro: {{count}}",
@@ -998,7 +995,6 @@
     "loadFailed": "Não foi possível carregar os problemas. Puxe para tentar de novo.",
     "whiteToMove": "Brancas jogam",
     "blackToMove": "Pretas jogam",
-    "findMove": "Encontre o melhor lance",
     "recorded": "Seu resultado foi registrado.",
     "detail": {
       "descriptionSection": "Sobre Este Puzzle",

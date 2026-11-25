@@ -230,10 +230,10 @@ for locale in LOCALES:
 # --- Puzzles: the web's `practice.puzzle` session / result / list texts, under
 # `puzzle.*`.
 PUZZLE_KEYS = {
-    "session": ["correct", "correctMove", "incorrect", "showAnswer",
+    "session": ["correct", "incorrect", "showAnswer",
                 "showBoard", "whitePlayed", "blackPlayed"],
     "result": ["title", "replaySection", "historySection", "solution", "note",
-               "attemptCorrect", "attemptIncorrect", "backToList", "tryAgain",
+               "backToList", "tryAgain",
                "peekCount", "statusSolved", "statusPartial", "statusRevealed"],
     "list": ["title", "empty"],
     "detail": ["descriptionSection", "startSolving", "whitePiecesLabel",
