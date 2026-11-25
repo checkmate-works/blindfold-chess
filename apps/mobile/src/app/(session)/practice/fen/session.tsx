@@ -13,12 +13,11 @@ import {
   usePieceAccuracy,
 } from "@blindfold-chess/features/fen-practice/client";
 
-import { Button, Screen } from "../../../../components";
+import { Button, ProgressBar, Screen } from "../../../../components";
 import {
   BoardTools,
   FenBoardEditor,
   FenDisplay,
-  ProblemProgress,
   ProblemRecreationResult,
   SessionLinks,
   confirmQuit,
@@ -119,7 +118,7 @@ export default function FenSession() {
     <Screen edges={["bottom", "left", "right"]}>
       <ScrollView ref={scrollRef} contentContainerStyle={styles.content}>
         {positions.length > 1 && (
-          <ProblemProgress
+          <ProgressBar
             current={currentProblemIndex + 1}
             total={positions.length}
           />

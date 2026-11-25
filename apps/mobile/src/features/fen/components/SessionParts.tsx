@@ -9,39 +9,10 @@ import { useTheme, fontSize, spacing, monoFont } from "../../../theme";
 /**
  * The parts the FEN drill and position memory stack the same way on their
  * session screens, after the web's `FenRecreate` and
- * `PositionMemoryRecreate`: the problem progress, the FEN box, the clear /
- * flip tools above the board and the muted text links under the submit
- * button.
+ * `PositionMemoryRecreate`: the FEN box, the clear / flip tools above the
+ * board and the muted text links under the submit button. The problem
+ * progress over them is the shared `ProgressBar`.
  */
-
-/** The web's `ProgressBar`: "2 / 5" over a full-width `h-2` track. */
-export function ProblemProgress({
-  current,
-  total,
-}: {
-  current: number;
-  total: number;
-}) {
-  const { colors } = useTheme();
-  return (
-    <View>
-      <Text style={[styles.progressText, { color: colors.mutedForeground }]}>
-        {current} / {total}
-      </Text>
-      <View style={[styles.track, { backgroundColor: colors.secondary }]}>
-        <View
-          style={[
-            styles.fill,
-            {
-              backgroundColor: colors.foreground,
-              width: `${(current / total) * 100}%`,
-            },
-          ]}
-        />
-      </View>
-    </View>
-  );
-}
 
 /** The FEN to rebuild, in the web's muted `font-mono text-sm` box; selectable to copy. */
 export function FenDisplay({ fen }: { fen: string }) {
@@ -217,20 +188,6 @@ export function confirmQuit(
 }
 
 const styles = StyleSheet.create({
-  progressText: {
-    fontSize: fontSize.sm,
-    marginBottom: spacing.sm,
-    fontVariant: ["tabular-nums"],
-  },
-  track: {
-    height: 8,
-    borderRadius: 4,
-    overflow: "hidden",
-  },
-  fill: {
-    height: "100%",
-    borderRadius: 4,
-  },
   // `px-3 py-2 bg-muted border rounded-md font-mono text-sm`.
   fen: {
     paddingHorizontal: 12,

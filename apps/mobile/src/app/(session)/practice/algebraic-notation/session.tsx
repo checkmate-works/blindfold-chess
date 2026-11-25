@@ -18,12 +18,11 @@ import {
 } from "@blindfold-chess/features/algebraic-notation";
 import { useAlgebraicNotationSession } from "@blindfold-chess/features/algebraic-notation/client";
 
-import { Button, Screen } from "../../../../components";
+import { Button, ProgressBar, Screen } from "../../../../components";
 import {
   AnswerFeedback,
   AnswerOptions,
   MoveBoard,
-  QuestionProgress,
 } from "../../../../features/algebraic-notation/components";
 import { useQuestionLocale } from "../../../../features/algebraic-notation/hooks";
 import { useTheme, fontSize, spacing } from "../../../../theme";
@@ -90,7 +89,7 @@ export default function AlgebraicNotationSession() {
   return (
     <Screen edges={["bottom"]}>
       <ScrollView ref={scrollRef} contentContainerStyle={styles.content}>
-        <QuestionProgress current={currentIndex + 1} total={total} />
+        <ProgressBar current={currentIndex + 1} total={total} />
 
         <Text style={[styles.description, { color: colors.mutedForeground }]}>
           {getQuestionDescription(question, locale)}

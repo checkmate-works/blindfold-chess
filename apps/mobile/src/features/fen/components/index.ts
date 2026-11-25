@@ -11,7 +11,6 @@ export { FenSettingsForm } from "./FenSettingsForm";
 export {
   BoardTools,
   FenDisplay,
-  ProblemProgress,
   SessionLinks,
   confirmQuit,
 } from "./SessionParts";

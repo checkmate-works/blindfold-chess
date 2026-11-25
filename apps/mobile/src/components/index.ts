@@ -26,6 +26,7 @@ export {
 export { PracticeSetupScreen } from "./PracticeSetupScreen";
 export { PracticeStatsResultCard } from "./PracticeStatsResultCard";
 export { PracticeTrainingScreen } from "./PracticeTrainingScreen";
+export { ProgressBar } from "./ProgressBar";
 export {
   PROBLEM_DETAILS_INSET,
   ProblemDetailsList,

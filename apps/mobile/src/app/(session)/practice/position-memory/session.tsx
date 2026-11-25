@@ -15,12 +15,11 @@ import {
 } from "@blindfold-chess/features/fen-practice/client";
 import { useCountdown } from "@blindfold-chess/features/practice-session";
 
-import { Button, QuizTimer, Screen } from "../../../../components";
+import { Button, ProgressBar, QuizTimer, Screen } from "../../../../components";
 import {
   BoardTools,
   FenBoard,
   FenBoardEditor,
-  ProblemProgress,
   ProblemRecreationResult,
   SessionLinks,
   confirmQuit,
@@ -181,7 +180,7 @@ export default function PositionMemorySession() {
     <Screen edges={["bottom", "left", "right"]}>
       <ScrollView ref={scrollRef} contentContainerStyle={styles.content}>
         {positions.length > 1 && (
-          <ProblemProgress
+          <ProgressBar
             current={currentProblemIndex + 1}
             total={positions.length}
           />

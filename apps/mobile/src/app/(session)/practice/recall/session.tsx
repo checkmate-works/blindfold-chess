@@ -17,13 +17,12 @@ import {
   type Side,
 } from "@blindfold-chess/types";
 
-import { Button, Screen } from "../../../../components";
+import { Button, ProgressBar, Screen } from "../../../../components";
 import {
   BoardPeek,
   ButtonInput,
 } from "../../../../features/ai-game/components";
 import { RecallMovesPanel } from "../../../../features/recall/components/RecallMovesPanel";
-import { RecallProgressBar } from "../../../../features/recall/components/RecallProgressBar";
 import { recallFeedbackTitle } from "../../../../features/recall/lib/feedback";
 import { readRecallPgn } from "../../../../features/recall/lib/pgn";
 import { encodeRecallLog } from "../../../../features/recall/lib/result-params";
@@ -193,7 +192,7 @@ function RecallRun({
         keyboardShouldPersistTaps="handled"
       >
         <View style={[styles.panel, { borderColor: colors.border }]}>
-          <RecallProgressBar current={state.index} total={moves.length} />
+          <ProgressBar current={state.index} total={moves.length} />
 
           <BoardPeek
             fen={position.fen}

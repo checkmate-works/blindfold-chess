@@ -6,7 +6,7 @@ import { isTourComplete } from "@blindfold-chess/features/knight-tour";
 import { useKnightTour } from "@blindfold-chess/features/knight-tour/client";
 import { isValidSquare } from "@blindfold-chess/features/common";
 
-import { BottomBar, Button, Screen } from "../../../../components";
+import { BottomBar, Button, ProgressBar, Screen } from "../../../../components";
 import {
   BlindMoveInput,
   KnightTourBoard,
@@ -17,7 +17,6 @@ import {
   spacing,
   fontSize,
   fontWeight,
-  borderRadius,
   monoFont,
   withAlpha,
 } from "../../../../theme";
@@ -96,29 +95,7 @@ export default function KnightTourSession() {
   return (
     <Screen edges={["left", "right"]}>
       <ScrollView contentContainerStyle={styles.content}>
-        <View>
-          <Text
-            style={[styles.progressText, { color: colors.mutedForeground }]}
-          >
-            {visited} / {TOTAL_SQUARES}
-          </Text>
-          <View
-            style={[
-              styles.progressTrack,
-              { backgroundColor: colors.secondary },
-            ]}
-          >
-            <View
-              style={[
-                styles.progressFill,
-                {
-                  backgroundColor: colors.foreground,
-                  width: `${(visited / TOTAL_SQUARES) * 100}%`,
-                },
-              ]}
-            />
-          </View>
-        </View>
+        <ProgressBar current={visited} total={TOTAL_SQUARES} />
 
         <View style={styles.position}>
           <Text
@@ -199,30 +176,15 @@ export default function KnightTourSession() {
 }
 
 /**
- * The web's sizes: blocks `gap-6` apart; the progress bar's `text-sm` count
- * `mb-2` over an `h-2` bar; the current square in `text-3xl` (`text-5xl`
- * blindfolded, where it is the whole picture) bold mono under its `text-sm`
- * label; the stuck box's `rounded-md p-4` with `mt-1` between its lines;
+ * The web's sizes: blocks `gap-6` apart; the current square in `text-3xl`
+ * (`text-5xl` blindfolded, where it is the whole picture) bold mono under
+ * its `text-sm` label; the stuck box's `rounded-md p-4` with `mt-1` between its lines;
  * Undo and Quit `gap-2` apart.
  */
 const styles = StyleSheet.create({
   content: {
     padding: spacing.lg,
     gap: spacing.lg,
-  },
-  progressText: {
-    fontSize: fontSize.sm,
-    fontVariant: ["tabular-nums"],
-    marginBottom: spacing.sm,
-  },
-  progressTrack: {
-    height: 8,
-    borderRadius: borderRadius.full,
-    overflow: "hidden",
-  },
-  progressFill: {
-    height: "100%",
-    borderRadius: borderRadius.full,
   },
   position: {
     alignItems: "center",
