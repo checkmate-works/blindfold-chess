@@ -5,9 +5,9 @@ import type {
   QuadrantQuestion,
 } from "@blindfold-chess/features/quadrants";
 
-import { TurnIndicator } from "../../../components";
+import { BoardCountdown, TurnIndicator } from "../../../components";
 import { fontSize, fontWeight, spacing, useTheme } from "../../../theme";
-import { QuadrantBoard } from "./QuadrantBoard";
+import { QUADRANT_BOARD_RADIUS, QuadrantBoard } from "./QuadrantBoard";
 
 type QuestionPanelProps = {
   question: QuadrantQuestion;
@@ -75,17 +75,10 @@ export function QuestionPanel({
           onQuadrantPress={onAnswer}
           disabled={disabled || countingDown}
         />
-        {countingDown && (
-          <View
-            style={styles.countdownVeil}
-            testID="countdown-overlay"
-            accessibilityLiveRegion="polite"
-          >
-            <Text style={styles.countdownText}>
-              {countdown > 0 ? countdown : "START!"}
-            </Text>
-          </View>
-        )}
+        <BoardCountdown
+          countdown={countdown}
+          borderRadius={QUADRANT_BOARD_RADIUS}
+        />
       </View>
     </View>
   );
@@ -104,22 +97,5 @@ const styles = StyleSheet.create({
   },
   hidden: {
     opacity: 0,
-  },
-  /**
-   * The coordinate quiz's countdown over its board: the web veils the
-   * content with a blur, which React Native has no way to draw, so a dark
-   * wash hides the board instead.
-   */
-  countdownVeil: {
-    ...StyleSheet.absoluteFill,
-    borderRadius: 6,
-    backgroundColor: "rgba(0, 0, 0, 0.55)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  countdownText: {
-    color: "#ffffff",
-    fontSize: 96,
-    fontWeight: "900",
   },
 });

@@ -1,6 +1,7 @@
 export { AnswerPair } from "./AnswerPair";
 export type { AnswerPairOption } from "./AnswerPair";
 export { BoardOrientationSelector } from "./BoardOrientationSelector";
+export { BoardCountdown } from "./BoardCountdown";
 export { BottomBar } from "./BottomBar";
 export { Button } from "./Button";
 export { Card } from "./Card";

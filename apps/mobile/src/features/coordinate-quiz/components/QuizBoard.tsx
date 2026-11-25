@@ -3,8 +3,8 @@ import type { Square } from "@blindfold-chess/types";
 import { StyleSheet, Text, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
-import { TurnIndicator } from "../../../components";
-import { useTheme, spacing } from "../../../theme";
+import { BoardCountdown, TurnIndicator } from "../../../components";
+import { useTheme } from "../../../theme";
 import type { CoordinateQuestion } from "../lib/types";
 import { ChessBoard } from "./ChessBoard";
 import type { SquareHighlight } from "./ChessBoardSquare";
@@ -104,21 +104,7 @@ export function QuizBoard({
           </Text>
         </View>
       )}
-      {countingDown && (
-        <View
-          style={styles.countdownVeil}
-          testID="countdown-overlay"
-          accessibilityLiveRegion="polite"
-        >
-          <Text
-            style={[styles.overlayText, styles.countdownText]}
-            numberOfLines={1}
-            adjustsFontSizeToFit
-          >
-            {countdown > 0 ? countdown : "START!"}
-          </Text>
-        </View>
-      )}
+      <BoardCountdown countdown={countdown} />
     </View>
   );
 }
@@ -132,22 +118,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     zIndex: 10,
-  },
-  /**
-   * The web veils the board with 30% black plus a backdrop blur. Without the
-   * blur 30% leaves the squares at full contrast, so the veil is darker.
-   */
-  countdownVeil: {
-    ...StyleSheet.absoluteFill,
-    backgroundColor: "rgba(0, 0, 0, 0.55)",
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: spacing.md,
-    zIndex: 20,
-  },
-  countdownText: {
-    color: "#ffffff",
-    fontSize: 96,
   },
   overlayText: {
     fontSize: 64,

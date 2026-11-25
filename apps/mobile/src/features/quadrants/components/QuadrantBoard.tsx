@@ -25,6 +25,9 @@ import { fontWeight } from "../../../theme";
 /** The web board's `max-w-xs`. */
 export const QUADRANT_BOARD_MAX_SIZE = 320;
 
+/** The web board's `rounded-md`, which anything laid over the board follows. */
+export const QUADRANT_BOARD_RADIUS = 6;
+
 /**
  * The web's Tailwind colours, which have no theme token on either platform:
  * `yellow-400` for the quarter lines, `green-500` / `red-500` for the
@@ -323,7 +326,7 @@ const styles = StyleSheet.create({
   // The web's `rounded-md overflow-hidden`.
   board: {
     alignSelf: "center",
-    borderRadius: 6,
+    borderRadius: QUADRANT_BOARD_RADIUS,
     overflow: "hidden",
   },
   row: {
