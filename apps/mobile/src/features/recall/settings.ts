@@ -6,13 +6,11 @@ export type RecallSettings = {
   /** The PGN last pasted, kept so a recall can be repeated. */
   pgn: string;
   playerColor: Side;
-  autoOpponent: boolean;
 };
 
 export const DEFAULT_RECALL_SETTINGS: RecallSettings = {
   pgn: "",
   playerColor: "white",
-  autoOpponent: true,
 };
 
 /**
