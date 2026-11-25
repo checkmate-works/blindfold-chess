@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { boardThemeColors } from "@blindfold-chess/ui";
 import {
@@ -7,16 +6,13 @@ import {
 } from "@blindfold-chess/features/coordinate-quiz";
 
 import { useGamePreferences } from "../../../lib/game-preferences";
+import { useDemoAnswerLoop } from "../../../lib/use-demo-answer-loop";
 import { useTheme } from "../../../theme";
 
 /** The web demo's `max-w-[240px]`. */
 const BOARD_SIZE = 240;
 const SQUARE_SIZE = BOARD_SIZE / 8;
 const DEMO_SQUARE = "e4";
-
-/** How long the prompt stands alone, then how long the answer stays lit. */
-const PROMPT_MS = 1800;
-const ANSWER_MS = 900;
 
 /**
  * The setup screen's demo: a white-side board in the player's theme with
@@ -29,15 +25,7 @@ export function HowToPlayBoard() {
   const { isDark } = useTheme();
   const { preferences } = useGamePreferences();
   const theme = boardThemeColors[preferences.boardTheme];
-  const [answered, setAnswered] = useState(false);
-
-  useEffect(() => {
-    const timer = setTimeout(
-      () => setAnswered((lit) => !lit),
-      answered ? ANSWER_MS : PROMPT_MS,
-    );
-    return () => clearTimeout(timer);
-  }, [answered]);
+  const answered = useDemoAnswerLoop();
 
   // ChessBoardSquare's target green (Tailwind green-500 / green-700).
   const answerColor = isDark ? "#15803d" : "#22c55e";
