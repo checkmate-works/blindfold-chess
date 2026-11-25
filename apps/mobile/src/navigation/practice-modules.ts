@@ -61,6 +61,7 @@ export const MOBILE_PRACTICE_MODULES: readonly MobilePracticeModule[] = [
     icon: "⚖️",
     hasTraining: true,
     sessionHeader: true,
+    howToPlayOnSetup: true,
   },
   {
     slug: "board-symmetry",
