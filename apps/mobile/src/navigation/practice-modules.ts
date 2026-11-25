@@ -129,7 +129,7 @@ export const MOBILE_PRACTICE_MODULES: readonly MobilePracticeModule[] = [
     sessionHeader: true,
   },
   { slug: "recall", i18nKey: "recall", icon: "🔁", sessionHeader: true },
-  { slug: "puzzle", i18nKey: "puzzle", icon: "🧩" },
+  { slug: "puzzle", i18nKey: "puzzle", icon: "🧩", sessionHeader: true },
 ];
 
 /**

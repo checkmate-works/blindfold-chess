@@ -36,8 +36,8 @@ export default function PuzzleList() {
 
   const open = (puzzle: PuzzleSummary) =>
     router.push({
-      pathname: "/practice/puzzle/session",
-      params: { id: puzzle.id },
+      pathname: "/practice/puzzle/[id]",
+      params: { id: puzzle.id, title: puzzle.title },
     });
 
   const row = (puzzle: PuzzleSummary, daily = false) => (

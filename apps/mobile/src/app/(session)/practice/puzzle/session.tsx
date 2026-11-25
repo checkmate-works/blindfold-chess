@@ -1,12 +1,13 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   ScrollView,
   StyleSheet,
   Text,
   View,
+  useWindowDimensions,
 } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { isBlackToMoveFromFen } from "@blindfold-chess/features/chess-core";
 import {
@@ -16,40 +17,51 @@ import {
   type SessionState,
 } from "@blindfold-chess/features/puzzle";
 
-import { Button, ListSection, Screen, SwitchRow } from "../../../../components";
-import {
-  ButtonInput,
-  ChessBoard,
-} from "../../../../features/ai-game/components";
+import { Button, Screen } from "../../../../components";
+import { ButtonInput } from "../../../../features/ai-game/components";
+import { BoardAccordion } from "../../../../features/puzzle/components/BoardAccordion";
+import { PiecesInfo } from "../../../../features/puzzle/components/PiecesInfo";
 import {
   fetchPuzzle,
   type Puzzle,
 } from "../../../../features/puzzle/puzzles-api";
 import { answerHaptics } from "../../../../lib/answer-haptics";
-import { SessionTopBar } from "../../../../navigation/SessionTopBar";
+import { SessionCloseButton } from "../../../../navigation/SessionCloseButton";
 import {
-  useTheme,
   borderRadius,
   fontSize,
   fontWeight,
   spacing,
+  useTheme,
 } from "../../../../theme";
 
+/** How long "Correct! 🎉" stays up before the result replaces the session. */
+const SOLVED_PAUSE_MS = 900;
+
 /**
- * Solving one puzzle (the web's `/practice/puzzle/[id]/session`): enter the
- * player's moves with the SAN keypad; a right move plays the opponent's
- * reply from the solution, a wrong one is counted. The board stays hidden
- * unless the player opens it, and each opening counts as a peek, as on the
- * web. Grading is the web's (`evaluatePuzzleSubmit`): any of the puzzle's
- * alternative solution lines is accepted until one is chosen.
+ * Solving one puzzle (the web's `/practice/puzzle/[id]/session`), stacked
+ * as the web's panel is: the pieces as text, the board behind "Show Board"
+ * (each opening counts as a peek), the SAN keypad, then "Show answer". The
+ * header carries the puzzle's title, and after each right move the
+ * opponent's reply with the progress ("● Black plays Nh2 (1/3)"), where the
+ * web shows them as the page title. A wrong move says so under the keypad.
+ *
+ * Grading is the web's (`evaluatePuzzleSubmit`): any of the puzzle's
+ * alternative lines is accepted until the first right move picks one. The
+ * session closes without asking, as the web page can be left at any time.
  */
 export default function PuzzleSession() {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const navigation = useNavigation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [puzzle, setPuzzle] = useState<Puzzle | "notFound" | "failed" | null>(
     null,
   );
+
+  useLayoutEffect(() => {
+    navigation.setOptions({ headerLeft: () => <SessionCloseButton /> });
+  }, [navigation]);
 
   useEffect(() => {
     let cancelled = false;
@@ -63,8 +75,7 @@ export default function PuzzleSession() {
 
   if (puzzle === null || typeof puzzle === "string") {
     return (
-      <Screen>
-        <SessionTopBar confirm={false} />
+      <Screen edges={["bottom"]}>
         <View style={styles.center}>
           {puzzle === null ? (
             <ActivityIndicator size="large" color={colors.primary} />
@@ -83,7 +94,9 @@ export default function PuzzleSession() {
 function PuzzleSolver({ puzzle }: { puzzle: Puzzle }) {
   const { t } = useTranslation();
   const router = useRouter();
+  const navigation = useNavigation();
   const { colors, feedbackColors } = useTheme();
+  const { width } = useWindowDimensions();
   const parsed = useMemo(
     () => parseSolutionLines(puzzle.solutions),
     [puzzle.solutions],
@@ -97,12 +110,28 @@ function PuzzleSolver({ puzzle }: { puzzle: Puzzle }) {
     lastOpponentMove: null,
   });
   const [lastMove, setLastMove] = useState<MoveSquares | null>(null);
-  const [feedback, setFeedback] = useState<"correct" | "incorrect" | null>(
-    null,
-  );
-  const [showBoard, setShowBoard] = useState(false);
+  const [feedback, setFeedback] = useState<"incorrect" | "solved" | null>(null);
   const [peekCount, setPeekCount] = useState(0);
   const finished = useRef(false);
+
+  const solved = feedback === "solved";
+  const total =
+    session.lockedSolutionIndex === null
+      ? null
+      : (parsed[session.lockedSolutionIndex]?.playerSlots.length ?? null);
+  const title =
+    session.lastOpponentMove !== null && !solved
+      ? `${playerIsBlack ? "○" : "●"} ${t(
+          playerIsBlack
+            ? "puzzle.session.whitePlayed"
+            : "puzzle.session.blackPlayed",
+          { move: session.lastOpponentMove },
+        )}${total === null ? "" : ` (${session.playerMoves.length}/${total})`}`
+      : puzzle.title;
+
+  useLayoutEffect(() => {
+    navigation.setOptions({ title });
+  }, [navigation, title]);
 
   const goToResult = (
     status: "solved" | "revealed",
@@ -127,6 +156,7 @@ function PuzzleSolver({ puzzle }: { puzzle: Puzzle }) {
   };
 
   const handleSubmit = (san: string) => {
+    if (solved) return;
     const outcome = evaluatePuzzleSubmit(
       session,
       san,
@@ -134,116 +164,93 @@ function PuzzleSolver({ puzzle }: { puzzle: Puzzle }) {
       puzzle.solutions,
     );
     setSession(outcome.nextSession);
-    const correct = outcome.kind === "accepted";
-    answerHaptics(correct);
-    setFeedback(correct ? "correct" : "incorrect");
-    if (outcome.kind === "accepted") {
-      setLastMove(outcome.opponentReply ?? outcome.playerMove);
-      if (outcome.solve) {
-        goToResult(
-          "solved",
-          outcome.nextSession.attempts,
-          outcome.nextSession.lockedSolutionIndex ?? 0,
-        );
-      }
+    answerHaptics(outcome.kind === "accepted");
+    if (outcome.kind !== "accepted") {
+      setFeedback("incorrect");
+      return;
     }
+    setLastMove(outcome.opponentReply ?? outcome.playerMove);
+    if (!outcome.solve) {
+      setFeedback(null);
+      return;
+    }
+    setFeedback("solved");
+    const { attempts, lockedSolutionIndex } = outcome.nextSession;
+    setTimeout(
+      () => goToResult("solved", attempts, lockedSolutionIndex ?? 0),
+      SOLVED_PAUSE_MS,
+    );
   };
 
-  const opponentLine = session.lastOpponentMove
-    ? t(
-        playerIsBlack
-          ? "puzzle.session.whitePlayed"
-          : "puzzle.session.blackPlayed",
-        {
-          move: session.lastOpponentMove,
-        },
-      )
-    : null;
-
   return (
-    <Screen>
-      <SessionTopBar confirm={false} />
+    <Screen edges={["bottom"]}>
       <ScrollView
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={[styles.header, { backgroundColor: colors.card }]}>
-          <Text style={[styles.title, { color: colors.foreground }]}>
-            {puzzle.title}
-          </Text>
-          {puzzle.description ? (
-            <Text
-              style={[styles.description, { color: colors.mutedForeground }]}
-            >
-              {puzzle.description}
-            </Text>
-          ) : null}
-          <Text style={[styles.prompt, { color: colors.foreground }]}>
-            {playerIsBlack ? t("puzzle.blackToMove") : t("puzzle.whiteToMove")}
-            {" · "}
-            {t("puzzle.findMove")}
-          </Text>
-          {opponentLine && (
-            <Text style={[styles.description, { color: colors.foreground }]}>
-              {opponentLine}
-            </Text>
-          )}
-          {feedback && (
-            <Text
-              accessibilityLiveRegion="polite"
-              style={[
-                styles.feedback,
-                {
-                  color:
-                    feedback === "correct"
-                      ? feedbackColors.success
-                      : feedbackColors.error,
-                },
-              ]}
-            >
-              {feedback === "correct"
-                ? t("puzzle.session.correctMove")
-                : t("puzzle.session.incorrect")}
-            </Text>
-          )}
-        </View>
+        <View style={[styles.panel, { borderColor: colors.border }]}>
+          <PiecesInfo fen={puzzle.fen} />
 
-        <ListSection>
-          <SwitchRow
-            label={t("puzzle.session.showBoard")}
-            value={showBoard}
-            onChange={(open) => {
-              if (open) setPeekCount((n) => n + 1);
-              setShowBoard(open);
-            }}
-          />
-        </ListSection>
-        {showBoard && (
-          <ChessBoard
+          <BoardAccordion
             fen={session.currentFen}
             flipped={playerIsBlack}
             lastMove={lastMove}
+            onOpen={() => setPeekCount((n) => n + 1)}
+            maxSize={width - PANEL_INSET - 2}
+            testID="puzzle-show-board"
           />
-        )}
 
-        <ButtonInput fen={session.currentFen} onSubmit={handleSubmit} />
+          <View style={styles.input}>
+            <ButtonInput
+              fen={session.currentFen}
+              onSubmit={handleSubmit}
+              disabled={solved}
+              fitWidth
+            />
+            {feedback && (
+              <Text
+                accessibilityLiveRegion="polite"
+                testID="puzzle-feedback"
+                style={[
+                  styles.feedback,
+                  {
+                    color: solved
+                      ? feedbackColors.success
+                      : feedbackColors.error,
+                  },
+                ]}
+              >
+                {solved
+                  ? t("puzzle.session.correct")
+                  : t("puzzle.session.incorrect")}
+              </Text>
+            )}
+          </View>
 
-        <Button
-          title={t("puzzle.session.showAnswer")}
-          variant="outline"
-          fullWidth
-          onPress={() =>
-            goToResult(
-              "revealed",
-              session.attempts,
-              session.lockedSolutionIndex ?? 0,
-            )
-          }
-        />
+          {!solved && (
+            <Button
+              title={t("puzzle.session.showAnswer")}
+              variant="secondary"
+              size="lg"
+              fullWidth
+              testID="puzzle-show-answer"
+              onPress={() =>
+                goToResult(
+                  "revealed",
+                  session.attempts,
+                  session.lockedSolutionIndex ?? 0,
+                )
+              }
+            />
+          )}
+        </View>
       </ScrollView>
     </Screen>
   );
 }
+
+/** The page's and the panel's padding on both sides, and the panel's border. */
+const PANEL_INSET = spacing.md * 4 + 2;
 
 const styles = StyleSheet.create({
   center: {
@@ -252,30 +259,21 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   content: {
-    padding: spacing.lg,
-    paddingTop: spacing.sm,
+    padding: spacing.md,
+  },
+  // The web's `PagePanel` with `space-y-4` between its parts.
+  panel: {
+    borderWidth: 1,
+    borderRadius: borderRadius.md,
+    padding: spacing.md,
     gap: spacing.md,
   },
-  header: {
-    borderRadius: borderRadius.lg,
-    padding: spacing.md,
-    gap: spacing.xs + 2,
-  },
-  title: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.bold,
-  },
-  description: {
-    fontSize: fontSize.sm,
-    lineHeight: 20,
-  },
-  prompt: {
-    fontSize: fontSize.md,
-    fontWeight: fontWeight.semibold,
-    marginTop: spacing.xs,
+  input: {
+    gap: spacing.sm,
   },
   feedback: {
     fontSize: fontSize.sm,
-    fontWeight: fontWeight.semibold,
+    fontWeight: fontWeight.medium,
+    textAlign: "center",
   },
 });
