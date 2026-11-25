@@ -38,9 +38,10 @@ export function PracticeStatsResultCard({
     averageTime: t("practiceResult.averageTime"),
   });
 
-  const averageTimeLabel = t("practiceResult.averageTime");
+  // By key, not label: the label is a translation and could match another
+  // stat's wording in some language.
   const stats = hideAverageTime
-    ? allStats.filter((stat) => stat.label !== averageTimeLabel)
+    ? allStats.filter((stat) => stat.key !== "averageTime")
     : allStats;
 
   return (
