@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { useRouter } from "expo-router";
 import type { RemoteChallengePort } from "@blindfold-chess/features/challenge-attempt";
 import {
@@ -10,18 +10,13 @@ import type { SquareColorsResult } from "@blindfold-chess/features/square-colors
 import { useSquareColorsSession } from "@blindfold-chess/features/square-colors/client";
 import type { Square } from "@blindfold-chess/types";
 
-import {
-  PracticeSessionScreen,
-  practiceSessionStyles,
-} from "../../../../components";
+import { PracticeSessionScreen } from "../../../../components";
 import { ChallengeAttemptGate } from "../../../../features/challenge/ChallengeAttemptGate";
-import {
-  ColorButtons,
-  SquareQuestion,
-} from "../../../../features/square-colors/components";
+import { QuestionPanel } from "../../../../features/square-colors/components";
 import { answerHaptics } from "../../../../lib/answer-haptics";
 import { useGamePreferences } from "../../../../lib/game-preferences";
 import { serializePracticeStatsParams } from "../../../../lib/practice-result-params";
+import { spacing } from "../../../../theme";
 import type { SquareColor } from "../../../../features/square-colors/lib/types";
 
 const SETTINGS = {};
@@ -117,26 +112,29 @@ function SquareColorsChallengeSession({
       headerShown
       countdownInBody
     >
-      <View style={practiceSessionStyles.questionContainer}>
-        <SquareQuestion
+      <View style={styles.body}>
+        <QuestionPanel
           square={currentSquare}
-          isCorrect={verdict}
-          countdown={countdown}
-        />
-      </View>
-
-      <View style={practiceSessionStyles.bottomSection}>
-        <ColorButtons
+          verdict={verdict}
+          answeredColor={answeredColor}
           onAnswer={onAnswer}
           disabled={inputDisabled}
           boardTheme={preferences.boardTheme}
-          selected={
-            verdict !== null && answeredColor
-              ? { color: answeredColor, correct: verdict }
-              : null
-          }
+          countdown={countdown}
         />
       </View>
     </PracticeSessionScreen>
   );
 }
+
+/**
+ * Stacked from the top as the web's session is: 24 under the hearts and
+ * clock (the web's mb-6), 32 above the score (its mt-8). Centring the
+ * square would open a gap between it and the buttons on a tall phone.
+ */
+const styles = StyleSheet.create({
+  body: {
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.xl,
+  },
+});

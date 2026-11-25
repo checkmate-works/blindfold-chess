@@ -1,22 +1,17 @@
 import { useCallback } from "react";
-import { View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
 import { generateSquareSequence } from "@blindfold-chess/features/common";
 import { useBatchTrainingSession } from "@blindfold-chess/features/practice-session";
 import { getSquareColor } from "@blindfold-chess/features/square-colors";
 
-import {
-  PracticeTrainingScreen,
-  practiceSessionStyles,
-} from "../../../../components";
+import { PracticeTrainingScreen } from "../../../../components";
 import { useCloseSession } from "../../../../navigation/use-close-session";
-import {
-  ColorButtons,
-  SquareQuestion,
-} from "../../../../features/square-colors/components";
+import { QuestionPanel } from "../../../../features/square-colors/components";
 import type { SquareColor } from "../../../../features/square-colors/lib/types";
 import { answerHaptics } from "../../../../lib/answer-haptics";
 import { useGamePreferences } from "../../../../lib/game-preferences";
+import { spacing } from "../../../../theme";
 
 const BATCH_SIZE = 100;
 
@@ -60,25 +55,27 @@ export default function SquareColorsTraining() {
       incorrectCount={incorrectCount}
       onEnd={close}
     >
-      <View style={practiceSessionStyles.questionContainer}>
-        <SquareQuestion
+      <View style={styles.body}>
+        <QuestionPanel
           square={currentSquare}
-          isCorrect={answered?.correct ?? null}
-        />
-      </View>
-
-      <View style={practiceSessionStyles.bottomSection}>
-        <ColorButtons
+          verdict={answered?.correct ?? null}
+          answeredColor={answered?.userAnswerData ?? null}
           onAnswer={onAnswer}
           disabled={showResult}
           boardTheme={preferences.boardTheme}
-          selected={
-            answered?.userAnswerData
-              ? { color: answered.userAnswerData, correct: answered.correct }
-              : null
-          }
         />
       </View>
     </PracticeTrainingScreen>
   );
 }
+
+/**
+ * Stacked from the top with the score and End right under the buttons, as
+ * the web's training page (its p-8 around the panel).
+ */
+const styles = StyleSheet.create({
+  body: {
+    paddingTop: spacing.xl,
+    paddingBottom: spacing.xl,
+  },
+});
