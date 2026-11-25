@@ -27,6 +27,8 @@ type ProblemFeedbackProps = {
   success: boolean;
   /** Skipped or timed out: there is no route of the player's to show. */
   skipped?: boolean;
+  /** The screen width around the board (`RouteBoard`'s `horizontalInset`). */
+  boardInset?: number;
 };
 
 /**
@@ -44,6 +46,7 @@ export function ProblemFeedback({
   shortestPath,
   success,
   skipped = false,
+  boardInset,
 }: ProblemFeedbackProps) {
   const { t } = useTranslation();
   const { colors, feedbackColors } = useTheme();
@@ -117,6 +120,7 @@ export function ProblemFeedback({
         path={boardPath}
         highlightedSquare={highlightedSquare}
         wrongSquares={boardWrongSquares}
+        horizontalInset={boardInset}
       />
 
       {showShortest && (

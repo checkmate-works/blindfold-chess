@@ -310,9 +310,9 @@
     },
     "result": {
       "title": "¡Práctica completada!",
-      "score": "Puntuación",
-      "correct": "Correctas",
-      "accuracy": "Precisión"
+      "problemDetails": "Detalles del problema",
+      "skipped": "Omitido",
+      "timeUp": "Tiempo agotado"
     },
     "pieces": {
       "n": "Caballo",

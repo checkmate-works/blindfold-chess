@@ -26,6 +26,8 @@ type RouteBoardProps = {
   highlightedSquare?: string | null;
   /** Squares the piece could not have reached from the one before. */
   wrongSquares?: readonly string[];
+  /** The screen width around the board; by default the screen's padding. */
+  horizontalInset?: number;
 };
 
 /**
@@ -42,11 +44,12 @@ export function RouteBoard({
   path,
   highlightedSquare = null,
   wrongSquares = EMPTY,
+  horizontalInset = spacing.lg * 2,
 }: RouteBoardProps) {
   const { width } = useWindowDimensions();
   const { preferences } = useGamePreferences();
   const palette = boardThemeColors[preferences.boardTheme];
-  const boardSize = Math.min(width - spacing.lg * 2, MAX_BOARD_SIZE);
+  const boardSize = Math.min(width - horizontalInset, MAX_BOARD_SIZE);
   const squareSize = boardSize / 8;
 
   const steps = useMemo(() => {

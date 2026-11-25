@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useInsertionEffect, useMemo, useRef } from "react";
 import { ScrollView, StyleSheet } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { RemoteChallengePort } from "@blindfold-chess/features/challenge-attempt";
@@ -18,6 +18,7 @@ import { useRoutePlannerSession } from "@blindfold-chess/features/route-planner/
 import { PracticeSessionScreen } from "../../../../components";
 import { ChallengeAttemptGate } from "../../../../features/challenge/ChallengeAttemptGate";
 import { ProblemPanel } from "../../../../features/route-planner/components";
+import { buildRoutePlannerResultParams } from "../../../../features/route-planner/lib/result-params";
 import { answerHaptics } from "../../../../lib/answer-haptics";
 import { parseEnumParam } from "../../../../lib/route-params";
 import { spacing } from "../../../../theme";
@@ -71,14 +72,23 @@ function RoutePlannerChallengeRun({
     [selectedPiece],
   );
 
+  // The run as of its last render, for `handleComplete`: the session calls
+  // it from its completion effect, and every insertion effect of that
+  // render (below) has run by then.
+  const run = useRef<{
+    timeElapsed: number;
+    timedOutProblem: RoutePlannerProblem | null;
+  }>({ timeElapsed: 0, timedOutProblem: null });
+
   const handleComplete = useCallback(
     (result: RoutePlannerResult) => {
       router.replace({
         pathname: "/practice/route-planner/result",
         params: {
-          correctCount: String(result.correctCount),
-          totalProblems: String(result.totalProblems),
-          accuracy: String(result.accuracy),
+          ...buildRoutePlannerResultParams(result, {
+            ...run.current,
+            timeLimit: CHALLENGE_TIME_LIMIT,
+          }),
           ...(attemptId ? { attemptId } : {}),
         },
       });
@@ -89,7 +99,9 @@ function RoutePlannerChallengeRun({
   const {
     currentProblem,
     countdown,
+    timeElapsed,
     timeRemaining,
+    finishReason,
     correctCount,
     incorrectCount,
     showFeedback,
@@ -104,6 +116,15 @@ function RoutePlannerChallengeRun({
     disablePause: true,
     onComplete: handleComplete,
     onAnswerEffect: answerHaptics,
+  });
+
+  // Only the clock leaves a problem on screen unanswered (it stops during
+  // the verdict), and the result lists it with its answer, as the web's.
+  useInsertionEffect(() => {
+    run.current = {
+      timeElapsed,
+      timedOutProblem: finishReason === "timeUp" ? currentProblem : null,
+    };
   });
 
   const disabled = showFeedback || awaitingServer || countdown !== null;

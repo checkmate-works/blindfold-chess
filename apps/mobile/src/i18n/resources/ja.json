@@ -310,9 +310,9 @@
     },
     "result": {
       "title": "練習終了！",
-      "score": "スコア",
-      "correct": "正解数",
-      "accuracy": "正答率"
+      "problemDetails": "問題ごとの詳細",
+      "skipped": "スキップ",
+      "timeUp": "時間切れ"
     },
     "pieces": {
       "n": "ナイト",
