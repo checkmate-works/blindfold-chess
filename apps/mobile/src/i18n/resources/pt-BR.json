@@ -100,7 +100,9 @@
     "correctAnswers": "Respostas corretas",
     "accuracy": "Precisão",
     "timeTaken": "Tempo gasto",
-    "averageTime": "Tempo médio"
+    "averageTime": "Tempo médio",
+    "playAgain": "Jogar novamente",
+    "backToMenu": "Voltar ao menu"
   },
   "onboarding": {
     "skip": "Pular",
@@ -219,9 +221,7 @@
       "incorrect": "Incorreto"
     },
     "result": {
-      "title": "Prática concluída!",
-      "playAgain": "Jogar novamente",
-      "backToMenu": "Voltar ao menu"
+      "title": "Prática concluída!"
     },
     "pieces": {
       "b": "Bispo",
@@ -247,8 +247,6 @@
     },
     "result": {
       "title": "Resultados",
-      "playAgain": "Jogar novamente",
-      "backToMenu": "Voltar à prática",
       "timeTaken": "Tempo"
     },
     "settings": {
@@ -265,9 +263,7 @@
       "dark": "Escura"
     },
     "result": {
-      "title": "Prática concluída!",
-      "playAgain": "Jogar novamente",
-      "backToMenu": "Voltar ao menu"
+      "title": "Prática concluída!"
     },
     "settings": {
       "timeLimit": "Tempo limite",
@@ -294,9 +290,7 @@
     "result": {
       "title": "Quiz concluído!",
       "totalQuestions": "Perguntas totais",
-      "points": "Pontos",
-      "playAgain": "Jogar novamente",
-      "backToMenu": "Voltar ao menu"
+      "points": "Pontos"
     }
   },
   "routePlanner": {
@@ -324,9 +318,7 @@
       "title": "Prática concluída!",
       "score": "Pontuação",
       "correct": "Corretas",
-      "accuracy": "Precisão",
-      "playAgain": "Jogar novamente",
-      "backToMenu": "Voltar ao menu"
+      "accuracy": "Precisão"
     },
     "pieces": {
       "n": "Cavalo",
@@ -421,9 +413,7 @@
       "correctAnswerLabel": "Resposta correta"
     },
     "result": {
-      "title": "Prática concluída!",
-      "playAgain": "Jogar novamente",
-      "backToMenu": "Voltar ao menu"
+      "title": "Prática concluída!"
     },
     "settings": {
       "timeLimit": "Tempo limite",
@@ -446,9 +436,7 @@
       "blackToMove": "Pretas jogam"
     },
     "result": {
-      "title": "Prática concluída!",
-      "playAgain": "Jogar novamente",
-      "backToMenu": "Voltar ao menu"
+      "title": "Prática concluída!"
     }
   },
   "knightTour": {
@@ -466,9 +454,7 @@
       "squaresVisited": "Casas Visitadas",
       "success": "Percurso Concluído!",
       "closedTourMessage": "Incrível! Você completou um percurso fechado — o cavalo pode voltar à sua casa inicial!",
-      "openTourMessage": "Parabéns! Você visitou as 64 casas!",
-      "playAgain": "Jogar novamente",
-      "backToMenu": "Voltar ao menu"
+      "openTourMessage": "Parabéns! Você visitou as 64 casas!"
     },
     "session": {
       "currentPosition": "Posição Atual",
@@ -495,9 +481,7 @@
       "questionCount": "{{total}} perguntas"
     },
     "result": {
-      "title": "Prática concluída!",
-      "playAgain": "Jogar novamente",
-      "backToMenu": "Voltar ao menu"
+      "title": "Prática concluída!"
     },
     "session": {
       "progress": "Pergunta {{current}} / {{total}}",
@@ -532,9 +516,7 @@
       "missing": "Ausente",
       "extra": "Extra",
       "problemDetails": "Detalhes do Problema",
-      "skipped": "Pulado",
-      "playAgain": "Jogar novamente",
-      "backToMenu": "Voltar ao menu"
+      "skipped": "Pulado"
     },
     "session": {
       "recreateFromFen": "Recrie a Posição a partir do FEN",
@@ -724,8 +706,7 @@
       "recreate": "Recrie a posição"
     },
     "result": {
-      "title": "Resultados",
-      "playAgain": "Jogar novamente"
+      "title": "Resultados"
     }
   },
   "recall": {
@@ -789,7 +770,6 @@
     },
     "result": {
       "title": "Resumo",
-      "backToMenu": "Voltar às práticas",
       "mistakes": "Tentativas erradas"
     }
   },

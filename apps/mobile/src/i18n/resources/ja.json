@@ -100,7 +100,9 @@
     "correctAnswers": "正解数",
     "accuracy": "正答率",
     "timeTaken": "経過時間",
-    "averageTime": "平均時間"
+    "averageTime": "平均時間",
+    "playAgain": "もう一度",
+    "backToMenu": "メニューに戻る"
   },
   "onboarding": {
     "skip": "スキップ",
@@ -219,9 +221,7 @@
       "incorrect": "不正解"
     },
     "result": {
-      "title": "練習終了！",
-      "playAgain": "もう一度",
-      "backToMenu": "メニューに戻る"
+      "title": "練習終了！"
     },
     "pieces": {
       "b": "ビショップ",
@@ -247,8 +247,6 @@
     },
     "result": {
       "title": "結果",
-      "playAgain": "もう一度",
-      "backToMenu": "練習に戻る",
       "timeTaken": "経過時間"
     },
     "settings": {
@@ -265,9 +263,7 @@
       "dark": "黒"
     },
     "result": {
-      "title": "練習終了！",
-      "playAgain": "もう一度",
-      "backToMenu": "メニューに戻る"
+      "title": "練習終了！"
     },
     "settings": {
       "timeLimit": "制限時間",
@@ -294,9 +290,7 @@
     "result": {
       "title": "クイズ終了！",
       "totalQuestions": "出題数",
-      "points": "ポイント",
-      "playAgain": "もう一度",
-      "backToMenu": "メニューに戻る"
+      "points": "ポイント"
     }
   },
   "routePlanner": {
@@ -324,9 +318,7 @@
       "title": "練習終了！",
       "score": "スコア",
       "correct": "正解数",
-      "accuracy": "正答率",
-      "playAgain": "もう一度",
-      "backToMenu": "メニューに戻る"
+      "accuracy": "正答率"
     },
     "pieces": {
       "n": "ナイト",
@@ -421,9 +413,7 @@
       "correctAnswerLabel": "正解"
     },
     "result": {
-      "title": "練習終了！",
-      "playAgain": "もう一度",
-      "backToMenu": "メニューに戻る"
+      "title": "練習終了！"
     },
     "settings": {
       "timeLimit": "制限時間",
@@ -446,9 +436,7 @@
       "blackToMove": "黒番"
     },
     "result": {
-      "title": "練習完了！",
-      "playAgain": "もう一度",
-      "backToMenu": "メニューに戻る"
+      "title": "練習完了！"
     }
   },
   "knightTour": {
@@ -466,9 +454,7 @@
       "squaresVisited": "訪問マス数",
       "success": "ツアー完了！",
       "closedTourMessage": "素晴らしい！閉じたツアーを達成しました - ナイトが開始マスに戻ることができます！",
-      "openTourMessage": "おめでとうございます！64マス全てを訪問しました！",
-      "playAgain": "もう一度",
-      "backToMenu": "メニューに戻る"
+      "openTourMessage": "おめでとうございます！64マス全てを訪問しました！"
     },
     "session": {
       "currentPosition": "現在位置",
@@ -495,9 +481,7 @@
       "questionCount": "全{{total}}問"
     },
     "result": {
-      "title": "練習完了！",
-      "playAgain": "もう一度",
-      "backToMenu": "メニューに戻る"
+      "title": "練習完了！"
     },
     "session": {
       "progress": "第{{current}}問 / {{total}}",
@@ -532,9 +516,7 @@
       "missing": "漏れ",
       "extra": "余分",
       "problemDetails": "問題ごとの結果",
-      "skipped": "スキップ",
-      "playAgain": "もう一度",
-      "backToMenu": "メニューに戻る"
+      "skipped": "スキップ"
     },
     "session": {
       "recreateFromFen": "FENから盤面を再現してください",
@@ -724,8 +706,7 @@
       "recreate": "盤面を再現"
     },
     "result": {
-      "title": "結果",
-      "playAgain": "もう一度"
+      "title": "結果"
     }
   },
   "recall": {
@@ -789,7 +770,6 @@
     },
     "result": {
       "title": "サマリー",
-      "backToMenu": "練習一覧へ",
       "mistakes": "誤入力"
     }
   },

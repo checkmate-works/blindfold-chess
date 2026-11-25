@@ -16,11 +16,7 @@ export default function PositionMemoryResult() {
   const result = parseFenResultParams(params);
 
   return (
-    <PracticeResultScreen
-      playAgainLabel={t("positionMemory.result.playAgain")}
-      backToMenuLabel={t("fen.result.backToMenu")}
-      setupHref="/practice/position-memory"
-    >
+    <PracticeResultScreen setupHref="/practice/position-memory">
       <PracticeResultCard
         scoreLabel={t("fen.result.accuracy")}
         scoreValue={`${result.accuracy.toFixed(1)}%`}

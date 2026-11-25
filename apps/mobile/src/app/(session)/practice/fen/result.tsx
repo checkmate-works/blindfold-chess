@@ -16,11 +16,7 @@ export default function FenResult() {
   const result = parseFenResultParams(params);
 
   return (
-    <PracticeResultScreen
-      playAgainLabel={t("fen.result.playAgain")}
-      backToMenuLabel={t("fen.result.backToMenu")}
-      setupHref="/practice/fen"
-    >
+    <PracticeResultScreen setupHref="/practice/fen">
       <PracticeResultCard
         scoreLabel={t("fen.result.accuracy")}
         scoreValue={`${result.accuracy.toFixed(1)}%`}

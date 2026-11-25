@@ -18,11 +18,7 @@ export default function CoordinateQuizResult() {
   const points = parseInt(params.points || "0", 10);
 
   return (
-    <PracticeResultScreen
-      playAgainLabel={t("coordinateQuiz.result.playAgain")}
-      backToMenuLabel={t("coordinateQuiz.result.backToMenu")}
-      setupHref="/practice/coordinate-quiz"
-    >
+    <PracticeResultScreen setupHref="/practice/coordinate-quiz">
       {/* The one module scored on points rather than correct-out-of-total,
           so only the headline differs from the other result screens. */}
       <PracticeStatsResultCard
