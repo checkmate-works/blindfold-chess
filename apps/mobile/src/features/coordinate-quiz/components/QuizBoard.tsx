@@ -3,49 +3,40 @@ import type { Square } from "@blindfold-chess/types";
 import { StyleSheet, Text, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
-import { useTheme, fontSize, fontWeight, spacing } from "../../../theme";
+import { TurnIndicator } from "../../../components";
+import { useTheme, spacing } from "../../../theme";
 import type { CoordinateQuestion } from "../lib/types";
 import { ChessBoard } from "./ChessBoard";
 import type { SquareHighlight } from "./ChessBoardSquare";
 
-type TurnIndicatorProps = {
+type QuizTurnIndicatorProps = {
   question: CoordinateQuestion | null;
-  /**
-   * Keeps the row's height but shows nothing — during the countdown, so a
-   * random orientation is not known before the clock starts. The web blurs
-   * it; React Native has no blur without another native module.
-   */
+  /** Hides the side during the countdown; see `TurnIndicator`'s `hidden`. */
   hidden?: boolean;
 };
 
 /**
- * "White to move" / "Black to move": which way the board is turned. A row of
- * its own directly above the board, as on the web — not in the timer row.
+ * Which way the quiz board is turned, in a row of its own directly above
+ * the board, as on the web — not in the timer row. Before the first
+ * question arrives it reads as Black, the side a missing orientation has
+ * always fallen to here; the row is hidden or not yet shown at that point.
  */
-export function TurnIndicator({
+export function QuizTurnIndicator({
   question,
   hidden = false,
-}: TurnIndicatorProps) {
+}: QuizTurnIndicatorProps) {
   const { t } = useTranslation();
-  const { colors } = useTheme();
   const white = question?.orientation === "white";
   return (
-    <View style={[styles.turnIndicator, hidden && styles.hidden]}>
-      <View
-        style={[
-          styles.turnDot,
-          {
-            backgroundColor: white ? colors.card : colors.foreground,
-            borderColor: colors.foreground,
-          },
-        ]}
-      />
-      <Text style={[styles.turnText, { color: colors.mutedForeground }]}>
-        {white
+    <TurnIndicator
+      side={white ? "white" : "black"}
+      label={
+        white
           ? t("coordinateQuiz.session.whiteToMove")
-          : t("coordinateQuiz.session.blackToMove")}
-      </Text>
-    </View>
+          : t("coordinateQuiz.session.blackToMove")
+      }
+      hidden={hidden}
+    />
   );
 }
 
@@ -132,24 +123,6 @@ export function QuizBoard({
   );
 }
 const styles = StyleSheet.create({
-  turnIndicator: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.xs,
-  },
-  turnDot: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 2,
-  },
-  hidden: {
-    opacity: 0,
-  },
-  turnText: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
-  },
   boardWrapper: {
     position: "relative",
     alignSelf: "center",

@@ -5,17 +5,9 @@ import type {
   QuadrantQuestion,
 } from "@blindfold-chess/features/quadrants";
 
+import { TurnIndicator } from "../../../components";
 import { fontSize, fontWeight, spacing, useTheme } from "../../../theme";
 import { QuadrantBoard } from "./QuadrantBoard";
-
-/**
- * The web's side dot: white, or `gray-800` (`gray-700` in dark mode), ringed
- * in `gray-800` (`gray-600`). Tailwind greys with no theme token.
- */
-const SIDE_DOT = {
-  light: { black: "#1f2937", border: "#1f2937" },
-  dark: { black: "#374151", border: "#4b5563" },
-} as const;
 
 type QuestionPanelProps = {
   question: QuadrantQuestion;
@@ -48,29 +40,22 @@ export function QuestionPanel({
   countdown = null,
 }: QuestionPanelProps) {
   const { t } = useTranslation();
-  const { colors, isDark } = useTheme();
-  const dot = SIDE_DOT[isDark ? "dark" : "light"];
+  const { colors } = useTheme();
   const countingDown = countdown !== null;
   const white = question.orientation === "white";
 
   return (
     <View style={styles.panel}>
-      <View style={[styles.sideRow, countingDown && styles.hidden]}>
-        <View
-          style={[
-            styles.sideDot,
-            {
-              backgroundColor: white ? "#ffffff" : dot.black,
-              borderColor: dot.border,
-            },
-          ]}
-        />
-        <Text style={[styles.sideText, { color: colors.mutedForeground }]}>
-          {white
+      <TurnIndicator
+        side={question.orientation}
+        label={
+          white
             ? t("quadrants.session.whiteToMove")
-            : t("quadrants.session.blackToMove")}
-        </Text>
-      </View>
+            : t("quadrants.session.blackToMove")
+        }
+        hidden={countingDown}
+        variant="web"
+      />
 
       <Text
         style={[
@@ -110,22 +95,6 @@ const styles = StyleSheet.create({
   panel: {
     alignItems: "center",
     gap: spacing.md,
-  },
-  sideRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.sm,
-  },
-  // The web's w-5 h-5 rounded-full border-2.
-  sideDot: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 2,
-  },
-  sideText: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
   },
   question: {
     fontSize: fontSize.xxl,
