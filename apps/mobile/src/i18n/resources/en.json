@@ -433,7 +433,7 @@
   },
   "knightTour": {
     "setup": {
-      "title": "Knight's Tour Setup",
+      "title": "Knight's Tour",
       "startingSquare": "Starting Square",
       "randomSquare": "Random",
       "pickOnBoard": "Or tap a square on the board",

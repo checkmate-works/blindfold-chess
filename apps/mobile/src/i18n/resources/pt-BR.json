@@ -433,7 +433,7 @@
   },
   "knightTour": {
     "setup": {
-      "title": "Percurso do Cavalo Configuração",
+      "title": "Percurso do Cavalo",
       "startingSquare": "Casa Inicial",
       "randomSquare": "Aleatório",
       "pickOnBoard": "Ou toque em uma casa do tabuleiro",

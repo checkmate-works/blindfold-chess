@@ -433,7 +433,7 @@
   },
   "knightTour": {
     "setup": {
-      "title": "ナイトツアーの設定",
+      "title": "ナイトツアー",
       "startingSquare": "開始マス",
       "randomSquare": "ランダム",
       "pickOnBoard": "盤面のマスをタップして選ぶこともできます",
