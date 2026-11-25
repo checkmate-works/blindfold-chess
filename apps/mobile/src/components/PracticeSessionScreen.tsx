@@ -9,6 +9,7 @@ import { LivesIndicator } from "./LivesIndicator";
 import { QuizTimer } from "./QuizTimer";
 import { ScoreFooter } from "./ScoreFooter";
 import { SessionCloseButton } from "../navigation/SessionCloseButton";
+import { SessionQuitLink } from "../navigation/SessionQuitLink";
 import { spacing } from "../theme";
 
 type PracticeSessionScreenProps = {
@@ -29,8 +30,9 @@ type PracticeSessionScreenProps = {
    * The stack draws this session's header (the module's `sessionHeader`):
    * the × is there, so the top row holds only the hearts on the left and the
    * clock on the right, as the web's `ChallengeStatusHeader` does, and the
-   * header clears the status bar. Omitted → no header: the × leads the top
-   * row and the frame clears the status bar itself.
+   * header clears the status bar. A "Quit" link also sits under the score,
+   * the web's `ChallengeQuitControl`. Omitted → no header: the × leads the
+   * top row and the frame clears the status bar itself.
    */
   headerShown?: boolean;
   /** Tightens the score footer's spacing where the body already pads itself. */
@@ -99,8 +101,13 @@ export function PracticeSessionScreen({
           <ScoreFooter
             correctCount={correctCount}
             incorrectCount={incorrectCount}
-            style={footerStyle}
+            style={[headerShown && styles.footerAboveQuit, footerStyle]}
           />
+          {headerShown && (
+            <View style={styles.quit}>
+              <SessionQuitLink />
+            </View>
+          )}
         </>
       )}
     </Screen>
@@ -132,6 +139,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
+  },
+  /** The score's own bottom padding gives way to the quit link's gap. */
+  footerAboveQuit: {
+    paddingBottom: 0,
+  },
+  /** 24pt under the score, as the web's `mt-6`. */
+  quit: {
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.lg,
   },
   leading: {
     flexDirection: "row",
