@@ -1,14 +1,12 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { useTranslation } from "react-i18next";
 import { getDiagonalSquares } from "@blindfold-chess/features/diagonal-quiz";
 import { ChessPieceIcon } from "@blindfold-chess/icons";
 import type { Square } from "@blindfold-chess/types";
-import { DISPLAY_RANKS, FILES } from "@blindfold-chess/types";
-import { boardThemeColors } from "@blindfold-chess/ui";
 
-import { useGamePreferences } from "../../../lib/game-preferences";
-import { fontSize, fontWeight, useTheme } from "../../../theme";
+import { StaticBoard } from "../../../components";
+import { fontSize, useTheme, withAlpha } from "../../../theme";
 
 /** The web board's `max-w-xs`. */
 const DEFAULT_MAX_SIZE = 320;
@@ -32,20 +30,16 @@ export function DiagonalBoard({
   maxSize?: number;
 }) {
   const { colors } = useTheme();
-  const { preferences } = useGamePreferences();
-  const theme = boardThemeColors[preferences.boardTheme];
-  const [width, setWidth] = useState(0);
-  const squareSize = width / 8;
 
-  const overlays = useMemo(() => {
+  const squareTint = useMemo(() => {
     const { diagonal, antiDiagonal } = getDiagonalSquares(square);
     const onDiagonal = new Set<string>(diagonal);
     const onAntiDiagonal = new Set<string>(antiDiagonal);
-    return (target: string): string | null => {
-      if (target === square) return `${colors.primary}80`;
+    return (target: Square): string | null => {
+      if (target === square) return withAlpha(colors.primary, 0.5);
       const d = onDiagonal.has(target);
       const a = onAntiDiagonal.has(target);
-      if (d && a) return `${colors.primary}4d`;
+      if (d && a) return withAlpha(colors.primary, 0.3);
       if (d) return DIAGONAL_TINT;
       if (a) return ANTI_DIAGONAL_TINT;
       return null;
@@ -54,61 +48,15 @@ export function DiagonalBoard({
 
   return (
     <View style={[styles.container, { maxWidth: maxSize }]}>
-      <View
-        style={styles.board}
-        onLayout={(event) => setWidth(event.nativeEvent.layout.width)}
-      >
-        {width > 0 &&
-          DISPLAY_RANKS.map((rank, rankIndex) => (
-            <View key={rank} style={styles.row}>
-              {FILES.map((file, fileIndex) => {
-                const name = `${file}${rank}`;
-                const light = (fileIndex + rankIndex) % 2 === 0;
-                const overlay = overlays(name);
-                const labelColor = light ? theme.lightText : theme.darkText;
-                return (
-                  <View
-                    key={name}
-                    style={[
-                      styles.square,
-                      {
-                        width: squareSize,
-                        height: squareSize,
-                        backgroundColor: light ? theme.light : theme.dark,
-                      },
-                    ]}
-                  >
-                    {overlay && (
-                      <View
-                        style={[
-                          StyleSheet.absoluteFill,
-                          { backgroundColor: overlay },
-                        ]}
-                      />
-                    )}
-                    {name === square && (
-                      <ChessPieceIcon
-                        type="b"
-                        color="w"
-                        size={squareSize * 0.8}
-                      />
-                    )}
-                    {fileIndex === 0 && (
-                      <Text style={[styles.rankLabel, { color: labelColor }]}>
-                        {rank}
-                      </Text>
-                    )}
-                    {rankIndex === DISPLAY_RANKS.length - 1 && (
-                      <Text style={[styles.fileLabel, { color: labelColor }]}>
-                        {file}
-                      </Text>
-                    )}
-                  </View>
-                );
-              })}
-            </View>
-          ))}
-      </View>
+      <StaticBoard
+        maxSize={maxSize}
+        squareTint={squareTint}
+        renderSquare={(target, squareSize) =>
+          target === square && (
+            <ChessPieceIcon type="b" color="w" size={squareSize * 0.8} />
+          )
+        }
+      />
 
       <View style={styles.legend}>
         <LegendItem type="diagonal" tint={DIAGONAL_TINT} />
@@ -150,34 +98,6 @@ const styles = StyleSheet.create({
   container: {
     width: "100%",
     alignSelf: "center",
-  },
-  // The web's `aspect-square rounded-md overflow-hidden`.
-  board: {
-    width: "100%",
-    aspectRatio: 1,
-    borderRadius: 6,
-    overflow: "hidden",
-  },
-  row: {
-    flexDirection: "row",
-  },
-  square: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  rankLabel: {
-    position: "absolute",
-    top: 1,
-    left: 2,
-    fontSize: 10,
-    fontWeight: fontWeight.semibold,
-  },
-  fileLabel: {
-    position: "absolute",
-    bottom: 0,
-    right: 2,
-    fontSize: 10,
-    fontWeight: fontWeight.semibold,
   },
   // The web's `flex justify-center gap-4 mt-3 text-xs`.
   legend: {
