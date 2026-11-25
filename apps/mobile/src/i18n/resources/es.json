@@ -956,7 +956,6 @@
     "startFailed": "No se pudo iniciar un desafío registrado. Revisa tu conexión e inténtalo de nuevo.",
     "startRateLimited": "Demasiados desafíos iniciados. Espera un poco e inténtalo de nuevo.",
     "retry": "Reintentar",
-    "signInToRecord": "Inicia sesión para registrar tu puntuación en la clasificación.",
     "signInBenefit": "Registra tus puntuaciones en la clasificación.",
     "record": {
       "saving": "Registrando tu puntuación…",
