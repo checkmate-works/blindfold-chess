@@ -93,7 +93,8 @@
     "puzzle": {
       "title": "Problemas",
       "description": "Encuentra la mejor jugada en posiciones seleccionadas"
-    }
+    },
+    "requiredKnowledge": "Conocimiento Necesario"
   },
   "practiceResult": {
     "correctAnswers": "Respuestas correctas",
@@ -257,7 +258,7 @@
   },
   "squareColors": {
     "setup": {
-      "title": "Ajustes de color de casillas"
+      "title": "Color de las casillas"
     },
     "session": {
       "question": "¿De qué color es {{square}}?",

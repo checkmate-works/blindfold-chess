@@ -8,6 +8,15 @@ export const LEARN_CATEGORIES = [
 ] as const;
 export type LearnCategory = (typeof LEARN_CATEGORIES)[number];
 
+/** The glyph on an article's row, by its category. */
+export const LEARN_CATEGORY_ICONS: Record<string, string> = {
+  moves: "♟️",
+  coordinates: "🎯",
+  notation: "📝",
+  memory: "🧠",
+  practice: "🏋️",
+};
+
 /** One learn article, in each language the web has it in. */
 export type LearnArticle = {
   slug: string;

@@ -93,7 +93,8 @@
     "puzzle": {
       "title": "Puzzles",
       "description": "Find the best move in curated positions"
-    }
+    },
+    "requiredKnowledge": "Required Knowledge"
   },
   "practiceResult": {
     "correctAnswers": "Correct Answers",
@@ -257,7 +258,7 @@
   },
   "squareColors": {
     "setup": {
-      "title": "Square Colors Setup"
+      "title": "Square Colors"
     },
     "session": {
       "question": "What color is {{square}}?",

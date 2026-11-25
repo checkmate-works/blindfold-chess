@@ -93,7 +93,8 @@
     "puzzle": {
       "title": "Problemas",
       "description": "Encontre o melhor lance em posições selecionadas"
-    }
+    },
+    "requiredKnowledge": "Conhecimento Necessário"
   },
   "practiceResult": {
     "correctAnswers": "Respostas corretas",
@@ -257,7 +258,7 @@
   },
   "squareColors": {
     "setup": {
-      "title": "Configurações de cor das casas"
+      "title": "Cor das casas"
     },
     "session": {
       "question": "Qual é a cor de {{square}}?",

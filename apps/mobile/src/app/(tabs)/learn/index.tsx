@@ -9,15 +9,11 @@ import {
   TabScrollView,
 } from "../../../components";
 import { LEARN_ARTICLES } from "../../../features/learn/generated/articles";
-import { LEARN_CATEGORIES, localized } from "../../../features/learn/types";
-
-const CATEGORY_ICONS: Record<string, string> = {
-  moves: "♟️",
-  coordinates: "🎯",
-  notation: "📝",
-  memory: "🧠",
-  practice: "🏋️",
-};
+import {
+  LEARN_CATEGORIES,
+  LEARN_CATEGORY_ICONS,
+  localized,
+} from "../../../features/learn/types";
 
 /**
  * The learn tab: the web's learn articles, grouped by category in the
@@ -48,7 +44,7 @@ export default function LearnTab() {
               <ListRow
                 key={article.slug}
                 testID={`learn-${article.slug}`}
-                leading={<ListIcon glyph={CATEGORY_ICONS[category]} />}
+                leading={<ListIcon glyph={LEARN_CATEGORY_ICONS[category]} />}
                 title={localized(article.title, i18n.language)}
                 subtitle={localized(article.excerpt, i18n.language)}
                 onPress={() => router.push(`/learn/${article.slug}` as Href)}

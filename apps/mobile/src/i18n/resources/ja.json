@@ -93,7 +93,8 @@
     "puzzle": {
       "title": "パズル",
       "description": "厳選された局面で最善手を見つける練習"
-    }
+    },
+    "requiredKnowledge": "関連記事"
   },
   "practiceResult": {
     "correctAnswers": "正解数",
@@ -257,7 +258,7 @@
   },
   "squareColors": {
     "setup": {
-      "title": "マスの色 設定"
+      "title": "マスの色"
     },
     "session": {
       "question": "{{square}} の色は？",
