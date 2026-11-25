@@ -292,10 +292,10 @@
   },
   "routePlanner": {
     "setup": {
-      "title": "Route Planner Settings",
+      "title": "Route Planner",
       "problemCount": "Number of Problems",
       "problemUnit": "{{count}} problems",
-      "pieceSelection": "Select Pieces"
+      "pieceSelection": "Select Piece"
     },
     "session": {
       "progress": "{{current}} / {{total}}",

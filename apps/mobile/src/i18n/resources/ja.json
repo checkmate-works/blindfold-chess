@@ -292,7 +292,7 @@
   },
   "routePlanner": {
     "setup": {
-      "title": "ルートプランナー 設定",
+      "title": "ルートプランナー",
       "problemCount": "問題数",
       "problemUnit": "{{count}}問",
       "pieceSelection": "駒の選択"

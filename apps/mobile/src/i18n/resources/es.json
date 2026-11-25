@@ -292,10 +292,10 @@
   },
   "routePlanner": {
     "setup": {
-      "title": "Ajustes del planificador de rutas",
+      "title": "Planificador de rutas",
       "problemCount": "Número de problemas",
       "problemUnit": "{{count}} problemas",
-      "pieceSelection": "Selecciona piezas"
+      "pieceSelection": "Selecciona una pieza"
     },
     "session": {
       "progress": "{{current}} / {{total}}",
