@@ -14,7 +14,7 @@ export { QuizTimer } from "./QuizTimer";
 export { ScoreFooter } from "./ScoreFooter";
 export { Screen } from "./Screen";
 export { SquarePrompt } from "./SquarePrompt";
-export { StaticBoard } from "./StaticBoard";
+export { STATIC_BOARD_RADIUS, StaticBoard } from "./StaticBoard";
 export { TurnIndicator } from "./TurnIndicator";
 export { SelectableChip } from "./SelectableChip";
 export { PieceSelector } from "./PieceSelector";

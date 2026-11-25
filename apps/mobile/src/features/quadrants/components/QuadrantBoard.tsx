@@ -1,32 +1,18 @@
 import { memo } from "react";
-import {
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-  useWindowDimensions,
-} from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import type { ViewStyle } from "react-native";
-import { boardThemeColors } from "@blindfold-chess/ui";
 import {
   type QuadrantId,
   type VisualQuadrant,
   quadrantIdAtVisualPosition,
 } from "@blindfold-chess/features/quadrants";
-import {
-  DISPLAY_RANKS,
-  FILES,
-  type ResolvedBoardOrientation,
-} from "@blindfold-chess/types";
+import type { ResolvedBoardOrientation } from "@blindfold-chess/types";
 
+import { StaticBoard } from "../../../components";
 import { useGamePreferences } from "../../../lib/game-preferences";
-import { fontWeight } from "../../../theme";
 
 /** The web board's `max-w-xs`. */
 export const QUADRANT_BOARD_MAX_SIZE = 320;
-
-/** The web board's `rounded-md`, which anything laid over the board follows. */
-export const QUADRANT_BOARD_RADIUS = 6;
 
 /**
  * The web's Tailwind colours, which have no theme token on either platform:
@@ -72,9 +58,10 @@ type QuadrantBoardProps = {
  * answer the right quarter's lines turn green and it takes a green tint, and
  * a wrong pick's turn red.
  *
- * Each quarter is one touch target rather than sixteen squares: the answer
- * is the quarter, so a tap anywhere inside it counts, as a click on any of
- * its squares does on the web.
+ * The squares are `StaticBoard`'s; the quarters and the lines are laid over
+ * them. Each quarter is one touch target rather than sixteen squares: the
+ * answer is the quarter, so a tap anywhere inside it counts, as a click on
+ * any of its squares does on the web.
  */
 export function QuadrantBoard({
   orientation,
@@ -85,18 +72,7 @@ export function QuadrantBoard({
   maxSize = QUADRANT_BOARD_MAX_SIZE,
   showCoordinates,
 }: QuadrantBoardProps) {
-  const { width: screenWidth } = useWindowDimensions();
   const { preferences } = useGamePreferences();
-  const theme = boardThemeColors[preferences.boardTheme];
-  const coordinates = showCoordinates ?? preferences.showCoordinates;
-
-  const boardSize = Math.min(screenWidth, maxSize);
-  const squareSize = boardSize / 8;
-  const half = boardSize / 2;
-
-  const flipped = orientation === "black";
-  const ranks = flipped ? [...DISPLAY_RANKS].reverse() : DISPLAY_RANKS;
-  const files = flipped ? [...FILES].reverse() : FILES;
 
   const idAt = (quarter: VisualQuadrant) =>
     quadrantIdAtVisualPosition(quarter, orientation);
@@ -114,7 +90,73 @@ export function QuadrantBoard({
     return null;
   };
 
-  const lines: { quarters: VisualQuadrant[]; style: ViewStyle }[] = [
+  const renderOverlay = (boardSize: number) => {
+    const half = boardSize / 2;
+    const coloured = quarterLines(half).map((line) => ({
+      ...line,
+      color: lineColor(line.quarters),
+    }));
+    return (
+      <>
+        {QUARTERS.map((quarter) => {
+          const id = idAt(quarter);
+          return (
+            <Quarter
+              key={quarter}
+              id={id}
+              style={quarterFrame(quarter, half)}
+              tint={
+                id === correctQuadrant
+                  ? CORRECT_COLOR + TINT_ALPHA
+                  : id === wrongQuadrant
+                    ? WRONG_COLOR + TINT_ALPHA
+                    : null
+              }
+              onPress={onQuadrantPress}
+              disabled={disabled}
+            />
+          );
+        })}
+
+        {/* Yellow lines first, so a verdict line is drawn over its neighbours. */}
+        {[
+          ...coloured.filter((l) => !l.color),
+          ...coloured.filter((l) => l.color),
+        ].map((line, index) => (
+          <View
+            key={index}
+            pointerEvents="none"
+            style={[
+              styles.line,
+              line.style,
+              { backgroundColor: line.color ?? LINE_COLOR },
+            ]}
+          />
+        ))}
+      </>
+    );
+  };
+
+  return (
+    <StaticBoard
+      maxSize={maxSize}
+      horizontalInset={0}
+      flipped={orientation === "black"}
+      showCoordinates={showCoordinates ?? preferences.showCoordinates}
+      renderOverlay={renderOverlay}
+      testID="quadrant-board"
+    />
+  );
+}
+
+/**
+ * The twelve 3pt segments: the centre cross straddling the middle, then
+ * the outer frame inside the edge, each with the quarters it borders.
+ */
+function quarterLines(
+  half: number,
+): { quarters: VisualQuadrant[]; style: ViewStyle }[] {
+  return [
     // The centre cross, straddling the middle.
     {
       quarters: ["top-left", "top-right"],
@@ -186,83 +228,6 @@ export function QuadrantBoard({
       style: { top: half, right: 0, height: half, width: LINE_WIDTH },
     },
   ];
-  const coloured = lines.map((line) => ({
-    ...line,
-    color: lineColor(line.quarters),
-  }));
-
-  return (
-    <View
-      style={[styles.board, { width: boardSize, height: boardSize }]}
-      testID="quadrant-board"
-    >
-      {ranks.map((rank, row) => (
-        <View key={rank} style={styles.row}>
-          {files.map((file, col) => {
-            const light = (row + col) % 2 === 0;
-            const labelColor = light ? theme.lightText : theme.darkText;
-            return (
-              <View
-                key={file}
-                style={{
-                  width: squareSize,
-                  height: squareSize,
-                  backgroundColor: light ? theme.light : theme.dark,
-                }}
-              >
-                {coordinates && col === 0 && (
-                  <Text style={[styles.rankLabel, { color: labelColor }]}>
-                    {rank}
-                  </Text>
-                )}
-                {coordinates && row === 7 && (
-                  <Text style={[styles.fileLabel, { color: labelColor }]}>
-                    {file}
-                  </Text>
-                )}
-              </View>
-            );
-          })}
-        </View>
-      ))}
-
-      {QUARTERS.map((quarter) => {
-        const id = idAt(quarter);
-        return (
-          <Quarter
-            key={quarter}
-            id={id}
-            style={quarterFrame(quarter, half)}
-            tint={
-              id === correctQuadrant
-                ? CORRECT_COLOR + TINT_ALPHA
-                : id === wrongQuadrant
-                  ? WRONG_COLOR + TINT_ALPHA
-                  : null
-            }
-            onPress={onQuadrantPress}
-            disabled={disabled}
-          />
-        );
-      })}
-
-      {/* Yellow lines first, so a verdict line is drawn over its neighbours. */}
-      {[
-        ...coloured.filter((l) => !l.color),
-        ...coloured.filter((l) => l.color),
-      ].map((line, index) => (
-        <View
-          key={index}
-          pointerEvents="none"
-          style={[
-            styles.line,
-            line.style,
-            { backgroundColor: line.color ?? LINE_COLOR },
-          ]}
-        />
-      ))}
-    </View>
-  );
 }
 
 function quarterFrame(quarter: VisualQuadrant, half: number): ViewStyle {
@@ -323,15 +288,6 @@ const Quarter = memo(function Quarter({
 });
 
 const styles = StyleSheet.create({
-  // The web's `rounded-md overflow-hidden`.
-  board: {
-    alignSelf: "center",
-    borderRadius: QUADRANT_BOARD_RADIUS,
-    overflow: "hidden",
-  },
-  row: {
-    flexDirection: "row",
-  },
   quarter: {
     position: "absolute",
   },
@@ -343,19 +299,5 @@ const styles = StyleSheet.create({
   },
   line: {
     position: "absolute",
-  },
-  rankLabel: {
-    position: "absolute",
-    top: 1,
-    left: 2,
-    fontSize: 10,
-    fontWeight: fontWeight.semibold,
-  },
-  fileLabel: {
-    position: "absolute",
-    bottom: 0,
-    right: 2,
-    fontSize: 10,
-    fontWeight: fontWeight.semibold,
   },
 });

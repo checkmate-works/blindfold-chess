@@ -5,9 +5,13 @@ import type {
   QuadrantQuestion,
 } from "@blindfold-chess/features/quadrants";
 
-import { BoardCountdown, TurnIndicator } from "../../../components";
+import {
+  BoardCountdown,
+  STATIC_BOARD_RADIUS,
+  TurnIndicator,
+} from "../../../components";
 import { fontSize, fontWeight, spacing, useTheme } from "../../../theme";
-import { QUADRANT_BOARD_RADIUS, QuadrantBoard } from "./QuadrantBoard";
+import { QuadrantBoard } from "./QuadrantBoard";
 
 type QuestionPanelProps = {
   question: QuadrantQuestion;
@@ -77,7 +81,7 @@ export function QuestionPanel({
         />
         <BoardCountdown
           countdown={countdown}
-          borderRadius={QUADRANT_BOARD_RADIUS}
+          borderRadius={STATIC_BOARD_RADIUS}
         />
       </View>
     </View>
