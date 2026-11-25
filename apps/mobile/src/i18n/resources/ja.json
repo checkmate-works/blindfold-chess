@@ -451,9 +451,9 @@
     "session": {
       "currentPosition": "現在位置",
       "stuck": "移動できるマスがありません！",
-      "stuckHint": "「戻る」で別のルートを試してください。",
+      "stuckHint": "「一手戻す」で別のルートを試してください。",
       "moveHistory": "移動履歴",
-      "undo": "戻る",
+      "undo": "一手戻す",
       "quit": "終了",
       "quitConfirmTitle": "練習を終了しますか？",
       "quitConfirmMessage": "現在までの結果を表示して練習を終了します。",
