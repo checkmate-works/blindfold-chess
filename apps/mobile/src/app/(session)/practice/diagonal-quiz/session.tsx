@@ -1,29 +1,22 @@
-import { useCallback } from "react";
-import { View, StyleSheet, ScrollView } from "react-native";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { ScrollView, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import type { RemoteChallengePort } from "@blindfold-chess/features/challenge-attempt";
+import type { DiagonalQuizResult } from "@blindfold-chess/features/diagonal-quiz";
+import { useDiagonalQuiz } from "@blindfold-chess/features/diagonal-quiz/client";
 import {
   CHALLENGE_TIME_LIMIT,
   MISTAKE_LIMIT,
 } from "@blindfold-chess/features/practice-registry";
 import type { Square } from "@blindfold-chess/types";
-import * as Haptics from "expo-haptics";
-import { useDiagonalQuiz } from "@blindfold-chess/features/diagonal-quiz/client";
 
-import {
-  PracticeSessionScreen,
-  practiceSessionStyles,
-} from "../../../../components";
-import {
-  QuestionCard,
-  DiagonalInputFields,
-  FileRankButtons,
-} from "../../../../features/diagonal-quiz/components";
-import type { ActiveField } from "../../../../features/diagonal-quiz/hooks";
-import { spacing } from "../../../../theme";
-import type { DiagonalQuizResult } from "@blindfold-chess/features/diagonal-quiz";
+import { PracticeSessionScreen } from "../../../../components";
 import { ChallengeAttemptGate } from "../../../../features/challenge/ChallengeAttemptGate";
+import { QuestionPanel } from "../../../../features/diagonal-quiz/components";
+import { serializeQuestionResults } from "../../../../features/diagonal-quiz/lib/result-params";
+import { answerHaptics } from "../../../../lib/answer-haptics";
 import { serializePracticeStatsParams } from "../../../../lib/practice-result-params";
+import { spacing } from "../../../../theme";
 
 const SETTINGS = {};
 
@@ -52,36 +45,16 @@ function DiagonalQuizSession({
   remote: RemoteChallengePort<Square> | undefined;
 }) {
   const router = useRouter();
-  const duration = CHALLENGE_TIME_LIMIT;
+  const [result, setResult] = useState<DiagonalQuizResult | null>(null);
 
-  const handleComplete = useCallback(
-    (result: DiagonalQuizResult) => {
-      router.replace({
-        pathname: "/practice/diagonal-quiz/result",
-        params: {
-          ...serializePracticeStatsParams(result),
-          ...(attemptId ? { attemptId } : {}),
-        },
-      });
-    },
-    [router, attemptId],
-  );
-
-  // Session + input + corner-info + reset-on-advance are composed by the
-  // shared useDiagonalQuiz hook; this screen is pure rendering.
-  const { session, input, isDisabled, singleDiagonal, singleAntiDiagonal } =
+  const { session, input, singleDiagonal, singleAntiDiagonal } =
     useDiagonalQuiz({
-      timeLimit: duration,
+      timeLimit: CHALLENGE_TIME_LIMIT,
       mistakeAllowance: MISTAKE_LIMIT,
       remote,
       disablePause: true,
-      onComplete: handleComplete,
-      onAnswerEffect: (correct) =>
-        Haptics.notificationAsync(
-          correct
-            ? Haptics.NotificationFeedbackType.Success
-            : Haptics.NotificationFeedbackType.Error,
-        ),
+      onComplete: setResult,
+      onAnswerEffect: answerHaptics,
     });
 
   const {
@@ -90,103 +63,101 @@ function DiagonalQuizSession({
     timeRemaining,
     correctCount,
     incorrectCount,
+    showFeedback,
+    awaitingServer,
+    isFinished,
+    isPaused,
     lastAnswer,
+    questionResults,
   } = session;
-  const {
-    diagonalStartText,
-    diagonalEndText,
-    antiDiagonalStartText,
-    antiDiagonalEndText,
-    activeField,
-    setActiveField,
-    isDiagonalComplete,
-    isAntiDiagonalComplete,
-    expectingFile,
-    expectingRank,
-    isInputtingStart,
-    isInputtingEnd,
-    handleFilePress,
-    handleRankPress,
-    handleBackspace,
-    handleClear,
-  } = input;
 
-  const handleFieldPress = (field: ActiveField) => {
-    if (isDisabled) return;
-    setActiveField(field);
-  };
+  // `onComplete` carries the score only; the per-question list the result
+  // screen's Problem Details needs is the session's, read when leaving.
+  const questionResultsRef = useRef(questionResults);
+  questionResultsRef.current = questionResults;
+
+  const goToResult = useCallback(
+    (completed: DiagonalQuizResult) => {
+      router.replace({
+        pathname: "/practice/diagonal-quiz/result",
+        params: {
+          ...serializePracticeStatsParams(completed),
+          data: serializeQuestionResults(questionResultsRef.current),
+          ...(attemptId ? { attemptId } : {}),
+        },
+      });
+    },
+    [router, attemptId],
+  );
+
+  useEffect(() => {
+    if (result) goToResult(result);
+  }, [result, goToResult]);
+
+  const inputDisabled =
+    isFinished ||
+    countdown !== null ||
+    isPaused ||
+    showFeedback ||
+    awaitingServer;
+
+  // Each diagonal is graded on its own, as the web does: a half-right
+  // answer shows one green field and one red.
+  const shown = showFeedback ? lastAnswer : null;
 
   return (
     <PracticeSessionScreen
       countdown={countdown}
       timeRemaining={timeRemaining}
-      progress={timeRemaining / duration}
+      progress={timeRemaining / CHALLENGE_TIME_LIMIT}
       correctCount={correctCount}
       incorrectCount={incorrectCount}
-      // Tighter footer spacing than the other quizzes: the file/rank button
-      // grid above already carries its own bottom padding.
-      footerStyle={styles.footer}
+      lives={{
+        remaining: Math.max(MISTAKE_LIMIT - incorrectCount, 0),
+        max: MISTAKE_LIMIT,
+      }}
+      headerShown
+      countdownInBody
     >
       <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={practiceSessionStyles.bottomSection}
+        style={styles.scroll}
+        contentContainerStyle={styles.body}
         showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
       >
-        {currentSquare && (
-          <QuestionCard
-            square={currentSquare}
-            isCorrect={lastAnswer?.correct ?? null}
-            lastAnswer={lastAnswer}
-          />
-        )}
-
-        <View style={styles.inputSection}>
-          <DiagonalInputFields
-            diagonalStartText={diagonalStartText}
-            diagonalEndText={diagonalEndText}
-            antiDiagonalStartText={antiDiagonalStartText}
-            antiDiagonalEndText={antiDiagonalEndText}
-            activeField={activeField}
-            isDiagonalComplete={isDiagonalComplete}
-            isAntiDiagonalComplete={isAntiDiagonalComplete}
-            isInputtingStart={isInputtingStart}
-            isInputtingEnd={isInputtingEnd}
-            singleDiagonal={singleDiagonal}
-            singleAntiDiagonal={singleAntiDiagonal}
-            disabled={isDisabled}
-            onFieldPress={handleFieldPress}
-          />
-        </View>
-
-        <View style={styles.buttonsSection}>
-          <FileRankButtons
-            expectingFile={expectingFile}
-            expectingRank={expectingRank}
-            disabled={isDisabled}
-            onFilePress={handleFilePress}
-            onRankPress={handleRankPress}
-            onBackspace={handleBackspace}
-            onClear={handleClear}
-          />
-        </View>
+        <QuestionPanel
+          square={currentSquare}
+          input={input}
+          singleDiagonal={singleDiagonal}
+          singleAntiDiagonal={singleAntiDiagonal}
+          disabled={inputDisabled}
+          diagonalResult={
+            shown ? (shown.isDiagonalCorrect ? "correct" : "incorrect") : null
+          }
+          antiDiagonalResult={
+            shown
+              ? shown.isAntiDiagonalCorrect
+                ? "correct"
+                : "incorrect"
+              : null
+          }
+          countdown={countdown}
+        />
       </ScrollView>
     </PracticeSessionScreen>
   );
 }
 
+/**
+ * Stacked from the top as the web's session is, the score right under the
+ * keypad (its mt-8). The panel only scrolls on a screen too short for it;
+ * it does not stretch, so the score never drops to the bottom edge.
+ */
 const styles = StyleSheet.create({
-  scrollView: {
-    flex: 1,
+  scroll: {
+    flexGrow: 0,
   },
-  inputSection: {
-    marginTop: spacing.lg,
-  },
-  buttonsSection: {
-    marginTop: spacing.lg,
-  },
-  footer: {
-    paddingBottom: spacing.lg,
+  body: {
     paddingTop: spacing.sm,
+    paddingBottom: spacing.xl,
   },
 });

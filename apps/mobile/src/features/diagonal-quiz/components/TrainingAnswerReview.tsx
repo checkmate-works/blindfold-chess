@@ -1,10 +1,14 @@
-import { View, Text, StyleSheet } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import { useTranslation } from "react-i18next";
+import type { Square } from "@blindfold-chess/types";
 
-import { Button, Card } from "../../../components";
-import { useTheme, fontSize, fontWeight, spacing } from "../../../theme";
+import { Button } from "../../../components";
+import { fontSize, fontWeight, spacing, useTheme } from "../../../theme";
+import { DiagonalAnswerComparison } from "./DiagonalAnswerComparison";
+import { DiagonalBoard } from "./DiagonalBoard";
 
 type TrainingAnswerReviewProps = {
+  square: Square;
   correctDiagonal: string;
   correctAntiDiagonal: string;
   /**
@@ -21,68 +25,60 @@ type TrainingAnswerReviewProps = {
 };
 
 /**
- * What diagonal-quiz training shows in place of the input after a wrong or
- * skipped answer: the right diagonals, the player's own answer beside them
- * when there was one (each half coloured by whether it was right), and a
- * Next button. Training waits on that button instead of auto-advancing, as
- * the web training screen does, so the player can study the answer.
+ * The board's edge here: the web's 320 left the Next button under the
+ * score on an iPhone 17, where training's Skip and End take the bottom.
+ */
+const BOARD_SIZE = 280;
+
+/**
+ * What diagonal-quiz training shows in place of the question after a wrong
+ * or skipped answer, as the web's result views: the question title, the
+ * board with both lines tinted, 24 below it the answers side by side (a
+ * skip has only the correct one, as a line of text), and 24 below that the
+ * Next Problem button. Training waits on that button instead of moving on,
+ * so the player can study the answer.
  */
 export function TrainingAnswerReview({
+  square,
   correctDiagonal,
   correctAntiDiagonal,
   userAnswer,
   onNext,
 }: TrainingAnswerReviewProps) {
   const { t } = useTranslation();
-  const { colors, feedbackColors } = useTheme();
-  const verdictColor = (correct: boolean) =>
-    correct ? feedbackColors.success : feedbackColors.error;
+  const { colors } = useTheme();
 
   return (
     <View style={styles.container}>
-      <Card padding="lg">
-        <Text style={[styles.label, { color: colors.mutedForeground }]}>
-          {t("diagonalQuiz.session.correctAnswerLabel")}
-        </Text>
-        <Text style={[styles.value, { color: colors.foreground }]}>
-          {t("diagonalQuiz.session.correctAnswer", {
-            diagonal: correctDiagonal,
-            antiDiagonal: correctAntiDiagonal,
-          })}
-        </Text>
+      <Text style={[styles.title, { color: colors.foreground }]}>
+        {t("diagonalQuiz.session.question", { square })}
+      </Text>
 
-        {userAnswer && (
-          <>
-            <Text
-              style={[
-                styles.label,
-                styles.spaced,
-                { color: colors.mutedForeground },
-              ]}
-            >
-              {t("diagonalQuiz.session.yourAnswer")}
-            </Text>
-            <Text style={styles.value}>
-              <Text
-                style={{ color: verdictColor(userAnswer.isDiagonalCorrect) }}
-              >
-                {userAnswer.diagonal}
-              </Text>
-              <Text style={{ color: colors.mutedForeground }}>{", "}</Text>
-              <Text
-                style={{
-                  color: verdictColor(userAnswer.isAntiDiagonalCorrect),
-                }}
-              >
-                {userAnswer.antiDiagonal}
-              </Text>
-            </Text>
-          </>
+      <DiagonalBoard square={square} maxSize={BOARD_SIZE} />
+
+      <View style={styles.answer}>
+        {userAnswer ? (
+          <DiagonalAnswerComparison
+            correctDiagonal={correctDiagonal}
+            correctAntiDiagonal={correctAntiDiagonal}
+            userDiagonal={userAnswer.diagonal}
+            userAntiDiagonal={userAnswer.antiDiagonal}
+            isDiagonalCorrect={userAnswer.isDiagonalCorrect}
+            isAntiDiagonalCorrect={userAnswer.isAntiDiagonalCorrect}
+          />
+        ) : (
+          <Text style={[styles.skipAnswer, { color: colors.mutedForeground }]}>
+            {t("diagonalQuiz.session.correctAnswer", {
+              diagonal: correctDiagonal,
+              antiDiagonal: correctAntiDiagonal,
+            })}
+          </Text>
         )}
-      </Card>
+      </View>
 
       <Button
         title={t("diagonalQuiz.session.nextProblem")}
+        icon="refresh"
         onPress={onNext}
         size="lg"
         fullWidth
@@ -93,21 +89,24 @@ export function TrainingAnswerReview({
 
 const styles = StyleSheet.create({
   container: {
-    gap: spacing.lg,
-    marginTop: spacing.lg,
+    paddingHorizontal: spacing.lg,
   },
-  label: {
-    fontSize: fontSize.sm,
+  // The web's question title: `text-base font-medium mb-4`.
+  title: {
+    fontSize: fontSize.md,
+    lineHeight: 24,
     fontWeight: fontWeight.medium,
     textAlign: "center",
+    marginBottom: spacing.md,
   },
-  spaced: {
-    marginTop: spacing.md,
+  // The web's `mt-6` around the answers.
+  answer: {
+    marginVertical: spacing.lg,
   },
-  value: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.bold,
+  // The web's `text-sm text-muted-foreground`.
+  skipAnswer: {
+    fontSize: fontSize.sm,
+    lineHeight: 20,
     textAlign: "center",
-    marginTop: spacing.xs,
   },
 });

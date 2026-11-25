@@ -390,7 +390,7 @@
   },
   "diagonalQuiz": {
     "setup": {
-      "title": "Diagonal Quiz Settings"
+      "title": "Diagonal Quiz"
     },
     "session": {
       "question": "What are the diagonals of {{square}}?",
@@ -401,6 +401,7 @@
       "singleSquare": "single square",
       "selectFile": "Select a file (a-h)",
       "selectRank": "Select a rank (1-8)",
+      "backspace": "Backspace",
       "clear": "Clear",
       "correct": "Correct!",
       "incorrect": "Incorrect",
@@ -409,8 +410,16 @@
       "yourAnswer": "Your answer",
       "correctAnswerLabel": "Correct answer"
     },
+    "board": {
+      "diagonal": "Diagonal",
+      "antiDiagonal": "Anti-diagonal",
+      "diagonalDirection": "(a1-h8 direction)",
+      "antiDiagonalDirection": "(h1-a8 direction)"
+    },
     "result": {
-      "title": "Practice Complete!"
+      "title": "Practice Complete!",
+      "problemDetails": "Problem Details",
+      "timeUp": "Time's up"
     },
     "settings": {
       "timeLimit": "Time Limit",

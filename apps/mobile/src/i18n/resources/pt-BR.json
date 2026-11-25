@@ -390,7 +390,7 @@
   },
   "diagonalQuiz": {
     "setup": {
-      "title": "Configurações do quiz de diagonais"
+      "title": "Quiz de diagonais"
     },
     "session": {
       "question": "Quais são as diagonais de {{square}}?",
@@ -401,6 +401,7 @@
       "singleSquare": "casa única",
       "selectFile": "Selecione uma coluna (a-h)",
       "selectRank": "Selecione uma linha (1-8)",
+      "backspace": "Retrocesso",
       "clear": "Limpar",
       "correct": "Correto!",
       "incorrect": "Incorreto",
@@ -409,8 +410,16 @@
       "yourAnswer": "Sua resposta",
       "correctAnswerLabel": "Resposta correta"
     },
+    "board": {
+      "diagonal": "Diagonal",
+      "antiDiagonal": "Antidiagonal",
+      "diagonalDirection": "(direção a1-h8)",
+      "antiDiagonalDirection": "(direção h1-a8)"
+    },
     "result": {
-      "title": "Prática concluída!"
+      "title": "Prática concluída!",
+      "problemDetails": "Detalhes do problema",
+      "timeUp": "Tempo esgotado"
     },
     "settings": {
       "timeLimit": "Tempo limite",

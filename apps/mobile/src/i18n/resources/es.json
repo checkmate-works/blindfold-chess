@@ -390,7 +390,7 @@
   },
   "diagonalQuiz": {
     "setup": {
-      "title": "Ajustes del quiz de diagonales"
+      "title": "Quiz de diagonales"
     },
     "session": {
       "question": "¿Cuáles son las diagonales de {{square}}?",
@@ -401,6 +401,7 @@
       "singleSquare": "casilla única",
       "selectFile": "Selecciona una columna (a-h)",
       "selectRank": "Selecciona una fila (1-8)",
+      "backspace": "Retroceso",
       "clear": "Borrar",
       "correct": "¡Correcto!",
       "incorrect": "Incorrecto",
@@ -409,8 +410,16 @@
       "yourAnswer": "Tu respuesta",
       "correctAnswerLabel": "Respuesta correcta"
     },
+    "board": {
+      "diagonal": "Diagonal",
+      "antiDiagonal": "Antidiagonal",
+      "diagonalDirection": "(dirección a1-h8)",
+      "antiDiagonalDirection": "(dirección h1-a8)"
+    },
     "result": {
-      "title": "¡Práctica completada!"
+      "title": "¡Práctica completada!",
+      "problemDetails": "Detalles del problema",
+      "timeUp": "Tiempo agotado"
     },
     "settings": {
       "timeLimit": "Tiempo límite",

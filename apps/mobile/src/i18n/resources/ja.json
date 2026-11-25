@@ -390,7 +390,7 @@
   },
   "diagonalQuiz": {
     "setup": {
-      "title": "ダイアゴナルクイズ 設定"
+      "title": "ダイアゴナルクイズ"
     },
     "session": {
       "question": "{{square}}の対角線は？",
@@ -398,9 +398,10 @@
       "antiDiagonalLabel": "逆対角線 (h1-a8方向)",
       "squarePlaceholder": "??",
       "singleSquarePlaceholder": "例: a1",
-      "singleSquare": "単一マス",
+      "singleSquare": "1マスのみ",
       "selectFile": "ファイルを選択 (a-h)",
       "selectRank": "ランクを選択 (1-8)",
+      "backspace": "一文字削除",
       "clear": "クリア",
       "correct": "正解！",
       "incorrect": "不正解",
@@ -409,8 +410,16 @@
       "yourAnswer": "あなたの回答",
       "correctAnswerLabel": "正解"
     },
+    "board": {
+      "diagonal": "対角線",
+      "antiDiagonal": "逆対角線",
+      "diagonalDirection": "(a1-h8方向)",
+      "antiDiagonalDirection": "(h1-a8方向)"
+    },
     "result": {
-      "title": "練習終了！"
+      "title": "練習終了！",
+      "problemDetails": "問題詳細",
+      "timeUp": "時間切れ"
     },
     "settings": {
       "timeLimit": "制限時間",
