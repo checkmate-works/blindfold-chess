@@ -1007,6 +1007,7 @@
     "startRateLimited": "Muitos desafios iniciados. Aguarde um pouco e tente novamente.",
     "retry": "Tentar novamente",
     "signInToRecord": "Entre para registrar sua pontuação no ranking.",
+    "signInBenefit": "Registre suas pontuações no ranking.",
     "record": {
       "saving": "Registrando sua pontuação…",
       "recorded": "Sua pontuação foi registrada.",

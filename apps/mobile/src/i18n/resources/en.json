@@ -1007,6 +1007,7 @@
     "startRateLimited": "Too many challenges started. Please wait a little and try again.",
     "retry": "Try again",
     "signInToRecord": "Sign in to record your score on the leaderboard.",
+    "signInBenefit": "Record your scores on the leaderboard.",
     "record": {
       "saving": "Recording your score…",
       "recorded": "Your score was recorded.",
