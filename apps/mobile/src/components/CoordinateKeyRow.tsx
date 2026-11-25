@@ -1,11 +1,5 @@
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import {
-  useTheme,
-  fontSize,
-  fontWeight,
-  borderRadius,
-  touchTarget,
-} from "../theme";
+import { useTheme, fontSize, fontWeight, touchTarget } from "../theme";
 
 type CoordinateKeyRowProps = {
   keys: readonly string[];
@@ -102,7 +96,8 @@ const styles = StyleSheet.create({
   key: {
     flex: 1,
     minHeight: touchTarget.minSize,
-    borderRadius: borderRadius.md,
+    // The web keypad's `rounded-md`, not the theme's 8.
+    borderRadius: 6,
     borderWidth: 1,
     justifyContent: "center",
     alignItems: "center",
