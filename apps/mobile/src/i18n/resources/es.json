@@ -230,7 +230,7 @@
   },
   "boardSymmetry": {
     "setup": {
-      "title": "Ajustes de simetría del tablero"
+      "title": "Simetría del tablero"
     },
     "session": {
       "question": "¿{{type}} de {{square}}?",
@@ -244,10 +244,6 @@
     "result": {
       "title": "Resultados",
       "timeTaken": "Tiempo"
-    },
-    "settings": {
-      "timeLimit": "Tiempo límite",
-      "seconds": "{{seconds}}s"
     }
   },
   "squareColors": {

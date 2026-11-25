@@ -230,7 +230,7 @@
   },
   "boardSymmetry": {
     "setup": {
-      "title": "Board Symmetry Setup"
+      "title": "Board Symmetry"
     },
     "session": {
       "question": "{{type}} of {{square}}?",
@@ -244,10 +244,6 @@
     "result": {
       "title": "Results",
       "timeTaken": "Time"
-    },
-    "settings": {
-      "timeLimit": "Time Limit",
-      "seconds": "{{seconds}}s"
     }
   },
   "squareColors": {

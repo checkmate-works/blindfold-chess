@@ -230,7 +230,7 @@
   },
   "boardSymmetry": {
     "setup": {
-      "title": "盤面対称 設定"
+      "title": "盤面対称"
     },
     "session": {
       "question": "{{square}}の{{type}}は？",
@@ -244,10 +244,6 @@
     "result": {
       "title": "結果",
       "timeTaken": "経過時間"
-    },
-    "settings": {
-      "timeLimit": "制限時間",
-      "seconds": "{{seconds}}秒"
     }
   },
   "squareColors": {
