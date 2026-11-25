@@ -108,13 +108,32 @@ for locale in LOCALES:
 # --- Recall (感想戦): the strings the mobile screens use, under `recall.*`.
 RECALL_KEYS = [
     "title", "description", "setup.pgnLabel",
-    "autoOpponentMoves", "dontKnow", "correctMove", "incorrectMove",
-    "progress", "showBoard", "completed", "moves", "noMovesYet",
+    "autoOpponentMoves", "dontKnow", "dontKnowPrompt", "revealAnswer",
+    "autoFillAll", "confirmAutoFillAllTitle", "confirmAutoFillAllMessage",
+    "cancel", "logAutoFilled", "moves", "completed",
+    "incorrectMoveError", "correctMoveMessage", "skippedMoveMessage",
     "summary.title", "summary.rateLabel", "summary.nailed", "summary.struggled",
-    "summary.missed", "summary.restart", "summary.startNew",
+    "summary.missed", "summary.mistakes", "summary.legendIncorrect",
+    "summary.legendAuto", "summary.triedMove", "summary.autoFilledCount",
+    "summary.reviewTitle", "summary.reviewHint",
+    "summary.restart", "summary.startNew",
     "help.input.title", "help.input.description",
     "help.dontKnow.title", "help.dontKnow.description",
     "help.setup.color.title", "help.setup.color.description",
+]
+
+# The setup's colour picker and PGN box are shared parts on the web, with
+# their texts in other namespaces; recall keeps its own copy under
+# `recall.setup.color.*` / `recall.pgnInput.*`. (web namespace, key, mobile key)
+RECALL_SHARED_KEYS = [
+    ("newGame", "selectColor", "setup.color.title"),
+    ("newGame", "playAsWhite", "setup.color.white"),
+    ("newGame", "playAsBlack", "setup.color.black"),
+    ("pgnInput", "placeholder", "pgnInput.placeholder"),
+    ("pgnInput", "clear", "pgnInput.clear"),
+    ("pgnInput", "clearConfirmTitle", "pgnInput.clearConfirmTitle"),
+    ("pgnInput", "clearConfirmMessage", "pgnInput.clearConfirmMessage"),
+    ("pgnInput", "clearConfirmButton", "pgnInput.clearConfirmButton"),
 ]
 
 
@@ -139,6 +158,13 @@ for locale in LOCALES:
     for key in RECALL_KEYS:
         text = re.sub(r"</?b>", "", dig(web, key))
         plant(recall, key, icu_to_i18next(text))
+    # The web's English reads "12... is not Nf3" (the move number "is not"
+    # the move); the app names the move entered and says it is wrong.
+    if locale == "en":
+        recall["incorrectMoveError"] = "{{movePrefix}} {{move}} is incorrect"
+    web_all = json.loads((WEB / f"{locale}.json").read_text())
+    for ns, key, mobile_key in RECALL_SHARED_KEYS:
+        plant(recall, mobile_key, icu_to_i18next(web_all[ns][key]))
     # The help sheet's pages for recall (the setup's PGN help mentions the
     # web-only Lichess import, so it is left out).
     mobile["moduleHelp"]["recall"] = {

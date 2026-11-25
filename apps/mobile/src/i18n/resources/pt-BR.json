@@ -707,21 +707,15 @@
       "title": "Recordar partida",
       "useSample": "Usar uma partida de exemplo",
       "invalidPgn": "Não foi possível ler este PGN. Verifique os lances e tente novamente.",
-      "playAs": "Lado a recordar",
-      "sides": {
-        "white": "Brancas",
-        "black": "Pretas"
+      "color": {
+        "title": "Selecione Sua Cor",
+        "white": "Jogar com Brancas",
+        "black": "Jogar com Pretas"
       }
     },
     "autoOpponentMoves": "Preencher automaticamente movimentos do adversário",
     "dontKnow": "Não sei",
-    "correctMove": "Correto!",
-    "incorrectMove": "Movimento incorreto. Tente novamente.",
-    "progress": "Progresso: {{current}} / {{total}} movimentos",
-    "showBoard": "Mostrar Tabuleiro",
-    "completed": "Revisão da Partida Concluída!",
     "moves": "Movimentos",
-    "noMovesYet": "Ainda não há movimentos",
     "summary": {
       "title": "Resumo",
       "rateLabel": "Taxa de lembrança",
@@ -729,7 +723,14 @@
       "struggled": "Com dúvidas",
       "missed": "Não lembrou",
       "restart": "Jogar de novo",
-      "startNew": "Começar com outro PGN"
+      "startNew": "Começar com outro PGN",
+      "mistakes": "Erros: {{count}}",
+      "legendIncorrect": "Tentativa incorreta",
+      "legendAuto": "Oponente",
+      "triedMove": "Tentou {{move}} — o correto era {{correct}}",
+      "autoFilledCount": "+{{count}} preenchidos automaticamente",
+      "reviewTitle": "Por Lance",
+      "reviewHint": "Toque para ver a posição"
     },
     "help": {
       "input": {
@@ -751,17 +752,27 @@
         }
       }
     },
-    "session": {
-      "toMove": {
-        "white": "Brancas jogam",
-        "black": "Pretas jogam"
-      },
-      "wrong": "Não é {{move}}. Tente novamente."
-    },
     "result": {
-      "title": "Resumo",
-      "mistakes": "Tentativas erradas"
-    }
+      "title": "Resumo"
+    },
+    "dontKnowPrompt": "Quer ver a resposta deste lance?",
+    "revealAnswer": "Ver resposta",
+    "autoFillAll": "Preencher Tudo Automaticamente",
+    "confirmAutoFillAllTitle": "Preencher automaticamente todos os movimentos?",
+    "confirmAutoFillAllMessage": "Isso preencherá automaticamente todos os movimentos restantes.",
+    "cancel": "Cancelar",
+    "logAutoFilled": "Preenchido automaticamente",
+    "incorrectMoveError": "{{movePrefix}} não é {{move}}",
+    "correctMoveMessage": "{{movePrefix}} {{move}} está correto",
+    "skippedMoveMessage": "A resposta era {{movePrefix}} {{move}}",
+    "pgnInput": {
+      "placeholder": "Cole sua notação PGN aqui...\n\nExemplo:\n1. e4 e5 2. Nf3 Nc6 3. Bb5 a6",
+      "clear": "Limpar PGN",
+      "clearConfirmTitle": "Limpar o PGN?",
+      "clearConfirmMessage": "Isso apagará o texto colado. Essa ação não pode ser desfeita.",
+      "clearConfirmButton": "Limpar"
+    },
+    "completed": "Revisão da Partida Concluída!"
   },
   "learn": {
     "description": "Artigos educativos e guias para melhorar sua compreensão do xadrez",
@@ -840,7 +851,7 @@
       "emailLabel": "E-mail",
       "emailPlaceholder": "voce@exemplo.com",
       "passwordLabel": "Senha",
-      "passwordPlaceholder": "Pelo menos {{minLength}} caracteres",
+      "passwordPlaceholder": "Pelo menos 8 caracteres",
       "confirmPasswordLabel": "Confirmar senha",
       "confirmPasswordPlaceholder": "Insira sua senha novamente",
       "emailSignUp": "Cadastrar-se com e-mail",

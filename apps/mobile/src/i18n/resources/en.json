@@ -707,21 +707,15 @@
       "title": "Recall",
       "useSample": "Use a sample game",
       "invalidPgn": "This PGN could not be read. Check the moves and try again.",
-      "playAs": "Side to recall",
-      "sides": {
-        "white": "White",
-        "black": "Black"
+      "color": {
+        "title": "Select Your Color",
+        "white": "Play as White",
+        "black": "Play as Black"
       }
     },
     "autoOpponentMoves": "Auto-fill opponent's moves",
     "dontKnow": "I don't know",
-    "correctMove": "Correct!",
-    "incorrectMove": "Incorrect move. Try again.",
-    "progress": "Progress: {{current}} / {{total}} moves",
-    "showBoard": "Show Board",
-    "completed": "Game Review Completed!",
     "moves": "Moves",
-    "noMovesYet": "Moves will appear here as you enter them",
     "summary": {
       "title": "Summary",
       "rateLabel": "Recall rate",
@@ -729,7 +723,14 @@
       "struggled": "Stumbled",
       "missed": "Couldn't recall",
       "restart": "Play again",
-      "startNew": "Start with another PGN"
+      "startNew": "Start with another PGN",
+      "mistakes": "Mistakes: {{count}}",
+      "legendIncorrect": "Wrong attempt",
+      "legendAuto": "Opponent",
+      "triedMove": "Tried {{move}} — correct was {{correct}}",
+      "autoFilledCount": "+{{count}} auto-filled",
+      "reviewTitle": "By Move",
+      "reviewHint": "Tap to view the position"
     },
     "help": {
       "input": {
@@ -751,17 +752,27 @@
         }
       }
     },
-    "session": {
-      "toMove": {
-        "white": "White to move",
-        "black": "Black to move"
-      },
-      "wrong": "Not {{move}}. Try again."
-    },
     "result": {
-      "title": "Summary",
-      "mistakes": "Wrong tries"
-    }
+      "title": "Summary"
+    },
+    "dontKnowPrompt": "Want to see the answer for this move?",
+    "revealAnswer": "Show answer",
+    "autoFillAll": "Auto-fill All",
+    "confirmAutoFillAllTitle": "Auto-fill all moves?",
+    "confirmAutoFillAllMessage": "This will auto-fill all remaining moves.",
+    "cancel": "Cancel",
+    "logAutoFilled": "Auto-filled",
+    "incorrectMoveError": "{{movePrefix}} {{move}} is incorrect",
+    "correctMoveMessage": "{{movePrefix}} {{move}} is correct",
+    "skippedMoveMessage": "The answer was {{movePrefix}} {{move}}",
+    "pgnInput": {
+      "placeholder": "Paste your PGN notation here...\n\nExample:\n1. e4 e5 2. Nf3 Nc6 3. Bb5 a6",
+      "clear": "Clear PGN",
+      "clearConfirmTitle": "Clear PGN?",
+      "clearConfirmMessage": "This will erase the pasted text. This can't be undone.",
+      "clearConfirmButton": "Clear"
+    },
+    "completed": "Game Review Completed!"
   },
   "learn": {
     "description": "Educational articles and guides to improve your chess understanding",
@@ -840,7 +851,7 @@
       "emailLabel": "Email",
       "emailPlaceholder": "you@example.com",
       "passwordLabel": "Password",
-      "passwordPlaceholder": "At least {{minLength}} characters",
+      "passwordPlaceholder": "At least 8 characters",
       "confirmPasswordLabel": "Confirm password",
       "confirmPasswordPlaceholder": "Re-enter your password",
       "emailSignUp": "Register with email",

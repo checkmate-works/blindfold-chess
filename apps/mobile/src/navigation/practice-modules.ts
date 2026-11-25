@@ -128,7 +128,7 @@ export const MOBILE_PRACTICE_MODULES: readonly MobilePracticeModule[] = [
     icon: "🧠",
     sessionHeader: true,
   },
-  { slug: "recall", i18nKey: "recall", icon: "🔁" },
+  { slug: "recall", i18nKey: "recall", icon: "🔁", sessionHeader: true },
   { slug: "puzzle", i18nKey: "puzzle", icon: "🧩" },
 ];
 

@@ -707,21 +707,15 @@
       "title": "棋譜再現",
       "useSample": "サンプルを使う",
       "invalidPgn": "棋譜を読み取れませんでした。内容を確認してもう一度お試しください。",
-      "playAs": "再現する手番",
-      "sides": {
-        "white": "白",
-        "black": "黒"
+      "color": {
+        "title": "色を選択",
+        "white": "白でプレイ",
+        "black": "黒でプレイ"
       }
     },
     "autoOpponentMoves": "相手の手を自動入力",
     "dontKnow": "わからない",
-    "correctMove": "正解！",
-    "incorrectMove": "違う手です。もう一度試してください。",
-    "progress": "進捗: {{current}} / {{total}} 手",
-    "showBoard": "ボードを表示",
-    "completed": "感想戦完了！",
     "moves": "棋譜",
-    "noMovesYet": "手を入力すると、ここに棋譜が表示されます",
     "summary": {
       "title": "サマリー",
       "rateLabel": "再現率",
@@ -729,7 +723,14 @@
       "struggled": "つまずき",
       "missed": "思い出せず",
       "restart": "もう一度",
-      "startNew": "別の棋譜で始める"
+      "startNew": "別の棋譜で始める",
+      "mistakes": "誤入力 {{count}} 回",
+      "legendIncorrect": "誤入力",
+      "legendAuto": "相手の手",
+      "triedMove": "{{move}} と入力 — 正解は {{correct}}",
+      "autoFilledCount": "+{{count}} 件を自動入力",
+      "reviewTitle": "手ごとの内容",
+      "reviewHint": "タップでその局面を確認"
     },
     "help": {
       "input": {
@@ -751,17 +752,27 @@
         }
       }
     },
-    "session": {
-      "toMove": {
-        "white": "白の手",
-        "black": "黒の手"
-      },
-      "wrong": "{{move}} ではありません。もう一度。"
-    },
     "result": {
-      "title": "サマリー",
-      "mistakes": "誤入力"
-    }
+      "title": "サマリー"
+    },
+    "dontKnowPrompt": "この手の正解を確認しますか？",
+    "revealAnswer": "正解を見る",
+    "autoFillAll": "全て自動入力",
+    "confirmAutoFillAllTitle": "全て自動入力しますか？",
+    "confirmAutoFillAllMessage": "残りの全ての手を自動入力します。",
+    "cancel": "キャンセル",
+    "logAutoFilled": "自動入力",
+    "incorrectMoveError": "{{movePrefix}} {{move}} ではありません",
+    "correctMoveMessage": "{{movePrefix}} {{move}} は正解です",
+    "skippedMoveMessage": "正解は {{movePrefix}} {{move}} でした",
+    "pgnInput": {
+      "placeholder": "PGN記法を貼り付けてください...\n\n例:\n1. e4 e5 2. Nf3 Nc6 3. Bb5 a6",
+      "clear": "PGNをクリア",
+      "clearConfirmTitle": "PGNをクリアしますか?",
+      "clearConfirmMessage": "貼り付けたテキストが消去されます。この操作は取り消せません。",
+      "clearConfirmButton": "クリア"
+    },
+    "completed": "感想戦完了！"
   },
   "learn": {
     "description": "チェスの理解を深めるための教育記事とガイド",
@@ -840,7 +851,7 @@
       "emailLabel": "メールアドレス",
       "emailPlaceholder": "you@example.com",
       "passwordLabel": "パスワード",
-      "passwordPlaceholder": "{{minLength}}文字以上",
+      "passwordPlaceholder": "8文字以上",
       "confirmPasswordLabel": "パスワード（確認）",
       "confirmPasswordPlaceholder": "パスワードを再入力",
       "emailSignUp": "メールで登録",
