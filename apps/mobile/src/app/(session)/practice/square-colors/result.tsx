@@ -21,9 +21,10 @@ export default function SquareColorsResult() {
       playAgainLabel={t("squareColors.result.playAgain")}
       backToMenuLabel={t("squareColors.result.backToMenu")}
       setupHref="/practice/square-colors"
+      actions="row"
     >
       <PracticeStatsResultCard result={result} />
-      <ChallengeRecordStatus attemptId={params.attemptId} />
+      <ChallengeRecordStatus attemptId={params.attemptId} signInPrompt="row" />
     </PracticeResultScreen>
   );
 }

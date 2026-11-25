@@ -8,6 +8,7 @@ import { useTheme, borderRadius, fontSize, spacing } from "../../theme";
 import { refreshAccount, useAuth as useAuthState } from "../../auth/use-auth";
 import { rankLabel } from "../records/rank-label";
 import { finishChallenge } from "./challenge-api";
+import { ChallengeSignInRow } from "./ChallengeSignInRow";
 
 type Status = "saving" | "recorded" | "notRecorded" | "failed";
 
@@ -16,11 +17,18 @@ type Status = "saving" | "recorded" | "notRecorded" | "failed";
  * finishes the attempt on the server (once) and says whether the score was
  * recorded; for an unrecorded run by a signed-out player it invites them to
  * sign in, as the web's result page does.
+ *
+ * `signInPrompt="row"` makes that invitation the setup screen's sign-in row
+ * (`ChallengeSignInRow`) instead of the inline sentence and button. Square
+ * colors uses it; the other modules move to it once its look is settled,
+ * and the inline form goes then.
  */
 export function ChallengeRecordStatus({
   attemptId,
+  signInPrompt = "inline",
 }: {
   attemptId: string | undefined;
+  signInPrompt?: "inline" | "row";
 }) {
   const { t } = useTranslation();
   const router = useRouter();
@@ -48,6 +56,13 @@ export function ChallengeRecordStatus({
 
   if (!attemptId) {
     if (auth.status !== "signedOut") return null;
+    if (signInPrompt === "row") {
+      return (
+        <View style={styles.signInRow}>
+          <ChallengeSignInRow />
+        </View>
+      );
+    }
     return (
       <View style={[styles.box, { backgroundColor: colors.card }]}>
         <Text style={[styles.text, { color: colors.foreground }]}>
@@ -101,6 +116,9 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     gap: spacing.sm,
     alignItems: "center",
+    marginTop: spacing.md,
+  },
+  signInRow: {
     marginTop: spacing.md,
   },
   row: {
