@@ -1,8 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, Alert } from "react-native";
+import type { ScrollViewInstance } from "react-native";
+import { View, Text, StyleSheet, ScrollView, Linking } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useRouter, useLocalSearchParams } from "expo-router";
+import { fenToLichessUrl } from "@blindfold-chess/features/chess-core/fen";
 import {
+  EMPTY_BOARD_FEN,
   selectInitialPositions,
   summarizeFenSession,
 } from "@blindfold-chess/features/fen-practice";
@@ -10,34 +13,50 @@ import {
   useFenPracticeSession,
   usePieceAccuracy,
 } from "@blindfold-chess/features/fen-practice/client";
+import { useCountdown } from "@blindfold-chess/features/practice-session";
 
-import { BottomBar, Button, Screen } from "../../../../components";
-import { SessionTopBar } from "../../../../navigation/SessionTopBar";
+import { Button, ProgressBar, QuizTimer, Screen } from "../../../../components";
 import {
+  BoardTools,
   FenBoard,
   FenBoardEditor,
-  FenProblemResult,
+  ProblemRecreationResult,
+  SessionLinks,
+  confirmQuit,
 } from "../../../../features/fen/components";
-import { parseIntParam } from "../../../../lib/route-params";
+import {
+  isBoardEmpty,
+  useProblemOrientation,
+} from "../../../../features/fen/lib/board";
 import {
   parseFenSessionParams,
   serializeFenResultParams,
   type FenSessionParams,
 } from "../../../../features/fen/lib/route-params";
+import { parseIntParam } from "../../../../lib/route-params";
 import {
   useTheme,
   spacing,
   fontSize,
   fontWeight,
-  borderRadius,
+  withAlpha,
 } from "../../../../theme";
 
 /**
- * Position memory (the web's `/practice/position-memory/session`): each
- * position is shown for the chosen number of seconds — or until "Memorized"
- * — then hidden, and the player rebuilds it on an empty board. Scoring and
- * the problem flow are the FEN drill's (`useFenPracticeSession`); only the
- * memorise step in front of each recreation is this screen's.
+ * Position memory (the web's multi-problem `/practice/position-memory/session`),
+ * stacked top-down as the web's phases are:
+ *
+ * - memorize: the progress, "Memorize the Position" with the clock, the
+ *   board (under the "3, 2, 1, START!" countdown before the first problem),
+ *   "I've Memorized", then the skip / quit links;
+ * - recreate: "Recreate" with the board tools, the empty board, Submit,
+ *   then view again / skip / quit;
+ * - the problem's result, as the FEN drill's.
+ *
+ * Scoring and the problem flow are the FEN drill's (`useFenPracticeSession`);
+ * only the memorize step in front of each recreation is this screen's.
+ * "View Again" returns to it with a full clock and keeps the pieces placed
+ * so far (the web's machine empties the board when the step ends again).
  */
 export default function PositionMemorySession() {
   const { t } = useTranslation();
@@ -86,6 +105,45 @@ export default function PositionMemorySession() {
     currentAccuracy,
   } = session;
 
+  // The web's pre-session countdown, once, before the first position shows.
+  const { countdown } = useCountdown();
+
+  // The index of the last problem whose memorise step is over; the step
+  // runs whenever it lags the current problem.
+  const [memorizedIndex, setMemorizedIndex] = useState(-1);
+  const memorizing =
+    phase === "recreate" && memorizedIndex < currentProblemIndex;
+  const [secondsLeft, setSecondsLeft] = useState(memorizeSeconds);
+  const clockRunning = memorizing && countdown === null;
+
+  useEffect(() => {
+    if (!clockRunning) return;
+    setSecondsLeft(memorizeSeconds);
+    const startedAt = Date.now();
+    const timer = setInterval(() => {
+      const left =
+        memorizeSeconds - Math.floor((Date.now() - startedAt) / 1000);
+      if (left <= 0) {
+        clearInterval(timer);
+        setMemorizedIndex(currentProblemIndex);
+      } else {
+        setSecondsLeft(left);
+      }
+    }, 250);
+    return () => clearInterval(timer);
+  }, [clockRunning, memorizeSeconds, currentProblemIndex]);
+
+  const [flipped, toggleFlipped] = useProblemOrientation(
+    currentProblemIndex,
+    originalPosition?.isBlackToMove ?? false,
+  );
+
+  // Every phase change opens at the top of the column.
+  const scrollRef = useRef<ScrollViewInstance>(null);
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ y: 0, animated: false });
+  }, [currentProblemIndex, phase, memorizing]);
+
   // Hand the summary to the result screen once the session ends, replacing
   // this route so "back" cannot re-enter a finished session. `session` is a
   // new object every render, so the ref keeps the hand-off to a single
@@ -101,256 +159,206 @@ export default function PositionMemorySession() {
     });
   }, [phase, session, positions.length, router]);
 
-  const handleQuit = () => {
-    Alert.alert(
-      t("fen.session.quitConfirmTitle"),
-      t("fen.session.quitConfirmMessage"),
-      [
-        { text: t("fen.session.quitConfirmNo"), style: "cancel" },
-        {
-          text: t("fen.session.quitConfirmYes"),
-          style: "destructive",
-          onPress: session.finish,
-        },
-      ],
-    );
-  };
-
-  // The index of the last problem whose memorise step is over; the step
-  // runs whenever it lags the current problem.
-  const [memorizedIndex, setMemorizedIndex] = useState(-1);
-  const memorizing =
-    phase === "recreate" && memorizedIndex < currentProblemIndex;
-  const [secondsLeft, setSecondsLeft] = useState(memorizeSeconds);
-
-  useEffect(() => {
-    if (!memorizing) return;
-    setSecondsLeft(memorizeSeconds);
-    const startedAt = Date.now();
-    const timer = setInterval(() => {
-      const left =
-        memorizeSeconds - Math.floor((Date.now() - startedAt) / 1000);
-      if (left <= 0) {
-        clearInterval(timer);
-        setMemorizedIndex(currentProblemIndex);
-      } else {
-        setSecondsLeft(left);
-      }
-    }, 250);
-    return () => clearInterval(timer);
-  }, [memorizing, memorizeSeconds, currentProblemIndex]);
-
-  const isLastProblem = currentProblemIndex >= positions.length - 1;
-  const progress =
-    positions.length > 0 ? (currentProblemIndex + 1) / positions.length : 0;
-
   // Blank while the hand-off to the result screen is in flight.
   if (!originalPosition || phase === "result") {
     return <Screen>{null}</Screen>;
   }
 
+  const isLastProblem = currentProblemIndex >= positions.length - 1;
+  const quitLink = {
+    label: t("fen.session.quit"),
+    onPress: () => confirmQuit(t, session.finish),
+    testID: "quit",
+  };
+  const skipLink = {
+    label: t("fen.session.skip"),
+    onPress: session.skip,
+    testID: "skip",
+  };
+
   return (
-    <Screen edges={["top", "left", "right"]}>
-      <SessionTopBar />
-      <ScrollView contentContainerStyle={styles.content}>
+    <Screen edges={["bottom", "left", "right"]}>
+      <ScrollView ref={scrollRef} contentContainerStyle={styles.content}>
         {positions.length > 1 && (
-          <View style={styles.progressRow}>
-            <View
-              style={[styles.progressTrack, { backgroundColor: colors.muted }]}
-            >
-              <View
-                style={[
-                  styles.progressFill,
-                  {
-                    backgroundColor: colors.primary,
-                    width: `${progress * 100}%`,
-                  },
-                ]}
-              />
-            </View>
-            <Text
-              style={[styles.progressText, { color: colors.mutedForeground }]}
-            >
-              {t("fen.session.problemOf", {
-                current: currentProblemIndex + 1,
-                total: positions.length,
-              })}
-            </Text>
-          </View>
+          <ProgressBar
+            current={currentProblemIndex + 1}
+            total={positions.length}
+          />
         )}
 
         {memorizing && (
           <>
             <View style={styles.memorizeHeader}>
-              <Text style={[styles.prompt, { color: colors.foreground }]}>
+              <Text
+                style={[
+                  styles.memorizeTitle,
+                  { color: colors.mutedForeground },
+                ]}
+              >
                 {t("positionMemory.session.memorize")}
               </Text>
-              <Text
-                style={[styles.secondsLeft, { color: colors.primary }]}
-                accessibilityLiveRegion="polite"
-              >
-                {t("positionMemory.setup.seconds", { count: secondsLeft })}
-              </Text>
+              <View style={styles.clock}>
+                <QuizTimer
+                  timeRemaining={secondsLeft}
+                  progress={secondsLeft / memorizeSeconds}
+                  size={50}
+                />
+              </View>
             </View>
-            <View
-              style={[styles.progressTrack, { backgroundColor: colors.muted }]}
-            >
-              <View
-                style={[
-                  styles.progressFill,
-                  {
-                    backgroundColor: colors.primary,
-                    width: `${(secondsLeft / memorizeSeconds) * 100}%`,
-                  },
-                ]}
+
+            <View>
+              <FenBoard
+                fen={originalPosition.fen}
+                flipped={originalPosition.isBlackToMove}
+                showCoordinates
               />
+              {countdown !== null && (
+                <View
+                  style={[
+                    styles.countdown,
+                    { backgroundColor: withAlpha(colors.background, 0.95) },
+                  ]}
+                  testID="countdown-overlay"
+                >
+                  <Text
+                    style={[styles.countdownText, { color: colors.foreground }]}
+                  >
+                    {countdown > 0 ? countdown : "START!"}
+                  </Text>
+                </View>
+              )}
             </View>
-            <FenBoard
-              fen={originalPosition.fen}
-              flipped={originalPosition.isBlackToMove}
+
+            <Button
+              title={t("positionMemory.session.memorized")}
+              onPress={() => setMemorizedIndex(currentProblemIndex)}
+              disabled={countdown !== null}
+              size="lg"
+              fullWidth
+              testID="memorized"
             />
+
+            <SessionLinks links={[skipLink, quitLink]} />
           </>
         )}
 
         {phase === "recreate" && !memorizing && (
           <>
-            <Text style={[styles.prompt, { color: colors.foreground }]}>
-              {t("positionMemory.session.recreate")}
-            </Text>
-            <Text style={[styles.hint, { color: colors.mutedForeground }]}>
-              {t("fen.session.selectPiece")}
-            </Text>
+            <View style={styles.recreateHeader}>
+              <Text
+                style={[
+                  styles.recreateTitle,
+                  { color: colors.mutedForeground },
+                ]}
+              >
+                {t("positionMemory.session.recreate")}
+              </Text>
+              <BoardTools
+                boardEmpty={isBoardEmpty(recreatedPosition)}
+                onClear={() => session.setRecreatedPosition(EMPTY_BOARD_FEN)}
+                onFlip={toggleFlipped}
+              />
+            </View>
+
             <FenBoardEditor
-              // A fresh editor per problem resets the orientation to the new
-              // side to move and the palette to its default.
+              // A fresh editor per problem resets the palette to its default.
               key={currentProblemIndex}
               fen={recreatedPosition}
               onFenChange={session.setRecreatedPosition}
-              initialFlipped={originalPosition.isBlackToMove}
+              flipped={flipped}
             />
-          </>
-        )}
 
-        {phase === "problem-result" && currentAccuracy && (
-          <FenProblemResult
-            accuracy={currentAccuracy}
-            originalFen={originalPosition.fen}
-            recreatedFen={recreatedPosition}
-            flipped={originalPosition.isBlackToMove}
-          />
-        )}
-      </ScrollView>
-
-      <BottomBar style={styles.footer}>
-        {memorizing ? (
-          <Button
-            title={t("positionMemory.session.memorized")}
-            onPress={() => setMemorizedIndex(currentProblemIndex)}
-            size="lg"
-            fullWidth
-          />
-        ) : phase === "recreate" ? (
-          <>
             <Button
               title={t("fen.session.submit")}
               onPress={session.submit}
               size="lg"
               fullWidth
+              testID="submit"
             />
-            <View style={styles.footerRow}>
-              <Button
-                title={t("fen.session.skip")}
-                onPress={session.skip}
-                variant="ghost"
-                size="sm"
-                style={styles.footerButton}
-              />
-              <Button
-                title={t("fen.session.quit")}
-                onPress={handleQuit}
-                variant="ghost"
-                size="sm"
-                style={styles.footerButton}
-              />
-            </View>
-          </>
-        ) : isLastProblem ? (
-          <Button
-            title={t("fen.problemResult.viewResults")}
-            onPress={session.finish}
-            size="lg"
-            fullWidth
-          />
-        ) : (
-          <>
-            <Button
-              title={t("fen.problemResult.nextProblem")}
-              onPress={session.nextProblem}
-              size="lg"
-              fullWidth
-            />
-            <Button
-              title={t("fen.problemResult.viewResults")}
-              onPress={session.finish}
-              variant="ghost"
-              size="sm"
-              fullWidth
+
+            <SessionLinks
+              links={[
+                {
+                  label: t("positionMemory.session.viewAgain"),
+                  onPress: () => setMemorizedIndex(currentProblemIndex - 1),
+                  testID: "view-again",
+                },
+                skipLink,
+                quitLink,
+              ]}
             />
           </>
         )}
-      </BottomBar>
+
+        {phase === "problem-result" && currentAccuracy && (
+          <ProblemRecreationResult
+            accuracy={currentAccuracy}
+            originalFen={originalPosition.fen}
+            recreatedFen={recreatedPosition}
+            flipped={originalPosition.isBlackToMove}
+            isLastProblem={isLastProblem}
+            onNextProblem={session.nextProblem}
+            onViewResults={session.finish}
+            extraActions={
+              <Button
+                title={t("positionMemory.session.analyzeOnLichess")}
+                icon="open-outline"
+                onPress={() =>
+                  void Linking.openURL(fenToLichessUrl(originalPosition.fen))
+                }
+                variant="secondary"
+                size="lg"
+                fullWidth
+                testID="analyze-on-lichess"
+              />
+            }
+          />
+        )}
+      </ScrollView>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
+  // The web's `gap-6` column.
   content: {
     padding: spacing.lg,
-    gap: spacing.md,
+    gap: spacing.lg,
   },
-  progressRow: {
-    flexDirection: "row",
+  // `relative flex items-center justify-center min-h-[50px]`, the clock at the right.
+  memorizeHeader: {
+    minHeight: 50,
     alignItems: "center",
-    gap: spacing.sm,
+    justifyContent: "center",
   },
-  progressTrack: {
-    flex: 1,
-    height: 8,
-    borderRadius: borderRadius.full,
-    overflow: "hidden",
-  },
-  progressFill: {
-    height: "100%",
-  },
-  progressText: {
-    fontSize: fontSize.sm,
-    fontVariant: ["tabular-nums"],
-  },
-  prompt: {
+  memorizeTitle: {
     fontSize: fontSize.lg,
     fontWeight: fontWeight.medium,
+    textAlign: "center",
   },
-  memorizeHeader: {
+  clock: {
+    position: "absolute",
+    right: 0,
+  },
+  countdown: {
+    ...StyleSheet.absoluteFill,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 6,
+  },
+  // `text-8xl font-black`.
+  countdownText: {
+    fontSize: 96,
+    fontWeight: "900",
+  },
+  recreateHeader: {
     flexDirection: "row",
-    alignItems: "baseline",
+    alignItems: "center",
     justifyContent: "space-between",
-  },
-  secondsLeft: {
-    fontSize: fontSize.xl,
-    fontWeight: fontWeight.bold,
-    fontVariant: ["tabular-nums"],
-  },
-  hint: {
-    fontSize: fontSize.sm,
-  },
-  footer: {
-    gap: spacing.xs,
-  },
-  footerRow: {
-    flexDirection: "row",
     gap: spacing.sm,
   },
-  footerButton: {
-    flex: 1,
+  recreateTitle: {
+    flexShrink: 1,
+    fontSize: fontSize.lg,
   },
 });

@@ -26,6 +26,8 @@ export {
   computePracticeResult,
   deriveResultStats,
   type StatItem,
+  type ResultStat,
+  type ResultStatKey,
   type DerivedResultStats,
   type DeriveResultStatsLabels,
 } from "./practice-result";

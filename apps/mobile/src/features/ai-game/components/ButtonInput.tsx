@@ -14,6 +14,13 @@ type ButtonInputProps = {
   fen: string;
   onSubmit: (move: AlgebraicNotation) => void;
   disabled?: boolean;
+  /**
+   * Stretches the eight file and rank keys across the input's width
+   * instead of scrolling them sideways. Eight 44pt keys need 380pt, more
+   * than a phone has inside a padded panel, so without this the h file and
+   * the 8th rank start off-screen.
+   */
+  fitWidth?: boolean;
 };
 
 /**
@@ -22,7 +29,12 @@ type ButtonInputProps = {
  * whose visibility rules are pure selectors on the shared notation-input
  * state machine, surfaced through `useMoveInput`.
  */
-export function ButtonInput({ fen, onSubmit, disabled }: ButtonInputProps) {
+export function ButtonInput({
+  fen,
+  onSubmit,
+  disabled,
+  fitWidth,
+}: ButtonInputProps) {
   const { t } = useTranslation();
   const { colors } = useTheme();
 
@@ -79,7 +91,12 @@ export function ButtonInput({ fen, onSubmit, disabled }: ButtonInputProps) {
 
       {/* Destination-square entry (file / pawn capture / rank / promotion / check) */}
       {!input.castling && (
-        <TargetSquareRows input={input} disabled={disabled} colors={colors} />
+        <TargetSquareRows
+          input={input}
+          disabled={disabled}
+          colors={colors}
+          fitWidth={fitWidth}
+        />
       )}
 
       <PreviewActionBar

@@ -415,16 +415,15 @@
   },
   "quadrants": {
     "setup": {
-      "title": "Âncoras de Quadrante Configuração",
+      "title": "Âncoras de Quadrante",
       "orientation": "Orientação do tabuleiro",
       "orientationWhite": "Brancas",
       "orientationBlack": "Pretas",
-      "orientationRandom": "Aleatória"
+      "orientationRandom": "Aleatória",
+      "notRecorded": "As pontuações deste exercício não serão registradas no seu histórico de prática nem no ranking."
     },
     "session": {
       "question": "Em qual quadrante está {{square}}?",
-      "correct": "Correto!",
-      "incorrect": "Incorreto",
       "whiteToMove": "Brancas jogam",
       "blackToMove": "Pretas jogam"
     },
@@ -434,7 +433,7 @@
   },
   "knightTour": {
     "setup": {
-      "title": "Percurso do Cavalo Configuração",
+      "title": "Percurso do Cavalo",
       "startingSquare": "Casa Inicial",
       "randomSquare": "Aleatório",
       "pickOnBoard": "Ou toque em uma casa do tabuleiro",
@@ -462,22 +461,18 @@
       "quitConfirmNo": "Continuar",
       "alreadyVisited": "Esta casa já foi visitada.",
       "invalidMove": "Movimento inválido",
-      "submitMove": "Enviar",
-      "selectFile": "Selecione uma coluna (a-h)",
-      "selectRank": "Selecione uma linha (1-8)"
+      "submitMove": "Enviar"
     }
   },
   "algebraicNotation": {
     "setup": {
-      "title": "Notação Algébrica Configuração",
-      "description": "Domine o sistema de notação enxadrística com exercícios interativos",
-      "questionCount": "{{total}} perguntas"
+      "title": "Notação Algébrica",
+      "description": "Domine o sistema de notação enxadrística com exercícios interativos"
     },
     "result": {
       "title": "Prática concluída!"
     },
     "session": {
-      "progress": "Pergunta {{current}} / {{total}}",
       "correct": "Correto!",
       "incorrect": "Incorreto",
       "correctAnswerIs": "A resposta correta é",
@@ -488,7 +483,7 @@
   },
   "fen": {
     "setup": {
-      "title": "Reconstrução FEN Configuração",
+      "title": "Reconstrução FEN",
       "problemSource": "Origem do Problema",
       "presetProblems": "Problemas Predefinidos",
       "enterFen": "Inserir FEN",
@@ -499,17 +494,11 @@
       "invalidFenOnLine": "FEN inválido na linha {{lines}}",
       "invalidFenOnLines": "FEN inválido nas linhas {{lines}}",
       "problemCount": "Número de Problemas",
+      "settings": "Configurações",
       "shuffle": "Embaralhar Problemas"
     },
     "result": {
-      "title": "Prática concluída!",
-      "accuracy": "Precisão",
-      "correct": "Correto",
-      "incorrect": "Incorreto",
-      "missing": "Ausente",
-      "extra": "Extra",
-      "problemDetails": "Detalhes do Problema",
-      "skipped": "Pulado"
+      "title": "Prática concluída!"
     },
     "session": {
       "recreateFromFen": "Recrie a Posição a partir do FEN",
@@ -523,18 +512,23 @@
       "quitConfirmNo": "Continuar",
       "whitePieces": "Peças Brancas",
       "blackPieces": "Peças Pretas",
-      "problem": "Problema",
-      "eraser": "Borracha",
-      "clearBoard": "Limpar tabuleiro",
-      "selectPiece": "Escolha uma peça e toque nas casas para colocá-la. Toque de novo para removê-la.",
-      "problemOf": "{{current}} / {{total}}"
+      "removePiece": "Remover peça",
+      "removePieceMode": "Modo de remover peça - Toque em uma casa para remover a peça",
+      "placingPiece": "Colocando",
+      "clearBoard": "Limpar",
+      "clearBoardConfirmTitle": "Limpar o tabuleiro?",
+      "clearBoardConfirmMessage": "Todas as peças que você colocou serão removidas.",
+      "clearBoardConfirmYes": "Limpar",
+      "clearBoardConfirmNo": "Cancelar"
     },
     "problemResult": {
       "accuracy": "Precisão",
+      "recreationProgress": "Progresso de recriação",
       "correct": "Correto",
       "incorrect": "Incorreto",
       "missing": "Ausente",
       "extra": "Extra",
+      "extraDescription": "Peças extras colocadas em casas vazias",
       "original": "Original",
       "yourRecreation": "Sua Recriação",
       "nextProblem": "Próximo Problema",
@@ -690,16 +684,19 @@
   "positionMemory": {
     "setup": {
       "title": "Memória de posições",
-      "memorizeTime": "Tempo para memorizar",
+      "settings": "Configuração do problema",
+      "memorizeTime": "Tempo de memorização",
       "seconds": "{{count}} s"
     },
     "session": {
       "memorize": "Memorize a posição",
-      "memorized": "Memorizei",
-      "recreate": "Recrie a posição"
+      "memorized": "Já memorizei",
+      "recreate": "Recriar",
+      "viewAgain": "Ver novamente",
+      "analyzeOnLichess": "Analisar no Lichess"
     },
     "result": {
-      "title": "Resultados"
+      "title": "Prática concluída!"
     }
   },
   "recall": {
@@ -710,21 +707,15 @@
       "title": "Recordar partida",
       "useSample": "Usar uma partida de exemplo",
       "invalidPgn": "Não foi possível ler este PGN. Verifique os lances e tente novamente.",
-      "playAs": "Lado a recordar",
-      "sides": {
-        "white": "Brancas",
-        "black": "Pretas"
+      "color": {
+        "title": "Selecione Sua Cor",
+        "white": "Jogar com Brancas",
+        "black": "Jogar com Pretas"
       }
     },
     "autoOpponentMoves": "Preencher automaticamente movimentos do adversário",
     "dontKnow": "Não sei",
-    "correctMove": "Correto!",
-    "incorrectMove": "Movimento incorreto. Tente novamente.",
-    "progress": "Progresso: {{current}} / {{total}} movimentos",
-    "showBoard": "Mostrar Tabuleiro",
-    "completed": "Revisão da Partida Concluída!",
     "moves": "Movimentos",
-    "noMovesYet": "Ainda não há movimentos",
     "summary": {
       "title": "Resumo",
       "rateLabel": "Taxa de lembrança",
@@ -732,7 +723,14 @@
       "struggled": "Com dúvidas",
       "missed": "Não lembrou",
       "restart": "Jogar de novo",
-      "startNew": "Começar com outro PGN"
+      "startNew": "Começar com outro PGN",
+      "mistakes": "Erros: {{count}}",
+      "legendIncorrect": "Tentativa incorreta",
+      "legendAuto": "Oponente",
+      "triedMove": "Tentou {{move}} — o correto era {{correct}}",
+      "autoFilledCount": "+{{count}} preenchidos automaticamente",
+      "reviewTitle": "Por Lance",
+      "reviewHint": "Toque para ver a posição"
     },
     "help": {
       "input": {
@@ -754,17 +752,27 @@
         }
       }
     },
-    "session": {
-      "toMove": {
-        "white": "Brancas jogam",
-        "black": "Pretas jogam"
-      },
-      "wrong": "Não é {{move}}. Tente novamente."
-    },
     "result": {
-      "title": "Resumo",
-      "mistakes": "Tentativas erradas"
-    }
+      "title": "Resumo"
+    },
+    "dontKnowPrompt": "Quer ver a resposta deste lance?",
+    "revealAnswer": "Ver resposta",
+    "autoFillAll": "Preencher Tudo Automaticamente",
+    "confirmAutoFillAllTitle": "Preencher automaticamente todos os movimentos?",
+    "confirmAutoFillAllMessage": "Isso preencherá automaticamente todos os movimentos restantes.",
+    "cancel": "Cancelar",
+    "logAutoFilled": "Preenchido automaticamente",
+    "incorrectMoveError": "{{movePrefix}} não é {{move}}",
+    "correctMoveMessage": "{{movePrefix}} {{move}} está correto",
+    "skippedMoveMessage": "A resposta era {{movePrefix}} {{move}}",
+    "pgnInput": {
+      "placeholder": "Cole sua notação PGN aqui...\n\nExemplo:\n1. e4 e5 2. Nf3 Nc6 3. Bb5 a6",
+      "clear": "Limpar PGN",
+      "clearConfirmTitle": "Limpar o PGN?",
+      "clearConfirmMessage": "Isso apagará o texto colado. Essa ação não pode ser desfeita.",
+      "clearConfirmButton": "Limpar"
+    },
+    "completed": "Revisão da Partida Concluída!"
   },
   "learn": {
     "description": "Artigos educativos e guias para melhorar sua compreensão do xadrez",
@@ -843,7 +851,7 @@
       "emailLabel": "E-mail",
       "emailPlaceholder": "voce@exemplo.com",
       "passwordLabel": "Senha",
-      "passwordPlaceholder": "Pelo menos {{minLength}} caracteres",
+      "passwordPlaceholder": "Pelo menos 8 caracteres",
       "confirmPasswordLabel": "Confirmar senha",
       "confirmPasswordPlaceholder": "Insira sua senha novamente",
       "emailSignUp": "Cadastrar-se com e-mail",
@@ -953,7 +961,6 @@
   "puzzle": {
     "session": {
       "correct": "Correto! 🎉",
-      "correctMove": "Correto",
       "incorrect": "Incorreto. Tente novamente.",
       "showAnswer": "Ver resposta",
       "showBoard": "Mostrar Tabuleiro",
@@ -966,13 +973,12 @@
       "historySection": "Histórico de Tentativas",
       "solution": "Solução: {{move}}",
       "note": "— {{note}}",
-      "attemptCorrect": "Correto",
-      "attemptIncorrect": "Incorreto",
       "backToList": "Voltar para Puzzles",
       "tryAgain": "Tentar Novamente",
       "peekCount": "Visualizações do Tabuleiro: {{count}}",
       "statusSolved": "Resolvido",
-      "statusRevealed": "Solução revelada"
+      "statusRevealed": "Solução revelada",
+      "statusPartial": "{{correct}}/{{total}} resolvidos"
     },
     "list": {
       "title": "Puzzle",
@@ -989,7 +995,17 @@
     "loadFailed": "Não foi possível carregar os problemas. Puxe para tentar de novo.",
     "whiteToMove": "Brancas jogam",
     "blackToMove": "Pretas jogam",
-    "findMove": "Encontre o melhor lance",
-    "recorded": "Seu resultado foi registrado."
+    "recorded": "Seu resultado foi registrado.",
+    "detail": {
+      "descriptionSection": "Sobre Este Puzzle",
+      "startSolving": "Começar a resolver",
+      "whitePiecesLabel": "Peças Brancas",
+      "blackPiecesLabel": "Peças Pretas",
+      "noPieces": "Nenhuma"
+    },
+    "white": "Brancas",
+    "black": "Pretas",
+    "play": "Reproduzir",
+    "replay": "Repetir"
   }
 }

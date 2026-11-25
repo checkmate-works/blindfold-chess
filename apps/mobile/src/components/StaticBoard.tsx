@@ -7,6 +7,15 @@ import { boardThemeColors } from "@blindfold-chess/ui";
 import { useGamePreferences } from "../lib/game-preferences";
 import { fontWeight } from "../theme";
 
+/**
+ * The web's `rounded-md`. Exported for a scrim laid over the board from
+ * outside its frame, which the board's own clipping does not reach.
+ */
+export const STATIC_BOARD_RADIUS = 6;
+
+const REVERSED_RANKS = [...DISPLAY_RANKS].reverse();
+const REVERSED_FILES = [...FILES].reverse();
+
 type StaticBoardProps = {
   /** The widest the board gets, in points. */
   maxSize: number;
@@ -31,21 +40,42 @@ type StaticBoardProps = {
    * label in the corner stays legible over it.
    */
   renderSquare?: (square: Square, squareSize: number) => ReactNode;
+  /**
+   * Turns the board to Black's side: rank 1 at the top and the h-file on
+   * the left, the letters still down the left edge and along the bottom.
+   * Defaults to White's side.
+   */
+  flipped?: boolean;
+  /**
+   * Draws the rank and file letters. Defaults to true: a board that
+   * explains an answer needs them, since the coordinates are part of the
+   * explanation, whatever the player's show-coordinates preference. A board
+   * the player answers on passes that preference instead, as the web's do.
+   */
+  showCoordinates?: boolean;
+  /**
+   * Drawn over the squares and the letters, inside the board's rounded,
+   * clipped frame, given the board's size in points: lines and touch
+   * targets that span more than one square. Anything here that takes a tap
+   * belongs to the module; the squares themselves still take none.
+   */
+  renderOverlay?: (boardSize: number) => ReactNode;
+  testID?: string;
 };
 
 /**
- * A board that is only looked at: squares in the player's board theme,
- * from White's side, with the rank letters down the left edge and the file
- * letters along the bottom, as the web's practice boards draw them. The
- * module decides what each square shows through `squareTint` and
- * `renderSquare`; the board owns the squares, the letters, the rounded
- * corners and the size, so every picture-board stays the same board.
+ * A board in the player's board theme, with the rank letters down the left
+ * edge and the file letters along the bottom, as the web's practice boards
+ * draw them. The module decides what each square shows through
+ * `squareTint` and `renderSquare`; the board owns the squares, the letters,
+ * the rounded corners and the size, so every board built on it stays the
+ * same board.
  *
- * Nothing on it takes a tap. A board the player answers on (coordinate
- * quiz, FEN recreation, knight's tour) is a grid of touch targets with its
- * own feedback and is not this component. The letters are always drawn,
- * whatever the player's show-coordinates preference: these boards explain
- * an answer, and the coordinates are part of the explanation.
+ * The squares take no tap. A board the player answers square by square
+ * (coordinate quiz, FEN recreation, knight's tour) is a grid of touch
+ * targets with its own feedback and is not this component. A board answered
+ * by region (quadrants' quarters) lays its own targets over the squares
+ * with `renderOverlay`.
  */
 export function StaticBoard({
   maxSize,
@@ -53,6 +83,10 @@ export function StaticBoard({
   coordinateFontSize = 10,
   squareTint,
   renderSquare,
+  flipped = false,
+  showCoordinates = true,
+  renderOverlay,
+  testID,
 }: StaticBoardProps) {
   const { width: screenWidth } = useWindowDimensions();
   const { preferences } = useGamePreferences();
@@ -66,6 +100,8 @@ export function StaticBoard({
   const boardSize = fixedSize ?? measuredWidth;
   const squareSize = boardSize / 8;
   const labelStyle = { fontSize: coordinateFontSize };
+  const ranks = flipped ? REVERSED_RANKS : DISPLAY_RANKS;
+  const files = flipped ? REVERSED_FILES : FILES;
 
   return (
     <View
@@ -80,11 +116,12 @@ export function StaticBoard({
           ? (event) => setMeasuredWidth(event.nativeEvent.layout.width)
           : undefined
       }
+      testID={testID}
     >
       {boardSize > 0 &&
-        DISPLAY_RANKS.map((rank, row) => (
+        ranks.map((rank, row) => (
           <View key={rank} style={styles.row}>
-            {FILES.map((file, col) => {
+            {files.map((file, col) => {
               const square: Square = `${file}${rank}`;
               const light = (row + col) % 2 === 0;
               const tint = squareTint?.(square);
@@ -110,7 +147,7 @@ export function StaticBoard({
                     />
                   )}
                   {renderSquare?.(square, squareSize)}
-                  {col === 0 && (
+                  {showCoordinates && col === 0 && (
                     <Text
                       style={[
                         styles.rankLabel,
@@ -121,7 +158,7 @@ export function StaticBoard({
                       {rank}
                     </Text>
                   )}
-                  {row === DISPLAY_RANKS.length - 1 && (
+                  {showCoordinates && row === ranks.length - 1 && (
                     <Text
                       style={[
                         styles.fileLabel,
@@ -137,6 +174,7 @@ export function StaticBoard({
             })}
           </View>
         ))}
+      {boardSize > 0 && renderOverlay?.(boardSize)}
     </View>
   );
 }
@@ -145,7 +183,7 @@ const styles = StyleSheet.create({
   // The web's `rounded-md overflow-hidden`.
   board: {
     alignSelf: "center",
-    borderRadius: 6,
+    borderRadius: STATIC_BOARD_RADIUS,
     overflow: "hidden",
   },
   fill: {

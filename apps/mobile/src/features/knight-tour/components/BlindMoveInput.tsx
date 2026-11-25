@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
-import { FILES, RANKS } from "@blindfold-chess/types";
+import { ChessPieceIcon } from "@blindfold-chess/icons";
+import type { PieceType } from "@blindfold-chess/types";
 
-import {
-  Button,
-  CoordinateKeyRow,
-  coordinateKeypadStyles,
-} from "../../../components";
-import { useTheme, spacing, fontSize, feedbackColors } from "../../../theme";
+import { Button, CoordinateInput } from "../../../components";
+import { useTheme, fontSize } from "../../../theme";
+
+/** The web's read-only piece row: K Q R B N, with the knight lit. */
+const PIECE_ROW: readonly PieceType[] = ["k", "q", "r", "b", "n"];
 
 type BlindMoveInputProps = {
   visitedSquares: ReadonlyMap<string, number>;
@@ -18,9 +18,11 @@ type BlindMoveInputProps = {
 };
 
 /**
- * Blindfold-mode move entry: pick a file and a rank, then submit. Mirrors the
- * web flow — either key can be toggled off again, and a visited or illegal
- * square is rejected with a message and the selection cleared.
+ * Blindfold-mode move entry, the web's `PieceCoordinateInput` with the
+ * knight lit: the piece row (an indicator, not a control), the file keys,
+ * the rank keys, then Submit over a rule. Either key toggles off on a
+ * second press; a visited or illegal square is rejected with the web's
+ * message and the keys are cleared.
  */
 export function BlindMoveInput({
   visitedSquares,
@@ -33,15 +35,11 @@ export function BlindMoveInput({
   const [rank, setRank] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const reset = () => {
-    setFile(null);
-    setRank(null);
-  };
-
   const handleSubmit = () => {
     if (!file || !rank) return;
     const square = `${file}${rank}`;
-    reset();
+    setFile(null);
+    setRank(null);
     if (visitedSquares.has(square)) {
       setError(t("knightTour.session.alreadyVisited"));
       return;
@@ -56,53 +54,90 @@ export function BlindMoveInput({
 
   return (
     <View style={styles.container}>
-      <Text
-        style={[
-          coordinateKeypadStyles.stepIndicator,
-          { color: colors.mutedForeground },
-        ]}
-      >
-        {file === null
-          ? t("knightTour.session.selectFile")
-          : t("knightTour.session.selectRank")}
-      </Text>
-      <CoordinateKeyRow
-        keys={FILES}
-        enabled
-        activeKey={file}
-        onPress={(key) => {
+      <View style={styles.pieces} accessibilityElementsHidden>
+        {PIECE_ROW.map((piece) => (
+          <View
+            key={piece}
+            style={[
+              styles.piece,
+              piece === "n"
+                ? {
+                    backgroundColor: colors.primary,
+                    borderColor: colors.primary,
+                  }
+                : {
+                    backgroundColor: colors.background,
+                    borderColor: colors.border,
+                    opacity: 0.5,
+                  },
+            ]}
+          >
+            <ChessPieceIcon type={piece} color="w" size={24} />
+          </View>
+        ))}
+      </View>
+      <CoordinateInput
+        selectedFile={file}
+        onFilePress={(key) => {
           setError(null);
           setFile(key === file ? null : key);
         }}
+        showRanks={false}
       />
-      <CoordinateKeyRow
-        keys={RANKS}
-        enabled
-        activeKey={rank}
-        onPress={(key) => {
+      <CoordinateInput
+        selectedRank={rank}
+        onRankPress={(key) => {
           setError(null);
           setRank(key === rank ? null : key);
         }}
+        showFiles={false}
       />
-      <Button
-        title={t("knightTour.session.submitMove")}
-        onPress={handleSubmit}
-        disabled={!file || !rank}
-        fullWidth
-      />
-      <Text style={styles.error}>{error ?? ""}</Text>
+      <View style={[styles.action, { borderTopColor: colors.border }]}>
+        <Button
+          title={t("knightTour.session.submitMove")}
+          onPress={handleSubmit}
+          disabled={!file || !rank}
+          fullWidth
+          testID="knight-tour-submit"
+        />
+      </View>
+      {error && (
+        <Text style={[styles.error, { color: colors.destructive }]}>
+          {error}
+        </Text>
+      )}
     </View>
   );
 }
 
+/**
+ * The web's `flex flex-col gap-3`, its `w-9 h-9 rounded-md` piece buttons
+ * `gap-2` apart, the submit row's `pt-4 border-t mt-2` and the `text-sm`
+ * error.
+ */
 const styles = StyleSheet.create({
   container: {
-    gap: spacing.sm,
+    gap: 12,
+  },
+  pieces: {
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 8,
+  },
+  piece: {
+    width: 36,
+    height: 36,
+    borderRadius: 6,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  action: {
+    marginTop: 8,
+    paddingTop: 16,
+    borderTopWidth: StyleSheet.hairlineWidth,
   },
   error: {
-    color: feedbackColors.error,
     fontSize: fontSize.sm,
-    textAlign: "center",
-    minHeight: 20,
   },
 });

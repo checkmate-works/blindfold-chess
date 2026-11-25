@@ -1,5 +1,8 @@
 import { validateFenFormat } from "@blindfold-chess/features/chess-core/fen";
-import type { FenSessionSummary } from "@blindfold-chess/features/fen-practice";
+import type {
+  FenProblemResultEntry,
+  FenSessionSummary,
+} from "@blindfold-chess/features/fen-practice";
 
 import { parseIntParam } from "../../../lib/route-params";
 
@@ -76,6 +79,8 @@ export type FenResultParams = {
   solved?: string;
   /** Problems in the session, submitted or not. */
   problems?: string;
+  /** `FenProblemResultEntry[]` as JSON, one per problem in session order. */
+  results?: string;
 };
 
 export type FenResult = {
@@ -87,6 +92,7 @@ export type FenResult = {
   extra: number;
   solved: number;
   problems: number;
+  results: FenProblemResultEntry[];
 };
 
 export function serializeFenResultParams(
@@ -104,6 +110,7 @@ export function serializeFenResultParams(
     extra: String(aggregated.totalExtra),
     solved: String(solved),
     problems: String(problemCount),
+    results: JSON.stringify(summary.results),
   };
 }
 
@@ -123,5 +130,55 @@ export function parseFenResultParams(params: FenResultParams): FenResult {
     extra: int(params.extra),
     solved: int(params.solved),
     problems: int(params.problems),
+    results: parseProblemResults(params.results),
   };
+}
+
+const COUNT_FIELDS = [
+  "accuracy",
+  "correctPieces",
+  "totalPieces",
+  "incorrectPieces",
+  "missingPieces",
+  "extraPieces",
+  "originalIndex",
+] as const;
+
+/**
+ * The per-problem list back from its JSON. Like the session params, a deep
+ * link can carry anything: an entry whose FEN is not well formed or whose
+ * counts are not non-negative numbers is dropped rather than drawn, and an
+ * unreadable list is empty.
+ */
+function parseProblemResults(
+  json: string | undefined,
+): FenProblemResultEntry[] {
+  if (!json) return [];
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(json);
+  } catch {
+    return [];
+  }
+  if (!Array.isArray(parsed)) return [];
+  return parsed.filter(isProblemResultEntry);
+}
+
+function isProblemResultEntry(value: unknown): value is FenProblemResultEntry {
+  if (typeof value !== "object" || value === null) return false;
+  const entry = value as Record<string, unknown>;
+  return (
+    typeof entry.fen === "string" &&
+    validateFenFormat(entry.fen) &&
+    typeof entry.recreatedFen === "string" &&
+    (entry.recreatedFen === "" || validateFenFormat(entry.recreatedFen)) &&
+    typeof entry.isBlackToMove === "boolean" &&
+    typeof entry.skipped === "boolean" &&
+    COUNT_FIELDS.every(
+      (field) =>
+        typeof entry[field] === "number" &&
+        Number.isFinite(entry[field]) &&
+        entry[field] >= 0,
+    )
+  );
 }

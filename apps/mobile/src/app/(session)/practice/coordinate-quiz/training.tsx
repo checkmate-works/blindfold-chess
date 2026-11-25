@@ -12,7 +12,7 @@ import type { Square } from "@blindfold-chess/types";
 import { PracticeTrainingScreen } from "../../../../components";
 import {
   QuizBoard,
-  TurnIndicator,
+  QuizTurnIndicator,
 } from "../../../../features/coordinate-quiz/components";
 import { BOARD_ORIENTATIONS } from "../../../../features/coordinate-quiz/lib/types";
 import type {
@@ -90,7 +90,7 @@ export default function CoordinateQuizTraining() {
     >
       <View style={styles.body}>
         <View style={styles.turnRow}>
-          <TurnIndicator question={currentQuestion} />
+          <QuizTurnIndicator question={currentQuestion} />
         </View>
         <QuizBoard
           question={currentQuestion}

@@ -6,8 +6,7 @@ import { isTourComplete } from "@blindfold-chess/features/knight-tour";
 import { useKnightTour } from "@blindfold-chess/features/knight-tour/client";
 import { isValidSquare } from "@blindfold-chess/features/common";
 
-import { BottomBar, Button, Screen } from "../../../../components";
-import { SessionTopBar } from "../../../../navigation/SessionTopBar";
+import { BottomBar, Button, ProgressBar, Screen } from "../../../../components";
 import {
   BlindMoveInput,
   KnightTourBoard,
@@ -18,12 +17,22 @@ import {
   spacing,
   fontSize,
   fontWeight,
-  borderRadius,
-  feedbackColors,
+  monoFont,
+  withAlpha,
 } from "../../../../theme";
 
 const TOTAL_SQUARES = 64;
 
+/**
+ * The tour, stacked from the top as the web's `KnightTourPlayingLayout`:
+ * the progress bar, the current square, the board (or, blindfolded, the
+ * piece-and-coordinate keypad), the move history. Undo and Quit, which the
+ * web puts at the end of that stack, are pinned in the bottom bar so they
+ * stay in reach however far the history has grown.
+ *
+ * The header's × leaves without a result, like every session's; Quit asks,
+ * then shows the result of the tour so far, as the web's does.
+ */
 export default function KnightTourSession() {
   const { t } = useTranslation();
   const router = useRouter();
@@ -80,33 +89,13 @@ export default function KnightTourSession() {
     );
   };
 
-  const progress = tour.visitedSquares.size / TOTAL_SQUARES;
+  const visited = tour.visitedSquares.size;
   const isStuck = availableMoves.length === 0;
 
   return (
-    <Screen edges={["top", "left", "right"]}>
-      <SessionTopBar />
+    <Screen edges={["left", "right"]}>
       <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.progressRow}>
-          <View
-            style={[styles.progressTrack, { backgroundColor: colors.muted }]}
-          >
-            <View
-              style={[
-                styles.progressFill,
-                {
-                  backgroundColor: colors.primary,
-                  width: `${progress * 100}%`,
-                },
-              ]}
-            />
-          </View>
-          <Text
-            style={[styles.progressText, { color: colors.mutedForeground }]}
-          >
-            {tour.visitedSquares.size} / {TOTAL_SQUARES}
-          </Text>
-        </View>
+        <ProgressBar current={visited} total={TOTAL_SQUARES} />
 
         <View style={styles.position}>
           <Text
@@ -116,17 +105,27 @@ export default function KnightTourSession() {
           </Text>
           <Text
             style={[
-              blindfold ? styles.positionBlind : styles.positionValue,
+              styles.positionValue,
+              blindfold && styles.positionBlind,
               { color: colors.foreground },
             ]}
+            testID="knight-tour-current"
           >
             {tour.currentSquare}
           </Text>
         </View>
 
         {isStuck ? (
-          <View style={styles.stuck}>
-            <Text style={styles.stuckTitle}>
+          <View
+            style={[
+              styles.stuck,
+              {
+                backgroundColor: withAlpha(colors.destructive, 0.1),
+                borderColor: withAlpha(colors.destructive, 0.2),
+              },
+            ]}
+          >
+            <Text style={[styles.stuckTitle, { color: colors.destructive }]}>
               {t("knightTour.session.stuck")}
             </Text>
             <Text style={[styles.stuckHint, { color: colors.mutedForeground }]}>
@@ -157,72 +156,60 @@ export default function KnightTourSession() {
       <BottomBar style={styles.footer}>
         <Button
           title={t("knightTour.session.undo")}
+          icon="arrow-undo"
           onPress={tour.undo}
           disabled={!tour.canUndo}
           variant="secondary"
           style={styles.footerButton}
+          testID="knight-tour-undo"
         />
         <Button
           title={t("knightTour.session.quit")}
           onPress={handleQuit}
-          variant="outline"
-          style={styles.footerButton}
+          style={[styles.footerButton, { backgroundColor: colors.destructive }]}
+          textStyle={{ color: colors.destructiveForeground }}
+          testID="knight-tour-quit"
         />
       </BottomBar>
     </Screen>
   );
 }
 
+/**
+ * The web's sizes: blocks `gap-6` apart; the current square in `text-3xl`
+ * (`text-5xl` blindfolded, where it is the whole picture) bold mono under
+ * its `text-sm` label; the stuck box's `rounded-md p-4` with `mt-1` between its lines;
+ * Undo and Quit `gap-2` apart.
+ */
 const styles = StyleSheet.create({
   content: {
     padding: spacing.lg,
     gap: spacing.lg,
-  },
-  progressRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.sm,
-  },
-  progressTrack: {
-    flex: 1,
-    height: 8,
-    borderRadius: borderRadius.full,
-    overflow: "hidden",
-  },
-  progressFill: {
-    height: "100%",
-  },
-  progressText: {
-    fontSize: fontSize.sm,
-    fontVariant: ["tabular-nums"],
   },
   position: {
     alignItems: "center",
   },
   positionLabel: {
     fontSize: fontSize.sm,
-    marginBottom: spacing.xs,
+    marginBottom: spacing.sm,
   },
   positionValue: {
-    fontSize: fontSize.xxxl,
+    fontSize: 30,
     fontWeight: fontWeight.bold,
+    fontFamily: monoFont,
   },
-  // Blindfold mode has no board, so the square name is the whole picture.
   positionBlind: {
     fontSize: 48,
-    fontWeight: fontWeight.bold,
   },
   stuck: {
     padding: spacing.md,
-    borderRadius: borderRadius.md,
+    borderRadius: 6,
     borderWidth: 1,
-    borderColor: feedbackColors.error,
-    backgroundColor: feedbackColors.errorSoft,
     alignItems: "center",
     gap: spacing.xs,
   },
   stuckTitle: {
-    color: feedbackColors.error,
+    fontSize: fontSize.md,
     fontWeight: fontWeight.medium,
   },
   stuckHint: {

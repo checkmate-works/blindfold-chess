@@ -41,6 +41,11 @@ type ChessBoardProps = {
    * practice or teaching board — every piece is drawn normally.
    */
   playerColor?: Side;
+  /**
+   * Caps the board's width below the default (the screen less 24pt a side),
+   * for a board drawn inside a padded panel.
+   */
+  maxSize?: number;
 };
 
 const RANKS = DISPLAY_RANKS;
@@ -61,11 +66,12 @@ export function ChessBoard({
   showCoordinates,
   lastMove = null,
   playerColor,
+  maxSize,
 }: ChessBoardProps) {
   const { preferences } = useGamePreferences();
   const { width: screenWidth } = useWindowDimensions();
   const maxBoardSize = screenWidth - spacing.lg * 2;
-  const boardSize = Math.min(maxBoardSize, 400);
+  const boardSize = Math.min(maxBoardSize, 400, maxSize ?? Infinity);
   const squareSize = boardSize / 8;
   const theme = boardThemeColors[preferences.boardTheme];
   const coordinatesShown = showCoordinates ?? preferences.showCoordinates;

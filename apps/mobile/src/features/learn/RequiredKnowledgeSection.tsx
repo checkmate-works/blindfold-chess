@@ -10,36 +10,30 @@ import { LEARN_CATEGORY_ICONS, localized } from "./types";
 
 const PIECE_SIZE = 22;
 
-type RequiredKnowledgeSectionProps = {
+type ArticleSectionProps = {
   /** The learn articles the practice builds on (`LEARN_ARTICLES` slugs), in order. */
   slugs: readonly string[];
   /**
-   * The section's caption: the web's own heading for the module's articles.
-   * Defaults to "Required Knowledge".
-   */
-  title?: string;
-  /**
    * The piece to draw for an article, by slug, where the web's card draws
-   * one of its own (legal moves' four movement articles); others take
-   * their category's icon.
+   * one of its own (legal moves' four movement articles, knight tour's
+   * knight); others take their category's icon.
    */
   pieces?: Readonly<Record<string, PieceType>>;
 };
 
 /**
- * The web practice page's article cards ("Required Knowledge", or legal
- * moves' "Related Articles"), as grouped rows that open each article in the
- * app's learn screen. The rows read the articles' own titles and excerpts,
- * the way the learn tab lists them, so a practice needs no strings of its
- * own for them. An article the app does not ship is left out, and with none
- * left the section is not drawn.
+ * The web practice page's article cards, as grouped rows under `title` that
+ * open each article in the app's learn screen. The rows read the articles'
+ * own titles and excerpts, the way the learn tab lists them, so a practice
+ * needs no strings of its own for them. An article the app does not ship
+ * is left out, and with none left the section is not drawn.
  */
-export function RequiredKnowledgeSection({
-  slugs,
+function ArticleSection({
   title,
+  slugs,
   pieces,
-}: RequiredKnowledgeSectionProps) {
-  const { t, i18n } = useTranslation();
+}: ArticleSectionProps & { title: string }) {
+  const { i18n } = useTranslation();
   const router = useRouter();
   const articles = slugs.flatMap((slug) => {
     const article = LEARN_ARTICLES.find((a) => a.slug === slug);
@@ -48,7 +42,7 @@ export function RequiredKnowledgeSection({
   if (articles.length === 0) return null;
 
   return (
-    <ListSection title={title ?? t("practice.requiredKnowledge")}>
+    <ListSection title={title}>
       {articles.map((article) => (
         <ListRow
           key={article.slug}
@@ -71,4 +65,27 @@ export function RequiredKnowledgeSection({
       ))}
     </ListSection>
   );
+}
+
+/**
+ * The articles under the web's "Required Knowledge" heading: what the
+ * module assumes the player already knows. Use whichever heading the web's
+ * page for the module uses.
+ */
+export function RequiredKnowledgeSection(props: ArticleSectionProps) {
+  const { t } = useTranslation();
+  return <ArticleSection title={t("practice.requiredKnowledge")} {...props} />;
+}
+
+/**
+ * The same rows under the web's "Related Articles" heading: further reading
+ * rather than a prerequisite. A free-play result's "Related Learning" on
+ * the web is this heading too (the app has one string for both).
+ *
+ * The two headings are two components rather than a free-text title, so a
+ * screen picks one of the web's two names and cannot drift to a third.
+ */
+export function RelatedArticlesSection(props: ArticleSectionProps) {
+  const { t } = useTranslation();
+  return <ArticleSection title={t("practice.relatedArticles")} {...props} />;
 }

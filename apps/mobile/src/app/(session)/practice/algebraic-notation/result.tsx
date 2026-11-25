@@ -1,3 +1,4 @@
+import { StyleSheet, View } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useLocalSearchParams } from "expo-router";
 
@@ -7,11 +8,16 @@ import {
   PracticeResultCard,
   PracticeResultScreen,
 } from "../../../../components";
+import { RelatedArticlesSection } from "../../../../features/learn/RequiredKnowledgeSection";
 import { parseIntParam } from "../../../../lib/route-params";
+import { spacing } from "../../../../theme";
 
 /**
- * Score and accuracy only: the quiz is untimed, so the time stats the other
- * modules show (via `PracticeStatsResultCard`) do not exist here.
+ * The web's free-play result: the score and accuracy, then the article the
+ * exercise builds on ("Related Learning" on the web). Score and accuracy
+ * only: the quiz is untimed, so the time stats the other modules show (via
+ * `PracticeStatsResultCard`) do not exist here, and nothing is recorded,
+ * so there is no record status either.
  */
 export default function AlgebraicNotationResult() {
   const { t } = useTranslation();
@@ -21,16 +27,25 @@ export default function AlgebraicNotationResult() {
 
   return (
     <PracticeResultScreen setupHref="/practice/algebraic-notation">
-      <PracticeResultCard
-        scoreLabel={t("practiceResult.correctAnswers")}
-        scoreValue={`${score} / ${total}`}
-        statItems={[
-          {
-            label: t("practiceResult.accuracy"),
-            value: `${getScorePercentage(score, total)}%`,
-          },
-        ]}
-      />
+      <View style={styles.stack}>
+        <PracticeResultCard
+          scoreLabel={t("practiceResult.correctAnswers")}
+          scoreValue={`${score} / ${total}`}
+          statItems={[
+            {
+              label: t("practiceResult.accuracy"),
+              value: `${getScorePercentage(score, total)}%`,
+            },
+          ]}
+        />
+        <RelatedArticlesSection slugs={["algebraic-notation"]} />
+      </View>
     </PracticeResultScreen>
   );
 }
+
+const styles = StyleSheet.create({
+  stack: {
+    gap: spacing.lg,
+  },
+});

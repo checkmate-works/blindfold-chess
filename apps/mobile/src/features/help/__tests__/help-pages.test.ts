@@ -21,6 +21,10 @@ describe("helpPagesFor", () => {
     expect(helpPagesFor("coordinateQuiz", true)).toEqual([]);
   });
 
+  it("drops the about page, the description the setup screen opens with", () => {
+    expect(helpPagesFor("algebraicNotation", true)).toEqual([]);
+  });
+
   it("is empty for a module without help", () => {
     expect(helpPagesFor("noSuchModule", false)).toEqual([]);
   });

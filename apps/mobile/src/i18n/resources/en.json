@@ -73,7 +73,7 @@
     },
     "algebraicNotation": {
       "title": "Algebraic Notation",
-      "description": "Master chess notation system with interactive exercises"
+      "description": "Master the chess notation system with interactive exercises"
     },
     "fen": {
       "title": "FEN Reconstruction",
@@ -415,16 +415,15 @@
   },
   "quadrants": {
     "setup": {
-      "title": "Quadrant Anchors Setup",
+      "title": "Quadrant Anchors",
       "orientation": "Board Orientation",
       "orientationWhite": "White",
       "orientationBlack": "Black",
-      "orientationRandom": "Random"
+      "orientationRandom": "Random",
+      "notRecorded": "Scores from this exercise will not be recorded in your practice history or leaderboard."
     },
     "session": {
       "question": "Which quadrant is {{square}} in?",
-      "correct": "Correct!",
-      "incorrect": "Incorrect",
       "whiteToMove": "White to move",
       "blackToMove": "Black to move"
     },
@@ -434,7 +433,7 @@
   },
   "knightTour": {
     "setup": {
-      "title": "Knight's Tour Setup",
+      "title": "Knight's Tour",
       "startingSquare": "Starting Square",
       "randomSquare": "Random",
       "pickOnBoard": "Or tap a square on the board",
@@ -462,22 +461,18 @@
       "quitConfirmNo": "Continue",
       "alreadyVisited": "This square has already been visited.",
       "invalidMove": "Invalid move",
-      "submitMove": "Submit",
-      "selectFile": "Select a file (a-h)",
-      "selectRank": "Select a rank (1-8)"
+      "submitMove": "Submit"
     }
   },
   "algebraicNotation": {
     "setup": {
-      "title": "Algebraic Notation Setup",
-      "description": "Master chess notation system with interactive exercises",
-      "questionCount": "{{total}} questions"
+      "title": "Algebraic Notation",
+      "description": "Master the chess notation system with interactive exercises"
     },
     "result": {
       "title": "Practice Complete!"
     },
     "session": {
-      "progress": "Question {{current}} / {{total}}",
       "correct": "Correct!",
       "incorrect": "Incorrect",
       "correctAnswerIs": "The correct answer is",
@@ -488,7 +483,7 @@
   },
   "fen": {
     "setup": {
-      "title": "FEN Reconstruction Setup",
+      "title": "FEN Reconstruction",
       "problemSource": "Problem Source",
       "presetProblems": "Preset Problems",
       "enterFen": "Enter FEN",
@@ -499,17 +494,11 @@
       "invalidFenOnLine": "Invalid FEN on line {{lines}}",
       "invalidFenOnLines": "Invalid FEN on lines {{lines}}",
       "problemCount": "Number of Problems",
+      "settings": "Settings",
       "shuffle": "Shuffle Problems"
     },
     "result": {
-      "title": "Practice Complete!",
-      "accuracy": "Accuracy",
-      "correct": "Correct",
-      "incorrect": "Incorrect",
-      "missing": "Missing",
-      "extra": "Extra",
-      "problemDetails": "Problem Details",
-      "skipped": "Skipped"
+      "title": "Practice Complete!"
     },
     "session": {
       "recreateFromFen": "Recreate the Position from FEN",
@@ -523,18 +512,23 @@
       "quitConfirmNo": "Continue",
       "whitePieces": "White Pieces",
       "blackPieces": "Black Pieces",
-      "problem": "Problem",
-      "eraser": "Eraser",
-      "clearBoard": "Clear Board",
-      "selectPiece": "Pick a piece, then tap squares to place it. Tap again to remove it.",
-      "problemOf": "{{current}} / {{total}}"
+      "removePiece": "Remove piece",
+      "removePieceMode": "Remove piece mode - Tap a square to remove a piece",
+      "placingPiece": "Placing",
+      "clearBoard": "Clear",
+      "clearBoardConfirmTitle": "Clear the board?",
+      "clearBoardConfirmMessage": "All pieces you have placed will be removed.",
+      "clearBoardConfirmYes": "Clear",
+      "clearBoardConfirmNo": "Cancel"
     },
     "problemResult": {
       "accuracy": "Accuracy",
+      "recreationProgress": "Recreation Progress",
       "correct": "Correct",
       "incorrect": "Incorrect",
       "missing": "Missing",
       "extra": "Extra",
+      "extraDescription": "Extra pieces placed in empty squares",
       "original": "Original",
       "yourRecreation": "Your Recreation",
       "nextProblem": "Next Problem",
@@ -690,16 +684,19 @@
   "positionMemory": {
     "setup": {
       "title": "Position Memory",
-      "memorizeTime": "Memorizing time",
+      "settings": "Problem Settings",
+      "memorizeTime": "Memorization Time",
       "seconds": "{{count}}s"
     },
     "session": {
-      "memorize": "Memorize the position",
-      "memorized": "Memorized",
-      "recreate": "Recreate the position"
+      "memorize": "Memorize the Position",
+      "memorized": "I've Memorized",
+      "recreate": "Recreate",
+      "viewAgain": "View Again",
+      "analyzeOnLichess": "Analyze on Lichess"
     },
     "result": {
-      "title": "Results"
+      "title": "Practice Complete!"
     }
   },
   "recall": {
@@ -710,21 +707,15 @@
       "title": "Recall",
       "useSample": "Use a sample game",
       "invalidPgn": "This PGN could not be read. Check the moves and try again.",
-      "playAs": "Side to recall",
-      "sides": {
-        "white": "White",
-        "black": "Black"
+      "color": {
+        "title": "Select Your Color",
+        "white": "Play as White",
+        "black": "Play as Black"
       }
     },
     "autoOpponentMoves": "Auto-fill opponent's moves",
     "dontKnow": "I don't know",
-    "correctMove": "Correct!",
-    "incorrectMove": "Incorrect move. Try again.",
-    "progress": "Progress: {{current}} / {{total}} moves",
-    "showBoard": "Show Board",
-    "completed": "Game Review Completed!",
     "moves": "Moves",
-    "noMovesYet": "Moves will appear here as you enter them",
     "summary": {
       "title": "Summary",
       "rateLabel": "Recall rate",
@@ -732,7 +723,14 @@
       "struggled": "Stumbled",
       "missed": "Couldn't recall",
       "restart": "Play again",
-      "startNew": "Start with another PGN"
+      "startNew": "Start with another PGN",
+      "mistakes": "Mistakes: {{count}}",
+      "legendIncorrect": "Wrong attempt",
+      "legendAuto": "Opponent",
+      "triedMove": "Tried {{move}} — correct was {{correct}}",
+      "autoFilledCount": "+{{count}} auto-filled",
+      "reviewTitle": "By Move",
+      "reviewHint": "Tap to view the position"
     },
     "help": {
       "input": {
@@ -754,17 +752,27 @@
         }
       }
     },
-    "session": {
-      "toMove": {
-        "white": "White to move",
-        "black": "Black to move"
-      },
-      "wrong": "Not {{move}}. Try again."
-    },
     "result": {
-      "title": "Summary",
-      "mistakes": "Wrong tries"
-    }
+      "title": "Summary"
+    },
+    "dontKnowPrompt": "Want to see the answer for this move?",
+    "revealAnswer": "Show answer",
+    "autoFillAll": "Auto-fill All",
+    "confirmAutoFillAllTitle": "Auto-fill all moves?",
+    "confirmAutoFillAllMessage": "This will auto-fill all remaining moves.",
+    "cancel": "Cancel",
+    "logAutoFilled": "Auto-filled",
+    "incorrectMoveError": "{{movePrefix}} {{move}} is incorrect",
+    "correctMoveMessage": "{{movePrefix}} {{move}} is correct",
+    "skippedMoveMessage": "The answer was {{movePrefix}} {{move}}",
+    "pgnInput": {
+      "placeholder": "Paste your PGN notation here...\n\nExample:\n1. e4 e5 2. Nf3 Nc6 3. Bb5 a6",
+      "clear": "Clear PGN",
+      "clearConfirmTitle": "Clear PGN?",
+      "clearConfirmMessage": "This will erase the pasted text. This can't be undone.",
+      "clearConfirmButton": "Clear"
+    },
+    "completed": "Game Review Completed!"
   },
   "learn": {
     "description": "Educational articles and guides to improve your chess understanding",
@@ -843,7 +851,7 @@
       "emailLabel": "Email",
       "emailPlaceholder": "you@example.com",
       "passwordLabel": "Password",
-      "passwordPlaceholder": "At least {{minLength}} characters",
+      "passwordPlaceholder": "At least 8 characters",
       "confirmPasswordLabel": "Confirm password",
       "confirmPasswordPlaceholder": "Re-enter your password",
       "emailSignUp": "Register with email",
@@ -953,7 +961,6 @@
   "puzzle": {
     "session": {
       "correct": "Correct! 🎉",
-      "correctMove": "Correct",
       "incorrect": "Incorrect. Try again.",
       "showAnswer": "Show answer",
       "showBoard": "Show Board",
@@ -966,13 +973,12 @@
       "historySection": "Attempt History",
       "solution": "Solution: {{move}}",
       "note": "— {{note}}",
-      "attemptCorrect": "Correct",
-      "attemptIncorrect": "Incorrect",
       "backToList": "Back to Puzzles",
       "tryAgain": "Try Again",
       "peekCount": "Board Peeks: {{count}}",
       "statusSolved": "Solved",
-      "statusRevealed": "Revealed"
+      "statusRevealed": "Revealed",
+      "statusPartial": "{{correct}}/{{total}} solved"
     },
     "list": {
       "title": "Puzzle",
@@ -989,7 +995,17 @@
     "loadFailed": "Could not load puzzles. Pull to retry.",
     "whiteToMove": "White to move",
     "blackToMove": "Black to move",
-    "findMove": "Find the best move",
-    "recorded": "Your result was recorded."
+    "recorded": "Your result was recorded.",
+    "detail": {
+      "descriptionSection": "About This Puzzle",
+      "startSolving": "Start solving",
+      "whitePiecesLabel": "White Pieces",
+      "blackPiecesLabel": "Black Pieces",
+      "noPieces": "None"
+    },
+    "white": "White",
+    "black": "Black",
+    "play": "Play",
+    "replay": "Replay"
   }
 }

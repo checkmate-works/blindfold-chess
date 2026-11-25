@@ -12,7 +12,7 @@ import {
 import { PracticeSessionScreen } from "../../../../components";
 import {
   QuizBoard,
-  TurnIndicator,
+  QuizTurnIndicator,
 } from "../../../../features/coordinate-quiz/components";
 import { spacing } from "../../../../theme";
 import { ChallengeAttemptGate } from "../../../../features/challenge/ChallengeAttemptGate";
@@ -142,7 +142,7 @@ function CoordinateQuizSession({
     >
       <View style={styles.body}>
         <View style={styles.turnRow}>
-          <TurnIndicator
+          <QuizTurnIndicator
             question={currentQuestion}
             hidden={countdown !== null}
           />

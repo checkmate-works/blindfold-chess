@@ -1,262 +1,300 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import {
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  View,
+  useWindowDimensions,
+} from "react-native";
 import { useTranslation } from "react-i18next";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
+import { replayMoves } from "@blindfold-chess/features/chess-core";
 import {
-  fullmoveNumberFromFen,
-  getStartingFen,
-  isBlackToMoveFromFen,
-  parsePgnWithFen,
-  replayMoves,
-} from "@blindfold-chess/features/chess-core";
-import { SIDES, type Side } from "@blindfold-chess/types";
+  SIDES,
+  type AlgebraicNotation,
+  type Side,
+} from "@blindfold-chess/types";
 
-import { Button, ListSection, Screen, SwitchRow } from "../../../../components";
+import { Button, ProgressBar, Screen } from "../../../../components";
 import {
+  BoardPeek,
   ButtonInput,
-  ChessBoard,
 } from "../../../../features/ai-game/components";
+import { RecallMovesPanel } from "../../../../features/recall/components/RecallMovesPanel";
+import { recallFeedbackTitle } from "../../../../features/recall/lib/feedback";
+import { readRecallPgn } from "../../../../features/recall/lib/pgn";
+import { encodeRecallLog } from "../../../../features/recall/lib/result-params";
 import {
-  computeRecallStats,
+  AUTO_FILL_ALL_THRESHOLD,
+  DONT_KNOW_PROMPT_THRESHOLD,
+  autoFillAll,
+  countCurrentMoveMistakes,
   createRecallState,
   isRecallComplete,
   revealRecallMove,
-  sideOfPly,
+  setAutoOpponent,
   submitRecallMove,
 } from "../../../../features/recall/recall-state";
-import type { RecallPlyOutcome } from "../../../../features/recall/recall-state";
 import { answerHaptics } from "../../../../lib/answer-haptics";
 import { parseEnumParam } from "../../../../lib/route-params";
-import { SessionTopBar } from "../../../../navigation/SessionTopBar";
-import {
-  useTheme,
-  borderRadius,
-  fontSize,
-  fontWeight,
-  spacing,
-} from "../../../../theme";
+import { useCloseSession } from "../../../../navigation/use-close-session";
+import { borderRadius, fontSize, spacing, useTheme } from "../../../../theme";
 
-/** "12." for white's move, "12…" for black's. */
-function moveLabel(fullmove: number, side: Side): string {
-  return side === "white" ? `${fullmove}.` : `${fullmove}…`;
-}
+type Params = {
+  pgn: string;
+  color: string;
+  /** "1" starts with "Auto-fill opponent's moves" on (a saved game's recall). */
+  auto?: string;
+  /** "setup" when opened from the recall setup screen. */
+  from?: string;
+};
 
 /**
- * Recall (the web's `/practice/recall/session`): replay a game's moves from
- * memory, one at a time, with the same SAN keypad as the AI game. A right
- * move advances; a wrong one is counted and can be tried again; "I don't
- * know" shows the move and moves on. With auto-opponent on, the other
- * side's moves are played automatically. The finished run goes to the
- * result screen with the recall stats.
+ * Recall (the web's `/practice/recall/session`), stacked top-down as the
+ * web's panel is: the progress bar, the board as the player's
+ * `boardVisibility` surfaces it (as in an AI game), the SAN keypad, the
+ * "I don't know" row and the "Auto-fill opponent's moves" switch, then the
+ * moves entered so far. The latest move's result is the header's title,
+ * where the web shows it as the page title.
+ *
+ * A wrong move is logged and can be tried again; after three on one move
+ * the session offers the answer, and from the second "I don't know" it
+ * offers "Auto-fill All". The finished run goes to the summary with the
+ * whole move log. The web's in-session board settings and move-list
+ * browsing are not ported (the board settings live in the Settings tab).
  */
 export default function RecallSession() {
+  const params = useLocalSearchParams<Params>();
+  const game = useMemo(() => readRecallPgn(params.pgn ?? ""), [params.pgn]);
+  const { close } = useCloseSession("/practice/recall");
+
+  useEffect(() => {
+    if (!game) close();
+  }, [game, close]);
+
+  if (!game) return <Screen>{null}</Screen>;
+  return (
+    <RecallRun
+      params={params}
+      moves={game.moves}
+      startingFen={game.hasFen ? game.startingFen : undefined}
+      fullStartingFen={game.startingFen}
+      firstMover={game.firstMover}
+      startMoveNumber={game.startMoveNumber}
+    />
+  );
+}
+
+function RecallRun({
+  params,
+  moves,
+  startingFen,
+  fullStartingFen,
+  firstMover,
+  startMoveNumber,
+}: {
+  params: Params;
+  moves: AlgebraicNotation[];
+  startingFen: string | undefined;
+  fullStartingFen: string;
+  firstMover: Side;
+  startMoveNumber: number;
+}) {
   const { t } = useTranslation();
   const router = useRouter();
+  const navigation = useNavigation();
   const { colors, feedbackColors } = useTheme();
-  const params = useLocalSearchParams<{
-    pgn: string;
-    color: string;
-    auto: string;
-  }>();
-
-  const game = useMemo(() => {
-    const parsed = parsePgnWithFen(params.pgn ?? "");
-    const moves = parsed.ok ? parsed.value.moves : [];
-    const startingFen = parsed.ok
-      ? (parsed.value.startingFen ?? getStartingFen())
-      : getStartingFen();
-    return {
-      moves,
-      startingFen,
-      positions: replayMoves(moves, startingFen),
-    };
-  }, [params.pgn]);
+  const { width } = useWindowDimensions();
+  const playerColor = parseEnumParam<Side>(params.color, SIDES, "white");
+  const positions = useMemo(
+    () => replayMoves(moves, fullStartingFen),
+    [moves, fullStartingFen],
+  );
 
   const [state, setState] = useState(() =>
     createRecallState({
-      moves: game.moves,
-      firstMover: isBlackToMoveFromFen(game.startingFen) ? "black" : "white",
-      playerColor: parseEnumParam<Side>(params.color, SIDES, "white"),
-      autoOpponent: params.auto !== "0",
+      moves,
+      firstMover,
+      startMoveNumber,
+      playerColor,
+      autoOpponent: params.auto === "1",
     }),
   );
-  const [showBoard, setShowBoard] = useState(false);
-  const [lastCorrect, setLastCorrect] = useState<string | null>(null);
+
+  const feedback = state.lastFeedback;
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      title: feedback
+        ? recallFeedbackTitle(feedback, t)
+        : t("practice.recall.title"),
+      headerTitleStyle: {
+        color:
+          feedback?.type === "incorrect"
+            ? feedbackColors.error
+            : feedback?.type === "correct"
+              ? feedbackColors.success
+              : feedback?.type === "skipped"
+                ? colors.mutedForeground
+                : colors.foreground,
+      },
+    });
+  }, [navigation, feedback, t, colors, feedbackColors]);
 
   const complete = isRecallComplete(state);
   const handedOff = useRef(false);
   useEffect(() => {
     if (!complete || handedOff.current) return;
     handedOff.current = true;
-    const stats = computeRecallStats(state);
     router.replace({
       pathname: "/practice/recall/result",
       params: {
-        total: String(stats.total),
-        nailed: String(stats.nailed),
-        struggled: String(stats.struggled),
-        missed: String(stats.missed),
-        mistakes: String(stats.mistakes),
-        rate: String(stats.rate),
+        pgn: params.pgn,
+        color: playerColor,
+        auto: params.auto ?? "0",
+        from: params.from ?? "",
+        log: encodeRecallLog(state.log),
       },
     });
-  }, [complete, state, router]);
+  }, [complete, state.log, router, params, playerColor]);
 
-  if (complete || game.moves.length === 0) {
-    return <Screen>{null}</Screen>;
-  }
+  if (complete) return <Screen edges={[]}>{null}</Screen>;
 
-  const position = game.positions[state.index];
-  const side = sideOfPly(state, state.index);
-  const startFullmove = fullmoveNumberFromFen(game.startingFen);
-  const firstIsBlack = state.firstMover === "black";
-  const fullmoveAt = (ply: number) =>
-    startFullmove + Math.floor((ply + (firstIsBlack ? 1 : 0)) / 2);
+  const position = positions[state.index] ?? positions[positions.length - 1];
+  const played = moves.slice(0, state.index);
+  const offerAnswer =
+    countCurrentMoveMistakes(state.log) >= DONT_KNOW_PROMPT_THRESHOLD;
 
   const handleSubmit = (san: string) => {
     const next = submitRecallMove(state, san);
-    const correct = next.index !== state.index;
-    answerHaptics(correct);
-    setLastCorrect(correct ? state.moves[state.index] : null);
+    answerHaptics(next.lastFeedback?.type === "correct");
     setState(next);
   };
 
-  const handleReveal = () => {
-    setLastCorrect(null);
-    setState(revealRecallMove(state));
-  };
-
-  const outcomeColor = (outcome: RecallPlyOutcome) => {
-    if (outcome.kind === "auto") return colors.mutedForeground;
-    if (outcome.kind === "revealed") return feedbackColors.error;
-    return outcome.mistakes === 0 ? feedbackColors.success : colors.foreground;
-  };
+  const confirmAutoFillAll = () =>
+    Alert.alert(
+      t("recall.confirmAutoFillAllTitle"),
+      t("recall.confirmAutoFillAllMessage"),
+      [
+        { text: t("recall.cancel"), style: "cancel" },
+        {
+          text: t("recall.autoFillAll"),
+          onPress: () => setState((s) => autoFillAll(s)),
+        },
+      ],
+    );
 
   return (
-    <Screen>
-      <SessionTopBar>
-        <Text style={[styles.progress, { color: colors.mutedForeground }]}>
-          {t("recall.progress", {
-            current: state.index,
-            total: state.moves.length,
-          })}
-        </Text>
-      </SessionTopBar>
+    <Screen edges={["bottom"]}>
       <ScrollView
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
       >
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.strip}
-          style={[styles.stripFrame, { borderColor: colors.border }]}
-        >
-          {state.outcomes.length === 0 ? (
-            <Text
-              style={[styles.stripEmpty, { color: colors.mutedForeground }]}
-            >
-              {t("recall.noMovesYet")}
-            </Text>
-          ) : (
-            state.outcomes.map((outcome, ply) => (
-              <Text
-                key={ply}
-                style={[styles.stripMove, { color: outcomeColor(outcome) }]}
-              >
-                {ply % 2 === (firstIsBlack ? 1 : 0) || ply === 0
-                  ? `${moveLabel(fullmoveAt(ply), sideOfPly(state, ply))} `
-                  : ""}
-                {state.moves[ply]}
-              </Text>
-            ))
-          )}
-        </ScrollView>
+        <View style={[styles.panel, { borderColor: colors.border }]}>
+          <ProgressBar current={state.index} total={moves.length} />
 
-        <View style={[styles.prompt, { backgroundColor: colors.card }]}>
-          <Text style={[styles.promptMove, { color: colors.foreground }]}>
-            {moveLabel(fullmoveAt(state.index), side)}{" "}
-            {t(`recall.session.toMove.${side}`)}
-          </Text>
-          {state.lastWrong ? (
-            <Text style={[styles.feedback, { color: feedbackColors.error }]}>
-              {t("recall.session.wrong", { move: state.lastWrong })}
+          <BoardPeek
+            fen={position.fen}
+            moves={played}
+            startingFen={startingFen}
+            playerColor={playerColor}
+            boardMaxSize={width - PANEL_INSET}
+          />
+
+          <ButtonInput fen={position.fen} onSubmit={handleSubmit} fitWidth />
+
+          <View style={styles.actions}>
+            {offerAnswer && (
+              <Text
+                accessibilityLiveRegion="polite"
+                style={[styles.prompt, { color: colors.mutedForeground }]}
+              >
+                {t("recall.dontKnowPrompt")}
+              </Text>
+            )}
+            <View style={styles.actionRow}>
+              <Button
+                title={
+                  offerAnswer ? t("recall.revealAnswer") : t("recall.dontKnow")
+                }
+                icon="help-circle"
+                variant={offerAnswer ? "primary" : "secondary"}
+                onPress={() => setState((s) => revealRecallMove(s))}
+                testID="recall-dont-know"
+              />
+              {state.dontKnowCount >= AUTO_FILL_ALL_THRESHOLD && (
+                <Button
+                  title={t("recall.autoFillAll")}
+                  icon="checkmark"
+                  variant="outline"
+                  onPress={confirmAutoFillAll}
+                  testID="recall-auto-fill-all"
+                />
+              )}
+            </View>
+          </View>
+
+          <View style={styles.switchRow}>
+            <Switch
+              value={state.autoOpponent}
+              onValueChange={(on) => setState((s) => setAutoOpponent(s, on))}
+              testID="recall-auto-opponent"
+            />
+            <Text
+              style={[styles.switchLabel, { color: colors.mutedForeground }]}
+            >
+              {t("recall.autoOpponentMoves")}
             </Text>
-          ) : lastCorrect ? (
-            <Text style={[styles.feedback, { color: feedbackColors.success }]}>
-              {t("recall.correctMove")} {lastCorrect}
-            </Text>
-          ) : null}
+          </View>
         </View>
 
-        <ListSection>
-          <SwitchRow
-            label={t("recall.showBoard")}
-            value={showBoard}
-            onChange={setShowBoard}
-          />
-        </ListSection>
-        {showBoard && (
-          <ChessBoard
-            fen={position.fen}
-            flipped={state.playerColor === "black"}
-            lastMove={position.lastMove ?? null}
-          />
-        )}
-
-        <ButtonInput fen={position.fen} onSubmit={handleSubmit} />
-
-        <Button
-          title={t("recall.dontKnow")}
-          variant="outline"
-          onPress={handleReveal}
-          fullWidth
+        <RecallMovesPanel
+          moves={played}
+          firstMover={firstMover}
+          startMoveNumber={startMoveNumber}
         />
       </ScrollView>
     </Screen>
   );
 }
 
+/** The page's and the panel's padding on both sides, and the panel's border. */
+const PANEL_INSET = spacing.md * 4 + 2;
+
 const styles = StyleSheet.create({
-  progress: {
-    fontSize: fontSize.sm,
-    fontVariant: ["tabular-nums"],
-  },
   content: {
-    padding: spacing.lg,
-    paddingTop: spacing.sm,
-    gap: spacing.md,
+    padding: spacing.md,
+    gap: spacing.xl,
   },
-  stripFrame: {
-    borderWidth: StyleSheet.hairlineWidth,
+  // The web's `border rounded-lg p-4` panel with `gap-6` between its parts.
+  panel: {
+    borderWidth: 1,
     borderRadius: borderRadius.md,
-    flexGrow: 0,
+    padding: spacing.md,
+    gap: spacing.lg,
   },
-  strip: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    gap: spacing.sm,
+  actions: {
     alignItems: "center",
-  },
-  stripEmpty: {
-    fontSize: fontSize.sm,
-  },
-  stripMove: {
-    fontSize: fontSize.md,
-    fontWeight: fontWeight.medium,
+    gap: spacing.sm,
   },
   prompt: {
-    borderRadius: borderRadius.lg,
-    padding: spacing.md,
-    alignItems: "center",
-    gap: spacing.xs,
-  },
-  promptMove: {
-    fontSize: fontSize.xl,
-    fontWeight: fontWeight.bold,
-  },
-  feedback: {
     fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
+    textAlign: "center",
+  },
+  actionRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    flexWrap: "wrap",
+    gap: spacing.sm,
+  },
+  switchRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+  },
+  switchLabel: {
+    fontSize: fontSize.sm,
+    flexShrink: 1,
   },
 });

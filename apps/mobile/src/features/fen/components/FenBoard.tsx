@@ -22,6 +22,21 @@ type FenBoardProps = {
   onSquarePress?: (square: string) => void;
   /** Largest edge in points; the board also never exceeds the screen width. */
   maxSize?: number;
+  /**
+   * Width taken off the screen width before sizing, for a board inside a
+   * padded panel. Defaults to the screen's own 24pt padding on both sides.
+   */
+  horizontalInset?: number;
+  /**
+   * A colour laid over a square (the result's correct / wrong / missing
+   * marks), by square name. Undefined leaves the square plain.
+   */
+  squareTint?: (square: string) => string | undefined;
+  /**
+   * Draws the coordinate letters regardless of the player's preference;
+   * false hides them (the result's small side-by-side boards, as the web's).
+   */
+  showCoordinates?: boolean;
 };
 
 /**
@@ -39,10 +54,14 @@ export function FenBoard({
   flipped = false,
   onSquarePress,
   maxSize = 400,
+  horizontalInset = spacing.lg * 2,
+  squareTint,
+  showCoordinates,
 }: FenBoardProps) {
   const { preferences } = useGamePreferences();
   const { width: screenWidth } = useWindowDimensions();
-  const boardSize = Math.min(screenWidth - spacing.lg * 2, maxSize);
+  const boardSize = Math.min(screenWidth - horizontalInset, maxSize);
+  const coordinates = showCoordinates ?? preferences.showCoordinates;
   const squareSize = boardSize / 8;
   const theme = boardThemeColors[preferences.boardTheme];
 
@@ -67,14 +86,9 @@ export function FenBoard({
                 size={squareSize}
                 background={light ? theme.light : theme.dark}
                 labelColor={light ? theme.lightText : theme.darkText}
-                rankLabel={
-                  preferences.showCoordinates && colIndex === 0
-                    ? String(rank)
-                    : null
-                }
-                fileLabel={
-                  preferences.showCoordinates && rowIndex === 7 ? file : null
-                }
+                tint={squareTint?.(square)}
+                rankLabel={coordinates && colIndex === 0 ? String(rank) : null}
+                fileLabel={coordinates && rowIndex === 7 ? file : null}
                 onPress={onSquarePress}
               />
             );
@@ -92,6 +106,7 @@ type BoardSquareProps = {
   size: number;
   background: string;
   labelColor: string;
+  tint?: string;
   rankLabel: string | null;
   fileLabel: string | null;
   onPress?: (square: string) => void;
@@ -103,6 +118,7 @@ const BoardSquare = memo(function BoardSquare({
   size,
   background,
   labelColor,
+  tint,
   rankLabel,
   fileLabel,
   onPress,
@@ -126,6 +142,13 @@ const BoardSquare = memo(function BoardSquare({
           size={size * 0.8}
         />
       )}
+      {/* Over the piece, as the web's overlay is. */}
+      {tint !== undefined && (
+        <View
+          pointerEvents="none"
+          style={[StyleSheet.absoluteFill, { backgroundColor: tint }]}
+        />
+      )}
       {rankLabel !== null && (
         <Text style={[styles.rankLabel, { color: labelColor }]}>
           {rankLabel}
@@ -141,9 +164,10 @@ const BoardSquare = memo(function BoardSquare({
 });
 
 const styles = StyleSheet.create({
+  // The web's `rounded-md`.
   container: {
     alignSelf: "center",
-    borderRadius: 4,
+    borderRadius: 6,
     overflow: "hidden",
   },
   row: {

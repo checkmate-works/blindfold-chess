@@ -82,7 +82,33 @@ describe("FEN result params", () => {
       extra: 0,
       solved: 1,
       problems: 2,
+      results: summary.results,
     });
+  });
+
+  it("drops problem entries that are not well formed", () => {
+    const good = {
+      fen: A,
+      recreatedFen: "",
+      isBlackToMove: false,
+      accuracy: 50,
+      correctPieces: 1,
+      totalPieces: 2,
+      incorrectPieces: 0,
+      missingPieces: 1,
+      extraPieces: 0,
+      originalIndex: 0,
+      skipped: false,
+    };
+    const results = JSON.stringify([
+      good,
+      { ...good, fen: "junk" },
+      { ...good, accuracy: -1 },
+      { ...good, skipped: "no" },
+      3,
+    ]);
+    expect(parseFenResultParams({ results }).results).toEqual([good]);
+    expect(parseFenResultParams({ results: "{" }).results).toEqual([]);
   });
 
   it("reads junk as zero", () => {
@@ -95,6 +121,7 @@ describe("FEN result params", () => {
       extra: 0,
       solved: 0,
       problems: 0,
+      results: [],
     });
   });
 });

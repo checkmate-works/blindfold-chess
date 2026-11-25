@@ -26,6 +26,8 @@ type BoardPeekProps = {
    * position assumed, the last move is simply not highlighted.
    */
   startingFen?: string;
+  /** Caps the inline (`'always'`) board's width; see `ChessBoard`'s `maxSize`. */
+  boardMaxSize?: number;
 };
 
 /**
@@ -38,6 +40,7 @@ export function BoardPeek({
   moves,
   playerColor,
   startingFen,
+  boardMaxSize,
 }: BoardPeekProps) {
   const { t } = useTranslation();
   const { colors } = useTheme();
@@ -64,6 +67,7 @@ export function BoardPeek({
           flipped={playerColor === "black"}
           playerColor={playerColor}
           lastMove={lastMove}
+          maxSize={boardMaxSize}
         />
       );
     case "peek":

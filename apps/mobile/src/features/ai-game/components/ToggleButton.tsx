@@ -16,6 +16,8 @@ export type ToggleButtonProps = {
   colors: ReturnType<typeof useTheme>["colors"];
   wide?: boolean;
   small?: boolean;
+  /** Takes an equal share of its row's width (no minimum width). */
+  fill?: boolean;
   testID?: string;
 };
 
@@ -27,6 +29,7 @@ export function ToggleButton({
   colors,
   wide,
   small,
+  fill,
   testID,
 }: ToggleButtonProps) {
   return (
@@ -40,6 +43,7 @@ export function ToggleButton({
         styles.toggleButton,
         small && styles.toggleButtonSmall,
         wide && styles.toggleButtonWide,
+        fill && styles.toggleButtonFill,
         {
           backgroundColor: isSelected ? colors.primary : colors.card,
           borderColor: isSelected ? colors.primary : colors.border,
@@ -79,6 +83,11 @@ const styles = StyleSheet.create({
     minHeight: 36,
     paddingHorizontal: spacing.xs,
     paddingVertical: spacing.xs,
+  },
+  toggleButtonFill: {
+    flex: 1,
+    minWidth: 0,
+    paddingHorizontal: 0,
   },
   toggleButtonWide: {
     paddingHorizontal: spacing.lg,

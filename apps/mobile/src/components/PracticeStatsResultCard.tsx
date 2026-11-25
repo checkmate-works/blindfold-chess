@@ -16,21 +16,33 @@ type PracticeStatsResultCardProps = {
    * stat grid below it stays the shared one.
    */
   score?: { label: string; value: string };
+  /**
+   * Leaves the average time per answer out of the stat grid, for a module
+   * whose web result does (quadrants).
+   */
+  hideAverageTime?: boolean;
 };
 
 export function PracticeStatsResultCard({
   result,
   timeTakenLabel,
   score,
+  hideAverageTime = false,
 }: PracticeStatsResultCardProps) {
   const { t } = useTranslation();
 
-  const { scoreValue, stats } = deriveResultStats(result, {
+  const { scoreValue, stats: allStats } = deriveResultStats(result, {
     correctAnswers: t("practiceResult.correctAnswers"),
     accuracy: t("practiceResult.accuracy"),
     timeTaken: timeTakenLabel ?? t("practiceResult.timeTaken"),
     averageTime: t("practiceResult.averageTime"),
   });
+
+  // By key, not label: the label is a translation and could match another
+  // stat's wording in some language.
+  const stats = hideAverageTime
+    ? allStats.filter((stat) => stat.key !== "averageTime")
+    : allStats;
 
   return (
     <PracticeResultCard

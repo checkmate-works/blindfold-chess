@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, Alert } from "react-native";
+import type { ScrollViewInstance } from "react-native";
+import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import {
+  EMPTY_BOARD_FEN,
   selectInitialPositions,
   summarizeFenSession,
 } from "@blindfold-chess/features/fen-practice";
@@ -11,26 +13,33 @@ import {
   usePieceAccuracy,
 } from "@blindfold-chess/features/fen-practice/client";
 
-import { BottomBar, Button, Screen } from "../../../../components";
-import { SessionTopBar } from "../../../../navigation/SessionTopBar";
+import { Button, ProgressBar, Screen } from "../../../../components";
 import {
+  BoardTools,
   FenBoardEditor,
-  FenProblemResult,
+  FenDisplay,
+  ProblemRecreationResult,
+  SessionLinks,
+  confirmQuit,
 } from "../../../../features/fen/components";
+import {
+  isBoardEmpty,
+  useProblemOrientation,
+} from "../../../../features/fen/lib/board";
 import {
   parseFenSessionParams,
   serializeFenResultParams,
   type FenSessionParams,
 } from "../../../../features/fen/lib/route-params";
-import {
-  useTheme,
-  spacing,
-  fontSize,
-  fontWeight,
-  borderRadius,
-  monoFont,
-} from "../../../../theme";
+import { useTheme, spacing, fontSize } from "../../../../theme";
 
+/**
+ * The FEN drill's run, stacked top-down as the web's `FenRecreate`: the
+ * progress, the FEN to read, the board tools and the editable board, Submit,
+ * then the skip / quit links. After Submit the same column shows the
+ * problem's result and the button to the next one. The stack header
+ * carries the module's name and the ×.
+ */
 export default function FenSession() {
   const { t } = useTranslation();
   const router = useRouter();
@@ -72,6 +81,17 @@ export default function FenSession() {
     currentAccuracy,
   } = session;
 
+  const [flipped, toggleFlipped] = useProblemOrientation(
+    currentProblemIndex,
+    originalPosition?.isBlackToMove ?? false,
+  );
+
+  // Each problem starts at the top of the column, where its FEN is.
+  const scrollRef = useRef<ScrollViewInstance>(null);
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ y: 0, animated: false });
+  }, [currentProblemIndex, phase]);
+
   // Hand the summary to the result screen once the session ends, replacing
   // this route so "back" cannot re-enter a finished session. `session` is a
   // new object every render, so the ref keeps the hand-off to a single
@@ -87,202 +107,107 @@ export default function FenSession() {
     });
   }, [phase, session, positions.length, router]);
 
-  const handleQuit = () => {
-    Alert.alert(
-      t("fen.session.quitConfirmTitle"),
-      t("fen.session.quitConfirmMessage"),
-      [
-        { text: t("fen.session.quitConfirmNo"), style: "cancel" },
-        {
-          text: t("fen.session.quitConfirmYes"),
-          style: "destructive",
-          onPress: session.finish,
-        },
-      ],
-    );
-  };
-
-  const isLastProblem = currentProblemIndex >= positions.length - 1;
-  const progress =
-    positions.length > 0 ? (currentProblemIndex + 1) / positions.length : 0;
-
   // Blank while the hand-off to the result screen is in flight.
   if (!originalPosition || phase === "result") {
     return <Screen>{null}</Screen>;
   }
 
+  const isLastProblem = currentProblemIndex >= positions.length - 1;
+
   return (
-    <Screen edges={["top", "left", "right"]}>
-      <SessionTopBar />
-      <ScrollView contentContainerStyle={styles.content}>
+    <Screen edges={["bottom", "left", "right"]}>
+      <ScrollView ref={scrollRef} contentContainerStyle={styles.content}>
         {positions.length > 1 && (
-          <View style={styles.progressRow}>
-            <View
-              style={[styles.progressTrack, { backgroundColor: colors.muted }]}
-            >
-              <View
-                style={[
-                  styles.progressFill,
-                  {
-                    backgroundColor: colors.primary,
-                    width: `${progress * 100}%`,
-                  },
-                ]}
-              />
-            </View>
-            <Text
-              style={[styles.progressText, { color: colors.mutedForeground }]}
-            >
-              {t("fen.session.problemOf", {
-                current: currentProblemIndex + 1,
-                total: positions.length,
-              })}
-            </Text>
-          </View>
+          <ProgressBar
+            current={currentProblemIndex + 1}
+            total={positions.length}
+          />
         )}
 
         {phase === "recreate" && (
           <>
-            <Text style={[styles.prompt, { color: colors.mutedForeground }]}>
-              {t("fen.session.recreateFromFen")}
-            </Text>
-            <Text
-              selectable
-              style={[
-                styles.fen,
-                {
-                  color: colors.foreground,
-                  backgroundColor: colors.muted,
-                  borderColor: colors.border,
-                },
-              ]}
-            >
-              {originalPosition.fen}
-            </Text>
-            <Text style={[styles.hint, { color: colors.mutedForeground }]}>
-              {t("fen.session.selectPiece")}
-            </Text>
-            <FenBoardEditor
-              // A fresh editor per problem resets the orientation to the new
-              // side to move and the palette to its default.
-              key={currentProblemIndex}
-              fen={recreatedPosition}
-              onFenChange={session.setRecreatedPosition}
-              initialFlipped={originalPosition.isBlackToMove}
-            />
-          </>
-        )}
+            <View>
+              <Text style={[styles.prompt, { color: colors.mutedForeground }]}>
+                {t("fen.session.recreateFromFen")}
+              </Text>
+              <FenDisplay fen={originalPosition.fen} />
+            </View>
 
-        {phase === "problem-result" && currentAccuracy && (
-          <FenProblemResult
-            accuracy={currentAccuracy}
-            originalFen={originalPosition.fen}
-            recreatedFen={recreatedPosition}
-            flipped={originalPosition.isBlackToMove}
-          />
-        )}
-      </ScrollView>
+            <View style={styles.board}>
+              <View style={styles.toolsRow}>
+                <BoardTools
+                  boardEmpty={isBoardEmpty(recreatedPosition)}
+                  onClear={() => session.setRecreatedPosition(EMPTY_BOARD_FEN)}
+                  onFlip={toggleFlipped}
+                />
+              </View>
+              <FenBoardEditor
+                // A fresh editor per problem resets the palette to its default.
+                key={currentProblemIndex}
+                fen={recreatedPosition}
+                onFenChange={session.setRecreatedPosition}
+                flipped={flipped}
+              />
+            </View>
 
-      <BottomBar style={styles.footer}>
-        {phase === "recreate" ? (
-          <>
             <Button
               title={t("fen.session.submit")}
               onPress={session.submit}
               size="lg"
               fullWidth
+              testID="submit"
             />
-            <View style={styles.footerRow}>
-              <Button
-                title={t("fen.session.skip")}
-                onPress={session.skip}
-                variant="ghost"
-                size="sm"
-                style={styles.footerButton}
-              />
-              <Button
-                title={t("fen.session.quit")}
-                onPress={handleQuit}
-                variant="ghost"
-                size="sm"
-                style={styles.footerButton}
-              />
-            </View>
-          </>
-        ) : isLastProblem ? (
-          <Button
-            title={t("fen.problemResult.viewResults")}
-            onPress={session.finish}
-            size="lg"
-            fullWidth
-          />
-        ) : (
-          <>
-            <Button
-              title={t("fen.problemResult.nextProblem")}
-              onPress={session.nextProblem}
-              size="lg"
-              fullWidth
-            />
-            <Button
-              title={t("fen.problemResult.viewResults")}
-              onPress={session.finish}
-              variant="ghost"
-              size="sm"
-              fullWidth
+
+            <SessionLinks
+              links={[
+                {
+                  label: t("fen.session.skip"),
+                  onPress: session.skip,
+                  testID: "skip",
+                },
+                {
+                  label: t("fen.session.quit"),
+                  onPress: () => confirmQuit(t, session.finish),
+                  testID: "quit",
+                },
+              ]}
             />
           </>
         )}
-      </BottomBar>
+
+        {phase === "problem-result" && currentAccuracy && (
+          <ProblemRecreationResult
+            accuracy={currentAccuracy}
+            originalFen={originalPosition.fen}
+            recreatedFen={recreatedPosition}
+            flipped={originalPosition.isBlackToMove}
+            isLastProblem={isLastProblem}
+            onNextProblem={session.nextProblem}
+            onViewResults={session.finish}
+          />
+        )}
+      </ScrollView>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
+  // The web's `gap-6` column; the links' `space-y-4` is close enough to share it.
   content: {
     padding: spacing.lg,
-    gap: spacing.md,
+    gap: spacing.lg,
   },
-  progressRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.sm,
-  },
-  progressTrack: {
-    flex: 1,
-    height: 8,
-    borderRadius: borderRadius.full,
-    overflow: "hidden",
-  },
-  progressFill: {
-    height: "100%",
-  },
-  progressText: {
-    fontSize: fontSize.sm,
-    fontVariant: ["tabular-nums"],
-  },
+  // `text-lg text-muted-foreground mb-3`.
   prompt: {
     fontSize: fontSize.lg,
-    fontWeight: fontWeight.medium,
+    marginBottom: 12,
   },
-  fen: {
-    fontFamily: monoFont,
-    fontSize: fontSize.sm,
-    padding: spacing.sm,
-    borderWidth: 1,
-    borderRadius: borderRadius.md,
-  },
-  hint: {
-    fontSize: fontSize.sm,
-  },
-  footer: {
-    gap: spacing.xs,
-  },
-  footerRow: {
-    flexDirection: "row",
+  board: {
     gap: spacing.sm,
   },
-  footerButton: {
-    flex: 1,
+  // `flex justify-end mb-2` over the board.
+  toolsRow: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
   },
 });

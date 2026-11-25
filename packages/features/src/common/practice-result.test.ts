@@ -250,4 +250,30 @@ describe("deriveResultStats", () => {
       "平均時間",
     ]);
   });
+
+  it("tags each stat with a key that does not depend on its label", () => {
+    const sameWording = {
+      correctAnswers: "Same",
+      accuracy: "Same",
+      timeTaken: "Same",
+      averageTime: "Same",
+    };
+    const result = deriveResultStats(
+      {
+        correctAnswers: 5,
+        totalQuestions: 10,
+        accuracy: 50,
+        timeTaken: 30,
+        averageTime: 3,
+      },
+      sameWording,
+    );
+
+    expect(result.stats.map((s) => [s.key, s.value])).toEqual([
+      ["correctAnswers", "5"],
+      ["accuracy", "50.0%"],
+      ["timeTaken", "30s"],
+      ["averageTime", "3.0s"],
+    ]);
+  });
 });
