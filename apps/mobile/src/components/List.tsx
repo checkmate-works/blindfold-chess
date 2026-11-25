@@ -160,17 +160,21 @@ type ListIconProps = {
   ionicon?: keyof typeof Ionicons.glyphMap;
   /** Tile color; defaults to the theme's secondary surface. */
   tint?: string;
+  /** A picture of its own instead (a chess piece icon), about 20pt. */
+  children?: ReactNode;
 };
 
 /** The rounded square tile at the leading edge of a list row. */
-export function ListIcon({ glyph, ionicon, tint }: ListIconProps) {
+export function ListIcon({ glyph, ionicon, tint, children }: ListIconProps) {
   const { colors } = useTheme();
   return (
     <View
       style={[styles.icon, { backgroundColor: tint ?? colors.secondary }]}
       importantForAccessibility="no-hide-descendants"
     >
-      {ionicon ? (
+      {children ? (
+        children
+      ) : ionicon ? (
         <Ionicons
           name={ionicon}
           size={18}
