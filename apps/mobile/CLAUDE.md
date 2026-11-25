@@ -73,8 +73,10 @@ header style (page-coloured, no hairline, chevron-only back).
   (board orientation as the web's swatches, `BoardOrientationSelector`;
   the piece to drill as the web's piece buttons, `PieceSelector`), then the
   web's "Required Knowledge" / "Related Articles" as one row per article into
-  the learn screen (`RequiredKnowledgeSection`, from the slugs alone; `title`
-  renames the section and `pieces` draws a piece in a row's icon), then the
+  the learn screen (`RequiredKnowledgeSection` or `RelatedArticlesSection`,
+  whichever of the two headings the web's page uses — there is no free-text
+  title, so a screen cannot drift to a third name — from the slugs alone;
+  `pieces` draws a piece in a row's icon), then the
   sign-in row (`ChallengeRulesNote`). The demo is the web's picture, but it
   plays the answer on a loop (`useDemoAnswerLoop`, one beat for every
   module). The header names the module, as the web page's title does.
@@ -83,7 +85,8 @@ header style (page-coloured, no hairline, chevron-only back).
   Quadrants is a challenge that is never recorded, so in place of the
   sign-in row it says so. A free-play module (no challenge, no training)
   has the web's shorter setup: its description or settings
-  (`ListSection`), the related articles (`RequiredKnowledgeSection`), and a
+  (`ListSection`), the related articles (`RelatedArticlesSection`, or
+  `RequiredKnowledgeSection` where the web says "Required Knowledge"), and a
   single Start in the `BottomBar` — no demo and no sign-in row. Recall
   starts from its PGN box and colour picker; puzzles from the list, then a
   detail page `practice/puzzle/[id]` on the root stack (title set by the
@@ -108,21 +111,41 @@ header style (page-coloured, no hairline, chevron-only back).
   Clear. A module whose lock covers more than the keys (route planner)
   fades its own container and leaves `disabled` off, or the two opacities
   multiply.
-- **Picture boards** — a board that explains an answer and takes no tap
-  (diagonal quiz's `DiagonalBoard`, route planner's `RouteBoard`) — are
-  `StaticBoard` (`components/StaticBoard.tsx`): the module gives each
-  square a tint (`squareTint`) and content (`renderSquare`); the board owns
-  the themed squares, the coordinate letters (always shown, whatever
-  `showCoordinates` says, since they are part of the explanation), the
-  rounded corners and the size — up to `maxSize`, filling its container, or
-  the screen less `horizontalInset` when the size must be known on the
-  first frame. A board the player taps (coordinate quiz, FEN recreation,
-  knight's tour) is not one. The AI-game `ChessBoard` and `FenBoard` are
+- **Picture boards** — a board that explains an answer and takes no tap on
+  its squares (diagonal quiz's `DiagonalBoard`, route planner's
+  `RouteBoard`, quadrants' `QuadrantBoard`) — are `StaticBoard`
+  (`components/StaticBoard.tsx`): the module gives each square a tint
+  (`squareTint`) and content (`renderSquare`); the board owns the themed
+  squares, the coordinate letters, the rounded corners
+  (`STATIC_BOARD_RADIUS`) and the size — up to `maxSize`, filling its
+  container, or the screen less `horizontalInset` when the size must be
+  known on the first frame. The letters are shown by default, since they
+  are part of the explanation; a board played on passes the player's
+  preference to `showCoordinates` instead, and `flipped` turns it to
+  Black's side. A board answered by region (quadrants' quarters) lays its
+  own touch targets and lines over the squares with `renderOverlay`,
+  inside the board's clipped frame. A board the player answers square by
+  square (coordinate quiz, FEN recreation, knight's tour) is not one. The
+  AI-game `ChessBoard` and `FenBoard` are
   still separate: they differ in corner radius, label size and flipping.
   `FenBoard` takes `horizontalInset`, `squareTint` and `showCoordinates` for
   the FEN and position-memory answers. A board inside a padded panel must
   be capped (`ChessBoard`'s `maxSize`, `BoardPeek`'s `boardMaxSize`,
   `ButtonInput`'s `fitWidth`), or it runs past the panel's edge.
+- **Around a tapped board** (coordinate quiz, quadrants): the side to move
+  above it is `TurnIndicator` (`components/TurnIndicator.tsx`). The module
+  passes the side and its own label, and `hidden` blanks the row during
+  the countdown without moving the layout. `variant` is `"theme"`
+  (coordinate quiz) or `"web"`, the web's greys (quadrants). A countdown
+  that stands inside the body (`countdownInBody`) over the board is
+  `BoardCountdown` (`components/BoardCountdown.tsx`), a sibling after the
+  board in a wrapper the board fills. Give it the board's `borderRadius`,
+  since the board's own clipping does not reach it.
+- **Run progress** over a free-play session (algebraic notation, FEN,
+  position memory, knight tour, recall) is `ProgressBar`
+  (`components/ProgressBar.tsx`), the web's `ProgressBar`: "n / N" in
+  tabular digits over an 8pt rounded track, clamped, with the progressbar
+  role. A module passes only `current` and `total`.
 - **Problem Details** under a challenge result (diagonal quiz, route
   planner) is `ProblemDetailsList` (`components/ProblemDetailsList.tsx`):
   a `ListSection` titled `practiceResult.problemDetails` with one row per
@@ -138,6 +161,9 @@ header style (page-coloured, no hairline, chevron-only back).
   hands each problem's result to the result screen in a route param
   (`lib/result-params.ts` in each module), since `onComplete` carries only
   the totals.
+- **Result stats** from `deriveResultStats` carry a `key`
+  (`ResultStatKey`); a module that leaves one out (quadrants' average time,
+  via `hideAverageTime`) filters by key, never by the translated label.
 - **Help:** a practice setup screen's header has a ? that opens
   `HelpSheet` (`features/help/`), paged: how to play and the web tutorial's
   explanation steps. The web's challenge/training mode pages are not ported
