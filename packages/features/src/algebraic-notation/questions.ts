@@ -16,7 +16,7 @@ export const ALGEBRAIC_NOTATION_QUESTIONS: readonly AlgebraicNotationQuestion[] 
       id: 1,
       description: {
         en: "Select the correct notation for the following move:",
-        ja: "次のmoveに対応する記法を選択してください：",
+        ja: "次の手に対応する記法を選択してください：",
         es: "Selecciona la notación correcta para la siguiente jugada:",
       },
       fenBefore: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
@@ -52,7 +52,7 @@ export const ALGEBRAIC_NOTATION_QUESTIONS: readonly AlgebraicNotationQuestion[] 
       id: 2,
       description: {
         en: "Select the correct notation for the following move:",
-        ja: "次のmoveに対応する記法を選択してください：",
+        ja: "次の手に対応する記法を選択してください：",
         es: "Selecciona la notación correcta para la siguiente jugada:",
       },
       fenBefore: "8/2k2p2/8/6K1/6P1/8/5r2/8 b - - 0 39",
@@ -85,7 +85,7 @@ export const ALGEBRAIC_NOTATION_QUESTIONS: readonly AlgebraicNotationQuestion[] 
       id: 3,
       description: {
         en: "Select the correct notation for the following move:",
-        ja: "次のmoveに対応する記法を選択してください：",
+        ja: "次の手に対応する記法を選択してください：",
         es: "Selecciona la notación correcta para la siguiente jugada:",
       },
       fenBefore: "8/8/5k2/4p2p/1pP1K1pP/1P6/5P2/8 b - c3 0 51",
@@ -127,7 +127,7 @@ export const ALGEBRAIC_NOTATION_QUESTIONS: readonly AlgebraicNotationQuestion[] 
       id: 4,
       description: {
         en: "Select the correct notation for the following move:",
-        ja: "次のmoveに対応する記法を選択してください：",
+        ja: "次の手に対応する記法を選択してください：",
         es: "Selecciona la notación correcta para la siguiente jugada:",
       },
       fenBefore: "5k2/1Q6/8/3Q2P1/p2P4/P6p/5PP1/1B4K1 w - - 2 45",
