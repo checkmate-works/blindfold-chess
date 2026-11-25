@@ -461,9 +461,7 @@
       "quitConfirmNo": "Continuar",
       "alreadyVisited": "Esta casa já foi visitada.",
       "invalidMove": "Movimento inválido",
-      "submitMove": "Enviar",
-      "selectFile": "Selecione uma coluna (a-h)",
-      "selectRank": "Selecione uma linha (1-8)"
+      "submitMove": "Enviar"
     }
   },
   "algebraicNotation": {

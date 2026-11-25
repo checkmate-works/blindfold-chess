@@ -461,9 +461,7 @@
       "quitConfirmNo": "続ける",
       "alreadyVisited": "このマスはすでに訪問済みです。",
       "invalidMove": "無効な手です",
-      "submitMove": "決定",
-      "selectFile": "ファイルを選択 (a-h)",
-      "selectRank": "ランクを選択 (1-8)"
+      "submitMove": "決定"
     }
   },
   "algebraicNotation": {

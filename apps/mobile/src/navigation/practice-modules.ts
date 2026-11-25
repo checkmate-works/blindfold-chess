@@ -108,7 +108,12 @@ export const MOBILE_PRACTICE_MODULES: readonly MobilePracticeModule[] = [
     sessionHeader: true,
     howToPlayOnSetup: true,
   },
-  { slug: "knight-tour", i18nKey: "knightTour", icon: "🐎" },
+  {
+    slug: "knight-tour",
+    i18nKey: "knightTour",
+    icon: "🐎",
+    sessionHeader: true,
+  },
   {
     slug: "algebraic-notation",
     i18nKey: "algebraicNotation",

@@ -461,9 +461,7 @@
       "quitConfirmNo": "Continuar",
       "alreadyVisited": "Esta casilla ya ha sido visitada.",
       "invalidMove": "Movimiento inválido",
-      "submitMove": "Enviar",
-      "selectFile": "Selecciona una columna (a-h)",
-      "selectRank": "Selecciona una fila (1-8)"
+      "submitMove": "Enviar"
     }
   },
   "algebraicNotation": {

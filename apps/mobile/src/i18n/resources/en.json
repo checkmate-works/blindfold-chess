@@ -461,9 +461,7 @@
       "quitConfirmNo": "Continue",
       "alreadyVisited": "This square has already been visited.",
       "invalidMove": "Invalid move",
-      "submitMove": "Submit",
-      "selectFile": "Select a file (a-h)",
-      "selectRank": "Select a rank (1-8)"
+      "submitMove": "Submit"
     }
   },
   "algebraicNotation": {
