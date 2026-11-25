@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, type ReactNode } from "react";
 import { StyleSheet, View } from "react-native";
 import { useTranslation } from "react-i18next";
 import {
@@ -23,12 +23,18 @@ type ProblemPanelProps = {
   countdown?: number | null;
   /** The submitted route, graded, with the goal square appended. */
   onSubmit: (attempt: RoutePlannerAttempt) => void;
+  /**
+   * Shown under the header in place of the strip and the keypad once the
+   * problem is answered (training's feedback and Next Problem).
+   */
+  feedback?: ReactNode;
 };
 
 /**
  * One problem, as the web's session lays it out: the header (piece, start
  * → target), 32 below it the route strip with its undo button, then the
- * keypad and "Submit Answer". The route lives here, so the parent mounts a
+ * keypad and "Submit Answer" — or, once answered, `feedback` in their
+ * place. The route lives here, so the parent mounts a
  * new panel (a new `key`) for each problem and it starts empty.
  */
 export function ProblemPanel({
@@ -37,6 +43,7 @@ export function ProblemPanel({
   disabled,
   countdown = null,
   onSubmit,
+  feedback,
 }: ProblemPanelProps) {
   const { t } = useTranslation();
   const entry = useRouteEntry({ disabled });
@@ -60,42 +67,44 @@ export function ProblemPanel({
   return (
     <View style={styles.panel}>
       <ProblemHeader problem={shown} countdown={countdown} />
-      <View style={styles.body}>
-        {/* Before the first problem (the countdown) the strip is an empty
+      {feedback ?? (
+        <View style={styles.body}>
+          {/* Before the first problem (the countdown) the strip is an empty
             frame and the keypad stays faded, so nothing moves when it
             arrives. */}
-        {shown ? (
-          <MovesStrip
-            start={shown.start}
-            end={shown.end}
-            moves={moves}
-            verdict={verdict}
-            onUndo={disabled ? undefined : entry.undo}
-          />
-        ) : (
-          <MovesStrip start={null} end={null} moves={[]} verdict={null} />
-        )}
-        <View style={styles.input}>
-          <SquareInput
-            piece={shown?.piece ?? null}
-            selectedFile={entry.selectedFile}
-            selectedRank={entry.selectedRank}
-            disabled={disabled || !shown}
-            onFilePress={entry.pressFile}
-            onRankPress={entry.pressRank}
-          >
-            <Button
-              title={t("routePlanner.session.submit")}
-              icon="flag"
-              onPress={submit}
-              size="lg"
-              fullWidth
-              disabled={disabled || moves.length === 0}
-              testID="route-submit"
+          {shown ? (
+            <MovesStrip
+              start={shown.start}
+              end={shown.end}
+              moves={moves}
+              verdict={verdict}
+              onUndo={disabled ? undefined : entry.undo}
             />
-          </SquareInput>
+          ) : (
+            <MovesStrip start={null} end={null} moves={[]} verdict={null} />
+          )}
+          <View style={styles.input}>
+            <SquareInput
+              piece={shown?.piece ?? null}
+              selectedFile={entry.selectedFile}
+              selectedRank={entry.selectedRank}
+              disabled={disabled || !shown}
+              onFilePress={entry.pressFile}
+              onRankPress={entry.pressRank}
+            >
+              <Button
+                title={t("routePlanner.session.submit")}
+                icon="flag"
+                onPress={submit}
+                size="lg"
+                fullWidth
+                disabled={disabled || moves.length === 0}
+                testID="route-submit"
+              />
+            </SquareInput>
+          </View>
         </View>
-      </View>
+      )}
     </View>
   );
 }

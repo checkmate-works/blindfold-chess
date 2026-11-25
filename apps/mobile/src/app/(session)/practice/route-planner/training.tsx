@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import { ScrollView, StyleSheet } from "react-native";
+import { ScrollView, StyleSheet, View } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useLocalSearchParams } from "expo-router";
 import {
@@ -13,8 +13,8 @@ import type { Square } from "@blindfold-chess/types";
 
 import { Button, PracticeTrainingScreen } from "../../../../components";
 import {
+  ProblemFeedback,
   ProblemPanel,
-  ProblemResultCard,
 } from "../../../../features/route-planner/components";
 import { answerHaptics } from "../../../../lib/answer-haptics";
 import { parseEnumParam } from "../../../../lib/route-params";
@@ -23,14 +23,17 @@ import { spacing } from "../../../../theme";
 
 type Outcome = {
   success: boolean;
+  /** The route as graded, the goal appended; empty when skipped. */
+  moves: Square[];
   shortestPath: Square[];
-  message: string;
+  skipped: boolean;
 };
 
 /**
  * Untimed route planner (the web's `/route-planner/training`): one problem
  * after another with the selected piece, until the player ends it. Each
- * answer shows the shortest route before moving on.
+ * answer keeps the problem's header and shows the route on a board, with
+ * the shortest one, before Next Problem.
  */
 export default function RoutePlannerTraining() {
   const { t } = useTranslation();
@@ -65,8 +68,9 @@ export default function RoutePlannerTraining() {
     (attempt: RoutePlannerAttempt) => {
       record({
         success: attempt.success,
+        moves: attempt.finalMoves,
         shortestPath: attempt.shortestPath,
-        message: attempt.message,
+        skipped: false,
       });
     },
     [record],
@@ -75,12 +79,13 @@ export default function RoutePlannerTraining() {
   const handleSkip = () => {
     record({
       success: false,
+      moves: [],
       shortestPath: getShortestPathOrEmpty(
         problem.piece,
         problem.start,
         problem.end,
       ),
-      message: "skipped",
+      skipped: true,
     });
   };
 
@@ -103,32 +108,36 @@ export default function RoutePlannerTraining() {
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
       >
-        {outcome ? (
-          <>
-            <ProblemResultCard
-              success={outcome.success}
-              message={outcome.message}
-              shortestPath={outcome.shortestPath}
-              piece={problem.piece}
-              start={problem.start}
-              end={problem.end}
-            />
-            <Button
-              title={t("routePlanner.session.nextProblem")}
-              onPress={handleNext}
-              size="lg"
-              fullWidth
-            />
-          </>
-        ) : (
-          <ProblemPanel
-            key={problemNumber}
-            problem={problem}
-            verdict={null}
-            disabled={false}
-            onSubmit={handleSubmit}
-          />
-        )}
+        <ProblemPanel
+          key={problemNumber}
+          problem={problem}
+          verdict={outcome ? outcome.success : null}
+          disabled={outcome !== null}
+          onSubmit={handleSubmit}
+          feedback={
+            outcome && (
+              <View style={styles.answered}>
+                <ProblemFeedback
+                  piece={problem.piece}
+                  start={problem.start}
+                  end={problem.end}
+                  moves={outcome.moves}
+                  shortestPath={outcome.shortestPath}
+                  success={outcome.success}
+                  skipped={outcome.skipped}
+                />
+                <Button
+                  title={t("routePlanner.session.nextProblem")}
+                  icon="refresh"
+                  onPress={handleNext}
+                  size="lg"
+                  fullWidth
+                  testID="route-next"
+                />
+              </View>
+            )
+          }
+        />
       </ScrollView>
     </PracticeTrainingScreen>
   );
@@ -146,6 +155,9 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: spacing.lg,
-    gap: spacing.lg,
+  },
+  /** The web's `space-y-6` between the feedback and Next Problem. */
+  answered: {
+    gap: 24,
   },
 });
