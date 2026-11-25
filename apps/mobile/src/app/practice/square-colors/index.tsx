@@ -26,7 +26,7 @@ export default function SquareColorsSetup() {
       >
         <HowToPlayDemo />
       </HowToPlaySection>
-      <RequiredKnowledgeSection slug="square-colors" />
+      <RequiredKnowledgeSection slugs={["square-colors"]} />
       <ChallengeRulesNote />
     </PracticeSetupScreen>
   );

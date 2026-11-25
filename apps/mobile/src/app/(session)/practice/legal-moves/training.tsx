@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 
 import {
@@ -11,27 +11,22 @@ import {
 } from "@blindfold-chess/features/legal-moves";
 import { useBatchTrainingSession } from "@blindfold-chess/features/practice-session";
 
-import {
-  PracticeTrainingScreen,
-  practiceSessionStyles,
-} from "../../../../components";
+import { PracticeTrainingScreen } from "../../../../components";
 import { useCloseSession } from "../../../../navigation/use-close-session";
-import {
-  LegalIllegalButtons,
-  QuestionCard,
-} from "../../../../features/legal-moves/components";
+import { QuestionPanel } from "../../../../features/legal-moves/components";
 import type {
   MoveQuestion,
   PieceType,
 } from "../../../../features/legal-moves/lib/types";
 import { answerHaptics } from "../../../../lib/answer-haptics";
 import { parseEnumParam } from "../../../../lib/route-params";
+import { spacing } from "../../../../theme";
 
 const BATCH_SIZE = 100;
 
 /**
- * Untimed legal-moves drill: the same question and answer buttons as the
- * timed session, with no clock and no end other than the player's.
+ * Untimed legal-moves drill: the same question panel as the timed session,
+ * with no clock and no end other than the player's.
  */
 export default function LegalMovesTraining() {
   const { close } = useCloseSession();
@@ -66,12 +61,8 @@ export default function LegalMovesTraining() {
     [handleAnswer],
   );
 
-  const feedback: "correct" | "incorrect" | null =
-    showResult && lastAnswer
-      ? lastAnswer.correct
-        ? "correct"
-        : "incorrect"
-      : null;
+  const answered =
+    showResult && lastAnswer?.skipped === false ? lastAnswer : null;
 
   return (
     <PracticeTrainingScreen
@@ -80,15 +71,26 @@ export default function LegalMovesTraining() {
       incorrectCount={incorrectCount}
       onEnd={close}
     >
-      <View style={practiceSessionStyles.questionContainer}>
-        {currentQuestion && (
-          <QuestionCard question={currentQuestion} feedback={feedback} />
-        )}
-      </View>
-
-      <View style={practiceSessionStyles.bottomSection}>
-        <LegalIllegalButtons onAnswer={onAnswer} disabled={showResult} />
+      <View style={styles.body}>
+        <QuestionPanel
+          question={currentQuestion}
+          verdict={answered?.correct ?? null}
+          answeredLegal={answered?.userAnswerData ?? null}
+          onAnswer={onAnswer}
+          disabled={showResult}
+        />
       </View>
     </PracticeTrainingScreen>
   );
 }
+
+/**
+ * Stacked from the top with the score and End right under the buttons, as
+ * the web's training page (its p-8 around the panel).
+ */
+const styles = StyleSheet.create({
+  body: {
+    paddingTop: spacing.xl,
+    paddingBottom: spacing.xl,
+  },
+});

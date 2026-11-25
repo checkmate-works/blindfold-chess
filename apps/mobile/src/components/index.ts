@@ -1,3 +1,5 @@
+export { AnswerPair } from "./AnswerPair";
+export type { AnswerPairOption } from "./AnswerPair";
 export { BoardOrientationSelector } from "./BoardOrientationSelector";
 export { BottomBar } from "./BottomBar";
 export { Button } from "./Button";
@@ -12,6 +14,7 @@ export { Screen } from "./Screen";
 export { SquarePairBadge } from "./SquarePairBadge";
 export { SquarePrompt } from "./SquarePrompt";
 export { SelectableChip } from "./SelectableChip";
+export { PieceSelector } from "./PieceSelector";
 export { PracticeResultCard } from "./PracticeResultCard";
 export { PracticeResultScreen } from "./PracticeResultScreen";
 export {

@@ -35,8 +35,8 @@ replaced by the platform's own parts or their common app equivalents.
   (`navigation/use-close-session.ts`, which pops the modal off the root stack
   and falls back to an href when nothing is underneath). Session → result is
   a `router.replace` inside the modal. A module with `sessionHeader`
-  (`navigation/practice-modules.ts`; coordinate quiz and square colors so
-  far, the target for the others) gives its session a stack header like its
+  (`navigation/practice-modules.ts`; coordinate quiz, legal moves and square
+  colors so far, the target for the others) gives its session a stack header like its
   result and training screens: the module's name and the ×, with the hearts
   and the clock in a row of their own below and a Quit link under the score
   (`PracticeSessionScreen` with `headerShown`). With `countdownInBody` the
@@ -67,19 +67,28 @@ header style (page-coloured, no hairline, chevron-only back).
   two-button footer, as grouped panels (`ListSection`) rather than the web's
   underlined headings: `HowToPlaySection` (the `moduleHelp` how-to-play text
   over the module's demo), then "Game Settings" when the challenge has any
-  (board orientation as the web's swatches, `BoardOrientationSelector`),
-  then the web's "Required Knowledge" article as a row into the learn screen
-  (`RequiredKnowledgeSection`, from the article's slug alone), then the
+  (board orientation as the web's swatches, `BoardOrientationSelector`;
+  the piece to drill as the web's piece buttons, `PieceSelector`), then the
+  web's "Required Knowledge" / "Related Articles" as one row per article into
+  the learn screen (`RequiredKnowledgeSection`, from the slugs alone; `title`
+  renames the section and `pieces` draws a piece in a row's icon), then the
   sign-in row (`ChallengeRulesNote`). The demo is the web's picture, but it
   plays the answer on a loop (`useDemoAnswerLoop`, one beat for every
   module). The header names the module, as the web page's title does.
-  Coordinate quiz and square colors so far, the target for the others.
+  Coordinate quiz, legal moves and square colors so far, the target for the
+  others.
+- **Two-way answers** (square colors' light / dark, legal moves' legal /
+  illegal) are `AnswerPair` (`components/AnswerPair.tsx`): the module paints
+  the two buttons and sizes them; the pair owns the press shrink, the verdict
+  ring (laid over the border, so it never moves the layout) and the dimmed
+  other button. Without `onAnswer` it is a still picture for a setup demo.
 - **Help:** a practice setup screen's header has a ? that opens
   `HelpSheet` (`features/help/`), paged: how to play and the web tutorial's
   explanation steps. The web's challenge/training mode pages are not ported
   (the setup screen already says all of it). A module with
   `howToPlayOnSetup` leaves its how-to-play page out (`helpPagesFor`), and
-  one with no page left gets no ? at all (coordinate quiz, square colors).
+  one with no page left gets no ? at all (coordinate quiz, legal moves,
+  square colors).
   `PracticeSetupScreen` finds the module from the route, so a setup screen
   needs nothing for it.
 - **Header buttons** are `HeaderIconButton`; the session close button is

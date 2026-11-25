@@ -94,7 +94,8 @@
       "title": "Puzzles",
       "description": "Find the best move in curated positions"
     },
-    "requiredKnowledge": "Required Knowledge"
+    "requiredKnowledge": "Required Knowledge",
+    "relatedArticles": "Related Articles"
   },
   "practiceResult": {
     "correctAnswers": "Correct Answers",
@@ -208,17 +209,13 @@
   },
   "legalMoves": {
     "setup": {
-      "title": "Legal Moves Settings",
-      "timeLimit": "Time Limit",
-      "durationSeconds": "{{seconds}}s",
-      "pieceSelection": "Select a Piece",
-      "selectAtLeastOne": "Please select at least one piece"
+      "title": "Legal Moves",
+      "pieceSelection": "Select a Piece"
     },
     "session": {
-      "legal": "Legal",
-      "illegal": "Illegal",
-      "correct": "Correct!",
-      "incorrect": "Incorrect"
+      "question": "Can the piece move from {{from}} to {{to}}?",
+      "legal": "Yes",
+      "illegal": "No"
     },
     "result": {
       "title": "Practice Complete!"

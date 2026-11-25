@@ -1,5 +1,5 @@
-import { useCallback, useMemo } from "react";
-import { View } from "react-native";
+import { useCallback, useMemo, useState } from "react";
+import { StyleSheet, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { RemoteChallengePort } from "@blindfold-chess/features/challenge-attempt";
 import {
@@ -15,18 +15,13 @@ import {
   MISTAKE_LIMIT,
 } from "@blindfold-chess/features/practice-registry";
 
-import {
-  PracticeSessionScreen,
-  practiceSessionStyles,
-} from "../../../../components";
+import { PracticeSessionScreen } from "../../../../components";
 import { ChallengeAttemptGate } from "../../../../features/challenge/ChallengeAttemptGate";
-import {
-  LegalIllegalButtons,
-  QuestionCard,
-} from "../../../../features/legal-moves/components";
+import { QuestionPanel } from "../../../../features/legal-moves/components";
 import { answerHaptics } from "../../../../lib/answer-haptics";
 import { serializePracticeStatsParams } from "../../../../lib/practice-result-params";
 import { parseEnumParam } from "../../../../lib/route-params";
+import { spacing } from "../../../../theme";
 
 /**
  * The legal-moves challenge (the web's `/legal-moves/challenge`) for one
@@ -105,11 +100,21 @@ function LegalMovesChallengeSession({
     onAnswerEffect: answerHaptics,
   });
 
-  const feedback: "correct" | "incorrect" | null = showFeedback
-    ? lastAnswerCorrect
-      ? "correct"
-      : "incorrect"
-    : null;
+  // The pressed button keeps its verdict ring until the next question,
+  // including any wait for the server; a press meanwhile is ignored by the
+  // session and must not move it. Only read while `showFeedback`.
+  const [answeredLegal, setAnsweredLegal] = useState<boolean | null>(null);
+  const inputDisabled =
+    countdown !== null || showFeedback || awaitingServer || !currentQuestion;
+
+  const onAnswer = useCallback(
+    (isLegal: boolean) => {
+      if (inputDisabled) return;
+      setAnsweredLegal(isLegal);
+      handleAnswer(isLegal);
+    },
+    [handleAnswer, inputDisabled],
+  );
 
   return (
     <PracticeSessionScreen
@@ -118,19 +123,35 @@ function LegalMovesChallengeSession({
       progress={timeRemaining / CHALLENGE_TIME_LIMIT}
       correctCount={correctCount}
       incorrectCount={incorrectCount}
+      lives={{
+        remaining: Math.max(MISTAKE_LIMIT - incorrectCount, 0),
+        max: MISTAKE_LIMIT,
+      }}
+      headerShown
+      countdownInBody
     >
-      <View style={practiceSessionStyles.questionContainer}>
-        {currentQuestion && (
-          <QuestionCard question={currentQuestion} feedback={feedback} />
-        )}
-      </View>
-
-      <View style={practiceSessionStyles.bottomSection}>
-        <LegalIllegalButtons
-          onAnswer={handleAnswer}
-          disabled={showFeedback || awaitingServer || !currentQuestion}
+      <View style={styles.body}>
+        <QuestionPanel
+          question={currentQuestion}
+          verdict={showFeedback ? lastAnswerCorrect : null}
+          answeredLegal={answeredLegal}
+          onAnswer={onAnswer}
+          disabled={inputDisabled}
+          countdown={countdown}
         />
       </View>
     </PracticeSessionScreen>
   );
 }
+
+/**
+ * Stacked from the top as the web's session is: 24 under the hearts and
+ * clock (the web's mb-8 less the question block's own centring), 32 above
+ * the score (its mt-8).
+ */
+const styles = StyleSheet.create({
+  body: {
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.xl,
+  },
+});

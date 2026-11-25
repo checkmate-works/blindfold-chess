@@ -94,7 +94,8 @@
       "title": "パズル",
       "description": "厳選された局面で最善手を見つける練習"
     },
-    "requiredKnowledge": "関連記事"
+    "requiredKnowledge": "関連記事",
+    "relatedArticles": "関連記事"
   },
   "practiceResult": {
     "correctAnswers": "正解数",
@@ -208,17 +209,13 @@
   },
   "legalMoves": {
     "setup": {
-      "title": "合法手判定 設定",
-      "timeLimit": "制限時間",
-      "durationSeconds": "{{seconds}}秒",
-      "pieceSelection": "駒を選択",
-      "selectAtLeastOne": "少なくとも1つの駒を選択してください"
+      "title": "合法手判定",
+      "pieceSelection": "駒を選択"
     },
     "session": {
-      "legal": "合法",
-      "illegal": "違法",
-      "correct": "正解！",
-      "incorrect": "不正解"
+      "question": "{{from}}から{{to}}へ移動できますか？",
+      "legal": "できる",
+      "illegal": "できない"
     },
     "result": {
       "title": "練習終了！"

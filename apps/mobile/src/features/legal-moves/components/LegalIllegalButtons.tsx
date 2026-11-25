@@ -1,96 +1,101 @@
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { StyleSheet } from "react-native";
+import type { StyleProp, ViewStyle } from "react-native";
 import { useTranslation } from "react-i18next";
-import {
-  useTheme,
-  fontSize,
-  fontWeight,
-  spacing,
-  borderRadius,
-  touchTarget,
-} from "../../../theme";
+
+import { AnswerPair } from "../../../components";
+import { fontSize, fontWeight, spacing, useTheme } from "../../../theme";
 
 type LegalIllegalButtonsProps = {
-  onAnswer: (isLegal: boolean) => void;
-  disabled: boolean;
+  /** Omitted → a picture of the buttons (the setup demo): nothing to press. */
+  onAnswer?: (isLegal: boolean) => void;
+  disabled?: boolean;
+  /** The answer just given and its verdict (`AnswerPair`'s ring). */
+  selected?: { isLegal: boolean; correct: boolean } | null;
+  /** The setup demo's smaller pair (the web's `px-4 py-2 text-sm`). */
+  compact?: boolean;
+  style?: StyleProp<ViewStyle>;
 };
 
+/**
+ * The ○ can / × cannot pair under a legal-moves question, tinted green and
+ * red as the web's: a tenth of the colour behind, a third of it around.
+ */
 export function LegalIllegalButtons({
   onAnswer,
-  disabled,
+  disabled = false,
+  selected = null,
+  compact = false,
+  style,
 }: LegalIllegalButtonsProps) {
   const { t } = useTranslation();
   const { feedbackColors } = useTheme();
 
   return (
-    <View style={styles.container}>
-      <TouchableOpacity
-        onPress={() => onAnswer(true)}
-        disabled={disabled}
-        activeOpacity={0.7}
-        style={[
-          styles.button,
-          styles.legalButton,
-          { backgroundColor: feedbackColors.successSoft },
-          disabled && styles.disabled,
-        ]}
-      >
-        <Text style={[styles.icon, { color: feedbackColors.success }]}>○</Text>
-        <Text style={[styles.label, { color: feedbackColors.success }]}>
-          {t("legalMoves.session.legal")}
-        </Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        onPress={() => onAnswer(false)}
-        disabled={disabled}
-        activeOpacity={0.7}
-        style={[
-          styles.button,
-          styles.illegalButton,
-          { backgroundColor: feedbackColors.errorSoft },
-          disabled && styles.disabled,
-        ]}
-      >
-        <Text style={[styles.icon, { color: feedbackColors.error }]}>×</Text>
-        <Text style={[styles.label, { color: feedbackColors.error }]}>
-          {t("legalMoves.session.illegal")}
-        </Text>
-      </TouchableOpacity>
-    </View>
+    <AnswerPair
+      options={[
+        {
+          value: true,
+          mark: "○",
+          label: t("legalMoves.session.legal"),
+          backgroundColor: feedbackColors.successSoft,
+          textColor: feedbackColors.success,
+          borderColor: "rgba(34, 197, 94, 0.3)",
+          testID: "answer-legal",
+        },
+        {
+          value: false,
+          mark: "×",
+          label: t("legalMoves.session.illegal"),
+          backgroundColor: feedbackColors.errorSoft,
+          textColor: feedbackColors.error,
+          borderColor: "rgba(239, 68, 68, 0.3)",
+          testID: "answer-illegal",
+        },
+      ]}
+      onAnswer={onAnswer}
+      disabled={disabled}
+      selected={
+        selected && { value: selected.isLegal, correct: selected.correct }
+      }
+      style={[compact ? styles.compactRow : styles.row, style]}
+      buttonStyle={compact ? styles.compactButton : styles.button}
+      labelStyle={compact ? styles.compactLabel : styles.label}
+      markStyle={compact && styles.compactMark}
+    />
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flexDirection: "row",
+  // The web's `grid-cols-2 gap-4`, across the panel's whole width.
+  row: {
     gap: spacing.md,
   },
+  // The web's `px-6 py-4`.
   button: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: spacing.sm,
+    paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
-    borderRadius: borderRadius.md,
-    borderWidth: 1,
-    minHeight: touchTarget.minSize,
   },
-  legalButton: {
-    borderColor: "rgba(34, 197, 94, 0.3)",
-  },
-  illegalButton: {
-    borderColor: "rgba(239, 68, 68, 0.3)",
-  },
-  disabled: {
-    opacity: 0.5,
-  },
-  icon: {
-    fontSize: 24,
-    fontWeight: fontWeight.bold,
-  },
+  // The web's `font-medium text-lg`.
   label: {
-    fontSize: fontSize.lg,
     fontWeight: fontWeight.medium,
+  },
+  // The demo's `gap-3 max-w-[200px]`.
+  compactRow: {
+    gap: 12,
+    maxWidth: 200,
+  },
+  // The demo's `px-4 py-2 gap-1`.
+  compactButton: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    gap: spacing.xs,
+  },
+  // The demo's `text-sm` label and `text-lg` mark.
+  compactLabel: {
+    fontSize: fontSize.sm,
+    fontWeight: fontWeight.medium,
+  },
+  compactMark: {
+    fontSize: fontSize.lg,
   },
 });
