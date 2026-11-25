@@ -35,10 +35,13 @@ replaced by the platform's own parts or their common app equivalents.
   (`navigation/use-close-session.ts`, which pops the modal off the root stack
   and falls back to an href when nothing is underneath). Session → result is
   a `router.replace` inside the modal. A module with `sessionHeader`
-  (`navigation/practice-modules.ts`; coordinate quiz so far, the target for
-  the others) gives its session a stack header like its result and training
-  screens: the module's name and the ×, with the hearts and the clock in a
-  row of their own below (`PracticeSessionScreen` with `headerShown`).
+  (`navigation/practice-modules.ts`; coordinate quiz and square colors so
+  far, the target for the others) gives its session a stack header like its
+  result and training screens: the module's name and the ×, with the hearts
+  and the clock in a row of their own below and a Quit link under the score
+  (`PracticeSessionScreen` with `headerShown`). With `countdownInBody` the
+  countdown stands inside the body (over the board, or where the square
+  will appear) instead of covering the screen.
   Header-less sessions show the × through `PracticeSessionScreen` (built in)
   or `SessionTopBar`; timed ones ask before leaving.
 
@@ -63,16 +66,20 @@ header style (page-coloured, no hairline, chevron-only back).
 - **Setup screens** take the web's sections, above the app's own
   two-button footer, as grouped panels (`ListSection`) rather than the web's
   underlined headings: `HowToPlaySection` (the `moduleHelp` how-to-play text
-  over the module's demo), then "Game Settings" with board orientation as
-  the web's swatches (`BoardOrientationSelector`), then the sign-in row
-  (`ChallengeRulesNote`). The header names the module, as the web page's
-  title does. Coordinate quiz so far, the target for the others.
+  over the module's demo), then "Game Settings" when the challenge has any
+  (board orientation as the web's swatches, `BoardOrientationSelector`),
+  then the web's "Required Knowledge" article as a row into the learn screen
+  (`RequiredKnowledgeSection`, from the article's slug alone), then the
+  sign-in row (`ChallengeRulesNote`). The demo is the web's picture, but it
+  plays the answer on a loop (`useDemoAnswerLoop`, one beat for every
+  module). The header names the module, as the web page's title does.
+  Coordinate quiz and square colors so far, the target for the others.
 - **Help:** a practice setup screen's header has a ? that opens
   `HelpSheet` (`features/help/`), paged: how to play and the web tutorial's
   explanation steps. The web's challenge/training mode pages are not ported
   (the setup screen already says all of it). A module with
   `howToPlayOnSetup` leaves its how-to-play page out (`helpPagesFor`), and
-  one with no page left gets no ? at all (coordinate quiz).
+  one with no page left gets no ? at all (coordinate quiz, square colors).
   `PracticeSetupScreen` finds the module from the route, so a setup screen
   needs nothing for it.
 - **Header buttons** are `HeaderIconButton`; the session close button is
