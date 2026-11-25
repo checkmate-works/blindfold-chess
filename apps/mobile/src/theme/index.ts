@@ -8,6 +8,7 @@ export type { ThemeColors } from "@blindfold-chess/ui";
 
 export { ThemeProvider, useTheme } from "./ThemeProvider";
 export { useFeedbackColor } from "./use-feedback-color";
+export { monoFont, withAlpha } from "./type-and-tint";
 
 export const spacing = {
   xs: 4,

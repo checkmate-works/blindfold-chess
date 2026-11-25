@@ -5,8 +5,7 @@ import { DISPLAY_RANKS, FILES, type PieceType } from "@blindfold-chess/types";
 import { boardThemeColors } from "@blindfold-chess/ui";
 
 import { useGamePreferences } from "../../../lib/game-preferences";
-import { spacing, useTheme } from "../../../theme";
-import { withAlpha } from "../lib/with-alpha";
+import { spacing, useTheme, withAlpha } from "../../../theme";
 
 /** The web's `max-w-sm`. */
 const MAX_BOARD_SIZE = 384;

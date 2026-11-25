@@ -1,18 +1,16 @@
-import {
-  Platform,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
-import { fontSize, fontWeight, spacing, useTheme } from "../../../theme";
+import {
+  fontSize,
+  fontWeight,
+  spacing,
+  useTheme,
+  monoFont,
+} from "../../../theme";
 import type { ActiveField } from "../hooks";
 
 /** The web's `font-mono`. */
-const MONO = Platform.OS === "ios" ? "Menlo" : "monospace";
-
 /** The verdict on one field, shown in place of its usual state. */
 export type FieldResult = "correct" | "incorrect" | null;
 
@@ -266,7 +264,7 @@ const styles = StyleSheet.create({
     opacity: 0.3,
   },
   text: {
-    fontFamily: MONO,
+    fontFamily: monoFont,
     fontSize: fontSize.lg,
     lineHeight: 28,
   },
@@ -275,7 +273,7 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   hyphen: {
-    fontFamily: MONO,
+    fontFamily: monoFont,
     fontSize: fontSize.lg,
   },
   disabled: {

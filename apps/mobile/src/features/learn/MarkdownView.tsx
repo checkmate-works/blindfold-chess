@@ -1,7 +1,6 @@
 import { Fragment, useMemo } from "react";
 import {
   Linking,
-  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -18,12 +17,11 @@ import {
   fontSize,
   fontWeight,
   spacing,
+  monoFont,
 } from "../../theme";
 import { LEARN_IMAGES } from "./generated/images";
 import { parseMarkdown } from "./markdown";
 import type { MdBlock, MdInline } from "./markdown";
-
-const MONO = Platform.OS === "ios" ? "Menlo" : "monospace";
 
 /** Width / height of an SVG from its viewBox, or 1 when it has none. */
 function svgAspect(xml: string): number {
@@ -260,7 +258,7 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
   },
   inlineCode: {
-    fontFamily: MONO,
+    fontFamily: monoFont,
     fontSize: fontSize.sm,
   },
   math: {
@@ -314,7 +312,7 @@ const styles = StyleSheet.create({
     padding: spacing.md,
   },
   codeText: {
-    fontFamily: MONO,
+    fontFamily: monoFont,
     fontSize: fontSize.sm,
   },
   mathBlock: {

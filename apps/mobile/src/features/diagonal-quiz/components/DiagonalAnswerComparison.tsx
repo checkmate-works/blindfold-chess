@@ -1,10 +1,8 @@
 import { useState } from "react";
-import { Platform, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
-import { fontSize, fontWeight, useTheme } from "../../../theme";
-
-const MONO = Platform.OS === "ios" ? "Menlo" : "monospace";
+import { fontSize, fontWeight, useTheme, monoFont } from "../../../theme";
 
 type DiagonalAnswerComparisonProps = {
   correctDiagonal: string;
@@ -168,6 +166,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
   },
   mono: {
-    fontFamily: MONO,
+    fontFamily: monoFont,
   },
 });

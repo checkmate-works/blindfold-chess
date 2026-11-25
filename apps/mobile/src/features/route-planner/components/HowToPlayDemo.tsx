@@ -3,8 +3,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { ChessPieceIcon } from "@blindfold-chess/icons";
 
 import { useDemoAnswerLoop } from "../../../lib/use-demo-answer-loop";
-import { fontSize, fontWeight, useTheme } from "../../../theme";
-import { MONO_FONT } from "../lib/fonts";
+import { fontSize, fontWeight, useTheme, monoFont } from "../../../theme";
 import { MovesStrip } from "./MovesStrip";
 
 /** e2 → g3 is one knight move, so the demo's route is the goal alone. */
@@ -62,7 +61,7 @@ const styles = StyleSheet.create({
   },
   // The web's `text-lg font-bold`.
   square: {
-    fontFamily: MONO_FONT,
+    fontFamily: monoFont,
     fontSize: fontSize.lg,
     fontWeight: fontWeight.bold,
   },

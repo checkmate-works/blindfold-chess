@@ -8,7 +8,13 @@ import {
 } from "@blindfold-chess/features/algebraic-notation";
 
 import { Card } from "../../../components";
-import { useTheme, fontSize, fontWeight, spacing } from "../../../theme";
+import {
+  useTheme,
+  fontSize,
+  fontWeight,
+  spacing,
+  monoFont,
+} from "../../../theme";
 import { useQuestionLocale } from "../hooks";
 
 type AnswerFeedbackProps = {
@@ -80,7 +86,7 @@ const styles = StyleSheet.create({
     fontSize: fontSize.sm,
   },
   answerValue: {
-    fontFamily: "Menlo",
+    fontFamily: monoFont,
     fontWeight: fontWeight.bold,
   },
   explanationTitle: {

@@ -5,7 +5,6 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  Platform,
 } from "react-native";
 import { useTranslation } from "react-i18next";
 import { isBlackToMoveFromFen } from "@blindfold-chess/features/chess-core/fen";
@@ -24,6 +23,7 @@ import {
   fontWeight,
   borderRadius,
   feedbackColors,
+  monoFont,
 } from "../../../theme";
 import { FenBoard } from "./FenBoard";
 
@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: borderRadius.md,
     padding: spacing.sm,
-    fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
+    fontFamily: monoFont,
     fontSize: fontSize.sm,
     textAlignVertical: "top",
   },

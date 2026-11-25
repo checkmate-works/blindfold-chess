@@ -14,6 +14,7 @@ import {
   spacing,
   borderRadius,
   touchTarget,
+  monoFont,
 } from "../../../theme";
 
 type AnswerOptionsProps = {
@@ -94,7 +95,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   optionText: {
-    fontFamily: "Menlo",
+    fontFamily: monoFont,
     fontSize: fontSize.lg,
     fontWeight: fontWeight.medium,
   },

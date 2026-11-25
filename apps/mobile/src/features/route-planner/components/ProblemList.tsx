@@ -6,9 +6,14 @@ import { ChessPieceIcon } from "@blindfold-chess/icons";
 import type { RoutePlannerProblemResult } from "@blindfold-chess/features/route-planner";
 
 import { ListSection } from "../../../components";
-import { fontSize, fontWeight, spacing, useTheme } from "../../../theme";
-import { MONO_FONT } from "../lib/fonts";
-import { withAlpha } from "../lib/with-alpha";
+import {
+  fontSize,
+  fontWeight,
+  spacing,
+  useTheme,
+  monoFont,
+  withAlpha,
+} from "../../../theme";
 import { ProblemFeedback } from "./ProblemFeedback";
 
 /**
@@ -187,7 +192,7 @@ const styles = StyleSheet.create({
   },
   number: {
     width: 32,
-    fontFamily: MONO_FONT,
+    fontFamily: monoFont,
     fontSize: fontSize.sm,
   },
   squares: {
@@ -196,7 +201,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   square: {
-    fontFamily: MONO_FONT,
+    fontFamily: monoFont,
     fontSize: fontSize.md,
     fontWeight: fontWeight.bold,
   },

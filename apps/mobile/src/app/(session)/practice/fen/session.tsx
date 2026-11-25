@@ -1,12 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  Alert,
-  Platform,
-} from "react-native";
+import { View, Text, StyleSheet, ScrollView, Alert } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import {
@@ -35,6 +28,7 @@ import {
   fontSize,
   fontWeight,
   borderRadius,
+  monoFont,
 } from "../../../../theme";
 
 export default function FenSession() {
@@ -272,7 +266,7 @@ const styles = StyleSheet.create({
     fontWeight: fontWeight.medium,
   },
   fen: {
-    fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
+    fontFamily: monoFont,
     fontSize: fontSize.sm,
     padding: spacing.sm,
     borderWidth: 1,

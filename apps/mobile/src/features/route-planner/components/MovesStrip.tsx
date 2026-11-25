@@ -2,8 +2,13 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
-import { feedbackColors, fontSize, fontWeight, useTheme } from "../../../theme";
-import { MONO_FONT } from "../lib/fonts";
+import {
+  feedbackColors,
+  fontSize,
+  fontWeight,
+  useTheme,
+  monoFont,
+} from "../../../theme";
 
 type MovesStripProps = {
   /** Null for the empty frame shown before the first problem. */
@@ -153,7 +158,7 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   endpoint: {
-    fontFamily: MONO_FONT,
+    fontFamily: monoFont,
     fontSize: fontSize.md,
     fontWeight: fontWeight.bold,
   },
@@ -168,7 +173,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   chipText: {
-    fontFamily: MONO_FONT,
+    fontFamily: monoFont,
     fontSize: fontSize.md,
     fontWeight: fontWeight.bold,
   },
