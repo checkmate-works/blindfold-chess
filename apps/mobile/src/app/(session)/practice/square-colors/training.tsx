@@ -50,6 +50,9 @@ export default function SquareColorsTraining() {
     [handleAnswer],
   );
 
+  const answered =
+    showResult && lastAnswer?.skipped === false ? lastAnswer : null;
+
   return (
     <PracticeTrainingScreen
       isReady={hasQuestions && currentSquare !== null && isLoaded}
@@ -58,12 +61,10 @@ export default function SquareColorsTraining() {
       onEnd={close}
     >
       <View style={practiceSessionStyles.questionContainer}>
-        {currentSquare && (
-          <SquareQuestion
-            square={currentSquare}
-            isCorrect={showResult && lastAnswer ? lastAnswer.correct : null}
-          />
-        )}
+        <SquareQuestion
+          square={currentSquare}
+          isCorrect={answered?.correct ?? null}
+        />
       </View>
 
       <View style={practiceSessionStyles.bottomSection}>
@@ -71,6 +72,11 @@ export default function SquareColorsTraining() {
           onAnswer={onAnswer}
           disabled={showResult}
           boardTheme={preferences.boardTheme}
+          selected={
+            answered?.userAnswerData
+              ? { color: answered.userAnswerData, correct: answered.correct }
+              : null
+          }
         />
       </View>
     </PracticeTrainingScreen>

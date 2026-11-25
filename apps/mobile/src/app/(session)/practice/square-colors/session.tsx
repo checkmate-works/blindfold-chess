@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { View } from "react-native";
 import { useRouter } from "expo-router";
 import type { RemoteChallengePort } from "@blindfold-chess/features/challenge-attempt";
 import {
@@ -135,21 +135,8 @@ function SquareColorsChallengeSession({
               ? { color: answeredColor, correct: verdict }
               : null
           }
-          style={styles.buttons}
         />
       </View>
     </PracticeSessionScreen>
   );
 }
-
-/**
- * The web's `max-w-xs`: on a phone the pair would otherwise fill the width
- * and push the square up against the clock row.
- */
-const styles = StyleSheet.create({
-  buttons: {
-    width: "100%",
-    maxWidth: 320,
-    alignSelf: "center",
-  },
-});

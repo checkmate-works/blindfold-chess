@@ -85,9 +85,16 @@ export function ColorButtons({
 }
 
 const styles = StyleSheet.create({
+  /**
+   * The web's `max-w-xs`: on a phone the pair would otherwise fill the
+   * width and push the square up against the clock row.
+   */
   container: {
     flexDirection: "row",
     gap: spacing.md,
+    width: "100%",
+    maxWidth: 320,
+    alignSelf: "center",
   },
   button: {
     flex: 1,
