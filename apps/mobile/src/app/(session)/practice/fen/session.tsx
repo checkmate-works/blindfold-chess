@@ -18,7 +18,7 @@ import {
   usePieceAccuracy,
 } from "@blindfold-chess/features/fen-practice/client";
 
-import { Button, Screen } from "../../../../components";
+import { BottomBar, Button, Screen } from "../../../../components";
 import { SessionTopBar } from "../../../../navigation/SessionTopBar";
 import {
   FenBoardEditor,
@@ -118,7 +118,7 @@ export default function FenSession() {
   }
 
   return (
-    <Screen>
+    <Screen edges={["top", "left", "right"]}>
       <SessionTopBar />
       <ScrollView contentContainerStyle={styles.content}>
         {positions.length > 1 && (
@@ -189,7 +189,7 @@ export default function FenSession() {
         )}
       </ScrollView>
 
-      <View style={[styles.footer, { borderTopColor: colors.border }]}>
+      <BottomBar style={styles.footer}>
         {phase === "recreate" ? (
           <>
             <Button
@@ -239,7 +239,7 @@ export default function FenSession() {
             />
           </>
         )}
-      </View>
+      </BottomBar>
     </Screen>
   );
 }
@@ -282,9 +282,6 @@ const styles = StyleSheet.create({
     fontSize: fontSize.sm,
   },
   footer: {
-    padding: spacing.lg,
-    paddingTop: spacing.md,
-    borderTopWidth: 1,
     gap: spacing.xs,
   },
   footerRow: {

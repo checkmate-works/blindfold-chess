@@ -6,7 +6,7 @@ import { isTourComplete } from "@blindfold-chess/features/knight-tour";
 import { useKnightTour } from "@blindfold-chess/features/knight-tour/client";
 import { isValidSquare } from "@blindfold-chess/features/common";
 
-import { Button, Screen } from "../../../../components";
+import { BottomBar, Button, Screen } from "../../../../components";
 import { SessionTopBar } from "../../../../navigation/SessionTopBar";
 import {
   BlindMoveInput,
@@ -84,7 +84,7 @@ export default function KnightTourSession() {
   const isStuck = availableMoves.length === 0;
 
   return (
-    <Screen>
+    <Screen edges={["top", "left", "right"]}>
       <SessionTopBar />
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.progressRow}>
@@ -154,7 +154,7 @@ export default function KnightTourSession() {
         />
       </ScrollView>
 
-      <View style={[styles.footer, { borderTopColor: colors.border }]}>
+      <BottomBar style={styles.footer}>
         <Button
           title={t("knightTour.session.undo")}
           onPress={tour.undo}
@@ -168,7 +168,7 @@ export default function KnightTourSession() {
           variant="outline"
           style={styles.footerButton}
         />
-      </View>
+      </BottomBar>
     </Screen>
   );
 }
@@ -232,9 +232,6 @@ const styles = StyleSheet.create({
   footer: {
     flexDirection: "row",
     gap: spacing.sm,
-    padding: spacing.lg,
-    paddingTop: spacing.md,
-    borderTopWidth: 1,
   },
   footerButton: {
     flex: 1,
