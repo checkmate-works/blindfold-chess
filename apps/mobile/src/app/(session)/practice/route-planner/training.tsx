@@ -1,22 +1,20 @@
 import { useCallback, useMemo, useState } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { ScrollView, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useLocalSearchParams } from "expo-router";
 import {
   ROUTE_PLANNER_CHALLENGE_PIECES,
-  evaluateAttempt,
   generateProblem,
   getShortestPathOrEmpty,
+  type RoutePlannerAttempt,
   type RoutePlannerChallengePiece,
 } from "@blindfold-chess/features/route-planner";
-import { useRoutePlannerInput } from "@blindfold-chess/features/route-planner/client";
 import type { Square } from "@blindfold-chess/types";
 
 import { Button, PracticeTrainingScreen } from "../../../../components";
 import {
-  ProblemCard,
+  ProblemPanel,
   ProblemResultCard,
-  SquareInput,
 } from "../../../../features/route-planner/components";
 import { answerHaptics } from "../../../../lib/answer-haptics";
 import { parseEnumParam } from "../../../../lib/route-params";
@@ -31,8 +29,8 @@ type Outcome = {
 
 /**
  * Untimed route planner (the web's `/route-planner/training`): one problem
- * after another with the selected pieces, until the player ends it. Each
- * answer shows the shortest route before moving on, as in the session.
+ * after another with the selected piece, until the player ends it. Each
+ * answer shows the shortest route before moving on.
  */
 export default function RoutePlannerTraining() {
   const { t } = useTranslation();
@@ -49,19 +47,12 @@ export default function RoutePlannerTraining() {
   );
 
   const [problem, setProblem] = useState(() => generateProblem(pieces));
+  // Keys the panel, so each problem starts with an empty route even when
+  // two in a row happen to be the same.
+  const [problemNumber, setProblemNumber] = useState(0);
   const [outcome, setOutcome] = useState<Outcome | null>(null);
   const [correctCount, setCorrectCount] = useState(0);
   const [incorrectCount, setIncorrectCount] = useState(0);
-
-  const {
-    moves,
-    selectedFile,
-    handleFilePress,
-    handleRankPress,
-    handleUndo,
-    replaceMoves,
-    reset,
-  } = useRoutePlannerInput({ disabled: outcome !== null });
 
   const record = useCallback((next: Outcome) => {
     setOutcome(next);
@@ -70,20 +61,16 @@ export default function RoutePlannerTraining() {
     else setIncorrectCount((n) => n + 1);
   }, []);
 
-  const handleSubmit = () => {
-    const attempt = evaluateAttempt(
-      problem.piece,
-      problem.start,
-      moves,
-      problem.end,
-    );
-    replaceMoves(attempt.finalMoves);
-    record({
-      success: attempt.success,
-      shortestPath: attempt.shortestPath,
-      message: attempt.message,
-    });
-  };
+  const handleSubmit = useCallback(
+    (attempt: RoutePlannerAttempt) => {
+      record({
+        success: attempt.success,
+        shortestPath: attempt.shortestPath,
+        message: attempt.message,
+      });
+    },
+    [record],
+  );
 
   const handleSkip = () => {
     record({
@@ -99,8 +86,8 @@ export default function RoutePlannerTraining() {
 
   const handleNext = () => {
     setProblem(generateProblem(pieces));
+    setProblemNumber((n) => n + 1);
     setOutcome(null);
-    reset();
   };
 
   return (
@@ -134,54 +121,31 @@ export default function RoutePlannerTraining() {
             />
           </>
         ) : (
-          <>
-            <ProblemCard
-              problem={problem}
-              moves={moves}
-              currentIndex={0}
-              totalCount={1}
-            />
-            <SquareInput
-              selectedFile={selectedFile}
-              disabled={false}
-              onFilePress={handleFilePress}
-              onRankPress={handleRankPress}
-            />
-            <View style={styles.actionRow}>
-              <Button
-                title={t("routePlanner.session.undo")}
-                onPress={handleUndo}
-                variant="outline"
-                disabled={moves.length === 0}
-                style={styles.action}
-              />
-              <Button
-                title={t("routePlanner.session.submit")}
-                onPress={handleSubmit}
-                disabled={moves.length === 0}
-                style={styles.action}
-              />
-            </View>
-          </>
+          <ProblemPanel
+            key={problemNumber}
+            problem={problem}
+            verdict={null}
+            disabled={false}
+            onSubmit={handleSubmit}
+          />
         )}
       </ScrollView>
     </PracticeTrainingScreen>
   );
 }
 
+/**
+ * Stacked from the top with the score, skip and End right under the panel,
+ * as the web's training page; the scroll view takes only the content's
+ * height and scrolls when the phone is too short for it.
+ */
 const styles = StyleSheet.create({
   scroll: {
-    flex: 1,
+    flexGrow: 0,
+    flexShrink: 1,
   },
   content: {
     padding: spacing.lg,
     gap: spacing.lg,
-  },
-  actionRow: {
-    flexDirection: "row",
-    gap: spacing.sm,
-  },
-  action: {
-    flex: 1,
   },
 });

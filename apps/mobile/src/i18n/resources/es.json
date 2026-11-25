@@ -298,10 +298,7 @@
       "pieceSelection": "Selecciona una pieza"
     },
     "session": {
-      "progress": "{{current}} / {{total}}",
-      "selectFile": "Selecciona una columna (a-h)",
-      "selectRank": "Selecciona una fila (1-8)",
-      "submit": "Enviar",
+      "submit": "Enviar respuesta",
       "undo": "Deshacer",
       "skip": "Saltar",
       "correct": "¡Correcto!",
@@ -309,7 +306,9 @@
       "skipped": "Saltado",
       "shortestPath": "Ruta más corta",
       "nextProblem": "Siguiente problema",
-      "finish": "Finalizar"
+      "finish": "Finalizar",
+      "startSquare": "Casilla inicial",
+      "targetSquare": "Casilla objetivo"
     },
     "result": {
       "title": "¡Práctica completada!",

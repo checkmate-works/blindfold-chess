@@ -6,8 +6,9 @@ import { feedbackColors, fontSize, fontWeight, useTheme } from "../../../theme";
 import { MONO_FONT } from "../lib/fonts";
 
 type MovesStripProps = {
-  start: string;
-  end: string;
+  /** Null for the empty frame shown before the first problem. */
+  start: string | null;
+  end: string | null;
   /** The squares entered so far, after `start`. */
   moves: readonly string[];
   /**
@@ -49,6 +50,10 @@ export function MovesStrip({
           backgroundColor: feedbackColors.errorSoft,
         }
     : { borderColor: "transparent", backgroundColor: colors.muted };
+
+  if (start === null || end === null) {
+    return <View style={[styles.strip, frame]} />;
+  }
 
   return (
     <View style={[styles.strip, frame]}>
@@ -125,7 +130,9 @@ export function MovesStrip({
  * The web's `flex flex-wrap gap-2 items-center min-h-[3rem] p-4 rounded-md
  * border`, with `font-mono font-bold` squares, `mx-1` arrows and
  * `px-2 py-1 rounded border` chips; the undo button is its `w-8 h-8
- * rounded-full ml-2`.
+ * rounded-full ml-2`. The minimum height is the padding plus the undo
+ * button (the web's `min-h-[3rem]` is less), so the keypad below does not
+ * jump when the first square and the button appear.
  */
 const styles = StyleSheet.create({
   strip: {
@@ -133,7 +140,7 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     alignItems: "center",
     gap: 8,
-    minHeight: 48,
+    minHeight: 16 + 32 + 16 + 2,
     padding: 16,
     borderRadius: 6,
     borderWidth: 1,

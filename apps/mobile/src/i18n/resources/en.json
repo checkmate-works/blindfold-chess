@@ -298,10 +298,7 @@
       "pieceSelection": "Select Piece"
     },
     "session": {
-      "progress": "{{current}} / {{total}}",
-      "selectFile": "Select a file (a-h)",
-      "selectRank": "Select a rank (1-8)",
-      "submit": "Submit",
+      "submit": "Submit Answer",
       "undo": "Undo",
       "skip": "Skip",
       "correct": "Correct!",
@@ -309,7 +306,9 @@
       "skipped": "Skipped",
       "shortestPath": "Shortest Path",
       "nextProblem": "Next Problem",
-      "finish": "Finish"
+      "finish": "Finish",
+      "startSquare": "Starting Square",
+      "targetSquare": "Target Square"
     },
     "result": {
       "title": "Practice Complete!",

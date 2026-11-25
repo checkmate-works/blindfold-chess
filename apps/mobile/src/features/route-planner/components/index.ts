@@ -1,8 +1,7 @@
 export { SettingsForm } from "./SettingsForm";
 export { HowToPlayDemo } from "./HowToPlayDemo";
 export { MovesStrip } from "./MovesStrip";
-export { SquareInput } from "./SquareInput";
-export { ProblemCard } from "./ProblemCard";
+export { ProblemPanel } from "./ProblemPanel";
 export { ProblemResultCard } from "./ProblemResultCard";
 export { ResultCard } from "./ResultCard";
 export {

@@ -298,10 +298,7 @@
       "pieceSelection": "Selecione a peça"
     },
     "session": {
-      "progress": "{{current}} / {{total}}",
-      "selectFile": "Selecione uma coluna (a-h)",
-      "selectRank": "Selecione uma linha (1-8)",
-      "submit": "Enviar",
+      "submit": "Enviar resposta",
       "undo": "Desfazer",
       "skip": "Pular",
       "correct": "Correto!",
@@ -309,7 +306,9 @@
       "skipped": "Pulado",
       "shortestPath": "Caminho mais curto",
       "nextProblem": "Próximo problema",
-      "finish": "Finalizar"
+      "finish": "Finalizar",
+      "startSquare": "Casa inicial",
+      "targetSquare": "Casa objetivo"
     },
     "result": {
       "title": "Prática concluída!",
