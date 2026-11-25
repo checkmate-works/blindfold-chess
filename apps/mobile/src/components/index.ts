@@ -25,6 +25,12 @@ export {
 export { PracticeSetupScreen } from "./PracticeSetupScreen";
 export { PracticeStatsResultCard } from "./PracticeStatsResultCard";
 export { PracticeTrainingScreen } from "./PracticeTrainingScreen";
+export {
+  PROBLEM_DETAILS_INSET,
+  ProblemDetailsList,
+} from "./ProblemDetailsList";
+export { problemVerdict } from "./problem-details";
+export type { ProblemVerdict } from "./problem-details";
 export { LivesIndicator } from "./LivesIndicator";
 export { ListIcon, ListRow, ListSection } from "./List";
 export { ModeButtonRow } from "./ModeButtonRow";

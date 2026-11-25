@@ -103,7 +103,10 @@
     "timeTaken": "Tiempo empleado",
     "averageTime": "Tiempo medio",
     "playAgain": "Jugar de nuevo",
-    "backToMenu": "Volver al menú"
+    "backToMenu": "Volver al menú",
+    "problemDetails": "Detalles del problema",
+    "skipped": "Omitido",
+    "timeUp": "Tiempo agotado"
   },
   "onboarding": {
     "skip": "Omitir",

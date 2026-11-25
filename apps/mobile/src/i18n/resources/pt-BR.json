@@ -103,7 +103,10 @@
     "timeTaken": "Tempo gasto",
     "averageTime": "Tempo médio",
     "playAgain": "Jogar novamente",
-    "backToMenu": "Voltar ao menu"
+    "backToMenu": "Voltar ao menu",
+    "problemDetails": "Detalhes do problema",
+    "skipped": "Pulado",
+    "timeUp": "Tempo esgotado"
   },
   "onboarding": {
     "skip": "Pular",
