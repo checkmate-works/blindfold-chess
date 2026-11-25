@@ -261,11 +261,8 @@
       "title": "Cor das casas"
     },
     "session": {
-      "question": "Qual é a cor de {{square}}?",
       "light": "Clara",
-      "dark": "Escura",
-      "correct": "Correto!",
-      "incorrect": "Incorreto"
+      "dark": "Escura"
     },
     "result": {
       "title": "Prática concluída!",

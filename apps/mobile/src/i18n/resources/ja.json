@@ -261,11 +261,8 @@
       "title": "マスの色"
     },
     "session": {
-      "question": "{{square}} の色は？",
       "light": "明",
-      "dark": "暗",
-      "correct": "正解！",
-      "incorrect": "不正解"
+      "dark": "暗"
     },
     "result": {
       "title": "練習終了！",

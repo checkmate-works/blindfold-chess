@@ -1,5 +1,5 @@
-import { useCallback } from "react";
-import { View } from "react-native";
+import { useCallback, useState } from "react";
+import { StyleSheet, View } from "react-native";
 import { useRouter } from "expo-router";
 import type { RemoteChallengePort } from "@blindfold-chess/features/challenge-attempt";
 import {
@@ -22,6 +22,7 @@ import {
 import { answerHaptics } from "../../../../lib/answer-haptics";
 import { useGamePreferences } from "../../../../lib/game-preferences";
 import { serializePracticeStatsParams } from "../../../../lib/practice-result-params";
+import type { SquareColor } from "../../../../features/square-colors/lib/types";
 
 const SETTINGS = {};
 
@@ -85,6 +86,23 @@ function SquareColorsChallengeSession({
     onAnswerEffect: answerHaptics,
   });
 
+  // The pressed button keeps its verdict ring until the next square,
+  // including any wait for the server; a press meanwhile is ignored by the
+  // session and must not move it. Only read while `showFeedback`.
+  const [answeredColor, setAnsweredColor] = useState<SquareColor | null>(null);
+  const inputDisabled = countdown !== null || showFeedback || awaitingServer;
+
+  const onAnswer = useCallback(
+    (color: SquareColor) => {
+      if (inputDisabled) return;
+      setAnsweredColor(color);
+      handleAnswer(color);
+    },
+    [handleAnswer, inputDisabled],
+  );
+
+  const verdict = showFeedback ? lastAnswerCorrect : null;
+
   return (
     <PracticeSessionScreen
       countdown={countdown}
@@ -92,23 +110,46 @@ function SquareColorsChallengeSession({
       progress={timeRemaining / CHALLENGE_TIME_LIMIT}
       correctCount={correctCount}
       incorrectCount={incorrectCount}
+      lives={{
+        remaining: Math.max(MISTAKE_LIMIT - incorrectCount, 0),
+        max: MISTAKE_LIMIT,
+      }}
+      headerShown
+      countdownInBody
     >
       <View style={practiceSessionStyles.questionContainer}>
-        {currentSquare && (
-          <SquareQuestion
-            square={currentSquare}
-            isCorrect={showFeedback ? lastAnswerCorrect : null}
-          />
-        )}
+        <SquareQuestion
+          square={currentSquare}
+          isCorrect={verdict}
+          countdown={countdown}
+        />
       </View>
 
       <View style={practiceSessionStyles.bottomSection}>
         <ColorButtons
-          onAnswer={handleAnswer}
-          disabled={showFeedback || awaitingServer}
+          onAnswer={onAnswer}
+          disabled={inputDisabled}
           boardTheme={preferences.boardTheme}
+          selected={
+            verdict !== null && answeredColor
+              ? { color: answeredColor, correct: verdict }
+              : null
+          }
+          style={styles.buttons}
         />
       </View>
     </PracticeSessionScreen>
   );
 }
+
+/**
+ * The web's `max-w-xs`: on a phone the pair would otherwise fill the width
+ * and push the square up against the clock row.
+ */
+const styles = StyleSheet.create({
+  buttons: {
+    width: "100%",
+    maxWidth: 320,
+    alignSelf: "center",
+  },
+});

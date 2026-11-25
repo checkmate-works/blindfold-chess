@@ -261,11 +261,8 @@
       "title": "Square Colors"
     },
     "session": {
-      "question": "What color is {{square}}?",
       "light": "Light",
-      "dark": "Dark",
-      "correct": "Correct!",
-      "incorrect": "Incorrect"
+      "dark": "Dark"
     },
     "result": {
       "title": "Practice Complete!",

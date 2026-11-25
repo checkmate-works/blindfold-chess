@@ -66,7 +66,7 @@ export function moduleSessionScreens(
   modules: readonly ModuleRoute[],
 ) {
   // `${i18nKey}.result.title`: the same eleven namespaces as moduleSetupScreens, with .result.title
-  // `practice.${i18nKey}.title` (modules with sessionHeader): practice.coordinateQuiz.title
+  // `practice.${i18nKey}.title` (modules with sessionHeader): practice.coordinateQuiz.title, practice.squareColors.title
   return modules.flatMap(({ route, i18nKey, hasTraining, sessionHeader }) => [
     <Stack.Screen
       key={`${route}/session`}

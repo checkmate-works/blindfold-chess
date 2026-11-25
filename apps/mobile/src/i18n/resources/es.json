@@ -261,11 +261,8 @@
       "title": "Color de las casillas"
     },
     "session": {
-      "question": "¿De qué color es {{square}}?",
       "light": "Clara",
-      "dark": "Oscura",
-      "correct": "¡Correcto!",
-      "incorrect": "Incorrecto"
+      "dark": "Oscura"
     },
     "result": {
       "title": "¡Práctica completada!",
