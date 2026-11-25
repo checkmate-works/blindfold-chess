@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 
 import { useBatchTrainingSession } from "@blindfold-chess/features/practice-session";
@@ -11,26 +11,22 @@ import {
 } from "@blindfold-chess/features/quadrants";
 import type {
   QuadrantId,
-  QuadrantQuestion as Question,
+  QuadrantQuestion,
 } from "@blindfold-chess/features/quadrants";
 import { isBoardOrientation } from "@blindfold-chess/types";
 
-import {
-  PracticeTrainingScreen,
-  practiceSessionStyles,
-} from "../../../../components";
+import { PracticeTrainingScreen } from "../../../../components";
 import { useCloseSession } from "../../../../navigation/use-close-session";
-import {
-  QuadrantBoard,
-  QuadrantQuestion,
-} from "../../../../features/quadrants/components";
+import { QuestionPanel } from "../../../../features/quadrants/components";
 import { answerHaptics } from "../../../../lib/answer-haptics";
+import { spacing } from "../../../../theme";
 
 const BATCH_SIZE = 100;
 
 /**
- * Untimed quadrants drill: no clock and no lives. As in the timed run, the
- * board marks the right quadrant (and a wrong pick) while the feedback shows.
+ * Untimed quadrants drill: no clock and no lives, from the side picked on
+ * the setup screen. As in the timed run, the board marks the right quarter
+ * (and a wrong pick) while the feedback shows.
  */
 export default function QuadrantsTraining() {
   const { close } = useCloseSession();
@@ -47,7 +43,7 @@ export default function QuadrantsTraining() {
     correctCount,
     incorrectCount,
     handleAnswer,
-  } = useBatchTrainingSession<Question, QuadrantId>({
+  } = useBatchTrainingSession<QuadrantQuestion, QuadrantId>({
     batchSize: BATCH_SIZE,
     generateBatch: () => generateQuadrantQuestionBatch(BATCH_SIZE, orientation),
     checkAnswer: (question, selectedQuadrant) =>
@@ -63,11 +59,6 @@ export default function QuadrantsTraining() {
 
   const answered =
     showResult && lastAnswer && !lastAnswer.skipped ? lastAnswer : null;
-  const correctQuadrant = answered
-    ? getCorrectQuadrant(answered.question.square)
-    : null;
-  const wrongQuadrant =
-    answered && !answered.correct ? answered.userAnswerData : null;
 
   return (
     <PracticeTrainingScreen
@@ -76,26 +67,32 @@ export default function QuadrantsTraining() {
       incorrectCount={incorrectCount}
       onEnd={close}
     >
-      {currentQuestion && (
-        <>
-          <View style={practiceSessionStyles.questionContainer}>
-            <QuadrantQuestion
-              question={currentQuestion}
-              isCorrect={answered ? answered.correct : null}
-            />
-          </View>
-
-          <View style={practiceSessionStyles.bottomSection}>
-            <QuadrantBoard
-              orientation={currentQuestion.orientation}
-              correctQuadrant={correctQuadrant}
-              wrongQuadrant={wrongQuadrant}
-              onQuadrantPress={onAnswer}
-              disabled={showResult}
-            />
-          </View>
-        </>
-      )}
+      <View style={styles.body}>
+        {currentQuestion && (
+          <QuestionPanel
+            question={currentQuestion}
+            correctQuadrant={
+              answered ? getCorrectQuadrant(answered.question.square) : null
+            }
+            wrongQuadrant={
+              answered && !answered.correct ? answered.userAnswerData : null
+            }
+            onAnswer={onAnswer}
+            disabled={showResult}
+          />
+        )}
+      </View>
     </PracticeTrainingScreen>
   );
 }
+
+/**
+ * Stacked from the top with the score and End right under the board, as
+ * the web's training page (its p-6 around the play area).
+ */
+const styles = StyleSheet.create({
+  body: {
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.lg,
+  },
+});

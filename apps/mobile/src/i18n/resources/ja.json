@@ -424,8 +424,6 @@
     },
     "session": {
       "question": "{{square}} はどのエリア？",
-      "correct": "正解！",
-      "incorrect": "不正解",
       "whiteToMove": "白番",
       "blackToMove": "黒番"
     },

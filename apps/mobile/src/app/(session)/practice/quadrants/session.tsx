@@ -1,26 +1,27 @@
 import { useCallback } from "react";
-import { View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import * as Haptics from "expo-haptics";
 
 import { useQuadrantsSession } from "@blindfold-chess/features/quadrants/client";
 import type { QuadrantsResult } from "@blindfold-chess/features/quadrants";
-import { isBoardOrientation } from "@blindfold-chess/types";
-
-import {
-  PracticeSessionScreen,
-  practiceSessionStyles,
-} from "../../../../components";
-import {
-  QuadrantBoard,
-  QuadrantQuestion,
-} from "../../../../features/quadrants/components";
 import {
   MISTAKE_LIMIT,
   CHALLENGE_TIME_LIMIT,
 } from "@blindfold-chess/features/practice-registry";
-import { serializePracticeStatsParams } from "../../../../lib/practice-result-params";
+import { isBoardOrientation } from "@blindfold-chess/types";
 
+import { PracticeSessionScreen } from "../../../../components";
+import { QuestionPanel } from "../../../../features/quadrants/components";
+import { answerHaptics } from "../../../../lib/answer-haptics";
+import { serializePracticeStatsParams } from "../../../../lib/practice-result-params";
+import { spacing } from "../../../../theme";
+
+/**
+ * The quadrants challenge (the web's `/quadrants/challenge/session`): 60
+ * seconds, ends at the mistake limit. The server keeps no record of it, so
+ * unlike the six ranked challenges it runs on the device whether or not the
+ * player is signed in.
+ */
 export default function QuadrantsSession() {
   const router = useRouter();
   const params = useLocalSearchParams<{ orientation: string }>();
@@ -38,14 +39,6 @@ export default function QuadrantsSession() {
     [router],
   );
 
-  const handleAnswerEffect = useCallback((correct: boolean) => {
-    Haptics.notificationAsync(
-      correct
-        ? Haptics.NotificationFeedbackType.Success
-        : Haptics.NotificationFeedbackType.Error,
-    );
-  }, []);
-
   const {
     currentQuestion,
     countdown,
@@ -53,7 +46,6 @@ export default function QuadrantsSession() {
     correctCount,
     incorrectCount,
     showFeedback,
-    lastAnswerCorrect,
     correctQuadrant,
     wrongQuadrant,
     handleAnswer,
@@ -62,7 +54,7 @@ export default function QuadrantsSession() {
     timeLimit: CHALLENGE_TIME_LIMIT,
     mistakeAllowance: MISTAKE_LIMIT,
     onComplete: handleComplete,
-    onAnswerEffect: handleAnswerEffect,
+    onAnswerEffect: answerHaptics,
   });
 
   return (
@@ -72,29 +64,37 @@ export default function QuadrantsSession() {
       progress={timeRemaining / CHALLENGE_TIME_LIMIT}
       correctCount={correctCount}
       incorrectCount={incorrectCount}
+      lives={{
+        remaining: Math.max(MISTAKE_LIMIT - incorrectCount, 0),
+        max: MISTAKE_LIMIT,
+      }}
+      headerShown
+      countdownInBody
     >
-      {currentQuestion && (
-        <>
-          <View style={practiceSessionStyles.questionContainer}>
-            <QuadrantQuestion
-              question={currentQuestion}
-              isCorrect={showFeedback ? lastAnswerCorrect : null}
-              remainingLives={MISTAKE_LIMIT - incorrectCount}
-              maxLives={MISTAKE_LIMIT}
-            />
-          </View>
-
-          <View style={practiceSessionStyles.bottomSection}>
-            <QuadrantBoard
-              orientation={currentQuestion.orientation}
-              correctQuadrant={correctQuadrant}
-              wrongQuadrant={wrongQuadrant}
-              onQuadrantPress={handleAnswer}
-              disabled={showFeedback}
-            />
-          </View>
-        </>
-      )}
+      <View style={styles.body}>
+        {currentQuestion && (
+          <QuestionPanel
+            question={currentQuestion}
+            correctQuadrant={correctQuadrant}
+            wrongQuadrant={wrongQuadrant}
+            onAnswer={handleAnswer}
+            disabled={showFeedback}
+            countdown={countdown}
+          />
+        )}
+      </View>
     </PracticeSessionScreen>
   );
 }
+
+/**
+ * Stacked from the top as the web's session is: 16 under the hearts and
+ * clock (its `space-y-4`), 32 above the score (its `mt-8`). Centring the
+ * board would open a gap between it and the question on a tall phone.
+ */
+const styles = StyleSheet.create({
+  body: {
+    paddingTop: spacing.md,
+    paddingBottom: spacing.xl,
+  },
+});

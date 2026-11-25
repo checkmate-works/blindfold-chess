@@ -424,8 +424,6 @@
     },
     "session": {
       "question": "Em qual quadrante está {{square}}?",
-      "correct": "Correto!",
-      "incorrect": "Incorreto",
       "whiteToMove": "Brancas jogam",
       "blackToMove": "Pretas jogam"
     },

@@ -105,6 +105,7 @@ export const MOBILE_PRACTICE_MODULES: readonly MobilePracticeModule[] = [
     i18nKey: "quadrants",
     icon: "🧭",
     hasTraining: true,
+    sessionHeader: true,
     howToPlayOnSetup: true,
   },
   { slug: "knight-tour", i18nKey: "knightTour", icon: "🐎" },
