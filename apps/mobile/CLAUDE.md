@@ -77,6 +77,11 @@ header style (page-coloured, no hairline, chevron-only back).
   needs nothing for it.
 - **Header buttons** are `HeaderIconButton`; the session close button is
   `SessionCloseButton`.
+- **Buttons pinned under scrolling content** (setup, session, result and
+  onboarding footers) go in `BottomBar`, which pads the home indicator's
+  inset itself so the bar runs to the bottom edge. Its screen leaves
+  `"bottom"` out of `Screen`'s `edges`; padded there too, the inset shows as
+  a grey strip under the bar.
 - Web pages (terms, privacy, FAQ, contact, licenses) open in the browser via
   `lib/web-pages.ts`, never in a WebView.
 
