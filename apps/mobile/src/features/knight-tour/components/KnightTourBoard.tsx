@@ -1,3 +1,4 @@
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { memo, useMemo } from "react";
 import {
   View,
@@ -8,8 +9,13 @@ import {
 } from "react-native";
 import { DISPLAY_RANKS, FILES } from "@blindfold-chess/types";
 import { ChessPieceIcon } from "@blindfold-chess/icons";
+import { boardThemeColors } from "@blindfold-chess/ui";
 
-import { chessColors, spacing, useTheme } from "../../../theme";
+import { useGamePreferences } from "../../../lib/game-preferences";
+import { fontWeight, spacing, useTheme, withAlpha } from "../../../theme";
+
+/** The web board's `max-w-md`. */
+const MAX_BOARD_SIZE = 448;
 
 type KnightTourBoardProps = {
   /** Where the knight is drawn; empty draws no knight. */
@@ -18,20 +24,29 @@ type KnightTourBoardProps = {
   visitedSquares: ReadonlyMap<string, number>;
   /**
    * Squares that respond to taps. During play these are the legal next
-   * squares; the setup screen passes every square so any can be picked.
+   * squares; the starting-square picker passes every square.
    */
   tappableSquares: readonly string[];
   onSquarePress?: (square: string) => void;
   /** Number each visited square instead of crossing it out (result screen). */
   showMoveNumbers?: boolean;
+  /**
+   * Width taken off the screen's for the board's size: the padding of
+   * everything around it. Defaults to the screen padding on both sides.
+   */
+  horizontalInset?: number;
 };
 
 /**
- * The Knight's Tour board, always from White's side like the web version.
+ * The Knight's Tour board, the web's `KnightTourBoard`: always from White's
+ * side, in the player's board theme, with the coordinate letters when the
+ * show-coordinates preference is on. The knight stands on the current
+ * square, every visited square is crossed out (or numbered, on the result)
+ * and only the legal next squares respond.
  *
- * Unlike the coordinate-quiz board (one target square, feedback colours) and
- * the ai-game board (pieces from a FEN), this one marks every visited square
- * and only lets the legal next squares respond, so it is its own component.
+ * Not a `StaticBoard`: it is a grid of touch targets, and it follows the
+ * show-coordinates preference as the web's play board does, where a
+ * picture board always draws the letters.
  */
 export function KnightTourBoard({
   currentSquare,
@@ -39,30 +54,41 @@ export function KnightTourBoard({
   tappableSquares,
   onSquarePress,
   showMoveNumbers = false,
+  horizontalInset = spacing.lg * 2,
 }: KnightTourBoardProps) {
   const { width: screenWidth } = useWindowDimensions();
   const { colors } = useTheme();
-  const boardSize = Math.min(screenWidth - spacing.lg * 2, 400);
+  const { preferences } = useGamePreferences();
+  const theme = boardThemeColors[preferences.boardTheme];
+  const boardSize = Math.min(screenWidth - horizontalInset, MAX_BOARD_SIZE);
   const squareSize = boardSize / 8;
   const tappable = useMemo(() => new Set(tappableSquares), [tappableSquares]);
+  const crossColor = withAlpha(colors.foreground, 0.5);
 
   return (
-    <View
-      style={[
-        styles.container,
-        { width: boardSize, height: boardSize, borderColor: colors.foreground },
-      ]}
-    >
-      {DISPLAY_RANKS.map((rank, rankIndex) => (
+    <View style={[styles.board, { width: boardSize, height: boardSize }]}>
+      {DISPLAY_RANKS.map((rank, row) => (
         <View key={rank} style={styles.row}>
-          {FILES.map((file, fileIndex) => {
+          {FILES.map((file, col) => {
             const square = `${file}${rank}`;
+            const light = (row + col) % 2 === 0;
             return (
               <BoardSquare
                 key={square}
                 square={square}
-                light={(rankIndex + fileIndex) % 2 === 0}
                 size={squareSize}
+                background={light ? theme.light : theme.dark}
+                labelColor={light ? theme.lightText : theme.darkText}
+                crossColor={crossColor}
+                rankLabel={
+                  preferences.showCoordinates && col === 0 ? rank : null
+                }
+                fileLabel={
+                  preferences.showCoordinates &&
+                  row === DISPLAY_RANKS.length - 1
+                    ? file
+                    : null
+                }
                 hasKnight={square === currentSquare}
                 moveNumber={visitedSquares.get(square)}
                 showMoveNumber={showMoveNumbers}
@@ -79,8 +105,12 @@ export function KnightTourBoard({
 
 type BoardSquareProps = {
   square: string;
-  light: boolean;
   size: number;
+  background: string;
+  labelColor: string;
+  crossColor: string;
+  rankLabel: string | null;
+  fileLabel: string | null;
   hasKnight: boolean;
   moveNumber: number | undefined;
   showMoveNumber: boolean;
@@ -90,16 +120,18 @@ type BoardSquareProps = {
 
 const BoardSquare = memo(function BoardSquare({
   square,
-  light,
   size,
+  background,
+  labelColor,
+  crossColor,
+  rankLabel,
+  fileLabel,
   hasKnight,
   moveNumber,
   showMoveNumber,
   tappable,
   onPress,
 }: BoardSquareProps) {
-  const markColor = light ? chessColors.boardDark : chessColors.boardLight;
-
   let content = null;
   if (hasKnight) {
     content = <ChessPieceIcon type="n" color="w" size={size * 0.8} />;
@@ -109,7 +141,7 @@ const BoardSquare = memo(function BoardSquare({
         <Text style={styles.numberText}>{moveNumber}</Text>
       </View>
     ) : (
-      <Text style={[styles.cross, { color: markColor }]}>{"✕"}</Text>
+      <Ionicons name="close" size={size * 0.5} color={crossColor} />
     );
   }
 
@@ -118,54 +150,71 @@ const BoardSquare = memo(function BoardSquare({
       onPress={() => onPress?.(square)}
       disabled={!tappable}
       activeOpacity={0.7}
+      accessibilityLabel={square}
       style={[
         styles.square,
-        {
-          width: size,
-          height: size,
-          backgroundColor: light
-            ? chessColors.boardLight
-            : chessColors.boardDark,
-        },
+        { width: size, height: size, backgroundColor: background },
       ]}
     >
       {content}
+      {rankLabel && (
+        <Text style={[styles.rankLabel, { color: labelColor }]}>
+          {rankLabel}
+        </Text>
+      )}
+      {fileLabel && (
+        <Text style={[styles.fileLabel, { color: labelColor }]}>
+          {fileLabel}
+        </Text>
+      )}
     </TouchableOpacity>
   );
 });
 
+/**
+ * The web's `rounded-md` board, its `w-6 h-6 rounded-full bg-black/50`
+ * move numbers in white `text-xs` bold, and its crosses at half the
+ * foreground colour.
+ */
 const styles = StyleSheet.create({
-  container: {
+  board: {
     alignSelf: "center",
-    borderRadius: 4,
+    borderRadius: 6,
     overflow: "hidden",
-    borderWidth: 2,
   },
   row: {
     flexDirection: "row",
-    flex: 1,
   },
   square: {
     justifyContent: "center",
     alignItems: "center",
   },
-  cross: {
-    fontSize: 18,
-    fontWeight: "700",
-    opacity: 0.7,
-  },
   numberBadge: {
-    minWidth: 22,
-    height: 22,
-    borderRadius: 11,
-    paddingHorizontal: 3,
+    minWidth: 24,
+    height: 24,
+    borderRadius: 12,
+    paddingHorizontal: 2,
     backgroundColor: "rgba(0, 0, 0, 0.5)",
     justifyContent: "center",
     alignItems: "center",
   },
   numberText: {
     color: "#fff",
-    fontSize: 11,
-    fontWeight: "700",
+    fontSize: 12,
+    fontWeight: fontWeight.bold,
+  },
+  rankLabel: {
+    position: "absolute",
+    top: 1,
+    left: 2,
+    fontSize: 10,
+    fontWeight: fontWeight.semibold,
+  },
+  fileLabel: {
+    position: "absolute",
+    bottom: 0,
+    right: 2,
+    fontSize: 10,
+    fontWeight: fontWeight.semibold,
   },
 });
