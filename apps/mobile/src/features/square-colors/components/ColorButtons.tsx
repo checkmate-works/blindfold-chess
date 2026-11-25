@@ -4,13 +4,7 @@ import { useTranslation } from "react-i18next";
 import type { BoardTheme } from "@blindfold-chess/types";
 import { boardThemeColors } from "@blindfold-chess/ui";
 
-import {
-  borderRadius,
-  fontSize,
-  fontWeight,
-  spacing,
-  useTheme,
-} from "../../../theme";
+import { fontSize, fontWeight, spacing, useTheme } from "../../../theme";
 import type { SquareColor } from "../lib/types";
 
 type ColorButtonsProps = {
@@ -101,14 +95,16 @@ const styles = StyleSheet.create({
     aspectRatio: 1,
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: borderRadius.lg,
+    // The web's `rounded-md`.
+    borderRadius: 6,
   },
   /** The web's `active:scale-95`. */
   pressed: {
     transform: [{ scale: 0.95 }],
   },
+  // The web's `text-lg font-bold`.
   buttonText: {
-    fontSize: fontSize.xl,
+    fontSize: fontSize.lg,
     fontWeight: fontWeight.bold,
   },
 });

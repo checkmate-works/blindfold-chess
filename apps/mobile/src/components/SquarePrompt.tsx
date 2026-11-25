@@ -17,6 +17,12 @@ type SquarePromptProps = {
    */
   squareColor?: string;
   /**
+   * The square's type size, set solid (line height equal to it), for a quiz
+   * that follows a web size other than the 72pt default (square colours:
+   * the web's 60px `text-6xl`, whose line height is 1).
+   */
+  squareSize?: number;
+  /**
    * The feedback slot under the square. Each quiz reserves its own height
    * and type size here, because how much feedback there is to show differs
    * — square-colors answers in one word, the diagonal quiz names two
@@ -39,6 +45,7 @@ export function SquarePrompt({
   question,
   square,
   squareColor,
+  squareSize,
   children,
 }: SquarePromptProps) {
   const { colors } = useTheme();
@@ -52,7 +59,14 @@ export function SquarePrompt({
       ) : null}
 
       <Text
-        style={[styles.squareText, { color: squareColor ?? colors.foreground }]}
+        style={[
+          styles.squareText,
+          { color: squareColor ?? colors.foreground },
+          squareSize !== undefined && {
+            fontSize: squareSize,
+            lineHeight: squareSize,
+          },
+        ]}
       >
         {square}
       </Text>
