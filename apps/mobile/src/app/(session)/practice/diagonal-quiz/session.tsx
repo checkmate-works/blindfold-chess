@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ScrollView, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import type { RemoteChallengePort } from "@blindfold-chess/features/challenge-attempt";
@@ -13,6 +13,7 @@ import type { Square } from "@blindfold-chess/types";
 import { PracticeSessionScreen } from "../../../../components";
 import { ChallengeAttemptGate } from "../../../../features/challenge/ChallengeAttemptGate";
 import { QuestionPanel } from "../../../../features/diagonal-quiz/components";
+import { serializeQuestionResults } from "../../../../features/diagonal-quiz/lib/result-params";
 import { answerHaptics } from "../../../../lib/answer-haptics";
 import { serializePracticeStatsParams } from "../../../../lib/practice-result-params";
 import { spacing } from "../../../../theme";
@@ -67,7 +68,13 @@ function DiagonalQuizSession({
     isFinished,
     isPaused,
     lastAnswer,
+    questionResults,
   } = session;
+
+  // `onComplete` carries the score only; the per-question list the result
+  // screen's Problem Details needs is the session's, read when leaving.
+  const questionResultsRef = useRef(questionResults);
+  questionResultsRef.current = questionResults;
 
   const goToResult = useCallback(
     (completed: DiagonalQuizResult) => {
@@ -75,6 +82,7 @@ function DiagonalQuizSession({
         pathname: "/practice/diagonal-quiz/result",
         params: {
           ...serializePracticeStatsParams(completed),
+          data: serializeQuestionResults(questionResultsRef.current),
           ...(attemptId ? { attemptId } : {}),
         },
       });

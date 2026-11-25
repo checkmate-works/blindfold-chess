@@ -5,3 +5,4 @@ export { HowToPlayDemo } from "./HowToPlayDemo";
 export { QuestionPanel } from "./QuestionPanel";
 export { DiagonalBoard } from "./DiagonalBoard";
 export { DiagonalAnswerComparison } from "./DiagonalAnswerComparison";
+export { DiagonalProblemList } from "./DiagonalProblemList";

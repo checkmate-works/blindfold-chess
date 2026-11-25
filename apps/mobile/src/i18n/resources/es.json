@@ -417,7 +417,9 @@
       "antiDiagonalDirection": "(dirección h1-a8)"
     },
     "result": {
-      "title": "¡Práctica completada!"
+      "title": "¡Práctica completada!",
+      "problemDetails": "Detalles del problema",
+      "timeUp": "Tiempo agotado"
     },
     "settings": {
       "timeLimit": "Tiempo límite",

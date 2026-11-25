@@ -417,7 +417,9 @@
       "antiDiagonalDirection": "(h1-a8方向)"
     },
     "result": {
-      "title": "練習終了！"
+      "title": "練習終了！",
+      "problemDetails": "問題詳細",
+      "timeUp": "時間切れ"
     },
     "settings": {
       "timeLimit": "制限時間",
