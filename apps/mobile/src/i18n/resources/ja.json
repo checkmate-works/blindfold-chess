@@ -242,8 +242,7 @@
       "incorrectWithSolution": "正解は{{solution}}"
     },
     "result": {
-      "title": "結果",
-      "timeTaken": "経過時間"
+      "title": "練習終了！"
     }
   },
   "squareColors": {

@@ -242,8 +242,7 @@
       "incorrectWithSolution": "{{solution}} é a resposta correta"
     },
     "result": {
-      "title": "Resultados",
-      "timeTaken": "Tempo"
+      "title": "Prática concluída!"
     }
   },
   "squareColors": {
