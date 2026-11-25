@@ -593,28 +593,12 @@
       "howToPlay": {
         "title": "How to Play",
         "body": "A square name is shown on the board. Tap the correct square as quickly as you can."
-      },
-      "challenge": {
-        "title": "Challenge Mode",
-        "body": "Compete to see how many you can answer correctly within the time limit. Your score is recorded and listed on the leaderboard."
-      },
-      "training": {
-        "title": "Training Mode",
-        "body": "Practice at your own pace with no time limit. Scores are not recorded."
       }
     },
     "legalMoves": {
       "howToPlay": {
         "title": "How to Play",
         "body": "A piece and two squares are shown. Determine whether the move is legal or not."
-      },
-      "challenge": {
-        "title": "Challenge Mode",
-        "body": "Compete to see how many you can answer correctly within the time limit. Your score is recorded and listed on the leaderboard."
-      },
-      "training": {
-        "title": "Training Mode",
-        "body": "Practice at your own pace with no time limit. Scores are not recorded."
       }
     },
     "boardSymmetry": {
@@ -637,28 +621,12 @@
       "step_point": {
         "title": "Point Symmetry (Center)",
         "body": "Squares symmetric with respect to the center of the board (rotated 180 degrees). Example: a1 ↔ h8, c3 ↔ f6."
-      },
-      "challenge": {
-        "title": "Challenge Mode",
-        "body": "Compete to see how many you can answer correctly within the time limit. Your score is recorded and listed on the leaderboard."
-      },
-      "training": {
-        "title": "Training Mode",
-        "body": "Practice at your own pace with no time limit. Scores are not recorded."
       }
     },
     "squareColors": {
       "howToPlay": {
         "title": "How to Play",
         "body": "Questions like the following will be asked repeatedly. Identify whether the given square is light or dark."
-      },
-      "challenge": {
-        "title": "Challenge Mode",
-        "body": "Compete to see how many you can answer correctly within the time limit. Your score is recorded and listed on the leaderboard."
-      },
-      "training": {
-        "title": "Training Mode",
-        "body": "Practice at your own pace with no time limit. Scores are not recorded."
       }
     },
     "diagonalQuiz": {
@@ -673,14 +641,6 @@
       "step_antiDiagonal": {
         "title": "What is an Anti-diagonal?",
         "body": "An anti-diagonal runs in the h1-a8 direction.\nAll squares where (file + rank) is constant belong to the same anti-diagonal.\nThe blue squares show the anti-diagonal passing through d4."
-      },
-      "challenge": {
-        "title": "Challenge Mode",
-        "body": "Compete to see how many you can answer correctly within the time limit. Your score is recorded and listed on the leaderboard."
-      },
-      "training": {
-        "title": "Training Mode",
-        "body": "Practice at your own pace with no time limit. Scores are not recorded."
       }
     },
     "routePlanner": {
@@ -695,14 +655,6 @@
       "step_visualization": {
         "title": "Visualize the Route",
         "body": "There is no board preview during practice. Visualize the path in your head and input the coordinates.\nExample: e4 -> f6 -> h5"
-      },
-      "challenge": {
-        "title": "Challenge Mode",
-        "body": "Compete to see how many you can answer correctly within the time limit. Your score is recorded and listed on the leaderboard."
-      },
-      "training": {
-        "title": "Training Mode",
-        "body": "Practice at your own pace with no time limit. Scores are not recorded."
       }
     },
     "quadrants": {

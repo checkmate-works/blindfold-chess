@@ -2,32 +2,18 @@
 
 /** The help pages of each module, in the order the help sheet shows them. */
 export const MODULE_HELP_PAGES: Readonly<Record<string, readonly string[]>> = {
-  coordinateQuiz: ["howToPlay", "challenge", "training"],
-  legalMoves: ["howToPlay", "challenge", "training"],
+  coordinateQuiz: ["howToPlay"],
+  legalMoves: ["howToPlay"],
   boardSymmetry: [
     "howToPlay",
     "step_intro",
     "step_horizontal",
     "step_vertical",
     "step_point",
-    "challenge",
-    "training",
   ],
-  squareColors: ["howToPlay", "challenge", "training"],
-  diagonalQuiz: [
-    "howToPlay",
-    "step_diagonal",
-    "step_antiDiagonal",
-    "challenge",
-    "training",
-  ],
-  routePlanner: [
-    "howToPlay",
-    "step_intro",
-    "step_visualization",
-    "challenge",
-    "training",
-  ],
+  squareColors: ["howToPlay"],
+  diagonalQuiz: ["howToPlay", "step_diagonal", "step_antiDiagonal"],
+  routePlanner: ["howToPlay", "step_intro", "step_visualization"],
   quadrants: ["howToPlay"],
   knightTour: ["overview", "tutorial"],
   algebraicNotation: ["about"],

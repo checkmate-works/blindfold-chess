@@ -5,27 +5,27 @@ import { useTranslation } from "react-i18next";
 import { BottomSheet } from "../../components/BottomSheet";
 import { Button } from "../../components/Button";
 import { useTheme, fontSize, fontWeight, spacing } from "../../theme";
-import { MODULE_HELP_PAGES } from "./module-help-pages";
 
 type Props = {
   /** The module's i18n key (`MOBILE_PRACTICE_MODULES[].i18nKey`). */
   moduleKey: string;
+  /** The pages to show, in order: `helpPagesFor`. */
+  pages: readonly string[];
   visible: boolean;
   onClose: () => void;
 };
 
 /**
- * A module's help, one page at a time in a bottom sheet: how to play, the
- * web tutorial's explanation steps, and what the challenge and training
- * modes are. The texts are the web's (copied by
- * `scripts/port-help-texts.py`); the web shows them as a spotlight tour on
- * the module page and a separate tutorial page, neither of which has a
- * native counterpart, so both become pages of this sheet.
+ * A module's help, one page at a time in a bottom sheet: how to play (unless
+ * the setup screen shows it) and the web tutorial's explanation steps. The
+ * texts are the web's (copied by `scripts/port-help-texts.py`); the web
+ * shows them as a spotlight tour on the module page and a separate tutorial
+ * page, neither of which has a native counterpart, so both become pages of
+ * this sheet.
  */
-export function HelpSheet({ moduleKey, visible, onClose }: Props) {
+export function HelpSheet({ moduleKey, pages, visible, onClose }: Props) {
   const { t } = useTranslation();
   const { colors } = useTheme();
-  const pages = MODULE_HELP_PAGES[moduleKey] ?? [];
   const [index, setIndex] = useState(0);
 
   useEffect(() => {

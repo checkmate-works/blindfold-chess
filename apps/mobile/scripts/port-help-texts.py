@@ -1,4 +1,4 @@
-"""Copy the practice modules' how-to-play, tutorial and mode texts from the
+"""Copy the practice modules' how-to-play and tutorial texts from the
 web dictionary (apps/web/src/messages) into the mobile one, as
 `moduleHelp.<mobileKey>.<page>.{title,body}`, and write the page order to
 src/features/help/module-help-pages.ts.
@@ -73,9 +73,10 @@ def pages_for(ns: dict) -> list[tuple[str, str, str]]:
             pages.append(("tutorial", tutorial["title"], tutorial["description"]))
     if not pages:
         pages.append(("about", ns["title"], ns["description"]))
-    for mode in ("challenge", "training"):
-        if mode in help_:
-            pages.append((mode, help_[mode]["title"], help_[mode]["description"]))
+    # The web's challenge / training mode pages are left out: they say the
+    # same thing for every module, and the setup screen already shows it —
+    # the rules in the footer hint, recording in the sign-in row, and the
+    # untimed mode in the Training button.
     return pages
 
 

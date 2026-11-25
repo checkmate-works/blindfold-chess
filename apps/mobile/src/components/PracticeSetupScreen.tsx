@@ -19,6 +19,7 @@ import { useTranslation } from "react-i18next";
 
 import { Button } from "./Button";
 import { HelpSheet } from "../features/help/HelpSheet";
+import { helpPagesFor } from "../features/help/help-pages";
 import { HeaderIconButton } from "../navigation/HeaderIconButton";
 import {
   MOBILE_PRACTICE_MODULES,
@@ -52,15 +53,12 @@ type PracticeSetupScreenProps = {
 };
 
 /**
- * The i18n key of the practice module whose setup screen is at `pathname`
- * (`/practice/<route>`), or null off the practice routes.
+ * The practice module whose setup screen is at `pathname`
+ * (`/practice/<route>`), or undefined off the practice routes.
  */
-function moduleKeyForPath(pathname: string): string | null {
+function moduleForPath(pathname: string) {
   const route = pathname.split("/")[2];
-  const module = MOBILE_PRACTICE_MODULES.find(
-    (m) => practiceModuleRoute(m) === route,
-  );
-  return module?.i18nKey ?? null;
+  return MOBILE_PRACTICE_MODULES.find((m) => practiceModuleRoute(m) === route);
 }
 
 /**
@@ -151,8 +149,10 @@ function useStartOnce() {
  * the heaviest thing on the screen.
  *
  * The header's trailing "?" opens the module's `HelpSheet` (how to play,
- * the tutorial's explanations, the modes). The module is found from the
- * route, so a setup screen needs nothing extra for it.
+ * the tutorial's explanations). The module is found from the route, so a
+ * setup screen needs nothing extra for it. A module whose help would only
+ * repeat the screen — its how-to-play shown on it and no tutorial — gets
+ * no "?" at all.
  */
 export function PracticeSetupScreen({
   isLoaded,
@@ -165,12 +165,17 @@ export function PracticeSetupScreen({
   const { t } = useTranslation();
   const { colors } = useTheme();
   const navigation = useNavigation();
-  const moduleKey = moduleKeyForPath(usePathname());
+  const module = moduleForPath(usePathname());
+  const moduleKey = module?.i18nKey ?? null;
+  const helpPages = module
+    ? helpPagesFor(module.i18nKey, module.howToPlayOnSetup ?? false)
+    : [];
+  const hasHelp = helpPages.length > 0;
   const [helpOpen, setHelpOpen] = useState(false);
   const startOnce = useStartOnce();
 
   useLayoutEffect(() => {
-    if (!moduleKey) return;
+    if (!hasHelp) return;
     navigation.setOptions({
       headerRight: () => (
         <HeaderIconButton
@@ -181,7 +186,7 @@ export function PracticeSetupScreen({
         />
       ),
     });
-  }, [navigation, moduleKey, t]);
+  }, [navigation, hasHelp, t]);
 
   if (!isLoaded) {
     return (
@@ -255,9 +260,10 @@ export function PracticeSetupScreen({
           />
         )}
       </View>
-      {moduleKey && (
+      {moduleKey && hasHelp && (
         <HelpSheet
           moduleKey={moduleKey}
+          pages={helpPages}
           visible={helpOpen}
           onClose={() => setHelpOpen(false)}
         />

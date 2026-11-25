@@ -67,10 +67,14 @@ header style (page-coloured, no hairline, chevron-only back).
   the web's swatches (`BoardOrientationSelector`), then the sign-in row
   (`ChallengeRulesNote`). The header names the module, as the web page's
   title does. Coordinate quiz so far, the target for the others.
-- **Help:** every practice setup screen's header has a ? that opens
-  `HelpSheet` (`features/help/`), paged: how to play, the web tutorial's
-  explanation steps, the challenge/training modes. `PracticeSetupScreen`
-  finds the module from the route, so a setup screen needs nothing for it.
+- **Help:** a practice setup screen's header has a ? that opens
+  `HelpSheet` (`features/help/`), paged: how to play and the web tutorial's
+  explanation steps. The web's challenge/training mode pages are not ported
+  (the setup screen already says all of it). A module with
+  `howToPlayOnSetup` leaves its how-to-play page out (`helpPagesFor`), and
+  one with no page left gets no ? at all (coordinate quiz).
+  `PracticeSetupScreen` finds the module from the route, so a setup screen
+  needs nothing for it.
 - **Header buttons** are `HeaderIconButton`; the session close button is
   `SessionCloseButton`.
 - Web pages (terms, privacy, FAQ, contact, licenses) open in the browser via
@@ -80,8 +84,8 @@ header style (page-coloured, no hairline, chevron-only back).
 
 Generated, not edited by hand; re-run the script after the web changes:
 
-- `scripts/port-help-texts.py` — the practice modules' how-to-play,
-  tutorial and mode texts (`moduleHelp.*` in the four dictionaries and
+- `scripts/port-help-texts.py` — the practice modules' how-to-play and
+  tutorial texts (`moduleHelp.*` in the four dictionaries and
   `features/help/module-help-pages.ts`), recall's strings (`recall.*`) and
   the account screens' (`account.*`) and the puzzle screens' (`puzzle.*`).
 - `pnpm bundle-glossary` (`scripts/bundle-glossary.ts`) — the web's glossary

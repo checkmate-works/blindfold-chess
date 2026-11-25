@@ -593,28 +593,12 @@
       "howToPlay": {
         "title": "Como Jogar",
         "body": "É mostrado o nome de uma casa no tabuleiro. Toque na casa correta o mais rápido possível."
-      },
-      "challenge": {
-        "title": "Modo Desafio",
-        "body": "Compita para ver quantas respostas corretas você consegue dar dentro do limite de tempo. Sua pontuação é registrada e aparece na tabela de classificação."
-      },
-      "training": {
-        "title": "Modo Treino",
-        "body": "Pratique no seu ritmo, sem limite de tempo. As pontuações não são registradas."
       }
     },
     "legalMoves": {
       "howToPlay": {
         "title": "Como Jogar",
         "body": "São mostradas uma peça e duas casas. Determine se o movimento é legal ou não."
-      },
-      "challenge": {
-        "title": "Modo Desafio",
-        "body": "Compita para ver quantas respostas corretas você consegue dar dentro do limite de tempo. Sua pontuação é registrada e aparece na tabela de classificação."
-      },
-      "training": {
-        "title": "Modo Treino",
-        "body": "Pratique no seu ritmo, sem limite de tempo. As pontuações não são registradas."
       }
     },
     "boardSymmetry": {
@@ -637,28 +621,12 @@
       "step_point": {
         "title": "Simetria Central (Ponto)",
         "body": "Casas simétricas em relação ao centro do tabuleiro (rotacionadas 180 graus). Exemplo: a1 ↔ h8, c3 ↔ f6."
-      },
-      "challenge": {
-        "title": "Modo Desafio",
-        "body": "Compita para ver quantas respostas corretas você consegue dar dentro do limite de tempo. Sua pontuação é registrada e aparece na tabela de classificação."
-      },
-      "training": {
-        "title": "Modo Treino",
-        "body": "Pratique no seu ritmo, sem limite de tempo. As pontuações não são registradas."
       }
     },
     "squareColors": {
       "howToPlay": {
         "title": "Como Jogar",
         "body": "Serão feitas perguntas como a seguinte repetidamente. Identifique se a casa dada é clara ou escura."
-      },
-      "challenge": {
-        "title": "Modo Desafio",
-        "body": "Compita para ver quantas respostas corretas você consegue dar dentro do limite de tempo. Sua pontuação é registrada e aparece na tabela de classificação."
-      },
-      "training": {
-        "title": "Modo Treino",
-        "body": "Pratique no seu ritmo, sem limite de tempo. As pontuações não são registradas."
       }
     },
     "diagonalQuiz": {
@@ -673,14 +641,6 @@
       "step_antiDiagonal": {
         "title": "O que é uma Anti-diagonal?",
         "body": "Uma anti-diagonal vai na direção h1-a8.\nTodas as casas onde (coluna + fila) é constante pertencem à mesma anti-diagonal.\nAs casas azuis mostram a anti-diagonal que passa por d4."
-      },
-      "challenge": {
-        "title": "Modo Desafio",
-        "body": "Compita para ver quantas respostas corretas você consegue dar dentro do limite de tempo. Sua pontuação é registrada e aparece na tabela de classificação."
-      },
-      "training": {
-        "title": "Modo Treino",
-        "body": "Pratique no seu ritmo, sem limite de tempo. As pontuações não são registradas."
       }
     },
     "routePlanner": {
@@ -695,14 +655,6 @@
       "step_visualization": {
         "title": "Visualize a Rota",
         "body": "Não há pré-visualização do tabuleiro durante a prática. Visualize o caminho em sua mente e insira as coordenadas.\nExemplo: e4 -> f6 -> h5"
-      },
-      "challenge": {
-        "title": "Modo Desafio",
-        "body": "Compita para ver quantas respostas corretas você consegue dar dentro do limite de tempo. Sua pontuação é registrada e aparece na tabela de classificação."
-      },
-      "training": {
-        "title": "Modo Treino",
-        "body": "Pratique no seu ritmo, sem limite de tempo. As pontuações não são registradas."
       }
     },
     "quadrants": {
