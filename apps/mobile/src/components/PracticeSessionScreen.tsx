@@ -35,6 +35,13 @@ type PracticeSessionScreenProps = {
    * top row and the frame clears the status bar itself.
    */
   headerShown?: boolean;
+  /**
+   * The body draws the countdown itself — over its board, as the web does —
+   * so the frame keeps the rows and the body on screen during it instead of
+   * covering the screen with its own countdown. The body must then also keep
+   * its input shut and its question hidden until `countdown` is null.
+   */
+  countdownInBody?: boolean;
   /** Tightens the score footer's spacing where the body already pads itself. */
   footerStyle?: StyleProp<ViewStyle>;
   children: ReactNode;
@@ -63,6 +70,7 @@ export function PracticeSessionScreen({
   incorrectCount,
   lives,
   headerShown = false,
+  countdownInBody = false,
   footerStyle,
   children,
 }: PracticeSessionScreenProps) {
@@ -77,9 +85,9 @@ export function PracticeSessionScreen({
       edges={["bottom", "left", "right"]}
       style={{ paddingTop: headerShown ? 0 : insets.top }}
     >
-      <CountdownOverlay countdown={countdown} />
+      {!countdownInBody && <CountdownOverlay countdown={countdown} />}
 
-      {countdown === null && (
+      {(countdown === null || countdownInBody) && (
         <>
           <View style={styles.timerRow}>
             <View style={styles.leading}>

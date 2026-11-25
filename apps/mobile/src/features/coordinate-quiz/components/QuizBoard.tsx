@@ -10,18 +10,27 @@ import type { SquareHighlight } from "./ChessBoardSquare";
 
 type TurnIndicatorProps = {
   question: CoordinateQuestion | null;
+  /**
+   * Keeps the row's height but shows nothing — during the countdown, so a
+   * random orientation is not known before the clock starts. The web blurs
+   * it; React Native has no blur without another native module.
+   */
+  hidden?: boolean;
 };
 
 /**
  * "White to move" / "Black to move": which way the board is turned. A row of
  * its own directly above the board, as on the web — not in the timer row.
  */
-export function TurnIndicator({ question }: TurnIndicatorProps) {
+export function TurnIndicator({
+  question,
+  hidden = false,
+}: TurnIndicatorProps) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const white = question?.orientation === "white";
   return (
-    <View style={styles.turnIndicator}>
+    <View style={[styles.turnIndicator, hidden && styles.hidden]}>
       <View
         style={[
           styles.turnDot,
@@ -50,6 +59,13 @@ type QuizBoardProps = {
   /** Whether `answeredSquare` was the target. */
   answerCorrect: boolean;
   onSquarePress: (square: Square) => void;
+  /**
+   * Seconds left before the timed session starts, or null once it has (and
+   * always in training). While set, a dark veil covers the board with the
+   * count over it, as the web's countdown does; the board takes no input and
+   * the target's name stays hidden.
+   */
+  countdown?: number | null;
 };
 
 /**
@@ -65,8 +81,10 @@ export function QuizBoard({
   answeredSquare,
   answerCorrect,
   onSquarePress,
+  countdown = null,
 }: QuizBoardProps) {
   const { colors } = useTheme();
+  const countingDown = countdown !== null;
   const showingResult = question !== null && answeredSquare !== null;
   const highlights = useMemo(() => {
     if (!question || !answeredSquare) return {};
@@ -84,14 +102,29 @@ export function QuizBoard({
         orientation={question?.orientation ?? "white"}
         highlights={highlights}
         onSquarePress={onSquarePress}
-        disabled={!question}
+        disabled={!question || countingDown}
       />
-      {question && !showingResult && (
+      {question && !showingResult && !countingDown && (
         <View style={styles.overlayContainer} pointerEvents="none">
           <Text
             style={[styles.overlayText, { color: colors.primaryForeground }]}
           >
             {question.targetSquare}
+          </Text>
+        </View>
+      )}
+      {countingDown && (
+        <View
+          style={styles.countdownVeil}
+          testID="countdown-overlay"
+          accessibilityLiveRegion="polite"
+        >
+          <Text
+            style={[styles.overlayText, styles.countdownText]}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+          >
+            {countdown > 0 ? countdown : "START!"}
           </Text>
         </View>
       )}
@@ -110,6 +143,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 2,
   },
+  hidden: {
+    opacity: 0,
+  },
   turnText: {
     fontSize: fontSize.sm,
     fontWeight: fontWeight.medium,
@@ -123,6 +159,22 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     zIndex: 10,
+  },
+  /**
+   * The web veils the board with 30% black plus a backdrop blur. Without the
+   * blur 30% leaves the squares at full contrast, so the veil is darker.
+   */
+  countdownVeil: {
+    ...StyleSheet.absoluteFill,
+    backgroundColor: "rgba(0, 0, 0, 0.55)",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: spacing.md,
+    zIndex: 20,
+  },
+  countdownText: {
+    color: "#ffffff",
+    fontSize: 96,
   },
   overlayText: {
     fontSize: 64,

@@ -119,11 +119,11 @@ function CoordinateQuizSession({
 
   const onSquarePress = useCallback(
     (square: Square) => {
-      if (showFeedback || awaitingServer) return;
+      if (countdown !== null || showFeedback || awaitingServer) return;
       setAnsweredSquare(square);
       handleAnswer(square);
     },
-    [handleAnswer, showFeedback, awaitingServer],
+    [handleAnswer, countdown, showFeedback, awaitingServer],
   );
 
   return (
@@ -138,16 +138,21 @@ function CoordinateQuizSession({
         max: MISTAKE_LIMIT,
       }}
       headerShown
+      countdownInBody
     >
       <View style={styles.body}>
         <View style={styles.turnRow}>
-          <TurnIndicator question={currentQuestion} />
+          <TurnIndicator
+            question={currentQuestion}
+            hidden={countdown !== null}
+          />
         </View>
         <QuizBoard
           question={currentQuestion}
           answeredSquare={showFeedback ? answeredSquare : null}
           answerCorrect={lastAnswerCorrect ?? false}
           onSquarePress={onSquarePress}
+          countdown={countdown}
         />
       </View>
     </PracticeSessionScreen>
