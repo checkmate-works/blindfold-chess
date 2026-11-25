@@ -483,7 +483,7 @@
   },
   "fen": {
     "setup": {
-      "title": "FEN Reconstruction Setup",
+      "title": "FEN Reconstruction",
       "problemSource": "Problem Source",
       "presetProblems": "Preset Problems",
       "enterFen": "Enter FEN",
@@ -494,6 +494,7 @@
       "invalidFenOnLine": "Invalid FEN on line {{lines}}",
       "invalidFenOnLines": "Invalid FEN on lines {{lines}}",
       "problemCount": "Number of Problems",
+      "settings": "Settings",
       "shuffle": "Shuffle Problems"
     },
     "result": {
@@ -685,7 +686,8 @@
   "positionMemory": {
     "setup": {
       "title": "Position Memory",
-      "memorizeTime": "Memorizing time",
+      "settings": "Problem Settings",
+      "memorizeTime": "Memorization Time",
       "seconds": "{{count}}s"
     },
     "session": {

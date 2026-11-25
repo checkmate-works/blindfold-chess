@@ -7,10 +7,13 @@ import {
 import { useAsyncStorageSettings } from "../../lib/persistent-settings/useAsyncStorageSettings";
 
 /**
- * Memorising seconds offered on the setup screen. The web takes any value in
- * 5–60 on a slider; these are its marked stops.
+ * Memorising seconds offered on the setup screen: the stops of the web's
+ * slider (5–60 in steps of 5), picked from a sheet.
  */
-export const MEMORIZE_TIME_OPTIONS = [5, 10, 30, 60] as const;
+export const MEMORIZE_TIME_OPTIONS: readonly number[] = Array.from(
+  { length: 12 },
+  (_, i) => (i + 1) * 5,
+);
 
 /**
  * The FEN drill's settings (problem source, count, shuffle) plus how long

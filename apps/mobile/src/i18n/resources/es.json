@@ -483,7 +483,7 @@
   },
   "fen": {
     "setup": {
-      "title": "Reconstrucción FEN Configuración",
+      "title": "Reconstrucción FEN",
       "problemSource": "Origen del Problema",
       "presetProblems": "Problemas Predefinidos",
       "enterFen": "Introducir FEN",
@@ -494,6 +494,7 @@
       "invalidFenOnLine": "FEN inválido en la línea {{lines}}",
       "invalidFenOnLines": "FEN inválido en las líneas {{lines}}",
       "problemCount": "Número de Problemas",
+      "settings": "Configuración",
       "shuffle": "Mezclar Problemas"
     },
     "result": {
@@ -685,7 +686,8 @@
   "positionMemory": {
     "setup": {
       "title": "Memoria de posiciones",
-      "memorizeTime": "Tiempo para memorizar",
+      "settings": "Configuración del problema",
+      "memorizeTime": "Tiempo de memorización",
       "seconds": "{{count}} s"
     },
     "session": {

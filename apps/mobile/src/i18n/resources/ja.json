@@ -483,7 +483,7 @@
   },
   "fen": {
     "setup": {
-      "title": "FEN再構築の設定",
+      "title": "FEN再構築",
       "problemSource": "出題方式",
       "presetProblems": "プリセットの問題",
       "enterFen": "FENを入力",
@@ -494,6 +494,7 @@
       "invalidFenOnLine": "{{lines}}行目のFENが無効です",
       "invalidFenOnLines": "{{lines}}行目のFENが無効です",
       "problemCount": "問題数",
+      "settings": "設定",
       "shuffle": "シャッフル"
     },
     "result": {
@@ -685,6 +686,7 @@
   "positionMemory": {
     "setup": {
       "title": "ポジションの記憶",
+      "settings": "出題の設定",
       "memorizeTime": "記憶時間",
       "seconds": "{{count}}秒"
     },
