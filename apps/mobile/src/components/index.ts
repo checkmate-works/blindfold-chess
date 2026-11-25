@@ -1,4 +1,5 @@
 export { BoardOrientationSelector } from "./BoardOrientationSelector";
+export { BottomBar } from "./BottomBar";
 export { Button } from "./Button";
 export { Card } from "./Card";
 export { CoordinateKeyRow, coordinateKeypadStyles } from "./CoordinateKeyRow";
