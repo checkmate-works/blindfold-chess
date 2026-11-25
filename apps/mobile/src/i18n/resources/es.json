@@ -397,8 +397,6 @@
       "selectRank": "Selecciona una fila (1-8)",
       "backspace": "Retroceso",
       "clear": "Borrar",
-      "correct": "¡Correcto!",
-      "incorrect": "Incorrecto",
       "correctAnswer": "{{diagonal}}, {{antiDiagonal}}",
       "nextProblem": "Siguiente Problema",
       "yourAnswer": "Tu respuesta",
@@ -411,9 +409,7 @@
       "antiDiagonalDirection": "(dirección h1-a8)"
     },
     "result": {
-      "title": "¡Práctica completada!",
-      "problemDetails": "Detalles del problema",
-      "timeUp": "Tiempo agotado"
+      "title": "¡Práctica completada!"
     },
     "settings": {
       "timeLimit": "Tiempo límite",

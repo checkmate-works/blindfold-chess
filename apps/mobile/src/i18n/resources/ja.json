@@ -397,8 +397,6 @@
       "selectRank": "ランクを選択 (1-8)",
       "backspace": "一文字削除",
       "clear": "クリア",
-      "correct": "正解！",
-      "incorrect": "不正解",
       "correctAnswer": "{{diagonal}}, {{antiDiagonal}}",
       "nextProblem": "次の問題",
       "yourAnswer": "あなたの回答",
@@ -411,9 +409,7 @@
       "antiDiagonalDirection": "(h1-a8方向)"
     },
     "result": {
-      "title": "練習終了！",
-      "problemDetails": "問題詳細",
-      "timeUp": "時間切れ"
+      "title": "練習終了！"
     },
     "settings": {
       "timeLimit": "制限時間",

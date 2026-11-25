@@ -397,8 +397,6 @@
       "selectRank": "Select a rank (1-8)",
       "backspace": "Backspace",
       "clear": "Clear",
-      "correct": "Correct!",
-      "incorrect": "Incorrect",
       "correctAnswer": "{{diagonal}}, {{antiDiagonal}}",
       "nextProblem": "Next Problem",
       "yourAnswer": "Your answer",
@@ -411,9 +409,7 @@
       "antiDiagonalDirection": "(h1-a8 direction)"
     },
     "result": {
-      "title": "Practice Complete!",
-      "problemDetails": "Problem Details",
-      "timeUp": "Time's up"
+      "title": "Practice Complete!"
     },
     "settings": {
       "timeLimit": "Time Limit",
