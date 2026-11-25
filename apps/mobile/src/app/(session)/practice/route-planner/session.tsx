@@ -1,7 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { useCallback, useInsertionEffect, useMemo, useRef } from "react";
+import { ScrollView, StyleSheet } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useTranslation } from "react-i18next";
 import type { RemoteChallengePort } from "@blindfold-chess/features/challenge-attempt";
 import {
   CHALLENGE_TIME_LIMIT,
@@ -9,22 +8,17 @@ import {
 } from "@blindfold-chess/features/practice-registry";
 import {
   ROUTE_PLANNER_CHALLENGE_PIECES,
-  evaluateAttempt,
+  type RoutePlannerAttempt,
   type RoutePlannerChallengePiece,
   type RoutePlannerProblem,
   type RoutePlannerResult,
 } from "@blindfold-chess/features/route-planner";
-import {
-  useRoutePlannerInput,
-  useRoutePlannerSession,
-} from "@blindfold-chess/features/route-planner/client";
+import { useRoutePlannerSession } from "@blindfold-chess/features/route-planner/client";
 
-import { Button, PracticeSessionScreen } from "../../../../components";
+import { PracticeSessionScreen } from "../../../../components";
 import { ChallengeAttemptGate } from "../../../../features/challenge/ChallengeAttemptGate";
-import {
-  ProblemCard,
-  SquareInput,
-} from "../../../../features/route-planner/components";
+import { ProblemPanel } from "../../../../features/route-planner/components";
+import { buildRoutePlannerResultParams } from "../../../../features/route-planner/lib/result-params";
 import { answerHaptics } from "../../../../lib/answer-haptics";
 import { parseEnumParam } from "../../../../lib/route-params";
 import { spacing } from "../../../../theme";
@@ -71,7 +65,6 @@ function RoutePlannerChallengeRun({
   attemptId: string | null;
   remote: RemoteChallengePort<RoutePlannerProblem> | undefined;
 }) {
-  const { t } = useTranslation();
   const router = useRouter();
   // The same piece the server generates the attempt's problems for.
   const pieces = useMemo(
@@ -79,14 +72,23 @@ function RoutePlannerChallengeRun({
     [selectedPiece],
   );
 
+  // The run as of its last render, for `handleComplete`: the session calls
+  // it from its completion effect, and every insertion effect of that
+  // render (below) has run by then.
+  const run = useRef<{
+    timeElapsed: number;
+    timedOutProblem: RoutePlannerProblem | null;
+  }>({ timeElapsed: 0, timedOutProblem: null });
+
   const handleComplete = useCallback(
     (result: RoutePlannerResult) => {
       router.replace({
         pathname: "/practice/route-planner/result",
         params: {
-          correctCount: String(result.correctCount),
-          totalProblems: String(result.totalProblems),
-          accuracy: String(result.accuracy),
+          ...buildRoutePlannerResultParams(result, {
+            ...run.current,
+            timeLimit: CHALLENGE_TIME_LIMIT,
+          }),
           ...(attemptId ? { attemptId } : {}),
         },
       });
@@ -97,7 +99,9 @@ function RoutePlannerChallengeRun({
   const {
     currentProblem,
     countdown,
+    timeElapsed,
     timeRemaining,
+    finishReason,
     correctCount,
     incorrectCount,
     showFeedback,
@@ -114,37 +118,23 @@ function RoutePlannerChallengeRun({
     onAnswerEffect: answerHaptics,
   });
 
+  // Only the clock leaves a problem on screen unanswered (it stops during
+  // the verdict), and the result lists it with its answer, as the web's.
+  useInsertionEffect(() => {
+    run.current = {
+      timeElapsed,
+      timedOutProblem: finishReason === "timeUp" ? currentProblem : null,
+    };
+  });
+
   const disabled = showFeedback || awaitingServer || countdown !== null;
-  const {
-    moves,
-    selectedFile,
-    handleFilePress,
-    handleRankPress,
-    handleUndo,
-    replaceMoves,
-    reset,
-  } = useRoutePlannerInput({ disabled });
 
-  // A new problem starts with an empty route.
-  const [shownProblem, setShownProblem] = useState(currentProblem);
-  useEffect(() => {
-    if (currentProblem !== shownProblem) {
-      setShownProblem(currentProblem);
-      reset();
-    }
-  }, [currentProblem, shownProblem, reset]);
-
-  const handleSubmit = () => {
-    if (!currentProblem || disabled) return;
-    const attempt = evaluateAttempt(
-      currentProblem.piece,
-      currentProblem.start,
-      moves,
-      currentProblem.end,
-    );
-    replaceMoves(attempt.finalMoves);
-    handleAnswer(attempt.success, attempt.finalMoves);
-  };
+  const onSubmit = useCallback(
+    (attempt: RoutePlannerAttempt) => {
+      handleAnswer(attempt.success, attempt.finalMoves);
+    },
+    [handleAnswer],
+  );
 
   return (
     <PracticeSessionScreen
@@ -153,62 +143,50 @@ function RoutePlannerChallengeRun({
       progress={timeRemaining / CHALLENGE_TIME_LIMIT}
       correctCount={correctCount}
       incorrectCount={incorrectCount}
+      lives={{
+        remaining: Math.max(MISTAKE_LIMIT - incorrectCount, 0),
+        max: MISTAKE_LIMIT,
+      }}
+      headerShown
+      countdownInBody
     >
       <ScrollView
+        style={styles.scroll}
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
       >
-        {currentProblem && (
-          <ProblemCard
-            problem={currentProblem}
-            moves={moves}
-            currentIndex={0}
-            totalCount={1}
-            feedback={
-              showFeedback
-                ? lastAnswerCorrect
-                  ? "correct"
-                  : "incorrect"
-                : null
-            }
-          />
-        )}
-        <SquareInput
-          selectedFile={selectedFile}
+        <ProblemPanel
+          // A new problem mounts a new panel, so its route starts empty.
+          key={
+            currentProblem
+              ? `${currentProblem.piece}:${currentProblem.start}:${currentProblem.end}`
+              : "none"
+          }
+          problem={currentProblem}
+          verdict={showFeedback ? lastAnswerCorrect : null}
           disabled={disabled}
-          onFilePress={handleFilePress}
-          onRankPress={handleRankPress}
+          countdown={countdown}
+          onSubmit={onSubmit}
         />
-        <View style={styles.actions}>
-          <Button
-            title={t("routePlanner.session.undo")}
-            onPress={handleUndo}
-            variant="outline"
-            disabled={disabled || moves.length === 0}
-            style={styles.action}
-          />
-          <Button
-            title={t("routePlanner.session.submit")}
-            onPress={handleSubmit}
-            disabled={disabled || moves.length === 0}
-            style={styles.action}
-          />
-        </View>
       </ScrollView>
     </PracticeSessionScreen>
   );
 }
 
+/**
+ * Stacked from the top as the web's session is: 24 under the hearts and
+ * clock (its `space-y-6`), 32 above the score (its `mt-8`). The scroll
+ * view takes only the panel's height, so the score sits right under it,
+ * and scrolls only on a phone too short for the whole panel.
+ */
 const styles = StyleSheet.create({
+  scroll: {
+    flexGrow: 0,
+    flexShrink: 1,
+  },
   content: {
-    padding: spacing.lg,
-    gap: spacing.lg,
-  },
-  actions: {
-    flexDirection: "row",
-    gap: spacing.sm,
-  },
-  action: {
-    flex: 1,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.xl,
   },
 });

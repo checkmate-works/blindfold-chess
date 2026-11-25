@@ -1,5 +1,10 @@
 export { SettingsForm } from "./SettingsForm";
-export { SquareInput } from "./SquareInput";
-export { ProblemCard } from "./ProblemCard";
-export { ProblemResultCard } from "./ProblemResultCard";
-export { ResultCard } from "./ResultCard";
+export { HowToPlayDemo } from "./HowToPlayDemo";
+export { MovesStrip } from "./MovesStrip";
+export { ProblemPanel } from "./ProblemPanel";
+export { ProblemFeedback } from "./ProblemFeedback";
+export { ProblemList } from "./ProblemList";
+export {
+  RELATED_ARTICLES,
+  RELATED_ARTICLE_PIECES,
+} from "../lib/related-articles";

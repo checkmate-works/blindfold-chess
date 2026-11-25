@@ -292,30 +292,27 @@
   },
   "routePlanner": {
     "setup": {
-      "title": "ルートプランナー 設定",
+      "title": "ルートプランナー",
       "problemCount": "問題数",
       "problemUnit": "{{count}}問",
       "pieceSelection": "駒の選択"
     },
     "session": {
-      "progress": "{{current}} / {{total}}",
-      "selectFile": "ファイルを選択 (a-h)",
-      "selectRank": "ランクを選択 (1-8)",
-      "submit": "回答",
+      "submit": "回答を送信",
       "undo": "戻す",
       "skip": "スキップ",
-      "correct": "正解！",
-      "incorrect": "不正解",
-      "skipped": "スキップ",
       "shortestPath": "最短経路",
+      "distance": "手数: {{count}}",
       "nextProblem": "次の問題",
-      "finish": "終了"
+      "finish": "終了",
+      "startSquare": "開始マス",
+      "targetSquare": "目標マス"
     },
     "result": {
       "title": "練習終了！",
-      "score": "スコア",
-      "correct": "正解数",
-      "accuracy": "正答率"
+      "problemDetails": "問題ごとの詳細",
+      "skipped": "スキップ",
+      "timeUp": "時間切れ"
     },
     "pieces": {
       "n": "ナイト",

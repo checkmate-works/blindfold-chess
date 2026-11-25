@@ -292,30 +292,27 @@
   },
   "routePlanner": {
     "setup": {
-      "title": "Ajustes del planificador de rutas",
+      "title": "Planificador de rutas",
       "problemCount": "Número de problemas",
       "problemUnit": "{{count}} problemas",
-      "pieceSelection": "Selecciona piezas"
+      "pieceSelection": "Selecciona una pieza"
     },
     "session": {
-      "progress": "{{current}} / {{total}}",
-      "selectFile": "Selecciona una columna (a-h)",
-      "selectRank": "Selecciona una fila (1-8)",
-      "submit": "Enviar",
+      "submit": "Enviar respuesta",
       "undo": "Deshacer",
       "skip": "Saltar",
-      "correct": "¡Correcto!",
-      "incorrect": "Incorrecto",
-      "skipped": "Saltado",
       "shortestPath": "Ruta más corta",
+      "distance": "Distancia: {{count}}",
       "nextProblem": "Siguiente problema",
-      "finish": "Finalizar"
+      "finish": "Finalizar",
+      "startSquare": "Casilla inicial",
+      "targetSquare": "Casilla objetivo"
     },
     "result": {
       "title": "¡Práctica completada!",
-      "score": "Puntuación",
-      "correct": "Correctas",
-      "accuracy": "Precisión"
+      "problemDetails": "Detalles del problema",
+      "skipped": "Omitido",
+      "timeUp": "Tiempo agotado"
     },
     "pieces": {
       "n": "Caballo",

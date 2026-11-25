@@ -1,29 +1,58 @@
+import { StyleSheet, View } from "react-native";
+import { useTranslation } from "react-i18next";
 import { useLocalSearchParams } from "expo-router";
 
-import { PracticeResultScreen } from "../../../../components";
+import {
+  PracticeResultScreen,
+  PracticeStatsResultCard,
+} from "../../../../components";
 import { ChallengeRecordStatus } from "../../../../features/challenge/ChallengeRecordStatus";
-import { ResultCard } from "../../../../features/route-planner/components";
-import type { RoutePlannerResult } from "../../../../features/route-planner/hooks";
+import { RequiredKnowledgeSection } from "../../../../features/learn/RequiredKnowledgeSection";
+import {
+  ProblemList,
+  RELATED_ARTICLE_PIECES,
+  RELATED_ARTICLES,
+} from "../../../../features/route-planner/components";
+import {
+  parseRoutePlannerProblems,
+  type RoutePlannerResultParams,
+} from "../../../../features/route-planner/lib/result-params";
+import { parsePracticeStatsParams } from "../../../../lib/practice-result-params";
+import { spacing } from "../../../../theme";
 
-export default function RoutePlannerResultScreen() {
-  const params = useLocalSearchParams<{
-    correctCount: string;
-    totalProblems: string;
-    accuracy: string;
-    attemptId?: string;
-  }>();
-
-  const result: RoutePlannerResult = {
-    problems: [],
-    correctCount: parseInt(params.correctCount || "0", 10),
-    totalProblems: parseInt(params.totalProblems || "0", 10),
-    accuracy: parseFloat(params.accuracy || "0"),
-  };
+/**
+ * The challenge's result, as the web's: the shared stats, whether the run
+ * was recorded, every problem with its route on a board, then the
+ * movement articles behind the drill.
+ */
+export default function RoutePlannerResult() {
+  const { t } = useTranslation();
+  const params = useLocalSearchParams<
+    Partial<RoutePlannerResultParams> & { attemptId?: string }
+  >();
+  const result = parsePracticeStatsParams(params);
+  const problems = parseRoutePlannerProblems(params.problems);
 
   return (
     <PracticeResultScreen setupHref="/practice/route-planner">
-      <ResultCard result={result} />
-      <ChallengeRecordStatus attemptId={params.attemptId} />
+      <View style={styles.stack}>
+        <View>
+          <PracticeStatsResultCard result={result} />
+          <ChallengeRecordStatus attemptId={params.attemptId} />
+        </View>
+        <ProblemList problems={problems} />
+        <RequiredKnowledgeSection
+          slugs={RELATED_ARTICLES}
+          pieces={RELATED_ARTICLE_PIECES}
+          title={t("practice.relatedArticles")}
+        />
+      </View>
     </PracticeResultScreen>
   );
 }
+
+const styles = StyleSheet.create({
+  stack: {
+    gap: spacing.lg,
+  },
+});

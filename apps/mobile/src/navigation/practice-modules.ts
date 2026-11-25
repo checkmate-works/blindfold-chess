@@ -91,6 +91,8 @@ export const MOBILE_PRACTICE_MODULES: readonly MobilePracticeModule[] = [
     i18nKey: "routePlanner",
     icon: "📍",
     hasTraining: true,
+    sessionHeader: true,
+    howToPlayOnSetup: true,
   },
   {
     // Registered as `quadrant_anchors`, but routed as `quadrants` on both
