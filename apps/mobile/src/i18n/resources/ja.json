@@ -288,8 +288,6 @@
     "session": {
       "findSquare": "見つけて",
       "timeRemaining": "残り時間",
-      "correct": "正解！",
-      "incorrect": "不正解",
       "score": "スコア",
       "whiteToMove": "白の手番",
       "blackToMove": "黒の手番"

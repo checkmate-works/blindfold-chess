@@ -8,7 +8,6 @@ export type {
   CoordinateQuestion,
   QuizSettings,
   QuizResult,
-  AnswerFeedback,
 } from "@blindfold-chess/features/coordinate-quiz";
 
 // Re-export Square for consumers that imported it from here

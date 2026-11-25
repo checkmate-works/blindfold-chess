@@ -288,8 +288,6 @@
     "session": {
       "findSquare": "Encuentra",
       "timeRemaining": "Tiempo restante",
-      "correct": "¡Correcto!",
-      "incorrect": "Incorrecto",
       "score": "Puntuación",
       "whiteToMove": "Turno de las blancas",
       "blackToMove": "Turno de las negras"

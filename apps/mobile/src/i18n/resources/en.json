@@ -288,8 +288,6 @@
     "session": {
       "findSquare": "Find",
       "timeRemaining": "Time Remaining",
-      "correct": "Correct!",
-      "incorrect": "Incorrect",
       "score": "Score",
       "whiteToMove": "White to move",
       "blackToMove": "Black to move"

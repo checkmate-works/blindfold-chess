@@ -1,90 +1,83 @@
-import { useCallback, useMemo } from "react";
+import { useMemo } from "react";
 import { View, StyleSheet, useWindowDimensions } from "react-native";
-import { ChessBoardSquare } from "./ChessBoardSquare";
 import { coordinatesToSquare } from "@blindfold-chess/features/coordinate-quiz";
-import type { Square, AnswerFeedback } from "../lib/types";
-import { useTheme, spacing } from "../../../theme";
-
 import type { ResolvedBoardOrientation } from "@blindfold-chess/types";
+
+import { useGamePreferences } from "../../../lib/game-preferences";
+import { borderRadius } from "../../../theme";
+import type { Square } from "../lib/types";
+import { ChessBoardSquare } from "./ChessBoardSquare";
+import type { SquareHighlight } from "./ChessBoardSquare";
+
+/**
+ * The web board's `max-w-md`. A phone is narrower, so the board spans the
+ * screen edge to edge with square corners, as the web's does below its `sm`
+ * breakpoint; on a wider screen it stops here and rounds its corners.
+ */
+const MAX_BOARD_SIZE = 448;
+
 type ChessBoardProps = {
   orientation: ResolvedBoardOrientation;
-  targetSquare: Square | null;
-  feedback: AnswerFeedback;
+  highlights: Partial<Record<Square, SquareHighlight>>;
   onSquarePress: (square: Square) => void;
   disabled: boolean;
 };
 
+/** The coordinate-less 8×8 board, in the player's board theme. */
 export function ChessBoard({
   orientation,
-  targetSquare,
-  feedback,
+  highlights,
   onSquarePress,
   disabled,
 }: ChessBoardProps) {
   const { width: screenWidth } = useWindowDimensions();
-  const { colors } = useTheme();
-
-  // Calculate board size (max width minus padding)
-  const maxBoardSize = screenWidth - spacing.lg * 2;
-  const boardSize = Math.min(maxBoardSize, 400);
+  const { preferences } = useGamePreferences();
+  const boardSize = Math.min(screenWidth, MAX_BOARD_SIZE);
   const squareSize = boardSize / 8;
+  const rounded = boardSize < screenWidth;
 
-  const handleSquarePress = useCallback(
-    (square: Square) => {
-      onSquarePress(square);
-    },
-    [onSquarePress],
-  );
-
-  // Generate board rows
-  const boardRows = useMemo(() => {
-    const rows = [];
-
-    for (let rank = 0; rank < 8; rank++) {
-      const squares = [];
-
-      for (let file = 0; file < 8; file++) {
-        const square = coordinatesToSquare(file, rank, orientation);
-        const isTarget = targetSquare === square;
-
-        squares.push(
-          <ChessBoardSquare
-            key={square}
-            square={square}
-            onPress={handleSquarePress}
-            isTarget={isTarget}
-            feedback={feedback}
-            disabled={disabled}
-            size={squareSize}
-          />,
-        );
-      }
-
-      rows.push(
+  const boardRows = useMemo(
+    () =>
+      Array.from({ length: 8 }, (_, rank) => (
         <View key={rank} style={styles.row}>
-          {squares}
-        </View>,
-      );
-    }
-
-    return rows;
-  }, [
-    orientation,
-    targetSquare,
-    feedback,
-    disabled,
-    squareSize,
-    handleSquarePress,
-  ]);
+          {Array.from({ length: 8 }, (_, file) => {
+            const square = coordinatesToSquare(file, rank, orientation);
+            return (
+              <ChessBoardSquare
+                key={square}
+                square={square}
+                onPress={onSquarePress}
+                highlight={highlights[square]}
+                boardTheme={preferences.boardTheme}
+                disabled={disabled}
+                size={squareSize}
+              />
+            );
+          })}
+        </View>
+      )),
+    [
+      orientation,
+      highlights,
+      preferences.boardTheme,
+      disabled,
+      squareSize,
+      onSquarePress,
+    ],
+  );
 
   return (
     <View
       style={[
         styles.container,
-        { width: boardSize, height: boardSize, borderColor: colors.foreground },
+        {
+          width: boardSize,
+          height: boardSize,
+          borderRadius: rounded ? borderRadius.md : 0,
+        },
       ]}
     >
-      <View style={styles.board}>{boardRows}</View>
+      {boardRows}
     </View>
   );
 }
@@ -92,12 +85,7 @@ export function ChessBoard({
 const styles = StyleSheet.create({
   container: {
     alignSelf: "center",
-    borderRadius: 4,
     overflow: "hidden",
-    borderWidth: 2,
-  },
-  board: {
-    flex: 1,
   },
   row: {
     flexDirection: "row",
