@@ -1,9 +1,9 @@
 import type { ReactNode } from "react";
 import { StyleSheet, View } from "react-native";
 import { ChessPieceIcon } from "@blindfold-chess/icons";
-import { FILES, RANKS, type PieceType } from "@blindfold-chess/types";
+import type { PieceType } from "@blindfold-chess/types";
 
-import { CoordinateKeyRow } from "../../../components";
+import { CoordinateInput } from "../../../components";
 import { useTheme } from "../../../theme";
 
 /** The web's read-only piece row: K Q R B N. */
@@ -27,6 +27,12 @@ type SquareInputProps = {
  * keys and the rank keys, each staged key in the primary colour, then the
  * submit button. While disabled the whole block fades to 40% and ignores
  * taps, as the web's does during the verdict.
+ *
+ * The file and rank rows are two `CoordinateInput`s of one row each, as the
+ * web draws them, because this block spaces all its rows 12 apart where the
+ * pad's own rows are 8. The lock is this block's, not the pad's `disabled`:
+ * the piece row and the submit button fade with the keys, and the pad's
+ * lock on top would multiply the two opacities.
  */
 export function SquareInput({
   piece,
@@ -69,17 +75,15 @@ export function SquareInput({
           );
         })}
       </View>
-      <CoordinateKeyRow
-        keys={FILES}
-        enabled
-        activeKey={selectedFile}
-        onPress={onFilePress}
+      <CoordinateInput
+        selectedFile={selectedFile}
+        onFilePress={onFilePress}
+        showRanks={false}
       />
-      <CoordinateKeyRow
-        keys={RANKS}
-        enabled
-        activeKey={selectedRank}
-        onPress={onRankPress}
+      <CoordinateInput
+        selectedRank={selectedRank}
+        onRankPress={onRankPress}
+        showFiles={false}
       />
       {children && <View style={styles.action}>{children}</View>}
     </View>

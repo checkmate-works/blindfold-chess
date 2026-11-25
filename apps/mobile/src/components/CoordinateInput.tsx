@@ -20,9 +20,10 @@ type CoordinateInputProps = {
   onFilePress?: (file: string) => void;
   onRankPress?: (rank: string) => void;
   /**
-   * Which rows to draw. A module that puts something between the two rows'
-   * spacing of its own (route planner's 12 apart instead of 8) draws them as
-   * two inputs, one row each, as the web's `PieceCoordinateInput` does.
+   * Which rows to draw. A module that spaces the two rows differently from
+   * the pad's 8 (route planner puts them 12 apart, like the rest of its
+   * block) draws them as two inputs of one row each, as the web's
+   * `PieceCoordinateInput` does.
    */
   showFiles?: boolean;
   showRanks?: boolean;
