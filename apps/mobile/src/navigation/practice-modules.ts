@@ -83,6 +83,7 @@ export const MOBILE_PRACTICE_MODULES: readonly MobilePracticeModule[] = [
     i18nKey: "diagonalQuiz",
     icon: "↗️",
     hasTraining: true,
+    howToPlayOnSetup: true,
   },
   {
     slug: "route-planner",

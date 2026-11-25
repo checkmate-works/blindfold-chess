@@ -390,7 +390,7 @@
   },
   "diagonalQuiz": {
     "setup": {
-      "title": "Diagonal Quiz Settings"
+      "title": "Diagonal Quiz"
     },
     "session": {
       "question": "What are the diagonals of {{square}}?",

@@ -390,7 +390,7 @@
   },
   "diagonalQuiz": {
     "setup": {
-      "title": "ダイアゴナルクイズ 設定"
+      "title": "ダイアゴナルクイズ"
     },
     "session": {
       "question": "{{square}}の対角線は？",
