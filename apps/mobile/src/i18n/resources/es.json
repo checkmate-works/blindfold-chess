@@ -380,7 +380,20 @@
       "invalidMove": "Jugada no válida",
       "disambiguation": "Desambiguación (opcional)",
       "sourceLabel": "Origen",
-      "showBoard": "Mostrar tablero"
+      "showBoard": "Mostrar tablero",
+      "aiPlayed": "La IA jugó {{move}}",
+      "invalidMoveWithInput": "Movimiento inválido: {{move}}",
+      "aiMoveFailed": "Error al procesar el movimiento de la IA",
+      "retry": "Reintentar",
+      "undo": "Deshacer",
+      "resign": "Rendirse",
+      "resigned": "Te has rendido",
+      "confirmResignTitle": "Confirmar Rendición",
+      "confirmResignMessage": "¿Estás seguro de que quieres rendirte? Esto terminará la partida.",
+      "confirmResign": "Rendirse",
+      "confirmUndoTitle": "Confirmar Deshacer",
+      "confirmUndoMessage": "¿Estás seguro de que quieres deshacer los dos últimos movimientos?",
+      "confirmUndo": "Deshacer"
     },
     "result": {
       "title": "Fin de la partida",

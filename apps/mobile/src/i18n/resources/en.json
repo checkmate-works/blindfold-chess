@@ -380,7 +380,20 @@
       "invalidMove": "Invalid move",
       "disambiguation": "Disambiguation (optional)",
       "sourceLabel": "Source",
-      "showBoard": "Show Board"
+      "showBoard": "Show Board",
+      "aiPlayed": "AI played {{move}}",
+      "invalidMoveWithInput": "Invalid move: {{move}}",
+      "aiMoveFailed": "AI move failed",
+      "retry": "Retry",
+      "undo": "Undo",
+      "resign": "Resign",
+      "resigned": "You resigned",
+      "confirmResignTitle": "Confirm Resignation",
+      "confirmResignMessage": "Are you sure you want to resign? This will end the game.",
+      "confirmResign": "Resign",
+      "confirmUndoTitle": "Confirm Undo",
+      "confirmUndoMessage": "Are you sure you want to undo the last two moves?",
+      "confirmUndo": "Undo"
     },
     "result": {
       "title": "Game Over",

@@ -380,7 +380,20 @@
       "invalidMove": "Jogada inválida",
       "disambiguation": "Desambiguação (opcional)",
       "sourceLabel": "Origem",
-      "showBoard": "Mostrar tabuleiro"
+      "showBoard": "Mostrar tabuleiro",
+      "aiPlayed": "A IA jogou {{move}}",
+      "invalidMoveWithInput": "Movimento inválido: {{move}}",
+      "aiMoveFailed": "Falha no movimento da IA",
+      "retry": "Tentar novamente",
+      "undo": "Desfazer",
+      "resign": "Desistir",
+      "resigned": "Você desistiu",
+      "confirmResignTitle": "Confirmar Desistência",
+      "confirmResignMessage": "Tem certeza de que deseja desistir? Isso encerrará a partida.",
+      "confirmResign": "Desistir",
+      "confirmUndoTitle": "Confirmar Desfazer",
+      "confirmUndoMessage": "Tem certeza de que deseja desfazer os dois últimos movimentos?",
+      "confirmUndo": "Desfazer"
     },
     "result": {
       "title": "Fim da partida",

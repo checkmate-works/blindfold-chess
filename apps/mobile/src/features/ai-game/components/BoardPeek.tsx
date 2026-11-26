@@ -28,6 +28,8 @@ type BoardPeekProps = {
   startingFen?: string;
   /** Caps the inline (`'always'`) board's width; see `ChessBoard`'s `maxSize`. */
   boardMaxSize?: number;
+  /** Called each time the player opens the hidden board (`'peek'` only). */
+  onPeek?: () => void;
 };
 
 /**
@@ -41,6 +43,7 @@ export function BoardPeek({
   playerColor,
   startingFen,
   boardMaxSize,
+  onPeek,
 }: BoardPeekProps) {
   const { t } = useTranslation();
   const { colors } = useTheme();
@@ -78,7 +81,10 @@ export function BoardPeek({
               styles.showBoardButton,
               { backgroundColor: colors.card, borderColor: colors.border },
             ]}
-            onPress={() => setIsModalVisible(true)}
+            onPress={() => {
+              setIsModalVisible(true);
+              onPeek?.();
+            }}
           >
             <Text
               style={[styles.showBoardButtonText, { color: colors.foreground }]}

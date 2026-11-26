@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
+import { Alert, View, Text, StyleSheet, ScrollView } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { isValidSkillLevel } from "@blindfold-chess/features/ai-game";
+import { findLastAiMoveNotation } from "@blindfold-chess/features/game-play";
+import { useAiReplyChip } from "@blindfold-chess/features/game-play/client";
 import { SIDES, type Side } from "@blindfold-chess/types";
 
 import { StockfishWebView } from "../../../../features/ai-game/engine";
@@ -20,8 +22,9 @@ import {
 import type { SkillLevel } from "../../../../features/ai-game/lib/types";
 import { decodeStartParams } from "../../../../features/ai-game/lib/start-params";
 import { saveGame } from "../../../../features/game-history/game-history";
+import { useGamePreferences } from "../../../../lib/game-preferences";
 import { parseEnumParam } from "../../../../lib/route-params";
-import { Screen } from "../../../../components";
+import { Button, Screen } from "../../../../components";
 import { SessionTopBar } from "../../../../navigation/SessionTopBar";
 import { useTheme, fontSize, fontWeight, spacing } from "../../../../theme";
 
@@ -29,6 +32,7 @@ export default function AiGameSession() {
   const { t } = useTranslation();
   const router = useRouter();
   const { colors } = useTheme();
+  const { preferences } = useGamePreferences();
   const params = useLocalSearchParams<{
     playerColor: string;
     skillLevel: string;
@@ -55,9 +59,51 @@ export default function AiGameSession() {
     skillLevel,
     getAiMove: ai.getAiMove,
     isAiLoading: ai.isLoading,
+    resetAi: ai.reset,
     startingFen: start.startingFen,
     initialMoves: start.moves,
   });
+
+  // The AI's reply is announced in the status line for as long as the player
+  // chose, and only while the board is out of sight: with the board always on
+  // screen the move is already visible there.
+  const aiReply = useAiReplyChip({
+    isAiThinking: game.isAiThinking,
+    aiMoveSignal: game.aiMoveSignal,
+    durationMs: preferences.aiReplyDuration,
+  });
+  const announcedAiMove =
+    preferences.boardVisibility !== "always" &&
+    aiReply.active &&
+    !aiReply.thinking
+      ? findLastAiMoveNotation(game.moves, playerColor, start.startingFen)
+      : null;
+
+  const confirmUndo = () => {
+    Alert.alert(
+      t("aiGame.session.confirmUndoTitle"),
+      t("aiGame.session.confirmUndoMessage"),
+      [
+        { text: t("common.cancel"), style: "cancel" },
+        { text: t("aiGame.session.confirmUndo"), onPress: game.undo },
+      ],
+    );
+  };
+
+  const confirmResign = () => {
+    Alert.alert(
+      t("aiGame.session.confirmResignTitle"),
+      t("aiGame.session.confirmResignMessage"),
+      [
+        { text: t("common.cancel"), style: "cancel" },
+        {
+          text: t("aiGame.session.confirmResign"),
+          style: "destructive",
+          onPress: game.resign,
+        },
+      ],
+    );
+  };
 
   // Keep the finished game in the device's history (the Play tab lists it,
   // and it can be replayed in recall). Once per session.
@@ -109,6 +155,7 @@ export default function AiGameSession() {
     <Screen edges={["top", "bottom"]}>
       {/* Hidden WebView for Stockfish engine */}
       <StockfishWebView
+        key={ai.webViewKey}
         ref={ai.webViewRef}
         onMessage={ai.handleMessage}
         onReady={ai.handleWebViewReady}
@@ -127,6 +174,9 @@ export default function AiGameSession() {
           isPlayerTurn={game.isPlayerTurn}
           isAiThinking={game.isAiThinking}
           gameStatus={game.gameStatus}
+          resigned={game.resigned}
+          aiMoveFailed={game.aiMoveFailed}
+          announcedAiMove={announcedAiMove}
           skillLevel={skillLevel}
           moveCount={game.moves.length}
         />
@@ -137,12 +187,14 @@ export default function AiGameSession() {
           moves={game.moves}
           startingFen={start.startingFen}
           playerColor={playerColor}
+          onPeek={aiReply.dismiss}
         />
 
-        {/* Error message */}
-        {game.error && (
+        {game.error?.kind === "invalid-move" && (
           <Text style={[styles.errorText, { color: colors.destructive }]}>
-            {game.error}
+            {t("aiGame.session.invalidMoveWithInput", {
+              move: game.error.input,
+            })}
           </Text>
         )}
 
@@ -157,6 +209,17 @@ export default function AiGameSession() {
               onSubmit={game.submitMove}
               disabled={ai.isLoading || game.isAiThinking}
             />
+          ) : game.aiMoveFailed ? (
+            <View style={styles.retryContainer}>
+              <Text style={[styles.errorText, { color: colors.destructive }]}>
+                {t("aiGame.session.aiMoveFailed")}
+              </Text>
+              <Button
+                title={t("aiGame.session.retry")}
+                icon="refresh"
+                onPress={game.retryAiMove}
+              />
+            </View>
           ) : (
             <View style={styles.aiThinkingContainer}>
               <Text
@@ -170,6 +233,29 @@ export default function AiGameSession() {
               <Spinner color={colors.primary} />
             </View>
           ))}
+
+        {game.gameStatus === "in_progress" && (
+          <View style={styles.actionRow}>
+            <Button
+              title={t("aiGame.session.undo")}
+              icon="arrow-undo"
+              variant="outline"
+              size="sm"
+              disabled={!game.canUndo}
+              onPress={confirmUndo}
+              style={styles.action}
+            />
+            <Button
+              title={t("aiGame.session.resign")}
+              icon="flag"
+              variant="outline"
+              size="sm"
+              disabled={!game.canResign}
+              onPress={confirmResign}
+              style={styles.action}
+            />
+          </View>
+        )}
 
         {/* Game over message */}
         {game.gameStatus !== "in_progress" && game.playerResult && (
@@ -199,6 +285,18 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: fontSize.sm,
     textAlign: "center",
+  },
+  retryContainer: {
+    alignItems: "center",
+    gap: spacing.md,
+    paddingVertical: spacing.lg,
+  },
+  actionRow: {
+    flexDirection: "row",
+    gap: spacing.md,
+  },
+  action: {
+    flex: 1,
   },
   gameOverContainer: {
     alignItems: "center",

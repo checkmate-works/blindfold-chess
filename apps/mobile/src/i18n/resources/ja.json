@@ -380,7 +380,20 @@
       "invalidMove": "無効な手です",
       "disambiguation": "曖昧さ解消（任意）",
       "sourceLabel": "出発マス",
-      "showBoard": "盤面を表示"
+      "showBoard": "盤面を表示",
+      "aiPlayed": "AIが{{move}}を指しました",
+      "invalidMoveWithInput": "無効な手です: {{move}}",
+      "aiMoveFailed": "AIの手の取得に失敗しました",
+      "retry": "再試行",
+      "undo": "待った",
+      "resign": "投了",
+      "resigned": "投了しました",
+      "confirmResignTitle": "投了の確認",
+      "confirmResignMessage": "本当に投了しますか？ゲームが終了します。",
+      "confirmResign": "投了する",
+      "confirmUndoTitle": "待ったの確認",
+      "confirmUndoMessage": "直前の2手を取り消しますか？",
+      "confirmUndo": "取り消す"
     },
     "result": {
       "title": "ゲーム終了",
