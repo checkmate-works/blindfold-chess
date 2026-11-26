@@ -3,14 +3,13 @@ import type { InterpolatingTranslator } from '@/i18n/translator';
 import { parseRequirements, ranksSeedData } from '@/lib/db/data/ranks';
 import type {
   ChallengeScoreRequirement,
+  ExamProblemRequirement,
   GamePublishWinHiddenBoardRequirement,
   GamePublishWinRequirement,
-  PositionSubmissionCountRequirement,
   RankRequirement,
 } from '@/lib/db/data/ranks';
-import { POSITION_KIND_CONFIG, type PositionKind } from '@/lib/positions/kind';
 
-import type { RequirementDivider, RequirementItem } from '../_components/RequirementsList';
+import type { RequirementItem } from '../_components/RequirementsList';
 import { getBeltColorHex } from './belt-colors';
 
 /**
@@ -18,11 +17,15 @@ import { getBeltColorHex } from './belt-colors';
  * click: localized labels, and hrefs pointing at the surface that can actually
  * satisfy each requirement.
  *
- * Every entry point here dispatches on `req.type` in ONE place. Three call sites
- * used to inline `if (challenge_score) … else <position>`, which silently
- * assumed only two requirement types existed — a third would have hit the
- * position branch and thrown on `req.positionTypes`. Adding a requirement type
- * is now one branch here plus one i18n template.
+ * Every entry point here dispatches on `req.type` in ONE place, so call sites
+ * never assume which requirement types exist. Adding a requirement type is
+ * one branch in each dispatcher here plus one i18n template; both
+ * dispatchers are exhaustive over the union, so a new member is a compile
+ * error until it gets its branches.
+ *
+ * Every requirement renders as exactly one entry: a rank's requirements are
+ * all required (implicit AND), so no entry is an alternative to another and
+ * nothing here emits an "or" divider.
  */
 
 export type RankCardState = 'achieved' | 'next' | 'unachieved' | 'coming-soon';
@@ -69,68 +72,44 @@ function buildChallengeScoreItem(
   };
 }
 
-function positionSubmissionRouteSegment(positionType: PositionKind): string {
-  return POSITION_KIND_CONFIG[positionType].slug;
+/**
+ * The URL segment of an exam problem: the kind in kebab-case, matching the
+ * practice routes (`position_memory` → `position-memory`).
+ */
+export function examProblemSegment(problem: ExamProblemRequirement['problem']): string {
+  return problem.replace(/_/g, '-');
 }
 
-function positionSubmissionLabel(
-  req: PositionSubmissionCountRequirement,
-  positionType: PositionKind,
-  t: InterpolatingTranslator
-): string {
-  return t('submissionCount', {
-    minCount: req.minCount,
-    itemName: t(`submissionItemNames.${positionType}`),
+function examProblemLabel(req: ExamProblemRequirement, t: InterpolatingTranslator): string {
+  return t('examProblem', {
+    rankName: t(`rankNames.${req.exam}`),
+    problemName: t(`examProblemNames.${req.problem}`),
   });
 }
 
 /**
- * Build one linked RequirementItem per `positionTypes` entry, joined by an
- * "or" divider — each post type independently satisfies the requirement
- * (see {@link PositionSubmissionCountRequirement}), so each gets its own
- * link rather than collapsing into one label/href pointing at only one type.
+ * An exam problem links to its own page under `/dojo/exams`, where the
+ * answer is graded on the server and a pass is recorded one problem at a
+ * time.
  */
-function buildPositionSubmissionItems(
-  req: PositionSubmissionCountRequirement,
+function buildExamProblemItem(
+  req: ExamProblemRequirement,
   locale: string,
   t: InterpolatingTranslator
-): (RequirementItem | RequirementDivider)[] {
-  return req.positionTypes.flatMap((positionType, index) => {
-    const item: RequirementItem = {
-      label: positionSubmissionLabel(req, positionType, t),
-      href: `/${locale}/practice/${positionSubmissionRouteSegment(positionType)}/new`,
-    };
-    if (index === 0) return [item];
-    const divider: RequirementDivider = { kind: 'or', label: t('orDivider') };
-    return [divider, item];
-  });
-}
-
-/**
- * Build the same "or"-joined entries as {@link buildPositionSubmissionItems},
- * but as plain labels with no href — for the RankCard summary view, which
- * never links out to a specific practice page.
- */
-export function buildPositionSubmissionLabels(
-  req: PositionSubmissionCountRequirement,
-  t: InterpolatingTranslator
-): (string | RequirementDivider)[] {
-  return req.positionTypes.flatMap((positionType, index) => {
-    const label = positionSubmissionLabel(req, positionType, t);
-    if (index === 0) return [label];
-    const divider: RequirementDivider = { kind: 'or', label: t('orDivider') };
-    return [divider, label];
-  });
+): RequirementItem {
+  return {
+    label: examProblemLabel(req, t),
+    href: `/${locale}/dojo/exams/${req.exam}/${examProblemSegment(req.problem)}`,
+  };
 }
 
 /**
  * Labels for one requirement, with no hrefs — the summary view used by the
- * ranks grid, the dojo's next-rank card, and the landing teasers.
+ * ranks grid, the dojo's next-rank card, and the landing teasers. Every
+ * requirement is one label: all of a rank's requirements must be met, so
+ * none is an alternative to another.
  */
-export function buildRequirementLabels(
-  req: RankRequirement,
-  t: InterpolatingTranslator
-): (string | RequirementDivider)[] {
+export function buildRequirementLabels(req: RankRequirement, t: InterpolatingTranslator): string[] {
   if (req.type === 'challenge_score') {
     return [
       t('challengeScore', {
@@ -139,13 +118,15 @@ export function buildRequirementLabels(
       }),
     ];
   }
+  if (req.type === 'exam_problem') return [examProblemLabel(req, t)];
   if (req.type === 'game_publish_win') {
     return [t('gamePublishWin', { minCount: req.minCount })];
   }
   if (req.type === 'game_publish_win_hidden_board') {
     return [t('gamePublishWinHiddenBoard', { minCount: req.minCount })];
   }
-  return buildPositionSubmissionLabels(req, t);
+  const unhandled: never = req;
+  return unhandled;
 }
 
 /**
@@ -161,14 +142,12 @@ export function buildRequirementItems(
   requirements: RankRequirement[],
   locale: string,
   t: InterpolatingTranslator
-): (RequirementItem | RequirementDivider)[] {
-  return requirements.flatMap((req) => {
-    if (req.type === 'challenge_score') return [buildChallengeScoreItem(req, locale, t)];
-    if (req.type === 'game_publish_win') return [buildGamePublishWinItem(req, locale, t)];
-    if (req.type === 'game_publish_win_hidden_board') {
-      return [buildGamePublishWinHiddenBoardItem(req, locale, t)];
-    }
-    return buildPositionSubmissionItems(req, locale, t);
+): RequirementItem[] {
+  return requirements.map((req) => {
+    if (req.type === 'challenge_score') return buildChallengeScoreItem(req, locale, t);
+    if (req.type === 'exam_problem') return buildExamProblemItem(req, locale, t);
+    if (req.type === 'game_publish_win') return buildGamePublishWinItem(req, locale, t);
+    return buildGamePublishWinHiddenBoardItem(req, locale, t);
   });
 }
 
@@ -288,11 +267,7 @@ export function buildRankTeaserCards(
     // TEASER_SLUGS is 5kyu/4kyu only (both challenge_score today), but go
     // through the shared dispatcher anyway so a reshuffle of the teaser slugs
     // cannot reintroduce a wrong-branch crash.
-    const requirementLabels = requirements.flatMap((req) =>
-      buildRequirementLabels(req, tRanks).filter(
-        (label): label is string => typeof label === 'string'
-      )
-    );
+    const requirementLabels = requirements.flatMap((req) => buildRequirementLabels(req, tRanks));
 
     return {
       slug,

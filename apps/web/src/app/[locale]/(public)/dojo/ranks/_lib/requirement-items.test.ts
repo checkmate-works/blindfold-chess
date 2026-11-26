@@ -5,9 +5,9 @@ import type { ChallengeScoreRequirement } from '@/lib/db/data/ranks';
 
 import {
   buildChallengeNameKey,
-  buildPositionSubmissionLabels,
   buildRequirementItems,
   buildRequirementLabels,
+  examProblemSegment,
   getRankCardState,
   isRankEarnedByPlaying,
 } from './requirement-items';
@@ -86,9 +86,9 @@ describe('buildRequirementItems', () => {
   const mockT = (key: string, values?: Record<string, string | number | Date>) => {
     if (key === 'challengeScore') return `Score ${values?.minScore}+ in ${values?.challengeName}`;
     if (key.startsWith('challengeNames.')) return key.replace('challengeNames.', '');
-    if (key === 'submissionCount') return `Submit ${values?.minCount} ${values?.itemName}`;
-    if (key.startsWith('submissionItemNames.')) return key.replace('submissionItemNames.', '');
-    if (key === 'orDivider') return 'or';
+    if (key === 'examProblem') return `Pass the ${values?.rankName} exam: ${values?.problemName}`;
+    if (key.startsWith('rankNames.')) return key.replace('rankNames.', '');
+    if (key.startsWith('examProblemNames.')) return key.replace('examProblemNames.', '');
     if (key === 'gamePublishWin') return `Beat the engine ${values?.minCount}+ times`;
     if (key === 'gamePublishWinHiddenBoard') return `Keep the board hidden and win`;
     if (key === 'gamePublishWinHiddenBoardNote') return `Peeking allowed up to ${values?.maxPeeks}`;
@@ -152,45 +152,40 @@ describe('buildRequirementItems', () => {
     expect(items[0]).toMatchObject({ href: '/en/practice/legal-moves' });
   });
 
-  it('should generate a single linked item for a memory-only requirement', () => {
+  it('links the position-memory exam problem to its kebab-case exam page', () => {
     const items = buildRequirementItems(
-      [{ type: 'position_submission_count', positionTypes: ['memory'], minCount: 1 }],
+      [{ type: 'exam_problem', exam: '2kyu', problem: 'position_memory' }],
       'en',
       mockT
     );
-    expect(items).toHaveLength(1);
-    expect(items[0]).toMatchObject({
-      href: '/en/practice/position-memory/new',
-      label: 'Submit 1 memory',
-    });
+    expect(items).toEqual([
+      {
+        href: '/en/dojo/exams/2kyu/position-memory',
+        label: 'Pass the 2kyu exam: position_memory',
+      },
+    ]);
   });
 
-  it('should generate the puzzle URL for a puzzle-only requirement', () => {
+  it('links the puzzle exam problem to its exam page', () => {
     const items = buildRequirementItems(
-      [{ type: 'position_submission_count', positionTypes: ['puzzle'], minCount: 1 }],
-      'en',
+      [{ type: 'exam_problem', exam: '2kyu', problem: 'puzzle' }],
+      'ja',
       mockT
     );
-    expect(items).toHaveLength(1);
-    expect(items[0]).toMatchObject({ href: '/en/practice/puzzle/new' });
+    expect(items).toEqual([
+      { href: '/ja/dojo/exams/2kyu/puzzle', label: 'Pass the 2kyu exam: puzzle' },
+    ]);
   });
 
-  it('should split a memory-or-puzzle requirement into two linked items joined by an or divider', () => {
-    const items = buildRequirementItems(
-      [{ type: 'position_submission_count', positionTypes: ['memory', 'puzzle'], minCount: 1 }],
-      'en',
-      mockT
+  it('renders the seeded 2kyu as one item per exam problem, with no or divider', () => {
+    const requirements = parseRequirements(
+      ranksSeedData.find((r) => r.slug === '2kyu')!.requirements
     );
-    expect(items).toHaveLength(3);
-    expect(items[0]).toMatchObject({
-      href: '/en/practice/position-memory/new',
-      label: 'Submit 1 memory',
-    });
-    expect(items[1]).toEqual({ kind: 'or', label: 'or' });
-    expect(items[2]).toMatchObject({
-      href: '/en/practice/puzzle/new',
-      label: 'Submit 1 puzzle',
-    });
+    const items = buildRequirementItems(requirements, 'en', mockT);
+    expect(items.map((item) => item.href)).toEqual([
+      '/en/dojo/exams/2kyu/position-memory',
+      '/en/dojo/exams/2kyu/puzzle',
+    ]);
   });
 
   it('should generate the game setup URL and a peek-allowance note for game_publish_win_hidden_board', () => {
@@ -216,6 +211,9 @@ describe('buildRequirementLabels', () => {
   const mockT = (key: string, values?: Record<string, string | number | Date>) => {
     if (key === 'gamePublishWin') return `Beat the engine ${values?.minCount}+ times`;
     if (key === 'gamePublishWinHiddenBoard') return `Keep the board hidden and win`;
+    if (key === 'examProblem') return `Pass ${values?.rankName}: ${values?.problemName}`;
+    if (key.startsWith('rankNames.')) return key.replace('rankNames.', '');
+    if (key.startsWith('examProblemNames.')) return key.replace('examProblemNames.', '');
     return key;
   };
 
@@ -233,34 +231,22 @@ describe('buildRequirementLabels', () => {
       )
     ).toEqual(['Keep the board hidden and win']);
   });
+
+  it('labels an exam problem with the rank name and the problem name', () => {
+    expect(
+      buildRequirementLabels({ type: 'exam_problem', exam: '2kyu', problem: 'puzzle' }, mockT)
+    ).toEqual(['Pass 2kyu: puzzle']);
+  });
 });
 
 // ---------------------------------------------------------------------------
-// buildPositionSubmissionLabels
+// examProblemSegment
 // ---------------------------------------------------------------------------
 
-describe('buildPositionSubmissionLabels', () => {
-  const mockT = (key: string, values?: Record<string, string | number | Date>) => {
-    if (key === 'orDivider') return 'or';
-    if (key === 'submissionCount') return `Submit ${values?.minCount} ${values?.itemName}`;
-    if (key.startsWith('submissionItemNames.')) return key.replace('submissionItemNames.', '');
-    return key;
-  };
-
-  it('should return a single label for a one-type requirement', () => {
-    const labels = buildPositionSubmissionLabels(
-      { type: 'position_submission_count', positionTypes: ['memory'], minCount: 1 },
-      mockT
-    );
-    expect(labels).toEqual(['Submit 1 memory']);
-  });
-
-  it('should join multiple types with an or divider entry, no href', () => {
-    const labels = buildPositionSubmissionLabels(
-      { type: 'position_submission_count', positionTypes: ['memory', 'puzzle'], minCount: 1 },
-      mockT
-    );
-    expect(labels).toEqual(['Submit 1 memory', { kind: 'or', label: 'or' }, 'Submit 1 puzzle']);
+describe('examProblemSegment', () => {
+  it('writes problem kinds in kebab-case for the exam URLs', () => {
+    expect(examProblemSegment('position_memory')).toBe('position-memory');
+    expect(examProblemSegment('puzzle')).toBe('puzzle');
   });
 });
 

@@ -222,9 +222,10 @@ describe('PuzzlePreviewClient', () => {
     });
 
     it('on success with grantedRanks: stashes them for the RankAchievementModal on the puzzle page', async () => {
-      // A puzzle counts toward `position_submission_count` (2kyu), so the
-      // first puzzle a user publishes can grant a rank. The modal on the
-      // destination page only sees it if the grant is stashed before push().
+      // Publishing still runs rank evaluation, so a create can come back with
+      // granted ranks (any rank whose other conditions were already met).
+      // The modal on the destination page only sees them if the grant is
+      // stashed before push().
       seedDraft();
       const grantedRanks = [{ slug: '2kyu', level: 40, color: '#2563eb' }];
       mockCreatePuzzle.mockResolvedValue({ success: true, id: 'abc-123', grantedRanks });
