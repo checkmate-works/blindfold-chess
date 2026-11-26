@@ -2,15 +2,17 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert, View, Text, StyleSheet, ScrollView } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import * as Crypto from "expo-crypto";
 import { isValidSkillLevel } from "@blindfold-chess/features/ai-game";
 import type { GamePreferences } from "@blindfold-chess/features/game-preferences";
 import { findLastAiMoveNotation } from "@blindfold-chess/features/game-play";
+import { computeGameStats } from "@blindfold-chess/features/game-record";
 import { useAiReplyChip } from "@blindfold-chess/features/game-play/client";
 import { SIDES, type Side } from "@blindfold-chess/types";
 
 import { StockfishWebView } from "../../../../features/ai-game/engine";
 import {
-  BoardPeek,
+  InlineBoard,
   ButtonInput,
   MoveHistory,
   GameInfo,
@@ -95,20 +97,32 @@ function AiGameBoard() {
     initialMoves: start.moves,
   });
 
-  // The AI's reply is announced in the status line for as long as the player
-  // chose, and only while the board is out of sight: with the board always on
-  // screen the move is already visible there.
+  // The AI's reply is announced where the board would be, for as long as the
+  // player chose, and only while the board is out of sight: on an open board
+  // the move is already visible.
   const aiReply = useAiReplyChip({
     isAiThinking: game.isAiThinking,
     aiMoveSignal: game.aiMoveSignal,
     durationMs: preferences.aiReplyDuration,
   });
   const announcedAiMove =
-    preferences.boardVisibility !== "always" &&
-    aiReply.active &&
-    !aiReply.thinking
+    aiReply.active && !aiReply.thinking
       ? findLastAiMoveNotation(game.moves, playerColor, start.startingFen)
       : null;
+
+  // A peek opens the board until the next move, then the mask returns.
+  const [revealed, setRevealed] = useState(false);
+  const moveCount = game.moves.length;
+  useEffect(() => {
+    setRevealed(false);
+  }, [moveCount]);
+  const { recordPeek } = game;
+  const dismissAiReply = aiReply.dismiss;
+  const revealBoard = useCallback(() => {
+    setRevealed(true);
+    recordPeek();
+    dismissAiReply();
+  }, [recordPeek, dismissAiReply]);
 
   const confirmUndo = () => {
     Alert.alert(
@@ -140,7 +154,8 @@ function AiGameBoard() {
   // and it can be replayed in recall). Once per session.
   const saved = useRef(false);
   // The saved game's id, so the result screen can open its page.
-  const [gameId] = useState(() => String(Date.now()));
+  // A UUID because the Exp grant is keyed by it.
+  const [gameId] = useState(() => Crypto.randomUUID());
 
   // Navigate to result when game is over
   useEffect(() => {
@@ -148,6 +163,7 @@ function AiGameBoard() {
       // Capture the narrowed value: the `!` it replaces was real — narrowing
       // is lost across the property access inside the setTimeout closure.
       const playerResult = game.playerResult;
+      const stats = computeGameStats(game.operationLogs);
       if (!saved.current) {
         saved.current = true;
         void saveGame({
@@ -169,6 +185,8 @@ function AiGameBoard() {
             skillLevel: game.skillLevel.toString(),
             moveCount: game.moves.length.toString(),
             gameId,
+            playerMoveCount: stats.totalMoves.toString(),
+            aidedMoveCount: stats.aidedMoves.toString(),
           },
         });
       }, 1500);
@@ -181,6 +199,7 @@ function AiGameBoard() {
     game.skillLevel,
     game.moves,
     game.moves.length,
+    game.operationLogs,
     start.startingFen,
     gameId,
     router,
@@ -204,25 +223,26 @@ function AiGameBoard() {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Game Info */}
         <GameInfo
           isPlayerTurn={game.isPlayerTurn}
           isAiThinking={game.isAiThinking}
           gameStatus={game.gameStatus}
           resigned={game.resigned}
           aiMoveFailed={game.aiMoveFailed}
-          announcedAiMove={announcedAiMove}
           skillLevel={skillLevel}
           moveCount={game.moves.length}
         />
 
-        {/* Board, as the player's boardVisibility preference surfaces it */}
-        <BoardPeek
+        <InlineBoard
           fen={game.currentFen}
           moves={game.moves}
           startingFen={start.startingFen}
           playerColor={playerColor}
-          onPeek={aiReply.dismiss}
+          revealed={revealed}
+          onReveal={revealBoard}
+          onHide={() => setRevealed(false)}
+          thinking={aiReply.thinking}
+          announcedAiMove={announcedAiMove}
         />
 
         {game.error?.kind === "invalid-move" && (
@@ -242,6 +262,7 @@ function AiGameBoard() {
             <ButtonInput
               fen={game.currentFen}
               onSubmit={game.submitMove}
+              fitWidth
               disabled={ai.isLoading || game.isAiThinking}
             />
           ) : game.aiMoveFailed ? (

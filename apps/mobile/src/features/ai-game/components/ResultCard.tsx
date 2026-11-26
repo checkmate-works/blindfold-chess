@@ -12,6 +12,8 @@ type ResultCardProps = {
   playerColor: Side;
   skillLevel: SkillLevel;
   moveCount: number;
+  /** Exp granted for the game, once the server has answered. */
+  earnedExp?: number;
 };
 
 const RESULT_COLOR: Record<PlayerResult, string> = {
@@ -29,6 +31,7 @@ export function ResultCard({
   playerColor,
   skillLevel,
   moveCount,
+  earnedExp,
 }: ResultCardProps) {
   const { t } = useTranslation();
 
@@ -58,6 +61,13 @@ export function ResultCard({
           value={String(moveCount)}
           accessory="none"
         />
+        {earnedExp !== undefined ? (
+          <ListRow
+            title={t("aiGame.result.expEarned")}
+            value={`+${earnedExp}`}
+            accessory="none"
+          />
+        ) : null}
       </ListSection>
     </View>
   );

@@ -412,7 +412,10 @@
       "confirmResign": "投了する",
       "confirmUndoTitle": "待ったの確認",
       "confirmUndoMessage": "直前の2手を取り消しますか？",
-      "confirmUndo": "取り消す"
+      "confirmUndo": "取り消す",
+      "boardHidden": "ボード非表示",
+      "revealBoard": "タップで表示",
+      "hideBoard": "ボードを隠す"
     },
     "result": {
       "title": "ゲーム終了",
@@ -425,7 +428,8 @@
       "playAgain": "もう一度",
       "backToMenu": "メニューに戻る",
       "review": "対局を振り返る",
-      "reviewDescription": "棋譜・PGN・棋譜再現"
+      "reviewDescription": "棋譜・PGN・棋譜再現",
+      "expEarned": "獲得経験値"
     }
   },
   "diagonalQuiz": {

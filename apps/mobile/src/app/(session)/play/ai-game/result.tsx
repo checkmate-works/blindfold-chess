@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import { StyleSheet, ScrollView } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
@@ -7,7 +8,11 @@ import {
 } from "@blindfold-chess/features/ai-game";
 import { SIDES, type Side } from "@blindfold-chess/types";
 
+import type { ExpInfo } from "@blindfold-chess/features/exp";
+
+import { useAuth } from "../../../../auth/use-auth";
 import { ResultCard } from "../../../../features/ai-game/components";
+import { saveAiGameResult } from "../../../../features/ai-game/game-result-api";
 import type {
   PlayerResult,
   SkillLevel,
@@ -39,6 +44,8 @@ export default function AiGameResult() {
     skillLevel: string;
     moveCount: string;
     gameId?: string;
+    playerMoveCount?: string;
+    aidedMoveCount?: string;
   }>();
 
   const result = parseEnumParam<PlayerResult>(
@@ -53,6 +60,35 @@ export default function AiGameResult() {
     : 5;
   const moveCount = parseIntParam(params.moveCount, { fallback: 0 });
   const gameId = params.gameId;
+  const playerMoveCount = parseIntParam(params.playerMoveCount, {
+    fallback: 0,
+  });
+  const aidedMoveCount = parseIntParam(params.aidedMoveCount, { fallback: 0 });
+
+  // A signed-in player's game earns Exp, as on the web. Sent once; the server
+  // grants once per game id, so a repeat would only return the same grant.
+  const auth = useAuth();
+  const [exp, setExp] = useState<ExpInfo | null>(null);
+  const sent = useRef(false);
+  useEffect(() => {
+    if (sent.current || auth.status !== "signedIn") return;
+    if (!gameId || playerMoveCount <= 0) return;
+    sent.current = true;
+    void saveAiGameResult({
+      gameId,
+      result,
+      skillLevel,
+      playerMoveCount,
+      aidedMoveCount,
+    }).then(setExp);
+  }, [
+    auth.status,
+    gameId,
+    result,
+    skillLevel,
+    playerMoveCount,
+    aidedMoveCount,
+  ]);
 
   return (
     <Screen edges={[]}>
@@ -66,6 +102,7 @@ export default function AiGameResult() {
           playerColor={playerColor}
           skillLevel={skillLevel}
           moveCount={moveCount}
+          earnedExp={exp?.earnedExp}
         />
         {gameId ? (
           <ListSection>

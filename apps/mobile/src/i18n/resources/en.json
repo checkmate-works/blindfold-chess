@@ -412,7 +412,10 @@
       "confirmResign": "Resign",
       "confirmUndoTitle": "Confirm Undo",
       "confirmUndoMessage": "Are you sure you want to undo the last two moves?",
-      "confirmUndo": "Undo"
+      "confirmUndo": "Undo",
+      "boardHidden": "Board hidden",
+      "revealBoard": "Tap to reveal",
+      "hideBoard": "Hide Board"
     },
     "result": {
       "title": "Game Over",
@@ -425,7 +428,8 @@
       "playAgain": "Play Again",
       "backToMenu": "Back to Menu",
       "review": "Review game",
-      "reviewDescription": "Moves, PGN and recall"
+      "reviewDescription": "Moves, PGN and recall",
+      "expEarned": "Exp earned"
     }
   },
   "diagonalQuiz": {

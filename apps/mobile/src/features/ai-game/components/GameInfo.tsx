@@ -19,12 +19,6 @@ type GameInfoProps = {
   resigned?: boolean;
   /** The last AI move failed and is waiting for Retry. */
   aiMoveFailed?: boolean;
-  /**
-   * The AI's last move (e.g. "1... e5") while it is being announced, null
-   * otherwise. It takes the place of "Your Turn" for as long as the player's
-   * AI-reply-duration preference says.
-   */
-  announcedAiMove?: string | null;
   skillLevel: SkillLevel;
   moveCount: number;
 };
@@ -35,7 +29,6 @@ export function GameInfo({
   gameStatus,
   resigned = false,
   aiMoveFailed = false,
-  announcedAiMove = null,
   skillLevel,
   moveCount,
 }: GameInfoProps) {
@@ -49,9 +42,6 @@ export function GameInfo({
     if (gameStatus === "draw") return t("aiGame.session.draw");
     if (isAiThinking) return t("aiGame.session.aiThinking");
     if (aiMoveFailed) return t("aiGame.session.aiMoveFailed");
-    if (announcedAiMove) {
-      return t("aiGame.session.aiPlayed", { move: announcedAiMove });
-    }
     if (isPlayerTurn) return t("aiGame.session.yourTurn");
     return t("aiGame.session.aiThinking");
   };

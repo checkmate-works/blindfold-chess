@@ -412,7 +412,10 @@
       "confirmResign": "Rendirse",
       "confirmUndoTitle": "Confirmar Deshacer",
       "confirmUndoMessage": "¿Estás seguro de que quieres deshacer los dos últimos movimientos?",
-      "confirmUndo": "Deshacer"
+      "confirmUndo": "Deshacer",
+      "boardHidden": "Tablero oculto",
+      "revealBoard": "Toca para ver",
+      "hideBoard": "Ocultar Tablero"
     },
     "result": {
       "title": "Fin de la partida",
@@ -425,7 +428,8 @@
       "playAgain": "Jugar de nuevo",
       "backToMenu": "Volver al menú",
       "review": "Repasar la partida",
-      "reviewDescription": "Movimientos, PGN y de memoria"
+      "reviewDescription": "Movimientos, PGN y de memoria",
+      "expEarned": "Exp obtenida"
     }
   },
   "diagonalQuiz": {

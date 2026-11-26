@@ -7,6 +7,8 @@ import {
   computeGameState,
   validateGameMove,
 } from "@blindfold-chess/features/ai-game";
+import type { MoveInputMethod } from "@blindfold-chess/features/game-record";
+import { useMoveOperationTracker } from "@blindfold-chess/features/game-record/client";
 
 import type { GameStatus, PlayerResult, SkillLevel } from "../lib/types";
 
@@ -62,6 +64,17 @@ export function useGameSession({
   // Counts the AI's moves, so the screen can announce each one once.
   const [aiMoveSignal, setAiMoveSignal] = useState(0);
   const isAiMoveInProgressRef = useRef(false);
+  // One log per player move: how it was entered and what help it took (board
+  // peeks, takebacks, invalid attempts). The same record the web keeps; the
+  // Exp grant reads its aided-move count.
+  const {
+    logs: operationLogs,
+    recordPeek,
+    recordInvalid,
+    recordUndo,
+    commitMove,
+    handleUndoLog,
+  } = useMoveOperationTracker();
 
   // Derive game state synchronously whenever moves change
   const gameState = useMemo(
@@ -138,23 +151,33 @@ export function useGameSession({
   ]);
 
   const submitMove = useCallback(
-    (move: AlgebraicNotation) => {
+    (move: AlgebraicNotation, inputMethod: MoveInputMethod = "button") => {
       if (!isPlayerTurn || gameStatus !== "in_progress" || isAiLoading) {
         return false;
       }
 
       if (!validateGameMove(moves, move, startingFen)) {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        recordInvalid(move);
         setError({ kind: "invalid-move", input: move });
         return false;
       }
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      commitMove(inputMethod);
       setMoves((prev) => [...prev, move]);
       setError(null);
       return true;
     },
-    [isPlayerTurn, gameStatus, isAiLoading, moves, startingFen],
+    [
+      isPlayerTurn,
+      gameStatus,
+      isAiLoading,
+      moves,
+      startingFen,
+      recordInvalid,
+      commitMove,
+    ],
   );
 
   const retryAiMove = useCallback(() => {
@@ -173,9 +196,13 @@ export function useGameSession({
 
   const undo = useCallback(() => {
     if (!canUndo) return;
+    // The retracted move's log goes with it (the move "never happened"), and
+    // the takeback itself is counted on the move the player makes next.
+    handleUndoLog(moves.slice(-UNDO_PLIES));
+    recordUndo();
     setMoves((prev) => prev.slice(0, -UNDO_PLIES));
     setError(null);
-  }, [canUndo]);
+  }, [canUndo, moves, handleUndoLog, recordUndo]);
 
   const canResign = gameStatus === "in_progress" && !isAiThinking;
 
@@ -195,6 +222,8 @@ export function useGameSession({
     error,
     aiMoveFailed,
     aiMoveSignal,
+    operationLogs,
+    recordPeek,
     currentFen,
     submitMove,
     retryAiMove,
