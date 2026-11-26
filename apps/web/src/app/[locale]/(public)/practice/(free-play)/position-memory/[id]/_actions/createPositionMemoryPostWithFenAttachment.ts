@@ -1,10 +1,9 @@
 'use server';
 
-import { getPositionById } from '@/lib/positions/queries';
-import { RATE_LIMITS } from '@/lib/security/rate-limit';
-import { validateContent } from '@/lib/validations/content';
-
-import { POSITION_MEMORY_TOPIC } from '@/app/[locale]/(public)/practice/(free-play)/_lib/wrapper-config';
+import {
+  POSITION_MEMORY_TOPIC,
+  getPositionMemoryPostParams,
+} from '@/app/[locale]/(public)/practice/(free-play)/_lib/wrapper-config';
 import type { CreatePostState } from '@/app/[locale]/(public)/topics/_actions/createPost';
 import { createPostWithFenAttachmentBase } from '@/app/[locale]/(public)/topics/_actions/createPostWithFenAttachmentBase';
 import { parentPagePostRedirect } from '@/app/[locale]/(public)/topics/_lib/parent-page-redirects';
@@ -15,22 +14,8 @@ export async function createPositionMemoryPostWithFenAttachment(
   _prevState: CreatePostState,
   formData: FormData
 ): Promise<CreatePostState> {
-  const position = await getPositionById({ id: positionId, type: 'memory' });
-
   return createPostWithFenAttachmentBase({
-    locale,
-    topicIdentifier: positionId,
-    ...POSITION_MEMORY_TOPIC,
-    topicKey: positionId,
-    // The row is already in hand for `topicAuthorId`, so re-validate against
-    // it rather than letting the config's validator issue a second query.
-    validateTopic: () => position !== null,
-    invalidTopicError: 'Invalid position',
-    rateLimit: RATE_LIMITS.createPost,
-    validateContent,
-    emitFeedItem: false,
-    topicAuthorId: position?.userId,
+    ...(await getPositionMemoryPostParams(locale, positionId, formData)),
     redirectPath: parentPagePostRedirect(locale, POSITION_MEMORY_TOPIC.urlSegment, positionId),
-    formData,
   });
 }
