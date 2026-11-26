@@ -42,7 +42,7 @@ export default function PracticeIndex() {
     <ListRow
       key={item.slug}
       testID={`practice-${item.slug}`}
-      leading={<ListIcon glyph={item.icon} />}
+      leading={<ListIcon ionicon={item.icon} />}
       title={t(`practice.${item.i18nKey}.title`)}
       subtitle={t(`practice.${item.i18nKey}.description`)}
       onPress={() =>
