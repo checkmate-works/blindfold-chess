@@ -28,3 +28,12 @@ export {
   resolveStoredGamePreferences,
   validateGamePreferences,
 } from "./validation";
+export type {
+  DifficultyLevel,
+  DifficultyPresetSettings,
+} from "./difficulty-presets";
+export {
+  DIFFICULTY_LEVELS,
+  DIFFICULTY_PRESETS,
+  matchDifficultyPreset,
+} from "./difficulty-presets";
