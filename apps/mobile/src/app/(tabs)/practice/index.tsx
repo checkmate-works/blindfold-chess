@@ -7,17 +7,9 @@ import {
 } from "@blindfold-chess/features/dojo-ranks";
 import { PRACTICE_MODULE_REGISTRY } from "@blindfold-chess/features/practice-registry";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import type { Href } from "expo-router";
 import { useTranslation } from "react-i18next";
 
-import {
-  DoneMark,
-  FilterChips,
-  ListIcon,
-  ListRow,
-  ListSection,
-  TabScrollView,
-} from "../../../components";
+import { FilterChips, TabScrollView } from "../../../components";
 import { useDojoJourney } from "../../../features/dojo/use-dojo-journey";
 import {
   practiceProgress,
@@ -29,11 +21,10 @@ import {
   practiceMenuType,
   practiceModuleRank,
 } from "../../../features/practice-list/rank-filter";
-import {
-  MOBILE_PRACTICE_MODULES,
-  practiceModuleRoute,
-} from "../../../navigation/practice-modules";
+import { MOBILE_PRACTICE_MODULES } from "../../../navigation/practice-modules";
 import type { MobilePracticeModule } from "../../../navigation/practice-modules";
+import { PracticeCard } from "../../../features/practice-list/PracticeCard";
+import { PracticeCardSection } from "../../../features/practice-list/PracticeCardSection";
 import { spacing } from "../../../theme";
 
 const CHALLENGE_SLUGS = new Set<string>(
@@ -116,33 +107,9 @@ export default function PracticeIndex() {
     })),
   ];
 
-  // `practice.${i18nKey}.title` / `.description` (i18nKey from MOBILE_PRACTICE_MODULES): practice.coordinateQuiz.title, practice.legalMoves.title, practice.boardSymmetry.title, practice.squareColors.title, practice.diagonalQuiz.title, practice.routePlanner.title, practice.quadrants.title, practice.knightTour.title, practice.algebraicNotation.title, practice.fen.title, and the same with .description
-  const renderRow = (item: MobilePracticeModule) => {
-    const progress = progressOf(item);
-    const title = t(`practice.${item.i18nKey}.title`);
-    const subtitle = t(`practice.${item.i18nKey}.description`);
-    return (
-      <ListRow
-        key={item.slug}
-        testID={`practice-${item.slug}`}
-        leading={<ListIcon ionicon={item.icon} />}
-        title={title}
-        subtitle={subtitle}
-        value={progress?.kind === "count" ? progress.value : undefined}
-        trailing={progress?.kind === "done" ? <DoneMark /> : undefined}
-        // The value is a bare mark or "1 / 3"; read it out as "Tried" /
-        // "Tried 1 / 3" after the row's own texts.
-        accessibilityLabel={
-          progress
-            ? [title, subtitle, progress.accessibilityLabel].join(", ")
-            : undefined
-        }
-        onPress={() =>
-          router.push(`/practice/${practiceModuleRoute(item)}` as Href)
-        }
-      />
-    );
-  };
+  const renderCard = (item: MobilePracticeModule) => (
+    <PracticeCard key={item.slug} module={item} progress={progressOf(item)} />
+  );
 
   return (
     <TabScrollView>
@@ -156,17 +123,17 @@ export default function PracticeIndex() {
         />
       </View>
       {challenges.length > 0 && (
-        <ListSection
+        <PracticeCardSection
           title={t("practice.challengeSection")}
           footer={t("practice.challengeSectionNote")}
         >
-          {challenges.map(renderRow)}
-        </ListSection>
+          {challenges.map(renderCard)}
+        </PracticeCardSection>
       )}
       {freePlay.length > 0 && (
-        <ListSection title={t("practice.freePlaySection")}>
-          {freePlay.map(renderRow)}
-        </ListSection>
+        <PracticeCardSection title={t("practice.freePlaySection")}>
+          {freePlay.map(renderCard)}
+        </PracticeCardSection>
       )}
     </TabScrollView>
   );
