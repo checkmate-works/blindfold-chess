@@ -77,3 +77,16 @@ export const shadows = {
     elevation: 5,
   },
 } as const;
+
+/** Shared action geometry. Minimum heights grow with wrapped or scaled text. */
+export const controlSize = {
+  sm: { minHeight: 44, paddingVertical: 11, paddingHorizontal: 16 },
+  md: { minHeight: 48, paddingVertical: 13, paddingHorizontal: 24 },
+  lg: { minHeight: 52, paddingVertical: 15, paddingHorizontal: 24 },
+} as const;
+
+export const controlLabel = {
+  fontSize: 15,
+  lineHeight: 20,
+  fontWeight: fontWeight.semibold,
+} as const;

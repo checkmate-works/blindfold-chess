@@ -27,11 +27,8 @@ type ModeButtonRowProps = {
  * screen's back-to-menu / play-again share it, so a module's footers keep
  * one shape from before a run to after it.
  *
- * The buttons are the medium size with 14pt top and bottom padding (about
- * 50pt tall with a 15pt label), the same as the mahjong-scoring app's start
- * footer this layout follows: a little taller than the medium size's own
- * 11pt padding (44pt), so the footer's actions carry their weight without
- * becoming the heaviest thing on the screen.
+ * Both actions use the shared footer size and stretch to equal height
+ * when either translated label wraps.
  */
 export function ModeButtonRow({
   secondary,
@@ -46,7 +43,7 @@ export function ModeButtonRow({
         onPress={secondary.onPress}
         disabled={disabled}
         variant="outline"
-        size="md"
+        size="lg"
         style={styles.button}
         testID={secondary.testID}
       />
@@ -55,7 +52,7 @@ export function ModeButtonRow({
         icon={primary.icon}
         onPress={primary.onPress}
         disabled={disabled}
-        size="md"
+        size="lg"
         style={styles.button}
         testID={primary.testID}
       />
@@ -68,14 +65,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: spacing.sm,
   },
-  // 14pt, not the medium size's 11: the reference footer's height. The two
-  // buttons split the row evenly, whatever their labels' widths, with
-  // narrower side padding than the medium size's own, so a long label
-  // ("Entrenamiento") stays on one line in half a phone's width.
   button: {
     flex: 1,
     flexBasis: 0,
-    paddingVertical: 14,
     paddingHorizontal: spacing.sm,
   },
 });
