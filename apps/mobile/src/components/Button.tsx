@@ -11,8 +11,9 @@ import {
   useTheme,
   spacing,
   borderRadius,
-  fontWeight,
   withAlpha,
+  controlSize,
+  controlLabel,
 } from "../theme";
 import type { AppColors } from "../theme";
 
@@ -43,11 +44,7 @@ type VariantPaint = {
   label: string;
 };
 
-/**
- * The paint of each variant at rest and while pressed. `ghost` has no
- * surface, so its pressed state cannot be shown by a fill; it dims its label
- * instead (see `GHOST_PRESSED_OPACITY`).
- */
+/** The paint of each variant at rest and while pressed. */
 function variantPaint(
   colors: AppColors,
   variant: ButtonVariant,
@@ -74,47 +71,17 @@ function variantPaint(
       };
     case "ghost":
       return {
-        fill: "transparent",
+        fill: pressed ? colors.muted : "transparent",
         border: "transparent",
         label: colors.primary,
       };
   }
 }
 
-/** How far a pressed `ghost` label fades — the only press cue it has. */
-const GHOST_PRESSED_OPACITY = 0.6;
-
 /**
- * The app's button.
- *
- * @description
- * The look follows the app's flat rule: a pressed button changes only its
- * fill — it never moves and never fades as a whole — so this is a
- * `Pressable` with a style function rather than a touchable that dims
- * itself on press.
- *
- * - Corner `borderRadius.button` (14), label weight 700 (600 for `ghost`).
- * - Heights: sm 36 / md 44 / lg 48. The old lg was about 70pt tall and had
- *   become the heaviest element on every screen it appeared on, which is why
- *   `ModeButtonRow` had already been overriding it down to about 50pt.
- * - Every variant carries a 1px border (transparent on the filled and the
- *   bare variants) so all four are exactly the same height side by side.
- * - `primary` is the one blue surface: filled `primary`, darker
- *   `primaryPressed` while pressed. `outline` (blue label) and `secondary`
- *   (ink label) are white with the 1px `panelBorder` that every panel uses;
- *   `secondary` used to be a grey fill, which could not be told apart from
- *   the grey of a disabled button.
- * - Disabled is a grey fill (`muted`) with a `mutedForeground` label, never a
- *   translucent version of the live colours: a faded blue still reads as
- *   pressable on a white page. `ghost` only greys its label.
- * - `loading` disables the press but keeps the live paint and the label; the
- *   spinner takes the icon's slot so the width does not jump.
- *
- * The variant names are kept as they were (rather than renamed to match any
- * other app's vocabulary) because they are used at many call sites across
- * parallel work; only what they look like changed. `style` and `textStyle`
- * are applied last so a caller's override (e.g. `ModeButtonRow`'s taller
- * vertical padding) always wins.
+ * Shared action button: compact 44pt, regular 48pt, footer 52pt minimum.
+ * Every size uses the same label metrics and grows for wrapped/scaled text.
+ * Press feedback changes fill only; loading keeps the label and live paint.
  */
 export function Button({
   title,
@@ -151,7 +118,7 @@ export function Button({
       onPress={onPress}
       disabled={isDisabled}
       accessibilityRole="button"
-      accessibilityState={{ disabled: isDisabled }}
+      accessibilityState={{ disabled: isDisabled, busy: loading }}
       testID={testID}
       style={({ pressed }) => {
         const paint = paintFor(pressed);
@@ -168,10 +135,6 @@ export function Button({
         const paint = paintFor(pressed);
         const labelStyle: TextStyle = {
           color: paint.label,
-          opacity:
-            variant === "ghost" && pressed && !isDisabled
-              ? GHOST_PRESSED_OPACITY
-              : 1,
         };
         return (
           <View style={styles.content}>
@@ -217,41 +180,33 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: spacing.sm,
+    maxWidth: "100%",
   },
 
-  // Sizes
-  size_sm: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    minHeight: 36,
-  },
-  size_md: {
-    paddingHorizontal: 24,
-    paddingVertical: 11,
-    minHeight: 44,
-  },
-  size_lg: {
-    paddingHorizontal: 24,
-    paddingVertical: 14,
-    minHeight: 48,
-  },
+  size_sm: controlSize.sm,
+  size_md: controlSize.md,
+  size_lg: controlSize.lg,
 
   // Text
   text: {
-    fontWeight: fontWeight.bold,
+    ...controlLabel,
+    flexShrink: 1,
+    textAlign: "center",
   },
   textGhost: {
-    fontWeight: fontWeight.semibold,
+    ...controlLabel,
+    flexShrink: 1,
+    textAlign: "center",
   },
 
   // Text sizes
   text_size_sm: {
-    fontSize: 14,
+    fontSize: controlLabel.fontSize,
   },
   text_size_md: {
-    fontSize: 15,
+    fontSize: controlLabel.fontSize,
   },
   text_size_lg: {
-    fontSize: 16,
+    fontSize: controlLabel.fontSize,
   },
 });

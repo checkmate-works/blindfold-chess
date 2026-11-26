@@ -1,10 +1,11 @@
-import { Text, StyleSheet, TouchableOpacity } from "react-native";
+import { Text, StyleSheet, Pressable } from "react-native";
 import {
-  fontSize,
-  fontWeight,
   spacing,
   borderRadius,
   touchTarget,
+  controlSize,
+  controlLabel,
+  useTheme,
 } from "../../../theme";
 import type { ThemeColors } from "../../../theme";
 
@@ -32,20 +33,27 @@ export function ToggleButton({
   fill,
   testID,
 }: ToggleButtonProps) {
+  const { colors: appColors } = useTheme();
   return (
-    <TouchableOpacity
+    <Pressable
       onPress={onPress}
       disabled={disabled}
       accessibilityRole="button"
       accessibilityState={{ selected: isSelected, disabled }}
       testID={testID}
-      style={[
+      style={({ pressed }) => [
         styles.toggleButton,
         small && styles.toggleButtonSmall,
         wide && styles.toggleButtonWide,
         fill && styles.toggleButtonFill,
         {
-          backgroundColor: isSelected ? colors.primary : colors.card,
+          backgroundColor: isSelected
+            ? pressed
+              ? appColors.primaryPressed
+              : colors.primary
+            : pressed
+              ? colors.muted
+              : colors.card,
           borderColor: isSelected ? colors.primary : colors.border,
           opacity: disabled ? 0.5 : 1,
         },
@@ -57,32 +65,29 @@ export function ToggleButton({
           small && styles.toggleTextSmall,
           {
             color: isSelected ? colors.primaryForeground : colors.foreground,
-            fontWeight: isSelected ? fontWeight.bold : fontWeight.normal,
+            fontWeight: controlLabel.fontWeight,
           },
         ]}
       >
         {label}
       </Text>
-    </TouchableOpacity>
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   toggleButton: {
     minWidth: touchTarget.minSize,
-    minHeight: touchTarget.minSize,
+    ...controlSize.sm,
     paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.md,
+    borderRadius: borderRadius.button,
     borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
   },
   toggleButtonSmall: {
-    minWidth: 36,
-    minHeight: 36,
+    minWidth: touchTarget.minSize,
     paddingHorizontal: spacing.xs,
-    paddingVertical: spacing.xs,
   },
   toggleButtonFill: {
     flex: 1,
@@ -93,9 +98,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
   },
   toggleText: {
-    fontSize: fontSize.md,
+    ...controlLabel,
+    textAlign: "center",
   },
   toggleTextSmall: {
-    fontSize: fontSize.sm,
+    fontSize: controlLabel.fontSize,
   },
 });

@@ -1,7 +1,7 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Pressable, StyleSheet } from "react-native";
 
-import { useTheme } from "../theme";
+import { useTheme, touchTarget, borderRadius } from "../theme";
 
 type Props = {
   icon: keyof typeof Ionicons.glyphMap;
@@ -25,11 +25,13 @@ export function HeaderIconButton({
   return (
     <Pressable
       onPress={onPress}
-      hitSlop={10}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       testID={testID}
-      style={styles.button}
+      style={({ pressed }) => [
+        styles.button,
+        { backgroundColor: pressed ? colors.muted : "transparent" },
+      ]}
     >
       <Ionicons name={icon} size={24} color={colors.foreground} />
     </Pressable>
@@ -38,8 +40,9 @@ export function HeaderIconButton({
 
 const styles = StyleSheet.create({
   button: {
-    width: 32,
-    height: 32,
+    width: touchTarget.minSize,
+    height: touchTarget.minSize,
+    borderRadius: borderRadius.button,
     alignItems: "center",
     justifyContent: "center",
   },

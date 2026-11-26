@@ -1,5 +1,12 @@
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { fontSize, fontWeight, spacing, borderRadius } from "../../../theme";
+import { View, Text, StyleSheet, Pressable } from "react-native";
+import {
+  fontWeight,
+  spacing,
+  borderRadius,
+  controlSize,
+  controlLabel,
+  withAlpha,
+} from "../../../theme";
 import type { ThemeColors } from "../../../theme";
 
 export type CheckboxPillProps = {
@@ -19,14 +26,20 @@ export function CheckboxPill({
 }: CheckboxPillProps) {
   return (
     <View style={styles.checkboxPillRow}>
-      <TouchableOpacity
+      <Pressable
         onPress={onPress}
         disabled={disabled}
-        style={[
+        accessibilityRole="checkbox"
+        accessibilityState={{ checked: isChecked, disabled }}
+        style={({ pressed }) => [
           styles.checkboxPill,
           {
-            backgroundColor: isChecked ? colors.primary + "1A" : "transparent",
-            borderColor: isChecked ? colors.primary : "transparent",
+            backgroundColor: pressed
+              ? colors.muted
+              : isChecked
+                ? withAlpha(colors.primary, 0.1)
+                : colors.card,
+            borderColor: isChecked ? colors.primary : colors.border,
             opacity: disabled ? 0.5 : 1,
           },
         ]}
@@ -58,7 +71,7 @@ export function CheckboxPill({
         >
           {label}
         </Text>
-      </TouchableOpacity>
+      </Pressable>
     </View>
   );
 }
@@ -72,9 +85,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: spacing.sm,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.full,
+    ...controlSize.sm,
+    borderRadius: borderRadius.button,
     borderWidth: 1,
   },
   checkbox: {
@@ -91,8 +103,7 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   checkboxPillLabel: {
-    fontFamily: "monospace",
-    fontWeight: fontWeight.bold,
-    fontSize: fontSize.lg,
+    ...controlLabel,
+    flexShrink: 1,
   },
 });

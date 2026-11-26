@@ -1,10 +1,11 @@
-import { Text, StyleSheet, TouchableOpacity } from "react-native";
+import { Text, StyleSheet, Pressable } from "react-native";
 import {
   useTheme,
   fontSize,
   fontWeight,
-  spacing,
   borderRadius,
+  controlSize,
+  controlLabel,
 } from "../theme";
 
 type SelectableChipProps = {
@@ -18,21 +19,7 @@ type SelectableChipProps = {
   icon?: string;
 };
 
-/**
- * A tappable pill that reads as on or off.
- *
- * @description
- * Every settings screen picks from a small fixed set — durations, problem
- * counts, board orientation, pieces — and each had written
- * the same `TouchableOpacity` by hand: border and background swapping to
- * `primary` when selected, label swapping to `primaryForeground`. Seven
- * copies, one of which had already been pulled into a local
- * `renderOptionButton` helper in `coordinate-quiz`.
- *
- * The selected style lives here so a theme change reaches every picker at
- * once, and so a new setting is a `.map()` rather than thirty lines of
- * `StyleSheet`.
- */
+/** Single-choice control with stable label weight and fill-only press feedback. */
 export function SelectableChip({
   label,
   selected,
@@ -42,14 +29,23 @@ export function SelectableChip({
   const { colors } = useTheme();
 
   return (
-    <TouchableOpacity
+    <Pressable
       onPress={onPress}
-      style={[
+      accessibilityRole="radio"
+      accessibilityLabel={label}
+      accessibilityState={{ checked: selected }}
+      style={({ pressed }) => [
         styles.chip,
         icon !== undefined && styles.iconChip,
         {
           borderColor: selected ? colors.primary : colors.border,
-          backgroundColor: selected ? colors.primary : colors.card,
+          backgroundColor: selected
+            ? pressed
+              ? colors.primaryPressed
+              : colors.primary
+            : pressed
+              ? colors.muted
+              : colors.card,
         },
       ]}
     >
@@ -61,21 +57,22 @@ export function SelectableChip({
             color: selected ? colors.primaryForeground : colors.foreground,
           },
           icon === undefined && {
-            fontWeight: selected ? fontWeight.medium : fontWeight.normal,
+            fontWeight: fontWeight.semibold,
           },
         ]}
       >
         {label}
       </Text>
-    </TouchableOpacity>
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   chip: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.md,
+    ...controlSize.sm,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: borderRadius.button,
     borderWidth: 1,
   },
   iconChip: {
@@ -83,7 +80,8 @@ const styles = StyleSheet.create({
     minWidth: 56,
   },
   label: {
-    fontSize: fontSize.sm,
+    ...controlLabel,
+    textAlign: "center",
   },
   icon: {
     fontSize: 24,

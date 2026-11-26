@@ -2,7 +2,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { Pressable, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
 
-import { useTheme } from "../theme";
+import { useTheme, touchTarget, borderRadius } from "../theme";
 import { useQuitSession } from "./use-quit-session";
 
 type Props = {
@@ -31,11 +31,13 @@ export function SessionCloseButton({ confirm = false, onClose }: Props) {
   return (
     <Pressable
       onPress={handlePress}
-      hitSlop={8}
       accessibilityRole="button"
       accessibilityLabel={t("common.close")}
       testID="session-close"
-      style={styles.button}
+      style={({ pressed }) => [
+        styles.button,
+        { backgroundColor: pressed ? colors.muted : "transparent" },
+      ]}
     >
       <Ionicons name="close" size={26} color={colors.foreground} />
     </Pressable>
@@ -44,8 +46,9 @@ export function SessionCloseButton({ confirm = false, onClose }: Props) {
 
 const styles = StyleSheet.create({
   button: {
-    width: 36,
-    height: 36,
+    width: touchTarget.minSize,
+    height: touchTarget.minSize,
+    borderRadius: borderRadius.button,
     alignItems: "center",
     justifyContent: "center",
   },

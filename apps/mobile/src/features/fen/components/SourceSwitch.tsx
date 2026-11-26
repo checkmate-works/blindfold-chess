@@ -1,6 +1,12 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { useTheme, fontSize, fontWeight, spacing } from "../../../theme";
+import {
+  useTheme,
+  borderRadius,
+  controlSize,
+  controlLabel,
+  spacing,
+} from "../../../theme";
 
 type SourceSwitchProps<T extends string> = {
   options: readonly { value: T; label: string }[];
@@ -34,9 +40,15 @@ export function SourceSwitch<T extends string>({
             accessibilityRole="tab"
             accessibilityState={{ selected }}
             testID={`source-${option.value}`}
-            style={[
+            style={({ pressed }) => [
               styles.segment,
-              selected && { backgroundColor: colors.card },
+              {
+                backgroundColor: pressed
+                  ? colors.muted
+                  : selected
+                    ? colors.card
+                    : "transparent",
+              },
             ]}
           >
             <Text
@@ -59,18 +71,20 @@ export function SourceSwitch<T extends string>({
 const styles = StyleSheet.create({
   track: {
     flexDirection: "row",
-    borderRadius: 8,
+    borderRadius: borderRadius.button,
     padding: spacing.xs,
   },
   segment: {
+    ...controlSize.sm,
     flex: 1,
+    justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
-    borderRadius: 6,
+    borderRadius: borderRadius.md,
   },
   label: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
+    ...controlLabel,
+    textAlign: "center",
   },
 });

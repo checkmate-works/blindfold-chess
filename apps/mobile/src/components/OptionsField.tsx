@@ -33,7 +33,7 @@ export function OptionsField<T>({
   return (
     <View style={styles.section}>
       <Text style={[styles.label, { color: colors.foreground }]}>{label}</Text>
-      <View style={styles.optionsRow}>
+      <View style={styles.optionsRow} accessibilityRole="radiogroup">
         {options.map((option) => (
           <SelectableChip
             key={String(option)}

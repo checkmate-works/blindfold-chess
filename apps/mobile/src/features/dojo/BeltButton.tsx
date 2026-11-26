@@ -2,7 +2,13 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { Pressable, StyleSheet, Text } from "react-native";
 import type { RankSlug } from "@blindfold-chess/features/dojo-ranks";
 
-import { borderRadius, fontWeight, spacing, useTheme } from "../../theme";
+import {
+  borderRadius,
+  controlLabel,
+  controlSize,
+  spacing,
+  useTheme,
+} from "../../theme";
 import { beltColors } from "./belt";
 
 /**
@@ -19,8 +25,8 @@ import { beltColors } from "./belt";
  * a green button would seem to belong to 2kyu.
  *
  * Its geometry matches `Button`'s `md` size so it sits in the same rhythm as
- * the app's other buttons: corner `borderRadius.button`, 44pt minimum height,
- * bold 15pt label.
+ * the app's other buttons: corner `borderRadius.button`, 48pt minimum height,
+ * semibold 15pt label.
  */
 export function BeltButton({
   slug,
@@ -63,16 +69,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: spacing.sm,
-    minHeight: 44,
-    paddingHorizontal: 24,
-    paddingVertical: 11,
-    borderWidth: 1.5,
+    ...controlSize.md,
+    borderWidth: 1,
     borderRadius: borderRadius.button,
   },
   title: {
     flexShrink: 1,
-    fontSize: 15,
-    fontWeight: fontWeight.bold,
+    ...controlLabel,
     textAlign: "center",
   },
 });

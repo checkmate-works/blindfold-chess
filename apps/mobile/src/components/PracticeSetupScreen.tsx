@@ -231,9 +231,8 @@ export function PracticeSetupScreen({
             icon="play"
             onPress={startOnce(onStart)}
             disabled={startDisabled}
-            size="md"
+            size="lg"
             fullWidth
-            style={styles.footerButton}
             testID="start"
           />
         )}
@@ -267,9 +266,5 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
     fontSize: fontSize.xs,
     textAlign: "center",
-  },
-  // 14pt, not the medium size's 16: the same height as `ModeButtonRow`.
-  footerButton: {
-    paddingVertical: 14,
   },
 });
