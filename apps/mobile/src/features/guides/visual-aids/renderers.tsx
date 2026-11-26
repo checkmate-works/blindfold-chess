@@ -186,8 +186,14 @@ function CoordinateBoard() {
   );
 }
 
+/**
+ * The 4kyu formulas, through the learn articles' renderer as the web draws
+ * them through its markdown. The fences go on lines of their own: that
+ * renderer reads a math block that way, and a one-line `$$…$$` as inline
+ * math with a stray `$$` left over.
+ */
 function Formula({ latex }: { latex: string }) {
-  return <MarkdownView source={`$$${latex}$$`} />;
+  return <MarkdownView source={`$$\n${latex}\n$$`} />;
 }
 
 function quadrantProp(props: AidProps): GuideQuadrant {
