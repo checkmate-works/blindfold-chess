@@ -35,6 +35,7 @@
     "./fen-practice": "./src/fen-practice/index.ts",
     "./fen-practice/client": "./src/fen-practice/client.ts",
     "./game-play": "./src/game-play/index.ts",
+    "./game-play/client": "./src/game-play/client.ts",
     "./game-preferences": "./src/game-preferences/index.ts",
     "./game-record": "./src/game-record/index.ts",
     "./knight-tour": "./src/knight-tour/index.ts",
