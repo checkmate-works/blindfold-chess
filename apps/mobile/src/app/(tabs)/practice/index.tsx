@@ -118,17 +118,23 @@ export default function PracticeIndex() {
   // `practice.${i18nKey}.title` / `.description` (i18nKey from MOBILE_PRACTICE_MODULES): practice.coordinateQuiz.title, practice.legalMoves.title, practice.boardSymmetry.title, practice.squareColors.title, practice.diagonalQuiz.title, practice.routePlanner.title, practice.quadrants.title, practice.knightTour.title, practice.algebraicNotation.title, practice.fen.title, and the same with .description
   const renderRow = (item: MobilePracticeModule) => {
     const progress = progressOf(item);
-    // TODO: read the progress out as `progress.accessibilityLabel`
-    // ("Tried 1 / 3") once `ListRow` accepts a label; until then the row
-    // reads its visible value.
+    const title = t(`practice.${item.i18nKey}.title`);
+    const subtitle = t(`practice.${item.i18nKey}.description`);
     return (
       <ListRow
         key={item.slug}
         testID={`practice-${item.slug}`}
         leading={<ListIcon ionicon={item.icon} />}
-        title={t(`practice.${item.i18nKey}.title`)}
-        subtitle={t(`practice.${item.i18nKey}.description`)}
+        title={title}
+        subtitle={subtitle}
         value={progress?.value}
+        // The value is a bare "✓" or "1 / 3"; read it out as "Tried" /
+        // "Tried 1 / 3" after the row's own texts.
+        accessibilityLabel={
+          progress
+            ? [title, subtitle, progress.accessibilityLabel].join(", ")
+            : undefined
+        }
         onPress={() =>
           router.push(`/practice/${practiceModuleRoute(item)}` as Href)
         }

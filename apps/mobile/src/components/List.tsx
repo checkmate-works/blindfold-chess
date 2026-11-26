@@ -82,6 +82,14 @@ type ListRowProps = {
   accessory?: "chevron" | "check" | "none" | "external";
   onPress?: () => void;
   disabled?: boolean;
+  /**
+   * What a screen reader says for the whole row, in place of its visible
+   * texts read in turn. For a row whose value is a glyph or bare numbers
+   * ("✓", "2 / 5"), which say nothing on their own; it replaces the title
+   * too, so it names the row as well as the value. Without it the row reads
+   * its title, subtitle and value.
+   */
+  accessibilityLabel?: string;
   testID?: string;
 };
 
@@ -104,6 +112,7 @@ export function ListRow({
   accessory,
   onPress,
   disabled = false,
+  accessibilityLabel,
   testID,
 }: ListRowProps) {
   const { colors } = useTheme();
@@ -115,6 +124,7 @@ export function ListRow({
       disabled={disabled || !onPress}
       testID={testID}
       accessibilityRole={onPress ? "button" : undefined}
+      accessibilityLabel={accessibilityLabel}
       accessibilityState={
         shownAccessory === "check" ? { selected: true } : undefined
       }
