@@ -1,4 +1,5 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { Fragment } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
@@ -59,7 +60,14 @@ function stageValue({ stage, done, total }: StageCount, t: TFunction): string {
  * pressable surface of the app.
  *
  * The frame and the lines between the cells are 1px `panelBorder`, the
- * same edge as every white panel of the app.
+ * same edge as every white panel of the app. Each line between two cells
+ * carries a small chevron pointing right, because the stages have an order:
+ * a rank is learnt, then practised, then examined, and three cells side by
+ * side with nothing between them read as three equal, unrelated counters.
+ * The chevron sits on a disc of the card's colour so it interrupts the line
+ * rather than being crossed by it, takes no touches (the cells stay the
+ * only targets, edge to edge) and is hidden from screen readers, which
+ * already hear the stages in order.
  */
 export function RankStageProgress({
   journey,
@@ -93,50 +101,68 @@ export function RankStageProgress({
           }
         };
         return (
-          <Pressable
-            key={count.stage}
-            accessibilityRole="link"
-            accessibilityLabel={`${name} ${value}`}
-            testID={`stage-${count.stage}`}
-            onPress={open}
-            style={({ pressed }) => [
-              styles.cell,
-              index > 0 && {
-                borderLeftWidth: 1,
-                borderLeftColor: colors.panelBorder,
-              },
-              isCurrent && { backgroundColor: belt.tint },
-              pressed && { backgroundColor: belt.tintPressed },
-            ]}
-          >
-            <Text
-              style={[
-                styles.name,
-                { color: isCurrent ? belt.tintText : colors.mutedForeground },
+          <Fragment key={count.stage}>
+            {index > 0 && (
+              <View
+                style={styles.arrowSlot}
+                pointerEvents="none"
+                accessible={false}
+                accessibilityElementsHidden
+                importantForAccessibility="no-hide-descendants"
+              >
+                <View style={[styles.arrow, { backgroundColor: colors.card }]}>
+                  <Ionicons
+                    name="chevron-forward"
+                    size={12}
+                    color={colors.mutedForeground}
+                  />
+                </View>
+              </View>
+            )}
+            <Pressable
+              accessibilityRole="link"
+              accessibilityLabel={`${name} ${value}`}
+              testID={`stage-${count.stage}`}
+              onPress={open}
+              style={({ pressed }) => [
+                styles.cell,
+                index > 0 && {
+                  borderLeftWidth: 1,
+                  borderLeftColor: colors.panelBorder,
+                },
+                isCurrent && { backgroundColor: belt.tint },
+                pressed && { backgroundColor: belt.tintPressed },
               ]}
             >
-              {name}
-            </Text>
-            <View style={styles.valueRow}>
-              {finished ? (
-                <Ionicons name="checkmark" size={14} color={colors.success} />
-              ) : null}
               <Text
                 style={[
-                  styles.value,
-                  {
-                    color: finished
-                      ? colors.success
-                      : isCurrent
-                        ? belt.tintText
-                        : colors.foreground,
-                  },
+                  styles.name,
+                  { color: isCurrent ? belt.tintText : colors.mutedForeground },
                 ]}
               >
-                {value}
+                {name}
               </Text>
-            </View>
-          </Pressable>
+              <View style={styles.valueRow}>
+                {finished ? (
+                  <Ionicons name="checkmark" size={14} color={colors.success} />
+                ) : null}
+                <Text
+                  style={[
+                    styles.value,
+                    {
+                      color: finished
+                        ? colors.success
+                        : isCurrent
+                          ? belt.tintText
+                          : colors.foreground,
+                    },
+                  ]}
+                >
+                  {value}
+                </Text>
+              </View>
+            </Pressable>
+          </Fragment>
         );
       })}
     </View>
@@ -156,6 +182,24 @@ const styles = StyleSheet.create({
     gap: 2,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.xs,
+  },
+  // A zero-width slot on the line between two cells, so the chevron adds no
+  // width to the row and the cells keep equal thirds; the chevron hangs over
+  // the line from it.
+  arrowSlot: {
+    width: 0,
+    zIndex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "visible",
+  },
+  arrow: {
+    position: "absolute",
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
   },
   name: {
     fontSize: fontSize.xs,
