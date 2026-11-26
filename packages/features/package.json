@@ -38,6 +38,7 @@
     "./game-play/client": "./src/game-play/client.ts",
     "./game-preferences": "./src/game-preferences/index.ts",
     "./game-record": "./src/game-record/index.ts",
+    "./game-record/client": "./src/game-record/client.ts",
     "./knight-tour": "./src/knight-tour/index.ts",
     "./knight-tour/client": "./src/knight-tour/client.ts",
     "./lame-name": "./src/lame-name/index.ts",

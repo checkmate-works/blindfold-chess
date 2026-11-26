@@ -1,13 +1,12 @@
 'use server';
 
-import { PLAYER_RESULTS } from '@blindfold-chess/features/ai-game';
 import type { ExpInfo, GameExpEngine, GameExpOutcome } from '@blindfold-chess/features/exp';
 
 import { authenticateAndGuard } from '@/lib/auth';
 import { saveAiGameResult } from '@/lib/db/save-game-result';
+import { parseAiGameResultReport } from '@/lib/games/ai-game-result-input';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { handleServerActionError } from '@/lib/server-action-error';
-import { UUID_RE } from '@/lib/validations/uuid';
 
 export type SaveGameResultInput = {
   /** The game's localStorage UUID — the grant's idempotency key. */
@@ -20,23 +19,6 @@ export type SaveGameResultInput = {
 
 export type SaveGameResultResponse =
   { success: true; exp?: ExpInfo } | { success: false; error: string };
-
-/**
- * Narrow an untrusted engine payload to {@link GameExpEngine}. Difficulty
- * values are passed through as plain numbers — the calculator clamps
- * out-of-range inputs, so we only require a finite number of the right kind.
- */
-function normalizeEngine(value: unknown): GameExpEngine | null {
-  if (!value || typeof value !== 'object') return null;
-  const v = value as Record<string, unknown>;
-  if (v.kind === 'stockfish' && typeof v.skillLevel === 'number' && Number.isFinite(v.skillLevel)) {
-    return { kind: 'stockfish', skillLevel: v.skillLevel };
-  }
-  if (v.kind === 'maia' && typeof v.rating === 'number' && Number.isFinite(v.rating)) {
-    return { kind: 'maia', rating: v.rating };
-  }
-  return null;
-}
 
 /**
  * Server Action: grant Exp for a completed AI game (Stockfish / Maia).
@@ -56,26 +38,11 @@ function normalizeEngine(value: unknown): GameExpEngine | null {
  */
 export async function saveGameResult(input: SaveGameResultInput): Promise<SaveGameResultResponse> {
   try {
-    if (!input || typeof input.gameId !== 'string' || !UUID_RE.test(input.gameId)) {
+    const report = parseAiGameResultReport(input);
+    if (!report) {
       return { success: false, error: 'invalid_input' };
     }
-    if (!PLAYER_RESULTS.includes(input.result)) {
-      return { success: false, error: 'invalid_input' };
-    }
-    const engine = normalizeEngine(input.engine);
-    if (!engine) {
-      return { success: false, error: 'invalid_input' };
-    }
-
-    const playerMoveCount = Math.max(0, Math.round(Number(input.playerMoveCount) || 0));
-    // Aided moves can never exceed the move count; clamp defensively so a
-    // tampered payload cannot push the purity ratio above 1.
-    const aidedMoveCount = Math.min(
-      playerMoveCount,
-      Math.max(0, Math.round(Number(input.aidedMoveCount) || 0))
-    );
-
-    if (playerMoveCount === 0) {
+    if (report.playerMoveCount === 0) {
       return { success: true };
     }
 
@@ -85,14 +52,7 @@ export async function saveGameResult(input: SaveGameResultInput): Promise<SaveGa
     }
     const { user } = guardResult;
 
-    const { exp } = await saveAiGameResult({
-      userId: user.id,
-      gameId: input.gameId,
-      result: input.result,
-      engine,
-      playerMoveCount,
-      aidedMoveCount,
-    });
+    const { exp } = await saveAiGameResult({ userId: user.id, ...report });
 
     return { success: true, exp };
   } catch (error) {
