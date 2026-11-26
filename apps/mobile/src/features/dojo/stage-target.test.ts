@@ -34,24 +34,18 @@ function journey(rank: EarnedRankSlug, input: Partial<JourneyInput> = {}) {
 
 describe("stageTarget", () => {
   describe("learn", () => {
-    it("opens the guide holding the first unread page", () => {
-      expect(stageTarget("learn", journey("5kyu"))).toEqual({
-        kind: "screen",
-        href: "/dojo/guides/mukyu",
-      });
+    it("opens the learn tab's list of guides, read or not", () => {
+      const expected = { kind: "screen", href: "/learn" };
+      expect(stageTarget("learn", journey("5kyu"))).toEqual(expected);
       expect(
         stageTarget(
           "learn",
           journey("5kyu", { completedSteps: new Set(pages("mukyu", 3)) }),
         ),
-      ).toEqual({ kind: "screen", href: "/dojo/guides/5kyu" });
-    });
-
-    it("opens the rank's first guide once every page is read", () => {
-      const read = new Set([...pages("mukyu", 3), ...pages("5kyu", 2)]);
+      ).toEqual(expected);
       expect(
-        stageTarget("learn", journey("5kyu", { completedSteps: read })),
-      ).toEqual({ kind: "screen", href: "/dojo/guides/mukyu" });
+        stageTarget("learn", journey("5kyu", { highest: "5kyu" })),
+      ).toEqual(expected);
     });
   });
 

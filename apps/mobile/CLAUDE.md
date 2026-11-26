@@ -290,15 +290,27 @@ database. Sign-in calls Supabase Auth directly; sign-up goes through
     `POST /dojo/exams/[rank]/[problem]` and the server grades and records
     it; anyone else is graded on the device and nothing is recorded.
     1kyu and 1dan (publishing a game) still open the web.
-  - a rank's stage cells (`RankStageProgress`) are links on every rank and
-    every screen they appear on; `stageTarget` (`stage-target.ts`) picks the
-    destination so the screens cannot disagree: learn → the guide with the
-    first unread page (the first guide once all are read), practice → the
-    practice list narrowed to the rank (`router.navigate`, since `push`
-    would stack a second list on the practice tab), exam → where the first
-    unmet requirement's row goes (the first requirement once all are met;
-    1dan's opens the web). Learn and exam route through `stepTarget`, the
-    same routing as the next-step button.
+  - a rank's stage cells (`RankStageProgress`, a chevron on each line
+    between them, since the stages come in order) are links on every rank
+    and every screen they appear on; `stageTarget` (`stage-target.ts`)
+    picks the destination so the screens cannot disagree: learn → the learn
+    tab's list of guides, practice → the practice list narrowed to the rank
+    (both tabs, so `router.navigate`, since `push` would stack a second
+    list on the tab), exam → where the first unmet requirement's row goes
+    (the first requirement once all are met; 1dan's opens the web). A cell
+    is the way into its whole stage, so learn and practice open a list;
+    the next-step button is what goes straight to the one next thing (for
+    learn, the guide holding the next unread page). Exam routes through
+    `stepTarget`, the same routing as the next-step button.
+  - the learn tab (`(tabs)/learn`) opens with the guides, one row per guide
+    in ladder order, before the glossary and the articles: a check once
+    read through, "n / N" part way, nothing before the first page, and a
+    press opens the guide at its first unread page
+    (`/dojo/guides/<rank>?page=<n>`; the guide screen ignores a page it
+    does not have). Read
+    pages are counted by `features/guides/reading-progress.ts`, which the
+    guide screen reads too: a page is read when any rank's journey has it
+    done, since the unranked guide belongs to 5kyu's.
 - `(account)` screens: welcome (the account offer that ends onboarding),
   sign-in, sign-up, setup-username, records (the user's own ranks).
   Settings has the Account section.

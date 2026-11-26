@@ -14,6 +14,13 @@ export type StageTarget =
   | { readonly kind: "web"; readonly path: string };
 
 /**
+ * The learn tab, whose first section lists every guide with how far it is
+ * read. A tab, so it is switched to with `router.navigate` rather than
+ * pushed over the current screen.
+ */
+export const GUIDE_LIST_HREF: Href = "/learn";
+
+/**
  * The practice tab narrowed to `rank`'s practices. The list reads the
  * `rank` param once and then drops it from its params.
  */
@@ -47,8 +54,13 @@ function stageStep(
  * current one too, and a row of cells where only some respond would look
  * the same as one where all do.
  *
- * - **Learn** opens the guide holding the first unread page (the rank's
- *   first guide once every page is read).
+ * - **Learn** opens the learn tab, where the guides are listed with how
+ *   far each is read and each opens at its first unread page. A cell is the
+ *   way into the whole stage, which can span two guides (5kyu reads the
+ *   unranked guide and its own), so it opens the list of them rather than
+ *   picking one guide; going straight into the guide that holds the next
+ *   page to read is the next-step button's job, and a cell doing the same
+ *   would only repeat it.
  * - **Practice** opens the practice tab narrowed to the rank, where each
  *   practice row shows which of its challenges are tried. It does not open
  *   one challenge's setup screen: a stage of several challenges has no
@@ -57,8 +69,10 @@ function stageStep(
  *   requirement once all are met) — an exam screen, a challenge's setup or,
  *   for a published game (1dan), a web page.
  *
- * Learn and exam reuse `stepTarget`, the routing the next-step button uses,
- * so a cell and the button never disagree about the same step.
+ * Practice and learn are tabs, so `RankStageProgress` switches to them with
+ * `router.navigate`; a push would stack a second copy of the tab's screen.
+ * Exam reuses `stepTarget`, the routing the next-step button uses, so a
+ * cell and the button never disagree about the same requirement.
  */
 export function stageTarget(
   stage: JourneyStage,
@@ -66,6 +80,9 @@ export function stageTarget(
 ): StageTarget {
   if (stage === "practice") {
     return { kind: "screen", href: practiceListHref(journey.rank) };
+  }
+  if (stage === "learn") {
+    return { kind: "screen", href: GUIDE_LIST_HREF };
   }
   const step = stageStep(journey, stage);
   // A stage without steps has no cell, so this is only a safe default.

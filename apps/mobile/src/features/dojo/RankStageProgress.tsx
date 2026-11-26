@@ -53,9 +53,9 @@ function stageValue({ stage, done, total }: StageCount, t: TFunction): string {
  * read out as the stage's name followed by its value ("Learn 2 / 5").
  *
  * Every cell is a link, on every rank: pressing it opens where
- * `stageTarget` says that stage leads (the guide, the practice list
- * narrowed to the rank, the exam), with `router.navigate` so the practice
- * tab is switched to rather than stacked again. A held cell is filled with
+ * `stageTarget` says that stage leads (the learn tab's list of guides, the
+ * practice list narrowed to the rank, the exam), with `router.navigate` so
+ * a tab is switched to rather than stacked again. A held cell is filled with
  * the belt's `tintPressed`; nothing else about it changes, as with every
  * pressable surface of the app.
  *
