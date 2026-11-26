@@ -1,17 +1,9 @@
 'use client';
 
 import { useSafeLocale as useLocale } from '@/i18n/use-safe-locale';
+import { BREAKTHROUGH_LINE, PAWN_BREAKTHROUGH_FEN } from '@blindfold-chess/features/dojo-guides';
 
 import { GameCommentBody } from '@/app/[locale]/(public)/games/shared/[id]/_components/GameCommentBody';
-
-import { PAWN_BREAKTHROUGH_FEN } from './pawn-breakthrough-fen';
-
-/**
- * The forced winning line from {@link PAWN_BREAKTHROUGH_FEN}. Exported so a
- * test can pin every ply as legal from that position — the move-reference
- * parser truncates silently at the first illegal move.
- */
-export const BREAKTHROUGH_LINE = '1. b6 axb6 2. c6 bxc6 3. a6 Kf7 4. a7 b5 5. a8=Q';
 
 /**
  * The 1kyu guide's steppable replay of {@link BREAKTHROUGH_LINE}. Reuses the

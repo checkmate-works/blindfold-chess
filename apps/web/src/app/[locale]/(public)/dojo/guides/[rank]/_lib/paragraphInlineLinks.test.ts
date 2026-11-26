@@ -2,10 +2,9 @@ import enMessages from '@/messages/en.json';
 import esMessages from '@/messages/es.json';
 import jaMessages from '@/messages/ja.json';
 import ptBRMessages from '@/messages/pt-BR.json';
+import { CASTLED_KINGSIDE_FEN, SCATTERED_PAWNS_FEN } from '@blindfold-chess/features/dojo-guides';
 import { describe, expect, it } from 'vitest';
 
-import { CASTLED_KINGSIDE_FEN } from '@/app/[locale]/(public)/dojo/ranks/_components/castled-kingside-fen';
-import { SCATTERED_PAWNS_FEN } from '@/app/[locale]/(public)/dojo/ranks/_components/scattered-pawns-fen';
 import { encodeFenToBase64Url } from '@/app/[locale]/(public)/practice/(free-play)/position-memory/_lib/share-url';
 
 import { getGuideInlineLink } from './paragraphInlineLinks';

@@ -1,6 +1,7 @@
+import { PAWN_BREAKTHROUGH_FEN } from '@blindfold-chess/features/dojo-guides';
+
 import { StaticPositionBoard } from './_shared/StaticPositionBoard';
 import { fenToStaticPlacements } from './_shared/fen-to-static-placements';
-import { PAWN_BREAKTHROUGH_FEN } from './pawn-breakthrough-fen';
 
 /**
  * Three white pawns facing three black pawns, kings tucked away on the kingside.

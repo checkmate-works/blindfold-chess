@@ -11,9 +11,9 @@
  * add an entry to `GUIDE_LINK_MAP`, and make sure the label and (optional)
  * `leadIn` text exist under `guides.inlineLinks.<rank>.*` in every locale.
  */
-import type { RankSlug } from '@/lib/db/data/ranks';
+import { TWO_PAWNS_VS_ONE_FEN } from '@blindfold-chess/features/dojo-guides';
 
-import { TWO_PAWNS_VS_ONE_FEN } from '@/app/[locale]/(public)/dojo/ranks/_components/two-pawns-vs-one-fen';
+import type { RankSlug } from '@/lib/db/data/ranks';
 
 type GuideLinkKey = `${RankSlug}:${number}:${number}`;
 

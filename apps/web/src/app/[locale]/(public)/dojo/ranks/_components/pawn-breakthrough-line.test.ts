@@ -1,9 +1,7 @@
+import { BREAKTHROUGH_LINE, PAWN_BREAKTHROUGH_FEN } from '@blindfold-chess/features/dojo-guides';
 import { describe, expect, it } from 'vitest';
 
 import { parseCommentMoveReferences } from '@/app/[locale]/(public)/games/shared/[id]/_lib/comment-move-references';
-
-import { BREAKTHROUGH_LINE } from './PawnBreakthroughLine';
-import { PAWN_BREAKTHROUGH_FEN } from './pawn-breakthrough-fen';
 
 /**
  * `parseCommentMoveReferences` silently truncates a run at its first illegal
