@@ -231,9 +231,14 @@ database. Sign-in calls Supabase Auth directly; sign-up goes through
   the `useAuth` store.
 - **The dojo** (`(tabs)/dojo`, `features/dojo/`) draws the belt ladder from
   `@blindfold-chess/features/dojo-ranks` (order, colours, requirements; the
-  web seed is pinned to it by a test) and the account's `highestRank`. The
-  API sends no best scores, so no requirement shows as met. 2kyu and up ask
-  for posting or publishing, which stay on the web, so those rows open it.
+  web seed is pinned to it by a test), the account's `highestRank`, and
+  `GET /dojo` (ranks held, best challenge scores) to mark each requirement
+  met. The app asks its own 2kyu requirement: an exam of fixed
+  position-memory problems (`features/dojo/exams.ts`, the position-memory
+  session with an `exam` param) instead of the web's posting. A pass is
+  kept on the device only and raises the shown rank from 3kyu
+  (`effectiveHighestRank`); the server's grants are unchanged. 1kyu and
+  1dan (publishing a game) still open the web.
 - `(account)` screens: welcome (the account offer that ends onboarding),
   sign-in, sign-up, setup-username, records (the user's own ranks).
   Settings has the Account section.
