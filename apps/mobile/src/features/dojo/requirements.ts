@@ -7,6 +7,7 @@ import { MODULE_TO_SLUG } from "@blindfold-chess/features/practice-registry";
 
 import { examFor } from "./exams";
 import type { MobileRankRequirement } from "./mobile-requirements";
+import { hasGuide } from "../guides/content";
 import {
   MOBILE_PRACTICE_MODULES,
   practiceModuleRoute,
@@ -32,20 +33,12 @@ const SUBMISSION_PATHS = {
 const NEW_GAME_PATH = "/games/new/standard";
 
 /**
- * The ranks that have a guide (教本) on the web. 1dan has none: its
+ * The in-app guide (教本) of a rank, when it has one: the ranks are the ones
+ * the bundled copy of the web's guides holds. 1dan has none — its
  * requirement is a whole game, which the ranks below already prepare for.
  */
-const RANKS_WITH_GUIDE: readonly RankSlug[] = [
-  "mukyu",
-  "5kyu",
-  "4kyu",
-  "3kyu",
-  "2kyu",
-  "1kyu",
-];
-
 export function guidePath(slug: RankSlug): string | undefined {
-  return RANKS_WITH_GUIDE.includes(slug) ? `/dojo/guides/${slug}` : undefined;
+  return hasGuide(slug) ? `/dojo/guides/${slug}` : undefined;
 }
 
 export function requirementTarget(

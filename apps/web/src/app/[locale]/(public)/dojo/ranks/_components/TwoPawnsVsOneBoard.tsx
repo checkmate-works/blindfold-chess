@@ -1,6 +1,7 @@
+import { TWO_PAWNS_VS_ONE_FEN } from '@blindfold-chess/features/dojo-guides';
+
 import { StaticPositionBoard } from './_shared/StaticPositionBoard';
 import { fenToStaticPlacements } from './_shared/fen-to-static-placements';
-import { TWO_PAWNS_VS_ONE_FEN } from './two-pawns-vs-one-fen';
 
 /**
  * A minimal 2-pawns-vs-1 endgame. Used on the 1kyu guide to show what the

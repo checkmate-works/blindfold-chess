@@ -30,7 +30,7 @@ replaced by the platform's own parts or their common app equivalents.
   bar hides on them: each module's setup at `practice/<route>/index.tsx`
   (URL `/practice/<route>`), the AI-game setup at `play/ai-game`, the saved
   games at `play/games`, learn articles at `learn/[slug]`, a dojo rank at
-  `dojo/ranks/[slug]`.
+  `dojo/ranks/[slug]` and its guide at `dojo/guides/[rank]`.
 - `(session)` — timed sessions, results and training runs
   (`(session)/practice/<route>/{session,result,training}.tsx`,
   `(session)/play/ai-game/*`), presented as one `fullScreenModal`. A full
@@ -207,10 +207,23 @@ Generated, not edited by hand; re-run the script after the web changes:
   render through `features/learn/markdown.ts` + `MarkdownView` (the markdown
   subset the articles use; LaTeX becomes plain text). Articles have no pt-BR
   text yet and fall back to English.
+- `pnpm bundle-guides` (`scripts/bundle-guides.ts`) — the web's dojo guides
+  (教本, `guides.pages` of the four dictionaries) into
+  `features/guides/generated/`, with each paragraph's link card (asked of the
+  web's `getGuideInlineLink`) and visual aid (component name and props, read
+  out of the web's `VISUAL_AID_MAP` as text). They render through
+  `GuidePageView`; every visual aid has a native drawing in
+  `features/guides/visual-aids/renderers.tsx`, typed over the generated name
+  union, so a component the web starts using fails the typecheck until it is
+  drawn. A link card opens the app's screen when it has the page (a bundled
+  article, a practice's setup, another guide) and the web otherwise. Only
+  the flat format is bundled; the script refuses a chaptered guide, which
+  would need a chapter screen first.
 
 Shared data lives in `@blindfold-chess/features` instead where both apps
 read it: the position-memory presets (`fen-practice`'s
-`POSITION_MEMORY_FENS`) and the opening families (`openings`).
+`POSITION_MEMORY_FENS`), the opening families (`openings`), and the guide
+boards' positions and diagonal tables (`dojo-guides`).
 
 ## Accounts and recorded challenges
 
