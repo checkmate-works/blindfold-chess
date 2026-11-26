@@ -1,70 +1,52 @@
-import { useCallback, useMemo, useState } from "react";
-import { useFocusEffect } from "expo-router";
-import type { RankSlug } from "@blindfold-chess/features/dojo-ranks";
+import { useMemo } from "react";
+import type {
+  RankRequirement,
+  RankSlug,
+} from "@blindfold-chess/features/dojo-ranks";
 
-import { useAuth } from "../../auth/use-auth";
-import { fetchDojoProgress, type BestScore } from "./dojo-api";
-import {
-  effectiveHighestRank,
-  isRequirementMet,
-  type MobileRankRequirement,
-} from "./mobile-requirements";
-import { usePassedExams } from "./passed-exams";
-import { parseHighestRank } from "./requirements";
+import { allJourneys, useDojoJourney } from "./use-dojo-journey";
 
 export type CurrentRank = {
-  /** The rank shown: the account's, raised by exams passed on the device. */
+  /** The account's highest rank, as the server has it. */
   readonly highest: RankSlug | undefined;
   readonly signedIn: boolean;
-  /** Met, not met, or `undefined` when the app cannot tell. */
-  readonly isMet: (requirement: MobileRankRequirement) => boolean | undefined;
+  /**
+   * Whether a requirement is met, read from the exam stage of the rank's
+   * journey; `undefined` for a requirement that is not one of the shared
+   * `RANK_REQUIREMENTS`.
+   */
+  readonly isMet: (requirement: RankRequirement) => boolean | undefined;
 };
 
 /**
- * The player's standing in the dojo.
+ * The player's standing in the dojo: the rank held and which requirements
+ * are met.
  *
  * @description
- * The rank comes from the account (`GET /me`, via `useAuth`) and the best
- * challenge scores from `GET /dojo`, re-read whenever the screen comes back
- * into focus so a challenge just finished shows up. Signed out there is no
- * rank and no recorded score — a signed-out run is graded on the device and
- * never reaches the server — so only the device's own exam passes count.
- * Those passes raise the shown rank by the exam's rank (see
- * `effectiveHighestRank`); the account's rank on the server is unchanged.
+ * The rank is the server's only (the account's `highestRank` from `GET /me`).
+ * Nothing done on the device raises it: an exam pass counts once the server
+ * has graded and recorded it, and the server's `user_ranks` is the one place
+ * a rank is kept. This keeps the app and the web showing the same rank, and
+ * a mark the device made can never be mistaken for a rank the server did not
+ * grant.
+ *
+ * `isMet` answers from the journeys `useDojoJourney` builds, matching the
+ * requirement objects of `RANK_REQUIREMENTS` by identity.
  */
 export function useCurrentRank(): CurrentRank {
-  const { status, account } = useAuth();
-  const signedIn = status === "signedIn";
-  const passedExams = usePassedExams();
-  const [bestScores, setBestScores] = useState<readonly BestScore[]>([]);
-
-  useFocusEffect(
-    useCallback(() => {
-      if (!signedIn) {
-        setBestScores([]);
-        return;
-      }
-      let active = true;
-      void fetchDojoProgress().then((result) => {
-        // A failed read keeps the last scores; the rows then show as not met,
-        // which is also what a fresh account sees.
-        if (active && !("error" in result)) setBestScores(result.bestScores);
-      });
-      return () => {
-        active = false;
-      };
-    }, [signedIn]),
-  );
+  const { highest, signedIn, journeyOf } = useDojoJourney();
 
   return useMemo(() => {
-    const facts = { bestScores, passedExams };
+    const met = new Map<RankRequirement, boolean>();
+    for (const journey of allJourneys(journeyOf)) {
+      for (const step of journey.steps) {
+        if (step.kind === "requirement") met.set(step.requirement, step.done);
+      }
+    }
     return {
-      highest: effectiveHighestRank(
-        parseHighestRank(account?.highestRank),
-        passedExams,
-      ),
+      highest,
       signedIn,
-      isMet: (requirement) => isRequirementMet(requirement, facts),
+      isMet: (requirement) => met.get(requirement),
     };
-  }, [account?.highestRank, bestScores, passedExams, signedIn]);
+  }, [highest, signedIn, journeyOf]);
 }
