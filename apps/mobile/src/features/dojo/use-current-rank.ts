@@ -1,26 +1,16 @@
 import { useMemo } from "react";
-import type {
-  RankRequirement,
-  RankSlug,
-} from "@blindfold-chess/features/dojo-ranks";
+import type { RankSlug } from "@blindfold-chess/features/dojo-ranks";
 
-import { allJourneys, useDojoJourney } from "./use-dojo-journey";
+import { useDojoJourney } from "./use-dojo-journey";
 
 export type CurrentRank = {
   /** The account's highest rank, as the server has it. */
   readonly highest: RankSlug | undefined;
   readonly signedIn: boolean;
-  /**
-   * Whether a requirement is met, read from the exam stage of the rank's
-   * journey; `undefined` for a requirement that is not one of the shared
-   * `RANK_REQUIREMENTS`.
-   */
-  readonly isMet: (requirement: RankRequirement) => boolean | undefined;
 };
 
 /**
- * The player's standing in the dojo: the rank held and which requirements
- * are met.
+ * The player's standing in the dojo: the rank held.
  *
  * @description
  * The rank is the server's only (the account's `highestRank` from `GET /me`).
@@ -30,23 +20,11 @@ export type CurrentRank = {
  * a mark the device made can never be mistaken for a rank the server did not
  * grant.
  *
- * `isMet` answers from the journeys `useDojoJourney` builds, matching the
- * requirement objects of `RANK_REQUIREMENTS` by identity.
+ * Which steps and requirements are done is the rank's journey
+ * (`useDojoJourney`); a screen that shows them reads the journey directly
+ * instead of this hook, so it syncs once.
  */
 export function useCurrentRank(): CurrentRank {
-  const { highest, signedIn, journeyOf } = useDojoJourney();
-
-  return useMemo(() => {
-    const met = new Map<RankRequirement, boolean>();
-    for (const journey of allJourneys(journeyOf)) {
-      for (const step of journey.steps) {
-        if (step.kind === "requirement") met.set(step.requirement, step.done);
-      }
-    }
-    return {
-      highest,
-      signedIn,
-      isMet: (requirement) => met.get(requirement),
-    };
-  }, [highest, signedIn, journeyOf]);
+  const { highest, signedIn } = useDojoJourney();
+  return useMemo(() => ({ highest, signedIn }), [highest, signedIn]);
 }
