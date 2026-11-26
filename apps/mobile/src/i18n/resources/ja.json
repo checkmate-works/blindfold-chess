@@ -423,7 +423,9 @@
       "skillLevel": "スキルレベル",
       "moveCount": "総手数",
       "playAgain": "もう一度",
-      "backToMenu": "メニューに戻る"
+      "backToMenu": "メニューに戻る",
+      "review": "対局を振り返る",
+      "reviewDescription": "棋譜・PGN・棋譜再現"
     }
   },
   "diagonalQuiz": {

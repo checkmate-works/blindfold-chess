@@ -1,14 +1,10 @@
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
 import type { Side } from "@blindfold-chess/types";
-import {
-  useTheme,
-  fontSize,
-  fontWeight,
-  spacing,
-  borderRadius,
-  feedbackColors,
-} from "../../../theme";
+import { getEloForSkillLevel } from "@blindfold-chess/features/ai-game";
+
+import { ListRow, ListSection } from "../../../components";
+import { fontSize, fontWeight, spacing, feedbackColors } from "../../../theme";
 import type { PlayerResult, SkillLevel } from "../lib/types";
 
 type ResultCardProps = {
@@ -16,154 +12,64 @@ type ResultCardProps = {
   playerColor: Side;
   skillLevel: SkillLevel;
   moveCount: number;
-  onPlayAgain: () => void;
-  onBackToMenu: () => void;
 };
 
+const RESULT_COLOR: Record<PlayerResult, string> = {
+  win: feedbackColors.success,
+  loss: feedbackColors.error,
+  draw: feedbackColors.warning,
+};
+
+/**
+ * How a finished AI game went: the outcome, then who it was played against.
+ * Presentational only; the result screen owns what to do next.
+ */
 export function ResultCard({
   result,
   playerColor,
   skillLevel,
   moveCount,
-  onPlayAgain,
-  onBackToMenu,
 }: ResultCardProps) {
   const { t } = useTranslation();
-  const { colors } = useTheme();
-
-  const getResultText = () => {
-    switch (result) {
-      case "win":
-        return t("aiGame.result.win");
-      case "loss":
-        return t("aiGame.result.loss");
-      case "draw":
-        return t("aiGame.result.draw");
-    }
-  };
-
-  const getResultColor = () => {
-    switch (result) {
-      case "win":
-        return feedbackColors.success;
-      case "loss":
-        return feedbackColors.error;
-      case "draw":
-        return feedbackColors.warning;
-    }
-  };
 
   return (
-    <View
-      style={[
-        styles.container,
-        { backgroundColor: colors.card, borderColor: colors.border },
-      ]}
-    >
-      <Text style={[styles.resultText, { color: getResultColor() }]}>
-        {getResultText()}
+    <View style={styles.container}>
+      <Text style={[styles.resultText, { color: RESULT_COLOR[result] }]}>
+        {/* aiGame.result.<PlayerResult>: aiGame.result.win, aiGame.result.loss, aiGame.result.draw */}
+        {t(`aiGame.result.${result}`)}
       </Text>
-
-      <View style={styles.statsContainer}>
-        <View style={styles.statRow}>
-          <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>
-            {t("aiGame.result.playerColor")}
-          </Text>
-          <Text style={[styles.statValue, { color: colors.foreground }]}>
-            {/* aiGame.setup.<Side>: aiGame.setup.white, aiGame.setup.black */}
-            {t(`aiGame.setup.${playerColor}`)}
-          </Text>
-        </View>
-        <View style={styles.statRow}>
-          <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>
-            {t("aiGame.result.skillLevel")}
-          </Text>
-          <Text style={[styles.statValue, { color: colors.foreground }]}>
-            {skillLevel}
-          </Text>
-        </View>
-        <View style={styles.statRow}>
-          <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>
-            {t("aiGame.result.moveCount")}
-          </Text>
-          <Text style={[styles.statValue, { color: colors.foreground }]}>
-            {moveCount}
-          </Text>
-        </View>
-      </View>
-
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={[
-            styles.button,
-            { backgroundColor: colors.primary, borderColor: colors.primary },
-          ]}
-          onPress={onPlayAgain}
-        >
-          <Text
-            style={[styles.buttonText, { color: colors.primaryForeground }]}
-          >
-            {t("aiGame.result.playAgain")}
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[
-            styles.button,
-            styles.secondaryButton,
-            { backgroundColor: colors.card, borderColor: colors.border },
-          ]}
-          onPress={onBackToMenu}
-        >
-          <Text style={[styles.buttonText, { color: colors.foreground }]}>
-            {t("aiGame.result.backToMenu")}
-          </Text>
-        </TouchableOpacity>
-      </View>
+      <ListSection>
+        <ListRow
+          title={t("aiGame.result.playerColor")}
+          // aiGame.setup.<Side>: aiGame.setup.white, aiGame.setup.black
+          value={t(`aiGame.setup.${playerColor}`)}
+          accessory="none"
+        />
+        <ListRow
+          title={t("aiGame.result.skillLevel")}
+          value={t("aiGame.setup.levelWithElo", {
+            level: skillLevel,
+            elo: getEloForSkillLevel(skillLevel),
+          })}
+          accessory="none"
+        />
+        <ListRow
+          title={t("aiGame.result.moveCount")}
+          value={String(moveCount)}
+          accessory="none"
+        />
+      </ListSection>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: borderRadius.lg,
-    borderWidth: 1,
-    padding: spacing.lg,
     gap: spacing.lg,
-    alignItems: "center",
   },
   resultText: {
     fontSize: fontSize.xxxl,
     fontWeight: fontWeight.bold,
-  },
-  statsContainer: {
-    width: "100%",
-    gap: spacing.sm,
-  },
-  statRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingVertical: spacing.xs,
-  },
-  statLabel: {
-    fontSize: fontSize.md,
-  },
-  statValue: {
-    fontSize: fontSize.md,
-    fontWeight: fontWeight.medium,
-  },
-  buttonContainer: {
-    width: "100%",
-    gap: spacing.sm,
-  },
-  button: {
-    paddingVertical: spacing.md,
-    borderRadius: borderRadius.md,
-    borderWidth: 1,
-    alignItems: "center",
-  },
-  secondaryButton: {},
-  buttonText: {
-    fontSize: fontSize.md,
-    fontWeight: fontWeight.semibold,
+    textAlign: "center",
   },
 });

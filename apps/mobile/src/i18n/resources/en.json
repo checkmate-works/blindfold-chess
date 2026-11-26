@@ -423,7 +423,9 @@
       "skillLevel": "Skill Level",
       "moveCount": "Total Moves",
       "playAgain": "Play Again",
-      "backToMenu": "Back to Menu"
+      "backToMenu": "Back to Menu",
+      "review": "Review game",
+      "reviewDescription": "Moves, PGN and recall"
     }
   },
   "diagonalQuiz": {

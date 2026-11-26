@@ -139,6 +139,8 @@ function AiGameBoard() {
   // Keep the finished game in the device's history (the Play tab lists it,
   // and it can be replayed in recall). Once per session.
   const saved = useRef(false);
+  // The saved game's id, so the result screen can open its page.
+  const [gameId] = useState(() => String(Date.now()));
 
   // Navigate to result when game is over
   useEffect(() => {
@@ -149,7 +151,7 @@ function AiGameBoard() {
       if (!saved.current) {
         saved.current = true;
         void saveGame({
-          id: String(Date.now()),
+          id: gameId,
           finishedAt: new Date().toISOString(),
           playerColor: game.playerColor,
           skillLevel: game.skillLevel,
@@ -166,6 +168,7 @@ function AiGameBoard() {
             playerColor: game.playerColor,
             skillLevel: game.skillLevel.toString(),
             moveCount: game.moves.length.toString(),
+            gameId,
           },
         });
       }, 1500);
@@ -179,6 +182,7 @@ function AiGameBoard() {
     game.moves,
     game.moves.length,
     start.startingFen,
+    gameId,
     router,
   ]);
 

@@ -423,7 +423,9 @@
       "skillLevel": "Nível de habilidade",
       "moveCount": "Total de jogadas",
       "playAgain": "Jogar novamente",
-      "backToMenu": "Voltar ao menu"
+      "backToMenu": "Voltar ao menu",
+      "review": "Revisar a partida",
+      "reviewDescription": "Movimentos, PGN e de memória"
     }
   },
   "diagonalQuiz": {
