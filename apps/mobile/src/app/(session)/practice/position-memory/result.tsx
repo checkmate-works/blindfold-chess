@@ -3,7 +3,10 @@ import { useLocalSearchParams } from "expo-router";
 
 import { PracticeResultScreen } from "../../../../components";
 import { ExamVerdictCard } from "../../../../features/dojo/ExamVerdictCard";
-import { examFor } from "../../../../features/dojo/exams";
+import {
+  examRankOf,
+  memoryExamProblemOf,
+} from "../../../../features/dojo/exam-run";
 import { SessionResult } from "../../../../features/fen/components";
 import {
   parseFenResultParams,
@@ -13,23 +16,32 @@ import {
 /**
  * Position memory's result, as the web's: the run's accuracy and recreation
  * progress, then every problem with both boards and a Lichess link. A dojo
- * exam run (`exam` param) leads with the verdict, and "Play again" returns
- * to the exam rather than the practice setup.
+ * exam run (`exam` param) leads with the verdict on its one problem — the
+ * recreated position is the answer graded — and "Play again" returns to the
+ * exam rather than the practice setup.
  */
 export default function PositionMemoryResult() {
   const params = useLocalSearchParams<FenResultParams & { exam?: string }>();
   const result = parseFenResultParams(params);
-  const exam = params.exam ? examFor(params.exam) : undefined;
+  const exam = examRankOf(params.exam);
+  const problem = memoryExamProblemOf(params.exam);
+  // A skipped problem has no recreation; the empty answer grades as a fail.
+  const recreatedFen = result.results[0]?.recreatedFen ?? "";
 
   return (
     <PracticeResultScreen
       setupHref={
-        exam
-          ? (`/dojo/exams/${exam.rank}` as Href)
-          : "/practice/position-memory"
+        exam ? (`/dojo/exams/${exam}` as Href) : "/practice/position-memory"
       }
     >
-      {exam && <ExamVerdictCard exam={exam} result={result} />}
+      {exam && problem && (
+        <ExamVerdictCard
+          exam={exam}
+          kind="position_memory"
+          problem={problem}
+          answer={{ fen: recreatedFen }}
+        />
+      )}
       <SessionResult result={result} showLichess />
     </PracticeResultScreen>
   );
