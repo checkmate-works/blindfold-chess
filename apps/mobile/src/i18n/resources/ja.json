@@ -1082,6 +1082,7 @@
     "requirementsTitle": "昇級条件",
     "requirementsScreenTitle": "{{rank}}の昇級条件",
     "noRequirements": "この段級位には昇級条件がありません。",
+    "nextRankSection": "次の段級位",
     "criteriaTitle": "合格基準",
     "challengeHint": "チャレンジモードで挑戦する",
     "bestOfRequired": "最高 {{best}} / 必要 {{required}}",

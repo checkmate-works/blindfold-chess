@@ -3,6 +3,7 @@ import { Stack, router, useLocalSearchParams } from "expo-router";
 import { useTranslation } from "react-i18next";
 import {
   RANK_REQUIREMENTS,
+  RANK_SLUGS,
   isRankSlug,
   type RankSlug,
 } from "@blindfold-chess/features/dojo-ranks";
@@ -14,6 +15,7 @@ import {
   ListSection,
   TabScrollView,
 } from "../../../components";
+import { BeltBadge } from "../../../features/dojo/BeltBadge";
 import { RankRequirementList } from "../../../features/dojo/RankRequirementList";
 import { rankDetailHref } from "../../../features/dojo/stage-target";
 import { useDojoJourney } from "../../../features/dojo/use-dojo-journey";
@@ -61,9 +63,18 @@ function NoRequirements({ rank }: { readonly rank: RankSlug | undefined }) {
  * opened the screen. A rank with no requirements (mukyu), or a param that
  * is no rank, shows a note and the way back instead of an empty list.
  *
+ * Once every requirement is met (or the rank is held, which marks them
+ * all met), a row under the list leads on to the next rank, so the player
+ * who has finished here is not left at a dead end. It opens the next
+ * rank's own screen rather than its requirements: a rank starts with its
+ * guide and its practice, which that screen shows with the requirements,
+ * and opening the requirements alone would skip the player past them.
+ * 1dan, the top of the ladder, has no such row.
+ *
  * @flow
  * 1. Opened from a rank's exam stage cell (home tab, dojo tab, rank screen)
  * 2. A requirement row → that challenge's setup, the rank's exam or the web
+ * 3. All met → the next rank's row → that rank's screen
  */
 export default function RankRequirementsScreen() {
   const { t } = useTranslation();
@@ -91,6 +102,7 @@ export default function RankRequirementsScreen() {
   const journey = journeyOf(earned);
   const exam = journey.stages.find((stage) => stage.stage === "exam");
   const allMet = exam !== undefined && exam.done >= exam.total;
+  const next: RankSlug | undefined = RANK_SLUGS[RANK_SLUGS.indexOf(earned) + 1];
 
   return (
     <TabScrollView>
@@ -110,6 +122,17 @@ export default function RankRequirementsScreen() {
         )}
         <RankRequirementList journey={journey} />
       </View>
+      {allMet && next && (
+        <ListSection title={t("dojo.nextRankSection")}>
+          <ListRow
+            testID="requirements-next-rank"
+            leading={<BeltBadge slug={next} />}
+            title={t(`ranks.names.${next}`)}
+            subtitle={t(`ranks.criteria.${next}`)}
+            onPress={() => router.push(rankDetailHref(next))}
+          />
+        </ListSection>
+      )}
     </TabScrollView>
   );
 }

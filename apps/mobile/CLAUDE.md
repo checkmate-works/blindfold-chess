@@ -307,10 +307,12 @@ database. Sign-in calls Supabase Auth directly; sign-up goes through
     (`dojo/requirements/[rank]`, `requirementsHref`): "Passed n / N" over
     `RankRequirementList`, so the player sees at a glance which
     requirements are already passed rather than landing in the first unmet
-    one's screen. The requirements screen never shows the cells, so
-    `navigate` to it always pushes. The next-step button (`stepTarget`) is
-    what goes straight to the one next thing (for learn, the next unread
-    page itself, `?page=<n>`).
+    one's screen. Once all are met (or the rank is held) it ends with a
+    row to the next rank's screen (not its requirements: a rank starts
+    with its guide and practice), none on 1dan. The requirements screen
+    never shows the cells, so `navigate` to it always pushes. The
+    next-step button (`stepTarget`) is what goes straight to the one next
+    thing (for learn, the next unread page itself, `?page=<n>`).
   - the learn tab (`(tabs)/learn`) opens with the guides, one row per guide
     in ladder order, before the glossary and the articles: the done mark once
     read through, "n / N" part way, nothing before the first page, and a

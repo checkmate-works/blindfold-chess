@@ -1082,6 +1082,7 @@
     "requirementsTitle": "Requisitos",
     "requirementsScreenTitle": "Requisitos de {{rank}}",
     "noRequirements": "Este rango no tiene requisitos.",
+    "nextRankSection": "Siguiente rango",
     "criteriaTitle": "Qué certifica",
     "challengeHint": "Hazlo en modo desafío",
     "bestOfRequired": "Mejor {{best}} / necesario {{required}}",
