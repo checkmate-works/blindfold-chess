@@ -9,9 +9,8 @@ import { DiagonalInputField } from './DiagonalInputField';
 
 /**
  * Everything the answer panel needs from whichever input hook drives it.
- * Passed as one object because both call sites already hold it as one — the
- * challenge screen's `useKeypadInput` returns it whole, and the training
- * screen composes it from `useDiagonalInput` plus its own field-click handler.
+ * Both the challenge and training screens get this object from
+ * `useKeypadInput`, which owns input guards and per-question resets.
  */
 export type DiagonalInputState = {
   singleDiagonal: boolean;

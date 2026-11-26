@@ -12,7 +12,7 @@ import { useAlgebraicKeyboardInput } from '@/app/[locale]/(public)/practice/_hoo
 import { SectionTitle } from '@/app/[locale]/_components';
 
 import { DiagonalAnswerPanel } from '../../_components/DiagonalAnswerPanel';
-import { useKeypadInput } from '../_hooks/use-keypad-input';
+import { useKeypadInput } from '../../_hooks/use-keypad-input';
 
 type Props = {
   currentSquare: Square;

@@ -541,14 +541,15 @@ describe('resolveHighestRankSlug', () => {
 });
 
 describe('shared rank definitions (@blindfold-chess/features/dojo-ranks)', () => {
-  // The mobile app draws the dojo from the shared copy, so a requirement
-  // changed here without changing it there would show players the wrong goal.
+  // Seed metadata must cover the shared ladder, and every shared requirement
+  // must survive the server JSONB parser used for rank evaluation.
   it('lists the same ranks in the same order', () => {
     expect([...ALL_RANK_SLUGS]).toEqual([...SHARED_RANK_SLUGS]);
   });
 
-  it('gives every seeded rank the same requirements', () => {
+  it('seeds every shared requirement with a shape the server can parse', () => {
     for (const seed of ranksSeedData) {
+      expect(parseRequirements(seed.requirements)).toEqual(seed.requirements);
       expect(seed.requirements).toEqual(
         SHARED_RANK_REQUIREMENTS[seed.slug as keyof typeof SHARED_RANK_REQUIREMENTS]
       );
