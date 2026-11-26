@@ -4,16 +4,11 @@ import type { ReactNode } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import type { StyleProp, ViewStyle } from "react-native";
 
-import {
-  useTheme,
-  fontSize,
-  fontWeight,
-  spacing,
-  borderRadius,
-} from "../theme";
+import { useTheme, fontWeight, spacing, borderRadius } from "../theme";
+import { SectionTitle } from "./SectionTitle";
 
 type ListSectionProps = {
-  /** Small caption above the group. */
+  /** The section's heading, drawn as a `SectionTitle`. */
   title?: string;
   /** Explanatory text under the group. */
   footer?: string;
@@ -22,11 +17,16 @@ type ListSectionProps = {
 };
 
 /**
- * A grouped list: rows on one rounded panel with hairline separators, a
- * caption above and an optional note below — the inset-grouped list of the
- * iOS Settings app, which Android apps use in the same shape for settings
- * and menus. Separators are inserted between the children here so rows do
- * not need to know whether they are last.
+ * A grouped list: rows on one rounded panel, a heading above and an optional
+ * note below — the inset-grouped list of the iOS Settings app, which Android
+ * apps use in the same shape for settings and menus.
+ *
+ * The heading is a `SectionTitle` flush with the panel's edge, 12 above the
+ * panel. The panel is white with a 1px `panelBorder` and a 12pt corner; rows
+ * are split by a 1px `rowSeparator` spanning the panel's full width (a full
+ * 1px rather than a hairline, which vanishes on white on some devices).
+ * Separators are inserted between the children here so rows do not need to
+ * know whether they are last.
  */
 export function ListSection({
   title,
@@ -38,23 +38,24 @@ export function ListSection({
   const rows = Children.toArray(children).filter(isValidElement);
 
   return (
-    <View style={[styles.section, style]}>
+    <View style={style}>
       {title ? (
-        <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>
-          {title}
-        </Text>
+        <SectionTitle style={styles.sectionTitle}>{title}</SectionTitle>
       ) : null}
       <View
         style={[
           styles.panel,
-          { backgroundColor: colors.card, borderColor: colors.border },
+          { backgroundColor: colors.card, borderColor: colors.panelBorder },
         ]}
       >
         {rows.map((row, index) => (
           <Fragment key={row.key ?? index}>
             {index > 0 && (
               <View
-                style={[styles.separator, { backgroundColor: colors.border }]}
+                style={[
+                  styles.separator,
+                  { backgroundColor: colors.rowSeparator },
+                ]}
               />
             )}
             {row}
@@ -86,8 +87,14 @@ type ListRowProps = {
 
 /**
  * One row of a `ListSection`: title (and subtitle), optional leading icon,
- * trailing value and accessory. Pressing paints the row a shade darker; the
- * row itself never moves or scales, matching the flat style of the web app.
+ * trailing value and accessory. Pressing paints the row `colors.muted`; the
+ * row itself never moves, scales or fades, matching the app's flat rule.
+ *
+ * @description
+ * Sizes: title 15pt, subtitle 13pt (line height 18), value 15pt; padding 14
+ * vertical / 16 horizontal, gap 12, at least 52 tall. The title is 600 on a
+ * row that can be pressed and 500 on one that only shows information, so a
+ * tappable row reads as one before it is touched.
  */
 export function ListRow({
   title,
@@ -119,7 +126,13 @@ export function ListRow({
     >
       {leading}
       <View style={styles.texts}>
-        <Text style={[styles.title, { color: colors.foreground }]}>
+        <Text
+          style={[
+            styles.title,
+            onPress ? styles.titlePressable : styles.titleStatic,
+            { color: colors.foreground },
+          ]}
+        >
           {title}
         </Text>
         {subtitle ? (
@@ -190,34 +203,29 @@ export function ListIcon({ glyph, ionicon, tint, children }: ListIconProps) {
 }
 
 const styles = StyleSheet.create({
-  section: {
-    gap: spacing.xs + 2,
-  },
   sectionTitle: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
-    paddingHorizontal: spacing.md,
+    marginBottom: 12,
   },
   panel: {
     borderRadius: borderRadius.lg,
-    borderWidth: StyleSheet.hairlineWidth,
+    borderWidth: 1,
     overflow: "hidden",
   },
   separator: {
-    height: StyleSheet.hairlineWidth,
-    marginLeft: spacing.md,
+    height: 1,
   },
   footer: {
-    fontSize: fontSize.xs + 1,
-    paddingHorizontal: spacing.md,
+    marginTop: spacing.xs + 2,
+    fontSize: 13,
     lineHeight: 18,
+    paddingHorizontal: spacing.xs,
   },
   row: {
     flexDirection: "row",
     alignItems: "center",
-    gap: spacing.md - 4,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm + 4,
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     minHeight: 52,
   },
   disabled: {
@@ -228,15 +236,20 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   title: {
-    fontSize: fontSize.md,
+    fontSize: 15,
+  },
+  titlePressable: {
+    fontWeight: fontWeight.semibold,
+  },
+  titleStatic: {
     fontWeight: fontWeight.medium,
   },
   subtitle: {
-    fontSize: fontSize.sm - 1,
+    fontSize: 13,
     lineHeight: 18,
   },
   value: {
-    fontSize: fontSize.md - 1,
+    fontSize: 15,
   },
   icon: {
     width: 32,
