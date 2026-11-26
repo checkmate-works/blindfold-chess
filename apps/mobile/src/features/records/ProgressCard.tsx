@@ -17,6 +17,11 @@ import { rankLabel } from "./rank-label";
  * dojo rank, level and EXP, the summary the web's mypage leads with. Taps
  * through to their records. Renders nothing signed out or before the
  * account has loaded.
+ *
+ * A flat surface on the white page: a 1px `panelBorder` frame rather than a
+ * hairline, which some devices render too faint to see on white, and no
+ * shadow. Pressing changes only the fill (to `muted`), not the position or
+ * opacity, like every other pressable surface.
  */
 export function ProgressCard() {
   const { t } = useTranslation();
@@ -44,7 +49,7 @@ export function ProgressCard() {
         styles.card,
         {
           backgroundColor: pressed ? colors.muted : colors.card,
-          borderColor: colors.border,
+          borderColor: colors.panelBorder,
         },
       ]}
     >
@@ -69,14 +74,14 @@ export function ProgressCard() {
 
 const styles = StyleSheet.create({
   card: {
-    borderWidth: StyleSheet.hairlineWidth,
+    borderWidth: 1,
     borderRadius: borderRadius.lg,
     padding: spacing.md,
     gap: spacing.md,
   },
   name: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.semibold,
+    fontSize: 17,
+    fontWeight: fontWeight.bold,
   },
   stats: {
     flexDirection: "row",
@@ -87,7 +92,7 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   statValue: {
-    fontSize: fontSize.lg,
+    fontSize: 17,
     fontWeight: fontWeight.bold,
   },
   statLabel: {
