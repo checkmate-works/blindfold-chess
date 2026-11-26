@@ -12,6 +12,13 @@ type SelectRowProps<T> = {
   value: T | null;
   onChange: (value: T) => void;
   formatOption: (option: T) => string;
+  /**
+   * What the row shows as its current value, when that should differ from
+   * the option's text in the sheet: a short form of a long option, or a word
+   * for "none of the options" (the row shows nothing for a null `value`
+   * otherwise). A long value squeezes the row's title.
+   */
+  valueLabel?: string;
   /** Optional note shown above the options in the sheet. */
   description?: string;
   testID?: string;
@@ -29,6 +36,7 @@ export function SelectRow<T>({
   value,
   onChange,
   formatOption,
+  valueLabel,
   description,
   testID,
 }: SelectRowProps<T>) {
@@ -39,7 +47,7 @@ export function SelectRow<T>({
     <>
       <ListRow
         title={label}
-        value={value === null ? undefined : formatOption(value)}
+        value={valueLabel ?? (value === null ? undefined : formatOption(value))}
         onPress={() => setOpen(true)}
         testID={testID}
       />

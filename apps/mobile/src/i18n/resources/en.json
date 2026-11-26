@@ -380,7 +380,8 @@
           "level3": "Peeks show only your own pieces",
           "level4": "Peeks show your pieces, without pawns",
           "level5": "Full blindfold — no board at all"
-        }
+        },
+        "level": "Level {{level}}"
       }
     },
     "session": {

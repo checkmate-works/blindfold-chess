@@ -380,7 +380,8 @@
           "level3": "Al echar un vistazo solo ves tus piezas",
           "level4": "Al echar un vistazo, tus piezas sin peones",
           "level5": "A ciegas total: sin tablero"
-        }
+        },
+        "level": "Nivel {{level}}"
       }
     },
     "session": {

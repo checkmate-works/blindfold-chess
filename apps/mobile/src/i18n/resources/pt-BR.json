@@ -380,7 +380,8 @@
           "level3": "Ao espiar, só suas peças aparecem",
           "level4": "Ao espiar, suas peças sem os peões",
           "level5": "Às cegas total: sem tabuleiro"
-        }
+        },
+        "level": "Nível {{level}}"
       }
     },
     "session": {

@@ -30,8 +30,9 @@ export function GameSettingsSection({ preferences, onChange }: Props) {
       title={t("common.gameSettings")}
       footer={
         level === null
-          ? `${t("aiGame.setup.difficulty.custom")}: ${t("aiGame.setup.difficulty.customDescription")}`
-          : undefined
+          ? t("aiGame.setup.difficulty.customDescription")
+          : // aiGame.setup.difficulty.levels.level{1,2,3,4,5}
+            t(`aiGame.setup.difficulty.levels.level${level}`)
       }
     >
       {/* aiGame.setup.difficulty.levels.level{1,2,3,4,5} */}
@@ -39,6 +40,11 @@ export function GameSettingsSection({ preferences, onChange }: Props) {
         label={t("aiGame.setup.difficulty.title")}
         options={DIFFICULTY_LEVELS}
         value={level}
+        valueLabel={
+          level === null
+            ? t("aiGame.setup.difficulty.custom")
+            : t("aiGame.setup.difficulty.level", { level })
+        }
         onChange={(picked) => onChange(DIFFICULTY_PRESETS[picked])}
         formatOption={(option) =>
           t("aiGame.setup.difficulty.option", {
