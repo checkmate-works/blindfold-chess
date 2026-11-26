@@ -5,11 +5,14 @@
 // per-user achieved ranks. Conceptually adjacent to `achievements` but kept
 // separate because rank progression is monotonic and per-user-unique while
 // achievements are a flat set.
+import { sql } from 'drizzle-orm';
 import {
+  check,
   index,
   integer,
   jsonb,
   pgTable,
+  primaryKey,
   timestamp,
   unique,
   uuid,
@@ -138,3 +141,67 @@ export const userRanks = pgTable(
 
 export type UserRank = typeof userRanks.$inferSelect;
 export type NewUserRank = typeof userRanks.$inferInsert;
+
+/**
+ * Dojo Step Completions — the set of dojo steps a user has completed.
+ *
+ * @description
+ * One row per (user, step). A step is named by a string key of one of two
+ * shapes: `guide:<rank>:<page>` (the user worked through one page of a rank's
+ * guide) and `exam:<rank>:<problem>` (the user passed one exam problem, e.g.
+ * `exam:2kyu:puzzle`). The key builders and the shape check live in
+ * `@blindfold-chess/features/dojo-journey`, shared with the app.
+ *
+ * @design One "completed keys" set for both guide pages and exam passes
+ *
+ * Both facts answer the same question — "has this user done step X?" — so
+ * one table holds both. Separate tables for guide progress and exam passes
+ * were rejected: they would duplicate the read and write paths for no
+ * difference in shape.
+ *
+ * @design `step_key` is a string, not an enum
+ *
+ * A new kind of step (another rank's guide, a new exam problem) is a new key,
+ * not a schema change, so adding one needs no migration. The CHECK
+ * `^[a-z0-9][a-z0-9:_-]{0,63}$` bounds what can be stored (lower-case slugs,
+ * digits, `:`, `_`, `-`; at most 64 characters) without listing the kinds.
+ *
+ * @design Append-only, never revoked
+ *
+ * A step once done stays done; no code path updates or deletes rows (only the
+ * `ON DELETE CASCADE` from `auth.users` when the account is erased). The
+ * primary key `(user_id, step_key)` makes every write idempotent through
+ * `onConflictDoNothing`, so a client resending its guide pages is harmless.
+ *
+ * @design Who may write which key
+ *
+ * Clients may report `guide:` keys only — a "worked on it" mark that grants
+ * nothing. `exam:` keys are evidence for a rank (the `exam_problem`
+ * requirement reads them), so only the server writes them, after grading the
+ * answer itself (`src/lib/dojo/exam.ts`). Accepting a reported `exam:` key
+ * would let anyone earn a rank by calling the API directly.
+ *
+ * @design Writes go through the server's Drizzle connection only
+ *
+ * `authenticated` gets SELECT on its own rows and nothing else (RLS policy in
+ * `drizzle/supabase/rls_policies.sql`, GRANT in `foreign_keys_and_grants.sql`).
+ * The FK to `auth.users` is defined in that custom SQL, like `user_ranks`.
+ */
+export const dojoStepCompletions = pgTable(
+  'dojo_step_completions',
+  {
+    userId: uuid('user_id').notNull(), // references auth.users — FK defined in custom SQL
+    stepKey: varchar('step_key', { length: 64 }).notNull(),
+    completedAt: timestamp('completed_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.userId, table.stepKey] }),
+    check(
+      'dojo_step_completions_chk_step_key',
+      sql`${table.stepKey} ~ '^[a-z0-9][a-z0-9:_-]{0,63}$'`
+    ),
+  ]
+);
+
+export type DojoStepCompletion = typeof dojoStepCompletions.$inferSelect;
+export type NewDojoStepCompletion = typeof dojoStepCompletions.$inferInsert;
