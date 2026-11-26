@@ -20,6 +20,10 @@ import {
   guideContent,
 } from "../../../features/guides/content";
 import {
+  guideStartPage,
+  readGuidePages,
+} from "../../../features/guides/reading-progress";
+import {
   allJourneys,
   useDojoJourney,
 } from "../../../features/dojo/use-dojo-journey";
@@ -54,8 +58,16 @@ import { fontSize, fontWeight, spacing, useTheme } from "../../../theme";
  * records pages: the web shows no reading progress, so a record there
  * would have nothing to show it.
  *
+ * An optional `page` param (1-based) opens the guide at that page: the
+ * learn tab's guide list opens each guide at its first unread page, so a
+ * player coming back to a half-read guide does not page through what they
+ * have read. A value that is not one of the guide's pages opens the first
+ * page. The param only sets where the screen starts; Previous / Next work
+ * as usual from there.
+ *
  * @flow
- * 1. Opened from the rank screen's guide row, or from another guide's link.
+ * 1. Opened from the rank screen's guide row, the learn tab's guide list
+ *    (at the first unread page), or from another guide's link.
  * 2. Previous / Next step through the pages, Next marking the page read;
  *    the last page offers "Mark as read" and the neighbouring ranks'
  *    guides, as the web's last page does.
@@ -63,12 +75,17 @@ import { fontSize, fontWeight, spacing, useTheme } from "../../../theme";
 export default function GuideScreen() {
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
-  const { rank } = useLocalSearchParams<{ rank: string }>();
-  const [pageIndex, setPageIndex] = useState(0);
-  const scrollRef = useRef<ScrollViewInstance>(null);
-  const { journeyOf, markGuidePage } = useDojoJourney();
+  const { rank, page: pageParam } = useLocalSearchParams<{
+    rank: string;
+    page?: string;
+  }>();
   const content = guideContent(i18n.language);
   const guide = isRankSlug(rank) ? content.guides[rank] : undefined;
+  const [pageIndex, setPageIndex] = useState(
+    () => guideStartPage(pageParam, guide?.pages.length ?? 0) - 1,
+  );
+  const scrollRef = useRef<ScrollViewInstance>(null);
+  const { journeyOf, markGuidePage } = useDojoJourney();
   if (!isRankSlug(rank) || !guide) return null;
 
   const pages = guide.pages;
@@ -76,16 +93,8 @@ export default function GuideScreen() {
   const isLast = pageIndex === pages.length - 1;
   const rankName = t(`ranks.names.${rank}`);
   const { prev, next } = adjacentGuideRanks(rank);
-  // A guide's pages are steps of whichever rank's journey reads it (the
-  // unranked guide is part of 5kyu's).
-  const lastPageRead = allJourneys(journeyOf).some((journey) =>
-    journey.steps.some(
-      (step) =>
-        step.kind === "guidePage" &&
-        step.guideRank === rank &&
-        step.page === pages.length &&
-        step.done,
-    ),
+  const lastPageRead = readGuidePages(allJourneys(journeyOf), rank).has(
+    pages.length,
   );
 
   const turn = (delta: number) => {
