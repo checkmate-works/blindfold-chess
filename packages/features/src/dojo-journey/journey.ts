@@ -53,6 +53,14 @@ export type JourneyStep =
       kind: "requirement";
       requirement: RankRequirement;
       done: boolean;
+      /**
+       * The player's best score on a `challenge_score` requirement's
+       * leaderboard, from `bestScores`: what a requirement row compares with
+       * its `minScore` ("best 38 / needed 40"). Absent for other
+       * requirements and when there is no score (signed out, or never
+       * finished), so a missing record never reads as a score of 0.
+       */
+      bestScore?: number;
     };
 
 /** What a player has finished, as read from the server or the device. */
@@ -165,7 +173,8 @@ function isRequirementMet(
  *   challenge is done once its best score reaches `minScore`, an exam
  *   problem once its `exam:` step key is completed; a published game counts
  *   only through the rank being held. With one requirement this reads as
- *   passed / not yet, with several as "n / N".
+ *   passed / not yet, with several as "n / N". A challenge's step also
+ *   carries the best score behind it (`bestScore`), when there is one.
  *
  * Holding the rank marks every step done, whatever the input says: the rank
  * is the proof, and guides or requirements added after it was earned must
@@ -213,11 +222,16 @@ export function buildRankJourney(
   }
 
   for (const requirement of requirements) {
+    const bestScore =
+      requirement.type === "challenge_score"
+        ? bestScoreOf(input, requirement.menuType, requirement.leaderboardKey)
+        : undefined;
     steps.push({
       stage: "exam",
       kind: "requirement",
       requirement,
       done: held || isRequirementMet(requirement, input),
+      ...(bestScore === undefined ? {} : { bestScore }),
     });
   }
 

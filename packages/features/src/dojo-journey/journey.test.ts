@@ -199,6 +199,47 @@ describe("buildRankJourney", () => {
     expect(stagesOf(atBar).exam).toBe("1/2");
   });
 
+  it("carries the best score on a challenge requirement's exam step", () => {
+    const journey = buildRankJourney(
+      "5kyu",
+      input({
+        bestScores: [
+          { menuType: "square_colors", leaderboardKey: "default", score: 9 },
+          { menuType: "square_colors", leaderboardKey: "default", score: 12 },
+          { menuType: "square_colors", leaderboardKey: "black", score: 30 },
+        ],
+      }),
+    );
+    const exam = journey.steps.flatMap((step) =>
+      step.kind === "requirement" ? [step] : [],
+    );
+    const squareColors = exam.find(
+      (step) =>
+        step.requirement.type === "challenge_score" &&
+        step.requirement.menuType === "square_colors",
+    );
+    expect(squareColors?.bestScore).toBe(12);
+    expect(squareColors?.done).toBe(false);
+    // No row for the coordinate quiz: no score rather than a score of 0.
+    const coordinateQuiz = exam.find(
+      (step) =>
+        step.requirement.type === "challenge_score" &&
+        step.requirement.menuType === "coordinate_quiz",
+    );
+    expect(coordinateQuiz).toBeDefined();
+    expect(coordinateQuiz).not.toHaveProperty("bestScore");
+  });
+
+  it("gives no best score to a requirement that is not a challenge", () => {
+    const journey = buildRankJourney("2kyu", input());
+    const problems = journey.steps.filter(
+      (step) =>
+        step.kind === "requirement" && step.requirement.type === "exam_problem",
+    );
+    expect(problems.length).toBeGreaterThan(0);
+    for (const step of problems) expect(step).not.toHaveProperty("bestScore");
+  });
+
   it("treats a guide without a page count as having no pages", () => {
     const journey = buildRankJourney("3kyu", input({ guidePageCounts: {} }));
     expect(journey.stages.map((s) => s.stage)).toEqual(["practice", "exam"]);
