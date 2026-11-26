@@ -8,7 +8,7 @@ import { beltColors } from "./belt";
 /**
  * A rank's badge: a circle painted in the belt colour with the belt icon
  * on it in white (the web's `BeltStrip`). Mukyu has no colour yet, so it is
- * a muted circle with a grey icon. A hairline outline keeps the near-black
+ * a muted circle with a grey icon. A 1px `panelBorder` outline (the same frame the app's panels wear) keeps the near-black
  * 1dan circle visible on the dark theme.
  */
 export function BeltBadge({
@@ -31,7 +31,7 @@ export function BeltBadge({
           height: size,
           borderRadius: size / 2,
           backgroundColor: slug === "mukyu" ? colors.muted : belt.fill,
-          borderColor: belt.outline,
+          borderColor: colors.panelBorder,
         },
       ]}
     >
@@ -42,7 +42,7 @@ export function BeltBadge({
 
 const styles = StyleSheet.create({
   badge: {
-    borderWidth: StyleSheet.hairlineWidth,
+    borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
   },

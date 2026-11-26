@@ -2,14 +2,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { Pressable, StyleSheet, Text } from "react-native";
 import type { RankSlug } from "@blindfold-chess/features/dojo-ranks";
 
-import {
-  borderRadius,
-  fontSize,
-  fontWeight,
-  spacing,
-  touchTarget,
-  useTheme,
-} from "../../theme";
+import { borderRadius, fontWeight, spacing, useTheme } from "../../theme";
 import { beltColors } from "./belt";
 
 /**
@@ -24,6 +17,10 @@ import { beltColors } from "./belt";
  * wears the belt on its band and badge, and a green button there would read
  * as part of the rank — the 2kyu belt is green, so on any other rank's card
  * a green button would seem to belong to 2kyu.
+ *
+ * Its geometry matches `Button`'s `md` size so it sits in the same rhythm as
+ * the app's other buttons: corner `borderRadius.button`, 44pt minimum height,
+ * bold 15pt label.
  */
 export function BeltButton({
   slug,
@@ -66,16 +63,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: spacing.sm,
-    minHeight: touchTarget.minSize,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm + 4,
+    minHeight: 44,
+    paddingHorizontal: 24,
+    paddingVertical: 11,
     borderWidth: 1.5,
-    borderRadius: borderRadius.md,
+    borderRadius: borderRadius.button,
   },
   title: {
     flexShrink: 1,
-    fontSize: fontSize.md,
-    fontWeight: fontWeight.semibold,
+    fontSize: 15,
+    fontWeight: fontWeight.bold,
     textAlign: "center",
   },
 });
