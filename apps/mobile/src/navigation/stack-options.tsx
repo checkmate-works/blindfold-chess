@@ -54,12 +54,31 @@ type TabStackProps = {
  * title is not used: it collapses on scroll into the small centred title,
  * and with the floating tab bar also reacting to scroll the screen top and
  * bottom both move at once.
+ *
+ * On iOS 26 every header item stands on a shared Liquid Glass capsule, which
+ * around a heading reads as a button. On iOS the heading is therefore a
+ * custom `unstable_headerLeftItems` item with `hidesSharedBackground`
+ * (Android has no capsule and keeps `headerLeft`). Unlike the pushed
+ * screens, a tab's entry keeps the header's hairline: the header and the
+ * tab's content are separate sections there. iOS 26's `hard` top scroll
+ * edge was tried instead and draws no line at rest, only an opaque band
+ * once the content scrolls under it.
  */
 export function TabStack({ titleKey, headerRight }: TabStackProps) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const screenOptions = useStackScreenOptions();
   const title = t(titleKey);
+  const heading = (
+    <Text
+      accessibilityRole="header"
+      numberOfLines={1}
+      allowFontScaling={false}
+      style={[styles.tabTitle, { color: colors.foreground }]}
+    >
+      {title}
+    </Text>
+  );
 
   return (
     <Stack screenOptions={screenOptions}>
@@ -69,14 +88,18 @@ export function TabStack({ titleKey, headerRight }: TabStackProps) {
           title,
           headerTitle: "",
           headerRight,
-          headerLeft: () => (
-            <Text
-              accessibilityRole="header"
-              style={[styles.tabTitle, { color: colors.foreground }]}
-            >
-              {title}
-            </Text>
-          ),
+          headerShadowVisible: true,
+          ...(Platform.OS === "ios"
+            ? {
+                unstable_headerLeftItems: () => [
+                  {
+                    type: "custom",
+                    element: heading,
+                    hidesSharedBackground: true,
+                  },
+                ],
+              }
+            : { headerLeft: () => heading }),
         }}
       />
     </Stack>
@@ -87,9 +110,9 @@ const styles = StyleSheet.create({
   tabTitle: {
     fontSize: 22,
     fontWeight: "700",
-    // The Android app bar puts headerLeft flush with the screen edge minus its
-    // own inset; iOS already insets it by the layout margin.
-    paddingLeft: Platform.OS === "android" ? 4 : 0,
+    // Line the heading up with the content's 16pt inset: the Android app bar
+    // puts headerLeft 4pt short of it, iOS puts header items 20pt in.
+    marginLeft: Platform.OS === "android" ? 4 : -4,
   },
 });
 
