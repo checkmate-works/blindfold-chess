@@ -285,20 +285,23 @@ function Example({ slug }: { slug: MobilePracticeModule["slug"] }) {
   }
 }
 
-/** Decorative worked example; the parent card announces the actual description. */
+/**
+ * Decorative worked example; the parent card announces the actual description.
+ * Leave the surface transparent so the board and answer accents stand out on
+ * the card itself, including its pressed state and dark appearance.
+ */
 export function PracticeCardVisual({
   slug,
 }: {
   slug: MobilePracticeModule["slug"];
 }) {
-  const { colors } = useTheme();
   return (
     <View
       pointerEvents="none"
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
       aria-hidden
-      style={[styles.band, { backgroundColor: colors.background }]}
+      style={styles.band}
     >
       <Example slug={slug} />
     </View>
