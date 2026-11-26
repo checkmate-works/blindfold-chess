@@ -1,7 +1,9 @@
+import type { MobileDojoResponse } from '@blindfold-chess/features/dojo-journey';
 import { eq } from 'drizzle-orm';
 
 import { db } from '@/lib/db';
 import { challengeBestScores } from '@/lib/db/schema';
+import { getCompletedSteps } from '@/lib/dojo/step-completions';
 import { authorizeMobileRequest } from '@/lib/mobile-api/auth';
 import { mobileJson, mobilePreflight, withMobileErrors } from '@/lib/mobile-api/response';
 
@@ -20,13 +22,16 @@ export const dynamic = 'force-dynamic';
  * `checkAndGrantRanks` judges `challenge_score` requirements against. The
  * app compares them with the shared requirement list
  * (`@blindfold-chess/features/dojo-ranks`), so no rank logic is repeated
- * here. Only the user's own rows (the app shows no other user).
+ * here. `completedSteps` are the user's `dojo_step_completions` keys: the
+ * guide pages they have read and the exam problems they have passed (the
+ * `exam:` keys an `exam_problem` requirement is judged by). Only the user's
+ * own rows (the app shows no other user).
  */
 export async function GET(request: Request) {
   return withMobileErrors('dojo', async () => {
     const auth = await authorizeMobileRequest(request);
     if (!auth.ok) return auth.response;
-    const [achieved, bestScores] = await Promise.all([
+    const [achieved, bestScores, completedSteps] = await Promise.all([
       getAchievedSlugsForUser(auth.user.id),
       db
         .select({
@@ -36,8 +41,14 @@ export async function GET(request: Request) {
         })
         .from(challengeBestScores)
         .where(eq(challengeBestScores.userId, auth.user.id)),
+      getCompletedSteps(auth.user.id),
     ]);
-    return mobileJson({ achievedRanks: [...achieved], bestScores });
+    const response: MobileDojoResponse = {
+      achievedRanks: [...achieved],
+      bestScores,
+      completedSteps,
+    };
+    return mobileJson(response);
   });
 }
 
