@@ -146,7 +146,13 @@ export const StockfishWebView = forwardRef<
       onError={(event) => {
         onError?.(`WebView error: ${event.nativeEvent.description}`);
       }}
+      // Both styles are needed to keep the engine's page out of the layout.
+      // `style` reaches only the native web view; the library wraps it in a
+      // View of its own with `flex: 1`, which `containerStyle` overrides.
+      // Left to itself that wrapper takes an equal share of the screen with
+      // the session's scroll view, i.e. a blank top half.
       style={styles.hidden}
+      containerStyle={styles.hidden}
       {...(Platform.OS === "android" && {
         mixedContentMode: "always" as const,
       })}
@@ -156,6 +162,7 @@ export const StockfishWebView = forwardRef<
 
 const styles = StyleSheet.create({
   hidden: {
+    flex: 0,
     width: 0,
     height: 0,
     opacity: 0,

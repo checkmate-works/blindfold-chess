@@ -125,15 +125,22 @@ export function MoveHistory({ moves, startingFen }: MoveHistoryProps) {
   );
 }
 
+/** About eight moves; a longer game scrolls inside the box. */
+const MAX_LIST_HEIGHT = 184;
+
 const styles = StyleSheet.create({
   container: {
     borderRadius: borderRadius.md,
     borderWidth: 1,
     padding: spacing.sm,
-    maxHeight: 200,
   },
+  // The list is as tall as its moves, up to a cap, then scrolls. The cap is
+  // on the scroll view itself and it must not flex: `flex: 1` inside a box
+  // with no height of its own (only a maximum) resolves to zero on native,
+  // which drew the list as an empty strip.
   scrollView: {
-    flex: 1,
+    flexGrow: 0,
+    maxHeight: MAX_LIST_HEIGHT,
   },
   emptyText: {
     fontSize: fontSize.sm,
