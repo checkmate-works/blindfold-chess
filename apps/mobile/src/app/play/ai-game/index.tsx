@@ -1,8 +1,7 @@
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useRouter } from "expo-router";
-import type { Side } from "@blindfold-chess/types";
 import {
   type PerGamePreferences,
   pickPerGamePreferences,
@@ -12,17 +11,18 @@ import { PracticeSetupScreen } from "../../../components";
 import {
   GameSettingsSection,
   SettingsForm,
-  StartPositionForm,
 } from "../../../features/ai-game/components";
-import {
-  useGameSettings,
-  useStartPositionInput,
-} from "../../../features/ai-game/hooks";
+import { useGameSettings } from "../../../features/ai-game/hooks";
 import { encodeGamePrefsParam } from "../../../features/ai-game/lib/game-prefs-param";
-import { encodeStartParams } from "../../../features/ai-game/lib/start-params";
 import { useGamePreferences } from "../../../lib/game-preferences";
 import { spacing } from "../../../theme";
 
+/**
+ * Setting up a game against the engine: the player's colour, the engine's
+ * strength, and how blind the game is played. A game in the app always
+ * starts from the standard position; starting from a custom position, an
+ * opening or a PGN stays on the web.
+ */
 export default function AiGameSetup() {
   const { t } = useTranslation();
   const router = useRouter();
@@ -41,23 +41,13 @@ export default function AiGameSetup() {
     ...gamePrefsEdits,
   });
 
-  const derivePlayerColor = useCallback(
-    (playerColor: Side) => updateSettings({ playerColor }),
-    [updateSettings],
-  );
-  const start = useStartPositionInput({
-    onDerivePlayerColor: derivePlayerColor,
-  });
-
   const handleStart = () => {
-    if (!start.resolution.ok) return;
     router.push({
       pathname: "/play/ai-game/session",
       params: {
         playerColor: settings.playerColor,
         skillLevel: settings.skillLevel.toString(),
         gamePrefs: encodeGamePrefsParam(gamePrefs),
-        ...encodeStartParams(start.resolution.value),
       },
     });
   };
@@ -67,32 +57,12 @@ export default function AiGameSetup() {
       isLoaded={isLoaded && preferencesLoaded}
       startLabel={t("aiGame.setup.startGame")}
       onStart={handleStart}
-      startDisabled={!start.resolution.ok}
     >
       <View style={styles.container}>
-        <StartPositionForm
-          mode={start.mode}
-          onChangeMode={start.setMode}
-          fenText={start.fenText}
-          onChangeFenText={start.changeFenText}
-          sideToMove={start.sideToMove}
-          onChangeSideToMove={start.setSideToMove}
-          pgnText={start.pgnText}
-          onChangePgnText={start.changePgnText}
-          resolution={start.resolution}
-        />
         <SettingsForm
           playerColor={settings.playerColor}
           skillLevel={settings.skillLevel}
-          playerColorHint={
-            start.showDerivedFromPgnHint
-              ? t("aiGame.setup.derivedFromPgn")
-              : undefined
-          }
-          onUpdatePlayerColor={(playerColor) => {
-            start.markColorManuallySet();
-            updateSettings({ playerColor });
-          }}
+          onUpdatePlayerColor={(playerColor) => updateSettings({ playerColor })}
           onUpdateSkillLevel={(skillLevel) => updateSettings({ skillLevel })}
         />
         <GameSettingsSection

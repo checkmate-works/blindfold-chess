@@ -8,5 +8,4 @@ export { ResultCard } from "./ResultCard";
 export { SettingsForm } from "./SettingsForm";
 export { GameSettingsSection } from "./GameSettingsSection";
 export { Spinner } from "./Spinner";
-export { StartPositionForm } from "./StartPositionForm";
 export { InlineBoard } from "./InlineBoard";
