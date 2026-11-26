@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
+import { getEloForSkillLevel } from "@blindfold-chess/features/ai-game";
 import {
   useTheme,
   fontSize,
@@ -70,7 +71,10 @@ export function GameInfo({
       </View>
       <View style={styles.infoRow}>
         <Text style={[styles.infoText, { color: colors.mutedForeground }]}>
-          {t("aiGame.session.skillLevel")}: {skillLevel}
+          {t("aiGame.setup.levelWithElo", {
+            level: skillLevel,
+            elo: getEloForSkillLevel(skillLevel),
+          })}
         </Text>
         <Text style={[styles.infoText, { color: colors.mutedForeground }]}>
           {t("aiGame.session.moves")}: {moveCount}

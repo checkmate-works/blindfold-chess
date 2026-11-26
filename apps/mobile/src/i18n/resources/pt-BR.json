@@ -199,7 +199,12 @@
         "text": "Texto",
         "icon": "Ícone"
       },
-      "resetDefaults": "Redefinir valores padrão"
+      "resetDefaults": "Redefinir valores padrão",
+      "aiReplyDuration": "Tempo de exibição da jogada da IA",
+      "aiReplyDurationModes": {
+        "keep": "Manter visível",
+        "seconds": "{{seconds}}s"
+      }
     },
     "about": {
       "title": "Sobre",
@@ -339,7 +344,6 @@
       "white": "Brancas",
       "black": "Pretas",
       "skillLevel": "Nível de habilidade",
-      "skillLevelDescription": "1 (iniciante) - 20 (mais forte)",
       "startGame": "Começar partida",
       "startMode": "Como você gostaria de começar?",
       "startModeStandard": "Padrão",
@@ -362,7 +366,22 @@
       "positionCheckCorrected": "O lado em xeque deve mover primeiro — por favor altere a vez de jogar",
       "positionValid": "Posição válida",
       "chooseOpening": "Escolher uma abertura",
-      "searchOpening": "Buscar por nome, ECO ou lances"
+      "searchOpening": "Buscar por nome, ECO ou lances",
+      "opponent": "Oponente",
+      "levelWithElo": "Nível {{level}} ({{elo}} ELO)",
+      "difficulty": {
+        "title": "Dificuldade",
+        "option": "Nível {{level}}: {{description}}",
+        "custom": "Personalizado",
+        "customDescription": "Sua própria combinação dos ajustes abaixo",
+        "levels": {
+          "level1": "Tabuleiro sempre visível",
+          "level2": "Tabuleiro oculto: espie sob demanda",
+          "level3": "Ao espiar, só suas peças aparecem",
+          "level4": "Ao espiar, suas peças sem os peões",
+          "level5": "Às cegas total: sem tabuleiro"
+        }
+      }
     },
     "session": {
       "yourTurn": "Sua vez",
@@ -371,7 +390,6 @@
       "stalemate": "Rei afogado",
       "draw": "Empate",
       "check": "Xeque!",
-      "skillLevel": "Nível",
       "moves": "Jogadas",
       "noMoves": "Ainda não há jogadas",
       "movePreview": "Digite sua jogada",

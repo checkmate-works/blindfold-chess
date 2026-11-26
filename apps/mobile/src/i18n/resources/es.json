@@ -199,7 +199,12 @@
         "text": "Texto",
         "icon": "Icono"
       },
-      "resetDefaults": "Restablecer valores predeterminados"
+      "resetDefaults": "Restablecer valores predeterminados",
+      "aiReplyDuration": "Tiempo de visualización de la jugada de la IA",
+      "aiReplyDurationModes": {
+        "keep": "Mantener visible",
+        "seconds": "{{seconds}}s"
+      }
     },
     "about": {
       "title": "Acerca de",
@@ -339,7 +344,6 @@
       "white": "Blancas",
       "black": "Negras",
       "skillLevel": "Nivel de habilidad",
-      "skillLevelDescription": "1 (principiante) - 20 (más fuerte)",
       "startGame": "Empezar partida",
       "startMode": "¿Cómo te gustaría empezar?",
       "startModeStandard": "Estándar",
@@ -362,7 +366,22 @@
       "positionCheckCorrected": "El bando en jaque debe mover primero — por favor cambia el turno",
       "positionValid": "Posición válida",
       "chooseOpening": "Elegir una apertura",
-      "searchOpening": "Buscar por nombre, ECO o jugadas"
+      "searchOpening": "Buscar por nombre, ECO o jugadas",
+      "opponent": "Oponente",
+      "levelWithElo": "Nivel {{level}} ({{elo}} ELO)",
+      "difficulty": {
+        "title": "Dificultad",
+        "option": "Nivel {{level}}: {{description}}",
+        "custom": "Personalizado",
+        "customDescription": "Tu propia combinación de los ajustes de abajo",
+        "levels": {
+          "level1": "Tablero siempre visible",
+          "level2": "Tablero oculto: vistazo bajo demanda",
+          "level3": "Al echar un vistazo solo ves tus piezas",
+          "level4": "Al echar un vistazo, tus piezas sin peones",
+          "level5": "A ciegas total: sin tablero"
+        }
+      }
     },
     "session": {
       "yourTurn": "Tu turno",
@@ -371,7 +390,6 @@
       "stalemate": "Tablas por ahogado",
       "draw": "Tablas",
       "check": "¡Jaque!",
-      "skillLevel": "Nivel",
       "moves": "Jugadas",
       "noMoves": "Aún no hay jugadas",
       "movePreview": "Introduce tu jugada",

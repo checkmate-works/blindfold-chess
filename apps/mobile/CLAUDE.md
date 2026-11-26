@@ -464,9 +464,17 @@ object with the same rules; the whole object sits under one AsyncStorage key
 wrapper that sanitises on read. The settings tab edits it, and the AI-game
 board components (`ChessBoard`, `BoardPeek`, `ButtonInput`) read it themselves
 rather than taking it as props. Fields mobile has no UI for yet
-(`showPieceDestinations`, `enableAutoComplete`, `aiReplyDuration`, the
-non-button input modes) are kept in the object so it stays one type, but
-nothing reads them.
+(`showPieceDestinations`, `enableAutoComplete`, the non-button input modes)
+are kept in the object so it stays one type, but nothing reads them.
+
+**An AI game plays under its own snapshot,** as on the web. The setup screen
+starts from the global values, lets the player change the per-game ones
+(`PerGamePreferences`: the difficulty ladder and the rows it is made of,
+`perGameSettingRows`, which the settings tab shares) without writing them
+back, and hands the result to the session as the `gamePrefs` route param.
+The session lays it over the global preferences with
+`GamePreferencesOverride`, so the board components still just call
+`useGamePreferences`.
 
 **Per-module practice settings.** Each practice module keeps its own
 settings through `useAsyncStorageSettings` (`src/lib/persistent-settings/`,

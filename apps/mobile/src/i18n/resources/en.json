@@ -199,7 +199,12 @@
         "text": "Text",
         "icon": "Icon"
       },
-      "resetDefaults": "Reset to defaults"
+      "resetDefaults": "Reset to defaults",
+      "aiReplyDuration": "AI move display time",
+      "aiReplyDurationModes": {
+        "keep": "Keep visible",
+        "seconds": "{{seconds}}s"
+      }
     },
     "about": {
       "title": "About",
@@ -339,7 +344,6 @@
       "white": "White",
       "black": "Black",
       "skillLevel": "Skill Level",
-      "skillLevelDescription": "1 (beginner) - 20 (strongest)",
       "startGame": "Start Game",
       "startMode": "How would you like to start?",
       "startModeStandard": "Standard",
@@ -362,7 +366,22 @@
       "positionCheckCorrected": "The checked side must move first — please select the other side to move",
       "positionValid": "Valid position",
       "chooseOpening": "Choose an opening",
-      "searchOpening": "Search by name, ECO or moves"
+      "searchOpening": "Search by name, ECO or moves",
+      "opponent": "Opponent",
+      "levelWithElo": "Level {{level}} ({{elo}} ELO)",
+      "difficulty": {
+        "title": "Difficulty",
+        "option": "Level {{level}}: {{description}}",
+        "custom": "Custom",
+        "customDescription": "Your own combination of the settings below",
+        "levels": {
+          "level1": "Board always visible",
+          "level2": "Board hidden — peek on demand",
+          "level3": "Peeks show only your own pieces",
+          "level4": "Peeks show your pieces, without pawns",
+          "level5": "Full blindfold — no board at all"
+        }
+      }
     },
     "session": {
       "yourTurn": "Your Turn",
@@ -371,7 +390,6 @@
       "stalemate": "Stalemate",
       "draw": "Draw",
       "check": "Check!",
-      "skillLevel": "Level",
       "moves": "Moves",
       "noMoves": "No moves yet",
       "movePreview": "Enter your move",

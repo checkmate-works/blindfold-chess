@@ -1,29 +1,28 @@
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useTranslation } from "react-i18next";
-import type { Side } from "@blindfold-chess/types";
-import {
-  useTheme,
-  fontSize,
-  fontWeight,
-  spacing,
-  borderRadius,
-} from "../../../theme";
+import { SIDES, type Side } from "@blindfold-chess/types";
+import { getEloForSkillLevel } from "@blindfold-chess/features/ai-game";
+
+import { ListSection, SelectRow } from "../../../components";
 import type { SkillLevel } from "../lib/types";
 
 type SettingsFormProps = {
   playerColor: Side;
   skillLevel: SkillLevel;
-  /** A note under the colour choice, e.g. that it was picked from a PGN. */
+  /** A note under the section, e.g. that the colour was picked from a PGN. */
   playerColorHint?: string;
   onUpdatePlayerColor: (color: Side) => void;
   onUpdateSkillLevel: (level: SkillLevel) => void;
 };
 
-const COLORS: Side[] = ["white", "black"];
-const SKILL_LEVELS: SkillLevel[] = [
+const SKILL_LEVELS: readonly SkillLevel[] = [
   1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
 ];
 
+/**
+ * Who the player faces: their colour and the engine's strength. A level is
+ * shown with the rating it is limited to ("Level 5 (1200 ELO)"), as on the
+ * web, since the number alone says little about how strong it plays.
+ */
 export function SettingsForm({
   playerColor,
   skillLevel,
@@ -32,148 +31,29 @@ export function SettingsForm({
   onUpdateSkillLevel,
 }: SettingsFormProps) {
   const { t } = useTranslation();
-  const { colors } = useTheme();
 
   return (
-    <View style={styles.container}>
-      {/* Player Color */}
-      <View style={styles.section}>
-        <Text style={[styles.label, { color: colors.foreground }]}>
-          {t("aiGame.setup.playerColor")}
-        </Text>
-        <View style={styles.optionsRow}>
-          {COLORS.map((color) => (
-            <TouchableOpacity
-              key={color}
-              onPress={() => onUpdatePlayerColor(color)}
-              style={[
-                styles.colorButton,
-                {
-                  borderColor:
-                    playerColor === color ? colors.primary : colors.border,
-                  backgroundColor:
-                    playerColor === color ? colors.primary : colors.card,
-                },
-              ]}
-            >
-              <Text
-                style={[
-                  styles.colorText,
-                  {
-                    color:
-                      playerColor === color
-                        ? colors.primaryForeground
-                        : colors.foreground,
-                    fontWeight:
-                      playerColor === color
-                        ? fontWeight.medium
-                        : fontWeight.normal,
-                  },
-                ]}
-              >
-                {/* aiGame.setup.<Side>: aiGame.setup.white, aiGame.setup.black */}
-                {t(`aiGame.setup.${color}`)}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-        {playerColorHint && (
-          <Text style={[styles.sublabel, { color: colors.mutedForeground }]}>
-            {playerColorHint}
-          </Text>
-        )}
-      </View>
-
-      {/* Skill Level */}
-      <View style={styles.section}>
-        <Text style={[styles.label, { color: colors.foreground }]}>
-          {t("aiGame.setup.skillLevel")}
-        </Text>
-        <Text style={[styles.sublabel, { color: colors.mutedForeground }]}>
-          {t("aiGame.setup.skillLevelDescription")}
-        </Text>
-        <View style={styles.skillGrid}>
-          {SKILL_LEVELS.map((level) => (
-            <TouchableOpacity
-              key={level}
-              onPress={() => onUpdateSkillLevel(level)}
-              style={[
-                styles.skillButton,
-                {
-                  borderColor:
-                    skillLevel === level ? colors.primary : colors.border,
-                  backgroundColor:
-                    skillLevel === level ? colors.primary : colors.card,
-                },
-              ]}
-            >
-              <Text
-                style={[
-                  styles.skillText,
-                  {
-                    color:
-                      skillLevel === level
-                        ? colors.primaryForeground
-                        : colors.foreground,
-                    fontWeight:
-                      skillLevel === level
-                        ? fontWeight.bold
-                        : fontWeight.normal,
-                  },
-                ]}
-              >
-                {level}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
-    </View>
+    <ListSection title={t("aiGame.setup.opponent")} footer={playerColorHint}>
+      {/* aiGame.setup.<Side>: aiGame.setup.white, aiGame.setup.black */}
+      <SelectRow<Side>
+        label={t("aiGame.setup.playerColor")}
+        options={SIDES}
+        value={playerColor}
+        onChange={onUpdatePlayerColor}
+        formatOption={(side) => t(`aiGame.setup.${side}`)}
+      />
+      <SelectRow<SkillLevel>
+        label={t("aiGame.setup.skillLevel")}
+        options={SKILL_LEVELS}
+        value={skillLevel}
+        onChange={onUpdateSkillLevel}
+        formatOption={(level) =>
+          t("aiGame.setup.levelWithElo", {
+            level,
+            elo: getEloForSkillLevel(level),
+          })
+        }
+      />
+    </ListSection>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    gap: spacing.lg,
-  },
-  section: {
-    gap: spacing.sm,
-  },
-  label: {
-    fontSize: fontSize.md,
-    fontWeight: fontWeight.medium,
-  },
-  sublabel: {
-    fontSize: fontSize.sm,
-  },
-  optionsRow: {
-    flexDirection: "row",
-    gap: spacing.sm,
-  },
-  colorButton: {
-    flex: 1,
-    paddingVertical: spacing.md,
-    borderRadius: borderRadius.md,
-    borderWidth: 1,
-    alignItems: "center",
-  },
-  colorText: {
-    fontSize: fontSize.md,
-  },
-  skillGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: spacing.xs,
-  },
-  skillButton: {
-    width: 44,
-    height: 44,
-    borderRadius: borderRadius.md,
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  skillText: {
-    fontSize: fontSize.sm,
-  },
-});

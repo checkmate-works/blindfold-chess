@@ -199,7 +199,12 @@
         "text": "テキスト",
         "icon": "アイコン"
       },
-      "resetDefaults": "デフォルトに戻す"
+      "resetDefaults": "デフォルトに戻す",
+      "aiReplyDuration": "AIの手の表示時間",
+      "aiReplyDurationModes": {
+        "keep": "ずっと表示",
+        "seconds": "{{seconds}}秒"
+      }
     },
     "about": {
       "title": "このアプリについて",
@@ -339,7 +344,6 @@
       "white": "白",
       "black": "黒",
       "skillLevel": "スキルレベル",
-      "skillLevelDescription": "1（初心者）- 20（最強）",
       "startGame": "ゲーム開始",
       "startMode": "開始方法を選択",
       "startModeStandard": "標準",
@@ -362,7 +366,22 @@
       "positionCheckCorrected": "チェックされている側が先に動く必要があります — 手番を変更してください",
       "positionValid": "有効なポジション",
       "chooseOpening": "定跡から選ぶ",
-      "searchOpening": "名前・ECO・手順で検索"
+      "searchOpening": "名前・ECO・手順で検索",
+      "opponent": "対戦相手",
+      "levelWithElo": "レベル {{level}} ({{elo}} ELO)",
+      "difficulty": {
+        "title": "難易度",
+        "option": "レベル{{level}}: {{description}}",
+        "custom": "カスタム",
+        "customDescription": "下の設定を自分で組み合わせた状態",
+        "levels": {
+          "level1": "盤面を常に表示",
+          "level2": "盤面を隠し、必要なときにピーク",
+          "level3": "ピーク時は自分の駒だけ表示",
+          "level4": "ピーク時は自分の駒だけ（ポーンなし）",
+          "level5": "完全な目隠し（盤面なし）"
+        }
+      }
     },
     "session": {
       "yourTurn": "あなたの番",
@@ -371,7 +390,6 @@
       "stalemate": "ステイルメイト",
       "draw": "引き分け",
       "check": "チェック！",
-      "skillLevel": "レベル",
       "moves": "手数",
       "noMoves": "まだ手がありません",
       "movePreview": "手を入力してください",

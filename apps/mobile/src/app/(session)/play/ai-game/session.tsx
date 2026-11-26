@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert, View, Text, StyleSheet, ScrollView } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { isValidSkillLevel } from "@blindfold-chess/features/ai-game";
+import type { GamePreferences } from "@blindfold-chess/features/game-preferences";
 import { findLastAiMoveNotation } from "@blindfold-chess/features/game-play";
 import { useAiReplyChip } from "@blindfold-chess/features/game-play/client";
 import { SIDES, type Side } from "@blindfold-chess/types";
@@ -20,15 +21,45 @@ import {
   useGameSession,
 } from "../../../../features/ai-game/hooks";
 import type { SkillLevel } from "../../../../features/ai-game/lib/types";
+import { decodeGamePrefsParam } from "../../../../features/ai-game/lib/game-prefs-param";
 import { decodeStartParams } from "../../../../features/ai-game/lib/start-params";
 import { saveGame } from "../../../../features/game-history/game-history";
-import { useGamePreferences } from "../../../../lib/game-preferences";
+import {
+  GamePreferencesOverride,
+  useGamePreferences,
+} from "../../../../lib/game-preferences";
 import { parseEnumParam } from "../../../../lib/route-params";
 import { Button, Screen } from "../../../../components";
 import { SessionTopBar } from "../../../../navigation/SessionTopBar";
 import { useTheme, fontSize, fontWeight, spacing } from "../../../../theme";
 
+/**
+ * The AI game. It plays under the preference snapshot its setup screen took
+ * (`gamePrefs`), laid over the global preferences for everything below, so
+ * the board and the input read this game's values without knowing it. A
+ * session opened without the param (the onboarding's first game) plays under
+ * the global ones.
+ */
 export default function AiGameSession() {
+  const { gamePrefs } = useLocalSearchParams<{ gamePrefs?: string }>();
+  // Decoded once: later changes are this game's own and live in the state.
+  const [overrides, setOverrides] = useState<Partial<GamePreferences>>(() =>
+    decodeGamePrefsParam(gamePrefs),
+  );
+  const updateOverrides = useCallback(
+    (updates: Partial<GamePreferences>) =>
+      setOverrides((current) => ({ ...current, ...updates })),
+    [],
+  );
+
+  return (
+    <GamePreferencesOverride overrides={overrides} onUpdate={updateOverrides}>
+      <AiGameBoard />
+    </GamePreferencesOverride>
+  );
+}
+
+function AiGameBoard() {
   const { t } = useTranslation();
   const router = useRouter();
   const { colors } = useTheme();
