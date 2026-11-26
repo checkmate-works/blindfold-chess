@@ -2,29 +2,27 @@ import { StyleSheet, Text, View } from "react-native";
 import type { Href } from "expo-router";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
-import {
-  RANK_REQUIREMENTS,
-  nextRankSlug,
-} from "@blindfold-chess/features/dojo-ranks";
+import { nextRankSlug } from "@blindfold-chess/features/dojo-ranks";
 
 import { Button } from "../../components";
 import { openWebPage } from "../../lib/web-pages";
 import { fontSize, useTheme } from "../../theme";
 import { RankGoalCard } from "./RankGoalCard";
+import { mobileRankRequirements } from "./mobile-requirements";
 import { requirementLabel, requirementTarget } from "./requirements";
 import { useCurrentRank } from "./use-current-rank";
 
 /**
  * The home tab's pointer into the dojo: the rank to aim for next (after the
  * player's current one; 5kyu when signed out), with a button straight into
- * its first requirement and one into the dojo. Once 1dan is held it says so
+ * its first unmet requirement and one into the dojo. Once 1dan is held it says so
  * and only links the dojo.
  */
 export function NextRankCard() {
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
-  const { highest } = useCurrentRank();
+  const { highest, isMet } = useCurrentRank();
   const next = nextRankSlug(highest);
   const openDojo = () => router.navigate("/dojo");
 
@@ -43,7 +41,10 @@ export function NextRankCard() {
     );
   }
 
-  const first = RANK_REQUIREMENTS[next][0];
+  // The first requirement not yet met; with all of them met (a grant the
+  // server has not made yet, or one judged on the web) the first one.
+  const requirements = mobileRankRequirements(next);
+  const first = requirements.find((r) => isMet(r) !== true) ?? requirements[0];
   const target = first ? requirementTarget(first) : undefined;
 
   return (

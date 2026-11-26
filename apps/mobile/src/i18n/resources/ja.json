@@ -1074,6 +1074,21 @@
     "webOnlyNote": "この条件はWeb版で満たせます。同じアカウントで取得した段級位はアプリにも反映されます。",
     "guide": "この級の教本を読む（Web）",
     "rankDetailTitle": "段級位",
-    "allAchieved": "すべてのランクを達成しました 🎉"
+    "allAchieved": "すべてのランクを達成しました 🎉",
+    "met": "達成済み",
+    "exam": {
+      "requirement": "{{rank}}の課題（ポジション記憶{{count}}問）に合格する",
+      "hint": "アプリの課題に挑戦する",
+      "title": "{{rank}}の課題",
+      "howTitle": "課題の進め方",
+      "stepMemorize": "{{count}}つの局面を、それぞれ{{seconds}}秒間覚える",
+      "stepRecreate": "覚えた局面を空の盤に再現する",
+      "rule": "{{count}}問すべてを提出し、平均正確度{{accuracy}}%以上で合格",
+      "deviceNote": "アプリの課題の合格はこの端末に記録されます。Web版の段級位には反映されません。",
+      "start": "課題を始める",
+      "passed": "{{rank}}の課題に合格しました",
+      "passedBody": "道場の段級位が{{rank}}になりました。",
+      "failed": "{{rank}}の課題は不合格でした"
+    }
   }
 }

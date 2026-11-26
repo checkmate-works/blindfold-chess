@@ -1074,6 +1074,21 @@
     "webOnlyNote": "This requirement is met on the web. Ranks earned with the same account show up in the app too.",
     "guide": "Read this rank's guide (web)",
     "rankDetailTitle": "Rank",
-    "allAchieved": "You have achieved every rank 🎉"
+    "allAchieved": "You have achieved every rank 🎉",
+    "met": "Done",
+    "exam": {
+      "requirement": "Pass the {{rank}} exam ({{count}} position-memory problems)",
+      "hint": "Take the app's exam",
+      "title": "{{rank}} exam",
+      "howTitle": "How the exam works",
+      "stepMemorize": "Memorize {{count}} positions, {{seconds}} seconds each",
+      "stepRecreate": "Recreate each one on an empty board",
+      "rule": "Submit all {{count}} with an average accuracy of {{accuracy}}% or more to pass",
+      "deviceNote": "An exam pass is recorded on this device. It does not change your rank on the web.",
+      "start": "Start the exam",
+      "passed": "You passed the {{rank}} exam",
+      "passedBody": "Your dojo rank is now {{rank}}.",
+      "failed": "Not passed this time"
+    }
   }
 }

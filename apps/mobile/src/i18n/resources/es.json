@@ -1074,6 +1074,21 @@
     "webOnlyNote": "Este requisito se cumple en la web. Los rangos obtenidos con la misma cuenta también aparecen en la app.",
     "guide": "Leer la guía de este rango (web)",
     "rankDetailTitle": "Rango",
-    "allAchieved": "¡Has conseguido todos los rangos! 🎉"
+    "allAchieved": "¡Has conseguido todos los rangos! 🎉",
+    "met": "Cumplido",
+    "exam": {
+      "requirement": "Aprueba el examen de {{rank}} ({{count}} problemas de memoria de posiciones)",
+      "hint": "Haz el examen de la app",
+      "title": "Examen de {{rank}}",
+      "howTitle": "Cómo funciona el examen",
+      "stepMemorize": "Memoriza {{count}} posiciones, {{seconds}} segundos cada una",
+      "stepRecreate": "Recrea cada una en un tablero vacío",
+      "rule": "Entrega las {{count}} con una precisión media del {{accuracy}}% o más para aprobar",
+      "deviceNote": "El aprobado se guarda en este dispositivo. No cambia tu rango en la web.",
+      "start": "Empezar el examen",
+      "passed": "Aprobaste el examen de {{rank}}",
+      "passedBody": "Tu rango en el dojo ahora es {{rank}}.",
+      "failed": "Esta vez no aprobaste"
+    }
   }
 }

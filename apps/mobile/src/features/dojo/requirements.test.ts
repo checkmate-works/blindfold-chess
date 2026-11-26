@@ -59,7 +59,10 @@ describe("requirementLabel", () => {
   it("finds a string for every requirement in every rank", async () => {
     for (const lng of ["ja", "en"]) {
       await t.changeLanguage(lng);
-      for (const requirement of ALL_REQUIREMENTS) {
+      for (const requirement of [
+        ...ALL_REQUIREMENTS,
+        { type: "dojo_exam", rank: "2kyu" } as const,
+      ]) {
         const label = requirementLabel(requirement, t.t);
         expect(label).not.toMatch(/ranks\.|\{\{/);
       }

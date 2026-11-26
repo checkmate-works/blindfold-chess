@@ -1,11 +1,12 @@
 import type { TFunction } from "i18next";
 import {
   isRankSlug,
-  type RankRequirement,
   type RankSlug,
 } from "@blindfold-chess/features/dojo-ranks";
 import { MODULE_TO_SLUG } from "@blindfold-chess/features/practice-registry";
 
+import { examFor } from "./exams";
+import type { MobileRankRequirement } from "./mobile-requirements";
 import {
   MOBILE_PRACTICE_MODULES,
   practiceModuleRoute,
@@ -48,9 +49,11 @@ export function guidePath(slug: RankSlug): string | undefined {
 }
 
 export function requirementTarget(
-  requirement: RankRequirement,
+  requirement: MobileRankRequirement,
 ): RequirementTarget {
   switch (requirement.type) {
+    case "dojo_exam":
+      return { kind: "practice", pathname: `/dojo/exams/${requirement.rank}` };
     case "challenge_score": {
       const slug = (MODULE_TO_SLUG as Record<string, string>)[
         requirement.menuType
@@ -81,10 +84,15 @@ export function requirementTarget(
  * (`ranks.requirement.*`, copied from the web dictionary).
  */
 export function requirementLabel(
-  requirement: RankRequirement,
+  requirement: MobileRankRequirement,
   t: TFunction,
 ): string {
   switch (requirement.type) {
+    case "dojo_exam":
+      return t("dojo.exam.requirement", {
+        rank: t(`ranks.names.${requirement.rank}`),
+        count: examFor(requirement.rank)?.fens.length ?? 0,
+      });
     case "challenge_score": {
       // ranks.challengeNames.square_colors, ranks.challengeNames.legal_moves_king, …
       const nameKey =

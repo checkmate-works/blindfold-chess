@@ -1074,6 +1074,21 @@
     "webOnlyNote": "Este requisito é cumprido na web. As faixas conquistadas com a mesma conta também aparecem no app.",
     "guide": "Ler o guia desta faixa (web)",
     "rankDetailTitle": "Faixa",
-    "allAchieved": "Você conquistou todas as graduações 🎉"
+    "allAchieved": "Você conquistou todas as graduações 🎉",
+    "met": "Concluído",
+    "exam": {
+      "requirement": "Passe no exame de {{rank}} ({{count}} problemas de memória de posições)",
+      "hint": "Faça o exame do app",
+      "title": "Exame de {{rank}}",
+      "howTitle": "Como funciona o exame",
+      "stepMemorize": "Memorize {{count}} posições, {{seconds}} segundos cada",
+      "stepRecreate": "Recrie cada uma em um tabuleiro vazio",
+      "rule": "Envie as {{count}} com precisão média de {{accuracy}}% ou mais para passar",
+      "deviceNote": "A aprovação fica registrada neste aparelho. Ela não muda sua faixa na web.",
+      "start": "Começar o exame",
+      "passed": "Você passou no exame de {{rank}}",
+      "passedBody": "Sua faixa no dojo agora é {{rank}}.",
+      "failed": "Desta vez não passou"
+    }
   }
 }

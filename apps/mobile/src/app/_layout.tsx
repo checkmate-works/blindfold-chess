@@ -97,6 +97,7 @@ function RootStack({ isDark }: { isDark: boolean }) {
           name="dojo/ranks/[slug]"
           options={{ title: t("dojo.rankDetailTitle") }}
         />
+        <Stack.Screen name="dojo/exams/[rank]" options={{ title: "" }} />
         <Stack.Screen name="learn/[slug]" options={{ title: "" }} />
         <Stack.Screen
           name="learn/glossary/index"
