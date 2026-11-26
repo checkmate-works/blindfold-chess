@@ -1,7 +1,5 @@
-import type {
-  ExamProblemKind,
-  MobileDojoExamResponse,
-} from '@blindfold-chess/features/dojo-journey';
+import type { MobileDojoExamResponse } from '@blindfold-chess/features/dojo-journey';
+import type { ExamProblemKind } from '@blindfold-chess/features/dojo-ranks';
 
 import { evaluateRanksAfterCreate } from '@/lib/db/rank-evaluation';
 import { submitExamProblem } from '@/lib/dojo/exam';
