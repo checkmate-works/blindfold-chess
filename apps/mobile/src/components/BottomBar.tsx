@@ -37,7 +37,7 @@ export function BottomBar({ children, style }: BottomBarProps) {
         styles.bar,
         {
           backgroundColor: colors.card,
-          borderTopColor: colors.border,
+          borderTopColor: colors.panelBorder,
           paddingBottom: Math.max(insets.bottom, BAR_PADDING),
         },
         style,

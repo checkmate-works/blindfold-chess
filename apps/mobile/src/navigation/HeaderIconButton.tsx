@@ -12,7 +12,8 @@ type Props = {
 
 /**
  * An icon button for the native header's trailing slot (help, share, …).
- * The glyph takes the header's tint; the hit area is padded to 44pt.
+ * The glyph is ink (`colors.foreground`), the header's tint, like the back
+ * chevron; the hit area is padded to 44pt.
  */
 export function HeaderIconButton({
   icon,
@@ -30,7 +31,7 @@ export function HeaderIconButton({
       testID={testID}
       style={styles.button}
     >
-      <Ionicons name={icon} size={24} color={colors.primary} />
+      <Ionicons name={icon} size={24} color={colors.foreground} />
     </Pressable>
   );
 }

@@ -6006,15 +6006,10 @@
     "requirements": "Requisitos",
     "comingSoon": "Em breve",
     "challengeScore": "Pontuação {minScore}+ em {challengeName}",
-    "submissionCount": "Publique pelo menos {minCount} {itemName}",
+    "examProblem": "Passe na prova de {rankName}: {problemName}",
     "gamePublishWin": "Vença o motor com ao menos uma restrição ativada e publique a partida",
     "gamePublishWinHiddenBoard": "Partindo da posição inicial padrão, vença o motor mantendo o tabuleiro oculto o tempo todo, e publique a partida",
     "gamePublishWinHiddenBoardNote": "※ A opção “Permitir espiar” ainda pode ser usada, até {maxPeeks} vezes",
-    "orDivider": "ou",
-    "submissionItemNames": {
-      "memory": "problema de memória de posições",
-      "puzzle": "puzzle"
-    },
     "challengeNames": {
       "square_colors": "Cor das Casas",
       "coordinate_quiz_white": "Quiz de Coordenadas (Brancas)",
@@ -6026,6 +6021,10 @@
       "legal_moves_knight": "Movimentos Legais (Cavalo)",
       "route_planner_knight": "Planejador de Rotas (Cavalo)",
       "route_planner_bishop": "Planejador de Rotas (Bispo)"
+    },
+    "examProblemNames": {
+      "position_memory": "Memória de Posições",
+      "puzzle": "Puzzle"
     },
     "rankNames": {
       "mukyu": "Sem Graduação",
@@ -6071,6 +6070,22 @@
       "description": "Cadastre-se para acompanhar seu progresso de graduação.",
       "cta": "Cadastro Gratuito"
     }
+  },
+  "dojoExam": {
+    "title": "Prova de {rankName}",
+    "lead": "Resolva estes {count} problemas para conquistar {rankName}. Você pode tentar quantas vezes quiser.",
+    "memoryRule": "Memorize a posição por {seconds} segundos e depois recrie-a em um tabuleiro vazio. Você passa com precisão de {accuracy}% ou mais.",
+    "puzzleRule": "Encontre o mate em {moves}.",
+    "start": "Começar",
+    "solved": "Aprovado",
+    "passed": "Você passou",
+    "failed": "Não passou. Você pode tentar de novo.",
+    "retry": "Tentar de novo",
+    "backToExam": "Voltar à prova",
+    "passedUnrecorded": "Você atingiu a nota de aprovação (não registrado)",
+    "signInNote": "Entre na sua conta para que sua aprovação seja registrada.",
+    "lockedNote": "Sua aprovação é registrada quando você tiver {prevRankName}.",
+    "recordFailed": "Não foi possível registrar o resultado. Tente novamente."
   },
   "rankAchievement": {
     "title": "Graduação Alcançada!",

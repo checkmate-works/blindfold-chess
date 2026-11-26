@@ -3,7 +3,7 @@
 import { useCallback, useRef, useState } from 'react';
 
 import { useRouter } from '@/i18n/routing';
-import type { Attempt } from '@blindfold-chess/features/puzzle';
+import type { Attempt, SolveContext } from '@blindfold-chess/features/puzzle';
 
 import { captureError } from '@/lib/sentry/capture-error';
 
@@ -21,13 +21,31 @@ type FinishSolveArgs = {
   playerMoveCount: number;
   /** Number of times the user peeked at the board during the run. */
   peekCount: number;
+  /** The player's own moves in the order they were accepted, as entered. */
+  playerMoves: string[];
 };
+
+/**
+ * Replaces the default post-solve handshake. Receives the solve and the
+ * player's moves exactly as they were accepted (the input the matcher took,
+ * not the canonical SAN of the solution line), so a caller that re-grades
+ * them elsewhere replays what the player actually played.
+ */
+export type PuzzleSolveHandler = (solve: SolveContext, playerMoves: string[]) => void;
 
 type Options = {
   positionId: string;
   /** Starting FEN of the puzzle, persisted into sessionStorage so the result
    *  page can re-render the position without a fresh DB fetch. */
   fen: string;
+  /**
+   * When given, a solve calls this instead of the default handshake: no
+   * sessionStorage write, no EXP grant, no navigation to /result. Puzzles
+   * that are not stored puzzles (the dojo exam) have no result page and earn
+   * no EXP, so they take the solve themselves. The double-fire guard and
+   * `isSolved` still apply; `isNavigatingToResult` stays `false`.
+   */
+  onSolve?: PuzzleSolveHandler;
 };
 
 type Return = {
@@ -48,7 +66,7 @@ type Return = {
  * guard) is testable in isolation and the session client can stay focused
  * on solve detection and the playing UI.
  */
-export function usePuzzleCompletion({ positionId, fen }: Options): Return {
+export function usePuzzleCompletion({ positionId, fen, onSolve }: Options): Return {
   const router = useRouter();
   const [isSolved, setIsSolved] = useState(false);
   const [isNavigatingToResult, setIsNavigatingToResult] = useState(false);
@@ -61,10 +79,15 @@ export function usePuzzleCompletion({ positionId, fen }: Options): Return {
   const savedRef = useRef(false);
 
   const finishSolve = useCallback(
-    ({ solutionLine, attempts, playerMoveCount, peekCount }: FinishSolveArgs) => {
+    ({ solutionLine, attempts, playerMoveCount, peekCount, playerMoves }: FinishSolveArgs) => {
       if (savedRef.current) return;
       savedRef.current = true;
       setIsSolved(true);
+
+      if (onSolve) {
+        onSolve({ solutionLine, attempts, playerMoveCount }, playerMoves);
+        return;
+      }
 
       writePuzzleResult(positionId, { attempts, solutionLine, fen, peekCount });
       setIsNavigatingToResult(true);
@@ -100,7 +123,7 @@ export function usePuzzleCompletion({ positionId, fen }: Options): Return {
         router.push(finalUrl);
       }, AUTO_NAVIGATE_DELAY_MS);
     },
-    [positionId, fen, router]
+    [positionId, fen, router, onSolve]
   );
 
   return { isSolved, isNavigatingToResult, finishSolve };

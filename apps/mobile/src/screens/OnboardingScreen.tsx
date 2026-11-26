@@ -51,7 +51,7 @@ export const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
       style={[
         styles.safeArea,
         {
-          backgroundColor: colors.background,
+          backgroundColor: colors.page,
           paddingTop: insets.top,
           // The answer bar pads the home indicator itself (BottomBar);
           // while the mentor is still talking there is no bar to do it.

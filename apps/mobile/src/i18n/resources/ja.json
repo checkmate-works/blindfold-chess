@@ -38,11 +38,22 @@
     "gettingStarted": "はじめての方へ",
     "learnBasics": "目隠しチェスの基礎を学ぶ",
     "nextRankTitle": "次の目標",
-    "openDojo": "道場を見る",
-    "allAchievedBody": "初段を取得しました。AIとの対戦で腕を磨きましょう。"
+    "allAchievedBody": "初段を取得しました。AIとの対戦で腕を磨きましょう。",
+    "nextStep": {
+      "guideStart": "教本を読む",
+      "guideContinue": "教本の続きを読む",
+      "challenge": "{{challengeName}}に挑戦する",
+      "choosePractice": "自分で練習を選ぶ"
+    }
   },
   "practice": {
     "title": "練習",
+    "filter": {
+      "label": "段級位で絞り込む",
+      "all": "すべて"
+    },
+    "tried": "挑戦済み",
+    "triedCount": "挑戦済み {{done}} / {{total}}",
     "coordinateQuiz": {
       "title": "座標クイズ",
       "description": "マス目を見つけて盤面のイメージ力をテスト"
@@ -786,7 +797,8 @@
       "notation": "記法",
       "memory": "記憶",
       "practice": "練習"
-    }
+    },
+    "guidePagesRead": "{{total}}ページ中{{done}}ページ読了"
   },
   "gameHistory": {
     "title": "対局履歴",
@@ -993,14 +1005,13 @@
     },
     "requirement": {
       "challengeScore": "{{challengeName}}でスコア{{minScore}}以上",
-      "submissionCount": "{{itemName}}を{{minCount}}件以上投稿する",
-      "submissionItemNames": {
-        "memory": "ポジション記憶の問題",
-        "puzzle": "パズル"
-      },
       "gamePublishWin": "何らかの制約を加えた設定でAIに勝利し、ゲームを公開する",
       "gamePublishWinHiddenBoard": "初期配置から、Hide the board オプションを維持してAIに勝利し、ゲームを公開する",
-      "orDivider": "または"
+      "examProblem": "{{rank}}の課題「{{problem}}」に合格する",
+      "examProblemNames": {
+        "position_memory": "ポジション記憶",
+        "puzzle": "パズル"
+      }
     }
   },
   "puzzle": {
@@ -1068,8 +1079,12 @@
     },
     "lockedNote": "下の級から順に取得していきましょう",
     "requirementsTitle": "昇級条件",
+    "requirementsScreenTitle": "{{rank}}の昇級条件",
+    "noRequirements": "この段級位には昇級条件がありません。",
+    "nextRankSection": "次の段級位",
     "criteriaTitle": "合格基準",
     "challengeHint": "チャレンジモードで挑戦する",
+    "bestOfRequired": "最高 {{best}} / 必要 {{required}}",
     "webOnly": "Web版で取り組めます",
     "webOnlyNote": "この条件はWeb版で満たせます。同じアカウントで取得した段級位はアプリにも反映されます。",
     "guide": "この級の教本を読む",
@@ -1077,18 +1092,33 @@
     "allAchieved": "すべてのランクを達成しました 🎉",
     "met": "達成済み",
     "exam": {
-      "requirement": "{{rank}}の課題（ポジション記憶{{count}}問）に合格する",
       "hint": "アプリの課題に挑戦する",
       "title": "{{rank}}の課題",
-      "howTitle": "課題の進め方",
-      "stepMemorize": "{{count}}つの局面を、それぞれ{{seconds}}秒間覚える",
-      "stepRecreate": "覚えた局面を空の盤に再現する",
-      "rule": "{{count}}問すべてを提出し、平均正確度{{accuracy}}%以上で合格",
-      "deviceNote": "アプリの課題の合格はこの端末に記録されます。Web版の段級位には反映されません。",
       "start": "課題を始める",
-      "passed": "{{rank}}の課題に合格しました",
-      "passedBody": "道場の段級位が{{rank}}になりました。",
-      "failed": "{{rank}}の課題は不合格でした"
-    }
+      "lead": "次の{{count}}題を解くと{{rank}}に昇級します。何度でも挑戦できます。",
+      "memoryRule": "局面を{{seconds}}秒で覚え、空の盤に再現します。正確度{{accuracy}}%以上で合格です。",
+      "puzzleRule": "{{moves}}手詰めを解きます。",
+      "solved": "合格済み",
+      "signInNote": "ログインすると合格が記録されます。",
+      "lockedNote": "{{prevRank}}を取得すると、この課題の合格が記録されます。",
+      "recording": "記録しています…",
+      "recordFailed": "記録できませんでした。通信状態を確認して、もう一度送信してください。",
+      "resend": "もう一度送信する",
+      "problemPassed": "合格しました",
+      "problemFailed": "不合格でした。もう一度挑戦できます。",
+      "passedUnrecorded": "合格ラインに届きました（記録なし）"
+    },
+    "stages": {
+      "learn": "学ぶ",
+      "practice": "練習する",
+      "exam": "試験"
+    },
+    "stageExamPassed": "合格",
+    "stageExamNotPassed": "未合格",
+    "guideDoneNextGuide": "読了して次の教本へ",
+    "guideDonePractice": "読了して練習へ",
+    "guideNextGuide": "次の教本へ",
+    "guideToPractice": "練習へ進む",
+    "guideRead": "読了"
   }
 }

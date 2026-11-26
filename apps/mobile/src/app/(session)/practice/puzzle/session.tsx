@@ -19,6 +19,10 @@ import {
 
 import { Button, Screen } from "../../../../components";
 import { ButtonInput } from "../../../../features/ai-game/components";
+import {
+  examRankOf,
+  puzzleExamProblemOf,
+} from "../../../../features/dojo/exam-run";
 import { BoardAccordion } from "../../../../features/puzzle/components/BoardAccordion";
 import { PiecesInfo } from "../../../../features/puzzle/components/PiecesInfo";
 import {
@@ -49,14 +53,36 @@ const SOLVED_PAUSE_MS = 900;
  * Grading is the web's (`evaluatePuzzleSubmit`): any of the puzzle's
  * alternative lines is accepted until the first right move picks one. The
  * session closes without asking, as the web page can be left at any time.
+ *
+ * A dojo exam run (`exam` param, from `dojo/exams/[rank]`) solves the
+ * exam's puzzle instead of fetching one, offers no "Show answer" (the exam
+ * is to find it), and hands the player's own moves to the result screen,
+ * which sends them for grading.
  */
 export default function PuzzleSession() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const navigation = useNavigation();
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const params = useLocalSearchParams<{ id: string; exam?: string }>();
+  const { id } = params;
+  const [exam] = useState(() => {
+    const rank = examRankOf(params.exam);
+    const problem = puzzleExamProblemOf(params.exam);
+    return rank && problem ? { rank, problem } : undefined;
+  });
   const [puzzle, setPuzzle] = useState<Puzzle | "notFound" | "failed" | null>(
-    null,
+    () =>
+      exam
+        ? {
+            id: "",
+            title: t("dojo.exam.title", {
+              rank: t(`ranks.names.${exam.rank}`),
+            }),
+            fen: exam.problem.fen,
+            description: null,
+            solutions: exam.problem.solutions,
+          }
+        : null,
   );
 
   useLayoutEffect(() => {
@@ -64,6 +90,7 @@ export default function PuzzleSession() {
   }, [navigation]);
 
   useEffect(() => {
+    if (exam) return;
     let cancelled = false;
     void fetchPuzzle(id ?? "").then((result) => {
       if (!cancelled) setPuzzle(result);
@@ -71,7 +98,7 @@ export default function PuzzleSession() {
     return () => {
       cancelled = true;
     };
-  }, [id]);
+  }, [id, exam]);
 
   if (puzzle === null || typeof puzzle === "string") {
     return (
@@ -88,10 +115,17 @@ export default function PuzzleSession() {
       </Screen>
     );
   }
-  return <PuzzleSolver puzzle={puzzle} />;
+  return <PuzzleSolver puzzle={puzzle} exam={exam?.rank} />;
 }
 
-function PuzzleSolver({ puzzle }: { puzzle: Puzzle }) {
+function PuzzleSolver({
+  puzzle,
+  exam,
+}: {
+  puzzle: Puzzle;
+  /** The rank whose exam this puzzle is, for an exam run. */
+  exam?: string;
+}) {
   const { t } = useTranslation();
   const router = useRouter();
   const navigation = useNavigation();
@@ -137,6 +171,7 @@ function PuzzleSolver({ puzzle }: { puzzle: Puzzle }) {
     status: "solved" | "revealed",
     attempts: SessionState["attempts"],
     lineIndex: number,
+    playerMoves: readonly string[],
   ) => {
     if (finished.current) return;
     finished.current = true;
@@ -151,6 +186,8 @@ function PuzzleSolver({ puzzle }: { puzzle: Puzzle }) {
         solution: JSON.stringify(puzzle.solutions[lineIndex] ?? []),
         peekCount: String(peekCount),
         playerMoveCount: String(parsed[lineIndex]?.playerSlots.length ?? 0),
+        // An exam run's answer: the player's own moves, in SAN.
+        ...(exam ? { exam, moves: JSON.stringify(playerMoves) } : {}),
       },
     });
   };
@@ -175,9 +212,10 @@ function PuzzleSolver({ puzzle }: { puzzle: Puzzle }) {
       return;
     }
     setFeedback("solved");
-    const { attempts, lockedSolutionIndex } = outcome.nextSession;
+    const { attempts, lockedSolutionIndex, playerMoves } = outcome.nextSession;
     setTimeout(
-      () => goToResult("solved", attempts, lockedSolutionIndex ?? 0),
+      () =>
+        goToResult("solved", attempts, lockedSolutionIndex ?? 0, playerMoves),
       SOLVED_PAUSE_MS,
     );
   };
@@ -227,7 +265,7 @@ function PuzzleSolver({ puzzle }: { puzzle: Puzzle }) {
             )}
           </View>
 
-          {!solved && (
+          {!solved && !exam && (
             <Button
               title={t("puzzle.session.showAnswer")}
               variant="secondary"
@@ -239,6 +277,7 @@ function PuzzleSolver({ puzzle }: { puzzle: Puzzle }) {
                   "revealed",
                   session.attempts,
                   session.lockedSolutionIndex ?? 0,
+                  session.playerMoves,
                 )
               }
             />

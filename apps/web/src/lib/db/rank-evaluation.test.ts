@@ -10,7 +10,7 @@ import {
   createRankEvalContext,
   evaluateRankRequirements,
 } from './rank-evaluation';
-import { games } from './schema';
+import { dojoStepCompletions, games } from './schema';
 
 // ---------------------------------------------------------------------------
 // Mock setup
@@ -242,50 +242,60 @@ describe('evaluateRankRequirements', () => {
     expect(result).toBe(true);
   });
 
-  it('should pass position_submission_count when the user owns enough rows', async () => {
-    // count() returns a single row with the value column populated.
-    mockSelectResult.mockReturnValue([{ value: 3 }]);
+  it('passes exam_problem when the exam step for that problem is recorded', async () => {
+    mockSelectResult.mockReturnValue([{ stepKey: 'exam:2kyu:puzzle' }]);
 
     const result = await evaluateRankRequirements(makeCtx([]), [
-      { type: 'position_submission_count', positionTypes: ['memory'], minCount: 1 },
+      { type: 'exam_problem', exam: '2kyu', problem: 'puzzle' },
     ]);
 
     expect(result).toBe(true);
   });
 
-  it('should fail position_submission_count when count is below threshold', async () => {
-    mockSelectResult.mockReturnValue([{ value: 0 }]);
+  it('fails exam_problem when only the other problem of the exam is recorded', async () => {
+    mockSelectResult.mockReturnValue([{ stepKey: 'exam:2kyu:position_memory' }]);
 
     const result = await evaluateRankRequirements(makeCtx([]), [
-      { type: 'position_submission_count', positionTypes: ['memory'], minCount: 1 },
+      { type: 'exam_problem', exam: '2kyu', problem: 'puzzle' },
     ]);
 
     expect(result).toBe(false);
   });
 
-  it('should treat a missing count row as zero submissions', async () => {
-    // No rows returned at all — drizzle's count() should yield [], so the
-    // evaluator must default to zero rather than crashing on `row.value`.
+  it('fails exam_problem when only guide pages are recorded', async () => {
+    mockSelectResult.mockReturnValue([{ stepKey: 'guide:2kyu:1' }, { stepKey: 'guide:2kyu:2' }]);
+
+    const result = await evaluateRankRequirements(makeCtx([]), [
+      { type: 'exam_problem', exam: '2kyu', problem: 'position_memory' },
+    ]);
+
+    expect(result).toBe(false);
+  });
+
+  it('reads the completed steps once for both problems of an exam', async () => {
+    mockSelectResult.mockClear();
+    mockSelectResult.mockReturnValue([
+      { stepKey: 'exam:2kyu:position_memory' },
+      { stepKey: 'exam:2kyu:puzzle' },
+    ]);
+
+    const result = await evaluateRankRequirements(makeCtx([]), [
+      { type: 'exam_problem', exam: '2kyu', problem: 'position_memory' },
+      { type: 'exam_problem', exam: '2kyu', problem: 'puzzle' },
+    ]);
+
+    expect(result).toBe(true);
+    expect(mockSelectResult).toHaveBeenCalledTimes(1);
+  });
+
+  it("filters the completed-steps query to the user's own rows", async () => {
     mockSelectResult.mockReturnValue([]);
 
-    const result = await evaluateRankRequirements(makeCtx([]), [
-      { type: 'position_submission_count', positionTypes: ['memory'], minCount: 1 },
+    await evaluateRankRequirements(makeCtx([]), [
+      { type: 'exam_problem', exam: '2kyu', problem: 'puzzle' },
     ]);
 
-    expect(result).toBe(false);
-  });
-
-  it('should pass position_submission_count with multiple positionTypes (OR across types)', async () => {
-    // A single puzzle post (or a single memory post) is enough — the count
-    // query sums rows across every listed type, it does not require each
-    // type individually to reach minCount.
-    mockSelectResult.mockReturnValue([{ value: 1 }]);
-
-    const result = await evaluateRankRequirements(makeCtx([]), [
-      { type: 'position_submission_count', positionTypes: ['memory', 'puzzle'], minCount: 1 },
-    ]);
-
-    expect(result).toBe(true);
+    expect(findEq(capturedWhere, dojoStepCompletions.userId)?.__eq.value).toBe(userId);
   });
 
   it('should return false for unknown requirement type', async () => {
@@ -1025,6 +1035,59 @@ describe('checkAndGrantRanks', () => {
     expect(result).toEqual([{ slug: '4kyu', level: 20, color: undefined }]);
     expect(mockInsertValues).toHaveBeenCalledTimes(1);
     expect(mockInsertValues).toHaveBeenCalledWith({ userId, rankId: 'rank-2' });
+  });
+
+  describe('2kyu exam (two exam_problem requirements)', () => {
+    const rank2kyu = {
+      id: 'rank-2kyu',
+      slug: '2kyu',
+      level: 40,
+      color: 'green',
+      requirements: [
+        { type: 'exam_problem', exam: '2kyu', problem: 'position_memory' },
+        { type: 'exam_problem', exam: '2kyu', problem: 'puzzle' },
+      ],
+    };
+
+    // Calls 1–3 are the parallel prefetch (held ranks, all ranks, best
+    // scores); call 4 is the lazy completed-steps fetch.
+    function mockPass(heldRankIds: string[], stepKeys: string[]) {
+      let callCount = 0;
+      mockSelectResult.mockImplementation(() => {
+        callCount++;
+        if (callCount === 1) return heldRankIds.map((rankId) => ({ rankId }));
+        if (callCount === 2) return [rank2kyu];
+        if (callCount === 3) return [];
+        return stepKeys.map((stepKey) => ({ stepKey }));
+      });
+    }
+
+    it('grants 2kyu once both exam problems are recorded', async () => {
+      mockPass([], ['guide:2kyu:1', 'exam:2kyu:position_memory', 'exam:2kyu:puzzle']);
+
+      const result = await checkAndGrantRanks(userId);
+
+      expect(result).toEqual([{ slug: '2kyu', level: 40, color: 'green' }]);
+      expect(mockInsertValues).toHaveBeenCalledWith({ userId, rankId: 'rank-2kyu' });
+    });
+
+    it('does not grant 2kyu when only one exam problem is recorded', async () => {
+      mockPass([], ['exam:2kyu:puzzle']);
+
+      const result = await checkAndGrantRanks(userId);
+
+      expect(result).toEqual([]);
+      expect(mockInsertValues).not.toHaveBeenCalled();
+    });
+
+    it('does not grant 2kyu a second time to a user who already holds it', async () => {
+      mockPass(['rank-2kyu'], ['exam:2kyu:position_memory', 'exam:2kyu:puzzle']);
+
+      const result = await checkAndGrantRanks(userId);
+
+      expect(result).toEqual([]);
+      expect(mockInsertValues).not.toHaveBeenCalled();
+    });
   });
 
   it('should do nothing when user has achieved all ranks', async () => {

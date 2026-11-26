@@ -44,7 +44,11 @@ export default function PuzzleList() {
     <ListRow
       key={puzzle.id}
       testID={`puzzle-${puzzle.id}`}
-      leading={<ListIcon glyph={daily ? "📅" : "🧩"} />}
+      leading={
+        <ListIcon
+          ionicon={daily ? "calendar-outline" : "extension-puzzle-outline"}
+        />
+      }
       title={puzzle.title}
       subtitle={
         isBlackToMoveFromFen(puzzle.fen)

@@ -603,6 +603,13 @@
       "when": 1795427006057,
       "tag": "20261123094326_drop_coin_ledger",
       "breakpoints": true
+    },
+    {
+      "idx": 86,
+      "version": "7",
+      "when": 1795689053858,
+      "tag": "20261126103053_create_dojo_step_completions",
+      "breakpoints": true
     }
   ]
 }

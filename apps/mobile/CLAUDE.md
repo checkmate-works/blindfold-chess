@@ -32,7 +32,8 @@ replaced by the platform's own parts or their common app equivalents.
   bar hides on them: each module's setup at `practice/<route>/index.tsx`
   (URL `/practice/<route>`), the AI-game setup at `play/ai-game`, the saved
   games at `play/games`, learn articles at `learn/[slug]`, a dojo rank at
-  `dojo/ranks/[slug]` and its guide at `dojo/guides/[rank]`.
+  `dojo/ranks/[slug]`, its guide at `dojo/guides/[rank]`, its exam at
+  `dojo/exams/[rank]` and its requirements at `dojo/requirements/[rank]`.
 - `(session)` — timed sessions, results and training runs
   (`(session)/practice/<route>/{session,result,training}.tsx`,
   `(session)/play/ai-game/*`), presented as one `fullScreenModal`. A full
@@ -62,12 +63,31 @@ header style (page-coloured, no hairline, chevron-only back).
 
 ## UI parts
 
+- **The look is flat** (the tokens are in `theme/surface.ts`, merged into
+  `useTheme().colors`): the ground of every screen is `colors.page`, white.
+  A panel (card, list, bottom bar, the dojo's stage cells) is white with a
+  1px `panelBorder` and no shadow; rows inside it are split by
+  `rowSeparator`. `colors.background` is not the page: it is the sunken
+  fill laid inside a panel (a field, a track). Blue (`primary`) is for the
+  main action only — the primary button and text actions — while headers
+  and tabs are ink. While pressed, a control changes only its fill
+  (`primaryPressed`, `muted`, a belt's `tintPressed`), never its position,
+  size or opacity. Colours always come from `useTheme().colors`; a screen
+  never writes a hex.
 - **Lists and settings** use `ListSection` / `ListRow` / `ListIcon`
   (`components/List.tsx`, the inset-grouped list), `SelectRow` (shows the
   value; picks a new one in a bottom sheet) and `SwitchRow` (platform switch)
   from `components/SettingRows.tsx`. Tab entry screens scroll in
   `TabScrollView` (automatic content insets, so the floating tab bar does not
   cover the last row).
+- **Done is one mark:** `DoneMark` (`components/DoneMark.tsx`), a white
+  check in a green circle — `"md"` in a row's `trailing`, `"sm"` beside a
+  line of text. Never a bare "✓" or a green `checkmark` icon of its own; a
+  plain check stays only for what is not "done" (a selected row, a valid
+  input).
+- **Filters over a list** are `FilterChips` (`components/FilterChips.tsx`):
+  one row of single-choice `SelectableChip`s that scrolls sideways when it
+  outgrows the screen, with "All" as a chip of its own.
 - **Half modals:** `BottomSheet` (`components/BottomSheet.tsx`) for option
   lists, help and pickers inside a screen — it works inside the session
   modal and sizes to its content. Closes on backdrop tap, Android back, or a
@@ -246,14 +266,74 @@ database. Sign-in calls Supabase Auth directly; sign-up goes through
   the `useAuth` store.
 - **The dojo** (`(tabs)/dojo`, `features/dojo/`) draws the belt ladder from
   `@blindfold-chess/features/dojo-ranks` (order, colours, requirements; the
-  web seed is pinned to it by a test), the account's `highestRank`, and
-  `GET /dojo` (ranks held, best challenge scores) to mark each requirement
-  met. The app asks its own 2kyu requirement: an exam of fixed
-  position-memory problems (`features/dojo/exams.ts`, the position-memory
-  session with an `exam` param) instead of the web's posting. A pass is
-  kept on the device only and raises the shown rank from 3kyu
-  (`effectiveHighestRank`); the server's grants are unchanged. 1kyu and
-  1dan (publishing a game) still open the web.
+  web seed is pinned to it by a test) and asks exactly the shared
+  requirements, as the web does. Each rank is a journey of three stages
+  built by `@blindfold-chess/features/dojo-journey`: learn (one step per
+  guide page), practice (each `challenge_score` challenge finished once)
+  and exam (the requirements). `useDojoJourney` is the one input every
+  screen reads:
+  - the rank is the server's only (the account's `highestRank`); nothing
+    on the device raises it.
+  - signed in: completed steps are `GET /dojo`'s `completedSteps` plus the
+    user's pages not sent yet; best scores are the server's. Signed out:
+    the device's guest marks, no scores.
+  - the device's marks (`progress-store.ts`, AsyncStorage
+    `"DOJO_PROGRESS"`) are kept per owner — `guest` (pages, challenges
+    finished signed out) and `byUser[userId].pendingSteps` — so a shared
+    device never gives one person's pages to another. The guest's pages go
+    to the first account that signs in, once (`guestImported`); its
+    challenge marks are never sent.
+  - `syncDojoProgress` (`progress-sync.ts`, on focus and sign-in) imports
+    the guest's pages, sends the pending ones (`POST /dojo/steps`, 100 per
+    request), drops what the server answered for, then reads `GET /dojo`.
+    A failed request keeps the pending pages for the next sync.
+  - the guide screen marks a page read on Next. The last page's button
+    marks it read and goes on to the next step of the learn stage the
+    guide belongs to (`afterGuide`, `features/guides/after-guide.ts`,
+    by `LEARN_GUIDES`): the stage's next guide with an unread page, at that
+    page (`router.replace`, so guides do not pile up), or once the stage is
+    read through the practice list narrowed to the rank (`router.dismissTo`:
+    from the root stack, `navigate` to a tab would push a second set of
+    tabs over the guide). Reading is one step of the journey, so finishing
+    a guide leads straight on to the next one; a guide read before keeps
+    the button ("Next guide" / "On to practice") so a reread can carry on
+    the same way. The guide just finished counts as fully read when
+    choosing, since its last mark may not be in the journey yet. Only
+    `guide:` keys are ever reported.
+  - an exam problem (`dojo/exams/[rank]`, then the position-memory or
+    puzzle session with an `exam` param) is graded by its result screen
+    (`exam-run.ts`, `ExamVerdictCard`): a signed-in player for whom the
+    exam is the next rank or a held one sends the answer to
+    `POST /dojo/exams/[rank]/[problem]` and the server grades and records
+    it; anyone else is graded on the device and nothing is recorded.
+    1kyu and 1dan (publishing a game) still open the web.
+  - a rank's stage cells (`RankStageProgress`, a chevron on each line
+    between them, since the stages come in order) are links on every rank
+    and every screen they appear on; `stageTarget` (`stage-target.ts`)
+    picks the destination so the screens cannot disagree. A cell is the way
+    into its whole stage, so every cell opens that stage's list: learn →
+    the learn tab's list of guides, practice → the practice list narrowed
+    to the rank (both tabs, so `router.dismissTo`: from a root-stack screen
+    such as the rank screen, `navigate` reuses a route only when it is on
+    top and would push a second set of tabs), exam → the rank's requirements screen
+    (`dojo/requirements/[rank]`, `requirementsHref`): "Passed n / N" over
+    `RankRequirementList`, so the player sees at a glance which
+    requirements are already passed rather than landing in the first unmet
+    one's screen. Once all are met (or the rank is held) it ends with a
+    row to the next rank's screen (not its requirements: a rank starts
+    with its guide and practice), none on 1dan. The requirements screen
+    is pushed. The
+    next-step button (`stepTarget`) is what goes straight to the one next
+    thing (for learn, the next unread page itself, `?page=<n>`).
+  - the learn tab (`(tabs)/learn`) opens with the guides, one row per guide
+    in ladder order, before the glossary and the articles: the done mark once
+    read through, "n / N" part way, nothing before the first page, and a
+    press opens the guide at its first unread page
+    (`/dojo/guides/<rank>?page=<n>`; the guide screen ignores a page it
+    does not have). Read
+    pages are counted by `features/guides/reading-progress.ts`, which the
+    guide screen reads too: a page is read when any rank's journey has it
+    done, since the unranked guide belongs to 5kyu's.
 - `(account)` screens: welcome (the account offer that ends onboarding),
   sign-in, sign-up, setup-username, records (the user's own ranks).
   Settings has the Account section.
@@ -328,6 +408,23 @@ there plus its route files (`practice/<route>/index.tsx` and
 `src/navigation/__tests__/practice-modules.test.ts` checks each entry's
 route files exist. The challenge rules (`MISTAKE_LIMIT`,
 `CHALLENGE_TIME_LIMIT`) come from the same package.
+
+**The list narrows by rank** (`features/practice-list/`). A practice's rank
+is `rankForPracticeMenuType` from `@blindfold-chess/features/dojo-ranks`,
+the same function the web's practice badges read. The chips are All plus
+every rank at least one mobile practice belongs to (mukyu to 2kyu today;
+1kyu and 1dan ask for AI games and would only ever list nothing). A
+narrowed list keeps the challenge / free-play sections and drops the ones
+left empty; a practice no rank asks for is under All only. Another screen
+opens the list narrowed with `/practice?rank=<slug>` (`practiceListHref`);
+the list applies the param and clears it with `router.setParams`, because
+the tab stays mounted and an uncleared param would not change the next
+time, leaving whatever filter the player picked in between. Each row shows
+its practice's share of its rank's practice stage, counted from the same
+`useDojoJourney` steps as the rank card (`practice-progress.ts`): the done mark
+for a single challenge once tried, "n / N" for several (legal moves on
+4kyu), nothing for mukyu practices or those without a challenge on their
+rank.
 
 **Training mode** (every challenge module, plus quadrants) is
 the untimed `training.tsx` beside each module's timed `session.tsx`: it runs

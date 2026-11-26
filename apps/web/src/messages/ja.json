@@ -6006,15 +6006,10 @@
     "requirements": "合格条件",
     "comingSoon": "近日公開",
     "challengeScore": "{challengeName}でスコア{minScore}以上",
-    "submissionCount": "{itemName}を{minCount}件以上投稿する",
+    "examProblem": "{rankName}の課題「{problemName}」に合格する",
     "gamePublishWin": "何らかの制約を加えた設定でAIに勝利し、ゲームを公開する",
     "gamePublishWinHiddenBoard": "初期配置から、Hide the board オプションを維持してAIに勝利し、ゲームを公開する",
     "gamePublishWinHiddenBoardNote": "※〈ピークを許可〉は{maxPeeks}回まで有効",
-    "orDivider": "または",
-    "submissionItemNames": {
-      "memory": "ポジション記憶の問題",
-      "puzzle": "パズル"
-    },
     "challengeNames": {
       "square_colors": "マス色チャレンジ",
       "coordinate_quiz_white": "座標クイズ（白）",
@@ -6026,6 +6021,10 @@
       "legal_moves_knight": "合法手チャレンジ（ナイト）",
       "route_planner_knight": "ルートプランナー（ナイト）",
       "route_planner_bishop": "ルートプランナー（ビショップ）"
+    },
+    "examProblemNames": {
+      "position_memory": "ポジション記憶",
+      "puzzle": "パズル"
     },
     "rankNames": {
       "mukyu": "無級",
@@ -6071,6 +6070,22 @@
       "description": "段級位の取得には会員登録が必要です",
       "cta": "無料登録"
     }
+  },
+  "dojoExam": {
+    "title": "{rankName}の課題",
+    "lead": "次の{count}題を解くと{rankName}に昇級します。何度でも挑戦できます。",
+    "memoryRule": "局面を{seconds}秒で覚え、空の盤に再現します。正確度{accuracy}%以上で合格です。",
+    "puzzleRule": "{moves}手詰めを解きます。",
+    "start": "挑戦する",
+    "solved": "合格済み",
+    "passed": "合格しました",
+    "failed": "不合格でした。もう一度挑戦できます。",
+    "retry": "もう一度挑戦する",
+    "backToExam": "課題の一覧に戻る",
+    "passedUnrecorded": "合格ラインに届きました（記録なし）",
+    "signInNote": "ログインすると合格が記録されます。",
+    "lockedNote": "{prevRankName}を取得すると、この課題の合格が記録されます。",
+    "recordFailed": "記録できませんでした。もう一度お試しください。"
   },
   "rankAchievement": {
     "title": "おめでとう！",

@@ -355,6 +355,18 @@ CREATE POLICY "user_ranks_select_policy" ON "user_ranks"
   FOR SELECT USING (true);
 
 -- =============================================================================
+-- dojo_step_completions (completed dojo steps — own-row SELECT, server-only write)
+-- =============================================================================
+-- Only the user reads their own progress; no screen shows another user's.
+-- There are no write policies: rows are written by the server on the Drizzle
+-- connection, and `exam:` rows only after the server grades the answer.
+ALTER TABLE "dojo_step_completions" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "dojo_step_completions_select_policy" ON "dojo_step_completions";
+CREATE POLICY "dojo_step_completions_select_policy" ON "dojo_step_completions"
+  FOR SELECT USING (auth.uid() = user_id);
+
+-- =============================================================================
 -- achievements (master data — public read, service role only write)
 -- =============================================================================
 ALTER TABLE "achievements" ENABLE ROW LEVEL SECURITY;

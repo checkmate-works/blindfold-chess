@@ -6,14 +6,14 @@ import {
   borderRadius,
   touchTarget,
 } from "../../../theme";
-import type { useTheme } from "../../../theme";
+import type { ThemeColors } from "../../../theme";
 
 export type ToggleButtonProps = {
   label: string;
   isSelected: boolean;
   onPress: () => void;
   disabled?: boolean;
-  colors: ReturnType<typeof useTheme>["colors"];
+  colors: ThemeColors;
   wide?: boolean;
   small?: boolean;
   /** Takes an equal share of its row's width (no minimum width). */

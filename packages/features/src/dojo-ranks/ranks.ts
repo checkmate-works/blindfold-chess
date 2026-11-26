@@ -4,8 +4,8 @@
  *
  * @description
  * The server grants ranks (it evaluates the requirements after a challenge
- * result is written, a position is posted or a game is published) and stores
- * only the ranks a user holds. What a client needs to draw the dojo — the
+ * result is written, an exam problem is passed or a game is published) and
+ * stores only the ranks a user holds. What a client needs to draw the dojo — the
  * ladder, the colour of each belt, the list of requirements and which rank
  * comes next — is fixed data, so it lives here instead of being fetched.
  *
@@ -66,18 +66,32 @@ export type ChallengeScoreRequirement = {
   readonly minScore: number;
 };
 
+/** The two kinds of exam problem a rank can set. */
+export type ExamProblemKind = "position_memory" | "puzzle";
+
 /**
- * Requires the user to have submitted at least `minCount` rows in the
- * `positions` table whose `type` is one of `positionTypes` (OR across
- * types — a `memory` post and a `puzzle` post count toward the same total).
- * Counted directly off `positions`, NOT off `exp_events` — submissions grant
- * points, not EXP, so the source of truth is the row count of the user's
- * authored positions.
+ * Requires the user to have passed one problem of a rank's exam: recreating a
+ * fixed position from memory (`position_memory`) or solving a fixed puzzle
+ * (`puzzle`). The problems themselves are constants in the `dojo-journey`
+ * module, so the web, the app and the server read the same ones.
+ *
+ * Passing is never self-reported. The server grades the answer with the
+ * shared grader and records the pass itself; a client cannot claim it. That
+ * is also what makes the requirement meetable from the app.
+ *
+ * 2kyu used to ask for posting a position-memory problem or a puzzle. It asks
+ * for these two exam problems instead, for three reasons: the rank has one
+ * condition on every platform (the app no longer substitutes an exam of its
+ * own and the web no longer needs a branch for posts), a rank should not make
+ * the user create content for others, and a retired requirement type left in
+ * the union would read as one that is still in force — so the posting type was
+ * removed outright rather than kept unused.
  */
-export type PositionSubmissionCountRequirement = {
-  readonly type: "position_submission_count";
-  readonly positionTypes: readonly ("memory" | "puzzle")[];
-  readonly minCount: number;
+export type ExamProblemRequirement = {
+  readonly type: "exam_problem";
+  /** The rank whose exam the problem belongs to. */
+  readonly exam: EarnedRankSlug;
+  readonly problem: ExamProblemKind;
 };
 
 /**
@@ -134,7 +148,7 @@ export type GamePublishWinHiddenBoardRequirement = {
 
 export type RankRequirement =
   | ChallengeScoreRequirement
-  | PositionSubmissionCountRequirement
+  | ExamProblemRequirement
   | GamePublishWinRequirement
   | GamePublishWinHiddenBoardRequirement;
 
@@ -191,11 +205,8 @@ export const RANK_REQUIREMENTS: Readonly<
     },
   ],
   "2kyu": [
-    {
-      type: "position_submission_count",
-      positionTypes: ["memory", "puzzle"],
-      minCount: 1,
-    },
+    { type: "exam_problem", exam: "2kyu", problem: "position_memory" },
+    { type: "exam_problem", exam: "2kyu", problem: "puzzle" },
   ],
   "1kyu": [{ type: "game_publish_win", minCount: 1 }],
   "1dan": [{ type: "game_publish_win_hidden_board", minCount: 1, maxPeeks: 5 }],
@@ -238,11 +249,15 @@ export function achievedRankCount(highest: RankSlug | undefined): number {
 
 /**
  * Whether a requirement can be met inside the mobile app. Challenge scores
- * can (the timed challenges record to the server when signed in); posting
- * positions and publishing games happen on the web only.
+ * can (the timed challenges record to the server when signed in), and so can
+ * exam problems (the app sends the answer and the server grades it);
+ * publishing games happens on the web only.
  */
 export function isRequirementPlayableOnMobile(
   requirement: RankRequirement,
 ): boolean {
-  return requirement.type === "challenge_score";
+  return (
+    requirement.type === "challenge_score" ||
+    requirement.type === "exam_problem"
+  );
 }

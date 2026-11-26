@@ -6006,15 +6006,10 @@
     "requirements": "Requirements",
     "comingSoon": "Coming Soon",
     "challengeScore": "Score {minScore}+ in {challengeName}",
-    "submissionCount": "Submit at least {minCount} {itemName}",
+    "examProblem": "Pass the {rankName} exam: {problemName}",
     "gamePublishWin": "Beat the engine with at least one constraint enabled, and publish the game",
     "gamePublishWinHiddenBoard": "Starting from the standard initial position, beat the engine with the board hidden throughout, and publish the game",
     "gamePublishWinHiddenBoardNote": "※ The \"Allow peeking\" option may still be used, up to {maxPeeks} times",
-    "orDivider": "or",
-    "submissionItemNames": {
-      "memory": "position-memory problem",
-      "puzzle": "puzzle"
-    },
     "challengeNames": {
       "square_colors": "Square Colors",
       "coordinate_quiz_white": "Coordinate Quiz (White)",
@@ -6026,6 +6021,10 @@
       "legal_moves_knight": "Legal Moves (Knight)",
       "route_planner_knight": "Route Planner (Knight)",
       "route_planner_bishop": "Route Planner (Bishop)"
+    },
+    "examProblemNames": {
+      "position_memory": "Position Memory",
+      "puzzle": "Puzzle"
     },
     "rankNames": {
       "mukyu": "Unranked",
@@ -6071,6 +6070,22 @@
       "description": "Sign up to track your rank progress.",
       "cta": "Sign Up Free"
     }
+  },
+  "dojoExam": {
+    "title": "{rankName} Exam",
+    "lead": "Solve these {count} problems to earn {rankName}. You can retry as often as you like.",
+    "memoryRule": "Memorize the position for {seconds} seconds, then recreate it on an empty board. {accuracy}% accuracy or better passes.",
+    "puzzleRule": "Find the mate in {moves}.",
+    "start": "Start",
+    "solved": "Passed",
+    "passed": "You passed",
+    "failed": "Not passed. You can try again.",
+    "retry": "Try again",
+    "backToExam": "Back to the exam",
+    "passedUnrecorded": "You reached the pass mark (not recorded)",
+    "signInNote": "Sign in to have your pass recorded.",
+    "lockedNote": "Your pass is recorded once you hold {prevRankName}.",
+    "recordFailed": "Could not record the result. Please try again."
   },
   "rankAchievement": {
     "title": "Rank Achieved!",

@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
+    paddingVertical: 14,
     minHeight: 52,
     gap: spacing.md,
   },
@@ -135,10 +135,11 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   switchLabel: {
-    fontSize: fontSize.md,
+    fontSize: 15,
     fontWeight: fontWeight.medium,
   },
   switchDescription: {
-    fontSize: fontSize.sm - 1,
+    fontSize: 13,
+    lineHeight: 19,
   },
 });
