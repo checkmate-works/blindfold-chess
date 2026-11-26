@@ -25,6 +25,7 @@
     "./common": "./src/common/index.ts",
     "./common/client": "./src/common/client.ts",
     "./dojo-guides": "./src/dojo-guides/index.ts",
+    "./dojo-journey": "./src/dojo-journey/index.ts",
     "./dojo-ranks": "./src/dojo-ranks/index.ts",
     "./coordinate-quiz": "./src/coordinate-quiz/index.ts",
     "./coordinate-quiz/client": "./src/coordinate-quiz/client.ts",
