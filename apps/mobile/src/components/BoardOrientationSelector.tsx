@@ -30,7 +30,7 @@ type BoardOrientationSelectorProps = {
  * Board orientation as three swatches in the player's board theme — a light
  * square for White, a dark one for Black, half of each for Random — the
  * web's `BoardOrientationSelector`. The chosen swatch takes the primary
- * border and grows slightly while the others fade to 60%.
+ * border and check badge; all options keep their size and legibility.
  *
  * Two touches the web has no use for: a check badge on the chosen swatch,
  * as iOS's Light / Dark appearance picker marks its choice, so the choice
@@ -65,12 +65,12 @@ export function BoardOrientationSelector({
               key={orientation}
               onPress={() => select(orientation)}
               accessibilityRole="radio"
-              accessibilityState={{ selected }}
+              accessibilityState={{ checked: selected }}
               accessibilityLabel={optionLabel}
               testID={`orientation-${orientation}`}
-              style={[
+              style={({ pressed }) => [
                 styles.option,
-                selected ? styles.selected : styles.unselected,
+                { backgroundColor: pressed ? colors.muted : "transparent" },
               ]}
             >
               <View>
@@ -139,17 +139,14 @@ const styles = StyleSheet.create({
   options: {
     flexDirection: "row",
     justifyContent: "center",
-    gap: spacing.lg,
+    gap: spacing.md,
+    flexWrap: "wrap",
   },
   option: {
     alignItems: "center",
     gap: spacing.sm,
-  },
-  selected: {
-    transform: [{ scale: 1.05 }],
-  },
-  unselected: {
-    opacity: 0.6,
+    padding: spacing.sm,
+    borderRadius: borderRadius.button,
   },
   swatch: {
     width: SWATCH_SIZE,

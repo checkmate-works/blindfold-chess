@@ -3,13 +3,20 @@ import * as Haptics from "expo-haptics";
 import { ChessPieceIcon } from "@blindfold-chess/icons";
 import type { PieceType } from "@blindfold-chess/types";
 
-import { fontSize, fontWeight, spacing, useTheme } from "../theme";
+import {
+  borderRadius,
+  touchTarget,
+  fontSize,
+  fontWeight,
+  spacing,
+  useTheme,
+} from "../theme";
 
 /**
  * The web's `w-10 sm:w-12`, rounded to the 44pt minimum touch target: the
  * six buttons and their gaps still fit one row on the narrowest phone.
  */
-const BUTTON_SIZE = 44;
+const BUTTON_SIZE = touchTarget.minSize;
 const PIECE_SIZE = 24;
 
 type PieceSelectorProps<T extends string> = {
@@ -58,19 +65,21 @@ export function PieceSelector<T extends string>({
               key={option}
               onPress={() => select(option)}
               accessibilityRole="radio"
-              accessibilityState={{ selected }}
+              accessibilityState={{ checked: selected }}
               accessibilityLabel={formatOption(option)}
               testID={`piece-${option}`}
-              style={[
+              style={({ pressed }) => [
                 styles.option,
                 selected
                   ? {
-                      backgroundColor: colors.primary,
+                      backgroundColor: pressed
+                        ? colors.primaryPressed
+                        : colors.primary,
                       borderColor: colors.primary,
                     }
                   : {
                       // The panel's own colour, as the web's sit on its page.
-                      backgroundColor: colors.card,
+                      backgroundColor: pressed ? colors.muted : colors.card,
                       borderColor: colors.border,
                     },
               ]}
@@ -113,13 +122,14 @@ const styles = StyleSheet.create({
   options: {
     flexDirection: "row",
     justifyContent: "center",
+    flexWrap: "wrap",
     gap: spacing.sm,
   },
   // The web's `rounded-md border`.
   option: {
     width: BUTTON_SIZE,
     height: BUTTON_SIZE,
-    borderRadius: 6,
+    borderRadius: borderRadius.button,
     borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",

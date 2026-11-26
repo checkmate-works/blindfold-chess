@@ -2,7 +2,13 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useTranslation } from "react-i18next";
 import { SIDES, type Side } from "@blindfold-chess/types";
 
-import { fontSize, fontWeight, spacing, useTheme } from "../../../theme";
+import {
+  borderRadius,
+  controlSize,
+  controlLabel,
+  spacing,
+  useTheme,
+} from "../../../theme";
 
 /**
  * The web's `ColorSelector` (from its new-game form): one segmented control,
@@ -32,9 +38,15 @@ export function ColorSelector({
             onPress={() => onChange(side)}
             accessibilityRole="tab"
             accessibilityState={{ selected }}
-            style={[
+            style={({ pressed }) => [
               styles.segment,
-              selected && { backgroundColor: colors.card },
+              {
+                backgroundColor: pressed
+                  ? colors.muted
+                  : selected
+                    ? colors.card
+                    : "transparent",
+              },
             ]}
             testID={`recall-color-${side}`}
           >
@@ -61,18 +73,20 @@ const styles = StyleSheet.create({
   // `rounded-lg bg-secondary p-1`, segments `rounded-md px-4 py-2 text-sm`.
   track: {
     flexDirection: "row",
-    borderRadius: 8,
+    borderRadius: borderRadius.button,
     padding: spacing.xs,
   },
   segment: {
+    ...controlSize.sm,
     flex: 1,
-    borderRadius: 6,
+    justifyContent: "center",
+    borderRadius: borderRadius.md,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
     alignItems: "center",
   },
   label: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
+    ...controlLabel,
+    textAlign: "center",
   },
 });

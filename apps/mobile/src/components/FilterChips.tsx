@@ -40,6 +40,7 @@ export function FilterChips({
   return (
     <ScrollView
       horizontal
+      accessibilityRole="radiogroup"
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={styles.row}
       accessibilityLabel={accessibilityLabel}
