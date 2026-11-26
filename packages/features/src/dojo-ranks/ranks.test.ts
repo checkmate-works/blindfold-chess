@@ -60,10 +60,24 @@ describe("RANK_REQUIREMENTS", () => {
     }
   });
 
-  it("makes 5kyu to 3kyu earnable on mobile and the rest web-only", () => {
+  it("makes 5kyu to 2kyu earnable on mobile and the game-publishing ranks web-only", () => {
     const playable = EARNED_RANK_SLUGS.filter((slug) =>
       RANK_REQUIREMENTS[slug].every(isRequirementPlayableOnMobile),
     );
-    expect(playable).toEqual(["5kyu", "4kyu", "3kyu"]);
+    expect(playable).toEqual(["5kyu", "4kyu", "3kyu", "2kyu"]);
+  });
+
+  it("asks 2kyu for its two exam problems, position memory and a puzzle", () => {
+    expect(RANK_REQUIREMENTS["2kyu"]).toEqual([
+      { type: "exam_problem", exam: "2kyu", problem: "position_memory" },
+      { type: "exam_problem", exam: "2kyu", problem: "puzzle" },
+    ]);
+  });
+
+  it("does not ask any rank to post content", () => {
+    const types = EARNED_RANK_SLUGS.flatMap((slug) =>
+      RANK_REQUIREMENTS[slug].map((r): string => r.type),
+    );
+    expect(types).not.toContain("position_submission_count");
   });
 });
