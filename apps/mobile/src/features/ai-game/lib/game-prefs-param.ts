@@ -13,6 +13,22 @@ export function encodeGamePrefsParam(preferences: PerGamePreferences): string {
 }
 
 /**
+ * The per-game keys of an untrusted preferences object (a route param, a
+ * saved game) that hold valid values. Anything else is dropped, so the
+ * result can be laid over the global preferences as it is.
+ */
+export function pickValidPerGamePreferences(
+  raw: unknown,
+): Partial<PerGamePreferences> {
+  const valid = validateGamePreferences(raw);
+  const picked: Partial<Record<keyof PerGamePreferences, unknown>> = {};
+  for (const key of PER_GAME_PREFERENCE_KEYS) {
+    if (valid[key] !== undefined) picked[key] = valid[key];
+  }
+  return picked as Partial<PerGamePreferences>;
+}
+
+/**
  * Read the `gamePrefs` param back. Only per-game keys with valid values
  * survive, so the result can be laid over the global preferences as it is;
  * a missing or unreadable param yields no overrides and the game plays under
@@ -28,10 +44,5 @@ export function decodeGamePrefsParam(
   } catch {
     return {};
   }
-  const valid = validateGamePreferences(parsed);
-  const picked: Partial<Record<keyof PerGamePreferences, unknown>> = {};
-  for (const key of PER_GAME_PREFERENCE_KEYS) {
-    if (valid[key] !== undefined) picked[key] = valid[key];
-  }
-  return picked as Partial<PerGamePreferences>;
+  return pickValidPerGamePreferences(parsed);
 }

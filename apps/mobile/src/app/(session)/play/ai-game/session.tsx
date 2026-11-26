@@ -1,14 +1,25 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Alert, View, Text, StyleSheet, ScrollView } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as Crypto from "expo-crypto";
 import { isValidSkillLevel } from "@blindfold-chess/features/ai-game";
-import type { GamePreferences } from "@blindfold-chess/features/game-preferences";
+import {
+  type GamePreferences,
+  pickPerGamePreferences,
+} from "@blindfold-chess/features/game-preferences";
 import { findLastAiMoveNotation } from "@blindfold-chess/features/game-play";
-import { computeGameStats } from "@blindfold-chess/features/game-record";
+import {
+  computeGameStats,
+  type MoveOperationLog,
+} from "@blindfold-chess/features/game-record";
 import { useAiReplyChip } from "@blindfold-chess/features/game-play/client";
-import { SIDES, type Side } from "@blindfold-chess/types";
+import {
+  SIDES,
+  type AlgebraicNotation,
+  type Side,
+} from "@blindfold-chess/types";
 
 import { StockfishWebView } from "../../../../features/ai-game/engine";
 import {
@@ -23,9 +34,16 @@ import {
   useGameSession,
 } from "../../../../features/ai-game/hooks";
 import type { SkillLevel } from "../../../../features/ai-game/lib/types";
-import { decodeGamePrefsParam } from "../../../../features/ai-game/lib/game-prefs-param";
-import { decodeStartParams } from "../../../../features/ai-game/lib/start-params";
-import { saveGame } from "../../../../features/game-history/game-history";
+import {
+  decodeGamePrefsParam,
+  pickValidPerGamePreferences,
+} from "../../../../features/ai-game/lib/game-prefs-param";
+import {
+  isInProgress,
+  loadSavedGame,
+  saveGame,
+} from "../../../../features/game-history/game-history";
+import { useCloseSession } from "../../../../navigation/use-close-session";
 import {
   GamePreferencesOverride,
   useGamePreferences,
@@ -42,19 +60,93 @@ import { HeaderIconButton } from "../../../../navigation/HeaderIconButton";
 import { SessionTopBar } from "../../../../navigation/SessionTopBar";
 import { useTheme, fontSize, fontWeight, spacing } from "../../../../theme";
 
+/** Everything a session starts from: a new game's choices or a saved game. */
+type GameSetup = {
+  /** The saved game's id. A UUID, because the Exp grant is keyed by it. */
+  gameId: string;
+  playerColor: Side;
+  skillLevel: SkillLevel;
+  startingFen?: string;
+  moves: AlgebraicNotation[];
+  operationLogs: MoveOperationLog[];
+  /** This game's preferences, laid over the global ones. */
+  gamePrefs: Partial<GamePreferences>;
+};
+
+function skillLevelOf(value: number): SkillLevel {
+  return isValidSkillLevel(value) ? value : 5;
+}
+
 /**
- * The AI game. It plays under the preference snapshot its setup screen took
- * (`gamePrefs`), laid over the global preferences for everything below, so
- * the board and the input read this game's values without knowing it. A
- * session opened without the param (the onboarding's first game) plays under
- * the global ones.
+ * The AI game, new or resumed.
+ *
+ * A new game comes with its setup's choices as route params (`playerColor`,
+ * `skillLevel`, `gamePrefs`; the onboarding's first game sends no
+ * `gamePrefs` and plays under the global preferences). A game picked up
+ * from the history comes as `resume`, the saved game's id, and everything
+ * else is read from the device, so the game continues from the position,
+ * the operation record and the settings it was left with.
  */
 export default function AiGameSession() {
-  const { gamePrefs } = useLocalSearchParams<{ gamePrefs?: string }>();
-  // Decoded once: later changes are this game's own and live in the state.
-  const [overrides, setOverrides] = useState<Partial<GamePreferences>>(() =>
-    decodeGamePrefsParam(gamePrefs),
+  const params = useLocalSearchParams<{
+    playerColor?: string;
+    skillLevel?: string;
+    gamePrefs?: string;
+    resume?: string;
+  }>();
+  const { close } = useCloseSession("/play");
+
+  // Built once: a new game's id must not change between renders.
+  const [setup, setSetup] = useState<GameSetup | null>(() =>
+    params.resume
+      ? null
+      : {
+          gameId: Crypto.randomUUID(),
+          playerColor: parseEnumParam<Side>(params.playerColor, SIDES, "white"),
+          skillLevel: skillLevelOf(Number(params.skillLevel)),
+          moves: [],
+          operationLogs: [],
+          gamePrefs: decodeGamePrefsParam(params.gamePrefs),
+        },
   );
+
+  const resumeId = params.resume;
+  useEffect(() => {
+    if (!resumeId) return;
+    let active = true;
+    void loadSavedGame(resumeId).then((saved) => {
+      if (!active) return;
+      // Deleted meanwhile, or already finished: there is nothing to play.
+      if (!saved || !isInProgress(saved)) {
+        close();
+        return;
+      }
+      setSetup({
+        gameId: saved.id,
+        playerColor: saved.playerColor,
+        skillLevel: skillLevelOf(saved.skillLevel),
+        startingFen: saved.startingFen,
+        moves: saved.moves as AlgebraicNotation[],
+        operationLogs: saved.operationLogs ?? [],
+        gamePrefs: pickValidPerGamePreferences(saved.gamePrefs),
+      });
+    });
+    return () => {
+      active = false;
+    };
+  }, [resumeId, close]);
+
+  if (!setup) return <Screen>{null}</Screen>;
+  return <AiGameWithPreferences setup={setup} />;
+}
+
+/**
+ * Lays the game's own preferences over the global ones for everything
+ * below, so the board and the input read this game's values without knowing
+ * it. Changes made mid-game land here, not in the stored preferences.
+ */
+function AiGameWithPreferences({ setup }: { setup: GameSetup }) {
+  const [overrides, setOverrides] = useState(setup.gamePrefs);
   const updateOverrides = useCallback(
     (updates: Partial<GamePreferences>) =>
       setOverrides((current) => ({ ...current, ...updates })),
@@ -63,12 +155,12 @@ export default function AiGameSession() {
 
   return (
     <GamePreferencesOverride overrides={overrides} onUpdate={updateOverrides}>
-      <AiGameBoard />
+      <AiGameBoard setup={setup} />
     </GamePreferencesOverride>
   );
 }
 
-function AiGameBoard() {
+function AiGameBoard({ setup }: { setup: GameSetup }) {
   const { t } = useTranslation();
   const router = useRouter();
   const { colors } = useTheme();
@@ -76,24 +168,13 @@ function AiGameBoard() {
   // The board starts from the player's side and can be turned round.
   const [flipped, setFlipped] = useState<boolean | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const params = useLocalSearchParams<{
-    playerColor: string;
-    skillLevel: string;
-    fen?: string;
-    moves?: string;
-  }>();
-
-  const playerColor = parseEnumParam<Side>(params.playerColor, SIDES, "white");
-  const parsedSkillLevel = Number(params.skillLevel);
-  const skillLevel: SkillLevel = isValidSkillLevel(parsedSkillLevel)
-    ? parsedSkillLevel
-    : 5;
-
-  // Decoded once: the session replays these as its initial state, and a
-  // re-decode on every render would hand useGameSession a new array each time.
-  const [start] = useState(() =>
-    decodeStartParams({ fen: params.fen, moves: params.moves }),
-  );
+  // The top inset is padded from the provider's value rather than left to
+  // `Screen`'s `SafeAreaView`: in a header-less screen of the full-screen
+  // session modal the view's own top inset comes out as 0 on iOS, which put
+  // the top row under the status bar. `PracticeSessionScreen` does the same.
+  const insets = useSafeAreaInsets();
+  const { gameId, playerColor, skillLevel } = setup;
+  const start = setup;
 
   const ai = useAiVersus(skillLevel);
 
@@ -105,6 +186,7 @@ function AiGameBoard() {
     resetAi: ai.reset,
     startingFen: start.startingFen,
     initialMoves: start.moves,
+    initialOperationLogs: start.operationLogs,
   });
 
   // The AI's reply is announced where the board would be, for as long as the
@@ -160,12 +242,39 @@ function AiGameBoard() {
     );
   };
 
-  // Keep the finished game in the device's history (the Play tab lists it,
-  // and it can be replayed in recall). Once per session.
-  const saved = useRef(false);
-  // The saved game's id, so the result screen can open its page.
-  // A UUID because the Exp grant is keyed by it.
-  const [gameId] = useState(() => Crypto.randomUUID());
+  // The game is written to the device after every move, so leaving the
+  // screen (or losing the app) never loses it: the history lists it as in
+  // progress and opens it again here. A game with no move yet is not worth a
+  // row, so saving starts with the first one.
+  const perGamePrefs = useMemo(
+    () => pickPerGamePreferences(preferences),
+    [preferences],
+  );
+  const hasBeenSaved = useRef(start.moves.length > 0);
+  useEffect(() => {
+    if (game.moves.length === 0 && !hasBeenSaved.current) return;
+    hasBeenSaved.current = true;
+    void saveGame({
+      id: gameId,
+      finishedAt: new Date().toISOString(),
+      playerColor,
+      skillLevel,
+      ...(game.playerResult ? { result: game.playerResult } : {}),
+      moves: [...game.moves],
+      startingFen: start.startingFen,
+      operationLogs: game.operationLogs,
+      gamePrefs: perGamePrefs,
+    });
+  }, [
+    game.moves,
+    game.playerResult,
+    game.operationLogs,
+    perGamePrefs,
+    gameId,
+    playerColor,
+    skillLevel,
+    start.startingFen,
+  ]);
 
   // Navigate to result when game is over
   useEffect(() => {
@@ -174,18 +283,6 @@ function AiGameBoard() {
       // is lost across the property access inside the setTimeout closure.
       const playerResult = game.playerResult;
       const stats = computeGameStats(game.operationLogs);
-      if (!saved.current) {
-        saved.current = true;
-        void saveGame({
-          id: gameId,
-          finishedAt: new Date().toISOString(),
-          playerColor: game.playerColor,
-          skillLevel: game.skillLevel,
-          result: playerResult,
-          moves: [...game.moves],
-          startingFen: start.startingFen,
-        });
-      }
       const timer = setTimeout(() => {
         router.replace({
           pathname: "/play/ai-game/result",
@@ -210,13 +307,15 @@ function AiGameBoard() {
     game.moves,
     game.moves.length,
     game.operationLogs,
-    start.startingFen,
     gameId,
     router,
   ]);
 
   return (
-    <Screen edges={["top", "bottom"]}>
+    <Screen
+      edges={["bottom", "left", "right"]}
+      style={{ paddingTop: insets.top }}
+    >
       {/* Hidden WebView for Stockfish engine */}
       <StockfishWebView
         key={ai.webViewKey}
@@ -226,7 +325,8 @@ function AiGameBoard() {
         onError={ai.handleWebViewError}
       />
 
-      <SessionTopBar>
+      {/* Leaving asks nothing: the game is saved and can be resumed. */}
+      <SessionTopBar confirm={false}>
         <View style={styles.topActions}>
           {preferences.boardVisibility !== "never" && (
             <HeaderIconButton

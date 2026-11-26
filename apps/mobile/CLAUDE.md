@@ -375,9 +375,13 @@ database. Sign-in calls Supabase Auth directly; sign-up goes through
 
 Still web-only: creating puzzles and community positions, repertoires,
 topics and articles, the home feed, Maia, password reset (the app opens the
-web page). Finished AI games are kept on the device
-(`features/game-history/`, AsyncStorage `"AI_GAME_HISTORY"`, newest first, at
-most 50), like the web keeps them in localStorage. The one thing an AI game
+web page), and starting an AI game from a custom position, an opening or a
+PGN: a game in the app always starts from the standard position. AI games
+are kept on the device (`features/game-history/`, AsyncStorage
+`"AI_GAME_HISTORY"`, newest first, at most 50), like the web keeps them in
+localStorage. The session saves the game after every move, so one that was
+left is listed as in progress (no `result`) and its row opens the session
+again with `resume=<id>`; that is why the session's × asks nothing. The one thing an AI game
 sends is its Exp report: the result screen posts a signed-in player's game to
 `POST /games/results` (the web's `saveGameResult`), with the move and
 aided-move counts from the session's operation log

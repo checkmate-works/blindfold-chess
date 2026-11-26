@@ -7,7 +7,10 @@ import {
   computeGameState,
   validateGameMove,
 } from "@blindfold-chess/features/ai-game";
-import type { MoveInputMethod } from "@blindfold-chess/features/game-record";
+import type {
+  MoveInputMethod,
+  MoveOperationLog,
+} from "@blindfold-chess/features/game-record";
 import { useMoveOperationTracker } from "@blindfold-chess/features/game-record/client";
 
 import type { GameStatus, PlayerResult, SkillLevel } from "../lib/types";
@@ -41,6 +44,8 @@ type UseGameSessionProps = {
    * sees the whole game. Read once on mount, like any initial state.
    */
   initialMoves?: AlgebraicNotation[];
+  /** The operation logs of a game being resumed. Read once on mount. */
+  initialOperationLogs?: MoveOperationLog[];
 };
 
 /** A move and the reply to it: what one undo takes back. */
@@ -54,6 +59,7 @@ export function useGameSession({
   resetAi,
   startingFen,
   initialMoves,
+  initialOperationLogs,
 }: UseGameSessionProps) {
   const [moves, setMoves] = useState<AlgebraicNotation[]>(
     () => initialMoves ?? [],
@@ -74,7 +80,7 @@ export function useGameSession({
     recordUndo,
     commitMove,
     handleUndoLog,
-  } = useMoveOperationTracker();
+  } = useMoveOperationTracker({ initialLogs: initialOperationLogs });
 
   // Derive game state synchronously whenever moves change
   const gameState = useMemo(
