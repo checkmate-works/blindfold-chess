@@ -16,6 +16,7 @@ import {
   spacing,
   useTheme,
 } from "../../theme";
+import { DoneMark } from "../../components";
 import { openWebPage } from "../../lib/web-pages";
 import { beltColors } from "./belt";
 import { stageTarget } from "./stage-target";
@@ -46,7 +47,8 @@ function stageValue({ stage, done, total }: StageCount, t: TFunction): string {
  * every stage done, whatever was recorded on the way. A stage the rank has
  * nothing for (1dan has no guide and no challenge) has no cell.
  *
- * A finished stage shows its value in the success colour with a check. On
+ * A finished stage shows its value in the success colour after the done
+ * mark (`DoneMark`, decorative: the cell's label already says it). On
  * the rank being worked towards (standing "next"), the stage the next step
  * belongs to is washed in the belt's tint, in the belt's colours rather
  * than the app's green for the same reason as `BeltButton`. Each cell is
@@ -143,9 +145,7 @@ export function RankStageProgress({
                 {name}
               </Text>
               <View style={styles.valueRow}>
-                {finished ? (
-                  <Ionicons name="checkmark" size={14} color={colors.success} />
-                ) : null}
+                {finished ? <DoneMark size="sm" /> : null}
                 <Text
                   style={[
                     styles.value,
@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
   valueRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 2,
+    gap: 4,
   },
   value: {
     fontSize: fontSize.sm,

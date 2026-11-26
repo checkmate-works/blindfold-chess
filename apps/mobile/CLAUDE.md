@@ -308,7 +308,7 @@ database. Sign-in calls Supabase Auth directly; sign-up goes through
     learn, the next unread page itself, `?page=<n>`). Exam routes through
     `stepTarget`, the same routing as the next-step button.
   - the learn tab (`(tabs)/learn`) opens with the guides, one row per guide
-    in ladder order, before the glossary and the articles: a check once
+    in ladder order, before the glossary and the articles: the done mark once
     read through, "n / N" part way, nothing before the first page, and a
     press opens the guide at its first unread page
     (`/dojo/guides/<rank>?page=<n>`; the guide screen ignores a page it
@@ -403,7 +403,7 @@ the list applies the param and clears it with `router.setParams`, because
 the tab stays mounted and an uncleared param would not change the next
 time, leaving whatever filter the player picked in between. Each row shows
 its practice's share of its rank's practice stage, counted from the same
-`useDojoJourney` steps as the rank card (`practice-progress.ts`): a check
+`useDojoJourney` steps as the rank card (`practice-progress.ts`): the done mark
 for a single challenge once tried, "n / N" for several (legal moves on
 4kyu), nothing for mukyu practices or those without a challenge on their
 rank.

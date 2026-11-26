@@ -4,14 +4,15 @@ import { useTranslation } from "react-i18next";
 import type { RankRequirement } from "@blindfold-chess/features/dojo-ranks";
 import type { RankJourney } from "@blindfold-chess/features/dojo-journey";
 
-import { ListIcon, ListRow, ListSection } from "../../components";
+import { DoneMark, ListIcon, ListRow, ListSection } from "../../components";
 import { openWebPage } from "../../lib/web-pages";
-import { useTheme } from "../../theme";
 import { requirementLabel, requirementTarget } from "./requirements";
 
 /**
  * What a rank asks for, one row per requirement, each marked met once it
- * is. The rows are the exam stage of the rank's journey, so a row is met
+ * is: the leading icon keeps telling the kind of requirement (a challenge,
+ * an exam problem, the web) and the done mark (`DoneMark`) at the row's end
+ * says it is met, the same mark as every other finished thing. The rows are the exam stage of the rank's journey, so a row is met
  * exactly when that stage counts it (and every row of a rank already held
  * is). A challenge row opens the module's setup screen, where the
  * challenge starts; an exam-problem row opens the rank's exam; a
@@ -29,7 +30,6 @@ export function RankRequirementList({
   readonly title?: string;
 }) {
   const { t, i18n } = useTranslation();
-  const { colors } = useTheme();
   const router = useRouter();
   const slug = journey.rank;
   const held = journey.standing === "achieved";
@@ -64,19 +64,17 @@ export function RankRequirementList({
             leading={
               <ListIcon
                 ionicon={
-                  met
-                    ? "checkmark"
-                    : target.kind === "web"
-                      ? "globe-outline"
-                      : requirement.type === "exam_problem"
-                        ? "school-outline"
-                        : "stopwatch-outline"
+                  target.kind === "web"
+                    ? "globe-outline"
+                    : requirement.type === "exam_problem"
+                      ? "school-outline"
+                      : "stopwatch-outline"
                 }
-                tint={met ? colors.success : undefined}
               />
             }
             title={requirementLabel(requirement, t)}
             subtitle={subtitleOf(requirement, met)}
+            trailing={met ? <DoneMark /> : undefined}
             accessory={target.kind === "web" ? "external" : "chevron"}
             onPress={() =>
               target.kind === "practice"

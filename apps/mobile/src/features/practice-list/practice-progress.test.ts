@@ -69,9 +69,9 @@ describe("practiceProgressLabel", () => {
     await i18n.init({ lng: "en", resources: { en: { translation: en } } });
   });
 
-  it("shows a check for a single challenge once tried, and nothing before", () => {
+  it("shows the done mark for a single challenge once tried, and nothing before", () => {
     expect(practiceProgressLabel({ done: 1, total: 1 }, i18n.t)).toEqual({
-      value: "✓",
+      kind: "done",
       accessibilityLabel: "Tried",
     });
     expect(
@@ -81,6 +81,7 @@ describe("practiceProgressLabel", () => {
 
   it("shows n / N for several challenges, even before any is tried", () => {
     expect(practiceProgressLabel({ done: 0, total: 3 }, i18n.t)).toEqual({
+      kind: "count",
       value: "0 / 3",
       accessibilityLabel: "Tried 0 / 3",
     });

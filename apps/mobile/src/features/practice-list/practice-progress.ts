@@ -38,16 +38,22 @@ export function practiceProgress(
   };
 }
 
-/** What a practice row shows for its progress, and how it is read out. */
-export type PracticeProgressLabel = {
-  readonly value: string;
-  readonly accessibilityLabel: string;
-};
+/**
+ * What a practice row shows for its progress, and how it is read out:
+ * `"done"` is the app's done mark (`DoneMark`), `"count"` a "n / N" value.
+ */
+export type PracticeProgressLabel =
+  | { readonly kind: "done"; readonly accessibilityLabel: string }
+  | {
+      readonly kind: "count";
+      readonly value: string;
+      readonly accessibilityLabel: string;
+    };
 
 /**
- * A single challenge shows a check once tried and nothing before; several
- * show "n / N" from the start. Read out as "Tried" / "Tried n / N" rather
- * than the bare glyph or numbers.
+ * A single challenge shows the done mark once tried and nothing before;
+ * several show "n / N" from the start. Read out as "Tried" / "Tried n / N"
+ * rather than the bare mark or numbers.
  */
 export function practiceProgressLabel(
   progress: PracticeProgress | undefined,
@@ -57,10 +63,11 @@ export function practiceProgressLabel(
   const { done, total } = progress;
   if (total === 1) {
     return done >= 1
-      ? { value: "✓", accessibilityLabel: t("practice.tried") }
+      ? { kind: "done", accessibilityLabel: t("practice.tried") }
       : undefined;
   }
   return {
+    kind: "count",
     value: t("dojo.rankProgress", { done, total }),
     accessibilityLabel: t("practice.triedCount", { done, total }),
   };

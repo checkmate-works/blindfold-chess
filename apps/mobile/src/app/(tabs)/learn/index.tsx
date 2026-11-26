@@ -3,6 +3,7 @@ import type { Href } from "expo-router";
 import { useTranslation } from "react-i18next";
 
 import {
+  DoneMark,
   ListIcon,
   ListRow,
   ListSection,
@@ -39,10 +40,10 @@ import {
  * are the dojo's reading — the learn stage of every rank — and this list is
  * where a rank's "Learn" cell sends the player. A row shows how far the
  * guide is read, counted by `guideReadingProgress`, the same count the
- * guide screen keeps: a check once every page is read, "n / N" part way,
- * nothing before the first page, matching the practice list's rows. It is
- * read out in words ("Read", "2 of 5 pages read") rather than as the bare
- * glyph or numbers. Pressing a row opens the guide at its first unread
+ * guide screen keeps: the done mark (`DoneMark`) once every page is read,
+ * "n / N" part way, nothing before the first page, matching the practice
+ * list's rows. It is read out in words ("Read", "2 of 5 pages read") rather
+ * than as the bare mark or numbers. Pressing a row opens the guide at its first unread
  * page, or at the first page once it is read through.
  */
 export default function LearnTab() {
@@ -68,9 +69,8 @@ export default function LearnTab() {
             rankName: t(`ranks.names.${rank}`),
           });
           const finished = progress.read >= progress.total;
-          const value = finished
-            ? "✓"
-            : progress.read > 0
+          const value =
+            !finished && progress.read > 0
               ? t("dojo.rankProgress", {
                   done: progress.read,
                   total: progress.total,
@@ -91,6 +91,7 @@ export default function LearnTab() {
               leading={<ListIcon ionicon="book-outline" />}
               title={title}
               value={value}
+              trailing={finished ? <DoneMark /> : undefined}
               accessibilityLabel={
                 spoken === undefined ? undefined : `${title}, ${spoken}`
               }

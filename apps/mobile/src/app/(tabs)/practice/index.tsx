@@ -11,6 +11,7 @@ import type { Href } from "expo-router";
 import { useTranslation } from "react-i18next";
 
 import {
+  DoneMark,
   FilterChips,
   ListIcon,
   ListRow,
@@ -69,7 +70,7 @@ const ALL = "all";
  * a chip, or a value that is no rank, is ignored.
  *
  * A row shows how far its practice is through its rank's practice stage,
- * counted from the same journey as the rank card: a check once its one
+ * counted from the same journey as the rank card: the done mark once its one
  * challenge is tried, or "n / N" for several (legal moves on 4kyu). Mukyu
  * practices and those with no challenge on their rank show nothing.
  */
@@ -127,8 +128,9 @@ export default function PracticeIndex() {
         leading={<ListIcon ionicon={item.icon} />}
         title={title}
         subtitle={subtitle}
-        value={progress?.value}
-        // The value is a bare "✓" or "1 / 3"; read it out as "Tried" /
+        value={progress?.kind === "count" ? progress.value : undefined}
+        trailing={progress?.kind === "done" ? <DoneMark /> : undefined}
+        // The value is a bare mark or "1 / 3"; read it out as "Tried" /
         // "Tried 1 / 3" after the row's own texts.
         accessibilityLabel={
           progress
