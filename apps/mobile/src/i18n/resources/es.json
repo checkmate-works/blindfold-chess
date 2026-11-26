@@ -1084,6 +1084,7 @@
     "noRequirements": "Este rango no tiene requisitos.",
     "criteriaTitle": "Qué certifica",
     "challengeHint": "Hazlo en modo desafío",
+    "bestOfRequired": "Mejor {{best}} / necesario {{required}}",
     "webOnly": "Disponible en la web",
     "webOnlyNote": "Este requisito se cumple en la web. Los rangos obtenidos con la misma cuenta también aparecen en la app.",
     "guide": "Leer la guía de este rango",

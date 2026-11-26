@@ -1084,6 +1084,7 @@
     "noRequirements": "This rank has no requirements.",
     "criteriaTitle": "What it certifies",
     "challengeHint": "Take it in challenge mode",
+    "bestOfRequired": "Best {{best}} / needed {{required}}",
     "webOnly": "Available on the web",
     "webOnlyNote": "This requirement is met on the web. Ranks earned with the same account show up in the app too.",
     "guide": "Read this rank's guide",

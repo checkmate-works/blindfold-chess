@@ -1084,6 +1084,7 @@
     "noRequirements": "Esta faixa não tem requisitos.",
     "criteriaTitle": "O que certifica",
     "challengeHint": "Faça no modo desafio",
+    "bestOfRequired": "Melhor {{best}} / necessário {{required}}",
     "webOnly": "Disponível na web",
     "webOnlyNote": "Este requisito é cumprido na web. As faixas conquistadas com a mesma conta também aparecem no app.",
     "guide": "Ler o guia desta faixa",

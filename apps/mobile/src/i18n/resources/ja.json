@@ -1084,6 +1084,7 @@
     "noRequirements": "この段級位には昇級条件がありません。",
     "criteriaTitle": "合格基準",
     "challengeHint": "チャレンジモードで挑戦する",
+    "bestOfRequired": "最高 {{best}} / 必要 {{required}}",
     "webOnly": "Web版で取り組めます",
     "webOnlyNote": "この条件はWeb版で満たせます。同じアカウントで取得した段級位はアプリにも反映されます。",
     "guide": "この級の教本を読む",
