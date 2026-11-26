@@ -1,16 +1,19 @@
 import { StyleSheet, View } from "react-native";
+import { BeltIcon } from "@blindfold-chess/icons";
 import type { RankSlug } from "@blindfold-chess/features/dojo-ranks";
 
 import { useTheme } from "../../theme";
 import { beltColors } from "./belt";
 
 /**
- * A rank's belt as a round swatch, outlined so the white (mukyu) and the
- * near-black (1dan) belts stay visible on either theme.
+ * A rank's badge: a circle painted in the belt colour with the belt icon
+ * on it in white (the web's `BeltStrip`). Mukyu has no colour yet, so it is
+ * a muted circle with a grey icon. A hairline outline keeps the near-black
+ * 1dan circle visible on the dark theme.
  */
 export function BeltBadge({
   slug,
-  size = 28,
+  size = 32,
 }: {
   readonly slug: RankSlug;
   readonly size?: number;
@@ -27,18 +30,12 @@ export function BeltBadge({
           width: size,
           height: size,
           borderRadius: size / 2,
-          backgroundColor: belt.fill,
+          backgroundColor: slug === "mukyu" ? colors.muted : belt.fill,
           borderColor: belt.outline,
         },
       ]}
     >
-      {/* The knot of the belt: a band across the middle in the text colour. */}
-      <View
-        style={[
-          styles.band,
-          { height: Math.max(3, size / 7), backgroundColor: belt.onFill },
-        ]}
-      />
+      <BeltIcon size={Math.round(size * 0.58)} color={belt.onFill} />
     </View>
   );
 }
@@ -48,10 +45,5 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     alignItems: "center",
     justifyContent: "center",
-    overflow: "hidden",
-  },
-  band: {
-    alignSelf: "stretch",
-    opacity: 0.35,
   },
 });

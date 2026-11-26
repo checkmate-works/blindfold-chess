@@ -24,3 +24,9 @@ export type RatingFaceIconProps = {
   /** Replaces the head's fill only; the eyes, brows and mouth keep their fixed colour. */
   faceColor?: string;
 };
+
+export type BeltIconProps = {
+  size?: number;
+  /** The belt's line colour. Defaults to the text colour. */
+  color?: string;
+};
