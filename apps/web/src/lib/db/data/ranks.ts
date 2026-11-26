@@ -23,86 +23,22 @@
  * Level values use gaps (10, 20, ...) to allow future intermediate ranks
  * without renumbering.
  */
-import type { PositionKind } from '@/lib/positions/kind';
+import { RANK_REQUIREMENTS } from '@blindfold-chess/features/dojo-ranks';
+import type {
+  ChallengeScoreRequirement,
+  GamePublishWinHiddenBoardRequirement,
+  GamePublishWinRequirement,
+  PositionSubmissionCountRequirement,
+  RankRequirement,
+} from '@blindfold-chess/features/dojo-ranks';
 
-export type ChallengeScoreRequirement = {
-  type: 'challenge_score';
-  menuType: string;
-  leaderboardKey: string;
-  minScore: number;
-};
-
-/**
- * Requires the user to have submitted at least `minCount` rows in the
- * `positions` table whose `type` is one of `positionTypes` (OR across
- * types — a `memory` post and a `puzzle` post count toward the same total).
- * Counted directly off `positions`, NOT off `exp_events` — submissions grant
- * points, not EXP, so the source of truth is the row count of the user's
- * authored positions.
- */
-export type PositionSubmissionCountRequirement = {
-  type: 'position_submission_count';
-  positionTypes: readonly PositionKind[];
-  minCount: number;
-};
-
-/**
- * Requires the user to have published at least one WON game against the engine
- * that was played under some blindfold constraint.
- *
- * Checked against `games` (every row there is an engine game — there is no
- * human-vs-human path into that table), so engine kind and strength are
- * deliberately not part of the condition: the rank is about playing without
- * full sight, not about beating a particular rating.
- *
- * "Under a constraint" is judged on the start-of-game settings snapshot alone —
- * see {@link isConstrainedPlaySettings}, which owns that predicate.
- *
- * The win is self-reported. `games.result` is not verified server-side (a game
- * can end in resignation or timeout, which a final-position check cannot
- * confirm — publish-time integrity is move legality, not outcome), so this
- * requirement inherits that posture.
- */
-export type GamePublishWinRequirement = {
-  type: 'game_publish_win';
-  minCount: number;
-};
-
-/**
- * Requires the user to have published at least `minCount` WON games against
- * the engine that stayed under a blindfold constraint for the ENTIRE game,
- * with peeking capped at `maxPeeks`.
- *
- * Stricter than {@link GamePublishWinRequirement} in two ways:
- * - "Hidden" is judged on `boardVisibility` specifically (not the full
- *   {@link isConstrainedPlaySettings} constraint set), and it must hold at
- *   the start AND stay that way the whole game — checked against the
- *   self-reported `games.play_settings_log`, not just the start snapshot.
- *   See {@link maintainedHiddenBoard}, which owns that predicate.
- * - The game's peek total must not exceed `maxPeeks`. The count comes from
- *   `games.operation_totals.peeks` — the monotonic lifetime counter that
- *   undo cannot shrink, so peek → undo → replay counts every peek
- *   (issue #95). Legacy rows without totals fall back to summing the
- *   per-move `operationLogs`, but qualify only when they also record zero
- *   undos: undo deletes log lines together with their peekCount, so a
- *   legacy game with any undo has an unverifiable peek total (fail closed).
- *
- * Like `game_publish_win`, this inherits the app's self-reported posture:
- * `games.result`, `play_settings_log`, `operation_logs`, and
- * `operation_totals` are all trusted as-is (only move legality is verified
- * server-side at publish time).
- */
-export type GamePublishWinHiddenBoardRequirement = {
-  type: 'game_publish_win_hidden_board';
-  minCount: number;
-  maxPeeks: number;
-};
-
-export type RankRequirement =
-  | ChallengeScoreRequirement
-  | PositionSubmissionCountRequirement
-  | GamePublishWinRequirement
-  | GamePublishWinHiddenBoardRequirement;
+export type {
+  ChallengeScoreRequirement,
+  PositionSubmissionCountRequirement,
+  GamePublishWinRequirement,
+  GamePublishWinHiddenBoardRequirement,
+  RankRequirement,
+} from '@blindfold-chess/features/dojo-ranks';
 
 type RankSeed = {
   slug: string;
@@ -292,87 +228,31 @@ export const ranksSeedData: RankSeed[] = [
     slug: '5kyu',
     level: 10,
     color: RANK_COLORS['5kyu'],
-    requirements: [
-      {
-        type: 'challenge_score',
-        menuType: 'square_colors',
-        leaderboardKey: 'default',
-        minScore: 15,
-      },
-      {
-        type: 'challenge_score',
-        menuType: 'coordinate_quiz',
-        leaderboardKey: 'white',
-        minScore: 20,
-      },
-    ],
+    requirements: [...structuredClone(RANK_REQUIREMENTS['5kyu'])],
   },
   {
     slug: '4kyu',
     level: 20,
     color: RANK_COLORS['4kyu'],
-    requirements: [
-      {
-        type: 'challenge_score',
-        menuType: 'legal_moves',
-        leaderboardKey: 'king',
-        minScore: 20,
-      },
-      {
-        type: 'challenge_score',
-        menuType: 'legal_moves',
-        leaderboardKey: 'knight',
-        minScore: 20,
-      },
-      {
-        type: 'challenge_score',
-        menuType: 'legal_moves',
-        leaderboardKey: 'bishop',
-        minScore: 10,
-      },
-    ],
+    requirements: [...structuredClone(RANK_REQUIREMENTS['4kyu'])],
   },
   {
     slug: '3kyu',
     level: 30,
     color: RANK_COLORS['3kyu'],
-    requirements: [
-      {
-        type: 'challenge_score',
-        menuType: 'route_planner',
-        leaderboardKey: 'knight',
-        minScore: 3,
-      },
-      {
-        type: 'challenge_score',
-        menuType: 'route_planner',
-        leaderboardKey: 'bishop',
-        minScore: 3,
-      },
-    ],
+    requirements: [...structuredClone(RANK_REQUIREMENTS['3kyu'])],
   },
   {
     slug: '2kyu',
     level: 40,
     color: RANK_COLORS['2kyu'],
-    requirements: [
-      {
-        type: 'position_submission_count',
-        positionTypes: ['memory', 'puzzle'],
-        minCount: 1,
-      },
-    ],
+    requirements: [...structuredClone(RANK_REQUIREMENTS['2kyu'])],
   },
   {
     slug: '1kyu',
     level: 50,
     color: RANK_COLORS['1kyu'],
-    requirements: [
-      {
-        type: 'game_publish_win',
-        minCount: 1,
-      },
-    ],
+    requirements: [...structuredClone(RANK_REQUIREMENTS['1kyu'])],
   },
   // Gap between 1kyu (50) and 1dan (110) is intentionally large to reserve
   // space for future intermediate ranks between kyū and dan tiers.
@@ -380,13 +260,7 @@ export const ranksSeedData: RankSeed[] = [
     slug: '1dan',
     level: 110,
     color: RANK_COLORS['1dan'],
-    requirements: [
-      {
-        type: 'game_publish_win_hidden_board',
-        minCount: 1,
-        maxPeeks: 5,
-      },
-    ],
+    requirements: [...structuredClone(RANK_REQUIREMENTS['1dan'])],
   },
 ];
 

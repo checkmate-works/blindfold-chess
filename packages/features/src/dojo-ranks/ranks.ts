@@ -9,10 +9,10 @@
  * ladder, the colour of each belt, the list of requirements and which rank
  * comes next — is fixed data, so it lives here instead of being fetched.
  *
- * The web seeds the `ranks` table from its own copy of these requirements
- * (`apps/web/src/lib/db/data/ranks.ts`, which also holds the parsers for the
- * jsonb column). A test there compares that seed with {@link RANK_REQUIREMENTS}
- * so the two cannot drift apart silently.
+ * The web seeds the `ranks` table from these requirements
+ * (`apps/web/src/lib/db/data/ranks.ts` keeps the level metadata and parsers
+ * for the jsonb column). Both apps therefore use the same requirement types
+ * and thresholds.
  *
  * Mukyu (無級) is the rank every user holds before earning one. It is never
  * stored or granted and has no requirements; it is in {@link RANK_SLUGS} so
@@ -66,22 +66,65 @@ export type ChallengeScoreRequirement = {
   readonly minScore: number;
 };
 
-/** At least `minCount` posted positions of any of `positionTypes` in total. */
+/**
+ * Requires the user to have submitted at least `minCount` rows in the
+ * `positions` table whose `type` is one of `positionTypes` (OR across
+ * types — a `memory` post and a `puzzle` post count toward the same total).
+ * Counted directly off `positions`, NOT off `exp_events` — submissions grant
+ * points, not EXP, so the source of truth is the row count of the user's
+ * authored positions.
+ */
 export type PositionSubmissionCountRequirement = {
   readonly type: "position_submission_count";
   readonly positionTypes: readonly ("memory" | "puzzle")[];
   readonly minCount: number;
 };
 
-/** At least `minCount` published won engine games played under a blindfold constraint. */
+/**
+ * Requires the user to have published at least one WON game against the engine
+ * that was played under some blindfold constraint.
+ *
+ * Checked against `games` (every row there is an engine game — there is no
+ * human-vs-human path into that table), so engine kind and strength are
+ * deliberately not part of the condition: the rank is about playing without
+ * full sight, not about beating a particular rating.
+ *
+ * "Under a constraint" is judged on the start-of-game settings snapshot alone —
+ * see {@link isConstrainedPlaySettings}, which owns that predicate.
+ *
+ * The win is self-reported. `games.result` is not verified server-side (a game
+ * can end in resignation or timeout, which a final-position check cannot
+ * confirm — publish-time integrity is move legality, not outcome), so this
+ * requirement inherits that posture.
+ */
 export type GamePublishWinRequirement = {
   readonly type: "game_publish_win";
   readonly minCount: number;
 };
 
 /**
- * At least `minCount` published won engine games with the board hidden for
- * the whole game and at most `maxPeeks` peeks.
+ * Requires the user to have published at least `minCount` WON games against
+ * the engine that stayed under a blindfold constraint for the ENTIRE game,
+ * with peeking capped at `maxPeeks`.
+ *
+ * Stricter than {@link GamePublishWinRequirement} in two ways:
+ * - "Hidden" is judged on `boardVisibility` specifically (not the full
+ *   {@link isConstrainedPlaySettings} constraint set), and it must hold at
+ *   the start AND stay that way the whole game — checked against the
+ *   self-reported `games.play_settings_log`, not just the start snapshot.
+ *   See {@link maintainedHiddenBoard}, which owns that predicate.
+ * - The game's peek total must not exceed `maxPeeks`. The count comes from
+ *   `games.operation_totals.peeks` — the monotonic lifetime counter that
+ *   undo cannot shrink, so peek → undo → replay counts every peek
+ *   (issue #95). Legacy rows without totals fall back to summing the
+ *   per-move `operationLogs`, but qualify only when they also record zero
+ *   undos: undo deletes log lines together with their peekCount, so a
+ *   legacy game with any undo has an unverifiable peek total (fail closed).
+ *
+ * Like `game_publish_win`, this inherits the app's self-reported posture:
+ * `games.result`, `play_settings_log`, `operation_logs`, and
+ * `operation_totals` are all trusted as-is (only move legality is verified
+ * server-side at publish time).
  */
 export type GamePublishWinHiddenBoardRequirement = {
   readonly type: "game_publish_win_hidden_board";
