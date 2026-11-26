@@ -20,8 +20,9 @@ type Props = {
 };
 
 /**
- * The outermost element of a screen: fills its parent and paints the theme
- * background behind the safe-area insets.
+ * The outermost element of a screen: fills its parent and paints the page
+ * (`colors.page`, white) behind the safe-area insets. Not
+ * the grey `background` color: that is the recessed fill laid on panels.
  *
  * Every screen needs the background painted here rather than on an inner view,
  * because the inset padding belongs to this element — leave it transparent and
@@ -32,7 +33,7 @@ export function Screen({ children, edges, style }: Props) {
   const { colors } = useTheme();
   return (
     <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }, style]}
+      style={[styles.container, { backgroundColor: colors.page }, style]}
       edges={edges}
     >
       {children}

@@ -6,6 +6,9 @@ export {
 } from "@blindfold-chess/ui";
 export type { ThemeColors } from "@blindfold-chess/ui";
 
+export { surfaceColors } from "./surface";
+export type { AppColors, SurfaceColors } from "./surface";
+
 export { ThemeProvider, useTheme } from "./ThemeProvider";
 export { useFeedbackColor } from "./use-feedback-color";
 export { monoFont, withAlpha } from "./type-and-tint";
@@ -24,6 +27,8 @@ export const borderRadius = {
   md: 8,
   lg: 12,
   xl: 16,
+  /** The corner of a full-width button. */
+  button: 14,
   full: 9999,
 } as const;
 

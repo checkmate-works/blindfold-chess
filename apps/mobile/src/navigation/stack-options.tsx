@@ -16,21 +16,30 @@ import { useTheme } from "../theme";
  * app uses — rather than a coloured band. Back buttons show only the chevron
  * (`headerBackButtonDisplayMode: "minimal"`): the previous screen's title
  * next to it is long in most languages and truncates unevenly.
+ *
+ * The header and the content are painted with `colors.page` (white), not
+ * the grey `background` color, which is the recessed fill used on panels.
+ *
+ * The back chevron and header icons are ink (`colors.foreground`) and the
+ * title is bold (700). The accent blue is kept for what starts something —
+ * the primary button — and for text actions ("Close", ghost buttons), so the
+ * screen's main action is the one thing that is blue. A blue header and tab
+ * bar would compete with it.
  */
 export function useStackScreenOptions(): NativeStackNavigationOptions {
   const { colors } = useTheme();
   return useMemo(
     () => ({
-      headerStyle: { backgroundColor: colors.background },
+      headerStyle: { backgroundColor: colors.page },
       headerShadowVisible: false,
-      headerTintColor: colors.primary,
+      headerTintColor: colors.foreground,
       headerTitleStyle: {
         color: colors.foreground,
-        fontWeight: "600",
+        fontWeight: "700",
         fontSize: 17,
       },
       headerBackButtonDisplayMode: "minimal",
-      contentStyle: { backgroundColor: colors.background },
+      contentStyle: { backgroundColor: colors.page },
     }),
     [colors],
   );

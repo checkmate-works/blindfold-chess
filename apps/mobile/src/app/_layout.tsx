@@ -37,7 +37,7 @@ function RootLayoutContent() {
           flex: 1,
           justifyContent: "center",
           alignItems: "center",
-          backgroundColor: colors.background,
+          backgroundColor: colors.page,
         }}
       >
         <ActivityIndicator size="large" color={colors.primary} />
