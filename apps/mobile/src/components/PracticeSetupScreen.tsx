@@ -187,12 +187,7 @@ export function PracticeSetupScreen({
 
   if (!isLoaded) {
     return (
-      <View
-        style={[
-          styles.loadingContainer,
-          { backgroundColor: colors.background },
-        ]}
-      >
+      <View style={[styles.loadingContainer, { backgroundColor: colors.page }]}>
         <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );

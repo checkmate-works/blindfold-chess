@@ -12,6 +12,7 @@ export { HowToPlaySection } from "./HowToPlaySection";
 export { OptionsField } from "./OptionsField";
 export { QuizTimer } from "./QuizTimer";
 export { ScoreFooter } from "./ScoreFooter";
+export { SectionTitle } from "./SectionTitle";
 export { Screen } from "./Screen";
 export { SquarePrompt } from "./SquarePrompt";
 export { STATIC_BOARD_RADIUS, StaticBoard } from "./StaticBoard";
