@@ -79,6 +79,11 @@ header style (page-coloured, no hairline, chevron-only back).
   from `components/SettingRows.tsx`. Tab entry screens scroll in
   `TabScrollView` (automatic content insets, so the floating tab bar does not
   cover the last row).
+- **Done is one mark:** `DoneMark` (`components/DoneMark.tsx`), a white
+  check in a green circle — `"md"` in a row's `trailing`, `"sm"` beside a
+  line of text. Never a bare "✓" or a green `checkmark` icon of its own; a
+  plain check stays only for what is not "done" (a selected row, a valid
+  input).
 - **Filters over a list** are `FilterChips` (`components/FilterChips.tsx`):
   one row of single-choice `SelectableChip`s that scrolls sideways when it
   outgrows the screen, with "All" as a chip of its own.

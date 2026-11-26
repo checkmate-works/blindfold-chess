@@ -78,16 +78,22 @@ type ListRowProps = {
   leading?: ReactNode;
   /** A value shown at the trailing edge, before the chevron. */
   value?: string;
+  /**
+   * An element in the value's place, before the accessory: a mark rather
+   * than text, such as a `DoneMark`. Drawn after `value` when a row has
+   * both.
+   */
+  trailing?: ReactNode;
   /** Trailing accessory. Rows with `onPress` default to a chevron. */
   accessory?: "chevron" | "check" | "none" | "external";
   onPress?: () => void;
   disabled?: boolean;
   /**
    * What a screen reader says for the whole row, in place of its visible
-   * texts read in turn. For a row whose value is a glyph or bare numbers
-   * ("✓", "2 / 5"), which say nothing on their own; it replaces the title
-   * too, so it names the row as well as the value. Without it the row reads
-   * its title, subtitle and value.
+   * texts read in turn. For a row whose value is a mark or bare numbers
+   * (a `DoneMark`, "2 / 5"), which say nothing on their own; it replaces
+   * the title too, so it names the row as well as the value. Without it the
+   * row reads its title, subtitle and value.
    */
   accessibilityLabel?: string;
   testID?: string;
@@ -95,8 +101,9 @@ type ListRowProps = {
 
 /**
  * One row of a `ListSection`: title (and subtitle), optional leading icon,
- * trailing value and accessory. Pressing paints the row `colors.muted`; the
- * row itself never moves, scales or fades, matching the app's flat rule.
+ * trailing value or element, and accessory. Pressing paints the row
+ * `colors.muted`; the row itself never moves, scales or fades, matching the
+ * app's flat rule.
  *
  * @description
  * Sizes: title 15pt, subtitle 13pt (line height 18), value 15pt; padding 14
@@ -109,6 +116,7 @@ export function ListRow({
   subtitle,
   leading,
   value,
+  trailing,
   accessory,
   onPress,
   disabled = false,
@@ -156,6 +164,7 @@ export function ListRow({
           {value}
         </Text>
       ) : null}
+      {trailing}
       {shownAccessory === "chevron" && (
         <Ionicons
           name="chevron-forward"

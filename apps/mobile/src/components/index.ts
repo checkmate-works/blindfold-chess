@@ -38,6 +38,7 @@ export {
 export { problemVerdict } from "./problem-details";
 export type { ProblemVerdict } from "./problem-details";
 export { LivesIndicator } from "./LivesIndicator";
+export { DoneMark } from "./DoneMark";
 export { ListIcon, ListRow, ListSection } from "./List";
 export { ModeButtonRow } from "./ModeButtonRow";
 export { TabScrollView } from "./TabScrollView";
