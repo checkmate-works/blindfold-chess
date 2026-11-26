@@ -11,15 +11,15 @@ import {
   RANK_COLORS,
   RANK_LEVEL_BY_SLUG,
   isChallengeScoreRequirement,
+  isExamProblemRequirement,
   isGamePublishWinHiddenBoardRequirement,
   isGamePublishWinRequirement,
   isMukyuSlug,
-  isPositionSubmissionCountRequirement,
   parseRequirements,
   ranksSeedData,
   resolveHighestRankSlug,
 } from './ranks';
-import type { ChallengeScoreRequirement, PositionSubmissionCountRequirement } from './ranks';
+import type { ChallengeScoreRequirement, ExamProblemRequirement } from './ranks';
 
 // ---------------------------------------------------------------------------
 // isChallengeScoreRequirement
@@ -115,60 +115,56 @@ describe('isChallengeScoreRequirement', () => {
 });
 
 // ---------------------------------------------------------------------------
-// isPositionSubmissionCountRequirement
+// isExamProblemRequirement
 // ---------------------------------------------------------------------------
 
-describe('isPositionSubmissionCountRequirement', () => {
-  const validReq: PositionSubmissionCountRequirement = {
-    type: 'position_submission_count',
-    positionTypes: ['memory'],
-    minCount: 1,
+describe('isExamProblemRequirement', () => {
+  const validReq: ExamProblemRequirement = {
+    type: 'exam_problem',
+    exam: '2kyu',
+    problem: 'position_memory',
   };
 
-  it('should return true for a valid single-type requirement', () => {
-    expect(isPositionSubmissionCountRequirement(validReq)).toBe(true);
+  it('accepts a position_memory problem of an earned rank', () => {
+    expect(isExamProblemRequirement(validReq)).toBe(true);
   });
 
-  it('should return true for a valid multi-type requirement', () => {
+  it('accepts a puzzle problem of an earned rank', () => {
+    expect(isExamProblemRequirement({ ...validReq, problem: 'puzzle' })).toBe(true);
+  });
+
+  it('rejects null', () => {
+    expect(isExamProblemRequirement(null)).toBe(false);
+  });
+
+  it('rejects a different requirement type', () => {
+    expect(isExamProblemRequirement({ ...validReq, type: 'challenge_score' })).toBe(false);
+  });
+
+  it('rejects an unknown problem kind', () => {
+    expect(isExamProblemRequirement({ ...validReq, problem: 'bogus' })).toBe(false);
+  });
+
+  it('rejects an unknown rank slug', () => {
+    expect(isExamProblemRequirement({ ...validReq, exam: '9kyu' })).toBe(false);
+  });
+
+  it('rejects mukyu, which has no exam', () => {
+    expect(isExamProblemRequirement({ ...validReq, exam: 'mukyu' })).toBe(false);
+  });
+
+  it('rejects a missing exam', () => {
+    const { exam, ...rest } = validReq;
+    void exam;
+    expect(isExamProblemRequirement(rest)).toBe(false);
+  });
+
+  it('drops the retired position_submission_count type when parsing', () => {
     expect(
-      isPositionSubmissionCountRequirement({ ...validReq, positionTypes: ['memory', 'puzzle'] })
-    ).toBe(true);
-  });
-
-  it('should return false for null', () => {
-    expect(isPositionSubmissionCountRequirement(null)).toBe(false);
-  });
-
-  it('should return false when type is wrong', () => {
-    expect(isPositionSubmissionCountRequirement({ ...validReq, type: 'challenge_score' })).toBe(
-      false
-    );
-  });
-
-  it('should return false when positionTypes is not an array', () => {
-    expect(isPositionSubmissionCountRequirement({ ...validReq, positionTypes: 'memory' })).toBe(
-      false
-    );
-  });
-
-  it('should return false when positionTypes is an empty array', () => {
-    expect(isPositionSubmissionCountRequirement({ ...validReq, positionTypes: [] })).toBe(false);
-  });
-
-  it('should return false when positionTypes contains an unknown value', () => {
-    expect(
-      isPositionSubmissionCountRequirement({ ...validReq, positionTypes: ['memory', 'bogus'] })
-    ).toBe(false);
-  });
-
-  it('should return false when minCount is missing', () => {
-    const { minCount, ...rest } = validReq;
-    void minCount;
-    expect(isPositionSubmissionCountRequirement(rest)).toBe(false);
-  });
-
-  it('should return false when minCount is not a number', () => {
-    expect(isPositionSubmissionCountRequirement({ ...validReq, minCount: '1' })).toBe(false);
+      parseRequirements([
+        { type: 'position_submission_count', positionTypes: ['memory'], minCount: 1 },
+      ])
+    ).toEqual([]);
   });
 });
 
@@ -336,13 +332,15 @@ describe('ranksSeedData – 2kyu', () => {
     expect(entry2kyu).toBeDefined();
   });
 
-  it('should have exactly 1 requirement satisfiable by either memory or puzzle posts', () => {
-    expect(entry2kyu!.requirements).toHaveLength(1);
-    const req = entry2kyu!.requirements[0];
-    expect(req.type).toBe('position_submission_count');
-    if (req.type !== 'position_submission_count') return;
-    expect(req.positionTypes).toEqual(['memory', 'puzzle']);
-    expect(req.minCount).toBe(1);
+  it('requires passing both problems of the 2kyu exam', () => {
+    expect(entry2kyu!.requirements).toEqual([
+      { type: 'exam_problem', exam: '2kyu', problem: 'position_memory' },
+      { type: 'exam_problem', exam: '2kyu', problem: 'puzzle' },
+    ]);
+  });
+
+  it('keeps both exam requirements through parseRequirements', () => {
+    expect(parseRequirements(entry2kyu!.requirements)).toHaveLength(2);
   });
 
   it('should have level 40 and green color', () => {

@@ -262,9 +262,11 @@ export async function createPositionEntry(params: {
   // No activity-log row: the positions row itself is the durable record of
   // a creation, so logging here would only duplicate it.
 
-  // Evaluate belt ranks AFTER the transaction commits, so that the freshly
-  // inserted `positions` row counts toward `position_submission_count`
-  // requirements (e.g. 2kyu). Best-effort by design — see
+  // Evaluate belt ranks AFTER the transaction commits. No rank requirement
+  // counts posts any more (2kyu asks for its exam problems instead), so this
+  // rarely grants anything here; it stays because the evaluation is
+  // idempotent and harmless, and removing it would mean reworking how the
+  // post screens receive `grantedRanks`. Best-effort by design — see
   // evaluateRanksAfterCreate.
   const grantedRanks: GrantedRank[] = await evaluateRanksAndRefreshEntitlements(
     user.id,

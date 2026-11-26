@@ -3,7 +3,8 @@
  *
  * @description
  * Evaluates whether a user qualifies for belt rank promotions after completing
- * challenges. Uses an evaluator pattern: one function per requirement `type`
+ * challenges, passing exam problems or publishing games. Uses an evaluator
+ * pattern: one function per requirement `type`
  * (e.g., `challenge_score`). Every unachieved rank is evaluated independently —
  * an unmet lower rank never blocks a higher one (skip-grants are allowed by
  * design). Grants are idempotent via `onConflictDoNothing`.
@@ -12,7 +13,7 @@
  *
  * Evaluators are keyed by `requirement.type`, not by rank slug. This means:
  * - Adding a new rank: seed data only, no code changes.
- * - Adding a new requirement type (e.g., `post_count`): add one evaluator to
+ * - Adding a new requirement type: add one evaluator to
  *   the `evaluators` record here, and a type guard branch in
  *   `parseRequirements` (`./data/ranks.ts` — the type guards live there, not
  *   in this module).
@@ -35,13 +36,30 @@
  * both 1kyu and 1dan in the same pass would otherwise run that query twice.
  * `RankEvalContext.getWonPublicGames()` fetches it once (lazily, only if a
  * game-based evaluator actually runs) and both evaluators filter the shared
- * result in TS.
+ * result in TS. `getCompletedStepKeys()` does the same for `exam_problem`:
+ * 2kyu's two problems read one fetch of the user's `dojo_step_completions`.
+ *
+ * @design Exams grant through the ordinary pass, one problem at a time
+ *
+ * An exam problem is solved and recorded on its own: `submitExamProblem`
+ * (`lib/dojo/exam.ts`) grades the answer and, on a pass, writes
+ * `exam:<rank>:<problem>` to `dojo_step_completions`. It never inserts into
+ * `user_ranks` itself. The caller then runs this evaluation, and the
+ * `exam_problem` evaluator sees the row; once every problem of the exam is
+ * recorded, the rank is granted like any other. Keeping one grant path means
+ * the web's promotion modal and the app's `grantedRanks` work unchanged, and
+ * recording problems singly means no progress state has to span screens.
  *
  * @design Where the belt system (段級位) lives
  *
- * - Tables: `ranks` (admin-managed master data) and `user_ranks` (INSERT-only
- *   achievement history, service role only) in `./schema/ranks.ts`; RLS in
- *   `drizzle/supabase/rls_policies.sql` (SELECT only for authenticated/anon).
+ * - Tables: `ranks` (admin-managed master data), `user_ranks` (INSERT-only
+ *   achievement history, service role only) and `dojo_step_completions`
+ *   (completed guide pages and passed exam problems, read by `exam_problem`)
+ *   in `./schema/ranks.ts`; RLS in `drizzle/supabase/rls_policies.sql`.
+ * - Exam problems: the problems and the grader are shared constants in
+ *   `@blindfold-chess/features/dojo-journey`; `lib/dojo/exam.ts` grades and
+ *   records a pass, `lib/dojo/step-completions.ts` reads and writes the
+ *   completed-steps set.
  * - Definitions: `./data/ranks.ts` — `ranksSeedData` (requirements are JSONB
  *   arrays, implicit AND; `[]` means "conditions not yet defined"),
  *   `ALL_RANK_SLUGS`, `RANK_COLORS`, the `RankRequirement` union and
@@ -51,8 +69,13 @@
  * - Triggers: every rank-relevant write calls
  *   `evaluateRanksAndRefreshEntitlements` (`./rank-grant-flow.ts`, which also
  *   refreshes the dan-tier ad-free cookie): `save-challenge-result.ts`,
- *   `lib/positions/user-position-mutations.ts`, `games/shared/_actions/publish-game.ts`
- *   and `games/shared/[id]/_actions/claim-shared-game.ts`.
+ *   `games/shared/_actions/publish-game.ts`,
+ *   `games/shared/[id]/_actions/claim-shared-game.ts` and the web's exam
+ *   Server Action; the mobile exam route (`api/mobile/v1/dojo/exams/...`)
+ *   calls `evaluateRanksAfterCreate` directly. `lib/positions/user-position-mutations.ts`
+ *   still evaluates after a post although no requirement counts posts any
+ *   more — the evaluation is idempotent and harmless, and removing it would
+ *   mean reworking how the post screens pass `grantedRanks` along.
  * - Surfacing: `practice/_components/RankAchievementModal.tsx` reads the
  *   granted ranks that `useChallengeResultSave` stashed in sessionStorage;
  *   `/dojo/ranks` (`dojo/ranks/page.tsx`, ISR) lists every rank in the states
@@ -81,7 +104,8 @@
  * @see {@link checkAndGrantRanks} — entry point
  * @see {@link evaluators} — registry of requirement type evaluators
  */
-import { and, asc, count, eq, inArray } from 'drizzle-orm';
+import { examStepKey } from '@blindfold-chess/features/dojo-journey';
+import { and, asc, eq } from 'drizzle-orm';
 import 'server-only';
 
 import { qualifiesAsHiddenBoardWin } from '@/lib/games/hidden-board-win';
@@ -96,16 +120,16 @@ import { captureError } from '@/lib/sentry/capture-error';
 
 import type {
   ChallengeScoreRequirement,
+  ExamProblemRequirement,
   GamePublishWinHiddenBoardRequirement,
   GamePublishWinRequirement,
   GrantedRank,
-  PositionSubmissionCountRequirement,
   RankRequirement,
 } from './data/ranks';
 import { parseRequirements } from './data/ranks';
 import { publiclyVisible } from './games-visibility';
 import { db } from './index';
-import { challengeBestScores, games, positions, ranks, userRanks } from './schema';
+import { challengeBestScores, dojoStepCompletions, games, ranks, userRanks } from './schema';
 
 // ---------------------------------------------------------------------------
 // Pre-fetched scores cache type
@@ -139,6 +163,11 @@ type RankEvalContext = {
   getBestScore(menuType: string, leaderboardKey: string): number | undefined;
   /** Lazy + memoized: both game evaluators filter this single fetch in TS. */
   getWonPublicGames(): Promise<WonPublicGameRow[]>;
+  /**
+   * The user's `dojo_step_completions` keys. Lazy + memoized: 2kyu has two
+   * `exam_problem` requirements, and both read this one fetch.
+   */
+  getCompletedStepKeys(): Promise<ReadonlySet<string>>;
 };
 
 /**
@@ -148,6 +177,7 @@ type RankEvalContext = {
  */
 export function createRankEvalContext(userId: string, scoreCache: BestScoreCache): RankEvalContext {
   let wonPublicGames: Promise<WonPublicGameRow[]> | null = null;
+  let completedStepKeys: Promise<ReadonlySet<string>> | null = null;
 
   return {
     userId,
@@ -166,6 +196,15 @@ export function createRankEvalContext(userId: string, scoreCache: BestScoreCache
         .from(games)
         .where(and(eq(games.authorId, userId), eq(games.result, 'win'), publiclyVisible()));
       return wonPublicGames;
+    },
+    getCompletedStepKeys: () => {
+      completedStepKeys ??= Promise.resolve(
+        db
+          .select({ stepKey: dojoStepCompletions.stepKey })
+          .from(dojoStepCompletions)
+          .where(eq(dojoStepCompletions.userId, userId))
+      ).then((rows) => new Set(rows.map((row) => row.stepKey)));
+      return completedStepKeys;
     },
   };
 }
@@ -193,14 +232,14 @@ const evaluators: EvaluatorRegistry = {
     const score = ctx.getBestScore(requirement.menuType, requirement.leaderboardKey);
     return score !== undefined && score >= requirement.minScore;
   },
-  position_submission_count: async (ctx, requirement: PositionSubmissionCountRequirement) => {
-    const [row] = await db
-      .select({ value: count() })
-      .from(positions)
-      .where(
-        and(eq(positions.userId, ctx.userId), inArray(positions.type, requirement.positionTypes))
-      );
-    return (row?.value ?? 0) >= requirement.minCount;
+  // A pass is recorded one problem at a time (`submitExamProblem` in
+  // `lib/dojo/exam.ts` writes `exam:<rank>:<problem>` after grading it), so
+  // this only asks whether that row exists. Once every problem of an exam is
+  // recorded, the ordinary pass grants the rank — there is no separate grant
+  // path for exams.
+  exam_problem: async (ctx, requirement: ExamProblemRequirement) => {
+    const completed = await ctx.getCompletedStepKeys();
+    return completed.has(examStepKey(requirement.exam, requirement.problem));
   },
   // The "was it constrained?" test reads a JSONB blob and is product logic
   // worth keeping honest and unit-tested, so it stays in TS rather than
@@ -251,8 +290,8 @@ export async function evaluateRankRequirements(
 /**
  * Check and grant any newly achievable ranks for a user.
  *
- * Called after every rank-relevant trigger (challenge save, position
- * create, game publish, game claim). Evaluates every unachieved rank
+ * Called after every rank-relevant trigger (challenge save, exam problem
+ * pass, game publish, game claim). Evaluates every unachieved rank
  * INDEPENDENTLY, in level order: each rank grants the moment its own
  * requirements are met, regardless of lower ranks — so a brand-new
  * player who publishes a black-belt-grade win jumps straight to 1dan
@@ -329,11 +368,13 @@ export async function checkAndGrantRanks(userId: string): Promise<GrantedRank[]>
 }
 
 /**
- * Best-effort rank evaluation for the tail of a UGC-create flow. Rank
- * evaluation is supplementary and must not fail the create, so failures are
- * swallowed after being reported (console + Sentry). Call AFTER the create
- * transaction commits so the freshly inserted row counts toward
- * count-based requirements (e.g. position_submission_count for 2kyu).
+ * Best-effort rank evaluation for the tail of a write that may earn a rank
+ * (every trigger listed in the module header reaches it, most through
+ * `evaluateRanksAndRefreshEntitlements`). Rank
+ * evaluation is supplementary and must not fail the write, so failures are
+ * swallowed after being reported (console + Sentry). Call AFTER the write
+ * commits so the fresh row is visible to the evaluators (e.g. the
+ * `exam:<rank>:<problem>` step an `exam_problem` requirement looks for).
  */
 export async function evaluateRanksAfterCreate(
   userId: string,

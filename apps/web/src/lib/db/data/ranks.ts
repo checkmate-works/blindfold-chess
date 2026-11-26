@@ -7,8 +7,15 @@
  * Requirement types:
  * - challenge_score: user's best score in a specific challenge must meet minScore.
  *   menuType / leaderboardKey correspond to challenge_results columns.
- * - position_submission_count: user's total posts across `positionTypes` must
- *   meet minCount (OR across types, see {@link PositionSubmissionCountRequirement}).
+ * - exam_problem: user must have passed one problem of a rank's exam (see
+ *   {@link ExamProblemRequirement}). The server grades the answer and records
+ *   the pass in `dojo_step_completions` as `exam:<rank>:<problem>`; the
+ *   requirement is met when that row exists. 2kyu asks for both problems of
+ *   its exam. It used to ask for posting a position-memory problem or a
+ *   puzzle; that requirement type was removed outright (type, guard,
+ *   evaluator, labels) rather than kept unused, because a retired type left in
+ *   the union reads as one still in force, and a rank should not make the user
+ *   create content for others.
  * - game_publish_win: user must have published minCount won engine games played
  *   under a blindfold constraint (see {@link GamePublishWinRequirement}).
  * - game_publish_win_hidden_board: like game_publish_win, but stricter — the
@@ -26,15 +33,15 @@
 import { RANK_REQUIREMENTS } from '@blindfold-chess/features/dojo-ranks';
 import type {
   ChallengeScoreRequirement,
+  ExamProblemRequirement,
   GamePublishWinHiddenBoardRequirement,
   GamePublishWinRequirement,
-  PositionSubmissionCountRequirement,
   RankRequirement,
 } from '@blindfold-chess/features/dojo-ranks';
 
 export type {
   ChallengeScoreRequirement,
-  PositionSubmissionCountRequirement,
+  ExamProblemRequirement,
   GamePublishWinRequirement,
   GamePublishWinHiddenBoardRequirement,
   RankRequirement,
@@ -102,17 +109,20 @@ export function isChallengeScoreRequirement(value: unknown): value is ChallengeS
   );
 }
 
-export function isPositionSubmissionCountRequirement(
-  value: unknown
-): value is PositionSubmissionCountRequirement {
+/**
+ * An `exam_problem` requirement names an earned rank's exam (never Mukyu,
+ * which has no exam) and one of the two problem kinds. Any other shape is
+ * dropped by {@link parseRequirements}.
+ */
+export function isExamProblemRequirement(value: unknown): value is ExamProblemRequirement {
   if (typeof value !== 'object' || value === null) return false;
   const record = value as Record<string, unknown>;
   return (
-    record.type === 'position_submission_count' &&
-    Array.isArray(record.positionTypes) &&
-    record.positionTypes.length > 0 &&
-    record.positionTypes.every((t) => t === 'memory' || t === 'puzzle') &&
-    typeof record.minCount === 'number'
+    record.type === 'exam_problem' &&
+    typeof record.exam === 'string' &&
+    record.exam !== 'mukyu' &&
+    (ALL_RANK_SLUGS as readonly string[]).includes(record.exam) &&
+    (record.problem === 'position_memory' || record.problem === 'puzzle')
   );
 }
 
@@ -137,7 +147,7 @@ export function isGamePublishWinHiddenBoardRequirement(
 function isRankRequirement(value: unknown): value is RankRequirement {
   return (
     isChallengeScoreRequirement(value) ||
-    isPositionSubmissionCountRequirement(value) ||
+    isExamProblemRequirement(value) ||
     isGamePublishWinRequirement(value) ||
     isGamePublishWinHiddenBoardRequirement(value)
   );
