@@ -19,7 +19,9 @@ replaced by the platform's own parts or their common app equivalents.
   bar that shrinks on scroll, Material 3 on Android). Icons are SF Symbols on
   iOS and Material Community Icons (via `VectorIcon`) on Android. Each tab is
   a stack with only its entry screen (`TabStack` in
-  `navigation/stack-options.tsx`, left-aligned 22pt title). The tabs layout
+  `navigation/stack-options.tsx`, left-aligned 22pt title; on iOS 26
+  without the glass capsule behind the title, and with the hairline under
+  the header that pushed screens leave out). The tabs layout
   is also the onboarding gate: `/` is the home tab, and a first launch is
   redirected to `/onboarding`. `NativeTabs` is unstable API: re-check its
   props whenever the Expo SDK changes. Five is the iOS bar's limit before it
