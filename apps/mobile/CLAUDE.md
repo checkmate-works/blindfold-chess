@@ -313,15 +313,16 @@ database. Sign-in calls Supabase Auth directly; sign-up goes through
     picks the destination so the screens cannot disagree. A cell is the way
     into its whole stage, so every cell opens that stage's list: learn →
     the learn tab's list of guides, practice → the practice list narrowed
-    to the rank (both tabs, so `router.navigate`, since `push` would stack
-    a second list on the tab), exam → the rank's requirements screen
+    to the rank (both tabs, so `router.dismissTo`: from a root-stack screen
+    such as the rank screen, `navigate` reuses a route only when it is on
+    top and would push a second set of tabs), exam → the rank's requirements screen
     (`dojo/requirements/[rank]`, `requirementsHref`): "Passed n / N" over
     `RankRequirementList`, so the player sees at a glance which
     requirements are already passed rather than landing in the first unmet
     one's screen. Once all are met (or the rank is held) it ends with a
     row to the next rank's screen (not its requirements: a rank starts
     with its guide and practice), none on 1dan. The requirements screen
-    never shows the cells, so `navigate` to it always pushes. The
+    is pushed. The
     next-step button (`stepTarget`) is what goes straight to the one next
     thing (for learn, the next unread page itself, `?page=<n>`).
   - the learn tab (`(tabs)/learn`) opens with the guides, one row per guide

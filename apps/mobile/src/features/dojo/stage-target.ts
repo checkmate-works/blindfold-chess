@@ -7,7 +7,7 @@ import type { RankSlug } from "@blindfold-chess/features/dojo-ranks";
 
 /**
  * The learn tab, whose first section lists every guide with how far it is
- * read. A tab, so it is switched to with `router.navigate` rather than
+ * read. A tab, so it is returned to with `router.dismissTo` rather than
  * pushed over the current screen.
  */
 export const GUIDE_LIST_HREF: Href = "/learn";
@@ -63,9 +63,10 @@ export function rankDetailHref(rank: RankSlug): Href {
  *   and on a rank of several requirements would choose one for the player.
  *
  * Practice and learn are tabs and the requirements screen sits on the root
- * stack; `RankStageProgress` opens all three with `router.navigate`, which
- * switches to a tab rather than stacking a second copy of it, and pushes
- * the requirements screen like any other root-stack screen.
+ * stack; `RankStageProgress` opens the tabs with `router.dismissTo`, which
+ * pops back to the tabs already underneath instead of stacking a second
+ * copy (what `router.navigate` does from a root-stack screen such as the
+ * rank screen), and pushes the requirements screen.
  */
 export function stageTarget(stage: JourneyStage, journey: RankJourney): Href {
   switch (stage) {

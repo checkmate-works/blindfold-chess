@@ -40,7 +40,7 @@ function NoRequirements({ rank }: { readonly rank: RankSlug | undefined }) {
         <ListRow
           leading={<ListIcon ionicon="ribbon-outline" />}
           title={t("tabs.dojo")}
-          onPress={() => router.navigate("/dojo")}
+          onPress={() => router.dismissTo("/dojo")}
         />
       )}
     </ListSection>
