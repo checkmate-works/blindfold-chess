@@ -68,11 +68,7 @@ export default function DojoTab() {
 
       {next ? (
         <>
-          <RankGoalCard
-            slug={next}
-            standing="next"
-            eyebrow={t("dojo.nextRank")}
-          />
+          <RankGoalCard slug={next} eyebrow={t("dojo.nextRank")} />
           <RankRequirementList
             slug={next}
             title={t("dojo.requirementsTitle")}

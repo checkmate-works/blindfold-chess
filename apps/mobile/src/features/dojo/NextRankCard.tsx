@@ -47,7 +47,7 @@ export function NextRankCard() {
   const target = first ? requirementTarget(first) : undefined;
 
   return (
-    <RankGoalCard slug={next} standing="next" eyebrow={t("home.nextRankTitle")}>
+    <RankGoalCard slug={next} eyebrow={t("home.nextRankTitle")}>
       <View style={styles.actions}>
         {first && target && (
           <Button

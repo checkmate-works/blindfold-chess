@@ -29,6 +29,10 @@ export function RankGoalCard({
   children,
 }: {
   readonly slug: RankSlug;
+  /**
+   * The standing pill. Left out where the caption already says it (a card
+   * captioned "Next goal" needs no "Next" pill).
+   */
   readonly standing?: RankStanding;
   /** A caption above the rank's name ("Next goal"). */
   readonly eyebrow?: string;
