@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { RemoteChallengePort } from "@blindfold-chess/features/challenge-attempt";
+import { getChallengeModule } from "@blindfold-chess/features/challenge-attempt/modules";
+import { challengeKey } from "@blindfold-chess/features/dojo-journey";
 import type { ChallengeMenuType } from "@blindfold-chess/features/practice-registry";
 
 import { useAuth } from "../../auth/use-auth";
@@ -19,6 +21,35 @@ const UNRECORDED = {
   attemptId: null,
   remote: undefined,
 } as const;
+
+/**
+ * The leaderboard (`<menuType>:<leaderboardKey>`) of the signed-out run in
+ * progress, if any. The run is decided here, where its settings are known;
+ * whether it ends is only known when its result screen shows, which reads
+ * this through {@link takeSignedOutRunKey}.
+ */
+let signedOutRunKey: string | undefined;
+
+function leaderboardOf(
+  menuType: ChallengeMenuType,
+  settings: unknown,
+): string | undefined {
+  const definition = getChallengeModule(menuType);
+  const parsed = definition?.parseSettings(settings);
+  if (!definition || parsed === null || parsed === undefined) return undefined;
+  return challengeKey(menuType, definition.leaderboardKey(parsed));
+}
+
+/**
+ * The signed-out run that just reached its result, handed over once: a
+ * second call (the result screen re-rendering, or another result screen
+ * later) gets nothing until another signed-out run starts.
+ */
+export function takeSignedOutRunKey(): string | undefined {
+  const key = signedOutRunKey;
+  signedOutRunKey = undefined;
+  return key;
+}
 
 /**
  * Decides once, before the session starts, whether this run is recorded:
@@ -51,9 +82,11 @@ export function useChallengeAttempt<Q>(
     if (settled.current || !authResolved) return;
     if (!signedIn) {
       settled.current = true;
+      signedOutRunKey = leaderboardOf(menuType, settingsRef.current);
       setState(UNRECORDED);
       return;
     }
+    signedOutRunKey = undefined;
     let cancelled = false;
     void beginChallenge<Q>(menuType, settingsRef.current).then((result) => {
       if (cancelled) return;

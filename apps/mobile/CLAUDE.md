@@ -246,14 +246,36 @@ database. Sign-in calls Supabase Auth directly; sign-up goes through
   the `useAuth` store.
 - **The dojo** (`(tabs)/dojo`, `features/dojo/`) draws the belt ladder from
   `@blindfold-chess/features/dojo-ranks` (order, colours, requirements; the
-  web seed is pinned to it by a test), the account's `highestRank`, and
-  `GET /dojo` (ranks held, best challenge scores) to mark each requirement
-  met. The app asks its own 2kyu requirement: an exam of fixed
-  position-memory problems (`features/dojo/exams.ts`, the position-memory
-  session with an `exam` param) instead of the web's posting. A pass is
-  kept on the device only and raises the shown rank from 3kyu
-  (`effectiveHighestRank`); the server's grants are unchanged. 1kyu and
-  1dan (publishing a game) still open the web.
+  web seed is pinned to it by a test) and asks exactly the shared
+  requirements, as the web does. Each rank is a journey of three stages
+  built by `@blindfold-chess/features/dojo-journey`: learn (one step per
+  guide page), practice (each `challenge_score` challenge finished once)
+  and exam (the requirements). `useDojoJourney` is the one input every
+  screen reads:
+  - the rank is the server's only (the account's `highestRank`); nothing
+    on the device raises it.
+  - signed in: completed steps are `GET /dojo`'s `completedSteps` plus the
+    user's pages not sent yet; best scores are the server's. Signed out:
+    the device's guest marks, no scores.
+  - the device's marks (`progress-store.ts`, AsyncStorage
+    `"DOJO_PROGRESS"`) are kept per owner — `guest` (pages, challenges
+    finished signed out) and `byUser[userId].pendingSteps` — so a shared
+    device never gives one person's pages to another. The guest's pages go
+    to the first account that signs in, once (`guestImported`); its
+    challenge marks are never sent.
+  - `syncDojoProgress` (`progress-sync.ts`, on focus and sign-in) imports
+    the guest's pages, sends the pending ones (`POST /dojo/steps`, 100 per
+    request), drops what the server answered for, then reads `GET /dojo`.
+    A failed request keeps the pending pages for the next sync.
+  - the guide screen marks a page read on Next, and the last page with
+    "Mark as read". Only `guide:` keys are ever reported.
+  - an exam problem (`dojo/exams/[rank]`, then the position-memory or
+    puzzle session with an `exam` param) is graded by its result screen
+    (`exam-run.ts`, `ExamVerdictCard`): a signed-in player for whom the
+    exam is the next rank or a held one sends the answer to
+    `POST /dojo/exams/[rank]/[problem]` and the server grades and records
+    it; anyone else is graded on the device and nothing is recorded.
+    1kyu and 1dan (publishing a game) still open the web.
 - `(account)` screens: welcome (the account offer that ends onboarding),
   sign-in, sign-up, setup-username, records (the user's own ranks).
   Settings has the Account section.

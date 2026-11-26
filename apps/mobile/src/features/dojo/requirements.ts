@@ -1,12 +1,13 @@
 import type { TFunction } from "i18next";
 import {
+  RANK_REQUIREMENTS,
   isRankSlug,
+  type EarnedRankSlug,
+  type RankRequirement,
   type RankSlug,
 } from "@blindfold-chess/features/dojo-ranks";
 import { MODULE_TO_SLUG } from "@blindfold-chess/features/practice-registry";
 
-import { examFor } from "./exams";
-import type { MobileRankRequirement } from "./mobile-requirements";
 import { hasGuide } from "../guides/content";
 import {
   MOBILE_PRACTICE_MODULES,
@@ -15,19 +16,13 @@ import {
 
 /**
  * Where a requirement row takes the player: a practice module's setup
- * screen in the app, or a page of the web app for what the app does not do
- * (posting positions and publishing games, which are the social side the
- * first mobile release leaves out).
+ * screen or a rank's exam in the app, or a page of the web app for what the
+ * app does not do (publishing games, the social side the first mobile
+ * release leaves out).
  */
 export type RequirementTarget =
   | { readonly kind: "practice"; readonly pathname: string }
   | { readonly kind: "web"; readonly path: string };
-
-/** The web page each kind of posted position is created on. */
-const SUBMISSION_PATHS = {
-  memory: "/practice/position-memory/new",
-  puzzle: "/practice/puzzle/new",
-} as const;
 
 /** Where a published game starts on the web. */
 const NEW_GAME_PATH = "/games/new/standard";
@@ -42,11 +37,12 @@ export function guidePath(slug: RankSlug): string | undefined {
 }
 
 export function requirementTarget(
-  requirement: MobileRankRequirement,
+  requirement: RankRequirement,
 ): RequirementTarget {
   switch (requirement.type) {
-    case "dojo_exam":
-      return { kind: "practice", pathname: `/dojo/exams/${requirement.rank}` };
+    case "exam_problem":
+      // Every problem of a rank's exam is listed on one screen.
+      return { kind: "practice", pathname: `/dojo/exams/${requirement.exam}` };
     case "challenge_score": {
       const slug = (MODULE_TO_SLUG as Record<string, string>)[
         requirement.menuType
@@ -61,11 +57,6 @@ export function requirementTarget(
           }
         : { kind: "web", path: `/practice/${slug ?? ""}` };
     }
-    case "position_submission_count":
-      return {
-        kind: "web",
-        path: SUBMISSION_PATHS[requirement.positionTypes[0] ?? "memory"],
-      };
     case "game_publish_win":
     case "game_publish_win_hidden_board":
       return { kind: "web", path: NEW_GAME_PATH };
@@ -77,14 +68,15 @@ export function requirementTarget(
  * (`ranks.requirement.*`, copied from the web dictionary).
  */
 export function requirementLabel(
-  requirement: MobileRankRequirement,
+  requirement: RankRequirement,
   t: TFunction,
 ): string {
   switch (requirement.type) {
-    case "dojo_exam":
-      return t("dojo.exam.requirement", {
-        rank: t(`ranks.names.${requirement.rank}`),
-        count: examFor(requirement.rank)?.fens.length ?? 0,
+    case "exam_problem":
+      return t("ranks.requirement.examProblem", {
+        rank: t(`ranks.names.${requirement.exam}`),
+        // ranks.requirement.examProblemNames.position_memory / .puzzle
+        problem: t(`ranks.requirement.examProblemNames.${requirement.problem}`),
       });
     case "challenge_score": {
       // ranks.challengeNames.square_colors, ranks.challengeNames.legal_moves_king, …
@@ -97,16 +89,6 @@ export function requirementLabel(
         minScore: requirement.minScore,
       });
     }
-    case "position_submission_count":
-      return requirement.positionTypes
-        .map((type) =>
-          t("ranks.requirement.submissionCount", {
-            // ranks.requirement.submissionItemNames.memory / .puzzle
-            itemName: t(`ranks.requirement.submissionItemNames.${type}`),
-            minCount: requirement.minCount,
-          }),
-        )
-        .join(` ${t("ranks.requirement.orDivider")} `);
     case "game_publish_win":
       return t("ranks.requirement.gamePublishWin");
     case "game_publish_win_hidden_board":
@@ -122,3 +104,17 @@ export function parseHighestRank(
 ): RankSlug | undefined {
   return isRankSlug(value) ? value : undefined;
 }
+
+/**
+ * A rank's requirements: exactly the shared `RANK_REQUIREMENTS`, which the
+ * app asks as the web does. Kept only for the screens that still list
+ * requirements through it, until they read the rank's journey instead.
+ */
+export function mobileRankRequirements(
+  slug: EarnedRankSlug,
+): readonly RankRequirement[] {
+  return RANK_REQUIREMENTS[slug];
+}
+
+/** The shared requirement type, under the name the older screens import. */
+export type MobileRankRequirement = RankRequirement;

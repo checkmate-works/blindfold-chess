@@ -33,6 +33,7 @@ import {
   serializeFenResultParams,
   type FenSessionParams,
 } from "../../../../features/fen/lib/route-params";
+import { memoryExamProblemOf } from "../../../../features/dojo/exam-run";
 import { parseIntParam } from "../../../../lib/route-params";
 import {
   useTheme,
@@ -65,10 +66,16 @@ export default function PositionMemorySession() {
   const params = useLocalSearchParams<
     FenSessionParams & { seconds?: string; exam?: string }
   >();
-  const memorizeSeconds = parseIntParam(params.seconds, {
-    min: 1,
-    fallback: 30,
-  });
+  // A dojo exam run (`exam` param) plays the exam's one problem with its own
+  // clock, whatever else the link carries, so the position recreated is the
+  // one the result screen sends for grading.
+  const [examProblem] = useState(() => memoryExamProblemOf(params.exam));
+  const memorizeSeconds =
+    examProblem?.memorizeSeconds ??
+    parseIntParam(params.seconds, {
+      min: 1,
+      fallback: 30,
+    });
 
   // `usePieceAccuracy` resolves `pieceNames.<piece>` / `scoreDescriptions.<kind>`
   // relative to the namespace it is handed; on mobile that is `fen`, and the
@@ -82,6 +89,9 @@ export default function PositionMemorySession() {
   // Read once: a reshuffle on a later render would swap the problem under the
   // player's fingers.
   const [initialPositions] = useState(() => {
+    if (examProblem) {
+      return selectInitialPositions(undefined, [examProblem.fen], 1, false);
+    }
     const { fens, problemCount, shuffle } = parseFenSessionParams(params);
     return selectInitialPositions(
       undefined,
@@ -157,11 +167,12 @@ export default function PositionMemorySession() {
       pathname: "/practice/position-memory/result",
       params: {
         ...serializeFenResultParams(summary, positions.length),
-        // A dojo exam run (`dojo/exams/[rank]`) is graded on the result screen.
-        ...(params.exam ? { exam: params.exam } : {}),
+        // A dojo exam run (`dojo/exams/[rank]`) is graded on the result
+        // screen, from the recreated position in `results`.
+        ...(examProblem && params.exam ? { exam: params.exam } : {}),
       },
     });
-  }, [phase, session, positions.length, router, params.exam]);
+  }, [phase, session, positions.length, router, params.exam, examProblem]);
 
   // Blank while the hand-off to the result screen is in flight.
   if (!originalPosition || phase === "result") {

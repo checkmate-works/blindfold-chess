@@ -5,8 +5,10 @@ import { useTranslation } from "react-i18next";
 import { useTheme, borderRadius, fontSize, spacing } from "../../theme";
 import { refreshAccount, useAuth as useAuthState } from "../../auth/use-auth";
 import { rankLabel } from "../records/rank-label";
+import { markGuestAttempt } from "../dojo/progress-store";
 import { finishChallenge } from "./challenge-api";
 import { ChallengeSignInRow } from "./ChallengeSignInRow";
+import { takeSignedOutRunKey } from "./useChallengeAttempt";
 
 type Status = "saving" | "recorded" | "notRecorded" | "failed";
 
@@ -28,6 +30,22 @@ export function ChallengeRecordStatus({
   const auth = useAuthState();
   const [status, setStatus] = useState<Status>("saving");
   const [promoted, setPromoted] = useState<string[]>([]);
+
+  // A signed-out run that reached its result marks its challenge as
+  // practised on this device. The dojo's "practice" stage asks, per
+  // `challenge_score` requirement, whether the player has finished that
+  // challenge at least once, counted per `(menuType, leaderboardKey)` — the
+  // unit the server's best scores are kept in, so a signed-in player's
+  // `challenge_best_scores` rows answer the same question without anything
+  // new being stored. A signed-out run never reaches the server, so the
+  // device keeps the mark instead.
+  const signedOut =
+    auth.status === "signedOut" || auth.status === "unavailable";
+  useEffect(() => {
+    if (attemptId || !signedOut) return;
+    const key = takeSignedOutRunKey();
+    if (key) void markGuestAttempt(key);
+  }, [attemptId, signedOut]);
 
   useEffect(() => {
     if (!attemptId) return;

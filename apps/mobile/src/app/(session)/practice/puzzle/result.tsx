@@ -7,7 +7,7 @@ import {
   useWindowDimensions,
 } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter, type Href } from "expo-router";
 import { useTranslation } from "react-i18next";
 import {
   fullmoveNumberFromFen,
@@ -20,6 +20,11 @@ import type {
 
 import { BottomBar, Button, ListSection, Screen } from "../../../../components";
 import { useAuth } from "../../../../auth/use-auth";
+import { ExamVerdictCard } from "../../../../features/dojo/ExamVerdictCard";
+import {
+  examRankOf,
+  puzzleExamProblemOf,
+} from "../../../../features/dojo/exam-run";
 import {
   AttemptHistoryPanel,
   AttemptStatusBadge,
@@ -52,6 +57,10 @@ function parseJson<T>(value: string | undefined, fallback: T): T {
  * the puzzle's page, as on the web; "Back to Puzzles" to the list. The
  * web's like, author, next puzzles, sign-up banner and Lichess analysis are
  * not ported.
+ *
+ * A dojo exam run (`exam` param) leads with the verdict on the player's
+ * moves (`ExamVerdictCard`), earns no free-play EXP (the exam records its
+ * own pass), and has one way out, back to the exam.
  */
 export default function PuzzleResult() {
   const { t } = useTranslation();
@@ -59,7 +68,6 @@ export default function PuzzleResult() {
   const { colors, feedbackColors } = useTheme();
   const { width } = useWindowDimensions();
   const auth = useAuth();
-  const { close } = useCloseSession("/practice/puzzle");
   const params = useLocalSearchParams<{
     id: string;
     title: string;
@@ -69,7 +77,21 @@ export default function PuzzleResult() {
     solution: string;
     peekCount: string;
     playerMoveCount: string;
+    exam?: string;
+    moves?: string;
   }>();
+  const exam = examRankOf(params.exam);
+  const examProblem = puzzleExamProblemOf(params.exam);
+  const examMoves = useMemo(
+    () =>
+      parseJson<unknown[]>(params.moves, []).filter(
+        (move): move is string => typeof move === "string",
+      ),
+    [params.moves],
+  );
+  const { close } = useCloseSession(
+    exam ? (`/dojo/exams/${exam}` as Href) : "/practice/puzzle",
+  );
   const attempts = useMemo(
     () => parseJson<Attempt[]>(params.attempts, []),
     [params.attempts],
@@ -85,14 +107,14 @@ export default function PuzzleResult() {
   const sent = useRef(false);
 
   useEffect(() => {
-    if (!solved || sent.current || auth.status !== "signedIn") return;
+    if (exam || !solved || sent.current || auth.status !== "signedIn") return;
     sent.current = true;
     void savePuzzleResult({
       playerMoveCount: Number(params.playerMoveCount) || 0,
       incorrectAttempts: attempts.filter((a) => !a.isCorrect).length,
       peekCount,
     }).then(setRecorded);
-  }, [solved, auth.status, params.playerMoveCount, attempts, peekCount]);
+  }, [exam, solved, auth.status, params.playerMoveCount, attempts, peekCount]);
 
   const history = useMemo(() => {
     if (!fen || attempts.length === 0) return null;
@@ -125,6 +147,14 @@ export default function PuzzleResult() {
   return (
     <Screen edges={[]}>
       <ScrollView contentContainerStyle={styles.content}>
+        {exam && examProblem && (
+          <ExamVerdictCard
+            exam={exam}
+            kind="puzzle"
+            problem={examProblem}
+            answer={{ moves: examMoves }}
+          />
+        )}
         {fen ? (
           <ListSection title={t("puzzle.result.replaySection")}>
             <View style={styles.replay}>
@@ -173,14 +203,16 @@ export default function PuzzleResult() {
           testID="puzzle-try-again"
           onPress={close}
         />
-        <Button
-          title={t("puzzle.result.backToList")}
-          variant="secondary"
-          size="lg"
-          fullWidth
-          testID="puzzle-back-to-list"
-          onPress={backToList}
-        />
+        {!exam && (
+          <Button
+            title={t("puzzle.result.backToList")}
+            variant="secondary"
+            size="lg"
+            fullWidth
+            testID="puzzle-back-to-list"
+            onPress={backToList}
+          />
+        )}
       </BottomBar>
     </Screen>
   );
