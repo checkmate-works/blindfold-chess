@@ -9,6 +9,7 @@ import {
   TabScrollView,
 } from "../../../components";
 import { AiGameCard } from "../../../features/ai-game/components/AiGameCard";
+import { NextRankCard } from "../../../features/dojo/NextRankCard";
 import { ProgressCard } from "../../../features/records/ProgressCard";
 import { useSignUpOffer } from "../../../features/onboarding/hooks/useSignUpOffer";
 import { useOnboardingStatus } from "../../../hooks/useOnboardingStatus";
@@ -21,9 +22,10 @@ import {
 const QUICK_START_SLUGS = ["coordinate-quiz", "square-colors", "legal-moves"];
 
 /**
- * The home tab: the AI game first (the web home leads with the same card),
- * then a quick start into the entry-level practice modules and the way back
- * into the introduction. It is also where the account offer that ends
+ * The home tab: the player's progress, the next rank to aim for with a way
+ * into the dojo (`NextRankCard`, from the account's current rank), the AI
+ * game (the web home leads with the same card), then a quick start into
+ * the entry-level practice modules and the way back into the introduction. It is also where the account offer that ends
  * onboarding opens (`useSignUpOffer`).
  */
 export default function HomeTab() {
@@ -39,6 +41,7 @@ export default function HomeTab() {
   return (
     <TabScrollView>
       <ProgressCard />
+      <NextRankCard />
       <AiGameCard
         buttonTitle={t("home.playAi")}
         onPress={() => router.push("/play/ai-game")}
