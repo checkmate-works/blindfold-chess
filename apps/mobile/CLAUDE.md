@@ -428,6 +428,16 @@ there plus its route files (`practice/<route>/index.tsx` and
 route files exist. The challenge rules (`MISTAKE_LIMIT`,
 `CHALLENGE_TIME_LIMIT`) come from the same package.
 
+**The practice catalogue uses illustrated cards** (`features/practice-list/`).
+`PracticeCard` combines the module title, a static worked example
+(`PracticeCardVisual`), description, rank and optional journey progress.
+The whole card opens setup; illustrations have no interactive children,
+timers or screen-reader stops. `PracticeCardSection` spaces cards without
+an enclosing list frame. Home quick starts and Play’s recall entry reuse
+the same card. Boards use the player’s board theme through `StaticBoard`;
+small previews omit coordinate letters. Settings and history remain grouped
+lists because they do not need practice illustrations.
+
 **The list narrows by rank** (`features/practice-list/`). A practice's rank
 is `rankForPracticeMenuType` from `@blindfold-chess/features/dojo-ranks`,
 the same function the web's practice badges read. The chips are All plus

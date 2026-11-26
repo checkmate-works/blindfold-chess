@@ -1,5 +1,4 @@
 import { useRouter } from "expo-router";
-import type { Href } from "expo-router";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -8,23 +7,21 @@ import {
   ListSection,
   TabScrollView,
 } from "../../../components";
+import { PracticeCard } from "../../../features/practice-list/PracticeCard";
+import { PracticeCardSection } from "../../../features/practice-list/PracticeCardSection";
+import { Button } from "../../../components/Button";
 import { AiGameCard } from "../../../features/ai-game/components/AiGameCard";
 import { NextRankCard } from "../../../features/dojo/NextRankCard";
 import { ProgressCard } from "../../../features/records/ProgressCard";
 import { useSignUpOffer } from "../../../features/onboarding/hooks/useSignUpOffer";
 import { useOnboardingStatus } from "../../../hooks/useOnboardingStatus";
-import {
-  MOBILE_PRACTICE_MODULES,
-  practiceModuleRoute,
-} from "../../../navigation/practice-modules";
+import { MOBILE_PRACTICE_MODULES } from "../../../navigation/practice-modules";
 
 /** The modules the home tab offers as a quick start, in this order. */
 const QUICK_START_SLUGS = ["coordinate-quiz", "square-colors", "legal-moves"];
 
-/** The puzzle module's icon, for the daily puzzle row. */
-const PUZZLE_ICON = MOBILE_PRACTICE_MODULES.find(
-  (m) => m.slug === "puzzle",
-)?.icon;
+/** The featured puzzle uses the same card as the catalogue. */
+const PUZZLE_MODULE = MOBILE_PRACTICE_MODULES.find((m) => m.slug === "puzzle");
 
 /**
  * The home tab, top to bottom: the next rank to aim for with a way into the
@@ -60,31 +57,20 @@ export default function HomeTab() {
         onPress={() => router.push("/play/ai-game")}
       />
 
-      <ListSection title={t("home.startPractice")}>
-        {/* practice.coordinateQuiz.title, practice.squareColors.title, practice.legalMoves.title (+ .description) */}
+      <PracticeCardSection title={t("home.startPractice")}>
         {quickStart.map((item) => (
-          <ListRow
-            key={item.slug}
-            leading={<ListIcon ionicon={item.icon} />}
-            title={t(`practice.${item.i18nKey}.title`)}
-            subtitle={t(`practice.${item.i18nKey}.description`)}
-            onPress={() =>
-              router.push(`/practice/${practiceModuleRoute(item)}` as Href)
-            }
-          />
+          <PracticeCard key={item.slug} module={item} />
         ))}
-        <ListRow
-          leading={<ListIcon ionicon={PUZZLE_ICON} />}
-          title={t("puzzle.daily")}
-          subtitle={t("practice.puzzle.description")}
-          onPress={() => router.push("/practice/puzzle")}
-        />
-        <ListRow
-          leading={<ListIcon ionicon="apps-outline" />}
+        {PUZZLE_MODULE && (
+          <PracticeCard module={PUZZLE_MODULE} title={t("puzzle.daily")} />
+        )}
+        <Button
           title={t("home.allPractice")}
+          variant="outline"
+          fullWidth
           onPress={() => router.navigate("/practice")}
         />
-      </ListSection>
+      </PracticeCardSection>
 
       <ListSection title={t("home.gettingStarted")}>
         <ListRow
