@@ -13,6 +13,8 @@ import { useTheme, borderRadius, fontSize, spacing } from "../../../theme";
 
 /** PGN result token for the player's result and colour. */
 function resultToken(game: SavedGame): string {
+  // PGN's token for a game still being played.
+  if (game.result === undefined) return "*";
   if (game.result === "draw") return "1/2-1/2";
   const whiteWon = (game.result === "win") === (game.playerColor === "white");
   return whiteWon ? "1-0" : "0-1";
@@ -93,7 +95,11 @@ export default function SavedGameScreen() {
         <ListSection>
           <ListRow
             title={t("gameHistory.resultLabel")}
-            value={t(`gameHistory.result.${game.result}`)}
+            value={
+              game.result
+                ? t(`gameHistory.result.${game.result}`)
+                : t("gameHistory.inProgress")
+            }
           />
           <ListRow
             title={t("gameHistory.sideLabel")}
@@ -120,8 +126,23 @@ export default function SavedGameScreen() {
           </Text>
         </View>
 
+        {game.result === undefined && (
+          <Button
+            title={t("gameHistory.resume")}
+            icon="play"
+            size="lg"
+            fullWidth
+            onPress={() =>
+              router.push({
+                pathname: "/play/ai-game/session",
+                params: { resume: game.id },
+              })
+            }
+          />
+        )}
         <Button
           title={t("gameHistory.recall")}
+          variant={game.result === undefined ? "outline" : "primary"}
           size="lg"
           fullWidth
           onPress={() =>

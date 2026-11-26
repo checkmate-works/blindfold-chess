@@ -19,6 +19,7 @@ import {
   fontWeight,
   spacing,
   borderRadius,
+  monoFont,
 } from "../../../theme";
 
 type MoveHistoryProps = {
@@ -27,13 +28,19 @@ type MoveHistoryProps = {
   startingFen?: string;
 };
 
+/**
+ * The game so far as one line of moves that scrolls sideways, the web's
+ * strip above the board ("1. e4 e5 2. Nf3 ..."), kept at the latest move.
+ * One line because the session has to fit the board and the keypad on a
+ * phone screen with it; the full list is on the saved game's page.
+ */
 export function MoveHistory({ moves, startingFen }: MoveHistoryProps) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const scrollViewRef = useRef<ScrollViewInstance>(null);
 
   useEffect(() => {
-    // Auto-scroll to bottom on new move
+    // Keep the latest move in view.
     if (scrollViewRef.current) {
       scrollViewRef.current.scrollToEnd({ animated: true });
     }
@@ -44,6 +51,7 @@ export function MoveHistory({ moves, startingFen }: MoveHistoryProps) {
       <View
         style={[
           styles.container,
+          styles.empty,
           { backgroundColor: colors.card, borderColor: colors.border },
         ]}
       >
@@ -68,6 +76,14 @@ export function MoveHistory({ moves, startingFen }: MoveHistoryProps) {
 
   const lastMoveIndex = moves.length - 1;
 
+  const moveStyle = (isLast: boolean) => [
+    styles.moveText,
+    {
+      color: colors.foreground,
+      backgroundColor: isLast ? colors.accent : "transparent",
+    },
+  ];
+
   return (
     <View
       style={[
@@ -75,91 +91,69 @@ export function MoveHistory({ moves, startingFen }: MoveHistoryProps) {
         { backgroundColor: colors.card, borderColor: colors.border },
       ]}
     >
-      <ScrollView ref={scrollViewRef} style={styles.scrollView}>
-        {movePairs.map((pair) => {
-          const whiteIsLast = pair.whiteMoveIndex === lastMoveIndex;
-          const blackIsLast = pair.blackMoveIndex === lastMoveIndex;
-
-          return (
-            <View key={pair.moveNumber} style={styles.moveRow}>
-              <Text
-                style={[styles.moveNumber, { color: colors.mutedForeground }]}
-              >
-                {pair.moveNumber}.
+      <ScrollView
+        ref={scrollViewRef}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.strip}
+      >
+        {movePairs.map((pair) => (
+          <View key={pair.moveNumber} style={styles.pair}>
+            <Text
+              style={[styles.moveNumber, { color: colors.mutedForeground }]}
+            >
+              {pair.moveNumber}.
+            </Text>
+            <Text style={moveStyle(pair.whiteMoveIndex === lastMoveIndex)}>
+              {pair.whiteMove}
+            </Text>
+            {pair.blackMove && (
+              <Text style={moveStyle(pair.blackMoveIndex === lastMoveIndex)}>
+                {pair.blackMove}
               </Text>
-              <Text
-                style={[
-                  styles.moveText,
-                  {
-                    color: colors.foreground,
-                    backgroundColor: whiteIsLast
-                      ? colors.accent
-                      : "transparent",
-                  },
-                  whiteIsLast && styles.highlightedMove,
-                ]}
-              >
-                {pair.whiteMove}
-              </Text>
-              {pair.blackMove && (
-                <Text
-                  style={[
-                    styles.moveText,
-                    {
-                      color: colors.foreground,
-                      backgroundColor: blackIsLast
-                        ? colors.accent
-                        : "transparent",
-                    },
-                    blackIsLast && styles.highlightedMove,
-                  ]}
-                >
-                  {pair.blackMove}
-                </Text>
-              )}
-            </View>
-          );
-        })}
+            )}
+          </View>
+        ))}
       </ScrollView>
     </View>
   );
 }
 
+/** The strip's height with or without moves, so the layout never jumps. */
+const STRIP_HEIGHT = 36;
+
 const styles = StyleSheet.create({
   container: {
+    height: STRIP_HEIGHT,
     borderRadius: borderRadius.md,
     borderWidth: 1,
-    padding: spacing.sm,
-    maxHeight: 200,
+    justifyContent: "center",
   },
-  scrollView: {
-    flex: 1,
+  empty: {
+    alignItems: "center",
   },
   emptyText: {
     fontSize: fontSize.sm,
-    textAlign: "center",
-    paddingVertical: spacing.md,
   },
-  moveRow: {
+  strip: {
+    alignItems: "center",
+    paddingHorizontal: spacing.sm,
+    gap: spacing.md,
+  },
+  pair: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: spacing.xs / 2,
-    gap: spacing.sm,
+    gap: spacing.xs,
   },
   moveNumber: {
     fontSize: fontSize.sm,
     fontWeight: fontWeight.medium,
-    width: 30,
-    textAlign: "right",
   },
   moveText: {
     fontSize: fontSize.sm,
-    fontFamily: "monospace",
-    minWidth: 50,
+    fontFamily: monoFont,
     paddingHorizontal: spacing.xs,
     paddingVertical: 1,
-  },
-  highlightedMove: {
     borderRadius: borderRadius.sm,
   },
 });

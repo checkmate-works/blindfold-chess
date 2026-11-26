@@ -100,3 +100,42 @@ export type PerGamePreferences = Pick<
   | "moveInputMode"
   | "aiReplyDuration"
 >;
+
+/**
+ * The keys of {@link PerGamePreferences}, for code that has to walk them at
+ * run time (taking a game's snapshot out of the full preferences object).
+ * `satisfies` plus the check below keep the list and the type in step in
+ * both directions.
+ */
+export const PER_GAME_PREFERENCE_KEYS = [
+  "boardVisibility",
+  "highlightLastMove",
+  "showPieceDestinations",
+  "showOwnPieces",
+  "showOpponentPieces",
+  "pieceShapeMode",
+  "pieceColors",
+  "pawnHideMode",
+  "moveInputMode",
+  "aiReplyDuration",
+] as const satisfies ReadonlyArray<keyof PerGamePreferences>;
+
+type MissingPerGameKey = Exclude<
+  keyof PerGamePreferences,
+  (typeof PER_GAME_PREFERENCE_KEYS)[number]
+>;
+// Fails to compile when a key of PerGamePreferences is absent from the list.
+const _allPerGameKeysListed: MissingPerGameKey extends never ? true : never =
+  true;
+void _allPerGameKeysListed;
+
+/** The per-game part of a preferences object: what one game snapshots. */
+export function pickPerGamePreferences(
+  preferences: PerGamePreferences,
+): PerGamePreferences {
+  const picked: Partial<Record<keyof PerGamePreferences, unknown>> = {};
+  for (const key of PER_GAME_PREFERENCE_KEYS) {
+    picked[key] = preferences[key];
+  }
+  return picked as PerGamePreferences;
+}

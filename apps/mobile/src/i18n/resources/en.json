@@ -199,7 +199,12 @@
         "text": "Text",
         "icon": "Icon"
       },
-      "resetDefaults": "Reset to defaults"
+      "resetDefaults": "Reset to defaults",
+      "aiReplyDuration": "AI move display time",
+      "aiReplyDurationModes": {
+        "keep": "Keep visible",
+        "seconds": "{{seconds}}s"
+      }
     },
     "about": {
       "title": "About",
@@ -339,30 +344,23 @@
       "white": "White",
       "black": "Black",
       "skillLevel": "Skill Level",
-      "skillLevelDescription": "1 (beginner) - 20 (strongest)",
       "startGame": "Start Game",
-      "startMode": "How would you like to start?",
-      "startModeStandard": "Standard",
-      "startModePosition": "Custom Position",
-      "startModePgn": "Import PGN",
-      "fenLabel": "FEN",
-      "fenPlaceholder": "Enter FEN notation...",
-      "sideToMove": "Side to move",
-      "pgnLabel": "Import PGN",
-      "pgnPlaceholder": "Paste your PGN notation here...\n\nExample:\n1. e4 e5 2. Nf3 Nc6 3. Bb5 a6",
-      "pgnEmpty": "Paste a PGN to continue",
-      "invalidPgn": "Invalid PGN format",
-      "pgnValidMoves": "Valid PGN with {{moves}} moves",
-      "derivedFromPgn": "Color automatically selected based on PGN",
-      "positionEmpty": "Place at least one piece on the board",
-      "positionInvalid": "Invalid position (e.g., each side must have exactly one king)",
-      "positionAlreadyCheckmate": "This position is already checkmate — the game would end immediately",
-      "positionAlreadyStalemate": "This position is already stalemate — the game would end immediately",
-      "positionInsufficientMaterial": "Insufficient material to continue — the game would be an immediate draw",
-      "positionCheckCorrected": "The checked side must move first — please select the other side to move",
-      "positionValid": "Valid position",
-      "chooseOpening": "Choose an opening",
-      "searchOpening": "Search by name, ECO or moves"
+      "opponent": "Opponent",
+      "levelWithElo": "Level {{level}} ({{elo}} ELO)",
+      "difficulty": {
+        "custom": "Custom",
+        "customDescription": "Your own combination of the settings below",
+        "levels": {
+          "level1": "Board always visible",
+          "level2": "Board hidden — peek on demand",
+          "level3": "Peeks show only your own pieces",
+          "level4": "Peeks show your pieces, without pawns",
+          "level5": "Full blindfold — no board at all"
+        },
+        "level": "Level {{level}}",
+        "customize": "Customize"
+      },
+      "preview": "Preview"
     },
     "session": {
       "yourTurn": "Your Turn",
@@ -371,8 +369,6 @@
       "stalemate": "Stalemate",
       "draw": "Draw",
       "check": "Check!",
-      "skillLevel": "Level",
-      "moves": "Moves",
       "noMoves": "No moves yet",
       "movePreview": "Enter your move",
       "submit": "Submit",
@@ -380,7 +376,24 @@
       "invalidMove": "Invalid move",
       "disambiguation": "Disambiguation (optional)",
       "sourceLabel": "Source",
-      "showBoard": "Show Board"
+      "showBoard": "Show Board",
+      "aiPlayed": "AI played {{move}}",
+      "invalidMoveWithInput": "Invalid move: {{move}}",
+      "aiMoveFailed": "AI move failed",
+      "retry": "Retry",
+      "undo": "Undo",
+      "resign": "Resign",
+      "resigned": "You resigned",
+      "confirmResignTitle": "Confirm Resignation",
+      "confirmResignMessage": "Are you sure you want to resign? This will end the game.",
+      "confirmResign": "Resign",
+      "confirmUndoTitle": "Confirm Undo",
+      "confirmUndoMessage": "Are you sure you want to undo the last two moves?",
+      "confirmUndo": "Undo",
+      "boardHidden": "Board hidden",
+      "revealBoard": "Tap to reveal",
+      "hideBoard": "Hide Board",
+      "flipBoard": "Flip Board"
     },
     "result": {
       "title": "Game Over",
@@ -391,7 +404,10 @@
       "skillLevel": "Skill Level",
       "moveCount": "Total Moves",
       "playAgain": "Play Again",
-      "backToMenu": "Back to Menu"
+      "backToMenu": "Back to Menu",
+      "review": "Review game",
+      "reviewDescription": "Moves, PGN and recall",
+      "expEarned": "Exp earned"
     }
   },
   "diagonalQuiz": {
@@ -803,7 +819,7 @@
   "gameHistory": {
     "title": "Your games",
     "detailTitle": "Game",
-    "empty": "Finished games will appear here.",
+    "empty": "Your games will appear here. A game you leave can be resumed.",
     "note": "Games are kept on this device only (up to 50).",
     "seeAll": "See all ({{count}})",
     "rowDetail": "Level {{level}} · {{moves}} moves · {{date}}",
@@ -825,7 +841,9 @@
     "delete": "Delete",
     "deleteConfirm": "Delete this game?",
     "you": "You",
-    "engine": "Stockfish (level {{level}})"
+    "engine": "Stockfish (level {{level}})",
+    "inProgress": "In progress",
+    "resume": "Resume game"
   },
   "glossary": {
     "title": "Chess Glossary",

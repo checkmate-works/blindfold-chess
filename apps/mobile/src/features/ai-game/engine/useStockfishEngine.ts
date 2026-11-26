@@ -36,6 +36,9 @@ export function useStockfishEngine() {
   const channelRef = useRef<WebViewUciMessageChannel | null>(null);
   const [engineState, setEngineState] = useState<EngineState>("idle");
   const engineStateRef = useRef<EngineState>("idle");
+  // Bumped by `reset`. An initialization that was started for an earlier
+  // WebView must not report its outcome once that WebView has been replaced.
+  const generationRef = useRef(0);
 
   // The UCI conversation — handshake, pending resolvers, per-command
   // deadlines, init retries, failing every awaiter when the bridge dies —
@@ -72,14 +75,35 @@ export function useStockfishEngine() {
   }, []);
 
   const handleWebViewReady = useCallback(() => {
+    const generation = generationRef.current;
     updateEngineState("initializing");
     engine.initialize().then(
-      () => updateEngineState("ready"),
+      () => {
+        if (generationRef.current !== generation) return;
+        updateEngineState("ready");
+      },
       (error: unknown) => {
+        if (generationRef.current !== generation) return;
         console.error("Engine initialization failed:", error);
         updateEngineState("error");
       },
     );
+  }, [engine, updateEngineState]);
+
+  /**
+   * Forget the current engine so a remounted WebView can start a new one.
+   *
+   * The engine lives in a page the WebView owns, so "restart the engine"
+   * means the caller remounts `StockfishWebView` (a new `key`) and this hook
+   * drops everything tied to the old page: the transport, the pending
+   * requests and the `ready` state. The new page's `__engine_loaded__`
+   * message then runs `handleWebViewReady` again.
+   */
+  const reset = useCallback(() => {
+    generationRef.current += 1;
+    void engine.destroy();
+    channelRef.current = null;
+    updateEngineState("idle");
   }, [engine, updateEngineState]);
 
   const handleWebViewError = useCallback(
@@ -160,5 +184,6 @@ export function useStockfishEngine() {
     handleWebViewError,
     setSkillLevel,
     getBestMove,
+    reset,
   };
 }

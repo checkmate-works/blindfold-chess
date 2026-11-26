@@ -199,7 +199,12 @@
         "text": "テキスト",
         "icon": "アイコン"
       },
-      "resetDefaults": "デフォルトに戻す"
+      "resetDefaults": "デフォルトに戻す",
+      "aiReplyDuration": "AIの手の表示時間",
+      "aiReplyDurationModes": {
+        "keep": "ずっと表示",
+        "seconds": "{{seconds}}秒"
+      }
     },
     "about": {
       "title": "このアプリについて",
@@ -339,30 +344,23 @@
       "white": "白",
       "black": "黒",
       "skillLevel": "スキルレベル",
-      "skillLevelDescription": "1（初心者）- 20（最強）",
       "startGame": "ゲーム開始",
-      "startMode": "開始方法を選択",
-      "startModeStandard": "標準",
-      "startModePosition": "カスタムポジション",
-      "startModePgn": "PGNからインポート",
-      "fenLabel": "FEN",
-      "fenPlaceholder": "FEN記法を入力...",
-      "sideToMove": "手番",
-      "pgnLabel": "PGNをインポート",
-      "pgnPlaceholder": "PGN記法を貼り付けてください...\n\n例:\n1. e4 e5 2. Nf3 Nc6 3. Bb5 a6",
-      "pgnEmpty": "PGNを貼り付けてください",
-      "invalidPgn": "無効なPGN形式",
-      "pgnValidMoves": "有効なPGN（{{moves}}手）",
-      "derivedFromPgn": "PGNに基づいて色が自動選択されました",
-      "positionEmpty": "駒を1つ以上配置してください",
-      "positionInvalid": "無効なポジションです（例：各サイドにキングが1つずつ必要です）",
-      "positionAlreadyCheckmate": "この局面は既にチェックメイトです — ゲームは即座に終了します",
-      "positionAlreadyStalemate": "この局面は既にステイルメイトです — ゲームは即座に終了します",
-      "positionInsufficientMaterial": "駒が不十分です — ゲームは即座に引き分けになります",
-      "positionCheckCorrected": "チェックされている側が先に動く必要があります — 手番を変更してください",
-      "positionValid": "有効なポジション",
-      "chooseOpening": "定跡から選ぶ",
-      "searchOpening": "名前・ECO・手順で検索"
+      "opponent": "対戦相手",
+      "levelWithElo": "レベル {{level}} ({{elo}} ELO)",
+      "difficulty": {
+        "custom": "カスタム",
+        "customDescription": "下の設定を自分で組み合わせた状態",
+        "levels": {
+          "level1": "盤面を常に表示",
+          "level2": "盤面を隠し、必要なときにピーク",
+          "level3": "ピーク時は自分の駒だけ表示",
+          "level4": "ピーク時は自分の駒だけ（ポーンなし）",
+          "level5": "完全な目隠し（盤面なし）"
+        },
+        "level": "レベル{{level}}",
+        "customize": "詳細設定"
+      },
+      "preview": "プレビュー"
     },
     "session": {
       "yourTurn": "あなたの番",
@@ -371,8 +369,6 @@
       "stalemate": "ステイルメイト",
       "draw": "引き分け",
       "check": "チェック！",
-      "skillLevel": "レベル",
-      "moves": "手数",
       "noMoves": "まだ手がありません",
       "movePreview": "手を入力してください",
       "submit": "送信",
@@ -380,7 +376,24 @@
       "invalidMove": "無効な手です",
       "disambiguation": "曖昧さ解消（任意）",
       "sourceLabel": "出発マス",
-      "showBoard": "盤面を表示"
+      "showBoard": "盤面を表示",
+      "aiPlayed": "AIが{{move}}を指しました",
+      "invalidMoveWithInput": "無効な手です: {{move}}",
+      "aiMoveFailed": "AIの手の取得に失敗しました",
+      "retry": "再試行",
+      "undo": "待った",
+      "resign": "投了",
+      "resigned": "投了しました",
+      "confirmResignTitle": "投了の確認",
+      "confirmResignMessage": "本当に投了しますか？ゲームが終了します。",
+      "confirmResign": "投了する",
+      "confirmUndoTitle": "待ったの確認",
+      "confirmUndoMessage": "直前の2手を取り消しますか？",
+      "confirmUndo": "取り消す",
+      "boardHidden": "ボード非表示",
+      "revealBoard": "タップで表示",
+      "hideBoard": "ボードを隠す",
+      "flipBoard": "ボードを反転"
     },
     "result": {
       "title": "ゲーム終了",
@@ -391,7 +404,10 @@
       "skillLevel": "スキルレベル",
       "moveCount": "総手数",
       "playAgain": "もう一度",
-      "backToMenu": "メニューに戻る"
+      "backToMenu": "メニューに戻る",
+      "review": "対局を振り返る",
+      "reviewDescription": "棋譜・PGN・棋譜再現",
+      "expEarned": "獲得経験値"
     }
   },
   "diagonalQuiz": {
@@ -803,7 +819,7 @@
   "gameHistory": {
     "title": "対局履歴",
     "detailTitle": "対局",
-    "empty": "対局を終えると、ここに表示されます。",
+    "empty": "対局するとここに表示されます。中断した対局はここから再開できます。",
     "note": "対局はこの端末にのみ保存されます（最大50局）。",
     "seeAll": "すべて表示（{{count}}局）",
     "rowDetail": "レベル{{level}} · {{moves}}手 · {{date}}",
@@ -825,7 +841,9 @@
     "delete": "削除",
     "deleteConfirm": "この対局を削除しますか？",
     "you": "あなた",
-    "engine": "Stockfish（レベル{{level}}）"
+    "engine": "Stockfish（レベル{{level}}）",
+    "inProgress": "対局中",
+    "resume": "対局を再開"
   },
   "glossary": {
     "title": "チェス用語集",

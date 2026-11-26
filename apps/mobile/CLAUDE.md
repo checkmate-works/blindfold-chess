@@ -375,9 +375,17 @@ database. Sign-in calls Supabase Auth directly; sign-up goes through
 
 Still web-only: creating puzzles and community positions, repertoires,
 topics and articles, the home feed, Maia, password reset (the app opens the
-web page). Finished AI games are kept on the device
-(`features/game-history/`, AsyncStorage `"AI_GAME_HISTORY"`, newest first, at
-most 50), like the web keeps them in localStorage.
+web page), and starting an AI game from a custom position, an opening or a
+PGN: a game in the app always starts from the standard position. AI games
+are kept on the device (`features/game-history/`, AsyncStorage
+`"AI_GAME_HISTORY"`, newest first, at most 50), like the web keeps them in
+localStorage. The session saves the game after every move, so one that was
+left is listed as in progress (no `result`) and its row opens the session
+again with `resume=<id>`; that is why the session's × asks nothing. The one thing an AI game
+sends is its Exp report: the result screen posts a signed-in player's game to
+`POST /games/results` (the web's `saveGameResult`), with the move and
+aided-move counts from the session's operation log
+(`useMoveOperationTracker`, shared with the web).
 
 ## Onboarding
 
@@ -464,9 +472,21 @@ object with the same rules; the whole object sits under one AsyncStorage key
 wrapper that sanitises on read. The settings tab edits it, and the AI-game
 board components (`ChessBoard`, `BoardPeek`, `ButtonInput`) read it themselves
 rather than taking it as props. Fields mobile has no UI for yet
-(`showPieceDestinations`, `enableAutoComplete`, `aiReplyDuration`, the
-non-button input modes) are kept in the object so it stays one type, but
-nothing reads them.
+(`showPieceDestinations`, `enableAutoComplete`, the non-button input modes)
+are kept in the object so it stays one type, but nothing reads them.
+
+**An AI game plays under its own snapshot,** as on the web. The setup screen
+starts from the global values, lets the player change the per-game ones
+(`PerGamePreferences`: the difficulty ladder and the rows it is made of,
+`perGameSettingRows`, which the settings tab shares) without writing them
+back, and hands the result to the session as the `gamePrefs` route param.
+The ladder is one checked row per level with a `BoardPreview` under it: a
+sample position drawn under the unsaved choices, from the chosen colour's
+side, and left out when the game has no board at all.
+The session lays it over the global preferences with
+`GamePreferencesOverride`, so the board components still just call
+`useGamePreferences`; the gear in the session's top row edits that copy
+mid-game.
 
 **Per-module practice settings.** Each practice module keeps its own
 settings through `useAsyncStorageSettings` (`src/lib/persistent-settings/`,

@@ -199,7 +199,12 @@
         "text": "Texto",
         "icon": "Ícone"
       },
-      "resetDefaults": "Redefinir valores padrão"
+      "resetDefaults": "Redefinir valores padrão",
+      "aiReplyDuration": "Tempo de exibição da jogada da IA",
+      "aiReplyDurationModes": {
+        "keep": "Manter visível",
+        "seconds": "{{seconds}}s"
+      }
     },
     "about": {
       "title": "Sobre",
@@ -339,30 +344,23 @@
       "white": "Brancas",
       "black": "Pretas",
       "skillLevel": "Nível de habilidade",
-      "skillLevelDescription": "1 (iniciante) - 20 (mais forte)",
       "startGame": "Começar partida",
-      "startMode": "Como você gostaria de começar?",
-      "startModeStandard": "Padrão",
-      "startModePosition": "Posição Personalizada",
-      "startModePgn": "Importar PGN",
-      "fenLabel": "FEN",
-      "fenPlaceholder": "Insira notação FEN...",
-      "sideToMove": "Vez de jogar",
-      "pgnLabel": "Importar PGN",
-      "pgnPlaceholder": "Cole sua notação PGN aqui...\n\nExemplo:\n1. e4 e5 2. Nf3 Nc6 3. Bb5 a6",
-      "pgnEmpty": "Cole um PGN para continuar",
-      "invalidPgn": "Formato PGN inválido",
-      "pgnValidMoves": "PGN válido com {{moves}} movimentos",
-      "derivedFromPgn": "Cor selecionada automaticamente com base no PGN",
-      "positionEmpty": "Coloque ao menos uma peça no tabuleiro",
-      "positionInvalid": "Posição inválida (ex., cada lado deve ter exatamente um rei)",
-      "positionAlreadyCheckmate": "Esta posição já é xeque-mate — a partida terminaria imediatamente",
-      "positionAlreadyStalemate": "Esta posição já é afogamento — a partida terminaria imediatamente",
-      "positionInsufficientMaterial": "Material insuficiente para continuar — a partida seria empate imediatamente",
-      "positionCheckCorrected": "O lado em xeque deve mover primeiro — por favor altere a vez de jogar",
-      "positionValid": "Posição válida",
-      "chooseOpening": "Escolher uma abertura",
-      "searchOpening": "Buscar por nome, ECO ou lances"
+      "opponent": "Oponente",
+      "levelWithElo": "Nível {{level}} ({{elo}} ELO)",
+      "difficulty": {
+        "custom": "Personalizado",
+        "customDescription": "Sua própria combinação dos ajustes abaixo",
+        "levels": {
+          "level1": "Tabuleiro sempre visível",
+          "level2": "Tabuleiro oculto: espie sob demanda",
+          "level3": "Ao espiar, só suas peças aparecem",
+          "level4": "Ao espiar, suas peças sem os peões",
+          "level5": "Às cegas total: sem tabuleiro"
+        },
+        "level": "Nível {{level}}",
+        "customize": "Personalizar"
+      },
+      "preview": "Pré-visualização"
     },
     "session": {
       "yourTurn": "Sua vez",
@@ -371,8 +369,6 @@
       "stalemate": "Rei afogado",
       "draw": "Empate",
       "check": "Xeque!",
-      "skillLevel": "Nível",
-      "moves": "Jogadas",
       "noMoves": "Ainda não há jogadas",
       "movePreview": "Digite sua jogada",
       "submit": "Enviar",
@@ -380,7 +376,24 @@
       "invalidMove": "Jogada inválida",
       "disambiguation": "Desambiguação (opcional)",
       "sourceLabel": "Origem",
-      "showBoard": "Mostrar tabuleiro"
+      "showBoard": "Mostrar tabuleiro",
+      "aiPlayed": "A IA jogou {{move}}",
+      "invalidMoveWithInput": "Movimento inválido: {{move}}",
+      "aiMoveFailed": "Falha no movimento da IA",
+      "retry": "Tentar novamente",
+      "undo": "Desfazer",
+      "resign": "Desistir",
+      "resigned": "Você desistiu",
+      "confirmResignTitle": "Confirmar Desistência",
+      "confirmResignMessage": "Tem certeza de que deseja desistir? Isso encerrará a partida.",
+      "confirmResign": "Desistir",
+      "confirmUndoTitle": "Confirmar Desfazer",
+      "confirmUndoMessage": "Tem certeza de que deseja desfazer os dois últimos movimentos?",
+      "confirmUndo": "Desfazer",
+      "boardHidden": "Tabuleiro oculto",
+      "revealBoard": "Toque para ver",
+      "hideBoard": "Ocultar Tabuleiro",
+      "flipBoard": "Inverter Tabuleiro"
     },
     "result": {
       "title": "Fim da partida",
@@ -391,7 +404,10 @@
       "skillLevel": "Nível de habilidade",
       "moveCount": "Total de jogadas",
       "playAgain": "Jogar novamente",
-      "backToMenu": "Voltar ao menu"
+      "backToMenu": "Voltar ao menu",
+      "review": "Revisar a partida",
+      "reviewDescription": "Movimentos, PGN e de memória",
+      "expEarned": "Exp obtida"
     }
   },
   "diagonalQuiz": {
@@ -803,7 +819,7 @@
   "gameHistory": {
     "title": "Suas partidas",
     "detailTitle": "Partida",
-    "empty": "As partidas concluídas aparecerão aqui.",
+    "empty": "Suas partidas aparecerão aqui. Você pode retomar uma partida que deixou.",
     "note": "As partidas ficam salvas só neste dispositivo (até 50).",
     "seeAll": "Ver todas ({{count}})",
     "rowDetail": "Nível {{level}} · {{moves}} lances · {{date}}",
@@ -825,7 +841,9 @@
     "delete": "Excluir",
     "deleteConfirm": "Excluir esta partida?",
     "you": "Você",
-    "engine": "Stockfish (nível {{level}})"
+    "engine": "Stockfish (nível {{level}})",
+    "inProgress": "Em andamento",
+    "resume": "Retomar a partida"
   },
   "glossary": {
     "title": "Glossário de Xadrez",

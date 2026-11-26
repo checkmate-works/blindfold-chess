@@ -77,3 +77,38 @@ export function useGamePreferences(): GamePreferencesContextValue {
   }
   return context;
 }
+
+/**
+ * Replaces part of the preferences for the screens below it, without writing
+ * to the stored ones. An AI game plays under the snapshot taken on its setup
+ * screen, as on the web, so changing the global settings mid-game (or a
+ * mid-game change) never rewrites the other.
+ *
+ * `onUpdate` receives what a screen below asks to change; the owner of
+ * `overrides` decides what to do with it.
+ */
+export function GamePreferencesOverride({
+  overrides,
+  onUpdate,
+  children,
+}: {
+  overrides: Partial<GamePreferences>;
+  onUpdate: (updates: Partial<GamePreferences>) => void;
+  children: ReactNode;
+}) {
+  const base = useGamePreferences();
+  const value = useMemo<GamePreferencesContextValue>(
+    () => ({
+      ...base,
+      preferences: { ...base.preferences, ...overrides },
+      updatePreferences: onUpdate,
+    }),
+    [base, overrides, onUpdate],
+  );
+
+  return (
+    <GamePreferencesContext.Provider value={value}>
+      {children}
+    </GamePreferencesContext.Provider>
+  );
+}

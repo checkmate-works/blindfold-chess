@@ -2,6 +2,7 @@
 // the type, its value sets, the defaults and the stored-payload sanitiser.
 // Storage (localStorage, AsyncStorage, cookies) stays in the apps.
 export type { GamePreferences, PerGamePreferences } from "./types";
+export { PER_GAME_PREFERENCE_KEYS, pickPerGamePreferences } from "./types";
 export type {
   AiReplyDuration,
   BoardVisibility,
@@ -28,3 +29,12 @@ export {
   resolveStoredGamePreferences,
   validateGamePreferences,
 } from "./validation";
+export type {
+  DifficultyLevel,
+  DifficultyPresetSettings,
+} from "./difficulty-presets";
+export {
+  DIFFICULTY_LEVELS,
+  DIFFICULTY_PRESETS,
+  matchDifficultyPreset,
+} from "./difficulty-presets";
