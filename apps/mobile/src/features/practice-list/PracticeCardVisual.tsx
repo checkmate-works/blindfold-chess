@@ -247,7 +247,7 @@ function Example({ slug }: { slug: MobilePracticeModule["slug"] }) {
     case "fen":
       return (
         <Row>
-          <Label>{"r1bqkb1r/\npppp1ppp/…"}</Label>
+          <Label>{"r1bqkbnr/\npppp1ppp/…"}</Label>
           <Arrow />
           <Board fen={POSITION} />
         </Row>
