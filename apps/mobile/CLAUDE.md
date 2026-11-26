@@ -205,6 +205,17 @@ header style (page-coloured, no hairline, chevron-only back).
   needs nothing for it.
 - **Header buttons** are `HeaderIconButton`; the session close button is
   `SessionCloseButton`.
+- **Control geometry** comes from `controlSize` and `controlLabel` in
+  `theme/index.ts`: compact actions and choices are at least 44pt, regular
+  actions 48pt, footer actions 52pt. These are minimums, not fixed heights:
+  labels wrap and grow with text scaling. Action labels use 15/20pt semibold
+  type and 14pt corners. `ModeButtonRow` uses the footer size, equal widths
+  and stretched heights; never override vertical padding at its call sites.
+  `BeltButton` uses the regular geometry with belt colours. Selection controls
+  keep stable label weight and show press feedback through fill; board swatches
+  keep their size and mark selection with a badge. Header icon targets occupy
+  a real 44pt square rather than relying on hit slop outside a smaller view.
+
 - **Buttons pinned under scrolling content** (setup, session, result and
   onboarding footers) go in `BottomBar`, which pads the home indicator's
   inset itself so the bar runs to the bottom edge. Its screen leaves

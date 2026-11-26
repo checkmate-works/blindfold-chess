@@ -2,7 +2,7 @@ import { Pressable, StyleSheet, Text } from "react-native";
 import { useNavigation } from "expo-router";
 import { useTranslation } from "react-i18next";
 
-import { useTheme, fontSize, fontWeight } from "../theme";
+import { useTheme, controlSize, controlLabel, borderRadius } from "../theme";
 
 type Props = {
   /** Closes the modal the screen is in (pops it off the root stack). */
@@ -28,7 +28,10 @@ export function HeaderTextButton({ dismiss, title, onPress }: Props) {
   return (
     <Pressable
       onPress={handle}
-      hitSlop={10}
+      style={({ pressed }) => [
+        styles.button,
+        { backgroundColor: pressed ? colors.muted : "transparent" },
+      ]}
       accessibilityRole="button"
       testID="header-close"
     >
@@ -40,8 +43,11 @@ export function HeaderTextButton({ dismiss, title, onPress }: Props) {
 }
 
 const styles = StyleSheet.create({
-  text: {
-    fontSize: fontSize.md + 1,
-    fontWeight: fontWeight.semibold,
+  button: {
+    ...controlSize.sm,
+    borderRadius: borderRadius.button,
+    justifyContent: "center",
+    alignItems: "center",
   },
+  text: controlLabel,
 });
