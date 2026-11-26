@@ -8,6 +8,8 @@ export { Card } from "./Card";
 export { CoordinateInput } from "./CoordinateInput";
 export { CoordinateKeyRow, coordinateKeypadStyles } from "./CoordinateKeyRow";
 export { CountdownOverlay } from "./CountdownOverlay";
+export { FilterChips } from "./FilterChips";
+export type { FilterChipOption } from "./FilterChips";
 export { HowToPlaySection } from "./HowToPlaySection";
 export { OptionsField } from "./OptionsField";
 export { QuizTimer } from "./QuizTimer";
