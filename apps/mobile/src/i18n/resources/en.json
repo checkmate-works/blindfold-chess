@@ -370,8 +370,6 @@
       "opponent": "Opponent",
       "levelWithElo": "Level {{level}} ({{elo}} ELO)",
       "difficulty": {
-        "title": "Difficulty",
-        "option": "Level {{level}}: {{description}}",
         "custom": "Custom",
         "customDescription": "Your own combination of the settings below",
         "levels": {
@@ -381,8 +379,10 @@
           "level4": "Peeks show your pieces, without pawns",
           "level5": "Full blindfold — no board at all"
         },
-        "level": "Level {{level}}"
-      }
+        "level": "Level {{level}}",
+        "customize": "Customize"
+      },
+      "preview": "Preview"
     },
     "session": {
       "yourTurn": "Your Turn",

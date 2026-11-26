@@ -476,6 +476,9 @@ starts from the global values, lets the player change the per-game ones
 (`PerGamePreferences`: the difficulty ladder and the rows it is made of,
 `perGameSettingRows`, which the settings tab shares) without writing them
 back, and hands the result to the session as the `gamePrefs` route param.
+The ladder is one checked row per level with a `BoardPreview` under it: a
+sample position drawn under the unsaved choices, from the chosen colour's
+side, and left out when the game has no board at all.
 The session lays it over the global preferences with
 `GamePreferencesOverride`, so the board components still just call
 `useGamePreferences`; the gear in the session's top row edits that copy

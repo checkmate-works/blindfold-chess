@@ -97,6 +97,7 @@ export default function AiGameSetup() {
         />
         <GameSettingsSection
           preferences={gamePrefs}
+          playerColor={settings.playerColor}
           onChange={(updates) =>
             setGamePrefsEdits((edits) => ({ ...edits, ...updates }))
           }

@@ -370,8 +370,6 @@
       "opponent": "Oponente",
       "levelWithElo": "Nível {{level}} ({{elo}} ELO)",
       "difficulty": {
-        "title": "Dificuldade",
-        "option": "Nível {{level}}: {{description}}",
         "custom": "Personalizado",
         "customDescription": "Sua própria combinação dos ajustes abaixo",
         "levels": {
@@ -381,8 +379,10 @@
           "level4": "Ao espiar, suas peças sem os peões",
           "level5": "Às cegas total: sem tabuleiro"
         },
-        "level": "Nível {{level}}"
-      }
+        "level": "Nível {{level}}",
+        "customize": "Personalizar"
+      },
+      "preview": "Pré-visualização"
     },
     "session": {
       "yourTurn": "Sua vez",

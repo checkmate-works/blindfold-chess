@@ -370,8 +370,6 @@
       "opponent": "対戦相手",
       "levelWithElo": "レベル {{level}} ({{elo}} ELO)",
       "difficulty": {
-        "title": "難易度",
-        "option": "レベル{{level}}: {{description}}",
         "custom": "カスタム",
         "customDescription": "下の設定を自分で組み合わせた状態",
         "levels": {
@@ -381,8 +379,10 @@
           "level4": "ピーク時は自分の駒だけ（ポーンなし）",
           "level5": "完全な目隠し（盤面なし）"
         },
-        "level": "レベル{{level}}"
-      }
+        "level": "レベル{{level}}",
+        "customize": "詳細設定"
+      },
+      "preview": "プレビュー"
     },
     "session": {
       "yourTurn": "あなたの番",
