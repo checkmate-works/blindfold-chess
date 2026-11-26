@@ -327,7 +327,15 @@ function AiGameBoard({ setup }: { setup: GameSetup }) {
 
       {/* Leaving asks nothing: the game is saved and can be resumed. */}
       <SessionTopBar confirm={false}>
-        <View style={styles.topActions}>
+        <View style={styles.topRow}>
+          <GameInfo
+            isPlayerTurn={game.isPlayerTurn}
+            isAiThinking={game.isAiThinking}
+            gameStatus={game.gameStatus}
+            resigned={game.resigned}
+            aiMoveFailed={game.aiMoveFailed}
+            skillLevel={skillLevel}
+          />
           {preferences.boardVisibility !== "never" && (
             <HeaderIconButton
               icon="swap-vertical"
@@ -350,16 +358,6 @@ function AiGameBoard({ setup }: { setup: GameSetup }) {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        <GameInfo
-          isPlayerTurn={game.isPlayerTurn}
-          isAiThinking={game.isAiThinking}
-          gameStatus={game.gameStatus}
-          resigned={game.resigned}
-          aiMoveFailed={game.aiMoveFailed}
-          skillLevel={skillLevel}
-          moveCount={game.moves.length}
-        />
-
         <InlineBoard
           fen={game.currentFen}
           moves={game.moves}
@@ -478,16 +476,24 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
+  // Tight on purpose: the board, the move strip and the keypad have to fit
+  // on a phone screen together, so the player never scrolls to enter a move.
   scrollContent: {
-    padding: spacing.lg,
-    gap: spacing.md,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.md,
+    gap: spacing.sm,
   },
   errorText: {
     fontSize: fontSize.sm,
     textAlign: "center",
   },
-  topActions: {
+  // The status sits between the × and the board controls. The row takes
+  // the top bar's whole trailing slot so the status can centre in it.
+  topRow: {
     flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "stretch",
     gap: spacing.md,
   },
   retryContainer: {

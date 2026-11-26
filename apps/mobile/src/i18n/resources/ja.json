@@ -369,7 +369,6 @@
       "stalemate": "ステイルメイト",
       "draw": "引き分け",
       "check": "チェック！",
-      "moves": "手数",
       "noMoves": "まだ手がありません",
       "movePreview": "手を入力してください",
       "submit": "送信",

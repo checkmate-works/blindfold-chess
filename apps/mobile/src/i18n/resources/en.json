@@ -369,7 +369,6 @@
       "stalemate": "Stalemate",
       "draw": "Draw",
       "check": "Check!",
-      "moves": "Moves",
       "noMoves": "No moves yet",
       "movePreview": "Enter your move",
       "submit": "Submit",
