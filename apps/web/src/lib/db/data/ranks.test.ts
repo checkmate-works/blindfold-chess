@@ -1,3 +1,8 @@
+import {
+  BELT_COLOR_HEX as SHARED_BELT_COLOR_HEX,
+  RANK_REQUIREMENTS as SHARED_RANK_REQUIREMENTS,
+  RANK_SLUGS as SHARED_RANK_SLUGS,
+} from '@blindfold-chess/features/dojo-ranks';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -532,5 +537,28 @@ describe('resolveHighestRankSlug', () => {
 
   it('should return the unknown slug when it is the only one held', () => {
     expect(resolveHighestRankSlug(new Set(['nonexistent']))).toBe('nonexistent');
+  });
+});
+
+describe('shared rank definitions (@blindfold-chess/features/dojo-ranks)', () => {
+  // The mobile app draws the dojo from the shared copy, so a requirement
+  // changed here without changing it there would show players the wrong goal.
+  it('lists the same ranks in the same order', () => {
+    expect([...ALL_RANK_SLUGS]).toEqual([...SHARED_RANK_SLUGS]);
+  });
+
+  it('gives every seeded rank the same requirements', () => {
+    for (const seed of ranksSeedData) {
+      expect(seed.requirements).toEqual(
+        SHARED_RANK_REQUIREMENTS[seed.slug as keyof typeof SHARED_RANK_REQUIREMENTS]
+      );
+    }
+    expect(ranksSeedData.map((seed) => seed.slug)).toEqual(Object.keys(SHARED_RANK_REQUIREMENTS));
+  });
+
+  it('uses the same belt colors', () => {
+    for (const slug of ALL_RANK_SLUGS) {
+      expect(BELT_COLOR_HEX[RANK_COLORS[slug]]).toBe(SHARED_BELT_COLOR_HEX[slug]);
+    }
   });
 });
