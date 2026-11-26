@@ -28,9 +28,10 @@ type ModeButtonRowProps = {
  * one shape from before a run to after it.
  *
  * The buttons are the medium size with 14pt top and bottom padding (about
- * 50pt tall with a 16pt label), the same as the mahjong-scoring app's start
- * footer this layout follows; the large size (about 70pt) made the footer
- * the heaviest thing on the screen.
+ * 50pt tall with a 15pt label), the same as the mahjong-scoring app's start
+ * footer this layout follows: a little taller than the medium size's own
+ * 11pt padding (44pt), so the footer's actions carry their weight without
+ * becoming the heaviest thing on the screen.
  */
 export function ModeButtonRow({
   secondary,
@@ -67,7 +68,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: spacing.sm,
   },
-  // 14pt, not the medium size's 16: the reference footer's height. The two
+  // 14pt, not the medium size's 11: the reference footer's height. The two
   // buttons split the row evenly, whatever their labels' widths, with
   // narrower side padding than the medium size's own, so a long label
   // ("Entrenamiento") stays on one line in half a phone's width.
