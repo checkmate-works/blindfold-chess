@@ -1115,7 +1115,10 @@
     },
     "stageExamPassed": "Passed",
     "stageExamNotPassed": "Not yet",
-    "guideDone": "Mark as read",
+    "guideDoneNextGuide": "Done, next guide",
+    "guideDonePractice": "Done, on to practice",
+    "guideNextGuide": "Next guide",
+    "guideToPractice": "On to practice",
     "guideRead": "Read"
   }
 }

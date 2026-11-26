@@ -13,6 +13,7 @@ import {
   ListSection,
   Screen,
 } from "../../../components";
+import { afterGuide } from "../../../features/guides/after-guide";
 import { GuidePageView } from "../../../features/guides/GuidePageView";
 import {
   adjacentGuideRanks,
@@ -52,11 +53,31 @@ import { fontSize, fontWeight, spacing, useTheme } from "../../../theme";
  * Each page is one step of the dojo's "learn" stage. Counting the guide as
  * a whole instead would leave the stage at 0 / 1 until the very end, which
  * says nothing about how far the player has read. A page is marked read
- * when the player moves past it with Next; the last page, which has no
- * Next, has a "Mark as read" button in its place (also the only button of
- * a one-page guide), shown as a disabled "Read" once it is. Only the app
- * records pages: the web shows no reading progress, so a record there
- * would have nothing to show it.
+ * when the player moves past it with Next. Only the app records pages: the
+ * web shows no reading progress, so a record there would have nothing to
+ * show it.
+ *
+ * The last page, which has no Next, has a button in its place (also the
+ * only button of a one-page guide) that marks the page read and goes on to
+ * the next step of the learn stage the guide belongs to (`afterGuide`):
+ * another of the stage's guides still unread, or, once the stage is read
+ * through, the practice list narrowed to the rank. Reading is one step of
+ * the rank's journey, not an end in itself, so finishing a guide leads
+ * straight into what the journey asks for next instead of leaving the
+ * player on a page with nothing left to do. Its label names where it goes
+ * ("Done, next guide" / "Done, on to practice"). A guide read before keeps
+ * the button, as "Next guide" / "On to practice" to the same place, rather
+ * than a disabled "Read": a player rereading a guide is on the same road
+ * and should be able to carry on along it.
+ *
+ * The next guide replaces this screen (`router.replace`), so a stage of two
+ * guides does not leave one guide under the other. The practice list is a
+ * tab, and the guide sits on the root stack above the tabs: a plain
+ * `router.navigate` there would push a second set of tabs onto the root
+ * stack, over the guide, because the root stack's `NAVIGATE` only reuses a
+ * route that is already on top. `router.dismissTo` pops the root stack back
+ * to the tabs instead, closing the guide (and whatever detail screen opened
+ * it) and switching to the practice tab with its `rank` param.
  *
  * An optional `page` param (1-based) opens the guide at that page: the
  * learn tab's guide list opens each guide at its first unread page, so a
@@ -69,8 +90,10 @@ import { fontSize, fontWeight, spacing, useTheme } from "../../../theme";
  * 1. Opened from the rank screen's guide row, the learn tab's guide list
  *    (at the first unread page), or from another guide's link.
  * 2. Previous / Next step through the pages, Next marking the page read;
- *    the last page offers "Mark as read" and the neighbouring ranks'
- *    guides, as the web's last page does.
+ *    the last page offers the neighbouring ranks' guides, as the web's last
+ *    page does.
+ * 3. The last page's button marks it read and replaces the screen with the
+ *    stage's next unread guide, or dismisses it to the rank's practice list.
  */
 export default function GuideScreen() {
   const { t, i18n } = useTranslation();
@@ -96,6 +119,7 @@ export default function GuideScreen() {
   const lastPageRead = readGuidePages(allJourneys(journeyOf), rank).has(
     pages.length,
   );
+  const after = afterGuide(rank, journeyOf);
 
   const turn = (delta: number) => {
     if (delta > 0) markGuidePage(rank, pageIndex + 1);
@@ -103,12 +127,24 @@ export default function GuideScreen() {
     scrollRef.current?.scrollTo({ y: 0, animated: false });
   };
 
+  const finish = () => {
+    if (!lastPageRead) markGuidePage(rank, pages.length);
+    if (after.kind === "guide") router.replace(after.href);
+    else router.dismissTo(after.href);
+  };
+
   const doneButton = (
     <Button
-      title={lastPageRead ? t("dojo.guideRead") : t("dojo.guideDone")}
-      icon={lastPageRead ? "checkmark" : undefined}
-      disabled={lastPageRead}
-      onPress={() => markGuidePage(rank, pages.length)}
+      title={t(
+        after.kind === "guide"
+          ? lastPageRead
+            ? "dojo.guideNextGuide"
+            : "dojo.guideDoneNextGuide"
+          : lastPageRead
+            ? "dojo.guideToPractice"
+            : "dojo.guideDonePractice",
+      )}
+      onPress={finish}
       style={styles.pagerButton}
       testID="guide-done"
     />

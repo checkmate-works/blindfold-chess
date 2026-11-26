@@ -1115,7 +1115,10 @@
     },
     "stageExamPassed": "Aprovado",
     "stageExamNotPassed": "Pendente",
-    "guideDone": "Marcar como lido",
+    "guideDoneNextGuide": "Lido: próximo guia",
+    "guideDonePractice": "Lido: ir praticar",
+    "guideNextGuide": "Próximo guia",
+    "guideToPractice": "Ir para a prática",
     "guideRead": "Lido"
   }
 }

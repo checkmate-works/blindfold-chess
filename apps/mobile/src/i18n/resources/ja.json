@@ -1115,7 +1115,10 @@
     },
     "stageExamPassed": "合格",
     "stageExamNotPassed": "未合格",
-    "guideDone": "読み終えた",
+    "guideDoneNextGuide": "読了して次の教本へ",
+    "guideDonePractice": "読了して練習へ",
+    "guideNextGuide": "次の教本へ",
+    "guideToPractice": "練習へ進む",
     "guideRead": "読了"
   }
 }

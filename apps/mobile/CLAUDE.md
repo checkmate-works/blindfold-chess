@@ -287,8 +287,19 @@ database. Sign-in calls Supabase Auth directly; sign-up goes through
     the guest's pages, sends the pending ones (`POST /dojo/steps`, 100 per
     request), drops what the server answered for, then reads `GET /dojo`.
     A failed request keeps the pending pages for the next sync.
-  - the guide screen marks a page read on Next, and the last page with
-    "Mark as read". Only `guide:` keys are ever reported.
+  - the guide screen marks a page read on Next. The last page's button
+    marks it read and goes on to the next step of the learn stage the
+    guide belongs to (`afterGuide`, `features/guides/after-guide.ts`,
+    by `LEARN_GUIDES`): the stage's next guide with an unread page, at that
+    page (`router.replace`, so guides do not pile up), or once the stage is
+    read through the practice list narrowed to the rank (`router.dismissTo`:
+    from the root stack, `navigate` to a tab would push a second set of
+    tabs over the guide). Reading is one step of the journey, so finishing
+    a guide leads straight on to the next one; a guide read before keeps
+    the button ("Next guide" / "On to practice") so a reread can carry on
+    the same way. The guide just finished counts as fully read when
+    choosing, since its last mark may not be in the journey yet. Only
+    `guide:` keys are ever reported.
   - an exam problem (`dojo/exams/[rank]`, then the position-memory or
     puzzle session with an `exam` param) is graded by its result screen
     (`exam-run.ts`, `ExamVerdictCard`): a signed-in player for whom the
