@@ -21,12 +21,25 @@ import {
 /** The modules the home tab offers as a quick start, in this order. */
 const QUICK_START_SLUGS = ["coordinate-quiz", "square-colors", "legal-moves"];
 
+/** The puzzle module's icon, for the daily puzzle row. */
+const PUZZLE_ICON = MOBILE_PRACTICE_MODULES.find(
+  (m) => m.slug === "puzzle",
+)?.icon;
+
 /**
- * The home tab: the player's progress, the next rank to aim for with a way
- * into the dojo (`NextRankCard`, from the account's current rank), the AI
- * game (the web home leads with the same card), then a quick start into
- * the entry-level practice modules and the way back into the introduction. It is also where the account offer that ends
- * onboarding opens (`useSignUpOffer`).
+ * The home tab, top to bottom: the next rank to aim for with a way into the
+ * dojo (`NextRankCard`, from the account's current rank), the summary of the
+ * player's records (`ProgressCard`), the AI game, a quick start into the
+ * entry-level practice modules, and the way back into the introduction. It
+ * is also where the account offer that ends onboarding opens
+ * (`useSignUpOffer`).
+ *
+ * The order puts the one thing to do now first: the rank ladder is what the
+ * app is built around, so the next rank leads, and the record summary that
+ * measures progress towards it comes straight after. The AI game and the
+ * practice list are ways to spend the session once the goal is in view.
+ * `NextRankCard`'s contents belong to the dojo feature; this screen only
+ * decides where it sits.
  */
 export default function HomeTab() {
   const { t } = useTranslation();
@@ -40,8 +53,8 @@ export default function HomeTab() {
 
   return (
     <TabScrollView>
-      <ProgressCard />
       <NextRankCard />
+      <ProgressCard />
       <AiGameCard
         buttonTitle={t("home.playAi")}
         onPress={() => router.push("/play/ai-game")}
@@ -52,7 +65,7 @@ export default function HomeTab() {
         {quickStart.map((item) => (
           <ListRow
             key={item.slug}
-            leading={<ListIcon glyph={item.icon} />}
+            leading={<ListIcon ionicon={item.icon} />}
             title={t(`practice.${item.i18nKey}.title`)}
             subtitle={t(`practice.${item.i18nKey}.description`)}
             onPress={() =>
@@ -61,13 +74,13 @@ export default function HomeTab() {
           />
         ))}
         <ListRow
-          leading={<ListIcon glyph="🧩" />}
+          leading={<ListIcon ionicon={PUZZLE_ICON} />}
           title={t("puzzle.daily")}
           subtitle={t("practice.puzzle.description")}
           onPress={() => router.push("/practice/puzzle")}
         />
         <ListRow
-          leading={<ListIcon ionicon="grid-outline" />}
+          leading={<ListIcon ionicon="apps-outline" />}
           title={t("home.allPractice")}
           onPress={() => router.navigate("/practice")}
         />
