@@ -49,6 +49,12 @@
   },
   "practice": {
     "title": "Práctica",
+    "filter": {
+      "label": "Filtrar por rango",
+      "all": "Todos"
+    },
+    "tried": "Intentado",
+    "triedCount": "Intentados {{done}} / {{total}}",
     "coordinateQuiz": {
       "title": "Quiz de coordenadas",
       "description": "Pon a prueba tu visualización del tablero encontrando casillas"

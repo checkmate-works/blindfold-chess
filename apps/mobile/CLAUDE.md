@@ -62,12 +62,26 @@ header style (page-coloured, no hairline, chevron-only back).
 
 ## UI parts
 
+- **The look is flat** (the tokens are in `theme/surface.ts`, merged into
+  `useTheme().colors`): the ground of every screen is `colors.page`, white.
+  A panel (card, list, bottom bar, the dojo's stage cells) is white with a
+  1px `panelBorder` and no shadow; rows inside it are split by
+  `rowSeparator`. `colors.background` is not the page: it is the sunken
+  fill laid inside a panel (a field, a track). Blue (`primary`) is for the
+  main action only — the primary button and text actions — while headers
+  and tabs are ink. While pressed, a control changes only its fill
+  (`primaryPressed`, `muted`, a belt's `tintPressed`), never its position,
+  size or opacity. Colours always come from `useTheme().colors`; a screen
+  never writes a hex.
 - **Lists and settings** use `ListSection` / `ListRow` / `ListIcon`
   (`components/List.tsx`, the inset-grouped list), `SelectRow` (shows the
   value; picks a new one in a bottom sheet) and `SwitchRow` (platform switch)
   from `components/SettingRows.tsx`. Tab entry screens scroll in
   `TabScrollView` (automatic content insets, so the floating tab bar does not
   cover the last row).
+- **Filters over a list** are `FilterChips` (`components/FilterChips.tsx`):
+  one row of single-choice `SelectableChip`s that scrolls sideways when it
+  outgrows the screen, with "All" as a chip of its own.
 - **Half modals:** `BottomSheet` (`components/BottomSheet.tsx`) for option
   lists, help and pickers inside a screen — it works inside the session
   modal and sizes to its content. Closes on backdrop tap, Android back, or a
@@ -276,6 +290,15 @@ database. Sign-in calls Supabase Auth directly; sign-up goes through
     `POST /dojo/exams/[rank]/[problem]` and the server grades and records
     it; anyone else is graded on the device and nothing is recorded.
     1kyu and 1dan (publishing a game) still open the web.
+  - a rank's stage cells (`RankStageProgress`) are links on every rank and
+    every screen they appear on; `stageTarget` (`stage-target.ts`) picks the
+    destination so the screens cannot disagree: learn → the guide with the
+    first unread page (the first guide once all are read), practice → the
+    practice list narrowed to the rank (`router.navigate`, since `push`
+    would stack a second list on the practice tab), exam → where the first
+    unmet requirement's row goes (the first requirement once all are met;
+    1dan's opens the web). Learn and exam route through `stepTarget`, the
+    same routing as the next-step button.
 - `(account)` screens: welcome (the account offer that ends onboarding),
   sign-in, sign-up, setup-username, records (the user's own ranks).
   Settings has the Account section.
@@ -350,6 +373,23 @@ there plus its route files (`practice/<route>/index.tsx` and
 `src/navigation/__tests__/practice-modules.test.ts` checks each entry's
 route files exist. The challenge rules (`MISTAKE_LIMIT`,
 `CHALLENGE_TIME_LIMIT`) come from the same package.
+
+**The list narrows by rank** (`features/practice-list/`). A practice's rank
+is `rankForPracticeMenuType` from `@blindfold-chess/features/dojo-ranks`,
+the same function the web's practice badges read. The chips are All plus
+every rank at least one mobile practice belongs to (mukyu to 2kyu today;
+1kyu and 1dan ask for AI games and would only ever list nothing). A
+narrowed list keeps the challenge / free-play sections and drops the ones
+left empty; a practice no rank asks for is under All only. Another screen
+opens the list narrowed with `/practice?rank=<slug>` (`practiceListHref`);
+the list applies the param and clears it with `router.setParams`, because
+the tab stays mounted and an uncleared param would not change the next
+time, leaving whatever filter the player picked in between. Each row shows
+its practice's share of its rank's practice stage, counted from the same
+`useDojoJourney` steps as the rank card (`practice-progress.ts`): a check
+for a single challenge once tried, "n / N" for several (legal moves on
+4kyu), nothing for mukyu practices or those without a challenge on their
+rank.
 
 **Training mode** (every challenge module, plus quadrants) is
 the untimed `training.tsx` beside each module's timed `session.tsx`: it runs

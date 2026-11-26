@@ -1,5 +1,6 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
 import {
@@ -14,7 +15,9 @@ import {
   spacing,
   useTheme,
 } from "../../theme";
+import { openWebPage } from "../../lib/web-pages";
 import { beltColors } from "./belt";
+import { stageTarget } from "./stage-target";
 
 type StageCount = RankJourney["stages"][number];
 
@@ -47,21 +50,32 @@ function stageValue({ stage, done, total }: StageCount, t: TFunction): string {
  * belongs to is washed in the belt's tint, in the belt's colours rather
  * than the app's green for the same reason as `BeltButton`. Each cell is
  * read out as the stage's name followed by its value ("Learn 2 / 5").
+ *
+ * Every cell is a link, on every rank: pressing it opens where
+ * `stageTarget` says that stage leads (the guide, the practice list
+ * narrowed to the rank, the exam), with `router.navigate` so the practice
+ * tab is switched to rather than stacked again. A held cell is filled with
+ * the belt's `tintPressed`; nothing else about it changes, as with every
+ * pressable surface of the app.
+ *
+ * The frame and the lines between the cells are 1px `panelBorder`, the
+ * same edge as every white panel of the app.
  */
 export function RankStageProgress({
   journey,
 }: {
   readonly journey: RankJourney;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { colors } = useTheme();
+  const router = useRouter();
   const belt = beltColors(journey.rank, colors);
   const current =
     journey.standing === "next" ? currentStage(journey) : undefined;
 
   return (
     <View
-      style={[styles.row, { borderColor: colors.border }]}
+      style={[styles.row, { borderColor: colors.panelBorder }]}
       testID={`stage-progress-${journey.rank}`}
     >
       {journey.stages.map((count, index) => {
@@ -70,19 +84,29 @@ export function RankStageProgress({
         // dojo.stages.learn, dojo.stages.practice, dojo.stages.exam
         const name = t(`dojo.stages.${count.stage}`);
         const value = stageValue(count, t);
+        const open = () => {
+          const target = stageTarget(count.stage, journey);
+          if (target.kind === "web") {
+            openWebPage(target.path, i18n.language);
+          } else {
+            router.navigate(target.href);
+          }
+        };
         return (
-          <View
+          <Pressable
             key={count.stage}
-            accessible
+            accessibilityRole="link"
             accessibilityLabel={`${name} ${value}`}
             testID={`stage-${count.stage}`}
-            style={[
+            onPress={open}
+            style={({ pressed }) => [
               styles.cell,
               index > 0 && {
-                borderLeftWidth: StyleSheet.hairlineWidth,
-                borderLeftColor: colors.border,
+                borderLeftWidth: 1,
+                borderLeftColor: colors.panelBorder,
               },
               isCurrent && { backgroundColor: belt.tint },
+              pressed && { backgroundColor: belt.tintPressed },
             ]}
           >
             <Text
@@ -112,7 +136,7 @@ export function RankStageProgress({
                 {value}
               </Text>
             </View>
-          </View>
+          </Pressable>
         );
       })}
     </View>
@@ -122,7 +146,7 @@ export function RankStageProgress({
 const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
-    borderWidth: StyleSheet.hairlineWidth,
+    borderWidth: 1,
     borderRadius: borderRadius.md,
     overflow: "hidden",
   },

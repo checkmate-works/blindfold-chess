@@ -49,6 +49,12 @@
   },
   "practice": {
     "title": "練習",
+    "filter": {
+      "label": "段級位で絞り込む",
+      "all": "すべて"
+    },
+    "tried": "挑戦済み",
+    "triedCount": "挑戦済み {{done}} / {{total}}",
     "coordinateQuiz": {
       "title": "座標クイズ",
       "description": "マス目を見つけて盤面のイメージ力をテスト"

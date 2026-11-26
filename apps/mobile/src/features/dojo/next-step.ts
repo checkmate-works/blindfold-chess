@@ -7,6 +7,7 @@ import {
 } from "@blindfold-chess/features/dojo-journey";
 
 import {
+  guidePath,
   requirementLabel,
   requirementTarget,
   type RequirementTarget,
@@ -30,6 +31,38 @@ function challengeNameKey(menuType: string, leaderboardKey: string): string {
     : `${menuType}_${leaderboardKey}`;
 }
 
+/**
+ * Where one step of a journey leads, wherever it is offered: the next-step
+ * button and the stage cells (`stageTarget`) both go through this, so the
+ * same step never opens two different screens.
+ *
+ * - A guide page opens its guide from the first page: the guide screen does
+ *   not reopen at the page the player stopped at.
+ * - A challenge opens the module's setup screen, the same one its challenge
+ *   requirement opens.
+ * - A requirement goes where its requirement row goes.
+ */
+export function stepTarget(step: JourneyStep): RequirementTarget {
+  switch (step.kind) {
+    case "guidePage":
+      return {
+        kind: "practice",
+        // A learn step exists only for a guide with pages, so the guide is
+        // bundled; the dojo tab is a fallback that cannot strand the player.
+        pathname: guidePath(step.guideRank) ?? "/dojo",
+      };
+    case "challenge":
+      return requirementTarget({
+        type: "challenge_score",
+        menuType: step.menuType,
+        leaderboardKey: step.leaderboardKey,
+        minScore: 0,
+      });
+    case "requirement":
+      return requirementTarget(step.requirement);
+  }
+}
+
 function stepAction(
   step: JourneyStep,
   journey: RankJourney,
@@ -44,12 +77,7 @@ function stepAction(
           started ? "home.nextStep.guideContinue" : "home.nextStep.guideStart",
         ),
         icon: "book-outline",
-        // Always the guide's first page: the guide screen does not reopen
-        // at the page the player stopped at.
-        target: {
-          kind: "practice",
-          pathname: `/dojo/guides/${step.guideRank}`,
-        },
+        target: stepTarget(step),
       };
     }
     case "challenge":
@@ -61,16 +89,10 @@ function stepAction(
           ),
         }),
         icon: "stopwatch-outline",
-        // The same setup screen the challenge requirement opens.
-        target: requirementTarget({
-          type: "challenge_score",
-          menuType: step.menuType,
-          leaderboardKey: step.leaderboardKey,
-          minScore: 0,
-        }),
+        target: stepTarget(step),
       };
     case "requirement": {
-      const target = requirementTarget(step.requirement);
+      const target = stepTarget(step);
       return {
         label: requirementLabel(step.requirement, t),
         icon:
