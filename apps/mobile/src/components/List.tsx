@@ -168,8 +168,7 @@ export function ListRow({
 }
 
 type ListIconProps = {
-  /** An emoji / chess glyph, or an Ionicons name with `ionicon`. */
-  glyph?: string;
+  /** An Ionicons name for the tile's icon. */
   ionicon?: keyof typeof Ionicons.glyphMap;
   /** Tile color; defaults to the theme's secondary surface. */
   tint?: string;
@@ -178,7 +177,7 @@ type ListIconProps = {
 };
 
 /** The rounded square tile at the leading edge of a list row. */
-export function ListIcon({ glyph, ionicon, tint, children }: ListIconProps) {
+export function ListIcon({ ionicon, tint, children }: ListIconProps) {
   const { colors } = useTheme();
   return (
     <View
@@ -193,11 +192,7 @@ export function ListIcon({ glyph, ionicon, tint, children }: ListIconProps) {
           size={18}
           color={tint ? "#ffffff" : colors.foreground}
         />
-      ) : (
-        <Text style={[styles.glyph, { color: colors.foreground }]}>
-          {glyph}
-        </Text>
-      )}
+      ) : null}
     </View>
   );
 }
@@ -257,8 +252,5 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.md,
     alignItems: "center",
     justifyContent: "center",
-  },
-  glyph: {
-    fontSize: 18,
   },
 });

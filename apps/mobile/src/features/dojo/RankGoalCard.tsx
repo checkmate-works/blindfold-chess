@@ -21,6 +21,9 @@ import { beltColors } from "./belt";
  * the rank's name with its standing, and what the rank certifies. The dojo
  * puts the next goal in one, the home tab puts it there with its buttons
  * (`children`), and the rank screen opens with one.
+ *
+ * The frame is a 1px `colors.panelBorder`, like the app's other panels; the
+ * 4pt top edge stays in the belt colour so the rank is readable at a glance.
  */
 export function RankGoalCard({
   slug,
@@ -48,8 +51,8 @@ export function RankGoalCard({
         styles.card,
         {
           backgroundColor: colors.card,
-          borderColor: colors.border,
-          borderTopColor: slug === "mukyu" ? colors.border : belt.fill,
+          borderColor: colors.panelBorder,
+          borderTopColor: slug === "mukyu" ? colors.panelBorder : belt.fill,
         },
       ]}
     >
@@ -103,7 +106,7 @@ export function StandingPill({
 
 const styles = StyleSheet.create({
   card: {
-    borderWidth: StyleSheet.hairlineWidth,
+    borderWidth: 1,
     borderTopWidth: 4,
     borderRadius: borderRadius.lg,
     padding: spacing.md,
