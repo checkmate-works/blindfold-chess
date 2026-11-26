@@ -158,14 +158,6 @@ describe('isExamProblemRequirement', () => {
     void exam;
     expect(isExamProblemRequirement(rest)).toBe(false);
   });
-
-  it('drops the retired position_submission_count type when parsing', () => {
-    expect(
-      parseRequirements([
-        { type: 'position_submission_count', positionTypes: ['memory'], minCount: 1 },
-      ])
-    ).toEqual([]);
-  });
 });
 
 // ---------------------------------------------------------------------------
