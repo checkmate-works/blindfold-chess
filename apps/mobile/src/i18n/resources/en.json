@@ -49,6 +49,12 @@
   },
   "practice": {
     "title": "Practice",
+    "filter": {
+      "label": "Filter by rank",
+      "all": "All"
+    },
+    "tried": "Tried",
+    "triedCount": "Tried {{done}} / {{total}}",
     "coordinateQuiz": {
       "title": "Coordinate Quiz",
       "description": "Test your board visualization by finding squares"

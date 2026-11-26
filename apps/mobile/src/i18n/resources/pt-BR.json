@@ -49,6 +49,12 @@
   },
   "practice": {
     "title": "Prática",
+    "filter": {
+      "label": "Filtrar por graduação",
+      "all": "Todos"
+    },
+    "tried": "Tentado",
+    "triedCount": "Tentados {{done}} / {{total}}",
     "coordinateQuiz": {
       "title": "Quiz de coordenadas",
       "description": "Teste sua visualização do tabuleiro encontrando casas"
