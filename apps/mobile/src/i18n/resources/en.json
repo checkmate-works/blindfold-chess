@@ -798,7 +798,8 @@
       "notation": "Notation",
       "memory": "Memory",
       "practice": "Practice"
-    }
+    },
+    "guidePagesRead": "{{done}} of {{total}} pages read"
   },
   "gameHistory": {
     "title": "Your games",
