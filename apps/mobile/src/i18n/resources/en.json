@@ -1072,7 +1072,7 @@
     "challengeHint": "Take it in challenge mode",
     "webOnly": "Available on the web",
     "webOnlyNote": "This requirement is met on the web. Ranks earned with the same account show up in the app too.",
-    "guide": "Read this rank's guide (web)",
+    "guide": "Read this rank's guide",
     "rankDetailTitle": "Rank",
     "allAchieved": "You have achieved every rank 🎉"
   }

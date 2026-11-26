@@ -82,7 +82,8 @@ describe("requirementLabel", () => {
 });
 
 describe("guidePath", () => {
-  it("links the ranks that have a web guide", () => {
+  it("opens the in-app guide of the ranks that have one", () => {
+    expect(guidePath("mukyu")).toBe("/dojo/guides/mukyu");
     expect(guidePath("5kyu")).toBe("/dojo/guides/5kyu");
     expect(guidePath("1dan")).toBeUndefined();
   });
