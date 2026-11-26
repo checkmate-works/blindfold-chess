@@ -25,7 +25,8 @@
     "play": "Jogar",
     "practice": "Prática",
     "settings": "Configurações",
-    "learn": "Aprender"
+    "learn": "Aprender",
+    "dojo": "Dojo"
   },
   "home": {
     "title": "Xadrez às Cegas",
@@ -35,7 +36,10 @@
     "replayOnboarding": "Refazer tutorial",
     "allPractice": "Todas as práticas",
     "gettingStarted": "Primeiros passos",
-    "learnBasics": "Aprenda o básico"
+    "learnBasics": "Aprenda o básico",
+    "nextRankTitle": "Próximo objetivo",
+    "openDojo": "Abrir o dojo",
+    "allAchievedBody": "Você tem o 1º Dan. Continue afiando contra o motor."
   },
   "practice": {
     "title": "Prática",
@@ -956,7 +960,48 @@
   "ranks": {
     "kyu": "{{n}}º Kyu",
     "dan": "{{n}}º Dan",
-    "firstDan": "1º Dan"
+    "firstDan": "1º Dan",
+    "names": {
+      "mukyu": "Sem Graduação",
+      "5kyu": "5.º Kyū",
+      "4kyu": "4.º Kyū",
+      "3kyu": "3.º Kyū",
+      "2kyu": "2.º Kyū",
+      "1kyu": "1.º Kyū",
+      "1dan": "1.º Dan"
+    },
+    "challengeNames": {
+      "square_colors": "Cor das Casas",
+      "coordinate_quiz_white": "Quiz de Coordenadas (Brancas)",
+      "coordinate_quiz_black": "Quiz de Coordenadas (Pretas)",
+      "coordinate_quiz_random": "Quiz de Coordenadas (Aleatório)",
+      "legal_moves": "Movimentos Legais",
+      "legal_moves_bishop": "Movimentos Legais (Bispo)",
+      "legal_moves_king": "Movimentos Legais (Rei)",
+      "legal_moves_knight": "Movimentos Legais (Cavalo)",
+      "route_planner_knight": "Planejador de Rotas (Cavalo)",
+      "route_planner_bishop": "Planejador de Rotas (Bispo)"
+    },
+    "criteria": {
+      "mukyu": "Pronto para começar o treinamento básico de xadrez às cegas.",
+      "5kyu": "Capacidade de identificar corretamente a casa no tabuleiro de xadrez a partir da notação algébrica (ex., e4, Bg7).",
+      "4kyu": "Capacidade de determinar os movimentos legais em uma coordenada específica para todas as peças sem ajudas visuais.",
+      "3kyu": "Capacidade de planejar rotas de manobra de peças para todas as peças sem auxílios visuais.",
+      "2kyu": "Ser capaz de reconhecer várias peças como uma única unidade com significado (um “chunk”).",
+      "1kyu": "Ser capaz de vencer o motor sob alguma restrição de xadrez às cegas.",
+      "1dan": "Ser capaz de vencer o motor no xadrez às cegas."
+    },
+    "requirement": {
+      "challengeScore": "Pontuação {{minScore}}+ em {{challengeName}}",
+      "submissionCount": "Publique pelo menos {{minCount}} {{itemName}}",
+      "submissionItemNames": {
+        "memory": "problema de memória de posições",
+        "puzzle": "puzzle"
+      },
+      "gamePublishWin": "Vença o motor com ao menos uma restrição ativada e publique a partida",
+      "gamePublishWinHiddenBoard": "Partindo da posição inicial padrão, vença o motor mantendo o tabuleiro oculto o tempo todo, e publique a partida",
+      "orDivider": "ou"
+    }
   },
   "puzzle": {
     "session": {
@@ -1007,5 +1052,28 @@
     "black": "Pretas",
     "play": "Reproduzir",
     "replay": "Repetir"
+  },
+  "dojo": {
+    "currentRank": "Faixa atual",
+    "rankProgress": "{{done}} / {{total}}",
+    "rankProgressValue": "{{rank}}, {{done}} de {{total}}",
+    "nextRank": "Próximo objetivo",
+    "journeyTitle": "Caminho até a faixa preta",
+    "signInNote": "É preciso uma conta para registrar sua faixa.",
+    "signInLink": "Entrar",
+    "status": {
+      "achieved": "Conquistada",
+      "next": "Próxima",
+      "locked": "Pendente"
+    },
+    "lockedNote": "Conquiste primeiro as faixas anteriores",
+    "requirementsTitle": "Requisitos",
+    "criteriaTitle": "O que certifica",
+    "challengeHint": "Faça no modo desafio",
+    "webOnly": "Disponível na web",
+    "webOnlyNote": "Este requisito é cumprido na web. As faixas conquistadas com a mesma conta também aparecem no app.",
+    "guide": "Ler o guia desta faixa (web)",
+    "rankDetailTitle": "Faixa",
+    "allAchieved": "Você conquistou todas as graduações 🎉"
   }
 }

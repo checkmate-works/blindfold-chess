@@ -1,10 +1,10 @@
 import Constants from "expo-constants";
 import { useTranslation } from "react-i18next";
-import { ListRow, ListSection, TabScrollView } from "../../../components";
-import { changeLanguage, type Locale } from "../../../i18n";
-import { AccountSection } from "../../../features/settings/AccountSection";
-import { BoardPreferencesSection } from "../../../features/settings/BoardPreferencesSection";
-import { openWebPage } from "../../../lib/web-pages";
+import { ListRow, ListSection, TabScrollView } from "../../components";
+import { changeLanguage, type Locale } from "../../i18n";
+import { AccountSection } from "../../features/settings/AccountSection";
+import { BoardPreferencesSection } from "../../features/settings/BoardPreferencesSection";
+import { openWebPage } from "../../lib/web-pages";
 
 /** The web pages the About section links to, in display order. */
 const ABOUT_PAGES = [
@@ -31,7 +31,16 @@ const LANGUAGE_LABELS: Record<Locale, string> = {
  */
 const LANGUAGE_ORDER = Object.keys(LANGUAGE_LABELS) as Locale[];
 
-export default function SettingsTab() {
+/**
+ * Settings: account, language, board appearance and the About pages.
+ *
+ * @description
+ * Pushed on the root stack from the gear at the right of the home header,
+ * not a tab of its own: the tab bar holds five tabs (iOS folds a sixth into
+ * a "More" tab), and the fifth slot went to the dojo, which a player visits
+ * far more often than settings.
+ */
+export default function SettingsScreen() {
   const { t, i18n } = useTranslation();
   const currentLanguage = i18n.language as Locale;
 

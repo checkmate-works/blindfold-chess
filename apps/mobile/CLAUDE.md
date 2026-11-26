@@ -13,8 +13,8 @@ replaced by the platform's own parts or their common app equivalents.
 
 `src/app/_layout.tsx` is the root native stack:
 
-- `(tabs)` — the bottom tabs (`(tabs)/_layout.tsx`): Home, Practice, Play,
-  Learn, Settings, drawn by the OS through expo-router's `NativeTabs`
+- `(tabs)` — the bottom tabs (`(tabs)/_layout.tsx`): Home, Dojo, Practice,
+  Play, Learn, drawn by the OS through expo-router's `NativeTabs`
   (`expo-router/native-tabs`; on iOS 26 the floating Liquid Glass
   bar that shrinks on scroll, Material 3 on Android). Icons are SF Symbols on
   iOS and Material Community Icons (via `VectorIcon`) on Android. Each tab is
@@ -22,11 +22,15 @@ replaced by the platform's own parts or their common app equivalents.
   `navigation/stack-options.tsx`, left-aligned 22pt title). The tabs layout
   is also the onboarding gate: `/` is the home tab, and a first launch is
   redirected to `/onboarding`. `NativeTabs` is unstable API: re-check its
-  props whenever the Expo SDK changes.
+  props whenever the Expo SDK changes. Five is the iOS bar's limit before it
+  folds the rest into "More", so Settings is not a tab: it is
+  `settings/index.tsx` on the root stack, opened from the gear in the home
+  header (`TabStack`'s `headerRight`).
 - Detail screens are pushed on the root stack, above the tabs, so the tab
   bar hides on them: each module's setup at `practice/<route>/index.tsx`
   (URL `/practice/<route>`), the AI-game setup at `play/ai-game`, the saved
-  games at `play/games`, learn articles at `learn/[slug]`.
+  games at `play/games`, learn articles at `learn/[slug]`, a dojo rank at
+  `dojo/ranks/[slug]`.
 - `(session)` — timed sessions, results and training runs
   (`(session)/practice/<route>/{session,result,training}.tsx`,
   `(session)/play/ai-game/*`), presented as one `fullScreenModal`. A full
@@ -225,6 +229,11 @@ database. Sign-in calls Supabase Auth directly; sign-up goes through
   release build without them has no accounts), the Supabase client (session
   in SecureStore), `callMobileApi` (retries a 401 once after a refresh) and
   the `useAuth` store.
+- **The dojo** (`(tabs)/dojo`, `features/dojo/`) draws the belt ladder from
+  `@blindfold-chess/features/dojo-ranks` (order, colours, requirements; the
+  web seed is pinned to it by a test) and the account's `highestRank`. The
+  API sends no best scores, so no requirement shows as met. 2kyu and up ask
+  for posting or publishing, which stay on the web, so those rows open it.
 - `(account)` screens: welcome (the account offer that ends onboarding),
   sign-in, sign-up, setup-username, records (the user's own ranks).
   Settings has the Account section.

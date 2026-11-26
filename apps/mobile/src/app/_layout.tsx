@@ -89,6 +89,14 @@ function RootStack({ isDark }: { isDark: boolean }) {
           name="play/games/[id]"
           options={{ title: t("gameHistory.detailTitle") }}
         />
+        <Stack.Screen
+          name="settings/index"
+          options={{ title: t("tabs.settings") }}
+        />
+        <Stack.Screen
+          name="dojo/ranks/[slug]"
+          options={{ title: t("dojo.rankDetailTitle") }}
+        />
         <Stack.Screen name="learn/[slug]" options={{ title: "" }} />
         <Stack.Screen
           name="learn/glossary/index"

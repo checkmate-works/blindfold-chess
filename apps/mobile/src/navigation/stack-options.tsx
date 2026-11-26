@@ -1,6 +1,6 @@
 import type { NativeStackNavigationOptions } from "expo-router/native-stack";
 import { Stack } from "expo-router";
-import { useMemo } from "react";
+import { useMemo, type ReactNode } from "react";
 import { Platform, StyleSheet, Text } from "react-native";
 import { useTranslation } from "react-i18next";
 
@@ -39,6 +39,8 @@ export function useStackScreenOptions(): NativeStackNavigationOptions {
 type TabStackProps = {
   /** i18n key of the tab's title, shown at the left of its header. */
   titleKey: string;
+  /** What the header's trailing slot shows (an entry the tab bar has no room for). */
+  headerRight?: () => ReactNode;
 };
 
 /**
@@ -53,7 +55,7 @@ type TabStackProps = {
  * and with the floating tab bar also reacting to scroll the screen top and
  * bottom both move at once.
  */
-export function TabStack({ titleKey }: TabStackProps) {
+export function TabStack({ titleKey, headerRight }: TabStackProps) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const screenOptions = useStackScreenOptions();
@@ -66,6 +68,7 @@ export function TabStack({ titleKey }: TabStackProps) {
         options={{
           title,
           headerTitle: "",
+          headerRight,
           headerLeft: () => (
             <Text
               accessibilityRole="header"
