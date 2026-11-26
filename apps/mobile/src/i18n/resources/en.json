@@ -25,7 +25,8 @@
     "play": "Play",
     "practice": "Practice",
     "settings": "Settings",
-    "learn": "Learn"
+    "learn": "Learn",
+    "dojo": "Dojo"
   },
   "home": {
     "title": "Blindfold Chess",
@@ -35,7 +36,10 @@
     "replayOnboarding": "Replay Tutorial",
     "allPractice": "All practice modules",
     "gettingStarted": "Getting started",
-    "learnBasics": "Learn the basics"
+    "learnBasics": "Learn the basics",
+    "nextRankTitle": "Next goal",
+    "openDojo": "Open the dojo",
+    "allAchievedBody": "You hold 1st Dan. Keep sharpening it against the engine."
   },
   "practice": {
     "title": "Practice",
@@ -956,7 +960,48 @@
   "ranks": {
     "kyu": "{{n}} Kyu",
     "dan": "{{n}} Dan",
-    "firstDan": "1 Dan"
+    "firstDan": "1 Dan",
+    "names": {
+      "mukyu": "Unranked",
+      "5kyu": "5th Kyū",
+      "4kyu": "4th Kyū",
+      "3kyu": "3rd Kyū",
+      "2kyu": "2nd Kyū",
+      "1kyu": "1st Kyū",
+      "1dan": "1st Dan"
+    },
+    "challengeNames": {
+      "square_colors": "Square Colors",
+      "coordinate_quiz_white": "Coordinate Quiz (White)",
+      "coordinate_quiz_black": "Coordinate Quiz (Black)",
+      "coordinate_quiz_random": "Coordinate Quiz (Random)",
+      "legal_moves": "Legal Moves",
+      "legal_moves_bishop": "Legal Moves (Bishop)",
+      "legal_moves_king": "Legal Moves (King)",
+      "legal_moves_knight": "Legal Moves (Knight)",
+      "route_planner_knight": "Route Planner (Knight)",
+      "route_planner_bishop": "Route Planner (Bishop)"
+    },
+    "criteria": {
+      "mukyu": "Ready to begin simple blindfold chess training.",
+      "5kyu": "Ability to correctly identify the square on the chess board from algebraic notation (e.g., e4, Bg7).",
+      "4kyu": "Ability to determine legal moves at a specified coordinate for all pieces without visual aids.",
+      "3kyu": "Ability to plan piece maneuvering routes for all pieces without visual aids.",
+      "2kyu": "Able to recognize multiple pieces as a single meaningful chunk.",
+      "1kyu": "Being able to beat the engine under some blindfold constraint.",
+      "1dan": "Being able to beat the engine at blindfold chess."
+    },
+    "requirement": {
+      "challengeScore": "Score {{minScore}}+ in {{challengeName}}",
+      "submissionCount": "Submit at least {{minCount}} {{itemName}}",
+      "submissionItemNames": {
+        "memory": "position-memory problem",
+        "puzzle": "puzzle"
+      },
+      "gamePublishWin": "Beat the engine with at least one constraint enabled, and publish the game",
+      "gamePublishWinHiddenBoard": "Starting from the standard initial position, beat the engine with the board hidden throughout, and publish the game",
+      "orDivider": "or"
+    }
   },
   "puzzle": {
     "session": {
@@ -1007,5 +1052,43 @@
     "black": "Black",
     "play": "Play",
     "replay": "Replay"
+  },
+  "dojo": {
+    "currentRank": "Current rank",
+    "rankProgress": "{{done}} / {{total}}",
+    "rankProgressValue": "{{rank}}, {{done}} of {{total}}",
+    "nextRank": "Next goal",
+    "journeyTitle": "Road to black belt",
+    "signInNote": "An account is needed to record your rank.",
+    "signInLink": "Sign in",
+    "status": {
+      "achieved": "Earned",
+      "next": "Next",
+      "locked": "Not yet"
+    },
+    "lockedNote": "Earn the ranks below this one first",
+    "requirementsTitle": "Requirements",
+    "criteriaTitle": "What it certifies",
+    "challengeHint": "Take it in challenge mode",
+    "webOnly": "Available on the web",
+    "webOnlyNote": "This requirement is met on the web. Ranks earned with the same account show up in the app too.",
+    "guide": "Read this rank's guide",
+    "rankDetailTitle": "Rank",
+    "allAchieved": "You have achieved every rank 🎉",
+    "met": "Done",
+    "exam": {
+      "requirement": "Pass the {{rank}} exam ({{count}} position-memory problems)",
+      "hint": "Take the app's exam",
+      "title": "{{rank}} exam",
+      "howTitle": "How the exam works",
+      "stepMemorize": "Memorize {{count}} positions, {{seconds}} seconds each",
+      "stepRecreate": "Recreate each one on an empty board",
+      "rule": "Submit all {{count}} with an average accuracy of {{accuracy}}% or more to pass",
+      "deviceNote": "An exam pass is recorded on this device. It does not change your rank on the web.",
+      "start": "Start the exam",
+      "passed": "You passed the {{rank}} exam",
+      "passedBody": "Your dojo rank is now {{rank}}.",
+      "failed": "Not passed this time"
+    }
   }
 }

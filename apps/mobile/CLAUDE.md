@@ -13,8 +13,8 @@ replaced by the platform's own parts or their common app equivalents.
 
 `src/app/_layout.tsx` is the root native stack:
 
-- `(tabs)` — the bottom tabs (`(tabs)/_layout.tsx`): Home, Practice, Play,
-  Learn, Settings, drawn by the OS through expo-router's `NativeTabs`
+- `(tabs)` — the bottom tabs (`(tabs)/_layout.tsx`): Home, Dojo, Practice,
+  Play, Learn, drawn by the OS through expo-router's `NativeTabs`
   (`expo-router/native-tabs`; on iOS 26 the floating Liquid Glass
   bar that shrinks on scroll, Material 3 on Android). Icons are SF Symbols on
   iOS and Material Community Icons (via `VectorIcon`) on Android. Each tab is
@@ -22,11 +22,15 @@ replaced by the platform's own parts or their common app equivalents.
   `navigation/stack-options.tsx`, left-aligned 22pt title). The tabs layout
   is also the onboarding gate: `/` is the home tab, and a first launch is
   redirected to `/onboarding`. `NativeTabs` is unstable API: re-check its
-  props whenever the Expo SDK changes.
+  props whenever the Expo SDK changes. Five is the iOS bar's limit before it
+  folds the rest into "More", so Settings is not a tab: it is
+  `settings/index.tsx` on the root stack, opened from the gear in the home
+  header (`TabStack`'s `headerRight`).
 - Detail screens are pushed on the root stack, above the tabs, so the tab
   bar hides on them: each module's setup at `practice/<route>/index.tsx`
   (URL `/practice/<route>`), the AI-game setup at `play/ai-game`, the saved
-  games at `play/games`, learn articles at `learn/[slug]`.
+  games at `play/games`, learn articles at `learn/[slug]`, a dojo rank at
+  `dojo/ranks/[slug]` and its guide at `dojo/guides/[rank]`.
 - `(session)` — timed sessions, results and training runs
   (`(session)/practice/<route>/{session,result,training}.tsx`,
   `(session)/play/ai-game/*`), presented as one `fullScreenModal`. A full
@@ -203,10 +207,23 @@ Generated, not edited by hand; re-run the script after the web changes:
   render through `features/learn/markdown.ts` + `MarkdownView` (the markdown
   subset the articles use; LaTeX becomes plain text). Articles have no pt-BR
   text yet and fall back to English.
+- `pnpm bundle-guides` (`scripts/bundle-guides.ts`) — the web's dojo guides
+  (教本, `guides.pages` of the four dictionaries) into
+  `features/guides/generated/`, with each paragraph's link card (asked of the
+  web's `getGuideInlineLink`) and visual aid (component name and props, read
+  out of the web's `VISUAL_AID_MAP` as text). They render through
+  `GuidePageView`; every visual aid has a native drawing in
+  `features/guides/visual-aids/renderers.tsx`, typed over the generated name
+  union, so a component the web starts using fails the typecheck until it is
+  drawn. A link card opens the app's screen when it has the page (a bundled
+  article, a practice's setup, another guide) and the web otherwise. Only
+  the flat format is bundled; the script refuses a chaptered guide, which
+  would need a chapter screen first.
 
 Shared data lives in `@blindfold-chess/features` instead where both apps
 read it: the position-memory presets (`fen-practice`'s
-`POSITION_MEMORY_FENS`) and the opening families (`openings`).
+`POSITION_MEMORY_FENS`), the opening families (`openings`), and the guide
+boards' positions and diagonal tables (`dojo-guides`).
 
 ## Accounts and recorded challenges
 
@@ -225,6 +242,16 @@ database. Sign-in calls Supabase Auth directly; sign-up goes through
   release build without them has no accounts), the Supabase client (session
   in SecureStore), `callMobileApi` (retries a 401 once after a refresh) and
   the `useAuth` store.
+- **The dojo** (`(tabs)/dojo`, `features/dojo/`) draws the belt ladder from
+  `@blindfold-chess/features/dojo-ranks` (order, colours, requirements; the
+  web seed is pinned to it by a test), the account's `highestRank`, and
+  `GET /dojo` (ranks held, best challenge scores) to mark each requirement
+  met. The app asks its own 2kyu requirement: an exam of fixed
+  position-memory problems (`features/dojo/exams.ts`, the position-memory
+  session with an `exam` param) instead of the web's posting. A pass is
+  kept on the device only and raises the shown rank from 3kyu
+  (`effectiveHighestRank`); the server's grants are unchanged. 1kyu and
+  1dan (publishing a game) still open the web.
 - `(account)` screens: welcome (the account offer that ends onboarding),
   sign-in, sign-up, setup-username, records (the user's own ranks).
   Settings has the Account section.

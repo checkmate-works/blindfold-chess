@@ -1,12 +1,14 @@
 import type { ElementType, ReactNode } from "react";
 
 import { getPieceData } from "../../data/chess-pieces";
+import { beltData } from "../../data/belt";
 import { flagData } from "../../data/flag";
 import { getRatingFaceData } from "../../data/rating-faces";
 import { spinnerData } from "../../data/spinner";
 import type { SvgElement, StrokeIconSvgData } from "../../data/types";
 import { undoData } from "../../data/undo";
 import type {
+  BeltIconProps,
   ChessPieceIconProps,
   RatingFaceIconProps,
   SpinnerIconProps,
@@ -158,6 +160,25 @@ export function createIconRenderer(primitives: IconPrimitives) {
     );
   }
 
+  function BeltIcon({
+    size = 24,
+    color = "currentColor",
+    ...extras
+  }: BeltIconProps & ContainerExtras) {
+    return (
+      <Svg
+        {...xmlnsProps}
+        viewBox={beltData.viewBox}
+        width={size}
+        height={size}
+        fill={color}
+        {...extras}
+      >
+        <Path d={beltData.path} />
+      </Svg>
+    );
+  }
+
   const UndoIcon = createStrokeIcon(undoData, "UndoIcon");
   const FlagIcon = createStrokeIcon(flagData, "FlagIcon");
 
@@ -167,6 +188,7 @@ export function createIconRenderer(primitives: IconPrimitives) {
     RatingFaceIcon,
     UndoIcon,
     FlagIcon,
+    BeltIcon,
     createStrokeIcon,
   };
 }

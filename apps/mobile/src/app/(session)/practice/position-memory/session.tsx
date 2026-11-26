@@ -63,7 +63,7 @@ export default function PositionMemorySession() {
   const router = useRouter();
   const { colors } = useTheme();
   const params = useLocalSearchParams<
-    FenSessionParams & { seconds?: string }
+    FenSessionParams & { seconds?: string; exam?: string }
   >();
   const memorizeSeconds = parseIntParam(params.seconds, {
     min: 1,
@@ -155,9 +155,13 @@ export default function PositionMemorySession() {
     const summary = summarizeFenSession(session);
     router.replace({
       pathname: "/practice/position-memory/result",
-      params: serializeFenResultParams(summary, positions.length),
+      params: {
+        ...serializeFenResultParams(summary, positions.length),
+        // A dojo exam run (`dojo/exams/[rank]`) is graded on the result screen.
+        ...(params.exam ? { exam: params.exam } : {}),
+      },
     });
-  }, [phase, session, positions.length, router]);
+  }, [phase, session, positions.length, router, params.exam]);
 
   // Blank while the hand-off to the result screen is in flight.
   if (!originalPosition || phase === "result") {

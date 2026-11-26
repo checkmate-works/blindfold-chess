@@ -1,6 +1,7 @@
+import { SCATTERED_PAWNS_FEN } from '@blindfold-chess/features/dojo-guides';
+
 import { StaticPositionBoard } from './_shared/StaticPositionBoard';
 import { fenToStaticPlacements } from './_shared/fen-to-static-placements';
-import { SCATTERED_PAWNS_FEN } from './scattered-pawns-fen';
 
 /**
  * A 10-pawn position with no chunkable structure, used on the 2kyu guide and

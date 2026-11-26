@@ -54,7 +54,7 @@ function RootLayoutContent() {
  * @description
  * - `(tabs)` — the bottom tabs, each a stack holding only its entry screen.
  * - Detail screens (each module's setup at `practice/<slug>`, the AI-game
- *   setup at `play/ai-game`, articles under `learn/`) are pushed here, above
+ *   setup at `play/ai-game`, articles under `learn/`, the dojo's ranks and guides) are pushed here, above
  *   the tabs, so the tab bar hides on them and one detail can be opened from
  *   any tab.
  * - `(session)` — timed sessions, results and training runs, presented as a
@@ -89,6 +89,17 @@ function RootStack({ isDark }: { isDark: boolean }) {
           name="play/games/[id]"
           options={{ title: t("gameHistory.detailTitle") }}
         />
+        <Stack.Screen
+          name="settings/index"
+          options={{ title: t("tabs.settings") }}
+        />
+        <Stack.Screen
+          name="dojo/ranks/[slug]"
+          options={{ title: t("dojo.rankDetailTitle") }}
+        />
+        <Stack.Screen name="dojo/exams/[rank]" options={{ title: "" }} />
+        {/* The guide names its rank in the title, set by the screen. */}
+        <Stack.Screen name="dojo/guides/[rank]" options={{ title: "" }} />
         <Stack.Screen name="learn/[slug]" options={{ title: "" }} />
         <Stack.Screen
           name="learn/glossary/index"

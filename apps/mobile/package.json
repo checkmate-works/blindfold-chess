@@ -17,7 +17,8 @@
     "copy-stockfish": "tsx scripts/copy-stockfish.ts",
     "eas-build-post-install": "pnpm copy-stockfish",
     "bundle-learn-content": "tsx scripts/bundle-learn-content.ts",
-    "bundle-glossary": "tsx scripts/bundle-glossary.ts"
+    "bundle-glossary": "tsx scripts/bundle-glossary.ts",
+    "bundle-guides": "tsx scripts/bundle-guides.ts"
   },
   "dependencies": {
     "@blindfold-chess/features": "workspace:^",

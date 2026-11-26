@@ -29,6 +29,8 @@ const PURE_BARRELS = [
   "game-play/index.ts",
   "fen-practice/index.ts",
   "practice-registry/index.ts",
+  "dojo-guides/index.ts",
+  "dojo-ranks/index.ts",
   "challenge-attempt/index.ts",
   "openings/index.ts",
   "puzzle/index.ts",

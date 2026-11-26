@@ -47,8 +47,12 @@ export const UndoIcon = factory.UndoIcon as (
 export const FlagIcon = factory.FlagIcon as (
   props: NativeStrokeIconProps,
 ) => ReturnType<typeof factory.FlagIcon>;
+export const BeltIcon = factory.BeltIcon as (
+  props: NativeStrokeIconProps,
+) => ReturnType<typeof factory.BeltIcon>;
 
 export type {
+  BeltIconProps,
   ChessPieceIconProps,
   RatingFaceIconProps,
   SpinnerIconProps,

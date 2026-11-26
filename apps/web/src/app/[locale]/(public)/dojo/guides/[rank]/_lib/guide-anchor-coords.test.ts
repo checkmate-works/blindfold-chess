@@ -1,11 +1,10 @@
 import jaMessages from '@/messages/ja.json';
 import { validateFen } from '@blindfold-chess/features/chess-core';
+import { TWO_PAWNS_VS_ONE_FEN } from '@blindfold-chess/features/dojo-guides';
 import { describe, expect, it } from 'vitest';
 
 import { getRankGuide, paragraphToPlainText } from '@/lib/guides';
 import type { FlatGuide } from '@/lib/guides';
-
-import { TWO_PAWNS_VS_ONE_FEN } from '@/app/[locale]/(public)/dojo/ranks/_components/two-pawns-vs-one-fen';
 
 import { getGuideInlineLink } from './paragraphInlineLinks';
 

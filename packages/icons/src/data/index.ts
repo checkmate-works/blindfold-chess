@@ -1,5 +1,6 @@
 export { getPieceData } from "./chess-pieces";
 export type { PieceType } from "./chess-pieces";
+export { beltData } from "./belt";
 export { flagData } from "./flag";
 export { getRatingFaceData } from "./rating-faces";
 export { spinnerData } from "./spinner";

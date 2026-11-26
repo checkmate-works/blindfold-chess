@@ -1,6 +1,7 @@
+import { CASTLED_KINGSIDE_FEN } from '@blindfold-chess/features/dojo-guides';
+
 import { StaticPositionBoard } from './_shared/StaticPositionBoard';
 import { fenToStaticPlacements } from './_shared/fen-to-static-placements';
-import { CASTLED_KINGSIDE_FEN } from './castled-kingside-fen';
 
 /**
  * Both sides castled kingside with only king, rook, and f/g/h pawns

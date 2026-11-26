@@ -8,7 +8,7 @@ import { useOnboardingStatus } from "../../hooks/useOnboardingStatus";
 import { useTheme } from "../../theme";
 
 /**
- * The bottom tabs: Home, Practice, Play, Learn, Settings.
+ * The bottom tabs: Home, Dojo, Practice, Play, Learn.
  *
  * @description
  * The tab bar is the OS's own (`NativeTabs`, a `UITabBarController` on iOS
@@ -17,6 +17,11 @@ import { useTheme } from "../../theme";
  * content scrolls down (`minimizeBehavior`); on older iOS it is the standard
  * translucent bar. The colors set here reach Android only partly and iOS
  * hardly at all — the OS paints the bar's background and separator itself.
+ *
+ * Five is the most the iOS bar shows before folding the rest into a "More"
+ * tab, so settings is not a tab: it opens from the gear in the home header.
+ * The dojo sits next to home because the rank ladder is the app's spine —
+ * every practice module the home screen suggests is a step on it.
  *
  * Icons: iOS uses SF Symbols (filled when selected); Android has no symbol
  * set in the OS, so it gets Material Community Icons rendered to an image by
@@ -67,6 +72,18 @@ export default function TabsLayout() {
           }
         />
       </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="dojo">
+        <NativeTabs.Trigger.Label>{t("tabs.dojo")}</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
+          sf="figure.martial.arts"
+          src={
+            <NativeTabs.Trigger.VectorIcon
+              family={MaterialCommunityIcons}
+              name="karate"
+            />
+          }
+        />
+      </NativeTabs.Trigger>
       <NativeTabs.Trigger name="practice">
         <NativeTabs.Trigger.Label>
           {t("tabs.practice")}
@@ -101,20 +118,6 @@ export default function TabsLayout() {
             <NativeTabs.Trigger.VectorIcon
               family={MaterialCommunityIcons}
               name="book-open-variant"
-            />
-          }
-        />
-      </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="settings">
-        <NativeTabs.Trigger.Label>
-          {t("tabs.settings")}
-        </NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon
-          sf={{ default: "gearshape", selected: "gearshape.fill" }}
-          src={
-            <NativeTabs.Trigger.VectorIcon
-              family={MaterialCommunityIcons}
-              name="cog"
             />
           }
         />

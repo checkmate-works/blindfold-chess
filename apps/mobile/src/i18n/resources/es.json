@@ -25,7 +25,8 @@
     "play": "Jugar",
     "practice": "Práctica",
     "settings": "Ajustes",
-    "learn": "Aprender"
+    "learn": "Aprender",
+    "dojo": "Dojo"
   },
   "home": {
     "title": "Ajedrez a Ciegas",
@@ -35,7 +36,10 @@
     "replayOnboarding": "Repetir tutorial",
     "allPractice": "Todas las prácticas",
     "gettingStarted": "Primeros pasos",
-    "learnBasics": "Aprende lo básico"
+    "learnBasics": "Aprende lo básico",
+    "nextRankTitle": "Próximo objetivo",
+    "openDojo": "Ir al dojo",
+    "allAchievedBody": "Tienes el 1.er Dan. Sigue puliéndolo contra el motor."
   },
   "practice": {
     "title": "Práctica",
@@ -956,7 +960,48 @@
   "ranks": {
     "kyu": "{{n}}.º Kyu",
     "dan": "{{n}}.º Dan",
-    "firstDan": "1.er Dan"
+    "firstDan": "1.er Dan",
+    "names": {
+      "mukyu": "Sin Rango",
+      "5kyu": "5.º Kyū",
+      "4kyu": "4.º Kyū",
+      "3kyu": "3.er Kyū",
+      "2kyu": "2.º Kyū",
+      "1kyu": "1.er Kyū",
+      "1dan": "1.er Dan"
+    },
+    "challengeNames": {
+      "square_colors": "Color de Casillas",
+      "coordinate_quiz_white": "Cuestionario de Coordenadas (Blancas)",
+      "coordinate_quiz_black": "Cuestionario de Coordenadas (Negras)",
+      "coordinate_quiz_random": "Cuestionario de Coordenadas (Aleatorio)",
+      "legal_moves": "Movimientos Legales",
+      "legal_moves_bishop": "Movimientos Legales (Alfil)",
+      "legal_moves_king": "Movimientos Legales (Rey)",
+      "legal_moves_knight": "Movimientos Legales (Caballo)",
+      "route_planner_knight": "Planificador de Rutas (Caballo)",
+      "route_planner_bishop": "Planificador de Rutas (Alfil)"
+    },
+    "criteria": {
+      "mukyu": "Listo para comenzar el entrenamiento básico de ajedrez a ciegas.",
+      "5kyu": "Capacidad de identificar correctamente la casilla en el tablero de ajedrez a partir de la notación algebraica (ej., e4, Ag7).",
+      "4kyu": "Capacidad de determinar los movimientos legales en una coordenada específica para todas las piezas sin ayudas visuales.",
+      "3kyu": "Capacidad de planificar rutas de maniobra para todas las piezas sin ayudas visuales.",
+      "2kyu": "Ser capaz de reconocer varias piezas como una sola unidad con significado (un «chunk»).",
+      "1kyu": "Ser capaz de ganar al motor bajo alguna restricción de ajedrez a ciegas.",
+      "1dan": "Ser capaz de ganar al motor en ajedrez a ciegas."
+    },
+    "requirement": {
+      "challengeScore": "Puntuación {{minScore}}+ en {{challengeName}}",
+      "submissionCount": "Publica al menos {{minCount}} {{itemName}}",
+      "submissionItemNames": {
+        "memory": "problema de memoria de posiciones",
+        "puzzle": "puzzle"
+      },
+      "gamePublishWin": "Gana al motor con al menos una restricción activada y publica la partida",
+      "gamePublishWinHiddenBoard": "Partiendo de la posición inicial estándar, gana al motor manteniendo el tablero oculto todo el tiempo, y publica la partida",
+      "orDivider": "o"
+    }
   },
   "puzzle": {
     "session": {
@@ -1007,5 +1052,43 @@
     "black": "Negras",
     "play": "Reproducir",
     "replay": "Repetir"
+  },
+  "dojo": {
+    "currentRank": "Rango actual",
+    "rankProgress": "{{done}} / {{total}}",
+    "rankProgressValue": "{{rank}}, {{done}} de {{total}}",
+    "nextRank": "Próximo objetivo",
+    "journeyTitle": "Camino al cinturón negro",
+    "signInNote": "Necesitas una cuenta para registrar tu rango.",
+    "signInLink": "Iniciar sesión",
+    "status": {
+      "achieved": "Obtenido",
+      "next": "Siguiente",
+      "locked": "Pendiente"
+    },
+    "lockedNote": "Primero obtén los rangos anteriores",
+    "requirementsTitle": "Requisitos",
+    "criteriaTitle": "Qué certifica",
+    "challengeHint": "Hazlo en modo desafío",
+    "webOnly": "Disponible en la web",
+    "webOnlyNote": "Este requisito se cumple en la web. Los rangos obtenidos con la misma cuenta también aparecen en la app.",
+    "guide": "Leer la guía de este rango",
+    "rankDetailTitle": "Rango",
+    "allAchieved": "¡Has conseguido todos los rangos! 🎉",
+    "met": "Cumplido",
+    "exam": {
+      "requirement": "Aprueba el examen de {{rank}} ({{count}} problemas de memoria de posiciones)",
+      "hint": "Haz el examen de la app",
+      "title": "Examen de {{rank}}",
+      "howTitle": "Cómo funciona el examen",
+      "stepMemorize": "Memoriza {{count}} posiciones, {{seconds}} segundos cada una",
+      "stepRecreate": "Recrea cada una en un tablero vacío",
+      "rule": "Entrega las {{count}} con una precisión media del {{accuracy}}% o más para aprobar",
+      "deviceNote": "El aprobado se guarda en este dispositivo. No cambia tu rango en la web.",
+      "start": "Empezar el examen",
+      "passed": "Aprobaste el examen de {{rank}}",
+      "passedBody": "Tu rango en el dojo ahora es {{rank}}.",
+      "failed": "Esta vez no aprobaste"
+    }
   }
 }

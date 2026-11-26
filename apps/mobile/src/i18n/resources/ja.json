@@ -25,7 +25,8 @@
     "play": "対戦",
     "practice": "練習",
     "settings": "設定",
-    "learn": "学ぶ"
+    "learn": "学ぶ",
+    "dojo": "道場"
   },
   "home": {
     "title": "ブラインドチェス",
@@ -35,7 +36,10 @@
     "replayOnboarding": "チュートリアルをもう一度",
     "allPractice": "すべての練習",
     "gettingStarted": "はじめての方へ",
-    "learnBasics": "目隠しチェスの基礎を学ぶ"
+    "learnBasics": "目隠しチェスの基礎を学ぶ",
+    "nextRankTitle": "次の目標",
+    "openDojo": "道場を見る",
+    "allAchievedBody": "初段を取得しました。AIとの対戦で腕を磨きましょう。"
   },
   "practice": {
     "title": "練習",
@@ -956,7 +960,48 @@
   "ranks": {
     "kyu": "{{n}}級",
     "dan": "{{n}}段",
-    "firstDan": "初段"
+    "firstDan": "初段",
+    "names": {
+      "mukyu": "無級",
+      "5kyu": "5級",
+      "4kyu": "4級",
+      "3kyu": "3級",
+      "2kyu": "2級",
+      "1kyu": "1級",
+      "1dan": "初段"
+    },
+    "challengeNames": {
+      "square_colors": "マス色チャレンジ",
+      "coordinate_quiz_white": "座標クイズ（白）",
+      "coordinate_quiz_black": "座標クイズ（黒）",
+      "coordinate_quiz_random": "座標クイズ（ランダム）",
+      "legal_moves": "合法手チャレンジ",
+      "legal_moves_bishop": "合法手チャレンジ（ビショップ）",
+      "legal_moves_king": "合法手チャレンジ（キング）",
+      "legal_moves_knight": "合法手チャレンジ（ナイト）",
+      "route_planner_knight": "ルートプランナー（ナイト）",
+      "route_planner_bishop": "ルートプランナー（ビショップ）"
+    },
+    "criteria": {
+      "mukyu": "目隠しチェスの簡単なトレーニングを始める準備ができていること。",
+      "5kyu": "代数記法（例：e4、Bg7）から、該当するチェスボード上のマスを正しく特定できること。",
+      "4kyu": "視覚的な補助がなくても、全ての駒で指定された座標における合法手の判定ができること。",
+      "3kyu": "視覚的な補助がなくても、全ての駒でマヌーバリングができること。",
+      "2kyu": "複数の駒を意味のある一つのまとまりとして認識ができること。",
+      "1kyu": "目隠しチェスに関する何らかの制約がかかった状態で、AIに勝利できること。",
+      "1dan": "目隠しチェスでAIに勝利できること。"
+    },
+    "requirement": {
+      "challengeScore": "{{challengeName}}でスコア{{minScore}}以上",
+      "submissionCount": "{{itemName}}を{{minCount}}件以上投稿する",
+      "submissionItemNames": {
+        "memory": "ポジション記憶の問題",
+        "puzzle": "パズル"
+      },
+      "gamePublishWin": "何らかの制約を加えた設定でAIに勝利し、ゲームを公開する",
+      "gamePublishWinHiddenBoard": "初期配置から、Hide the board オプションを維持してAIに勝利し、ゲームを公開する",
+      "orDivider": "または"
+    }
   },
   "puzzle": {
     "session": {
@@ -1007,5 +1052,43 @@
     "black": "黒",
     "play": "再生",
     "replay": "再生"
+  },
+  "dojo": {
+    "currentRank": "現在の段級位",
+    "rankProgress": "{{done}} / {{total}}",
+    "rankProgressValue": "{{rank}}（{{total}}段階中{{done}}段階）",
+    "nextRank": "次の目標",
+    "journeyTitle": "黒帯への道",
+    "signInNote": "段級位を記録するにはアカウントが必要です。",
+    "signInLink": "ログイン",
+    "status": {
+      "achieved": "取得済み",
+      "next": "次の目標",
+      "locked": "未取得"
+    },
+    "lockedNote": "下の級から順に取得していきましょう",
+    "requirementsTitle": "昇級条件",
+    "criteriaTitle": "合格基準",
+    "challengeHint": "チャレンジモードで挑戦する",
+    "webOnly": "Web版で取り組めます",
+    "webOnlyNote": "この条件はWeb版で満たせます。同じアカウントで取得した段級位はアプリにも反映されます。",
+    "guide": "この級の教本を読む",
+    "rankDetailTitle": "段級位",
+    "allAchieved": "すべてのランクを達成しました 🎉",
+    "met": "達成済み",
+    "exam": {
+      "requirement": "{{rank}}の課題（ポジション記憶{{count}}問）に合格する",
+      "hint": "アプリの課題に挑戦する",
+      "title": "{{rank}}の課題",
+      "howTitle": "課題の進め方",
+      "stepMemorize": "{{count}}つの局面を、それぞれ{{seconds}}秒間覚える",
+      "stepRecreate": "覚えた局面を空の盤に再現する",
+      "rule": "{{count}}問すべてを提出し、平均正確度{{accuracy}}%以上で合格",
+      "deviceNote": "アプリの課題の合格はこの端末に記録されます。Web版の段級位には反映されません。",
+      "start": "課題を始める",
+      "passed": "{{rank}}の課題に合格しました",
+      "passedBody": "道場の段級位が{{rank}}になりました。",
+      "failed": "{{rank}}の課題は不合格でした"
+    }
   }
 }
