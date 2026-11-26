@@ -1,3 +1,4 @@
+import type Ionicons from "@expo/vector-icons/Ionicons";
 import type { PracticeModuleSlug } from "@blindfold-chess/features/practice-registry";
 
 /**
@@ -14,7 +15,15 @@ import type { PracticeModuleSlug } from "@blindfold-chess/features/practice-regi
  * @property i18nKey - Namespace holding the module's strings: the list card
  *   reads `practice.<i18nKey>.title` / `.description`, the stack headers read
  *   `<i18nKey>.setup.title` / `.result.title`.
- * @property icon - The glyph on the practice list card.
+ * @property icon - The Ionicons line icon on the module's list rows (the
+ *   practice tab, the home quick start, the play tab's recall row), drawn
+ *   in ink on the grey `ListIcon` tile. Emoji were dropped because they
+ *   render as different pictures, in their own colours, depending on the OS
+ *   and its font, so a list of them never looks like one set; line icons
+ *   share a single stroke and take the theme's colour. The type is the
+ *   glyph map's keys, so a name the icon font does not have fails to
+ *   compile instead of rendering a blank box. SF Symbols were considered
+ *   and left for later: they need `expo-symbols` and a native rebuild.
  * @property hasTraining - The module also has an untimed `training` screen
  *   next to its timed session.
  * @property sessionHeader - The timed session sits under a stack header with
@@ -29,7 +38,7 @@ export type MobilePracticeModule = {
   slug: PracticeModuleSlug;
   route?: string;
   i18nKey: string;
-  icon: string;
+  icon: keyof typeof Ionicons.glyphMap;
   hasTraining?: boolean;
   sessionHeader?: boolean;
   howToPlayOnSetup?: boolean;
@@ -51,7 +60,7 @@ export const MOBILE_PRACTICE_MODULES: readonly MobilePracticeModule[] = [
   {
     slug: "coordinate-quiz",
     i18nKey: "coordinateQuiz",
-    icon: "🎯",
+    icon: "locate-outline",
     hasTraining: true,
     sessionHeader: true,
     howToPlayOnSetup: true,
@@ -59,7 +68,7 @@ export const MOBILE_PRACTICE_MODULES: readonly MobilePracticeModule[] = [
   {
     slug: "legal-moves",
     i18nKey: "legalMoves",
-    icon: "⚖️",
+    icon: "scale-outline",
     hasTraining: true,
     sessionHeader: true,
     howToPlayOnSetup: true,
@@ -67,7 +76,7 @@ export const MOBILE_PRACTICE_MODULES: readonly MobilePracticeModule[] = [
   {
     slug: "board-symmetry",
     i18nKey: "boardSymmetry",
-    icon: "🦋",
+    icon: "swap-horizontal-outline",
     hasTraining: true,
     sessionHeader: true,
     howToPlayOnSetup: true,
@@ -75,7 +84,7 @@ export const MOBILE_PRACTICE_MODULES: readonly MobilePracticeModule[] = [
   {
     slug: "square-colors",
     i18nKey: "squareColors",
-    icon: "🎨",
+    icon: "contrast-outline",
     hasTraining: true,
     sessionHeader: true,
     howToPlayOnSetup: true,
@@ -83,7 +92,7 @@ export const MOBILE_PRACTICE_MODULES: readonly MobilePracticeModule[] = [
   {
     slug: "diagonal-quiz",
     i18nKey: "diagonalQuiz",
-    icon: "↗️",
+    icon: "trending-up-outline",
     hasTraining: true,
     sessionHeader: true,
     howToPlayOnSetup: true,
@@ -91,7 +100,7 @@ export const MOBILE_PRACTICE_MODULES: readonly MobilePracticeModule[] = [
   {
     slug: "route-planner",
     i18nKey: "routePlanner",
-    icon: "📍",
+    icon: "navigate-outline",
     hasTraining: true,
     sessionHeader: true,
     howToPlayOnSetup: true,
@@ -102,7 +111,7 @@ export const MOBILE_PRACTICE_MODULES: readonly MobilePracticeModule[] = [
     slug: "quadrant-anchors",
     route: "quadrants",
     i18nKey: "quadrants",
-    icon: "🧭",
+    icon: "grid-outline",
     hasTraining: true,
     sessionHeader: true,
     howToPlayOnSetup: true,
@@ -110,25 +119,40 @@ export const MOBILE_PRACTICE_MODULES: readonly MobilePracticeModule[] = [
   {
     slug: "knight-tour",
     i18nKey: "knightTour",
-    icon: "🐎",
+    icon: "footsteps-outline",
     sessionHeader: true,
   },
   {
     slug: "algebraic-notation",
     i18nKey: "algebraicNotation",
-    icon: "🔤",
+    icon: "text-outline",
     sessionHeader: true,
     howToPlayOnSetup: true,
   },
-  { slug: "fen", i18nKey: "fen", icon: "📝", sessionHeader: true },
+  {
+    slug: "fen",
+    i18nKey: "fen",
+    icon: "code-slash-outline",
+    sessionHeader: true,
+  },
   {
     slug: "position-memory",
     i18nKey: "positionMemory",
-    icon: "🧠",
+    icon: "eye-off-outline",
     sessionHeader: true,
   },
-  { slug: "recall", i18nKey: "recall", icon: "🔁", sessionHeader: true },
-  { slug: "puzzle", i18nKey: "puzzle", icon: "🧩", sessionHeader: true },
+  {
+    slug: "recall",
+    i18nKey: "recall",
+    icon: "repeat-outline",
+    sessionHeader: true,
+  },
+  {
+    slug: "puzzle",
+    i18nKey: "puzzle",
+    icon: "extension-puzzle-outline",
+    sessionHeader: true,
+  },
 ];
 
 /**

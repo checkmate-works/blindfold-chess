@@ -44,7 +44,7 @@ export default function LearnTab() {
               <ListRow
                 key={article.slug}
                 testID={`learn-${article.slug}`}
-                leading={<ListIcon glyph={LEARN_CATEGORY_ICONS[category]} />}
+                leading={<ListIcon ionicon={LEARN_CATEGORY_ICONS[category]} />}
                 title={localized(article.title, i18n.language)}
                 subtitle={localized(article.excerpt, i18n.language)}
                 onPress={() => router.push(`/learn/${article.slug}` as Href)}

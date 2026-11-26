@@ -1,3 +1,5 @@
+import type Ionicons from "@expo/vector-icons/Ionicons";
+
 /** The web's article categories, in the order the learn tab lists them. */
 export const LEARN_CATEGORIES = [
   "moves",
@@ -8,13 +10,21 @@ export const LEARN_CATEGORIES = [
 ] as const;
 export type LearnCategory = (typeof LEARN_CATEGORIES)[number];
 
-/** The glyph on an article's row, by its category. */
-export const LEARN_CATEGORY_ICONS: Record<string, string> = {
-  moves: "♟️",
-  coordinates: "🎯",
-  notation: "📝",
-  memory: "🧠",
-  practice: "🏋️",
+/**
+ * The Ionicons line icon on an article's row, by its category. Line icons
+ * rather than emoji so the learn list matches the practice list (see
+ * `MobilePracticeModule.icon`); keyed by `string` because an article's
+ * `category` is not narrowed to `LearnCategory`.
+ */
+export const LEARN_CATEGORY_ICONS: Record<
+  string,
+  keyof typeof Ionicons.glyphMap
+> = {
+  moves: "move-outline",
+  coordinates: "locate-outline",
+  notation: "create-outline",
+  memory: "bulb-outline",
+  practice: "barbell-outline",
 };
 
 /** One learn article, in each language the web has it in. */
