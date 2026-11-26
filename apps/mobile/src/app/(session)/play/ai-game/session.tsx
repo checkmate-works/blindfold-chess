@@ -31,7 +31,14 @@ import {
   useGamePreferences,
 } from "../../../../lib/game-preferences";
 import { parseEnumParam } from "../../../../lib/route-params";
-import { Button, Screen } from "../../../../components";
+import {
+  BottomSheet,
+  Button,
+  ListSection,
+  Screen,
+} from "../../../../components";
+import { perGameSettingRows } from "../../../../features/settings/per-game-setting-rows";
+import { HeaderIconButton } from "../../../../navigation/HeaderIconButton";
 import { SessionTopBar } from "../../../../navigation/SessionTopBar";
 import { useTheme, fontSize, fontWeight, spacing } from "../../../../theme";
 
@@ -65,7 +72,10 @@ function AiGameBoard() {
   const { t } = useTranslation();
   const router = useRouter();
   const { colors } = useTheme();
-  const { preferences } = useGamePreferences();
+  const { preferences, updatePreferences } = useGamePreferences();
+  // The board starts from the player's side and can be turned round.
+  const [flipped, setFlipped] = useState<boolean | null>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const params = useLocalSearchParams<{
     playerColor: string;
     skillLevel: string;
@@ -216,7 +226,24 @@ function AiGameBoard() {
         onError={ai.handleWebViewError}
       />
 
-      <SessionTopBar />
+      <SessionTopBar>
+        <View style={styles.topActions}>
+          {preferences.boardVisibility !== "never" && (
+            <HeaderIconButton
+              icon="swap-vertical"
+              accessibilityLabel={t("aiGame.session.flipBoard")}
+              onPress={() =>
+                setFlipped((current) => !(current ?? playerColor === "black"))
+              }
+            />
+          )}
+          <HeaderIconButton
+            icon="settings-outline"
+            accessibilityLabel={t("common.gameSettings")}
+            onPress={() => setSettingsOpen(true)}
+          />
+        </View>
+      </SessionTopBar>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
@@ -238,6 +265,7 @@ function AiGameBoard() {
           moves={game.moves}
           startingFen={start.startingFen}
           playerColor={playerColor}
+          flipped={flipped ?? playerColor === "black"}
           revealed={revealed}
           onReveal={revealBoard}
           onHide={() => setRevealed(false)}
@@ -326,6 +354,22 @@ function AiGameBoard() {
           </View>
         )}
       </ScrollView>
+
+      {/* This game's settings, changed mid-game: they are the session's own
+          copy, so the global preferences stay as they were. */}
+      <BottomSheet
+        visible={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        title={t("common.gameSettings")}
+      >
+        <ListSection>
+          {perGameSettingRows({
+            t,
+            preferences,
+            onChange: updatePreferences,
+          })}
+        </ListSection>
+      </BottomSheet>
     </Screen>
   );
 }
@@ -341,6 +385,10 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: fontSize.sm,
     textAlign: "center",
+  },
+  topActions: {
+    flexDirection: "row",
+    gap: spacing.md,
   },
   retryContainer: {
     alignItems: "center",

@@ -377,7 +377,11 @@ Still web-only: creating puzzles and community positions, repertoires,
 topics and articles, the home feed, Maia, password reset (the app opens the
 web page). Finished AI games are kept on the device
 (`features/game-history/`, AsyncStorage `"AI_GAME_HISTORY"`, newest first, at
-most 50), like the web keeps them in localStorage.
+most 50), like the web keeps them in localStorage. The one thing an AI game
+sends is its Exp report: the result screen posts a signed-in player's game to
+`POST /games/results` (the web's `saveGameResult`), with the move and
+aided-move counts from the session's operation log
+(`useMoveOperationTracker`, shared with the web).
 
 ## Onboarding
 
@@ -474,7 +478,8 @@ starts from the global values, lets the player change the per-game ones
 back, and hands the result to the session as the `gamePrefs` route param.
 The session lays it over the global preferences with
 `GamePreferencesOverride`, so the board components still just call
-`useGamePreferences`.
+`useGamePreferences`; the gear in the session's top row edits that copy
+mid-game.
 
 **Per-module practice settings.** Each practice module keeps its own
 settings through `useAsyncStorageSettings` (`src/lib/persistent-settings/`,

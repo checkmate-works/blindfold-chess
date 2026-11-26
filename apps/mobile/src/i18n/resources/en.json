@@ -415,7 +415,8 @@
       "confirmUndo": "Undo",
       "boardHidden": "Board hidden",
       "revealBoard": "Tap to reveal",
-      "hideBoard": "Hide Board"
+      "hideBoard": "Hide Board",
+      "flipBoard": "Flip Board"
     },
     "result": {
       "title": "Game Over",

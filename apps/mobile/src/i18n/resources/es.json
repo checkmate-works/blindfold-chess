@@ -415,7 +415,8 @@
       "confirmUndo": "Deshacer",
       "boardHidden": "Tablero oculto",
       "revealBoard": "Toca para ver",
-      "hideBoard": "Ocultar Tablero"
+      "hideBoard": "Ocultar Tablero",
+      "flipBoard": "Voltear Tablero"
     },
     "result": {
       "title": "Fin de la partida",

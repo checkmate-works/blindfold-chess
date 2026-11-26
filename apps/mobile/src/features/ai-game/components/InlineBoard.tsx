@@ -22,6 +22,8 @@ type InlineBoardProps = {
   /** The game's moves in SAN, used to find the last move's squares. */
   moves: AlgebraicNotation[];
   playerColor: Side;
+  /** Draw the board from Black's side. */
+  flipped: boolean;
   /** The position the moves start from; the standard start when omitted. */
   startingFen?: string;
   /** In `'peek'` mode: whether the player has the board open right now. */
@@ -55,6 +57,7 @@ export function InlineBoard({
   fen,
   moves,
   playerColor,
+  flipped,
   startingFen,
   revealed,
   onReveal,
@@ -120,7 +123,7 @@ export function InlineBoard({
       <View>
         <ChessBoard
           fen={fen}
-          flipped={playerColor === "black"}
+          flipped={flipped}
           playerColor={playerColor}
           lastMove={lastMove}
         />
