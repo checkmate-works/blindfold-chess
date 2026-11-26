@@ -17,8 +17,11 @@ import { useDojoJourney } from "./use-dojo-journey";
  * player's current one; 5kyu when signed out), how far each of its stages
  * is, and one button in the belt's colours straight into the next step
  * (`nextStepOf`). Under it, a link to the practice tab for a player who
- * would rather pick something else, and one into the dojo. Once 1dan is
- * held it says so and only links the dojo.
+ * would rather pick something else. Once 1dan is held it only says so.
+ *
+ * There is no link into the dojo itself: the dojo is a tab of its own, one
+ * press away in the tab bar under this card, so a link here would only
+ * repeat it.
  *
  * When every step of the next rank is done but the rank is not granted yet
  * (the server has not recorded it), there is no next step and no button.
@@ -28,7 +31,6 @@ export function NextRankCard() {
   const { colors } = useTheme();
   const router = useRouter();
   const { nextRank, nextJourney } = useDojoJourney();
-  const openDojo = () => router.navigate("/dojo");
 
   if (!nextRank || !nextJourney) {
     return (
@@ -36,11 +38,6 @@ export function NextRankCard() {
         <Text style={[styles.body, { color: colors.foreground }]}>
           {t("home.allAchievedBody")}
         </Text>
-        <Button
-          title={t("home.openDojo")}
-          variant="outline"
-          onPress={openDojo}
-        />
       </RankGoalCard>
     );
   }
@@ -71,13 +68,6 @@ export function NextRankCard() {
             size="sm"
             onPress={() => router.navigate("/practice")}
             testID="home-choose-practice"
-          />
-          <Button
-            title={t("home.openDojo")}
-            variant="ghost"
-            size="sm"
-            onPress={openDojo}
-            testID="home-open-dojo"
           />
         </View>
       </View>
