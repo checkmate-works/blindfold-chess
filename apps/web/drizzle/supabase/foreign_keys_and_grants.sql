@@ -495,6 +495,23 @@ GRANT SELECT ON TABLE public.user_ranks TO authenticated;
 GRANT SELECT ON TABLE public.user_ranks TO anon;
 
 -- =============================================================================
+-- dojo_step_completions (completed dojo steps — own-row read, server-only write)
+-- =============================================================================
+
+-- FK constraint: dojo_step_completions.user_id → auth.users(id) ON DELETE CASCADE
+-- A user's completed guide pages and exam passes mean nothing once the
+-- account is purged.
+SELECT public.ensure_auth_users_fk('dojo_step_completions', 'dojo_step_completions_user_id_fkey', 'user_id', 'CASCADE');
+
+-- Withdraw everything first, then give authenticated SELECT back (RLS limits
+-- it to the user's own rows; no screen shows another user's progress, so anon
+-- gets nothing). Writes go through the server's Drizzle connection only:
+-- `exam:` rows are evidence for a rank and are written after the server grades
+-- the answer, so a client write privilege would let anyone earn a rank.
+REVOKE ALL ON TABLE public.dojo_step_completions FROM authenticated, anon;
+GRANT SELECT ON TABLE public.dojo_step_completions TO authenticated;
+
+-- =============================================================================
 -- exp_events
 -- =============================================================================
 

@@ -6006,15 +6006,10 @@
     "requirements": "Requisitos",
     "comingSoon": "Próximamente",
     "challengeScore": "Puntuación {minScore}+ en {challengeName}",
-    "submissionCount": "Publica al menos {minCount} {itemName}",
+    "examProblem": "Aprueba el examen de {rankName}: {problemName}",
     "gamePublishWin": "Gana al motor con al menos una restricción activada y publica la partida",
     "gamePublishWinHiddenBoard": "Partiendo de la posición inicial estándar, gana al motor manteniendo el tablero oculto todo el tiempo, y publica la partida",
     "gamePublishWinHiddenBoardNote": "※ La opción «Permitir vistazos» puede usarse hasta {maxPeeks} veces",
-    "orDivider": "o",
-    "submissionItemNames": {
-      "memory": "problema de memoria de posiciones",
-      "puzzle": "puzzle"
-    },
     "challengeNames": {
       "square_colors": "Color de Casillas",
       "coordinate_quiz_white": "Cuestionario de Coordenadas (Blancas)",
@@ -6026,6 +6021,10 @@
       "legal_moves_knight": "Movimientos Legales (Caballo)",
       "route_planner_knight": "Planificador de Rutas (Caballo)",
       "route_planner_bishop": "Planificador de Rutas (Alfil)"
+    },
+    "examProblemNames": {
+      "position_memory": "Memoria de Posiciones",
+      "puzzle": "Puzzle"
     },
     "rankNames": {
       "mukyu": "Sin Rango",
@@ -6071,6 +6070,22 @@
       "description": "Regístrate para seguir tu progreso de rango.",
       "cta": "Registro Gratuito"
     }
+  },
+  "dojoExam": {
+    "title": "Examen de {rankName}",
+    "lead": "Resuelve estos {count} problemas para obtener {rankName}. Puedes intentarlo tantas veces como quieras.",
+    "memoryRule": "Memoriza la posición durante {seconds} segundos y luego recréala en un tablero vacío. Apruebas con una precisión del {accuracy}% o más.",
+    "puzzleRule": "Encuentra el mate en {moves}.",
+    "start": "Empezar",
+    "solved": "Aprobado",
+    "passed": "Has aprobado",
+    "failed": "No has aprobado. Puedes volver a intentarlo.",
+    "retry": "Intentar de nuevo",
+    "backToExam": "Volver al examen",
+    "passedUnrecorded": "Has alcanzado la nota de aprobado (no registrado)",
+    "signInNote": "Inicia sesión para que se registre tu aprobado.",
+    "lockedNote": "Tu aprobado se registrará cuando tengas {prevRankName}.",
+    "recordFailed": "No se pudo registrar el resultado. Inténtalo de nuevo."
   },
   "rankAchievement": {
     "title": "¡Rango Alcanzado!",

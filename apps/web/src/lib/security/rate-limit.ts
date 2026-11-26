@@ -167,6 +167,20 @@ export const RATE_LIMITS = {
    */
   saveGameResult: { action: 'save_game_result', maxAttempts: 60, windowMs: 3_600_000 },
   /**
+   * Reporting read guide pages from the app (`POST /api/mobile/v1/dojo/steps`).
+   * The app batches the pages read since its last sync into one request (at
+   * most `DOJO_STEPS_MAX` keys), so a reader sends a handful per session; 120
+   * per hour only stops a script from hammering the insert.
+   */
+  dojoStep: { action: 'dojo_step', maxAttempts: 120, windowMs: 3_600_000 },
+  /**
+   * Submitting an exam answer for grading. Retrying is part of the design (a
+   * failed answer can be tried again at once), so the cap sits well above a
+   * player's pace — one memory attempt takes at least its 30-second look —
+   * and only bounds how fast a script can probe for the answer.
+   */
+  dojoExam: { action: 'dojo_exam', maxAttempts: 60, windowMs: 3_600_000 },
+  /**
    * Per-user limit for AI review requests — the abuse backstop behind the
    * subscription requirement. Results are cached per (game, locale), so
    * repeat views are free; this counts accepted generation requests only. No

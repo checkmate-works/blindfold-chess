@@ -36,11 +36,14 @@ export type FreePlayResultOutput = {
  * EXP info via `getExpInfoBySource(userId, 'practice_result', id)`.
  *
  * Belt-rank evaluation (`checkAndGrantRanks`) is intentionally NOT invoked
- * here: no current rank requirement type (`challenge_score`,
- * `position_submission_count`, `game_publish_win`,
- * `game_publish_win_hidden_board`) reads anything a free-play run writes, so
- * free-play completions cannot unlock any rank. Re-adding this call is
- * straightforward once a free-play-eligible requirement type is introduced.
+ * here: no current rank requirement type (`challenge_score`, `exam_problem`,
+ * `game_publish_win`, `game_publish_win_hidden_board`) reads anything a
+ * free-play run writes, so free-play completions cannot unlock any rank. An
+ * exam problem looks like a free-play run (a position-memory or puzzle
+ * session) but is graded and recorded separately by `submitExamProblem`
+ * (`lib/dojo/exam.ts`), which is what `exam_problem` reads. Re-adding this
+ * call is straightforward once a free-play-eligible requirement type is
+ * introduced.
  */
 export async function saveFreePlayResult(
   input: FreePlayResultInput
