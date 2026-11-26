@@ -1,8 +1,6 @@
 import type { TFunction } from "i18next";
 import {
-  RANK_REQUIREMENTS,
   isRankSlug,
-  type EarnedRankSlug,
   type RankRequirement,
   type RankSlug,
 } from "@blindfold-chess/features/dojo-ranks";
@@ -104,17 +102,3 @@ export function parseHighestRank(
 ): RankSlug | undefined {
   return isRankSlug(value) ? value : undefined;
 }
-
-/**
- * A rank's requirements: exactly the shared `RANK_REQUIREMENTS`, which the
- * app asks as the web does. Kept only for the screens that still list
- * requirements through it, until they read the rank's journey instead.
- */
-export function mobileRankRequirements(
-  slug: EarnedRankSlug,
-): readonly RankRequirement[] {
-  return RANK_REQUIREMENTS[slug];
-}
-
-/** The shared requirement type, under the name the older screens import. */
-export type MobileRankRequirement = RankRequirement;

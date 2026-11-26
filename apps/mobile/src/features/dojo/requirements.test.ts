@@ -10,7 +10,6 @@ import en from "../../i18n/resources/en.json";
 import ja from "../../i18n/resources/ja.json";
 import {
   guidePath,
-  mobileRankRequirements,
   parseHighestRank,
   requirementLabel,
   requirementTarget,
@@ -53,36 +52,6 @@ describe("requirementTarget", () => {
   });
 });
 
-/**
- * The exam-problem strings, used only where the app dictionaries do not have
- * them yet (`addResourceBundle` without overwrite keeps the dictionary's own
- * string wherever it has one).
- */
-const EXAM_PROBLEM_STRINGS = {
-  ja: {
-    ranks: {
-      requirement: {
-        examProblem: "{{rank}}の課題「{{problem}}」に合格する",
-        examProblemNames: {
-          position_memory: "ポジション記憶",
-          puzzle: "パズル",
-        },
-      },
-    },
-  },
-  en: {
-    ranks: {
-      requirement: {
-        examProblem: "Pass the {{rank}} exam: {{problem}}",
-        examProblemNames: {
-          position_memory: "Position Memory",
-          puzzle: "Puzzle",
-        },
-      },
-    },
-  },
-};
-
 describe("requirementLabel", () => {
   const t = i18next.createInstance();
   beforeAll(async () => {
@@ -90,9 +59,6 @@ describe("requirementLabel", () => {
       lng: "ja",
       resources: { ja: { translation: ja }, en: { translation: en } },
     });
-    for (const [lng, strings] of Object.entries(EXAM_PROBLEM_STRINGS)) {
-      t.addResourceBundle(lng, "translation", strings, true, false);
-    }
   });
 
   it("finds a string for every requirement in every rank", async () => {
@@ -117,14 +83,6 @@ describe("requirementLabel", () => {
     expect(requirementLabel(RANK_REQUIREMENTS["4kyu"][1]!, t.t)).toBe(
       "合法手チャレンジ（ナイト）でスコア20以上",
     );
-  });
-});
-
-describe("mobileRankRequirements", () => {
-  it("asks exactly the shared requirements", () => {
-    for (const slug of EARNED_RANK_SLUGS) {
-      expect(mobileRankRequirements(slug)).toBe(RANK_REQUIREMENTS[slug]);
-    }
   });
 });
 

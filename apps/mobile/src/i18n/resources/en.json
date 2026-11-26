@@ -39,7 +39,13 @@
     "learnBasics": "Learn the basics",
     "nextRankTitle": "Next goal",
     "openDojo": "Open the dojo",
-    "allAchievedBody": "You hold 1st Dan. Keep sharpening it against the engine."
+    "allAchievedBody": "You hold 1st Dan. Keep sharpening it against the engine.",
+    "nextStep": {
+      "guideStart": "Read the guide",
+      "guideContinue": "Continue the guide",
+      "challenge": "Try {{challengeName}}",
+      "choosePractice": "Choose a practice yourself"
+    }
   },
   "practice": {
     "title": "Practice",
@@ -993,14 +999,13 @@
     },
     "requirement": {
       "challengeScore": "Score {{minScore}}+ in {{challengeName}}",
-      "submissionCount": "Submit at least {{minCount}} {{itemName}}",
-      "submissionItemNames": {
-        "memory": "position-memory problem",
-        "puzzle": "puzzle"
-      },
       "gamePublishWin": "Beat the engine with at least one constraint enabled, and publish the game",
       "gamePublishWinHiddenBoard": "Starting from the standard initial position, beat the engine with the board hidden throughout, and publish the game",
-      "orDivider": "or"
+      "examProblem": "Pass the {{rank}} exam: {{problem}}",
+      "examProblemNames": {
+        "position_memory": "Position Memory",
+        "puzzle": "Puzzle"
+      }
     }
   },
   "puzzle": {
@@ -1077,18 +1082,30 @@
     "allAchieved": "You have achieved every rank 🎉",
     "met": "Done",
     "exam": {
-      "requirement": "Pass the {{rank}} exam ({{count}} position-memory problems)",
       "hint": "Take the app's exam",
       "title": "{{rank}} exam",
-      "howTitle": "How the exam works",
-      "stepMemorize": "Memorize {{count}} positions, {{seconds}} seconds each",
-      "stepRecreate": "Recreate each one on an empty board",
-      "rule": "Submit all {{count}} with an average accuracy of {{accuracy}}% or more to pass",
-      "deviceNote": "An exam pass is recorded on this device. It does not change your rank on the web.",
       "start": "Start the exam",
-      "passed": "You passed the {{rank}} exam",
-      "passedBody": "Your dojo rank is now {{rank}}.",
-      "failed": "Not passed this time"
-    }
+      "lead": "Solve these {{count}} problems to earn {{rank}}. You can retry as often as you like.",
+      "memoryRule": "Memorize the position for {{seconds}} seconds, then recreate it. {{accuracy}}% accuracy or better passes.",
+      "puzzleRule": "Find the mate in {{moves}}.",
+      "solved": "Passed",
+      "signInNote": "Sign in to have your pass recorded.",
+      "lockedNote": "Your pass is recorded once you hold {{prevRank}}.",
+      "recording": "Recording…",
+      "recordFailed": "Could not record the result. Check your connection and send it again.",
+      "resend": "Send again",
+      "problemPassed": "You passed",
+      "problemFailed": "Not passed. You can try again.",
+      "passedUnrecorded": "You reached the pass mark (not recorded)"
+    },
+    "stages": {
+      "learn": "Learn",
+      "practice": "Practice",
+      "exam": "Exam"
+    },
+    "stageExamPassed": "Passed",
+    "stageExamNotPassed": "Not yet",
+    "guideDone": "Mark as read",
+    "guideRead": "Read"
   }
 }
