@@ -1,3 +1,5 @@
+import type { ComponentProps } from 'react';
+
 import { STARTING_FEN } from '@blindfold-chess/features/chess-core/fen';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { act, fireEvent, render, screen } from '@testing-library/react';
@@ -176,7 +178,11 @@ function toSolutionMoves(line: string) {
     .map((san) => ({ san, note: null }));
 }
 
-function renderSession(solutions: string[] = ['Nf3'], fen: string = STARTING_FEN) {
+function renderSession(
+  solutions: string[] = ['Nf3'],
+  fen: string = STARTING_FEN,
+  extraProps: Pick<ComponentProps<typeof PuzzleSessionClient>, 'onSolve' | 'hideShowAnswer'> = {}
+) {
   const solutionMoves = solutions.map(toSolutionMoves);
   return render(
     <PuzzleSessionClient
@@ -186,6 +192,7 @@ function renderSession(solutions: string[] = ['Nf3'], fen: string = STARTING_FEN
       positionTitle={POSITION_TITLE}
       piecesInfo={<div data-testid="stub-pieces-info" />}
       breadcrumb={<nav data-testid="stub-breadcrumb" />}
+      {...extraProps}
     />
   );
 }
@@ -1089,6 +1096,67 @@ describe('PuzzleSessionClient', () => {
       } finally {
         vi.useRealTimers();
       }
+    });
+  });
+
+  describe('a caller that takes the solve itself (onSolve)', () => {
+    it('hands the solve and the accepted player moves to onSolve', () => {
+      const onSolve = vi.fn();
+      renderSession(['Nf3 Nc6'], STARTING_FEN, { onSolve });
+
+      fireEvent.click(screen.getByTestId('stub-submit'));
+
+      expect(onSolve).toHaveBeenCalledTimes(1);
+      expect(onSolve).toHaveBeenCalledWith(
+        {
+          solutionLine: 'Nf3 Nc6',
+          attempts: [{ move: 'Nf3', isCorrect: true }],
+          playerMoveCount: 1,
+        },
+        ['Nf3']
+      );
+    });
+
+    it('skips the default save and navigation when onSolve is given', async () => {
+      vi.useFakeTimers();
+      try {
+        renderSession(['Nf3'], STARTING_FEN, { onSolve: vi.fn() });
+
+        await act(async () => {
+          fireEvent.click(screen.getByTestId('stub-submit'));
+        });
+        act(() => {
+          vi.advanceTimersByTime(2000);
+        });
+
+        expect(mockSavePuzzleResult).not.toHaveBeenCalled();
+        expect(mockPush).not.toHaveBeenCalled();
+        expect(sessionStorage.getItem(`puzzle_result_${POSITION_ID}`)).toBeNull();
+        // Still locks the session once solved, and never shows the
+        // result-bound "Loading..." title.
+        expect(screen.getByTestId('move-input-panel')).toHaveAttribute('data-disabled', 'true');
+        expect(screen.queryByTestId('loading-title')).not.toBeInTheDocument();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('calls onSolve at most once even if the solving submit re-runs', () => {
+      const onSolve = vi.fn();
+      renderSession(['Nf3'], STARTING_FEN, { onSolve });
+
+      fireEvent.click(screen.getByTestId('stub-submit'));
+      fireEvent.click(screen.getByTestId('stub-submit'));
+
+      expect(onSolve).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('hideShowAnswer', () => {
+    it('hides the give-up link that would reveal the answer', () => {
+      renderSession(['Nf3'], STARTING_FEN, { hideShowAnswer: true });
+
+      expect(screen.queryByTestId('view-result-link')).not.toBeInTheDocument();
     });
   });
 });

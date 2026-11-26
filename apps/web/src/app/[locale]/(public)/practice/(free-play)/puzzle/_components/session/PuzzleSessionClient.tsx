@@ -23,6 +23,7 @@ import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCont
 import { usePuzzleBoardFeedback } from '../../_hooks/use-puzzle-board-feedback';
 import type { PuzzleFeedbackSource } from '../../_hooks/use-puzzle-board-feedback';
 import { usePuzzleCompletion } from '../../_hooks/use-puzzle-completion';
+import type { PuzzleSolveHandler } from '../../_hooks/use-puzzle-completion';
 import { usePuzzleScroll } from '../../_hooks/use-puzzle-scroll';
 import { writePuzzleResult } from '../../_lib/puzzle-result-storage';
 import { CircleMarker } from '../CircleMarker';
@@ -46,6 +47,20 @@ type Props = {
    * `PlayPageClient` shape where `breadcrumb` is injected the same way.
    */
   breadcrumb: ReactNode;
+  /**
+   * Takes the solve instead of the default handshake (result-payload write,
+   * EXP grant, navigation to `/practice/puzzle/<positionId>/result`). For a
+   * puzzle that is not a stored puzzle — the dojo exam grades the player's
+   * moves on the server and shows its verdict in place. Omit it and the
+   * session behaves exactly as for a stored puzzle.
+   */
+  onSolve?: PuzzleSolveHandler;
+  /**
+   * Hide the "show answer" give-up link. That link leads to the stored
+   * puzzle's result page, which reveals the solution; an exam has neither
+   * the page nor any business revealing its answer. Defaults to `false`.
+   */
+  hideShowAnswer?: boolean;
 };
 
 export function PuzzleSessionClient({
@@ -55,6 +70,8 @@ export function PuzzleSessionClient({
   positionTitle,
   piecesInfo,
   breadcrumb,
+  onSolve,
+  hideShowAnswer = false,
 }: Props) {
   const t = useTranslations('practice.puzzle.session');
   const tPlay = useTranslations('play');
@@ -99,10 +116,12 @@ export function PuzzleSessionClient({
   } = usePuzzleBoardFeedback(fen);
 
   // Owns isSolved + isNavigatingToResult + the post-solve handshake
-  // (sessionStorage write, EXP grant Server Action, router.push to /result).
+  // (sessionStorage write, EXP grant Server Action, router.push to /result),
+  // or hands the solve to `onSolve` when the caller supplies one.
   const { isSolved, isNavigatingToResult, finishSolve } = usePuzzleCompletion({
     positionId,
     fen,
+    onSolve,
   });
 
   // Scroll the PageTitle into view whenever the opponent auto-plays a
@@ -165,7 +184,7 @@ export function PuzzleSessionClient({
     }
 
     if (outcome.solve) {
-      finishSolve({ ...outcome.solve, peekCount });
+      finishSolve({ ...outcome.solve, peekCount, playerMoves: outcome.nextSession.playerMoves });
     }
 
     return true;
@@ -366,7 +385,7 @@ export function PuzzleSessionClient({
             </div>
           </div>
 
-          {!isSolved && (
+          {!isSolved && !hideShowAnswer && (
             // A give-up: bail out to the result page (which reveals the
             // solution) at any point, even before a first attempt. `size="lg"`
             // matches the other full-width action buttons in the flow so its
