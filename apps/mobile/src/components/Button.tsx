@@ -90,7 +90,8 @@ const GHOST_PRESSED_OPACITY = 0.6;
  * @description
  * The look follows the app's flat rule: a pressed button changes only its
  * fill — it never moves and never fades as a whole — so this is a
- * `Pressable` with a style function rather than a `TouchableOpacity`.
+ * `Pressable` with a style function rather than a touchable that dims
+ * itself on press.
  *
  * - Corner `borderRadius.button` (14), label weight 700 (600 for `ghost`).
  * - Heights: sm 36 / md 44 / lg 48. The old lg was about 70pt tall and had
