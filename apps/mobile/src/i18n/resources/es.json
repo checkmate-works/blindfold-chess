@@ -39,7 +39,13 @@
     "learnBasics": "Aprende lo básico",
     "nextRankTitle": "Próximo objetivo",
     "openDojo": "Ir al dojo",
-    "allAchievedBody": "Tienes el 1.er Dan. Sigue puliéndolo contra el motor."
+    "allAchievedBody": "Tienes el 1.er Dan. Sigue puliéndolo contra el motor.",
+    "nextStep": {
+      "guideStart": "Leer la guía",
+      "guideContinue": "Seguir con la guía",
+      "challenge": "Prueba {{challengeName}}",
+      "choosePractice": "Elegir una práctica por tu cuenta"
+    }
   },
   "practice": {
     "title": "Práctica",
@@ -993,14 +999,13 @@
     },
     "requirement": {
       "challengeScore": "Puntuación {{minScore}}+ en {{challengeName}}",
-      "submissionCount": "Publica al menos {{minCount}} {{itemName}}",
-      "submissionItemNames": {
-        "memory": "problema de memoria de posiciones",
-        "puzzle": "puzzle"
-      },
       "gamePublishWin": "Gana al motor con al menos una restricción activada y publica la partida",
       "gamePublishWinHiddenBoard": "Partiendo de la posición inicial estándar, gana al motor manteniendo el tablero oculto todo el tiempo, y publica la partida",
-      "orDivider": "o"
+      "examProblem": "Aprueba el examen de {{rank}}: {{problem}}",
+      "examProblemNames": {
+        "position_memory": "Memoria de Posiciones",
+        "puzzle": "Puzzle"
+      }
     }
   },
   "puzzle": {
@@ -1077,18 +1082,30 @@
     "allAchieved": "¡Has conseguido todos los rangos! 🎉",
     "met": "Cumplido",
     "exam": {
-      "requirement": "Aprueba el examen de {{rank}} ({{count}} problemas de memoria de posiciones)",
       "hint": "Haz el examen de la app",
       "title": "Examen de {{rank}}",
-      "howTitle": "Cómo funciona el examen",
-      "stepMemorize": "Memoriza {{count}} posiciones, {{seconds}} segundos cada una",
-      "stepRecreate": "Recrea cada una en un tablero vacío",
-      "rule": "Entrega las {{count}} con una precisión media del {{accuracy}}% o más para aprobar",
-      "deviceNote": "El aprobado se guarda en este dispositivo. No cambia tu rango en la web.",
       "start": "Empezar el examen",
-      "passed": "Aprobaste el examen de {{rank}}",
-      "passedBody": "Tu rango en el dojo ahora es {{rank}}.",
-      "failed": "Esta vez no aprobaste"
-    }
+      "lead": "Resuelve estos {{count}} problemas para obtener {{rank}}. Puedes intentarlo tantas veces como quieras.",
+      "memoryRule": "Memoriza la posición durante {{seconds}} segundos y luego recréala. Con una precisión del {{accuracy}}% o más, apruebas.",
+      "puzzleRule": "Encuentra el mate en {{moves}}.",
+      "solved": "Aprobado",
+      "signInNote": "Inicia sesión para que se registre tu aprobado.",
+      "lockedNote": "Tu aprobado se registra cuando tengas {{prevRank}}.",
+      "recording": "Registrando…",
+      "recordFailed": "No se pudo registrar el resultado. Comprueba tu conexión y vuelve a enviarlo.",
+      "resend": "Enviar de nuevo",
+      "problemPassed": "Aprobaste",
+      "problemFailed": "No aprobaste. Puedes intentarlo de nuevo.",
+      "passedUnrecorded": "Alcanzaste la nota de aprobado (sin registrar)"
+    },
+    "stages": {
+      "learn": "Aprender",
+      "practice": "Practicar",
+      "exam": "Examen"
+    },
+    "stageExamPassed": "Aprobado",
+    "stageExamNotPassed": "Pendiente",
+    "guideDone": "Marcar como leído",
+    "guideRead": "Leído"
   }
 }

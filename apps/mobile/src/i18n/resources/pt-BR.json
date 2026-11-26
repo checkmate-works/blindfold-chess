@@ -39,7 +39,13 @@
     "learnBasics": "Aprenda o básico",
     "nextRankTitle": "Próximo objetivo",
     "openDojo": "Abrir o dojo",
-    "allAchievedBody": "Você tem o 1º Dan. Continue afiando contra o motor."
+    "allAchievedBody": "Você tem o 1º Dan. Continue afiando contra o motor.",
+    "nextStep": {
+      "guideStart": "Ler o guia",
+      "guideContinue": "Continuar o guia",
+      "challenge": "Experimente {{challengeName}}",
+      "choosePractice": "Escolher um treino por conta própria"
+    }
   },
   "practice": {
     "title": "Prática",
@@ -993,14 +999,13 @@
     },
     "requirement": {
       "challengeScore": "Pontuação {{minScore}}+ em {{challengeName}}",
-      "submissionCount": "Publique pelo menos {{minCount}} {{itemName}}",
-      "submissionItemNames": {
-        "memory": "problema de memória de posições",
-        "puzzle": "puzzle"
-      },
       "gamePublishWin": "Vença o motor com ao menos uma restrição ativada e publique a partida",
       "gamePublishWinHiddenBoard": "Partindo da posição inicial padrão, vença o motor mantendo o tabuleiro oculto o tempo todo, e publique a partida",
-      "orDivider": "ou"
+      "examProblem": "Passe no exame de {{rank}}: {{problem}}",
+      "examProblemNames": {
+        "position_memory": "Memória de Posições",
+        "puzzle": "Puzzle"
+      }
     }
   },
   "puzzle": {
@@ -1077,18 +1082,30 @@
     "allAchieved": "Você conquistou todas as graduações 🎉",
     "met": "Concluído",
     "exam": {
-      "requirement": "Passe no exame de {{rank}} ({{count}} problemas de memória de posições)",
       "hint": "Faça o exame do app",
       "title": "Exame de {{rank}}",
-      "howTitle": "Como funciona o exame",
-      "stepMemorize": "Memorize {{count}} posições, {{seconds}} segundos cada",
-      "stepRecreate": "Recrie cada uma em um tabuleiro vazio",
-      "rule": "Envie as {{count}} com precisão média de {{accuracy}}% ou mais para passar",
-      "deviceNote": "A aprovação fica registrada neste aparelho. Ela não muda sua faixa na web.",
       "start": "Começar o exame",
-      "passed": "Você passou no exame de {{rank}}",
-      "passedBody": "Sua faixa no dojo agora é {{rank}}.",
-      "failed": "Desta vez não passou"
-    }
+      "lead": "Resolva estes {{count}} problemas para conquistar {{rank}}. Você pode tentar quantas vezes quiser.",
+      "memoryRule": "Memorize a posição por {{seconds}} segundos e depois recrie-a. Com {{accuracy}}% de precisão ou mais, você passa.",
+      "puzzleRule": "Encontre o mate em {{moves}}.",
+      "solved": "Aprovado",
+      "signInNote": "Entre na sua conta para que sua aprovação seja registrada.",
+      "lockedNote": "Sua aprovação é registrada quando você tiver {{prevRank}}.",
+      "recording": "Registrando…",
+      "recordFailed": "Não foi possível registrar o resultado. Verifique sua conexão e envie novamente.",
+      "resend": "Enviar novamente",
+      "problemPassed": "Você passou",
+      "problemFailed": "Não passou. Você pode tentar de novo.",
+      "passedUnrecorded": "Você atingiu a nota de aprovação (sem registro)"
+    },
+    "stages": {
+      "learn": "Aprender",
+      "practice": "Praticar",
+      "exam": "Exame"
+    },
+    "stageExamPassed": "Aprovado",
+    "stageExamNotPassed": "Pendente",
+    "guideDone": "Marcar como lido",
+    "guideRead": "Lido"
   }
 }
