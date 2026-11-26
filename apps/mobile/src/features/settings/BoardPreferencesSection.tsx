@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
 import {
   BOARD_THEMES,
@@ -15,7 +15,7 @@ import {
 
 import { ListRow, ListSection, SelectRow, SwitchRow } from "../../components";
 import { useGamePreferences } from "../../lib/game-preferences";
-import { useTheme, fontSize, fontWeight, spacing } from "../../theme";
+import { spacing } from "../../theme";
 import { MOBILE_MOVE_INPUT_MODES } from "./mobile-move-input-modes";
 
 /**
@@ -54,16 +54,12 @@ function pieceVisibilityUpdate(
  */
 export function BoardPreferencesSection() {
   const { t } = useTranslation();
-  const { colors } = useTheme();
   const { preferences, updatePreferences, resetPreferences } =
     useGamePreferences();
 
   return (
     <View style={styles.section}>
-      <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>
-        {t("settings.board.title")}
-      </Text>
-      <ListSection>
+      <ListSection title={t("settings.board.title")}>
         {/* settings.board.boardVisibilities.{always,peek,never} */}
         <SelectRow
           label={t("settings.board.boardVisibility")}
@@ -157,10 +153,5 @@ export function BoardPreferencesSection() {
 const styles = StyleSheet.create({
   section: {
     gap: spacing.xs + 2,
-  },
-  sectionTitle: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
-    paddingHorizontal: spacing.md,
   },
 });

@@ -1,13 +1,13 @@
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { fontSize, fontWeight, spacing, borderRadius } from "../../../theme";
-import type { useTheme } from "../../../theme";
+import type { ThemeColors } from "../../../theme";
 
 export type CheckboxPillProps = {
   label: string;
   isChecked: boolean;
   onPress: () => void;
   disabled?: boolean;
-  colors: ReturnType<typeof useTheme>["colors"];
+  colors: ThemeColors;
 };
 
 export function CheckboxPill({

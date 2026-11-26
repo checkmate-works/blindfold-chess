@@ -47,7 +47,7 @@ function ArticleSection({
         <ListRow
           key={article.slug}
           leading={
-            <ListIcon glyph={LEARN_CATEGORY_ICONS[article.category]}>
+            <ListIcon ionicon={LEARN_CATEGORY_ICONS[article.category]}>
               {pieces?.[article.slug] && (
                 <ChessPieceIcon
                   type={pieces[article.slug]}

@@ -10,9 +10,15 @@ import {
 import { AiGameCard } from "../../../features/ai-game/components/AiGameCard";
 import { GameRow } from "../../../features/game-history/GameRow";
 import { useSavedGames } from "../../../features/game-history/useSavedGames";
+import { MOBILE_PRACTICE_MODULES } from "../../../navigation/practice-modules";
 
 /** Rows of recent games shown before "see all". */
 const RECENT_COUNT = 5;
+
+/** The recall row uses the recall module's icon from the module table. */
+const RECALL_ICON = MOBILE_PRACTICE_MODULES.find(
+  (m) => m.slug === "recall",
+)?.icon;
 
 /**
  * The play tab: a new game against the engine, the games played on this
@@ -54,7 +60,7 @@ export default function PlayTab() {
 
       <ListSection>
         <ListRow
-          leading={<ListIcon glyph="🔁" />}
+          leading={<ListIcon ionicon={RECALL_ICON} />}
           title={t("practice.recall.title")}
           subtitle={t("practice.recall.description")}
           onPress={() => router.push("/practice/recall")}

@@ -9,11 +9,22 @@ type CardProps = {
   shadow?: "none" | "sm" | "md" | "lg";
 };
 
+/**
+ * A panel laid on the page: white, a 1px `panelBorder` and a 12pt corner.
+ *
+ * @description
+ * No shadow by default. The app's look is flat — a panel resting on the
+ * page is outlined, not lifted — so a shadow belongs only on a layer that
+ * really floats above the page (a sheet, an overlay). `shadow` is still
+ * accepted and the theme's `shadows` are kept, because removing the prop
+ * would break the type of every caller that passes it, and those layers
+ * still need it.
+ */
 export function Card({
   children,
   style,
   padding = "md",
-  shadow = "sm",
+  shadow = "none",
 }: CardProps) {
   const { colors } = useTheme();
 
@@ -21,7 +32,7 @@ export function Card({
     <View
       style={[
         styles.base,
-        { backgroundColor: colors.card, borderColor: colors.border },
+        { backgroundColor: colors.card, borderColor: colors.panelBorder },
         padding !== "none" && styles[`padding_${padding}`],
         shadow !== "none" && shadows[shadow],
         style,

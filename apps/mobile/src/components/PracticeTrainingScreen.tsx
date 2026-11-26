@@ -48,7 +48,7 @@ export function PracticeTrainingScreen({
 
   if (!isReady) {
     return (
-      <View style={[styles.loading, { backgroundColor: colors.background }]}>
+      <View style={[styles.loading, { backgroundColor: colors.page }]}>
         <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );

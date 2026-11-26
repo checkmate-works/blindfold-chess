@@ -18,6 +18,12 @@ import { useTheme } from "../../theme";
  * translucent bar. The colors set here reach Android only partly and iOS
  * hardly at all — the OS paints the bar's background and separator itself.
  *
+ * The selected tab is ink (`colors.foreground`), unselected labels are
+ * muted, and Android's selection pill is the neutral `colors.muted`. The
+ * accent blue is kept for the primary button and text actions, so the
+ * screen's main action is the one blue thing; a blue tab bar would compete
+ * with it.
+ *
  * Five is the most the iOS bar shows before folding the rest into a "More"
  * tab, so settings is not a tab: it opens from the gear in the home header.
  * The dojo sits next to home because the rank ladder is the app's spine —
@@ -52,13 +58,24 @@ export default function TabsLayout() {
 
   return (
     <NativeTabs
-      tintColor={colors.primary}
+      tintColor={colors.foreground}
       minimizeBehavior="onScrollDown"
-      labelStyle={{ fontSize: 11, fontWeight: "600" }}
+      labelStyle={{
+        default: {
+          fontSize: 11,
+          fontWeight: "600",
+          color: colors.mutedForeground,
+        },
+        selected: {
+          fontSize: 11,
+          fontWeight: "600",
+          color: colors.foreground,
+        },
+      }}
       // Android only from here on.
       backgroundColor={colors.card}
       labelVisibilityMode="labeled"
-      indicatorColor={colors.secondary}
+      indicatorColor={colors.muted}
     >
       <NativeTabs.Trigger name="(home)">
         <NativeTabs.Trigger.Label>{t("tabs.home")}</NativeTabs.Trigger.Label>

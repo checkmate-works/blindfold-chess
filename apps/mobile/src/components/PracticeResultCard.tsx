@@ -22,12 +22,17 @@ export function PracticeResultCard({
         <Text style={[styles.scoreLabel, { color: colors.mutedForeground }]}>
           {scoreLabel}
         </Text>
-        <Text style={[styles.scoreValue, { color: colors.primary }]}>
+        {/* Ink, not blue: the accent colour is kept for what can be pressed
+            (the primary button, text actions), so the score does not
+            compete with the button that starts the next round. */}
+        <Text style={[styles.scoreValue, { color: colors.foreground }]}>
           {scoreValue}
         </Text>
       </View>
 
-      <View style={[styles.divider, { backgroundColor: colors.border }]} />
+      <View
+        style={[styles.divider, { backgroundColor: colors.rowSeparator }]}
+      />
 
       <View style={styles.statsGrid}>
         {statItems.map((item, index) => (
