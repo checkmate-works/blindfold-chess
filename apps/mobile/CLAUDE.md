@@ -300,7 +300,7 @@ database. Sign-in calls Supabase Auth directly; sign-up goes through
     (the first requirement once all are met; 1dan's opens the web). A cell
     is the way into its whole stage, so learn and practice open a list;
     the next-step button is what goes straight to the one next thing (for
-    learn, the guide holding the next unread page). Exam routes through
+    learn, the next unread page itself, `?page=<n>`). Exam routes through
     `stepTarget`, the same routing as the next-step button.
   - the learn tab (`(tabs)/learn`) opens with the guides, one row per guide
     in ladder order, before the glossary and the articles: a check once

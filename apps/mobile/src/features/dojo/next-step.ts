@@ -12,6 +12,7 @@ import {
   requirementTarget,
   type RequirementTarget,
 } from "./requirements";
+import { guidePageHref } from "../guides/reading-progress";
 
 /** One suggestion of what to do next: a button's copy, glyph and route. */
 export type NextStep = {
@@ -38,8 +39,8 @@ function challengeNameKey(menuType: string, leaderboardKey: string): string {
  * cells open lists instead (the learn tab's guides, the practice tab), as
  * a cell stands for its whole stage.
  *
- * - A guide page opens its guide from the first page: the guide screen does
- *   not reopen at the page the player stopped at.
+ * - A guide page opens its guide at that very page (`?page=`), so the
+ *   button picks up where the player stopped rather than at the start.
  * - A challenge opens the module's setup screen, the same one its challenge
  *   requirement opens.
  * - A requirement goes where its requirement row goes.
@@ -51,7 +52,10 @@ export function stepTarget(step: JourneyStep): RequirementTarget {
         kind: "practice",
         // A learn step exists only for a guide with pages, so the guide is
         // bundled; the dojo tab is a fallback that cannot strand the player.
-        pathname: guidePath(step.guideRank) ?? "/dojo",
+        pathname:
+          guidePath(step.guideRank) === undefined
+            ? "/dojo"
+            : (guidePageHref(step.guideRank, step.page) as string),
       };
     case "challenge":
       return requirementTarget({
@@ -120,8 +124,8 @@ function stepAction(
  * different steps. The order is guidance only — the player can open any
  * stage at any time, and nothing here locks a later one.
  *
- * - A guide page opens that guide (`/dojo/guides/<guideRank>`) from its first
- *   page. It reads "Read the guide" until a page of the rank's learn stage
+ * - A guide page opens that guide (`/dojo/guides/<guideRank>?page=<n>`) at
+ *   the page itself. It reads "Read the guide" until a page of the rank's learn stage
  *   is done, and "Continue the guide" after.
  * - A challenge to try opens the module's setup screen, where the challenge
  *   starts.

@@ -64,6 +64,17 @@ describe("nextStepOf", () => {
     });
   });
 
+  it("opens the guide at its first unread page", () => {
+    const step = nextStepOf(
+      journey("5kyu", { completedSteps: new Set(pages("mukyu", 1)) }),
+      i18n.t,
+    );
+    expect(step?.target).toEqual({
+      kind: "practice",
+      pathname: "/dojo/guides/mukyu?page=2",
+    });
+  });
+
   it("points at learning first even when a challenge was already tried", () => {
     const step = nextStepOf(
       journey("5kyu", {
