@@ -1080,6 +1080,8 @@
     },
     "lockedNote": "Conquiste primeiro as faixas anteriores",
     "requirementsTitle": "Requisitos",
+    "requirementsScreenTitle": "Requisitos de {{rank}}",
+    "noRequirements": "Esta faixa não tem requisitos.",
     "criteriaTitle": "O que certifica",
     "challengeHint": "Faça no modo desafio",
     "webOnly": "Disponível na web",

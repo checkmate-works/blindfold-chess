@@ -9,7 +9,12 @@ import type {
   RankSlug,
 } from "@blindfold-chess/features/dojo-ranks";
 
-import { practiceListHref, stageTarget } from "./stage-target";
+import {
+  practiceListHref,
+  rankDetailHref,
+  requirementsHref,
+  stageTarget,
+} from "./stage-target";
 
 const PAGE_COUNTS: Partial<Record<RankSlug, number>> = {
   mukyu: 3,
@@ -35,7 +40,7 @@ function journey(rank: EarnedRankSlug, input: Partial<JourneyInput> = {}) {
 describe("stageTarget", () => {
   describe("learn", () => {
     it("opens the learn tab's list of guides, read or not", () => {
-      const expected = { kind: "screen", href: "/learn" };
+      const expected = "/learn";
       expect(stageTarget("learn", journey("5kyu"))).toEqual(expected);
       expect(
         stageTarget(
@@ -51,10 +56,7 @@ describe("stageTarget", () => {
 
   describe("practice", () => {
     it("opens the practice list narrowed to the rank, done or not", () => {
-      const expected = {
-        kind: "screen",
-        href: { pathname: "/practice", params: { rank: "4kyu" } },
-      };
+      const expected = { pathname: "/practice", params: { rank: "4kyu" } };
       expect(stageTarget("practice", journey("4kyu"))).toEqual(expected);
       expect(
         stageTarget("practice", journey("4kyu", { highest: "4kyu" })),
@@ -63,37 +65,32 @@ describe("stageTarget", () => {
   });
 
   describe("exam", () => {
-    it("opens the first unmet requirement's screen", () => {
-      const fiveKyu = journey("5kyu", {
-        bestScores: [
-          { menuType: "square_colors", leaderboardKey: "default", score: 15 },
-        ],
-      });
-      // Square colours is met; the coordinate quiz is the one left.
-      expect(stageTarget("exam", fiveKyu)).toEqual({
-        kind: "screen",
-        href: "/practice/coordinate-quiz",
-      });
-    });
-
-    it("opens the first requirement once every one is met", () => {
+    it("opens the rank's requirements screen, met or not", () => {
+      const expected = "/dojo/requirements/5kyu";
+      expect(stageTarget("exam", journey("5kyu"))).toEqual(expected);
+      expect(
+        stageTarget(
+          "exam",
+          journey("5kyu", {
+            bestScores: [
+              {
+                menuType: "square_colors",
+                leaderboardKey: "default",
+                score: 15,
+              },
+            ],
+          }),
+        ),
+      ).toEqual(expected);
       expect(stageTarget("exam", journey("5kyu", { highest: "5kyu" }))).toEqual(
-        { kind: "screen", href: "/practice/square-colors" },
+        expected,
       );
     });
 
-    it("opens the rank's exam screen for an exam problem", () => {
-      expect(stageTarget("exam", journey("2kyu"))).toEqual({
-        kind: "screen",
-        href: "/dojo/exams/2kyu",
-      });
-    });
-
-    it("opens the web for 1dan, whose only requirement is a published game", () => {
-      expect(stageTarget("exam", journey("1dan"))).toEqual({
-        kind: "web",
-        path: "/games/new/standard",
-      });
+    it("stays in the app for 1dan, whose requirement is met on the web", () => {
+      expect(stageTarget("exam", journey("1dan"))).toEqual(
+        "/dojo/requirements/1dan",
+      );
     });
   });
 });
@@ -104,5 +101,17 @@ describe("practiceListHref", () => {
       pathname: "/practice",
       params: { rank: "3kyu" },
     });
+  });
+});
+
+describe("requirementsHref", () => {
+  it("names the rank in the requirements screen's path", () => {
+    expect(requirementsHref("3kyu")).toBe("/dojo/requirements/3kyu");
+  });
+});
+
+describe("rankDetailHref", () => {
+  it("names the rank in the rank screen's path", () => {
+    expect(rankDetailHref("mukyu")).toBe("/dojo/ranks/mukyu");
   });
 });

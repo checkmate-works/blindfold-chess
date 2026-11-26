@@ -17,7 +17,6 @@ import {
   useTheme,
 } from "../../theme";
 import { DoneMark } from "../../components";
-import { openWebPage } from "../../lib/web-pages";
 import { beltColors } from "./belt";
 import { stageTarget } from "./stage-target";
 
@@ -56,8 +55,10 @@ function stageValue({ stage, done, total }: StageCount, t: TFunction): string {
  *
  * Every cell is a link, on every rank: pressing it opens where
  * `stageTarget` says that stage leads (the learn tab's list of guides, the
- * practice list narrowed to the rank, the exam), with `router.navigate` so
- * a tab is switched to rather than stacked again. A held cell is filled with
+ * practice list narrowed to the rank, the rank's requirements screen), with
+ * `router.navigate` so a tab is switched to rather than stacked again. The
+ * requirements screen is a root-stack screen that never shows these cells,
+ * so navigating to it from them always pushes it. A held cell is filled with
  * the belt's `tintPressed`; nothing else about it changes, as with every
  * pressable surface of the app.
  *
@@ -76,7 +77,7 @@ export function RankStageProgress({
 }: {
   readonly journey: RankJourney;
 }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
   const belt = beltColors(journey.rank, colors);
@@ -94,14 +95,7 @@ export function RankStageProgress({
         // dojo.stages.learn, dojo.stages.practice, dojo.stages.exam
         const name = t(`dojo.stages.${count.stage}`);
         const value = stageValue(count, t);
-        const open = () => {
-          const target = stageTarget(count.stage, journey);
-          if (target.kind === "web") {
-            openWebPage(target.path, i18n.language);
-          } else {
-            router.navigate(target.href);
-          }
-        };
+        const open = () => router.navigate(stageTarget(count.stage, journey));
         return (
           <Fragment key={count.stage}>
             {index > 0 && (

@@ -1080,6 +1080,8 @@
     },
     "lockedNote": "Earn the ranks below this one first",
     "requirementsTitle": "Requirements",
+    "requirementsScreenTitle": "{{rank}} requirements",
+    "noRequirements": "This rank has no requirements.",
     "criteriaTitle": "What it certifies",
     "challengeHint": "Take it in challenge mode",
     "webOnly": "Available on the web",

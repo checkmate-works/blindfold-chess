@@ -1080,6 +1080,8 @@
     },
     "lockedNote": "Primero obtén los rangos anteriores",
     "requirementsTitle": "Requisitos",
+    "requirementsScreenTitle": "Requisitos de {{rank}}",
+    "noRequirements": "Este rango no tiene requisitos.",
     "criteriaTitle": "Qué certifica",
     "challengeHint": "Hazlo en modo desafío",
     "webOnly": "Disponible en la web",

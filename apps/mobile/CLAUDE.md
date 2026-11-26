@@ -32,7 +32,8 @@ replaced by the platform's own parts or their common app equivalents.
   bar hides on them: each module's setup at `practice/<route>/index.tsx`
   (URL `/practice/<route>`), the AI-game setup at `play/ai-game`, the saved
   games at `play/games`, learn articles at `learn/[slug]`, a dojo rank at
-  `dojo/ranks/[slug]` and its guide at `dojo/guides/[rank]`.
+  `dojo/ranks/[slug]`, its guide at `dojo/guides/[rank]`, its exam at
+  `dojo/exams/[rank]` and its requirements at `dojo/requirements/[rank]`.
 - `(session)` — timed sessions, results and training runs
   (`(session)/practice/<route>/{session,result,training}.tsx`,
   `(session)/play/ai-game/*`), presented as one `fullScreenModal`. A full
@@ -298,15 +299,18 @@ database. Sign-in calls Supabase Auth directly; sign-up goes through
   - a rank's stage cells (`RankStageProgress`, a chevron on each line
     between them, since the stages come in order) are links on every rank
     and every screen they appear on; `stageTarget` (`stage-target.ts`)
-    picks the destination so the screens cannot disagree: learn → the learn
-    tab's list of guides, practice → the practice list narrowed to the rank
-    (both tabs, so `router.navigate`, since `push` would stack a second
-    list on the tab), exam → where the first unmet requirement's row goes
-    (the first requirement once all are met; 1dan's opens the web). A cell
-    is the way into its whole stage, so learn and practice open a list;
-    the next-step button is what goes straight to the one next thing (for
-    learn, the next unread page itself, `?page=<n>`). Exam routes through
-    `stepTarget`, the same routing as the next-step button.
+    picks the destination so the screens cannot disagree. A cell is the way
+    into its whole stage, so every cell opens that stage's list: learn →
+    the learn tab's list of guides, practice → the practice list narrowed
+    to the rank (both tabs, so `router.navigate`, since `push` would stack
+    a second list on the tab), exam → the rank's requirements screen
+    (`dojo/requirements/[rank]`, `requirementsHref`): "Passed n / N" over
+    `RankRequirementList`, so the player sees at a glance which
+    requirements are already passed rather than landing in the first unmet
+    one's screen. The requirements screen never shows the cells, so
+    `navigate` to it always pushes. The next-step button (`stepTarget`) is
+    what goes straight to the one next thing (for learn, the next unread
+    page itself, `?page=<n>`).
   - the learn tab (`(tabs)/learn`) opens with the guides, one row per guide
     in ladder order, before the glossary and the articles: the done mark once
     read through, "n / N" part way, nothing before the first page, and a

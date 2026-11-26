@@ -1,17 +1,9 @@
 import type { Href } from "expo-router";
 import type {
   JourneyStage,
-  JourneyStep,
   RankJourney,
 } from "@blindfold-chess/features/dojo-journey";
 import type { RankSlug } from "@blindfold-chess/features/dojo-ranks";
-
-import { stepTarget } from "./next-step";
-
-/** Where a stage cell takes the player: a screen of the app or a web page. */
-export type StageTarget =
-  | { readonly kind: "screen"; readonly href: Href }
-  | { readonly kind: "web"; readonly path: string };
 
 /**
  * The learn tab, whose first section lists every guide with how far it is
@@ -28,17 +20,14 @@ export function practiceListHref(rank: RankSlug): Href {
   return { pathname: "/practice", params: { rank } };
 }
 
-/**
- * The step of `stage` a cell should open: the first one not done, or the
- * stage's first step once all are done (going back over a finished stage
- * starts from its beginning).
- */
-function stageStep(
-  journey: RankJourney,
-  stage: JourneyStage,
-): JourneyStep | undefined {
-  const inStage = journey.steps.filter((step) => step.stage === stage);
-  return inStage.find((step) => !step.done) ?? inStage[0];
+/** The screen listing `rank`'s requirements alone, with how many are met. */
+export function requirementsHref(rank: RankSlug): Href {
+  return `/dojo/requirements/${rank}` as Href;
+}
+
+/** `rank`'s own screen: its card, stages, requirements and guide. */
+export function rankDetailHref(rank: RankSlug): Href {
+  return `/dojo/ranks/${rank}` as Href;
 }
 
 /**
@@ -54,43 +43,37 @@ function stageStep(
  * current one too, and a row of cells where only some respond would look
  * the same as one where all do.
  *
- * - **Learn** opens the learn tab, where the guides are listed with how
- *   far each is read and each opens at its first unread page. A cell is the
- *   way into the whole stage, which can span two guides (5kyu reads the
- *   unranked guide and its own), so it opens the list of them rather than
- *   picking one guide; going straight into the guide that holds the next
- *   page to read is the next-step button's job, and a cell doing the same
- *   would only repeat it.
- * - **Practice** opens the practice tab narrowed to the rank, where each
- *   practice row shows which of its challenges are tried. It does not open
- *   one challenge's setup screen: a stage of several challenges has no
- *   single right one to open.
- * - **Exam** goes where the first unmet requirement's row goes (the first
- *   requirement once all are met) — an exam screen, a challenge's setup or,
- *   for a published game (1dan), a web page.
+ * A cell is the way into its whole stage, so every cell opens the stage's
+ * list, where the player sees what in it is done and picks what to do;
+ * going straight to the one next thing is the next-step button's job
+ * (`nextStepOf`), and a cell doing the same would only repeat it.
  *
- * Practice and learn are tabs, so `RankStageProgress` switches to them with
- * `router.navigate`; a push would stack a second copy of the tab's screen.
- * Exam reuses `stepTarget`, the routing the next-step button uses, so a
- * cell and the button never disagree about the same requirement.
+ * - **Learn** opens the learn tab, where the guides are listed with how
+ *   far each is read and each opens at its first unread page. The stage
+ *   can span two guides (5kyu reads the unranked guide and its own), so
+ *   there is no single guide to open.
+ * - **Practice** opens the practice tab narrowed to the rank, where each
+ *   practice row shows which of its challenges are tried. A stage of
+ *   several challenges has no single right setup screen to open.
+ * - **Exam** opens the rank's requirements screen
+ *   (`dojo/requirements/[rank]`): only that rank's requirements, each
+ *   marked once met and opening where it is met (a challenge's setup, the
+ *   exam, or the web for 1dan's published game). Going to the first unmet
+ *   requirement's screen instead would hide which ones are already passed,
+ *   and on a rank of several requirements would choose one for the player.
+ *
+ * Practice and learn are tabs and the requirements screen sits on the root
+ * stack; `RankStageProgress` opens all three with `router.navigate`, which
+ * switches to a tab rather than stacking a second copy of it, and pushes
+ * the requirements screen like any other root-stack screen.
  */
-export function stageTarget(
-  stage: JourneyStage,
-  journey: RankJourney,
-): StageTarget {
-  if (stage === "practice") {
-    return { kind: "screen", href: practiceListHref(journey.rank) };
+export function stageTarget(stage: JourneyStage, journey: RankJourney): Href {
+  switch (stage) {
+    case "learn":
+      return GUIDE_LIST_HREF;
+    case "practice":
+      return practiceListHref(journey.rank);
+    case "exam":
+      return requirementsHref(journey.rank);
   }
-  if (stage === "learn") {
-    return { kind: "screen", href: GUIDE_LIST_HREF };
-  }
-  const step = stageStep(journey, stage);
-  // A stage without steps has no cell, so this is only a safe default.
-  if (step === undefined) {
-    return { kind: "screen", href: `/dojo/ranks/${journey.rank}` as Href };
-  }
-  const target = stepTarget(step);
-  return target.kind === "web"
-    ? { kind: "web", path: target.path }
-    : { kind: "screen", href: target.pathname as Href };
 }

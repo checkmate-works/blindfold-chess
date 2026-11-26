@@ -33,11 +33,11 @@ function challengeNameKey(menuType: string, leaderboardKey: string): string {
 }
 
 /**
- * Where one step of a journey leads, wherever it is offered: the next-step
- * button and the exam cell (`stageTarget`) both go through this, so the
- * same step never opens two different screens. The learn and practice
- * cells open lists instead (the learn tab's guides, the practice tab), as
- * a cell stands for its whole stage.
+ * Where one step of a journey leads: the screen the next-step button opens
+ * for it. The stage cells (`stageTarget`) do not use this: a cell stands
+ * for its whole stage, so each opens the stage's list (the learn tab's
+ * guides, the practice tab, the rank's requirements screen), and the
+ * requirement rows there route each requirement as the button would.
  *
  * - A guide page opens its guide at that very page (`?page=`), so the
  *   button picks up where the player stopped rather than at the start.
