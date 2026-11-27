@@ -311,8 +311,10 @@ database. Sign-in calls Supabase Auth directly; sign-up goes through
     the same way. The guide just finished counts as fully read when
     choosing, since its last mark may not be in the journey yet. Only
     `guide:` keys are ever reported.
-  - an exam problem (`dojo/exams/[rank]`, then the position-memory or
-    puzzle session with an `exam` param) is graded by its result screen
+  - an exam problem (`dojo/exams/[rank]`, then the problem's page
+    `dojo/exams/[rank]/[problem]` — laid out like a puzzle's page, with the
+    exam's patterns from `DOJO_EXAMS` — whose Start opens the position-memory
+    or puzzle session with an `exam` param) is graded by its result screen
     (`exam-run.ts`, `ExamVerdictCard`): a signed-in player for whom the
     exam is the next rank or a held one sends the answer to
     `POST /dojo/exams/[rank]/[problem]` and the server grades and records

@@ -1125,7 +1125,31 @@
       "resend": "Send again",
       "problemPassed": "You passed",
       "problemFailed": "Not passed. You can try again.",
-      "passedUnrecorded": "You reached the pass mark (not recorded)"
+      "passedUnrecorded": "You reached the pass mark (not recorded)",
+      "attempt": "Start",
+      "memoryDescriptionSection": "Position Description",
+      "puzzleDescriptionSection": "About This Puzzle",
+      "patternsSection": "Useful patterns for solving",
+      "memoryIntro": {
+        "2kyu": "This is the {{rank}} exam. Make good use of chunks to memorize the position."
+      },
+      "puzzleIntro": {
+        "2kyu": "This is the {{rank}} exam. Picture the board in your mind and solve the mate in two."
+      },
+      "patterns": {
+        "kingside_castle": {
+          "title": "Kingside castle",
+          "description": "The king, the rook and the three pawns in front of them, held as one shape rather than five pieces."
+        },
+        "kingside_fianchetto": {
+          "title": "Kingside fianchetto",
+          "description": "The bishop on g2 behind the pawn pushed to g3. Together with the f2 and h2 pawns it is one shape to hold."
+        },
+        "smothered_mate": {
+          "title": "Smothered mate",
+          "description": "A king boxed in by its own pieces, mated by a knight's check."
+        }
+      }
     },
     "stages": {
       "learn": "Learn",

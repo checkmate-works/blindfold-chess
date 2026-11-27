@@ -1,12 +1,12 @@
-import { useMemo, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import Svg, { Line, Circle } from "react-native-svg";
 import { ChessPieceIcon } from "@blindfold-chess/icons";
-import { fenToBoardFlat } from "@blindfold-chess/features/chess-core/fen";
 import type { PieceType, Square } from "@blindfold-chess/types";
 import { boardThemeColors } from "@blindfold-chess/ui";
 
 import { StaticBoard } from "../../components/StaticBoard";
+import { useFenSquares } from "../../components/use-fen-squares";
 import { useGamePreferences } from "../../lib/game-preferences";
 import type { MobilePracticeModule } from "../../navigation/practice-modules";
 import {
@@ -34,23 +34,13 @@ const point = (square: Square) => ({
 
 function Board({ fen = EMPTY, path = [] }: { fen?: string; path?: Path }) {
   const { colors } = useTheme();
-  const pieces = useMemo(() => fenToBoardFlat(fen), [fen]);
+  const renderSquare = useFenSquares(fen);
   return (
     <View style={styles.board}>
       <StaticBoard
         maxSize={96}
         showCoordinates={false}
-        renderSquare={(square, size) => {
-          const piece =
-            pieces[(8 - Number(square[1])) * 8 + square.charCodeAt(0) - 97];
-          return piece ? (
-            <ChessPieceIcon
-              type={piece.toLowerCase() as PieceType}
-              color={piece === piece.toUpperCase() ? "w" : "b"}
-              size={size}
-            />
-          ) : null;
-        }}
+        renderSquare={renderSquare}
         renderOverlay={() => (
           <Svg
             width="100%"

@@ -1125,7 +1125,31 @@
       "resend": "Enviar novamente",
       "problemPassed": "Você passou",
       "problemFailed": "Não passou. Você pode tentar de novo.",
-      "passedUnrecorded": "Você atingiu a nota de aprovação (sem registro)"
+      "passedUnrecorded": "Você atingiu a nota de aprovação (sem registro)",
+      "attempt": "Começar",
+      "memoryDescriptionSection": "Descrição da Posição",
+      "puzzleDescriptionSection": "Sobre Este Puzzle",
+      "patternsSection": "Padrões úteis para resolver",
+      "memoryIntro": {
+        "2kyu": "Esta é a prova de {{rank}}. Aproveite os chunks para memorizar a posição."
+      },
+      "puzzleIntro": {
+        "2kyu": "Esta é a prova de {{rank}}. Imagine o tabuleiro e resolva o mate em dois lances."
+      },
+      "patterns": {
+        "kingside_castle": {
+          "title": "Roque pequeno",
+          "description": "O rei, a torre e os três peões à frente deles, guardados como uma só forma em vez de cinco peças."
+        },
+        "kingside_fianchetto": {
+          "title": "Fianqueto do rei",
+          "description": "O bispo em g2 atrás do peão avançado para g3. Junto com os peões de f2 e h2, é uma só forma para guardar."
+        },
+        "smothered_mate": {
+          "title": "Mate sufocado",
+          "description": "Um rei cercado pelas próprias peças, que leva mate com o xeque de um cavalo."
+        }
+      }
     },
     "stages": {
       "learn": "Aprender",

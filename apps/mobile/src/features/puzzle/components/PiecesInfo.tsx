@@ -16,9 +16,16 @@ import {
 /**
  * The web's `PiecesInfo`: a card with the side to move and both sides'
  * pieces as text ("K Q R a1 …"), so the position can be read without the
- * board.
+ * board. `showSideToMove` leaves the side to move out, as the web does for
+ * position memory, where the task is only to recall the position.
  */
-export function PiecesInfo({ fen }: { fen: string }) {
+export function PiecesInfo({
+  fen,
+  showSideToMove = true,
+}: {
+  fen: string;
+  showSideToMove?: boolean;
+}) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const pieces = fenToPieceList(fen);
@@ -36,11 +43,13 @@ export function PiecesInfo({ fen }: { fen: string }) {
         { backgroundColor: colors.card, borderColor: colors.border },
       ]}
     >
-      <Text style={[styles.text, styles.label, { color: colors.foreground }]}>
-        {isBlackToMoveFromFen(fen)
-          ? t("puzzle.blackToMove")
-          : t("puzzle.whiteToMove")}
-      </Text>
+      {showSideToMove ? (
+        <Text style={[styles.text, styles.label, { color: colors.foreground }]}>
+          {isBlackToMoveFromFen(fen)
+            ? t("puzzle.blackToMove")
+            : t("puzzle.whiteToMove")}
+        </Text>
+      ) : null}
       {line(t("puzzle.detail.whitePiecesLabel"), pieces.white)}
       {line(t("puzzle.detail.blackPiecesLabel"), pieces.black)}
     </View>
