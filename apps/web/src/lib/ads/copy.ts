@@ -1,4 +1,5 @@
 import { SUPPORTED_LOCALES } from '@/config';
+import { isSupportedLocale } from '@/i18n/supported-locale';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -62,10 +63,6 @@ export function resolveNativeCopy(
   };
 }
 
-function isLocale(value: string): value is Locale {
-  return (SUPPORTED_LOCALES as readonly string[]).includes(value);
-}
-
 /**
  * Fold translation rows into each creative's copy maps. A row for a locale
  * the site no longer serves is skipped rather than fatal: nothing could read
@@ -76,7 +73,7 @@ export function copyFromTranslationRows(
 ): Map<string, CreativeCopy> {
   const byCreative = new Map<string, CreativeCopy>();
   for (const row of rows) {
-    if (!isLocale(row.locale)) continue;
+    if (!isSupportedLocale(row.locale)) continue;
     const copy = byCreative.get(row.creativeId) ?? { title: {}, description: {} };
     if (row.title !== null) copy.title[row.locale] = row.title;
     if (row.description !== null) copy.description[row.locale] = row.description;

@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 
 import { notFound, useRouter, useSearchParams } from 'next/navigation';
 
-import { SUPPORTED_LOCALES } from '@/config';
+import { isSupportedLocale } from '@/i18n/supported-locale';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { ExpInfo } from '@blindfold-chess/features/exp';
 
@@ -270,7 +270,7 @@ export function createPracticeResultClient(config: ResultClientConfig) {
 
     // Locale validation (used by square-colors, board-symmetry)
     if (validateLocale) {
-      if (!(SUPPORTED_LOCALES as readonly string[]).includes(locale)) {
+      if (!isSupportedLocale(locale)) {
         notFound();
       }
     }
