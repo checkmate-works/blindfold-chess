@@ -10,11 +10,13 @@
  *
  * @flow
  * 1. Unknown rank, or a rank without this problem → 404.
- * 2. Memorize → recreate, as in the single-position practice session (no
+ * 2. The page opens on the problem's condition and a start button; the
+ *    position stays hidden until the attempt starts.
+ * 3. Memorize → recreate, as in the single-position practice session (no
  *    pause: the seconds are part of the problem).
- * 3. The recreated FEN goes to `submitExamAnswer`. Signed out, the browser
+ * 4. The recreated FEN goes to `submitExamAnswer`. Signed out, the browser
  *    grades it as practice. The verdict offers a retry and the way back.
- * 4. A pass that completes the exam stashes the granted rank and returns to
+ * 5. A pass that completes the exam stashes the granted rank and returns to
  *    the problem list, which celebrates it.
  */
 import type { Metadata } from 'next';
@@ -75,6 +77,10 @@ export default async function DojoExamPositionMemoryPage({ params }: Props) {
   const prevRankName = t(`ranks.rankNames.${previousRank(exam)}`);
   const examTitle = t('dojoExam.title', { rankName });
   const problemName = t('ranks.examProblemNames.position_memory');
+  const rule = t('dojoExam.memoryRule', {
+    seconds: problem.memorizeSeconds,
+    accuracy: problem.minAccuracy,
+  });
 
   return (
     <PageLayout
@@ -86,7 +92,16 @@ export default async function DojoExamPositionMemoryPage({ params }: Props) {
         { label: problemName },
       ]}
     >
-      <ExamMemorySession rank={exam} problem={problem} prevRankName={prevRankName} />
+      <ExamMemorySession
+        rank={exam}
+        problem={problem}
+        prevRankName={prevRankName}
+        intro={
+          <div className="rounded-lg border border-border bg-card p-4">
+            <p className="text-foreground">{rule}</p>
+          </div>
+        }
+      />
     </PageLayout>
   );
 }
