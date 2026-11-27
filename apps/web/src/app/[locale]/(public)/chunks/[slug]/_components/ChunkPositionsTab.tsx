@@ -5,6 +5,7 @@ import { Button } from '@/app/_components';
 import { FaPlus } from 'react-icons/fa';
 
 import { EMPTY_LIKE_META } from '@/lib/db/like-queries';
+import { PORTABLE_ENGAGEMENT_NAMESPACE } from '@/lib/i18n/portable-engagement-namespace';
 import { getPositionDetailPath } from '@/lib/positions/routes';
 import { parsePositionType } from '@/lib/positions/types';
 
@@ -79,7 +80,7 @@ export async function ChunkPositionsTab({
               likeMeta={likeMetaMap.get(position.id) ?? EMPTY_LIKE_META}
               replyMeta={replyMetaMap.get(position.id) ?? EMPTY_REPLY_META}
               detailHref={detailPath}
-              i18nNamespace={isPuzzle ? 'practice.puzzle' : 'practice.positionMemory'}
+              i18nNamespace={PORTABLE_ENGAGEMENT_NAMESPACE}
               toggleLikeAction={togglePositionLike}
               justNowLabel={isPuzzle ? tPuzzle('justNow') : tMemory('justNow')}
               authorFallbackLabel={tCommon('deletedUser')}

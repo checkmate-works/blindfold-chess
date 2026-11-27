@@ -3627,7 +3627,11 @@
       "startOverConfirmTitle": "Começar de novo?",
       "startOverConfirmMessage": "Seu rascunho atual será apagado. Isto não pode ser desfeito.",
       "startOverConfirm": "Começar de novo",
-      "startOverCancel": "Cancelar"
+      "startOverCancel": "Cancelar",
+      "whitePieces": "Peças Brancas",
+      "blackPieces": "Peças Pretas",
+      "removePieceMode": "Modo de remoção de peça - Clique em uma casa para remover a peça",
+      "placingPiece": "Colocando"
     },
     "preview": {
       "title": "Pré-visualizar chunk",

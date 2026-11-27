@@ -99,7 +99,7 @@ export function ChunkFormFields({
   messageFor,
 }: Props) {
   const t = useTranslations('chunks.form');
-  const editableBoardLabels = useEditableBoardLabels('practice.puzzle');
+  const editableBoardLabels = useEditableBoardLabels('chunks.form');
   const { preferences, isLoaded } = useGamePreferences();
 
   const [clearBoardOpen, setClearBoardOpen] = useState(false);

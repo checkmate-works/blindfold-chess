@@ -1,6 +1,7 @@
 import { EMPTY_LIKE_META, type LikeMeta } from '@/lib/db/like-queries';
 import type { ReplyMeta } from '@/lib/db/reply-meta-queries';
 import type { Position } from '@/lib/db/schema';
+import { PORTABLE_ENGAGEMENT_NAMESPACE } from '@/lib/i18n/portable-engagement-namespace';
 import { type PositionKind, getPositionKindDetailPath } from '@/lib/positions/kind';
 import type { AuthorProfile } from '@/lib/users/author-profile';
 
@@ -65,7 +66,7 @@ export function ProblemPositionList({
               likeMeta={likeMetaMap.get(position.id) ?? EMPTY_LIKE_META}
               replyMeta={replyMetaMap.get(position.id) ?? emptyReplyMeta}
               detailHref={getPositionHref(type, position.id)}
-              i18nNamespace={type === 'puzzle' ? 'practice.puzzle' : 'practice.positionMemory'}
+              i18nNamespace={PORTABLE_ENGAGEMENT_NAMESPACE}
               toggleLikeAction={toggleLike}
               justNowLabel={justNowLabel}
               authorFallbackLabel={authorFallbackLabel}

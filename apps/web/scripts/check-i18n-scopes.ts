@@ -125,6 +125,19 @@ const IMPORT_RE = /(?:import|export)\s[^'"]*?from\s*['"]([^'"]+)['"]|import\(\s*
 const NS_LITERAL_RE = /use(?:Safe)?Translations\(\s*(['"`])([^'"`)]+)\1/g;
 const NS_PROP_RE =
   /(?:i18nNamespace|translationNamespace|translationKey|namespace)=\{?["'`]([^"'`]+)["'`]/g;
+// A namespace prop chosen by an expression — `i18nNamespace={isPuzzle ?
+// 'practice.puzzle' : 'practice.positionMemory'}`. NS_PROP_RE only sees a
+// literal that directly follows `=` / `={`, so a ternary used to slip past
+// the closure and the page rendered the raw `namespace.key` at runtime.
+// Every string literal inside the braces counts as a candidate; the
+// known-namespace filter below drops the ones that are not namespaces.
+const NS_PROP_EXPR_RE =
+  /(?:i18nNamespace|translationNamespace|translationKey|namespace)=\{([^{}]*)\}/g;
+const STRING_LITERAL_RE = /["'`]([^"'`]+)["'`]/g;
+// Hooks that take the namespace as their first argument and call
+// `useTranslations` with it themselves, hiding the literal from
+// NS_LITERAL_RE at the call site. Add a hook here when it is introduced.
+const NS_HOOK_RE = /\b(?:useEditableBoardLabels)\(\s*(['"`])([^'"`)]+)\1/g;
 
 const importsOf = new Map<string, string[]>();
 const namespacesOf = new Map<string, Set<string>>();
@@ -141,6 +154,12 @@ for (const file of files) {
   const namespaces = new Set<string>();
   for (const m of source.matchAll(NS_LITERAL_RE)) namespaces.add(m[2]!.split('.')[0]!);
   for (const m of source.matchAll(NS_PROP_RE)) namespaces.add(m[1]!.split('.')[0]!);
+  for (const m of source.matchAll(NS_PROP_EXPR_RE)) {
+    for (const literal of m[1]!.matchAll(STRING_LITERAL_RE)) {
+      namespaces.add(literal[1]!.split('.')[0]!);
+    }
+  }
+  for (const m of source.matchAll(NS_HOOK_RE)) namespaces.add(m[2]!.split('.')[0]!);
   const extra = EXTRA_FILE_NAMESPACES[relative(SRC, file)];
   if (extra) for (const ns of extra) namespaces.add(ns);
   if (namespaces.size > 0) namespacesOf.set(file, namespaces);
