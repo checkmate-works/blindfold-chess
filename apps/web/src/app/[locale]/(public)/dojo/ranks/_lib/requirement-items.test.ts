@@ -4,78 +4,11 @@ import { parseRequirements, ranksSeedData } from '@/lib/db/data/ranks';
 import type { ChallengeScoreRequirement } from '@/lib/db/data/ranks';
 
 import {
-  buildChallengeNameKey,
   buildRequirementItems,
   buildRequirementLabels,
   getRankCardState,
   isRankEarnedByPlaying,
 } from './requirement-items';
-
-// ---------------------------------------------------------------------------
-// buildChallengeNameKey
-// ---------------------------------------------------------------------------
-
-describe('buildChallengeNameKey', () => {
-  it('should return menuType alone when leaderboardKey is "default"', () => {
-    const req: ChallengeScoreRequirement = {
-      type: 'challenge_score',
-      menuType: 'square_colors',
-      leaderboardKey: 'default',
-      minScore: 15,
-    };
-    expect(buildChallengeNameKey(req)).toBe('square_colors');
-  });
-
-  it('should return menuType_leaderboardKey when leaderboardKey is not "default"', () => {
-    const req: ChallengeScoreRequirement = {
-      type: 'challenge_score',
-      menuType: 'coordinate_quiz',
-      leaderboardKey: 'white',
-      minScore: 20,
-    };
-    expect(buildChallengeNameKey(req)).toBe('coordinate_quiz_white');
-  });
-
-  it('should handle an empty string leaderboardKey (not "default")', () => {
-    const req: ChallengeScoreRequirement = {
-      type: 'challenge_score',
-      menuType: 'coordinate_quiz',
-      leaderboardKey: '',
-      minScore: 10,
-    };
-    expect(buildChallengeNameKey(req)).toBe('coordinate_quiz_');
-  });
-
-  it('should return "legal_moves_bishop" for the 4kyu bishop requirement', () => {
-    const req: ChallengeScoreRequirement = {
-      type: 'challenge_score',
-      menuType: 'legal_moves',
-      leaderboardKey: 'bishop',
-      minScore: 10,
-    };
-    expect(buildChallengeNameKey(req)).toBe('legal_moves_bishop');
-  });
-
-  it('should return "legal_moves_knight" for the 4kyu knight requirement', () => {
-    const req: ChallengeScoreRequirement = {
-      type: 'challenge_score',
-      menuType: 'legal_moves',
-      leaderboardKey: 'knight',
-      minScore: 20,
-    };
-    expect(buildChallengeNameKey(req)).toBe('legal_moves_knight');
-  });
-
-  it('should return "legal_moves_king" for legal_moves with king leaderboardKey', () => {
-    const req: ChallengeScoreRequirement = {
-      type: 'challenge_score',
-      menuType: 'legal_moves',
-      leaderboardKey: 'king',
-      minScore: 20,
-    };
-    expect(buildChallengeNameKey(req)).toBe('legal_moves_king');
-  });
-});
 
 // ---------------------------------------------------------------------------
 // buildRequirementItems

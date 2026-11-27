@@ -4,11 +4,45 @@ import {
   EARNED_RANK_SLUGS,
   RANK_REQUIREMENTS,
   achievedRankCount,
+  challengeNameKey,
   isRankSlug,
   isRequirementPlayableOnMobile,
   nextRankSlug,
   rankStanding,
 } from "./ranks";
+
+describe("challengeNameKey", () => {
+  it("names a module's default leaderboard by the module alone", () => {
+    expect(challengeNameKey("square_colors", "default")).toBe("square_colors");
+  });
+
+  it("joins the module and any other leaderboard", () => {
+    expect(challengeNameKey("coordinate_quiz", "white")).toBe(
+      "coordinate_quiz_white",
+    );
+    expect(challengeNameKey("legal_moves", "king")).toBe("legal_moves_king");
+    expect(challengeNameKey("coordinate_quiz", "")).toBe("coordinate_quiz_");
+  });
+
+  it("has a key for every challenge requirement", () => {
+    const keys = EARNED_RANK_SLUGS.flatMap((slug) =>
+      RANK_REQUIREMENTS[slug].flatMap((r) =>
+        r.type === "challenge_score"
+          ? [challengeNameKey(r.menuType, r.leaderboardKey)]
+          : [],
+      ),
+    );
+    expect(keys).toEqual([
+      "square_colors",
+      "coordinate_quiz_white",
+      "legal_moves_king",
+      "legal_moves_knight",
+      "legal_moves_bishop",
+      "route_planner_knight",
+      "route_planner_bishop",
+    ]);
+  });
+});
 
 describe("rankStanding", () => {
   it("treats every rank up to the highest held as achieved", () => {

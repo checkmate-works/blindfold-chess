@@ -1,5 +1,6 @@
 import type Ionicons from "@expo/vector-icons/Ionicons";
 import type { TFunction } from "i18next";
+import { challengeNameKey } from "@blindfold-chess/features/dojo-ranks";
 import {
   firstUndoneStep,
   type JourneyStep,
@@ -20,17 +21,6 @@ export type NextStep = {
   readonly icon: keyof typeof Ionicons.glyphMap;
   readonly target: RequirementTarget;
 };
-
-/**
- * The `ranks.challengeNames.*` key of a challenge leaderboard: the module
- * alone for its default board, the module and board otherwise. The same
- * key `requirementLabel` names a challenge requirement with.
- */
-function challengeNameKey(menuType: string, leaderboardKey: string): string {
-  return leaderboardKey === "default"
-    ? menuType
-    : `${menuType}_${leaderboardKey}`;
-}
 
 /**
  * Where one step of a journey leads: the screen the next-step button opens

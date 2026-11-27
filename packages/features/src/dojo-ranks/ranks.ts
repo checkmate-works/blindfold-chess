@@ -67,6 +67,22 @@ export type ChallengeScoreRequirement = {
 };
 
 /**
+ * The `ranks.challengeNames.*` message key of a challenge leaderboard: the
+ * module alone for its default board (`square_colors`), the module and the
+ * board otherwise (`legal_moves_king`). The web and the app name a
+ * `challenge_score` requirement, and the app its next challenge step, with
+ * this key, so a new leaderboard needs one message entry per dictionary.
+ */
+export function challengeNameKey(
+  menuType: string,
+  leaderboardKey: string,
+): string {
+  return leaderboardKey === "default"
+    ? menuType
+    : `${menuType}_${leaderboardKey}`;
+}
+
+/**
  * The kinds of exam problem a rank can set, in the order an exam lists them.
  * The URL segments, the problem lists and the request guards all read this
  * one list, so a kind added here reaches every one of them.

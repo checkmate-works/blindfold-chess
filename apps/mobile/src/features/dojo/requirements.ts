@@ -1,5 +1,6 @@
 import type { TFunction } from "i18next";
 import {
+  challengeNameKey,
   isRankSlug,
   type RankRequirement,
   type RankSlug,
@@ -78,10 +79,10 @@ export function requirementLabel(
       });
     case "challenge_score": {
       // ranks.challengeNames.square_colors, ranks.challengeNames.legal_moves_king, …
-      const nameKey =
-        requirement.leaderboardKey === "default"
-          ? requirement.menuType
-          : `${requirement.menuType}_${requirement.leaderboardKey}`;
+      const nameKey = challengeNameKey(
+        requirement.menuType,
+        requirement.leaderboardKey,
+      );
       return t("ranks.requirement.challengeScore", {
         challengeName: t(`ranks.challengeNames.${nameKey}`),
         minScore: requirement.minScore,

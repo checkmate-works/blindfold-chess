@@ -97,8 +97,8 @@
  *   19. `lib/db/data/ranks.ts` — a `challenge_score` entry in `ranksSeedData`
  *       (`menuType` is a plain string there, not typed).
  *   20. `messages/*.json` — `ranks.challengeNames.<key>` as built by
- *       `buildChallengeNameKey` in `dojo/ranks/_lib/requirement-items.ts`,
- *       which also has a hard-coded `legal_moves` / `route_planner` branch for
+ *       `challengeNameKey` in `@blindfold-chess/features/dojo-ranks`;
+ *       `dojo/ranks/_lib/requirement-items.ts` has a hard-coded `legal_moves` / `route_planner` branch for
  *       modules whose requirement links to a challenge with a query parameter.
  */
 
