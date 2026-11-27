@@ -1,20 +1,20 @@
 import { Stack } from "expo-router";
 import { useTranslation } from "react-i18next";
 
-import { HeaderTextButton } from "../../navigation/HeaderTextButton";
+import { ModalCloseButton } from "../../navigation/ModalCloseButton";
 import { useStackScreenOptions } from "../../navigation/stack-options";
 
 /**
  * The account offer after onboarding (`welcome`), sign-in, sign-up,
  * username setup and the user's records: a stack inside
  * one modal (the root stack presents `(account)` as `modal`, the iOS card
- * sheet). Each screen's header has a Close button that dismisses the whole
+ * sheet). Each screen's header has a × (`ModalCloseButton`) that dismisses the whole
  * modal; moving between sign-in and sign-up stays inside it.
  */
 export default function AccountLayout() {
   const { t } = useTranslation();
   const screenOptions = useStackScreenOptions();
-  const close = { headerLeft: () => <HeaderTextButton dismiss /> };
+  const close = { headerLeft: () => <ModalCloseButton /> };
   return (
     <Stack screenOptions={screenOptions}>
       <Stack.Screen
