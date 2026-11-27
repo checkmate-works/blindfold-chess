@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 
 import { executeMove, isCheckmateFen } from "../chess-core/moves";
 import { calculateAccuracy } from "../common/accuracy";
-import { CASTLED_KINGSIDE_FEN } from "../dojo-guides/positions";
 import {
   DOJO_EXAMS,
   type MemoryExamProblem,
@@ -15,16 +14,16 @@ import {
 const memory = DOJO_EXAMS["2kyu"]!.position_memory as MemoryExamProblem;
 const puzzle = DOJO_EXAMS["2kyu"]!.puzzle as PuzzleExamProblem;
 
-// Both castles with black's h-pawn left off the board.
-const MISSING_H_PAWN = "5rk1/5pp1/8/8/8/8/5PPP/5RK1 w - - 0 1";
+// The exam's position without the knight, the bishop and black's h-pawn.
+const MISSING_THREE = "5rk1/5pp1/8/8/8/6P1/5P1P/5RK1 w - - 0 1";
 // Only the kings, in place.
 const KINGS_ONLY = "6k1/8/8/8/8/8/8/6K1 w - - 0 1";
 
 describe("DOJO_EXAMS", () => {
-  it("sets 2kyu the guide's castled-kingside chunks to memorise for 30 seconds at 100%", () => {
+  it("sets 2kyu two castled kings of twelve pieces to memorise for 30 seconds at 100%", () => {
     expect(memory).toEqual({
       kind: "position_memory",
-      fen: CASTLED_KINGSIDE_FEN,
+      fen: "5rk1/5ppp/5n2/8/8/6P1/5PBP/5RK1 w - - 0 1",
       memorizeSeconds: 30,
       minAccuracy: 100,
     });
@@ -80,8 +79,8 @@ describe("gradeExamProblem: position memory", () => {
   it("gives the same accuracy the position-memory session shows for the same recreation", () => {
     const session = calculateAccuracy(
       memory.fen,
-      MISSING_H_PAWN,
-      { p: "pawn" },
+      MISSING_THREE,
+      { p: "pawn", n: "knight", b: "bishop" },
       {
         correct: (piece, square) => `${piece} on ${square}`,
         wrongPiece: (square) => `wrong on ${square}`,
@@ -89,9 +88,9 @@ describe("gradeExamProblem: position memory", () => {
         extra: (piece, square) => `extra ${piece} on ${square}`,
       },
     );
-    const grade = gradeExamProblem(memory, { fen: MISSING_H_PAWN });
+    const grade = gradeExamProblem(memory, { fen: MISSING_THREE });
     expect(grade.accuracy).toBe(session.accuracy);
-    expect(grade).toEqual({ passed: false, accuracy: 90 });
+    expect(grade).toEqual({ passed: false, accuracy: 75 });
   });
 
   it("fails a recreation below the required accuracy", () => {
@@ -101,12 +100,12 @@ describe("gradeExamProblem: position memory", () => {
   });
 
   it("passes at exactly the required accuracy and fails just under it", () => {
-    const answer = { fen: MISSING_H_PAWN };
+    const answer = { fen: MISSING_THREE };
     expect(
-      gradeExamProblem({ ...memory, minAccuracy: 90 }, answer).passed,
+      gradeExamProblem({ ...memory, minAccuracy: 75 }, answer).passed,
     ).toBe(true);
     expect(
-      gradeExamProblem({ ...memory, minAccuracy: 90.01 }, answer).passed,
+      gradeExamProblem({ ...memory, minAccuracy: 75.01 }, answer).passed,
     ).toBe(false);
   });
 

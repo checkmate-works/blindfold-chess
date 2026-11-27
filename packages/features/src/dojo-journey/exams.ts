@@ -10,13 +10,12 @@
  * app and the server all read the same problem, and changing one is a
  * reviewed code change.
  *
- * 2kyu's exam: recreate both sides' kingside castle from memory (30 seconds
- * to look, every piece in place to pass), and solve a two-move mate (a queen
+ * 2kyu's exam: recreate two castled kings from memory (30 seconds to look,
+ * every piece in place to pass), and solve a two-move mate (a queen
  * sacrifice into a smothered mate).
  */
 import { validateFenFormat } from "../chess-core/fen-pure";
 import { calculateAccuracy } from "../common/accuracy";
-import { CASTLED_KINGSIDE_FEN } from "../dojo-guides/positions";
 import {
   type EarnedRankSlug,
   type ExamProblemKind,
@@ -67,12 +66,12 @@ export const DOJO_EXAMS: Readonly<
   "2kyu": {
     position_memory: {
       kind: "position_memory",
-      // The 2kyu guide's chunking example: ten pieces that read as two
-      // castled kings rather than ten separate facts. 2kyu is about
-      // memorising in chunks, so the exam asks for exactly the position the
-      // guide teaches with, and with only two chunks to hold, a pass means
-      // every piece in place.
-      fen: CASTLED_KINGSIDE_FEN,
+      // Two castled kings, each with one piece more than the 2kyu guide's
+      // example (a fianchettoed bishop for white, a knight on f6 for black).
+      // The guide's own position stays a practice problem; the exam asks
+      // for the same chunking on twelve pieces the player has not seen, and
+      // with only two chunks to hold, a pass means every piece in place.
+      fen: "5rk1/5ppp/5n2/8/8/6P1/5PBP/5RK1 w - - 0 1",
       memorizeSeconds: 30,
       minAccuracy: 100,
     },
