@@ -370,6 +370,7 @@
       "draw": "Empate",
       "check": "Xeque!",
       "noMoves": "Ainda não há jogadas",
+      "moves": "Movimentos",
       "invalidMove": "Jogada inválida",
       "showBoard": "Mostrar tabuleiro",
       "aiPlayed": "A IA jogou {{move}}",

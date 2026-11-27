@@ -370,6 +370,7 @@
       "draw": "引き分け",
       "check": "チェック！",
       "noMoves": "まだ手がありません",
+      "moves": "棋譜",
       "invalidMove": "無効な手です",
       "showBoard": "盤面を表示",
       "aiPlayed": "AIが{{move}}を指しました",

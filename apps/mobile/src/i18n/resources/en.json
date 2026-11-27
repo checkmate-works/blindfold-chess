@@ -370,6 +370,7 @@
       "draw": "Draw",
       "check": "Check!",
       "noMoves": "No moves yet",
+      "moves": "Moves",
       "invalidMove": "Invalid move",
       "showBoard": "Show Board",
       "aiPlayed": "AI played {{move}}",

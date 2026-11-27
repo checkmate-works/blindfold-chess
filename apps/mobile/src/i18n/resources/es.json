@@ -370,6 +370,7 @@
       "draw": "Tablas",
       "check": "¡Jaque!",
       "noMoves": "Aún no hay jugadas",
+      "moves": "Movimientos",
       "invalidMove": "Jugada no válida",
       "showBoard": "Mostrar tablero",
       "aiPlayed": "La IA jugó {{move}}",

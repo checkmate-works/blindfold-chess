@@ -143,6 +143,11 @@ header style (page-coloured, no hairline, chevron-only back).
   then the typed move with backspace, clear and submit. Each key appends to
   one string (`useNotationInput`'s text-builder actions), so a
   disambiguated move such as `Nbd2` is typed like any other.
+- **The AI game's moves are not on the screen.** A move list always in
+  view is the game written out, which blindfold play takes away, so the
+  session draws none: the list icon in its top row opens `MoveHistory`
+  (a scoresheet, one row per move number) in a `BottomSheet`, and the
+  player looks only when they choose to, as with the board.
 - **Picture boards** — a board that explains an answer and takes no tap on
   its squares (diagonal quiz's `DiagonalBoard`, route planner's
   `RouteBoard`, quadrants' `QuadrantBoard`) — are `StaticBoard`
