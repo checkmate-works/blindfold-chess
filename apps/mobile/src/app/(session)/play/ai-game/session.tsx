@@ -27,7 +27,6 @@ import {
   ButtonInput,
   MoveHistory,
   GameInfo,
-  Spinner,
 } from "../../../../features/ai-game/components";
 import {
   useAiVersus,
@@ -385,38 +384,26 @@ function AiGameBoard({ setup }: { setup: GameSetup }) {
           </Text>
         )}
 
-        {/* Input area */}
-        {game.gameStatus === "in_progress" &&
-          (game.isPlayerTurn ? (
-            <ButtonInput
-              fen={game.currentFen}
-              onSubmit={game.submitMove}
-              disabled={ai.isLoading || game.isAiThinking}
-            />
-          ) : game.aiMoveFailed ? (
-            <View style={styles.retryContainer}>
-              <Text style={[styles.errorText, { color: colors.destructive }]}>
-                {t("aiGame.session.aiMoveFailed")}
-              </Text>
-              <Button
-                title={t("aiGame.session.retry")}
-                icon="refresh"
-                onPress={game.retryAiMove}
-              />
-            </View>
-          ) : (
-            <View style={styles.aiThinkingContainer}>
-              <Text
-                style={[
-                  styles.aiThinkingText,
-                  { color: colors.mutedForeground },
-                ]}
-              >
-                {t("aiGame.session.aiThinking")}
-              </Text>
-              <Spinner color={colors.primary} />
-            </View>
-          ))}
+        {/* The keypad stays in place through the AI's turn, only disabled,
+            as on the web: taking it away while the AI thinks moved the
+            buttons below it up and back down on every move. That the AI is
+            working is said on the board and in the top row instead. */}
+        {game.gameStatus === "in_progress" && (
+          <ButtonInput
+            fen={game.currentFen}
+            onSubmit={game.submitMove}
+            disabled={ai.isLoading || !game.isPlayerTurn || game.isAiThinking}
+          />
+        )}
+
+        {/* The failure itself reads in the top row; this adds the way out. */}
+        {game.gameStatus === "in_progress" && game.aiMoveFailed && (
+          <Button
+            title={t("aiGame.session.retry")}
+            icon="refresh"
+            onPress={game.retryAiMove}
+          />
+        )}
 
         {game.gameStatus === "in_progress" && (
           <View style={styles.actionRow}>
@@ -507,11 +494,6 @@ const styles = StyleSheet.create({
     alignSelf: "stretch",
     gap: spacing.md,
   },
-  retryContainer: {
-    alignItems: "center",
-    gap: spacing.md,
-    paddingVertical: spacing.lg,
-  },
   actionRow: {
     flexDirection: "row",
     gap: spacing.md,
@@ -526,15 +508,5 @@ const styles = StyleSheet.create({
   gameOverText: {
     fontSize: fontSize.xxl,
     fontWeight: fontWeight.bold,
-  },
-  aiThinkingContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: spacing.sm,
-    paddingVertical: spacing.lg,
-  },
-  aiThinkingText: {
-    fontSize: fontSize.md,
   },
 });
