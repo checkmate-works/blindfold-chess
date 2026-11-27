@@ -25,9 +25,10 @@ replaced by the platform's own parts or their common app equivalents.
   is also the onboarding gate: `/` is the home tab, and a first launch is
   redirected to `/onboarding`. `NativeTabs` is unstable API: re-check its
   props whenever the Expo SDK changes. Five is the iOS bar's limit before it
-  folds the rest into "More", so Settings is not a tab: it is
-  `settings/index.tsx` on the root stack, opened from the gear in the home
-  header (`TabStack`'s `headerRight`).
+  folds the rest into "More", so Settings is not a tab: the person icon in
+  the home header (`TabStack`'s `headerRight`) opens mypage
+  (`(account)/mypage.tsx`), and settings (`(account)/settings.tsx`) is a row
+  there, inside the account modal.
 - Detail screens are pushed on the root stack, above the tabs, so the tab
   bar hides on them: each module's setup at `practice/<route>/index.tsx`
   (URL `/practice/<route>`), the AI-game setup at `play/ai-game`, the saved
@@ -350,9 +351,16 @@ database. Sign-in calls Supabase Auth directly; sign-up goes through
     pages are counted by `features/guides/reading-progress.ts`, which the
     guide screen reads too: a page is read when any rank's journey has it
     done, since the unranked guide belongs to 5kyu's.
-- `(account)` screens: welcome (the account offer that ends onboarding),
-  sign-in, sign-up, setup-username, records (the user's own ranks).
-  Settings has the Account section.
+- `(account)` screens: mypage (the home header's entry: the username,
+  rank, level and EXP and a row into records for a player with a username;
+  the sign-up card over a faded sample for anyone else; settings for
+  everyone), settings (with the Account section), welcome (the account
+  offer that ends onboarding), sign-in, sign-up, setup-username, records
+  (the user's own ranks). Whichever screen opens the modal gets the ×; the
+  layout decides from the screen's place in the stack, since records and
+  sign-up open both ways. A root-stack screen pushed from inside the modal
+  opens under it on iOS, so a row that leaves for one (the tutorial) closes
+  the modal first.
 - **One-tap sign-in** (`auth/oauth.ts`, `features/account/OAuthButtons.tsx`):
   Sign in with Apple through the native sheet and `signInWithIdToken` (iOS
   only), Google through Supabase's hosted page in an in-app browser session

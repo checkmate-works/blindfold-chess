@@ -39,19 +39,39 @@
       "guideContinue": "教本の続きを読む",
       "challenge": "{{challengeName}}に挑戦する",
       "choosePractice": "自分で練習を選ぶ"
-    },
-    "recordCta": {
+    }
+  },
+  "recordCta": {
+    "signUpButton": "無料登録",
+    "signIn": "アカウントをお持ちの方はログイン",
+    "usernameButton": "ユーザー名を決める",
+    "home": {
       "signUp": {
         "message": "無料登録で、チャレンジの成績と段位をアカウントに残せます",
-        "description": "経験値やレベルも貯まり、Web 版でも同じアカウントで続きから遊べます。",
-        "button": "無料登録"
+        "description": "経験値やレベルも貯まり、Web 版でも同じアカウントで続きから遊べます。"
       },
-      "signIn": "アカウントをお持ちの方はログイン",
       "username": {
         "message": "ユーザー名を決めて、登録を済ませましょう",
-        "description": "ランキングや Web 版のマイページに表示される名前です。",
-        "button": "ユーザー名を決める"
+        "description": "ランキングや Web 版のマイページに表示される名前です。"
       }
+    },
+    "mypage": {
+      "signUp": {
+        "message": "無料登録すると、ここにあなたの記録が並びます",
+        "description": "段級位・レベル・経験値と、チャレンジのランキングでの順位をここでまとめて確かめられます。"
+      },
+      "username": {
+        "message": "ユーザー名を決めると、ここにあなたの記録が並びます",
+        "description": "段級位・レベル・経験値と、チャレンジのランキングでの順位をここでまとめて確かめられます。"
+      }
+    }
+  },
+  "mypage": {
+    "title": "マイページ",
+    "loadFailed": "アカウントを読み込めませんでした。",
+    "retry": "もう一度読み込む",
+    "preview": {
+      "username": "あなたの名前"
     }
   },
   "practice": {

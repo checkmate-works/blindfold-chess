@@ -5,8 +5,10 @@ import { HeaderIconButton } from "../../../navigation/HeaderIconButton";
 import { TabStack } from "../../../navigation/stack-options";
 
 /**
- * The home tab's stack. Its header carries the gear into settings, which
- * has no tab of its own (see `app/settings/index.tsx`).
+ * The home tab's stack. Its header carries the person icon into mypage
+ * (`(account)/mypage`), the one entry to the account, the user's records and
+ * settings, as in the mahjong app. Settings has no tab of its own and is
+ * reached from mypage.
  */
 export default function Layout() {
   const { t } = useTranslation();
@@ -16,10 +18,10 @@ export default function Layout() {
       titleKey="tabs.home"
       headerRight={() => (
         <HeaderIconButton
-          icon="settings-outline"
-          accessibilityLabel={t("tabs.settings")}
-          onPress={() => router.push("/settings")}
-          testID="home-settings"
+          icon="person-circle-outline"
+          accessibilityLabel={t("mypage.title")}
+          onPress={() => router.push("/mypage")}
+          testID="home-mypage"
         />
       )}
     />

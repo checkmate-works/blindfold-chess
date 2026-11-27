@@ -1,42 +1,59 @@
 import { Stack } from "expo-router";
+import type { ComponentProps } from "react";
 import { useTranslation } from "react-i18next";
 
 import { ModalCloseButton } from "../../navigation/ModalCloseButton";
 import { useStackScreenOptions } from "../../navigation/stack-options";
 
+/** The function form of a screen's `options`. */
+type ScreenOptionsFn = Extract<
+  ComponentProps<typeof Stack.Screen>["options"],
+  (...args: never[]) => unknown
+>;
+
 /**
- * The account offer after onboarding (`welcome`), sign-in, sign-up,
- * username setup and the user's records: a stack inside
- * one modal (the root stack presents `(account)` as `modal`, the iOS card
- * sheet). Each screen's header has a × (`ModalCloseButton`) that dismisses the whole
- * modal; moving between sign-in and sign-up stays inside it.
+ * The account modal: mypage, settings, the account offer after onboarding
+ * (`welcome`), sign-in, sign-up, username setup and the user's records, as a
+ * stack inside one modal (the root stack presents `(account)` as `modal`,
+ * the iOS card sheet). Screens inside it push onto this stack without
+ * closing the modal.
+ *
+ * Whichever screen opens the modal shows a × (`ModalCloseButton`) that
+ * dismisses the whole modal; a screen pushed on top of it gets the OS back
+ * chevron instead. The same screen can be either — records opens from the
+ * home tab's progress card and from mypage — so the layout decides from the
+ * screen's place in the stack rather than per screen.
  */
 export default function AccountLayout() {
   const { t } = useTranslation();
   const screenOptions = useStackScreenOptions();
-  const close = { headerLeft: () => <ModalCloseButton /> };
+  const titled =
+    (title: string): ScreenOptionsFn =>
+    ({ route, navigation }) =>
+      navigation.getState().routes[0]?.key === route.key
+        ? { title, headerLeft: () => <ModalCloseButton /> }
+        : { title };
   return (
     <Stack screenOptions={screenOptions}>
+      <Stack.Screen name="mypage" options={titled(t("mypage.title"))} />
+      <Stack.Screen name="settings" options={titled(t("tabs.settings"))} />
       <Stack.Screen
         name="welcome"
-        options={{ title: t("account.welcome.title"), ...close }}
+        options={titled(t("account.welcome.title"))}
       />
       <Stack.Screen
         name="sign-in"
-        options={{ title: t("account.signIn.title"), ...close }}
+        options={titled(t("account.signIn.title"))}
       />
       <Stack.Screen
         name="sign-up"
-        options={{ title: t("account.signUp.title") }}
+        options={titled(t("account.signUp.title"))}
       />
       <Stack.Screen
         name="setup-username"
-        options={{ title: t("account.setupUsername.title"), ...close }}
+        options={titled(t("account.setupUsername.title"))}
       />
-      <Stack.Screen
-        name="records"
-        options={{ title: t("records.title"), ...close }}
-      />
+      <Stack.Screen name="records" options={titled(t("records.title"))} />
     </Stack>
   );
 }

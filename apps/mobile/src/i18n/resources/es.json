@@ -39,19 +39,39 @@
       "guideContinue": "Seguir con la guía",
       "challenge": "Prueba {{challengeName}}",
       "choosePractice": "Elegir una práctica por tu cuenta"
-    },
-    "recordCta": {
+    }
+  },
+  "recordCta": {
+    "signUpButton": "Regístrate gratis",
+    "signIn": "¿Ya tienes una cuenta? Inicia sesión",
+    "usernameButton": "Elegir nombre de usuario",
+    "home": {
       "signUp": {
         "message": "Regístrate gratis para guardar tus resultados de desafíos y tu rango en tu cuenta",
-        "description": "También ganas EXP y niveles, y puedes continuar en la web con la misma cuenta.",
-        "button": "Regístrate gratis"
+        "description": "También ganas EXP y niveles, y puedes continuar en la web con la misma cuenta."
       },
-      "signIn": "¿Ya tienes una cuenta? Inicia sesión",
       "username": {
         "message": "Elige un nombre de usuario para terminar el registro",
-        "description": "Es el nombre que aparece en la clasificación y en tu página de la web.",
-        "button": "Elegir nombre de usuario"
+        "description": "Es el nombre que aparece en la clasificación y en tu página de la web."
       }
+    },
+    "mypage": {
+      "signUp": {
+        "message": "Regístrate gratis y tus registros aparecerán aquí",
+        "description": "Consulta tu rango, nivel, EXP y tu posición en las clasificaciones de desafíos en un solo lugar."
+      },
+      "username": {
+        "message": "Elige un nombre de usuario y tus registros aparecerán aquí",
+        "description": "Consulta tu rango, nivel, EXP y tu posición en las clasificaciones de desafíos en un solo lugar."
+      }
+    }
+  },
+  "mypage": {
+    "title": "Mi página",
+    "loadFailed": "No se pudo cargar tu cuenta.",
+    "retry": "Reintentar",
+    "preview": {
+      "username": "tu_nombre"
     }
   },
   "practice": {
