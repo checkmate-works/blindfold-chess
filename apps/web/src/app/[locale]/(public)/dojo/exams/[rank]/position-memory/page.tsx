@@ -10,10 +10,12 @@
  *
  * @flow
  * 1. Unknown rank, or a rank without this problem → 404.
- * 2. The page opens on the problem's condition and a start button, laid out
- *    like a free-play problem's detail page (`practice/position-memory/
- *    custom/[token]`) minus its board and piece list: either would let the
- *    player study the position past the memorize seconds.
+ * 2. The page opens laid out like a saved problem's detail page
+ *    (`practice/position-memory/[id]`): the condition as its description,
+ *    the piece list, the collapsible board, the patterns useful for solving
+ *    (constants of the exam, not rows in `chunks`) and a start button.
+ *    Like that page it shows the position before the attempt; the memorize
+ *    seconds limit the attempt, not the study.
  * 3. Memorize → recreate, as in the single-position practice session (no
  *    pause: the seconds are part of the problem).
  * 4. The recreated FEN goes to `submitExamAnswer`. Signed out, the browser
@@ -28,7 +30,10 @@ import { notFound } from 'next/navigation';
 import { SUPPORTED_LOCALES } from '@/config';
 
 import { PositionDetailLayout } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionDetailLayout';
+import { PositionPeekBoard } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionPeekBoard';
+import { PiecesInfo } from '@/app/[locale]/(public)/practice/_components/PiecesInfo';
 import { SectionTitle } from '@/app/[locale]/_components';
+import { RelatedTags } from '@/app/[locale]/_components/RelatedTags';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -102,9 +107,26 @@ export default async function DojoExamPositionMemoryPage({ params }: Props) {
         intro={
           <>
             <SectionTitle>{t('practice.positionMemory.detail.descriptionSection')}</SectionTitle>
-            <div className="rounded-lg border border-border bg-card p-4">
-              <p className="text-sm text-foreground">{rule}</p>
-            </div>
+            <p className="text-foreground">{rule}</p>
+            <PiecesInfo fen={problem.fen} showSideToMove={false} />
+            <PositionPeekBoard fen={problem.fen} />
+            <RelatedTags
+              themes={[]}
+              chunks={problem.patterns.map((pattern) => ({
+                id: pattern.key,
+                // dojoExam.patterns.<ExamPatternKey>: kingside_castle, kingside_fianchetto
+                title: t(`dojoExam.patterns.${pattern.key}.title`),
+                description: t(`dojoExam.patterns.${pattern.key}.description`),
+                representativeFen: pattern.fen,
+              }))}
+              locale={locale}
+              labels={{
+                sectionTitle: (count) =>
+                  t('practice.positionMemory.detail.usefulSection', { count }),
+                badgeTheme: t('practice.tags.badge.theme'),
+                badgeChunk: t('practice.tags.badge.chunk'),
+              }}
+            />
           </>
         }
       />

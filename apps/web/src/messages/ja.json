@@ -6085,7 +6085,17 @@
     "passedUnrecorded": "合格ラインに届きました（記録なし）",
     "signInNote": "ログインすると合格が記録されます。",
     "lockedNote": "{prevRankName}を取得すると、この課題の合格が記録されます。",
-    "recordFailed": "記録できませんでした。もう一度お試しください。"
+    "recordFailed": "記録できませんでした。もう一度お試しください。",
+    "patterns": {
+      "kingside_castle": {
+        "title": "キングサイドのキャスリング",
+        "description": "キング、ルーク、その前に並ぶ3つのポーンを、駒5つではなくひとつの形として覚えます。"
+      },
+      "kingside_fianchetto": {
+        "title": "キングサイドのフィアンチェット",
+        "description": "g3に突いたポーンの奥、g2にビショップを置いた形です。f2・h2のポーンと合わせてひとつの形として覚えます。"
+      }
+    }
   },
   "rankAchievement": {
     "title": "おめでとう！",

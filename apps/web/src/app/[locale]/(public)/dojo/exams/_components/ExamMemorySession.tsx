@@ -26,9 +26,8 @@ type Props = {
   /** Name of the rank a player has to hold before a pass is recorded. */
   prevRankName: string;
   /**
-   * What the page shows before the attempt starts: the problem's condition,
-   * rendered on the server. It never shows the position or lists its pieces,
-   * since either would let the player study it past the memorize seconds.
+   * What the page shows above the start button before the attempt starts —
+   * the problem's description section, rendered on the server.
    */
   intro: ReactNode;
 };

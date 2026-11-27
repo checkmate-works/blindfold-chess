@@ -6085,7 +6085,17 @@
     "passedUnrecorded": "You reached the pass mark (not recorded)",
     "signInNote": "Sign in to have your pass recorded.",
     "lockedNote": "Your pass is recorded once you hold {prevRankName}.",
-    "recordFailed": "Could not record the result. Please try again."
+    "recordFailed": "Could not record the result. Please try again.",
+    "patterns": {
+      "kingside_castle": {
+        "title": "Kingside castle",
+        "description": "The king, the rook and the three pawns in front of them, held as one shape rather than five pieces."
+      },
+      "kingside_fianchetto": {
+        "title": "Kingside fianchetto",
+        "description": "The bishop on g2 behind the pawn pushed to g3. Together with the f2 and h2 pawns it is one shape to hold."
+      }
+    }
   },
   "rankAchievement": {
     "title": "Rank Achieved!",
