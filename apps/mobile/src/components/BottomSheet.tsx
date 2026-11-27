@@ -1,29 +1,36 @@
-import { useEffect, useRef, useState } from "react";
+import { BottomSheet as NativeBottomSheet, RNHostView } from "@expo/ui";
 import type { ReactNode } from "react";
 import {
-  Animated,
-  Easing,
-  Modal,
-  PanResponder,
-  Pressable,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
   View,
   useWindowDimensions,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useTheme, fontSize, fontWeight, spacing } from "../theme";
 
+/**
+ * The tall sheet's height, as a share of the screen, and the cap on a sheet
+ * sized to its content. Some of the screen stays visible above it, so it
+ * reads as a layer laid over the screen for a moment.
+ */
+const TALL_HEIGHT_RATIO = 0.85;
+
 type BottomSheetProps = {
   visible: boolean;
+  /** A tap on the backdrop, a drag down, or the Android back button. */
   onClose: () => void;
   /** Heading in the sheet's top row. */
   title?: string;
   /**
-   * `content` sizes to the content (up to 60% of the screen) — option lists
-   * and short notes. `tall` takes 90% — help pages and longer text.
+   * - `content` — as tall as the content, up to 85% of the screen. Option
+   *   lists and short notes.
+   * - `tall` — a fixed height the body fills, so switching what is inside
+   *   (help pages) does not move the top edge. 85% of the screen on iOS,
+   *   full screen on Android (a Material 3 sheet rests only at half and
+   *   full, and half is too cramped for a page of text).
    */
   size?: "content" | "tall";
   /** Pinned under the scrolling body (e.g. a primary button). */
@@ -31,28 +38,39 @@ type BottomSheetProps = {
   children: ReactNode;
 };
 
-/** Drag distance (pt) or fling speed past which releasing the grabber closes. */
-const DISMISS_DISTANCE = 120;
-const DISMISS_VELOCITY = 1.2;
-
 /**
- * A sheet that slides up from the bottom over a dimmed backdrop — the
- * half-modal most apps use for option lists, short explanations and help.
+ * A sheet that slides up from the bottom — the half-modal most apps use for
+ * option lists, short explanations and help.
  *
  * @description
- * Closes on a tap on the backdrop, on the Android back button
- * (`onRequestClose`) and on dragging the top row (grabber and title) down.
- * Only the top row takes the drag, so the body can scroll freely; this is
- * how the system sheets behave once their content scrolls.
+ * The sheet is the platform's own (`@expo/ui`'s `BottomSheet`: SwiftUI's
+ * `.sheet` on iOS, Material 3's `ModalBottomSheet` on Android), so the drag
+ * down, the fling, pulling down once the body has scrolled back to the top,
+ * the closing motion, the backdrop and the grabber all behave the way each
+ * platform's own sheets do. It replaced a `Modal` + `PanResponder` sheet
+ * that only took the drag on its top row (pulling the body did nothing) and
+ * closed on a fixed-time easing instead of carrying on at the speed the
+ * finger let go.
  *
- * Built on `Modal` + `Animated` rather than the platform sheet so it can sit
- * inside any screen — including the full-screen session modal — and size to
- * its content on both platforms (the Android form sheet only has half and
- * full heights). For a sheet that is a route of its own, use the root
- * stack's `formSheet` presentation instead.
+ * It is a component opened in place with `visible`, not a route: expo-router's
+ * `formSheet` presentation is for a screen of its own, and does not suit a
+ * picker that opens over its row and hands a value back. It works inside the
+ * full-screen session modal too.
  *
- * The sheet itself has no border or shadow; the dimmed backdrop lifts it,
- * matching the flat style of the rest of the app.
+ * The React Native content goes into the native sheet through `RNHostView`.
+ * Sized to its content, `matchContents` hands the content's Yoga height to
+ * the sheet; on iOS a fractional detent does not pass its height down to the
+ * content (it lays out at full height and the footer falls off the sheet),
+ * so the tall sheet also sizes from its content, which fixes its own height.
+ * On Android the tall sheet is full screen and the content fills it.
+ *
+ * The sheet leaves room for the home indicator and the navigation bar
+ * itself, so adding `useSafeAreaInsets().bottom` would double it. It also
+ * moves out of the keyboard's way itself.
+ *
+ * The backdrop is drawn by the OS and takes no accessibility label; closing
+ * is the platform's (VoiceOver's two-finger scrub, Android's back), so a
+ * sheet's content should still offer a close or done button of its own.
  */
 export function BottomSheet({
   visible,
@@ -63,114 +81,32 @@ export function BottomSheet({
   children,
 }: BottomSheetProps) {
   const { colors } = useTheme();
-  const insets = useSafeAreaInsets();
-  const { height: windowHeight } = useWindowDimensions();
-  // Stays mounted through the closing animation, then unmounts the Modal.
-  const [mounted, setMounted] = useState(visible);
-  const translateY = useRef(new Animated.Value(windowHeight)).current;
-  const backdrop = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    if (visible) {
-      setMounted(true);
-      translateY.setValue(windowHeight);
-      Animated.parallel([
-        Animated.timing(translateY, {
-          toValue: 0,
-          duration: 280,
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
-        }),
-        Animated.timing(backdrop, {
-          toValue: 1,
-          duration: 280,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    } else if (mounted) {
-      Animated.parallel([
-        Animated.timing(translateY, {
-          toValue: windowHeight,
-          duration: 220,
-          easing: Easing.in(Easing.cubic),
-          useNativeDriver: true,
-        }),
-        Animated.timing(backdrop, {
-          toValue: 0,
-          duration: 220,
-          useNativeDriver: true,
-        }),
-      ]).start(({ finished }) => {
-        // Reopening mid-close starts the open animation on the same values,
-        // which stops this one and calls back with `finished: false`;
-        // unmounting then would drop the Modal while it is visible.
-        if (finished) setMounted(false);
-      });
-    }
-    // `mounted` is read only to skip the close animation on first render.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visible, windowHeight, translateY, backdrop]);
-
-  const onCloseRef = useRef(onClose);
-  onCloseRef.current = onClose;
-  const panResponder = useRef(
-    PanResponder.create({
-      onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dy) > 4,
-      onPanResponderMove: (_, g) => {
-        translateY.setValue(Math.max(0, g.dy));
-      },
-      onPanResponderRelease: (_, g) => {
-        if (g.dy > DISMISS_DISTANCE || g.vy > DISMISS_VELOCITY) {
-          onCloseRef.current();
-        } else {
-          Animated.spring(translateY, {
-            toValue: 0,
-            bounciness: 4,
-            useNativeDriver: true,
-          }).start();
-        }
-      },
-    }),
-  ).current;
-
-  if (!mounted) return null;
-
-  const maxHeight = windowHeight * (size === "tall" ? 0.9 : 0.6);
+  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
+  const sizesFromContent = Platform.OS === "ios" || size === "content";
 
   return (
-    <Modal
-      visible
-      transparent
-      animationType="none"
-      statusBarTranslucent
-      navigationBarTranslucent
-      onRequestClose={onClose}
+    <NativeBottomSheet
+      isPresented={visible}
+      onDismiss={onClose}
+      snapPoints={sizesFromContent ? undefined : ["full"]}
+      contentPadding={0}
+      containerColor={colors.card}
     >
-      <Animated.View
-        style={[styles.backdrop, { opacity: backdrop }]}
-        pointerEvents="box-none"
-      >
-        <Pressable
-          style={StyleSheet.absoluteFill}
-          onPress={onClose}
-          accessibilityRole="button"
-          accessibilityLabel={title}
-        />
-      </Animated.View>
-      <Animated.View
-        accessibilityViewIsModal
-        style={[
-          styles.sheet,
-          {
-            backgroundColor: colors.card,
-            paddingBottom: Math.max(insets.bottom, spacing.md),
-            transform: [{ translateY }],
-          },
-          size === "tall" ? { height: maxHeight } : { maxHeight },
-        ]}
-      >
-        <View {...panResponder.panHandlers} style={styles.dragArea}>
-          <View style={[styles.grabber, { backgroundColor: colors.border }]} />
+      <RNHostView matchContents={sizesFromContent}>
+        <View
+          accessibilityViewIsModal
+          style={[
+            styles.sheet,
+            // Sized to its content, the width is measured as fit-content too
+            // and paragraphs would run sideways without wrapping.
+            { width: windowWidth },
+            size === "content"
+              ? { maxHeight: windowHeight * TALL_HEIGHT_RATIO }
+              : sizesFromContent
+                ? { height: windowHeight * TALL_HEIGHT_RATIO }
+                : styles.fill,
+          ]}
+        >
           {title ? (
             <Text
               accessibilityRole="header"
@@ -179,61 +115,43 @@ export function BottomSheet({
               {title}
             </Text>
           ) : null}
+          <ScrollView
+            style={size === "content" ? styles.bodyContent : styles.fill}
+            contentContainerStyle={styles.body}
+          >
+            {children}
+          </ScrollView>
+          {footer ? <View style={styles.footer}>{footer}</View> : null}
         </View>
-        <ScrollView
-          style={size === "tall" ? styles.bodyTall : undefined}
-          contentContainerStyle={styles.body}
-          bounces={false}
-        >
-          {children}
-        </ScrollView>
-        {footer ? <View style={styles.footer}>{footer}</View> : null}
-      </Animated.View>
-    </Modal>
+      </RNHostView>
+    </NativeBottomSheet>
   );
 }
 
 const styles = StyleSheet.create({
-  backdrop: {
-    ...StyleSheet.absoluteFill,
-    backgroundColor: "rgba(0,0,0,0.4)",
-  },
   sheet: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    overflow: "hidden",
-  },
-  dragArea: {
-    alignItems: "center",
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.sm,
-    paddingHorizontal: spacing.lg,
-  },
-  grabber: {
-    width: 36,
-    height: 5,
-    borderRadius: 3,
-    marginBottom: spacing.sm,
+    // The OS draws the grabber; the title sits under it.
+    paddingTop: Platform.OS === "ios" ? spacing.lg : 0,
+    paddingBottom: spacing.md,
+    gap: spacing.sm,
   },
   title: {
     fontSize: fontSize.lg,
     fontWeight: fontWeight.semibold,
-    alignSelf: "stretch",
     textAlign: "center",
+    paddingHorizontal: spacing.lg,
   },
-  bodyTall: {
-    flex: 1,
+  bodyContent: {
+    flexGrow: 0,
+    flexShrink: 1,
   },
   body: {
     paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.md,
   },
   footer: {
     paddingHorizontal: spacing.lg,
-    paddingTop: spacing.sm,
+  },
+  fill: {
+    flex: 1,
   },
 });
