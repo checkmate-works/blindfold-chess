@@ -5,6 +5,7 @@ import 'server-only';
 import { db, puzzleSolutions } from '@/lib/db';
 import { featuredPuzzles, positions } from '@/lib/db/schema';
 import { getDailyPuzzle } from '@/lib/positions/queries';
+import { isValidUUID } from '@/lib/validations/uuid';
 
 /**
  * The puzzles the app offers: the Daily Puzzle and the rest of the featured
@@ -41,11 +42,9 @@ export async function listMobilePuzzles(): Promise<{
   };
 }
 
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
 /** A featured puzzle with its solution lines, or null if it is not one. */
 export async function getMobilePuzzle(id: string): Promise<MobilePuzzle | null> {
-  if (!UUID_RE.test(id)) return null;
+  if (!isValidUUID(id)) return null;
   const [row] = await db
     .select({
       id: positions.id,

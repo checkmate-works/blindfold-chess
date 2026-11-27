@@ -6,7 +6,7 @@ import { validateFenSemantic } from '@blindfold-chess/features/chess-core';
 import { STARTING_FEN } from '@blindfold-chess/features/chess-core/fen';
 
 import { MiniBoard } from '@/lib/positions/ui/MiniBoard';
-import { FEN_MAX_LENGTH } from '@/lib/post-fens/constants';
+import { FEN_CAPTION_MAX_LENGTH, FEN_MAX_LENGTH } from '@/lib/post-fens/constants';
 
 import type { ValidationStatus } from './attachment-validation-status';
 
@@ -95,7 +95,7 @@ export function FenAttachmentInput({ onChange, onModeChange, onValidationStatusC
         id="attachmentFenCaption"
         name="attachmentFenCaption"
         type="text"
-        maxLength={200}
+        maxLength={FEN_CAPTION_MAX_LENGTH}
         placeholder=""
         value={caption}
         onChange={(e) => setCaption(e.target.value)}
