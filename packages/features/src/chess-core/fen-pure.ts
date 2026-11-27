@@ -356,64 +356,30 @@ export function fenToPieceList(fen: string): {
   white: string[];
   black: string[];
 } {
-  const PIECE_ORDER: Record<string, number> = {
-    K: 0,
-    Q: 1,
-    R: 2,
-    B: 3,
-    N: 4,
-    P: 5,
+  const PIECE_ORDER: Record<PieceType, number> = {
+    k: 0,
+    q: 1,
+    r: 2,
+    b: 3,
+    n: 4,
+    p: 5,
   };
 
-  const piecePlacement = fen.split(" ")[0];
-  const white: string[] = [];
-  const black: string[] = [];
+  // Sorted by piece type, then alphabetically by square within a type.
+  const sorted = [...fenToPlacements(fen)].sort((a, b) =>
+    PIECE_ORDER[a.type] !== PIECE_ORDER[b.type]
+      ? PIECE_ORDER[a.type] - PIECE_ORDER[b.type]
+      : a.square.localeCompare(b.square),
+  );
 
-  const ranks = piecePlacement.split("/");
-  for (let rankIdx = 0; rankIdx < ranks.length; rankIdx++) {
-    const rankNumber = 8 - rankIdx; // rank 8 at top
-    let fileIdx = 0;
+  const labelsOf = (color: PieceColor): string[] =>
+    sorted
+      .filter((piece) => piece.color === color)
+      .map(({ type, square }) =>
+        type === "p" ? square : `${type.toUpperCase()}${square}`,
+      );
 
-    for (const char of ranks[rankIdx]) {
-      if (/\d/.test(char)) {
-        fileIdx += parseInt(char);
-      } else {
-        const file = String.fromCharCode("a".charCodeAt(0) + fileIdx);
-        const square = `${file}${rankNumber}`;
-        const upper = char.toUpperCase();
-        const label = upper === "P" ? square : `${upper}${square}`;
-
-        if (char === char.toUpperCase()) {
-          white.push(label);
-        } else {
-          black.push(label);
-        }
-        fileIdx++;
-      }
-    }
-  }
-
-  // A label is a bare square for a pawn ("e4") and letter + square otherwise
-  // ("Nf3"); the labels above are only ever built in those two shapes.
-  const parseLabel = (label: string) =>
-    label.length === 2
-      ? { order: PIECE_ORDER.P, square: label }
-      : { order: PIECE_ORDER[label[0]], square: label.slice(1) };
-
-  const sortPieces = (pieces: readonly string[]): string[] => {
-    return [...pieces].sort((a, b) => {
-      const pieceA = parseLabel(a);
-      const pieceB = parseLabel(b);
-      if (pieceA.order !== pieceB.order) return pieceA.order - pieceB.order;
-      // Within same piece type, sort alphabetically by square
-      return pieceA.square.localeCompare(pieceB.square);
-    });
-  };
-
-  return {
-    white: sortPieces(white),
-    black: sortPieces(black),
-  };
+  return { white: labelsOf("w"), black: labelsOf("b") };
 }
 
 /**
