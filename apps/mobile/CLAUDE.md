@@ -90,8 +90,11 @@ header style (page-coloured, no hairline, chevron-only back).
   outgrows the screen, with "All" as a chip of its own.
 - **Half modals:** `BottomSheet` (`components/BottomSheet.tsx`) for option
   lists, help and pickers inside a screen — it works inside the session
-  modal and sizes to its content. Closes on backdrop tap, Android back, or a
-  drag on its top row. Only the dimmed backdrop lifts it (no border/shadow).
+  modal and sizes to its content. It is the platform's own sheet
+  (`@expo/ui`: SwiftUI `.sheet` on iOS, Material 3 on Android), so dragging,
+  flinging, the backdrop and the grabber are the OS's; never rebuild them
+  with `Modal` + `PanResponder`. `@expo/ui` is a native module: adding or
+  upgrading it needs a new native build, not just a Metro reload.
 - **Setup screens** take the web's sections, above the app's own
   two-button footer, as grouped panels (`ListSection`) rather than the web's
   underlined headings: `HowToPlaySection` (the `moduleHelp` how-to-play text
