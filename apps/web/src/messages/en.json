@@ -6075,6 +6075,10 @@
     "title": "{rankName} Exam",
     "lead": "Solve these {count} problems to earn {rankName}. You can retry as often as you like.",
     "memoryRule": "Memorize the position for {seconds} seconds, then recreate it on an empty board. {accuracy}% accuracy or better passes.",
+    "memoryRulePerfect": "Memorize the position for {seconds} seconds, then recreate it on an empty board. Every piece in place passes.",
+    "memoryIntro": {
+      "2kyu": "This is the {rankName} exam. Make good use of chunks to memorize the position."
+    },
     "puzzleRule": "Find the mate in {moves}.",
     "start": "Start",
     "solved": "Passed",
@@ -6085,7 +6089,17 @@
     "passedUnrecorded": "You reached the pass mark (not recorded)",
     "signInNote": "Sign in to have your pass recorded.",
     "lockedNote": "Your pass is recorded once you hold {prevRankName}.",
-    "recordFailed": "Could not record the result. Please try again."
+    "recordFailed": "Could not record the result. Please try again.",
+    "patterns": {
+      "kingside_castle": {
+        "title": "Kingside castle",
+        "description": "The king, the rook and the three pawns in front of them, held as one shape rather than five pieces."
+      },
+      "kingside_fianchetto": {
+        "title": "Kingside fianchetto",
+        "description": "The bishop on g2 behind the pawn pushed to g3. Together with the f2 and h2 pawns it is one shape to hold."
+      }
+    }
   },
   "rankAchievement": {
     "title": "Rank Achieved!",

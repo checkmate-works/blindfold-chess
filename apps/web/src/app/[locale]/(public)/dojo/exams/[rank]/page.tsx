@@ -80,10 +80,13 @@ export default async function DojoExamPage({ params }: Props) {
     const problem = DOJO_EXAMS[exam]![kind];
     const rule =
       problem.kind === 'position_memory'
-        ? t('dojoExam.memoryRule', {
-            seconds: problem.memorizeSeconds,
-            accuracy: problem.minAccuracy,
-          })
+        ? // "100% or better" reads oddly, so a perfect-recreation mark has its own wording.
+          problem.minAccuracy === 100
+          ? t('dojoExam.memoryRulePerfect', { seconds: problem.memorizeSeconds })
+          : t('dojoExam.memoryRule', {
+              seconds: problem.memorizeSeconds,
+              accuracy: problem.minAccuracy,
+            })
         : t('dojoExam.puzzleRule', {
             // The player's moves only — the length of the mate.
             moves: parseSolutionLines(problem.solutions)[0]?.playerSlots.length ?? 0,

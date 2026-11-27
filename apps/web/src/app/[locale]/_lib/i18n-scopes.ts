@@ -213,6 +213,23 @@ export const INTL_SCOPES = {
       'unsavedChanges',
     ],
   },
+  // Nested inside 'dojo': the exam problems run the practice sessions, whose
+  // dictionary (~50 KB) the guides, ranks and hub under /dojo never read.
+  // A nested provider replaces the 'dojo' one for this subtree, so the list
+  // repeats what the exam pages share with the rest of /dojo.
+  dojoExams: {
+    dir: '[locale]/(public)/dojo/exams',
+    namespaces: [
+      'Common',
+      'Preferences',
+      'buttonInput',
+      'dojoExam',
+      'play',
+      'practice',
+      'rankAchievement',
+      'unsavedChanges',
+    ],
+  },
   home: {
     dir: '[locale]/(public)/(home)',
     namespaces: [

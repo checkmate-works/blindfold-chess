@@ -210,7 +210,13 @@ const scopeDirs = Object.values(INTL_SCOPES).map((scope) => join(APP, scope.dir)
 
 for (const [id, scope] of Object.entries(INTL_SCOPES)) {
   const dir = join(APP, scope.dir);
-  const seeds = files.filter((file) => isUnder(file, dir) && isEntry(file));
+  // A scope nested inside this one (e.g. 'dojoExams' under 'dojo') mounts
+  // its own provider, which replaces this one for its subtree, so its entry
+  // files are its own scope's to account for, not this one's.
+  const nested = scopeDirs.filter((other) => other !== dir && isUnder(other, dir));
+  const seeds = files.filter(
+    (file) => isUnder(file, dir) && isEntry(file) && !nested.some((n) => isUnder(file, n))
+  );
   if (seeds.length === 0) {
     failures.push(`scope '${id}': no entry files under ${scope.dir} — wrong dir?`);
     continue;

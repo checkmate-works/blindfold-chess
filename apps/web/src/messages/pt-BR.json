@@ -6075,6 +6075,10 @@
     "title": "Prova de {rankName}",
     "lead": "Resolva estes {count} problemas para conquistar {rankName}. Você pode tentar quantas vezes quiser.",
     "memoryRule": "Memorize a posição por {seconds} segundos e depois recrie-a em um tabuleiro vazio. Você passa com precisão de {accuracy}% ou mais.",
+    "memoryRulePerfect": "Memorize a posição por {seconds} segundos e depois recrie-a em um tabuleiro vazio. Você passa se colocar todas as peças corretamente.",
+    "memoryIntro": {
+      "2kyu": "Esta é a prova de {rankName}. Aproveite os chunks para memorizar a posição."
+    },
     "puzzleRule": "Encontre o mate em {moves}.",
     "start": "Começar",
     "solved": "Aprovado",
@@ -6085,7 +6089,17 @@
     "passedUnrecorded": "Você atingiu a nota de aprovação (não registrado)",
     "signInNote": "Entre na sua conta para que sua aprovação seja registrada.",
     "lockedNote": "Sua aprovação é registrada quando você tiver {prevRankName}.",
-    "recordFailed": "Não foi possível registrar o resultado. Tente novamente."
+    "recordFailed": "Não foi possível registrar o resultado. Tente novamente.",
+    "patterns": {
+      "kingside_castle": {
+        "title": "Roque pequeno",
+        "description": "O rei, a torre e os três peões à frente deles, guardados como uma só forma em vez de cinco peças."
+      },
+      "kingside_fianchetto": {
+        "title": "Fianqueto do rei",
+        "description": "O bispo em g2 atrás do peão avançado para g3. Junto com os peões de f2 e h2, é uma só forma para guardar."
+      }
+    }
   },
   "rankAchievement": {
     "title": "Graduação Alcançada!",

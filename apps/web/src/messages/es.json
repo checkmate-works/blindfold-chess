@@ -6075,6 +6075,10 @@
     "title": "Examen de {rankName}",
     "lead": "Resuelve estos {count} problemas para obtener {rankName}. Puedes intentarlo tantas veces como quieras.",
     "memoryRule": "Memoriza la posición durante {seconds} segundos y luego recréala en un tablero vacío. Apruebas con una precisión del {accuracy}% o más.",
+    "memoryRulePerfect": "Memoriza la posición durante {seconds} segundos y luego recréala en un tablero vacío. Apruebas si colocas todas las piezas correctamente.",
+    "memoryIntro": {
+      "2kyu": "Este es el examen de {rankName}. Aprovecha los chunks para memorizar la posición."
+    },
     "puzzleRule": "Encuentra el mate en {moves}.",
     "start": "Empezar",
     "solved": "Aprobado",
@@ -6085,7 +6089,17 @@
     "passedUnrecorded": "Has alcanzado la nota de aprobado (no registrado)",
     "signInNote": "Inicia sesión para que se registre tu aprobado.",
     "lockedNote": "Tu aprobado se registrará cuando tengas {prevRankName}.",
-    "recordFailed": "No se pudo registrar el resultado. Inténtalo de nuevo."
+    "recordFailed": "No se pudo registrar el resultado. Inténtalo de nuevo.",
+    "patterns": {
+      "kingside_castle": {
+        "title": "Enroque corto",
+        "description": "El rey, la torre y los tres peones delante de ellos, recordados como una sola forma en lugar de cinco piezas."
+      },
+      "kingside_fianchetto": {
+        "title": "Fianchetto de rey",
+        "description": "El alfil en g2 detrás del peón avanzado a g3. Junto con los peones de f2 y h2 forma una sola figura que recordar."
+      }
+    }
   },
   "rankAchievement": {
     "title": "¡Rango Alcanzado!",

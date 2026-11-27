@@ -10,9 +10,9 @@
  * app and the server all read the same problem, and changing one is a
  * reviewed code change.
  *
- * 2kyu's exam: recreate the Italian Game from memory (30 seconds to look,
- * 80% accuracy to pass), and solve a two-move mate (a queen sacrifice into a
- * smothered mate).
+ * 2kyu's exam: recreate two castled kings from memory (30 seconds to look,
+ * every piece in place to pass), and solve a two-move mate (a queen
+ * sacrifice into a smothered mate).
  */
 import { validateFenFormat } from "../chess-core/fen-pure";
 import { calculateAccuracy } from "../common/accuracy";
@@ -31,6 +31,22 @@ import {
 } from "../puzzle/puzzle-match";
 import type { PuzzleSolutionMove } from "../puzzle/types";
 
+/** A piece pattern that helps with an exam problem, named by its message key. */
+export type ExamPatternKey = "kingside_castle" | "kingside_fianchetto";
+
+/**
+ * A pattern the exam page lists as useful for solving, the way a saved
+ * position-memory problem lists the chunks tagged on it. Kept here rather
+ * than as a reference to a row in `chunks`: chunks are posted, edited and
+ * deleted by users, and an exam's hints should change only through a
+ * reviewed code change, like the problem itself.
+ */
+export type ExamPattern = {
+  key: ExamPatternKey;
+  /** The pattern on its own, drawn as the card's thumbnail. */
+  fen: string;
+};
+
 /** Recreate `fen` after looking at it for `memorizeSeconds`. */
 export type MemoryExamProblem = {
   kind: "position_memory";
@@ -38,6 +54,7 @@ export type MemoryExamProblem = {
   memorizeSeconds: number;
   /** The accuracy (percent, as {@link calculateAccuracy} computes it) a pass needs. */
   minAccuracy: number;
+  patterns: readonly ExamPattern[];
 };
 
 /**
@@ -66,11 +83,18 @@ export const DOJO_EXAMS: Readonly<
   "2kyu": {
     position_memory: {
       kind: "position_memory",
-      // The Italian Game with both sides' knights out: an opening a 2kyu
-      // player should read as a few familiar chunks, not 32 loose pieces.
-      fen: "r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/2N2N2/PPPP1PPP/R1BQK2R w KQkq - 0 1",
+      // Two castled kings, each with one piece more than the 2kyu guide's
+      // example (a fianchettoed bishop for white, a knight on f6 for black).
+      // The guide's own position stays a practice problem; the exam asks
+      // for the same chunking on twelve pieces the player has not seen, and
+      // with only two chunks to hold, a pass means every piece in place.
+      fen: "5rk1/5ppp/5n2/8/8/6P1/5PBP/5RK1 w - - 0 1",
       memorizeSeconds: 30,
-      minAccuracy: 80,
+      minAccuracy: 100,
+      patterns: [
+        { key: "kingside_castle", fen: "5rk1/5ppp/8/8/8/8/8/8 w - - 0 1" },
+        { key: "kingside_fianchetto", fen: "8/8/8/8/8/6P1/5PBP/8 w - - 0 1" },
+      ],
     },
     puzzle: {
       kind: "puzzle",

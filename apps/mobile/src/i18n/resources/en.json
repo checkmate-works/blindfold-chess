@@ -1115,6 +1115,7 @@
       "start": "Start the exam",
       "lead": "Solve these {{count}} problems to earn {{rank}}. You can retry as often as you like.",
       "memoryRule": "Memorize the position for {{seconds}} seconds, then recreate it. {{accuracy}}% accuracy or better passes.",
+      "memoryRulePerfect": "Memorize the position for {{seconds}} seconds, then recreate it. Every piece in place passes.",
       "puzzleRule": "Find the mate in {{moves}}.",
       "solved": "Passed",
       "signInNote": "Sign in to have your pass recorded.",

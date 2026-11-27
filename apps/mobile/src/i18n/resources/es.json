@@ -1115,6 +1115,7 @@
       "start": "Empezar el examen",
       "lead": "Resuelve estos {{count}} problemas para obtener {{rank}}. Puedes intentarlo tantas veces como quieras.",
       "memoryRule": "Memoriza la posición durante {{seconds}} segundos y luego recréala. Con una precisión del {{accuracy}}% o más, apruebas.",
+      "memoryRulePerfect": "Memoriza la posición durante {{seconds}} segundos y luego recréala. Apruebas si colocas todas las piezas correctamente.",
       "puzzleRule": "Encuentra el mate en {{moves}}.",
       "solved": "Aprobado",
       "signInNote": "Inicia sesión para que se registre tu aprobado.",

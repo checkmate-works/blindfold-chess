@@ -1,18 +1,21 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { type ReactNode, useCallback, useMemo, useState } from 'react';
 
+import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 import type { MemoryExamProblem } from '@blindfold-chess/features/dojo-journey';
 import type { EarnedRankSlug } from '@blindfold-chess/features/dojo-ranks';
+import { FaPlay } from 'react-icons/fa';
 
 import {
   PositionMemorySessionView,
   type SessionCompletePayload,
 } from '@/app/[locale]/(public)/practice/(free-play)/position-memory/_components/session/PositionMemorySessionView';
-import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
+import { SectionTitle } from '@/app/[locale]/_components';
+import { TEXT_LINK_CLASSES, TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 import { useExamSubmission } from '../_hooks/use-exam-submission';
 import { ExamOutcome } from './ExamOutcome';
@@ -22,16 +25,28 @@ type Props = {
   problem: MemoryExamProblem;
   /** Name of the rank a player has to hold before a pass is recorded. */
   prevRankName: string;
+  /**
+   * What the page shows above the start button before the attempt starts —
+   * the problem's description section, rendered on the server.
+   */
+  intro: ReactNode;
 };
 
 /**
  * The position-memory problem of a rank's exam: the ordinary single-position
  * session, timed to the problem's memorize seconds, whose recreation is sent
- * to the server for grading. The verdict replaces the session on the same
- * page; a retry mounts a fresh session.
+ * to the server for grading.
+ *
+ * The page opens on {@link Props.intro} and a start button, the way a
+ * free-play problem opens on its detail page, so the memorize clock does not
+ * start the moment the problem is opened from the exam's list. The verdict
+ * replaces the session on the same page; a retry mounts a fresh session
+ * straight away, as the condition has already been read.
  */
-export function ExamMemorySession({ rank, problem, prevRankName }: Props) {
+export function ExamMemorySession({ rank, problem, prevRankName, intro }: Props) {
   const t = useTranslations('dojoExam');
+  const tDetail = useTranslations('practice.positionMemory.detail');
+  const [started, setStarted] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const { verdict, submit, fail, reset } = useExamSubmission(rank, 'position_memory');
 
@@ -57,6 +72,37 @@ export function ExamMemorySession({ rank, problem, prevRankName }: Props) {
     reset();
     setAttempt((n) => n + 1);
   }, [reset]);
+
+  if (!started) {
+    return (
+      <>
+        {intro}
+        <SectionTitle>{tDetail('solveSection')}</SectionTitle>
+        <div className="space-y-6">
+          <Button
+            onClick={() => setStarted(true)}
+            variant="primary"
+            size="lg"
+            icon={<FaPlay />}
+            fullWidth
+          >
+            {t('start')}
+          </Button>
+          <div className="flex flex-col items-center gap-2">
+            <Link
+              href="/practice/position-memory/tutorial"
+              className={`text-sm ${TEXT_LINK_CLASSES}`}
+            >
+              {tDetail('tutorialLink')}
+            </Link>
+            <Link href={`/dojo/exams/${rank}`} className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
+              {t('backToExam')}
+            </Link>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   if (verdict.kind !== 'idle') {
     return (

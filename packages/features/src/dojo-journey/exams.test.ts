@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { executeMove, isCheckmateFen } from "../chess-core/moves";
+import { fenToPlacements } from "../chess-core/fen-pure";
 import { calculateAccuracy } from "../common/accuracy";
 import {
   DOJO_EXAMS,
@@ -14,20 +15,34 @@ import {
 const memory = DOJO_EXAMS["2kyu"]!.position_memory as MemoryExamProblem;
 const puzzle = DOJO_EXAMS["2kyu"]!.puzzle as PuzzleExamProblem;
 
-// The Italian Game with both black knights left off the board.
-const MISSING_TWO_KNIGHTS =
-  "r1bqk2r/pppp1ppp/8/2b1p3/2B1P3/2N2N2/PPPP1PPP/R1BQK2R w KQkq - 0 1";
-// Only the kings and the pawns, in place.
-const KINGS_AND_PAWNS = "4k3/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/4K3 w - - 0 1";
+// The exam's position without the knight, the bishop and black's h-pawn.
+const MISSING_THREE = "5rk1/5pp1/8/8/8/6P1/5P1P/5RK1 w - - 0 1";
+// Only the kings, in place.
+const KINGS_ONLY = "6k1/8/8/8/8/8/8/6K1 w - - 0 1";
 
 describe("DOJO_EXAMS", () => {
-  it("sets 2kyu the Italian Game to memorise for 30 seconds at 80%", () => {
+  it("sets 2kyu two castled kings of twelve pieces to memorise for 30 seconds at 100%", () => {
     expect(memory).toEqual({
       kind: "position_memory",
-      fen: "r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/2N2N2/PPPP1PPP/R1BQK2R w KQkq - 0 1",
+      fen: "5rk1/5ppp/5n2/8/8/6P1/5PBP/5RK1 w - - 0 1",
       memorizeSeconds: 30,
-      minAccuracy: 80,
+      minAccuracy: 100,
+      patterns: [
+        { key: "kingside_castle", fen: "5rk1/5ppp/8/8/8/8/8/8 w - - 0 1" },
+        { key: "kingside_fianchetto", fen: "8/8/8/8/8/6P1/5PBP/8 w - - 0 1" },
+      ],
     });
+  });
+
+  it("draws every pattern of the 2kyu memory problem from pieces on the problem's own squares", () => {
+    const problem = new Set(
+      fenToPlacements(memory.fen).map((p) => JSON.stringify(p)),
+    );
+    for (const pattern of memory.patterns) {
+      for (const placement of fenToPlacements(pattern.fen)) {
+        expect(problem, `${pattern.key}`).toContain(JSON.stringify(placement));
+      }
+    }
   });
 
   it("ends in checkmate when the 2kyu puzzle's solution is replayed", () => {
@@ -80,8 +95,8 @@ describe("gradeExamProblem: position memory", () => {
   it("gives the same accuracy the position-memory session shows for the same recreation", () => {
     const session = calculateAccuracy(
       memory.fen,
-      MISSING_TWO_KNIGHTS,
-      { n: "knight" },
+      MISSING_THREE,
+      { p: "pawn", n: "knight", b: "bishop" },
       {
         correct: (piece, square) => `${piece} on ${square}`,
         wrongPiece: (square) => `wrong on ${square}`,
@@ -89,24 +104,24 @@ describe("gradeExamProblem: position memory", () => {
         extra: (piece, square) => `extra ${piece} on ${square}`,
       },
     );
-    const grade = gradeExamProblem(memory, { fen: MISSING_TWO_KNIGHTS });
+    const grade = gradeExamProblem(memory, { fen: MISSING_THREE });
     expect(grade.accuracy).toBe(session.accuracy);
-    expect(grade).toEqual({ passed: true, accuracy: 93.75 });
+    expect(grade).toEqual({ passed: false, accuracy: 75 });
   });
 
   it("fails a recreation below the required accuracy", () => {
-    const grade = gradeExamProblem(memory, { fen: KINGS_AND_PAWNS });
+    const grade = gradeExamProblem(memory, { fen: KINGS_ONLY });
     expect(grade.passed).toBe(false);
     expect(grade.accuracy).toBeLessThan(memory.minAccuracy);
   });
 
   it("passes at exactly the required accuracy and fails just under it", () => {
-    const answer = { fen: MISSING_TWO_KNIGHTS };
+    const answer = { fen: MISSING_THREE };
     expect(
-      gradeExamProblem({ ...memory, minAccuracy: 93.75 }, answer).passed,
+      gradeExamProblem({ ...memory, minAccuracy: 75 }, answer).passed,
     ).toBe(true);
     expect(
-      gradeExamProblem({ ...memory, minAccuracy: 93.76 }, answer).passed,
+      gradeExamProblem({ ...memory, minAccuracy: 75.01 }, answer).passed,
     ).toBe(false);
   });
 

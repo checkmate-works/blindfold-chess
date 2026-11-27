@@ -10,11 +10,18 @@
  *
  * @flow
  * 1. Unknown rank, or a rank without this problem → 404.
- * 2. Memorize → recreate, as in the single-position practice session (no
+ * 2. The page opens laid out like a saved problem's detail page
+ *    (`practice/position-memory/[id]`): what the rank's problem practises as
+ *    its description,
+ *    the piece list, the collapsible board, the patterns useful for solving
+ *    (constants of the exam, not rows in `chunks`) and a start button.
+ *    Like that page it shows the position before the attempt; the memorize
+ *    seconds limit the attempt, not the study.
+ * 3. Memorize → recreate, as in the single-position practice session (no
  *    pause: the seconds are part of the problem).
- * 3. The recreated FEN goes to `submitExamAnswer`. Signed out, the browser
+ * 4. The recreated FEN goes to `submitExamAnswer`. Signed out, the browser
  *    grades it as practice. The verdict offers a retry and the way back.
- * 4. A pass that completes the exam stashes the granted rank and returns to
+ * 5. A pass that completes the exam stashes the granted rank and returns to
  *    the problem list, which celebrates it.
  */
 import type { Metadata } from 'next';
@@ -23,7 +30,11 @@ import { notFound } from 'next/navigation';
 
 import { SUPPORTED_LOCALES } from '@/config';
 
-import { PageLayout } from '@/app/[locale]/_components';
+import { PositionDetailLayout } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionDetailLayout';
+import { PositionPeekBoard } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionPeekBoard';
+import { PiecesInfo } from '@/app/[locale]/(public)/practice/_components/PiecesInfo';
+import { SectionTitle } from '@/app/[locale]/_components';
+import { RelatedTags } from '@/app/[locale]/_components/RelatedTags';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -75,18 +86,51 @@ export default async function DojoExamPositionMemoryPage({ params }: Props) {
   const prevRankName = t(`ranks.rankNames.${previousRank(exam)}`);
   const examTitle = t('dojoExam.title', { rankName });
   const problemName = t('ranks.examProblemNames.position_memory');
+  // dojoExam.memoryIntro.<EarnedRankSlug>: each rank with this problem
+  // (generateStaticParams), which says what the rank's problem practises. The
+  // condition itself is on the exam's list and in the session's own timer.
+  const intro = t(`dojoExam.memoryIntro.${exam}`, { rankName });
 
   return (
-    <PageLayout
+    <PositionDetailLayout
       title={problemName}
       locale={locale}
-      breadcrumb={[
+      breadcrumbItems={[
         { label: t('dojo.pageTitle'), href: '/dojo' },
         { label: examTitle, href: `/dojo/exams/${exam}` },
         { label: problemName },
       ]}
     >
-      <ExamMemorySession rank={exam} problem={problem} prevRankName={prevRankName} />
-    </PageLayout>
+      <ExamMemorySession
+        rank={exam}
+        problem={problem}
+        prevRankName={prevRankName}
+        intro={
+          <>
+            <SectionTitle>{t('practice.positionMemory.detail.descriptionSection')}</SectionTitle>
+            <p className="text-foreground">{intro}</p>
+            <PiecesInfo fen={problem.fen} showSideToMove={false} />
+            <PositionPeekBoard fen={problem.fen} />
+            <RelatedTags
+              themes={[]}
+              chunks={problem.patterns.map((pattern) => ({
+                id: pattern.key,
+                // dojoExam.patterns.<ExamPatternKey>: kingside_castle, kingside_fianchetto
+                title: t(`dojoExam.patterns.${pattern.key}.title`),
+                description: t(`dojoExam.patterns.${pattern.key}.description`),
+                representativeFen: pattern.fen,
+              }))}
+              locale={locale}
+              labels={{
+                sectionTitle: (count) =>
+                  t('practice.positionMemory.detail.usefulSection', { count }),
+                badgeTheme: t('practice.tags.badge.theme'),
+                badgeChunk: t('practice.tags.badge.chunk'),
+              }}
+            />
+          </>
+        }
+      />
+    </PositionDetailLayout>
   );
 }

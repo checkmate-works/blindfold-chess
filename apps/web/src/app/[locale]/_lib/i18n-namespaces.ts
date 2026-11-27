@@ -105,6 +105,7 @@ export const NAMESPACE_CLASSIFICATION = {
   contact: 'client',
   deleteAccount: 'client',
   dojo: 'client',
+  dojoExam: 'client',
   // The embeddable game replay's own strings. Client-side because the widget
   // is one interactive component (`EmbedGameReplay`); its page hands it just
   // this namespace plus `Common`, never the full dictionary.
