@@ -10,7 +10,12 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 type ChunkSummary = {
   id: string;
-  slug: string;
+  /**
+   * The chunk's page. Absent for a pattern that is not a row in `chunks` —
+   * the dojo exam's hints are constants of the exam — which renders as a
+   * static card.
+   */
+  slug?: string;
   title: string;
   description: string | null;
   representativeFen: string;
@@ -70,7 +75,7 @@ export function RelatedTags({ themes, chunks, locale, labels, action }: Props) {
           <RelatedTagCard
             key={`chunk-${chunk.id}`}
             kind="chunk"
-            href={`/chunks/${chunk.slug}` as '/chunks/[slug]'}
+            href={chunk.slug ? (`/chunks/${chunk.slug}` as '/chunks/[slug]') : undefined}
             locale={locale}
             previewFen={chunk.representativeFen}
             label={chunk.title}
