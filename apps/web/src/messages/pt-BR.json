@@ -6080,6 +6080,9 @@
       "2kyu": "Esta é a prova de {rankName}. Aproveite os chunks para memorizar a posição."
     },
     "puzzleRule": "Encontre o mate em {moves}.",
+    "puzzleIntro": {
+      "2kyu": "Esta é a prova de {rankName}. Imagine o tabuleiro e resolva o mate em dois lances."
+    },
     "start": "Começar",
     "solved": "Aprovado",
     "passed": "Você passou",
@@ -6098,6 +6101,10 @@
       "kingside_fianchetto": {
         "title": "Fianqueto do rei",
         "description": "O bispo em g2 atrás do peão avançado para g3. Junto com os peões de f2 e h2, é uma só forma para guardar."
+      },
+      "smothered_mate": {
+        "title": "Mate sufocado",
+        "description": "Um rei cercado pelas próprias peças, que leva mate com o xeque de um cavalo."
       }
     }
   },

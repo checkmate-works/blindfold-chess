@@ -6080,6 +6080,9 @@
       "2kyu": "Este es el examen de {rankName}. Aprovecha los chunks para memorizar la posición."
     },
     "puzzleRule": "Encuentra el mate en {moves}.",
+    "puzzleIntro": {
+      "2kyu": "Este es el examen de {rankName}. Imagina el tablero y resuelve el mate en dos."
+    },
     "start": "Empezar",
     "solved": "Aprobado",
     "passed": "Has aprobado",
@@ -6098,6 +6101,10 @@
       "kingside_fianchetto": {
         "title": "Fianchetto de rey",
         "description": "El alfil en g2 detrás del peón avanzado a g3. Junto con los peones de f2 y h2 forma una sola figura que recordar."
+      },
+      "smothered_mate": {
+        "title": "Mate de la coz",
+        "description": "Un rey encerrado por sus propias piezas, al que da mate el jaque de un caballo."
       }
     }
   },

@@ -32,11 +32,12 @@ import {
 import type { PuzzleSolutionMove } from "../puzzle/types";
 
 /** A piece pattern that helps with an exam problem, named by its message key. */
-export type ExamPatternKey = "kingside_castle" | "kingside_fianchetto";
+export type ExamPatternKey =
+  "kingside_castle" | "kingside_fianchetto" | "smothered_mate";
 
 /**
  * A pattern the exam page lists as useful for solving, the way a saved
- * position-memory problem lists the chunks tagged on it. Kept here rather
+ * position-memory problem or puzzle lists the chunks tagged on it. Kept here rather
  * than as a reference to a row in `chunks`: chunks are posted, edited and
  * deleted by users, and an exam's hints should change only through a
  * reviewed code change, like the problem itself.
@@ -66,6 +67,7 @@ export type PuzzleExamProblem = {
   kind: "puzzle";
   fen: string;
   solutions: PuzzleSolutionMove[][];
+  patterns: readonly ExamPattern[];
 };
 
 export type ExamProblem = MemoryExamProblem | PuzzleExamProblem;
@@ -102,6 +104,10 @@ export const DOJO_EXAMS: Readonly<
       // take, and the knight then mates the king boxed in by its own pieces.
       fen: "5r1k/6pp/7N/8/2Q5/8/8/6K1 w - - 0 1",
       solutions: [solutionLine("Qg8+", "Rxg8", "Nf7#")],
+      // The mate the solution ends in, rather than the start position.
+      patterns: [
+        { key: "smothered_mate", fen: "6rk/5Npp/8/8/8/8/8/8 w - - 0 1" },
+      ],
     },
   },
 };

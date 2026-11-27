@@ -42,7 +42,7 @@ vi.mock(
 
 const PROBLEM = DOJO_EXAMS['2kyu']!.puzzle as PuzzleExamProblem;
 
-function renderSession() {
+function renderPage() {
   render(
     <ExamPuzzleSession
       rank="2kyu"
@@ -50,9 +50,18 @@ function renderSession() {
       title="Puzzle"
       piecesInfo={null}
       breadcrumb={null}
+      breadcrumbItems={[]}
+      locale="en"
       prevRankName="3kyu"
+      intro={<p data-testid="intro" />}
     />
   );
+}
+
+/** Renders the page and starts the attempt, as the player does. */
+function renderSession() {
+  renderPage();
+  fireEvent.click(screen.getByRole('button', { name: 'start' }));
 }
 
 beforeEach(() => {
@@ -61,6 +70,18 @@ beforeEach(() => {
 });
 
 describe('ExamPuzzleSession', () => {
+  it('opens on the intro and mounts the session only once the attempt starts', () => {
+    renderPage();
+
+    expect(screen.getByTestId('intro')).toBeInTheDocument();
+    expect(sessionProps).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'start' }));
+
+    expect(screen.queryByTestId('intro')).not.toBeInTheDocument();
+    expect(screen.getByTestId('stub-solve')).toBeInTheDocument();
+  });
+
   it('runs the session without the "show answer" link', () => {
     renderSession();
 

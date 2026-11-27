@@ -34,11 +34,11 @@ import { PositionDetailLayout } from '@/app/[locale]/(public)/practice/(free-pla
 import { PositionPeekBoard } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionPeekBoard';
 import { PiecesInfo } from '@/app/[locale]/(public)/practice/_components/PiecesInfo';
 import { SectionTitle } from '@/app/[locale]/_components';
-import { RelatedTags } from '@/app/[locale]/_components/RelatedTags';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { ExamMemorySession } from '../../_components/ExamMemorySession';
+import { ExamPatterns } from '../../_components/ExamPatterns';
 import { EXAM_RANKS, examProblemOf, parseExamRank, previousRank } from '../../_lib/exam-rank';
 
 type Props = {
@@ -111,22 +111,10 @@ export default async function DojoExamPositionMemoryPage({ params }: Props) {
             <p className="text-foreground">{intro}</p>
             <PiecesInfo fen={problem.fen} showSideToMove={false} />
             <PositionPeekBoard fen={problem.fen} />
-            <RelatedTags
-              themes={[]}
-              chunks={problem.patterns.map((pattern) => ({
-                id: pattern.key,
-                // dojoExam.patterns.<ExamPatternKey>: kingside_castle, kingside_fianchetto
-                title: t(`dojoExam.patterns.${pattern.key}.title`),
-                description: t(`dojoExam.patterns.${pattern.key}.description`),
-                representativeFen: pattern.fen,
-              }))}
+            <ExamPatterns
+              patterns={problem.patterns}
               locale={locale}
-              labels={{
-                sectionTitle: (count) =>
-                  t('practice.positionMemory.detail.usefulSection', { count }),
-                badgeTheme: t('practice.tags.badge.theme'),
-                badgeChunk: t('practice.tags.badge.chunk'),
-              }}
+              detailNamespace="practice.positionMemory.detail"
             />
           </>
         }

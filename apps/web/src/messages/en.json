@@ -6080,6 +6080,9 @@
       "2kyu": "This is the {rankName} exam. Make good use of chunks to memorize the position."
     },
     "puzzleRule": "Find the mate in {moves}.",
+    "puzzleIntro": {
+      "2kyu": "This is the {rankName} exam. Picture the board in your mind and solve the mate in two."
+    },
     "start": "Start",
     "solved": "Passed",
     "passed": "You passed",
@@ -6098,6 +6101,10 @@
       "kingside_fianchetto": {
         "title": "Kingside fianchetto",
         "description": "The bishop on g2 behind the pawn pushed to g3. Together with the f2 and h2 pawns it is one shape to hold."
+      },
+      "smothered_mate": {
+        "title": "Smothered mate",
+        "description": "A king boxed in by its own pieces, mated by a knight's check."
       }
     }
   },
