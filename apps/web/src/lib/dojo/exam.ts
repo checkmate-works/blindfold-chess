@@ -45,9 +45,8 @@ import {
 import 'server-only';
 
 import { db, dojoStepCompletions } from '@/lib/db';
-
-import { getAchievedSlugsForUser } from '@/app/[locale]/(public)/dojo/ranks/_lib/queries';
-import { resolveHighestAchievedSlug } from '@/app/[locale]/(public)/dojo/ranks/_lib/rank-progression';
+import { resolveHighestAchievedSlug } from '@/lib/dojo/rank-progression';
+import { getAchievedSlugsForUser } from '@/lib/dojo/rank-queries';
 
 /**
  * - `unknownExam`: `(exam, problem)` names no problem (unknown rank, a rank

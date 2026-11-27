@@ -33,6 +33,7 @@ import Link from 'next/link';
 import { getNativeAdCreatives } from '@/lib/ads/ad';
 import { DOJO_NATIVE_AD_SLOT } from '@/lib/ads/registry';
 import { ALL_RANK_SLUGS } from '@/lib/db/data/ranks';
+import { getAllRanks } from '@/lib/dojo/rank-queries';
 
 import {
   Divider,
@@ -49,7 +50,6 @@ import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps } from '@/app/[locale]/_lib/types';
 
 import { RANKS_GRID_CLASSES, RanksGrid } from './_components/RanksGrid';
-import { getAllRanks } from './_lib/queries';
 
 export async function generateMetadata({ params }: LocalePageProps): Promise<Metadata> {
   return createPageMetadata({ params, namespace: 'metadata.ranks', path: 'dojo/ranks' });

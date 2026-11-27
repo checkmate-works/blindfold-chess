@@ -8,11 +8,11 @@ import type { RankSlug } from '@/lib/db/data/ranks';
 import { countGamesByAuthorId } from '@/lib/db/games-read';
 import { countRows } from '@/lib/db/list-query';
 import { profileNotDeleted } from '@/lib/db/profile-not-deleted';
+import { resolveHighestAchievedSlug } from '@/lib/dojo/rank-progression';
+import { getAchievedSlugsForUser } from '@/lib/dojo/rank-queries';
 import { hasBlocked } from '@/lib/moderation/block';
 import { countPositions } from '@/lib/positions/queries';
 
-import { getAchievedSlugsForUser } from '@/app/[locale]/(public)/dojo/ranks/_lib/queries';
-import { resolveHighestAchievedSlug } from '@/app/[locale]/(public)/dojo/ranks/_lib/rank-progression';
 import { getPostCountByUserId } from '@/app/[locale]/(public)/topics/_lib/user-post-queries';
 
 export type ProfileShellData = {

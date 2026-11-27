@@ -23,18 +23,12 @@ import { getNativeAdCreatives } from '@/lib/ads/ad';
 import { DOJO_NATIVE_AD_SLOT } from '@/lib/ads/registry';
 import { getOptionalUser } from '@/lib/auth';
 import type { RankSlug } from '@/lib/db/data/ranks';
+import { resolveAchievedSlugs, resolveDisplayAchievedSlugs } from '@/lib/dojo/rank-progression';
+import { getAllRanks, getUserAchievedRankIds } from '@/lib/dojo/rank-queries';
 import { buildGuideHrefBySlug } from '@/lib/guides/guideHrefBySlug';
 
 import { RankCard } from '@/app/[locale]/(public)/dojo/ranks/_components/RankCard';
 import { getBeltColorHex } from '@/app/[locale]/(public)/dojo/ranks/_lib/belt-colors';
-import {
-  getAllRanks,
-  getUserAchievedRankIds,
-} from '@/app/[locale]/(public)/dojo/ranks/_lib/queries';
-import {
-  resolveAchievedSlugs,
-  resolveDisplayAchievedSlugs,
-} from '@/app/[locale]/(public)/dojo/ranks/_lib/rank-progression';
 import { buildRequirementItems } from '@/app/[locale]/(public)/dojo/ranks/_lib/requirement-items';
 import { PublishNudgeBanner } from '@/app/[locale]/(public)/games/_components/PublishNudgeBanner';
 import {

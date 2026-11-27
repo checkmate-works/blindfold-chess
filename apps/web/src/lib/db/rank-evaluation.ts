@@ -82,7 +82,9 @@
  *   `achieved` / `next` / `unachieved` / `coming-soon` from
  *   `dojo/ranks/_lib/requirement-items.ts`, which also renders requirement
  *   labels; `/dojo` recommends the next rank via `resolveNextRank` /
- *   `resolveRecommendedNextSlug` in `dojo/ranks/_lib/rank-progression.ts`.
+ *   `resolveRecommendedNextSlug` in `../dojo/rank-progression.ts` (the API routes and
+ *   `../dojo/exam.ts` read the same module, and the cached `ranks` reads in
+ *   `../dojo/rank-queries.ts`).
  * - No `profiles.currentRankId` cache: a user's rank is derived from
  *   `user_ranks` (≤15 rows per user); `resolveHighestRankSlug` in
  *   `./data/ranks.ts` is the one place that picks "the" rank of a user.

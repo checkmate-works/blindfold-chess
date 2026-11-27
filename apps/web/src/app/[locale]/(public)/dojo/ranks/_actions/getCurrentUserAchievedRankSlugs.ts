@@ -1,9 +1,8 @@
 'use server';
 
 import { getOptionalUser } from '@/lib/auth';
-
-import { getAchievedSlugsForUser } from '../_lib/queries';
-import { resolveDisplayAchievedSlugs } from '../_lib/rank-progression';
+import { resolveDisplayAchievedSlugs } from '@/lib/dojo/rank-progression';
+import { getAchievedSlugsForUser } from '@/lib/dojo/rank-queries';
 
 /**
  * Return the DISPLAY set of rank slugs the currently-signed-in user has

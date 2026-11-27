@@ -5,11 +5,11 @@ import type { ServerTranslator } from '@/i18n/translator';
 
 import { ALL_RANK_SLUGS, isMukyuSlug, parseRequirements } from '@/lib/db/data/ranks';
 import type { RankRequirement, RankSlug } from '@/lib/db/data/ranks';
+import { getRankBySlug } from '@/lib/dojo/rank-queries';
 import { getRankGuide } from '@/lib/guides';
 import type { RankGuide } from '@/lib/guides';
 
 import { getBeltColorHex } from '@/app/[locale]/(public)/dojo/ranks/_lib/belt-colors';
-import { getRankBySlug } from '@/app/[locale]/(public)/dojo/ranks/_lib/queries';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 /**

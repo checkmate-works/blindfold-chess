@@ -6,17 +6,17 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 
 import { ALL_RANK_SLUGS, isMukyuSlug, parseRequirements } from '@/lib/db/data/ranks';
 import type { Rank } from '@/lib/db/schema';
+import {
+  resolveAchievedSlugs,
+  resolveDisplayAchievedSlugs,
+  resolveRecommendedNextSlug,
+} from '@/lib/dojo/rank-progression';
 
 import { useAuth } from '@/app/[locale]/_contexts/AuthContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { getCurrentUserAchievedRankIds } from '../_actions/getCurrentUserAchievedRankIds';
 import { getBeltColorHex } from '../_lib/belt-colors';
-import {
-  resolveAchievedSlugs,
-  resolveDisplayAchievedSlugs,
-  resolveRecommendedNextSlug,
-} from '../_lib/rank-progression';
 import { buildRequirementLabels, getRankCardState } from '../_lib/requirement-items';
 import { RankCard } from './RankCard';
 

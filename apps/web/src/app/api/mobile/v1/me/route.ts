@@ -3,13 +3,12 @@ import { eq } from 'drizzle-orm';
 
 import { db } from '@/lib/db';
 import { userExp } from '@/lib/db/schema';
+import { resolveHighestAchievedSlug } from '@/lib/dojo/rank-progression';
+import { getAchievedSlugsForUser } from '@/lib/dojo/rank-queries';
 import { authorizeMobileRequest } from '@/lib/mobile-api/auth';
 import { mobileJson, mobilePreflight, withMobileErrors } from '@/lib/mobile-api/response';
 import { isUserBanned } from '@/lib/moderation/ban';
 import { getViewerProfile } from '@/lib/users/viewer-profile';
-
-import { getAchievedSlugsForUser } from '@/app/[locale]/(public)/dojo/ranks/_lib/queries';
-import { resolveHighestAchievedSlug } from '@/app/[locale]/(public)/dojo/ranks/_lib/rank-progression';
 
 async function readTotalExp(userId: string): Promise<number> {
   const [row] = await db

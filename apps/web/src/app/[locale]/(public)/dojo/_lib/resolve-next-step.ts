@@ -2,9 +2,9 @@ import { CURRICULUM } from '@/lib/db/data/curriculum';
 import { ALL_RANK_SLUGS } from '@/lib/db/data/ranks';
 import type { RankSlug } from '@/lib/db/data/ranks';
 import type { Rank } from '@/lib/db/schema';
+import { resolveNextRank } from '@/lib/dojo/rank-progression';
+import type { ResolveNextRankResult } from '@/lib/dojo/rank-progression';
 
-import { resolveNextRank } from '@/app/[locale]/(public)/dojo/ranks/_lib/rank-progression';
-import type { ResolveNextRankResult } from '@/app/[locale]/(public)/dojo/ranks/_lib/rank-progression';
 import { isRankEarnedByPlaying } from '@/app/[locale]/(public)/dojo/ranks/_lib/requirement-items';
 
 /**

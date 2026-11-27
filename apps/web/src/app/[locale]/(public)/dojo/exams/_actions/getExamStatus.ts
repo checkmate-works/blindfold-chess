@@ -8,10 +8,9 @@ import {
 } from '@blindfold-chess/features/dojo-journey';
 
 import { getOptionalUser } from '@/lib/auth';
+import { resolveHighestAchievedSlug } from '@/lib/dojo/rank-progression';
+import { getAchievedSlugsForUser } from '@/lib/dojo/rank-queries';
 import { getCompletedSteps } from '@/lib/dojo/step-completions';
-
-import { getAchievedSlugsForUser } from '@/app/[locale]/(public)/dojo/ranks/_lib/queries';
-import { resolveHighestAchievedSlug } from '@/app/[locale]/(public)/dojo/ranks/_lib/rank-progression';
 
 import type { ExamStatus } from '../_lib/types';
 

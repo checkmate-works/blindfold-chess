@@ -3,6 +3,8 @@ import type { MobileDojoExamResponse } from '@blindfold-chess/features/dojo-jour
 
 import { evaluateRanksAfterCreate } from '@/lib/db/rank-evaluation';
 import { submitExamProblem } from '@/lib/dojo/exam';
+import { resolveHighestAchievedSlug } from '@/lib/dojo/rank-progression';
+import { getAchievedSlugsForUser } from '@/lib/dojo/rank-queries';
 import { authorizeMobileRequest } from '@/lib/mobile-api/auth';
 import {
   mobileError,
@@ -12,9 +14,6 @@ import {
   withMobileErrors,
 } from '@/lib/mobile-api/response';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
-
-import { getAchievedSlugsForUser } from '@/app/[locale]/(public)/dojo/ranks/_lib/queries';
-import { resolveHighestAchievedSlug } from '@/app/[locale]/(public)/dojo/ranks/_lib/rank-progression';
 
 export const dynamic = 'force-dynamic';
 

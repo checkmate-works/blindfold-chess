@@ -10,7 +10,7 @@ const mockGetUserAchievedRankIds = vi.fn();
 
 vi.mock('@/lib/auth');
 
-vi.mock('../_lib/queries', () => ({
+vi.mock('@/lib/dojo/rank-queries', () => ({
   getAllRanks: (...args: unknown[]) => mockGetAllRanks(...args),
   getUserAchievedRankIds: (...args: unknown[]) => mockGetUserAchievedRankIds(...args),
   getAchievedSlugsForUser: async (userId: string) => {
