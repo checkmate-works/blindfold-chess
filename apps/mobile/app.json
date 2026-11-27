@@ -13,7 +13,10 @@
       "config": {
         "usesNonExemptEncryption": false
       },
-      "usesAppleSignIn": true
+      "usesAppleSignIn": true,
+      "infoPlist": {
+        "CFBundleLocalizations": ["en", "ja", "es", "pt-BR"]
+      }
     },
     "android": {
       "package": "online.blindfoldchess.app",

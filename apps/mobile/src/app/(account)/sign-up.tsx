@@ -9,7 +9,7 @@ import {
   OAuthButtons,
   OAuthDivider,
 } from "../../features/account/OAuthButtons";
-import { HeaderTextButton } from "../../navigation/HeaderTextButton";
+import { ModalCloseButton } from "../../navigation/ModalCloseButton";
 import { useTheme, fontSize, fontWeight, spacing } from "../../theme";
 
 /**
@@ -33,7 +33,7 @@ const MIN_PASSWORD_LENGTH = 6;
  * Usually pushed from sign-in, so "Sign in" goes back to it. The home tab's
  * sign-up card opens it as the first screen of the account modal instead:
  * then there is nothing to go back to (going back would close the modal), so
- * the header gets the modal's Close button and "Sign in" replaces this
+ * the header gets the modal's × and "Sign in" replaces this
  * screen with sign-in.
  */
 export default function SignUpScreen() {
@@ -50,9 +50,7 @@ export default function SignUpScreen() {
   const toSignIn = () =>
     opensModal ? router.replace("/sign-in") : router.back();
   const closeButton = opensModal ? (
-    <Stack.Screen
-      options={{ headerLeft: () => <HeaderTextButton dismiss /> }}
-    />
+    <Stack.Screen options={{ headerLeft: () => <ModalCloseButton /> }} />
   ) : null;
 
   const handleSubmit = async () => {

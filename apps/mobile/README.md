@@ -67,16 +67,14 @@ Three things have to be in place:
   [authentication setup](../web/docs/authentication-setup.md). Restart
   Supabase (`pnpm supabase stop && pnpm supabase start`) after changing them
   or `config.toml`.
-- The buttons turned on when starting Metro. On iOS the Google button is
-  shown only together with Apple's (App Store Review Guideline 4.8), so list
-  both:
+- The Google button turned on when starting Metro:
 
   ```bash
-  EXPO_PUBLIC_OAUTH_PROVIDERS=apple,google pnpm --filter mobile dev
+  EXPO_PUBLIC_OAUTH_PROVIDERS=google pnpm --filter mobile dev
   ```
 
-  The Apple button then shows too, but Apple is disabled in the local
-  Supabase, so only Google can complete.
+  On iOS the Apple button is always shown, but Apple is disabled in the
+  local Supabase, so only Google can complete there.
 
 - Phone and computer on the same network, as for the rest of the backend.
 

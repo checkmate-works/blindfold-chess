@@ -356,10 +356,10 @@ database. Sign-in calls Supabase Auth directly; sign-up goes through
 - **One-tap sign-in** (`auth/oauth.ts`, `features/account/OAuthButtons.tsx`):
   Sign in with Apple through the native sheet and `signInWithIdToken` (iOS
   only), Google through Supabase's hosted page in an in-app browser session
-  with PKCE, returning to `blindfold-chess://auth-callback`. The build
-  variable `EXPO_PUBLIC_OAUTH_PROVIDERS` (`apple,google`) turns the buttons
-  on; unset shows none. On iOS, Google is shown only together with Apple
-  (App Store Review Guideline 4.8). Before turning a provider on, enable it
+  with PKCE, returning to `blindfold-chess://auth-callback`. Apple's
+  button is on every iOS build; Google's needs the build variable
+  `EXPO_PUBLIC_OAUTH_PROVIDERS=google`, and on iOS it always sits beside
+  Apple's (App Store Review Guideline 4.8). Before shipping a provider, enable it
   in the Supabase dashboard (Apple: the bundle ID as a client ID) and add
   `blindfold-chess://auth-callback` to the Redirect URLs (the local
   `config.toml` also allows Expo Go's `exp://**/--/auth-callback`; production
@@ -483,6 +483,16 @@ Keys are read with `t("...")`; some call sites build the key from a namespace
 variable (for example `features/help/HelpSheet.tsx`), and those sites list the
 concrete keys they produce in a comment so that a grep for the full key still
 finds them.
+
+iOS draws its own parts (Apple's Sign in with Apple button, system sheets)
+in the language it picks for the app, not the one chosen in the app's
+settings. The app ships no `.lproj` folders, so the languages are declared in
+`ios.infoPlist.CFBundleLocalizations` in `app.json`
+(`src/i18n/__tests__/ios-localizations.test.ts` keeps it equal to
+`SUPPORTED_LOCALES`); without it iOS falls back to English on every device.
+A language picked in the app that differs from the device's still leaves
+those parts in the device's language. A change there needs a new native
+build.
 
 ## Settings are device-local: one global board store, then per module
 

@@ -3403,7 +3403,7 @@
     "passwordPlaceholder": "8文字以上",
     "confirmPasswordLabel": "パスワード（確認）",
     "confirmPasswordPlaceholder": "パスワードを再入力",
-    "emailSignUp": "メールで登録",
+    "emailSignUp": "メールアドレスで登録",
     "emailSignUpLoading": "登録中...",
     "emailSignUpError": "登録に失敗しました。もう一度お試しください。",
     "rateLimited": "サインアップ試行回数が多すぎます。しばらくしてからお試しください。",
