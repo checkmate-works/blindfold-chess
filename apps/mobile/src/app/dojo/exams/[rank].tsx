@@ -3,13 +3,12 @@ import { Stack, useLocalSearchParams, useRouter, type Href } from "expo-router";
 import { useTranslation } from "react-i18next";
 import {
   DOJO_EXAMS,
+  examProblemKinds,
+  examRankOf,
   type ExamProblem,
 } from "@blindfold-chess/features/dojo-journey";
 import {
-  RANK_REQUIREMENTS,
   RANK_SLUGS,
-  isRankSlug,
-  type EarnedRankSlug,
   type ExamProblemKind,
 } from "@blindfold-chess/features/dojo-ranks";
 
@@ -20,13 +19,6 @@ import { examRunMode } from "../../../features/dojo/exam-run";
 import { RankGoalCard } from "../../../features/dojo/RankGoalCard";
 import { useDojoJourney } from "../../../features/dojo/use-dojo-journey";
 import { fontSize, spacing, useTheme } from "../../../theme";
-
-/** The problem kinds of `rank`'s exam, in the order its requirements list them. */
-function examProblemKinds(rank: EarnedRankSlug): ExamProblemKind[] {
-  return RANK_REQUIREMENTS[rank].flatMap((requirement) =>
-    requirement.type === "exam_problem" ? [requirement.problem] : [],
-  );
-}
 
 /** How many of its moves the player makes in a puzzle's first line. */
 function playerMoveCount(problem: ExamProblem): number {
@@ -63,14 +55,14 @@ export default function DojoExamScreen() {
   const router = useRouter();
   const auth = useAuth();
   const { highest, signedIn, journeyOf } = useDojoJourney();
-  const { rank } = useLocalSearchParams<{ rank: string }>();
-  const exam =
-    isRankSlug(rank) && rank !== "mukyu" ? DOJO_EXAMS[rank] : undefined;
-  if (!exam || !isRankSlug(rank) || rank === "mukyu") return null;
+  const params = useLocalSearchParams<{ rank: string }>();
+  const rank = examRankOf(params.rank);
+  const exam = rank ? DOJO_EXAMS[rank] : undefined;
+  if (!rank || !exam) return null;
 
   const rankName = t(`ranks.names.${rank}`);
   const journey = journeyOf(rank);
-  const kinds = examProblemKinds(rank).filter((kind) => exam[kind]);
+  const kinds = examProblemKinds(rank);
   const passedKinds = new Set(
     journey.steps.flatMap((step) =>
       step.kind === "requirement" &&

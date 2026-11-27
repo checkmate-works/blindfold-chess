@@ -22,9 +22,9 @@ import { BottomBar, Button, ListSection, Screen } from "../../../../components";
 import { useAuth } from "../../../../auth/use-auth";
 import { ExamVerdictCard } from "../../../../features/dojo/ExamVerdictCard";
 import {
+  examProblemOf,
   examRankOf,
-  puzzleExamProblemOf,
-} from "../../../../features/dojo/exam-run";
+} from "@blindfold-chess/features/dojo-journey";
 import {
   AttemptHistoryPanel,
   AttemptStatusBadge,
@@ -81,7 +81,7 @@ export default function PuzzleResult() {
     moves?: string;
   }>();
   const exam = examRankOf(params.exam);
-  const examProblem = puzzleExamProblemOf(params.exam);
+  const examProblem = examProblemOf(params.exam, "puzzle");
   const examMoves = useMemo(
     () =>
       parseJson<unknown[]>(params.moves, []).filter(

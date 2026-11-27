@@ -7,11 +7,8 @@ import {
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { isBlackToMoveFromFen } from "@blindfold-chess/features/chess-core";
-import { DOJO_EXAMS } from "@blindfold-chess/features/dojo-journey";
-import {
-  isRankSlug,
-  type ExamProblemKind,
-} from "@blindfold-chess/features/dojo-ranks";
+import { DOJO_EXAMS, examRankOf } from "@blindfold-chess/features/dojo-journey";
+import { EXAM_PROBLEM_KINDS } from "@blindfold-chess/features/dojo-ranks";
 
 import { BottomBar, Button, ListSection, Screen } from "../../../../components";
 import { examProblemSegment } from "../../../../features/dojo/dojo-api";
@@ -19,8 +16,6 @@ import { ExamPatternList } from "../../../../features/dojo/ExamPatternList";
 import { BoardAccordion } from "../../../../features/puzzle/components/BoardAccordion";
 import { PiecesInfo } from "../../../../features/puzzle/components/PiecesInfo";
 import { fontSize, spacing, useTheme } from "../../../../theme";
-
-const KINDS: readonly ExamProblemKind[] = ["position_memory", "puzzle"];
 
 /**
  * Dojo exam problem (道場の課題の問題)
@@ -45,11 +40,10 @@ export default function DojoExamProblemScreen() {
   const router = useRouter();
   const { width } = useWindowDimensions();
   const params = useLocalSearchParams<{ rank: string; problem: string }>();
-  const rank =
-    isRankSlug(params.rank) && params.rank !== "mukyu"
-      ? params.rank
-      : undefined;
-  const kind = KINDS.find((k) => examProblemSegment(k) === params.problem);
+  const rank = examRankOf(params.rank);
+  const kind = EXAM_PROBLEM_KINDS.find(
+    (k) => examProblemSegment(k) === params.problem,
+  );
   const problem = rank && kind ? DOJO_EXAMS[rank]?.[kind] : undefined;
   if (!rank || !kind || !problem) return null;
 

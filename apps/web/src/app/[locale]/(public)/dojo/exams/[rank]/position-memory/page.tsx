@@ -29,6 +29,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { SUPPORTED_LOCALES } from '@/config';
+import { EXAM_RANKS, examProblemOf, examRankOf } from '@blindfold-chess/features/dojo-journey';
 
 import { PositionDetailLayout } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionDetailLayout';
 import { PositionPeekBoard } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionPeekBoard';
@@ -39,7 +40,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { ExamMemorySession } from '../../_components/ExamMemorySession';
 import { ExamPatterns } from '../../_components/ExamPatterns';
-import { EXAM_RANKS, examProblemOf, parseExamRank, previousRank } from '../../_lib/exam-rank';
+import { previousRank } from '../../_lib/exam-rank';
 
 type Props = {
   params: Promise<{ locale: Locale; rank: string }>;
@@ -59,10 +60,10 @@ export const dynamicParams = false;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, rank } = await params;
-  const exam = parseExamRank(rank);
+  const exam = examRankOf(rank);
   if (!exam) return {};
   const t = await getTranslations({ locale });
-  // ranks.rankNames.<EarnedRankSlug>: only ranks with an exam (parseExamRank)
+  // ranks.rankNames.<EarnedRankSlug>: only ranks with an exam (examRankOf)
   const rankName = t(`ranks.rankNames.${exam}`);
   return {
     title: resolveTitle(
@@ -76,8 +77,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function DojoExamPositionMemoryPage({ params }: Props) {
   const { locale, rank } = await params;
   setRequestLocale(locale);
-  const exam = parseExamRank(rank);
-  const problem = exam ? examProblemOf(exam, 'position_memory') : undefined;
+  const exam = examRankOf(rank);
+  const problem = examProblemOf(exam, 'position_memory');
   if (!exam || !problem) notFound();
 
   const t = await getTranslations({ locale });

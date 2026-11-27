@@ -28,6 +28,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { SUPPORTED_LOCALES } from '@/config';
+import { EXAM_RANKS, examProblemOf, examRankOf } from '@blindfold-chess/features/dojo-journey';
 
 import { PositionPeekBoard } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionPeekBoard';
 import { PiecesInfo } from '@/app/[locale]/(public)/practice/_components/PiecesInfo';
@@ -38,7 +39,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { ExamPatterns } from '../../_components/ExamPatterns';
 import { ExamPuzzleSession } from '../../_components/ExamPuzzleSession';
-import { EXAM_RANKS, examProblemOf, parseExamRank, previousRank } from '../../_lib/exam-rank';
+import { previousRank } from '../../_lib/exam-rank';
 
 type Props = {
   params: Promise<{ locale: Locale; rank: string }>;
@@ -55,10 +56,10 @@ export const dynamicParams = false;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, rank } = await params;
-  const exam = parseExamRank(rank);
+  const exam = examRankOf(rank);
   if (!exam) return {};
   const t = await getTranslations({ locale });
-  // ranks.rankNames.<EarnedRankSlug>: only ranks with an exam (parseExamRank)
+  // ranks.rankNames.<EarnedRankSlug>: only ranks with an exam (examRankOf)
   const rankName = t(`ranks.rankNames.${exam}`);
   return {
     title: resolveTitle(
@@ -72,8 +73,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function DojoExamPuzzlePage({ params }: Props) {
   const { locale, rank } = await params;
   setRequestLocale(locale);
-  const exam = parseExamRank(rank);
-  const problem = exam ? examProblemOf(exam, 'puzzle') : undefined;
+  const exam = examRankOf(rank);
+  const problem = examProblemOf(exam, 'puzzle');
   if (!exam || !problem) notFound();
 
   const t = await getTranslations({ locale });

@@ -26,7 +26,12 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { SUPPORTED_LOCALES } from '@/config';
-import { DOJO_EXAMS } from '@blindfold-chess/features/dojo-journey';
+import {
+  DOJO_EXAMS,
+  EXAM_RANKS,
+  examProblemKinds,
+  examRankOf,
+} from '@blindfold-chess/features/dojo-journey';
 import { parseSolutionLines } from '@blindfold-chess/features/puzzle';
 
 import { examProblemSegment } from '@/app/[locale]/(public)/dojo/ranks/_lib/requirement-items';
@@ -37,7 +42,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { ExamProblemList } from '../_components/ExamProblemList';
 import type { ExamProblemRow } from '../_components/ExamProblemList';
-import { EXAM_RANKS, examProblemKinds, parseExamRank, previousRank } from '../_lib/exam-rank';
+import { previousRank } from '../_lib/exam-rank';
 
 type Props = {
   params: Promise<{ locale: Locale; rank: string }>;
@@ -52,10 +57,10 @@ export const dynamicParams = false;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, rank } = await params;
-  const exam = parseExamRank(rank);
+  const exam = examRankOf(rank);
   if (!exam) return {};
   const t = await getTranslations({ locale });
-  // ranks.rankNames.<EarnedRankSlug>: only ranks with an exam (parseExamRank)
+  // ranks.rankNames.<EarnedRankSlug>: only ranks with an exam (examRankOf)
   const rankName = t(`ranks.rankNames.${exam}`);
   return {
     title: resolveTitle(t('dojoExam.title', { rankName }), locale),
@@ -67,7 +72,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function DojoExamPage({ params }: Props) {
   const { locale, rank } = await params;
   setRequestLocale(locale);
-  const exam = parseExamRank(rank);
+  const exam = examRankOf(rank);
   if (!exam) notFound();
 
   const t = await getTranslations({ locale });

@@ -17,11 +17,12 @@
 import { validateFenFormat } from "../chess-core/fen-pure";
 import { calculateAccuracy } from "../common/accuracy";
 import {
+  EARNED_RANK_SLUGS,
+  EXAM_PROBLEM_KINDS,
   type EarnedRankSlug,
   type ExamProblemKind,
   type RankSlug,
   isExamProblemKind,
-  isRankSlug,
   rankStanding,
 } from "../dojo-ranks/ranks";
 import { MAX_SOLUTION_MOVES } from "../puzzle/limits";
@@ -113,6 +114,45 @@ export const DOJO_EXAMS: Readonly<
   },
 };
 
+/** The ranks that have an exam, lowest first. */
+export const EXAM_RANKS: readonly EarnedRankSlug[] = EARNED_RANK_SLUGS.filter(
+  (slug) => DOJO_EXAMS[slug] !== undefined,
+);
+
+/**
+ * `value` as a rank that has an exam, or undefined. Safe on untrusted input
+ * (a URL segment, a route param, a request body): only known ranks match.
+ */
+export function examRankOf(value: unknown): EarnedRankSlug | undefined {
+  return EXAM_RANKS.find((rank) => rank === value);
+}
+
+/**
+ * The problem kinds of `rank`'s exam, in {@link EXAM_PROBLEM_KINDS} order —
+ * the order every list of an exam's problems shows them in.
+ */
+export function examProblemKinds(rank: EarnedRankSlug): ExamProblemKind[] {
+  const exam = DOJO_EXAMS[rank];
+  return exam
+    ? EXAM_PROBLEM_KINDS.filter((kind) => exam[kind] !== undefined)
+    : [];
+}
+
+/**
+ * The `kind` problem of the exam `exam` names, narrowed to that kind's shape,
+ * or undefined when `exam` is not a rank with an exam. `exam` may be untrusted.
+ */
+export function examProblemOf<K extends ExamProblemKind>(
+  exam: unknown,
+  kind: K,
+): Extract<ExamProblem, { kind: K }> | undefined {
+  const rank = examRankOf(exam);
+  const problem = rank ? DOJO_EXAMS[rank]?.[kind] : undefined;
+  return problem?.kind === kind
+    ? (problem as Extract<ExamProblem, { kind: K }>)
+    : undefined;
+}
+
 /**
  * The problem named by an untrusted `(exam, problem)` pair, or undefined when
  * the rank has no exam or the kind is unknown. Safe to call with request
@@ -122,10 +162,7 @@ export function examProblemFor(
   exam: string,
   problem: string,
 ): ExamProblem | undefined {
-  if (!isRankSlug(exam) || exam === "mukyu" || !isExamProblemKind(problem)) {
-    return undefined;
-  }
-  return DOJO_EXAMS[exam]?.[problem];
+  return isExamProblemKind(problem) ? examProblemOf(exam, problem) : undefined;
 }
 
 /** A recreated position (memory) or the player's moves in SAN (puzzle). */

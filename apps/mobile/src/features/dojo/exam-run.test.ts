@@ -5,11 +5,8 @@ vi.mock("./dojo-api", () => ({ submitExamProblem: vi.fn() }));
 
 import { submitExamProblem } from "./dojo-api";
 import {
-  examRankOf,
   examRunMode,
   examVerdict,
-  memoryExamProblemOf,
-  puzzleExamProblemOf,
   runExamProblem,
   type ExamRunOutcome,
 } from "./exam-run";
@@ -148,20 +145,5 @@ describe("runExamProblem", () => {
         grantedRanks: [],
       }),
     ).toBe("passedUnrecorded");
-  });
-});
-
-describe("route params", () => {
-  it("reads an exam param only for a rank that has an exam", () => {
-    expect(examRankOf("2kyu")).toBe("2kyu");
-    expect(examRankOf("3kyu")).toBeUndefined();
-    expect(examRankOf("mukyu")).toBeUndefined();
-    expect(examRankOf(undefined)).toBeUndefined();
-  });
-
-  it("finds each kind of problem of the named exam", () => {
-    expect(memoryExamProblemOf("2kyu")).toBe(exam.position_memory);
-    expect(puzzleExamProblemOf("2kyu")).toBe(exam.puzzle);
-    expect(puzzleExamProblemOf("nope")).toBeUndefined();
   });
 });

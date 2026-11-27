@@ -33,7 +33,7 @@ import {
   serializeFenResultParams,
   type FenSessionParams,
 } from "../../../../features/fen/lib/route-params";
-import { memoryExamProblemOf } from "../../../../features/dojo/exam-run";
+import { examProblemOf } from "@blindfold-chess/features/dojo-journey";
 import { parseIntParam } from "../../../../lib/route-params";
 import {
   useTheme,
@@ -69,7 +69,9 @@ export default function PositionMemorySession() {
   // A dojo exam run (`exam` param) plays the exam's one problem with its own
   // clock, whatever else the link carries, so the position recreated is the
   // one the result screen sends for grading.
-  const [examProblem] = useState(() => memoryExamProblemOf(params.exam));
+  const [examProblem] = useState(() =>
+    examProblemOf(params.exam, "position_memory"),
+  );
   const memorizeSeconds =
     examProblem?.memorizeSeconds ??
     parseIntParam(params.seconds, {

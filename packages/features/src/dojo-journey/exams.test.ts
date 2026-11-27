@@ -5,9 +5,13 @@ import { fenToPlacements } from "../chess-core/fen-pure";
 import { calculateAccuracy } from "../common/accuracy";
 import {
   DOJO_EXAMS,
+  EXAM_RANKS,
   type MemoryExamProblem,
   type PuzzleExamProblem,
   examProblemFor,
+  examProblemKinds,
+  examProblemOf,
+  examRankOf,
   gradeExamProblem,
   isExamEligible,
 } from "./exams";
@@ -94,6 +98,32 @@ describe("examProblemFor", () => {
     expect(examProblemFor("2kyu", "memory")).toBeUndefined();
     expect(examProblemFor("__proto__", "puzzle")).toBeUndefined();
     expect(examProblemFor("2kyu", "constructor")).toBeUndefined();
+  });
+});
+
+describe("exam lookups", () => {
+  it("lists the ranks with an exam", () => {
+    expect(EXAM_RANKS).toEqual(["2kyu"]);
+  });
+
+  it("reads a rank only when it has an exam", () => {
+    expect(examRankOf("2kyu")).toBe("2kyu");
+    expect(examRankOf("3kyu")).toBeUndefined();
+    expect(examRankOf("mukyu")).toBeUndefined();
+    expect(examRankOf("__proto__")).toBeUndefined();
+    expect(examRankOf(undefined)).toBeUndefined();
+  });
+
+  it("lists an exam's problem kinds, memory first", () => {
+    expect(examProblemKinds("2kyu")).toEqual(["position_memory", "puzzle"]);
+    expect(examProblemKinds("5kyu")).toEqual([]);
+  });
+
+  it("finds each kind of problem of the named exam", () => {
+    expect(examProblemOf("2kyu", "position_memory")).toBe(memory);
+    expect(examProblemOf("2kyu", "puzzle")).toBe(puzzle);
+    expect(examProblemOf("nope", "puzzle")).toBeUndefined();
+    expect(examProblemOf(undefined, "puzzle")).toBeUndefined();
   });
 });
 
