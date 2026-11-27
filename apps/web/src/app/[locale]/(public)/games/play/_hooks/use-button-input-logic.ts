@@ -14,7 +14,7 @@ type ButtonInputLogicProps = {
  * append, backspace, clear, submit actions.
  */
 export function useButtonInputLogic({ fen, onSubmit }: ButtonInputLogicProps) {
-  const n = useNotationInput({ fen, onSubmit, resetOnSubmit: false });
+  const n = useNotationInput({ fen, onSubmit });
 
   return {
     input: n.state.input,

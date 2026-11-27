@@ -168,6 +168,7 @@ function AiGameBoard({ setup }: { setup: GameSetup }) {
   // The board starts from the player's side and can be turned round.
   const [flipped, setFlipped] = useState<boolean | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [movesOpen, setMovesOpen] = useState(false);
   // The top inset is padded from the provider's value rather than left to
   // `Screen`'s `SafeAreaView`: in a header-less screen of the full-screen
   // session modal the view's own top inset comes out as 0 on iOS, which put
@@ -336,6 +337,11 @@ function AiGameBoard({ setup }: { setup: GameSetup }) {
             aiMoveFailed={game.aiMoveFailed}
             skillLevel={skillLevel}
           />
+          <HeaderIconButton
+            icon="list"
+            accessibilityLabel={t("aiGame.session.moves")}
+            onPress={() => setMovesOpen(true)}
+          />
           {preferences.boardVisibility !== "never" && (
             <HeaderIconButton
               icon="swap-vertical"
@@ -379,16 +385,12 @@ function AiGameBoard({ setup }: { setup: GameSetup }) {
           </Text>
         )}
 
-        {/* Move History */}
-        <MoveHistory moves={game.moves} startingFen={start.startingFen} />
-
         {/* Input area */}
         {game.gameStatus === "in_progress" &&
           (game.isPlayerTurn ? (
             <ButtonInput
               fen={game.currentFen}
               onSubmit={game.submitMove}
-              fitWidth
               disabled={ai.isLoading || game.isAiThinking}
             />
           ) : game.aiMoveFailed ? (
@@ -453,6 +455,15 @@ function AiGameBoard({ setup }: { setup: GameSetup }) {
         )}
       </ScrollView>
 
+      {/* The moves stay off the screen while playing: a list always in view
+          is the game written out, which blindfold play takes away. */}
+      <BottomSheet
+        visible={movesOpen}
+        onClose={() => setMovesOpen(false)}
+        title={t("aiGame.session.moves")}
+      >
+        <MoveHistory moves={game.moves} startingFen={start.startingFen} />
+      </BottomSheet>
       {/* This game's settings, changed mid-game: they are the session's own
           copy, so the global preferences stay as they were. */}
       <BottomSheet
@@ -476,7 +487,7 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
-  // Tight on purpose: the board, the move strip and the keypad have to fit
+  // Tight on purpose: the board and the keypad have to fit
   // on a phone screen together, so the player never scrolls to enter a move.
   scrollContent: {
     paddingHorizontal: spacing.lg,

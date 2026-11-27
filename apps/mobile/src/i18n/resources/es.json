@@ -382,12 +382,8 @@
       "draw": "Tablas",
       "check": "¡Jaque!",
       "noMoves": "Aún no hay jugadas",
-      "movePreview": "Introduce tu jugada",
-      "submit": "Enviar",
-      "clear": "Borrar",
+      "moves": "Movimientos",
       "invalidMove": "Jugada no válida",
-      "disambiguation": "Desambiguación (opcional)",
-      "sourceLabel": "Origen",
       "showBoard": "Mostrar tablero",
       "aiPlayed": "La IA jugó {{move}}",
       "invalidMoveWithInput": "Movimiento inválido: {{move}}",
@@ -1175,5 +1171,29 @@
     "guideNextGuide": "Siguiente guía",
     "guideToPractice": "Ir a practicar",
     "guideRead": "Leído"
+  },
+  "buttonInput": {
+    "piece": {
+      "king": "Rey",
+      "queen": "Dama",
+      "rook": "Torre",
+      "bishop": "Alfil",
+      "knight": "Caballo"
+    },
+    "symbol": {
+      "capture": "Captura",
+      "check": "Jaque",
+      "promotion": "Promoción",
+      "checkmate": "Jaque mate"
+    },
+    "castling": {
+      "kingside": "Enroque corto",
+      "queenside": "Enroque largo"
+    },
+    "action": {
+      "backspace": "Retroceso",
+      "clear": "Borrar",
+      "submit": "Enviar"
+    }
   }
 }

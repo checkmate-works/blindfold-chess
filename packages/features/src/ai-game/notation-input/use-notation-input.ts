@@ -5,10 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { AlgebraicNotation } from "@blindfold-chess/types";
 
 import {
-  computeIsPawnCaptureMode,
   computeIsSubmittable,
-  computePreviewText,
-  computeShowPromotion,
   createInitialState,
   notationInputReducer,
 } from "./state-machine";
@@ -17,21 +14,19 @@ import type {
   NotationChar,
   NotationInputAction,
   NotationInputState,
-  PromotionPiece,
   UseNotationInputOptions,
   UseNotationInputReturn,
 } from "./types";
 
 /**
- * SAN move-entry state for the AI game, wrapping {@link notationInputReducer}.
- * All state resets whenever `fen` changes — i.e. when the game accepts a
- * move — so with `resetOnSubmit: false` a rejected move stays on screen for
- * correction while an accepted one clears.
+ * SAN keypad state, wrapping {@link notationInputReducer}. The input resets
+ * whenever `fen` changes — i.e. when the game accepts a move — so a
+ * rejected move stays on screen for correction while an accepted one
+ * clears.
  */
 export function useNotationInput({
   fen,
   onSubmit,
-  resetOnSubmit = false,
 }: UseNotationInputOptions): UseNotationInputReturn {
   const [state, setState] = useState<NotationInputState>(createInitialState);
   const prevFenRef = useRef(fen);
@@ -44,10 +39,8 @@ export function useNotationInput({
     }
   }, [fen]);
 
-  const dispatch = useCallback((...actions: NotationInputAction[]) => {
-    setState((prev) =>
-      actions.reduce((s, action) => notationInputReducer(s, action), prev),
-    );
+  const dispatch = useCallback((action: NotationInputAction) => {
+    setState((prev) => notationInputReducer(prev, action));
   }, []);
 
   const appendChar = useCallback(
@@ -64,93 +57,20 @@ export function useNotationInput({
   );
   const clear = useCallback(() => dispatch({ type: "clear" }), [dispatch]);
 
-  const selectPiece = useCallback(
-    (piece: string) => dispatch({ type: "selectPiece", piece }),
-    [dispatch],
-  );
-  const selectFile = useCallback(
-    (file: string) => dispatch({ type: "selectFile", file }),
-    [dispatch],
-  );
-  const selectRank = useCallback(
-    (rank: string) => dispatch({ type: "selectRank", rank }),
-    [dispatch],
-  );
-  const setTargetFile = useCallback(
-    (file: string | null) => dispatch({ type: "setTargetFile", file }),
-    [dispatch],
-  );
-  const toggleCapture = useCallback(
-    () => dispatch({ type: "toggleCapture" }),
-    [dispatch],
-  );
-  const toggleCheck = useCallback(
-    () => dispatch({ type: "toggleCheck" }),
-    [dispatch],
-  );
-  const selectCastling = useCallback(
-    (move: CastlingToken) => dispatch({ type: "selectCastling", move }),
-    [dispatch],
-  );
-  const selectPromotion = useCallback(
-    (piece: PromotionPiece) => dispatch({ type: "selectPromotion", piece }),
-    [dispatch],
-  );
-  const selectSourceFile = useCallback(
-    (file: string) => dispatch({ type: "selectSourceFile", file }),
-    [dispatch],
-  );
-  const selectSourceRank = useCallback(
-    (rank: string) => dispatch({ type: "selectSourceRank", rank }),
-    [dispatch],
-  );
-  const toggleAmbiguous = useCallback(
-    () => dispatch({ type: "toggleAmbiguous" }),
-    [dispatch],
-  );
-  const reset = useCallback(() => dispatch({ type: "reset" }), [dispatch]);
-
-  const previewText = useMemo(() => computePreviewText(state), [state]);
-  const showPromotion = useMemo(() => computeShowPromotion(state), [state]);
-  const isPawnCaptureMode = useMemo(
-    () => computeIsPawnCaptureMode(state),
-    [state],
-  );
   const isSubmittable = useMemo(() => computeIsSubmittable(state), [state]);
 
   const submit = useCallback(() => {
     if (state.input.length === 0) return;
     onSubmit(state.input as AlgebraicNotation);
-    if (resetOnSubmit) {
-      dispatch({ type: "reset" });
-    }
-    // When resetOnSubmit is false:
-    // - On success: the parent's FEN changes, the effect above clears state.
-    // - On failure: keep state so the user can backspace to correct.
-  }, [state.input, onSubmit, resetOnSubmit, dispatch]);
+  }, [state.input, onSubmit]);
 
   return {
     state,
-    previewText,
-    showPromotion,
-    isPawnCaptureMode,
     isSubmittable,
     appendChar,
     appendCastling,
     backspace,
     clear,
-    selectPiece,
-    selectFile,
-    selectRank,
-    setTargetFile,
-    toggleCapture,
-    toggleCheck,
-    selectCastling,
-    selectPromotion,
-    selectSourceFile,
-    selectSourceRank,
-    toggleAmbiguous,
-    reset,
     submit,
   };
 }
