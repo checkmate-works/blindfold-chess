@@ -154,6 +154,30 @@ export function examProblemOf<K extends ExamProblemKind>(
 }
 
 /**
+ * The URL segment of a problem kind: the kind in kebab-case
+ * (`position_memory` → `position-memory`), as in the web's exam pages
+ * (`/dojo/exams/2kyu/position-memory`), the app's exam routes and the mobile
+ * API (`POST /dojo/exams/<exam>/<problem>`). Clients build the URL with this
+ * and the server reads it back with {@link examProblemKindFromSegment}, so
+ * the two cannot spell a problem differently.
+ */
+export function examProblemSegment(kind: ExamProblemKind): string {
+  return kind.replace(/_/g, "-");
+}
+
+/**
+ * The problem kind a URL segment names, or undefined. Only the spelling
+ * {@link examProblemSegment} writes is accepted, so each problem has one URL.
+ */
+export function examProblemKindFromSegment(
+  segment: string,
+): ExamProblemKind | undefined {
+  return EXAM_PROBLEM_KINDS.find(
+    (kind) => examProblemSegment(kind) === segment,
+  );
+}
+
+/**
  * The problem named by an untrusted `(exam, problem)` pair, or undefined when
  * the rank has no exam or the kind is unknown. Safe to call with request
  * input: only known slugs and kinds are looked up.

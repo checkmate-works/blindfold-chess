@@ -9,8 +9,10 @@ import {
   type MemoryExamProblem,
   type PuzzleExamProblem,
   examProblemFor,
+  examProblemKindFromSegment,
   examProblemKinds,
   examProblemOf,
+  examProblemSegment,
   examRankOf,
   gradeExamProblem,
   isExamEligible,
@@ -124,6 +126,22 @@ describe("exam lookups", () => {
     expect(examProblemOf("2kyu", "puzzle")).toBe(puzzle);
     expect(examProblemOf("nope", "puzzle")).toBeUndefined();
     expect(examProblemOf(undefined, "puzzle")).toBeUndefined();
+  });
+});
+
+describe("exam problem URL segments", () => {
+  it("writes problem kinds in kebab-case", () => {
+    expect(examProblemSegment("position_memory")).toBe("position-memory");
+    expect(examProblemSegment("puzzle")).toBe("puzzle");
+  });
+
+  it("reads back only the kebab-case spelling", () => {
+    expect(examProblemKindFromSegment("position-memory")).toBe(
+      "position_memory",
+    );
+    expect(examProblemKindFromSegment("puzzle")).toBe("puzzle");
+    expect(examProblemKindFromSegment("position_memory")).toBeUndefined();
+    expect(examProblemKindFromSegment("constructor")).toBeUndefined();
   });
 });
 

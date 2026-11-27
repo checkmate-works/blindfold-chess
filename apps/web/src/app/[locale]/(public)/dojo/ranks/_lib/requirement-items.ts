@@ -1,4 +1,5 @@
 import type { InterpolatingTranslator } from '@/i18n/translator';
+import { examProblemSegment } from '@blindfold-chess/features/dojo-journey';
 
 import { parseRequirements, ranksSeedData } from '@/lib/db/data/ranks';
 import type {
@@ -70,14 +71,6 @@ function buildChallengeScoreItem(
     }),
     href,
   };
-}
-
-/**
- * The URL segment of an exam problem: the kind in kebab-case, matching the
- * practice routes (`position_memory` → `position-memory`).
- */
-export function examProblemSegment(problem: ExamProblemRequirement['problem']): string {
-  return problem.replace(/_/g, '-');
 }
 
 function examProblemLabel(req: ExamProblemRequirement, t: InterpolatingTranslator): string {

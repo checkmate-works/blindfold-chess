@@ -7,7 +7,6 @@ import {
   buildChallengeNameKey,
   buildRequirementItems,
   buildRequirementLabels,
-  examProblemSegment,
   getRankCardState,
   isRankEarnedByPlaying,
 } from './requirement-items';
@@ -236,17 +235,6 @@ describe('buildRequirementLabels', () => {
     expect(
       buildRequirementLabels({ type: 'exam_problem', exam: '2kyu', problem: 'puzzle' }, mockT)
     ).toEqual(['Pass 2kyu: puzzle']);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// examProblemSegment
-// ---------------------------------------------------------------------------
-
-describe('examProblemSegment', () => {
-  it('writes problem kinds in kebab-case for the exam URLs', () => {
-    expect(examProblemSegment('position_memory')).toBe('position-memory');
-    expect(examProblemSegment('puzzle')).toBe('puzzle');
   });
 });
 

@@ -30,11 +30,11 @@ import {
   DOJO_EXAMS,
   EXAM_RANKS,
   examProblemKinds,
+  examProblemSegment,
   examRankOf,
 } from '@blindfold-chess/features/dojo-journey';
 import { parseSolutionLines } from '@blindfold-chess/features/puzzle';
 
-import { examProblemSegment } from '@/app/[locale]/(public)/dojo/ranks/_lib/requirement-items';
 import { RankAchievementModal } from '@/app/[locale]/(public)/practice/_components/RankAchievementModal';
 import { PageLayout } from '@/app/[locale]/_components';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';

@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import {
   DOJO_EXAMS,
   examProblemKinds,
+  examProblemSegment,
   examRankOf,
   type ExamProblem,
 } from "@blindfold-chess/features/dojo-journey";
@@ -14,7 +15,6 @@ import {
 
 import { ListIcon, ListRow, ListSection, Screen } from "../../../components";
 import { useAuth } from "../../../auth/use-auth";
-import { examProblemSegment } from "../../../features/dojo/dojo-api";
 import { examRunMode } from "../../../features/dojo/exam-run";
 import { RankGoalCard } from "../../../features/dojo/RankGoalCard";
 import { useDojoJourney } from "../../../features/dojo/use-dojo-journey";
