@@ -1,4 +1,6 @@
-import { ALL_RANK_SLUGS, MUKYU_SLUG, isMukyuSlug, parseRequirements } from '@/lib/db/data/ranks';
+import { EARNED_RANK_SLUGS, isRankSlug, nextRankSlug } from '@blindfold-chess/features/dojo-ranks';
+
+import { MUKYU_SLUG, parseRequirements } from '@/lib/db/data/ranks';
 import type { RankRequirement, RankSlug } from '@/lib/db/data/ranks';
 import type { Rank } from '@/lib/db/schema';
 
@@ -13,9 +15,6 @@ import type { Rank } from '@/lib/db/schema';
  * must not be conflated. See {@link resolveEffectiveAchievedSlugs}.
  */
 
-/** Non-mukyu rank slugs, in ascending progression order. */
-const REAL_RANK_SLUGS = ALL_RANK_SLUGS.filter((slug) => !isMukyuSlug(slug));
-
 /**
  * Index of the highest achieved rank in progression order, or -1 for none.
  *
@@ -25,8 +24,8 @@ const REAL_RANK_SLUGS = ALL_RANK_SLUGS.filter((slug) => !isMukyuSlug(slug));
  */
 function highestAchievedIndex(achievedSlugs: ReadonlySet<RankSlug>): number {
   let highest = -1;
-  for (let i = 0; i < REAL_RANK_SLUGS.length; i++) {
-    if (achievedSlugs.has(REAL_RANK_SLUGS[i])) highest = i;
+  for (let i = 0; i < EARNED_RANK_SLUGS.length; i++) {
+    if (achievedSlugs.has(EARNED_RANK_SLUGS[i])) highest = i;
   }
   return highest;
 }
@@ -44,7 +43,7 @@ export function resolveAchievedSlugs(
     dbRanks
       .filter((r) => achievedRankIds.has(r.id))
       .map((r) => r.slug)
-      .filter((slug): slug is RankSlug => (ALL_RANK_SLUGS as readonly string[]).includes(slug))
+      .filter(isRankSlug)
   );
 }
 
@@ -63,10 +62,9 @@ export function resolveAchievedSlugs(
  * `/dojo/ranks`, just not pushed as "next").
  */
 export function resolveRecommendedNextSlug(achievedSlugs: ReadonlySet<RankSlug>): RankSlug | null {
-  for (let i = highestAchievedIndex(achievedSlugs) + 1; i < REAL_RANK_SLUGS.length; i++) {
-    if (!achievedSlugs.has(REAL_RANK_SLUGS[i])) return REAL_RANK_SLUGS[i];
-  }
-  return null;
+  // Every rank above the highest held is unachieved by definition, so the
+  // first unachieved one above it is simply the shared ladder's next rank.
+  return nextRankSlug(resolveHighestAchievedSlug(achievedSlugs) ?? undefined) ?? null;
 }
 
 /**
@@ -80,7 +78,7 @@ export function resolveRecommendedNextSlug(achievedSlugs: ReadonlySet<RankSlug>)
  */
 export function resolveHighestAchievedSlug(achievedSlugs: ReadonlySet<RankSlug>): RankSlug | null {
   const highest = highestAchievedIndex(achievedSlugs);
-  return highest === -1 ? null : REAL_RANK_SLUGS[highest];
+  return highest === -1 ? null : EARNED_RANK_SLUGS[highest];
 }
 
 /**
@@ -105,7 +103,7 @@ export function resolveEffectiveAchievedSlugs(
 ): ReadonlySet<RankSlug> {
   const highest = highestAchievedIndex(achievedSlugs);
   if (highest === -1) return achievedSlugs;
-  return new Set(REAL_RANK_SLUGS.slice(0, highest + 1));
+  return new Set(EARNED_RANK_SLUGS.slice(0, highest + 1));
 }
 
 /** Display-only: effective expansion + mukyu iff the user holds >=1 real rank. */
@@ -159,7 +157,7 @@ export function resolveNextRank(
   };
 
   const highest = highestAchievedIndex(achievedSlugs);
-  const current = highest === -1 ? null : toView(REAL_RANK_SLUGS[highest]);
+  const current = highest === -1 ? null : toView(EARNED_RANK_SLUGS[highest]);
 
   const nextSlug = resolveRecommendedNextSlug(achievedSlugs);
   const next = nextSlug ? toView(nextSlug) : null;
