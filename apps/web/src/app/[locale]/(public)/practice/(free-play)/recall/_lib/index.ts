@@ -1,6 +1,9 @@
-export { countCurrentMoveMistakes, DONT_KNOW_PROMPT_THRESHOLD } from './current-move-mistakes';
-export type { MoveLogEntry } from './move-log-entry';
+export {
+  AUTO_FILL_ALL_THRESHOLD,
+  DONT_KNOW_PROMPT_THRESHOLD,
+  computeRecallStats,
+  countCurrentMoveMistakes,
+} from '@blindfold-chess/features/recall';
+export type { MoveLogEntry, RecallStats } from '@blindfold-chess/features/recall';
 export { isPlayerTurn } from './move-notation';
-export { computeRecallStats } from './recall-stats';
-export type { RecallStats } from './recall-stats';
 export { resolveModalPosition } from './resolve-modal-position';

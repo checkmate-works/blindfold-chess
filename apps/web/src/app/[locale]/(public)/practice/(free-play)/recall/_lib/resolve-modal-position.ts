@@ -1,4 +1,4 @@
-import type { MoveLogEntry } from './move-log-entry';
+import type { MoveLogEntry } from '@blindfold-chess/features/recall';
 
 /**
  * Resolve a moveLog entry to a `useMoveNavigation`-style position (-2 =

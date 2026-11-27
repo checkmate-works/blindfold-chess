@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import type { MoveLogEntry } from "../recall-state";
+import type { MoveLogEntry } from "@blindfold-chess/features/recall";
 import { decodeRecallLog, encodeRecallLog } from "./result-params";
 
 const LOG: MoveLogEntry[] = [

@@ -1,4 +1,4 @@
-import type { MoveLogEntry } from "../recall-state";
+import type { MoveLogEntry } from "@blindfold-chess/features/recall";
 
 const STATUSES: readonly MoveLogEntry["status"][] = [
   "correct",

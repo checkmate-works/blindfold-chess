@@ -1,4 +1,4 @@
-import type { MoveLogEntry } from './move-log-entry';
+import type { MoveLogEntry } from "./move-log-entry";
 
 /**
  * Wrong attempts on one move after which the review offers to reveal the
@@ -15,6 +15,13 @@ import type { MoveLogEntry } from './move-log-entry';
 export const DONT_KNOW_PROMPT_THRESHOLD = 3;
 
 /**
+ * "I don't know" presses in one session after which "Auto-fill All" is
+ * offered next to the button: a reviewer who has given up on two moves is
+ * likely stuck on the rest of the game too.
+ */
+export const AUTO_FILL_ALL_THRESHOLD = 2;
+
+/**
  * Number of wrong attempts entered for the move currently being resolved.
  *
  * The log is an ordered stream in which `incorrect` entries precede the
@@ -23,9 +30,15 @@ export const DONT_KNOW_PROMPT_THRESHOLD = 3;
  * attempts on the unresolved move are therefore exactly the trailing run of
  * `incorrect` entries — no separate counter to keep in sync with the log.
  */
-export function countCurrentMoveMistakes(entries: MoveLogEntry[]): number {
+export function countCurrentMoveMistakes(
+  entries: readonly MoveLogEntry[],
+): number {
   let count = 0;
-  for (let i = entries.length - 1; i >= 0 && entries[i].status === 'incorrect'; i--) {
+  for (
+    let i = entries.length - 1;
+    i >= 0 && entries[i].status === "incorrect";
+    i--
+  ) {
     count++;
   }
   return count;

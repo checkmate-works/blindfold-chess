@@ -4,6 +4,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { useTranslation } from "react-i18next";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { replayMoves } from "@blindfold-chess/features/chess-core";
+import { computeRecallStats } from "@blindfold-chess/features/recall";
 import { SIDES, type Side } from "@blindfold-chess/types";
 
 import { BottomBar, Button, Screen } from "../../../../components";
@@ -12,10 +13,7 @@ import { RecallMoveStrip } from "../../../../features/recall/components/RecallMo
 import { SegmentedBar } from "../../../../features/recall/components/SegmentedBar";
 import { readRecallPgn } from "../../../../features/recall/lib/pgn";
 import { decodeRecallLog } from "../../../../features/recall/lib/result-params";
-import {
-  computeRecallStats,
-  positionOfEntry,
-} from "../../../../features/recall/recall-state";
+import { positionOfEntry } from "../../../../features/recall/recall-state";
 import { parseEnumParam } from "../../../../lib/route-params";
 import { useCloseSession } from "../../../../navigation/use-close-session";
 import { fontSize, fontWeight, spacing, useTheme } from "../../../../theme";

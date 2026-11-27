@@ -14,6 +14,6 @@ export type MoveLogEntry = {
    * - `auto`: the opponent's move auto-filled in auto-opponent mode — NOT the
    *   user's responsibility, excluded from recall stats.
    */
-  status: 'correct' | 'incorrect' | 'auto' | 'skipped' | 'autoFilled';
+  status: "correct" | "incorrect" | "auto" | "skipped" | "autoFilled";
   incorrectMove?: string;
 };

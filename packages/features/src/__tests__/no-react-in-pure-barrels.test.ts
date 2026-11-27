@@ -35,6 +35,7 @@ const PURE_BARRELS = [
   "challenge-attempt/index.ts",
   "openings/index.ts",
   "puzzle/index.ts",
+  "recall/index.ts",
 ];
 
 const REACT_IMPORT_RE = /\bfrom\s+["']react["']/;
