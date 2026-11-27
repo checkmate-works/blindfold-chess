@@ -1,6 +1,9 @@
 import { useCallback, useMemo } from "react";
 import { ChessPieceIcon } from "@blindfold-chess/icons";
-import { fenToBoardFlat } from "@blindfold-chess/features/chess-core/fen";
+import {
+  fenToBoardFlat,
+  squareToBoardIndex,
+} from "@blindfold-chess/features/chess-core/fen";
 import type { PieceType, Square } from "@blindfold-chess/types";
 
 /**
@@ -15,8 +18,8 @@ export function useFenSquares(
   const pieces = useMemo(() => fenToBoardFlat(fen), [fen]);
   return useCallback(
     (square: Square, size: number) => {
-      const piece =
-        pieces[(8 - Number(square[1])) * 8 + square.charCodeAt(0) - 97];
+      const index = squareToBoardIndex(square);
+      const piece = index === null ? "" : pieces[index];
       return piece ? (
         <ChessPieceIcon
           type={piece.toLowerCase() as PieceType}

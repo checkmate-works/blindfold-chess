@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   useWindowDimensions,
 } from "react-native";
+import { isLightSquare } from "@blindfold-chess/features/common";
 import { DISPLAY_RANKS, FILES } from "@blindfold-chess/types";
 import { ChessPieceIcon } from "@blindfold-chess/icons";
 import { boardThemeColors } from "@blindfold-chess/ui";
@@ -71,7 +72,7 @@ export function KnightTourBoard({
         <View key={rank} style={styles.row}>
           {FILES.map((file, col) => {
             const square = `${file}${rank}`;
-            const light = (row + col) % 2 === 0;
+            const light = isLightSquare(col, row);
             return (
               <BoardSquare
                 key={square}
