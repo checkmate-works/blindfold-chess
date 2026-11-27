@@ -16,6 +16,7 @@ import {
   borderRadius,
   fontSize,
   fontWeight,
+  monoFont,
   spacing,
   touchTarget,
   useTheme,
@@ -366,6 +367,6 @@ const styles = StyleSheet.create({
   previewText: {
     fontSize: fontSize.lg,
     fontWeight: fontWeight.bold,
-    fontFamily: "monospace",
+    fontFamily: monoFont,
   },
 });
