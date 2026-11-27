@@ -455,8 +455,6 @@ function AiGameBoard({ setup }: { setup: GameSetup }) {
         )}
       </ScrollView>
 
-      {/* This game's settings, changed mid-game: they are the session's own
-          copy, so the global preferences stay as they were. */}
       {/* The moves stay off the screen while playing: a list always in view
           is the game written out, which blindfold play takes away. */}
       <BottomSheet
@@ -466,6 +464,8 @@ function AiGameBoard({ setup }: { setup: GameSetup }) {
       >
         <MoveHistory moves={game.moves} startingFen={start.startingFen} />
       </BottomSheet>
+      {/* This game's settings, changed mid-game: they are the session's own
+          copy, so the global preferences stay as they were. */}
       <BottomSheet
         visible={settingsOpen}
         onClose={() => setSettingsOpen(false)}
