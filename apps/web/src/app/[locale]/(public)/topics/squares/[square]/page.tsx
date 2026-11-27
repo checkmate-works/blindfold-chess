@@ -14,10 +14,8 @@ import { BoardFrame, BoardSkeleton } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
-import { resolveNativeAds } from '@/lib/ads/ad';
 import { TOPIC_DETAIL_NATIVE_AD_SLOT } from '@/lib/ads/registry';
 import { getOptionalUser } from '@/lib/auth';
-import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 import { getPaginationParams } from '@/lib/pagination';
 
 import { JoinConversationToggle } from '@/app/[locale]/(public)/topics/_components/JoinConversationToggle';
@@ -25,6 +23,7 @@ import { SortSelect } from '@/app/[locale]/(public)/topics/_components/SortSelec
 import { TopicCardSkeleton } from '@/app/[locale]/(public)/topics/_components/TopicCardSkeleton';
 import { TopicListPageLayout } from '@/app/[locale]/(public)/topics/_components/TopicListPageLayout';
 import { renderAttachment } from '@/app/[locale]/(public)/topics/_components/render-attachment';
+import { loadPostListRenderData } from '@/app/[locale]/(public)/topics/_lib/load-post-list-render-data';
 import {
   TOPIC_PAGE_SIZE,
   buildPaginationHref,
@@ -107,13 +106,12 @@ async function SquarePostsContent({ params, searchParams }: Props) {
   // to a ReactNode upstream — PostCard is a client component and cannot
   // call the server-only `getAttachmentsForPosts` itself. Posts with no
   // attachment row drop out of the map.
-  const postIds = posts.map((p) => p.id);
-  const [attachments, tVideo, { creatives: nativeAdCreatives }] = await Promise.all([
-    postIds.length > 0 ? getAttachmentsForPosts(postIds) : new Map(),
-    getTranslations({ locale, namespace: 'postVideoAttachmentRender' }),
-    resolveNativeAds(TOPIC_DETAIL_NATIVE_AD_SLOT, user?.id ?? null, locale),
-  ]);
-  const fallbackVideoTitle = tVideo('fallbackTitle');
+  const { attachments, fallbackVideoTitle, nativeAdCreatives } = await loadPostListRenderData({
+    postIds: posts.map((p) => p.id),
+    locale,
+    userId: user?.id ?? null,
+    adSlot: TOPIC_DETAIL_NATIVE_AD_SLOT,
+  });
   // Server-gated: an ad-free reader gets an empty pool, and the layout places
   // no cards from one. The `.ad-slot-wrapper` CSS hide that `NativeAdCard`
   // owns is the second layer, for the first paint.

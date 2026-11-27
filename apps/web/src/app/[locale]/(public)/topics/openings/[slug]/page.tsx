@@ -13,10 +13,8 @@ import { notFound } from 'next/navigation';
 import { BoardFrame } from '@/app/_components';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
-import { resolveNativeAds } from '@/lib/ads/ad';
 import { TOPIC_DETAIL_NATIVE_AD_SLOT } from '@/lib/ads/registry';
 import { getOptionalUser } from '@/lib/auth';
-import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 import { paginateItems } from '@/lib/pagination';
 import type { RepertoireSort } from '@/lib/repertoires/queries';
 import { countPublicRepertoiresForOpening } from '@/lib/repertoires/queries';
@@ -27,6 +25,7 @@ import { JoinConversationToggle } from '@/app/[locale]/(public)/topics/_componen
 import { SortSelect } from '@/app/[locale]/(public)/topics/_components/SortSelect';
 import { TopicListPageLayout } from '@/app/[locale]/(public)/topics/_components/TopicListPageLayout';
 import { renderAttachment } from '@/app/[locale]/(public)/topics/_components/render-attachment';
+import { loadPostListRenderData } from '@/app/[locale]/(public)/topics/_lib/load-post-list-render-data';
 import {
   TOPIC_PAGE_SIZE,
   buildPaginationHref,
@@ -144,13 +143,12 @@ async function OpeningDetailContent({ params, searchParams }: Props) {
   // OpeningPostCard is a client component and `getAttachmentsForPosts`
   // is server-only. The OpeningPostCard composes this with the
   // optional rating display in its `extraContent` slot.
-  const postIds = posts.map((p) => p.id);
-  const [attachments, tVideo, { creatives: nativeAdCreatives }] = await Promise.all([
-    postIds.length > 0 ? getAttachmentsForPosts(postIds) : new Map(),
-    getTranslations({ locale, namespace: 'postVideoAttachmentRender' }),
-    resolveNativeAds(TOPIC_DETAIL_NATIVE_AD_SLOT, user?.id ?? null, locale),
-  ]);
-  const fallbackVideoTitle = tVideo('fallbackTitle');
+  const { attachments, fallbackVideoTitle, nativeAdCreatives } = await loadPostListRenderData({
+    postIds: posts.map((p) => p.id),
+    locale,
+    userId: user?.id ?? null,
+    adSlot: TOPIC_DETAIL_NATIVE_AD_SLOT,
+  });
   // Server-gated: an ad-free reader gets an empty pool, and the layout places
   // no cards from one. The `.ad-slot-wrapper` CSS hide that `NativeAdCard`
   // owns is the second layer, for the first paint.
