@@ -13,6 +13,12 @@ import {
   fullmoveNumberFromFen,
   isBlackToMoveFromFen,
 } from "@blindfold-chess/features/chess-core";
+import {
+  buildCells,
+  buildRows,
+  computeAttemptStatus,
+  groupAttemptsByPlayerStep,
+} from "@blindfold-chess/features/puzzle";
 import type {
   Attempt,
   PuzzleSolutionMove,
@@ -30,12 +36,6 @@ import {
   AttemptStatusBadge,
 } from "../../../../features/puzzle/components/AttemptHistoryPanel";
 import { SolutionReplay } from "../../../../features/puzzle/components/SolutionReplay";
-import {
-  buildCells,
-  buildRows,
-  computeAttemptStatus,
-  groupAttemptsByPlayerStep,
-} from "../../../../features/puzzle/lib/attempt-history";
 import { savePuzzleResult } from "../../../../features/puzzle/puzzles-api";
 import { useCloseSession } from "../../../../navigation/use-close-session";
 import { fontSize, fontWeight, spacing, useTheme } from "../../../../theme";
@@ -127,7 +127,7 @@ export default function PuzzleResult() {
     return {
       rows: buildRows(
         cells,
-        isBlackToMoveFromFen(fen),
+        isBlackToMoveFromFen(fen) ? "b" : "w",
         fullmoveNumberFromFen(fen),
       ),
       status: computeAttemptStatus(attempts, sans),

@@ -5,58 +5,11 @@ import { useMemo } from 'react';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 import { fullmoveNumberFromFen } from '@blindfold-chess/features/chess-core/fen';
+import { buildCells, buildRows, groupAttemptsByPlayerStep } from '@blindfold-chess/features/puzzle';
+import type { Attempt, AttemptCell, AttemptStatus } from '@blindfold-chess/features/puzzle';
 import type { PieceColor } from '@blindfold-chess/types';
 
 import { CircleMarker } from './CircleMarker';
-
-type Attempt = { move: string; isCorrect: boolean };
-
-export type PlayerStep = {
-  /** All wrong attempts the user submitted while at this step. */
-  wrongMoves: string[];
-  /**
-   * The user's literal correct input that closed this step, or `null` when
-   * the user abandoned the step (clicked "View Result" without ever solving
-   * it). `null` is the signal the panel uses to switch from a green "solved"
-   * chip to a muted "answer revealed" chip.
-   */
-  correctMove: string | null;
-};
-
-type SolvedCell = {
-  kind: 'solved';
-  wrongMoves: string[];
-  correctMove: string;
-  note?: string | null;
-};
-type RevealedCell = {
-  kind: 'revealed';
-  wrongMoves: string[];
-  expectedMove: string;
-  note?: string | null;
-};
-type SkippedCell = { kind: 'skipped'; expectedMove: string; note?: string | null };
-type OpponentCell = { kind: 'opponent'; san: string; note?: string | null };
-type EmptyCell = { kind: 'empty' };
-type Cell = SolvedCell | RevealedCell | SkippedCell | OpponentCell | EmptyCell;
-
-type Row = {
-  moveNumber: number;
-  white: Cell;
-  black: Cell;
-};
-
-export type AttemptStatus = {
-  /**
-   * `solved` — every player slot was answered correctly.
-   * `partial` — at least one but not all player slots were solved before
-   *             the user navigated away via "View Result".
-   * `revealed` — the user gave up before solving any player slot.
-   */
-  state: 'solved' | 'partial' | 'revealed';
-  correctCount: number;
-  totalPlayerSteps: number;
-};
 
 type Props = {
   fen: string;
@@ -65,153 +18,6 @@ type Props = {
   /** Parallel array to `solutionSans` — per-move commentary from the puzzle's solution data. */
   notes?: (string | null)[];
 };
-
-/**
- * Groups player attempts by the puzzle step they targeted. Walking the
- * chronological attempt log, every wrong attempt accumulates under the
- * current step; the first correct attempt closes the step and advances
- * the cursor. Trailing wrongs at a still-open step (puzzle abandoned mid-way)
- * are surfaced as a step with `correctMove === null` so the panel can
- * still render them.
- */
-export function groupAttemptsByPlayerStep(attempts: Attempt[]): PlayerStep[] {
-  const groups: PlayerStep[] = [];
-  let current: PlayerStep = { wrongMoves: [], correctMove: null };
-
-  for (const a of attempts) {
-    if (a.isCorrect) {
-      current.correctMove = a.move;
-      groups.push(current);
-      current = { wrongMoves: [], correctMove: null };
-    } else {
-      current.wrongMoves.push(a.move);
-    }
-  }
-
-  if (current.wrongMoves.length > 0) {
-    groups.push(current);
-  }
-
-  return groups;
-}
-
-/**
- * Parse the fullmove number (6th field) from a FEN string. Falls back to 1
- * if the FEN is short or the field is non-numeric — the panel still renders
- * sensibly with a starting count of 1.
- */
-
-/**
- * Derive the high-level outcome the user reached by the time they landed
- * on the result page. Counts how many player slots were solved and
- * compares against the total number of player slots in the chosen
- * solution line. Used by both the AttemptHistoryPanel cell renderer
- * (to pick `solved` / `revealed` / `skipped` styling per cell) and the
- * standalone `<AttemptStatusBadge>` (to label the section as a whole).
- */
-export function computeAttemptStatus(attempts: Attempt[], solutionSans: string[]): AttemptStatus {
-  const groups = groupAttemptsByPlayerStep(attempts);
-  const correctCount = groups.filter((g) => g.correctMove !== null).length;
-  const totalPlayerSteps = Math.ceil(solutionSans.length / 2);
-
-  let state: AttemptStatus['state'];
-  if (totalPlayerSteps > 0 && correctCount === totalPlayerSteps) {
-    state = 'solved';
-  } else if (correctCount === 0) {
-    state = 'revealed';
-  } else {
-    state = 'partial';
-  }
-
-  return { state, correctCount, totalPlayerSteps };
-}
-
-/**
- * Build the per-solution-move cell sequence. Player turns become one of
- * three cell kinds depending on the user's progress:
- *   - `solved`: there is a matching attempt group with a recorded correct
- *               move — render the user's literal input as the green chip.
- *   - `revealed`: the user attempted this step and ran out of guesses
- *                 (clicked "View Result" mid-step) — render their wrong
- *                 inputs followed by the canonical SAN as the muted
- *                 answer-reveal chip.
- *   - `skipped`: the user never reached this step — render only the
- *                muted answer-reveal chip.
- * Opponent turns are auto-played and rendered as plain SAN.
- *
- * `notes` is a parallel array to `solutionSans` (per-move commentary from
- * the puzzle's solution data). Optional and defaults to empty so existing
- * callers that only care about attempt grading are unaffected.
- */
-export function buildCells(
-  solutionSans: string[],
-  groups: PlayerStep[],
-  notes: (string | null)[] = []
-): Cell[] {
-  const cells: Cell[] = [];
-  for (let i = 0; i < solutionSans.length; i++) {
-    const isPlayerTurn = i % 2 === 0;
-    const san = solutionSans[i]!;
-    const note = notes[i] ?? undefined;
-    if (!isPlayerTurn) {
-      cells.push({ kind: 'opponent', san, note });
-      continue;
-    }
-    const playerStepIdx = i / 2;
-    const group = groups[playerStepIdx];
-    if (!group) {
-      cells.push({ kind: 'skipped', expectedMove: san, note });
-    } else if (group.correctMove !== null) {
-      cells.push({
-        kind: 'solved',
-        wrongMoves: group.wrongMoves,
-        correctMove: group.correctMove,
-        note,
-      });
-    } else {
-      cells.push({
-        kind: 'revealed',
-        wrongMoves: group.wrongMoves,
-        expectedMove: san,
-        note,
-      });
-    }
-  }
-  return cells;
-}
-
-/**
- * Pair the linear cell sequence into white/black rows with chess fullmove
- * numbering. When the puzzle starts from a black-to-move FEN, the first row
- * has an empty white cell and the move number stays at the FEN's starting
- * fullmove (it has not yet ticked over to the next number).
- */
-export function buildRows(cells: Cell[], firstTurn: PieceColor, startFullmove: number): Row[] {
-  const rows: Row[] = [];
-
-  let cellIdx = 0;
-  let moveNumber = startFullmove;
-
-  if (firstTurn === 'b' && cells.length > 0) {
-    rows.push({
-      moveNumber,
-      white: { kind: 'empty' },
-      black: cells[0]!,
-    });
-    cellIdx = 1;
-    moveNumber += 1;
-  }
-
-  while (cellIdx < cells.length) {
-    const white = cells[cellIdx]!;
-    const black = cells[cellIdx + 1] ?? { kind: 'empty' as const };
-    rows.push({ moveNumber, white, black });
-    cellIdx += 2;
-    moveNumber += 1;
-  }
-
-  return rows;
-}
 
 const WRONG_CHIP =
   'inline-flex items-baseline rounded px-1.5 py-0.5 text-xs text-red-600 dark:text-red-400 line-through opacity-80 bg-red-500/5 dark:bg-red-500/10';
@@ -226,7 +32,13 @@ const CORRECT_CHIP =
 const REVEALED_CHIP =
   'inline-flex items-baseline rounded px-1.5 py-0.5 italic text-muted-foreground border border-dashed border-border';
 
-function CellContent({ cell, formatNote }: { cell: Cell; formatNote: (note: string) => string }) {
+function CellContent({
+  cell,
+  formatNote,
+}: {
+  cell: AttemptCell;
+  formatNote: (note: string) => string;
+}) {
   if (cell.kind === 'empty') {
     return <span className="text-muted-foreground">…</span>;
   }

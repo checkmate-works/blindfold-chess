@@ -1,14 +1,13 @@
-import { render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
-
 import {
-  AttemptHistoryPanel,
-  AttemptStatusBadge,
   buildCells,
   buildRows,
   computeAttemptStatus,
   groupAttemptsByPlayerStep,
-} from './AttemptHistoryPanel';
+} from '@blindfold-chess/features/puzzle';
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
+
+import { AttemptHistoryPanel, AttemptStatusBadge } from './AttemptHistoryPanel';
 
 // Return translation keys verbatim (with arguments interpolated as JSON) so
 // assertions can match deterministic strings without depending on locale
