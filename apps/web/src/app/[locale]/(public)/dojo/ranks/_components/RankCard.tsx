@@ -5,7 +5,6 @@ import { HiCheckCircle, HiChevronRight } from 'react-icons/hi2';
 import { isWhiteBelt } from '../_lib/belt-colors';
 import type { RankCardState } from '../_lib/requirement-items';
 import { RequirementsList } from './RequirementsList';
-import type { RequirementDivider } from './RequirementsList';
 
 type RankCardProps = {
   slug: string;
@@ -18,7 +17,7 @@ type RankCardProps = {
    * e.g. the Dojo page, where requirement items are rendered as standalone
    * links beneath the card instead of inside it.
    */
-  requirementLabels?: (string | RequirementDivider)[];
+  requirementLabels?: string[];
   requirementsHeading?: string;
   comingSoonLabel: string;
 };

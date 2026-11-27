@@ -26,8 +26,7 @@ import { getBeltColorHex } from './belt-colors';
  * error until it gets its branches.
  *
  * Every requirement renders as exactly one entry: a rank's requirements are
- * all required (implicit AND), so no entry is an alternative to another and
- * nothing here emits an "or" divider.
+ * all required (implicit AND), so no entry is an alternative to another.
  */
 
 export type RankCardState = 'achieved' | 'next' | 'unachieved' | 'coming-soon';
