@@ -400,7 +400,6 @@
       "confirmUndo": "Deshacer",
       "boardHidden": "Tablero oculto",
       "revealBoard": "Toca para ver",
-      "hideBoard": "Ocultar Tablero",
       "flipBoard": "Voltear Tablero"
     },
     "result": {

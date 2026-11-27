@@ -5,7 +5,6 @@ import { useTranslation } from "react-i18next";
 import { getLastMoveDetails } from "@blindfold-chess/features/chess-core";
 import type { AlgebraicNotation, Side } from "@blindfold-chess/types";
 
-import { Button } from "../../../components";
 import { useGamePreferences } from "../../../lib/game-preferences";
 import {
   useTheme,
@@ -29,7 +28,6 @@ type InlineBoardProps = {
   /** In `'peek'` mode: whether the player has the board open right now. */
   revealed: boolean;
   onReveal: () => void;
-  onHide: () => void;
   /** The AI is computing its reply. */
   thinking: boolean;
   /**
@@ -46,8 +44,9 @@ type InlineBoardProps = {
  *
  * - `'always'`: the board.
  * - `'peek'`: the board under a mask. Tapping the mask opens it (the screen
- *   counts that as a peek) and the screen closes it again after the next
- *   move.
+ *   counts that as a peek) and the screen closes it again once the
+ *   player's next move is accepted. There is no button to close it sooner,
+ *   as on the web, so the screen keeps its layout.
  * - `'never'`: no board at all, only a bar that carries the AI's reply.
  *
  * While the AI thinks, an open `'always'` board is covered by a light scrim
@@ -64,7 +63,6 @@ export function InlineBoard({
   startingFen,
   revealed,
   onReveal,
-  onHide,
   thinking,
   announcedAiMove,
 }: InlineBoardProps) {
@@ -195,15 +193,6 @@ export function InlineBoard({
           </View>
         ) : null}
       </View>
-      {preferences.boardVisibility === "peek" && revealed ? (
-        <Button
-          title={t("aiGame.session.hideBoard")}
-          icon="eye-off-outline"
-          variant="ghost"
-          size="sm"
-          onPress={onHide}
-        />
-      ) : null}
     </View>
   );
 }
