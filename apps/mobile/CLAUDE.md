@@ -481,6 +481,16 @@ variable (for example `features/help/HelpSheet.tsx`), and those sites list the
 concrete keys they produce in a comment so that a grep for the full key still
 finds them.
 
+iOS draws its own parts (Apple's Sign in with Apple button, system sheets)
+in the language it picks for the app, not the one chosen in the app's
+settings. The app ships no `.lproj` folders, so the languages are declared in
+`ios.infoPlist.CFBundleLocalizations` in `app.json`
+(`src/i18n/__tests__/ios-localizations.test.ts` keeps it equal to
+`SUPPORTED_LOCALES`); without it iOS falls back to English on every device.
+A language picked in the app that differs from the device's still leaves
+those parts in the device's language. A change there needs a new native
+build.
+
 ## Settings are device-local: one global board store, then per module
 
 **Global board preferences.** `GamePreferencesProvider` /
