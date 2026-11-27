@@ -50,6 +50,16 @@ type ChessBoardProps = {
 
 const RANKS = DISPLAY_RANKS;
 
+/**
+ * The width (and height) `ChessBoard` draws at: the screen less 24pt a side,
+ * at most 400pt, and at most `maxSize`. Exported so a panel that stands in
+ * for the board takes exactly its place.
+ */
+export function useChessBoardSize(maxSize?: number): number {
+  const { width: screenWidth } = useWindowDimensions();
+  return Math.min(screenWidth - spacing.lg * 2, 400, maxSize ?? Infinity);
+}
+
 /** `chessColors.boardHighlight` at the strength lichess tints a last move. */
 const LAST_MOVE_TINT = `${chessColors.boardHighlight}66`;
 
@@ -69,9 +79,7 @@ export function ChessBoard({
   maxSize,
 }: ChessBoardProps) {
   const { preferences } = useGamePreferences();
-  const { width: screenWidth } = useWindowDimensions();
-  const maxBoardSize = screenWidth - spacing.lg * 2;
-  const boardSize = Math.min(maxBoardSize, 400, maxSize ?? Infinity);
+  const boardSize = useChessBoardSize(maxSize);
   const squareSize = boardSize / 8;
   const theme = boardThemeColors[preferences.boardTheme];
   const coordinatesShown = showCoordinates ?? preferences.showCoordinates;
