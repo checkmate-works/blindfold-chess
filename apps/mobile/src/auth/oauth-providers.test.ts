@@ -3,10 +3,13 @@ import { describe, expect, it } from "vitest";
 import { parseOAuthRedirect, resolveOAuthProviders } from "./oauth-providers";
 
 describe("resolveOAuthProviders", () => {
-  it("offers nothing when the build variable is unset or empty", () => {
+  it("offers Apple on iOS even when the build variable is unset", () => {
     expect(
       resolveOAuthProviders({ setting: undefined, platform: "ios" }),
-    ).toEqual([]);
+    ).toEqual(["apple"]);
+  });
+
+  it("offers nothing on Android when the build variable is unset or empty", () => {
     expect(
       resolveOAuthProviders({ setting: " ", platform: "android" }),
     ).toEqual([]);
@@ -16,12 +19,9 @@ describe("resolveOAuthProviders", () => {
     expect(
       resolveOAuthProviders({ setting: "google, Apple", platform: "ios" }),
     ).toEqual(["apple", "google"]);
-  });
-
-  it("withholds Google on iOS unless Apple is offered too (App Store 4.8)", () => {
     expect(
       resolveOAuthProviders({ setting: "google", platform: "ios" }),
-    ).toEqual([]);
+    ).toEqual(["apple", "google"]);
   });
 
   it("offers Google alone on Android and never Apple there", () => {
@@ -35,7 +35,7 @@ describe("resolveOAuthProviders", () => {
 
   it("ignores names it does not know", () => {
     expect(
-      resolveOAuthProviders({ setting: "apple,github", platform: "ios" }),
+      resolveOAuthProviders({ setting: "github", platform: "ios" }),
     ).toEqual(["apple"]);
   });
 });

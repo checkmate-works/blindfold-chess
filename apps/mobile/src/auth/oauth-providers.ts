@@ -7,19 +7,19 @@
 export type OAuthProvider = "apple" | "google";
 
 /**
- * The providers to show, from the build variable `EXPO_PUBLIC_OAUTH_PROVIDERS`
- * (comma-separated, e.g. `apple,google`). Unset or empty means none, so a
- * build made before a provider is enabled in Supabase shows no button that
- * could only fail.
+ * The providers to show.
  *
- * - Apple is offered on iOS only. It uses the native Sign in with Apple sheet,
- *   which exists only there; Android would need the browser flow and an Apple
- *   Services ID, which this app does not set up.
- * - On iOS, Google is offered only together with Apple. App Store Review
- *   Guideline 4.8 rejects an app that offers a third-party login such as
- *   Google without also offering Sign in with Apple (or an equivalent
- *   privacy-focused login), so listing Google alone would ship a build that
- *   fails review.
+ * - Apple is offered on every iOS build, with nothing to turn on. It uses the
+ *   native Sign in with Apple sheet, which exists only on iOS; Android would
+ *   need the browser flow and an Apple Services ID, which this app does not
+ *   set up. It needs Apple enabled in the Supabase project with the bundle
+ *   ID as a client ID.
+ * - Google is offered when the build variable `EXPO_PUBLIC_OAUTH_PROVIDERS`
+ *   (comma-separated, e.g. `google`) lists it, so a build made before Google
+ *   is set up in Supabase shows no button that could only fail. `apple` may
+ *   still be listed; it changes nothing. App Store Review Guideline 4.8
+ *   rejects an app that offers a third-party login such as Google without
+ *   Sign in with Apple, which iOS now always has.
  *
  * The order is fixed — Apple first — because Apple's Human Interface
  * Guidelines ask for its button to be at least as prominent as the others.
@@ -37,11 +37,9 @@ export function resolveOAuthProviders({
       .map((name) => name.trim().toLowerCase())
       .filter(Boolean),
   );
-  const apple = platform === "ios" && listed.has("apple");
-  const google = listed.has("google") && (platform !== "ios" || apple);
   return [
-    ...(apple ? (["apple"] as const) : []),
-    ...(google ? (["google"] as const) : []),
+    ...(platform === "ios" ? (["apple"] as const) : []),
+    ...(listed.has("google") ? (["google"] as const) : []),
   ];
 }
 
