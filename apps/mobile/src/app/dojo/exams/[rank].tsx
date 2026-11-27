@@ -9,7 +9,7 @@ import {
   examRankOf,
 } from "@blindfold-chess/features/dojo-journey";
 import {
-  RANK_SLUGS,
+  previousRankSlug,
   type ExamProblemKind,
 } from "@blindfold-chess/features/dojo-ranks";
 
@@ -72,10 +72,10 @@ export default function DojoExamScreen() {
     accountLoaded: auth.account !== undefined,
     highest,
   });
-  const prevRank = RANK_SLUGS[RANK_SLUGS.indexOf(rank) - 1];
+  const prevRank = previousRankSlug(rank);
   const note = !signedIn
     ? t("dojo.exam.signInNote")
-    : mode === "practice" && prevRank
+    : mode === "practice"
       ? t("dojo.exam.lockedNote", { prevRank: t(`ranks.names.${prevRank}`) })
       : undefined;
 

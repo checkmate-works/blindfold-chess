@@ -34,6 +34,7 @@ import {
   examProblemSegment,
   examRankOf,
 } from '@blindfold-chess/features/dojo-journey';
+import { previousRankSlug } from '@blindfold-chess/features/dojo-ranks';
 
 import { RankAchievementModal } from '@/app/[locale]/(public)/practice/_components/RankAchievementModal';
 import { PageLayout } from '@/app/[locale]/_components';
@@ -42,7 +43,6 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { ExamProblemList } from '../_components/ExamProblemList';
 import type { ExamProblemRow } from '../_components/ExamProblemList';
-import { previousRank } from '../_lib/exam-rank';
 
 type Props = {
   params: Promise<{ locale: Locale; rank: string }>;
@@ -78,7 +78,7 @@ export default async function DojoExamPage({ params }: Props) {
   const t = await getTranslations({ locale });
   // ranks.rankNames.<RankSlug>: the exam's rank and the one below it
   const rankName = t(`ranks.rankNames.${exam}`);
-  const prevRankName = t(`ranks.rankNames.${previousRank(exam)}`);
+  const prevRankName = t(`ranks.rankNames.${previousRankSlug(exam)}`);
   const title = t('dojoExam.title', { rankName });
 
   const rows: ExamProblemRow[] = examProblemKinds(exam).map((kind) => {

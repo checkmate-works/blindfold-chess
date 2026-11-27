@@ -30,6 +30,7 @@ import { notFound } from 'next/navigation';
 
 import { SUPPORTED_LOCALES } from '@/config';
 import { EXAM_RANKS, examProblemOf, examRankOf } from '@blindfold-chess/features/dojo-journey';
+import { previousRankSlug } from '@blindfold-chess/features/dojo-ranks';
 
 import { PositionDetailLayout } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionDetailLayout';
 import { PositionPeekBoard } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionPeekBoard';
@@ -40,7 +41,6 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { ExamMemorySession } from '../../_components/ExamMemorySession';
 import { ExamPatterns } from '../../_components/ExamPatterns';
-import { previousRank } from '../../_lib/exam-rank';
 
 type Props = {
   params: Promise<{ locale: Locale; rank: string }>;
@@ -84,7 +84,7 @@ export default async function DojoExamPositionMemoryPage({ params }: Props) {
   const t = await getTranslations({ locale });
   // ranks.rankNames.<RankSlug>: the exam's rank and the one below it
   const rankName = t(`ranks.rankNames.${exam}`);
-  const prevRankName = t(`ranks.rankNames.${previousRank(exam)}`);
+  const prevRankName = t(`ranks.rankNames.${previousRankSlug(exam)}`);
   const examTitle = t('dojoExam.title', { rankName });
   const problemName = t('ranks.examProblemNames.position_memory');
   // dojoExam.memoryIntro.<EarnedRankSlug>: each rank with this problem

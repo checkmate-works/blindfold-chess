@@ -8,6 +8,7 @@ import {
   isRankSlug,
   isRequirementPlayableOnMobile,
   nextRankSlug,
+  previousRankSlug,
   rankStanding,
 } from "./ranks";
 
@@ -56,6 +57,17 @@ describe("rankStanding", () => {
     expect(rankStanding("mukyu", undefined)).toBe("achieved");
     expect(rankStanding("5kyu", undefined)).toBe("next");
     expect(rankStanding("4kyu", undefined)).toBe("locked");
+  });
+});
+
+describe("previousRankSlug", () => {
+  it("is the rank right below", () => {
+    expect(previousRankSlug("2kyu")).toBe("3kyu");
+    expect(previousRankSlug("5kyu")).toBe("mukyu");
+  });
+
+  it("is undefined below mukyu", () => {
+    expect(previousRankSlug("mukyu")).toBeUndefined();
   });
 });
 

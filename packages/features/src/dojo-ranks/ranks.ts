@@ -268,6 +268,17 @@ export function nextRankSlug(
   return next === undefined || next === MUKYU_SLUG ? undefined : next;
 }
 
+/**
+ * The rank right below `slug`, or undefined below mukyu. For an earned rank
+ * it is always defined (mukyu for 5kyu): the rank a player has to hold before
+ * a pass at `slug`'s exam is recorded.
+ */
+export function previousRankSlug(slug: EarnedRankSlug): RankSlug;
+export function previousRankSlug(slug: RankSlug): RankSlug | undefined;
+export function previousRankSlug(slug: RankSlug): RankSlug | undefined {
+  return RANK_SLUGS[RANK_SLUGS.indexOf(slug) - 1];
+}
+
 /** How many of the earned ranks are covered by `highest`. */
 export function achievedRankCount(highest: RankSlug | undefined): number {
   return RANK_SLUGS.indexOf(highest ?? MUKYU_SLUG);
