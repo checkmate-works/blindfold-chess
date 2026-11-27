@@ -107,3 +107,24 @@ export function isAiReplyDuration(value: unknown): value is AiReplyDuration {
     (AI_REPLY_DURATION_VALUES as readonly number[]).includes(value)
   );
 }
+
+/**
+ * Which side's pieces are drawn, as the settings UI offers it: one choice
+ * rather than the two independent booleans the preferences store
+ * (`showOwnPieces` / `showOpponentPieces`). The would-be fourth combination
+ * (neither side shown) is just a piece-less board, indistinguishable from
+ * hiding the board (`boardVisibility: 'never'`), so the three meaningful
+ * modes cover the space without the redundant state — and fit on one row.
+ */
+export const PIECE_VISIBILITY_MODES = ["all", "own", "opponent"] as const;
+export type PieceVisibilityMode = (typeof PIECE_VISIBILITY_MODES)[number];
+
+/** The two stored booleans each {@link PieceVisibilityMode} stands for. */
+export const PIECE_VISIBILITY_PRESETS: Record<
+  PieceVisibilityMode,
+  { showOwnPieces: boolean; showOpponentPieces: boolean }
+> = {
+  all: { showOwnPieces: true, showOpponentPieces: true },
+  own: { showOwnPieces: true, showOpponentPieces: false },
+  opponent: { showOwnPieces: false, showOpponentPieces: true },
+};

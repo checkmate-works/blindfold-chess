@@ -8,6 +8,7 @@ export type {
   BoardVisibility,
   ButtonInputPieceLabel,
   MoveInputMode,
+  PieceVisibilityMode,
 } from "./values";
 export {
   AI_REPLY_DURATION_KEEP,
@@ -20,6 +21,8 @@ export {
   DEFAULT_ENABLED_MOVE_INPUT_MODES,
   DEFAULT_MOVE_INPUT_MODE,
   MOVE_INPUT_MODES,
+  PIECE_VISIBILITY_MODES,
+  PIECE_VISIBILITY_PRESETS,
   isAiReplyDuration,
   isBoardVisibility,
   legacyToBoardVisibility,

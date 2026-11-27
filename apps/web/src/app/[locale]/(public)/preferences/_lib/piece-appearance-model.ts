@@ -1,3 +1,8 @@
+import {
+  PIECE_VISIBILITY_MODES,
+  PIECE_VISIBILITY_PRESETS,
+} from '@blindfold-chess/features/game-preferences';
+import type { PieceVisibilityMode } from '@blindfold-chess/features/game-preferences';
 import { sideToPieceColor } from '@blindfold-chess/types';
 import type { PieceColor, PieceColorMode, Side } from '@blindfold-chess/types';
 import { PIECE_SHAPE_MODES } from '@blindfold-chess/types';
@@ -26,22 +31,10 @@ export type PieceShapeMode = GamePreferences['pieceShapeMode'];
 
 const ALL_SHAPE_OPTIONS = PIECE_SHAPE_MODES;
 
-// Piece visibility is exposed as a single-choice radio rather than two
-// independent checkboxes: the would-be fourth combination (neither side shown)
-// is just a piece-less board, indistinguishable from "Hide the board", so the
-// three meaningful modes below cover the space without the redundant state — and
-// fit on one row.
-export const PIECE_VISIBILITY_MODES = ['all', 'own', 'opponent'] as const;
-export type PieceVisibilityMode = (typeof PIECE_VISIBILITY_MODES)[number];
-
-export const PIECE_VISIBILITY_PRESETS: Record<
-  PieceVisibilityMode,
-  { showOwnPieces: boolean; showOpponentPieces: boolean }
-> = {
-  all: { showOwnPieces: true, showOpponentPieces: true },
-  own: { showOwnPieces: true, showOpponentPieces: false },
-  opponent: { showOwnPieces: false, showOpponentPieces: true },
-};
+// The 3-way piece visibility radio and the booleans each choice stands for
+// are shared with the mobile app's settings.
+export { PIECE_VISIBILITY_MODES, PIECE_VISIBILITY_PRESETS };
+export type { PieceVisibilityMode };
 
 // Piece shape is exposed as a "show as stones" toggle plus a side selector that
 // only appears when both sides are visible (the only case where stoning just one
