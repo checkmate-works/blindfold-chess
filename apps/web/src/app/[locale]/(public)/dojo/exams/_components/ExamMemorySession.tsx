@@ -14,7 +14,8 @@ import {
   PositionMemorySessionView,
   type SessionCompletePayload,
 } from '@/app/[locale]/(public)/practice/(free-play)/position-memory/_components/session/PositionMemorySessionView';
-import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
+import { SectionTitle } from '@/app/[locale]/_components';
+import { TEXT_LINK_CLASSES, TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 import { useExamSubmission } from '../_hooks/use-exam-submission';
 import { ExamOutcome } from './ExamOutcome';
@@ -45,6 +46,7 @@ type Props = {
  */
 export function ExamMemorySession({ rank, problem, prevRankName, intro }: Props) {
   const t = useTranslations('dojoExam');
+  const tDetail = useTranslations('practice.positionMemory.detail');
   const [started, setStarted] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const { verdict, submit, fail, reset } = useExamSubmission(rank, 'position_memory');
@@ -74,23 +76,32 @@ export function ExamMemorySession({ rank, problem, prevRankName, intro }: Props)
 
   if (!started) {
     return (
-      <div className="space-y-6">
+      <>
         {intro}
-        <Button
-          onClick={() => setStarted(true)}
-          variant="primary"
-          size="lg"
-          icon={<FaPlay />}
-          fullWidth
-        >
-          {t('start')}
-        </Button>
-        <div className="text-center">
-          <Link href={`/dojo/exams/${rank}`} className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
-            {t('backToExam')}
-          </Link>
+        <SectionTitle>{tDetail('solveSection')}</SectionTitle>
+        <div className="space-y-6">
+          <Button
+            onClick={() => setStarted(true)}
+            variant="primary"
+            size="lg"
+            icon={<FaPlay />}
+            fullWidth
+          >
+            {t('start')}
+          </Button>
+          <div className="flex flex-col items-center gap-2">
+            <Link
+              href="/practice/position-memory/tutorial"
+              className={`text-sm ${TEXT_LINK_CLASSES}`}
+            >
+              {tDetail('tutorialLink')}
+            </Link>
+            <Link href={`/dojo/exams/${rank}`} className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
+              {t('backToExam')}
+            </Link>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 

@@ -10,8 +10,10 @@
  *
  * @flow
  * 1. Unknown rank, or a rank without this problem → 404.
- * 2. The page opens on the problem's condition and a start button; the
- *    position stays hidden until the attempt starts.
+ * 2. The page opens on the problem's condition and a start button, laid out
+ *    like a free-play problem's detail page (`practice/position-memory/
+ *    custom/[token]`) minus its board and piece list: either would let the
+ *    player study the position past the memorize seconds.
  * 3. Memorize → recreate, as in the single-position practice session (no
  *    pause: the seconds are part of the problem).
  * 4. The recreated FEN goes to `submitExamAnswer`. Signed out, the browser
@@ -25,7 +27,8 @@ import { notFound } from 'next/navigation';
 
 import { SUPPORTED_LOCALES } from '@/config';
 
-import { PageLayout } from '@/app/[locale]/_components';
+import { PositionDetailLayout } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionDetailLayout';
+import { SectionTitle } from '@/app/[locale]/_components';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -83,10 +86,10 @@ export default async function DojoExamPositionMemoryPage({ params }: Props) {
   });
 
   return (
-    <PageLayout
+    <PositionDetailLayout
       title={problemName}
       locale={locale}
-      breadcrumb={[
+      breadcrumbItems={[
         { label: t('dojo.pageTitle'), href: '/dojo' },
         { label: examTitle, href: `/dojo/exams/${exam}` },
         { label: problemName },
@@ -97,11 +100,14 @@ export default async function DojoExamPositionMemoryPage({ params }: Props) {
         problem={problem}
         prevRankName={prevRankName}
         intro={
-          <div className="rounded-lg border border-border bg-card p-4">
-            <p className="text-foreground">{rule}</p>
-          </div>
+          <>
+            <SectionTitle>{t('practice.positionMemory.detail.descriptionSection')}</SectionTitle>
+            <div className="rounded-lg border border-border bg-card p-4">
+              <p className="text-sm text-foreground">{rule}</p>
+            </div>
+          </>
         }
       />
-    </PageLayout>
+    </PositionDetailLayout>
   );
 }
