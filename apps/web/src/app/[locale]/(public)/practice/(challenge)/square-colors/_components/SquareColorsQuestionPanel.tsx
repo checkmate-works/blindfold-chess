@@ -1,6 +1,7 @@
 'use client';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import type { SquareColor } from '@blindfold-chess/features/square-colors';
 
 import type { BoardTheme } from '@/lib/games/board-themes';
 
@@ -12,7 +13,7 @@ import { SquareColorQuestionDisplay } from './SquareColorQuestionDisplay';
 type Props = {
   currentSquare: string;
   lastAnswer: { correct: boolean; square: string } | null;
-  onAnswer: (answer: 'light' | 'dark') => void;
+  onAnswer: (answer: SquareColor) => void;
   boardTheme?: BoardTheme;
   /**
    * Blocks both the buttons and the arrow-key bindings. Challenge mode also

@@ -37,6 +37,7 @@ import {
 import { EMPTY_BOARD_ANNOTATIONS } from '@/lib/board-annotations/types';
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
 import type { RepertoirePhase } from '@/lib/repertoires/validation';
+import type { RepertoireVisibility } from '@/lib/repertoires/visibility';
 import { uuidv7 } from '@/lib/uuidv7';
 
 import { chunks } from './chunks';
@@ -105,7 +106,7 @@ export const repertoires = pgTable(
      * are excluded from public catalogs for free.
      */
     status: varchar('status', { length: 20 })
-      .$type<'building' | 'private' | 'followers_only' | 'public'>()
+      .$type<'building' | RepertoireVisibility>()
       .notNull()
       .default('building'),
     /**

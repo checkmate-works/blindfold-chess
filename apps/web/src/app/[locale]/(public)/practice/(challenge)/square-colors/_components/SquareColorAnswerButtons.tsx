@@ -1,8 +1,10 @@
+import type { SquareColor } from '@blindfold-chess/features/square-colors';
+
 import type { BoardTheme } from '@/lib/games/board-themes';
 import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/games/board-themes';
 
 type Props = {
-  onAnswer: (color: 'light' | 'dark') => void;
+  onAnswer: (color: SquareColor) => void;
   disabled: boolean;
   labels: {
     white: string;
