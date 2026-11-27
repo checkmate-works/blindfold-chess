@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { executeMove, isCheckmateFen } from "../chess-core/moves";
+import { fenToPlacements } from "../chess-core/fen-pure";
 import { calculateAccuracy } from "../common/accuracy";
 import {
   DOJO_EXAMS,
@@ -26,7 +27,22 @@ describe("DOJO_EXAMS", () => {
       fen: "5rk1/5ppp/5n2/8/8/6P1/5PBP/5RK1 w - - 0 1",
       memorizeSeconds: 30,
       minAccuracy: 100,
+      patterns: [
+        { key: "kingside_castle", fen: "5rk1/5ppp/8/8/8/8/8/8 w - - 0 1" },
+        { key: "kingside_fianchetto", fen: "8/8/8/8/8/6P1/5PBP/8 w - - 0 1" },
+      ],
     });
+  });
+
+  it("draws every pattern of the 2kyu memory problem from pieces on the problem's own squares", () => {
+    const problem = new Set(
+      fenToPlacements(memory.fen).map((p) => JSON.stringify(p)),
+    );
+    for (const pattern of memory.patterns) {
+      for (const placement of fenToPlacements(pattern.fen)) {
+        expect(problem, `${pattern.key}`).toContain(JSON.stringify(placement));
+      }
+    }
   });
 
   it("ends in checkmate when the 2kyu puzzle's solution is replayed", () => {

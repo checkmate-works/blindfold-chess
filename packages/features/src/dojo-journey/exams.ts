@@ -31,6 +31,22 @@ import {
 } from "../puzzle/puzzle-match";
 import type { PuzzleSolutionMove } from "../puzzle/types";
 
+/** A piece pattern that helps with an exam problem, named by its message key. */
+export type ExamPatternKey = "kingside_castle" | "kingside_fianchetto";
+
+/**
+ * A pattern the exam page lists as useful for solving, the way a saved
+ * position-memory problem lists the chunks tagged on it. Kept here rather
+ * than as a reference to a row in `chunks`: chunks are posted, edited and
+ * deleted by users, and an exam's hints should change only through a
+ * reviewed code change, like the problem itself.
+ */
+export type ExamPattern = {
+  key: ExamPatternKey;
+  /** The pattern on its own, drawn as the card's thumbnail. */
+  fen: string;
+};
+
 /** Recreate `fen` after looking at it for `memorizeSeconds`. */
 export type MemoryExamProblem = {
   kind: "position_memory";
@@ -38,6 +54,7 @@ export type MemoryExamProblem = {
   memorizeSeconds: number;
   /** The accuracy (percent, as {@link calculateAccuracy} computes it) a pass needs. */
   minAccuracy: number;
+  patterns: readonly ExamPattern[];
 };
 
 /**
@@ -74,6 +91,10 @@ export const DOJO_EXAMS: Readonly<
       fen: "5rk1/5ppp/5n2/8/8/6P1/5PBP/5RK1 w - - 0 1",
       memorizeSeconds: 30,
       minAccuracy: 100,
+      patterns: [
+        { key: "kingside_castle", fen: "5rk1/5ppp/8/8/8/8/8/8 w - - 0 1" },
+        { key: "kingside_fianchetto", fen: "8/8/8/8/8/6P1/5PBP/8 w - - 0 1" },
+      ],
     },
     puzzle: {
       kind: "puzzle",
