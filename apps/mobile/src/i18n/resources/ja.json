@@ -31,12 +31,7 @@
   "home": {
     "title": "ブラインドチェス",
     "welcome": "おかえりなさい！",
-    "startPractice": "練習を始める",
     "playAi": "AIと対戦する",
-    "replayOnboarding": "チュートリアルをもう一度",
-    "allPractice": "すべての練習",
-    "gettingStarted": "はじめての方へ",
-    "learnBasics": "目隠しチェスの基礎を学ぶ",
     "nextRankTitle": "次の目標",
     "allAchievedBody": "初段を取得しました。AIとの対戦で腕を磨きましょう。",
     "nextStep": {
@@ -44,6 +39,19 @@
       "guideContinue": "教本の続きを読む",
       "challenge": "{{challengeName}}に挑戦する",
       "choosePractice": "自分で練習を選ぶ"
+    },
+    "recordCta": {
+      "signUp": {
+        "message": "無料登録で、チャレンジの成績と段位をアカウントに残せます",
+        "description": "経験値やレベルも貯まり、Web 版でも同じアカウントで続きから遊べます。",
+        "button": "無料登録"
+      },
+      "signIn": "アカウントをお持ちの方はログイン",
+      "username": {
+        "message": "ユーザー名を決めて、登録を済ませましょう",
+        "description": "ランキングや Web 版のマイページに表示される名前です。",
+        "button": "ユーザー名を決める"
+      }
     }
   },
   "practice": {
@@ -228,6 +236,10 @@
       "retry": "タップして再試行",
       "deleteAccount": "アカウントを削除",
       "deleteAccountNote": "アカウントの削除は Web サイトで行います。Web でログインしてから削除してください。ユーザー名を未設定の場合は、先に設定を求められます。"
+    },
+    "tutorial": {
+      "title": "チュートリアル",
+      "replay": "チュートリアルをもう一度"
     }
   },
   "legalMoves": {

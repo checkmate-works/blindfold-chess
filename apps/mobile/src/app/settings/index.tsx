@@ -4,6 +4,7 @@ import { ListRow, ListSection, TabScrollView } from "../../components";
 import { changeLanguage, type Locale } from "../../i18n";
 import { AccountSection } from "../../features/settings/AccountSection";
 import { BoardPreferencesSection } from "../../features/settings/BoardPreferencesSection";
+import { TutorialSection } from "../../features/settings/TutorialSection";
 import { openWebPage } from "../../lib/web-pages";
 
 /** The web pages the About section links to, in display order. */
@@ -32,7 +33,8 @@ const LANGUAGE_LABELS: Record<Locale, string> = {
 const LANGUAGE_ORDER = Object.keys(LANGUAGE_LABELS) as Locale[];
 
 /**
- * Settings: account, language, board appearance and the About pages.
+ * Settings: account, language, board appearance, the tutorial and the
+ * About pages.
  *
  * @description
  * Pushed on the root stack from the gear at the right of the home header,
@@ -64,6 +66,7 @@ export default function SettingsScreen() {
         ))}
       </ListSection>
       <BoardPreferencesSection />
+      <TutorialSection />
       {/* settings.about.{faq,contact,terms,privacy,licenses} */}
       <ListSection
         title={t("settings.about.title")}

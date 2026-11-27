@@ -31,12 +31,7 @@
   "home": {
     "title": "Ajedrez a Ciegas",
     "welcome": "¡Bienvenido de nuevo!",
-    "startPractice": "Empezar práctica",
     "playAi": "Jugar contra la IA",
-    "replayOnboarding": "Repetir tutorial",
-    "allPractice": "Todas las prácticas",
-    "gettingStarted": "Primeros pasos",
-    "learnBasics": "Aprende lo básico",
     "nextRankTitle": "Próximo objetivo",
     "allAchievedBody": "Tienes el 1.er Dan. Sigue puliéndolo contra el motor.",
     "nextStep": {
@@ -44,6 +39,19 @@
       "guideContinue": "Seguir con la guía",
       "challenge": "Prueba {{challengeName}}",
       "choosePractice": "Elegir una práctica por tu cuenta"
+    },
+    "recordCta": {
+      "signUp": {
+        "message": "Regístrate gratis para guardar tus resultados de desafíos y tu rango en tu cuenta",
+        "description": "También ganas EXP y niveles, y puedes continuar en la web con la misma cuenta.",
+        "button": "Regístrate gratis"
+      },
+      "signIn": "¿Ya tienes una cuenta? Inicia sesión",
+      "username": {
+        "message": "Elige un nombre de usuario para terminar el registro",
+        "description": "Es el nombre que aparece en la clasificación y en tu página de la web.",
+        "button": "Elegir nombre de usuario"
+      }
     }
   },
   "practice": {
@@ -228,6 +236,10 @@
       "retry": "Toca para reintentar",
       "deleteAccount": "Eliminar cuenta",
       "deleteAccountNote": "La cuenta se elimina en el sitio web: inicia sesión allí para eliminarla. Si aún no has configurado un nombre de usuario, primero se te pedirá que lo hagas."
+    },
+    "tutorial": {
+      "title": "Tutorial",
+      "replay": "Repetir tutorial"
     }
   },
   "legalMoves": {
