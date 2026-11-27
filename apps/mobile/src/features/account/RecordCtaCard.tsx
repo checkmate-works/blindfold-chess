@@ -7,8 +7,12 @@ import { useAuth } from "../../auth/use-auth";
 import { Button, Card } from "../../components";
 import { fontSize, fontWeight, spacing, useTheme } from "../../theme";
 
+/** Where the card sits: picks the message and the buttons' `testID`s. */
+export type RecordCtaPlacement = "home" | "mypage";
+
 /**
- * The home tab's way into an account, under the next-rank card.
+ * The way into an account: on the home tab under the next-rank card, and on
+ * mypage in place of the records a player without an account does not have.
  *
  * Signing in is optional and the app has no standing sign-in button a guest
  * would see, so home says what an account adds to the person who has none:
@@ -22,10 +26,19 @@ import { fontSize, fontWeight, spacing, useTheme } from "../../theme";
  *   or the account still loading, an account that failed to load) — nothing.
  *   Retrying a failed load belongs to the settings screen's account section.
  *
+ * What it promises depends on where it is (`recordCta.<placement>`): home
+ * is seen by someone about to practise, so it says what an account keeps;
+ * mypage is opened to look at one's records, so it says they would be listed
+ * there, and the screen lays a faded sample of them under the card.
+ *
  * The message carries the whole point, so the card has no heading. It is a
  * flat panel; only the buttons inside are pressable.
  */
-export function RecordCtaCard() {
+export function RecordCtaCard({
+  placement,
+}: {
+  placement: RecordCtaPlacement;
+}) {
   const { t } = useTranslation();
   const router = useRouter();
   const { status, account } = useAuth();
@@ -33,21 +46,22 @@ export function RecordCtaCard() {
   if (status === "signedOut") {
     return (
       <CtaFrame
-        message={t("home.recordCta.signUp.message")}
-        description={t("home.recordCta.signUp.description")}
+        // recordCta.{home,mypage}.signUp.{message,description}
+        message={t(`recordCta.${placement}.signUp.message`)}
+        description={t(`recordCta.${placement}.signUp.description`)}
       >
         <Button
-          title={t("home.recordCta.signUp.button")}
+          title={t("recordCta.signUpButton")}
           size="lg"
           fullWidth
-          testID="home-sign-up-cta"
+          testID={`${placement}-sign-up-cta`}
           onPress={() => router.push("/sign-up")}
         />
         <Button
-          title={t("home.recordCta.signIn")}
+          title={t("recordCta.signIn")}
           variant="ghost"
           size="sm"
-          testID="home-sign-in-cta"
+          testID={`${placement}-sign-in-cta`}
           onPress={() => router.push("/sign-in")}
         />
       </CtaFrame>
@@ -57,14 +71,15 @@ export function RecordCtaCard() {
   if (status === "signedIn" && account?.username === null) {
     return (
       <CtaFrame
-        message={t("home.recordCta.username.message")}
-        description={t("home.recordCta.username.description")}
+        // recordCta.{home,mypage}.username.{message,description}
+        message={t(`recordCta.${placement}.username.message`)}
+        description={t(`recordCta.${placement}.username.description`)}
       >
         <Button
-          title={t("home.recordCta.username.button")}
+          title={t("recordCta.usernameButton")}
           size="lg"
           fullWidth
-          testID="home-username-cta"
+          testID={`${placement}-username-cta`}
           onPress={() => router.push("/setup-username")}
         />
       </CtaFrame>

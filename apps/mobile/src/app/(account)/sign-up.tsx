@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
-import { Stack, useNavigation, useRouter } from "expo-router";
+import { useNavigation, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 
 import { Button, TextField } from "../../components";
@@ -9,7 +9,6 @@ import {
   OAuthButtons,
   OAuthDivider,
 } from "../../features/account/OAuthButtons";
-import { ModalCloseButton } from "../../navigation/ModalCloseButton";
 import { useTheme, fontSize, fontWeight, spacing } from "../../theme";
 
 /**
@@ -30,11 +29,10 @@ const MIN_PASSWORD_LENGTH = 6;
  * screen shows the web's "check your email" text; the user confirms in the
  * browser and comes back to sign in.
  *
- * Usually pushed from sign-in, so "Sign in" goes back to it. The home tab's
- * sign-up card opens it as the first screen of the account modal instead:
- * then there is nothing to go back to (going back would close the modal), so
- * the header gets the modal's × and "Sign in" replaces this
- * screen with sign-in.
+ * "Sign in" goes back when sign-up was pushed from sign-in. Opened any other
+ * way — first in the account modal from the home tab's card, or pushed from
+ * mypage's — going back would close the modal or land on mypage, so it
+ * replaces this screen with sign-in instead.
  */
 export default function SignUpScreen() {
   const { t } = useTranslation();
@@ -46,12 +44,11 @@ export default function SignUpScreen() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
-  const opensModal = useNavigation().getState()?.index === 0;
+  const state = useNavigation().getState();
+  const cameFromSignIn =
+    state !== undefined && state.routes[state.index - 1]?.name === "sign-in";
   const toSignIn = () =>
-    opensModal ? router.replace("/sign-in") : router.back();
-  const closeButton = opensModal ? (
-    <Stack.Screen options={{ headerLeft: () => <ModalCloseButton /> }} />
-  ) : null;
+    cameFromSignIn ? router.back() : router.replace("/sign-in");
 
   const handleSubmit = async () => {
     if (busy) return;
@@ -90,7 +87,6 @@ export default function SignUpScreen() {
   if (sent) {
     return (
       <ScrollView contentContainerStyle={styles.content}>
-        {closeButton}
         <Text style={[styles.title, { color: colors.foreground }]}>
           {t("account.verifyEmail.title")}
         </Text>
@@ -117,7 +113,6 @@ export default function SignUpScreen() {
       contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"
     >
-      {closeButton}
       <OAuthButtons mode="signUp" />
       <OAuthDivider />
       <Text style={[styles.body, { color: colors.mutedForeground }]}>

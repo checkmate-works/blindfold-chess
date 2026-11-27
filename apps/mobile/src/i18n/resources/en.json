@@ -39,19 +39,39 @@
       "guideContinue": "Continue the guide",
       "challenge": "Try {{challengeName}}",
       "choosePractice": "Choose a practice yourself"
-    },
-    "recordCta": {
+    }
+  },
+  "recordCta": {
+    "signUpButton": "Sign up free",
+    "signIn": "Already have an account? Sign in",
+    "usernameButton": "Choose a username",
+    "home": {
       "signUp": {
         "message": "Sign up free to keep your challenge results and rank on your account",
-        "description": "You also earn EXP and levels, and can pick up where you left off on the web with the same account.",
-        "button": "Sign up free"
+        "description": "You also earn EXP and levels, and can pick up where you left off on the web with the same account."
       },
-      "signIn": "Already have an account? Sign in",
       "username": {
         "message": "Choose a username to finish signing up",
-        "description": "It's the name shown on the leaderboard and on your mypage on the web.",
-        "button": "Choose a username"
+        "description": "It's the name shown on the leaderboard and on your mypage on the web."
       }
+    },
+    "mypage": {
+      "signUp": {
+        "message": "Sign up free and your records will appear here",
+        "description": "See your rank, level, EXP and your place on the challenge leaderboards in one place."
+      },
+      "username": {
+        "message": "Choose a username and your records will appear here",
+        "description": "See your rank, level, EXP and your place on the challenge leaderboards in one place."
+      }
+    }
+  },
+  "mypage": {
+    "title": "My Page",
+    "loadFailed": "Couldn't load your account.",
+    "retry": "Try again",
+    "preview": {
+      "username": "your_name"
     }
   },
   "practice": {

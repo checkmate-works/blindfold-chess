@@ -61,8 +61,9 @@ function RootLayoutContent() {
  *   full-screen modal. It has no swipe to dismiss, so a timed run cannot be
  *   abandoned by an accidental edge swipe; its screens close it with
  *   `useCloseSession`.
- * - `(account)` — sign-in, sign-up, username setup and the user's records:
- *   a stack inside one card-style modal, closed from its header.
+ * - `(account)` — mypage, settings, sign-in, sign-up, username setup and
+ *   the user's records: a stack inside one card-style modal, closed from its
+ *   header.
  * - `glossary/[slug]` — a half-height sheet (`formSheet` with a grabber,
  *   expandable to full height): a term is read and dismissed without losing
  *   one's place, and can be opened from anywhere.
@@ -88,10 +89,6 @@ function RootStack({ isDark }: { isDark: boolean }) {
         <Stack.Screen
           name="play/games/[id]"
           options={{ title: t("gameHistory.detailTitle") }}
-        />
-        <Stack.Screen
-          name="settings/index"
-          options={{ title: t("tabs.settings") }}
         />
         <Stack.Screen
           name="dojo/ranks/[slug]"

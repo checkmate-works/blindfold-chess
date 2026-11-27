@@ -36,7 +36,7 @@ export default function HomeTab() {
   return (
     <TabScrollView>
       <NextRankCard />
-      <RecordCtaCard />
+      <RecordCtaCard placement="home" />
       <ProgressCard />
       <AiGameCard
         buttonTitle={t("home.playAi")}

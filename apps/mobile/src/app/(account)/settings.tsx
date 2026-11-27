@@ -37,10 +37,12 @@ const LANGUAGE_ORDER = Object.keys(LANGUAGE_LABELS) as Locale[];
  * About pages.
  *
  * @description
- * Pushed on the root stack from the gear at the right of the home header,
- * not a tab of its own: the tab bar holds five tabs (iOS folds a sixth into
- * a "More" tab), and the fifth slot went to the dojo, which a player visits
- * far more often than settings.
+ * Pushed inside the account modal from mypage's last row, not a tab of its
+ * own: the tab bar holds five tabs (iOS folds a sixth into a "More" tab),
+ * and the fifth slot went to the dojo, which a player visits far more often
+ * than settings. Being in the modal's stack lets the account rows push
+ * sign-in, username setup and records on top of it; the tutorial row closes
+ * the modal first (`TutorialSection`).
  */
 export default function SettingsScreen() {
   const { t, i18n } = useTranslation();

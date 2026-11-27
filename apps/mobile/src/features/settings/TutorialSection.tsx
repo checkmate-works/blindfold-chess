@@ -15,13 +15,19 @@ export function TutorialSection() {
   const { t } = useTranslation();
   const router = useRouter();
   const { clearStatus } = useOnboardingStatus();
+  // Settings lives in the account modal, and a root-stack screen pushed from
+  // inside a modal opens under it on iOS, out of sight. Close the modal first.
+  const openOnboarding = () => {
+    router.dismissTo("/");
+    router.push("/onboarding");
+  };
 
   return (
     <ListSection title={t("settings.tutorial.title")}>
       <ListRow
         leading={<ListIcon ionicon="chatbubbles-outline" />}
         title={t("settings.tutorial.replay")}
-        onPress={() => router.push("/onboarding")}
+        onPress={openOnboarding}
         testID="settings-replay-onboarding"
       />
       {__DEV__ ? (
@@ -30,7 +36,7 @@ export function TutorialSection() {
           title="Reset Onboarding (Debug)"
           onPress={async () => {
             await clearStatus();
-            router.replace("/onboarding");
+            openOnboarding();
           }}
         />
       ) : null}
