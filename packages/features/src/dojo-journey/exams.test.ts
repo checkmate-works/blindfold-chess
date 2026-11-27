@@ -57,6 +57,19 @@ describe("DOJO_EXAMS", () => {
     }
   });
 
+  it("draws the 2kyu puzzle's patterns from pieces on the squares its solution mates on", () => {
+    for (const line of puzzle.solutions) {
+      let fen = puzzle.fen;
+      for (const { san } of line) fen = executeMove(fen, san)!.fen;
+      const mate = new Set(fenToPlacements(fen).map((p) => JSON.stringify(p)));
+      for (const pattern of puzzle.patterns) {
+        for (const placement of fenToPlacements(pattern.fen)) {
+          expect(mate, `${pattern.key}`).toContain(JSON.stringify(placement));
+        }
+      }
+    }
+  });
+
   it("makes the 2kyu puzzle a mate in two for white", () => {
     expect(puzzle.fen.split(" ")[1]).toBe("w");
     expect(puzzle.solutions).toHaveLength(1);
