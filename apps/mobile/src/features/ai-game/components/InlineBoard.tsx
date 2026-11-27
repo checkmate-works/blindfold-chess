@@ -50,6 +50,9 @@ type InlineBoardProps = {
  *   move.
  * - `'never'`: no board at all, only a bar that carries the AI's reply.
  *
+ * While the AI thinks, an open `'always'` board is covered by a light scrim
+ * with a "thinking" chip, so the turn shows where the player is looking.
+ *
  * The mask is laid over a board that is still drawn, so the two are the same
  * size without measuring; the mask is opaque, so nothing shows through.
  */
@@ -154,6 +157,43 @@ export function InlineBoard({
             </Text>
           </Pressable>
         ) : null}
+        {/* On a board that is always open the mask and its reply are never
+            drawn, so the AI's turn reads here instead, as on the web: a
+            light scrim that keeps the position readable and a spinning chip
+            that tells a working engine from a stuck one. It takes no
+            touches and is laid over the board, so nothing moves. */}
+        {thinking && preferences.boardVisibility === "always" ? (
+          <View
+            pointerEvents="none"
+            accessibilityLiveRegion="polite"
+            style={styles.thinkingOverlay}
+          >
+            <View
+              style={[
+                StyleSheet.absoluteFill,
+                styles.scrim,
+                { backgroundColor: colors.page },
+              ]}
+            />
+            <View
+              style={[
+                styles.thinkingChip,
+                {
+                  backgroundColor: colors.card,
+                  borderColor: colors.panelBorder,
+                },
+              ]}
+            >
+              <Spinner color={colors.primary} />
+              <Text
+                numberOfLines={1}
+                style={[styles.thinkingText, { color: colors.foreground }]}
+              >
+                {t("aiGame.session.aiThinking")}
+              </Text>
+            </View>
+          </View>
+        ) : null}
       </View>
       {preferences.boardVisibility === "peek" && revealed ? (
         <Button
@@ -184,6 +224,34 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     borderWidth: 1,
     borderRadius: borderRadius.sm,
+  },
+  thinkingOverlay: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: borderRadius.sm,
+    overflow: "hidden",
+  },
+  scrim: {
+    opacity: 0.4,
+  },
+  thinkingChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+    maxWidth: "90%",
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+    borderWidth: 1,
+    borderRadius: borderRadius.full,
+  },
+  thinkingText: {
+    fontSize: fontSize.sm,
+    fontWeight: fontWeight.medium,
   },
   bar: {
     alignItems: "center",
