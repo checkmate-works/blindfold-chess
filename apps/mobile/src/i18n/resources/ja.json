@@ -900,7 +900,7 @@
       "passwordPlaceholder": "8文字以上",
       "confirmPasswordLabel": "パスワード（確認）",
       "confirmPasswordPlaceholder": "パスワードを再入力",
-      "emailSignUp": "メールで登録",
+      "emailSignUp": "メールアドレスで登録",
       "emailSignUpError": "登録に失敗しました。もう一度お試しください。",
       "passwordMismatch": "パスワードが一致しません。",
       "alreadyHaveAccount": "既にアカウントをお持ちですか？",
@@ -949,7 +949,7 @@
       "title": "アカウント",
       "heading": "おつかれさまでした！",
       "body": "アカウントを作ると、チャレンジの成績が記録され、段位やレベルが上がっていきます。Web 版でも同じアカウントで続きから遊べます。",
-      "signUpWithEmail": "メールで登録",
+      "signUpWithEmail": "メールアドレスで登録",
       "signIn": "アカウントをお持ちの方はログイン",
       "later": "あとで"
     }
