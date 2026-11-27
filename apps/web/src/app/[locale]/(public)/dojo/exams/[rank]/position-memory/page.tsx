@@ -24,84 +24,43 @@
  * 5. A pass that completes the exam stashes the granted rank and returns to
  *    the problem list, which celebrates it.
  */
-import type { Metadata } from 'next';
-import { getTranslations, setRequestLocale } from 'next-intl/server';
-import { notFound } from 'next/navigation';
-
-import { SUPPORTED_LOCALES } from '@/config';
-import { EXAM_RANKS, examProblemOf, examRankOf } from '@blindfold-chess/features/dojo-journey';
-import { previousRankSlug } from '@blindfold-chess/features/dojo-ranks';
-
 import { PositionDetailLayout } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionDetailLayout';
 import { PositionPeekBoard } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionPeekBoard';
 import { PiecesInfo } from '@/app/[locale]/(public)/practice/_components/PiecesInfo';
 import { SectionTitle } from '@/app/[locale]/_components';
-import { resolveTitle } from '@/app/[locale]/_lib/metadata';
-import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { ExamMemorySession } from '../../_components/ExamMemorySession';
 import { ExamPatterns } from '../../_components/ExamPatterns';
+import {
+  type ExamProblemPageParams,
+  examProblemMetadata,
+  examProblemStaticParams,
+  loadExamProblemPage,
+} from '../../_lib/exam-problem-page';
 
-type Props = {
-  params: Promise<{ locale: Locale; rank: string }>;
-};
+type Props = { params: ExamProblemPageParams };
 
 export function generateStaticParams() {
-  return SUPPORTED_LOCALES.flatMap((locale) =>
-    EXAM_RANKS.filter((rank) => examProblemOf(rank, 'position_memory')).map((rank) => ({
-      locale,
-      rank,
-    }))
-  );
+  return examProblemStaticParams('position_memory');
 }
 
 /** Every rank with this problem is prerendered; any other segment is a 404. */
 export const dynamicParams = false;
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale, rank } = await params;
-  const exam = examRankOf(rank);
-  if (!exam) return {};
-  const t = await getTranslations({ locale });
-  // ranks.rankNames.<EarnedRankSlug>: only ranks with an exam (examRankOf)
-  const rankName = t(`ranks.rankNames.${exam}`);
-  return {
-    title: resolveTitle(
-      `${t('ranks.examProblemNames.position_memory')} - ${t('dojoExam.title', { rankName })}`,
-      locale
-    ),
-    robots: { index: false, follow: false },
-  };
+export function generateMetadata({ params }: Props) {
+  return examProblemMetadata(params, 'position_memory');
 }
 
 export default async function DojoExamPositionMemoryPage({ params }: Props) {
-  const { locale, rank } = await params;
-  setRequestLocale(locale);
-  const exam = examRankOf(rank);
-  const problem = examProblemOf(exam, 'position_memory');
-  if (!exam || !problem) notFound();
-
-  const t = await getTranslations({ locale });
-  // ranks.rankNames.<RankSlug>: the exam's rank and the one below it
-  const rankName = t(`ranks.rankNames.${exam}`);
-  const prevRankName = t(`ranks.rankNames.${previousRankSlug(exam)}`);
-  const examTitle = t('dojoExam.title', { rankName });
-  const problemName = t('ranks.examProblemNames.position_memory');
+  const { locale, exam, problem, t, rankName, prevRankName, problemName, breadcrumbItems } =
+    await loadExamProblemPage(params, 'position_memory');
   // dojoExam.memoryIntro.<EarnedRankSlug>: each rank with this problem
   // (generateStaticParams), which says what the rank's problem practises. The
   // condition itself is on the exam's list and in the session's own timer.
   const intro = t(`dojoExam.memoryIntro.${exam}`, { rankName });
 
   return (
-    <PositionDetailLayout
-      title={problemName}
-      locale={locale}
-      breadcrumbItems={[
-        { label: t('dojo.pageTitle'), href: '/dojo' },
-        { label: examTitle, href: `/dojo/exams/${exam}` },
-        { label: problemName },
-      ]}
-    >
+    <PositionDetailLayout title={problemName} locale={locale} breadcrumbItems={breadcrumbItems}>
       <ExamMemorySession
         rank={exam}
         problem={problem}
