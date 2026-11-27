@@ -189,6 +189,37 @@ export function examProblemFor(
   return isExamProblemKind(problem) ? examProblemOf(exam, problem) : undefined;
 }
 
+/** How many moves the player makes in a puzzle problem's first solution line. */
+export function examPuzzleMoveCount(problem: PuzzleExamProblem): number {
+  return parseSolutionLines(problem.solutions)[0]?.playerSlots.length ?? 0;
+}
+
+/**
+ * A problem's condition as a message key and the values it interpolates.
+ * The web (`dojoExam.<key>`) and the app (`dojo.exam.<key>`) use the same
+ * key and value names, so both state the same condition.
+ *
+ * A pass mark of 100% has its own wording (`memoryRulePerfect`, "every piece
+ * in place"), since "100% or better" reads oddly.
+ */
+export type ExamProblemRule =
+  | { key: "memoryRulePerfect"; values: { seconds: number } }
+  | { key: "memoryRule"; values: { seconds: number; accuracy: number } }
+  | { key: "puzzleRule"; values: { moves: number } };
+
+export function examProblemRule(problem: ExamProblem): ExamProblemRule {
+  if (problem.kind === "puzzle") {
+    return {
+      key: "puzzleRule",
+      values: { moves: examPuzzleMoveCount(problem) },
+    };
+  }
+  const seconds = problem.memorizeSeconds;
+  return problem.minAccuracy === 100
+    ? { key: "memoryRulePerfect", values: { seconds } }
+    : { key: "memoryRule", values: { seconds, accuracy: problem.minAccuracy } };
+}
+
 /** A recreated position (memory) or the player's moves in SAN (puzzle). */
 export type ExamAnswer = { fen: string } | { moves: string[] };
 

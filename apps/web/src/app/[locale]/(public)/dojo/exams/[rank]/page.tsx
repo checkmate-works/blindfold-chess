@@ -30,10 +30,10 @@ import {
   DOJO_EXAMS,
   EXAM_RANKS,
   examProblemKinds,
+  examProblemRule,
   examProblemSegment,
   examRankOf,
 } from '@blindfold-chess/features/dojo-journey';
-import { parseSolutionLines } from '@blindfold-chess/features/puzzle';
 
 import { RankAchievementModal } from '@/app/[locale]/(public)/practice/_components/RankAchievementModal';
 import { PageLayout } from '@/app/[locale]/_components';
@@ -82,20 +82,9 @@ export default async function DojoExamPage({ params }: Props) {
   const title = t('dojoExam.title', { rankName });
 
   const rows: ExamProblemRow[] = examProblemKinds(exam).map((kind) => {
-    const problem = DOJO_EXAMS[exam]![kind];
-    const rule =
-      problem.kind === 'position_memory'
-        ? // "100% or better" reads oddly, so a perfect-recreation mark has its own wording.
-          problem.minAccuracy === 100
-          ? t('dojoExam.memoryRulePerfect', { seconds: problem.memorizeSeconds })
-          : t('dojoExam.memoryRule', {
-              seconds: problem.memorizeSeconds,
-              accuracy: problem.minAccuracy,
-            })
-        : t('dojoExam.puzzleRule', {
-            // The player's moves only — the length of the mate.
-            moves: parseSolutionLines(problem.solutions)[0]?.playerSlots.length ?? 0,
-          });
+    // dojoExam.memoryRule / .memoryRulePerfect / .puzzleRule
+    const { key, values } = examProblemRule(DOJO_EXAMS[exam]![kind]);
+    const rule = t(`dojoExam.${key}`, values);
     return {
       kind,
       // ranks.examProblemNames.<ExamProblemKind>: position_memory, puzzle

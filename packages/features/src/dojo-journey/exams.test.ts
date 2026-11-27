@@ -12,7 +12,9 @@ import {
   examProblemKindFromSegment,
   examProblemKinds,
   examProblemOf,
+  examProblemRule,
   examProblemSegment,
+  examPuzzleMoveCount,
   examRankOf,
   gradeExamProblem,
   isExamEligible,
@@ -126,6 +128,30 @@ describe("exam lookups", () => {
     expect(examProblemOf("2kyu", "puzzle")).toBe(puzzle);
     expect(examProblemOf("nope", "puzzle")).toBeUndefined();
     expect(examProblemOf(undefined, "puzzle")).toBeUndefined();
+  });
+});
+
+describe("examProblemRule", () => {
+  it("words a 100% mark as every piece in place", () => {
+    expect(examProblemRule(memory)).toEqual({
+      key: "memoryRulePerfect",
+      values: { seconds: 30 },
+    });
+  });
+
+  it("states any other mark as a percentage", () => {
+    expect(examProblemRule({ ...memory, minAccuracy: 80 })).toEqual({
+      key: "memoryRule",
+      values: { seconds: 30, accuracy: 80 },
+    });
+  });
+
+  it("counts only the player's moves of a puzzle's line", () => {
+    expect(examPuzzleMoveCount(puzzle)).toBe(2);
+    expect(examProblemRule(puzzle)).toEqual({
+      key: "puzzleRule",
+      values: { moves: 2 },
+    });
   });
 });
 

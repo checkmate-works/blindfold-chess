@@ -4,9 +4,9 @@ import { useTranslation } from "react-i18next";
 import {
   DOJO_EXAMS,
   examProblemKinds,
+  examProblemRule,
   examProblemSegment,
   examRankOf,
-  type ExamProblem,
 } from "@blindfold-chess/features/dojo-journey";
 import {
   RANK_SLUGS,
@@ -19,12 +19,6 @@ import { examRunMode } from "../../../features/dojo/exam-run";
 import { RankGoalCard } from "../../../features/dojo/RankGoalCard";
 import { useDojoJourney } from "../../../features/dojo/use-dojo-journey";
 import { fontSize, spacing, useTheme } from "../../../theme";
-
-/** How many of its moves the player makes in a puzzle's first line. */
-function playerMoveCount(problem: ExamProblem): number {
-  if (problem.kind !== "puzzle") return 0;
-  return Math.ceil((problem.solutions[0]?.length ?? 0) / 2);
-}
 
 /**
  * Dojo exam (道場の課題)
@@ -103,7 +97,7 @@ export default function DojoExamScreen() {
         </Text>
         <ListSection>
           {kinds.map((kind) => {
-            const problem = exam[kind];
+            const rule = examProblemRule(exam[kind]);
             const solved = passedKinds.has(kind);
             return (
               <ListRow
@@ -119,22 +113,8 @@ export default function DojoExamScreen() {
                 }
                 // ranks.requirement.examProblemNames.position_memory / .puzzle
                 title={t(`ranks.requirement.examProblemNames.${kind}`)}
-                subtitle={
-                  problem.kind === "position_memory"
-                    ? // "100% or better" reads oddly, so a perfect-recreation
-                      // mark has its own wording.
-                      problem.minAccuracy === 100
-                      ? t("dojo.exam.memoryRulePerfect", {
-                          seconds: problem.memorizeSeconds,
-                        })
-                      : t("dojo.exam.memoryRule", {
-                          seconds: problem.memorizeSeconds,
-                          accuracy: problem.minAccuracy,
-                        })
-                    : t("dojo.exam.puzzleRule", {
-                        moves: playerMoveCount(problem),
-                      })
-                }
+                // dojo.exam.memoryRule / .memoryRulePerfect / .puzzleRule
+                subtitle={t(`dojo.exam.${rule.key}`, rule.values)}
                 value={solved ? t("dojo.exam.solved") : undefined}
                 accessory="chevron"
                 onPress={() => open(kind)}
