@@ -6081,7 +6081,7 @@
     },
     "puzzleRule": "Encontre o mate em {moves}.",
     "puzzleIntro": {
-      "2kyu": "Esta é a prova de {rankName}. Imagine o tabuleiro e resolva o mate em dois lances."
+      "2kyu": "Esta é a prova de {rankName}. Imagine o tabuleiro e resolva o mate em {moves} lances."
     },
     "start": "Começar",
     "solved": "Aprovado",

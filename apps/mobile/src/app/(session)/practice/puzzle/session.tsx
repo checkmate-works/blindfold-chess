@@ -20,9 +20,9 @@ import {
 import { Button, Screen } from "../../../../components";
 import { ButtonInput } from "../../../../features/ai-game/components";
 import {
+  examProblemOf,
   examRankOf,
-  puzzleExamProblemOf,
-} from "../../../../features/dojo/exam-run";
+} from "@blindfold-chess/features/dojo-journey";
 import { BoardAccordion } from "../../../../features/puzzle/components/BoardAccordion";
 import { PiecesInfo } from "../../../../features/puzzle/components/PiecesInfo";
 import {
@@ -67,7 +67,7 @@ export default function PuzzleSession() {
   const { id } = params;
   const [exam] = useState(() => {
     const rank = examRankOf(params.exam);
-    const problem = puzzleExamProblemOf(params.exam);
+    const problem = examProblemOf(params.exam, "puzzle");
     return rank && problem ? { rank, problem } : undefined;
   });
   const [puzzle, setPuzzle] = useState<Puzzle | "notFound" | "failed" | null>(

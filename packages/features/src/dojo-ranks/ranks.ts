@@ -66,8 +66,34 @@ export type ChallengeScoreRequirement = {
   readonly minScore: number;
 };
 
-/** The two kinds of exam problem a rank can set. */
-export type ExamProblemKind = "position_memory" | "puzzle";
+/**
+ * The `ranks.challengeNames.*` message key of a challenge leaderboard: the
+ * module alone for its default board (`square_colors`), the module and the
+ * board otherwise (`legal_moves_king`). The web and the app name a
+ * `challenge_score` requirement, and the app its next challenge step, with
+ * this key, so a new leaderboard needs one message entry per dictionary.
+ */
+export function challengeNameKey(
+  menuType: string,
+  leaderboardKey: string,
+): string {
+  return leaderboardKey === "default"
+    ? menuType
+    : `${menuType}_${leaderboardKey}`;
+}
+
+/**
+ * The kinds of exam problem a rank can set, in the order an exam lists them.
+ * The URL segments, the problem lists and the request guards all read this
+ * one list, so a kind added here reaches every one of them.
+ */
+export const EXAM_PROBLEM_KINDS = ["position_memory", "puzzle"] as const;
+
+export type ExamProblemKind = (typeof EXAM_PROBLEM_KINDS)[number];
+
+export function isExamProblemKind(value: unknown): value is ExamProblemKind {
+  return (EXAM_PROBLEM_KINDS as readonly unknown[]).includes(value);
+}
 
 /**
  * Requires the user to have passed one problem of a rank's exam: recreating a
@@ -240,6 +266,17 @@ export function nextRankSlug(
 ): EarnedRankSlug | undefined {
   const next = RANK_SLUGS[RANK_SLUGS.indexOf(highest ?? MUKYU_SLUG) + 1];
   return next === undefined || next === MUKYU_SLUG ? undefined : next;
+}
+
+/**
+ * The rank right below `slug`, or undefined below mukyu. For an earned rank
+ * it is always defined (mukyu for 5kyu): the rank a player has to hold before
+ * a pass at `slug`'s exam is recorded.
+ */
+export function previousRankSlug(slug: EarnedRankSlug): RankSlug;
+export function previousRankSlug(slug: RankSlug): RankSlug | undefined;
+export function previousRankSlug(slug: RankSlug): RankSlug | undefined {
+  return RANK_SLUGS[RANK_SLUGS.indexOf(slug) - 1];
 }
 
 /** How many of the earned ranks are covered by `highest`. */

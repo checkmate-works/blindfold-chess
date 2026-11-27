@@ -7,20 +7,18 @@ import {
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { isBlackToMoveFromFen } from "@blindfold-chess/features/chess-core";
-import { DOJO_EXAMS } from "@blindfold-chess/features/dojo-journey";
 import {
-  isRankSlug,
-  type ExamProblemKind,
-} from "@blindfold-chess/features/dojo-ranks";
+  DOJO_EXAMS,
+  examProblemKindFromSegment,
+  examPuzzleMoveCount,
+  examRankOf,
+} from "@blindfold-chess/features/dojo-journey";
 
 import { BottomBar, Button, ListSection, Screen } from "../../../../components";
-import { examProblemSegment } from "../../../../features/dojo/dojo-api";
 import { ExamPatternList } from "../../../../features/dojo/ExamPatternList";
 import { BoardAccordion } from "../../../../features/puzzle/components/BoardAccordion";
 import { PiecesInfo } from "../../../../features/puzzle/components/PiecesInfo";
 import { fontSize, spacing, useTheme } from "../../../../theme";
-
-const KINDS: readonly ExamProblemKind[] = ["position_memory", "puzzle"];
 
 /**
  * Dojo exam problem (道場の課題の問題)
@@ -45,11 +43,8 @@ export default function DojoExamProblemScreen() {
   const router = useRouter();
   const { width } = useWindowDimensions();
   const params = useLocalSearchParams<{ rank: string; problem: string }>();
-  const rank =
-    isRankSlug(params.rank) && params.rank !== "mukyu"
-      ? params.rank
-      : undefined;
-  const kind = KINDS.find((k) => examProblemSegment(k) === params.problem);
+  const rank = examRankOf(params.rank);
+  const kind = examProblemKindFromSegment(params.problem);
   const problem = rank && kind ? DOJO_EXAMS[rank]?.[kind] : undefined;
   if (!rank || !kind || !problem) return null;
 
@@ -75,10 +70,13 @@ export default function DojoExamProblemScreen() {
           <Text style={[styles.description, { color: colors.foreground }]}>
             {/* dojo.exam.memoryIntro.<rank> / dojo.exam.puzzleIntro.<rank>:
                 each rank with an exam (2kyu) */}
-            {t(
-              `dojo.exam.${isMemory ? "memoryIntro" : "puzzleIntro"}.${rank}`,
-              { rank: rankName },
-            )}
+            {isMemory
+              ? t(`dojo.exam.memoryIntro.${rank}`, { rank: rankName })
+              : // The length of the mate comes from the problem itself.
+                t(`dojo.exam.puzzleIntro.${rank}`, {
+                  rank: rankName,
+                  moves: examPuzzleMoveCount(problem),
+                })}
           </Text>
         </ListSection>
         <PiecesInfo fen={problem.fen} showSideToMove={!isMemory} />

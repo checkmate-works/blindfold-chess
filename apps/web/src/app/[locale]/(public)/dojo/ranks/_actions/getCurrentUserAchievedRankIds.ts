@@ -1,8 +1,7 @@
 'use server';
 
 import { getOptionalUser } from '@/lib/auth';
-
-import { getUserAchievedRankIds } from '../_lib/queries';
+import { getUserAchievedRankIds } from '@/lib/dojo/rank-queries';
 
 /**
  * Return the set of rank IDs the currently-signed-in user has achieved, or

@@ -17,10 +17,12 @@
 import { validateFenFormat } from "../chess-core/fen-pure";
 import { calculateAccuracy } from "../common/accuracy";
 import {
+  EARNED_RANK_SLUGS,
+  EXAM_PROBLEM_KINDS,
   type EarnedRankSlug,
   type ExamProblemKind,
   type RankSlug,
-  isRankSlug,
+  isExamProblemKind,
   rankStanding,
 } from "../dojo-ranks/ranks";
 import { MAX_SOLUTION_MOVES } from "../puzzle/limits";
@@ -112,8 +114,67 @@ export const DOJO_EXAMS: Readonly<
   },
 };
 
-function isExamProblemKind(value: unknown): value is ExamProblemKind {
-  return value === "position_memory" || value === "puzzle";
+/** The ranks that have an exam, lowest first. */
+export const EXAM_RANKS: readonly EarnedRankSlug[] = EARNED_RANK_SLUGS.filter(
+  (slug) => DOJO_EXAMS[slug] !== undefined,
+);
+
+/**
+ * `value` as a rank that has an exam, or undefined. Safe on untrusted input
+ * (a URL segment, a route param, a request body): only known ranks match.
+ */
+export function examRankOf(value: unknown): EarnedRankSlug | undefined {
+  return EXAM_RANKS.find((rank) => rank === value);
+}
+
+/**
+ * The problem kinds of `rank`'s exam, in {@link EXAM_PROBLEM_KINDS} order —
+ * the order every list of an exam's problems shows them in.
+ */
+export function examProblemKinds(rank: EarnedRankSlug): ExamProblemKind[] {
+  const exam = DOJO_EXAMS[rank];
+  return exam
+    ? EXAM_PROBLEM_KINDS.filter((kind) => exam[kind] !== undefined)
+    : [];
+}
+
+/**
+ * The `kind` problem of the exam `exam` names, narrowed to that kind's shape,
+ * or undefined when `exam` is not a rank with an exam. `exam` may be untrusted.
+ */
+export function examProblemOf<K extends ExamProblemKind>(
+  exam: unknown,
+  kind: K,
+): Extract<ExamProblem, { kind: K }> | undefined {
+  const rank = examRankOf(exam);
+  const problem = rank ? DOJO_EXAMS[rank]?.[kind] : undefined;
+  return problem?.kind === kind
+    ? (problem as Extract<ExamProblem, { kind: K }>)
+    : undefined;
+}
+
+/**
+ * The URL segment of a problem kind: the kind in kebab-case
+ * (`position_memory` → `position-memory`), as in the web's exam pages
+ * (`/dojo/exams/2kyu/position-memory`), the app's exam routes and the mobile
+ * API (`POST /dojo/exams/<exam>/<problem>`). Clients build the URL with this
+ * and the server reads it back with {@link examProblemKindFromSegment}, so
+ * the two cannot spell a problem differently.
+ */
+export function examProblemSegment(kind: ExamProblemKind): string {
+  return kind.replace(/_/g, "-");
+}
+
+/**
+ * The problem kind a URL segment names, or undefined. Only the spelling
+ * {@link examProblemSegment} writes is accepted, so each problem has one URL.
+ */
+export function examProblemKindFromSegment(
+  segment: string,
+): ExamProblemKind | undefined {
+  return EXAM_PROBLEM_KINDS.find(
+    (kind) => examProblemSegment(kind) === segment,
+  );
 }
 
 /**
@@ -125,10 +186,38 @@ export function examProblemFor(
   exam: string,
   problem: string,
 ): ExamProblem | undefined {
-  if (!isRankSlug(exam) || exam === "mukyu" || !isExamProblemKind(problem)) {
-    return undefined;
+  return isExamProblemKind(problem) ? examProblemOf(exam, problem) : undefined;
+}
+
+/** How many moves the player makes in a puzzle problem's first solution line. */
+export function examPuzzleMoveCount(problem: PuzzleExamProblem): number {
+  return parseSolutionLines(problem.solutions)[0]?.playerSlots.length ?? 0;
+}
+
+/**
+ * A problem's condition as a message key and the values it interpolates.
+ * The web (`dojoExam.<key>`) and the app (`dojo.exam.<key>`) use the same
+ * key and value names, so both state the same condition.
+ *
+ * A pass mark of 100% has its own wording (`memoryRulePerfect`, "every piece
+ * in place"), since "100% or better" reads oddly.
+ */
+export type ExamProblemRule =
+  | { key: "memoryRulePerfect"; values: { seconds: number } }
+  | { key: "memoryRule"; values: { seconds: number; accuracy: number } }
+  | { key: "puzzleRule"; values: { moves: number } };
+
+export function examProblemRule(problem: ExamProblem): ExamProblemRule {
+  if (problem.kind === "puzzle") {
+    return {
+      key: "puzzleRule",
+      values: { moves: examPuzzleMoveCount(problem) },
+    };
   }
-  return DOJO_EXAMS[exam]?.[problem];
+  const seconds = problem.memorizeSeconds;
+  return problem.minAccuracy === 100
+    ? { key: "memoryRulePerfect", values: { seconds } }
+    : { key: "memoryRule", values: { seconds, accuracy: problem.minAccuracy } };
 }
 
 /** A recreated position (memory) or the player's moves in SAN (puzzle). */

@@ -9,7 +9,7 @@ vi.mock('@/lib/auth');
 vi.mock('@/lib/dojo/step-completions', () => ({
   getCompletedSteps: (...args: unknown[]) => mockGetCompletedSteps(...args),
 }));
-vi.mock('@/app/[locale]/(public)/dojo/ranks/_lib/queries', () => ({
+vi.mock('@/lib/dojo/rank-queries', () => ({
   getAchievedSlugsForUser: (...args: unknown[]) => mockGetAchievedSlugs(...args),
 }));
 

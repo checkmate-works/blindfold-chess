@@ -2,10 +2,7 @@ import * as matchers from '@testing-library/jest-dom/matchers';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import type {
-  RequirementDivider,
-  RequirementItem,
-} from '@/app/[locale]/(public)/dojo/ranks/_components/RequirementsList';
+import type { RequirementItem } from '@/app/[locale]/(public)/dojo/ranks/_components/RequirementsList';
 
 import { NextRankRequirements } from './NextRankRequirements';
 
@@ -53,22 +50,5 @@ describe('NextRankRequirements', () => {
 
     expect(screen.queryByRole('link')).toBeNull();
     expect(screen.getByText('Complete a secret quest')).toBeInTheDocument();
-  });
-
-  it('renders an or-divider row as plain text with no link and no belt dot', () => {
-    const divider: RequirementDivider = { kind: 'or', label: 'or' };
-    const mixedItems: (RequirementItem | RequirementDivider)[] = [
-      { label: 'Post a position-memory problem', href: '/en/practice/position-memory/new' },
-      divider,
-      { label: 'Post a puzzle', href: '/en/practice/puzzle/new' },
-    ];
-    render(<NextRankRequirements items={mixedItems} beltColor={BELT} />);
-
-    expect(screen.getAllByRole('link')).toHaveLength(2);
-    const dividerRow = screen.getByText('or');
-    expect(dividerRow.closest('a')).toBeNull();
-    expect(
-      dividerRow.closest('li')?.querySelector('[data-testid="next-rank-belt-dot"]')
-    ).toBeNull();
   });
 });

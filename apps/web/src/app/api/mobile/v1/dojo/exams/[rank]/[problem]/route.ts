@@ -1,8 +1,10 @@
+import { examProblemKindFromSegment } from '@blindfold-chess/features/dojo-journey';
 import type { MobileDojoExamResponse } from '@blindfold-chess/features/dojo-journey';
-import type { ExamProblemKind } from '@blindfold-chess/features/dojo-ranks';
 
 import { evaluateRanksAfterCreate } from '@/lib/db/rank-evaluation';
 import { submitExamProblem } from '@/lib/dojo/exam';
+import { resolveHighestAchievedSlug } from '@/lib/dojo/rank-progression';
+import { getAchievedSlugsForUser } from '@/lib/dojo/rank-queries';
 import { authorizeMobileRequest } from '@/lib/mobile-api/auth';
 import {
   mobileError,
@@ -13,20 +15,7 @@ import {
 } from '@/lib/mobile-api/response';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 
-import { getAchievedSlugsForUser } from '@/app/[locale]/(public)/dojo/ranks/_lib/queries';
-import { resolveHighestAchievedSlug } from '@/app/[locale]/(public)/dojo/ranks/_lib/rank-progression';
-
 export const dynamic = 'force-dynamic';
-
-/**
- * URL segments are kebab-case, like the web's exam pages
- * (`/dojo/exams/2kyu/position-memory`); the problem kinds are snake_case.
- * Only these spellings are accepted, so each problem has one URL.
- */
-const PROBLEM_BY_SEGMENT: Readonly<Record<string, ExamProblemKind>> = {
-  'position-memory': 'position_memory',
-  puzzle: 'puzzle',
-};
 
 /**
  * Grades the app user's answer to one exam problem — `{ fen }` (the
@@ -52,9 +41,8 @@ export async function POST(
     const auth = await authorizeMobileRequest(request, { rateLimit: RATE_LIMITS.dojoExam });
     if (!auth.ok) return auth.response;
     const { rank, problem: segment } = await params;
-    const problem = Object.hasOwn(PROBLEM_BY_SEGMENT, segment)
-      ? PROBLEM_BY_SEGMENT[segment]
-      : undefined;
+    // Kebab-case segments only (`position-memory`), so each problem has one URL.
+    const problem = examProblemKindFromSegment(segment);
     if (!problem) return mobileError('unknownExam', 404);
 
     const answer = await readJsonBody(request);

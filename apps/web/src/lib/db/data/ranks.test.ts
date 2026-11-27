@@ -1,8 +1,4 @@
-import {
-  BELT_COLOR_HEX as SHARED_BELT_COLOR_HEX,
-  RANK_REQUIREMENTS as SHARED_RANK_REQUIREMENTS,
-  RANK_SLUGS as SHARED_RANK_SLUGS,
-} from '@blindfold-chess/features/dojo-ranks';
+import { RANK_REQUIREMENTS as SHARED_RANK_REQUIREMENTS } from '@blindfold-chess/features/dojo-ranks';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -533,10 +529,6 @@ describe('resolveHighestRankSlug', () => {
 describe('shared rank definitions (@blindfold-chess/features/dojo-ranks)', () => {
   // Seed metadata must cover the shared ladder, and every shared requirement
   // must survive the server JSONB parser used for rank evaluation.
-  it('lists the same ranks in the same order', () => {
-    expect([...ALL_RANK_SLUGS]).toEqual([...SHARED_RANK_SLUGS]);
-  });
-
   it('seeds every shared requirement with a shape the server can parse', () => {
     for (const seed of ranksSeedData) {
       expect(parseRequirements(seed.requirements)).toEqual(seed.requirements);
@@ -545,11 +537,5 @@ describe('shared rank definitions (@blindfold-chess/features/dojo-ranks)', () =>
       );
     }
     expect(ranksSeedData.map((seed) => seed.slug)).toEqual(Object.keys(SHARED_RANK_REQUIREMENTS));
-  });
-
-  it('uses the same belt colors', () => {
-    for (const slug of ALL_RANK_SLUGS) {
-      expect(BELT_COLOR_HEX[RANK_COLORS[slug]]).toBe(SHARED_BELT_COLOR_HEX[slug]);
-    }
   });
 });

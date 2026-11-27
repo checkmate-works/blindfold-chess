@@ -5,9 +5,17 @@ import { fenToPlacements } from "../chess-core/fen-pure";
 import { calculateAccuracy } from "../common/accuracy";
 import {
   DOJO_EXAMS,
+  EXAM_RANKS,
   type MemoryExamProblem,
   type PuzzleExamProblem,
   examProblemFor,
+  examProblemKindFromSegment,
+  examProblemKinds,
+  examProblemOf,
+  examProblemRule,
+  examProblemSegment,
+  examPuzzleMoveCount,
+  examRankOf,
   gradeExamProblem,
   isExamEligible,
 } from "./exams";
@@ -94,6 +102,72 @@ describe("examProblemFor", () => {
     expect(examProblemFor("2kyu", "memory")).toBeUndefined();
     expect(examProblemFor("__proto__", "puzzle")).toBeUndefined();
     expect(examProblemFor("2kyu", "constructor")).toBeUndefined();
+  });
+});
+
+describe("exam lookups", () => {
+  it("lists the ranks with an exam", () => {
+    expect(EXAM_RANKS).toEqual(["2kyu"]);
+  });
+
+  it("reads a rank only when it has an exam", () => {
+    expect(examRankOf("2kyu")).toBe("2kyu");
+    expect(examRankOf("3kyu")).toBeUndefined();
+    expect(examRankOf("mukyu")).toBeUndefined();
+    expect(examRankOf("__proto__")).toBeUndefined();
+    expect(examRankOf(undefined)).toBeUndefined();
+  });
+
+  it("lists an exam's problem kinds, memory first", () => {
+    expect(examProblemKinds("2kyu")).toEqual(["position_memory", "puzzle"]);
+    expect(examProblemKinds("5kyu")).toEqual([]);
+  });
+
+  it("finds each kind of problem of the named exam", () => {
+    expect(examProblemOf("2kyu", "position_memory")).toBe(memory);
+    expect(examProblemOf("2kyu", "puzzle")).toBe(puzzle);
+    expect(examProblemOf("nope", "puzzle")).toBeUndefined();
+    expect(examProblemOf(undefined, "puzzle")).toBeUndefined();
+  });
+});
+
+describe("examProblemRule", () => {
+  it("words a 100% mark as every piece in place", () => {
+    expect(examProblemRule(memory)).toEqual({
+      key: "memoryRulePerfect",
+      values: { seconds: 30 },
+    });
+  });
+
+  it("states any other mark as a percentage", () => {
+    expect(examProblemRule({ ...memory, minAccuracy: 80 })).toEqual({
+      key: "memoryRule",
+      values: { seconds: 30, accuracy: 80 },
+    });
+  });
+
+  it("counts only the player's moves of a puzzle's line", () => {
+    expect(examPuzzleMoveCount(puzzle)).toBe(2);
+    expect(examProblemRule(puzzle)).toEqual({
+      key: "puzzleRule",
+      values: { moves: 2 },
+    });
+  });
+});
+
+describe("exam problem URL segments", () => {
+  it("writes problem kinds in kebab-case", () => {
+    expect(examProblemSegment("position_memory")).toBe("position-memory");
+    expect(examProblemSegment("puzzle")).toBe("puzzle");
+  });
+
+  it("reads back only the kebab-case spelling", () => {
+    expect(examProblemKindFromSegment("position-memory")).toBe(
+      "position_memory",
+    );
+    expect(examProblemKindFromSegment("puzzle")).toBe("puzzle");
+    expect(examProblemKindFromSegment("position_memory")).toBeUndefined();
+    expect(examProblemKindFromSegment("constructor")).toBeUndefined();
   });
 });
 

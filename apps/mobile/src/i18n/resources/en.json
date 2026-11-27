@@ -1134,7 +1134,7 @@
         "2kyu": "This is the {{rank}} exam. Make good use of chunks to memorize the position."
       },
       "puzzleIntro": {
-        "2kyu": "This is the {{rank}} exam. Picture the board in your mind and solve the mate in two."
+        "2kyu": "This is the {{rank}} exam. Picture the board in your mind and solve the mate in {{moves}}."
       },
       "patterns": {
         "kingside_castle": {

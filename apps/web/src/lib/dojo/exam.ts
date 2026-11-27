@@ -37,17 +37,16 @@
  */
 import {
   examProblemFor,
+  examRankOf,
   examStepKey,
   gradeExamProblem,
   isExamEligible,
 } from '@blindfold-chess/features/dojo-journey';
-import { MUKYU_SLUG, isRankSlug } from '@blindfold-chess/features/dojo-ranks';
 import 'server-only';
 
 import { db, dojoStepCompletions } from '@/lib/db';
-
-import { getAchievedSlugsForUser } from '@/app/[locale]/(public)/dojo/ranks/_lib/queries';
-import { resolveHighestAchievedSlug } from '@/app/[locale]/(public)/dojo/ranks/_lib/rank-progression';
+import { resolveHighestAchievedSlug } from '@/lib/dojo/rank-progression';
+import { getAchievedSlugsForUser } from '@/lib/dojo/rank-queries';
 
 /**
  * - `unknownExam`: `(exam, problem)` names no problem (unknown rank, a rank
@@ -74,21 +73,21 @@ export async function submitExamProblem(
   problem: string,
   answer: unknown
 ): Promise<SubmitExamResult> {
-  if (!isRankSlug(exam) || exam === MUKYU_SLUG) return { status: 'unknownExam' };
+  const examRank = examRankOf(exam);
   const examProblem = examProblemFor(exam, problem);
-  if (!examProblem) return { status: 'unknownExam' };
+  if (!examRank || !examProblem) return { status: 'unknownExam' };
 
   const { passed, accuracy } = gradeExamProblem(examProblem, answer);
   if (!passed) return { status: 'graded', passed, accuracy, recorded: false };
 
   const highest = resolveHighestAchievedSlug(await getAchievedSlugsForUser(userId));
-  if (!isExamEligible(exam, highest ?? undefined)) {
+  if (!isExamEligible(examRank, highest ?? undefined)) {
     return { status: 'graded', passed, accuracy, recorded: false };
   }
 
   await db
     .insert(dojoStepCompletions)
-    .values({ userId, stepKey: examStepKey(exam, examProblem.kind) })
+    .values({ userId, stepKey: examStepKey(examRank, examProblem.kind) })
     .onConflictDoNothing({ target: [dojoStepCompletions.userId, dojoStepCompletions.stepKey] });
   return { status: 'graded', passed, accuracy, recorded: true };
 }

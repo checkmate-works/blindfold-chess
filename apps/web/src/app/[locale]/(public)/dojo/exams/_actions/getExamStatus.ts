@@ -1,14 +1,17 @@
 'use server';
 
-import { examStepKey, isExamEligible } from '@blindfold-chess/features/dojo-journey';
+import {
+  examProblemKinds,
+  examRankOf,
+  examStepKey,
+  isExamEligible,
+} from '@blindfold-chess/features/dojo-journey';
 
 import { getOptionalUser } from '@/lib/auth';
+import { resolveHighestAchievedSlug } from '@/lib/dojo/rank-progression';
+import { getAchievedSlugsForUser } from '@/lib/dojo/rank-queries';
 import { getCompletedSteps } from '@/lib/dojo/step-completions';
 
-import { getAchievedSlugsForUser } from '@/app/[locale]/(public)/dojo/ranks/_lib/queries';
-import { resolveHighestAchievedSlug } from '@/app/[locale]/(public)/dojo/ranks/_lib/rank-progression';
-
-import { examProblemKinds, parseExamRank } from '../_lib/exam-rank';
 import type { ExamStatus } from '../_lib/types';
 
 /**
@@ -20,7 +23,7 @@ export async function getExamStatus(rank: string): Promise<ExamStatus> {
   const user = await getOptionalUser();
   if (!user) return { signedIn: false };
 
-  const exam = parseExamRank(rank);
+  const exam = examRankOf(rank);
   if (!exam) return { signedIn: true, solved: [], eligible: false };
 
   const [completed, achieved] = await Promise.all([

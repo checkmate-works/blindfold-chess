@@ -2,9 +2,8 @@
 
 import { getOptionalUser, userHasProfile } from '@/lib/auth';
 import type { RankSlug } from '@/lib/db/data/ranks';
+import { getAchievedSlugsForUser } from '@/lib/dojo/rank-queries';
 import type { GuestPromotionQualification } from '@/lib/games/guest-promotion';
-
-import { getAchievedSlugsForUser } from '../_lib/queries';
 
 /**
  * The rank the caller would earn by publishing THIS game right now — or

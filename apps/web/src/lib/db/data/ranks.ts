@@ -30,13 +30,21 @@
  * Level values use gaps (10, 20, ...) to allow future intermediate ranks
  * without renumbering.
  */
-import { RANK_REQUIREMENTS } from '@blindfold-chess/features/dojo-ranks';
+import {
+  BELT_COLOR_HEX as BELT_COLOR_HEX_BY_SLUG,
+  RANK_REQUIREMENTS,
+  RANK_SLUGS,
+  MUKYU_SLUG as SHARED_MUKYU_SLUG,
+  isExamProblemKind,
+  isRankSlug,
+} from '@blindfold-chess/features/dojo-ranks';
 import type {
   ChallengeScoreRequirement,
   ExamProblemRequirement,
   GamePublishWinHiddenBoardRequirement,
   GamePublishWinRequirement,
   RankRequirement,
+  RankSlug,
 } from '@blindfold-chess/features/dojo-ranks';
 
 export type {
@@ -45,6 +53,7 @@ export type {
   GamePublishWinRequirement,
   GamePublishWinHiddenBoardRequirement,
   RankRequirement,
+  RankSlug,
 } from '@blindfold-chess/features/dojo-ranks';
 
 type RankSeed = {
@@ -55,15 +64,14 @@ type RankSeed = {
 };
 
 /**
- * All rank slugs in progression order (lowest to highest).
+ * All rank slugs in progression order (lowest to highest), as the shared
+ * `RANK_SLUGS` lists them — the web and the app read one ladder.
  * Used by the ranks page to determine which ranks are "Coming Soon".
  *
  * Mukyu (無級 — "no rank") is included at the start as the default rank.
  * @see {@link MUKYU_SLUG} for the business logic rationale.
  */
-export const ALL_RANK_SLUGS = ['mukyu', '5kyu', '4kyu', '3kyu', '2kyu', '1kyu', '1dan'] as const;
-
-export type RankSlug = (typeof ALL_RANK_SLUGS)[number];
+export const ALL_RANK_SLUGS = RANK_SLUGS;
 
 /**
  * The `level` at which the dan tier begins (1dan = 110; kyū ranks are ≤50).
@@ -79,7 +87,11 @@ export type RankSlug = (typeof ALL_RANK_SLUGS)[number];
  */
 export const DAN_TIER_MIN_LEVEL = 110;
 
-/** Belt colors for each rank. */
+/**
+ * The belt colour of each rank by name, as the `ranks.color` column stores it
+ * and the grant result (`GrantedRank.color`) carries it. The hex of each
+ * colour comes from the shared `BELT_COLOR_HEX` (see {@link BELT_COLOR_HEX}).
+ */
 export const RANK_COLORS: Record<RankSlug, string> = {
   mukyu: 'white',
   '5kyu': 'orange',
@@ -119,10 +131,9 @@ export function isExamProblemRequirement(value: unknown): value is ExamProblemRe
   const record = value as Record<string, unknown>;
   return (
     record.type === 'exam_problem' &&
-    typeof record.exam === 'string' &&
-    record.exam !== 'mukyu' &&
-    (ALL_RANK_SLUGS as readonly string[]).includes(record.exam) &&
-    (record.problem === 'position_memory' || record.problem === 'puzzle')
+    isRankSlug(record.exam) &&
+    record.exam !== MUKYU_SLUG &&
+    isExamProblemKind(record.problem)
   );
 }
 
@@ -170,20 +181,16 @@ export function parseRequirements(raw: unknown): RankRequirement[] {
 // ---------------------------------------------------------------------------
 
 /**
- * Map rank color names to CSS hex values.
+ * Map rank color names (the `ranks.color` values) to CSS hex values, for
+ * callers that hold only the stored colour name. Derived from the shared
+ * per-rank hex, so a belt's colour is written down once.
  *
  * White (#ffffff) is used for Mukyu. UI components rendering this color
  * should add a border or outline for visibility against light backgrounds.
  */
-export const BELT_COLOR_HEX: Record<string, string> = {
-  white: '#ffffff',
-  orange: '#f97316',
-  blue: '#3b82f6',
-  yellow: '#eab308',
-  green: '#22c55e',
-  brown: '#92400e',
-  black: '#1c1917',
-};
+export const BELT_COLOR_HEX: Record<string, string> = Object.fromEntries(
+  ALL_RANK_SLUGS.map((slug) => [RANK_COLORS[slug], BELT_COLOR_HEX_BY_SLUG[slug]])
+);
 
 // ---------------------------------------------------------------------------
 // Mukyu (無級 — "no rank") — UI-only default rank
@@ -212,7 +219,7 @@ export const BELT_COLOR_HEX: Record<string, string> = {
  * {@link ranksSeedData} currently has conditions). Mukyu has no requirements
  * by design — it is always accessible and clickable.
  */
-export const MUKYU_SLUG = 'mukyu' as const;
+export const MUKYU_SLUG = SHARED_MUKYU_SLUG;
 
 /** Check whether a given slug is the Mukyu (unranked) slug. */
 export function isMukyuSlug(slug: string): slug is typeof MUKYU_SLUG {

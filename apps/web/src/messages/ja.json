@@ -6081,7 +6081,7 @@
     },
     "puzzleRule": "{moves}手詰めを解きます。",
     "puzzleIntro": {
-      "2kyu": "{rankName}の課題です。盤面を思い浮かべながら、2手詰めを解いてみましょう。"
+      "2kyu": "{rankName}の課題です。盤面を思い浮かべながら、{moves}手詰めを解いてみましょう。"
     },
     "start": "挑戦する",
     "solved": "合格済み",

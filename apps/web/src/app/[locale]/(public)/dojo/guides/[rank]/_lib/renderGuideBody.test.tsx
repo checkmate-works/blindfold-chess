@@ -149,7 +149,7 @@ vi.mock('@/app/[locale]/(public)/dojo/ranks/_lib/requirement-items', () => ({
 }));
 
 const getRankBySlugMock = vi.fn();
-vi.mock('@/app/[locale]/(public)/dojo/ranks/_lib/queries', () => ({
+vi.mock('@/lib/dojo/rank-queries', () => ({
   getRankBySlug: (...args: unknown[]) => getRankBySlugMock(...args),
 }));
 

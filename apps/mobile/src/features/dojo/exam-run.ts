@@ -22,48 +22,18 @@
  * 5kyu would show 4kyu and 3kyu as done too.
  */
 import {
-  DOJO_EXAMS,
-  examProblemFor,
   gradeExamProblem,
   isExamEligible,
   type ExamAnswer,
   type ExamProblem,
-  type MemoryExamProblem,
-  type PuzzleExamProblem,
 } from "@blindfold-chess/features/dojo-journey";
 import {
-  isRankSlug,
   type EarnedRankSlug,
   type ExamProblemKind,
   type RankSlug,
 } from "@blindfold-chess/features/dojo-ranks";
 
 import { submitExamProblem } from "./dojo-api";
-
-/** An `exam` route param as a rank with an exam, or undefined. */
-export function examRankOf(
-  exam: string | undefined,
-): EarnedRankSlug | undefined {
-  return isRankSlug(exam) && exam !== "mukyu" && DOJO_EXAMS[exam]
-    ? exam
-    : undefined;
-}
-
-/** The position-memory problem of the exam an `exam` route param names. */
-export function memoryExamProblemOf(
-  exam: string | undefined,
-): MemoryExamProblem | undefined {
-  const problem = examProblemFor(exam ?? "", "position_memory");
-  return problem?.kind === "position_memory" ? problem : undefined;
-}
-
-/** The puzzle problem of the exam an `exam` route param names. */
-export function puzzleExamProblemOf(
-  exam: string | undefined,
-): PuzzleExamProblem | undefined {
-  const problem = examProblemFor(exam ?? "", "puzzle");
-  return problem?.kind === "puzzle" ? problem : undefined;
-}
 
 export type ExamRunMode = "record" | "practice";
 

@@ -19,7 +19,7 @@ vi.mock('@/lib/db', () => ({
   },
   dojoStepCompletions: { userId: 'user_id', stepKey: 'step_key' },
 }));
-vi.mock('@/app/[locale]/(public)/dojo/ranks/_lib/queries', () => ({
+vi.mock('@/lib/dojo/rank-queries', () => ({
   getAchievedSlugsForUser: (userId: string) => getAchievedSlugsForUser(userId),
 }));
 

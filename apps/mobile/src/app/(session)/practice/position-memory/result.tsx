@@ -4,9 +4,9 @@ import { useLocalSearchParams } from "expo-router";
 import { PracticeResultScreen } from "../../../../components";
 import { ExamVerdictCard } from "../../../../features/dojo/ExamVerdictCard";
 import {
+  examProblemOf,
   examRankOf,
-  memoryExamProblemOf,
-} from "../../../../features/dojo/exam-run";
+} from "@blindfold-chess/features/dojo-journey";
 import { SessionResult } from "../../../../features/fen/components";
 import {
   parseFenResultParams,
@@ -24,7 +24,7 @@ export default function PositionMemoryResult() {
   const params = useLocalSearchParams<FenResultParams & { exam?: string }>();
   const result = parseFenResultParams(params);
   const exam = examRankOf(params.exam);
-  const problem = memoryExamProblemOf(params.exam);
+  const problem = examProblemOf(params.exam, "position_memory");
   // A skipped problem has no recreation; the empty answer grades as a fail.
   const recreatedFen = result.results[0]?.recreatedFen ?? "";
 

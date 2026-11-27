@@ -3,11 +3,10 @@ import { eq } from 'drizzle-orm';
 
 import { db } from '@/lib/db';
 import { challengeBestScores } from '@/lib/db/schema';
+import { getAchievedSlugsForUser } from '@/lib/dojo/rank-queries';
 import { getCompletedSteps } from '@/lib/dojo/step-completions';
 import { authorizeMobileRequest } from '@/lib/mobile-api/auth';
 import { mobileJson, mobilePreflight, withMobileErrors } from '@/lib/mobile-api/response';
-
-import { getAchievedSlugsForUser } from '@/app/[locale]/(public)/dojo/ranks/_lib/queries';
 
 export const dynamic = 'force-dynamic';
 

@@ -2,8 +2,6 @@ import Link from 'next/link';
 
 import { HiChevronRight, HiMiniStar } from 'react-icons/hi2';
 
-import { Divider } from '@/app/[locale]/_components/Divider';
-
 export type RequirementItem = {
   label: string;
   /** Small caption rendered under the label — e.g. a peek-count allowance. */
@@ -11,17 +9,11 @@ export type RequirementItem = {
 } & ({ href: string } | { href?: never });
 
 /**
- * Renders as a centered "--- {label} ---" row instead of a requirement card.
- * Used to join alternative requirements (e.g. "post A" OR "post B") without
- * implying they must both be satisfied.
+ * One row: a plain label, or a label with an optional link and caption.
+ * Every row is a requirement in its own right — a rank's requirements are
+ * all required, so the list has no "or" rows.
  */
-export type RequirementDivider = { kind: 'or'; label: string };
-
-export type RequirementListEntry = string | RequirementItem | RequirementDivider;
-
-function isRequirementDivider(item: RequirementListEntry): item is RequirementDivider {
-  return typeof item === 'object' && 'kind' in item && item.kind === 'or';
-}
+export type RequirementListEntry = string | RequirementItem;
 
 type RequirementsListProps = {
   items: RequirementListEntry[];
@@ -39,16 +31,6 @@ export function RequirementsList({
   return (
     <ul className={className}>
       {items.map((item, i) => {
-        if (isRequirementDivider(item)) {
-          return (
-            <li key={i} className="flex items-center gap-3 py-1">
-              <Divider className="flex-1" />
-              <span className="text-xs text-muted-foreground">{item.label}</span>
-              <Divider className="flex-1" />
-            </li>
-          );
-        }
-
         const label = typeof item === 'string' ? item : item.label;
         const href = typeof item === 'string' ? undefined : item.href;
         const note = typeof item === 'string' ? undefined : item.note;

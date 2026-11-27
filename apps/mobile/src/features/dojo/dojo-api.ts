@@ -5,6 +5,7 @@ import {
   type RankSlug,
 } from "@blindfold-chess/features/dojo-ranks";
 import {
+  examProblemSegment,
   parseMobileDojoExamResponse,
   parseMobileDojoResponse,
   parseMobileDojoStepsResponse,
@@ -73,11 +74,6 @@ export async function postGuideSteps(
     await response.json().catch(() => undefined),
   );
   return body ?? { error: "serverError" };
-}
-
-/** The URL segment of a problem kind: `position_memory` → `position-memory`. */
-export function examProblemSegment(problem: ExamProblemKind): string {
-  return problem.replace(/_/g, "-");
 }
 
 /**

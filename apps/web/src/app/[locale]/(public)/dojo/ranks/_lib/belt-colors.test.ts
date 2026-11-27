@@ -32,8 +32,7 @@ describe('getBeltColorHex', () => {
   it('should return fallback gray for an unknown slug', () => {
     // Force an unknown slug that has no matching color name
     const unknownSlug = 'unknown_rank' as RankSlug;
-    // RANK_COLORS won't have this key, so colorName is undefined
-    // BELT_COLOR_HEX[undefined] is undefined, so fallback '#6b7280' is returned
+    // The shared hex table has no entry for it, so the fallback is returned
     expect(getBeltColorHex(unknownSlug)).toBe('#6b7280');
   });
 });

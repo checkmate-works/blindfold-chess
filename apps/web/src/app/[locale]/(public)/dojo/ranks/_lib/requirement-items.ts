@@ -1,4 +1,6 @@
 import type { InterpolatingTranslator } from '@/i18n/translator';
+import { examProblemSegment } from '@blindfold-chess/features/dojo-journey';
+import { challengeNameKey } from '@blindfold-chess/features/dojo-ranks';
 
 import { parseRequirements, ranksSeedData } from '@/lib/db/data/ranks';
 import type {
@@ -24,18 +26,10 @@ import { getBeltColorHex } from './belt-colors';
  * error until it gets its branches.
  *
  * Every requirement renders as exactly one entry: a rank's requirements are
- * all required (implicit AND), so no entry is an alternative to another and
- * nothing here emits an "or" divider.
+ * all required (implicit AND), so no entry is an alternative to another.
  */
 
 export type RankCardState = 'achieved' | 'next' | 'unachieved' | 'coming-soon';
-
-export function buildChallengeNameKey(req: ChallengeScoreRequirement): string {
-  if (req.leaderboardKey === 'default') {
-    return req.menuType;
-  }
-  return `${req.menuType}_${req.leaderboardKey}`;
-}
 
 /**
  * Convert a challenge menuType (snake_case) to a practice route slug (kebab-case).
@@ -52,7 +46,7 @@ function buildChallengeScoreItem(
   locale: string,
   t: InterpolatingTranslator
 ): RequirementItem {
-  const challengeKey = buildChallengeNameKey(req);
+  const challengeKey = challengeNameKey(req.menuType, req.leaderboardKey);
   const practiceSlug = menuTypeToPracticeSlug(req.menuType);
 
   // For legal_moves and route_planner, link directly to the challenge page
@@ -70,14 +64,6 @@ function buildChallengeScoreItem(
     }),
     href,
   };
-}
-
-/**
- * The URL segment of an exam problem: the kind in kebab-case, matching the
- * practice routes (`position_memory` → `position-memory`).
- */
-export function examProblemSegment(problem: ExamProblemRequirement['problem']): string {
-  return problem.replace(/_/g, '-');
 }
 
 function examProblemLabel(req: ExamProblemRequirement, t: InterpolatingTranslator): string {
@@ -114,7 +100,7 @@ export function buildRequirementLabels(req: RankRequirement, t: InterpolatingTra
     return [
       t('challengeScore', {
         minScore: req.minScore,
-        challengeName: t(`challengeNames.${buildChallengeNameKey(req)}`),
+        challengeName: t(`challengeNames.${challengeNameKey(req.menuType, req.leaderboardKey)}`),
       }),
     ];
   }

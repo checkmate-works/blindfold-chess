@@ -30,6 +30,7 @@ import { DOJO_NATIVE_AD_SLOT } from '@/lib/ads/registry';
 import { truncateContent } from '@/lib/content/truncate-content';
 import { ALL_RANK_SLUGS, isMukyuSlug } from '@/lib/db/data/ranks';
 import type { RankSlug } from '@/lib/db/data/ranks';
+import { getValidatedRank } from '@/lib/dojo/rank-queries';
 import { buildGuidePath, getRankGuide, paragraphToPlainText } from '@/lib/guides';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
@@ -49,7 +50,6 @@ import { RankNavigation } from '../_components/RankNavigation';
 import { RequirementsList } from '../_components/RequirementsList';
 import { ScatteredPawnsBoard } from '../_components/ScatteredPawnsBoard';
 import { getBeltColorHex } from '../_lib/belt-colors';
-import { getValidatedRank } from '../_lib/queries';
 import { buildRequirementItems } from '../_lib/requirement-items';
 
 type Props = {

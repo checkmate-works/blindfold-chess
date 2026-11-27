@@ -6081,7 +6081,7 @@
     },
     "puzzleRule": "Encuentra el mate en {moves}.",
     "puzzleIntro": {
-      "2kyu": "Este es el examen de {rankName}. Imagina el tablero y resuelve el mate en dos."
+      "2kyu": "Este es el examen de {rankName}. Imagina el tablero y resuelve el mate en {moves}."
     },
     "start": "Empezar",
     "solved": "Aprobado",

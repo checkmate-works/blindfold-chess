@@ -3,8 +3,8 @@ import { Stack, router, useLocalSearchParams } from "expo-router";
 import { useTranslation } from "react-i18next";
 import {
   RANK_REQUIREMENTS,
-  RANK_SLUGS,
   isRankSlug,
+  nextRankSlug,
   type RankSlug,
 } from "@blindfold-chess/features/dojo-ranks";
 
@@ -102,7 +102,7 @@ export default function RankRequirementsScreen() {
   const journey = journeyOf(earned);
   const exam = journey.stages.find((stage) => stage.stage === "exam");
   const allMet = exam !== undefined && exam.done >= exam.total;
-  const next: RankSlug | undefined = RANK_SLUGS[RANK_SLUGS.indexOf(earned) + 1];
+  const next = nextRankSlug(earned);
 
   return (
     <TabScrollView>

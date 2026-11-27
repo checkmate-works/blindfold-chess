@@ -23,71 +23,39 @@
  * 5. A pass that completes the exam stashes the granted rank and returns to
  *    the problem list, which celebrates it.
  */
-import type { Metadata } from 'next';
-import { getTranslations, setRequestLocale } from 'next-intl/server';
-import { notFound } from 'next/navigation';
-
-import { SUPPORTED_LOCALES } from '@/config';
+import { examPuzzleMoveCount } from '@blindfold-chess/features/dojo-journey';
 
 import { PositionPeekBoard } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionPeekBoard';
 import { PiecesInfo } from '@/app/[locale]/(public)/practice/_components/PiecesInfo';
 import { SectionTitle } from '@/app/[locale]/_components';
-import { Breadcrumb, type BreadcrumbItem } from '@/app/[locale]/_components/Breadcrumb';
-import { resolveTitle } from '@/app/[locale]/_lib/metadata';
-import type { Locale } from '@/app/[locale]/_lib/types';
+import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 
 import { ExamPatterns } from '../../_components/ExamPatterns';
 import { ExamPuzzleSession } from '../../_components/ExamPuzzleSession';
-import { EXAM_RANKS, examProblemOf, parseExamRank, previousRank } from '../../_lib/exam-rank';
+import {
+  type ExamProblemPageParams,
+  examProblemMetadata,
+  examProblemStaticParams,
+  loadExamProblemPage,
+} from '../../_lib/exam-problem-page';
 
-type Props = {
-  params: Promise<{ locale: Locale; rank: string }>;
-};
+type Props = { params: ExamProblemPageParams };
 
 export function generateStaticParams() {
-  return SUPPORTED_LOCALES.flatMap((locale) =>
-    EXAM_RANKS.filter((rank) => examProblemOf(rank, 'puzzle')).map((rank) => ({ locale, rank }))
-  );
+  return examProblemStaticParams('puzzle');
 }
 
 /** Every rank with this problem is prerendered; any other segment is a 404. */
 export const dynamicParams = false;
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale, rank } = await params;
-  const exam = parseExamRank(rank);
-  if (!exam) return {};
-  const t = await getTranslations({ locale });
-  // ranks.rankNames.<EarnedRankSlug>: only ranks with an exam (parseExamRank)
-  const rankName = t(`ranks.rankNames.${exam}`);
-  return {
-    title: resolveTitle(
-      `${t('ranks.examProblemNames.puzzle')} - ${t('dojoExam.title', { rankName })}`,
-      locale
-    ),
-    robots: { index: false, follow: false },
-  };
+export function generateMetadata({ params }: Props) {
+  return examProblemMetadata(params, 'puzzle');
 }
 
 export default async function DojoExamPuzzlePage({ params }: Props) {
-  const { locale, rank } = await params;
-  setRequestLocale(locale);
-  const exam = parseExamRank(rank);
-  const problem = exam ? examProblemOf(exam, 'puzzle') : undefined;
-  if (!exam || !problem) notFound();
+  const { locale, exam, problem, t, rankName, prevRankName, problemName, breadcrumbItems } =
+    await loadExamProblemPage(params, 'puzzle');
 
-  const t = await getTranslations({ locale });
-  // ranks.rankNames.<RankSlug>: the exam's rank and the one below it
-  const rankName = t(`ranks.rankNames.${exam}`);
-  const prevRankName = t(`ranks.rankNames.${previousRank(exam)}`);
-  const examTitle = t('dojoExam.title', { rankName });
-  const problemName = t('ranks.examProblemNames.puzzle');
-
-  const breadcrumbItems: BreadcrumbItem[] = [
-    { label: t('dojo.pageTitle'), href: '/dojo' },
-    { label: examTitle, href: `/dojo/exams/${exam}` },
-    { label: problemName },
-  ];
   const breadcrumb = <Breadcrumb items={breadcrumbItems} locale={locale} density="compact" />;
 
   return (
@@ -104,8 +72,11 @@ export default async function DojoExamPuzzlePage({ params }: Props) {
         <>
           <SectionTitle>{t('practice.puzzle.detail.descriptionSection')}</SectionTitle>
           {/* dojoExam.puzzleIntro.<EarnedRankSlug>: each rank with this
-              problem (generateStaticParams), which says what it practises. */}
-          <p className="text-foreground">{t(`dojoExam.puzzleIntro.${exam}`, { rankName })}</p>
+              problem (generateStaticParams), which says what it practises.
+              The length of the mate comes from the problem itself. */}
+          <p className="text-foreground">
+            {t(`dojoExam.puzzleIntro.${exam}`, { rankName, moves: examPuzzleMoveCount(problem) })}
+          </p>
           <PiecesInfo fen={problem.fen} />
           <PositionPeekBoard fen={problem.fen} />
           <ExamPatterns

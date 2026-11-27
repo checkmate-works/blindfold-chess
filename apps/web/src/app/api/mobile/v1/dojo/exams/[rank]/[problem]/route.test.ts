@@ -29,7 +29,7 @@ vi.mock('@/lib/db/rank-evaluation', () => ({
   evaluateRanksAfterCreate: (...args: unknown[]) => evaluateRanksAfterCreate(...args),
 }));
 const getAchievedSlugsForUser = vi.fn();
-vi.mock('@/app/[locale]/(public)/dojo/ranks/_lib/queries', () => ({
+vi.mock('@/lib/dojo/rank-queries', () => ({
   getAchievedSlugsForUser: (userId: string) => getAchievedSlugsForUser(userId),
 }));
 
