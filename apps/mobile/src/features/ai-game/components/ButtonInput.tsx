@@ -74,7 +74,7 @@ const ACTION_ICON_SIZE = 20;
  * move, the same way on both apps.
  *
  * A rejected move stays on screen so the player can backspace and fix it
- * (`resetOnSubmit: false`); an accepted one changes `fen`, which clears the
+ * (`submit` keeps it); an accepted one changes `fen`, which clears the
  * input.
  *
  * The piece icons take the colour of the side to move, read from `fen`,
@@ -91,7 +91,7 @@ export function ButtonInput({
   const showIcons = preferences.buttonInputPieceLabel !== "text";
   const pieceColor = fen.split(" ")[1] === "b" ? "b" : "w";
 
-  const n = useNotationInput({ fen, onSubmit, resetOnSubmit: false });
+  const n = useNotationInput({ fen, onSubmit });
   const input = n.state.input;
   const canSubmit = n.isSubmittable && !disabled;
 

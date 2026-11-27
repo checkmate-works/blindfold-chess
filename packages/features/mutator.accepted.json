@@ -113,7 +113,7 @@
   },
   "f2ut1751bu": {
     "reason": "The default branch is the compile-time exhaustiveness check over NotationInputAction; no well-typed action reaches it.",
-    "where": "src/ai-game/notation-input/state-machine.ts:304:14 { const _exhaustive: never = action; return _exhaustive; } -> {}"
+    "where": "src/ai-game/notation-input/state-machine.ts:50:14 { const _exhaustive: never = action; return _exhaustive; } -> {}"
   },
   "jcmjn1su2t": {
     "reason": "chess.js 1.4.0's validateFen checks a subset of validateFenStructure plus the pre-checks above, so no FEN reaches this throw today; the guard is for a stricter chess.js.",

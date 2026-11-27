@@ -1,10 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  computeIsPawnCaptureMode,
   computeIsSubmittable,
-  computePreviewText,
-  computeShowPromotion,
   createInitialState,
   notationInputReducer,
 } from "../state-machine";
@@ -14,32 +11,19 @@ import { MAX_NOTATION_INPUT_LENGTH } from "../types";
 // createInitialState
 // ============================================================
 describe("createInitialState", () => {
-  it("returns a fresh fully-empty state", () => {
-    const s = createInitialState();
-    expect(s.input).toBe("");
-    expect(s.selectedPiece).toBeNull();
-    expect(s.selectedFiles.size).toBe(0);
-    expect(s.selectedRanks.size).toBe(0);
-    expect(s.targetFile).toBeNull();
-    expect(s.isCapture).toBe(false);
-    expect(s.isCheck).toBe(false);
-    expect(s.castling).toBeNull();
-    expect(s.promotionPiece).toBeNull();
-    expect(s.sourceFile).toBeNull();
-    expect(s.sourceRank).toBeNull();
-    expect(s.isAmbiguous).toBe(false);
+  it("returns an empty input", () => {
+    expect(createInitialState()).toEqual({ input: "" });
   });
 
   it("returns a new object on each call (no shared reference)", () => {
     const a = createInitialState();
     const b = createInitialState();
     expect(a).not.toBe(b);
-    expect(a.selectedFiles).not.toBe(b.selectedFiles);
   });
 });
 
 // ============================================================
-// notationInputReducer — appendChar (web keypad)
+// notationInputReducer — appendChar
 // ============================================================
 describe("notationInputReducer — appendChar", () => {
   it("appends a single character to input", () => {
@@ -74,7 +58,7 @@ describe("notationInputReducer — appendChar", () => {
 });
 
 // ============================================================
-// notationInputReducer — appendCastling (web keypad)
+// notationInputReducer — appendCastling
 // ============================================================
 describe("notationInputReducer — appendCastling", () => {
   it("appends O-O when there is room", () => {
@@ -117,7 +101,7 @@ describe("notationInputReducer — appendCastling", () => {
 });
 
 // ============================================================
-// notationInputReducer — backspace (web keypad)
+// notationInputReducer — backspace
 // ============================================================
 describe("notationInputReducer — backspace", () => {
   it("removes the last character", () => {
@@ -135,7 +119,7 @@ describe("notationInputReducer — backspace", () => {
 });
 
 // ============================================================
-// notationInputReducer — clear (web keypad)
+// notationInputReducer — clear
 // ============================================================
 describe("notationInputReducer — clear", () => {
   it("resets input to an empty string", () => {
@@ -150,391 +134,6 @@ describe("notationInputReducer — clear", () => {
   });
 });
 
-// ============================================================
-// notationInputReducer — selectPiece (mobile)
-// ============================================================
-describe("notationInputReducer — selectPiece", () => {
-  it("selects a piece when none is selected", () => {
-    const next = notationInputReducer(createInitialState(), {
-      type: "selectPiece",
-      piece: "N",
-    });
-    expect(next.selectedPiece).toBe("N");
-    expect(next.input).toBe("N");
-  });
-
-  it("deselects when the same piece is tapped twice", () => {
-    let s = notationInputReducer(createInitialState(), {
-      type: "selectPiece",
-      piece: "N",
-    });
-    s = notationInputReducer(s, { type: "selectPiece", piece: "N" });
-    expect(s.selectedPiece).toBeNull();
-    expect(s.input).toBe("");
-  });
-
-  it("clears files when deselecting the piece", () => {
-    let s = notationInputReducer(createInitialState(), {
-      type: "selectPiece",
-      piece: "N",
-    });
-    s = notationInputReducer(s, { type: "selectFile", file: "f" });
-    expect(s.selectedFiles.has("f")).toBe(true);
-    s = notationInputReducer(s, { type: "selectPiece", piece: "N" });
-    expect(s.selectedPiece).toBeNull();
-    expect(s.selectedFiles.size).toBe(0);
-  });
-});
-
-// ============================================================
-// notationInputReducer — selectFile / selectRank (mobile)
-// ============================================================
-describe("notationInputReducer — selectFile", () => {
-  it("selects a file", () => {
-    const next = notationInputReducer(createInitialState(), {
-      type: "selectFile",
-      file: "e",
-    });
-    expect(next.selectedFiles.has("e")).toBe(true);
-    expect(next.input).toBe("e");
-  });
-
-  it("deselects when the same file is tapped twice", () => {
-    let s = notationInputReducer(createInitialState(), {
-      type: "selectFile",
-      file: "e",
-    });
-    s = notationInputReducer(s, { type: "selectFile", file: "e" });
-    expect(s.selectedFiles.size).toBe(0);
-  });
-
-  it("replaces the previous file on new selection", () => {
-    let s = notationInputReducer(createInitialState(), {
-      type: "selectFile",
-      file: "e",
-    });
-    s = notationInputReducer(s, { type: "selectFile", file: "d" });
-    expect(s.selectedFiles.size).toBe(1);
-    expect(s.selectedFiles.has("d")).toBe(true);
-  });
-
-  it("clears an active castling when a file is selected", () => {
-    let s = notationInputReducer(createInitialState(), {
-      type: "selectCastling",
-      move: "O-O",
-    });
-    expect(s.castling).toBe("O-O");
-    s = notationInputReducer(s, { type: "selectFile", file: "e" });
-    expect(s.castling).toBeNull();
-  });
-});
-
-describe("notationInputReducer — selectRank", () => {
-  it("selects a rank and appears in preview after a file", () => {
-    let s = notationInputReducer(createInitialState(), {
-      type: "selectFile",
-      file: "e",
-    });
-    s = notationInputReducer(s, { type: "selectRank", rank: "4" });
-    expect(s.selectedRanks.has("4")).toBe(true);
-    expect(s.input).toBe("e4");
-  });
-
-  it("deselects when the same rank is tapped twice", () => {
-    let s = notationInputReducer(createInitialState(), {
-      type: "selectRank",
-      rank: "4",
-    });
-    s = notationInputReducer(s, { type: "selectRank", rank: "4" });
-    expect(s.selectedRanks.size).toBe(0);
-  });
-});
-
-// ============================================================
-// notationInputReducer — setTargetFile (mobile pawn capture)
-// ============================================================
-describe("notationInputReducer — setTargetFile", () => {
-  it("sets a target file when in pawn capture mode", () => {
-    // Enter pawn capture mode: select file + toggle capture (no piece).
-    let s = notationInputReducer(createInitialState(), {
-      type: "selectFile",
-      file: "e",
-    });
-    s = notationInputReducer(s, { type: "toggleCapture" });
-    expect(computeIsPawnCaptureMode(s)).toBe(true);
-
-    s = notationInputReducer(s, { type: "setTargetFile", file: "d" });
-    expect(s.targetFile).toBe("d");
-    expect(s.input).toBe("exd");
-  });
-
-  it("clears a target file when pawn capture mode is exited", () => {
-    let s = notationInputReducer(createInitialState(), {
-      type: "selectFile",
-      file: "e",
-    });
-    s = notationInputReducer(s, { type: "toggleCapture" });
-    s = notationInputReducer(s, { type: "setTargetFile", file: "d" });
-    expect(s.targetFile).toBe("d");
-    // Turning off capture should exit pawn-capture mode and clear target.
-    s = notationInputReducer(s, { type: "toggleCapture" });
-    expect(s.targetFile).toBeNull();
-  });
-});
-
-// ============================================================
-// notationInputReducer — toggleCapture / toggleCheck (mobile)
-// ============================================================
-describe("notationInputReducer — toggleCapture", () => {
-  it("flips isCapture", () => {
-    const s1 = notationInputReducer(createInitialState(), {
-      type: "toggleCapture",
-    });
-    expect(s1.isCapture).toBe(true);
-    const s2 = notationInputReducer(s1, { type: "toggleCapture" });
-    expect(s2.isCapture).toBe(false);
-  });
-});
-
-describe("notationInputReducer — toggleCheck", () => {
-  it("flips isCheck and appears in preview", () => {
-    let s = notationInputReducer(createInitialState(), {
-      type: "selectFile",
-      file: "e",
-    });
-    s = notationInputReducer(s, { type: "selectRank", rank: "4" });
-    s = notationInputReducer(s, { type: "toggleCheck" });
-    expect(s.isCheck).toBe(true);
-    expect(s.input).toBe("e4+");
-  });
-});
-
-// ============================================================
-// notationInputReducer — selectCastling (mobile)
-// ============================================================
-describe("notationInputReducer — selectCastling", () => {
-  it("sets castling and clears other fields", () => {
-    let s = notationInputReducer(createInitialState(), {
-      type: "selectPiece",
-      piece: "N",
-    });
-    s = notationInputReducer(s, { type: "selectFile", file: "f" });
-    s = notationInputReducer(s, { type: "selectRank", rank: "3" });
-    s = notationInputReducer(s, { type: "selectCastling", move: "O-O" });
-    expect(s.castling).toBe("O-O");
-    expect(s.selectedPiece).toBeNull();
-    expect(s.selectedFiles.size).toBe(0);
-    expect(s.selectedRanks.size).toBe(0);
-    expect(s.input).toBe("O-O");
-  });
-
-  it("deselects when the same castling move is tapped twice", () => {
-    let s = notationInputReducer(createInitialState(), {
-      type: "selectCastling",
-      move: "O-O",
-    });
-    s = notationInputReducer(s, { type: "selectCastling", move: "O-O" });
-    expect(s.castling).toBeNull();
-    expect(s.input).toBe("");
-  });
-});
-
-// ============================================================
-// notationInputReducer — selectPromotion (mobile)
-// ============================================================
-describe("notationInputReducer — selectPromotion", () => {
-  it("selects a promotion piece when the preview shows one", () => {
-    // Pawn pushing to rank 8 triggers showPromotion.
-    let s = notationInputReducer(createInitialState(), {
-      type: "selectFile",
-      file: "e",
-    });
-    s = notationInputReducer(s, { type: "selectRank", rank: "8" });
-    expect(computeShowPromotion(s)).toBe(true);
-    s = notationInputReducer(s, { type: "selectPromotion", piece: "q" });
-    expect(s.promotionPiece).toBe("q");
-    expect(s.input).toBe("e8=Q");
-  });
-
-  it("deselects when the same promotion piece is tapped twice", () => {
-    let s = notationInputReducer(createInitialState(), {
-      type: "selectFile",
-      file: "e",
-    });
-    s = notationInputReducer(s, { type: "selectRank", rank: "8" });
-    s = notationInputReducer(s, { type: "selectPromotion", piece: "q" });
-    s = notationInputReducer(s, { type: "selectPromotion", piece: "q" });
-    expect(s.promotionPiece).toBeNull();
-  });
-});
-
-// ============================================================
-// notationInputReducer — selectSourceFile / selectSourceRank (mobile)
-// ============================================================
-describe("notationInputReducer — source disambiguation", () => {
-  it("selects a source file and renders it after the piece", () => {
-    let s = notationInputReducer(createInitialState(), {
-      type: "selectPiece",
-      piece: "N",
-    });
-    s = notationInputReducer(s, { type: "selectSourceFile", file: "b" });
-    s = notationInputReducer(s, { type: "selectFile", file: "d" });
-    s = notationInputReducer(s, { type: "selectRank", rank: "2" });
-    expect(s.sourceFile).toBe("b");
-    expect(s.input).toBe("Nbd2");
-  });
-
-  it("selects a source rank", () => {
-    let s = notationInputReducer(createInitialState(), {
-      type: "selectPiece",
-      piece: "R",
-    });
-    s = notationInputReducer(s, { type: "selectSourceRank", rank: "1" });
-    expect(s.sourceRank).toBe("1");
-  });
-
-  it("deselects the same source file when tapped twice", () => {
-    let s = notationInputReducer(createInitialState(), {
-      type: "selectPiece",
-      piece: "N",
-    });
-    s = notationInputReducer(s, { type: "selectSourceFile", file: "b" });
-    s = notationInputReducer(s, { type: "selectSourceFile", file: "b" });
-    expect(s.sourceFile).toBeNull();
-  });
-});
-
-// ============================================================
-// notationInputReducer — toggleAmbiguous (mobile)
-// ============================================================
-describe("notationInputReducer — toggleAmbiguous", () => {
-  it("flips isAmbiguous", () => {
-    const s1 = notationInputReducer(createInitialState(), {
-      type: "toggleAmbiguous",
-    });
-    expect(s1.isAmbiguous).toBe(true);
-    const s2 = notationInputReducer(s1, { type: "toggleAmbiguous" });
-    expect(s2.isAmbiguous).toBe(false);
-  });
-});
-
-// ============================================================
-// notationInputReducer — reset (mobile)
-// ============================================================
-describe("notationInputReducer — reset", () => {
-  it("returns a fully empty state", () => {
-    let s = notationInputReducer(createInitialState(), {
-      type: "selectPiece",
-      piece: "N",
-    });
-    s = notationInputReducer(s, { type: "selectFile", file: "f" });
-    s = notationInputReducer(s, { type: "selectRank", rank: "3" });
-    s = notationInputReducer(s, { type: "reset" });
-    expect(s).toEqual(createInitialState());
-  });
-});
-
-// ============================================================
-// computePreviewText
-// ============================================================
-describe("computePreviewText", () => {
-  it("renders castling as the full token", () => {
-    const s = notationInputReducer(createInitialState(), {
-      type: "selectCastling",
-      move: "O-O-O",
-    });
-    expect(computePreviewText(s)).toBe("O-O-O");
-  });
-
-  it("renders a piece move with capture", () => {
-    let s = notationInputReducer(createInitialState(), {
-      type: "selectPiece",
-      piece: "N",
-    });
-    s = notationInputReducer(s, { type: "toggleCapture" });
-    s = notationInputReducer(s, { type: "selectFile", file: "d" });
-    s = notationInputReducer(s, { type: "selectRank", rank: "5" });
-    expect(computePreviewText(s)).toBe("Nxd5");
-  });
-
-  it("renders a pawn capture with target file", () => {
-    let s = notationInputReducer(createInitialState(), {
-      type: "selectFile",
-      file: "e",
-    });
-    s = notationInputReducer(s, { type: "toggleCapture" });
-    s = notationInputReducer(s, { type: "setTargetFile", file: "d" });
-    s = notationInputReducer(s, { type: "selectRank", rank: "5" });
-    expect(computePreviewText(s)).toBe("exd5");
-  });
-
-  it("renders promotion with uppercased piece", () => {
-    let s = notationInputReducer(createInitialState(), {
-      type: "selectFile",
-      file: "e",
-    });
-    s = notationInputReducer(s, { type: "selectRank", rank: "8" });
-    s = notationInputReducer(s, { type: "selectPromotion", piece: "q" });
-    expect(computePreviewText(s)).toBe("e8=Q");
-  });
-});
-
-// ============================================================
-// computeShowPromotion / computeIsPawnCaptureMode
-// ============================================================
-describe("computeShowPromotion", () => {
-  it("is true for a pawn move to rank 8", () => {
-    let s = notationInputReducer(createInitialState(), {
-      type: "selectFile",
-      file: "e",
-    });
-    s = notationInputReducer(s, { type: "selectRank", rank: "8" });
-    expect(computeShowPromotion(s)).toBe(true);
-  });
-
-  it("is false for a piece move to rank 8", () => {
-    let s = notationInputReducer(createInitialState(), {
-      type: "selectPiece",
-      piece: "N",
-    });
-    s = notationInputReducer(s, { type: "selectFile", file: "f" });
-    s = notationInputReducer(s, { type: "selectRank", rank: "8" });
-    expect(computeShowPromotion(s)).toBe(false);
-  });
-
-  it("is false during castling", () => {
-    const s = notationInputReducer(createInitialState(), {
-      type: "selectCastling",
-      move: "O-O",
-    });
-    expect(computeShowPromotion(s)).toBe(false);
-  });
-});
-
-describe("computeIsPawnCaptureMode", () => {
-  it("is true with a single file, no piece, and capture toggled", () => {
-    let s = notationInputReducer(createInitialState(), {
-      type: "selectFile",
-      file: "e",
-    });
-    s = notationInputReducer(s, { type: "toggleCapture" });
-    expect(computeIsPawnCaptureMode(s)).toBe(true);
-  });
-
-  it("is false when a piece is selected", () => {
-    let s = notationInputReducer(createInitialState(), {
-      type: "selectPiece",
-      piece: "N",
-    });
-    s = notationInputReducer(s, { type: "selectFile", file: "f" });
-    s = notationInputReducer(s, { type: "toggleCapture" });
-    expect(computeIsPawnCaptureMode(s)).toBe(false);
-  });
-});
-
-// ============================================================
-// computeIsSubmittable
-// ============================================================
 describe("computeIsSubmittable", () => {
   it("returns false when input is empty", () => {
     expect(computeIsSubmittable(createInitialState())).toBe(false);
@@ -546,105 +145,5 @@ describe("computeIsSubmittable", () => {
       char: "e",
     });
     expect(computeIsSubmittable(s)).toBe(true);
-  });
-
-  it("returns true after a structured selection that builds preview text", () => {
-    let s = notationInputReducer(createInitialState(), {
-      type: "selectPiece",
-      piece: "N",
-    });
-    s = notationInputReducer(s, { type: "selectFile", file: "f" });
-    s = notationInputReducer(s, { type: "selectRank", rank: "3" });
-    expect(computeIsSubmittable(s)).toBe(true);
-  });
-});
-
-// ============================================================
-// Structured input sequences, as the mobile button UI drives them
-// ============================================================
-function run(
-  ...actions: Parameters<typeof notationInputReducer>[1][]
-): ReturnType<typeof createInitialState> {
-  return actions.reduce(notationInputReducer, createInitialState());
-}
-
-describe("notationInputReducer — structured sequences", () => {
-  it("removes only the last character on backspace", () => {
-    const next = notationInputReducer(
-      { ...createInitialState(), input: "Nf3" },
-      { type: "backspace" },
-    );
-    expect(next.input).toBe("Nf");
-  });
-
-  it("keeps the chosen file when switching to another piece", () => {
-    const s = run(
-      { type: "selectPiece", piece: "N" },
-      { type: "selectFile", file: "f" },
-      { type: "selectPiece", piece: "B" },
-    );
-    expect(s.input).toBe("Bf");
-  });
-
-  it("writes the source rank between the piece and the destination", () => {
-    const s = run(
-      { type: "selectPiece", piece: "R" },
-      { type: "selectSourceRank", rank: "1" },
-      { type: "selectFile", file: "a" },
-      { type: "selectRank", rank: "3" },
-    );
-    expect(s.input).toBe("R1a3");
-  });
-
-  it("clears the source rank when the same rank is tapped twice", () => {
-    const s = run(
-      { type: "selectPiece", piece: "R" },
-      { type: "selectSourceRank", rank: "1" },
-      { type: "selectSourceRank", rank: "1" },
-    );
-    expect(s.sourceRank).toBeNull();
-    expect(s.input).toBe("R");
-  });
-
-  it("shows only the pawn's file while a capture waits for its target", () => {
-    const s = run({ type: "selectFile", file: "e" }, { type: "toggleCapture" });
-    expect(s.input).toBe("e");
-  });
-
-  it("offers promotion for a pawn reaching rank 1 too", () => {
-    const s = run(
-      { type: "selectFile", file: "e" },
-      { type: "selectRank", rank: "1" },
-    );
-    expect(computeShowPromotion(s)).toBe(true);
-  });
-
-  it("drops the promotion piece when the rank moves off the last rank", () => {
-    const s = run(
-      { type: "selectFile", file: "e" },
-      { type: "selectRank", rank: "8" },
-      { type: "selectPromotion", piece: "q" },
-      { type: "selectRank", rank: "7" },
-    );
-    expect(s.promotionPiece).toBeNull();
-    expect(s.input).toBe("e7");
-  });
-
-  it("leaves no capture behind after castling is picked and dropped", () => {
-    const s = run(
-      { type: "toggleCapture" },
-      { type: "selectCastling", move: "O-O" },
-      { type: "selectCastling", move: "O-O" },
-    );
-    expect(s.isCapture).toBe(false);
-    expect(s.input).toBe("");
-  });
-});
-
-describe("computeIsPawnCaptureMode — needs a file", () => {
-  it("is false when capture is toggled before any file is chosen", () => {
-    expect(
-      computeIsPawnCaptureMode({ ...createInitialState(), isCapture: true }),
-    ).toBe(false);
   });
 });
