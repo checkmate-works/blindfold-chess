@@ -3627,7 +3627,11 @@
       "startOverConfirmTitle": "最初からやり直しますか？",
       "startOverConfirmMessage": "現在の下書きはすべて消去されます。取り消せません。",
       "startOverConfirm": "やり直す",
-      "startOverCancel": "キャンセル"
+      "startOverCancel": "キャンセル",
+      "whitePieces": "白の駒",
+      "blackPieces": "黒の駒",
+      "removePieceMode": "駒を削除 - マスをクリックして駒を削除",
+      "placingPiece": "配置中:"
     },
     "preview": {
       "title": "チャンクのプレビュー",

@@ -3627,7 +3627,11 @@
       "startOverConfirmTitle": "¿Empezar de nuevo?",
       "startOverConfirmMessage": "Tu borrador actual se borrará. Esto no se puede deshacer.",
       "startOverConfirm": "Empezar de nuevo",
-      "startOverCancel": "Cancelar"
+      "startOverCancel": "Cancelar",
+      "whitePieces": "Piezas Blancas",
+      "blackPieces": "Piezas Negras",
+      "removePieceMode": "Modo de eliminar pieza - Haz clic en una casilla para eliminar la pieza",
+      "placingPiece": "Colocando"
     },
     "preview": {
       "title": "Vista previa del chunk",

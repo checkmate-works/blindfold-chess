@@ -3627,7 +3627,11 @@
       "startOverConfirmTitle": "Start over?",
       "startOverConfirmMessage": "Your current draft will be cleared. This cannot be undone.",
       "startOverConfirm": "Start over",
-      "startOverCancel": "Cancel"
+      "startOverCancel": "Cancel",
+      "whitePieces": "White Pieces",
+      "blackPieces": "Black Pieces",
+      "removePieceMode": "Remove piece mode - Click on a square to remove piece",
+      "placingPiece": "Placing"
     },
     "preview": {
       "title": "Preview chunk",
