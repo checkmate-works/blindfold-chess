@@ -28,7 +28,12 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { SUPPORTED_LOCALES } from '@/config';
-import { EXAM_RANKS, examProblemOf, examRankOf } from '@blindfold-chess/features/dojo-journey';
+import {
+  EXAM_RANKS,
+  examProblemOf,
+  examPuzzleMoveCount,
+  examRankOf,
+} from '@blindfold-chess/features/dojo-journey';
 import { previousRankSlug } from '@blindfold-chess/features/dojo-ranks';
 
 import { PositionPeekBoard } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionPeekBoard';
@@ -105,8 +110,11 @@ export default async function DojoExamPuzzlePage({ params }: Props) {
         <>
           <SectionTitle>{t('practice.puzzle.detail.descriptionSection')}</SectionTitle>
           {/* dojoExam.puzzleIntro.<EarnedRankSlug>: each rank with this
-              problem (generateStaticParams), which says what it practises. */}
-          <p className="text-foreground">{t(`dojoExam.puzzleIntro.${exam}`, { rankName })}</p>
+              problem (generateStaticParams), which says what it practises.
+              The length of the mate comes from the problem itself. */}
+          <p className="text-foreground">
+            {t(`dojoExam.puzzleIntro.${exam}`, { rankName, moves: examPuzzleMoveCount(problem) })}
+          </p>
           <PiecesInfo fen={problem.fen} />
           <PositionPeekBoard fen={problem.fen} />
           <ExamPatterns

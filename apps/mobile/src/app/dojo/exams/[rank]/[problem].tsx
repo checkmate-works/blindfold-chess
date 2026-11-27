@@ -10,6 +10,7 @@ import { isBlackToMoveFromFen } from "@blindfold-chess/features/chess-core";
 import {
   DOJO_EXAMS,
   examProblemKindFromSegment,
+  examPuzzleMoveCount,
   examRankOf,
 } from "@blindfold-chess/features/dojo-journey";
 
@@ -69,10 +70,13 @@ export default function DojoExamProblemScreen() {
           <Text style={[styles.description, { color: colors.foreground }]}>
             {/* dojo.exam.memoryIntro.<rank> / dojo.exam.puzzleIntro.<rank>:
                 each rank with an exam (2kyu) */}
-            {t(
-              `dojo.exam.${isMemory ? "memoryIntro" : "puzzleIntro"}.${rank}`,
-              { rank: rankName },
-            )}
+            {isMemory
+              ? t(`dojo.exam.memoryIntro.${rank}`, { rank: rankName })
+              : // The length of the mate comes from the problem itself.
+                t(`dojo.exam.puzzleIntro.${rank}`, {
+                  rank: rankName,
+                  moves: examPuzzleMoveCount(problem),
+                })}
           </Text>
         </ListSection>
         <PiecesInfo fen={problem.fen} showSideToMove={!isMemory} />

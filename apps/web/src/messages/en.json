@@ -6081,7 +6081,7 @@
     },
     "puzzleRule": "Find the mate in {moves}.",
     "puzzleIntro": {
-      "2kyu": "This is the {rankName} exam. Picture the board in your mind and solve the mate in two."
+      "2kyu": "This is the {rankName} exam. Picture the board in your mind and solve the mate in {moves}."
     },
     "start": "Start",
     "solved": "Passed",

@@ -1134,7 +1134,7 @@
         "2kyu": "Esta é a prova de {{rank}}. Aproveite os chunks para memorizar a posição."
       },
       "puzzleIntro": {
-        "2kyu": "Esta é a prova de {{rank}}. Imagine o tabuleiro e resolva o mate em dois lances."
+        "2kyu": "Esta é a prova de {{rank}}. Imagine o tabuleiro e resolva o mate em {{moves}} lances."
       },
       "patterns": {
         "kingside_castle": {
