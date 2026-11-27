@@ -137,6 +137,12 @@ header style (page-coloured, no hairline, chevron-only back).
   Clear. A module whose lock covers more than the keys (route planner)
   fades its own container and leaves `disabled` off, or the two opacities
   multiply.
+- **Move entry** (AI game, puzzle, recall) is `ButtonInput`
+  (`features/ai-game/components/ButtonInput.tsx`), the web's SAN keypad
+  key for key: K Q R B N ×, the files, the ranks, + = # and the castlings,
+  then the typed move with backspace, clear and submit. Each key appends to
+  one string (`useNotationInput`'s text-builder actions), so a
+  disambiguated move such as `Nbd2` is typed like any other.
 - **Picture boards** — a board that explains an answer and takes no tap on
   its squares (diagonal quiz's `DiagonalBoard`, route planner's
   `RouteBoard`, quadrants' `QuadrantBoard`) — are `StaticBoard`
@@ -156,8 +162,8 @@ header style (page-coloured, no hairline, chevron-only back).
   still separate: they differ in corner radius, label size and flipping.
   `FenBoard` takes `horizontalInset`, `squareTint` and `showCoordinates` for
   the FEN and position-memory answers. A board inside a padded panel must
-  be capped (`ChessBoard`'s `maxSize`, `BoardPeek`'s `boardMaxSize`,
-  `ButtonInput`'s `fitWidth`), or it runs past the panel's edge.
+  be capped (`ChessBoard`'s `maxSize`, `BoardPeek`'s `boardMaxSize`), or it
+  runs past the panel's edge.
 - **Around a tapped board** (coordinate quiz, quadrants): the side to move
   above it is `TurnIndicator` (`components/TurnIndicator.tsx`). The module
   passes the side and its own label, and `hidden` blanks the row during

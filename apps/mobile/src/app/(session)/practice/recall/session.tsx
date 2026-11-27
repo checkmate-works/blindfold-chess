@@ -202,7 +202,7 @@ function RecallRun({
             boardMaxSize={width - PANEL_INSET}
           />
 
-          <ButtonInput fen={position.fen} onSubmit={handleSubmit} fitWidth />
+          <ButtonInput fen={position.fen} onSubmit={handleSubmit} />
 
           <View style={styles.actions}>
             {offerAnswer && (

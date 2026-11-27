@@ -370,12 +370,7 @@
       "draw": "Draw",
       "check": "Check!",
       "noMoves": "No moves yet",
-      "movePreview": "Enter your move",
-      "submit": "Submit",
-      "clear": "Clear",
       "invalidMove": "Invalid move",
-      "disambiguation": "Disambiguation (optional)",
-      "sourceLabel": "Source",
       "showBoard": "Show Board",
       "aiPlayed": "AI played {{move}}",
       "invalidMoveWithInput": "Invalid move: {{move}}",
@@ -1163,5 +1158,29 @@
     "guideNextGuide": "Next guide",
     "guideToPractice": "On to practice",
     "guideRead": "Read"
+  },
+  "buttonInput": {
+    "piece": {
+      "king": "King",
+      "queen": "Queen",
+      "rook": "Rook",
+      "bishop": "Bishop",
+      "knight": "Knight"
+    },
+    "symbol": {
+      "capture": "Capture",
+      "check": "Check",
+      "promotion": "Promotion",
+      "checkmate": "Checkmate"
+    },
+    "castling": {
+      "kingside": "Kingside castling",
+      "queenside": "Queenside castling"
+    },
+    "action": {
+      "backspace": "Backspace",
+      "clear": "Clear",
+      "submit": "Submit"
+    }
   }
 }

@@ -388,7 +388,6 @@ function AiGameBoard({ setup }: { setup: GameSetup }) {
             <ButtonInput
               fen={game.currentFen}
               onSubmit={game.submitMove}
-              fitWidth
               disabled={ai.isLoading || game.isAiThinking}
             />
           ) : game.aiMoveFailed ? (

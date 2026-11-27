@@ -370,12 +370,7 @@
       "draw": "Empate",
       "check": "Xeque!",
       "noMoves": "Ainda não há jogadas",
-      "movePreview": "Digite sua jogada",
-      "submit": "Enviar",
-      "clear": "Limpar",
       "invalidMove": "Jogada inválida",
-      "disambiguation": "Desambiguação (opcional)",
-      "sourceLabel": "Origem",
       "showBoard": "Mostrar tabuleiro",
       "aiPlayed": "A IA jogou {{move}}",
       "invalidMoveWithInput": "Movimento inválido: {{move}}",
@@ -1163,5 +1158,29 @@
     "guideNextGuide": "Próximo guia",
     "guideToPractice": "Ir para a prática",
     "guideRead": "Lido"
+  },
+  "buttonInput": {
+    "piece": {
+      "king": "Rei",
+      "queen": "Dama",
+      "rook": "Torre",
+      "bishop": "Bispo",
+      "knight": "Cavalo"
+    },
+    "symbol": {
+      "capture": "Captura",
+      "check": "Xeque",
+      "promotion": "Promoção",
+      "checkmate": "Xeque-mate"
+    },
+    "castling": {
+      "kingside": "Roque pequeno",
+      "queenside": "Roque grande"
+    },
+    "action": {
+      "backspace": "Retrocesso",
+      "clear": "Limpar",
+      "submit": "Enviar"
+    }
   }
 }

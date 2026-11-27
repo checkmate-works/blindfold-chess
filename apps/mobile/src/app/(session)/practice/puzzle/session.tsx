@@ -243,7 +243,6 @@ function PuzzleSolver({
               fen={session.currentFen}
               onSubmit={handleSubmit}
               disabled={solved}
-              fitWidth
             />
             {feedback && (
               <Text

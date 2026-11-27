@@ -370,12 +370,7 @@
       "draw": "引き分け",
       "check": "チェック！",
       "noMoves": "まだ手がありません",
-      "movePreview": "手を入力してください",
-      "submit": "送信",
-      "clear": "クリア",
       "invalidMove": "無効な手です",
-      "disambiguation": "曖昧さ解消（任意）",
-      "sourceLabel": "出発マス",
       "showBoard": "盤面を表示",
       "aiPlayed": "AIが{{move}}を指しました",
       "invalidMoveWithInput": "無効な手です: {{move}}",
@@ -1163,5 +1158,29 @@
     "guideNextGuide": "次の教本へ",
     "guideToPractice": "練習へ進む",
     "guideRead": "読了"
+  },
+  "buttonInput": {
+    "piece": {
+      "king": "キング",
+      "queen": "クイーン",
+      "rook": "ルーク",
+      "bishop": "ビショップ",
+      "knight": "ナイト"
+    },
+    "symbol": {
+      "capture": "取る",
+      "check": "チェック",
+      "promotion": "成り",
+      "checkmate": "チェックメイト"
+    },
+    "castling": {
+      "kingside": "キングサイドキャスリング",
+      "queenside": "クイーンサイドキャスリング"
+    },
+    "action": {
+      "backspace": "1 文字削除",
+      "clear": "クリア",
+      "submit": "送信"
+    }
   }
 }
