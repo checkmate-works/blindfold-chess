@@ -87,6 +87,13 @@ type ListRowProps = {
   /** Trailing accessory. Rows with `onPress` default to a chevron. */
   accessory?: "chevron" | "check" | "none" | "external";
   onPress?: () => void;
+  /**
+   * A secondary action on press-and-hold (deleting the row's item). Give
+   * `longPressLabel` with it: a screen reader cannot hold, so the action is
+   * also offered as one of the row's accessibility actions under that name.
+   */
+  onLongPress?: () => void;
+  longPressLabel?: string;
   disabled?: boolean;
   /**
    * What a screen reader says for the whole row, in place of its visible
@@ -119,6 +126,8 @@ export function ListRow({
   trailing,
   accessory,
   onPress,
+  onLongPress,
+  longPressLabel,
   disabled = false,
   accessibilityLabel,
   testID,
@@ -129,7 +138,16 @@ export function ListRow({
   return (
     <Pressable
       onPress={onPress}
-      disabled={disabled || !onPress}
+      onLongPress={onLongPress}
+      disabled={disabled || (!onPress && !onLongPress)}
+      accessibilityActions={
+        onLongPress && longPressLabel
+          ? [{ name: "longpress", label: longPressLabel }]
+          : undefined
+      }
+      onAccessibilityAction={(event) => {
+        if (event.nativeEvent.actionName === "longpress") onLongPress?.();
+      }}
       testID={testID}
       accessibilityRole={onPress ? "button" : undefined}
       accessibilityLabel={accessibilityLabel}

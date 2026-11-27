@@ -22,7 +22,7 @@ const RECALL_MODULE = MOBILE_PRACTICE_MODULES.find((m) => m.slug === "recall");
 export default function PlayTab() {
   const { t } = useTranslation();
   const router = useRouter();
-  const games = useSavedGames();
+  const { games, reload } = useSavedGames();
 
   return (
     <TabScrollView>
@@ -36,7 +36,9 @@ export default function PlayTab() {
           [
             ...games
               .slice(0, RECENT_COUNT)
-              .map((game) => <GameRow key={game.id} game={game} />),
+              .map((game) => (
+                <GameRow key={game.id} game={game} onDeleted={reload} />
+              )),
             ...(games.length > RECENT_COUNT
               ? [
                   <ListRow

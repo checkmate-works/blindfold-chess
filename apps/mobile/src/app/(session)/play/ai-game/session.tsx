@@ -27,7 +27,6 @@ import {
   ButtonInput,
   MoveHistory,
   GameInfo,
-  Spinner,
 } from "../../../../features/ai-game/components";
 import {
   useAiVersus,
@@ -203,13 +202,17 @@ function AiGameBoard({ setup }: { setup: GameSetup }) {
       ? findLastAiMoveNotation(game.moves, playerColor, start.startingFen)
       : null;
 
-  // A peek opens the board until the next move, then the mask returns.
+  // A peek opens the board until the player's next move is accepted, then
+  // the mask returns, as on the web. Only the player's own move closes it:
+  // the AI's reply or an undo leave an opened board open.
   const [revealed, setRevealed] = useState(false);
-  const moveCount = game.moves.length;
-  useEffect(() => {
-    setRevealed(false);
-  }, [moveCount]);
-  const { recordPeek } = game;
+  const { recordPeek, submitMove: submitGameMove } = game;
+  const submitMove = useCallback(
+    (move: AlgebraicNotation) => {
+      if (submitGameMove(move)) setRevealed(false);
+    },
+    [submitGameMove],
+  );
   const dismissAiReply = aiReply.dismiss;
   const revealBoard = useCallback(() => {
     setRevealed(true);
@@ -372,53 +375,57 @@ function AiGameBoard({ setup }: { setup: GameSetup }) {
           flipped={flipped ?? playerColor === "black"}
           revealed={revealed}
           onReveal={revealBoard}
-          onHide={() => setRevealed(false)}
           thinking={aiReply.thinking}
           announcedAiMove={announcedAiMove}
         />
 
-        {game.error?.kind === "invalid-move" && (
-          <Text style={[styles.errorText, { color: colors.destructive }]}>
-            {t("aiGame.session.invalidMoveWithInput", {
-              move: game.error.input,
-            })}
-          </Text>
-        )}
+        {/* One line kept for the message whether or not there is one, so a
+            rejected move does not push the keypad down under the player's
+            finger, and accepting the next one does not pull it back up. The
+            message goes as soon as the player edits the move, as on the
+            web. */}
+        <Text
+          numberOfLines={1}
+          accessibilityLiveRegion="polite"
+          style={[styles.errorText, { color: colors.destructive }]}
+        >
+          {game.error?.kind === "invalid-move"
+            ? t("aiGame.session.invalidMoveWithInput", {
+                move: game.error.input,
+              })
+            : game.aiMoveFailed
+              ? t("aiGame.session.aiMoveFailed")
+              : ""}
+        </Text>
 
-        {/* Input area */}
-        {game.gameStatus === "in_progress" &&
-          (game.isPlayerTurn ? (
-            <ButtonInput
-              fen={game.currentFen}
-              onSubmit={game.submitMove}
-              disabled={ai.isLoading || game.isAiThinking}
+        {/* The controls stay in place for the whole game, only disabled, as
+            on the web: the keypad through the AI's turn (that the AI is
+            working is said on the board and in the top row), and everything
+            once the game is over, with the result laid over it. Taking them
+            away moved what was below them on every move, and collapsed the
+            screen at the end. */}
+        <View>
+          <ButtonInput
+            fen={game.currentFen}
+            onSubmit={submitMove}
+            onEdit={game.clearInvalidMove}
+            disabled={
+              ai.isLoading ||
+              !game.isPlayerTurn ||
+              game.isAiThinking ||
+              game.gameStatus !== "in_progress"
+            }
+          />
+
+          {game.gameStatus === "in_progress" && game.aiMoveFailed && (
+            <Button
+              title={t("aiGame.session.retry")}
+              icon="refresh"
+              onPress={game.retryAiMove}
+              style={styles.retry}
             />
-          ) : game.aiMoveFailed ? (
-            <View style={styles.retryContainer}>
-              <Text style={[styles.errorText, { color: colors.destructive }]}>
-                {t("aiGame.session.aiMoveFailed")}
-              </Text>
-              <Button
-                title={t("aiGame.session.retry")}
-                icon="refresh"
-                onPress={game.retryAiMove}
-              />
-            </View>
-          ) : (
-            <View style={styles.aiThinkingContainer}>
-              <Text
-                style={[
-                  styles.aiThinkingText,
-                  { color: colors.mutedForeground },
-                ]}
-              >
-                {t("aiGame.session.aiThinking")}
-              </Text>
-              <Spinner color={colors.primary} />
-            </View>
-          ))}
+          )}
 
-        {game.gameStatus === "in_progress" && (
           <View style={styles.actionRow}>
             <Button
               title={t("aiGame.session.undo")}
@@ -439,20 +446,29 @@ function AiGameBoard({ setup }: { setup: GameSetup }) {
               style={styles.action}
             />
           </View>
-        )}
 
-        {/* Game over message */}
-        {game.gameStatus !== "in_progress" && game.playerResult && (
-          <View style={styles.gameOverContainer}>
-            <Text style={[styles.gameOverText, { color: colors.foreground }]}>
-              {game.playerResult === "win"
-                ? t("aiGame.result.win")
-                : game.playerResult === "loss"
-                  ? t("aiGame.result.loss")
-                  : t("aiGame.result.draw")}
-            </Text>
-          </View>
-        )}
+          {game.gameStatus !== "in_progress" && game.playerResult && (
+            <View
+              accessibilityLiveRegion="polite"
+              style={styles.gameOverOverlay}
+            >
+              <View
+                style={[
+                  StyleSheet.absoluteFill,
+                  styles.gameOverScrim,
+                  { backgroundColor: colors.page },
+                ]}
+              />
+              <Text style={[styles.gameOverText, { color: colors.foreground }]}>
+                {game.playerResult === "win"
+                  ? t("aiGame.result.win")
+                  : game.playerResult === "loss"
+                    ? t("aiGame.result.loss")
+                    : t("aiGame.result.draw")}
+              </Text>
+            </View>
+          )}
+        </View>
       </ScrollView>
 
       {/* The moves stay off the screen while playing: a list always in view
@@ -483,6 +499,9 @@ function AiGameBoard({ setup }: { setup: GameSetup }) {
   );
 }
 
+/** The error line's height, kept whether or not a message is showing. */
+const ERROR_LINE_HEIGHT = 20;
+
 const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
@@ -497,7 +516,12 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: fontSize.sm,
+    lineHeight: ERROR_LINE_HEIGHT,
+    minHeight: ERROR_LINE_HEIGHT,
     textAlign: "center",
+  },
+  retry: {
+    marginTop: spacing.sm,
   },
   // The status sits between the × and the board controls. The row takes
   // the top bar's whole trailing slot so the status can centre in it.
@@ -507,34 +531,28 @@ const styles = StyleSheet.create({
     alignSelf: "stretch",
     gap: spacing.md,
   },
-  retryContainer: {
-    alignItems: "center",
-    gap: spacing.md,
-    paddingVertical: spacing.lg,
-  },
   actionRow: {
     flexDirection: "row",
     gap: spacing.md,
+    marginTop: spacing.sm,
   },
   action: {
     flex: 1,
   },
-  gameOverContainer: {
+  gameOverOverlay: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
     alignItems: "center",
-    paddingVertical: spacing.xl,
+    justifyContent: "center",
+  },
+  gameOverScrim: {
+    opacity: 0.85,
   },
   gameOverText: {
     fontSize: fontSize.xxl,
     fontWeight: fontWeight.bold,
-  },
-  aiThinkingContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: spacing.sm,
-    paddingVertical: spacing.lg,
-  },
-  aiThinkingText: {
-    fontSize: fontSize.md,
   },
 });

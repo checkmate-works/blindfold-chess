@@ -400,7 +400,6 @@
       "confirmUndo": "Deshacer",
       "boardHidden": "Tablero oculto",
       "revealBoard": "Toca para ver",
-      "hideBoard": "Ocultar Tablero",
       "flipBoard": "Voltear Tablero"
     },
     "result": {
@@ -848,6 +847,7 @@
     "share": "Compartir PGN",
     "delete": "Eliminar",
     "deleteConfirm": "¿Eliminar esta partida?",
+    "deleteHint": "Mantén pulsada una partida para eliminarla.",
     "you": "Tú",
     "engine": "Stockfish (nivel {{level}})",
     "inProgress": "En curso",

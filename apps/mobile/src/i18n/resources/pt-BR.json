@@ -400,7 +400,6 @@
       "confirmUndo": "Desfazer",
       "boardHidden": "Tabuleiro oculto",
       "revealBoard": "Toque para ver",
-      "hideBoard": "Ocultar Tabuleiro",
       "flipBoard": "Inverter Tabuleiro"
     },
     "result": {
@@ -848,6 +847,7 @@
     "share": "Compartilhar PGN",
     "delete": "Excluir",
     "deleteConfirm": "Excluir esta partida?",
+    "deleteHint": "Toque e segure uma partida para excluí-la.",
     "you": "Você",
     "engine": "Stockfish (nível {{level}})",
     "inProgress": "Em andamento",
