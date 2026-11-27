@@ -153,6 +153,40 @@ describe("useGameSession actions", () => {
     });
   });
 
+  it("clears an invalid move's message when the move is edited", () => {
+    const { result } = renderHook(() =>
+      useGameSession({
+        playerColor: "white",
+        skillLevel: 5,
+        getAiMove: never(),
+        isAiLoading: false,
+      }),
+    );
+
+    act(() => {
+      result.current.submitMove("Ke2" as AlgebraicNotation);
+    });
+    act(() => result.current.clearInvalidMove());
+    expect(result.current.error).toBeNull();
+  });
+
+  it("keeps a failed AI move's error when the move is edited", async () => {
+    const getAiMove = vi.fn().mockResolvedValue(err({ kind: "no-move" }));
+    const { result } = renderHook(() =>
+      useGameSession({
+        playerColor: "white",
+        skillLevel: 5,
+        getAiMove,
+        isAiLoading: false,
+        initialMoves: san(["e4"]),
+      }),
+    );
+
+    await waitFor(() => expect(result.current.aiMoveFailed).toBe(true));
+    act(() => result.current.clearInvalidMove());
+    expect(result.current.aiMoveFailed).toBe(true);
+  });
+
   it("stops after a failed AI move and asks again only on retry", async () => {
     const getAiMove = vi
       .fn()

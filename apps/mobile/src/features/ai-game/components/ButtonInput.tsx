@@ -27,6 +27,8 @@ type ButtonInputProps = {
   fen: string;
   onSubmit: (move: AlgebraicNotation) => void;
   disabled?: boolean;
+  /** Called on every key that changes the typed move (not on submit). */
+  onEdit?: () => void;
 };
 
 type PieceLabelKey = "king" | "queen" | "rook" | "bishop" | "knight";
@@ -85,6 +87,7 @@ export function ButtonInput({
   fen,
   onSubmit,
   disabled = false,
+  onEdit,
 }: ButtonInputProps) {
   const { t } = useTranslation();
   const { colors } = useTheme();
@@ -93,6 +96,14 @@ export function ButtonInput({
   const pieceColor = fen.split(" ")[1] === "b" ? "b" : "w";
 
   const n = useNotationInput({ fen, onSubmit });
+  // Every editing key goes through here so the caller can drop a message
+  // about the move being edited.
+  const edit =
+    <A extends unknown[]>(action: (...args: A) => void) =>
+    (...args: A) => {
+      onEdit?.();
+      action(...args);
+    };
   const input = n.state.input;
   const canSubmit = n.isSubmittable && !disabled;
 
@@ -103,7 +114,7 @@ export function ButtonInput({
         {PIECE_BUTTONS.map(({ char, type, labelKey }) => (
           <Key
             key={char}
-            onPress={() => n.appendChar(char)}
+            onPress={edit(() => n.appendChar(char))}
             disabled={disabled}
             label={t(`buttonInput.piece.${labelKey}`)}
             testID={`move-piece-${char}`}
@@ -121,7 +132,7 @@ export function ButtonInput({
           </Key>
         ))}
         <Key
-          onPress={() => n.appendChar("x")}
+          onPress={edit(() => n.appendChar("x"))}
           disabled={disabled}
           label={t("buttonInput.symbol.capture")}
           testID="move-capture"
@@ -133,8 +144,8 @@ export function ButtonInput({
 
       {/* Rows 2-3: files, ranks */}
       <CoordinateInput
-        onFilePress={(file) => n.appendChar(file as NotationChar)}
-        onRankPress={(rank) => n.appendChar(rank as NotationChar)}
+        onFilePress={edit((file: string) => n.appendChar(file as NotationChar))}
+        onRankPress={edit((rank: string) => n.appendChar(rank as NotationChar))}
         disabled={disabled}
       />
 
@@ -144,7 +155,7 @@ export function ButtonInput({
           {ANNOTATION_BUTTONS.map(({ char, labelKey }) => (
             <Key
               key={char}
-              onPress={() => n.appendChar(char)}
+              onPress={edit(() => n.appendChar(char))}
               disabled={disabled}
               label={t(`buttonInput.symbol.${labelKey}`)}
             >
@@ -156,7 +167,7 @@ export function ButtonInput({
           {CASTLING_BUTTONS.map(({ move, labelKey }) => (
             <Key
               key={move}
-              onPress={() => n.appendCastling(move)}
+              onPress={edit(() => n.appendCastling(move))}
               disabled={disabled}
               label={t(`buttonInput.castling.${labelKey}`)}
               wide
@@ -184,7 +195,7 @@ export function ButtonInput({
           </Text>
         </View>
         <Key
-          onPress={n.backspace}
+          onPress={edit(n.backspace)}
           disabled={disabled}
           label={t("buttonInput.action.backspace")}
           action
@@ -192,7 +203,7 @@ export function ButtonInput({
           <Delete size={ACTION_ICON_SIZE} color={colors.foreground} />
         </Key>
         <Key
-          onPress={n.clear}
+          onPress={edit(n.clear)}
           disabled={disabled}
           label={t("buttonInput.action.clear")}
           action

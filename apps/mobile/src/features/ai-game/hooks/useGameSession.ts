@@ -210,6 +210,12 @@ export function useGameSession({
     setError(null);
   }, [canUndo, moves, handleUndoLog, recordUndo]);
 
+  // Editing the rejected move takes its message away, as on the web. Only
+  // that message: an AI failure stays until Retry clears it.
+  const clearInvalidMove = useCallback(() => {
+    setError((current) => (current?.kind === "invalid-move" ? null : current));
+  }, []);
+
   const canResign = gameStatus === "in_progress" && !isAiThinking;
 
   const resign = useCallback(() => {
@@ -232,6 +238,7 @@ export function useGameSession({
     recordPeek,
     currentFen,
     submitMove,
+    clearInvalidMove,
     retryAiMove,
     canUndo,
     undo,
