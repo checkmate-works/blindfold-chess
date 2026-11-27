@@ -10,12 +10,17 @@
  *
  * @flow
  * 1. Unknown rank, or a rank without this problem → 404.
- * 2. Solve move by move, the opponent's replies auto-played, as in a stored
+ * 2. The page opens laid out like a stored puzzle's detail page
+ *    (`practice/puzzle/[id]`): what the rank's problem practises as its
+ *    description, the piece list, the collapsible board, the patterns useful
+ *    for solving (constants of the exam, not rows in `chunks`) and a start
+ *    button.
+ * 3. Solve move by move, the opponent's replies auto-played, as in a stored
  *    puzzle.
- * 3. On the solving move the player's moves go to `submitExamAnswer`. Signed
+ * 4. On the solving move the player's moves go to `submitExamAnswer`. Signed
  *    out, the browser grades them as practice. The verdict offers a retry
  *    and the way back.
- * 4. A pass that completes the exam stashes the granted rank and returns to
+ * 5. A pass that completes the exam stashes the granted rank and returns to
  *    the problem list, which celebrates it.
  */
 import type { Metadata } from 'next';
@@ -24,11 +29,14 @@ import { notFound } from 'next/navigation';
 
 import { SUPPORTED_LOCALES } from '@/config';
 
+import { PositionPeekBoard } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionPeekBoard';
 import { PiecesInfo } from '@/app/[locale]/(public)/practice/_components/PiecesInfo';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { SectionTitle } from '@/app/[locale]/_components';
+import { Breadcrumb, type BreadcrumbItem } from '@/app/[locale]/_components/Breadcrumb';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { ExamPatterns } from '../../_components/ExamPatterns';
 import { ExamPuzzleSession } from '../../_components/ExamPuzzleSession';
 import { EXAM_RANKS, examProblemOf, parseExamRank, previousRank } from '../../_lib/exam-rank';
 
@@ -75,17 +83,12 @@ export default async function DojoExamPuzzlePage({ params }: Props) {
   const examTitle = t('dojoExam.title', { rankName });
   const problemName = t('ranks.examProblemNames.puzzle');
 
-  const breadcrumb = (
-    <Breadcrumb
-      items={[
-        { label: t('dojo.pageTitle'), href: '/dojo' },
-        { label: examTitle, href: `/dojo/exams/${exam}` },
-        { label: problemName },
-      ]}
-      locale={locale}
-      density="compact"
-    />
-  );
+  const breadcrumbItems: BreadcrumbItem[] = [
+    { label: t('dojo.pageTitle'), href: '/dojo' },
+    { label: examTitle, href: `/dojo/exams/${exam}` },
+    { label: problemName },
+  ];
+  const breadcrumb = <Breadcrumb items={breadcrumbItems} locale={locale} density="compact" />;
 
   return (
     <ExamPuzzleSession
@@ -94,7 +97,24 @@ export default async function DojoExamPuzzlePage({ params }: Props) {
       title={problemName}
       piecesInfo={<PiecesInfo fen={problem.fen} />}
       breadcrumb={breadcrumb}
+      breadcrumbItems={breadcrumbItems}
+      locale={locale}
       prevRankName={prevRankName}
+      intro={
+        <>
+          <SectionTitle>{t('practice.puzzle.detail.descriptionSection')}</SectionTitle>
+          {/* dojoExam.puzzleIntro.<EarnedRankSlug>: each rank with this
+              problem (generateStaticParams), which says what it practises. */}
+          <p className="text-foreground">{t(`dojoExam.puzzleIntro.${exam}`, { rankName })}</p>
+          <PiecesInfo fen={problem.fen} />
+          <PositionPeekBoard fen={problem.fen} />
+          <ExamPatterns
+            patterns={problem.patterns}
+            locale={locale}
+            detailNamespace="practice.puzzle.detail"
+          />
+        </>
+      }
     />
   );
 }
