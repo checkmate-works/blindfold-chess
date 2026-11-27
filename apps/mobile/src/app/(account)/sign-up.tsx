@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
-import { useRouter } from "expo-router";
+import { Stack, useNavigation, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 
 import { Button, TextField } from "../../components";
@@ -9,6 +9,7 @@ import {
   OAuthButtons,
   OAuthDivider,
 } from "../../features/account/OAuthButtons";
+import { HeaderTextButton } from "../../navigation/HeaderTextButton";
 import { useTheme, fontSize, fontWeight, spacing } from "../../theme";
 
 /**
@@ -28,6 +29,12 @@ const MIN_PASSWORD_LENGTH = 6;
  * rate limit, password rules and confirmation link apply. Afterwards the
  * screen shows the web's "check your email" text; the user confirms in the
  * browser and comes back to sign in.
+ *
+ * Usually pushed from sign-in, so "Sign in" goes back to it. The home tab's
+ * sign-up card opens it as the first screen of the account modal instead:
+ * then there is nothing to go back to (going back would close the modal), so
+ * the header gets the modal's Close button and "Sign in" replaces this
+ * screen with sign-in.
  */
 export default function SignUpScreen() {
   const { t } = useTranslation();
@@ -39,6 +46,14 @@ export default function SignUpScreen() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
+  const opensModal = useNavigation().getState()?.index === 0;
+  const toSignIn = () =>
+    opensModal ? router.replace("/sign-in") : router.back();
+  const closeButton = opensModal ? (
+    <Stack.Screen
+      options={{ headerLeft: () => <HeaderTextButton dismiss /> }}
+    />
+  ) : null;
 
   const handleSubmit = async () => {
     if (busy) return;
@@ -77,6 +92,7 @@ export default function SignUpScreen() {
   if (sent) {
     return (
       <ScrollView contentContainerStyle={styles.content}>
+        {closeButton}
         <Text style={[styles.title, { color: colors.foreground }]}>
           {t("account.verifyEmail.title")}
         </Text>
@@ -90,7 +106,7 @@ export default function SignUpScreen() {
         </Text>
         <Button
           title={t("account.signUp.signIn")}
-          onPress={() => router.back()}
+          onPress={toSignIn}
           size="lg"
           fullWidth
         />
@@ -103,6 +119,7 @@ export default function SignUpScreen() {
       contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"
     >
+      {closeButton}
       <OAuthButtons mode="signUp" />
       <OAuthDivider />
       <Text style={[styles.body, { color: colors.mutedForeground }]}>
@@ -160,7 +177,7 @@ export default function SignUpScreen() {
           title={t("account.signUp.signIn")}
           variant="ghost"
           size="sm"
-          onPress={() => router.back()}
+          onPress={toSignIn}
         />
       </View>
     </ScrollView>
