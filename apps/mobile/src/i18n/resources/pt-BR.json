@@ -31,12 +31,7 @@
   "home": {
     "title": "Xadrez às Cegas",
     "welcome": "Bem-vindo de volta!",
-    "startPractice": "Começar prática",
     "playAi": "Jogar contra a IA",
-    "replayOnboarding": "Refazer tutorial",
-    "allPractice": "Todas as práticas",
-    "gettingStarted": "Primeiros passos",
-    "learnBasics": "Aprenda o básico",
     "nextRankTitle": "Próximo objetivo",
     "allAchievedBody": "Você tem o 1º Dan. Continue afiando contra o motor.",
     "nextStep": {
@@ -44,6 +39,19 @@
       "guideContinue": "Continuar o guia",
       "challenge": "Experimente {{challengeName}}",
       "choosePractice": "Escolher um treino por conta própria"
+    },
+    "recordCta": {
+      "signUp": {
+        "message": "Cadastre-se grátis para guardar seus resultados de desafios e seu nível na sua conta",
+        "description": "Você também ganha EXP e níveis, e pode continuar na web com a mesma conta.",
+        "button": "Cadastre-se grátis"
+      },
+      "signIn": "Já tem uma conta? Entrar",
+      "username": {
+        "message": "Escolha um nome de usuário para concluir o cadastro",
+        "description": "É o nome exibido no ranking e na sua página na web.",
+        "button": "Escolher nome de usuário"
+      }
     }
   },
   "practice": {
@@ -228,6 +236,10 @@
       "retry": "Toque para tentar de novo",
       "deleteAccount": "Excluir conta",
       "deleteAccountNote": "A exclusão da conta é feita no site: entre lá para excluir sua conta. Se você ainda não definiu um nome de usuário, será solicitado que defina um primeiro."
+    },
+    "tutorial": {
+      "title": "Tutorial",
+      "replay": "Refazer tutorial"
     }
   },
   "legalMoves": {

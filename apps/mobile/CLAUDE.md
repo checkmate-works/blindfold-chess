@@ -435,7 +435,7 @@ route files exist. The challenge rules (`MISTAKE_LIMIT`,
 (`PracticeCardVisual`), description, rank and optional journey progress.
 The whole card opens setup; illustrations have no interactive children,
 timers or screen-reader stops. `PracticeCardSection` spaces cards without
-an enclosing list frame. Home quick starts and Play’s recall entry reuse
+an enclosing list frame. Play’s recall entry reuses
 the same card. Boards use the player’s board theme through `StaticBoard`;
 small previews omit coordinate letters. Settings and history remain grouped
 lists because they do not need practice illustrations.

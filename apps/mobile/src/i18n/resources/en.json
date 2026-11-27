@@ -31,12 +31,7 @@
   "home": {
     "title": "Blindfold Chess",
     "welcome": "Welcome back!",
-    "startPractice": "Start Practice",
     "playAi": "Play vs AI",
-    "replayOnboarding": "Replay Tutorial",
-    "allPractice": "All practice modules",
-    "gettingStarted": "Getting started",
-    "learnBasics": "Learn the basics",
     "nextRankTitle": "Next goal",
     "allAchievedBody": "You hold 1st Dan. Keep sharpening it against the engine.",
     "nextStep": {
@@ -44,6 +39,19 @@
       "guideContinue": "Continue the guide",
       "challenge": "Try {{challengeName}}",
       "choosePractice": "Choose a practice yourself"
+    },
+    "recordCta": {
+      "signUp": {
+        "message": "Sign up free to keep your challenge results and rank on your account",
+        "description": "You also earn EXP and levels, and can pick up where you left off on the web with the same account.",
+        "button": "Sign up free"
+      },
+      "signIn": "Already have an account? Sign in",
+      "username": {
+        "message": "Choose a username to finish signing up",
+        "description": "It's the name shown on the leaderboard and on your mypage on the web.",
+        "button": "Choose a username"
+      }
     }
   },
   "practice": {
@@ -228,6 +236,10 @@
       "retry": "Tap to retry",
       "deleteAccount": "Delete account",
       "deleteAccountNote": "Account deletion opens the website: sign in there to delete your account. If you haven't set a username yet, you'll be asked to set one first."
+    },
+    "tutorial": {
+      "title": "Tutorial",
+      "replay": "Replay Tutorial"
     }
   },
   "legalMoves": {
