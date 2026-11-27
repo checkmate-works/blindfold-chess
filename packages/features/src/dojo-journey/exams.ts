@@ -20,6 +20,7 @@ import {
   type EarnedRankSlug,
   type ExamProblemKind,
   type RankSlug,
+  isExamProblemKind,
   isRankSlug,
   rankStanding,
 } from "../dojo-ranks/ranks";
@@ -111,10 +112,6 @@ export const DOJO_EXAMS: Readonly<
     },
   },
 };
-
-function isExamProblemKind(value: unknown): value is ExamProblemKind {
-  return value === "position_memory" || value === "puzzle";
-}
 
 /**
  * The problem named by an untrusted `(exam, problem)` pair, or undefined when

@@ -1,4 +1,5 @@
-import { BELT_COLOR_HEX, RANK_COLORS } from '@/lib/db/data/ranks';
+import { BELT_COLOR_HEX } from '@blindfold-chess/features/dojo-ranks';
+
 import type { RankSlug } from '@/lib/db/data/ranks';
 
 /**
@@ -10,8 +11,7 @@ import type { RankSlug } from '@/lib/db/data/ranks';
 
 /** Hex for a rank's belt colour, falling back to a neutral grey for an unmapped slug. */
 export function getBeltColorHex(slug: RankSlug): string {
-  const colorName = RANK_COLORS[slug];
-  return BELT_COLOR_HEX[colorName] ?? '#6b7280';
+  return BELT_COLOR_HEX[slug] ?? '#6b7280';
 }
 
 /**

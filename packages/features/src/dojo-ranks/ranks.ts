@@ -66,8 +66,18 @@ export type ChallengeScoreRequirement = {
   readonly minScore: number;
 };
 
-/** The two kinds of exam problem a rank can set. */
-export type ExamProblemKind = "position_memory" | "puzzle";
+/**
+ * The kinds of exam problem a rank can set, in the order an exam lists them.
+ * The URL segments, the problem lists and the request guards all read this
+ * one list, so a kind added here reaches every one of them.
+ */
+export const EXAM_PROBLEM_KINDS = ["position_memory", "puzzle"] as const;
+
+export type ExamProblemKind = (typeof EXAM_PROBLEM_KINDS)[number];
+
+export function isExamProblemKind(value: unknown): value is ExamProblemKind {
+  return (EXAM_PROBLEM_KINDS as readonly unknown[]).includes(value);
+}
 
 /**
  * Requires the user to have passed one problem of a rank's exam: recreating a
