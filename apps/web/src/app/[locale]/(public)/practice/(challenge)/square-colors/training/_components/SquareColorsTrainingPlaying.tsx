@@ -1,5 +1,7 @@
 'use client';
 
+import type { SquareColor } from '@blindfold-chess/features/square-colors';
+
 import type { BoardTheme } from '@/lib/games/board-themes';
 import { DEFAULT_BOARD_THEME } from '@/lib/games/board-themes';
 
@@ -12,7 +14,7 @@ type Props = {
   currentSquare: string;
   showResult: boolean;
   lastAnswer: { correct: boolean; square: string } | null;
-  onAnswer: (color: 'light' | 'dark') => void;
+  onAnswer: (color: SquareColor) => void;
   boardTheme?: BoardTheme;
   correctCount: number;
   incorrectCount: number;

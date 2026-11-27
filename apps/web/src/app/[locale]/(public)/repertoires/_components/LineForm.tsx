@@ -23,6 +23,7 @@ import type { BoardAnnotations } from '@/lib/board-annotations/types';
 import type { RepertoireFormField } from '@/lib/repertoires/form-error-fields';
 import { repertoireErrorField } from '@/lib/repertoires/form-error-fields';
 import { KNOWN_LINE_FORM_ERRORS } from '@/lib/repertoires/line-form-errors';
+import { REPERTOIRE_NAME_MAX } from '@/lib/repertoires/validation';
 
 import { BoardFenTabs } from '@/app/[locale]/(public)/practice/(free-play)/_components/BoardFenTabs';
 import { deleteAnnotation } from '@/app/[locale]/(public)/repertoires/[id]/lines/[lineNo]/_actions/deleteAnnotation';
@@ -228,7 +229,7 @@ export function LineForm({
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder={t('namePlaceholder')}
-          maxLength={120}
+          maxLength={REPERTOIRE_NAME_MAX}
           className="mt-1 w-full"
           invalid={nameError !== null}
           {...fieldErrorProps('line-name-error', nameError)}

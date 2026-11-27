@@ -1,4 +1,4 @@
-import { SUPPORTED_LOCALES } from '@/config';
+import { isSupportedLocale } from '@/i18n/supported-locale';
 
 import { sanitizeNext } from './safe-next';
 
@@ -27,7 +27,7 @@ const NON_RETURNABLE_PATHS: readonly string[] = [
 function pathWithoutLocale(pathname: string): string {
   const segments = pathname.split('/');
   const first = segments[1];
-  if (!first || !(SUPPORTED_LOCALES as readonly string[]).includes(first)) {
+  if (!first || !isSupportedLocale(first)) {
     return pathname;
   }
   const rest = segments.slice(2).join('/');

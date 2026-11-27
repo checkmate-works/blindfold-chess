@@ -2,7 +2,7 @@
 
 import { after } from 'next/server';
 
-import { SUPPORTED_LOCALES } from '@/config';
+import { isSupportedLocale } from '@/i18n/supported-locale';
 import { z } from 'zod';
 
 import { resolveAiReviewGenerationState } from '@/lib/ai-review/entitlement';
@@ -35,7 +35,9 @@ const evaluationSchema = z.object({
 
 const inputSchema = z.object({
   gameId: z.string().regex(UUID_RE),
-  locale: z.string().refine((l) => (SUPPORTED_LOCALES as readonly string[]).includes(l)),
+  // Annotated `boolean` so the predicate does not narrow the schema's output
+  // to `Locale`: callers pass the locale as a plain string.
+  locale: z.string().refine((l): boolean => isSupportedLocale(l)),
   evaluations: z.array(evaluationSchema).max(500),
 });
 

@@ -14,7 +14,7 @@ import type {
   AttemptCell,
   AttemptRow,
   AttemptStatus,
-} from "../lib/attempt-history";
+} from "@blindfold-chess/features/puzzle";
 
 /** The web's `CircleMarker`: ○ for White, ● for Black. */
 export function SideMarker({ black }: { black: boolean }) {

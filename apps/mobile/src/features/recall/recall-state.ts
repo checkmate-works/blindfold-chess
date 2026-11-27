@@ -1,26 +1,6 @@
 import { computeMoveNumber } from "@blindfold-chess/features/chess-core/move-numbering";
+import type { MoveLogEntry } from "@blindfold-chess/features/recall";
 import type { Side } from "@blindfold-chess/types";
-
-/**
- * One line of the recall's move log, the web's `MoveLogEntry`.
- *
- * - `correct`: the player recalled and entered the move.
- * - `incorrect`: a wrong try (`incorrectMove` holds what was entered); it
- *   comes before the entry that resolves the same move.
- * - `skipped`: the player gave up on this move ("I don't know").
- * - `autoFilled`: the move was resolved by "Auto-fill All" rather than given
- *   up on one at a time. It counts as a miss like `skipped`, but stays apart
- *   so the summary can fold the whole run into one marker.
- * - `auto`: the opponent's move, played by "Auto-fill opponent's moves". Not
- *   the player's to recall, so it is left out of the stats.
- */
-export type MoveLogEntry = {
-  moveNumber: number;
-  isWhiteMove: boolean;
-  move: string;
-  status: "correct" | "incorrect" | "auto" | "skipped" | "autoFilled";
-  incorrectMove?: string;
-};
 
 /** The result of the latest action, shown above the board. */
 export type RecallFeedback = {
@@ -48,18 +28,6 @@ export type RecallState = {
   dontKnowCount: number;
   lastFeedback: RecallFeedback | null;
 };
-
-/**
- * Wrong tries at one move after which the session offers the answer: a
- * one-line prompt appears and "I don't know" turns into the primary "Show
- * answer". The web's `DONT_KNOW_PROMPT_THRESHOLD`; the offer stays inline
- * rather than in a dialog, because giving up counts against the recall rate
- * and a dialog that takes focus turns a stray tap into a miss.
- */
-export const DONT_KNOW_PROMPT_THRESHOLD = 3;
-
-/** "I don't know" presses after which "Auto-fill All" appears. */
-export const AUTO_FILL_ALL_THRESHOLD = 2;
 
 export function sideOfPly(state: RecallState, ply: number): Side {
   const firstIsWhite = state.firstMover === "white";
@@ -206,76 +174,6 @@ export function autoFillAll(state: RecallState): RecallState {
     index: state.moves.length,
     log,
     lastFeedback: null,
-  };
-}
-
-/**
- * Wrong tries at the move not yet resolved: the trailing run of `incorrect`
- * entries, since every resolution appends an entry of another kind.
- */
-export function countCurrentMoveMistakes(log: readonly MoveLogEntry[]): number {
-  let count = 0;
-  for (let i = log.length - 1; i >= 0 && log[i].status === "incorrect"; i--) {
-    count++;
-  }
-  return count;
-}
-
-export type RecallStats = {
-  /** Moves the player had to recall: nailed + struggled + missed. */
-  total: number;
-  /** Recalled with no wrong try. */
-  nailed: number;
-  /** Recalled after one or more wrong tries. */
-  struggled: number;
-  /** Given up ("I don't know" / "Auto-fill All"). */
-  missed: number;
-  /** Wrong tries over the whole game (can exceed the move count). */
-  mistakes: number;
-  /** nailed + struggled. */
-  recalled: number;
-  /** `recalled / total`, 0..1; 0 when there was nothing to recall. */
-  recallRate: number;
-};
-
-/** The web's `computeRecallStats`, over the same log. */
-export function computeRecallStats(log: readonly MoveLogEntry[]): RecallStats {
-  let nailed = 0;
-  let struggled = 0;
-  let missed = 0;
-  let mistakes = 0;
-  let mistakesForCurrent = 0;
-  for (const entry of log) {
-    switch (entry.status) {
-      case "incorrect":
-        mistakes++;
-        mistakesForCurrent++;
-        break;
-      case "correct":
-        if (mistakesForCurrent > 0) struggled++;
-        else nailed++;
-        mistakesForCurrent = 0;
-        break;
-      case "skipped":
-      case "autoFilled":
-        missed++;
-        mistakesForCurrent = 0;
-        break;
-      case "auto":
-        mistakesForCurrent = 0;
-        break;
-    }
-  }
-  const recalled = nailed + struggled;
-  const total = recalled + missed;
-  return {
-    total,
-    nailed,
-    struggled,
-    missed,
-    mistakes,
-    recalled,
-    recallRate: total > 0 ? recalled / total : 0,
   };
 }
 

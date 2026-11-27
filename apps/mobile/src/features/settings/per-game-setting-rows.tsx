@@ -9,20 +9,19 @@ import {
   AI_REPLY_DURATION_KEEP,
   AI_REPLY_DURATION_VALUES,
   BOARD_VISIBILITY_VALUES,
+  PIECE_VISIBILITY_MODES,
+  PIECE_VISIBILITY_PRESETS,
   type PerGamePreferences,
+  type PieceVisibilityMode,
 } from "@blindfold-chess/features/game-preferences";
 
 import { SelectRow, SwitchRow } from "../../components";
 
 /**
- * The web's piece-visibility picker: one choice of which side's pieces are
- * shown, written to the two independent booleans. Hiding both sides at once
- * is not offered (the board would be empty — `boardVisibility: 'never'` is
- * the way to get that), so a stored both-hidden state simply selects no chip.
+ * The piece-visibility choice the two stored booleans amount to. Hiding both
+ * sides at once is not one of the choices, so a stored both-hidden state
+ * simply selects no chip.
  */
-const PIECE_VISIBILITY_MODES = ["all", "own", "opponent"] as const;
-type PieceVisibilityMode = (typeof PIECE_VISIBILITY_MODES)[number];
-
 function pieceVisibilityMode(
   preferences: Pick<PerGamePreferences, "showOwnPieces" | "showOpponentPieces">,
 ): PieceVisibilityMode | null {
@@ -31,15 +30,6 @@ function pieceVisibilityMode(
   if (showOwnPieces) return "own";
   if (showOpponentPieces) return "opponent";
   return null;
-}
-
-function pieceVisibilityUpdate(
-  mode: PieceVisibilityMode,
-): Pick<PerGamePreferences, "showOwnPieces" | "showOpponentPieces"> {
-  return {
-    showOwnPieces: mode !== "opponent",
-    showOpponentPieces: mode !== "own",
-  };
 }
 
 type Options = {
@@ -104,7 +94,7 @@ export function perGameSettingRows({
       label={t("settings.board.pieceVisibility")}
       options={PIECE_VISIBILITY_MODES}
       value={pieceVisibilityMode(preferences)}
-      onChange={(mode) => onChange(pieceVisibilityUpdate(mode))}
+      onChange={(mode) => onChange(PIECE_VISIBILITY_PRESETS[mode])}
       formatOption={(v) => t(`settings.board.pieceVisibilityModes.${v}`)}
     />,
     // settings.board.pieceShapeModes.{normal,circles-all,circles-own,circles-opponent}

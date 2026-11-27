@@ -6,7 +6,11 @@ import {
   TouchableOpacity,
   useWindowDimensions,
 } from "react-native";
-import { fenToBoardFlat } from "@blindfold-chess/features/chess-core/fen";
+import {
+  fenToBoardFlat,
+  squareToBoardIndex,
+} from "@blindfold-chess/features/chess-core/fen";
+import { isLightSquare } from "@blindfold-chess/features/common";
 import { DISPLAY_RANKS, FILES } from "@blindfold-chess/types";
 import { ChessPieceIcon } from "@blindfold-chess/icons";
 import type { PieceColor, PieceType } from "@blindfold-chess/icons";
@@ -76,13 +80,13 @@ export function FenBoard({
         <View key={rank} style={styles.row}>
           {files.map((file, colIndex) => {
             const square = `${file}${rank}`;
-            const index = (8 - Number(rank)) * 8 + FILES.indexOf(file);
-            const light = (Number(rank) + FILES.indexOf(file)) % 2 === 0;
+            const index = squareToBoardIndex(square);
+            const light = isLightSquare(colIndex, rowIndex);
             return (
               <BoardSquare
                 key={square}
                 square={square}
-                piece={pieces[index] ?? ""}
+                piece={index === null ? "" : (pieces[index] ?? "")}
                 size={squareSize}
                 background={light ? theme.light : theme.dark}
                 labelColor={light ? theme.lightText : theme.darkText}

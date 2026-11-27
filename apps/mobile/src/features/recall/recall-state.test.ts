@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  autoFillAll,
   computeRecallStats,
   countCurrentMoveMistakes,
+} from "@blindfold-chess/features/recall";
+
+import {
+  autoFillAll,
   createRecallState,
   isRecallComplete,
   positionOfEntry,

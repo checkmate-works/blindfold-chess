@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 
 import { notFound } from 'next/navigation';
 
-import { SUPPORTED_LOCALES } from '@/config';
+import { isSupportedLocale } from '@/i18n/supported-locale';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { PracticeResultPage } from '@/app/[locale]/(public)/practice/_components/PracticeResultPage';
@@ -62,7 +62,7 @@ export function createCustomPracticeResultPage(config: CustomPracticeResultConfi
     const tPractice = useTranslations('practice');
     const tNavigation = useTranslations('navigation');
 
-    if (validateLocale && !(SUPPORTED_LOCALES as readonly string[]).includes(locale)) {
+    if (validateLocale && !isSupportedLocale(locale)) {
       notFound();
     }
 

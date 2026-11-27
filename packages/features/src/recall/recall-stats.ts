@@ -1,4 +1,4 @@
-import type { MoveLogEntry } from './move-log-entry';
+import type { MoveLogEntry } from "./move-log-entry";
 
 export type RecallStats = {
   /** User-engaged moves = nailed + struggled + missed. Opponent auto-fills are excluded. */
@@ -29,7 +29,9 @@ export type RecallStats = {
  * attempt, otherwise `struggled`. `skipped` and `autoFilled` both count as
  * `missed`.
  */
-export function computeRecallStats(entries: MoveLogEntry[]): RecallStats {
+export function computeRecallStats(
+  entries: readonly MoveLogEntry[],
+): RecallStats {
   let nailed = 0;
   let struggled = 0;
   let missed = 0;
@@ -39,21 +41,21 @@ export function computeRecallStats(entries: MoveLogEntry[]): RecallStats {
 
   for (const entry of entries) {
     switch (entry.status) {
-      case 'incorrect':
+      case "incorrect":
         mistakes++;
         mistakesForCurrent++;
         break;
-      case 'correct':
+      case "correct":
         if (mistakesForCurrent > 0) struggled++;
         else nailed++;
         mistakesForCurrent = 0;
         break;
-      case 'skipped':
-      case 'autoFilled':
+      case "skipped":
+      case "autoFilled":
         missed++;
         mistakesForCurrent = 0;
         break;
-      case 'auto':
+      case "auto":
         // Opponent's auto-filled move — not the user's responsibility.
         mistakesForCurrent = 0;
         break;

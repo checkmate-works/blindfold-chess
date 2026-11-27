@@ -10,7 +10,7 @@ import {
   useTheme,
   withAlpha,
 } from "../../../theme";
-import type { MoveLogEntry } from "../recall-state";
+import type { MoveLogEntry } from "@blindfold-chess/features/recall";
 
 type IndividualStatus = Exclude<MoveLogEntry["status"], "autoFilled">;
 

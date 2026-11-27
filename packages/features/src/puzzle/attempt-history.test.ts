@@ -39,7 +39,7 @@ describe("attempt history", () => {
       groupAttemptsByPlayerStep([right("Qh2+")]),
     );
     expect(cells.map((c) => c.kind)).toEqual(["solved", "opponent", "skipped"]);
-    const rows = buildRows(cells, true, 30);
+    const rows = buildRows(cells, "b", 30);
     expect(rows.map((r) => r.moveNumber)).toEqual([30, 31]);
     expect(rows[0].white).toEqual({ kind: "empty" });
     expect(rows[1].black).toEqual({ kind: "skipped", expectedMove: "Qh1#" });

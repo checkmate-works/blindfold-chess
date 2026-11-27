@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { isLightSquare } from "@blindfold-chess/features/common";
 import type { Square } from "@blindfold-chess/types";
 import { DISPLAY_RANKS, FILES } from "@blindfold-chess/types";
 import { boardThemeColors } from "@blindfold-chess/ui";
@@ -123,7 +124,7 @@ export function StaticBoard({
           <View key={rank} style={styles.row}>
             {files.map((file, col) => {
               const square: Square = `${file}${rank}`;
-              const light = (row + col) % 2 === 0;
+              const light = isLightSquare(col, row);
               const tint = squareTint?.(square);
               const labelColor = light ? theme.lightText : theme.darkText;
               return (

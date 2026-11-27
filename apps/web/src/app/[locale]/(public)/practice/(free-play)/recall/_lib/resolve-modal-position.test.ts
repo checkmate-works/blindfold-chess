@@ -1,6 +1,6 @@
+import type { MoveLogEntry } from '@blindfold-chess/features/recall';
 import { describe, expect, it } from 'vitest';
 
-import type { MoveLogEntry } from './move-log-entry';
 import { resolveModalPosition } from './resolve-modal-position';
 
 /** Terse builder — only the fields the resolver looks at matter here. */

@@ -1,4 +1,4 @@
-import { SUPPORTED_LOCALES } from '@/config';
+import { isSupportedLocale } from '@/i18n/supported-locale';
 
 import type { LocalizedCopy } from '@/lib/ads/copy';
 import { isPlaceholderAdHref } from '@/lib/ads/placeholder';
@@ -130,7 +130,7 @@ function validateLocalizedCopy(value: unknown, field: string): string | null {
   const enError = validateText(copy.en, `${field}.en`);
   if (enError) return enError;
   for (const key of Object.keys(copy)) {
-    if (!(SUPPORTED_LOCALES as readonly string[]).includes(key)) return `invalid ${field} locale`;
+    if (!isSupportedLocale(key)) return `invalid ${field} locale`;
     const localeError = validateText(copy[key], `${field}.${key}`);
     if (localeError) return localeError;
   }

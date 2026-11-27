@@ -4,6 +4,7 @@ import { useCallback } from 'react';
 
 import { generateSquareSequence } from '@blindfold-chess/features/common';
 import { useBatchTrainingSession } from '@blindfold-chess/features/practice-session';
+import type { SquareColor } from '@blindfold-chess/features/square-colors';
 import { getSquareColor } from '@blindfold-chess/features/square-colors';
 
 import { useTrainingSessionShell } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-training-session-shell';
@@ -31,7 +32,7 @@ export default function SquareColorsTrainingSession({ locale }: Props) {
     correctCount,
     incorrectCount,
     handleAnswer,
-  } = useBatchTrainingSession<string, 'light' | 'dark'>({
+  } = useBatchTrainingSession<string, SquareColor>({
     batchSize: BATCH_SIZE,
     generateBatch: () => generateSquareSequence(BATCH_SIZE),
     checkAnswer: (square, selectedColor) => selectedColor === getSquareColor(square),
@@ -44,7 +45,7 @@ export default function SquareColorsTrainingSession({ locale }: Props) {
   });
 
   const onAnswer = useCallback(
-    (selectedColor: 'light' | 'dark') => {
+    (selectedColor: SquareColor) => {
       handleAnswer(selectedColor);
     },
     [handleAnswer]

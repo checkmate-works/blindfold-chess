@@ -11,11 +11,9 @@ import { getTranslations } from 'next-intl/server';
 
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
-import { resolveNativeAds } from '@/lib/ads/ad';
 import { withRepeatingNativeAds } from '@/lib/ads/placement';
 import { TOPIC_CATALOG_NATIVE_AD_SLOT } from '@/lib/ads/registry';
 import { getOptionalUser } from '@/lib/auth';
-import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 import { buildPageHref, getPaginationParams } from '@/lib/pagination';
 
 import { TopicPostCard } from '@/app/[locale]/(public)/(home)/_components/TopicPostCard';
@@ -23,6 +21,7 @@ import { TopicCardSkeleton } from '@/app/[locale]/(public)/topics/_components/To
 import { TopicTabs } from '@/app/[locale]/(public)/topics/_components/TopicTabs';
 import { TopicTabsSkeleton } from '@/app/[locale]/(public)/topics/_components/TopicTabsSkeleton';
 import { renderAttachment } from '@/app/[locale]/(public)/topics/_components/render-attachment';
+import { loadPostListRenderData } from '@/app/[locale]/(public)/topics/_lib/load-post-list-render-data';
 import { TOPIC_PAGE_SIZE } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import { isValidSquare } from '@/app/[locale]/(public)/topics/squares/_lib/squares';
 import { PageLayout, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
@@ -95,13 +94,12 @@ async function OpeningsContent({ params, searchParams }: Props) {
   // Pre-resolve each visible post's attachment slot upstream because
   // TopicPostCard is a client component and `getAttachmentsForPosts`
   // is server-only. Posts with no attachment row drop out of the map.
-  const postIds = recentPosts.map((p) => p.id);
-  const [attachments, tVideo, { creatives: nativeAdCreatives }] = await Promise.all([
-    postIds.length > 0 ? getAttachmentsForPosts(postIds) : new Map(),
-    getTranslations({ locale, namespace: 'postVideoAttachmentRender' }),
-    resolveNativeAds(TOPIC_CATALOG_NATIVE_AD_SLOT, user?.id ?? null, locale),
-  ]);
-  const fallbackVideoTitle = tVideo('fallbackTitle');
+  const { attachments, fallbackVideoTitle, nativeAdCreatives } = await loadPostListRenderData({
+    postIds: recentPosts.map((p) => p.id),
+    locale,
+    userId: user?.id ?? null,
+    adSlot: TOPIC_CATALOG_NATIVE_AD_SLOT,
+  });
 
   // Server-gated: an ad-free reader gets an empty pool, and an empty pool
   // places no cards at all. The `.ad-slot-wrapper` CSS hide that

@@ -28,6 +28,7 @@ import { useRecallParentReporting } from '../_hooks/use-recall-parent-reporting'
 import { useRecallPreferences } from '../_hooks/use-recall-preferences';
 import type { MoveLogEntry } from '../_lib';
 import {
+  AUTO_FILL_ALL_THRESHOLD,
   DONT_KNOW_PROMPT_THRESHOLD,
   computeRecallStats,
   countCurrentMoveMistakes,
@@ -349,7 +350,7 @@ export function RecallClient({
                             >
                               <span
                                 className={
-                                  settings.dontKnowCount >= 2 && !offerAnswer
+                                  settings.dontKnowCount >= AUTO_FILL_ALL_THRESHOLD && !offerAnswer
                                     ? 'hidden md:inline'
                                     : ''
                                 }
@@ -358,7 +359,7 @@ export function RecallClient({
                               </span>
                             </Button>
                           </span>
-                          {settings.dontKnowCount >= 2 && (
+                          {settings.dontKnowCount >= AUTO_FILL_ALL_THRESHOLD && (
                             <button
                               onClick={() => setShowAnalyzeAllConfirm(true)}
                               className="px-4 py-2 border border-border rounded-md hover:bg-muted flex items-center gap-2"

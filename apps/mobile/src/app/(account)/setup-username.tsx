@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ScrollView, StyleSheet, Text } from "react-native";
 import { useNavigation } from "expo-router";
 import { useTranslation } from "react-i18next";
+import { USERNAME_MIN_LENGTH } from "@blindfold-chess/features/username";
 
 import { Button, TextField } from "../../components";
 import { submitUsername } from "../../auth/account";
@@ -77,7 +78,7 @@ export default function SetupUsernameScreen() {
         title={t("account.setupUsername.submit")}
         onPress={handleSubmit}
         loading={busy}
-        disabled={username.trim().length < 2}
+        disabled={username.trim().length < USERNAME_MIN_LENGTH}
         size="lg"
         fullWidth
       />

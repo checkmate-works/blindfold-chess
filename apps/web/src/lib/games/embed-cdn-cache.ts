@@ -1,4 +1,4 @@
-import { SUPPORTED_LOCALES } from '@/config';
+import { isSupportedLocale } from '@/i18n/supported-locale';
 
 import { isFramablePath } from '@/lib/security/framing';
 
@@ -85,7 +85,7 @@ export function isCdnCacheableEmbedRequest(
 ): boolean {
   if (!isFramablePath(pathname)) return false;
   const langs = searchParams.getAll('lang');
-  return langs.length === 1 && (SUPPORTED_LOCALES as readonly string[]).includes(langs[0]);
+  return langs.length === 1 && isSupportedLocale(langs[0]);
 }
 
 /**

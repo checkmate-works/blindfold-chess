@@ -12,6 +12,11 @@ import { useTranslation } from "react-i18next";
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import { replayMoves } from "@blindfold-chess/features/chess-core";
 import {
+  AUTO_FILL_ALL_THRESHOLD,
+  DONT_KNOW_PROMPT_THRESHOLD,
+  countCurrentMoveMistakes,
+} from "@blindfold-chess/features/recall";
+import {
   SIDES,
   type AlgebraicNotation,
   type Side,
@@ -27,10 +32,7 @@ import { recallFeedbackTitle } from "../../../../features/recall/lib/feedback";
 import { readRecallPgn } from "../../../../features/recall/lib/pgn";
 import { encodeRecallLog } from "../../../../features/recall/lib/result-params";
 import {
-  AUTO_FILL_ALL_THRESHOLD,
-  DONT_KNOW_PROMPT_THRESHOLD,
   autoFillAll,
-  countCurrentMoveMistakes,
   createRecallState,
   isRecallComplete,
   revealRecallMove,
