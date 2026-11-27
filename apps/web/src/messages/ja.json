@@ -6075,6 +6075,10 @@
     "title": "{rankName}の課題",
     "lead": "次の{count}題を解くと{rankName}に昇級します。何度でも挑戦できます。",
     "memoryRule": "局面を{seconds}秒で覚え、空の盤に再現します。正確度{accuracy}%以上で合格です。",
+    "memoryRulePerfect": "局面を{seconds}秒で覚え、空の盤に再現します。すべての駒を正しく置ければ合格です。",
+    "memoryIntro": {
+      "2kyu": "{rankName}の課題です。チャンクをうまく利用して、ポジションを記憶してみましょう。"
+    },
     "puzzleRule": "{moves}手詰めを解きます。",
     "start": "挑戦する",
     "solved": "合格済み",

@@ -11,7 +11,8 @@
  * @flow
  * 1. Unknown rank, or a rank without this problem → 404.
  * 2. The page opens laid out like a saved problem's detail page
- *    (`practice/position-memory/[id]`): the condition as its description,
+ *    (`practice/position-memory/[id]`): what the rank's problem practises as
+ *    its description,
  *    the piece list, the collapsible board, the patterns useful for solving
  *    (constants of the exam, not rows in `chunks`) and a start button.
  *    Like that page it shows the position before the attempt; the memorize
@@ -85,10 +86,10 @@ export default async function DojoExamPositionMemoryPage({ params }: Props) {
   const prevRankName = t(`ranks.rankNames.${previousRank(exam)}`);
   const examTitle = t('dojoExam.title', { rankName });
   const problemName = t('ranks.examProblemNames.position_memory');
-  const rule = t('dojoExam.memoryRule', {
-    seconds: problem.memorizeSeconds,
-    accuracy: problem.minAccuracy,
-  });
+  // dojoExam.memoryIntro.<EarnedRankSlug>: each rank with this problem
+  // (generateStaticParams), which says what the rank's problem practises. The
+  // condition itself is on the exam's list and in the session's own timer.
+  const intro = t(`dojoExam.memoryIntro.${exam}`, { rankName });
 
   return (
     <PositionDetailLayout
@@ -107,7 +108,7 @@ export default async function DojoExamPositionMemoryPage({ params }: Props) {
         intro={
           <>
             <SectionTitle>{t('practice.positionMemory.detail.descriptionSection')}</SectionTitle>
-            <p className="text-foreground">{rule}</p>
+            <p className="text-foreground">{intro}</p>
             <PiecesInfo fen={problem.fen} showSideToMove={false} />
             <PositionPeekBoard fen={problem.fen} />
             <RelatedTags

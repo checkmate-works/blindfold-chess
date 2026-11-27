@@ -6075,6 +6075,10 @@
     "title": "{rankName} Exam",
     "lead": "Solve these {count} problems to earn {rankName}. You can retry as often as you like.",
     "memoryRule": "Memorize the position for {seconds} seconds, then recreate it on an empty board. {accuracy}% accuracy or better passes.",
+    "memoryRulePerfect": "Memorize the position for {seconds} seconds, then recreate it on an empty board. Every piece in place passes.",
+    "memoryIntro": {
+      "2kyu": "This is the {rankName} exam. Make good use of chunks to memorize the position."
+    },
     "puzzleRule": "Find the mate in {moves}.",
     "start": "Start",
     "solved": "Passed",

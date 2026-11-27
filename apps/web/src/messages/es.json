@@ -6075,6 +6075,10 @@
     "title": "Examen de {rankName}",
     "lead": "Resuelve estos {count} problemas para obtener {rankName}. Puedes intentarlo tantas veces como quieras.",
     "memoryRule": "Memoriza la posición durante {seconds} segundos y luego recréala en un tablero vacío. Apruebas con una precisión del {accuracy}% o más.",
+    "memoryRulePerfect": "Memoriza la posición durante {seconds} segundos y luego recréala en un tablero vacío. Apruebas si colocas todas las piezas correctamente.",
+    "memoryIntro": {
+      "2kyu": "Este es el examen de {rankName}. Aprovecha los chunks para memorizar la posición."
+    },
     "puzzleRule": "Encuentra el mate en {moves}.",
     "start": "Empezar",
     "solved": "Aprobado",

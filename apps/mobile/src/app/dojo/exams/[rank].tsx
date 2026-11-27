@@ -131,10 +131,16 @@ export default function DojoExamScreen() {
                 title={t(`ranks.requirement.examProblemNames.${kind}`)}
                 subtitle={
                   problem.kind === "position_memory"
-                    ? t("dojo.exam.memoryRule", {
-                        seconds: problem.memorizeSeconds,
-                        accuracy: problem.minAccuracy,
-                      })
+                    ? // "100% or better" reads oddly, so a perfect-recreation
+                      // mark has its own wording.
+                      problem.minAccuracy === 100
+                      ? t("dojo.exam.memoryRulePerfect", {
+                          seconds: problem.memorizeSeconds,
+                        })
+                      : t("dojo.exam.memoryRule", {
+                          seconds: problem.memorizeSeconds,
+                          accuracy: problem.minAccuracy,
+                        })
                     : t("dojo.exam.puzzleRule", {
                         moves: playerMoveCount(problem),
                       })

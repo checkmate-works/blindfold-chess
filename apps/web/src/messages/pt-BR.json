@@ -6075,6 +6075,10 @@
     "title": "Prova de {rankName}",
     "lead": "Resolva estes {count} problemas para conquistar {rankName}. Você pode tentar quantas vezes quiser.",
     "memoryRule": "Memorize a posição por {seconds} segundos e depois recrie-a em um tabuleiro vazio. Você passa com precisão de {accuracy}% ou mais.",
+    "memoryRulePerfect": "Memorize a posição por {seconds} segundos e depois recrie-a em um tabuleiro vazio. Você passa se colocar todas as peças corretamente.",
+    "memoryIntro": {
+      "2kyu": "Esta é a prova de {rankName}. Aproveite os chunks para memorizar a posição."
+    },
     "puzzleRule": "Encontre o mate em {moves}.",
     "start": "Começar",
     "solved": "Aprovado",

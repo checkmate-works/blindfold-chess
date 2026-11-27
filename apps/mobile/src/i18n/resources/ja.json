@@ -1115,6 +1115,7 @@
       "start": "課題を始める",
       "lead": "次の{{count}}題を解くと{{rank}}に昇級します。何度でも挑戦できます。",
       "memoryRule": "局面を{{seconds}}秒で覚え、空の盤に再現します。正確度{{accuracy}}%以上で合格です。",
+      "memoryRulePerfect": "局面を{{seconds}}秒で覚え、空の盤に再現します。すべての駒を正しく置ければ合格です。",
       "puzzleRule": "{{moves}}手詰めを解きます。",
       "solved": "合格済み",
       "signInNote": "ログインすると合格が記録されます。",
