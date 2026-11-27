@@ -847,6 +847,7 @@
     "share": "Share PGN",
     "delete": "Delete",
     "deleteConfirm": "Delete this game?",
+    "deleteHint": "Press and hold a game to delete it.",
     "you": "You",
     "engine": "Stockfish (level {{level}})",
     "inProgress": "In progress",

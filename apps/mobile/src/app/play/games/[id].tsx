@@ -63,7 +63,7 @@ export default function SavedGameScreen() {
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const { colors } = useTheme();
-  const games = useSavedGames();
+  const { games } = useSavedGames();
   const game = games?.find((g) => g.id === id);
 
   if (!game) {

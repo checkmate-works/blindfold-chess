@@ -847,6 +847,7 @@
     "share": "PGNを共有",
     "delete": "削除",
     "deleteConfirm": "この対局を削除しますか？",
+    "deleteHint": "対局を長押しすると削除できます。",
     "you": "あなた",
     "engine": "Stockfish（レベル{{level}}）",
     "inProgress": "対局中",

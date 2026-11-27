@@ -847,6 +847,7 @@
     "share": "Compartir PGN",
     "delete": "Eliminar",
     "deleteConfirm": "¿Eliminar esta partida?",
+    "deleteHint": "Mantén pulsada una partida para eliminarla.",
     "you": "Tú",
     "engine": "Stockfish (nivel {{level}})",
     "inProgress": "En curso",
