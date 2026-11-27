@@ -5,6 +5,7 @@ import { memo } from 'react';
 import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
+import { PORTABLE_ENGAGEMENT_NAMESPACE } from '@/lib/i18n/portable-engagement-namespace';
 import { getPositionDetailPath } from '@/lib/positions/routes';
 import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
 import { resolveAuthorName } from '@/lib/users/display-name';
@@ -79,7 +80,7 @@ export const PositionFeedCard = memo(function PositionFeedCard({
             likeMeta={data.likeMeta}
             replyMeta={data.replyMeta}
             toggleLikeAction={toggleLike}
-            i18nNamespace={data.type === 'puzzle' ? 'practice.puzzle' : 'practice.positionMemory'}
+            i18nNamespace={PORTABLE_ENGAGEMENT_NAMESPACE}
             // Comment icon additionally scrolls to the Comments section
             // (`id="comments"` on the page's SectionTitle); the rest of the
             // card keeps linking to the plain detail page.

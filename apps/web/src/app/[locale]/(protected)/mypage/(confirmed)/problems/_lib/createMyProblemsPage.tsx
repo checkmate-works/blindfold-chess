@@ -7,6 +7,7 @@ import { FiEdit2 } from 'react-icons/fi';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { EMPTY_LIKE_META } from '@/lib/db/like-queries';
 import { EMPTY_REPLY_META, getReplyMetaMap } from '@/lib/db/reply-meta-queries';
+import { PORTABLE_ENGAGEMENT_NAMESPACE } from '@/lib/i18n/portable-engagement-namespace';
 import { buildPageHref, getPaginationParams } from '@/lib/pagination';
 import type { PositionKind } from '@/lib/positions/kind';
 import { getPositionLikeMetaMap } from '@/lib/positions/like-queries';
@@ -131,7 +132,7 @@ export function createMyProblemsPage(config: MyProblemsPageConfig) {
                   likeMeta={likeMetaMap.get(position.id) ?? EMPTY_LIKE_META}
                   replyMeta={replyMetaMap.get(position.id) ?? EMPTY_REPLY_META}
                   detailHref={detailHref}
-                  i18nNamespace={footerNamespace}
+                  i18nNamespace={PORTABLE_ENGAGEMENT_NAMESPACE}
                   toggleLikeAction={toggleLike}
                   justNowLabel={justNowLabel}
                   authorFallbackLabel={authorFallbackLabel}
