@@ -9,6 +9,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { getOpenings } from '@/lib/openings/master-queries';
 
+import { getOpeningDisplayName } from '@/app/[locale]/(public)/topics/openings/_lib/get-opening-display-name';
 import { PageLayout } from '@/app/[locale]/_components';
 import { type HelpStep, HelpTourButton } from '@/app/[locale]/_components/HelpTourButton';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -60,9 +61,7 @@ export default async function OpeningGamePage({ params }: Props) {
   const allOpenings = await getOpenings();
 
   const openings = allOpenings.map((o) => {
-    const translatedName = tOpeningNames.has(o.slug as never)
-      ? tOpeningNames(o.slug as never)
-      : o.name;
+    const translatedName = getOpeningDisplayName(tOpeningNames, o.slug, o.name);
     return {
       slug: o.slug,
       name: o.name,

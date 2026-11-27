@@ -16,6 +16,7 @@ import { getCurrentReturnTarget } from '@/lib/current-return-target';
 import { getOpenings } from '@/lib/openings/master-queries';
 
 import { DeletePostButton } from '@/app/[locale]/(public)/topics/_components/DeletePostButton';
+import { getOpeningDisplayName } from '@/app/[locale]/(public)/topics/openings/_lib/get-opening-display-name';
 import {
   getOpeningBySlug,
   hasUserPostedForOpening,
@@ -92,9 +93,7 @@ export default async function InterviewQuestionDetailPage({ params }: Props) {
   const returnTarget = user ? null : await getCurrentReturnTarget();
 
   const openings = (allOpenings ?? []).map((o) => {
-    const translatedName = tOpeningNames.has(o.slug as never)
-      ? tOpeningNames(o.slug as never)
-      : o.name;
+    const translatedName = getOpeningDisplayName(tOpeningNames, o.slug, o.name);
     return {
       slug: o.slug,
       name: o.name,
@@ -114,9 +113,11 @@ export default async function InterviewQuestionDetailPage({ params }: Props) {
       getOpeningBySlug(answer.answerValue),
       user ? hasUserPostedForOpening(user.id, answer.answerValue) : false,
     ]);
-    answerDisplayName = tOpeningNames.has(answer.answerValue as never)
-      ? tOpeningNames(answer.answerValue as never)
-      : (answer.openingName ?? answer.answerValue);
+    answerDisplayName = getOpeningDisplayName(
+      tOpeningNames,
+      answer.answerValue,
+      answer.openingName ?? answer.answerValue
+    );
   }
 
   return (
