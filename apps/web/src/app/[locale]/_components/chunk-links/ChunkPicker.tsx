@@ -61,7 +61,14 @@ export function ChunkPicker({
   const { isOpen, getMenuProps, getInputProps, getItemProps, highlightedIndex, openMenu } =
     useCombobox<ChunkOption>({
       items: displayItems,
-      inputValue,
+      // Downshift owns the input's text; `inputValue` here is only a mirror
+      // for filtering. Passing it back as a controlled `inputValue` prop breaks
+      // typing on iOS: downshift fires its change callbacks from an effect, so
+      // the render right after each keystroke still carries the previous text,
+      // and React writes that stale value into the DOM input. WebKit's
+      // predictive-text / composition session is then out of sync with the
+      // field, which shows up as doubled characters and a dead Backspace.
+      onInputValueChange: ({ inputValue: nextInput }) => setInputValue(nextInput ?? ''),
       selectedItem: null,
       defaultHighlightedIndex: 0,
       itemToString: (item) => (item ? item.label : ''),
@@ -76,17 +83,13 @@ export function ChunkPicker({
             return changes;
         }
       },
-      onStateChange: ({ inputValue: nextInput, type, selectedItem }) => {
+      onStateChange: ({ type, selectedItem }) => {
         switch (type) {
           case useCombobox.stateChangeTypes.InputKeyDownEnter:
           case useCombobox.stateChangeTypes.ItemClick:
             if (selectedItem) {
               onSelect(selectedItem);
-              setInputValue('');
             }
-            break;
-          case useCombobox.stateChangeTypes.InputChange:
-            setInputValue(nextInput ?? '');
             break;
           default:
             break;
