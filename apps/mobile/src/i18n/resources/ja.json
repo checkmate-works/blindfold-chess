@@ -1125,7 +1125,31 @@
       "resend": "もう一度送信する",
       "problemPassed": "合格しました",
       "problemFailed": "不合格でした。もう一度挑戦できます。",
-      "passedUnrecorded": "合格ラインに届きました（記録なし）"
+      "passedUnrecorded": "合格ラインに届きました（記録なし）",
+      "attempt": "挑戦する",
+      "memoryDescriptionSection": "ポジションの説明",
+      "puzzleDescriptionSection": "このパズルについて",
+      "patternsSection": "解答に役立つパターン",
+      "memoryIntro": {
+        "2kyu": "{{rank}}の課題です。チャンクをうまく利用して、ポジションを記憶してみましょう。"
+      },
+      "puzzleIntro": {
+        "2kyu": "{{rank}}の課題です。盤面を思い浮かべながら、2手詰めを解いてみましょう。"
+      },
+      "patterns": {
+        "kingside_castle": {
+          "title": "キングサイドのキャスリング",
+          "description": "キング、ルーク、その前に並ぶ3つのポーンを、駒5つではなくひとつの形として覚えます。"
+        },
+        "kingside_fianchetto": {
+          "title": "キングサイドのフィアンチェット",
+          "description": "g3に突いたポーンの奥、g2にビショップを置いた形です。f2・h2のポーンと合わせてひとつの形として覚えます。"
+        },
+        "smothered_mate": {
+          "title": "スマザードメイト",
+          "description": "自分の駒に囲まれて逃げ場のないキングを、ナイトのチェックで詰ませる形です。"
+        }
+      }
     },
     "stages": {
       "learn": "学ぶ",

@@ -98,6 +98,10 @@ function RootStack({ isDark }: { isDark: boolean }) {
           options={{ title: t("dojo.rankDetailTitle") }}
         />
         <Stack.Screen name="dojo/exams/[rank]" options={{ title: "" }} />
+        <Stack.Screen
+          name="dojo/exams/[rank]/[problem]"
+          options={{ title: "" }}
+        />
         {/* Named after its rank, set by the screen like the guide's. */}
         <Stack.Screen name="dojo/requirements/[rank]" options={{ title: "" }} />
         {/* The guide names its rank in the title, set by the screen. */}

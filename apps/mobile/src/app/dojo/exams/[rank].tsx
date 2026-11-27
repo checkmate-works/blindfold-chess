@@ -1,5 +1,5 @@
 import { ScrollView, StyleSheet, Text } from "react-native";
-import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { Stack, useLocalSearchParams, useRouter, type Href } from "expo-router";
 import { useTranslation } from "react-i18next";
 import {
   DOJO_EXAMS,
@@ -15,6 +15,7 @@ import {
 
 import { ListIcon, ListRow, ListSection, Screen } from "../../../components";
 import { useAuth } from "../../../auth/use-auth";
+import { examProblemSegment } from "../../../features/dojo/dojo-api";
 import { examRunMode } from "../../../features/dojo/exam-run";
 import { RankGoalCard } from "../../../features/dojo/RankGoalCard";
 import { useDojoJourney } from "../../../features/dojo/use-dojo-journey";
@@ -40,9 +41,10 @@ function playerMoveCount(problem: ExamProblem): number {
  * A rank's exam: the rank's card, how many problems earn it, then one row
  * per problem — its name, its rule (memorize for n seconds and reach the
  * accuracy; find the mate in n), and "Passed" once the server has recorded
- * it. A row opens that problem's session (position memory or puzzle, with
- * the `exam` param); its result screen grades the answer and records a pass
- * when it can, and closing the result returns here.
+ * it. A row opens that problem's page (`dojo/exams/[rank]/[problem]`), whose
+ * Start opens the session (position memory or puzzle, with the `exam`
+ * param); its result screen grades the answer and records a pass when it
+ * can.
  *
  * Every problem can be retried as often as the player likes. When a pass
  * cannot be recorded — signed out, or the rank below not held yet — a note
@@ -50,8 +52,10 @@ function playerMoveCount(problem: ExamProblem): number {
  *
  * @flow
  * 1. Opened from the rank's exam requirements in the dojo or on the home tab
- * 2. A problem row → its session → its result (verdict, recorded or not)
- * 3. Closing the result returns here, with the problem marked once passed
+ * 2. A problem row → its page → its session → its result (verdict,
+ *    recorded or not)
+ * 3. Back from the problem's page returns here, with the problem marked
+ *    once passed
  */
 export default function DojoExamScreen() {
   const { t } = useTranslation();
@@ -90,13 +94,7 @@ export default function DojoExamScreen() {
       : undefined;
 
   const open = (kind: ExamProblemKind) =>
-    router.push({
-      pathname:
-        kind === "position_memory"
-          ? "/practice/position-memory/session"
-          : "/practice/puzzle/session",
-      params: { exam: rank },
-    });
+    router.push(`/dojo/exams/${rank}/${examProblemSegment(kind)}` as Href);
 
   return (
     <Screen edges={["bottom"]}>
