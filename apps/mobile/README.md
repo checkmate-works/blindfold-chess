@@ -215,7 +215,10 @@ Pass `-- --any-branch` to build from another branch.
   in a terminal: it asks for your Apple ID and lets EAS create and keep the
   distribution certificate and provisioning profile (answer Yes to each), and
   the first submission creates the app record in App Store Connect. Later
-  builds run non-interactively through `testflight`.
+  builds run non-interactively through `testflight`, which can only find
+  that record through `ascAppId` in `eas.json`'s submit profile (the app's
+  Apple ID under App Information in App Store Connect): without it the
+  build still runs but `--auto-submit` schedules no submission.
 - EAS uploads only files Git tracks, so the Stockfish engine (gitignored,
   copied from `node_modules`) is missing on the build machine. The
   `eas-build-post-install` script in `package.json` runs `copy-stockfish`
