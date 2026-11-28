@@ -499,7 +499,12 @@ out but not drawn; the setup screen opens with it. The whole card opens
 setup, except the pill: on the practice tab it opens the rank's
 introduction in a `BottomSheet` (`RankSheet`: `RankGoalCard` and a button
 on to the rank screen, nothing else that navigates). Illustrations have
-no interactive children, timers or screen-reader stops. `PracticeCardSection` spaces cards without
+no interactive children, timers or screen-reader stops. Every example is
+laid on one band in the player's board colour (`cardGround`: the theme's
+light square, or on the dark scheme the dark square mixed into the card), the
+way tiles sit on a table's felt; its boards get a dark-square frame and its
+labels are white tiles, the answer ringed in primary. A neutral grey band was
+tried first and read as a sunken field. `PracticeCardSection` spaces cards without
 an enclosing list frame. Play’s recall entry reuses
 the same card. Boards use the player’s board theme through `StaticBoard`;
 small previews omit coordinate letters. Settings and history remain grouped
