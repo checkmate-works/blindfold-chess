@@ -126,16 +126,24 @@ const styles = StyleSheet.create({
 });
 
 /**
- * How the root stack presents the `sheet` group: a half-height sheet with a
- * grabber that can be dragged up to full height or down to dismiss — the
- * system sheet on iOS (`UISheetPresentationController`) and a Material
- * bottom sheet on Android. The sheet draws its own title row and ×
- * (`SheetScreen`), since a form sheet has no navigation bar on Android.
+ * How the root stack presents a sheet route (the glossary term,
+ * `glossary/[slug]`): a sheet as tall as its content with a grabber, dragged
+ * down to dismiss — the system sheet on iOS (`UISheetPresentationController`)
+ * and a Material bottom sheet on Android. The sheet draws its own title row
+ * and ×, since a form sheet has no navigation bar on Android.
+ *
+ * @description
+ * The height follows the content (`fitToContents`) rather than a fixed share
+ * of the screen: a term's definition runs from one line to a paragraph, and
+ * at a fixed 55% the short ones sat in half a screen of white. A fixed
+ * fraction also left the screen without a height to fill on iOS (it is laid
+ * out absolutely, without a bottom edge), so a `flex: 1` body collapsed and
+ * the definition was drawn over the title. The corner radius is the OS's, so
+ * the sheet matches the system's own on each iOS version.
  */
 export const SHEET_SCREEN_OPTIONS: NativeStackNavigationOptions = {
   presentation: "formSheet",
-  sheetAllowedDetents: [0.55, 1],
+  sheetAllowedDetents: "fitToContents",
   sheetGrabberVisible: true,
-  sheetCornerRadius: 20,
   headerShown: false,
 };

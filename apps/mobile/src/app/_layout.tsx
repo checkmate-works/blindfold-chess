@@ -64,9 +64,9 @@ function RootLayoutContent() {
  * - `(account)` — mypage, settings, sign-in, sign-up, username setup and
  *   the user's records: a stack inside one card-style modal, closed from its
  *   header.
- * - `glossary/[slug]` — a half-height sheet (`formSheet` with a grabber,
- *   expandable to full height): a term is read and dismissed without losing
- *   one's place, and can be opened from anywhere.
+ * - `glossary/[slug]` — a sheet as tall as the term (`formSheet` with a
+ *   grabber, sized to its content): a term is read and dismissed without
+ *   losing one's place, and can be opened from anywhere.
  */
 function RootStack({ isDark }: { isDark: boolean }) {
   const { t } = useTranslation();
