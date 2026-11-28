@@ -169,7 +169,8 @@
     "timeUp": "Tempo esgotado",
     "correct": "Correto",
     "incorrect": "Incorreto",
-    "levelUp": "Subiu de nível!"
+    "levelUp": "Subiu de nível!",
+    "backToGame": "Voltar à partida"
   },
   "onboarding": {
     "skip": "Pular",
@@ -455,7 +456,9 @@
       },
       "gameMenu": "Menu da partida",
       "undoHint": "Desfaz seu último lance e a resposta da IA",
-      "resignHint": "Admite a derrota e encerra a partida"
+      "resignHint": "Admite a derrota e encerra a partida",
+      "positionCheck": "Recriar esta posição",
+      "startRecall": "De memória"
     },
     "result": {
       "title": "Fim da partida",
@@ -618,7 +621,8 @@
       "clearBoardConfirmTitle": "Limpar o tabuleiro?",
       "clearBoardConfirmMessage": "Todas as peças que você colocou serão removidas.",
       "clearBoardConfirmYes": "Limpar",
-      "clearBoardConfirmNo": "Cancelar"
+      "clearBoardConfirmNo": "Cancelar",
+      "loadStartPosition": "Posição inicial"
     },
     "problemResult": {
       "accuracy": "Precisão",

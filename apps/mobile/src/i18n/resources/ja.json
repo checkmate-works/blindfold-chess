@@ -169,7 +169,8 @@
     "timeUp": "時間切れ",
     "correct": "正解",
     "incorrect": "不正解",
-    "levelUp": "レベルアップ！"
+    "levelUp": "レベルアップ！",
+    "backToGame": "対局に戻る"
   },
   "onboarding": {
     "skip": "スキップ",
@@ -455,7 +456,9 @@
       },
       "gameMenu": "対局メニュー",
       "undoHint": "あなたの直前の手とAIの応手を取り消します",
-      "resignHint": "負けを認めて対局を終えます"
+      "resignHint": "負けを認めて対局を終えます",
+      "positionCheck": "このポジションを再現",
+      "startRecall": "棋譜再現"
     },
     "result": {
       "title": "ゲーム終了",
@@ -618,7 +621,8 @@
       "clearBoardConfirmTitle": "盤面をクリアしますか？",
       "clearBoardConfirmMessage": "配置したすべての駒が取り除かれます。",
       "clearBoardConfirmYes": "クリア",
-      "clearBoardConfirmNo": "キャンセル"
+      "clearBoardConfirmNo": "キャンセル",
+      "loadStartPosition": "開始局面"
     },
     "problemResult": {
       "accuracy": "正解率",
