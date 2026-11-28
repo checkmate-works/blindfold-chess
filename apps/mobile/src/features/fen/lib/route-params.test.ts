@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { summarizeFenSession } from "@blindfold-chess/features/fen-practice";
 
 import {
+  gamePositionCheckSessionParams,
   parseFenResultParams,
   parseFenSessionParams,
   serializeFenResultParams,
@@ -123,5 +124,27 @@ describe("FEN result params", () => {
       problems: 0,
       results: [],
     });
+  });
+});
+
+describe("gamePositionCheckSessionParams", () => {
+  it("plays the game's position once, straight to recreation, back to the game", () => {
+    const params = gamePositionCheckSessionParams({ fen: B, startFen: A });
+    expect(params).toMatchObject({
+      from: "game",
+      skipMemorize: "1",
+      start: A,
+    });
+    expect(parseFenSessionParams(params)).toEqual({
+      fens: [B],
+      problemCount: 1,
+      shuffle: false,
+    });
+  });
+
+  it("leaves the starting position out when it is unknown", () => {
+    expect(gamePositionCheckSessionParams({ fen: B })).not.toHaveProperty(
+      "start",
+    );
   });
 });

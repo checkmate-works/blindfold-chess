@@ -41,15 +41,24 @@ export function FenDisplay({ fen }: { fen: string }) {
  * `p-2 rounded-md text-sm` style. The web's FEN drill has only the flip;
  * the app keeps the clear it always had there too, so both drills offer
  * the same tools.
+ *
+ * With `onLoadStart` (position memory opened from an AI game, whose start
+ * position is known) a "Starting position" tool comes first: it fills the
+ * empty board with the game's start, so the player rebuilds the position by
+ * moving pieces from it rather than placing all of them. It is on only while
+ * the board is empty, so it never overwrites pieces already placed, as on the
+ * web.
  */
 export function BoardTools({
   boardEmpty,
   onClear,
   onFlip,
+  onLoadStart,
 }: {
   boardEmpty: boolean;
   onClear: () => void;
   onFlip: () => void;
+  onLoadStart?: () => void;
 }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
@@ -70,6 +79,23 @@ export function BoardTools({
 
   return (
     <View style={styles.tools}>
+      {onLoadStart && (
+        <ToolButton
+          onPress={onLoadStart}
+          disabled={!boardEmpty}
+          accessibilityLabel={t("fen.session.loadStartPosition")}
+          testID="load-start-position"
+        >
+          <MaterialCommunityIcons
+            name="chess-pawn"
+            size={16}
+            color={colors.mutedForeground}
+          />
+          <Text style={[styles.toolText, { color: colors.mutedForeground }]}>
+            {t("fen.session.loadStartPosition")}
+          </Text>
+        </ToolButton>
+      )}
       <ToolButton
         onPress={confirmClear}
         disabled={boardEmpty}

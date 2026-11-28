@@ -5,6 +5,7 @@ import type {
 } from "@blindfold-chess/features/fen-practice";
 
 import { parseIntParam } from "../../../lib/route-params";
+import { FROM_GAME } from "../../../navigation/from-game";
 
 /** Search params the setup screen hands the session screen. */
 export type FenSessionParams = {
@@ -52,6 +53,36 @@ export function guideProblemSessionParams(
     ...serializeFenSessionParams({ fens, problemCount: 1, shuffle: false }),
     from: FROM_GUIDE,
     ...(seconds ? { seconds } : {}),
+  };
+}
+
+/**
+ * The position-memory session params for an AI game's position check (the
+ * web's mid-game "Recreate this position"): the game's current position as
+ * the one problem, recreated straight away (`skipMemorize`: the memorising
+ * happened during play), with the game's starting position offered on the
+ * empty board (`start`), marked `from=game` so the session and its result
+ * lead back to the game. The result's "Play again" reopens it with the same.
+ */
+export function gamePositionCheckSessionParams({
+  fen,
+  startFen,
+}: {
+  fen: string;
+  /** Left out when unknown (a result reopened without it). */
+  startFen?: string;
+}): Partial<
+  Record<keyof FenSessionParams | "from" | "skipMemorize" | "start", string>
+> {
+  return {
+    ...serializeFenSessionParams({
+      fens: [fen],
+      problemCount: 1,
+      shuffle: false,
+    }),
+    from: FROM_GAME,
+    skipMemorize: "1",
+    ...(startFen ? { start: startFen } : {}),
   };
 }
 
