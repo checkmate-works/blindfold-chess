@@ -1,7 +1,7 @@
 import type { Href } from "expo-router";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
-import { PracticeResultScreen } from "../../../../components";
+import { PracticeResultScreen, type ResultExits } from "../../../../components";
 import { ExamVerdictCard } from "../../../../features/dojo/ExamVerdictCard";
 import {
   examProblemOf,
@@ -10,8 +10,9 @@ import {
 import { SessionResult } from "../../../../features/fen/components";
 import {
   parseFenResultParams,
+  FROM_GUIDE,
+  guideProblemSessionParams,
   parseFenSessionParams,
-  serializeFenSessionParams,
   type FenResultParams,
 } from "../../../../features/fen/lib/route-params";
 
@@ -34,31 +35,28 @@ export default function PositionMemoryResult() {
   const problem = examProblemOf(params.exam, "position_memory");
   // A skipped problem has no recreation; the empty answer grades as a fail.
   const recreatedFen = result.results[0]?.recreatedFen ?? "";
-  const guideProblems = !exam && params.from === "guide" && params.problems;
-  const backToGuide = guideProblems
-    ? {
-        onPlayAgain: () =>
-          router.replace({
-            pathname: "/practice/position-memory/session",
-            params: {
-              ...serializeFenSessionParams({
-                fens: parseFenSessionParams({ problems: guideProblems }).fens,
-                problemCount: 1,
-                shuffle: false,
-              }),
-              from: "guide",
-            },
-          }),
-      }
-    : undefined;
+  const guideProblems = !exam && params.from === FROM_GUIDE && params.problems;
+  const exits: ResultExits = exam
+    ? { kind: "exam" }
+    : guideProblems
+      ? {
+          kind: "guide",
+          onPlayAgain: () =>
+            router.replace({
+              pathname: "/practice/position-memory/session",
+              params: guideProblemSessionParams(
+                parseFenSessionParams({ problems: guideProblems }).fens,
+              ),
+            }),
+        }
+      : { kind: "menu" };
 
   return (
     <PracticeResultScreen
       setupHref={
         exam ? (`/dojo/exams/${exam}` as Href) : "/practice/position-memory"
       }
-      backToGuide={backToGuide}
-      hideBackToMenu={Boolean(exam)}
+      exits={exits}
     >
       {exam && problem && (
         <ExamVerdictCard

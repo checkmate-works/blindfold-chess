@@ -6,7 +6,7 @@ import {
 import { validateFen } from "@blindfold-chess/features/chess-core";
 import { validateFenFormat } from "@blindfold-chess/features/chess-core/fen";
 
-import { serializeFenSessionParams } from "../fen/lib/route-params";
+import { guideProblemSessionParams } from "../fen/lib/route-params";
 import {
   MOBILE_PRACTICE_MODULES,
   practiceModuleRoute,
@@ -218,14 +218,7 @@ export function guideLinkTarget(path: string): GuideLinkTarget {
  * is not underneath the session.
  */
 function guidePositionMemoryHref(fen: string): string {
-  const params = new URLSearchParams({
-    ...serializeFenSessionParams({
-      fens: [fen],
-      problemCount: 1,
-      shuffle: false,
-    }),
-    from: "guide",
-  });
+  const params = new URLSearchParams(guideProblemSessionParams([fen]));
   return `/practice/position-memory/session?${params.toString()}`;
 }
 
