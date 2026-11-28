@@ -1008,17 +1008,47 @@
   },
   "records": {
     "title": "マイレコード",
-    "period": "期間",
+    "menu": "チャレンジ",
     "periods": {
-      "all-time": "全期間",
-      "weekly": "今週",
-      "monthly": "今月"
+      "thisWeek": "今週",
+      "lastWeek": "先週",
+      "thisMonth": "今月",
+      "lastMonth": "先月",
+      "twoWeeksAgo": "2週間前",
+      "twoMonthsAgo": "2ヶ月前"
     },
-    "rank": "{{rank}}位",
-    "empty": "まだ記録されたチャレンジはありません。",
+    "comparison": {
+      "vsLastWeek": "先週比",
+      "vs2WeeksAgo": "2週間前比",
+      "vsLastMonth": "先月比",
+      "vs2MonthsAgo": "2ヶ月前比"
+    },
+    "filters": {
+      "boardOrientation": "ボード方向",
+      "piece": "駒"
+    },
+    "bestScore": "最高スコア",
+    "avgScore": "平均スコア",
+    "scoreTrend": "スコア推移",
+    "chartLabel": "{{current}}と{{previous}}の日ごとの平均スコア",
+    "sessionHistory": "セッション履歴",
+    "sessionRow": "正答 {{correct}} · ミス {{incorrect}}",
+    "columns": {
+      "correct": "正答数",
+      "miss": "ミス"
+    },
+    "viewAllResults": "結果をもっと見る",
+    "noData": "まだ記録がありません。",
+    "goToPractice": "練習する",
+    "takeChallenge": "チャレンジする",
     "loading": "読み込み中…",
     "loadFailed": "記録を読み込めませんでした。引っ張って再読み込みしてください。",
-    "note": "各チャレンジのランキングでのあなたの順位です。ランキング全体はWebサイトで見られます。",
+    "results": {
+      "title": "結果一覧",
+      "empty": "結果が見つかりません。",
+      "allMenus": "すべてのメニュー",
+      "end": "これ以上の結果はありません。"
+    },
     "keys": {
       "white": "白",
       "black": "黒",
@@ -1030,6 +1060,18 @@
       "knight": "ナイト",
       "pawn": "ポーン"
     }
+  },
+  "ownRanks": {
+    "title": "あなたのランキング",
+    "period": "期間",
+    "periods": {
+      "all-time": "全期間",
+      "weekly": "今週",
+      "monthly": "今月"
+    },
+    "rank": "{{rank}}位",
+    "empty": "まだ記録されたチャレンジはありません。",
+    "note": "各チャレンジのランキングでのあなたの順位です。ランキング全体はWebサイトで見られます。"
   },
   "challenge": {
     "startFailed": "記録付きのチャレンジを開始できませんでした。通信状況を確認してもう一度お試しください。",

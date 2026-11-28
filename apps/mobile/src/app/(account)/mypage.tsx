@@ -32,8 +32,9 @@ const PREVIEW_STATS: AccountStatsInput = {
  *
  * @description
  * - A player with an account and a username sees the heading — username,
- *   email, then dojo rank, level and EXP (`AccountStats`) — and a row into
- *   their own leaderboard ranks (records).
+ *   email, then dojo rank, level and EXP (`AccountStats`) — and rows into
+ *   My Records (the web mypage's link of that name) and their own
+ *   leaderboard ranks (the web home's "Your Rankings").
  * - A guest, or a player who has not chosen a username yet, sees the same
  *   sign-up card as the home tab (`RecordCtaCard`, worded for mypage) with a
  *   faded sample of the heading under it: what would be listed here is
@@ -49,7 +50,8 @@ const PREVIEW_STATS: AccountStatsInput = {
  * apps/mobile/CLAUDE.md), so the app takes only the username.
  *
  * @flow
- * 1. The records row opens the user's ranks per challenge
+ * 1. The records row opens My Records; the ranks row the user's rank per
+ *    challenge
  * 2. A guest signs up or signs in from the card; a player without a username
  *    goes on to choose one
  * 3. The settings row opens settings
@@ -122,6 +124,12 @@ function MypageBody() {
           title={t("records.title")}
           onPress={() => router.push("/records")}
           testID="mypage-records"
+        />
+        <ListRow
+          leading={<ListIcon ionicon="podium-outline" />}
+          title={t("ownRanks.title")}
+          onPress={() => router.push("/ranks")}
+          testID="mypage-ranks"
         />
       </ListSection>
     </>

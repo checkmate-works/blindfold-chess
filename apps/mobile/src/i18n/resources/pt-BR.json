@@ -1008,17 +1008,47 @@
   },
   "records": {
     "title": "Meus recordes",
-    "period": "Período",
+    "menu": "Desafio",
     "periods": {
-      "all-time": "Todo o período",
-      "weekly": "Esta semana",
-      "monthly": "Este mês"
+      "thisWeek": "Esta Semana",
+      "lastWeek": "Semana Passada",
+      "thisMonth": "Este Mês",
+      "lastMonth": "Mês Passado",
+      "twoWeeksAgo": "Há 2 Semanas",
+      "twoMonthsAgo": "Há 2 Meses"
     },
-    "rank": "#{{rank}}",
-    "empty": "Ainda não há desafios registrados.",
+    "comparison": {
+      "vsLastWeek": "vs semana passada",
+      "vs2WeeksAgo": "vs há 2 semanas",
+      "vsLastMonth": "vs mês passado",
+      "vs2MonthsAgo": "vs há 2 meses"
+    },
+    "filters": {
+      "boardOrientation": "Orientação do Tabuleiro",
+      "piece": "Peça"
+    },
+    "bestScore": "Melhor Pontuação",
+    "avgScore": "Pontuação Méd.",
+    "scoreTrend": "Tendência de Pontuação",
+    "chartLabel": "Pontuação média diária: {{current}} e {{previous}}",
+    "sessionHistory": "Histórico de Sessões",
+    "sessionRow": "Corretas {{correct}} · Erros {{incorrect}}",
+    "columns": {
+      "correct": "Corretas",
+      "miss": "Erros"
+    },
+    "viewAllResults": "Mais resultados",
+    "noData": "Ainda não há registros.",
+    "goToPractice": "Praticar",
+    "takeChallenge": "Fazer o desafio",
     "loading": "Carregando…",
     "loadFailed": "Não foi possível carregar seus recordes. Puxe para tentar de novo.",
-    "note": "Sua posição em cada ranking de desafios. Os rankings completos estão no site.",
+    "results": {
+      "title": "Resultados",
+      "empty": "Nenhum resultado encontrado.",
+      "allMenus": "Todos os Tipos de Menu",
+      "end": "Não há mais resultados."
+    },
     "keys": {
       "white": "Brancas",
       "black": "Pretas",
@@ -1030,6 +1060,18 @@
       "knight": "Cavalo",
       "pawn": "Peão"
     }
+  },
+  "ownRanks": {
+    "title": "Seus Rankings",
+    "period": "Período",
+    "periods": {
+      "all-time": "Todo o período",
+      "weekly": "Esta semana",
+      "monthly": "Este mês"
+    },
+    "rank": "#{{rank}}",
+    "empty": "Ainda não há desafios registrados.",
+    "note": "Sua posição em cada ranking de desafios. Os rankings completos estão no site."
   },
   "challenge": {
     "startFailed": "Não foi possível iniciar um desafio registrado. Verifique sua conexão e tente novamente.",

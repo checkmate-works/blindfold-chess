@@ -1008,17 +1008,47 @@
   },
   "records": {
     "title": "Mis récords",
-    "period": "Periodo",
+    "menu": "Desafío",
     "periods": {
-      "all-time": "Histórico",
-      "weekly": "Esta semana",
-      "monthly": "Este mes"
+      "thisWeek": "Esta Semana",
+      "lastWeek": "Semana Pasada",
+      "thisMonth": "Este Mes",
+      "lastMonth": "Mes Pasado",
+      "twoWeeksAgo": "Hace 2 Semanas",
+      "twoMonthsAgo": "Hace 2 Meses"
     },
-    "rank": "#{{rank}}",
-    "empty": "Aún no hay desafíos registrados.",
+    "comparison": {
+      "vsLastWeek": "vs semana pasada",
+      "vs2WeeksAgo": "vs hace 2 semanas",
+      "vsLastMonth": "vs mes pasado",
+      "vs2MonthsAgo": "vs hace 2 meses"
+    },
+    "filters": {
+      "boardOrientation": "Orientación del Tablero",
+      "piece": "Pieza"
+    },
+    "bestScore": "Mejor Puntuación",
+    "avgScore": "Puntuación Prom.",
+    "scoreTrend": "Tendencia de Puntuación",
+    "chartLabel": "Puntuación media diaria: {{current}} y {{previous}}",
+    "sessionHistory": "Historial de Sesiones",
+    "sessionRow": "Correctas {{correct}} · Errores {{incorrect}}",
+    "columns": {
+      "correct": "Correctas",
+      "miss": "Errores"
+    },
+    "viewAllResults": "Más resultados",
+    "noData": "Aún no hay registros.",
+    "goToPractice": "Practicar",
+    "takeChallenge": "Hacer el desafío",
     "loading": "Cargando…",
     "loadFailed": "No se pudieron cargar tus récords. Desliza para reintentar.",
-    "note": "Tu posición en cada clasificación de desafíos. Las clasificaciones completas están en el sitio web.",
+    "results": {
+      "title": "Resultados",
+      "empty": "No se encontraron resultados.",
+      "allMenus": "Todos los Tipos de Menú",
+      "end": "No hay más resultados."
+    },
     "keys": {
       "white": "Blancas",
       "black": "Negras",
@@ -1030,6 +1060,18 @@
       "knight": "Caballo",
       "pawn": "Peón"
     }
+  },
+  "ownRanks": {
+    "title": "Tus Clasificaciones",
+    "period": "Periodo",
+    "periods": {
+      "all-time": "Histórico",
+      "weekly": "Esta semana",
+      "monthly": "Este mes"
+    },
+    "rank": "#{{rank}}",
+    "empty": "Aún no hay desafíos registrados.",
+    "note": "Tu posición en cada clasificación de desafíos. Las clasificaciones completas están en el sitio web."
   },
   "challenge": {
     "startFailed": "No se pudo iniciar un desafío registrado. Revisa tu conexión e inténtalo de nuevo.",

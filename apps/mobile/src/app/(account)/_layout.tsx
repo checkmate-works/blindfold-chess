@@ -13,7 +13,8 @@ type ScreenOptionsFn = Extract<
 
 /**
  * The account modal: mypage, settings, the account offer after onboarding
- * (`welcome`), sign-in, sign-up, username setup and the user's records, as a
+ * (`welcome`), sign-in, sign-up, username setup, the user's records (My
+ * Records, its full results list) and their leaderboard ranks, as a
  * stack inside one modal (the root stack presents `(account)` as `modal`,
  * the iOS card sheet). Screens inside it push onto this stack without
  * closing the modal.
@@ -54,6 +55,11 @@ export default function AccountLayout() {
         options={titled(t("account.setupUsername.title"))}
       />
       <Stack.Screen name="records" options={titled(t("records.title"))} />
+      <Stack.Screen
+        name="records-results"
+        options={titled(t("records.results.title"))}
+      />
+      <Stack.Screen name="ranks" options={titled(t("ownRanks.title"))} />
     </Stack>
   );
 }
