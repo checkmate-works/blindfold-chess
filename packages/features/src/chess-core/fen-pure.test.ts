@@ -334,4 +334,24 @@ describe("validateFenFormat", () => {
     // Eight squares without the stray character.
     expect(validateFenFormat("8/8/8/8/8/8/8/K7X w")).toBe(false);
   });
+
+  it("accepts consecutive empty-square digits that sum to eight", () => {
+    expect(validateFenFormat("8/8/8/8/8/8/8/17 w")).toBe(true);
+    expect(validateFenFormat("8/8/8/8/8/8/8/44 w")).toBe(true);
+    expect(validateFenFormat("8/8/8/8/8/8/8/K16 w")).toBe(true);
+  });
+
+  // Fields are split on single spaces, so a doubled space leaves an empty
+  // turn field and a tab glues the turn onto the last rank.
+  it("rejects a turn separated by anything but a single space", () => {
+    expect(validateFenFormat(`${BOARD}  w`)).toBe(false);
+    expect(validateFenFormat(`${BOARD}\tw`)).toBe(false);
+  });
+
+  it("does not look past the turn field", () => {
+    expect(validateFenFormat(`${BOARD} w KQkq - 0`)).toBe(true);
+    expect(validateFenFormat(`${BOARD} w KQkq - 0 1 extra`)).toBe(true);
+    expect(validateFenFormat(`${BOARD} w garbage`)).toBe(true);
+    expect(validateFenFormat(`${BOARD} w KQkq -  0 1`)).toBe(true);
+  });
 });
