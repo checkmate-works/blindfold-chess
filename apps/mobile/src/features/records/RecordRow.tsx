@@ -88,18 +88,20 @@ export function RecordColumnsHeader() {
       importantForAccessibility="no-hide-descendants"
     >
       <Text
+        numberOfLines={1}
         style={[
-          styles.headerText,
           styles.score,
+          styles.headerText,
           { color: colors.mutedForeground },
         ]}
       >
         {correct}
       </Text>
       <Text
+        numberOfLines={1}
         style={[
-          styles.headerText,
           styles.miss,
+          styles.headerText,
           { color: colors.mutedForeground },
         ]}
       >
@@ -135,6 +137,7 @@ const styles = StyleSheet.create({
     paddingTop: spacing.sm,
     paddingBottom: spacing.xs,
   },
+  /** Last in the header's styles, so its size wins over the columns'. */
   headerText: {
     fontSize: fontSize.xs,
     fontWeight: fontWeight.medium,
