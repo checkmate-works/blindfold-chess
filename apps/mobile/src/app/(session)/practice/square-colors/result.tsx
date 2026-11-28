@@ -17,10 +17,7 @@ export default function SquareColorsResult() {
   return (
     <PracticeResultScreen setupHref="/practice/square-colors">
       <PracticeStatsResultCard result={result} />
-      <ChallengeRecordStatus
-        attemptId={params.attemptId}
-        menu="square_colors"
-      />
+      <ChallengeRecordStatus attemptId={params.attemptId} />
     </PracticeResultScreen>
   );
 }

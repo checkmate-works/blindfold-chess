@@ -117,8 +117,37 @@ export async function beginChallenge<Q>(
   };
 }
 
+/**
+ * What the web's result page shows of a recorded run beyond its score: the
+ * EXP card and the "Your record" card. The server computes both (the badge
+ * rule and the history cut are its own), and the app draws them as given.
+ */
+export type ChallengeResultSummary = {
+  /** `null` when the run granted no EXP. */
+  exp: {
+    earnedExp: number;
+    level: number;
+    levelUp: boolean;
+    progressPercent: number;
+  } | null;
+  record: {
+    status: "first" | "new-best" | "none";
+    currentScore?: number;
+    previousBestScore?: number;
+    previousLastScore?: number;
+    diffFromLast?: number;
+  };
+  /** The registry menu (`square_colors`, …), for the link into My Records. */
+  menuType: string;
+};
+
 export type FinishResult =
-  | { kind: "recorded"; grantedRanks: { slug: string }[] }
+  | {
+      kind: "recorded";
+      grantedRanks: { slug: string }[];
+      /** `null` when the server could not read it; the run is recorded. */
+      summary: ChallengeResultSummary | null;
+    }
   | { kind: "notRecorded" }
   | { kind: "failed" };
 
@@ -130,7 +159,12 @@ const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 type FinishBody =
   | { status: "pending"; remainingMs: number }
-  | { status: "done"; success: true; grantedRanks: { slug: string }[] }
+  | {
+      status: "done";
+      success: true;
+      grantedRanks: { slug: string }[];
+      summary: ChallengeResultSummary | null;
+    }
   | { status: "done"; success: false };
 
 /** The finish body, or undefined when it is not one this client can act on. */
@@ -152,7 +186,39 @@ function readFinishBody(v: unknown): FinishBody | undefined {
       (r: unknown): r is { slug: string } =>
         isRecord(r) && typeof r.slug === "string",
     ),
+    summary: readSummary(v.summary),
   };
+}
+
+const isOptionalNumber = (v: unknown) =>
+  v === undefined || typeof v === "number";
+
+/**
+ * The finish body's `summary`, or `null` when it is missing or not one this
+ * client can draw — the record is already saved, so an unreadable summary
+ * only leaves its two cards out.
+ */
+export function readSummary(v: unknown): ChallengeResultSummary | null {
+  if (!isRecord(v) || typeof v.menuType !== "string") return null;
+  const { exp, record } = v;
+  const expOk =
+    exp === null ||
+    (isRecord(exp) &&
+      typeof exp.earnedExp === "number" &&
+      typeof exp.level === "number" &&
+      typeof exp.levelUp === "boolean" &&
+      typeof exp.progressPercent === "number");
+  const recordOk =
+    isRecord(record) &&
+    (record.status === "first" ||
+      record.status === "new-best" ||
+      record.status === "none") &&
+    isOptionalNumber(record.currentScore) &&
+    isOptionalNumber(record.previousBestScore) &&
+    isOptionalNumber(record.previousLastScore) &&
+    isOptionalNumber(record.diffFromLast);
+  if (!expOk || !recordOk) return null;
+  return v as ChallengeResultSummary;
 }
 
 /**
@@ -193,7 +259,11 @@ export async function finishChallenge(
       continue;
     }
     if (body.success)
-      return { kind: "recorded", grantedRanks: body.grantedRanks };
+      return {
+        kind: "recorded",
+        grantedRanks: body.grantedRanks,
+        summary: body.summary,
+      };
     return { kind: "notRecorded" };
   }
 }

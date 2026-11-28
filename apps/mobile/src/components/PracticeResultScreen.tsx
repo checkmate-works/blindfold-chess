@@ -1,11 +1,14 @@
 import { Screen } from "./Screen";
+import { useCallback, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
-import { StyleSheet, ScrollView } from "react-native";
+import { StyleSheet, ScrollView, View } from "react-native";
+import type { ScrollViewInstance, ViewInstance } from "react-native";
 import type { Href } from "expo-router";
 import { useTranslation } from "react-i18next";
 
 import { BottomBar } from "./BottomBar";
 import { ModeButtonRow } from "./ModeButtonRow";
+import { ResultMistakesContext, type ResultMistakes } from "./result-mistakes";
 import { useCloseSession } from "../navigation/use-close-session";
 import { spacing } from "../theme";
 
@@ -30,6 +33,10 @@ type PracticeResultScreenProps = {
  * The labels and where each button goes are owned here, not by the
  * modules, so every result screen reads and behaves the same and a change
  * to either is made once.
+ *
+ * The screen also holds the hand-off between the score's "Incorrect" count
+ * and a problem list (`ResultMistakesContext`), since it owns the scroll
+ * both sit in.
  */
 export function PracticeResultScreen({
   setupHref,
@@ -37,11 +44,20 @@ export function PracticeResultScreen({
 }: PracticeResultScreenProps) {
   const { t } = useTranslation();
   const { close, closeToMenu } = useCloseSession(setupHref);
+  const mistakes = useResultMistakesHandOff();
 
   return (
     <Screen edges={[]}>
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-        {children}
+      <ScrollView
+        ref={mistakes.scrollRef}
+        style={styles.scroll}
+        contentContainerStyle={styles.content}
+      >
+        <ResultMistakesContext.Provider value={mistakes.value}>
+          <View ref={mistakes.contentRef} collapsable={false}>
+            {children}
+          </View>
+        </ResultMistakesContext.Provider>
       </ScrollView>
 
       <BottomBar>
@@ -62,6 +78,44 @@ export function PracticeResultScreen({
       </BottomBar>
     </Screen>
   );
+}
+
+/** The gap left above a view scrolled to the top: the content's padding. */
+const SCROLL_TO_MARGIN = spacing.lg;
+
+/**
+ * One registered "open the missed problems" handler, and a scroll that puts
+ * a view inside the result at the top of the screen.
+ */
+function useResultMistakesHandOff() {
+  const scrollRef = useRef<ScrollViewInstance>(null);
+  const contentRef = useRef<ViewInstance>(null);
+  const [handler, setHandler] = useState<(() => void) | undefined>(undefined);
+
+  const register = useCallback((next: () => void) => {
+    setHandler(() => next);
+    return () =>
+      setHandler((current) => (current === next ? undefined : current));
+  }, []);
+
+  const scrollTo = useCallback((view: ViewInstance | null) => {
+    const content = contentRef.current;
+    if (!view || !content) return;
+    view.measureLayout(content, (_x, y) => {
+      // `y` is from the top of the content wrapper, which sits under the
+      // scroll content's padding.
+      scrollRef.current?.scrollTo({
+        y: Math.max(y + spacing.lg - SCROLL_TO_MARGIN, 0),
+        animated: true,
+      });
+    });
+  }, []);
+
+  const value = useMemo<ResultMistakes>(
+    () => ({ reveal: handler, register, scrollTo }),
+    [handler, register, scrollTo],
+  );
+  return { scrollRef, contentRef, value };
 }
 
 const styles = StyleSheet.create({

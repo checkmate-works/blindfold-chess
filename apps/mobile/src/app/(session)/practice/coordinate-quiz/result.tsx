@@ -28,10 +28,7 @@ export default function CoordinateQuizResult() {
           value: String(points),
         }}
       />
-      <ChallengeRecordStatus
-        attemptId={params.attemptId}
-        menu="coordinate_quiz"
-      />
+      <ChallengeRecordStatus attemptId={params.attemptId} />
     </PracticeResultScreen>
   );
 }

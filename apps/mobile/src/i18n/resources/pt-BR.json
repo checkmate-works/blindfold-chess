@@ -162,7 +162,10 @@
     "backToMenu": "Voltar ao menu",
     "problemDetails": "Detalhes do problema",
     "skipped": "Pulado",
-    "timeUp": "Tempo esgotado"
+    "timeUp": "Tempo esgotado",
+    "correct": "Correto",
+    "incorrect": "Incorreto",
+    "levelUp": "Subiu de nível!"
   },
   "onboarding": {
     "skip": "Pular",
@@ -1087,7 +1090,16 @@
     "rules": "60 segundos · termina após 3 erros",
     "willRecord": "Sua pontuação será registrada no ranking.",
     "promoted": "Você foi promovido a {{rank}}!",
-    "viewMyRecords": "Ver seu progresso em Meus recordes"
+    "recordCard": {
+      "thisTime": "Desta vez",
+      "title": "Seu registro",
+      "previousBest": "Melhor anterior",
+      "previousLast": "Última vez",
+      "scoreValue": "{{score}} corretas",
+      "newBest": "Novo recorde pessoal!",
+      "firstRecord": "Primeiro registro",
+      "viewMyRecords": "Ver seu progresso em Meus Registros"
+    }
   },
   "progress": {
     "rank": "Graduação",

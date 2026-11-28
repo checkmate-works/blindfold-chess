@@ -162,7 +162,10 @@
     "backToMenu": "メニューに戻る",
     "problemDetails": "問題ごとの詳細",
     "skipped": "スキップ",
-    "timeUp": "時間切れ"
+    "timeUp": "時間切れ",
+    "correct": "正解",
+    "incorrect": "不正解",
+    "levelUp": "レベルアップ！"
   },
   "onboarding": {
     "skip": "スキップ",
@@ -1087,7 +1090,16 @@
     "rules": "制限時間60秒・ミス3回で終了",
     "willRecord": "スコアはランキングに記録されます。",
     "promoted": "{{rank}}に昇級しました！",
-    "viewMyRecords": "マイレコードで推移を見る"
+    "recordCard": {
+      "thisTime": "今回",
+      "title": "あなたの記録",
+      "previousBest": "これまでのベスト",
+      "previousLast": "前回",
+      "scoreValue": "{{score}} 問",
+      "newBest": "自己ベスト更新！",
+      "firstRecord": "初めての記録",
+      "viewMyRecords": "マイレコードで推移を見る"
+    }
   },
   "progress": {
     "rank": "段級位",
