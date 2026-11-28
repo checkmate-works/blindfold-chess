@@ -43,6 +43,7 @@ import {
   saveGame,
 } from "../../../../features/game-history/game-history";
 import { postSavedGameNotice } from "../../../../features/game-history/saved-game-notice";
+import { differsFromStart } from "../../../../features/game-history/session-changes";
 import { useCloseSession } from "../../../../navigation/use-close-session";
 import {
   GamePreferencesOverride,
@@ -270,14 +271,30 @@ function AiGameBoard({ setup }: { setup: GameSetup }) {
   // The game is written to the device after every move, so leaving the
   // screen (or losing the app) never loses it: the history lists it as in
   // progress and opens it again here. A game with no move yet is not worth a
-  // row, so saving starts with the first one.
+  // row, so saving starts with the first one; a resumed game is already on
+  // the device, so it is written again only once it changes
+  // (`differsFromStart`). Once written, it is written on every change, even
+  // back to where it started.
   const perGamePrefs = useMemo(
     () => pickPerGamePreferences(preferences),
     [preferences],
   );
-  const hasBeenSaved = useRef(start.moves.length > 0);
+  const [startPrefsKey] = useState(() => JSON.stringify(perGamePrefs));
+  const hasBeenSaved = useRef(false);
   useEffect(() => {
-    if (game.moves.length === 0 && !hasBeenSaved.current) return;
+    if (
+      !hasBeenSaved.current &&
+      !differsFromStart(
+        { moves: start.moves, prefsKey: startPrefsKey },
+        {
+          moves: game.moves,
+          result: game.playerResult,
+          prefsKey: JSON.stringify(perGamePrefs),
+        },
+      )
+    ) {
+      return;
+    }
     hasBeenSaved.current = true;
     void saveGame({
       id: gameId,
@@ -299,22 +316,25 @@ function AiGameBoard({ setup }: { setup: GameSetup }) {
     playerColor,
     skillLevel,
     start.startingFen,
+    start.moves,
+    startPrefsKey,
   ]);
 
-  // Closing an unfinished game that has been saved tells the screen below
-  // so ("Game saved", with Resume). Posted as the session goes away rather
-  // than from the ×, so Android's back button, which also pops the modal,
-  // says it too. A game that ended goes on to its result instead, and one
-  // with no move was never saved.
-  const leftUnfinishedRef = useRef(false);
+  // Closing an unfinished game that this session saved tells the screen
+  // below so ("Game saved", with Resume). Posted as the session goes away
+  // rather than from the ×, so Android's back button, which also pops the
+  // modal, says it too. A game that ended goes on to its result instead, and
+  // one this session never wrote (a new game with no move, a resumed one
+  // left as it was opened) has nothing to announce.
+  const inProgressRef = useRef(true);
   useEffect(() => {
-    leftUnfinishedRef.current =
-      game.gameStatus === "in_progress" &&
-      (game.moves.length > 0 || hasBeenSaved.current);
-  }, [game.gameStatus, game.moves.length]);
+    inProgressRef.current = game.gameStatus === "in_progress";
+  }, [game.gameStatus]);
   useEffect(
     () => () => {
-      if (leftUnfinishedRef.current) postSavedGameNotice(gameId);
+      if (inProgressRef.current && hasBeenSaved.current) {
+        postSavedGameNotice(gameId);
+      }
     },
     [gameId],
   );
