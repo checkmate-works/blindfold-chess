@@ -47,9 +47,14 @@ replaced by the platform's own parts or their common app equivalents.
   Take the Challenge now pushes the setup and back returns to My Records
   (or, when that setup is right underneath, goes back to it instead of
   stacking a copy: `routeNameBelow`, `navigation/route-below.ts`). A link
-  from inside a modal to a pushed page closes the modal and then pushes
-  (a challenge result's "View My Records" closes the session onto its
-  setup first).
+  from inside a modal to a pushed page closes the modal and then pushes:
+  `useOpenRootScreen` (`navigation/use-open-root-screen.ts`) does it for
+  parts drawn both on root-stack screens and in the session modal (the
+  related-articles rows, a result's "View My Records"). A session's "play
+  again" lands on its setup even when the session was opened from
+  elsewhere (a resumed AI game: `useCloseSession`'s `closeOnto`), and a
+  first sign-in resets the account modal to username setup alone, so it
+  has the × and no way back into the sign-in screens.
 - `(session)` — timed sessions, results and training runs
   (`(session)/practice/<route>/{session,result,training}.tsx`,
   `(session)/play/ai-game/*`), presented as one `fullScreenModal`. A full
