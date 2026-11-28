@@ -229,12 +229,18 @@ for locale in LOCALES:
 
 # --- Puzzles: the web's `practice.puzzle` session / result / list texts, under
 # `puzzle.*`.
+#
+# `result.title` is not ported: it is the result screen's header, and every
+# practice module's result header in the app reads "Results" (`<module>.result.
+# title`). The web's "Puzzle Result" names the module because a web page title
+# stands alone in a tab; the app's header already sits over the puzzle.
 PUZZLE_KEYS = {
     "session": ["correct", "incorrect", "showAnswer",
                 "showBoard", "whitePlayed", "blackPlayed"],
-    "result": ["title", "replaySection", "historySection", "solution", "note",
+    "result": ["replaySection", "historySection", "solution", "note",
                "backToList", "tryAgain",
-               "peekCount", "statusSolved", "statusPartial", "statusRevealed"],
+               "peekCount", "statusSolved", "statusPartial", "statusRevealed",
+               "likeCta", "likedCta"],
     "list": ["title", "empty"],
     "detail": ["descriptionSection", "startSolving", "whitePiecesLabel",
                "blackPiecesLabel", "noPieces"],

@@ -76,6 +76,24 @@
       }
     }
   },
+  "authPrompt": {
+    "signIn": "ログイン",
+    "signedOut": {
+      "title": "ログインしていいね",
+      "message": "無料のアカウントを作ると、パズルやお知らせにいいねできます。記録や段級位も残ります。"
+    },
+    "username": {
+      "title": "ユーザー名を決めましょう",
+      "message": "ユーザー名を決めると登録が完了し、パズルやお知らせにいいねできるようになります。"
+    }
+  },
+  "likes": {
+    "like": "いいね",
+    "unlike": "いいねを取り消す",
+    "likeWithCount": "いいね、{{count}}件",
+    "unlikeWithCount": "いいねを取り消す、{{count}}件",
+    "failed": "いいねを更新できませんでした。もう一度お試しください。"
+  },
   "mypage": {
     "title": "マイページ",
     "loadFailed": "アカウントを読み込めませんでした。",
@@ -1201,7 +1219,9 @@
       "peekCount": "盤面確認: {{count}}回",
       "statusSolved": "全問正解",
       "statusRevealed": "解答表示",
-      "statusPartial": "{{correct}}/{{total}} 正解"
+      "statusPartial": "{{correct}}/{{total}} 正解",
+      "likeCta": "このパズルにいいね",
+      "likedCta": "いいね済み"
     },
     "list": {
       "title": "パズル",
@@ -1229,7 +1249,8 @@
     "white": "白",
     "black": "黒",
     "play": "再生",
-    "replay": "再生"
+    "replay": "再生",
+    "signInBenefit": "解いたパズルを記録して経験値を獲得できます。"
   },
   "dojo": {
     "currentRank": "現在の段級位",

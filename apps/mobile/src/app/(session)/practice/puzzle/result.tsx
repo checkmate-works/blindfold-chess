@@ -31,7 +31,9 @@ import type {
 
 import { BottomBar, Button, ListSection, Screen } from "../../../../components";
 import { useAuth } from "../../../../auth/use-auth";
+import { SignInRow } from "../../../../features/account/SignInRow";
 import { ExamVerdictCard } from "../../../../features/dojo/ExamVerdictCard";
+import { ResultLikeButton } from "../../../../features/likes/LikeButton";
 import {
   examProblemOf,
   examRankOf,
@@ -59,10 +61,12 @@ function parseJson<T>(value: string | undefined, fallback: T): T {
  * solution replayed on the board, then — when the player tried anything —
  * the attempt history with the solved / partly solved / revealed badge,
  * the board peek count, and whether a solved puzzle was recorded (a
- * signed-in player's free-play EXP, sent once). "Try Again" goes back to
- * the puzzle's page, as on the web; "Back to Puzzles" to the list. The
- * web's like, author, next puzzles, sign-up banner and Lichess analysis are
- * not ported.
+ * signed-in player's free-play EXP, sent once). A signed-out player gets the
+ * sign-in row in its place (the web's sign-up banner). Last comes the web's
+ * "Like this puzzle", right above the footer; signed out, it opens the
+ * sign-in prompt. "Try Again" goes back to the puzzle's page, as on the
+ * web; "Back to Puzzles" to the list. The web's author, next puzzles and
+ * Lichess analysis are not ported (the app shows no other user).
  *
  * A dojo exam run (`exam` param) leads with the verdict on the player's
  * moves (`ExamVerdictCard`), earns no free-play EXP (the exam records its
@@ -209,6 +213,23 @@ export default function PuzzleResult() {
             {t("puzzle.recorded")}
           </Text>
         )}
+
+        {!exam && auth.status === "signedOut" && (
+          <SignInRow
+            ionicon="extension-puzzle"
+            benefit={t("puzzle.signInBenefit")}
+            testID="puzzle-sign-in"
+          />
+        )}
+
+        {!exam && params.id ? (
+          <ResultLikeButton
+            target={{ kind: "puzzle", id: params.id }}
+            label={t("puzzle.result.likeCta")}
+            likedLabel={t("puzzle.result.likedCta")}
+            testID="puzzle-like"
+          />
+        ) : null}
       </ScrollView>
       <BottomBar style={styles.footer}>
         <Button

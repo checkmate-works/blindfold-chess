@@ -16,12 +16,14 @@ import {
   type Announcement,
 } from "../../features/announcements/announcements-api";
 import { MarkdownView } from "../../features/learn/MarkdownView";
+import { LikeToggle } from "../../features/likes/LikeButton";
 import { fontSize, fontWeight, spacing, useTheme } from "../../theme";
 
 /**
  * One announcement (the web's `/announcements/<slug>`): the title, the date
- * and the body, rendered natively like a learn article. Likes stay on the
- * web. The header shows the title the list passed while the body loads.
+ * and the body, rendered natively like a learn article, then the web's
+ * heart with the total (signed out, a press opens the sign-in prompt). The
+ * header shows the title the list passed while the body loads.
  */
 export default function AnnouncementScreen() {
   const { slug, title } = useLocalSearchParams<{
@@ -80,6 +82,16 @@ export default function AnnouncementScreen() {
             {formatAnnouncementDate(loaded.publishedAt, i18n.language)}
           </Text>
           <MarkdownView source={loaded.content} />
+          <View style={styles.like}>
+            <LikeToggle
+              target={{
+                kind: "announcement",
+                slug: loaded.slug,
+                locale: i18n.language,
+              }}
+              testID="announcement-like"
+            />
+          </View>
         </ScrollView>
       )}
     </Screen>
@@ -100,6 +112,9 @@ const styles = StyleSheet.create({
   title: {
     fontSize: fontSize.xxl,
     fontWeight: fontWeight.bold,
+  },
+  like: {
+    marginTop: spacing.lg,
   },
   date: {
     fontSize: fontSize.sm,
