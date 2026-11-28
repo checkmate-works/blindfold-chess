@@ -55,7 +55,7 @@ export function ExpGainCard({ exp }: { exp: Exp }) {
           <View
             style={[
               styles.fill,
-              { backgroundColor: colors.foreground, width: `${percent}%` },
+              { backgroundColor: colors.primary, width: `${percent}%` },
             ]}
           />
         </View>
@@ -64,10 +64,10 @@ export function ExpGainCard({ exp }: { exp: Exp }) {
         <View
           style={[
             styles.levelUp,
-            { backgroundColor: withAlpha(colors.success, 0.12) },
+            { backgroundColor: withAlpha(colors.primary, 0.1) },
           ]}
         >
-          <Text style={[styles.levelUpText, { color: colors.success }]}>
+          <Text style={[styles.levelUpText, { color: colors.primary }]}>
             {t("practiceResult.levelUp")}
           </Text>
         </View>
