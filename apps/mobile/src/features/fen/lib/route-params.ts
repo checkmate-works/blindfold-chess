@@ -41,13 +41,17 @@ export const FROM_GUIDE = "guide";
  * The session params for a guide's problem: just that problem, in order,
  * marked `from=guide`. The guide's link card opens the session with them,
  * and the result's "Play again" replays the problem with the same.
+ * `seconds` sets the memorization clock (position memory's `seconds` param);
+ * left out, the session uses its default.
  */
 export function guideProblemSessionParams(
   fens: readonly string[],
-): Record<keyof FenSessionParams | "from", string> {
+  seconds?: string,
+): Record<keyof FenSessionParams | "from", string> & { seconds?: string } {
   return {
     ...serializeFenSessionParams({ fens, problemCount: 1, shuffle: false }),
     from: FROM_GUIDE,
+    ...(seconds ? { seconds } : {}),
   };
 }
 

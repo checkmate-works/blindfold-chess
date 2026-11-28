@@ -353,12 +353,16 @@ Generated, not edited by hand; re-run the script after the web changes:
   `features/guides/visual-aids/renderers.tsx`, typed over the generated name
   union, so a component the web starts using fails the typecheck until it is
   drawn. A link card opens the app's screen when it has the page (a bundled
-  article, a practice's setup, another guide) and the web otherwise. Two
+  article, a practice's setup, another guide) and the web otherwise. Three
   web pages become the app's own flows (`guideLinkTarget`): an instant
   position-memory problem (`/practice/position-memory/custom/<Base64URL
 FEN>`) opens the session on that one problem over the guide with
   `from=guide`, whose result leads with "Back to guide" and replays the
-  problem in place (`PracticeResultScreen`'s `exits`); a game from a
+  problem in place (`PracticeResultScreen`'s `exits`). The web's
+  position-memory tutorial (`/practice/position-memory/tutorial`) is the
+  same kind of guide problem, the Lucena position
+  (`POSITION_MEMORY_TUTORIAL_FEN`) on the web tutorial's 60 s clock, which
+  the result's replay keeps. A game from a
   position (`/games/new/position?fen=`) opens the AI-game setup with `fen`,
   which shows the starting position, gives the player the side to move for
   this game only, and passes `startingFen` to the session. Only

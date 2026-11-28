@@ -18,6 +18,10 @@ import type { FlatGuide, GuideLocaleContent, GuideParagraph } from "./types";
 
 type GuideLocale = keyof typeof GUIDE_CONTENT;
 
+/** The web tutorial's position (its `PositionMemoryTutorial`): the Lucena. */
+export const POSITION_MEMORY_TUTORIAL_FEN =
+  "1K1k4/1P6/8/8/8/8/r7/4R3 w - - 0 1";
+
 /**
  * The guides in the app's language: the exact tag, then its language
  * (`pt` → `pt-BR`), then English.
@@ -149,8 +153,8 @@ export function parseProse(text: string): ProseSegment[] {
 /**
  * Where a guide's link card goes: a screen of the app when the app has the
  * page — a learn article it bundles, a practice's setup screen, another
- * guide, a position-memory problem, an AI game from a position — otherwise
- * the web page.
+ * guide, a position-memory problem or its tutorial, an AI game from a
+ * position — otherwise the web page.
  */
 export type GuideLinkTarget =
   | { readonly kind: "app"; readonly href: string }
@@ -174,6 +178,21 @@ export function guideLinkTarget(path: string): GuideLinkTarget {
     if (fen && validateFenFormat(fen)) {
       return { kind: "app", href: guidePositionMemoryHref(fen) };
     }
+  }
+  // The web's position-memory tutorial (`/practice/position-memory/tutorial`)
+  // is one problem, the Lucena position, memorized before recreating it. The
+  // app plays it as a guide problem with a 60-second clock, the web
+  // tutorial's time limit.
+  if (
+    section === "practice" &&
+    first === "position-memory" &&
+    second === "tutorial" &&
+    rest.length === 0
+  ) {
+    return {
+      kind: "app",
+      href: guidePositionMemoryHref(POSITION_MEMORY_TUTORIAL_FEN, "60"),
+    };
   }
   // The web's "new game from a position" (`/games/new/position?fen=`): the
   // AI-game setup with that starting position.
@@ -217,8 +236,8 @@ export function guideLinkTarget(path: string): GuideLinkTarget {
  * result lead back to the guide rather than to the practice's setup, which
  * is not underneath the session.
  */
-function guidePositionMemoryHref(fen: string): string {
-  const params = new URLSearchParams(guideProblemSessionParams([fen]));
+function guidePositionMemoryHref(fen: string, seconds?: string): string {
+  const params = new URLSearchParams(guideProblemSessionParams([fen], seconds));
   return `/practice/position-memory/session?${params.toString()}`;
 }
 

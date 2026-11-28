@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   GUIDE_RANKS,
+  POSITION_MEMORY_TUTORIAL_FEN,
   adjacentGuideRanks,
   formatWebMessage,
   guideContent,
@@ -200,6 +201,21 @@ describe("guideLinkTarget", () => {
     expect(params.get("from")).toBe("guide");
   });
 
+  it("opens the position-memory tutorial as the Lucena problem on a 60 s clock", () => {
+    const target = guideLinkTarget("/practice/position-memory/tutorial");
+    expect(target.kind).toBe("app");
+    if (target.kind !== "app") return;
+    const [pathname, query] = target.href.split("?");
+    expect(pathname).toBe("/practice/position-memory/session");
+    const params = new URLSearchParams(query);
+    expect(JSON.parse(params.get("problems") ?? "")).toEqual([
+      POSITION_MEMORY_TUTORIAL_FEN,
+    ]);
+    expect(params.get("count")).toBe("1");
+    expect(params.get("seconds")).toBe("60");
+    expect(params.get("from")).toBe("guide");
+  });
+
   it("opens the AI-game setup from a guide's position", () => {
     const fen = "4k3/4p3/8/8/8/8/3PP3/4K3 w - - 0 1";
     const target = guideLinkTarget(
@@ -227,6 +243,7 @@ describe("guideLinkTarget", () => {
   it("sends what the app does not have to the web", () => {
     for (const path of [
       "/practice/diagonal-quiz/tutorial",
+      "/practice/position-memory/tutorial/extra",
       "/practice/position-memory/custom/abc",
       "/practice/position-memory/custom/!!",
       "/repertoires",
