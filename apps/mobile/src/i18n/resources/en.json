@@ -435,7 +435,10 @@
         "rook": "Promote to rook",
         "bishop": "Promote to bishop",
         "knight": "Promote to knight"
-      }
+      },
+      "gameMenu": "Game menu",
+      "undoHint": "Take back your last move and the AI's reply",
+      "resignHint": "Concede the game and end it"
     },
     "result": {
       "title": "Game Over",

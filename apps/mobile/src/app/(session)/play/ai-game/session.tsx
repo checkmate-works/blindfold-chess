@@ -29,6 +29,7 @@ import {
   MoveHistory,
   GameFinishSheet,
   GameInfo,
+  GameMenuSheet,
   ResultHeadline,
 } from "../../../../features/ai-game/components";
 import {
@@ -174,6 +175,7 @@ function AiGameBoard({ setup }: { setup: GameSetup }) {
   const [flipped, setFlipped] = useState<boolean | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [movesOpen, setMovesOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   // The top inset is padded from the provider's value rather than left to
   // `Screen`'s `SafeAreaView`: in a header-less screen of the full-screen
   // session modal the view's own top inset comes out as 0 on iOS, which put
@@ -441,6 +443,14 @@ function AiGameBoard({ setup }: { setup: GameSetup }) {
             accessibilityLabel={t("common.gameSettings")}
             onPress={() => setSettingsOpen(true)}
           />
+          {/* Take back and resign: once a game at most, so they are kept
+              away from the keypad, where a slip off the submit key could
+              reach them. */}
+          <HeaderIconButton
+            icon="ellipsis-horizontal"
+            accessibilityLabel={t("aiGame.session.gameMenu")}
+            onPress={() => setMenuOpen(true)}
+          />
         </View>
       </SessionTopBar>
       <ScrollView
@@ -520,27 +530,6 @@ function AiGameBoard({ setup }: { setup: GameSetup }) {
             />
           )}
 
-          <View style={styles.actionRow}>
-            <Button
-              title={t("aiGame.session.undo")}
-              icon="arrow-undo"
-              variant="outline"
-              size="sm"
-              disabled={!game.canUndo}
-              onPress={confirmUndo}
-              style={styles.action}
-            />
-            <Button
-              title={t("aiGame.session.resign")}
-              icon="flag"
-              variant="outline"
-              size="sm"
-              disabled={!game.canResign}
-              onPress={confirmResign}
-              style={styles.action}
-            />
-          </View>
-
           {finished && game.playerResult && game.termination && (
             <View
               accessibilityLiveRegion="polite"
@@ -600,6 +589,14 @@ function AiGameBoard({ setup }: { setup: GameSetup }) {
           }}
         />
       ) : null}
+      <GameMenuSheet
+        visible={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        canUndo={game.canUndo}
+        canResign={game.canResign}
+        onUndo={confirmUndo}
+        onResign={confirmResign}
+      />
       {/* This game's settings, changed mid-game: they are the session's own
           copy, so the global preferences stay as they were. */}
       <BottomSheet
@@ -656,15 +653,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     alignSelf: "stretch",
-    gap: spacing.md,
-  },
-  actionRow: {
-    flexDirection: "row",
-    gap: spacing.md,
-    marginTop: spacing.sm,
-  },
-  action: {
-    flex: 1,
+    // Four 44pt buttons share the row with the status; at the wider gap the
+    // level under it ("Level 5 (1200 ELO)") was cut off on a 402pt phone.
+    // The buttons' own 44pt squares keep them apart enough to tap.
+    gap: spacing.xs,
   },
   gameOverOverlay: {
     position: "absolute",

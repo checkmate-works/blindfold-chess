@@ -435,7 +435,10 @@
         "rook": "Promover a torre",
         "bishop": "Promover a bispo",
         "knight": "Promover a cavalo"
-      }
+      },
+      "gameMenu": "Menu da partida",
+      "undoHint": "Desfaz seu último lance e a resposta da IA",
+      "resignHint": "Admite a derrota e encerra a partida"
     },
     "result": {
       "title": "Fim da partida",

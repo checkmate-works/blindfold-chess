@@ -4,6 +4,7 @@ export { ButtonInput } from "./ButtonInput";
 export { ChessBoard } from "./ChessBoard";
 export { GameFinishSheet } from "./GameFinishSheet";
 export { GameInfo } from "./GameInfo";
+export { GameMenuSheet } from "./GameMenuSheet";
 export { MoveHistory } from "./MoveHistory";
 export { ResultCard } from "./ResultCard";
 export { ResultHeadline } from "./ResultHeadline";

@@ -469,6 +469,11 @@ Again. Dragged away, it comes back from the button over the frozen
 controls. A resignation is worded as the player's act ("You resigned")
 rather than as a big red loss.
 
+Take back and resign live in `GameMenuSheet`, behind the "…" at the end of
+the session's top row, not beside the keypad: a row under the input sat a
+thumb's slip from the submit key for actions a game needs once if at all.
+Each row closes the sheet before its confirmation alert asks.
+
 ## Onboarding
 
 A first launch opens `/onboarding`: the mentor's chat

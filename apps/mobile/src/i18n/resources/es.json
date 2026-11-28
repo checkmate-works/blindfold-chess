@@ -435,7 +435,10 @@
         "rook": "Coronar a torre",
         "bishop": "Coronar a alfil",
         "knight": "Coronar a caballo"
-      }
+      },
+      "gameMenu": "Menú de la partida",
+      "undoHint": "Deshace tu última jugada y la respuesta de la IA",
+      "resignHint": "Reconoce la derrota y termina la partida"
     },
     "result": {
       "title": "Fin de la partida",
