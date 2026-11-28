@@ -7,6 +7,8 @@ import { validateFen } from "@blindfold-chess/features/chess-core";
 import { validateFenFormat } from "@blindfold-chess/features/chess-core/fen";
 
 import { guideProblemSessionParams } from "../fen/lib/route-params";
+import { MODULE_HELP_PAGES } from "../help/module-help-pages";
+import { SETUP_HELP_PARAM } from "../../navigation/setup-help";
 import {
   MOBILE_PRACTICE_MODULES,
   practiceModuleRoute,
@@ -153,8 +155,8 @@ export function parseProse(text: string): ProseSegment[] {
 /**
  * Where a guide's link card goes: a screen of the app when the app has the
  * page — a learn article it bundles, a practice's setup screen, another
- * guide, a position-memory problem or its tutorial, an AI game from a
- * position — otherwise the web page.
+ * guide, a position-memory problem, a practice's tutorial, an AI game from
+ * a position — otherwise the web page.
  */
 export type GuideLinkTarget =
   | { readonly kind: "app"; readonly href: string }
@@ -219,6 +221,26 @@ export function guideLinkTarget(path: string): GuideLinkTarget {
       return { kind: "app", href: `/practice/${practiceModuleRoute(module)}` };
     }
   }
+  // A practice's web tutorial (`/practice/<module>/tutorial`, other than
+  // position memory's above): its explanation steps are the help sheet's
+  // pages, so the link opens the setup screen with the sheet up.
+  if (
+    section === "practice" &&
+    first !== undefined &&
+    second === "tutorial" &&
+    rest.length === 0
+  ) {
+    const module = MOBILE_PRACTICE_MODULES.find(
+      (m) => practiceModuleRoute(m) === first || m.slug === first,
+    );
+    if (module && hasTutorialHelp(module.i18nKey)) {
+      const params = new URLSearchParams(SETUP_HELP_PARAM);
+      return {
+        kind: "app",
+        href: `/practice/${practiceModuleRoute(module)}?${params.toString()}`,
+      };
+    }
+  }
   if (
     section === "dojo" &&
     first === "guides" &&
@@ -229,6 +251,17 @@ export function guideLinkTarget(path: string): GuideLinkTarget {
     return { kind: "app", href: `/dojo/guides/${second}` };
   }
   return { kind: "web", path };
+}
+
+/**
+ * Whether a module's help sheet carries its web tutorial: the generated
+ * tutorial pages (`step_*` for the challenge modules' explanation steps,
+ * `tutorial` for the free-play ones), not just how to play.
+ */
+function hasTutorialHelp(moduleKey: string): boolean {
+  return (MODULE_HELP_PAGES[moduleKey] ?? []).some(
+    (page) => page === "tutorial" || page.startsWith("step_"),
+  );
 }
 
 /**

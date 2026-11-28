@@ -216,6 +216,28 @@ describe("guideLinkTarget", () => {
     expect(params.get("from")).toBe("guide");
   });
 
+  it("opens a practice's tutorial as its setup screen with the help sheet up", () => {
+    expect(guideLinkTarget("/practice/diagonal-quiz/tutorial")).toEqual({
+      kind: "app",
+      href: "/practice/diagonal-quiz?help=1",
+    });
+    // A module whose help is only how to play has no tutorial to show.
+    expect(guideLinkTarget("/practice/coordinate-quiz/tutorial")).toEqual({
+      kind: "web",
+      path: "/practice/coordinate-quiz/tutorial",
+    });
+  });
+
+  it("opens every guide's tutorial in the app", () => {
+    const links = Object.values(GUIDE_CONTENT.en.links).filter((link) =>
+      /^\/practice\/[^/]+\/tutorial$/.test(link.href),
+    );
+    expect(links.length).toBeGreaterThan(0);
+    for (const link of links) {
+      expect(guideLinkTarget(link.href).kind).toBe("app");
+    }
+  });
+
   it("opens the AI-game setup from a guide's position", () => {
     const fen = "4k3/4p3/8/8/8/8/3PP3/4K3 w - - 0 1";
     const target = guideLinkTarget(
@@ -242,7 +264,7 @@ describe("guideLinkTarget", () => {
 
   it("sends what the app does not have to the web", () => {
     for (const path of [
-      "/practice/diagonal-quiz/tutorial",
+      "/practice/diagonal-quiz/tutorial/extra",
       "/practice/position-memory/tutorial/extra",
       "/practice/position-memory/custom/abc",
       "/practice/position-memory/custom/!!",
