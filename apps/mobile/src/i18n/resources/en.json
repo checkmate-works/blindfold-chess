@@ -375,7 +375,7 @@
       "playerColor": "Play as",
       "white": "White",
       "black": "Black",
-      "skillLevel": "Skill Level",
+      "skillLevel": "AI Strength",
       "startGame": "Start Game",
       "opponent": "Opponent",
       "levelWithElo": "Level {{level}} ({{elo}} ELO)",
@@ -390,7 +390,9 @@
           "level5": "Full blindfold — no board at all"
         },
         "level": "Level {{level}}",
-        "customize": "Customize"
+        "customize": "Customize",
+        "section": "Blindfold",
+        "label": "Difficulty"
       },
       "preview": "Preview"
     },
@@ -435,7 +437,7 @@
       "loss": "You Lose",
       "draw": "Draw",
       "playerColor": "Color",
-      "skillLevel": "Skill Level",
+      "skillLevel": "AI Strength",
       "moveCount": "Total Moves",
       "playAgain": "Play Again",
       "backToMenu": "Back to Menu",
@@ -868,7 +870,7 @@
     },
     "resultLabel": "Result",
     "sideLabel": "You played",
-    "levelLabel": "AI level",
+    "levelLabel": "AI strength",
     "dateLabel": "Played",
     "recall": "Replay from memory (recall)",
     "share": "Share PGN",

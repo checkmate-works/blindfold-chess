@@ -375,7 +375,7 @@
       "playerColor": "プレイする色",
       "white": "白",
       "black": "黒",
-      "skillLevel": "スキルレベル",
+      "skillLevel": "AIの強さ",
       "startGame": "ゲーム開始",
       "opponent": "対戦相手",
       "levelWithElo": "レベル {{level}} ({{elo}} ELO)",
@@ -390,7 +390,9 @@
           "level5": "完全な目隠し（盤面なし）"
         },
         "level": "レベル{{level}}",
-        "customize": "詳細設定"
+        "customize": "詳細設定",
+        "section": "目隠し",
+        "label": "難易度"
       },
       "preview": "プレビュー"
     },
@@ -435,7 +437,7 @@
       "loss": "敗北",
       "draw": "引き分け",
       "playerColor": "カラー",
-      "skillLevel": "スキルレベル",
+      "skillLevel": "AIの強さ",
       "moveCount": "総手数",
       "playAgain": "もう一度",
       "backToMenu": "メニューに戻る",
@@ -868,7 +870,7 @@
     },
     "resultLabel": "結果",
     "sideLabel": "あなたの手番",
-    "levelLabel": "AIレベル",
+    "levelLabel": "AIの強さ",
     "dateLabel": "対局日時",
     "recall": "感想戦をする（棋譜再現）",
     "share": "PGNを共有",

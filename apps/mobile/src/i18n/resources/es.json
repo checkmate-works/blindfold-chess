@@ -375,7 +375,7 @@
       "playerColor": "Juega como",
       "white": "Blancas",
       "black": "Negras",
-      "skillLevel": "Nivel de habilidad",
+      "skillLevel": "Fuerza de la IA",
       "startGame": "Empezar partida",
       "opponent": "Oponente",
       "levelWithElo": "Nivel {{level}} ({{elo}} ELO)",
@@ -390,7 +390,9 @@
           "level5": "A ciegas total: sin tablero"
         },
         "level": "Nivel {{level}}",
-        "customize": "Personalizar"
+        "customize": "Personalizar",
+        "section": "A ciegas",
+        "label": "Dificultad"
       },
       "preview": "Vista Previa"
     },
@@ -435,7 +437,7 @@
       "loss": "Has perdido",
       "draw": "Tablas",
       "playerColor": "Color",
-      "skillLevel": "Nivel de habilidad",
+      "skillLevel": "Fuerza de la IA",
       "moveCount": "Jugadas totales",
       "playAgain": "Jugar de nuevo",
       "backToMenu": "Volver al menú",
@@ -868,7 +870,7 @@
     },
     "resultLabel": "Resultado",
     "sideLabel": "Jugaste con",
-    "levelLabel": "Nivel de la IA",
+    "levelLabel": "Fuerza de la IA",
     "dateLabel": "Fecha",
     "recall": "Reproducir de memoria",
     "share": "Compartir PGN",
