@@ -4,16 +4,22 @@ import { useFocusEffect, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { isBlackToMoveFromFen } from "@blindfold-chess/features/chess-core";
 
-import { ListIcon, ListRow, ListSection } from "../../../components";
+import { ListRow, ListSection, StaticBoard } from "../../../components";
+import { useFenSquares } from "../../../components/use-fen-squares";
+import { DailyPuzzleContent } from "../../../features/puzzle/DailyPuzzleCard";
 import {
   fetchPuzzleList,
   type PuzzleSummary,
 } from "../../../features/puzzle/puzzles-api";
 import { spacing } from "../../../theme";
 
+/** The side of a featured row's board, in points. */
+const THUMB_SIZE = 56;
+
 /**
- * Puzzles (the web's `/practice/puzzle`): the Daily Puzzle and the featured
- * set the operators picked. The app does not list the user-submitted pool,
+ * Puzzles (the web's `/practice/puzzle`): the Daily Puzzle, drawn as the same
+ * card as on home (`DailyPuzzleContent`), and the featured set the operators
+ * picked, each row led by its position as the web's list cards are. The app does not list the user-submitted pool,
  * so it shows no unmoderated user content (apps/mobile/CLAUDE.md).
  */
 export default function PuzzleList() {
@@ -40,15 +46,11 @@ export default function PuzzleList() {
       params: { id: puzzle.id, title: puzzle.title },
     });
 
-  const row = (puzzle: PuzzleSummary, daily = false) => (
+  const row = (puzzle: PuzzleSummary) => (
     <ListRow
       key={puzzle.id}
       testID={`puzzle-${puzzle.id}`}
-      leading={
-        <ListIcon
-          ionicon={daily ? "calendar-outline" : "extension-puzzle-outline"}
-        />
-      }
+      leading={<BoardThumb fen={puzzle.fen} />}
       title={puzzle.title}
       subtitle={
         isBlackToMoveFromFen(puzzle.fen)
@@ -90,9 +92,7 @@ export default function PuzzleList() {
       ) : (
         <>
           {daily && (
-            <ListSection title={t("puzzle.daily")}>
-              {row(daily, true)}
-            </ListSection>
+            <DailyPuzzleContent puzzle={daily} testID={`puzzle-${daily.id}`} />
           )}
           <ListSection
             title={t("puzzle.featured")}
@@ -107,6 +107,19 @@ export default function PuzzleList() {
         </>
       )}
     </ScrollView>
+  );
+}
+
+/** A featured row's position: the board with its pieces, no coordinates. */
+function BoardThumb({ fen }: { fen: string }) {
+  const renderSquare = useFenSquares(fen);
+  return (
+    <StaticBoard
+      maxSize={THUMB_SIZE}
+      horizontalInset={0}
+      showCoordinates={false}
+      renderSquare={renderSquare}
+    />
   );
 }
 
