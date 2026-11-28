@@ -446,7 +446,10 @@ function AiGameBoard({ setup }: { setup: GameSetup }) {
         variant="outline"
         size="sm"
         onPress={openPositionCheck}
-        disabled={practiceLocked}
+        // Only on the player's turn: the check's board faces the side to
+        // move, so on the AI's turn (a reply that failed) it would be drawn
+        // from the opponent's side.
+        disabled={practiceLocked || !game.isPlayerTurn}
         testID="position-check"
       />
     ) : undefined;
