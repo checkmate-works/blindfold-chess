@@ -6,8 +6,8 @@ import { TabStack } from "../../../navigation/stack-options";
 
 /**
  * The home tab's stack. Its header carries the person icon into mypage
- * (`(account)/mypage`), the one entry to the account, the user's records and
- * settings, as in the mahjong app. Settings has no tab of its own and is
+ * (`app/mypage.tsx`, pushed on the root stack), the one entry to the
+ * account, the user's records and settings, as in the mahjong app. Settings has no tab of its own and is
  * reached from mypage.
  */
 export default function Layout() {

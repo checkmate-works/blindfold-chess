@@ -17,10 +17,11 @@ import { spacing } from "../../../theme";
 const THUMB_SIZE = 56;
 
 /**
- * Puzzles (the web's `/practice/puzzle`): the Daily Puzzle, drawn as the same
- * card as on home (`DailyPuzzleContent`), and the featured set the operators
- * picked, each row led by its position as the web's list cards are. The app does not list the user-submitted pool,
- * so it shows no unmoderated user content (apps/mobile/CLAUDE.md).
+ * Puzzles (the web's `/practice/puzzle`): the Daily Puzzle, drawn as the
+ * same card as on home (`DailyPuzzleContent`), and the featured set the
+ * operators picked, each row led by its position as the web's list cards
+ * are. The app does not list the user-submitted pool, so it shows no
+ * unmoderated user content (apps/mobile/CLAUDE.md).
  */
 export default function PuzzleList() {
   const { t } = useTranslation();
