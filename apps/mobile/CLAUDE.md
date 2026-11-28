@@ -355,7 +355,7 @@ Generated, not edited by hand; re-run the script after the web changes:
   position-memory problem (`/practice/position-memory/custom/<Base64URL
 FEN>`) opens the session on that one problem over the guide with
   `from=guide`, whose result leads with "Back to guide" and replays the
-  problem in place (`PracticeResultScreen`'s `backToGuide`); a game from a
+  problem in place (`PracticeResultScreen`'s `exits`); a game from a
   position (`/games/new/position?fen=`) opens the AI-game setup with `fen`,
   which shows the starting position, gives the player the side to move for
   this game only, and passes `startingFen` to the session. Only

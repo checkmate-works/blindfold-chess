@@ -32,6 +32,26 @@ export function serializeFenSessionParams({
 }
 
 /**
+ * The `from` value of a session opened from a guide's link card. The
+ * session hands it on to its result, which then leads back to the guide.
+ */
+export const FROM_GUIDE = "guide";
+
+/**
+ * The session params for a guide's problem: just that problem, in order,
+ * marked `from=guide`. The guide's link card opens the session with them,
+ * and the result's "Play again" replays the problem with the same.
+ */
+export function guideProblemSessionParams(
+  fens: readonly string[],
+): Record<keyof FenSessionParams | "from", string> {
+  return {
+    ...serializeFenSessionParams({ fens, problemCount: 1, shuffle: false }),
+    from: FROM_GUIDE,
+  };
+}
+
+/**
  * Read the session params back. A deep link can carry anything, so entries
  * that are not well-formed FENs are dropped, and an unreadable list comes
  * back empty — the session then falls back to the built-in problems.

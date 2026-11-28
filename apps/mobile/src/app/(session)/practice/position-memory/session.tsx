@@ -29,6 +29,7 @@ import {
   useProblemOrientation,
 } from "../../../../features/fen/lib/board";
 import {
+  FROM_GUIDE,
   parseFenSessionParams,
   serializeFenResultParams,
   type FenSessionParams,
@@ -174,8 +175,8 @@ export default function PositionMemorySession() {
         ...(examProblem && params.exam ? { exam: params.exam } : {}),
         // A guide's problem (`from=guide`) leads back to the guide, and its
         // "play again" needs the problem it was.
-        ...(params.from === "guide" && !examProblem
-          ? { from: "guide", problems: params.problems ?? "" }
+        ...(params.from === FROM_GUIDE && !examProblem
+          ? { from: FROM_GUIDE, problems: params.problems ?? "" }
           : {}),
       },
     });

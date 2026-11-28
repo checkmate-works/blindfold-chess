@@ -22,7 +22,7 @@ export { TurnIndicator } from "./TurnIndicator";
 export { SelectableChip } from "./SelectableChip";
 export { PieceSelector } from "./PieceSelector";
 export { PracticeResultCard } from "./PracticeResultCard";
-export { PracticeResultScreen } from "./PracticeResultScreen";
+export { PracticeResultScreen, type ResultExits } from "./PracticeResultScreen";
 export {
   PracticeSessionScreen,
   practiceSessionStyles,

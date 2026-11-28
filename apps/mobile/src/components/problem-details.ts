@@ -40,7 +40,9 @@ export function initiallyOpenRows(
   verdicts: readonly ProblemVerdict[],
 ): Set<number> {
   return new Set(
-    verdicts.flatMap((verdict, index) => (verdict === "correct" ? [] : [index])),
+    verdicts.flatMap((verdict, index) =>
+      verdict === "correct" ? [] : [index],
+    ),
   );
 }
 

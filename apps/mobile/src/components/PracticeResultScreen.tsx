@@ -13,6 +13,12 @@ import { ResultMistakesContext, type ResultMistakes } from "./result-mistakes";
 import { useCloseSession } from "../navigation/use-close-session";
 import { spacing } from "../theme";
 
+/** The footer's ways out; see `PracticeResultScreenProps.exits`. */
+export type ResultExits =
+  | { kind: "menu" }
+  | { kind: "exam" }
+  | { kind: "guide"; onPlayAgain: () => void };
+
 type PracticeResultScreenProps = {
   /**
    * The feature's setup screen. "Play again" closes the session modal, which
@@ -21,29 +27,30 @@ type PracticeResultScreenProps = {
    */
   setupHref: Href;
   /**
-   * Set when the session was opened from a guide's link card, over the
-   * guide: the primary button closes back to the guide ("Back to guide"),
-   * and the secondary one replays the problem in place, since closing the
-   * modal reveals the guide, not the practice's setup.
+   * Which ways out the footer offers (default `"menu"`). Every kind keeps
+   * "Play again"; they differ in what stands beside it:
+   *
+   * - `"menu"` — "Back to menu", which pops the setup too.
+   * - `"exam"` — nothing: the run was started from the exam's problem page,
+   *   which "Play again" returns to, and "Back to menu" would pop the exam's
+   *   screens out from under the player (the puzzle exam's result has only
+   *   Try Again for the same reason).
+   * - `"guide"` — the session was opened from a guide's link card, over the
+   *   guide: the primary button closes back to the guide ("Back to guide"),
+   *   and "Play again" replays the problem in place (`onPlayAgain`), since
+   *   closing the modal reveals the guide, not the practice's setup.
    */
-  backToGuide?: { onPlayAgain: () => void };
+  exits?: ResultExits;
   /** The result card rendered under the title. */
   children: ReactNode;
-  /**
-   * Leave out "Back to menu", keeping only "Play again". An exam run sets
-   * it: the run was started from the exam's problem page, which "Play
-   * again" returns to, and "Back to menu" would pop the exam's screens out
-   * from under the player (the puzzle exam's result has only Try Again for
-   * the same reason).
-   */
-  hideBackToMenu?: boolean;
 };
 
 /**
  * Shared layout for every practice result screen: the result card, with the
- * two ways out pinned to the bottom in the setup footer's `ModeButtonRow` —
- * "Back to menu" on the left (outlined) and "Play again" on the right
- * (filled), so the footer keeps the shape it had before the run. The title
+ * ways out pinned to the bottom in the setup footer's `ModeButtonRow` —
+ * normally "Back to menu" on the left (outlined) and "Play again" on the
+ * right (filled), so the footer keeps the shape it had before the run
+ * (`exits` names the exam and guide variants). The title
  * is the header's (registered in `moduleSessionScreens`).
  *
  * The labels and where each button goes are owned here, not by the
@@ -56,11 +63,9 @@ type PracticeResultScreenProps = {
  */
 export function PracticeResultScreen({
   setupHref,
-  backToGuide,
+  exits = { kind: "menu" },
   children,
-  hideBackToMenu = false,
 }: PracticeResultScreenProps) {
-  const { t } = useTranslation();
   const { close, closeToMenu } = useCloseSession(setupHref);
   const mistakes = useResultMistakesHandOff();
 
@@ -79,49 +84,70 @@ export function PracticeResultScreen({
       </ScrollView>
 
       <BottomBar>
-        {backToGuide ? (
-          <ModeButtonRow
-            secondary={{
-              title: t("practiceResult.playAgain"),
-              icon: "refresh",
-              onPress: backToGuide.onPlayAgain,
-              testID: "result-play-again",
-            }}
-            primary={{
-              title: t("practiceResult.backToGuide"),
-              icon: "book-outline",
-              onPress: close,
-              testID: "result-back-to-guide",
-            }}
-          />
-        ) : hideBackToMenu ? (
-          <Button
-            title={t("practiceResult.playAgain")}
-            icon="refresh"
-            size="lg"
-            fullWidth
-            onPress={close}
-            testID="result-play-again"
-          />
-        ) : (
-          <ModeButtonRow
-            secondary={{
-              title: t("practiceResult.backToMenu"),
-              icon: "list",
-              onPress: closeToMenu,
-              testID: "result-back-to-menu",
-            }}
-            primary={{
-              title: t("practiceResult.playAgain"),
-              icon: "refresh",
-              onPress: close,
-              testID: "result-play-again",
-            }}
-          />
-        )}
+        <ResultFooter exits={exits} close={close} closeToMenu={closeToMenu} />
       </BottomBar>
     </Screen>
   );
+}
+
+/** The footer's buttons for one kind of `exits`. */
+function ResultFooter({
+  exits,
+  close,
+  closeToMenu,
+}: {
+  exits: ResultExits;
+  close: () => void;
+  closeToMenu: () => void;
+}) {
+  const { t } = useTranslation();
+  switch (exits.kind) {
+    case "guide":
+      return (
+        <ModeButtonRow
+          secondary={{
+            title: t("practiceResult.playAgain"),
+            icon: "refresh",
+            onPress: exits.onPlayAgain,
+            testID: "result-play-again",
+          }}
+          primary={{
+            title: t("practiceResult.backToGuide"),
+            icon: "book-outline",
+            onPress: close,
+            testID: "result-back-to-guide",
+          }}
+        />
+      );
+    case "exam":
+      return (
+        <Button
+          title={t("practiceResult.playAgain")}
+          icon="refresh"
+          size="lg"
+          fullWidth
+          onPress={close}
+          testID="result-play-again"
+        />
+      );
+    case "menu":
+      return (
+        <ModeButtonRow
+          secondary={{
+            title: t("practiceResult.backToMenu"),
+            icon: "list",
+            onPress: closeToMenu,
+            testID: "result-back-to-menu",
+          }}
+          primary={{
+            title: t("practiceResult.playAgain"),
+            icon: "refresh",
+            onPress: close,
+            testID: "result-play-again",
+          }}
+        />
+      );
+  }
 }
 
 /** The gap left above a view scrolled to the top: the content's padding. */

@@ -2,8 +2,10 @@ import { useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { validateFen } from "@blindfold-chess/features/chess-core";
-import { isBlackToMoveFromFen } from "@blindfold-chess/features/chess-core/fen";
+import {
+  isBlackToMoveFromFen,
+  validateFen,
+} from "@blindfold-chess/features/chess-core";
 import type { Side } from "@blindfold-chess/types";
 import {
   type PerGamePreferences,
@@ -46,12 +48,9 @@ export default function AiGameSetup() {
   const startingFen =
     params.fen && validateFen(params.fen) ? params.fen : undefined;
   const { settings, isLoaded, updateSettings } = useGameSettings();
+  // A position's game starts with the player on the side to move.
   const [positionColor, setPositionColor] = useState<Side | null>(() =>
-    startingFen
-      ? isBlackToMoveFromFen(startingFen)
-        ? "black"
-        : "white"
-      : null,
+    startingFen ? sideToMove(startingFen) : null,
   );
   const playerColor = positionColor ?? settings.playerColor;
   const { preferences, isLoaded: preferencesLoaded } = useGamePreferences();
@@ -120,6 +119,10 @@ export default function AiGameSetup() {
       </View>
     </PracticeSetupScreen>
   );
+}
+
+function sideToMove(fen: string): Side {
+  return isBlackToMoveFromFen(fen) ? "black" : "white";
 }
 
 const styles = StyleSheet.create({
