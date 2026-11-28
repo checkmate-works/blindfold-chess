@@ -1,14 +1,17 @@
-import { View, Text, StyleSheet } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
 import type { Side } from "@blindfold-chess/types";
 import { getEloForSkillLevel } from "@blindfold-chess/features/ai-game";
 
 import { ListRow, ListSection } from "../../../components";
-import { fontSize, fontWeight, spacing, feedbackColors } from "../../../theme";
+import { spacing } from "../../../theme";
+import type { GameTermination } from "../hooks/useGameSession";
 import type { PlayerResult, SkillLevel } from "../lib/types";
+import { ResultHeadline } from "./ResultHeadline";
 
 type ResultCardProps = {
   result: PlayerResult;
+  termination: GameTermination;
   playerColor: Side;
   skillLevel: SkillLevel;
   moveCount: number;
@@ -16,18 +19,14 @@ type ResultCardProps = {
   earnedExp?: number;
 };
 
-const RESULT_COLOR: Record<PlayerResult, string> = {
-  win: feedbackColors.success,
-  loss: feedbackColors.error,
-  draw: feedbackColors.warning,
-};
-
 /**
- * How a finished AI game went: the outcome, then who it was played against.
- * Presentational only; the result screen owns what to do next.
+ * How a finished AI game went: the outcome and how it came about, then who
+ * it was played against. Presentational only; the finish sheet owns what to
+ * do next.
  */
 export function ResultCard({
   result,
+  termination,
   playerColor,
   skillLevel,
   moveCount,
@@ -37,10 +36,7 @@ export function ResultCard({
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.resultText, { color: RESULT_COLOR[result] }]}>
-        {/* aiGame.result.<PlayerResult>: aiGame.result.win, aiGame.result.loss, aiGame.result.draw */}
-        {t(`aiGame.result.${result}`)}
-      </Text>
+      <ResultHeadline result={result} termination={termination} />
       <ListSection>
         <ListRow
           title={t("aiGame.result.playerColor")}
@@ -76,10 +72,5 @@ export function ResultCard({
 const styles = StyleSheet.create({
   container: {
     gap: spacing.lg,
-  },
-  resultText: {
-    fontSize: fontSize.xxxl,
-    fontWeight: fontWeight.bold,
-    textAlign: "center",
   },
 });

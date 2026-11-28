@@ -449,7 +449,13 @@
       "backToMenu": "メニューに戻る",
       "review": "対局を振り返る",
       "reviewDescription": "棋譜・PGN・棋譜再現",
-      "expEarned": "獲得経験値"
+      "expEarned": "獲得経験値",
+      "termination": {
+        "checkmate": "チェックメイト",
+        "resignation": "投了",
+        "stalemate": "ステイルメイト"
+      },
+      "nextAction": "次のアクション"
     }
   },
   "diagonalQuiz": {

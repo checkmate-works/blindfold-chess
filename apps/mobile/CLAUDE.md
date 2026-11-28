@@ -454,10 +454,20 @@ session saved posts a notice as the session goes away
 screen it closes back to — the AI-game setup, the play tab, the saved games
 or a saved game's page, each rendering `SavedGameSnackbar` — shows "Game
 saved" with Resume. The one thing an AI game
-sends is its Exp report: the result screen posts a signed-in player's game to
-`POST /games/results` (the web's `saveGameResult`), with the move and
-aided-move counts from the session's operation log
-(`useMoveOperationTracker`, shared with the web).
+sends is its Exp report: as the game ends, `useAiGameExpGrant` posts a
+signed-in player's game to `POST /games/results` (the web's
+`saveGameResult`), with the move and aided-move counts from the session's
+operation log (`useMoveOperationTracker`, shared with the web).
+
+An AI game has no result screen (`resultInSession` in `module-routes.ts`).
+A finished game stays on its board, uncovered in every visibility mode, with
+the web's end-of-game mark on the losing king (`resolveTerminationMark` from
+`@blindfold-chess/features/board-display`: `#` for a mate, a flag for a
+resignation), and `GameFinishSheet` comes up over it a moment later: the
+outcome and how it came about, the review row, and Back to Menu / Play
+Again. Dragged away, it comes back from the button over the frozen
+controls. A resignation is worded as the player's act ("You resigned")
+rather than as a big red loss.
 
 ## Onboarding
 

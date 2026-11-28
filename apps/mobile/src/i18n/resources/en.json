@@ -449,7 +449,13 @@
       "backToMenu": "Back to Menu",
       "review": "Review game",
       "reviewDescription": "Moves, PGN and recall",
-      "expEarned": "Exp earned"
+      "expEarned": "Exp earned",
+      "termination": {
+        "checkmate": "Checkmate",
+        "resignation": "Resignation",
+        "stalemate": "Stalemate"
+      },
+      "nextAction": "Next action"
     }
   },
   "diagonalQuiz": {

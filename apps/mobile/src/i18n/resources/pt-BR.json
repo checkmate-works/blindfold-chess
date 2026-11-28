@@ -449,7 +449,13 @@
       "backToMenu": "Voltar ao menu",
       "review": "Revisar a partida",
       "reviewDescription": "Movimentos, PGN e de memória",
-      "expEarned": "Exp obtida"
+      "expEarned": "Exp obtida",
+      "termination": {
+        "checkmate": "Xeque-mate",
+        "resignation": "Desistência",
+        "stalemate": "Afogamento"
+      },
+      "nextAction": "Próxima ação"
     }
   },
   "diagonalQuiz": {
