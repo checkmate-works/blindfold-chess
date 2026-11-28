@@ -27,6 +27,7 @@ import {
   type MoveSquares,
   type PieceDisplay,
   type SquareHighlightType,
+  type TerminationMark,
 } from "@blindfold-chess/features/board-display";
 import { ChessPieceIcon } from "@blindfold-chess/icons";
 import type { PieceType, PieceColor } from "@blindfold-chess/icons";
@@ -38,6 +39,7 @@ import { chessColors, spacing, fontSize } from "../../../theme";
 import { useBoardMoveInput } from "../hooks/useBoardMoveInput";
 import { squareAtPoint } from "../lib/board-geometry";
 import { PromotionPicker } from "./PromotionPicker";
+import { TerminationMarkBadge } from "./TerminationMarkBadge";
 
 type ChessBoardProps = {
   fen: string;
@@ -49,6 +51,13 @@ type ChessBoardProps = {
   showCoordinates?: boolean;
   /** Squares of the last move, tinted when `highlightLastMove` is on. */
   lastMove?: { from: string; to: string } | null;
+  /**
+   * The end-of-game mark, on the losing king's square: `#` for a mate, a
+   * flag for a resignation. Pass it only on a finished game's last position.
+   */
+  terminationMark?: TerminationMark | null;
+  /** Accessible name of `terminationMark`. */
+  terminationMarkLabel?: string;
   /**
    * The side the player is playing. Setting it marks this as a game board:
    * the blindfold piece preferences (hidden sides, stones, single colour,
@@ -130,6 +139,8 @@ export function ChessBoard({
   flipped = false,
   showCoordinates,
   lastMove = null,
+  terminationMark = null,
+  terminationMarkLabel,
   playerColor,
   maxSize,
   onMove,
@@ -364,6 +375,14 @@ export function ChessBoard({
     ? drawnCell(input.promotion.to, flipped)
     : null;
 
+  // The mark sits in the king square's top-right corner, inside the square:
+  // the board clips its rounded corners, so a badge hanging over the edge,
+  // as on the web, would be cut off on the outer files and ranks.
+  const markCell = terminationMark
+    ? drawnCell(terminationMark.square as Square, flipped)
+    : null;
+  const markSize = Math.round(squareSize * 0.42);
+
   const squares = (
     <View
       pointerEvents={interactive ? "none" : "auto"}
@@ -434,6 +453,24 @@ export function ChessBoard({
           })}
         </View>
       ))}
+      {terminationMark && markCell && (
+        <View
+          pointerEvents="none"
+          style={[
+            styles.marker,
+            {
+              top: markCell.row * squareSize + 1,
+              left: (markCell.column + 1) * squareSize - markSize - 1,
+            },
+          ]}
+        >
+          <TerminationMarkBadge
+            kind={terminationMark.kind}
+            size={markSize}
+            label={terminationMarkLabel}
+          />
+        </View>
+      )}
     </View>
   );
 
