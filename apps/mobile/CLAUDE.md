@@ -201,6 +201,17 @@ header style (page-coloured, no hairline, chevron-only back).
   session draws none: the list icon in its top row opens `MoveHistory`
   (a scoresheet, one row per move number) in a `BottomSheet`, and the
   player looks only when they choose to, as with the board.
+- **Two practices open from inside an AI game**, as on the web: the
+  covered board (peek mask, `'never'` panel; `InlineBoard`'s
+  `coveredAction`) carries "Recreate this position", a position-memory
+  session on the live position that starts on the empty board
+  (`gamePositionCheckSessionParams`: `skipMemorize`, and `start` for the
+  "Starting position" tool), and the moves sheet ends with "Recall" over the
+  game so far. Both are pushed inside the `(session)` stack with
+  `from=game`, so the game stays mounted underneath; `useReturnToGame`
+  (`navigation/use-return-to-game.tsx`) swaps their × for one that pops back
+  to it, and their results lead with "Back to game" instead of closing the
+  modal. Neither opens before the first move or while the engine thinks.
 - **Picture boards** — a board that explains an answer and takes no tap on
   its squares (diagonal quiz's `DiagonalBoard`, route planner's
   `RouteBoard`, quadrants' `QuadrantBoard`) — are `StaticBoard`

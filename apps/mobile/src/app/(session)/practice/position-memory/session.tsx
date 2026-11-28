@@ -3,7 +3,10 @@ import type { ScrollViewInstance } from "react-native";
 import { View, Text, StyleSheet, ScrollView, Linking } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { fenToLichessUrl } from "@blindfold-chess/features/chess-core/fen";
+import {
+  fenToLichessUrl,
+  validateFenFormat,
+} from "@blindfold-chess/features/chess-core/fen";
 import {
   EMPTY_BOARD_FEN,
   selectInitialPositions,
@@ -36,6 +39,7 @@ import {
 } from "../../../../features/fen/lib/route-params";
 import { examProblemOf } from "@blindfold-chess/features/dojo-journey";
 import { parseIntParam } from "../../../../lib/route-params";
+import { useReturnToGame } from "../../../../navigation/use-return-to-game";
 import {
   useTheme,
   spacing,
@@ -59,13 +63,27 @@ import {
  * only the memorize step in front of each recreation is this screen's.
  * "View Again" returns to it with a full clock and keeps the pieces placed
  * so far (the web's machine empties the board when the step ends again).
+ *
+ * Opened from an AI game (`from=game`, the board's "Recreate this
+ * position"), the session is the web's mid-game position check:
+ * `skipMemorize=1` starts on the empty board, since the memorising happened
+ * during play and showing the position first would give the answer away,
+ * so "View Again" is gone too; `start` is the game's starting position,
+ * offered as a tool on the empty board; and the × and the result lead back
+ * to the game.
  */
 export default function PositionMemorySession() {
   const { t } = useTranslation();
   const router = useRouter();
   const { colors } = useTheme();
   const params = useLocalSearchParams<
-    FenSessionParams & { seconds?: string; exam?: string; from?: string }
+    FenSessionParams & {
+      seconds?: string;
+      exam?: string;
+      from?: string;
+      skipMemorize?: string;
+      start?: string;
+    }
   >();
   // A dojo exam run (`exam` param) plays the exam's one problem with its own
   // clock, whatever else the link carries, so the position recreated is the
@@ -73,6 +91,12 @@ export default function PositionMemorySession() {
   const [examProblem] = useState(() =>
     examProblemOf(params.exam, "position_memory"),
   );
+  const skipMemorize = !examProblem && params.skipMemorize === "1";
+  const startFen =
+    !examProblem && params.start && validateFenFormat(params.start)
+      ? params.start
+      : undefined;
+  const backToGame = useReturnToGame({ from: params.from, confirm: true });
   const memorizeSeconds =
     examProblem?.memorizeSeconds ??
     parseIntParam(params.seconds, {
@@ -123,7 +147,8 @@ export default function PositionMemorySession() {
 
   // The index of the last problem whose memorise step is over; the step
   // runs whenever it lags the current problem.
-  const [memorizedIndex, setMemorizedIndex] = useState(-1);
+  // Skipping it marks the first (only) problem memorised from the start.
+  const [memorizedIndex, setMemorizedIndex] = useState(skipMemorize ? 0 : -1);
   const memorizing =
     phase === "recreate" && memorizedIndex < currentProblemIndex;
   const [secondsLeft, setSecondsLeft] = useState(memorizeSeconds);
@@ -182,6 +207,15 @@ export default function PositionMemorySession() {
               ...(params.seconds ? { seconds: params.seconds } : {}),
             }
           : {}),
+        // A game's position check leads back to the game, and its "play
+        // again" needs the problem and the game's starting position.
+        ...(backToGame && !examProblem
+          ? {
+              from: params.from ?? "",
+              problems: params.problems ?? "",
+              ...(startFen ? { start: startFen } : {}),
+            }
+          : {}),
       },
     });
   }, [
@@ -194,6 +228,8 @@ export default function PositionMemorySession() {
     params.problems,
     params.seconds,
     examProblem,
+    backToGame,
+    startFen,
   ]);
 
   // Blank while the hand-off to the result screen is in flight.
@@ -294,6 +330,11 @@ export default function PositionMemorySession() {
                 boardEmpty={isBoardEmpty(recreatedPosition)}
                 onClear={() => session.setRecreatedPosition(EMPTY_BOARD_FEN)}
                 onFlip={toggleFlipped}
+                onLoadStart={
+                  startFen
+                    ? () => session.setRecreatedPosition(startFen)
+                    : undefined
+                }
               />
             </View>
 
@@ -315,11 +356,16 @@ export default function PositionMemorySession() {
 
             <SessionLinks
               links={[
-                {
-                  label: t("positionMemory.session.viewAgain"),
-                  onPress: () => setMemorizedIndex(currentProblemIndex - 1),
-                  testID: "view-again",
-                },
+                ...(skipMemorize
+                  ? []
+                  : [
+                      {
+                        label: t("positionMemory.session.viewAgain"),
+                        onPress: () =>
+                          setMemorizedIndex(currentProblemIndex - 1),
+                        testID: "view-again",
+                      },
+                    ]),
                 skipLink,
                 quitLink,
               ]}

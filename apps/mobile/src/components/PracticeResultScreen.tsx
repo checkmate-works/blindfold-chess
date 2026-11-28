@@ -17,7 +17,8 @@ import { spacing } from "../theme";
 export type ResultExits =
   | { kind: "menu" }
   | { kind: "exam" }
-  | { kind: "guide"; onPlayAgain: () => void };
+  | { kind: "guide"; onPlayAgain: () => void }
+  | { kind: "game"; onPlayAgain: () => void; onBackToGame: () => void };
 
 type PracticeResultScreenProps = {
   /**
@@ -39,6 +40,10 @@ type PracticeResultScreenProps = {
    *   guide: the primary button closes back to the guide ("Back to guide"),
    *   and "Play again" replays the problem in place (`onPlayAgain`), since
    *   closing the modal reveals the guide, not the practice's setup.
+   * - `"game"` — the session was opened from inside an AI game, on top of
+   *   it in the same stack: the primary button goes back to the game
+   *   (`onBackToGame`), and "Play again" replays the problem in place, since
+   *   closing the modal would leave the game.
    */
   exits?: ResultExits;
   /** The result card rendered under the title. */
@@ -116,6 +121,23 @@ function ResultFooter({
             icon: "book-outline",
             onPress: close,
             testID: "result-back-to-guide",
+          }}
+        />
+      );
+    case "game":
+      return (
+        <ModeButtonRow
+          secondary={{
+            title: t("practiceResult.playAgain"),
+            icon: "refresh",
+            onPress: exits.onPlayAgain,
+            testID: "result-play-again",
+          }}
+          primary={{
+            title: t("practiceResult.backToGame"),
+            icon: "arrow-undo",
+            onPress: exits.onBackToGame,
+            testID: "result-back-to-game",
           }}
         />
       );

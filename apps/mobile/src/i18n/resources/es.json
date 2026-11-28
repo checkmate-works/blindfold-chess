@@ -169,7 +169,8 @@
     "timeUp": "Tiempo agotado",
     "correct": "Correcto",
     "incorrect": "Incorrecto",
-    "levelUp": "¡Subes de nivel!"
+    "levelUp": "¡Subes de nivel!",
+    "backToGame": "Volver a la partida"
   },
   "onboarding": {
     "skip": "Omitir",
@@ -455,7 +456,9 @@
       },
       "gameMenu": "Menú de la partida",
       "undoHint": "Deshace tu última jugada y la respuesta de la IA",
-      "resignHint": "Reconoce la derrota y termina la partida"
+      "resignHint": "Reconoce la derrota y termina la partida",
+      "positionCheck": "Recrear esta posición",
+      "startRecall": "De memoria"
     },
     "result": {
       "title": "Fin de la partida",
@@ -618,7 +621,8 @@
       "clearBoardConfirmTitle": "¿Vaciar el tablero?",
       "clearBoardConfirmMessage": "Se quitarán todas las piezas que has colocado.",
       "clearBoardConfirmYes": "Vaciar",
-      "clearBoardConfirmNo": "Cancelar"
+      "clearBoardConfirmNo": "Cancelar",
+      "loadStartPosition": "Posición inicial"
     },
     "problemResult": {
       "accuracy": "Precisión",

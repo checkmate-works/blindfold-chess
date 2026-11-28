@@ -169,7 +169,8 @@
     "timeUp": "Time's up",
     "correct": "Correct",
     "incorrect": "Incorrect",
-    "levelUp": "Level Up!"
+    "levelUp": "Level Up!",
+    "backToGame": "Back to game"
   },
   "onboarding": {
     "skip": "Skip",
@@ -455,7 +456,9 @@
       },
       "gameMenu": "Game menu",
       "undoHint": "Take back your last move and the AI's reply",
-      "resignHint": "Concede the game and end it"
+      "resignHint": "Concede the game and end it",
+      "positionCheck": "Recreate this position",
+      "startRecall": "Recall"
     },
     "result": {
       "title": "Game Over",
@@ -618,7 +621,8 @@
       "clearBoardConfirmTitle": "Clear the board?",
       "clearBoardConfirmMessage": "All pieces you have placed will be removed.",
       "clearBoardConfirmYes": "Clear",
-      "clearBoardConfirmNo": "Cancel"
+      "clearBoardConfirmNo": "Cancel",
+      "loadStartPosition": "Starting position"
     },
     "problemResult": {
       "accuracy": "Accuracy",

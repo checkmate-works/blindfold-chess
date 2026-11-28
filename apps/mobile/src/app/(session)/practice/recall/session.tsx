@@ -41,6 +41,7 @@ import {
 } from "../../../../features/recall/recall-state";
 import { answerHaptics } from "../../../../lib/answer-haptics";
 import { parseEnumParam } from "../../../../lib/route-params";
+import { useReturnToGame } from "../../../../navigation/use-return-to-game";
 import { useCloseSession } from "../../../../navigation/use-close-session";
 import { borderRadius, fontSize, spacing, useTheme } from "../../../../theme";
 
@@ -49,7 +50,11 @@ type Params = {
   color: string;
   /** "1" starts with "Auto-fill opponent's moves" on (a saved game's recall). */
   auto?: string;
-  /** "setup" when opened from the recall setup screen. */
+  /**
+   * "setup" when opened from the recall setup screen, `FROM_GAME` when
+   * opened from an AI game's moves sheet (the × and the summary then lead
+   * back to the game).
+   */
   from?: string;
 };
 
@@ -71,6 +76,7 @@ export default function RecallSession() {
   const params = useLocalSearchParams<Params>();
   const game = useMemo(() => readRecallPgn(params.pgn ?? ""), [params.pgn]);
   const { close } = useCloseSession("/practice/recall");
+  useReturnToGame({ from: params.from, confirm: true });
 
   useEffect(() => {
     if (!game) close();

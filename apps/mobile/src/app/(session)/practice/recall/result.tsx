@@ -16,6 +16,7 @@ import { decodeRecallLog } from "../../../../features/recall/lib/result-params";
 import { positionOfEntry } from "../../../../features/recall/recall-state";
 import { parseEnumParam } from "../../../../lib/route-params";
 import { useCloseSession } from "../../../../navigation/use-close-session";
+import { useReturnToGame } from "../../../../navigation/use-return-to-game";
 import { fontSize, fontWeight, spacing, useTheme } from "../../../../theme";
 
 /**
@@ -25,7 +26,8 @@ import { fontSize, fontWeight, spacing, useTheme } from "../../../../theme";
  * move and per wrong try; tapping one opens the board at that point, as the
  * web's quick-peek does. "Play again" replays the same PGN from move 1;
  * the second button goes back to where the recall was started (the setup's
- * "Start with another PGN", or the saved game).
+ * "Start with another PGN", the saved game, or the AI game it was opened
+ * from, which is underneath in the same stack).
  */
 export default function RecallResult() {
   const { t } = useTranslation();
@@ -39,6 +41,7 @@ export default function RecallResult() {
     from: string;
     log: string;
   }>();
+  const backToGame = useReturnToGame({ from: params.from });
   const log = useMemo(() => decodeRecallLog(params.log), [params.log]);
   const stats = computeRecallStats(log);
   const game = useMemo(() => readRecallPgn(params.pgn ?? ""), [params.pgn]);
@@ -148,14 +151,16 @@ export default function RecallResult() {
         />
         <Button
           title={
-            params.from === "setup"
-              ? t("recall.summary.startNew")
-              : t("common.back")
+            backToGame
+              ? t("practiceResult.backToGame")
+              : params.from === "setup"
+                ? t("recall.summary.startNew")
+                : t("common.back")
           }
           variant="secondary"
           size="lg"
           fullWidth
-          onPress={close}
+          onPress={backToGame ?? close}
           testID="recall-start-new"
         />
       </BottomBar>
