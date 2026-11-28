@@ -1074,7 +1074,7 @@
     },
     "rank": "#{{rank}}",
     "empty": "Aún no hay desafíos registrados.",
-    "note": "Tu posición en cada clasificación de desafíos. Las clasificaciones completas están en el sitio web."
+    "note": "Tu posición en cada clasificación de desafíos. Toca una fila para abrir la clasificación completa en el sitio web."
   },
   "challenge": {
     "startFailed": "No se pudo iniciar un desafío registrado. Revisa tu conexión e inténtalo de nuevo.",

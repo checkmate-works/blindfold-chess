@@ -1074,7 +1074,7 @@
     },
     "rank": "#{{rank}}",
     "empty": "No recorded challenges yet.",
-    "note": "Your rank on each challenge leaderboard. The full leaderboards are on the website."
+    "note": "Your rank on each challenge leaderboard. Tap a row to open the full leaderboard on the website."
   },
   "challenge": {
     "startFailed": "Could not start a recorded challenge. Check your connection and try again.",
