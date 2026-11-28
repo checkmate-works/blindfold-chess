@@ -1086,7 +1086,8 @@
     },
     "rules": "制限時間60秒・ミス3回で終了",
     "willRecord": "スコアはランキングに記録されます。",
-    "promoted": "{{rank}}に昇級しました！"
+    "promoted": "{{rank}}に昇級しました！",
+    "viewMyRecords": "マイレコードで推移を見る"
   },
   "progress": {
     "rank": "段級位",

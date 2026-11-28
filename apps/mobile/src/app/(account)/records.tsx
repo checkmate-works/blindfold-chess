@@ -6,7 +6,7 @@ import {
   Text,
   View,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import {
   DASHBOARD_PERIODS,
@@ -17,6 +17,7 @@ import {
   getPreviousPeriodLabel,
 } from "@blindfold-chess/features/challenge-records";
 import { LEGAL_MOVES_PIECE_SELECTIONS } from "@blindfold-chess/features/legal-moves";
+import { CHALLENGE_MENU_TYPES } from "@blindfold-chess/features/practice-registry";
 import type { BoardOrientation, PieceType } from "@blindfold-chess/types";
 
 import {
@@ -65,6 +66,9 @@ const PIECE_OF: Record<string, PieceType | null> = {
  * - Take the Challenge, which closes the account modal and opens the
  *   challenge's setup.
  *
+ * A `menu` param opens on that challenge (a result screen's link names the
+ * one just played), as the web's `?menu=`.
+ *
  * Pull to refresh reads everything again; it is also read again whenever
  * the screen comes back into view. The web's help tour is not ported: each
  * section is labelled, and the web's tour only says what the labels do.
@@ -75,7 +79,10 @@ export default function RecordsScreen() {
   const { colors } = useTheme();
   const router = useRouter();
   const locale = i18n.language;
-  const dashboard = useRecordsDashboard(locale);
+  const params = useLocalSearchParams<{ menu?: string }>();
+  const initialMenu =
+    CHALLENGE_MENU_TYPES.find((m) => m === params.menu) ?? null;
+  const dashboard = useRecordsDashboard(locale, initialMenu);
   const [refreshing, setRefreshing] = useState(false);
 
   const {

@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
+import type { ChallengeMenuType } from "@blindfold-chess/features/practice-registry";
 
+import { Button } from "../../components/Button";
 import { useTheme, borderRadius, fontSize, spacing } from "../../theme";
 import { refreshAccount, useAuth as useAuthState } from "../../auth/use-auth";
 import { rankLabel } from "../records/rank-label";
@@ -19,13 +22,22 @@ type Status = "saving" | "recorded" | "notRecorded" | "failed";
  * sign in, as the web's result page does, with the setup screen's sign-in
  * row (`ChallengeSignInRow`) so the invitation looks the same before and
  * after a run.
+ *
+ * A recorded run ends with a button into My Records, opened on `menu`, as
+ * the web result's "See your progress in My Records" link. My Records is
+ * the account modal's screen, presented over this session modal, so its ×
+ * comes back to the result.
  */
 export function ChallengeRecordStatus({
   attemptId,
+  menu,
 }: {
   attemptId: string | undefined;
+  /** The challenge just played, which My Records opens on. */
+  menu: ChallengeMenuType;
 }) {
   const { t } = useTranslation();
+  const router = useRouter();
   const { colors, feedbackColors } = useTheme();
   const auth = useAuthState();
   const [status, setStatus] = useState<Status>("saving");
@@ -84,7 +96,8 @@ export function ChallengeRecordStatus({
     <View
       style={[
         styles.box,
-        promoted.length === 0 && styles.row,
+        // The spinner sits beside its line; everything else stacks.
+        status === "saving" && styles.row,
         { backgroundColor: colors.card },
       ]}
       accessibilityLiveRegion="polite"
@@ -101,6 +114,18 @@ export function ChallengeRecordStatus({
           {t("challenge.promoted", { rank: rankLabel(slug, t) })}
         </Text>
       ))}
+      {status === "recorded" ? (
+        <Button
+          title={t("challenge.viewMyRecords")}
+          icon="trending-up"
+          variant="outline"
+          size="sm"
+          onPress={() =>
+            router.push({ pathname: "/records", params: { menu } })
+          }
+          testID="challenge-view-my-records"
+        />
+      ) : null}
     </View>
   );
 }

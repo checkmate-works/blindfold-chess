@@ -22,7 +22,10 @@ export default function DiagonalQuizResult() {
   return (
     <PracticeResultScreen setupHref="/practice/diagonal-quiz">
       <PracticeStatsResultCard result={result} />
-      <ChallengeRecordStatus attemptId={params.attemptId} />
+      <ChallengeRecordStatus
+        attemptId={params.attemptId}
+        menu="diagonal_quiz"
+      />
       {questions.length > 0 && (
         <View style={styles.problems}>
           <DiagonalProblemList results={questions} />

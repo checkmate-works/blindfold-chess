@@ -1086,7 +1086,8 @@
     },
     "rules": "60 segundos · termina tras 3 errores",
     "willRecord": "Tu puntuación se registrará en la clasificación.",
-    "promoted": "¡Has ascendido a {{rank}}!"
+    "promoted": "¡Has ascendido a {{rank}}!",
+    "viewMyRecords": "Ver tu progreso en Mis récords"
   },
   "progress": {
     "rank": "Rango",

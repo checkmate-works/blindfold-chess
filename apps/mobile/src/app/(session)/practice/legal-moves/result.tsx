@@ -17,7 +17,7 @@ export default function LegalMovesResult() {
   return (
     <PracticeResultScreen setupHref="/practice/legal-moves">
       <PracticeStatsResultCard result={result} />
-      <ChallengeRecordStatus attemptId={params.attemptId} />
+      <ChallengeRecordStatus attemptId={params.attemptId} menu="legal_moves" />
     </PracticeResultScreen>
   );
 }

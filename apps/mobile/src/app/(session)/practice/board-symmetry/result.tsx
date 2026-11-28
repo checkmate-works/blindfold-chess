@@ -17,7 +17,10 @@ export default function BoardSymmetryResult() {
   return (
     <PracticeResultScreen setupHref="/practice/board-symmetry">
       <PracticeStatsResultCard result={result} />
-      <ChallengeRecordStatus attemptId={params.attemptId} />
+      <ChallengeRecordStatus
+        attemptId={params.attemptId}
+        menu="board_symmetry"
+      />
     </PracticeResultScreen>
   );
 }

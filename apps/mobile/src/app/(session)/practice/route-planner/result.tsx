@@ -36,7 +36,10 @@ export default function RoutePlannerResult() {
       <View style={styles.stack}>
         <View>
           <PracticeStatsResultCard result={result} />
-          <ChallengeRecordStatus attemptId={params.attemptId} />
+          <ChallengeRecordStatus
+            attemptId={params.attemptId}
+            menu="route_planner"
+          />
         </View>
         <ProblemList problems={problems} />
         <RelatedArticlesSection

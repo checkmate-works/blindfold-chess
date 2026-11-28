@@ -1086,7 +1086,8 @@
     },
     "rules": "60 segundos · termina após 3 erros",
     "willRecord": "Sua pontuação será registrada no ranking.",
-    "promoted": "Você foi promovido a {{rank}}!"
+    "promoted": "Você foi promovido a {{rank}}!",
+    "viewMyRecords": "Ver seu progresso em Meus recordes"
   },
   "progress": {
     "rank": "Graduação",

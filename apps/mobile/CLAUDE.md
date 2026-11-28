@@ -407,7 +407,9 @@ database. Sign-in calls Supabase Auth directly; sign-up goes through
   trend drawn with SVG (`features/records/ScoreChart.tsx`), the five newest
   runs and Take the Challenge; `GET /records/dashboard`, with the stats and
   the series from the shared `@blindfold-chess/features/challenge-records`
-  so both apps count the same), records-results (every run,
+  so both apps count the same; a recorded challenge's result screen opens
+  it over the session on that challenge, `?menu=` as on the web),
+  records-results (every run,
   `GET /records/results`, the next page loading near the end) and ranks
   (the user's own rank per leaderboard, the web home's "Your Rankings";
   `GET /leaderboard/ranks`). Whichever screen opens the modal gets the ×; the

@@ -54,13 +54,19 @@ function filterByKey(
  * comes up, so a player who only drilled the knight this week does not land
  * on an empty "random"; changing only the period keeps the player's key.
  *
+ * `initialMenu` is the challenge to open on (a result screen's link names
+ * the one just played), as the web's `?menu=`.
+ *
  * The data is read again whenever the screen comes back into view, so a
  * challenge finished in between shows up.
  */
-export function useRecordsDashboard(locale: string) {
+export function useRecordsDashboard(
+  locale: string,
+  initialMenu: ChallengeMenuType | null = null,
+) {
   const [period, setPeriod] = useState<DatePeriod>("thisWeek");
   const [preferredMenu, setPreferredMenu] = useState<ChallengeMenuType | null>(
-    null,
+    initialMenu,
   );
   const [data, setData] = useState<RecordsDashboard | null>(null);
   const [failed, setFailed] = useState(false);

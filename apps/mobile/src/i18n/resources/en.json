@@ -1086,7 +1086,8 @@
     },
     "rules": "60 seconds · ends after 3 mistakes",
     "willRecord": "Your score will be recorded on the leaderboard.",
-    "promoted": "Promoted to {{rank}}!"
+    "promoted": "Promoted to {{rank}}!",
+    "viewMyRecords": "See your progress in My records"
   },
   "progress": {
     "rank": "Dojo rank",
