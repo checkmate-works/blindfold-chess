@@ -341,9 +341,11 @@ database. Sign-in calls Supabase Auth directly; sign-up goes through
     picks the destination so the screens cannot disagree. A cell is the way
     into its whole stage, so every cell opens that stage's list: learn →
     the learn tab's list of guides, practice → the practice list narrowed
-    to the rank (both tabs, so `router.dismissTo`: from a root-stack screen
-    such as the rank screen, `navigate` reuses a route only when it is on
-    top and would push a second set of tabs), exam → the rank's requirements screen
+    to the rank (both tabs, opened with `openTab`: `router.dismissTo` from a
+    root-stack screen such as the rank screen, where `navigate` reuses a
+    route only when it is on top and would push a second set of tabs, but
+    `router.navigate` from inside the tabs, where `dismissTo`'s `POP_TO`
+    lands on the tab navigator, which drops it), exam → the rank's requirements screen
     (`dojo/requirements/[rank]`, `requirementsHref`): "Passed n / N" over
     `RankRequirementList`, so the player sees at a glance which
     requirements are already passed rather than landing in the first unmet

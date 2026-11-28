@@ -18,7 +18,7 @@ import {
 } from "../../theme";
 import { DoneMark } from "../../components";
 import { beltColors } from "./belt";
-import { stageTarget } from "./stage-target";
+import { openTab, stageTarget } from "./stage-target";
 
 type StageCount = RankJourney["stages"][number];
 
@@ -56,13 +56,10 @@ function stageValue({ stage, done, total }: StageCount, t: TFunction): string {
  * Every cell is a link, on every rank: pressing it opens where
  * `stageTarget` says that stage leads (the learn tab's list of guides, the
  * practice list narrowed to the rank, the rank's requirements screen).
- * Learn and practice are tabs, opened with `router.dismissTo`: the cells
- * also sit on the rank screen, a root-stack screen above the tabs, and
- * `router.navigate` from there reuses a route only when it is the one on
- * top, so it would push a second set of tabs; `dismissTo` pops back to the
- * existing tabs and switches to the tab (from inside the tabs it simply
- * switches). The requirements screen is a root-stack screen of its own and
- * is pushed. A held cell is filled with
+ * Learn and practice are tabs, and how a tab is reached depends on where
+ * the cells sit, so `openTab` picks the call when the cell is pressed.
+ * The requirements screen is a root-stack screen of its own and is pushed.
+ * A held cell is filled with
  * the belt's `tintPressed`; nothing else about it changes, as with every
  * pressable surface of the app.
  *
@@ -103,7 +100,7 @@ export function RankStageProgress({
         const open = () =>
           count.stage === "exam"
             ? router.push(target)
-            : router.dismissTo(target);
+            : openTab(router, target);
         return (
           <Fragment key={count.stage}>
             {index > 0 && (
