@@ -380,13 +380,13 @@
       "playerColor": "Play as",
       "white": "White",
       "black": "Black",
-      "skillLevel": "Skill Level",
+      "skillLevel": "AI Strength",
       "startGame": "Start Game",
       "opponent": "Opponent",
       "levelWithElo": "Level {{level}} ({{elo}} ELO)",
       "difficulty": {
         "custom": "Custom",
-        "customDescription": "Your own combination of the settings below",
+        "customDescription": "Your own combination of the Level settings",
         "levels": {
           "level1": "Board always visible",
           "level2": "Board hidden — peek on demand",
@@ -395,9 +395,14 @@
           "level5": "Full blindfold — no board at all"
         },
         "level": "Level {{level}}",
-        "customize": "Customize"
+        "section": "Blindfold",
+        "label": "Difficulty",
+        "contents": "Level settings",
+        "footer": "Choosing a level sets everything under Level settings at once. Changing one of them yourself makes it Custom.",
+        "overwriteNote": "Choosing a level replaces your current adjustments."
       },
-      "preview": "Preview"
+      "preview": "Preview",
+      "display": "During the game"
     },
     "session": {
       "yourTurn": "Your Turn",
@@ -440,7 +445,7 @@
       "loss": "You Lose",
       "draw": "Draw",
       "playerColor": "Color",
-      "skillLevel": "Skill Level",
+      "skillLevel": "AI Strength",
       "moveCount": "Total Moves",
       "playAgain": "Play Again",
       "backToMenu": "Back to Menu",
@@ -873,7 +878,7 @@
     },
     "resultLabel": "Result",
     "sideLabel": "You played",
-    "levelLabel": "AI level",
+    "levelLabel": "AI strength",
     "dateLabel": "Played",
     "recall": "Replay from memory (recall)",
     "share": "Share PGN",

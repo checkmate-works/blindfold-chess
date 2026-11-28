@@ -4,13 +4,17 @@ import {
   DIFFICULTY_LEVELS,
   DIFFICULTY_PRESETS,
   matchDifficultyPreset,
+  type DifficultyLevel,
   type PerGamePreferences,
 } from "@blindfold-chess/features/game-preferences";
 import type { Side } from "@blindfold-chess/types";
 
-import { ListRow, ListSection } from "../../../components";
+import { ListSection, SelectRow } from "../../../components";
 import { spacing } from "../../../theme";
-import { perGameSettingRows } from "../../settings/per-game-setting-rows";
+import {
+  difficultySettingRows,
+  inGameDisplayRows,
+} from "../../settings/per-game-setting-rows";
 import { BoardPreview } from "./BoardPreview";
 
 type Props = {
@@ -21,18 +25,32 @@ type Props = {
 };
 
 /**
- * How blind this game is played, in the web's order: the difficulty ladder,
- * a preview of the board it gives, then the settings a rung is made of.
+ * How blind this game is played, in the web's order: the difficulty level,
+ * a preview of the board it gives, the rows a level is made of, then the
+ * rows no level touches.
  *
- * The ladder is one row per level, easiest first, each with what it does and
- * a check on the active one. Picking a rung writes its values into the
- * settings under "Customize" and they stay editable; the rung checked is
- * always read back from them. "Custom" is not a choice: it appears, already
- * checked, only when the settings sit on no rung, so the ladder never shows
- * nothing selected — the way into it is editing the rows below.
+ * The level is one row, like the engine's strength above it: the row shows
+ * the active level and what it does, and tapping it opens a sheet listing
+ * the levels, easiest first, each with its description. The setup screen is
+ * passed through before every game, so five rows standing open made it long
+ * for a choice that is usually kept from game to game.
  *
- * The preview stays in the ladder's panel so a rung's effect shows right
- * under the row just tapped. It is left out when the game has no board at
+ * A level is a template for the rows under "Level settings": picking one
+ * writes its values there, and they stay editable; the level shown is always
+ * read back from them. The screen makes that cause and effect visible rather
+ * than leaving it to be discovered: those rows sit in a section of their own
+ * right under the level, the rows a level never sets (the AI move's
+ * announcement, the last-move highlight, the move dots) are apart under
+ * "During the game", since changing them never makes the level "Custom", and
+ * a note under the level says both halves in one sentence.
+ *
+ * "Custom" is not a choice in the sheet: the row says it, with its
+ * description, when the level rows match no level, so the row never shows
+ * nothing. Picking a level then replaces those hand-made changes, so the
+ * sheet says so above the levels while the row shows "Custom".
+ *
+ * The preview stays on the screen, under the row, so a level's effect shows
+ * as soon as the sheet closes. It is left out when the game has no board at
  * all (`boardVisibility: "never"`): there is nothing to draw.
  */
 export function GameSettingsSection({
@@ -42,30 +60,44 @@ export function GameSettingsSection({
 }: Props) {
   const { t } = useTranslation();
   const activeLevel = matchDifficultyPreset(preferences);
+  // aiGame.setup.difficulty.levels.level{1,2,3,4,5}
+  const describeLevel = (level: DifficultyLevel) =>
+    t(`aiGame.setup.difficulty.levels.level${level}`);
+  const formatLevel = (level: DifficultyLevel) =>
+    t("aiGame.setup.difficulty.level", { level });
 
   return (
     <View style={styles.sections}>
-      <ListSection title={t("common.gameSettings")}>
-        {DIFFICULTY_LEVELS.map((level) => (
-          <ListRow
-            key={level}
-            title={t("aiGame.setup.difficulty.level", { level })}
-            // aiGame.setup.difficulty.levels.level{1,2,3,4,5}
-            subtitle={t(`aiGame.setup.difficulty.levels.level${level}`)}
-            accessory={level === activeLevel ? "check" : "none"}
-            onPress={() => onChange(DIFFICULTY_PRESETS[level])}
-            testID={`difficulty-level-${level}`}
-          />
-        ))}
-        {activeLevel === null && (
-          <ListRow
-            key="custom"
-            title={t("aiGame.setup.difficulty.custom")}
-            subtitle={t("aiGame.setup.difficulty.customDescription")}
-            accessory="check"
-            testID="difficulty-custom"
-          />
-        )}
+      <ListSection
+        title={t("aiGame.setup.difficulty.section")}
+        footer={t("aiGame.setup.difficulty.footer")}
+      >
+        <SelectRow<DifficultyLevel>
+          key="difficulty"
+          label={t("aiGame.setup.difficulty.label")}
+          options={DIFFICULTY_LEVELS}
+          value={activeLevel}
+          onChange={(level) => onChange(DIFFICULTY_PRESETS[level])}
+          formatOption={formatLevel}
+          describeOption={describeLevel}
+          valueLabel={
+            activeLevel === null
+              ? t("aiGame.setup.difficulty.custom")
+              : undefined
+          }
+          subtitle={
+            activeLevel === null
+              ? t("aiGame.setup.difficulty.customDescription")
+              : describeLevel(activeLevel)
+          }
+          description={
+            activeLevel === null
+              ? t("aiGame.setup.difficulty.overwriteNote")
+              : undefined
+          }
+          testID="difficulty-row"
+          optionTestID="difficulty-level"
+        />
         {preferences.boardVisibility !== "never" && (
           <BoardPreview
             key="preview"
@@ -74,8 +106,11 @@ export function GameSettingsSection({
           />
         )}
       </ListSection>
-      <ListSection title={t("aiGame.setup.difficulty.customize")}>
-        {perGameSettingRows({ t, preferences, onChange })}
+      <ListSection title={t("aiGame.setup.difficulty.contents")}>
+        {difficultySettingRows({ t, preferences, onChange })}
+      </ListSection>
+      <ListSection title={t("aiGame.setup.display")}>
+        {inGameDisplayRows({ t, preferences, onChange })}
       </ListSection>
     </View>
   );

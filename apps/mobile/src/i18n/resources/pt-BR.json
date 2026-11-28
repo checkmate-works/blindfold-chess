@@ -380,13 +380,13 @@
       "playerColor": "Jogar como",
       "white": "Brancas",
       "black": "Pretas",
-      "skillLevel": "Nível de habilidade",
+      "skillLevel": "Força da IA",
       "startGame": "Começar partida",
       "opponent": "Oponente",
       "levelWithElo": "Nível {{level}} ({{elo}} ELO)",
       "difficulty": {
         "custom": "Personalizado",
-        "customDescription": "Sua própria combinação dos ajustes abaixo",
+        "customDescription": "Sua própria combinação dos Ajustes do nível",
         "levels": {
           "level1": "Tabuleiro sempre visível",
           "level2": "Tabuleiro oculto: espie sob demanda",
@@ -395,9 +395,14 @@
           "level5": "Às cegas total: sem tabuleiro"
         },
         "level": "Nível {{level}}",
-        "customize": "Personalizar"
+        "section": "Às cegas",
+        "label": "Dificuldade",
+        "contents": "Ajustes do nível",
+        "footer": "Escolher um nível define de uma vez todos os ajustes do nível. Se você mudar um deles, passa a ser Personalizado.",
+        "overwriteNote": "Escolher um nível substitui seus ajustes atuais."
       },
-      "preview": "Pré-visualização"
+      "preview": "Pré-visualização",
+      "display": "Durante a partida"
     },
     "session": {
       "yourTurn": "Sua vez",
@@ -440,7 +445,7 @@
       "loss": "Você perdeu",
       "draw": "Empate",
       "playerColor": "Cor",
-      "skillLevel": "Nível de habilidade",
+      "skillLevel": "Força da IA",
       "moveCount": "Total de jogadas",
       "playAgain": "Jogar novamente",
       "backToMenu": "Voltar ao menu",
@@ -873,7 +878,7 @@
     },
     "resultLabel": "Resultado",
     "sideLabel": "Você jogou de",
-    "levelLabel": "Nível da IA",
+    "levelLabel": "Força da IA",
     "dateLabel": "Data",
     "recall": "Reproduzir de memória",
     "share": "Compartilhar PGN",

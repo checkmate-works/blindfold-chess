@@ -380,13 +380,13 @@
       "playerColor": "プレイする色",
       "white": "白",
       "black": "黒",
-      "skillLevel": "スキルレベル",
+      "skillLevel": "AIの強さ",
       "startGame": "ゲーム開始",
       "opponent": "対戦相手",
       "levelWithElo": "レベル {{level}} ({{elo}} ELO)",
       "difficulty": {
         "custom": "カスタム",
-        "customDescription": "下の設定を自分で組み合わせた状態",
+        "customDescription": "「レベルの内容」を自分で組み合わせた状態",
         "levels": {
           "level1": "盤面を常に表示",
           "level2": "盤面を隠し、必要なときにピーク",
@@ -395,9 +395,14 @@
           "level5": "完全な目隠し（盤面なし）"
         },
         "level": "レベル{{level}}",
-        "customize": "詳細設定"
+        "section": "目隠し",
+        "label": "難易度",
+        "contents": "レベルの内容",
+        "footer": "レベルを選ぶと、「レベルの内容」の項目がまとめて設定されます。項目を個別に変えるとカスタムになります。",
+        "overwriteNote": "レベルを選ぶと、今の調整は上書きされます。"
       },
-      "preview": "プレビュー"
+      "preview": "プレビュー",
+      "display": "対局中の表示"
     },
     "session": {
       "yourTurn": "あなたの番",
@@ -440,7 +445,7 @@
       "loss": "敗北",
       "draw": "引き分け",
       "playerColor": "カラー",
-      "skillLevel": "スキルレベル",
+      "skillLevel": "AIの強さ",
       "moveCount": "総手数",
       "playAgain": "もう一度",
       "backToMenu": "メニューに戻る",
@@ -873,7 +878,7 @@
     },
     "resultLabel": "結果",
     "sideLabel": "あなたの手番",
-    "levelLabel": "AIレベル",
+    "levelLabel": "AIの強さ",
     "dateLabel": "対局日時",
     "recall": "感想戦をする（棋譜再現）",
     "share": "PGNを共有",

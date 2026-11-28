@@ -578,9 +578,17 @@ starts from the global values, lets the player change the per-game ones
 (`PerGamePreferences`: the difficulty ladder and the rows it is made of,
 `perGameSettingRows`, which the settings tab shares) without writing them
 back, and hands the result to the session as the `gamePrefs` route param.
-The ladder is one checked row per level with a `BoardPreview` under it: a
-sample position drawn under the unsaved choices, from the chosen colour's
-side, and left out when the game has no board at all.
+The ladder is one `SelectRow`, like the engine's strength: the row shows
+the active level and what it does ("Custom" when the rows below sit on no
+level), and the sheet lists the levels with their descriptions. A
+`BoardPreview` stays on the screen under it: a sample position drawn under
+the unsaved choices, from the chosen colour's side, and left out when the
+game has no board at all. Under it the rows a level sets
+(`difficultySettingRows`) form their own "Level settings" section, apart
+from the rows no level touches (`inGameDisplayRows`, "During the game"),
+so that changing a row in the first group, and only there, turns the level
+into "Custom"; the settings tab and the session's gear show both groups in
+the same order through `perGameSettingRows`.
 The session lays it over the global preferences with
 `GamePreferencesOverride`, so the board components still just call
 `useGamePreferences`; the gear in the session's top row edits that copy
