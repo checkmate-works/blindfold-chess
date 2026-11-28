@@ -1,15 +1,15 @@
 'use server';
 
-import { and, desc, eq, gte, lt } from 'drizzle-orm';
-
 import { getOptionalUser } from '@/lib/auth';
-import { db } from '@/lib/db';
-import { liveChallengeResult } from '@/lib/db/challenge-results-visibility';
 import type { ChallengeMenuType } from '@/lib/db/practice-menu-types';
-import { CHALLENGE_MENU_TYPES } from '@/lib/db/practice-menu-types';
-import { challengeResults } from '@/lib/db/schema';
 import { captureError } from '@/lib/sentry/capture-error';
 import { handleServerActionError } from '@/lib/server-action-error';
+
+import {
+  listAvailableMenuTypes,
+  loadChallengeDashboard,
+  querySessionsByRange,
+} from '../_lib/dashboard-queries';
 
 export type ChallengeResultRow = {
   id: string;
@@ -31,38 +31,6 @@ export type GetChallengeSessionsResponse = {
 async function getSessionUserId(): Promise<string | null> {
   const user = await getOptionalUser();
   return user?.id ?? null;
-}
-
-/**
- * The player's results in `range`, newest first. Results removed by
- * moderation are left out, so the dashboard's session list and its
- * period-over-period comparison only ever count live runs.
- */
-function querySessionsByRange(
-  userId: string,
-  menuType: string | null,
-  range: { start: Date; end: Date }
-) {
-  const conditions = [eq(challengeResults.userId, userId), liveChallengeResult()];
-  if (menuType) {
-    conditions.push(eq(challengeResults.menuType, menuType));
-  }
-  conditions.push(gte(challengeResults.createdAt, range.start));
-  conditions.push(lt(challengeResults.createdAt, range.end));
-
-  return db
-    .select({
-      id: challengeResults.id,
-      menuType: challengeResults.menuType,
-      leaderboardKey: challengeResults.leaderboardKey,
-      score: challengeResults.score,
-      incorrectAnswers: challengeResults.incorrectAnswers,
-      timeTaken: challengeResults.timeTaken,
-      createdAt: challengeResults.createdAt,
-    })
-    .from(challengeResults)
-    .where(and(...conditions))
-    .orderBy(desc(challengeResults.createdAt));
 }
 
 export async function getChallengeSessions(
@@ -132,52 +100,15 @@ export async function getChallengeDashboardData(
       return { success: false, ...empty };
     }
 
-    const currentRange = { start: new Date(currentRangeStart), end: new Date(currentRangeEnd) };
-    const previousRange = { start: new Date(previousRangeStart), end: new Date(previousRangeEnd) };
-
-    const availableMenuTypes = await listAvailableMenuTypes(userId, currentRange);
-    const selectedMenu =
-      preferredMenu && availableMenuTypes.includes(preferredMenu)
-        ? preferredMenu
-        : (availableMenuTypes[0] ?? null);
-
-    if (!selectedMenu) {
-      return { success: true, ...empty, availableMenuTypes };
-    }
-
-    const [sessions, previousSessions] = await Promise.all([
-      querySessionsByRange(userId, selectedMenu, currentRange),
-      querySessionsByRange(userId, selectedMenu, previousRange),
-    ]);
-
-    return { success: true, availableMenuTypes, selectedMenu, sessions, previousSessions };
+    const data = await loadChallengeDashboard(userId, preferredMenu, {
+      current: { start: new Date(currentRangeStart), end: new Date(currentRangeEnd) },
+      previous: { start: new Date(previousRangeStart), end: new Date(previousRangeEnd) },
+    });
+    return { success: true, ...data };
   } catch (error) {
     handleServerActionError(error, '[getChallengeDashboardData]');
     return { success: false, ...empty };
   }
-}
-
-/**
- * The menus the player has live results for. A menu whose only results were
- * removed by moderation is not offered, since selecting it would show nothing.
- */
-async function listAvailableMenuTypes(
-  userId: string,
-  range?: { start: Date; end: Date }
-): Promise<ChallengeMenuType[]> {
-  const conditions = [eq(challengeResults.userId, userId), liveChallengeResult()];
-  if (range) {
-    conditions.push(gte(challengeResults.createdAt, range.start));
-    conditions.push(lt(challengeResults.createdAt, range.end));
-  }
-
-  const rows = await db
-    .selectDistinct({ menuType: challengeResults.menuType })
-    .from(challengeResults)
-    .where(and(...conditions));
-
-  const present = new Set(rows.map((r) => r.menuType));
-  return CHALLENGE_MENU_TYPES.filter((m) => present.has(m));
 }
 
 /**
