@@ -1,5 +1,6 @@
 import {
   getShortestPathOrEmpty,
+  isRoutePlannerProblemResult,
   type RoutePlannerProblem,
   type RoutePlannerProblemResult,
   type RoutePlannerResult,
@@ -71,7 +72,9 @@ export function buildRoutePlannerResultParams(
 
 /**
  * The problem list back from the params; anything that is not a JSON
- * array (a deep link without it, a mangled one) is an empty list.
+ * array (a deep link without it, a mangled one) is an empty list, and an
+ * entry that is not a well-formed problem result is dropped rather than
+ * rendered.
  */
 export function parseRoutePlannerProblems(
   raw: string | undefined,
@@ -79,7 +82,9 @@ export function parseRoutePlannerProblems(
   if (!raw) return [];
   try {
     const parsed: unknown = JSON.parse(raw);
-    return Array.isArray(parsed) ? (parsed as RoutePlannerProblemResult[]) : [];
+    return Array.isArray(parsed)
+      ? parsed.filter(isRoutePlannerProblemResult)
+      : [];
   } catch {
     return [];
   }
