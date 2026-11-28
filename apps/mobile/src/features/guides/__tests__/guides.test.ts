@@ -182,14 +182,58 @@ describe("guideLinkTarget", () => {
     });
   });
 
+  it("opens a position-memory problem as a session of that one problem", () => {
+    const fen = "5rk1/5ppp/8/8/8/8/5PPP/5RK1 w - - 0 1";
+    const token = btoa(fen)
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=+$/, "");
+    const target = guideLinkTarget(`/practice/position-memory/custom/${token}`);
+    expect(target.kind).toBe("app");
+    if (target.kind !== "app") return;
+    const [pathname, query] = target.href.split("?");
+    expect(pathname).toBe("/practice/position-memory/session");
+    const params = new URLSearchParams(query);
+    expect(JSON.parse(params.get("problems") ?? "")).toEqual([fen]);
+    expect(params.get("count")).toBe("1");
+    expect(params.get("shuffle")).toBe("0");
+    expect(params.get("from")).toBe("guide");
+  });
+
+  it("opens the AI-game setup from a guide's position", () => {
+    const fen = "4k3/4p3/8/8/8/8/3PP3/4K3 w - - 0 1";
+    const target = guideLinkTarget(
+      `/games/new/position?fen=${encodeURIComponent(fen)}`,
+    );
+    expect(target.kind).toBe("app");
+    if (target.kind !== "app") return;
+    const [pathname, query] = target.href.split("?");
+    expect(pathname).toBe("/play/ai-game");
+    expect(new URLSearchParams(query).get("fen")).toBe(fen);
+  });
+
+  it("opens every guide's problem and position in the app", () => {
+    const links = Object.values(GUIDE_CONTENT.en.links).filter(
+      (link) =>
+        link.href.startsWith("/practice/position-memory/custom/") ||
+        link.href.startsWith("/games/new/position"),
+    );
+    expect(links.length).toBeGreaterThan(0);
+    for (const link of links) {
+      expect(guideLinkTarget(link.href).kind).toBe("app");
+    }
+  });
+
   it("sends what the app does not have to the web", () => {
     for (const path of [
       "/practice/diagonal-quiz/tutorial",
       "/practice/position-memory/custom/abc",
+      "/practice/position-memory/custom/!!",
       "/repertoires",
       "/chunks/new",
       "/articles/switched-to-quadrant-method",
       "/games/new/position?fen=x",
+      "/games/new/position",
     ]) {
       expect(guideLinkTarget(path)).toEqual({ kind: "web", path });
     }

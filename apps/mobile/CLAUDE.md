@@ -327,7 +327,15 @@ Generated, not edited by hand; re-run the script after the web changes:
   `features/guides/visual-aids/renderers.tsx`, typed over the generated name
   union, so a component the web starts using fails the typecheck until it is
   drawn. A link card opens the app's screen when it has the page (a bundled
-  article, a practice's setup, another guide) and the web otherwise. Only
+  article, a practice's setup, another guide) and the web otherwise. Two
+  web pages become the app's own flows (`guideLinkTarget`): an instant
+  position-memory problem (`/practice/position-memory/custom/<Base64URL
+FEN>`) opens the session on that one problem over the guide with
+  `from=guide`, whose result leads with "Back to guide" and replays the
+  problem in place (`PracticeResultScreen`'s `backToGuide`); a game from a
+  position (`/games/new/position?fen=`) opens the AI-game setup with `fen`,
+  which shows the starting position, gives the player the side to move for
+  this game only, and passes `startingFen` to the session. Only
   the flat format is bundled; the script refuses a chaptered guide, which
   would need a chapter screen first.
 
@@ -500,8 +508,9 @@ database. Sign-in calls Supabase Auth directly; sign-up goes through
 
 Still web-only: creating puzzles and community positions, repertoires,
 topics and articles, the home feed, Maia, password reset (the app opens the
-web page), and starting an AI game from a custom position, an opening or a
-PGN: a game in the app always starts from the standard position. AI games
+web page), and starting an AI game from a position set up by hand, an
+opening or a PGN: a game in the app starts from the standard position, or
+from a guide's position when a guide's link card opens the setup. AI games
 are kept on the device (`features/game-history/`, AsyncStorage
 `"AI_GAME_HISTORY"`, newest first, at most 50), like the web keeps them in
 localStorage. The session saves the game after every move, so one that was

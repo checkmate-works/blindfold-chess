@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as Crypto from "expo-crypto";
 import { isValidSkillLevel } from "@blindfold-chess/features/ai-game";
+import { validateFen } from "@blindfold-chess/features/chess-core";
 import {
   type GamePreferences,
   pickPerGamePreferences,
@@ -87,8 +88,9 @@ function skillLevelOf(value: number): SkillLevel {
  * The AI game, new or resumed.
  *
  * A new game comes with its setup's choices as route params (`playerColor`,
- * `skillLevel`, `gamePrefs`; the onboarding's first game sends no
- * `gamePrefs` and plays under the global preferences). A game picked up
+ * `skillLevel`, `gamePrefs`, and `startingFen` for a game from a guide's
+ * position; the onboarding's first game sends no `gamePrefs` and plays
+ * under the global preferences). A game picked up
  * from the history comes as `resume`, the saved game's id, and everything
  * else is read from the device, so the game continues from the position,
  * the operation record and the settings it was left with.
@@ -98,6 +100,7 @@ export default function AiGameSession() {
     playerColor?: string;
     skillLevel?: string;
     gamePrefs?: string;
+    startingFen?: string;
     resume?: string;
   }>();
   const { close } = useCloseSession("/play");
@@ -110,6 +113,12 @@ export default function AiGameSession() {
           gameId: Crypto.randomUUID(),
           playerColor: parseEnumParam<Side>(params.playerColor, SIDES, "white"),
           skillLevel: skillLevelOf(Number(params.skillLevel)),
+          // A deep link can carry anything; a FEN chess.js rejects starts
+          // from the standard position instead.
+          startingFen:
+            params.startingFen && validateFen(params.startingFen)
+              ? params.startingFen
+              : undefined,
           moves: [],
           operationLogs: [],
           gamePrefs: decodeGamePrefsParam(params.gamePrefs),

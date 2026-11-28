@@ -3,6 +3,10 @@ import {
   type RankSlug,
 } from "@blindfold-chess/features/dojo-ranks";
 
+import { validateFen } from "@blindfold-chess/features/chess-core";
+import { validateFenFormat } from "@blindfold-chess/features/chess-core/fen";
+
+import { serializeFenSessionParams } from "../fen/lib/route-params";
 import {
   MOBILE_PRACTICE_MODULES,
   practiceModuleRoute,
@@ -145,15 +149,43 @@ export function parseProse(text: string): ProseSegment[] {
 /**
  * Where a guide's link card goes: a screen of the app when the app has the
  * page — a learn article it bundles, a practice's setup screen, another
- * guide — otherwise the web page.
+ * guide, a position-memory problem, an AI game from a position — otherwise
+ * the web page.
  */
 export type GuideLinkTarget =
   | { readonly kind: "app"; readonly href: string }
   | { readonly kind: "web"; readonly path: string };
 
 export function guideLinkTarget(path: string): GuideLinkTarget {
-  const segments = path.split("?")[0].split("/").filter(Boolean);
+  const [pathname, query = ""] = path.split("?");
+  const segments = pathname.split("/").filter(Boolean);
   const [section, first, second, ...rest] = segments;
+
+  // The web's instant problem (`/practice/position-memory/custom/<token>`):
+  // the guide's position, Base64URL-encoded. The app plays it as a session
+  // of that one problem, opened over the guide so closing it returns there.
+  if (
+    section === "practice" &&
+    first === "position-memory" &&
+    second === "custom" &&
+    rest.length === 1
+  ) {
+    const fen = decodeFenFromBase64Url(rest[0]);
+    if (fen && validateFenFormat(fen)) {
+      return { kind: "app", href: guidePositionMemoryHref(fen) };
+    }
+  }
+  // The web's "new game from a position" (`/games/new/position?fen=`): the
+  // AI-game setup with that starting position.
+  if (section === "games" && first === "new" && second === "position") {
+    const fen = new URLSearchParams(query).get("fen");
+    if (rest.length === 0 && fen && validateFen(fen)) {
+      return {
+        kind: "app",
+        href: `/play/ai-game?${new URLSearchParams({ fen }).toString()}`,
+      };
+    }
+  }
 
   if (section === "learn" && second !== undefined && rest.length === 0) {
     if (LEARN_ARTICLES.some((article) => article.slug === second)) {
@@ -178,4 +210,40 @@ export function guideLinkTarget(path: string): GuideLinkTarget {
     return { kind: "app", href: `/dojo/guides/${second}` };
   }
   return { kind: "web", path };
+}
+
+/**
+ * The position-memory session for one guide problem. `from=guide` makes its
+ * result lead back to the guide rather than to the practice's setup, which
+ * is not underneath the session.
+ */
+function guidePositionMemoryHref(fen: string): string {
+  const params = new URLSearchParams({
+    ...serializeFenSessionParams({
+      fens: [fen],
+      problemCount: 1,
+      shuffle: false,
+    }),
+    from: "guide",
+  });
+  return `/practice/position-memory/session?${params.toString()}`;
+}
+
+/**
+ * The FEN in a web instant-problem token: Base64URL without padding, as the
+ * web's `encodeFenToBase64Url` writes it. `null` for anything that does not
+ * decode; the caller still validates the FEN.
+ */
+export function decodeFenFromBase64Url(token: string): string | null {
+  // A FEN is under 100 characters; a longer token is not one of the web's.
+  if (token.length === 0 || token.length > 256) return null;
+  if (!/^[A-Za-z0-9_-]+$/.test(token)) return null;
+  try {
+    const base64 = token.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = base64 + "=".repeat((4 - (base64.length % 4)) % 4);
+    const decoded = atob(padded);
+    return decoded.length > 0 ? decoded : null;
+  } catch {
+    return null;
+  }
 }

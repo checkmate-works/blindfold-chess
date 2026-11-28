@@ -64,7 +64,7 @@ export default function PositionMemorySession() {
   const router = useRouter();
   const { colors } = useTheme();
   const params = useLocalSearchParams<
-    FenSessionParams & { seconds?: string; exam?: string }
+    FenSessionParams & { seconds?: string; exam?: string; from?: string }
   >();
   // A dojo exam run (`exam` param) plays the exam's one problem with its own
   // clock, whatever else the link carries, so the position recreated is the
@@ -172,9 +172,23 @@ export default function PositionMemorySession() {
         // A dojo exam run (`dojo/exams/[rank]`) is graded on the result
         // screen, from the recreated position in `results`.
         ...(examProblem && params.exam ? { exam: params.exam } : {}),
+        // A guide's problem (`from=guide`) leads back to the guide, and its
+        // "play again" needs the problem it was.
+        ...(params.from === "guide" && !examProblem
+          ? { from: "guide", problems: params.problems ?? "" }
+          : {}),
       },
     });
-  }, [phase, session, positions.length, router, params.exam, examProblem]);
+  }, [
+    phase,
+    session,
+    positions.length,
+    router,
+    params.exam,
+    params.from,
+    params.problems,
+    examProblem,
+  ]);
 
   // Blank while the hand-off to the result screen is in flight.
   if (!originalPosition || phase === "result") {

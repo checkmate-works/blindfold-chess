@@ -163,6 +163,7 @@
     "averageTime": "平均時間",
     "playAgain": "もう一度",
     "backToMenu": "メニューに戻る",
+    "backToGuide": "教本に戻る",
     "problemDetails": "問題ごとの詳細",
     "skipped": "スキップ",
     "timeUp": "時間切れ",
@@ -415,6 +416,7 @@
         "overwriteNote": "レベルを選ぶと、今の調整は上書きされます。"
       },
       "preview": "プレビュー",
+      "startingPosition": "開始局面",
       "display": "対局中の表示"
     },
     "session": {
