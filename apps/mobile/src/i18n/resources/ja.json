@@ -381,7 +381,7 @@
       "levelWithElo": "レベル {{level}} ({{elo}} ELO)",
       "difficulty": {
         "custom": "カスタム",
-        "customDescription": "下の設定を自分で組み合わせた状態",
+        "customDescription": "「レベルの内容」を自分で組み合わせた状態",
         "levels": {
           "level1": "盤面を常に表示",
           "level2": "盤面を隠し、必要なときにピーク",

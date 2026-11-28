@@ -381,7 +381,7 @@
       "levelWithElo": "Level {{level}} ({{elo}} ELO)",
       "difficulty": {
         "custom": "Custom",
-        "customDescription": "Your own combination of the settings below",
+        "customDescription": "Your own combination of the Level settings",
         "levels": {
           "level1": "Board always visible",
           "level2": "Board hidden — peek on demand",

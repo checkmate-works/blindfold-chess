@@ -381,7 +381,7 @@
       "levelWithElo": "Nível {{level}} ({{elo}} ELO)",
       "difficulty": {
         "custom": "Personalizado",
-        "customDescription": "Sua própria combinação dos ajustes abaixo",
+        "customDescription": "Sua própria combinação dos Ajustes do nível",
         "levels": {
           "level1": "Tabuleiro sempre visível",
           "level2": "Tabuleiro oculto: espie sob demanda",
