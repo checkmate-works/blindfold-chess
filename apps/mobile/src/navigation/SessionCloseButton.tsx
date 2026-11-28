@@ -20,7 +20,7 @@ type Props = {
  *
  * A full-screen modal has no swipe to dismiss and no back chevron, so every
  * screen in `(session)` shows this button in its header or, for the
- * header-less timed sessions, in its own top row. The hit area is the platform
+ * header-less timed sessions, in its own top row. The hit area is the platform's
  * minimum even though the glyph is smaller.
  */
 export function SessionCloseButton({ confirm = false, onClose }: Props) {

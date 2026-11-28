@@ -105,6 +105,9 @@ header style (page-coloured, no hairline, chevron-only back).
   from `components/SettingRows.tsx`. Tab entry screens scroll in
   `TabScrollView` (automatic content insets, so the floating tab bar does not
   cover the last row).
+- List values move below the title on narrow screens or when system text is
+  enlarged. Switch rows expose one labelled switch to accessibility services;
+  their nested native switch is visual only for hit testing and reading.
 - **Done is one mark:** `DoneMark` (`components/DoneMark.tsx`), a white
   check in a green circle — `"md"` in a row's `trailing`, `"sm"` beside a
   line of text. Never a bare "✓" or a green `checkmark` icon of its own; a

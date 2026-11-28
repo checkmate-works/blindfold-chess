@@ -12,7 +12,7 @@ import { useTheme, touchTarget, borderRadius } from "../theme";
  *
  * An ink glyph like the session's × (`SessionCloseButton`) and the header's
  * other icons, rather than a blue "Close" text, so every way out of a modal
- * looks the same. The hit area is the platform minimum.
+ * looks the same. The hit area is the platform's minimum.
  */
 export function ModalCloseButton() {
   const { t } = useTranslation();

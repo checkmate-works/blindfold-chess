@@ -13,7 +13,7 @@ type Props = {
 /**
  * An icon button for the native header's trailing slot (help, share, …).
  * The glyph is ink (`colors.foreground`), the header's tint, like the back
- * chevron; the hit area is padded to platform.
+ * chevron; the hit area is 44pt on iOS and 48dp on Android.
  */
 export function HeaderIconButton({
   icon,

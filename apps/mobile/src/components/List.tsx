@@ -202,6 +202,8 @@ export function ListRow({
       {trailing}
       {shownAccessory === "chevron" && (
         <Ionicons
+          accessible={false}
+          importantForAccessibility="no"
           name="chevron-forward"
           size={18}
           color={colors.mutedForeground}
@@ -209,13 +211,21 @@ export function ListRow({
       )}
       {shownAccessory === "external" && (
         <Ionicons
+          accessible={false}
+          importantForAccessibility="no"
           name="open-outline"
           size={18}
           color={colors.mutedForeground}
         />
       )}
       {shownAccessory === "check" && (
-        <Ionicons name="checkmark" size={20} color={colors.primary} />
+        <Ionicons
+          accessible={false}
+          importantForAccessibility="no"
+          name="checkmark"
+          size={20}
+          color={colors.primary}
+        />
       )}
     </Pressable>
   );
@@ -236,12 +246,15 @@ export function ListIcon({ ionicon, tint, children }: ListIconProps) {
   return (
     <View
       style={[styles.icon, { backgroundColor: tint ?? colors.secondary }]}
+      accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
     >
       {children ? (
         children
       ) : ionicon ? (
         <Ionicons
+          accessible={false}
+          importantForAccessibility="no"
           name={ionicon}
           size={18}
           color={tint ? "#ffffff" : colors.foreground}
