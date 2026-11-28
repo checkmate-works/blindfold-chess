@@ -444,8 +444,10 @@ are kept on the device (`features/game-history/`, AsyncStorage
 `"AI_GAME_HISTORY"`, newest first, at most 50), like the web keeps them in
 localStorage. The session saves the game after every move, so one that was
 left is listed as in progress (no `result`) and its row opens the session
-again with `resume=<id>`; that is why the session's × asks nothing. Instead,
-an unfinished game that was saved posts a notice as the session goes away
+again with `resume=<id>`; that is why the session's × asks nothing. A resumed
+game is written again only once it changes (`session-changes.ts`), so
+opening one moves nothing in the history. Instead, an unfinished game the
+session saved posts a notice as the session goes away
 (`saved-game-notice.ts`, so Android's back button counts too), and the
 screen it closes back to — the AI-game setup, the play tab, the saved games
 or a saved game's page, each rendering `SavedGameSnackbar` — shows "Game
