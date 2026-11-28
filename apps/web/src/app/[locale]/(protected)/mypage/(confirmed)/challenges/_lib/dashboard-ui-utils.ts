@@ -1,49 +1,14 @@
 import type { ClientTranslator } from '@/i18n/translator';
+import { getComparisonLabelKey } from '@blindfold-chess/features/challenge-records';
 
 import type { DatePeriod } from './period-utils';
 
+export {
+  getNavigablePreviousPeriod,
+  getPreviousPeriodLabel,
+} from '@blindfold-chess/features/challenge-records';
+
 export function getComparisonLabel(period: DatePeriod, t: ClientTranslator): string {
-  switch (period) {
-    case 'thisWeek':
-      return t('vsLastWeek');
-    case 'lastWeek':
-      return t('vs2WeeksAgo');
-    case 'thisMonth':
-      return t('vsLastMonth');
-    case 'lastMonth':
-      return t('vs2MonthsAgo');
-  }
-}
-
-export function getPreviousPeriodLabel(period: DatePeriod): string {
-  switch (period) {
-    case 'thisWeek':
-      return 'lastWeek';
-    case 'lastWeek':
-      return 'twoWeeksAgo';
-    case 'thisMonth':
-      return 'lastMonth';
-    case 'lastMonth':
-      return 'twoMonthsAgo';
-  }
-}
-
-/**
- * Returns the DatePeriod that the previous-period legend label should navigate to,
- * or null if the previous period is not a selectable option.
- *
- * thisWeek  → lastWeek  (selectable)
- * thisMonth → lastMonth (selectable)
- * lastWeek  → null      ("2 weeks ago" is not selectable)
- * lastMonth → null      ("2 months ago" is not selectable)
- */
-export function getNavigablePreviousPeriod(period: DatePeriod): DatePeriod | null {
-  switch (period) {
-    case 'thisWeek':
-      return 'lastWeek';
-    case 'thisMonth':
-      return 'lastMonth';
-    default:
-      return null;
-  }
+  // Mypage.<ComparisonLabelKey>: Mypage.vsLastWeek, Mypage.vs2WeeksAgo, Mypage.vsLastMonth, Mypage.vs2MonthsAgo (getComparisonLabelKey)
+  return t(getComparisonLabelKey(period));
 }

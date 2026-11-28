@@ -416,11 +416,21 @@ database. Sign-in calls Supabase Auth directly; sign-up goes through
     guide screen reads too: a page is read when any rank's journey has it
     done, since the unranked guide belongs to 5kyu's.
 - `(account)` screens: mypage (the home header's entry: the username,
-  rank, level and EXP and a row into records for a player with a username;
-  the sign-up card over a faded sample for anyone else; settings for
-  everyone), settings (with the Account section), welcome (the account
+  rank, level and EXP and rows into records and ranks for a player with a
+  username; the sign-up card over a faded sample for anyone else; settings
+  for everyone), settings (with the Account section), welcome (the account
   offer that ends onboarding), sign-in, sign-up, setup-username, records
-  (the user's own ranks). Whichever screen opens the modal gets the ×; the
+  (My Records, the web's `/mypage/challenges`: period chips, the challenge
+  and its key, best / average score against the previous period, the score
+  trend drawn with SVG (`features/records/ScoreChart.tsx`), the five newest
+  runs and Take the Challenge; `GET /records/dashboard`, with the stats and
+  the series from the shared `@blindfold-chess/features/challenge-records`
+  so both apps count the same; a recorded challenge's result screen opens
+  it over the session on that challenge, `?menu=` as on the web),
+  records-results (every run,
+  `GET /records/results`, the next page loading near the end) and ranks
+  (the user's own rank per leaderboard, the web home's "Your Rankings";
+  `GET /leaderboard/ranks`). Whichever screen opens the modal gets the ×; the
   layout decides from the screen's place in the stack, since records and
   sign-up open both ways. A root-stack screen pushed from inside the modal
   opens under it on iOS, so a row that leaves for one (the tutorial) closes

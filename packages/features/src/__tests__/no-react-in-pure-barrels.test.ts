@@ -33,6 +33,7 @@ const PURE_BARRELS = [
   "dojo-ranks/index.ts",
   "dojo-journey/index.ts",
   "challenge-attempt/index.ts",
+  "challenge-records/index.ts",
   "openings/index.ts",
   "puzzle/index.ts",
   "recall/index.ts",
