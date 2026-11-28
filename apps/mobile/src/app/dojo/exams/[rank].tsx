@@ -15,6 +15,7 @@ import {
 
 import { ListIcon, ListRow, ListSection, Screen } from "../../../components";
 import { useAuth } from "../../../auth/use-auth";
+import { SignInRow } from "../../../features/account/SignInRow";
 import { examRunMode } from "../../../features/dojo/exam-run";
 import { RankGoalCard } from "../../../features/dojo/RankGoalCard";
 import { useDojoJourney } from "../../../features/dojo/use-dojo-journey";
@@ -34,7 +35,8 @@ import { fontSize, spacing, useTheme } from "../../../theme";
  *
  * Every problem can be retried as often as the player likes. When a pass
  * cannot be recorded — signed out, or the rank below not held yet — a note
- * says so up front; the problems still run, as practice.
+ * says so (signed out, as the sign-in row); the problems still run, as
+ * practice.
  *
  * @flow
  * 1. Opened from the rank's exam requirements in the dojo or on the home tab
@@ -73,11 +75,16 @@ export default function DojoExamScreen() {
     highest,
   });
   const prevRank = previousRankSlug(rank);
-  const note = !signedIn
-    ? t("dojo.exam.signInNote")
-    : mode === "practice"
-      ? t("dojo.exam.lockedNote", { prevRank: t(`ranks.names.${prevRank}`) })
-      : undefined;
+  // Signed out, the note is the sign-in row, so the way to have a pass
+  // recorded is one tap away; a build without accounts keeps the sentence.
+  const signInRow = auth.status === "signedOut";
+  const note = signInRow
+    ? undefined
+    : !signedIn
+      ? t("dojo.exam.signInNote")
+      : mode === "practice"
+        ? t("dojo.exam.lockedNote", { prevRank: t(`ranks.names.${prevRank}`) })
+        : undefined;
 
   const open = (kind: ExamProblemKind) =>
     router.push(`/dojo/exams/${rank}/${examProblemSegment(kind)}` as Href);
@@ -123,6 +130,13 @@ export default function DojoExamScreen() {
             );
           })}
         </ListSection>
+        {signInRow && (
+          <SignInRow
+            ionicon="ribbon"
+            benefit={t("dojo.exam.signInNote")}
+            testID="exam-sign-in"
+          />
+        )}
         {note && (
           <Text style={[styles.note, { color: colors.mutedForeground }]}>
             {note}
