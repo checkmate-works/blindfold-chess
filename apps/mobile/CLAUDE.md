@@ -147,6 +147,21 @@ header style (page-coloured, no hairline, chevron-only back).
   then the typed move with backspace, clear and submit. Each key appends to
   one string (`useNotationInput`'s text-builder actions), so a
   disambiguated move such as `Nbd2` is typed like any other.
+- **The AI game's board is also played on**, as on the web: while the
+  board is uncovered (`'always'`, or an open peek) and it is the player's
+  turn, `ChessBoard` takes `onMove` and accepts a tap on a piece then its
+  destination, or a drag. The rules are the web board's, from the shared
+  `classifyBoardClick` / `classifyMoveAttempt` (`useBoardMoveInput`): a
+  first tap never counts, a reselect is free, a tap or drop on a square no
+  legal move reaches counts one invalid attempt (`recordIllegalBoardMove`,
+  with the squares), and a promotion waits for `PromotionPicker`. The
+  board has one `PanResponder` over it and squares that take no touches,
+  so positions are measured from its corner (`squareAtPoint`); it claims
+  the touch in the capture phase and keeps it while a piece is held, and
+  the session stops its `ScrollView` meanwhile (`onDragActiveChange`).
+  A board move goes through the same `submitMove`, logged as `'board'`.
+  The move dots follow `showPieceDestinations` and are off whenever the
+  pieces are disguised (`areDestinationsObscured`).
 - **The AI game's moves are not on the screen.** A move list always in
   view is the game written out, which blindfold play takes away, so the
   session draws none: the list icon in its top row opens `MoveHistory`
@@ -527,7 +542,7 @@ object with the same rules; the whole object sits under one AsyncStorage key
 wrapper that sanitises on read. The settings tab edits it, and the AI-game
 board components (`ChessBoard`, `BoardPeek`, `ButtonInput`) read it themselves
 rather than taking it as props. Fields mobile has no UI for yet
-(`showPieceDestinations`, `enableAutoComplete`, the non-button input modes)
+(`enableAutoComplete`, the non-button input modes)
 are kept in the object so it stays one type, but nothing reads them.
 
 **An AI game plays under its own snapshot,** as on the web. The setup screen

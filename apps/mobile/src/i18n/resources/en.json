@@ -180,6 +180,7 @@
       "displayOptions": "Display Options",
       "showCoordinates": "Show coordinates",
       "highlightLastMove": "Highlight last move",
+      "showPieceDestinations": "Piece destinations",
       "boardTheme": "Board Theme",
       "boardThemes": {
         "monotone": "Monotone",
@@ -420,7 +421,14 @@
       "confirmUndo": "Undo",
       "boardHidden": "Board hidden",
       "revealBoard": "Tap to reveal",
-      "flipBoard": "Flip Board"
+      "flipBoard": "Flip Board",
+      "cancelPromotion": "Cancel promotion",
+      "promoteTo": {
+        "queen": "Promote to queen",
+        "rook": "Promote to rook",
+        "bishop": "Promote to bishop",
+        "knight": "Promote to knight"
+      }
     },
     "result": {
       "title": "Game Over",

@@ -180,6 +180,7 @@
       "displayOptions": "Opções de Exibição",
       "showCoordinates": "Mostrar coordenadas",
       "highlightLastMove": "Destacar último movimento",
+      "showPieceDestinations": "Destinos das peças",
       "boardTheme": "Tema do Tabuleiro",
       "boardThemes": {
         "monotone": "Monocromático",
@@ -420,7 +421,14 @@
       "confirmUndo": "Desfazer",
       "boardHidden": "Tabuleiro oculto",
       "revealBoard": "Toque para ver",
-      "flipBoard": "Inverter Tabuleiro"
+      "flipBoard": "Inverter Tabuleiro",
+      "cancelPromotion": "Cancelar promoção",
+      "promoteTo": {
+        "queen": "Promover a dama",
+        "rook": "Promover a torre",
+        "bishop": "Promover a bispo",
+        "knight": "Promover a cavalo"
+      }
     },
     "result": {
       "title": "Fim da partida",

@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useTranslation } from "react-i18next";
 import { getLastMoveDetails } from "@blindfold-chess/features/chess-core";
+import type { MoveSquares } from "@blindfold-chess/features/board-display";
 import type { AlgebraicNotation, Side } from "@blindfold-chess/types";
 
 import { useGamePreferences } from "../../../lib/game-preferences";
@@ -36,6 +37,14 @@ type InlineBoardProps = {
    * the board still learns the reply without looking elsewhere.
    */
   announcedAiMove: string | null;
+  /**
+   * Board input, passed only while the player may move. The board takes it
+   * only while it is uncovered (`'always'`, or a peek that is open), so a
+   * masked board can never play a move.
+   */
+  onMove?: (san: string) => void;
+  onIllegalMove?: (attempt: string, squares: MoveSquares) => void;
+  onDragActiveChange?: (active: boolean) => void;
 };
 
 /**
@@ -65,6 +74,9 @@ export function InlineBoard({
   onReveal,
   thinking,
   announcedAiMove,
+  onMove,
+  onIllegalMove,
+  onDragActiveChange,
 }: InlineBoardProps) {
   const { t } = useTranslation();
   const { colors } = useTheme();
@@ -127,6 +139,9 @@ export function InlineBoard({
           flipped={flipped}
           playerColor={playerColor}
           lastMove={lastMove}
+          onMove={masked ? undefined : onMove}
+          onIllegalMove={masked ? undefined : onIllegalMove}
+          onDragActiveChange={onDragActiveChange}
         />
         {masked ? (
           <Pressable

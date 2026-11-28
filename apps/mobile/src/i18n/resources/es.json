@@ -180,6 +180,7 @@
       "displayOptions": "Opciones de Visualización",
       "showCoordinates": "Mostrar coordenadas",
       "highlightLastMove": "Resaltar último movimiento",
+      "showPieceDestinations": "Destinos de las piezas",
       "boardTheme": "Tema del Tablero",
       "boardThemes": {
         "monotone": "Monocromático",
@@ -420,7 +421,14 @@
       "confirmUndo": "Deshacer",
       "boardHidden": "Tablero oculto",
       "revealBoard": "Toca para ver",
-      "flipBoard": "Voltear Tablero"
+      "flipBoard": "Voltear Tablero",
+      "cancelPromotion": "Cancelar coronación",
+      "promoteTo": {
+        "queen": "Coronar a dama",
+        "rook": "Coronar a torre",
+        "bishop": "Coronar a alfil",
+        "knight": "Coronar a caballo"
+      }
     },
     "result": {
       "title": "Fin de la partida",
