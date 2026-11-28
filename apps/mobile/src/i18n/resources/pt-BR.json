@@ -390,11 +390,14 @@
           "level5": "Às cegas total: sem tabuleiro"
         },
         "level": "Nível {{level}}",
-        "customize": "Personalizar",
         "section": "Às cegas",
-        "label": "Dificuldade"
+        "label": "Dificuldade",
+        "contents": "Ajustes do nível",
+        "footer": "Escolher um nível define de uma vez todos os ajustes do nível. Se você mudar um deles, passa a ser Personalizado.",
+        "overwriteNote": "Escolher um nível substitui seus ajustes atuais."
       },
-      "preview": "Pré-visualização"
+      "preview": "Pré-visualização",
+      "display": "Durante a partida"
     },
     "session": {
       "yourTurn": "Sua vez",

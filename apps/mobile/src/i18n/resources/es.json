@@ -390,11 +390,14 @@
           "level5": "A ciegas total: sin tablero"
         },
         "level": "Nivel {{level}}",
-        "customize": "Personalizar",
         "section": "A ciegas",
-        "label": "Dificultad"
+        "label": "Dificultad",
+        "contents": "Ajustes del nivel",
+        "footer": "Al elegir un nivel se configuran a la vez todos los ajustes del nivel. Si cambias uno por tu cuenta, pasa a ser Personalizado.",
+        "overwriteNote": "Al elegir un nivel se reemplazan tus ajustes actuales."
       },
-      "preview": "Vista Previa"
+      "preview": "Vista Previa",
+      "display": "Durante la partida"
     },
     "session": {
       "yourTurn": "Tu turno",

@@ -390,11 +390,14 @@
           "level5": "Full blindfold — no board at all"
         },
         "level": "Level {{level}}",
-        "customize": "Customize",
         "section": "Blindfold",
-        "label": "Difficulty"
+        "label": "Difficulty",
+        "contents": "Level settings",
+        "footer": "Choosing a level sets everything under Level settings at once. Changing one of them yourself makes it Custom.",
+        "overwriteNote": "Choosing a level replaces your current adjustments."
       },
-      "preview": "Preview"
+      "preview": "Preview",
+      "display": "During the game"
     },
     "session": {
       "yourTurn": "Your Turn",
