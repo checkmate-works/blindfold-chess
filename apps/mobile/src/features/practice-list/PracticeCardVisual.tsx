@@ -26,6 +26,13 @@ const MATE =
   "r1bqkb1r/pppp1ppp/2n2n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 4 4";
 const EMPTY = "8/8/8/8/8/8/8/8 w - - 0 1";
 
+/**
+ * The preview board's side. Small enough that a card stays a list row
+ * rather than a page; the route overlay is drawn in a 96-unit viewBox and
+ * scales with it.
+ */
+const BOARD_SIZE = 80;
+
 type Path = readonly Square[];
 const point = (square: Square) => ({
   x: (square.charCodeAt(0) - 97 + 0.5) * 12,
@@ -38,7 +45,7 @@ function Board({ fen = EMPTY, path = [] }: { fen?: string; path?: Path }) {
   return (
     <View style={styles.board}>
       <StaticBoard
-        maxSize={96}
+        maxSize={BOARD_SIZE}
         showCoordinates={false}
         renderSquare={renderSquare}
         renderOverlay={() => (
@@ -300,7 +307,7 @@ export function PracticeCardVisual({
 
 const styles = StyleSheet.create({
   band: {
-    minHeight: 128,
+    minHeight: 96,
     padding: spacing.sm,
     gap: spacing.xs,
     alignItems: "center",
@@ -314,7 +321,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: spacing.sm,
   },
-  board: { width: 96, height: 96 },
+  board: { width: BOARD_SIZE, height: BOARD_SIZE },
   label: {
     fontFamily: monoFont,
     fontSize: 14,

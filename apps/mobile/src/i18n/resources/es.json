@@ -81,6 +81,11 @@
     },
     "tried": "Intentado",
     "triedCount": "Intentados {{done}} / {{total}}",
+    "details": "Ver detalles",
+    "rankSheet": {
+      "openRank": "Ver detalles del rango",
+      "pillLabel": "Sobre {{rank}}"
+    },
     "coordinateQuiz": {
       "title": "Quiz de coordenadas",
       "description": "Pon a prueba tu visualización del tablero encontrando casillas"

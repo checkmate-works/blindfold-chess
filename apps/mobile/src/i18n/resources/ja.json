@@ -81,6 +81,11 @@
     },
     "tried": "挑戦済み",
     "triedCount": "挑戦済み {{done}} / {{total}}",
+    "details": "詳しく見る",
+    "rankSheet": {
+      "openRank": "この級の詳細を見る",
+      "pillLabel": "{{rank}}の案内を見る"
+    },
     "coordinateQuiz": {
       "title": "座標クイズ",
       "description": "マス目を見つけて盤面のイメージ力をテスト"

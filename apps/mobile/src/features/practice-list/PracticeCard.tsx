@@ -2,6 +2,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useRouter, type Href } from "expo-router";
 import { useTranslation } from "react-i18next";
+import type { RankSlug } from "@blindfold-chess/features/dojo-ranks";
 
 import { DoneMark } from "../../components/DoneMark";
 import {
@@ -9,6 +10,7 @@ import {
   type MobilePracticeModule,
 } from "../../navigation/practice-modules";
 import { borderRadius, fontWeight, spacing, useTheme } from "../../theme";
+import { RankPill } from "../dojo/RankPill";
 import type { PracticeProgressLabel } from "./practice-progress";
 import { practiceModuleRank } from "./rank-filter";
 import { PracticeCardVisual } from "./PracticeCardVisual";
@@ -17,13 +19,33 @@ type Props = {
   module: MobilePracticeModule;
   progress?: PracticeProgressLabel;
   title?: string;
+  /**
+   * Makes the rank pill a button that opens the rank's introduction
+   * (`RankSheet`). Left out, the pill is only a label.
+   */
+  onRankPress?: (rank: RankSlug) => void;
 };
 
-/** One entry point to setup, shared by the catalogue and featured practices. */
+/**
+ * One entry point to setup, shared by the catalogue and featured practices.
+ *
+ * @description
+ * Laid out like a phone app's link card and kept short, so a screen holds
+ * several: the title with the rank's belt pill beside it, the worked
+ * example, then one footer line — the progress mark on the left ("Tried",
+ * or "Tried n / N" for a practice with several challenges on its rank) and
+ * "Details ›" on the right, which says the card opens a page rather than
+ * starting a run. The description is not drawn (the setup screen opens
+ * with it) but is still read out with the card.
+ *
+ * The pill is the card's only other target: with `onRankPress` it opens
+ * the rank's introduction instead of the setup.
+ */
 export function PracticeCard({
   module,
   progress,
   title: titleOverride,
+  onRankPress,
 }: Props) {
   const { colors } = useTheme();
   const { t } = useTranslation();
@@ -62,46 +84,54 @@ export function PracticeCard({
         <Text style={[styles.title, { color: colors.foreground }]}>
           {title}
         </Text>
-        <Ionicons
-          name="chevron-forward"
-          size={20}
-          color={colors.mutedForeground}
-        />
+        {rank && rankLabel && (
+          <RankPill
+            slug={rank}
+            label={rankLabel}
+            onPress={onRankPress ? () => onRankPress(rank) : undefined}
+            accessibilityLabel={t("practice.rankSheet.pillLabel", {
+              rank: rankLabel,
+            })}
+          />
+        )}
       </View>
       <PracticeCardVisual slug={module.slug} />
-      <Text style={[styles.description, { color: colors.mutedForeground }]}>
-        {description}
-      </Text>
-      {(rankLabel || progress) && (
-        <View style={styles.footer}>
-          {rankLabel && (
+      <View style={[styles.footer, progress && styles.footerWithMark]}>
+        {progress && (
+          // A finished single challenge is the green "done" chip; a count
+          // ("Tried 1 / 3") is still under way, so it stays neutral.
+          <View
+            style={[
+              styles.progress,
+              {
+                backgroundColor:
+                  progress.kind === "done" ? colors.successSoft : colors.muted,
+              },
+            ]}
+          >
+            {progress.kind === "done" && <DoneMark size="sm" />}
             <Text
               style={[
-                styles.rank,
+                styles.progressLabel,
                 {
-                  color: colors.mutedForeground,
-                  backgroundColor: colors.background,
+                  color:
+                    progress.kind === "done"
+                      ? colors.successSoftForeground
+                      : colors.mutedForeground,
                 },
               ]}
             >
-              {rankLabel}
+              {progress.accessibilityLabel}
             </Text>
-          )}
-          {progress && (
-            <View style={styles.progress}>
-              {progress.kind === "done" && <DoneMark size="sm" />}
-              <Text
-                style={[
-                  styles.progressLabel,
-                  { color: colors.mutedForeground },
-                ]}
-              >
-                {progress.accessibilityLabel}
-              </Text>
-            </View>
-          )}
+          </View>
+        )}
+        <View style={styles.detail}>
+          <Text style={[styles.detailLabel, { color: colors.primary }]}>
+            {t("practice.details")}
+          </Text>
+          <Ionicons name="chevron-forward" size={16} color={colors.primary} />
         </View>
-      )}
+      </View>
     </Pressable>
   );
 }
@@ -110,36 +140,47 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
     borderRadius: borderRadius.xl,
-    padding: spacing.md,
-    gap: 12,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 14,
+    gap: 10,
   },
-  header: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
-  title: {
-    flex: 1,
-    fontSize: 17,
-    lineHeight: 24,
-    fontWeight: fontWeight.semibold,
-  },
-  description: { fontSize: 14, lineHeight: 21 },
-  footer: {
+  header: {
     flexDirection: "row",
-    flexWrap: "wrap",
-    alignItems: "center",
-    justifyContent: "space-between",
+    alignItems: "flex-start",
     gap: spacing.sm,
   },
-  rank: {
-    fontSize: 12,
-    lineHeight: 18,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    borderRadius: borderRadius.sm,
+  title: {
+    flex: 1,
+    fontSize: 16,
+    lineHeight: 22,
+    fontWeight: fontWeight.bold,
   },
+  footer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    gap: spacing.sm,
+  },
+  footerWithMark: { justifyContent: "space-between" },
   progress: {
     flexDirection: "row",
     alignItems: "center",
     gap: spacing.xs,
+    minHeight: 24,
+    paddingHorizontal: spacing.sm,
+    borderRadius: borderRadius.sm,
     flexShrink: 1,
   },
-  progressLabel: { fontSize: 12, lineHeight: 18, flexShrink: 1 },
+  progressLabel: {
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: fontWeight.bold,
+    flexShrink: 1,
+  },
+  detail: { flexDirection: "row", alignItems: "center" },
+  detailLabel: {
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: fontWeight.semibold,
+  },
 });
