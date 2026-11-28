@@ -12,7 +12,7 @@ import { ExpGainCard } from "./ExpGainCard";
 import { RecordCard } from "./RecordCard";
 import { takeSignedOutRunKey } from "./useChallengeAttempt";
 
-type Status = "saving" | "recorded" | "notRecorded" | "failed";
+type Status = "saving" | "recorded" | "notRecorded" | "failed" | "interrupted";
 
 /**
  * The result screen's line about the leaderboard: for a recorded run it
@@ -26,16 +26,24 @@ type Status = "saving" | "recorded" | "notRecorded" | "failed";
  * web's order: the EXP card, then the player's record against it with the
  * way into My Records (`summary` of the finish). When the server could not
  * read those, the line saying the score was recorded stands in for them.
+ *
+ * A run that ended because its answers stopped reaching the server
+ * (`interrupted`, see `attempt-result-params.ts`) is not finished; the line
+ * says the connection was lost and nothing was recorded.
  */
 export function ChallengeRecordStatus({
   attemptId,
+  interrupted = false,
 }: {
   attemptId: string | undefined;
+  interrupted?: boolean;
 }) {
   const { t } = useTranslation();
   const { colors, feedbackColors } = useTheme();
   const auth = useAuthState();
-  const [status, setStatus] = useState<Status>("saving");
+  const [status, setStatus] = useState<Status>(
+    interrupted ? "interrupted" : "saving",
+  );
   const [promoted, setPromoted] = useState<string[]>([]);
   const [summary, setSummary] = useState<ChallengeResultSummary | null>(null);
 
@@ -56,7 +64,7 @@ export function ChallengeRecordStatus({
   }, [attemptId, signedOut]);
 
   useEffect(() => {
-    if (!attemptId) return;
+    if (!attemptId || interrupted) return;
     let cancelled = false;
     void finishChallenge(attemptId).then((result) => {
       if (cancelled) return;
@@ -71,7 +79,7 @@ export function ChallengeRecordStatus({
     return () => {
       cancelled = true;
     };
-  }, [attemptId]);
+  }, [attemptId, interrupted]);
 
   if (!attemptId) {
     if (auth.status !== "signedOut") return null;
@@ -103,7 +111,7 @@ export function ChallengeRecordStatus({
     );
   }
 
-  // challenge.record.{saving,recorded,notRecorded,failed}
+  // challenge.record.{saving,recorded,notRecorded,failed,interrupted}
   const color =
     status === "recorded"
       ? feedbackColors.success

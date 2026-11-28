@@ -1,4 +1,10 @@
-import { useCallback, useMemo, useState } from "react";
+import {
+  useCallback,
+  useInsertionEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { View, StyleSheet } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import * as Haptics from "expo-haptics";
@@ -16,6 +22,7 @@ import {
 } from "../../../../features/coordinate-quiz/components";
 import { spacing } from "../../../../theme";
 import { ChallengeAttemptGate } from "../../../../features/challenge/ChallengeAttemptGate";
+import { attemptResultParams } from "../../../../features/challenge/attempt-result-params";
 import { BOARD_ORIENTATIONS } from "../../../../features/coordinate-quiz/lib/types";
 import type {
   BoardOrientation,
@@ -69,6 +76,11 @@ function CoordinateQuizSession({
   const router = useRouter();
   const timeLimit = CHALLENGE_TIME_LIMIT;
 
+  // Whether the run lost the server, for `handleComplete`: the session
+  // calls it from its completion effect, and every insertion effect of
+  // that render (below) has run by then.
+  const remoteFailedRef = useRef(false);
+
   const handleComplete = useCallback(
     (result: QuizResult) => {
       router.replace({
@@ -80,7 +92,7 @@ function CoordinateQuizSession({
           averageTime: result.averageTime.toString(),
           points: result.points.toString(),
           timeTaken: result.timeTaken.toString(),
-          ...(attemptId ? { attemptId } : {}),
+          ...attemptResultParams(attemptId, remoteFailedRef.current),
         },
       });
     },
@@ -97,6 +109,7 @@ function CoordinateQuizSession({
     awaitingServer,
     lastAnswerCorrect,
     handleAnswer,
+    remoteFailed,
   } = useCoordinateQuizSession({
     timeLimit,
     orientation,
@@ -110,6 +123,9 @@ function CoordinateQuizSession({
           ? Haptics.NotificationFeedbackType.Success
           : Haptics.NotificationFeedbackType.Error,
       ),
+  });
+  useInsertionEffect(() => {
+    remoteFailedRef.current = remoteFailed;
   });
 
   // The pressed square keeps its colour until the next question, including

@@ -467,7 +467,10 @@ database. Sign-in calls Supabase Auth directly; sign-up goes through
   runs the shared session hook in remote mode (the server supplies and
   grades every question); signed out, the run is local. The result screen's
   `ChallengeRecordStatus` finishes the attempt (the web's resend rules) and
-  says whether it was recorded. Each challenge's setup takes only what the
+  says whether it was recorded. A run the session hook ended because its
+  answers stopped reaching the server (`remoteFailed`) reaches the result
+  with `interrupted=1` (`attemptResultParams`); it is not finished, and the
+  line says the connection was lost, as the web does. Each challenge's setup takes only what the
   web's challenge takes (orientation, or the piece for legal moves / route
   planner, which are the leaderboard keys).
 - **The app shows no other user.** Only the user's own ranks; full

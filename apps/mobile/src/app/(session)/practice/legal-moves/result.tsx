@@ -10,14 +10,17 @@ import type { PracticeStatsParams } from "../../../../lib/practice-result-params
 
 export default function LegalMovesResult() {
   const params = useLocalSearchParams<
-    PracticeStatsParams & { attemptId?: string }
+    PracticeStatsParams & { attemptId?: string; interrupted?: string }
   >();
   const result = parsePracticeStatsParams(params);
 
   return (
     <PracticeResultScreen setupHref="/practice/legal-moves">
       <PracticeStatsResultCard result={result} />
-      <ChallengeRecordStatus attemptId={params.attemptId} />
+      <ChallengeRecordStatus
+        attemptId={params.attemptId}
+        interrupted={params.interrupted === "1"}
+      />
     </PracticeResultScreen>
   );
 }
