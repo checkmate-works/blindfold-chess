@@ -1,5 +1,12 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+  useWindowDimensions,
+} from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { Href } from "expo-router";
 import { useTranslation } from "react-i18next";
@@ -15,17 +22,38 @@ import {
 } from "../../theme";
 
 /**
+ * The share of the screen the sheet's body may take before it scrolls. Every
+ * bundled definition fits well inside it at the default text size; only the
+ * largest accessibility sizes reach it.
+ */
+const BODY_MAX_HEIGHT_RATIO = 0.6;
+
+/**
  * One glossary term, shown as a sheet over the screen it was opened from
- * (the root stack presents `glossary/[slug]` as a `formSheet`: half height,
- * drag up for full, drag down to close). A form sheet has no navigation bar
- * on Android, so the sheet draws its own title row and ×. Related terms
+ * (the root stack presents `glossary/[slug]` as a `formSheet` sized to its
+ * content, dragged down to close). A form sheet has no navigation bar on
+ * Android, so the sheet draws its own title row and ×. Related terms
  * replace the sheet's content in place.
+ *
+ * @description
+ * The sheet is as tall as the term, so a one-line definition does not sit
+ * in half a screen of white. Sized to its content, the screen is laid out
+ * without a height to fill, so nothing here may lean on `flex: 1`: the body
+ * is a `ScrollView` that takes its content's height up to
+ * `BODY_MAX_HEIGHT_RATIO` of the screen and scrolls beyond it. The root is
+ * `collapsable={false}`: react-native-screens looks for a `ScrollView` among
+ * the sheet's direct children and resizes and moves it to fill the sheet,
+ * and once the root was flattened away it found the body and drew it over
+ * the title. Kept as a real view, the root is what it finds. The category
+ * sits over the name as a quiet label, grey rather than the link blue, since
+ * it is not tappable.
  */
 export default function GlossaryTermSheet() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const { colors } = useTheme();
+  const { height: windowHeight } = useWindowDimensions();
   const term = GLOSSARY_TERMS.find((entry) => entry.slug === slug);
 
   if (!term) return null;
@@ -35,9 +63,16 @@ export default function GlossaryTermSheet() {
     .filter((entry) => entry !== undefined);
 
   return (
-    <View style={[styles.root, { backgroundColor: colors.card }]}>
+    <View
+      collapsable={false}
+      style={[styles.root, { backgroundColor: colors.card }]}
+    >
       <View style={styles.header}>
         <View style={styles.titles}>
+          {/* glossary.categories.<category> */}
+          <Text style={[styles.category, { color: colors.mutedForeground }]}>
+            {t(`glossary.categories.${term.category}`)}
+          </Text>
           <Text
             accessibilityRole="header"
             style={[styles.title, { color: colors.foreground }]}
@@ -52,20 +87,30 @@ export default function GlossaryTermSheet() {
         </View>
         <Pressable
           onPress={() => router.back()}
-          hitSlop={10}
           accessibilityRole="button"
           accessibilityLabel={t("common.close")}
           testID="sheet-close"
-          style={[styles.close, { backgroundColor: colors.muted }]}
+          style={styles.closeTarget}
         >
-          <Ionicons name="close" size={18} color={colors.foreground} />
+          {({ pressed }) => (
+            <View
+              style={[
+                styles.close,
+                { backgroundColor: pressed ? colors.border : colors.muted },
+              ]}
+            >
+              <Ionicons name="close" size={18} color={colors.foreground} />
+            </View>
+          )}
         </Pressable>
       </View>
-      <ScrollView contentContainerStyle={styles.body}>
-        {/* glossary.categories.<category> */}
-        <Text style={[styles.category, { color: colors.primary }]}>
-          {t(`glossary.categories.${term.category}`)}
-        </Text>
+      <ScrollView
+        style={[
+          styles.bodyScroll,
+          { maxHeight: windowHeight * BODY_MAX_HEIGHT_RATIO },
+        ]}
+        contentContainerStyle={styles.body}
+      >
         <Text style={[styles.definition, { color: colors.foreground }]}>
           {definition}
         </Text>
@@ -103,25 +148,40 @@ export default function GlossaryTermSheet() {
 
 const styles = StyleSheet.create({
   root: {
-    flex: 1,
+    // The OS draws the grabber; the title row sits under it.
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.lg,
   },
   header: {
     flexDirection: "row",
     alignItems: "flex-start",
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.lg,
-    gap: spacing.md,
+    paddingLeft: spacing.lg,
+    paddingRight: spacing.md,
+    gap: spacing.sm,
   },
   titles: {
     flex: 1,
     gap: 2,
   },
+  category: {
+    fontSize: fontSize.xs,
+    fontWeight: fontWeight.semibold,
+    letterSpacing: 0.5,
+    textTransform: "uppercase",
+  },
   title: {
-    fontSize: fontSize.xl,
+    fontSize: fontSize.xxl,
     fontWeight: fontWeight.bold,
   },
   subtitle: {
     fontSize: fontSize.sm,
+  },
+  // A 44pt square to touch, with the 30pt circle drawn inside it.
+  closeTarget: {
+    width: 44,
+    height: 44,
+    alignItems: "center",
+    justifyContent: "center",
   },
   close: {
     width: 30,
@@ -130,13 +190,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  body: {
-    padding: spacing.lg,
-    gap: spacing.md,
+  bodyScroll: {
+    flexGrow: 0,
   },
-  category: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.semibold,
+  body: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
+    gap: spacing.md,
   },
   definition: {
     fontSize: fontSize.md,
