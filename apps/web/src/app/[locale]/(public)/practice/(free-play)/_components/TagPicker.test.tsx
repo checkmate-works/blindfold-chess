@@ -121,4 +121,15 @@ describe('TagPicker search input', () => {
     expect(onChange).toHaveBeenCalledWith([themes[0]], []);
     expect(input.value).toBe('');
   });
+
+  it('keeps the typed query when the field loses focus without a pick', () => {
+    const onChange = vi.fn();
+    const input = renderPicker(onChange);
+    fireEvent.focus(input);
+    fireEvent.change(input, { target: { value: 'fo' } });
+    fireEvent.blur(input, { relatedTarget: document.body });
+
+    expect(input.value).toBe('fo');
+    expect(onChange).not.toHaveBeenCalled();
+  });
 });

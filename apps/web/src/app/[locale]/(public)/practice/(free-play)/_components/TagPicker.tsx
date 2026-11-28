@@ -126,7 +126,7 @@ export function TagPicker({
       selectedItem: null,
       defaultHighlightedIndex: 0,
       itemToString: (item) => (item ? item.label : ''),
-      stateReducer: (_state, { changes, type }) => {
+      stateReducer: (state, { changes, type }) => {
         switch (type) {
           case useCombobox.stateChangeTypes.InputKeyDownEnter:
           case useCombobox.stateChangeTypes.ItemClick:
@@ -134,6 +134,15 @@ export function TagPicker({
             // reopens it (downshift's InputChange default), so adding several
             // tags in a row still works without leaving the list hanging open.
             return { ...changes, isOpen: false, highlightedIndex: 0, inputValue: '' };
+          // On a blur that is not a mouse press outside (Tab, the iOS
+          // keyboard's Done or next-field arrows) and on Alt+ArrowUp,
+          // downshift "selects" the highlighted item, which with
+          // `selectedItem` pinned to null only writes its label into the
+          // field: the text would read "Fork" with no tag added. Keep what
+          // the user typed instead.
+          case useCombobox.stateChangeTypes.InputBlur:
+          case useCombobox.stateChangeTypes.InputKeyDownArrowUp:
+            return { ...changes, inputValue: state.inputValue };
           // Downshift's default InputClick action toggles isOpen, which
           // collides with our onFocus → openMenu() flow: focus opens the
           // menu, then the click that caused the focus immediately
