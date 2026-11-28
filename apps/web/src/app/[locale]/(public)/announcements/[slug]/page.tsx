@@ -67,7 +67,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     : undefined;
   const isFallback = announcementLocale !== locale;
   const title = announcement.title;
-  const description = toMetaDescription(announcement.content);
+  // A members-only body must not reach the head: the page gates it behind
+  // sign-in, but metadata is served to everyone, crawlers included, so a
+  // description derived from the content — and the og:description built from
+  // it — would publish what the gate withholds. The title stays, since the
+  // listing and the sign-in prompt already show it to anonymous readers. The
+  // decision is per announcement, not per viewer: a crawler is never signed
+  // in, and what an anonymous visitor can index here is only that prompt.
+  const isMembersOnly = announcement.visibility === 'members_only';
+  const description = isMembersOnly ? undefined : toMetaDescription(announcement.content);
 
   return {
     ...generateCanonicalMetadata({
