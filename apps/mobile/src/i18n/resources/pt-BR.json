@@ -435,7 +435,10 @@
         "rook": "Promover a torre",
         "bishop": "Promover a bispo",
         "knight": "Promover a cavalo"
-      }
+      },
+      "gameMenu": "Menu da partida",
+      "undoHint": "Desfaz seu último lance e a resposta da IA",
+      "resignHint": "Admite a derrota e encerra a partida"
     },
     "result": {
       "title": "Fim da partida",
@@ -449,7 +452,13 @@
       "backToMenu": "Voltar ao menu",
       "review": "Revisar a partida",
       "reviewDescription": "Movimentos, PGN e de memória",
-      "expEarned": "Exp obtida"
+      "expEarned": "Exp obtida",
+      "termination": {
+        "checkmate": "Xeque-mate",
+        "resignation": "Desistência",
+        "stalemate": "Afogamento"
+      },
+      "nextAction": "Próxima ação"
     }
   },
   "diagonalQuiz": {

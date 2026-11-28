@@ -3,7 +3,10 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useTranslation } from "react-i18next";
 import { getLastMoveDetails } from "@blindfold-chess/features/chess-core";
-import type { MoveSquares } from "@blindfold-chess/features/board-display";
+import type {
+  MoveSquares,
+  TerminationMark,
+} from "@blindfold-chess/features/board-display";
 import type { AlgebraicNotation, Side } from "@blindfold-chess/types";
 
 import { useGamePreferences } from "../../../lib/game-preferences";
@@ -43,6 +46,15 @@ type InlineBoardProps = {
    * masked board can never play a move.
    */
   onMove?: (san: string) => void;
+  /**
+   * The game is over: the board is drawn uncovered whatever the visibility,
+   * so the player sees the position the game ended on — for a game played
+   * blind, the answer to what they were holding in their head.
+   */
+  finished?: boolean;
+  /** The end-of-game mark on the losing king, for a finished game. */
+  terminationMark?: TerminationMark | null;
+  terminationMarkLabel?: string;
   onIllegalMove?: (attempt: string, squares: MoveSquares) => void;
   onDragActiveChange?: (active: boolean) => void;
 };
@@ -62,6 +74,10 @@ type InlineBoardProps = {
  *   means switching the visibility mid-game (the gear in the top row) does
  *   not move the error line and the keypad under the player's finger.
  *
+ * Once the game is over (`finished`) every mode draws the board uncovered,
+ * with the end-of-game mark on the losing king, as the web's finished board
+ * does.
+ *
  * While the AI thinks, an open `'always'` board is covered by a light scrim
  * with a "thinking" chip, so the turn shows where the player is looking.
  *
@@ -79,6 +95,9 @@ export function InlineBoard({
   thinking,
   announcedAiMove,
   onMove,
+  finished = false,
+  terminationMark = null,
+  terminationMarkLabel,
   onIllegalMove,
   onDragActiveChange,
 }: InlineBoardProps) {
@@ -110,7 +129,7 @@ export function InlineBoard({
     </Text>
   ) : null;
 
-  if (preferences.boardVisibility === "never") {
+  if (preferences.boardVisibility === "never" && !finished) {
     return (
       <View style={styles.container}>
         <View
@@ -142,7 +161,8 @@ export function InlineBoard({
     );
   }
 
-  const masked = preferences.boardVisibility === "peek" && !revealed;
+  const masked =
+    preferences.boardVisibility === "peek" && !revealed && !finished;
 
   return (
     <View style={styles.container}>
@@ -152,6 +172,8 @@ export function InlineBoard({
           flipped={flipped}
           playerColor={playerColor}
           lastMove={lastMove}
+          terminationMark={terminationMark}
+          terminationMarkLabel={terminationMarkLabel}
           onMove={masked ? undefined : onMove}
           onIllegalMove={masked ? undefined : onIllegalMove}
           onDragActiveChange={onDragActiveChange}

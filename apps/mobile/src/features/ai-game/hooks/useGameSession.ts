@@ -49,6 +49,15 @@ type UseGameSessionProps = {
   initialOperationLogs?: MoveOperationLog[];
 };
 
+/**
+ * How a finished game ended. `gameStatus` cannot say it on its own: a
+ * resignation is recorded as a checkmate status (as on the web), so the
+ * screen reads the reason from here to word the result and to mark the
+ * losing king with a flag rather than a `#`.
+ */
+export type GameTermination =
+  "checkmate" | "resignation" | "stalemate" | "draw";
+
 /** A move and the reply to it: what one undo takes back. */
 const UNDO_PLIES = 2;
 
@@ -98,6 +107,12 @@ export function useGameSession({
   const playerResult: PlayerResult | null = resigned
     ? "loss"
     : gameState.playerResult;
+
+  const termination: GameTermination | null = resigned
+    ? "resignation"
+    : gameState.status === "in_progress"
+      ? null
+      : gameState.status;
 
   const aiMoveFailed = error?.kind === "ai-move-failed";
 
@@ -242,6 +257,7 @@ export function useGameSession({
     gameStatus,
     playerResult,
     resigned,
+    termination,
     isPlayerTurn,
     isAiThinking,
     error,

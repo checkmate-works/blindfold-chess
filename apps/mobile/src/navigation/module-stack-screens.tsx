@@ -17,12 +17,15 @@ type Translate = ReturnType<typeof useTranslation>["t"];
  *   module's name, and the × that asks before leaving), like its result and
  *   training screens, instead of drawing the × in its own top row. Its
  *   session renders `PracticeSessionScreen` with `headerShown`.
+ * @property resultInSession - The session shows its own result, over the
+ *   board the game ended on, so there is no `result` screen (the AI game).
  */
 export type ModuleRoute = {
   route: string;
   i18nKey: string;
   hasTraining?: boolean;
   sessionHeader?: boolean;
+  resultInSession?: boolean;
 };
 
 /**
@@ -70,43 +73,49 @@ export function moduleSessionScreens(
   // practice.boardSymmetry.title, practice.squareColors.title, practice.diagonalQuiz.title, practice.routePlanner.title,
   // practice.quadrants.title, practice.knightTour.title, practice.algebraicNotation.title, practice.fen.title,
   // practice.positionMemory.title, practice.recall.title, practice.puzzle.title
-  return modules.flatMap(({ route, i18nKey, hasTraining, sessionHeader }) => [
-    <Stack.Screen
-      key={`${route}/session`}
-      name={`${route}/session`}
-      options={
-        sessionHeader
-          ? {
-              title: t(`practice.${i18nKey}.title`),
-              headerBackVisible: false,
-              gestureEnabled: false,
-              headerLeft: () => <SessionCloseButton confirm />,
-            }
-          : { headerShown: false, gestureEnabled: false }
-      }
-    />,
-    <Stack.Screen
-      key={`${route}/result`}
-      name={`${route}/result`}
-      options={{
-        title: t(`${i18nKey}.result.title`),
-        headerBackVisible: false,
-        gestureEnabled: false,
-        headerLeft: () => <SessionCloseButton />,
-      }}
-    />,
-    ...(hasTraining
-      ? [
-          <Stack.Screen
-            key={`${route}/training`}
-            name={`${route}/training`}
-            options={{
-              title: t("common.training"),
-              headerBackVisible: false,
-              headerLeft: () => <SessionCloseButton />,
-            }}
-          />,
-        ]
-      : []),
-  ]);
+  return modules.flatMap(
+    ({ route, i18nKey, hasTraining, sessionHeader, resultInSession }) => [
+      <Stack.Screen
+        key={`${route}/session`}
+        name={`${route}/session`}
+        options={
+          sessionHeader
+            ? {
+                title: t(`practice.${i18nKey}.title`),
+                headerBackVisible: false,
+                gestureEnabled: false,
+                headerLeft: () => <SessionCloseButton confirm />,
+              }
+            : { headerShown: false, gestureEnabled: false }
+        }
+      />,
+      ...(resultInSession
+        ? []
+        : [
+            <Stack.Screen
+              key={`${route}/result`}
+              name={`${route}/result`}
+              options={{
+                title: t(`${i18nKey}.result.title`),
+                headerBackVisible: false,
+                gestureEnabled: false,
+                headerLeft: () => <SessionCloseButton />,
+              }}
+            />,
+          ]),
+      ...(hasTraining
+        ? [
+            <Stack.Screen
+              key={`${route}/training`}
+              name={`${route}/training`}
+              options={{
+                title: t("common.training"),
+                headerBackVisible: false,
+                headerLeft: () => <SessionCloseButton />,
+              }}
+            />,
+          ]
+        : []),
+    ],
+  );
 }

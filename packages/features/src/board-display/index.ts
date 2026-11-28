@@ -22,3 +22,11 @@ export { describeIllegalAttempt } from "./describe-illegal-attempt";
 export type { SquareHighlightType } from "./highlight";
 export { resolveSquareHighlight } from "./highlight";
 export { squareToBoardIndices } from "./coords";
+export type { TerminationMark, TerminationMarkKind } from "./termination-mark";
+export {
+  HASH_GLYPH_PATHS,
+  TERMINATION_MARK_STYLE,
+  isFinalPosition,
+  resolveLosingColor,
+  resolveTerminationMark,
+} from "./termination-mark";

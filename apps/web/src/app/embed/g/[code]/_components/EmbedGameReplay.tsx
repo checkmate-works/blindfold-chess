@@ -4,13 +4,13 @@ import { useMemo, useState } from 'react';
 
 import { ChessBoard } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import type { TerminationMark } from '@blindfold-chess/features/board-display';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 import type { BoardTheme } from '@/lib/games/board-themes';
 import { foldBoardVisibility, playSettingsAtHalfMove } from '@/lib/games/play-settings-log';
 import type { GamePlaySettings, PlaySettingsChangeEntry } from '@/lib/games/saved-game-types';
-import type { TerminationMark } from '@/lib/games/termination-mark';
 
 import { HorizontalMoveList } from '@/app/[locale]/(public)/games/play/_components/HorizontalMoveList';
 import {

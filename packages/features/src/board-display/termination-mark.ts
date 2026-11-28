@@ -1,9 +1,13 @@
-import { boardIndexToSquare, fenToBoardFlat } from '@blindfold-chess/features/chess-core/fen';
-import { sideToPieceColor } from '@blindfold-chess/types';
-import type { FinalGameOutcome, PieceColor, Side } from '@blindfold-chess/types';
+import { boardIndexToSquare, fenToBoardFlat } from "../chess-core/fen-pure";
+import { sideToPieceColor } from "@blindfold-chess/types";
+import type {
+  FinalGameOutcome,
+  PieceColor,
+  Side,
+} from "@blindfold-chess/types";
 
 /** Why the losing side's king is marked. */
-export type TerminationMarkKind = 'checkmate' | 'resignation';
+export type TerminationMarkKind = "checkmate" | "resignation";
 
 /** Where to draw the end-of-game mark, and which one. */
 export type TerminationMark = {
@@ -16,22 +20,31 @@ export type TerminationMark = {
  * Badge appearance per kind, in renderer-neutral values (CSS and SVG both take
  * these strings verbatim).
  *
- * The glyph is named rather than drawn here: the DOM board reaches for the
- * shared icon data, and so can the SVG renderer, which cannot emit `<text>` at
- * all (the lambda has no fonts — see `renderBoardSvg`). Neither may substitute
- * a character literal for the mark.
+ * The glyph is named rather than drawn here: every board that draws the mark
+ * (the web's DOM board, its SVG/GIF renderer, the mobile board) reaches for
+ * the same stroke paths. None may substitute a character literal: the web's
+ * SVG renderer runs where no fonts are installed, so a `#` typed as text
+ * would rasterize to tofu.
  */
 export const TERMINATION_MARK_STYLE = {
-  checkmate: { fill: '#dc2626', glyph: 'hash' },
-  resignation: { fill: '#475569', glyph: 'flag' },
-} as const satisfies Record<TerminationMarkKind, { fill: string; glyph: 'hash' | 'flag' }>;
+  checkmate: { fill: "#dc2626", glyph: "hash" },
+  resignation: { fill: "#475569", glyph: "flag" },
+} as const satisfies Record<
+  TerminationMarkKind,
+  { fill: string; glyph: "hash" | "flag" }
+>;
 
 /**
  * The `#` glyph as four strokes on a 24×24 grid — chess notation's own mark for
  * checkmate, drawn rather than typed for the reason above. Paired with
  * `flagData` from `@blindfold-chess/icons/data`, which covers the other kind.
  */
-export const HASH_GLYPH_PATHS = ['M9 3v18', 'M15 3v18', 'M3 9h18', 'M3 15h18'] as const;
+export const HASH_GLYPH_PATHS = [
+  "M9 3v18",
+  "M15 3v18",
+  "M3 9h18",
+  "M3 15h18",
+] as const;
 
 /**
  * Whether a board's navigation position is showing the game's last position —
@@ -45,8 +58,14 @@ export const HASH_GLYPH_PATHS = ['M9 3v18', 'M15 3v18', 'M3 9h18', 'M3 15h18'] a
  *
  * `-2` — the replay's pre-game overview board — is neither.
  */
-export function isFinalPosition(currentPosition: number, movesLength: number): boolean {
-  return currentPosition === -1 || (movesLength > 0 && currentPosition === movesLength - 1);
+export function isFinalPosition(
+  currentPosition: number,
+  movesLength: number,
+): boolean {
+  return (
+    currentPosition === -1 ||
+    (movesLength > 0 && currentPosition === movesLength - 1)
+  );
 }
 
 /**
@@ -55,12 +74,12 @@ export function isFinalPosition(currentPosition: number, movesLength: number): b
  */
 export function resolveLosingColor(
   playerResult: FinalGameOutcome | null,
-  playerSide: Side
+  playerSide: Side,
 ): PieceColor | null {
-  if (playerResult !== 'win' && playerResult !== 'loss') return null;
+  if (playerResult !== "win" && playerResult !== "loss") return null;
   const playerColor = sideToPieceColor(playerSide);
-  const opponentColor = playerColor === 'w' ? 'b' : 'w';
-  return playerResult === 'loss' ? playerColor : opponentColor;
+  const opponentColor = playerColor === "w" ? "b" : "w";
+  return playerResult === "loss" ? playerColor : opponentColor;
 }
 
 /**
@@ -68,14 +87,14 @@ export function resolveLosingColor(
  * fell to a mate or to a resignation.
  *
  * This is the whole rule, kept pure and renderer-free so every surface that
- * shows a finished game — the play board, the shared replay, the exported GIF —
- * marks the same square with the same meaning. A surface that recomputed "which
+ * shows a finished game — the web and mobile play boards, the shared replay,
+ * the exported GIF — marks the same square with the same meaning. A surface that recomputed "which
  * king" for itself is how the replay and the board would come to disagree about
  * a game they are both showing.
  *
  * Deriving the kind from the position rather than from stored data is
  * deliberate: resigning stamps a terminal status onto a position that is still
- * playable (`handleResign`), and nothing in the game record distinguishes it
+ * playable, and nothing in the game record distinguishes it
  * from a real mate. The position can — if the loser is not actually mated, they
  * gave up.
  *
@@ -96,12 +115,12 @@ export function resolveTerminationMark({
 }): TerminationMark | null {
   if (!losingColor) return null;
 
-  const kingChar = losingColor === 'w' ? 'K' : 'k';
+  const kingChar = losingColor === "w" ? "K" : "k";
   const index = fenToBoardFlat(fen).indexOf(kingChar);
   if (index === -1) return null;
 
   return {
     square: boardIndexToSquare(index),
-    kind: isCheckmate ? 'checkmate' : 'resignation',
+    kind: isCheckmate ? "checkmate" : "resignation",
   };
 }

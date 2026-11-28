@@ -127,11 +127,40 @@ describe("useGameSession actions", () => {
 
     act(() => result.current.resign());
     expect(result.current.resigned).toBe(true);
+    expect(result.current.termination).toBe("resignation");
     expect(result.current.gameStatus).not.toBe("in_progress");
     expect(result.current.playerResult).toBe("loss");
     act(() => {
       expect(result.current.submitMove("e4" as AlgebraicNotation)).toBe(false);
     });
+  });
+
+  it("has no termination while the game is being played", () => {
+    const { result } = renderHook(() =>
+      useGameSession({
+        playerColor: "white",
+        skillLevel: 5,
+        getAiMove: never(),
+        isAiLoading: false,
+      }),
+    );
+
+    expect(result.current.termination).toBeNull();
+  });
+
+  it("names a mate on the board as a checkmate, not a resignation", () => {
+    const { result } = renderHook(() =>
+      useGameSession({
+        playerColor: "black",
+        skillLevel: 5,
+        getAiMove: never(),
+        isAiLoading: false,
+        initialMoves: san(["f3", "e5", "g4", "Qh4#"]),
+      }),
+    );
+
+    expect(result.current.termination).toBe("checkmate");
+    expect(result.current.playerResult).toBe("win");
   });
 
   it("reports an invalid move with what was entered", () => {

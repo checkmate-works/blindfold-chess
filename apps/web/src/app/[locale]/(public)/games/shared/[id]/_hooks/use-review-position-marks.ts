@@ -2,6 +2,12 @@
 
 import { useCallback, useMemo } from 'react';
 
+import type { TerminationMark } from '@blindfold-chess/features/board-display';
+import {
+  isFinalPosition,
+  resolveLosingColor,
+  resolveTerminationMark,
+} from '@blindfold-chess/features/board-display';
 import {
   getLastMoveDetails,
   isCheckmateFen,
@@ -12,12 +18,6 @@ import type { AlgebraicNotation, FinalGameOutcome, Side } from '@blindfold-chess
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
 import type { MoveJudgment } from '@/lib/games/analysis/types';
 import type { EvaluationMark } from '@/lib/games/evaluation';
-import type { TerminationMark } from '@/lib/games/termination-mark';
-import {
-  isFinalPosition,
-  resolveLosingColor,
-  resolveTerminationMark,
-} from '@/lib/games/termination-mark';
 
 import { computeCurrentPly } from '../_lib/replay-derivations';
 

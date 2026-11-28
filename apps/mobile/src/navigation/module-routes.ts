@@ -15,7 +15,7 @@ export const PRACTICE_MODULE_ROUTES: readonly ModuleRoute[] =
 
 /** The play flows (games against the engine), rooted at `play/<route>`. */
 export const PLAY_MODULE_ROUTES: readonly ModuleRoute[] = [
-  { route: "play/ai-game", i18nKey: "aiGame" },
+  { route: "play/ai-game", i18nKey: "aiGame", resultInSession: true },
 ];
 
 export const ALL_MODULE_ROUTES: readonly ModuleRoute[] = [

@@ -10,10 +10,11 @@ import {
   pickPerGamePreferences,
 } from "@blindfold-chess/features/game-preferences";
 import { findLastAiMoveNotation } from "@blindfold-chess/features/game-play";
+import type { MoveOperationLog } from "@blindfold-chess/features/game-record";
 import {
-  computeGameStats,
-  type MoveOperationLog,
-} from "@blindfold-chess/features/game-record";
+  resolveLosingColor,
+  resolveTerminationMark,
+} from "@blindfold-chess/features/board-display";
 import { useAiReplyChip } from "@blindfold-chess/features/game-play/client";
 import {
   SIDES,
@@ -26,9 +27,13 @@ import {
   InlineBoard,
   ButtonInput,
   MoveHistory,
+  GameFinishSheet,
   GameInfo,
+  GameMenuSheet,
+  ResultHeadline,
 } from "../../../../features/ai-game/components";
 import {
+  useAiGameExpGrant,
   useAiVersus,
   useGameSession,
 } from "../../../../features/ai-game/hooks";
@@ -59,7 +64,7 @@ import {
 import { perGameSettingRows } from "../../../../features/settings/per-game-setting-rows";
 import { HeaderIconButton } from "../../../../navigation/HeaderIconButton";
 import { SessionTopBar } from "../../../../navigation/SessionTopBar";
-import { useTheme, fontSize, fontWeight, spacing } from "../../../../theme";
+import { useTheme, fontSize, spacing } from "../../../../theme";
 
 /** Everything a session starts from: a new game's choices or a saved game. */
 type GameSetup = {
@@ -170,6 +175,7 @@ function AiGameBoard({ setup }: { setup: GameSetup }) {
   const [flipped, setFlipped] = useState<boolean | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [movesOpen, setMovesOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   // The top inset is padded from the provider's value rather than left to
   // `Screen`'s `SafeAreaView`: in a header-less screen of the full-screen
   // session modal the view's own top inset comes out as 0 on iOS, which put
@@ -177,6 +183,9 @@ function AiGameBoard({ setup }: { setup: GameSetup }) {
   const insets = useSafeAreaInsets();
   const { gameId, playerColor, skillLevel } = setup;
   const start = setup;
+  // "Play again" reveals the setup screen under the modal, which still holds
+  // this game's settings; the setup is where to fall back to without one.
+  const { close: closeToSetup, closeToMenu } = useCloseSession("/play/ai-game");
 
   const ai = useAiVersus(skillLevel);
 
@@ -339,40 +348,55 @@ function AiGameBoard({ setup }: { setup: GameSetup }) {
     [gameId],
   );
 
-  // Navigate to result when game is over
+  // A finished game stays on its board, uncovered and with the losing king
+  // marked, and the finish sheet comes up over it a moment later, so the
+  // player sees how the game ended before being asked what next. It opens
+  // once; dragged away, it comes back from the button over the frozen
+  // controls.
+  const finished = game.termination !== null && game.playerResult !== null;
+  const [finishSheetOpen, setFinishSheetOpen] = useState(false);
+  const finishSheetShown = useRef(false);
   useEffect(() => {
-    if (game.gameStatus !== "in_progress" && game.playerResult) {
-      // Capture the narrowed value: the `!` it replaces was real — narrowing
-      // is lost across the property access inside the setTimeout closure.
-      const playerResult = game.playerResult;
-      const stats = computeGameStats(game.operationLogs);
-      const timer = setTimeout(() => {
-        router.replace({
-          pathname: "/play/ai-game/result",
-          params: {
-            result: playerResult,
-            playerColor: game.playerColor,
-            skillLevel: game.skillLevel.toString(),
-            moveCount: game.moves.length.toString(),
-            gameId,
-            playerMoveCount: stats.totalMoves.toString(),
-            aidedMoveCount: stats.aidedMoves.toString(),
-          },
-        });
-      }, 1500);
-      return () => clearTimeout(timer);
-    }
-  }, [
-    game.gameStatus,
-    game.playerResult,
-    game.playerColor,
-    game.skillLevel,
-    game.moves,
-    game.moves.length,
-    game.operationLogs,
+    if (!finished || finishSheetShown.current) return;
+    const timer = setTimeout(() => {
+      finishSheetShown.current = true;
+      setFinishSheetOpen(true);
+    }, FINISH_SHEET_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [finished]);
+
+  const terminationMark = useMemo(
+    () =>
+      finished
+        ? resolveTerminationMark({
+            fen: game.currentFen,
+            losingColor: resolveLosingColor(game.playerResult, playerColor),
+            isCheckmate: game.termination === "checkmate",
+          })
+        : null,
+    [
+      finished,
+      game.currentFen,
+      game.playerResult,
+      game.termination,
+      playerColor,
+    ],
+  );
+
+  const exp = useAiGameExpGrant({
     gameId,
-    router,
-  ]);
+    result: finished ? game.playerResult : null,
+    skillLevel,
+    operationLogs: game.operationLogs,
+  });
+
+  const reviewGame = () => {
+    setFinishSheetOpen(false);
+    // The saved game's page is on the root stack, under this modal.
+    // `dismissTo` leaves the modal for it rather than pushing a root screen
+    // from inside the session stack.
+    router.dismissTo({ pathname: "/play/games/[id]", params: { id: gameId } });
+  };
 
   return (
     <Screen
@@ -405,7 +429,7 @@ function AiGameBoard({ setup }: { setup: GameSetup }) {
             accessibilityLabel={t("aiGame.session.moves")}
             onPress={() => setMovesOpen(true)}
           />
-          {preferences.boardVisibility !== "never" && (
+          {(preferences.boardVisibility !== "never" || finished) && (
             <HeaderIconButton
               icon="swap-vertical"
               accessibilityLabel={t("aiGame.session.flipBoard")}
@@ -418,6 +442,14 @@ function AiGameBoard({ setup }: { setup: GameSetup }) {
             icon="settings-outline"
             accessibilityLabel={t("common.gameSettings")}
             onPress={() => setSettingsOpen(true)}
+          />
+          {/* Take back and resign: once a game at most, so they are kept
+              away from the keypad, where a slip off the submit key could
+              reach them. */}
+          <HeaderIconButton
+            icon="ellipsis-horizontal"
+            accessibilityLabel={t("aiGame.session.gameMenu")}
+            onPress={() => setMenuOpen(true)}
           />
         </View>
       </SessionTopBar>
@@ -439,6 +471,14 @@ function AiGameBoard({ setup }: { setup: GameSetup }) {
           thinking={aiReply.thinking}
           announcedAiMove={announcedAiMove}
           onMove={canBoardMove ? submitBoardMove : undefined}
+          finished={finished}
+          terminationMark={terminationMark}
+          terminationMarkLabel={
+            terminationMark
+              ? // aiGame.result.termination.<TerminationMarkKind>: aiGame.result.termination.checkmate, aiGame.result.termination.resignation
+                t(`aiGame.result.termination.${terminationMark.kind}`)
+              : undefined
+          }
           onIllegalMove={canBoardMove ? game.recordIllegalBoardMove : undefined}
           onDragActiveChange={setPieceHeld}
         />
@@ -490,28 +530,7 @@ function AiGameBoard({ setup }: { setup: GameSetup }) {
             />
           )}
 
-          <View style={styles.actionRow}>
-            <Button
-              title={t("aiGame.session.undo")}
-              icon="arrow-undo"
-              variant="outline"
-              size="sm"
-              disabled={!game.canUndo}
-              onPress={confirmUndo}
-              style={styles.action}
-            />
-            <Button
-              title={t("aiGame.session.resign")}
-              icon="flag"
-              variant="outline"
-              size="sm"
-              disabled={!game.canResign}
-              onPress={confirmResign}
-              style={styles.action}
-            />
-          </View>
-
-          {game.gameStatus !== "in_progress" && game.playerResult && (
+          {finished && game.playerResult && game.termination && (
             <View
               accessibilityLiveRegion="polite"
               style={styles.gameOverOverlay}
@@ -523,13 +542,16 @@ function AiGameBoard({ setup }: { setup: GameSetup }) {
                   { backgroundColor: colors.page },
                 ]}
               />
-              <Text style={[styles.gameOverText, { color: colors.foreground }]}>
-                {game.playerResult === "win"
-                  ? t("aiGame.result.win")
-                  : game.playerResult === "loss"
-                    ? t("aiGame.result.loss")
-                    : t("aiGame.result.draw")}
-              </Text>
+              <ResultHeadline
+                result={game.playerResult}
+                termination={game.termination}
+                size="md"
+              />
+              <Button
+                title={t("aiGame.result.nextAction")}
+                onPress={() => setFinishSheetOpen(true)}
+                style={styles.nextAction}
+              />
             </View>
           )}
         </View>
@@ -544,6 +566,37 @@ function AiGameBoard({ setup }: { setup: GameSetup }) {
       >
         <MoveHistory moves={game.moves} startingFen={start.startingFen} />
       </BottomSheet>
+      {game.playerResult && game.termination ? (
+        <GameFinishSheet
+          visible={finishSheetOpen}
+          onClose={() => setFinishSheetOpen(false)}
+          result={game.playerResult}
+          termination={game.termination}
+          playerColor={playerColor}
+          skillLevel={skillLevel}
+          moveCount={game.moves.length}
+          earnedExp={exp?.earnedExp}
+          // A game with no move is never saved (`differsFromStart`), so
+          // there is no page to review.
+          onReview={game.moves.length > 0 ? reviewGame : undefined}
+          onPlayAgain={() => {
+            setFinishSheetOpen(false);
+            closeToSetup();
+          }}
+          onBackToMenu={() => {
+            setFinishSheetOpen(false);
+            closeToMenu();
+          }}
+        />
+      ) : null}
+      <GameMenuSheet
+        visible={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        canUndo={game.canUndo}
+        canResign={game.canResign}
+        onUndo={confirmUndo}
+        onResign={confirmResign}
+      />
       {/* This game's settings, changed mid-game: they are the session's own
           copy, so the global preferences stay as they were. */}
       <BottomSheet
@@ -562,6 +615,13 @@ function AiGameBoard({ setup }: { setup: GameSetup }) {
     </Screen>
   );
 }
+
+/**
+ * How long a finished game's board is left alone before the finish sheet
+ * comes up over it: long enough to take in the final position and its mark,
+ * short enough that the sheet still reads as the answer to the last move.
+ */
+const FINISH_SHEET_DELAY_MS = 800;
 
 /** The error line's height, kept whether or not a message is showing. */
 const ERROR_LINE_HEIGHT = 20;
@@ -593,15 +653,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     alignSelf: "stretch",
-    gap: spacing.md,
-  },
-  actionRow: {
-    flexDirection: "row",
-    gap: spacing.md,
-    marginTop: spacing.sm,
-  },
-  action: {
-    flex: 1,
+    // Four 44pt buttons share the row with the status; at the wider gap the
+    // level under it ("Level 5 (1200 ELO)") was cut off on a 402pt phone.
+    // The buttons' own 44pt squares keep them apart enough to tap.
+    gap: spacing.xs,
   },
   gameOverOverlay: {
     position: "absolute",
@@ -615,8 +670,7 @@ const styles = StyleSheet.create({
   gameOverScrim: {
     opacity: 0.85,
   },
-  gameOverText: {
-    fontSize: fontSize.xxl,
-    fontWeight: fontWeight.bold,
+  nextAction: {
+    marginTop: spacing.md,
   },
 });
