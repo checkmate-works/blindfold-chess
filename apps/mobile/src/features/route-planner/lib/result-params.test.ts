@@ -84,4 +84,24 @@ describe("parseRoutePlannerProblems", () => {
     expect(parseRoutePlannerProblems("{")).toEqual([]);
     expect(parseRoutePlannerProblems('{"a":1}')).toEqual([]);
   });
+
+  it("drops entries of the wrong shape and keeps the well-formed ones", () => {
+    const [solved] = RESULT.problems;
+    const { userPath: _userPath, ...withoutUserPath } = solved;
+    expect(
+      parseRoutePlannerProblems(
+        JSON.stringify([
+          null,
+          "b1",
+          [solved],
+          {},
+          withoutUserPath,
+          { ...solved, start: "z9" },
+          { ...solved, success: "yes" },
+          { ...solved, shortestPath: ["b1", 7] },
+          solved,
+        ]),
+      ),
+    ).toEqual([solved]);
+  });
 });

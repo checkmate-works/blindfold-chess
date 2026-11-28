@@ -3,17 +3,35 @@ import { describe, expect, it } from "vitest";
 import { parseFenResultData, summarizeFenSession } from "./result-data";
 
 describe("parseFenResultData", () => {
-  it("decodes the complete result payload", () => {
-    const payload = {
-      score: 2,
-      total: 3,
-      detailedStats: { correct: 2, incorrect: 1, total: 3 },
-      results: [{ square: "a1" }],
-    };
+  const entry = {
+    fen: "8/8/8/8/8/8/8/K6k w - - 0 1",
+    recreatedFen: "8/8/8/8/8/8/8/K7 w - - 0 1",
+    isBlackToMove: false,
+    accuracy: 50,
+    correctPieces: 1,
+    totalPieces: 2,
+    incorrectPieces: 0,
+    missingPieces: 1,
+    extraPieces: 0,
+    originalIndex: 0,
+    skipped: false,
+  };
+  const payload = {
+    score: 50,
+    total: 100,
+    detailedStats: {
+      correctPieces: 1,
+      totalPieces: 2,
+      incorrectPieces: 0,
+      missingPieces: 1,
+      extraPieces: 0,
+    },
+    results: [entry],
+  };
+  const encode = (value: unknown) => encodeURIComponent(JSON.stringify(value));
 
-    expect(
-      parseFenResultData(encodeURIComponent(JSON.stringify(payload))),
-    ).toEqual(payload);
+  it("decodes the payload the session writes", () => {
+    expect(parseFenResultData(encode(payload))).toEqual(payload);
   });
 
   it.each([null, "", "%E0%A4%A", "not-json"])(
@@ -22,6 +40,54 @@ describe("parseFenResultData", () => {
       expect(parseFenResultData(data)).toBeNull();
     },
   );
+
+  it.each([null, 42, "text", [payload]])(
+    "returns null when the payload is not an object: %j",
+    (value) => {
+      expect(parseFenResultData(encode(value))).toBeNull();
+    },
+  );
+
+  it("drops a missing or malformed top-level field and keeps the rest", () => {
+    expect(
+      parseFenResultData(
+        encode({
+          score: "50",
+          total: 100,
+          detailedStats: { correct: 1, incorrect: 1, total: 2 },
+          results: "none",
+        }),
+      ),
+    ).toEqual({ total: 100 });
+  });
+
+  it("drops the session's null detailedStats, so the page uses its own", () => {
+    expect(
+      parseFenResultData(
+        encode({ score: 0, total: 100, results: [], detailedStats: null }),
+      ),
+    ).toEqual({ score: 0, total: 100, results: [] });
+  });
+
+  it("drops result entries of the wrong shape and keeps the well-formed ones", () => {
+    const { accuracy: _accuracy, ...withoutAccuracy } = entry;
+    expect(
+      parseFenResultData(
+        encode({
+          results: [
+            null,
+            "a1",
+            [entry],
+            withoutAccuracy,
+            { ...entry, fen: 1 },
+            { ...entry, skipped: "no" },
+            { ...entry, totalPieces: null },
+            entry,
+          ],
+        }),
+      ),
+    ).toEqual({ results: [entry] });
+  });
 });
 
 describe("summarizeFenSession", () => {

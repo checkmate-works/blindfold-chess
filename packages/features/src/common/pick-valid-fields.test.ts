@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   integerBetween,
   isBoolean,
+  isFiniteNumber,
   isString,
   oneOf,
   pickValidFields,
@@ -61,5 +62,13 @@ describe("pickValidFields", () => {
       false,
       false,
     ]);
+  });
+
+  it("accepts only finite numbers as a finite number", () => {
+    expect(
+      [0, -1.5, Number.NaN, Number.POSITIVE_INFINITY, "3", null].map(
+        isFiniteNumber,
+      ),
+    ).toEqual([true, true, false, false, false, false]);
   });
 });

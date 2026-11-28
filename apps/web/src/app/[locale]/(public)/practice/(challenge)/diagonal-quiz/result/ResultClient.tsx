@@ -7,47 +7,13 @@ import { useSearchParams } from 'next/navigation';
 import { createPracticeResultClient } from '@/app/[locale]/(public)/practice/_lib/createPracticeResultClient';
 
 import { DiagonalQuizProblemList } from '../_components/DiagonalQuizProblemList';
-import type { QuestionResult } from '../_components/DiagonalQuizProblemList';
+import { parseDiagonalQuizResults } from '../_lib/result-data';
 
 function DiagonalQuizChildren() {
   const searchParams = useSearchParams();
   const dataParam = searchParams.get('data');
 
-  const questionResults = useMemo(() => {
-    if (!dataParam) return [];
-    try {
-      // Decode and parse minified JSON
-      // Minified keys: s=square, c=isCorrect, dc=isDiagonalCorrect, ac=isAntiDiagonalCorrect
-      // cd=correctDiagonal, ca=correctAntiDiagonal, ud=userDiagonal, ua=userAntiDiagonal,
-      // t=timedOut (present only on the question the time limit cut off)
-      type SerializedResult = {
-        s: string;
-        c: number;
-        dc: number;
-        ac: number;
-        cd: string;
-        ca: string;
-        ud?: string;
-        ua?: string;
-        t?: number;
-      };
-      const parsed = JSON.parse(decodeURIComponent(dataParam));
-      return parsed.map((item: SerializedResult) => ({
-        square: item.s,
-        isCorrect: item.c === 1,
-        isDiagonalCorrect: item.dc === 1,
-        isAntiDiagonalCorrect: item.ac === 1,
-        correctDiagonal: item.cd,
-        correctAntiDiagonal: item.ca,
-        userDiagonal: item.ud,
-        userAntiDiagonal: item.ua,
-        ...(item.t === 1 ? { timedOut: true } : {}),
-      })) as QuestionResult[];
-    } catch (e) {
-      console.error('Failed to parse result data', e);
-      return [];
-    }
-  }, [dataParam]);
+  const questionResults = useMemo(() => parseDiagonalQuizResults(dataParam), [dataParam]);
 
   return (
     <div className="mt-8">
@@ -63,17 +29,10 @@ export const ResultClient = createPracticeResultClient({
   buildTryAgainUrl: (ctx) => `/${ctx.locale}/practice/diagonal-quiz/challenge/session`,
   buildSettingsUrl: (ctx) => `/${ctx.locale}/practice/diagonal-quiz`,
   buildAverageTimeText: (ctx) => {
-    const dataParam = ctx.searchParams.get('data');
-    let count = 0;
-    if (dataParam) {
-      try {
-        const parsed = JSON.parse(decodeURIComponent(dataParam));
-        // The timed-out question took no answer, so it is not in the average.
-        count = Array.isArray(parsed) ? parsed.filter((item) => item?.t !== 1).length : 0;
-      } catch {
-        // ignore
-      }
-    }
+    // The timed-out question took no answer, so it is not in the average.
+    const count = parseDiagonalQuizResults(ctx.searchParams.get('data')).filter(
+      (result) => !result.timedOut
+    ).length;
     const avg = count > 0 ? (ctx.timeElapsed / count).toFixed(1) : '0.0';
     return ctx.tPractice('secondsFormat', { seconds: avg });
   },

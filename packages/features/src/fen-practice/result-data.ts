@@ -1,29 +1,96 @@
 import type { PositionAccuracy } from "../common/accuracy";
+import { isJsonObject, parseEncodedJson } from "../common/encoded-json";
+import {
+  isBoolean,
+  isFiniteNumber,
+  isString,
+  pickValidFields,
+} from "../common/pick-valid-fields";
 import { aggregateResults, type AggregatedStats } from "./aggregate-results";
 import type { FenPosition } from "./problems";
 
+/**
+ * The payload the FEN session hands its result page in the `data` param.
+ * Every field is optional: a field that is missing or malformed is dropped,
+ * and the result page falls back to its own default for it.
+ */
 export type FenResultData = {
   score?: number;
   total?: number;
-  detailedStats?: {
-    correct: number;
-    incorrect: number;
-    total: number;
-  };
-  results?: unknown[];
+  detailedStats?: FenDetailedStats;
+  results?: FenProblemResultEntry[];
 };
 
-/** Decode the result payload carried between the FEN session and result page. */
+/**
+ * Decode the result payload carried between the FEN session and result page.
+ *
+ * The payload arrives through the URL, so its shape is checked rather than
+ * assumed: a hand-edited or truncated link must fall back to the defaults, not
+ * reach the result list and throw while it renders. Each top-level field is
+ * judged on its own, and a malformed entry of `results` is dropped while the
+ * well-formed ones are kept.
+ *
+ * @returns `null` when the param is absent, does not decode, or is not an
+ * object.
+ */
 export function parseFenResultData(
   dataParam: string | null,
 ): FenResultData | null {
-  if (!dataParam) return null;
+  const parsed = parseEncodedJson(dataParam);
+  if (!isJsonObject(parsed)) return null;
 
-  try {
-    return JSON.parse(decodeURIComponent(dataParam)) as FenResultData;
-  } catch {
-    return null;
+  const data: FenResultData = pickValidFields<Omit<FenResultData, "results">>(
+    parsed,
+    {
+      score: isFiniteNumber,
+      total: isFiniteNumber,
+      detailedStats: isFenDetailedStats,
+    },
+  );
+  if (Array.isArray(parsed.results)) {
+    data.results = parsed.results.filter(isFenProblemResultEntry);
   }
+  return data;
+}
+
+const DETAILED_STATS_FIELDS = [
+  "correctPieces",
+  "totalPieces",
+  "incorrectPieces",
+  "missingPieces",
+  "extraPieces",
+] as const;
+
+function isFenDetailedStats(value: unknown): value is FenDetailedStats {
+  return (
+    isJsonObject(value) &&
+    DETAILED_STATS_FIELDS.every((field) => isFiniteNumber(value[field]))
+  );
+}
+
+const ENTRY_NUMBER_FIELDS = [
+  "accuracy",
+  ...DETAILED_STATS_FIELDS,
+  "originalIndex",
+] as const;
+
+/**
+ * Whether a decoded value has the shape of one result entry. The FENs are
+ * only checked to be strings: the result board already falls back to an
+ * empty board on a FEN it cannot read, and a stricter check would drop
+ * entries the session wrote itself.
+ */
+function isFenProblemResultEntry(
+  value: unknown,
+): value is FenProblemResultEntry {
+  return (
+    isJsonObject(value) &&
+    isString(value.fen) &&
+    isString(value.recreatedFen) &&
+    isBoolean(value.isBlackToMove) &&
+    isBoolean(value.skipped) &&
+    ENTRY_NUMBER_FIELDS.every((field) => isFiniteNumber(value[field]))
+  );
 }
 
 /** One problem of a finished session, as the result screens list it. */

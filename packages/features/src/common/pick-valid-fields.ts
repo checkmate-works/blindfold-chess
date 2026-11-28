@@ -48,6 +48,10 @@ export const isBoolean: FieldGuard<boolean> = (value): value is boolean =>
 export const isString: FieldGuard<string> = (value): value is string =>
   typeof value === "string";
 
+/** Guard for a number field that must be finite (not `NaN` or `Infinity`). */
+export const isFiniteNumber: FieldGuard<number> = (value): value is number =>
+  typeof value === "number" && Number.isFinite(value);
+
 /** Guard for an integer field within `[min, max]`. */
 export function integerBetween(min: number, max: number): FieldGuard<number> {
   return (value: unknown): value is number =>
