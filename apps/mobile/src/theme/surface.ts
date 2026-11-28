@@ -37,12 +37,20 @@ export const surfaceColors = {
     panelBorder: "#dddddd",
     rowSeparator: "#ececec",
     primaryPressed: "#2c7ac4",
+    snackbar: "#323232",
+    snackbarForeground: "#ffffff",
+    snackbarAction: "#8ec5f5",
+    snackbarPressed: "#4a4a4a",
   },
   dark: {
     page: "#161512",
     panelBorder: "#3a3835",
     rowSeparator: "#2f2d2a",
     primaryPressed: "#2c7ac4",
+    snackbar: "#e8e6e3",
+    snackbarForeground: "#161512",
+    snackbarAction: "#1f6fb8",
+    snackbarPressed: "#d6d4d1",
   },
 } as const satisfies Record<"light" | "dark", SurfaceColors>;
 
@@ -75,6 +83,21 @@ export type SurfaceColors = {
   rowSeparator: string;
   /** The primary button's fill while it is pressed. */
   primaryPressed: string;
+  /**
+   * The snackbar's fill: the inverse of the page, so the one message that
+   * floats over the content stands apart from every panel on it without a
+   * shadow (the flat look has none).
+   */
+  snackbar: string;
+  /** The snackbar's message. */
+  snackbarForeground: string;
+  /**
+   * The snackbar's action. The primary blue is too dark on the inverse
+   * fill, so the action takes a lighter blue of the same hue.
+   */
+  snackbarAction: string;
+  /** The fill behind the snackbar's action while it is pressed. */
+  snackbarPressed: string;
 };
 
 /**

@@ -5,6 +5,7 @@ import { ListRow, ListSection, TabScrollView } from "../../../components";
 import { PracticeCard } from "../../../features/practice-list/PracticeCard";
 import { AiGameCard } from "../../../features/ai-game/components/AiGameCard";
 import { GameRow } from "../../../features/game-history/GameRow";
+import { SavedGameSnackbar } from "../../../features/game-history/SavedGameSnackbar";
 import { useSavedGames } from "../../../features/game-history/useSavedGames";
 import { MOBILE_PRACTICE_MODULES } from "../../../navigation/practice-modules";
 
@@ -24,37 +25,43 @@ export default function PlayTab() {
   const router = useRouter();
   const { games, reload } = useSavedGames();
 
+  // The snackbar is the scroll view's sibling, not its child: the scroll
+  // view stays the screen's first view, which the native header and the
+  // tab bar look for to inset it and to collapse on scroll.
   return (
-    <TabScrollView>
-      <AiGameCard
-        buttonTitle={t("aiGame.setup.startGame")}
-        onPress={() => router.push("/play/ai-game")}
-      />
+    <>
+      <TabScrollView>
+        <AiGameCard
+          buttonTitle={t("aiGame.setup.startGame")}
+          onPress={() => router.push("/play/ai-game")}
+        />
 
-      <ListSection title={t("gameHistory.title")}>
-        {games && games.length > 0 ? (
-          [
-            ...games
-              .slice(0, RECENT_COUNT)
-              .map((game) => (
-                <GameRow key={game.id} game={game} onDeleted={reload} />
-              )),
-            ...(games.length > RECENT_COUNT
-              ? [
-                  <ListRow
-                    key="all"
-                    title={t("gameHistory.seeAll", { count: games.length })}
-                    onPress={() => router.push("/play/games")}
-                  />,
-                ]
-              : []),
-          ]
-        ) : (
-          <ListRow title={t("gameHistory.empty")} />
-        )}
-      </ListSection>
+        <ListSection title={t("gameHistory.title")}>
+          {games && games.length > 0 ? (
+            [
+              ...games
+                .slice(0, RECENT_COUNT)
+                .map((game) => (
+                  <GameRow key={game.id} game={game} onDeleted={reload} />
+                )),
+              ...(games.length > RECENT_COUNT
+                ? [
+                    <ListRow
+                      key="all"
+                      title={t("gameHistory.seeAll", { count: games.length })}
+                      onPress={() => router.push("/play/games")}
+                    />,
+                  ]
+                : []),
+            ]
+          ) : (
+            <ListRow title={t("gameHistory.empty")} />
+          )}
+        </ListSection>
 
-      {RECALL_MODULE && <PracticeCard module={RECALL_MODULE} />}
-    </TabScrollView>
+        {RECALL_MODULE && <PracticeCard module={RECALL_MODULE} />}
+      </TabScrollView>
+      <SavedGameSnackbar />
+    </>
   );
 }

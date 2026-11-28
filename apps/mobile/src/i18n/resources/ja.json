@@ -879,7 +879,9 @@
     "you": "あなた",
     "engine": "Stockfish（レベル{{level}}）",
     "inProgress": "対局中",
-    "resume": "対局を再開"
+    "resume": "対局を再開",
+    "savedNotice": "対局を保存しました",
+    "resumeShort": "再開"
   },
   "glossary": {
     "title": "チェス用語集",

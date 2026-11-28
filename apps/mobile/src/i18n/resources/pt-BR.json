@@ -879,7 +879,9 @@
     "you": "Você",
     "engine": "Stockfish (nível {{level}})",
     "inProgress": "Em andamento",
-    "resume": "Retomar a partida"
+    "resume": "Retomar a partida",
+    "savedNotice": "Partida salva",
+    "resumeShort": "Retomar"
   },
   "glossary": {
     "title": "Glossário de Xadrez",

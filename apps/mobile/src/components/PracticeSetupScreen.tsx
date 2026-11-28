@@ -52,6 +52,11 @@ type PracticeSetupScreenProps = {
   onStartTraining?: () => void;
   /** The feature's settings form. */
   children: ReactNode;
+  /**
+   * Laid over the bottom of the form, just above the start buttons: a
+   * `Snackbar` the screen shows (the AI-game setup's "Game saved").
+   */
+  overlay?: ReactNode;
 };
 
 /**
@@ -158,6 +163,7 @@ export function PracticeSetupScreen({
   startDisabled = false,
   onStartTraining,
   children,
+  overlay,
 }: PracticeSetupScreenProps) {
   const { t } = useTranslation();
   const { colors } = useTheme();
@@ -195,13 +201,16 @@ export function PracticeSetupScreen({
 
   return (
     <Screen edges={[]}>
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {children}
-      </ScrollView>
+      <View style={styles.body}>
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {children}
+        </ScrollView>
+        {overlay}
+      </View>
 
       <BottomBar>
         {onStartTraining ? (
@@ -254,6 +263,9 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+  },
+  body: {
+    flex: 1,
   },
   scrollView: {
     flex: 1,

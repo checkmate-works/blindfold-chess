@@ -8,6 +8,7 @@ import {
   deleteSavedGame,
   type SavedGame,
 } from "../../../features/game-history/game-history";
+import { SavedGameSnackbar } from "../../../features/game-history/SavedGameSnackbar";
 import { useSavedGames } from "../../../features/game-history/useSavedGames";
 import { useTheme, borderRadius, fontSize, spacing } from "../../../theme";
 
@@ -166,6 +167,7 @@ export default function SavedGameScreen() {
           textStyle={{ color: colors.destructive }}
         />
       </ScrollView>
+      <SavedGameSnackbar />
     </Screen>
   );
 }

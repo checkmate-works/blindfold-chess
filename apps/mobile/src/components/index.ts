@@ -45,3 +45,4 @@ export { TabScrollView } from "./TabScrollView";
 export { BottomSheet } from "./BottomSheet";
 export { SelectRow, SwitchRow } from "./SettingRows";
 export { TextField } from "./TextField";
+export { Snackbar } from "./Snackbar";
