@@ -49,7 +49,18 @@ export function DailyPuzzleCard() {
   return daily ? <DailyPuzzleContent puzzle={daily} /> : null;
 }
 
-function DailyPuzzleContent({ puzzle }: { puzzle: PuzzleSummary }) {
+/**
+ * The card itself, for a screen that already holds the day's puzzle: the
+ * puzzle list draws the same card at its top, so home and the list show
+ * the Daily Puzzle the same way. `testID` names the button.
+ */
+export function DailyPuzzleContent({
+  puzzle,
+  testID = "home-daily-puzzle",
+}: {
+  puzzle: PuzzleSummary;
+  testID?: string;
+}) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
@@ -86,7 +97,7 @@ function DailyPuzzleContent({ puzzle }: { puzzle: PuzzleSummary }) {
           title={t("puzzle.detail.startSolving")}
           size="sm"
           style={styles.action}
-          testID="home-daily-puzzle"
+          testID={testID}
           onPress={() =>
             router.push({
               pathname: "/practice/puzzle/[id]",
