@@ -11,8 +11,9 @@ import { isValidUUID } from '@/lib/validations/uuid';
  * The puzzles the app offers: the Daily Puzzle and the rest of the featured
  * set — the ones the operators picked (`featured_puzzles`). The app does not
  * browse the whole user-submitted pool: everything it shows is curated, so
- * it carries no unmoderated user content (apps/mobile/CLAUDE.md). Authors,
- * likes and comments are left out for the same reason.
+ * it carries no unmoderated user content (apps/mobile/CLAUDE.md). Authors
+ * and comments are left out for the same reason; a like's own route
+ * (`puzzles/[id]/like`) answers only the viewer's like and the total.
  */
 export type MobilePuzzleSummary = { id: string; title: string; fen: string };
 

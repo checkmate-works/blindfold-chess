@@ -76,6 +76,24 @@
       }
     }
   },
+  "authPrompt": {
+    "signIn": "Iniciar sesión",
+    "signedOut": {
+      "title": "Inicia sesión para dar me gusta",
+      "message": "Crea una cuenta gratis para dar me gusta a puzzles y anuncios. También guarda tus registros y tu rango."
+    },
+    "username": {
+      "title": "Elige un nombre de usuario",
+      "message": "Elige un nombre de usuario para terminar el registro. Después podrás dar me gusta a puzzles y anuncios."
+    }
+  },
+  "likes": {
+    "like": "Me gusta",
+    "unlike": "Quitar me gusta",
+    "likeWithCount": "Me gusta, {{count}} me gusta",
+    "unlikeWithCount": "Quitar me gusta, {{count}} me gusta",
+    "failed": "No se pudo actualizar el me gusta. Inténtalo de nuevo."
+  },
   "mypage": {
     "title": "Mi página",
     "loadFailed": "No se pudo cargar tu cuenta.",
@@ -1185,7 +1203,9 @@
       "peekCount": "Vistas del Tablero: {{count}}",
       "statusSolved": "Resuelto",
       "statusRevealed": "Solución revelada",
-      "statusPartial": "{{correct}}/{{total}} resueltos"
+      "statusPartial": "{{correct}}/{{total}} resueltos",
+      "likeCta": "Me gusta este puzzle",
+      "likedCta": "Te gusta"
     },
     "list": {
       "title": "Puzzle",
@@ -1213,7 +1233,8 @@
     "white": "Blancas",
     "black": "Negras",
     "play": "Reproducir",
-    "replay": "Repetir"
+    "replay": "Repetir",
+    "signInBenefit": "Registra los puzzles resueltos y gana EXP."
   },
   "dojo": {
     "currentRank": "Rango actual",

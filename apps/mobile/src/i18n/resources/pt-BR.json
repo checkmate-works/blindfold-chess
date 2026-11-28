@@ -76,6 +76,24 @@
       }
     }
   },
+  "authPrompt": {
+    "signIn": "Entrar",
+    "signedOut": {
+      "title": "Entre para curtir",
+      "message": "Crie uma conta grátis para curtir puzzles e avisos. Ela também guarda seus registros e sua faixa."
+    },
+    "username": {
+      "title": "Escolha um nome de usuário",
+      "message": "Escolha um nome de usuário para concluir o cadastro. Depois você poderá curtir puzzles e avisos."
+    }
+  },
+  "likes": {
+    "like": "Curtir",
+    "unlike": "Descurtir",
+    "likeWithCount": "Curtir, {{count}} curtidas",
+    "unlikeWithCount": "Descurtir, {{count}} curtidas",
+    "failed": "Não foi possível atualizar a curtida. Tente de novo."
+  },
   "mypage": {
     "title": "Minha página",
     "loadFailed": "Não foi possível carregar sua conta.",
@@ -1185,7 +1203,9 @@
       "peekCount": "Visualizações do Tabuleiro: {{count}}",
       "statusSolved": "Resolvido",
       "statusRevealed": "Solução revelada",
-      "statusPartial": "{{correct}}/{{total}} resolvidos"
+      "statusPartial": "{{correct}}/{{total}} resolvidos",
+      "likeCta": "Curtir este puzzle",
+      "likedCta": "Curtido"
     },
     "list": {
       "title": "Puzzle",
@@ -1213,7 +1233,8 @@
     "white": "Brancas",
     "black": "Pretas",
     "play": "Reproduzir",
-    "replay": "Repetir"
+    "replay": "Repetir",
+    "signInBenefit": "Registre os puzzles resolvidos e ganhe EXP."
   },
   "dojo": {
     "currentRank": "Faixa atual",

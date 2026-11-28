@@ -76,6 +76,24 @@
       }
     }
   },
+  "authPrompt": {
+    "signIn": "Sign in",
+    "signedOut": {
+      "title": "Sign in to like",
+      "message": "Create a free account to like puzzles and announcements. It also keeps your records and rank."
+    },
+    "username": {
+      "title": "Choose a username",
+      "message": "Choose a username to finish signing up. Then you can like puzzles and announcements."
+    }
+  },
+  "likes": {
+    "like": "Like",
+    "unlike": "Unlike",
+    "likeWithCount": "Like, {{count}} likes",
+    "unlikeWithCount": "Unlike, {{count}} likes",
+    "failed": "Could not update the like. Please try again."
+  },
   "mypage": {
     "title": "My Page",
     "loadFailed": "Couldn't load your account.",
@@ -1185,7 +1203,9 @@
       "peekCount": "Board Peeks: {{count}}",
       "statusSolved": "Solved",
       "statusRevealed": "Revealed",
-      "statusPartial": "{{correct}}/{{total}} solved"
+      "statusPartial": "{{correct}}/{{total}} solved",
+      "likeCta": "Like this puzzle",
+      "likedCta": "Liked"
     },
     "list": {
       "title": "Puzzle",
@@ -1213,7 +1233,8 @@
     "white": "White",
     "black": "Black",
     "play": "Play",
-    "replay": "Replay"
+    "replay": "Replay",
+    "signInBenefit": "Record solved puzzles and earn EXP."
   },
   "dojo": {
     "currentRank": "Current rank",

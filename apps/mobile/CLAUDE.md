@@ -540,16 +540,37 @@ database. Sign-in calls Supabase Auth directly; sign-up goes through
   featured set only (`GET /puzzles`; `GET /puzzles/[id]` answers 404 for any
   other puzzle), solves them with the web's rules from
   `@blindfold-chess/features/puzzle`, and records a solved one for a
-  signed-in player (`POST /puzzles/results`, free-play EXP). Authors, likes,
+  signed-in player (`POST /puzzles/results`, free-play EXP). Authors,
   comments and the user-submitted pool stay on the web, under the rule
   above.
+
+- **Likes** (`features/likes/`): the web's "Like this puzzle" on a puzzle's
+  result and the heart with its total under an announcement
+  (`GET`/`POST /puzzles/[id]/like`, `/announcements/[slug]/like`; the
+  routes answer 404 for anything the app does not show). Only the viewer's
+  own like and the total cross the wire, never who liked, so the rule
+  above still holds: a like adds nothing another user can read in the app.
+  A player who cannot like yet — signed out, or signed in without a
+  username, whom the server refuses with `profileRequired` as the web
+  does — gets `showAuthPrompt` (`features/account/auth-prompt.ts`), the
+  web's `AuthPromptModal` as a native alert, whose choices open the account
+  modal.
+
+- **Sign-in invitations** are one component, `SignInRow`
+  (`features/account/`): a challenge's setup and unrecorded result, a
+  signed-out puzzle result and a dojo exam use it with their own benefit
+  line. A free-play result whose run the app does not send to the server
+  (FEN, position memory, knight tour, algebraic notation, recall) has none:
+  an account would not keep that run, so the row would promise something
+  untrue.
 
 - **Announcements** (`announcements`, and the last section of home): the
   public announcements only (`GET /announcements?page=&locale=`, `GET
 /announcements/[slug]`, both public), each in the app's language where a
   translation exists, as on the web. The body renders with the learn
-  articles' `MarkdownView`. Members-only announcements and likes stay on the
-  web: the app has no sign-in gate in front of a body.
+  articles' `MarkdownView`, followed by the like (above). Members-only
+  announcements stay on the web: the app has no sign-in gate in front of a
+  body.
 
 Still web-only: creating puzzles and community positions, repertoires,
 topics and articles, the home feed, Maia, password reset (the app opens the

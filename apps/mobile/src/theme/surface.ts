@@ -41,6 +41,8 @@ export const surfaceColors = {
     snackbarForeground: "#ffffff",
     snackbarAction: "#8ec5f5",
     snackbarPressed: "#4a4a4a",
+    like: "#e11d48",
+    likeTint: "#fff1f2",
   },
   dark: {
     page: "#161512",
@@ -51,6 +53,8 @@ export const surfaceColors = {
     snackbarForeground: "#161512",
     snackbarAction: "#1f6fb8",
     snackbarPressed: "#d6d4d1",
+    like: "#fb7185",
+    likeTint: "#2a1418",
   },
 } as const satisfies Record<"light" | "dark", SurfaceColors>;
 
@@ -98,6 +102,14 @@ export type SurfaceColors = {
   snackbarAction: string;
   /** The fill behind the snackbar's action while it is pressed. */
   snackbarPressed: string;
+  /**
+   * The heart, its label and the like button's border: the web's rose
+   * (`rose-600` / `rose-400`), so a like reads the same on both. Not
+   * `primary`: blue is kept for the main action, and a like is not one.
+   */
+  like: string;
+  /** The like button's fill once liked, and while pressed. */
+  likeTint: string;
 };
 
 /**
