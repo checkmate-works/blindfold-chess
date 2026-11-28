@@ -7,7 +7,12 @@ import {
   useWindowDimensions,
 } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { useLocalSearchParams, useRouter, type Href } from "expo-router";
+import {
+  useLocalSearchParams,
+  useNavigation,
+  useRouter,
+  type Href,
+} from "expo-router";
 import { useTranslation } from "react-i18next";
 import {
   fullmoveNumberFromFen,
@@ -37,6 +42,7 @@ import {
 } from "../../../../features/puzzle/components/AttemptHistoryPanel";
 import { SolutionReplay } from "../../../../features/puzzle/components/SolutionReplay";
 import { savePuzzleResult } from "../../../../features/puzzle/puzzles-api";
+import { routeNameBelow } from "../../../../navigation/route-below";
 import { useCloseSession } from "../../../../navigation/use-close-session";
 import { fontSize, fontWeight, spacing, useTheme } from "../../../../theme";
 
@@ -89,6 +95,7 @@ export default function PuzzleResult() {
       ),
     [params.moves],
   );
+  const navigation = useNavigation();
   const { close } = useCloseSession(
     exam ? (`/dojo/exams/${exam}` as Href) : "/practice/puzzle",
   );
@@ -135,10 +142,18 @@ export default function PuzzleResult() {
   }, [fen, attempts, solution]);
 
   const backToList = () => {
-    // The list sits two screens down (list → puzzle → this modal); a result
-    // opened any other way has no list under it, so close to the fallback.
-    if (router.canDismiss()) {
+    const below = navigation.getParent()?.getState();
+    if (below?.routes.some((route) => route.name === "practice/puzzle/index")) {
+      // Opened from the list (list → puzzle → this modal): pop back to it.
       router.dismissTo("/practice/puzzle");
+    } else if (routeNameBelow(below) === "practice/puzzle/[id]") {
+      // Opened from a puzzle reached without the list (home's daily puzzle
+      // card): close onto that puzzle and put the list in its place, so
+      // back from the list does not show the puzzle just solved again.
+      // `dismissTo` would instead replace this modal with the list and
+      // leave the puzzle underneath it.
+      close();
+      router.replace("/practice/puzzle");
     } else {
       close();
     }

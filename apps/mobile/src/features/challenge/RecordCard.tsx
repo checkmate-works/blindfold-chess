@@ -1,5 +1,4 @@
 import { StyleSheet, Text, View } from "react-native";
-import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import {
   formatSignedDelta,
@@ -7,7 +6,7 @@ import {
 } from "@blindfold-chess/features/challenge-records";
 
 import { ListIcon, ListRow, ListSection } from "../../components";
-import { useCloseSession } from "../../navigation/use-close-session";
+import { useOpenRootScreen } from "../../navigation/use-open-root-screen";
 import {
   borderRadius,
   fontSize,
@@ -38,8 +37,7 @@ type RecordCardProps = {
 export function RecordCard({ record, menuType }: RecordCardProps) {
   const { t } = useTranslation();
   const { colors } = useTheme();
-  const router = useRouter();
-  const { close } = useCloseSession();
+  const openRootScreen = useOpenRootScreen();
 
   const formatScore = (score: number | undefined) =>
     score === undefined ? "—" : t("challenge.recordCard.scoreValue", { score });
@@ -107,13 +105,9 @@ export function RecordCard({ record, menuType }: RecordCardProps) {
       <ListRow
         leading={<ListIcon ionicon="trending-up" tint={colors.primary} />}
         title={t("challenge.recordCard.viewMyRecords")}
-        onPress={() => {
-          // My Records is a root-stack screen, which would open under the
-          // session modal on iOS: close the modal onto the challenge's setup
-          // and push My Records over that, so back returns to the setup.
-          close();
-          router.push({ pathname: "/records", params: { menu: menuType } });
-        }}
+        onPress={() =>
+          openRootScreen({ pathname: "/records", params: { menu: menuType } })
+        }
         testID="record-view-my-records"
       />
     </ListSection>

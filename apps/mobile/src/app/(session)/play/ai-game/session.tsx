@@ -184,8 +184,11 @@ function AiGameBoard({ setup }: { setup: GameSetup }) {
   const { gameId, playerColor, skillLevel } = setup;
   const start = setup;
   // "Play again" reveals the setup screen under the modal, which still holds
-  // this game's settings; the setup is where to fall back to without one.
-  const { close: closeToSetup, closeToMenu } = useCloseSession("/play/ai-game");
+  // this game's settings. A game resumed from the play tab, the saved games
+  // or the onboarding has no setup underneath, so the setup is opened over
+  // whatever is (`closeOnto`); it is also the fallback with nothing below.
+  const { closeOnto, closeToMenu } = useCloseSession("/play/ai-game");
+  const closeToSetup = () => closeOnto("play/ai-game/index", "/play/ai-game");
 
   const ai = useAiVersus(skillLevel);
 
