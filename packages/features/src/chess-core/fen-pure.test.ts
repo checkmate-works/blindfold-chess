@@ -335,10 +335,12 @@ describe("validateFenFormat", () => {
     expect(validateFenFormat("8/8/8/8/8/8/8/K7X w")).toBe(false);
   });
 
-  it("accepts consecutive empty-square digits that sum to eight", () => {
-    expect(validateFenFormat("8/8/8/8/8/8/8/17 w")).toBe(true);
-    expect(validateFenFormat("8/8/8/8/8/8/8/44 w")).toBe(true);
-    expect(validateFenFormat("8/8/8/8/8/8/8/K16 w")).toBe(true);
+  // The digits add up to eight squares, but canonical FEN writes each run of
+  // empty squares as a single digit, and chess.js rejects these too.
+  it("rejects consecutive empty-square digits even when they sum to eight", () => {
+    expect(validateFenFormat("8/8/8/8/8/8/8/17 w")).toBe(false);
+    expect(validateFenFormat("8/8/8/8/8/8/8/44 w")).toBe(false);
+    expect(validateFenFormat("8/8/8/8/8/8/8/K16 w")).toBe(false);
   });
 
   // Fields are split on single spaces, so a doubled space leaves an empty
