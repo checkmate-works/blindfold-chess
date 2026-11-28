@@ -1,6 +1,7 @@
 import { Alert } from "react-native";
 import { useTranslation } from "react-i18next";
 
+import { postScreenNotice } from "./screen-notice";
 import { useCloseSession } from "./use-close-session";
 
 /**
@@ -23,6 +24,15 @@ export function useQuitSession({
   const { close } = useCloseSession();
   const leave = onClose ?? close;
 
+  // A confirmed quit throws the run away, and the confirmation said so; the
+  // screen the modal closes back to says it was done ("Session quit").
+  // A session's own `onClose` goes somewhere else (its result) and says
+  // nothing here.
+  const quit = () => {
+    leave();
+    if (!onClose) postScreenNotice({ kind: "sessionQuit" });
+  };
+
   return () => {
     if (!confirm) {
       leave();
@@ -30,7 +40,7 @@ export function useQuitSession({
     }
     Alert.alert(t("common.quitConfirmTitle"), t("common.quitConfirmMessage"), [
       { text: t("common.cancel"), style: "cancel" },
-      { text: t("common.quit"), style: "destructive", onPress: leave },
+      { text: t("common.quit"), style: "destructive", onPress: quit },
     ]);
   };
 }
