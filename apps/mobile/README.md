@@ -158,19 +158,44 @@ Run from `apps/mobile`, or from the root with `pnpm --filter mobile <script>`:
 
 ## Environment Variables
 
-All three are optional in development and baked into the bundle at build time
-(`EXPO_PUBLIC_*`). A release build needs **all three**: if any is missing it
-has no accounts and runs signed out only.
+All are optional in development and baked into the bundle at build time
+(`EXPO_PUBLIC_*`), so changing one needs a new build. A release build needs
+**the first three**: if any is missing it has no accounts and runs signed out
+only.
 
 | Variable                               | Development default         | Release builds                        |
 | -------------------------------------- | --------------------------- | ------------------------------------- |
 | `EXPO_PUBLIC_SUPABASE_URL`             | `http://<Metro host>:55321` | `https://<ref>.supabase.co`           |
 | `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Supabase CLI's local key    | The production `sb_publishable_…` key |
 | `EXPO_PUBLIC_API_ORIGIN`               | `http://<Metro host>:3100`  | `https://www.blindfold-chess.online`  |
+| `EXPO_PUBLIC_OAUTH_PROVIDERS`          | Unset (no Google button)    | `google` to offer Google sign-in      |
 
 The Supabase URL and publishable key are in the Supabase Dashboard under
 Project Settings > API. Everything in `EXPO_PUBLIC_*` ships inside the app, so
 never put a secret in one.
+
+### Which sign-in methods a build offers
+
+| Method | Offered when                                                   |
+| ------ | -------------------------------------------------------------- |
+| Email  | Always (with the three backend variables above)                |
+| Apple  | Always on iOS; never on Android                                |
+| Google | `EXPO_PUBLIC_OAUTH_PROVIDERS` lists `google` (comma-separated) |
+
+Google is behind a variable so that a build made before the provider is set
+up shows no button that can only fail. Before turning it on for a release
+build, in the production Supabase project:
+
+1. Authentication > Sign In / Providers > Google: enable it.
+2. Authentication > URL Configuration > Redirect URLs: add
+   `blindfold-chess://auth-callback`. Do not add Expo Go's
+   `exp://**/--/auth-callback` here; only the local `config.toml` allows it.
+
+Apple needs no variable, because App Store Review Guideline 4.8 requires Sign
+in with Apple next to any third-party login such as Google. It does need
+Apple enabled in Supabase with the bundle ID (`online.blindfoldchess.app`) as
+a client ID. The rule is `resolveOAuthProviders` in
+[`src/auth/oauth-providers.ts`](src/auth/oauth-providers.ts).
 
 ### Release builds
 
@@ -184,6 +209,9 @@ npx eas-cli env:create --environment production --visibility plaintext \
   --name EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY --value sb_publishable_…
 npx eas-cli env:create --environment production --visibility plaintext \
   --name EXPO_PUBLIC_API_ORIGIN --value https://www.blindfold-chess.online
+# Optional: offer Google sign-in (see "Which sign-in methods a build offers")
+npx eas-cli env:create --environment production --visibility plaintext \
+  --name EXPO_PUBLIC_OAUTH_PROVIDERS --value google
 ```
 
 `npx eas-cli env:list --environment production` shows what is set.
