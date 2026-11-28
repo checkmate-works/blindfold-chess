@@ -13,6 +13,7 @@ import {
   SettingsForm,
 } from "../../../features/ai-game/components";
 import { useGameSettings } from "../../../features/ai-game/hooks";
+import { SavedGameSnackbar } from "../../../features/game-history/SavedGameSnackbar";
 import { encodeGamePrefsParam } from "../../../features/ai-game/lib/game-prefs-param";
 import { useGamePreferences } from "../../../lib/game-preferences";
 import { spacing } from "../../../theme";
@@ -57,6 +58,7 @@ export default function AiGameSetup() {
       isLoaded={isLoaded && preferencesLoaded}
       startLabel={t("aiGame.setup.startGame")}
       onStart={handleStart}
+      overlay={<SavedGameSnackbar />}
     >
       <View style={styles.container}>
         <SettingsForm

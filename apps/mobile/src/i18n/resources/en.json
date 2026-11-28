@@ -871,7 +871,9 @@
     "you": "You",
     "engine": "Stockfish (level {{level}})",
     "inProgress": "In progress",
-    "resume": "Resume game"
+    "resume": "Resume game",
+    "savedNotice": "Game saved",
+    "resumeShort": "Resume"
   },
   "glossary": {
     "title": "Chess Glossary",

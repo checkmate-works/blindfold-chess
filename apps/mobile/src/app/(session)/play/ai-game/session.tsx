@@ -42,6 +42,7 @@ import {
   loadSavedGame,
   saveGame,
 } from "../../../../features/game-history/game-history";
+import { postSavedGameNotice } from "../../../../features/game-history/saved-game-notice";
 import { useCloseSession } from "../../../../navigation/use-close-session";
 import {
   GamePreferencesOverride,
@@ -280,6 +281,24 @@ function AiGameBoard({ setup }: { setup: GameSetup }) {
     start.startingFen,
   ]);
 
+  // Closing an unfinished game that has been saved tells the screen below
+  // so ("Game saved", with Resume). Posted as the session goes away rather
+  // than from the ×, so Android's back button, which also pops the modal,
+  // says it too. A game that ended goes on to its result instead, and one
+  // with no move was never saved.
+  const leftUnfinishedRef = useRef(false);
+  useEffect(() => {
+    leftUnfinishedRef.current =
+      game.gameStatus === "in_progress" &&
+      (game.moves.length > 0 || hasBeenSaved.current);
+  }, [game.gameStatus, game.moves.length]);
+  useEffect(
+    () => () => {
+      if (leftUnfinishedRef.current) postSavedGameNotice(gameId);
+    },
+    [gameId],
+  );
+
   // Navigate to result when game is over
   useEffect(() => {
     if (game.gameStatus !== "in_progress" && game.playerResult) {
@@ -329,7 +348,8 @@ function AiGameBoard({ setup }: { setup: GameSetup }) {
         onError={ai.handleWebViewError}
       />
 
-      {/* Leaving asks nothing: the game is saved and can be resumed. */}
+      {/* Leaving asks nothing: the game is saved and can be resumed, which
+          the screen underneath then says. */}
       <SessionTopBar confirm={false}>
         <View style={styles.topRow}>
           <GameInfo

@@ -871,7 +871,9 @@
     "you": "Tú",
     "engine": "Stockfish (nivel {{level}})",
     "inProgress": "En curso",
-    "resume": "Reanudar la partida"
+    "resume": "Reanudar la partida",
+    "savedNotice": "Partida guardada",
+    "resumeShort": "Reanudar"
   },
   "glossary": {
     "title": "Glosario de Ajedrez",
