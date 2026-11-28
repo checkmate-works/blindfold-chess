@@ -90,8 +90,10 @@ header style (page-coloured, no hairline, chevron-only back).
   plain check stays only for what is not "done" (a selected row, a valid
   input).
 - **Filters over a list** are `FilterChips` (`components/FilterChips.tsx`):
-  one row of single-choice `SelectableChip`s that scrolls sideways when it
-  outgrows the screen, with "All" as a chip of its own.
+  one row of single-choice pill chips (36pt drawn, 44pt to touch; the one
+  on filled in `primary`) that runs to the screen's edges and scrolls
+  sideways when it outgrows the screen, with "All" as a chip of its own.
+  They are not `SelectableChip`s, which are the settings pickers.
 - **Half modals:** `BottomSheet` (`components/BottomSheet.tsx`) for option
   lists, help and pickers inside a screen — it works inside the session
   modal and sizes to its content. It is the platform's own sheet
