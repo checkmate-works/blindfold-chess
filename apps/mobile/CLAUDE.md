@@ -505,8 +505,7 @@ light square, or on the dark scheme the dark square mixed into the card), the
 way tiles sit on a table's felt; its boards get a dark-square frame and its
 labels are white tiles, the answer ringed in primary. A neutral grey band was
 tried first and read as a sunken field. `PracticeCardSection` spaces cards without
-an enclosing list frame. Play’s recall entry reuses
-the same card. Boards use the player’s board theme through `StaticBoard`;
+an enclosing list frame. Boards use the player’s board theme through `StaticBoard`;
 small previews omit coordinate letters. Settings and history remain grouped
 lists because they do not need practice illustrations.
 

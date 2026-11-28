@@ -16,7 +16,7 @@ import type { PracticeModuleSlug } from "@blindfold-chess/features/practice-regi
  *   reads `practice.<i18nKey>.title` / `.description`, the stack headers read
  *   `<i18nKey>.setup.title` / `.result.title`.
  * @property icon - The Ionicons line icon on the module's list rows (the
- *   practice tab, the home quick start, the play tab's recall row), drawn
+ *   practice tab, the home quick start), drawn
  *   in ink on the grey `ListIcon` tile. Emoji were dropped because they
  *   render as different pictures, in their own colours, depending on the OS
  *   and its font, so a list of them never looks like one set; line icons
