@@ -7,7 +7,11 @@ import { useRouter } from 'next/navigation';
 
 import { Button, FieldError, TextInput, fieldErrorProps } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { USERNAME_MAX_LENGTH, validateUsername } from '@blindfold-chess/features/username';
+import {
+  USERNAME_MAX_LENGTH,
+  generateUsername,
+  validateUsername,
+} from '@blindfold-chess/features/username';
 
 import { DISPLAY_NAME_MAX_LENGTH } from '@/lib/users/profile-limits';
 
@@ -18,17 +22,6 @@ import { setUsername as setUsernameAction } from '../_actions/setUsername';
 type Props = {
   locale: string;
 };
-
-/**
- * Produces a username that always satisfies the format rule. The random suffix
- * gives users an easy starting point while still allowing them to replace it.
- */
-function generateUsername(): string {
-  const bytes = crypto.getRandomValues(new Uint8Array(5));
-  const suffix = Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
-
-  return `player_${suffix}`;
-}
 
 export function UsernameForm({ locale }: Props) {
   const t = useTranslations('setupUsername');

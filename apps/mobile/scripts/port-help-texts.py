@@ -207,7 +207,7 @@ ACCOUNT_KEYS = {
     "verifyEmail": ["title", "description", "checkInbox", "checkSpam"],
     "setupUsername": ["title", "description", "usernameLabel",
                       "usernamePlaceholder", "usernameHint", "cannotChange",
-                      "submit", "validation"],
+                      "submit", "validation", "generateUsername"],
     "validation": ["password"],
 }
 

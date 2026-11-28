@@ -968,7 +968,8 @@
         "displayNameInappropriate": "Este nome de exibição não é permitido.",
         "displayNameImpersonation": "Este nome de exibição se parece com um nome reservado ou oficial. Escolha outro.",
         "reserved": "Este nome de usuário não está disponível."
-      }
+      },
+      "generateUsername": "Gerar um nome de usuário aleatório"
     },
     "validation": {
       "password": {
