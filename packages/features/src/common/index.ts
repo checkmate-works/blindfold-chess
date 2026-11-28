@@ -74,10 +74,12 @@ export { calculateAccuracy, calculateSquareDifferences } from "./accuracy";
 export { FEEDBACK_FLASH_MS, flashFeedbackDuration } from "./flash-policy";
 export { toggleSelection } from "./toggle-selection";
 export type { PersistentStorage } from "./persistent-storage";
+export { isJsonObject, parseEncodedJson } from "./encoded-json";
 export type { FieldGuard } from "./pick-valid-fields";
 export {
   integerBetween,
   isBoolean,
+  isFiniteNumber,
   isString,
   oneOf,
   pickValidFields,
