@@ -287,7 +287,7 @@
       "illegal": "できない"
     },
     "result": {
-      "title": "練習終了！"
+      "title": "結果"
     },
     "pieces": {
       "b": "ビショップ",
@@ -311,7 +311,7 @@
       "incorrectWithSolution": "正解は{{solution}}"
     },
     "result": {
-      "title": "練習終了！"
+      "title": "結果"
     }
   },
   "squareColors": {
@@ -323,7 +323,7 @@
       "dark": "黒"
     },
     "result": {
-      "title": "練習終了！"
+      "title": "結果"
     },
     "settings": {
       "timeLimit": "制限時間",
@@ -348,7 +348,7 @@
       "blackToMove": "黒の手番"
     },
     "result": {
-      "title": "クイズ終了！",
+      "title": "結果",
       "totalQuestions": "出題数",
       "points": "ポイント"
     }
@@ -372,7 +372,7 @@
       "targetSquare": "目標マス"
     },
     "result": {
-      "title": "練習終了！"
+      "title": "結果"
     },
     "pieces": {
       "n": "ナイト",
@@ -497,7 +497,7 @@
       "antiDiagonalDirection": "(h1-a8方向)"
     },
     "result": {
-      "title": "練習終了！"
+      "title": "結果"
     },
     "settings": {
       "timeLimit": "制限時間",
@@ -519,7 +519,7 @@
       "blackToMove": "黒番"
     },
     "result": {
-      "title": "練習完了！"
+      "title": "結果"
     }
   },
   "knightTour": {
@@ -533,7 +533,7 @@
       "setupHint": "ナイトの合法手のみを使って、全64マスをちょうど1回ずつ訪問します。"
     },
     "result": {
-      "title": "練習完了！",
+      "title": "結果",
       "squaresVisited": "訪問マス数",
       "success": "ツアー完了！",
       "closedTourMessage": "素晴らしい！閉じたツアーを達成しました - ナイトが開始マスに戻ることができます！",
@@ -561,7 +561,7 @@
       "description": "問題を解きながら、チェスの棋譜の書き方を身につけます"
     },
     "result": {
-      "title": "練習完了！"
+      "title": "結果"
     },
     "session": {
       "correct": "正解！",
@@ -589,7 +589,7 @@
       "shuffle": "シャッフル"
     },
     "result": {
-      "title": "練習完了！"
+      "title": "結果"
     },
     "session": {
       "recreateFromFen": "FENから盤面を再現してください",
@@ -787,7 +787,7 @@
       "analyzeOnLichess": "Lichessで解析"
     },
     "result": {
-      "title": "練習完了！"
+      "title": "結果"
     }
   },
   "recall": {
@@ -844,7 +844,7 @@
       }
     },
     "result": {
-      "title": "サマリー"
+      "title": "結果"
     },
     "dontKnowPrompt": "この手の正解を確認しますか？",
     "revealAnswer": "正解を見る",
@@ -1106,7 +1106,7 @@
       "blackPlayed": "黒が {{move}} を指しました"
     },
     "result": {
-      "title": "パズル結果",
+      "title": "結果",
       "replaySection": "正解のリプレイ",
       "historySection": "回答履歴",
       "solution": "正解: {{move}}",

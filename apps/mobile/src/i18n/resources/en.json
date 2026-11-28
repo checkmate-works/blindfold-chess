@@ -287,7 +287,7 @@
       "illegal": "No"
     },
     "result": {
-      "title": "Practice Complete!"
+      "title": "Results"
     },
     "pieces": {
       "b": "Bishop",
@@ -311,7 +311,7 @@
       "incorrectWithSolution": "{{solution}} is correct"
     },
     "result": {
-      "title": "Practice Complete!"
+      "title": "Results"
     }
   },
   "squareColors": {
@@ -323,7 +323,7 @@
       "dark": "Dark"
     },
     "result": {
-      "title": "Practice Complete!"
+      "title": "Results"
     },
     "settings": {
       "timeLimit": "Time Limit",
@@ -348,7 +348,7 @@
       "blackToMove": "Black to move"
     },
     "result": {
-      "title": "Quiz Complete!",
+      "title": "Results",
       "totalQuestions": "Total Questions",
       "points": "Points"
     }
@@ -372,7 +372,7 @@
       "targetSquare": "Target Square"
     },
     "result": {
-      "title": "Practice Complete!"
+      "title": "Results"
     },
     "pieces": {
       "n": "Knight",
@@ -497,7 +497,7 @@
       "antiDiagonalDirection": "(h1-a8 direction)"
     },
     "result": {
-      "title": "Practice Complete!"
+      "title": "Results"
     },
     "settings": {
       "timeLimit": "Time Limit",
@@ -519,7 +519,7 @@
       "blackToMove": "Black to move"
     },
     "result": {
-      "title": "Practice Complete!"
+      "title": "Results"
     }
   },
   "knightTour": {
@@ -533,7 +533,7 @@
       "setupHint": "The knight must visit all 64 squares exactly once using only legal knight moves."
     },
     "result": {
-      "title": "Practice Complete!",
+      "title": "Results",
       "squaresVisited": "Squares Visited",
       "success": "Tour Complete!",
       "closedTourMessage": "Amazing! You completed a closed tour - the knight can return to its starting square!",
@@ -561,7 +561,7 @@
       "description": "Master the chess notation system with interactive exercises"
     },
     "result": {
-      "title": "Practice Complete!"
+      "title": "Results"
     },
     "session": {
       "correct": "Correct!",
@@ -589,7 +589,7 @@
       "shuffle": "Shuffle Problems"
     },
     "result": {
-      "title": "Practice Complete!"
+      "title": "Results"
     },
     "session": {
       "recreateFromFen": "Recreate the Position from FEN",
@@ -787,7 +787,7 @@
       "analyzeOnLichess": "Analyze on Lichess"
     },
     "result": {
-      "title": "Practice Complete!"
+      "title": "Results"
     }
   },
   "recall": {
@@ -844,7 +844,7 @@
       }
     },
     "result": {
-      "title": "Summary"
+      "title": "Results"
     },
     "dontKnowPrompt": "Want to see the answer for this move?",
     "revealAnswer": "Show answer",
@@ -1106,7 +1106,7 @@
       "blackPlayed": "Black plays {{move}}"
     },
     "result": {
-      "title": "Puzzle Result",
+      "title": "Results",
       "replaySection": "Solution Replay",
       "historySection": "Attempt History",
       "solution": "Solution: {{move}}",

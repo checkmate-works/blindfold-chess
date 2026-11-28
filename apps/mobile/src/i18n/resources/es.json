@@ -287,7 +287,7 @@
       "illegal": "No"
     },
     "result": {
-      "title": "¡Práctica completada!"
+      "title": "Resultados"
     },
     "pieces": {
       "b": "Alfil",
@@ -311,7 +311,7 @@
       "incorrectWithSolution": "{{solution}} es la respuesta correcta"
     },
     "result": {
-      "title": "¡Práctica completada!"
+      "title": "Resultados"
     }
   },
   "squareColors": {
@@ -323,7 +323,7 @@
       "dark": "Oscura"
     },
     "result": {
-      "title": "¡Práctica completada!"
+      "title": "Resultados"
     },
     "settings": {
       "timeLimit": "Tiempo límite",
@@ -348,7 +348,7 @@
       "blackToMove": "Turno de las negras"
     },
     "result": {
-      "title": "¡Quiz completado!",
+      "title": "Resultados",
       "totalQuestions": "Preguntas totales",
       "points": "Puntos"
     }
@@ -372,7 +372,7 @@
       "targetSquare": "Casilla objetivo"
     },
     "result": {
-      "title": "¡Práctica completada!"
+      "title": "Resultados"
     },
     "pieces": {
       "n": "Caballo",
@@ -497,7 +497,7 @@
       "antiDiagonalDirection": "(dirección h1-a8)"
     },
     "result": {
-      "title": "¡Práctica completada!"
+      "title": "Resultados"
     },
     "settings": {
       "timeLimit": "Tiempo límite",
@@ -519,7 +519,7 @@
       "blackToMove": "Mueven las negras"
     },
     "result": {
-      "title": "¡Práctica completada!"
+      "title": "Resultados"
     }
   },
   "knightTour": {
@@ -533,7 +533,7 @@
       "setupHint": "El caballo debe visitar las 64 casillas exactamente una vez usando solo movimientos legales de caballo."
     },
     "result": {
-      "title": "¡Práctica completada!",
+      "title": "Resultados",
       "squaresVisited": "Casillas Visitadas",
       "success": "¡Recorrido Completado!",
       "closedTourMessage": "¡Increíble! Completaste un recorrido cerrado — ¡el caballo puede volver a su casilla inicial!",
@@ -561,7 +561,7 @@
       "description": "Domina el sistema de notación ajedrecística con ejercicios interactivos"
     },
     "result": {
-      "title": "¡Práctica completada!"
+      "title": "Resultados"
     },
     "session": {
       "correct": "¡Correcto!",
@@ -589,7 +589,7 @@
       "shuffle": "Mezclar Problemas"
     },
     "result": {
-      "title": "¡Práctica completada!"
+      "title": "Resultados"
     },
     "session": {
       "recreateFromFen": "Recrea la Posición desde el FEN",
@@ -787,7 +787,7 @@
       "analyzeOnLichess": "Analizar en Lichess"
     },
     "result": {
-      "title": "¡Práctica completada!"
+      "title": "Resultados"
     }
   },
   "recall": {
@@ -844,7 +844,7 @@
       }
     },
     "result": {
-      "title": "Resumen"
+      "title": "Resultados"
     },
     "dontKnowPrompt": "¿Quieres ver la respuesta de esta jugada?",
     "revealAnswer": "Ver respuesta",
@@ -1106,7 +1106,7 @@
       "blackPlayed": "Negras juegan {{move}}"
     },
     "result": {
-      "title": "Resultado del Puzzle",
+      "title": "Resultados",
       "replaySection": "Repetición de la Solución",
       "historySection": "Historial de Intentos",
       "solution": "Solución: {{move}}",
