@@ -19,6 +19,7 @@ import {
   resolveSquareHighlight,
   squareToBoardIndices,
 } from '@blindfold-chess/features/board-display';
+import type { TerminationMark } from '@blindfold-chess/features/board-display';
 import type { BoardPiece, MoveResult } from '@blindfold-chess/features/chess-core';
 import {
   fenToBoard,
@@ -39,7 +40,6 @@ import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/games/board-them
 import type { EvaluationMark } from '@/lib/games/evaluation';
 import { MoveJudgmentBadge } from '@/lib/games/evaluation';
 import { goStoneStyle } from '@/lib/games/go-stone-style';
-import type { TerminationMark } from '@/lib/games/termination-mark';
 
 import type { SquareRenderInfo } from './BoardLayout';
 import { BoardLayout } from './BoardLayout';

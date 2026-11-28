@@ -1,4 +1,9 @@
 import type { BlindfoldDisplaySettings } from '@blindfold-chess/features/board-display';
+import type { TerminationMark } from '@blindfold-chess/features/board-display';
+import {
+  resolveLosingColor,
+  resolveTerminationMark,
+} from '@blindfold-chess/features/board-display';
 import { executeMove, isCheckmateFen, replayMoves } from '@blindfold-chess/features/chess-core';
 import {
   type IllegalAttemptSquares,
@@ -18,8 +23,6 @@ import type {
   MoveOperationLog,
   UndoneMoveLog,
 } from '@/lib/games/saved-game-types';
-import type { TerminationMark } from '@/lib/games/termination-mark';
-import { resolveLosingColor, resolveTerminationMark } from '@/lib/games/termination-mark';
 
 import { getPlayerMoveIndices } from '@/app/[locale]/(public)/games/play/_lib/move-ops-alignment';
 

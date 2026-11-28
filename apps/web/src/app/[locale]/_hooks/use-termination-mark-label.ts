@@ -3,8 +3,7 @@
 import { useCallback } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-
-import type { TerminationMark } from '@/lib/games/termination-mark';
+import type { TerminationMark } from '@blindfold-chess/features/board-display';
 
 /**
  * Accessible name for a board's end-of-game badge ("Checkmate" / "Resignation").

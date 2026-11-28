@@ -5,6 +5,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { notFound, usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import {
+  isFinalPosition,
+  resolveLosingColor,
+  resolveTerminationMark,
+} from '@blindfold-chess/features/board-display';
 import { STARTING_FEN } from '@blindfold-chess/features/chess-core/fen';
 import type { ExpInfo } from '@blindfold-chess/features/exp';
 import { sideToPieceColor } from '@blindfold-chess/types';
@@ -14,11 +19,6 @@ import { FaBrain, FaChessBoard } from 'react-icons/fa';
 import type { BoardVisibility } from '@/lib/games/board-visibility';
 import { writeBoardVisibilityCookieClient } from '@/lib/games/board-visibility-cookie';
 import type { MoveInputPreferenceHint } from '@/lib/games/move-input-cookie';
-import {
-  isFinalPosition,
-  resolveLosingColor,
-  resolveTerminationMark,
-} from '@/lib/games/termination-mark';
 
 import { ExpGainDisplay } from '@/app/[locale]/(public)/practice/_components/ExpGainDisplay';
 import { useTerminationMarkLabel } from '@/app/[locale]/_hooks/use-termination-mark-label';

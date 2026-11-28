@@ -3,6 +3,8 @@ import type {
   PieceDisplay,
 } from '@blindfold-chess/features/board-display';
 import { resolvePieceDisplay } from '@blindfold-chess/features/board-display';
+import type { TerminationMark } from '@blindfold-chess/features/board-display';
+import { HASH_GLYPH_PATHS, TERMINATION_MARK_STYLE } from '@blindfold-chess/features/board-display';
 import { fenCharToPiece, fenToBoardFlat } from '@blindfold-chess/features/chess-core/fen';
 import {
   BOARD_LAST_INDEX,
@@ -19,8 +21,6 @@ import type { BoardTheme } from '@blindfold-chess/types';
 import { boardThemeColors } from '@blindfold-chess/ui';
 
 import type { MoveSquares } from '@/lib/board/move-squares';
-import type { TerminationMark } from '@/lib/games/termination-mark';
-import { HASH_GLYPH_PATHS, TERMINATION_MARK_STYLE } from '@/lib/games/termination-mark';
 
 /**
  * A GIF-replay annotation drawn on top of the board — a fixed-position badge

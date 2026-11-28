@@ -1,7 +1,6 @@
+import type { TerminationMarkKind } from '@blindfold-chess/features/board-display';
+import { HASH_GLYPH_PATHS, TERMINATION_MARK_STYLE } from '@blindfold-chess/features/board-display';
 import { flagData } from '@blindfold-chess/icons/data';
-
-import type { TerminationMarkKind } from '@/lib/games/termination-mark';
-import { HASH_GLYPH_PATHS, TERMINATION_MARK_STYLE } from '@/lib/games/termination-mark';
 
 type Props = {
   kind: TerminationMarkKind;

@@ -6,6 +6,10 @@ import { notFound } from 'next/navigation';
 import { SITE_URL } from '@/config';
 import { negotiateLocale } from '@/i18n/negotiate-locale';
 import {
+  resolveLosingColor,
+  resolveTerminationMark,
+} from '@blindfold-chess/features/board-display';
+import {
   getFenAfterMoves,
   getStartingFen,
   isCheckmateFen,
@@ -16,7 +20,6 @@ import { getGameById } from '@/lib/db/games-read';
 import { DEFAULT_BOARD_THEME } from '@/lib/games/board-themes';
 import { gameUsedNotablePlaySettings } from '@/lib/games/play-settings-log';
 import { decodeGameShortId } from '@/lib/games/short-id';
-import { resolveLosingColor, resolveTerminationMark } from '@/lib/games/termination-mark';
 import { resolveAuthorName } from '@/lib/users/display-name';
 import { UUID_RE } from '@/lib/validations/uuid';
 

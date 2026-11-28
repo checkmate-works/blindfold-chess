@@ -1,9 +1,8 @@
 import type { ReactElement } from 'react';
 
+import type { TerminationMark } from '@blindfold-chess/features/board-display';
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-
-import type { TerminationMark } from '@/lib/games/termination-mark';
 
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 

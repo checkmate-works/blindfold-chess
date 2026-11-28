@@ -1,9 +1,9 @@
 import type { ReactNode } from 'react';
 
+import type { TerminationMark } from '@blindfold-chess/features/board-display';
 import type { Side } from '@blindfold-chess/types';
 
 import type { MoveSquares } from '@/lib/board/move-squares';
-import type { TerminationMark } from '@/lib/games/termination-mark';
 
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 

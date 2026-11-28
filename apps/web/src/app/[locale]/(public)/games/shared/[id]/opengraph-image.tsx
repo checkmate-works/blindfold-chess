@@ -1,12 +1,15 @@
 import { getTranslations } from 'next-intl/server';
 import { ImageResponse } from 'next/og';
 
+import {
+  resolveLosingColor,
+  resolveTerminationMark,
+} from '@blindfold-chess/features/board-display';
 import { isCheckmateFen, replayMoves } from '@blindfold-chess/features/chess-core';
 
 import { renderBoardSvg } from '@/lib/board-svg/render-board-svg';
 import { getGameById } from '@/lib/db/games-read';
 import { playSettingsToThumbnailDisplay } from '@/lib/games/play-settings-thumbnail';
-import { resolveLosingColor, resolveTerminationMark } from '@/lib/games/termination-mark';
 import { loadOgFonts } from '@/lib/og/load-og-fonts';
 import { resolveNullableAuthorName } from '@/lib/users/display-name';
 import { UUID_RE } from '@/lib/validations/uuid';
