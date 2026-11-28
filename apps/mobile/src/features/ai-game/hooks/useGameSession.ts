@@ -7,6 +7,7 @@ import {
   computeGameState,
   validateGameMove,
 } from "@blindfold-chess/features/ai-game";
+import type { MoveSquares } from "@blindfold-chess/features/board-display";
 import type {
   MoveInputMethod,
   MoveOperationLog,
@@ -186,6 +187,18 @@ export function useGameSession({
     ],
   );
 
+  // An illegal board attempt (a tap or a drop no legal move reaches). The
+  // board only ever sends legal moves to `submitMove`, so its mistakes are
+  // counted here, with the squares, as the web counts them. Nothing is
+  // written under the keypad: the piece simply stays where it was.
+  const recordIllegalBoardMove = useCallback(
+    (attempt: string, squares: MoveSquares) => {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      recordInvalid(attempt, squares);
+    },
+    [recordInvalid],
+  );
+
   const retryAiMove = useCallback(() => {
     resetAi?.();
     // Clearing the error is what lets the effect above ask again.
@@ -238,6 +251,7 @@ export function useGameSession({
     recordPeek,
     currentFen,
     submitMove,
+    recordIllegalBoardMove,
     clearInvalidMove,
     retryAiMove,
     canUndo,

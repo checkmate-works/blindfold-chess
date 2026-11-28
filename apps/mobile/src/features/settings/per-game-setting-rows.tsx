@@ -88,6 +88,12 @@ export function perGameSettingRows({
       value={preferences.highlightLastMove}
       onChange={(highlightLastMove) => onChange({ highlightLastMove })}
     />,
+    <SwitchRow
+      key="showPieceDestinations"
+      label={t("settings.board.showPieceDestinations")}
+      value={preferences.showPieceDestinations}
+      onChange={(showPieceDestinations) => onChange({ showPieceDestinations })}
+    />,
     // settings.board.pieceVisibilityModes.{all,own,opponent}
     <SelectRow<PieceVisibilityMode>
       key="pieceVisibility"

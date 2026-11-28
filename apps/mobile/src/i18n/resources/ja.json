@@ -180,6 +180,7 @@
       "displayOptions": "表示オプション",
       "showCoordinates": "座標を表示",
       "highlightLastMove": "最終手をハイライト",
+      "showPieceDestinations": "駒の移動先",
       "boardTheme": "ボードテーマ",
       "boardThemes": {
         "monotone": "モノトーン",
@@ -420,7 +421,14 @@
       "confirmUndo": "取り消す",
       "boardHidden": "ボード非表示",
       "revealBoard": "タップで表示",
-      "flipBoard": "ボードを反転"
+      "flipBoard": "ボードを反転",
+      "cancelPromotion": "昇格をキャンセル",
+      "promoteTo": {
+        "queen": "クイーンに昇格",
+        "rook": "ルークに昇格",
+        "bishop": "ビショップに昇格",
+        "knight": "ナイトに昇格"
+      }
     },
     "result": {
       "title": "ゲーム終了",

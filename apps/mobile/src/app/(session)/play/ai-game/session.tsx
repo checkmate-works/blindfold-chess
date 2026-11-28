@@ -213,6 +213,26 @@ function AiGameBoard({ setup }: { setup: GameSetup }) {
     },
     [submitGameMove],
   );
+  // A move made on the board (tap or drag), as on the web: only on an
+  // uncovered board (`InlineBoard` enforces that) and only while the player
+  // can move. It goes through the same submit, so it is validated, counted
+  // and closes a peek like a typed one; the log tags it `'board'`.
+  const submitBoardMove = useCallback(
+    (san: string) => {
+      if (submitGameMove(san as AlgebraicNotation, "board")) {
+        setRevealed(false);
+      }
+    },
+    [submitGameMove],
+  );
+  const canBoardMove =
+    !ai.isLoading &&
+    game.isPlayerTurn &&
+    !game.isAiThinking &&
+    game.gameStatus === "in_progress";
+  // The screen scrolls, so it stops while a piece is held: otherwise a drag
+  // down the board would scroll the screen under the finger.
+  const [pieceHeld, setPieceHeld] = useState(false);
   const dismissAiReply = aiReply.dismiss;
   const revealBoard = useCallback(() => {
     setRevealed(true);
@@ -362,6 +382,7 @@ function AiGameBoard({ setup }: { setup: GameSetup }) {
         </View>
       </SessionTopBar>
       <ScrollView
+        scrollEnabled={!pieceHeld}
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -377,6 +398,9 @@ function AiGameBoard({ setup }: { setup: GameSetup }) {
           onReveal={revealBoard}
           thinking={aiReply.thinking}
           announcedAiMove={announcedAiMove}
+          onMove={canBoardMove ? submitBoardMove : undefined}
+          onIllegalMove={canBoardMove ? game.recordIllegalBoardMove : undefined}
+          onDragActiveChange={setPieceHeld}
         />
 
         {/* One line kept for the message whether or not there is one, so a
