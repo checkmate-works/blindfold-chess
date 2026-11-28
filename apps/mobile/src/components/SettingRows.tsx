@@ -21,6 +21,15 @@ type SelectRowProps<T> = {
   valueLabel?: string;
   /** Optional note shown above the options in the sheet. */
   description?: string;
+  /**
+   * A line under the row's label, for what the current value means when
+   * the value alone (a level number) says little.
+   */
+  subtitle?: string;
+  /** A line under each option in the sheet, saying what it does. */
+  describeOption?: (option: T) => string;
+  /** The sheet's options get `${optionTestID}-${option}`. */
+  optionTestID?: string;
   testID?: string;
 };
 
@@ -38,6 +47,9 @@ export function SelectRow<T>({
   formatOption,
   valueLabel,
   description,
+  subtitle,
+  describeOption,
+  optionTestID,
   testID,
 }: SelectRowProps<T>) {
   const { colors } = useTheme();
@@ -47,6 +59,7 @@ export function SelectRow<T>({
     <>
       <ListRow
         title={label}
+        subtitle={subtitle}
         value={valueLabel ?? (value === null ? undefined : formatOption(value))}
         onPress={() => setOpen(true)}
         testID={testID}
@@ -62,11 +75,15 @@ export function SelectRow<T>({
             <ListRow
               key={String(option)}
               title={formatOption(option)}
+              subtitle={describeOption?.(option)}
               accessory={option === value ? "check" : "none"}
               onPress={() => {
                 onChange(option);
                 setOpen(false);
               }}
+              testID={
+                optionTestID ? `${optionTestID}-${String(option)}` : undefined
+              }
             />
           ))}
         </ListSection>

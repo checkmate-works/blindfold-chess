@@ -4,11 +4,12 @@ import {
   DIFFICULTY_LEVELS,
   DIFFICULTY_PRESETS,
   matchDifficultyPreset,
+  type DifficultyLevel,
   type PerGamePreferences,
 } from "@blindfold-chess/features/game-preferences";
 import type { Side } from "@blindfold-chess/types";
 
-import { ListRow, ListSection } from "../../../components";
+import { ListSection, SelectRow } from "../../../components";
 import { spacing } from "../../../theme";
 import { perGameSettingRows } from "../../settings/per-game-setting-rows";
 import { BoardPreview } from "./BoardPreview";
@@ -24,15 +25,20 @@ type Props = {
  * How blind this game is played, in the web's order: the difficulty ladder,
  * a preview of the board it gives, then the settings a rung is made of.
  *
- * The ladder is one row per level, easiest first, each with what it does and
- * a check on the active one. Picking a rung writes its values into the
- * settings under "Customize" and they stay editable; the rung checked is
- * always read back from them. "Custom" is not a choice: it appears, already
- * checked, only when the settings sit on no rung, so the ladder never shows
- * nothing selected — the way into it is editing the rows below.
+ * The ladder is one row, like the engine's strength above it: the row shows
+ * the active rung and what it does, and tapping it opens a sheet listing
+ * the rungs, easiest first, each with its description. The setup screen is
+ * passed through before every game, so five rows standing open made it long
+ * for a choice that is usually kept from game to game.
  *
- * The preview stays in the ladder's panel so a rung's effect shows right
- * under the row just tapped. It is left out when the game has no board at
+ * Picking a rung writes its values into the settings under "Customize" and
+ * they stay editable; the rung shown is always read back from them. "Custom"
+ * is not a choice in the sheet: the row says it, with its description, when
+ * the settings sit on no rung, so the row never shows nothing — the way into
+ * it is editing the rows below.
+ *
+ * The preview stays on the screen, under the row, so a rung's effect shows
+ * as soon as the sheet closes. It is left out when the game has no board at
  * all (`boardVisibility: "never"`): there is nothing to draw.
  */
 export function GameSettingsSection({
@@ -42,30 +48,36 @@ export function GameSettingsSection({
 }: Props) {
   const { t } = useTranslation();
   const activeLevel = matchDifficultyPreset(preferences);
+  // aiGame.setup.difficulty.levels.level{1,2,3,4,5}
+  const describeLevel = (level: DifficultyLevel) =>
+    t(`aiGame.setup.difficulty.levels.level${level}`);
+  const formatLevel = (level: DifficultyLevel) =>
+    t("aiGame.setup.difficulty.level", { level });
 
   return (
     <View style={styles.sections}>
-      <ListSection title={t("common.gameSettings")}>
-        {DIFFICULTY_LEVELS.map((level) => (
-          <ListRow
-            key={level}
-            title={t("aiGame.setup.difficulty.level", { level })}
-            // aiGame.setup.difficulty.levels.level{1,2,3,4,5}
-            subtitle={t(`aiGame.setup.difficulty.levels.level${level}`)}
-            accessory={level === activeLevel ? "check" : "none"}
-            onPress={() => onChange(DIFFICULTY_PRESETS[level])}
-            testID={`difficulty-level-${level}`}
-          />
-        ))}
-        {activeLevel === null && (
-          <ListRow
-            key="custom"
-            title={t("aiGame.setup.difficulty.custom")}
-            subtitle={t("aiGame.setup.difficulty.customDescription")}
-            accessory="check"
-            testID="difficulty-custom"
-          />
-        )}
+      <ListSection title={t("aiGame.setup.difficulty.section")}>
+        <SelectRow<DifficultyLevel>
+          key="difficulty"
+          label={t("aiGame.setup.difficulty.label")}
+          options={DIFFICULTY_LEVELS}
+          value={activeLevel}
+          onChange={(level) => onChange(DIFFICULTY_PRESETS[level])}
+          formatOption={formatLevel}
+          describeOption={describeLevel}
+          valueLabel={
+            activeLevel === null
+              ? t("aiGame.setup.difficulty.custom")
+              : undefined
+          }
+          subtitle={
+            activeLevel === null
+              ? t("aiGame.setup.difficulty.customDescription")
+              : describeLevel(activeLevel)
+          }
+          testID="difficulty-row"
+          optionTestID="difficulty-level"
+        />
         {preferences.boardVisibility !== "never" && (
           <BoardPreview
             key="preview"
