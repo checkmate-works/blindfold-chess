@@ -1,8 +1,12 @@
 import { useState } from "react";
 import { ScrollView, StyleSheet, Text } from "react-native";
 import { useNavigation } from "expo-router";
+import * as Crypto from "expo-crypto";
 import { useTranslation } from "react-i18next";
-import { USERNAME_MIN_LENGTH } from "@blindfold-chess/features/username";
+import {
+  USERNAME_MIN_LENGTH,
+  generateUsername,
+} from "@blindfold-chess/features/username";
 
 import { Button, TextField } from "../../components";
 import { submitUsername } from "../../auth/account";
@@ -23,7 +27,9 @@ const ERROR_KEYS: Record<string, string> = {
 /**
  * Choosing the username (the web's `/mypage/setup-username`), once. It is
  * the account's public ID on the web — the leaderboard shows it — so the
- * screen repeats the web's warning that it cannot be changed.
+ * screen repeats the web's warning that it cannot be changed. As on the
+ * web, a button under the field fills in a random `player_…` name to start
+ * from (`expo-crypto` supplies the bytes: React Native has no Web Crypto).
  */
 export default function SetupUsernameScreen() {
   const { t } = useTranslation();
@@ -32,6 +38,11 @@ export default function SetupUsernameScreen() {
   const [username, setUsername] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const handleGenerate = () => {
+    setUsername(generateUsername(Crypto.getRandomBytes));
+    setError(null);
+  };
 
   const handleSubmit = async () => {
     if (busy) return;
@@ -71,6 +82,16 @@ export default function SetupUsernameScreen() {
         onSubmitEditing={handleSubmit}
         testID="username-input"
       />
+      <Button
+        title={t("account.setupUsername.generateUsername")}
+        onPress={handleGenerate}
+        variant="ghost"
+        size="sm"
+        icon="shuffle"
+        disabled={busy}
+        style={styles.generate}
+        testID="generate-username"
+      />
       <Text style={[styles.note, { color: colors.mutedForeground }]}>
         {t("account.setupUsername.cannotChange")}
       </Text>
@@ -94,6 +115,9 @@ const styles = StyleSheet.create({
   body: {
     fontSize: fontSize.md,
     lineHeight: 24,
+  },
+  generate: {
+    alignSelf: "flex-end",
   },
   note: {
     fontSize: fontSize.sm,

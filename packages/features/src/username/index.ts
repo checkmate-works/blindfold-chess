@@ -1,4 +1,8 @@
 export {
+  GENERATED_USERNAME_PREFIX,
+  generateUsername,
+} from "./generate-username";
+export {
   IMPERSONATION_SENSITIVE_NAMES,
   isReservedUsername,
 } from "./reserved-usernames";

@@ -968,7 +968,8 @@
         "displayNameInappropriate": "この表示名は使用できません。",
         "displayNameImpersonation": "この表示名は予約済みの名前や公式の名前と紛らわしいため使用できません。別の名前を選んでください。",
         "reserved": "このユーザー名は使用できません。"
-      }
+      },
+      "generateUsername": "ランダムなユーザー名を生成する"
     },
     "validation": {
       "password": {
