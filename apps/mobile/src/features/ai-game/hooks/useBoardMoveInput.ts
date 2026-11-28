@@ -55,8 +55,11 @@ type Options = {
  *   it waits in `promotion` until the player picks a piece.
  *
  * Selection and promotion belong to the position they were made in, so a
- * new FEN (the player's move, the AI's reply, an undo) drops them without an
- * effect: they are stored with the FEN and read back only while it matches.
+ * new FEN (the player's move, the AI's reply, an undo) or the board turning
+ * off drops them. They are cleared during the render that sees the change,
+ * not merely hidden while the FEN differs: an undo followed by the same move
+ * and the same reply comes back to the identical FEN, move counters and all,
+ * and a hidden selection or promotion picker would reappear there unasked.
  */
 export function useBoardMoveInput({
   fen,
@@ -73,6 +76,15 @@ export function useBoardMoveInput({
     fen: string;
     promotion: PendingPromotion;
   } | null>(null);
+
+  // React's "adjust state while rendering" pattern: one extra render, no
+  // effect, so no frame ever shows the stale selection.
+  const [inputKey, setInputKey] = useState({ fen, enabled });
+  if (inputKey.fen !== fen || inputKey.enabled !== enabled) {
+    setInputKey({ fen, enabled });
+    setSelection(null);
+    setPending(null);
+  }
 
   const selectedSquare =
     enabled && selection?.fen === fen ? selection.square : null;

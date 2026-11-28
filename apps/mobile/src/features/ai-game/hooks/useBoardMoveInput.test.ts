@@ -133,4 +133,40 @@ describe("useBoardMoveInput", () => {
     expect(result.current.promotion).toBeNull();
     expect(onMove).not.toHaveBeenCalled();
   });
+
+  it("drops a pending promotion for good when the position changes and comes back", () => {
+    const { result, rerender, onMove, onIllegalMove } = setup({
+      fen: PROMOTION,
+    });
+    act(() => result.current.tap("a7"));
+    act(() => result.current.tap("a8"));
+    expect(result.current.promotion).not.toBeNull();
+
+    const props = {
+      movableColor: "w" as const,
+      enabled: true,
+      onMove,
+      onIllegalMove,
+    };
+    rerender({ ...props, fen: START });
+    rerender({ ...props, fen: PROMOTION });
+    expect(result.current.promotion).toBeNull();
+    expect(result.current.selectedSquare).toBeNull();
+  });
+
+  it("drops the selection when the board turns off and on in one position", () => {
+    const { result, rerender, onMove, onIllegalMove } = setup();
+    act(() => result.current.tap("e2"));
+    expect(result.current.selectedSquare).toBe("e2");
+
+    const props = {
+      fen: START,
+      movableColor: "w" as const,
+      onMove,
+      onIllegalMove,
+    };
+    rerender({ ...props, enabled: false });
+    rerender({ ...props, enabled: true });
+    expect(result.current.selectedSquare).toBeNull();
+  });
 });
