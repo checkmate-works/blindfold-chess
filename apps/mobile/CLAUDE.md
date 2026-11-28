@@ -13,12 +13,15 @@ replaced by the platform's own parts or their common app equivalents.
 
 `src/app/_layout.tsx` is the root native stack:
 
-- `(tabs)` — the bottom tabs (`(tabs)/_layout.tsx`): Home, Dojo, Practice,
-  Play, Learn, drawn by the OS through expo-router's `NativeTabs`
+- `(tabs)` — the bottom tabs (`(tabs)/_layout.tsx`): Home, Dojo, Play,
+  Practice, Learn, drawn by the OS through expo-router's `NativeTabs`
   (`expo-router/native-tabs`; on iOS 26 the floating Liquid Glass
   bar that shrinks on scroll, Material 3 on Android). Icons are SF Symbols on
-  iOS and Material Community Icons (via `VectorIcon`) on Android. Each tab is
-  a stack with only its entry screen (`TabStack` in
+  iOS and Material Community Icons (via `VectorIcon`) on Android. Play sits
+  in the middle and is the only way into an AI game (home has no game
+  card); its badge counts the games in progress (`useInProgressGameCount`,
+  re-read after every write to the saved games), grey rather than the OS's
+  alert red. Each tab is a stack with only its entry screen (`TabStack` in
   `navigation/stack-options.tsx`, left-aligned 22pt title; on iOS 26
   without the glass capsule behind the title, and with the hairline under
   the header that pushed screens leave out). The tabs layout

@@ -3,12 +3,13 @@ import { NativeTabs } from "expo-router/native-tabs";
 import { Redirect } from "expo-router";
 import { useTranslation } from "react-i18next";
 
+import { useInProgressGameCount } from "../../features/game-history/useInProgressGameCount";
 import { useOnboardingStatus } from "../../hooks/useOnboardingStatus";
 
 import { useTheme } from "../../theme";
 
 /**
- * The bottom tabs: Home, Dojo, Practice, Play, Learn.
+ * The bottom tabs: Home, Dojo, Play, Practice, Learn.
  *
  * @description
  * The tab bar is the OS's own (`NativeTabs`, a `UITabBarController` on iOS
@@ -27,7 +28,17 @@ import { useTheme } from "../../theme";
  * Five is the most the iOS bar shows before folding the rest into a "More"
  * tab, so settings is not a tab: it opens from the gear in the home header.
  * The dojo sits next to home because the rank ladder is the app's spine —
- * every practice module the home screen suggests is a step on it.
+ * every practice module the home screen suggests is a step on it. Play is in
+ * the middle, the easiest tab to reach with a thumb: the home screen no
+ * longer carries an AI-game card, so the tab is the way into a game.
+ *
+ * The play tab's badge counts the AI games still in progress (saved games
+ * without a result), so a game left part way is not forgotten; it is hidden
+ * at 0. The badge is grey (`mutedForeground`) rather than the OS's red: red
+ * reads as an alert that needs handling, and a paused game is only a
+ * reminder; blue is kept for the main action. On iOS only the badge's fill
+ * can be set — its text is always white — so a softer pale badge is not an
+ * option there.
  *
  * Icons: iOS uses SF Symbols (filled when selected); Android has no symbol
  * set in the OS, so it gets Material Community Icons rendered to an image by
@@ -52,6 +63,7 @@ export default function TabsLayout() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const { isLoading, hasCompleted } = useOnboardingStatus();
+  const inProgressGames = useInProgressGameCount();
 
   if (isLoading) return null;
   if (!hasCompleted) return <Redirect href="/onboarding" />;
@@ -60,6 +72,7 @@ export default function TabsLayout() {
     <NativeTabs
       tintColor={colors.foreground}
       minimizeBehavior="onScrollDown"
+      badgeBackgroundColor={colors.mutedForeground}
       labelStyle={{
         default: {
           fontSize: 11,
@@ -101,6 +114,21 @@ export default function TabsLayout() {
           }
         />
       </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="play">
+        <NativeTabs.Trigger.Label>{t("tabs.play")}</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Badge hidden={inProgressGames === 0}>
+          {String(inProgressGames)}
+        </NativeTabs.Trigger.Badge>
+        <NativeTabs.Trigger.Icon
+          sf={{ default: "flag.2.crossed", selected: "flag.2.crossed.fill" }}
+          src={
+            <NativeTabs.Trigger.VectorIcon
+              family={MaterialCommunityIcons}
+              name="chess-knight"
+            />
+          }
+        />
+      </NativeTabs.Trigger>
       <NativeTabs.Trigger name="practice">
         <NativeTabs.Trigger.Label>
           {t("tabs.practice")}
@@ -111,18 +139,6 @@ export default function TabsLayout() {
             <NativeTabs.Trigger.VectorIcon
               family={MaterialCommunityIcons}
               name="dumbbell"
-            />
-          }
-        />
-      </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="play">
-        <NativeTabs.Trigger.Label>{t("tabs.play")}</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon
-          sf={{ default: "flag.2.crossed", selected: "flag.2.crossed.fill" }}
-          src={
-            <NativeTabs.Trigger.VectorIcon
-              family={MaterialCommunityIcons}
-              name="chess-knight"
             />
           }
         />

@@ -31,7 +31,6 @@
   "home": {
     "title": "Blindfold Chess",
     "welcome": "Welcome back!",
-    "playAi": "Play vs AI",
     "nextRankTitle": "Next goal",
     "allAchievedBody": "You hold 1st Dan. Keep sharpening it against the engine.",
     "nextStep": {

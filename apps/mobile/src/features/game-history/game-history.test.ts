@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   MAX_SAVED_GAMES,
+  countInProgress,
   isInProgress,
   parseSavedGames,
   withGameAdded,
@@ -31,6 +32,14 @@ describe("game history", () => {
     expect(parseSavedGames(JSON.stringify([unfinished]))).toEqual([unfinished]);
     expect(isInProgress(unfinished)).toBe(true);
     expect(isInProgress(game("a"))).toBe(false);
+  });
+
+  it("counts only the games in progress", () => {
+    const { result: _result, ...unfinished } = game("b");
+    expect(
+      countInProgress([game("a"), unfinished, { ...unfinished, id: "c" }]),
+    ).toBe(2);
+    expect(countInProgress([])).toBe(0);
   });
 
   it("drops a game whose operation logs are not logs", () => {
