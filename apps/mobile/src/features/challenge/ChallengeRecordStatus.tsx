@@ -98,7 +98,12 @@ export function ChallengeRecordStatus({
             <PromotedLines slugs={promoted} />
           </View>
         )}
-        <RecordCard record={summary.record} menuType={summary.menuType} />
+        <RecordCard
+          record={summary.record}
+          menuType={summary.menuType}
+          leaderboardKey={summary.leaderboardKey}
+          placements={summary.placements}
+        />
       </View>
     );
   }

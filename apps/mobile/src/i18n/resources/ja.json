@@ -1099,7 +1099,8 @@
       "scoreValue": "{{score}} 問",
       "newBest": "自己ベスト更新！",
       "firstRecord": "初めての記録",
-      "viewMyRecords": "マイレコードで推移を見る"
+      "viewMyRecords": "マイレコードで推移を見る",
+      "placement": "ランキング（{{period}}）"
     }
   },
   "progress": {

@@ -1099,7 +1099,8 @@
       "scoreValue": "{{score}} corretas",
       "newBest": "Novo recorde pessoal!",
       "firstRecord": "Primeiro registro",
-      "viewMyRecords": "Ver seu progresso em Meus Registros"
+      "viewMyRecords": "Ver seu progresso em Meus Registros",
+      "placement": "Ranking · {{period}}"
     }
   },
   "progress": {

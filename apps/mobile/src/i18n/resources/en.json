@@ -1099,7 +1099,8 @@
       "scoreValue": "{{score}} correct",
       "newBest": "New personal best!",
       "firstRecord": "First record",
-      "viewMyRecords": "See your progress in My Records"
+      "viewMyRecords": "See your progress in My Records",
+      "placement": "Leaderboard · {{period}}"
     }
   },
   "progress": {
