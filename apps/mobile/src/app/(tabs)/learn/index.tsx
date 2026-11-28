@@ -9,15 +9,12 @@ import {
   ListSection,
   TabScrollView,
 } from "../../../components";
+import { BeltDot } from "../../../features/dojo/BeltDot";
 import {
   allJourneys,
   useDojoJourney,
 } from "../../../features/dojo/use-dojo-journey";
-import {
-  GUIDE_RANKS,
-  formatWebMessage,
-  guideContent,
-} from "../../../features/guides/content";
+import { GUIDE_RANKS, guideContent } from "../../../features/guides/content";
 import {
   guidePageHref,
   guideReadingProgress,
@@ -40,7 +37,14 @@ import {
  * @description
  * The guides come first, one row per guide in ladder order, because they
  * are the dojo's reading — the learn stage of every rank — and this list is
- * where a rank's "Learn" cell sends the player. A row shows how far the
+ * where a rank's "Learn" cell sends the player. A row is laid out like the
+ * web's guide index: the rank's belt-coloured dot (`BeltDot`) where other
+ * rows have an icon, the subject the guide teaches as the title
+ * ("代数記法の理解") and the rank's name under it. The web prints the rank
+ * name above the subject; the app keeps `ListRow`'s title-then-subtitle
+ * order, which every other row on the tab uses. The web's dashed line
+ * joining the dots is left out, since it would cross the list's row
+ * separators. A row shows how far the
  * guide is read, counted by `guideReadingProgress`, the same count the
  * guide screen keeps: the done mark (`DoneMark`) once every page is read,
  * "n / N" part way, nothing before the first page, matching the practice
@@ -66,10 +70,9 @@ export default function LearnTab() {
             rank,
             guide.pages.length,
           );
-          const title = formatWebMessage(guides.strings.indexTitleWithRank, {
-            // ranks.names.mukyu, ranks.names.5kyu, ranks.names.4kyu, …
-            rankName: t(`ranks.names.${rank}`),
-          });
+          const title = guides.titles[rank] ?? "";
+          // ranks.names.mukyu, ranks.names.5kyu, ranks.names.4kyu, …
+          const rankName = t(`ranks.names.${rank}`);
           const finished = progress.read >= progress.total;
           const value =
             !finished && progress.read > 0
@@ -90,12 +93,15 @@ export default function LearnTab() {
             <ListRow
               key={rank}
               testID={`guide-${rank}`}
-              leading={<ListIcon ionicon="book-outline" />}
+              leading={<BeltDot slug={rank} />}
               title={title}
+              subtitle={rankName}
               value={value}
               trailing={finished ? <DoneMark /> : undefined}
               accessibilityLabel={
-                spoken === undefined ? undefined : `${title}, ${spoken}`
+                spoken === undefined
+                  ? undefined
+                  : `${title}, ${rankName}, ${spoken}`
               }
               onPress={() =>
                 router.push(guidePageHref(rank, progress.firstUnreadPage ?? 1))
