@@ -587,7 +587,9 @@ function AiGameBoard({ setup }: { setup: GameSetup }) {
           skillLevel={skillLevel}
           moveCount={game.moves.length}
           earnedExp={exp?.earnedExp}
-          onReview={reviewGame}
+          // A game with no move is never saved (`differsFromStart`), so
+          // there is no page to review.
+          onReview={game.moves.length > 0 ? reviewGame : undefined}
           onPlayAgain={() => {
             setFinishSheetOpen(false);
             closeToSetup();

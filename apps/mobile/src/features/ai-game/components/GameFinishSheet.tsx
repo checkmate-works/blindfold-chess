@@ -24,8 +24,11 @@ type GameFinishSheetProps = {
   moveCount: number;
   /** Exp granted for the game, once the server has answered. */
   earnedExp?: number;
-  /** Open the saved game's page (moves, PGN, recall). */
-  onReview: () => void;
+  /**
+   * Open the saved game's page (moves, PGN, recall). Left out for a game
+   * with no move, which is never saved, so it has no page to open.
+   */
+  onReview?: () => void;
   /** Back to the setup screen, which still holds this game's settings. */
   onPlayAgain: () => void;
   onBackToMenu: () => void;
@@ -83,13 +86,15 @@ export function GameFinishSheet({
           moveCount={moveCount}
           earnedExp={earnedExp}
         />
-        <ListSection>
-          <ListRow
-            title={t("aiGame.result.review")}
-            subtitle={t("aiGame.result.reviewDescription")}
-            onPress={onReview}
-          />
-        </ListSection>
+        {onReview ? (
+          <ListSection>
+            <ListRow
+              title={t("aiGame.result.review")}
+              subtitle={t("aiGame.result.reviewDescription")}
+              onPress={onReview}
+            />
+          </ListSection>
+        ) : null}
       </View>
     </BottomSheet>
   );
