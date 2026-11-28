@@ -11,9 +11,9 @@ type PracticeStatsResultCardProps = {
    */
   timeTakenLabel?: string;
   /**
-   * Replaces the headline (correct out of total by default) for a module
-   * scored on something else — the coordinate quiz, scored on points. The
-   * stat grid below it stays the shared one.
+   * The score of a module scored on something other than right answers —
+   * the coordinate quiz's points — shown first in the stat grid under the
+   * accuracy graph.
    */
   score?: { label: string; value: string };
   /**
@@ -39,16 +39,29 @@ export function PracticeStatsResultCard({
   });
 
   // By key, not label: the label is a translation and could match another
-  // stat's wording in some language.
-  const stats = hideAverageTime
-    ? allStats.filter((stat) => stat.key !== "averageTime")
-    : allStats;
+  // stat's wording in some language. The correct count and the accuracy are
+  // the accuracy graph's summary, so the grid keeps only the times.
+  const accuracyStat = allStats.find((stat) => stat.key === "accuracy");
+  const timeStats = allStats.filter(
+    (stat) =>
+      stat.key !== "correctAnswers" &&
+      stat.key !== "accuracy" &&
+      !(hideAverageTime && stat.key === "averageTime"),
+  );
+  // A module scored on something else (the coordinate quiz's points) leads
+  // the grid with that score, since the graph only counts right answers.
+  const stats = score ? [score, ...timeStats] : timeStats;
 
   return (
     <PracticeResultCard
       scoreLabel={score?.label ?? t("practiceResult.correctAnswers")}
       scoreValue={score?.value ?? scoreValue}
       statItems={stats}
+      accuracy={{
+        correct: result.correctAnswers,
+        total: result.totalQuestions,
+        summary: `${scoreValue} · ${accuracyStat?.value ?? ""}`,
+      }}
     />
   );
 }

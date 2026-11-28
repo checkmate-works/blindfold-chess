@@ -1,10 +1,12 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import type { ViewInstance } from "react-native";
 import { useTranslation } from "react-i18next";
 
 import { ListSection } from "./List";
+import { useResultMistakes } from "./result-mistakes";
 import {
   initiallyOpenRows,
   verdictPresentation,
@@ -60,6 +62,12 @@ type ProblemDetailsListProps<Problem> = {
  * not answered right start open (`initiallyOpenRows`), since they are what
  * the result is read for. A module supplies only what differs per problem.
  *
+ * The rows not answered right are also what the score's "Incorrect" count
+ * opens: the list registers them with the result screen
+ * (`useResultMistakes`), and the count reopens any the reader closed and
+ * scrolls the list into view. A list with nothing missed registers nothing,
+ * so the count stays plain text.
+ *
  * Renders nothing for an empty list, so a screen need not guard it.
  */
 export function ProblemDetailsList<Problem>({
@@ -72,39 +80,55 @@ export function ProblemDetailsList<Problem>({
   initiallyOpen = "unanswered",
 }: ProblemDetailsListProps<Problem>) {
   const { t } = useTranslation();
-  const { open, toggle } = useOpenRowSet(() =>
+  const { open, toggle, openAll } = useOpenRowSet(() =>
     initiallyOpen === "none"
       ? new Set<number>()
       : initiallyOpenRows(problems.map(verdictOf)),
   );
+  const listRef = useRef<ViewInstance>(null);
+  const mistakes = useResultMistakes();
+  // The missed rows, read once like the open set: the problems never change
+  // under a result screen, and `verdictOf` is usually an inline function.
+  const [missed] = useState(() => initiallyOpenRows(problems.map(verdictOf)));
+  const register = mistakes?.register;
+  const scrollTo = mistakes?.scrollTo;
+  useEffect(() => {
+    if (!register || !scrollTo || missed.size === 0) return;
+    return register(() => {
+      openAll(missed);
+      scrollTo(listRef.current);
+    });
+  }, [register, scrollTo, missed, openAll]);
   if (problems.length === 0) return null;
 
   return (
-    <ListSection title={t("practiceResult.problemDetails")}>
-      {problems.map((problem, index) => (
-        <ProblemRow
-          key={index}
-          index={index}
-          verdict={
-            renderVerdict ? (
-              renderVerdict(problem, index)
-            ) : (
-              <VerdictBadge verdict={verdictOf(problem)} />
-            )
-          }
-          subtitle={renderSubtitle(problem, index)}
-          expanded={open.has(index)}
-          onToggle={toggle}
-          testID={
-            rowTestIDPrefix === undefined
-              ? undefined
-              : `${rowTestIDPrefix}${index}`
-          }
-        >
-          {open.has(index) ? renderDetails(problem, index) : null}
-        </ProblemRow>
-      ))}
-    </ListSection>
+    <View ref={listRef} collapsable={false}>
+      <ListSection title={t("practiceResult.problemDetails")}>
+        {problems.map((problem, index) => (
+          <ProblemRow
+            key={index}
+            index={index}
+            verdict={
+              renderVerdict ? (
+                renderVerdict(problem, index)
+              ) : (
+                <VerdictBadge verdict={verdictOf(problem)} />
+              )
+            }
+            subtitle={renderSubtitle(problem, index)}
+            expanded={open.has(index)}
+            onToggle={toggle}
+            testID={
+              rowTestIDPrefix === undefined
+                ? undefined
+                : `${rowTestIDPrefix}${index}`
+            }
+          >
+            {open.has(index) ? renderDetails(problem, index) : null}
+          </ProblemRow>
+        ))}
+      </ListSection>
+    </View>
   );
 }
 
@@ -122,7 +146,10 @@ function useOpenRowSet(initial: () => ReadonlySet<number>) {
       return next;
     });
   }, []);
-  return { open, toggle };
+  const openAll = useCallback((rows: ReadonlySet<number>) => {
+    setOpen((previous) => new Set([...previous, ...rows]));
+  }, []);
+  return { open, toggle, openAll };
 }
 
 function ProblemRow({

@@ -225,6 +225,21 @@ header style (page-coloured, no hairline, chevron-only back).
   hands each problem's result to the result screen in a route param
   (`lib/result-params.ts` in each module), since `onComplete` carries only
   the totals.
+- **A challenge result** has the web's sections in the web's order: the
+  score card, which opens on the accuracy bar (`AccuracyBar`, right answers
+  against the rest, with a legend, and "2 / 4 · 50.0%" beside its caption)
+  rather than a big headline count, then a grid of the times only (the
+  coordinate quiz's points first), then for a recorded run the EXP card
+  (`ExpGainCard`) and "Your record" (`RecordCard`: this run with its change
+  against the last, the last run, the best before, a row into My Records),
+  or the sign-in row for a signed-out player, then the problem details and
+  related articles. The EXP and the record come in the finish's `summary`
+  (computed on the server as the web's result page does), so no rule of
+  either is repeated here. Where a problem list has misses, the legend's
+  incorrect count opens them (`ResultMistakesContext`, held by
+  `PracticeResultScreen`); elsewhere it is plain text. The web's
+  leaderboard preview is left out (the app shows no other user), and so
+  are its ads and its grid of same-band practices.
 - **Result stats** from `deriveResultStats` carry a `key`
   (`ResultStatKey`); a module that leaves one out (quadrants' average time,
   via `hideAverageTime`) filters by key, never by the translated label.
