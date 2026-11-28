@@ -1,7 +1,10 @@
-/** The part of a stack navigator's state `routeNameBelow` reads. */
+/** A route of a stack navigator's state, as these helpers read it. */
+type StackRoute = { name: string; params?: object };
+
+/** The part of a stack navigator's state these helpers read. */
 type StackState = {
   index: number;
-  routes: readonly { name: string; params?: object }[];
+  routes: readonly StackRoute[];
 };
 
 /**
@@ -18,8 +21,7 @@ type StackState = {
 export function routeNameBelow(
   state: StackState | undefined,
 ): string | undefined {
-  if (!state || state.index < 1) return undefined;
-  return state.routes[state.index - 1]?.name;
+  return routeBelow(state)?.name;
 }
 
 /**
@@ -29,7 +31,7 @@ export function routeNameBelow(
  */
 export function routeBelow(
   state: StackState | undefined,
-): { name: string; params?: object } | undefined {
+): StackRoute | undefined {
   if (!state || state.index < 1) return undefined;
   return state.routes[state.index - 1];
 }
