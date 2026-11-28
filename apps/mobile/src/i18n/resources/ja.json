@@ -373,8 +373,6 @@
     }
   },
   "aiGame": {
-    "title": "AI対戦",
-    "description": "AIエンジンとブラインドチェスで対戦",
     "setup": {
       "title": "ゲーム設定",
       "playerColor": "プレイする色",

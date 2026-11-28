@@ -1,8 +1,12 @@
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 
-import { ListRow, ListSection, TabScrollView } from "../../../components";
-import { AiGameCard } from "../../../features/ai-game/components/AiGameCard";
+import {
+  Button,
+  ListRow,
+  ListSection,
+  TabScrollView,
+} from "../../../components";
 import { GameRow } from "../../../features/game-history/GameRow";
 import { SavedGameSnackbar } from "../../../features/game-history/SavedGameSnackbar";
 import { useSavedGames } from "../../../features/game-history/useSavedGames";
@@ -26,9 +30,14 @@ export default function PlayTab() {
   return (
     <>
       <TabScrollView>
-        <AiGameCard
-          buttonTitle={t("aiGame.setup.startGame")}
+        {/* The tab's one action, on its own: the tab's name already says
+            what it plays, so a card with a title and a description over
+            the button only pushed the history down. */}
+        <Button
+          title={t("aiGame.setup.startGame")}
           onPress={() => router.push("/play/ai-game")}
+          size="lg"
+          fullWidth
         />
 
         <ListSection title={t("gameHistory.title")}>
