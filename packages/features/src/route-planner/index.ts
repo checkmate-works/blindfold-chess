@@ -11,3 +11,4 @@ export type {
   UseRoutePlannerSessionReturn,
 } from "./use-route-planner-session";
 export * from "./challenge";
+export { isRoutePlannerProblemResult } from "./result-guard";
