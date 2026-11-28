@@ -33,9 +33,10 @@ function svgAspect(xml: string): number {
 }
 
 /**
- * Renders a learn article's markdown with native text (see `markdown.ts`
- * for the subset). Links into the app (`/learn/…`, `/practice/…`) navigate
- * inside it; other links open in the browser. The figures are the web's
+ * Renders a learn article's or an announcement's markdown with native text
+ * (see `markdown.ts` for the subset). Links into the app (`/learn/…`,
+ * `/practice/…`, `/announcements/…`) navigate inside it; other links open
+ * in the browser. The figures are the web's
  * SVGs, bundled; the web-only interactive demos (`![demo:…]()`) are left
  * out.
  */
@@ -53,7 +54,7 @@ export function MarkdownView({ source }: { source: string }) {
 function useOpenLink() {
   const router = useRouter();
   return (href: string) => {
-    if (/^\/(learn|practice|play)(\/|$)/.test(href)) {
+    if (/^\/(learn|practice|play|announcements)(\/|$)/.test(href)) {
       router.push(href as Href);
     } else if (/^https?:\/\//.test(href)) {
       void Linking.openURL(href);

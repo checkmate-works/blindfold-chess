@@ -40,6 +40,15 @@
       "choosePractice": "Choose a practice yourself"
     }
   },
+  "announcements": {
+    "title": "Announcements",
+    "viewAll": "See all announcements",
+    "pinned": "Pinned",
+    "empty": "No announcements yet.",
+    "loadMore": "Show more",
+    "loadFailed": "Could not load announcements. Pull to retry.",
+    "notFound": "This announcement is no longer available."
+  },
   "recordCta": {
     "signUpButton": "Sign up free",
     "signIn": "Already have an account? Sign in",
