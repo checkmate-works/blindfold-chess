@@ -1,6 +1,10 @@
 import { StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
+import {
+  formatSignedDelta,
+  signedDeltaTone,
+} from "@blindfold-chess/features/challenge-records";
 
 import { ListIcon, ListRow, ListSection } from "../../components";
 import {
@@ -11,7 +15,6 @@ import {
   withAlpha,
 } from "../../theme";
 import type { ChallengeResultSummary } from "./challenge-api";
-import { formatSignedDelta, signedDeltaTone } from "./signed-delta";
 
 type RecordCardProps = {
   record: ChallengeResultSummary["record"];
