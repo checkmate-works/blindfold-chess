@@ -3,6 +3,7 @@ import { and, desc, eq, inArray, ne, sql } from 'drizzle-orm';
 import { announcements, db, likes, profiles } from '@/lib/db';
 import type { Announcement } from '@/lib/db';
 
+import { publishedAnnouncement } from './announcements-visibility';
 import type { LikeMeta } from './like-queries';
 
 /** Polymorphic `likes.target_type` for an announcement. */
@@ -87,7 +88,7 @@ export async function toggleAnnouncementLike(params: {
         and(
           eq(announcements.id, displayedVariantId),
           eq(announcements.slug, slug),
-          eq(announcements.status, 'published')
+          publishedAnnouncement()
         )
       );
     if (!displayed) return { error: 'notFound' };

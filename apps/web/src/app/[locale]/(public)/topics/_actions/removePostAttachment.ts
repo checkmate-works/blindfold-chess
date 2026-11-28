@@ -14,6 +14,7 @@ import {
 } from '@/lib/db';
 import { POST_IMAGES_BUCKET } from '@/lib/post-images/validation';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
+import { captureError } from '@/lib/sentry/capture-error';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { loadAuthoredPost } from '@/lib/topic-posts';
 import { logActivityEvent } from '@/lib/users/activity-log';
@@ -96,12 +97,28 @@ export async function removePostAttachment(
     if (!row) return { error: 'attachmentNotFound' };
     // Keep the DB row until Storage confirms removal. It is both the
     // retry handle and the source of the path; never accept a client path.
+    // The author only sees a generic failure and may never retry, so the
+    // failure is reported here: otherwise a Storage outage would leave no
+    // trace beyond rows that quietly refuse to go away.
+    const storageScope = {
+      tags: { feature: 'post-image-remove' },
+      extra: {
+        postId: post.id,
+        attachmentId,
+        storagePath: row.storagePath,
+        bucket: POST_IMAGES_BUCKET,
+      },
+    };
     try {
       const { error } = await createAdminClient()
         .storage.from(POST_IMAGES_BUCKET)
         .remove([row.storagePath]);
-      if (error) return { error: 'error' };
-    } catch {
+      if (error) {
+        captureError(error, '[removePostAttachment] storage remove failed', storageScope);
+        return { error: 'error' };
+      }
+    } catch (error) {
+      captureError(error, '[removePostAttachment] storage remove threw', storageScope);
       return { error: 'error' };
     }
 

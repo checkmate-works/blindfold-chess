@@ -3,10 +3,14 @@ import { cache } from 'react';
 import { unstable_cache } from 'next/cache';
 
 import { DEFAULT_LOCALE } from '@/config';
-import { and, desc, eq, gte, isNotNull, sql } from 'drizzle-orm';
+import { and, desc, eq, gte, sql } from 'drizzle-orm';
 
 import { ANNOUNCEMENTS_CACHE_TAG } from '@/lib/cache-tags';
 import { type Announcement, announcements, db } from '@/lib/db';
+import {
+  publiclyVisibleAnnouncement,
+  publishedAnnouncement,
+} from '@/lib/db/announcements-visibility';
 
 import { pickByLocale } from '@/app/[locale]/_lib/locale-utils';
 
@@ -105,7 +109,7 @@ const getDeduplicatedAnnouncements = unstable_cache(
             END
         ) AS rn
       FROM ${announcements}
-      WHERE ${announcements.status} = 'published'
+      WHERE ${publishedAnnouncement()}
     ) ranked
     WHERE rn = 1
     ORDER BY pinned_at DESC NULLS LAST, published_at DESC
@@ -124,16 +128,16 @@ const getDeduplicatedAnnouncements = unstable_cache(
 );
 
 /**
- * Get all published public announcements (used by generateStaticParams).
+ * Get all published public announcements (used by the sitemap).
  * Does NOT deduplicate by slug — callers extract unique slugs themselves.
- * Filters by visibility='public' because generateStaticParams should only
- * produce paths for publicly accessible announcements.
+ * Filters by visibility='public' because the sitemap should only list
+ * announcements an anonymous crawler can read.
  */
 export async function getPublishedAnnouncements(): Promise<Announcement[]> {
   return db
     .select()
     .from(announcements)
-    .where(and(eq(announcements.status, 'published'), eq(announcements.visibility, 'public')))
+    .where(publiclyVisibleAnnouncement())
     .orderBy(...pinnedFirstOrdering);
 }
 
@@ -167,7 +171,7 @@ export const getPublishedAnnouncementCount = unstable_cache(
     const [result] = await db
       .select({ count: sql<number>`COUNT(DISTINCT ${announcements.slug})` })
       .from(announcements)
-      .where(eq(announcements.status, 'published'));
+      .where(publishedAnnouncement());
 
     return Number(result.count);
   },
@@ -198,7 +202,7 @@ export const getPublishedAnnouncement = cache(
     const results = await db
       .select()
       .from(announcements)
-      .where(and(eq(announcements.slug, slug), eq(announcements.status, 'published')));
+      .where(and(eq(announcements.slug, slug), publishedAnnouncement()));
 
     if (results.length === 0) return null;
 
@@ -256,10 +260,8 @@ export const getLatestBannerAnnouncement = cache(
         .from(announcements)
         .where(
           and(
-            eq(announcements.status, 'published'),
-            eq(announcements.visibility, 'public'),
+            publiclyVisibleAnnouncement(),
             eq(announcements.showAsBanner, true),
-            isNotNull(announcements.publishedAt),
             gte(announcements.publishedAt, cutoff)
           )
         )
