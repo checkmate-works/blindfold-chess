@@ -14,7 +14,7 @@ import {
   spacing,
   borderRadius,
 } from "../../../theme";
-import { ChessBoard } from "./ChessBoard";
+import { ChessBoard, useChessBoardSize } from "./ChessBoard";
 import { Spinner } from "./Spinner";
 
 type InlineBoardProps = {
@@ -56,7 +56,11 @@ type InlineBoardProps = {
  *   counts that as a peek) and the screen closes it again once the
  *   player's next move is accepted. There is no button to close it sooner,
  *   as on the web, so the screen keeps its layout.
- * - `'never'`: no board at all, only a bar that carries the AI's reply.
+ * - `'never'`: no board at all, but a panel of the board's size in its
+ *   place that carries the AI's reply. A phone fits the whole game on one
+ *   screen, so there is room to spare, and keeping the board's footprint
+ *   means switching the visibility mid-game (the gear in the top row) does
+ *   not move the error line and the keypad under the player's finger.
  *
  * While the AI thinks, an open `'always'` board is covered by a light scrim
  * with a "thinking" chip, so the turn shows where the player is looking.
@@ -81,6 +85,7 @@ export function InlineBoard({
   const { t } = useTranslation();
   const { colors } = useTheme();
   const { preferences } = useGamePreferences();
+  const boardSize = useChessBoardSize();
 
   const lastMove = useMemo(() => {
     try {
@@ -107,24 +112,32 @@ export function InlineBoard({
 
   if (preferences.boardVisibility === "never") {
     return (
-      <View
-        style={[
-          styles.bar,
-          { backgroundColor: colors.card, borderColor: colors.panelBorder },
-        ]}
-      >
-        {reply ?? (
-          <View style={styles.reply}>
+      <View style={styles.container}>
+        <View
+          accessibilityLiveRegion="polite"
+          style={[
+            styles.placeholder,
+            {
+              width: boardSize,
+              height: boardSize,
+              backgroundColor: colors.card,
+              borderColor: colors.panelBorder,
+            },
+          ]}
+        >
+          {reply ?? (
             <Ionicons
               name="eye-off-outline"
-              size={18}
+              size={32}
               color={colors.mutedForeground}
             />
+          )}
+          {reply ? null : (
             <Text style={[styles.hint, { color: colors.mutedForeground }]}>
               {t("aiGame.session.boardHidden")}
             </Text>
-          </View>
-        )}
+          )}
+        </View>
       </View>
     );
   }
@@ -257,14 +270,13 @@ const styles = StyleSheet.create({
     fontSize: fontSize.sm,
     fontWeight: fontWeight.medium,
   },
-  bar: {
+  placeholder: {
     alignItems: "center",
     justifyContent: "center",
-    minHeight: 48,
+    gap: spacing.sm,
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
     borderWidth: 1,
-    borderRadius: borderRadius.md,
+    borderRadius: borderRadius.sm,
   },
   reply: {
     flexDirection: "row",
