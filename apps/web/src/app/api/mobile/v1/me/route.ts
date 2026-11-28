@@ -24,7 +24,8 @@ export const dynamic = 'force-dynamic';
 /**
  * The signed-in account as the app needs it: whether a username is set
  * (recording challenges does not need one; appearing on the web's
- * leaderboard does), whether the account is banned, and the progress the
+ * leaderboard does), the avatar's URL (`null` for none), whether the account
+ * is banned, and the progress the
  * web's mypage leads with: total EXP, the level it gives (`getLevel`, the
  * shared curve) and the highest dojo rank achieved (`null` for none).
  * Answers for a banned account too, so the app can say why recording is
@@ -44,6 +45,7 @@ export async function GET(request: Request) {
       userId: auth.user.id,
       email: auth.user.email ?? null,
       username: profile?.username ?? null,
+      avatarUrl: profile?.avatarUrl ?? null,
       banned,
       totalExp,
       level: getLevel(totalExp),

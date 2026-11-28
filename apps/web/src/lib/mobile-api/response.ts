@@ -13,7 +13,7 @@ const MOBILE_HEADERS = {
   'Cache-Control': 'private, no-store',
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'Authorization, Content-Type',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
 } as const;
 
 export function mobileJson(body: unknown, init: { status?: number } = {}): NextResponse {
