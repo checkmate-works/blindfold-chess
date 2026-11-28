@@ -226,8 +226,10 @@ header style (page-coloured, no hairline, chevron-only back).
   (`lib/result-params.ts` in each module), since `onComplete` carries only
   the totals.
 - **A challenge result** has the web's sections in the web's order: the
-  score card with the accuracy bar (`AccuracyBar`, right answers against
-  the rest, with a legend), then for a recorded run the EXP card
+  score card, which opens on the accuracy bar (`AccuracyBar`, right answers
+  against the rest, with a legend, and "2 / 4 · 50.0%" beside its caption)
+  rather than a big headline count, then a grid of the times only (the
+  coordinate quiz's points first), then for a recorded run the EXP card
   (`ExpGainCard`) and "Your record" (`RecordCard`: this run with its change
   against the last, the last run, the best before, a row into My Records),
   or the sign-in row for a signed-out player, then the problem details and

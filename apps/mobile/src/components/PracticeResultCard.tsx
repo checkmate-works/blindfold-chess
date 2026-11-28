@@ -9,11 +9,22 @@ type PracticeResultCardProps = {
   scoreValue: string;
   statItems: StatItem[];
   /**
-   * The web's accuracy graph under the headline: right answers out of the
-   * questions asked. Left out for a result with no right-or-wrong count.
+   * The web's accuracy graph: right answers out of the questions asked, with
+   * `summary` ("2 / 4 · 50.0%") beside its caption. When given, it stands in
+   * for the big headline, which would only say the same count again.
    */
-  accuracy?: { correct: number; total: number };
+  accuracy?: { correct: number; total: number; summary: string };
 };
+
+/**
+ * The score panel at the top of a practice result.
+ *
+ * With an accuracy count the panel opens on the web's graph rather than a
+ * 48pt "2 / 4": the web's result has no such number either, and the bar
+ * already shows the count, so the headline only took a third of the screen
+ * to repeat it. The count stays in words beside the graph's caption. A
+ * result with no right-or-wrong count keeps the headline.
+ */
 
 export function PracticeResultCard({
   scoreLabel,
@@ -25,21 +36,23 @@ export function PracticeResultCard({
 
   return (
     <Card padding="lg">
-      <View style={styles.scoreContainer}>
-        <Text style={[styles.scoreLabel, { color: colors.mutedForeground }]}>
-          {scoreLabel}
-        </Text>
-        {/* Ink, not blue: the accent colour is kept for what can be pressed
+      {accuracy && accuracy.total > 0 ? (
+        <AccuracyBar
+          correct={accuracy.correct}
+          total={accuracy.total}
+          summary={accuracy.summary}
+        />
+      ) : (
+        <View style={styles.scoreContainer}>
+          <Text style={[styles.scoreLabel, { color: colors.mutedForeground }]}>
+            {scoreLabel}
+          </Text>
+          {/* Ink, not blue: the accent colour is kept for what can be pressed
             (the primary button, text actions), so the score does not
             compete with the button that starts the next round. */}
-        <Text style={[styles.scoreValue, { color: colors.foreground }]}>
-          {scoreValue}
-        </Text>
-      </View>
-
-      {accuracy && accuracy.total > 0 && (
-        <View style={styles.accuracy}>
-          <AccuracyBar correct={accuracy.correct} total={accuracy.total} />
+          <Text style={[styles.scoreValue, { color: colors.foreground }]}>
+            {scoreValue}
+          </Text>
         </View>
       )}
 
@@ -82,16 +95,16 @@ const styles = StyleSheet.create({
     fontSize: 48,
     fontWeight: fontWeight.bold,
   },
-  accuracy: {
-    marginTop: spacing.sm,
-  },
   divider: {
     height: 1,
     marginVertical: spacing.md,
   },
+  // Centred: a grid of one (quadrants' time) or three (coordinate quiz's
+  // points and times) would otherwise hang to the left.
   statsGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
+    justifyContent: "center",
     gap: spacing.md,
   },
   statItem: {

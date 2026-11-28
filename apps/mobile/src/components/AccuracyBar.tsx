@@ -13,6 +13,8 @@ import {
 type AccuracyBarProps = {
   correct: number;
   total: number;
+  /** The count in words at the caption's end, e.g. "2 / 4 · 50.0%". */
+  summary?: string;
 };
 
 /**
@@ -25,7 +27,7 @@ type AccuracyBarProps = {
  * a problem list that registered them (`useResultMistakes`); otherwise it is
  * plain text.
  */
-export function AccuracyBar({ correct, total }: AccuracyBarProps) {
+export function AccuracyBar({ correct, total, summary }: AccuracyBarProps) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const mistakes = useResultMistakes();
@@ -40,9 +42,16 @@ export function AccuracyBar({ correct, total }: AccuracyBarProps) {
 
   return (
     <View>
-      <Text style={[styles.caption, { color: colors.mutedForeground }]}>
-        {t("practiceResult.accuracy")}
-      </Text>
+      <View style={styles.captionRow}>
+        <Text style={[styles.caption, { color: colors.mutedForeground }]}>
+          {t("practiceResult.accuracy")}
+        </Text>
+        {summary !== undefined && (
+          <Text style={[styles.summary, { color: colors.foreground }]}>
+            {summary}
+          </Text>
+        )}
+      </View>
       <View
         style={[styles.track, { backgroundColor: colors.muted }]}
         accessibilityRole="progressbar"
@@ -134,10 +143,21 @@ function LegendItem({
 
 /** The web's `h-8 rounded-lg` bar, its `text-sm` counts and `text-xs` legend. */
 const styles = StyleSheet.create({
+  captionRow: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    justifyContent: "space-between",
+    gap: spacing.sm,
+    marginBottom: spacing.sm,
+  },
   caption: {
     fontSize: fontSize.sm,
     fontWeight: fontWeight.medium,
-    marginBottom: spacing.sm,
+  },
+  summary: {
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.semibold,
+    fontVariant: ["tabular-nums"],
   },
   track: {
     flexDirection: "row",
