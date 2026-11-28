@@ -385,7 +385,11 @@ database. Sign-in calls Supabase Auth directly; sign-up goes through
     thing (for learn, the next unread page itself, `?page=<n>`).
   - the learn tab (`(tabs)/learn`) opens with the guides, one row per guide
     in ladder order, before the articles (the glossary list,
-    `learn/glossary`, is held back from the first release and has no row): the done mark once
+    `learn/glossary`, is held back from the first release and has no row).
+    Each row is the web's guide index entry: the belt's dot (`BeltDot`)
+    in place of an icon, the subject the guide teaches as its title (the
+    web's curriculum section, bundled as `titles` by `bundle-guides`) and
+    the rank's name under it. It shows the done mark once
     read through, "n / N" part way, nothing before the first page, and a
     press opens the guide at its first unread page
     (`/dojo/guides/<rank>?page=<n>`; the guide screen ignores a page it

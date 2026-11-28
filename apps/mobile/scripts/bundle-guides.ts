@@ -8,6 +8,12 @@
  * - the link card after a paragraph, from the web's `getGuideInlineLink`
  *   (`paragraphInlineLinks.ts`), which is imported and asked about every
  *   paragraph, with its label in each language;
+ * - each guide's title, the web's curriculum section for its rank
+ *   (`CURRICULUM` in `lib/db/data/curriculum.ts`, worded by
+ *   `dojo.curriculum.sections.*`), which the web's guide index lists under
+ *   the rank name. A guided rank with other than one section stops the
+ *   script: the app lists one row per guide, so two sections would need
+ *   a row of their own each;
  * - which board or table follows a paragraph, read out of the web's
  *   `VISUAL_AID_MAP` (`paragraphVisualAids.tsx`) as a component name and its
  *   literal props. That file imports the web's React components, so it is
@@ -137,7 +143,15 @@ function lookup(dict: unknown, path: string): string {
   return value;
 }
 
+type Curriculum = readonly {
+  slug: string;
+  sections: readonly { titleKey: string }[];
+}[];
+
 async function main() {
+  const { CURRICULUM } = (await import(
+    pathToFileURL(join(WEB, "lib/db/data/curriculum.ts")).href
+  )) as { CURRICULUM: Curriculum };
   const { getGuideInlineLink } = (await import(
     pathToFileURL(join(GUIDE_LIB, "paragraphInlineLinks.ts")).href
   )) as { getGuideInlineLink: GetLink };
@@ -146,7 +160,7 @@ async function main() {
   for (const locale of LOCALES) {
     const messages = JSON.parse(
       await readFile(join(WEB, `messages/${locale}.json`), "utf8"),
-    ) as { guides: Record<string, unknown> };
+    ) as { guides: Record<string, unknown>; dojo: unknown };
     const g = messages.guides;
     const t = (key: string) => lookup(g, key);
     const guides = readGuides(locale, g.pages as Record<string, unknown>);
@@ -168,8 +182,24 @@ async function main() {
       });
     }
 
+    const titles: Record<string, string> = {};
+    for (const rank of Object.keys(guides)) {
+      const sections =
+        CURRICULUM.find((entry) => entry.slug === rank)?.sections ?? [];
+      if (sections.length !== 1) {
+        throw new Error(
+          `${rank}: ${sections.length} curriculum sections — the app lists one row per guide, titled by its one section`,
+        );
+      }
+      titles[rank] = lookup(
+        messages.dojo,
+        `curriculum.sections.${sections[0]!.titleKey}`,
+      );
+    }
+
     content[locale] = {
       guides,
+      titles,
       links,
       strings: {
         title: t("top.title"),

@@ -38,6 +38,11 @@ export type GuideInlineLink = {
 /** The guides of one language, and the few strings their pages need. */
 export type GuideLocaleContent = {
   readonly guides: Readonly<Record<string, FlatGuide>>;
+  /**
+   * Each guide's title by rank: the web's curriculum section the guide
+   * teaches ("代数記法の理解"), shown under the rank name in the guide list.
+   */
+  readonly titles: Readonly<Record<string, string>>;
   /** Keyed `<rank>:<page>:<paragraph>` (1-based page, 0-based paragraph). */
   readonly links: Readonly<Record<string, GuideInlineLink>>;
   readonly strings: {

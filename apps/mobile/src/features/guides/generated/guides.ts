@@ -283,6 +283,14 @@ export const GUIDE_CONTENT: Readonly<
         ],
       },
     },
+    titles: {
+      mukyu: "代数記法の理解",
+      "5kyu": "アンカーポイントによる盤面の把握",
+      "3kyu": "ダイアゴナルと逆ダイアゴナルの算出",
+      "2kyu": "チャンクによるパターン認識",
+      "4kyu": "目隠しチェスでのリーガルムーブ判定",
+      "1kyu": "オープニングとエンドゲームの暗記",
+    },
     links: {
       "mukyu:1:3": {
         label: "代数記法について学ぶ",
@@ -661,6 +669,14 @@ export const GUIDE_CONTENT: Readonly<
           },
         ],
       },
+    },
+    titles: {
+      mukyu: "Algebraic notation",
+      "5kyu": "Board awareness with anchor points",
+      "3kyu": "Computing diagonals and anti-diagonals",
+      "2kyu": "Pattern recognition with chunks",
+      "4kyu": "Legal move detection in blindfold chess",
+      "1kyu": "Memorising openings and endgames",
     },
     links: {
       "mukyu:1:3": {
@@ -1041,6 +1057,14 @@ export const GUIDE_CONTENT: Readonly<
         ],
       },
     },
+    titles: {
+      mukyu: "Notación algebraica",
+      "5kyu": "Percepción del tablero con puntos de anclaje",
+      "3kyu": "Cálculo de diagonales y antidiagonales",
+      "2kyu": "Reconocimiento de patrones con chunks",
+      "4kyu": "Detección de movimientos legales en ajedrez a ciegas",
+      "1kyu": "Memorizar aperturas y finales",
+    },
     links: {
       "mukyu:1:3": {
         label: "Aprende sobre notación algebraica",
@@ -1419,6 +1443,14 @@ export const GUIDE_CONTENT: Readonly<
           },
         ],
       },
+    },
+    titles: {
+      mukyu: "Notação algébrica",
+      "5kyu": "Percepção do tabuleiro com pontos de ancoragem",
+      "3kyu": "Cálculo de diagonais e antidiagonais",
+      "2kyu": "Reconhecimento de padrões com chunks",
+      "4kyu": "Detecção de movimentos legais no xadrez às cegas",
+      "1kyu": "Memorizar aberturas e finais",
     },
     links: {
       "mukyu:1:3": {
