@@ -78,6 +78,7 @@
     "title": "マイページ",
     "loadFailed": "アカウントを読み込めませんでした。",
     "retry": "もう一度読み込む",
+    "webProfile": "Webサイトでプロフィールを見る",
     "preview": {
       "username": "あなたの名前"
     }

@@ -78,6 +78,7 @@
     "title": "Minha página",
     "loadFailed": "Não foi possível carregar sua conta.",
     "retry": "Tentar novamente",
+    "webProfile": "Ver seu perfil no site",
     "preview": {
       "username": "seu_nome"
     }

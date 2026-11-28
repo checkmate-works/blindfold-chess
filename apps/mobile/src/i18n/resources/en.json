@@ -78,6 +78,7 @@
     "title": "My Page",
     "loadFailed": "Couldn't load your account.",
     "retry": "Try again",
+    "webProfile": "View your profile on the website",
     "preview": {
       "username": "your_name"
     }
