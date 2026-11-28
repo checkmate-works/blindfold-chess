@@ -294,7 +294,11 @@ header style (page-coloured, no hairline, chevron-only back).
   Board symmetry, diagonal quiz and route planner keep the ? for the web
   tutorial's explanation steps.
   `PracticeSetupScreen` finds the module from the route, so a setup screen
-  needs nothing for it.
+  needs nothing for it. `/practice/<route>?help=1` (`SETUP_HELP_PARAM`,
+  `navigation/setup-help.ts`) opens the setup with the sheet up once the
+  push has finished: a guide's link to a web tutorial
+  (`/practice/<module>/tutorial`) lands there when the sheet carries that
+  tutorial's steps.
 - **Transient messages** are `Snackbar` (`components/Snackbar.tsx`):
   Material's snackbar, drawn the same on iOS (which has no system
   counterpart) — one line along the bottom with at most one action, gone

@@ -14,7 +14,14 @@ import {
   ScrollView,
   ActivityIndicator,
 } from "react-native";
-import { useFocusEffect, useNavigation, usePathname } from "expo-router";
+import {
+  useFocusEffect,
+  useLocalSearchParams,
+  useNavigation,
+  usePathname,
+} from "expo-router";
+import type { ParamListBase } from "expo-router/react-navigation";
+import type { NativeStackNavigationProp } from "expo-router/native-stack";
 import { useTranslation } from "react-i18next";
 
 import { BottomBar } from "./BottomBar";
@@ -24,6 +31,7 @@ import { HelpSheet } from "../features/help/HelpSheet";
 import { helpPagesFor } from "../features/help/help-pages";
 import { HeaderIconButton } from "../navigation/HeaderIconButton";
 import { ScreenNoticeSnackbar } from "../navigation/ScreenNoticeSnackbar";
+import { SETUP_HELP_PARAM } from "../navigation/setup-help";
 import {
   MOBILE_PRACTICE_MODULES,
   practiceModuleRoute,
@@ -162,7 +170,7 @@ export function PracticeSetupScreen({
 }: PracticeSetupScreenProps) {
   const { t } = useTranslation();
   const { colors } = useTheme();
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   const module = moduleForPath(usePathname());
   const moduleKey = module?.i18nKey ?? null;
   const helpPages = module
@@ -171,6 +179,23 @@ export function PracticeSetupScreen({
   const hasHelp = helpPages.length > 0;
   const [helpOpen, setHelpOpen] = useState(false);
   const startOnce = useStartOnce();
+
+  // `?help=1` (`SETUP_HELP_PARAM`) opens the help sheet once the push that
+  // brought the screen in has finished, for a link that means the module's
+  // tutorial (a guide's link card). A sheet presented mid-push would have to
+  // attach to a screen still sliding in, so it waits for the transition.
+  // Once only: coming back to the screen later leaves the sheet closed.
+  const { help } = useLocalSearchParams<{ help?: string }>();
+  const helpPending = useRef(help === SETUP_HELP_PARAM.help && hasHelp);
+  useEffect(
+    () =>
+      navigation.addListener("transitionEnd", (event) => {
+        if (event.data.closing || !helpPending.current) return;
+        helpPending.current = false;
+        setHelpOpen(true);
+      }),
+    [navigation],
+  );
 
   useLayoutEffect(() => {
     if (!hasHelp) return;
