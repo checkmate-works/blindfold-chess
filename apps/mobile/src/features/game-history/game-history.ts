@@ -103,7 +103,8 @@ const listeners = new Set<() => void>();
 /**
  * Calls `listener` after every write to the saved games, for a view that
  * stays mounted while games are saved or deleted elsewhere (the play tab's
- * badge). Returns the unsubscribe function.
+ * badge) or must catch a write still queued when it read (the saved-game
+ * lists, `useSavedGames`). Returns the unsubscribe function.
  */
 export function subscribeToSavedGames(listener: () => void): () => void {
   listeners.add(listener);
