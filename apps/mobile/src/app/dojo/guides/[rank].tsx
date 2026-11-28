@@ -1,7 +1,13 @@
 import { useRef, useState } from "react";
 import { ScrollView, StyleSheet, Text } from "react-native";
 import type { ScrollViewInstance } from "react-native";
-import { Stack, router, useLocalSearchParams, type Href } from "expo-router";
+import {
+  Stack,
+  router,
+  useLocalSearchParams,
+  useNavigation,
+  type Href,
+} from "expo-router";
 import { useTranslation } from "react-i18next";
 import { isRankSlug } from "@blindfold-chess/features/dojo-ranks";
 
@@ -28,6 +34,7 @@ import {
   allJourneys,
   useDojoJourney,
 } from "../../../features/dojo/use-dojo-journey";
+import { routeBelow } from "../../../navigation/route-below";
 import { fontSize, fontWeight, spacing, useTheme } from "../../../theme";
 
 /**
@@ -97,6 +104,7 @@ import { fontSize, fontWeight, spacing, useTheme } from "../../../theme";
  */
 export default function GuideScreen() {
   const { t, i18n } = useTranslation();
+  const navigation = useNavigation();
   const { colors } = useTheme();
   const { rank, page: pageParam } = useLocalSearchParams<{
     rank: string;
@@ -125,6 +133,21 @@ export default function GuideScreen() {
     if (delta > 0) markGuidePage(rank, pageIndex + 1);
     setPageIndex((i) => Math.min(Math.max(i + delta, 0), pages.length - 1));
     scrollRef.current?.scrollTo({ y: 0, animated: false });
+  };
+
+  // The previous / next rank rows. Arrived here from that rank's guide (by
+  // the row pointing the other way), go back to it rather than push a copy,
+  // or rows tapped back and forth would stack A → B → A → B for the back
+  // button to walk through.
+  const openNeighbour = (slug: string) => {
+    const below = routeBelow(navigation.getState());
+    const belowRank =
+      below?.params && "rank" in below.params ? below.params.rank : undefined;
+    if (below?.name === "dojo/guides/[rank]" && belowRank === slug) {
+      router.back();
+    } else {
+      router.push(`/dojo/guides/${slug}` as Href);
+    }
   };
 
   const finish = () => {
@@ -183,7 +206,7 @@ export default function GuideScreen() {
                       : content.strings.nextRank,
                     { rankName: t(`ranks.names.${slug}`) },
                   )}
-                  onPress={() => router.push(`/dojo/guides/${slug}` as Href)}
+                  onPress={() => openNeighbour(slug)}
                 />
               ) : null,
             )}

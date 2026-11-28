@@ -15,6 +15,16 @@ import {
 } from "../navigation/stack-options";
 import { ThemeProvider, useTheme } from "../theme";
 
+/**
+ * The tabs sit under every other root-stack screen, even when the app is
+ * opened straight onto a deeper route (a link to an article, a restored
+ * session): without this, that screen is the stack's only route and has no
+ * back button, and a session's close has nowhere to go but its fallback.
+ */
+export const unstable_settings = {
+  initialRouteName: "(tabs)",
+};
+
 function RootLayoutContent() {
   const { colors, isDark } = useTheme();
   const [i18nInitialized, setI18nInitialized] = useState(false);
@@ -61,9 +71,16 @@ function RootLayoutContent() {
  *   full-screen modal. It has no swipe to dismiss, so a timed run cannot be
  *   abandoned by an accidental edge swipe; its screens close it with
  *   `useCloseSession`.
- * - `(account)` — mypage, settings, sign-in, sign-up, username setup and
- *   the user's records: a stack inside one card-style modal, closed from its
- *   header.
+ * - The account's pages — mypage, settings, My Records, its full results
+ *   list and the user's ranks — are detail screens too, pushed here. They
+ *   are places to browse that lead on to other screens (My Records' "Take
+ *   the Challenge" opens a setup), and only a screen on this stack can do
+ *   that and still come back with the back button: a root-stack screen
+ *   pushed from inside a modal opens under the modal on iOS, so the modal
+ *   would have to close first and take the way back with it.
+ * - `(account)` — welcome, sign-in, sign-up and username setup: a task that
+ *   ends where it was opened from, as a stack inside one card-style modal,
+ *   closed from its header.
  * - `glossary/[slug]` — a sheet as tall as the term (`formSheet` with a
  *   grabber, sized to its content): a term is read and dismissed without
  *   losing one's place, and can be opened from anywhere.
@@ -115,6 +132,14 @@ function RootStack({ isDark }: { isDark: boolean }) {
         />
         {/* Named after the announcement, set by the screen. */}
         <Stack.Screen name="announcements/[slug]" options={{ title: "" }} />
+        <Stack.Screen name="mypage" options={{ title: t("mypage.title") }} />
+        <Stack.Screen name="settings" options={{ title: t("tabs.settings") }} />
+        <Stack.Screen name="records" options={{ title: t("records.title") }} />
+        <Stack.Screen
+          name="records-results"
+          options={{ title: t("records.results.title") }}
+        />
+        <Stack.Screen name="ranks" options={{ title: t("ownRanks.title") }} />
         <Stack.Screen
           name="(account)"
           options={{ headerShown: false, presentation: "modal" }}

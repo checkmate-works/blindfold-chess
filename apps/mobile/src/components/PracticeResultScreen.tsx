@@ -7,6 +7,7 @@ import type { Href } from "expo-router";
 import { useTranslation } from "react-i18next";
 
 import { BottomBar } from "./BottomBar";
+import { Button } from "./Button";
 import { ModeButtonRow } from "./ModeButtonRow";
 import { ResultMistakesContext, type ResultMistakes } from "./result-mistakes";
 import { useCloseSession } from "../navigation/use-close-session";
@@ -28,6 +29,14 @@ type PracticeResultScreenProps = {
   backToGuide?: { onPlayAgain: () => void };
   /** The result card rendered under the title. */
   children: ReactNode;
+  /**
+   * Leave out "Back to menu", keeping only "Play again". An exam run sets
+   * it: the run was started from the exam's problem page, which "Play
+   * again" returns to, and "Back to menu" would pop the exam's screens out
+   * from under the player (the puzzle exam's result has only Try Again for
+   * the same reason).
+   */
+  hideBackToMenu?: boolean;
 };
 
 /**
@@ -49,6 +58,7 @@ export function PracticeResultScreen({
   setupHref,
   backToGuide,
   children,
+  hideBackToMenu = false,
 }: PracticeResultScreenProps) {
   const { t } = useTranslation();
   const { close, closeToMenu } = useCloseSession(setupHref);
@@ -83,6 +93,15 @@ export function PracticeResultScreen({
               onPress: close,
               testID: "result-back-to-guide",
             }}
+          />
+        ) : hideBackToMenu ? (
+          <Button
+            title={t("practiceResult.playAgain")}
+            icon="refresh"
+            size="lg"
+            fullWidth
+            onPress={close}
+            testID="result-play-again"
           />
         ) : (
           <ModeButtonRow
