@@ -2,6 +2,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
 import { isUserBanned as mockIsUserBanned } from '@/lib/moderation/__mocks__/ban';
+import { POST_IMAGES_BUCKET } from '@/lib/post-images/validation';
+import { captureError } from '@/lib/sentry/capture-error';
 import { getUserMock as mockGetUser } from '@/lib/supabase/__mocks__/server';
 import { logActivityEvent } from '@/lib/users/activity-log';
 
@@ -15,6 +17,7 @@ const mockDeleteReturning = vi.fn();
 const mockStorageRemove = vi.fn();
 
 vi.mock('@/lib/users/activity-log');
+vi.mock('@/lib/sentry/capture-error', () => ({ captureError: vi.fn() }));
 
 vi.mock('@/lib/supabase/server');
 vi.mock('@/lib/supabase/admin', () => ({
@@ -65,6 +68,16 @@ const ownedPostRow = {
   topicType: 'opening',
   topicKey: 'sicilian-defense',
   deletedAt: null,
+};
+
+const expectedStorageScope = {
+  tags: { feature: 'post-image-remove' },
+  extra: {
+    postId: testPostId,
+    attachmentId: testAttachmentId,
+    storagePath: 'user-uploads/foo.webp',
+    bucket: POST_IMAGES_BUCKET,
+  },
 };
 
 describe('removePostAttachment', () => {
@@ -196,12 +209,18 @@ describe('removePostAttachment', () => {
     mockSelectLimit
       .mockResolvedValueOnce([ownedPostRow])
       .mockResolvedValueOnce([{ storagePath: 'user-uploads/foo.webp' }]);
-    mockStorageRemove.mockResolvedValueOnce({ error: { message: 'permission denied' } });
+    const storageError = { message: 'permission denied' };
+    mockStorageRemove.mockResolvedValueOnce({ error: storageError });
 
     const result = await removePostAttachment(testPostId, testAttachmentId, 'image', 'en');
     expect(result).toEqual({ error: 'error' });
     expect(mockDeleteWhere).not.toHaveBeenCalled();
     expect(logActivityEvent).not.toHaveBeenCalled();
+    expect(captureError).toHaveBeenCalledWith(
+      storageError,
+      '[removePostAttachment] storage remove failed',
+      expectedStorageScope
+    );
   });
   it('retains the attachment when Storage throws', async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
@@ -209,12 +228,29 @@ describe('removePostAttachment', () => {
     mockSelectLimit
       .mockResolvedValueOnce([ownedPostRow])
       .mockResolvedValueOnce([{ storagePath: 'user-uploads/foo.webp' }]);
-    mockStorageRemove.mockRejectedValueOnce(new Error('network failure'));
+    const thrown = new Error('network failure');
+    mockStorageRemove.mockRejectedValueOnce(thrown);
 
     expect(await removePostAttachment(testPostId, testAttachmentId, 'image', 'en')).toEqual({
       error: 'error',
     });
     expect(mockDeleteWhere).not.toHaveBeenCalled();
     expect(logActivityEvent).not.toHaveBeenCalled();
+    expect(captureError).toHaveBeenCalledWith(
+      thrown,
+      '[removePostAttachment] storage remove threw',
+      expectedStorageScope
+    );
+  });
+
+  it('reports nothing when Storage removal succeeds', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
+    mockIsUserBanned.mockResolvedValue(false);
+    mockSelectLimit
+      .mockResolvedValueOnce([ownedPostRow])
+      .mockResolvedValueOnce([{ storagePath: 'user-uploads/foo.webp' }]);
+
+    await removePostAttachment(testPostId, testAttachmentId, 'image', 'en');
+    expect(captureError).not.toHaveBeenCalled();
   });
 });
