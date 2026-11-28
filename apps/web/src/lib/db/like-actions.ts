@@ -94,7 +94,26 @@ export async function toggleLikeForTarget(params: {
  * client already applies the new count optimistically (`useLikeToggle`),
  * so the extra render never even reached the screen.
  */
-export async function performEntityToggleLike<TExtra>(params: {
+export async function performEntityToggleLike<TExtra>(
+  params: EntityLikeTarget<TExtra>
+): Promise<ToggleLikeResult> {
+  const uuidError = validateUUID(params.id, params.fieldName);
+  if (uuidError) return uuidError;
+
+  // A like is publicly attributed twice over: it names the liker in the
+  // owner's notification and it counts toward the liker's public activity.
+  // A provisional user (session, no `profiles` row) has no name to render,
+  // so the notification arrives with an empty actor. Topic likes have always
+  // required a profile — requiring one here stops the same gesture from being
+  // gated differently depending on what is being liked.
+  const guardResult = await authenticateGuardAndRequireProfile(RATE_LIMITS.toggleLike);
+  if ('error' in guardResult) return { error: guardResult.error };
+
+  return toggleEntityLikeForUser(guardResult.user.id, params);
+}
+
+/** The per-entity half of a like toggle; see {@link performEntityToggleLike}. */
+export type EntityLikeTarget<TExtra> = {
   id: string;
   /** camelCase field name used to build the `invalid<Field>` error key. */
   fieldName: string;
@@ -118,22 +137,20 @@ export async function performEntityToggleLike<TExtra>(params: {
    * where a like on a missing id would never be cleaned up.
    */
   missingTarget?: 'skipNotification' | 'reject';
-}): Promise<ToggleLikeResult> {
-  const { id, fieldName, targetType, fetchOwner, notificationMeta } = params;
+};
+
+/**
+ * Steps (4)-(6) of {@link performEntityToggleLike}, for a caller that has
+ * already authenticated the liker, rate-limited them, checked that they have
+ * a profile and validated `id` — the mobile API, which authenticates by
+ * bearer token rather than the cookie session the web's guard reads.
+ */
+export async function toggleEntityLikeForUser<TExtra>(
+  userId: string,
+  params: EntityLikeTarget<TExtra>
+): Promise<ToggleLikeResult> {
+  const { id, targetType, fetchOwner, notificationMeta } = params;
   const missingTarget = params.missingTarget ?? 'skipNotification';
-
-  const uuidError = validateUUID(id, fieldName);
-  if (uuidError) return uuidError;
-
-  // A like is publicly attributed twice over: it names the liker in the
-  // owner's notification and it counts toward the liker's public activity.
-  // A provisional user (session, no `profiles` row) has no name to render,
-  // so the notification arrives with an empty actor. Topic likes have always
-  // required a profile — requiring one here stops the same gesture from being
-  // gated differently depending on what is being liked.
-  const guardResult = await authenticateGuardAndRequireProfile(RATE_LIMITS.toggleLike);
-  if ('error' in guardResult) return { error: guardResult.error };
-  const { user } = guardResult;
 
   // Look up the owner BEFORE toggling so a block can reject the like outright:
   // once either party has blocked the other, neither may like the other's
@@ -142,20 +159,16 @@ export async function performEntityToggleLike<TExtra>(params: {
   const owner = await fetchOwner(id);
   if (!owner && missingTarget === 'reject') return { error: 'notFound' };
 
-  const blocked = await assertNotBlocked(user.id, owner?.userId);
+  const blocked = await assertNotBlocked(userId, owner?.userId);
   if (blocked) return blocked;
 
-  const { liked, likeCount } = await toggleLikeForTarget({
-    userId: user.id,
-    targetType,
-    targetId: id,
-  });
+  const { liked, likeCount } = await toggleLikeForTarget({ userId, targetType, targetId: id });
 
   // (createNotification no-ops when owner.userId is null — anonymised owner.)
-  if (liked && owner && owner.userId !== user.id) {
+  if (liked && owner && owner.userId !== userId) {
     createNotification({
       userId: owner.userId,
-      actorId: user.id,
+      actorId: userId,
       type: 'like',
       targetType,
       targetId: id,

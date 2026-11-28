@@ -42,6 +42,18 @@ export async function listMobilePuzzles(): Promise<{
   };
 }
 
+/** Whether `id` is a puzzle the app offers (a live featured one). */
+export async function isMobilePuzzle(id: string): Promise<boolean> {
+  if (!isValidUUID(id)) return false;
+  const [row] = await db
+    .select({ id: positions.id })
+    .from(featuredPuzzles)
+    .innerJoin(positions, eq(positions.id, featuredPuzzles.positionId))
+    .where(and(eq(featuredPuzzles.positionId, id), LIVE_FEATURED))
+    .limit(1);
+  return row !== undefined;
+}
+
 /** A featured puzzle with its solution lines, or null if it is not one. */
 export async function getMobilePuzzle(id: string): Promise<MobilePuzzle | null> {
   if (!isValidUUID(id)) return null;

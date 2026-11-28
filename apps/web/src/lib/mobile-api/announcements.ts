@@ -151,6 +151,7 @@ const getPublicAnnouncementVariants = unstable_cache(
   async (slug: string) => {
     const rows = await db
       .select({
+        id: announcements.id,
         slug: announcements.slug,
         title: announcements.title,
         content: announcements.content,
@@ -161,7 +162,9 @@ const getPublicAnnouncementVariants = unstable_cache(
       .where(and(eq(announcements.slug, slug), publiclyVisibleAnnouncement()));
     return rows.map((row) => ({ ...row, publishedAt: toIso(row.publishedAt) }));
   },
-  ['mobile-public-announcement'],
+  // Bumped when the row's shape changes: an entry cached under the old key
+  // would lack the new column until it expired.
+  ['mobile-public-announcement-v2'],
   { tags: [ANNOUNCEMENTS_CACHE_TAG], revalidate: 86400 }
 );
 
@@ -175,4 +178,19 @@ export async function getMobileAnnouncement(
   const row = pickByLocale(rows, locale);
   if (row.publishedAt === null) return null;
   return { slug: row.slug, title: row.title, content: row.content, publishedAt: row.publishedAt };
+}
+
+/**
+ * The id of the locale variant the app shows for `slug` (the row a like is
+ * written against, as the web writes it against the variant on screen), or
+ * null when the slug has no public published row.
+ */
+export async function getMobileAnnouncementVariantId(
+  slug: string,
+  locale: string
+): Promise<string | null> {
+  const rows = await getPublicAnnouncementVariants(slug);
+  if (rows.length === 0) return null;
+  const row = pickByLocale(rows, locale);
+  return row.publishedAt === null ? null : row.id;
 }
