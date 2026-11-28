@@ -90,8 +90,10 @@ header style (page-coloured, no hairline, chevron-only back).
   plain check stays only for what is not "done" (a selected row, a valid
   input).
 - **Filters over a list** are `FilterChips` (`components/FilterChips.tsx`):
-  one row of single-choice `SelectableChip`s that scrolls sideways when it
-  outgrows the screen, with "All" as a chip of its own.
+  one row of single-choice pill chips (36pt drawn, 44pt to touch; the one
+  on filled in `primary`) that runs to the screen's edges and scrolls
+  sideways when it outgrows the screen, with "All" as a chip of its own.
+  They are not `SelectableChip`s, which are the settings pickers.
 - **Half modals:** `BottomSheet` (`components/BottomSheet.tsx`) for option
   lists, help and pickers inside a screen — it works inside the session
   modal and sizes to its content. It is the platform's own sheet
@@ -488,10 +490,16 @@ route files exist. The challenge rules (`MISTAKE_LIMIT`,
 `CHALLENGE_TIME_LIMIT`) come from the same package.
 
 **The practice catalogue uses illustrated cards** (`features/practice-list/`).
-`PracticeCard` combines the module title, a static worked example
-(`PracticeCardVisual`), description, rank and optional journey progress.
-The whole card opens setup; illustrations have no interactive children,
-timers or screen-reader stops. `PracticeCardSection` spaces cards without
+`PracticeCard` is kept short: the module title with the rank's belt pill
+(`RankPill`) beside it, a static worked example (`PracticeCardVisual`, an
+80pt board), and one footer line — the journey progress as a chip on the
+left (green with the done mark once a single challenge is tried, neutral
+for "Tried n / N") and "Details ›" on the right. The description is read
+out but not drawn; the setup screen opens with it. The whole card opens
+setup, except the pill: on the practice tab it opens the rank's
+introduction in a `BottomSheet` (`RankSheet`: `RankGoalCard` and a button
+on to the rank screen, nothing else that navigates). Illustrations have
+no interactive children, timers or screen-reader stops. `PracticeCardSection` spaces cards without
 an enclosing list frame. Play’s recall entry reuses
 the same card. Boards use the player’s board theme through `StaticBoard`;
 small previews omit coordinate letters. Settings and history remain grouped

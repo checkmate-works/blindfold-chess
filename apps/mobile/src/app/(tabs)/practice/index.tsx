@@ -25,6 +25,7 @@ import { MOBILE_PRACTICE_MODULES } from "../../../navigation/practice-modules";
 import type { MobilePracticeModule } from "../../../navigation/practice-modules";
 import { PracticeCard } from "../../../features/practice-list/PracticeCard";
 import { PracticeCardSection } from "../../../features/practice-list/PracticeCardSection";
+import { RankSheet } from "../../../features/practice-list/RankSheet";
 import { spacing } from "../../../theme";
 
 const CHALLENGE_SLUGS = new Set<string>(
@@ -71,6 +72,14 @@ export default function PracticeIndex() {
   const { journeyOf } = useDojoJourney();
   const { rank: rankParam } = useLocalSearchParams<{ rank?: string }>();
   const [selected, setSelected] = useState<RankSlug | typeof ALL>(ALL);
+  // The rank whose introduction is open, and the last one opened, which
+  // the sheet keeps drawing while it slides away.
+  const [sheetRank, setSheetRank] = useState<RankSlug>();
+  const [lastSheetRank, setLastSheetRank] = useState<RankSlug>();
+  const openRankSheet = (rank: RankSlug) => {
+    setSheetRank(rank);
+    setLastSheetRank(rank);
+  };
 
   // A tab screen stays mounted after it is left, so the param would still
   // read the same rank the next time another screen opens the tab with it:
@@ -108,11 +117,21 @@ export default function PracticeIndex() {
   ];
 
   const renderCard = (item: MobilePracticeModule) => (
-    <PracticeCard key={item.slug} module={item} progress={progressOf(item)} />
+    <PracticeCard
+      key={item.slug}
+      module={item}
+      progress={progressOf(item)}
+      onRankPress={openRankSheet}
+    />
   );
 
   return (
     <TabScrollView>
+      <RankSheet
+        slug={sheetRank}
+        lastSlug={lastSheetRank}
+        onClose={() => setSheetRank(undefined)}
+      />
       <View style={styles.filter}>
         <FilterChips
           options={chipOptions}

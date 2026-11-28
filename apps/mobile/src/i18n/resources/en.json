@@ -81,6 +81,11 @@
     },
     "tried": "Tried",
     "triedCount": "Tried {{done}} / {{total}}",
+    "details": "Details",
+    "rankSheet": {
+      "openRank": "View rank details",
+      "pillLabel": "About {{rank}}"
+    },
     "coordinateQuiz": {
       "title": "Coordinate Quiz",
       "description": "Test your board visualization by finding squares"

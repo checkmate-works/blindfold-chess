@@ -81,6 +81,11 @@
     },
     "tried": "Tentado",
     "triedCount": "Tentados {{done}} / {{total}}",
+    "details": "Ver detalhes",
+    "rankSheet": {
+      "openRank": "Ver detalhes da faixa",
+      "pillLabel": "Sobre {{rank}}"
+    },
     "coordinateQuiz": {
       "title": "Quiz de coordenadas",
       "description": "Teste sua visualização do tabuleiro encontrando casas"
