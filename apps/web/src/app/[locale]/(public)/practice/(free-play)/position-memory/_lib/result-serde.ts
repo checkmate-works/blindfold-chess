@@ -18,6 +18,12 @@
  *       as the EXP accuracy-bonus tier input). Optional for backward
  *       compatibility with older URLs; parser defaults it to 0.
  */
+import {
+  isFiniteNumber,
+  isJsonObject,
+  isString,
+  parseEncodedJson,
+} from '@blindfold-chess/features/common';
 
 export interface SerializedResultItem {
   f: string;
@@ -132,42 +138,70 @@ export function serializeStats(stats: SerializedStats): string {
   return encodeURIComponent(JSON.stringify(stats));
 }
 
+/**
+ * The per-problem list back from the `data` param. The param arrives through
+ * the URL, so anything can be in it: a value that is not a JSON array is an
+ * empty list, and an entry whose fields are not the strings and numbers
+ * {@link SerializedResultItem} names is dropped rather than rendered (the
+ * result list reads `accuracy.toFixed()` and would throw on it).
+ */
 export function parseResults(dataParam: string | null): ParsedResultItem[] {
-  if (!dataParam) return [];
-  try {
-    const parsed = JSON.parse(decodeURIComponent(dataParam));
-    if (!Array.isArray(parsed)) return [];
-    return parsed.map((item: SerializedResultItem) => ({
-      fen: item.f,
-      recreatedFen: item.r,
-      isBlackToMove: item.b === 1,
-      accuracy: item.a,
-      correctPieces: item.c,
-      totalPieces: item.t,
-      incorrectPieces: item.i,
-      missingPieces: item.m,
-      extraPieces: item.e,
-      originalIndex: item.o,
-      skipped: item.s === 1,
-    }));
-  } catch {
-    return [];
-  }
+  const parsed = parseEncodedJson(dataParam);
+  if (!Array.isArray(parsed)) return [];
+  return parsed.filter(isSerializedResultItem).map((item) => ({
+    fen: item.f,
+    recreatedFen: item.r,
+    isBlackToMove: item.b === 1,
+    accuracy: item.a,
+    correctPieces: item.c,
+    totalPieces: item.t,
+    incorrectPieces: item.i,
+    missingPieces: item.m,
+    extraPieces: item.e,
+    originalIndex: item.o,
+    skipped: item.s === 1,
+  }));
 }
 
+/**
+ * The aggregate stats back from the `stats` param, or `null` when the param
+ * is absent or any of its counts is not a number. `k` may be missing (older
+ * URLs predate it) and then counts as 0.
+ */
 export function parseStats(statsParam: string | null): ParsedStats | null {
-  if (!statsParam) return null;
-  try {
-    const parsed = JSON.parse(decodeURIComponent(statsParam)) as SerializedStats;
-    return {
-      correctPieces: parsed.c,
-      totalPieces: parsed.t,
-      incorrectPieces: parsed.i,
-      missingPieces: parsed.m,
-      extraPieces: parsed.e,
-      mistakes: parsed.k ?? 0,
-    };
-  } catch {
-    return null;
-  }
+  const parsed = parseEncodedJson(statsParam);
+  if (!isSerializedStats(parsed)) return null;
+  return {
+    correctPieces: parsed.c,
+    totalPieces: parsed.t,
+    incorrectPieces: parsed.i,
+    missingPieces: parsed.m,
+    extraPieces: parsed.e,
+    mistakes: parsed.k ?? 0,
+  };
+}
+
+const RESULT_ITEM_NUMBER_FIELDS = ['b', 'a', 'c', 't', 'i', 'm', 'e', 'o', 's'] as const;
+
+/**
+ * The FENs are only checked to be strings: the result board already falls
+ * back to an empty board on a FEN it cannot read.
+ */
+function isSerializedResultItem(value: unknown): value is SerializedResultItem {
+  return (
+    isJsonObject(value) &&
+    isString(value.f) &&
+    isString(value.r) &&
+    RESULT_ITEM_NUMBER_FIELDS.every((field) => isFiniteNumber(value[field]))
+  );
+}
+
+const STATS_NUMBER_FIELDS = ['c', 't', 'i', 'm', 'e'] as const;
+
+function isSerializedStats(value: unknown): value is SerializedStats {
+  return (
+    isJsonObject(value) &&
+    STATS_NUMBER_FIELDS.every((field) => isFiniteNumber(value[field])) &&
+    (value.k === undefined || isFiniteNumber(value.k))
+  );
 }
