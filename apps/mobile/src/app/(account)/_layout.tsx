@@ -1,8 +1,10 @@
 import { Stack } from "expo-router";
+import { StyleSheet, View } from "react-native";
 import type { ComponentProps } from "react";
 import { useTranslation } from "react-i18next";
 
 import { ModalCloseButton } from "../../navigation/ModalCloseButton";
+import { ModalGrabber } from "../../navigation/ModalGrabber";
 import { useStackScreenOptions } from "../../navigation/stack-options";
 
 /** The function form of a screen's `options`. */
@@ -24,6 +26,9 @@ type ScreenOptionsFn = Extract<
  * chevron instead. The same screen can be either — records opens from the
  * home tab's progress card and from mypage — so the layout decides from the
  * screen's place in the stack rather than per screen.
+ *
+ * The modal also closes on a drag down (iOS), which `ModalGrabber` shows at
+ * its top edge over every screen of the stack.
  */
 export default function AccountLayout() {
   const { t } = useTranslation();
@@ -35,31 +40,40 @@ export default function AccountLayout() {
         ? { title, headerLeft: () => <ModalCloseButton /> }
         : { title };
   return (
-    <Stack screenOptions={screenOptions}>
-      <Stack.Screen name="mypage" options={titled(t("mypage.title"))} />
-      <Stack.Screen name="settings" options={titled(t("tabs.settings"))} />
-      <Stack.Screen
-        name="welcome"
-        options={titled(t("account.welcome.title"))}
-      />
-      <Stack.Screen
-        name="sign-in"
-        options={titled(t("account.signIn.title"))}
-      />
-      <Stack.Screen
-        name="sign-up"
-        options={titled(t("account.signUp.title"))}
-      />
-      <Stack.Screen
-        name="setup-username"
-        options={titled(t("account.setupUsername.title"))}
-      />
-      <Stack.Screen name="records" options={titled(t("records.title"))} />
-      <Stack.Screen
-        name="records-results"
-        options={titled(t("records.results.title"))}
-      />
-      <Stack.Screen name="ranks" options={titled(t("ownRanks.title"))} />
-    </Stack>
+    <View style={styles.root}>
+      <Stack screenOptions={screenOptions}>
+        <Stack.Screen name="mypage" options={titled(t("mypage.title"))} />
+        <Stack.Screen name="settings" options={titled(t("tabs.settings"))} />
+        <Stack.Screen
+          name="welcome"
+          options={titled(t("account.welcome.title"))}
+        />
+        <Stack.Screen
+          name="sign-in"
+          options={titled(t("account.signIn.title"))}
+        />
+        <Stack.Screen
+          name="sign-up"
+          options={titled(t("account.signUp.title"))}
+        />
+        <Stack.Screen
+          name="setup-username"
+          options={titled(t("account.setupUsername.title"))}
+        />
+        <Stack.Screen name="records" options={titled(t("records.title"))} />
+        <Stack.Screen
+          name="records-results"
+          options={titled(t("records.results.title"))}
+        />
+        <Stack.Screen name="ranks" options={titled(t("ownRanks.title"))} />
+      </Stack>
+      <ModalGrabber />
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+  },
+});

@@ -287,7 +287,7 @@
       "illegal": "Não"
     },
     "result": {
-      "title": "Prática concluída!"
+      "title": "Resultados"
     },
     "pieces": {
       "b": "Bispo",
@@ -311,7 +311,7 @@
       "incorrectWithSolution": "{{solution}} é a resposta correta"
     },
     "result": {
-      "title": "Prática concluída!"
+      "title": "Resultados"
     }
   },
   "squareColors": {
@@ -323,7 +323,7 @@
       "dark": "Escura"
     },
     "result": {
-      "title": "Prática concluída!"
+      "title": "Resultados"
     },
     "settings": {
       "timeLimit": "Tempo limite",
@@ -348,7 +348,7 @@
       "blackToMove": "Vez das pretas"
     },
     "result": {
-      "title": "Quiz concluído!",
+      "title": "Resultados",
       "totalQuestions": "Perguntas totais",
       "points": "Pontos"
     }
@@ -372,7 +372,7 @@
       "targetSquare": "Casa objetivo"
     },
     "result": {
-      "title": "Prática concluída!"
+      "title": "Resultados"
     },
     "pieces": {
       "n": "Cavalo",
@@ -497,7 +497,7 @@
       "antiDiagonalDirection": "(direção h1-a8)"
     },
     "result": {
-      "title": "Prática concluída!"
+      "title": "Resultados"
     },
     "settings": {
       "timeLimit": "Tempo limite",
@@ -519,7 +519,7 @@
       "blackToMove": "Pretas jogam"
     },
     "result": {
-      "title": "Prática concluída!"
+      "title": "Resultados"
     }
   },
   "knightTour": {
@@ -533,7 +533,7 @@
       "setupHint": "O cavalo deve visitar as 64 casas exatamente uma vez usando apenas movimentos legais de cavalo."
     },
     "result": {
-      "title": "Prática concluída!",
+      "title": "Resultados",
       "squaresVisited": "Casas Visitadas",
       "success": "Percurso Concluído!",
       "closedTourMessage": "Incrível! Você completou um percurso fechado — o cavalo pode voltar à sua casa inicial!",
@@ -561,7 +561,7 @@
       "description": "Domine o sistema de notação enxadrística com exercícios interativos"
     },
     "result": {
-      "title": "Prática concluída!"
+      "title": "Resultados"
     },
     "session": {
       "correct": "Correto!",
@@ -589,7 +589,7 @@
       "shuffle": "Embaralhar Problemas"
     },
     "result": {
-      "title": "Prática concluída!"
+      "title": "Resultados"
     },
     "session": {
       "recreateFromFen": "Recrie a Posição a partir do FEN",
@@ -787,7 +787,7 @@
       "analyzeOnLichess": "Analisar no Lichess"
     },
     "result": {
-      "title": "Prática concluída!"
+      "title": "Resultados"
     }
   },
   "recall": {
@@ -844,7 +844,7 @@
       }
     },
     "result": {
-      "title": "Resumo"
+      "title": "Resultados"
     },
     "dontKnowPrompt": "Quer ver a resposta deste lance?",
     "revealAnswer": "Ver resposta",
@@ -1149,7 +1149,7 @@
       "blackPlayed": "Pretas jogam {{move}}"
     },
     "result": {
-      "title": "Resultado do Puzzle",
+      "title": "Resultados",
       "replaySection": "Replay da Solução",
       "historySection": "Histórico de Tentativas",
       "solution": "Solução: {{move}}",
