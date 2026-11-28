@@ -61,7 +61,11 @@ replaced by the platform's own parts or their common app equivalents.
   screen modal has no swipe-to-dismiss, so a timed run cannot be abandoned by
   an edge swipe; every screen in it closes it with `useCloseSession`
   (`navigation/use-close-session.ts`, which pops the modal off the root stack
-  and falls back to an href when nothing is underneath). Session → result is
+  and falls back to an href when nothing is underneath; "back to menu"
+  pops the setup too, landing wherever the setup was opened from, and an
+  exam run's result leaves it out). The root layout's
+  `unstable_settings.initialRouteName` keeps the tabs under every screen, so
+  one opened straight from a link still has a back button. Session → result is
   a `router.replace` inside the modal. A module with `sessionHeader`
   (`navigation/practice-modules.ts`; every practice module now) gives its
   session a stack header like its result and training screens: the
@@ -146,7 +150,9 @@ header style (page-coloured, no hairline, chevron-only back).
   starts from its PGN box and colour picker; puzzles from the list, then a
   detail page `practice/puzzle/[id]` on the root stack (title set by the
   screen's own `<Stack.Screen options>`). A puzzle result's Try Again closes
-  back to that detail page and Back to List `dismissTo`s the list.
+  back to that detail page and Back to List `dismissTo`s the list, or, when
+  the puzzle was opened without it (home's daily puzzle), puts the list in
+  the puzzle's place.
 - **Two-way answers** (square colors' light / dark, legal moves' legal /
   illegal) are `AnswerPair` (`components/AnswerPair.tsx`): the module paints
   the two buttons and sizes them; the pair owns the press shrink, the verdict

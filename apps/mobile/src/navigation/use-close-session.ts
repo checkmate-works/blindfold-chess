@@ -24,7 +24,11 @@ import { routeNameBelow } from "./route-below";
  *   article, My Records). Pushed from inside the modal, that screen would
  *   open under it on iOS, out of sight; this closes first, so the screen
  *   opens over the setup and its back button returns there.
- * - `closeToMenu()` pops the root stack to the tabs — "back to menu".
+ * - `closeToMenu()` — "back to menu" — returns to the screen the setup
+ *   was opened from: it pops the modal and the screen under it (the setup,
+ *   or a saved game's page), landing on the practice list, a dojo rank's
+ *   requirements, My Records or the saved games, wherever the player chose
+ *   this from. With only the tabs under the modal it pops to them.
  *
  * When the modal is the first route (the app was opened on a deep link, or
  * restored after the process was killed), nothing is underneath it; both
@@ -68,8 +72,11 @@ export function useCloseSession(fallbackHref: Href = "/practice") {
   const closeToMenu = useCallback(() => {
     const root = navigation.getParent();
     if (root?.canGoBack()) {
-      // `popToTop` exists on stack navigators only; the root is one.
-      (root as unknown as { popToTop: () => void }).popToTop();
+      // `pop` exists on stack navigators only; the root is one. Two routes
+      // come off — the modal and the setup under it — or just the modal
+      // when the tabs are right underneath.
+      const stack = root as unknown as { pop: (count: number) => void };
+      stack.pop(Math.min(2, root.getState().index));
     } else {
       router.replace(fallbackHref);
     }

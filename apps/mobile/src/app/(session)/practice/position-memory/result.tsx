@@ -33,6 +33,7 @@ export default function PositionMemoryResult() {
       setupHref={
         exam ? (`/dojo/exams/${exam}` as Href) : "/practice/position-memory"
       }
+      hideBackToMenu={Boolean(exam)}
     >
       {exam && problem && (
         <ExamVerdictCard

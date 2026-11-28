@@ -15,6 +15,16 @@ import {
 } from "../navigation/stack-options";
 import { ThemeProvider, useTheme } from "../theme";
 
+/**
+ * The tabs sit under every other root-stack screen, even when the app is
+ * opened straight onto a deeper route (a link to an article, a restored
+ * session): without this, that screen is the stack's only route and has no
+ * back button, and a session's close has nowhere to go but its fallback.
+ */
+export const unstable_settings = {
+  initialRouteName: "(tabs)",
+};
+
 function RootLayoutContent() {
   const { colors, isDark } = useTheme();
   const [i18nInitialized, setI18nInitialized] = useState(false);
