@@ -2,7 +2,13 @@ import { forwardRef, useState } from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
 import type { TextInputInstance, TextInputProps } from "react-native";
 
-import { useTheme, borderRadius, fontWeight, spacing } from "../theme";
+import {
+  useTheme,
+  borderRadius,
+  fontWeight,
+  spacing,
+  touchTarget,
+} from "../theme";
 
 type Props = TextInputProps & {
   label: string;
@@ -45,6 +51,9 @@ export const TextField = forwardRef<TextInputInstance, Props>(
         </Text>
         <TextInput
           ref={ref}
+          accessibilityLabel={label}
+          accessibilityHint={hint}
+          underlineColorAndroid="transparent"
           placeholderTextColor={colors.mutedForeground}
           style={[
             styles.input,
@@ -67,6 +76,7 @@ export const TextField = forwardRef<TextInputInstance, Props>(
         />
         {hint ? (
           <Text
+            accessibilityLiveRegion={error ? "polite" : "none"}
             style={[
               styles.hint,
               { color: error ? colors.destructive : colors.mutedForeground },
@@ -89,6 +99,7 @@ const styles = StyleSheet.create({
     fontWeight: fontWeight.semibold,
   },
   input: {
+    minHeight: touchTarget.actionSize,
     borderWidth: 1,
     borderRadius: borderRadius.md,
     paddingHorizontal: 12,
