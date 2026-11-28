@@ -78,6 +78,7 @@
     "title": "My Page",
     "loadFailed": "Couldn't load your account.",
     "retry": "Try again",
+    "webProfile": "View your profile on the website",
     "preview": {
       "username": "your_name"
     }
@@ -1074,7 +1075,7 @@
     },
     "rank": "#{{rank}}",
     "empty": "No recorded challenges yet.",
-    "note": "Your rank on each challenge leaderboard. The full leaderboards are on the website."
+    "note": "Your rank on each challenge leaderboard. Tap a row to open the full leaderboard on the website."
   },
   "challenge": {
     "startFailed": "Could not start a recorded challenge. Check your connection and try again.",
@@ -1098,7 +1099,8 @@
       "scoreValue": "{{score}} correct",
       "newBest": "New personal best!",
       "firstRecord": "First record",
-      "viewMyRecords": "See your progress in My Records"
+      "viewMyRecords": "See your progress in My Records",
+      "placement": "Leaderboard · {{period}}"
     }
   },
   "progress": {

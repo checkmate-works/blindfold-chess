@@ -16,6 +16,7 @@ import {
   AccountStats,
   type AccountStatsInput,
 } from "../../features/records/AccountStats";
+import { openWebPage } from "../../lib/web-pages";
 import { fontSize, fontWeight, spacing, useTheme } from "../../theme";
 
 /** The made-up stats of the sample a guest sees under the sign-up card. */
@@ -47,7 +48,9 @@ const PREVIEW_STATS: AccountStatsInput = {
  *
  * There is no profile editing: avatars, display names and bios are shown to
  * other players on the web, and the app shows no other player (see
- * apps/mobile/CLAUDE.md), so the app takes only the username.
+ * apps/mobile/CLAUDE.md), so the app takes only the username. The last
+ * row opens the player's public profile (`/u/<username>`) in the browser
+ * instead, where the web's profile, with its posts and followers, lives.
  *
  * @flow
  * 1. The records row opens My Records; the ranks row the user's rank per
@@ -76,7 +79,7 @@ export default function MypageScreen() {
 }
 
 function MypageBody() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const router = useRouter();
   const { status, account, accountError, email } = useAuth();
 
@@ -131,6 +134,20 @@ function MypageBody() {
           onPress={() => router.push("/ranks")}
           testID="mypage-ranks"
         />
+        {!!account.username && (
+          <ListRow
+            leading={<ListIcon ionicon="person-circle-outline" />}
+            title={t("mypage.webProfile")}
+            accessory="external"
+            onPress={() =>
+              openWebPage(
+                `/u/${encodeURIComponent(account.username ?? "")}`,
+                i18n.language,
+              )
+            }
+            testID="mypage-web-profile"
+          />
+        )}
       </ListSection>
     </>
   );

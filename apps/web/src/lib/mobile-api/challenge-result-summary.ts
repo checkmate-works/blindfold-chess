@@ -8,6 +8,10 @@ import { db } from '@/lib/db/index';
 import { CHALLENGE_MENU_TYPES, type ChallengeMenuType } from '@/lib/db/practice-menu-types';
 import { challengeResults } from '@/lib/db/schema';
 import { getScoreComparison } from '@/lib/db/score-comparison';
+import {
+  type LeaderboardPlacement,
+  getLeaderboardPlacements,
+} from '@/lib/mobile-api/leaderboard-placements';
 
 import {
   type RecordView,
@@ -27,6 +31,15 @@ export type ChallengeResultSummary = {
   record: RecordView;
   /** The menu the run belongs to, for the app's link into My Records. */
   menuType: string;
+  /** The board the run was ranked on, for the app's link to it on the web. */
+  leaderboardKey: string;
+  /**
+   * The player's own place on that board per period, after this run. The web's
+   * result page shows a preview of the board instead, with other players in
+   * it; the app shows no other user, so it gets only these numbers and links
+   * to the board on the web.
+   */
+  placements: LeaderboardPlacement[];
 };
 
 const isChallengeMenuType = (value: string): value is ChallengeMenuType =>
@@ -58,9 +71,16 @@ export async function getChallengeResultSummary(
     .limit(1);
   if (!row || !isChallengeMenuType(row.menuType)) return undefined;
 
-  const [exp, comparison] = await Promise.all([
+  const [exp, comparison, placements] = await Promise.all([
     getExpInfoBySource(userId, 'challenge_result', challengeResultId),
     getScoreComparison(userId, row.menuType, row.leaderboardKey, challengeResultId),
+    getLeaderboardPlacements(userId, row.menuType, row.leaderboardKey),
   ]);
-  return { exp, record: deriveRecordView(comparison), menuType: row.menuType };
+  return {
+    exp,
+    record: deriveRecordView(comparison),
+    menuType: row.menuType,
+    leaderboardKey: row.leaderboardKey,
+    placements,
+  };
 }

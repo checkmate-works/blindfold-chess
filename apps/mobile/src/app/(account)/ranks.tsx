@@ -12,16 +12,19 @@ import {
   type OwnRank,
   type RankPeriod,
 } from "../../features/records/records-api";
+import { leaderboardPath } from "../../features/records/leaderboard-path";
+import { openWebPage } from "../../lib/web-pages";
 import { spacing } from "../../theme";
 
 /**
  * The user's own rank on each challenge leaderboard, per period — the web
  * home's "Your Rankings", and all the app shows of the leaderboard. A row
  * of mypage, beside My Records. Other players' rows stay on the web: the
- * app shows no other user's name (see apps/mobile/CLAUDE.md).
+ * app shows no other user's name (see apps/mobile/CLAUDE.md), so each row
+ * opens that leaderboard, for the same period, in the browser.
  */
 export default function RanksScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [period, setPeriod] = useState<RankPeriod>("all-time");
   const [ranks, setRanks] = useState<OwnRank[] | null>(null);
   const [failed, setFailed] = useState(false);
@@ -101,13 +104,20 @@ export default function RanksScreen() {
         ) : ranks.length === 0 ? (
           <ListRow title={t("ownRanks.empty")} />
         ) : (
-          ranks.map((rank) => (
-            <ListRow
-              key={`${rank.module}/${rank.key}`}
-              title={titleOf(rank)}
-              value={t("ownRanks.rank", { rank: rank.rank })}
-            />
-          ))
+          ranks.map((rank) => {
+            const path = leaderboardPath(period, rank.module, rank.key);
+            return (
+              <ListRow
+                key={`${rank.module}/${rank.key}`}
+                title={titleOf(rank)}
+                value={t("ownRanks.rank", { rank: rank.rank })}
+                accessory={path ? "external" : "none"}
+                onPress={
+                  path ? () => openWebPage(path, i18n.language) : undefined
+                }
+              />
+            );
+          })
         )}
       </ListSection>
     </ScrollView>

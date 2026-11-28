@@ -238,8 +238,10 @@ header style (page-coloured, no hairline, chevron-only back).
   either is repeated here. Where a problem list has misses, the legend's
   incorrect count opens them (`ResultMistakesContext`, held by
   `PracticeResultScreen`); elsewhere it is plain text. The web's
-  leaderboard preview is left out (the app shows no other user), and so
-  are its ads and its grid of same-band practices.
+  leaderboard preview is left out (the app shows no other user): in its
+  place "Your record" lists the player's own place per period (the
+  summary's `placements`), each row opening that board on the web. Its
+  ads and its grid of same-band practices are left out too.
 - **Result stats** from `deriveResultStats` carry a `key`
   (`ResultStatKey`); a module that leaves one out (quadrants' average time,
   via `hideAverageTime`) filters by key, never by the translated label.
@@ -282,8 +284,11 @@ header style (page-coloured, no hairline, chevron-only back).
   inset itself so the bar runs to the bottom edge. Its screen leaves
   `"bottom"` out of `Screen`'s `edges`; padded there too, the inset shows as
   a grey strip under the bar.
-- Web pages (terms, privacy, FAQ, contact, licenses) open in the browser via
-  `lib/web-pages.ts`, never in a WebView.
+- Web pages (terms, privacy, FAQ, contact, licenses, and the leaderboards
+  and public profile the app leaves to the web) open in the browser via
+  `lib/web-pages.ts`, never in a WebView. A page with other users' names
+  or posts in it shown inside the app would make them the app's own
+  user-generated content.
 
 ## Content copied from the web
 

@@ -5,6 +5,7 @@ import type {
 import type { ChallengeMenuType } from "@blindfold-chess/features/practice-registry";
 
 import { callMobileApi, errorCodeOf } from "../../auth/api-client";
+import { RANK_PERIODS, type RankPeriod } from "../records/records-api";
 
 // A 2xx is not proof of a JSON body from our API: a captive portal or a
 // proxy can answer with an HTML page and a 200. Every body below is read
@@ -139,6 +140,18 @@ export type ChallengeResultSummary = {
   };
   /** The registry menu (`square_colors`, …), for the link into My Records. */
   menuType: string;
+  /**
+   * The player's own place on the run's leaderboard (`leaderboardKey`) per
+   * period, after this run; empty where the server sent none (a server from
+   * before it did, or a player hidden from the leaderboard).
+   */
+  placements: LeaderboardPlacement[];
+  leaderboardKey?: string;
+};
+
+export type LeaderboardPlacement = {
+  period: RankPeriod;
+  rank: number;
 };
 
 export type FinishResult =
@@ -218,7 +231,28 @@ export function readSummary(v: unknown): ChallengeResultSummary | null {
     isOptionalNumber(record.previousLastScore) &&
     isOptionalNumber(record.diffFromLast);
   if (!expOk || !recordOk) return null;
-  return v as ChallengeResultSummary;
+  return {
+    exp: exp as ChallengeResultSummary["exp"],
+    record: record as ChallengeResultSummary["record"],
+    menuType: v.menuType,
+    leaderboardKey:
+      typeof v.leaderboardKey === "string" ? v.leaderboardKey : undefined,
+    placements: readPlacements(v.placements),
+  };
+}
+
+/**
+ * The summary's placements, keeping only the entries this client can draw.
+ * They are an extra on the record card, so a malformed list drops entries
+ * rather than the whole summary.
+ */
+function readPlacements(v: unknown): LeaderboardPlacement[] {
+  if (!Array.isArray(v)) return [];
+  return v.flatMap((p: unknown) => {
+    if (!isRecord(p) || typeof p.rank !== "number") return [];
+    const period = RANK_PERIODS.find((r) => r === p.period);
+    return period ? [{ period, rank: p.rank }] : [];
+  });
 }
 
 /**

@@ -148,7 +148,37 @@ describe("finishChallenge", () => {
     await expect(finish()).resolves.toEqual({
       kind: "recorded",
       grantedRanks: [],
-      summary,
+      // A server from before placements were sent: the card shows none.
+      summary: { ...summary, placements: [] },
+    });
+  });
+
+  it("reads the leaderboard placements, dropping entries it cannot draw", async () => {
+    const summary = {
+      exp: null,
+      record: { status: "none" },
+      menuType: "legal_moves",
+      leaderboardKey: "knight",
+      placements: [
+        { period: "all-time", rank: 12 },
+        { period: "yearly", rank: 1 },
+        { period: "weekly", rank: "9" },
+        { period: "weekly", rank: 9 },
+      ],
+    };
+    api.mockResolvedValue(
+      json({ status: "done", success: true, grantedRanks: [], summary }),
+    );
+    await expect(finish()).resolves.toEqual({
+      kind: "recorded",
+      grantedRanks: [],
+      summary: {
+        ...summary,
+        placements: [
+          { period: "all-time", rank: 12 },
+          { period: "weekly", rank: 9 },
+        ],
+      },
     });
   });
 

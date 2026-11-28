@@ -38,6 +38,8 @@ const SUMMARY = {
     diffFromLast: 4,
   },
   menuType: 'square_colors',
+  leaderboardKey: 'default',
+  placements: [{ period: 'weekly', rank: 9 }],
 };
 
 describe('POST /api/mobile/v1/challenges/[id]/finish', () => {

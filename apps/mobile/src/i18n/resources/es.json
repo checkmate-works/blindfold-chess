@@ -78,6 +78,7 @@
     "title": "Mi página",
     "loadFailed": "No se pudo cargar tu cuenta.",
     "retry": "Reintentar",
+    "webProfile": "Ver tu perfil en el sitio web",
     "preview": {
       "username": "tu_nombre"
     }
@@ -1074,7 +1075,7 @@
     },
     "rank": "#{{rank}}",
     "empty": "Aún no hay desafíos registrados.",
-    "note": "Tu posición en cada clasificación de desafíos. Las clasificaciones completas están en el sitio web."
+    "note": "Tu posición en cada clasificación de desafíos. Toca una fila para abrir la clasificación completa en el sitio web."
   },
   "challenge": {
     "startFailed": "No se pudo iniciar un desafío registrado. Revisa tu conexión e inténtalo de nuevo.",
@@ -1098,7 +1099,8 @@
       "scoreValue": "{{score}} correctas",
       "newBest": "¡Nuevo récord personal!",
       "firstRecord": "Primer registro",
-      "viewMyRecords": "Ver tu progreso en Mis Registros"
+      "viewMyRecords": "Ver tu progreso en Mis Registros",
+      "placement": "Clasificación · {{period}}"
     }
   },
   "progress": {
