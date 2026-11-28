@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, type ReactNode } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useTranslation } from "react-i18next";
@@ -57,6 +57,14 @@ type InlineBoardProps = {
   terminationMarkLabel?: string;
   onIllegalMove?: (attempt: string, squares: MoveSquares) => void;
   onDragActiveChange?: (active: boolean) => void;
+  /**
+   * An action drawn on the covered board — the peek mask and the `'never'`
+   * panel — at its foot (the session's "Recreate this position"). It is
+   * the free self-test beside the counted peek, so it goes where the player
+   * already reaches when they wonder how the position looks. Never drawn
+   * on an uncovered board, where there is nothing to recreate.
+   */
+  coveredAction?: ReactNode;
 };
 
 /**
@@ -100,6 +108,7 @@ export function InlineBoard({
   terminationMarkLabel,
   onIllegalMove,
   onDragActiveChange,
+  coveredAction,
 }: InlineBoardProps) {
   const { t } = useTranslation();
   const { colors } = useTheme();
@@ -156,6 +165,9 @@ export function InlineBoard({
               {t("aiGame.session.boardHidden")}
             </Text>
           )}
+          {coveredAction ? (
+            <View style={styles.coveredAction}>{coveredAction}</View>
+          ) : null}
         </View>
       </View>
     );
@@ -204,6 +216,14 @@ export function InlineBoard({
                 : `${t("aiGame.session.boardHidden")} · ${t("aiGame.session.revealBoard")}`}
             </Text>
           </Pressable>
+        ) : null}
+        {/* A sibling over the mask rather than its child: the mask is one
+            button ("Show Board"), and a button inside it would be merged
+            into that one for screen readers. */}
+        {masked && coveredAction ? (
+          <View pointerEvents="box-none" style={styles.coveredAction}>
+            {coveredAction}
+          </View>
         ) : null}
         {/* On a board that is always open the mask and its reply are never
             drawn, so the AI's turn reads here instead, as on the web: a
@@ -311,5 +331,12 @@ const styles = StyleSheet.create({
   },
   hint: {
     fontSize: fontSize.sm,
+  },
+  coveredAction: {
+    position: "absolute",
+    right: 0,
+    bottom: spacing.md,
+    left: 0,
+    alignItems: "center",
   },
 });

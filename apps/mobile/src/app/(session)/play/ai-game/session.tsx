@@ -5,7 +5,8 @@ import { useTranslation } from "react-i18next";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as Crypto from "expo-crypto";
 import { isValidSkillLevel } from "@blindfold-chess/features/ai-game";
-import { validateFen } from "@blindfold-chess/features/chess-core";
+import { generatePgn, validateFen } from "@blindfold-chess/features/chess-core";
+import { STARTING_FEN } from "@blindfold-chess/features/chess-core/fen";
 import {
   type GamePreferences,
   pickPerGamePreferences,
@@ -48,6 +49,8 @@ import {
   loadSavedGame,
   saveGame,
 } from "../../../../features/game-history/game-history";
+import { gamePositionCheckSessionParams } from "../../../../features/fen/lib/route-params";
+import { FROM_GAME } from "../../../../navigation/from-game";
 import { postScreenNotice } from "../../../../navigation/screen-notice";
 import { differsFromStart } from "../../../../features/game-history/session-changes";
 import { useCloseSession } from "../../../../navigation/use-close-session";
@@ -412,6 +415,61 @@ function AiGameBoard({ setup }: { setup: GameSetup }) {
     operationLogs: game.operationLogs,
   });
 
+  // The two practices the web offers mid-game, opened over the game in the
+  // same session stack so the game stays underneath and their × and result
+  // come back to it (`useReturnToGame`). Both are free, as on the web: the
+  // moves sheet is uncounted, and the position check gives away no more than
+  // the moves do. Neither opens while the engine is thinking (leaving would
+  // drop the pending reply) or before the first move (there is nothing to
+  // recreate yet).
+  const practiceLocked =
+    game.moves.length === 0 || game.isAiThinking || ai.isLoading;
+
+  // "Recreate this position": an instant position-memory problem over the
+  // live position, recreated straight away since the memorising happened
+  // during play. Drawn on the covered board only (`InlineBoard`), beside the
+  // counted peek, and not on a finished game, whose board is uncovered.
+  const openPositionCheck = () => {
+    router.push({
+      pathname: "/practice/position-memory/session",
+      params: gamePositionCheckSessionParams({
+        fen: game.currentFen,
+        startFen: start.startingFen ?? STARTING_FEN,
+      }),
+    });
+  };
+  const positionCheckAction =
+    game.moves.length > 0 && !finished ? (
+      <Button
+        title={t("aiGame.session.positionCheck")}
+        icon="grid-outline"
+        variant="outline"
+        size="sm"
+        onPress={openPositionCheck}
+        disabled={practiceLocked}
+        testID="position-check"
+      />
+    ) : undefined;
+
+  // "Recall": replay the game so far from memory, from the moves sheet — the
+  // moment the player reaches for the moves is the moment they can no longer
+  // recall them. The opponent's moves fill in by themselves, as for a saved
+  // game. The sheet closes first: a native sheet left open would sit over
+  // the pushed screen.
+  const openRecall = () => {
+    let pgn: string;
+    try {
+      pgn = generatePgn(game.moves, start.startingFen);
+    } catch {
+      return;
+    }
+    setMovesOpen(false);
+    router.push({
+      pathname: "/practice/recall/session",
+      params: { pgn, color: playerColor, auto: "1", from: FROM_GAME },
+    });
+  };
+
   const reviewGame = () => {
     setFinishSheetOpen(false);
     // The saved game's page is on the root stack, under this modal.
@@ -503,6 +561,7 @@ function AiGameBoard({ setup }: { setup: GameSetup }) {
           }
           onIllegalMove={canBoardMove ? game.recordIllegalBoardMove : undefined}
           onDragActiveChange={setPieceHeld}
+          coveredAction={positionCheckAction}
         />
 
         {/* One line kept for the message whether or not there is one, so a
@@ -587,6 +646,16 @@ function AiGameBoard({ setup }: { setup: GameSetup }) {
         title={t("aiGame.session.moves")}
       >
         <MoveHistory moves={game.moves} startingFen={start.startingFen} />
+        <Button
+          title={t("aiGame.session.startRecall")}
+          icon="bulb-outline"
+          variant="outline"
+          fullWidth
+          onPress={openRecall}
+          disabled={practiceLocked}
+          style={styles.recall}
+          testID="start-recall"
+        />
       </BottomSheet>
       {game.playerResult && game.termination ? (
         <GameFinishSheet
@@ -693,6 +762,9 @@ const styles = StyleSheet.create({
     opacity: 0.85,
   },
   nextAction: {
+    marginTop: spacing.md,
+  },
+  recall: {
     marginTop: spacing.md,
   },
 });
