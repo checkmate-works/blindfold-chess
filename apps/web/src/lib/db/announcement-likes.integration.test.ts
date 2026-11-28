@@ -52,9 +52,9 @@ describe.skipIf(process.env.RUN_ANNOUNCEMENT_DB_TESTS !== '1')(
     beforeEach(async () => {
       await client`TRUNCATE announcements, likes`;
       const rows = await client`
-      INSERT INTO announcements (slug, title, content, locale, status)
-      VALUES ('notice', 'Notice', 'Body', 'en', 'published'),
-             ('notice', 'Notice', 'Body', 'ja', 'published') RETURNING id`;
+      INSERT INTO announcements (slug, title, content, locale, status, published_at)
+      VALUES ('notice', 'Notice', 'Body', 'en', 'published', now()),
+             ('notice', 'Notice', 'Body', 'ja', 'published', now()) RETURNING id`;
       [en, ja] = rows.map((r) => r.id);
     });
     afterAll(async () => {
@@ -126,6 +126,12 @@ describe.skipIf(process.env.RUN_ANNOUNCEMENT_DB_TESTS !== '1')(
       expect(await toggle(en)).toEqual({ error: 'notFound' });
       await client`UPDATE announcements SET slug = 'other' WHERE id = ${ja}`;
       expect(await toggle(ja)).toEqual({ error: 'notFound' });
+      expect(await client`SELECT * FROM likes`).toHaveLength(0);
+    });
+
+    it('rejects a published variant that has no published_at', async () => {
+      await client`UPDATE announcements SET published_at = NULL WHERE id = ${en}`;
+      expect(await toggle(en)).toEqual({ error: 'notFound' });
       expect(await client`SELECT * FROM likes`).toHaveLength(0);
     });
 

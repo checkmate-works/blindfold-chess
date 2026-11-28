@@ -1,7 +1,13 @@
+import type { SQL } from 'drizzle-orm';
+import { PgDialect } from 'drizzle-orm/pg-core';
 import { describe, expect, it, vi } from 'vitest';
 
 import { mockChain } from '@/lib/db/__test-support__/query-chain';
 import { actualDbSchema } from '@/lib/db/__test-support__/schema-actual';
+import {
+  publiclyVisibleAnnouncement,
+  publishedAnnouncement,
+} from '@/lib/db/announcements-visibility';
 
 import {
   getLatestBannerAnnouncement,
@@ -566,6 +572,78 @@ describe('announcements queries', () => {
       const result = await getLatestBannerAnnouncement('en');
 
       expect(result).toBeNull();
+    });
+  });
+
+  /**
+   * The row tests above cannot see the filter: the mocked chain returns what
+   * it is given whatever the `where`. These render the condition each query
+   * actually hands Drizzle and check it against the shared predicates — the
+   * member-facing reads (listing, count, detail) use `publishedAnnouncement`,
+   * the anonymous ones (sitemap, banner) `publiclyVisibleAnnouncement`.
+   */
+  describe('visibility rule each query applies', () => {
+    /** SQL text with positional placeholders collapsed, so fragments compare across queries. */
+    const render = (condition: unknown) =>
+      new PgDialect().sqlToQuery(condition as SQL).sql.replace(/\$\d+/g, '?');
+    const published = render(publishedAnnouncement());
+    const publiclyVisible = render(publiclyVisibleAnnouncement());
+    const VISIBILITY_COLUMN = '"announcements"."visibility"';
+
+    const lastWhere = (chain: Record<string, unknown>) =>
+      render((chain.where as ReturnType<typeof vi.fn>).mock.calls.at(-1)?.[0]);
+
+    const selectReturning = (rows: unknown[]) => {
+      const chain = mockChain(rows);
+      mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
+      return chain;
+    };
+
+    it('listing: published, any visibility', async () => {
+      mockDb.execute.mockResolvedValue(mockExecuteResult([]));
+
+      await getPublishedAnnouncementsPaginated('en', 20, 0);
+
+      const query = render(mockDb.execute.mock.calls.at(-1)?.[0]);
+      expect(query).toContain(published);
+      expect(query).not.toContain(VISIBILITY_COLUMN);
+    });
+
+    it('count: published, any visibility (mirrors the listing)', async () => {
+      const chain = selectReturning([{ count: 0 }]);
+
+      await getPublishedAnnouncementCount();
+
+      expect(lastWhere(chain)).toBe(published);
+    });
+
+    it('detail by slug: published, any visibility', async () => {
+      const chain = selectReturning([]);
+
+      await getPublishedAnnouncement('visibility-rule-slug', 'en');
+
+      const where = lastWhere(chain);
+      expect(where).toContain(published);
+      expect(where).not.toContain(VISIBILITY_COLUMN);
+    });
+
+    it('sitemap: published and public', async () => {
+      const chain = selectReturning([]);
+
+      await getPublishedAnnouncements();
+
+      expect(lastWhere(chain)).toBe(publiclyVisible);
+    });
+
+    it('banner: published and public, plus the banner opt-in and window', async () => {
+      const chain = selectReturning([]);
+
+      await getLatestBannerAnnouncement('visibility-rule-locale');
+
+      const where = lastWhere(chain);
+      expect(where).toContain(publiclyVisible);
+      expect(where).toContain('"announcements"."show_as_banner" = ?');
+      expect(where).toContain('"announcements"."published_at" >= ?');
     });
   });
 });
