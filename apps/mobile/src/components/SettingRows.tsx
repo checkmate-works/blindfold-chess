@@ -112,9 +112,15 @@ export function SwitchRow({
   return (
     <Pressable
       onPress={() => onChange(!value)}
+      accessible
       accessibilityRole="switch"
+      accessibilityLabel={label}
+      accessibilityHint={description}
       accessibilityState={{ checked: value }}
-      style={styles.switchRow}
+      style={({ pressed }) => [
+        styles.switchRow,
+        pressed && { backgroundColor: colors.muted },
+      ]}
       testID={testID}
     >
       <View style={styles.switchTexts}>
@@ -132,11 +138,18 @@ export function SwitchRow({
           </Text>
         ) : null}
       </View>
-      <Switch
-        value={value}
-        onValueChange={onChange}
-        trackColor={{ true: colors.primary, false: colors.muted }}
-      />
+      <View
+        pointerEvents="none"
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+      >
+        <Switch
+          accessible={false}
+          value={value}
+          onValueChange={onChange}
+          trackColor={{ true: colors.primary, false: colors.muted }}
+        />
+      </View>
     </Pressable>
   );
 }

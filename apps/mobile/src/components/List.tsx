@@ -1,7 +1,13 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Children, Fragment, isValidElement } from "react";
 import type { ReactNode } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  useWindowDimensions,
+} from "react-native";
 import type { StyleProp, ViewStyle } from "react-native";
 
 import { useTheme, fontWeight, spacing, borderRadius } from "../theme";
@@ -133,6 +139,8 @@ export function ListRow({
   testID,
 }: ListRowProps) {
   const { colors } = useTheme();
+  const { width, fontScale } = useWindowDimensions();
+  const stackedValue = fontScale >= 1.3 || width < 360;
   const shownAccessory = accessory ?? (onPress ? "chevron" : "none");
 
   return (
@@ -151,9 +159,7 @@ export function ListRow({
       testID={testID}
       accessibilityRole={onPress ? "button" : undefined}
       accessibilityLabel={accessibilityLabel}
-      accessibilityState={
-        shownAccessory === "check" ? { selected: true } : undefined
-      }
+      accessibilityState={{ disabled, selected: shownAccessory === "check" }}
       style={({ pressed }) => [
         styles.row,
         pressed && { backgroundColor: colors.muted },
@@ -176,9 +182,20 @@ export function ListRow({
             {subtitle}
           </Text>
         ) : null}
+        {value && stackedValue ? (
+          <Text style={[styles.value, { color: colors.mutedForeground }]}>
+            {value}
+          </Text>
+        ) : null}
       </View>
-      {value ? (
-        <Text style={[styles.value, { color: colors.mutedForeground }]}>
+      {value && !stackedValue ? (
+        <Text
+          style={[
+            styles.value,
+            styles.trailingValue,
+            { color: colors.mutedForeground },
+          ]}
+        >
           {value}
         </Text>
       ) : null}
@@ -282,6 +299,11 @@ const styles = StyleSheet.create({
   },
   value: {
     fontSize: 15,
+  },
+  trailingValue: {
+    maxWidth: "45%",
+    flexShrink: 1,
+    textAlign: "right",
   },
   icon: {
     width: 32,
