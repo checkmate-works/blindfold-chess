@@ -540,9 +540,11 @@ database. Sign-in calls Supabase Auth directly; sign-up goes through
   user-generated content must have. The two profile fields the web's
   sign-up asks for, the username and the avatar, are set in the app too,
   but the app shows them only to their owner; adding a screen that shows
-  another user's name or picture brings Guideline 1.2 in. The avatar is
-  declared under App Privacy as Photos or Videos, linked to the user, for
-  app functionality.
+  another user's name or picture brings Guideline 1.2 in. App Store
+  Connect's App Privacy has to declare the avatar as Photos or Videos,
+  linked to the user, not used for tracking, for app functionality. It was
+  not declared when the upload was added; check it before submitting for
+  review (App Privacy has no public API, so it is edited in the web UI).
 
 - **Puzzles** (`practice/puzzle`): the app lists the Daily Puzzle and the
   featured set only (`GET /puzzles`; `GET /puzzles/[id]` answers 404 for any
