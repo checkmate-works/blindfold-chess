@@ -486,6 +486,9 @@ database. Sign-in calls Supabase Auth directly; sign-up goes through
     guide screen reads too: a page is read when any rank's journey has it
     done, since the unranked guide belongs to 5kyu's.
 - **Account pages** (root stack): mypage (the home header's entry: the
+  avatar, which a tap changes or removes (`AvatarPicker`, `POST` / `DELETE
+/avatar`; the system photo picker, so iOS asks for no photo permission,
+  and no camera), the
   username, rank, level and EXP and rows into records and ranks for a
   player with a username; the sign-up card over a faded sample for anyone
   else; settings for everyone), settings (with the Account section),
@@ -534,7 +537,12 @@ database. Sign-in calls Supabase Auth directly; sign-up goes through
 - **The app shows no other user.** Only the user's own ranks; full
   leaderboards, profiles and anything other users wrote stay on the web, so
   the app needs none of the reporting and blocking an app showing
-  user-generated content must have.
+  user-generated content must have. The two profile fields the web's
+  sign-up asks for, the username and the avatar, are set in the app too,
+  but the app shows them only to their owner; adding a screen that shows
+  another user's name or picture brings Guideline 1.2 in. The avatar is
+  declared under App Privacy as Photos or Videos, linked to the user, for
+  app functionality.
 
 - **Puzzles** (`practice/puzzle`): the app lists the Daily Puzzle and the
   featured set only (`GET /puzzles`; `GET /puzzles/[id]` answers 404 for any

@@ -83,6 +83,22 @@
     "webProfile": "Ver seu perfil no site",
     "preview": {
       "username": "seu_nome"
+    },
+    "avatar": {
+      "title": "Foto de perfil",
+      "add": "Adicionar foto de perfil",
+      "change": "Alterar foto de perfil",
+      "choose": "Escolher uma foto",
+      "remove": "Remover foto",
+      "removeConfirm": "Remover sua foto de perfil?",
+      "errors": {
+        "offline": "Não foi possível conectar. Verifique sua conexão e tente novamente.",
+        "rateLimited": "Muitas alterações. Aguarde alguns minutos e tente novamente.",
+        "tooLarge": "Esta foto é grande demais.",
+        "invalidFile": "Não foi possível usar esta foto. Tente outra.",
+        "banned": "Sua conta não pode alterar a foto de perfil.",
+        "generic": "Não foi possível salvar sua foto de perfil. Tente novamente."
+      }
     }
   },
   "practice": {

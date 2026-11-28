@@ -10,6 +10,10 @@ export type ApiFailure = "signedOut" | "offline" | "unavailable";
 
 export type MobileApiInit = {
   readonly method?: "GET" | "POST" | "DELETE";
+  /**
+   * Sent as JSON, except a `FormData`, which goes as multipart: fetch sets
+   * its Content-Type, boundary included.
+   */
   readonly body?: unknown;
   /** Sends no token: the endpoint is public. */
   readonly anonymous?: boolean;
@@ -24,17 +28,21 @@ async function send(
 ): Promise<Response | "offline"> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  const multipart = init.body instanceof FormData;
+  const json = init.body !== undefined && !multipart;
   try {
     return await fetch(`${backendConfig!.apiOrigin}/api/mobile/v1${path}`, {
       method: init.method ?? "GET",
       headers: {
         Accept: "application/json",
-        ...(init.body !== undefined
-          ? { "Content-Type": "application/json" }
-          : {}),
+        ...(json ? { "Content-Type": "application/json" } : {}),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
-      body: init.body !== undefined ? JSON.stringify(init.body) : undefined,
+      body: multipart
+        ? (init.body as FormData)
+        : json
+          ? JSON.stringify(init.body)
+          : undefined,
       signal: controller.signal,
     });
   } catch {
