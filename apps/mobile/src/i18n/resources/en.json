@@ -160,6 +160,7 @@
     "averageTime": "Avg. Time",
     "playAgain": "Play Again",
     "backToMenu": "Back to Menu",
+    "backToGuide": "Back to Guide",
     "problemDetails": "Problem Details",
     "skipped": "Skipped",
     "timeUp": "Time's up",
@@ -412,6 +413,7 @@
         "overwriteNote": "Choosing a level replaces your current adjustments."
       },
       "preview": "Preview",
+      "startingPosition": "Starting Position",
       "display": "During the game"
     },
     "session": {

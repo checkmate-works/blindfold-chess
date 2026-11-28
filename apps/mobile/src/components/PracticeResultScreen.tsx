@@ -19,6 +19,13 @@ type PracticeResultScreenProps = {
    * the modal was opened without it (deep link, restored process).
    */
   setupHref: Href;
+  /**
+   * Set when the session was opened from a guide's link card, over the
+   * guide: the primary button closes back to the guide ("Back to guide"),
+   * and the secondary one replays the problem in place, since closing the
+   * modal reveals the guide, not the practice's setup.
+   */
+  backToGuide?: { onPlayAgain: () => void };
   /** The result card rendered under the title. */
   children: ReactNode;
 };
@@ -40,6 +47,7 @@ type PracticeResultScreenProps = {
  */
 export function PracticeResultScreen({
   setupHref,
+  backToGuide,
   children,
 }: PracticeResultScreenProps) {
   const { t } = useTranslation();
@@ -61,20 +69,37 @@ export function PracticeResultScreen({
       </ScrollView>
 
       <BottomBar>
-        <ModeButtonRow
-          secondary={{
-            title: t("practiceResult.backToMenu"),
-            icon: "list",
-            onPress: closeToMenu,
-            testID: "result-back-to-menu",
-          }}
-          primary={{
-            title: t("practiceResult.playAgain"),
-            icon: "refresh",
-            onPress: close,
-            testID: "result-play-again",
-          }}
-        />
+        {backToGuide ? (
+          <ModeButtonRow
+            secondary={{
+              title: t("practiceResult.playAgain"),
+              icon: "refresh",
+              onPress: backToGuide.onPlayAgain,
+              testID: "result-play-again",
+            }}
+            primary={{
+              title: t("practiceResult.backToGuide"),
+              icon: "book-outline",
+              onPress: close,
+              testID: "result-back-to-guide",
+            }}
+          />
+        ) : (
+          <ModeButtonRow
+            secondary={{
+              title: t("practiceResult.backToMenu"),
+              icon: "list",
+              onPress: closeToMenu,
+              testID: "result-back-to-menu",
+            }}
+            primary={{
+              title: t("practiceResult.playAgain"),
+              icon: "refresh",
+              onPress: close,
+              testID: "result-play-again",
+            }}
+          />
+        )}
       </BottomBar>
     </Screen>
   );

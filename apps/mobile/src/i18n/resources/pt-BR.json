@@ -160,6 +160,7 @@
     "averageTime": "Tempo médio",
     "playAgain": "Jogar novamente",
     "backToMenu": "Voltar ao menu",
+    "backToGuide": "Voltar ao guia",
     "problemDetails": "Detalhes do problema",
     "skipped": "Pulado",
     "timeUp": "Tempo esgotado",
@@ -412,6 +413,7 @@
         "overwriteNote": "Escolher um nível substitui seus ajustes atuais."
       },
       "preview": "Pré-visualização",
+      "startingPosition": "Posição Inicial",
       "display": "Durante a partida"
     },
     "session": {

@@ -119,9 +119,9 @@ function Prose({ text, style }: { text: string; style: StyleProp<TextStyle> }) {
 
 /**
  * The web's link card as a list row. The app's own screen opens when it has
- * the page (a bundled article, a practice, another guide); anything else —
- * kata, chunks, a position-memory problem, the AI game from a position —
- * opens on the web, marked with the external accessory.
+ * the page (a bundled article, a practice, another guide, a position-memory
+ * problem, the AI game from a position); anything else — kata, chunks, the
+ * tutorials — opens on the web, marked with the external accessory.
  */
 function GuideLinkCard({ link }: { link: GuideInlineLink }) {
   const { i18n } = useTranslation();
