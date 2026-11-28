@@ -1,4 +1,10 @@
-import { useCallback, useMemo, useState } from "react";
+import {
+  useCallback,
+  useInsertionEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { StyleSheet, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { RemoteChallengePort } from "@blindfold-chess/features/challenge-attempt";
@@ -17,6 +23,7 @@ import {
 
 import { PracticeSessionScreen } from "../../../../components";
 import { ChallengeAttemptGate } from "../../../../features/challenge/ChallengeAttemptGate";
+import { attemptResultParams } from "../../../../features/challenge/attempt-result-params";
 import { QuestionPanel } from "../../../../features/legal-moves/components";
 import { answerHaptics } from "../../../../lib/answer-haptics";
 import { serializePracticeStatsParams } from "../../../../lib/practice-result-params";
@@ -67,13 +74,18 @@ function LegalMovesChallengeSession({
     [selectedPiece],
   );
 
+  // Whether the run lost the server, for `handleComplete`: the session
+  // calls it from its completion effect, and every insertion effect of
+  // that render (below) has run by then.
+  const remoteFailedRef = useRef(false);
+
   const handleComplete = useCallback(
     (result: LegalMovesResult) => {
       router.replace({
         pathname: "/practice/legal-moves/result",
         params: {
           ...serializePracticeStatsParams(result),
-          ...(attemptId ? { attemptId } : {}),
+          ...attemptResultParams(attemptId, remoteFailedRef.current),
         },
       });
     },
@@ -90,6 +102,7 @@ function LegalMovesChallengeSession({
     awaitingServer,
     lastAnswerCorrect,
     handleAnswer,
+    remoteFailed,
   } = useLegalMovesSession({
     timeLimit: CHALLENGE_TIME_LIMIT,
     selectedPieces,
@@ -98,6 +111,9 @@ function LegalMovesChallengeSession({
     disablePause: true,
     onComplete: handleComplete,
     onAnswerEffect: answerHaptics,
+  });
+  useInsertionEffect(() => {
+    remoteFailedRef.current = remoteFailed;
   });
 
   // The pressed button keeps its verdict ring until the next question,

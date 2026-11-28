@@ -18,7 +18,9 @@
     "quitConfirmMessage": "O progresso desta sessão será perdido.",
     "help": "Ajuda",
     "next": "Próximo",
-    "previous": "Voltar"
+    "previous": "Voltar",
+    "sessionQuitNotice": "Sessão encerrada. Esta rodada não foi registrada.",
+    "trainingEndedNotice": "Treinamento finalizado"
   },
   "tabs": {
     "home": "Início",
@@ -910,7 +912,10 @@
     "inProgress": "Em andamento",
     "resume": "Retomar a partida",
     "savedNotice": "Partida salva",
-    "resumeShort": "Retomar"
+    "resumeShort": "Retomar",
+    "saveFailedNotice": "Não foi possível salvar a partida",
+    "deletedNotice": "Partida excluída",
+    "deleteFailedNotice": "Não foi possível excluir a partida"
   },
   "glossary": {
     "title": "Glossário de Xadrez",
@@ -1086,7 +1091,8 @@
       "saving": "Registrando sua pontuação…",
       "recorded": "Sua pontuação foi registrada.",
       "notRecorded": "Esta rodada não foi registrada.",
-      "failed": "Não foi possível registrar sua pontuação. Verifique sua conexão."
+      "failed": "Não foi possível registrar sua pontuação. Verifique sua conexão.",
+      "interrupted": "A conexão caiu e o desafio terminou antes do tempo. Sua pontuação não foi registrada."
     },
     "rules": "60 segundos · termina após 3 erros",
     "willRecord": "Sua pontuação será registrada no ranking.",

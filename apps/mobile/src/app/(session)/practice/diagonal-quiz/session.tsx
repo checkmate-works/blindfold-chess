@@ -12,6 +12,7 @@ import type { Square } from "@blindfold-chess/types";
 
 import { PracticeSessionScreen } from "../../../../components";
 import { ChallengeAttemptGate } from "../../../../features/challenge/ChallengeAttemptGate";
+import { attemptResultParams } from "../../../../features/challenge/attempt-result-params";
 import { QuestionPanel } from "../../../../features/diagonal-quiz/components";
 import { serializeQuestionResults } from "../../../../features/diagonal-quiz/lib/result-params";
 import { answerHaptics } from "../../../../lib/answer-haptics";
@@ -69,12 +70,15 @@ function DiagonalQuizSession({
     isPaused,
     lastAnswer,
     questionResults,
+    remoteFailed,
   } = session;
 
   // `onComplete` carries the score only; the per-question list the result
   // screen's Problem Details needs is the session's, read when leaving.
   const questionResultsRef = useRef(questionResults);
   questionResultsRef.current = questionResults;
+  const remoteFailedRef = useRef(remoteFailed);
+  remoteFailedRef.current = remoteFailed;
 
   const goToResult = useCallback(
     (completed: DiagonalQuizResult) => {
@@ -83,7 +87,7 @@ function DiagonalQuizSession({
         params: {
           ...serializePracticeStatsParams(completed),
           data: serializeQuestionResults(questionResultsRef.current),
-          ...(attemptId ? { attemptId } : {}),
+          ...attemptResultParams(attemptId, remoteFailedRef.current),
         },
       });
     },

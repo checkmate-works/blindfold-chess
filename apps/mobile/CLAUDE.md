@@ -264,8 +264,20 @@ header style (page-coloured, no hairline, chevron-only back).
   after 4 s (10 s with a screen reader on, and announced). It sits in a
   `SafeAreaView`, so it clears the home indicator and the iOS tab bar by
   itself; render it as the last child of the area it floats over (above a
-  setup screen's `BottomBar`, `PracticeSetupScreen`'s `overlay`). Its
-  colours are the inverse `snackbar*` surface tokens.
+  setup screen's `BottomBar`). Its colours are the inverse `snackbar*`
+  surface tokens.
+- **An action that ends by leaving says what it did** on the screen it
+  lands on: it posts to `navigation/screen-notice.ts` (a module store, since
+  the two screens never meet), and that screen's `ScreenNoticeSnackbar`
+  takes it once focused and shows it. Quitting a timed session ("Session
+  quit", posted by `useQuitSession` after its confirmation), a training
+  run's End ("Training ended"), deleting a saved game (done or failed), and
+  closing an unfinished AI game ("Game saved" with Resume, or the save's
+  failure) post one. `PracticeSetupScreen` draws the snackbar itself; the
+  play tab, the saved games and a saved game's page render it as their last
+  child. A notice nobody takes within 3 s is dropped, so one never turns up
+  later on an unrelated screen. A new kind is a member of `ScreenNoticeKind`
+  plus its line in `ScreenNoticeSnackbar`.
 - **Header buttons** are `HeaderIconButton`; the session close button is
   `SessionCloseButton`.
 - **Control geometry** comes from `controlSize` and `controlLabel` in
@@ -460,7 +472,10 @@ database. Sign-in calls Supabase Auth directly; sign-up goes through
   runs the shared session hook in remote mode (the server supplies and
   grades every question); signed out, the run is local. The result screen's
   `ChallengeRecordStatus` finishes the attempt (the web's resend rules) and
-  says whether it was recorded. Each challenge's setup takes only what the
+  says whether it was recorded. A run the session hook ended because its
+  answers stopped reaching the server (`remoteFailed`) reaches the result
+  with `interrupted=1` (`attemptResultParams`); it is not finished, and the
+  line says the connection was lost, as the web does. Each challenge's setup takes only what the
   web's challenge takes (orientation, or the piece for legal moves / route
   planner, which are the leaderboard keys).
 - **The app shows no other user.** Only the user's own ranks; full
@@ -494,11 +509,11 @@ left is listed as in progress (no `result`) and its row opens the session
 again with `resume=<id>`; that is why the session's × asks nothing. A resumed
 game is written again only once it changes (`session-changes.ts`), so
 opening one moves nothing in the history. Instead, an unfinished game the
-session saved posts a notice as the session goes away
-(`saved-game-notice.ts`, so Android's back button counts too), and the
-screen it closes back to — the AI-game setup, the play tab, the saved games
-or a saved game's page, each rendering `SavedGameSnackbar` — shows "Game
-saved" with Resume. The one thing an AI game
+session saved posts a notice as the session goes away (`screen-notice.ts`,
+so Android's back button counts too), once the latest write has settled,
+and the screen it closes back to — the AI-game setup, the play tab, the
+saved games or a saved game's page — shows "Game saved" with Resume, or
+that the game could not be saved. The one thing an AI game
 sends is its Exp report: as the game ends, `useAiGameExpGrant` posts a
 signed-in player's game to `POST /games/results` (the web's
 `saveGameResult`), with the move and aided-move counts from the session's

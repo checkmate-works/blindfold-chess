@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "./Button";
 import { Screen } from "./Screen";
 import { ScoreFooter } from "./ScoreFooter";
+import { postScreenNotice } from "../navigation/screen-notice";
 import { useTheme, spacing } from "../theme";
 
 type PracticeTrainingScreenProps = {
@@ -75,7 +76,13 @@ export function PracticeTrainingScreen({
         )}
         <Button
           title={t("common.endTraining")}
-          onPress={onEnd}
+          onPress={() => {
+            // The setup screen it goes back to says the run ended, as the
+            // web's "Training ended" toast does. The header's × leaves
+            // without a word: it is a dismissal, not the run's end.
+            onEnd();
+            postScreenNotice({ kind: "trainingEnded" });
+          }}
           variant="outline"
           fullWidth
         />

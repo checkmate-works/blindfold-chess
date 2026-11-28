@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useInsertionEffect, useRef, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { useRouter } from "expo-router";
 import type { RemoteChallengePort } from "@blindfold-chess/features/challenge-attempt";
@@ -12,6 +12,7 @@ import type { Square } from "@blindfold-chess/types";
 
 import { PracticeSessionScreen } from "../../../../components";
 import { ChallengeAttemptGate } from "../../../../features/challenge/ChallengeAttemptGate";
+import { attemptResultParams } from "../../../../features/challenge/attempt-result-params";
 import { QuestionPanel } from "../../../../features/square-colors/components";
 import { answerHaptics } from "../../../../lib/answer-haptics";
 import { useGamePreferences } from "../../../../lib/game-preferences";
@@ -49,13 +50,18 @@ function SquareColorsChallengeSession({
   const router = useRouter();
   const { preferences } = useGamePreferences();
 
+  // Whether the run lost the server, for `handleComplete`: the session
+  // calls it from its completion effect, and every insertion effect of
+  // that render (below) has run by then.
+  const remoteFailedRef = useRef(false);
+
   const handleComplete = useCallback(
     (result: SquareColorsResult) => {
       router.replace({
         pathname: "/practice/square-colors/result",
         params: {
           ...serializePracticeStatsParams(result),
-          ...(attemptId ? { attemptId } : {}),
+          ...attemptResultParams(attemptId, remoteFailedRef.current),
         },
       });
     },
@@ -72,6 +78,7 @@ function SquareColorsChallengeSession({
     awaitingServer,
     lastAnswerCorrect,
     handleAnswer,
+    remoteFailed,
   } = useSquareColorsSession({
     timeLimit: CHALLENGE_TIME_LIMIT,
     mistakeAllowance: MISTAKE_LIMIT,
@@ -79,6 +86,9 @@ function SquareColorsChallengeSession({
     disablePause: true,
     onComplete: handleComplete,
     onAnswerEffect: answerHaptics,
+  });
+  useInsertionEffect(() => {
+    remoteFailedRef.current = remoteFailed;
   });
 
   // The pressed button keeps its verdict ring until the next square,

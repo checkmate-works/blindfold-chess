@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { ChessPieceIcon } from "@blindfold-chess/icons";
 
 import { ListIcon, ListRow } from "../../components";
+import { postScreenNotice } from "../../navigation/screen-notice";
 import { useTheme } from "../../theme";
 import { deleteSavedGame, type SavedGame } from "./game-history";
 import { SideMark } from "./SideMark";
@@ -59,7 +60,16 @@ export function GameRow({
         text: t("gameHistory.delete"),
         style: "destructive",
         onPress: () => {
-          void deleteSavedGame(game.id).then(onDeleted);
+          // The row going away is easy to miss at the bottom of a list, and
+          // a failed write leaves it in place with nothing said; the
+          // screen's snackbar says which.
+          void deleteSavedGame(game.id).then(
+            () => {
+              onDeleted();
+              postScreenNotice({ kind: "gameDeleted" });
+            },
+            () => postScreenNotice({ kind: "gameDeleteFailed" }),
+          );
         },
       },
     ]);

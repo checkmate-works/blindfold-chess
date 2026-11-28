@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useInsertionEffect, useRef } from "react";
 import { StyleSheet, View } from "react-native";
 import { useRouter } from "expo-router";
 import type { RemoteChallengePort } from "@blindfold-chess/features/challenge-attempt";
@@ -14,6 +14,7 @@ import type { BoardSymmetryResult } from "@blindfold-chess/features/board-symmet
 import { PracticeSessionScreen } from "../../../../components";
 import { QuestionPanel } from "../../../../features/board-symmetry/components";
 import { ChallengeAttemptGate } from "../../../../features/challenge/ChallengeAttemptGate";
+import { attemptResultParams } from "../../../../features/challenge/attempt-result-params";
 import { answerHaptics } from "../../../../lib/answer-haptics";
 import { serializePracticeStatsParams } from "../../../../lib/practice-result-params";
 import { spacing } from "../../../../theme";
@@ -50,13 +51,18 @@ function BoardSymmetrySession({
   const router = useRouter();
   const duration = CHALLENGE_TIME_LIMIT;
 
+  // Whether the run lost the server, for `handleComplete`: the session
+  // calls it from its completion effect, and every insertion effect of
+  // that render (below) has run by then.
+  const remoteFailedRef = useRef(false);
+
   const handleComplete = useCallback(
     (result: BoardSymmetryResult) => {
       router.replace({
         pathname: "/practice/board-symmetry/result",
         params: {
           ...serializePracticeStatsParams(result),
-          ...(attemptId ? { attemptId } : {}),
+          ...attemptResultParams(attemptId, remoteFailedRef.current),
         },
       });
     },
@@ -78,6 +84,7 @@ function BoardSymmetrySession({
     handleFileToggle,
     handleRankToggle,
     handleAnswer,
+    remoteFailed,
   } = useBoardSymmetrySession({
     timeLimit: duration,
     mistakeAllowance: MISTAKE_LIMIT,
@@ -85,6 +92,9 @@ function BoardSymmetrySession({
     disablePause: true,
     onComplete: handleComplete,
     onAnswerEffect: answerHaptics,
+  });
+  useInsertionEffect(() => {
+    remoteFailedRef.current = remoteFailed;
   });
 
   const isCorrect = showFeedback ? lastAnswerCorrect : null;

@@ -26,7 +26,10 @@ import { spacing } from "../../../../theme";
  */
 export default function RoutePlannerResult() {
   const params = useLocalSearchParams<
-    Partial<RoutePlannerResultParams> & { attemptId?: string }
+    Partial<RoutePlannerResultParams> & {
+      attemptId?: string;
+      interrupted?: string;
+    }
   >();
   const result = parsePracticeStatsParams(params);
   const problems = parseRoutePlannerProblems(params.problems);
@@ -36,7 +39,10 @@ export default function RoutePlannerResult() {
       <View style={styles.stack}>
         <View>
           <PracticeStatsResultCard result={result} />
-          <ChallengeRecordStatus attemptId={params.attemptId} />
+          <ChallengeRecordStatus
+            attemptId={params.attemptId}
+            interrupted={params.interrupted === "1"}
+          />
         </View>
         <ProblemList problems={problems} />
         <RelatedArticlesSection

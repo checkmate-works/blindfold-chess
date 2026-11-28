@@ -14,7 +14,11 @@ import { spacing } from "../../../../theme";
 
 export default function DiagonalQuizResult() {
   const params = useLocalSearchParams<
-    PracticeStatsParams & { attemptId?: string; data?: string }
+    PracticeStatsParams & {
+      attemptId?: string;
+      interrupted?: string;
+      data?: string;
+    }
   >();
   const result = parsePracticeStatsParams(params);
   const questions = parseQuestionResults(params.data);
@@ -22,7 +26,10 @@ export default function DiagonalQuizResult() {
   return (
     <PracticeResultScreen setupHref="/practice/diagonal-quiz">
       <PracticeStatsResultCard result={result} />
-      <ChallengeRecordStatus attemptId={params.attemptId} />
+      <ChallengeRecordStatus
+        attemptId={params.attemptId}
+        interrupted={params.interrupted === "1"}
+      />
       {questions.length > 0 && (
         <View style={styles.problems}>
           <DiagonalProblemList results={questions} />

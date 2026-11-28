@@ -12,7 +12,11 @@ import type { PracticeStatsParams } from "../../../../lib/practice-result-params
 export default function CoordinateQuizResult() {
   const { t } = useTranslation();
   const params = useLocalSearchParams<
-    PracticeStatsParams & { points?: string; attemptId?: string }
+    PracticeStatsParams & {
+      points?: string;
+      attemptId?: string;
+      interrupted?: string;
+    }
   >();
   const result = parsePracticeStatsParams(params);
   const points = parseInt(params.points || "0", 10);
@@ -28,7 +32,10 @@ export default function CoordinateQuizResult() {
           value: String(points),
         }}
       />
-      <ChallengeRecordStatus attemptId={params.attemptId} />
+      <ChallengeRecordStatus
+        attemptId={params.attemptId}
+        interrupted={params.interrupted === "1"}
+      />
     </PracticeResultScreen>
   );
 }

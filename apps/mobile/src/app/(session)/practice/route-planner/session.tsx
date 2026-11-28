@@ -17,6 +17,7 @@ import { useRoutePlannerSession } from "@blindfold-chess/features/route-planner/
 
 import { PracticeSessionScreen } from "../../../../components";
 import { ChallengeAttemptGate } from "../../../../features/challenge/ChallengeAttemptGate";
+import { attemptResultParams } from "../../../../features/challenge/attempt-result-params";
 import { ProblemPanel } from "../../../../features/route-planner/components";
 import { buildRoutePlannerResultParams } from "../../../../features/route-planner/lib/result-params";
 import { answerHaptics } from "../../../../lib/answer-haptics";
@@ -78,7 +79,8 @@ function RoutePlannerChallengeRun({
   const run = useRef<{
     timeElapsed: number;
     timedOutProblem: RoutePlannerProblem | null;
-  }>({ timeElapsed: 0, timedOutProblem: null });
+    remoteFailed: boolean;
+  }>({ timeElapsed: 0, timedOutProblem: null, remoteFailed: false });
 
   const handleComplete = useCallback(
     (result: RoutePlannerResult) => {
@@ -86,10 +88,11 @@ function RoutePlannerChallengeRun({
         pathname: "/practice/route-planner/result",
         params: {
           ...buildRoutePlannerResultParams(result, {
-            ...run.current,
+            timeElapsed: run.current.timeElapsed,
+            timedOutProblem: run.current.timedOutProblem,
             timeLimit: CHALLENGE_TIME_LIMIT,
           }),
-          ...(attemptId ? { attemptId } : {}),
+          ...attemptResultParams(attemptId, run.current.remoteFailed),
         },
       });
     },
@@ -108,6 +111,7 @@ function RoutePlannerChallengeRun({
     awaitingServer,
     lastAnswerCorrect,
     handleAnswer,
+    remoteFailed,
   } = useRoutePlannerSession({
     selectedPieces: pieces,
     timeLimit: CHALLENGE_TIME_LIMIT,
@@ -124,6 +128,7 @@ function RoutePlannerChallengeRun({
     run.current = {
       timeElapsed,
       timedOutProblem: finishReason === "timeUp" ? currentProblem : null,
+      remoteFailed,
     };
   });
 
