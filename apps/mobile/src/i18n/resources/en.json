@@ -373,8 +373,6 @@
     }
   },
   "aiGame": {
-    "title": "Play vs AI",
-    "description": "Play a blindfold game against the AI engine",
     "setup": {
       "title": "Game Setup",
       "playerColor": "Play as",

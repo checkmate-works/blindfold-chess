@@ -373,8 +373,6 @@
     }
   },
   "aiGame": {
-    "title": "Jogar contra a IA",
-    "description": "Jogue uma partida às cegas contra o motor de IA",
     "setup": {
       "title": "Configuração da partida",
       "playerColor": "Jogar como",

@@ -1,24 +1,23 @@
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 
-import { ListRow, ListSection, TabScrollView } from "../../../components";
-import { PracticeCard } from "../../../features/practice-list/PracticeCard";
-import { AiGameCard } from "../../../features/ai-game/components/AiGameCard";
+import {
+  Button,
+  ListRow,
+  ListSection,
+  TabScrollView,
+} from "../../../components";
 import { GameRow } from "../../../features/game-history/GameRow";
 import { SavedGameSnackbar } from "../../../features/game-history/SavedGameSnackbar";
 import { useSavedGames } from "../../../features/game-history/useSavedGames";
-import { MOBILE_PRACTICE_MODULES } from "../../../navigation/practice-modules";
 
 /** Rows of recent games shown before "see all". */
 const RECENT_COUNT = 5;
 
-/** The recall entry shares the practice catalogue card. */
-const RECALL_MODULE = MOBILE_PRACTICE_MODULES.find((m) => m.slug === "recall");
-
 /**
- * The play tab: a new game against the engine, the games played on this
- * device (the web's `/games` list, which the web also keeps in the
- * browser), and recall for replaying a game from memory.
+ * The play tab: a new game against the engine and the games played on
+ * this device (the web's `/games` list, which the web also keeps in the
+ * browser). Recall is reached from the practice tab only.
  */
 export default function PlayTab() {
   const { t } = useTranslation();
@@ -31,9 +30,14 @@ export default function PlayTab() {
   return (
     <>
       <TabScrollView>
-        <AiGameCard
-          buttonTitle={t("aiGame.setup.startGame")}
+        {/* The tab's one action, on its own: the tab's name already says
+            what it plays, so a card with a title and a description over
+            the button only pushed the history down. */}
+        <Button
+          title={t("aiGame.setup.startGame")}
           onPress={() => router.push("/play/ai-game")}
+          size="lg"
+          fullWidth
         />
 
         <ListSection title={t("gameHistory.title")}>
@@ -58,8 +62,6 @@ export default function PlayTab() {
             <ListRow title={t("gameHistory.empty")} />
           )}
         </ListSection>
-
-        {RECALL_MODULE && <PracticeCard module={RECALL_MODULE} />}
       </TabScrollView>
       <SavedGameSnackbar />
     </>
