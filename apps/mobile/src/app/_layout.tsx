@@ -110,6 +110,12 @@ function RootStack({ isDark }: { isDark: boolean }) {
         />
         <Stack.Screen name="glossary/[slug]" options={SHEET_SCREEN_OPTIONS} />
         <Stack.Screen
+          name="announcements/index"
+          options={{ title: t("announcements.title") }}
+        />
+        {/* Named after the announcement, set by the screen. */}
+        <Stack.Screen name="announcements/[slug]" options={{ title: "" }} />
+        <Stack.Screen
           name="(account)"
           options={{ headerShown: false, presentation: "modal" }}
         />

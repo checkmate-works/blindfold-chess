@@ -40,6 +40,15 @@
       "choosePractice": "Escolher um treino por conta própria"
     }
   },
+  "announcements": {
+    "title": "Anúncios",
+    "viewAll": "Ver todos os anúncios",
+    "pinned": "Fixado",
+    "empty": "Ainda não há anúncios.",
+    "loadMore": "Mostrar mais",
+    "loadFailed": "Não foi possível carregar os anúncios. Puxe para tentar novamente.",
+    "notFound": "Este anúncio não está mais disponível."
+  },
   "recordCta": {
     "signUpButton": "Cadastre-se grátis",
     "signIn": "Já tem uma conta? Entrar",

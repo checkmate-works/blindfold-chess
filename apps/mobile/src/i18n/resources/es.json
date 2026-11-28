@@ -40,6 +40,15 @@
       "choosePractice": "Elegir una práctica por tu cuenta"
     }
   },
+  "announcements": {
+    "title": "Anuncios",
+    "viewAll": "Ver todos los anuncios",
+    "pinned": "Fijado",
+    "empty": "Aún no hay anuncios.",
+    "loadMore": "Mostrar más",
+    "loadFailed": "No se pudieron cargar los anuncios. Desliza hacia abajo para reintentar.",
+    "notFound": "Este anuncio ya no está disponible."
+  },
   "recordCta": {
     "signUpButton": "Regístrate gratis",
     "signIn": "¿Ya tienes una cuenta? Inicia sesión",

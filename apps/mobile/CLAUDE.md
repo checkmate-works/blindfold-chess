@@ -439,6 +439,13 @@ database. Sign-in calls Supabase Auth directly; sign-up goes through
   comments and the user-submitted pool stay on the web, under the rule
   above.
 
+- **Announcements** (`announcements`, and the last section of home): the
+  public announcements only (`GET /announcements?page=&locale=`, `GET
+/announcements/[slug]`, both public), each in the app's language where a
+  translation exists, as on the web. The body renders with the learn
+  articles' `MarkdownView`. Members-only announcements and likes stay on the
+  web: the app has no sign-in gate in front of a body.
+
 Still web-only: creating puzzles and community positions, repertoires,
 topics and articles, the home feed, Maia, password reset (the app opens the
 web page), and starting an AI game from a custom position, an opening or a

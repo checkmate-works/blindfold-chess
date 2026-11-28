@@ -40,6 +40,15 @@
       "choosePractice": "自分で練習を選ぶ"
     }
   },
+  "announcements": {
+    "title": "お知らせ",
+    "viewAll": "すべてのお知らせを見る",
+    "pinned": "固定",
+    "empty": "お知らせはまだありません。",
+    "loadMore": "さらに表示",
+    "loadFailed": "お知らせを読み込めませんでした。下に引っ張って再読み込みしてください。",
+    "notFound": "このお知らせは公開を終了しました。"
+  },
   "recordCta": {
     "signUpButton": "無料登録",
     "signIn": "アカウントをお持ちの方はログイン",
