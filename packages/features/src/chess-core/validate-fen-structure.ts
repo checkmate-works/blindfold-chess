@@ -15,9 +15,13 @@
  * directly from `./index.ts`.
  */
 
+import {
+  findPiecePlacementError,
+  type PiecePlacementError,
+} from "./piece-placement";
+
 export type FenStructureResult = { ok: true } | { ok: false; error: string };
 
-const VALID_RANK_CHARS = /^[PNBRQKpnbrqk1-8]+$/;
 const CASTLING_RE = /^[KQkq]+$/;
 // Ranks 3 and 6 only: a double-pushed pawn can only skip a square on one of
 // those, so any other rank cannot occur in a FEN. Matches chess.js's own
@@ -30,7 +34,8 @@ const NON_NEGATIVE_INT = /^\d+$/;
  * six space-separated fields are individually well-formed:
  *
  * 1. Piece placement: 8 ranks separated by `/`, each summing to 8 squares,
- *    containing only `PNBRQKpnbrqk` and digit run-length shorthands.
+ *    containing only `PNBRQKpnbrqk` and digit run-length shorthands, one
+ *    digit per run of empty squares (the rule `validateFenFormat` shares).
  * 2. Side to move: exactly `w` or `b`.
  * 3. Castling rights: `-` or a subset of `KQkq` (order not enforced).
  * 4. En passant square: `-` or a rank-3 / rank-6 square name (`a3`-`h3`,
@@ -60,44 +65,10 @@ export function validateFenStructure(fen: string): FenStructureResult {
   const [placement, sideToMove, castling, enPassant, halfmove, fullmove] =
     fields;
 
-  // 1. Piece placement: 8 ranks separated by '/'
-  const ranks = placement.split("/");
-  if (ranks.length !== 8) {
-    return { ok: false, error: "Board must have exactly 8 ranks" };
-  }
-
-  for (let i = 0; i < 8; i++) {
-    const rank = ranks[i];
-    // VALID_RANK_CHARS needs at least one character, so an empty rank ("//")
-    // fails here too.
-    if (!VALID_RANK_CHARS.test(rank)) {
-      return { ok: false, error: `Rank ${8 - i} contains invalid characters` };
-    }
-    let sum = 0;
-    let previousWasDigit = false;
-    for (const ch of rank) {
-      // The rank is now only digits 1-8 and piece letters, and every letter
-      // sorts after "8".
-      if (ch <= "8") {
-        if (previousWasDigit) {
-          // Consecutive digits like "17" would otherwise pass the sum check
-          // for some combinations; reject them explicitly to match canonical
-          // FEN, which uses a single run-length digit per empty run.
-          return {
-            ok: false,
-            error: `Rank ${8 - i} has consecutive empty-square digits`,
-          };
-        }
-        sum += parseInt(ch, 10);
-        previousWasDigit = true;
-      } else {
-        sum += 1;
-        previousWasDigit = false;
-      }
-    }
-    if (sum !== 8) {
-      return { ok: false, error: `Rank ${8 - i} does not sum to 8 squares` };
-    }
+  // 1. Piece placement
+  const placementError = findPiecePlacementError(placement);
+  if (placementError) {
+    return { ok: false, error: describePlacementError(placementError) };
   }
 
   // 2. Side to move
@@ -129,4 +100,17 @@ export function validateFenStructure(fen: string): FenStructureResult {
   }
 
   return { ok: true };
+}
+
+function describePlacementError(error: PiecePlacementError): string {
+  switch (error.kind) {
+    case "rankCount":
+      return "Board must have exactly 8 ranks";
+    case "invalidCharacters":
+      return `Rank ${error.rank} contains invalid characters`;
+    case "consecutiveDigits":
+      return `Rank ${error.rank} has consecutive empty-square digits`;
+    case "squareCount":
+      return `Rank ${error.rank} does not sum to 8 squares`;
+  }
 }

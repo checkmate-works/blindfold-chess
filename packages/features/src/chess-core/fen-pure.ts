@@ -32,6 +32,8 @@ export const STARTING_FEN =
 
 import type { PieceColor, PieceType } from "@blindfold-chess/types";
 
+import { findPiecePlacementError } from "./piece-placement";
+
 /**
  * Parse FEN piece placement into a flat 64-element array of piece characters.
  * Index 0 = a8, index 1 = b8, ..., index 63 = h1.
@@ -384,33 +386,19 @@ export function fenToPieceList(fen: string): {
 
 /**
  * Lightweight FEN format validation without chess.js.
- * Checks structural validity (8 ranks, valid characters, valid turn)
- * but does not verify position legality.
+ * Checks the piece placement (8 ranks, valid characters, one digit per run
+ * of empty squares, 8 squares per rank) and the turn, but nothing after the
+ * turn field and not position legality. Fields are split on single spaces,
+ * and two fields are enough.
  */
 export function validateFenFormat(fen: string): boolean {
   // FEN must have at least 2 parts (board and turn). A FEN with only the
   // board has no `parts[1]`, so the turn check at the end rejects it.
   const parts = fen.trim().split(" ");
 
-  // Validate board part (8 ranks separated by /)
-  const board = parts[0];
-  const ranks = board.split("/");
-  if (ranks.length !== 8) return false;
-
-  // Validate each rank
-  for (const rank of ranks) {
-    let squareCount = 0;
-    for (const char of rank) {
-      if (/[1-8]/.test(char)) {
-        squareCount += parseInt(char);
-      } else if (/[pnbrqkPNBRQK]/.test(char)) {
-        squareCount += 1;
-      } else {
-        return false;
-      }
-    }
-    if (squareCount !== 8) return false;
-  }
+  // The same board rule validateFenStructure applies, so the two never
+  // disagree about a board.
+  if (findPiecePlacementError(parts[0]) !== null) return false;
 
   // Validate turn
   if (parts[1] !== "w" && parts[1] !== "b") return false;

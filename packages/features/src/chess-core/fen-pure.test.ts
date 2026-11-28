@@ -334,4 +334,26 @@ describe("validateFenFormat", () => {
     // Eight squares without the stray character.
     expect(validateFenFormat("8/8/8/8/8/8/8/K7X w")).toBe(false);
   });
+
+  // The digits add up to eight squares, but canonical FEN writes each run of
+  // empty squares as a single digit, and chess.js rejects these too.
+  it("rejects consecutive empty-square digits even when they sum to eight", () => {
+    expect(validateFenFormat("8/8/8/8/8/8/8/17 w")).toBe(false);
+    expect(validateFenFormat("8/8/8/8/8/8/8/44 w")).toBe(false);
+    expect(validateFenFormat("8/8/8/8/8/8/8/K16 w")).toBe(false);
+  });
+
+  // Fields are split on single spaces, so a doubled space leaves an empty
+  // turn field and a tab glues the turn onto the last rank.
+  it("rejects a turn separated by anything but a single space", () => {
+    expect(validateFenFormat(`${BOARD}  w`)).toBe(false);
+    expect(validateFenFormat(`${BOARD}\tw`)).toBe(false);
+  });
+
+  it("does not look past the turn field", () => {
+    expect(validateFenFormat(`${BOARD} w KQkq - 0`)).toBe(true);
+    expect(validateFenFormat(`${BOARD} w KQkq - 0 1 extra`)).toBe(true);
+    expect(validateFenFormat(`${BOARD} w garbage`)).toBe(true);
+    expect(validateFenFormat(`${BOARD} w KQkq -  0 1`)).toBe(true);
+  });
 });

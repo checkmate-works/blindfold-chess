@@ -287,6 +287,19 @@ describe("validateFenStructure — what the caller is told", () => {
     );
   });
 
+  it("rejects every consecutive-digit run, whatever it sums to", () => {
+    for (const rank of ["44", "K16", "2222", "71"]) {
+      expect(error(`8/8/8/8/8/8/8/${rank} w - - 0 1`)).toBe(
+        "Rank 1 has consecutive empty-square digits",
+      );
+    }
+  });
+
+  it("splits fields on any run of whitespace", () => {
+    expect(error("8/8/8/8/8/8/8/8  w - -  0 1")).toBeNull();
+    expect(error("8/8/8/8/8/8/8/8\tw - - 0 1")).toBeNull();
+  });
+
   it("rejects a bad side to move with its own message", () => {
     expect(error("8/8/8/8/8/8/8/8 x - - 0 1")).toBe(
       "Side to move must be w or b",
