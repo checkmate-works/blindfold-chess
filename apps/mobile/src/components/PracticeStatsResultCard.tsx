@@ -49,6 +49,10 @@ export function PracticeStatsResultCard({
       scoreLabel={score?.label ?? t("practiceResult.correctAnswers")}
       scoreValue={score?.value ?? scoreValue}
       statItems={stats}
+      accuracy={{
+        correct: result.correctAnswers,
+        total: result.totalQuestions,
+      }}
     />
   );
 }

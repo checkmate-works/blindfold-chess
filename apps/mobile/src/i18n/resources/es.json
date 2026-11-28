@@ -162,7 +162,10 @@
     "backToMenu": "Volver al menú",
     "problemDetails": "Detalles del problema",
     "skipped": "Omitido",
-    "timeUp": "Tiempo agotado"
+    "timeUp": "Tiempo agotado",
+    "correct": "Correcto",
+    "incorrect": "Incorrecto",
+    "levelUp": "¡Subes de nivel!"
   },
   "onboarding": {
     "skip": "Omitir",
@@ -1044,7 +1047,17 @@
     },
     "rules": "60 segundos · termina tras 3 errores",
     "willRecord": "Tu puntuación se registrará en la clasificación.",
-    "promoted": "¡Has ascendido a {{rank}}!"
+    "promoted": "¡Has ascendido a {{rank}}!",
+    "recordCard": {
+      "thisTime": "Esta vez",
+      "title": "Tu registro",
+      "previousBest": "Mejor anterior",
+      "previousLast": "Última vez",
+      "scoreValue": "{{score}} correctas",
+      "newBest": "¡Nuevo récord personal!",
+      "firstRecord": "Primer registro",
+      "viewMyRecords": "Ver tu progreso en Mis Registros"
+    }
   },
   "progress": {
     "rank": "Rango",

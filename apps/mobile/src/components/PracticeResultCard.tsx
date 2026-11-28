@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet } from "react-native";
 import type { StatItem } from "@blindfold-chess/features/common";
+import { AccuracyBar } from "./AccuracyBar";
 import { Card } from "./Card";
 import { useTheme, fontSize, fontWeight, spacing } from "../theme";
 
@@ -7,12 +8,18 @@ type PracticeResultCardProps = {
   scoreLabel: string;
   scoreValue: string;
   statItems: StatItem[];
+  /**
+   * The web's accuracy graph under the headline: right answers out of the
+   * questions asked. Left out for a result with no right-or-wrong count.
+   */
+  accuracy?: { correct: number; total: number };
 };
 
 export function PracticeResultCard({
   scoreLabel,
   scoreValue,
   statItems,
+  accuracy,
 }: PracticeResultCardProps) {
   const { colors, feedbackColors } = useTheme();
 
@@ -29,6 +36,12 @@ export function PracticeResultCard({
           {scoreValue}
         </Text>
       </View>
+
+      {accuracy && accuracy.total > 0 && (
+        <View style={styles.accuracy}>
+          <AccuracyBar correct={accuracy.correct} total={accuracy.total} />
+        </View>
+      )}
 
       <View
         style={[styles.divider, { backgroundColor: colors.rowSeparator }]}
@@ -68,6 +81,9 @@ const styles = StyleSheet.create({
   scoreValue: {
     fontSize: 48,
     fontWeight: fontWeight.bold,
+  },
+  accuracy: {
+    marginTop: spacing.sm,
   },
   divider: {
     height: 1,

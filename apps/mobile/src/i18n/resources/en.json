@@ -162,7 +162,10 @@
     "backToMenu": "Back to Menu",
     "problemDetails": "Problem Details",
     "skipped": "Skipped",
-    "timeUp": "Time's up"
+    "timeUp": "Time's up",
+    "correct": "Correct",
+    "incorrect": "Incorrect",
+    "levelUp": "Level Up!"
   },
   "onboarding": {
     "skip": "Skip",
@@ -1044,7 +1047,17 @@
     },
     "rules": "60 seconds · ends after 3 mistakes",
     "willRecord": "Your score will be recorded on the leaderboard.",
-    "promoted": "Promoted to {{rank}}!"
+    "promoted": "Promoted to {{rank}}!",
+    "recordCard": {
+      "thisTime": "This time",
+      "title": "Your record",
+      "previousBest": "Previous best",
+      "previousLast": "Last time",
+      "scoreValue": "{{score}} correct",
+      "newBest": "New personal best!",
+      "firstRecord": "First record",
+      "viewMyRecords": "See your progress in My Records"
+    }
   },
   "progress": {
     "rank": "Dojo rank",
