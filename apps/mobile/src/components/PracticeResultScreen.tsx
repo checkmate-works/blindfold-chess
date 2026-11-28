@@ -7,6 +7,7 @@ import type { Href } from "expo-router";
 import { useTranslation } from "react-i18next";
 
 import { BottomBar } from "./BottomBar";
+import { Button } from "./Button";
 import { ModeButtonRow } from "./ModeButtonRow";
 import { ResultMistakesContext, type ResultMistakes } from "./result-mistakes";
 import { useCloseSession } from "../navigation/use-close-session";
@@ -19,8 +20,23 @@ type PracticeResultScreenProps = {
    * the modal was opened without it (deep link, restored process).
    */
   setupHref: Href;
+  /**
+   * Set when the session was opened from a guide's link card, over the
+   * guide: the primary button closes back to the guide ("Back to guide"),
+   * and the secondary one replays the problem in place, since closing the
+   * modal reveals the guide, not the practice's setup.
+   */
+  backToGuide?: { onPlayAgain: () => void };
   /** The result card rendered under the title. */
   children: ReactNode;
+  /**
+   * Leave out "Back to menu", keeping only "Play again". An exam run sets
+   * it: the run was started from the exam's problem page, which "Play
+   * again" returns to, and "Back to menu" would pop the exam's screens out
+   * from under the player (the puzzle exam's result has only Try Again for
+   * the same reason).
+   */
+  hideBackToMenu?: boolean;
 };
 
 /**
@@ -40,7 +56,9 @@ type PracticeResultScreenProps = {
  */
 export function PracticeResultScreen({
   setupHref,
+  backToGuide,
   children,
+  hideBackToMenu = false,
 }: PracticeResultScreenProps) {
   const { t } = useTranslation();
   const { close, closeToMenu } = useCloseSession(setupHref);
@@ -61,20 +79,46 @@ export function PracticeResultScreen({
       </ScrollView>
 
       <BottomBar>
-        <ModeButtonRow
-          secondary={{
-            title: t("practiceResult.backToMenu"),
-            icon: "list",
-            onPress: closeToMenu,
-            testID: "result-back-to-menu",
-          }}
-          primary={{
-            title: t("practiceResult.playAgain"),
-            icon: "refresh",
-            onPress: close,
-            testID: "result-play-again",
-          }}
-        />
+        {backToGuide ? (
+          <ModeButtonRow
+            secondary={{
+              title: t("practiceResult.playAgain"),
+              icon: "refresh",
+              onPress: backToGuide.onPlayAgain,
+              testID: "result-play-again",
+            }}
+            primary={{
+              title: t("practiceResult.backToGuide"),
+              icon: "book-outline",
+              onPress: close,
+              testID: "result-back-to-guide",
+            }}
+          />
+        ) : hideBackToMenu ? (
+          <Button
+            title={t("practiceResult.playAgain")}
+            icon="refresh"
+            size="lg"
+            fullWidth
+            onPress={close}
+            testID="result-play-again"
+          />
+        ) : (
+          <ModeButtonRow
+            secondary={{
+              title: t("practiceResult.backToMenu"),
+              icon: "list",
+              onPress: closeToMenu,
+              testID: "result-back-to-menu",
+            }}
+            primary={{
+              title: t("practiceResult.playAgain"),
+              icon: "refresh",
+              onPress: close,
+              testID: "result-play-again",
+            }}
+          />
+        )}
       </BottomBar>
     </Screen>
   );

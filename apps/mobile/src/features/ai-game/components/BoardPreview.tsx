@@ -35,6 +35,11 @@ type Props = {
   preferences: Partial<GamePreferences>;
   /** The side the player will play: the board is seen from it. */
   playerColor: Side;
+  /**
+   * The game's starting position, when it is not the standard one (a
+   * guide's position): drawn in place of the sample, with no last move.
+   */
+  startingFen?: string;
 };
 
 /**
@@ -50,7 +55,7 @@ type Props = {
  * The caller leaves it out when the game has no board at all
  * (`boardVisibility: "never"`), as the web does.
  */
-export function BoardPreview({ preferences, playerColor }: Props) {
+export function BoardPreview({ preferences, playerColor, startingFen }: Props) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const { width } = useWindowDimensions();
@@ -62,10 +67,10 @@ export function BoardPreview({ preferences, playerColor }: Props) {
       </Text>
       <GamePreferencesOverride overrides={preferences} onUpdate={ignoreUpdate}>
         <ChessBoard
-          fen={PREVIEW_FEN}
+          fen={startingFen ?? PREVIEW_FEN}
           flipped={playerColor === "black"}
           playerColor={playerColor}
-          lastMove={PREVIEW_LAST_MOVE}
+          lastMove={startingFen ? undefined : PREVIEW_LAST_MOVE}
           maxSize={Math.min(PREVIEW_MAX_SIZE, width - PREVIEW_HORIZONTAL_INSET)}
         />
       </GamePreferencesOverride>

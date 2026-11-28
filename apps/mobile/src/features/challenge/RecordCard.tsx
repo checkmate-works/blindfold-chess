@@ -1,5 +1,4 @@
 import { StyleSheet, Text, View } from "react-native";
-import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import {
   formatSignedDelta,
@@ -7,6 +6,7 @@ import {
 } from "@blindfold-chess/features/challenge-records";
 
 import { ListIcon, ListRow, ListSection } from "../../components";
+import { useOpenRootScreen } from "../../navigation/use-open-root-screen";
 import {
   borderRadius,
   fontSize,
@@ -31,7 +31,8 @@ type RecordCardProps = {
  * The web result's "Your record" card for a signed-in player: this run, the
  * last one and the best before it, with the change against the last run on
  * this run's row (the ticker order: the value, then its change) and a badge
- * for a first record or a new best under it, then a row into My Records.
+ * for a first record or a new best under it, then a row into My Records,
+ * which closes the session and opens My Records over the challenge's setup.
  *
  * Grouped rows rather than the web's card: three label–value lines and a
  * link are what the inset-grouped list is for. The rows always number three,
@@ -52,7 +53,7 @@ export function RecordCard({
 }: RecordCardProps) {
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
-  const router = useRouter();
+  const openRootScreen = useOpenRootScreen();
 
   const formatScore = (score: number | undefined) =>
     score === undefined ? "—" : t("challenge.recordCard.scoreValue", { score });
@@ -140,7 +141,7 @@ export function RecordCard({
         leading={<ListIcon ionicon="trending-up" tint={colors.primary} />}
         title={t("challenge.recordCard.viewMyRecords")}
         onPress={() =>
-          router.push({ pathname: "/records", params: { menu: menuType } })
+          openRootScreen({ pathname: "/records", params: { menu: menuType } })
         }
         testID="record-view-my-records"
       />

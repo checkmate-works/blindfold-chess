@@ -15,12 +15,9 @@ export function TutorialSection() {
   const { t } = useTranslation();
   const router = useRouter();
   const { clearStatus } = useOnboardingStatus();
-  // Settings lives in the account modal, and a root-stack screen pushed from
-  // inside a modal opens under it on iOS, out of sight. Close the modal first.
-  const openOnboarding = () => {
-    router.dismissTo("/");
-    router.push("/onboarding");
-  };
+  // Settings is a root-stack screen, so the chat is pushed over it; the
+  // chat's last step pops back to the tabs itself (`app/onboarding.tsx`).
+  const openOnboarding = () => router.push("/onboarding");
 
   return (
     <ListSection title={t("settings.tutorial.title")}>

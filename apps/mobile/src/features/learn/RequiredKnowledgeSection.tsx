@@ -1,10 +1,10 @@
-import { useRouter } from "expo-router";
 import type { Href } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { ChessPieceIcon } from "@blindfold-chess/icons";
 import type { PieceType } from "@blindfold-chess/types";
 
 import { ListIcon, ListRow, ListSection } from "../../components";
+import { useOpenRootScreen } from "../../navigation/use-open-root-screen";
 import { LEARN_ARTICLES } from "./generated/articles";
 import { LEARN_CATEGORY_ICONS, localized } from "./types";
 
@@ -27,6 +27,10 @@ type ArticleSectionProps = {
  * own titles and excerpts, the way the learn tab lists them, so a practice
  * needs no strings of its own for them. An article the app does not ship
  * is left out, and with none left the section is not drawn.
+ *
+ * A free-play result shows the same rows inside the session modal, so a row
+ * opens its article through `useOpenRootScreen`: from a result it closes
+ * the session first, and the article opens over the setup.
  */
 function ArticleSection({
   title,
@@ -34,7 +38,7 @@ function ArticleSection({
   pieces,
 }: ArticleSectionProps & { title: string }) {
   const { i18n } = useTranslation();
-  const router = useRouter();
+  const openRootScreen = useOpenRootScreen();
   const articles = slugs.flatMap((slug) => {
     const article = LEARN_ARTICLES.find((a) => a.slug === slug);
     return article ? [article] : [];
@@ -59,7 +63,7 @@ function ArticleSection({
           }
           title={localized(article.title, i18n.language)}
           subtitle={localized(article.excerpt, i18n.language)}
-          onPress={() => router.push(`/learn/${article.slug}` as Href)}
+          onPress={() => openRootScreen(`/learn/${article.slug}` as Href)}
           testID={`required-knowledge-${article.slug}`}
         />
       ))}

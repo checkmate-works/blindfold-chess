@@ -1,11 +1,11 @@
 import Constants from "expo-constants";
 import { useTranslation } from "react-i18next";
-import { ListRow, ListSection, TabScrollView } from "../../components";
-import { changeLanguage, type Locale } from "../../i18n";
-import { AccountSection } from "../../features/settings/AccountSection";
-import { BoardPreferencesSection } from "../../features/settings/BoardPreferencesSection";
-import { TutorialSection } from "../../features/settings/TutorialSection";
-import { openWebPage } from "../../lib/web-pages";
+import { ListRow, ListSection, TabScrollView } from "../components";
+import { changeLanguage, type Locale } from "../i18n";
+import { AccountSection } from "../features/settings/AccountSection";
+import { BoardPreferencesSection } from "../features/settings/BoardPreferencesSection";
+import { TutorialSection } from "../features/settings/TutorialSection";
+import { openWebPage } from "../lib/web-pages";
 
 /** The web pages the About section links to, in display order. */
 const ABOUT_PAGES = [
@@ -37,12 +37,11 @@ const LANGUAGE_ORDER = Object.keys(LANGUAGE_LABELS) as Locale[];
  * About pages.
  *
  * @description
- * Pushed inside the account modal from mypage's last row, not a tab of its
- * own: the tab bar holds five tabs (iOS folds a sixth into a "More" tab),
- * and the fifth slot went to the dojo, which a player visits far more often
- * than settings. Being in the modal's stack lets the account rows push
- * sign-in, username setup and records on top of it; the tutorial row closes
- * the modal first (`TutorialSection`).
+ * Pushed on the root stack from mypage's last row, not a tab of its own:
+ * the tab bar holds five tabs (iOS folds a sixth into a "More" tab), and
+ * the fifth slot went to the dojo, which a player visits far more often
+ * than settings. The account rows open sign-in and username setup in the
+ * account modal over it, and push My Records on top of it.
  */
 export default function SettingsScreen() {
   const { t, i18n } = useTranslation();

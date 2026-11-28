@@ -29,22 +29,43 @@ replaced by the platform's own parts or their common app equivalents.
   redirected to `/onboarding`. `NativeTabs` is unstable API: re-check its
   props whenever the Expo SDK changes. Five is the iOS bar's limit before it
   folds the rest into "More", so Settings is not a tab: the person icon in
-  the home header (`TabStack`'s `headerRight`) opens mypage
-  (`(account)/mypage.tsx`), and settings (`(account)/settings.tsx`) is a row
-  there, inside the account modal.
+  the home header (`TabStack`'s `headerRight`) pushes mypage
+  (`mypage.tsx`), and settings (`settings.tsx`) is a row there.
 - Detail screens are pushed on the root stack, above the tabs, so the tab
   bar hides on them: each module's setup at `practice/<route>/index.tsx`
   (URL `/practice/<route>`), the AI-game setup at `play/ai-game`, the saved
   games at `play/games`, learn articles at `learn/[slug]`, a dojo rank at
   `dojo/ranks/[slug]`, its guide at `dojo/guides/[rank]`, its exam at
   `dojo/exams/[rank]` and its requirements at `dojo/requirements/[rank]`.
+  The account's pages are detail screens too: `mypage`, `settings`,
+  `records` (My Records), `records-results` and `ranks`.
+- **Modal or push:** a modal is for a task that ends where it was opened
+  (sign-in, a session); a page that leads on to other screens is pushed.
+  A root-stack screen pushed from inside a modal opens under the modal on
+  iOS, so a modal can only reach one by closing first, which loses the way
+  back. That is why the account's pages left the account modal: My Records'
+  Take the Challenge now pushes the setup and back returns to My Records
+  (or, when that setup is right underneath, goes back to it instead of
+  stacking a copy: `routeNameBelow`, `navigation/route-below.ts`). A link
+  from inside a modal to a pushed page closes the modal and then pushes:
+  `useOpenRootScreen` (`navigation/use-open-root-screen.ts`) does it for
+  parts drawn both on root-stack screens and in the session modal (the
+  related-articles rows, a result's "View My Records"). A session's "play
+  again" lands on its setup even when the session was opened from
+  elsewhere (a resumed AI game: `useCloseSession`'s `closeOnto`), and a
+  first sign-in resets the account modal to username setup alone, so it
+  has the × and no way back into the sign-in screens.
 - `(session)` — timed sessions, results and training runs
   (`(session)/practice/<route>/{session,result,training}.tsx`,
   `(session)/play/ai-game/*`), presented as one `fullScreenModal`. A full
   screen modal has no swipe-to-dismiss, so a timed run cannot be abandoned by
   an edge swipe; every screen in it closes it with `useCloseSession`
   (`navigation/use-close-session.ts`, which pops the modal off the root stack
-  and falls back to an href when nothing is underneath). Session → result is
+  and falls back to an href when nothing is underneath; "back to menu"
+  pops the setup too, landing wherever the setup was opened from, and an
+  exam run's result leaves it out). The root layout's
+  `unstable_settings.initialRouteName` keeps the tabs under every screen, so
+  one opened straight from a link still has a back button. Session → result is
   a `router.replace` inside the modal. A module with `sessionHeader`
   (`navigation/practice-modules.ts`; every practice module now) gives its
   session a stack header like its result and training screens: the
@@ -129,7 +150,9 @@ header style (page-coloured, no hairline, chevron-only back).
   starts from its PGN box and colour picker; puzzles from the list, then a
   detail page `practice/puzzle/[id]` on the root stack (title set by the
   screen's own `<Stack.Screen options>`). A puzzle result's Try Again closes
-  back to that detail page and Back to List `dismissTo`s the list.
+  back to that detail page and Back to List `dismissTo`s the list, or, when
+  the puzzle was opened without it (home's daily puzzle), puts the list in
+  the puzzle's place.
 - **Two-way answers** (square colors' light / dark, legal moves' legal /
   illegal) are `AnswerPair` (`components/AnswerPair.tsx`): the module paints
   the two buttons and sizes them; the pair owns the press shrink, the verdict
@@ -327,7 +350,15 @@ Generated, not edited by hand; re-run the script after the web changes:
   `features/guides/visual-aids/renderers.tsx`, typed over the generated name
   union, so a component the web starts using fails the typecheck until it is
   drawn. A link card opens the app's screen when it has the page (a bundled
-  article, a practice's setup, another guide) and the web otherwise. Only
+  article, a practice's setup, another guide) and the web otherwise. Two
+  web pages become the app's own flows (`guideLinkTarget`): an instant
+  position-memory problem (`/practice/position-memory/custom/<Base64URL
+FEN>`) opens the session on that one problem over the guide with
+  `from=guide`, whose result leads with "Back to guide" and replays the
+  problem in place (`PracticeResultScreen`'s `backToGuide`); a game from a
+  position (`/games/new/position?fen=`) opens the AI-game setup with `fen`,
+  which shows the starting position, gives the player the side to move for
+  this game only, and passes `startingFen` to the session. Only
   the flat format is bundled; the script refuses a chaptered guide, which
   would need a chapter screen first.
 
@@ -432,26 +463,26 @@ database. Sign-in calls Supabase Auth directly; sign-up goes through
     pages are counted by `features/guides/reading-progress.ts`, which the
     guide screen reads too: a page is read when any rank's journey has it
     done, since the unranked guide belongs to 5kyu's.
-- `(account)` screens: mypage (the home header's entry: the username,
-  rank, level and EXP and rows into records and ranks for a player with a
-  username; the sign-up card over a faded sample for anyone else; settings
-  for everyone), settings (with the Account section), welcome (the account
-  offer that ends onboarding), sign-in, sign-up, setup-username, records
-  (My Records, the web's `/mypage/challenges`: period chips, the challenge
-  and its key, best / average score against the previous period, the score
-  trend drawn with SVG (`features/records/ScoreChart.tsx`), the five newest
-  runs and Take the Challenge; `GET /records/dashboard`, with the stats and
-  the series from the shared `@blindfold-chess/features/challenge-records`
-  so both apps count the same; a recorded challenge's result screen opens
-  it over the session on that challenge, `?menu=` as on the web),
-  records-results (every run,
-  `GET /records/results`, the next page loading near the end) and ranks
-  (the user's own rank per leaderboard, the web home's "Your Rankings";
-  `GET /leaderboard/ranks`). Whichever screen opens the modal gets the ×; the
-  layout decides from the screen's place in the stack, since records and
-  sign-up open both ways. A root-stack screen pushed from inside the modal
-  opens under it on iOS, so a row that leaves for one (the tutorial) closes
-  the modal first.
+- **Account pages** (root stack): mypage (the home header's entry: the
+  username, rank, level and EXP and rows into records and ranks for a
+  player with a username; the sign-up card over a faded sample for anyone
+  else; settings for everyone), settings (with the Account section),
+  records (My Records, the web's `/mypage/challenges`: period chips, the
+  challenge and its key, best / average score against the previous period,
+  the score trend drawn with SVG (`features/records/ScoreChart.tsx`), the
+  five newest runs and Take the Challenge; `GET /records/dashboard`, with
+  the stats and the series from the shared
+  `@blindfold-chess/features/challenge-records` so both apps count the
+  same; a recorded challenge's result screen closes the session and opens
+  it over that challenge's setup, `?menu=` as on the web), records-results
+  (every run, `GET /records/results`, the next page loading near the end)
+  and ranks (the user's own rank per leaderboard, the web home's "Your
+  Rankings"; `GET /leaderboard/ranks`).
+- `(account)` modal: welcome (the account offer that ends onboarding),
+  sign-in, sign-up, setup-username — tasks that close back onto the screen
+  that opened them. Whichever screen opens the modal gets the ×; the layout
+  decides from the screen's place in the stack, since sign-up opens both
+  ways.
 - **One-tap sign-in** (`auth/oauth.ts`, `features/account/OAuthButtons.tsx`):
   Sign in with Apple through the native sheet and `signInWithIdToken` (iOS
   only), Google through Supabase's hosted page in an in-app browser session
@@ -500,8 +531,9 @@ database. Sign-in calls Supabase Auth directly; sign-up goes through
 
 Still web-only: creating puzzles and community positions, repertoires,
 topics and articles, the home feed, Maia, password reset (the app opens the
-web page), and starting an AI game from a custom position, an opening or a
-PGN: a game in the app always starts from the standard position. AI games
+web page), and starting an AI game from a position set up by hand, an
+opening or a PGN: a game in the app starts from the standard position, or
+from a guide's position when a guide's link card opens the setup. AI games
 are kept on the device (`features/game-history/`, AsyncStorage
 `"AI_GAME_HISTORY"`, newest first, at most 50), like the web keeps them in
 localStorage. The session saves the game after every move, so one that was

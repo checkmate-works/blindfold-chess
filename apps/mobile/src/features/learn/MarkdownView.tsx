@@ -11,6 +11,8 @@ import { useRouter } from "expo-router";
 import type { Href } from "expo-router";
 import { SvgXml } from "react-native-svg";
 
+import { openTab } from "../dojo/stage-target";
+
 import {
   useTheme,
   borderRadius,
@@ -54,7 +56,13 @@ export function MarkdownView({ source }: { source: string }) {
 function useOpenLink() {
   const router = useRouter();
   return (href: string) => {
-    if (/^\/(learn|practice|play|announcements)(\/|$)/.test(href)) {
+    if (/^\/(learn|practice|play)(\?|$)/.test(href)) {
+      // A tab itself (the bare list, maybe narrowed by a query). The view
+      // sits on root-stack screens (an article, an announcement), where a
+      // push would stack a second set of tabs; `openTab` pops back to the
+      // tabs underneath and switches to it.
+      openTab(router, href as Href);
+    } else if (/^\/(learn|practice|play|announcements)(\/|$)/.test(href)) {
       router.push(href as Href);
     } else if (/^https?:\/\//.test(href)) {
       void Linking.openURL(href);

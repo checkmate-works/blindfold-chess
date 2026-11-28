@@ -21,7 +21,13 @@ export default function Onboarding() {
     await setCompleted();
     // Home goes underneath, so closing the first session lands there (where
     // the account offer opens) rather than on a setup screen. `dismissTo`
-    // also covers a replay from home, where home is already below.
+    // also covers a replay from settings, where home is already below.
+    if (!destination && router.canGoBack()) {
+      // Skipping a replay (opened from settings) goes back to where it was
+      // opened; with no first session to start, home need not be below.
+      router.back();
+      return;
+    }
     router.dismissTo("/");
     if (destination === "ai-game") {
       router.push({

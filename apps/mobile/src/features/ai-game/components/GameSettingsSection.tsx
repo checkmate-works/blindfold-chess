@@ -22,6 +22,8 @@ type Props = {
   onChange: (updates: Partial<PerGamePreferences>) => void;
   /** The side the player will play, which the preview is seen from. */
   playerColor: Side;
+  /** A starting position other than the standard one, for the preview. */
+  startingFen?: string;
 };
 
 /**
@@ -57,6 +59,7 @@ export function GameSettingsSection({
   preferences,
   onChange,
   playerColor,
+  startingFen,
 }: Props) {
   const { t } = useTranslation();
   const activeLevel = matchDifficultyPreset(preferences);
@@ -103,6 +106,7 @@ export function GameSettingsSection({
             key="preview"
             preferences={preferences}
             playerColor={playerColor}
+            startingFen={startingFen}
           />
         )}
       </ListSection>

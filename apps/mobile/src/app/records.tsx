@@ -6,7 +6,7 @@ import {
   Text,
   View,
 } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import {
   DASHBOARD_PERIODS,
@@ -28,17 +28,15 @@ import {
   ListSection,
   PieceSelector,
   SelectRow,
-} from "../../components";
-import { practiceModuleRoute } from "../../navigation/practice-modules";
-import {
-  RecordColumnsHeader,
-  RecordRow,
-} from "../../features/records/RecordRow";
-import { RecordStats } from "../../features/records/RecordStats";
-import { ScoreChart } from "../../features/records/ScoreChart";
-import { menuNameOf, practiceModuleOf } from "../../features/records/menu-name";
-import { useRecordsDashboard } from "../../features/records/use-records-dashboard";
-import { fontSize, spacing, useTheme } from "../../theme";
+} from "../components";
+import { practiceModuleRoute } from "../navigation/practice-modules";
+import { routeNameBelow } from "../navigation/route-below";
+import { RecordColumnsHeader, RecordRow } from "../features/records/RecordRow";
+import { RecordStats } from "../features/records/RecordStats";
+import { ScoreChart } from "../features/records/ScoreChart";
+import { menuNameOf, practiceModuleOf } from "../features/records/menu-name";
+import { useRecordsDashboard } from "../features/records/use-records-dashboard";
+import { fontSize, spacing, useTheme } from "../theme";
 
 const PIECE_OF: Record<string, PieceType | null> = {
   king: "k",
@@ -63,8 +61,9 @@ const PIECE_OF: Record<string, PieceType | null> = {
  * - the score trend, this period over the one before (tap the previous
  *   period's legend entry to open it, as on the web);
  * - the five newest runs, with a row into every result (`records-results`);
- * - Take the Challenge, which closes the account modal and opens the
- *   challenge's setup.
+ * - Take the Challenge, which opens the challenge's setup on top, so the
+ *   back button returns here (or goes back to that setup when it is the
+ *   screen underneath).
  *
  * A `menu` param opens on that challenge (a result screen's link names the
  * one just played), as the web's `?menu=`.
@@ -78,6 +77,7 @@ export default function RecordsScreen() {
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
+  const navigation = useNavigation();
   const locale = i18n.language;
   const params = useLocalSearchParams<{ menu?: string }>();
   const initialMenu =
@@ -102,10 +102,14 @@ export default function RecordsScreen() {
   const openChallenge = () => {
     const module = selectedMenu ? practiceModuleOf(selectedMenu) : undefined;
     if (!module) return;
-    // A root-stack screen pushed from inside the account modal opens under
-    // it on iOS, out of sight, so the modal closes first.
-    router.dismissTo("/");
-    router.push(`/practice/${practiceModuleRoute(module)}`);
+    const route = `practice/${practiceModuleRoute(module)}`;
+    // Opened from that challenge's setup (its result's "View My Records"),
+    // the setup is right below: go back to it rather than stacking a copy.
+    if (routeNameBelow(navigation.getState()) === `${route}/index`) {
+      router.back();
+    } else {
+      router.push(`/${route}`);
+    }
   };
 
   const body = () => {

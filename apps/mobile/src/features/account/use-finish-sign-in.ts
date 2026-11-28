@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { useNavigation, useRouter } from "expo-router";
+import { useNavigation } from "expo-router";
 
 import { refreshAccount } from "../../auth/use-auth";
 
@@ -10,14 +10,23 @@ import { refreshAccount } from "../../auth/use-auth";
  * the `(account)` modal. Called from a screen inside that modal.
  */
 export function useFinishSignIn(): () => Promise<void> {
-  const router = useRouter();
   const navigation = useNavigation();
   return useCallback(async () => {
     const account = await refreshAccount();
     if (account && account.username === null) {
-      router.replace("/setup-username");
+      // Username setup becomes the modal's only screen, so it gets the ×
+      // rather than a back chevron (and edge swipe) into the welcome or
+      // sign-in screen of an account that is now signed in. A `replace`
+      // would swap only the top screen and leave those under it.
+      // `reset` exists on every navigator; the untyped route list is the
+      // account stack's own (`app/(account)/_layout.tsx`).
+      (
+        navigation as unknown as {
+          reset: (state: { index: number; routes: { name: string }[] }) => void;
+        }
+      ).reset({ index: 0, routes: [{ name: "setup-username" }] });
     } else {
       navigation.getParent()?.goBack();
     }
-  }, [router, navigation]);
+  }, [navigation]);
 }
