@@ -31,7 +31,6 @@
   "home": {
     "title": "Ajedrez a Ciegas",
     "welcome": "¡Bienvenido de nuevo!",
-    "playAi": "Jugar contra la IA",
     "nextRankTitle": "Próximo objetivo",
     "allAchievedBody": "Tienes el 1.er Dan. Sigue puliéndolo contra el motor.",
     "nextStep": {

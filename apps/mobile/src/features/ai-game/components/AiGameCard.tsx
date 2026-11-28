@@ -4,7 +4,7 @@ import { Button, Card } from "../../../components";
 import { useTheme, fontWeight, spacing } from "../../../theme";
 
 type AiGameCardProps = {
-  /** The call to action; the Home and Play tabs word it differently. */
+  /** The call to action. */
   buttonTitle: string;
   onPress: () => void;
 };
@@ -13,9 +13,9 @@ type AiGameCardProps = {
  * The "play against the AI" card: the feature's title and description over
  * a full-width button.
  *
- * Both the Home tab and the Play tab lead with this card, and each had the
- * three elements and their styles written out; only the button's wording
- * differs.
+ * The Play tab leads with this card. Home used to carry it too, with its
+ * own button wording; the play tab now sits in the middle of the tab bar
+ * instead, so the card has a single home.
  *
  * It follows the flat surface rule: a surface laid on the page casts no
  * shadow, so `shadow="none"` is passed explicitly and the card stays flat

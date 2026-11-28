@@ -31,7 +31,6 @@
   "home": {
     "title": "ブラインドチェス",
     "welcome": "おかえりなさい！",
-    "playAi": "AIと対戦する",
     "nextRankTitle": "次の目標",
     "allAchievedBody": "初段を取得しました。AIとの対戦で腕を磨きましょう。",
     "nextStep": {

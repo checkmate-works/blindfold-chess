@@ -39,6 +39,11 @@ export function isInProgress(game: SavedGame): boolean {
   return game.result === undefined;
 }
 
+/** How many of the saved games can still be played on. */
+export function countInProgress(games: readonly SavedGame[]): number {
+  return games.filter(isInProgress).length;
+}
+
 /** Games kept; the oldest is dropped past this. */
 export const MAX_SAVED_GAMES = 50;
 
@@ -93,6 +98,20 @@ export async function loadSavedGames(): Promise<SavedGame[]> {
   return parseSavedGames(await AsyncStorage.getItem(STORAGE_KEY));
 }
 
+const listeners = new Set<() => void>();
+
+/**
+ * Calls `listener` after every write to the saved games, for a view that
+ * stays mounted while games are saved or deleted elsewhere (the play tab's
+ * badge). Returns the unsubscribe function.
+ */
+export function subscribeToSavedGames(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+}
+
 /**
  * Writes run one after another. Each is a read of the whole list followed by
  * a write of it, and a game is saved after every move: two of them
@@ -107,6 +126,7 @@ function enqueueWrite(
   const run = async () => {
     const games = await loadSavedGames();
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(update(games)));
+    for (const listener of listeners) listener();
   };
   // A failed write must not stop the ones queued behind it.
   writes = writes.then(run, run);
