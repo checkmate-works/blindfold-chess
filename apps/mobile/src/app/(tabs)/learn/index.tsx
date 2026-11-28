@@ -30,10 +30,12 @@ import {
 } from "../../../features/learn/types";
 
 /**
- * The learn tab: the dojo's guides, then the glossary, then the web's learn
- * articles grouped by category in the web's order. Guides and articles ship
- * with the app (see `scripts/bundle-guides.ts` and
- * `scripts/bundle-learn-content.ts`), so the tab works offline.
+ * The learn tab: the dojo's guides, then the web's learn articles grouped by
+ * category in the web's order. Guides and articles ship with the app (see
+ * `scripts/bundle-guides.ts` and `scripts/bundle-learn-content.ts`), so the
+ * tab works offline. The glossary list (`learn/glossary`) is built but has
+ * no row here: it is held back from the first release, so nothing links to
+ * it. A guide's term links still open a single term's sheet.
  *
  * @description
  * The guides come first, one row per guide in ladder order, because they
@@ -101,14 +103,6 @@ export default function LearnTab() {
             />
           );
         })}
-      </ListSection>
-      <ListSection>
-        <ListRow
-          leading={<ListIcon ionicon="library-outline" />}
-          title={t("glossary.title")}
-          subtitle={t("glossary.subtitle")}
-          onPress={() => router.push("/learn/glossary")}
-        />
       </ListSection>
       {/* learn.categories.{moves,coordinates,notation,memory,practice} */}
       {LEARN_CATEGORIES.map((category) => {

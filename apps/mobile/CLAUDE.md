@@ -384,7 +384,8 @@ database. Sign-in calls Supabase Auth directly; sign-up goes through
     next-step button (`stepTarget`) is what goes straight to the one next
     thing (for learn, the next unread page itself, `?page=<n>`).
   - the learn tab (`(tabs)/learn`) opens with the guides, one row per guide
-    in ladder order, before the glossary and the articles: the done mark once
+    in ladder order, before the articles (the glossary list,
+    `learn/glossary`, is held back from the first release and has no row): the done mark once
     read through, "n / N" part way, nothing before the first page, and a
     press opens the guide at its first unread page
     (`/dojo/guides/<rank>?page=<n>`; the guide screen ignores a page it
