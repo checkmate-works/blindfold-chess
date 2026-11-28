@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
@@ -11,6 +12,7 @@ import {
   ListSection,
   TabScrollView,
 } from "../components";
+import { AvatarPicker } from "../features/account/AvatarPicker";
 import { RecordCtaCard } from "../features/account/RecordCtaCard";
 import {
   AccountStats,
@@ -48,11 +50,14 @@ const PREVIEW_STATS: AccountStatsInput = {
  *   Sign-in and sign-up open in the account modal over this page and close
  *   back onto it.
  *
- * There is no profile editing: avatars, display names and bios are shown to
- * other players on the web, and the app shows no other player (see
- * apps/mobile/CLAUDE.md), so the app takes only the username. The last
- * row opens the player's public profile (`/u/<username>`) in the browser
- * instead, where the web's profile, with its posts and followers, lives.
+ * The heading's avatar is the one profile field the app edits besides the
+ * username, the two the web's sign-up asks for (`AvatarPicker`). The player
+ * sees only their own picture here; other players see it on the web, and
+ * the app shows no other player (see apps/mobile/CLAUDE.md), so it needs
+ * none of the reporting and blocking that showing it to others would. The
+ * rest of the profile (display name, bio, links) stays on the web: the last
+ * row opens the player's public profile (`/u/<username>`) in the browser,
+ * where the web's profile, with its posts and followers, lives.
  *
  * @flow
  * 1. The records row opens My Records; the ranks row the user's rank per
@@ -109,6 +114,7 @@ function MypageBody() {
           <ProfileHeading
             username={t("mypage.preview.username")}
             stats={PREVIEW_STATS}
+            avatar={<AvatarPicker avatarUrl={null} />}
           />
         </View>
       </>
@@ -122,6 +128,7 @@ function MypageBody() {
         username={account.username ?? ""}
         email={email}
         stats={account}
+        avatar={<AvatarPicker avatarUrl={account.avatarUrl} />}
       />
       <ListSection>
         <ListRow
@@ -155,34 +162,39 @@ function MypageBody() {
   );
 }
 
-/** The heading card: the username over the account's stats. */
+/** The heading card: the avatar and username over the account's stats. */
 function ProfileHeading({
   username,
   email,
   stats,
+  avatar,
 }: {
   username: string;
   email?: string;
   stats: AccountStatsInput;
+  avatar: ReactNode;
 }) {
   const { colors } = useTheme();
   return (
     <Card style={styles.heading}>
-      <View style={styles.names}>
-        <Text
-          style={[styles.username, { color: colors.foreground }]}
-          numberOfLines={1}
-        >
-          {username}
-        </Text>
-        {email ? (
+      <View style={styles.identity}>
+        {avatar}
+        <View style={styles.names}>
           <Text
-            style={[styles.email, { color: colors.mutedForeground }]}
+            style={[styles.username, { color: colors.foreground }]}
             numberOfLines={1}
           >
-            {email}
+            {username}
           </Text>
-        ) : null}
+          {email ? (
+            <Text
+              style={[styles.email, { color: colors.mutedForeground }]}
+              numberOfLines={1}
+            >
+              {email}
+            </Text>
+          ) : null}
+        </View>
       </View>
       <AccountStats account={stats} />
     </Card>
@@ -214,7 +226,13 @@ const styles = StyleSheet.create({
   heading: {
     gap: spacing.md,
   },
+  identity: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.md,
+  },
   names: {
+    flex: 1,
     gap: 2,
   },
   username: {

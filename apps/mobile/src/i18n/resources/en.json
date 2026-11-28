@@ -83,6 +83,22 @@
     "webProfile": "View your profile on the website",
     "preview": {
       "username": "your_name"
+    },
+    "avatar": {
+      "title": "Profile picture",
+      "add": "Add a profile picture",
+      "change": "Change profile picture",
+      "choose": "Choose a photo",
+      "remove": "Remove photo",
+      "removeConfirm": "Remove your profile picture?",
+      "errors": {
+        "offline": "Could not connect. Check your connection and try again.",
+        "rateLimited": "Too many changes. Please wait a few minutes and try again.",
+        "tooLarge": "This photo is too large.",
+        "invalidFile": "This photo could not be used. Try another one.",
+        "banned": "Your account cannot change its profile picture.",
+        "generic": "Could not save your profile picture. Please try again."
+      }
     }
   },
   "practice": {

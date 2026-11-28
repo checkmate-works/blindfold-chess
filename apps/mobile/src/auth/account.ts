@@ -5,6 +5,8 @@ export type MobileAccount = {
   userId: string;
   email: string | null;
   username: string | null;
+  /** The avatar's public URL; null for none, absent from older servers. */
+  avatarUrl?: string | null;
   banned: boolean;
   /** Absent from servers older than the app (the fields were added later). */
   totalExp?: number;
