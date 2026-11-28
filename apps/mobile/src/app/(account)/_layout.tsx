@@ -14,17 +14,18 @@ type ScreenOptionsFn = Extract<
 >;
 
 /**
- * The account modal: mypage, settings, the account offer after onboarding
- * (`welcome`), sign-in, sign-up, username setup, the user's records (My
- * Records, its full results list) and their leaderboard ranks, as a
- * stack inside one modal (the root stack presents `(account)` as `modal`,
- * the iOS card sheet). Screens inside it push onto this stack without
- * closing the modal.
+ * The account modal: the account offer after onboarding (`welcome`),
+ * sign-in, sign-up and username setup, as a stack inside one modal (the
+ * root stack presents `(account)` as `modal`, the iOS card sheet). Each is
+ * a task that ends where it began — signing in closes the modal back onto
+ * the screen that opened it (`useFinishSignIn`) — so it fits a modal. The
+ * account's pages that lead elsewhere (mypage, settings, My Records, ranks)
+ * are pushed on the root stack instead; see `app/_layout.tsx`.
  *
  * Whichever screen opens the modal shows a × (`ModalCloseButton`) that
  * dismisses the whole modal; a screen pushed on top of it gets the OS back
- * chevron instead. The same screen can be either — records opens from the
- * home tab's progress card and from mypage — so the layout decides from the
+ * chevron instead. The same screen can be either — sign-up opens from
+ * mypage's card and from sign-in's link — so the layout decides from the
  * screen's place in the stack rather than per screen.
  *
  * The modal also closes on a drag down (iOS), which `ModalGrabber` shows at
@@ -42,8 +43,6 @@ export default function AccountLayout() {
   return (
     <View style={styles.root}>
       <Stack screenOptions={screenOptions}>
-        <Stack.Screen name="mypage" options={titled(t("mypage.title"))} />
-        <Stack.Screen name="settings" options={titled(t("tabs.settings"))} />
         <Stack.Screen
           name="welcome"
           options={titled(t("account.welcome.title"))}
@@ -60,12 +59,6 @@ export default function AccountLayout() {
           name="setup-username"
           options={titled(t("account.setupUsername.title"))}
         />
-        <Stack.Screen name="records" options={titled(t("records.title"))} />
-        <Stack.Screen
-          name="records-results"
-          options={titled(t("records.results.title"))}
-        />
-        <Stack.Screen name="ranks" options={titled(t("ownRanks.title"))} />
       </Stack>
       <ModalGrabber />
     </View>

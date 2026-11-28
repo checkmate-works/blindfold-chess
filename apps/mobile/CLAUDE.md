@@ -29,15 +29,27 @@ replaced by the platform's own parts or their common app equivalents.
   redirected to `/onboarding`. `NativeTabs` is unstable API: re-check its
   props whenever the Expo SDK changes. Five is the iOS bar's limit before it
   folds the rest into "More", so Settings is not a tab: the person icon in
-  the home header (`TabStack`'s `headerRight`) opens mypage
-  (`(account)/mypage.tsx`), and settings (`(account)/settings.tsx`) is a row
-  there, inside the account modal.
+  the home header (`TabStack`'s `headerRight`) pushes mypage
+  (`mypage.tsx`), and settings (`settings.tsx`) is a row there.
 - Detail screens are pushed on the root stack, above the tabs, so the tab
   bar hides on them: each module's setup at `practice/<route>/index.tsx`
   (URL `/practice/<route>`), the AI-game setup at `play/ai-game`, the saved
   games at `play/games`, learn articles at `learn/[slug]`, a dojo rank at
   `dojo/ranks/[slug]`, its guide at `dojo/guides/[rank]`, its exam at
   `dojo/exams/[rank]` and its requirements at `dojo/requirements/[rank]`.
+  The account's pages are detail screens too: `mypage`, `settings`,
+  `records` (My Records), `records-results` and `ranks`.
+- **Modal or push:** a modal is for a task that ends where it was opened
+  (sign-in, a session); a page that leads on to other screens is pushed.
+  A root-stack screen pushed from inside a modal opens under the modal on
+  iOS, so a modal can only reach one by closing first, which loses the way
+  back. That is why the account's pages left the account modal: My Records'
+  Take the Challenge now pushes the setup and back returns to My Records
+  (or, when that setup is right underneath, goes back to it instead of
+  stacking a copy: `routeNameBelow`, `navigation/route-below.ts`). A link
+  from inside a modal to a pushed page closes the modal and then pushes
+  (a challenge result's "View My Records" closes the session onto its
+  setup first).
 - `(session)` — timed sessions, results and training runs
   (`(session)/practice/<route>/{session,result,training}.tsx`,
   `(session)/play/ai-game/*`), presented as one `fullScreenModal`. A full
@@ -415,26 +427,26 @@ database. Sign-in calls Supabase Auth directly; sign-up goes through
     pages are counted by `features/guides/reading-progress.ts`, which the
     guide screen reads too: a page is read when any rank's journey has it
     done, since the unranked guide belongs to 5kyu's.
-- `(account)` screens: mypage (the home header's entry: the username,
-  rank, level and EXP and rows into records and ranks for a player with a
-  username; the sign-up card over a faded sample for anyone else; settings
-  for everyone), settings (with the Account section), welcome (the account
-  offer that ends onboarding), sign-in, sign-up, setup-username, records
-  (My Records, the web's `/mypage/challenges`: period chips, the challenge
-  and its key, best / average score against the previous period, the score
-  trend drawn with SVG (`features/records/ScoreChart.tsx`), the five newest
-  runs and Take the Challenge; `GET /records/dashboard`, with the stats and
-  the series from the shared `@blindfold-chess/features/challenge-records`
-  so both apps count the same; a recorded challenge's result screen opens
-  it over the session on that challenge, `?menu=` as on the web),
-  records-results (every run,
-  `GET /records/results`, the next page loading near the end) and ranks
-  (the user's own rank per leaderboard, the web home's "Your Rankings";
-  `GET /leaderboard/ranks`). Whichever screen opens the modal gets the ×; the
-  layout decides from the screen's place in the stack, since records and
-  sign-up open both ways. A root-stack screen pushed from inside the modal
-  opens under it on iOS, so a row that leaves for one (the tutorial) closes
-  the modal first.
+- **Account pages** (root stack): mypage (the home header's entry: the
+  username, rank, level and EXP and rows into records and ranks for a
+  player with a username; the sign-up card over a faded sample for anyone
+  else; settings for everyone), settings (with the Account section),
+  records (My Records, the web's `/mypage/challenges`: period chips, the
+  challenge and its key, best / average score against the previous period,
+  the score trend drawn with SVG (`features/records/ScoreChart.tsx`), the
+  five newest runs and Take the Challenge; `GET /records/dashboard`, with
+  the stats and the series from the shared
+  `@blindfold-chess/features/challenge-records` so both apps count the
+  same; a recorded challenge's result screen closes the session and opens
+  it over that challenge's setup, `?menu=` as on the web), records-results
+  (every run, `GET /records/results`, the next page loading near the end)
+  and ranks (the user's own rank per leaderboard, the web home's "Your
+  Rankings"; `GET /leaderboard/ranks`).
+- `(account)` modal: welcome (the account offer that ends onboarding),
+  sign-in, sign-up, setup-username — tasks that close back onto the screen
+  that opened them. Whichever screen opens the modal gets the ×; the layout
+  decides from the screen's place in the stack, since sign-up opens both
+  ways.
 - **One-tap sign-in** (`auth/oauth.ts`, `features/account/OAuthButtons.tsx`):
   Sign in with Apple through the native sheet and `signInWithIdToken` (iOS
   only), Google through Supabase's hosted page in an in-app browser session

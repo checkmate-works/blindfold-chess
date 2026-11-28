@@ -7,6 +7,7 @@ import {
 } from "@blindfold-chess/features/challenge-records";
 
 import { ListIcon, ListRow, ListSection } from "../../components";
+import { useCloseSession } from "../../navigation/use-close-session";
 import {
   borderRadius,
   fontSize,
@@ -26,7 +27,8 @@ type RecordCardProps = {
  * The web result's "Your record" card for a signed-in player: this run, the
  * last one and the best before it, with the change against the last run on
  * this run's row (the ticker order: the value, then its change) and a badge
- * for a first record or a new best under it, then a row into My Records.
+ * for a first record or a new best under it, then a row into My Records,
+ * which closes the session and opens My Records over the challenge's setup.
  *
  * Grouped rows rather than the web's card: three label–value lines and a
  * link are what the inset-grouped list is for. The rows always number three,
@@ -37,6 +39,7 @@ export function RecordCard({ record, menuType }: RecordCardProps) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
+  const { close } = useCloseSession();
 
   const formatScore = (score: number | undefined) =>
     score === undefined ? "—" : t("challenge.recordCard.scoreValue", { score });
@@ -104,9 +107,13 @@ export function RecordCard({ record, menuType }: RecordCardProps) {
       <ListRow
         leading={<ListIcon ionicon="trending-up" tint={colors.primary} />}
         title={t("challenge.recordCard.viewMyRecords")}
-        onPress={() =>
-          router.push({ pathname: "/records", params: { menu: menuType } })
-        }
+        onPress={() => {
+          // My Records is a root-stack screen, which would open under the
+          // session modal on iOS: close the modal onto the challenge's setup
+          // and push My Records over that, so back returns to the setup.
+          close();
+          router.push({ pathname: "/records", params: { menu: menuType } });
+        }}
         testID="record-view-my-records"
       />
     </ListSection>

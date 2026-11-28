@@ -20,14 +20,11 @@ import {
   type ChallengeMenuType,
 } from "@blindfold-chess/features/practice-registry";
 
-import { FilterChips, ListRow, ListSection } from "../../components";
-import {
-  RecordColumnsHeader,
-  RecordRow,
-} from "../../features/records/RecordRow";
-import { menuNameOf } from "../../features/records/menu-name";
-import { fetchRecordsResults } from "../../features/records/records-api";
-import { fontSize, spacing, useTheme } from "../../theme";
+import { FilterChips, ListRow, ListSection } from "../components";
+import { RecordColumnsHeader, RecordRow } from "../features/records/RecordRow";
+import { menuNameOf } from "../features/records/menu-name";
+import { fetchRecordsResults } from "../features/records/records-api";
+import { fontSize, spacing, useTheme } from "../theme";
 
 const ALL = "all";
 const ORIENTATION_KEYS = ["white", "black", "random"] as const;

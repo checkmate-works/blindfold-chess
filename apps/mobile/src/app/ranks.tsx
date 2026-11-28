@@ -3,16 +3,16 @@ import { RefreshControl, ScrollView, StyleSheet } from "react-native";
 import { useFocusEffect } from "expo-router";
 import { useTranslation } from "react-i18next";
 
-import { ListRow, ListSection, OptionsField } from "../../components";
-import { MOBILE_PRACTICE_MODULES } from "../../navigation/practice-modules";
+import { ListRow, ListSection, OptionsField } from "../components";
+import { MOBILE_PRACTICE_MODULES } from "../navigation/practice-modules";
 import {
   RANK_PERIODS,
   fetchOwnRanks,
   slugOfModule,
   type OwnRank,
   type RankPeriod,
-} from "../../features/records/records-api";
-import { spacing } from "../../theme";
+} from "../features/records/records-api";
+import { spacing } from "../theme";
 
 /**
  * The user's own rank on each challenge leaderboard, per period — the web

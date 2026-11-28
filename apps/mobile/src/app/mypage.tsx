@@ -2,7 +2,7 @@ import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 
-import { refreshAccount, useAuth } from "../../auth/use-auth";
+import { refreshAccount, useAuth } from "../auth/use-auth";
 import {
   Button,
   Card,
@@ -10,13 +10,13 @@ import {
   ListRow,
   ListSection,
   TabScrollView,
-} from "../../components";
-import { RecordCtaCard } from "../../features/account/RecordCtaCard";
+} from "../components";
+import { RecordCtaCard } from "../features/account/RecordCtaCard";
 import {
   AccountStats,
   type AccountStatsInput,
-} from "../../features/records/AccountStats";
-import { fontSize, fontWeight, spacing, useTheme } from "../../theme";
+} from "../features/records/AccountStats";
+import { fontSize, fontWeight, spacing, useTheme } from "../theme";
 
 /** The made-up stats of the sample a guest sees under the sign-up card. */
 const PREVIEW_STATS: AccountStatsInput = {
@@ -26,9 +26,11 @@ const PREVIEW_STATS: AccountStatsInput = {
 };
 
 /**
- * Mypage, opened from the person icon at the right of the home header: the
- * account modal's first screen (the web's `/mypage`, in the mahjong app's
- * shape).
+ * Mypage, opened from the person icon at the right of the home header and
+ * pushed on the root stack (the web's `/mypage`, in the mahjong app's
+ * shape). It is a hub whose rows lead on — to My Records and from there to
+ * a challenge — so it is a pushed page rather than a modal, and the back
+ * button retraces the way.
  *
  * @description
  * - A player with an account and a username sees the heading — username,
@@ -41,9 +43,9 @@ const PREVIEW_STATS: AccountStatsInput = {
  *   clearer as a picture than as a list of words. The sample takes no taps
  *   and is hidden from screen readers.
  * - Settings is a row at the end for everyone. It used to be the gear in the
- *   home header; the header now has one entry, here, as in the mahjong app,
- *   and settings opens inside this modal (so the account rows in it can push
- *   sign-in and records on the same stack).
+ *   home header; the header now has one entry, here, as in the mahjong app.
+ *   Sign-in and sign-up open in the account modal over this page and close
+ *   back onto it.
  *
  * There is no profile editing: avatars, display names and bios are shown to
  * other players on the web, and the app shows no other player (see
