@@ -100,7 +100,10 @@ header style (page-coloured, no hairline, chevron-only back).
   (`@expo/ui`: SwiftUI `.sheet` on iOS, Material 3 on Android), so dragging,
   flinging, the backdrop and the grabber are the OS's; never rebuild them
   with `Modal` + `PanResponder`. `@expo/ui` is a native module: adding or
-  upgrading it needs a new native build, not just a Metro reload.
+  upgrading it needs a new native build, not just a Metro reload. The
+  account modal is an iOS card modal rather than a sheet, and the OS gives
+  a grabber only to form sheets, so its layout draws one (`ModalGrabber`):
+  every surface that closes on a drag down shows the bar.
 - **Setup screens** take the web's sections, above the app's own
   two-button footer, as grouped panels (`ListSection`) rather than the web's
   underlined headings: `HowToPlaySection` (the `moduleHelp` how-to-play text
