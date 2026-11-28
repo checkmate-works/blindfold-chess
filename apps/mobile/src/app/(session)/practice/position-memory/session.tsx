@@ -174,9 +174,13 @@ export default function PositionMemorySession() {
         // screen, from the recreated position in `results`.
         ...(examProblem && params.exam ? { exam: params.exam } : {}),
         // A guide's problem (`from=guide`) leads back to the guide, and its
-        // "play again" needs the problem it was.
+        // "play again" needs the problem it was, on the same clock.
         ...(params.from === FROM_GUIDE && !examProblem
-          ? { from: FROM_GUIDE, problems: params.problems ?? "" }
+          ? {
+              from: FROM_GUIDE,
+              problems: params.problems ?? "",
+              ...(params.seconds ? { seconds: params.seconds } : {}),
+            }
           : {}),
       },
     });
@@ -188,6 +192,7 @@ export default function PositionMemorySession() {
     params.exam,
     params.from,
     params.problems,
+    params.seconds,
     examProblem,
   ]);
 

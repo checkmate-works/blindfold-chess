@@ -28,7 +28,12 @@ import {
 export default function PositionMemoryResult() {
   const router = useRouter();
   const params = useLocalSearchParams<
-    FenResultParams & { exam?: string; from?: string; problems?: string }
+    FenResultParams & {
+      exam?: string;
+      from?: string;
+      problems?: string;
+      seconds?: string;
+    }
   >();
   const result = parseFenResultParams(params);
   const exam = examRankOf(params.exam);
@@ -46,6 +51,7 @@ export default function PositionMemoryResult() {
               pathname: "/practice/position-memory/session",
               params: guideProblemSessionParams(
                 parseFenSessionParams({ problems: guideProblems }).fens,
+                params.seconds,
               ),
             }),
         }
