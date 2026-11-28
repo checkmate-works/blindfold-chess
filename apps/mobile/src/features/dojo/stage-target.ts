@@ -1,4 +1,4 @@
-import type { Href } from "expo-router";
+import type { Href, ImperativeRouter } from "expo-router";
 import type {
   JourneyStage,
   RankJourney,
@@ -7,8 +7,8 @@ import type { RankSlug } from "@blindfold-chess/features/dojo-ranks";
 
 /**
  * The learn tab, whose first section lists every guide with how far it is
- * read. A tab, so it is returned to with `router.dismissTo` rather than
- * pushed over the current screen.
+ * read. A tab, so it is switched to ({@link openTab})
+ * rather than pushed over the current screen.
  */
 export const GUIDE_LIST_HREF: Href = "/learn";
 
@@ -63,10 +63,10 @@ export function rankDetailHref(rank: RankSlug): Href {
  *   and on a rank of several requirements would choose one for the player.
  *
  * Practice and learn are tabs and the requirements screen sits on the root
- * stack; `RankStageProgress` opens the tabs with `router.dismissTo`, which
- * pops back to the tabs already underneath instead of stacking a second
- * copy (what `router.navigate` does from a root-stack screen such as the
- * rank screen), and pushes the requirements screen.
+ * stack; `RankStageProgress` opens the tabs with `openTab` (`navigate`
+ * from inside the tabs, `dismissTo` from a root-stack screen such as the
+ * rank screen, where `navigate` would stack a second set of tabs) and
+ * pushes the requirements screen.
  */
 export function stageTarget(stage: JourneyStage, journey: RankJourney): Href {
   switch (stage) {
@@ -77,4 +77,37 @@ export function stageTarget(stage: JourneyStage, journey: RankJourney): Href {
     case "exam":
       return requirementsHref(journey.rank);
   }
+}
+
+/**
+ * Opens the tab at `href` from wherever the stage cells are.
+ *
+ * @description
+ * The cells sit both inside the tabs (the home and dojo tabs) and above
+ * them (the rank screen, pushed on the root stack), and neither call works
+ * from both:
+ *
+ * - From a root-stack screen, `router.navigate` reuses a route only when it
+ *   is the one on top, so it pushes a second set of tabs over the screen.
+ *   `router.dismissTo` pops back to the tabs already underneath and switches
+ *   to the tab.
+ * - From inside the tabs, `router.dismissTo` does nothing at all. expo-router
+ *   sends its `POP_TO` to the deepest navigator the current and target
+ *   routes share, which here is the tab navigator, and the tab router has no
+ *   handling for `POP_TO`; the action is dropped with only a dev-build
+ *   warning ("was not handled by any navigator"). `router.navigate` switches
+ *   the tab.
+ *
+ * `router.canDismiss()` tells the two apart: it is true when a stack in the
+ * focused branch holds more than one route, which on these screens means
+ * the rank screen sits on the root stack above the tabs (each tab's own
+ * stack holds only its entry screen). It is read when the cell is pressed,
+ * not during render, so it reflects the stack as it is at that moment.
+ */
+export function openTab(
+  router: Pick<ImperativeRouter, "canDismiss" | "dismissTo" | "navigate">,
+  href: Href,
+): void {
+  if (router.canDismiss()) router.dismissTo(href);
+  else router.navigate(href);
 }

@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   buildRankJourney,
   guideStepKey,
@@ -10,6 +10,8 @@ import type {
 } from "@blindfold-chess/features/dojo-ranks";
 
 import {
+  GUIDE_LIST_HREF,
+  openTab,
   practiceListHref,
   rankDetailHref,
   requirementsHref,
@@ -113,5 +115,30 @@ describe("requirementsHref", () => {
 describe("rankDetailHref", () => {
   it("names the rank in the rank screen's path", () => {
     expect(rankDetailHref("mukyu")).toBe("/dojo/ranks/mukyu");
+  });
+});
+
+describe("openTab", () => {
+  function fakeRouter(canDismiss: boolean) {
+    return {
+      canDismiss: () => canDismiss,
+      dismissTo: vi.fn(),
+      navigate: vi.fn(),
+    };
+  }
+
+  it("switches the tab with navigate from inside the tabs, where dismissTo is dropped", () => {
+    const router = fakeRouter(false);
+    openTab(router, GUIDE_LIST_HREF);
+    expect(router.navigate).toHaveBeenCalledWith(GUIDE_LIST_HREF);
+    expect(router.dismissTo).not.toHaveBeenCalled();
+  });
+
+  it("pops back to the tabs with dismissTo from a root-stack screen above them", () => {
+    const router = fakeRouter(true);
+    const href = practiceListHref("5kyu");
+    openTab(router, href);
+    expect(router.dismissTo).toHaveBeenCalledWith(href);
+    expect(router.navigate).not.toHaveBeenCalled();
   });
 });
