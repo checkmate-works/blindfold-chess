@@ -1,16 +1,31 @@
 import { useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import * as AppleAuthentication from "expo-apple-authentication";
 import { useTranslation } from "react-i18next";
 
-import { Button } from "../../components";
 import { OAUTH_PROVIDERS, signInWith } from "../../auth/oauth";
 import type { OAuthProvider } from "../../auth/oauth-providers";
-import { useTheme, borderRadius, fontSize, spacing } from "../../theme";
+import {
+  useTheme,
+  borderRadius,
+  controlLabel,
+  fontSize,
+  spacing,
+} from "../../theme";
+import { GoogleLogo } from "./GoogleLogo";
 import { useFinishSignIn } from "./use-finish-sign-in";
 
 /** The height of Apple's button, matched by the Google one beside it. */
 const BUTTON_HEIGHT = 50;
+
+/** The web button's 20px "G". */
+const GOOGLE_LOGO_SIZE = 20;
 
 /**
  * One-tap sign-in buttons — Sign in with Apple (iOS) and Google — for the
@@ -18,7 +33,9 @@ const BUTTON_HEIGHT = 50;
  * offers none. Signing in and signing up are the same action here: the first
  * sign-in creates the account, and `useFinishSignIn` then asks for the
  * username. Apple's button is Apple's own component, as its guidelines
- * require.
+ * require. Google's is drawn to stand beside it as the web's does: the
+ * four-colour "G" before the label, on the card fill inside a panel border,
+ * with Apple's height and corner.
  *
  * `mode` only picks the wording — the web's "Sign in with Google" or
  * "Register with Google", and Apple's matching button text.
@@ -66,17 +83,33 @@ export function OAuthButtons({ mode }: { mode: "signIn" | "signUp" }) {
             onPress={() => void start("apple")}
           />
         ) : (
-          <Button
+          <Pressable
             key={provider}
-            // account.signIn.googleOAuth, account.signUp.googleOAuth
-            title={t(`account.${mode}.googleOAuth`)}
-            variant="outline"
-            size="lg"
-            fullWidth
-            loading={busy === "google"}
-            style={styles.googleButton}
             onPress={() => void start("google")}
-          />
+            disabled={busy !== null}
+            accessibilityRole="button"
+            accessibilityState={{
+              disabled: busy !== null,
+              busy: busy === "google",
+            }}
+            style={({ pressed }) => [
+              styles.googleButton,
+              {
+                backgroundColor: pressed ? colors.muted : colors.card,
+                borderColor: colors.panelBorder,
+              },
+            ]}
+          >
+            {busy === "google" ? (
+              <ActivityIndicator color={colors.foreground} size="small" />
+            ) : (
+              <GoogleLogo size={GOOGLE_LOGO_SIZE} />
+            )}
+            <Text style={[styles.googleLabel, { color: colors.foreground }]}>
+              {/* account.signIn.googleOAuth, account.signUp.googleOAuth */}
+              {t(`account.${mode}.googleOAuth`)}
+            </Text>
+          </Pressable>
         ),
       )}
       {failed && (
@@ -114,7 +147,20 @@ const styles = StyleSheet.create({
     height: BUTTON_HEIGHT,
   },
   googleButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: spacing.sm,
+    width: "100%",
     minHeight: BUTTON_HEIGHT,
+    paddingHorizontal: spacing.lg,
+    borderRadius: borderRadius.lg,
+    borderWidth: 1,
+  },
+  googleLabel: {
+    ...controlLabel,
+    flexShrink: 1,
+    textAlign: "center",
   },
   error: {
     fontSize: fontSize.sm,
