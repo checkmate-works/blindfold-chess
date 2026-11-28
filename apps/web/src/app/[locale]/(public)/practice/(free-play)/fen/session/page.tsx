@@ -12,6 +12,8 @@ import { PracticeSessionPage } from '@/app/[locale]/(public)/practice/_component
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
 
+import { parseSessionFens, parseTutorialFen } from '../_lib/session-params';
+
 const FenSession = dynamic(() => import('../_components/FenSession').then((mod) => mod.FenSession));
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -26,19 +28,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-/**
- * Decode Base64 string to FEN strings
- * Returns null if decoding fails
- */
-function decodeFensFromBase64(encoded: string): string[] | null {
-  try {
-    const decoded = atob(encoded);
-    return decoded.split('\n').filter((line) => line.trim());
-  } catch {
-    return null;
-  }
-}
-
 export default async function FenSessionPage({ params, searchParams }: Props) {
   const { locale } = await params;
   const search = await searchParams;
@@ -51,11 +40,7 @@ export default async function FenSessionPage({ params, searchParams }: Props) {
   const modeParam = search.mode;
   const fenParam = search.fen;
 
-  // Decode problems from base64 if provided
-  let fens: string[] | null = null;
-  if (problemsParam && typeof problemsParam === 'string') {
-    fens = decodeFensFromBase64(problemsParam);
-  }
+  const fens = parseSessionFens(problemsParam);
 
   // Parse count
   let problemCount = fens?.length ?? 5;
@@ -69,15 +54,8 @@ export default async function FenSessionPage({ params, searchParams }: Props) {
   const shuffle = shuffleParam === '1';
   const isTutorial = modeParam === 'tutorial';
 
-  // Decode custom FEN if provided (for tutorial - single FEN)
-  let customFen: string | null = null;
-  if (fenParam && typeof fenParam === 'string') {
-    try {
-      customFen = decodeURIComponent(fenParam);
-    } catch {
-      // Invalid encoding, ignore
-    }
-  }
+  // The single position the tutorial starts with.
+  const customFen = parseTutorialFen(fenParam);
 
   return (
     <PracticeSessionPage
