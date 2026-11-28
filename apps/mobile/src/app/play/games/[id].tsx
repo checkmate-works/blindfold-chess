@@ -8,6 +8,7 @@ import {
   deleteSavedGame,
   type SavedGame,
 } from "../../../features/game-history/game-history";
+import { SideMark } from "../../../features/game-history/SideMark";
 import { SavedGameSnackbar } from "../../../features/game-history/SavedGameSnackbar";
 import { useSavedGames } from "../../../features/game-history/useSavedGames";
 import { useTheme, borderRadius, fontSize, spacing } from "../../../theme";
@@ -104,7 +105,8 @@ export default function SavedGameScreen() {
           />
           <ListRow
             title={t("gameHistory.sideLabel")}
-            value={t(`gameHistory.side.${game.playerColor}`)}
+            trailing={<SideMark side={game.playerColor} />}
+            accessibilityLabel={`${t("gameHistory.sideLabel")}: ${t(`gameHistory.side.${game.playerColor}`)}`}
           />
           <ListRow
             title={t("gameHistory.levelLabel")}
