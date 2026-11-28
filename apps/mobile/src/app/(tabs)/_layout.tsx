@@ -26,7 +26,8 @@ import { useTheme } from "../../theme";
  * with it.
  *
  * Five is the most the iOS bar shows before folding the rest into a "More"
- * tab, so settings is not a tab: it opens from the gear in the home header.
+ * tab, so settings is not a tab: the person icon in the home header opens
+ * mypage, and settings is a row there.
  * The dojo sits next to home because the rank ladder is the app's spine —
  * every practice module the home screen suggests is a step on it. Play is in
  * the middle, the easiest tab to reach with a thumb: the home screen no
