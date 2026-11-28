@@ -5,10 +5,11 @@ import { ChessPieceIcon } from "@blindfold-chess/icons";
 import type { PieceType, Square } from "@blindfold-chess/types";
 import { boardThemeColors } from "@blindfold-chess/ui";
 
-import { StaticBoard } from "../../components/StaticBoard";
+import { STATIC_BOARD_RADIUS, StaticBoard } from "../../components/StaticBoard";
 import { useFenSquares } from "../../components/use-fen-squares";
 import { useGamePreferences } from "../../lib/game-preferences";
 import type { MobilePracticeModule } from "../../navigation/practice-modules";
+import { cardGround } from "./card-ground";
 import {
   borderRadius,
   fontWeight,
@@ -41,9 +42,15 @@ const point = (square: Square) => ({
 
 function Board({ fen = EMPTY, path = [] }: { fen?: string; path?: Path }) {
   const { colors } = useTheme();
+  const { preferences } = useGamePreferences();
   const renderSquare = useFenSquares(fen);
   return (
-    <View style={styles.board}>
+    <View
+      style={[
+        styles.board,
+        { borderColor: boardThemeColors[preferences.boardTheme].dark },
+      ]}
+    >
       <StaticBoard
         maxSize={BOARD_SIZE}
         showCoordinates={false}
@@ -94,14 +101,16 @@ function Label({
   answer?: boolean;
 }) {
   const { colors } = useTheme();
+  // Every label is a tile laid on the band, like the tiles on a mahjong
+  // table; the answer is the tile ringed in primary.
   return (
     <Text
       style={[
         styles.label,
         {
           color: colors.foreground,
-          borderColor: answer ? colors.primary : "transparent",
-          backgroundColor: answer ? colors.card : "transparent",
+          borderColor: answer ? colors.primary : colors.card,
+          backgroundColor: colors.card,
         },
       ]}
     >
@@ -171,7 +180,7 @@ function Example({ slug }: { slug: MobilePracticeModule["slug"] }) {
       return (
         <Row>
           <Board path={["e4", "d4"]} />
-          <View>
+          <View style={styles.stack}>
             <Label>e4 ↔ d4</Label>
             <Label answer>d4</Label>
           </View>
@@ -181,7 +190,7 @@ function Example({ slug }: { slug: MobilePracticeModule["slug"] }) {
       return (
         <Row>
           <Piece type="b" />
-          <View>
+          <View style={styles.stack}>
             <Label>e4</Label>
             <Label answer>b1 ↔ h7</Label>
             <Label answer>a8 ↔ h1</Label>
@@ -193,7 +202,7 @@ function Example({ slug }: { slug: MobilePracticeModule["slug"] }) {
         <Row>
           <Piece type="n" />
           <Board path={["e2", "g3", "f5"]} />
-          <View>
+          <View style={styles.stack}>
             <Label>e2 → f5</Label>
             <Label answer>g3</Label>
           </View>
@@ -284,21 +293,28 @@ function Example({ slug }: { slug: MobilePracticeModule["slug"] }) {
 
 /**
  * Decorative worked example; the parent card announces the actual description.
- * Leave the surface transparent so the board and answer accents stand out on
- * the card itself, including its pressed state and dark appearance.
+ * It is laid on a band in the player's board colour (`cardGround`), so every
+ * card's example sits on the same ground, the way tiles sit on a table's felt.
  */
 export function PracticeCardVisual({
   slug,
 }: {
   slug: MobilePracticeModule["slug"];
 }) {
+  const { colors, isDark } = useTheme();
+  const { preferences } = useGamePreferences();
+  const ground = cardGround(
+    boardThemeColors[preferences.boardTheme],
+    isDark,
+    colors.card,
+  );
   return (
     <View
       pointerEvents="none"
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
       aria-hidden
-      style={styles.band}
+      style={[styles.band, { backgroundColor: ground.fill }]}
     >
       <Example slug={slug} />
     </View>
@@ -321,7 +337,14 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: spacing.sm,
   },
-  board: { width: BOARD_SIZE, height: BOARD_SIZE },
+  // The frame sits outside the board, so the band clears it by its width.
+  stack: { gap: spacing.xs },
+  board: {
+    width: BOARD_SIZE + 4,
+    height: BOARD_SIZE + 4,
+    borderWidth: 2,
+    borderRadius: STATIC_BOARD_RADIUS + 2,
+  },
   label: {
     fontFamily: monoFont,
     fontSize: 14,
