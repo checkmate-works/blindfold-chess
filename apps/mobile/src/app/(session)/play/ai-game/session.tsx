@@ -47,7 +47,7 @@ import {
   loadSavedGame,
   saveGame,
 } from "../../../../features/game-history/game-history";
-import { postSavedGameNotice } from "../../../../features/game-history/saved-game-notice";
+import { postScreenNotice } from "../../../../navigation/screen-notice";
 import { differsFromStart } from "../../../../features/game-history/session-changes";
 import { useCloseSession } from "../../../../navigation/use-close-session";
 import {
@@ -290,6 +290,7 @@ function AiGameBoard({ setup }: { setup: GameSetup }) {
   );
   const [startPrefsKey] = useState(() => JSON.stringify(perGamePrefs));
   const hasBeenSaved = useRef(false);
+  const lastSave = useRef<Promise<boolean>>(Promise.resolve(true));
   useEffect(() => {
     if (
       !hasBeenSaved.current &&
@@ -305,7 +306,9 @@ function AiGameBoard({ setup }: { setup: GameSetup }) {
       return;
     }
     hasBeenSaved.current = true;
-    void saveGame({
+    // Each write stores the whole game, so whether the game is kept is
+    // whether the latest write went through; the closing notice reads it.
+    lastSave.current = saveGame({
       id: gameId,
       finishedAt: new Date().toISOString(),
       playerColor,
@@ -315,7 +318,10 @@ function AiGameBoard({ setup }: { setup: GameSetup }) {
       startingFen: start.startingFen,
       operationLogs: game.operationLogs,
       gamePrefs: perGamePrefs,
-    });
+    }).then(
+      () => true,
+      () => false,
+    );
   }, [
     game.moves,
     game.playerResult,
@@ -334,16 +340,20 @@ function AiGameBoard({ setup }: { setup: GameSetup }) {
   // rather than from the ×, so Android's back button, which also pops the
   // modal, says it too. A game that ended goes on to its result instead, and
   // one this session never wrote (a new game with no move, a resumed one
-  // left as it was opened) has nothing to announce.
+  // left as it was opened) has nothing to announce. The notice waits for the
+  // latest write, so a write that failed says so instead of "Game saved".
   const inProgressRef = useRef(true);
   useEffect(() => {
     inProgressRef.current = game.gameStatus === "in_progress";
   }, [game.gameStatus]);
   useEffect(
     () => () => {
-      if (inProgressRef.current && hasBeenSaved.current) {
-        postSavedGameNotice(gameId);
-      }
+      if (!inProgressRef.current || !hasBeenSaved.current) return;
+      void lastSave.current.then((saved) =>
+        postScreenNotice(
+          saved ? { kind: "gameSaved", gameId } : { kind: "gameSaveFailed" },
+        ),
+      );
     },
     [gameId],
   );

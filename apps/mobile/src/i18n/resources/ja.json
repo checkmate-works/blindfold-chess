@@ -18,7 +18,9 @@
     "quitConfirmMessage": "このセッションの成績は記録されません。",
     "help": "ヘルプ",
     "next": "次へ",
-    "previous": "戻る"
+    "previous": "戻る",
+    "sessionQuitNotice": "セッションを中止しました。成績は記録されていません。",
+    "trainingEndedNotice": "トレーニングを終了しました"
   },
   "tabs": {
     "home": "ホーム",
@@ -909,7 +911,10 @@
     "inProgress": "対局中",
     "resume": "対局を再開",
     "savedNotice": "対局を保存しました",
-    "resumeShort": "再開"
+    "resumeShort": "再開",
+    "saveFailedNotice": "対局を保存できませんでした",
+    "deletedNotice": "対局を削除しました",
+    "deleteFailedNotice": "対局を削除できませんでした"
   },
   "glossary": {
     "title": "チェス用語集",
@@ -1085,7 +1090,8 @@
       "saving": "スコアを記録しています…",
       "recorded": "スコアを記録しました。",
       "notRecorded": "今回の結果は記録されませんでした。",
-      "failed": "スコアを記録できませんでした。通信状況を確認してください。"
+      "failed": "スコアを記録できませんでした。通信状況を確認してください。",
+      "interrupted": "通信が途切れたため、チャレンジを途中で終了しました。スコアは記録されていません。"
     },
     "rules": "制限時間60秒・ミス3回で終了",
     "willRecord": "スコアはランキングに記録されます。",

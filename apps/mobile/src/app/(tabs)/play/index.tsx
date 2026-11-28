@@ -8,7 +8,7 @@ import {
   TabScrollView,
 } from "../../../components";
 import { GameRow } from "../../../features/game-history/GameRow";
-import { SavedGameSnackbar } from "../../../features/game-history/SavedGameSnackbar";
+import { ScreenNoticeSnackbar } from "../../../navigation/ScreenNoticeSnackbar";
 import { useSavedGames } from "../../../features/game-history/useSavedGames";
 
 /** Rows of recent games shown before "see all". */
@@ -63,7 +63,7 @@ export default function PlayTab() {
           )}
         </ListSection>
       </TabScrollView>
-      <SavedGameSnackbar />
+      <ScreenNoticeSnackbar />
     </>
   );
 }

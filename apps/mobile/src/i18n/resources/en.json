@@ -18,7 +18,9 @@
     "quitConfirmMessage": "Your progress in this session will be lost.",
     "help": "Help",
     "next": "Next",
-    "previous": "Back"
+    "previous": "Back",
+    "sessionQuitNotice": "Session quit. This run was not recorded.",
+    "trainingEndedNotice": "Training ended"
   },
   "tabs": {
     "home": "Home",
@@ -909,7 +911,10 @@
     "inProgress": "In progress",
     "resume": "Resume game",
     "savedNotice": "Game saved",
-    "resumeShort": "Resume"
+    "resumeShort": "Resume",
+    "saveFailedNotice": "Couldn't save the game",
+    "deletedNotice": "Game deleted",
+    "deleteFailedNotice": "Couldn't delete the game"
   },
   "glossary": {
     "title": "Chess Glossary",
@@ -1085,7 +1090,8 @@
       "saving": "Recording your score…",
       "recorded": "Your score was recorded.",
       "notRecorded": "This run was not recorded.",
-      "failed": "Could not record your score. Check your connection."
+      "failed": "Could not record your score. Check your connection.",
+      "interrupted": "The connection was lost, so the challenge ended early. Your score was not recorded."
     },
     "rules": "60 seconds · ends after 3 mistakes",
     "willRecord": "Your score will be recorded on the leaderboard.",

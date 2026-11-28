@@ -23,6 +23,7 @@ import { ModeButtonRow } from "./ModeButtonRow";
 import { HelpSheet } from "../features/help/HelpSheet";
 import { helpPagesFor } from "../features/help/help-pages";
 import { HeaderIconButton } from "../navigation/HeaderIconButton";
+import { ScreenNoticeSnackbar } from "../navigation/ScreenNoticeSnackbar";
 import {
   MOBILE_PRACTICE_MODULES,
   practiceModuleRoute,
@@ -52,11 +53,6 @@ type PracticeSetupScreenProps = {
   onStartTraining?: () => void;
   /** The feature's settings form. */
   children: ReactNode;
-  /**
-   * Laid over the bottom of the form, just above the start buttons: a
-   * `Snackbar` the screen shows (the AI-game setup's "Game saved").
-   */
-  overlay?: ReactNode;
 };
 
 /**
@@ -163,7 +159,6 @@ export function PracticeSetupScreen({
   startDisabled = false,
   onStartTraining,
   children,
-  overlay,
 }: PracticeSetupScreenProps) {
   const { t } = useTranslation();
   const { colors } = useTheme();
@@ -209,7 +204,10 @@ export function PracticeSetupScreen({
         >
           {children}
         </ScrollView>
-        {overlay}
+        {/* Laid over the bottom of the form, just above the start buttons:
+            what the session this screen opened said as it closed ("Session
+            quit", "Training ended", the AI game's "Game saved"). */}
+        <ScreenNoticeSnackbar />
       </View>
 
       <BottomBar>

@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import { ListRow, ListSection, Screen } from "../../../components";
 import { GameRow } from "../../../features/game-history/GameRow";
-import { SavedGameSnackbar } from "../../../features/game-history/SavedGameSnackbar";
+import { ScreenNoticeSnackbar } from "../../../navigation/ScreenNoticeSnackbar";
 import { useSavedGames } from "../../../features/game-history/useSavedGames";
 import { spacing } from "../../../theme";
 
@@ -26,7 +26,7 @@ export default function SavedGamesScreen() {
           )}
         </ListSection>
       </ScrollView>
-      <SavedGameSnackbar />
+      <ScreenNoticeSnackbar />
     </Screen>
   );
 }

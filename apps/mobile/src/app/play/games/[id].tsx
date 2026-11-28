@@ -9,7 +9,8 @@ import {
   type SavedGame,
 } from "../../../features/game-history/game-history";
 import { SideMark } from "../../../features/game-history/SideMark";
-import { SavedGameSnackbar } from "../../../features/game-history/SavedGameSnackbar";
+import { postScreenNotice } from "../../../navigation/screen-notice";
+import { ScreenNoticeSnackbar } from "../../../navigation/ScreenNoticeSnackbar";
 import { useSavedGames } from "../../../features/game-history/useSavedGames";
 import { useTheme, borderRadius, fontSize, spacing } from "../../../theme";
 
@@ -85,7 +86,15 @@ export default function SavedGameScreen() {
         text: t("gameHistory.delete"),
         style: "destructive",
         onPress: () => {
-          void deleteSavedGame(game.id).then(() => router.back());
+          // Deleted: the list it goes back to says so. Not deleted: this
+          // page stays and says so, rather than nothing happening.
+          void deleteSavedGame(game.id).then(
+            () => {
+              router.back();
+              postScreenNotice({ kind: "gameDeleted" });
+            },
+            () => postScreenNotice({ kind: "gameDeleteFailed" }),
+          );
         },
       },
     ]);
@@ -169,7 +178,7 @@ export default function SavedGameScreen() {
           textStyle={{ color: colors.destructive }}
         />
       </ScrollView>
-      <SavedGameSnackbar />
+      <ScreenNoticeSnackbar />
     </Screen>
   );
 }

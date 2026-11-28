@@ -18,7 +18,9 @@
     "quitConfirmMessage": "Se perderá el progreso de esta sesión.",
     "help": "Ayuda",
     "next": "Siguiente",
-    "previous": "Atrás"
+    "previous": "Atrás",
+    "sessionQuitNotice": "Sesión abandonada. Esta partida no se registró.",
+    "trainingEndedNotice": "Entrenamiento finalizado"
   },
   "tabs": {
     "home": "Inicio",
@@ -909,7 +911,10 @@
     "inProgress": "En curso",
     "resume": "Reanudar la partida",
     "savedNotice": "Partida guardada",
-    "resumeShort": "Reanudar"
+    "resumeShort": "Reanudar",
+    "saveFailedNotice": "No se pudo guardar la partida",
+    "deletedNotice": "Partida eliminada",
+    "deleteFailedNotice": "No se pudo eliminar la partida"
   },
   "glossary": {
     "title": "Glosario de Ajedrez",
@@ -1085,7 +1090,8 @@
       "saving": "Registrando tu puntuación…",
       "recorded": "Tu puntuación se registró.",
       "notRecorded": "Esta partida no se registró.",
-      "failed": "No se pudo registrar tu puntuación. Revisa tu conexión."
+      "failed": "No se pudo registrar tu puntuación. Revisa tu conexión.",
+      "interrupted": "Se perdió la conexión y el desafío terminó antes de tiempo. Tu puntuación no se registró."
     },
     "rules": "60 segundos · termina tras 3 errores",
     "willRecord": "Tu puntuación se registrará en la clasificación.",
