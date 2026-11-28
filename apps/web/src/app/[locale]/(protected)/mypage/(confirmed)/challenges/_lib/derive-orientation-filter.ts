@@ -1,3 +1,4 @@
+import { latestLeaderboardKey } from '@blindfold-chess/features/challenge-records';
 import type { BoardOrientation } from '@blindfold-chess/types';
 import { isBoardOrientation } from '@blindfold-chess/types';
 
@@ -18,12 +19,6 @@ export const DEFAULT_BOARD_ORIENTATION: BoardOrientation = 'white';
  * timestamp so the order is not load-bearing.
  */
 export function deriveOrientationFromSessions(sessions: ChallengeResultRow[]): BoardOrientation {
-  const latest = sessions
-    .filter((s) => s.menuType === 'coordinate_quiz')
-    .reduce<ChallengeResultRow | undefined>(
-      (best, s) => (!best || s.createdAt > best.createdAt ? s : best),
-      undefined
-    );
-  if (!latest || !isBoardOrientation(latest.leaderboardKey)) return DEFAULT_BOARD_ORIENTATION;
-  return latest.leaderboardKey;
+  const key = latestLeaderboardKey(sessions, 'coordinate_quiz');
+  return key !== undefined && isBoardOrientation(key) ? key : DEFAULT_BOARD_ORIENTATION;
 }

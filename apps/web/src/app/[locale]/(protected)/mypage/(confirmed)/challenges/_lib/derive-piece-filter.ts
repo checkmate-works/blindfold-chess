@@ -1,4 +1,5 @@
 import type { PieceSelection } from '@/app/_components/practice/PieceSelector';
+import { latestLeaderboardKey } from '@blindfold-chess/features/challenge-records';
 
 import { PIECE_NAME_TO_SHORT, PIECE_TYPES, type PieceFullName } from '@/lib/games/chess-pieces';
 
@@ -27,15 +28,9 @@ export const DEFAULT_PIECE_SELECTION: PieceSelection = 'random';
  * query, but the pick is by timestamp so the order is not load-bearing.
  */
 export function derivePieceSelectionFromSessions(sessions: ChallengeResultRow[]): PieceSelection {
-  const latest = sessions
-    .filter((s) => s.menuType === 'legal_moves')
-    .reduce<ChallengeResultRow | undefined>(
-      (best, s) => (!best || s.createdAt > best.createdAt ? s : best),
-      undefined
-    );
-  if (!latest) return DEFAULT_PIECE_SELECTION;
+  const key = latestLeaderboardKey(sessions, 'legal_moves');
+  if (key === undefined) return DEFAULT_PIECE_SELECTION;
 
-  const key = latest.leaderboardKey;
   if (key === 'random') return 'random';
 
   // Convert full piece name to short code for PieceSelection
