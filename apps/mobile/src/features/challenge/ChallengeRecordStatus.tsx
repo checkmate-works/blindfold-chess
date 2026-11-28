@@ -6,8 +6,10 @@ import { useTheme, borderRadius, fontSize, spacing } from "../../theme";
 import { refreshAccount, useAuth as useAuthState } from "../../auth/use-auth";
 import { rankLabel } from "../records/rank-label";
 import { markGuestAttempt } from "../dojo/progress-store";
-import { finishChallenge } from "./challenge-api";
+import { finishChallenge, type ChallengeResultSummary } from "./challenge-api";
 import { ChallengeSignInRow } from "./ChallengeSignInRow";
+import { ExpGainCard } from "./ExpGainCard";
+import { RecordCard } from "./RecordCard";
 import { takeSignedOutRunKey } from "./useChallengeAttempt";
 
 type Status = "saving" | "recorded" | "notRecorded" | "failed";
@@ -19,6 +21,11 @@ type Status = "saving" | "recorded" | "notRecorded" | "failed";
  * sign in, as the web's result page does, with the setup screen's sign-in
  * row (`ChallengeSignInRow`) so the invitation looks the same before and
  * after a run.
+ *
+ * A recorded run then shows what the web's result page shows of it, in the
+ * web's order: the EXP card, then the player's record against it with the
+ * way into My Records (`summary` of the finish). When the server could not
+ * read those, the line saying the score was recorded stands in for them.
  */
 export function ChallengeRecordStatus({
   attemptId,
@@ -30,6 +37,7 @@ export function ChallengeRecordStatus({
   const auth = useAuthState();
   const [status, setStatus] = useState<Status>("saving");
   const [promoted, setPromoted] = useState<string[]>([]);
+  const [summary, setSummary] = useState<ChallengeResultSummary | null>(null);
 
   // A signed-out run that reached its result marks its challenge as
   // practised on this device. The dojo's "practice" stage asks, per
@@ -55,6 +63,7 @@ export function ChallengeRecordStatus({
       setStatus(result.kind);
       if (result.kind === "recorded") {
         setPromoted(result.grantedRanks.map((rank) => rank.slug));
+        setSummary(result.summary);
         // The EXP and any new rank show on the home tab's progress card.
         void refreshAccount();
       }
@@ -69,6 +78,27 @@ export function ChallengeRecordStatus({
     return (
       <View style={styles.signInRow}>
         <ChallengeSignInRow />
+      </View>
+    );
+  }
+
+  if (status === "recorded" && summary) {
+    return (
+      <View style={styles.cards}>
+        {summary.exp && <ExpGainCard exp={summary.exp} />}
+        {promoted.length > 0 && (
+          <View
+            style={[
+              styles.box,
+              styles.promotedBox,
+              { backgroundColor: colors.card },
+            ]}
+            accessibilityLiveRegion="polite"
+          >
+            <PromotedLines slugs={promoted} />
+          </View>
+        )}
+        <RecordCard record={summary.record} menuType={summary.menuType} />
       </View>
     );
   }
@@ -93,16 +123,20 @@ export function ChallengeRecordStatus({
       <Text style={[styles.text, { color }]}>
         {t(`challenge.record.${status}`)}
       </Text>
-      {promoted.map((slug) => (
-        <Text
-          key={slug}
-          style={[styles.promoted, { color: colors.foreground }]}
-        >
-          {t("challenge.promoted", { rank: rankLabel(slug, t) })}
-        </Text>
-      ))}
+      <PromotedLines slugs={promoted} />
     </View>
   );
+}
+
+/** "Promoted to <rank>!" for each rank the run granted. */
+function PromotedLines({ slugs }: { slugs: string[] }) {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  return slugs.map((slug) => (
+    <Text key={slug} style={[styles.promoted, { color: colors.foreground }]}>
+      {t("challenge.promoted", { rank: rankLabel(slug, t) })}
+    </Text>
+  ));
 }
 
 const styles = StyleSheet.create({
@@ -112,6 +146,13 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     alignItems: "center",
     marginTop: spacing.md,
+  },
+  cards: {
+    gap: spacing.md,
+    marginTop: spacing.md,
+  },
+  promotedBox: {
+    marginTop: 0,
   },
   signInRow: {
     marginTop: spacing.md,

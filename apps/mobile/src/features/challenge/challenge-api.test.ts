@@ -126,6 +126,45 @@ describe("finishChallenge", () => {
     await expect(finish()).resolves.toEqual({
       kind: "recorded",
       grantedRanks: [{ slug: "pawn" }],
+      summary: null,
+    });
+  });
+
+  it("returns the EXP and record summary of a recorded result", async () => {
+    const summary = {
+      exp: { earnedExp: 12, level: 3, levelUp: true, progressPercent: 40 },
+      record: {
+        status: "new-best",
+        currentScore: 9,
+        previousBestScore: 7,
+        previousLastScore: 5,
+        diffFromLast: 4,
+      },
+      menuType: "square_colors",
+    };
+    api.mockResolvedValue(
+      json({ status: "done", success: true, grantedRanks: [], summary }),
+    );
+    await expect(finish()).resolves.toEqual({
+      kind: "recorded",
+      grantedRanks: [],
+      summary,
+    });
+  });
+
+  it("keeps a recorded result whose summary it cannot read, without the summary", async () => {
+    api.mockResolvedValue(
+      json({
+        status: "done",
+        success: true,
+        grantedRanks: [],
+        summary: { exp: "lots", record: {}, menuType: "square_colors" },
+      }),
+    );
+    await expect(finish()).resolves.toEqual({
+      kind: "recorded",
+      grantedRanks: [],
+      summary: null,
     });
   });
 
@@ -145,6 +184,7 @@ describe("finishChallenge", () => {
     await expect(finish()).resolves.toEqual({
       kind: "recorded",
       grantedRanks: [],
+      summary: null,
     });
     expect(api).toHaveBeenCalledTimes(2);
   });
