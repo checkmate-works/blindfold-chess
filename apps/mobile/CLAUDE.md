@@ -105,13 +105,16 @@ header style (page-coloured, no hairline, chevron-only back).
   from `components/SettingRows.tsx`. Tab entry screens scroll in
   `TabScrollView` (automatic content insets, so the floating tab bar does not
   cover the last row).
+- List values move below the title on narrow screens or when system text is
+  enlarged. Switch rows expose one labelled switch to accessibility services;
+  their nested native switch is visual only for hit testing and reading.
 - **Done is one mark:** `DoneMark` (`components/DoneMark.tsx`), a white
   check in a green circle — `"md"` in a row's `trailing`, `"sm"` beside a
   line of text. Never a bare "✓" or a green `checkmark` icon of its own; a
   plain check stays only for what is not "done" (a selected row, a valid
   input).
 - **Filters over a list** are `FilterChips` (`components/FilterChips.tsx`):
-  one row of single-choice pill chips (36pt drawn, 44pt to touch; the one
+  one row of single-choice pill chips (36pt drawn, 44pt on iOS / 48dp on Android to touch; the one
   on filled in `primary`) that runs to the screen's edges and scrolls
   sideways when it outgrows the screen, with "All" as a chip of its own.
   They are not `SelectableChip`s, which are the settings pickers.
@@ -304,7 +307,7 @@ header style (page-coloured, no hairline, chevron-only back).
 - **Header buttons** are `HeaderIconButton`; the session close button is
   `SessionCloseButton`.
 - **Control geometry** comes from `controlSize` and `controlLabel` in
-  `theme/index.ts`: compact actions and choices are at least 44pt, regular
+  `theme/index.ts`: compact actions and choices are at least 44pt on iOS / 48dp on Android, regular
   actions 48pt, footer actions 52pt. These are minimums, not fixed heights:
   labels wrap and grow with text scaling. Action labels use 15/20pt semibold
   type and 14pt corners. `ModeButtonRow` uses the footer size, equal widths
@@ -312,7 +315,7 @@ header style (page-coloured, no hairline, chevron-only back).
   `BeltButton` uses the regular geometry with belt colours. Selection controls
   keep stable label weight and show press feedback through fill; board swatches
   keep their size and mark selection with a badge. Header icon targets occupy
-  a real 44pt square rather than relying on hit slop outside a smaller view.
+  a real 44pt (iOS) / 48dp (Android) square rather than relying on hit slop outside a smaller view.
 
 - **Buttons pinned under scrolling content** (setup, session, result and
   onboarding footers) go in `BottomBar`, which pads the home indicator's

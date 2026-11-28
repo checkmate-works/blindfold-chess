@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
+import type { TextInputInstance } from "react-native";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 
@@ -23,13 +24,14 @@ export default function SignInScreen() {
   const router = useRouter();
   const finishSignIn = useFinishSignIn();
   const { colors } = useTheme();
+  const passwordRef = useRef<TextInputInstance>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async () => {
-    if (!supabase || busy) return;
+    if (!supabase || busy || !email.trim() || !password) return;
     setBusy(true);
     setError(null);
     const { error: signInError } = await supabase.auth.signInWithPassword({
@@ -53,6 +55,8 @@ export default function SignInScreen() {
     <ScrollView
       contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"
+      automaticallyAdjustKeyboardInsets
+      keyboardDismissMode="on-drag"
     >
       <OAuthButtons mode="signIn" />
       <OAuthDivider />
@@ -62,6 +66,10 @@ export default function SignInScreen() {
         onChangeText={setEmail}
         placeholder={t("account.signIn.emailPlaceholder")}
         autoCapitalize="none"
+        autoCorrect={false}
+        returnKeyType="next"
+        submitBehavior="submit"
+        onSubmitEditing={() => passwordRef.current?.focus()}
         autoComplete="email"
         keyboardType="email-address"
         textContentType="username"
@@ -69,17 +77,25 @@ export default function SignInScreen() {
       />
       <TextField
         label={t("account.signIn.passwordLabel")}
+        ref={passwordRef}
         value={password}
         onChangeText={setPassword}
         placeholder={t("account.signIn.passwordPlaceholder")}
+        autoCapitalize="none"
+        autoCorrect={false}
         secureTextEntry
         autoComplete="current-password"
         textContentType="password"
+        returnKeyType="done"
         onSubmitEditing={handleSubmit}
         testID="sign-in-password"
       />
       {error && (
-        <Text style={[styles.error, { color: colors.destructive }]}>
+        <Text
+          accessibilityRole="alert"
+          accessibilityLiveRegion="polite"
+          style={[styles.error, { color: colors.destructive }]}
+        >
           {error}
         </Text>
       )}

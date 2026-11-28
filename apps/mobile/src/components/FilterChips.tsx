@@ -1,6 +1,12 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
-import { borderRadius, fontWeight, spacing, useTheme } from "../theme";
+import {
+  borderRadius,
+  fontWeight,
+  spacing,
+  touchTarget,
+  useTheme,
+} from "../theme";
 
 export type FilterChipOption = {
   readonly value: string;
@@ -21,11 +27,11 @@ type FilterChipsProps = {
 /**
  * How far each chip's touch area reaches past its drawn edge, above and
  * below. The chip is drawn 36pt tall, the size phone apps give a filter
- * chip; the slop makes the target 44pt. A horizontal `ScrollView` takes no
+ * chip; the slop makes the target 44pt on iOS and 48dp on Android. A horizontal `ScrollView` takes no
  * touches outside its own frame, so the row is padded by the same amount
  * and a negative margin keeps the spacing to its neighbours unchanged.
  */
-const CHIP_SLOP = 4;
+const CHIP_SLOP = (touchTarget.actionSize - 36) / 2;
 const CHIP_HIT_SLOP = { top: CHIP_SLOP, bottom: CHIP_SLOP } as const;
 
 /**
@@ -127,6 +133,7 @@ const styles = StyleSheet.create({
   },
   chip: {
     minHeight: 36,
+    minWidth: touchTarget.actionSize,
     justifyContent: "center",
     borderRadius: borderRadius.full,
     borderWidth: 1,

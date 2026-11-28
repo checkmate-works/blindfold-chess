@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
+import type { TextInputInstance } from "react-native";
 import { useNavigation, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 
@@ -38,6 +39,8 @@ export default function SignUpScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const { colors } = useTheme();
+  const passwordRef = useRef<TextInputInstance>(null);
+  const confirmRef = useRef<TextInputInstance>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -51,7 +54,7 @@ export default function SignUpScreen() {
     cameFromSignIn ? router.back() : router.replace("/sign-in");
 
   const handleSubmit = async () => {
-    if (busy) return;
+    if (busy || !email.trim() || !password || !confirm) return;
     if (password !== confirm) {
       setError(t("account.signUp.passwordMismatch"));
       return;
@@ -112,6 +115,8 @@ export default function SignUpScreen() {
     <ScrollView
       contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"
+      automaticallyAdjustKeyboardInsets
+      keyboardDismissMode="on-drag"
     >
       <OAuthButtons mode="signUp" />
       <OAuthDivider />
@@ -124,33 +129,51 @@ export default function SignUpScreen() {
         onChangeText={setEmail}
         placeholder={t("account.signUp.emailPlaceholder")}
         autoCapitalize="none"
+        autoCorrect={false}
+        returnKeyType="next"
+        submitBehavior="submit"
+        onSubmitEditing={() => passwordRef.current?.focus()}
         autoComplete="email"
         keyboardType="email-address"
         textContentType="username"
       />
       <TextField
         label={t("account.signUp.passwordLabel")}
+        ref={passwordRef}
         value={password}
         onChangeText={setPassword}
         placeholder={t("account.signUp.passwordPlaceholder", {
           minLength: MIN_PASSWORD_LENGTH,
         })}
+        autoCapitalize="none"
+        autoCorrect={false}
         secureTextEntry
         autoComplete="new-password"
         textContentType="newPassword"
+        returnKeyType="next"
+        submitBehavior="submit"
+        onSubmitEditing={() => confirmRef.current?.focus()}
       />
       <TextField
         label={t("account.signUp.confirmPasswordLabel")}
+        ref={confirmRef}
         value={confirm}
         onChangeText={setConfirm}
         placeholder={t("account.signUp.confirmPasswordPlaceholder")}
+        autoCapitalize="none"
+        autoCorrect={false}
         secureTextEntry
         autoComplete="new-password"
         textContentType="newPassword"
+        returnKeyType="done"
         onSubmitEditing={handleSubmit}
       />
       {error && (
-        <Text style={[styles.error, { color: colors.destructive }]}>
+        <Text
+          accessibilityRole="alert"
+          accessibilityLiveRegion="polite"
+          style={[styles.error, { color: colors.destructive }]}
+        >
           {error}
         </Text>
       )}

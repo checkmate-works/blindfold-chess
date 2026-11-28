@@ -45,7 +45,7 @@ export default function SetupUsernameScreen() {
   };
 
   const handleSubmit = async () => {
-    if (busy) return;
+    if (busy || username.trim().length < USERNAME_MIN_LENGTH) return;
     setBusy(true);
     setError(null);
     const code = await submitUsername(username.trim());
@@ -66,6 +66,8 @@ export default function SetupUsernameScreen() {
     <ScrollView
       contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"
+      automaticallyAdjustKeyboardInsets
+      keyboardDismissMode="on-drag"
     >
       <Text style={[styles.body, { color: colors.foreground }]}>
         {t("account.setupUsername.description")}
@@ -79,6 +81,7 @@ export default function SetupUsernameScreen() {
         autoCorrect={false}
         hint={error ?? t("account.setupUsername.usernameHint")}
         error={error !== null}
+        returnKeyType="done"
         onSubmitEditing={handleSubmit}
         testID="username-input"
       />

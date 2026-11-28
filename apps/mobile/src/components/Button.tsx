@@ -14,6 +14,7 @@ import {
   withAlpha,
   controlSize,
   controlLabel,
+  touchTarget,
 } from "../theme";
 import type { AppColors } from "../theme";
 
@@ -118,6 +119,7 @@ export function Button({
       onPress={onPress}
       disabled={isDisabled}
       accessibilityRole="button"
+      accessibilityLabel={title}
       accessibilityState={{ disabled: isDisabled, busy: loading }}
       testID={testID}
       style={({ pressed }) => {
@@ -168,6 +170,7 @@ export function Button({
 
 const styles = StyleSheet.create({
   base: {
+    minWidth: touchTarget.actionSize,
     alignItems: "center",
     justifyContent: "center",
     borderRadius: borderRadius.button,
