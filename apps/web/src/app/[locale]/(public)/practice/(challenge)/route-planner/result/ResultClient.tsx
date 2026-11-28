@@ -5,7 +5,6 @@ import { useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import type { RoutePlannerProblemResult } from '@blindfold-chess/features/route-planner';
 
 import { ARTICLE_ICONS } from '@/app/[locale]/(public)/learn/_lib/types';
 import {
@@ -17,6 +16,7 @@ import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCont
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { RoutePlannerResultList } from '../_components/RoutePlannerResultList';
+import { parseRoutePlannerResults, scoreRoutePlannerResults } from '../_lib/result-data';
 
 function RoutePlannerChildren() {
   const searchParams = useSearchParams();
@@ -24,15 +24,7 @@ function RoutePlannerChildren() {
   const tPractice = useTranslations('practice');
   const dataParam = searchParams.get('data');
 
-  const results = useMemo(() => {
-    if (!dataParam) return [];
-    try {
-      const parsed = JSON.parse(decodeURIComponent(dataParam));
-      return Array.isArray(parsed) ? (parsed as RoutePlannerProblemResult[]) : [];
-    } catch {
-      return [];
-    }
-  }, [dataParam]);
+  const results = useMemo(() => parseRoutePlannerResults(dataParam), [dataParam]);
 
   if (results.length === 0 || !isLoaded) return null;
 
@@ -87,29 +79,13 @@ function RelatedLinks({ locale }: { locale: Locale }) {
   );
 }
 
-/** Parse score/total from the data param (route-planner uses data-based scoring) */
-function parseDataScores(searchParams: URLSearchParams) {
-  const dataParam = searchParams.get('data');
-  if (!dataParam) return { score: 0, total: 0 };
-  try {
-    const parsed = JSON.parse(decodeURIComponent(dataParam));
-    // The problem the time limit cut off is listed but was never answered.
-    const results = (Array.isArray(parsed) ? parsed : []).filter(
-      (r: RoutePlannerProblemResult) => !r.timedOut
-    );
-    const score = results.filter((r: RoutePlannerProblemResult) => r.success).length;
-    return { score, total: results.length };
-  } catch {
-    return { score: 0, total: 0 };
-  }
-}
-
 export const ResultClient = createPracticeResultClient({
   moduleSlug: 'route-planner',
   i18nKey: 'routePlanner',
   containerClassName: 'space-y-8',
   tryAgainNavigation: 'reload',
-  resolveScoreTotal: (sp) => parseDataScores(sp),
+  // Route planner scores from the data param rather than score/total params.
+  resolveScoreTotal: (sp) => scoreRoutePlannerResults(parseRoutePlannerResults(sp.get('data'))),
   extraParams: (sp) => ({
     piece: sp.get('piece'),
   }),
