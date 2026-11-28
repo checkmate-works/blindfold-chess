@@ -34,9 +34,12 @@ import { useTheme } from "../../theme";
  * longer carries an AI-game card, so the tab is the way into a game.
  *
  * The play tab's badge counts the AI games still in progress (saved games
- * without a result), so a game left part way is not forgotten; it is hidden
- * at 0. The badge is grey (`mutedForeground`) rather than the OS's red: red
- * reads as an alert that needs handling, and a paused game is only a
+ * without a result), so a game left part way is not forgotten. At 0 the
+ * `Badge` element is left out altogether rather than given `hidden`:
+ * expo-router sets the tab's badge text from any non-empty children and
+ * reads `hidden` only when there are none, so `hidden` with "0" inside
+ * still drew a "0" badge. The badge is grey (`mutedForeground`) rather
+ * than the OS's red: red reads as an alert that needs handling, and a paused game is only a
  * reminder; blue is kept for the main action. On iOS only the badge's fill
  * can be set — its text is always white — so a softer pale badge is not an
  * option there.
@@ -117,9 +120,11 @@ export default function TabsLayout() {
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="play">
         <NativeTabs.Trigger.Label>{t("tabs.play")}</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Badge hidden={inProgressGames === 0}>
-          {String(inProgressGames)}
-        </NativeTabs.Trigger.Badge>
+        {inProgressGames > 0 && (
+          <NativeTabs.Trigger.Badge>
+            {String(inProgressGames)}
+          </NativeTabs.Trigger.Badge>
+        )}
         <NativeTabs.Trigger.Icon
           sf={{ default: "flag.2.crossed", selected: "flag.2.crossed.fill" }}
           src={
