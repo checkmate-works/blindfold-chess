@@ -12,6 +12,7 @@ import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { KnightTourResult } from '../_components/KnightTourResult';
+import { parseKnightTourResult, parseKnightTourSettings } from '../_lib/result-data';
 
 function KnightTourContent({ locale }: { locale: Locale }) {
   const t = useTranslations('practice.knightTour');
@@ -24,31 +25,12 @@ function KnightTourContent({ locale }: { locale: Locale }) {
   const settingsParam = searchParams.get('settings');
   const isTutorial = modeParam === 'tutorial';
 
-  const { visitedSquares, lastSquare, success, isClosedTour } = useMemo(() => {
-    if (!dataParam) {
-      return { visitedSquares: new Map(), lastSquare: '', success: false, isClosedTour: false };
-    }
-    try {
-      const parsed = JSON.parse(decodeURIComponent(dataParam));
-      return {
-        visitedSquares: new Map(parsed.visitedSquares as [string, number][]),
-        lastSquare: parsed.lastSquare,
-        success: parsed.success,
-        isClosedTour: parsed.isClosedTour,
-      };
-    } catch {
-      return { visitedSquares: new Map(), lastSquare: '', success: false, isClosedTour: false };
-    }
-  }, [dataParam]);
+  const { visitedSquares, lastSquare, success, isClosedTour } = useMemo(
+    () => parseKnightTourResult(dataParam),
+    [dataParam]
+  );
 
-  const settings = useMemo(() => {
-    if (!settingsParam) return { startingSquare: 'a1', blindfoldMode: false };
-    try {
-      return JSON.parse(decodeURIComponent(settingsParam));
-    } catch {
-      return { startingSquare: 'a1', blindfoldMode: false };
-    }
-  }, [settingsParam]);
+  const settings = useMemo(() => parseKnightTourSettings(settingsParam), [settingsParam]);
 
   const handlePlayAgain = () => {
     if (isTutorial) {
