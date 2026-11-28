@@ -23,12 +23,11 @@ type RecordCardProps = {
  * The web result's "Your record" card for a signed-in player: this run, the
  * last one and the best before it, with the change against the last run on
  * this run's row (the ticker order: the value, then its change) and a badge
- * for a first record or a new best, then a row into My Records.
+ * for a first record or a new best under it, then a row into My Records.
  *
  * Grouped rows rather than the web's card: three label–value lines and a
  * link are what the inset-grouped list is for. The rows always number three,
- * whatever the run was, so the card keeps one height; a missing value is a
- * dash, as on the web. The status and the values are the server's
+ * whatever the run was; a missing value is a dash, as on the web. The status and the values are the server's
  * (`deriveRecordView`), so the badge rule is decided in one place.
  */
 export function RecordCard({ record, menuType }: RecordCardProps) {
@@ -65,25 +64,27 @@ export function RecordCard({ record, menuType }: RecordCardProps) {
         title={t("challenge.recordCard.thisTime")}
         trailing={
           <View style={styles.current}>
+            <View style={styles.valueLine}>
+              <Text style={[styles.value, { color: colors.foreground }]}>
+                {formatScore(record.currentScore)}
+              </Text>
+              {record.diffFromLast !== undefined && (
+                <Text
+                  style={[
+                    styles.delta,
+                    { color: toneColor[signedDeltaTone(record.diffFromLast)] },
+                  ]}
+                >
+                  {formatSignedDelta(record.diffFromLast)}
+                </Text>
+              )}
+            </View>
             {badge && (
               <View style={[styles.badge, { backgroundColor: badge.fill }]}>
                 <Text style={[styles.badgeText, { color: badge.color }]}>
                   {badge.label}
                 </Text>
               </View>
-            )}
-            <Text style={[styles.value, { color: colors.foreground }]}>
-              {formatScore(record.currentScore)}
-            </Text>
-            {record.diffFromLast !== undefined && (
-              <Text
-                style={[
-                  styles.delta,
-                  { color: toneColor[signedDeltaTone(record.diffFromLast)] },
-                ]}
-              >
-                {formatSignedDelta(record.diffFromLast)}
-              </Text>
             )}
           </View>
         }
@@ -110,11 +111,17 @@ export function RecordCard({ record, menuType }: RecordCardProps) {
 }
 
 const styles = StyleSheet.create({
+  // The badge goes under the value rather than beside it, so the row's
+  // label keeps its line on a narrow phone.
   current: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
+    alignItems: "flex-end",
+    gap: 4,
     flexShrink: 1,
+  },
+  valueLine: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    gap: 8,
   },
   badge: {
     borderRadius: borderRadius.full,
