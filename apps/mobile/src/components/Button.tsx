@@ -14,6 +14,7 @@ import {
   withAlpha,
   controlSize,
   controlLabel,
+  touchTarget,
 } from "../theme";
 import type { AppColors } from "../theme";
 
@@ -168,6 +169,7 @@ export function Button({
 
 const styles = StyleSheet.create({
   base: {
+    minWidth: touchTarget.actionSize,
     alignItems: "center",
     justifyContent: "center",
     borderRadius: borderRadius.button,

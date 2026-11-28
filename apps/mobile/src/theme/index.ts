@@ -1,3 +1,5 @@
+import { Platform } from "react-native";
+
 export {
   lightColors,
   darkColors,
@@ -49,9 +51,10 @@ export const fontWeight = {
   bold: "700" as const,
 };
 
-// Minimum touch target size (44x44 points for accessibility)
+// Board/key geometry stays compact; standalone actions follow each platform.
 export const touchTarget = {
   minSize: 44,
+  actionSize: Platform.OS === "android" ? 48 : 44,
 } as const;
 
 export const shadows = {
@@ -80,7 +83,11 @@ export const shadows = {
 
 /** Shared action geometry. Minimum heights grow with wrapped or scaled text. */
 export const controlSize = {
-  sm: { minHeight: 44, paddingVertical: 11, paddingHorizontal: 16 },
+  sm: {
+    minHeight: touchTarget.actionSize,
+    paddingVertical: 11,
+    paddingHorizontal: 16,
+  },
   md: { minHeight: 48, paddingVertical: 13, paddingHorizontal: 24 },
   lg: { minHeight: 52, paddingVertical: 15, paddingHorizontal: 24 },
 } as const;

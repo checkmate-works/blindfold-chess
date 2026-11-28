@@ -13,7 +13,7 @@ type Props = {
 /**
  * An icon button for the native header's trailing slot (help, share, …).
  * The glyph is ink (`colors.foreground`), the header's tint, like the back
- * chevron; the hit area is padded to 44pt.
+ * chevron; the hit area is padded to platform.
  */
 export function HeaderIconButton({
   icon,
@@ -40,8 +40,8 @@ export function HeaderIconButton({
 
 const styles = StyleSheet.create({
   button: {
-    width: touchTarget.minSize,
-    height: touchTarget.minSize,
+    width: touchTarget.actionSize,
+    height: touchTarget.actionSize,
     borderRadius: borderRadius.button,
     alignItems: "center",
     justifyContent: "center",
